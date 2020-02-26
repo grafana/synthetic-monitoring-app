@@ -1,0 +1,33 @@
+{
+  "type": "app",
+  "name": "Worldping",
+  "id": "grafana-worldping-app",
+
+  "info": {
+    "author": {
+      "name": "Grafana Project",
+      "url": "https://grafana.com"
+    },
+    "logos": {
+      "small": "img/logo.svg",
+      "large": "img/logo.svg"
+    },
+    "version": "%VERSION%",
+    "updated": "%TODAY%"
+  },
+
+  "includes": [
+    {
+      "type": "page",
+      "name": "React Config",
+      "path": "/plugins/grafana-worldping-app/?page=page2",
+      "role": "Admin",
+      "addToNav": true
+    }
+  ],
+
+  "dependencies": {
+    "grafanaVersion": "6.7.x",
+    "plugins": []
+  }
+}
