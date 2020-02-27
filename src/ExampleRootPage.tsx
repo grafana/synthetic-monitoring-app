@@ -3,6 +3,7 @@ import React, { PureComponent } from 'react';
 
 // Types
 import { NavModelItem, AppRootProps } from '@grafana/data';
+import { HttpSettings, HttpMethod, IpVersion, ValidationMethod, ValidationSeverity } from './types';
 
 interface Props extends AppRootProps {}
 
@@ -79,7 +80,38 @@ export class ExampleRootPage<ExampleAppSettings> extends PureComponent<Props> {
   }
 
   render() {
-    const { path, query, meta } = this.props;
+    const { path, query } = this.props;
+
+    const hs: HttpSettings = {
+      url: 'https://grafana.com/',
+      method: HttpMethod.GET,
+      ipVersion: IpVersion.Any,
+      validateCert: true,
+      downloadLimit: 0, // unlimited
+      validation: [
+        {
+          body: {
+            method: ValidationMethod.IncludesText,
+            value: 'grafana',
+            severity: ValidationSeverity.Warning,
+          },
+        },
+        {
+          body: {
+            method: ValidationMethod.IncludesText,
+            value: 'monitoring solution',
+            severity: ValidationSeverity.Warning,
+          },
+        },
+        {
+          body: {
+            method: ValidationMethod.ExcludesText,
+            value: 'error',
+            severity: ValidationSeverity.Critical,
+          },
+        },
+      ],
+    };
 
     return (
       <div>
@@ -96,7 +128,7 @@ export class ExampleRootPage<ExampleAppSettings> extends PureComponent<Props> {
             <a href={path + '?x=1&y=2&y=3'}>ZZZ</a>
           </li>
         </ul>
-        <pre>{JSON.stringify(meta.jsonData)}</pre>
+        <pre>{JSON.stringify(hs, null, 2)}</pre>
       </div>
     );
   }
