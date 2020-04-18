@@ -27,10 +27,5 @@
       "small": "img/logo.svg",
       "large": "img/logo.svg"
     }
-  },
-
-  "dependencies": {
-    "grafanaVersion": "7.0.x",
-    "plugins": []
   }
 }
