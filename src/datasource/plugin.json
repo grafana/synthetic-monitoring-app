@@ -1,0 +1,36 @@
+{
+  "type": "datasource",
+  "name": "Worldping Info",
+  "id": "worldping-datasource",
+  "metrics": true,
+
+  "routes": [
+    {
+      "path": "dev/v1/*",
+      "method": "*",
+      "url": "https://worldping-api-dev.grafana.net/api/v1",
+      "headers": [
+        {
+          "name": "Authorization",
+          "content": "Bearer {{.SecureJsonData.accessToken}}"
+        }
+      ]
+    }
+  ],
+
+  "info": {
+    "description": "Worldping Info",
+    "author": {
+      "name": "Grafana"
+    },
+    "logos": {
+      "small": "img/logo.svg",
+      "large": "img/logo.svg"
+    }
+  },
+
+  "dependencies": {
+    "grafanaVersion": "7.0.x",
+    "plugins": []
+  }
+}

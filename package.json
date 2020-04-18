@@ -1,6 +1,6 @@
 {
   "name": "worldping-app",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Grafana Woldping App",
   "scripts": {
     "build": "grafana-toolkit plugin:build",
@@ -11,8 +11,10 @@
   "author": "Grafana Labs",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@grafana/data": "next",
-    "@grafana/toolkit": "next",
-    "@grafana/ui": "next"
+    "@grafana/data": "canary",
+    "@grafana/toolkit": "canary",
+    "@grafana/ui": "canary",
+    "@grafana/runtime": "canary",
+    "@types/lodash": "latest"
   }
 }

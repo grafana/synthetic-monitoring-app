@@ -1,6 +1,5 @@
-export interface ExampleAppSettings {
-  customText?: string;
-  customCheckbox?: boolean;
+export interface GlobalSettings {
+  // anything?
 }
 
 export type CheckSettings = PingSettings | HttpSettings | DnsSettings;

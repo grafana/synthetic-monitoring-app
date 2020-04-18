@@ -3,11 +3,11 @@ import React, { PureComponent } from 'react';
 
 // Types
 import { PluginConfigPageProps, AppPluginMeta } from '@grafana/data';
-import { ExampleAppSettings } from 'types';
+import { GlobalSettings } from 'types';
 
-interface Props extends PluginConfigPageProps<AppPluginMeta<ExampleAppSettings>> {}
+interface Props extends PluginConfigPageProps<AppPluginMeta<GlobalSettings>> {}
 
-export class ExamplePage1 extends PureComponent<Props> {
+export class SetupPage extends PureComponent<Props> {
   constructor(props: Props) {
     super(props);
   }
@@ -17,7 +17,7 @@ export class ExamplePage1 extends PureComponent<Props> {
 
     return (
       <div>
-        11111111111111111111111111111111
+        TODO... setup....
         <pre>{JSON.stringify(query)}</pre>
         11111111111111111111111111111111
       </div>
