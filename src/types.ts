@@ -1,21 +1,8 @@
+import { Labels } from '@grafana/data';
+
+// App Settings
 export interface GlobalSettings {
   // anything?
-}
-
-export type CheckSettings = PingSettings | HttpSettings | DnsSettings;
-
-// The "settings" field defines the type of check.
-export interface Check {
-  id: number;
-  orgId: number;
-  frequency: number;
-  offset: number;
-  timeout: number;
-  enabled: boolean;
-  tags: string[];
-  settings: CheckSettings;
-  created: number;
-  modified: number;
 }
 
 export enum IpVersion {
@@ -133,3 +120,69 @@ export interface DnsSettings {
   port: number;
   validation: DnsValidations[];
 }
+
+export interface BaseObject {
+  id: number;
+  tenantID: number;
+  created: number; // seconds
+  updated: number; // seconds
+}
+
+export interface Probe extends BaseObject {
+  name: string;
+  public: boolean;
+  latitude: number;
+  longitude: number;
+  online: boolean;
+  onelineChange: number;
+  labels: Labels;
+}
+
+export interface Check extends BaseObject {
+  frequency: number;
+  offset: number;
+  timeout: number;
+  enabled: boolean;
+
+  labels: any; // Currently list of [name:value]... can it be Labels?
+  settings: any; //
+
+  // Link to probes
+  probes: number[];
+}
+
+// {
+//   "id": 7,
+//   "tenantId": 2,
+//   "labels": [
+//   {
+//   "Name": "environment",
+//   "Value": "production"
+//   }
+//   ],
+//   "settings": {
+//   "http": {
+//   "url": "https://apple.com/",
+//   "method": "GET",
+//   "headers": null,
+//   "body": "",
+//   "downloadLimit": 0,
+//   "ipVersion": "V4",
+//   "validateCert": true,
+//   "validation": [
+//   {
+//   "responseTime": {
+//   "threshold": 250,
+//   "severity": "Warning"
+//   }
+//   }
+//   ]
+//   }
+//   },
+//   "probes": [
+//   2,
+//   3
+//   ],
+//   "created": 1587161988,
+//   "modified": 1587161988
+//   },

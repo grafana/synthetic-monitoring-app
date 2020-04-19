@@ -6,9 +6,9 @@
 
   "routes": [
     {
-      "path": "dev/v1/*",
+      "path": "dev",
       "method": "*",
-      "url": "https://worldping-api-dev.grafana.net/api/v1",
+      "url": "https://worldping-api-dev.grafana.net/api/v1/",
       "headers": [
         {
           "name": "Authorization",

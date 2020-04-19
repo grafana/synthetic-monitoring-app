@@ -9,6 +9,10 @@ export interface WorldpingQuery extends DataQuery {
   queryType: QueryType;
 }
 
+export const defaultQuery: WorldpingQuery = {
+  queryType: QueryType.Probes,
+} as WorldpingQuery;
+
 export interface LinkedDatsourceInfo {
   grafanaName: string;
   hostedId: number;

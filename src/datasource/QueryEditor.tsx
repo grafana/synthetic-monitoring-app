@@ -1,11 +1,18 @@
 import React, { PureComponent } from 'react';
-import { QueryEditorProps } from '@grafana/data';
+import { defaults } from 'lodash';
+import { QueryEditorProps, SelectableValue } from '@grafana/data';
 import { DataSource } from './DataSource';
-import { WorldpingQuery, WorldpingOptions } from './types';
+import { WorldpingQuery, WorldpingOptions, QueryType, defaultQuery } from './types';
+import { Select } from '@grafana/ui';
 
 type Props = QueryEditorProps<DataSource, WorldpingQuery, WorldpingOptions>;
 
 interface State {}
+
+const types = [
+  { label: 'Probes', value: QueryType.Probes },
+  { label: 'Checks', value: QueryType.Checks },
+];
 
 export class QueryEditor extends PureComponent<Props, State> {
   onComponentDidMount() {}
@@ -21,10 +28,22 @@ export class QueryEditor extends PureComponent<Props, State> {
   //   onRunQuery(); // executes the query
   // };
 
-  render() {
-    // const query = defaults(this.props.query, defaultQuery);
-    // const { queryText, constant } = query;
+  onQueryTypeChanged = (item: SelectableValue<QueryType>) => {
+    const { onChange, onRunQuery, query } = this.props;
+    onChange({
+      ...query,
+      queryType: item.value!,
+    });
+    onRunQuery();
+  };
 
-    return <div className="gf-form">TODO!</div>;
+  render() {
+    const query = defaults(this.props.query, defaultQuery);
+
+    return (
+      <div className="gf-form">
+        <Select options={types} value={types.find(t => t.value === query.queryType)} onChange={this.onQueryTypeChanged} />
+      </div>
+    );
   }
 }
