@@ -1,12 +1,20 @@
-import { DataQueryRequest, DataQueryResponse, DataSourceApi, DataSourceInstanceSettings, FieldType, ArrayDataFrame, DataFrame } from '@grafana/data';
+import {
+  DataQueryRequest,
+  DataQueryResponse,
+  DataSourceApi,
+  DataSourceInstanceSettings,
+  FieldType,
+  ArrayDataFrame,
+  DataFrame,
+} from '@grafana/data';
 
 import { WorldpingQuery, WorldpingOptions, QueryType } from './types';
 
 import { getBackendSrv } from '@grafana/runtime';
-import { Probe, Check } from 'types';
+import { Probe, Check, InitResponse } from '../types';
 
-export class DataSource extends DataSourceApi<WorldpingQuery, WorldpingOptions> {
-  constructor(private instanceSettings: DataSourceInstanceSettings<WorldpingOptions>) {
+export class WorldPingDataSource extends DataSourceApi<WorldpingQuery, WorldpingOptions> {
+  constructor(public instanceSettings: DataSourceInstanceSettings<WorldpingOptions>) {
     super(instanceSettings);
   }
 
@@ -33,7 +41,11 @@ export class DataSource extends DataSourceApi<WorldpingQuery, WorldpingOptions> 
     return { data };
   }
 
-  listProbes(): Promise<Probe[]> {
+  //--------------------------------------------------------------------------------
+  // PROBES
+  //--------------------------------------------------------------------------------
+
+  async listProbes(): Promise<Probe[]> {
     return getBackendSrv()
       .datasourceRequest({
         method: 'GET',
@@ -44,7 +56,11 @@ export class DataSource extends DataSourceApi<WorldpingQuery, WorldpingOptions> 
       });
   }
 
-  listChecks(): Promise<Check[]> {
+  //--------------------------------------------------------------------------------
+  // CHECKS
+  //--------------------------------------------------------------------------------
+
+  async listChecks(): Promise<Check[]> {
     return getBackendSrv()
       .datasourceRequest({
         method: 'GET',
@@ -55,32 +71,98 @@ export class DataSource extends DataSourceApi<WorldpingQuery, WorldpingOptions> 
       });
   }
 
+  async addCheck(check: Check): Promise<any> {
+    return getBackendSrv()
+      .datasourceRequest({
+        method: 'POST',
+        url: `${this.instanceSettings.url}/dev/check/add`,
+        data: check,
+      })
+      .then((res: any) => {
+        return res.data;
+      });
+  }
+
+  async deleteCheck(id: number): Promise<any> {
+    return getBackendSrv()
+      .datasourceRequest({
+        method: 'DELETE',
+        url: `${this.instanceSettings.url}/dev/check/${id}`,
+      })
+      .then((res: any) => {
+        return res.data;
+      });
+  }
+
+  async updateCheck(check: Check): Promise<any> {
+    return getBackendSrv()
+      .datasourceRequest({
+        method: 'PUT',
+        url: `${this.instanceSettings.url}/dev/check/${check.id}`,
+        data: check,
+      })
+      .then((res: any) => {
+        return res.data;
+      });
+  }
+
+  //--------------------------------------------------------------------------------
+  // SETUP
+  //--------------------------------------------------------------------------------
+
+  async registerInit(apiToken: string): Promise<InitResponse> {
+    return getBackendSrv()
+      .datasourceRequest({
+        method: 'POST',
+        url: `${this.instanceSettings.url}/dev/register/init`,
+        data: { apiToken },
+      })
+      .then((res: any) => {
+        return res.data;
+      });
+  }
+
+  async registerSave(apiToken: string, options: WorldpingOptions, accessToken: string): Promise<InitResponse> {
+    const data = {
+      ...this.instanceSettings,
+      jsonData: options,
+      secureJsonData: {
+        accessToken,
+      },
+      access: 'proxy',
+    };
+    const info = await getBackendSrv().put(`api/datasources/${this.instanceSettings.id}`, data);
+    console.log('Saved accessToken, now update our configs', info);
+
+    // Note the accessToken above must be saved first!
+    await getBackendSrv().datasourceRequest({
+      method: 'POST',
+      url: `${this.instanceSettings.url}/dev/register/save`,
+      data: {
+        apiToken,
+        metricsInstanceId: options.metrics.hostedId,
+        logsInstanceId: options.logs.hostedId,
+      },
+    });
+
+    return info;
+  }
+
+  //--------------------------------------------------------------------------------
+  // TEST
+  //--------------------------------------------------------------------------------
+
   async testDatasource() {
-    console.log('TEST', this.instanceSettings);
-
-    // Implement
-    return this.query({
-      targets: [
-        {
-          refId: 'A',
-          queryType: QueryType.Probes,
-        },
-      ],
-    } as DataQueryRequest<WorldpingQuery>);
-  }
-}
-
-export function getTableRows(data: DataFrame): any[] {
-  const tableData = [];
-
-  for (let i = 0; i < data.length; i++) {
-    const row: { [key: string]: string | number } = {};
-    for (let j = 0; j < data.fields.length; j++) {
-      const prop = data.fields[j].name;
-      row[prop] = data.fields[j].values.get(i);
+    const probes = await this.listProbes();
+    if (probes.length) {
+      return {
+        status: 'OK',
+        mesage: `Found ${probes.length} probes`,
+      };
     }
-    tableData.push(row);
+    return {
+      status: 'Error',
+      mesage: 'unable to connect',
+    };
   }
-
-  return tableData;
 }

@@ -123,7 +123,7 @@ export interface DnsSettings {
 
 export interface BaseObject {
   id: number;
-  tenantID: number;
+  tenantId: number;
   created: number; // seconds
   updated: number; // seconds
 }
@@ -151,38 +151,28 @@ export interface Check extends BaseObject {
   probes: number[];
 }
 
-// {
-//   "id": 7,
-//   "tenantId": 2,
-//   "labels": [
-//   {
-//   "Name": "environment",
-//   "Value": "production"
-//   }
-//   ],
-//   "settings": {
-//   "http": {
-//   "url": "https://apple.com/",
-//   "method": "GET",
-//   "headers": null,
-//   "body": "",
-//   "downloadLimit": 0,
-//   "ipVersion": "V4",
-//   "validateCert": true,
-//   "validation": [
-//   {
-//   "responseTime": {
-//   "threshold": 250,
-//   "severity": "Warning"
-//   }
-//   }
-//   ]
-//   }
-//   },
-//   "probes": [
-//   2,
-//   3
-//   ],
-//   "created": 1587161988,
-//   "modified": 1587161988
-//   },
+export interface HostedInstance {
+  id: number;
+  orgSlug: string;
+  orgName: string;
+  clusterSlug: string;
+  clusterName: string;
+  type: string; // "prometheus" "logs",
+  name: string;
+  url: string;
+  description: string;
+  status: string;
+  currentActiveSeries: number;
+  currentDpm: number;
+  currentUsage: number;
+}
+
+export interface InitResponse {
+  accessToken: string;
+  viewerKeys: {
+    'logs-viewer': string;
+    'metrics-viewer': string;
+  };
+  metricInstances: HostedInstance[];
+  logInstances: HostedInstance[];
+}

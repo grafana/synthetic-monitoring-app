@@ -1,13 +1,12 @@
 import React, { PureComponent, ChangeEvent } from 'react';
-import { SecretFormField } from '@grafana/ui';
 import { DataSourcePluginOptionsEditorProps } from '@grafana/data';
 import { WorldpingOptions, SecureJsonData } from './types';
+import { LegacyForms } from '@grafana/ui';
+import { TenantView } from 'components/TenantView';
 
-interface Props extends DataSourcePluginOptionsEditorProps<WorldpingOptions> {}
+interface Props extends DataSourcePluginOptionsEditorProps<WorldpingOptions, SecureJsonData> {}
 
-interface State {}
-
-export class ConfigEditor extends PureComponent<Props, State> {
+export class ConfigEditor extends PureComponent<Props> {
   onAccessTokenChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { onOptionsChange, options } = this.props;
     onOptionsChange({
@@ -38,12 +37,17 @@ export class ConfigEditor extends PureComponent<Props, State> {
     const { secureJsonFields } = options;
     const secureJsonData = (options.secureJsonData || {}) as SecureJsonData;
 
+    if (isValid(options.jsonData)) {
+      return <TenantView settings={options.jsonData} worldping={options.name} />;
+    }
+
     return (
       <div className="gf-form-group">
-        <h4>NOTE: this is normally created using the wizard... for now enter manually</h4>
+        <a href={`/plugins/grafana-worldping-app/?page=setup&instance=${options.name}`}>Configure</a>
+
         <div className="gf-form-inline">
           <div className="gf-form">
-            <SecretFormField
+            <LegacyForms.SecretFormField
               isConfigured={(secureJsonFields && secureJsonFields.accessToken) as boolean}
               value={secureJsonData.accessToken || ''}
               label="Access Token"
@@ -58,4 +62,21 @@ export class ConfigEditor extends PureComponent<Props, State> {
       </div>
     );
   }
+}
+
+export function isValid(settings: WorldpingOptions): boolean {
+  if (!settings) {
+    return false;
+  }
+
+  const { metrics, logs } = settings;
+  if (!metrics || !metrics.grafanaName || !metrics.hostedId) {
+    return false;
+  }
+
+  if (!logs || !logs.grafanaName || !logs.hostedId) {
+    return false;
+  }
+
+  return true;
 }

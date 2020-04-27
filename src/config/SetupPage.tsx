@@ -4,52 +4,69 @@ import React, { PureComponent } from 'react';
 // Types
 import { PluginConfigPageProps, AppPluginMeta } from '@grafana/data';
 import { GlobalSettings } from 'types';
-import { LinkButton, Button } from '@grafana/ui';
+import { getDataSourceSrv, getLocationSrv } from '@grafana/runtime';
+import { TenantSetup } from 'components/TenantSetup';
+import { createNewWorldpingInstance, findWorldPingDataSources } from 'utils';
+import { WorldPingDataSource } from 'datasource/DataSource';
 
 interface Props extends PluginConfigPageProps<AppPluginMeta<GlobalSettings>> {}
+interface State {
+  instance?: WorldPingDataSource;
+}
 
 export class SetupPage extends PureComponent<Props> {
-  constructor(props: Props) {
-    super(props);
+  state: State = {};
+
+  async componentDidMount() {
+    this.checkInstance();
   }
 
-  onClick = () => {
-    console.log('CLICK!');
-  };
+  async componentDidUpdate(oldProps: Props) {
+    if (oldProps.query !== this.props.query) {
+      this.checkInstance();
+    }
+  }
 
-  renderXXX() {
-    return (
-      <div className="add-data-source-item" onClick={this.onClick}>
-        <img className="add-data-source-item-logo" src={'http://localhost:3000/public/app/plugins/datasource/prometheus/img/prometheus_logo.svg'} />
-        <div className="add-data-source-item-text-wrapper">
-          <span className="add-data-source-item-text">The Name</span>
-          <span className="add-data-source-item-desc">description here....</span>
-        </div>
-        <div className="add-data-source-item-actions">
-          <LinkButton variant="secondary" href={`?utm_source=grafana_add_ds`} target="_blank" rel="noopener" icon="external-link-alt">
-            link text
-          </LinkButton>
-          <Button>Select</Button>
-        </div>
-      </div>
-    );
+  async checkInstance() {
+    let instance = this.props.query['instance'];
+    if (instance) {
+      try {
+        const ds = (await getDataSourceSrv().get(instance)) as WorldPingDataSource;
+        this.setState({ instance: ds });
+        return; //
+      } catch (err) {
+        console.log('Setup Unknown instance?', err);
+        alert('Unknown instance: ' + instance);
+      }
+    }
+
+    // Find the existing instance
+    const instances = findWorldPingDataSources();
+    if (instances.length) {
+      getLocationSrv().update({
+        partial: true,
+        query: {
+          instance: instances[0].name,
+        },
+      });
+      return;
+    }
+
+    // Create a new instance
+    if (!instance) {
+      console.log('Creating a new datasource');
+      await createNewWorldpingInstance();
+      console.log('Reload the windows (will redirect)');
+      window.location.reload(); // force reload
+    }
   }
 
   render() {
-    const { query } = this.props;
+    const { instance } = this.state;
+    if (!instance) {
+      return <div>Loading...</div>;
+    }
 
-    return (
-      <div>
-        TODO... setup....
-        <pre>{JSON.stringify(query)}</pre>
-        11111111111111111111111111111111
-        <div className="add-data-source-category">
-          <div className="add-data-source-category__header">Header here</div>
-
-          {this.renderXXX()}
-          {this.renderXXX()}
-        </div>
-      </div>
-    );
+    return <TenantSetup instance={instance} />;
   }
 }

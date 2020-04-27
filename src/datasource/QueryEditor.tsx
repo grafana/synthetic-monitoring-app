@@ -1,11 +1,11 @@
 import React, { PureComponent } from 'react';
 import { defaults } from 'lodash';
 import { QueryEditorProps, SelectableValue } from '@grafana/data';
-import { DataSource } from './DataSource';
+import { WorldPingDataSource } from './DataSource';
 import { WorldpingQuery, WorldpingOptions, QueryType, defaultQuery } from './types';
 import { Select } from '@grafana/ui';
 
-type Props = QueryEditorProps<DataSource, WorldpingQuery, WorldpingOptions>;
+type Props = QueryEditorProps<WorldPingDataSource, WorldpingQuery, WorldpingOptions>;
 
 interface State {}
 
@@ -42,7 +42,11 @@ export class QueryEditor extends PureComponent<Props, State> {
 
     return (
       <div className="gf-form">
-        <Select options={types} value={types.find(t => t.value === query.queryType)} onChange={this.onQueryTypeChanged} />
+        <Select
+          options={types}
+          value={types.find(t => t.value === query.queryType)}
+          onChange={this.onQueryTypeChanged}
+        />
       </div>
     );
   }
