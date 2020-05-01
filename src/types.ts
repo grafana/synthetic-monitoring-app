@@ -1,4 +1,5 @@
-import { Labels } from '@grafana/data';
+import { Labels, DataSourceApi } from '@grafana/data';
+import { WorldPingDataSource } from 'datasource/DataSource';
 
 // App Settings
 export interface GlobalSettings {
@@ -167,12 +168,18 @@ export interface HostedInstance {
   currentUsage: number;
 }
 
-export interface InitResponse {
+export interface RegistrationInfo {
   accessToken: string;
-  viewerKeys: {
-    'logs-viewer': string;
-    'metrics-viewer': string;
+  tenantInfo: {
+    id: number;
+    metricInstance: HostedInstance;
+    logInstance: HostedInstance;
   };
-  metricInstances: HostedInstance[];
-  logInstances: HostedInstance[];
+  instances: HostedInstance[];
+}
+
+export interface GrafanaInstances {
+  worldping: WorldPingDataSource;
+  metrics?: DataSourceApi;
+  logs?: DataSourceApi;
 }

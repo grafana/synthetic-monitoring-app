@@ -55,7 +55,7 @@ class LinkedDatasourceView extends PureComponent<Props2, State2> {
     if (ds?.type === 'worldping-datasource') {
       getLocationSrv().update({
         partial: false,
-        path: `plugins/grafana-worldping-app/?page=setup&instance=${ds?.name}`,
+        path: `a/grafana-worldping-app/`,
       });
     } else {
       getLocationSrv().update({

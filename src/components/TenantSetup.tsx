@@ -1,10 +1,10 @@
 import React, { PureComponent, ChangeEvent } from 'react';
 import { Label, Button, Input } from '@grafana/ui';
-import { InitResponse } from 'types';
+import { RegistrationInfo, HostedInstance } from 'types';
 import { WorldPingDataSource } from 'datasource/DataSource';
 import { isValid } from 'datasource/ConfigEditor';
 import { InstanceList } from './InstanceList';
-import { createHostedInstance } from 'utils';
+import { createHostedInstance, findHostedInstance, getHostedLokiAndPrometheusInfo } from 'utils';
 import { WorldpingOptions } from 'datasource/types';
 import { getLocationSrv } from '@grafana/runtime';
 import { TenantView } from './TenantView';
@@ -15,7 +15,7 @@ interface Props {
 
 interface State {
   adminApiToken?: string;
-  info?: InitResponse;
+  info?: RegistrationInfo;
   logsInstance?: number;
   metricsInstance?: number;
 }
@@ -34,8 +34,8 @@ export class TenantSetup extends PureComponent<Props, State> {
     const info = await instance.registerInit(adminApiToken);
     this.setState({
       info,
-      logsInstance: info.logInstances[0].id,
-      metricsInstance: info.metricInstances[0].id,
+      logsInstance: info.tenantInfo?.logInstance?.id,
+      metricsInstance: info.tenantInfo?.metricInstance?.id,
     });
   };
 
@@ -43,51 +43,76 @@ export class TenantSetup extends PureComponent<Props, State> {
     this.setState({ adminApiToken: event.target.value });
   };
 
-  onSelectLogs(id: number) {
+  onSelectLogs = (id: number) => {
     this.setState({ logsInstance: id });
-  }
-  onSelectMetrics(id: number) {
+  };
+  onSelectMetrics = (id: number) => {
     this.setState({ metricsInstance: id });
-  }
+  };
+
+  createDataSource = async (name: string, hosted: HostedInstance) => {
+    const { instance } = this.props;
+    const { adminApiToken } = this.state;
+    try {
+      const token = await instance.getViewerToken(adminApiToken!, hosted!);
+      if (token) {
+        return await createHostedInstance(name, hosted!, token);
+      }
+      console.error('error getting token');
+      return undefined;
+    } catch (ex) {
+      console.log('Error creating', name, hosted, ex);
+    }
+    return undefined;
+  };
 
   onSave = async () => {
     const { instance } = this.props;
     const { info, adminApiToken } = this.state;
-    const metricsInstance = info?.metricInstances.find(i => i.id === this.state.metricsInstance);
-    const logsInstance = info?.logInstances.find(i => i.id === this.state.logsInstance);
     const name = instance?.instanceSettings.name;
 
-    if (!metricsInstance) {
+    const hostedMetrics = info?.instances.find(i => i.id === this.state.metricsInstance);
+    const hostedLogs = info?.instances.find(i => i.id === this.state.logsInstance);
+
+    if (!hostedMetrics) {
       alert('Missing metrics instance');
       return;
     }
 
-    if (!logsInstance) {
+    if (!hostedLogs) {
       alert('Missing logs instance');
       return;
     }
 
-    const metrics = await createHostedInstance(`${name} Metrics`, metricsInstance, info!.viewerKeys['metrics-viewer']);
-    const logs = await createHostedInstance(`${name} Logs`, logsInstance, info!.viewerKeys['logs-viewer']);
+    const known = await getHostedLokiAndPrometheusInfo();
+
+    let metrics = findHostedInstance(known, hostedMetrics);
+    if (!metrics) {
+      metrics = await this.createDataSource(`${name} Metrics`, hostedMetrics!);
+    }
+
+    let logs = findHostedInstance(known, hostedLogs);
+    if (!logs) {
+      logs = await this.createDataSource(`${name} Logs`, hostedLogs!);
+    }
 
     const options: WorldpingOptions = {
       logs: {
-        grafanaName: logs.name,
-        hostedId: logsInstance.id,
+        grafanaName: logs!.name,
+        hostedId: hostedLogs.id,
       },
       metrics: {
-        grafanaName: metrics.name,
-        hostedId: metricsInstance.id,
+        grafanaName: metrics!.name,
+        hostedId: hostedMetrics.id,
       },
     };
     await instance!.registerSave(adminApiToken!, options, info?.accessToken!);
 
     getLocationSrv().update({
       partial: false,
-      path: 'plugins/grafana-worldping-app/',
+      path: 'a/grafana-worldping-app/',
       query: {
         page: 'checks',
-        instance: instance.name,
       },
     });
   };
@@ -110,14 +135,21 @@ export class TenantSetup extends PureComponent<Props, State> {
     }
     return (
       <div>
-        <h4>Setup</h4>
-        <div>Connect worldping to your hosted metrics</div>
+        <div>Select the hosted instances where worldping will send it data</div>
 
         <h4>Metrics</h4>
-        <InstanceList instances={info.metricInstances} onSelected={this.onSelectMetrics} selected={metricsInstance!} />
+        <InstanceList
+          instances={info.instances.filter(f => f.type === 'prometheus')}
+          onSelected={this.onSelectMetrics}
+          selected={metricsInstance!}
+        />
 
         <h4>Logs</h4>
-        <InstanceList instances={info.logInstances} onSelected={this.onSelectLogs} selected={logsInstance!} />
+        <InstanceList
+          instances={info.instances.filter(f => f.type === 'logs')}
+          onSelected={this.onSelectLogs}
+          selected={logsInstance!}
+        />
         <br />
         <br />
         <Button variant="primary" onClick={this.onSave}>

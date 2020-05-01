@@ -15,13 +15,36 @@ export function findWorldPingDataSources(): Array<DataSourceInstanceSettings<Wor
 }
 
 /** Given hosted info, link to an existing instance */
-export function findHostedInstance(info: HostedInstance): DataSourceInstanceSettings | undefined {
-  for (const ds of Object.values(config.datasources)) {
-    if (info.url === ds.url) {
-      console.log('Consider', info, ds);
+export function findHostedInstance(
+  known: DataSourceInstanceSettings[],
+  info?: HostedInstance
+): DataSourceInstanceSettings | undefined {
+  if (info) {
+    const basicAuthUser = `${info.id}`;
+    for (const ds of known) {
+      if (ds.url === info.url) {
+        console.log('MAYBE:', basicAuthUser, (ds as any).basicAuthUser, ds);
+        if (basicAuthUser === (ds as any).basicAuthUser) {
+          return ds;
+        }
+      }
     }
   }
   return undefined;
+}
+
+/** Given hosted info, link to an existing instance */
+export async function getHostedLokiAndPrometheusInfo(): Promise<DataSourceInstanceSettings[]> {
+  const settings: DataSourceInstanceSettings[] = [];
+  for (const ds of Object.values(config.datasources)) {
+    if (ds.type === 'prometheus' || ds.type === 'loki') {
+      const s = await getBackendSrv().get(`api/datasources/${ds.id}`);
+      if (s.url && s.url.indexOf('grafana.net') > 0) {
+        settings.push(s as DataSourceInstanceSettings);
+      }
+    }
+  }
+  return settings;
 }
 
 export async function createNewWorldpingInstance(): Promise<DataSourceSettings> {
@@ -37,7 +60,7 @@ export async function createHostedInstance(
   name: string,
   info: HostedInstance,
   key: string
-): Promise<DataSourceSettings> {
+): Promise<DataSourceInstanceSettings> {
   const data = {
     name,
     url: info.url,
@@ -49,5 +72,9 @@ export async function createHostedInstance(
     },
     type: info.type === 'logs' ? 'loki' : 'prometheus',
   };
-  return getBackendSrv().post('api/datasources', data);
+  return getBackendSrv()
+    .post('api/datasources', data)
+    .then(d => {
+      return d.data;
+    });
 }

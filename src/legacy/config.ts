@@ -1,4 +1,5 @@
 import { PluginMeta } from '@grafana/data';
+import { getLocationSrv } from '@grafana/runtime';
 
 export class ExampleConfigCtrl {
   static templateUrl = 'legacy/config.html';
@@ -30,7 +31,9 @@ export class ExampleConfigCtrl {
       return;
     }
 
-    // TODO, can do stuff after update
-    console.log('Post Update:', this);
+    getLocationSrv().update({
+      path: 'a/grafana-worldping-app',
+      partial: false,
+    });
   }
 }

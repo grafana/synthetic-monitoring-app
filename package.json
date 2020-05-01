@@ -11,10 +11,15 @@
   "author": "Grafana Labs",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@grafana/data": "canary",
-    "@grafana/toolkit": "canary",
-    "@grafana/ui": "canary",
-    "@grafana/runtime": "canary",
+    "@grafana/data": "next",
+    "@grafana/runtime": "next",
+    "@grafana/toolkit": "next",
+    "@grafana/ui": "next",
     "@types/lodash": "latest"
+  },
+  "dependencies": {
+    "@types/leaflet": "^1.5.12",
+    "leaflet": "^1.6.0",
+    "react-leaflet": "^2.6.0"
   }
 }

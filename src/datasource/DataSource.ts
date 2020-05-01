@@ -11,7 +11,7 @@ import {
 import { WorldpingQuery, WorldpingOptions, QueryType } from './types';
 
 import { getBackendSrv } from '@grafana/runtime';
-import { Probe, Check, InitResponse } from '../types';
+import { Probe, Check, RegistrationInfo, HostedInstance } from '../types';
 
 export class WorldPingDataSource extends DataSourceApi<WorldpingQuery, WorldpingOptions> {
   constructor(public instanceSettings: DataSourceInstanceSettings<WorldpingOptions>) {
@@ -26,16 +26,24 @@ export class WorldPingDataSource extends DataSourceApi<WorldpingQuery, Worldping
         const frame = new ArrayDataFrame(probes);
         frame.setFieldType('onelineChange', FieldType.time, (s: number) => s * 1000); // seconds to ms
         frame.setFieldType('created', FieldType.time, (s: number) => s * 1000); // seconds to ms
-        frame.setFieldType('updated', FieldType.time, (s: number) => s * 1000); // seconds to ms
+        frame.setFieldType('modified', FieldType.time, (s: number) => s * 1000); // seconds to ms
         frame.refId = query.refId;
         data.push(frame);
       } else if (query.queryType === QueryType.Checks) {
         const checks = await this.listChecks();
         const frame = new ArrayDataFrame(checks);
         frame.setFieldType('created', FieldType.time, (s: number) => s * 1000); // seconds to ms
-        frame.setFieldType('updated', FieldType.time, (s: number) => s * 1000); // seconds to ms
+        frame.setFieldType('modified', FieldType.time, (s: number) => s * 1000); // seconds to ms
         frame.refId = query.refId;
-        data.push(frame);
+
+        const copy: DataFrame = {
+          ...frame,
+          fields: frame.fields,
+          length: checks.length,
+        };
+
+        console.log('FRAME', frame.length);
+        data.push(copy);
       }
     }
     return { data };
@@ -110,7 +118,7 @@ export class WorldPingDataSource extends DataSourceApi<WorldpingQuery, Worldping
   // SETUP
   //--------------------------------------------------------------------------------
 
-  async registerInit(apiToken: string): Promise<InitResponse> {
+  async registerInit(apiToken: string): Promise<RegistrationInfo> {
     return getBackendSrv()
       .datasourceRequest({
         method: 'POST',
@@ -122,7 +130,7 @@ export class WorldPingDataSource extends DataSourceApi<WorldpingQuery, Worldping
       });
   }
 
-  async registerSave(apiToken: string, options: WorldpingOptions, accessToken: string): Promise<InitResponse> {
+  async registerSave(apiToken: string, options: WorldpingOptions, accessToken: string): Promise<any> {
     const data = {
       ...this.instanceSettings,
       jsonData: options,
@@ -135,7 +143,7 @@ export class WorldPingDataSource extends DataSourceApi<WorldpingQuery, Worldping
     console.log('Saved accessToken, now update our configs', info);
 
     // Note the accessToken above must be saved first!
-    await getBackendSrv().datasourceRequest({
+    return await getBackendSrv().datasourceRequest({
       method: 'POST',
       url: `${this.instanceSettings.url}/dev/register/save`,
       data: {
@@ -144,8 +152,22 @@ export class WorldPingDataSource extends DataSourceApi<WorldpingQuery, Worldping
         logsInstanceId: options.logs.hostedId,
       },
     });
+  }
 
-    return info;
+  async getViewerToken(apiToken: string, instance: HostedInstance): Promise<string> {
+    return getBackendSrv()
+      .datasourceRequest({
+        method: 'POST',
+        url: `${this.instanceSettings.url}/dev/register/viewer-token`,
+        data: {
+          apiToken,
+          id: instance.id,
+          type: instance.type,
+        },
+      })
+      .then((res: any) => {
+        return res.data?.token;
+      });
   }
 
   //--------------------------------------------------------------------------------
