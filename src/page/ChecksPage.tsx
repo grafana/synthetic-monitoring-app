@@ -22,9 +22,21 @@ export class ChecksPage extends PureComponent<Props, State> {
   };
 
   async componentDidMount() {
-    const { instance } = this.props;
+    const { instance, id } = this.props;
     const checks = await instance.worldping.listChecks();
-    this.setState({ checks });
+
+    const num = id ? parseInt(id, 10) : -1;
+    const check = checks.find(c => c.id === num);
+    this.setState({ checks, check });
+  }
+
+  componentDidUpdate(oldProps: Props) {
+    if (this.props.id !== oldProps.id) {
+      const { id } = this.props;
+      const num = id ? parseInt(id, 10) : -1;
+      const check = this.state.checks.find(c => c.id === num);
+      this.setState({ check });
+    }
   }
 
   //-----------------------------------------------------------------
@@ -35,7 +47,7 @@ export class ChecksPage extends PureComponent<Props, State> {
     getLocationSrv().update({
       partial: true,
       query: {
-        check: id,
+        id,
       },
     });
   };
@@ -117,7 +129,7 @@ export class ChecksPage extends PureComponent<Props, State> {
     getLocationSrv().update({
       partial: true,
       query: {
-        check: '',
+        id: '',
       },
     });
   };

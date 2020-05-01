@@ -19,15 +19,14 @@
   "includes": [
     {
       "type": "page",
-      "name": "React Config",
-      "path": "/plugins/grafana-worldping-app/?page=page2",
-      "role": "Admin",
+      "name": "Worldping",
+      "path": "/a/grafana-worldping-app/",
       "addToNav": true
     }
   ],
 
   "dependencies": {
-    "grafanaVersion": "7.x",
+    "grafanaVersion": "7.0.x",
     "plugins": []
   }
 }

@@ -49,7 +49,7 @@ export default class ProbesMap extends Component<{}, State> {
             }
           `}
         >
-          <TileLayer url="https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png" />
+          <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
           <Marker position={position}>
             <Popup>
               A pretty CSS3 popup. <br /> Easily customizable.
