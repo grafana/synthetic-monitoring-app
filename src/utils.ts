@@ -63,7 +63,7 @@ export async function createHostedInstance(
 ): Promise<DataSourceInstanceSettings> {
   const data = {
     name,
-    url: info.url,
+    url: info.url + (info.type === 'logs' ? '/loki/api/v1' : '/api/prom'),
     access: 'proxy',
     basicAuth: true,
     basicAuthUser: `${info.id}`,
