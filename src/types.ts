@@ -1,4 +1,4 @@
-import { Labels, DataSourceApi } from '@grafana/data';
+import { DataSourceApi } from '@grafana/data';
 import { WorldPingDataSource } from 'datasource/DataSource';
 
 // App Settings
@@ -129,6 +129,11 @@ export interface BaseObject {
   updated: number; // seconds
 }
 
+export interface Label {
+  name: string;
+  value: string;
+}
+
 export interface Probe extends BaseObject {
   name: string;
   public: boolean;
@@ -136,7 +141,7 @@ export interface Probe extends BaseObject {
   longitude: number;
   online: boolean;
   onelineChange: number;
-  labels: Labels;
+  labels: Label[];
 }
 
 export interface Check extends BaseObject {
@@ -145,7 +150,7 @@ export interface Check extends BaseObject {
   timeout: number;
   enabled: boolean;
 
-  labels: any; // Currently list of [name:value]... can it be Labels?
+  labels: Label[]; // Currently list of [name:value]... can it be Labels?
   settings: any; //
 
   // Link to probes

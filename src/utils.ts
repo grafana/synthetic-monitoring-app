@@ -21,8 +21,9 @@ export function findHostedInstance(
 ): DataSourceInstanceSettings | undefined {
   if (info) {
     const basicAuthUser = `${info.id}`;
+    const instanceUrl = info.url + (info.type === 'logs' ? '/loki/api/v1' : '/api/prom');
     for (const ds of known) {
-      if (ds.url === info.url) {
+      if (ds.url === instanceUrl) {
         console.log('MAYBE:', basicAuthUser, (ds as any).basicAuthUser, ds);
         if (basicAuthUser === (ds as any).basicAuthUser) {
           return ds;
@@ -75,6 +76,6 @@ export async function createHostedInstance(
   return getBackendSrv()
     .post('api/datasources', data)
     .then(d => {
-      return d.data;
+      return d.datasource;
     });
 }

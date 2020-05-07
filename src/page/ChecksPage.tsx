@@ -2,7 +2,7 @@
 import React, { PureComponent } from 'react';
 
 // Types
-import { Check, GrafanaInstances } from 'types';
+import { Check, GrafanaInstances, Label } from 'types';
 import { getLocationSrv } from '@grafana/runtime';
 import { Button } from '@grafana/ui';
 import { CheckEditor } from 'components/CheckEditor';
@@ -52,6 +52,14 @@ export class ChecksPage extends PureComponent<Props, State> {
     });
   };
 
+  labelsToString(labels: Label[]) {
+    return labels
+      .map(label => {
+        return label.name + '=' + label.value;
+      })
+      .join(' ');
+  }
+
   renderCheckList() {
     const { instance } = this.props;
     const { checks } = this.state;
@@ -66,8 +74,8 @@ export class ChecksPage extends PureComponent<Props, State> {
       enabled: true,
       labels: [
         {
-          Name: 'environment',
-          Value: 'production',
+          name: 'environment',
+          value: 'production',
         },
       ],
       probes: [2, 3],
@@ -97,11 +105,14 @@ export class ChecksPage extends PureComponent<Props, State> {
     return (
       <div>
         {checks.map(check => {
+          const checkType = Object.keys(check.settings)[0];
           return (
             <div key={check.id} className="add-data-source-item" onClick={() => this.onSelectCheck(check.id)}>
               <div className="add-data-source-item-text-wrapper">
                 <span className="add-data-source-item-text">{check.id}</span>
-                <span className="add-data-source-item-desc">description here....</span>
+                <span className="add-data-source-item-desc">
+                  {checkType}: {this.labelsToString(check.labels)}
+                </span>
               </div>
               <div className="add-data-source-item-actions">
                 <Button>Select</Button>
