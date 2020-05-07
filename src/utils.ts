@@ -21,7 +21,7 @@ export function findHostedInstance(
 ): DataSourceInstanceSettings | undefined {
   if (info) {
     const basicAuthUser = `${info.id}`;
-    const instanceUrl = info.url + (info.type === 'logs' ? '/loki/api/v1' : '/api/prom');
+    const instanceUrl = info.url + (info.type === 'logs' ? '' : '/api/prom');
     for (const ds of known) {
       if (ds.url === instanceUrl) {
         console.log('MAYBE:', basicAuthUser, (ds as any).basicAuthUser, ds);
@@ -64,7 +64,7 @@ export async function createHostedInstance(
 ): Promise<DataSourceInstanceSettings> {
   const data = {
     name,
-    url: info.url + (info.type === 'logs' ? '/loki/api/v1' : '/api/prom'),
+    url: info.url + (info.type === 'logs' ? '' : '/api/prom'),
     access: 'proxy',
     basicAuth: true,
     basicAuthUser: `${info.id}`,
