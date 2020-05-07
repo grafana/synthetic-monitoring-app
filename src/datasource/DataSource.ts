@@ -147,9 +147,9 @@ export class WorldPingDataSource extends DataSourceApi<WorldpingQuery, Worldping
       method: 'POST',
       url: `${this.instanceSettings.url}/dev/register/save`,
       headers: {
-        // ensure the grafana backend doesn't use a cached copy of the 
+        // ensure the grafana backend doesn't use a cached copy of the
         // datasource config, as it might not have the new accessToken set.
-        'X-Grafana-NoCache': 'true', 
+        'X-Grafana-NoCache': 'true',
       },
       data: {
         apiToken,
