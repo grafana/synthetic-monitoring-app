@@ -6,7 +6,6 @@ import { isValid } from 'datasource/ConfigEditor';
 import { InstanceList } from './InstanceList';
 import { createHostedInstance, findHostedInstance, getHostedLokiAndPrometheusInfo } from 'utils';
 import { WorldpingOptions } from 'datasource/types';
-import { getLocationSrv } from '@grafana/runtime';
 import { TenantView } from './TenantView';
 
 interface Props {
@@ -106,15 +105,11 @@ export class TenantSetup extends PureComponent<Props, State> {
         hostedId: hostedMetrics.id,
       },
     };
+
     await instance!.registerSave(adminApiToken!, options, info?.accessToken!);
 
-    getLocationSrv().update({
-      partial: false,
-      path: 'a/grafana-worldping-app/',
-      query: {
-        page: 'checks',
-      },
-    });
+    // force reload so that GrafanaBootConfig is updated.
+    window.location.reload();
   };
 
   renderSetup() {
