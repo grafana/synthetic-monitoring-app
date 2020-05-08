@@ -151,10 +151,22 @@ export interface Check extends BaseObject {
   enabled: boolean;
 
   labels: Label[]; // Currently list of [name:value]... can it be Labels?
-  settings: any; //
+  settings: Settings; //
 
   // Link to probes
   probes: number[];
+}
+
+export interface Settings {
+  http?: object;
+  ping?: object;
+  dns?: object;
+}
+
+export enum CheckType {
+  HTTP = 'http',
+  PING = 'ping',
+  DNS = 'dns',
 }
 
 export interface HostedInstance {
