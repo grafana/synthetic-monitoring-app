@@ -22,6 +22,24 @@
       "name": "Worldping",
       "path": "/a/grafana-worldping-app/",
       "addToNav": true
+    },
+    {
+      "type": "dashboard",
+      "name": "worldPing: Summary",
+      "path": "dashboards/worldping-summary.json",
+      "addToNav": false
+    },
+    {
+      "type": "dashboard",
+      "name": "worldPing: HTTP",
+      "path": "dashboards/worldping-http.json",
+      "addToNav": false
+    },
+    {
+      "type": "dashboard",
+      "name": "worldPing: ICMP",
+      "path": "dashboards/worldping-icmp.json",
+      "addToNav": false
     }
   ],
 
