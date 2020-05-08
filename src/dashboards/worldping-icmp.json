@@ -81,23 +81,23 @@
       }
     ]
   },
-  "editable": true,
+  "editable": false,
   "gnetId": null,
   "graphTooltip": 0,
   "id": null,
-  "iteration": 1588885867232,
+  "iteration": 1588926907600,
   "links": [],
   "panels": [
     {
-      "circleMaxSize": "5",
-      "circleMinSize": "1",
+      "circleMaxSize": "10",
+      "circleMinSize": "2",
       "colors": [
         "#37872D",
-        "rgba(237, 129, 40, 0.89)",
+        "#FA6400",
         "#C4162A"
       ],
       "datasource": "${DS_WORLDPING_METRICS}",
-      "decimals": 0,
+      "decimals": 2,
       "esGeoPoint": "geohash",
       "esLocationName": "probe",
       "esMetric": "Count",
@@ -123,7 +123,7 @@
       "mapCenterLongitude": 0,
       "maxDataPoints": "",
       "mouseWheelZoom": false,
-      "showLegend": true,
+      "showLegend": false,
       "stickyLabels": false,
       "tableQueryOptions": {
         "geohashField": "geohash",
@@ -135,21 +135,23 @@
       },
       "targets": [
         {
-          "expr": "sum(((probe_success{probe=~\"$probe\"} * on (check_id, probe) group_left(latitude, longitude, geohash)worldping_check_info{check_name=\"ping\", latitude!=\"0.000000\", probe=~\"$probe\"} ) -1) * -1) by (probe, latitude, longitude, geohash)",
+          "expr": "100-(100 * avg((sum_over_time(probe_success[$__range]) / count_over_time(probe_success[$__range])) * on (check_id, probe) group_left(latitude, longitude, geohash) worldping_check_info{check_name=\"ping\", endpoint=~\"$endpoint\", latitude!=\"0.000000\"}) by (probe, latitude, longitude, geohash))",
           "format": "table",
+          "instant": true,
           "interval": "",
           "legendFormat": "",
           "refId": "A"
         }
       ],
-      "thresholds": "1,2",
+      "thresholds": "0.5,1",
       "timeFrom": null,
       "timeShift": null,
-      "title": "Ping Probe Errors",
+      "title": "Downtime",
       "type": "grafana-worldmap-panel",
-      "unitPlural": "",
+      "unitPlural": "%",
       "unitSingle": "",
-      "valueName": "avg"
+      "unitSingular": "%",
+      "valueName": "current"
     },
     {
       "cacheTimeout": null,
@@ -173,12 +175,16 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "red",
                 "value": null
               },
               {
-                "color": "red",
-                "value": 80
+                "color": "#EAB839",
+                "value": 0.99
+              },
+              {
+                "color": "green",
+                "value": 0.995
               }
             ]
           },
@@ -214,7 +220,7 @@
       "pluginVersion": "7.1.0-cd0c4dbcpre",
       "targets": [
         {
-          "expr": "avg(1 - (sum_over_time(probe_success{probe=~\"$probe\"}[$__range]) *  on (check_id, probe, config_version) worldping_check_info{endpoint=\"$endpoint\",probe=~\"$probe\"}) / (count_over_time(probe_success{probe=~\"$probe\"}[$__range]) *  on (check_id, probe, config_version) worldping_check_info{endpoint=\"$endpoint\", probe=~\"$probe\"}))",
+          "expr": "avg((sum_over_time(probe_success{probe=~\"$probe\"}[$__range]) *  on (check_id, probe, config_version) worldping_check_info{endpoint=\"$endpoint\",probe=~\"$probe\"}) / (count_over_time(probe_success{probe=~\"$probe\"}[$__range]) *  on (check_id, probe, config_version) worldping_check_info{endpoint=\"$endpoint\", probe=~\"$probe\"}))",
           "hide": false,
           "instant": false,
           "interval": "",
@@ -224,7 +230,7 @@
       ],
       "timeFrom": null,
       "timeShift": null,
-      "title": "Failure rate",
+      "title": "Uptime",
       "type": "stat"
     },
     {
@@ -341,12 +347,13 @@
         "current": false,
         "max": false,
         "min": false,
-        "show": true,
+        "show": false,
         "total": false,
         "values": false
       },
       "lines": true,
       "linewidth": 0,
+      "maxDataPoints": "200",
       "nullPointMode": "null",
       "options": {
         "dataLinks": []
@@ -361,9 +368,9 @@
       "steppedLine": true,
       "targets": [
         {
-          "expr": "1 - sum(sum_over_time(probe_success{probe=~\"$probe\"}[1m]) *  on (check_id, probe, config_version) worldping_check_info{endpoint=\"$endpoint\", probe=~\"$probe\"}) / (sum(count_over_time(probe_success{probe=~\"$probe\"}[1m]) *  on (check_id, probe, config_version) worldping_check_info{endpoint=\"$endpoint\", probe=~\"$probe\"}))",
+          "expr": "1 - sum(sum_over_time(probe_success{probe=~\"$probe\"}[$__interval]) *  on (check_id, probe, config_version) worldping_check_info{endpoint=\"$endpoint\", probe=~\"$probe\"}) / (sum(count_over_time(probe_success{probe=~\"$probe\"}[$__interval]) *  on (check_id, probe, config_version) worldping_check_info{endpoint=\"$endpoint\", probe=~\"$probe\"}))",
           "interval": "",
-          "legendFormat": "error % (1m)",
+          "legendFormat": "errors",
           "refId": "A"
         }
       ],
@@ -371,7 +378,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Average failure rate : $probe ⮕ $endpoint",
+      "title": "Error Rate : $probe ⮕ $endpoint",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -387,6 +394,7 @@
       },
       "yaxes": [
         {
+          "$$hashKey": "object:353",
           "decimals": null,
           "format": "percentunit",
           "label": "",
@@ -396,6 +404,7 @@
           "show": true
         },
         {
+          "$$hashKey": "object:354",
           "format": "short",
           "label": null,
           "logBase": 1,
@@ -411,7 +420,7 @@
     },
     {
       "aliasColors": {},
-      "bars": false,
+      "bars": true,
       "dashLength": 10,
       "dashes": false,
       "datasource": "${DS_WORLDPING_METRICS}",
@@ -424,8 +433,8 @@
       "fill": 10,
       "fillGradient": 0,
       "gridPos": {
-        "h": 9,
-        "w": 18,
+        "h": 6,
+        "w": 19,
         "x": 0,
         "y": 9
       },
@@ -442,8 +451,9 @@
         "total": false,
         "values": true
       },
-      "lines": true,
+      "lines": false,
       "linewidth": 0,
+      "maxDataPoints": "100",
       "nullPointMode": "null",
       "options": {
         "dataLinks": []
@@ -488,6 +498,7 @@
           "expr": "avg(probe_icmp_duration_seconds{probe=~\"$probe\"} * on (check_id,probe,config_version) group_left worldping_check_info{check_name=\"ping\",probe=~\"$probe\",endpoint=\"$endpoint\"}) by (phase)",
           "instant": false,
           "interval": "",
+          "intervalFactor": 1,
           "legendFormat": "{{phase}}",
           "refId": "A"
         }
@@ -496,7 +507,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "$probe ⮕ $endpoint",
+      "title": "Response Latency: $probe ⮕ $endpoint",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -553,9 +564,9 @@
       },
       "fontSize": "100%",
       "gridPos": {
-        "h": 9,
-        "w": 6,
-        "x": 18,
+        "h": 12,
+        "w": 5,
+        "x": 19,
         "y": 9
       },
       "id": 24,
@@ -582,7 +593,7 @@
         },
         {
           "$$hashKey": "object:1137",
-          "alias": "Fail rate",
+          "alias": "Error Percent",
           "align": "right",
           "colorMode": null,
           "colors": [
@@ -599,9 +610,9 @@
       ],
       "targets": [
         {
-          "expr": "1 - max((sum_over_time(probe_success[$__range]) / count_over_time(probe_success[$__range])) * on (check_id,probe)  worldping_check_info{check_name=\"ping\",endpoint=\"$endpoint\"}) by (probe)",
+          "expr": "1 - max((sum_over_time(probe_success[$__range]) / count_over_time(probe_success[$__range])) * on (check_id,probe) group_left(label_country) worldping_check_info{check_name=\"ping\",endpoint=\"$endpoint\"}) by (probe, label_country)",
           "interval": "",
-          "legendFormat": "{{probe}}",
+          "legendFormat": "{{probe}} ({{ label_country }})",
           "refId": "C"
         }
       ],
@@ -610,6 +621,136 @@
       "title": "Probes",
       "transform": "timeseries_aggregations",
       "type": "table-old"
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "${DS_WORLDPING_METRICS}",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "fill": 10,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 6,
+        "w": 19,
+        "x": 0,
+        "y": 15
+      },
+      "hiddenSeries": false,
+      "id": 29,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "max": false,
+        "min": false,
+        "rightSide": true,
+        "show": true,
+        "sort": "current",
+        "sortDesc": true,
+        "total": false,
+        "values": true
+      },
+      "lines": false,
+      "linewidth": 0,
+      "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pointradius": 1,
+      "points": true,
+      "renderer": "flot",
+      "repeatDirection": null,
+      "seriesOverrides": [
+        {
+          "$$hashKey": "object:1071",
+          "alias": "transfer",
+          "zindex": 3
+        },
+        {
+          "$$hashKey": "object:1082",
+          "alias": "processing",
+          "zindex": 2
+        },
+        {
+          "$$hashKey": "object:1089",
+          "alias": "tls",
+          "zindex": 1
+        },
+        {
+          "$$hashKey": "object:1096",
+          "alias": "connect",
+          "zindex": 0
+        },
+        {
+          "$$hashKey": "object:1103",
+          "alias": "resolve",
+          "zindex": -1
+        }
+      ],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "avg(probe_duration_seconds{probe=~\"$probe\"} * on (check_id,probe,config_version) group_left worldping_check_info{check_name=\"ping\",probe=~\"$probe\",endpoint=\"$endpoint\"}) by (probe)",
+          "instant": false,
+          "interval": "",
+          "intervalFactor": 1,
+          "legendFormat": "{{phase}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Response Latency by Probe",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "transformations": [],
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "decimals": null,
+          "format": "s",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "decimals": null,
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "datasource": "${DS_WORLDPING_LOGS}",
@@ -623,7 +764,7 @@
         "h": 13,
         "w": 24,
         "x": 0,
-        "y": 18
+        "y": 21
       },
       "id": 15,
       "options": {
@@ -716,7 +857,7 @@
     ]
   },
   "timezone": "",
-  "title": "Worldping ICMP",
+  "title": "worldPing ICMP",
   "uid": "EHyn7ueZk",
-  "version": 4
+  "version": 15
 }
