@@ -18,12 +18,19 @@ export interface LinkedDatsourceInfo {
   hostedId: number;
 }
 
+export interface DashboardInfo {
+  title: string;
+  uid: string;
+  json: string;
+}
+
 /**
  * These are options configured for each DataSource instance
  */
 export interface WorldpingOptions extends DataSourceJsonData {
   metrics: LinkedDatsourceInfo;
   logs: LinkedDatsourceInfo;
+  dashboards: DashboardInfo[];
 }
 
 /**

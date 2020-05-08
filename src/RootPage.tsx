@@ -146,9 +146,19 @@ export class RootPage extends PureComponent<Props, State> {
   //-----------------------------------------------------------------------------------------
   renderStatus() {
     const { instance } = this.state;
+    const options = instance!.worldping.instanceSettings.jsonData;
     return (
       <div>
-        <TenantView settings={instance!.worldping.instanceSettings.jsonData} />
+        <TenantView settings={options} />
+        <br />
+        <h3>Dashboards:</h3>
+        {options.dashboards.map(d => {
+          return (
+            <div key={d.uid}>
+              <a href={`d/${d.uid}/`}>{d.title}</a>
+            </div>
+          );
+        })}
       </div>
     );
   }

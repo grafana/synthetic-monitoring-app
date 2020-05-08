@@ -7,6 +7,7 @@ import { InstanceList } from './InstanceList';
 import { createHostedInstance, findHostedInstance, getHostedLokiAndPrometheusInfo } from 'utils';
 import { WorldpingOptions } from 'datasource/types';
 import { TenantView } from './TenantView';
+import { dashboardPaths, importDashboard } from 'dashboards/loader';
 
 interface Props {
   instance: WorldPingDataSource;
@@ -104,8 +105,14 @@ export class TenantSetup extends PureComponent<Props, State> {
         grafanaName: metrics!.name,
         hostedId: hostedMetrics.id,
       },
+      dashboards: [],
     };
-
+    
+    // Save the dashboard names
+    for (const json of dashboardPaths) {
+      const d = await importDashboard(json, options);
+      options.dashboards.push(d);
+    }
     await instance!.registerSave(adminApiToken!, options, info?.accessToken!);
 
     // force reload so that GrafanaBootConfig is updated.
