@@ -3,7 +3,7 @@ import {
   Button,
   Container,
   ConfirmModal,
-  Label,
+  Field,
   List,
   IconButton,
   Input,
@@ -12,16 +12,18 @@ import {
   TextArea,
   MultiSelect,
   Select,
+  Legend,
 } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
 import { Check, Label as WorldpingLabel, Settings, CheckType, Probe } from 'types';
 import { WorldPingDataSource } from 'datasource/DataSource';
 import { PingSettingsForm } from './pingSettings';
+import { FormLabel } from './utils';
 
 interface Props {
   check: Check;
   instance: WorldPingDataSource;
-  onReturn: () => void;
+  onReturn: (reload: boolean) => void;
 }
 
 interface State {
@@ -48,10 +50,13 @@ export class CheckEditor extends PureComponent<Props, State> {
   };
 
   onRemoveCheck = async () => {
-    const id = this.props.check.id;
+    const id = this.props.check.id || 0;
+    if (!this.props.check.id) {
+      return;
+    }
     const info = this.props.instance.deleteCheck(id);
     console.log('Remove Check', id, info);
-    this.props.onReturn();
+    this.props.onReturn(true);
   };
 
   onLabelsUpdate = (labels: WorldpingLabel[]) => {
@@ -108,7 +113,7 @@ export class CheckEditor extends PureComponent<Props, State> {
       const info = await instance.addCheck(check);
       console.log('got', info);
     }
-    this.props.onReturn();
+    this.props.onReturn(true);
   };
 
   onEnableChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -117,34 +122,59 @@ export class CheckEditor extends PureComponent<Props, State> {
     this.setState({ check });
   };
 
+  onBack = () => {
+    this.props.onReturn(false);
+  };
+
   render() {
     const { check, showDeleteModal, probes } = this.state;
     if (!check || probes.length === 0) {
       return <div>Loading...</div>;
     }
-    console.log('enabled is', check.enabled);
+    let legend = 'Edit Check';
+    if (!check.id) {
+      legend = 'Add Check';
+    }
     return (
       <Container>
+        <Legend>{legend}</Legend>
         <Container margin="md">
           <HorizontalGroup>
-            <Label>Check Name</Label>
-            <Input type="string" value="Grafana.com basic" />
-            <Label>Enabled</Label>
-            <Switch value={check.enabled} onChange={this.onEnableChange} />
+            <Field label={<FormLabel name="Check Name" help="Unique name of check" />}>
+              <Input type="string" value="Grafana.com basic" />
+            </Field>
+            <Field label={<FormLabel name="Enabled" help="whether this check should run." />}>
+              <Container padding="sm">
+                <Switch value={check.enabled} onChange={this.onEnableChange} />
+              </Container>
+            </Field>
           </HorizontalGroup>
         </Container>
         <Container margin="md">
           <h3 className="page-heading">Timing information</h3>
           <HorizontalGroup>
-            <Label>Frequency (s)</Label>
-            <Input
-              type="number"
-              placeholder="60"
-              value={check!.frequency / 1000 || 60}
-              onChange={this.onFrequencyUpdate}
-            />
-            <Label>Timeout (s)</Label>
-            <Input type="number" placeholder="5" value={check!.timeout / 1000 || 5} onChange={this.onTimeoutUpdate} />
+            <Field label={<FormLabel name="Frequency" help="How frequently the check will run." />}>
+              <Input
+                label="Frequency"
+                type="number"
+                placeholder="60"
+                value={check!.frequency / 1000 || 60}
+                onChange={this.onFrequencyUpdate}
+                suffix="seconds"
+                maxLength={4}
+              />
+            </Field>
+            <Field label={<FormLabel name="Timeout" help="maximum execution time for a check" />}>
+              <Input
+                label="Timeout"
+                type="number"
+                placeholder="5"
+                value={check!.timeout / 1000 || 5}
+                onChange={this.onTimeoutUpdate}
+                suffix="seconds"
+                maxLength={4}
+              />
+            </Field>
           </HorizontalGroup>
         </Container>
         <Container margin="md">
@@ -175,7 +205,7 @@ export class CheckEditor extends PureComponent<Props, State> {
               onConfirm={this.onRemoveCheck}
               onDismiss={this.showDeleteUserModal(false)}
             />
-            <a onClick={this.props.onReturn}>Back</a>
+            <a onClick={this.onBack}>Back</a>
           </HorizontalGroup>
         </Container>
       </Container>
@@ -200,8 +230,8 @@ export class CheckLabels extends PureComponent<CheckLabelsProps, CheckLabelsStat
   };
 
   addLabel = () => {
-    console.log('adding new label');
     let labels = this.state.labels;
+    console.log('adding new label', labels);
     const n = labels.push({ name: '', value: '' });
 
     this.setState({ labels: labels, numLabels: n }, this.onUpdate);
@@ -280,6 +310,7 @@ export class CheckLabel extends PureComponent<CheckLabelProps, CheckLabelState> 
 
   render() {
     const { name, value } = this.state;
+    console.log('rendering label with name:', name);
     return (
       <HorizontalGroup>
         <Input type="text" placeholder="name" value={name} onChange={this.onNameChange} />
@@ -364,10 +395,10 @@ export class CheckSettings extends PureComponent<CheckSettingsProps, CheckSettin
     return (
       <div>
         <HorizontalGroup>
-          <Label>Type</Label>
-          <Select value={type} disabled={isNew} options={checkTypes} onChange={this.onSetType} />
+          <Field label="Type">
+            <Select value={type} disabled={isNew} options={checkTypes} onChange={this.onSetType} />
+          </Field>
         </HorizontalGroup>
-        <br />
         {settingsForm}
       </div>
     );

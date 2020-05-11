@@ -95,7 +95,7 @@ export class WorldPingDataSource extends DataSourceApi<WorldpingQuery, Worldping
     return getBackendSrv()
       .datasourceRequest({
         method: 'DELETE',
-        url: `${this.instanceSettings.url}/dev/check/${id}`,
+        url: `${this.instanceSettings.url}/dev/check/delete/${id}`,
       })
       .then((res: any) => {
         return res.data;
@@ -103,10 +103,11 @@ export class WorldPingDataSource extends DataSourceApi<WorldpingQuery, Worldping
   }
 
   async updateCheck(check: Check): Promise<any> {
+    console.log('updating check.', check);
     return getBackendSrv()
       .datasourceRequest({
-        method: 'PUT',
-        url: `${this.instanceSettings.url}/dev/check/${check.id}`,
+        method: 'POST',
+        url: `${this.instanceSettings.url}/dev/check/update`,
         data: check,
       })
       .then((res: any) => {

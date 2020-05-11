@@ -93,8 +93,12 @@ export class ProbesPage extends PureComponent<Props, State> {
     return (
       <div>
         {probes.map(probe => {
+          const probeId: number = probe.id || 0;
+          if (!probe.id) {
+            return;
+          }
           return (
-            <div key={probe.id} className="add-data-source-item" onClick={() => this.onSelectCheck(probe.id)}>
+            <div key={probeId} className="add-data-source-item" onClick={() => this.onSelectCheck(probeId)}>
               <div className="add-data-source-item-text-wrapper">
                 <span className="add-data-source-item-text">{probe.name}</span>
                 <span className="add-data-source-item-desc">

@@ -119,10 +119,10 @@ export interface DnsSettings {
 }
 
 export interface BaseObject {
-  id: number;
-  tenantId: number;
-  created: number; // seconds
-  updated: number; // seconds
+  id?: number;
+  tenantId?: number;
+  created?: number; // seconds
+  updated?: number; // seconds
 }
 
 export interface Label {
