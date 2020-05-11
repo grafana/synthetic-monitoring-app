@@ -1,7 +1,22 @@
 import React, { PureComponent } from 'react';
-import { Button, ConfirmModal, Label, List, IconButton, Input, HorizontalGroup, TextArea } from '@grafana/ui';
-import { Check, Label as WorldpingLabel, Settings, CheckType } from 'types';
+import {
+  Button,
+  Container,
+  ConfirmModal,
+  Label,
+  List,
+  IconButton,
+  Input,
+  HorizontalGroup,
+  Switch,
+  TextArea,
+  MultiSelect,
+  Select,
+} from '@grafana/ui';
+import { SelectableValue } from '@grafana/data';
+import { Check, Label as WorldpingLabel, Settings, CheckType, Probe } from 'types';
 import { WorldPingDataSource } from 'datasource/DataSource';
+import { PingSettingsForm } from './pingSettings';
 
 interface Props {
   check: Check;
@@ -11,16 +26,20 @@ interface Props {
 
 interface State {
   check?: Check;
+  probes: Probe[];
   showDeleteModal: boolean;
 }
 
 export class CheckEditor extends PureComponent<Props, State> {
-  state: State = { showDeleteModal: false };
+  state: State = { showDeleteModal: false, probes: [] };
 
-  componentDidMount() {
+  async componentDidMount() {
+    const { instance } = this.props;
     const check = { ...this.props.check } as Check;
+    const probes = await instance.listProbes();
     this.setState({
       check: check,
+      probes: probes,
     });
   }
 
@@ -44,6 +63,15 @@ export class CheckEditor extends PureComponent<Props, State> {
     this.setState({ check });
   };
 
+  onProbesUpdate = (probes: number[]) => {
+    let check = this.state.check;
+    if (!check) {
+      return;
+    }
+    check.probes = probes;
+    this.setState({ check });
+  };
+
   onSettingsUpdate = (settings: Settings) => {
     let check = this.state.check;
     if (!check) {
@@ -55,13 +83,13 @@ export class CheckEditor extends PureComponent<Props, State> {
 
   onFrequencyUpdate = (event: React.ChangeEvent<HTMLInputElement>) => {
     let check = { ...this.state.check } as Check;
-    check.frequency = Number(event.target.value) * 1000;
+    check.frequency = event.target.valueAsNumber * 1000;
     this.setState({ check });
   };
 
   onTimeoutUpdate = (event: React.ChangeEvent<HTMLInputElement>) => {
     let check = { ...this.state.check } as Check;
-    check.timeout = Number(event.target.value) * 1000;
+    check.timeout = event.target.valueAsNumber * 1000;
     this.setState({ check });
   };
 
@@ -83,51 +111,74 @@ export class CheckEditor extends PureComponent<Props, State> {
     this.props.onReturn();
   };
 
+  onEnableChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    let check = { ...this.state.check } as Check;
+    check.enabled = !check.enabled;
+    this.setState({ check });
+  };
+
   render() {
-    const { check, showDeleteModal } = this.state;
-    if (!check) {
+    const { check, showDeleteModal, probes } = this.state;
+    if (!check || probes.length === 0) {
       return <div>Loading...</div>;
     }
-
+    console.log('enabled is', check.enabled);
     return (
-      <div>
-        <h3 className="page-heading">Timing information</h3>
-        <HorizontalGroup>
-          <Label>Frequency (s)</Label>
-          <Input
-            type="number"
-            placeholder="60"
-            value={check!.frequency / 1000 || 60}
-            onChange={this.onFrequencyUpdate}
-          />
-          <Label>Timeout (s)</Label>
-          <Input type="number" placeholder="5" value={check!.timeout / 1000 || 5} onChange={this.onTimeoutUpdate} />
-        </HorizontalGroup>
-        <h3 className="page-heading">Labels</h3>
-        <CheckLabels labels={check.labels} onUpdate={this.onLabelsUpdate} />
-        <br />
-        <h3 className="page-heading">Settings</h3>
-        <CheckSettings settings={check.settings} onUpdate={this.onSettingsUpdate} isNew={check.id ? true : false} />
-        <br />
-        <HorizontalGroup>
-          <Button onClick={this.onSave}>Save</Button>
-          {check.id && (
-            <Button variant="destructive" onClick={this.showDeleteUserModal(true)}>
-              Delete Check
-            </Button>
-          )}
-          <ConfirmModal
-            isOpen={showDeleteModal}
-            title="Delete check"
-            body="Are you sure you want to delete this check?"
-            confirmText="Delete check"
-            onConfirm={this.onRemoveCheck}
-            onDismiss={this.showDeleteUserModal(false)}
-          />
-          <a onClick={this.props.onReturn}>Back</a>
-        </HorizontalGroup>
-        <br />
-      </div>
+      <Container>
+        <Container margin="md">
+          <HorizontalGroup>
+            <Label>Check Name</Label>
+            <Input type="string" value="Grafana.com basic" />
+            <Label>Enabled</Label>
+            <Switch value={check.enabled} onChange={this.onEnableChange} />
+          </HorizontalGroup>
+        </Container>
+        <Container margin="md">
+          <h3 className="page-heading">Timing information</h3>
+          <HorizontalGroup>
+            <Label>Frequency (s)</Label>
+            <Input
+              type="number"
+              placeholder="60"
+              value={check!.frequency / 1000 || 60}
+              onChange={this.onFrequencyUpdate}
+            />
+            <Label>Timeout (s)</Label>
+            <Input type="number" placeholder="5" value={check!.timeout / 1000 || 5} onChange={this.onTimeoutUpdate} />
+          </HorizontalGroup>
+        </Container>
+        <Container margin="md">
+          <h3 className="page-heading">Probe Locations</h3>
+          <CheckProbes probes={check.probes} availableProbes={probes} onUpdate={this.onProbesUpdate} />
+        </Container>
+        <Container margin="md">
+          <h3 className="page-heading">Labels</h3>
+          <CheckLabels labels={check.labels} onUpdate={this.onLabelsUpdate} />
+        </Container>
+        <Container margin="md">
+          <h3 className="page-heading">Settings</h3>
+          <CheckSettings settings={check.settings} onUpdate={this.onSettingsUpdate} isNew={check.id ? true : false} />
+        </Container>
+        <Container margin="md">
+          <HorizontalGroup>
+            <Button onClick={this.onSave}>Save</Button>
+            {check.id && (
+              <Button variant="destructive" onClick={this.showDeleteUserModal(true)}>
+                Delete Check
+              </Button>
+            )}
+            <ConfirmModal
+              isOpen={showDeleteModal}
+              title="Delete check"
+              body="Are you sure you want to delete this check?"
+              confirmText="Delete check"
+              onConfirm={this.onRemoveCheck}
+              onDismiss={this.showDeleteUserModal(false)}
+            />
+            <a onClick={this.props.onReturn}>Back</a>
+          </HorizontalGroup>
+        </Container>
+      </Container>
     );
   }
 }
@@ -268,28 +319,118 @@ export class CheckSettings extends PureComponent<CheckSettingsProps, CheckSettin
     this.props.onUpdate(this.state.settings);
   };
 
-  onSetType = (event: React.ChangeEvent<HTMLInputElement>) => {
+  onSetType = (type: SelectableValue<CheckType>) => {
+    if (!type.value) {
+      return;
+    }
     let settings: Settings = {};
-    let type = event.target.value as CheckType;
-    settings[type] = {};
-    this.setState({ type: type, settings: settings }, this.onUpdate);
+    settings[type.value] = undefined;
+    this.setState({ type: type.value, settings: settings }, this.onUpdate);
   };
 
-  onSettingsChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const settings = JSON.parse(event.target.value);
+  onJsonChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    let settings: Settings = {};
+    settings[this.state.type] = JSON.parse(event.target.value);
+    this.setState({ settings: settings }, this.onUpdate);
+  };
+
+  onSettingsChange = (settings: Settings) => {
     this.setState({ settings: settings }, this.onUpdate);
   };
 
   render() {
     const { settings, type } = this.state;
     const { isNew } = this.props;
+    let settingsForm = (
+      <TextArea value={JSON.stringify(settings[type], null, 2)} onChange={this.onJsonChange} rows={20} />
+    );
+    if (type === CheckType.PING) {
+      settingsForm = <PingSettingsForm settings={settings} onUpdate={this.onSettingsChange} />;
+    }
+    const checkTypes = [
+      {
+        label: 'HTTP',
+        value: CheckType.HTTP,
+      },
+      {
+        label: 'PING',
+        value: CheckType.PING,
+      },
+      {
+        label: 'DNS',
+        value: CheckType.DNS,
+      },
+    ];
     return (
       <div>
         <HorizontalGroup>
           <Label>Type</Label>
-          <Input type="string" value={type} disabled={isNew} />
+          <Select value={type} disabled={isNew} options={checkTypes} onChange={this.onSetType} />
         </HorizontalGroup>
-        <TextArea value={JSON.stringify(settings[type], null, 2)} onChange={this.onUpdate} rows={20} />
+        <br />
+        {settingsForm}
+      </div>
+    );
+  }
+}
+
+interface CheckProbesProps {
+  probes: number[];
+  availableProbes: Probe[];
+  onUpdate: (probes: number[]) => void;
+}
+
+interface CheckProbesState {
+  probes: number[];
+  probeStr: string;
+}
+
+export class CheckProbes extends PureComponent<CheckProbesProps, CheckProbesState> {
+  state = {
+    probes: this.props.probes || [],
+    probeStr: this.props.probes.join(','),
+  };
+
+  onChange = (item: Array<SelectableValue<number>>) => {
+    let probes: number[] = [];
+    for (const p of item.values()) {
+      if (p.value) {
+        probes.push(p.value);
+      }
+    }
+    console.log('probes updated to:', probes);
+
+    const str = probes.join(',');
+    this.setState({ probes: probes, probeStr: str }, this.onUpdate);
+  };
+
+  onUpdate = () => {
+    this.props.onUpdate(this.state.probes);
+  };
+
+  render() {
+    const { probes } = this.state;
+    const { availableProbes } = this.props;
+    let options = [];
+    for (const p of availableProbes) {
+      options.push({
+        label: p.name,
+        value: p.id,
+        labels: p.labels,
+        online: p.online,
+      });
+    }
+    let selectedProbes = [];
+    for (const p of probes) {
+      let existing = options.find(item => item.value === p);
+      if (existing) {
+        selectedProbes.push(existing);
+      }
+    }
+
+    return (
+      <div>
+        <MultiSelect options={options} value={selectedProbes} onChange={this.onChange} />
       </div>
     );
   }

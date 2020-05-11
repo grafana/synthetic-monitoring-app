@@ -80,22 +80,10 @@ export class ChecksPage extends PureComponent<Props, State> {
       ],
       probes: [2, 3],
       settings: {
-        http: {
-          url: 'https://apple.com/',
-          method: 'GET',
-          headers: null,
-          body: '',
-          downloadLimit: 0,
+        ping: {
+          hostname: 'apple.com',
           ipVersion: 'V4',
-          validateCert: true,
-          validation: [
-            {
-              responseTime: {
-                threshold: 250,
-                severity: 'Warning',
-              },
-            },
-          ],
+          dontFragment: true,
         },
       },
     } as Check;

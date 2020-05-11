@@ -32,14 +32,10 @@ export interface ResponseTimeValidation extends Validation {
   threshold: number;
 }
 
-export interface PingValidation {
-  responseTime?: ResponseTimeValidation;
-}
-
 export interface PingSettings {
   hostname: string;
   ipVersion: IpVersion;
-  validation: PingValidation[]; // only a single check actually makes sense
+  dontFragment: boolean;
 }
 
 export enum HttpMethod {
@@ -146,7 +142,7 @@ export interface Probe extends BaseObject {
 
 export interface Check extends BaseObject {
   frequency: number;
-  offset: number;
+  offset?: number;
   timeout: number;
   enabled: boolean;
 
@@ -158,9 +154,9 @@ export interface Check extends BaseObject {
 }
 
 export interface Settings {
-  http?: object;
-  ping?: object;
-  dns?: object;
+  http?: HttpSettings;
+  ping?: PingSettings;
+  dns?: DnsSettings;
 }
 
 export enum CheckType {
