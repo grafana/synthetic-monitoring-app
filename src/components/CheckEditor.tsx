@@ -15,8 +15,9 @@ import {
   Legend,
 } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
-import { Check, Label as WorldpingLabel, Settings, CheckType, Probe } from 'types';
+import { Check, Label as WorldpingLabel, Settings, CheckType, Probe, OrgRole } from 'types';
 import { WorldPingDataSource } from 'datasource/DataSource';
+import { hasRole } from 'utils';
 import { PingSettingsForm } from './pingSettings';
 import { FormLabel } from './utils';
 
@@ -135,17 +136,19 @@ export class CheckEditor extends PureComponent<Props, State> {
     if (!check.id) {
       legend = 'Add Check';
     }
+    let isEditor = hasRole(OrgRole.EDITOR);
+
     return (
       <Container>
         <Legend>{legend}</Legend>
         <Container margin="md">
           <HorizontalGroup>
-            <Field label={<FormLabel name="Check Name" help="Unique name of check" />}>
+            <Field label={<FormLabel name="Check Name" help="Unique name of check" />} disabled={!isEditor}>
               <Input type="string" value="Grafana.com basic" />
             </Field>
-            <Field label={<FormLabel name="Enabled" help="whether this check should run." />}>
+            <Field label={<FormLabel name="Enabled" help="whether this check should run." />} disabled={!isEditor}>
               <Container padding="sm">
-                <Switch value={check.enabled} onChange={this.onEnableChange} />
+                <Switch value={check.enabled} onChange={this.onEnableChange} disabled={!isEditor} />
               </Container>
             </Field>
           </HorizontalGroup>
@@ -153,7 +156,10 @@ export class CheckEditor extends PureComponent<Props, State> {
         <Container margin="md">
           <h3 className="page-heading">Timing information</h3>
           <HorizontalGroup>
-            <Field label={<FormLabel name="Frequency" help="How frequently the check will run." />}>
+            <Field
+              label={<FormLabel name="Frequency" help="How frequently the check will run." />}
+              disabled={!isEditor}
+            >
               <Input
                 label="Frequency"
                 type="number"
@@ -164,7 +170,7 @@ export class CheckEditor extends PureComponent<Props, State> {
                 maxLength={4}
               />
             </Field>
-            <Field label={<FormLabel name="Timeout" help="maximum execution time for a check" />}>
+            <Field label={<FormLabel name="Timeout" help="maximum execution time for a check" />} disabled={!isEditor}>
               <Input
                 label="Timeout"
                 type="number"
@@ -179,21 +185,33 @@ export class CheckEditor extends PureComponent<Props, State> {
         </Container>
         <Container margin="md">
           <h3 className="page-heading">Probe Locations</h3>
-          <CheckProbes probes={check.probes} availableProbes={probes} onUpdate={this.onProbesUpdate} />
+          <CheckProbes
+            probes={check.probes}
+            availableProbes={probes}
+            onUpdate={this.onProbesUpdate}
+            isEditor={isEditor}
+          />
         </Container>
         <Container margin="md">
           <h3 className="page-heading">Labels</h3>
-          <CheckLabels labels={check.labels} onUpdate={this.onLabelsUpdate} />
+          <CheckLabels labels={check.labels} onUpdate={this.onLabelsUpdate} isEditor={isEditor} />
         </Container>
         <Container margin="md">
           <h3 className="page-heading">Settings</h3>
-          <CheckSettings settings={check.settings} onUpdate={this.onSettingsUpdate} isNew={check.id ? true : false} />
+          <CheckSettings
+            settings={check.settings}
+            onUpdate={this.onSettingsUpdate}
+            isNew={check.id ? true : false}
+            isEditor={isEditor}
+          />
         </Container>
         <Container margin="md">
           <HorizontalGroup>
-            <Button onClick={this.onSave}>Save</Button>
+            <Button onClick={this.onSave} disabled={!isEditor}>
+              Save
+            </Button>
             {check.id && (
-              <Button variant="destructive" onClick={this.showDeleteUserModal(true)}>
+              <Button variant="destructive" onClick={this.showDeleteUserModal(true)} disabled={!isEditor}>
                 Delete Check
               </Button>
             )}
@@ -215,6 +233,7 @@ export class CheckEditor extends PureComponent<Props, State> {
 
 interface CheckLabelsProps {
   labels: WorldpingLabel[];
+  isEditor: boolean;
   onUpdate: (labels: WorldpingLabel[]) => void;
 }
 
@@ -255,6 +274,7 @@ export class CheckLabels extends PureComponent<CheckLabelsProps, CheckLabelsStat
 
   render() {
     const { labels } = this.state;
+    const { isEditor } = this.props;
     return (
       <div>
         <HorizontalGroup>
@@ -264,11 +284,17 @@ export class CheckLabels extends PureComponent<CheckLabelsProps, CheckLabelsStat
               return item.name;
             }}
             renderItem={(item, index) => (
-              <CheckLabel onDelete={this.onDelete} onChange={this.onChange} label={item} index={index} />
+              <CheckLabel
+                onDelete={this.onDelete}
+                onChange={this.onChange}
+                label={item}
+                index={index}
+                isEditor={isEditor}
+              />
             )}
           />
         </HorizontalGroup>
-        <IconButton name="plus-circle" onClick={this.addLabel} />
+        <IconButton name="plus-circle" onClick={this.addLabel} disabled={!isEditor} />
       </div>
     );
   }
@@ -277,6 +303,7 @@ export class CheckLabels extends PureComponent<CheckLabelsProps, CheckLabelsStat
 interface CheckLabelProps {
   label: WorldpingLabel;
   index: number;
+  isEditor: boolean;
   onDelete: (index: number) => void;
   onChange: (index: number, label: WorldpingLabel) => void;
 }
@@ -310,12 +337,13 @@ export class CheckLabel extends PureComponent<CheckLabelProps, CheckLabelState> 
 
   render() {
     const { name, value } = this.state;
+    const { isEditor } = this.props;
     console.log('rendering label with name:', name);
     return (
       <HorizontalGroup>
-        <Input type="text" placeholder="name" value={name} onChange={this.onNameChange} />
-        <Input type="text" placeholder="value" value={value} onChange={this.onValueChange} />
-        <IconButton name="minus-circle" onClick={this.onDelete} />
+        <Input type="text" placeholder="name" value={name} onChange={this.onNameChange} disabled={!isEditor} />
+        <Input type="text" placeholder="value" value={value} onChange={this.onValueChange} disabled={!isEditor} />
+        <IconButton name="minus-circle" onClick={this.onDelete} disabled={!isEditor} />
       </HorizontalGroup>
     );
   }
@@ -323,6 +351,7 @@ export class CheckLabel extends PureComponent<CheckLabelProps, CheckLabelState> 
 
 interface CheckSettingsProps {
   isNew: boolean;
+  isEditor: boolean;
   settings: Settings;
   onUpdate: (settings: Settings) => void;
 }
@@ -371,12 +400,17 @@ export class CheckSettings extends PureComponent<CheckSettingsProps, CheckSettin
 
   render() {
     const { settings, type } = this.state;
-    const { isNew } = this.props;
+    const { isNew, isEditor } = this.props;
     let settingsForm = (
-      <TextArea value={JSON.stringify(settings[type], null, 2)} onChange={this.onJsonChange} rows={20} />
+      <TextArea
+        value={JSON.stringify(settings[type], null, 2)}
+        onChange={this.onJsonChange}
+        rows={20}
+        disabled={!isEditor}
+      />
     );
     if (type === CheckType.PING) {
-      settingsForm = <PingSettingsForm settings={settings} onUpdate={this.onSettingsChange} />;
+      settingsForm = <PingSettingsForm settings={settings} onUpdate={this.onSettingsChange} isEditor={isEditor} />;
     }
     const checkTypes = [
       {
@@ -395,8 +429,8 @@ export class CheckSettings extends PureComponent<CheckSettingsProps, CheckSettin
     return (
       <div>
         <HorizontalGroup>
-          <Field label="Type">
-            <Select value={type} disabled={isNew} options={checkTypes} onChange={this.onSetType} />
+          <Field label="Type" disabled={isNew}>
+            <Select value={type} options={checkTypes} onChange={this.onSetType} />
           </Field>
         </HorizontalGroup>
         {settingsForm}
@@ -408,6 +442,7 @@ export class CheckSettings extends PureComponent<CheckSettingsProps, CheckSettin
 interface CheckProbesProps {
   probes: number[];
   availableProbes: Probe[];
+  isEditor: boolean;
   onUpdate: (probes: number[]) => void;
 }
 
@@ -441,7 +476,7 @@ export class CheckProbes extends PureComponent<CheckProbesProps, CheckProbesStat
 
   render() {
     const { probes } = this.state;
-    const { availableProbes } = this.props;
+    const { availableProbes, isEditor } = this.props;
     let options = [];
     for (const p of availableProbes) {
       options.push({
@@ -461,7 +496,7 @@ export class CheckProbes extends PureComponent<CheckProbesProps, CheckProbesStat
 
     return (
       <div>
-        <MultiSelect options={options} value={selectedProbes} onChange={this.onChange} />
+        <MultiSelect options={options} value={selectedProbes} onChange={this.onChange} disabled={!isEditor} />
       </div>
     );
   }

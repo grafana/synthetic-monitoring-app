@@ -2,10 +2,11 @@
 import React, { PureComponent } from 'react';
 
 // Types
-import { Check, GrafanaInstances, Label, IpVersion } from 'types';
+import { Check, GrafanaInstances, Label, IpVersion, OrgRole } from 'types';
 import { getLocationSrv } from '@grafana/runtime';
 import { Button, HorizontalGroup } from '@grafana/ui';
 import { CheckEditor } from 'components/CheckEditor';
+import { hasRole } from 'utils';
 
 interface Props {
   instance: GrafanaInstances;
@@ -70,9 +71,11 @@ export class ChecksPage extends PureComponent<Props, State> {
 
     return (
       <div>
-        <HorizontalGroup justify="flex-end">
-          <Button onClick={this.onAddNew}>New</Button>
-        </HorizontalGroup>
+        {hasRole(OrgRole.EDITOR) && (
+          <HorizontalGroup justify="flex-end">
+            <Button onClick={this.onAddNew}>New</Button>
+          </HorizontalGroup>
+        )}
         {checks.map(check => {
           const checkId: number = check.id || 0;
           if (!check.id) {

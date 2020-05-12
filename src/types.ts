@@ -196,3 +196,19 @@ export interface GrafanaInstances {
   metrics?: DataSourceApi;
   logs?: DataSourceApi;
 }
+
+export interface User {
+  email: string;
+  id: number;
+  isGrafanaAdmin: boolean;
+  isSignedIn: boolean;
+  orgId: number;
+  orgName: string;
+  orgRole: OrgRole;
+}
+
+export enum OrgRole {
+  ADMIN = 'Admin',
+  EDITOR = 'Editor',
+  VIEWER = 'Viewer',
+}

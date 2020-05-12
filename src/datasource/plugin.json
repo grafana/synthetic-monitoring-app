@@ -7,8 +7,33 @@
   "routes": [
     {
       "path": "dev",
-      "method": "*",
+      "method": "GET",
       "url": "https://worldping-api-dev.grafana.net/api/v1/",
+      "reqRole": "Viewer",
+      "headers": [
+        {
+          "name": "Authorization",
+          "content": "Bearer {{.SecureJsonData.accessToken}}"
+        }
+      ]
+    },
+    {
+      "path": "dev",
+      "method": "POST",
+      "url": "https://worldping-api-dev.grafana.net/api/v1/",
+      "reqRole": "Editor",
+      "headers": [
+        {
+          "name": "Authorization",
+          "content": "Bearer {{.SecureJsonData.accessToken}}"
+        }
+      ]
+    },
+    {
+      "path": "dev",
+      "method": "DELETE",
+      "url": "https://worldping-api-dev.grafana.net/api/v1/",
+      "reqRole": "Editor",
       "headers": [
         {
           "name": "Authorization",

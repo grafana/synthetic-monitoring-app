@@ -3,9 +3,9 @@ import React, { PureComponent } from 'react';
 
 // Types
 import { NavModelItem, AppRootProps, DataSourceInstanceSettings } from '@grafana/data';
-import { GlobalSettings, RegistrationInfo, GrafanaInstances } from './types';
+import { GlobalSettings, RegistrationInfo, GrafanaInstances, OrgRole } from './types';
 import { WorldPingDataSource } from 'datasource/DataSource';
-import { findWorldPingDataSources, createNewWorldpingInstance } from 'utils';
+import { findWorldPingDataSources, createNewWorldpingInstance, hasRole } from 'utils';
 import { WorldpingOptions } from 'datasource/types';
 import { getDataSourceSrv } from '@grafana/runtime';
 import { TenantSetup } from './components/TenantSetup';
@@ -149,7 +149,7 @@ export class RootPage extends PureComponent<Props, State> {
     const options = instance!.worldping.instanceSettings.jsonData;
     return (
       <div>
-        <TenantView settings={options} />
+        {hasRole(OrgRole.EDITOR) && <TenantView settings={options} />}
         <br />
         <h3>Dashboards:</h3>
         {options.dashboards.map(d => {

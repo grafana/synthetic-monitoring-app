@@ -6,6 +6,7 @@ import { FormLabel } from './utils';
 
 interface Props {
   settings: Settings;
+  isEditor: boolean;
   onUpdate: (settings: Settings) => void;
 }
 
@@ -53,6 +54,8 @@ export class PingSettingsForm extends PureComponent<Props, State> {
 
   render() {
     const { hostname, ipVersion, dontFragment, collapseOptions } = this.state;
+    const { isEditor } = this.props;
+
     const options = [
       {
         label: 'Any',
@@ -70,23 +73,27 @@ export class PingSettingsForm extends PureComponent<Props, State> {
     return (
       <Container>
         <HorizontalGroup>
-          <Field label={<FormLabel name="Hostname" help="name of host to ping" />}>
+          <Field label={<FormLabel name="Hostname" help="name of host to ping" />} disabled={!isEditor}>
             <Input type="string" value={hostname} placeholder="hostname" />
           </Field>
         </HorizontalGroup>
         <Collapse label="Advanced Options" collapsible={true} onToggle={this.onToggleOptions} isOpen={collapseOptions}>
           <HorizontalGroup>
             <div>
-              <Field label={<FormLabel name="IP Version" help="The IP protocol of the ICMP request" />}>
+              <Field
+                label={<FormLabel name="IP Version" help="The IP protocol of the ICMP request" />}
+                disabled={!isEditor}
+              >
                 <Select value={ipVersion} options={options} onChange={this.onIpVersionChange} />
               </Field>
             </div>
             <div>
               <Field
                 label={<FormLabel name="Don't Fragment" help="Set the DF-bit in the IP-header. Only works with ipV4" />}
+                disabled={!isEditor}
               >
                 <Container padding="sm">
-                  <Switch value={dontFragment} onChange={this.onDontFragmentChange} />
+                  <Switch value={dontFragment} onChange={this.onDontFragmentChange} disabled={!isEditor} />
                 </Container>
               </Field>
             </div>
