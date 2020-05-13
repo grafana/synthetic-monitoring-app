@@ -107,7 +107,7 @@ export class TenantSetup extends PureComponent<Props, State> {
       },
       dashboards: [],
     };
-    
+
     // Save the dashboard names
     for (const json of dashboardPaths) {
       const d = await importDashboard(json, options);
