@@ -10,6 +10,7 @@ import { WorldpingOptions } from 'datasource/types';
 import { getDataSourceSrv } from '@grafana/runtime';
 import { TenantSetup } from './components/TenantSetup';
 import { TenantView } from 'components/TenantView';
+import { DashboardList } from 'components/DashboardList';
 import { ChecksPage } from 'page/ChecksPage';
 import { ProbesPage } from 'page/ProbesPage';
 
@@ -120,9 +121,9 @@ export class RootPage extends PureComponent<Props, State> {
     }
 
     const node = {
-      text: 'Worldping',
+      text: 'worldPing',
       img: meta.info.logos.large,
-      subTitle: 'Global network probes',
+      subTitle: 'Global Blackbox Monitoring',
       url: path,
       children: tabs,
     };
@@ -149,16 +150,9 @@ export class RootPage extends PureComponent<Props, State> {
     const options = instance!.worldping.instanceSettings.jsonData;
     return (
       <div>
-        {hasRole(OrgRole.EDITOR) && <TenantView settings={options} />}
+        <DashboardList dashboards={options.dashboards} />
         <br />
-        <h3>Dashboards:</h3>
-        {options.dashboards.map(d => {
-          return (
-            <div key={d.uid}>
-              <a href={`d/${d.uid}/`}>{d.title}</a>
-            </div>
-          );
-        })}
+        {hasRole(OrgRole.EDITOR) && <TenantView settings={options} />}
       </div>
     );
   }
@@ -173,20 +167,6 @@ export class RootPage extends PureComponent<Props, State> {
     }
 
     return <TenantSetup instance={instance.worldping} />;
-  }
-
-  //-----------------------------------------------------------------------------------------
-  // Checks
-  //-----------------------------------------------------------------------------------------
-  renderChecks() {
-    return <div>checks</div>;
-  }
-
-  //-----------------------------------------------------------------------------------------
-  // Probes
-  //-----------------------------------------------------------------------------------------
-  renderProbes() {
-    return <div>probes</div>;
   }
 
   render() {

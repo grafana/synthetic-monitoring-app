@@ -38,12 +38,12 @@ export class ConfigEditor extends PureComponent<Props> {
     const secureJsonData = (options.secureJsonData || {}) as SecureJsonData;
 
     if (isValid(options.jsonData)) {
-      return <TenantView settings={options.jsonData} worldping={options.name} />;
+      return <TenantView settings={options.jsonData} />;
     }
 
     return (
       <div className="gf-form-group">
-        <a href={`/plugins/grafana-worldping-app/?page=setup&instance=${options.name}`}>Configure</a>
+        <a href={`/plugins/grafana-worldping-app/setup?instance=${options.name}`}>Configure</a>
 
         <div className="gf-form-inline">
           <div className="gf-form">
