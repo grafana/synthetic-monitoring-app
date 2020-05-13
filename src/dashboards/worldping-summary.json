@@ -23,6 +23,12 @@
       "version": "0.2.1"
     },
     {
+      "type": "panel",
+      "id": "graph",
+      "name": "Graph",
+      "version": ""
+    },
+    {
       "type": "datasource",
       "id": "prometheus",
       "name": "Prometheus",
@@ -49,22 +55,23 @@
       }
     ]
   },
-  "editable": true,
+  "description": "",
+  "editable": false,
   "gnetId": null,
   "graphTooltip": 0,
   "id": null,
   "links": [],
   "panels": [
     {
-      "circleMaxSize": "5",
-      "circleMinSize": "1",
+      "circleMaxSize": "10",
+      "circleMinSize": "2",
       "colors": [
         "#37872D",
-        "rgba(237, 129, 40, 0.89)",
+        "#FA6400",
         "#C4162A"
       ],
       "datasource": "${DS_WORLDPING_METRICS}",
-      "decimals": 0,
+      "decimals": 2,
       "esGeoPoint": "geohash",
       "esLocationName": "probe",
       "esMetric": "Count",
@@ -90,7 +97,7 @@
       "mapCenterLongitude": 0,
       "maxDataPoints": "",
       "mouseWheelZoom": false,
-      "showLegend": true,
+      "showLegend": false,
       "stickyLabels": false,
       "tableQueryOptions": {
         "geohashField": "geohash",
@@ -102,32 +109,35 @@
       },
       "targets": [
         {
-          "expr": "sum(((probe_success * on (check_id, probe) group_left(latitude, longitude, geohash)worldping_check_info{check_name=\"ping\", latitude!=\"0.000000\"} ) -1) * -1) by (probe, latitude, longitude, geohash)",
+          "expr": "100-(100 * avg((sum_over_time(probe_success[$__range]) / count_over_time(probe_success[$__range])) * on (check_id, probe) group_left(latitude, longitude, geohash) worldping_check_info{check_name=\"ping\", latitude!=\"0.000000\"}) by (probe, latitude, longitude, geohash))",
           "format": "table",
+          "hide": false,
+          "instant": true,
           "interval": "",
           "legendFormat": "",
           "refId": "A"
         }
       ],
-      "thresholds": "1,2",
+      "thresholds": "0.5,1",
       "timeFrom": null,
       "timeShift": null,
-      "title": "Ping Probe Errors",
+      "title": "Ping Downtime",
       "type": "grafana-worldmap-panel",
-      "unitPlural": "",
+      "unitPlural": "%",
       "unitSingle": "",
-      "valueName": "avg"
+      "unitSingular": "%",
+      "valueName": "current"
     },
     {
-      "circleMaxSize": "5",
-      "circleMinSize": "1",
+      "circleMaxSize": "10",
+      "circleMinSize": "2",
       "colors": [
         "#37872D",
-        "rgba(237, 129, 40, 0.89)",
+        "#FA6400",
         "#C4162A"
       ],
       "datasource": "${DS_WORLDPING_METRICS}",
-      "decimals": 0,
+      "decimals": 2,
       "esGeoPoint": "geohash",
       "esLocationName": "probe",
       "esMetric": "Count",
@@ -145,7 +155,7 @@
       },
       "hideEmpty": false,
       "hideZero": false,
-      "id": 6,
+      "id": 10,
       "initialZoom": 1,
       "locationData": "table",
       "mapCenter": "(0°, 0°)",
@@ -153,7 +163,7 @@
       "mapCenterLongitude": 0,
       "maxDataPoints": "",
       "mouseWheelZoom": false,
-      "showLegend": true,
+      "showLegend": false,
       "stickyLabels": false,
       "tableQueryOptions": {
         "geohashField": "geohash",
@@ -165,21 +175,236 @@
       },
       "targets": [
         {
-          "expr": "sum(((probe_success * on (check_id, probe) group_left(latitude, longitude, geohash)worldping_check_info{check_name=\"http\", latitude!=\"0.000000\"} ) -1) * -1) by (probe, latitude, longitude, geohash)",
+          "expr": "100-(100 * avg((sum_over_time(probe_success[$__range]) / count_over_time(probe_success[$__range])) * on (check_id, probe) group_left(latitude, longitude, geohash) worldping_check_info{check_name=\"http\", latitude!=\"0.000000\"}) by (probe, latitude, longitude, geohash))",
           "format": "table",
+          "hide": false,
+          "instant": true,
           "interval": "",
           "legendFormat": "",
           "refId": "A"
         }
       ],
-      "thresholds": "1,2",
+      "thresholds": "0.5,1",
       "timeFrom": null,
       "timeShift": null,
-      "title": "HTTP Probe Errors",
+      "title": "HTTP Downtime",
       "type": "grafana-worldmap-panel",
-      "unitPlural": "",
+      "unitPlural": "%",
       "unitSingle": "",
-      "valueName": "total"
+      "unitSingular": "%",
+      "valueName": "current"
+    },
+    {
+      "aliasColors": {},
+      "bars": true,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "${DS_WORLDPING_METRICS}",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "fill": 10,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 4,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "hiddenSeries": false,
+      "id": 8,
+      "interval": "",
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": false,
+        "total": false,
+        "values": false
+      },
+      "lines": false,
+      "linewidth": 0,
+      "maxDataPoints": "100",
+      "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [
+        {
+          "$$hashKey": "object:776",
+          "alias": "% Errors",
+          "color": "#C4162A"
+        }
+      ],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "1 - sum(sum_over_time(probe_success{}[$__interval]) *  on (check_id, probe, config_version) worldping_check_info{check_name=\"ping\"}) / (sum(count_over_time(probe_success{}[$__interval]) *  on (check_id, probe, config_version) worldping_check_info{check_name=\"ping\"}))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "% Errors",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "ICMP Check Error Percent",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:845",
+          "decimals": null,
+          "format": "percentunit",
+          "label": "",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:846",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": true,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "${DS_WORLDPING_METRICS}",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "fill": 10,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 4,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "hiddenSeries": false,
+      "id": 9,
+      "interval": "",
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": false,
+        "total": false,
+        "values": false
+      },
+      "lines": false,
+      "linewidth": 0,
+      "maxDataPoints": "100",
+      "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [
+        {
+          "$$hashKey": "object:776",
+          "alias": "% Errors",
+          "color": "#C4162A"
+        }
+      ],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "1 - sum(sum_over_time(probe_success{}[$__interval]) *  on (check_id, probe, config_version) worldping_check_info{check_name=\"http\"}) / (sum(count_over_time(probe_success{}[$__interval]) *  on (check_id, probe, config_version) worldping_check_info{check_name=\"http\"}))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "% Errors",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "HTTP Check Error Percent",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:845",
+          "decimals": null,
+          "format": "percentunit",
+          "label": "",
+          "logBase": 1,
+          "max": null,
+          "min": "0",
+          "show": true
+        },
+        {
+          "$$hashKey": "object:846",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "columns": [],
@@ -195,7 +420,7 @@
         "h": 11,
         "w": 12,
         "x": 0,
-        "y": 8
+        "y": 12
       },
       "id": 2,
       "pageSize": null,
@@ -221,19 +446,19 @@
         },
         {
           "$$hashKey": "object:280",
-          "alias": "Error %",
+          "alias": "Uptime",
           "align": "right",
           "colorMode": "row",
           "colors": [
-            "#56A64B",
+            "rgba(245, 54, 54, 0.9)",
             "#FF780A",
-            "rgba(245, 54, 54, 0.9)"
+            "#56A64B"
           ],
           "decimals": 2,
           "pattern": "Value",
           "thresholds": [
-            ".01",
-            "0.1"
+            "0.99",
+            "0.995"
           ],
           "type": "number",
           "unit": "percentunit"
@@ -259,7 +484,7 @@
       ],
       "targets": [
         {
-          "expr": "avg(1 - (sum_over_time(probe_success[$__range]) / count_over_time(probe_success[$__range])) * on (check_id, probe) group_left(endpoint) worldping_check_info{check_name=\"ping\", latitude!=\"0.000000\"}) by (endpoint)",
+          "expr": "avg((sum_over_time(probe_success[$__range]) / count_over_time(probe_success[$__range])) * on (check_id, probe) group_left(endpoint) worldping_check_info{check_name=\"ping\", latitude!=\"0.000000\"}) by (endpoint)",
           "instant": true,
           "interval": "",
           "legendFormat": "{{endpoint}}",
@@ -292,7 +517,7 @@
         "h": 11,
         "w": 12,
         "x": 12,
-        "y": 8
+        "y": 12
       },
       "id": 3,
       "pageSize": null,
@@ -304,7 +529,7 @@
       "styles": [
         {
           "$$hashKey": "object:375",
-          "alias": "endpoint",
+          "alias": "Endpoint",
           "align": "auto",
           "colorMode": null,
           "dateFormat": "YYYY-MM-DD HH:mm:ss",
@@ -315,27 +540,26 @@
           "pattern": "Metric",
           "rangeMaps": [],
           "thresholds": [
-            "5",
-            "10"
+            ""
           ],
           "type": "string",
           "valueMaps": []
         },
         {
           "$$hashKey": "object:376",
-          "alias": "Error %",
+          "alias": "Uptime",
           "align": "right",
           "colorMode": "row",
           "colors": [
-            "#56A64B",
+            "rgba(245, 54, 54, 0.9)",
             "rgba(237, 129, 40, 0.89)",
-            "rgba(245, 54, 54, 0.9)"
+            "#56A64B"
           ],
           "decimals": 2,
           "pattern": "Current",
           "thresholds": [
-            ".01",
-            "0.1"
+            "0.99",
+            "0.995"
           ],
           "type": "number",
           "unit": "percentunit"
@@ -343,7 +567,7 @@
       ],
       "targets": [
         {
-          "expr": "avg(1 - (sum_over_time(probe_success[$__range]) / count_over_time(probe_success[$__range])) * on (check_id, probe) group_left(endpoint) worldping_check_info{check_name=\"http\", latitude!=\"0.000000\"}) by (endpoint)",
+          "expr": "avg((sum_over_time(probe_success[$__range]) / count_over_time(probe_success[$__range])) * on (check_id, probe) group_left(endpoint) worldping_check_info{check_name=\"http\", latitude!=\"0.000000\"}) by (endpoint)",
           "interval": "",
           "legendFormat": "{{endpoint}}",
           "refId": "C"
@@ -356,19 +580,21 @@
       "type": "table-old"
     }
   ],
+  "refresh": "5m",
   "schemaVersion": 25,
   "style": "dark",
-  "tags": [],
+  "tags": [
+    "worldping"
+  ],
   "templating": {
     "list": []
   },
   "time": {
-    "from": "now-6h",
+    "from": "now-3h",
     "to": "now"
   },
   "timepicker": {
     "refresh_intervals": [
-      "5s",
       "10s",
       "30s",
       "1m",
@@ -383,5 +609,5 @@
   "timezone": "",
   "title": "worldPing Summary",
   "uid": "fU-WBSqWz",
-  "version": 3
+  "version": 10
 }

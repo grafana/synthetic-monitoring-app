@@ -24,6 +24,12 @@ export interface DashboardInfo {
   json: string;
 }
 
+export interface FolderInfo {
+  title: string;
+  uid: string;
+  id: number;
+}
+
 /**
  * These are options configured for each DataSource instance
  */
