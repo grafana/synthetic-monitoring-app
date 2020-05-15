@@ -76,9 +76,9 @@ export class RootPage extends PureComponent<Props, State> {
 
   updateNav() {
     const { path, onNavChanged, query, meta } = this.props;
-
+    const selected = query.page || 'status';
     const tabs: NavModelItem[] = [];
-    if (this.state.valid) {
+    if (this.state.valid && selected !== 'setup') {
       tabs.push({
         text: 'Status',
         // icon: 'fa fa-fw fa-file-text-o',
@@ -94,7 +94,7 @@ export class RootPage extends PureComponent<Props, State> {
       });
     }
 
-    if (this.state.valid) {
+    if (this.state.valid && selected !== 'setup') {
       tabs.push({
         text: 'Checks',
         url: path + '?page=checks',
@@ -109,7 +109,7 @@ export class RootPage extends PureComponent<Props, State> {
 
     // Set the active tab
     let found = false;
-    const selected = query.page || 'setup';
+
     for (const tab of tabs) {
       tab.active = !found && selected === tab.id;
       if (tab.active) {
@@ -150,7 +150,7 @@ export class RootPage extends PureComponent<Props, State> {
     const options = instance!.worldping.instanceSettings.jsonData;
     return (
       <div>
-        <DashboardList dashboards={options.dashboards} />
+        <DashboardList options={options} checkUpdates={false} />
         <br />
         {hasRole(OrgRole.EDITOR) && <TenantView settings={options} />}
       </div>
@@ -174,12 +174,11 @@ export class RootPage extends PureComponent<Props, State> {
     if (settings.length > 1) {
       return this.renderMultipleConfigs();
     }
-
-    if (!valid) {
+    const { query } = this.props;
+    if (!valid || query.page === 'setup') {
       return this.renderSetup();
     }
 
-    const { query } = this.props;
     if (query.page === 'checks') {
       return <ChecksPage instance={instance!} id={query.id} />;
     }

@@ -97,5 +97,3 @@ export function hasRole(requiredRole: OrgRole): boolean {
     }
   }
 }
-
-export const rootPath = '/a/grafana-worldping-app/';

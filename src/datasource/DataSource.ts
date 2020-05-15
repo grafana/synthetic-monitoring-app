@@ -131,6 +131,16 @@ export class WorldPingDataSource extends DataSourceApi<WorldpingQuery, Worldping
       });
   }
 
+  async onOptionsChange(options: WorldpingOptions) {
+    const data = {
+      ...this.instanceSettings,
+      jsonData: options,
+      access: 'proxy',
+    };
+    const info = await getBackendSrv().put(`api/datasources/${this.instanceSettings.id}`, data);
+    console.log('updated datasource config', info);
+  }
+
   async registerSave(apiToken: string, options: WorldpingOptions, accessToken: string): Promise<any> {
     const data = {
       ...this.instanceSettings,

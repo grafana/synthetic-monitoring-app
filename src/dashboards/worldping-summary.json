@@ -56,7 +56,7 @@
     ]
   },
   "description": "",
-  "editable": false,
+  "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
   "id": null,
@@ -228,6 +228,12 @@
       },
       "lines": false,
       "linewidth": 0,
+      "links": [
+        {
+          "title": "Logs",
+          "url": "/explore?left=%5B\"${__from}\",\"${__to}\",\"Worldping%20Logs\",%7B\"expr\":\"%7Bcheck_name%3D%5C\"ping%5C\",%20probe_success%3D%5C\"0%5C\"%7D\"%7D,%7B\"mode\":\"Logs\"%7D,%7B\"ui\":%5Btrue,true,true,\"none\"%5D%7D%5D"
+        }
+      ],
       "maxDataPoints": "100",
       "nullPointMode": "null",
       "options": {
@@ -334,6 +340,12 @@
       },
       "lines": false,
       "linewidth": 0,
+      "links": [
+        {
+          "title": "Logs",
+          "url": "/explore?left=%5B\"${__from}\",\"${__to}\",\"Worldping%20Logs\",%7B\"expr\":\"%7Bcheck_name%3D%5C\"http%5C\",%20probe_success%3D%5C\"0%5C\"%7D\"%7D,%7B\"mode\":\"Logs\"%7D,%7B\"ui\":%5Btrue,true,true,\"none\"%5D%7D%5D"
+        }
+      ],
       "maxDataPoints": "100",
       "nullPointMode": "null",
       "options": {
@@ -437,7 +449,7 @@
           "dateFormat": "YYYY-MM-DD HH:mm:ss",
           "link": true,
           "linkTooltip": "",
-          "linkUrl": "/d/EHyn7ueZk/worldping-icmp?var-probe=All&var-endpoint=${__cell}",
+          "linkUrl": "/d/EHyn7ueZk/worldping-icmp?var-probe=All&var-endpoint=${__cell}&from=${__from}&to=${__to}",
           "mappingType": 1,
           "pattern": "Metric",
           "rangeMaps": [],
@@ -535,7 +547,7 @@
           "dateFormat": "YYYY-MM-DD HH:mm:ss",
           "link": true,
           "linkTooltip": "",
-          "linkUrl": "/d/rq0JrllZz/worldping-http?var-probe=All&var-endpoint=${__cell}",
+          "linkUrl": "/d/rq0JrllZz/worldping-http?var-probe=All&var-endpoint=${__cell}&from=${__from}&to=${__to}",
           "mappingType": 1,
           "pattern": "Metric",
           "rangeMaps": [],
@@ -580,7 +592,7 @@
       "type": "table-old"
     }
   ],
-  "refresh": "5m",
+  "refresh": false,
   "schemaVersion": 25,
   "style": "dark",
   "tags": [
@@ -609,5 +621,5 @@
   "timezone": "",
   "title": "worldPing Summary",
   "uid": "fU-WBSqWz",
-  "version": 10
+  "version": 11
 }
