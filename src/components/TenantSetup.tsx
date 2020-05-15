@@ -1,5 +1,5 @@
 import React, { PureComponent, ChangeEvent } from 'react';
-import { Label, Button, Input } from '@grafana/ui';
+import { Label, Button, Input, ConfirmModal } from '@grafana/ui';
 import { RegistrationInfo, HostedInstance } from 'types';
 import { WorldPingDataSource } from 'datasource/DataSource';
 import { isValid } from 'datasource/ConfigEditor';
@@ -8,6 +8,7 @@ import { createHostedInstance, findHostedInstance, getHostedLokiAndPrometheusInf
 import { WorldpingOptions } from 'datasource/types';
 import { TenantView } from './TenantView';
 import { dashboardPaths, importDashboard } from 'dashboards/loader';
+import { DashboardList } from './DashboardList';
 
 interface Props {
   instance: WorldPingDataSource;
@@ -18,10 +19,15 @@ interface State {
   info?: RegistrationInfo;
   logsInstance?: number;
   metricsInstance?: number;
+  showResetModal: boolean;
+  resetConfig: boolean;
 }
 
 export class TenantSetup extends PureComponent<Props, State> {
-  state: State = {};
+  state: State = {
+    showResetModal: false,
+    resetConfig: false,
+  };
 
   onInit = async () => {
     const { instance } = this.props;
@@ -127,7 +133,12 @@ export class TenantSetup extends PureComponent<Props, State> {
         <div>
           <Label>Admin API Key</Label>
 
-          <Input type="text" placeholder="your org id" value={adminApiToken || ''} onChange={this.onApiTokenChange} />
+          <Input
+            type="text"
+            placeholder="Grafana.com Admin Api Key"
+            value={adminApiToken || ''}
+            onChange={this.onApiTokenChange}
+          />
 
           <Button variant="primary" onClick={this.onInit}>
             Initalize
@@ -161,19 +172,50 @@ export class TenantSetup extends PureComponent<Props, State> {
     );
   }
 
+  showResetModal = (show: boolean) => () => {
+    this.setState({ showResetModal: show });
+  };
+
+  onReset = () => {
+    this.setState({ resetConfig: true });
+  };
+
+  onOptionsChange = (options: WorldpingOptions) => {
+    const { instance } = this.props;
+    return instance.onOptionsChange(options);
+  };
+
   render() {
     const { instance } = this.props;
     if (!instance) {
       return <div>Loading...</div>;
     }
+    const { showResetModal, resetConfig } = this.state;
 
-    if (!isValid(instance.instanceSettings?.jsonData)) {
+    if (!isValid(instance.instanceSettings?.jsonData) || resetConfig) {
       return this.renderSetup();
     }
 
     return (
       <div>
+        <DashboardList
+          options={instance.instanceSettings.jsonData}
+          checkUpdates={true}
+          onChange={this.onOptionsChange}
+        />
+        <br />
         <TenantView settings={instance.instanceSettings.jsonData} />
+        <Button variant="destructive" onClick={this.showResetModal(true)}>
+          Reset
+        </Button>
+        <ConfirmModal
+          isOpen={showResetModal}
+          title="Reset Configuration"
+          body="Are you sure you want to reset worldPing's configuration?"
+          confirmText="Reset Configuration"
+          onConfirm={this.onReset}
+          onDismiss={this.showResetModal(false)}
+        />
       </div>
     );
   }

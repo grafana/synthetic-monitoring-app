@@ -2,32 +2,26 @@ import React, { PureComponent } from 'react';
 import { WorldpingOptions, LinkedDatsourceInfo } from 'datasource/types';
 import { config, getLocationSrv } from '@grafana/runtime';
 import { DataSourceInstanceSettings } from '@grafana/data';
-import { Button } from '@grafana/ui';
+import { Button, Container } from '@grafana/ui';
 
 interface Props {
   settings: WorldpingOptions;
-  worldping?: string;
 }
 
 export class TenantView extends PureComponent<Props> {
   render() {
-    const { settings, worldping } = this.props;
+    const { settings } = this.props;
     if (!settings) {
       return <div>Loading...</div>;
     }
 
     return (
       <div>
-        {worldping && (
-          <>
-            <h2>Worldping</h2>
-            <LinkedDatasourceView info={{ grafanaName: worldping, hostedId: 0 }} />
-          </>
-        )}
-        <h2>Metrics</h2>
-        <LinkedDatasourceView info={settings.metrics} />
-        <h2>Logs</h2>
-        <LinkedDatasourceView info={settings.logs} />
+        <h2>Linked Data Sources</h2>
+        <Container margin="sm">
+          <LinkedDatasourceView info={settings.metrics} />
+          <LinkedDatasourceView info={settings.logs} />
+        </Container>
       </div>
     );
   }

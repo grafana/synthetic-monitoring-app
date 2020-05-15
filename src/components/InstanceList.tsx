@@ -34,7 +34,7 @@ export class InstanceList extends PureComponent<Props> {
               <img className="add-data-source-item-logo" src={logo} />
               <div className="add-data-source-item-text-wrapper">
                 <span className="add-data-source-item-text">{instance.name}</span>
-                <span className="add-data-source-item-desc">description here....</span>
+                <span className="add-data-source-item-desc">{instance.url}</span>
               </div>
               <div className="add-data-source-item-actions">
                 <LinkButton

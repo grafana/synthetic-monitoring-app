@@ -22,6 +22,8 @@ export interface DashboardInfo {
   title: string;
   uid: string;
   json: string;
+  version: number;
+  latestVersion?: number;
 }
 
 export interface FolderInfo {

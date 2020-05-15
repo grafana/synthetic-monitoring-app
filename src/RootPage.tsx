@@ -3,13 +3,14 @@ import React, { PureComponent } from 'react';
 
 // Types
 import { NavModelItem, AppRootProps, DataSourceInstanceSettings } from '@grafana/data';
-import { GlobalSettings, RegistrationInfo, GrafanaInstances } from './types';
+import { GlobalSettings, RegistrationInfo, GrafanaInstances, OrgRole } from './types';
 import { WorldPingDataSource } from 'datasource/DataSource';
-import { findWorldPingDataSources, createNewWorldpingInstance } from 'utils';
+import { findWorldPingDataSources, createNewWorldpingInstance, hasRole } from 'utils';
 import { WorldpingOptions } from 'datasource/types';
 import { getDataSourceSrv } from '@grafana/runtime';
 import { TenantSetup } from './components/TenantSetup';
 import { TenantView } from 'components/TenantView';
+import { DashboardList } from 'components/DashboardList';
 import { ChecksPage } from 'page/ChecksPage';
 import { ProbesPage } from 'page/ProbesPage';
 
@@ -75,9 +76,9 @@ export class RootPage extends PureComponent<Props, State> {
 
   updateNav() {
     const { path, onNavChanged, query, meta } = this.props;
-
+    const selected = query.page || 'status';
     const tabs: NavModelItem[] = [];
-    if (this.state.valid) {
+    if (this.state.valid && selected !== 'setup') {
       tabs.push({
         text: 'Status',
         // icon: 'fa fa-fw fa-file-text-o',
@@ -93,7 +94,7 @@ export class RootPage extends PureComponent<Props, State> {
       });
     }
 
-    if (this.state.valid) {
+    if (this.state.valid && selected !== 'setup') {
       tabs.push({
         text: 'Checks',
         url: path + '?page=checks',
@@ -108,7 +109,7 @@ export class RootPage extends PureComponent<Props, State> {
 
     // Set the active tab
     let found = false;
-    const selected = query.page || 'setup';
+
     for (const tab of tabs) {
       tab.active = !found && selected === tab.id;
       if (tab.active) {
@@ -120,9 +121,9 @@ export class RootPage extends PureComponent<Props, State> {
     }
 
     const node = {
-      text: 'Worldping',
+      text: 'worldPing',
       img: meta.info.logos.large,
-      subTitle: 'Global network probes',
+      subTitle: 'Global Blackbox Monitoring',
       url: path,
       children: tabs,
     };
@@ -149,16 +150,9 @@ export class RootPage extends PureComponent<Props, State> {
     const options = instance!.worldping.instanceSettings.jsonData;
     return (
       <div>
-        <TenantView settings={options} />
+        <DashboardList options={options} checkUpdates={false} />
         <br />
-        <h3>Dashboards:</h3>
-        {options.dashboards.map(d => {
-          return (
-            <div key={d.uid}>
-              <a href={`d/${d.uid}/`}>{d.title}</a>
-            </div>
-          );
-        })}
+        {hasRole(OrgRole.EDITOR) && <TenantView settings={options} />}
       </div>
     );
   }
@@ -175,31 +169,16 @@ export class RootPage extends PureComponent<Props, State> {
     return <TenantSetup instance={instance.worldping} />;
   }
 
-  //-----------------------------------------------------------------------------------------
-  // Checks
-  //-----------------------------------------------------------------------------------------
-  renderChecks() {
-    return <div>checks</div>;
-  }
-
-  //-----------------------------------------------------------------------------------------
-  // Probes
-  //-----------------------------------------------------------------------------------------
-  renderProbes() {
-    return <div>probes</div>;
-  }
-
   render() {
     const { settings, valid, instance } = this.state;
     if (settings.length > 1) {
       return this.renderMultipleConfigs();
     }
-
-    if (!valid) {
+    const { query } = this.props;
+    if (!valid || query.page === 'setup') {
       return this.renderSetup();
     }
 
-    const { query } = this.props;
     if (query.page === 'checks') {
       return <ChecksPage instance={instance!} id={query.id} />;
     }

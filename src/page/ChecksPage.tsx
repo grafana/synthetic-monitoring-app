@@ -2,10 +2,11 @@
 import React, { PureComponent } from 'react';
 
 // Types
-import { Check, GrafanaInstances, Label } from 'types';
+import { Check, GrafanaInstances, Label, IpVersion, OrgRole } from 'types';
 import { getLocationSrv } from '@grafana/runtime';
-import { Button } from '@grafana/ui';
+import { Button, HorizontalGroup } from '@grafana/ui';
 import { CheckEditor } from 'components/CheckEditor';
+import { hasRole } from 'utils';
 
 interface Props {
   instance: GrafanaInstances;
@@ -14,11 +15,13 @@ interface Props {
 interface State {
   checks: Check[];
   check?: Check; // selected check
+  addNew: boolean;
 }
 
 export class ChecksPage extends PureComponent<Props, State> {
   state: State = {
     checks: [],
+    addNew: false,
   };
 
   async componentDidMount() {
@@ -61,55 +64,28 @@ export class ChecksPage extends PureComponent<Props, State> {
   }
 
   renderCheckList() {
-    const { instance } = this.props;
     const { checks } = this.state;
     if (!checks) {
       return null;
     }
 
-    const template = {
-      frequency: 5000,
-      offset: 1000,
-      timeout: 2500,
-      enabled: true,
-      labels: [
-        {
-          name: 'environment',
-          value: 'production',
-        },
-      ],
-      probes: [2, 3],
-      settings: {
-        http: {
-          url: 'https://apple.com/',
-          method: 'GET',
-          headers: null,
-          body: '',
-          downloadLimit: 0,
-          ipVersion: 'V4',
-          validateCert: true,
-          validation: [
-            {
-              responseTime: {
-                threshold: 250,
-                severity: 'Warning',
-              },
-            },
-          ],
-        },
-      },
-    } as Check;
-
-    const { worldping } = instance;
-
     return (
       <div>
+        {hasRole(OrgRole.EDITOR) && (
+          <HorizontalGroup justify="flex-end">
+            <Button onClick={this.onAddNew}>New</Button>
+          </HorizontalGroup>
+        )}
         {checks.map(check => {
+          const checkId: number = check.id || 0;
+          if (!check.id) {
+            return;
+          }
           const checkType = Object.keys(check.settings)[0];
           return (
-            <div key={check.id} className="add-data-source-item" onClick={() => this.onSelectCheck(check.id)}>
+            <div key={checkId} className="add-data-source-item" onClick={() => this.onSelectCheck(checkId)}>
               <div className="add-data-source-item-text-wrapper">
-                <span className="add-data-source-item-text">{check.id}</span>
+                <span className="add-data-source-item-text">{checkId}</span>
                 <span className="add-data-source-item-desc">
                   {checkType}: {this.labelsToString(check.labels)}
                 </span>
@@ -120,12 +96,15 @@ export class ChecksPage extends PureComponent<Props, State> {
             </div>
           );
         })}
-        <br />
-        <h3>Add Check</h3>
-        <CheckEditor check={template} instance={worldping} onReturn={this.onRefresh} />
       </div>
     );
   }
+
+  onAddNew = () => {
+    this.setState({
+      addNew: true,
+    });
+  };
 
   onRefresh = async () => {
     const { instance } = this.props;
@@ -135,8 +114,14 @@ export class ChecksPage extends PureComponent<Props, State> {
     });
   };
 
-  onGoBack = () => {
+  onGoBack = (refresh: boolean) => {
     console.log('go back');
+    this.setState({
+      addNew: false,
+    });
+    if (refresh) {
+      this.onRefresh();
+    }
     getLocationSrv().update({
       partial: true,
       query: {
@@ -147,12 +132,29 @@ export class ChecksPage extends PureComponent<Props, State> {
 
   render() {
     const { instance } = this.props;
-    const { check } = this.state;
+    const { check, addNew } = this.state;
     if (!instance) {
       return <div>Loading...</div>;
     }
     if (check) {
       return <CheckEditor check={check} instance={instance.worldping} onReturn={this.onGoBack} />;
+    }
+    if (addNew) {
+      const template = {
+        frequency: 60000,
+        timeout: 2500,
+        enabled: true,
+        labels: [],
+        probes: [],
+        settings: {
+          ping: {
+            hostname: '',
+            ipVersion: IpVersion.Any,
+            dontFragment: false,
+          },
+        },
+      } as Check;
+      return <CheckEditor check={template} instance={instance.worldping} onReturn={this.onGoBack} />;
     }
     return <div>{this.renderCheckList()}</div>;
   }

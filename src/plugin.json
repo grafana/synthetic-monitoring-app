@@ -1,6 +1,6 @@
 {
   "type": "app",
-  "name": "Worldping",
+  "name": "worldPing",
   "id": "grafana-worldping-app",
 
   "info": {
@@ -19,8 +19,20 @@
   "includes": [
     {
       "type": "page",
-      "name": "Worldping",
+      "name": "Status",
       "path": "/a/grafana-worldping-app/",
+      "addToNav": true
+    },
+    {
+      "type": "page",
+      "name": "Checks",
+      "path": "/a/grafana-worldping-app/?page=checks",
+      "addToNav": true
+    },
+    {
+      "type": "page",
+      "name": "Probes",
+      "path": "/a/grafana-worldping-app/?page=probes",
       "addToNav": true
     }
   ],

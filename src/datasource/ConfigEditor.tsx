@@ -36,27 +36,27 @@ export class ConfigEditor extends PureComponent<Props> {
     const { options } = this.props;
     const { secureJsonFields } = options;
     const secureJsonData = (options.secureJsonData || {}) as SecureJsonData;
-
-    if (isValid(options.jsonData)) {
-      return <TenantView settings={options.jsonData} worldping={options.name} />;
+    function isConfigured(): boolean {
+      return (secureJsonFields && secureJsonFields.accessToken) as boolean;
     }
-
     return (
-      <div className="gf-form-group">
-        <a href={`/plugins/grafana-worldping-app/?page=setup&instance=${options.name}`}>Configure</a>
-
-        <div className="gf-form-inline">
-          <div className="gf-form">
-            <LegacyForms.SecretFormField
-              isConfigured={(secureJsonFields && secureJsonFields.accessToken) as boolean}
-              value={secureJsonData.accessToken || ''}
-              label="Access Token"
-              placeholder="access token saved on the server"
-              labelWidth={10}
-              inputWidth={20}
-              onReset={this.onResetAccessToken}
-              onChange={this.onAccessTokenChange}
-            />
+      <div>
+        {isValid(options.jsonData) && isConfigured() && <TenantView settings={options.jsonData} />}
+        <br />
+        <div className="gf-form-group">
+          <div className="gf-form-inline">
+            <div className="gf-form">
+              <LegacyForms.SecretFormField
+                isConfigured={isConfigured()}
+                value={secureJsonData.accessToken || ''}
+                label="Access Token"
+                placeholder="access token saved on the server"
+                labelWidth={10}
+                inputWidth={20}
+                onReset={this.onResetAccessToken}
+                onChange={this.onAccessTokenChange}
+              />
+            </div>
           </div>
         </div>
       </div>

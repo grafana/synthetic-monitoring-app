@@ -3,7 +3,7 @@ import { DataSourceInstanceSettings, DataSourceSettings } from '@grafana/data';
 import { WorldpingOptions } from './datasource/types';
 
 import { config, getBackendSrv } from '@grafana/runtime';
-import { HostedInstance } from 'types';
+import { HostedInstance, User, OrgRole } from 'types';
 
 /**
  * Find all worldping datasources
@@ -78,4 +78,22 @@ export async function createHostedInstance(
     .then(d => {
       return d.datasource;
     });
+}
+
+export function hasRole(requiredRole: OrgRole): boolean {
+  const user: User = config.bootData.user;
+  switch (requiredRole) {
+    case OrgRole.ADMIN: {
+      return user.orgRole === OrgRole.ADMIN;
+    }
+    case OrgRole.EDITOR: {
+      return user.orgRole === OrgRole.ADMIN || user.orgRole === OrgRole.EDITOR;
+    }
+    case OrgRole.VIEWER: {
+      return user.orgRole === OrgRole.ADMIN || user.orgRole === OrgRole.EDITOR || user.orgRole === OrgRole.VIEWER;
+    }
+    default: {
+      return false;
+    }
+  }
 }

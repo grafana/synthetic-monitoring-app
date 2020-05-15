@@ -25,7 +25,6 @@ export async function importDashboard(path: string, options: WorldpingOptions): 
   const backendSrv = getBackendSrv();
 
   const json = await backendSrv.get(`public/plugins/grafana-worldping-app/dashboards/${path}`);
-  // ??? Change the UID ????
 
   const folder = await findWorldpingFolder();
 
@@ -38,11 +37,37 @@ export async function importDashboard(path: string, options: WorldpingOptions): 
     ],
     folderId: folder.id,
   });
-  console.log('imported', info);
 
   return {
     title: info.title,
     uid: json.uid,
     json: path,
+    version: json.version,
+    latestVersion: json.version,
   };
+}
+
+export async function listAppDashboards(): Promise<DashboardInfo[]> {
+  const backendSrv = getBackendSrv();
+  let dashboards: DashboardInfo[] = [];
+  for (const p of dashboardPaths) {
+    console.log('fetching dashboard', p);
+    const json = await backendSrv.get(`public/plugins/grafana-worldping-app/dashboards/${p}`);
+
+    const dInfo = {
+      title: json.title,
+      uid: json.uid,
+      json: p,
+      version: 0,
+      latestVersion: json.version,
+    };
+    console.log('dashboard', dInfo);
+    dashboards.push(dInfo);
+  }
+  return dashboards;
+}
+
+export async function removeDashboard(dashboard: DashboardInfo): Promise<any> {
+  const backendSrv = getBackendSrv();
+  return backendSrv.delete(`/api/dashboards/uid/${dashboard.uid}`);
 }

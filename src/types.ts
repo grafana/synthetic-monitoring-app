@@ -32,14 +32,10 @@ export interface ResponseTimeValidation extends Validation {
   threshold: number;
 }
 
-export interface PingValidation {
-  responseTime?: ResponseTimeValidation;
-}
-
 export interface PingSettings {
   hostname: string;
   ipVersion: IpVersion;
-  validation: PingValidation[]; // only a single check actually makes sense
+  dontFragment: boolean;
 }
 
 export enum HttpMethod {
@@ -123,10 +119,10 @@ export interface DnsSettings {
 }
 
 export interface BaseObject {
-  id: number;
-  tenantId: number;
-  created: number; // seconds
-  updated: number; // seconds
+  id?: number;
+  tenantId?: number;
+  created?: number; // seconds
+  updated?: number; // seconds
 }
 
 export interface Label {
@@ -146,15 +142,27 @@ export interface Probe extends BaseObject {
 
 export interface Check extends BaseObject {
   frequency: number;
-  offset: number;
+  offset?: number;
   timeout: number;
   enabled: boolean;
 
   labels: Label[]; // Currently list of [name:value]... can it be Labels?
-  settings: any; //
+  settings: Settings; //
 
   // Link to probes
   probes: number[];
+}
+
+export interface Settings {
+  http?: HttpSettings;
+  ping?: PingSettings;
+  dns?: DnsSettings;
+}
+
+export enum CheckType {
+  HTTP = 'http',
+  PING = 'ping',
+  DNS = 'dns',
 }
 
 export interface HostedInstance {
@@ -187,4 +195,20 @@ export interface GrafanaInstances {
   worldping: WorldPingDataSource;
   metrics?: DataSourceApi;
   logs?: DataSourceApi;
+}
+
+export interface User {
+  email: string;
+  id: number;
+  isGrafanaAdmin: boolean;
+  isSignedIn: boolean;
+  orgId: number;
+  orgName: string;
+  orgRole: OrgRole;
+}
+
+export enum OrgRole {
+  ADMIN = 'Admin',
+  EDITOR = 'Editor',
+  VIEWER = 'Viewer',
 }
