@@ -10,12 +10,16 @@ import {
 
 import { WorldpingQuery, WorldpingOptions, QueryType } from './types';
 
-import { getBackendSrv } from '@grafana/runtime';
+import { config, getBackendSrv } from '@grafana/runtime';
 import { Probe, Check, RegistrationInfo, HostedInstance } from '../types';
 
 export class WorldPingDataSource extends DataSourceApi<WorldpingQuery, WorldpingOptions> {
   constructor(public instanceSettings: DataSourceInstanceSettings<WorldpingOptions>) {
     super(instanceSettings);
+  }
+
+  getMetricsDS(): DataSourceInstanceSettings {
+    return config.datasources[this.instanceSettings.jsonData.metrics.grafanaName];
   }
 
   async query(options: DataQueryRequest<WorldpingQuery>): Promise<DataQueryResponse> {
@@ -58,6 +62,55 @@ export class WorldPingDataSource extends DataSourceApi<WorldpingQuery, Worldping
       .datasourceRequest({
         method: 'GET',
         url: `${this.instanceSettings.url}/dev/probe/list`,
+      })
+      .then((res: any) => {
+        return res.data;
+      });
+  }
+
+  async addProbe(probe: Probe): Promise<any> {
+    return getBackendSrv()
+      .datasourceRequest({
+        method: 'POST',
+        url: `${this.instanceSettings.url}/dev/probe/add`,
+        data: probe,
+      })
+      .then((res: any) => {
+        return res.data;
+      });
+  }
+
+  async deleteProbe(id: number): Promise<any> {
+    return getBackendSrv()
+      .datasourceRequest({
+        method: 'DELETE',
+        url: `${this.instanceSettings.url}/dev/probe/delete/${id}`,
+      })
+      .then((res: any) => {
+        return res.data;
+      });
+  }
+
+  async updateProbe(probe: Probe): Promise<any> {
+    console.log('updating probe.', probe);
+    return getBackendSrv()
+      .datasourceRequest({
+        method: 'POST',
+        url: `${this.instanceSettings.url}/dev/probe/update`,
+        data: probe,
+      })
+      .then((res: any) => {
+        return res.data;
+      });
+  }
+
+  async resetProbeToken(probe: Probe): Promise<any> {
+    console.log('updating probe.', probe);
+    return getBackendSrv()
+      .datasourceRequest({
+        method: 'POST',
+        url: `${this.instanceSettings.url}/dev/probe/update?reset-token=true`,
+        data: probe,
       })
       .then((res: any) => {
         return res.data;

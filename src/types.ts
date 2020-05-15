@@ -136,7 +136,7 @@ export interface Probe extends BaseObject {
   latitude: number;
   longitude: number;
   online: boolean;
-  onelineChange: number;
+  onlineChange: number;
   labels: Label[];
 }
 
