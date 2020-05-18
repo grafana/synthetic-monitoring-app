@@ -4,8 +4,6 @@ import {
   Container,
   ConfirmModal,
   Field,
-  List,
-  IconButton,
   Input,
   HorizontalGroup,
   Switch,
@@ -19,7 +17,7 @@ import { Check, Label as WorldpingLabel, Settings, CheckType, Probe, OrgRole } f
 import { WorldPingDataSource } from 'datasource/DataSource';
 import { hasRole } from 'utils';
 import { PingSettingsForm } from './pingSettings';
-import { FormLabel } from './utils';
+import { FormLabel, WorldpingLabelsForm } from './utils';
 
 interface Props {
   check: Check;
@@ -46,7 +44,7 @@ export class CheckEditor extends PureComponent<Props, State> {
     });
   }
 
-  showDeleteUserModal = (show: boolean) => () => {
+  showDeleteCheckModal = (show: boolean) => () => {
     this.setState({ showDeleteModal: show });
   };
 
@@ -61,10 +59,7 @@ export class CheckEditor extends PureComponent<Props, State> {
   };
 
   onLabelsUpdate = (labels: WorldpingLabel[]) => {
-    let check = this.state.check;
-    if (!check) {
-      return;
-    }
+    let check = { ...this.state.check } as Check;
     check.labels = labels;
     this.setState({ check });
   };
@@ -194,7 +189,7 @@ export class CheckEditor extends PureComponent<Props, State> {
         </Container>
         <Container margin="md">
           <h3 className="page-heading">Labels</h3>
-          <CheckLabels labels={check.labels} onUpdate={this.onLabelsUpdate} isEditor={isEditor} />
+          <WorldpingLabelsForm labels={check.labels} onUpdate={this.onLabelsUpdate} isEditor={isEditor} />
         </Container>
         <Container margin="md">
           <h3 className="page-heading">Settings</h3>
@@ -211,7 +206,7 @@ export class CheckEditor extends PureComponent<Props, State> {
               Save
             </Button>
             {check.id && (
-              <Button variant="destructive" onClick={this.showDeleteUserModal(true)} disabled={!isEditor}>
+              <Button variant="destructive" onClick={this.showDeleteCheckModal(true)} disabled={!isEditor}>
                 Delete Check
               </Button>
             )}
@@ -221,130 +216,12 @@ export class CheckEditor extends PureComponent<Props, State> {
               body="Are you sure you want to delete this check?"
               confirmText="Delete check"
               onConfirm={this.onRemoveCheck}
-              onDismiss={this.showDeleteUserModal(false)}
+              onDismiss={this.showDeleteCheckModal(false)}
             />
             <a onClick={this.onBack}>Back</a>
           </HorizontalGroup>
         </Container>
       </Container>
-    );
-  }
-}
-
-interface CheckLabelsProps {
-  labels: WorldpingLabel[];
-  isEditor: boolean;
-  onUpdate: (labels: WorldpingLabel[]) => void;
-}
-
-interface CheckLabelsState {
-  labels: WorldpingLabel[];
-  numLabels: number;
-}
-
-export class CheckLabels extends PureComponent<CheckLabelsProps, CheckLabelsState> {
-  state = {
-    labels: this.props.labels || [],
-    numLabels: this.props.labels.length,
-  };
-
-  addLabel = () => {
-    let labels = this.state.labels;
-    console.log('adding new label', labels);
-    const n = labels.push({ name: '', value: '' });
-
-    this.setState({ labels: labels, numLabels: n }, this.onUpdate);
-  };
-
-  onDelete = (index: number) => {
-    let labels = this.state.labels;
-    labels.splice(index, 1);
-    this.setState({ labels: labels, numLabels: labels.length }, this.onUpdate);
-  };
-
-  onUpdate = () => {
-    this.props.onUpdate(this.state.labels);
-  };
-
-  onChange = (index: number, label: WorldpingLabel) => {
-    let labels = this.state.labels;
-    labels[index] = label;
-    this.setState({ labels: labels }, this.onUpdate);
-  };
-
-  render() {
-    const { labels } = this.state;
-    const { isEditor } = this.props;
-    return (
-      <div>
-        <HorizontalGroup>
-          <List
-            items={labels}
-            getItemKey={item => {
-              return item.name;
-            }}
-            renderItem={(item, index) => (
-              <CheckLabel
-                onDelete={this.onDelete}
-                onChange={this.onChange}
-                label={item}
-                index={index}
-                isEditor={isEditor}
-              />
-            )}
-          />
-        </HorizontalGroup>
-        <IconButton name="plus-circle" onClick={this.addLabel} disabled={!isEditor} />
-      </div>
-    );
-  }
-}
-
-interface CheckLabelProps {
-  label: WorldpingLabel;
-  index: number;
-  isEditor: boolean;
-  onDelete: (index: number) => void;
-  onChange: (index: number, label: WorldpingLabel) => void;
-}
-
-interface CheckLabelState {
-  name: string;
-  value: string;
-}
-
-export class CheckLabel extends PureComponent<CheckLabelProps, CheckLabelState> {
-  state = {
-    name: this.props.label.name || '',
-    value: this.props.label.value || '',
-  };
-
-  onNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({ name: event.target.value }, this.onChange);
-  };
-
-  onValueChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({ value: event.target.value }, this.onChange);
-  };
-
-  onDelete = () => {
-    this.props.onDelete(this.props.index);
-  };
-
-  onChange = () => {
-    this.props.onChange(this.props.index, { name: this.state.name, value: this.state.value });
-  };
-
-  render() {
-    const { name, value } = this.state;
-    const { isEditor } = this.props;
-    console.log('rendering label with name:', name);
-    return (
-      <HorizontalGroup>
-        <Input type="text" placeholder="name" value={name} onChange={this.onNameChange} disabled={!isEditor} />
-        <Input type="text" placeholder="value" value={value} onChange={this.onValueChange} disabled={!isEditor} />
-        <IconButton name="minus-circle" onClick={this.onDelete} disabled={!isEditor} />
-      </HorizontalGroup>
     );
   }
 }

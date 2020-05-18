@@ -14,7 +14,7 @@
     "@grafana/data": "next",
     "@grafana/runtime": "next",
     "@grafana/toolkit": "next",
-    "@grafana/ui": "next",
+    "@grafana/ui": "^7.0.0-beta.3",
     "@types/lodash": "latest"
   },
   "dependencies": {
