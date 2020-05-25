@@ -69,8 +69,8 @@ export function isValid(settings: WorldpingOptions): boolean {
     return false;
   }
 
-  const { metrics, logs } = settings;
-  if (!metrics || !metrics.grafanaName || !metrics.hostedId) {
+  const { apiHost, metrics, logs } = settings;
+  if (!apiHost || !metrics || !metrics.grafanaName || !metrics.hostedId) {
     return false;
   }
 

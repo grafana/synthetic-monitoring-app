@@ -172,12 +172,26 @@ export class WorldPingDataSource extends DataSourceApi<WorldpingQuery, Worldping
   // SETUP
   //--------------------------------------------------------------------------------
 
-  async registerInit(apiToken: string): Promise<RegistrationInfo> {
-    return getBackendSrv()
+  async registerInit(apiHost: string, apiToken: string): Promise<RegistrationInfo> {
+    const backendSrv = getBackendSrv();
+    const data = {
+      ...this.instanceSettings,
+      jsonData: {
+        apiHost: apiHost,
+      },
+      access: 'proxy',
+    };
+    await backendSrv.put(`api/datasources/${this.instanceSettings.id}`, data);
+    return backendSrv
       .datasourceRequest({
         method: 'POST',
         url: `${this.instanceSettings.url}/dev/register/init`,
         data: { apiToken },
+        headers: {
+          // ensure the grafana backend doesn't use a cached copy of the
+          // datasource config, as it might not have the new apiHost set.
+          'X-Grafana-NoCache': 'true',
+        },
       })
       .then((res: any) => {
         return res.data;
