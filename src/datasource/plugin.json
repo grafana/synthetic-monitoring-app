@@ -8,7 +8,7 @@
     {
       "path": "dev",
       "method": "GET",
-      "url": "https://worldping-api-dev.grafana.net/api/v1/",
+      "url": "https://{{.JsonData.apiHost}}/api/v1/",
       "reqRole": "Viewer",
       "headers": [
         {
@@ -20,7 +20,7 @@
     {
       "path": "dev",
       "method": "POST",
-      "url": "https://worldping-api-dev.grafana.net/api/v1/",
+      "url": "https://{{.JsonData.apiHost}}/api/v1/",
       "reqRole": "Editor",
       "headers": [
         {
@@ -32,7 +32,7 @@
     {
       "path": "dev",
       "method": "DELETE",
-      "url": "https://worldping-api-dev.grafana.net/api/v1/",
+      "url": "https://{{.JsonData.apiHost}}/api/v1/",
       "reqRole": "Editor",
       "headers": [
         {

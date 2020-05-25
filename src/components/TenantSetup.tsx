@@ -1,5 +1,5 @@
 import React, { PureComponent, ChangeEvent } from 'react';
-import { Label, Button, Input, ConfirmModal } from '@grafana/ui';
+import { Label, Button, Input, ConfirmModal, HorizontalGroup, Collapse } from '@grafana/ui';
 import { RegistrationInfo, HostedInstance } from 'types';
 import { WorldPingDataSource } from 'datasource/DataSource';
 import { isValid } from 'datasource/ConfigEditor';
@@ -15,6 +15,8 @@ interface Props {
 }
 
 interface State {
+  showAdvanced: boolean;
+  apiHost?: string;
   adminApiToken?: string;
   info?: RegistrationInfo;
   logsInstance?: number;
@@ -27,22 +29,32 @@ export class TenantSetup extends PureComponent<Props, State> {
   state: State = {
     showResetModal: false,
     resetConfig: false,
+    apiHost: 'worldping-api-dev.grafana.net',
+    showAdvanced: false,
   };
 
   onInit = async () => {
     const { instance } = this.props;
-    const { adminApiToken } = this.state;
+    const { adminApiToken, apiHost } = this.state;
     if (!adminApiToken) {
       alert('Missing admin key');
       return;
     }
+    if (!apiHost) {
+      alert('Missing apiHost');
+      return;
+    }
 
-    const info = await instance.registerInit(adminApiToken);
+    const info = await instance.registerInit(apiHost, adminApiToken);
     this.setState({
       info,
       logsInstance: info.tenantInfo?.logInstance?.id,
       metricsInstance: info.tenantInfo?.metricInstance?.id,
     });
+  };
+
+  onApiHostChange = (event: ChangeEvent<any>) => {
+    this.setState({ apiHost: event.target.value });
   };
 
   onApiTokenChange = (event: ChangeEvent<any>) => {
@@ -74,7 +86,7 @@ export class TenantSetup extends PureComponent<Props, State> {
 
   onSave = async () => {
     const { instance } = this.props;
-    const { info, adminApiToken } = this.state;
+    const { info, adminApiToken, apiHost } = this.state;
     const name = instance?.instanceSettings.name;
 
     const hostedMetrics = info?.instances.find(i => i.id === this.state.metricsInstance);
@@ -87,6 +99,11 @@ export class TenantSetup extends PureComponent<Props, State> {
 
     if (!hostedLogs) {
       alert('Missing logs instance');
+      return;
+    }
+
+    if (!apiHost) {
+      alert('Missing apiHost');
       return;
     }
 
@@ -103,6 +120,7 @@ export class TenantSetup extends PureComponent<Props, State> {
     }
 
     const options: WorldpingOptions = {
+      apiHost: apiHost,
       logs: {
         grafanaName: logs!.name,
         hostedId: hostedLogs.id,
@@ -125,21 +143,41 @@ export class TenantSetup extends PureComponent<Props, State> {
     window.location.reload();
   };
 
+  onToggleAdvanced = (isOpen: boolean) => {
+    this.setState({ showAdvanced: !this.state.showAdvanced });
+  };
+
   renderSetup() {
-    const { info, adminApiToken, logsInstance, metricsInstance } = this.state;
+    const { info, adminApiToken, apiHost, logsInstance, metricsInstance, showAdvanced } = this.state;
 
     if (!info) {
       return (
         <div>
-          <Label>Admin API Key</Label>
+          <HorizontalGroup wrap={true}>
+            <Label>Admin API Key</Label>
 
-          <Input
-            type="text"
-            placeholder="Grafana.com Admin Api Key"
-            value={adminApiToken || ''}
-            onChange={this.onApiTokenChange}
-          />
+            <Input
+              type="text"
+              width={100}
+              placeholder="Grafana.com Admin Api Key"
+              value={adminApiToken || ''}
+              onChange={this.onApiTokenChange}
+            />
+          </HorizontalGroup>
+          <br />
+          <Collapse label="Advanced" collapsible={true} onToggle={this.onToggleAdvanced} isOpen={showAdvanced}>
+            <HorizontalGroup>
+              <Label>Backend Address</Label>
 
+              <Input
+                type="text"
+                width={40}
+                placeholder="worldPing backend Address"
+                value={apiHost || 'worldping-api-dev.grafana.net'}
+                onChange={this.onApiHostChange}
+              />
+            </HorizontalGroup>
+          </Collapse>
           <Button variant="primary" onClick={this.onInit}>
             Initalize
           </Button>

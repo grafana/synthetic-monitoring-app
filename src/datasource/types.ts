@@ -36,6 +36,7 @@ export interface FolderInfo {
  * These are options configured for each DataSource instance
  */
 export interface WorldpingOptions extends DataSourceJsonData {
+  apiHost: string;
   metrics: LinkedDatsourceInfo;
   logs: LinkedDatsourceInfo;
   dashboards: DashboardInfo[];
