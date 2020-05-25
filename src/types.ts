@@ -33,7 +33,6 @@ export interface ResponseTimeValidation extends Validation {
 }
 
 export interface PingSettings {
-  hostname: string;
   ipVersion: IpVersion;
   dontFragment: boolean;
 }
@@ -81,7 +80,6 @@ export interface HttpValidation {
 
 // HttpSettings provides the settings for a HTTP check.
 export interface HttpSettings {
-  url: string;
   method: HttpMethod;
   headers?: string[];
   body?: string;
@@ -109,7 +107,6 @@ export type DnsValidations = ResponseTimeValidation | DnsTtlValidation | DnsText
 
 // DnsSettings provides the settings for a DNS check.
 export interface DnsSettings {
-  name: string;
   recordType: DnsRecordType;
   server: string;
   ipVersion: IpVersion;
@@ -141,6 +138,8 @@ export interface Probe extends BaseObject {
 }
 
 export interface Check extends BaseObject {
+  job: string;
+  target: string;
   frequency: number;
   offset?: number;
   timeout: number;

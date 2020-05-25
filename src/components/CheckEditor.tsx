@@ -15,9 +15,14 @@ import {
 import { SelectableValue } from '@grafana/data';
 import { Check, Label as WorldpingLabel, Settings, CheckType, Probe, OrgRole } from 'types';
 import { WorldPingDataSource } from 'datasource/DataSource';
-import { hasRole } from 'utils';
+import { hasRole, checkType } from 'utils';
 import { PingSettingsForm } from './pingSettings';
 import { FormLabel, WorldpingLabelsForm } from './utils';
+
+interface TargetHelpInfo {
+  text?: string;
+  example: string;
+}
 
 interface Props {
   check: Check;
@@ -27,12 +32,20 @@ interface Props {
 
 interface State {
   check?: Check;
+  typeOfCheck?: CheckType;
   probes: Probe[];
   showDeleteModal: boolean;
+  targetHelp: TargetHelpInfo;
 }
 
 export class CheckEditor extends PureComponent<Props, State> {
-  state: State = { showDeleteModal: false, probes: [] };
+  state: State = {
+    showDeleteModal: false,
+    probes: [],
+    targetHelp: {
+      example: '',
+    },
+  };
 
   async componentDidMount() {
     const { instance } = this.props;
@@ -40,7 +53,9 @@ export class CheckEditor extends PureComponent<Props, State> {
     const probes = await instance.listProbes();
     this.setState({
       check: check,
+      typeOfCheck: checkType(check.settings),
       probes: probes,
+      targetHelp: this.targetHelpText(),
     });
   }
 
@@ -79,6 +94,31 @@ export class CheckEditor extends PureComponent<Props, State> {
       return;
     }
     check.settings = settings;
+    this.setState({ check });
+  };
+
+  onSetType = (type: SelectableValue<CheckType>) => {
+    let check = { ...this.state.check } as Check;
+    if (!type.value) {
+      return;
+    }
+    let settings: Settings = {};
+    settings[type.value] = undefined;
+    check.settings = settings;
+    const targetHelp = this.targetHelpText();
+    const typeOfCheck = checkType(check.settings);
+    this.setState({ check, targetHelp, typeOfCheck });
+  };
+
+  onJobUpdate = (event: React.ChangeEvent<HTMLInputElement>) => {
+    let check = { ...this.state.check } as Check;
+    check.job = event.target.value;
+    this.setState({ check });
+  };
+
+  onTargetUpdate = (event: React.ChangeEvent<HTMLInputElement>) => {
+    let check = { ...this.state.check } as Check;
+    check.target = event.target.value;
     this.setState({ check });
   };
 
@@ -122,24 +162,92 @@ export class CheckEditor extends PureComponent<Props, State> {
     this.props.onReturn(false);
   };
 
+  targetHelpText(): TargetHelpInfo {
+    const { typeOfCheck } = this.state;
+    if (!typeOfCheck) {
+      return { text: '', example: '' };
+    }
+    let resp: TargetHelpInfo;
+    switch (typeOfCheck) {
+      case CheckType.HTTP: {
+        resp = {
+          text: 'full url of endpoint to probe',
+          example: 'https://google.com/',
+        };
+        break;
+      }
+      case CheckType.PING: {
+        resp = {
+          text: 'hostname of endpoint to ping',
+          example: 'google.com',
+        };
+        break;
+      }
+      case CheckType.DNS: {
+        resp = {
+          text: 'name of record to query',
+          example: 'google.com',
+        };
+        break;
+      }
+    }
+    return resp;
+  }
+
   render() {
-    const { check, showDeleteModal, probes } = this.state;
+    const { check, showDeleteModal, probes, targetHelp, typeOfCheck } = this.state;
     if (!check || probes.length === 0) {
       return <div>Loading...</div>;
     }
+    
     let legend = 'Edit Check';
     if (!check.id) {
       legend = 'Add Check';
     }
+
     let isEditor = hasRole(OrgRole.EDITOR);
+
+    const checkTypes = [
+      {
+        label: 'HTTP',
+        value: CheckType.HTTP,
+      },
+      {
+        label: 'PING',
+        value: CheckType.PING,
+      },
+      {
+        label: 'DNS',
+        value: CheckType.DNS,
+      },
+    ];
 
     return (
       <Container>
         <Legend>{legend}</Legend>
         <Container margin="md">
           <HorizontalGroup>
-            <Field label={<FormLabel name="Check Name" help="Unique name of check" />} disabled={!isEditor}>
-              <Input type="string" value="Grafana.com basic" />
+            <Field label={<FormLabel name="Check Type" />} disabled={check.id ? true : false}>
+              <Select value={typeOfCheck} options={checkTypes} onChange={this.onSetType} />
+            </Field>
+            <Field
+              label={
+                <FormLabel
+                  name="Job Name"
+                  help="job name to assign to this check. 'Job name + target' must be unique."
+                />
+              }
+              disabled={!isEditor}
+            >
+              <Input type="string" placeholder="job" value={check.job} onChange={this.onJobUpdate} />
+            </Field>
+            <Field label={<FormLabel name="Target" help={targetHelp.text} />} disabled={!isEditor}>
+              <Input
+                type="string"
+                placeholder={targetHelp.example}
+                value={check.target}
+                onChange={this.onTargetUpdate}
+              />
             </Field>
             <Field label={<FormLabel name="Enabled" help="whether this check should run." />} disabled={!isEditor}>
               <Container padding="sm">
@@ -162,7 +270,8 @@ export class CheckEditor extends PureComponent<Props, State> {
                 value={check!.frequency / 1000 || 60}
                 onChange={this.onFrequencyUpdate}
                 suffix="seconds"
-                maxLength={4}
+                max={600}
+                min={10}
               />
             </Field>
             <Field label={<FormLabel name="Timeout" help="maximum execution time for a check" />} disabled={!isEditor}>
@@ -173,7 +282,8 @@ export class CheckEditor extends PureComponent<Props, State> {
                 value={check!.timeout / 1000 || 5}
                 onChange={this.onTimeoutUpdate}
                 suffix="seconds"
-                maxLength={4}
+                max={60}
+                min={1}
               />
             </Field>
           </HorizontalGroup>
@@ -195,8 +305,8 @@ export class CheckEditor extends PureComponent<Props, State> {
           <h3 className="page-heading">Settings</h3>
           <CheckSettings
             settings={check.settings}
+            typeOfCheck={typeOfCheck || CheckType.HTTP}
             onUpdate={this.onSettingsUpdate}
-            isNew={check.id ? true : false}
             isEditor={isEditor}
           />
         </Container>
@@ -227,47 +337,38 @@ export class CheckEditor extends PureComponent<Props, State> {
 }
 
 interface CheckSettingsProps {
-  isNew: boolean;
   isEditor: boolean;
   settings: Settings;
+  typeOfCheck: CheckType;
   onUpdate: (settings: Settings) => void;
 }
 
 interface CheckSettingsState {
-  settings: Settings;
-  type: CheckType;
+  settings?: Settings;
 }
 
 export class CheckSettings extends PureComponent<CheckSettingsProps, CheckSettingsState> {
-  state = {
-    settings: this.props.settings || { http: {} },
-    type: this.checkType(this.props.settings || { http: {} }),
-  };
+  state: CheckSettingsState = {};
 
-  checkType(settings: Settings) {
-    let types = Object.keys(settings);
-    if (types.length < 1) {
-      return CheckType.HTTP;
+  componentDidMount() {
+    const { settings } = this.props;
+    this.setState({ settings });
+  }
+
+  componentDidUpdate(oldProps: CheckSettingsProps) {
+    const { settings, typeOfCheck } = this.props;
+    if (typeOfCheck !== oldProps.typeOfCheck) {
+      this.setState({ settings });
     }
-    return types[0] as CheckType;
   }
 
   onUpdate = () => {
-    this.props.onUpdate(this.state.settings);
-  };
-
-  onSetType = (type: SelectableValue<CheckType>) => {
-    if (!type.value) {
-      return;
-    }
-    let settings: Settings = {};
-    settings[type.value] = undefined;
-    this.setState({ type: type.value, settings: settings }, this.onUpdate);
+    this.props.onUpdate(this.state.settings!);
   };
 
   onJsonChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     let settings: Settings = {};
-    settings[this.state.type] = JSON.parse(event.target.value);
+    settings[this.props.typeOfCheck] = JSON.parse(event.target.value);
     this.setState({ settings: settings }, this.onUpdate);
   };
 
@@ -276,43 +377,23 @@ export class CheckSettings extends PureComponent<CheckSettingsProps, CheckSettin
   };
 
   render() {
-    const { settings, type } = this.state;
-    const { isNew, isEditor } = this.props;
+    const { settings } = this.state;
+    if (!settings) {
+      return <div>Loading....</div>;
+    }
+    const { isEditor } = this.props;
     let settingsForm = (
       <TextArea
-        value={JSON.stringify(settings[type], null, 2)}
+        value={JSON.stringify(settings[this.props.typeOfCheck], null, 2)}
         onChange={this.onJsonChange}
         rows={20}
         disabled={!isEditor}
       />
     );
-    if (type === CheckType.PING) {
+    if (this.props.typeOfCheck === CheckType.PING) {
       settingsForm = <PingSettingsForm settings={settings} onUpdate={this.onSettingsChange} isEditor={isEditor} />;
     }
-    const checkTypes = [
-      {
-        label: 'HTTP',
-        value: CheckType.HTTP,
-      },
-      {
-        label: 'PING',
-        value: CheckType.PING,
-      },
-      {
-        label: 'DNS',
-        value: CheckType.DNS,
-      },
-    ];
-    return (
-      <div>
-        <HorizontalGroup>
-          <Field label="Type" disabled={isNew}>
-            <Select value={type} options={checkTypes} onChange={this.onSetType} />
-          </Field>
-        </HorizontalGroup>
-        {settingsForm}
-      </div>
-    );
+    return <div>{settingsForm}</div>;
   }
 }
 

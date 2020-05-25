@@ -3,7 +3,7 @@ import { DataSourceInstanceSettings, DataSourceSettings } from '@grafana/data';
 import { WorldpingOptions } from './datasource/types';
 
 import { config, getBackendSrv } from '@grafana/runtime';
-import { HostedInstance, User, OrgRole } from 'types';
+import { HostedInstance, User, OrgRole, CheckType, Settings } from 'types';
 
 /**
  * Find all worldping datasources
@@ -96,4 +96,12 @@ export function hasRole(requiredRole: OrgRole): boolean {
       return false;
     }
   }
+}
+
+export function checkType(settings: Settings): CheckType {
+  let types = Object.keys(settings);
+  if (types.length < 1) {
+    return CheckType.HTTP;
+  }
+  return types[0] as CheckType;
 }
