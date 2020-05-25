@@ -16,7 +16,8 @@ import { SelectableValue } from '@grafana/data';
 import { Check, Label as WorldpingLabel, Settings, CheckType, Probe, OrgRole } from 'types';
 import { WorldPingDataSource } from 'datasource/DataSource';
 import { hasRole, checkType } from 'utils';
-import { PingSettingsForm } from './pingSettings';
+import { PingSettingsForm } from './PingSettings';
+import { HttpSettingsForm } from './HttpSettings';
 import { FormLabel, WorldpingLabelsForm } from './utils';
 
 interface TargetHelpInfo {
@@ -51,11 +52,13 @@ export class CheckEditor extends PureComponent<Props, State> {
     const { instance } = this.props;
     const check = { ...this.props.check } as Check;
     const probes = await instance.listProbes();
+    const typeOfCheck = checkType(check.settings);
+    const targetHelp = this.targetHelpText(typeOfCheck);
     this.setState({
-      check: check,
-      typeOfCheck: checkType(check.settings),
-      probes: probes,
-      targetHelp: this.targetHelpText(),
+      check,
+      typeOfCheck,
+      probes,
+      targetHelp,
     });
   }
 
@@ -105,8 +108,9 @@ export class CheckEditor extends PureComponent<Props, State> {
     let settings: Settings = {};
     settings[type.value] = undefined;
     check.settings = settings;
-    const targetHelp = this.targetHelpText();
+
     const typeOfCheck = checkType(check.settings);
+    const targetHelp = this.targetHelpText(typeOfCheck);
     this.setState({ check, targetHelp, typeOfCheck });
   };
 
@@ -162,8 +166,7 @@ export class CheckEditor extends PureComponent<Props, State> {
     this.props.onReturn(false);
   };
 
-  targetHelpText(): TargetHelpInfo {
-    const { typeOfCheck } = this.state;
+  targetHelpText(typeOfCheck: CheckType | undefined): TargetHelpInfo {
     if (!typeOfCheck) {
       return { text: '', example: '' };
     }
@@ -199,7 +202,7 @@ export class CheckEditor extends PureComponent<Props, State> {
     if (!check || probes.length === 0) {
       return <div>Loading...</div>;
     }
-    
+
     let legend = 'Edit Check';
     if (!check.id) {
       legend = 'Add Check';
@@ -247,6 +250,7 @@ export class CheckEditor extends PureComponent<Props, State> {
                 placeholder={targetHelp.example}
                 value={check.target}
                 onChange={this.onTargetUpdate}
+                width={60}
               />
             </Field>
             <Field label={<FormLabel name="Enabled" help="whether this check should run." />} disabled={!isEditor}>
@@ -382,18 +386,25 @@ export class CheckSettings extends PureComponent<CheckSettingsProps, CheckSettin
       return <div>Loading....</div>;
     }
     const { isEditor } = this.props;
-    let settingsForm = (
-      <TextArea
-        value={JSON.stringify(settings[this.props.typeOfCheck], null, 2)}
-        onChange={this.onJsonChange}
-        rows={20}
-        disabled={!isEditor}
-      />
-    );
-    if (this.props.typeOfCheck === CheckType.PING) {
-      settingsForm = <PingSettingsForm settings={settings} onUpdate={this.onSettingsChange} isEditor={isEditor} />;
+
+    switch (this.props.typeOfCheck) {
+      case CheckType.PING: {
+        return <PingSettingsForm settings={settings} onUpdate={this.onSettingsChange} isEditor={isEditor} />;
+      }
+      case CheckType.HTTP: {
+        return <HttpSettingsForm settings={settings} onUpdate={this.onSettingsChange} isEditor={isEditor} />;
+      }
+      case CheckType.DNS: {
+        return (
+          <TextArea
+            value={JSON.stringify(settings[this.props.typeOfCheck], null, 2)}
+            onChange={this.onJsonChange}
+            rows={20}
+            disabled={!isEditor}
+          />
+        );
+      }
     }
-    return <div>{settingsForm}</div>;
   }
 }
 

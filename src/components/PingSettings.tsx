@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import { Collapse, Container, HorizontalGroup, Field, Select, Switch } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
-import { IpVersion, Settings } from 'types';
+import { IpVersion, Settings, PingSettings } from 'types';
 import { FormLabel } from './utils';
 
 interface Props {
@@ -10,27 +10,22 @@ interface Props {
   onUpdate: (settings: Settings) => void;
 }
 
-interface State {
-  ipVersion: IpVersion;
-  dontFragment: boolean;
-  collapseOptions: boolean;
+interface State extends PingSettings {
+  showAdvanced: boolean;
 }
 
 export class PingSettingsForm extends PureComponent<Props, State> {
   state: State = {
     ipVersion: this.props.settings!.ping?.ipVersion || IpVersion.Any,
     dontFragment: this.props.settings!.ping?.dontFragment || false,
-    collapseOptions: false,
+    showAdvanced: false,
   };
 
   onUpdate = () => {
-    const settings = {
-      ping: {
-        ipVersion: this.state.ipVersion,
-        dontFragment: this.state.dontFragment,
-      },
-    };
-    this.props.onUpdate(settings);
+    const settings = this.state as PingSettings;
+    this.props.onUpdate({
+      ping: settings,
+    });
   };
 
   onIpVersionChange = (value: SelectableValue<IpVersion>) => {
@@ -42,11 +37,11 @@ export class PingSettingsForm extends PureComponent<Props, State> {
   };
 
   onToggleOptions = (isOpen: boolean) => {
-    this.setState({ collapseOptions: !this.state.collapseOptions });
+    this.setState({ showAdvanced: !this.state.showAdvanced });
   };
 
   render() {
-    const { ipVersion, dontFragment, collapseOptions } = this.state;
+    const { ipVersion, dontFragment, showAdvanced } = this.state;
     const { isEditor } = this.props;
 
     const options = [
@@ -65,7 +60,7 @@ export class PingSettingsForm extends PureComponent<Props, State> {
     ];
     return (
       <Container>
-        <Collapse label="Advanced Options" collapsible={true} onToggle={this.onToggleOptions} isOpen={collapseOptions}>
+        <Collapse label="Advanced Options" collapsible={true} onToggle={this.onToggleOptions} isOpen={showAdvanced}>
           <HorizontalGroup>
             <div>
               <Field
