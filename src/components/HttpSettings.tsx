@@ -13,7 +13,7 @@ import {
   Input,
 } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
-import { IpVersion, Settings, HttpSettings, HttpMethod, HttpVersion } from 'types';
+import { IpVersion, Settings, HttpSettings, HttpMethod, HttpVersion, BasicAuth, TLSConfig } from 'types';
 import { FormLabel, WorldpingLabelsForm } from './utils';
 import { Label as WorldpingLabel } from 'types';
 
@@ -26,6 +26,8 @@ interface Props {
 interface State extends HttpSettings {
   showAdvanced: boolean;
   showValidation: boolean;
+  showAuthentication: boolean;
+  showTLS: boolean;
 }
 
 export class HttpSettingsForm extends PureComponent<Props, State> {
@@ -48,6 +50,8 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
 
     showAdvanced: false,
     showValidation: false,
+    showAuthentication: false,
+    showTLS: false,
   };
 
   onUpdate = () => {
@@ -63,6 +67,14 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
 
   onBodyChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     this.setState({ body: event.target.value }, this.onUpdate);
+  };
+
+  onBearerTokenChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    this.setState({ bearerToken: event.target.value }, this.onUpdate);
+  };
+
+  onBasicAuthChange = (basicAuth: BasicAuth | undefined) => {
+    this.setState({ basicAuth: basicAuth }, this.onUpdate);
   };
 
   onIpVersionChange = (value: SelectableValue<IpVersion>) => {
@@ -89,6 +101,18 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
     this.setState({ showValidation: !this.state.showValidation });
   };
 
+  onToggleAuthentication = (isOpen: boolean) => {
+    this.setState({ showAuthentication: !this.state.showAuthentication });
+  };
+
+  onToggleTLS = (isOpen: boolean) => {
+    this.setState({ showTLS: !this.state.showTLS });
+  };
+
+  onTLSChange = (tlsConfig: TLSConfig) => {
+    this.setState({ tlsConfig: tlsConfig }, this.onUpdate);
+  };
+
   onValidHttpVersionsChange = (item: Array<SelectableValue<HttpVersion>>) => {
     let validHTTPVersions: HttpVersion[] = [];
     for (const p of item.values()) {
@@ -97,6 +121,16 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
       }
     }
     this.setState({ validHTTPVersions }, this.onUpdate);
+  };
+
+  onValidStatusCodeChange = (item: Array<SelectableValue<number>>) => {
+    let validStatusCodes: number[] = [];
+    for (const p of item.values()) {
+      if (p.value) {
+        validStatusCodes.push(p.value);
+      }
+    }
+    this.setState({ validStatusCodes }, this.onUpdate);
   };
 
   headersToLabels(): WorldpingLabel[] {
@@ -181,6 +215,69 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
     this.setState({ failIfBodyNotMatchesRegexp }, this.onUpdate);
   };
 
+  generateValidStatusCodes() {
+    let validCodes = [];
+    for (let i = 100; i <= 102; i++) {
+      validCodes.push({
+        label: `${i}`,
+        value: i,
+      });
+    }
+    for (let i = 200; i <= 208; i++) {
+      validCodes.push({
+        label: `${i}`,
+        value: i,
+      });
+    }
+    for (let i = 300; i <= 308; i++) {
+      validCodes.push({
+        label: `${i}`,
+        value: i,
+      });
+    }
+    for (let i = 400; i <= 418; i++) {
+      validCodes.push({
+        label: `${i}`,
+        value: i,
+      });
+    }
+    validCodes.push({
+      label: '422',
+      value: 422,
+    });
+    validCodes.push({
+      label: '426',
+      value: 426,
+    });
+    validCodes.push({
+      label: '428',
+      value: 428,
+    });
+    validCodes.push({
+      label: '429',
+      value: 429,
+    });
+    validCodes.push({
+      label: '431',
+      value: 431,
+    });
+    for (let i = 500; i <= 511; i++) {
+      validCodes.push({
+        label: `${i}`,
+        value: i,
+      });
+    }
+    validCodes.push({
+      label: '598',
+      value: 598,
+    });
+    validCodes.push({
+      label: '599',
+      value: 599,
+    });
+    return validCodes;
+  }
+
   render() {
     const { state } = this;
     const { isEditor } = this.props;
@@ -209,7 +306,7 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
         value: HttpVersion.HTTP1_1,
       },
       {
-        label: 'HTTP/2.0',
+        label: 'HTTP/2',
         value: HttpVersion.HTTP2_0,
       },
     ];
@@ -239,6 +336,8 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
         value: HttpMethod.OPTIONS,
       },
     ];
+    const validStatusCodes = this.generateValidStatusCodes();
+
     return (
       <Container>
         <HorizontalGroup>
@@ -252,7 +351,7 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
             disabled={!isEditor}
           >
             <div>
-              <TextArea value={state.body} onChange={this.onBodyChange} rows={5} disabled={!isEditor} />
+              <TextArea value={state.body} onChange={this.onBodyChange} rows={2} disabled={!isEditor} />
             </div>
           </Field>
         </Container>
@@ -268,6 +367,31 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
           </Field>
         </Container>
         <br />
+        <Collapse label="TLS Config" collapsible={true} onToggle={this.onToggleTLS} isOpen={state.showTLS}>
+          <TLSForm onChange={this.onTLSChange} isEditor={isEditor} tlsConfig={state.tlsConfig} />
+        </Collapse>
+        <Collapse
+          label="Authentication"
+          collapsible={true}
+          onToggle={this.onToggleAuthentication}
+          isOpen={state.showAuthentication}
+        >
+          <HorizontalGroup>
+            <Field
+              label={<FormLabel name="Bearer Token" help="The bearer token for the target" />}
+              disabled={!isEditor}
+            >
+              <Input
+                type="password"
+                placeholder="Bearer Token"
+                value={state.bearerToken}
+                onChange={this.onBearerTokenChange}
+                disabled={!isEditor}
+              />
+            </Field>
+          </HorizontalGroup>
+          <BasicAuthForm onChange={this.onBasicAuthChange} basicAuth={state.basicAuth} isEditor={isEditor} />
+        </Collapse>
         <Collapse
           label="Validation"
           collapsible={true}
@@ -275,6 +399,19 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
           isOpen={state.showValidation}
         >
           <HorizontalGroup>
+            <Field
+              label={
+                <FormLabel name="Valid Status Codes" help="Accepted status codes for this probe. Defaults to 2xx." />
+              }
+              disabled={!isEditor}
+            >
+              <MultiSelect
+                options={validStatusCodes}
+                value={state.validStatusCodes}
+                onChange={this.onValidStatusCodeChange}
+                disabled={!isEditor}
+              />
+            </Field>
             <Field
               label={<FormLabel name="Valid HTTP Versions" help="Accepted HTTP versions for this probe" />}
               disabled={!isEditor}
@@ -286,6 +423,7 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
                 disabled={!isEditor}
               />
             </Field>
+
             <Field label={<FormLabel name="Fail if SSL" help="Probe fails if SSL is present" />} disabled={!isEditor}>
               <Container padding="sm">
                 <Switch value={state.failIfSSL} onChange={this.onFailIfSSLChange} disabled={!isEditor} />
@@ -396,6 +534,206 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
           </HorizontalGroup>
         </Collapse>
       </Container>
+    );
+  }
+}
+
+interface BasicAuthProps {
+  basicAuth?: BasicAuth;
+  isEditor: boolean;
+  onChange: (basicAuth: BasicAuth | undefined) => void;
+}
+
+interface BasicAuthState {
+  username: string;
+  password: string;
+}
+
+export class BasicAuthForm extends PureComponent<BasicAuthProps, BasicAuthState> {
+  state = {
+    username: this.props.basicAuth?.username || '',
+    password: this.props.basicAuth?.password || '',
+  };
+
+  onUpdate = () => {
+    if (!this.state.username && !this.state.password) {
+      this.props.onChange(undefined);
+      return;
+    }
+    const auth = {
+      username: this.state.username,
+      password: this.state.password,
+    };
+    this.props.onChange(auth);
+  };
+
+  onUsernameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    this.setState({ username: event.target.value }, this.onUpdate);
+  };
+
+  onPasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    this.setState({ password: event.target.value }, this.onUpdate);
+  };
+
+  render() {
+    const { username, password } = this.state;
+    const { isEditor } = this.props;
+
+    return (
+      <HorizontalGroup>
+        <Field label={<FormLabel name="Username" help="Basic Authentication username" />} disabled={!isEditor}>
+          <Input
+            type="text"
+            placeholder="username"
+            value={username}
+            onChange={this.onUsernameChange}
+            disabled={!isEditor}
+          />
+        </Field>
+        <Field label={<FormLabel name="Password" help="Basic Authentication password" />} disabled={!isEditor}>
+          <Input
+            type="password"
+            placeholder="password"
+            value={password}
+            onChange={this.onPasswordChange}
+            disabled={!isEditor}
+          />
+        </Field>
+      </HorizontalGroup>
+    );
+  }
+}
+
+interface TLSProps {
+  tlsConfig?: TLSConfig;
+  isEditor: boolean;
+  onChange: (tlsConfig: TLSConfig) => void;
+}
+
+interface TLSState {
+  insecureSkipVerify: boolean;
+  caCert: string;
+  clientCert: string;
+  clientKey: string;
+  serverName: string;
+}
+
+export class TLSForm extends PureComponent<TLSProps, TLSState> {
+  state = {
+    insecureSkipVerify: this.props.tlsConfig?.insecureSkipVerify || false,
+    caCert: this.props.tlsConfig?.caCert || '',
+    clientCert: this.props.tlsConfig?.clientCert || '',
+    clientKey: this.props.tlsConfig?.clientKey || '',
+    serverName: this.props.tlsConfig?.serverName || '',
+  };
+
+  onUpdate = () => {
+    const cfg = {
+      insecureSkipVerify: this.state.insecureSkipVerify,
+      caCert: this.state.caCert,
+      clientCert: this.state.clientCert,
+      clientKey: this.state.clientKey,
+      serverName: this.state.serverName,
+    };
+    this.props.onChange(cfg);
+  };
+
+  onInsecureSkipVerifyChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    this.setState({ insecureSkipVerify: !this.state.insecureSkipVerify }, this.onUpdate);
+  };
+
+  onServerNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    this.setState({ serverName: event.target.value }, this.onUpdate);
+  };
+
+  onCACertChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    this.setState({ caCert: event.target.value }, this.onUpdate);
+  };
+  onClientCertChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    this.setState({ clientCert: event.target.value }, this.onUpdate);
+  };
+  onClientKeyChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    this.setState({ clientKey: event.target.value }, this.onUpdate);
+  };
+
+  render() {
+    const { insecureSkipVerify, caCert, clientCert, clientKey, serverName } = this.state;
+    const { isEditor } = this.props;
+
+    return (
+      <div>
+        <HorizontalGroup>
+          <Field
+            label={<FormLabel name="Skip Validation" help="Disable target certificate validation" />}
+            disabled={!isEditor}
+          >
+            <Container padding="sm">
+              <Switch value={insecureSkipVerify} onChange={this.onInsecureSkipVerifyChange} disabled={!isEditor} />
+            </Container>
+          </Field>
+          <Field
+            label={<FormLabel name="Server Name" help="Used to verify the hostname for the targets" />}
+            disabled={!isEditor}
+          >
+            <Input
+              type="text"
+              placeholder="ServerName"
+              value={serverName}
+              onChange={this.onServerNameChange}
+              disabled={!isEditor}
+            />
+          </Field>
+        </HorizontalGroup>
+        <Container>
+          <Field
+            label={<FormLabel name="CA Certificate" help="The CA cert to use for the targets" />}
+            disabled={!isEditor}
+          >
+            <div>
+              <TextArea
+                value={caCert}
+                onChange={this.onCACertChange}
+                rows={2}
+                disabled={!isEditor}
+                placeholder="CA Certificate"
+              />
+            </div>
+          </Field>
+        </Container>
+        <Container>
+          <Field
+            label={<FormLabel name="Client Certificate" help="The client cert file for the targets" />}
+            disabled={!isEditor}
+          >
+            <div>
+              <TextArea
+                value={clientCert}
+                onChange={this.onClientCertChange}
+                rows={2}
+                disabled={!isEditor}
+                placeholder="Client Certificate"
+              />
+            </div>
+          </Field>
+        </Container>
+        <Container>
+          <Field
+            label={<FormLabel name="Client Key" help="The client key file for the targets" />}
+            disabled={!isEditor}
+          >
+            <div>
+              <TextArea
+                type="password"
+                value={clientKey}
+                onChange={this.onClientKeyChange}
+                rows={2}
+                disabled={!isEditor}
+                placeholder="Client Key"
+              />
+            </div>
+          </Field>
+        </Container>
+      </div>
     );
   }
 }
