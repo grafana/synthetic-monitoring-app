@@ -135,7 +135,7 @@
       },
       "targets": [
         {
-          "expr": "100-(100 * avg((sum_over_time(probe_success[$__range]) / count_over_time(probe_success[$__range])) * on (check_id, probe) group_left(latitude, longitude, geohash) worldping_check_info{check_name=\"ping\", endpoint=~\"$endpoint\", latitude!=\"0.000000\"}) by (probe, latitude, longitude, geohash))",
+          "expr": "100-(100 * avg((sum_over_time(probe_success{instance=\"$instance\"}[$__range]) / count_over_time(probe_success{instance=\"$instance\"}[$__range])) * on (instance, job, probe) group_left(latitude, longitude, geohash) worldping_check_info{check_name=\"ping\", instance=\"$instance\"}) by (probe, latitude, longitude, geohash))",
           "format": "table",
           "instant": true,
           "interval": "",
@@ -220,7 +220,7 @@
       "pluginVersion": "7.1.0-cd0c4dbcpre",
       "targets": [
         {
-          "expr": "avg((sum_over_time(probe_success{probe=~\"$probe\"}[$__range]) *  on (check_id, probe, config_version) worldping_check_info{endpoint=\"$endpoint\",probe=~\"$probe\"}) / (count_over_time(probe_success{probe=~\"$probe\"}[$__range]) *  on (check_id, probe, config_version) worldping_check_info{endpoint=\"$endpoint\", probe=~\"$probe\"}))",
+          "expr": "avg((sum_over_time(probe_success{probe=~\"$probe\", instance=\"$instance\"}[$__range]) *  on (instance, job, probe, config_version) worldping_check_info{check_name=\"ping\", instance=\"$instance\", probe=~\"$probe\"}) / (count_over_time(probe_success{probe=~\"$probe\", instance=\"$instance\"}[$__range]) *  on (instance, job, probe, config_version) worldping_check_info{check_name=\"ping\", instance=\"$instance\", probe=~\"$probe\"}))",
           "hide": false,
           "instant": false,
           "interval": "",
@@ -294,7 +294,7 @@
       "pluginVersion": "7.1.0-cd0c4dbcpre",
       "targets": [
         {
-          "expr": "sum(topk(1,worldping_check_info{probe=~\"$probe\",endpoint=\"$endpoint\"})) by (frequency)",
+          "expr": "sum(topk(1,worldping_check_info{probe=~\"$probe\", instance=\"$instance\", check_name=\"ping\"})) by (frequency)",
           "format": "table",
           "instant": true,
           "interval": "",
@@ -368,7 +368,7 @@
       "steppedLine": true,
       "targets": [
         {
-          "expr": "1 - sum(sum_over_time(probe_success{probe=~\"$probe\"}[$__interval]) *  on (check_id, probe, config_version) worldping_check_info{endpoint=\"$endpoint\", probe=~\"$probe\"}) / (sum(count_over_time(probe_success{probe=~\"$probe\"}[$__interval]) *  on (check_id, probe, config_version) worldping_check_info{endpoint=\"$endpoint\", probe=~\"$probe\"}))",
+          "expr": "1 - sum(sum_over_time(probe_success{probe=~\"$probe\", instance=\"$instance\"}[$__interval]) *  on (instance, job, probe, config_version) worldping_check_info{check_name=\"ping\",instance=\"$instance\", probe=~\"$probe\"}) / (sum(count_over_time(probe_success{probe=~\"$probe\", instance=\"$instance\"}[$__interval]) *  on (instance, job, probe, config_version) worldping_check_info{check_name=\"ping\",instance=\"$instance\", probe=~\"$probe\"}))",
           "interval": "",
           "legendFormat": "errors",
           "refId": "A"
@@ -495,7 +495,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "avg(probe_icmp_duration_seconds{probe=~\"$probe\"} * on (check_id,probe,config_version) group_left worldping_check_info{check_name=\"ping\",probe=~\"$probe\",endpoint=\"$endpoint\"}) by (phase)",
+          "expr": "avg(probe_icmp_duration_seconds{probe=~\"$probe\", instance=\"$instance\"}) by (phase)",
           "instant": false,
           "interval": "",
           "intervalFactor": 1,
@@ -584,7 +584,7 @@
           "dateFormat": "YYYY-MM-DD HH:mm:ss",
           "link": true,
           "linkTooltip": "",
-          "linkUrl": "/d/${__dashboard.uid}/${__dashboard.name}?var-probe=${__cell}&var-endpoint=$endpoint",
+          "linkUrl": "/d/${__dashboard.uid}/${__dashboard.name}?var-probe=${__cell}&var-instance=$instance",
           "mappingType": 1,
           "pattern": "Metric",
           "rangeMaps": [],
@@ -610,7 +610,7 @@
       ],
       "targets": [
         {
-          "expr": "1 - max((sum_over_time(probe_success[$__range]) / count_over_time(probe_success[$__range])) * on (check_id,probe) group_left(label_country) worldping_check_info{check_name=\"ping\",endpoint=\"$endpoint\"}) by (probe, label_country)",
+          "expr": "1 - max((sum_over_time(probe_success{instance=\"$instance\"}[$__range]) / count_over_time(probe_success{instance=\"$instance\"}[$__range])) * on (instance, job, probe) group_left(label_country) worldping_check_info{check_name=\"ping\",instance=\"$instance\"}) by (probe, label_country)",
           "interval": "",
           "legendFormat": "{{probe}} ({{ label_country }})",
           "refId": "C"
@@ -700,7 +700,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "avg(probe_duration_seconds{probe=~\"$probe\"} * on (check_id,probe,config_version) group_left worldping_check_info{check_name=\"ping\",probe=~\"$probe\",endpoint=\"$endpoint\"}) by (probe)",
+          "expr": "avg(probe_duration_seconds{probe=~\"$probe\", instance=\"$instance\"} * on (instance, job,probe,config_version) group_left worldping_check_info{check_name=\"ping\",probe=~\"$probe\",instance=\"$instance\"}) by (probe)",
           "instant": false,
           "interval": "",
           "intervalFactor": 1,
@@ -775,7 +775,7 @@
       },
       "targets": [
         {
-          "expr": "{probe=~\"$probe\",endpoint=\"$endpoint\", probe_success=\"0\"}",
+          "expr": "{probe=~\"$probe\",instance=\"$instance\", probe_success=\"0\"}",
           "refId": "A"
         }
       ],
@@ -804,7 +804,7 @@
         "multi": false,
         "name": "probe",
         "options": [],
-        "query": "label_values(worldping_check_info,probe)",
+        "query": "label_values(worldping_check_info{check_name=\"ping\"},probe)",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -819,14 +819,14 @@
         "allValue": null,
         "current": {},
         "datasource": "${DS_WORLDPING_METRICS}",
-        "definition": "label_values(worldping_check_info{check_name=\"ping\"},endpoint)",
+        "definition": "label_values(worldping_check_info{check_name=\"ping\"},instance)",
         "hide": 0,
         "includeAll": false,
         "label": null,
         "multi": false,
-        "name": "endpoint",
+        "name": "instance",
         "options": [],
-        "query": "label_values(worldping_check_info{check_name=\"ping\"},endpoint)",
+        "query": "label_values(worldping_check_info{check_name=\"ping\"},instance)",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -859,5 +859,5 @@
   "timezone": "",
   "title": "worldPing ICMP",
   "uid": "EHyn7ueZk",
-  "version": 16
+  "version": 18
 }

@@ -109,7 +109,7 @@
       },
       "targets": [
         {
-          "expr": "100-(100 * avg((sum_over_time(probe_success[$__range]) / count_over_time(probe_success[$__range])) * on (check_id, probe) group_left(latitude, longitude, geohash) worldping_check_info{check_name=\"ping\", latitude!=\"0.000000\"}) by (probe, latitude, longitude, geohash))",
+          "expr": "100-(100 * avg((sum_over_time(probe_success[$__range]) / count_over_time(probe_success[$__range])) * on (instance, job, probe, config_version) group_left(latitude, longitude, geohash) worldping_check_info{check_name=\"ping\"}) by (probe, latitude, longitude, geohash))",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -175,7 +175,7 @@
       },
       "targets": [
         {
-          "expr": "100-(100 * avg((sum_over_time(probe_success[$__range]) / count_over_time(probe_success[$__range])) * on (check_id, probe) group_left(latitude, longitude, geohash) worldping_check_info{check_name=\"http\", latitude!=\"0.000000\"}) by (probe, latitude, longitude, geohash))",
+          "expr": "100-(100 * avg((sum_over_time(probe_success[$__range]) / count_over_time(probe_success[$__range])) * on (instance, job, probe, config_version) group_left(latitude, longitude, geohash) worldping_check_info{check_name=\"http\"}) by (probe, latitude, longitude, geohash))",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -255,7 +255,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "1 - sum(sum_over_time(probe_success{}[$__interval]) *  on (check_id, probe, config_version) worldping_check_info{check_name=\"ping\"}) / (sum(count_over_time(probe_success{}[$__interval]) *  on (check_id, probe, config_version) worldping_check_info{check_name=\"ping\"}))",
+          "expr": "1 - sum(sum_over_time(probe_success{}[$__interval]) *  on (instance, job, probe, config_version) worldping_check_info{check_name=\"ping\"}) / (sum(count_over_time(probe_success{}[$__interval]) *  on (instance, job, probe, config_version) worldping_check_info{check_name=\"ping\"}))",
           "hide": false,
           "interval": "",
           "legendFormat": "% Errors",
@@ -367,7 +367,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "1 - sum(sum_over_time(probe_success{}[$__interval]) *  on (check_id, probe, config_version) worldping_check_info{check_name=\"http\"}) / (sum(count_over_time(probe_success{}[$__interval]) *  on (check_id, probe, config_version) worldping_check_info{check_name=\"http\"}))",
+          "expr": "1 - sum(sum_over_time(probe_success{}[$__interval]) *  on (instance, job, probe, config_version) worldping_check_info{check_name=\"http\"}) / (sum(count_over_time(probe_success{}[$__interval]) *  on (instance, job, probe, config_version) worldping_check_info{check_name=\"http\"}))",
           "hide": false,
           "interval": "",
           "legendFormat": "% Errors",
@@ -444,12 +444,12 @@
       "styles": [
         {
           "$$hashKey": "object:279",
-          "alias": "endpoint",
+          "alias": "instance",
           "align": "auto",
           "dateFormat": "YYYY-MM-DD HH:mm:ss",
           "link": true,
           "linkTooltip": "",
-          "linkUrl": "/d/EHyn7ueZk/worldping-icmp?var-probe=All&var-endpoint=${__cell}&from=${__from}&to=${__to}",
+          "linkUrl": "/d/EHyn7ueZk/worldping-icmp?var-probe=All&var-instance=${__cell}&from=${__from}&to=${__to}",
           "mappingType": 1,
           "pattern": "Metric",
           "rangeMaps": [],
@@ -496,10 +496,10 @@
       ],
       "targets": [
         {
-          "expr": "avg((sum_over_time(probe_success[$__range]) / count_over_time(probe_success[$__range])) * on (check_id, probe) group_left(endpoint) worldping_check_info{check_name=\"ping\", latitude!=\"0.000000\"}) by (endpoint)",
+          "expr": "avg((sum_over_time(probe_success[$__range]) / count_over_time(probe_success[$__range])) * on (instance, job, probe, config_version) group_left worldping_check_info{check_name=\"ping\"}) by (instance)",
           "instant": true,
           "interval": "",
-          "legendFormat": "{{endpoint}}",
+          "legendFormat": "{{instance}}",
           "refId": "C"
         }
       ],
@@ -541,13 +541,13 @@
       "styles": [
         {
           "$$hashKey": "object:375",
-          "alias": "Endpoint",
+          "alias": "instance",
           "align": "auto",
           "colorMode": null,
           "dateFormat": "YYYY-MM-DD HH:mm:ss",
           "link": true,
           "linkTooltip": "",
-          "linkUrl": "/d/rq0JrllZz/worldping-http?var-probe=All&var-endpoint=${__cell}&from=${__from}&to=${__to}",
+          "linkUrl": "/d/rq0JrllZz/worldping-http?var-probe=All&var-instance=${__cell}&from=${__from}&to=${__to}",
           "mappingType": 1,
           "pattern": "Metric",
           "rangeMaps": [],
@@ -579,9 +579,9 @@
       ],
       "targets": [
         {
-          "expr": "avg((sum_over_time(probe_success[$__range]) / count_over_time(probe_success[$__range])) * on (check_id, probe) group_left(endpoint) worldping_check_info{check_name=\"http\", latitude!=\"0.000000\"}) by (endpoint)",
+          "expr": "avg((sum_over_time(probe_success[$__range]) / count_over_time(probe_success[$__range])) * on (instance, job, probe, config_version) group_left worldping_check_info{check_name=\"http\"}) by (instance)",
           "interval": "",
-          "legendFormat": "{{endpoint}}",
+          "legendFormat": "{{instance}}",
           "refId": "C"
         }
       ],
@@ -621,5 +621,5 @@
   "timezone": "",
   "title": "worldPing Summary",
   "uid": "fU-WBSqWz",
-  "version": 11
+  "version": 14
 }
