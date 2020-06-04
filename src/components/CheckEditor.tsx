@@ -18,6 +18,7 @@ import { WorldPingDataSource } from 'datasource/DataSource';
 import { hasRole, checkType } from 'utils';
 import { PingSettingsForm } from './PingSettings';
 import { HttpSettingsForm } from './HttpSettings';
+import { DnsSettingsForm } from './DnsSettings';
 import { FormLabel, WorldpingLabelsForm } from './utils';
 
 interface TargetHelpInfo {
@@ -175,21 +176,28 @@ export class CheckEditor extends PureComponent<Props, State> {
       case CheckType.HTTP: {
         resp = {
           text: 'full url of endpoint to probe',
-          example: 'https://google.com/',
+          example: 'https://grafana.com/',
         };
         break;
       }
       case CheckType.PING: {
         resp = {
           text: 'hostname of endpoint to ping',
-          example: 'google.com',
+          example: 'grafana.com',
         };
         break;
       }
       case CheckType.DNS: {
         resp = {
           text: 'name of record to query',
-          example: 'google.com',
+          example: 'grafana.com',
+        };
+        break;
+      }
+      case CheckType.TCP: {
+        resp = {
+          text: 'host:port to connect to',
+          example: 'grafana.com:80',
         };
         break;
       }
@@ -395,6 +403,9 @@ export class CheckSettings extends PureComponent<CheckSettingsProps, CheckSettin
         return <HttpSettingsForm settings={settings} onUpdate={this.onSettingsChange} isEditor={isEditor} />;
       }
       case CheckType.DNS: {
+        return <DnsSettingsForm settings={settings} onUpdate={this.onSettingsChange} isEditor={isEditor} />;
+      }
+      case CheckType.TCP: {
         return (
           <TextArea
             value={JSON.stringify(settings[this.props.typeOfCheck], null, 2)}
