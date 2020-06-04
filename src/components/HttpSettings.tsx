@@ -13,7 +13,7 @@ import {
   Input,
 } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
-import { IpVersion, Settings, HttpSettings, HttpMethod, HttpVersion, BasicAuth, TLSConfig } from 'types';
+import { IpVersion, Settings, HttpSettings, HttpMethod, HttpVersion, BasicAuth, TLSConfig, HeaderMatch } from 'types';
 import { FormLabel, WorldpingLabelsForm } from './utils';
 import { Label as WorldpingLabel } from 'types';
 
@@ -213,6 +213,31 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
     }
     failIfBodyNotMatchesRegexp.push('');
     this.setState({ failIfBodyNotMatchesRegexp }, this.onUpdate);
+  };
+
+  onFailIfHeaderMatchesUpdate = (headerMatches: HeaderMatch[]) => {
+    let matches: HeaderMatch[] = [];
+    if (!this.state.failIfHeaderMatchesRegexp) {
+      matches = headerMatches;
+    } else {
+      headerMatches.forEach(v => {
+        matches.push(v);
+      });
+    }
+    console.log('setting failIfHeaderMatchesRegexp', matches);
+    this.setState({ failIfHeaderMatchesRegexp: matches }, this.onUpdate);
+  };
+
+  onFailIfHeaderNotMatchesUpdate = (headerMatches: HeaderMatch[]) => {
+    let matches: HeaderMatch[] = [];
+    if (!this.state.failIfHeaderNotMatchesRegexp) {
+      matches = headerMatches;
+    } else {
+      headerMatches.forEach(v => {
+        matches.push(v);
+      });
+    }
+    this.setState({ failIfHeaderNotMatchesRegexp: matches }, this.onUpdate);
   };
 
   generateValidStatusCodes() {
@@ -501,6 +526,20 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
               </Container>
             </Field>
           </HorizontalGroup>
+          <HeaderMatchForm
+            headerMatches={state.failIfHeaderMatchesRegexp || []}
+            name="Fail if header matches regexp"
+            help="Probe fails if response header matches regex. For headers with multiple values, fails if *at least one* matches"
+            onChange={this.onFailIfHeaderMatchesUpdate}
+            isEditor={isEditor}
+          />
+          <HeaderMatchForm
+            headerMatches={state.failIfHeaderNotMatchesRegexp || []}
+            name="Fail if header doesn't match regexp"
+            help="Probe fails if response header does not match regex. For headers with multiple values, fails if *none* match."
+            onChange={this.onFailIfHeaderNotMatchesUpdate}
+            isEditor={isEditor}
+          />
         </Collapse>
         <Collapse
           label="Advanced Options"
@@ -734,6 +773,148 @@ export class TLSForm extends PureComponent<TLSProps, TLSState> {
           </Field>
         </Container>
       </div>
+    );
+  }
+}
+
+interface HeaderMatchProps {
+  headerMatches: HeaderMatch[];
+  name: string;
+  help: string;
+  isEditor: boolean;
+  onChange: (headerMatches: HeaderMatch[]) => void;
+}
+
+interface HeaderMatchState {
+  headerMatches: HeaderMatch[];
+}
+
+export class HeaderMatchForm extends PureComponent<HeaderMatchProps, HeaderMatchState> {
+  state = {
+    headerMatches: this.props.headerMatches,
+  };
+
+  onUpdate = () => {
+    let matches: HeaderMatch[] = [];
+    this.state.headerMatches.forEach(v => {
+      matches.push(v);
+    });
+    this.props.onChange(this.state.headerMatches);
+  };
+
+  onHeaderChange = (index: number) => (event: React.ChangeEvent<HTMLInputElement>) => {
+    let matches: HeaderMatch[] = [];
+    this.state.headerMatches.forEach((v, i) => {
+      if (i === index) {
+        matches.push({
+          header: event.target.value,
+          regexp: v.regexp,
+          allowMissing: v.allowMissing,
+        });
+      } else {
+        matches.push(v);
+      }
+    });
+    this.setState({ headerMatches: matches }, this.onUpdate);
+  };
+
+  onRegexpChange = (index: number) => (event: React.ChangeEvent<HTMLInputElement>) => {
+    let matches: HeaderMatch[] = [];
+    this.state.headerMatches.forEach((v, i) => {
+      if (i === index) {
+        matches.push({
+          header: v.header,
+          regexp: event.target.value,
+          allowMissing: v.allowMissing,
+        });
+      } else {
+        matches.push(v);
+      }
+    });
+    this.setState({ headerMatches: matches }, this.onUpdate);
+  };
+
+  onAllowMissingChange = (index: number) => (event: React.ChangeEvent<HTMLInputElement>) => {
+    let matches: HeaderMatch[] = [];
+    this.state.headerMatches.forEach((v, i) => {
+      if (i === index) {
+        matches.push({
+          header: v.header,
+          regexp: v.regexp,
+          allowMissing: !v.allowMissing,
+        });
+      } else {
+        matches.push(v);
+      }
+    });
+    this.setState({ headerMatches: matches }, this.onUpdate);
+  };
+
+  onHeaderMatchesDelete = (index: number) => () => {
+    let matches: HeaderMatch[] = [];
+    this.state.headerMatches?.forEach((v, i) => {
+      if (i !== index) {
+        matches.push(v);
+      }
+    });
+    this.setState({ headerMatches: matches }, this.onUpdate);
+  };
+
+  onHeaderMatchesAdd = () => {
+    let matches: HeaderMatch[] = [];
+    this.state.headerMatches.forEach(v => {
+      matches.push(v);
+    });
+    matches.push({
+      header: '',
+      regexp: '',
+      allowMissing: false,
+    });
+    this.setState({ headerMatches: matches }, this.onUpdate);
+  };
+
+  render() {
+    const { headerMatches } = this.state;
+    const { isEditor, name, help } = this.props;
+
+    return (
+      <HorizontalGroup>
+        <Field label={<FormLabel name={name} help={help} />} disabled={!isEditor}>
+          <Container>
+            <List
+              items={headerMatches}
+              renderItem={(item, index) => (
+                <HorizontalGroup>
+                  <Input
+                    type="text"
+                    placeholder="header"
+                    value={item.header}
+                    onChange={this.onHeaderChange(index)}
+                    disabled={!isEditor}
+                  />
+                  <Input
+                    type="text"
+                    placeholder="regexp"
+                    value={item.regexp}
+                    onChange={this.onRegexpChange(index)}
+                    disabled={!isEditor}
+                  />
+                  <Container padding="sm">
+                    <Switch
+                      title="Allow Missing"
+                      value={item.allowMissing}
+                      onChange={this.onAllowMissingChange(index)}
+                      disabled={!isEditor}
+                    />
+                  </Container>
+                  <IconButton name="minus-circle" onClick={this.onHeaderMatchesDelete(index)} disabled={!isEditor} />
+                </HorizontalGroup>
+              )}
+            />
+            <IconButton name="plus-circle" onClick={this.onHeaderMatchesAdd} disabled={!isEditor} />
+          </Container>
+        </Field>
+      </HorizontalGroup>
     );
   }
 }
