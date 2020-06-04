@@ -8,7 +8,7 @@
     {
       "path": "dev",
       "method": "GET",
-      "url": "https://{{.JsonData.apiHost}}/api/v1/",
+      "url": "{{.JsonData.apiHost}}/api/v1/",
       "reqRole": "Viewer",
       "headers": [
         {
@@ -20,7 +20,7 @@
     {
       "path": "dev",
       "method": "POST",
-      "url": "https://{{.JsonData.apiHost}}/api/v1/",
+      "url": "{{.JsonData.apiHost}}/api/v1/",
       "reqRole": "Editor",
       "headers": [
         {
@@ -32,7 +32,7 @@
     {
       "path": "dev",
       "method": "DELETE",
-      "url": "https://{{.JsonData.apiHost}}/api/v1/",
+      "url": "{{.JsonData.apiHost}}/api/v1/",
       "reqRole": "Editor",
       "headers": [
         {

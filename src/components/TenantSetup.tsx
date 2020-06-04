@@ -26,10 +26,12 @@ interface State {
 }
 
 export class TenantSetup extends PureComponent<Props, State> {
+  defaultApiHost = 'https://worldping-api-dev.grafana.net';
+
   state: State = {
     showResetModal: false,
     resetConfig: false,
-    apiHost: 'worldping-api-dev.grafana.net',
+    apiHost: this.defaultApiHost,
     showAdvanced: false,
   };
 
@@ -173,7 +175,7 @@ export class TenantSetup extends PureComponent<Props, State> {
                 type="text"
                 width={40}
                 placeholder="worldPing backend Address"
-                value={apiHost || 'worldping-api-dev.grafana.net'}
+                value={apiHost || this.defaultApiHost}
                 onChange={this.onApiHostChange}
               />
             </HorizontalGroup>

@@ -172,12 +172,22 @@ export class WorldPingDataSource extends DataSourceApi<WorldpingQuery, Worldping
   // SETUP
   //--------------------------------------------------------------------------------
 
+  normalizeURL(url: string): string {
+    if (url.startsWith('http://')) {
+      return url;
+    } else if (url.startsWith('https://')) {
+      return url;
+    } else {
+      return 'https://' + url;
+    }
+  }
+
   async registerInit(apiHost: string, apiToken: string): Promise<RegistrationInfo> {
     const backendSrv = getBackendSrv();
     const data = {
       ...this.instanceSettings,
       jsonData: {
-        apiHost: apiHost,
+        apiHost: this.normalizeURL(apiHost),
       },
       access: 'proxy',
     };
