@@ -141,6 +141,8 @@ export class ChecksPage extends PureComponent<Props, State> {
     }
     if (addNew) {
       const template = {
+        job: 'worldping',
+        target: '',
         frequency: 60000,
         timeout: 2500,
         enabled: true,
@@ -148,7 +150,6 @@ export class ChecksPage extends PureComponent<Props, State> {
         probes: [],
         settings: {
           ping: {
-            hostname: '',
             ipVersion: IpVersion.Any,
             dontFragment: false,
           },

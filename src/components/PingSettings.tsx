@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
-import { Collapse, Container, HorizontalGroup, Field, Input, Select, Switch } from '@grafana/ui';
+import { Collapse, Container, HorizontalGroup, Field, Select, Switch } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
-import { IpVersion, Settings } from 'types';
+import { IpVersion, Settings, PingSettings } from 'types';
 import { FormLabel } from './utils';
 
 interface Props {
@@ -10,34 +10,22 @@ interface Props {
   onUpdate: (settings: Settings) => void;
 }
 
-interface State {
-  hostname: string;
-  ipVersion: IpVersion;
-  dontFragment: boolean;
-  collapseOptions: boolean;
+interface State extends PingSettings {
+  showAdvanced: boolean;
 }
 
 export class PingSettingsForm extends PureComponent<Props, State> {
   state: State = {
-    hostname: this.props.settings!.ping?.hostname || '',
     ipVersion: this.props.settings!.ping?.ipVersion || IpVersion.Any,
     dontFragment: this.props.settings!.ping?.dontFragment || false,
-    collapseOptions: false,
+    showAdvanced: false,
   };
 
   onUpdate = () => {
-    const settings = {
-      ping: {
-        hostname: this.state.hostname,
-        ipVersion: this.state.ipVersion,
-        dontFragment: this.state.dontFragment,
-      },
-    };
-    this.props.onUpdate(settings);
-  };
-
-  onHostnameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({ hostname: event.target.value }, this.onUpdate);
+    const settings = this.state as PingSettings;
+    this.props.onUpdate({
+      ping: settings,
+    });
   };
 
   onIpVersionChange = (value: SelectableValue<IpVersion>) => {
@@ -49,11 +37,11 @@ export class PingSettingsForm extends PureComponent<Props, State> {
   };
 
   onToggleOptions = (isOpen: boolean) => {
-    this.setState({ collapseOptions: !this.state.collapseOptions });
+    this.setState({ showAdvanced: !this.state.showAdvanced });
   };
 
   render() {
-    const { hostname, ipVersion, dontFragment, collapseOptions } = this.state;
+    const { ipVersion, dontFragment, showAdvanced } = this.state;
     const { isEditor } = this.props;
 
     const options = [
@@ -72,12 +60,7 @@ export class PingSettingsForm extends PureComponent<Props, State> {
     ];
     return (
       <Container>
-        <HorizontalGroup>
-          <Field label={<FormLabel name="Hostname" help="name of host to ping" />} disabled={!isEditor}>
-            <Input type="string" value={hostname} placeholder="hostname" />
-          </Field>
-        </HorizontalGroup>
-        <Collapse label="Advanced Options" collapsible={true} onToggle={this.onToggleOptions} isOpen={collapseOptions}>
+        <Collapse label="Advanced Options" collapsible={true} onToggle={this.onToggleOptions} isOpen={showAdvanced}>
           <HorizontalGroup>
             <div>
               <Field

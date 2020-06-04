@@ -12,28 +12,7 @@ export enum IpVersion {
   V6 = 'V6',
 }
 
-export enum ValidationMethod {
-  Regex = 'Regex',
-  IncludesText = 'IncludesText',
-  ExcludesText = 'ExcludesText',
-  ExactMatch = 'ExactMatch',
-}
-
-export enum ValidationSeverity {
-  Warning = 'Warning',
-  Critical = 'Critical',
-}
-
-export interface Validation {
-  severity: ValidationSeverity;
-}
-
-export interface ResponseTimeValidation extends Validation {
-  threshold: number;
-}
-
 export interface PingSettings {
-  hostname: string;
   ipVersion: IpVersion;
   dontFragment: boolean;
 }
@@ -42,7 +21,15 @@ export enum HttpMethod {
   GET = 'GET',
   HEAD = 'HEAD',
   POST = 'POST',
+  PUT = 'PUT',
   OPTIONS = 'OPTIONS',
+  DELETE = 'DELETE',
+}
+
+export enum HttpVersion {
+  HTTP1_0 = 'HTTP/1.0',
+  HTTP1_1 = 'HTTP/1.1',
+  HTTP2_0 = 'HTTP/2',
 }
 
 export enum DnsRecordType {
@@ -62,60 +49,67 @@ export enum DnsProtocol {
   UDP = 'UDP',
 }
 
-export interface HttpBodyValidation extends Validation {
-  method: ValidationMethod;
-  value: string;
-}
-
-export interface HttpHeaderValidation extends Validation {
+export interface HeaderMatch {
   header: string;
-  method: ValidationMethod;
-  value: string;
-}
-
-export interface HttpValidation {
-  responseTime?: ResponseTimeValidation;
-  body?: HttpBodyValidation;
-  header?: HttpHeaderValidation;
+  regexp: string;
+  allowMissing: boolean;
 }
 
 // HttpSettings provides the settings for a HTTP check.
 export interface HttpSettings {
-  url: string;
   method: HttpMethod;
   headers?: string[];
   body?: string;
-  downloadLimit?: number;
   ipVersion: IpVersion;
-  validateCert: boolean;
-  validation: HttpValidation[];
+  noFollowRedirects: boolean;
+  tlsConfig?: TLSConfig;
+
+  // Authentication
+  bearerToken?: string;
+  basicAuth?: BasicAuth;
+
+  // validations
+  failIfSSL?: boolean;
+  failIfNotSSL?: boolean;
+  validStatusCodes?: number[];
+  validHTTPVersions?: HttpVersion[];
+  failIfBodyMatchesRegexp?: string[];
+  failIfBodyNotMatchesRegexp?: string[];
+  failIfHeaderMatchesRegexp?: HeaderMatch[];
+  failIfHeaderNotMatchesRegexp?: HeaderMatch[];
 }
 
-export interface DnsTtlValidation extends Validation {
-  name: string;
-  value: string;
+export interface TLSConfig {
+  insecureSkipVerify: boolean;
+  caCert: string;
+  clientCert: string;
+  clientKey: string;
+  serverName: string;
 }
 
-export interface DnsTextValidation extends Validation {
-  method: ValidationMethod;
-  value: string;
+export interface BasicAuth {
+  username: string;
+  password: string;
 }
 
-export interface DnsHostValidation extends Validation {
-  host: string[];
+export interface DNSRRValidator {
+  failIfMatchesRegexp: string[];
+  failIfNotMatchesRegexp: string[];
 }
-
-export type DnsValidations = ResponseTimeValidation | DnsTtlValidation | DnsTextValidation | DnsHostValidation;
 
 // DnsSettings provides the settings for a DNS check.
 export interface DnsSettings {
-  name: string;
   recordType: DnsRecordType;
   server: string;
   ipVersion: IpVersion;
   protocol: DnsProtocol;
   port: number;
-  validation: DnsValidations[];
+
+  // validation
+  validRCodes?: string[];
+  validateAnswer?: DNSRRValidator;
+  validateAuthority?: DNSRRValidator;
+  validateAdditional?: DNSRRValidator;
 }
 
 export interface BaseObject {
@@ -141,6 +135,8 @@ export interface Probe extends BaseObject {
 }
 
 export interface Check extends BaseObject {
+  job: string;
+  target: string;
   frequency: number;
   offset?: number;
   timeout: number;

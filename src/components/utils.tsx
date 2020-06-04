@@ -4,22 +4,25 @@ import { Label as WorldpingLabel } from 'types';
 
 interface FormLabelProps {
   name: string;
-  help: string;
+  help?: string;
 }
 
 interface FormLabelState {}
 
 export class FormLabel extends PureComponent<FormLabelProps, FormLabelState> {
   render() {
+    const { help } = this.props;
     return (
       <Container margin="sm">
         {this.props.name}
-        <Tooltip content={this.props.help}>
-          <span>
-            &nbsp;
-            <Icon name="question-circle" />
-          </span>
-        </Tooltip>
+        {help && (
+          <Tooltip content={help}>
+            <span>
+              &nbsp;
+              <Icon name="question-circle" />
+            </span>
+          </Tooltip>
+        )}
       </Container>
     );
   }
@@ -74,9 +77,6 @@ export class WorldpingLabelsForm extends PureComponent<LabelsProps, LabelsState>
         <HorizontalGroup>
           <List
             items={labels}
-            getItemKey={item => {
-              return item.name;
-            }}
             renderItem={(item, index) => (
               <WorldpingLabelForm
                 onDelete={this.onDelete}
@@ -109,9 +109,16 @@ interface LabelState {
 
 export class WorldpingLabelForm extends PureComponent<LabelProps, LabelState> {
   state = {
-    name: this.props.label.name || '',
-    value: this.props.label.value || '',
+    name: this.props.label.name,
+    value: this.props.label.value,
   };
+
+  componentDidUpdate(oldProps: LabelProps) {
+    const { label, index } = this.props;
+    if (label !== oldProps.label || index !== oldProps.index) {
+      this.setState({ name: this.props.label.name, value: this.props.label.value });
+    }
+  }
 
   onNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     this.setState({ name: event.target.value }, this.onChange);
