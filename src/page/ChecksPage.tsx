@@ -63,11 +63,17 @@ export class ChecksPage extends PureComponent<Props, State> {
       .join(' ');
   }
 
+  sortChecks(checks: Check[]): Check[] {
+    return checks.sort((a, b) => b.job.localeCompare(a.job));
+  }
+
   renderCheckList() {
     const { checks } = this.state;
     if (!checks) {
       return null;
     }
+
+    const sortedChecks = this.sortChecks(checks);
 
     return (
       <div>
@@ -76,7 +82,8 @@ export class ChecksPage extends PureComponent<Props, State> {
             <Button onClick={this.onAddNew}>New</Button>
           </HorizontalGroup>
         )}
-        {checks.map(check => {
+
+        {sortedChecks.map(check => {
           const checkId: number = check.id || 0;
           if (!check.id) {
             return;
@@ -85,7 +92,9 @@ export class ChecksPage extends PureComponent<Props, State> {
           return (
             <div key={checkId} className="add-data-source-item" onClick={() => this.onSelectCheck(checkId)}>
               <div className="add-data-source-item-text-wrapper">
-                <span className="add-data-source-item-text">{checkId}</span>
+                <span className="add-data-source-item-text">
+                  {check.job} / {check.target}
+                </span>
                 <span className="add-data-source-item-desc">
                   {checkType}: {this.labelsToString(check.labels)}
                 </span>

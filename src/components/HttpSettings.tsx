@@ -795,10 +795,6 @@ export class HeaderMatchForm extends PureComponent<HeaderMatchProps, HeaderMatch
   };
 
   onUpdate = () => {
-    let matches: HeaderMatch[] = [];
-    this.state.headerMatches.forEach(v => {
-      matches.push(v);
-    });
     this.props.onChange(this.state.headerMatches);
   };
 
@@ -899,14 +895,17 @@ export class HeaderMatchForm extends PureComponent<HeaderMatchProps, HeaderMatch
                     onChange={this.onRegexpChange(index)}
                     disabled={!isEditor}
                   />
-                  <Container padding="sm">
-                    <Switch
-                      title="Allow Missing"
-                      value={item.allowMissing}
-                      onChange={this.onAllowMissingChange(index)}
-                      disabled={!isEditor}
-                    />
-                  </Container>
+                  <HorizontalGroup>
+                    <span>Allow Missing</span>
+                    <Container padding="sm">
+                      <Switch
+                        title="Allow Missing"
+                        value={item.allowMissing}
+                        onChange={this.onAllowMissingChange(index)}
+                        disabled={!isEditor}
+                      />
+                    </Container>
+                  </HorizontalGroup>
                   <IconButton name="minus-circle" onClick={this.onHeaderMatchesDelete(index)} disabled={!isEditor} />
                 </HorizontalGroup>
               )}
