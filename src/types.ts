@@ -116,7 +116,7 @@ export interface TcpSettings {
   ipVersion: IpVersion;
   tls: boolean;
   tlsConfig?: TLSConfig;
-  queryResposne?: TCPQueryResponse[];
+  queryResponse?: TCPQueryResponse[];
 }
 
 export interface TCPQueryResponse {

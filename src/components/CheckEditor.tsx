@@ -7,7 +7,6 @@ import {
   Input,
   HorizontalGroup,
   Switch,
-  TextArea,
   MultiSelect,
   Select,
   Legend,
@@ -19,6 +18,7 @@ import { hasRole, checkType } from 'utils';
 import { PingSettingsForm } from './PingSettings';
 import { HttpSettingsForm } from './HttpSettings';
 import { DnsSettingsForm } from './DnsSettings';
+import { TcpSettingsForm } from './TcpSettings';
 import { FormLabel, WorldpingLabelsForm } from './utils';
 
 interface TargetHelpInfo {
@@ -231,6 +231,10 @@ export class CheckEditor extends PureComponent<Props, State> {
         label: 'DNS',
         value: CheckType.DNS,
       },
+      {
+        label: 'TCP',
+        value: CheckType.TCP,
+      },
     ];
 
     return (
@@ -406,14 +410,7 @@ export class CheckSettings extends PureComponent<CheckSettingsProps, CheckSettin
         return <DnsSettingsForm settings={settings} onUpdate={this.onSettingsChange} isEditor={isEditor} />;
       }
       case CheckType.TCP: {
-        return (
-          <TextArea
-            value={JSON.stringify(settings[this.props.typeOfCheck], null, 2)}
-            onChange={this.onJsonChange}
-            rows={20}
-            disabled={!isEditor}
-          />
-        );
+        return <TcpSettingsForm settings={settings} onUpdate={this.onSettingsChange} isEditor={isEditor} />;
       }
     }
   }
