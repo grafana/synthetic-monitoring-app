@@ -107,9 +107,22 @@ export interface DnsSettings {
 
   // validation
   validRCodes?: string[];
-  validateAnswer?: DNSRRValidator;
-  validateAuthority?: DNSRRValidator;
-  validateAdditional?: DNSRRValidator;
+  validateAnswerRRS?: DNSRRValidator;
+  validateAuthorityRRS?: DNSRRValidator;
+  validateAdditionalRRS?: DNSRRValidator;
+}
+
+export interface TcpSettings {
+  ipVersion: IpVersion;
+  tls: boolean;
+  tlsConfig?: TLSConfig;
+  queryResposne?: TCPQueryResponse[];
+}
+
+export interface TCPQueryResponse {
+  send: string;
+  expect: string;
+  startTLS: boolean;
 }
 
 export interface BaseObject {
@@ -153,12 +166,14 @@ export interface Settings {
   http?: HttpSettings;
   ping?: PingSettings;
   dns?: DnsSettings;
+  tcp?: TcpSettings;
 }
 
 export enum CheckType {
   HTTP = 'http',
   PING = 'ping',
   DNS = 'dns',
+  TCP = 'tcp',
 }
 
 export interface HostedInstance {
