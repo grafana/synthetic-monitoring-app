@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import { Collapse, Container, HorizontalGroup, Field, Select, Switch } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
 import { IpVersion, Settings, PingSettings } from 'types';
-import { FormLabel } from './utils';
+import { FormLabel, IpOptions } from './utils';
 
 interface Props {
   settings: Settings;
@@ -16,7 +16,7 @@ interface State extends PingSettings {
 
 export class PingSettingsForm extends PureComponent<Props, State> {
   state: State = {
-    ipVersion: this.props.settings!.ping?.ipVersion || IpVersion.Any,
+    ipVersion: this.props.settings!.ping?.ipVersion || IpVersion.V4,
     dontFragment: this.props.settings!.ping?.dontFragment || false,
     showAdvanced: false,
   };
@@ -44,20 +44,6 @@ export class PingSettingsForm extends PureComponent<Props, State> {
     const { ipVersion, dontFragment, showAdvanced } = this.state;
     const { isEditor } = this.props;
 
-    const options = [
-      {
-        label: 'Any',
-        value: IpVersion.Any,
-      },
-      {
-        label: 'V4',
-        value: IpVersion.V4,
-      },
-      {
-        label: 'V6',
-        value: IpVersion.V6,
-      },
-    ];
     return (
       <Container>
         <Collapse label="Advanced Options" collapsible={true} onToggle={this.onToggleOptions} isOpen={showAdvanced}>
@@ -67,7 +53,7 @@ export class PingSettingsForm extends PureComponent<Props, State> {
                 label={<FormLabel name="IP Version" help="The IP protocol of the ICMP request" />}
                 disabled={!isEditor}
               >
-                <Select value={ipVersion} options={options} onChange={this.onIpVersionChange} />
+                <Select value={ipVersion} options={IpOptions} onChange={this.onIpVersionChange} />
               </Field>
             </div>
             <div>

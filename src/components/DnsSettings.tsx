@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import { Collapse, Container, HorizontalGroup, Field, Select, MultiSelect, Input, List, IconButton } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
 import { IpVersion, Settings, DnsSettings, DnsProtocol, DnsRecordType, DNSRRValidator } from 'types';
-import { FormLabel } from './utils';
+import { FormLabel, IpOptions } from './utils';
 
 interface Props {
   settings: Settings;
@@ -21,7 +21,7 @@ export class DnsSettingsForm extends PureComponent<Props, State> {
     showAdvanced: false,
     recordType: this.props.settings!.dns?.recordType || DnsRecordType.A,
     server: this.props.settings!.dns?.server || '8.8.8.8',
-    ipVersion: this.props.settings!.dns?.ipVersion || IpVersion.Any,
+    ipVersion: this.props.settings!.dns?.ipVersion || IpVersion.V4,
     protocol: this.props.settings!.dns?.protocol || DnsProtocol.UDP,
     port: this.props.settings!.dns?.port || 53,
 
@@ -129,21 +129,6 @@ export class DnsSettingsForm extends PureComponent<Props, State> {
       validateAdditionalRRS,
     } = this.state;
     const { isEditor } = this.props;
-
-    const ipOptions = [
-      {
-        label: 'Any',
-        value: IpVersion.Any,
-      },
-      {
-        label: 'V4',
-        value: IpVersion.V4,
-      },
-      {
-        label: 'V6',
-        value: IpVersion.V6,
-      },
-    ];
 
     const recordTypes = [
       {
@@ -253,7 +238,7 @@ export class DnsSettingsForm extends PureComponent<Props, State> {
                 label={<FormLabel name="IP Version" help="The IP protocol of the ICMP request" />}
                 disabled={!isEditor}
               >
-                <Select value={ipVersion} options={ipOptions} onChange={this.onIpVersionChange} />
+                <Select value={ipVersion} options={IpOptions} onChange={this.onIpVersionChange} />
               </Field>
             </div>
           </HorizontalGroup>
