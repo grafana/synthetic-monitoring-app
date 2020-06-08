@@ -14,7 +14,7 @@ import {
 import { SelectableValue } from '@grafana/data';
 import { Check, Label as WorldpingLabel, Settings, CheckType, Probe, OrgRole } from 'types';
 import { WorldPingDataSource } from 'datasource/DataSource';
-import { hasRole, checkType } from 'utils';
+import { hasRole, checkType, defaultSettings } from 'utils';
 import { PingSettingsForm } from './PingSettings';
 import { HttpSettingsForm } from './HttpSettings';
 import { DnsSettingsForm } from './DnsSettings';
@@ -106,11 +106,13 @@ export class CheckEditor extends PureComponent<Props, State> {
     if (!type.value) {
       return;
     }
-    let settings: Settings = {};
-    settings[type.value] = undefined;
+    const typeOfCheck = type.value;
+    const settings = defaultSettings(typeOfCheck);
+    if (!settings) {
+      return;
+    }
     check.settings = settings;
 
-    const typeOfCheck = checkType(check.settings);
     const targetHelp = this.targetHelpText(typeOfCheck);
     this.setState({ check, targetHelp, typeOfCheck });
   };

@@ -3,7 +3,17 @@ import { DataSourceInstanceSettings, DataSourceSettings } from '@grafana/data';
 import { WorldpingOptions } from './datasource/types';
 
 import { config, getBackendSrv } from '@grafana/runtime';
-import { HostedInstance, User, OrgRole, CheckType, Settings } from 'types';
+import {
+  HostedInstance,
+  User,
+  OrgRole,
+  CheckType,
+  Settings,
+  IpVersion,
+  HttpMethod,
+  DnsRecordType,
+  DnsProtocol,
+} from 'types';
 
 /**
  * Find all worldping datasources
@@ -104,4 +114,45 @@ export function checkType(settings: Settings): CheckType {
     return CheckType.HTTP;
   }
   return types[0] as CheckType;
+}
+
+export function defaultSettings(t: CheckType): Settings | undefined {
+  switch (t) {
+    case CheckType.HTTP: {
+      return {
+        http: {
+          method: HttpMethod.GET,
+          ipVersion: IpVersion.V4,
+          noFollowRedirects: false,
+        },
+      };
+    }
+    case CheckType.PING: {
+      return {
+        ping: {
+          ipVersion: IpVersion.V4,
+          dontFragment: false,
+        },
+      };
+    }
+    case CheckType.DNS: {
+      return {
+        dns: {
+          recordType: DnsRecordType.A,
+          server: '8.8.8.8',
+          ipVersion: IpVersion.V4,
+          protocol: DnsProtocol.UDP,
+          port: 53,
+        },
+      };
+    }
+    case CheckType.TCP: {
+      return {
+        tcp: {
+          ipVersion: IpVersion.V4,
+          tls: false,
+        },
+      };
+    }
+  }
 }
