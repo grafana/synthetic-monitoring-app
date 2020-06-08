@@ -760,7 +760,7 @@
       ],
       "timeFrom": null,
       "timeShift": null,
-      "title": "logs for $probe: $instance",
+      "title": "Error logs for $probe: $instance",
       "type": "logs"
     }
   ],
