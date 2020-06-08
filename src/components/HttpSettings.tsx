@@ -14,7 +14,7 @@ import {
 } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
 import { IpVersion, Settings, HttpSettings, HttpMethod, HttpVersion, BasicAuth, TLSConfig, HeaderMatch } from 'types';
-import { FormLabel, WorldpingLabelsForm } from './utils';
+import { FormLabel, WorldpingLabelsForm, IpOptions } from './utils';
 import { Label as WorldpingLabel } from 'types';
 
 interface Props {
@@ -35,7 +35,7 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
     method: this.props.settings.http?.method || HttpMethod.GET,
     body: this.props.settings.http?.body,
     headers: this.props.settings.http?.headers,
-    ipVersion: this.props.settings.http?.ipVersion || IpVersion.Any,
+    ipVersion: this.props.settings.http?.ipVersion || IpVersion.V4,
     noFollowRedirects: this.props.settings.http?.noFollowRedirects || false,
 
     // validations
@@ -307,20 +307,6 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
     const { state } = this;
     const { isEditor } = this.props;
 
-    const ipOptions = [
-      {
-        label: 'Any',
-        value: IpVersion.Any,
-      },
-      {
-        label: 'V4',
-        value: IpVersion.V4,
-      },
-      {
-        label: 'V6',
-        value: IpVersion.V6,
-      },
-    ];
     const httpVersionOptions = [
       {
         label: 'HTTP/1.0',
@@ -553,7 +539,7 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
                 label={<FormLabel name="IP Version" help="The IP protocol of the ICMP request" />}
                 disabled={!isEditor}
               >
-                <Select value={state.ipVersion} options={ipOptions} onChange={this.onIpVersionChange} />
+                <Select value={state.ipVersion} options={IpOptions} onChange={this.onIpVersionChange} />
               </Field>
             </div>
             <div>

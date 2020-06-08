@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react';
 import { Tooltip, Icon, Container, IconButton, HorizontalGroup, List, Input } from '@grafana/ui';
-import { Label as WorldpingLabel } from 'types';
+import { Label as WorldpingLabel, IpVersion } from 'types';
 
 interface FormLabelProps {
   name: string;
@@ -149,3 +149,18 @@ export class WorldpingLabelForm extends PureComponent<LabelProps, LabelState> {
     );
   }
 }
+
+export const IpOptions = [
+  {
+    label: 'Any',
+    value: IpVersion.Any,
+  },
+  {
+    label: 'V4',
+    value: IpVersion.V4,
+  },
+  {
+    label: 'V6',
+    value: IpVersion.V6,
+  },
+];

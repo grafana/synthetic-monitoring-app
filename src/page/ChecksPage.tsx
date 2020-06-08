@@ -159,7 +159,7 @@ export class ChecksPage extends PureComponent<Props, State> {
         probes: [],
         settings: {
           ping: {
-            ipVersion: IpVersion.Any,
+            ipVersion: IpVersion.V4,
             dontFragment: false,
           },
         },

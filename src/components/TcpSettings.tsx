@@ -13,7 +13,7 @@ import {
 } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
 import { IpVersion, Settings, TcpSettings, TLSConfig, TCPQueryResponse } from 'types';
-import { FormLabel } from './utils';
+import { FormLabel, IpOptions } from './utils';
 import { TLSForm } from './HttpSettings';
 
 interface Props {
@@ -35,7 +35,7 @@ queryResponse?: TCPQueryResponse[];
 */
 export class TcpSettingsForm extends PureComponent<Props, State> {
   state: State = {
-    ipVersion: this.props.settings!.tcp?.ipVersion || IpVersion.Any,
+    ipVersion: this.props.settings!.tcp?.ipVersion || IpVersion.V4,
     tls: this.props.settings!.tcp?.tls || false,
     tlsConfig: this.props.settings!.tcp?.tlsConfig,
     queryResponse: this.props.settings!.tcp?.queryResponse,
@@ -92,20 +92,6 @@ export class TcpSettingsForm extends PureComponent<Props, State> {
     const { ipVersion, tls, showTLS, showQueryResponse, showAdvanced, tlsConfig, queryResponse } = this.state;
     const { isEditor } = this.props;
 
-    const options = [
-      {
-        label: 'Any',
-        value: IpVersion.Any,
-      },
-      {
-        label: 'V4',
-        value: IpVersion.V4,
-      },
-      {
-        label: 'V6',
-        value: IpVersion.V6,
-      },
-    ];
     return (
       <Container>
         <Field
@@ -140,7 +126,7 @@ export class TcpSettingsForm extends PureComponent<Props, State> {
                 label={<FormLabel name="IP Version" help="The IP protocol of the ICMP request" />}
                 disabled={!isEditor}
               >
-                <Select value={ipVersion} options={options} onChange={this.onIpVersionChange} />
+                <Select value={ipVersion} options={IpOptions} onChange={this.onIpVersionChange} />
               </Field>
             </div>
           </HorizontalGroup>
