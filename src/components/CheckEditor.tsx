@@ -20,6 +20,7 @@ import { HttpSettingsForm } from './HttpSettings';
 import { DnsSettingsForm } from './DnsSettings';
 import { TcpSettingsForm } from './TcpSettings';
 import { FormLabel, WorldpingLabelsForm } from './utils';
+import * as Validation from 'validation';
 
 interface TargetHelpInfo {
   text?: string;
@@ -244,7 +245,7 @@ export class CheckEditor extends PureComponent<Props, State> {
         <Legend>{legend}</Legend>
         <Container margin="md">
           <HorizontalGroup>
-            <Field label={<FormLabel name="Check Type" />} disabled={check.id ? true : false}>
+            <Field label={<FormLabel name="Check Type" />} disabled={check.id ? true : false} required={true}>
               <Select value={typeOfCheck} options={checkTypes} onChange={this.onSetType} />
             </Field>
             <Field
@@ -255,16 +256,22 @@ export class CheckEditor extends PureComponent<Props, State> {
                 />
               }
               disabled={!isEditor}
+              invalid={!Validation.validateJob(check.job)}
             >
-              <Input type="string" placeholder="job" value={check.job} onChange={this.onJobUpdate} />
+              <Input type="string" placeholder="job" value={check.job} onChange={this.onJobUpdate} required={true} />
             </Field>
-            <Field label={<FormLabel name="Target" help={targetHelp.text} />} disabled={!isEditor}>
+            <Field
+              label={<FormLabel name="Target" help={targetHelp.text} />}
+              disabled={!isEditor}
+              invalid={!Validation.validateTarget(check.target)}
+            >
               <Input
                 type="string"
                 placeholder={targetHelp.example}
                 value={check.target}
                 onChange={this.onTargetUpdate}
                 width={60}
+                required={true}
               />
             </Field>
             <Field label={<FormLabel name="Enabled" help="whether this check should run." />} disabled={!isEditor}>
@@ -280,27 +287,34 @@ export class CheckEditor extends PureComponent<Props, State> {
             <Field
               label={<FormLabel name="Frequency" help="How frequently the check will run." />}
               disabled={!isEditor}
+              invalid={!Validation.validateFrequency(check.frequency)}
             >
               <Input
                 label="Frequency"
                 type="number"
+                step={10}
                 placeholder="60"
                 value={check!.frequency / 1000 || 60}
                 onChange={this.onFrequencyUpdate}
                 suffix="seconds"
-                max={600}
+                max={120}
                 min={10}
               />
             </Field>
-            <Field label={<FormLabel name="Timeout" help="maximum execution time for a check" />} disabled={!isEditor}>
+            <Field
+              label={<FormLabel name="Timeout" help="maximum execution time for a check" />}
+              disabled={!isEditor}
+              invalid={!Validation.validateTimeout(check.timeout)}
+            >
               <Input
                 label="Timeout"
                 type="number"
+                step={0.1}
                 placeholder="5"
                 value={check!.timeout / 1000 || 5}
                 onChange={this.onTimeoutUpdate}
                 suffix="seconds"
-                max={60}
+                max={10}
                 min={1}
               />
             </Field>
@@ -330,7 +344,7 @@ export class CheckEditor extends PureComponent<Props, State> {
         </Container>
         <Container margin="md">
           <HorizontalGroup>
-            <Button onClick={this.onSave} disabled={!isEditor}>
+            <Button onClick={this.onSave} disabled={!isEditor || !Validation.validateCheck(check)}>
               Save
             </Button>
             {check.id && (
@@ -475,7 +489,13 @@ export class CheckProbes extends PureComponent<CheckProbesProps, CheckProbesStat
 
     return (
       <div>
-        <MultiSelect options={options} value={selectedProbes} onChange={this.onChange} disabled={!isEditor} />
+        <MultiSelect
+          options={options}
+          value={selectedProbes}
+          onChange={this.onChange}
+          disabled={!isEditor}
+          invalid={!Validation.validateProbes(probes)}
+        />
       </div>
     );
   }

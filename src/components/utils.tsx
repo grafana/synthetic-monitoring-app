@@ -1,6 +1,7 @@
 import React, { PureComponent } from 'react';
 import { Tooltip, Icon, Container, IconButton, HorizontalGroup, List, Input } from '@grafana/ui';
 import { Label as WorldpingLabel, IpVersion } from 'types';
+import * as Validation from 'validation';
 
 interface FormLabelProps {
   name: string;
@@ -142,8 +143,22 @@ export class WorldpingLabelForm extends PureComponent<LabelProps, LabelState> {
     console.log('rendering label with name:', name);
     return (
       <HorizontalGroup>
-        <Input type="text" placeholder="name" value={name} onChange={this.onNameChange} disabled={!isEditor} />
-        <Input type="text" placeholder="value" value={value} onChange={this.onValueChange} disabled={!isEditor} />
+        <Input
+          type="text"
+          placeholder="name"
+          value={name}
+          onChange={this.onNameChange}
+          disabled={!isEditor}
+          invalid={!Validation.validateLabelName(name)}
+        />
+        <Input
+          type="text"
+          placeholder="value"
+          value={value}
+          onChange={this.onValueChange}
+          disabled={!isEditor}
+          invalid={!Validation.validateLabelValue(value)}
+        />
         <IconButton name="minus-circle" onClick={this.onDelete} disabled={!isEditor} />
       </HorizontalGroup>
     );
