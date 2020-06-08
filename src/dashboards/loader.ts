@@ -3,7 +3,9 @@ import { DashboardInfo, FolderInfo, WorldpingOptions } from 'datasource/types';
 
 export const dashboardPaths = [
   'worldping-http.json', // The path
-  'worldping-icmp.json',
+  'worldping-ping.json',
+  'worldping-dns.json',
+  'worldping-tcp.json',
   'worldping-summary.json',
 ];
 
@@ -51,7 +53,6 @@ export async function listAppDashboards(): Promise<DashboardInfo[]> {
   const backendSrv = getBackendSrv();
   let dashboards: DashboardInfo[] = [];
   for (const p of dashboardPaths) {
-    console.log('fetching dashboard', p);
     const json = await backendSrv.get(`public/plugins/grafana-worldping-app/dashboards/${p}`);
 
     const dInfo = {
@@ -61,7 +62,6 @@ export async function listAppDashboards(): Promise<DashboardInfo[]> {
       version: 0,
       latestVersion: json.version,
     };
-    console.log('dashboard', dInfo);
     dashboards.push(dInfo);
   }
   return dashboards;

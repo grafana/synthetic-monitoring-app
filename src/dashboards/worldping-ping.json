@@ -22,7 +22,7 @@
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "7.1.0-cd0c4dbcpre"
+      "version": "7.0.3"
     },
     {
       "type": "panel",
@@ -59,18 +59,11 @@
       "id": "stat",
       "name": "Stat",
       "version": ""
-    },
-    {
-      "type": "panel",
-      "id": "table-old",
-      "name": "Table (old)",
-      "version": ""
     }
   ],
   "annotations": {
     "list": [
       {
-        "$$hashKey": "object:1066",
         "builtIn": 1,
         "datasource": "-- Grafana --",
         "enable": true,
@@ -85,7 +78,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": null,
-  "iteration": 1589382921916,
+  "iteration": 1591625960879,
   "links": [],
   "panels": [
     {
@@ -131,11 +124,11 @@
         "latitudeField": "latitude",
         "longitudeField": "longitude",
         "metricField": "Value",
-        "queryType": "coordinates"
+        "queryType": "geohash"
       },
       "targets": [
         {
-          "expr": "100-(100 * avg((sum_over_time(probe_success{instance=\"$instance\"}[$__range]) / count_over_time(probe_success{instance=\"$instance\"}[$__range])) * on (instance, job, probe) group_left(latitude, longitude, geohash) worldping_check_info{check_name=\"ping\", instance=\"$instance\"}) by (probe, latitude, longitude, geohash))",
+          "expr": "100*(1 - (sum(rate(probe_success_sum{instance=\"$instance\", job=\"$job\"}[$__range]) *  on (instance, job, probe, config_version) group_left(geohash) worldping_check_info{check_name=\"ping\", instance=\"$instance\", job=\"$job\"}) by (probe, geohash)/ sum(rate(probe_success_count{instance=\"$instance\", job=\"$job\"}[$__range]) *  on (instance, job, probe, config_version) group_left(geohash) worldping_check_info{check_name=\"ping\", instance=\"$instance\", job=\"$job\"}) by (probe, geohash)))",
           "format": "table",
           "instant": true,
           "interval": "",
@@ -162,7 +155,6 @@
           "decimals": 2,
           "mappings": [
             {
-              "$$hashKey": "object:894",
               "id": 0,
               "op": "=",
               "text": "N/A",
@@ -194,7 +186,7 @@
       },
       "gridPos": {
         "h": 2,
-        "w": 5,
+        "w": 3,
         "x": 14,
         "y": 0
       },
@@ -214,13 +206,14 @@
           "calcs": [
             "mean"
           ],
+          "fields": "",
           "values": false
         }
       },
-      "pluginVersion": "7.1.0-cd0c4dbcpre",
+      "pluginVersion": "7.0.3",
       "targets": [
         {
-          "expr": "avg((sum_over_time(probe_success{probe=~\"$probe\", instance=\"$instance\"}[$__range]) *  on (instance, job, probe, config_version) worldping_check_info{check_name=\"ping\", instance=\"$instance\", probe=~\"$probe\"}) / (count_over_time(probe_success{probe=~\"$probe\", instance=\"$instance\"}[$__range]) *  on (instance, job, probe, config_version) worldping_check_info{check_name=\"ping\", instance=\"$instance\", probe=~\"$probe\"}))",
+          "expr": "sum(rate(probe_success_sum{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__range])) / sum(rate(probe_success_count{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__range]))",
           "hide": false,
           "instant": false,
           "interval": "",
@@ -238,13 +231,84 @@
       "datasource": "${DS_WORLDPING_METRICS}",
       "fieldConfig": {
         "defaults": {
+          "custom": {},
+          "decimals": 2,
+          "mappings": [],
+          "nullValueMode": "connected",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 2
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 2,
+        "w": 4,
+        "x": 17,
+        "y": 0
+      },
+      "id": 30,
+      "links": [],
+      "options": {
+        "colorMode": "value",
+        "fieldOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "pluginVersion": "7.0.3",
+      "targets": [
+        {
+          "expr": "sum(rate(probe_duration_seconds_sum{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__range])) / sum(rate(probe_duration_seconds_count{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__range]))",
+          "hide": false,
+          "instant": true,
+          "interval": "",
+          "legendFormat": "",
+          "refId": "B"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Average Latency",
+      "type": "stat"
+    },
+    {
+      "cacheTimeout": null,
+      "datasource": "${DS_WORLDPING_METRICS}",
+      "fieldConfig": {
+        "defaults": {
           "custom": {
             "align": null
           },
           "decimals": 0,
           "mappings": [
             {
-              "$$hashKey": "object:2714",
               "id": 0,
               "op": "=",
               "text": "N/A",
@@ -268,8 +332,8 @@
       },
       "gridPos": {
         "h": 2,
-        "w": 5,
-        "x": 19,
+        "w": 3,
+        "x": 21,
         "y": 0
       },
       "id": 17,
@@ -288,10 +352,11 @@
           "calcs": [
             "last"
           ],
+          "fields": "",
           "values": false
         }
       },
-      "pluginVersion": "7.1.0-cd0c4dbcpre",
+      "pluginVersion": "7.0.3",
       "targets": [
         {
           "expr": "sum(topk(1,worldping_check_info{probe=~\"$probe\", instance=\"$instance\", check_name=\"ping\"})) by (frequency)",
@@ -325,6 +390,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "${DS_WORLDPING_METRICS}",
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "custom": {}
@@ -341,7 +407,7 @@
       },
       "hiddenSeries": false,
       "id": 8,
-      "interval": "",
+      "interval": "5m",
       "legend": {
         "avg": false,
         "current": false,
@@ -353,7 +419,6 @@
       },
       "lines": true,
       "linewidth": 0,
-      "maxDataPoints": "200",
       "nullPointMode": "null",
       "options": {
         "dataLinks": []
@@ -368,7 +433,8 @@
       "steppedLine": true,
       "targets": [
         {
-          "expr": "1 - sum(sum_over_time(probe_success{probe=~\"$probe\", instance=\"$instance\"}[$__interval]) *  on (instance, job, probe, config_version) worldping_check_info{check_name=\"ping\",instance=\"$instance\", probe=~\"$probe\"}) / (sum(count_over_time(probe_success{probe=~\"$probe\", instance=\"$instance\"}[$__interval]) *  on (instance, job, probe, config_version) worldping_check_info{check_name=\"ping\",instance=\"$instance\", probe=~\"$probe\"}))",
+          "expr": "100*(1-(sum(rate(probe_success_sum{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__interval])) / sum(rate(probe_success_count{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__interval]))))",
+          "hide": false,
           "interval": "",
           "legendFormat": "errors",
           "refId": "A"
@@ -378,7 +444,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Error Rate : $probe ⮕ $endpoint",
+      "title": "Error Rate : $probe ⮕ $job / $instance",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -394,17 +460,15 @@
       },
       "yaxes": [
         {
-          "$$hashKey": "object:353",
           "decimals": null,
-          "format": "percentunit",
+          "format": "percent",
           "label": "",
           "logBase": 1,
-          "max": "1",
+          "max": "100",
           "min": "0",
           "show": true
         },
         {
-          "$$hashKey": "object:354",
           "format": "short",
           "label": null,
           "logBase": 1,
@@ -433,8 +497,8 @@
       "fill": 10,
       "fillGradient": 0,
       "gridPos": {
-        "h": 6,
-        "w": 19,
+        "h": 7,
+        "w": 12,
         "x": 0,
         "y": 9
       },
@@ -465,27 +529,22 @@
       "repeatDirection": null,
       "seriesOverrides": [
         {
-          "$$hashKey": "object:1071",
           "alias": "transfer",
           "zindex": 3
         },
         {
-          "$$hashKey": "object:1082",
           "alias": "processing",
           "zindex": 2
         },
         {
-          "$$hashKey": "object:1089",
           "alias": "tls",
           "zindex": 1
         },
         {
-          "$$hashKey": "object:1096",
           "alias": "connect",
           "zindex": 0
         },
         {
-          "$$hashKey": "object:1103",
           "alias": "resolve",
           "zindex": -1
         }
@@ -495,7 +554,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "avg(probe_icmp_duration_seconds{probe=~\"$probe\", instance=\"$instance\"}) by (phase)",
+          "expr": "avg(probe_icmp_duration_seconds{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}) by (phase)",
           "instant": false,
           "interval": "",
           "intervalFactor": 1,
@@ -507,7 +566,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Response Latency: $probe ⮕ $endpoint",
+      "title": "Response Latency: $probe ⮕ $job / $instance",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -548,81 +607,6 @@
       }
     },
     {
-      "columns": [
-        {
-          "$$hashKey": "object:1134",
-          "text": "Current",
-          "value": "current"
-        }
-      ],
-      "datasource": "${DS_WORLDPING_METRICS}",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
-        "overrides": []
-      },
-      "fontSize": "100%",
-      "gridPos": {
-        "h": 12,
-        "w": 5,
-        "x": 19,
-        "y": 9
-      },
-      "id": 24,
-      "pageSize": null,
-      "showHeader": true,
-      "sort": {
-        "col": 1,
-        "desc": true
-      },
-      "styles": [
-        {
-          "$$hashKey": "object:1136",
-          "alias": "Probe",
-          "align": "auto",
-          "dateFormat": "YYYY-MM-DD HH:mm:ss",
-          "link": true,
-          "linkTooltip": "",
-          "linkUrl": "/d/${__dashboard.uid}/${__dashboard.name}?var-probe=${__cell}&var-instance=$instance",
-          "mappingType": 1,
-          "pattern": "Metric",
-          "rangeMaps": [],
-          "type": "string",
-          "valueMaps": []
-        },
-        {
-          "$$hashKey": "object:1137",
-          "alias": "Error Percent",
-          "align": "right",
-          "colorMode": null,
-          "colors": [
-            "rgba(245, 54, 54, 0.9)",
-            "rgba(237, 129, 40, 0.89)",
-            "rgba(50, 172, 45, 0.97)"
-          ],
-          "decimals": 2,
-          "pattern": "Current",
-          "thresholds": [],
-          "type": "number",
-          "unit": "percentunit"
-        }
-      ],
-      "targets": [
-        {
-          "expr": "1 - max((sum_over_time(probe_success{instance=\"$instance\"}[$__range]) / count_over_time(probe_success{instance=\"$instance\"}[$__range])) * on (instance, job, probe) group_left(label_country) worldping_check_info{check_name=\"ping\",instance=\"$instance\"}) by (probe, label_country)",
-          "interval": "",
-          "legendFormat": "{{probe}} ({{ label_country }})",
-          "refId": "C"
-        }
-      ],
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "Probes",
-      "transform": "timeseries_aggregations",
-      "type": "table-old"
-    },
-    {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
@@ -637,10 +621,10 @@
       "fill": 10,
       "fillGradient": 0,
       "gridPos": {
-        "h": 6,
-        "w": 19,
-        "x": 0,
-        "y": 15
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 9
       },
       "hiddenSeries": false,
       "id": 29,
@@ -670,27 +654,22 @@
       "repeatDirection": null,
       "seriesOverrides": [
         {
-          "$$hashKey": "object:1071",
           "alias": "transfer",
           "zindex": 3
         },
         {
-          "$$hashKey": "object:1082",
           "alias": "processing",
           "zindex": 2
         },
         {
-          "$$hashKey": "object:1089",
           "alias": "tls",
           "zindex": 1
         },
         {
-          "$$hashKey": "object:1096",
           "alias": "connect",
           "zindex": 0
         },
         {
-          "$$hashKey": "object:1103",
           "alias": "resolve",
           "zindex": -1
         }
@@ -700,7 +679,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "avg(probe_duration_seconds{probe=~\"$probe\", instance=\"$instance\"} * on (instance, job,probe,config_version) group_left worldping_check_info{check_name=\"ping\",probe=~\"$probe\",instance=\"$instance\"}) by (probe)",
+          "expr": "avg(probe_duration_seconds{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"} * on (instance, job,probe,config_version) group_left probe_success{probe=~\"$probe\",instance=\"$instance\", job=\"$job\"} > 0) by (probe)",
           "instant": false,
           "interval": "",
           "intervalFactor": 1,
@@ -764,7 +743,7 @@
         "h": 13,
         "w": 24,
         "x": 0,
-        "y": 21
+        "y": 16
       },
       "id": 15,
       "options": {
@@ -775,13 +754,13 @@
       },
       "targets": [
         {
-          "expr": "{probe=~\"$probe\",instance=\"$instance\", probe_success=\"0\"}",
+          "expr": "{probe=~\"$probe\",instance=\"$instance\", job=\"$job\", probe_success=\"0\"}",
           "refId": "A"
         }
       ],
       "timeFrom": null,
       "timeShift": null,
-      "title": "logs for $probe: $endpoint",
+      "title": "logs for $probe: $instance",
       "type": "logs"
     }
   ],
@@ -819,14 +798,36 @@
         "allValue": null,
         "current": {},
         "datasource": "${DS_WORLDPING_METRICS}",
-        "definition": "label_values(worldping_check_info{check_name=\"ping\"},instance)",
+        "definition": "label_values(worldping_check_info{check_name=\"ping\", probe=~\"$probe\"},job)",
+        "hide": 0,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "job",
+        "options": [],
+        "query": "label_values(worldping_check_info{check_name=\"ping\", probe=~\"$probe\"},job)",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {},
+        "datasource": "${DS_WORLDPING_METRICS}",
+        "definition": "label_values(worldping_check_info{check_name=\"ping\", job=\"$job\", probe=~\"$probe\"},instance)",
         "hide": 0,
         "includeAll": false,
         "label": null,
         "multi": false,
         "name": "instance",
         "options": [],
-        "query": "label_values(worldping_check_info{check_name=\"ping\"},instance)",
+        "query": "label_values(worldping_check_info{check_name=\"ping\", job=\"$job\", probe=~\"$probe\"},instance)",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -857,7 +858,7 @@
     ]
   },
   "timezone": "",
-  "title": "worldPing ICMP",
+  "title": "worldPing Ping",
   "uid": "EHyn7ueZk",
-  "version": 18
+  "version": 21
 }

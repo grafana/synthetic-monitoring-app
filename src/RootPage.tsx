@@ -6,8 +6,8 @@ import { NavModelItem, AppRootProps, DataSourceInstanceSettings } from '@grafana
 import { GlobalSettings, RegistrationInfo, GrafanaInstances, OrgRole } from './types';
 import { WorldPingDataSource } from 'datasource/DataSource';
 import { findWorldPingDataSources, createNewWorldpingInstance, hasRole } from 'utils';
-import { WorldpingOptions } from 'datasource/types';
-import { getDataSourceSrv } from '@grafana/runtime';
+import { WorldpingOptions, DashboardInfo } from 'datasource/types';
+import { getDataSourceSrv, getLocationSrv } from '@grafana/runtime';
 import { TenantSetup } from './components/TenantSetup';
 import { TenantView } from 'components/TenantView';
 import { DashboardList } from 'components/DashboardList';
@@ -78,7 +78,29 @@ export class RootPage extends PureComponent<Props, State> {
     const { path, onNavChanged, query, meta } = this.props;
     const selected = query.page || 'status';
     const tabs: NavModelItem[] = [];
-    if (this.state.valid && selected !== 'setup') {
+    if (this.state.valid && selected !== 'setup' && selected !== 'redirect') {
+      tabs.push({
+        text: 'Status',
+        // icon: 'fa fa-fw fa-file-text-o',
+        url: path,
+        id: 'status',
+      });
+      tabs.push({
+        text: 'Checks',
+        url: path + '?page=checks',
+        id: 'checks',
+      });
+      tabs.push({
+        text: 'Probes',
+        url: path + '?page=probes',
+        id: 'probes',
+      });
+    } else if (this.state.valid && selected === 'redirect') {
+      tabs.push({
+        text: 'Dashboard Redirect',
+        url: path + '?page=redirect',
+        id: 'redirect',
+      });
       tabs.push({
         text: 'Status',
         // icon: 'fa fa-fw fa-file-text-o',
@@ -91,19 +113,6 @@ export class RootPage extends PureComponent<Props, State> {
         // icon: 'fa fa-fw fa-file-text-o',
         url: path,
         id: 'setup',
-      });
-    }
-
-    if (this.state.valid && selected !== 'setup') {
-      tabs.push({
-        text: 'Checks',
-        url: path + '?page=checks',
-        id: 'checks',
-      });
-      tabs.push({
-        text: 'Probes',
-        url: path + '?page=probes',
-        id: 'probes',
       });
     }
 
@@ -157,6 +166,40 @@ export class RootPage extends PureComponent<Props, State> {
     );
   }
 
+  dashboardRedirect() {
+    const { instance } = this.state;
+    const { query } = this.props;
+    if (!instance) {
+      return <div>Loading.... (or maybe a user permissions error?)</div>;
+    }
+    if (!query.dashboard) {
+      return <div>Dashboard not found</div>;
+    }
+    const dashboards = instance!.worldping.instanceSettings.jsonData.dashboards;
+    let target: DashboardInfo | undefined = undefined;
+    for (const item of dashboards) {
+      if (item.title.toLocaleLowerCase() === 'worldping ' + query.dashboard) {
+        target = item;
+      }
+    }
+
+    if (!target) {
+      console.log('dashboard not found.', query);
+      return <div>Dashboard not found</div>;
+    }
+
+    const d = `d/${target.uid}`;
+    let q = { ...query };
+    delete q.dashboard;
+    delete q.page;
+    getLocationSrv().update({
+      partial: false,
+      path: d,
+      query: q,
+    });
+    return null;
+  }
+
   //-----------------------------------------------------------------------------------------
   // Setup
   //-----------------------------------------------------------------------------------------
@@ -177,6 +220,10 @@ export class RootPage extends PureComponent<Props, State> {
     const { query } = this.props;
     if (!valid || query.page === 'setup') {
       return this.renderSetup();
+    }
+
+    if ('dashboard' in query) {
+      return this.dashboardRedirect();
     }
 
     if (query.page === 'checks') {

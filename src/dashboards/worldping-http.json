@@ -22,7 +22,7 @@
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "7.1.0-cd0c4dbcpre"
+      "version": "7.0.3"
     },
     {
       "type": "panel",
@@ -59,18 +59,11 @@
       "id": "stat",
       "name": "Stat",
       "version": ""
-    },
-    {
-      "type": "panel",
-      "id": "table-old",
-      "name": "Table (old)",
-      "version": ""
     }
   ],
   "annotations": {
     "list": [
       {
-        "$$hashKey": "object:1066",
         "builtIn": 1,
         "datasource": "-- Grafana --",
         "enable": true,
@@ -85,7 +78,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": null,
-  "iteration": 1589382863506,
+  "iteration": 1591626907521,
   "links": [],
   "panels": [
     {
@@ -115,7 +108,7 @@
       },
       "hideEmpty": false,
       "hideZero": false,
-      "id": 30,
+      "id": 27,
       "initialZoom": 1,
       "locationData": "table",
       "mapCenter": "(0°, 0°)",
@@ -131,11 +124,11 @@
         "latitudeField": "latitude",
         "longitudeField": "longitude",
         "metricField": "Value",
-        "queryType": "coordinates"
+        "queryType": "geohash"
       },
       "targets": [
         {
-          "expr": "100-(100 * avg((sum_over_time(probe_success{instance=\"$instance\"}[$__range]) / count_over_time(probe_success{instance=\"$instance\"}[$__range])) * on (instance, job, probe) group_left(latitude, longitude, geohash) worldping_check_info{check_name=\"http\", instance=\"$instance\"}) by (probe, latitude, longitude, geohash))",
+          "expr": "100*(1 - (sum(rate(probe_success_sum{instance=\"$instance\", job=\"$job\"}[$__range]) *  on (instance, job, probe, config_version) group_left(geohash) worldping_check_info{check_name=\"http\", instance=\"$instance\", job=\"$job\"}) by (probe, geohash)/ sum(rate(probe_success_count{instance=\"$instance\", job=\"$job\"}[$__range]) *  on (instance, job, probe, config_version) group_left(geohash) worldping_check_info{check_name=\"http\", instance=\"$instance\", job=\"$job\"}) by (probe, geohash)))",
           "format": "table",
           "instant": true,
           "interval": "",
@@ -162,7 +155,6 @@
           "decimals": 2,
           "mappings": [
             {
-              "$$hashKey": "object:894",
               "id": 0,
               "op": "=",
               "text": "N/A",
@@ -179,12 +171,12 @@
                 "value": null
               },
               {
-                "color": "orange",
-                "value": 0.995
+                "color": "#EAB839",
+                "value": 0.99
               },
               {
                 "color": "green",
-                "value": 0.999
+                "value": 0.995
               }
             ]
           },
@@ -194,7 +186,7 @@
       },
       "gridPos": {
         "h": 2,
-        "w": 3,
+        "w": 2,
         "x": 14,
         "y": 0
       },
@@ -214,16 +206,16 @@
           "calcs": [
             "mean"
           ],
+          "fields": "",
           "values": false
         }
       },
-      "pluginVersion": "7.1.0-cd0c4dbcpre",
+      "pluginVersion": "7.0.3",
       "targets": [
         {
-          "expr": "avg(sum_over_time(probe_success{probe=~\"$probe\", instance=\"$instance\"}[$__range]) / count_over_time(probe_success{probe=~\"$probe\", instance=\"$instance\"}[$__range]))",
-          "format": "time_series",
+          "expr": "sum(rate(probe_success_sum{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__range])) / sum(rate(probe_success_count{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__range]))",
           "hide": false,
-          "instant": true,
+          "instant": false,
           "interval": "",
           "legendFormat": "",
           "refId": "B"
@@ -239,20 +231,9 @@
       "datasource": "${DS_WORLDPING_METRICS}",
       "fieldConfig": {
         "defaults": {
-          "custom": {
-            "align": null
-          },
-          "decimals": 0,
-          "mappings": [
-            {
-              "$$hashKey": "object:2714",
-              "id": 0,
-              "op": "=",
-              "text": "N/A",
-              "type": 1,
-              "value": "null"
-            }
-          ],
+          "custom": {},
+          "decimals": 2,
+          "mappings": [],
           "nullValueMode": "connected",
           "thresholds": {
             "mode": "absolute",
@@ -260,26 +241,34 @@
               {
                 "color": "green",
                 "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 2
               }
             ]
           },
-          "unit": "ms"
+          "unit": "s"
         },
         "overrides": []
       },
       "gridPos": {
         "h": 2,
         "w": 3,
-        "x": 17,
+        "x": 16,
         "y": 0
       },
-      "id": 17,
+      "id": 30,
       "links": [],
       "options": {
         "colorMode": "value",
         "fieldOptions": {
           "calcs": [
-            "mean"
+            "lastNotNull"
           ]
         },
         "graphMode": "none",
@@ -289,35 +278,24 @@
           "calcs": [
             "last"
           ],
+          "fields": "",
           "values": false
         }
       },
-      "pluginVersion": "7.1.0-cd0c4dbcpre",
+      "pluginVersion": "7.0.3",
       "targets": [
         {
-          "expr": "sum(topk(1,worldping_check_info{probe=~\"$probe\",instance=\"$instance\"})) by (frequency)",
-          "format": "table",
+          "expr": "sum(rate(probe_duration_seconds_sum{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__range])) / sum(rate(probe_duration_seconds_count{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__range]))",
+          "hide": false,
           "instant": true,
           "interval": "",
-          "legendFormat": "{{frequency}}",
-          "refId": "A"
+          "legendFormat": "",
+          "refId": "B"
         }
       ],
       "timeFrom": null,
       "timeShift": null,
-      "title": "Frequency",
-      "transformations": [
-        {
-          "id": "organize",
-          "options": {
-            "excludeByName": {
-              "Value": true
-            },
-            "indexByName": {},
-            "renameByName": {}
-          }
-        }
-      ],
+      "title": "Average Latency",
       "type": "stat"
     },
     {
@@ -329,7 +307,6 @@
           "decimals": 2,
           "mappings": [
             {
-              "$$hashKey": "object:2870",
               "id": 0,
               "op": "=",
               "text": "N/A",
@@ -361,11 +338,11 @@
       },
       "gridPos": {
         "h": 2,
-        "w": 4,
-        "x": 20,
+        "w": 3,
+        "x": 19,
         "y": 0
       },
-      "id": 19,
+      "id": 32,
       "links": [],
       "options": {
         "colorMode": "value",
@@ -381,13 +358,14 @@
           "calcs": [
             "mean"
           ],
+          "fields": "",
           "values": false
         }
       },
-      "pluginVersion": "7.1.0-cd0c4dbcpre",
+      "pluginVersion": "7.0.3",
       "targets": [
         {
-          "expr": "min(probe_ssl_earliest_cert_expiry{probe=~\"$probe\",instance=\"$instance\"}) - time()",
+          "expr": "min(probe_ssl_earliest_cert_expiry{probe=~\"$probe\",instance=\"$instance\", job=\"$job\"}) - time()",
           "hide": false,
           "instant": true,
           "interval": "",
@@ -401,11 +379,98 @@
       "type": "stat"
     },
     {
+      "cacheTimeout": null,
+      "datasource": "${DS_WORLDPING_METRICS}",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": null
+          },
+          "decimals": 0,
+          "mappings": [
+            {
+              "id": 0,
+              "op": "=",
+              "text": "N/A",
+              "type": 1,
+              "value": "null"
+            }
+          ],
+          "nullValueMode": "connected",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 2,
+        "w": 2,
+        "x": 22,
+        "y": 0
+      },
+      "id": 17,
+      "links": [],
+      "options": {
+        "colorMode": "value",
+        "fieldOptions": {
+          "calcs": [
+            "mean"
+          ]
+        },
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "pluginVersion": "7.0.3",
+      "targets": [
+        {
+          "expr": "sum(topk(1,worldping_check_info{probe=~\"$probe\", instance=\"$instance\", check_name=\"http\"})) by (frequency)",
+          "format": "table",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "{{frequency}}",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Frequency",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Value": true
+            },
+            "indexByName": {},
+            "renameByName": {}
+          }
+        }
+      ],
+      "type": "stat"
+    },
+    {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
       "datasource": "${DS_WORLDPING_METRICS}",
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "custom": {}
@@ -422,7 +487,7 @@
       },
       "hiddenSeries": false,
       "id": 8,
-      "interval": "",
+      "interval": "5m",
       "legend": {
         "avg": false,
         "current": false,
@@ -434,7 +499,6 @@
       },
       "lines": true,
       "linewidth": 0,
-      "maxDataPoints": "200",
       "nullPointMode": "null",
       "options": {
         "dataLinks": []
@@ -449,7 +513,8 @@
       "steppedLine": true,
       "targets": [
         {
-          "expr": "1 - sum(sum_over_time(probe_success{probe=~\"$probe\", instance=\"$instance\"}[$__interval]) *  on (instance, job, probe, config_version) worldping_check_info{check_name=\"http\", instance=\"$instance\", probe=~\"$probe\"}) / (sum(count_over_time(probe_success{probe=~\"$probe\", instance=\"$instance\"}[$__interval]) *  on (instance, job, probe, config_version) worldping_check_info{check_name=\"http\", instance=\"$instance\", probe=~\"$probe\"}))",
+          "expr": "100*(1-(sum(rate(probe_success_sum{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__interval])) / sum(rate(probe_success_count{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__interval]))))",
+          "hide": false,
           "interval": "",
           "legendFormat": "errors",
           "refId": "A"
@@ -459,7 +524,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Error Rate : $probe ⮕ $instance",
+      "title": "Error Rate : $probe ⮕ $job / $instance",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -476,10 +541,10 @@
       "yaxes": [
         {
           "decimals": null,
-          "format": "percentunit",
+          "format": "percent",
           "label": "",
           "logBase": 1,
-          "max": "1",
+          "max": "100",
           "min": "0",
           "show": true
         },
@@ -512,8 +577,8 @@
       "fill": 10,
       "fillGradient": 0,
       "gridPos": {
-        "h": 6,
-        "w": 19,
+        "h": 7,
+        "w": 12,
         "x": 0,
         "y": 9
       },
@@ -532,6 +597,7 @@
       },
       "lines": false,
       "linewidth": 0,
+      "maxDataPoints": "100",
       "nullPointMode": "null",
       "options": {
         "dataLinks": []
@@ -543,27 +609,22 @@
       "repeatDirection": null,
       "seriesOverrides": [
         {
-          "$$hashKey": "object:1071",
           "alias": "transfer",
           "zindex": 3
         },
         {
-          "$$hashKey": "object:1082",
           "alias": "processing",
           "zindex": 2
         },
         {
-          "$$hashKey": "object:1089",
           "alias": "tls",
           "zindex": 1
         },
         {
-          "$$hashKey": "object:1096",
           "alias": "connect",
           "zindex": 0
         },
         {
-          "$$hashKey": "object:1103",
           "alias": "resolve",
           "zindex": -1
         }
@@ -573,10 +634,10 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "avg(probe_http_duration_seconds{probe=~\"$probe\", instance=\"$instance\"}) by (phase)",
+          "expr": "avg(probe_http_duration_seconds{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}) by (phase)",
           "instant": false,
           "interval": "",
-          "intervalFactor": 3,
+          "intervalFactor": 1,
           "legendFormat": "{{phase}}",
           "refId": "A"
         }
@@ -585,7 +646,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Response Latency: $probe ⮕ $instance",
+      "title": "Response Latency: $probe ⮕ $job / $instance",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -626,81 +687,6 @@
       }
     },
     {
-      "columns": [
-        {
-          "$$hashKey": "object:1134",
-          "text": "Current",
-          "value": "current"
-        }
-      ],
-      "datasource": "${DS_WORLDPING_METRICS}",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
-        "overrides": []
-      },
-      "fontSize": "100%",
-      "gridPos": {
-        "h": 12,
-        "w": 5,
-        "x": 19,
-        "y": 9
-      },
-      "id": 24,
-      "pageSize": null,
-      "showHeader": true,
-      "sort": {
-        "col": 1,
-        "desc": true
-      },
-      "styles": [
-        {
-          "$$hashKey": "object:1136",
-          "alias": "Probe",
-          "align": "auto",
-          "dateFormat": "YYYY-MM-DD HH:mm:ss",
-          "link": true,
-          "linkTooltip": "",
-          "linkUrl": "/d/${__dashboard.uid}/${__dashboard.name}?var-probe=${__cell}&var-instance=$instance",
-          "mappingType": 1,
-          "pattern": "Metric",
-          "rangeMaps": [],
-          "type": "string",
-          "valueMaps": []
-        },
-        {
-          "$$hashKey": "object:1137",
-          "alias": "Fail rate",
-          "align": "right",
-          "colorMode": null,
-          "colors": [
-            "rgba(245, 54, 54, 0.9)",
-            "rgba(237, 129, 40, 0.89)",
-            "rgba(50, 172, 45, 0.97)"
-          ],
-          "decimals": 2,
-          "pattern": "Current",
-          "thresholds": [],
-          "type": "number",
-          "unit": "percentunit"
-        }
-      ],
-      "targets": [
-        {
-          "expr": "1 - max((sum_over_time(probe_success{instance=\"$instance\"}[$__range]) / count_over_time(probe_success{instance=\"$instance\"}[$__range])) * on (instance, job, probe)  group_left(label_country) worldping_check_info{check_name=\"http\",instance=\"$instance\"}) by (probe, label_country)",
-          "interval": "",
-          "legendFormat": "{{probe}} ({{label_country}})",
-          "refId": "C"
-        }
-      ],
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "Probes",
-      "transform": "timeseries_aggregations",
-      "type": "table-old"
-    },
-    {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
@@ -715,13 +701,13 @@
       "fill": 10,
       "fillGradient": 0,
       "gridPos": {
-        "h": 6,
-        "w": 19,
-        "x": 0,
-        "y": 15
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 9
       },
       "hiddenSeries": false,
-      "id": 28,
+      "id": 29,
       "legend": {
         "alignAsTable": true,
         "avg": true,
@@ -748,27 +734,22 @@
       "repeatDirection": null,
       "seriesOverrides": [
         {
-          "$$hashKey": "object:1071",
           "alias": "transfer",
           "zindex": 3
         },
         {
-          "$$hashKey": "object:1082",
           "alias": "processing",
           "zindex": 2
         },
         {
-          "$$hashKey": "object:1089",
           "alias": "tls",
           "zindex": 1
         },
         {
-          "$$hashKey": "object:1096",
           "alias": "connect",
           "zindex": 0
         },
         {
-          "$$hashKey": "object:1103",
           "alias": "resolve",
           "zindex": -1
         }
@@ -778,7 +759,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "avg(probe_duration_seconds{probe=~\"$probe\", instance=\"$instance\"} * on (instance, job,probe,config_version) group_left worldping_check_info{check_name=\"http\",probe=~\"$probe\",instance=\"$instance\"}) by (probe)",
+          "expr": "avg(probe_duration_seconds{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"} * on (instance, job,probe,config_version) group_left probe_success{probe=~\"$probe\",instance=\"$instance\", job=\"$job\"} > 0) by (probe)",
           "instant": false,
           "interval": "",
           "intervalFactor": 1,
@@ -839,10 +820,10 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 14,
+        "h": 13,
         "w": 24,
         "x": 0,
-        "y": 21
+        "y": 16
       },
       "id": 15,
       "options": {
@@ -853,7 +834,7 @@
       },
       "targets": [
         {
-          "expr": "{probe=~\"$probe\",instance=\"$instance\", probe_success=\"0\"}",
+          "expr": "{probe=~\"$probe\",instance=\"$instance\", job=\"$job\", probe_success=\"0\"}",
           "refId": "A"
         }
       ],
@@ -866,16 +847,14 @@
   "refresh": "1m",
   "schemaVersion": 25,
   "style": "dark",
-  "tags": [
-    "worldping"
-  ],
+  "tags": [],
   "templating": {
     "list": [
       {
         "allValue": ".*",
         "current": {},
         "datasource": "${DS_WORLDPING_METRICS}",
-        "definition": "label_values(worldping_check_info{check_name=\"http\"},probe)",
+        "definition": "label_values(worldping_check_info,probe)",
         "hide": 0,
         "includeAll": true,
         "label": null,
@@ -897,14 +876,36 @@
         "allValue": null,
         "current": {},
         "datasource": "${DS_WORLDPING_METRICS}",
-        "definition": "label_values(worldping_check_info{check_name=\"http\"},instance)",
+        "definition": "label_values(worldping_check_info{check_name=\"http\", probe=~\"$probe\"},job)",
+        "hide": 0,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "job",
+        "options": [],
+        "query": "label_values(worldping_check_info{check_name=\"http\", probe=~\"$probe\"},job)",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {},
+        "datasource": "${DS_WORLDPING_METRICS}",
+        "definition": "label_values(worldping_check_info{check_name=\"http\", job=\"$job\", probe=~\"$probe\"},instance)",
         "hide": 0,
         "includeAll": false,
         "label": null,
         "multi": false,
         "name": "instance",
         "options": [],
-        "query": "label_values(worldping_check_info{check_name=\"http\"},instance)",
+        "query": "label_values(worldping_check_info{check_name=\"http\", job=\"$job\", probe=~\"$probe\"},instance)",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -937,5 +938,5 @@
   "timezone": "",
   "title": "worldPing HTTP",
   "uid": "rq0JrllZz",
-  "version": 21
+  "version": 22
 }
