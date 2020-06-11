@@ -36,7 +36,7 @@ export function validateFrequency(freq: number): boolean {
 }
 
 export function validateTimeout(t: number): boolean {
-  return t > 1000 && t < 10000;
+  return t >= 1000 && t <= 10000;
 }
 
 export function validateLabels(labels: Label[]): boolean {
