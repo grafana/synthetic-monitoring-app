@@ -40,7 +40,7 @@ export function validateTimeout(t: number): boolean {
 }
 
 export function validateLabels(labels: Label[]): boolean {
-  if (labels.length < 1 || labels.length > 64) {
+  if (labels.length > 64) {
     return false;
   }
   // validate each label
