@@ -32,7 +32,7 @@ export function validateTarget(target: string): boolean {
 }
 
 export function validateFrequency(freq: number): boolean {
-  return freq > 10000 && freq < 120000;
+  return freq >= 10000 && freq <= 120000;
 }
 
 export function validateTimeout(t: number): boolean {
