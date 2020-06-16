@@ -1,6 +1,6 @@
 import { DataSourceInstanceSettings, DataSourceSettings } from '@grafana/data';
 
-import { WorldpingOptions } from './datasource/types';
+import { WorldpingOptions, DashboardInfo } from './datasource/types';
 
 import { config, getBackendSrv } from '@grafana/runtime';
 import {
@@ -14,6 +14,7 @@ import {
   DnsRecordType,
   DnsProtocol,
 } from 'types';
+import { WorldPingDataSource } from 'datasource/DataSource';
 
 /**
  * Find all worldping datasources
@@ -155,4 +156,16 @@ export function defaultSettings(t: CheckType): Settings | undefined {
       };
     }
   }
+}
+
+/** Given hosted info, link to an existing instance */
+export function dashboardUID(checkType: string, ds: WorldPingDataSource): DashboardInfo | undefined {
+  const dashboards = ds.instanceSettings.jsonData.dashboards;
+  let target: DashboardInfo | undefined = undefined;
+  for (const item of dashboards) {
+    if (item.title.toLocaleLowerCase() === 'worldping ' + checkType) {
+      target = item;
+    }
+  }
+  return target;
 }
