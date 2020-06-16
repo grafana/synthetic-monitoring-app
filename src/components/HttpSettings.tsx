@@ -47,6 +47,7 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
     failIfBodyNotMatchesRegexp: this.props.settings.http?.failIfBodyNotMatchesRegexp || [],
     failIfHeaderMatchesRegexp: this.props.settings.http?.failIfHeaderMatchesRegexp || [],
     failIfHeaderNotMatchesRegexp: this.props.settings.http?.failIfHeaderNotMatchesRegexp || [],
+    cacheBustingQueryParamName: this.props.settings.http?.cacheBustingQueryParamName,
 
     showAdvanced: false,
     showValidation: false,
@@ -91,6 +92,10 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
 
   onFailIfSSLChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     this.setState({ failIfSSL: !this.state.failIfSSL }, this.onUpdate);
+  };
+
+  onCacheBustingQueryParamNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    this.setState({ cacheBustingQueryParamName: event.target.value }, this.onUpdate);
   };
 
   onToggleAdvanced = (isOpen: boolean) => {
@@ -536,7 +541,7 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
           <HorizontalGroup>
             <div>
               <Field
-                label={<FormLabel name="IP Version" help="The IP protocol of the ICMP request" />}
+                label={<FormLabel name="IP Version" help="The IP protocol of the HTTP request" />}
                 disabled={!isEditor}
               >
                 <Select value={state.ipVersion} options={IpOptions} onChange={this.onIpVersionChange} />
@@ -554,6 +559,26 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
                     disabled={!isEditor}
                   />
                 </Container>
+              </Field>
+            </div>
+          </HorizontalGroup>
+          <HorizontalGroup>
+            <div>
+              <Field
+                label={
+                  <FormLabel
+                    name="Cache busting query parameter name"
+                    help="The name of the query parameter used to prevent the server from using a cached response. Each probe will assign a random value to this parameter each time a request is made."
+                  />
+                }
+              >
+                <Input
+                  type="string"
+                  placeholder="cache-bust"
+                  value={state.cacheBustingQueryParamName}
+                  onChange={this.onCacheBustingQueryParamNameChange}
+                  disabled={!isEditor}
+                />
               </Field>
             </div>
           </HorizontalGroup>

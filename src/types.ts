@@ -77,6 +77,8 @@ export interface HttpSettings {
   failIfBodyNotMatchesRegexp?: string[];
   failIfHeaderMatchesRegexp?: HeaderMatch[];
   failIfHeaderNotMatchesRegexp?: HeaderMatch[];
+
+  cacheBustingQueryParamName?: string;
 }
 
 export interface TLSConfig {
