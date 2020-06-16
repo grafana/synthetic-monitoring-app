@@ -6,6 +6,7 @@ import { GrafanaInstances, Label, Probe, OrgRole } from 'types';
 import { Button, HorizontalGroup, IconName, Badge, BadgeColor } from '@grafana/ui';
 import { getLocationSrv } from '@grafana/runtime';
 import { ProbeEditor } from 'components/ProbeEditor';
+import { UptimeGauge } from 'components/UptimeGauge';
 import { hasRole } from 'utils';
 //import ProbesMap from 'components/ProbesMap';
 
@@ -117,6 +118,7 @@ export class ProbesPage extends PureComponent<Props, State> {
 
   renderProbeList() {
     const { probes } = this.state;
+    const { instance } = this.props;
     if (!probes) {
       return null;
     }
@@ -149,6 +151,14 @@ export class ProbesPage extends PureComponent<Props, State> {
                   <div>{this.labelsToString(probe.labels)}</div>
                 </span>
               </div>
+              <UptimeGauge
+                labelNames={['probe']}
+                labelValues={[probe.name]}
+                ds={instance.worldping.getMetricsDS()}
+                height={60}
+                width={150}
+                sparkline={false}
+              />
               <div className="add-data-source-item-actions">
                 <Button>Select</Button>
               </div>

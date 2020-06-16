@@ -17,7 +17,7 @@ import { Label as WorldpingLabel, Probe, OrgRole } from 'types';
 import { WorldPingDataSource } from 'datasource/DataSource';
 import { hasRole } from 'utils';
 import { FormLabel, WorldpingLabelsForm } from './utils';
-import { ProbeUptime } from './UptimeGauge';
+import { UptimeGauge } from './UptimeGauge';
 
 interface Props {
   probe: Probe;
@@ -204,7 +204,14 @@ export class ProbeEditor extends PureComponent<Props, State> {
           </Container>
         )}
         <br />
-        <ProbeUptime probe={probe.name} ds={instance.getMetricsDS()} />
+        <UptimeGauge
+          labelNames={['probe']}
+          labelValues={[probe.name]}
+          ds={instance.getMetricsDS()}
+          height={200}
+          width={300}
+          sparkline={true}
+        />
       </Container>
     );
   }
@@ -272,7 +279,12 @@ export class ProbeEditor extends PureComponent<Props, State> {
           </Container>
           <Container margin="md">
             <h3 className="page-heading">Labels</h3>
-            <WorldpingLabelsForm labels={probe.labels} onUpdate={this.onLabelsUpdate} isEditor={isEditor} />
+            <WorldpingLabelsForm
+              labels={probe.labels}
+              onUpdate={this.onLabelsUpdate}
+              isEditor={isEditor}
+              type="Label"
+            />
           </Container>
           <Container margin="md">
             <HorizontalGroup>

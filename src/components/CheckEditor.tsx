@@ -10,6 +10,7 @@ import {
   MultiSelect,
   Select,
   Legend,
+  VerticalGroup,
 } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
 import { Check, Label as WorldpingLabel, Settings, CheckType, Probe, OrgRole } from 'types';
@@ -243,7 +244,7 @@ export class CheckEditor extends PureComponent<Props, State> {
     return (
       <Container>
         <Legend>{legend}</Legend>
-        <Container margin="md">
+        <VerticalGroup>
           <HorizontalGroup>
             <Field label={<FormLabel name="Check Type" />} disabled={check.id ? true : false} required={true}>
               <Select value={typeOfCheck} options={checkTypes} onChange={this.onSetType} />
@@ -280,9 +281,6 @@ export class CheckEditor extends PureComponent<Props, State> {
               </Container>
             </Field>
           </HorizontalGroup>
-        </Container>
-        <Container margin="md">
-          <h3 className="page-heading">Timing information</h3>
           <HorizontalGroup>
             <Field
               label={<FormLabel name="Frequency" help="How frequently the check will run." />}
@@ -319,30 +317,48 @@ export class CheckEditor extends PureComponent<Props, State> {
               />
             </Field>
           </HorizontalGroup>
-        </Container>
-        <Container margin="md">
-          <h3 className="page-heading">Probe Locations</h3>
-          <CheckProbes
-            probes={check.probes}
-            availableProbes={probes}
-            onUpdate={this.onProbesUpdate}
-            isEditor={isEditor}
-          />
-        </Container>
-        <Container margin="md">
-          <h3 className="page-heading">Labels</h3>
-          <WorldpingLabelsForm labels={check.labels} onUpdate={this.onLabelsUpdate} isEditor={isEditor} />
-        </Container>
-        <Container margin="md">
-          <h3 className="page-heading">Settings</h3>
+
+          <Field
+            label={
+              <FormLabel
+                name="Probe Locations"
+                help="select the locations where this target should be monitored from."
+              />
+            }
+            disabled={!isEditor}
+            invalid={!Validation.validateProbes(check.probes)}
+          >
+            <CheckProbes
+              probes={check.probes}
+              availableProbes={probes}
+              onUpdate={this.onProbesUpdate}
+              isEditor={isEditor}
+            />
+          </Field>
+
+          <Field
+            label={<FormLabel name="Labels" help="add custom labels to be included with collected metrics and logs." />}
+            disabled={!isEditor}
+            invalid={!Validation.validateLabels(check.labels)}
+          >
+            <WorldpingLabelsForm
+              labels={check.labels}
+              onUpdate={this.onLabelsUpdate}
+              isEditor={isEditor}
+              type="Label"
+            />
+          </Field>
+        </VerticalGroup>
+        <Container>
+          <br />
+          <h3 className="page-heading">{typeOfCheck!.toLocaleUpperCase()} Settings</h3>
           <CheckSettings
             settings={check.settings}
             typeOfCheck={typeOfCheck || CheckType.HTTP}
             onUpdate={this.onSettingsUpdate}
             isEditor={isEditor}
           />
-        </Container>
-        <Container margin="md">
+
           <HorizontalGroup>
             <Button onClick={this.onSave} disabled={!isEditor || !Validation.validateCheck(check)}>
               Save

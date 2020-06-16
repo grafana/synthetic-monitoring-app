@@ -5,8 +5,8 @@ import React, { PureComponent } from 'react';
 import { NavModelItem, AppRootProps, DataSourceInstanceSettings } from '@grafana/data';
 import { GlobalSettings, RegistrationInfo, GrafanaInstances, OrgRole } from './types';
 import { WorldPingDataSource } from 'datasource/DataSource';
-import { findWorldPingDataSources, createNewWorldpingInstance, hasRole } from 'utils';
-import { WorldpingOptions, DashboardInfo } from 'datasource/types';
+import { findWorldPingDataSources, createNewWorldpingInstance, hasRole, dashboardUID } from 'utils';
+import { WorldpingOptions } from 'datasource/types';
 import { getDataSourceSrv, getLocationSrv } from '@grafana/runtime';
 import { TenantSetup } from './components/TenantSetup';
 import { TenantView } from 'components/TenantView';
@@ -175,13 +175,7 @@ export class RootPage extends PureComponent<Props, State> {
     if (!query.dashboard) {
       return <div>Dashboard not found</div>;
     }
-    const dashboards = instance!.worldping.instanceSettings.jsonData.dashboards;
-    let target: DashboardInfo | undefined = undefined;
-    for (const item of dashboards) {
-      if (item.title.toLocaleLowerCase() === 'worldping ' + query.dashboard) {
-        target = item;
-      }
-    }
+    const target = dashboardUID(query.dashboard, instance!.worldping);
 
     if (!target) {
       console.log('dashboard not found.', query);

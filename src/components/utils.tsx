@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import { Tooltip, Icon, Container, IconButton, HorizontalGroup, List, Input } from '@grafana/ui';
+import { Tooltip, Icon, Container, IconButton, HorizontalGroup, List, Input, VerticalGroup, Button } from '@grafana/ui';
 import { Label as WorldpingLabel, IpVersion } from 'types';
 import * as Validation from 'validation';
 
@@ -32,6 +32,7 @@ export class FormLabel extends PureComponent<FormLabelProps, FormLabelState> {
 interface LabelsProps {
   labels: WorldpingLabel[];
   isEditor: boolean;
+  type: string;
   onUpdate: (labels: WorldpingLabel[]) => void;
 }
 
@@ -74,23 +75,24 @@ export class WorldpingLabelsForm extends PureComponent<LabelsProps, LabelsState>
     const { labels } = this.state;
     const { isEditor } = this.props;
     return (
-      <div>
-        <HorizontalGroup>
-          <List
-            items={labels}
-            renderItem={(item, index) => (
-              <WorldpingLabelForm
-                onDelete={this.onDelete}
-                onChange={this.onChange}
-                label={item}
-                index={index}
-                isEditor={isEditor}
-              />
-            )}
-          />
-        </HorizontalGroup>
-        <IconButton name="plus-circle" onClick={this.addLabel} disabled={!isEditor} />
-      </div>
+      <VerticalGroup justify="space-between">
+        <List
+          items={labels}
+          renderItem={(item, index) => (
+            <WorldpingLabelForm
+              onDelete={this.onDelete}
+              onChange={this.onChange}
+              label={item}
+              index={index}
+              isEditor={isEditor}
+            />
+          )}
+        />
+        <Button onClick={this.addLabel} disabled={!isEditor} variant="secondary" size="sm">
+          <Icon name="plus" />
+          &nbsp; Add {this.props.type}
+        </Button>
+      </VerticalGroup>
     );
   }
 }
@@ -142,7 +144,7 @@ export class WorldpingLabelForm extends PureComponent<LabelProps, LabelState> {
     const { isEditor } = this.props;
     console.log('rendering label with name:', name);
     return (
-      <HorizontalGroup>
+      <HorizontalGroup justify="space-between">
         <Input
           type="text"
           placeholder="name"

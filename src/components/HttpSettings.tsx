@@ -11,6 +11,9 @@ import {
   List,
   IconButton,
   Input,
+  Button,
+  Icon,
+  VerticalGroup,
 } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
 import { IpVersion, Settings, HttpSettings, HttpMethod, HttpVersion, BasicAuth, TLSConfig, HeaderMatch } from 'types';
@@ -357,13 +360,16 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
     return (
       <Container>
         <HorizontalGroup>
-          <Field label={<FormLabel name="Method" help="The HTTP method the probe will use" />} disabled={!isEditor}>
+          <Field
+            label={<FormLabel name="Request Method" help="The HTTP method the probe will use" />}
+            disabled={!isEditor}
+          >
             <Select value={state.method} options={methodOptions} onChange={this.onMethodChange} />
           </Field>
         </HorizontalGroup>
         <Container>
           <Field
-            label={<FormLabel name="Body" help="The body of the HTTP request used in probe." />}
+            label={<FormLabel name="Request Body" help="The body of the HTTP request used in probe." />}
             disabled={!isEditor}
           >
             <div>
@@ -372,12 +378,16 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
           </Field>
         </Container>
         <Container>
-          <Field label={<FormLabel name="Headers" help="The HTTP headers set for the probe.." />} disabled={!isEditor}>
+          <Field
+            label={<FormLabel name="Request Headers" help="The HTTP headers set for the probe.." />}
+            disabled={!isEditor}
+          >
             <div>
               <WorldpingLabelsForm
                 labels={this.headersToLabels()}
                 isEditor={isEditor}
                 onUpdate={this.onHeadersUpdate}
+                type="Header"
               />
             </div>
           </Field>
@@ -454,69 +464,72 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
               </Container>
             </Field>
           </HorizontalGroup>
-          <HorizontalGroup>
-            <Field
-              label={<FormLabel name="Fail if body matches regexp" help="Probe fails if response body matches regex" />}
-              disabled={!isEditor}
-            >
-              <Container>
-                <List
-                  items={state.failIfBodyMatchesRegexp || []}
-                  renderItem={(item, index) => (
-                    <HorizontalGroup>
-                      <Input
-                        type="text"
-                        placeholder="regexp"
-                        value={item}
-                        onChange={this.onFailIfBodyMatchesRegexpChange(index)}
-                        disabled={!isEditor}
-                      />
-                      <IconButton
-                        name="minus-circle"
-                        onClick={this.onFailIfBodyMatchesRegexpDelete(index)}
-                        disabled={!isEditor}
-                      />
-                    </HorizontalGroup>
-                  )}
-                />
-                <IconButton name="plus-circle" onClick={this.addFailIfBodyMatchesRegexp} disabled={!isEditor} />
-              </Container>
-            </Field>
-          </HorizontalGroup>
-          <HorizontalGroup>
-            <Field
-              label={
-                <FormLabel
-                  name="Fail if body doesn't match regexp"
-                  help="Probe fails if response body does not match regex"
-                />
-              }
-              disabled={!isEditor}
-            >
-              <Container>
-                <List
-                  items={state.failIfBodyNotMatchesRegexp || []}
-                  renderItem={(item, index) => (
-                    <HorizontalGroup>
-                      <Input
-                        type="text"
-                        placeholder="regexp"
-                        value={item}
-                        onChange={this.onFailIfBodyNotMatchesRegexpChange(index)}
-                        disabled={!isEditor}
-                      />
-                      <IconButton
-                        name="minus-circle"
-                        onClick={this.onFailIfBodyNotMatchesRegexpDelete(index)}
-                        disabled={!isEditor}
-                      />
-                    </HorizontalGroup>
-                  )}
-                />
-                <IconButton name="plus-circle" onClick={this.addFailIfBodyNotMatchesRegexp} disabled={!isEditor} />
-              </Container>
-            </Field>
-          </HorizontalGroup>
+
+          <Field
+            label={<FormLabel name="Fail if body matches regexp" help="Probe fails if response body matches regex" />}
+            disabled={!isEditor}
+          >
+            <VerticalGroup justify="space-between">
+              <List
+                items={state.failIfBodyMatchesRegexp || []}
+                renderItem={(item, index) => (
+                  <HorizontalGroup>
+                    <Input
+                      type="text"
+                      placeholder="regexp"
+                      value={item}
+                      onChange={this.onFailIfBodyMatchesRegexpChange(index)}
+                      disabled={!isEditor}
+                    />
+                    <IconButton
+                      name="minus-circle"
+                      onClick={this.onFailIfBodyMatchesRegexpDelete(index)}
+                      disabled={!isEditor}
+                    />
+                  </HorizontalGroup>
+                )}
+              />
+              <Button onClick={this.addFailIfBodyMatchesRegexp} disabled={!isEditor} variant="secondary" size="sm">
+                <Icon name="plus" />
+                &nbsp; Add Body Regexp
+              </Button>
+            </VerticalGroup>
+          </Field>
+          <Field
+            label={
+              <FormLabel
+                name="Fail if body doesn't match regexp"
+                help="Probe fails if response body does not match regex"
+              />
+            }
+            disabled={!isEditor}
+          >
+            <VerticalGroup justify="space-between">
+              <List
+                items={state.failIfBodyNotMatchesRegexp || []}
+                renderItem={(item, index) => (
+                  <HorizontalGroup>
+                    <Input
+                      type="text"
+                      placeholder="regexp"
+                      value={item}
+                      onChange={this.onFailIfBodyNotMatchesRegexpChange(index)}
+                      disabled={!isEditor}
+                    />
+                    <IconButton
+                      name="minus-circle"
+                      onClick={this.onFailIfBodyNotMatchesRegexpDelete(index)}
+                      disabled={!isEditor}
+                    />
+                  </HorizontalGroup>
+                )}
+              />
+              <Button onClick={this.addFailIfBodyNotMatchesRegexp} disabled={!isEditor} variant="secondary" size="sm">
+                <Icon name="plus" />
+                &nbsp; Add Body Regexp
+              </Button>
+            </VerticalGroup>
+          </Field>
           <HeaderMatchForm
             headerMatches={state.failIfHeaderMatchesRegexp || []}
             name="Fail if header matches regexp"
@@ -885,46 +898,47 @@ export class HeaderMatchForm extends PureComponent<HeaderMatchProps, HeaderMatch
     const { isEditor, name, help } = this.props;
 
     return (
-      <HorizontalGroup>
-        <Field label={<FormLabel name={name} help={help} />} disabled={!isEditor}>
-          <Container>
-            <List
-              items={headerMatches}
-              renderItem={(item, index) => (
+      <Field label={<FormLabel name={name} help={help} />} disabled={!isEditor}>
+        <VerticalGroup justify="space-between">
+          <List
+            items={headerMatches}
+            renderItem={(item, index) => (
+              <HorizontalGroup>
+                <Input
+                  type="text"
+                  placeholder="header"
+                  value={item.header}
+                  onChange={this.onHeaderChange(index)}
+                  disabled={!isEditor}
+                />
+                <Input
+                  type="text"
+                  placeholder="regexp"
+                  value={item.regexp}
+                  onChange={this.onRegexpChange(index)}
+                  disabled={!isEditor}
+                />
                 <HorizontalGroup>
-                  <Input
-                    type="text"
-                    placeholder="header"
-                    value={item.header}
-                    onChange={this.onHeaderChange(index)}
-                    disabled={!isEditor}
-                  />
-                  <Input
-                    type="text"
-                    placeholder="regexp"
-                    value={item.regexp}
-                    onChange={this.onRegexpChange(index)}
-                    disabled={!isEditor}
-                  />
-                  <HorizontalGroup>
-                    <span>Allow Missing</span>
-                    <Container padding="sm">
-                      <Switch
-                        title="Allow Missing"
-                        value={item.allowMissing}
-                        onChange={this.onAllowMissingChange(index)}
-                        disabled={!isEditor}
-                      />
-                    </Container>
-                  </HorizontalGroup>
-                  <IconButton name="minus-circle" onClick={this.onHeaderMatchesDelete(index)} disabled={!isEditor} />
+                  <span>Allow Missing</span>
+                  <Container padding="sm">
+                    <Switch
+                      title="Allow Missing"
+                      value={item.allowMissing}
+                      onChange={this.onAllowMissingChange(index)}
+                      disabled={!isEditor}
+                    />
+                  </Container>
                 </HorizontalGroup>
-              )}
-            />
-            <IconButton name="plus-circle" onClick={this.onHeaderMatchesAdd} disabled={!isEditor} />
-          </Container>
-        </Field>
-      </HorizontalGroup>
+                <IconButton name="minus-circle" onClick={this.onHeaderMatchesDelete(index)} disabled={!isEditor} />
+              </HorizontalGroup>
+            )}
+          />
+          <Button onClick={this.onHeaderMatchesAdd} disabled={!isEditor} variant="secondary" size="sm">
+            <Icon name="plus" />
+            &nbsp; Add Header Regexp
+          </Button>
+        </VerticalGroup>
+      </Field>
     );
   }
 }
