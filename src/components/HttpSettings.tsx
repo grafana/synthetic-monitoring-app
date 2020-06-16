@@ -574,6 +574,7 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
               >
                 <Input
                   type="string"
+                  placeholder="cache-bust"
                   value={state.cacheBustingQueryParamName}
                   onChange={this.onCacheBustingQueryParamNameChange}
                   disabled={!isEditor}
