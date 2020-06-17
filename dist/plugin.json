@@ -2,7 +2,6 @@
   "type": "app",
   "name": "worldPing",
   "id": "grafana-worldping-app",
-
   "info": {
     "author": {
       "name": "Grafana Project",
@@ -12,10 +11,14 @@
       "small": "img/logo.svg",
       "large": "img/logo.svg"
     },
-    "version": "%VERSION%",
-    "updated": "%TODAY%"
+    "version": "0.0.1",
+    "updated": "2020-06-17",
+    "build": {
+      "time": 1592399081788,
+      "branch": "ci",
+      "hash": "5537e5de19f0ad5b27bc64667106008dff4e14fd"
+    }
   },
-
   "includes": [
     {
       "type": "page",
@@ -36,7 +39,6 @@
       "addToNav": true
     }
   ],
-
   "dependencies": {
     "grafanaVersion": "7.0.x",
     "plugins": []
