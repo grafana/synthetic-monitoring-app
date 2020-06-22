@@ -4,7 +4,17 @@ import React, { PureComponent } from 'react';
 // Types
 import { Check, GrafanaInstances, Label, IpVersion, OrgRole, CheckType } from 'types';
 import { getLocationSrv } from '@grafana/runtime';
-import { Button, HorizontalGroup, Icon, VerticalGroup, Container, Select, Input, Pagination } from '@grafana/ui';
+import {
+  Button,
+  HorizontalGroup,
+  Icon,
+  VerticalGroup,
+  Container,
+  Select,
+  Input,
+  Pagination,
+  InfoBox,
+} from '@grafana/ui';
 import { SelectableValue, unEscapeStringFromRegex, escapeStringForRegex } from '@grafana/data';
 import { CheckEditor } from 'components/CheckEditor';
 import { UptimeGauge, CheckHealth } from 'components/UptimeGauge';
@@ -82,7 +92,9 @@ export class ChecksPage extends PureComponent<Props, State> {
     return labels.map(label => {
       return (
         <div>
-          {label.name}={label.value}
+          <a onClick={this.onFilterByLabel(label.name, label.value)}>
+            {label.name}={label.value}
+          </a>
         </div>
       );
     });
@@ -178,6 +190,11 @@ export class ChecksPage extends PureComponent<Props, State> {
     this.setState({ typeFilter: type.value, currentPage: 1 }, this.filterChecks);
   };
 
+  onFilterByLabel = (labelName: string, labelValue: string) => (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
+    event.stopPropagation();
+    this.setState({ searchFilter: `${labelName}=${labelValue}`, currentPage: 1 }, this.filterChecks);
+  };
+
   onSearchFilterChange = (filter: string) => {
     this.setState({ searchFilter: filter }, this.filterChecks);
   };
@@ -187,11 +204,31 @@ export class ChecksPage extends PureComponent<Props, State> {
     this.setState({ currentPage: toPage }, this.filterChecks);
   };
 
+  renderNoChecks() {
+    return (
+      <InfoBox title="worldPing: Global Blackbox Monitoring" url={'https://grafana.com/docs/grafana-cloud/worldping/'}>
+        <p>
+          This account does not currently have any checks configured. Click the button below to start monitoring your
+          services with Grafana Cloud.
+        </p>
+        {hasRole(OrgRole.EDITOR) && (
+          <Button variant="primary" onClick={this.onAddNew}>
+            New Check
+          </Button>
+        )}
+      </InfoBox>
+    );
+  }
+
   renderCheckList() {
     const { checks, typeFilter, searchFilter, filteredChecks, totalPages, currentPage } = this.state;
     const { instance } = this.props;
     if (!checks) {
       return null;
+    }
+
+    if (checks.length === 0) {
+      return this.renderNoChecks();
     }
 
     const checkTypes = [
@@ -216,6 +253,7 @@ export class ChecksPage extends PureComponent<Props, State> {
         value: CheckType.TCP,
       },
     ];
+    const ds = instance.worldping.getMetricsDS();
     return (
       <div>
         <div className="page-action-bar">
@@ -259,7 +297,7 @@ export class ChecksPage extends PureComponent<Props, State> {
                     <HorizontalGroup justify="space-between">
                       <div className="card-item-body">
                         <figure className="card-item-figure">
-                          <CheckHealth check={check} ds={instance.worldping.getMetricsDS()} />
+                          <CheckHealth check={check} ds={ds} />
                         </figure>
                         <VerticalGroup>
                           <div className="card-item-name">{check.target}</div>
@@ -279,7 +317,7 @@ export class ChecksPage extends PureComponent<Props, State> {
                         <UptimeGauge
                           labelNames={['instance', 'job']}
                           labelValues={[check.target, check.job]}
-                          ds={instance.worldping.getMetricsDS()}
+                          ds={ds}
                           height={70}
                           width={150}
                           sparkline={false}
@@ -314,7 +352,6 @@ export class ChecksPage extends PureComponent<Props, State> {
   };
 
   onGoBack = (refresh: boolean) => {
-    console.log('go back');
     this.setState({
       addNew: false,
     });
@@ -340,7 +377,7 @@ export class ChecksPage extends PureComponent<Props, State> {
     }
     if (addNew) {
       const template = {
-        job: 'worldping',
+        job: '',
         target: '',
         frequency: 60000,
         timeout: 2500,

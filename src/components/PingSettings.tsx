@@ -50,7 +50,7 @@ export class PingSettingsForm extends PureComponent<Props, State> {
           <HorizontalGroup>
             <div>
               <Field
-                label={<FormLabel name="IP Version" help="The IP protocol of the ICMP request" />}
+                label={<FormLabel name="IP Version" description="The IP protocol of the ICMP request" />}
                 disabled={!isEditor}
               >
                 <Select value={ipVersion} options={IpOptions} onChange={this.onIpVersionChange} />
@@ -58,7 +58,12 @@ export class PingSettingsForm extends PureComponent<Props, State> {
             </div>
             <div>
               <Field
-                label={<FormLabel name="Don't Fragment" help="Set the DF-bit in the IP-header. Only works with ipV4" />}
+                label={
+                  <FormLabel
+                    name="Don't Fragment"
+                    description="Set the DF-bit in the IP-header. Only works with ipV4"
+                  />
+                }
                 disabled={!isEditor}
               >
                 <Container padding="sm">

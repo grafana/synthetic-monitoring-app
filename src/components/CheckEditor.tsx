@@ -10,17 +10,17 @@ import {
   MultiSelect,
   Select,
   Legend,
-  VerticalGroup,
+  Collapse,
 } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
 import { Check, Label as WorldpingLabel, Settings, CheckType, Probe, OrgRole } from 'types';
 import { WorldPingDataSource } from 'datasource/DataSource';
 import { hasRole, checkType, defaultSettings } from 'utils';
 import { PingSettingsForm } from './PingSettings';
-import { HttpSettingsForm } from './HttpSettings';
+import { HttpSettingsForm } from './http/HttpSettings';
 import { DnsSettingsForm } from './DnsSettings';
 import { TcpSettingsForm } from './TcpSettings';
-import { FormLabel, WorldpingLabelsForm } from './utils';
+import { WorldpingLabelsForm } from './utils';
 import * as Validation from 'validation';
 
 interface TargetHelpInfo {
@@ -40,11 +40,13 @@ interface State {
   probes: Probe[];
   showDeleteModal: boolean;
   targetHelp: TargetHelpInfo;
+  showOptions: boolean;
 }
 
 export class CheckEditor extends PureComponent<Props, State> {
   state: State = {
     showDeleteModal: false,
+    showOptions: false,
     probes: [],
     targetHelp: {
       example: '',
@@ -86,19 +88,13 @@ export class CheckEditor extends PureComponent<Props, State> {
   };
 
   onProbesUpdate = (probes: number[]) => {
-    let check = this.state.check;
-    if (!check) {
-      return;
-    }
+    let check = { ...this.state.check } as Check;
     check.probes = probes;
     this.setState({ check });
   };
 
   onSettingsUpdate = (settings: Settings) => {
-    let check = this.state.check;
-    if (!check) {
-      return;
-    }
+    let check = { ...this.state.check } as Check;
     check.settings = settings;
     this.setState({ check });
   };
@@ -179,28 +175,28 @@ export class CheckEditor extends PureComponent<Props, State> {
     switch (typeOfCheck) {
       case CheckType.HTTP: {
         resp = {
-          text: 'full url of endpoint to probe',
+          text: 'Full URL to send requests to',
           example: 'https://grafana.com/',
         };
         break;
       }
       case CheckType.PING: {
         resp = {
-          text: 'hostname of endpoint to ping',
+          text: 'Hostname to ping',
           example: 'grafana.com',
         };
         break;
       }
       case CheckType.DNS: {
         resp = {
-          text: 'name of record to query',
+          text: 'Name of record to query',
           example: 'grafana.com',
         };
         break;
       }
       case CheckType.TCP: {
         resp = {
-          text: 'host:port to connect to',
+          text: 'Host:port to connect to',
           example: 'grafana.com:80',
         };
         break;
@@ -209,8 +205,12 @@ export class CheckEditor extends PureComponent<Props, State> {
     return resp;
   }
 
+  onToggleOptions = (isOpen: boolean) => {
+    this.setState({ showOptions: !this.state.showOptions });
+  };
+
   render() {
-    const { check, showDeleteModal, probes, targetHelp, typeOfCheck } = this.state;
+    const { check, showDeleteModal, probes, targetHelp, typeOfCheck, showOptions } = this.state;
     if (!check || probes.length === 0) {
       return <div>Loading...</div>;
     }
@@ -242,48 +242,60 @@ export class CheckEditor extends PureComponent<Props, State> {
     ];
 
     return (
-      <Container>
+      <div>
         <Legend>{legend}</Legend>
-        <VerticalGroup>
-          <HorizontalGroup>
-            <Field label={<FormLabel name="Check Type" />} disabled={check.id ? true : false} required={true}>
-              <Select value={typeOfCheck} options={checkTypes} onChange={this.onSetType} />
+        <div>
+          <HorizontalGroup justify="flex-start" spacing="md">
+            <Field label="Check Type" disabled={check.id ? true : false}>
+              <Select value={typeOfCheck} options={checkTypes} onChange={this.onSetType} width={30} />
             </Field>
-            <Field
-              label={
-                <FormLabel
-                  name="Job Name"
-                  help="job name to assign to this check. 'Job name + target' must be unique."
-                />
-              }
-              disabled={!isEditor}
-              invalid={!Validation.validateJob(check.job)}
-            >
-              <Input type="string" placeholder="job" value={check.job} onChange={this.onJobUpdate} required={true} />
-            </Field>
-            <Field
-              label={<FormLabel name="Target" help={targetHelp.text} />}
-              disabled={!isEditor}
-              invalid={!Validation.validateTarget(check.target)}
-            >
-              <Input
-                type="string"
-                placeholder={targetHelp.example}
-                value={check.target}
-                onChange={this.onTargetUpdate}
-                width={60}
-                required={true}
-              />
-            </Field>
-            <Field label={<FormLabel name="Enabled" help="whether this check should run." />} disabled={!isEditor}>
+            <Field label="Enabled" disabled={!isEditor}>
               <Container padding="sm">
                 <Switch value={check.enabled} onChange={this.onEnableChange} disabled={!isEditor} />
               </Container>
             </Field>
           </HorizontalGroup>
-          <HorizontalGroup>
+          <Field
+            label="Job Name"
+            description="Name used for job label"
+            disabled={!isEditor}
+            invalid={!Validation.validateJob(check.job)}
+          >
+            <Input type="string" placeholder="jobName" value={check.job} onChange={this.onJobUpdate} />
+          </Field>
+          <Field
+            label="Target"
+            description={targetHelp.text}
+            disabled={!isEditor}
+            invalid={!Validation.validateTarget(check.target)}
+          >
+            <Input
+              type="string"
+              placeholder={targetHelp.example}
+              value={check.target}
+              onChange={this.onTargetUpdate}
+              required={true}
+            />
+          </Field>
+          <div>
             <Field
-              label={<FormLabel name="Frequency" help="How frequently the check will run." />}
+              label="Probe Locations"
+              description="Select the locations where this target should be monitored from"
+              disabled={!isEditor}
+              invalid={!Validation.validateProbes(check.probes)}
+            >
+              <CheckProbes
+                probes={check.probes}
+                availableProbes={probes}
+                onUpdate={this.onProbesUpdate}
+                isEditor={isEditor}
+              />
+            </Field>
+          </div>
+          <Collapse label="Options" collapsible={true} onToggle={this.onToggleOptions} isOpen={showOptions}>
+            <Field
+              label="Frequency"
+              description="How frequently the check should run."
               disabled={!isEditor}
               invalid={!Validation.validateFrequency(check.frequency)}
             >
@@ -291,16 +303,17 @@ export class CheckEditor extends PureComponent<Props, State> {
                 label="Frequency"
                 type="number"
                 step={10}
-                placeholder="60"
                 value={check!.frequency / 1000 || 60}
                 onChange={this.onFrequencyUpdate}
                 suffix="seconds"
                 max={120}
                 min={10}
+                width={30}
               />
             </Field>
             <Field
-              label={<FormLabel name="Timeout" help="maximum execution time for a check" />}
+              label="Timeout"
+              description="Maximum execution time for a check"
               disabled={!isEditor}
               invalid={!Validation.validateTimeout(check.timeout)}
             >
@@ -308,78 +321,59 @@ export class CheckEditor extends PureComponent<Props, State> {
                 label="Timeout"
                 type="number"
                 step={0.1}
-                placeholder="5"
                 value={check!.timeout / 1000 || 5}
                 onChange={this.onTimeoutUpdate}
                 suffix="seconds"
                 max={10}
                 min={1}
+                width={30}
               />
             </Field>
-          </HorizontalGroup>
 
-          <Field
-            label={
-              <FormLabel
-                name="Probe Locations"
-                help="select the locations where this target should be monitored from."
+            <Field
+              label="Labels"
+              description="Custom labels to be included with collected metrics and logs."
+              disabled={!isEditor}
+              invalid={!Validation.validateLabels(check.labels)}
+            >
+              <WorldpingLabelsForm
+                labels={check.labels}
+                onUpdate={this.onLabelsUpdate}
+                isEditor={isEditor}
+                type="Label"
+                limit={5}
               />
-            }
-            disabled={!isEditor}
-            invalid={!Validation.validateProbes(check.probes)}
-          >
-            <CheckProbes
-              probes={check.probes}
-              availableProbes={probes}
-              onUpdate={this.onProbesUpdate}
+            </Field>
+            <br />
+            <h3 className="page-heading">{typeOfCheck!.toLocaleUpperCase()} Settings</h3>
+            <CheckSettings
+              settings={check.settings}
+              typeOfCheck={typeOfCheck || CheckType.HTTP}
+              onUpdate={this.onSettingsUpdate}
               isEditor={isEditor}
             />
-          </Field>
-
-          <Field
-            label={<FormLabel name="Labels" help="add custom labels to be included with collected metrics and logs." />}
-            disabled={!isEditor}
-            invalid={!Validation.validateLabels(check.labels)}
-          >
-            <WorldpingLabelsForm
-              labels={check.labels}
-              onUpdate={this.onLabelsUpdate}
-              isEditor={isEditor}
-              type="Label"
-            />
-          </Field>
-        </VerticalGroup>
-        <Container>
-          <br />
-          <h3 className="page-heading">{typeOfCheck!.toLocaleUpperCase()} Settings</h3>
-          <CheckSettings
-            settings={check.settings}
-            typeOfCheck={typeOfCheck || CheckType.HTTP}
-            onUpdate={this.onSettingsUpdate}
-            isEditor={isEditor}
-          />
-
-          <HorizontalGroup>
-            <Button onClick={this.onSave} disabled={!isEditor || !Validation.validateCheck(check)}>
-              Save
+          </Collapse>
+        </div>
+        <HorizontalGroup>
+          <Button onClick={this.onSave} disabled={!isEditor || !Validation.validateCheck(check)}>
+            Save {Validation.validateCheck(check)}
+          </Button>
+          {check.id && (
+            <Button variant="destructive" onClick={this.showDeleteCheckModal(true)} disabled={!isEditor}>
+              Delete Check
             </Button>
-            {check.id && (
-              <Button variant="destructive" onClick={this.showDeleteCheckModal(true)} disabled={!isEditor}>
-                Delete Check
-              </Button>
-            )}
-            <ConfirmModal
-              isOpen={showDeleteModal}
-              title="Delete check"
-              body="Are you sure you want to delete this check?"
-              confirmText="Delete check"
-              onConfirm={this.onRemoveCheck}
-              onDismiss={this.showDeleteCheckModal(false)}
-            />
-            <a onClick={this.onBack}>Back</a>
-          </HorizontalGroup>
-        </Container>
-      </Container>
+          )}
+          <ConfirmModal
+            isOpen={showDeleteModal}
+            title="Delete check"
+            body="Are you sure you want to delete this check?"
+            confirmText="Delete check"
+            onConfirm={this.onRemoveCheck}
+            onDismiss={this.showDeleteCheckModal(false)}
+          />
+          <a onClick={this.onBack}>Back</a>
+        </HorizontalGroup>
+      </div>
     );
   }
 }
@@ -473,14 +467,27 @@ export class CheckProbes extends PureComponent<CheckProbesProps, CheckProbesStat
         probes.push(p.value);
       }
     }
-    console.log('probes updated to:', probes);
-
     const str = probes.join(',');
     this.setState({ probes: probes, probeStr: str }, this.onUpdate);
   };
 
   onUpdate = () => {
     this.props.onUpdate(this.state.probes);
+  };
+
+  onAllLocations = () => {
+    let probes: number[] = [];
+    for (const p of this.props.availableProbes) {
+      if (p.id) {
+        probes.push(p.id);
+      }
+    }
+    const str = probes.join(',');
+    this.setState({ probes: probes, probeStr: str }, this.onUpdate);
+  };
+  onClearLocations = () => {
+    let probes: number[] = [];
+    this.setState({ probes: probes, probeStr: '' }, this.onUpdate);
   };
 
   render() {
@@ -491,8 +498,7 @@ export class CheckProbes extends PureComponent<CheckProbesProps, CheckProbesStat
       options.push({
         label: p.name,
         value: p.id,
-        labels: p.labels,
-        online: p.online,
+        description: p.online ? 'Online' : 'Offline',
       });
     }
     let selectedProbes = [];
@@ -511,7 +517,18 @@ export class CheckProbes extends PureComponent<CheckProbesProps, CheckProbesStat
           onChange={this.onChange}
           disabled={!isEditor}
           invalid={!Validation.validateProbes(probes)}
+          closeMenuOnSelect={false}
         />
+        <Container margin="xs">
+          <HorizontalGroup spacing="md">
+            <Button onClick={this.onAllLocations} disabled={!isEditor} variant="secondary" size="sm">
+              All&nbsp;&nbsp;
+            </Button>
+            <Button onClick={this.onClearLocations} disabled={!isEditor} variant="secondary" size="sm" type="reset">
+              Clear
+            </Button>
+          </HorizontalGroup>
+        </Container>
       </div>
     );
   }

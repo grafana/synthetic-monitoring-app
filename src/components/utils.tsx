@@ -1,31 +1,19 @@
 import React, { PureComponent } from 'react';
-import { Tooltip, Icon, Container, IconButton, HorizontalGroup, List, Input, VerticalGroup, Button } from '@grafana/ui';
+import { Icon, Label, IconButton, HorizontalGroup, List, Input, VerticalGroup, Button } from '@grafana/ui';
 import { Label as WorldpingLabel, IpVersion } from 'types';
 import * as Validation from 'validation';
 
 interface FormLabelProps {
   name: string;
-  help?: string;
+  description?: string;
 }
 
 interface FormLabelState {}
 
 export class FormLabel extends PureComponent<FormLabelProps, FormLabelState> {
   render() {
-    const { help } = this.props;
-    return (
-      <Container margin="sm">
-        {this.props.name}
-        {help && (
-          <Tooltip content={help}>
-            <span>
-              &nbsp;
-              <Icon name="question-circle" />
-            </span>
-          </Tooltip>
-        )}
-      </Container>
-    );
+    const { description, name } = this.props;
+    return <Label description={description || ''}>{name}</Label>;
   }
 }
 
@@ -33,6 +21,7 @@ interface LabelsProps {
   labels: WorldpingLabel[];
   isEditor: boolean;
   type: string;
+  limit: number;
   onUpdate: (labels: WorldpingLabel[]) => void;
 }
 
@@ -73,7 +62,7 @@ export class WorldpingLabelsForm extends PureComponent<LabelsProps, LabelsState>
 
   render() {
     const { labels } = this.state;
-    const { isEditor } = this.props;
+    const { isEditor, limit } = this.props;
     return (
       <VerticalGroup justify="space-between">
         <List
@@ -88,10 +77,12 @@ export class WorldpingLabelsForm extends PureComponent<LabelsProps, LabelsState>
             />
           )}
         />
-        <Button onClick={this.addLabel} disabled={!isEditor} variant="secondary" size="sm">
-          <Icon name="plus" />
-          &nbsp; Add {this.props.type}
-        </Button>
+        {labels.length < limit && (
+          <Button onClick={this.addLabel} disabled={!isEditor} variant="secondary" size="sm">
+            <Icon name="plus" />
+            &nbsp; Add {this.props.type}
+          </Button>
+        )}
       </VerticalGroup>
     );
   }

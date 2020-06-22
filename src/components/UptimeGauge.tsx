@@ -32,16 +32,28 @@ export class UptimeGauge extends PureComponent<Props, State> {
     points: [],
   };
 
-  async componentDidMount() {
-    const { labelNames, labelValues } = this.props;
+  filterString(labelNames: string[], labelValues: string[]): string {
     let filters: string[] = [];
     for (let i in labelNames) {
       const k = labelNames[i];
       const v = labelValues[i];
       filters.push(`${k}="${v}"`);
     }
-    const filter = filters.join(',');
+    return filters.join(',');
+  }
+
+  async componentDidMount() {
+    const { labelNames, labelValues } = this.props;
+    const filter = this.filterString(labelNames, labelValues);
     this.setState({ filter }, this.queryUptime);
+  }
+
+  async componentDidUpdate(oldProps: Props) {
+    const { labelNames, labelValues } = this.props;
+    const filter = this.filterString(labelNames, labelValues);
+    if (this.state.filter !== filter) {
+      this.setState({ filter }, this.queryUptime);
+    }
   }
 
   async queryUptime() {
@@ -170,6 +182,18 @@ export class CheckHealth extends PureComponent<CheckHealthProps, CheckHealthStat
   };
 
   async componentDidMount() {
+    const { check } = this.props;
+    if (!check.enabled) {
+      this.setState({ iconName: 'pause' });
+      return;
+    }
+    await this.queryUptime();
+  }
+
+  async componentDidUpdate(oldProps: CheckHealthProps) {
+    if (this.props.check.id === oldProps.check.id) {
+      return;
+    }
     const { check } = this.props;
     if (!check.enabled) {
       this.setState({ iconName: 'pause' });

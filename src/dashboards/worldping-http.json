@@ -128,7 +128,7 @@
       },
       "targets": [
         {
-          "expr": "100*(1 - (sum(rate(probe_success_sum{instance=\"$instance\", job=\"$job\"}[$__range]) *  on (instance, job, probe, config_version) group_left(geohash) worldping_check_info{check_name=\"http\", instance=\"$instance\", job=\"$job\"}) by (probe, geohash)/ sum(rate(probe_success_count{instance=\"$instance\", job=\"$job\"}[$__range]) *  on (instance, job, probe, config_version) group_left(geohash) worldping_check_info{check_name=\"http\", instance=\"$instance\", job=\"$job\"}) by (probe, geohash)))",
+          "expr": "100*(1 - (sum(rate(probe_success_sum{instance=\"$instance\", job=\"$job\"}[$__range]) *  on (instance, job, probe, config_version) group_left(geohash) max(worldping_check_info{check_name=\"http\", instance=\"$instance\", job=\"$job\"}) by (instance, job, probe, config_version, geohash)) by (probe, geohash)/ sum(rate(probe_success_count{instance=\"$instance\", job=\"$job\"}[$__range]) *  on (instance, job, probe, config_version) group_left(geohash) max(worldping_check_info{check_name=\"http\", instance=\"$instance\", job=\"$job\"}) by (instance, job, probe, config_version, geohash)) by (probe, geohash)))",
           "format": "table",
           "instant": true,
           "interval": "",
@@ -938,5 +938,5 @@
   "timezone": "",
   "title": "worldPing HTTP",
   "uid": "rq0JrllZz",
-  "version": 22
+  "version": 23
 }

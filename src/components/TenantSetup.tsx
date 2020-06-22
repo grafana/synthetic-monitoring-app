@@ -26,7 +26,7 @@ interface State {
 }
 
 export class TenantSetup extends PureComponent<Props, State> {
-  defaultApiHost = 'https://worldping-api-dev.grafana.net';
+  defaultApiHost = 'https://worldping-api.grafana.net';
 
   state: State = {
     showResetModal: false,
