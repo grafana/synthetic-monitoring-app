@@ -1,6 +1,6 @@
 {
   "name": "worldping-app",
-  "version": "0.0.1",
+  "version": "0.0.1-dev",
   "description": "Grafana Woldping App",
   "scripts": {
     "build": "grafana-toolkit plugin:build",
