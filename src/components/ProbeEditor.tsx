@@ -16,7 +16,7 @@ import {
 import { Label as WorldpingLabel, Probe, OrgRole } from 'types';
 import { WorldPingDataSource } from 'datasource/DataSource';
 import { hasRole } from 'utils';
-import { FormLabel, WorldpingLabelsForm } from './utils';
+import { WorldpingLabelsForm } from './utils';
 import { UptimeGauge } from './UptimeGauge';
 
 interface Props {
@@ -88,6 +88,12 @@ export class ProbeEditor extends PureComponent<Props, State> {
     this.setState({ probe });
   };
 
+  onRegionUpdate = (event: React.ChangeEvent<HTMLInputElement>) => {
+    let probe = { ...this.state.probe } as Probe;
+    probe.region = event.target.value;
+    this.setState({ probe });
+  };
+
   onNameUpdate = (event: React.ChangeEvent<HTMLInputElement>) => {
     let probe = { ...this.state.probe } as Probe;
     probe.name = event.target.value;
@@ -142,6 +148,14 @@ export class ProbeEditor extends PureComponent<Props, State> {
     }
     if (probe.longitude < -180 || probe.longitude > 180) {
       console.log('probe longitude must be between -180 and 180');
+      return false;
+    }
+    if (probe.region === '') {
+      console.log('probe region must be set');
+      return false;
+    }
+    if (probe.labels.length > 3) {
+      console.log('probes cannot have more than 3 labels');
       return false;
     }
     for (const l of probe.labels) {
@@ -233,13 +247,12 @@ export class ProbeEditor extends PureComponent<Props, State> {
           <Legend>{legend}</Legend>
           <Container margin="md">
             <HorizontalGroup>
-              <Field label={<FormLabel name="Probe Name" help="Unique name of probe" />} disabled={!isEditor}>
+              <Field label="Probe Name" description="Unique name of probe" disabled={!isEditor}>
                 <Input type="string" value={probe.name} onChange={this.onNameUpdate} />
               </Field>
               <Field
-                label={
-                  <FormLabel name="Public" help="Public probes are run by Grafana Labs and can be used by all users" />
-                }
+                label="Public"
+                description="Public probes are run by Grafana Labs and can be used by all users"
                 disabled={!isEditor}
               >
                 <Container padding="sm">
@@ -251,10 +264,7 @@ export class ProbeEditor extends PureComponent<Props, State> {
           <Container margin="md">
             <h3 className="page-heading">Location information</h3>
             <HorizontalGroup>
-              <Field
-                label={<FormLabel name="Latitude" help="Latitude coordinates of this probe" />}
-                disabled={!isEditor}
-              >
+              <Field label="Latitude" description="Latitude coordinates of this probe" disabled={!isEditor}>
                 <Input
                   label="Latitude"
                   type="number"
@@ -263,16 +273,24 @@ export class ProbeEditor extends PureComponent<Props, State> {
                   onChange={this.onLatUpdate}
                 />
               </Field>
-              <Field
-                label={<FormLabel name="Longitude" help="Longitude coordinates of this probe" />}
-                disabled={!isEditor}
-              >
+              <Field label="Longitude" description="Longitude coordinates of this probe" disabled={!isEditor}>
                 <Input
                   label="Longitude"
                   type="number"
                   placeholder="0.0"
                   value={probe?.longitude || 0.0}
                   onChange={this.onLongUpdate}
+                />
+              </Field>
+            </HorizontalGroup>
+            <HorizontalGroup>
+              <Field label="Region" description="Latitude coordinates of this probe" disabled={!isEditor}>
+                <Input
+                  label="Region"
+                  type="string"
+                  placeholder="region"
+                  value={probe.region}
+                  onChange={this.onRegionUpdate}
                 />
               </Field>
             </HorizontalGroup>
@@ -284,6 +302,7 @@ export class ProbeEditor extends PureComponent<Props, State> {
               onUpdate={this.onLabelsUpdate}
               isEditor={isEditor}
               type="Label"
+              limit={3}
             />
           </Container>
           <Container margin="md">

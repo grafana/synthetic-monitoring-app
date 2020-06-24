@@ -17,8 +17,9 @@ import {
 } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
 import { IpVersion, Settings, HttpSettings, HttpMethod, HttpVersion, BasicAuth, TLSConfig, HeaderMatch } from 'types';
-import { FormLabel, WorldpingLabelsForm, IpOptions } from './utils';
+import { WorldpingLabelsForm, IpOptions } from '../utils';
 import { Label as WorldpingLabel } from 'types';
+import { AuthSettings } from './AuthSettings';
 
 interface Props {
   settings: Settings;
@@ -40,6 +41,10 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
     headers: this.props.settings.http?.headers,
     ipVersion: this.props.settings.http?.ipVersion || IpVersion.V4,
     noFollowRedirects: this.props.settings.http?.noFollowRedirects || false,
+
+    // Authentication
+    bearerToken: this.props.settings.http?.bearerToken,
+    basicAuth: this.props.settings.http?.basicAuth,
 
     // validations
     failIfSSL: this.props.settings.http?.failIfSSL || false,
@@ -73,14 +78,6 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
     this.setState({ body: event.target.value }, this.onUpdate);
   };
 
-  onBearerTokenChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({ bearerToken: event.target.value }, this.onUpdate);
-  };
-
-  onBasicAuthChange = (basicAuth: BasicAuth | undefined) => {
-    this.setState({ basicAuth: basicAuth }, this.onUpdate);
-  };
-
   onIpVersionChange = (value: SelectableValue<IpVersion>) => {
     this.setState({ ipVersion: value.value || IpVersion.Any }, this.onUpdate);
   };
@@ -109,8 +106,8 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
     this.setState({ showValidation: !this.state.showValidation });
   };
 
-  onToggleAuthentication = (isOpen: boolean) => {
-    this.setState({ showAuthentication: !this.state.showAuthentication });
+  onAuthUpdate = (bearerToken: string | undefined, basicAuth: BasicAuth | undefined) => {
+    this.setState({ bearerToken, basicAuth }, this.onUpdate);
   };
 
   onToggleTLS = (isOpen: boolean) => {
@@ -360,34 +357,26 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
     return (
       <Container>
         <HorizontalGroup>
-          <Field
-            label={<FormLabel name="Request Method" help="The HTTP method the probe will use" />}
-            disabled={!isEditor}
-          >
+          <Field label="Request Method" description="The HTTP method the probe will use" disabled={!isEditor}>
             <Select value={state.method} options={methodOptions} onChange={this.onMethodChange} />
           </Field>
         </HorizontalGroup>
         <Container>
-          <Field
-            label={<FormLabel name="Request Body" help="The body of the HTTP request used in probe." />}
-            disabled={!isEditor}
-          >
+          <Field label="Request Body" description="The body of the HTTP request used in probe." disabled={!isEditor}>
             <div>
               <TextArea value={state.body} onChange={this.onBodyChange} rows={2} disabled={!isEditor} />
             </div>
           </Field>
         </Container>
         <Container>
-          <Field
-            label={<FormLabel name="Request Headers" help="The HTTP headers set for the probe.." />}
-            disabled={!isEditor}
-          >
+          <Field label="Request Headers" description="The HTTP headers set for the probe.." disabled={!isEditor}>
             <div>
               <WorldpingLabelsForm
                 labels={this.headersToLabels()}
                 isEditor={isEditor}
                 onUpdate={this.onHeadersUpdate}
                 type="Header"
+                limit={10}
               />
             </div>
           </Field>
@@ -396,28 +385,12 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
         <Collapse label="TLS Config" collapsible={true} onToggle={this.onToggleTLS} isOpen={state.showTLS}>
           <TLSForm onChange={this.onTLSChange} isEditor={isEditor} tlsConfig={state.tlsConfig} />
         </Collapse>
-        <Collapse
-          label="Authentication"
-          collapsible={true}
-          onToggle={this.onToggleAuthentication}
-          isOpen={state.showAuthentication}
-        >
-          <HorizontalGroup>
-            <Field
-              label={<FormLabel name="Bearer Token" help="The bearer token for the target" />}
-              disabled={!isEditor}
-            >
-              <Input
-                type="password"
-                placeholder="Bearer Token"
-                value={state.bearerToken}
-                onChange={this.onBearerTokenChange}
-                disabled={!isEditor}
-              />
-            </Field>
-          </HorizontalGroup>
-          <BasicAuthForm onChange={this.onBasicAuthChange} basicAuth={state.basicAuth} isEditor={isEditor} />
-        </Collapse>
+        <AuthSettings
+          isEditor={isEditor}
+          basicAuth={state.basicAuth}
+          bearerToken={state.bearerToken}
+          onUpdate={this.onAuthUpdate}
+        />
         <Collapse
           label="Validation"
           collapsible={true}
@@ -426,9 +399,8 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
         >
           <HorizontalGroup>
             <Field
-              label={
-                <FormLabel name="Valid Status Codes" help="Accepted status codes for this probe. Defaults to 2xx." />
-              }
+              label="Valid Status Codes"
+              description="Accepted status codes for this probe. Defaults to 2xx."
               disabled={!isEditor}
             >
               <MultiSelect
@@ -438,10 +410,7 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
                 disabled={!isEditor}
               />
             </Field>
-            <Field
-              label={<FormLabel name="Valid HTTP Versions" help="Accepted HTTP versions for this probe" />}
-              disabled={!isEditor}
-            >
+            <Field label="Valid HTTP Versions" description="Accepted HTTP versions for this probe" disabled={!isEditor}>
               <MultiSelect
                 options={httpVersionOptions}
                 value={state.validHTTPVersions}
@@ -450,15 +419,12 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
               />
             </Field>
 
-            <Field label={<FormLabel name="Fail if SSL" help="Probe fails if SSL is present" />} disabled={!isEditor}>
+            <Field label="Fail if SSL" description="Probe fails if SSL is present" disabled={!isEditor}>
               <Container padding="sm">
                 <Switch value={state.failIfSSL} onChange={this.onFailIfSSLChange} disabled={!isEditor} />
               </Container>
             </Field>
-            <Field
-              label={<FormLabel name="Fail if not SSL" help="Probe fails if SSL is not present" />}
-              disabled={!isEditor}
-            >
+            <Field label="Fail if not SSL" description="Probe fails if SSL is not present" disabled={!isEditor}>
               <Container padding="sm">
                 <Switch value={state.failIfNotSSL} onChange={this.onFailIfNotSSLChange} disabled={!isEditor} />
               </Container>
@@ -466,7 +432,8 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
           </HorizontalGroup>
 
           <Field
-            label={<FormLabel name="Fail if body matches regexp" help="Probe fails if response body matches regex" />}
+            label="Fail if body matches regexp"
+            description="Probe fails if response body matches regex"
             disabled={!isEditor}
           >
             <VerticalGroup justify="space-between">
@@ -496,12 +463,8 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
             </VerticalGroup>
           </Field>
           <Field
-            label={
-              <FormLabel
-                name="Fail if body doesn't match regexp"
-                help="Probe fails if response body does not match regex"
-              />
-            }
+            label="Fail if body doesn't match regexp"
+            description="Probe fails if response body does not match regex"
             disabled={!isEditor}
           >
             <VerticalGroup justify="space-between">
@@ -533,14 +496,14 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
           <HeaderMatchForm
             headerMatches={state.failIfHeaderMatchesRegexp || []}
             name="Fail if header matches regexp"
-            help="Probe fails if response header matches regex. For headers with multiple values, fails if *at least one* matches"
+            description="Probe fails if response header matches regex. For headers with multiple values, fails if *at least one* matches"
             onChange={this.onFailIfHeaderMatchesUpdate}
             isEditor={isEditor}
           />
           <HeaderMatchForm
             headerMatches={state.failIfHeaderNotMatchesRegexp || []}
             name="Fail if header doesn't match regexp"
-            help="Probe fails if response header does not match regex. For headers with multiple values, fails if *none* match."
+            description="Probe fails if response header does not match regex. For headers with multiple values, fails if *none* match."
             onChange={this.onFailIfHeaderNotMatchesUpdate}
             isEditor={isEditor}
           />
@@ -553,16 +516,14 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
         >
           <HorizontalGroup>
             <div>
-              <Field
-                label={<FormLabel name="IP Version" help="The IP protocol of the HTTP request" />}
-                disabled={!isEditor}
-              >
+              <Field label="IP Version" description="The IP protocol of the HTTP request" disabled={!isEditor}>
                 <Select value={state.ipVersion} options={IpOptions} onChange={this.onIpVersionChange} />
               </Field>
             </div>
             <div>
               <Field
-                label={<FormLabel name="Follow Redirects" help="Whether or not the probe will follow any redirects." />}
+                label="Follow Redirects"
+                description="Whether or not the probe will follow any redirects."
                 disabled={!isEditor}
               >
                 <Container padding="sm">
@@ -578,12 +539,8 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
           <HorizontalGroup>
             <div>
               <Field
-                label={
-                  <FormLabel
-                    name="Cache busting query parameter name"
-                    help="The name of the query parameter used to prevent the server from using a cached response. Each probe will assign a random value to this parameter each time a request is made."
-                  />
-                }
+                label="Cache busting query parameter name"
+                description="The name of the query parameter used to prevent the server from using a cached response. Each probe will assign a random value to this parameter each time a request is made."
               >
                 <Input
                   type="string"
@@ -597,72 +554,6 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
           </HorizontalGroup>
         </Collapse>
       </Container>
-    );
-  }
-}
-
-interface BasicAuthProps {
-  basicAuth?: BasicAuth;
-  isEditor: boolean;
-  onChange: (basicAuth: BasicAuth | undefined) => void;
-}
-
-interface BasicAuthState {
-  username: string;
-  password: string;
-}
-
-export class BasicAuthForm extends PureComponent<BasicAuthProps, BasicAuthState> {
-  state = {
-    username: this.props.basicAuth?.username || '',
-    password: this.props.basicAuth?.password || '',
-  };
-
-  onUpdate = () => {
-    if (!this.state.username && !this.state.password) {
-      this.props.onChange(undefined);
-      return;
-    }
-    const auth = {
-      username: this.state.username,
-      password: this.state.password,
-    };
-    this.props.onChange(auth);
-  };
-
-  onUsernameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({ username: event.target.value }, this.onUpdate);
-  };
-
-  onPasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({ password: event.target.value }, this.onUpdate);
-  };
-
-  render() {
-    const { username, password } = this.state;
-    const { isEditor } = this.props;
-
-    return (
-      <HorizontalGroup>
-        <Field label={<FormLabel name="Username" help="Basic Authentication username" />} disabled={!isEditor}>
-          <Input
-            type="text"
-            placeholder="username"
-            value={username}
-            onChange={this.onUsernameChange}
-            disabled={!isEditor}
-          />
-        </Field>
-        <Field label={<FormLabel name="Password" help="Basic Authentication password" />} disabled={!isEditor}>
-          <Input
-            type="password"
-            placeholder="password"
-            value={password}
-            onChange={this.onPasswordChange}
-            disabled={!isEditor}
-          />
-        </Field>
-      </HorizontalGroup>
     );
   }
 }
@@ -726,18 +617,12 @@ export class TLSForm extends PureComponent<TLSProps, TLSState> {
     return (
       <div>
         <HorizontalGroup>
-          <Field
-            label={<FormLabel name="Skip Validation" help="Disable target certificate validation" />}
-            disabled={!isEditor}
-          >
+          <Field label="Skip Validation" description="Disable target certificate validation" disabled={!isEditor}>
             <Container padding="sm">
               <Switch value={insecureSkipVerify} onChange={this.onInsecureSkipVerifyChange} disabled={!isEditor} />
             </Container>
           </Field>
-          <Field
-            label={<FormLabel name="Server Name" help="Used to verify the hostname for the targets" />}
-            disabled={!isEditor}
-          >
+          <Field label="Server Name" description="Used to verify the hostname for the targets" disabled={!isEditor}>
             <Input
               type="text"
               placeholder="ServerName"
@@ -748,10 +633,7 @@ export class TLSForm extends PureComponent<TLSProps, TLSState> {
           </Field>
         </HorizontalGroup>
         <Container>
-          <Field
-            label={<FormLabel name="CA Certificate" help="The CA cert to use for the targets" />}
-            disabled={!isEditor}
-          >
+          <Field label="CA Certificate" description="The CA cert to use for the targets" disabled={!isEditor}>
             <div>
               <TextArea
                 value={caCert}
@@ -764,10 +646,7 @@ export class TLSForm extends PureComponent<TLSProps, TLSState> {
           </Field>
         </Container>
         <Container>
-          <Field
-            label={<FormLabel name="Client Certificate" help="The client cert file for the targets" />}
-            disabled={!isEditor}
-          >
+          <Field label="Client Certificate" description="The client cert file for the targets" disabled={!isEditor}>
             <div>
               <TextArea
                 value={clientCert}
@@ -780,10 +659,7 @@ export class TLSForm extends PureComponent<TLSProps, TLSState> {
           </Field>
         </Container>
         <Container>
-          <Field
-            label={<FormLabel name="Client Key" help="The client key file for the targets" />}
-            disabled={!isEditor}
-          >
+          <Field label="Client Key" description="The client key file for the targets" disabled={!isEditor}>
             <div>
               <TextArea
                 type="password"
@@ -804,7 +680,7 @@ export class TLSForm extends PureComponent<TLSProps, TLSState> {
 interface HeaderMatchProps {
   headerMatches: HeaderMatch[];
   name: string;
-  help: string;
+  description: string;
   isEditor: boolean;
   onChange: (headerMatches: HeaderMatch[]) => void;
 }
@@ -895,10 +771,10 @@ export class HeaderMatchForm extends PureComponent<HeaderMatchProps, HeaderMatch
 
   render() {
     const { headerMatches } = this.state;
-    const { isEditor, name, help } = this.props;
+    const { isEditor, name, description } = this.props;
 
     return (
-      <Field label={<FormLabel name={name} help={help} />} disabled={!isEditor}>
+      <Field label={name} description={description} disabled={!isEditor}>
         <VerticalGroup justify="space-between">
           <List
             items={headerMatches}

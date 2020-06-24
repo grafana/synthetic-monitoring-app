@@ -13,8 +13,8 @@ import {
 } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
 import { IpVersion, Settings, TcpSettings, TLSConfig, TCPQueryResponse } from 'types';
-import { FormLabel, IpOptions } from './utils';
-import { TLSForm } from './HttpSettings';
+import { IpOptions } from './utils';
+import { TLSForm } from './http/HttpSettings';
 
 interface Props {
   settings: Settings;
@@ -95,7 +95,8 @@ export class TcpSettingsForm extends PureComponent<Props, State> {
     return (
       <Container>
         <Field
-          label={<FormLabel name="Use TLS" help="Whether or not TLS is used when the connection is initiated." />}
+          label="Use TLS"
+          description="Whether or not TLS is used when the connection is initiated."
           disabled={!isEditor}
         >
           <Container padding="sm">
@@ -122,10 +123,7 @@ export class TcpSettingsForm extends PureComponent<Props, State> {
         <Collapse label="Advanced Options" collapsible={true} onToggle={this.onShowAdvanced} isOpen={showAdvanced}>
           <HorizontalGroup>
             <div>
-              <Field
-                label={<FormLabel name="IP Version" help="The IP protocol of the ICMP request" />}
-                disabled={!isEditor}
-              >
+              <Field label="IP Version" description="The IP protocol of the ICMP request" disabled={!isEditor}>
                 <Select value={ipVersion} options={IpOptions} onChange={this.onIpVersionChange} />
               </Field>
             </div>
@@ -252,12 +250,8 @@ export class QueryResponseForm extends PureComponent<QueryResponseProps, QueryRe
 
     return (
       <Field
-        label={
-          <FormLabel
-            name="Query/Response"
-            help="The query sent in the TCP probe and the expected associated response. StartTLS upgrades TCP connection to TLS."
-          />
-        }
+        label="Query/Response"
+        description="The query sent in the TCP probe and the expected associated response. StartTLS upgrades TCP connection to TLS."
         disabled={!isEditor}
       >
         <Container>

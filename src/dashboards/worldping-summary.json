@@ -55,16 +55,16 @@
     ]
   },
   "description": "",
-  "editable": false,
+  "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
   "id": null,
-  "iteration": 1591643197906,
+  "iteration": 1592844495556,
   "links": [],
   "panels": [
     {
       "collapsed": false,
-      "datasource": null,
+      "datasource": "${DS_WORLDPING_METRICS}",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -125,7 +125,7 @@
       },
       "targets": [
         {
-          "expr": "100*(1 - (sum(rate(probe_success_sum[${__range_s}s]) *  on (instance, job, probe, config_version) group_left(geohash) worldping_check_info{check_name=\"$check_type\"}) by (probe, geohash)/ sum(rate(probe_success_count[${__range_s}s]) *  on (instance, job, probe, config_version) group_left(geohash) worldping_check_info{check_name=\"$check_type\"}) by (probe, geohash)))",
+          "expr": "100*(1 - (sum(rate(probe_success_sum[${__range_s}s]) *  on (instance, job, probe, config_version) group_left(geohash) max(worldping_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version, geohash)) by (probe, geohash)/ sum(rate(probe_success_count[${__range_s}s]) *  on (instance, job, probe, config_version) group_left(geohash) max(worldping_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version, geohash)) by (probe, geohash)))",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -205,7 +205,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "1 - (sum(rate(probe_success_sum[$__interval]) *  on (instance, job, probe, config_version) worldping_check_info{check_name=\"$check_type\"}) / sum(rate(probe_success_count[$__interval]) *  on (instance, job, probe, config_version) worldping_check_info{check_name=\"$check_type\"}))",
+          "expr": "1 - (sum(rate(probe_success_sum[$__interval]) *  on (instance, job, probe, config_version) max(worldping_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version)) / sum(rate(probe_success_count[$__interval]) *  on (instance, job, probe, config_version) max(worldping_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version)))",
           "hide": false,
           "interval": "",
           "legendFormat": "% Errors",
@@ -380,7 +380,7 @@
       ],
       "targets": [
         {
-          "expr": "sum(rate(probe_success_sum[$__range]) * on (instance, job, probe, config_version) group_left(check_name) worldping_check_info{check_name=\"$check_type\"}) by (instance, job, check_name) / sum(rate(probe_success_count[$__range]) * on (instance, job, probe, config_version) group_left(check_name) worldping_check_info{check_name=\"$check_type\"}) by (instance, check_name, job)",
+          "expr": "sum(rate(probe_success_sum[$__range]) * on (instance, job, probe, config_version) group_left(check_name) max(worldping_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version, check_name)) by (instance, job, check_name) / sum(rate(probe_success_count[$__range]) * on (instance, job, probe, config_version) group_left(check_name) max(worldping_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version, check_name)) by (instance, check_name, job)",
           "format": "table",
           "instant": true,
           "interval": "",
@@ -388,7 +388,7 @@
           "refId": "C"
         },
         {
-          "expr": "sum(rate(probe_duration_seconds_sum[$__range]) * on (instance, job, probe, config_version) group_left(check_name) worldping_check_info{check_name=\"$check_type\"}) by (instance, job, check_name) / sum(rate(probe_duration_seconds_count[$__range]) * on (instance, job, probe, config_version) group_left(check_name) worldping_check_info{check_name=\"$check_type\"}) by (instance, job, check_name)",
+          "expr": "sum(rate(probe_duration_seconds_sum[$__range]) * on (instance, job, probe, config_version) group_left(check_name) max(worldping_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version, check_name)) by (instance, job, check_name) / sum(rate(probe_duration_seconds_count[$__range]) * on (instance, job, probe, config_version) group_left(check_name) max(worldping_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version, check_name)) by (instance, job, check_name)",
           "format": "table",
           "instant": true,
           "interval": "",
@@ -458,7 +458,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(probe_duration_seconds_sum[5m]) * on (instance, job, probe, config_version) group_left worldping_check_info{check_name=\"$check_type\"})  by (job, instance) / sum(rate(probe_duration_seconds_count[5m]) * on (instance, job, probe, config_version) group_left worldping_check_info{check_name=\"$check_type\"}) by (job, instance)",
+          "expr": "sum(rate(probe_duration_seconds_sum[5m]) * on (instance, job, probe, config_version) group_left max(worldping_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version))  by (job, instance) / sum(rate(probe_duration_seconds_count[5m]) * on (instance, job, probe, config_version) group_left max(worldping_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version)) by (job, instance)",
           "hide": false,
           "interval": "",
           "legendFormat": "{{job}}/{{ instance }}",
@@ -537,6 +537,28 @@
         "tagsQuery": "",
         "type": "query",
         "useTags": false
+      },
+      {
+        "allValue": ".*",
+        "current": {},
+        "datasource": "${DS_WORLDPING_METRICS}",
+        "definition": "label_values(worldping_check_info, region)",
+        "hide": 0,
+        "includeAll": true,
+        "label": null,
+        "multi": true,
+        "name": "region",
+        "options": [],
+        "query": "label_values(worldping_check_info, region)",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
       }
     ]
   },
@@ -560,5 +582,5 @@
   "timezone": "",
   "title": "worldPing Summary",
   "uid": "fU-WBSqWz",
-  "version": 29
+  "version": 34
 }

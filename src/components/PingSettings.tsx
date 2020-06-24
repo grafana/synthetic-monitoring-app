@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import { Collapse, Container, HorizontalGroup, Field, Select, Switch } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
 import { IpVersion, Settings, PingSettings } from 'types';
-import { FormLabel, IpOptions } from './utils';
+import { IpOptions } from './utils';
 
 interface Props {
   settings: Settings;
@@ -49,16 +49,14 @@ export class PingSettingsForm extends PureComponent<Props, State> {
         <Collapse label="Advanced Options" collapsible={true} onToggle={this.onToggleOptions} isOpen={showAdvanced}>
           <HorizontalGroup>
             <div>
-              <Field
-                label={<FormLabel name="IP Version" help="The IP protocol of the ICMP request" />}
-                disabled={!isEditor}
-              >
+              <Field label="IP Version" description="The IP protocol of the ICMP request" disabled={!isEditor}>
                 <Select value={ipVersion} options={IpOptions} onChange={this.onIpVersionChange} />
               </Field>
             </div>
             <div>
               <Field
-                label={<FormLabel name="Don't Fragment" help="Set the DF-bit in the IP-header. Only works with ipV4" />}
+                label="Don't Fragment"
+                description="Set the DF-bit in the IP-header. Only works with ipV4"
                 disabled={!isEditor}
               >
                 <Container padding="sm">

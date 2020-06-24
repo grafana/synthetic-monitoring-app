@@ -32,15 +32,15 @@ export function validateTarget(target: string): boolean {
 }
 
 export function validateFrequency(freq: number): boolean {
-  return freq >= 10000 && freq <= 120000;
+  return freq > 10000 && freq < 120000;
 }
 
 export function validateTimeout(t: number): boolean {
-  return t >= 1000 && t <= 10000;
+  return t > 1000 && t < 10000;
 }
 
 export function validateLabels(labels: Label[]): boolean {
-  if (labels.length > 64) {
+  if (labels.length < 1 || labels.length > 5) {
     return false;
   }
   // validate each label
@@ -51,8 +51,6 @@ export function validateLabels(labels: Label[]): boolean {
   }
   return true;
 }
-
-const reservedLabels: string[] = ['instance', 'job', 'probe', 'config_version', 'check_name'];
 
 const labelRegex = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
 
@@ -65,9 +63,6 @@ export function validateLabelName(name: string): boolean {
     return false;
   }
 
-  if (reservedLabels.indexOf(name) > -1) {
-    return false;
-  }
   return labelRegex.test(name);
 }
 

@@ -107,6 +107,7 @@ export class ProbesPage extends PureComponent<Props, State> {
         public: false,
         latitude: 0.0,
         longitude: 0.0,
+        region: '',
         labels: [],
         online: false,
         onlineChange: 0,
