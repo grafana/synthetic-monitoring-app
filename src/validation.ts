@@ -24,7 +24,7 @@ export function validateCheck(check: Check): boolean {
 }
 
 export function validateJob(job: string): boolean {
-  return job.length > 0 && job.length < 32;
+  return job.length > 0 && job.length <= 32;
 }
 
 export function validateTarget(target: string): boolean {
@@ -32,15 +32,15 @@ export function validateTarget(target: string): boolean {
 }
 
 export function validateFrequency(freq: number): boolean {
-  return freq > 10000 && freq < 120000;
+  return freq >= 10000 && freq <= 120000;
 }
 
 export function validateTimeout(t: number): boolean {
-  return t > 1000 && t < 10000;
+  return t >= 1000 && t <= 10000;
 }
 
 export function validateLabels(labels: Label[]): boolean {
-  if (labels.length < 1 || labels.length > 5) {
+  if (labels.length < 0 || labels.length > 5) {
     return false;
   }
   // validate each label
