@@ -17,7 +17,7 @@ import {
 } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
 import { IpVersion, Settings, HttpSettings, HttpMethod, HttpVersion, BasicAuth, TLSConfig, HeaderMatch } from 'types';
-import { FormLabel, WorldpingLabelsForm, IpOptions } from '../utils';
+import { WorldpingLabelsForm, IpOptions } from '../utils';
 import { Label as WorldpingLabel } from 'types';
 import { AuthSettings } from './AuthSettings';
 
@@ -357,28 +357,19 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
     return (
       <Container>
         <HorizontalGroup>
-          <Field
-            label={<FormLabel name="Request Method" description="The HTTP method the probe will use" />}
-            disabled={!isEditor}
-          >
+          <Field label="Request Method" description="The HTTP method the probe will use" disabled={!isEditor}>
             <Select value={state.method} options={methodOptions} onChange={this.onMethodChange} />
           </Field>
         </HorizontalGroup>
         <Container>
-          <Field
-            label={<FormLabel name="Request Body" description="The body of the HTTP request used in probe." />}
-            disabled={!isEditor}
-          >
+          <Field label="Request Body" description="The body of the HTTP request used in probe." disabled={!isEditor}>
             <div>
               <TextArea value={state.body} onChange={this.onBodyChange} rows={2} disabled={!isEditor} />
             </div>
           </Field>
         </Container>
         <Container>
-          <Field
-            label={<FormLabel name="Request Headers" description="The HTTP headers set for the probe.." />}
-            disabled={!isEditor}
-          >
+          <Field label="Request Headers" description="The HTTP headers set for the probe.." disabled={!isEditor}>
             <div>
               <WorldpingLabelsForm
                 labels={this.headersToLabels()}
@@ -408,12 +399,8 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
         >
           <HorizontalGroup>
             <Field
-              label={
-                <FormLabel
-                  name="Valid Status Codes"
-                  description="Accepted status codes for this probe. Defaults to 2xx."
-                />
-              }
+              label="Valid Status Codes"
+              description="Accepted status codes for this probe. Defaults to 2xx."
               disabled={!isEditor}
             >
               <MultiSelect
@@ -423,10 +410,7 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
                 disabled={!isEditor}
               />
             </Field>
-            <Field
-              label={<FormLabel name="Valid HTTP Versions" description="Accepted HTTP versions for this probe" />}
-              disabled={!isEditor}
-            >
+            <Field label="Valid HTTP Versions" description="Accepted HTTP versions for this probe" disabled={!isEditor}>
               <MultiSelect
                 options={httpVersionOptions}
                 value={state.validHTTPVersions}
@@ -435,18 +419,12 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
               />
             </Field>
 
-            <Field
-              label={<FormLabel name="Fail if SSL" description="Probe fails if SSL is present" />}
-              disabled={!isEditor}
-            >
+            <Field label="Fail if SSL" description="Probe fails if SSL is present" disabled={!isEditor}>
               <Container padding="sm">
                 <Switch value={state.failIfSSL} onChange={this.onFailIfSSLChange} disabled={!isEditor} />
               </Container>
             </Field>
-            <Field
-              label={<FormLabel name="Fail if not SSL" description="Probe fails if SSL is not present" />}
-              disabled={!isEditor}
-            >
+            <Field label="Fail if not SSL" description="Probe fails if SSL is not present" disabled={!isEditor}>
               <Container padding="sm">
                 <Switch value={state.failIfNotSSL} onChange={this.onFailIfNotSSLChange} disabled={!isEditor} />
               </Container>
@@ -454,9 +432,8 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
           </HorizontalGroup>
 
           <Field
-            label={
-              <FormLabel name="Fail if body matches regexp" description="Probe fails if response body matches regex" />
-            }
+            label="Fail if body matches regexp"
+            description="Probe fails if response body matches regex"
             disabled={!isEditor}
           >
             <VerticalGroup justify="space-between">
@@ -486,12 +463,8 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
             </VerticalGroup>
           </Field>
           <Field
-            label={
-              <FormLabel
-                name="Fail if body doesn't match regexp"
-                description="Probe fails if response body does not match regex"
-              />
-            }
+            label="Fail if body doesn't match regexp"
+            description="Probe fails if response body does not match regex"
             disabled={!isEditor}
           >
             <VerticalGroup justify="space-between">
@@ -543,21 +516,14 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
         >
           <HorizontalGroup>
             <div>
-              <Field
-                label={<FormLabel name="IP Version" description="The IP protocol of the HTTP request" />}
-                disabled={!isEditor}
-              >
+              <Field label="IP Version" description="The IP protocol of the HTTP request" disabled={!isEditor}>
                 <Select value={state.ipVersion} options={IpOptions} onChange={this.onIpVersionChange} />
               </Field>
             </div>
             <div>
               <Field
-                label={
-                  <FormLabel
-                    name="Follow Redirects"
-                    description="Whether or not the probe will follow any redirects."
-                  />
-                }
+                label="Follow Redirects"
+                description="Whether or not the probe will follow any redirects."
                 disabled={!isEditor}
               >
                 <Container padding="sm">
@@ -573,12 +539,8 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
           <HorizontalGroup>
             <div>
               <Field
-                label={
-                  <FormLabel
-                    name="Cache busting query parameter name"
-                    description="The name of the query parameter used to prevent the server from using a cached response. Each probe will assign a random value to this parameter each time a request is made."
-                  />
-                }
+                label="Cache busting query parameter name"
+                description="The name of the query parameter used to prevent the server from using a cached response. Each probe will assign a random value to this parameter each time a request is made."
               >
                 <Input
                   type="string"
@@ -655,18 +617,12 @@ export class TLSForm extends PureComponent<TLSProps, TLSState> {
     return (
       <div>
         <HorizontalGroup>
-          <Field
-            label={<FormLabel name="Skip Validation" description="Disable target certificate validation" />}
-            disabled={!isEditor}
-          >
+          <Field label="Skip Validation" description="Disable target certificate validation" disabled={!isEditor}>
             <Container padding="sm">
               <Switch value={insecureSkipVerify} onChange={this.onInsecureSkipVerifyChange} disabled={!isEditor} />
             </Container>
           </Field>
-          <Field
-            label={<FormLabel name="Server Name" description="Used to verify the hostname for the targets" />}
-            disabled={!isEditor}
-          >
+          <Field label="Server Name" description="Used to verify the hostname for the targets" disabled={!isEditor}>
             <Input
               type="text"
               placeholder="ServerName"
@@ -677,10 +633,7 @@ export class TLSForm extends PureComponent<TLSProps, TLSState> {
           </Field>
         </HorizontalGroup>
         <Container>
-          <Field
-            label={<FormLabel name="CA Certificate" description="The CA cert to use for the targets" />}
-            disabled={!isEditor}
-          >
+          <Field label="CA Certificate" description="The CA cert to use for the targets" disabled={!isEditor}>
             <div>
               <TextArea
                 value={caCert}
@@ -693,10 +646,7 @@ export class TLSForm extends PureComponent<TLSProps, TLSState> {
           </Field>
         </Container>
         <Container>
-          <Field
-            label={<FormLabel name="Client Certificate" description="The client cert file for the targets" />}
-            disabled={!isEditor}
-          >
+          <Field label="Client Certificate" description="The client cert file for the targets" disabled={!isEditor}>
             <div>
               <TextArea
                 value={clientCert}
@@ -709,10 +659,7 @@ export class TLSForm extends PureComponent<TLSProps, TLSState> {
           </Field>
         </Container>
         <Container>
-          <Field
-            label={<FormLabel name="Client Key" description="The client key file for the targets" />}
-            disabled={!isEditor}
-          >
+          <Field label="Client Key" description="The client key file for the targets" disabled={!isEditor}>
             <div>
               <TextArea
                 type="password"
@@ -827,7 +774,7 @@ export class HeaderMatchForm extends PureComponent<HeaderMatchProps, HeaderMatch
     const { isEditor, name, description } = this.props;
 
     return (
-      <Field label={<FormLabel name={name} description={description} />} disabled={!isEditor}>
+      <Field label={name} description={description} disabled={!isEditor}>
         <VerticalGroup justify="space-between">
           <List
             items={headerMatches}

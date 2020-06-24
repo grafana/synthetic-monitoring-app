@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import { Collapse, Container, HorizontalGroup, Field, Select, MultiSelect, Input, List, IconButton } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
 import { IpVersion, Settings, DnsSettings, DnsProtocol, DnsRecordType, DNSRRValidator } from 'types';
-import { FormLabel, IpOptions } from './utils';
+import { IpOptions } from './utils';
 
 interface Props {
   settings: Settings;
@@ -187,28 +187,22 @@ export class DnsSettingsForm extends PureComponent<Props, State> {
     return (
       <Container>
         <HorizontalGroup>
-          <Field
-            label={<FormLabel name="Record Type" description="DNS record type to query for" />}
-            disabled={!isEditor}
-          >
+          <Field label="Record Type" description="DNS record type to query for" disabled={!isEditor}>
             <Select value={recordType} options={recordTypes} onChange={this.onRecordTypeChange} />
           </Field>
-          <Field label={<FormLabel name="Server" description="Address of server to query" />} disabled={!isEditor}>
+          <Field label="Server" description="Address of server to query" disabled={!isEditor}>
             <Input value={server} type="text" placeholder="server" onChange={this.onServerChange} />
           </Field>
-          <Field label={<FormLabel name="Protocol" description="Transport protocol to use" />} disabled={!isEditor}>
+          <Field label="Protocol" description="Transport protocol to use" disabled={!isEditor}>
             <Select value={protocol} options={protocols} onChange={this.onProtocolChange} />
           </Field>
-          <Field label={<FormLabel name="Port" description="port on server to query" />} disabled={!isEditor}>
+          <Field label="Port" description="port on server to query" disabled={!isEditor}>
             <Input value={port} type="number" placeholder="port" onChange={this.onPortChange} />
           </Field>
         </HorizontalGroup>
         <Collapse label="Validation" collapsible={true} onToggle={this.onShowValidation} isOpen={showValidation}>
           <HorizontalGroup>
-            <Field
-              label={<FormLabel name="Valid Response Codes" description="List of valid response codes" />}
-              disabled={!isEditor}
-            >
+            <Field label="Valid Response Codes" description="List of valid response codes" disabled={!isEditor}>
               <MultiSelect value={validRCodes} options={rCodes} onChange={this.onValidRCodesChange} />
             </Field>
           </HorizontalGroup>
@@ -237,10 +231,7 @@ export class DnsSettingsForm extends PureComponent<Props, State> {
         <Collapse label="Advanced Options" collapsible={true} onToggle={this.onShowAdvanced} isOpen={showAdvanced}>
           <HorizontalGroup>
             <div>
-              <Field
-                label={<FormLabel name="IP Version" description="The IP protocol of the ICMP request" />}
-                disabled={!isEditor}
-              >
+              <Field label="IP Version" description="The IP protocol of the ICMP request" disabled={!isEditor}>
                 <Select value={ipVersion} options={IpOptions} onChange={this.onIpVersionChange} />
               </Field>
             </div>
@@ -344,10 +335,7 @@ export class DnsValidatorForm extends PureComponent<DnsValidatorProps, DnsValida
     return (
       <Container>
         <HorizontalGroup>
-          <Field
-            label={<FormLabel name={name + ' matches'} description={description + ' match'} />}
-            disabled={!isEditor}
-          >
+          <Field label={name + ' matches'} description={description + ' match'} disabled={!isEditor}>
             <Container>
               <List
                 items={failIfMatchesRegexp}
@@ -371,10 +359,7 @@ export class DnsValidatorForm extends PureComponent<DnsValidatorProps, DnsValida
               <IconButton name="plus-circle" onClick={this.onFailIfMatchesRegexpAdd} disabled={!isEditor} />
             </Container>
           </Field>
-          <Field
-            label={<FormLabel name={name + " doesn't match"} description={description + " don't match"} />}
-            disabled={!isEditor}
-          >
+          <Field label={name + " doesn't match"} description={description + " don't match"} disabled={!isEditor}>
             <Container>
               <List
                 items={failIfNotMatchesRegexp}

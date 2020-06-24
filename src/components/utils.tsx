@@ -1,21 +1,7 @@
 import React, { PureComponent } from 'react';
-import { Icon, Label, IconButton, HorizontalGroup, List, Input, VerticalGroup, Button } from '@grafana/ui';
+import { Icon, IconButton, HorizontalGroup, List, Input, VerticalGroup, Button } from '@grafana/ui';
 import { Label as WorldpingLabel, IpVersion } from 'types';
 import * as Validation from 'validation';
-
-interface FormLabelProps {
-  name: string;
-  description?: string;
-}
-
-interface FormLabelState {}
-
-export class FormLabel extends PureComponent<FormLabelProps, FormLabelState> {
-  render() {
-    const { description, name } = this.props;
-    return <Label description={description || ''}>{name}</Label>;
-  }
-}
 
 interface LabelsProps {
   labels: WorldpingLabel[];
