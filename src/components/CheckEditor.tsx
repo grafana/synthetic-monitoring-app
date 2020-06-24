@@ -267,7 +267,7 @@ export class CheckEditor extends PureComponent<Props, State> {
             label="Target"
             description={targetHelp.text}
             disabled={!isEditor}
-            invalid={!Validation.validateTarget(check.target)}
+            invalid={!Validation.validateTarget(checkType(check.settings), check.target)}
           >
             <Input
               type="string"
