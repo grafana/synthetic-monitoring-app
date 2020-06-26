@@ -1,7 +1,7 @@
 {
 	"info": {
 		"_postman_id": "4e721430-cac5-4b04-8dfe-86a25bc38920",
-		"name": "Worldping (online)",
+		"name": "Synthetic monitoring (online)",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -27,10 +27,10 @@
 					}
 				},
 				"url": {
-					"raw": "https://worldping-api-dev.grafana.net/api/v1/register/init ",
+					"raw": "https://synthetic-monitoring-api-dev.grafana.net/api/v1/register/init ",
 					"protocol": "https",
 					"host": [
-						"worldping-api-dev",
+						"synthetic-monitoring-api-dev",
 						"grafana",
 						"net"
 					],
@@ -66,10 +66,10 @@
 					}
 				},
 				"url": {
-					"raw": "https://worldping-api-dev.grafana.net/api/v1/register/init ",
+					"raw": "https://synthetic-monitoring-api-dev.grafana.net/api/v1/register/init ",
 					"protocol": "https",
 					"host": [
-						"worldping-api-dev",
+						"synthetic-monitoring-api-dev",
 						"grafana",
 						"net"
 					],
@@ -122,10 +122,10 @@
 					}
 				},
 				"url": {
-					"raw": "https://worldping-api-dev.grafana.net/api/v1/register/save",
+					"raw": "https://synthetic-monitoring-api-dev.grafana.net/api/v1/register/save",
 					"protocol": "https",
 					"host": [
-						"worldping-api-dev",
+						"synthetic-monitoring-api-dev",
 						"grafana",
 						"net"
 					],
@@ -174,10 +174,10 @@
 					}
 				},
 				"url": {
-					"raw": "https://worldping-api-dev.grafana.net/api/v1/probe/list",
+					"raw": "https://synthetic-monitoring-api-dev.grafana.net/api/v1/probe/list",
 					"protocol": "https",
 					"host": [
-						"worldping-api-dev",
+						"synthetic-monitoring-api-dev",
 						"grafana",
 						"net"
 					],
@@ -226,10 +226,10 @@
 					}
 				},
 				"url": {
-					"raw": "https://worldping-api-dev.grafana.net/api/v1/check/list",
+					"raw": "https://synthetic-monitoring-api-dev.grafana.net/api/v1/check/list",
 					"protocol": "https",
 					"host": [
-						"worldping-api-dev",
+						"synthetic-monitoring-api-dev",
 						"grafana",
 						"net"
 					],
@@ -275,10 +275,10 @@
 					}
 				},
 				"url": {
-					"raw": "https://worldping-api-dev.grafana.net/api/v1/check/add",
+					"raw": "https://synthetic-monitoring-api-dev.grafana.net/api/v1/check/add",
 					"protocol": "https",
 					"host": [
-						"worldping-api-dev",
+						"synthetic-monitoring-api-dev",
 						"grafana",
 						"net"
 					],
@@ -324,10 +324,10 @@
 					}
 				},
 				"url": {
-					"raw": "https://worldping-api-dev.grafana.net/api/v1/check/add",
+					"raw": "https://synthetic-monitoring-api-dev.grafana.net/api/v1/check/add",
 					"protocol": "https",
 					"host": [
-						"worldping-api-dev",
+						"synthetic-monitoring-api-dev",
 						"grafana",
 						"net"
 					],
@@ -373,10 +373,10 @@
 					}
 				},
 				"url": {
-					"raw": "https://worldping-api-dev.grafana.net/api/v1/check/add",
+					"raw": "https://synthetic-monitoring-api-dev.grafana.net/api/v1/check/add",
 					"protocol": "https",
 					"host": [
-						"worldping-api-dev",
+						"synthetic-monitoring-api-dev",
 						"grafana",
 						"net"
 					],
