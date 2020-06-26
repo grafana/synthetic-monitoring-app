@@ -1,41 +1,41 @@
 import { getBackendSrv } from '@grafana/runtime';
-import { DashboardInfo, FolderInfo, WorldpingOptions } from 'datasource/types';
+import { DashboardInfo, FolderInfo, SMOptions } from 'datasource/types';
 
 export const dashboardPaths = [
-  'worldping-http.json', // The path
-  'worldping-ping.json',
-  'worldping-dns.json',
-  'worldping-tcp.json',
-  'worldping-summary.json',
+  'sm-http.json', // The path
+  'sm-ping.json',
+  'sm-dns.json',
+  'sm-tcp.json',
+  'sm-summary.json',
 ];
 
-async function findWorldpingFolder(): Promise<FolderInfo> {
+async function findSyntheticMonitoringFolder(): Promise<FolderInfo> {
   const backendSrv = getBackendSrv();
   const folders = (await backendSrv.get(`api/folders`)) as FolderInfo[];
   for (const folder of folders) {
-    if (folder.title === 'worldPing') {
+    if (folder.title === 'SyntheticMonitoring') {
       return folder;
     }
   }
 
   return await backendSrv.post('api/folders', {
-    title: 'worldPing',
+    title: 'SyntheticMonitoring',
   });
 }
 
-export async function importDashboard(path: string, options: WorldpingOptions): Promise<DashboardInfo> {
+export async function importDashboard(path: string, options: SMOptions): Promise<DashboardInfo> {
   const backendSrv = getBackendSrv();
 
-  const json = await backendSrv.get(`public/plugins/grafana-worldping-app/dashboards/${path}`);
+  const json = await backendSrv.get(`public/plugins/grafana-synthetic-monitoring-app/dashboards/${path}`);
 
-  const folder = await findWorldpingFolder();
+  const folder = await findSyntheticMonitoringFolder();
 
   const info = await backendSrv.post('api/dashboards/import', {
     dashboard: json,
     overwrite: true, // UID?
     inputs: [
-      { name: 'DS_WORLDPING_METRICS', type: 'datasource', pluginId: 'prometheus', value: options.metrics.grafanaName },
-      { name: 'DS_WORLDPING_LOGS', type: 'datasource', pluginId: 'loki', value: options.logs.grafanaName },
+      { name: 'DS_SM_METRICS', type: 'datasource', pluginId: 'prometheus', value: options.metrics.grafanaName },
+      { name: 'DS_SM_LOGS', type: 'datasource', pluginId: 'loki', value: options.logs.grafanaName },
     ],
     folderId: folder.id,
   });
@@ -53,7 +53,7 @@ export async function listAppDashboards(): Promise<DashboardInfo[]> {
   const backendSrv = getBackendSrv();
   let dashboards: DashboardInfo[] = [];
   for (const p of dashboardPaths) {
-    const json = await backendSrv.get(`public/plugins/grafana-worldping-app/dashboards/${p}`);
+    const json = await backendSrv.get(`public/plugins/grafana-synthetic-monitoring-app/dashboards/${p}`);
 
     const dInfo = {
       title: json.title,

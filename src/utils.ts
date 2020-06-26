@@ -1,6 +1,6 @@
 import { DataSourceInstanceSettings, DataSourceSettings } from '@grafana/data';
 
-import { WorldpingOptions, DashboardInfo } from './datasource/types';
+import { SMOptions, DashboardInfo } from './datasource/types';
 
 import { config, getBackendSrv } from '@grafana/runtime';
 import {
@@ -14,15 +14,15 @@ import {
   DnsRecordType,
   DnsProtocol,
 } from 'types';
-import { WorldPingDataSource } from 'datasource/DataSource';
+import { SMDataSource } from 'datasource/DataSource';
 
 /**
- * Find all worldping datasources
+ * Find all synthetic-monitoring datasources
  */
-export function findWorldPingDataSources(): Array<DataSourceInstanceSettings<WorldpingOptions>> {
+export function findSMDataSources(): Array<DataSourceInstanceSettings<SMOptions>> {
   return Object.values(config.datasources).filter(ds => {
-    return ds.type === 'worldping-datasource';
-  }) as Array<DataSourceInstanceSettings<WorldpingOptions>>;
+    return ds.type === 'synthetic-monitoring-datasource';
+  }) as Array<DataSourceInstanceSettings<SMOptions>>;
 }
 
 /** Given hosted info, link to an existing instance */
@@ -59,10 +59,10 @@ export async function getHostedLokiAndPrometheusInfo(): Promise<DataSourceInstan
   return settings;
 }
 
-export async function createNewWorldpingInstance(): Promise<DataSourceSettings> {
+export async function createNewApiInstance(): Promise<DataSourceSettings> {
   return getBackendSrv().post('api/datasources', {
-    name: 'Worldping',
-    type: 'worldping-datasource',
+    name: 'Synthetic Monitoring',
+    type: 'synthetic-monitoring-datasource',
     access: 'proxy',
     isDefault: false,
   });
@@ -159,11 +159,11 @@ export function defaultSettings(t: CheckType): Settings | undefined {
 }
 
 /** Given hosted info, link to an existing instance */
-export function dashboardUID(checkType: string, ds: WorldPingDataSource): DashboardInfo | undefined {
+export function dashboardUID(checkType: string, ds: SMDataSource): DashboardInfo | undefined {
   const dashboards = ds.instanceSettings.jsonData.dashboards;
   let target: DashboardInfo | undefined = undefined;
   for (const item of dashboards) {
-    if (item.title.toLocaleLowerCase() === 'worldping ' + checkType) {
+    if (item.title.toLocaleLowerCase() === 'sm ' + checkType) {
       target = item;
     }
   }

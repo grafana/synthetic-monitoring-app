@@ -5,13 +5,13 @@ export enum QueryType {
   Checks = 'checks',
 }
 
-export interface WorldpingQuery extends DataQuery {
+export interface SMQuery extends DataQuery {
   queryType: QueryType;
 }
 
-export const defaultQuery: WorldpingQuery = {
+export const defaultQuery: SMQuery = {
   queryType: QueryType.Probes,
-} as WorldpingQuery;
+} as SMQuery;
 
 export interface LinkedDatsourceInfo {
   grafanaName: string;
@@ -35,7 +35,7 @@ export interface FolderInfo {
 /**
  * These are options configured for each DataSource instance
  */
-export interface WorldpingOptions extends DataSourceJsonData {
+export interface SMOptions extends DataSourceJsonData {
   apiHost: string;
   metrics: LinkedDatsourceInfo;
   logs: LinkedDatsourceInfo;

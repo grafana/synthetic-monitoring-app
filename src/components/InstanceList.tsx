@@ -39,7 +39,7 @@ export class InstanceList extends PureComponent<Props> {
               <div className="add-data-source-item-actions">
                 <LinkButton
                   variant="secondary"
-                  href={`https://grafana.com/orgs/${instance.orgSlug}/hosted-${hostedType}/${instance.id}?utm_source=worldping_app`}
+                  href={`https://grafana.com/orgs/${instance.orgSlug}/hosted-${hostedType}/${instance.id}?utm_source=synthetic_monitoring_app`}
                   target="_blank"
                   rel="noopener"
                   icon="external-link-alt"

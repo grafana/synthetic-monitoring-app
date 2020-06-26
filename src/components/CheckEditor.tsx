@@ -13,14 +13,14 @@ import {
   Collapse,
 } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
-import { Check, Label as WorldpingLabel, Settings, CheckType, Probe, OrgRole } from 'types';
-import { WorldPingDataSource } from 'datasource/DataSource';
+import { Check, Label as SMLabel, Settings, CheckType, Probe, OrgRole } from 'types';
+import { SMDataSource } from 'datasource/DataSource';
 import { hasRole, checkType, defaultSettings } from 'utils';
 import { PingSettingsForm } from './PingSettings';
 import { HttpSettingsForm } from './http/HttpSettings';
 import { DnsSettingsForm } from './DnsSettings';
 import { TcpSettingsForm } from './TcpSettings';
-import { WorldpingLabelsForm } from './utils';
+import { SMLabelsForm } from './utils';
 import * as Validation from 'validation';
 
 interface TargetHelpInfo {
@@ -30,7 +30,7 @@ interface TargetHelpInfo {
 
 interface Props {
   check: Check;
-  instance: WorldPingDataSource;
+  instance: SMDataSource;
   onReturn: (reload: boolean) => void;
 }
 
@@ -81,7 +81,7 @@ export class CheckEditor extends PureComponent<Props, State> {
     this.props.onReturn(true);
   };
 
-  onLabelsUpdate = (labels: WorldpingLabel[]) => {
+  onLabelsUpdate = (labels: SMLabel[]) => {
     let check = { ...this.state.check } as Check;
     check.labels = labels;
     this.setState({ check });
@@ -336,7 +336,7 @@ export class CheckEditor extends PureComponent<Props, State> {
               disabled={!isEditor}
               invalid={!Validation.validateLabels(check.labels)}
             >
-              <WorldpingLabelsForm
+              <SMLabelsForm
                 labels={check.labels}
                 onUpdate={this.onLabelsUpdate}
                 isEditor={isEditor}

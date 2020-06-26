@@ -1,7 +1,7 @@
 {
-  "name": "worldping-app",
+  "name": "synthetic-monitoring-app",
   "version": "0.0.1-dev",
-  "description": "Grafana Woldping App",
+  "description": "Grafana Synthetic Monitoring App",
   "scripts": {
     "build": "grafana-toolkit plugin:build",
     "test": "grafana-toolkit plugin:test",

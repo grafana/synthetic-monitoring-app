@@ -1,12 +1,12 @@
 {
   "type": "datasource",
-  "name": "Worldping Info",
-  "id": "worldping-datasource",
+  "name": "Synthetic Monitoring API",
+  "id": "synthetic-monitoring-datasource",
   "metrics": true,
 
   "routes": [
     {
-      "path": "dev",
+      "path": "sm",
       "method": "GET",
       "url": "{{.JsonData.apiHost}}/api/v1/",
       "reqRole": "Viewer",
@@ -18,7 +18,7 @@
       ]
     },
     {
-      "path": "dev",
+      "path": "sm",
       "method": "POST",
       "url": "{{.JsonData.apiHost}}/api/v1/",
       "reqRole": "Editor",
@@ -30,7 +30,7 @@
       ]
     },
     {
-      "path": "dev",
+      "path": "sm",
       "method": "DELETE",
       "url": "{{.JsonData.apiHost}}/api/v1/",
       "reqRole": "Editor",
@@ -44,7 +44,7 @@
   ],
 
   "info": {
-    "description": "Worldping Info",
+    "description": "Synthetic Monitoring API",
     "author": {
       "name": "Grafana"
     },

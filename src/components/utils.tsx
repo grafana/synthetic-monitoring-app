@@ -1,22 +1,22 @@
 import React, { PureComponent } from 'react';
 import { Icon, IconButton, HorizontalGroup, List, Input, VerticalGroup, Button } from '@grafana/ui';
-import { Label as WorldpingLabel, IpVersion } from 'types';
+import { Label as SMLabel, IpVersion } from 'types';
 import * as Validation from 'validation';
 
 interface LabelsProps {
-  labels: WorldpingLabel[];
+  labels: SMLabel[];
   isEditor: boolean;
   type: string;
   limit: number;
-  onUpdate: (labels: WorldpingLabel[]) => void;
+  onUpdate: (labels: SMLabel[]) => void;
 }
 
 interface LabelsState {
-  labels: WorldpingLabel[];
+  labels: SMLabel[];
   numLabels: number;
 }
 
-export class WorldpingLabelsForm extends PureComponent<LabelsProps, LabelsState> {
+export class SMLabelsForm extends PureComponent<LabelsProps, LabelsState> {
   state = {
     labels: this.props.labels || [],
     numLabels: this.props.labels.length,
@@ -40,7 +40,7 @@ export class WorldpingLabelsForm extends PureComponent<LabelsProps, LabelsState>
     this.props.onUpdate(this.state.labels);
   };
 
-  onChange = (index: number, label: WorldpingLabel) => {
+  onChange = (index: number, label: SMLabel) => {
     let labels = this.state.labels;
     labels[index] = label;
     this.setState({ labels: labels }, this.onUpdate);
@@ -54,7 +54,7 @@ export class WorldpingLabelsForm extends PureComponent<LabelsProps, LabelsState>
         <List
           items={labels}
           renderItem={(item, index) => (
-            <WorldpingLabelForm
+            <SMLabelForm
               onDelete={this.onDelete}
               onChange={this.onChange}
               label={item}
@@ -75,11 +75,11 @@ export class WorldpingLabelsForm extends PureComponent<LabelsProps, LabelsState>
 }
 
 interface LabelProps {
-  label: WorldpingLabel;
+  label: SMLabel;
   index: number;
   isEditor: boolean;
   onDelete: (index: number) => void;
-  onChange: (index: number, label: WorldpingLabel) => void;
+  onChange: (index: number, label: SMLabel) => void;
 }
 
 interface LabelState {
@@ -87,7 +87,7 @@ interface LabelState {
   value: string;
 }
 
-export class WorldpingLabelForm extends PureComponent<LabelProps, LabelState> {
+export class SMLabelForm extends PureComponent<LabelProps, LabelState> {
   state = {
     name: this.props.label.name,
     value: this.props.label.value,

@@ -4,9 +4,9 @@ import React, { PureComponent } from 'react';
 // Types
 import { NavModelItem, AppRootProps, DataSourceInstanceSettings } from '@grafana/data';
 import { GlobalSettings, RegistrationInfo, GrafanaInstances, OrgRole } from './types';
-import { WorldPingDataSource } from 'datasource/DataSource';
-import { findWorldPingDataSources, createNewWorldpingInstance, hasRole, dashboardUID } from 'utils';
-import { WorldpingOptions } from 'datasource/types';
+import { SMDataSource } from 'datasource/DataSource';
+import { findSMDataSources, createNewApiInstance, hasRole, dashboardUID } from 'utils';
+import { SMOptions } from 'datasource/types';
 import { getDataSourceSrv, getLocationSrv } from '@grafana/runtime';
 import { TenantSetup } from './components/TenantSetup';
 import { TenantView } from 'components/TenantView';
@@ -16,7 +16,7 @@ import { ProbesPage } from 'page/ProbesPage';
 
 interface Props extends AppRootProps<GlobalSettings> {}
 interface State {
-  settings: Array<DataSourceInstanceSettings<WorldpingOptions>>;
+  settings: Array<DataSourceInstanceSettings<SMOptions>>;
   instance?: GrafanaInstances;
   info?: RegistrationInfo;
   valid?: boolean;
@@ -27,18 +27,18 @@ export class RootPage extends PureComponent<Props, State> {
     super(props);
 
     this.state = {
-      settings: findWorldPingDataSources(),
+      settings: findSMDataSources(),
     };
   }
 
   async loadInstances() {
     const settings = this.state.settings[0];
     if (settings && settings.name) {
-      const worldping = (await getDataSourceSrv().get(settings.name)) as WorldPingDataSource;
-      if (worldping) {
-        let global = worldping.instanceSettings.jsonData;
+      const api = (await getDataSourceSrv().get(settings.name)) as SMDataSource;
+      if (api) {
+        let global = api.instanceSettings.jsonData;
         const instance: GrafanaInstances = {
-          worldping,
+          api,
           metrics: await loadDataSourceIfExists(global?.metrics?.grafanaName),
           logs: await loadDataSourceIfExists(global?.logs?.grafanaName),
         };
@@ -55,7 +55,7 @@ export class RootPage extends PureComponent<Props, State> {
     // Create a new instance
     if (true) {
       console.log('Creating a new datasource TODO, check user auth');
-      await createNewWorldpingInstance();
+      await createNewApiInstance();
       console.log('Reload the windows (will redirect)');
       window.location.reload(); // force reload
     }
@@ -130,9 +130,9 @@ export class RootPage extends PureComponent<Props, State> {
     }
 
     const node = {
-      text: 'worldPing',
+      text: 'Synthetic Monitoring',
       img: meta.info.logos.large,
-      subTitle: 'Global Blackbox Monitoring',
+      subTitle: 'Grafana Cloud Synthetic Monitoring',
       url: path,
       children: tabs,
     };
@@ -156,7 +156,7 @@ export class RootPage extends PureComponent<Props, State> {
   //-----------------------------------------------------------------------------------------
   renderStatus() {
     const { instance } = this.state;
-    const options = instance!.worldping.instanceSettings.jsonData;
+    const options = instance!.api.instanceSettings.jsonData;
     return (
       <div>
         <DashboardList options={options} checkUpdates={false} />
@@ -175,7 +175,7 @@ export class RootPage extends PureComponent<Props, State> {
     if (!query.dashboard) {
       return <div>Dashboard not found</div>;
     }
-    const target = dashboardUID(query.dashboard, instance!.worldping);
+    const target = dashboardUID(query.dashboard, instance!.api);
 
     if (!target) {
       console.log('dashboard not found.', query);
@@ -203,7 +203,7 @@ export class RootPage extends PureComponent<Props, State> {
       return <div>Loading.... (or maybe a user permissions error?)</div>;
     }
 
-    return <TenantSetup instance={instance.worldping} />;
+    return <TenantSetup instance={instance.api} />;
   }
 
   render() {
@@ -241,7 +241,7 @@ async function loadDataSourceIfExists(name?: string) {
 }
 
 function isValid(instance: GrafanaInstances): boolean {
-  if (!instance || !instance.logs || !instance.metrics || !instance.worldping) {
+  if (!instance || !instance.logs || !instance.metrics || !instance.api) {
     return false;
   }
   return true;

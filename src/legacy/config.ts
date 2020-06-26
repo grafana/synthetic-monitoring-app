@@ -32,7 +32,7 @@ export class ExampleConfigCtrl {
     }
 
     getLocationSrv().update({
-      path: 'a/grafana-worldping-app',
+      path: 'a/grafana-synthetic-monitoring-app',
       partial: false,
     });
   }

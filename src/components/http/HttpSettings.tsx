@@ -17,8 +17,8 @@ import {
 } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
 import { IpVersion, Settings, HttpSettings, HttpMethod, HttpVersion, BasicAuth, TLSConfig, HeaderMatch } from 'types';
-import { WorldpingLabelsForm, IpOptions } from '../utils';
-import { Label as WorldpingLabel } from 'types';
+import { SMLabelsForm, IpOptions } from '../utils';
+import { Label as SMLabel } from 'types';
 import { AuthSettings } from './AuthSettings';
 
 interface Props {
@@ -138,8 +138,8 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
     this.setState({ validStatusCodes }, this.onUpdate);
   };
 
-  headersToLabels(): WorldpingLabel[] {
-    let labels: WorldpingLabel[] = [];
+  headersToLabels(): SMLabel[] {
+    let labels: SMLabel[] = [];
     for (const h of this.state.headers || []) {
       const parts = h.split(':', 2);
       labels.push({
@@ -150,7 +150,7 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
     return labels;
   }
 
-  onHeadersUpdate = (labels: WorldpingLabel[]) => {
+  onHeadersUpdate = (labels: SMLabel[]) => {
     let headers: string[] = [];
     for (const l of labels) {
       headers.push(`${l.name}: ${l.value}`);
@@ -371,7 +371,7 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
         <Container>
           <Field label="Request Headers" description="The HTTP headers set for the probe.." disabled={!isEditor}>
             <div>
-              <WorldpingLabelsForm
+              <SMLabelsForm
                 labels={this.headersToLabels()}
                 isEditor={isEditor}
                 onUpdate={this.onHeadersUpdate}

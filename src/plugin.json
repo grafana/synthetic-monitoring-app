@@ -1,7 +1,7 @@
 {
   "type": "app",
-  "name": "worldPing",
-  "id": "grafana-worldping-app",
+  "name": "Synthetic Monitoring",
+  "id": "grafana-synthetic-monitoring-app",
 
   "info": {
     "author": {
@@ -20,19 +20,19 @@
     {
       "type": "page",
       "name": "Status",
-      "path": "/a/grafana-worldping-app/",
+      "path": "/a/grafana-synthetic-monitoring-app/",
       "addToNav": true
     },
     {
       "type": "page",
       "name": "Checks",
-      "path": "/a/grafana-worldping-app/?page=checks",
+      "path": "/a/grafana-synthetic-monitoring-app/?page=checks",
       "addToNav": true
     },
     {
       "type": "page",
       "name": "Probes",
-      "path": "/a/grafana-worldping-app/?page=probes",
+      "path": "/a/grafana-synthetic-monitoring-app/?page=probes",
       "addToNav": true
     }
   ],

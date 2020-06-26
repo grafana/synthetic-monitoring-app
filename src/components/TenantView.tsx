@@ -1,11 +1,11 @@
 import React, { PureComponent } from 'react';
-import { WorldpingOptions, LinkedDatsourceInfo } from 'datasource/types';
+import { SMOptions, LinkedDatsourceInfo } from 'datasource/types';
 import { config, getLocationSrv } from '@grafana/runtime';
 import { DataSourceInstanceSettings } from '@grafana/data';
 import { Button, Container } from '@grafana/ui';
 
 interface Props {
-  settings: WorldpingOptions;
+  settings: SMOptions;
 }
 
 export class TenantView extends PureComponent<Props> {
@@ -46,10 +46,10 @@ class LinkedDatasourceView extends PureComponent<Props2, State2> {
 
   onClick = () => {
     const { ds } = this.state;
-    if (ds?.type === 'worldping-datasource') {
+    if (ds?.type === 'synthetic-monitoring-datasource') {
       getLocationSrv().update({
         partial: false,
-        path: `a/grafana-worldping-app/`,
+        path: `a/grafana-synthetic-monitoring-app/`,
       });
     } else {
       getLocationSrv().update({
