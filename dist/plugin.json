@@ -2,7 +2,6 @@
   "type": "app",
   "name": "Synthetic Monitoring",
   "id": "grafana-synthetic-monitoring-app",
-
   "info": {
     "author": {
       "name": "Grafana Project",
@@ -12,10 +11,14 @@
       "small": "img/logo.svg",
       "large": "img/logo.svg"
     },
-    "version": "%VERSION%",
-    "updated": "%TODAY%"
+    "version": "0.0.1-dev2",
+    "updated": "2020-06-26",
+    "build": {
+      "time": 1593175322429,
+      "branch": "rename",
+      "hash": "058463181476c6b32d43c06b9ae6858d1967bb33"
+    }
   },
-
   "includes": [
     {
       "type": "page",
@@ -36,7 +39,6 @@
       "addToNav": true
     }
   ],
-
   "dependencies": {
     "grafanaVersion": "7.0.x",
     "plugins": []
