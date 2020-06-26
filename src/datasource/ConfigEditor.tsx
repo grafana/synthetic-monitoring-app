@@ -1,10 +1,10 @@
 import React, { PureComponent, ChangeEvent } from 'react';
 import { DataSourcePluginOptionsEditorProps } from '@grafana/data';
-import { WorldpingOptions, SecureJsonData } from './types';
+import { SMOptions, SecureJsonData } from './types';
 import { LegacyForms } from '@grafana/ui';
 import { TenantView } from 'components/TenantView';
 
-interface Props extends DataSourcePluginOptionsEditorProps<WorldpingOptions, SecureJsonData> {}
+interface Props extends DataSourcePluginOptionsEditorProps<SMOptions, SecureJsonData> {}
 
 export class ConfigEditor extends PureComponent<Props> {
   onAccessTokenChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -64,7 +64,7 @@ export class ConfigEditor extends PureComponent<Props> {
   }
 }
 
-export function isValid(settings: WorldpingOptions): boolean {
+export function isValid(settings: SMOptions): boolean {
   if (!settings) {
     return false;
   }

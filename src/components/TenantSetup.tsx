@@ -1,17 +1,17 @@
 import React, { PureComponent, ChangeEvent } from 'react';
 import { Label, Button, Input, ConfirmModal, HorizontalGroup, Collapse } from '@grafana/ui';
 import { RegistrationInfo, HostedInstance } from 'types';
-import { WorldPingDataSource } from 'datasource/DataSource';
+import { SMDataSource } from 'datasource/DataSource';
 import { isValid } from 'datasource/ConfigEditor';
 import { InstanceList } from './InstanceList';
 import { createHostedInstance, findHostedInstance, getHostedLokiAndPrometheusInfo } from 'utils';
-import { WorldpingOptions } from 'datasource/types';
+import { SMOptions } from 'datasource/types';
 import { TenantView } from './TenantView';
 import { dashboardPaths, importDashboard } from 'dashboards/loader';
 import { DashboardList } from './DashboardList';
 
 interface Props {
-  instance: WorldPingDataSource;
+  instance: SMDataSource;
 }
 
 interface State {
@@ -26,7 +26,7 @@ interface State {
 }
 
 export class TenantSetup extends PureComponent<Props, State> {
-  defaultApiHost = 'https://worldping-api.grafana.net';
+  defaultApiHost = 'https://synthetic-monitoring-api.grafana.net';
 
   state: State = {
     showResetModal: false,
@@ -121,7 +121,7 @@ export class TenantSetup extends PureComponent<Props, State> {
       logs = await this.createDataSource(`${name} Logs`, hostedLogs!);
     }
 
-    const options: WorldpingOptions = {
+    const options: SMOptions = {
       apiHost: apiHost,
       logs: {
         grafanaName: logs!.name,
@@ -174,7 +174,7 @@ export class TenantSetup extends PureComponent<Props, State> {
               <Input
                 type="text"
                 width={40}
-                placeholder="worldPing backend Address"
+                placeholder="Synthetic Monitoring Backend Address"
                 value={apiHost || this.defaultApiHost}
                 onChange={this.onApiHostChange}
               />
@@ -188,7 +188,7 @@ export class TenantSetup extends PureComponent<Props, State> {
     }
     return (
       <div>
-        <div>Select the hosted instances where worldping will send it data</div>
+        <div>Select the Grafana Cloud instances Synthetic Monitoring will send data to</div>
 
         <h4>Metrics</h4>
         <InstanceList
@@ -220,7 +220,7 @@ export class TenantSetup extends PureComponent<Props, State> {
     this.setState({ resetConfig: true });
   };
 
-  onOptionsChange = (options: WorldpingOptions) => {
+  onOptionsChange = (options: SMOptions) => {
     const { instance } = this.props;
     return instance.onOptionsChange(options);
   };
@@ -251,7 +251,7 @@ export class TenantSetup extends PureComponent<Props, State> {
         <ConfirmModal
           isOpen={showResetModal}
           title="Reset Configuration"
-          body="Are you sure you want to reset worldPing's configuration?"
+          body="Are you sure you want to reset the configuration?"
           confirmText="Reset Configuration"
           onConfirm={this.onReset}
           onDismiss={this.showResetModal(false)}

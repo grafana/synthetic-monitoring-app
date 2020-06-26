@@ -1,9 +1,9 @@
 import { DataSourcePlugin } from '@grafana/data';
-import { WorldPingDataSource } from './DataSource';
+import { SMDataSource } from './DataSource';
 import { ConfigEditor } from './ConfigEditor';
 import { QueryEditor } from './QueryEditor';
-import { WorldpingQuery, WorldpingOptions } from './types';
+import { SMQuery, SMOptions } from './types';
 
-export const plugin = new DataSourcePlugin<WorldPingDataSource, WorldpingQuery, WorldpingOptions>(WorldPingDataSource)
+export const plugin = new DataSourcePlugin<SMDataSource, SMQuery, SMOptions>(SMDataSource)
   .setConfigEditor(ConfigEditor)
   .setQueryEditor(QueryEditor);

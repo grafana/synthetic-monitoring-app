@@ -13,15 +13,15 @@ import {
   Legend,
   IconName,
 } from '@grafana/ui';
-import { Label as WorldpingLabel, Probe, OrgRole } from 'types';
-import { WorldPingDataSource } from 'datasource/DataSource';
+import { Label as SMLabel, Probe, OrgRole } from 'types';
+import { SMDataSource } from 'datasource/DataSource';
 import { hasRole } from 'utils';
-import { WorldpingLabelsForm } from './utils';
+import { SMLabelsForm } from './utils';
 import { UptimeGauge } from './UptimeGauge';
 
 interface Props {
   probe: Probe;
-  instance: WorldPingDataSource;
+  instance: SMDataSource;
   onReturn: (reload: boolean) => void;
 }
 
@@ -70,7 +70,7 @@ export class ProbeEditor extends PureComponent<Props, State> {
     this.props.onReturn(true);
   };
 
-  onLabelsUpdate = (labels: WorldpingLabel[]) => {
+  onLabelsUpdate = (labels: SMLabel[]) => {
     let probe = { ...this.state.probe } as Probe;
     probe.labels = labels;
     this.setState({ probe });
@@ -297,7 +297,7 @@ export class ProbeEditor extends PureComponent<Props, State> {
           </Container>
           <Container margin="md">
             <h3 className="page-heading">Labels</h3>
-            <WorldpingLabelsForm
+            <SMLabelsForm
               labels={probe.labels}
               onUpdate={this.onLabelsUpdate}
               isEditor={isEditor}

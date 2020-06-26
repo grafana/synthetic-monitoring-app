@@ -1,11 +1,11 @@
 import React, { PureComponent } from 'react';
 import { defaults } from 'lodash';
 import { QueryEditorProps, SelectableValue } from '@grafana/data';
-import { WorldPingDataSource } from './DataSource';
-import { WorldpingQuery, WorldpingOptions, QueryType, defaultQuery } from './types';
+import { SMDataSource } from './DataSource';
+import { SMQuery, SMOptions, QueryType, defaultQuery } from './types';
 import { Select } from '@grafana/ui';
 
-type Props = QueryEditorProps<WorldPingDataSource, WorldpingQuery, WorldpingOptions>;
+type Props = QueryEditorProps<SMDataSource, SMQuery, SMOptions>;
 
 interface State {}
 

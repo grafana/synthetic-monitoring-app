@@ -8,13 +8,13 @@ import {
   DataFrame,
 } from '@grafana/data';
 
-import { WorldpingQuery, WorldpingOptions, QueryType } from './types';
+import { SMQuery, SMOptions, QueryType } from './types';
 
 import { config, getBackendSrv } from '@grafana/runtime';
 import { Probe, Check, RegistrationInfo, HostedInstance } from '../types';
 
-export class WorldPingDataSource extends DataSourceApi<WorldpingQuery, WorldpingOptions> {
-  constructor(public instanceSettings: DataSourceInstanceSettings<WorldpingOptions>) {
+export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
+  constructor(public instanceSettings: DataSourceInstanceSettings<SMOptions>) {
     super(instanceSettings);
   }
 
@@ -22,7 +22,7 @@ export class WorldPingDataSource extends DataSourceApi<WorldpingQuery, Worldping
     return config.datasources[this.instanceSettings.jsonData.metrics.grafanaName];
   }
 
-  async query(options: DataQueryRequest<WorldpingQuery>): Promise<DataQueryResponse> {
+  async query(options: DataQueryRequest<SMQuery>): Promise<DataQueryResponse> {
     const data: DataFrame[] = [];
     for (const query of options.targets) {
       if (query.queryType === QueryType.Probes) {
@@ -61,7 +61,7 @@ export class WorldPingDataSource extends DataSourceApi<WorldpingQuery, Worldping
     return getBackendSrv()
       .datasourceRequest({
         method: 'GET',
-        url: `${this.instanceSettings.url}/dev/probe/list`,
+        url: `${this.instanceSettings.url}/sm/probe/list`,
       })
       .then((res: any) => {
         return res.data;
@@ -72,7 +72,7 @@ export class WorldPingDataSource extends DataSourceApi<WorldpingQuery, Worldping
     return getBackendSrv()
       .datasourceRequest({
         method: 'POST',
-        url: `${this.instanceSettings.url}/dev/probe/add`,
+        url: `${this.instanceSettings.url}/sm/probe/add`,
         data: probe,
       })
       .then((res: any) => {
@@ -84,7 +84,7 @@ export class WorldPingDataSource extends DataSourceApi<WorldpingQuery, Worldping
     return getBackendSrv()
       .datasourceRequest({
         method: 'DELETE',
-        url: `${this.instanceSettings.url}/dev/probe/delete/${id}`,
+        url: `${this.instanceSettings.url}/sm/probe/delete/${id}`,
       })
       .then((res: any) => {
         return res.data;
@@ -96,7 +96,7 @@ export class WorldPingDataSource extends DataSourceApi<WorldpingQuery, Worldping
     return getBackendSrv()
       .datasourceRequest({
         method: 'POST',
-        url: `${this.instanceSettings.url}/dev/probe/update`,
+        url: `${this.instanceSettings.url}/sm/probe/update`,
         data: probe,
       })
       .then((res: any) => {
@@ -109,7 +109,7 @@ export class WorldPingDataSource extends DataSourceApi<WorldpingQuery, Worldping
     return getBackendSrv()
       .datasourceRequest({
         method: 'POST',
-        url: `${this.instanceSettings.url}/dev/probe/update?reset-token=true`,
+        url: `${this.instanceSettings.url}/sm/probe/update?reset-token=true`,
         data: probe,
       })
       .then((res: any) => {
@@ -125,7 +125,7 @@ export class WorldPingDataSource extends DataSourceApi<WorldpingQuery, Worldping
     return getBackendSrv()
       .datasourceRequest({
         method: 'GET',
-        url: `${this.instanceSettings.url}/dev/check/list`,
+        url: `${this.instanceSettings.url}/sm/check/list`,
       })
       .then((res: any) => {
         return res.data;
@@ -136,7 +136,7 @@ export class WorldPingDataSource extends DataSourceApi<WorldpingQuery, Worldping
     return getBackendSrv()
       .datasourceRequest({
         method: 'POST',
-        url: `${this.instanceSettings.url}/dev/check/add`,
+        url: `${this.instanceSettings.url}/sm/check/add`,
         data: check,
       })
       .then((res: any) => {
@@ -148,7 +148,7 @@ export class WorldPingDataSource extends DataSourceApi<WorldpingQuery, Worldping
     return getBackendSrv()
       .datasourceRequest({
         method: 'DELETE',
-        url: `${this.instanceSettings.url}/dev/check/delete/${id}`,
+        url: `${this.instanceSettings.url}/sm/check/delete/${id}`,
       })
       .then((res: any) => {
         return res.data;
@@ -160,7 +160,7 @@ export class WorldPingDataSource extends DataSourceApi<WorldpingQuery, Worldping
     return getBackendSrv()
       .datasourceRequest({
         method: 'POST',
-        url: `${this.instanceSettings.url}/dev/check/update`,
+        url: `${this.instanceSettings.url}/sm/check/update`,
         data: check,
       })
       .then((res: any) => {
@@ -195,7 +195,7 @@ export class WorldPingDataSource extends DataSourceApi<WorldpingQuery, Worldping
     return backendSrv
       .datasourceRequest({
         method: 'POST',
-        url: `${this.instanceSettings.url}/dev/register/init`,
+        url: `${this.instanceSettings.url}/sm/register/init`,
         data: { apiToken },
         headers: {
           // ensure the grafana backend doesn't use a cached copy of the
@@ -208,7 +208,7 @@ export class WorldPingDataSource extends DataSourceApi<WorldpingQuery, Worldping
       });
   }
 
-  async onOptionsChange(options: WorldpingOptions) {
+  async onOptionsChange(options: SMOptions) {
     const data = {
       ...this.instanceSettings,
       jsonData: options,
@@ -218,7 +218,7 @@ export class WorldPingDataSource extends DataSourceApi<WorldpingQuery, Worldping
     console.log('updated datasource config', info);
   }
 
-  async registerSave(apiToken: string, options: WorldpingOptions, accessToken: string): Promise<any> {
+  async registerSave(apiToken: string, options: SMOptions, accessToken: string): Promise<any> {
     const data = {
       ...this.instanceSettings,
       jsonData: options,
@@ -233,7 +233,7 @@ export class WorldPingDataSource extends DataSourceApi<WorldpingQuery, Worldping
     // Note the accessToken above must be saved first!
     return await getBackendSrv().datasourceRequest({
       method: 'POST',
-      url: `${this.instanceSettings.url}/dev/register/save`,
+      url: `${this.instanceSettings.url}/sm/register/save`,
       headers: {
         // ensure the grafana backend doesn't use a cached copy of the
         // datasource config, as it might not have the new accessToken set.
@@ -251,7 +251,7 @@ export class WorldPingDataSource extends DataSourceApi<WorldpingQuery, Worldping
     return getBackendSrv()
       .datasourceRequest({
         method: 'POST',
-        url: `${this.instanceSettings.url}/dev/register/viewer-token`,
+        url: `${this.instanceSettings.url}/sm/register/viewer-token`,
         data: {
           apiToken,
           id: instance.id,

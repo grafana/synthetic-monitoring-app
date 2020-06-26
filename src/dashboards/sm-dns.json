@@ -1,16 +1,16 @@
 {
     "__inputs": [
       {
-        "name": "DS_WORLDPING_METRICS",
-        "label": "Worldping Metrics",
+        "name": "DS_SM_METRICS",
+        "label": "Synthetic Monitoring Metrics",
         "description": "",
         "type": "datasource",
         "pluginId": "prometheus",
         "pluginName": "Prometheus"
       },
       {
-        "name": "DS_WORLDPING_LOGS",
-        "label": "Worldping Logs",
+        "name": "DS_SM_LOGS",
+        "label": "Synthetic Monitoring Logs",
         "description": "",
         "type": "datasource",
         "pluginId": "loki",
@@ -78,7 +78,7 @@
     "gnetId": null,
     "graphTooltip": 0,
     "id": null,
-    "iteration": 1591628218761,
+    "iteration": 1591627233669,
     "links": [],
     "panels": [
       {
@@ -89,7 +89,7 @@
           "#FA6400",
           "#C4162A"
         ],
-        "datasource": "${DS_WORLDPING_METRICS}",
+        "datasource": "${DS_SM_METRICS}",
         "decimals": 2,
         "esGeoPoint": "geohash",
         "esLocationName": "probe",
@@ -128,7 +128,7 @@
         },
         "targets": [
           {
-            "expr": "100*(1 - (sum(rate(probe_success_sum{instance=\"$instance\", job=\"$job\"}[$__range]) *  on (instance, job, probe, config_version) group_left(geohash) max(worldping_check_info{check_name=\"tcp\", instance=\"$instance\", job=\"$job\"}) by (instance, job, probe, config_version, geohash)) by (probe, geohash)/ sum(rate(probe_success_count{instance=\"$instance\", job=\"$job\"}[$__range]) *  on (instance, job, probe, config_version) group_left(geohash) max(worldping_check_info{check_name=\"tcp\", instance=\"$instance\", job=\"$job\"}) by (instance, job, probe, config_version, geohash)) by (probe, geohash)))",
+            "expr": "100*(1 - (sum(rate(probe_success_sum{instance=\"$instance\", job=\"$job\"}[$__range]) *  on (instance, job, probe, config_version) group_left(geohash) max(sm_check_info{check_name=\"dns\", instance=\"$instance\", job=\"$job\"}) by (instance, job, probe, config_version, geohash)) by (probe, geohash)/ sum(rate(probe_success_count{instance=\"$instance\", job=\"$job\"}[$__range]) *  on (instance, job, probe, config_version) group_left(geohash) max(sm_check_info{check_name=\"dns\", instance=\"$instance\", job=\"$job\"}) by (instance, job, probe, config_version, geohash)) by (probe, geohash)))",
             "format": "table",
             "instant": true,
             "interval": "",
@@ -148,7 +148,7 @@
       },
       {
         "cacheTimeout": null,
-        "datasource": "${DS_WORLDPING_METRICS}",
+        "datasource": "${DS_SM_METRICS}",
         "fieldConfig": {
           "defaults": {
             "custom": {},
@@ -228,7 +228,7 @@
       },
       {
         "cacheTimeout": null,
-        "datasource": "${DS_WORLDPING_METRICS}",
+        "datasource": "${DS_SM_METRICS}",
         "fieldConfig": {
           "defaults": {
             "custom": {},
@@ -285,7 +285,7 @@
         "pluginVersion": "7.0.3",
         "targets": [
           {
-            "expr": "sum(rate(probe_duration_seconds_sum{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__range])) / sum(rate(probe_duration_seconds_count{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__range]))",
+            "expr": "sum(rate(probe_dns_lookup_time_seconds_sum{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__range])) / sum(rate(probe_dns_lookup_time_seconds_count{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__range]))",
             "hide": false,
             "instant": true,
             "interval": "",
@@ -300,11 +300,10 @@
       },
       {
         "cacheTimeout": null,
-        "datasource": "${DS_WORLDPING_METRICS}",
+        "datasource": "${DS_SM_METRICS}",
         "fieldConfig": {
           "defaults": {
             "custom": {},
-            "decimals": 2,
             "mappings": [
               {
                 "id": 0,
@@ -319,20 +318,12 @@
               "mode": "absolute",
               "steps": [
                 {
-                  "color": "#d44a3a",
+                  "color": "green",
                   "value": null
-                },
-                {
-                  "color": "rgba(237, 129, 40, 0.89)",
-                  "value": 604800
-                },
-                {
-                  "color": "#299c46",
-                  "value": 2419200
                 }
               ]
             },
-            "unit": "s"
+            "unit": "short"
           },
           "overrides": []
         },
@@ -365,7 +356,7 @@
         "pluginVersion": "7.0.3",
         "targets": [
           {
-            "expr": "min(probe_ssl_earliest_cert_expiry{probe=~\"$probe\",instance=\"$instance\", job=\"$job\"}) - time()",
+            "expr": "avg(probe_dns_answer_rrs{probe=~\"$probe\",instance=\"$instance\", job=\"$job\"})",
             "hide": false,
             "instant": true,
             "interval": "",
@@ -375,12 +366,12 @@
         ],
         "timeFrom": null,
         "timeShift": null,
-        "title": "SSL Expiry",
+        "title": "Answer Records",
         "type": "stat"
       },
       {
         "cacheTimeout": null,
-        "datasource": "${DS_WORLDPING_METRICS}",
+        "datasource": "${DS_SM_METRICS}",
         "fieldConfig": {
           "defaults": {
             "custom": {
@@ -439,7 +430,7 @@
         "pluginVersion": "7.0.3",
         "targets": [
           {
-            "expr": "sum(topk(1,worldping_check_info{probe=~\"$probe\", instance=\"$instance\", check_name=\"tcp\"})) by (frequency)",
+            "expr": "sum(topk(1,sm_check_info{probe=~\"$probe\", instance=\"$instance\", check_name=\"dns\"})) by (frequency)",
             "format": "table",
             "instant": true,
             "interval": "",
@@ -469,7 +460,7 @@
         "bars": false,
         "dashLength": 10,
         "dashes": false,
-        "datasource": "${DS_WORLDPING_METRICS}",
+        "datasource": "${DS_SM_METRICS}",
         "description": "",
         "fieldConfig": {
           "defaults": {
@@ -567,7 +558,7 @@
         "bars": false,
         "dashLength": 10,
         "dashes": false,
-        "datasource": "${DS_WORLDPING_METRICS}",
+        "datasource": "${DS_SM_METRICS}",
         "fieldConfig": {
           "defaults": {
             "custom": {}
@@ -578,7 +569,7 @@
         "fillGradient": 0,
         "gridPos": {
           "h": 7,
-          "w": 24,
+          "w": 12,
           "x": 0,
           "y": 9
         },
@@ -635,7 +626,7 @@
         "steppedLine": false,
         "targets": [
           {
-            "expr": "avg(probe_duration_seconds{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"} * on (instance, job,probe,config_version) group_left probe_success{probe=~\"$probe\",instance=\"$instance\", job=\"$job\"} > 0) by (probe)",
+            "expr": "avg(probe_dns_lookup_time_seconds{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"} * on (instance, job,probe,config_version) group_left probe_success{probe=~\"$probe\",instance=\"$instance\", job=\"$job\"} > 0) by (probe)",
             "instant": false,
             "interval": "",
             "intervalFactor": 1,
@@ -688,7 +679,148 @@
         }
       },
       {
-        "datasource": "${DS_WORLDPING_LOGS}",
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": "${DS_SM_METRICS}",
+        "decimals": 0,
+        "fieldConfig": {
+          "defaults": {
+            "custom": {}
+          },
+          "overrides": []
+        },
+        "fill": 0,
+        "fillGradient": 0,
+        "gridPos": {
+          "h": 7,
+          "w": 12,
+          "x": 12,
+          "y": 9
+        },
+        "hiddenSeries": false,
+        "id": 12,
+        "legend": {
+          "alignAsTable": true,
+          "avg": true,
+          "current": true,
+          "max": false,
+          "min": false,
+          "rightSide": true,
+          "show": true,
+          "total": false,
+          "values": true
+        },
+        "lines": true,
+        "linewidth": 2,
+        "maxDataPoints": "100",
+        "nullPointMode": "null",
+        "options": {
+          "dataLinks": []
+        },
+        "percentage": false,
+        "pointradius": 2,
+        "points": false,
+        "renderer": "flot",
+        "repeatDirection": null,
+        "seriesOverrides": [
+          {
+            "alias": "transfer",
+            "zindex": 3
+          },
+          {
+            "alias": "processing",
+            "zindex": 2
+          },
+          {
+            "alias": "tls",
+            "zindex": 1
+          },
+          {
+            "alias": "connect",
+            "zindex": 0
+          },
+          {
+            "alias": "resolve",
+            "zindex": -1
+          }
+        ],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "avg(probe_dns_answer_rrs{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"})",
+            "instant": false,
+            "interval": "",
+            "intervalFactor": 1,
+            "legendFormat": "Answer Records",
+            "refId": "A"
+          },
+          {
+            "expr": "avg(probe_dns_authority_rrs{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"})",
+            "instant": false,
+            "interval": "",
+            "intervalFactor": 1,
+            "legendFormat": "Authority Records",
+            "refId": "B"
+          },
+          {
+            "expr": "avg(probe_dns_additional_rrs{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"})",
+            "instant": false,
+            "interval": "",
+            "intervalFactor": 1,
+            "legendFormat": "Additional Records",
+            "refId": "C"
+          }
+        ],
+        "thresholds": [],
+        "timeFrom": null,
+        "timeRegions": [],
+        "timeShift": null,
+        "title": "Resource Records",
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "transformations": [],
+        "type": "graph",
+        "xaxis": {
+          "buckets": null,
+          "mode": "time",
+          "name": null,
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "decimals": 0,
+            "format": "none",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          },
+          {
+            "decimals": null,
+            "format": "short",
+            "label": null,
+            "logBase": 1,
+            "max": null,
+            "min": null,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false,
+          "alignLevel": null
+        }
+      },
+      {
+        "datasource": "${DS_SM_LOGS}",
         "fieldConfig": {
           "defaults": {
             "custom": {}
@@ -723,21 +855,23 @@
     "refresh": "1m",
     "schemaVersion": 25,
     "style": "dark",
-    "tags": [],
+    "tags": [
+      "synthetic-monitoring"
+    ],
     "templating": {
       "list": [
         {
           "allValue": ".*",
           "current": {},
-          "datasource": "${DS_WORLDPING_METRICS}",
-          "definition": "label_values(worldping_check_info{check_name=\"tcp\"},probe)",
+          "datasource": "${DS_SM_METRICS}",
+          "definition": "label_values(sm_check_info{check_name=\"dns\"},probe)",
           "hide": 0,
           "includeAll": true,
           "label": null,
           "multi": false,
           "name": "probe",
           "options": [],
-          "query": "label_values(worldping_check_info{check_name=\"tcp\"},probe)",
+          "query": "label_values(sm_check_info{check_name=\"dns\"},probe)",
           "refresh": 1,
           "regex": "",
           "skipUrlSync": false,
@@ -751,15 +885,15 @@
         {
           "allValue": null,
           "current": {},
-          "datasource": "${DS_WORLDPING_METRICS}",
-          "definition": "label_values(worldping_check_info{check_name=\"tcp\", probe=~\"$probe\"},job)",
+          "datasource": "${DS_SM_METRICS}",
+          "definition": "label_values(sm_check_info{check_name=\"dns\", probe=~\"$probe\"},job)",
           "hide": 0,
           "includeAll": false,
           "label": null,
           "multi": false,
           "name": "job",
           "options": [],
-          "query": "label_values(worldping_check_info{check_name=\"tcp\", probe=~\"$probe\"},job)",
+          "query": "label_values(sm_check_info{check_name=\"dns\", probe=~\"$probe\"},job)",
           "refresh": 1,
           "regex": "",
           "skipUrlSync": false,
@@ -773,15 +907,15 @@
         {
           "allValue": null,
           "current": {},
-          "datasource": "${DS_WORLDPING_METRICS}",
-          "definition": "label_values(worldping_check_info{check_name=\"tcp\", job=\"$job\", probe=~\"$probe\"},instance)",
+          "datasource": "${DS_SM_METRICS}",
+          "definition": "label_values(sm_check_info{check_name=\"dns\", job=\"$job\", probe=~\"$probe\"},instance)",
           "hide": 0,
           "includeAll": false,
           "label": null,
           "multi": false,
           "name": "instance",
           "options": [],
-          "query": "label_values(worldping_check_info{check_name=\"tcp\", job=\"$job\", probe=~\"$probe\"},instance)",
+          "query": "label_values(sm_check_info{check_name=\"dns\", job=\"$job\", probe=~\"$probe\"},instance)",
           "refresh": 1,
           "regex": "",
           "skipUrlSync": false,
@@ -812,7 +946,7 @@
       ]
     },
     "timezone": "",
-    "title": "worldPing TCP",
-    "uid": "mh84e5mMk",
-    "version": 5
+    "title": "Synthetic Monitoring - DNS",
+    "uid": "lgL6odgGz",
+    "version": 8
   }

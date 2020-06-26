@@ -1,5 +1,5 @@
 import { DataSourceApi } from '@grafana/data';
-import { WorldPingDataSource } from 'datasource/DataSource';
+import { SMDataSource } from 'datasource/DataSource';
 
 // App Settings
 export interface GlobalSettings {
@@ -206,7 +206,7 @@ export interface RegistrationInfo {
 }
 
 export interface GrafanaInstances {
-  worldping: WorldPingDataSource;
+  api: SMDataSource;
   metrics?: DataSourceApi;
   logs?: DataSourceApi;
 }

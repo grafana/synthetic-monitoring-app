@@ -1,12 +1,12 @@
 import React, { PureComponent } from 'react';
 import { Icon } from '@grafana/ui';
-import { DashboardInfo, WorldpingOptions } from 'datasource/types';
+import { DashboardInfo, SMOptions } from 'datasource/types';
 import { listAppDashboards, importDashboard, removeDashboard } from 'dashboards/loader';
 
 interface Props {
   checkUpdates: boolean;
-  options: WorldpingOptions;
-  onChange?: (options: WorldpingOptions) => void;
+  options: SMOptions;
+  onChange?: (options: SMOptions) => void;
 }
 
 interface State {

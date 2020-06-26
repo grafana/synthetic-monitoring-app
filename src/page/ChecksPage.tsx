@@ -53,7 +53,7 @@ export class ChecksPage extends PureComponent<Props, State> {
   async componentDidMount() {
     const { instance, id } = this.props;
     const { checksPerPage } = this.state;
-    const checks = await instance.worldping.listChecks();
+    const checks = await instance.api.listChecks();
     const sortedChecks = checks.sort((a, b) => b.job.localeCompare(a.job));
     const totalPages = Math.ceil(sortedChecks.length / checksPerPage);
     const num = id ? parseInt(id, 10) : -1;
@@ -163,7 +163,7 @@ export class ChecksPage extends PureComponent<Props, State> {
     event.stopPropagation();
     const { instance } = this.props;
     const checkType = Object.keys(check.settings)[0];
-    const target = dashboardUID(checkType, instance.worldping);
+    const target = dashboardUID(checkType, instance.api);
 
     if (!target) {
       console.log('dashboard not found.', checkType);
@@ -200,13 +200,15 @@ export class ChecksPage extends PureComponent<Props, State> {
   };
 
   changePage = (toPage: number) => {
-    console.log('setting current page to', toPage);
     this.setState({ currentPage: toPage }, this.filterChecks);
   };
 
   renderNoChecks() {
     return (
-      <InfoBox title="worldPing: Global Blackbox Monitoring" url={'https://grafana.com/docs/grafana-cloud/worldping/'}>
+      <InfoBox
+        title="Grafna Cloud Synthetic Monitoring"
+        url={'https://grafana.com/docs/grafana-cloud/synthetic-monitoring/'}
+      >
         <p>
           This account does not currently have any checks configured. Click the button below to start monitoring your
           services with Grafana Cloud.
@@ -253,7 +255,7 @@ export class ChecksPage extends PureComponent<Props, State> {
         value: CheckType.TCP,
       },
     ];
-    const ds = instance.worldping.getMetricsDS();
+    const ds = instance.api.getMetricsDS();
     return (
       <div>
         <div className="page-action-bar">
@@ -345,7 +347,7 @@ export class ChecksPage extends PureComponent<Props, State> {
 
   onRefresh = async () => {
     const { instance } = this.props;
-    const checks = await instance.worldping.listChecks();
+    const checks = await instance.api.listChecks();
     this.setState({
       checks,
     });
@@ -373,7 +375,7 @@ export class ChecksPage extends PureComponent<Props, State> {
       return <div>Loading...</div>;
     }
     if (check) {
-      return <CheckEditor check={check} instance={instance.worldping} onReturn={this.onGoBack} />;
+      return <CheckEditor check={check} instance={instance.api} onReturn={this.onGoBack} />;
     }
     if (addNew) {
       const template = {
@@ -391,7 +393,7 @@ export class ChecksPage extends PureComponent<Props, State> {
           },
         },
       } as Check;
-      return <CheckEditor check={template} instance={instance.worldping} onReturn={this.onGoBack} />;
+      return <CheckEditor check={template} instance={instance.api} onReturn={this.onGoBack} />;
     }
     return <div>{this.renderCheckList()}</div>;
   }

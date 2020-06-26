@@ -1,8 +1,8 @@
 {
   "__inputs": [
     {
-      "name": "DS_WORLDPING_METRICS",
-      "label": "Worldping Metrics",
+      "name": "DS_SM_METRICS",
+      "label": "Synthetic Monitoring Metrics",
       "description": "",
       "type": "datasource",
       "pluginId": "prometheus",
@@ -55,7 +55,7 @@
     ]
   },
   "description": "",
-  "editable": true,
+  "editable": false,
   "gnetId": null,
   "graphTooltip": 0,
   "id": null,
@@ -64,7 +64,7 @@
   "panels": [
     {
       "collapsed": false,
-      "datasource": "${DS_WORLDPING_METRICS}",
+      "datasource": "${DS_SM_METRICS}",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -85,7 +85,7 @@
         "#FA6400",
         "#C4162A"
       ],
-      "datasource": "${DS_WORLDPING_METRICS}",
+      "datasource": "${DS_SM_METRICS}",
       "decimals": 2,
       "description": "",
       "esGeoPoint": "geohash",
@@ -125,7 +125,7 @@
       },
       "targets": [
         {
-          "expr": "100*(1 - (sum(rate(probe_success_sum[${__range_s}s]) *  on (instance, job, probe, config_version) group_left(geohash) max(worldping_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version, geohash)) by (probe, geohash)/ sum(rate(probe_success_count[${__range_s}s]) *  on (instance, job, probe, config_version) group_left(geohash) max(worldping_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version, geohash)) by (probe, geohash)))",
+          "expr": "100*(1 - (sum(rate(probe_success_sum[${__range_s}s]) *  on (instance, job, probe, config_version) group_left(geohash) max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version, geohash)) by (probe, geohash)/ sum(rate(probe_success_count[${__range_s}s]) *  on (instance, job, probe, config_version) group_left(geohash) max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version, geohash)) by (probe, geohash)))",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -149,7 +149,7 @@
       "bars": true,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_WORLDPING_METRICS}",
+      "datasource": "${DS_SM_METRICS}",
       "fieldConfig": {
         "defaults": {
           "custom": {}
@@ -182,7 +182,7 @@
         {
           "targetBlank": true,
           "title": "Show Logs",
-          "url": "/explore?left=%5B\"${__from}\",\"${__to}\",\"Worldping%20Logs\",%7B\"expr\":\"%7Bcheck_name%3D%5C\"${check_type}%5C\",%20probe_success%3D%5C\"0%5C\"%7D\"%7D,%7B\"mode\":\"Logs\"%7D,%7B\"ui\":%5Btrue,true,true,\"none\"%5D%7D%5D"
+          "url": "/explore?left=%5B\"${__from}\",\"${__to}\",\"Synthetic Monitoring%20Logs\",%7B\"expr\":\"%7Bcheck_name%3D%5C\"${check_type}%5C\",%20probe_success%3D%5C\"0%5C\"%7D\"%7D,%7B\"mode\":\"Logs\"%7D,%7B\"ui\":%5Btrue,true,true,\"none\"%5D%7D%5D"
         }
       ],
       "maxDataPoints": "100",
@@ -205,7 +205,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "1 - (sum(rate(probe_success_sum[$__interval]) *  on (instance, job, probe, config_version) max(worldping_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version)) / sum(rate(probe_success_count[$__interval]) *  on (instance, job, probe, config_version) max(worldping_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version)))",
+          "expr": "1 - (sum(rate(probe_success_sum[$__interval]) *  on (instance, job, probe, config_version) max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version)) / sum(rate(probe_success_count[$__interval]) *  on (instance, job, probe, config_version) max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version)))",
           "hide": false,
           "interval": "",
           "legendFormat": "% Errors",
@@ -256,7 +256,7 @@
     },
     {
       "columns": [],
-      "datasource": "${DS_WORLDPING_METRICS}",
+      "datasource": "${DS_SM_METRICS}",
       "fieldConfig": {
         "defaults": {
           "custom": {}
@@ -284,7 +284,7 @@
           "dateFormat": "YYYY-MM-DD HH:mm:ss",
           "link": true,
           "linkTooltip": "",
-          "linkUrl": "/a/grafana-worldping-app/?page=redirect&dashboard=${__cell_1}&var-probe=All&var-instance=${__cell}&var-job=${__cell_3}&from=${__from}&to=${__to}",
+          "linkUrl": "/a/grafana-synthetic-monitoring-app/?page=redirect&dashboard=${__cell_1}&var-probe=All&var-instance=${__cell}&var-job=${__cell_3}&from=${__from}&to=${__to}",
           "mappingType": 1,
           "pattern": "instance",
           "rangeMaps": [],
@@ -380,7 +380,7 @@
       ],
       "targets": [
         {
-          "expr": "sum(rate(probe_success_sum[$__range]) * on (instance, job, probe, config_version) group_left(check_name) max(worldping_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version, check_name)) by (instance, job, check_name) / sum(rate(probe_success_count[$__range]) * on (instance, job, probe, config_version) group_left(check_name) max(worldping_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version, check_name)) by (instance, check_name, job)",
+          "expr": "sum(rate(probe_success_sum[$__range]) * on (instance, job, probe, config_version) group_left(check_name) max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version, check_name)) by (instance, job, check_name) / sum(rate(probe_success_count[$__range]) * on (instance, job, probe, config_version) group_left(check_name) max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version, check_name)) by (instance, check_name, job)",
           "format": "table",
           "instant": true,
           "interval": "",
@@ -388,7 +388,7 @@
           "refId": "C"
         },
         {
-          "expr": "sum(rate(probe_duration_seconds_sum[$__range]) * on (instance, job, probe, config_version) group_left(check_name) max(worldping_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version, check_name)) by (instance, job, check_name) / sum(rate(probe_duration_seconds_count[$__range]) * on (instance, job, probe, config_version) group_left(check_name) max(worldping_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version, check_name)) by (instance, job, check_name)",
+          "expr": "sum(rate(probe_duration_seconds_sum[$__range]) * on (instance, job, probe, config_version) group_left(check_name) max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version, check_name)) by (instance, job, check_name) / sum(rate(probe_duration_seconds_count[$__range]) * on (instance, job, probe, config_version) group_left(check_name) max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version, check_name)) by (instance, job, check_name)",
           "format": "table",
           "instant": true,
           "interval": "",
@@ -408,7 +408,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_WORLDPING_METRICS}",
+      "datasource": "${DS_SM_METRICS}",
       "fieldConfig": {
         "defaults": {
           "custom": {}
@@ -458,7 +458,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(probe_duration_seconds_sum[5m]) * on (instance, job, probe, config_version) group_left max(worldping_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version))  by (job, instance) / sum(rate(probe_duration_seconds_count[5m]) * on (instance, job, probe, config_version) group_left max(worldping_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version)) by (job, instance)",
+          "expr": "sum(rate(probe_duration_seconds_sum[5m]) * on (instance, job, probe, config_version) group_left max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version))  by (job, instance) / sum(rate(probe_duration_seconds_count[5m]) * on (instance, job, probe, config_version) group_left max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version)) by (job, instance)",
           "hide": false,
           "interval": "",
           "legendFormat": "{{job}}/{{ instance }}",
@@ -512,22 +512,22 @@
   "schemaVersion": 25,
   "style": "dark",
   "tags": [
-    "worldping"
+    "synthetic-monitoring"
   ],
   "templating": {
     "list": [
       {
         "allValue": null,
         "current": {},
-        "datasource": "${DS_WORLDPING_METRICS}",
-        "definition": "label_values(worldping_check_info, check_name)",
+        "datasource": "${DS_SM_METRICS}",
+        "definition": "label_values(sm_check_info, check_name)",
         "hide": 0,
         "includeAll": true,
         "label": "Check Type",
         "multi": false,
         "name": "check_type",
         "options": [],
-        "query": "label_values(worldping_check_info, check_name)",
+        "query": "label_values(sm_check_info, check_name)",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -541,15 +541,15 @@
       {
         "allValue": ".*",
         "current": {},
-        "datasource": "${DS_WORLDPING_METRICS}",
-        "definition": "label_values(worldping_check_info, region)",
+        "datasource": "${DS_SM_METRICS}",
+        "definition": "label_values(sm_check_info, region)",
         "hide": 0,
         "includeAll": true,
         "label": null,
         "multi": true,
         "name": "region",
         "options": [],
-        "query": "label_values(worldping_check_info, region)",
+        "query": "label_values(sm_check_info, region)",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -580,7 +580,7 @@
     ]
   },
   "timezone": "",
-  "title": "worldPing Summary",
+  "title": "Synthetic Monitoring Summary",
   "uid": "fU-WBSqWz",
-  "version": 34
+  "version": 35
 }

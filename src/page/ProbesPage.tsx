@@ -29,7 +29,7 @@ export class ProbesPage extends PureComponent<Props, State> {
 
   async componentDidMount() {
     const { instance, id } = this.props;
-    const probes = await instance.worldping.listProbes();
+    const probes = await instance.api.listProbes();
     const num = id ? parseInt(id, 10) : -1;
     const probe = probes.find(p => p.id === num);
     this.setState({ probes, probe });
@@ -69,7 +69,7 @@ export class ProbesPage extends PureComponent<Props, State> {
 
   onRefresh = async () => {
     const { instance } = this.props;
-    const probes = await instance.worldping.listProbes();
+    const probes = await instance.api.listProbes();
     this.setState({
       probes,
     });
@@ -99,7 +99,7 @@ export class ProbesPage extends PureComponent<Props, State> {
     }
 
     if (probe) {
-      return <ProbeEditor probe={probe} instance={instance.worldping} onReturn={this.onGoBack} />;
+      return <ProbeEditor probe={probe} instance={instance.api} onReturn={this.onGoBack} />;
     }
     if (addNew) {
       const template = {
@@ -112,7 +112,7 @@ export class ProbesPage extends PureComponent<Props, State> {
         online: false,
         onlineChange: 0,
       } as Probe;
-      return <ProbeEditor probe={template} instance={instance.worldping} onReturn={this.onGoBack} />;
+      return <ProbeEditor probe={template} instance={instance.api} onReturn={this.onGoBack} />;
     }
     return <div>{this.renderProbeList()}</div>;
   }
@@ -155,7 +155,7 @@ export class ProbesPage extends PureComponent<Props, State> {
               <UptimeGauge
                 labelNames={['probe']}
                 labelValues={[probe.name]}
-                ds={instance.worldping.getMetricsDS()}
+                ds={instance.api.getMetricsDS()}
                 height={60}
                 width={150}
                 sparkline={false}
