@@ -12,6 +12,11 @@
       "small": "img/logo.svg",
       "large": "img/logo.svg"
     },
+    "screenshots": [
+      {"name": "Summary Dashboard", "path": "img/screenshot-dash-summary.png"},
+      {"name": "HTTP Dashboard", "path": "img/screenshot-dash-http.png"},
+      {"name": "Check List", "path": "img/screenshot-check-list.png"}
+    ],
     "version": "%VERSION%",
     "updated": "%TODAY%"
   },
@@ -22,6 +27,12 @@
       "name": "Config",
       "path": "/a/grafana-synthetic-monitoring-app/",
       "addToNav": false
+    },
+    {
+      "type": "page",
+      "name": "Home",
+      "path": "/a/grafana-synthetic-monitoring-app/?page=redirect&dashboard=summary",
+      "addToNav": true
     },
     {
       "type": "page",
