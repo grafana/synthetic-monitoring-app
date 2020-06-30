@@ -5,7 +5,7 @@
 
   "info": {
     "author": {
-      "name": "Grafana Project",
+      "name": "Grafana Labs",
       "url": "https://grafana.com"
     },
     "logos": {
@@ -19,9 +19,9 @@
   "includes": [
     {
       "type": "page",
-      "name": "Status",
+      "name": "Config",
       "path": "/a/grafana-synthetic-monitoring-app/",
-      "addToNav": true
+      "addToNav": false
     },
     {
       "type": "page",

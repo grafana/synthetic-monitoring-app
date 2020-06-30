@@ -163,7 +163,7 @@ export function dashboardUID(checkType: string, ds: SMDataSource): DashboardInfo
   const dashboards = ds.instanceSettings.jsonData.dashboards;
   let target: DashboardInfo | undefined = undefined;
   for (const item of dashboards) {
-    if (item.title.toLocaleLowerCase() === 'sm ' + checkType) {
+    if (item.json.toLocaleLowerCase() === `sm-${checkType}.json`) {
       target = item;
     }
   }

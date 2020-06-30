@@ -1,5 +1,5 @@
 import React, { PureComponent, ChangeEvent } from 'react';
-import { Label, Button, Input, ConfirmModal, HorizontalGroup, Collapse } from '@grafana/ui';
+import { Field, Button, Input, ConfirmModal, HorizontalGroup, Collapse, InfoBox, Alert, Container } from '@grafana/ui';
 import { RegistrationInfo, HostedInstance } from 'types';
 import { SMDataSource } from 'datasource/DataSource';
 import { isValid } from 'datasource/ConfigEditor';
@@ -18,6 +18,8 @@ interface State {
   showAdvanced: boolean;
   apiHost?: string;
   adminApiToken?: string;
+  userError?: string;
+  backendError?: string;
   info?: RegistrationInfo;
   logsInstance?: number;
   metricsInstance?: number;
@@ -47,11 +49,28 @@ export class TenantSetup extends PureComponent<Props, State> {
       return;
     }
 
-    const info = await instance.registerInit(apiHost, adminApiToken);
+    const info = await instance.registerInit(apiHost, adminApiToken).catch(err => {
+      console.error('failed to init. ', err);
+      if (err.data.msg) {
+        this.setState({ userError: err.data.msg, backendError: undefined });
+        return;
+      }
+      let msg = 'failed to initialize with provided Admin API Key';
+      if (err.statusText) {
+        msg = `${err.status}: ${err.statusText}`;
+      }
+      this.setState({ backendError: msg, userError: undefined });
+    });
+    if (!info) {
+      console.log('info not returned from registerInit');
+      return;
+    }
     this.setState({
       info,
       logsInstance: info.tenantInfo?.logInstance?.id,
       metricsInstance: info.tenantInfo?.metricInstance?.id,
+      userError: undefined,
+      backendError: undefined,
     });
   };
 
@@ -150,39 +169,70 @@ export class TenantSetup extends PureComponent<Props, State> {
   };
 
   renderSetup() {
-    const { info, adminApiToken, apiHost, logsInstance, metricsInstance, showAdvanced } = this.state;
+    const {
+      info,
+      adminApiToken,
+      apiHost,
+      logsInstance,
+      metricsInstance,
+      showAdvanced,
+      userError,
+      backendError,
+    } = this.state;
 
     if (!info) {
       return (
         <div>
           <HorizontalGroup wrap={true}>
-            <Label>Admin API Key</Label>
-
-            <Input
-              type="text"
-              width={100}
-              placeholder="Grafana.com Admin Api Key"
-              value={adminApiToken || ''}
-              onChange={this.onApiTokenChange}
-            />
+            <InfoBox
+              title="Initialize Synthetic Monitoring App"
+              url={'https://grafana.com/grafana/plugins/grafana-synthetic-monitoring-app/'}
+            >
+              <p>
+                To initialize the App and connect it to your Grafana Cloud service you will need a Admin API key for you
+                Grafana.com account. The <b>API key</b> is only needed for the initialization process and will not be
+                stored. Once the initialization is complete you can safely delete the key.
+                <br />
+                <br />
+                <a className="highlight-word" href="//grafana.com/profile/api-keys" target="_blank">
+                  Generate a new API key
+                </a>
+              </p>
+            </InfoBox>
+            <Field label="Admin API Key" error={userError} invalid={userError !== undefined}>
+              <Input
+                type="text"
+                width={100}
+                placeholder="Grafana.com Admin Api Key"
+                value={adminApiToken || ''}
+                onChange={this.onApiTokenChange}
+              />
+            </Field>
           </HorizontalGroup>
           <br />
           <Collapse label="Advanced" collapsible={true} onToggle={this.onToggleAdvanced} isOpen={showAdvanced}>
             <HorizontalGroup>
-              <Label>Backend Address</Label>
-
-              <Input
-                type="text"
-                width={40}
-                placeholder="Synthetic Monitoring Backend Address"
-                value={apiHost || this.defaultApiHost}
-                onChange={this.onApiHostChange}
-              />
+              <Field label="Backend Address">
+                <Input
+                  type="text"
+                  width={40}
+                  placeholder="Synthetic Monitoring Backend Address"
+                  value={apiHost || this.defaultApiHost}
+                  onChange={this.onApiHostChange}
+                />
+              </Field>
             </HorizontalGroup>
           </Collapse>
           <Button variant="primary" onClick={this.onInit}>
             Initalize
           </Button>
+          {backendError !== undefined && (
+            <Container margin="md">
+              <Alert title="Backend Error" severity="error">
+                {backendError}
+              </Alert>
+            </Container>
+          )}
         </div>
       );
     }
