@@ -5,13 +5,18 @@
 
   "info": {
     "author": {
-      "name": "Grafana Project",
+      "name": "Grafana Labs",
       "url": "https://grafana.com"
     },
     "logos": {
       "small": "img/logo.svg",
       "large": "img/logo.svg"
     },
+    "screenshots": [
+      {"name": "Summary Dashboard", "path": "img/screenshot-dash-summary.png"},
+      {"name": "HTTP Dashboard", "path": "img/screenshot-dash-http.png"},
+      {"name": "Check List", "path": "img/screenshot-check-list.png"}
+    ],
     "version": "%VERSION%",
     "updated": "%TODAY%"
   },
@@ -19,8 +24,14 @@
   "includes": [
     {
       "type": "page",
-      "name": "Status",
+      "name": "Config",
       "path": "/a/grafana-synthetic-monitoring-app/",
+      "addToNav": false
+    },
+    {
+      "type": "page",
+      "name": "Home",
+      "path": "/a/grafana-synthetic-monitoring-app/?page=redirect&dashboard=summary",
       "addToNav": true
     },
     {
@@ -39,6 +50,13 @@
 
   "dependencies": {
     "grafanaVersion": "7.0.x",
-    "plugins": []
+    "plugins": [
+      {
+        "type": "panel",
+        "name": "Worldmap Panel",
+        "id": "grafana-worldmap-panel",
+        "version": "^0.3.2"
+      }
+    ]
   }
 }

@@ -1,14 +1,25 @@
-<a href="a/grafana-synthetic-monitoring-app/?page=setup">
-<div class="add-data-source-item">
-  <img class="add-data-source-item-logo" src="public/plugins/synthetic-monitoring-datasource/img/logo.svg" />
-  <div class="add-data-source-item-text-wrapper">
-    <span class="add-data-source-item-text">Synthetic Monitoring</span
-    ><span class="add-data-source-item-desc">Grafana Cloud Synthetic Monitoring</span>
+<div class="card-item" style="position: relative; margin-top:16px; padding: 16px; -webkit-box-flex: 1; flex-grow:1; border-top: 3px solid rgb(50, 115, 217)">
+  <div>
+    <div style="width: 100%; display: flex; flex-direction: row; flex-wrap: no-wrap; -webkit-box-pack: justify; justify-content: space-between; align-items: flex-start; height: 100%; margin-bottom: 0px">
+      <div class="css-657se6">
+        <div>
+          <h4>Synthetic Monitoring App</h4>
+        </div>
+      </div>
+    </div>
   </div>
-  <div class="add-data-source-item-actions">
-    <button class="css-1ihbihm-button">
-      <span class="css-1beih13"><span>Setup</span></span>
-    </button>
+  <div ng-if="!ctrl.configured">
+    <p>
+      Synthetic Monitoring is a blackbox monitoring solution provided as part of <a class="highlight-word" href="https://grafana.com/products/cloud/" target="_blank">Grafana Cloud</a>.  If you don't already have a Grafana Cloud service, <a class="highlight-word" href="https://grafana.com/signup/cloud" target="_blank">sign up now </a>
+      <br/><br/>
+      Click below to enable and initialize the App and start monitoring your network services today.
+    </p>
+  </div>
+  <div ng-if="ctrl.configured">
+    <p>
+      Synthetic Monitoring is a blackbox monitoring solution provided as part of <a class="highlight-word" href="https://grafana.com/products/cloud/" target="_blank">Grafana Cloud</a>.
+      <br/><br/>
+      Click <b>Update</b> to edit the App's configuration.
+    </p>
   </div>
 </div>
-</a>

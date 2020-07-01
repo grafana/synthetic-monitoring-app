@@ -3,14 +3,12 @@ import React, { PureComponent } from 'react';
 
 // Types
 import { NavModelItem, AppRootProps, DataSourceInstanceSettings } from '@grafana/data';
-import { GlobalSettings, RegistrationInfo, GrafanaInstances, OrgRole } from './types';
+import { GlobalSettings, RegistrationInfo, GrafanaInstances } from './types';
 import { SMDataSource } from 'datasource/DataSource';
-import { findSMDataSources, createNewApiInstance, hasRole, dashboardUID } from 'utils';
+import { findSMDataSources, createNewApiInstance, dashboardUID } from 'utils';
 import { SMOptions } from 'datasource/types';
 import { getDataSourceSrv, getLocationSrv } from '@grafana/runtime';
 import { TenantSetup } from './components/TenantSetup';
-import { TenantView } from 'components/TenantView';
-import { DashboardList } from 'components/DashboardList';
 import { ChecksPage } from 'page/ChecksPage';
 import { ProbesPage } from 'page/ProbesPage';
 
@@ -76,15 +74,9 @@ export class RootPage extends PureComponent<Props, State> {
 
   updateNav() {
     const { path, onNavChanged, query, meta } = this.props;
-    const selected = query.page || 'status';
+    const selected = query.page || 'checks';
     const tabs: NavModelItem[] = [];
-    if (this.state.valid && selected !== 'setup' && selected !== 'redirect') {
-      tabs.push({
-        text: 'Status',
-        // icon: 'fa fa-fw fa-file-text-o',
-        url: path,
-        id: 'status',
-      });
+    if (this.state.valid && selected !== 'config' && selected !== 'redirect') {
       tabs.push({
         text: 'Checks',
         url: path + '?page=checks',
@@ -102,17 +94,17 @@ export class RootPage extends PureComponent<Props, State> {
         id: 'redirect',
       });
       tabs.push({
-        text: 'Status',
+        text: 'Config',
         // icon: 'fa fa-fw fa-file-text-o',
         url: path,
-        id: 'status',
+        id: 'config',
       });
     } else {
       tabs.push({
-        text: 'Setup',
+        text: 'Config',
         // icon: 'fa fa-fw fa-file-text-o',
         url: path,
-        id: 'setup',
+        id: 'config',
       });
     }
 
@@ -151,21 +143,6 @@ export class RootPage extends PureComponent<Props, State> {
     return <div>TODO... multiple instances... delete one!!!!</div>;
   }
 
-  //-----------------------------------------------------------------------------------------
-  // Setup
-  //-----------------------------------------------------------------------------------------
-  renderStatus() {
-    const { instance } = this.state;
-    const options = instance!.api.instanceSettings.jsonData;
-    return (
-      <div>
-        <DashboardList options={options} checkUpdates={false} />
-        <br />
-        {hasRole(OrgRole.EDITOR) && <TenantView settings={options} />}
-      </div>
-    );
-  }
-
   dashboardRedirect() {
     const { instance } = this.state;
     const { query } = this.props;
@@ -195,9 +172,9 @@ export class RootPage extends PureComponent<Props, State> {
   }
 
   //-----------------------------------------------------------------------------------------
-  // Setup
+  // Config
   //-----------------------------------------------------------------------------------------
-  renderSetup() {
+  renderConfig() {
     const { instance } = this.state;
     if (!instance) {
       return <div>Loading.... (or maybe a user permissions error?)</div>;
@@ -212,8 +189,8 @@ export class RootPage extends PureComponent<Props, State> {
       return this.renderMultipleConfigs();
     }
     const { query } = this.props;
-    if (!valid || query.page === 'setup') {
-      return this.renderSetup();
+    if (!valid || query.page === 'config') {
+      return this.renderConfig();
     }
 
     if ('dashboard' in query) {
@@ -227,7 +204,7 @@ export class RootPage extends PureComponent<Props, State> {
       return <ProbesPage instance={instance!} id={query.id} />;
     }
 
-    return this.renderStatus();
+    return <div>Page not found.</div>;
   }
 }
 

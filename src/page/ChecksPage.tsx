@@ -36,6 +36,7 @@ interface State {
   totalPages: number;
   currentPage: number;
   checksPerPage: number;
+  loading: boolean;
 }
 
 export class ChecksPage extends PureComponent<Props, State> {
@@ -48,6 +49,7 @@ export class ChecksPage extends PureComponent<Props, State> {
     totalPages: 1,
     currentPage: 1,
     checksPerPage: this.props.checksPerPage || 15,
+    loading: true,
   };
 
   async componentDidMount() {
@@ -63,6 +65,7 @@ export class ChecksPage extends PureComponent<Props, State> {
       check: check,
       totalPages: totalPages,
       filteredChecks: sortedChecks.slice(0, checksPerPage),
+      loading: false,
     });
   }
 
@@ -348,9 +351,13 @@ export class ChecksPage extends PureComponent<Props, State> {
   onRefresh = async () => {
     const { instance } = this.props;
     const checks = await instance.api.listChecks();
-    this.setState({
-      checks,
-    });
+    const sortedChecks = checks.sort((a, b) => b.job.localeCompare(a.job));
+    this.setState(
+      {
+        checks: sortedChecks,
+      },
+      this.filterChecks
+    );
   };
 
   onGoBack = (refresh: boolean) => {
@@ -370,8 +377,8 @@ export class ChecksPage extends PureComponent<Props, State> {
 
   render() {
     const { instance } = this.props;
-    const { check, addNew } = this.state;
-    if (!instance) {
+    const { check, addNew, loading } = this.state;
+    if (loading) {
       return <div>Loading...</div>;
     }
     if (check) {
