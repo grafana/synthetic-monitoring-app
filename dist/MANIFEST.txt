@@ -1,0 +1,38 @@
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+{
+  "plugin": "grafana-synthetic-monitoring-app",
+  "version": "0.0.4",
+  "files": {
+    "LICENSE": "2d4174f4540bd9ca7d7d97e24724ef517829a2c818af6bfacc884807f5d5f692",
+    "README.md": "71869ea02d923844b6b0ceb1d438ac54b7de8f67b5daf1a92fec9bc2fb3a126b",
+    "dashboards/sm-dns.json": "aefaa9bd3f96cf013756068d059d23e6d820d247eea6b587f51505ee45b6d18f",
+    "dashboards/sm-http.json": "7f5a1346ff4a29d81f091f69e9f5c7a6581d5471181b95b207c0f617b12f0914",
+    "dashboards/sm-ping.json": "3d0989e27935b5247cf3f6f3c4f560598a9fd7d9ba6f532a1a0fdd4a2882c349",
+    "dashboards/sm-summary.json": "570bbe2408bab0402c9d28ff646627df72f4d95cd8b35e8efed52a66b3b93940",
+    "dashboards/sm-tcp.json": "0fb6ff0d1812ff022703fd2c399a1b933e591ccec9b4e84ed04723c0a3cdc15d",
+    "datasource/module.js": "64fc4932540705226266a383f293e41fb6ae2f380de3a9f9fa9b11ec68420ca0",
+    "datasource/module.js.LICENSE.txt": "0d8f66cd4afb566cb5b7e1540c68f43b939d3eba12ace290f18abc4f4cb53ed0",
+    "datasource/module.js.map": "731104aa7d9d1a6f39c55a7485b2419c28caf6b9925f247c92e999c2b0e7527f",
+    "datasource/plugin.json": "004eb5ff67e8e54d362747d782889fa0964c541a9f8678f15e1694e9820b376d",
+    "legacy/config.html": "61bf70a512ebe27c51d95008e28e9f84bd02e808a9a13b264e611e6543f15e8b",
+    "module.js": "0bfc994fb6cbb7548199987746ae6370f3ee10a6c6eeff8bd0834e0e21e6993f",
+    "module.js.LICENSE.txt": "0d8f66cd4afb566cb5b7e1540c68f43b939d3eba12ace290f18abc4f4cb53ed0",
+    "module.js.map": "e72dcf29f3b42a76fc43aaa743b7a451b8307c9b7823e0aee7f484da21c7597c",
+    "plugin.json": "47ecbd6f43750bc79c25246918869cc4e3349a94a27db2e50dbe8ae8a73d34b4"
+  },
+  "time": 1593626891771,
+  "keyId": "7e4d0c6a708866e7"
+}
+-----BEGIN PGP SIGNATURE-----
+Version: OpenPGP.js v4.10.1
+Comment: https://openpgpjs.org
+
+wqEEARMKAAYFAl780QsACgkQfk0ManCIZucLggIJAVCVsb00v/2lWJlYWByR
+a8T5BfvjLwRHRfeaeuYeR65PyLQykgaS4tvz0YNbRYQl4L0TsMwSWuocNOjz
+aqNHVwfKAgjq1tQ7BpqZZf9Sz4rO5EJkmMCGECDmGWkC8aNbxAb4UuzhiXrz
+gW9YHs6fwcWN+cVXGintzrXOXfeQjDaSivEWdA==
+=srPU
+-----END PGP SIGNATURE-----
