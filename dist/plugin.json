@@ -2,7 +2,6 @@
   "type": "app",
   "name": "Synthetic Monitoring",
   "id": "grafana-synthetic-monitoring-app",
-
   "info": {
     "author": {
       "name": "Grafana Labs",
@@ -13,14 +12,27 @@
       "large": "img/logo.svg"
     },
     "screenshots": [
-      {"name": "Summary Dashboard", "path": "img/screenshot-dash-summary.png"},
-      {"name": "HTTP Dashboard", "path": "img/screenshot-dash-http.png"},
-      {"name": "Check List", "path": "img/screenshot-check-list.png"}
+      {
+        "name": "Summary Dashboard",
+        "path": "img/screenshot-dash-summary.png"
+      },
+      {
+        "name": "HTTP Dashboard",
+        "path": "img/screenshot-dash-http.png"
+      },
+      {
+        "name": "Check List",
+        "path": "img/screenshot-check-list.png"
+      }
     ],
-    "version": "%VERSION%",
-    "updated": "%TODAY%"
+    "version": "0.0.5",
+    "updated": "2020-07-01",
+    "build": {
+      "time": 1593627730578,
+      "branch": "20200630-fixes",
+      "hash": "a6ff3cec8fc6c362a88fb5c4c7b7be69112e3ea5"
+    }
   },
-
   "includes": [
     {
       "type": "page",
@@ -47,7 +59,6 @@
       "addToNav": true
     }
   ],
-
   "dependencies": {
     "grafanaVersion": "7.0.x",
     "plugins": [
