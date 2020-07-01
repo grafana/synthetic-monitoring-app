@@ -1,6 +1,6 @@
 {
   "name": "synthetic-monitoring-app",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Grafana Synthetic Monitoring App",
   "scripts": {
     "build": "grafana-toolkit plugin:build",
@@ -17,9 +17,5 @@
     "@grafana/ui": "^7.0.0-beta.3",
     "@types/lodash": "latest"
   },
-  "dependencies": {
-    "@types/leaflet": "^1.5.12",
-    "leaflet": "^1.6.0",
-    "react-leaflet": "^2.6.0"
-  }
+  "dependencies": {}
 }

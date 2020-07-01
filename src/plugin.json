@@ -50,6 +50,6 @@
 
   "dependencies": {
     "grafanaVersion": "7.0.x",
-    "plugins": []
+    "plugins": ["grafana-worldmap-panel"]
   }
 }
