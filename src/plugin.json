@@ -50,6 +50,13 @@
 
   "dependencies": {
     "grafanaVersion": "7.0.x",
-    "plugins": ["grafana-worldmap-panel"]
+    "plugins": [
+      {
+        "type": "panel",
+        "name": "Worldmap Panel",
+        "id": "grafana-worldmap-panel",
+        "version": "^0.3.2"
+      }
+    ]
   }
 }
