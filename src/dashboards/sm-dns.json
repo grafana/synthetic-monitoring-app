@@ -78,7 +78,7 @@
     "gnetId": null,
     "graphTooltip": 0,
     "id": null,
-    "iteration": 1591627233669,
+    "iteration": 1594330906000,
     "links": [],
     "panels": [
       {
@@ -285,7 +285,7 @@
         "pluginVersion": "7.0.3",
         "targets": [
           {
-            "expr": "sum(rate(probe_dns_lookup_time_seconds_sum{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__range])) / sum(rate(probe_dns_lookup_time_seconds_count{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__range]))",
+            "expr": "sum(rate(probe_dns_duration_seconds_sum{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__range])) / sum(rate(probe_dns_duration_seconds_count{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__range]))",
             "hide": false,
             "instant": true,
             "interval": "",
@@ -626,7 +626,7 @@
         "steppedLine": false,
         "targets": [
           {
-            "expr": "avg(probe_dns_lookup_time_seconds{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"} * on (instance, job,probe,config_version) group_left probe_success{probe=~\"$probe\",instance=\"$instance\", job=\"$job\"} > 0) by (probe)",
+            "expr": "avg(probe_dns_duration_seconds{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"} by (phase)",
             "instant": false,
             "interval": "",
             "intervalFactor": 1,
@@ -948,5 +948,5 @@
     "timezone": "",
     "title": "Synthetic Monitoring - DNS",
     "uid": "lgL6odgGz",
-    "version": 8
+    "version": 9
   }
