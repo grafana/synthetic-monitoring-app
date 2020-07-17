@@ -1,5 +1,7 @@
 import { Check, CheckType, Settings, HttpSettings, PingSettings, DnsSettings, TcpSettings, Label } from 'types';
 import { checkType } from 'utils';
+import * as punycode from 'punycode';
+import { Address4, Address6 } from 'ip-address';
 
 export const CheckValidation = {
   job: validateJob,
@@ -36,8 +38,20 @@ export function validateTarget(typeOfCheck: CheckType, target: string): boolean 
     case CheckType.HTTP: {
       return validateHttpTarget(target);
     }
+    case CheckType.PING: {
+      return validateHostname(target);
+    }
+    case CheckType.DNS: {
+      return validateHostname(target);
+    }
+    case CheckType.TCP: {
+      return validateHostPort(target);
+    }
     default: {
-      return true;
+      // we want to make sure that we are validating the target for all
+      // check types; if someone adds a check type but forgets to update
+      // this validation, it will land here.
+      return false;
     }
   }
 }
@@ -130,4 +144,40 @@ function validateHttpTarget(target: string): boolean {
   } catch (_) {
     return false;
   }
+}
+
+function validateHostname(target: string): boolean {
+  // guess IP address first because some invalid IP addresses will look
+  // like valid hostnames
+
+  const ipv4 = new Address4(target);
+  if (ipv4.isValid()) {
+    return true;
+  }
+
+  const ipv6 = new Address6(target);
+  if (ipv6.isValid()) {
+    return true;
+  }
+
+  // it doesn't seem to be an IP address, let's try FQHN.
+  const pc = punycode.toASCII(target);
+  // note that \w matches "_"
+  const re = new RegExp(/^[a-z]([-a-z0-9]{0,62}[a-z0-9])?(\.[a-z]([-a-z0-9]{0,62}[a-z0-9])?)+$/, 'i');
+
+  return pc.match(re) != null;
+}
+
+function validateHostPort(target: string): boolean {
+  const re = new RegExp(/^(?:\[([0-9a-f:.]+)\]|([^:]+)):(\d+)$/, 'i');
+  const match = target.match(re);
+
+  if (match === null) {
+    return false;
+  }
+
+  const host = match[1] !== undefined ? match[1] : match[2];
+  const port = parseInt(match[3], 10);
+
+  return validateHostname(host) && !isNaN(port) && port > 0 && port <= 65535;
 }
