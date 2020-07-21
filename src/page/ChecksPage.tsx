@@ -209,7 +209,7 @@ export class ChecksPage extends PureComponent<Props, State> {
   renderNoChecks() {
     return (
       <InfoBox
-        title="Grafna Cloud Synthetic Monitoring"
+        title="Grafana Cloud Synthetic Monitoring"
         url={'https://grafana.com/docs/grafana-cloud/synthetic-monitoring/'}
       >
         <p>

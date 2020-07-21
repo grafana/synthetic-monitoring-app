@@ -13,13 +13,13 @@ async function findSyntheticMonitoringFolder(): Promise<FolderInfo> {
   const backendSrv = getBackendSrv();
   const folders = (await backendSrv.get(`api/folders`)) as FolderInfo[];
   for (const folder of folders) {
-    if (folder.title === 'SyntheticMonitoring') {
+    if (folder.title === 'Synthetic Monitoring') {
       return folder;
     }
   }
 
   return await backendSrv.post('api/folders', {
-    title: 'SyntheticMonitoring',
+    title: 'Synthetic Monitoring',
   });
 }
 
