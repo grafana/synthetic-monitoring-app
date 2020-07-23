@@ -7,6 +7,14 @@
       "type": "datasource",
       "pluginId": "prometheus",
       "pluginName": "Prometheus"
+    },
+    {
+      "name": "DS_SM_LOGS",
+      "label": "Synthetic Monitoring Logs",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "loki",
+      "pluginName": "Loki"
     }
   ],
   "__requires": [
@@ -182,7 +190,7 @@
         {
           "targetBlank": true,
           "title": "Show Logs",
-          "url": "/explore?left=%5B\"${__from}\",\"${__to}\",\"Synthetic Monitoring%20Logs\",%7B\"expr\":\"%7Bcheck_name%3D%5C\"${check_type}%5C\",%20probe_success%3D%5C\"0%5C\"%7D\"%7D,%7B\"mode\":\"Logs\"%7D,%7B\"ui\":%5Btrue,true,true,\"none\"%5D%7D%5D"
+          "url": "/explore?left=%5B\"${__from}\",\"${__to}\",\"${_DS_SM_LOGS}\",%7B\"expr\":\"%7Bcheck_name%3D%5C\"${check_type}%5C\",%20probe_success%3D%5C\"0%5C\"%7D\"%7D,%7B\"mode\":\"Logs\"%7D,%7B\"ui\":%5Btrue,true,true,\"none\"%5D%7D%5D"
         }
       ],
       "maxDataPoints": "100",
@@ -559,6 +567,24 @@
         "tagsQuery": "",
         "type": "query",
         "useTags": false
+      },
+      {
+        "current": {
+          "value": "${DS_SM_LOGS}",
+          "text": "${DS_SM_LOGS}"
+        },
+        "hide": 2,
+        "label": null,
+        "name": "_DS_SM_LOGS",
+        "options": [
+          {
+            "value": "${DS_SM_LOGS}",
+            "text": "${DS_SM_LOGS}"
+          }
+        ],
+        "query": "${DS_SM_LOGS}",
+        "skipUrlSync": false,
+        "type": "constant"
       }
     ]
   },
@@ -582,5 +608,5 @@
   "timezone": "",
   "title": "Synthetic Monitoring Summary",
   "uid": "fU-WBSqWz",
-  "version": 35
+  "version": 36
 }
