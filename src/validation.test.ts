@@ -1,5 +1,5 @@
 import { validateCheck, CheckValidation } from 'validation';
-import { Check, CheckType } from 'types';
+import { Check, CheckType, HttpMethod, IpVersion, DnsRecordType, DnsProtocol } from 'types';
 
 describe('trivial cases', () => {
   it('should be a valid http check', () => {
@@ -11,8 +11,13 @@ describe('trivial cases', () => {
       labels: [],
       probes: [1],
       enabled: true,
-      settings: {http: {
-      }},
+      settings: {
+        http: {
+          method: HttpMethod.GET,
+          ipVersion: IpVersion.V4,
+          noFollowRedirects: false,
+        },
+      },
     };
 
     expect(validateCheck(check)).toBe(true);
@@ -27,8 +32,12 @@ describe('trivial cases', () => {
       labels: [],
       probes: [1],
       enabled: true,
-      settings: {ping: {
-      }},
+      settings: {
+        ping: {
+          ipVersion: IpVersion.V4,
+          dontFragment: true,
+        },
+      },
     };
 
     expect(validateCheck(check)).toBe(true);
@@ -43,8 +52,15 @@ describe('trivial cases', () => {
       labels: [],
       probes: [1],
       enabled: true,
-      settings: {dns: {
-      }},
+      settings: {
+        dns: {
+          recordType: DnsRecordType.A,
+          server: '8.8.8.8',
+          ipVersion: IpVersion.V4,
+          protocol: DnsProtocol.TCP,
+          port: 53,
+        },
+      },
     };
 
     expect(validateCheck(check)).toBe(true);
@@ -59,8 +75,12 @@ describe('trivial cases', () => {
       labels: [],
       probes: [1],
       enabled: true,
-      settings: {tcp: {
-      }},
+      settings: {
+        tcp: {
+          ipVersion: IpVersion.V4,
+          tls: false,
+        },
+      },
     };
 
     expect(validateCheck(check)).toBe(true);
@@ -69,28 +89,21 @@ describe('trivial cases', () => {
 
 describe('bad targets', () => {
   it('should reject non-http URLs', () => {
-    const testcases: string[] = [
-      'ftp://example.org/',
-      'schema://example.org/',
-    ];
+    const testcases: string[] = ['ftp://example.org/', 'schema://example.org/'];
     testcases.forEach((testcase: string) => {
       expect(CheckValidation.target(CheckType.HTTP, testcase)).toBe(false);
     });
   });
 
   it('should reject URLs without schema', () => {
-    const testcases: string[] = [
-      'example.org',
-    ];
+    const testcases: string[] = ['example.org'];
     testcases.forEach((testcase: string) => {
       expect(CheckValidation.target(CheckType.HTTP, testcase)).toBe(false);
     });
   });
 
   it('should reject ping and dns targets without domains', () => {
-    const testcases: string[] = [
-      'grafana',
-    ];
+    const testcases: string[] = ['grafana'];
     testcases.forEach((testcase: string) => {
       expect(CheckValidation.target(CheckType.PING, testcase)).toBe(false);
       expect(CheckValidation.target(CheckType.DNS, testcase)).toBe(false);
@@ -98,12 +111,7 @@ describe('bad targets', () => {
   });
 
   it('should reject ping targets with invalid hostnames', () => {
-    const testcases: string[] = [
-      '1.org',
-      'x.',
-      '.y',
-      'x=y.org',
-    ];
+    const testcases: string[] = ['1.org', 'x.', '.y', 'x=y.org'];
     testcases.forEach((testcase: string) => {
       expect(CheckValidation.target(CheckType.PING, testcase)).toBe(false);
       expect(CheckValidation.target(CheckType.DNS, testcase)).toBe(false);
@@ -111,12 +119,7 @@ describe('bad targets', () => {
   });
 
   it('should reject tcp targets without valid ports', () => {
-    const testcases: string[] = [
-      'x.y',
-      'x.y:',
-      'x.y:0',
-      'x.y:65536',
-    ];
+    const testcases: string[] = ['x.y', 'x.y:', 'x.y:0', 'x.y:65536'];
     testcases.forEach((testcase: string) => {
       expect(CheckValidation.target(CheckType.TCP, testcase)).toBe(false);
     });
@@ -125,18 +128,14 @@ describe('bad targets', () => {
 
 describe('good targets', () => {
   it('should accept http schema as HTTP target', () => {
-    const testcases: string[] = [
-      'http://grafana.com/',
-    ];
+    const testcases: string[] = ['http://grafana.com/'];
     testcases.forEach((testcase: string) => {
       expect(CheckValidation.target(CheckType.HTTP, testcase)).toBe(true);
     });
   });
 
   it('should accept https schema as HTTP target', () => {
-    const testcases: string[] = [
-      'https://grafana.com/',
-    ];
+    const testcases: string[] = ['https://grafana.com/'];
     testcases.forEach((testcase: string) => {
       expect(CheckValidation.target(CheckType.HTTP, testcase)).toBe(true);
     });
@@ -157,7 +156,6 @@ describe('good targets', () => {
       expect(CheckValidation.target(CheckType.HTTP, testcase)).toBe(true);
     });
   });
-
 
   it('should accept IPv4 as ping target', () => {
     const testcases: string[] = [
@@ -190,11 +188,7 @@ describe('good targets', () => {
   });
 
   it('should accept tcp targets with host:port', () => {
-    const testcases: string[] = [
-      'x.y:25',
-      '1.2.3.4:25',
-      '[2001:0db8:1001:1001:1001:1001:1001:1001]:8080',
-    ];
+    const testcases: string[] = ['x.y:25', '1.2.3.4:25', '[2001:0db8:1001:1001:1001:1001:1001:1001]:8080'];
     testcases.forEach((testcase: string) => {
       expect(CheckValidation.target(CheckType.TCP, testcase)).toBe(true);
     });
