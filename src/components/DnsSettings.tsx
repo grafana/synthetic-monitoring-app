@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import React, { PureComponent, useReducer, useEffect, FC } from 'react';
 import { Collapse, Container, HorizontalGroup, Field, Select, MultiSelect, Input, List, IconButton } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
 import { IpVersion, Settings, DnsSettings, DnsProtocol, DnsRecordType, DNSRRValidator } from 'types';
@@ -266,6 +266,15 @@ export class DnsValidatorForm extends PureComponent<DnsValidatorProps, DnsValida
     this.props.onChange(validations);
   };
 
+  onUpdateFailIfMatches = (failIfMatchesRegexp: string[]) => {
+    const { onChange } = this.props;
+    console.log('calling this');
+    onChange({
+      failIfMatchesRegexp,
+      failIfNotMatchesRegexp: this.state.failIfNotMatchesRegexp,
+    });
+  };
+
   onFailIfMatchesRegexpChange = (index: number) => (event: React.ChangeEvent<HTMLInputElement>) => {
     let failIfMatchesRegexp: string[] = [];
     this.state.failIfMatchesRegexp.forEach((v, i) => {
@@ -335,30 +344,13 @@ export class DnsValidatorForm extends PureComponent<DnsValidatorProps, DnsValida
     return (
       <Container>
         <HorizontalGroup>
-          <Field label={name + ' matches'} description={description + ' match'} disabled={!isEditor}>
-            <Container>
-              <List
-                items={failIfMatchesRegexp}
-                renderItem={(item, index) => (
-                  <HorizontalGroup>
-                    <Input
-                      type="text"
-                      placeholder="regexp"
-                      value={item}
-                      onChange={this.onFailIfMatchesRegexpChange(index)}
-                      disabled={!isEditor}
-                    />
-                    <IconButton
-                      name="minus-circle"
-                      onClick={this.onFailIfMatchesRegexpDelete(index)}
-                      disabled={!isEditor}
-                    />
-                  </HorizontalGroup>
-                )}
-              />
-              <IconButton name="plus-circle" onClick={this.onFailIfMatchesRegexpAdd} disabled={!isEditor} />
-            </Container>
-          </Field>
+          <ListInput
+            label={`${name} matches`}
+            description={`${description} match`}
+            items={failIfMatchesRegexp}
+            onUpdate={this.onUpdateFailIfMatches}
+            disabled={!isEditor}
+          />
           <Field label={name + " doesn't match"} description={description + " don't match"} disabled={!isEditor}>
             <Container>
               <List
@@ -388,3 +380,76 @@ export class DnsValidatorForm extends PureComponent<DnsValidatorProps, DnsValida
     );
   }
 }
+
+interface Action {
+  type: string;
+  [key: string]: any;
+}
+
+function listInputReducer(state: string[], action: Action) {
+  switch (action.type) {
+    case 'delete': {
+      const newState: string[] = [];
+      return state.reduce((newState, item, index) => {
+        if (index !== action.index) {
+          newState.push(item);
+        }
+        return newState;
+      }, newState);
+    }
+    case 'add': {
+      return [...state, ''];
+    }
+    case 'change': {
+      return state.map((value, index) => {
+        if (index === action.index) {
+          return action.value;
+        }
+        return value;
+      });
+    }
+    default:
+      return state;
+  }
+}
+
+interface ListInputProps {
+  description: string;
+  label: string;
+  items: string[];
+  disabled?: boolean;
+  onUpdate: (items: string[]) => void;
+}
+
+const ListInput: FC<ListInputProps> = ({ label, description, items, disabled, onUpdate }) => {
+  const [state, dispatch] = useReducer(listInputReducer, items);
+
+  useEffect(() => {
+    onUpdate(state);
+  }, [state]);
+
+  return (
+    <Field label={label} description={description} disabled={disabled}>
+      <Container>
+        <List
+          items={state}
+          renderItem={(item, index) => (
+            <HorizontalGroup>
+              <Input
+                type="text"
+                placeholder="regexp"
+                value={item}
+                onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                  dispatch({ type: 'change', index, value: event.target.value })
+                }
+                disabled={disabled}
+              />
+              <IconButton name="minus-circle" onClick={() => dispatch({ type: 'delete', index })} disabled={disabled} />
+            </HorizontalGroup>
+          )}
+        />
+        <IconButton name="plus-circle" onClick={() => dispatch({ type: 'add' })} disabled={disabled} />
+      </Container>
+    </Field>
+  );
+};
