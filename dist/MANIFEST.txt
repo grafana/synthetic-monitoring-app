@@ -1,0 +1,38 @@
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+{
+  "plugin": "grafana-synthetic-monitoring-app",
+  "version": "0.0.6",
+  "files": {
+    "LICENSE": "6424c8b26451432c471c7c92ea2d96d74e0e32a9cf4ca1ebcfaab81a32ec9a3a",
+    "README.md": "ec663348af7470abe4c32b2826d613a61561869d6f5a7bf56a322ec29717b2dd",
+    "dashboards/sm-dns.json": "2a2196178822b73255710836938eee3b9b811aa73db4f2c6fe3e69134d4b2623",
+    "dashboards/sm-http.json": "7f5a1346ff4a29d81f091f69e9f5c7a6581d5471181b95b207c0f617b12f0914",
+    "dashboards/sm-ping.json": "3d0989e27935b5247cf3f6f3c4f560598a9fd7d9ba6f532a1a0fdd4a2882c349",
+    "dashboards/sm-summary.json": "ac4e6530eb6fe4723e17feb66eff2a37341c5d49d56ee2443ad3742ca1ac39e3",
+    "dashboards/sm-tcp.json": "0fb6ff0d1812ff022703fd2c399a1b933e591ccec9b4e84ed04723c0a3cdc15d",
+    "datasource/module.js": "4eb508cc96f2132ce6dafdbc9e9a7653f8c699e89a30a16d31cb8ca4119c12de",
+    "datasource/module.js.LICENSE.txt": "0d8f66cd4afb566cb5b7e1540c68f43b939d3eba12ace290f18abc4f4cb53ed0",
+    "datasource/module.js.map": "1bf2699ee71ad21aab6be77b589c9f2054558f0dd3bc6c71516b4fe5ef733f1c",
+    "datasource/plugin.json": "004eb5ff67e8e54d362747d782889fa0964c541a9f8678f15e1694e9820b376d",
+    "legacy/config.html": "61bf70a512ebe27c51d95008e28e9f84bd02e808a9a13b264e611e6543f15e8b",
+    "module.js": "82f0a589035f9524bb56607dad838b660f4a32fd00dc6f4b3f61c1cb4614d00a",
+    "module.js.LICENSE.txt": "8f2480d1a2d4317adaf2405ce8eb4bc0281bc85b82794d0fbe9f851e6ecfb9e5",
+    "module.js.map": "6d0c8c0e80376b6832786dda0adf692ab08c86657cfb4526738dc000638019e9",
+    "plugin.json": "20702360b23b8ea46a850a4ffebee91e389f2272f906d7e1b9333b1c7b94f80d"
+  },
+  "time": 1596143368717,
+  "keyId": "7e4d0c6a708866e7"
+}
+-----BEGIN PGP SIGNATURE-----
+Version: OpenPGP.js v4.10.1
+Comment: https://openpgpjs.org
+
+wqIEARMKAAYFAl8jNwgACgkQfk0ManCIZudqOgIJAakKVQouu0wntrqF9y+y
+sZoivJHXVx7Ar2e3BdaIc+vtS7wLYxPebL9HXuf0thQnCEvtZT0bIo/gKs4i
+rZYp7zHZAgkBP+QK+YeDTbt8rxC9B9rSX49zMcu4ejp1DCuZQ6xqIE6n4yJt
+xG8AAFP7lJYOxhqOVCaMdQ/fV0ejVzuDnWRDf5c=
+=gBWT
+-----END PGP SIGNATURE-----
