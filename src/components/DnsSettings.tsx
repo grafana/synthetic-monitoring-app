@@ -1,8 +1,10 @@
-import React, { PureComponent, useReducer, useEffect, FC } from 'react';
-import { Collapse, Container, HorizontalGroup, Field, Select, MultiSelect, Input, List, IconButton } from '@grafana/ui';
+import React, { PureComponent } from 'react';
+import { css } from 'emotion';
+import { Collapse, Container, HorizontalGroup, Field, Select, MultiSelect, Input } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
 import { IpVersion, Settings, DnsSettings, DnsProtocol, DnsRecordType, DNSRRValidator } from 'types';
 import { IpOptions } from './utils';
+import ListInput from './ListInput';
 
 interface Props {
   settings: Settings;
@@ -78,7 +80,6 @@ export class DnsSettingsForm extends PureComponent<Props, State> {
   };
 
   onValidateAnswerChange = (validations: DNSRRValidator | undefined) => {
-    console.log('validateAnswer update.', validations);
     if (!validations) {
       this.setState({ validateAnswerRRS: undefined }, this.onUpdate);
       return;
@@ -206,27 +207,35 @@ export class DnsSettingsForm extends PureComponent<Props, State> {
               <MultiSelect value={validRCodes} options={rCodes} onChange={this.onValidRCodesChange} />
             </Field>
           </HorizontalGroup>
-          <DnsValidatorForm
-            name="Validate Answer"
-            description="Validate entries in the Answer section of the DNS response"
-            validations={validateAnswerRRS}
-            onChange={this.onValidateAnswerChange}
-            isEditor={isEditor}
-          />
-          <DnsValidatorForm
-            name="Validate Authority"
-            description="Validate entries in the Authority section of the DNS response"
-            validations={validateAuthorityRRS}
-            onChange={this.onValidateAuthorityChange}
-            isEditor={isEditor}
-          />
-          <DnsValidatorForm
-            name="Validate Additional"
-            description="Validate entries in the Additional section of the DNS response"
-            validations={validateAdditionalRRS}
-            onChange={this.onValidateAdditionalChange}
-            isEditor={isEditor}
-          />
+          <div
+            className={css`
+              display: grid;
+              grid-template-columns: auto auto;
+              grid-column-gap: 0.5rem;
+            `}
+          >
+            <DnsValidatorForm
+              name="Validate Answer"
+              description="Validate entries in the Answer section of the DNS response"
+              validations={validateAnswerRRS}
+              onChange={this.onValidateAnswerChange}
+              isEditor={isEditor}
+            />
+            <DnsValidatorForm
+              name="Validate Authority"
+              description="Validate entries in the Authority section of the DNS response"
+              validations={validateAuthorityRRS}
+              onChange={this.onValidateAuthorityChange}
+              isEditor={isEditor}
+            />
+            <DnsValidatorForm
+              name="Validate Additional"
+              description="Validate entries in the Additional section of the DNS response"
+              validations={validateAdditionalRRS}
+              onChange={this.onValidateAdditionalChange}
+              isEditor={isEditor}
+            />
+          </div>
         </Collapse>
         <Collapse label="Advanced Options" collapsible={true} onToggle={this.onShowAdvanced} isOpen={showAdvanced}>
           <HorizontalGroup>
@@ -250,206 +259,53 @@ interface DnsValidatorProps {
   onChange: (validations: DNSRRValidator | undefined) => void;
 }
 
-interface DnsValidatorState extends DNSRRValidator {}
-
-export class DnsValidatorForm extends PureComponent<DnsValidatorProps, DnsValidatorState> {
-  state = {
-    failIfMatchesRegexp: this.props.validations?.failIfMatchesRegexp || [],
-    failIfNotMatchesRegexp: this.props.validations?.failIfNotMatchesRegexp || [],
-  };
-
-  onUpdate = () => {
-    const validations: DNSRRValidator = {
-      failIfMatchesRegexp: this.state.failIfMatchesRegexp,
-      failIfNotMatchesRegexp: this.state.failIfNotMatchesRegexp,
-    };
-    this.props.onChange(validations);
-  };
-
+export class DnsValidatorForm extends PureComponent<DnsValidatorProps> {
   onUpdateFailIfMatches = (failIfMatchesRegexp: string[]) => {
     const { onChange } = this.props;
-    console.log('calling this');
+    const { validations } = this.props;
+    const failIfNotMatchesRegexp = validations?.failIfNotMatchesRegexp ?? [];
     onChange({
       failIfMatchesRegexp,
-      failIfNotMatchesRegexp: this.state.failIfNotMatchesRegexp,
+      failIfNotMatchesRegexp,
     });
   };
 
-  onFailIfMatchesRegexpChange = (index: number) => (event: React.ChangeEvent<HTMLInputElement>) => {
-    let failIfMatchesRegexp: string[] = [];
-    this.state.failIfMatchesRegexp.forEach((v, i) => {
-      if (i === index) {
-        failIfMatchesRegexp.push(event.target.value);
-      } else {
-        failIfMatchesRegexp.push(v);
-      }
+  onUpdateFailIfNotMatches = (failIfNotMatchesRegexp: string[]) => {
+    const { onChange } = this.props;
+    const { validations } = this.props;
+    const failIfMatchesRegexp = validations?.failIfMatchesRegexp ?? [];
+    onChange({
+      failIfNotMatchesRegexp,
+      failIfMatchesRegexp,
     });
-    this.setState({ failIfMatchesRegexp }, this.onUpdate);
-  };
-
-  onFailIfNotMatchesRegexpChange = (index: number) => (event: React.ChangeEvent<HTMLInputElement>) => {
-    let failIfNotMatchesRegexp: string[] = [];
-    this.state.failIfNotMatchesRegexp.forEach((v, i) => {
-      if (i === index) {
-        failIfNotMatchesRegexp.push(event.target.value);
-      } else {
-        failIfNotMatchesRegexp.push(v);
-      }
-    });
-    this.setState({ failIfNotMatchesRegexp }, this.onUpdate);
-  };
-
-  onFailIfMatchesRegexpDelete = (index: number) => () => {
-    let failIfMatchesRegexp: string[] = [];
-    this.state.failIfMatchesRegexp?.forEach((v, i) => {
-      if (i !== index) {
-        failIfMatchesRegexp.push(v);
-      }
-    });
-    this.setState({ failIfMatchesRegexp }, this.onUpdate);
-  };
-
-  onFailIfNotMatchesRegexpDelete = (index: number) => () => {
-    let failIfNotMatchesRegexp: string[] = [];
-    this.state.failIfNotMatchesRegexp?.forEach((v, i) => {
-      if (i !== index) {
-        failIfNotMatchesRegexp.push(v);
-      }
-    });
-    this.setState({ failIfNotMatchesRegexp }, this.onUpdate);
-  };
-
-  onFailIfMatchesRegexpAdd = () => {
-    let failIfMatchesRegexp: string[] = [];
-    this.state.failIfMatchesRegexp.forEach(v => {
-      failIfMatchesRegexp.push(v);
-    });
-    failIfMatchesRegexp.push('');
-    this.setState({ failIfMatchesRegexp }, this.onUpdate);
-  };
-
-  onFailIfNotMatchesRegexpAdd = () => {
-    let failIfNotMatchesRegexp: string[] = [];
-    this.state.failIfNotMatchesRegexp.forEach(v => {
-      failIfNotMatchesRegexp.push(v);
-    });
-    failIfNotMatchesRegexp.push('');
-    this.setState({ failIfNotMatchesRegexp }, this.onUpdate);
   };
 
   render() {
-    const { failIfMatchesRegexp, failIfNotMatchesRegexp } = this.state;
-    const { isEditor, name, description } = this.props;
+    const { validations } = this.props;
+    const failIfMatchesRegexp = validations?.failIfMatchesRegexp ?? [];
+    const failIfNotMatchesRegexp = validations?.failIfNotMatchesRegexp ?? [];
 
+    const { isEditor, name, description } = this.props;
+    const dataTestId = name.replace(' ', '-').toLowerCase();
     return (
-      <Container>
-        <HorizontalGroup>
-          <ListInput
-            label={`${name} matches`}
-            description={`${description} match`}
-            items={failIfMatchesRegexp}
-            onUpdate={this.onUpdateFailIfMatches}
-            disabled={!isEditor}
-          />
-          <Field label={name + " doesn't match"} description={description + " don't match"} disabled={!isEditor}>
-            <Container>
-              <List
-                items={failIfNotMatchesRegexp}
-                renderItem={(item, index) => (
-                  <HorizontalGroup>
-                    <Input
-                      type="text"
-                      placeholder="regexp"
-                      value={item}
-                      onChange={this.onFailIfNotMatchesRegexpChange(index)}
-                      disabled={!isEditor}
-                    />
-                    <IconButton
-                      name="minus-circle"
-                      onClick={this.onFailIfNotMatchesRegexpDelete(index)}
-                      disabled={!isEditor}
-                    />
-                  </HorizontalGroup>
-                )}
-              />
-              <IconButton name="plus-circle" onClick={this.onFailIfNotMatchesRegexpAdd} disabled={!isEditor} />
-            </Container>
-          </Field>
-        </HorizontalGroup>
-      </Container>
+      <>
+        <ListInput
+          dataTestId={`${dataTestId}-matches`}
+          label={`${name} matches`}
+          description={`${description} match`}
+          items={failIfMatchesRegexp}
+          onUpdate={this.onUpdateFailIfMatches}
+          disabled={!isEditor}
+        />
+        <ListInput
+          dataTestId={`${dataTestId}-not-matches`}
+          label={`${name} doesn't match`}
+          description={`${description} don't match`}
+          items={failIfNotMatchesRegexp}
+          onUpdate={this.onUpdateFailIfNotMatches}
+          disabled={!isEditor}
+        />
+      </>
     );
   }
 }
-
-interface Action {
-  type: string;
-  [key: string]: any;
-}
-
-function listInputReducer(state: string[], action: Action) {
-  switch (action.type) {
-    case 'delete': {
-      const newState: string[] = [];
-      return state.reduce((newState, item, index) => {
-        if (index !== action.index) {
-          newState.push(item);
-        }
-        return newState;
-      }, newState);
-    }
-    case 'add': {
-      return [...state, ''];
-    }
-    case 'change': {
-      return state.map((value, index) => {
-        if (index === action.index) {
-          return action.value;
-        }
-        return value;
-      });
-    }
-    default:
-      return state;
-  }
-}
-
-interface ListInputProps {
-  description: string;
-  label: string;
-  items: string[];
-  disabled?: boolean;
-  onUpdate: (items: string[]) => void;
-}
-
-const ListInput: FC<ListInputProps> = ({ label, description, items, disabled, onUpdate }) => {
-  const [state, dispatch] = useReducer(listInputReducer, items);
-
-  useEffect(() => {
-    onUpdate(state);
-  }, [state]);
-
-  return (
-    <Field label={label} description={description} disabled={disabled}>
-      <Container>
-        <List
-          items={state}
-          renderItem={(item, index) => (
-            <HorizontalGroup>
-              <Input
-                type="text"
-                placeholder="regexp"
-                value={item}
-                onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-                  dispatch({ type: 'change', index, value: event.target.value })
-                }
-                disabled={disabled}
-              />
-              <IconButton name="minus-circle" onClick={() => dispatch({ type: 'delete', index })} disabled={disabled} />
-            </HorizontalGroup>
-          )}
-        />
-        <IconButton name="plus-circle" onClick={() => dispatch({ type: 'add' })} disabled={disabled} />
-      </Container>
-    </Field>
-  );
-};
