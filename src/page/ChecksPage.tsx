@@ -388,6 +388,7 @@ export class ChecksPage extends PureComponent<Props, State> {
       const template = {
         job: '',
         target: '',
+        queryParams: [],
         frequency: 60000,
         timeout: 2500,
         enabled: true,

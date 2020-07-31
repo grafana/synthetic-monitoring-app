@@ -14,6 +14,7 @@ import {
 } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
 import { Check, Label as SMLabel, Settings, CheckType, Probe, OrgRole } from 'types';
+import { css } from 'emotion';
 import { SMDataSource } from 'datasource/DataSource';
 import { hasRole, checkType, defaultSettings } from 'utils';
 import { PingSettingsForm } from './PingSettings';
@@ -22,6 +23,7 @@ import { DnsSettingsForm } from './DnsSettings';
 import { TcpSettingsForm } from './TcpSettings';
 import { SMLabelsForm } from './utils';
 import * as Validation from 'validation';
+import ListInput from './ListInput';
 
 interface TargetHelpInfo {
   text?: string;
@@ -35,7 +37,7 @@ interface Props {
 }
 
 interface State {
-  check?: Check;
+  check: Check;
   typeOfCheck?: CheckType;
   probes: Probe[];
   showDeleteModal: boolean;
@@ -46,6 +48,7 @@ interface State {
 export class CheckEditor extends PureComponent<Props, State> {
   state: State = {
     showDeleteModal: false,
+    check: { ...this.props.check },
     showOptions: false,
     probes: [],
     targetHelp: {
@@ -55,12 +58,11 @@ export class CheckEditor extends PureComponent<Props, State> {
 
   async componentDidMount() {
     const { instance } = this.props;
-    const check = { ...this.props.check } as Check;
+    const { check } = this.state;
     const probes = await instance.listProbes();
     const typeOfCheck = checkType(check.settings);
     const targetHelp = this.targetHelpText(typeOfCheck);
     this.setState({
-      check,
       typeOfCheck,
       probes,
       targetHelp,
@@ -112,7 +114,7 @@ export class CheckEditor extends PureComponent<Props, State> {
     check.settings = settings;
 
     const targetHelp = this.targetHelpText(typeOfCheck);
-    this.setState({ check, targetHelp, typeOfCheck });
+    this.setState({ check, targetHelp, typeOfCheck }, this.updateTargetQueryParams);
   };
 
   onJobUpdate = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -125,6 +127,39 @@ export class CheckEditor extends PureComponent<Props, State> {
     let check = { ...this.state.check } as Check;
     check.target = event.target.value;
     this.setState({ check });
+  };
+
+  updateTargetQueryParams = () => {
+    const { check, typeOfCheck } = this.state;
+    if (typeOfCheck === CheckType.HTTP) {
+      const [targetRoot, query] = check.target?.split('?') ?? [];
+      const newQueryParams = query?.split('&') ?? [];
+      const queryParams = [...(check.queryParams ?? []), ...newQueryParams];
+      this.setState({
+        check: {
+          ...check,
+          target: targetRoot,
+          queryParams,
+        },
+      });
+    } else {
+      this.setState({
+        check: {
+          ...check,
+          queryParams: [],
+        },
+      });
+    }
+  };
+
+  onTargetParamUpdate = (queryParams: string[]) => {
+    const { check } = this.state;
+    this.setState({
+      check: {
+        ...check,
+        queryParams,
+      },
+    });
   };
 
   onFrequencyUpdate = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -275,8 +310,22 @@ export class CheckEditor extends PureComponent<Props, State> {
               value={check.target}
               onChange={this.onTargetUpdate}
               required={true}
+              onBlur={this.updateTargetQueryParams}
             />
           </Field>
+          {check?.queryParams?.length > 0 && (
+            <ListInput
+              dataTestId="check-target-queries"
+              label="Target query params"
+              description="Query parameters included in the target url"
+              items={check.queryParams}
+              onUpdate={this.onTargetParamUpdate}
+              placeholder="Query param"
+              className={css`
+                padding-left: 1rem;
+              `}
+            />
+          )}
           <div>
             <Field
               label="Probe Locations"

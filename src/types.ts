@@ -153,6 +153,7 @@ export interface Probe extends BaseObject {
 export interface Check extends BaseObject {
   job: string;
   target: string;
+  queryParams: string[];
   frequency: number;
   offset?: number;
   timeout: number;
