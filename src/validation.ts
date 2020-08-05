@@ -29,7 +29,7 @@ export function validateJob(job: string): boolean {
   return job.length > 0 && job.length <= 32;
 }
 
-export function validateTarget(typeOfCheck: CheckType, target: string, queryParams: string[]): boolean {
+export function validateTarget(typeOfCheck: CheckType, target: string, queryParams: string): boolean {
   if (!(target.length > 0 && target.length <= 64)) {
     return false;
   }
@@ -137,10 +137,9 @@ export function validateSettingsTCP(settings: TcpSettings): boolean {
   return true;
 }
 
-function validateHttpTarget(target: string, queryParams: string[]): boolean {
+function validateHttpTarget(target: string, queryParams: string): boolean {
   try {
-    const queryString = `?${queryParams.join('&')}`;
-    const fullTarget = target.concat(queryString);
+    const fullTarget = target.concat(queryParams);
     const url = new URL(fullTarget);
     return url.protocol === 'https:' || url.protocol === 'http:';
   } catch (_) {

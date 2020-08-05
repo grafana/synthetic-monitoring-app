@@ -16,14 +16,14 @@ import { SelectableValue } from '@grafana/data';
 import { Check, Label as SMLabel, Settings, CheckType, Probe, OrgRole } from 'types';
 import { css } from 'emotion';
 import { SMDataSource } from 'datasource/DataSource';
-import { hasRole, checkType, defaultSettings } from 'utils';
+import { hasRole, checkType, defaultSettings, parseUrl } from 'utils';
 import { PingSettingsForm } from './PingSettings';
 import { HttpSettingsForm } from './http/HttpSettings';
 import { DnsSettingsForm } from './DnsSettings';
 import { TcpSettingsForm } from './TcpSettings';
 import { SMLabelsForm } from './utils';
 import * as Validation from 'validation';
-import ListInput from './ListInput';
+import QueryParams from './QueryParams';
 
 interface TargetHelpInfo {
   text?: string;
@@ -132,27 +132,39 @@ export class CheckEditor extends PureComponent<Props, State> {
   updateTargetQueryParams = () => {
     const { check, typeOfCheck } = this.state;
     if (typeOfCheck === CheckType.HTTP) {
-      const [targetRoot, query] = check.target?.split('?') ?? [];
-      const newQueryParams = query?.split('&') ?? [];
-      const queryParams = [...(check.queryParams ?? []), ...newQueryParams];
+      const url = parseUrl(check.target);
+      if (!url) {
+        return;
+      }
+
+      const queryString = url.search ?? '';
+      const targetRoot = check.target.replace(queryString, '');
+      const newQueryParams = url.searchParams;
+      if (check.queryParams) {
+        const previousQueryParams = new URLSearchParams(check.queryParams);
+        previousQueryParams.forEach((value, name) => {
+          newQueryParams.append(name, value);
+        });
+      }
+
       this.setState({
         check: {
           ...check,
           target: targetRoot,
-          queryParams,
+          queryParams: newQueryParams.toString(),
         },
       });
     } else {
       this.setState({
         check: {
           ...check,
-          queryParams: [],
+          queryParams: '',
         },
       });
     }
   };
 
-  onTargetParamUpdate = (queryParams: string[]) => {
+  onTargetParamUpdate = (queryParams: string) => {
     const { check } = this.state;
     this.setState({
       check: {
@@ -302,7 +314,7 @@ export class CheckEditor extends PureComponent<Props, State> {
             label="Target"
             description={targetHelp.text}
             disabled={!isEditor}
-            invalid={!Validation.validateTarget(checkType(check.settings), check.target)}
+            invalid={!Validation.validateTarget(checkType(check.settings), check.target, check.queryParams)}
           >
             <Input
               type="string"
@@ -313,14 +325,9 @@ export class CheckEditor extends PureComponent<Props, State> {
               onBlur={this.updateTargetQueryParams}
             />
           </Field>
-          {check?.queryParams?.length > 0 && (
-            <ListInput
-              dataTestId="check-target-queries"
-              label="Target query params"
-              description="Query parameters included in the target url"
-              items={check.queryParams}
-              onUpdate={this.onTargetParamUpdate}
-              placeholder="Query param"
+          {check?.queryParams && (
+            <QueryParams
+              queryParams={check.queryParams}
               className={css`
                 padding-left: 1rem;
               `}
