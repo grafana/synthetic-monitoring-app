@@ -29,9 +29,6 @@ function listInputReducer(state: string[], action: Action): string[] {
         return value;
       });
     }
-    case 'sync': {
-      return action.syncState ?? state;
-    }
     default:
       return state;
   }
@@ -62,10 +59,6 @@ const ListInput: FC<Props> = ({
   useEffect(() => {
     onUpdate(state);
   }, [state]);
-
-  useEffect(() => {
-    dispatch({ type: 'sync', syncState: items });
-  }, [items]);
 
   return (
     <div data-testid={dataTestId} className={className}>

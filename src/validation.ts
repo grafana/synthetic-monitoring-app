@@ -16,7 +16,7 @@ export const CheckValidation = {
 export function validateCheck(check: Check): boolean {
   return (
     CheckValidation.job(check.job) &&
-    CheckValidation.target(checkType(check.settings), check.target, check.queryParams) &&
+    CheckValidation.target(checkType(check.settings), check.target) &&
     CheckValidation.frequency(check.frequency) &&
     CheckValidation.timeout(check.timeout) &&
     CheckValidation.labels(check.labels) &&
@@ -29,14 +29,14 @@ export function validateJob(job: string): boolean {
   return job.length > 0 && job.length <= 32;
 }
 
-export function validateTarget(typeOfCheck: CheckType, target: string, queryParams: string): boolean {
+export function validateTarget(typeOfCheck: CheckType, target: string): boolean {
   if (!(target.length > 0 && target.length <= 64)) {
     return false;
   }
 
   switch (typeOfCheck) {
     case CheckType.HTTP: {
-      return validateHttpTarget(target, queryParams);
+      return validateHttpTarget(target);
     }
     case CheckType.PING: {
       return validateHostname(target);
@@ -137,10 +137,9 @@ export function validateSettingsTCP(settings: TcpSettings): boolean {
   return true;
 }
 
-function validateHttpTarget(target: string, queryParams: string): boolean {
+function validateHttpTarget(target: string): boolean {
   try {
-    const fullTarget = target.concat(queryParams);
-    const url = new URL(fullTarget);
+    const url = new URL(target);
     return url.protocol === 'https:' || url.protocol === 'http:';
   } catch (_) {
     return false;

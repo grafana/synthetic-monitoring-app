@@ -1,30 +1,84 @@
-import React, { FC, useState, useEffect } from 'react';
+import React, { FC, useReducer, useEffect, useState } from 'react';
 import { css } from 'emotion';
-import { Field, HorizontalGroup, Input, IconButton, Label } from '@grafana/ui';
+import { Field, Label, Button } from '@grafana/ui';
+import QueryParamInput, { QueryParam } from './QueryParamInput';
 
 interface Props {
-  queryParams: string;
-  className: string;
+  target: URL;
+  className?: string;
+  onChange: (target: string) => void;
 }
 
-interface QueryParam {
-  name: string;
-  value: string;
+interface Action {
+  type: string;
+  index?: number;
+  queryParam?: QueryParam;
+  target?: URL;
 }
 
-const QueryParams: FC<Props> = ({ queryParams, className }) => {
-  const [formattedParams, updateFormattedParams] = useState([] as QueryParam[]);
-  useEffect(() => {
-    const params = new URLSearchParams(queryParams);
-    const formatted: QueryParam[] = [];
-    params.forEach((value, name) => {
-      formatted.push({
-        name,
-        value,
-      });
+function init(target: URL) {
+  const params = target.search;
+  const formatted = params
+    .replace('?', '')
+    .split('&')
+    .map(queryParam => {
+      const [name, value] = queryParam.split('=');
+      return { name, value };
     });
-    updateFormattedParams(formatted);
-  }, [queryParams]);
+  return formatted;
+}
+
+const getQueryParamString = (queryParams: QueryParam[]) => {
+  return queryParams.reduce((paramString, param, index) => {
+    return `${paramString}${index !== 0 ? '&' : ''}${param.name ?? ''}=${param.value ?? ''}`;
+  }, '');
+};
+
+function queryParamReducer(state: QueryParam[], action: Action) {
+  switch (action.type) {
+    case 'change':
+      return state.map((queryParam, index) => {
+        if (index === action.index && action.queryParam) {
+          return action.queryParam;
+        }
+        return queryParam;
+      });
+    case 'add':
+      return [...state, { name: '', value: '' }];
+    case 'delete':
+      if (action.index == null) {
+        return state;
+      }
+      return [...state.slice(0, action.index), ...state.slice(action.index + 1)];
+    case 'sync':
+      return init(action.target ?? new URL(''));
+    default:
+      return state;
+  }
+}
+
+const QueryParams: FC<Props> = ({ target, onChange, className }) => {
+  const [formattedParams, dispatch] = useReducer(queryParamReducer, target, init);
+  const [shouldUpdate, setShouldUpdate] = useState(false);
+
+  useEffect(() => {
+    const queryParamString = getQueryParamString(formattedParams);
+    target.search = queryParamString;
+    onChange(target.toString());
+    setShouldUpdate(false);
+  }, [shouldUpdate]);
+
+  useEffect(() => {
+    const queryParamString = getQueryParamString(formattedParams);
+    if (target.search !== `?${queryParamString}`) {
+      dispatch({ type: 'sync', target });
+    }
+  }, [target]);
+
+  const handleDelete = (index: number) => () => {
+    dispatch({ type: 'delete', index });
+    setShouldUpdate(true);
+  };
 
   return (
     <div className={className}>
@@ -40,15 +94,22 @@ const QueryParams: FC<Props> = ({ queryParams, className }) => {
           <Label>Key</Label>
           <Label>Value</Label>
           <div />
-          {formattedParams.map(({ name, value }) => (
-            <>
-              <Input label="Key" type="text" placeholder="Key" value={name} />
-              <Input label="Value" type="text" placeholder="Value" value={value} />
-              <IconButton name="minus-circle" />
-            </>
+          {formattedParams.map((queryParam, index) => (
+            <QueryParamInput
+              queryParam={queryParam}
+              key={index}
+              onDelete={handleDelete(index)}
+              onChange={updatedParam => {
+                dispatch({ type: 'change', queryParam: updatedParam, index: index });
+                setShouldUpdate(true);
+              }}
+            />
           ))}
         </div>
       </Field>
+      <Button variant="secondary" size="sm" onClick={() => dispatch({ type: 'add' })}>
+        Add query param
+      </Button>
     </div>
   );
 };

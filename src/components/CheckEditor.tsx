@@ -14,21 +14,15 @@ import {
 } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
 import { Check, Label as SMLabel, Settings, CheckType, Probe, OrgRole } from 'types';
-import { css } from 'emotion';
 import { SMDataSource } from 'datasource/DataSource';
-import { hasRole, checkType, defaultSettings, parseUrl } from 'utils';
+import { hasRole, checkType, defaultSettings } from 'utils';
 import { PingSettingsForm } from './PingSettings';
 import { HttpSettingsForm } from './http/HttpSettings';
 import { DnsSettingsForm } from './DnsSettings';
 import { TcpSettingsForm } from './TcpSettings';
 import { SMLabelsForm } from './utils';
 import * as Validation from 'validation';
-import QueryParams from './QueryParams';
-
-interface TargetHelpInfo {
-  text?: string;
-  example: string;
-}
+import CheckTarget from './CheckTarget';
 
 interface Props {
   check: Check;
@@ -41,7 +35,6 @@ interface State {
   typeOfCheck?: CheckType;
   probes: Probe[];
   showDeleteModal: boolean;
-  targetHelp: TargetHelpInfo;
   showOptions: boolean;
 }
 
@@ -51,9 +44,6 @@ export class CheckEditor extends PureComponent<Props, State> {
     check: { ...this.props.check },
     showOptions: false,
     probes: [],
-    targetHelp: {
-      example: '',
-    },
   };
 
   async componentDidMount() {
@@ -61,11 +51,9 @@ export class CheckEditor extends PureComponent<Props, State> {
     const { check } = this.state;
     const probes = await instance.listProbes();
     const typeOfCheck = checkType(check.settings);
-    const targetHelp = this.targetHelpText(typeOfCheck);
     this.setState({
       typeOfCheck,
       probes,
-      targetHelp,
     });
   }
 
@@ -113,8 +101,7 @@ export class CheckEditor extends PureComponent<Props, State> {
     }
     check.settings = settings;
 
-    const targetHelp = this.targetHelpText(typeOfCheck);
-    this.setState({ check, targetHelp, typeOfCheck }, this.updateTargetQueryParams);
+    this.setState({ check, typeOfCheck });
   };
 
   onJobUpdate = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -123,55 +110,11 @@ export class CheckEditor extends PureComponent<Props, State> {
     this.setState({ check });
   };
 
-  onTargetUpdate = (event: React.ChangeEvent<HTMLInputElement>) => {
+  onTargetUpdate = (target: string) => {
     let check = { ...this.state.check } as Check;
-    check.target = event.target.value;
+    check.target = target;
+    console.log('check target updating', target);
     this.setState({ check });
-  };
-
-  updateTargetQueryParams = () => {
-    const { check, typeOfCheck } = this.state;
-    if (typeOfCheck === CheckType.HTTP) {
-      const url = parseUrl(check.target);
-      if (!url) {
-        return;
-      }
-
-      const queryString = url.search ?? '';
-      const targetRoot = check.target.replace(queryString, '');
-      const newQueryParams = url.searchParams;
-      if (check.queryParams) {
-        const previousQueryParams = new URLSearchParams(check.queryParams);
-        previousQueryParams.forEach((value, name) => {
-          newQueryParams.append(name, value);
-        });
-      }
-
-      this.setState({
-        check: {
-          ...check,
-          target: targetRoot,
-          queryParams: newQueryParams.toString(),
-        },
-      });
-    } else {
-      this.setState({
-        check: {
-          ...check,
-          queryParams: '',
-        },
-      });
-    }
-  };
-
-  onTargetParamUpdate = (queryParams: string) => {
-    const { check } = this.state;
-    this.setState({
-      check: {
-        ...check,
-        queryParams,
-      },
-    });
   };
 
   onFrequencyUpdate = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -214,50 +157,12 @@ export class CheckEditor extends PureComponent<Props, State> {
     this.props.onReturn(false);
   };
 
-  targetHelpText(typeOfCheck: CheckType | undefined): TargetHelpInfo {
-    if (!typeOfCheck) {
-      return { text: '', example: '' };
-    }
-    let resp: TargetHelpInfo;
-    switch (typeOfCheck) {
-      case CheckType.HTTP: {
-        resp = {
-          text: 'Full URL to send requests to',
-          example: 'https://grafana.com/',
-        };
-        break;
-      }
-      case CheckType.PING: {
-        resp = {
-          text: 'Hostname to ping',
-          example: 'grafana.com',
-        };
-        break;
-      }
-      case CheckType.DNS: {
-        resp = {
-          text: 'Name of record to query',
-          example: 'grafana.com',
-        };
-        break;
-      }
-      case CheckType.TCP: {
-        resp = {
-          text: 'Host:port to connect to',
-          example: 'grafana.com:80',
-        };
-        break;
-      }
-    }
-    return resp;
-  }
-
   onToggleOptions = (isOpen: boolean) => {
     this.setState({ showOptions: !this.state.showOptions });
   };
 
   render() {
-    const { check, showDeleteModal, probes, targetHelp, typeOfCheck, showOptions } = this.state;
+    const { check, showDeleteModal, probes, typeOfCheck, showOptions } = this.state;
     if (!check || probes.length === 0) {
       return <div>Loading...</div>;
     }
@@ -310,29 +215,13 @@ export class CheckEditor extends PureComponent<Props, State> {
           >
             <Input type="string" placeholder="jobName" value={check.job} onChange={this.onJobUpdate} />
           </Field>
-          <Field
-            label="Target"
-            description={targetHelp.text}
+          <CheckTarget
+            target={check.target}
+            typeOfCheck={typeOfCheck}
+            checkSettings={check.settings}
             disabled={!isEditor}
-            invalid={!Validation.validateTarget(checkType(check.settings), check.target, check.queryParams)}
-          >
-            <Input
-              type="string"
-              placeholder={targetHelp.example}
-              value={check.target}
-              onChange={this.onTargetUpdate}
-              required={true}
-              onBlur={this.updateTargetQueryParams}
-            />
-          </Field>
-          {check?.queryParams && (
-            <QueryParams
-              queryParams={check.queryParams}
-              className={css`
-                padding-left: 1rem;
-              `}
-            />
-          )}
+            onChange={this.onTargetUpdate}
+          />
           <div>
             <Field
               label="Probe Locations"
