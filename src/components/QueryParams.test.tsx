@@ -38,3 +38,11 @@ test('Returns a query string onChange', async () => {
   await userEvent.type(queryValueInput, 'queryValue');
   expect(onChange).toHaveBeenLastCalledWith('http://example.com/?queryName=queryValue');
 });
+
+test('Delete button deletes a query param', async () => {
+  const target = new URL('https://example.com?robert=bob&stephen=steve&jim=james');
+  render(<QueryParams target={target} onChange={onChange} />);
+  const buttons = await screen.findAllByRole('button');
+  userEvent.click(buttons[1]);
+  expect(onChange).toHaveBeenCalledWith('https://example.com/?robert=bob&jim=james');
+});

@@ -62,10 +62,12 @@ const QueryParams: FC<Props> = ({ target, onChange, className }) => {
   const [shouldUpdate, setShouldUpdate] = useState(false);
 
   useEffect(() => {
-    const queryParamString = getQueryParamString(formattedParams);
-    target.search = queryParamString;
-    onChange(target.toString());
-    setShouldUpdate(false);
+    if (shouldUpdate) {
+      const queryParamString = getQueryParamString(formattedParams);
+      target.search = queryParamString;
+      onChange(target.toString());
+      setShouldUpdate(false);
+    }
   }, [shouldUpdate]);
 
   useEffect(() => {

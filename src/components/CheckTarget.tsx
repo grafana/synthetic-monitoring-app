@@ -60,6 +60,7 @@ const getTargetHelpText = (typeOfCheck: CheckType | undefined): TargetHelpInfo =
 const CheckTarget: FC<Props> = ({ target, typeOfCheck, disabled, checkSettings, onChange }) => {
   const targetHelp = getTargetHelpText(typeOfCheck);
   const [targetValue, updateTarget] = useState(target);
+
   useEffect(() => {
     onChange(targetValue);
   }, [targetValue]);
@@ -81,7 +82,7 @@ const CheckTarget: FC<Props> = ({ target, typeOfCheck, disabled, checkSettings, 
           required={true}
         />
       </Field>
-      {typeOfCheck === CheckType.HTTP && parsedURL?.search && (
+      {typeOfCheck === CheckType.HTTP && parsedURL && (
         <QueryParams
           target={parsedURL}
           onChange={(target: string) => updateTarget(target)}

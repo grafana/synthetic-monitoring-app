@@ -30,7 +30,7 @@ export function validateJob(job: string): boolean {
 }
 
 export function validateTarget(typeOfCheck: CheckType, target: string): boolean {
-  if (!(target.length > 0 && target.length <= 64)) {
+  if (!(target.length > 0 && target.length <= 2040)) {
     return false;
   }
 
