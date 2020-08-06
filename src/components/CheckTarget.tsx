@@ -88,6 +88,7 @@ const CheckTarget: FC<Props> = ({ target, typeOfCheck, disabled, checkSettings, 
           onChange={(target: string) => updateTarget(target)}
           className={css`
             padding-left: 1rem;
+            margin-bottom: 1rem;
           `}
         />
       )}

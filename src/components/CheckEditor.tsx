@@ -113,7 +113,6 @@ export class CheckEditor extends PureComponent<Props, State> {
   onTargetUpdate = (target: string) => {
     let check = { ...this.state.check } as Check;
     check.target = target;
-    console.log('check target updating', target);
     this.setState({ check });
   };
 
