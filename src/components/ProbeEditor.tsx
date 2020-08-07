@@ -1,84 +1,10 @@
 import React, { FC, useState, useReducer } from 'react';
-import {
-  Badge,
-  BadgeColor,
-  Modal,
-  Button,
-  Container,
-  ConfirmModal,
-  Field,
-  Input,
-  HorizontalGroup,
-  Switch,
-  Legend,
-  IconName,
-} from '@grafana/ui';
+import { Modal, Button, Container, ConfirmModal, Field, Input, HorizontalGroup, Switch, Legend } from '@grafana/ui';
 import { Label as SMLabel, Probe, OrgRole, InputChangeEvent } from 'types';
 import { SMDataSource } from 'datasource/DataSource';
 import { hasRole } from 'utils';
 import { SMLabelsForm } from './utils';
-import { UptimeGauge } from './UptimeGauge';
-
-interface ProbeStatusProps {
-  probe: Probe;
-  instance: SMDataSource;
-  onResetToken: () => void;
-}
-
-const ProbeStatus: FC<ProbeStatusProps> = ({ probe, instance, onResetToken }) => {
-  const [showResetModal, setShowResetModal] = useState(false);
-
-  if (!probe) {
-    return null;
-  }
-  let isEditor = !probe.public && hasRole(OrgRole.EDITOR);
-  let onlineTxt = 'Offline';
-  let onlineIcon = 'heart-break' as IconName;
-  let color = 'red' as BadgeColor;
-  if (probe.online) {
-    onlineTxt = 'Online';
-    onlineIcon = 'heart';
-    color = 'green';
-  }
-
-  const handleResetToken = () => {
-    onResetToken();
-    setShowResetModal(false);
-  };
-
-  return (
-    <Container margin="md">
-      <Legend>
-        Status: &nbsp;
-        <Badge color={color} icon={onlineIcon} text={onlineTxt} />
-      </Legend>
-      {!probe.public && (
-        <Container>
-          <Button variant="destructive" onClick={() => setShowResetModal(true)} disabled={!isEditor}>
-            Reset Access Token
-          </Button>
-          <ConfirmModal
-            isOpen={showResetModal}
-            title="Reset Probe Access Token"
-            body="Are you sure you want to reset the access token for this Probe?"
-            confirmText="Reset Token"
-            onConfirm={() => handleResetToken()}
-            onDismiss={() => setShowResetModal(false)}
-          />
-        </Container>
-      )}
-      <br />
-      <UptimeGauge
-        labelNames={['probe']}
-        labelValues={[probe.name]}
-        ds={instance.getMetricsDS()}
-        height={200}
-        width={300}
-        sparkline={true}
-      />
-    </Container>
-  );
-};
+import ProbeStatus from './ProbeStatus';
 
 interface Props {
   probe: Probe;
@@ -141,21 +67,22 @@ const isValid = (probe: Probe): boolean => {
 };
 
 function probeReducer(state: Probe, action: Action) {
+  const numberFields = new Set(['latitude', 'longitude']);
+  const isNumber = numberFields.has(action.name);
   return {
     ...state,
-    [action.name]: action.value,
+    [action.name]: isNumber ? parseFloat(action.value as string) : action.value,
   };
 }
 
-const ProbeEditor: FC<Props> = ({ probe, instance, onReturn }) => {
+const ProbeEditor: FC<Props> = ({ probe: initialProbe, instance, onReturn }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [probeToken, setProbeToken] = useState('');
-  const [probeValues, dispatchUpdateProbe] = useReducer(probeReducer, probe);
+  const [probe, dispatchUpdateProbe] = useReducer(probeReducer, initialProbe);
 
   const onSave = async () => {
-    const isValid = false;
-    if (!isValid) {
+    if (!isValid(probe)) {
       return;
     }
     if (probe.id) {
@@ -203,7 +130,7 @@ const ProbeEditor: FC<Props> = ({ probe, instance, onReturn }) => {
             <Field label="Probe Name" description="Unique name of probe" disabled={!isEditor}>
               <Input
                 type="string"
-                value={probeValues.name}
+                value={probe.name}
                 onChange={(e: InputChangeEvent) => dispatchUpdateProbe({ name: 'name', value: e.target.value })}
               />
             </Field>
@@ -226,7 +153,7 @@ const ProbeEditor: FC<Props> = ({ probe, instance, onReturn }) => {
                 label="Latitude"
                 type="number"
                 placeholder="0.0"
-                value={probeValues.latitude}
+                value={probe.latitude}
                 onChange={(e: InputChangeEvent) => dispatchUpdateProbe({ name: 'latitude', value: e.target.value })}
               />
             </Field>
@@ -235,7 +162,7 @@ const ProbeEditor: FC<Props> = ({ probe, instance, onReturn }) => {
                 label="Longitude"
                 type="number"
                 placeholder="0.0"
-                value={probeValues.longitude}
+                value={probe.longitude}
                 onChange={(e: InputChangeEvent) => dispatchUpdateProbe({ name: 'longitude', value: e.target.value })}
               />
             </Field>
@@ -246,7 +173,7 @@ const ProbeEditor: FC<Props> = ({ probe, instance, onReturn }) => {
                 label="Region"
                 type="string"
                 placeholder="region"
-                value={probeValues.region}
+                value={probe.region}
                 onChange={(e: InputChangeEvent) => dispatchUpdateProbe({ name: 'region', value: e.target.value })}
               />
             </Field>
@@ -255,7 +182,7 @@ const ProbeEditor: FC<Props> = ({ probe, instance, onReturn }) => {
         <Container margin="md">
           <h3 className="page-heading">Labels</h3>
           <SMLabelsForm
-            labels={probeValues.labels}
+            labels={probe.labels}
             onUpdate={labels => {
               dispatchUpdateProbe({ name: 'labels', value: labels });
             }}
@@ -266,7 +193,7 @@ const ProbeEditor: FC<Props> = ({ probe, instance, onReturn }) => {
         </Container>
         <Container margin="md">
           <HorizontalGroup>
-            <Button onClick={onSave} disabled={!isEditor || !isValid(probeValues)}>
+            <Button onClick={() => onSave()} disabled={!isEditor || !isValid(probe)}>
               Save
             </Button>
             {probe.id && (
