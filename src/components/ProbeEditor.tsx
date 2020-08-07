@@ -1,4 +1,5 @@
 import React, { FC, useState, useReducer } from 'react';
+import { css } from 'emotion';
 import { Modal, Button, Container, ConfirmModal, Field, Input, HorizontalGroup, Switch, Legend } from '@grafana/ui';
 import { Label as SMLabel, Probe, OrgRole, InputChangeEvent } from 'types';
 import { SMDataSource } from 'datasource/DataSource';
@@ -17,52 +18,64 @@ interface Action {
   value: string | SMLabel[];
 }
 
-const isValid = (probe: Probe): boolean => {
+interface LabelValidation {
+  name?: string;
+  value?: string;
+}
+
+interface ProbeValidation {
+  name?: string;
+  labels?: LabelValidation[];
+  latitude?: string;
+  longitude?: string;
+  region?: string;
+  invalidState?: string;
+}
+
+const getValidationMessages = (probe: Probe): ProbeValidation => {
   if (!probe) {
-    return false;
+    return { invalidState: 'Something went wrong' };
   }
-  if (probe.name === '') {
-    console.log('probe name must be set');
-    return false;
-  }
+  const validations: ProbeValidation = {};
   if (probe.name.length > 32) {
     console.log('probe name must be less than 32 characters');
-    return false;
+    validations.name = 'Must be less than 32 characters';
   }
   if (probe.latitude < -90 || probe.latitude > 90) {
-    console.log('probe latitude must be between -90 and 90');
-    return false;
+    validations.latitude = 'Must be between -90 and 90';
   }
   if (probe.longitude < -180 || probe.longitude > 180) {
-    console.log('probe longitude must be between -180 and 180');
+    validations.longitude = 'Must be between -180 and 180';
+  }
+  return validations;
+  // for (const l of probe.labels) {
+  //   if (l.name === '' || l.value === '') {
+  //     console.log('label name and value must be set');
+  //     return false;
+  //   }
+  //   if (!l.name.match(/^[a-zA-Z0-9_]*$/)) {
+  //     console.log('label name can only contain a-zA-Z0-9_');
+  //     return false;
+  //   }
+  //   if (l.name.length > 32) {
+  //     console.log('label name must be less than 32 chars');
+  //     return false;
+  //   }
+  //   if (l.value.length > 64) {
+  //     console.log('label name must be less than 64 chars');
+  //     return false;
+  //   }
+  // }
+  // return true;
+};
+
+const isValid = (validations: ProbeValidation, probe: Probe): boolean => {
+  console.log({ probe });
+  if (Object.keys(validations).length > 0 || !probe.name || !probe.latitude || !probe.longitude || !probe.region) {
+    console.log('in here');
     return false;
   }
-  if (probe.region === '') {
-    console.log('probe region must be set');
-    return false;
-  }
-  if (probe.labels.length > 3) {
-    console.log('probes cannot have more than 3 labels');
-    return false;
-  }
-  for (const l of probe.labels) {
-    if (l.name === '' || l.value === '') {
-      console.log('label name and value must be set');
-      return false;
-    }
-    if (!l.name.match(/^[a-zA-Z0-9_]*$/)) {
-      console.log('label name can only contain a-zA-Z0-9_');
-      return false;
-    }
-    if (l.name.length > 32) {
-      console.log('label name must be less than 32 chars');
-      return false;
-    }
-    if (l.value.length > 64) {
-      console.log('label name must be less than 64 chars');
-      return false;
-    }
-  }
+
   return true;
 };
 
@@ -75,6 +88,10 @@ function probeReducer(state: Probe, action: Action) {
   };
 }
 
+const minInputWidth = css`
+  min-width: 200px;
+`;
+
 const ProbeEditor: FC<Props> = ({ probe: initialProbe, instance, onReturn }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showTokenModal, setShowTokenModal] = useState(false);
@@ -82,7 +99,7 @@ const ProbeEditor: FC<Props> = ({ probe: initialProbe, instance, onReturn }) => 
   const [probe, dispatchUpdateProbe] = useReducer(probeReducer, initialProbe);
 
   const onSave = async () => {
-    if (!isValid(probe)) {
+    if (!isValid(validations, probe)) {
       return;
     }
     if (probe.id) {
@@ -117,6 +134,10 @@ const ProbeEditor: FC<Props> = ({ probe: initialProbe, instance, onReturn }) => 
     return <div>Loading...</div>;
   }
 
+  const validations = getValidationMessages(probe);
+  console.log(validations);
+  console.log(isValid(validations, probe));
+
   const legend = probe.id ? 'Configuration' : 'Add Probe';
 
   const isEditor = !probe.public && hasRole(OrgRole.EDITOR);
@@ -126,10 +147,18 @@ const ProbeEditor: FC<Props> = ({ probe: initialProbe, instance, onReturn }) => 
       <Container>
         <Legend>{legend}</Legend>
         <Container margin="md">
-          <HorizontalGroup>
-            <Field label="Probe Name" description="Unique name of probe" disabled={!isEditor}>
+          <HorizontalGroup align="flex-start">
+            <Field
+              error={validations.name}
+              invalid={Boolean(validations.name)}
+              label="Probe Name"
+              description="Unique name of probe"
+              disabled={!isEditor}
+              className={minInputWidth}
+            >
               <Input
                 type="string"
+                required
                 value={probe.name}
                 onChange={(e: InputChangeEvent) => dispatchUpdateProbe({ name: 'name', value: e.target.value })}
               />
@@ -147,8 +176,16 @@ const ProbeEditor: FC<Props> = ({ probe: initialProbe, instance, onReturn }) => 
         </Container>
         <Container margin="md">
           <h3 className="page-heading">Location information</h3>
-          <HorizontalGroup>
-            <Field label="Latitude" description="Latitude coordinates of this probe" disabled={!isEditor}>
+          <HorizontalGroup align="flex-start">
+            <Field
+              error={validations.latitude}
+              invalid={Boolean(validations.latitude)}
+              required
+              label="Latitude"
+              description="Latitude coordinates of this probe"
+              disabled={!isEditor}
+              className={minInputWidth}
+            >
               <Input
                 label="Latitude"
                 type="number"
@@ -157,7 +194,14 @@ const ProbeEditor: FC<Props> = ({ probe: initialProbe, instance, onReturn }) => 
                 onChange={(e: InputChangeEvent) => dispatchUpdateProbe({ name: 'latitude', value: e.target.value })}
               />
             </Field>
-            <Field label="Longitude" description="Longitude coordinates of this probe" disabled={!isEditor}>
+            <Field
+              error={validations.longitude}
+              invalid={Boolean(validations.longitude)}
+              required
+              label="Longitude"
+              description="Longitude coordinates of this probe"
+              disabled={!isEditor}
+            >
               <Input
                 label="Longitude"
                 type="number"
@@ -168,7 +212,15 @@ const ProbeEditor: FC<Props> = ({ probe: initialProbe, instance, onReturn }) => 
             </Field>
           </HorizontalGroup>
           <HorizontalGroup>
-            <Field label="Region" description="Latitude coordinates of this probe" disabled={!isEditor}>
+            <Field
+              error={validations.region}
+              invalid={Boolean(validations.region)}
+              required
+              label="Region"
+              description="Latitude coordinates of this probe"
+              disabled={!isEditor}
+              className={minInputWidth}
+            >
               <Input
                 label="Region"
                 type="string"
@@ -193,7 +245,7 @@ const ProbeEditor: FC<Props> = ({ probe: initialProbe, instance, onReturn }) => 
         </Container>
         <Container margin="md">
           <HorizontalGroup>
-            <Button onClick={() => onSave()} disabled={!isEditor || !isValid(probe)}>
+            <Button onClick={() => onSave()} disabled={!isEditor || !isValid(validations, probe)}>
               Save
             </Button>
             {probe.id && (
