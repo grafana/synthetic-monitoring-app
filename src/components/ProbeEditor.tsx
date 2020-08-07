@@ -6,6 +6,7 @@ import { SMDataSource } from 'datasource/DataSource';
 import { hasRole } from 'utils';
 import { SMLabelsForm } from './utils';
 import ProbeStatus from './ProbeStatus';
+import { validateLabel } from 'validation';
 
 interface Props {
   probe: Probe;
@@ -36,43 +37,29 @@ const getValidationMessages = (probe: Probe): ProbeValidation => {
   if (!probe) {
     return { invalidState: 'Something went wrong' };
   }
-  const validations: ProbeValidation = {};
+  const validationMessages: ProbeValidation = {};
   if (probe.name.length > 32) {
     console.log('probe name must be less than 32 characters');
-    validations.name = 'Must be less than 32 characters';
+    validationMessages.name = 'Must be less than 32 characters';
   }
   if (probe.latitude < -90 || probe.latitude > 90) {
-    validations.latitude = 'Must be between -90 and 90';
+    validationMessages.latitude = 'Must be between -90 and 90';
   }
   if (probe.longitude < -180 || probe.longitude > 180) {
-    validations.longitude = 'Must be between -180 and 180';
+    validationMessages.longitude = 'Must be between -180 and 180';
   }
-  return validations;
-  // for (const l of probe.labels) {
-  //   if (l.name === '' || l.value === '') {
-  //     console.log('label name and value must be set');
-  //     return false;
-  //   }
-  //   if (!l.name.match(/^[a-zA-Z0-9_]*$/)) {
-  //     console.log('label name can only contain a-zA-Z0-9_');
-  //     return false;
-  //   }
-  //   if (l.name.length > 32) {
-  //     console.log('label name must be less than 32 chars');
-  //     return false;
-  //   }
-  //   if (l.value.length > 64) {
-  //     console.log('label name must be less than 64 chars');
-  //     return false;
-  //   }
-  // }
-  // return true;
+  return validationMessages;
 };
 
 const isValid = (validations: ProbeValidation, probe: Probe): boolean => {
-  console.log({ probe });
-  if (Object.keys(validations).length > 0 || !probe.name || !probe.latitude || !probe.longitude || !probe.region) {
-    console.log('in here');
+  // invalid values
+  const hasInvalidLabel = probe.labels.some(label => !validateLabel(label));
+  if (Object.keys(validations).length > 0 || hasInvalidLabel) {
+    return false;
+  }
+
+  // missing values
+  if (!probe.name || !probe.latitude || !probe.longitude || !probe.region) {
     return false;
   }
 
