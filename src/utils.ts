@@ -169,3 +169,11 @@ export function dashboardUID(checkType: string, ds: SMDataSource): DashboardInfo
   }
   return target;
 }
+
+export const parseUrl = (url: string) => {
+  try {
+    return new URL(url);
+  } catch (e) {
+    return;
+  }
+};

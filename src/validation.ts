@@ -30,7 +30,7 @@ export function validateJob(job: string): boolean {
 }
 
 export function validateTarget(typeOfCheck: CheckType, target: string): boolean {
-  if (!(target.length > 0 && target.length <= 64)) {
+  if (!(target.length > 0 && target.length <= 2040)) {
     return false;
   }
 
@@ -139,7 +139,7 @@ export function validateSettingsTCP(settings: TcpSettings): boolean {
 
 function validateHttpTarget(target: string): boolean {
   try {
-    let url = new URL(target);
+    const url = new URL(target);
     return url.protocol === 'https:' || url.protocol === 'http:';
   } catch (_) {
     return false;

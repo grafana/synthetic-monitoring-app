@@ -5,6 +5,7 @@ interface Action {
   type: string;
   index?: number;
   value?: string;
+  syncState?: string[];
 }
 
 function listInputReducer(state: string[], action: Action): string[] {
@@ -35,22 +36,32 @@ function listInputReducer(state: string[], action: Action): string[] {
 
 interface Props {
   description: string;
+  className?: string;
   label: string;
   items: string[];
   disabled?: boolean;
   dataTestId?: string;
+  placeholder: string;
   onUpdate: (items: string[]) => void;
 }
 
-const ListInput: FC<Props> = ({ label, description, items, disabled, onUpdate, dataTestId }) => {
+const ListInput: FC<Props> = ({
+  label,
+  description,
+  items,
+  disabled,
+  onUpdate,
+  dataTestId,
+  placeholder,
+  className,
+}) => {
   const [state, dispatch] = useReducer(listInputReducer, items);
-
   useEffect(() => {
     onUpdate(state);
   }, [state]);
 
   return (
-    <div data-testid={dataTestId}>
+    <div data-testid={dataTestId} className={className}>
       <Field label={label} description={description} disabled={disabled}>
         <>
           <List
@@ -59,7 +70,7 @@ const ListInput: FC<Props> = ({ label, description, items, disabled, onUpdate, d
               <HorizontalGroup>
                 <Input
                   type="text"
-                  placeholder="regexp"
+                  placeholder={placeholder}
                   value={item}
                   onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
                     dispatch({ type: 'change', index, value: event.target.value })

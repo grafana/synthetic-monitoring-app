@@ -8,4 +8,5 @@ const standard = require('@grafana/toolkit/src/config/jest.plugin.config');
 const config = standard.jestConfig();
 // Adding jest-environment-jsdom-fifteen because the jsdom included with @grafana/toolkit doesn't play nice with the current version of @testing-library
 config.testEnvironment = 'jest-environment-jsdom-fifteen';
+config.setupFilesAfterEnv = ['@testing-library/jest-dom/extend-expect'];
 module.exports = config;
