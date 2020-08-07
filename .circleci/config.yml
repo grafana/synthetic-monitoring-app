@@ -26,10 +26,10 @@ workflows:
           requires:
             - report
           filters: *filter-only-release
-      # - publish_github_release:
-      #     requires:
-      #       - approve_release
-      #     filters: *filter-only-release
+      - publish_github_release:
+          requires:
+            - approve_release
+          filters: *filter-only-release
 
 executors:
   default_exec: # declares a reusable executor
