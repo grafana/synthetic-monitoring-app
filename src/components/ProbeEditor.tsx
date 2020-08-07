@@ -19,27 +19,20 @@ interface Action {
   value: string | SMLabel[];
 }
 
-interface LabelValidation {
+interface ProbeValidationMessages {
   name?: string;
-  value?: string;
-}
-
-interface ProbeValidation {
-  name?: string;
-  labels?: LabelValidation[];
   latitude?: string;
   longitude?: string;
   region?: string;
   invalidState?: string;
 }
 
-const getValidationMessages = (probe: Probe): ProbeValidation => {
+const getValidationMessages = (probe: Probe): ProbeValidationMessages => {
   if (!probe) {
     return { invalidState: 'Something went wrong' };
   }
-  const validationMessages: ProbeValidation = {};
+  const validationMessages: ProbeValidationMessages = {};
   if (probe.name.length > 32) {
-    console.log('probe name must be less than 32 characters');
     validationMessages.name = 'Must be less than 32 characters';
   }
   if (probe.latitude < -90 || probe.latitude > 90) {
@@ -51,7 +44,7 @@ const getValidationMessages = (probe: Probe): ProbeValidation => {
   return validationMessages;
 };
 
-const isValid = (validations: ProbeValidation, probe: Probe): boolean => {
+const isValid = (validations: ProbeValidationMessages, probe: Probe): boolean => {
   // invalid values
   const hasInvalidLabel = probe.labels.some(label => !validateLabel(label));
   if (Object.keys(validations).length > 0 || hasInvalidLabel) {
@@ -90,12 +83,9 @@ const ProbeEditor: FC<Props> = ({ probe: initialProbe, instance, onReturn }) => 
       return;
     }
     if (probe.id) {
-      console.log('UPDATE', probe, instance);
-      const info = await instance.updateProbe(probe);
-      console.log('got', info);
+      await instance.updateProbe(probe);
       onReturn(true);
     } else {
-      console.log('ADD', probe);
       const info = await instance.addProbe(probe);
       setShowTokenModal(true);
       setProbeToken(info.token);
@@ -106,8 +96,7 @@ const ProbeEditor: FC<Props> = ({ probe: initialProbe, instance, onReturn }) => 
     if (!probe.id) {
       return;
     }
-    const info = instance.deleteProbe(probe.id);
-    console.log('Remove Probe', probe.id, info);
+    await instance.deleteProbe(probe.id);
     onReturn(true);
   };
 
@@ -122,8 +111,6 @@ const ProbeEditor: FC<Props> = ({ probe: initialProbe, instance, onReturn }) => 
   }
 
   const validations = getValidationMessages(probe);
-  console.log(validations);
-  console.log(isValid(validations, probe));
 
   const legend = probe.id ? 'Configuration' : 'Add Probe';
 
@@ -245,7 +232,7 @@ const ProbeEditor: FC<Props> = ({ probe: initialProbe, instance, onReturn }) => 
               title="Delete Probe"
               body="Are you sure you want to delete this Probe?"
               confirmText="Delete Probe"
-              onConfirm={() => onRemoveProbe}
+              onConfirm={onRemoveProbe}
               onDismiss={() => setShowDeleteModal(false)}
             />
             <a onClick={() => onReturn(false)}>Back</a>
