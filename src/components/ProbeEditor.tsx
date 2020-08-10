@@ -1,6 +1,17 @@
 import React, { FC, useState, useReducer } from 'react';
 import { css } from 'emotion';
-import { Modal, Button, Container, ConfirmModal, Field, Input, HorizontalGroup, Switch, Legend } from '@grafana/ui';
+import {
+  Modal,
+  Button,
+  Container,
+  ConfirmModal,
+  Field,
+  Input,
+  HorizontalGroup,
+  Switch,
+  Legend,
+  Label,
+} from '@grafana/ui';
 import { Label as SMLabel, Probe, OrgRole, InputChangeEvent } from 'types';
 import { SMDataSource } from 'datasource/DataSource';
 import { hasRole } from 'utils';
@@ -62,6 +73,7 @@ const isValid = (validations: ProbeValidationMessages, probe: Probe): boolean =>
 function probeReducer(state: Probe, action: Action) {
   const numberFields = new Set(['latitude', 'longitude']);
   const isNumber = numberFields.has(action.name);
+  console.log('reducer firing', action.name, action.value);
   return {
     ...state,
     [action.name]: isNumber ? parseFloat(action.value as string) : action.value,
@@ -131,8 +143,9 @@ const ProbeEditor: FC<Props> = ({ probe: initialProbe, instance, onReturn }) => 
               className={minInputWidth}
             >
               <Input
-                type="string"
-                required
+                type="text"
+                id="probe-name-input"
+                placeholder="Probe name"
                 value={probe.name}
                 onChange={(e: InputChangeEvent) => dispatchUpdateProbe({ name: 'name', value: e.target.value })}
               />

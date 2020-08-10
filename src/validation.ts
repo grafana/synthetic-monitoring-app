@@ -2,6 +2,7 @@ import { Check, CheckType, Settings, HttpSettings, PingSettings, DnsSettings, Tc
 import { checkType } from 'utils';
 import * as punycode from 'punycode';
 import { Address4, Address6 } from 'ip-address';
+jest.unmock('utils');
 
 export const CheckValidation = {
   job: validateJob,
