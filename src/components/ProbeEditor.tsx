@@ -73,7 +73,6 @@ const isValid = (validations: ProbeValidationMessages, probe: Probe): boolean =>
 function probeReducer(state: Probe, action: Action) {
   const numberFields = new Set(['latitude', 'longitude']);
   const isNumber = numberFields.has(action.name);
-  console.log('reducer firing', action.name, action.value);
   return {
     ...state,
     [action.name]: isNumber ? parseFloat(action.value as string) : action.value,
@@ -175,6 +174,7 @@ const ProbeEditor: FC<Props> = ({ probe: initialProbe, instance, onReturn }) => 
             >
               <Input
                 label="Latitude"
+                id="probe-editor-latitude"
                 type="number"
                 placeholder="0.0"
                 value={probe.latitude}
@@ -191,6 +191,7 @@ const ProbeEditor: FC<Props> = ({ probe: initialProbe, instance, onReturn }) => 
             >
               <Input
                 label="Longitude"
+                id="probe-editor-longitude"
                 type="number"
                 placeholder="0.0"
                 value={probe.longitude}
@@ -204,7 +205,7 @@ const ProbeEditor: FC<Props> = ({ probe: initialProbe, instance, onReturn }) => 
               invalid={Boolean(validations.region)}
               required
               label="Region"
-              description="Latitude coordinates of this probe"
+              description="Region of this probe"
               disabled={!isEditor}
               className={minInputWidth}
             >
@@ -248,7 +249,9 @@ const ProbeEditor: FC<Props> = ({ probe: initialProbe, instance, onReturn }) => 
               onConfirm={onRemoveProbe}
               onDismiss={() => setShowDeleteModal(false)}
             />
-            <a onClick={() => onReturn(false)}>Back</a>
+            <Button variant="secondary" onClick={() => onReturn(false)}>
+              Back
+            </Button>
           </HorizontalGroup>
         </Container>
         <Modal
