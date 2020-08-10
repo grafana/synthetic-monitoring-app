@@ -293,6 +293,7 @@ export class DnsValidatorForm extends PureComponent<DnsValidatorProps> {
           dataTestId={`${dataTestId}-matches`}
           label={`${name} matches`}
           description={`${description} match`}
+          placeholder="Enter regexp"
           items={failIfMatchesRegexp}
           onUpdate={this.onUpdateFailIfMatches}
           disabled={!isEditor}
@@ -301,6 +302,7 @@ export class DnsValidatorForm extends PureComponent<DnsValidatorProps> {
           dataTestId={`${dataTestId}-not-matches`}
           label={`${name} doesn't match`}
           description={`${description} don't match`}
+          placeholder="Enter regexp"
           items={failIfNotMatchesRegexp}
           onUpdate={this.onUpdateFailIfNotMatches}
           disabled={!isEditor}

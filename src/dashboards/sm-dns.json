@@ -78,7 +78,7 @@
     "gnetId": null,
     "graphTooltip": 0,
     "id": null,
-    "iteration": 1594330906000,
+    "iteration": 1596752049000,
     "links": [],
     "panels": [
       {
@@ -626,7 +626,7 @@
         "steppedLine": false,
         "targets": [
           {
-            "expr": "avg(probe_dns_duration_seconds{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"} by (phase)",
+            "expr": "avg(probe_dns_duration_seconds{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}) by (phase)",
             "instant": false,
             "interval": "",
             "intervalFactor": 1,
@@ -948,5 +948,5 @@
     "timezone": "",
     "title": "Synthetic Monitoring - DNS",
     "uid": "lgL6odgGz",
-    "version": 9
+    "version": 10
   }

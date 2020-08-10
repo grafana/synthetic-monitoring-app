@@ -22,11 +22,7 @@ import { DnsSettingsForm } from './DnsSettings';
 import { TcpSettingsForm } from './TcpSettings';
 import { SMLabelsForm } from './utils';
 import * as Validation from 'validation';
-
-interface TargetHelpInfo {
-  text?: string;
-  example: string;
-}
+import CheckTarget from './CheckTarget';
 
 interface Props {
   check: Check;
@@ -35,35 +31,29 @@ interface Props {
 }
 
 interface State {
-  check?: Check;
+  check: Check;
   typeOfCheck?: CheckType;
   probes: Probe[];
   showDeleteModal: boolean;
-  targetHelp: TargetHelpInfo;
   showOptions: boolean;
 }
 
 export class CheckEditor extends PureComponent<Props, State> {
   state: State = {
     showDeleteModal: false,
+    check: { ...this.props.check },
     showOptions: false,
     probes: [],
-    targetHelp: {
-      example: '',
-    },
   };
 
   async componentDidMount() {
     const { instance } = this.props;
-    const check = { ...this.props.check } as Check;
+    const { check } = this.state;
     const probes = await instance.listProbes();
     const typeOfCheck = checkType(check.settings);
-    const targetHelp = this.targetHelpText(typeOfCheck);
     this.setState({
-      check,
       typeOfCheck,
       probes,
-      targetHelp,
     });
   }
 
@@ -111,8 +101,7 @@ export class CheckEditor extends PureComponent<Props, State> {
     }
     check.settings = settings;
 
-    const targetHelp = this.targetHelpText(typeOfCheck);
-    this.setState({ check, targetHelp, typeOfCheck });
+    this.setState({ check, typeOfCheck });
   };
 
   onJobUpdate = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -121,9 +110,9 @@ export class CheckEditor extends PureComponent<Props, State> {
     this.setState({ check });
   };
 
-  onTargetUpdate = (event: React.ChangeEvent<HTMLInputElement>) => {
+  onTargetUpdate = (target: string) => {
     let check = { ...this.state.check } as Check;
-    check.target = event.target.value;
+    check.target = target;
     this.setState({ check });
   };
 
@@ -167,50 +156,12 @@ export class CheckEditor extends PureComponent<Props, State> {
     this.props.onReturn(false);
   };
 
-  targetHelpText(typeOfCheck: CheckType | undefined): TargetHelpInfo {
-    if (!typeOfCheck) {
-      return { text: '', example: '' };
-    }
-    let resp: TargetHelpInfo;
-    switch (typeOfCheck) {
-      case CheckType.HTTP: {
-        resp = {
-          text: 'Full URL to send requests to',
-          example: 'https://grafana.com/',
-        };
-        break;
-      }
-      case CheckType.PING: {
-        resp = {
-          text: 'Hostname to ping',
-          example: 'grafana.com',
-        };
-        break;
-      }
-      case CheckType.DNS: {
-        resp = {
-          text: 'Name of record to query',
-          example: 'grafana.com',
-        };
-        break;
-      }
-      case CheckType.TCP: {
-        resp = {
-          text: 'Host:port to connect to',
-          example: 'grafana.com:80',
-        };
-        break;
-      }
-    }
-    return resp;
-  }
-
   onToggleOptions = (isOpen: boolean) => {
     this.setState({ showOptions: !this.state.showOptions });
   };
 
   render() {
-    const { check, showDeleteModal, probes, targetHelp, typeOfCheck, showOptions } = this.state;
+    const { check, showDeleteModal, probes, typeOfCheck, showOptions } = this.state;
     if (!check || probes.length === 0) {
       return <div>Loading...</div>;
     }
@@ -263,20 +214,13 @@ export class CheckEditor extends PureComponent<Props, State> {
           >
             <Input type="string" placeholder="jobName" value={check.job} onChange={this.onJobUpdate} />
           </Field>
-          <Field
-            label="Target"
-            description={targetHelp.text}
+          <CheckTarget
+            target={check.target}
+            typeOfCheck={typeOfCheck}
+            checkSettings={check.settings}
             disabled={!isEditor}
-            invalid={!Validation.validateTarget(checkType(check.settings), check.target)}
-          >
-            <Input
-              type="string"
-              placeholder={targetHelp.example}
-              value={check.target}
-              onChange={this.onTargetUpdate}
-              required={true}
-            />
-          </Field>
+            onChange={this.onTargetUpdate}
+          />
           <div>
             <Field
               label="Probe Locations"
