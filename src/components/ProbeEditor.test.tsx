@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ProbeEditor from './ProbeEditor';
 import { getInstanceMock } from '../datasource/__mocks__/DataSource';
@@ -14,20 +14,16 @@ const defaultProbe = {
   online: false,
   onlineChange: 0,
 };
-
-const { mocks: instanceMocks, instance } = getInstanceMock();
-
 const onReturn = jest.fn();
 
 beforeEach(() => {
-  Object.values(instanceMocks).forEach(mock => {
-    mock.mockReset();
-  });
   onReturn.mockReset();
 });
 
 const renderProbeEditor = ({ probe = defaultProbe } = {}) => {
-  return render(<ProbeEditor probe={probe} instance={instance} onReturn={onReturn} />);
+  const instance = getInstanceMock();
+  render(<ProbeEditor probe={probe} instance={instance} onReturn={onReturn} />);
+  return instance;
 };
 
 describe('validation messages', () => {
@@ -78,4 +74,41 @@ test('save button is disabled by invalid values', async () => {
   const longitudeInput = await screen.findByLabelText('Longitude', { exact: false });
   userEvent.type(longitudeInput, '444');
   expect(saveButton).toBeDisabled();
+});
+
+test('saves new probe', async () => {
+  const validProbe = {
+    name: 'valid probe',
+    public: false,
+    latitude: 44,
+    longitude: 44,
+    region: 'Narnia',
+    labels: [],
+    online: false,
+    onlineChange: 0,
+  };
+  const instance = renderProbeEditor({ probe: validProbe });
+  const saveButton = await screen.findByRole('button', { name: 'Save' });
+  userEvent.click(saveButton);
+  await screen.findByText('Probe Authentication Token');
+  expect(instance.addProbe).toHaveBeenCalledWith(validProbe);
+});
+
+test('updates existing probe', async () => {
+  const validProbe = {
+    id: 32,
+    name: 'valid probe',
+    public: false,
+    latitude: 44,
+    longitude: 44,
+    region: 'Narnia',
+    labels: [],
+    online: false,
+    onlineChange: 0,
+  };
+  const instance = renderProbeEditor({ probe: validProbe });
+  const saveButton = await screen.findByRole('button', { name: 'Save' });
+  userEvent.click(saveButton);
+  await waitFor(() => expect(onReturn).toHaveBeenCalledWith(true));
+  expect(instance.updateProbe).toHaveBeenCalledWith(validProbe);
 });

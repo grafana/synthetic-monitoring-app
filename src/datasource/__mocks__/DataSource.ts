@@ -94,30 +94,16 @@ export const instanceSettings: DataSourceInstanceSettings<SMOptions> = {
 };
 
 export const getInstanceMock = (settings: DataSourceInstanceSettings<SMOptions> = instanceSettings) => {
-  const mocks = {
-    listProbes: jest.fn(),
-    addProbe: jest.fn(),
-    deleteProbe: jest.fn(),
-    updateProbe: jest.fn(),
-    resetProbeToken: jest.fn(),
-    listChecks: jest.fn(),
-    addCheck: jest.fn(),
-    deleteCheck: jest.fn(),
-    updateCheck: jest.fn(),
-  };
-
   const instance = new SMDataSource(settings);
-  instance.addCheck = mocks.addCheck;
-  instance.listProbes = mocks.listProbes;
-  instance.addProbe = mocks.addProbe;
-  instance.deleteProbe = mocks.deleteProbe;
-  instance.updateProbe = mocks.updateProbe;
-  instance.resetProbeToken = mocks.resetProbeToken;
-  instance.listChecks = mocks.listChecks;
-  instance.deleteCheck = mocks.deleteCheck;
-  instance.updateCheck = mocks.updateCheck;
-  return {
-    mocks,
-    instance,
-  };
+  instance.getMetricsDS = jest.fn().mockImplementation(() => ({ url: 'a url' }));
+  instance.addCheck = jest.fn();
+  instance.listProbes = jest.fn();
+  instance.addProbe = jest.fn().mockImplementation(() => Promise.resolve({ token: 'a token' }));
+  instance.deleteProbe = jest.fn();
+  instance.updateProbe = jest.fn();
+  instance.resetProbeToken = jest.fn();
+  instance.listChecks = jest.fn();
+  instance.deleteCheck = jest.fn();
+  instance.updateCheck = jest.fn();
+  return instance;
 };

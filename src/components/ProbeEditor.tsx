@@ -1,17 +1,6 @@
 import React, { FC, useState, useReducer } from 'react';
 import { css } from 'emotion';
-import {
-  Modal,
-  Button,
-  Container,
-  ConfirmModal,
-  Field,
-  Input,
-  HorizontalGroup,
-  Switch,
-  Legend,
-  Label,
-} from '@grafana/ui';
+import { Modal, Button, Container, ConfirmModal, Field, Input, HorizontalGroup, Switch, Legend } from '@grafana/ui';
 import { Label as SMLabel, Probe, OrgRole, InputChangeEvent } from 'types';
 import { SMDataSource } from 'datasource/DataSource';
 import { hasRole } from 'utils';
