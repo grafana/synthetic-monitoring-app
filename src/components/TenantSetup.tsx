@@ -224,7 +224,7 @@ export class TenantSetup extends PureComponent<Props, State> {
             </HorizontalGroup>
           </Collapse>
           <Button variant="primary" onClick={this.onInit}>
-            Initalize
+            Initialize
           </Button>
           {backendError !== undefined && (
             <Container margin="md">
