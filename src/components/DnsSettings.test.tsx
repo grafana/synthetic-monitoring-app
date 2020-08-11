@@ -1,7 +1,8 @@
 import React from 'react';
-import { DnsSettingsForm } from './DnsSettings';
+import DnsSettingsForm from './DnsSettings';
 import { screen, render, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { DnsResponseCodes } from 'types';
 
 const onUpdateMock = jest.fn();
 const defaultSettings = {};
@@ -24,16 +25,14 @@ describe('Validations', () => {
     userEvent.click(addButton);
     const addInput = await within(answerValidations).findByRole('textbox');
     await userEvent.type(addInput, 'a validation');
-    expect(onUpdateMock).toHaveBeenCalledWith({
+    expect(onUpdateMock).toHaveBeenLastCalledWith({
       dns: {
         ipVersion: 'V4',
         port: 53,
         protocol: 'UDP',
         recordType: 'A',
         server: '8.8.8.8',
-        showAdvanced: false,
-        showValidation: true,
-        validRCodes: [],
+        validRCodes: [DnsResponseCodes.NOERROR],
         validateAdditionalRRS: {
           failIfMatchesRegexp: [],
           failIfNotMatchesRegexp: [],
@@ -59,16 +58,14 @@ describe('Validations', () => {
     userEvent.click(addButton);
     const addInput = await within(answerValidations).findByRole('textbox');
     await userEvent.type(addInput, 'a validation');
-    expect(onUpdateMock).toHaveBeenCalledWith({
+    expect(onUpdateMock).toHaveBeenLastCalledWith({
       dns: {
         ipVersion: 'V4',
         port: 53,
         protocol: 'UDP',
         recordType: 'A',
         server: '8.8.8.8',
-        showAdvanced: false,
-        showValidation: true,
-        validRCodes: [],
+        validRCodes: [DnsResponseCodes.NOERROR],
         validateAdditionalRRS: {
           failIfMatchesRegexp: [],
           failIfNotMatchesRegexp: [],
@@ -94,16 +91,14 @@ describe('Validations', () => {
     userEvent.click(addButton);
     const addInput = await within(answerValidations).findByRole('textbox');
     await userEvent.type(addInput, 'a validation');
-    expect(onUpdateMock).toHaveBeenCalledWith({
+    expect(onUpdateMock).toHaveBeenLastCalledWith({
       dns: {
         ipVersion: 'V4',
         port: 53,
         protocol: 'UDP',
         recordType: 'A',
         server: '8.8.8.8',
-        showAdvanced: false,
-        showValidation: true,
-        validRCodes: [],
+        validRCodes: [DnsResponseCodes.NOERROR],
         validateAdditionalRRS: {
           failIfMatchesRegexp: [],
           failIfNotMatchesRegexp: [],
@@ -129,16 +124,14 @@ describe('Validations', () => {
     userEvent.click(addButton);
     const addInput = await within(answerValidations).findByRole('textbox');
     await userEvent.type(addInput, 'a validation');
-    expect(onUpdateMock).toHaveBeenCalledWith({
+    expect(onUpdateMock).toHaveBeenLastCalledWith({
       dns: {
         ipVersion: 'V4',
         port: 53,
         protocol: 'UDP',
         recordType: 'A',
         server: '8.8.8.8',
-        showAdvanced: false,
-        showValidation: true,
-        validRCodes: [],
+        validRCodes: [DnsResponseCodes.NOERROR],
         validateAdditionalRRS: {
           failIfMatchesRegexp: [],
           failIfNotMatchesRegexp: [],
@@ -153,5 +146,15 @@ describe('Validations', () => {
         },
       },
     });
+  });
+});
+
+describe('Response codes', () => {
+  test('defaults to NOERROR', async () => {
+    renderDnsSettings();
+    const validationExpandButton = await screen.findByText('Validation');
+    userEvent.click(validationExpandButton);
+    const noErrorResponseCode = await screen.findByText(DnsResponseCodes.NOERROR);
+    expect(noErrorResponseCode).toBeInTheDocument();
   });
 });

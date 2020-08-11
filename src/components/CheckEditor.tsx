@@ -18,7 +18,7 @@ import { SMDataSource } from 'datasource/DataSource';
 import { hasRole, checkType, defaultSettings } from 'utils';
 import { PingSettingsForm } from './PingSettings';
 import { HttpSettingsForm } from './http/HttpSettings';
-import { DnsSettingsForm } from './DnsSettings';
+import DnsSettingsForm from './DnsSettings';
 import { TcpSettingsForm } from './TcpSettings';
 import { SMLabelsForm } from './utils';
 import * as Validation from 'validation';
