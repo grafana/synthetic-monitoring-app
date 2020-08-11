@@ -78,7 +78,7 @@ export class UptimeGauge extends PureComponent<Props, State> {
     }
     let value: DisplayValue = {
       numeric: 0,
-      title: 'Uptime',
+      title: 'Success rate',
       text: 'loading...',
     };
     if (resp.data.data.result.length < 1) {
