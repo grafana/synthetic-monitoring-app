@@ -2,9 +2,10 @@ import React, { PureComponent } from 'react';
 import { css } from 'emotion';
 import { Collapse, Container, HorizontalGroup, Field, Select, MultiSelect, Input } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
-import { IpVersion, Settings, DnsSettings, DnsProtocol, DnsRecordType, DNSRRValidator } from 'types';
+import { IpVersion, Settings, DnsSettings, DnsProtocol, DnsRecordType, DNSRRValidator, DnsResponseCodes } from 'types';
 import { IpOptions } from './utils';
-import ListInput from './ListInput';
+import DnsValidatorForm from './DnsValidatorForm';
+import { enumToStringArray } from 'utils';
 
 interface Props {
   settings: Settings;
@@ -16,6 +17,61 @@ interface State extends DnsSettings {
   showAdvanced: boolean;
   showValidation: boolean;
 }
+
+const RESPONSE_CODES = enumToStringArray(DnsResponseCodes).map(responseCode => ({
+  label: responseCode,
+  value: responseCode,
+}));
+
+const RECORD_TYPES = [
+  {
+    label: DnsRecordType.A,
+    value: DnsRecordType.A,
+  },
+  {
+    label: DnsRecordType.AAAA,
+    value: DnsRecordType.AAAA,
+  },
+  {
+    label: DnsRecordType.CNAME,
+    value: DnsRecordType.CNAME,
+  },
+  {
+    label: DnsRecordType.MX,
+    value: DnsRecordType.MX,
+  },
+  {
+    label: DnsRecordType.NS,
+    value: DnsRecordType.NS,
+  },
+  {
+    label: DnsRecordType.SOA,
+    value: DnsRecordType.SOA,
+  },
+  {
+    label: DnsRecordType.TXT,
+    value: DnsRecordType.TXT,
+  },
+  {
+    label: DnsRecordType.PTR,
+    value: DnsRecordType.PTR,
+  },
+  {
+    label: DnsRecordType.SRV,
+    value: DnsRecordType.SRV,
+  },
+];
+
+const PROTOCOLS = [
+  {
+    label: DnsProtocol.UDP,
+    value: DnsProtocol.UDP,
+  },
+  {
+    label: DnsProtocol.TCP,
+    value: DnsProtocol.TCP,
+  },
+];
 
 export class DnsSettingsForm extends PureComponent<Props, State> {
   state: State = {
@@ -131,80 +187,32 @@ export class DnsSettingsForm extends PureComponent<Props, State> {
     } = this.state;
     const { isEditor } = this.props;
 
-    const recordTypes = [
-      {
-        label: DnsRecordType.A,
-        value: DnsRecordType.A,
-      },
-      {
-        label: DnsRecordType.AAAA,
-        value: DnsRecordType.AAAA,
-      },
-      {
-        label: DnsRecordType.CNAME,
-        value: DnsRecordType.CNAME,
-      },
-      {
-        label: DnsRecordType.MX,
-        value: DnsRecordType.MX,
-      },
-      {
-        label: DnsRecordType.NS,
-        value: DnsRecordType.NS,
-      },
-      {
-        label: DnsRecordType.SOA,
-        value: DnsRecordType.SOA,
-      },
-      {
-        label: DnsRecordType.TXT,
-        value: DnsRecordType.TXT,
-      },
-      {
-        label: DnsRecordType.PTR,
-        value: DnsRecordType.PTR,
-      },
-      {
-        label: DnsRecordType.SRV,
-        value: DnsRecordType.SRV,
-      },
-    ];
-    const protocols = [
-      {
-        label: DnsProtocol.UDP,
-        value: DnsProtocol.UDP,
-      },
-      {
-        label: DnsProtocol.TCP,
-        value: DnsProtocol.TCP,
-      },
-    ];
-    const rCodes = [
-      {
-        label: 'NOERROR',
-        value: 'NOERROR',
-      },
-    ];
     return (
       <Container>
         <HorizontalGroup>
           <Field label="Record Type" description="DNS record type to query for" disabled={!isEditor}>
-            <Select value={recordType} options={recordTypes} onChange={this.onRecordTypeChange} />
+            <Select value={recordType} options={RECORD_TYPES} onChange={this.onRecordTypeChange} />
           </Field>
           <Field label="Server" description="Address of server to query" disabled={!isEditor}>
-            <Input value={server} type="text" placeholder="server" onChange={this.onServerChange} />
+            <Input
+              id="dns-settings-server-address"
+              value={server}
+              type="text"
+              placeholder="server"
+              onChange={this.onServerChange}
+            />
           </Field>
           <Field label="Protocol" description="Transport protocol to use" disabled={!isEditor}>
-            <Select value={protocol} options={protocols} onChange={this.onProtocolChange} />
+            <Select value={protocol} options={PROTOCOLS} onChange={this.onProtocolChange} />
           </Field>
           <Field label="Port" description="port on server to query" disabled={!isEditor}>
-            <Input value={port} type="number" placeholder="port" onChange={this.onPortChange} />
+            <Input id="dns-settings-port" value={port} type="number" placeholder="port" onChange={this.onPortChange} />
           </Field>
         </HorizontalGroup>
         <Collapse label="Validation" collapsible={true} onToggle={this.onShowValidation} isOpen={showValidation}>
           <HorizontalGroup>
             <Field label="Valid Response Codes" description="List of valid response codes" disabled={!isEditor}>
-              <MultiSelect value={validRCodes} options={rCodes} onChange={this.onValidRCodesChange} />
+              <MultiSelect value={validRCodes} options={RESPONSE_CODES} onChange={this.onValidRCodesChange} />
             </Field>
           </HorizontalGroup>
           <div
@@ -247,67 +255,6 @@ export class DnsSettingsForm extends PureComponent<Props, State> {
           </HorizontalGroup>
         </Collapse>
       </Container>
-    );
-  }
-}
-
-interface DnsValidatorProps {
-  validations: DNSRRValidator | undefined;
-  name: string;
-  description: string;
-  isEditor: boolean;
-  onChange: (validations: DNSRRValidator | undefined) => void;
-}
-
-export class DnsValidatorForm extends PureComponent<DnsValidatorProps> {
-  onUpdateFailIfMatches = (failIfMatchesRegexp: string[]) => {
-    const { onChange } = this.props;
-    const { validations } = this.props;
-    const failIfNotMatchesRegexp = validations?.failIfNotMatchesRegexp ?? [];
-    onChange({
-      failIfMatchesRegexp,
-      failIfNotMatchesRegexp,
-    });
-  };
-
-  onUpdateFailIfNotMatches = (failIfNotMatchesRegexp: string[]) => {
-    const { onChange } = this.props;
-    const { validations } = this.props;
-    const failIfMatchesRegexp = validations?.failIfMatchesRegexp ?? [];
-    onChange({
-      failIfNotMatchesRegexp,
-      failIfMatchesRegexp,
-    });
-  };
-
-  render() {
-    const { validations } = this.props;
-    const failIfMatchesRegexp = validations?.failIfMatchesRegexp ?? [];
-    const failIfNotMatchesRegexp = validations?.failIfNotMatchesRegexp ?? [];
-
-    const { isEditor, name, description } = this.props;
-    const dataTestId = name.replace(' ', '-').toLowerCase();
-    return (
-      <>
-        <ListInput
-          dataTestId={`${dataTestId}-matches`}
-          label={`${name} matches`}
-          description={`${description} match`}
-          placeholder="Enter regexp"
-          items={failIfMatchesRegexp}
-          onUpdate={this.onUpdateFailIfMatches}
-          disabled={!isEditor}
-        />
-        <ListInput
-          dataTestId={`${dataTestId}-not-matches`}
-          label={`${name} doesn't match`}
-          description={`${description} don't match`}
-          placeholder="Enter regexp"
-          items={failIfNotMatchesRegexp}
-          onUpdate={this.onUpdateFailIfNotMatches}
-          disabled={!isEditor}
-        />
-      </>
     );
   }
 }

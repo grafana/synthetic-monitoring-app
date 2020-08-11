@@ -177,3 +177,8 @@ export const parseUrl = (url: string) => {
     return;
   }
 };
+
+export function enumToStringArray<T>(enumObject: T) {
+  const uniqueKeys = new Set(Object.keys(enumObject));
+  return Array.from(uniqueKeys);
+}
