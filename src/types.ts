@@ -226,3 +226,8 @@ export enum OrgRole {
   EDITOR = 'Editor',
   VIEWER = 'Viewer',
 }
+
+export interface APIError {
+  status: number;
+  message: string;
+}

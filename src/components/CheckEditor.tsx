@@ -1,4 +1,5 @@
 import React, { PureComponent } from 'react';
+import { css } from 'emotion';
 import {
   Button,
   Container,
@@ -11,9 +12,10 @@ import {
   Select,
   Legend,
   Collapse,
+  Alert,
 } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
-import { Check, Label as SMLabel, Settings, CheckType, Probe, OrgRole } from 'types';
+import { Check, Label as SMLabel, Settings, CheckType, Probe, OrgRole, APIError } from 'types';
 import { SMDataSource } from 'datasource/DataSource';
 import { hasRole, checkType, defaultSettings } from 'utils';
 import { PingSettingsForm } from './PingSettings';
@@ -37,6 +39,7 @@ interface State {
   showDeleteModal: boolean;
   showOptions: boolean;
   probesLoading: boolean;
+  error?: APIError;
 }
 
 export class CheckEditor extends PureComponent<Props, State> {
@@ -134,19 +137,21 @@ export class CheckEditor extends PureComponent<Props, State> {
   onSave = async () => {
     const { instance } = this.props;
     const { check } = this.state;
-    if (!check) {
-      return;
+    try {
+      if (check.id) {
+        await instance.updateCheck(check);
+      } else {
+        await instance.addCheck(check);
+      }
+      this.props.onReturn(true);
+    } catch (e) {
+      this.setState({
+        error: {
+          status: e.status,
+          message: e.data?.message ?? 'Something went wrong',
+        },
+      });
     }
-    if (check.id) {
-      console.log('UPDATE', check, instance);
-      const info = await instance.updateCheck(check);
-      console.log('got', info);
-    } else {
-      console.log('ADD', check);
-      const info = await instance.addCheck(check);
-      console.log('got', info);
-    }
-    this.props.onReturn(true);
   };
 
   onEnableChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -164,7 +169,7 @@ export class CheckEditor extends PureComponent<Props, State> {
   };
 
   render() {
-    const { check, showDeleteModal, probes, probesLoading, typeOfCheck, showOptions } = this.state;
+    const { check, showDeleteModal, probes, probesLoading, typeOfCheck, showOptions, error } = this.state;
     if (!check || probesLoading) {
       return <div>Loading...</div>;
     }
@@ -320,6 +325,17 @@ export class CheckEditor extends PureComponent<Props, State> {
           />
           <a onClick={this.onBack}>Back</a>
         </HorizontalGroup>
+        {error && (
+          <div
+            className={css`
+              margin-top: 1rem;
+            `}
+          >
+            <Alert title="Save failed" severity="error">
+              {`${error.status}: ${error.message}`}
+            </Alert>
+          </div>
+        )}
       </div>
     );
   }
