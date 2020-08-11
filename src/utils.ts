@@ -178,7 +178,8 @@ export const parseUrl = (url: string) => {
   }
 };
 
+// Takes a TS enum with matching string/value pairs and transforms it into an array of strings
+// Under the hood TS enums duplicate key/value pairs so a value can match a key and vice-versa
 export function enumToStringArray<T>(enumObject: T) {
-  const uniqueKeys = new Set(Object.keys(enumObject));
-  return Array.from(uniqueKeys);
+  return [...new Set(Object.keys(enumObject))];
 }

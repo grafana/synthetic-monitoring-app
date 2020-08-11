@@ -5,68 +5,24 @@ import { SelectableValue } from '@grafana/data';
 import { IpVersion, Settings, DnsSettings, DnsProtocol, DnsRecordType, DNSRRValidator, DnsResponseCodes } from 'types';
 import { IpOptions } from './utils';
 import DnsValidatorForm from './DnsValidatorForm';
-import { enumToStringArray } from 'utils';
+import { DNS_RESPONSE_CODES, DNS_RECORD_TYPES, DNS_PROTOCOLS } from './constants';
 
 interface Props {
   settings: Settings;
   isEditor: boolean;
   onUpdate: (settings: Settings) => void;
 }
-
-const RESPONSE_CODES = enumToStringArray(DnsResponseCodes).map(responseCode => ({
-  label: responseCode,
-  value: responseCode,
-}));
-
-const RECORD_TYPES = [
-  {
-    label: DnsRecordType.A,
-    value: DnsRecordType.A,
-  },
-  {
-    label: DnsRecordType.AAAA,
-    value: DnsRecordType.AAAA,
-  },
-  {
-    label: DnsRecordType.CNAME,
-    value: DnsRecordType.CNAME,
-  },
-  {
-    label: DnsRecordType.MX,
-    value: DnsRecordType.MX,
-  },
-  {
-    label: DnsRecordType.NS,
-    value: DnsRecordType.NS,
-  },
-  {
-    label: DnsRecordType.SOA,
-    value: DnsRecordType.SOA,
-  },
-  {
-    label: DnsRecordType.TXT,
-    value: DnsRecordType.TXT,
-  },
-  {
-    label: DnsRecordType.PTR,
-    value: DnsRecordType.PTR,
-  },
-  {
-    label: DnsRecordType.SRV,
-    value: DnsRecordType.SRV,
-  },
-];
-
-const PROTOCOLS = [
-  {
-    label: DnsProtocol.UDP,
-    value: DnsProtocol.UDP,
-  },
-  {
-    label: DnsProtocol.TCP,
-    value: DnsProtocol.TCP,
-  },
-];
+const defaultValues = {
+  recordType: DnsRecordType.A,
+  server: '8.8.8.8',
+  ipVersion: IpVersion.V4,
+  protocol: DnsProtocol.UDP,
+  port: 53,
+  validRCodes: [DnsResponseCodes.NOERROR],
+  validateAnswerRRS: { failIfMatchesRegexp: [], failIfNotMatchesRegexp: [] },
+  validateAuthorityRRS: { failIfMatchesRegexp: [], failIfNotMatchesRegexp: [] },
+  validateAdditionalRRS: { failIfMatchesRegexp: [], failIfNotMatchesRegexp: [] },
+};
 
 interface Action {
   name: keyof DnsSettings;
@@ -83,24 +39,10 @@ function dnsSettingsReducer(state: DnsSettings, action: Action) {
 
 const DnsSettingsForm: FC<Props> = ({ settings, isEditor, onUpdate }) => {
   const initialValues = {
-    recordType: settings.dns?.recordType ?? DnsRecordType.A,
-    server: settings!.dns?.server ?? '8.8.8.8',
-    ipVersion: settings!.dns?.ipVersion ?? IpVersion.V4,
-    protocol: settings!.dns?.protocol ?? DnsProtocol.UDP,
-    port: settings!.dns?.port ?? 53,
-
-    // validation
-    validRCodes: settings!.dns?.validRCodes ?? [DnsResponseCodes.NOERROR],
-    validateAnswerRRS: settings!.dns?.validateAnswerRRS ?? { failIfMatchesRegexp: [], failIfNotMatchesRegexp: [] },
-    validateAuthorityRRS: settings!.dns?.validateAuthorityRRS ?? {
-      failIfMatchesRegexp: [],
-      failIfNotMatchesRegexp: [],
-    },
-    validateAdditionalRRS: settings!.dns?.validateAdditionalRRS ?? {
-      failIfMatchesRegexp: [],
-      failIfNotMatchesRegexp: [],
-    },
+    ...defaultValues,
+    ...settings.dns,
   };
+
   const [dnsSettings, dispatch] = useReducer(dnsSettingsReducer, initialValues);
   const [showValidation, setShowValidation] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -115,7 +57,7 @@ const DnsSettingsForm: FC<Props> = ({ settings, isEditor, onUpdate }) => {
         <Field label="Record Type" description="DNS record type to query for" disabled={!isEditor}>
           <Select
             value={dnsSettings.recordType}
-            options={RECORD_TYPES}
+            options={DNS_RECORD_TYPES}
             onChange={(selected: SelectableValue<DnsRecordType>) =>
               dispatch({
                 name: 'recordType',
@@ -139,7 +81,7 @@ const DnsSettingsForm: FC<Props> = ({ settings, isEditor, onUpdate }) => {
         <Field label="Protocol" description="Transport protocol to use" disabled={!isEditor}>
           <Select
             value={dnsSettings.protocol}
-            options={PROTOCOLS}
+            options={DNS_PROTOCOLS}
             onChange={selected => dispatch({ name: 'protocol', value: selected.value, fallbackValue: DnsProtocol.UDP })}
           />
         </Field>
@@ -165,7 +107,7 @@ const DnsSettingsForm: FC<Props> = ({ settings, isEditor, onUpdate }) => {
           <Field label="Valid Response Codes" description="List of valid response codes" disabled={!isEditor}>
             <MultiSelect
               value={dnsSettings.validRCodes}
-              options={RESPONSE_CODES}
+              options={DNS_RESPONSE_CODES}
               onChange={value =>
                 dispatch({
                   name: 'validRCodes',
