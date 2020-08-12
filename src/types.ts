@@ -227,6 +227,29 @@ export enum OrgRole {
   VIEWER = 'Viewer',
 }
 
+export enum DnsResponseCodes {
+  NOERROR = 'NOERROR',
+  BADALG = 'BADALG',
+  BADCOOKIE = 'BADCOOKIE',
+  BADKEY = 'BADKEY',
+  BADMODE = 'BADMODE',
+  BADNAME = 'BADNAME',
+  BADSIG = 'BADSIG',
+  BADTIME = 'BADTIME',
+  BADTRUNC = 'BADTRUNC',
+  BADVERS = 'BADVERS',
+  FORMERR = 'FORMERR',
+  NOTAUTH = 'NOTAUTH',
+  NOTIMP = 'NOTIMP',
+  NOTZONE = 'NOTZONE',
+  NXDOMAIN = 'NXDOMAIN',
+  NXRRSET = 'NXRRSET',
+  REFUSED = 'REFUSED',
+  SERVFAIL = 'SERVFAIL',
+  YXDOMAIN = 'YXDOMAIN',
+  YXRRSET = 'YXRRSET',
+}
+
 export interface APIError {
   status: number;
   message: string;
