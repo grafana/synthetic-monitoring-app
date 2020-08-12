@@ -193,12 +193,10 @@ const ProbeEditor: FC<Props> = ({ probe, instance, onReturn }) => {
                     rules={{
                       validate: (labels: SMLabel[]) => {
                         const isValid = !labels?.some(label => !validateLabel(label));
-                        console.log('validating labels', isValid);
                         return isValid;
                       },
                     }}
                     onUpdate={(labels: SMLabel[]) => {
-                      console.log('setting values', labels);
                       control.setValue('labels', labels, true);
                     }}
                     isEditor={isEditor}
