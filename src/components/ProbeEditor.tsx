@@ -1,6 +1,19 @@
 import React, { FC, useState, useReducer } from 'react';
 import { css } from 'emotion';
-import { Modal, Button, Container, ConfirmModal, Field, Input, HorizontalGroup, Switch, Legend } from '@grafana/ui';
+import {
+  Modal,
+  Button,
+  Container,
+  ConfirmModal,
+  Field,
+  FieldSet,
+  Input,
+  HorizontalGroup,
+  Switch,
+  Legend,
+  Form,
+  InputControl,
+} from '@grafana/ui';
 import { Label as SMLabel, Probe, OrgRole, InputChangeEvent } from 'types';
 import { SMDataSource } from 'datasource/DataSource';
 import { hasRole } from 'utils';
@@ -78,15 +91,19 @@ const ProbeEditor: FC<Props> = ({ probe: initialProbe, instance, onReturn }) => 
   const [probeToken, setProbeToken] = useState('');
   const [probe, dispatchUpdateProbe] = useReducer(probeReducer, initialProbe);
 
-  const onSave = async () => {
-    if (!isValid(validations, probe)) {
+  const onSave = async (formValues: Probe) => {
+    console.log('formValues', formValues);
+    formValues.latitude = Number(formValues.latitude);
+    formValues.longitude = Number(formValues.longitude);
+    if (!isValid(validations, formValues)) {
+      console.log('not valid');
       return;
     }
     if (probe.id) {
-      await instance.updateProbe(probe);
+      await instance.updateProbe(formValues);
       onReturn(true);
     } else {
-      const info = await instance.addProbe(probe);
+      const info = await instance.addProbe(formValues);
       setShowTokenModal(true);
       setProbeToken(info.token);
     }
@@ -118,140 +135,161 @@ const ProbeEditor: FC<Props> = ({ probe: initialProbe, instance, onReturn }) => 
 
   return (
     <HorizontalGroup align="flex-start">
-      <Container>
-        <Legend>{legend}</Legend>
-        <Container margin="md">
-          <HorizontalGroup align="flex-start">
-            <Field
-              error={validations.name}
-              invalid={Boolean(validations.name)}
-              label="Probe Name"
-              description="Unique name of probe"
-              disabled={!isEditor}
-              className={minInputWidth}
-            >
-              <Input
-                type="text"
-                id="probe-name-input"
-                placeholder="Probe name"
-                value={probe.name}
-                onChange={(e: InputChangeEvent) => dispatchUpdateProbe({ name: 'name', value: e.target.value })}
-              />
-            </Field>
-            <Field
-              label="Public"
-              description="Public probes are run by Grafana Labs and can be used by all users"
-              disabled={!isEditor}
-            >
-              <Container padding="sm">
-                <Switch value={probe.public} disabled={false} />
+      <Form onSubmit={onSave} validateOn="onBlur">
+        {({ register, errors, control, formState, getValues }) => {
+          console.log(getValues());
+          return (
+            <div>
+              <Legend>{legend}</Legend>
+              <FieldSet>
+                <Field
+                  error="Name is required"
+                  invalid={Boolean(errors.name)}
+                  label="Probe Name"
+                  description="Unique name of probe"
+                  disabled={!isEditor}
+                  className={minInputWidth}
+                  required
+                >
+                  <Input
+                    type="text"
+                    maxLength={32}
+                    defaultValue={probe.name}
+                    ref={register({
+                      required: true,
+                      maxLength: 32,
+                    })}
+                    id="probe-name-input"
+                    placeholder="Probe name"
+                    name="name"
+                  />
+                </Field>
+                <Field label="Public" description="Public probes are run by Grafana Labs and can be used by all users">
+                  <Container padding="sm">
+                    <Switch ref={register()} name="public" disabled={!isEditor} />
+                  </Container>
+                </Field>
+              </FieldSet>
+              <FieldSet label="Location information">
+                <Field
+                  error="Must be between -90 and 90"
+                  invalid={Boolean(errors.latitude)}
+                  required
+                  label="Latitude"
+                  description="Latitude coordinates of this probe"
+                  disabled={!isEditor}
+                  className={minInputWidth}
+                >
+                  <Input
+                    ref={register({
+                      required: true,
+                      max: 90,
+                      min: -90,
+                    })}
+                    label="Latitude"
+                    max={90}
+                    min={-90}
+                    defaultValue={probe.latitude}
+                    id="probe-editor-latitude"
+                    type="number"
+                    placeholder="0.0"
+                    name="latitude"
+                  />
+                </Field>
+                <Field
+                  error="Must be between -180 and 180"
+                  invalid={Boolean(errors.longitude)}
+                  required
+                  label="Longitude"
+                  description="Longitude coordinates of this probe"
+                  disabled={!isEditor}
+                >
+                  <Input
+                    ref={register({
+                      required: true,
+                      max: 180,
+                      min: -180,
+                    })}
+                    label="Longitude"
+                    name="longitude"
+                    max={180}
+                    min={-180}
+                    defaultValue={probe.longitude}
+                    id="probe-editor-longitude"
+                    type="number"
+                    placeholder="0.0"
+                  />
+                </Field>
+              </FieldSet>
+              <FieldSet>
+                <Field
+                  error="Region is required"
+                  invalid={Boolean(errors.region)}
+                  required
+                  label="Region"
+                  description="Region of this probe"
+                  disabled={!isEditor}
+                  className={minInputWidth}
+                >
+                  <Input
+                    ref={register({ required: true })}
+                    defaultValue={probe.region}
+                    name="region"
+                    label="Region"
+                    type="string"
+                    placeholder="Region"
+                  />
+                </Field>
+              </FieldSet>
+              <FieldSet label="Labels">
+                <InputControl
+                  control={control}
+                  as={SMLabelsForm}
+                  name="labels"
+                  type="Labels"
+                  labels={getValues().labels || probe.labels || []}
+                  onUpdate={(labels: SMLabel[]) => {
+                    control.setValue('labels', labels);
+                  }}
+                  isEditor={isEditor}
+                  limit={3}
+                />
+              </FieldSet>
+              <Container margin="md">
+                <HorizontalGroup>
+                  <Button type="submit" disabled={!isEditor || !formState.isValid || !formState.touched}>
+                    Save
+                  </Button>
+                  {probe.id && (
+                    <Button variant="destructive" onClick={() => setShowDeleteModal(true)} disabled={!isEditor}>
+                      Delete Probe
+                    </Button>
+                  )}
+                  <ConfirmModal
+                    isOpen={showDeleteModal}
+                    title="Delete Probe"
+                    body="Are you sure you want to delete this Probe?"
+                    confirmText="Delete Probe"
+                    onConfirm={onRemoveProbe}
+                    onDismiss={() => setShowDeleteModal(false)}
+                  />
+                  <Button variant="secondary" onClick={() => onReturn(false)}>
+                    Back
+                  </Button>
+                </HorizontalGroup>
               </Container>
-            </Field>
-          </HorizontalGroup>
-        </Container>
-        <Container margin="md">
-          <h3 className="page-heading">Location information</h3>
-          <HorizontalGroup align="flex-start">
-            <Field
-              error={validations.latitude}
-              invalid={Boolean(validations.latitude)}
-              required
-              label="Latitude"
-              description="Latitude coordinates of this probe"
-              disabled={!isEditor}
-              className={minInputWidth}
-            >
-              <Input
-                label="Latitude"
-                id="probe-editor-latitude"
-                type="number"
-                placeholder="0.0"
-                value={probe.latitude}
-                onChange={(e: InputChangeEvent) => dispatchUpdateProbe({ name: 'latitude', value: e.target.value })}
-              />
-            </Field>
-            <Field
-              error={validations.longitude}
-              invalid={Boolean(validations.longitude)}
-              required
-              label="Longitude"
-              description="Longitude coordinates of this probe"
-              disabled={!isEditor}
-            >
-              <Input
-                label="Longitude"
-                id="probe-editor-longitude"
-                type="number"
-                placeholder="0.0"
-                value={probe.longitude}
-                onChange={(e: InputChangeEvent) => dispatchUpdateProbe({ name: 'longitude', value: e.target.value })}
-              />
-            </Field>
-          </HorizontalGroup>
-          <HorizontalGroup>
-            <Field
-              error={validations.region}
-              invalid={Boolean(validations.region)}
-              required
-              label="Region"
-              description="Region of this probe"
-              disabled={!isEditor}
-              className={minInputWidth}
-            >
-              <Input
-                label="Region"
-                type="string"
-                placeholder="region"
-                value={probe.region}
-                onChange={(e: InputChangeEvent) => dispatchUpdateProbe({ name: 'region', value: e.target.value })}
-              />
-            </Field>
-          </HorizontalGroup>
-        </Container>
-        <Container margin="md">
-          <h3 className="page-heading">Labels</h3>
-          <SMLabelsForm
-            labels={probe.labels}
-            onUpdate={labels => {
-              dispatchUpdateProbe({ name: 'labels', value: labels });
-            }}
-            isEditor={isEditor}
-            type="Label"
-            limit={3}
-          />
-        </Container>
-        <Container margin="md">
-          <HorizontalGroup>
-            <Button onClick={() => onSave()} disabled={!isEditor || !isValid(validations, probe)}>
-              Save
-            </Button>
-            {probe.id && (
-              <Button variant="destructive" onClick={() => setShowDeleteModal(true)} disabled={!isEditor}>
-                Delete Probe
-              </Button>
-            )}
-            <ConfirmModal
-              isOpen={showDeleteModal}
-              title="Delete Probe"
-              body="Are you sure you want to delete this Probe?"
-              confirmText="Delete Probe"
-              onConfirm={onRemoveProbe}
-              onDismiss={() => setShowDeleteModal(false)}
-            />
-            <Button variant="secondary" onClick={() => onReturn(false)}>
-              Back
-            </Button>
-          </HorizontalGroup>
-        </Container>
-        <Modal
-          isOpen={showTokenModal}
-          title="Probe Authentication Token"
-          icon={'lock'}
-          onDismiss={() => (probe.id ? setShowTokenModal(false) : onReturn(false))}
-        >
-          {probeToken}
-        </Modal>
-      </Container>
+              <Modal
+                isOpen={showTokenModal}
+                title="Probe Authentication Token"
+                icon={'lock'}
+                onDismiss={() => (probe.id ? setShowTokenModal(false) : onReturn(false))}
+              >
+                {probeToken}
+              </Modal>
+            </div>
+          );
+        }}
+      </Form>
       {probe.id && <ProbeStatus probe={probe} instance={instance} onResetToken={onResetToken} />}
     </HorizontalGroup>
   );
