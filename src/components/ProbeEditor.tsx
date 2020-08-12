@@ -1,4 +1,4 @@
-import React, { FC, useState, useReducer } from 'react';
+import React, { FC, useState } from 'react';
 import { css } from 'emotion';
 import {
   Modal,
@@ -14,7 +14,7 @@ import {
   Form,
   InputControl,
 } from '@grafana/ui';
-import { Label as SMLabel, Probe, OrgRole, InputChangeEvent } from 'types';
+import { Label as SMLabel, Probe, OrgRole } from 'types';
 import { SMDataSource } from 'datasource/DataSource';
 import { hasRole } from 'utils';
 import { SMLabelsForm } from './utils';
@@ -27,80 +27,25 @@ interface Props {
   onReturn: (reload: boolean) => void;
 }
 
-interface Action {
-  name: keyof Probe;
-  value: string | SMLabel[];
-}
-
-interface ProbeValidationMessages {
-  name?: string;
-  latitude?: string;
-  longitude?: string;
-  region?: string;
-  invalidState?: string;
-}
-
-const getValidationMessages = (probe: Probe): ProbeValidationMessages => {
-  if (!probe) {
-    return { invalidState: 'Something went wrong' };
-  }
-  const validationMessages: ProbeValidationMessages = {};
-  if (probe.name.length > 32) {
-    validationMessages.name = 'Must be less than 32 characters';
-  }
-  if (probe.latitude < -90 || probe.latitude > 90) {
-    validationMessages.latitude = 'Must be between -90 and 90';
-  }
-  if (probe.longitude < -180 || probe.longitude > 180) {
-    validationMessages.longitude = 'Must be between -180 and 180';
-  }
-  return validationMessages;
-};
-
-const isValid = (validations: ProbeValidationMessages, probe: Probe): boolean => {
-  // invalid values
-  const hasInvalidLabel = probe.labels.some(label => !validateLabel(label));
-  if (Object.keys(validations).length > 0 || hasInvalidLabel) {
-    return false;
-  }
-
-  // missing values
-  if (!probe.name || !probe.latitude || !probe.longitude || !probe.region) {
-    return false;
-  }
-
-  return true;
-};
-
-function probeReducer(state: Probe, action: Action) {
-  const numberFields = new Set(['latitude', 'longitude']);
-  const isNumber = numberFields.has(action.name);
-  return {
-    ...state,
-    [action.name]: isNumber ? parseFloat(action.value as string) : action.value,
-  };
-}
-
 const minInputWidth = css`
   min-width: 200px;
 `;
 
-const ProbeEditor: FC<Props> = ({ probe: initialProbe, instance, onReturn }) => {
+const ProbeEditor: FC<Props> = ({ probe, instance, onReturn }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [probeToken, setProbeToken] = useState('');
-  const [probe, dispatchUpdateProbe] = useReducer(probeReducer, initialProbe);
 
   const onSave = async (formValues: Probe) => {
-    console.log('formValues', formValues);
+    // Form values always come back as a string, even for number inputs
     formValues.latitude = Number(formValues.latitude);
     formValues.longitude = Number(formValues.longitude);
-    if (!isValid(validations, formValues)) {
-      console.log('not valid');
-      return;
-    }
+
     if (probe.id) {
-      await instance.updateProbe(formValues);
+      await instance.updateProbe({
+        ...probe,
+        ...formValues,
+      });
       onReturn(true);
     } else {
       const info = await instance.addProbe(formValues);
@@ -127,17 +72,17 @@ const ProbeEditor: FC<Props> = ({ probe: initialProbe, instance, onReturn }) => 
     return <div>Loading...</div>;
   }
 
-  const validations = getValidationMessages(probe);
-
   const legend = probe.id ? 'Configuration' : 'Add Probe';
 
   const isEditor = !probe.public && hasRole(OrgRole.EDITOR);
 
   return (
     <HorizontalGroup align="flex-start">
-      <Form onSubmit={onSave} validateOn="onBlur">
+      <Form onSubmit={onSave} validateOn="onChange" defaultValues={probe}>
         {({ register, errors, control, formState, getValues }) => {
-          console.log(getValues());
+          console.log('values', getValues());
+          console.log('isvalid', formState.isValid);
+          console.log('errors', errors);
           return (
             <div>
               <Legend>{legend}</Legend>
@@ -154,7 +99,6 @@ const ProbeEditor: FC<Props> = ({ probe: initialProbe, instance, onReturn }) => 
                   <Input
                     type="text"
                     maxLength={32}
-                    defaultValue={probe.name}
                     ref={register({
                       required: true,
                       maxLength: 32,
@@ -166,7 +110,7 @@ const ProbeEditor: FC<Props> = ({ probe: initialProbe, instance, onReturn }) => 
                 </Field>
                 <Field label="Public" description="Public probes are run by Grafana Labs and can be used by all users">
                   <Container padding="sm">
-                    <Switch ref={register()} name="public" disabled={!isEditor} />
+                    <Switch ref={register} name="public" disabled={!isEditor} />
                   </Container>
                 </Field>
               </FieldSet>
@@ -189,7 +133,6 @@ const ProbeEditor: FC<Props> = ({ probe: initialProbe, instance, onReturn }) => 
                     label="Latitude"
                     max={90}
                     min={-90}
-                    defaultValue={probe.latitude}
                     id="probe-editor-latitude"
                     type="number"
                     placeholder="0.0"
@@ -214,7 +157,6 @@ const ProbeEditor: FC<Props> = ({ probe: initialProbe, instance, onReturn }) => 
                     name="longitude"
                     max={180}
                     min={-180}
-                    defaultValue={probe.longitude}
                     id="probe-editor-longitude"
                     type="number"
                     placeholder="0.0"
@@ -233,7 +175,6 @@ const ProbeEditor: FC<Props> = ({ probe: initialProbe, instance, onReturn }) => 
                 >
                   <Input
                     ref={register({ required: true })}
-                    defaultValue={probe.region}
                     name="region"
                     label="Region"
                     type="string"
@@ -241,23 +182,36 @@ const ProbeEditor: FC<Props> = ({ probe: initialProbe, instance, onReturn }) => 
                   />
                 </Field>
               </FieldSet>
-              <FieldSet label="Labels">
-                <InputControl
-                  control={control}
-                  as={SMLabelsForm}
-                  name="labels"
-                  type="Labels"
-                  labels={getValues().labels || probe.labels || []}
-                  onUpdate={(labels: SMLabel[]) => {
-                    control.setValue('labels', labels);
-                  }}
-                  isEditor={isEditor}
-                  limit={3}
-                />
+              <FieldSet>
+                <Field label="Labels" invalid={Boolean(errors.labels)} error="Name and value are required">
+                  <InputControl
+                    control={control}
+                    as={SMLabelsForm}
+                    name="labels"
+                    type="Labels"
+                    labels={getValues().labels || []}
+                    rules={{
+                      validate: (labels: SMLabel[]) => {
+                        const isValid = !labels?.some(label => !validateLabel(label));
+                        console.log('validating labels', isValid);
+                        return isValid;
+                      },
+                    }}
+                    onUpdate={(labels: SMLabel[]) => {
+                      console.log('setting values', labels);
+                      control.setValue('labels', labels, true);
+                    }}
+                    isEditor={isEditor}
+                    limit={3}
+                  />
+                </Field>
               </FieldSet>
               <Container margin="md">
                 <HorizontalGroup>
-                  <Button type="submit" disabled={!isEditor || !formState.isValid || !formState.touched}>
+                  <Button
+                    type="submit"
+                    disabled={!isEditor || !formState.isValid || !formState.touched || formState.isSubmitting}
+                  >
                     Save
                   </Button>
                   {probe.id && (

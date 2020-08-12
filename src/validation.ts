@@ -80,6 +80,7 @@ export function validateLabels(labels: Label[]): boolean {
 const labelRegex = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
 
 export function validateLabel(label: Label): boolean {
+  console.log('LABEL VALIDATION', label);
   return validateLabelName(label.name) && validateLabelValue(label.value);
 }
 
