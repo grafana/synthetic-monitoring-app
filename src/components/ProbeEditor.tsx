@@ -6,7 +6,6 @@ import {
   Container,
   ConfirmModal,
   Field,
-  FieldSet,
   Input,
   HorizontalGroup,
   Switch,
@@ -48,7 +47,10 @@ const ProbeEditor: FC<Props> = ({ probe, instance, onReturn }) => {
       });
       onReturn(true);
     } else {
-      const info = await instance.addProbe(formValues);
+      const info = await instance.addProbe({
+        ...probe,
+        ...formValues,
+      });
       setShowTokenModal(true);
       setProbeToken(info.token);
     }
@@ -80,13 +82,10 @@ const ProbeEditor: FC<Props> = ({ probe, instance, onReturn }) => {
     <HorizontalGroup align="flex-start">
       <Form onSubmit={onSave} validateOn="onChange" defaultValues={probe}>
         {({ register, errors, control, formState, getValues }) => {
-          console.log('values', getValues());
-          console.log('isvalid', formState.isValid);
-          console.log('errors', errors);
           return (
             <div>
               <Legend>{legend}</Legend>
-              <FieldSet>
+              <Container margin="md">
                 <Field
                   error="Name is required"
                   invalid={Boolean(errors.name)}
@@ -113,8 +112,9 @@ const ProbeEditor: FC<Props> = ({ probe, instance, onReturn }) => {
                     <Switch ref={register} name="public" disabled={!isEditor} />
                   </Container>
                 </Field>
-              </FieldSet>
-              <FieldSet label="Location information">
+              </Container>
+              <Container margin="md">
+                <Legend>Location information</Legend>
                 <Field
                   error="Must be between -90 and 90"
                   invalid={Boolean(errors.latitude)}
@@ -162,8 +162,8 @@ const ProbeEditor: FC<Props> = ({ probe, instance, onReturn }) => {
                     placeholder="0.0"
                   />
                 </Field>
-              </FieldSet>
-              <FieldSet>
+              </Container>
+              <Container margin="md">
                 <Field
                   error="Region is required"
                   invalid={Boolean(errors.region)}
@@ -181,8 +181,8 @@ const ProbeEditor: FC<Props> = ({ probe, instance, onReturn }) => {
                     placeholder="Region"
                   />
                 </Field>
-              </FieldSet>
-              <FieldSet>
+              </Container>
+              <Container margin="md">
                 <Field label="Labels" invalid={Boolean(errors.labels)} error="Name and value are required">
                   <InputControl
                     control={control}
@@ -205,7 +205,7 @@ const ProbeEditor: FC<Props> = ({ probe, instance, onReturn }) => {
                     limit={3}
                   />
                 </Field>
-              </FieldSet>
+              </Container>
               <Container margin="md">
                 <HorizontalGroup>
                   <Button

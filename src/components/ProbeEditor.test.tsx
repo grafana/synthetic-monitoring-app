@@ -26,13 +26,13 @@ const renderProbeEditor = ({ probe = defaultProbe } = {}) => {
   return instance;
 };
 
-describe('validation messages', () => {
-  test('Shows message for probe name too long', async () => {
+describe('validation', () => {
+  test('probe name', async () => {
     renderProbeEditor();
     const nameInput = await screen.findByLabelText('Probe Name', { exact: false });
-    userEvent.type(nameInput, 'a name that is definitely too long and should have an error');
-    const errorMessage = await screen.findByText('Must be less than 32 characters');
-    expect(errorMessage).toBeInTheDocument();
+    userEvent.type(nameInput, 'a name that is definitely too long and should definitely not be allowed to get typed');
+    const maxLengthString = 'a name that is definitely too lo';
+    expect(nameInput).toHaveValue(maxLengthString);
   });
   test('Shows message for invalid latitude', async () => {
     renderProbeEditor();
@@ -73,6 +73,8 @@ test('save button is disabled by invalid values', async () => {
   expect(saveButton).not.toBeDisabled();
   const longitudeInput = await screen.findByLabelText('Longitude', { exact: false });
   userEvent.type(longitudeInput, '444');
+  const errorMessage = await screen.findByText('Must be between -180 and 180');
+  expect(errorMessage).toBeInTheDocument();
   expect(saveButton).toBeDisabled();
 });
 
