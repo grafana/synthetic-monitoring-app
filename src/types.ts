@@ -229,3 +229,8 @@ export enum OrgRole {
 }
 
 export type InputChangeEvent = ChangeEvent<HTMLInputElement>;
+
+export interface APIError {
+  status: number;
+  message: string;
+}
