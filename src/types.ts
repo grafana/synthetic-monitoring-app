@@ -249,3 +249,8 @@ export enum DnsResponseCodes {
   YXDOMAIN = 'YXDOMAIN',
   YXRRSET = 'YXRRSET',
 }
+
+export interface APIError {
+  status: number;
+  message: string;
+}
