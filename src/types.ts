@@ -1,6 +1,5 @@
 import { DataSourceApi } from '@grafana/data';
 import { SMDataSource } from 'datasource/DataSource';
-import { ChangeEvent } from 'react';
 
 // App Settings
 export interface GlobalSettings {
@@ -227,8 +226,6 @@ export enum OrgRole {
   EDITOR = 'Editor',
   VIEWER = 'Viewer',
 }
-
-export type InputChangeEvent = ChangeEvent<HTMLInputElement>;
 
 export interface APIError {
   status: number;
