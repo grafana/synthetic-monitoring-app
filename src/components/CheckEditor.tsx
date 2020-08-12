@@ -38,6 +38,7 @@ interface State {
   probes: Probe[];
   showDeleteModal: boolean;
   showOptions: boolean;
+  probesLoading: boolean;
   error?: APIError;
 }
 
@@ -46,6 +47,7 @@ export class CheckEditor extends PureComponent<Props, State> {
     showDeleteModal: false,
     check: { ...this.props.check },
     showOptions: false,
+    probesLoading: true,
     probes: [],
   };
 
@@ -56,6 +58,7 @@ export class CheckEditor extends PureComponent<Props, State> {
     const typeOfCheck = checkType(check.settings);
     this.setState({
       typeOfCheck,
+      probesLoading: false,
       probes,
     });
   }
@@ -166,8 +169,8 @@ export class CheckEditor extends PureComponent<Props, State> {
   };
 
   render() {
-    const { check, showDeleteModal, probes, typeOfCheck, showOptions, error } = this.state;
-    if (!check || probes.length === 0) {
+    const { check, showDeleteModal, probes, probesLoading, typeOfCheck, showOptions, error } = this.state;
+    if (!check || probesLoading) {
       return <div>Loading...</div>;
     }
 
