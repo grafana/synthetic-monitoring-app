@@ -55,3 +55,5 @@ export const DNS_PROTOCOLS = [
     value: DnsProtocol.TCP,
   },
 ];
+
+export const DEFAULT_API_HOST = 'https://synthetic-monitoring-api.grafana.net';
