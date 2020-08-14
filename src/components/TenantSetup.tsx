@@ -1,16 +1,5 @@
-import React, { PureComponent, ChangeEvent } from 'react';
-import {
-  Field,
-  Button,
-  Input,
-  ConfirmModal,
-  HorizontalGroup,
-  Collapse,
-  InfoBox,
-  Alert,
-  Container,
-  Form,
-} from '@grafana/ui';
+import React, { PureComponent } from 'react';
+import { Button, ConfirmModal } from '@grafana/ui';
 import { RegistrationInfo, HostedInstance } from 'types';
 import { SMDataSource } from 'datasource/DataSource';
 import { isValid } from 'datasource/ConfigEditor';
@@ -20,6 +9,7 @@ import { SMOptions } from 'datasource/types';
 import { TenantView } from './TenantView';
 import { dashboardPaths, importDashboard } from 'dashboards/loader';
 import { DashboardList } from './DashboardList';
+import TenantAPISetupForm from './TenantAPISetupForm';
 import { DEFAULT_API_HOST } from './constants';
 
 interface Props {
@@ -27,7 +17,6 @@ interface Props {
 }
 
 interface State {
-  showAdvanced: boolean;
   adminApiToken?: string;
   apiHost?: string;
   userError?: string;
@@ -48,7 +37,6 @@ export class TenantSetup extends PureComponent<Props, State> {
   state: State = {
     showResetModal: false,
     resetConfig: false,
-    showAdvanced: false,
   };
 
   onInit = async ({ apiHost = DEFAULT_API_HOST, adminApiToken }: InitParams) => {
@@ -74,6 +62,8 @@ export class TenantSetup extends PureComponent<Props, State> {
       info,
       logsInstance: info.tenantInfo?.logInstance?.id,
       metricsInstance: info.tenantInfo?.metricInstance?.id,
+      apiHost,
+      adminApiToken,
       userError: undefined,
       backendError: undefined,
     });
@@ -161,95 +151,11 @@ export class TenantSetup extends PureComponent<Props, State> {
     window.location.reload();
   };
 
-  onToggleAdvanced = (isOpen: boolean) => {
-    this.setState({ showAdvanced: !this.state.showAdvanced });
-  };
-
   renderSetup() {
-    const { info, logsInstance, metricsInstance, showAdvanced, backendError, userError } = this.state;
+    const { info, logsInstance, metricsInstance, backendError, userError } = this.state;
 
     if (!info) {
-      return (
-        <Form onSubmit={this.onInit} defaultValues={{ apiHost: DEFAULT_API_HOST }} validateOn="onChange">
-          {({ register, errors, formState, getValues }) => (
-            <div>
-              <HorizontalGroup wrap={true}>
-                <InfoBox
-                  title="Initialize Synthetic Monitoring App"
-                  url={'https://grafana.com/grafana/plugins/grafana-synthetic-monitoring-app/'}
-                >
-                  <p>
-                    To initialize the App and connect it to your Grafana Cloud service you will need a Admin API key for
-                    you Grafana.com account. The <b>API key</b> is only needed for the initialization process and will
-                    not be stored. Once the initialization is complete you can safely delete the key.
-                    <br />
-                    <br />
-                    <a className="highlight-word" href="//grafana.com/profile/api-keys" target="_blank">
-                      Generate a new API key
-                    </a>
-                  </p>
-                </InfoBox>
-                <Field
-                  label="Admin API Key"
-                  required
-                  error="Admin api key is required"
-                  invalid={Boolean(errors.adminApiToken)}
-                >
-                  <Input
-                    ref={register({ required: true })}
-                    id="tenant-setup-api-key"
-                    type="text"
-                    name="adminApiToken"
-                    width={100}
-                    placeholder="Grafana.com Admin Api Key"
-                  />
-                </Field>
-              </HorizontalGroup>
-              <br />
-              <Collapse label="Advanced" collapsible={true} onToggle={this.onToggleAdvanced} isOpen={showAdvanced}>
-                <HorizontalGroup>
-                  <Field label="Backend Address" invalid={Boolean(errors.apiHost)} error={errors.apiHost?.message}>
-                    <Input
-                      ref={register({
-                        required: true,
-                        validate: value => {
-                          try {
-                            new URL(value);
-                          } catch (e) {
-                            return e.message;
-                          }
-                        },
-                      })}
-                      name="apiHost"
-                      id="tenant-setup-backend-host"
-                      type="text"
-                      width={40}
-                      placeholder="Synthetic Monitoring Backend Address"
-                    />
-                  </Field>
-                </HorizontalGroup>
-              </Collapse>
-              <Button variant="primary" type="submit" disabled={!formState.isValid}>
-                Initialize
-              </Button>
-              {backendError && (
-                <Container margin="md">
-                  <Alert title="Backend Error" severity="error">
-                    {backendError}
-                  </Alert>
-                </Container>
-              )}
-              {userError && (
-                <Container margin="md">
-                  <Alert title="User Error" severity="error">
-                    {userError}
-                  </Alert>
-                </Container>
-              )}
-            </div>
-          )}
-        </Form>
-      );
+      return <TenantAPISetupForm onSubmit={this.onInit} submissionError={userError || backendError} />;
     }
     return (
       <div>
