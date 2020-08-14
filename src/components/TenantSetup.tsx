@@ -30,7 +30,7 @@ interface State {
 
 interface InitParams {
   adminApiToken: string;
-  apiHost: string;
+  apiHost?: string;
 }
 
 export class TenantSetup extends PureComponent<Props, State> {
@@ -41,7 +41,6 @@ export class TenantSetup extends PureComponent<Props, State> {
 
   onInit = async ({ apiHost = DEFAULT_API_HOST, adminApiToken }: InitParams) => {
     const { instance } = this.props;
-
     const info = await instance.registerInit(apiHost, adminApiToken).catch(err => {
       console.error('failed to init. ', err);
       if (err.data.msg) {

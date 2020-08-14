@@ -4,7 +4,7 @@ import { DEFAULT_API_HOST } from './constants';
 
 interface FormValues {
   adminApiToken: string;
-  apiHost: string;
+  apiHost?: string;
 }
 
 interface Props {
@@ -15,8 +15,12 @@ interface Props {
 const TenantAPISetupForm: FC<Props> = ({ onSubmit, submissionError }) => {
   const [showAdvanced, setShowAdvanced] = useState(false);
   return (
-    <Form onSubmit={onSubmit} defaultValues={{ apiHost: DEFAULT_API_HOST }} validateOn="onChange">
-      {({ register, errors, formState, getValues }) => (
+    <Form
+      onSubmit={(values: FormValues) => onSubmit(values)}
+      defaultValues={{ apiHost: DEFAULT_API_HOST }}
+      validateOn="onChange"
+    >
+      {({ register, errors, formState }) => (
         <div>
           <HorizontalGroup wrap={true}>
             <InfoBox
@@ -56,7 +60,6 @@ const TenantAPISetupForm: FC<Props> = ({ onSubmit, submissionError }) => {
               <Field label="Backend Address" invalid={Boolean(errors.apiHost)} error={errors.apiHost?.message}>
                 <Input
                   ref={register({
-                    required: true,
                     validate: value => {
                       try {
                         new URL(value);
@@ -74,7 +77,7 @@ const TenantAPISetupForm: FC<Props> = ({ onSubmit, submissionError }) => {
               </Field>
             </HorizontalGroup>
           </Collapse>
-          <Button variant="primary" type="submit" disabled={!formState.isValid}>
+          <Button variant="primary" type="submit" disabled={formState.isSubmitting || !formState.isValid}>
             Initialize
           </Button>
           {submissionError && (
