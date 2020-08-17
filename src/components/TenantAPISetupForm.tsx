@@ -15,11 +15,7 @@ interface Props {
 const TenantAPISetupForm: FC<Props> = ({ onSubmit, submissionError }) => {
   const [showAdvanced, setShowAdvanced] = useState(false);
   return (
-    <Form
-      onSubmit={(values: FormValues) => onSubmit(values)}
-      defaultValues={{ apiHost: DEFAULT_API_HOST }}
-      validateOn="onChange"
-    >
+    <Form onSubmit={onSubmit} defaultValues={{ apiHost: DEFAULT_API_HOST }} validateOn="onChange">
       {({ register, errors, formState }) => (
         <div>
           <HorizontalGroup wrap={true}>
