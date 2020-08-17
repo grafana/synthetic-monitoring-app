@@ -59,8 +59,8 @@ const TenantAPISetupForm: FC<Props> = ({ onSubmit, submissionError }) => {
                     validate: value => {
                       try {
                         new URL(value);
-                      } catch (e) {
-                        return e.message;
+                      } catch ({ message }) {
+                        return message;
                       }
                     },
                   })}
