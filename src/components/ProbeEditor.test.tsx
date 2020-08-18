@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ProbeEditor from './ProbeEditor';
 import { getInstanceMock } from '../datasource/__mocks__/DataSource';
@@ -30,7 +30,12 @@ describe('validation', () => {
   test('probe name', async () => {
     renderProbeEditor();
     const nameInput = await screen.findByLabelText('Probe Name', { exact: false });
-    userEvent.type(nameInput, 'a name that is definitely too long and should definitely not be allowed to get typed');
+    await act(async () => {
+      await userEvent.type(
+        nameInput,
+        'a name that is definitely too long and should definitely not be allowed to get typed'
+      );
+    });
     const maxLengthString = 'a name that is definitely too lo';
     expect(nameInput).toHaveValue(maxLengthString);
   });
