@@ -290,14 +290,14 @@ export class ChecksPage extends PureComponent<Props, State> {
         </div>
         <section className="card-section card-list-layout-list">
           <ol className="card-list">
-            {filteredChecks.map(check => {
+            {filteredChecks.map((check, index) => {
               const checkId: number = check.id || 0;
               if (!check.id) {
                 return;
               }
               const checkType = Object.keys(check.settings)[0];
               return (
-                <li className="card-item-wrapper">
+                <li className="card-item-wrapper" key={index}>
                   <a className="card-item" onClick={() => this.onSelectCheck(checkId)}>
                     <HorizontalGroup justify="space-between">
                       <div className="card-item-body">

@@ -1,10 +1,21 @@
 import React, { FC, useState } from 'react';
 import { css } from 'emotion';
-import { Badge, BadgeColor, Button, Container, ConfirmModal, Legend, IconName } from '@grafana/ui';
+import {
+  Badge,
+  BadgeColor,
+  Button,
+  Container,
+  ConfirmModal,
+  Legend,
+  IconName,
+  stylesFactory,
+  useTheme,
+} from '@grafana/ui';
 import { Probe, OrgRole } from 'types';
 import { SMDataSource } from 'datasource/DataSource';
 import { hasRole } from 'utils';
 import { UptimeGauge } from './UptimeGauge';
+import { GrafanaTheme } from '@grafana/data';
 
 interface Props {
   probe: Probe;
@@ -17,6 +28,22 @@ interface BadgeStatus {
   text: string;
   icon: IconName;
 }
+
+const getStyles = stylesFactory((theme: GrafanaTheme) => ({
+  legend: css`
+    margin: ${theme.spacing.sm} ${theme.spacing.sm} 0 0;
+    width: auto;
+  `,
+  container: css`
+    padding-left: ${theme.spacing.sm}
+    margin-bottom: ${theme.spacing.md}
+  `,
+  badgeContainer: css`
+    margin-bottom: ${theme.spacing.sm};
+    display: flex;
+    align-items: center;
+  `,
+}));
 
 const getBadgeStatus = (online: boolean): BadgeStatus => {
   if (online) {
@@ -35,12 +62,14 @@ const getBadgeStatus = (online: boolean): BadgeStatus => {
 
 const ProbeStatus: FC<Props> = ({ probe, instance, onResetToken }) => {
   const [showResetModal, setShowResetModal] = useState(false);
-
   if (!probe) {
     return null;
   }
   const isEditor = !probe.public && hasRole(OrgRole.EDITOR);
   const badgeStatus = getBadgeStatus(probe.online);
+
+  const theme = useTheme();
+  const styles = getStyles(theme);
 
   const handleResetToken = () => {
     onResetToken();
@@ -49,27 +78,9 @@ const ProbeStatus: FC<Props> = ({ probe, instance, onResetToken }) => {
 
   return (
     <Container margin="md">
-      <div
-        className={css`
-          padding-left: 0.75rem;
-          margin-bottom: 1.5rem;
-        `}
-      >
-        <div
-          className={css`
-            margin-bottom: 0.25rem;
-            display: flex;
-            align-items: center;
-          `}
-        >
-          <Legend
-            className={css`
-              margin: 6px 0.5rem 0 0;
-              width: auto;
-            `}
-          >
-            Status:
-          </Legend>
+      <div className={styles.container}>
+        <div className={styles.badgeContainer}>
+          <Legend className={styles.legend}>Status:</Legend>
           <Badge color={badgeStatus.color} icon={badgeStatus.icon} text={badgeStatus.text} />
         </div>
         {!probe.public && (
