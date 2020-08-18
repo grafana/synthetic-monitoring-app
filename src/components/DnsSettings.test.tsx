@@ -3,6 +3,7 @@ import DnsSettingsForm from './DnsSettings';
 import { screen, render, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { DnsResponseCodes } from 'types';
+jest.unmock('utils');
 
 const onUpdateMock = jest.fn();
 const defaultSettings = {};

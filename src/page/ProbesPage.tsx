@@ -5,7 +5,7 @@ import React, { PureComponent } from 'react';
 import { GrafanaInstances, Label, Probe, OrgRole } from 'types';
 import { Button, HorizontalGroup, IconName, Badge, BadgeColor } from '@grafana/ui';
 import { getLocationSrv } from '@grafana/runtime';
-import { ProbeEditor } from 'components/ProbeEditor';
+import ProbeEditor from 'components/ProbeEditor';
 import { UptimeGauge } from 'components/UptimeGauge';
 import { hasRole } from 'utils';
 //import ProbesMap from 'components/ProbesMap';

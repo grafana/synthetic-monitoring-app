@@ -81,12 +81,13 @@ export class UptimeGauge extends PureComponent<Props, State> {
       title: 'Success rate',
       text: 'loading...',
     };
-    if (resp.data.data.result.length < 1) {
+    const result = resp.data?.data?.result;
+    if (!result || result.length < 1) {
       value.text = 'N/A';
       this.setState({ value, lastUpdate });
       return;
     }
-    const uptime = parseFloat(resp.data.data.result[0].value[1]) * 100;
+    const uptime = parseFloat(result[0].value[1]) * 100;
     let color = 'green';
     if (uptime < 99) {
       color = 'red';
@@ -222,13 +223,14 @@ export class CheckHealth extends PureComponent<CheckHealthProps, CheckHealthStat
     }
     let iconName: IconName = 'heart';
     let className = 'ok';
-    if (resp.data.data.result.length < 1) {
+    const results = resp.data?.data?.result;
+    if (!results || results.length < 1) {
       iconName = 'question-circle';
       className = 'paused';
       this.setState({ iconName, className });
       return;
     }
-    const uptime = parseFloat(resp.data.data.result[0].value[1]) * 100;
+    const uptime = parseFloat(results[0].value[1]) * 100;
     if (uptime < 99) {
       className = 'warning';
     }

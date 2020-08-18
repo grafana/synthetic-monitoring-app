@@ -1,7 +1,6 @@
-import React, { PureComponent } from 'react';
+import React, { FC, useState } from 'react';
+import { css } from 'emotion';
 import {
-  Badge,
-  BadgeColor,
   Modal,
   Button,
   Container,
@@ -11,13 +10,15 @@ import {
   HorizontalGroup,
   Switch,
   Legend,
-  IconName,
+  Form,
+  InputControl,
 } from '@grafana/ui';
 import { Label as SMLabel, Probe, OrgRole } from 'types';
 import { SMDataSource } from 'datasource/DataSource';
 import { hasRole } from 'utils';
 import { SMLabelsForm } from './utils';
-import { UptimeGauge } from './UptimeGauge';
+import ProbeStatus from './ProbeStatus';
+import { validateLabel } from 'validation';
 
 interface Props {
   probe: Probe;
@@ -25,318 +26,225 @@ interface Props {
   onReturn: (reload: boolean) => void;
 }
 
-interface State {
-  probe?: Probe;
-  showDeleteModal: boolean;
-  showTokenModal: boolean;
-  probeToken: string;
-  showResetModal: boolean;
-}
+const minInputWidth = css`
+  min-width: 200px;
+`;
 
-export class ProbeEditor extends PureComponent<Props, State> {
-  state: State = {
-    showDeleteModal: false,
-    showTokenModal: false,
-    showResetModal: false,
-    probeToken: '',
-  };
+const ProbeEditor: FC<Props> = ({ probe, instance, onReturn }) => {
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showTokenModal, setShowTokenModal] = useState(false);
+  const [probeToken, setProbeToken] = useState('');
 
-  async componentDidMount() {
-    const probe = { ...this.props.probe } as Probe;
-    this.setState({
-      probe: probe,
-    });
-  }
+  const onSave = async (formValues: Probe) => {
+    // Form values always come back as a string, even for number inputs
+    formValues.latitude = Number(formValues.latitude);
+    formValues.longitude = Number(formValues.longitude);
 
-  showDeleteProbeModal = (show: boolean) => () => {
-    this.setState({ showDeleteModal: show });
-  };
-
-  showTokenModal = (show: boolean) => () => {
-    this.setState({ showTokenModal: show });
-  };
-
-  showResetModal = (show: boolean) => () => {
-    this.setState({ showResetModal: show });
-  };
-
-  onRemoveProbe = async () => {
-    const id = this.props.probe.id || 0;
-    if (!this.props.probe.id) {
-      return;
-    }
-    const info = this.props.instance.deleteProbe(id);
-    console.log('Remove Probe', id, info);
-    this.props.onReturn(true);
-  };
-
-  onLabelsUpdate = (labels: SMLabel[]) => {
-    let probe = { ...this.state.probe } as Probe;
-    probe.labels = labels;
-    this.setState({ probe });
-  };
-
-  onLatUpdate = (event: React.ChangeEvent<HTMLInputElement>) => {
-    let probe = { ...this.state.probe } as Probe;
-    probe.latitude = event.target.valueAsNumber;
-    this.setState({ probe });
-  };
-
-  onLongUpdate = (event: React.ChangeEvent<HTMLInputElement>) => {
-    let probe = { ...this.state.probe } as Probe;
-    probe.longitude = event.target.valueAsNumber;
-    this.setState({ probe });
-  };
-
-  onRegionUpdate = (event: React.ChangeEvent<HTMLInputElement>) => {
-    let probe = { ...this.state.probe } as Probe;
-    probe.region = event.target.value;
-    this.setState({ probe });
-  };
-
-  onNameUpdate = (event: React.ChangeEvent<HTMLInputElement>) => {
-    let probe = { ...this.state.probe } as Probe;
-    probe.name = event.target.value;
-    this.setState({ probe });
-  };
-
-  onSave = async () => {
-    const { instance } = this.props;
-    const { probe } = this.state;
-    if (!probe) {
-      return;
-    }
     if (probe.id) {
-      console.log('UPDATE', probe, instance);
-      const info = await instance.updateProbe(probe);
-      console.log('got', info);
-      this.props.onReturn(true);
+      await instance.updateProbe({
+        ...probe,
+        ...formValues,
+      });
+      onReturn(true);
     } else {
-      console.log('ADD', probe);
-      const info = await instance.addProbe(probe);
-      this.setState({ showTokenModal: true, probeToken: info.token });
+      const info = await instance.addProbe({
+        ...probe,
+        ...formValues,
+      });
+      setShowTokenModal(true);
+      setProbeToken(info.token);
     }
   };
 
-  onResetToken = async () => {
-    const { instance } = this.props;
-    const probe = { ...this.props.probe };
-    const info = await instance.resetProbeToken(probe);
-    this.setState({ showTokenModal: true, showResetModal: false, probeToken: info.token });
-  };
-
-  onBack = () => {
-    this.props.onReturn(false);
-  };
-
-  isValid(): boolean {
-    const { probe } = this.state;
-    if (!probe) {
-      return false;
-    }
-    if (probe.name === '') {
-      console.log('probe name must be set');
-      return false;
-    }
-    if (probe.name.length > 32) {
-      console.log('probe name must be less than 32 characters');
-      return false;
-    }
-    if (probe.latitude < -90 || probe.latitude > 90) {
-      console.log('probe latitude must be between -90 and 90');
-      return false;
-    }
-    if (probe.longitude < -180 || probe.longitude > 180) {
-      console.log('probe longitude must be between -180 and 180');
-      return false;
-    }
-    if (probe.region === '') {
-      console.log('probe region must be set');
-      return false;
-    }
-    if (probe.labels.length > 3) {
-      console.log('probes cannot have more than 3 labels');
-      return false;
-    }
-    for (const l of probe.labels) {
-      if (l.name === '' || l.value === '') {
-        console.log('label name and value must be set');
-        return false;
-      }
-      if (!l.name.match(/^[a-zA-Z0-9_]*$/)) {
-        console.log('label name can only contain a-zA-Z0-9_');
-        return false;
-      }
-      if (l.name.length > 32) {
-        console.log('label name must be less than 32 chars');
-        return false;
-      }
-      if (l.value.length > 64) {
-        console.log('label name must be less than 64 chars');
-        return false;
-      }
-    }
-    return true;
-  }
-
-  renderStatus() {
-    const { probe, showResetModal } = this.state;
-    const { instance } = this.props;
-
-    if (!probe) {
+  const onRemoveProbe = async () => {
+    if (!probe.id) {
       return;
     }
-    let isEditor = !probe.public && hasRole(OrgRole.EDITOR);
-    let onlineTxt = 'Offline';
-    let onlineIcon = 'heart-break' as IconName;
-    let color = 'red' as BadgeColor;
-    if (probe.online) {
-      onlineTxt = 'Online';
-      onlineIcon = 'heart';
-      color = 'green';
-    }
+    await instance.deleteProbe(probe.id);
+    onReturn(true);
+  };
 
-    return (
-      <Container margin="md">
-        <Legend>
-          Status: &nbsp;
-          <Badge color={color} icon={onlineIcon} text={onlineTxt} />
-        </Legend>
-        {!probe.public && (
-          <Container>
-            <Button variant="destructive" onClick={this.showResetModal(true)} disabled={!isEditor}>
-              Reset Access Token
-            </Button>
-            <ConfirmModal
-              isOpen={showResetModal}
-              title="Reset Probe Access Token"
-              body="Are you sure you want to reset the access token for this Probe?"
-              confirmText="Reset Token"
-              onConfirm={this.onResetToken}
-              onDismiss={this.showResetModal(false)}
-            />
-          </Container>
-        )}
-        <br />
-        <UptimeGauge
-          labelNames={['probe']}
-          labelValues={[probe.name]}
-          ds={instance.getMetricsDS()}
-          height={200}
-          width={300}
-          sparkline={true}
-        />
-      </Container>
-    );
+  const onResetToken = async () => {
+    const info = await instance.resetProbeToken(probe);
+    setShowTokenModal(true);
+    setProbeToken(info.token);
+  };
+
+  if (!probe) {
+    return <div>Loading...</div>;
   }
 
-  render() {
-    const { probe, showDeleteModal, showTokenModal, probeToken } = this.state;
-    if (!probe) {
-      return <div>Loading...</div>;
-    }
-    let legend = 'Configuration';
-    if (!probe.id) {
-      legend = 'Add Probe';
-    }
-    let isEditor = !probe.public && hasRole(OrgRole.EDITOR);
+  const legend = probe.id ? 'Configuration' : 'Add Probe';
 
-    return (
-      <HorizontalGroup align="flex-start">
-        <Container>
-          <Legend>{legend}</Legend>
-          <Container margin="md">
-            <HorizontalGroup>
-              <Field label="Probe Name" description="Unique name of probe" disabled={!isEditor}>
-                <Input type="string" value={probe.name} onChange={this.onNameUpdate} />
-              </Field>
-              <Field
-                label="Public"
-                description="Public probes are run by Grafana Labs and can be used by all users"
-                disabled={!isEditor}
-              >
-                <Container padding="sm">
-                  <Switch value={probe.public} disabled={false} />
-                </Container>
-              </Field>
-            </HorizontalGroup>
-          </Container>
-          <Container margin="md">
-            <h3 className="page-heading">Location information</h3>
-            <HorizontalGroup>
-              <Field label="Latitude" description="Latitude coordinates of this probe" disabled={!isEditor}>
-                <Input
+  const isEditor = !probe.public && hasRole(OrgRole.EDITOR);
+
+  return (
+    <HorizontalGroup align="flex-start">
+      <Form onSubmit={onSave} validateOn="onChange" defaultValues={probe}>
+        {({ register, errors, control, formState, getValues }) => {
+          return (
+            <div>
+              <Legend>{legend}</Legend>
+              <Container margin="md">
+                <Field
+                  error="Name is required"
+                  invalid={Boolean(errors.name)}
+                  label="Probe Name"
+                  description="Unique name of probe"
+                  disabled={!isEditor}
+                  className={minInputWidth}
+                  required
+                >
+                  <Input
+                    type="text"
+                    maxLength={32}
+                    ref={register({
+                      required: true,
+                      maxLength: 32,
+                    })}
+                    id="probe-name-input"
+                    placeholder="Probe name"
+                    name="name"
+                  />
+                </Field>
+                <Field label="Public" description="Public probes are run by Grafana Labs and can be used by all users">
+                  <Container padding="sm">
+                    <Switch ref={register} name="public" disabled={!isEditor} />
+                  </Container>
+                </Field>
+              </Container>
+              <Container margin="md">
+                <Legend>Location information</Legend>
+                <Field
+                  error="Must be between -90 and 90"
+                  invalid={Boolean(errors.latitude)}
+                  required
                   label="Latitude"
-                  type="number"
-                  placeholder="0.0"
-                  value={probe?.latitude || 0.0}
-                  onChange={this.onLatUpdate}
-                />
-              </Field>
-              <Field label="Longitude" description="Longitude coordinates of this probe" disabled={!isEditor}>
-                <Input
+                  description="Latitude coordinates of this probe"
+                  disabled={!isEditor}
+                  className={minInputWidth}
+                >
+                  <Input
+                    ref={register({
+                      required: true,
+                      max: 90,
+                      min: -90,
+                    })}
+                    label="Latitude"
+                    max={90}
+                    min={-90}
+                    id="probe-editor-latitude"
+                    type="number"
+                    placeholder="0.0"
+                    name="latitude"
+                  />
+                </Field>
+                <Field
+                  error="Must be between -180 and 180"
+                  invalid={Boolean(errors.longitude)}
+                  required
                   label="Longitude"
-                  type="number"
-                  placeholder="0.0"
-                  value={probe?.longitude || 0.0}
-                  onChange={this.onLongUpdate}
-                />
-              </Field>
-            </HorizontalGroup>
-            <HorizontalGroup>
-              <Field label="Region" description="Latitude coordinates of this probe" disabled={!isEditor}>
-                <Input
+                  description="Longitude coordinates of this probe"
+                  disabled={!isEditor}
+                >
+                  <Input
+                    ref={register({
+                      required: true,
+                      max: 180,
+                      min: -180,
+                    })}
+                    label="Longitude"
+                    name="longitude"
+                    max={180}
+                    min={-180}
+                    id="probe-editor-longitude"
+                    type="number"
+                    placeholder="0.0"
+                  />
+                </Field>
+              </Container>
+              <Container margin="md">
+                <Field
+                  error="Region is required"
+                  invalid={Boolean(errors.region)}
+                  required
                   label="Region"
-                  type="string"
-                  placeholder="region"
-                  value={probe.region}
-                  onChange={this.onRegionUpdate}
-                />
-              </Field>
-            </HorizontalGroup>
-          </Container>
-          <Container margin="md">
-            <h3 className="page-heading">Labels</h3>
-            <SMLabelsForm
-              labels={probe.labels}
-              onUpdate={this.onLabelsUpdate}
-              isEditor={isEditor}
-              type="Label"
-              limit={3}
-            />
-          </Container>
-          <Container margin="md">
-            <HorizontalGroup>
-              <Button onClick={this.onSave} disabled={!isEditor || !this.isValid()}>
-                Save
-              </Button>
-              {probe.id && (
-                <Button variant="destructive" onClick={this.showDeleteProbeModal(true)} disabled={!isEditor}>
-                  Delete Probe
-                </Button>
-              )}
-              <ConfirmModal
-                isOpen={showDeleteModal}
-                title="Delete Probe"
-                body="Are you sure you want to delete this Probe?"
-                confirmText="Delete Probe"
-                onConfirm={this.onRemoveProbe}
-                onDismiss={this.showDeleteProbeModal(false)}
-              />
-              <a onClick={this.onBack}>Back</a>
-            </HorizontalGroup>
-          </Container>
-          <Modal
-            isOpen={showTokenModal}
-            title="Probe Authentication Token"
-            icon={'lock'}
-            onDismiss={probe.id ? this.showTokenModal(false) : this.onBack}
-          >
-            {probeToken}
-          </Modal>
-        </Container>
-        {probe.id && this.renderStatus()}
-      </HorizontalGroup>
-    );
-  }
-}
+                  description="Region of this probe"
+                  disabled={!isEditor}
+                  className={minInputWidth}
+                >
+                  <Input
+                    ref={register({ required: true })}
+                    name="region"
+                    label="Region"
+                    type="string"
+                    placeholder="Region"
+                  />
+                </Field>
+              </Container>
+              <Container margin="md">
+                <Field label="Labels" invalid={Boolean(errors.labels)} error="Name and value are required">
+                  <InputControl
+                    control={control}
+                    as={SMLabelsForm}
+                    name="labels"
+                    type="Labels"
+                    labels={getValues().labels || []}
+                    rules={{
+                      validate: (labels: SMLabel[]) => {
+                        const isValid = !labels?.some(label => !validateLabel(label));
+                        return isValid;
+                      },
+                    }}
+                    onUpdate={(labels: SMLabel[]) => {
+                      control.setValue('labels', labels, true);
+                    }}
+                    isEditor={isEditor}
+                    limit={3}
+                  />
+                </Field>
+              </Container>
+              <Container margin="md">
+                <HorizontalGroup>
+                  <Button
+                    type="submit"
+                    disabled={!isEditor || !formState.isValid || !formState.touched || formState.isSubmitting}
+                  >
+                    Save
+                  </Button>
+                  {probe.id && (
+                    <Button variant="destructive" onClick={() => setShowDeleteModal(true)} disabled={!isEditor}>
+                      Delete Probe
+                    </Button>
+                  )}
+                  <ConfirmModal
+                    isOpen={showDeleteModal}
+                    title="Delete Probe"
+                    body="Are you sure you want to delete this Probe?"
+                    confirmText="Delete Probe"
+                    onConfirm={onRemoveProbe}
+                    onDismiss={() => setShowDeleteModal(false)}
+                  />
+                  <Button variant="secondary" onClick={() => onReturn(false)}>
+                    Back
+                  </Button>
+                </HorizontalGroup>
+              </Container>
+              <Modal
+                isOpen={showTokenModal}
+                title="Probe Authentication Token"
+                icon={'lock'}
+                onDismiss={() => (probe.id ? setShowTokenModal(false) : onReturn(false))}
+              >
+                {probeToken}
+              </Modal>
+            </div>
+          );
+        }}
+      </Form>
+      {probe.id && <ProbeStatus probe={probe} instance={instance} onResetToken={onResetToken} />}
+    </HorizontalGroup>
+  );
+};
+
+export default ProbeEditor;

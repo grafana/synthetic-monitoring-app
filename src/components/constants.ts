@@ -1,4 +1,4 @@
-import { enumToStringArray } from 'utils';
+import { enumToStringArray } from '../utils';
 import { DnsResponseCodes, DnsRecordType, DnsProtocol } from 'types';
 
 export const DNS_RESPONSE_CODES = enumToStringArray(DnsResponseCodes).map(responseCode => ({
