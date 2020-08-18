@@ -1,4 +1,4 @@
-import { enumToStringArray } from 'utils';
+import { enumToStringArray } from '../utils';
 import { DnsResponseCodes, DnsRecordType, DnsProtocol } from 'types';
 
 export const DNS_RESPONSE_CODES = enumToStringArray(DnsResponseCodes).map(responseCode => ({
@@ -55,3 +55,5 @@ export const DNS_PROTOCOLS = [
     value: DnsProtocol.TCP,
   },
 ];
+
+export const DEFAULT_API_HOST = 'https://synthetic-monitoring-api.grafana.net';
