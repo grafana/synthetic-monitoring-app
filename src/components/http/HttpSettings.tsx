@@ -17,7 +17,8 @@ import {
 } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
 import { IpVersion, Settings, HttpSettings, HttpMethod, HttpVersion, BasicAuth, TLSConfig, HeaderMatch } from 'types';
-import { SMLabelsForm, IpOptions } from '../utils';
+import SMLabelsForm from 'components/SMLabelsForm';
+import { IP_OPTIONS } from '../constants';
 import { Label as SMLabel } from 'types';
 import { AuthSettings } from './AuthSettings';
 
@@ -517,7 +518,7 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
           <HorizontalGroup>
             <div>
               <Field label="IP Version" description="The IP protocol of the HTTP request" disabled={!isEditor}>
-                <Select value={state.ipVersion} options={IpOptions} onChange={this.onIpVersionChange} />
+                <Select value={state.ipVersion} options={IP_OPTIONS} onChange={this.onIpVersionChange} />
               </Field>
             </div>
             <div>

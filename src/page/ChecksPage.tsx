@@ -16,8 +16,9 @@ import {
   InfoBox,
 } from '@grafana/ui';
 import { SelectableValue, unEscapeStringFromRegex, escapeStringForRegex } from '@grafana/data';
-import { CheckEditor } from 'components/CheckEditor';
-import { UptimeGauge, CheckHealth } from 'components/UptimeGauge';
+import CheckEditor from 'components/CheckEditor';
+import { CheckHealth } from 'components/CheckHealth';
+import { UptimeGauge } from 'components/UptimeGauge';
 import { hasRole, dashboardUID } from 'utils';
 
 interface Props {
@@ -55,18 +56,22 @@ export class ChecksPage extends PureComponent<Props, State> {
   async componentDidMount() {
     const { instance, id } = this.props;
     const { checksPerPage } = this.state;
-    const checks = await instance.api.listChecks();
-    const sortedChecks = checks.sort((a, b) => b.job.localeCompare(a.job));
-    const totalPages = Math.ceil(sortedChecks.length / checksPerPage);
-    const num = id ? parseInt(id, 10) : -1;
-    const check = checks.find(c => c.id === num);
-    this.setState({
-      checks: sortedChecks,
-      check: check,
-      totalPages: totalPages,
-      filteredChecks: sortedChecks.slice(0, checksPerPage),
-      loading: false,
-    });
+    try {
+      const checks = await instance.api.listChecks();
+      const sortedChecks = checks.sort((a, b) => b.job.localeCompare(a.job));
+      const totalPages = Math.ceil(sortedChecks.length / checksPerPage);
+      const num = id ? parseInt(id, 10) : -1;
+      const check = checks.find(c => c.id === num);
+      this.setState({
+        checks: sortedChecks,
+        check: check,
+        totalPages: totalPages,
+        filteredChecks: sortedChecks.slice(0, checksPerPage),
+        loading: false,
+      });
+    } catch (e) {
+      console.log('in herrrre', e);
+    }
   }
 
   componentDidUpdate(oldProps: Props) {
