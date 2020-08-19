@@ -1,5 +1,5 @@
 import { enumToStringArray } from '../utils';
-import { DnsResponseCodes, DnsRecordType, DnsProtocol, IpVersion } from 'types';
+import { DnsResponseCodes, DnsRecordType, DnsProtocol, IpVersion, CheckType } from 'types';
 
 export const DNS_RESPONSE_CODES = enumToStringArray(DnsResponseCodes).map(responseCode => ({
   label: responseCode,
@@ -70,5 +70,28 @@ export const IP_OPTIONS = [
   {
     label: 'V6',
     value: IpVersion.V6,
+  },
+];
+
+export const CHECK_FILTER_OPTIONS = [
+  {
+    label: 'All',
+    value: 'all',
+  },
+  {
+    label: 'HTTP',
+    value: CheckType.HTTP,
+  },
+  {
+    label: 'PING',
+    value: CheckType.PING,
+  },
+  {
+    label: 'DNS',
+    value: CheckType.DNS,
+  },
+  {
+    label: 'TCP',
+    value: CheckType.TCP,
   },
 ];
