@@ -1,8 +1,7 @@
 import React, { PureComponent } from 'react';
-import { BigValueColorMode, BigValueGraphMode, BigValue, Container, IconName, Icon } from '@grafana/ui';
+import { BigValueColorMode, BigValueGraphMode, BigValue, Container } from '@grafana/ui';
 import { DataSourceInstanceSettings, GraphSeriesValue, DisplayValue } from '@grafana/data';
 import { config, getBackendSrv } from '@grafana/runtime';
-import { Check } from 'types';
 
 interface Props {
   ds: DataSourceInstanceSettings;
@@ -163,86 +162,5 @@ export class UptimeGauge extends PureComponent<Props, State> {
         />
       </Container>
     );
-  }
-}
-
-interface CheckHealthProps {
-  ds: DataSourceInstanceSettings;
-  check: Check;
-}
-
-interface CheckHealthState {
-  iconName: IconName;
-  className: string;
-}
-
-export class CheckHealth extends PureComponent<CheckHealthProps, CheckHealthState> {
-  state: CheckHealthState = {
-    iconName: 'heart',
-    className: 'paused',
-  };
-
-  async componentDidMount() {
-    const { check } = this.props;
-    if (!check.enabled) {
-      this.setState({ iconName: 'pause' });
-      return;
-    }
-    await this.queryUptime();
-  }
-
-  async componentDidUpdate(oldProps: CheckHealthProps) {
-    if (this.props.check.id === oldProps.check.id) {
-      return;
-    }
-    const { check } = this.props;
-    if (!check.enabled) {
-      this.setState({ iconName: 'pause' });
-      return;
-    }
-    await this.queryUptime();
-  }
-
-  async queryUptime() {
-    const { ds, check } = this.props;
-    const filter = `instance="${check.target}", job="${check.job}"`;
-
-    const backendSrv = getBackendSrv();
-    const lastUpdate = Math.floor(Date.now() / 1000);
-    const resp = await backendSrv.datasourceRequest({
-      method: 'GET',
-      url: `${ds.url}/api/v1/query`,
-      params: {
-        query: `sum(probe_success{${filter}}) / count(probe_success{${filter}})`,
-        time: lastUpdate,
-      },
-    });
-    if (!resp.ok) {
-      console.log(resp);
-      return;
-    }
-    let iconName: IconName = 'heart';
-    let className = 'ok';
-    const results = resp.data?.data?.result;
-    if (!results || results.length < 1) {
-      iconName = 'question-circle';
-      className = 'paused';
-      this.setState({ iconName, className });
-      return;
-    }
-    const uptime = parseFloat(results[0].value[1]) * 100;
-    if (uptime < 99) {
-      className = 'warning';
-    }
-    if (uptime < 50) {
-      className = 'critical';
-      iconName = 'heart-break';
-    }
-    this.setState({ iconName, className });
-  }
-
-  render() {
-    const { iconName, className } = this.state;
-    return <Icon name={iconName} size="xxl" className={`alert-rule-item__icon alert-state-${className}`} />;
   }
 }

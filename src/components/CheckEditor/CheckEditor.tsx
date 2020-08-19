@@ -8,7 +8,6 @@ import {
   Input,
   HorizontalGroup,
   Switch,
-  MultiSelect,
   Select,
   Legend,
   Collapse,
@@ -18,13 +17,11 @@ import { SelectableValue } from '@grafana/data';
 import { Check, Label as SMLabel, Settings, CheckType, Probe, OrgRole, APIError } from 'types';
 import { SMDataSource } from 'datasource/DataSource';
 import { hasRole, checkType, defaultSettings } from 'utils';
-import { PingSettingsForm } from './PingSettings';
-import { HttpSettingsForm } from './http/HttpSettings';
-import DnsSettingsForm from './DnsSettings';
-import { TcpSettingsForm } from './TcpSettings';
-import { SMLabelsForm } from './utils';
+import SMLabelsForm from 'components/SMLabelsForm';
 import * as Validation from 'validation';
-import CheckTarget from './CheckTarget';
+import CheckTarget from 'components/CheckTarget';
+import CheckSettings from './CheckSettings';
+import CheckProbes from './CheckProbes';
 
 interface Props {
   check: Check;
@@ -42,7 +39,7 @@ interface State {
   error?: APIError;
 }
 
-export class CheckEditor extends PureComponent<Props, State> {
+export default class CheckEditor extends PureComponent<Props, State> {
   state: State = {
     showDeleteModal: false,
     check: { ...this.props.check },
@@ -336,162 +333,6 @@ export class CheckEditor extends PureComponent<Props, State> {
             </Alert>
           </div>
         )}
-      </div>
-    );
-  }
-}
-
-interface CheckSettingsProps {
-  isEditor: boolean;
-  settings: Settings;
-  typeOfCheck: CheckType;
-  onUpdate: (settings: Settings) => void;
-}
-
-interface CheckSettingsState {
-  settings?: Settings;
-}
-
-export class CheckSettings extends PureComponent<CheckSettingsProps, CheckSettingsState> {
-  state: CheckSettingsState = {};
-
-  componentDidMount() {
-    const { settings } = this.props;
-    this.setState({ settings });
-  }
-
-  componentDidUpdate(oldProps: CheckSettingsProps) {
-    const { settings, typeOfCheck } = this.props;
-    if (typeOfCheck !== oldProps.typeOfCheck) {
-      this.setState({ settings });
-    }
-  }
-
-  onUpdate = () => {
-    this.props.onUpdate(this.state.settings!);
-  };
-
-  onJsonChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    let settings: Settings = {};
-    settings[this.props.typeOfCheck] = JSON.parse(event.target.value);
-    this.setState({ settings: settings }, this.onUpdate);
-  };
-
-  onSettingsChange = (settings: Settings) => {
-    this.setState({ settings: settings }, this.onUpdate);
-  };
-
-  render() {
-    const { settings } = this.state;
-    if (!settings) {
-      return <div>Loading....</div>;
-    }
-    const { isEditor } = this.props;
-
-    switch (this.props.typeOfCheck) {
-      case CheckType.PING: {
-        return <PingSettingsForm settings={settings} onUpdate={this.onSettingsChange} isEditor={isEditor} />;
-      }
-      case CheckType.HTTP: {
-        return <HttpSettingsForm settings={settings} onUpdate={this.onSettingsChange} isEditor={isEditor} />;
-      }
-      case CheckType.DNS: {
-        return <DnsSettingsForm settings={settings} onUpdate={this.onSettingsChange} isEditor={isEditor} />;
-      }
-      case CheckType.TCP: {
-        return <TcpSettingsForm settings={settings} onUpdate={this.onSettingsChange} isEditor={isEditor} />;
-      }
-    }
-  }
-}
-
-interface CheckProbesProps {
-  probes: number[];
-  availableProbes: Probe[];
-  isEditor: boolean;
-  onUpdate: (probes: number[]) => void;
-}
-
-interface CheckProbesState {
-  probes: number[];
-  probeStr: string;
-}
-
-export class CheckProbes extends PureComponent<CheckProbesProps, CheckProbesState> {
-  state = {
-    probes: this.props.probes || [],
-    probeStr: this.props.probes.join(','),
-  };
-
-  onChange = (item: Array<SelectableValue<number>>) => {
-    let probes: number[] = [];
-    for (const p of item.values()) {
-      if (p.value) {
-        probes.push(p.value);
-      }
-    }
-    const str = probes.join(',');
-    this.setState({ probes: probes, probeStr: str }, this.onUpdate);
-  };
-
-  onUpdate = () => {
-    this.props.onUpdate(this.state.probes);
-  };
-
-  onAllLocations = () => {
-    let probes: number[] = [];
-    for (const p of this.props.availableProbes) {
-      if (p.id) {
-        probes.push(p.id);
-      }
-    }
-    const str = probes.join(',');
-    this.setState({ probes: probes, probeStr: str }, this.onUpdate);
-  };
-  onClearLocations = () => {
-    let probes: number[] = [];
-    this.setState({ probes: probes, probeStr: '' }, this.onUpdate);
-  };
-
-  render() {
-    const { probes } = this.state;
-    const { availableProbes, isEditor } = this.props;
-    let options = [];
-    for (const p of availableProbes) {
-      options.push({
-        label: p.name,
-        value: p.id,
-        description: p.online ? 'Online' : 'Offline',
-      });
-    }
-    let selectedProbes = [];
-    for (const p of probes) {
-      let existing = options.find(item => item.value === p);
-      if (existing) {
-        selectedProbes.push(existing);
-      }
-    }
-
-    return (
-      <div>
-        <MultiSelect
-          options={options}
-          value={selectedProbes}
-          onChange={this.onChange}
-          disabled={!isEditor}
-          invalid={!Validation.validateProbes(probes)}
-          closeMenuOnSelect={false}
-        />
-        <Container margin="xs">
-          <HorizontalGroup spacing="md">
-            <Button onClick={this.onAllLocations} disabled={!isEditor} variant="secondary" size="sm">
-              All&nbsp;&nbsp;
-            </Button>
-            <Button onClick={this.onClearLocations} disabled={!isEditor} variant="secondary" size="sm" type="reset">
-              Clear
-            </Button>
-          </HorizontalGroup>
-        </Container>
       </div>
     );
   }

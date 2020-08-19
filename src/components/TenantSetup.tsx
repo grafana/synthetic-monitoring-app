@@ -6,7 +6,7 @@ import { isValid } from 'datasource/ConfigEditor';
 import { InstanceList } from './InstanceList';
 import { createHostedInstance, findHostedInstance, getHostedLokiAndPrometheusInfo } from 'utils';
 import { SMOptions } from 'datasource/types';
-import { TenantView } from './TenantView';
+import { TenantView } from 'components/TenantView';
 import { dashboardPaths, importDashboard } from 'dashboards/loader';
 import { DashboardList } from './DashboardList';
 import TenantAPISetupForm from './TenantAPISetupForm';

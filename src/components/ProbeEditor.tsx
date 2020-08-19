@@ -16,7 +16,7 @@ import {
 import { Label as SMLabel, Probe, OrgRole } from 'types';
 import { SMDataSource } from 'datasource/DataSource';
 import { hasRole } from 'utils';
-import { SMLabelsForm } from './utils';
+import SMLabelsForm from 'components/SMLabelsForm';
 import ProbeStatus from './ProbeStatus';
 import { validateLabel } from 'validation';
 
