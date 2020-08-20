@@ -42,10 +42,8 @@ const matchesSearchFilter = (check: Check, searchFilter: string) => {
 
   // allow users to search using <term>=<somevalue>.
   // <term> can be one of target, job or a label name
-  const lowerCaseFilter = searchFilter.toLowerCase();
-  console.log('lowercase filter', lowerCaseFilter);
+  const lowerCaseFilter = searchFilter.toLowerCase().trim();
   if (lowerCaseFilter.split('=').length > 1) {
-    console.log('been split');
     const parts = lowerCaseFilter.split('=', 2);
     const term = parts[0] ?? '';
     const value = parts[1] ?? '';
@@ -67,16 +65,13 @@ const matchesSearchFilter = (check: Check, searchFilter: string) => {
     return false;
   }
   if (check.job.toLowerCase().match(lowerCaseFilter) || check.target.toLowerCase().match(lowerCaseFilter)) {
-    console.log('job or target match');
     return true;
   }
   for (let label of check.labels) {
     if (label.name.toLowerCase().match(searchFilter) || label.value.toLowerCase().match(searchFilter)) {
-      console.log('label matche');
       return true;
     }
   }
-  console.log('no match');
   return false;
 };
 
@@ -86,7 +81,7 @@ interface Props {
   checks: Check[];
 }
 
-const CheckList: FC<Props> = ({ instance, onAddNewClick, checks }) => {
+export const CheckList: FC<Props> = ({ instance, onAddNewClick, checks }) => {
   const [searchFilter, setSearchFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
@@ -248,5 +243,3 @@ const CheckList: FC<Props> = ({ instance, onAddNewClick, checks }) => {
     </div>
   );
 };
-
-export default CheckList;

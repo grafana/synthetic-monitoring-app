@@ -19,6 +19,7 @@ import { SelectableValue, unEscapeStringFromRegex, escapeStringForRegex } from '
 import CheckEditor from 'components/CheckEditor';
 import { CheckHealth } from 'components/CheckHealth';
 import { UptimeGauge } from 'components/UptimeGauge';
+import { CheckList } from 'components/CheckList';
 import { hasRole, dashboardUID } from 'utils';
 
 interface Props {
@@ -382,7 +383,7 @@ export class ChecksPage extends PureComponent<Props, State> {
 
   render() {
     const { instance } = this.props;
-    const { check, addNew, loading } = this.state;
+    const { check, addNew, loading, checks } = this.state;
     if (loading) {
       return <div>Loading...</div>;
     }
@@ -407,6 +408,6 @@ export class ChecksPage extends PureComponent<Props, State> {
       } as Check;
       return <CheckEditor check={template} instance={instance.api} onReturn={this.onGoBack} />;
     }
-    return <div>{this.renderCheckList()}</div>;
+    return <CheckList instance={instance} onAddNewClick={this.onAddNew} checks={checks} />;
   }
 }
