@@ -183,3 +183,9 @@ export const parseUrl = (url: string) => {
 export function enumToStringArray<T>(enumObject: T) {
   return [...new Set(Object.keys(enumObject))];
 }
+
+// Matches a string against multiple options
+export const matchStrings = (string: string, comparisons: string[]): boolean => {
+  const lowerCased = string.toLowerCase();
+  return comparisons.some(comparison => comparison.toLowerCase().match(lowerCased));
+};

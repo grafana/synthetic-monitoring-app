@@ -20,7 +20,7 @@ import { unEscapeStringFromRegex, escapeStringForRegex } from '@grafana/data';
 import { getLocationSrv } from '@grafana/runtime';
 import { CheckHealth } from 'components/CheckHealth';
 import { UptimeGauge } from 'components/UptimeGauge';
-import { hasRole, dashboardUID, checkType as getCheckType } from 'utils';
+import { hasRole, dashboardUID, checkType as getCheckType, matchStrings } from 'utils';
 import { CHECK_FILTER_OPTIONS } from './constants';
 
 const CHECKS_PER_PAGE = 15;
@@ -36,8 +36,6 @@ const matchesFilterType = (check: Check, typeFilter: string) => {
   return false;
 };
 
-const stringMatch = (string: string, comparison: string) => string.toLowerCase().match(comparison);
-
 const matchesSearchFilter = ({ target, job, labels }: Check, searchFilter: string) => {
   if (!searchFilter) {
     return true;
@@ -49,12 +47,14 @@ const matchesSearchFilter = ({ target, job, labels }: Check, searchFilter: strin
     .toLowerCase()
     .trim()
     .split('=');
-  return filterParts.some(
-    filterPart =>
-      stringMatch(target, filterPart) ||
-      stringMatch(job, filterPart) ||
-      labels.some(({ value, name }) => stringMatch(value, filterPart) || stringMatch(name, filterPart))
-  );
+
+  const labelMatches = labels.reduce((acc, { name, value }) => {
+    acc.push(name);
+    acc.push(value);
+    return acc;
+  }, [] as string[]);
+
+  return filterParts.some(filterPart => matchStrings(filterPart, [target, job, ...labelMatches]));
 };
 
 interface Props {

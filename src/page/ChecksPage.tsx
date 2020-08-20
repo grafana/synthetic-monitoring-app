@@ -34,7 +34,7 @@ export class ChecksPage extends PureComponent<Props, State> {
     const check = checks.find(c => c.id === num);
     this.setState({
       checks,
-      check: check,
+      check,
       loading: false,
     });
   }
