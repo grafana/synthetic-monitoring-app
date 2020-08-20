@@ -3,6 +3,7 @@
   "version": "0.0.7",
   "description": "Grafana Synthetic Monitoring App",
   "scripts": {
+    "lint": "eslint --cache --ignore-path .gitignore --ext .js,.jsx,.ts,.tsx .",
     "build": "grafana-toolkit plugin:build",
     "test": "grafana-toolkit plugin:test",
     "dev": "grafana-toolkit plugin:dev",
@@ -11,7 +12,7 @@
   "husky": {
     "hooks": {
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
-      "pre-push": "yarn test"
+      "pre-push": "yarn lint && yarn test"
     }
   },
   "author": "Grafana Labs",
@@ -29,6 +30,8 @@
     "@testing-library/user-event": "^12.0.17",
     "@types/ip-address": "latest",
     "@types/lodash": "latest",
+    "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-react-hooks": "^4.1.0",
     "husky": "^4.2.5",
     "jest-environment-jsdom-fifteen": "^1.0.2"
   },

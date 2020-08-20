@@ -58,7 +58,7 @@ const ListInput: FC<Props> = ({
   const [state, dispatch] = useReducer(listInputReducer, items);
   useEffect(() => {
     onUpdate(state);
-  }, [state]);
+  }, [state, onUpdate]);
 
   return (
     <div data-testid={dataTestId} className={className}>
