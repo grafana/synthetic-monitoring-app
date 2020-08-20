@@ -68,6 +68,7 @@ const QueryParams: FC<Props> = ({ target, onChange, className }) => {
       onChange(target.toString());
       setShouldUpdate(false);
     }
+    // eslint-disable-next-line
   }, [shouldUpdate]);
 
   useEffect(() => {
@@ -75,6 +76,7 @@ const QueryParams: FC<Props> = ({ target, onChange, className }) => {
     if (target.search !== `?${queryParamString}`) {
       dispatch({ type: 'sync', target });
     }
+    // eslint-disable-next-line
   }, [target]);
 
   const handleDelete = (index: number) => () => {

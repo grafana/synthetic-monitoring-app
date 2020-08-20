@@ -35,8 +35,8 @@ const getStyles = stylesFactory((theme: GrafanaTheme) => ({
     width: auto;
   `,
   container: css`
-    padding-left: ${theme.spacing.sm}
-    margin-bottom: ${theme.spacing.md}
+    padding-left: ${theme.spacing.sm};
+    margin-bottom: ${theme.spacing.md};
   `,
   badgeContainer: css`
     margin-bottom: ${theme.spacing.sm};
@@ -62,13 +62,14 @@ const getBadgeStatus = (online: boolean): BadgeStatus => {
 
 const ProbeStatus: FC<Props> = ({ probe, instance, onResetToken }) => {
   const [showResetModal, setShowResetModal] = useState(false);
+  const theme = useTheme();
+
   if (!probe) {
     return null;
   }
   const isEditor = !probe.public && hasRole(OrgRole.EDITOR);
   const badgeStatus = getBadgeStatus(probe.online);
 
-  const theme = useTheme();
   const styles = getStyles(theme);
 
   const handleResetToken = () => {

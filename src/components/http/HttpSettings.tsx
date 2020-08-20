@@ -16,10 +16,19 @@ import {
   VerticalGroup,
 } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
-import { IpVersion, Settings, HttpSettings, HttpMethod, HttpVersion, BasicAuth, TLSConfig, HeaderMatch } from 'types';
+import {
+  Label as SMLabel,
+  IpVersion,
+  Settings,
+  HttpSettings,
+  HttpMethod,
+  HttpVersion,
+  BasicAuth,
+  TLSConfig,
+  HeaderMatch,
+} from 'types';
 import SMLabelsForm from 'components/SMLabelsForm';
 import { IP_OPTIONS } from '../constants';
-import { Label as SMLabel } from 'types';
 import { AuthSettings } from './AuthSettings';
 
 interface Props {
