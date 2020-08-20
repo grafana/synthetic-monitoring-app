@@ -2,7 +2,7 @@
 import React, { FC, useState } from 'react';
 
 // Types
-import { OrgRole, Check, Label, GrafanaInstances } from 'types';
+import { OrgRole, Check, Label, GrafanaInstances, CheckType } from 'types';
 import {
   Button,
   IconButton,
@@ -19,7 +19,7 @@ import { unEscapeStringFromRegex, escapeStringForRegex } from '@grafana/data';
 import { getLocationSrv } from '@grafana/runtime';
 import { CheckHealth } from 'components/CheckHealth';
 import { UptimeGauge } from 'components/UptimeGauge';
-import { hasRole, dashboardUID } from 'utils';
+import { hasRole, dashboardUID, checkType as getCheckType } from 'utils';
 import { CHECK_FILTER_OPTIONS } from './constants';
 
 const CHECKS_PER_PAGE = 15;
@@ -28,7 +28,7 @@ const matchesFilterType = (check: Check, typeFilter: string) => {
   if (typeFilter === 'all') {
     return true;
   }
-  const checkType = Object.keys(check.settings)[0];
+  const checkType = getCheckType(check.settings);
   if (checkType === typeFilter) {
     return true;
   }
@@ -88,8 +88,7 @@ export const CheckList: FC<Props> = ({ instance, onAddNewClick, checks }) => {
 
   const datasource = instance.api.getMetricsDS();
 
-  const showDashboard = (check: Check) => () => {
-    const checkType = Object.keys(check.settings)[0];
+  const showDashboard = (check: Check, checkType: CheckType) => {
     const target = dashboardUID(checkType, instance.api);
 
     if (!target) {
@@ -172,11 +171,10 @@ export const CheckList: FC<Props> = ({ instance, onAddNewClick, checks }) => {
       <section className="card-section card-list-layout-list">
         <ol className="card-list">
           {filteredChecks.map((check, index) => {
-            const checkId: number = check.id || 0;
             if (!check.id) {
-              return;
+              return null;
             }
-            const checkType = Object.keys(check.settings)[0];
+            const checkType = getCheckType(check.settings);
             return (
               <li className="card-item-wrapper" key={index}>
                 <a
@@ -185,7 +183,7 @@ export const CheckList: FC<Props> = ({ instance, onAddNewClick, checks }) => {
                     getLocationSrv().update({
                       partial: true,
                       query: {
-                        id: checkId,
+                        id: check.id,
                       },
                     })
                   }
@@ -212,10 +210,14 @@ export const CheckList: FC<Props> = ({ instance, onAddNewClick, checks }) => {
                         ))}
                       </div>
                       <Container margin="lg">
-                        <IconButton name="apps" size="xl" onClick={() => showDashboard(check)} />
-                        {/* <a onClick={this.showDashboard(check)}>
-                          <Icon name="apps" size="xl" />
-                        </a> */}
+                        <IconButton
+                          name="apps"
+                          size="xl"
+                          onClick={e => {
+                            showDashboard(check, checkType);
+                            e.stopPropagation();
+                          }}
+                        />
                       </Container>
                       <UptimeGauge
                         labelNames={['instance', 'job']}

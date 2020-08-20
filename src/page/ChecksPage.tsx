@@ -2,25 +2,11 @@
 import React, { PureComponent } from 'react';
 
 // Types
-import { Check, GrafanaInstances, Label, IpVersion, OrgRole, CheckType } from 'types';
+import { Check, GrafanaInstances, Label, IpVersion } from 'types';
 import { getLocationSrv } from '@grafana/runtime';
-import {
-  Button,
-  HorizontalGroup,
-  Icon,
-  VerticalGroup,
-  Container,
-  Select,
-  Input,
-  Pagination,
-  InfoBox,
-} from '@grafana/ui';
-import { SelectableValue, unEscapeStringFromRegex, escapeStringForRegex } from '@grafana/data';
 import CheckEditor from 'components/CheckEditor';
-import { CheckHealth } from 'components/CheckHealth';
-import { UptimeGauge } from 'components/UptimeGauge';
 import { CheckList } from 'components/CheckList';
-import { hasRole, dashboardUID } from 'utils';
+import { dashboardUID } from 'utils';
 
 interface Props {
   instance: GrafanaInstances;
