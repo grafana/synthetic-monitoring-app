@@ -35,7 +35,7 @@ executors:
   default_exec: # declares a reusable executor
     docker:
       - image: srclosson/grafana-plugin-ci-alpine:latest
-    resource_class: medium+
+    resource_class: large
   e2e_exec:
     docker:
       - image: srclosson/grafana-plugin-ci-e2e:latest
