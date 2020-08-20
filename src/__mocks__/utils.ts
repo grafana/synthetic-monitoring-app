@@ -1,5 +1,11 @@
 import { OrgRole } from 'types';
+import * as utils from 'utils';
 
-export function hasRole(requiredRole: OrgRole): boolean {
+function hasRole(requiredRole: OrgRole): boolean {
   return true;
 }
+
+module.exports = {
+  ...utils,
+  hasRole,
+};

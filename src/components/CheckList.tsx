@@ -15,6 +15,7 @@ import {
   Pagination,
   InfoBox,
 } from '@grafana/ui';
+import { css } from 'emotion';
 import { unEscapeStringFromRegex, escapeStringForRegex } from '@grafana/data';
 import { getLocationSrv } from '@grafana/runtime';
 import { CheckHealth } from 'components/CheckHealth';
@@ -35,44 +36,25 @@ const matchesFilterType = (check: Check, typeFilter: string) => {
   return false;
 };
 
-const matchesSearchFilter = (check: Check, searchFilter: string) => {
+const stringMatch = (string: string, comparison: string) => string.toLowerCase().match(comparison);
+
+const matchesSearchFilter = ({ target, job, labels }: Check, searchFilter: string) => {
   if (!searchFilter) {
     return true;
   }
 
   // allow users to search using <term>=<somevalue>.
   // <term> can be one of target, job or a label name
-  const lowerCaseFilter = searchFilter.toLowerCase().trim();
-  if (lowerCaseFilter.split('=').length > 1) {
-    const parts = lowerCaseFilter.split('=', 2);
-    const term = parts[0] ?? '';
-    const value = parts[1] ?? '';
-    switch (term) {
-      case 'target': {
-        return check.target.toLowerCase().match(value);
-      }
-      case 'job': {
-        return check.job.toLowerCase().match(value);
-      }
-      default: {
-        for (let label of check.labels) {
-          if (label.name === term && label.value.toLowerCase().match(value)) {
-            return true;
-          }
-        }
-      }
-    }
-    return false;
-  }
-  if (check.job.toLowerCase().match(lowerCaseFilter) || check.target.toLowerCase().match(lowerCaseFilter)) {
-    return true;
-  }
-  for (let label of check.labels) {
-    if (label.name.toLowerCase().match(searchFilter) || label.value.toLowerCase().match(searchFilter)) {
-      return true;
-    }
-  }
-  return false;
+  const filterParts = searchFilter
+    .toLowerCase()
+    .trim()
+    .split('=');
+  return filterParts.some(
+    filterPart =>
+      stringMatch(target, filterPart) ||
+      stringMatch(job, filterPart) ||
+      labels.some(({ value, name }) => stringMatch(value, filterPart) || stringMatch(name, filterPart))
+  );
 };
 
 interface Props {
@@ -85,7 +67,6 @@ export const CheckList: FC<Props> = ({ instance, onAddNewClick, checks }) => {
   const [searchFilter, setSearchFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
-
   const datasource = instance.api.getMetricsDS();
 
   const showDashboard = (check: Check, checkType: CheckType) => {
@@ -155,6 +136,7 @@ export const CheckList: FC<Props> = ({ instance, onAddNewClick, checks }) => {
 
           <div className="width-13">
             <Select
+              aria-label="Types"
               options={CHECK_FILTER_OPTIONS}
               onChange={selected => setTypeFilter(selected?.value ?? typeFilter)}
               value={typeFilter}
@@ -176,7 +158,7 @@ export const CheckList: FC<Props> = ({ instance, onAddNewClick, checks }) => {
             }
             const checkType = getCheckType(check.settings);
             return (
-              <li className="card-item-wrapper" key={index}>
+              <li className="card-item-wrapper" key={index} aria-label="check-card">
                 <a
                   className="card-item"
                   onClick={() =>
@@ -201,12 +183,22 @@ export const CheckList: FC<Props> = ({ instance, onAddNewClick, checks }) => {
                     <HorizontalGroup justify="flex-end">
                       <div className="card-item-header">
                         <div className="card-item-type">{checkType}</div>
-                        {check.labels.map((label: Label) => (
-                          <div>
-                            <a onClick={() => setSearchFilter(`${label.name}=${label.value}`)}>
-                              {label.name}={label.value}
-                            </a>
-                          </div>
+                        {check.labels.map((label: Label, index) => (
+                          <Button
+                            variant="secondary"
+                            key={index}
+                            className={css`
+                              border: none;
+                              background: inherit;
+                            `}
+                            onClick={e => {
+                              e.stopPropagation();
+                              setSearchFilter(`${label.name}=${label.value}`);
+                              setCurrentPage(1);
+                            }}
+                          >
+                            {label.name}={label.value}
+                          </Button>
                         ))}
                       </div>
                       <Container margin="lg">
