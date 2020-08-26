@@ -2,6 +2,7 @@ import { Check, CheckType, Settings, HttpSettings, PingSettings, DnsSettings, Tc
 import { checkType } from 'utils';
 import * as punycode from 'punycode';
 import { Address4, Address6 } from 'ip-address';
+import validUrl from 'valid-url';
 
 export const CheckValidation = {
   job: validateJob,
@@ -138,12 +139,7 @@ export function validateSettingsTCP(settings: TcpSettings): boolean {
 }
 
 function validateHttpTarget(target: string): boolean {
-  try {
-    const url = new URL(target);
-    return url.protocol === 'https:' || url.protocol === 'http:';
-  } catch (_) {
-    return false;
-  }
+  return Boolean(validUrl.isWebUri(target));
 }
 
 function validateHostname(target: string): boolean {

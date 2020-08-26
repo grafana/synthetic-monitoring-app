@@ -2150,6 +2150,11 @@
   dependencies:
     source-map "^0.6.1"
 
+"@types/valid-url@^1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@types/valid-url/-/valid-url-1.0.3.tgz#a124389fb953559c7f889795a98620e91adb3687"
+  integrity sha512-+33x29mg+ecU88ODdWpqaie2upIuRkhujVLA7TuJjM823cNMbeggfI6NhxewaRaRF8dy+g33e4uIg/m5Mb3xDQ==
+
 "@types/webpack-dev-server@*":
   version "3.11.0"
   resolved "https://registry.yarnpkg.com/@types/webpack-dev-server/-/webpack-dev-server-3.11.0.tgz#bcc3b85e7dc6ac2db25330610513f2228c2fcfb2"
@@ -12661,6 +12666,11 @@ v8-compile-cache@^2.0.3:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/v8-compile-cache/-/v8-compile-cache-2.1.1.tgz#54bc3cdd43317bca91e35dcaf305b1a7237de745"
   integrity sha512-8OQ9CL+VWyt3JStj7HX7/ciTL2V3Rl1Wf5OL+SNTm0yK1KvtReVulksyeRnCANHHuUxHlQig+JJDlUhBt1NQDQ==
+
+valid-url@^1.0.9:
+  version "1.0.9"
+  resolved "https://registry.yarnpkg.com/valid-url/-/valid-url-1.0.9.tgz#1c14479b40f1397a75782f115e4086447433a200"
+  integrity sha1-HBRHm0DxOXp1eC8RXkCGRHQzogA=
 
 validate-npm-package-license@^3.0.1:
   version "3.0.4"
