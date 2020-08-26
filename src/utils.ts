@@ -189,3 +189,32 @@ export const matchStrings = (string: string, comparisons: string[]): boolean => 
   const lowerCased = string.toLowerCase();
   return comparisons.some(comparison => comparison.toLowerCase().match(lowerCased));
 };
+
+interface MetricQueryResponse {
+  error?: string;
+  data: any[];
+}
+
+export const queryMetric = async (url: string, query: string): Promise<MetricQueryResponse> => {
+  const backendSrv = getBackendSrv();
+  const lastUpdate = Math.floor(Date.now() / 1000);
+
+  try {
+    const response = await backendSrv.datasourceRequest({
+      method: 'GET',
+      url: `${url}/api/v1/query`,
+      params: {
+        query,
+        time: lastUpdate,
+      },
+    });
+    if (!response.ok) {
+      return { error: 'Error fetching data', data: [] };
+    }
+    return {
+      data: response.data?.data?.result ?? [],
+    };
+  } catch (e) {
+    return { error: (e.message || e.data?.message) ?? 'Error fetching data', data: [] };
+  }
+};
