@@ -173,7 +173,7 @@ export const CheckList: FC<Props> = ({ instance, onAddNewClick, checks }) => {
                   <HorizontalGroup justify="space-between">
                     <div className="card-item-body">
                       <figure className="card-item-figure">
-                        <CheckHealth check={check} ds={datasource} />
+                        <CheckHealth check={check} />
                       </figure>
                       <VerticalGroup>
                         <div className="card-item-name">{check.target}</div>

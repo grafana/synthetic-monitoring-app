@@ -1,15 +1,36 @@
-import React, { useState, useEffect, FC } from 'react';
+import React, { FC } from 'react';
 import { IconName, Icon } from '@grafana/ui';
-import { DataSourceInstanceSettings } from '@grafana/data';
 import { Check } from 'types';
-import { queryMetric } from 'utils';
+import { useMetricData } from 'hooks/useMetricData';
 
-interface CheckHealthProps {
-  ds: DataSourceInstanceSettings;
+interface Props {
   check: Check;
 }
 
-const getIconClassName = (uptime: number) => {
+const getIconName = (error: string | undefined, noData: boolean, uptime: number, enabled: boolean): IconName => {
+  if (error) {
+    return 'exclamation-triangle';
+  }
+  if (noData) {
+    return 'question-circle';
+  }
+  if (!enabled) {
+    return 'pause';
+  }
+
+  return uptime < 50 ? 'heart-break' : 'heart';
+};
+
+const getIconClassName = (error: string | undefined, noData: boolean, uptime: number, enabled: boolean): string => {
+  if (error) {
+    return 'critical';
+  }
+  if (noData) {
+    return 'paused';
+  }
+  if (!enabled) {
+    return 'paused';
+  }
   if (uptime < 50) {
     return 'critical';
   }
@@ -19,46 +40,18 @@ const getIconClassName = (uptime: number) => {
   return 'ok';
 };
 
-interface Icon {
-  iconName: IconName;
-  className: string;
-}
+export const CheckHealth: FC<Props> = ({ check }) => {
+  const filter = `instance="${check.target}", job="${check.job}"`;
+  const query = `sum(probe_success{${filter}}) / count(probe_success{${filter}})`;
+  const { data, error } = useMetricData(query);
 
-export const CheckHealth: FC<CheckHealthProps> = ({ check, ds }) => {
-  const [{ iconName, className }, setIcon] = useState<Icon>({ iconName: 'heart', className: 'paused' });
-
-  useEffect(() => {
-    const getData = async (url: string) => {
-      const { error, data } = await queryMetric(url, query);
-
-      if (error) {
-        setIcon({ iconName: 'exclamation-triangle', className: 'critical' });
-        return;
-      }
-
-      if (!data || data.length < 1) {
-        setIcon({ iconName: 'question-circle', className: 'paused' });
-        return;
-      }
-
-      const uptime = parseFloat(data[0].value[1]) * 100;
-      const iconName = uptime < 50 ? 'heart-break' : 'heart';
-
-      setIcon({ iconName, className: getIconClassName(uptime) });
-    };
-
-    if (!check.enabled) {
-      setIcon({ iconName: 'pause', className: 'paused' });
-    }
-    const filter = `instance="${check.target}", job="${check.job}"`;
-    const query = `sum(probe_success{${filter}}) / count(probe_success{${filter}})`;
-
-    if (!ds.url) {
-      return;
-    }
-
-    getData(ds.url);
-  }, [check, ds.url]);
-
-  return <Icon name={iconName} size="xxl" className={`alert-rule-item__icon alert-state-${className}`} />;
+  const noData = !data || data.length < 1;
+  const uptime = parseFloat(data?.[0]?.value?.[1] ?? 0) * 100;
+  return (
+    <Icon
+      name={getIconName(error, noData, uptime, check.enabled)}
+      size="xxl"
+      className={`alert-rule-item__icon alert-state-${getIconClassName(error, noData, uptime, check.enabled)}`}
+    />
+  );
 };
