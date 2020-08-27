@@ -16,14 +16,14 @@ see more on [Docs](https://grafana.com/docs/grafana-cloud/synthetic-monitoring/)
 
 Skip to next step if it's already done
 
-Create checks data from Synthetic Monitoring should show up in selected prom instance, 
+Created checks will push metrics to the selected Prometheus instance
 explore the included dashboard to see the data.
 
 ![Example HTTP Check](./sm_http_check.png)
 
 #### Get cortextool
 See [Alerts - Grafana Cloud Docs](https://grafana.com/docs/grafana-cloud/metrics/prometheus/alerts_rules/) 
-to see how to install [cortextool](https://github.com/grafana/cortex-tools/releases)
+for instructions on how to install [cortextool](https://github.com/grafana/cortex-tools/releases)
 
 Once it's installed, try `cortextool --help` to verify
 
@@ -52,7 +52,7 @@ export PROM_USER=<PROM_USER ID>
 ```
 
 #### Configure Alertmanager
-You need to Configure Alertmanager, if not already configured. by default, it's not configured.
+You need to configure Alertmanager, if not already configured. By default, it's not configured.
 
 **Load config**
 
@@ -71,7 +71,7 @@ You need to Configure Alertmanager, if not already configured. by default, it's 
 
 #### Create and Upload Alert rules
 
-Here we will alert when our website job takes more than 0.50 seconds on Bangalore probe. here is what that looks like as prom query, play around and use Grafana Explore mode to test your queries and figure out thresholds.
+Here we will alert when our website job takes more than 0.50 seconds on a probe in Bangalore. Here is what that looks like as a Prometheus query, play around and use Grafana Explore mode to test your queries and figure out thresholds.
 ```
 probe_duration_seconds{job="website", probe="Bangalore"} > 0.50
 ```
@@ -98,7 +98,7 @@ You can visit `<alertmanager-address>/alertmanager/#/alerts` to see your active 
 
 
 #### Update Alert Rules
-Alert Rules can be updated by changing rules yml file and loading rules again
+Alert Rules can be updated by changing the `prom_rules.yml` file and loading rules again
 
 **Update alerts**
 
@@ -116,6 +116,6 @@ Example Alert email:
 ![ALert Email](./alert_email.png)
 
 **Tips:**
-- Use grafana explore mode to see data about how many alerts are firing.
+- Use Grafana explore mode to see data about how many alerts are firing.
     - `ALERTS{alertstate="firing"}` will print all firing alerts
 - Use this [Grafana Dashboard](https://grafana.com/grafana/dashboards/11098) to see, and debug your Prometheus Alerts in Grafana
