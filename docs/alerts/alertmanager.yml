@@ -1,11 +1,10 @@
 global:
   # The smarthost and SMTP sender used for mail notifications.
-  # we are using gmail SMTP in this example
-  smtp_smarthost: 'smtp.gmail.com:587'
-  smtp_from: 'suraj.sidh+alertmanager@grafana.com'
-  smtp_auth_username: 'suraj.sidh@grafana.com'
-  smtp_auth_identity: 'suraj.sidh@grafana.com'
-  smtp_auth_password: '<gmail-password>'
+  smtp_smarthost: '<smtp-host>:<port>'
+  smtp_from: 'example@example.com'
+  smtp_auth_username: 'example@example.com'
+  smtp_auth_identity: 'example@example.com'
+  smtp_auth_password: '<password>'
 
 # The directory from which notification templates are read.
 templates:
@@ -40,7 +39,7 @@ route:
   repeat_interval: 2h
 
   # A default receiver
-  receiver: suraj-email
+  receiver: my-email
 
   # All the above attributes are inherited by all child routes and can
   # overwritten on each.
@@ -51,7 +50,7 @@ route:
     # catch alerts that are related to a list of services.
     - match_re:
         job: ^(website)$
-      receiver: suraj-sm-email
+      receiver: my-sm-email
 
 # Inhibition rules allow to mute a set of alerts given that another alert is
 # firing.
@@ -71,11 +70,11 @@ inhibit_rules:
 
 
 receivers:
-  - name: 'suraj-email'
+  - name: 'my-email'
     email_configs:
-      - to: 'suraj.sidh+alerts@grafana.com'
+      - to: 'alerts@example.com'
         send_resolved: true
-  - name: 'suraj-sm-email'
+  - name: 'my-sm-email'
     email_configs:
-      - to: 'suraj.sidh+sm-alerts@grafana.com'
+      - to: 'sm-alerts@example.com'
         send_resolved: true

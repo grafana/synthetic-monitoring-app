@@ -1,4 +1,4 @@
-# Alerting on Synthetic Monitoring
+# Alerting on [Synthetic Monitoring](https://grafana.com/grafana/plugins/grafana-synthetic-monitoring-app)
 
 This documents explains how to create Alertmanager alerts on Synthetic Monitoring Data.
 Data from Synthetic Monitoring is in selected Metrics instance, and you can use Grafana based alerts or use Alertmanager.
