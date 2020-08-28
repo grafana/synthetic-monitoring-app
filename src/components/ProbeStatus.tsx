@@ -100,14 +100,7 @@ const ProbeStatus: FC<Props> = ({ probe, instance, onResetToken }) => {
           </Container>
         )}
       </div>
-      <UptimeGauge
-        labelNames={['probe']}
-        labelValues={[probe.name]}
-        ds={instance.getMetricsDS()}
-        height={200}
-        width={300}
-        sparkline={true}
-      />
+      <UptimeGauge labelNames={['probe']} labelValues={[probe.name]} height={200} width={300} sparkline={true} />
     </Container>
   );
 };

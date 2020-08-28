@@ -214,7 +214,6 @@ export const CheckList: FC<Props> = ({ instance, onAddNewClick, checks }) => {
                       <UptimeGauge
                         labelNames={['instance', 'job']}
                         labelValues={[check.target, check.job]}
-                        ds={datasource}
                         height={70}
                         width={150}
                         sparkline={false}

@@ -157,7 +157,6 @@ export class ProbesPage extends PureComponent<Props, State> {
                 <UptimeGauge
                   labelNames={['probe']}
                   labelValues={[probe.name]}
-                  ds={instance.api.getMetricsDS()}
                   height={60}
                   width={150}
                   sparkline={false}
