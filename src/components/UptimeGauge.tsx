@@ -63,6 +63,9 @@ export const UptimeGauge: FC<Props> = ({ labelNames, labelValues, height, width,
     }, [])
     .join(',');
 
+  const uptimeQuery = `sum(rate(probe_success_sum{${filter}}[3h])) / sum(rate(probe_success_count{${filter}}[3h]))`;
+  const sparklineQuery = `100 * sum(rate(probe_success_sum{${filter}}[10m])) / sum(rate(probe_success_count{${filter}}[10m]))`;
+
   const lastUpdate = Math.floor(Date.now() / 1000);
 
   // options are declared in state to maintain referential equality for the options object. Otherwise data fetching can get stuck in a loop
@@ -72,8 +75,6 @@ export const UptimeGauge: FC<Props> = ({ labelNames, labelValues, height, width,
     step: 600,
   });
 
-  const uptimeQuery = `sum(rate(probe_success_sum{${filter}}[3h])) / sum(rate(probe_success_count{${filter}}[3h]))`;
-  const sparklineQuery = `100 * sum(rate(probe_success_sum{${filter}}[10m])) / sum(rate(probe_success_count{${filter}}[10m]))`;
   const { data: uptimeData, loading: uptimeLoading } = useMetricData(uptimeQuery);
   const { data: sparklineData, loading: sparklineLoading } = useMetricData(sparklineQuery, sparklineOptions);
   const value = getDisplayValue(uptimeData, uptimeLoading);
