@@ -1,8 +1,8 @@
 import { useContext, useState, useEffect } from 'react';
 import { InstanceContext } from 'components/InstanceContext';
-import { queryMetric } from 'utils';
+import { queryMetric, MetricQueryOptions } from 'utils';
 
-export function useMetricData(query: string) {
+export function useMetricData(query: string, options?: MetricQueryOptions | undefined) {
   const { instance } = useContext(InstanceContext);
   const [isFetchingData, setIsFetchingData] = useState(true);
   const [data, setData] = useState<any[]>([]);
@@ -15,13 +15,13 @@ export function useMetricData(query: string) {
       if (!url) {
         return;
       }
-      const { error: queryError, data: queryData } = await queryMetric(url, query);
+      const { error: queryError, data: queryData } = await queryMetric(url, query, options);
       setData(queryData);
       setError(queryError);
       setIsFetchingData(false);
     };
     getData();
-  }, [query, instance?.api]);
+  }, [query, instance?.api, options]);
 
   return { loading: isFetchingData, data, error };
 }
