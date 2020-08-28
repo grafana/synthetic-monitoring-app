@@ -119,7 +119,6 @@ export class ProbesPage extends PureComponent<Props, State> {
 
   renderProbeList() {
     const { probes } = this.state;
-    const { instance } = this.props;
     if (!probes) {
       return null;
     }

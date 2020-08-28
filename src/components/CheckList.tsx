@@ -67,7 +67,6 @@ export const CheckList: FC<Props> = ({ instance, onAddNewClick, checks }) => {
   const [searchFilter, setSearchFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
-  const datasource = instance.api.getMetricsDS();
 
   const showDashboard = (check: Check, checkType: CheckType) => {
     const target = dashboardUID(checkType, instance.api);
