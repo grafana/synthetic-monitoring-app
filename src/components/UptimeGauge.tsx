@@ -70,6 +70,7 @@ export const UptimeGauge: FC<Props> = ({ labelNames, labelValues, height, width,
 
   // options are declared in state to maintain referential equality for the options object. Otherwise data fetching can get stuck in a loop
   const [sparklineOptions] = useState({
+    skip: !sparkline,
     start: lastUpdate - 60 * 60 * 3,
     end: lastUpdate,
     step: 600,
