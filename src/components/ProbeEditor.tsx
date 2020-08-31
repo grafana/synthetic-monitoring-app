@@ -1,4 +1,4 @@
-import React, { FC, useState } from 'react';
+import React, { FC, useState, useContext } from 'react';
 import { css } from 'emotion';
 import {
   Modal,
@@ -14,15 +14,14 @@ import {
   InputControl,
 } from '@grafana/ui';
 import { Label as SMLabel, Probe, OrgRole } from 'types';
-import { SMDataSource } from 'datasource/DataSource';
 import { hasRole } from 'utils';
 import SMLabelsForm from 'components/SMLabelsForm';
 import ProbeStatus from './ProbeStatus';
 import { validateLabel } from 'validation';
+import { InstanceContext } from 'components/InstanceContext';
 
 interface Props {
   probe: Probe;
-  instance: SMDataSource;
   onReturn: (reload: boolean) => void;
 }
 
@@ -30,10 +29,11 @@ const minInputWidth = css`
   min-width: 200px;
 `;
 
-const ProbeEditor: FC<Props> = ({ probe, instance, onReturn }) => {
+const ProbeEditor: FC<Props> = ({ probe, onReturn }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [probeToken, setProbeToken] = useState('');
+  const { instance } = useContext(InstanceContext);
 
   const onSave = async (formValues: Probe) => {
     // Form values always come back as a string, even for number inputs
@@ -41,13 +41,13 @@ const ProbeEditor: FC<Props> = ({ probe, instance, onReturn }) => {
     formValues.longitude = Number(formValues.longitude);
 
     if (probe.id) {
-      await instance.updateProbe({
+      await instance?.api.updateProbe({
         ...probe,
         ...formValues,
       });
       onReturn(true);
     } else {
-      const info = await instance.addProbe({
+      const info = await instance?.api.addProbe({
         ...probe,
         ...formValues,
       });
@@ -60,12 +60,12 @@ const ProbeEditor: FC<Props> = ({ probe, instance, onReturn }) => {
     if (!probe.id) {
       return;
     }
-    await instance.deleteProbe(probe.id);
+    await instance?.api.deleteProbe(probe.id);
     onReturn(true);
   };
 
   const onResetToken = async () => {
-    const info = await instance.resetProbeToken(probe);
+    const info = await instance?.api.resetProbeToken(probe);
     setShowTokenModal(true);
     setProbeToken(info.token);
   };

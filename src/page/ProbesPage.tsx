@@ -2,13 +2,11 @@
 import React, { PureComponent } from 'react';
 
 // Types
-import { GrafanaInstances, Label, Probe, OrgRole } from 'types';
-import { Button, HorizontalGroup, IconName, Badge, BadgeColor } from '@grafana/ui';
+import { GrafanaInstances, Label, Probe } from 'types';
 import { getLocationSrv } from '@grafana/runtime';
 import ProbeEditor from 'components/ProbeEditor';
-import { UptimeGauge } from 'components/UptimeGauge';
-import { hasRole } from 'utils';
-//import ProbesMap from 'components/ProbesMap';
+import { InstanceContext } from 'components/InstanceContext';
+import { ProbeList } from 'components/ProbeList';
 
 interface Props {
   instance: GrafanaInstances;
@@ -21,17 +19,20 @@ interface State {
   addNew: boolean;
 }
 
-export class ProbesPage extends PureComponent<Props, State> {
+export class ProbesPage2 extends PureComponent<Props, State> {
+  static contextType = InstanceContext;
+
   state: State = {
     probes: [],
     addNew: false,
   };
 
   async componentDidMount() {
-    const { instance, id } = this.props;
+    const { id } = this.props;
+    const { instance } = this.context;
     const probes = await instance.api.listProbes();
-    const num = id ? parseInt(id, 10) : -1;
-    const probe = probes.find(p => p.id === num);
+    const probeId = id ? parseInt(id, 10) : -1;
+    const probe = probes.find((p: Probe) => p.id === probeId);
     this.setState({ probes, probe });
   }
 
@@ -68,7 +69,7 @@ export class ProbesPage extends PureComponent<Props, State> {
   };
 
   onRefresh = async () => {
-    const { instance } = this.props;
+    const { instance } = this.context;
     const probes = await instance.api.listProbes();
     this.setState({
       probes,
@@ -92,14 +93,14 @@ export class ProbesPage extends PureComponent<Props, State> {
   };
 
   render() {
-    const { instance } = this.props;
-    const { probe, addNew } = this.state;
-    if (!instance) {
+    const { loading } = this.context;
+    const { probe, addNew, probes } = this.state;
+    if (loading) {
       return <div>Loading...</div>;
     }
 
     if (probe) {
-      return <ProbeEditor probe={probe} instance={instance.api} onReturn={this.onGoBack} />;
+      return <ProbeEditor probe={probe} onReturn={this.onGoBack} />;
     }
     if (addNew) {
       const template = {
@@ -112,64 +113,8 @@ export class ProbesPage extends PureComponent<Props, State> {
         online: false,
         onlineChange: 0,
       } as Probe;
-      return <ProbeEditor probe={template} instance={instance.api} onReturn={this.onGoBack} />;
+      return <ProbeEditor probe={template} onReturn={this.onGoBack} />;
     }
-    return <div>{this.renderProbeList()}</div>;
-  }
-
-  renderProbeList() {
-    const { probes } = this.state;
-    const { instance } = this.props;
-    if (!probes) {
-      return null;
-    }
-    return (
-      <div>
-        {hasRole(OrgRole.EDITOR) && (
-          <HorizontalGroup justify="flex-end">
-            <Button onClick={this.onAddNew}>New</Button>
-          </HorizontalGroup>
-        )}
-        {probes
-          .sort((probeA, probeB) => probeA.name.localeCompare(probeB.name))
-          .map(probe => {
-            const probeId: number = probe.id || 0;
-            if (!probe.id) {
-              return;
-            }
-            let onlineTxt = 'Offline';
-            let onlineIcon = 'heart-break' as IconName;
-            let color = 'red' as BadgeColor;
-            if (probe.online) {
-              onlineTxt = 'Online';
-              onlineIcon = 'heart';
-              color = 'green';
-            }
-            return (
-              <div key={probeId} className="add-data-source-item" onClick={() => this.onSelectProbe(probeId)}>
-                <div className="add-data-source-item-text-wrapper">
-                  <span className="add-data-source-item-text">{probe.name}</span>
-                  <span className="add-data-source-item-desc">
-                    <Badge color={color} icon={onlineIcon} text={onlineTxt} />
-                    <div>{this.labelsToString(probe.labels)}</div>
-                  </span>
-                </div>
-                <UptimeGauge
-                  labelNames={['probe']}
-                  labelValues={[probe.name]}
-                  ds={instance.api.getMetricsDS()}
-                  height={60}
-                  width={150}
-                  sparkline={false}
-                />
-                <div className="add-data-source-item-actions">
-                  <Button>Select</Button>
-                </div>
-              </div>
-            );
-          })}
-        <br />
-      </div>
-    );
+    return <ProbeList probes={probes} onAddNew={this.onAddNew} onSelectProbe={this.onSelectProbe} />;
   }
 }
