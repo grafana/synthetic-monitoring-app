@@ -205,7 +205,7 @@ export class RootPage extends PureComponent<Props, State> {
       return <ChecksPage instance={instance!} id={query.id} />;
     }
     if (query.page === 'probes') {
-      return <ProbesPage instance={instance!} id={query.id} />;
+      return <ProbesPage id={query.id} />;
     }
 
     return <div>Page not found.</div>;

@@ -2,14 +2,13 @@
 import React, { PureComponent } from 'react';
 
 // Types
-import { GrafanaInstances, Label, Probe } from 'types';
+import { Label, Probe } from 'types';
 import { getLocationSrv } from '@grafana/runtime';
 import ProbeEditor from 'components/ProbeEditor';
 import { InstanceContext } from 'components/InstanceContext';
 import { ProbeList } from 'components/ProbeList';
 
 interface Props {
-  instance: GrafanaInstances;
   id?: string;
 }
 

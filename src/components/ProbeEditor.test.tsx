@@ -3,7 +3,7 @@ import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ProbeEditor from './ProbeEditor';
 import { InstanceContext } from 'components/InstanceContext';
-import { getInstanceMock } from '../datasource/__mocks__/DataSource';
+import { getInstanceMock, instanceSettings } from '../datasource/__mocks__/DataSource';
 
 const defaultProbe = {
   name: '',
@@ -22,7 +22,7 @@ beforeEach(() => {
 });
 
 const renderProbeEditor = ({ probe = defaultProbe } = {}) => {
-  const instance = { api: getInstanceMock() };
+  const instance = { api: getInstanceMock(instanceSettings) };
 
   render(
     <InstanceContext.Provider value={{ instance, loading: false }}>

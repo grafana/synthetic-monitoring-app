@@ -70,7 +70,7 @@ const ProbeEditor: FC<Props> = ({ probe, onReturn }) => {
     setProbeToken(info.token);
   };
 
-  if (!probe) {
+  if (!probe || !instance) {
     return <div>Loading...</div>;
   }
 
@@ -242,7 +242,7 @@ const ProbeEditor: FC<Props> = ({ probe, onReturn }) => {
           );
         }}
       </Form>
-      {probe.id && <ProbeStatus probe={probe} instance={instance} onResetToken={onResetToken} />}
+      {probe.id && <ProbeStatus probe={probe} instance={instance.api} onResetToken={onResetToken} />}
     </HorizontalGroup>
   );
 };
