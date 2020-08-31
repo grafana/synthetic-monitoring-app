@@ -97,7 +97,32 @@ export const getInstanceMock = (settings: DataSourceInstanceSettings<SMOptions> 
   const instance = new SMDataSource(settings);
   instance.getMetricsDS = jest.fn().mockImplementation(() => ({ url: 'a url' }));
   instance.addCheck = jest.fn();
-  instance.listProbes = jest.fn();
+  instance.listProbes = jest.fn().mockImplementation(() =>
+    Promise.resolve([
+      {
+        name: 'tacos',
+        id: 32,
+        public: false,
+        latitude: 0.0,
+        longitude: 0.0,
+        region: '',
+        labels: [{ name: 'Mr', value: 'Orange' }],
+        online: true,
+        onlineChange: 0,
+      },
+      {
+        name: 'burritos',
+        id: 42,
+        public: true,
+        latitude: 0.0,
+        longitude: 0.0,
+        region: '',
+        labels: [{ name: 'Mr', value: 'Pink' }],
+        online: false,
+        onlineChange: 0,
+      },
+    ])
+  );
   instance.addProbe = jest.fn().mockImplementation(() => Promise.resolve({ token: 'a token' }));
   instance.deleteProbe = jest.fn();
   instance.updateProbe = jest.fn();
