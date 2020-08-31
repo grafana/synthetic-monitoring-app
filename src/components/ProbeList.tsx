@@ -1,4 +1,5 @@
 import React, { FC, useContext } from 'react';
+import { css } from 'emotion';
 import { Badge, Button, HorizontalGroup } from '@grafana/ui';
 import { InstanceContext } from 'components/InstanceContext';
 import { UptimeGauge } from 'components/UptimeGauge';
@@ -28,7 +29,14 @@ export const ProbeList: FC<Props> = ({ probes, onAddNew, onSelectProbe }) => {
     <div>
       {hasRole(OrgRole.EDITOR) && (
         <HorizontalGroup justify="flex-end">
-          <Button onClick={onAddNew}>New</Button>
+          <Button
+            onClick={onAddNew}
+            className={css`
+              margin-bottom: 1rem;
+            `}
+          >
+            New
+          </Button>
         </HorizontalGroup>
       )}
       {probes
