@@ -12,14 +12,12 @@ import {
   useTheme,
 } from '@grafana/ui';
 import { Probe, OrgRole } from 'types';
-import { SMDataSource } from 'datasource/DataSource';
 import { hasRole } from 'utils';
 import { UptimeGauge } from './UptimeGauge';
 import { GrafanaTheme } from '@grafana/data';
 
 interface Props {
   probe: Probe;
-  instance: SMDataSource;
   onResetToken: () => void;
 }
 
@@ -60,7 +58,7 @@ const getBadgeStatus = (online: boolean): BadgeStatus => {
   };
 };
 
-const ProbeStatus: FC<Props> = ({ probe, instance, onResetToken }) => {
+const ProbeStatus: FC<Props> = ({ probe, onResetToken }) => {
   const [showResetModal, setShowResetModal] = useState(false);
   const theme = useTheme();
 
@@ -100,14 +98,7 @@ const ProbeStatus: FC<Props> = ({ probe, instance, onResetToken }) => {
           </Container>
         )}
       </div>
-      <UptimeGauge
-        labelNames={['probe']}
-        labelValues={[probe.name]}
-        ds={instance.getMetricsDS()}
-        height={200}
-        width={300}
-        sparkline={true}
-      />
+      <UptimeGauge labelNames={['probe']} labelValues={[probe.name]} height={200} width={300} sparkline={true} />
     </Container>
   );
 };

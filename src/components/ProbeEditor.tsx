@@ -242,7 +242,7 @@ const ProbeEditor: FC<Props> = ({ probe, instance, onReturn }) => {
           );
         }}
       </Form>
-      {probe.id && <ProbeStatus probe={probe} instance={instance} onResetToken={onResetToken} />}
+      {probe.id && <ProbeStatus probe={probe} onResetToken={onResetToken} />}
     </HorizontalGroup>
   );
 };
