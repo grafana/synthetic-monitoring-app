@@ -58,7 +58,6 @@ export const ProbeList: FC<Props> = ({ probes, onAddNew, onSelectProbe }) => {
               <UptimeGauge
                 labelNames={['probe']}
                 labelValues={[probe.name]}
-                ds={instance.api.getMetricsDS()}
                 height={60}
                 width={150}
                 sparkline={false}

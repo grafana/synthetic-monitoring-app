@@ -56,9 +56,11 @@ export const ProbesPage: FC<Props> = ({ id }) => {
   if (probesLoading || instanceLoading) {
     return <div>Loading...</div>;
   }
+
   if (selectedProbe) {
     return <ProbeEditor probe={selectedProbe} onReturn={onGoBack} />;
   }
+
   if (isAddingNew) {
     const template = {
       name: '',

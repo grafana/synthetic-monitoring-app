@@ -195,18 +195,32 @@ interface MetricQueryResponse {
   data: any[];
 }
 
-export const queryMetric = async (url: string, query: string): Promise<MetricQueryResponse> => {
+export interface MetricQueryOptions {
+  start: number;
+  end: number;
+  step: number;
+}
+
+export const queryMetric = async (
+  url: string,
+  query: string,
+  options?: MetricQueryOptions
+): Promise<MetricQueryResponse> => {
   const backendSrv = getBackendSrv();
   const lastUpdate = Math.floor(Date.now() / 1000);
+  const params = {
+    query,
+    time: lastUpdate,
+    ...(options || {}),
+  };
+
+  const path = options?.step ? '/api/v1/query_range' : '/api/v1/query';
 
   try {
     const response = await backendSrv.datasourceRequest({
       method: 'GET',
-      url: `${url}/api/v1/query`,
-      params: {
-        query,
-        time: lastUpdate,
-      },
+      url: `${url}${path}`,
+      params,
     });
     if (!response.ok) {
       return { error: 'Error fetching data', data: [] };
