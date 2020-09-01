@@ -1,46 +1,46 @@
 # Alerting on [Synthetic Monitoring](https://grafana.com/grafana/plugins/grafana-synthetic-monitoring-app)
 
-This documents explains how to create Alertmanager alerts on Synthetic Monitoring Data.
-Data from Synthetic Monitoring is in selected Metrics instance, and you can use Grafana based alerts or use Alertmanager.
+Synthetic Monitoring data is written to your Grafana Cloud account and alerts can be created using either standard [Grafana alerts](https://grafana.com/docs/grafana/latest/alerting/create-alerts/) or with your [Prometheus Alertmanager instance](https://grafana.com/docs/grafana-cloud/metrics/prometheus/alerts_rules/).
 
-These alerts are same as other Alertmanager alerts on Grafana Cloud, 
-see [Alerts - Grafana Cloud Docs](https://grafana.com/docs/grafana-cloud/metrics/prometheus/alerts_rules/) to know more.
+In this example, we will be creating Alertmanager alerts on HTTP check data.
 
-In this example, we will be creating alerts on HTTP check data.
+## Set up Synthetic Monitoring and create an HTTP check
+[Install and configure](https://grafana.com/docs/grafana-cloud/synthetic-monitoring/installation/) Synthetic Monitoring in your Grafana Cloud account.
 
-## How to
 
-#### Setup Synthetic Monitoring
-Install Synthetic Monitoring in your Grafana Cloud Instance, 
-see more on [Docs](https://grafana.com/docs/grafana-cloud/synthetic-monitoring/).
+Save the Grafana Cloud API key created during installation. We will use this key to also create an alert.
 
-Skip to next step if it's already done
 
-Created checks will push metrics to the selected Prometheus instance
-explore the included dashboard to see the data.
+Create at least one HTTP check:
+
+
+1. Navigate to **Synthetic Monitoring > Checks**.
+2. Click **New Check**.
+3. Choose a **Check Type** of **HTTP**.
+4. Enter a name.
+5. Enter the target URL to be checked, ie. `https://grafana.com`.
+6. Choose the probe locations to check from.
+7. Click **Save**.
+
+
+Checks push data to the Prometheus instance selected during installation that we will use to alert on. 
+
 
 ![Example HTTP Check](./sm_http_check.png)
 
-#### Get cortextool
-See [Alerts - Grafana Cloud Docs](https://grafana.com/docs/grafana-cloud/metrics/prometheus/alerts_rules/) 
-for instructions on how to install [cortextool](https://github.com/grafana/cortex-tools/releases)
 
-Once it's installed, try `cortextool --help` to verify
+## Export environment variables
 
-#### Get API Key, Endpoints and User IDs
 
-We need Grafana Cloud Admin API key, Alertmanager UserID & URL, Prometheus UserID & URL
+We export a few pieces of information to create alerts. You should already have an [API key](https://grafana.com/profile/api-keys) with the `Admin` role from installing Synthetic Monitoring.
 
-Click details on Hosted Alerts in Grafana Cloud for UserIDs and URLs
 
-For API key, create and use a Grafana Cloud key with `Admin` Role
+From your Grafana Cloud account, click **Details** on your **Alerts** instance and save the **URL** and **User** values for **Metrics Authentication Settings** and **Alertmanager Authentication Settings**.
 
-Now export these, and we will use these in commands down the line
-
-![API Key](./api_key.png)
 
 ![Alertmanager Details](./alertmanager_details.png)
 
+Now export the following values to use for commands in the next steps.
 ```bash
 export API_KEY=<API KEY>
 # Alertmanager Authentication Settings
@@ -51,69 +51,98 @@ export PROM_URL=<PROM_URL>
 export PROM_USER=<PROM_USER ID>
 ```
 
-#### Configure Alertmanager
-You need to configure Alertmanager, if not already configured. By default, it's not configured.
+## Install cortextool
+See [Alerts - Grafana Cloud Docs](https://grafana.com/docs/grafana-cloud/metrics/prometheus/alerts_rules/) 
+for instructions on how to install [cortextool](https://github.com/grafana/cortex-tools/releases).
 
-**Load config**
+Once installed, try `cortextool --help` to verify it is working.
 
-- [Prometheus Docs](https://grafana.com/docs/grafana-cloud/metrics/prometheus/alerts_rules/#configure-alertmanager)
+
+## Configure Alertmanager
+Alertmanager needs to be configured if you have not already done so.
+
+**Load your config**
+
+1. See [Prometheus Docs](https://grafana.com/docs/grafana-cloud/metrics/prometheus/alerts_rules/#upload-alertmanager-configuration-to-your-grafana-cloud-alerts-instance).
+2. Create an `alertmanager.yml` based on the docs sample and information, see [example alertmanager config file](./alertmanager.yml) for reference.
 
 `cortextool alertmanager load alertmanager.yml --address=${ALERT_URL} --id=${ALERT_USER} --key=${API_KEY}`
 
-**get and verify config**
+
+**Verify your config**
 
 `cortextool alertmanager get  --address=${ALERT_URL} --id=${ALERT_USER} --key=${API_KEY}`
 
-- visit `<alertmanager-address>/alertmanager` to check you config
+Visit `<alertmanager-address>/alertmanager` to check your config.
 
-> TIP: We have blogpost on this: https://grafana.com/blog/2020/02/25/step-by-step-guide-to-setting-up-prometheus-alertmanager-with-slack-pagerduty-and-gmail/
+> TIP: See the Grafana blog post: [*Step-by-step guide to setting up Prometheus Alertmanager with Slack, PagerDuty, and Gmail*](https://grafana.com/blog/2020/02/25/step-by-step-guide-to-setting-up-prometheus-alertmanager-with-slack-pagerduty-and-gmail/).
 
 
-#### Create and Upload Alert rules
 
-Here we will alert when our website job takes more than 0.50 seconds on a probe in Bangalore. Here is what that looks like as a Prometheus query, play around and use Grafana Explore mode to test your queries and figure out thresholds.
+
+## Create and upload alert rules
+
+Here we will alert when our website takes more than `0.5 seconds` to load on the Bangalore probe. 
+This is what the Prometheus query looks like. Play around and use Grafana Explore mode to test your queries and figure out thresholds.
+
 ```
 probe_duration_seconds{job="website", probe="Bangalore"} > 0.50
 ```
 
-- [Prometheus Docs](https://grafana.com/docs/grafana-cloud/metrics/prometheus/alerts_rules/#configure-and-upload-alert-rules)
 
-**load rules from prom_rules.yml**
+The rules file for the alert may look something like:
+```yaml
+# prom_rules.yml
+namespace: 'prom_rules'
+groups:
+  - name: 'probe_duration_rules_and_alerts'
+    rules:
+      - alert: 'ProbeDurationHalfSecondExceeded'
+        annotations:
+          message: "Check {{ $labels.job }} is taking more than 0.5 seconds."
+        expr: "probe_duration_seconds{job="website", probe="Bangalore"} > 0.50"
+        for: "1m"
+        labels:
+          "severity": "critical"
+```
+
+See the [Grafana Cloud Alerting docs](https://grafana.com/docs/grafana-cloud/metrics/prometheus/alerts_rules/#upload-recording-and-alerting-rules-definition-to-your-grafana-cloud-metrics-instance), and [example rules file](./prom_rules.yml) for more information.
+
+**Load rules**
 
 `cortextool rules load prom_rules.yml --address=${PROM_URL} --id=${PROM_USER} --key=${API_KEY}`
 
-**list rules**
+**List rules**
 
 `cortextool rules list --address=${PROM_URL} --id=${PROM_USER} --key=${API_KEY}`
 
-**see rules**
+**See rules**
 
 `cortextool rules print --address=${PROM_URL} --id=${PROM_USER} --key=${API_KEY}`
 
-**delete rules**
+**Delete rules**
 
 `cortextool rules delete <namespace> <rule group> --address=${PROM_URL} --id=${PROM_USER} --key=${API_KEY}`
 
 You can visit `<alertmanager-address>/alertmanager/#/alerts` to see your active alerts
 
 
-#### Update Alert Rules
-Alert Rules can be updated by changing the `prom_rules.yml` file and loading rules again
+## Update alert rules
+Alert Rules can be updated by changing the `prom_rules.yml` file and loading the rules again.
 
 **Update alerts**
 
-`cortextool rules load prom_rules.yml --address=${PROM_ADDR} --id=${PROM_ID} --key=${API_KEY}`
+`cortextool rules load prom_rules.yml --address=${PROM_URL} --id=${PROM_USER} --key=${API_KEY}`
 
-**See Updated Alerts**
+**See updated alerts**
 
 `cortextool rules print --address=${PROM_URL} --id=${PROM_USER} --key=${API_KEY}`
 
-#### Test Alerts
-Set low thresholds to test alerts, and verify that notifications are delivered.
+## Test Alerts
+Set low thresholds to test the alert, and verify that notifications are delivered.
 
-Example Alert email:
-
-![ALert Email](./alert_email.png)
+An alert email may look something like:
+![Alert Email](./alert_email.png)
 
 **Tips:**
 - Use Grafana explore mode to see data about how many alerts are firing.
