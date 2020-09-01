@@ -27,3 +27,7 @@ ci/
 e2e-results/
 
 temp/
+.eslintcache
+
+# JetBrains IDEs
+.idea/

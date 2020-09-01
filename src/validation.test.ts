@@ -1,5 +1,6 @@
 import { validateCheck, CheckValidation } from 'validation';
 import { Check, CheckType, HttpMethod, IpVersion, DnsRecordType, DnsProtocol } from 'types';
+jest.unmock('utils');
 
 describe('trivial cases', () => {
   it('should be a valid http check', () => {

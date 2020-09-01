@@ -183,3 +183,52 @@ export const parseUrl = (url: string) => {
 export function enumToStringArray<T>(enumObject: T) {
   return [...new Set(Object.keys(enumObject))];
 }
+
+// Matches a string against multiple options
+export const matchStrings = (string: string, comparisons: string[]): boolean => {
+  const lowerCased = string.toLowerCase();
+  return comparisons.some(comparison => comparison.toLowerCase().match(lowerCased));
+};
+
+interface MetricQueryResponse {
+  error?: string;
+  data: any[];
+}
+
+export interface MetricQueryOptions {
+  start: number;
+  end: number;
+  step: number;
+}
+
+export const queryMetric = async (
+  url: string,
+  query: string,
+  options?: MetricQueryOptions
+): Promise<MetricQueryResponse> => {
+  const backendSrv = getBackendSrv();
+  const lastUpdate = Math.floor(Date.now() / 1000);
+  const params = {
+    query,
+    time: lastUpdate,
+    ...(options || {}),
+  };
+
+  const path = options?.step ? '/api/v1/query_range' : '/api/v1/query';
+
+  try {
+    const response = await backendSrv.datasourceRequest({
+      method: 'GET',
+      url: `${url}${path}`,
+      params,
+    });
+    if (!response.ok) {
+      return { error: 'Error fetching data', data: [] };
+    }
+    return {
+      data: response.data?.data?.result ?? [],
+    };
+  } catch (e) {
+    return { error: (e.message || e.data?.message) ?? 'Error fetching data', data: [] };
+  }
+};

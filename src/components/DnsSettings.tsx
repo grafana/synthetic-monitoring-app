@@ -3,9 +3,8 @@ import { css } from 'emotion';
 import { Collapse, Container, HorizontalGroup, Field, Select, MultiSelect, Input } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
 import { IpVersion, Settings, DnsSettings, DnsProtocol, DnsRecordType, DNSRRValidator, DnsResponseCodes } from 'types';
-import { IpOptions } from './utils';
 import DnsValidatorForm from './DnsValidatorForm';
-import { DNS_RESPONSE_CODES, DNS_RECORD_TYPES, DNS_PROTOCOLS } from './constants';
+import { DNS_RESPONSE_CODES, DNS_RECORD_TYPES, DNS_PROTOCOLS, IP_OPTIONS } from './constants';
 
 interface Props {
   settings: Settings;
@@ -179,7 +178,7 @@ const DnsSettingsForm: FC<Props> = ({ settings, isEditor, onUpdate }) => {
             <Field label="IP Version" description="The IP protocol of the ICMP request" disabled={!isEditor}>
               <Select
                 value={values.ipVersion}
-                options={IpOptions}
+                options={IP_OPTIONS}
                 onChange={selected => {
                   const dns = getUpdatedSettings(values, {
                     name: 'ipVersion',

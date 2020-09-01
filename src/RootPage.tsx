@@ -9,6 +9,7 @@ import { findSMDataSources, createNewApiInstance, dashboardUID } from 'utils';
 import { SMOptions } from 'datasource/types';
 import { getDataSourceSrv, getLocationSrv } from '@grafana/runtime';
 import { TenantSetup } from './components/TenantSetup';
+import { InstanceContext } from './components/InstanceContext';
 import { ChecksPage } from 'page/ChecksPage';
 import { ProbesPage } from 'page/ProbesPage';
 
@@ -16,6 +17,7 @@ interface Props extends AppRootProps<GlobalSettings> {}
 interface State {
   settings: Array<DataSourceInstanceSettings<SMOptions>>;
   instance?: GrafanaInstances;
+  loadingInstance: boolean;
   info?: RegistrationInfo;
   valid?: boolean;
 }
@@ -26,6 +28,7 @@ export class RootPage extends PureComponent<Props, State> {
 
     this.state = {
       settings: findSMDataSources(),
+      loadingInstance: true,
     };
   }
 
@@ -43,6 +46,7 @@ export class RootPage extends PureComponent<Props, State> {
 
         this.setState({
           instance,
+          loadingInstance: false,
           valid: isValid(instance),
         });
         this.updateNav();
@@ -183,7 +187,7 @@ export class RootPage extends PureComponent<Props, State> {
     return <TenantSetup instance={instance.api} />;
   }
 
-  render() {
+  renderPage() {
     const { settings, valid, instance } = this.state;
     if (settings.length > 1) {
       return this.renderMultipleConfigs();
@@ -201,10 +205,20 @@ export class RootPage extends PureComponent<Props, State> {
       return <ChecksPage instance={instance!} id={query.id} />;
     }
     if (query.page === 'probes') {
-      return <ProbesPage instance={instance!} id={query.id} />;
+      return <ProbesPage id={query.id} />;
     }
 
     return <div>Page not found.</div>;
+  }
+
+  render() {
+    const { instance, loadingInstance } = this.state;
+
+    return (
+      <InstanceContext.Provider value={{ instance, loading: loadingInstance }}>
+        {this.renderPage()}
+      </InstanceContext.Provider>
+    );
   }
 }
 

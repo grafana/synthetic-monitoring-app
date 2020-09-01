@@ -2,6 +2,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { CheckType, HttpMethod, IpVersion, DnsRecordType, DnsProtocol } from 'types';
 import CheckTarget from './CheckTarget';
+jest.unmock('utils');
 
 const onChangeMock = jest.fn();
 

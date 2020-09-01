@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import { Collapse, Container, HorizontalGroup, Field, Select, Switch } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
 import { IpVersion, Settings, PingSettings } from 'types';
-import { IpOptions } from './utils';
+import { IP_OPTIONS } from './constants';
 
 interface Props {
   settings: Settings;
@@ -50,7 +50,7 @@ export class PingSettingsForm extends PureComponent<Props, State> {
           <HorizontalGroup>
             <div>
               <Field label="IP Version" description="The IP protocol of the ICMP request" disabled={!isEditor}>
-                <Select value={ipVersion} options={IpOptions} onChange={this.onIpVersionChange} />
+                <Select value={ipVersion} options={IP_OPTIONS} onChange={this.onIpVersionChange} />
               </Field>
             </div>
             <div>

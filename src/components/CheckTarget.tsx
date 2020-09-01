@@ -63,7 +63,7 @@ const CheckTarget: FC<Props> = ({ target, typeOfCheck, disabled, checkSettings, 
 
   useEffect(() => {
     onChange(targetValue);
-  }, [targetValue]);
+  }, [targetValue, onChange]);
 
   const parsedURL = parseUrl(targetValue);
   return (

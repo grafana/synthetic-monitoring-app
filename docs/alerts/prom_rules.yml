@@ -1,0 +1,14 @@
+namespace: prom_rules
+groups:
+  - name: synthetic_monitoring
+    interval: 5m
+    rules:
+      - record: ""
+        alert: WebsiteIsSlow
+        expr: probe_duration_seconds{job="website"} > 0.50
+        for: 2m
+        labels:
+            severity: warning
+        annotations:
+            description: '{{ $labels.instance }} of job {{ $labels.job }} is taking more then 500ms from {{ $labels.probe }}'
+            summary: Website {{ $labels.instance }} is slow from {{ $labels.probe }}

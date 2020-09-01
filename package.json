@@ -1,8 +1,9 @@
 {
   "name": "synthetic-monitoring-app",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Grafana Synthetic Monitoring App",
   "scripts": {
+    "lint": "eslint --cache --ignore-path .gitignore --ext .js,.jsx,.ts,.tsx .",
     "build": "grafana-toolkit plugin:build",
     "test": "grafana-toolkit plugin:test",
     "dev": "grafana-toolkit plugin:dev",
@@ -10,7 +11,8 @@
   },
   "husky": {
     "hooks": {
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
+      "pre-push": "yarn lint && yarn test"
     }
   },
   "author": "Grafana Labs",
@@ -28,11 +30,15 @@
     "@testing-library/user-event": "^12.0.17",
     "@types/ip-address": "latest",
     "@types/lodash": "latest",
+    "@types/valid-url": "^1.0.3",
+    "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-react-hooks": "^4.1.0",
     "husky": "^4.2.5",
     "jest-environment-jsdom-fifteen": "^1.0.2"
   },
   "dependencies": {
     "ip-address": "^6.3.0",
-    "punycode": "^2.1.1"
+    "punycode": "^2.1.1",
+    "valid-url": "^1.0.9"
   }
 }
