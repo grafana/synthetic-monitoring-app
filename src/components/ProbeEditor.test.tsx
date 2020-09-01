@@ -2,7 +2,8 @@ import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ProbeEditor from './ProbeEditor';
-import { getInstanceMock } from '../datasource/__mocks__/DataSource';
+import { InstanceContext } from 'components/InstanceContext';
+import { getInstanceMock, instanceSettings } from '../datasource/__mocks__/DataSource';
 
 const defaultProbe = {
   name: '',
@@ -21,8 +22,13 @@ beforeEach(() => {
 });
 
 const renderProbeEditor = ({ probe = defaultProbe } = {}) => {
-  const instance = getInstanceMock();
-  render(<ProbeEditor probe={probe} instance={instance} onReturn={onReturn} />);
+  const instance = { api: getInstanceMock(instanceSettings) };
+
+  render(
+    <InstanceContext.Provider value={{ instance, loading: false }}>
+      <ProbeEditor probe={probe} onReturn={onReturn} />
+    </InstanceContext.Provider>
+  );
   return instance;
 };
 
@@ -98,7 +104,7 @@ test('saves new probe', async () => {
   const saveButton = await screen.findByRole('button', { name: 'Save' });
   userEvent.click(saveButton);
   await screen.findByText('Probe Authentication Token');
-  expect(instance.addProbe).toHaveBeenCalledWith(validProbe);
+  expect(instance.api.addProbe).toHaveBeenCalledWith(validProbe);
 });
 
 test('updates existing probe', async () => {
@@ -117,5 +123,5 @@ test('updates existing probe', async () => {
   const saveButton = await screen.findByRole('button', { name: 'Save' });
   userEvent.click(saveButton);
   await waitFor(() => expect(onReturn).toHaveBeenCalledWith(true));
-  expect(instance.updateProbe).toHaveBeenCalledWith(validProbe);
+  expect(instance.api.updateProbe).toHaveBeenCalledWith(validProbe);
 });

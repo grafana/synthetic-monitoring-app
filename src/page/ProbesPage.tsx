@@ -1,88 +1,41 @@
 // Libraries
-import React, { PureComponent } from 'react';
+import React, { FC, useContext, useState, useEffect } from 'react';
 
 // Types
-import { GrafanaInstances, Label, Probe, OrgRole } from 'types';
-import { Button, HorizontalGroup, IconName, Badge, BadgeColor } from '@grafana/ui';
+import { Probe } from 'types';
 import { getLocationSrv } from '@grafana/runtime';
 import ProbeEditor from 'components/ProbeEditor';
-import { UptimeGauge } from 'components/UptimeGauge';
-import { hasRole } from 'utils';
-//import ProbesMap from 'components/ProbesMap';
+import { InstanceContext } from 'components/InstanceContext';
+import { ProbeList } from 'components/ProbeList';
 
 interface Props {
-  instance: GrafanaInstances;
   id?: string;
 }
 
-interface State {
-  probes: Probe[];
-  probe?: Probe; // selected Probe
-  addNew: boolean;
-}
+export const ProbesPage: FC<Props> = ({ id }) => {
+  const [isAddingNew, setAddingNew] = useState(false);
+  const [probesLoading, setProbesLoading] = useState(true);
+  const [probes, setProbes] = useState<Probe[]>([]);
+  const [selectedProbe, setSelectedProbe] = useState<Probe | undefined>();
+  const { instance, loading: instanceLoading } = useContext(InstanceContext);
+  useEffect(() => {
+    const fetchProbes = async () => {
+      const probes = await instance?.api.listProbes();
+      if (probes) {
+        setProbes(probes);
+        setProbesLoading(false);
+      }
+      if (id) {
+        const selectedProbe = probes?.find(probe => probe.id === parseInt(id, 10));
+        setSelectedProbe(selectedProbe);
+      }
+    };
+    fetchProbes();
+  }, [instanceLoading, instance?.api, id]);
 
-export class ProbesPage extends PureComponent<Props, State> {
-  state: State = {
-    probes: [],
-    addNew: false,
-  };
-
-  async componentDidMount() {
-    const { instance, id } = this.props;
-    const probes = await instance.api.listProbes();
-    const num = id ? parseInt(id, 10) : -1;
-    const probe = probes.find(p => p.id === num);
-    this.setState({ probes, probe });
-  }
-
-  componentDidUpdate(oldProps: Props) {
-    if (this.props.id !== oldProps.id) {
-      const { id } = this.props;
-      const num = id ? parseInt(id, 10) : -1;
-      const probe = this.state.probes.find(p => p.id === num);
-      this.setState({ probe });
-    }
-  }
-
-  labelsToString(labels: Label[]) {
-    return labels
-      .map(label => {
-        return label.name + '=' + label.value;
-      })
-      .join(' ');
-  }
-
-  onSelectProbe = (id: number) => {
-    getLocationSrv().update({
-      partial: true,
-      query: {
-        id,
-      },
-    });
-  };
-
-  onAddNew = () => {
-    this.setState({
-      addNew: true,
-    });
-  };
-
-  onRefresh = async () => {
-    const { instance } = this.props;
-    const probes = await instance.api.listProbes();
-    this.setState({
-      probes,
-    });
-  };
-
-  onGoBack = (refresh: boolean) => {
-    console.log('go back');
-    this.setState({
-      addNew: false,
-    });
-    if (refresh) {
-      this.onRefresh();
-    }
+  const onGoBack = () => {
+    setSelectedProbe(undefined);
+    setAddingNew(false);
     getLocationSrv().update({
       partial: true,
       query: {
@@ -91,83 +44,35 @@ export class ProbesPage extends PureComponent<Props, State> {
     });
   };
 
-  render() {
-    const { instance } = this.props;
-    const { probe, addNew } = this.state;
-    if (!instance) {
-      return <div>Loading...</div>;
-    }
+  const onSelectProbe = (id: number) => {
+    getLocationSrv().update({
+      partial: true,
+      query: {
+        id,
+      },
+    });
+  };
 
-    if (probe) {
-      return <ProbeEditor probe={probe} instance={instance.api} onReturn={this.onGoBack} />;
-    }
-    if (addNew) {
-      const template = {
-        name: '',
-        public: false,
-        latitude: 0.0,
-        longitude: 0.0,
-        region: '',
-        labels: [],
-        online: false,
-        onlineChange: 0,
-      } as Probe;
-      return <ProbeEditor probe={template} instance={instance.api} onReturn={this.onGoBack} />;
-    }
-    return <div>{this.renderProbeList()}</div>;
+  if (probesLoading || instanceLoading) {
+    return <div>Loading...</div>;
   }
 
-  renderProbeList() {
-    const { probes } = this.state;
-    if (!probes) {
-      return null;
-    }
-    return (
-      <div>
-        {hasRole(OrgRole.EDITOR) && (
-          <HorizontalGroup justify="flex-end">
-            <Button onClick={this.onAddNew}>New</Button>
-          </HorizontalGroup>
-        )}
-        {probes
-          .sort((probeA, probeB) => probeA.name.localeCompare(probeB.name))
-          .map(probe => {
-            const probeId: number = probe.id || 0;
-            if (!probe.id) {
-              return;
-            }
-            let onlineTxt = 'Offline';
-            let onlineIcon = 'heart-break' as IconName;
-            let color = 'red' as BadgeColor;
-            if (probe.online) {
-              onlineTxt = 'Online';
-              onlineIcon = 'heart';
-              color = 'green';
-            }
-            return (
-              <div key={probeId} className="add-data-source-item" onClick={() => this.onSelectProbe(probeId)}>
-                <div className="add-data-source-item-text-wrapper">
-                  <span className="add-data-source-item-text">{probe.name}</span>
-                  <span className="add-data-source-item-desc">
-                    <Badge color={color} icon={onlineIcon} text={onlineTxt} />
-                    <div>{this.labelsToString(probe.labels)}</div>
-                  </span>
-                </div>
-                <UptimeGauge
-                  labelNames={['probe']}
-                  labelValues={[probe.name]}
-                  height={60}
-                  width={150}
-                  sparkline={false}
-                />
-                <div className="add-data-source-item-actions">
-                  <Button>Select</Button>
-                </div>
-              </div>
-            );
-          })}
-        <br />
-      </div>
-    );
+  if (selectedProbe) {
+    return <ProbeEditor probe={selectedProbe} onReturn={onGoBack} />;
   }
-}
+
+  if (isAddingNew) {
+    const template = {
+      name: '',
+      public: false,
+      latitude: 0.0,
+      longitude: 0.0,
+      region: '',
+      labels: [],
+      online: false,
+      onlineChange: 0,
+    } as Probe;
+    return <ProbeEditor probe={template} onReturn={onGoBack} />;
+  }
+  return <ProbeList probes={probes} onAddNew={() => setAddingNew(true)} onSelectProbe={onSelectProbe} />;
+};
