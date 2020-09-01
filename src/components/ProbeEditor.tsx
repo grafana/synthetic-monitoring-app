@@ -35,19 +35,23 @@ const ProbeEditor: FC<Props> = ({ probe, onReturn }) => {
   const [probeToken, setProbeToken] = useState('');
   const { instance } = useContext(InstanceContext);
 
+  if (!probe || !instance) {
+    return <div>Loading...</div>;
+  }
+
   const onSave = async (formValues: Probe) => {
     // Form values always come back as a string, even for number inputs
     formValues.latitude = Number(formValues.latitude);
     formValues.longitude = Number(formValues.longitude);
 
     if (probe.id) {
-      await instance?.api.updateProbe({
+      await instance.api.updateProbe({
         ...probe,
         ...formValues,
       });
       onReturn(true);
     } else {
-      const info = await instance?.api.addProbe({
+      const info = await instance.api.addProbe({
         ...probe,
         ...formValues,
       });
@@ -60,19 +64,15 @@ const ProbeEditor: FC<Props> = ({ probe, onReturn }) => {
     if (!probe.id) {
       return;
     }
-    await instance?.api.deleteProbe(probe.id);
+    await instance.api.deleteProbe(probe.id);
     onReturn(true);
   };
 
   const onResetToken = async () => {
-    const info = await instance?.api.resetProbeToken(probe);
+    const info = await instance.api.resetProbeToken(probe);
     setShowTokenModal(true);
     setProbeToken(info.token);
   };
-
-  if (!probe || !instance) {
-    return <div>Loading...</div>;
-  }
 
   const legend = probe.id ? 'Configuration' : 'Add Probe';
 
