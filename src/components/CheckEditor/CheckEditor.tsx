@@ -21,7 +21,7 @@ import SMLabelsForm from 'components/SMLabelsForm';
 import * as Validation from 'validation';
 import CheckTarget from 'components/CheckTarget';
 import CheckSettings from './CheckSettings';
-import CheckProbes from './CheckProbes';
+import { ProbeOptions, OnChangeArgs } from './ProbeOptions';
 
 interface Props {
   check: Check;
@@ -117,6 +117,18 @@ export default class CheckEditor extends PureComponent<Props, State> {
     let check = { ...this.state.check } as Check;
     check.target = target;
     this.setState({ check });
+  };
+
+  onProbeOptionsChange = ({ timeout, frequency, probes }: OnChangeArgs) => {
+    const { check } = this.state;
+    this.setState({
+      check: {
+        ...check,
+        timeout,
+        frequency,
+        probes,
+      },
+    });
   };
 
   onFrequencyUpdate = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -226,59 +238,14 @@ export default class CheckEditor extends PureComponent<Props, State> {
             disabled={!isEditor}
             onChange={this.onTargetUpdate}
           />
-          <div>
-            <Field
-              label="Probe Locations"
-              description="Select the locations where this target should be monitored from"
-              disabled={!isEditor}
-              invalid={!Validation.validateProbes(check.probes)}
-            >
-              <CheckProbes
-                probes={check.probes}
-                availableProbes={probes}
-                onUpdate={this.onProbesUpdate}
-                isEditor={isEditor}
-              />
-            </Field>
-          </div>
+          <ProbeOptions
+            isEditor={isEditor}
+            timeout={check.timeout}
+            frequency={check.frequency}
+            probes={check.probes}
+            onChange={this.onProbeOptionsChange}
+          />
           <Collapse label="Options" collapsible={true} onToggle={this.onToggleOptions} isOpen={showOptions}>
-            <Field
-              label="Frequency"
-              description="How frequently the check should run."
-              disabled={!isEditor}
-              invalid={!Validation.validateFrequency(check.frequency)}
-            >
-              <Input
-                label="Frequency"
-                type="number"
-                step={10}
-                value={check!.frequency / 1000 || 60}
-                onChange={this.onFrequencyUpdate}
-                suffix="seconds"
-                max={120}
-                min={10}
-                width={30}
-              />
-            </Field>
-            <Field
-              label="Timeout"
-              description="Maximum execution time for a check"
-              disabled={!isEditor}
-              invalid={!Validation.validateTimeout(check.timeout)}
-            >
-              <Input
-                label="Timeout"
-                type="number"
-                step={0.1}
-                value={check!.timeout / 1000 || 5}
-                onChange={this.onTimeoutUpdate}
-                suffix="seconds"
-                max={10}
-                min={1}
-                width={30}
-              />
-            </Field>
-
             <Field
               label="Labels"
               description="Custom labels to be included with collected metrics and logs."
