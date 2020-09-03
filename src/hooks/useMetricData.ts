@@ -6,7 +6,7 @@ interface UseMetricOptions {
   skip?: boolean;
 }
 
-const REFETCH_INTERVAL = 10000;
+const REFETCH_INTERVAL = 60000;
 
 export function useMetricData(query: string, options?: MetricQueryOptions & UseMetricOptions) {
   const { instance } = useContext(InstanceContext);
