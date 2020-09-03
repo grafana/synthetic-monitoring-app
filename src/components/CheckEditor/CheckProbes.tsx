@@ -1,5 +1,6 @@
 import React, { PureComponent } from 'react';
-import { Button, Container, HorizontalGroup, MultiSelect } from '@grafana/ui';
+import { css } from 'emotion';
+import { Button, HorizontalGroup, MultiSelect } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
 import { Probe } from 'types';
 import * as Validation from 'validation';
@@ -81,8 +82,12 @@ export default class CheckProbes extends PureComponent<CheckProbesProps, CheckPr
           invalid={!Validation.validateProbes(probes)}
           closeMenuOnSelect={false}
         />
-        <Container margin="xs">
-          <HorizontalGroup spacing="md">
+        <div
+          className={css`
+            margin-top: 0.5rem;
+          `}
+        >
+          <HorizontalGroup spacing="sm">
             <Button onClick={this.onAllLocations} disabled={!isEditor} variant="secondary" size="sm">
               All&nbsp;&nbsp;
             </Button>
@@ -90,7 +95,7 @@ export default class CheckProbes extends PureComponent<CheckProbesProps, CheckPr
               Clear
             </Button>
           </HorizontalGroup>
-        </Container>
+        </div>
       </div>
     );
   }

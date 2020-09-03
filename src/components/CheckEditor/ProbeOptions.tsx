@@ -5,6 +5,7 @@ import { validateFrequency, validateProbes, validateTimeout } from 'validation';
 import CheckProbes from './CheckProbes';
 import { InstanceContext } from 'components/InstanceContext';
 import { Probe } from 'types';
+import { SliderInput } from 'components/SliderInput';
 
 export interface OnChangeArgs {
   timeout: number;
@@ -73,34 +74,30 @@ export const ProbeOptions: FC<Props> = ({ frequency, timeout, isEditor, onChange
         disabled={!isEditor}
         invalid={!validateFrequency(frequencyValue)}
       >
-        <Input
-          label="Frequency"
-          type="number"
-          step={10}
-          value={frequency / 1000}
-          onChange={(e: ChangeEvent<HTMLInputElement>) => setFrequencyValue(e.target.valueAsNumber * 1000)}
-          suffix="seconds"
-          max={120}
+        <SliderInput
+          id="probe-options-frequency"
+          value={frequencyValue / 1000}
+          onChange={value => setFrequencyValue(value * 1000)}
           min={10}
-          width={30}
+          max={120}
+          separationLabel="every"
+          suffixLabel="seconds"
         />
       </Field>
       <Field
         label="Timeout"
         description="Maximum execution time for a check"
         disabled={!isEditor}
-        invalid={!validateTimeout(timeout)}
+        invalid={!validateTimeout(timeoutValue)}
       >
-        <Input
-          label="Timeout"
-          type="number"
-          step={0.1}
+        <SliderInput
+          id="probe-options-timeout"
           value={timeout / 1000}
-          onChange={(e: ChangeEvent<HTMLInputElement>) => setTimeoutValue(e.target.valueAsNumber * 1000)}
-          suffix="seconds"
           max={10}
           min={1}
-          width={30}
+          suffixLabel="seconds"
+          separationLabel="every"
+          onChange={value => setTimeoutValue(value * 1000)}
         />
       </Field>
     </div>
