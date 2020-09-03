@@ -66,6 +66,7 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
     failIfHeaderMatchesRegexp: this.props.settings.http?.failIfHeaderMatchesRegexp || [],
     failIfHeaderNotMatchesRegexp: this.props.settings.http?.failIfHeaderNotMatchesRegexp || [],
     cacheBustingQueryParamName: this.props.settings.http?.cacheBustingQueryParamName,
+    tlsConfig: this.props.settings.http?.tlsConfig,
 
     showAdvanced: false,
     showValidation: false,
