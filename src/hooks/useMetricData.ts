@@ -6,37 +6,37 @@ interface UseMetricOptions {
   skip?: boolean;
 }
 
-export function useMetricData(query: string, options?: (MetricQueryOptions & UseMetricOptions) | undefined) {
+const REFETCH_INTERVAL = 10000;
+
+export function useMetricData(query: string, options?: MetricQueryOptions & UseMetricOptions) {
   const { instance } = useContext(InstanceContext);
   const [isFetchingData, setIsFetchingData] = useState(true);
   const [data, setData] = useState<any[]>([]);
   const [error, setError] = useState<string | undefined>();
-  const [refetches, setRefetches] = useState(0);
 
   // refresh data every 60 seconds
   useEffect(() => {
-    const interval = setInterval(() => {
-      setRefetches(refetches + 1);
-    }, 60000);
-    return () => clearInterval(interval);
-  });
-
-  useEffect(() => {
     const getData = async () => {
-      setIsFetchingData(true);
       const url = instance?.api?.getMetricsDS()?.url;
-      if (!url) {
+      if (options?.skip || !url) {
         return;
       }
+      setIsFetchingData(true);
       const { error: queryError, data: queryData } = await queryMetric(url, query, options);
+
       setData(queryData);
       setError(queryError);
       setIsFetchingData(false);
     };
-    if (!options?.skip) {
+
+    getData();
+
+    const interval = setInterval(() => {
       getData();
-    }
-  }, [query, instance?.api, options, refetches]);
+    }, REFETCH_INTERVAL);
+
+    return () => clearInterval(interval);
+  }, [query, instance?.api, options]);
 
   return { loading: isFetchingData, data, error };
 }
