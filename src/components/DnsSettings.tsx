@@ -69,6 +69,24 @@ const DnsSettingsForm: FC<Props> = ({ settings, isEditor, labels, onUpdate }) =>
     []
   );
 
+  const onValidateAuthorityChange = useCallback(
+    (validations: DNSRRValidator | undefined) => {
+      const dns = getUpdatedSettings(values, { name: 'validateAuthorityRRS', value: validations });
+      onUpdate({ dns }, labels);
+    },
+    // eslint-disable-next-line
+    []
+  );
+
+  const onValidateAdditionalChange = useCallback(
+    (validations: DNSRRValidator | undefined) => {
+      const dns = getUpdatedSettings(values, { name: 'validateAdditionalRRS', value: validations });
+      onUpdate({ dns }, labels);
+    },
+    // eslint-disable-next-line
+    []
+  );
+
   return (
     <Container>
       <Collapse
@@ -176,26 +194,20 @@ const DnsSettingsForm: FC<Props> = ({ settings, isEditor, labels, onUpdate }) =>
             onChange={onValidateAnswerChange}
             isEditor={isEditor}
           />
-          {/* <DnsValidatorForm
+          <DnsValidatorForm
             name="Validate Authority"
             description="Validate entries in the Authority section of the DNS response"
             validations={values.validateAuthorityRRS}
-            onChange={(validations: DNSRRValidator | undefined) => {
-              const dns = getUpdatedSettings(values, { name: 'validateAuthorityRRS', value: validations });
-              onUpdate({ dns }, labels);
-            }}
+            onChange={onValidateAuthorityChange}
             isEditor={isEditor}
           />
           <DnsValidatorForm
             name="Validate Additional"
             description="Validate entries in the Additional section of the DNS response"
             validations={values.validateAdditionalRRS}
-            onChange={(validations: DNSRRValidator | undefined) => {
-              const dns = getUpdatedSettings(values, { name: 'validateAdditionalRRS', value: validations });
-              onUpdate({ dns }, labels);
-            }}
+            onChange={onValidateAdditionalChange}
             isEditor={isEditor}
-          /> */}
+          />
         </div>
       </Collapse>
       <Collapse
