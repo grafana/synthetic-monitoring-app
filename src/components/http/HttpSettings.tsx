@@ -30,11 +30,13 @@ import {
 import SMLabelsForm from 'components/SMLabelsForm';
 import { IP_OPTIONS } from '../constants';
 import { AuthSettings } from './AuthSettings';
+import { LabelField } from 'components/LabelField';
 
 interface Props {
   settings: Settings;
   isEditor: boolean;
-  onUpdate: (settings: Settings) => void;
+  labels: SMLabel[];
+  onUpdate: (settings: Settings, labels: SMLabel[]) => void;
 }
 
 interface State extends HttpSettings {
@@ -42,6 +44,8 @@ interface State extends HttpSettings {
   showValidation: boolean;
   showAuthentication: boolean;
   showTLS: boolean;
+  showHTTPSettings: boolean;
+  labels: SMLabel[];
 }
 
 export class HttpSettingsForm extends PureComponent<Props, State> {
@@ -51,6 +55,7 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
     headers: this.props.settings.http?.headers,
     ipVersion: this.props.settings.http?.ipVersion || IpVersion.V4,
     noFollowRedirects: this.props.settings.http?.noFollowRedirects || false,
+    labels: this.props.labels ?? [],
 
     // Authentication
     bearerToken: this.props.settings.http?.bearerToken,
@@ -68,6 +73,7 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
     cacheBustingQueryParamName: this.props.settings.http?.cacheBustingQueryParamName,
     tlsConfig: this.props.settings.http?.tlsConfig,
 
+    showHTTPSettings: false,
     showAdvanced: false,
     showValidation: false,
     showAuthentication: false,
@@ -76,9 +82,17 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
 
   onUpdate = () => {
     const settings = this.state as HttpSettings;
-    this.props.onUpdate({
-      http: settings,
-    });
+    const { labels } = this.state;
+    this.props.onUpdate(
+      {
+        http: settings,
+      },
+      labels
+    );
+  };
+
+  onLabelsChange = (labels: SMLabel[]) => {
+    this.setState({ labels }, this.onUpdate);
   };
 
   onMethodChange = (value: SelectableValue<HttpMethod>) => {
@@ -107,6 +121,10 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
 
   onCacheBustingQueryParamNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     this.setState({ cacheBustingQueryParamName: event.target.value }, this.onUpdate);
+  };
+
+  onToggleHTTPSettings = () => {
+    this.setState({ showHTTPSettings: !this.state.showHTTPSettings });
   };
 
   onToggleAdvanced = (isOpen: boolean) => {
@@ -367,32 +385,38 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
 
     return (
       <Container>
-        <HorizontalGroup>
-          <Field label="Request Method" description="The HTTP method the probe will use" disabled={!isEditor}>
-            <Select value={state.method} options={methodOptions} onChange={this.onMethodChange} />
-          </Field>
-        </HorizontalGroup>
-        <Container>
-          <Field label="Request Body" description="The body of the HTTP request used in probe." disabled={!isEditor}>
-            <div>
-              <TextArea value={state.body} onChange={this.onBodyChange} rows={2} disabled={!isEditor} />
-            </div>
-          </Field>
-        </Container>
-        <Container>
-          <Field label="Request Headers" description="The HTTP headers set for the probe.." disabled={!isEditor}>
-            <div>
-              <SMLabelsForm
-                labels={this.headersToLabels()}
-                isEditor={isEditor}
-                onUpdate={this.onHeadersUpdate}
-                type="Header"
-                limit={10}
-              />
-            </div>
-          </Field>
-        </Container>
-        <br />
+        <Collapse
+          label="HTTP Settings"
+          onToggle={this.onToggleHTTPSettings}
+          isOpen={state.showHTTPSettings}
+          collapsible
+        >
+          <HorizontalGroup>
+            <Field label="Request Method" description="The HTTP method the probe will use" disabled={!isEditor}>
+              <Select value={state.method} options={methodOptions} onChange={this.onMethodChange} />
+            </Field>
+          </HorizontalGroup>
+          <Container>
+            <Field label="Request Body" description="The body of the HTTP request used in probe." disabled={!isEditor}>
+              <div>
+                <TextArea value={state.body} onChange={this.onBodyChange} rows={2} disabled={!isEditor} />
+              </div>
+            </Field>
+          </Container>
+          <Container>
+            <Field label="Request Headers" description="The HTTP headers set for the probe.." disabled={!isEditor}>
+              <div>
+                <SMLabelsForm
+                  labels={this.headersToLabels()}
+                  isEditor={isEditor}
+                  onUpdate={this.onHeadersUpdate}
+                  type="Header"
+                  limit={10}
+                />
+              </div>
+            </Field>
+          </Container>
+        </Collapse>
         <Collapse label="TLS Config" collapsible={true} onToggle={this.onToggleTLS} isOpen={state.showTLS}>
           <TLSForm onChange={this.onTLSChange} isEditor={isEditor} tlsConfig={state.tlsConfig} />
         </Collapse>
@@ -525,6 +549,7 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
           onToggle={this.onToggleAdvanced}
           isOpen={state.showAdvanced}
         >
+          <LabelField labels={state.labels} isEditor={isEditor} onLabelsUpdate={this.onLabelsChange} />
           <HorizontalGroup>
             <div>
               <Field label="IP Version" description="The IP protocol of the HTTP request" disabled={!isEditor}>
@@ -548,20 +573,18 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
             </div>
           </HorizontalGroup>
           <HorizontalGroup>
-            <div>
-              <Field
-                label="Cache busting query parameter name"
-                description="The name of the query parameter used to prevent the server from using a cached response. Each probe will assign a random value to this parameter each time a request is made."
-              >
-                <Input
-                  type="string"
-                  placeholder="cache-bust"
-                  value={state.cacheBustingQueryParamName}
-                  onChange={this.onCacheBustingQueryParamNameChange}
-                  disabled={!isEditor}
-                />
-              </Field>
-            </div>
+            <Field
+              label="Cache busting query parameter name"
+              description="The name of the query parameter used to prevent the server from using a cached response. Each probe will assign a random value to this parameter each time a request is made."
+            >
+              <Input
+                type="string"
+                placeholder="cache-bust"
+                value={state.cacheBustingQueryParamName}
+                onChange={this.onCacheBustingQueryParamNameChange}
+                disabled={!isEditor}
+              />
+            </Field>
           </HorizontalGroup>
         </Collapse>
       </Container>
