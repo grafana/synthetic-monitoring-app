@@ -178,7 +178,7 @@ export default class CheckEditor extends PureComponent<Props, State> {
   };
 
   render() {
-    const { check, showDeleteModal, probes, probesLoading, typeOfCheck, showOptions, error } = this.state;
+    const { check, showDeleteModal, probesLoading, typeOfCheck, error } = this.state;
     if (!check || probesLoading) {
       return <div>Loading...</div>;
     }

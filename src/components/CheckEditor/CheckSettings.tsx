@@ -66,10 +66,24 @@ export default class CheckSettings extends PureComponent<Props, State> {
         );
       }
       case CheckType.HTTP: {
-        return <HttpSettingsForm settings={settings} onUpdate={this.onSettingsChange} isEditor={isEditor} />;
+        return (
+          <HttpSettingsForm
+            labels={labels ?? []}
+            settings={settings}
+            onUpdate={this.onSettingsChange}
+            isEditor={isEditor}
+          />
+        );
       }
       case CheckType.DNS: {
-        return <DnsSettingsForm settings={settings} onUpdate={this.onSettingsChange} isEditor={isEditor} />;
+        return (
+          <DnsSettingsForm
+            labels={labels ?? []}
+            settings={settings}
+            onUpdate={this.onSettingsChange}
+            isEditor={isEditor}
+          />
+        );
       }
       case CheckType.TCP: {
         return <TcpSettingsForm settings={settings} onUpdate={this.onSettingsChange} isEditor={isEditor} />;
