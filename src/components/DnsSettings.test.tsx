@@ -4,6 +4,7 @@ import { screen, render, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { DnsResponseCodes, Label } from 'types';
 jest.unmock('utils');
+jest.setTimeout(10000);
 
 const onUpdateMock = jest.fn();
 const defaultSettings = {};

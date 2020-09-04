@@ -5,6 +5,7 @@ import { ProbesPage } from './ProbesPage';
 import { InstanceContext } from 'components/InstanceContext';
 import { getInstanceMock, instanceSettings } from '../datasource/__mocks__/DataSource';
 import * as runtime from '@grafana/runtime';
+jest.setTimeout(10000);
 
 interface RenderArgs {
   id?: string;
