@@ -86,7 +86,14 @@ export default class CheckSettings extends PureComponent<Props, State> {
         );
       }
       case CheckType.TCP: {
-        return <TcpSettingsForm settings={settings} onUpdate={this.onSettingsChange} isEditor={isEditor} />;
+        return (
+          <TcpSettingsForm
+            settings={settings}
+            labels={labels ?? []}
+            onUpdate={this.onSettingsChange}
+            isEditor={isEditor}
+          />
+        );
       }
     }
   }
