@@ -1,6 +1,6 @@
-import React, { FC, useState, useEffect, useContext, ChangeEvent } from 'react';
+import React, { FC, useState, useEffect, useContext } from 'react';
 import { css } from 'emotion';
-import { Field, Input } from '@grafana/ui';
+import { Field } from '@grafana/ui';
 import { validateFrequency, validateProbes, validateTimeout } from 'validation';
 import CheckProbes from './CheckProbes';
 import { InstanceContext } from 'components/InstanceContext';

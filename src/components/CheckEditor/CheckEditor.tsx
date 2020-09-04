@@ -10,17 +10,15 @@ import {
   Switch,
   Select,
   Legend,
-  Collapse,
   Alert,
 } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
-import { Check, Label as SMLabel, Settings, CheckType, Probe, OrgRole, APIError } from 'types';
+import { Check, Label as SMLabel, CheckType, Probe, OrgRole, APIError } from 'types';
 import { SMDataSource } from 'datasource/DataSource';
 import { hasRole, checkType, defaultSettings } from 'utils';
-import SMLabelsForm from 'components/SMLabelsForm';
 import * as Validation from 'validation';
 import CheckTarget from 'components/CheckTarget';
-import CheckSettings from './CheckSettings';
+import CheckSettings, { OnUpdateArgs } from './CheckSettings';
 import { ProbeOptions, OnChangeArgs } from './ProbeOptions';
 
 interface Props {
@@ -86,9 +84,11 @@ export default class CheckEditor extends PureComponent<Props, State> {
     this.setState({ check });
   };
 
-  onSettingsUpdate = (settings: Settings) => {
+  onSettingsUpdate = ({ settings, labels }: OnUpdateArgs) => {
     let check = { ...this.state.check } as Check;
+
     check.settings = settings;
+    check.labels = labels ?? [];
     this.setState({ check });
   };
 
@@ -245,30 +245,13 @@ export default class CheckEditor extends PureComponent<Props, State> {
             probes={check.probes}
             onChange={this.onProbeOptionsChange}
           />
-          <Collapse label="Options" collapsible={true} onToggle={this.onToggleOptions} isOpen={showOptions}>
-            <Field
-              label="Labels"
-              description="Custom labels to be included with collected metrics and logs."
-              disabled={!isEditor}
-              invalid={!Validation.validateLabels(check.labels)}
-            >
-              <SMLabelsForm
-                labels={check.labels}
-                onUpdate={this.onLabelsUpdate}
-                isEditor={isEditor}
-                type="Label"
-                limit={5}
-              />
-            </Field>
-            <br />
-            <h3 className="page-heading">{typeOfCheck!.toLocaleUpperCase()} Settings</h3>
-            <CheckSettings
-              settings={check.settings}
-              typeOfCheck={typeOfCheck || CheckType.HTTP}
-              onUpdate={this.onSettingsUpdate}
-              isEditor={isEditor}
-            />
-          </Collapse>
+          <CheckSettings
+            labels={check.labels}
+            settings={check.settings}
+            typeOfCheck={typeOfCheck || CheckType.HTTP}
+            onUpdate={this.onSettingsUpdate}
+            isEditor={isEditor}
+          />
         </div>
         <HorizontalGroup>
           <Button onClick={this.onSave} disabled={!isEditor || !Validation.validateCheck(check)}>
