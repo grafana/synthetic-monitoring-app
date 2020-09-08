@@ -19,6 +19,7 @@ interface State extends TcpSettings {
   showQueryResponse: boolean;
   showAdvanced: boolean;
   showTLS: boolean;
+  showTCPSettings: boolean;
   labels: Label[];
 }
 /*
@@ -37,6 +38,7 @@ export default class TcpSettingsForm extends PureComponent<Props, State> {
     showQueryResponse: false,
     showAdvanced: false,
     showTLS: false,
+    showTCPSettings: false,
   };
 
   onUpdate = () => {
@@ -61,6 +63,10 @@ export default class TcpSettingsForm extends PureComponent<Props, State> {
 
   onToggleTLS = (isOpen: boolean) => {
     this.setState({ showTLS: !this.state.showTLS }, this.onUpdate);
+  };
+
+  onToggleTCPSettings = () => {
+    this.setState({ showTCPSettings: !this.state.showTCPSettings });
   };
 
   onTLSChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -97,26 +103,22 @@ export default class TcpSettingsForm extends PureComponent<Props, State> {
   };
 
   render() {
-    const { ipVersion, tls, showTLS, showQueryResponse, showAdvanced, tlsConfig, queryResponse, labels } = this.state;
+    const {
+      ipVersion,
+      tls,
+      showTCPSettings,
+      showTLS,
+      showQueryResponse,
+      showAdvanced,
+      tlsConfig,
+      queryResponse,
+      labels,
+    } = this.state;
     const { isEditor } = this.props;
 
     return (
       <Container>
-        <Collapse
-          label="Query/Response"
-          collapsible={true}
-          onToggle={this.onShowQueryResponse}
-          isOpen={showQueryResponse}
-        >
-          <Container>
-            <QueryResponseForm
-              queryResponses={queryResponse}
-              isEditor={isEditor}
-              onChange={this.onQueryResponsesUpdate}
-            />
-          </Container>
-        </Collapse>
-        <Collapse label="TLS Config" collapsible={true} onToggle={this.onToggleTLS} isOpen={showTLS}>
+        <Collapse label="TCP Settings" onToggle={this.onToggleTCPSettings} isOpen={showTCPSettings} collapsible>
           <Field
             label="Use TLS"
             description="Whether or not TLS is used when the connection is initiated."
@@ -126,9 +128,20 @@ export default class TcpSettingsForm extends PureComponent<Props, State> {
               <Switch title="Use TLS" value={tls} onChange={this.onTLSChange} disabled={!isEditor} />
             </Container>
           </Field>
+        </Collapse>
+        <Collapse label="Query/Response" onToggle={this.onShowQueryResponse} isOpen={showQueryResponse} collapsible>
+          <Container>
+            <QueryResponseForm
+              queryResponses={queryResponse}
+              isEditor={isEditor}
+              onChange={this.onQueryResponsesUpdate}
+            />
+          </Container>
+        </Collapse>
+        <Collapse label="TLS Config" onToggle={this.onToggleTLS} isOpen={showTLS} collapsible>
           <TLSForm onChange={this.onTLSCOnfigChange} isEditor={isEditor} tlsConfig={tlsConfig} />
         </Collapse>
-        <Collapse label="Advanced Options" collapsible={true} onToggle={this.onShowAdvanced} isOpen={showAdvanced}>
+        <Collapse label="Advanced Options" onToggle={this.onShowAdvanced} isOpen={showAdvanced} collapsible>
           <LabelField isEditor={isEditor} labels={labels} onLabelsUpdate={this.onLabelsChange} />
           <HorizontalGroup>
             <div>
