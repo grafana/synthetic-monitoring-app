@@ -1,11 +1,12 @@
 import React, { PureComponent } from 'react';
-import { Collapse, Container, HorizontalGroup, Field, Select, Switch } from '@grafana/ui';
+import { Container, HorizontalGroup, Field, Select, Switch } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
 import { IpVersion, Settings, TcpSettings, TLSConfig, TCPQueryResponse, Label } from 'types';
 import { TLSForm } from 'components/http/HttpSettings';
 import QueryResponseForm from './TcpQueryResponseForm';
 import { IP_OPTIONS } from '../constants';
 import { LabelField } from 'components/LabelField';
+import { Collapse } from 'components/Collapse';
 
 interface Props {
   settings: Settings;

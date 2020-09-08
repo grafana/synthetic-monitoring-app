@@ -1,6 +1,5 @@
 import React, { PureComponent } from 'react';
 import {
-  Collapse,
   Container,
   HorizontalGroup,
   Field,
@@ -27,6 +26,7 @@ import {
   TLSConfig,
   HeaderMatch,
 } from 'types';
+import { Collapse } from 'components/Collapse';
 import SMLabelsForm from 'components/SMLabelsForm';
 import { IP_OPTIONS } from '../constants';
 import { AuthSettings } from './AuthSettings';

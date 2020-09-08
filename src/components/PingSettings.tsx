@@ -1,5 +1,6 @@
 import React, { PureComponent } from 'react';
-import { Collapse, Container, HorizontalGroup, Field, Select, Switch } from '@grafana/ui';
+import { Container, HorizontalGroup, Field, Select, Switch } from '@grafana/ui';
+import { Collapse } from 'components/Collapse';
 import { SelectableValue } from '@grafana/data';
 import { IpVersion, Settings, PingSettings, Label } from 'types';
 import { IP_OPTIONS } from './constants';
