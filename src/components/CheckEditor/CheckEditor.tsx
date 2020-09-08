@@ -18,6 +18,7 @@ import { SMDataSource } from 'datasource/DataSource';
 import { hasRole, checkType, defaultSettings } from 'utils';
 import * as Validation from 'validation';
 import CheckTarget from 'components/CheckTarget';
+import { Subheader } from 'components/Subheader';
 import CheckSettings, { OnUpdateArgs } from './CheckSettings';
 import { ProbeOptions, OnChangeArgs } from './ProbeOptions';
 
@@ -213,6 +214,7 @@ export default class CheckEditor extends PureComponent<Props, State> {
       <div>
         <Legend>{legend}</Legend>
         <div>
+          <Subheader>Check Details</Subheader>
           <HorizontalGroup justify="flex-start" spacing="md">
             <Field label="Check Type" disabled={check.id ? true : false}>
               <Select value={typeOfCheck} options={checkTypes} onChange={this.onSetType} width={30} />
@@ -237,6 +239,11 @@ export default class CheckEditor extends PureComponent<Props, State> {
             checkSettings={check.settings}
             disabled={!isEditor}
             onChange={this.onTargetUpdate}
+          />
+          <hr
+            className={css`
+              margin-top: 24px;
+            `}
           />
           <ProbeOptions
             isEditor={isEditor}

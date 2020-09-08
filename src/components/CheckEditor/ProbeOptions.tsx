@@ -1,23 +1,17 @@
 import React, { FC, useState, useEffect, useContext } from 'react';
-import { css } from 'emotion';
 import { Field } from '@grafana/ui';
 import { validateFrequency, validateProbes, validateTimeout } from 'validation';
 import CheckProbes from './CheckProbes';
 import { InstanceContext } from 'components/InstanceContext';
 import { Probe } from 'types';
 import { SliderInput } from 'components/SliderInput';
+import { Subheader } from 'components/Subheader';
 
 export interface OnChangeArgs {
   timeout: number;
   frequency: number;
   probes: number[];
 }
-
-const styles = {
-  header: css`
-    margin-bottom: 1rem;
-  `,
-};
 
 interface Props {
   isEditor: boolean;
@@ -54,7 +48,7 @@ export const ProbeOptions: FC<Props> = ({ frequency, timeout, isEditor, onChange
 
   return (
     <div>
-      <h3 className={styles.header}>Probe Options</h3>
+      <Subheader>Probe Options</Subheader>
       <Field
         label="Probe Locations"
         description="Select up to 20 locations where this target will be checked from."

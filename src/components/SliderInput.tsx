@@ -20,7 +20,7 @@ const styles = {
   `,
   slider: css`
     width: 14rem;
-    margin-right: 1rem;
+    margin-right: 1.5rem;
     margin-left: 0;
   `,
   inputGroupWrapper: css`
@@ -29,6 +29,10 @@ const styles = {
     align-items: center;
   `,
   rightMargin: css`
+    margin-right: 0.5rem;
+  `,
+  sliderInput: css`
+    width: 40px;
     margin-right: 0.5rem;
   `,
 };
@@ -51,7 +55,7 @@ export const SliderInput: FC<Props> = ({ value, min, max, id, onChange, separati
         <Input
           id={id}
           invalid={invalid}
-          className={styles.rightMargin}
+          className={styles.sliderInput}
           type="number"
           value={value}
           max={max}
