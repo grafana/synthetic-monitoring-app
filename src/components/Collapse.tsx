@@ -10,19 +10,23 @@ interface Props {
   onToggle?: (isOpen: boolean) => void;
 }
 
-export const Collapse: FC<Props> = props => (
-  <div
-    className={css`
-      .panel-container {
-        border-right: none;
-        border-left: none;
-        border-bottom: none;
-      }
-      .panel-container :first-child {
-        padding-left: 0px;
-      }
-    `}
-  >
-    <GrafanaCollapse {...props} />
+const containerStyles = css`
+  .panel-container {
+    border-right: none;
+    border-left: none;
+    border-bottom: none;
+    margin-bottom: 0;
+  }
+  .panel-container > div:first-of-type {
+    padding: 16px 0px;
+  }
+  .panel-container > div:nth-child(2) {
+    padding: 0 8px;
+  }
+`;
+
+export const Collapse: FC<Props> = ({ isOpen, ...props }) => (
+  <div className={containerStyles}>
+    <GrafanaCollapse isOpen={isOpen} {...props} />
   </div>
 );
