@@ -1,6 +1,6 @@
 import React, { FC, ChangeEvent, useState, useCallback, useMemo } from 'react';
 import { css } from 'emotion';
-import { Collapse, Container, HorizontalGroup, Field, Select, MultiSelect, Input } from '@grafana/ui';
+import { Container, HorizontalGroup, Field, Select, MultiSelect, Input } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
 import {
   IpVersion,
@@ -13,6 +13,7 @@ import {
   DnsResponseCodes,
 } from 'types';
 import DnsValidatorForm from './DnsValidatorForm';
+import { Collapse } from 'components/Collapse';
 import { LabelField } from './LabelField';
 import { DNS_RESPONSE_CODES, DNS_RECORD_TYPES, DNS_PROTOCOLS, IP_OPTIONS } from './constants';
 
@@ -163,6 +164,9 @@ const DnsSettingsForm: FC<Props> = ({ settings, isEditor, labels, onUpdate }) =>
         onToggle={() => setShowValidation(!showValidation)}
         isOpen={showValidation}
         collapsible
+        css={css`
+          border: none;
+        `}
       >
         <HorizontalGroup>
           <Field label="Valid Response Codes" description="List of valid response codes" disabled={!isEditor}>
