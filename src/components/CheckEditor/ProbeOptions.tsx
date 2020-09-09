@@ -90,7 +90,7 @@ export const ProbeOptions: FC<Props> = ({ frequency, timeout, isEditor, onChange
           max={10}
           min={1}
           suffixLabel="seconds"
-          separationLabel="every"
+          separationLabel="after"
           onChange={value => setTimeoutValue(value * 1000)}
         />
       </Field>

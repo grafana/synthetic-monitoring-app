@@ -86,11 +86,12 @@ export default class CheckEditor extends PureComponent<Props, State> {
   };
 
   onSettingsUpdate = ({ settings, labels }: OnUpdateArgs) => {
-    let check = { ...this.state.check } as Check;
-
-    check.settings = settings;
-    check.labels = labels ?? [];
-    this.setState({ check });
+    this.setState(state => {
+      const check = state.check as Check;
+      check.settings = settings;
+      check.labels = labels ?? [];
+      return { check };
+    });
   };
 
   onSetType = (type: SelectableValue<CheckType>) => {
@@ -213,7 +214,11 @@ export default class CheckEditor extends PureComponent<Props, State> {
     return (
       <div>
         <Legend>{legend}</Legend>
-        <div>
+        <div
+          className={css`
+            margin-bottom: 8px;
+          `}
+        >
           <Subheader>Check Details</Subheader>
           <HorizontalGroup justify="flex-start" spacing="md">
             <Field label="Check Type" disabled={check.id ? true : false}>
