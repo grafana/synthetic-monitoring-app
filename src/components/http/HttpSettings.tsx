@@ -25,6 +25,7 @@ import {
   BasicAuth,
   TLSConfig,
   HeaderMatch,
+  OnUpdateSettingsArgs,
 } from 'types';
 import { Collapse } from 'components/Collapse';
 import SMLabelsForm from 'components/SMLabelsForm';
@@ -36,7 +37,7 @@ interface Props {
   settings: Settings;
   isEditor: boolean;
   labels: SMLabel[];
-  onUpdate: (settings: Settings, labels: SMLabel[]) => void;
+  onUpdate: (args: OnUpdateSettingsArgs) => void;
 }
 
 interface State extends HttpSettings {
@@ -83,12 +84,12 @@ export class HttpSettingsForm extends PureComponent<Props, State> {
   onUpdate = () => {
     const settings = this.state as HttpSettings;
     const { labels } = this.state;
-    this.props.onUpdate(
-      {
+    this.props.onUpdate({
+      settings: {
         http: settings,
       },
-      labels
-    );
+      labels,
+    });
   };
 
   onLabelsChange = (labels: SMLabel[]) => {

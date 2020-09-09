@@ -11,6 +11,7 @@ import {
   DnsRecordType,
   DNSRRValidator,
   DnsResponseCodes,
+  OnUpdateSettingsArgs,
 } from 'types';
 import DnsValidatorForm from './DnsValidatorForm';
 import { Collapse } from 'components/Collapse';
@@ -21,7 +22,7 @@ interface Props {
   settings: Settings;
   isEditor: boolean;
   labels: Label[];
-  onUpdate: (settings: Settings, labels: Label[]) => void;
+  onUpdate: (args: OnUpdateSettingsArgs) => void;
 }
 
 const defaultValues = {
@@ -55,7 +56,7 @@ const DnsSettingsForm: FC<Props> = ({ settings, isEditor, labels, onUpdate }) =>
       ...defaultValues,
       ...settings.dns,
     }),
-    [settings.dns]
+    [settings]
   );
 
   const [showValidation, setShowValidation] = useState(false);
@@ -64,28 +65,25 @@ const DnsSettingsForm: FC<Props> = ({ settings, isEditor, labels, onUpdate }) =>
   const onValidateAnswerChange = useCallback(
     (validations: DNSRRValidator | undefined) => {
       const dns = getUpdatedSettings(values, { name: 'validateAnswerRRS', value: validations });
-      onUpdate({ dns }, labels);
+      onUpdate({ settings: { dns }, labels });
     },
-    // eslint-disable-next-line
-    []
+    [onUpdate, labels, values]
   );
 
   const onValidateAuthorityChange = useCallback(
     (validations: DNSRRValidator | undefined) => {
       const dns = getUpdatedSettings(values, { name: 'validateAuthorityRRS', value: validations });
-      onUpdate({ dns }, labels);
+      onUpdate({ settings: { dns }, labels });
     },
-    // eslint-disable-next-line
-    []
+    [onUpdate, labels, values]
   );
 
   const onValidateAdditionalChange = useCallback(
     (validations: DNSRRValidator | undefined) => {
       const dns = getUpdatedSettings(values, { name: 'validateAdditionalRRS', value: validations });
-      onUpdate({ dns }, labels);
+      onUpdate({ settings: { dns }, labels });
     },
-    // eslint-disable-next-line
-    []
+    [onUpdate, labels, values]
   );
 
   return (
@@ -111,7 +109,7 @@ const DnsSettingsForm: FC<Props> = ({ settings, isEditor, labels, onUpdate }) =>
                   value: selected.value,
                   fallbackValue: DnsRecordType.A,
                 });
-                onUpdate({ dns }, labels);
+                onUpdate({ settings: { dns }, labels });
               }}
             />
           </Field>
@@ -127,7 +125,7 @@ const DnsSettingsForm: FC<Props> = ({ settings, isEditor, labels, onUpdate }) =>
                   value: e.target.value,
                   fallbackValue: '8.8.8.8',
                 });
-                onUpdate({ dns }, labels);
+                onUpdate({ settings: { dns }, labels });
               }}
             />
           </Field>
@@ -141,7 +139,7 @@ const DnsSettingsForm: FC<Props> = ({ settings, isEditor, labels, onUpdate }) =>
                   value: selected.value,
                   fallbackValue: DnsProtocol.UDP,
                 });
-                onUpdate({ dns }, labels);
+                onUpdate({ settings: { dns }, labels });
               }}
             />
           </Field>
@@ -153,7 +151,7 @@ const DnsSettingsForm: FC<Props> = ({ settings, isEditor, labels, onUpdate }) =>
               placeholder="port"
               onChange={(e: ChangeEvent<HTMLInputElement>) => {
                 const dns = getUpdatedSettings(values, { name: 'port', value: e.target.value, fallbackValue: 53 });
-                onUpdate({ dns }, labels);
+                onUpdate({ settings: { dns }, labels });
               }}
             />
           </Field>
@@ -164,9 +162,6 @@ const DnsSettingsForm: FC<Props> = ({ settings, isEditor, labels, onUpdate }) =>
         onToggle={() => setShowValidation(!showValidation)}
         isOpen={showValidation}
         collapsible
-        css={css`
-          border: none;
-        `}
       >
         <HorizontalGroup>
           <Field label="Valid Response Codes" description="List of valid response codes" disabled={!isEditor}>
@@ -179,7 +174,7 @@ const DnsSettingsForm: FC<Props> = ({ settings, isEditor, labels, onUpdate }) =>
                   value: responseCodes.map(code => code.value),
                   fallbackValue: [DnsResponseCodes.NOERROR],
                 });
-                onUpdate({ dns }, labels);
+                onUpdate({ settings: { dns }, labels });
               }}
             />
           </Field>
@@ -224,7 +219,7 @@ const DnsSettingsForm: FC<Props> = ({ settings, isEditor, labels, onUpdate }) =>
           isEditor={isEditor}
           labels={labels}
           onLabelsUpdate={labelsValue => {
-            onUpdate({ dns: values }, labelsValue);
+            onUpdate({ settings: { dns: values }, labels: labelsValue });
           }}
         />
         <HorizontalGroup>
@@ -238,7 +233,7 @@ const DnsSettingsForm: FC<Props> = ({ settings, isEditor, labels, onUpdate }) =>
                   value: selected.value,
                   fallbackValue: IpVersion.Any,
                 });
-                onUpdate({ dns }, labels);
+                onUpdate({ settings: { dns }, labels });
               }}
             />
           </Field>

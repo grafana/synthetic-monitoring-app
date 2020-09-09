@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import { Container, HorizontalGroup, Field, Select, Switch } from '@grafana/ui';
 import { Collapse } from 'components/Collapse';
 import { SelectableValue } from '@grafana/data';
-import { IpVersion, Settings, PingSettings, Label } from 'types';
+import { IpVersion, Settings, PingSettings, Label, OnUpdateSettingsArgs } from 'types';
 import { IP_OPTIONS } from './constants';
 import { LabelField } from 'components/LabelField';
 
@@ -10,7 +10,7 @@ interface Props {
   settings: Settings;
   labels?: Label[];
   isEditor: boolean;
-  onUpdate: (settings: Settings, labels: Label[]) => void;
+  onUpdate: (args: OnUpdateSettingsArgs) => void;
 }
 
 interface State extends PingSettings {
@@ -30,7 +30,7 @@ export class PingSettingsForm extends PureComponent<Props, State> {
   onUpdate = () => {
     const { settings, labels } = this.state;
     const pingSettings = { settings: { ping: settings } } as Settings;
-    this.props.onUpdate(pingSettings, labels);
+    this.props.onUpdate({ settings: pingSettings, labels });
   };
 
   onIpVersionChange = (value: SelectableValue<IpVersion>) => {

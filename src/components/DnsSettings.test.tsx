@@ -33,8 +33,8 @@ describe('Validations', () => {
     userEvent.click(addButton);
     const addInput = await within(answerValidations).findByRole('textbox');
     await userEvent.type(addInput, 'a validation');
-    expect(onUpdateMock).toHaveBeenLastCalledWith(
-      {
+    expect(onUpdateMock).toHaveBeenLastCalledWith({
+      settings: {
         dns: {
           ipVersion: 'V4',
           port: 53,
@@ -56,8 +56,8 @@ describe('Validations', () => {
           },
         },
       },
-      []
-    );
+      labels: [],
+    });
   });
 
   it('adds answer does not match validations', async () => {
@@ -69,8 +69,8 @@ describe('Validations', () => {
     userEvent.click(addButton);
     const addInput = await within(answerValidations).findByRole('textbox');
     await userEvent.type(addInput, 'a validation');
-    expect(onUpdateMock).toHaveBeenLastCalledWith(
-      {
+    expect(onUpdateMock).toHaveBeenLastCalledWith({
+      settings: {
         dns: {
           ipVersion: 'V4',
           port: 53,
@@ -92,8 +92,8 @@ describe('Validations', () => {
           },
         },
       },
-      []
-    );
+      labels: [],
+    });
   });
 
   it('adds authority does match validations', async () => {
@@ -105,8 +105,8 @@ describe('Validations', () => {
     userEvent.click(addButton);
     const addInput = await within(answerValidations).findByRole('textbox');
     await userEvent.type(addInput, 'a validation');
-    expect(onUpdateMock).toHaveBeenLastCalledWith(
-      {
+    expect(onUpdateMock).toHaveBeenLastCalledWith({
+      settings: {
         dns: {
           ipVersion: 'V4',
           port: 53,
@@ -128,8 +128,8 @@ describe('Validations', () => {
           },
         },
       },
-      []
-    );
+      labels: [],
+    });
   });
 
   it('adds authority does not match validations', async () => {
@@ -141,8 +141,8 @@ describe('Validations', () => {
     userEvent.click(addButton);
     const addInput = await within(answerValidations).findByRole('textbox');
     await userEvent.type(addInput, 'a validation');
-    expect(onUpdateMock).toHaveBeenLastCalledWith(
-      {
+    expect(onUpdateMock).toHaveBeenLastCalledWith({
+      settings: {
         dns: {
           ipVersion: 'V4',
           port: 53,
@@ -164,8 +164,8 @@ describe('Validations', () => {
           },
         },
       },
-      []
-    );
+      labels: [],
+    });
   });
 });
 

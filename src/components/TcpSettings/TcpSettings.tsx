@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import { Container, HorizontalGroup, Field, Select, Switch } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
-import { IpVersion, Settings, TcpSettings, TLSConfig, TCPQueryResponse, Label } from 'types';
+import { IpVersion, Settings, TcpSettings, TLSConfig, TCPQueryResponse, Label, OnUpdateSettingsArgs } from 'types';
 import { TLSForm } from 'components/http/HttpSettings';
 import QueryResponseForm from './TcpQueryResponseForm';
 import { IP_OPTIONS } from '../constants';
@@ -12,7 +12,7 @@ interface Props {
   settings: Settings;
   isEditor: boolean;
   labels: Label[];
-  onUpdate: (settings: Settings, labels: Label[]) => void;
+  onUpdate: (args: OnUpdateSettingsArgs) => void;
 }
 
 interface State extends TcpSettings {
@@ -49,12 +49,12 @@ export default class TcpSettingsForm extends PureComponent<Props, State> {
       tlsConfig,
       queryResponse,
     };
-    this.props.onUpdate(
-      {
+    this.props.onUpdate({
+      settings: {
         tcp: settings,
       },
-      labels
-    );
+      labels,
+    });
   };
 
   onIpVersionChange = (value: SelectableValue<IpVersion>) => {

@@ -13,13 +13,13 @@ import {
   Alert,
 } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
-import { Check, Label as SMLabel, CheckType, Probe, OrgRole, APIError } from 'types';
+import { Check, Label as SMLabel, CheckType, Probe, OrgRole, APIError, OnUpdateSettingsArgs } from 'types';
 import { SMDataSource } from 'datasource/DataSource';
 import { hasRole, checkType, defaultSettings } from 'utils';
 import * as Validation from 'validation';
 import CheckTarget from 'components/CheckTarget';
 import { Subheader } from 'components/Subheader';
-import CheckSettings, { OnUpdateArgs } from './CheckSettings';
+import { CheckSettings } from './CheckSettings';
 import { ProbeOptions, OnChangeArgs } from './ProbeOptions';
 
 interface Props {
@@ -85,7 +85,7 @@ export default class CheckEditor extends PureComponent<Props, State> {
     this.setState({ check });
   };
 
-  onSettingsUpdate = ({ settings, labels }: OnUpdateArgs) => {
+  onSettingsUpdate = ({ settings, labels }: OnUpdateSettingsArgs) => {
     this.setState(state => {
       const check = state.check as Check;
       check.settings = settings;

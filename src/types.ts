@@ -254,3 +254,8 @@ export interface APIError {
   status: number;
   message: string;
 }
+
+export interface OnUpdateSettingsArgs {
+  settings: Settings;
+  labels?: Label[];
+}
