@@ -122,15 +122,14 @@ export default class CheckEditor extends PureComponent<Props, State> {
   };
 
   onProbeOptionsChange = ({ timeout, frequency, probes }: OnChangeArgs) => {
-    const { check } = this.state;
-    this.setState({
+    this.setState(state => ({
       check: {
-        ...check,
+        ...state.check,
         timeout,
         frequency,
         probes,
       },
-    });
+    }));
   };
 
   onFrequencyUpdate = (event: React.ChangeEvent<HTMLInputElement>) => {
