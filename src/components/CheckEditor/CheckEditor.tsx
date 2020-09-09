@@ -10,18 +10,17 @@ import {
   Switch,
   Select,
   Legend,
-  Collapse,
   Alert,
 } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
-import { Check, Label as SMLabel, Settings, CheckType, Probe, OrgRole, APIError } from 'types';
+import { Check, Label as SMLabel, CheckType, Probe, OrgRole, APIError, OnUpdateSettingsArgs } from 'types';
 import { SMDataSource } from 'datasource/DataSource';
 import { hasRole, checkType, defaultSettings } from 'utils';
-import SMLabelsForm from 'components/SMLabelsForm';
 import * as Validation from 'validation';
 import CheckTarget from 'components/CheckTarget';
-import CheckSettings from './CheckSettings';
-import CheckProbes from './CheckProbes';
+import { Subheader } from 'components/Subheader';
+import { CheckSettings } from './CheckSettings';
+import { ProbeOptions, OnChangeArgs } from './ProbeOptions';
 
 interface Props {
   check: Check;
@@ -86,10 +85,13 @@ export default class CheckEditor extends PureComponent<Props, State> {
     this.setState({ check });
   };
 
-  onSettingsUpdate = (settings: Settings) => {
-    let check = { ...this.state.check } as Check;
-    check.settings = settings;
-    this.setState({ check });
+  onSettingsUpdate = ({ settings, labels }: OnUpdateSettingsArgs) => {
+    this.setState(state => {
+      const check = state.check as Check;
+      check.settings = settings;
+      check.labels = labels ?? [];
+      return { check };
+    });
   };
 
   onSetType = (type: SelectableValue<CheckType>) => {
@@ -117,6 +119,17 @@ export default class CheckEditor extends PureComponent<Props, State> {
     let check = { ...this.state.check } as Check;
     check.target = target;
     this.setState({ check });
+  };
+
+  onProbeOptionsChange = ({ timeout, frequency, probes }: OnChangeArgs) => {
+    this.setState(state => ({
+      check: {
+        ...state.check,
+        timeout,
+        frequency,
+        probes,
+      },
+    }));
   };
 
   onFrequencyUpdate = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -166,7 +179,7 @@ export default class CheckEditor extends PureComponent<Props, State> {
   };
 
   render() {
-    const { check, showDeleteModal, probes, probesLoading, typeOfCheck, showOptions, error } = this.state;
+    const { check, showDeleteModal, probesLoading, typeOfCheck, error } = this.state;
     if (!check || probesLoading) {
       return <div>Loading...</div>;
     }
@@ -200,7 +213,12 @@ export default class CheckEditor extends PureComponent<Props, State> {
     return (
       <div>
         <Legend>{legend}</Legend>
-        <div>
+        <div
+          className={css`
+            margin-bottom: 8px;
+          `}
+        >
+          <Subheader>Check Details</Subheader>
           <HorizontalGroup justify="flex-start" spacing="md">
             <Field label="Check Type" disabled={check.id ? true : false}>
               <Select value={typeOfCheck} options={checkTypes} onChange={this.onSetType} width={30} />
@@ -226,82 +244,25 @@ export default class CheckEditor extends PureComponent<Props, State> {
             disabled={!isEditor}
             onChange={this.onTargetUpdate}
           />
-          <div>
-            <Field
-              label="Probe Locations"
-              description="Select the locations where this target should be monitored from"
-              disabled={!isEditor}
-              invalid={!Validation.validateProbes(check.probes)}
-            >
-              <CheckProbes
-                probes={check.probes}
-                availableProbes={probes}
-                onUpdate={this.onProbesUpdate}
-                isEditor={isEditor}
-              />
-            </Field>
-          </div>
-          <Collapse label="Options" collapsible={true} onToggle={this.onToggleOptions} isOpen={showOptions}>
-            <Field
-              label="Frequency"
-              description="How frequently the check should run."
-              disabled={!isEditor}
-              invalid={!Validation.validateFrequency(check.frequency)}
-            >
-              <Input
-                label="Frequency"
-                type="number"
-                step={10}
-                value={check!.frequency / 1000 || 60}
-                onChange={this.onFrequencyUpdate}
-                suffix="seconds"
-                max={120}
-                min={10}
-                width={30}
-              />
-            </Field>
-            <Field
-              label="Timeout"
-              description="Maximum execution time for a check"
-              disabled={!isEditor}
-              invalid={!Validation.validateTimeout(check.timeout)}
-            >
-              <Input
-                label="Timeout"
-                type="number"
-                step={0.1}
-                value={check!.timeout / 1000 || 5}
-                onChange={this.onTimeoutUpdate}
-                suffix="seconds"
-                max={10}
-                min={1}
-                width={30}
-              />
-            </Field>
-
-            <Field
-              label="Labels"
-              description="Custom labels to be included with collected metrics and logs."
-              disabled={!isEditor}
-              invalid={!Validation.validateLabels(check.labels)}
-            >
-              <SMLabelsForm
-                labels={check.labels}
-                onUpdate={this.onLabelsUpdate}
-                isEditor={isEditor}
-                type="Label"
-                limit={5}
-              />
-            </Field>
-            <br />
-            <h3 className="page-heading">{typeOfCheck!.toLocaleUpperCase()} Settings</h3>
-            <CheckSettings
-              settings={check.settings}
-              typeOfCheck={typeOfCheck || CheckType.HTTP}
-              onUpdate={this.onSettingsUpdate}
-              isEditor={isEditor}
-            />
-          </Collapse>
+          <hr
+            className={css`
+              margin-top: 24px;
+            `}
+          />
+          <ProbeOptions
+            isEditor={isEditor}
+            timeout={check.timeout}
+            frequency={check.frequency}
+            probes={check.probes}
+            onChange={this.onProbeOptionsChange}
+          />
+          <CheckSettings
+            labels={check.labels}
+            settings={check.settings}
+            typeOfCheck={typeOfCheck || CheckType.HTTP}
+            onUpdate={this.onSettingsUpdate}
+            isEditor={isEditor}
+          />
         </div>
         <HorizontalGroup>
           <Button onClick={this.onSave} disabled={!isEditor || !Validation.validateCheck(check)}>

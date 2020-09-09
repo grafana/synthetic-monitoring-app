@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import React, { FC, useCallback, useMemo } from 'react';
 import { DNSRRValidator } from 'types';
 import ListInput from './ListInput';
 
@@ -11,8 +11,28 @@ interface Props {
 }
 
 const DnsValidatorForm: FC<Props> = ({ onChange, validations, isEditor, name, description }) => {
-  const failIfMatchesRegexp = validations?.failIfMatchesRegexp ?? [];
-  const failIfNotMatchesRegexp = validations?.failIfNotMatchesRegexp ?? [];
+  const failIfMatchesRegexp = useMemo(() => validations?.failIfMatchesRegexp ?? [], [validations]);
+  const failIfNotMatchesRegexp = useMemo(() => validations?.failIfNotMatchesRegexp ?? [], [validations]);
+
+  const onFailIfMatchesUpdate = useCallback(
+    (failIfMatches: string[]) => {
+      onChange({
+        failIfMatchesRegexp: failIfMatches,
+        failIfNotMatchesRegexp,
+      });
+    },
+    [onChange, failIfNotMatchesRegexp]
+  );
+
+  const onFailIfNotMatchesUpdate = useCallback(
+    (failIfNotMatches: string[]) => {
+      onChange({
+        failIfNotMatchesRegexp: failIfNotMatches,
+        failIfMatchesRegexp,
+      });
+    },
+    [onChange, failIfMatchesRegexp]
+  );
 
   const dataTestId = name.replace(' ', '-').toLowerCase();
   return (
@@ -23,12 +43,7 @@ const DnsValidatorForm: FC<Props> = ({ onChange, validations, isEditor, name, de
         description={`${description} match`}
         placeholder="Enter regexp"
         items={failIfMatchesRegexp}
-        onUpdate={(failIfMatches: string[]) => {
-          onChange({
-            failIfMatchesRegexp: failIfMatches,
-            failIfNotMatchesRegexp,
-          });
-        }}
+        onUpdate={onFailIfMatchesUpdate}
         disabled={!isEditor}
       />
       <ListInput
@@ -37,12 +52,7 @@ const DnsValidatorForm: FC<Props> = ({ onChange, validations, isEditor, name, de
         description={`${description} don't match`}
         placeholder="Enter regexp"
         items={failIfNotMatchesRegexp}
-        onUpdate={(failIfNotMatches: string[]) => {
-          onChange({
-            failIfNotMatchesRegexp: failIfNotMatches,
-            failIfMatchesRegexp,
-          });
-        }}
+        onUpdate={onFailIfNotMatchesUpdate}
         disabled={!isEditor}
       />
     </>

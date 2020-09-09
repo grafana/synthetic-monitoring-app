@@ -1,5 +1,6 @@
 import React, { FC, useState } from 'react';
-import { Alert, Button, Collapse, Container, Field, Form, HorizontalGroup, InfoBox, Input } from '@grafana/ui';
+import { Alert, Button, Container, Field, Form, HorizontalGroup, InfoBox, Input } from '@grafana/ui';
+import { Collapse } from 'components/Collapse';
 import { DEFAULT_API_HOST } from './constants';
 
 interface FormValues {

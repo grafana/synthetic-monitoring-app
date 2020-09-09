@@ -1,21 +1,26 @@
 import React, { PureComponent } from 'react';
-import { Collapse, Container, HorizontalGroup, Field, Select, Switch } from '@grafana/ui';
+import { Container, HorizontalGroup, Field, Select, Switch } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
-import { IpVersion, Settings, TcpSettings, TLSConfig, TCPQueryResponse } from 'types';
+import { IpVersion, Settings, TcpSettings, TLSConfig, TCPQueryResponse, Label, OnUpdateSettingsArgs } from 'types';
 import { TLSForm } from 'components/http/HttpSettings';
 import QueryResponseForm from './TcpQueryResponseForm';
 import { IP_OPTIONS } from '../constants';
+import { LabelField } from 'components/LabelField';
+import { Collapse } from 'components/Collapse';
 
 interface Props {
   settings: Settings;
   isEditor: boolean;
-  onUpdate: (settings: Settings) => void;
+  labels: Label[];
+  onUpdate: (args: OnUpdateSettingsArgs) => void;
 }
 
 interface State extends TcpSettings {
   showQueryResponse: boolean;
   showAdvanced: boolean;
   showTLS: boolean;
+  showTCPSettings: boolean;
+  labels: Label[];
 }
 /*
 ipVersion: IpVersion;
@@ -29,15 +34,26 @@ export default class TcpSettingsForm extends PureComponent<Props, State> {
     tls: this.props.settings!.tcp?.tls || false,
     tlsConfig: this.props.settings!.tcp?.tlsConfig,
     queryResponse: this.props.settings!.tcp?.queryResponse,
+    labels: this.props.labels ?? [],
     showQueryResponse: false,
     showAdvanced: false,
     showTLS: false,
+    showTCPSettings: false,
   };
 
   onUpdate = () => {
-    const settings = this.state as TcpSettings;
+    const { ipVersion, tls, tlsConfig, queryResponse, labels } = this.state;
+    const settings = {
+      ipVersion,
+      tls,
+      tlsConfig,
+      queryResponse,
+    };
     this.props.onUpdate({
-      tcp: settings,
+      settings: {
+        tcp: settings,
+      },
+      labels,
     });
   };
 
@@ -47,6 +63,10 @@ export default class TcpSettingsForm extends PureComponent<Props, State> {
 
   onToggleTLS = (isOpen: boolean) => {
     this.setState({ showTLS: !this.state.showTLS }, this.onUpdate);
+  };
+
+  onToggleTCPSettings = () => {
+    this.setState({ showTCPSettings: !this.state.showTCPSettings });
   };
 
   onTLSChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -65,6 +85,10 @@ export default class TcpSettingsForm extends PureComponent<Props, State> {
     this.setState({ showQueryResponse: !this.state.showQueryResponse });
   };
 
+  onLabelsChange = (labels: Label[]) => {
+    this.setState({ labels }, this.onUpdate);
+  };
+
   onQueryResponsesUpdate = (queryResponse: TCPQueryResponse[]) => {
     let config: TCPQueryResponse[] = [];
     if (!this.state.queryResponse) {
@@ -79,26 +103,33 @@ export default class TcpSettingsForm extends PureComponent<Props, State> {
   };
 
   render() {
-    const { ipVersion, tls, showTLS, showQueryResponse, showAdvanced, tlsConfig, queryResponse } = this.state;
+    const {
+      ipVersion,
+      tls,
+      showTCPSettings,
+      showTLS,
+      showQueryResponse,
+      showAdvanced,
+      tlsConfig,
+      queryResponse,
+      labels,
+    } = this.state;
     const { isEditor } = this.props;
 
     return (
       <Container>
-        <Field
-          label="Use TLS"
-          description="Whether or not TLS is used when the connection is initiated."
-          disabled={!isEditor}
-        >
-          <Container padding="sm">
-            <Switch title="Use TLS" value={tls} onChange={this.onTLSChange} disabled={!isEditor} />
-          </Container>
-        </Field>
-        <Collapse
-          label="Query/Response"
-          collapsible={true}
-          onToggle={this.onShowQueryResponse}
-          isOpen={showQueryResponse}
-        >
+        <Collapse label="TCP Settings" onToggle={this.onToggleTCPSettings} isOpen={showTCPSettings} collapsible>
+          <Field
+            label="Use TLS"
+            description="Whether or not TLS is used when the connection is initiated."
+            disabled={!isEditor}
+          >
+            <Container padding="sm">
+              <Switch title="Use TLS" value={tls} onChange={this.onTLSChange} disabled={!isEditor} />
+            </Container>
+          </Field>
+        </Collapse>
+        <Collapse label="Query/Response" onToggle={this.onShowQueryResponse} isOpen={showQueryResponse} collapsible>
           <Container>
             <QueryResponseForm
               queryResponses={queryResponse}
@@ -107,10 +138,11 @@ export default class TcpSettingsForm extends PureComponent<Props, State> {
             />
           </Container>
         </Collapse>
-        <Collapse label="TLS Config" collapsible={true} onToggle={this.onToggleTLS} isOpen={showTLS}>
+        <Collapse label="TLS Config" onToggle={this.onToggleTLS} isOpen={showTLS} collapsible>
           <TLSForm onChange={this.onTLSCOnfigChange} isEditor={isEditor} tlsConfig={tlsConfig} />
         </Collapse>
-        <Collapse label="Advanced Options" collapsible={true} onToggle={this.onShowAdvanced} isOpen={showAdvanced}>
+        <Collapse label="Advanced Options" onToggle={this.onShowAdvanced} isOpen={showAdvanced} collapsible>
+          <LabelField isEditor={isEditor} labels={labels} onLabelsUpdate={this.onLabelsChange} />
           <HorizontalGroup>
             <div>
               <Field label="IP Version" description="The IP protocol of the ICMP request" disabled={!isEditor}>

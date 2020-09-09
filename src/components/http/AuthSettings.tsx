@@ -1,6 +1,7 @@
 import React, { PureComponent } from 'react';
 import { css } from 'emotion';
-import { Collapse, Container, HorizontalGroup, Field, Switch, Input, VerticalGroup } from '@grafana/ui';
+import { Container, HorizontalGroup, Field, Switch, Input, VerticalGroup } from '@grafana/ui';
+import { Collapse } from 'components/Collapse';
 import { BasicAuth } from 'types';
 
 interface Props {

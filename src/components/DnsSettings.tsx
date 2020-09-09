@@ -1,15 +1,28 @@
-import React, { FC, ChangeEvent, useState } from 'react';
+import React, { FC, ChangeEvent, useState, useCallback, useMemo } from 'react';
 import { css } from 'emotion';
-import { Collapse, Container, HorizontalGroup, Field, Select, MultiSelect, Input } from '@grafana/ui';
+import { Container, HorizontalGroup, Field, Select, MultiSelect, Input } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
-import { IpVersion, Settings, DnsSettings, DnsProtocol, DnsRecordType, DNSRRValidator, DnsResponseCodes } from 'types';
+import {
+  IpVersion,
+  Label,
+  Settings,
+  DnsSettings,
+  DnsProtocol,
+  DnsRecordType,
+  DNSRRValidator,
+  DnsResponseCodes,
+  OnUpdateSettingsArgs,
+} from 'types';
 import DnsValidatorForm from './DnsValidatorForm';
+import { Collapse } from 'components/Collapse';
+import { LabelField } from './LabelField';
 import { DNS_RESPONSE_CODES, DNS_RECORD_TYPES, DNS_PROTOCOLS, IP_OPTIONS } from './constants';
 
 interface Props {
   settings: Settings;
   isEditor: boolean;
-  onUpdate: (settings: Settings) => void;
+  labels: Label[];
+  onUpdate: (args: OnUpdateSettingsArgs) => void;
 }
 
 const defaultValues = {
@@ -37,80 +50,118 @@ function getUpdatedSettings(settings: DnsSettings, action: Action): DnsSettings 
   };
 }
 
-const DnsSettingsForm: FC<Props> = ({ settings, isEditor, onUpdate }) => {
-  const values = {
-    ...defaultValues,
-    ...settings.dns,
-  };
+const DnsSettingsForm: FC<Props> = ({ settings, isEditor, labels, onUpdate }) => {
+  const values = useMemo(
+    () => ({
+      ...defaultValues,
+      ...settings.dns,
+    }),
+    [settings]
+  );
 
   const [showValidation, setShowValidation] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showDNSSettings, setShowDNSSettings] = useState(false);
+  const onValidateAnswerChange = useCallback(
+    (validations: DNSRRValidator | undefined) => {
+      const dns = getUpdatedSettings(values, { name: 'validateAnswerRRS', value: validations });
+      onUpdate({ settings: { dns }, labels });
+    },
+    [onUpdate, labels, values]
+  );
+
+  const onValidateAuthorityChange = useCallback(
+    (validations: DNSRRValidator | undefined) => {
+      const dns = getUpdatedSettings(values, { name: 'validateAuthorityRRS', value: validations });
+      onUpdate({ settings: { dns }, labels });
+    },
+    [onUpdate, labels, values]
+  );
+
+  const onValidateAdditionalChange = useCallback(
+    (validations: DNSRRValidator | undefined) => {
+      const dns = getUpdatedSettings(values, { name: 'validateAdditionalRRS', value: validations });
+      onUpdate({ settings: { dns }, labels });
+    },
+    [onUpdate, labels, values]
+  );
 
   return (
     <Container>
-      <HorizontalGroup>
-        <Field label="Record Type" description="DNS record type to query for" disabled={!isEditor}>
-          <Select
-            value={values.recordType}
-            options={DNS_RECORD_TYPES}
-            onChange={(selected: SelectableValue<DnsRecordType>) => {
-              const dns = getUpdatedSettings(values, {
-                name: 'recordType',
-                value: selected.value,
-                fallbackValue: DnsRecordType.A,
-              });
-              onUpdate({ dns });
-            }}
-          />
-        </Field>
-        <Field label="Server" description="Address of server to query" disabled={!isEditor}>
-          <Input
-            id="dns-settings-server-address"
-            value={values.server}
-            type="text"
-            placeholder="server"
-            onChange={(e: ChangeEvent<HTMLInputElement>) => {
-              const dns = getUpdatedSettings(values, {
-                name: 'server',
-                value: e.target.value,
-                fallbackValue: '8.8.8.8',
-              });
-              onUpdate({ dns });
-            }}
-          />
-        </Field>
-        <Field label="Protocol" description="Transport protocol to use" disabled={!isEditor}>
-          <Select
-            value={values.protocol}
-            options={DNS_PROTOCOLS}
-            onChange={selected => {
-              const dns = getUpdatedSettings(values, {
-                name: 'protocol',
-                value: selected.value,
-                fallbackValue: DnsProtocol.UDP,
-              });
-              onUpdate({ dns });
-            }}
-          />
-        </Field>
-        <Field label="Port" description="port on server to query" disabled={!isEditor}>
-          <Input
-            id="dns-settings-port"
-            value={values.port}
-            type="number"
-            placeholder="port"
-            onChange={(e: ChangeEvent<HTMLInputElement>) => {
-              const dns = getUpdatedSettings(values, { name: 'port', value: e.target.value, fallbackValue: 53 });
-              onUpdate({ dns });
-            }}
-          />
-        </Field>
-      </HorizontalGroup>
+      <Collapse
+        label="DNS Settings"
+        onToggle={() => setShowDNSSettings(!showDNSSettings)}
+        isOpen={showDNSSettings}
+        collapsible
+      >
+        <div
+          className={css`
+            max-width: 240px;
+          `}
+        >
+          <Field label="Record Type" disabled={!isEditor}>
+            <Select
+              value={values.recordType}
+              options={DNS_RECORD_TYPES}
+              onChange={(selected: SelectableValue<DnsRecordType>) => {
+                const dns = getUpdatedSettings(values, {
+                  name: 'recordType',
+                  value: selected.value,
+                  fallbackValue: DnsRecordType.A,
+                });
+                onUpdate({ settings: { dns }, labels });
+              }}
+            />
+          </Field>
+          <Field label="Server" disabled={!isEditor}>
+            <Input
+              id="dns-settings-server-address"
+              value={values.server}
+              type="text"
+              placeholder="server"
+              onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                const dns = getUpdatedSettings(values, {
+                  name: 'server',
+                  value: e.target.value,
+                  fallbackValue: '8.8.8.8',
+                });
+                onUpdate({ settings: { dns }, labels });
+              }}
+            />
+          </Field>
+          <Field label="Protocol" disabled={!isEditor}>
+            <Select
+              value={values.protocol}
+              options={DNS_PROTOCOLS}
+              onChange={selected => {
+                const dns = getUpdatedSettings(values, {
+                  name: 'protocol',
+                  value: selected.value,
+                  fallbackValue: DnsProtocol.UDP,
+                });
+                onUpdate({ settings: { dns }, labels });
+              }}
+            />
+          </Field>
+          <Field label="Port" disabled={!isEditor}>
+            <Input
+              id="dns-settings-port"
+              value={values.port}
+              type="number"
+              placeholder="port"
+              onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                const dns = getUpdatedSettings(values, { name: 'port', value: e.target.value, fallbackValue: 53 });
+                onUpdate({ settings: { dns }, labels });
+              }}
+            />
+          </Field>
+        </div>
+      </Collapse>
       <Collapse
         label="Validation"
-        collapsible={true}
         onToggle={() => setShowValidation(!showValidation)}
         isOpen={showValidation}
+        collapsible
       >
         <HorizontalGroup>
           <Field label="Valid Response Codes" description="List of valid response codes" disabled={!isEditor}>
@@ -123,7 +174,7 @@ const DnsSettingsForm: FC<Props> = ({ settings, isEditor, onUpdate }) => {
                   value: responseCodes.map(code => code.value),
                   fallbackValue: [DnsResponseCodes.NOERROR],
                 });
-                onUpdate({ dns });
+                onUpdate({ settings: { dns }, labels });
               }}
             />
           </Field>
@@ -139,30 +190,21 @@ const DnsSettingsForm: FC<Props> = ({ settings, isEditor, onUpdate }) => {
             name="Validate Answer"
             description="Validate entries in the Answer section of the DNS response"
             validations={values.validateAnswerRRS}
-            onChange={(validations: DNSRRValidator | undefined) => {
-              const dns = getUpdatedSettings(values, { name: 'validateAnswerRRS', value: validations });
-              onUpdate({ dns });
-            }}
+            onChange={onValidateAnswerChange}
             isEditor={isEditor}
           />
           <DnsValidatorForm
             name="Validate Authority"
             description="Validate entries in the Authority section of the DNS response"
             validations={values.validateAuthorityRRS}
-            onChange={(validations: DNSRRValidator | undefined) => {
-              const dns = getUpdatedSettings(values, { name: 'validateAuthorityRRS', value: validations });
-              onUpdate({ dns });
-            }}
+            onChange={onValidateAuthorityChange}
             isEditor={isEditor}
           />
           <DnsValidatorForm
             name="Validate Additional"
             description="Validate entries in the Additional section of the DNS response"
             validations={values.validateAdditionalRRS}
-            onChange={(validations: DNSRRValidator | undefined) => {
-              const dns = getUpdatedSettings(values, { name: 'validateAdditionalRRS', value: validations });
-              onUpdate({ dns });
-            }}
+            onChange={onValidateAdditionalChange}
             isEditor={isEditor}
           />
         </div>
@@ -173,23 +215,28 @@ const DnsSettingsForm: FC<Props> = ({ settings, isEditor, onUpdate }) => {
         onToggle={() => setShowAdvanced(!showAdvanced)}
         isOpen={showAdvanced}
       >
+        <LabelField
+          isEditor={isEditor}
+          labels={labels}
+          onLabelsUpdate={labelsValue => {
+            onUpdate({ settings: { dns: values }, labels: labelsValue });
+          }}
+        />
         <HorizontalGroup>
-          <div>
-            <Field label="IP Version" description="The IP protocol of the ICMP request" disabled={!isEditor}>
-              <Select
-                value={values.ipVersion}
-                options={IP_OPTIONS}
-                onChange={selected => {
-                  const dns = getUpdatedSettings(values, {
-                    name: 'ipVersion',
-                    value: selected.value,
-                    fallbackValue: IpVersion.Any,
-                  });
-                  onUpdate({ dns });
-                }}
-              />
-            </Field>
-          </div>
+          <Field label="IP Version" description="The IP protocol of the ICMP request" disabled={!isEditor}>
+            <Select
+              value={values.ipVersion}
+              options={IP_OPTIONS}
+              onChange={selected => {
+                const dns = getUpdatedSettings(values, {
+                  name: 'ipVersion',
+                  value: selected.value,
+                  fallbackValue: IpVersion.Any,
+                });
+                onUpdate({ settings: { dns }, labels });
+              }}
+            />
+          </Field>
         </HorizontalGroup>
       </Collapse>
     </Container>
