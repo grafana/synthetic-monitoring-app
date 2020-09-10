@@ -111,7 +111,7 @@ const QueryParams: FC<Props> = ({ target, onChange, className }) => {
           ))}
         </div>
       </Field>
-      <Button variant="secondary" size="sm" onClick={() => dispatch({ type: 'add' })}>
+      <Button type="button" variant="secondary" size="sm" onClick={() => dispatch({ type: 'add' })}>
         Add query param
       </Button>
     </div>

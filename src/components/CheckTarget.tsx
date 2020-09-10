@@ -5,6 +5,7 @@ import { validateTarget } from 'validation';
 import { CheckType, Settings } from 'types';
 import { checkType, parseUrl } from 'utils';
 import QueryParams from './QueryParams';
+import { useFormContext } from 'react-hook-form';
 
 interface Props {
   target: string;
@@ -59,33 +60,34 @@ const getTargetHelpText = (typeOfCheck: CheckType | undefined): TargetHelpInfo =
 
 const CheckTarget: FC<Props> = ({ target, typeOfCheck, disabled, checkSettings, onChange }) => {
   const targetHelp = getTargetHelpText(typeOfCheck);
-  const [targetValue, updateTarget] = useState(target);
+  // const [targetValue, updateTarget] = useState(target);
 
-  useEffect(() => {
-    onChange(targetValue);
-  }, [targetValue, onChange]);
+  // useEffect(() => {
+  //   console.log('in check target', target, targetValue);
+  //   onChange(targetValue);
+  // }, [targetValue]);
 
-  const parsedURL = parseUrl(targetValue);
+  const parsedURL = parseUrl(target);
   return (
     <>
       <Field
         label="Target"
         description={targetHelp.text}
         disabled={disabled}
-        invalid={!validateTarget(checkType(checkSettings), target)}
+        // invalid={!validateTarget(checkType(checkSettings), target)}
       >
         <Input
           type="string"
           placeholder={targetHelp.example}
           value={target}
-          onChange={(e: ChangeEvent<HTMLInputElement>) => updateTarget(e.target.value)}
+          onChange={(e: ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
           required={true}
         />
       </Field>
       {typeOfCheck === CheckType.HTTP && parsedURL && (
         <QueryParams
           target={parsedURL}
-          onChange={(target: string) => updateTarget(target)}
+          onChange={(target: string) => onChange(target)}
           className={css`
             padding-left: 1rem;
             margin-bottom: 1rem;

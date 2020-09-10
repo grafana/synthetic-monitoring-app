@@ -1,1 +1,1 @@
-export { default } from './CheckEditor';
+export { CheckEditor } from './CheckEditor';

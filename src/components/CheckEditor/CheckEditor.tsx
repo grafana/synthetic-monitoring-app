@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import React, { PureComponent, FC, useState, useContext, useEffect, useCallback } from 'react';
 import { css } from 'emotion';
 import {
   Button,
@@ -21,6 +21,7 @@ import CheckTarget from 'components/CheckTarget';
 import { Subheader } from 'components/Subheader';
 import { CheckSettings } from './CheckSettings';
 import { ProbeOptions, OnChangeArgs } from './ProbeOptions';
+import { useForm, FormContext, Controller } from 'react-hook-form';
 
 interface Props {
   check: Check;
@@ -37,8 +38,205 @@ interface State {
   probesLoading: boolean;
   error?: APIError;
 }
+const CHECK_TYPE_OPTIONS = [
+  {
+    label: 'HTTP',
+    value: CheckType.HTTP,
+  },
+  {
+    label: 'PING',
+    value: CheckType.PING,
+  },
+  {
+    label: 'DNS',
+    value: CheckType.DNS,
+  },
+  {
+    label: 'TCP',
+    value: CheckType.TCP,
+  },
+];
 
-export default class CheckEditor extends PureComponent<Props, State> {
+const DEFAULT_VALUES = {
+  checkType: CHECK_TYPE_OPTIONS[1],
+};
+
+export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [probesLoading, setProbesLoading] = useState(true);
+  const [probes, setProbes] = useState<Probe[]>([]);
+  const [error, setError] = useState();
+  const formMethods = useForm({ defaultValues: DEFAULT_VALUES });
+
+  useEffect(() => {
+    const getProbes = async () => {
+      setProbesLoading(true);
+      const probes = await instance.listProbes();
+      setProbesLoading(false);
+      setProbes(probes);
+    };
+
+    getProbes();
+  }, [instance]);
+
+  const typeOfCheck = checkType(check.settings);
+
+  let legend = 'Edit Check';
+  if (!check.id) {
+    legend = 'Add Check';
+  }
+
+  let isEditor = hasRole(OrgRole.EDITOR);
+
+  const onSubmit = async (values: any) => {
+    console.log(values);
+    return;
+    try {
+      if (values.id) {
+        await instance.updateCheck(values);
+      } else {
+        await instance.addCheck(values);
+      }
+      onReturn(true);
+    } catch (e) {
+      // this.setState({
+      //   error: {
+      //     status: e.status,
+      //     message: e.data?.message ?? 'Something went wrong',
+      //   },
+      // });
+    }
+  };
+
+  const onRemoveCheck = async () => {
+    const id = check.id;
+    if (!id) {
+      return;
+    }
+    const info = instance.deleteCheck(id);
+    console.log('Remove Check', id, info);
+    onReturn(true);
+  };
+
+  const onBack = () => onReturn(true);
+
+  const target = formMethods.watch('target', '') as string;
+  const selectedCheckType = formMethods.watch('checkType');
+
+  console.log('target', target);
+
+  // const onTargetChange = useCallback(
+  //   targetValue => {
+  //     console.log('changing', targetValue, target);
+  //     formMethods.setValue('target', targetValue);
+  //   },
+  //   [formMethods]
+  // );
+
+  if (!check || probesLoading) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+    <FormContext {...formMethods}>
+      <form onSubmit={formMethods.handleSubmit(onSubmit)}>
+        <Legend>{legend}</Legend>
+        <div
+          className={css`
+            margin-bottom: 8px;
+          `}
+        >
+          <Subheader>Check Details</Subheader>
+          <HorizontalGroup justify="flex-start" spacing="md">
+            <Field label="Check Type" disabled={check.id ? true : false}>
+              <Controller
+                name="checkType"
+                control={formMethods.control}
+                as={Select}
+                options={CHECK_TYPE_OPTIONS}
+                width={30}
+              />
+            </Field>
+            <Field label="Enabled" disabled={!isEditor}>
+              <Container padding="sm">
+                <Switch name="enabled" ref={formMethods.register()} disabled={!isEditor} />
+              </Container>
+            </Field>
+          </HorizontalGroup>
+          <Field
+            label="Job Name"
+            description="Name used for job label"
+            disabled={!isEditor}
+            // invalid={!Validation.validateJob(check.job)}
+          >
+            <Input ref={formMethods.register()} name="job" type="string" placeholder="jobName" />
+          </Field>
+
+          <Controller
+            name="target"
+            as={CheckTarget}
+            control={formMethods.control}
+            // onChange={onTargetChange}
+            target={target}
+            valueName="target"
+            typeOfCheck={selectedCheckType.value as CheckType}
+            checkSettings={check.settings}
+            disabled={!isEditor}
+          />
+          <hr
+            className={css`
+              margin-top: 24px;
+            `}
+          />
+          {/* <ProbeOptions
+          isEditor={isEditor}
+          timeout={check.timeout}
+          frequency={check.frequency}
+          probes={check.probes}
+          onChange={this.onProbeOptionsChange}
+        />
+        <CheckSettings
+          labels={check.labels}
+          settings={check.settings}
+          typeOfCheck={typeOfCheck || CheckType.HTTP}
+          onUpdate={this.onSettingsUpdate}
+          isEditor={isEditor}
+        /> */}
+        </div>
+        <HorizontalGroup>
+          <Button type="submit">Save {Validation.validateCheck(check)}</Button>
+          {check.id && (
+            <Button variant="destructive" onClick={() => setShowDeleteModal(true)} disabled={!isEditor}>
+              Delete Check
+            </Button>
+          )}
+          <ConfirmModal
+            isOpen={showDeleteModal}
+            title="Delete check"
+            body="Are you sure you want to delete this check?"
+            confirmText="Delete check"
+            onConfirm={onRemoveCheck}
+            onDismiss={() => setShowDeleteModal(false)}
+          />
+          <a onClick={onBack}>Back</a>
+        </HorizontalGroup>
+        {error && (
+          <div
+            className={css`
+              margin-top: 1rem;
+            `}
+          >
+            <Alert title="Save failed" severity="error">
+              {`${error?.status}: ${error?.message}`}
+            </Alert>
+          </div>
+        )}
+      </form>
+    </FormContext>
+  );
+};
+
+export default class CheckEditor2 extends PureComponent<Props, State> {
   state: State = {
     showDeleteModal: false,
     check: { ...this.props.check },

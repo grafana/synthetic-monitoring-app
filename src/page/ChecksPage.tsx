@@ -4,7 +4,7 @@ import React, { PureComponent } from 'react';
 // Types
 import { Check, GrafanaInstances, IpVersion } from 'types';
 import { getLocationSrv } from '@grafana/runtime';
-import CheckEditor from 'components/CheckEditor';
+import { CheckEditor } from 'components/CheckEditor';
 import { CheckList } from 'components/CheckList';
 
 interface Props {
