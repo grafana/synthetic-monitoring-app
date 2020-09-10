@@ -1,5 +1,5 @@
 import React, { FC } from 'react';
-import { Settings, CheckType, Label, OnUpdateSettingsArgs } from 'types';
+import { Settings, CheckType, Label } from 'types';
 import { PingSettingsForm } from 'components/PingSettings';
 import { HttpSettingsForm } from 'components/http/HttpSettings';
 import DnsSettingsForm from 'components/DnsSettings';
@@ -10,17 +10,16 @@ interface Props {
   labels: Label[];
   settings: Settings;
   typeOfCheck: CheckType;
-  onUpdate: (values: OnUpdateSettingsArgs) => void;
 }
 
-export const CheckSettings: FC<Props> = ({ onUpdate, settings, labels = [], isEditor, typeOfCheck }) => {
+export const CheckSettings: FC<Props> = ({ settings, labels = [], isEditor, typeOfCheck }) => {
   if (!settings) {
     return <div>Loading....</div>;
   }
 
   switch (typeOfCheck) {
     case CheckType.PING: {
-      return <PingSettingsForm labels={labels} settings={settings} onUpdate={onUpdate} isEditor={isEditor} />;
+      return <PingSettingsForm labels={labels} settings={settings.ping} isEditor={isEditor} />;
     }
     case CheckType.HTTP: {
       return <HttpSettingsForm labels={labels} settings={settings} onUpdate={onUpdate} isEditor={isEditor} />;

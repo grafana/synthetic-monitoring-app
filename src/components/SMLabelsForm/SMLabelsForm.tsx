@@ -8,7 +8,7 @@ interface Props {
   isEditor: boolean;
   type: string;
   limit: number;
-  onUpdate: (labels: Label[]) => void;
+  onChange: (labels: Label[]) => void;
 }
 
 interface State {
@@ -37,7 +37,7 @@ export default class SMLabelsForm extends PureComponent<Props, State> {
   };
 
   onUpdate = () => {
-    this.props.onUpdate(this.state.labels);
+    this.props.onChange(this.state.labels);
   };
 
   onChange = (index: number, label: Label) => {

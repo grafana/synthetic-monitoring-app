@@ -67,11 +67,11 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
     checkType: CHECK_TYPE_OPTIONS.find(checkTypeOption => checkTypeOption.value === defaultCheckType),
     job: check.job,
     target: check.target,
-    timeout: check.timeout,
-    frequency: check.frequency,
+    timeout: check.timeout / 1000,
+    frequency: check.frequency / 1000,
     labels: check.labels,
     probes: check.probes,
-    settings: check.settings,
+    ...check.settings,
   };
 
   const formMethods = useForm({ defaultValues });
@@ -110,7 +110,7 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
   const onBack = () => onReturn(true);
 
   const target = formMethods.watch('target', '') as string;
-  const selectedCheckType = formMethods.watch('checkType');
+  const selectedCheckType = formMethods.watch('checkType').value as CheckType;
 
   if (!check) {
     return <div>Loading...</div>;
@@ -157,7 +157,7 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
             control={formMethods.control}
             target={target}
             valueName="target"
-            typeOfCheck={selectedCheckType.value as CheckType}
+            typeOfCheck={selectedCheckType}
             checkSettings={check.settings}
             disabled={!isEditor}
           />
@@ -167,13 +167,12 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
             `}
           />
           <ProbeOptions isEditor={isEditor} timeout={check.timeout} frequency={check.frequency} probes={check.probes} />
-          {/* <CheckSettings
-          labels={check.labels}
-          settings={check.settings}
-          typeOfCheck={typeOfCheck || CheckType.HTTP}
-          onUpdate={this.onSettingsUpdate}
-          isEditor={isEditor}
-        /> */}
+          <CheckSettings
+            labels={check.labels}
+            settings={check.settings}
+            typeOfCheck={selectedCheckType}
+            isEditor={isEditor}
+          />
         </div>
         <HorizontalGroup>
           <Button type="submit">Save {Validation.validateCheck(check)}</Button>
