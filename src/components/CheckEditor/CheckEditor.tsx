@@ -57,6 +57,18 @@ const CHECK_TYPE_OPTIONS = [
   },
 ];
 
+// const defaultDnsSettings = {
+//   recordType: DnsRecordType.A,
+//   server: '8.8.8.8',
+//   ipVersion: IpVersion.V4,
+//   protocol: DnsProtocol.UDP,
+//   port: 53,
+//   validRCodes: [DnsResponseCodes.NOERROR],
+//   validateAnswerRRS: { failIfMatchesRegexp: [], failIfNotMatchesRegexp: [] },
+//   validateAuthorityRRS: { failIfMatchesRegexp: [], failIfNotMatchesRegexp: [] },
+//   validateAdditionalRRS: { failIfMatchesRegexp: [], failIfNotMatchesRegexp: [] },
+// };
+
 export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [error, setError] = useState();

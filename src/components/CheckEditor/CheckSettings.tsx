@@ -25,7 +25,7 @@ export const CheckSettings: FC<Props> = ({ settings, labels = [], isEditor, type
       return <HttpSettingsForm labels={labels} settings={settings.http} isEditor={isEditor} />;
     }
     case CheckType.DNS: {
-      return <DnsSettingsForm labels={labels} settings={settings} onUpdate={onUpdate} isEditor={isEditor} />;
+      return <DnsSettingsForm labels={labels} settings={settings.dns} isEditor={isEditor} />;
     }
     case CheckType.TCP: {
       return <TcpSettingsForm settings={settings} labels={labels} onUpdate={onUpdate} isEditor={isEditor} />;
