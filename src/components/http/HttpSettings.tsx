@@ -1,4 +1,4 @@
-import React, { FC, useState, PureComponent } from 'react';
+import React, { FC, useState } from 'react';
 import {
   Container,
   HorizontalGroup,
@@ -7,32 +7,17 @@ import {
   Switch,
   MultiSelect,
   TextArea,
-  List,
-  IconButton,
   Input,
-  Button,
-  Icon,
   VerticalGroup,
 } from '@grafana/ui';
 import { css } from 'emotion';
 import { useFormContext, Controller } from 'react-hook-form';
-import { SelectableValue } from '@grafana/data';
-import {
-  Label as SMLabel,
-  IpVersion,
-  Settings,
-  HttpSettings,
-  HttpMethod,
-  HttpVersion,
-  BasicAuth,
-  TLSConfig,
-  HeaderMatch,
-  OnUpdateSettingsArgs,
-} from 'types';
+import { Label as SMLabel, HttpSettings, HttpMethod, HttpVersion, OnUpdateSettingsArgs } from 'types';
 import { Collapse } from 'components/Collapse';
 import SMLabelsForm from 'components/SMLabelsForm';
+import { BodyRegexMatcherInput } from 'components/BodyRegexMatcherInput';
+import { HeaderRegexMatcherInput } from 'components/HeaderRegexMatcherInput';
 import { IP_OPTIONS } from '../constants';
-import { AuthSettings } from './AuthSettings';
 import { LabelField } from 'components/LabelField';
 
 const httpVersionOptions = [
@@ -146,230 +131,7 @@ interface Props {
   settings?: HttpSettings;
   isEditor: boolean;
   labels: SMLabel[];
-  onUpdate: (args: OnUpdateSettingsArgs) => void;
 }
-
-// interface State extends HttpSettings {
-//   showAdvanced: boolean;
-//   showValidation: boolean;
-//   showAuthentication: boolean;
-//   showTLS: boolean;
-//   showHTTPSettings: boolean;
-//   labels: SMLabel[];
-// }
-
-// state: State = {
-//   method: this.props.settings.http?.method || HttpMethod.GET,
-//   body: this.props.settings.http?.body,
-//   headers: this.props.settings.http?.headers,
-//   ipVersion: this.props.settings.http?.ipVersion || IpVersion.V4,
-//   noFollowRedirects: this.props.settings.http?.noFollowRedirects || false,
-//   labels: this.props.labels ?? [],
-
-//   // Authentication
-//   bearerToken: this.props.settings.http?.bearerToken,
-//   basicAuth: this.props.settings.http?.basicAuth,
-
-//   // validations
-//   failIfSSL: this.props.settings.http?.failIfSSL || false,
-//   failIfNotSSL: this.props.settings.http?.failIfNotSSL || false,
-//   validStatusCodes: this.props.settings.http?.validStatusCodes || [],
-//   validHTTPVersions: this.props.settings.http?.validHTTPVersions || [],
-//   failIfBodyMatchesRegexp: this.props.settings.http?.failIfBodyMatchesRegexp || [],
-//   failIfBodyNotMatchesRegexp: this.props.settings.http?.failIfBodyNotMatchesRegexp || [],
-//   failIfHeaderMatchesRegexp: this.props.settings.http?.failIfHeaderMatchesRegexp || [],
-//   failIfHeaderNotMatchesRegexp: this.props.settings.http?.failIfHeaderNotMatchesRegexp || [],
-//   cacheBustingQueryParamName: this.props.settings.http?.cacheBustingQueryParamName,
-//   tlsConfig: this.props.settings.http?.tlsConfig,
-
-//   showHTTPSettings: false,
-//   showAdvanced: false,
-//   showValidation: false,
-//   showAuthentication: false,
-//   showTLS: false,
-// };
-
-// onUpdate = () => {
-//   const settings = this.state as HttpSettings;
-//   const { labels } = this.state;
-//   this.props.onUpdate({
-//     settings: {
-//       http: settings,
-//     },
-//     labels,
-//   });
-// };
-
-// onLabelsChange = (labels: SMLabel[]) => {
-//   this.setState({ labels }, this.onUpdate);
-// };
-
-// onMethodChange = (value: SelectableValue<HttpMethod>) => {
-//   this.setState({ method: value.value || HttpMethod.GET }, this.onUpdate);
-// };
-
-// onBodyChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-//   this.setState({ body: event.target.value }, this.onUpdate);
-// };
-
-// onIpVersionChange = (value: SelectableValue<IpVersion>) => {
-//   this.setState({ ipVersion: value.value || IpVersion.Any }, this.onUpdate);
-// };
-
-// onNoFollowRedirectsChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-//   this.setState({ noFollowRedirects: !this.state.noFollowRedirects }, this.onUpdate);
-// };
-
-// onFailIfNotSSLChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-//   this.setState({ failIfNotSSL: !this.state.failIfNotSSL }, this.onUpdate);
-// };
-
-// onFailIfSSLChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-//   this.setState({ failIfSSL: !this.state.failIfSSL }, this.onUpdate);
-// };
-
-// onCacheBustingQueryParamNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-//   this.setState({ cacheBustingQueryParamName: event.target.value }, this.onUpdate);
-// };
-
-// onToggleHTTPSettings = () => {
-//   this.setState({ showHTTPSettings: !this.state.showHTTPSettings });
-// };
-
-// onToggleAdvanced = (isOpen: boolean) => {
-//   this.setState({ showAdvanced: !this.state.showAdvanced });
-// };
-
-// onToggleValidation = (isOpen: boolean) => {
-//   this.setState({ showValidation: !this.state.showValidation });
-// };
-
-// onAuthUpdate = (bearerToken: string | undefined, basicAuth: BasicAuth | undefined) => {
-//   this.setState({ bearerToken, basicAuth }, this.onUpdate);
-// };
-
-// onToggleTLS = (isOpen: boolean) => {
-//   this.setState({ showTLS: !this.state.showTLS });
-// };
-
-// onTLSChange = (tlsConfig: TLSConfig) => {
-//   this.setState({ tlsConfig: tlsConfig }, this.onUpdate);
-// };
-
-// onValidHttpVersionsChange = (item: Array<SelectableValue<HttpVersion>>) => {
-//   let validHTTPVersions: HttpVersion[] = [];
-//   for (const p of item.values()) {
-//     if (p.value) {
-//       validHTTPVersions.push(p.value);
-//     }
-//   }
-//   this.setState({ validHTTPVersions }, this.onUpdate);
-// };
-
-// onValidStatusCodeChange = (item: Array<SelectableValue<number>>) => {
-//   let validStatusCodes: number[] = [];
-//   for (const p of item.values()) {
-//     if (p.value) {
-//       validStatusCodes.push(p.value);
-//     }
-//   }
-//   this.setState({ validStatusCodes }, this.onUpdate);
-// };
-
-// onHeadersUpdate = (labels: SMLabel[]) => {
-//   let headers: string[] = [];
-//   for (const l of labels) {
-//     headers.push(`${l.name}: ${l.value}`);
-//   }
-//   this.setState({ headers }, this.onUpdate);
-// };
-
-// onFailIfBodyMatchesRegexpChange = (index: number) => (event: React.ChangeEvent<HTMLInputElement>) => {
-//   let failIfBodyMatchesRegexp: string[] = [];
-//   this.state.failIfBodyMatchesRegexp?.forEach((v, i) => {
-//     if (i === index) {
-//       failIfBodyMatchesRegexp.push(event.target.value);
-//     } else {
-//       failIfBodyMatchesRegexp.push(v);
-//     }
-//   });
-//   this.setState({ failIfBodyMatchesRegexp }, this.onUpdate);
-// };
-
-// onFailIfBodyMatchesRegexpDelete = (index: number) => () => {
-//   let failIfBodyMatchesRegexp: string[] = [];
-//   this.state.failIfBodyMatchesRegexp?.forEach((v, i) => {
-//     if (i !== index) {
-//       failIfBodyMatchesRegexp.push(v);
-//     }
-//   });
-//   this.setState({ failIfBodyMatchesRegexp }, this.onUpdate);
-// };
-
-// addFailIfBodyMatchesRegexp = () => {
-//   let failIfBodyMatchesRegexp: string[] = [];
-//   for (const v of this.state.failIfBodyMatchesRegexp || []) {
-//     failIfBodyMatchesRegexp.push(v);
-//   }
-//   failIfBodyMatchesRegexp.push('');
-//   this.setState({ failIfBodyMatchesRegexp }, this.onUpdate);
-// };
-
-// onFailIfBodyNotMatchesRegexpChange = (index: number) => (event: React.ChangeEvent<HTMLInputElement>) => {
-//   let failIfBodyNotMatchesRegexp: string[] = [];
-//   this.state.failIfBodyNotMatchesRegexp?.forEach((v, i) => {
-//     if (i === index) {
-//       failIfBodyNotMatchesRegexp.push(event.target.value);
-//     } else {
-//       failIfBodyNotMatchesRegexp.push(v);
-//     }
-//   });
-//   this.setState({ failIfBodyNotMatchesRegexp }, this.onUpdate);
-// };
-
-// onFailIfBodyNotMatchesRegexpDelete = (index: number) => () => {
-//   let failIfBodyNotMatchesRegexp: string[] = [];
-//   this.state.failIfBodyNotMatchesRegexp?.forEach((v, i) => {
-//     if (i !== index) {
-//       failIfBodyNotMatchesRegexp.push(v);
-//     }
-//   });
-//   this.setState({ failIfBodyNotMatchesRegexp }, this.onUpdate);
-// };
-
-// addFailIfBodyNotMatchesRegexp = () => {
-//   let failIfBodyNotMatchesRegexp: string[] = [];
-//   for (const v of this.state.failIfBodyNotMatchesRegexp || []) {
-//     failIfBodyNotMatchesRegexp.push(v);
-//   }
-//   failIfBodyNotMatchesRegexp.push('');
-//   this.setState({ failIfBodyNotMatchesRegexp }, this.onUpdate);
-// };
-
-// onFailIfHeaderMatchesUpdate = (headerMatches: HeaderMatch[]) => {
-//   let matches: HeaderMatch[] = [];
-//   if (!this.state.failIfHeaderMatchesRegexp) {
-//     matches = headerMatches;
-//   } else {
-//     headerMatches.forEach(v => {
-//       matches.push(v);
-//     });
-//   }
-//   console.log('setting failIfHeaderMatchesRegexp', matches);
-//   this.setState({ failIfHeaderMatchesRegexp: matches }, this.onUpdate);
-// };
-
-// onFailIfHeaderNotMatchesUpdate = (headerMatches: HeaderMatch[]) => {
-//   let matches: HeaderMatch[] = [];
-//   if (!this.state.failIfHeaderNotMatchesRegexp) {
-//     matches = headerMatches;
-//   } else {
-//     headerMatches.forEach(v => {
-//       matches.push(v);
-//     });
-//   }
-//   this.setState({ failIfHeaderNotMatchesRegexp: matches }, this.onUpdate);
-// };
 
 export const HttpSettingsForm: FC<Props> = ({ settings, isEditor, labels }) => {
   const { register, watch, control } = useFormContext();
@@ -613,83 +375,31 @@ export const HttpSettingsForm: FC<Props> = ({ settings, isEditor, labels }) => {
             </Container>
           </Field>
         </HorizontalGroup>
-
-        {/* <Field
+        <BodyRegexMatcherInput
           label="Fail if body matches regexp"
           description="Probe fails if response body matches regex"
-          disabled={!isEditor}
-        >
-          <VerticalGroup justify="space-between">
-            <List
-              items={state.failIfBodyMatchesRegexp || []}
-              renderItem={(item, index) => (
-                <HorizontalGroup>
-                  <Input
-                    type="text"
-                    placeholder="regexp"
-                    value={item}
-                    onChange={this.onFailIfBodyMatchesRegexpChange(index)}
-                    disabled={!isEditor}
-                  />
-                  <IconButton
-                    name="minus-circle"
-                    onClick={this.onFailIfBodyMatchesRegexpDelete(index)}
-                    disabled={!isEditor}
-                  />
-                </HorizontalGroup>
-              )}
-            />
-            <Button onClick={this.addFailIfBodyMatchesRegexp} disabled={!isEditor} variant="secondary" size="sm">
-              <Icon name="plus" />
-              &nbsp; Add Body Regexp
-            </Button>
-          </VerticalGroup>
-        </Field> */}
-        {/* <Field
-            label="Fail if body doesn't match regexp"
-            description="Probe fails if response body does not match regex"
-            disabled={!isEditor}
-          >
-            <VerticalGroup justify="space-between">
-              <List
-                items={state.failIfBodyNotMatchesRegexp || []}
-                renderItem={(item, index) => (
-                  <HorizontalGroup>
-                    <Input
-                      type="text"
-                      placeholder="regexp"
-                      value={item}
-                      onChange={this.onFailIfBodyNotMatchesRegexpChange(index)}
-                      disabled={!isEditor}
-                    />
-                    <IconButton
-                      name="minus-circle"
-                      onClick={this.onFailIfBodyNotMatchesRegexpDelete(index)}
-                      disabled={!isEditor}
-                    />
-                  </HorizontalGroup>
-                )}
-              />
-              <Button onClick={this.addFailIfBodyNotMatchesRegexp} disabled={!isEditor} variant="secondary" size="sm">
-                <Icon name="plus" />
-                &nbsp; Add Body Regexp
-              </Button>
-            </VerticalGroup>
-          </Field>
-          <HeaderMatchForm
-            headerMatches={state.failIfHeaderMatchesRegexp || []}
-            name="Fail if header matches regexp"
-            description="Probe fails if response header matches regex. For headers with multiple values, fails if *at least one* matches"
-            onChange={this.onFailIfHeaderMatchesUpdate}
-            isEditor={isEditor}
-          />
-          <HeaderMatchForm
-            headerMatches={state.failIfHeaderNotMatchesRegexp || []}
-            name="Fail if header doesn't match regexp"
-            description="Probe fails if response header does not match regex. For headers with multiple values, fails if *none* match."
-            onChange={this.onFailIfHeaderNotMatchesUpdate}
-            isEditor={isEditor}
-          /> */}
+          name="settings.http.failIfBodyMatchesRegexp"
+          isEditor={isEditor}
+        />
+        <BodyRegexMatcherInput
+          label="Fail if body doesn't match regexp"
+          description="Probe fails if response body does not match regex"
+          name="settings.http.failIfBodyNotMatchesRegexp"
+          isEditor={isEditor}
+        />
+        <HeaderRegexMatcherInput
+          label="Fail if header matches regexp"
+          description="Probe fails if response header matches regex. For headers with multiple values, fails if *at least one* matches"
+          name="settings.http.failIfHeaderMatchesRegexp"
+          isEditor={isEditor}
+        />
+
+        <HeaderRegexMatcherInput
+          label="Fail if header doesn't match regexp"
+          description="Probe fails if response header does not match regex. For headers with multiple values, fails if *none* match."
+          name="settings.http.failIfHeaderNotMatchesRegexp"
+          isEditor={isEditor}
+        />
       </Collapse>
       <Collapse
         label="Advanced Options"
@@ -734,264 +444,3 @@ export const HttpSettingsForm: FC<Props> = ({ settings, isEditor, labels }) => {
     </Container>
   );
 };
-
-// interface TLSProps {
-//   tlsConfig?: TLSConfig;
-//   isEditor: boolean;
-//   onChange: (tlsConfig: TLSConfig) => void;
-// }
-
-// interface TLSState {
-//   insecureSkipVerify: boolean;
-//   caCert: string;
-//   clientCert: string;
-//   clientKey: string;
-//   serverName: string;
-// }
-
-// export class TLSForm extends PureComponent<TLSProps, TLSState> {
-//   state = {
-//     insecureSkipVerify: this.props.tlsConfig?.insecureSkipVerify || false,
-//     caCert: this.props.tlsConfig?.caCert || '',
-//     clientCert: this.props.tlsConfig?.clientCert || '',
-//     clientKey: this.props.tlsConfig?.clientKey || '',
-//     serverName: this.props.tlsConfig?.serverName || '',
-//   };
-
-//   onUpdate = () => {
-//     const cfg = {
-//       insecureSkipVerify: this.state.insecureSkipVerify,
-//       caCert: this.state.caCert,
-//       clientCert: this.state.clientCert,
-//       clientKey: this.state.clientKey,
-//       serverName: this.state.serverName,
-//     };
-//     this.props.onChange(cfg);
-//   };
-
-//   onInsecureSkipVerifyChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-//     this.setState({ insecureSkipVerify: !this.state.insecureSkipVerify }, this.onUpdate);
-//   };
-
-//   onServerNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-//     this.setState({ serverName: event.target.value }, this.onUpdate);
-//   };
-
-//   onCACertChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-//     this.setState({ caCert: event.target.value }, this.onUpdate);
-//   };
-//   onClientCertChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-//     this.setState({ clientCert: event.target.value }, this.onUpdate);
-//   };
-//   onClientKeyChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-//     this.setState({ clientKey: event.target.value }, this.onUpdate);
-//   };
-
-//   render() {
-//     const { insecureSkipVerify, caCert, clientCert, clientKey, serverName } = this.state;
-//     const { isEditor } = this.props;
-
-//     return (
-//       <div>
-//         <HorizontalGroup>
-//           <Field label="Skip Validation" description="Disable target certificate validation" disabled={!isEditor}>
-//             <Container padding="sm">
-//               <Switch value={insecureSkipVerify} onChange={this.onInsecureSkipVerifyChange} disabled={!isEditor} />
-//             </Container>
-//           </Field>
-//           <Field label="Server Name" description="Used to verify the hostname for the targets" disabled={!isEditor}>
-//             <Input
-//               type="text"
-//               placeholder="ServerName"
-//               value={serverName}
-//               onChange={this.onServerNameChange}
-//               disabled={!isEditor}
-//             />
-//           </Field>
-//         </HorizontalGroup>
-//         <Container>
-//           <Field label="CA Certificate" description="The CA cert to use for the targets" disabled={!isEditor}>
-//             <div>
-//               <TextArea
-//                 value={caCert}
-//                 onChange={this.onCACertChange}
-//                 rows={2}
-//                 disabled={!isEditor}
-//                 placeholder="CA Certificate"
-//               />
-//             </div>
-//           </Field>
-//         </Container>
-//         <Container>
-//           <Field label="Client Certificate" description="The client cert file for the targets" disabled={!isEditor}>
-//             <div>
-//               <TextArea
-//                 value={clientCert}
-//                 onChange={this.onClientCertChange}
-//                 rows={2}
-//                 disabled={!isEditor}
-//                 placeholder="Client Certificate"
-//               />
-//             </div>
-//           </Field>
-//         </Container>
-//         <Container>
-//           <Field label="Client Key" description="The client key file for the targets" disabled={!isEditor}>
-//             <div>
-//               <TextArea
-//                 type="password"
-//                 value={clientKey}
-//                 onChange={this.onClientKeyChange}
-//                 rows={2}
-//                 disabled={!isEditor}
-//                 placeholder="Client Key"
-//               />
-//             </div>
-//           </Field>
-//         </Container>
-//       </div>
-//     );
-//   }
-// }
-
-interface HeaderMatchProps {
-  headerMatches: HeaderMatch[];
-  name: string;
-  description: string;
-  isEditor: boolean;
-  onChange: (headerMatches: HeaderMatch[]) => void;
-}
-
-interface HeaderMatchState {
-  headerMatches: HeaderMatch[];
-}
-
-export class HeaderMatchForm extends PureComponent<HeaderMatchProps, HeaderMatchState> {
-  state = {
-    headerMatches: this.props.headerMatches,
-  };
-
-  onUpdate = () => {
-    this.props.onChange(this.state.headerMatches);
-  };
-
-  onHeaderChange = (index: number) => (event: React.ChangeEvent<HTMLInputElement>) => {
-    let matches: HeaderMatch[] = [];
-    this.state.headerMatches.forEach((v, i) => {
-      if (i === index) {
-        matches.push({
-          header: event.target.value,
-          regexp: v.regexp,
-          allowMissing: v.allowMissing,
-        });
-      } else {
-        matches.push(v);
-      }
-    });
-    this.setState({ headerMatches: matches }, this.onUpdate);
-  };
-
-  onRegexpChange = (index: number) => (event: React.ChangeEvent<HTMLInputElement>) => {
-    let matches: HeaderMatch[] = [];
-    this.state.headerMatches.forEach((v, i) => {
-      if (i === index) {
-        matches.push({
-          header: v.header,
-          regexp: event.target.value,
-          allowMissing: v.allowMissing,
-        });
-      } else {
-        matches.push(v);
-      }
-    });
-    this.setState({ headerMatches: matches }, this.onUpdate);
-  };
-
-  onAllowMissingChange = (index: number) => (event: React.ChangeEvent<HTMLInputElement>) => {
-    let matches: HeaderMatch[] = [];
-    this.state.headerMatches.forEach((v, i) => {
-      if (i === index) {
-        matches.push({
-          header: v.header,
-          regexp: v.regexp,
-          allowMissing: !v.allowMissing,
-        });
-      } else {
-        matches.push(v);
-      }
-    });
-    this.setState({ headerMatches: matches }, this.onUpdate);
-  };
-
-  onHeaderMatchesDelete = (index: number) => () => {
-    let matches: HeaderMatch[] = [];
-    this.state.headerMatches?.forEach((v, i) => {
-      if (i !== index) {
-        matches.push(v);
-      }
-    });
-    this.setState({ headerMatches: matches }, this.onUpdate);
-  };
-
-  onHeaderMatchesAdd = () => {
-    let matches: HeaderMatch[] = [];
-    this.state.headerMatches.forEach(v => {
-      matches.push(v);
-    });
-    matches.push({
-      header: '',
-      regexp: '',
-      allowMissing: false,
-    });
-    this.setState({ headerMatches: matches }, this.onUpdate);
-  };
-
-  render() {
-    const { headerMatches } = this.state;
-    const { isEditor, name, description } = this.props;
-
-    return (
-      <Field label={name} description={description} disabled={!isEditor}>
-        <VerticalGroup justify="space-between">
-          <List
-            items={headerMatches}
-            renderItem={(item, index) => (
-              <HorizontalGroup>
-                <Input
-                  type="text"
-                  placeholder="header"
-                  value={item.header}
-                  onChange={this.onHeaderChange(index)}
-                  disabled={!isEditor}
-                />
-                <Input
-                  type="text"
-                  placeholder="regexp"
-                  value={item.regexp}
-                  onChange={this.onRegexpChange(index)}
-                  disabled={!isEditor}
-                />
-                <HorizontalGroup>
-                  <span>Allow Missing</span>
-                  <Container padding="sm">
-                    <Switch
-                      title="Allow Missing"
-                      value={item.allowMissing}
-                      onChange={this.onAllowMissingChange(index)}
-                      disabled={!isEditor}
-                    />
-                  </Container>
-                </HorizontalGroup>
-                <IconButton name="minus-circle" onClick={this.onHeaderMatchesDelete(index)} disabled={!isEditor} />
-              </HorizontalGroup>
-            )}
-          />
-          <Button onClick={this.onHeaderMatchesAdd} disabled={!isEditor} variant="secondary" size="sm">
-            <Icon name="plus" />
-            &nbsp; Add Header Regexp
-          </Button>
-        </VerticalGroup>
-      </Field>
-    );
-  }
-}
