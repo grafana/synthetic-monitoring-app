@@ -8,12 +8,6 @@ import { SliderInput } from 'components/SliderInput';
 import { Subheader } from 'components/Subheader';
 import { useFormContext, Controller } from 'react-hook-form';
 
-export interface OnChangeArgs {
-  timeout: number;
-  frequency: number;
-  probes: number[];
-}
-
 interface Props {
   isEditor: boolean;
   timeout: number;
