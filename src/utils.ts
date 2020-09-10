@@ -1,4 +1,4 @@
-import { DataSourceInstanceSettings, DataSourceSettings } from '@grafana/data';
+import { DataSourceInstanceSettings, DataSourceSettings, SelectableValue } from '@grafana/data';
 
 import { SMOptions, DashboardInfo } from './datasource/types';
 
@@ -8,12 +8,29 @@ import {
   User,
   OrgRole,
   CheckType,
-  Settings,
-  IpVersion,
-  HttpMethod,
   DnsRecordType,
   DnsProtocol,
+  CheckFormValues,
+  Settings,
+  SettingsFormValues,
+  PingSettingsFormValues,
+  IpVersion,
+  PingSettings,
+  HttpSettings,
+  HttpMethod,
+  HttpSettingsFormValues,
+  Label,
+  TcpSettingsFormValues,
+  TcpSettings,
+  DnsSettingsFormValues,
+  DnsSettings,
+  DNSRRValidator,
+  DnsValidationFormValue,
+  ResponseMatchType,
+  Check,
 } from 'types';
+
+import { CHECK_TYPE_OPTIONS } from 'components/constants';
 import { SMDataSource } from 'datasource/DataSource';
 
 /**
@@ -57,6 +74,11 @@ export async function getHostedLokiAndPrometheusInfo(): Promise<DataSourceInstan
     }
   }
   return settings;
+}
+
+export function selectableValueFrom<T>(value: T, label?: string): SelectableValue<T> {
+  const labelValue: unknown = value;
+  return { label: label ?? (labelValue as string), value };
 }
 
 export async function createNewApiInstance(): Promise<DataSourceSettings> {
@@ -231,4 +253,110 @@ export const queryMetric = async (
   } catch (e) {
     return { error: (e.message || e.data?.message) ?? 'Error fetching data', data: [] };
   }
+};
+
+const getPingSettingsFormValues = (settings: Settings): PingSettingsFormValues => {
+  const pingSettings = settings.ping ?? (defaultSettings(CheckType.PING) as PingSettings);
+  return {
+    ...pingSettings,
+    ipVersion: selectableValueFrom(pingSettings.ipVersion),
+  };
+};
+
+const headersToLabels = (headers: string[] | undefined): Label[] =>
+  headers?.map(header => {
+    const parts = header.split(':', 2);
+    return {
+      name: parts[0],
+      value: parts[1],
+    };
+  }) ?? [];
+
+const getHttpSettingsFormValues = (settings: Settings): HttpSettingsFormValues => {
+  const httpSettings = settings.http ?? (defaultSettings(CheckType.HTTP) as HttpSettings);
+  return {
+    ...httpSettings,
+    validStatusCodes: httpSettings.validStatusCodes?.map(statusCode => selectableValueFrom(statusCode)) ?? [],
+    validHttpVersions: httpSettings.validHTTPVersions?.map(httpVersion => selectableValueFrom(httpVersion)) ?? [],
+    method: selectableValueFrom(httpSettings.method),
+    ipVersion: selectableValueFrom(httpSettings.ipVersion),
+    headers: headersToLabels(httpSettings.headers),
+  };
+};
+
+const getTcpSettingsFormValues = (settings: Settings): TcpSettingsFormValues => {
+  const tcpSettings = settings.tcp ?? (defaultSettings(CheckType.TCP) as TcpSettings);
+  return {
+    ...tcpSettings,
+    ipVersion: selectableValueFrom(tcpSettings.ipVersion),
+  };
+};
+
+interface GetDnsValidationArgs {
+  [ResponseMatchType.Answer]?: DNSRRValidator;
+  [ResponseMatchType.Authority]?: DNSRRValidator;
+  [ResponseMatchType.Additional]?: DNSRRValidator;
+}
+const getDnsValidations = (validations: GetDnsValidationArgs): DnsValidationFormValue[] =>
+  Object.keys(validations).reduce<DnsValidationFormValue[]>((formValues, validationType) => {
+    const responseMatch = validationType as ResponseMatchType;
+    validations[responseMatch]?.failIfMatchesRegexp?.forEach(expression => {
+      formValues.push({
+        expression,
+        inverted: false,
+        responseMatch: selectableValueFrom(responseMatch),
+      });
+    });
+
+    validations[responseMatch]?.failIfNotMatchesRegexp?.forEach(expression => {
+      formValues.push({
+        expression,
+        inverted: true,
+        responseMatch: selectableValueFrom(responseMatch),
+      });
+    });
+    return formValues;
+  }, []);
+
+const getDnsSettingsFormValues = (settings: Settings): DnsSettingsFormValues => {
+  const dnsSettings = settings.dns ?? (defaultSettings(CheckType.DNS) as DnsSettings);
+  return {
+    ...dnsSettings,
+    ipVersion: selectableValueFrom(dnsSettings.ipVersion),
+    protocol: selectableValueFrom(dnsSettings.protocol),
+    recordType: selectableValueFrom(dnsSettings.recordType),
+    validRCodes: dnsSettings.validRCodes?.map(responseCode => selectableValueFrom(responseCode)) ?? [],
+    validations: getDnsValidations({
+      [ResponseMatchType.Answer]: dnsSettings.validateAnswerRRS,
+      [ResponseMatchType.Authority]: dnsSettings.validateAuthorityRRS,
+      [ResponseMatchType.Additional]: dnsSettings.validateAdditionalRRS,
+    }),
+  };
+};
+
+const getFormSettingsForCheck = (settings: Settings): SettingsFormValues => {
+  const type = checkType(settings);
+  switch (type) {
+    case CheckType.HTTP:
+      return { http: getHttpSettingsFormValues(settings) };
+    case CheckType.TCP:
+      return { tcp: getTcpSettingsFormValues(settings) };
+    case CheckType.DNS:
+      return { dns: getDnsSettingsFormValues(settings) };
+    case CheckType.PING:
+    default:
+      return { ping: getPingSettingsFormValues(settings) };
+  }
+};
+
+export const getDefaultValuesFromCheck = (check: Check): CheckFormValues => {
+  const defaultCheckType = checkType(check.settings);
+  return {
+    ...check,
+    timeout: check.timeout / 1000,
+    frequency: check.frequency / 1000,
+    checkType:
+      CHECK_TYPE_OPTIONS.find(checkTypeOption => checkTypeOption.value === defaultCheckType) ?? CHECK_TYPE_OPTIONS[1],
+    settings: getFormSettingsForCheck(check.settings),
+  };
 };

@@ -1,6 +1,5 @@
 import React, { FC, useState, useEffect, useContext } from 'react';
 import { Field } from '@grafana/ui';
-import { validateFrequency, validateProbes, validateTimeout } from 'validation';
 import CheckProbes from './CheckProbes';
 import { InstanceContext } from 'components/InstanceContext';
 import { Probe } from 'types';

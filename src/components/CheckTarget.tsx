@@ -1,11 +1,9 @@
-import React, { FC, useState, useEffect, ChangeEvent } from 'react';
+import React, { FC, ChangeEvent } from 'react';
 import { Field, Input } from '@grafana/ui';
 import { css } from 'emotion';
-import { validateTarget } from 'validation';
 import { CheckType, Settings } from 'types';
-import { checkType, parseUrl } from 'utils';
+import { parseUrl } from 'utils';
 import QueryParams from './QueryParams';
-import { useFormContext } from 'react-hook-form';
 
 interface Props {
   target: string;

@@ -1,4 +1,4 @@
-import React, { PureComponent, FC, useState, useContext, useEffect, useCallback } from 'react';
+import React, { FC, useState } from 'react';
 import { css } from 'emotion';
 import {
   Button,
@@ -12,15 +12,15 @@ import {
   Legend,
   Alert,
 } from '@grafana/ui';
-import { SelectableValue } from '@grafana/data';
-import { Check, Label as SMLabel, CheckType, Probe, OrgRole, APIError, OnUpdateSettingsArgs } from 'types';
+import { Check, CheckType, OrgRole } from 'types';
 import { SMDataSource } from 'datasource/DataSource';
-import { hasRole, checkType, defaultSettings } from 'utils';
+import { hasRole, getDefaultValuesFromCheck } from 'utils';
 import * as Validation from 'validation';
 import CheckTarget from 'components/CheckTarget';
 import { Subheader } from 'components/Subheader';
 import { CheckSettings } from './CheckSettings';
 import { ProbeOptions } from './ProbeOptions';
+import { CHECK_TYPE_OPTIONS } from 'components/constants';
 import { useForm, FormContext, Controller } from 'react-hook-form';
 
 interface Props {
@@ -29,62 +29,11 @@ interface Props {
   onReturn: (reload: boolean) => void;
 }
 
-// interface State {
-//   check: Check;
-//   typeOfCheck?: CheckType;
-//   probes: Probe[];
-//   showDeleteModal: boolean;
-//   showOptions: boolean;
-//   probesLoading: boolean;
-//   error?: APIError;
-// }
-const CHECK_TYPE_OPTIONS = [
-  {
-    label: 'HTTP',
-    value: CheckType.HTTP,
-  },
-  {
-    label: 'PING',
-    value: CheckType.PING,
-  },
-  {
-    label: 'DNS',
-    value: CheckType.DNS,
-  },
-  {
-    label: 'TCP',
-    value: CheckType.TCP,
-  },
-];
-
-// const defaultDnsSettings = {
-//   recordType: DnsRecordType.A,
-//   server: '8.8.8.8',
-//   ipVersion: IpVersion.V4,
-//   protocol: DnsProtocol.UDP,
-//   port: 53,
-//   validRCodes: [DnsResponseCodes.NOERROR],
-//   validateAnswerRRS: { failIfMatchesRegexp: [], failIfNotMatchesRegexp: [] },
-//   validateAuthorityRRS: { failIfMatchesRegexp: [], failIfNotMatchesRegexp: [] },
-//   validateAdditionalRRS: { failIfMatchesRegexp: [], failIfNotMatchesRegexp: [] },
-// };
-
 export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [error, setError] = useState();
 
-  const defaultCheckType = checkType(check.settings);
-
-  const defaultValues = {
-    checkType: CHECK_TYPE_OPTIONS.find(checkTypeOption => checkTypeOption.value === defaultCheckType),
-    job: check.job,
-    target: check.target,
-    timeout: check.timeout / 1000,
-    frequency: check.frequency / 1000,
-    labels: check.labels,
-    probes: check.probes,
-    settings: check.settings,
-  };
+  const defaultValues = getDefaultValuesFromCheck(check);
 
   const formMethods = useForm({ defaultValues });
 

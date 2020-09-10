@@ -14,7 +14,7 @@ import {
   useTheme,
 } from '@grafana/ui';
 import { useFormContext, Controller, useFieldArray } from 'react-hook-form';
-import { Label as LabelType } from 'types';
+import { Label as LabelType, ResponseMatchType } from 'types';
 import { Collapse } from 'components/Collapse';
 import { LabelField } from './LabelField';
 import { DNS_RESPONSE_CODES, DNS_RECORD_TYPES, DNS_PROTOCOLS, IP_OPTIONS } from './constants';
@@ -22,12 +22,6 @@ import { DNS_RESPONSE_CODES, DNS_RECORD_TYPES, DNS_PROTOCOLS, IP_OPTIONS } from 
 interface Props {
   isEditor: boolean;
   labels: LabelType[];
-}
-
-enum ResponseMatchType {
-  Authority = 'Authority',
-  Answer = 'Answer',
-  Additional = 'Additional',
 }
 
 const RESPONSE_MATCH_OPTIONS = [

@@ -1,4 +1,4 @@
-import { DataSourceApi } from '@grafana/data';
+import { DataSourceApi, SelectableValue } from '@grafana/data';
 import { SMDataSource } from 'datasource/DataSource';
 
 // App Settings
@@ -10,11 +10,6 @@ export enum IpVersion {
   Any = 'Any',
   V4 = 'V4',
   V6 = 'V6',
-}
-
-export interface PingSettings {
-  ipVersion: IpVersion;
-  dontFragment: boolean;
 }
 
 export enum HttpMethod {
@@ -55,32 +50,6 @@ export interface HeaderMatch {
   allowMissing: boolean;
 }
 
-// HttpSettings provides the settings for a HTTP check.
-export interface HttpSettings {
-  method: HttpMethod;
-  headers?: string[];
-  body?: string;
-  ipVersion: IpVersion;
-  noFollowRedirects: boolean;
-  tlsConfig?: TLSConfig;
-
-  // Authentication
-  bearerToken?: string;
-  basicAuth?: BasicAuth;
-
-  // validations
-  failIfSSL?: boolean;
-  failIfNotSSL?: boolean;
-  validStatusCodes?: number[];
-  validHTTPVersions?: HttpVersion[];
-  failIfBodyMatchesRegexp?: string[];
-  failIfBodyNotMatchesRegexp?: string[];
-  failIfHeaderMatchesRegexp?: HeaderMatch[];
-  failIfHeaderNotMatchesRegexp?: HeaderMatch[];
-
-  cacheBustingQueryParamName?: string;
-}
-
 export interface TLSConfig {
   insecureSkipVerify: boolean;
   caCert: string;
@@ -97,28 +66,6 @@ export interface BasicAuth {
 export interface DNSRRValidator {
   failIfMatchesRegexp: string[];
   failIfNotMatchesRegexp: string[];
-}
-
-// DnsSettings provides the settings for a DNS check.
-export interface DnsSettings {
-  recordType: DnsRecordType;
-  server: string;
-  ipVersion: IpVersion;
-  protocol: DnsProtocol;
-  port: number;
-
-  // validation
-  validRCodes?: string[];
-  validateAnswerRRS?: DNSRRValidator;
-  validateAuthorityRRS?: DNSRRValidator;
-  validateAdditionalRRS?: DNSRRValidator;
-}
-
-export interface TcpSettings {
-  ipVersion: IpVersion;
-  tls: boolean;
-  tlsConfig?: TLSConfig;
-  queryResponse?: TCPQueryResponse[];
 }
 
 export interface TCPQueryResponse {
@@ -148,6 +95,121 @@ export interface Probe extends BaseObject {
   online: boolean;
   onlineChange: number;
   labels: Label[];
+}
+
+export enum ResponseMatchType {
+  Authority = 'Authority',
+  Answer = 'Answer',
+  Additional = 'Additional',
+}
+
+export interface DnsValidationFormValue {
+  expression: string;
+  inverted: boolean;
+  responseMatch: SelectableValue<ResponseMatchType>;
+}
+
+export interface DnsSettings {
+  recordType: DnsRecordType;
+  server: string;
+  ipVersion: IpVersion;
+  protocol: DnsProtocol;
+  port: number;
+
+  // validation
+  validRCodes?: string[];
+  validateAnswerRRS?: DNSRRValidator;
+  validateAuthorityRRS?: DNSRRValidator;
+  validateAdditionalRRS?: DNSRRValidator;
+}
+
+export interface DnsSettingsFormValues
+  extends Omit<
+    DnsSettings,
+    | 'ipVersion'
+    | 'protocol'
+    | 'recordType'
+    | 'validRCodes'
+    | 'validateAnswerRRS'
+    | 'validateAuthorityRRS'
+    | 'validateAdditionalRRS'
+  > {
+  ipVersion: SelectableValue<IpVersion>;
+  protocol: SelectableValue<DnsProtocol>;
+  recordType: SelectableValue<DnsRecordType>;
+  validRCodes: Array<SelectableValue<string>>;
+  validations: DnsValidationFormValue[];
+}
+
+export interface TcpSettings {
+  ipVersion: IpVersion;
+  tls: boolean;
+  tlsConfig?: TLSConfig;
+  queryResponse?: TCPQueryResponse[];
+}
+
+export interface TcpSettingsFormValues extends Omit<TcpSettings, 'ipVersion'> {
+  ipVersion: SelectableValue<IpVersion>;
+}
+// HttpSettings provides the settings for a HTTP check.
+export interface HttpSettings {
+  method: HttpMethod;
+  headers?: string[];
+  body?: string;
+  ipVersion: IpVersion;
+  noFollowRedirects: boolean;
+  tlsConfig?: TLSConfig;
+
+  // Authentication
+  bearerToken?: string;
+  basicAuth?: BasicAuth;
+
+  // validations
+  failIfSSL?: boolean;
+  failIfNotSSL?: boolean;
+  validStatusCodes?: number[];
+  validHTTPVersions?: HttpVersion[];
+  failIfBodyMatchesRegexp?: string[];
+  failIfBodyNotMatchesRegexp?: string[];
+  failIfHeaderMatchesRegexp?: HeaderMatch[];
+  failIfHeaderNotMatchesRegexp?: HeaderMatch[];
+
+  cacheBustingQueryParamName?: string;
+}
+
+interface HttpHeaderFormValue {
+  name: string;
+  value: string;
+}
+
+export interface HttpSettingsFormValues
+  extends Omit<HttpSettings, 'validStatusCodes' | 'validHTTPVersions' | 'method' | 'ipVersion' | 'headers'> {
+  validStatusCodes: Array<SelectableValue<number>>;
+  validHttpVersions: Array<SelectableValue<HttpVersion>>;
+  method: SelectableValue<HttpMethod>;
+  ipVersion: SelectableValue<IpVersion>;
+  headers: HttpHeaderFormValue[];
+}
+
+export interface PingSettings {
+  ipVersion: IpVersion;
+  dontFragment: boolean;
+}
+
+export interface PingSettingsFormValues extends Omit<PingSettings, 'ipVersion'> {
+  ipVersion: SelectableValue<IpVersion>;
+}
+
+export interface SettingsFormValues {
+  http?: HttpSettingsFormValues;
+  ping?: PingSettingsFormValues;
+  dns?: DnsSettingsFormValues;
+  tcp?: TcpSettingsFormValues;
+}
+
+export interface CheckFormValues extends Omit<Check, 'settings' | 'checkType'> {
+  checkType: SelectableValue<CheckType>;
+  settings: SettingsFormValues;
 }
 
 export interface Check extends BaseObject {
