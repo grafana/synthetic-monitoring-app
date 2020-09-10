@@ -22,7 +22,7 @@ export const CheckSettings: FC<Props> = ({ settings, labels = [], isEditor, type
       return <PingSettingsForm labels={labels} settings={settings.ping} isEditor={isEditor} />;
     }
     case CheckType.HTTP: {
-      return <HttpSettingsForm labels={labels} settings={settings} onUpdate={onUpdate} isEditor={isEditor} />;
+      return <HttpSettingsForm labels={labels} settings={settings.http} isEditor={isEditor} />;
     }
     case CheckType.DNS: {
       return <DnsSettingsForm labels={labels} settings={settings} onUpdate={onUpdate} isEditor={isEditor} />;

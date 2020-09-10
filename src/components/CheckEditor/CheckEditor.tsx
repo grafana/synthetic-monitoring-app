@@ -71,7 +71,7 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
     frequency: check.frequency / 1000,
     labels: check.labels,
     probes: check.probes,
-    ...check.settings,
+    settings: check.settings,
   };
 
   const formMethods = useForm({ defaultValues });
