@@ -6,6 +6,7 @@ import { InstanceContext } from 'components/InstanceContext';
 import { Probe } from 'types';
 import { SliderInput } from 'components/SliderInput';
 import { Subheader } from 'components/Subheader';
+import { useFormContext, Controller } from 'react-hook-form';
 
 export interface OnChangeArgs {
   timeout: number;
@@ -18,14 +19,11 @@ interface Props {
   timeout: number;
   frequency: number;
   probes: number[];
-  onChange: (values: OnChangeArgs) => void;
 }
 
-export const ProbeOptions: FC<Props> = ({ frequency, timeout, isEditor, onChange, probes }) => {
-  const [timeoutValue, setTimeoutValue] = useState(timeout);
-  const [frequencyValue, setFrequencyValue] = useState(frequency);
-  const [selectedProbes, setSelectedProbes] = useState(probes);
+export const ProbeOptions: FC<Props> = ({ frequency, timeout, isEditor, probes }) => {
   const [availableProbes, setAvailableProbes] = useState<Probe[]>([]);
+  const { control } = useFormContext();
   const { instance } = useContext(InstanceContext);
 
   useEffect(() => {
@@ -38,14 +36,6 @@ export const ProbeOptions: FC<Props> = ({ frequency, timeout, isEditor, onChange
     fetchProbes();
   }, [instance]);
 
-  useEffect(() => {
-    onChange({
-      timeout: timeoutValue,
-      frequency: frequencyValue,
-      probes: selectedProbes,
-    });
-  }, [timeoutValue, frequencyValue, selectedProbes, onChange]);
-
   return (
     <div>
       <Subheader>Probe Options</Subheader>
@@ -53,12 +43,15 @@ export const ProbeOptions: FC<Props> = ({ frequency, timeout, isEditor, onChange
         label="Probe Locations"
         description="Select up to 20 locations where this target will be checked from."
         disabled={!isEditor}
-        invalid={!validateProbes(selectedProbes)}
+        // invalid={!validateProbes(selectedProbes)}
       >
-        <CheckProbes
-          probes={selectedProbes}
+        <Controller
+          as={CheckProbes}
+          control={control}
+          name="probes"
+          valueName="probes"
+          probes={probes}
           availableProbes={availableProbes}
-          onUpdate={setSelectedProbes}
           isEditor={isEditor}
         />
       </Field>
@@ -66,12 +59,14 @@ export const ProbeOptions: FC<Props> = ({ frequency, timeout, isEditor, onChange
         label="Frequency"
         description="How frequently the check should run."
         disabled={!isEditor}
-        invalid={!validateFrequency(frequencyValue)}
+        // invalid={!validateFrequency(frequencyValue)}
       >
-        <SliderInput
+        <Controller
           id="probe-options-frequency"
-          value={frequencyValue / 1000}
-          onChange={value => setFrequencyValue(value * 1000)}
+          name="frequency"
+          control={control}
+          value={frequency}
+          as={SliderInput}
           min={10}
           max={120}
           separationLabel="every"
@@ -82,16 +77,17 @@ export const ProbeOptions: FC<Props> = ({ frequency, timeout, isEditor, onChange
         label="Timeout"
         description="Maximum execution time for a check"
         disabled={!isEditor}
-        invalid={!validateTimeout(timeoutValue)}
+        // invalid={!validateTimeout(timeoutValue)}
       >
-        <SliderInput
+        <Controller
           id="probe-options-timeout"
-          value={timeout / 1000}
+          name="timeout"
+          value={timeout}
+          as={SliderInput}
           max={10}
           min={1}
           suffixLabel="seconds"
           separationLabel="after"
-          onChange={value => setTimeoutValue(value * 1000)}
         />
       </Field>
     </div>

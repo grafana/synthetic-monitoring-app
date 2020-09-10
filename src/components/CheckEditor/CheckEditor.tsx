@@ -57,34 +57,24 @@ const CHECK_TYPE_OPTIONS = [
   },
 ];
 
-const DEFAULT_VALUES = {
-  checkType: CHECK_TYPE_OPTIONS[1],
-};
-
 export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [probesLoading, setProbesLoading] = useState(true);
-  const [probes, setProbes] = useState<Probe[]>([]);
   const [error, setError] = useState();
-  const formMethods = useForm({ defaultValues: DEFAULT_VALUES });
 
-  useEffect(() => {
-    const getProbes = async () => {
-      setProbesLoading(true);
-      const probes = await instance.listProbes();
-      setProbesLoading(false);
-      setProbes(probes);
-    };
+  const defaultCheckType = checkType(check.settings);
 
-    getProbes();
-  }, [instance]);
+  const defaultValues = {
+    checkType: CHECK_TYPE_OPTIONS.find(checkTypeOption => checkTypeOption.value === defaultCheckType),
+    job: check.job,
+    target: check.target,
+    timeout: check.timeout,
+    frequency: check.frequency,
+    labels: check.labels,
+    probes: check.probes,
+    settings: check.settings,
+  };
 
-  const typeOfCheck = checkType(check.settings);
-
-  let legend = 'Edit Check';
-  if (!check.id) {
-    legend = 'Add Check';
-  }
+  const formMethods = useForm({ defaultValues });
 
   let isEditor = hasRole(OrgRole.EDITOR);
 
@@ -113,8 +103,7 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
     if (!id) {
       return;
     }
-    const info = instance.deleteCheck(id);
-    console.log('Remove Check', id, info);
+    await instance.deleteCheck(id);
     onReturn(true);
   };
 
@@ -123,24 +112,14 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
   const target = formMethods.watch('target', '') as string;
   const selectedCheckType = formMethods.watch('checkType');
 
-  console.log('target', target);
-
-  // const onTargetChange = useCallback(
-  //   targetValue => {
-  //     console.log('changing', targetValue, target);
-  //     formMethods.setValue('target', targetValue);
-  //   },
-  //   [formMethods]
-  // );
-
-  if (!check || probesLoading) {
+  if (!check) {
     return <div>Loading...</div>;
   }
 
   return (
     <FormContext {...formMethods}>
       <form onSubmit={formMethods.handleSubmit(onSubmit)}>
-        <Legend>{legend}</Legend>
+        <Legend>{check.id ? 'Add Check' : 'Edit Check'}</Legend>
         <div
           className={css`
             margin-bottom: 8px;
@@ -176,7 +155,6 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
             name="target"
             as={CheckTarget}
             control={formMethods.control}
-            // onChange={onTargetChange}
             target={target}
             valueName="target"
             typeOfCheck={selectedCheckType.value as CheckType}
@@ -188,14 +166,8 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
               margin-top: 24px;
             `}
           />
-          {/* <ProbeOptions
-          isEditor={isEditor}
-          timeout={check.timeout}
-          frequency={check.frequency}
-          probes={check.probes}
-          onChange={this.onProbeOptionsChange}
-        />
-        <CheckSettings
+          <ProbeOptions isEditor={isEditor} timeout={check.timeout} frequency={check.frequency} probes={check.probes} />
+          {/* <CheckSettings
           labels={check.labels}
           settings={check.settings}
           typeOfCheck={typeOfCheck || CheckType.HTTP}

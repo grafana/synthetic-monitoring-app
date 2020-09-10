@@ -9,7 +9,7 @@ interface CheckProbesProps {
   probes: number[];
   availableProbes: Probe[];
   isEditor: boolean;
-  onUpdate: (probes: number[]) => void;
+  onChange: (probes: number[]) => void;
 }
 
 interface CheckProbesState {
@@ -35,7 +35,7 @@ export default class CheckProbes extends PureComponent<CheckProbesProps, CheckPr
   };
 
   onUpdate = () => {
-    this.props.onUpdate(this.state.probes);
+    this.props.onChange(this.state.probes);
   };
 
   onAllLocations = () => {
