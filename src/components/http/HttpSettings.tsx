@@ -12,13 +12,14 @@ import {
 } from '@grafana/ui';
 import { css } from 'emotion';
 import { useFormContext, Controller } from 'react-hook-form';
-import { Label as SMLabel, HttpSettings, HttpMethod, HttpVersion, OnUpdateSettingsArgs } from 'types';
+import { Label as SMLabel, HttpSettings, HttpMethod, HttpVersion, CheckType } from 'types';
 import { Collapse } from 'components/Collapse';
 import SMLabelsForm from 'components/SMLabelsForm';
 import { BodyRegexMatcherInput } from 'components/BodyRegexMatcherInput';
 import { HeaderRegexMatcherInput } from 'components/HeaderRegexMatcherInput';
 import { IP_OPTIONS } from '../constants';
 import { LabelField } from 'components/LabelField';
+import { TLSConfig } from 'components/TLSConfig';
 
 const httpVersionOptions = [
   {
@@ -136,7 +137,6 @@ interface Props {
 export const HttpSettingsForm: FC<Props> = ({ settings, isEditor, labels }) => {
   const { register, watch, control } = useFormContext();
   const [showHttpSettings, setShowHttpSettings] = useState(false);
-  const [showTLS, setShowTLS] = useState(false);
   const [showAuthentication, setShowAuthentication] = useState(false);
   const [showValidation, setShowValidation] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -193,64 +193,7 @@ export const HttpSettingsForm: FC<Props> = ({ settings, isEditor, labels }) => {
           </Field>
         </Container>
       </Collapse>
-      <Collapse label="TLS Config" onToggle={() => setShowTLS(!showTLS)} isOpen={showTLS} collapsible>
-        <HorizontalGroup>
-          <Field label="Skip Validation" description="Disable target certificate validation" disabled={!isEditor}>
-            <Container padding="sm">
-              <Switch ref={register()} name="settings.http.tlsConfig.insecureSkipVerify" disabled={!isEditor} />
-            </Container>
-          </Field>
-          <Field label="Server Name" description="Used to verify the hostname for the targets" disabled={!isEditor}>
-            <Input
-              ref={register()}
-              name="settings.http.tlsConfig.serverName"
-              type="text"
-              placeholder="ServerName"
-              disabled={!isEditor}
-            />
-          </Field>
-        </HorizontalGroup>
-        <Container>
-          <Field label="CA Certificate" description="The CA cert to use for the targets" disabled={!isEditor}>
-            <div>
-              <TextArea
-                ref={register()}
-                name="settings.http.tlsConfig.caCert"
-                rows={2}
-                disabled={!isEditor}
-                placeholder="CA Certificate"
-              />
-            </div>
-          </Field>
-        </Container>
-        <Container>
-          <Field label="Client Certificate" description="The client cert file for the targets" disabled={!isEditor}>
-            <div>
-              <TextArea
-                ref={register()}
-                name="settings.http.tlsConfig.caCert"
-                rows={2}
-                disabled={!isEditor}
-                placeholder="Client Certificate"
-              />
-            </div>
-          </Field>
-        </Container>
-        <Container>
-          <Field label="Client Key" description="The client key file for the targets" disabled={!isEditor}>
-            <div>
-              <TextArea
-                ref={register()}
-                name="settings.http.tlsConfig.clientKey"
-                type="password"
-                rows={2}
-                disabled={!isEditor}
-                placeholder="Client Key"
-              />
-            </div>
-          </Field>
-        </Container>
-      </Collapse>
+      <TLSConfig isEditor={isEditor} checkType={CheckType.HTTP} />
       <Collapse
         label="Authentication"
         onToggle={() => setShowAuthentication(!showAuthentication)}

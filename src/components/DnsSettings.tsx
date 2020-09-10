@@ -14,13 +14,12 @@ import {
   useTheme,
 } from '@grafana/ui';
 import { useFormContext, Controller, useFieldArray } from 'react-hook-form';
-import { Label as LabelType, DnsSettings } from 'types';
+import { Label as LabelType } from 'types';
 import { Collapse } from 'components/Collapse';
 import { LabelField } from './LabelField';
 import { DNS_RESPONSE_CODES, DNS_RECORD_TYPES, DNS_PROTOCOLS, IP_OPTIONS } from './constants';
 
 interface Props {
-  settings?: DnsSettings;
   isEditor: boolean;
   labels: LabelType[];
 }
@@ -37,7 +36,7 @@ const RESPONSE_MATCH_OPTIONS = [
   { label: `Validate ${ResponseMatchType.Additional} matches`, value: ResponseMatchType.Additional },
 ];
 
-const DnsSettingsForm: FC<Props> = ({ settings, isEditor, labels }) => {
+const DnsSettingsForm: FC<Props> = ({ isEditor, labels }) => {
   const { spacing } = useTheme();
 
   const { register, control } = useFormContext();
