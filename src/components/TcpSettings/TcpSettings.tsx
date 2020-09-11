@@ -11,7 +11,7 @@ import {
   VerticalGroup,
 } from '@grafana/ui';
 import { useFormContext, Controller, useFieldArray } from 'react-hook-form';
-import { Label, CheckType } from 'types';
+import { CheckType } from 'types';
 import { IP_OPTIONS } from '../constants';
 import { LabelField } from 'components/LabelField';
 import { Collapse } from 'components/Collapse';
@@ -19,10 +19,9 @@ import { TLSConfig } from 'components/TLSConfig';
 
 interface Props {
   isEditor: boolean;
-  labels: Label[];
 }
 
-export const TcpSettingsForm: FC<Props> = ({ isEditor, labels }) => {
+export const TcpSettingsForm: FC<Props> = ({ isEditor }) => {
   const [showTCPSettings, setShowTCPSettings] = useState(false);
   const [showQueryResponse, setShowQueryResponse] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -104,7 +103,7 @@ export const TcpSettingsForm: FC<Props> = ({ isEditor, labels }) => {
         isOpen={showAdvanced}
         collapsible
       >
-        <LabelField isEditor={isEditor} labels={labels} />
+        <LabelField isEditor={isEditor} />
         <HorizontalGroup>
           <div>
             <Field label="IP Version" description="The IP protocol of the ICMP request" disabled={!isEditor}>

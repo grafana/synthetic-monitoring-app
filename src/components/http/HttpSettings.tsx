@@ -12,14 +12,14 @@ import {
 } from '@grafana/ui';
 import { css } from 'emotion';
 import { useFormContext, Controller } from 'react-hook-form';
-import { Label as SMLabel, HttpSettings, HttpMethod, HttpVersion, CheckType } from 'types';
+import { HttpMethod, HttpVersion, CheckType } from 'types';
 import { Collapse } from 'components/Collapse';
-import SMLabelsForm from 'components/SMLabelsForm';
 import { BodyRegexMatcherInput } from 'components/BodyRegexMatcherInput';
 import { HeaderRegexMatcherInput } from 'components/HeaderRegexMatcherInput';
 import { IP_OPTIONS } from '../constants';
 import { LabelField } from 'components/LabelField';
 import { TLSConfig } from 'components/TLSConfig';
+import { NameValueInput } from 'components/NameValueInput';
 
 const httpVersionOptions = [
   {
@@ -129,12 +129,10 @@ const generateValidStatusCodes = () => {
 const validStatusCodes = generateValidStatusCodes();
 
 interface Props {
-  settings?: HttpSettings;
   isEditor: boolean;
-  labels: SMLabel[];
 }
 
-export const HttpSettingsForm: FC<Props> = ({ settings, isEditor, labels }) => {
+export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
   const { register, watch, control } = useFormContext();
   const [showHttpSettings, setShowHttpSettings] = useState(false);
   const [showAuthentication, setShowAuthentication] = useState(false);
@@ -146,18 +144,6 @@ export const HttpSettingsForm: FC<Props> = ({ settings, isEditor, labels }) => {
   const [includeBearerToken, setIncludeBearerToken] = useState(Boolean(bearerToken));
   const [includeBasicAuth, setIncludeBasicAuth] = useState(Boolean(basicAuth));
 
-  const headersToLabels = (): SMLabel[] => {
-    let labels: SMLabel[] = [];
-    for (const h of settings?.headers ?? []) {
-      const parts = h.split(':', 2);
-      labels.push({
-        name: parts[0],
-        value: parts[1],
-      });
-    }
-    return labels;
-  };
-
   return (
     <Container>
       <Collapse
@@ -168,7 +154,7 @@ export const HttpSettingsForm: FC<Props> = ({ settings, isEditor, labels }) => {
       >
         <HorizontalGroup>
           <Field label="Request Method" description="The HTTP method the probe will use" disabled={!isEditor}>
-            <Controller as={Select} name="settings.http.method" value={settings?.method} options={methodOptions} />
+            <Controller as={Select} name="settings.http.method" options={methodOptions} />
           </Field>
         </HorizontalGroup>
         <Container>
@@ -180,16 +166,7 @@ export const HttpSettingsForm: FC<Props> = ({ settings, isEditor, labels }) => {
         </Container>
         <Container>
           <Field label="Request Headers" description="The HTTP headers set for the probe.." disabled={!isEditor}>
-            <div>
-              <Controller
-                as={SMLabelsForm}
-                name="settings.http.headers"
-                labels={headersToLabels()}
-                isEditor={isEditor}
-                type="Header"
-                limit={10}
-              />
-            </div>
+            <NameValueInput name="settings.http.headers" disabled={!isEditor} label="Header" limit={10} />
           </Field>
         </Container>
       </Collapse>
@@ -350,7 +327,7 @@ export const HttpSettingsForm: FC<Props> = ({ settings, isEditor, labels }) => {
         isOpen={showAdvanced}
         collapsible
       >
-        <LabelField labels={labels} isEditor={isEditor} />
+        <LabelField isEditor={isEditor} />
         <HorizontalGroup>
           <div>
             <Field label="IP Version" description="The IP protocol of the HTTP request" disabled={!isEditor}>

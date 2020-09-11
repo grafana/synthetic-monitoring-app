@@ -14,14 +14,13 @@ import {
   useTheme,
 } from '@grafana/ui';
 import { useFormContext, Controller, useFieldArray } from 'react-hook-form';
-import { Label as LabelType, ResponseMatchType } from 'types';
+import { ResponseMatchType } from 'types';
 import { Collapse } from 'components/Collapse';
 import { LabelField } from './LabelField';
 import { DNS_RESPONSE_CODES, DNS_RECORD_TYPES, DNS_PROTOCOLS, IP_OPTIONS } from './constants';
 
 interface Props {
   isEditor: boolean;
-  labels: LabelType[];
 }
 
 const RESPONSE_MATCH_OPTIONS = [
@@ -30,7 +29,7 @@ const RESPONSE_MATCH_OPTIONS = [
   { label: `Validate ${ResponseMatchType.Additional} matches`, value: ResponseMatchType.Additional },
 ];
 
-const DnsSettingsForm: FC<Props> = ({ isEditor, labels }) => {
+const DnsSettingsForm: FC<Props> = ({ isEditor }) => {
   const { spacing } = useTheme();
 
   const { register, control } = useFormContext();
@@ -145,7 +144,7 @@ const DnsSettingsForm: FC<Props> = ({ isEditor, labels }) => {
         onToggle={() => setShowAdvanced(!showAdvanced)}
         isOpen={showAdvanced}
       >
-        <LabelField isEditor={isEditor} labels={labels} />
+        <LabelField isEditor={isEditor} />
         <HorizontalGroup>
           <Field label="IP Version" description="The IP protocol of the ICMP request" disabled={!isEditor}>
             <Controller name="settings.dns.ipVersion" as={Select} options={IP_OPTIONS} />

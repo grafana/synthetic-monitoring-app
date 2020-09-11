@@ -11,13 +11,12 @@ import {
   Switch,
   Legend,
   Form,
-  InputControl,
 } from '@grafana/ui';
-import { Label as SMLabel, Probe, OrgRole } from 'types';
+import { Probe, OrgRole } from 'types';
 import { hasRole } from 'utils';
-import SMLabelsForm from 'components/SMLabelsForm';
+import { LabelField } from 'components/LabelField';
 import ProbeStatus from './ProbeStatus';
-import { validateLabel } from 'validation';
+// import { validateLabel } from 'validation';
 import { InstanceContext } from 'components/InstanceContext';
 
 interface Props {
@@ -81,7 +80,7 @@ const ProbeEditor: FC<Props> = ({ probe, onReturn }) => {
   return (
     <HorizontalGroup align="flex-start">
       <Form onSubmit={onSave} validateOn="onChange" defaultValues={probe}>
-        {({ register, errors, control, formState, getValues }) => {
+        {({ register, errors, formState }) => {
           return (
             <div>
               <Legend>{legend}</Legend>
@@ -184,24 +183,7 @@ const ProbeEditor: FC<Props> = ({ probe, onReturn }) => {
               </Container>
               <Container margin="md">
                 <Field label="Labels" invalid={Boolean(errors.labels)} error="Name and value are required">
-                  <InputControl
-                    control={control}
-                    as={SMLabelsForm}
-                    name="labels"
-                    type="Labels"
-                    labels={getValues().labels || []}
-                    rules={{
-                      validate: (labels: SMLabel[]) => {
-                        const isValid = !labels?.some(label => !validateLabel(label));
-                        return isValid;
-                      },
-                    }}
-                    onUpdate={(labels: SMLabel[]) => {
-                      control.setValue('labels', labels, true);
-                    }}
-                    isEditor={isEditor}
-                    limit={3}
-                  />
+                  <LabelField isEditor={isEditor} limit={3} />
                 </Field>
               </Container>
               <Container margin="md">

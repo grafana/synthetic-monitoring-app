@@ -128,12 +128,7 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
             `}
           />
           <ProbeOptions isEditor={isEditor} timeout={check.timeout} frequency={check.frequency} probes={check.probes} />
-          <CheckSettings
-            labels={check.labels}
-            settings={check.settings}
-            typeOfCheck={selectedCheckType}
-            isEditor={isEditor}
-          />
+          <CheckSettings typeOfCheck={selectedCheckType} isEditor={isEditor} />
         </div>
         <HorizontalGroup>
           <Button type="submit">Save {Validation.validateCheck(check)}</Button>

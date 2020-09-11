@@ -1,22 +1,20 @@
 import React, { FC } from 'react';
 import { Field } from '@grafana/ui';
-import { Controller } from 'react-hook-form';
-import SMLabelsForm from 'components/SMLabelsForm';
-import { validateLabels } from 'validation';
-import { Label } from 'types';
+// import { validateLabels } from 'validation';
+import { NameValueInput } from './NameValueInput';
 
 interface Props {
-  labels: Label[];
   isEditor: boolean;
+  limit?: number;
 }
 
-export const LabelField: FC<Props> = ({ labels, isEditor }) => (
+export const LabelField: FC<Props> = ({ isEditor, limit }) => (
   <Field
     label="Labels"
     description="Custom labels to be included with collected metrics and logs."
     disabled={!isEditor}
-    invalid={!validateLabels(labels)}
+    // invalid={!validateLabels(labels)}
   >
-    <Controller as={SMLabelsForm} name="labels" labels={labels} isEditor={isEditor} type="Label" limit={5} />
+    <NameValueInput name="labels" disabled={!isEditor} label="Label" limit={limit ?? 5} />
   </Field>
 );
