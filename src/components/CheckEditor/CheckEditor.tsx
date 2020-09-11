@@ -12,10 +12,10 @@ import {
   Legend,
   Alert,
 } from '@grafana/ui';
-import { Check, CheckType, OrgRole } from 'types';
+import { Check, CheckType, OrgRole, CheckFormValues } from 'types';
 import { SMDataSource } from 'datasource/DataSource';
 import { hasRole } from 'utils';
-import { getDefaultValuesFromCheck } from './checkFormTransformations';
+import { getDefaultValuesFromCheck, getCheckFromFormValues } from './checkFormTransformations';
 import * as Validation from 'validation';
 import CheckTarget from 'components/CheckTarget';
 import { Subheader } from 'components/Subheader';
@@ -36,18 +36,20 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
 
   const defaultValues = getDefaultValuesFromCheck(check);
 
-  const formMethods = useForm({ defaultValues });
+  const formMethods = useForm<CheckFormValues>({ defaultValues });
 
   let isEditor = hasRole(OrgRole.EDITOR);
 
-  const onSubmit = async (values: any) => {
+  const onSubmit = async (values: CheckFormValues) => {
     console.log(values);
+    const check = getCheckFromFormValues(values);
+    console.log(check);
     return;
     try {
       if (values.id) {
-        await instance.updateCheck(values);
+        await instance.updateCheck(check);
       } else {
-        await instance.addCheck(values);
+        await instance.addCheck(check);
       }
       onReturn(true);
     } catch (e) {
