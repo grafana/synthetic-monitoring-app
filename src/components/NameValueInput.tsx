@@ -15,13 +15,12 @@ export const NameValueInput: FC<Props> = ({ name, disabled, limit, label }) => {
   return (
     <VerticalGroup justify="space-between">
       {fields.map((field, index) => (
-        <HorizontalGroup justify="space-between">
+        <HorizontalGroup key={field.id}>
           <Input
             ref={register()}
             name={`${name}[${index}].name`}
             type="text"
             placeholder="name"
-            value={name}
             disabled={disabled}
             // invalid={!Validation.validateLabelName(name)}
           />
@@ -37,7 +36,13 @@ export const NameValueInput: FC<Props> = ({ name, disabled, limit, label }) => {
         </HorizontalGroup>
       ))}
       {fields.length < limit && (
-        <Button onClick={() => append({ name: '', value: '' })} disabled={disabled} variant="secondary" size="sm">
+        <Button
+          onClick={() => append({ name: '', value: '' })}
+          disabled={disabled}
+          variant="secondary"
+          size="sm"
+          type="button"
+        >
           <Icon name="plus" />
           &nbsp; Add {label}
         </Button>

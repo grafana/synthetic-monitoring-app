@@ -353,7 +353,7 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
           >
             <Input
               ref={register()}
-              name="settings.http.cacheBustingQueryParam"
+              name="settings.http.cacheBustingQueryParamName"
               type="string"
               placeholder="cache-bust"
               disabled={!isEditor}

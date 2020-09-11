@@ -195,7 +195,12 @@ const ProbeEditor: FC<Props> = ({ probe, onReturn }) => {
                     Save
                   </Button>
                   {probe.id && (
-                    <Button variant="destructive" onClick={() => setShowDeleteModal(true)} disabled={!isEditor}>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      onClick={() => setShowDeleteModal(true)}
+                      disabled={!isEditor}
+                    >
                       Delete Probe
                     </Button>
                   )}
@@ -207,7 +212,7 @@ const ProbeEditor: FC<Props> = ({ probe, onReturn }) => {
                     onConfirm={onRemoveProbe}
                     onDismiss={() => setShowDeleteModal(false)}
                   />
-                  <Button variant="secondary" onClick={() => onReturn(false)}>
+                  <Button variant="secondary" onClick={() => onReturn(false)} type="button">
                     Back
                   </Button>
                 </HorizontalGroup>

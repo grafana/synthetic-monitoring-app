@@ -101,7 +101,7 @@ export const CheckList: FC<Props> = ({ instance, onAddNewClick, checks }) => {
           services with Grafana Cloud.
         </p>
         {hasRole(OrgRole.EDITOR) && (
-          <Button variant="primary" onClick={onAddNewClick}>
+          <Button variant="primary" onClick={onAddNewClick} type="button">
             New Check
           </Button>
         )}
@@ -144,7 +144,7 @@ export const CheckList: FC<Props> = ({ instance, onAddNewClick, checks }) => {
         </div>
         <div className="page-action-bar__spacer" />
         {hasRole(OrgRole.EDITOR) && (
-          <Button variant="secondary" onClick={onAddNewClick}>
+          <Button variant="secondary" onClick={onAddNewClick} type="button">
             New Check
           </Button>
         )}
@@ -195,6 +195,7 @@ export const CheckList: FC<Props> = ({ instance, onAddNewClick, checks }) => {
                               setSearchFilter(`${label.name}=${label.value}`);
                               setCurrentPage(1);
                             }}
+                            type="button"
                           >
                             {label.name}={label.value}
                           </Button>

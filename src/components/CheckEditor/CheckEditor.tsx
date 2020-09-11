@@ -1,4 +1,4 @@
-import React, { FC, useState } from 'react';
+import React, { FC, useState, useMemo } from 'react';
 import { css } from 'emotion';
 import {
   Button,
@@ -32,9 +32,9 @@ interface Props {
 
 export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [error, setError] = useState();
+  const [error, setError] = useState<Error | undefined>();
 
-  const defaultValues = getDefaultValuesFromCheck(check);
+  const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
 
   const formMethods = useForm<CheckFormValues>({ defaultValues });
 
@@ -42,23 +42,17 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
 
   const onSubmit = async (values: CheckFormValues) => {
     console.log(values);
-    const check = getCheckFromFormValues(values);
+    const updatedCheck = getCheckFromFormValues(values, check);
     console.log(check);
-    return;
     try {
       if (values.id) {
-        await instance.updateCheck(check);
+        await instance.updateCheck(updatedCheck);
       } else {
-        await instance.addCheck(check);
+        await instance.addCheck(updatedCheck);
       }
       onReturn(true);
     } catch (e) {
-      // this.setState({
-      //   error: {
-      //     status: e.status,
-      //     message: e.data?.message ?? 'Something went wrong',
-      //   },
-      // });
+      setError(e);
     }
   };
 
@@ -136,7 +130,7 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
         <HorizontalGroup>
           <Button type="submit">Save {Validation.validateCheck(check)}</Button>
           {check.id && (
-            <Button variant="destructive" onClick={() => setShowDeleteModal(true)} disabled={!isEditor}>
+            <Button variant="destructive" onClick={() => setShowDeleteModal(true)} disabled={!isEditor} type="button">
               Delete Check
             </Button>
           )}

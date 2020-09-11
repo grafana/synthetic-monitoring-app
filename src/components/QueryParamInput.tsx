@@ -41,7 +41,7 @@ const QueryParamInput: FC<Props> = ({ queryParam, onChange, onDelete }) => (
         })
       }
     />
-    <IconButton name="minus-circle" onClick={onDelete} />
+    <IconButton name="minus-circle" onClick={onDelete} type="button" />
   </>
 );
 

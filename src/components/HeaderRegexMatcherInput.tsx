@@ -1,6 +1,6 @@
 import React, { FC } from 'react';
 import { useFormContext, useFieldArray } from 'react-hook-form';
-import { Field, Input, IconButton, HorizontalGroup, Icon, Button, Switch } from '@grafana/ui';
+import { Field, Input, IconButton, HorizontalGroup, Icon, Button, Switch, Label } from '@grafana/ui';
 
 interface Props {
   isEditor: boolean;
@@ -31,7 +31,8 @@ export const HeaderRegexMatcherInput: FC<Props> = ({ isEditor, name, label, desc
               placeholder="regexp"
               disabled={!isEditor}
             />
-            <Switch ref={register()} name={`${name}[${index}].allowMissing`} label="Allow Missing" />
+            <Label>Allow Missing</Label>
+            <Switch ref={register()} name={`${name}[${index}].allowMissing`} />
             <IconButton name="minus-circle" type="button" disabled={!isEditor} onClick={() => remove(index)} />
           </HorizontalGroup>
         ))}
