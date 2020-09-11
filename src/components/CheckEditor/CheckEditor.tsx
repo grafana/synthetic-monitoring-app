@@ -14,7 +14,8 @@ import {
 } from '@grafana/ui';
 import { Check, CheckType, OrgRole } from 'types';
 import { SMDataSource } from 'datasource/DataSource';
-import { hasRole, getDefaultValuesFromCheck } from 'utils';
+import { hasRole } from 'utils';
+import { getDefaultValuesFromCheck } from './checkFormTransformations';
 import * as Validation from 'validation';
 import CheckTarget from 'components/CheckTarget';
 import { Subheader } from 'components/Subheader';

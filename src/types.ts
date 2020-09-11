@@ -207,8 +207,9 @@ export interface SettingsFormValues {
   tcp?: TcpSettingsFormValues;
 }
 
-export interface CheckFormValues extends Omit<Check, 'settings' | 'checkType'> {
+export interface CheckFormValues extends Omit<Check, 'settings' | 'probes'> {
   checkType: SelectableValue<CheckType>;
+  probes: Array<SelectableValue<number>>;
   settings: SettingsFormValues;
 }
 
