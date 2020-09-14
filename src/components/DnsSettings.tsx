@@ -60,7 +60,7 @@ const DnsSettingsForm: FC<Props> = ({ isEditor }) => {
           <Field label="Server" disabled={!isEditor}>
             <Input
               id="dns-settings-server-address"
-              ref={register()}
+              ref={register}
               name="settings.dns.server"
               type="text"
               placeholder="server"
@@ -70,7 +70,7 @@ const DnsSettingsForm: FC<Props> = ({ isEditor }) => {
             <Controller as={Select} name="settings.dns.protocol" options={DNS_PROTOCOLS} />
           </Field>
           <Field label="Port" disabled={!isEditor}>
-            <Input id="dns-settings-port" ref={register()} name="settings.dns.port" type="number" placeholder="port" />
+            <Input id="dns-settings-port" ref={register} name="settings.dns.port" type="number" placeholder="port" />
           </Field>
         </div>
       </Collapse>
@@ -107,7 +107,7 @@ const DnsSettingsForm: FC<Props> = ({ isEditor }) => {
                   options={RESPONSE_MATCH_OPTIONS}
                 />
                 <Input
-                  ref={register()}
+                  ref={register}
                   name={`settings.dns.validations[${index}].expression`}
                   placeholder="Type Expression"
                 />
@@ -118,7 +118,7 @@ const DnsSettingsForm: FC<Props> = ({ isEditor }) => {
                     justify-self: center;
                   `}
                 >
-                  <Checkbox ref={register()} name={`settings.dns.validations[${index}].inverted`} />
+                  <Checkbox ref={register} name={`settings.dns.validations[${index}].inverted`} />
                 </div>
                 <IconButton name="minus-circle" onClick={() => remove(index)} />
               </Fragment>
