@@ -95,20 +95,30 @@ export function validateLabels(labels: Label[]): boolean {
 
 const labelRegex = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
 
-export function validateLabel(label: Label): boolean {
+export function validateLabel(label: Label): string | undefined {
   return validateLabelName(label.name) && validateLabelValue(label.value);
 }
 
-export function validateLabelName(name: string): boolean {
-  if (name.length < 1 || name.length > 32) {
-    return false;
+export function validateLabelName(name: string): string | undefined {
+  if (name.length > 32) {
+    return 'Label names must be 32 characters or less';
+  }
+  if (!labelRegex.test(name)) {
+    return 'Invalid label name';
   }
 
-  return labelRegex.test(name);
+  return undefined;
 }
 
-export function validateLabelValue(value: string): boolean {
-  return value.length > 0 && value.length <= 32;
+export function validateLabelValue(value: string): string | undefined {
+  if (value.length > 32) {
+    return 'Label names must be 32 characters or less';
+  }
+  if (!labelRegex.test(value)) {
+    return 'Invalid label value';
+  }
+
+  return undefined;
 }
 
 export function validateSettings(settings: Settings): boolean {
