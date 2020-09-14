@@ -78,6 +78,7 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
     return <div>Loading...</div>;
   }
   console.log({ errors: formMethods.errors });
+  console.log('default values', defaultValues);
 
   return (
     <FormContext {...formMethods}>

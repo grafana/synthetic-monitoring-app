@@ -121,10 +121,34 @@ export function validateLabelValue(value: string): string | undefined {
   return undefined;
 }
 
-export function validateSettings(settings: Settings): boolean {
+export const validateBasicAuthUsername = (username: string) => {
+  return undefined;
+};
+
+export const validateBearerToken = (token: string) => {
+  return undefined;
+};
+
+export const validateTLSServerName = (serverName: string) => {
+  return undefined;
+};
+
+export const validateTLSCACert = (caCert: string) => {
+  return undefined;
+};
+
+export const validateTLSClientCert = (clientCert: string) => {
+  return undefined;
+};
+
+export const validateTLSClientKey = (clientKey: string) => {
+  return undefined;
+};
+
+export function validateSettings(settings: Settings): string | undefined {
   let checkT = checkType(settings);
   if (!settings[checkT]) {
-    return false;
+    return 'Settings values required';
   }
 
   switch (checkT) {
@@ -153,20 +177,32 @@ export function validateProbes(probes: number[]): string | undefined {
   return undefined;
 }
 
-export function validateSettingsHTTP(settings: HttpSettings): boolean {
-  return true;
+export const validateHTTPBody = (body: string) => {
+  return undefined;
+};
+
+export const validateHTTPHeaderName = (name: string) => {
+  return undefined;
+};
+
+export const validateHTTPHeaderValue = (name: string) => {
+  return undefined;
+};
+
+export function validateSettingsHTTP(settings: HttpSettings): string | undefined {
+  return undefined;
 }
 
-export function validateSettingsPING(settings: PingSettings): boolean {
-  return true;
+export function validateSettingsPING(settings: PingSettings): string | undefined {
+  return undefined;
 }
 
-export function validateSettingsDNS(settings: DnsSettings): boolean {
-  return true;
+export function validateSettingsDNS(settings: DnsSettings): string | undefined {
+  return undefined;
 }
 
-export function validateSettingsTCP(settings: TcpSettings): boolean {
-  return true;
+export function validateSettingsTCP(settings: TcpSettings): string | undefined {
+  return undefined;
 }
 
 function validateHttpTarget(target: string): string | undefined {

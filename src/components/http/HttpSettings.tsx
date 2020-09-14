@@ -20,6 +20,7 @@ import { IP_OPTIONS } from '../constants';
 import { LabelField } from 'components/LabelField';
 import { TLSConfig } from 'components/TLSConfig';
 import { NameValueInput } from 'components/NameValueInput';
+import { validateBearerToken, validateHTTPBody, validateHTTPHeaderName, validateHTTPHeaderValue } from 'validation';
 
 const httpVersionOptions = [
   {
@@ -133,7 +134,7 @@ interface Props {
 }
 
 export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
-  const { register, watch, control } = useFormContext();
+  const { register, watch, control, errors } = useFormContext();
   const [showHttpSettings, setShowHttpSettings] = useState(false);
   const [showAuthentication, setShowAuthentication] = useState(false);
   const [showValidation, setShowValidation] = useState(false);
@@ -153,20 +154,48 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
         collapsible
       >
         <HorizontalGroup>
-          <Field label="Request Method" description="The HTTP method the probe will use" disabled={!isEditor}>
-            <Controller as={Select} name="settings.http.method" options={methodOptions} />
+          <Field
+            label="Request Method"
+            description="The HTTP method the probe will use"
+            disabled={!isEditor}
+            invalid={Boolean(errors?.settings?.http?.method)}
+            error={errors?.settings?.http?.method}
+          >
+            <Controller as={Select} rules={{ required: true }} name="settings.http.method" options={methodOptions} />
           </Field>
         </HorizontalGroup>
         <Container>
-          <Field label="Request Body" description="The body of the HTTP request used in probe." disabled={!isEditor}>
-            <div>
-              <TextArea ref={register()} name="settings.http.body" rows={2} disabled={!isEditor} />
-            </div>
+          <Field
+            label="Request Body"
+            description="The body of the HTTP request used in probe."
+            disabled={!isEditor}
+            invalid={Boolean(errors?.settings?.http?.body)}
+            error={errors?.settings?.http?.body}
+          >
+            <TextArea
+              ref={register({ validate: validateHTTPBody })}
+              name="settings.http.body"
+              rows={2}
+              disabled={!isEditor}
+            />
           </Field>
         </Container>
         <Container>
-          <Field label="Request Headers" description="The HTTP headers set for the probe.." disabled={!isEditor}>
-            <NameValueInput name="settings.http.headers" disabled={!isEditor} label="Header" limit={10} />
+          <Field
+            label="Request Headers"
+            description="The HTTP headers set for the probe.."
+            disabled={!isEditor}
+            invalid={Boolean(errors.settings?.http?.headers)}
+            error={errors.settings?.http?.headers}
+          >
+            <NameValueInput
+              name="settings.http.headers"
+              disabled={!isEditor}
+              label="Header"
+              limit={10}
+              validateName={validateHTTPHeaderName}
+              validateValue={validateHTTPHeaderValue}
+            />
           </Field>
         </Container>
       </Collapse>
@@ -200,16 +229,17 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
             </Container>
           </Field>
           {includeBearerToken && (
-            <VerticalGroup>
+            <Field invalid={Boolean(errors.settings?.http?.bearerToken)} error={errors.settings?.http?.bearerToken}>
               <Input
-                ref={register()}
+                ref={register({
+                  validate: validateBearerToken,
+                })}
                 name={'settings.http.bearerToken'}
                 type="password"
                 placeholder="Bearer Token"
                 disabled={!isEditor}
               />
-              <br />
-            </VerticalGroup>
+            </Field>
           )}
         </VerticalGroup>
         <VerticalGroup spacing="xs">
@@ -286,12 +316,12 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
 
           <Field label="Fail if SSL" description="Probe fails if SSL is present" disabled={!isEditor}>
             <Container padding="sm">
-              <Switch ref={register()} name="settings.http.failIfSSL" disabled={!isEditor} />
+              <Switch ref={register} name="settings.http.failIfSSL" disabled={!isEditor} />
             </Container>
           </Field>
           <Field label="Fail if not SSL" description="Probe fails if SSL is not present" disabled={!isEditor}>
             <Container padding="sm">
-              <Switch ref={register()} name="settings.http.failIfNotSSL" disabled={!isEditor} />
+              <Switch ref={register} name="settings.http.failIfNotSSL" disabled={!isEditor} />
             </Container>
           </Field>
         </HorizontalGroup>
@@ -341,7 +371,7 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
               disabled={!isEditor}
             >
               <Container padding="sm">
-                <Switch ref={register()} name="settings.http.noFollowRedirects" disabled={!isEditor} />
+                <Switch ref={register} name="settings.http.noFollowRedirects" disabled={!isEditor} />
               </Container>
             </Field>
           </div>
@@ -352,7 +382,7 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
             description="The name of the query parameter used to prevent the server from using a cached response. Each probe will assign a random value to this parameter each time a request is made."
           >
             <Input
-              ref={register()}
+              ref={register}
               name="settings.http.cacheBustingQueryParamName"
               type="string"
               placeholder="cache-bust"

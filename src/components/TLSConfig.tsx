@@ -3,6 +3,7 @@ import { useFormContext } from 'react-hook-form';
 import { HorizontalGroup, Field, Input, Container, TextArea, Switch } from '@grafana/ui';
 import { Collapse } from 'components/Collapse';
 import { CheckType } from 'types';
+import { validateTLSCACert, validateTLSClientCert, validateTLSClientKey, validateTLSServerName } from 'validation';
 
 interface Props {
   isEditor: boolean;
@@ -11,18 +12,26 @@ interface Props {
 
 export const TLSConfig: FC<Props> = ({ isEditor, checkType }) => {
   const [showTLS, setShowTLS] = useState(false);
-  const { register } = useFormContext();
+  const { register, errors } = useFormContext();
   return (
     <Collapse label="TLS Config" onToggle={() => setShowTLS(!showTLS)} isOpen={showTLS} collapsible>
       <HorizontalGroup>
         <Field label="Skip Validation" description="Disable target certificate validation" disabled={!isEditor}>
           <Container padding="sm">
-            <Switch ref={register()} name={`settings.${checkType}.tlsConfig.insecureSkipVerify`} disabled={!isEditor} />
+            <Switch ref={register} name={`settings.${checkType}.tlsConfig.insecureSkipVerify`} disabled={!isEditor} />
           </Container>
         </Field>
-        <Field label="Server Name" description="Used to verify the hostname for the targets" disabled={!isEditor}>
+        <Field
+          label="Server Name"
+          description="Used to verify the hostname for the targets"
+          disabled={!isEditor}
+          invalid={Boolean(errors.settings?.[checkType]?.tlsConfig?.serverName)}
+          error={errors.settings?.[checkType]?.tlsConfig?.serverName}
+        >
           <Input
-            ref={register()}
+            ref={register({
+              validate: validateTLSServerName,
+            })}
             name={`settings.${checkType}.tlsConfig.serverName`}
             type="text"
             placeholder="ServerName"
@@ -31,9 +40,17 @@ export const TLSConfig: FC<Props> = ({ isEditor, checkType }) => {
         </Field>
       </HorizontalGroup>
       <Container>
-        <Field label="CA Certificate" description="The CA cert to use for the targets" disabled={!isEditor}>
+        <Field
+          label="CA Certificate"
+          description="The CA cert to use for the targets"
+          disabled={!isEditor}
+          invalid={Boolean(errors.settings?.[checkType]?.tlsConfig?.caCert)}
+          error={errors.settings?.[checkType]?.tlsConfig?.caCert}
+        >
           <TextArea
-            ref={register()}
+            ref={register({
+              validate: validateTLSCACert,
+            })}
             name={`settings.${checkType}.tlsConfig.caCert`}
             rows={2}
             disabled={!isEditor}
@@ -42,10 +59,18 @@ export const TLSConfig: FC<Props> = ({ isEditor, checkType }) => {
         </Field>
       </Container>
       <Container>
-        <Field label="Client Certificate" description="The client cert file for the targets" disabled={!isEditor}>
+        <Field
+          label="Client Certificate"
+          description="The client cert file for the targets"
+          disabled={!isEditor}
+          invalid={Boolean(errors?.settings?.[checkType]?.tlsConfig?.clientCert)}
+          error={errors?.settings?.[checkType]?.tlsConfig?.clientCert}
+        >
           <TextArea
-            ref={register()}
-            name={`settings.${checkType}.tlsConfig.caCert`}
+            ref={register({
+              validate: validateTLSClientCert,
+            })}
+            name={`settings.${checkType}.tlsConfig.clientCert`}
             rows={2}
             disabled={!isEditor}
             placeholder="Client Certificate"
@@ -53,9 +78,15 @@ export const TLSConfig: FC<Props> = ({ isEditor, checkType }) => {
         </Field>
       </Container>
       <Container>
-        <Field label="Client Key" description="The client key file for the targets" disabled={!isEditor}>
+        <Field
+          label="Client Key"
+          description="The client key file for the targets"
+          disabled={!isEditor}
+          invalid={Boolean(errors?.settings?.[checkType]?.tlsConfig?.clientKey)}
+          error={errors?.settings?.[checkType]?.tlsConfig?.clientKey}
+        >
           <TextArea
-            ref={register()}
+            ref={register({ validate: validateTLSClientKey })}
             name={`settings.${checkType}.tlsConfig.clientKey`}
             type="password"
             rows={2}
