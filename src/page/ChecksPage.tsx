@@ -95,7 +95,7 @@ export class ChecksPage extends PureComponent<Props, State> {
         job: '',
         target: '',
         frequency: 60000,
-        timeout: 2500,
+        timeout: 3000,
         enabled: true,
         labels: [],
         probes: [],

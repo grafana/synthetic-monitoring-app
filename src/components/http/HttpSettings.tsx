@@ -161,7 +161,13 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
             invalid={Boolean(errors?.settings?.http?.method)}
             error={errors?.settings?.http?.method}
           >
-            <Controller as={Select} rules={{ required: true }} name="settings.http.method" options={methodOptions} />
+            <Controller
+              as={Select}
+              rules={{ required: true }}
+              name="settings.http.method"
+              options={methodOptions}
+              defaultValue={methodOptions[0]}
+            />
           </Field>
         </HorizontalGroup>
         <Container>

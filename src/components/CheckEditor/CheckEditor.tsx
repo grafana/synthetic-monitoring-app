@@ -37,13 +37,12 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
   const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
 
   const formMethods = useForm<CheckFormValues>({ defaultValues, mode: 'onBlur' });
+  const selectedCheckType = formMethods.watch('checkType').value as CheckType;
 
   let isEditor = hasRole(OrgRole.EDITOR);
 
   const onSubmit = async (values: CheckFormValues) => {
-    console.log(values);
     const updatedCheck = getCheckFromFormValues(values, defaultValues);
-    console.log(check);
     try {
       if (check.id) {
         await instance.updateCheck({
@@ -72,13 +71,10 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
   const onBack = () => onReturn(true);
 
   const target = formMethods.watch('target', '') as string;
-  const selectedCheckType = formMethods.watch('checkType').value as CheckType;
 
   if (!check) {
     return <div>Loading...</div>;
   }
-  console.log({ errors: formMethods.errors });
-  console.log('default values', defaultValues);
 
   return (
     <FormContext {...formMethods}>
