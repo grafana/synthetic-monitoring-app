@@ -6,6 +6,7 @@ import { Probe } from 'types';
 import { SliderInput } from 'components/SliderInput';
 import { Subheader } from 'components/Subheader';
 import { useFormContext, Controller } from 'react-hook-form';
+import { validateProbes } from 'validation';
 
 interface Props {
   isEditor: boolean;
@@ -16,7 +17,7 @@ interface Props {
 
 export const ProbeOptions: FC<Props> = ({ frequency, timeout, isEditor, probes }) => {
   const [availableProbes, setAvailableProbes] = useState<Probe[]>([]);
-  const { control } = useFormContext();
+  const { control, errors } = useFormContext();
   const { instance } = useContext(InstanceContext);
 
   useEffect(() => {
@@ -36,13 +37,15 @@ export const ProbeOptions: FC<Props> = ({ frequency, timeout, isEditor, probes }
         label="Probe Locations"
         description="Select up to 20 locations where this target will be checked from."
         disabled={!isEditor}
-        // invalid={!validateProbes(selectedProbes)}
+        invalid={Boolean(errors.probes)}
+        error={errors.probes?.message}
       >
         <Controller
           as={CheckProbes}
           control={control}
           name="probes"
           valueName="probes"
+          rules={{ validate: validateProbes }}
           probes={probes}
           availableProbes={availableProbes}
           isEditor={isEditor}

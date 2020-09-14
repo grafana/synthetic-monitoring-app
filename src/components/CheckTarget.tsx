@@ -8,9 +8,11 @@ import QueryParams from './QueryParams';
 interface Props {
   target: string;
   typeOfCheck?: CheckType;
-  checkSettings: Settings;
   disabled?: boolean;
   onChange: (target: string) => void;
+  onBlur?: () => void;
+  invalid?: boolean;
+  error?: string;
 }
 
 interface TargetHelpInfo {
@@ -56,26 +58,15 @@ const getTargetHelpText = (typeOfCheck: CheckType | undefined): TargetHelpInfo =
   return resp;
 };
 
-const CheckTarget: FC<Props> = ({ target, typeOfCheck, disabled, checkSettings, onChange }) => {
+const CheckTarget: FC<Props> = ({ target, typeOfCheck, disabled, onChange, onBlur, invalid, error }) => {
   const targetHelp = getTargetHelpText(typeOfCheck);
-  // const [targetValue, updateTarget] = useState(target);
-
-  // useEffect(() => {
-  //   console.log('in check target', target, targetValue);
-  //   onChange(targetValue);
-  // }, [targetValue]);
-
   const parsedURL = parseUrl(target);
   return (
     <>
-      <Field
-        label="Target"
-        description={targetHelp.text}
-        disabled={disabled}
-        // invalid={!validateTarget(checkType(checkSettings), target)}
-      >
+      <Field label="Target" description={targetHelp.text} disabled={disabled} invalid={invalid} error={error}>
         <Input
           type="string"
+          onBlur={onBlur}
           placeholder={targetHelp.example}
           value={target}
           onChange={(e: ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
@@ -85,6 +76,7 @@ const CheckTarget: FC<Props> = ({ target, typeOfCheck, disabled, checkSettings, 
       {typeOfCheck === CheckType.HTTP && parsedURL && (
         <QueryParams
           target={parsedURL}
+          onBlur={onBlur}
           onChange={(target: string) => onChange(target)}
           className={css`
             padding-left: 1rem;

@@ -15,24 +15,27 @@ export const CheckValidation = {
 };
 
 export function validateCheck(check: Check): boolean {
-  return (
+  return Boolean(
     CheckValidation.job(check.job) &&
-    CheckValidation.target(checkType(check.settings), check.target) &&
-    CheckValidation.frequency(check.frequency) &&
-    CheckValidation.timeout(check.timeout) &&
-    CheckValidation.labels(check.labels) &&
-    CheckValidation.settings(check.settings) &&
-    CheckValidation.probes(check.probes)
+      CheckValidation.target(checkType(check.settings), check.target) &&
+      CheckValidation.frequency(check.frequency) &&
+      CheckValidation.timeout(check.timeout) &&
+      CheckValidation.labels(check.labels) &&
+      CheckValidation.settings(check.settings) &&
+      CheckValidation.probes(check.probes)
   );
 }
 
-export function validateJob(job: string): boolean {
-  return job.length > 0 && job.length <= 32;
+export function validateJob(job: string): string | undefined {
+  if (job.length > 32) {
+    return 'Job name must be 32 characters or less';
+  }
+  return undefined;
 }
 
-export function validateTarget(typeOfCheck: CheckType, target: string): boolean {
-  if (!(target.length > 0 && target.length <= 2040)) {
-    return false;
+export function validateTarget(typeOfCheck: CheckType, target: string): string | undefined {
+  if (target.length > 2040) {
+    return 'Target length must be less than 2040 characters';
   }
 
   switch (typeOfCheck) {
@@ -52,7 +55,7 @@ export function validateTarget(typeOfCheck: CheckType, target: string): boolean 
       // we want to make sure that we are validating the target for all
       // check types; if someone adds a check type but forgets to update
       // this validation, it will land here.
-      return false;
+      return 'Invalid check type';
     }
   }
 }
@@ -118,8 +121,14 @@ export function validateSettings(settings: Settings): boolean {
   }
 }
 
-export function validateProbes(probes: number[]): boolean {
-  return probes.length > 0 && probes.length <= 64;
+export function validateProbes(probes: number[]): string | undefined {
+  if (probes.length === 0) {
+    return 'Select a probe';
+  }
+  if (probes.length > 64) {
+    return `The maximum probe quantity is 64, you have selected ${probes.length}`;
+  }
+  return undefined;
 }
 
 export function validateSettingsHTTP(settings: HttpSettings): boolean {
@@ -138,42 +147,60 @@ export function validateSettingsTCP(settings: TcpSettings): boolean {
   return true;
 }
 
-function validateHttpTarget(target: string): boolean {
-  return Boolean(validUrl.isWebUri(target));
+function validateHttpTarget(target: string): string | undefined {
+  const isValidUrl = Boolean(validUrl.isWebUri(target));
+  if (!isValidUrl) {
+    return 'Target must be a valid web URL';
+  }
+  return undefined;
 }
 
-function validateHostname(target: string): boolean {
+function validateHostname(target: string): string | undefined {
   // guess IP address first because some invalid IP addresses will look
   // like valid hostnames
 
   const ipv4 = new Address4(target);
   if (ipv4.isValid()) {
-    return true;
+    return 'Target must be a valid hostname';
   }
 
   const ipv6 = new Address6(target);
   if (ipv6.isValid()) {
-    return true;
+    return 'Target must be a valid hostname';
   }
 
   // it doesn't seem to be an IP address, let's try FQHN.
   const pc = punycode.toASCII(target);
   // note that \w matches "_"
   const re = new RegExp(/^[a-z]([-a-z0-9]{0,62}[a-z0-9])?(\.[a-z]([-a-z0-9]{0,62}[a-z0-9])?)+$/, 'i');
+  if (!pc.match(re)) {
+    return 'Target must be a valid hostname';
+  }
 
-  return pc.match(re) != null;
+  return undefined;
 }
 
-function validateHostPort(target: string): boolean {
+function validateHostPort(target: string): string | undefined {
   const re = new RegExp(/^(?:\[([0-9a-f:.]+)\]|([^:]+)):(\d+)$/, 'i');
   const match = target.match(re);
 
   if (match === null) {
-    return false;
+    return 'Must be a valid host:port combination';
   }
 
   const host = match[1] !== undefined ? match[1] : match[2];
   const port = parseInt(match[3], 10);
 
-  return validateHostname(host) && !isNaN(port) && port > 0 && port <= 65535;
+  if (isNaN(port)) {
+    return 'Invalid port value';
+  }
+  if (port > 65535) {
+    return 'Port must be less than 65535';
+  }
+
+  if (port < 0) {
+    return 'Port must be greater than 0';
+  }
+
+  return validateHostname(host);
 }

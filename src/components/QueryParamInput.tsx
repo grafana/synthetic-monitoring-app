@@ -13,12 +13,14 @@ interface Props {
   };
   onChange: (queryParam: QueryParam) => void;
   onDelete: () => void;
+  onBlur?: () => void;
 }
 
-const QueryParamInput: FC<Props> = ({ queryParam, onChange, onDelete }) => (
+const QueryParamInput: FC<Props> = ({ queryParam, onChange, onDelete, onBlur }) => (
   <>
     <Input
       label="Key"
+      onBlur={onBlur}
       type="text"
       placeholder="Key"
       value={queryParam.name}
@@ -31,6 +33,7 @@ const QueryParamInput: FC<Props> = ({ queryParam, onChange, onDelete }) => (
     />
     <Input
       label="Value"
+      onBlur={onBlur}
       type="text"
       placeholder="Value"
       value={queryParam.value}

@@ -16,7 +16,7 @@ import { Check, CheckType, OrgRole, CheckFormValues } from 'types';
 import { SMDataSource } from 'datasource/DataSource';
 import { hasRole } from 'utils';
 import { getDefaultValuesFromCheck, getCheckFromFormValues } from './checkFormTransformations';
-import * as Validation from 'validation';
+import { validateJob, validateCheck, validateTarget } from 'validation';
 import CheckTarget from 'components/CheckTarget';
 import { Subheader } from 'components/Subheader';
 import { CheckSettings } from './CheckSettings';
@@ -36,7 +36,7 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
 
   const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
 
-  const formMethods = useForm<CheckFormValues>({ defaultValues });
+  const formMethods = useForm<CheckFormValues>({ defaultValues, mode: 'onBlur' });
 
   let isEditor = hasRole(OrgRole.EDITOR);
 
@@ -77,6 +77,7 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
   if (!check) {
     return <div>Loading...</div>;
   }
+  console.log({ errors: formMethods.errors });
 
   return (
     <FormContext {...formMethods}>
@@ -100,7 +101,7 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
             </Field>
             <Field label="Enabled" disabled={!isEditor}>
               <Container padding="sm">
-                <Switch name="enabled" ref={formMethods.register()} disabled={!isEditor} />
+                <Switch name="enabled" ref={formMethods.register} disabled={!isEditor} />
               </Container>
             </Field>
           </HorizontalGroup>
@@ -108,9 +109,19 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
             label="Job Name"
             description="Name used for job label"
             disabled={!isEditor}
-            // invalid={!Validation.validateJob(check.job)}
+            invalid={Boolean(formMethods.errors.job)}
+            error={formMethods.errors.job?.message}
           >
-            <Input ref={formMethods.register()} name="job" type="string" placeholder="jobName" />
+            <Input
+              id="check-editor-job-input"
+              ref={formMethods.register({
+                required: true,
+                validate: validateJob,
+              })}
+              name="job"
+              type="string"
+              placeholder="jobName"
+            />
           </Field>
 
           <Controller
@@ -120,7 +131,12 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
             target={target}
             valueName="target"
             typeOfCheck={selectedCheckType}
-            checkSettings={check.settings}
+            invalid={Boolean(formMethods.errors.target)}
+            error={formMethods.errors.target?.message}
+            rules={{
+              required: true,
+              validate: target => validateTarget(selectedCheckType, target),
+            }}
             disabled={!isEditor}
           />
           <hr
@@ -132,7 +148,7 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
           <CheckSettings typeOfCheck={selectedCheckType} isEditor={isEditor} />
         </div>
         <HorizontalGroup>
-          <Button type="submit">Save {Validation.validateCheck(check)}</Button>
+          <Button type="submit">Save {validateCheck(check)}</Button>
           {check.id && (
             <Button variant="destructive" onClick={() => setShowDeleteModal(true)} disabled={!isEditor} type="button">
               Delete Check
