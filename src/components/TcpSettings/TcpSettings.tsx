@@ -42,7 +42,7 @@ export const TcpSettingsForm: FC<Props> = ({ isEditor }) => {
           disabled={!isEditor}
         >
           <Container padding="sm">
-            <Switch ref={register()} title="Use TLS" name="settings.tcp.tls" disabled={!isEditor} />
+            <Switch ref={register} title="Use TLS" name="settings.tcp.tls" disabled={!isEditor} />
           </Container>
         </Field>
       </Collapse>
@@ -61,14 +61,14 @@ export const TcpSettingsForm: FC<Props> = ({ isEditor }) => {
             {fields.map((field, index) => (
               <HorizontalGroup key={field.id}>
                 <Input
-                  ref={register()}
+                  ref={register}
                   name={`settings.tcp.queryResponse[${index}].expect`}
                   type="text"
                   placeholder="response to expect"
                   disabled={!isEditor}
                 />
                 <TextArea
-                  ref={register()}
+                  ref={register}
                   name={`settings.tcp.queryResponse[${index}].send`}
                   type="text"
                   placeholder="data to send"
@@ -78,7 +78,7 @@ export const TcpSettingsForm: FC<Props> = ({ isEditor }) => {
                 <span>StartTLS</span>
                 <Container padding="sm">
                   <Switch
-                    ref={register()}
+                    ref={register}
                     name={`settings.tcp.queryResponse[${index}].startTLS`}
                     label="StartTLS"
                     disabled={!isEditor}
