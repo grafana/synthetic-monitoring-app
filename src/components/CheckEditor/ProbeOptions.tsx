@@ -33,24 +33,19 @@ export const ProbeOptions: FC<Props> = ({ frequency, timeout, isEditor, probes }
   return (
     <div>
       <Subheader>Probe Options</Subheader>
-      <Field
-        label="Probe Locations"
-        description="Select up to 20 locations where this target will be checked from."
-        disabled={!isEditor}
-        invalid={Boolean(errors.probes)}
+
+      <Controller
+        as={CheckProbes}
+        control={control}
+        name="probes"
+        valueName="probes"
+        rules={{ validate: validateProbes }}
+        probes={probes}
+        availableProbes={availableProbes}
+        isEditor={isEditor}
+        invalid={errors.probes}
         error={errors.probes?.message}
-      >
-        <Controller
-          as={CheckProbes}
-          control={control}
-          name="probes"
-          valueName="probes"
-          rules={{ validate: validateProbes }}
-          probes={probes}
-          availableProbes={availableProbes}
-          isEditor={isEditor}
-        />
-      </Field>
+      />
       <Field
         label="Frequency"
         description="How frequently the check should run."
