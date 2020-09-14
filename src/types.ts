@@ -134,11 +134,11 @@ export interface DnsSettingsFormValues
     | 'validateAuthorityRRS'
     | 'validateAdditionalRRS'
   > {
-  ipVersion?: SelectableValue<IpVersion>;
-  protocol?: SelectableValue<DnsProtocol>;
-  recordType?: SelectableValue<DnsRecordType>;
-  validRCodes?: Array<SelectableValue<string>>;
-  validations?: DnsValidationFormValue[];
+  ipVersion: SelectableValue<IpVersion>;
+  protocol: SelectableValue<DnsProtocol>;
+  recordType: SelectableValue<DnsRecordType>;
+  validRCodes: Array<SelectableValue<string>>;
+  validations: DnsValidationFormValue[];
 }
 
 export interface TcpSettings {
@@ -149,7 +149,7 @@ export interface TcpSettings {
 }
 
 export interface TcpSettingsFormValues extends Omit<TcpSettings, 'ipVersion'> {
-  ipVersion?: SelectableValue<IpVersion>;
+  ipVersion: SelectableValue<IpVersion>;
 }
 // HttpSettings provides the settings for a HTTP check.
 export interface HttpSettings {
@@ -184,11 +184,11 @@ interface HttpHeaderFormValue {
 
 export interface HttpSettingsFormValues
   extends Omit<HttpSettings, 'validStatusCodes' | 'validHTTPVersions' | 'method' | 'ipVersion' | 'headers'> {
-  validStatusCodes?: Array<SelectableValue<number>>;
-  validHTTPVersions?: Array<SelectableValue<HttpVersion>>;
-  method?: SelectableValue<HttpMethod>;
-  ipVersion?: SelectableValue<IpVersion>;
-  headers?: HttpHeaderFormValue[];
+  validStatusCodes: Array<SelectableValue<number>>;
+  validHTTPVersions: Array<SelectableValue<HttpVersion>>;
+  method: SelectableValue<HttpMethod>;
+  ipVersion: SelectableValue<IpVersion>;
+  headers: HttpHeaderFormValue[];
 }
 
 export interface PingSettings {
@@ -197,7 +197,7 @@ export interface PingSettings {
 }
 
 export interface PingSettingsFormValues extends Omit<PingSettings, 'ipVersion'> {
-  ipVersion?: SelectableValue<IpVersion>;
+  ipVersion: SelectableValue<IpVersion>;
 }
 
 export interface SettingsFormValues {
@@ -206,9 +206,10 @@ export interface SettingsFormValues {
   dns?: DnsSettingsFormValues;
   tcp?: TcpSettingsFormValues;
 }
-export interface CheckFormValues extends Omit<Check, 'settings'> {
+export interface CheckFormValues extends Omit<Check, 'settings' | 'labels'> {
   checkType: SelectableValue<CheckType>;
   settings: SettingsFormValues;
+  labels?: Label[];
 }
 
 export interface Check extends BaseObject {
@@ -224,6 +225,8 @@ export interface Check extends BaseObject {
 
   // Link to probes
   probes: number[];
+  id?: number;
+  tenantId?: number;
 }
 
 export interface Settings {

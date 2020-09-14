@@ -95,7 +95,7 @@ const getHttpSettingsFormValues = (settings: Settings): HttpSettingsFormValues =
   return {
     ...httpSettings,
     validStatusCodes: httpSettings.validStatusCodes?.map(statusCode => selectableValueFrom(statusCode)) ?? [],
-    validHttpVersions: httpSettings.validHTTPVersions?.map(httpVersion => selectableValueFrom(httpVersion)) ?? [],
+    validHTTPVersions: httpSettings.validHTTPVersions?.map(httpVersion => selectableValueFrom(httpVersion)) ?? [],
     method: selectableValueFrom(httpSettings.method),
     ipVersion: selectableValueFrom(httpSettings.ipVersion),
     headers: headersToLabels(httpSettings.headers),
@@ -173,7 +173,7 @@ export const getDefaultValuesFromCheck = (check: Check): CheckFormValues => {
     ...check,
     timeout: check.timeout / 1000,
     frequency: check.frequency / 1000,
-    probes: check.probes.map(probe => selectableValueFrom(probe)),
+    probes: check.probes,
     checkType:
       CHECK_TYPE_OPTIONS.find(checkTypeOption => checkTypeOption.value === defaultCheckType) ?? CHECK_TYPE_OPTIONS[1],
     settings: getFormSettingsForCheck(check.settings),
@@ -191,38 +191,62 @@ function getValuesFromMultiSelectables<T>(selectables: Array<SelectableValue<T>>
   return selectables.map(selectable => getValueFromSelectable(selectable));
 }
 
-const getHttpSettings = (settings: HttpSettingsFormValues | undefined): HttpSettings => {
-  if (!settings) {
+const getHttpSettings = (
+  settings: Partial<HttpSettingsFormValues> | undefined = {},
+  defaultSettings: HttpSettingsFormValues | undefined
+): HttpSettings => {
+  if (!defaultSettings) {
     throw new Error('Invalid HTTP settings values');
   }
-  const headers = settings.headers.map(header => `${header.name}:${header.value}`);
-  return {
+  const headers = settings.headers ?? defaultSettings.headers;
+  const formattedHeaders = headers?.map(header => `${header.name}:${header.value}`);
+
+  const mergedSettings = {
+    ...defaultSettings,
     ...settings,
-    method: getValueFromSelectable(settings.method),
-    headers,
-    ipVersion: getValueFromSelectable(settings.ipVersion),
-    validStatusCodes: getValuesFromMultiSelectables(settings.validStatusCodes),
-    validHTTPVersions: getValuesFromMultiSelectables(settings.validHttpVersions),
+  };
+
+  return {
+    ...mergedSettings,
+    method: getValueFromSelectable(settings?.method ?? defaultSettings.method),
+    headers: formattedHeaders,
+    ipVersion: getValueFromSelectable(settings?.ipVersion ?? defaultSettings.ipVersion),
+    validStatusCodes: getValuesFromMultiSelectables(settings?.validStatusCodes ?? defaultSettings.validStatusCodes),
+    validHTTPVersions: getValuesFromMultiSelectables(settings?.validHTTPVersions ?? defaultSettings.validHTTPVersions),
   };
 };
 
-const getTcpSettings = (settings: TcpSettingsFormValues | undefined): TcpSettings => {
-  if (!settings) {
+const getTcpSettings = (
+  settings: Partial<TcpSettingsFormValues> | undefined,
+  defaultSettings: TcpSettingsFormValues | undefined
+): TcpSettings => {
+  if (!defaultSettings) {
     throw new Error('Invalid TCP settings values');
   }
-  return {
+  const mergedSettings = {
+    ...defaultSettings,
     ...settings,
-    ipVersion: getValueFromSelectable(settings.ipVersion),
+  };
+  return {
+    ...mergedSettings,
+    ipVersion: getValueFromSelectable(settings?.ipVersion ?? defaultSettings.ipVersion),
   };
 };
 
-const getPingSettings = (settings: PingSettingsFormValues | undefined): PingSettings => {
-  if (!settings) {
+const getPingSettings = (
+  settings: Partial<PingSettingsFormValues> | undefined = {},
+  defaultSettings: PingSettingsFormValues | undefined
+): PingSettings => {
+  if (!defaultSettings) {
     throw new Error('Invalid PING settings values');
   }
-  return {
+  const mergedSettings = {
+    ...defaultSettings,
     ...settings,
-    ipVersion: getValueFromSelectable(settings.ipVersion),
+  };
+  return {
+    ...mergedSettings,
+    ipVersion: getValueFromSelectable(settings.ipVersion ?? defaultSettings.ipVersion),
   };
 };
 
@@ -262,47 +286,50 @@ const getDnsValidationsFromFormValues = (validations: DnsValidationFormValue[]):
     }
   );
 
-const getDnsSettings = (settings: DnsSettingsFormValues | undefined): DnsSettings => {
-  if (!settings) {
+const getDnsSettings = (
+  settings: Partial<DnsSettingsFormValues> | undefined,
+  defaultSettings: DnsSettingsFormValues | undefined
+): DnsSettings => {
+  if (!defaultSettings) {
     throw new Error('Invalid DNS settings values');
   }
-  const validations = getDnsValidationsFromFormValues(settings.validations);
+  const validations = getDnsValidationsFromFormValues(settings?.validations ?? defaultSettings.validations);
   return {
-    recordType: getValueFromSelectable(settings.recordType),
-    server: settings.server,
-    ipVersion: getValueFromSelectable(settings.ipVersion),
-    protocol: getValueFromSelectable(settings.protocol),
-    port: settings.port,
-    validRCodes: getValuesFromMultiSelectables(settings.validRCodes),
+    recordType: getValueFromSelectable(settings?.recordType ?? defaultSettings.recordType),
+    server: settings?.server ?? defaultSettings.server,
+    ipVersion: getValueFromSelectable(settings?.ipVersion ?? defaultSettings.ipVersion),
+    protocol: getValueFromSelectable(settings?.protocol ?? defaultSettings.protocol),
+    port: settings?.port ?? defaultSettings.port,
+    validRCodes: getValuesFromMultiSelectables(settings?.validRCodes ?? defaultSettings.validRCodes),
     ...validations,
   };
 };
 
-const getSettingsFromFormValues = (formValues: CheckFormValues): Settings => {
-  const checkType = getValueFromSelectable(formValues.checkType);
+const getSettingsFromFormValues = (formValues: Partial<CheckFormValues>, defaultValues: CheckFormValues): Settings => {
+  const checkType = getValueFromSelectable(formValues.checkType ?? defaultValues.checkType);
   switch (checkType) {
     case CheckType.HTTP:
-      return { http: getHttpSettings(formValues.settings.http) };
+      return { http: getHttpSettings(formValues.settings?.http, defaultValues.settings.http) };
     case CheckType.TCP:
-      return { tcp: getTcpSettings(formValues.settings.tcp) };
+      return { tcp: getTcpSettings(formValues.settings?.tcp, defaultValues.settings.tcp) };
     case CheckType.DNS:
-      return { dns: getDnsSettings(formValues.settings.dns) };
+      return { dns: getDnsSettings(formValues.settings?.dns, defaultValues.settings.dns) };
     case CheckType.PING:
-      return { ping: getPingSettings(formValues.settings.ping) };
+      return { ping: getPingSettings(formValues.settings?.ping, defaultValues.settings.ping) };
     default:
       throw new Error(`Check type of ${checkType} is invalid`);
   }
 };
 
-export const getCheckFromFormValues = (formValues: CheckFormValues): Check => {
+export const getCheckFromFormValues = (formValues: CheckFormValues, defaultValues: CheckFormValues): Check => {
   return {
     job: formValues.job,
     target: formValues.target,
     enabled: formValues.enabled,
-    labels: formValues.labels,
-    probes: getValuesFromMultiSelectables(formValues.probes),
+    labels: formValues.labels ?? defaultValues.labels ?? [],
+    probes: formValues.probes,
     timeout: formValues.timeout * 1000,
     frequency: formValues.frequency * 1000,
-    settings: getSettingsFromFormValues(formValues),
+    settings: getSettingsFromFormValues(formValues, defaultValues),
   };
 };

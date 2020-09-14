@@ -42,11 +42,15 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
 
   const onSubmit = async (values: CheckFormValues) => {
     console.log(values);
-    const updatedCheck = getCheckFromFormValues(values, check);
+    const updatedCheck = getCheckFromFormValues(values, defaultValues);
     console.log(check);
     try {
-      if (values.id) {
-        await instance.updateCheck(updatedCheck);
+      if (check.id) {
+        await instance.updateCheck({
+          id: check.id,
+          tenantId: check.tenantId,
+          ...updatedCheck,
+        });
       } else {
         await instance.addCheck(updatedCheck);
       }
