@@ -24,7 +24,13 @@ export const PingSettingsForm: FC<Props> = ({ isEditor }) => {
       <HorizontalGroup>
         <div>
           <Field label="IP Version" description="The IP protocol of the ICMP request" disabled={!isEditor}>
-            <Controller name="settings.ping.ipVersion" as={Select} control={control} options={IP_OPTIONS} />
+            <Controller
+              name="settings.ping.ipVersion"
+              as={Select}
+              control={control}
+              options={IP_OPTIONS}
+              rules={{ required: true }}
+            />
           </Field>
         </div>
         <div>

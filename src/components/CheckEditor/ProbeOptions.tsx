@@ -6,7 +6,7 @@ import { Probe } from 'types';
 import { SliderInput } from 'components/SliderInput';
 import { Subheader } from 'components/Subheader';
 import { useFormContext, Controller } from 'react-hook-form';
-import { validateProbes } from 'validation';
+import { validateFrequency, validateProbes, validateTimeout } from 'validation';
 
 interface Props {
   isEditor: boolean;
@@ -50,11 +50,13 @@ export const ProbeOptions: FC<Props> = ({ frequency, timeout, isEditor, probes }
         label="Frequency"
         description="How frequently the check should run."
         disabled={!isEditor}
-        // invalid={!validateFrequency(frequencyValue)}
+        invalid={Boolean(errors.frequency)}
+        error={errors.frequency?.message}
       >
         <Controller
           id="probe-options-frequency"
           name="frequency"
+          rules={{ validate: validateFrequency }}
           control={control}
           value={frequency}
           as={SliderInput}
@@ -68,11 +70,13 @@ export const ProbeOptions: FC<Props> = ({ frequency, timeout, isEditor, probes }
         label="Timeout"
         description="Maximum execution time for a check"
         disabled={!isEditor}
-        // invalid={!validateTimeout(timeoutValue)}
+        invalid={Boolean(errors.timeout)}
+        error={errors.timeout?.message}
       >
         <Controller
           id="probe-options-timeout"
           name="timeout"
+          rules={{ validate: validateTimeout }}
           value={timeout}
           as={SliderInput}
           max={10}

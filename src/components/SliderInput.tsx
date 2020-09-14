@@ -11,6 +11,7 @@ interface Props {
   suffixLabel?: string;
   invalid?: boolean;
   onChange: (value: number) => void;
+  onBlur: () => void;
 }
 
 const styles = {
@@ -37,7 +38,17 @@ const styles = {
   `,
 };
 
-export const SliderInput: FC<Props> = ({ value, min, max, id, onChange, separationLabel, suffixLabel, invalid }) => {
+export const SliderInput: FC<Props> = ({
+  value,
+  min,
+  max,
+  id,
+  onChange,
+  separationLabel,
+  suffixLabel,
+  invalid,
+  onBlur,
+}) => {
   return (
     <div className={styles.container}>
       <div className={styles.slider}>
@@ -47,7 +58,10 @@ export const SliderInput: FC<Props> = ({ value, min, max, id, onChange, separati
           min={min}
           max={max}
           value={[value]}
-          onAfterChange={([value]) => onChange(value)}
+          onAfterChange={([value]) => {
+            onChange(value);
+            onBlur();
+          }}
         />
       </div>
       <div className={styles.inputGroupWrapper}>
@@ -55,6 +69,7 @@ export const SliderInput: FC<Props> = ({ value, min, max, id, onChange, separati
         <Input
           id={id}
           invalid={invalid}
+          onBlur={onBlur}
           className={styles.sliderInput}
           type="number"
           value={value}

@@ -60,12 +60,24 @@ export function validateTarget(typeOfCheck: CheckType, target: string): string |
   }
 }
 
-export function validateFrequency(freq: number): boolean {
-  return freq >= 10000 && freq <= 120000;
+export function validateFrequency(frequency: number): string | undefined {
+  if (frequency < 10) {
+    return 'Frequency must be at least 10 seconds';
+  }
+  if (frequency > 120) {
+    return 'Frequency cannot be greater than 120 seconds';
+  }
+  return undefined;
 }
 
-export function validateTimeout(t: number): boolean {
-  return t >= 1000 && t <= 10000;
+export function validateTimeout(timeout: number): string | undefined {
+  if (timeout < 1) {
+    return 'Timeout must be at least 1 second';
+  }
+  if (timeout > 10) {
+    return 'Timeout cannot be greater than 10 seconds';
+  }
+  return undefined;
 }
 
 export function validateLabels(labels: Label[]): boolean {
