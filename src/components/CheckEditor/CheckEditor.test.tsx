@@ -1,9 +1,10 @@
 import React from 'react';
-import { render, screen, waitFor, act } from '@testing-library/react';
+import { render, screen, waitFor, act, within } from '@testing-library/react';
 import { Check, IpVersion, CheckType, DnsResponseCodes, ResponseMatchType } from 'types';
 import { CheckEditor } from './CheckEditor';
-import { getInstanceMock, instanceSettings } from '../../datasource/__mocks__/DataSource';
+import { getInstanceMock } from '../../datasource/__mocks__/DataSource';
 import userEvent from '@testing-library/user-event';
+import { InstanceContext } from 'components/InstanceContext';
 
 const defaultCheck = {
   job: '',
@@ -21,19 +22,21 @@ const defaultCheck = {
   },
 } as Check;
 
-const minimumFieldCheck = {
+const getMinimumCheck = (overrides: any = {}) => ({
   ...defaultCheck,
   job: 'tacos',
   target: 'burritos.com',
   probes: [1],
-};
+  ...overrides,
+});
 
 const onReturn = jest.fn();
 
 const selectCheckType = async (checkType: CheckType) => {
   const checkTypeInput = await screen.findByText('PING');
   userEvent.click(checkTypeInput);
-  const option = await screen.findByText(checkType.toUpperCase());
+  const selectMenu = await screen.findByLabelText('Select options menu');
+  const option = await within(selectMenu).findByText(checkType.toUpperCase());
   userEvent.click(option);
 };
 
@@ -49,11 +52,20 @@ const selectDnsResponseMatchType = async (responseMatch: ResponseMatchType) => {
   userEvent.click(options[options.length - 1]);
 };
 
-const selectSubmitButton = async () => await screen.findByRole('button', { name: 'Save' });
+const submitForm = async () => {
+  const saveButton = screen.getByRole('button', { name: 'Save' });
+  expect(saveButton).not.toBeDisabled();
+  userEvent.click(saveButton);
+  await waitFor(() => expect(onReturn).toHaveBeenCalledWith(true));
+};
 
 const renderCheckEditor = async ({ check = defaultCheck } = {}) => {
   const instance = getInstanceMock();
-  render(<CheckEditor check={check} instance={instance} onReturn={onReturn} />);
+  render(
+    <InstanceContext.Provider value={{ instance: { api: instance }, loading: false }}>
+      <CheckEditor check={check} instance={instance} onReturn={onReturn} />
+    </InstanceContext.Provider>
+  );
   await waitFor(() => expect(screen.getByText('Check Details')).toBeInTheDocument());
   return instance;
 };
@@ -62,6 +74,83 @@ it('renders without crashing', async () => {
   await renderCheckEditor();
   const header = screen.getByText('Check Details');
   expect(header).toBeInTheDocument();
+});
+
+describe('HTTP', () => {
+  it('has correct sections', async () => {
+    await renderCheckEditor();
+    await selectCheckType(CheckType.HTTP);
+    const httpSettings = await screen.findByText('HTTP Settings');
+    expect(httpSettings).toBeInTheDocument();
+    const tlsConfig = await screen.findByText('TLS Config');
+    expect(tlsConfig).toBeInTheDocument();
+    const authentication = await screen.findByText('Authentication');
+    expect(authentication).toBeInTheDocument();
+    const validation = await screen.findByText('Validation');
+    expect(validation).toBeInTheDocument();
+    const advanced = await screen.findByText('Advanced Options');
+    expect(advanced).toBeInTheDocument();
+  });
+
+  it('transforms values to correct format', async () => {
+    // Couldn't get the target input to take a value in the testing environment, so starting with a default
+    const instance = await renderCheckEditor({ check: { ...defaultCheck, target: 'https://grafana.com' } });
+    await selectCheckType(CheckType.HTTP);
+    await act(async () => await userEvent.type(screen.getByLabelText('Job Name', { exact: false }), 'tacos'));
+    const probeOptions = screen.getByText('Probe Options').parentElement;
+    if (!probeOptions) {
+      throw new Error('Couldnt find Probe Options');
+    }
+
+    userEvent.click(within(probeOptions).getByText('Choose'));
+    // Select burritos probe options
+    const selectMenu = await screen.findByLabelText('Select options menu');
+    userEvent.click(await within(selectMenu).findByText('burritos'));
+
+    const httpSettings = await screen.findByText('HTTP Settings');
+    userEvent.click(httpSettings);
+    const requestBodyInput = await screen.findByLabelText('Request Body', { exact: false });
+    await userEvent.paste(requestBodyInput, 'requestbody');
+    await userEvent.click(await screen.findByRole('button', { name: 'Add Header' }));
+    await act(async () => await userEvent.type(await screen.findByPlaceholderText('name'), 'headerName'));
+    await act(async () => await userEvent.type(await screen.findByPlaceholderText('value'), 'headerValue'));
+
+    userEvent.click(screen.getByText('TLS Config'));
+    await act(async () => await userEvent.type(screen.getByLabelText('Server Name', { exact: false }), 'serverName'));
+    // TextArea components misbehave when using type, using paste for now as a workaround
+    await act(async () => await userEvent.paste(screen.getByLabelText('CA Certificate', { exact: false }), 'caCert'));
+    await act(
+      async () => await userEvent.paste(screen.getByLabelText('Client Certificate', { exact: false }), 'clientCert')
+    );
+    await act(async () => await userEvent.paste(screen.getByLabelText('Client Key', { exact: false }), 'client key'));
+
+    await submitForm();
+    expect(instance.addCheck).toHaveBeenCalledWith({
+      job: 'tacos',
+      target: 'https://grafana.com',
+      enabled: true,
+      labels: [],
+      probes: [42],
+      timeout: 3000,
+      frequency: 60000,
+      settings: {
+        http: {
+          method: 'GET',
+          headers: ['headerName:headerValue'],
+          body: 'requestbody',
+          ipVersion: 'V4',
+          noFollowRedirects: false,
+          tlsConfig: {
+            insecureSkipVerify: false,
+            caCert: 'caCert',
+            clientCert: 'clientCert',
+            clientKey: 'client key',
+            serverName: 'serverName',
+          },
+        },
+      },
+    });
+  });
 });
 
 describe('DNS', () => {
@@ -78,7 +167,7 @@ describe('DNS', () => {
 
   describe('Validations', () => {
     it('handles authority validations', async () => {
-      const instance = await renderCheckEditor({ check: minimumFieldCheck });
+      const instance = await renderCheckEditor({ check: getMinimumCheck() });
       await openDnsValidations();
       const addRegex = await screen.findByRole('button', { name: 'Add RegEx Validation' });
       userEvent.click(addRegex);
@@ -88,11 +177,7 @@ describe('DNS', () => {
       await userEvent.type(expressionInputs[1], 'inverted validation');
       const invertedCheckboxes = await screen.findAllByRole('checkbox');
       userEvent.click(invertedCheckboxes[1]);
-      const saveButton = await selectSubmitButton();
-      userEvent.click(saveButton);
-
-      await waitFor(() => expect(onReturn).toHaveBeenCalledWith(true));
-
+      await submitForm();
       expect(instance.addCheck).toHaveBeenCalledWith({
         job: 'tacos',
         target: 'burritos.com',
@@ -127,7 +212,7 @@ describe('DNS', () => {
     });
 
     it('handles answer validations', async () => {
-      const instance = await renderCheckEditor({ check: minimumFieldCheck });
+      const instance = await renderCheckEditor({ check: getMinimumCheck() });
       await openDnsValidations();
       const addRegex = await screen.findByRole('button', { name: 'Add RegEx Validation' });
       userEvent.click(addRegex);
@@ -139,10 +224,7 @@ describe('DNS', () => {
       await userEvent.type(expressionInputs[1], 'inverted validation');
       const invertedCheckboxes = await screen.findAllByRole('checkbox');
       userEvent.click(invertedCheckboxes[1]);
-      const saveButton = await selectSubmitButton();
-      userEvent.click(saveButton);
-
-      await waitFor(() => expect(onReturn).toHaveBeenCalledWith(true));
+      await submitForm();
 
       expect(instance.addCheck).toHaveBeenCalledWith({
         job: 'tacos',
@@ -178,7 +260,7 @@ describe('DNS', () => {
     });
 
     it('handles additional validations', async () => {
-      const instance = await renderCheckEditor({ check: minimumFieldCheck });
+      const instance = await renderCheckEditor({ check: getMinimumCheck() });
       await openDnsValidations();
       const addRegex = await screen.findByRole('button', { name: 'Add RegEx Validation' });
       userEvent.click(addRegex);
@@ -190,10 +272,8 @@ describe('DNS', () => {
       await userEvent.type(expressionInputs[1], 'inverted validation');
       const invertedCheckboxes = await screen.findAllByRole('checkbox');
       userEvent.click(invertedCheckboxes[1]);
-      const saveButton = await selectSubmitButton();
-      userEvent.click(saveButton);
 
-      await waitFor(() => expect(onReturn).toHaveBeenCalledWith(true));
+      await submitForm();
 
       expect(instance.addCheck).toHaveBeenCalledWith({
         job: 'tacos',

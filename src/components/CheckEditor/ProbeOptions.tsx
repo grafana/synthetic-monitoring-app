@@ -23,7 +23,6 @@ export const ProbeOptions: FC<Props> = ({ frequency, timeout, isEditor, probes }
   useEffect(() => {
     const fetchProbes = async () => {
       const probes = await instance?.api.listProbes();
-
       setAvailableProbes(probes ?? []);
     };
 

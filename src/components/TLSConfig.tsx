@@ -29,6 +29,7 @@ export const TLSConfig: FC<Props> = ({ isEditor, checkType }) => {
           error={errors.settings?.[checkType]?.tlsConfig?.serverName}
         >
           <Input
+            id="tls-config-server-name"
             ref={register({
               validate: validateTLSServerName,
             })}
@@ -48,6 +49,7 @@ export const TLSConfig: FC<Props> = ({ isEditor, checkType }) => {
           error={errors.settings?.[checkType]?.tlsConfig?.caCert}
         >
           <TextArea
+            id="tls-config-ca-certificate"
             ref={register({
               validate: validateTLSCACert,
             })}
@@ -67,6 +69,7 @@ export const TLSConfig: FC<Props> = ({ isEditor, checkType }) => {
           error={errors?.settings?.[checkType]?.tlsConfig?.clientCert}
         >
           <TextArea
+            id="tls-config-client-cert"
             ref={register({
               validate: validateTLSClientCert,
             })}
@@ -86,6 +89,7 @@ export const TLSConfig: FC<Props> = ({ isEditor, checkType }) => {
           error={errors?.settings?.[checkType]?.tlsConfig?.clientKey}
         >
           <TextArea
+            id="tls-config-client-key"
             ref={register({ validate: validateTLSClientKey })}
             name={`settings.${checkType}.tlsConfig.clientKey`}
             type="password"

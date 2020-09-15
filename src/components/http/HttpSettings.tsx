@@ -179,6 +179,7 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
             error={errors?.settings?.http?.body}
           >
             <TextArea
+              id="http-settings-request-body"
               ref={register({ validate: validateHTTPBody })}
               name="settings.http.body"
               rows={2}

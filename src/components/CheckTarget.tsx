@@ -65,6 +65,7 @@ const CheckTarget: FC<Props> = ({ target, typeOfCheck, disabled, onChange, onBlu
     <>
       <Field label="Target" description={targetHelp.text} disabled={disabled} invalid={invalid} error={error}>
         <Input
+          id="check-editor-target"
           type="string"
           onBlur={onBlur}
           placeholder={targetHelp.example}
