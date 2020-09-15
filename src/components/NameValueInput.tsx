@@ -15,19 +15,20 @@ interface Props {
 export const NameValueInput: FC<Props> = ({ name, disabled, limit, label, validateName, validateValue }) => {
   const { register, control, errors } = useFormContext();
   const { fields, append, remove } = useFieldArray({ control, name });
+  const fieldError = name.split('.').reduce((error, current) => error?.[current], errors);
   return (
     <VerticalGroup justify="space-between">
       {fields.map((field, index) => (
         <HorizontalGroup key={field.id} align="flex-start">
           <Field
-            invalid={Boolean(errors[name]?.[index]?.name)}
-            error={errors[name]?.[index]?.name?.message}
+            invalid={Boolean(fieldError?.[index]?.name?.type)}
+            error={fieldError?.[index]?.name?.message}
             className={css`
               margin-bottom: 0;
             `}
           >
             <Input
-              ref={register({ validate: validateName, required: true })}
+              ref={register({ required: true })}
               name={`${name}[${index}].name`}
               type="text"
               placeholder="name"
@@ -35,14 +36,14 @@ export const NameValueInput: FC<Props> = ({ name, disabled, limit, label, valida
             />
           </Field>
           <Field
-            invalid={Boolean(errors[name]?.[index]?.value)}
-            error={errors[name]?.[index]?.value?.message}
+            invalid={Boolean(fieldError?.[index]?.value)}
+            error={fieldError?.[index]?.value?.message}
             className={css`
               margin-bottom: 0;
             `}
           >
             <Input
-              ref={register({ validate: validateValue, required: true })}
+              ref={register({ required: true })}
               name={`${name}[${index}].value`}
               type="text"
               placeholder="value"

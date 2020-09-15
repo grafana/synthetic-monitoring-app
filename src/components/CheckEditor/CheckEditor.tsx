@@ -16,7 +16,7 @@ import { Check, CheckType, OrgRole, CheckFormValues } from 'types';
 import { SMDataSource } from 'datasource/DataSource';
 import { hasRole } from 'utils';
 import { getDefaultValuesFromCheck, getCheckFromFormValues } from './checkFormTransformations';
-import { validateJob, validateCheck, validateTarget } from 'validation';
+import { validateJob, validateTarget } from 'validation';
 import CheckTarget from 'components/CheckTarget';
 import { Subheader } from 'components/Subheader';
 import { CheckSettings } from './CheckSettings';
@@ -36,7 +36,7 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
 
   const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
 
-  const formMethods = useForm<CheckFormValues>({ defaultValues, mode: 'onBlur' });
+  const formMethods = useForm<CheckFormValues>({ defaultValues, mode: 'onChange' });
   const selectedCheckType = formMethods.watch('checkType').value as CheckType;
 
   let isEditor = hasRole(OrgRole.EDITOR);
@@ -146,7 +146,10 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
           <CheckSettings typeOfCheck={selectedCheckType} isEditor={isEditor} />
         </div>
         <HorizontalGroup>
-          <Button type="submit" disabled={formMethods.formState.isSubmitting || !formMethods.formState.isValid}>
+          <Button
+            type="submit"
+            disabled={formMethods.formState.isSubmitting || Object.keys(formMethods.errors).length > 0}
+          >
             Save
           </Button>
           {check.id && (

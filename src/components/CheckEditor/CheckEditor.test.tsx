@@ -39,6 +39,7 @@ const selectCheckType = async (checkType: CheckType) => {
   const selectMenu = await screen.findByLabelText('Select options menu');
   const option = await within(selectMenu).findByText(checkType.toUpperCase());
   userEvent.click(option);
+  await screen.findByText(checkType.toUpperCase());
 };
 
 const openDnsValidations = async () => {
@@ -54,7 +55,7 @@ const selectDnsResponseMatchType = async (responseMatch: ResponseMatchType) => {
 };
 
 const submitForm = async () => {
-  const saveButton = screen.getByRole('button', { name: 'Save' });
+  const saveButton = await screen.findByRole('button', { name: 'Save' });
   expect(saveButton).not.toBeDisabled();
   userEvent.click(saveButton);
   await waitFor(() => expect(onReturn).toHaveBeenCalledWith(true));
@@ -95,10 +96,12 @@ describe('HTTP', () => {
 
   it('transforms values to correct format', async () => {
     // Couldn't get the target input to take a value in the testing environment, so starting with a default
-    const instance = await renderCheckEditor({ check: { ...defaultCheck, target: 'https://grafana.com' } });
+    const instance = await renderCheckEditor({
+      check: { ...defaultCheck, target: 'https://grafana.com' },
+    });
     // Set Check Details
     await selectCheckType(CheckType.HTTP);
-    await act(async () => await userEvent.type(screen.getByLabelText('Job Name', { exact: false }), 'tacos'));
+    await act(async () => await userEvent.type(await screen.findByLabelText('Job Name', { exact: false }), 'tacos'));
 
     // Set probe options
     const probeOptions = screen.getByText('Probe Options').parentElement;
@@ -124,7 +127,7 @@ describe('HTTP', () => {
     // TLS Config
     userEvent.click(screen.getByText('TLS Config'));
     await act(async () => await userEvent.type(screen.getByLabelText('Server Name', { exact: false }), 'serverName'));
-    // TextArea components misbehave when using type, using paste for now as a workaround
+    // TextArea components misbehave when using userEvent.type, using paste for now as a workaround
     await act(async () => await userEvent.paste(screen.getByLabelText('CA Certificate', { exact: false }), 'caCert'));
     await act(
       async () => await userEvent.paste(screen.getByLabelText('Client Certificate', { exact: false }), 'clientCert')
@@ -137,10 +140,16 @@ describe('HTTP', () => {
     userEvent.click(validationHeader);
     const validationContainer = validationHeader.parentElement?.parentElement ?? new HTMLElement();
     const [statusCodeInput, httpVersionInput] = await within(validationContainer).findAllByRole('textbox');
-    userEvent.click(statusCodeInput);
-    userEvent.click(await within(await screen.findByLabelText('Select options menu')).findByText('100'));
+    await act(async () => await userEvent.click(statusCodeInput));
+    await act(
+      async () =>
+        await userEvent.click(await within(await screen.findByLabelText('Select options menu')).findByText('100'))
+    );
     userEvent.click(httpVersionInput);
-    userEvent.click(await within(await screen.findByLabelText('Select options menu')).findByText('HTTP/1.0'));
+    await act(
+      async () =>
+        await userEvent.click(await within(await screen.findByLabelText('Select options menu')).findByText('HTTP/1.0'))
+    );
 
     await submitForm();
 
