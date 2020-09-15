@@ -23,7 +23,7 @@ import {
   Check,
 } from 'types';
 
-import { CHECK_TYPE_OPTIONS, IP_OPTIONS } from 'components/constants';
+import { CHECK_TYPE_OPTIONS, IP_OPTIONS, DNS_RESPONSE_CODES } from 'components/constants';
 import { checkType } from 'utils';
 
 export function selectableValueFrom<T>(value: T, label?: string): SelectableValue<T> {
@@ -145,7 +145,10 @@ const getDnsSettingsFormValues = (settings: Settings): DnsSettingsFormValues => 
     ipVersion: selectableValueFrom(dnsSettings.ipVersion),
     protocol: selectableValueFrom(dnsSettings.protocol),
     recordType: selectableValueFrom(dnsSettings.recordType),
-    validRCodes: dnsSettings.validRCodes?.map(responseCode => selectableValueFrom(responseCode)) ?? [],
+    validRCodes:
+      (dnsSettings.validRCodes
+        ?.map(responseCode => DNS_RESPONSE_CODES.find(option => option.value === responseCode))
+        .filter(Boolean) as Array<SelectableValue<string>>) ?? [],
     validations: getDnsValidations({
       [ResponseMatchType.Answer]: dnsSettings.validateAnswerRRS,
       [ResponseMatchType.Authority]: dnsSettings.validateAuthorityRRS,
@@ -291,7 +294,6 @@ const getDnsSettings = (
   defaultSettings: DnsSettingsFormValues | undefined
 ): DnsSettings => {
   const fallbackValues = fallbackSettings(CheckType.DNS).dns as DnsSettings;
-
   const validations = getDnsValidationsFromFormValues(settings?.validations ?? defaultSettings?.validations ?? []);
   return {
     recordType:

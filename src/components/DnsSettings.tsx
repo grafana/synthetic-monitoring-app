@@ -82,7 +82,12 @@ const DnsSettingsForm: FC<Props> = ({ isEditor }) => {
       >
         <HorizontalGroup>
           <Field label="Valid Response Codes" description="List of valid response codes" disabled={!isEditor}>
-            <Controller as={MultiSelect} name="settings.dns.validRCodes" options={DNS_RESPONSE_CODES} />
+            <Controller
+              as={MultiSelect}
+              name="settings.dns.validRCodes"
+              options={DNS_RESPONSE_CODES}
+              defaultValue={[DNS_RESPONSE_CODES[0]]}
+            />
           </Field>
         </HorizontalGroup>
         <Label>Valid Response Matches</Label>
@@ -105,6 +110,7 @@ const DnsSettingsForm: FC<Props> = ({ isEditor }) => {
                   as={Select}
                   name={`settings.dns.validations[${index}].responseMatch`}
                   options={RESPONSE_MATCH_OPTIONS}
+                  defaultValue={RESPONSE_MATCH_OPTIONS[0]}
                 />
                 <Input
                   ref={register}
@@ -118,7 +124,11 @@ const DnsSettingsForm: FC<Props> = ({ isEditor }) => {
                     justify-self: center;
                   `}
                 >
-                  <Checkbox ref={register} name={`settings.dns.validations[${index}].inverted`} />
+                  <Checkbox
+                    ref={register}
+                    name={`settings.dns.validations[${index}].inverted`}
+                    aria-label="dns-validation-inverted"
+                  />
                 </div>
                 <IconButton name="minus-circle" onClick={() => remove(index)} />
               </Fragment>

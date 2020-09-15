@@ -90,6 +90,7 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
             <Field label="Check Type" disabled={check.id ? true : false}>
               <Controller
                 name="checkType"
+                placeholder="Check Type"
                 control={formMethods.control}
                 as={Select}
                 options={CHECK_TYPE_OPTIONS}
@@ -145,7 +146,9 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
           <CheckSettings typeOfCheck={selectedCheckType} isEditor={isEditor} />
         </div>
         <HorizontalGroup>
-          <Button type="submit">Save {validateCheck(check)}</Button>
+          <Button type="submit" disabled={formMethods.formState.isSubmitting || !formMethods.formState.isValid}>
+            Save
+          </Button>
           {check.id && (
             <Button variant="destructive" onClick={() => setShowDeleteModal(true)} disabled={!isEditor} type="button">
               Delete Check
@@ -167,9 +170,9 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
               margin-top: 1rem;
             `}
           >
-            <Alert title="Save failed" severity="error">
+            {/* <Alert title="Save failed" severity="error">
               {`${error?.status}: ${error?.message}`}
-            </Alert>
+            </Alert> */}
           </div>
         )}
       </form>

@@ -93,10 +93,10 @@ export const instanceSettings: DataSourceInstanceSettings<SMOptions> = {
   },
 };
 
-export const getInstanceMock = (settings: DataSourceInstanceSettings<SMOptions> = instanceSettings) => {
+export const getInstanceMock = (settings: DataSourceInstanceSettings<SMOptions> | undefined = instanceSettings) => {
   const instance = new SMDataSource(settings);
   instance.getMetricsDS = jest.fn().mockImplementation(() => ({ url: 'a url' }));
-  instance.addCheck = jest.fn();
+  instance.addCheck = jest.fn().mockImplementation(() => Promise.resolve());
   instance.listProbes = jest.fn().mockImplementation(() =>
     Promise.resolve([
       {
