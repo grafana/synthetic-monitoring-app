@@ -1,6 +1,6 @@
 import React, { FC } from 'react';
 import { css } from 'emotion';
-import { HorizontalGroup, Input, IconButton, VerticalGroup, Icon, Button, Field } from '@grafana/ui';
+import { HorizontalGroup, Input, IconButton, VerticalGroup, Icon, Button, Field, useTheme } from '@grafana/ui';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 
 interface Props {
@@ -15,6 +15,7 @@ interface Props {
 export const NameValueInput: FC<Props> = ({ name, disabled, limit, label, validateName, validateValue }) => {
   const { register, control, errors } = useFormContext();
   const { fields, append, remove } = useFieldArray({ control, name });
+  const theme = useTheme();
   const fieldError = name.split('.').reduce((error, current) => error?.[current], errors);
   return (
     <VerticalGroup justify="space-between">
@@ -50,7 +51,15 @@ export const NameValueInput: FC<Props> = ({ name, disabled, limit, label, valida
               disabled={disabled}
             />
           </Field>
-          <IconButton name="minus-circle" type="button" onClick={() => remove(index)} disabled={disabled} />
+          <IconButton
+            className={css`
+              margin-top: ${theme.spacing.sm};
+            `}
+            name="minus-circle"
+            type="button"
+            onClick={() => remove(index)}
+            disabled={disabled}
+          />
         </HorizontalGroup>
       ))}
       {fields.length < limit && (

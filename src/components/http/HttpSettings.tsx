@@ -188,13 +188,7 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
           </Field>
         </Container>
         <Container>
-          <Field
-            label="Request Headers"
-            description="The HTTP headers set for the probe.."
-            disabled={!isEditor}
-            invalid={Boolean(errors.settings?.http?.headers)}
-            error={errors.settings?.http?.headers}
-          >
+          <Field label="Request Headers" description="The HTTP headers set for the probe.." disabled={!isEditor}>
             <NameValueInput
               name="settings.http.headers"
               disabled={!isEditor}
