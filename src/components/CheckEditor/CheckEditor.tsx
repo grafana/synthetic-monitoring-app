@@ -146,8 +146,9 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
           <CheckSettings typeOfCheck={selectedCheckType} isEditor={isEditor} />
         </div>
         <HorizontalGroup>
-          {/* <Button type="submit" disabled={formMethods.formState.isSubmitting || !formMethods.formState.isValid}> */}
-          <Button type="submit">Save</Button>
+          <Button type="submit" disabled={formMethods.formState.isSubmitting || !formMethods.formState.isValid}>
+            Save
+          </Button>
           {check.id && (
             <Button variant="destructive" onClick={() => setShowDeleteModal(true)} disabled={!isEditor} type="button">
               Delete Check
