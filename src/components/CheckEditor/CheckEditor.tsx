@@ -30,9 +30,14 @@ interface Props {
   onReturn: (reload: boolean) => void;
 }
 
+interface SubmissionError {
+  status?: string;
+  message?: string;
+}
+
 export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [error, setError] = useState<Error | undefined>();
+  const [error, setError] = useState<SubmissionError | undefined>();
 
   const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
 
@@ -173,9 +178,9 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
               margin-top: 1rem;
             `}
           >
-            {/* <Alert title="Save failed" severity="error">
+            <Alert title="Save failed" severity="error">
               {`${error?.status}: ${error?.message}`}
-            </Alert> */}
+            </Alert>
           </div>
         )}
       </form>
