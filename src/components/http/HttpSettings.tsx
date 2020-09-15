@@ -367,7 +367,12 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
         <HorizontalGroup>
           <div>
             <Field label="IP Version" description="The IP protocol of the HTTP request" disabled={!isEditor}>
-              <Controller as={Select} name="settings.http.ipVersion" options={IP_OPTIONS} />
+              <Controller
+                as={Select}
+                name="settings.http.ipVersion"
+                options={IP_OPTIONS}
+                defaultValue={IP_OPTIONS[1]}
+              />
             </Field>
           </div>
           <div>
