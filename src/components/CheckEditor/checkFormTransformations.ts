@@ -301,7 +301,7 @@ const getDnsSettings = (
     server: settings?.server ?? defaultSettings?.server ?? fallbackValues.server,
     ipVersion: getValueFromSelectable(settings?.ipVersion ?? defaultSettings?.ipVersion) ?? fallbackValues.ipVersion,
     protocol: getValueFromSelectable(settings?.protocol ?? defaultSettings?.protocol) ?? fallbackValues.protocol,
-    port: settings?.port ?? defaultSettings?.port ?? fallbackValues.port,
+    port: Number(settings?.port ?? defaultSettings?.port ?? fallbackValues.port),
     validRCodes:
       getValuesFromMultiSelectables(settings?.validRCodes ?? defaultSettings?.validRCodes) ??
       fallbackValues.validRCodes,

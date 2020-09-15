@@ -48,8 +48,8 @@ export const Collapse: FC<Props> = ({ isOpen, label, children, onToggle, ...prop
   const styles = getStyles(theme);
 
   return (
-    <div className={cx(['panel-container', styles.container])} onClick={() => onToggle && onToggle(Boolean(isOpen))}>
-      <div className={styles.header}>
+    <div className={cx(['panel-container', styles.container])}>
+      <div className={styles.header} onClick={() => onToggle && onToggle(Boolean(isOpen))}>
         <Icon name={isOpen ? 'angle-up' : 'angle-down'} className={styles.headerIcon} />
         <div className={styles.label}>{label}</div>
       </div>

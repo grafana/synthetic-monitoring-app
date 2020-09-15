@@ -241,7 +241,7 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
                 ref={register({
                   validate: validateBearerToken,
                 })}
-                name={'settings.http.bearerToken'}
+                name="settings.http.bearerToken"
                 type="password"
                 placeholder="Bearer Token"
                 disabled={!isEditor}

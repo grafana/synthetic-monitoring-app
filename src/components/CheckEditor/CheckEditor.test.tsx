@@ -5,6 +5,7 @@ import { CheckEditor } from './CheckEditor';
 import { getInstanceMock } from '../../datasource/__mocks__/DataSource';
 import userEvent from '@testing-library/user-event';
 import { InstanceContext } from 'components/InstanceContext';
+jest.setTimeout(10000);
 
 const defaultCheck = {
   job: '',
@@ -95,8 +96,11 @@ describe('HTTP', () => {
   it('transforms values to correct format', async () => {
     // Couldn't get the target input to take a value in the testing environment, so starting with a default
     const instance = await renderCheckEditor({ check: { ...defaultCheck, target: 'https://grafana.com' } });
+    // Set Check Details
     await selectCheckType(CheckType.HTTP);
     await act(async () => await userEvent.type(screen.getByLabelText('Job Name', { exact: false }), 'tacos'));
+
+    // Set probe options
     const probeOptions = screen.getByText('Probe Options').parentElement;
     if (!probeOptions) {
       throw new Error('Couldnt find Probe Options');
@@ -104,9 +108,10 @@ describe('HTTP', () => {
 
     userEvent.click(within(probeOptions).getByText('Choose'));
     // Select burritos probe options
-    const selectMenu = await screen.findByLabelText('Select options menu');
-    userEvent.click(await within(selectMenu).findByText('burritos'));
+    const probeSelectMenu = await screen.findByLabelText('Select options menu');
+    userEvent.click(await within(probeSelectMenu).findByText('burritos'));
 
+    // HTTP Settings
     const httpSettings = await screen.findByText('HTTP Settings');
     userEvent.click(httpSettings);
     const requestBodyInput = await screen.findByLabelText('Request Body', { exact: false });
@@ -116,6 +121,7 @@ describe('HTTP', () => {
     await act(async () => await userEvent.type(await screen.findByPlaceholderText('value'), 'headerValue'));
     userEvent.click(httpSettings);
 
+    // TLS Config
     userEvent.click(screen.getByText('TLS Config'));
     await act(async () => await userEvent.type(screen.getByLabelText('Server Name', { exact: false }), 'serverName'));
     // TextArea components misbehave when using type, using paste for now as a workaround
@@ -124,8 +130,20 @@ describe('HTTP', () => {
       async () => await userEvent.paste(screen.getByLabelText('Client Certificate', { exact: false }), 'clientCert')
     );
     await act(async () => await userEvent.paste(screen.getByLabelText('Client Key', { exact: false }), 'client key'));
+    userEvent.click(screen.getByText('TLS Config'));
+
+    // Validation
+    const validationHeader = screen.getByText('Validation');
+    userEvent.click(validationHeader);
+    const validationContainer = validationHeader.parentElement?.parentElement ?? new HTMLElement();
+    const [statusCodeInput, httpVersionInput] = await within(validationContainer).findAllByRole('textbox');
+    userEvent.click(statusCodeInput);
+    userEvent.click(await within(await screen.findByLabelText('Select options menu')).findByText('100'));
+    userEvent.click(httpVersionInput);
+    userEvent.click(await within(await screen.findByLabelText('Select options menu')).findByText('HTTP/1.0'));
 
     await submitForm();
+
     expect(instance.addCheck).toHaveBeenCalledWith({
       job: 'tacos',
       target: 'https://grafana.com',
@@ -148,6 +166,11 @@ describe('HTTP', () => {
             clientKey: 'client key',
             serverName: 'serverName',
           },
+          validStatusCodes: [100],
+          validHTTPVersions: ['HTTP/1.0'],
+          failIfNotSSL: false,
+          failIfSSL: false,
+          cacheBustingQueryParamName: '',
         },
       },
     });
@@ -190,7 +213,7 @@ describe('DNS', () => {
         settings: {
           dns: {
             ipVersion: 'V4',
-            port: '53',
+            port: 53,
             protocol: 'UDP',
             recordType: 'A',
             server: '8.8.8.8',
