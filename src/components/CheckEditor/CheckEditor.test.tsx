@@ -5,7 +5,7 @@ import { CheckEditor } from './CheckEditor';
 import { getInstanceMock } from '../../datasource/__mocks__/DataSource';
 import userEvent from '@testing-library/user-event';
 import { InstanceContext } from 'components/InstanceContext';
-jest.setTimeout(14000);
+jest.setTimeout(20000);
 
 const defaultCheck = {
   job: '',
