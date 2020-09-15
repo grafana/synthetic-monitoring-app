@@ -1,7 +1,7 @@
 import React, { FC, ChangeEvent } from 'react';
 import { Field, Input } from '@grafana/ui';
 import { css } from 'emotion';
-import { CheckType, Settings } from 'types';
+import { CheckType } from 'types';
 import { parseUrl } from 'utils';
 import QueryParams from './QueryParams';
 
