@@ -218,20 +218,12 @@ function validateHostname(target: string): string | undefined {
   // like valid hostnames
 
   const ipv4 = new Address4(target);
-  if (ipv4.isValid()) {
-    return 'Target must be a valid hostname';
-  }
-
   const ipv6 = new Address6(target);
-  if (ipv6.isValid()) {
-    return 'Target must be a valid hostname';
-  }
-
   // it doesn't seem to be an IP address, let's try FQHN.
   const pc = punycode.toASCII(target);
   // note that \w matches "_"
   const re = new RegExp(/^[a-z]([-a-z0-9]{0,62}[a-z0-9])?(\.[a-z]([-a-z0-9]{0,62}[a-z0-9])?)+$/, 'i');
-  if (!pc.match(re)) {
+  if (!pc.match(re) && !ipv4.isValid() && !ipv6.isValid()) {
     return 'Target must be a valid hostname';
   }
 
@@ -247,7 +239,7 @@ function validateHostPort(target: string): string | undefined {
   }
 
   const host = match[1] !== undefined ? match[1] : match[2];
-  const port = parseInt(match[3], 10);
+  const port = parseInt(match[match.length - 1], 10);
 
   if (isNaN(port)) {
     return 'Invalid port value';
@@ -256,7 +248,7 @@ function validateHostPort(target: string): string | undefined {
     return 'Port must be less than 65535';
   }
 
-  if (port < 0) {
+  if (port <= 0) {
     return 'Port must be greater than 0';
   }
 
