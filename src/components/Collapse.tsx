@@ -1,6 +1,7 @@
 import React, { FC } from 'react';
-import { Collapse as GrafanaCollapse, useTheme } from '@grafana/ui';
-import { css } from 'emotion';
+import { Icon, useTheme } from '@grafana/ui';
+import { css, cx } from 'emotion';
+import { GrafanaTheme } from '@grafana/data';
 
 interface Props {
   isOpen?: boolean;
@@ -10,27 +11,49 @@ interface Props {
   onToggle?: (isOpen: boolean) => void;
 }
 
-export const Collapse: FC<Props> = ({ isOpen, ...props }) => {
-  const theme = useTheme();
+const getStyles = (theme: GrafanaTheme) => ({
+  container: css`
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+    margin-bottom: 0;
+    padding: ${theme.spacing.md} 0;
+  `,
+  header: css`
+    display: flex;
+    align-items: center;
+    transition: all 0.1s linear;
+    cursor: pointer;
+  `,
+  headerExpanded: css`
+    padding-bottom: ${theme.spacing.sm};
+  `,
+  headerIcon: css`
+    margin-right: ${theme.spacing.sm};
+  `,
+  label: css`
+    margin-right: ${theme.spacing.sm};
+    font-size: ${theme.typography.heading.h4};
+  `,
+  body: css`
+    padding-top: ${theme.spacing.sm};
+  `,
+  hidden: css`
+    display: none;
+  `,
+});
 
-  const containerStyles = css`
-    .panel-container {
-      border-right: none;
-      border-left: none;
-      border-bottom: none;
-      margin-bottom: 0;
-    }
-    .panel-container > div:first-of-type {
-      padding: ${theme.spacing.md} 0px;
-    }
-    .panel-container > div:nth-child(2) {
-      padding: 0 ${theme.spacing.sm};
-    }
-  `;
+export const Collapse: FC<Props> = ({ isOpen, label, children, onToggle, ...props }) => {
+  const theme = useTheme();
+  const styles = getStyles(theme);
 
   return (
-    <div className={containerStyles}>
-      <GrafanaCollapse isOpen={isOpen} {...props} />
+    <div className={cx(['panel-container', styles.container])} onClick={() => onToggle && onToggle(Boolean(isOpen))}>
+      <div className={styles.header}>
+        <Icon name={isOpen ? 'angle-up' : 'angle-down'} className={styles.headerIcon} />
+        <div className={styles.label}>{label}</div>
+      </div>
+      <div className={cx(styles.body, { [styles.hidden]: !isOpen })}>{children}</div>
     </div>
   );
 };

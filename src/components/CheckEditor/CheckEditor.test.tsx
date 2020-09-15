@@ -114,6 +114,7 @@ describe('HTTP', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Add Header' }));
     await act(async () => await userEvent.type(await screen.findByPlaceholderText('name'), 'headerName'));
     await act(async () => await userEvent.type(await screen.findByPlaceholderText('value'), 'headerValue'));
+    userEvent.click(httpSettings);
 
     userEvent.click(screen.getByText('TLS Config'));
     await act(async () => await userEvent.type(screen.getByLabelText('Server Name', { exact: false }), 'serverName'));
@@ -189,7 +190,7 @@ describe('DNS', () => {
         settings: {
           dns: {
             ipVersion: 'V4',
-            port: 53,
+            port: '53',
             protocol: 'UDP',
             recordType: 'A',
             server: '8.8.8.8',
