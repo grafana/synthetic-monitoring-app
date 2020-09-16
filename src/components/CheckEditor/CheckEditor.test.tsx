@@ -78,6 +78,59 @@ it('renders without crashing', async () => {
   expect(header).toBeInTheDocument();
 });
 
+it('Updates existing check', async () => {
+  const instance = await renderCheckEditor({ check: getMinimumCheck({ target: 'grafana.com', id: 32, tenantId: 45 }) });
+  await submitForm();
+  expect(instance.addCheck).toHaveBeenCalledTimes(0);
+  expect(instance.updateCheck).toHaveBeenCalledWith({
+    job: 'tacos',
+    id: 32,
+    tenantId: 45,
+    target: 'grafana.com',
+    enabled: true,
+    labels: [],
+    probes: [1],
+    timeout: 3000,
+    frequency: 60000,
+    settings: {
+      ping: {
+        ipVersion: 'V4',
+        dontFragment: false,
+      },
+    },
+  });
+});
+
+describe('PING', () => {
+  it('transforms values to correct format', async () => {
+    const instance = await renderCheckEditor({ check: getMinimumCheck({ target: 'grafana.com' }) });
+    const advancedOptions = await screen.findByText('Advanced Options');
+    userEvent.click(advancedOptions);
+    const addLabel = await screen.findByRole('button', { name: 'Add Label' });
+    userEvent.click(addLabel);
+    const labelNameInput = await screen.findByPlaceholderText('name');
+    await act(async () => await userEvent.type(labelNameInput, 'labelName'));
+    const labelValueInput = await screen.findByPlaceholderText('value');
+    await act(async () => await userEvent.type(labelValueInput, 'labelValue'));
+    await submitForm();
+    expect(instance.addCheck).toHaveBeenCalledWith({
+      job: 'tacos',
+      target: 'grafana.com',
+      enabled: true,
+      labels: [{ name: 'labelName', value: 'labelValue' }],
+      probes: [1],
+      timeout: 3000,
+      frequency: 60000,
+      settings: {
+        ping: {
+          ipVersion: 'V4',
+          dontFragment: false,
+        },
+      },
+    });
+  });
+});
+
 describe('HTTP', () => {
   it('has correct sections', async () => {
     await renderCheckEditor();
