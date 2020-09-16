@@ -17,9 +17,12 @@ export const TLSConfig: FC<Props> = ({ isEditor, checkType }) => {
     <Collapse label="TLS Config" onToggle={() => setShowTLS(!showTLS)} isOpen={showTLS} collapsible>
       <HorizontalGroup>
         <Field label="Skip Validation" description="Disable target certificate validation" disabled={!isEditor}>
-          <Container padding="sm">
-            <Switch ref={register} name={`settings.${checkType}.tlsConfig.insecureSkipVerify`} disabled={!isEditor} />
-          </Container>
+          <Switch
+            id="tls-config-skip-validation"
+            ref={register}
+            name={`settings.${checkType}.tlsConfig.insecureSkipVerify`}
+            disabled={!isEditor}
+          />
         </Field>
         <Field
           label="Server Name"

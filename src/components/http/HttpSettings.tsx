@@ -316,14 +316,15 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
           </Field>
 
           <Field label="Fail if SSL" description="Probe fails if SSL is present" disabled={!isEditor}>
-            <Container padding="sm">
-              <Switch ref={register} name="settings.http.failIfSSL" disabled={!isEditor} />
-            </Container>
+            <Switch id="http-settings-fail-ssl" ref={register} name="settings.http.failIfSSL" disabled={!isEditor} />
           </Field>
           <Field label="Fail if not SSL" description="Probe fails if SSL is not present" disabled={!isEditor}>
-            <Container padding="sm">
-              <Switch ref={register} name="settings.http.failIfNotSSL" disabled={!isEditor} />
-            </Container>
+            <Switch
+              id="http-settings-fail-not-ssl"
+              ref={register}
+              name="settings.http.failIfNotSSL"
+              disabled={!isEditor}
+            />
           </Field>
         </HorizontalGroup>
         <BodyRegexMatcherInput
@@ -362,12 +363,7 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
         <HorizontalGroup>
           <div>
             <Field label="IP Version" description="The IP protocol of the HTTP request" disabled={!isEditor}>
-              <Controller
-                as={Select}
-                name="settings.http.ipVersion"
-                options={IP_OPTIONS}
-                defaultValue={IP_OPTIONS[1]}
-              />
+              <Controller as={Select} name="settings.http.ipVersion" options={IP_OPTIONS} />
             </Field>
           </div>
           <div>
@@ -376,9 +372,12 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
               description="Whether or not the probe will follow any redirects."
               disabled={!isEditor}
             >
-              <Container padding="sm">
-                <Switch ref={register} name="settings.http.noFollowRedirects" disabled={!isEditor} />
-              </Container>
+              <Switch
+                id="http-settings-follow-redirects"
+                ref={register}
+                name="settings.http.noFollowRedirects"
+                disabled={!isEditor}
+              />
             </Field>
           </div>
         </HorizontalGroup>
@@ -388,6 +387,7 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
             description="The name of the query parameter used to prevent the server from using a cached response. Each probe will assign a random value to this parameter each time a request is made."
           >
             <Input
+              id="https-settings-cache-busting-query"
               ref={register}
               name="settings.http.cacheBustingQueryParamName"
               type="string"
