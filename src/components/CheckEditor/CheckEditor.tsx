@@ -13,6 +13,7 @@ import {
   Alert,
   Spinner,
 } from '@grafana/ui';
+import { useAsyncCallback } from 'react-async-hook';
 import { Check, CheckType, OrgRole, CheckFormValues } from 'types';
 import { SMDataSource } from 'datasource/DataSource';
 import { hasRole } from 'utils';
@@ -38,7 +39,6 @@ interface SubmissionError {
 
 export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [error, setError] = useState<SubmissionError | undefined>();
 
   const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
 
@@ -47,23 +47,21 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
 
   const isEditor = hasRole(OrgRole.EDITOR);
 
-  const onSubmit = async (values: CheckFormValues) => {
+  const { execute: onSubmit, error, loading: submitting } = useAsyncCallback(async (values: CheckFormValues) => {
     const updatedCheck = getCheckFromFormValues(values, defaultValues);
-    try {
-      if (check.id) {
-        await instance.updateCheck({
-          id: check.id,
-          tenantId: check.tenantId,
-          ...updatedCheck,
-        });
-      } else {
-        await instance.addCheck(updatedCheck);
-      }
-      onReturn(true);
-    } catch (e) {
-      setError(e);
+    if (check.id) {
+      await instance.updateCheck({
+        id: check.id,
+        tenantId: check.tenantId,
+        ...updatedCheck,
+      });
+    } else {
+      await instance.addCheck(updatedCheck);
     }
-  };
+    onReturn(true);
+  });
+
+  const submissionError = error as SubmissionError;
 
   const onRemoveCheck = async () => {
     const id = check.id;
@@ -73,8 +71,6 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
     await instance.deleteCheck(id);
     onReturn(true);
   };
-
-  const onBack = () => onReturn(true);
 
   const target = formMethods.watch('target', '') as string;
 
@@ -154,7 +150,7 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
         <HorizontalGroup>
           <Button
             type="submit"
-            disabled={formMethods.formState.isSubmitting || Object.keys(formMethods.errors).length > 0}
+            disabled={formMethods.formState.isSubmitting || submitting || Object.keys(formMethods.errors).length > 0}
           >
             Save
           </Button>
@@ -171,16 +167,16 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
             onConfirm={onRemoveCheck}
             onDismiss={() => setShowDeleteModal(false)}
           />
-          <a onClick={onBack}>Back</a>
+          <a onClick={() => onReturn(true)}>Back</a>
         </HorizontalGroup>
-        {error && (
+        {submissionError && (
           <div
             className={css`
               margin-top: 1rem;
             `}
           >
             <Alert title="Save failed" severity="error">
-              {`${error?.status}: ${error?.message}`}
+              {`${submissionError.status}: ${submissionError.message}`}
             </Alert>
           </div>
         )}

@@ -39,6 +39,7 @@
   "dependencies": {
     "ip-address": "^6.3.0",
     "punycode": "^2.1.1",
+    "react-async-hook": "^3.6.1",
     "react-hook-form": "5.1.3",
     "valid-url": "^1.0.9"
   }
