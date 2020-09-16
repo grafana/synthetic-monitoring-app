@@ -77,7 +77,7 @@ export default class CheckProbes extends PureComponent<CheckProbesProps, CheckPr
     return (
       <ThemeContext.Consumer>
         {theme => (
-          <div>
+          <>
             <Field
               label="Probe Locations"
               description="Select up to 20 locations where this target will be checked from."
@@ -109,7 +109,7 @@ export default class CheckProbes extends PureComponent<CheckProbesProps, CheckPr
                 </Button>
               </HorizontalGroup>
             </div>
-          </div>
+          </>
         )}
       </ThemeContext.Consumer>
     );

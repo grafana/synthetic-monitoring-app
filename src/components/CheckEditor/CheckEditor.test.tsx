@@ -23,7 +23,7 @@ const defaultCheck = {
   },
 } as Check;
 
-const getMinimumCheck = (overrides: any = {}) => ({
+const getMinimumCheck = (overrides: Partial<Check> = {}) => ({
   ...defaultCheck,
   job: 'tacos',
   target: 'burritos.com',

@@ -27,8 +27,8 @@ import { CHECK_TYPE_OPTIONS, IP_OPTIONS, DNS_RESPONSE_CODES } from 'components/c
 import { checkType } from 'utils';
 
 export function selectableValueFrom<T>(value: T, label?: string): SelectableValue<T> {
-  const labelValue: unknown = value;
-  return { label: label ?? (labelValue as string), value };
+  const labelValue = String(value);
+  return { label: label ?? labelValue, value };
 }
 
 export function fallbackSettings(t: CheckType): Settings {

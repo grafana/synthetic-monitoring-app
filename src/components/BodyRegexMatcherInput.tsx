@@ -2,6 +2,7 @@ import React, { FC } from 'react';
 import { useFormContext, useFieldArray } from 'react-hook-form';
 import { css } from 'emotion';
 import { Field, Input, IconButton, HorizontalGroup, Icon, Button, useTheme } from '@grafana/ui';
+import { GrafanaTheme } from '@grafana/data';
 
 interface Props {
   isEditor: boolean;
@@ -10,27 +11,29 @@ interface Props {
   description: string;
 }
 
+const getStyles = (theme: GrafanaTheme) => ({
+  verticalContainer: css`
+    margin-bottom: ${theme.spacing.sm};
+    display: flex;
+    flex-direction: column;
+  `,
+  marginBottom: css`
+    margin-bottom: ${theme.spacing.sm};
+  `,
+});
+
 export const BodyRegexMatcherInput: FC<Props> = ({ isEditor, name, label, description }) => {
   const { control, register } = useFormContext();
   const { fields, append, remove } = useFieldArray({ control, name });
   const theme = useTheme();
+  const styles = getStyles(theme);
+
   return (
     <Field label={label} description={description} disabled={!isEditor}>
-      <div>
-        <div
-          className={css`
-            margin-bottom: ${theme.spacing.sm};
-            display: flex;
-            flex-direction: column;
-          `}
-        >
+      <>
+        <div className={styles.verticalContainer}>
           {fields.map((field, index) => (
-            <div
-              key={field.id}
-              className={css`
-                margin-bottom: ${theme.spacing.sm};
-              `}
-            >
+            <div key={field.id} className={styles.marginBottom}>
               <HorizontalGroup>
                 <Input
                   ref={register()}
@@ -50,7 +53,7 @@ export const BodyRegexMatcherInput: FC<Props> = ({ isEditor, name, label, descri
             Add Body Regexp
           </HorizontalGroup>
         </Button>
-      </div>
+      </>
     </Field>
   );
 };

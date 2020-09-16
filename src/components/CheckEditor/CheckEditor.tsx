@@ -11,6 +11,7 @@ import {
   Select,
   Legend,
   Alert,
+  Spinner,
 } from '@grafana/ui';
 import { Check, CheckType, OrgRole, CheckFormValues } from 'types';
 import { SMDataSource } from 'datasource/DataSource';
@@ -44,7 +45,7 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
   const formMethods = useForm<CheckFormValues>({ defaultValues, mode: 'onChange' });
   const selectedCheckType = formMethods.watch('checkType').value as CheckType;
 
-  let isEditor = hasRole(OrgRole.EDITOR);
+  const isEditor = hasRole(OrgRole.EDITOR);
 
   const onSubmit = async (values: CheckFormValues) => {
     const updatedCheck = getCheckFromFormValues(values, defaultValues);
@@ -78,7 +79,7 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
   const target = formMethods.watch('target', '') as string;
 
   if (!check) {
-    return <div>Loading...</div>;
+    return <Spinner />;
   }
 
   return (
