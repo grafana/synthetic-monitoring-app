@@ -129,6 +129,37 @@ describe('PING', () => {
       },
     });
   });
+
+  it('correctly populates default values', async () => {
+    const check = {
+      job: 'carne asada',
+      target: 'target.com',
+      enabled: true,
+      labels: [{ name: 'a great label', value: 'totally awesome label' }],
+      probes: [42],
+      timeout: 2000,
+      frequency: 120000,
+      settings: {
+        ping: {
+          ipVersion: IpVersion.V6,
+          dontFragment: true,
+        },
+      },
+    };
+
+    await renderCheckEditor({ check });
+    expect(await screen.findByLabelText('Job Name', { exact: false })).toHaveValue('carne asada');
+    expect(await screen.findByLabelText('Target', { exact: false })).toHaveValue('target.com');
+    expect(await screen.findByText('burritos')).toBeInTheDocument(); // display name of probe with id 42 returned in mocked listProbes call
+    expect(await screen.findByLabelText('Frequency', { exact: false })).toHaveValue(120);
+    expect(await screen.findByLabelText('Timeout', { exact: false })).toHaveValue(2);
+    const advancedOption = await screen.findByText('Advanced Options');
+    userEvent.click(advancedOption);
+    expect(await screen.findByPlaceholderText('name')).toHaveValue('a great label');
+    expect(await screen.findByPlaceholderText('value')).toHaveValue('totally awesome label');
+    expect(await screen.findByText('V6')).toBeInTheDocument();
+    expect(await screen.findByLabelText("Don't Fragment", { exact: false })).toBeChecked();
+  });
 });
 
 describe('HTTP', () => {

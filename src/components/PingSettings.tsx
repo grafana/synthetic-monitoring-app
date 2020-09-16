@@ -1,5 +1,5 @@
 import React, { FC, useState } from 'react';
-import { Container, HorizontalGroup, Field, Select, Switch } from '@grafana/ui';
+import { HorizontalGroup, Field, Select, Switch } from '@grafana/ui';
 import { Collapse } from 'components/Collapse';
 import { IP_OPTIONS } from './constants';
 import { LabelField } from 'components/LabelField';
@@ -12,7 +12,6 @@ interface Props {
 export const PingSettingsForm: FC<Props> = ({ isEditor }) => {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const { control, register } = useFormContext();
-
   return (
     <Collapse
       label="Advanced Options"
@@ -39,9 +38,12 @@ export const PingSettingsForm: FC<Props> = ({ isEditor }) => {
             description="Set the DF-bit in the IP-header. Only works with ipV4"
             disabled={!isEditor}
           >
-            <Container padding="sm">
-              <Switch ref={register()} name="settings.ping.dontFragment" disabled={!isEditor} />
-            </Container>
+            <Switch
+              id="ping-settings-dont-fragment"
+              ref={register()}
+              name="settings.ping.dontFragment"
+              disabled={!isEditor}
+            />
           </Field>
         </div>
       </HorizontalGroup>
