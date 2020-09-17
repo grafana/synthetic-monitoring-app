@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.0.10
+
+- Update check creation UX
+- Update DNS validation input formats
+- Improve form input validation messaging
+
 ## v0.0.9
 
 - Improve target URL validations
