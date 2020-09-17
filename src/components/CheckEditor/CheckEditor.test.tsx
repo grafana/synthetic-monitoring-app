@@ -83,12 +83,6 @@ const renderCheckEditor = async ({ check = defaultCheck } = {}) => {
   return instance;
 };
 
-it('renders without crashing', async () => {
-  await renderCheckEditor();
-  const header = screen.getByText('Check Details');
-  expect(header).toBeInTheDocument();
-});
-
 it('Updates existing check', async () => {
   const instance = await renderCheckEditor({ check: getMinimumCheck({ target: 'grafana.com', id: 32, tenantId: 45 }) });
   await submitForm();

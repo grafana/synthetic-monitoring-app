@@ -111,11 +111,7 @@ const getTcpSettingsFormValues = (settings: Settings): TcpSettingsFormValues => 
   };
 };
 
-interface GetDnsValidationArgs {
-  [ResponseMatchType.Answer]?: DNSRRValidator;
-  [ResponseMatchType.Authority]?: DNSRRValidator;
-  [ResponseMatchType.Additional]?: DNSRRValidator;
-}
+type GetDnsValidationArgs = { [key in ResponseMatchType]: DNSRRValidator | undefined };
 
 const getDnsValidations = (validations: GetDnsValidationArgs): DnsValidationFormValue[] =>
   Object.keys(validations).reduce<DnsValidationFormValue[]>((formValues, validationType) => {

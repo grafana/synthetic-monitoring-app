@@ -16,7 +16,9 @@ export const NameValueInput: FC<Props> = ({ name, disabled, limit, label, valida
   const { register, control, errors } = useFormContext();
   const { fields, append, remove } = useFieldArray({ control, name });
   const theme = useTheme();
-  const fieldError = name.split('.').reduce((error, current) => error?.[current], errors);
+  const fieldError = name
+    .split('.')
+    .reduce((nestedError, errorPathFragment) => nestedError?.[errorPathFragment], errors);
   return (
     <VerticalGroup justify="space-between">
       {fields.map((field, index) => (
