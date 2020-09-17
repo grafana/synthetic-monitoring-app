@@ -9,6 +9,7 @@ import {
   TextArea,
   Input,
   VerticalGroup,
+  useStyles,
 } from '@grafana/ui';
 import { css } from 'emotion';
 import { useFormContext, Controller } from 'react-hook-form';
@@ -21,6 +22,7 @@ import { LabelField } from 'components/LabelField';
 import { TLSConfig } from 'components/TLSConfig';
 import { NameValueInput } from 'components/NameValueInput';
 import { validateBearerToken, validateHTTPBody, validateHTTPHeaderName, validateHTTPHeaderValue } from 'validation';
+import { GrafanaTheme } from '@grafana/data';
 
 const httpVersionOptions = [
   {
@@ -129,6 +131,12 @@ const generateValidStatusCodes = () => {
 
 const validStatusCodes = generateValidStatusCodes();
 
+const getStyles = (theme?: GrafanaTheme) => ({
+  validationGroup: css`
+    max-width: 400px;
+  `,
+});
+
 interface Props {
   isEditor: boolean;
 }
@@ -144,6 +152,7 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
   const basicAuth = watch('settings.http.basicAuth');
   const [includeBearerToken, setIncludeBearerToken] = useState(Boolean(bearerToken));
   const [includeBasicAuth, setIncludeBasicAuth] = useState(Boolean(basicAuth));
+  const styles = useStyles(getStyles);
 
   return (
     <Container>
@@ -291,7 +300,7 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
         isOpen={showValidation}
         collapsible
       >
-        <HorizontalGroup>
+        <div className={styles.validationGroup}>
           <Field
             label="Valid Status Codes"
             description="Accepted status codes for this probe. Defaults to 2xx."
@@ -328,19 +337,7 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
               disabled={!isEditor}
             />
           </Field>
-
-          {/* <Field label="Fail if SSL" description="Probe fails if SSL is present" disabled={!isEditor}>
-            <Switch id="http-settings-fail-ssl" ref={register} name="settings.http.failIfSSL" disabled={!isEditor} />
-          </Field>
-          <Field label="Fail if not SSL" description="Probe fails if SSL is not present" disabled={!isEditor}>
-            <Switch
-              id="http-settings-fail-not-ssl"
-              ref={register}
-              name="settings.http.failIfNotSSL"
-              disabled={!isEditor}
-            />
-          </Field> */}
-        </HorizontalGroup>
+        </div>
         <BodyRegexMatcherInput
           label="Fail if body matches regexp"
           description="Probe fails if response body matches regex"
