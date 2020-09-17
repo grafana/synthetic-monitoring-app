@@ -16,7 +16,7 @@ import { HttpMethod, HttpVersion, CheckType } from 'types';
 import { Collapse } from 'components/Collapse';
 import { BodyRegexMatcherInput } from 'components/BodyRegexMatcherInput';
 import { HeaderRegexMatcherInput } from 'components/HeaderRegexMatcherInput';
-import { IP_OPTIONS } from '../constants';
+import { HTTP_SSL_OPTIONS, IP_OPTIONS } from '../constants';
 import { LabelField } from 'components/LabelField';
 import { TLSConfig } from 'components/TLSConfig';
 import { NameValueInput } from 'components/NameValueInput';
@@ -315,7 +315,21 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
             />
           </Field>
 
-          <Field label="Fail if SSL" description="Probe fails if SSL is present" disabled={!isEditor}>
+          <Field
+            label="SSL Options"
+            description="Choose whether probe fails if SSL is present or not present"
+            disabled={!isEditor}
+          >
+            <Controller
+              as={Select}
+              name="settings.http.sslOptions"
+              control={control}
+              options={HTTP_SSL_OPTIONS}
+              disabled={!isEditor}
+            />
+          </Field>
+
+          {/* <Field label="Fail if SSL" description="Probe fails if SSL is present" disabled={!isEditor}>
             <Switch id="http-settings-fail-ssl" ref={register} name="settings.http.failIfSSL" disabled={!isEditor} />
           </Field>
           <Field label="Fail if not SSL" description="Probe fails if SSL is not present" disabled={!isEditor}>
@@ -325,7 +339,7 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
               name="settings.http.failIfNotSSL"
               disabled={!isEditor}
             />
-          </Field>
+          </Field> */}
         </HorizontalGroup>
         <BodyRegexMatcherInput
           label="Fail if body matches regexp"

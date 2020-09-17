@@ -21,9 +21,10 @@ import {
   DnsValidationFormValue,
   ResponseMatchType,
   Check,
+  HttpSslOption,
 } from 'types';
 
-import { CHECK_TYPE_OPTIONS, IP_OPTIONS, DNS_RESPONSE_CODES } from 'components/constants';
+import { CHECK_TYPE_OPTIONS, IP_OPTIONS, DNS_RESPONSE_CODES, HTTP_SSL_OPTIONS } from 'components/constants';
 import { checkType } from 'utils';
 
 export function selectableValueFrom<T>(value: T, label?: string): SelectableValue<T> {
@@ -91,10 +92,30 @@ const headersToLabels = (headers: string[] | undefined): Label[] =>
     };
   }) ?? [];
 
+const getHttpSettingsSslValue = (failIfSSL: boolean, failIfNotSSL: boolean): SelectableValue<HttpSslOption> => {
+  if (failIfSSL && !failIfNotSSL) {
+    return (
+      HTTP_SSL_OPTIONS.find((option: SelectableValue<HttpSslOption>) => option.value === HttpSslOption.FailIfPresent) ??
+      HTTP_SSL_OPTIONS[0]
+    );
+  }
+
+  if (!failIfSSL && failIfNotSSL) {
+    return (
+      HTTP_SSL_OPTIONS.find(
+        (option: SelectableValue<HttpSslOption>) => option.value === HttpSslOption.FailIfNotPresent
+      ) ?? HTTP_SSL_OPTIONS[0]
+    );
+  }
+
+  return HTTP_SSL_OPTIONS[0];
+};
+
 const getHttpSettingsFormValues = (settings: Settings): HttpSettingsFormValues => {
   const httpSettings = settings.http ?? (fallbackSettings(CheckType.HTTP) as HttpSettings);
   return {
     ...httpSettings,
+    sslOptions: getHttpSettingsSslValue(httpSettings.failIfSSL ?? false, httpSettings.failIfNotSSL ?? false),
     validStatusCodes: httpSettings.validStatusCodes?.map(statusCode => selectableValueFrom(statusCode)) ?? [],
     validHTTPVersions: httpSettings.validHTTPVersions?.map(httpVersion => selectableValueFrom(httpVersion)) ?? [],
     method: selectableValueFrom(httpSettings.method),
@@ -192,6 +213,29 @@ function getValuesFromMultiSelectables<T>(selectables: Array<SelectableValue<T>>
   return selectables?.map(selectable => getValueFromSelectable(selectable)).filter(Boolean) as T[];
 }
 
+const getHttpSslOptionsFromFormValue = (sslOption: HttpSslOption): Pick<HttpSettings, 'failIfSSL' | 'failIfNotSSL'> => {
+  switch (sslOption) {
+    case HttpSslOption.Ignore: {
+      return {
+        failIfNotSSL: false,
+        failIfSSL: false,
+      };
+    }
+    case HttpSslOption.FailIfPresent: {
+      return {
+        failIfNotSSL: false,
+        failIfSSL: true,
+      };
+    }
+    case HttpSslOption.FailIfNotPresent: {
+      return {
+        failIfNotSSL: true,
+        failIfSSL: false,
+      };
+    }
+  }
+};
+
 const getHttpSettings = (
   settings: Partial<HttpSettingsFormValues> | undefined = {},
   defaultSettings: HttpSettingsFormValues | undefined
@@ -206,9 +250,17 @@ const getHttpSettings = (
   };
   const method = getValueFromSelectable(settings?.method ?? defaultSettings?.method) ?? fallbackValues.method;
 
+  const sslConfig = getHttpSslOptionsFromFormValue(
+    getValueFromSelectable(settings.sslOptions ?? defaultSettings?.sslOptions) ?? HttpSslOption.Ignore
+  );
+
+  // We need to pick the sslOptions key out of the settings, since the API doesn't expect this key
+  const { sslOptions, ...mergedSettingsToKeep } = mergedSettings;
+
   return {
     ...fallbackValues,
-    ...mergedSettings,
+    ...mergedSettingsToKeep,
+    ...sslConfig,
     method,
     headers: formattedHeaders,
     ipVersion: getValueFromSelectable(settings?.ipVersion ?? defaultSettings?.ipVersion) ?? fallbackValues.ipVersion,
