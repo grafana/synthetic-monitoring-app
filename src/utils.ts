@@ -3,17 +3,8 @@ import { DataSourceInstanceSettings, DataSourceSettings } from '@grafana/data';
 import { SMOptions, DashboardInfo } from './datasource/types';
 
 import { config, getBackendSrv } from '@grafana/runtime';
-import {
-  HostedInstance,
-  User,
-  OrgRole,
-  CheckType,
-  Settings,
-  IpVersion,
-  HttpMethod,
-  DnsRecordType,
-  DnsProtocol,
-} from 'types';
+import { HostedInstance, User, OrgRole, CheckType, Settings } from 'types';
+
 import { SMDataSource } from 'datasource/DataSource';
 
 /**
@@ -109,55 +100,6 @@ export function hasRole(requiredRole: OrgRole): boolean {
   }
 }
 
-export function checkType(settings: Settings): CheckType {
-  let types = Object.keys(settings);
-  if (types.length < 1) {
-    return CheckType.HTTP;
-  }
-  return types[0] as CheckType;
-}
-
-export function defaultSettings(t: CheckType): Settings | undefined {
-  switch (t) {
-    case CheckType.HTTP: {
-      return {
-        http: {
-          method: HttpMethod.GET,
-          ipVersion: IpVersion.V4,
-          noFollowRedirects: false,
-        },
-      };
-    }
-    case CheckType.PING: {
-      return {
-        ping: {
-          ipVersion: IpVersion.V4,
-          dontFragment: false,
-        },
-      };
-    }
-    case CheckType.DNS: {
-      return {
-        dns: {
-          recordType: DnsRecordType.A,
-          server: '8.8.8.8',
-          ipVersion: IpVersion.V4,
-          protocol: DnsProtocol.UDP,
-          port: 53,
-        },
-      };
-    }
-    case CheckType.TCP: {
-      return {
-        tcp: {
-          ipVersion: IpVersion.V4,
-          tls: false,
-        },
-      };
-    }
-  }
-}
-
 /** Given hosted info, link to an existing instance */
 export function dashboardUID(checkType: string, ds: SMDataSource): DashboardInfo | undefined {
   const dashboards = ds.instanceSettings.jsonData.dashboards;
@@ -189,6 +131,14 @@ export const matchStrings = (string: string, comparisons: string[]): boolean => 
   const lowerCased = string.toLowerCase();
   return comparisons.some(comparison => comparison.toLowerCase().match(lowerCased));
 };
+
+export function checkType(settings: Settings): CheckType {
+  let types = Object.keys(settings);
+  if (types.length < 1) {
+    return CheckType.HTTP;
+  }
+  return types[0] as CheckType;
+}
 
 interface MetricQueryResponse {
   error?: string;

@@ -7,6 +7,7 @@ interface Props {
   target: URL;
   className?: string;
   onChange: (target: string) => void;
+  onBlur?: () => void;
 }
 
 interface Action {
@@ -57,7 +58,7 @@ function queryParamReducer(state: QueryParam[], action: Action) {
   }
 }
 
-const QueryParams: FC<Props> = ({ target, onChange, className }) => {
+const QueryParams: FC<Props> = ({ target, onChange, className, onBlur }) => {
   const [formattedParams, dispatch] = useReducer(queryParamReducer, target, init);
   const [shouldUpdate, setShouldUpdate] = useState(false);
 
@@ -101,6 +102,7 @@ const QueryParams: FC<Props> = ({ target, onChange, className }) => {
           {formattedParams.map((queryParam, index) => (
             <QueryParamInput
               queryParam={queryParam}
+              onBlur={onBlur}
               key={index}
               onDelete={handleDelete(index)}
               onChange={updatedParam => {
@@ -111,7 +113,7 @@ const QueryParams: FC<Props> = ({ target, onChange, className }) => {
           ))}
         </div>
       </Field>
-      <Button variant="secondary" size="sm" onClick={() => dispatch({ type: 'add' })}>
+      <Button type="button" variant="secondary" size="sm" onClick={() => dispatch({ type: 'add' })}>
         Add query param
       </Button>
     </div>

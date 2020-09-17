@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import React, { FC, useState, useMemo } from 'react';
 import { css } from 'emotion';
 import {
   Button,
@@ -11,16 +11,20 @@ import {
   Select,
   Legend,
   Alert,
+  Spinner,
 } from '@grafana/ui';
-import { SelectableValue } from '@grafana/data';
-import { Check, Label as SMLabel, CheckType, Probe, OrgRole, APIError, OnUpdateSettingsArgs } from 'types';
+import { useAsyncCallback } from 'react-async-hook';
+import { Check, CheckType, OrgRole, CheckFormValues } from 'types';
 import { SMDataSource } from 'datasource/DataSource';
-import { hasRole, checkType, defaultSettings } from 'utils';
-import * as Validation from 'validation';
+import { hasRole } from 'utils';
+import { getDefaultValuesFromCheck, getCheckFromFormValues } from './checkFormTransformations';
+import { validateJob, validateTarget } from 'validation';
 import CheckTarget from 'components/CheckTarget';
 import { Subheader } from 'components/Subheader';
 import { CheckSettings } from './CheckSettings';
-import { ProbeOptions, OnChangeArgs } from './ProbeOptions';
+import { ProbeOptions } from './ProbeOptions';
+import { CHECK_TYPE_OPTIONS } from 'components/constants';
+import { useForm, FormContext, Controller } from 'react-hook-form';
 
 interface Props {
   check: Check;
@@ -28,191 +32,56 @@ interface Props {
   onReturn: (reload: boolean) => void;
 }
 
-interface State {
-  check: Check;
-  typeOfCheck?: CheckType;
-  probes: Probe[];
-  showDeleteModal: boolean;
-  showOptions: boolean;
-  probesLoading: boolean;
-  error?: APIError;
+interface SubmissionError {
+  status?: string;
+  message?: string;
 }
 
-export default class CheckEditor extends PureComponent<Props, State> {
-  state: State = {
-    showDeleteModal: false,
-    check: { ...this.props.check },
-    showOptions: false,
-    probesLoading: true,
-    probes: [],
+export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
+
+  const formMethods = useForm<CheckFormValues>({ defaultValues, mode: 'onChange' });
+  const selectedCheckType = formMethods.watch('checkType').value as CheckType;
+
+  const isEditor = hasRole(OrgRole.EDITOR);
+
+  const { execute: onSubmit, error, loading: submitting } = useAsyncCallback(async (values: CheckFormValues) => {
+    const updatedCheck = getCheckFromFormValues(values, defaultValues);
+    if (check.id) {
+      await instance.updateCheck({
+        id: check.id,
+        tenantId: check.tenantId,
+        ...updatedCheck,
+      });
+    } else {
+      await instance.addCheck(updatedCheck);
+    }
+    onReturn(true);
+  });
+
+  const submissionError = error as SubmissionError;
+
+  const onRemoveCheck = async () => {
+    const id = check.id;
+    if (!id) {
+      return;
+    }
+    await instance.deleteCheck(id);
+    onReturn(true);
   };
 
-  async componentDidMount() {
-    const { instance } = this.props;
-    const { check } = this.state;
-    const probes = await instance.listProbes();
-    const typeOfCheck = checkType(check.settings);
-    this.setState({
-      typeOfCheck,
-      probesLoading: false,
-      probes,
-    });
+  const target = formMethods.watch('target', '') as string;
+
+  if (!check) {
+    return <Spinner />;
   }
 
-  showDeleteCheckModal = (show: boolean) => () => {
-    this.setState({ showDeleteModal: show });
-  };
-
-  onRemoveCheck = async () => {
-    const id = this.props.check.id || 0;
-    if (!this.props.check.id) {
-      return;
-    }
-    const info = this.props.instance.deleteCheck(id);
-    console.log('Remove Check', id, info);
-    this.props.onReturn(true);
-  };
-
-  onLabelsUpdate = (labels: SMLabel[]) => {
-    let check = { ...this.state.check } as Check;
-    check.labels = labels;
-    this.setState({ check });
-  };
-
-  onProbesUpdate = (probes: number[]) => {
-    let check = { ...this.state.check } as Check;
-    check.probes = probes;
-    this.setState({ check });
-  };
-
-  onSettingsUpdate = ({ settings, labels }: OnUpdateSettingsArgs) => {
-    this.setState(state => {
-      const check = state.check as Check;
-      check.settings = settings;
-      check.labels = labels ?? [];
-      return { check };
-    });
-  };
-
-  onSetType = (type: SelectableValue<CheckType>) => {
-    let check = { ...this.state.check } as Check;
-    if (!type.value) {
-      return;
-    }
-    const typeOfCheck = type.value;
-    const settings = defaultSettings(typeOfCheck);
-    if (!settings) {
-      return;
-    }
-    check.settings = settings;
-
-    this.setState({ check, typeOfCheck });
-  };
-
-  onJobUpdate = (event: React.ChangeEvent<HTMLInputElement>) => {
-    let check = { ...this.state.check } as Check;
-    check.job = event.target.value;
-    this.setState({ check });
-  };
-
-  onTargetUpdate = (target: string) => {
-    let check = { ...this.state.check } as Check;
-    check.target = target;
-    this.setState({ check });
-  };
-
-  onProbeOptionsChange = ({ timeout, frequency, probes }: OnChangeArgs) => {
-    this.setState(state => ({
-      check: {
-        ...state.check,
-        timeout,
-        frequency,
-        probes,
-      },
-    }));
-  };
-
-  onFrequencyUpdate = (event: React.ChangeEvent<HTMLInputElement>) => {
-    let check = { ...this.state.check } as Check;
-    check.frequency = event.target.valueAsNumber * 1000;
-    this.setState({ check });
-  };
-
-  onTimeoutUpdate = (event: React.ChangeEvent<HTMLInputElement>) => {
-    let check = { ...this.state.check } as Check;
-    check.timeout = event.target.valueAsNumber * 1000;
-    this.setState({ check });
-  };
-
-  onSave = async () => {
-    const { instance } = this.props;
-    const { check } = this.state;
-    try {
-      if (check.id) {
-        await instance.updateCheck(check);
-      } else {
-        await instance.addCheck(check);
-      }
-      this.props.onReturn(true);
-    } catch (e) {
-      this.setState({
-        error: {
-          status: e.status,
-          message: e.data?.message ?? 'Something went wrong',
-        },
-      });
-    }
-  };
-
-  onEnableChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    let check = { ...this.state.check } as Check;
-    check.enabled = !check.enabled;
-    this.setState({ check });
-  };
-
-  onBack = () => {
-    this.props.onReturn(false);
-  };
-
-  onToggleOptions = (isOpen: boolean) => {
-    this.setState({ showOptions: !this.state.showOptions });
-  };
-
-  render() {
-    const { check, showDeleteModal, probesLoading, typeOfCheck, error } = this.state;
-    if (!check || probesLoading) {
-      return <div>Loading...</div>;
-    }
-
-    let legend = 'Edit Check';
-    if (!check.id) {
-      legend = 'Add Check';
-    }
-
-    let isEditor = hasRole(OrgRole.EDITOR);
-
-    const checkTypes = [
-      {
-        label: 'HTTP',
-        value: CheckType.HTTP,
-      },
-      {
-        label: 'PING',
-        value: CheckType.PING,
-      },
-      {
-        label: 'DNS',
-        value: CheckType.DNS,
-      },
-      {
-        label: 'TCP',
-        value: CheckType.TCP,
-      },
-    ];
-
-    return (
-      <div>
-        <Legend>{legend}</Legend>
+  return (
+    <FormContext {...formMethods}>
+      <form onSubmit={formMethods.handleSubmit(onSubmit)}>
+        <Legend>{check.id ? 'Add Check' : 'Edit Check'}</Legend>
         <div
           className={css`
             margin-bottom: 8px;
@@ -221,11 +90,18 @@ export default class CheckEditor extends PureComponent<Props, State> {
           <Subheader>Check Details</Subheader>
           <HorizontalGroup justify="flex-start" spacing="md">
             <Field label="Check Type" disabled={check.id ? true : false}>
-              <Select value={typeOfCheck} options={checkTypes} onChange={this.onSetType} width={30} />
+              <Controller
+                name="checkType"
+                placeholder="Check Type"
+                control={formMethods.control}
+                as={Select}
+                options={CHECK_TYPE_OPTIONS}
+                width={30}
+              />
             </Field>
             <Field label="Enabled" disabled={!isEditor}>
               <Container padding="sm">
-                <Switch value={check.enabled} onChange={this.onEnableChange} disabled={!isEditor} />
+                <Switch name="enabled" ref={formMethods.register} disabled={!isEditor} />
               </Container>
             </Field>
           </HorizontalGroup>
@@ -233,43 +109,53 @@ export default class CheckEditor extends PureComponent<Props, State> {
             label="Job Name"
             description="Name used for job label"
             disabled={!isEditor}
-            invalid={!Validation.validateJob(check.job)}
+            invalid={Boolean(formMethods.errors.job)}
+            error={formMethods.errors.job?.message}
           >
-            <Input type="string" placeholder="jobName" value={check.job} onChange={this.onJobUpdate} />
+            <Input
+              id="check-editor-job-input"
+              ref={formMethods.register({
+                required: true,
+                validate: validateJob,
+              })}
+              name="job"
+              type="string"
+              placeholder="jobName"
+            />
           </Field>
-          <CheckTarget
-            target={check.target}
-            typeOfCheck={typeOfCheck}
-            checkSettings={check.settings}
+
+          <Controller
+            name="target"
+            as={CheckTarget}
+            control={formMethods.control}
+            target={target}
+            valueName="target"
+            typeOfCheck={selectedCheckType}
+            invalid={Boolean(formMethods.errors.target)}
+            error={formMethods.errors.target?.message}
+            rules={{
+              required: true,
+              validate: target => validateTarget(selectedCheckType, target),
+            }}
             disabled={!isEditor}
-            onChange={this.onTargetUpdate}
           />
           <hr
             className={css`
               margin-top: 24px;
             `}
           />
-          <ProbeOptions
-            isEditor={isEditor}
-            timeout={check.timeout}
-            frequency={check.frequency}
-            probes={check.probes}
-            onChange={this.onProbeOptionsChange}
-          />
-          <CheckSettings
-            labels={check.labels}
-            settings={check.settings}
-            typeOfCheck={typeOfCheck || CheckType.HTTP}
-            onUpdate={this.onSettingsUpdate}
-            isEditor={isEditor}
-          />
+          <ProbeOptions isEditor={isEditor} timeout={check.timeout} frequency={check.frequency} probes={check.probes} />
+          <CheckSettings typeOfCheck={selectedCheckType} isEditor={isEditor} />
         </div>
         <HorizontalGroup>
-          <Button onClick={this.onSave} disabled={!isEditor || !Validation.validateCheck(check)}>
-            Save {Validation.validateCheck(check)}
+          <Button
+            type="submit"
+            disabled={formMethods.formState.isSubmitting || submitting || Object.keys(formMethods.errors).length > 0}
+          >
+            Save
           </Button>
           {check.id && (
-            <Button variant="destructive" onClick={this.showDeleteCheckModal(true)} disabled={!isEditor}>
+            <Button variant="destructive" onClick={() => setShowDeleteModal(true)} disabled={!isEditor} type="button">
               Delete Check
             </Button>
           )}
@@ -278,23 +164,23 @@ export default class CheckEditor extends PureComponent<Props, State> {
             title="Delete check"
             body="Are you sure you want to delete this check?"
             confirmText="Delete check"
-            onConfirm={this.onRemoveCheck}
-            onDismiss={this.showDeleteCheckModal(false)}
+            onConfirm={onRemoveCheck}
+            onDismiss={() => setShowDeleteModal(false)}
           />
-          <a onClick={this.onBack}>Back</a>
+          <a onClick={() => onReturn(true)}>Back</a>
         </HorizontalGroup>
-        {error && (
+        {submissionError && (
           <div
             className={css`
               margin-top: 1rem;
             `}
           >
             <Alert title="Save failed" severity="error">
-              {`${error.status}: ${error.message}`}
+              {`${submissionError.status}: ${submissionError.message}`}
             </Alert>
           </div>
         )}
-      </div>
-    );
-  }
-}
+      </form>
+    </FormContext>
+  );
+};

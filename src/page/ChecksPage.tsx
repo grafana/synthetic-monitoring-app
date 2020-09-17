@@ -4,7 +4,7 @@ import React, { PureComponent } from 'react';
 // Types
 import { Check, GrafanaInstances, IpVersion } from 'types';
 import { getLocationSrv } from '@grafana/runtime';
-import CheckEditor from 'components/CheckEditor';
+import { CheckEditor } from 'components/CheckEditor';
 import { CheckList } from 'components/CheckList';
 
 interface Props {
@@ -95,7 +95,7 @@ export class ChecksPage extends PureComponent<Props, State> {
         job: '',
         target: '',
         frequency: 60000,
-        timeout: 2500,
+        timeout: 3000,
         enabled: true,
         labels: [],
         probes: [],
