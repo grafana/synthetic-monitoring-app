@@ -1,161 +1,55 @@
 import React from 'react';
 import DnsSettingsForm from './DnsSettings';
-import { screen, render, within } from '@testing-library/react';
+import { screen, render } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { DnsResponseCodes } from 'types';
+import { DnsResponseCodes, Label } from 'types';
+import { MockFormWrapper } from '../__mocks__/MockFormWrapper';
+
 jest.unmock('utils');
+jest.setTimeout(10000);
 
 const onUpdateMock = jest.fn();
 const defaultSettings = {};
+const defaultLabels: Label[] = [];
 
-const renderDnsSettings = ({ isEditor = true, onUpdate = onUpdateMock, settings = defaultSettings } = {}) => {
-  return render(<DnsSettingsForm settings={settings} onUpdate={onUpdate} isEditor={isEditor} />);
+const renderDnsSettings = ({ isEditor = true, settings = defaultSettings, labels = defaultLabels } = {}) => {
+  return render(
+    <MockFormWrapper defaultValues={{ settings, labels }}>
+      <DnsSettingsForm isEditor={isEditor} />
+    </MockFormWrapper>
+  );
 };
 
 beforeEach(() => {
   onUpdateMock.mockReset();
 });
 
-describe('Validations', () => {
-  it('adds answer does match validations', async () => {
-    renderDnsSettings();
-    const validationExpandButton = await screen.findByText('Validation');
-    userEvent.click(validationExpandButton);
-    const answerValidations = await screen.findByTestId('validate-answer-matches');
-    const addButton = await within(answerValidations).findByRole('button');
-    userEvent.click(addButton);
-    const addInput = await within(answerValidations).findByRole('textbox');
-    await userEvent.type(addInput, 'a validation');
-    expect(onUpdateMock).toHaveBeenLastCalledWith({
-      dns: {
-        ipVersion: 'V4',
-        port: 53,
-        protocol: 'UDP',
-        recordType: 'A',
-        server: '8.8.8.8',
-        validRCodes: [DnsResponseCodes.NOERROR],
-        validateAdditionalRRS: {
-          failIfMatchesRegexp: [],
-          failIfNotMatchesRegexp: [],
-        },
-        validateAnswerRRS: {
-          failIfMatchesRegexp: ['a validation'],
-          failIfNotMatchesRegexp: [],
-        },
-        validateAuthorityRRS: {
-          failIfMatchesRegexp: [],
-          failIfNotMatchesRegexp: [],
-        },
-      },
-    });
-  });
-
-  it('adds answer does not match validations', async () => {
-    renderDnsSettings();
-    const validationExpandButton = await screen.findByText('Validation');
-    userEvent.click(validationExpandButton);
-    const answerValidations = await screen.findByTestId('validate-answer-not-matches');
-    const addButton = await within(answerValidations).findByRole('button');
-    userEvent.click(addButton);
-    const addInput = await within(answerValidations).findByRole('textbox');
-    await userEvent.type(addInput, 'a validation');
-    expect(onUpdateMock).toHaveBeenLastCalledWith({
-      dns: {
-        ipVersion: 'V4',
-        port: 53,
-        protocol: 'UDP',
-        recordType: 'A',
-        server: '8.8.8.8',
-        validRCodes: [DnsResponseCodes.NOERROR],
-        validateAdditionalRRS: {
-          failIfMatchesRegexp: [],
-          failIfNotMatchesRegexp: [],
-        },
-        validateAnswerRRS: {
-          failIfMatchesRegexp: [],
-          failIfNotMatchesRegexp: ['a validation'],
-        },
-        validateAuthorityRRS: {
-          failIfMatchesRegexp: [],
-          failIfNotMatchesRegexp: [],
-        },
-      },
-    });
-  });
-
-  it('adds authority does match validations', async () => {
-    renderDnsSettings();
-    const validationExpandButton = await screen.findByText('Validation');
-    userEvent.click(validationExpandButton);
-    const answerValidations = await screen.findByTestId('validate-authority-matches');
-    const addButton = await within(answerValidations).findByRole('button');
-    userEvent.click(addButton);
-    const addInput = await within(answerValidations).findByRole('textbox');
-    await userEvent.type(addInput, 'a validation');
-    expect(onUpdateMock).toHaveBeenLastCalledWith({
-      dns: {
-        ipVersion: 'V4',
-        port: 53,
-        protocol: 'UDP',
-        recordType: 'A',
-        server: '8.8.8.8',
-        validRCodes: [DnsResponseCodes.NOERROR],
-        validateAdditionalRRS: {
-          failIfMatchesRegexp: [],
-          failIfNotMatchesRegexp: [],
-        },
-        validateAnswerRRS: {
-          failIfMatchesRegexp: [],
-          failIfNotMatchesRegexp: [],
-        },
-        validateAuthorityRRS: {
-          failIfMatchesRegexp: ['a validation'],
-          failIfNotMatchesRegexp: [],
-        },
-      },
-    });
-  });
-
-  it('adds authority does not match validations', async () => {
-    renderDnsSettings();
-    const validationExpandButton = await screen.findByText('Validation');
-    userEvent.click(validationExpandButton);
-    const answerValidations = await screen.findByTestId('validate-authority-not-matches');
-    const addButton = await within(answerValidations).findByRole('button');
-    userEvent.click(addButton);
-    const addInput = await within(answerValidations).findByRole('textbox');
-    await userEvent.type(addInput, 'a validation');
-    expect(onUpdateMock).toHaveBeenLastCalledWith({
-      dns: {
-        ipVersion: 'V4',
-        port: 53,
-        protocol: 'UDP',
-        recordType: 'A',
-        server: '8.8.8.8',
-        validRCodes: [DnsResponseCodes.NOERROR],
-        validateAdditionalRRS: {
-          failIfMatchesRegexp: [],
-          failIfNotMatchesRegexp: [],
-        },
-        validateAnswerRRS: {
-          failIfMatchesRegexp: [],
-          failIfNotMatchesRegexp: [],
-        },
-        validateAuthorityRRS: {
-          failIfMatchesRegexp: [],
-          failIfNotMatchesRegexp: ['a validation'],
-        },
-      },
-    });
-  });
-});
-
-describe('Response codes', () => {
-  test('defaults to NOERROR', async () => {
+describe('Default values', () => {
+  test('response codes default to NOERROR', async () => {
     renderDnsSettings();
     const validationExpandButton = await screen.findByText('Validation');
     userEvent.click(validationExpandButton);
     const noErrorResponseCode = await screen.findByText(DnsResponseCodes.NOERROR);
     expect(noErrorResponseCode).toBeInTheDocument();
+  });
+
+  test('DNS Settings', async () => {
+    renderDnsSettings();
+    const dnsSettings = await screen.findByText('DNS Settings');
+    userEvent.click(dnsSettings);
+    expect(await screen.findByText('A')).toBeInTheDocument();
+    expect(await screen.findByText('UDP')).toBeInTheDocument();
+    const server = await screen.findByLabelText('Server');
+    expect(server).toHaveValue('8.8.8.8');
+    const port = await screen.findByLabelText('Port');
+    expect(port).toHaveValue(53);
+  });
+
+  test('Advanced options', async () => {
+    renderDnsSettings();
+    const advancedExpand = await screen.findByText('Advanced Options');
+    userEvent.click(advancedExpand);
+    const ipInput = await screen.findByText('V4');
+    expect(ipInput).toBeInTheDocument();
   });
 });

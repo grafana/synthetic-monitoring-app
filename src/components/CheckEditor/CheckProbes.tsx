@@ -1,14 +1,17 @@
 import React, { PureComponent } from 'react';
-import { Button, Container, HorizontalGroup, MultiSelect } from '@grafana/ui';
+import { css } from 'emotion';
+import { Button, HorizontalGroup, MultiSelect, ThemeContext, Field } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
 import { Probe } from 'types';
-import * as Validation from 'validation';
 
 interface CheckProbesProps {
   probes: number[];
   availableProbes: Probe[];
   isEditor: boolean;
-  onUpdate: (probes: number[]) => void;
+  onChange: (probes: number[]) => void;
+  onBlur?: () => void;
+  invalid?: boolean;
+  error?: string;
 }
 
 interface CheckProbesState {
@@ -34,7 +37,7 @@ export default class CheckProbes extends PureComponent<CheckProbesProps, CheckPr
   };
 
   onUpdate = () => {
-    this.props.onUpdate(this.state.probes);
+    this.props.onChange(this.state.probes);
   };
 
   onAllLocations = () => {
@@ -54,8 +57,8 @@ export default class CheckProbes extends PureComponent<CheckProbesProps, CheckPr
 
   render() {
     const { probes } = this.state;
-    const { availableProbes, isEditor } = this.props;
-    let options = [];
+    const { availableProbes, isEditor, onBlur, invalid, error } = this.props;
+    let options: SelectableValue[] = [];
     for (const p of availableProbes) {
       options.push({
         label: p.name,
@@ -63,7 +66,7 @@ export default class CheckProbes extends PureComponent<CheckProbesProps, CheckPr
         description: p.online ? 'Online' : 'Offline',
       });
     }
-    let selectedProbes = [];
+    let selectedProbes: SelectableValue[] = [];
     for (const p of probes) {
       let existing = options.find(item => item.value === p);
       if (existing) {
@@ -72,26 +75,43 @@ export default class CheckProbes extends PureComponent<CheckProbesProps, CheckPr
     }
 
     return (
-      <div>
-        <MultiSelect
-          options={options}
-          value={selectedProbes}
-          onChange={this.onChange}
-          disabled={!isEditor}
-          invalid={!Validation.validateProbes(probes)}
-          closeMenuOnSelect={false}
-        />
-        <Container margin="xs">
-          <HorizontalGroup spacing="md">
-            <Button onClick={this.onAllLocations} disabled={!isEditor} variant="secondary" size="sm">
-              All&nbsp;&nbsp;
-            </Button>
-            <Button onClick={this.onClearLocations} disabled={!isEditor} variant="secondary" size="sm" type="reset">
-              Clear
-            </Button>
-          </HorizontalGroup>
-        </Container>
-      </div>
+      <ThemeContext.Consumer>
+        {theme => (
+          <>
+            <Field
+              label="Probe Locations"
+              description="Select up to 20 locations where this target will be checked from."
+              disabled={!isEditor}
+              error={error}
+              invalid={invalid}
+            >
+              <MultiSelect
+                options={options}
+                value={selectedProbes}
+                onChange={this.onChange}
+                disabled={!isEditor}
+                closeMenuOnSelect={false}
+                onBlur={onBlur}
+              />
+            </Field>
+            <div
+              className={css`
+                margin-top: ${theme.spacing.sm};
+                margin-bottom: ${theme.spacing.md};
+              `}
+            >
+              <HorizontalGroup spacing="sm">
+                <Button onClick={this.onAllLocations} disabled={!isEditor} variant="secondary" size="sm" type="button">
+                  All&nbsp;&nbsp;
+                </Button>
+                <Button onClick={this.onClearLocations} disabled={!isEditor} variant="secondary" size="sm" type="reset">
+                  Clear
+                </Button>
+              </HorizontalGroup>
+            </div>
+          </>
+        )}
+      </ThemeContext.Consumer>
     );
   }
 }

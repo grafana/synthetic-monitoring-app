@@ -95,3 +95,22 @@ export const CHECK_FILTER_OPTIONS = [
     value: CheckType.TCP,
   },
 ];
+
+export const CHECK_TYPE_OPTIONS = [
+  {
+    label: 'HTTP',
+    value: CheckType.HTTP,
+  },
+  {
+    label: 'PING',
+    value: CheckType.PING,
+  },
+  {
+    label: 'DNS',
+    value: CheckType.DNS,
+  },
+  {
+    label: 'TCP',
+    value: CheckType.TCP,
+  },
+];

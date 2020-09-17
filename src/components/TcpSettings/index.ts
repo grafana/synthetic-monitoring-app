@@ -1,1 +1,1 @@
-export { default } from './TcpSettings';
+export { TcpSettingsForm } from './TcpSettings';

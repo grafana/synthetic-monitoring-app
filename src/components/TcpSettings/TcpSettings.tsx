@@ -1,125 +1,117 @@
-import React, { PureComponent } from 'react';
-import { Collapse, Container, HorizontalGroup, Field, Select, Switch } from '@grafana/ui';
-import { SelectableValue } from '@grafana/data';
-import { IpVersion, Settings, TcpSettings, TLSConfig, TCPQueryResponse } from 'types';
-import { TLSForm } from 'components/http/HttpSettings';
-import QueryResponseForm from './TcpQueryResponseForm';
+import React, { FC, useState } from 'react';
+import {
+  Container,
+  HorizontalGroup,
+  Field,
+  Select,
+  Switch,
+  Input,
+  TextArea,
+  IconButton,
+  VerticalGroup,
+} from '@grafana/ui';
+import { useFormContext, Controller, useFieldArray } from 'react-hook-form';
+import { CheckType } from 'types';
 import { IP_OPTIONS } from '../constants';
+import { LabelField } from 'components/LabelField';
+import { Collapse } from 'components/Collapse';
+import { TLSConfig } from 'components/TLSConfig';
 
 interface Props {
-  settings: Settings;
   isEditor: boolean;
-  onUpdate: (settings: Settings) => void;
 }
 
-interface State extends TcpSettings {
-  showQueryResponse: boolean;
-  showAdvanced: boolean;
-  showTLS: boolean;
-}
-/*
-ipVersion: IpVersion;
-tls: boolean;
-tlsConfig?: TLSConfig;
-queryResponse?: TCPQueryResponse[];
-*/
-export default class TcpSettingsForm extends PureComponent<Props, State> {
-  state: State = {
-    ipVersion: this.props.settings!.tcp?.ipVersion || IpVersion.V4,
-    tls: this.props.settings!.tcp?.tls || false,
-    tlsConfig: this.props.settings!.tcp?.tlsConfig,
-    queryResponse: this.props.settings!.tcp?.queryResponse,
-    showQueryResponse: false,
-    showAdvanced: false,
-    showTLS: false,
-  };
+export const TcpSettingsForm: FC<Props> = ({ isEditor }) => {
+  const [showTCPSettings, setShowTCPSettings] = useState(false);
+  const [showQueryResponse, setShowQueryResponse] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
-  onUpdate = () => {
-    const settings = this.state as TcpSettings;
-    this.props.onUpdate({
-      tcp: settings,
-    });
-  };
-
-  onIpVersionChange = (value: SelectableValue<IpVersion>) => {
-    this.setState({ ipVersion: value.value || IpVersion.Any }, this.onUpdate);
-  };
-
-  onToggleTLS = (isOpen: boolean) => {
-    this.setState({ showTLS: !this.state.showTLS }, this.onUpdate);
-  };
-
-  onTLSChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({ tls: !this.state.tls }, this.onUpdate);
-  };
-
-  onTLSCOnfigChange = (tlsConfig: TLSConfig) => {
-    this.setState({ tlsConfig: tlsConfig }, this.onUpdate);
-  };
-
-  onShowAdvanced = (isOpen: boolean) => {
-    this.setState({ showAdvanced: !this.state.showAdvanced });
-  };
-
-  onShowQueryResponse = (isOpen: boolean) => {
-    this.setState({ showQueryResponse: !this.state.showQueryResponse });
-  };
-
-  onQueryResponsesUpdate = (queryResponse: TCPQueryResponse[]) => {
-    let config: TCPQueryResponse[] = [];
-    if (!this.state.queryResponse) {
-      config = queryResponse;
-    } else {
-      queryResponse.forEach(v => {
-        config.push(v);
-      });
-    }
-
-    this.setState({ queryResponse: config }, this.onUpdate);
-  };
-
-  render() {
-    const { ipVersion, tls, showTLS, showQueryResponse, showAdvanced, tlsConfig, queryResponse } = this.state;
-    const { isEditor } = this.props;
-
-    return (
-      <Container>
+  const { register, control } = useFormContext();
+  const { fields, append, remove } = useFieldArray({ control, name: 'settings.tcp.queryResponse' });
+  return (
+    <Container>
+      <Collapse
+        label="TCP Settings"
+        onToggle={() => setShowTCPSettings(!showTCPSettings)}
+        isOpen={showTCPSettings}
+        collapsible
+      >
         <Field
           label="Use TLS"
           description="Whether or not TLS is used when the connection is initiated."
           disabled={!isEditor}
         >
           <Container padding="sm">
-            <Switch title="Use TLS" value={tls} onChange={this.onTLSChange} disabled={!isEditor} />
+            <Switch ref={register} title="Use TLS" name="settings.tcp.tls" disabled={!isEditor} />
           </Container>
         </Field>
-        <Collapse
+      </Collapse>
+      <Collapse
+        label="Query/Response"
+        onToggle={() => setShowQueryResponse(!showQueryResponse)}
+        isOpen={showQueryResponse}
+        collapsible
+      >
+        <Field
           label="Query/Response"
-          collapsible={true}
-          onToggle={this.onShowQueryResponse}
-          isOpen={showQueryResponse}
+          description="The query sent in the TCP probe and the expected associated response. StartTLS upgrades TCP connection to TLS."
+          disabled={!isEditor}
         >
-          <Container>
-            <QueryResponseForm
-              queryResponses={queryResponse}
-              isEditor={isEditor}
-              onChange={this.onQueryResponsesUpdate}
+          <VerticalGroup>
+            {fields.map((field, index) => (
+              <HorizontalGroup key={field.id}>
+                <Input
+                  ref={register}
+                  name={`settings.tcp.queryResponse[${index}].expect`}
+                  type="text"
+                  placeholder="response to expect"
+                  disabled={!isEditor}
+                />
+                <TextArea
+                  ref={register}
+                  name={`settings.tcp.queryResponse[${index}].send`}
+                  type="text"
+                  placeholder="data to send"
+                  rows={1}
+                  disabled={!isEditor}
+                />
+                <span>StartTLS</span>
+                <Container padding="sm">
+                  <Switch
+                    ref={register}
+                    name={`settings.tcp.queryResponse[${index}].startTLS`}
+                    label="StartTLS"
+                    disabled={!isEditor}
+                  />
+                </Container>
+                <IconButton name="minus-circle" onClick={() => remove(index)} disabled={!isEditor} />
+              </HorizontalGroup>
+            ))}
+
+            <IconButton
+              name="plus-circle"
+              onClick={() => append({ expect: '', send: '', startTLS: false })}
+              disabled={!isEditor}
             />
-          </Container>
-        </Collapse>
-        <Collapse label="TLS Config" collapsible={true} onToggle={this.onToggleTLS} isOpen={showTLS}>
-          <TLSForm onChange={this.onTLSCOnfigChange} isEditor={isEditor} tlsConfig={tlsConfig} />
-        </Collapse>
-        <Collapse label="Advanced Options" collapsible={true} onToggle={this.onShowAdvanced} isOpen={showAdvanced}>
-          <HorizontalGroup>
-            <div>
-              <Field label="IP Version" description="The IP protocol of the ICMP request" disabled={!isEditor}>
-                <Select value={ipVersion} options={IP_OPTIONS} onChange={this.onIpVersionChange} />
-              </Field>
-            </div>
-          </HorizontalGroup>
-        </Collapse>
-      </Container>
-    );
-  }
-}
+          </VerticalGroup>
+        </Field>
+      </Collapse>
+      <TLSConfig isEditor={isEditor} checkType={CheckType.TCP} />
+      <Collapse
+        label="Advanced Options"
+        onToggle={() => setShowAdvanced(!showAdvanced)}
+        isOpen={showAdvanced}
+        collapsible
+      >
+        <LabelField isEditor={isEditor} />
+        <HorizontalGroup>
+          <div>
+            <Field label="IP Version" description="The IP protocol of the ICMP request" disabled={!isEditor}>
+              <Controller as={Select} name="settings.tcp.ipVersion" options={IP_OPTIONS} defaultValue={IP_OPTIONS[1]} />
+            </Field>
+          </div>
+        </HorizontalGroup>
+      </Collapse>
+    </Container>
+  );
+};
