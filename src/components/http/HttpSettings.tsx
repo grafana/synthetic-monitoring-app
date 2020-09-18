@@ -19,8 +19,6 @@ import { css } from 'emotion';
 import { useFormContext, Controller, useFieldArray } from 'react-hook-form';
 import { HttpMethod, HttpVersion, CheckType, HttpRegexValidationType } from 'types';
 import { Collapse } from 'components/Collapse';
-import { BodyRegexMatcherInput } from 'components/BodyRegexMatcherInput';
-import { HeaderRegexMatcherInput } from 'components/HeaderRegexMatcherInput';
 import { HTTP_REGEX_VALIDATION_OPTIONS, HTTP_SSL_OPTIONS, IP_OPTIONS } from '../constants';
 import { LabelField } from 'components/LabelField';
 import { TLSConfig } from 'components/TLSConfig';
