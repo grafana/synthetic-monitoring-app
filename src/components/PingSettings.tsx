@@ -1,5 +1,6 @@
 import React, { FC, useState } from 'react';
-import { HorizontalGroup, Field, Select, Switch } from '@grafana/ui';
+import { css } from 'emotion';
+import { Field, Select, Switch } from '@grafana/ui';
 import { Collapse } from 'components/Collapse';
 import { IP_OPTIONS } from './constants';
 import { LabelField } from 'components/LabelField';
@@ -19,34 +20,34 @@ export const PingSettingsForm: FC<Props> = ({ isEditor }) => {
       onToggle={() => setShowAdvanced(!showAdvanced)}
       isOpen={showAdvanced}
     >
-      <LabelField isEditor={isEditor} />
-      <HorizontalGroup>
-        <div>
-          <Field label="IP Version" description="The IP protocol of the ICMP request" disabled={!isEditor}>
-            <Controller
-              name="settings.ping.ipVersion"
-              as={Select}
-              control={control}
-              options={IP_OPTIONS}
-              rules={{ required: true }}
-            />
-          </Field>
-        </div>
-        <div>
-          <Field
-            label="Don't Fragment"
-            description="Set the DF-bit in the IP-header. Only works with ipV4"
+      <div
+        className={css`
+          max-width: 500px;
+        `}
+      >
+        <LabelField isEditor={isEditor} />
+        <Field label="IP Version" description="The IP protocol of the ICMP request" disabled={!isEditor}>
+          <Controller
+            name="settings.ping.ipVersion"
+            as={Select}
+            control={control}
+            options={IP_OPTIONS}
+            rules={{ required: true }}
+          />
+        </Field>
+        <Field
+          label="Don't Fragment"
+          description="Set the DF-bit in the IP-header. Only works with ipV4"
+          disabled={!isEditor}
+        >
+          <Switch
+            id="ping-settings-dont-fragment"
+            ref={register()}
+            name="settings.ping.dontFragment"
             disabled={!isEditor}
-          >
-            <Switch
-              id="ping-settings-dont-fragment"
-              ref={register()}
-              name="settings.ping.dontFragment"
-              disabled={!isEditor}
-            />
-          </Field>
-        </div>
-      </HorizontalGroup>
+          />
+        </Field>
+      </div>
     </Collapse>
   );
 };

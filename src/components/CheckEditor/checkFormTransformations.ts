@@ -12,6 +12,7 @@ import {
   HttpSettings,
   HttpMethod,
   HttpSettingsFormValues,
+  HttpRegexValidationFormValue,
   Label,
   TcpSettingsFormValues,
   TcpSettings,
@@ -22,6 +23,7 @@ import {
   ResponseMatchType,
   Check,
   HttpSslOption,
+  HttpRegexValidationType,
 } from 'types';
 
 import { CHECK_TYPE_OPTIONS, IP_OPTIONS, DNS_RESPONSE_CODES, HTTP_SSL_OPTIONS } from 'components/constants';
@@ -236,6 +238,51 @@ const getHttpSslOptionsFromFormValue = (sslOption: HttpSslOption): Pick<HttpSett
   }
 };
 
+type HttpSettingsValidations = Pick<
+  HttpSettings,
+  | 'failIfBodyMatchesRegexp'
+  | 'failIfBodyNotMatchesRegexp'
+  | 'failIfHeaderMatchesRegexp'
+  | 'failIfHeaderNotMatchesRegexp'
+>;
+
+const getHttpRegexValidationsFromFormValue = (validations: HttpRegexValidationFormValue[]): HttpSettingsValidations =>
+  validations.reduce<HttpSettingsValidations>(
+    (results, validation) => {
+      switch (validation.matchType.value) {
+        case HttpRegexValidationType.Body: {
+          if (validation.inverted) {
+            results.failIfBodyNotMatchesRegexp?.push(validation.expression);
+          } else {
+            results.failIfBodyMatchesRegexp?.push(validation.expression);
+          }
+        }
+        case HttpRegexValidationType.Header: {
+          if (validation.inverted) {
+            results.failIfHeaderNotMatchesRegexp?.push({
+              header: validation.header ?? '',
+              regexp: validation.expression,
+              allowMissing: validation.allowMissing ?? false,
+            });
+          } else {
+            results.failIfHeaderMatchesRegexp?.push({
+              header: validation.header ?? '',
+              regexp: validation.expression,
+              allowMissing: validation.allowMissing ?? false,
+            });
+          }
+        }
+      }
+      return results;
+    },
+    {
+      failIfBodyMatchesRegexp: [],
+      failIfBodyNotMatchesRegexp: [],
+      failIfHeaderMatchesRegexp: [],
+      failIfHeaderNotMatchesRegexp: [],
+    }
+  );
+
 const getHttpSettings = (
   settings: Partial<HttpSettingsFormValues> | undefined = {},
   defaultSettings: HttpSettingsFormValues | undefined
@@ -254,13 +301,16 @@ const getHttpSettings = (
     getValueFromSelectable(settings.sslOptions ?? defaultSettings?.sslOptions) ?? HttpSslOption.Ignore
   );
 
+  const validationRegexes = getHttpRegexValidationsFromFormValue(mergedSettings.regexValidations ?? []);
+
   // We need to pick the sslOptions key out of the settings, since the API doesn't expect this key
-  const { sslOptions, ...mergedSettingsToKeep } = mergedSettings;
+  const { sslOptions, regexValidations, ...mergedSettingsToKeep } = mergedSettings;
 
   return {
     ...fallbackValues,
     ...mergedSettingsToKeep,
     ...sslConfig,
+    ...validationRegexes,
     method,
     headers: formattedHeaders,
     ipVersion: getValueFromSelectable(settings?.ipVersion ?? defaultSettings?.ipVersion) ?? fallbackValues.ipVersion,

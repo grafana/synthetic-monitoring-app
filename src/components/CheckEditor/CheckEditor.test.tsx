@@ -316,6 +316,22 @@ describe('HTTP', () => {
       async () =>
         await userEvent.click(await within(await screen.findByLabelText('Select options menu')).findByText('HTTP/1.0'))
     );
+    userEvent.click(await screen.findByRole('button', { name: 'Add Regex Validation' }));
+    userEvent.click(await within(validationSection).findByText('FieldName'));
+    userEvent.click(await within(validationSection).findByText('Check fails if response header matches'));
+
+    await act(
+      async () =>
+        await userEvent.type(await within(validationSection).findByPlaceholderText('Header name'), 'Content-Type')
+    );
+
+    await act(
+      async () => await userEvent.type(await within(validationSection).findByPlaceholderText('Regex'), 'a header regex')
+    );
+
+    const [allowMissing, invertMatch] = await within(validationSection).findAllByRole('checkbox');
+    userEvent.click(allowMissing);
+    userEvent.click(invertMatch);
 
     await submitForm();
 
@@ -345,6 +361,10 @@ describe('HTTP', () => {
           validHTTPVersions: ['HTTP/1.0'],
           failIfNotSSL: false,
           failIfSSL: false,
+          failIfHeaderNotMatchesRegexp: [{ regexp: 'a header regex', allowMissing: true, header: 'Content-Type' }],
+          failIfHeaderMatchesRegexp: [],
+          failIfBodyMatchesRegexp: [],
+          failIfBodyNotMatchesRegexp: [],
           cacheBustingQueryParamName: '',
         },
       },
