@@ -208,7 +208,7 @@ describe('HTTP', () => {
           validStatusCodes: [100],
           validHTTPVersions: [HttpVersion.HTTP1_0],
           failIfNotSSL: true,
-          failIfSSL: true,
+          failIfSSL: false,
           bearerToken: 'a bear',
           basicAuth: { username: 'steve', password: 'stevessecurepassword' },
           cacheBustingQueryParamName: 'busted',
@@ -251,8 +251,7 @@ describe('HTTP', () => {
 
     expect(await within(validation).findByText('100')).toBeInTheDocument();
     expect(await within(validation).findByText('HTTP/1.0')).toBeInTheDocument();
-    expect(await screen.findByLabelText('Fail if SSL', { exact: false })).toBeChecked();
-    expect(await screen.findByLabelText('Fail if not SSL', { exact: false })).toBeChecked();
+    expect(await within(validation).findByText('Probe fails if SSL is not present.')).toBeInTheDocument();
 
     const advancedOptions = await toggleSection('Advanced Options');
     expect(await within(advancedOptions).findByPlaceholderText('name')).toHaveValue('a great label');

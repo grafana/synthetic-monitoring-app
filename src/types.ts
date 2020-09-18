@@ -183,7 +183,11 @@ interface HttpHeaderFormValue {
 }
 
 export interface HttpSettingsFormValues
-  extends Omit<HttpSettings, 'validStatusCodes' | 'validHTTPVersions' | 'method' | 'ipVersion' | 'headers'> {
+  extends Omit<
+    HttpSettings,
+    'validStatusCodes' | 'validHTTPVersions' | 'method' | 'ipVersion' | 'headers' | 'failIfSSL' | 'failIfNotSSL'
+  > {
+  sslOptions: SelectableValue<HttpSslOption>;
   validStatusCodes: Array<SelectableValue<number>>;
   validHTTPVersions: Array<SelectableValue<HttpVersion>>;
   method: SelectableValue<HttpMethod>;
@@ -322,4 +326,10 @@ export interface APIError {
 export interface OnUpdateSettingsArgs {
   settings: Settings;
   labels?: Label[];
+}
+
+export enum HttpSslOption {
+  Ignore,
+  FailIfPresent,
+  FailIfNotPresent,
 }

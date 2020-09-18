@@ -1,5 +1,5 @@
 import { enumToStringArray } from '../utils';
-import { DnsResponseCodes, DnsRecordType, DnsProtocol, IpVersion, CheckType } from 'types';
+import { DnsResponseCodes, DnsRecordType, DnsProtocol, IpVersion, CheckType, HttpSslOption } from 'types';
 
 export const DNS_RESPONSE_CODES = enumToStringArray(DnsResponseCodes).map(responseCode => ({
   label: responseCode,
@@ -112,5 +112,20 @@ export const CHECK_TYPE_OPTIONS = [
   {
     label: 'TCP',
     value: CheckType.TCP,
+  },
+];
+
+export const HTTP_SSL_OPTIONS = [
+  {
+    label: 'Ignore SSL',
+    value: HttpSslOption.Ignore,
+  },
+  {
+    label: 'Probe fails if SSL is present.',
+    value: HttpSslOption.FailIfPresent,
+  },
+  {
+    label: 'Probe fails if SSL is not present.',
+    value: HttpSslOption.FailIfNotPresent,
   },
 ];
