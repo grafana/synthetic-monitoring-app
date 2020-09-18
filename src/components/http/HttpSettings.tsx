@@ -425,7 +425,7 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
             variant="secondary"
             size="sm"
             disabled={!isEditor}
-            onClick={() => append({ matchType: HTTP_REGEX_VALIDATION_OPTIONS[0], expression: '', inverted: false })}
+            onClick={() => append({ matchType: HTTP_REGEX_VALIDATION_OPTIONS[1], expression: '', inverted: false })}
           >
             Add Regex Validation
           </Button>
