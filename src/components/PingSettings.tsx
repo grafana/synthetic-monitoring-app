@@ -15,7 +15,7 @@ export const PingSettingsForm: FC<Props> = ({ isEditor }) => {
   const { control, register } = useFormContext();
   return (
     <Collapse
-      label="Advanced Options"
+      label="Advanced options"
       collapsible={true}
       onToggle={() => setShowAdvanced(!showAdvanced)}
       isOpen={showAdvanced}
@@ -26,7 +26,7 @@ export const PingSettingsForm: FC<Props> = ({ isEditor }) => {
         `}
       >
         <LabelField isEditor={isEditor} />
-        <Field label="IP Version" description="The IP protocol of the ICMP request" disabled={!isEditor}>
+        <Field label="IP version" description="The IP protocol of the ICMP request" disabled={!isEditor}>
           <Controller
             name="settings.ping.ipVersion"
             as={Select}
@@ -36,7 +36,7 @@ export const PingSettingsForm: FC<Props> = ({ isEditor }) => {
           />
         </Field>
         <Field
-          label="Don't Fragment"
+          label="Don't fragment"
           description="Set the DF-bit in the IP-header. Only works with ipV4"
           disabled={!isEditor}
         >

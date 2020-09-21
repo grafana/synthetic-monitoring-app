@@ -109,8 +109,8 @@ it('Updates existing check', async () => {
 describe('PING', () => {
   it('transforms values to correct format', async () => {
     const instance = await renderCheckEditor({ check: getMinimumCheck({ target: 'grafana.com' }) });
-    await toggleSection('Advanced Options');
-    const addLabel = await screen.findByRole('button', { name: 'Add Label' });
+    await toggleSection('Advanced options');
+    const addLabel = await screen.findByRole('button', { name: 'Add label' });
     userEvent.click(addLabel);
     const labelNameInput = await screen.findByPlaceholderText('name');
     await act(async () => await userEvent.type(labelNameInput, 'labelName'));
@@ -157,7 +157,7 @@ describe('PING', () => {
     expect(await screen.findByText('burritos')).toBeInTheDocument(); // display name of probe with id 42 returned in mocked listProbes call
     expect(await screen.findByLabelText('Frequency', { exact: false })).toHaveValue(120);
     expect(await screen.findByLabelText('Timeout', { exact: false })).toHaveValue(2);
-    const advancedOption = await screen.findByText('Advanced Options');
+    const advancedOption = await screen.findByText('Advanced options');
     userEvent.click(advancedOption);
     expect(await screen.findByPlaceholderText('name')).toHaveValue('a great label');
     expect(await screen.findByPlaceholderText('value')).toHaveValue('totally awesome label');
@@ -170,15 +170,15 @@ describe('HTTP', () => {
   it('has correct sections', async () => {
     await renderCheckEditor();
     await selectCheckType(CheckType.HTTP);
-    const httpSettings = await screen.findByText('HTTP Settings');
+    const httpSettings = await screen.findByText('HTTP settings');
     expect(httpSettings).toBeInTheDocument();
-    const tlsConfig = await screen.findByText('TLS Config');
+    const tlsConfig = await screen.findByText('TLS config');
     expect(tlsConfig).toBeInTheDocument();
     const authentication = await screen.findByText('Authentication');
     expect(authentication).toBeInTheDocument();
     const validation = await screen.findByText('Validation');
     expect(validation).toBeInTheDocument();
-    const advanced = await screen.findByText('Advanced Options');
+    const advanced = await screen.findByText('Advanced options');
     expect(advanced).toBeInTheDocument();
   });
 
@@ -221,7 +221,7 @@ describe('HTTP', () => {
     };
 
     await renderCheckEditor({ check });
-    expect(await screen.findByLabelText('Job Name', { exact: false })).toHaveValue('carne asada');
+    expect(await screen.findByLabelText('Job name', { exact: false })).toHaveValue('carne asada');
     expect(await screen.findByLabelText('Full URL to send requests to', { exact: false })).toHaveValue(
       'https://target.com'
     );
@@ -229,23 +229,23 @@ describe('HTTP', () => {
     expect(await screen.findByLabelText('Frequency', { exact: false })).toHaveValue(120);
     expect(await screen.findByLabelText('Timeout', { exact: false })).toHaveValue(2);
 
-    const httpSection = await toggleSection('HTTP Settings');
+    const httpSection = await toggleSection('HTTP settings');
     expect(await screen.findByText('GET')).toBeInTheDocument();
-    expect(await screen.findByLabelText('Request Body', { exact: false })).toHaveValue('requestbody');
+    expect(await screen.findByLabelText('Request body', { exact: false })).toHaveValue('requestbody');
     expect(await within(httpSection).findByPlaceholderText('name')).toHaveValue('headerName');
     expect(await within(httpSection).findByPlaceholderText('value')).toHaveValue('headerValue');
 
-    await toggleSection('TLS Config');
-    expect(await screen.findByLabelText('Skip Validation', { exact: false })).toBeChecked();
-    expect(await screen.findByLabelText('Server Name', { exact: false })).toHaveValue('serverName');
-    expect(await screen.findByLabelText('CA Certificate', { exact: false })).toHaveValue('caCert');
-    expect(await screen.findByLabelText('Client Certificate', { exact: false })).toHaveValue('clientCert');
-    expect(await screen.findByLabelText('Client Key', { exact: false })).toHaveValue('client key');
+    await toggleSection('TLS config');
+    expect(await screen.findByLabelText('Skip validation', { exact: false })).toBeChecked();
+    expect(await screen.findByLabelText('Server name', { exact: false })).toHaveValue('serverName');
+    expect(await screen.findByLabelText('CA certificate', { exact: false })).toHaveValue('caCert');
+    expect(await screen.findByLabelText('Client certificate', { exact: false })).toHaveValue('clientCert');
+    expect(await screen.findByLabelText('Client key', { exact: false })).toHaveValue('client key');
 
     await toggleSection('Authentication');
-    expect(await screen.findByPlaceholderText('Bearer Token')).toHaveValue('a bear');
-    expect(await screen.findByPlaceholderText('username')).toHaveValue('steve');
-    expect(await screen.findByPlaceholderText('password')).toHaveValue('stevessecurepassword');
+    expect(await screen.findByPlaceholderText('Bearer token')).toHaveValue('a bear');
+    expect(await screen.findByPlaceholderText('Username')).toHaveValue('steve');
+    expect(await screen.findByPlaceholderText('Password')).toHaveValue('stevessecurepassword');
 
     const validation = await toggleSection('Validation');
 
@@ -258,7 +258,7 @@ describe('HTTP', () => {
     expect(header2).toHaveValue('a different header');
     expect(await within(validation).findAllByText('Check fails if response body matches')).toHaveLength(2);
 
-    const advancedOptions = await toggleSection('Advanced Options');
+    const advancedOptions = await toggleSection('Advanced options');
     expect(await within(advancedOptions).findByPlaceholderText('name')).toHaveValue('a great label');
     expect(await within(advancedOptions).findByPlaceholderText('value')).toHaveValue('totally awesome label');
     expect(await within(advancedOptions).findByText('V6')).toBeInTheDocument();
@@ -278,7 +278,7 @@ describe('HTTP', () => {
     await act(async () => await userEvent.type(await screen.findByLabelText('Job Name', { exact: false }), 'tacos'));
 
     // Set probe options
-    const probeOptions = screen.getByText('Probe Options').parentElement;
+    const probeOptions = screen.getByText('Probe options').parentElement;
     if (!probeOptions) {
       throw new Error('Couldnt find Probe Options');
     }
@@ -289,16 +289,16 @@ describe('HTTP', () => {
     userEvent.click(await within(probeSelectMenu).findByText('burritos'));
 
     // HTTP Settings
-    await toggleSection('HTTP Settings');
+    await toggleSection('HTTP settings');
     const requestBodyInput = await screen.findByLabelText('Request Body', { exact: false });
     await userEvent.paste(requestBodyInput, 'requestbody');
-    await userEvent.click(await screen.findByRole('button', { name: 'Add Header' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Add header' }));
     await act(async () => await userEvent.type(await screen.findByPlaceholderText('name'), 'headerName'));
     await act(async () => await userEvent.type(await screen.findByPlaceholderText('value'), 'headerValue'));
-    await toggleSection('HTTP Settings');
+    await toggleSection('HTTP settings');
 
     // TLS Config
-    await toggleSection('TLS Config');
+    await toggleSection('TLS config');
     await act(async () => await userEvent.type(screen.getByLabelText('Server Name', { exact: false }), 'serverName'));
     // TextArea components misbehave when using userEvent.type, using paste for now as a workaround
     await act(async () => await userEvent.paste(screen.getByLabelText('CA Certificate', { exact: false }), 'caCert'));
@@ -306,7 +306,7 @@ describe('HTTP', () => {
       async () => await userEvent.paste(screen.getByLabelText('Client Certificate', { exact: false }), 'clientCert')
     );
     await act(async () => await userEvent.paste(screen.getByLabelText('Client Key', { exact: false }), 'client key'));
-    await toggleSection('TLS Config');
+    await toggleSection('TLS config');
 
     // Validation
     const validationSection = await toggleSection('Validation');
@@ -322,7 +322,7 @@ describe('HTTP', () => {
         await userEvent.click(await within(await screen.findByLabelText('Select options menu')).findByText('HTTP/1.0'))
     );
     userEvent.click(await screen.findByRole('button', { name: 'Add Regex Validation' }));
-    userEvent.click(await within(validationSection).findByText('FieldName'));
+    userEvent.click(await within(validationSection).findByText('Field name'));
     userEvent.click(await within(validationSection).findByText('Check fails if response header matches'));
 
     await act(
@@ -381,11 +381,11 @@ describe('DNS', () => {
   it('has correct sections', async () => {
     await renderCheckEditor();
     await selectCheckType(CheckType.DNS);
-    const dnsSettings = await screen.findByText('DNS Settings');
+    const dnsSettings = await screen.findByText('DNS settings');
     expect(dnsSettings).toBeInTheDocument();
     const validation = await screen.findByText('Validation');
     expect(validation).toBeInTheDocument();
-    const advancedOptions = await screen.findByText('Advanced Options');
+    const advancedOptions = await screen.findByText('Advanced options');
     expect(advancedOptions).toBeInTheDocument();
   });
 
@@ -396,7 +396,7 @@ describe('DNS', () => {
       const addRegex = await screen.findByRole('button', { name: 'Add RegEx Validation' });
       userEvent.click(addRegex);
       userEvent.click(addRegex);
-      const expressionInputs = await screen.findAllByPlaceholderText('Type Expression');
+      const expressionInputs = await screen.findAllByPlaceholderText('Type expression');
       await act(() => userEvent.type(expressionInputs[0], 'not inverted validation'));
       await userEvent.type(expressionInputs[1], 'inverted validation');
       const invertedCheckboxes = await screen.findAllByRole('checkbox');
@@ -443,7 +443,7 @@ describe('DNS', () => {
       await selectDnsResponseMatchType(ResponseMatchType.Answer);
       userEvent.click(addRegex);
       await selectDnsResponseMatchType(ResponseMatchType.Answer);
-      const expressionInputs = await screen.findAllByPlaceholderText('Type Expression');
+      const expressionInputs = await screen.findAllByPlaceholderText('Type expression');
       await act(() => userEvent.type(expressionInputs[0], 'not inverted validation'));
       await userEvent.type(expressionInputs[1], 'inverted validation');
       const invertedCheckboxes = await screen.findAllByRole('checkbox');
@@ -491,7 +491,7 @@ describe('DNS', () => {
       await selectDnsResponseMatchType(ResponseMatchType.Additional);
       userEvent.click(addRegex);
       await selectDnsResponseMatchType(ResponseMatchType.Additional);
-      const expressionInputs = await screen.findAllByPlaceholderText('Type Expression');
+      const expressionInputs = await screen.findAllByPlaceholderText('Type expression');
       await act(() => userEvent.type(expressionInputs[0], 'not inverted validation'));
       await userEvent.type(expressionInputs[1], 'inverted validation');
       const invertedCheckboxes = await screen.findAllByRole('checkbox');

@@ -47,7 +47,7 @@ const DnsSettingsForm: FC<Props> = ({ isEditor }) => {
   return (
     <Container>
       <Collapse
-        label="DNS Settings"
+        label="DNS settings"
         onToggle={() => setShowDNSSettings(!showDNSSettings)}
         isOpen={showDNSSettings}
         collapsible
@@ -57,7 +57,7 @@ const DnsSettingsForm: FC<Props> = ({ isEditor }) => {
             max-width: 240px;
           `}
         >
-          <Field label="Record Type" disabled={!isEditor}>
+          <Field label="Record type" disabled={!isEditor}>
             <Controller
               as={Select}
               name="settings.dns.recordType"
@@ -102,7 +102,7 @@ const DnsSettingsForm: FC<Props> = ({ isEditor }) => {
         collapsible
       >
         <HorizontalGroup>
-          <Field label="Valid Response Codes" description="List of valid response codes" disabled={!isEditor}>
+          <Field label="Valid response codes" description="List of valid response codes" disabled={!isEditor}>
             <Controller
               as={MultiSelect}
               name="settings.dns.validRCodes"
@@ -136,7 +136,7 @@ const DnsSettingsForm: FC<Props> = ({ isEditor }) => {
                 <Input
                   ref={register}
                   name={`settings.dns.validations[${index}].expression`}
-                  placeholder="Type Expression"
+                  placeholder="Type expression"
                 />
                 <div
                   className={css`
@@ -170,14 +170,14 @@ const DnsSettingsForm: FC<Props> = ({ isEditor }) => {
         </Button>
       </Collapse>
       <Collapse
-        label="Advanced Options"
+        label="Advanced options"
         collapsible={true}
         onToggle={() => setShowAdvanced(!showAdvanced)}
         isOpen={showAdvanced}
       >
         <LabelField isEditor={isEditor} />
         <HorizontalGroup>
-          <Field label="IP Version" description="The IP protocol of the ICMP request" disabled={!isEditor}>
+          <Field label="IP version" description="The IP protocol of the ICMP request" disabled={!isEditor}>
             <Controller name="settings.dns.ipVersion" as={Select} options={IP_OPTIONS} defaultValue={IP_OPTIONS[1]} />
           </Field>
         </HorizontalGroup>

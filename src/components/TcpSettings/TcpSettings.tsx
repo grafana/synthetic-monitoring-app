@@ -31,7 +31,7 @@ export const TcpSettingsForm: FC<Props> = ({ isEditor }) => {
   return (
     <Container>
       <Collapse
-        label="TCP Settings"
+        label="TCP settings"
         onToggle={() => setShowTCPSettings(!showTCPSettings)}
         isOpen={showTCPSettings}
         collapsible
@@ -64,14 +64,14 @@ export const TcpSettingsForm: FC<Props> = ({ isEditor }) => {
                   ref={register}
                   name={`settings.tcp.queryResponse[${index}].expect`}
                   type="text"
-                  placeholder="response to expect"
+                  placeholder="Response to expect"
                   disabled={!isEditor}
                 />
                 <TextArea
                   ref={register}
                   name={`settings.tcp.queryResponse[${index}].send`}
                   type="text"
-                  placeholder="data to send"
+                  placeholder="Data to send"
                   rows={1}
                   disabled={!isEditor}
                 />
@@ -98,7 +98,7 @@ export const TcpSettingsForm: FC<Props> = ({ isEditor }) => {
       </Collapse>
       <TLSConfig isEditor={isEditor} checkType={CheckType.TCP} />
       <Collapse
-        label="Advanced Options"
+        label="Advanced options"
         onToggle={() => setShowAdvanced(!showAdvanced)}
         isOpen={showAdvanced}
         collapsible
@@ -106,7 +106,7 @@ export const TcpSettingsForm: FC<Props> = ({ isEditor }) => {
         <LabelField isEditor={isEditor} />
         <HorizontalGroup>
           <div>
-            <Field label="IP Version" description="The IP protocol of the ICMP request" disabled={!isEditor}>
+            <Field label="IP version" description="The IP protocol of the ICMP request" disabled={!isEditor}>
               <Controller as={Select} name="settings.tcp.ipVersion" options={IP_OPTIONS} defaultValue={IP_OPTIONS[1]} />
             </Field>
           </div>
