@@ -12,6 +12,7 @@ import {
   HttpSettings,
   HttpMethod,
   HttpSettingsFormValues,
+  HttpRegexValidationFormValue,
   Label,
   TcpSettingsFormValues,
   TcpSettings,
@@ -22,9 +23,17 @@ import {
   ResponseMatchType,
   Check,
   HttpSslOption,
+  HttpRegexValidationType,
+  HeaderMatch,
 } from 'types';
 
-import { CHECK_TYPE_OPTIONS, IP_OPTIONS, DNS_RESPONSE_CODES, HTTP_SSL_OPTIONS } from 'components/constants';
+import {
+  CHECK_TYPE_OPTIONS,
+  IP_OPTIONS,
+  DNS_RESPONSE_CODES,
+  HTTP_SSL_OPTIONS,
+  HTTP_REGEX_VALIDATION_OPTIONS,
+} from 'components/constants';
 import { checkType } from 'utils';
 
 export function selectableValueFrom<T>(value: T, label?: string): SelectableValue<T> {
@@ -111,16 +120,64 @@ const getHttpSettingsSslValue = (failIfSSL: boolean, failIfNotSSL: boolean): Sel
   return HTTP_SSL_OPTIONS[0];
 };
 
+const getHttpRegexValidationFormValues = (
+  validationSettings: HttpSettingsValidations
+): HttpRegexValidationFormValue[] => {
+  const bodyRegexes = new Set(['failIfBodyMatchesRegexp', 'failIfBodyNotMatchesRegexp']);
+  const headerRegexes = new Set(['failIfHeaderMatchesRegexp', 'failIfHeaderNotMatchesRegexp']);
+  const invertedTypes = new Set(['failIfBodyNotMatchesRegexp', 'failIfHeaderNotMatchesRegexp']);
+  return Object.keys(validationSettings).reduce<HttpRegexValidationFormValue[]>(
+    (validationFormValues, regexType: keyof HttpSettingsValidations) => {
+      const validations = validationSettings[regexType] ?? [];
+      validations.forEach((validation: string | HeaderMatch) => {
+        if (bodyRegexes.has(regexType)) {
+          validationFormValues.push({
+            matchType: selectableValueFrom(HttpRegexValidationType.Body, HTTP_REGEX_VALIDATION_OPTIONS[1].label),
+            expression: validation as string,
+            inverted: invertedTypes.has(regexType),
+          });
+        } else if (headerRegexes.has(regexType)) {
+          const headerMatch = validation as HeaderMatch;
+          validationFormValues.push({
+            matchType: selectableValueFrom(HttpRegexValidationType.Header, HTTP_REGEX_VALIDATION_OPTIONS[0].label),
+            expression: headerMatch.regexp,
+            header: headerMatch.header,
+            allowMissing: headerMatch.allowMissing,
+            inverted: invertedTypes.has(regexType),
+          });
+        }
+      });
+      return validationFormValues;
+    },
+    []
+  );
+};
+
 const getHttpSettingsFormValues = (settings: Settings): HttpSettingsFormValues => {
   const httpSettings = settings.http ?? (fallbackSettings(CheckType.HTTP) as HttpSettings);
+  const {
+    failIfBodyMatchesRegexp,
+    failIfBodyNotMatchesRegexp,
+    failIfHeaderMatchesRegexp,
+    failIfHeaderNotMatchesRegexp,
+    ...pickedSettings
+  } = httpSettings;
+
+  const regexValidations = getHttpRegexValidationFormValues({
+    failIfBodyMatchesRegexp,
+    failIfBodyNotMatchesRegexp,
+    failIfHeaderMatchesRegexp,
+    failIfHeaderNotMatchesRegexp,
+  });
   return {
-    ...httpSettings,
+    ...pickedSettings,
     sslOptions: getHttpSettingsSslValue(httpSettings.failIfSSL ?? false, httpSettings.failIfNotSSL ?? false),
     validStatusCodes: httpSettings.validStatusCodes?.map(statusCode => selectableValueFrom(statusCode)) ?? [],
     validHTTPVersions: httpSettings.validHTTPVersions?.map(httpVersion => selectableValueFrom(httpVersion)) ?? [],
     method: selectableValueFrom(httpSettings.method),
     ipVersion: selectableValueFrom(httpSettings.ipVersion),
     headers: headersToLabels(httpSettings.headers),
+    regexValidations,
   };
 };
 
@@ -236,6 +293,51 @@ const getHttpSslOptionsFromFormValue = (sslOption: HttpSslOption): Pick<HttpSett
   }
 };
 
+type HttpSettingsValidations = Pick<
+  HttpSettings,
+  | 'failIfBodyMatchesRegexp'
+  | 'failIfBodyNotMatchesRegexp'
+  | 'failIfHeaderMatchesRegexp'
+  | 'failIfHeaderNotMatchesRegexp'
+>;
+
+const getHttpRegexValidationsFromFormValue = (validations: HttpRegexValidationFormValue[]): HttpSettingsValidations =>
+  validations.reduce<HttpSettingsValidations>(
+    (results, validation) => {
+      switch (validation.matchType.value) {
+        case HttpRegexValidationType.Body: {
+          if (validation.inverted) {
+            results.failIfBodyNotMatchesRegexp?.push(validation.expression);
+          } else {
+            results.failIfBodyMatchesRegexp?.push(validation.expression);
+          }
+        }
+        case HttpRegexValidationType.Header: {
+          if (validation.inverted) {
+            results.failIfHeaderNotMatchesRegexp?.push({
+              header: validation.header ?? '',
+              regexp: validation.expression,
+              allowMissing: validation.allowMissing ?? false,
+            });
+          } else {
+            results.failIfHeaderMatchesRegexp?.push({
+              header: validation.header ?? '',
+              regexp: validation.expression,
+              allowMissing: validation.allowMissing ?? false,
+            });
+          }
+        }
+      }
+      return results;
+    },
+    {
+      failIfBodyMatchesRegexp: [],
+      failIfBodyNotMatchesRegexp: [],
+      failIfHeaderMatchesRegexp: [],
+      failIfHeaderNotMatchesRegexp: [],
+    }
+  );
+
 const getHttpSettings = (
   settings: Partial<HttpSettingsFormValues> | undefined = {},
   defaultSettings: HttpSettingsFormValues | undefined
@@ -254,13 +356,16 @@ const getHttpSettings = (
     getValueFromSelectable(settings.sslOptions ?? defaultSettings?.sslOptions) ?? HttpSslOption.Ignore
   );
 
+  const validationRegexes = getHttpRegexValidationsFromFormValue(mergedSettings.regexValidations ?? []);
+
   // We need to pick the sslOptions key out of the settings, since the API doesn't expect this key
-  const { sslOptions, ...mergedSettingsToKeep } = mergedSettings;
+  const { sslOptions, regexValidations, ...mergedSettingsToKeep } = mergedSettings;
 
   return {
     ...fallbackValues,
     ...mergedSettingsToKeep,
     ...sslConfig,
+    ...validationRegexes,
     method,
     headers: formattedHeaders,
     ipVersion: getValueFromSelectable(settings?.ipVersion ?? defaultSettings?.ipVersion) ?? fallbackValues.ipVersion,

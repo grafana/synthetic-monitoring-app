@@ -1,4 +1,4 @@
-import React, { FC, useState } from 'react';
+import React, { FC, useState, Fragment } from 'react';
 import {
   Container,
   HorizontalGroup,
@@ -10,14 +10,16 @@ import {
   Input,
   VerticalGroup,
   useStyles,
+  Label,
+  Checkbox,
+  IconButton,
+  Button,
 } from '@grafana/ui';
 import { css } from 'emotion';
-import { useFormContext, Controller } from 'react-hook-form';
-import { HttpMethod, HttpVersion, CheckType } from 'types';
+import { useFormContext, Controller, useFieldArray } from 'react-hook-form';
+import { HttpMethod, HttpVersion, CheckType, HttpRegexValidationType } from 'types';
 import { Collapse } from 'components/Collapse';
-import { BodyRegexMatcherInput } from 'components/BodyRegexMatcherInput';
-import { HeaderRegexMatcherInput } from 'components/HeaderRegexMatcherInput';
-import { HTTP_SSL_OPTIONS, IP_OPTIONS } from '../constants';
+import { HTTP_REGEX_VALIDATION_OPTIONS, HTTP_SSL_OPTIONS, IP_OPTIONS } from '../constants';
 import { LabelField } from 'components/LabelField';
 import { TLSConfig } from 'components/TLSConfig';
 import { NameValueInput } from 'components/NameValueInput';
@@ -130,10 +132,37 @@ const generateValidStatusCodes = () => {
 };
 
 const validStatusCodes = generateValidStatusCodes();
+const REGEX_FIELD_NAME = 'settings.http.regexValidations';
 
 const getStyles = (theme?: GrafanaTheme) => ({
   validationGroup: css`
     max-width: 400px;
+  `,
+  validationGrid: css`
+    display: grid;
+    grid-template-columns: 300px auto 70px auto auto;
+    grid-gap: ${theme?.spacing.sm};
+    align-items: center;
+    width: 100%;
+  `,
+  validationInverted: css`
+    position: relative;
+    margin-top: -20px;
+    justify-self: center;
+  `,
+  maxWidth: css`
+    max-width: 500px;
+  `,
+  validationExpressions: css`
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  `,
+  validationHeaderName: css`
+    margin-right: ${theme?.spacing.sm};
+  `,
+  validationAllowMissing: css`
+    justify-self: center;
   `,
 });
 
@@ -150,8 +179,10 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
 
   const bearerToken = watch('settings.http.bearerToken');
   const basicAuth = watch('settings.http.basicAuth');
+
   const [includeBearerToken, setIncludeBearerToken] = useState(Boolean(bearerToken));
   const [includeBasicAuth, setIncludeBasicAuth] = useState(Boolean(basicAuth));
+  const { fields, append, remove } = useFieldArray({ control, name: REGEX_FIELD_NAME });
   const styles = useStyles(getStyles);
 
   return (
@@ -338,31 +369,65 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
             />
           </Field>
         </div>
-        <BodyRegexMatcherInput
-          label="Fail if body matches regexp"
-          description="Probe fails if response body matches regex"
-          name="settings.http.failIfBodyMatchesRegexp"
-          isEditor={isEditor}
-        />
-        <BodyRegexMatcherInput
-          label="Fail if body doesn't match regexp"
-          description="Probe fails if response body does not match regex"
-          name="settings.http.failIfBodyNotMatchesRegexp"
-          isEditor={isEditor}
-        />
-        <HeaderRegexMatcherInput
-          label="Fail if header matches regexp"
-          description="Probe fails if response header matches regex. For headers with multiple values, fails if *at least one* matches"
-          name="settings.http.failIfHeaderMatchesRegexp"
-          isEditor={isEditor}
-        />
-
-        <HeaderRegexMatcherInput
-          label="Fail if header doesn't match regexp"
-          description="Probe fails if response header does not match regex. For headers with multiple values, fails if *none* match."
-          name="settings.http.failIfHeaderNotMatchesRegexp"
-          isEditor={isEditor}
-        />
+        <VerticalGroup width="100%">
+          <Label>Regex Validation</Label>
+          {Boolean(fields.length) && (
+            <div className={styles.validationGrid}>
+              <Label>Field Name</Label>
+              <Label>Match condition</Label>
+              <Label>Invert Match</Label>
+              <Label>Allow Missing</Label>
+              <div />
+              {fields.map((field, index) => {
+                const isHeaderMatch =
+                  watch(`${REGEX_FIELD_NAME}[${index}].matchType`)?.value === HttpRegexValidationType.Header;
+                return (
+                  <Fragment key={field.id}>
+                    <Controller
+                      as={Select}
+                      name={`${REGEX_FIELD_NAME}[${index}].matchType`}
+                      placeholder="FieldName"
+                      options={HTTP_REGEX_VALIDATION_OPTIONS}
+                    />
+                    <div className={styles.validationExpressions}>
+                      {isHeaderMatch && (
+                        <div className={styles.validationHeaderName}>
+                          <Input
+                            ref={register}
+                            name={`${REGEX_FIELD_NAME}[${index}].header`}
+                            placeholder="Header name"
+                          />
+                        </div>
+                      )}
+                      <Input ref={register} name={`${REGEX_FIELD_NAME}[${index}].expression`} placeholder="Regex" />
+                    </div>
+                    <div className={styles.validationInverted}>
+                      <Checkbox ref={register} name={`${REGEX_FIELD_NAME}[${index}].inverted`} />
+                    </div>
+                    {isHeaderMatch ? (
+                      <div className={styles.validationAllowMissing}>
+                        <Switch ref={register} name={`${REGEX_FIELD_NAME}[${index}].allowMissing`} />
+                      </div>
+                    ) : (
+                      <div />
+                    )}
+                    <IconButton name="minus-circle" onClick={() => remove(index)} />
+                  </Fragment>
+                );
+              })}
+            </div>
+          )}
+          <Button
+            type="button"
+            icon="plus"
+            variant="secondary"
+            size="sm"
+            disabled={!isEditor}
+            onClick={() => append({ matchType: HTTP_REGEX_VALIDATION_OPTIONS[1], expression: '', inverted: false })}
+          >
+            Add Regex Validation
+          </Button>
+        </VerticalGroup>
       </Collapse>
       <Collapse
         label="Advanced Options"
@@ -370,29 +435,23 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
         isOpen={showAdvanced}
         collapsible
       >
-        <LabelField isEditor={isEditor} />
-        <HorizontalGroup>
-          <div>
-            <Field label="IP Version" description="The IP protocol of the HTTP request" disabled={!isEditor}>
-              <Controller as={Select} name="settings.http.ipVersion" options={IP_OPTIONS} />
-            </Field>
-          </div>
-          <div>
-            <Field
-              label="Follow Redirects"
-              description="Whether or not the probe will follow any redirects."
+        <div className={styles.maxWidth}>
+          <LabelField isEditor={isEditor} />
+          <Field label="IP Version" description="The IP protocol of the HTTP request" disabled={!isEditor}>
+            <Controller as={Select} name="settings.http.ipVersion" options={IP_OPTIONS} />
+          </Field>
+          <Field
+            label="Follow Redirects"
+            description="Whether or not the probe will follow any redirects."
+            disabled={!isEditor}
+          >
+            <Switch
+              id="http-settings-follow-redirects"
+              ref={register}
+              name="settings.http.noFollowRedirects"
               disabled={!isEditor}
-            >
-              <Switch
-                id="http-settings-follow-redirects"
-                ref={register}
-                name="settings.http.noFollowRedirects"
-                disabled={!isEditor}
-              />
-            </Field>
-          </div>
-        </HorizontalGroup>
-        <HorizontalGroup>
+            />
+          </Field>
           <Field
             label="Cache busting query parameter name"
             description="The name of the query parameter used to prevent the server from using a cached response. Each probe will assign a random value to this parameter each time a request is made."
@@ -406,7 +465,7 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
               disabled={!isEditor}
             />
           </Field>
-        </HorizontalGroup>
+        </div>
       </Collapse>
     </Container>
   );

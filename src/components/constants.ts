@@ -1,5 +1,13 @@
 import { enumToStringArray } from '../utils';
-import { DnsResponseCodes, DnsRecordType, DnsProtocol, IpVersion, CheckType, HttpSslOption } from 'types';
+import {
+  DnsResponseCodes,
+  DnsRecordType,
+  DnsProtocol,
+  IpVersion,
+  CheckType,
+  HttpSslOption,
+  HttpRegexValidationType,
+} from 'types';
 
 export const DNS_RESPONSE_CODES = enumToStringArray(DnsResponseCodes).map(responseCode => ({
   label: responseCode,
@@ -128,4 +136,9 @@ export const HTTP_SSL_OPTIONS = [
     label: 'Probe fails if SSL is not present.',
     value: HttpSslOption.FailIfNotPresent,
   },
+];
+
+export const HTTP_REGEX_VALIDATION_OPTIONS = [
+  { label: 'Check fails if response header matches', value: HttpRegexValidationType.Header },
+  { label: 'Check fails if response body matches', value: HttpRegexValidationType.Body },
 ];

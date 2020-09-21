@@ -215,7 +215,7 @@ describe('HTTP', () => {
           failIfBodyMatchesRegexp: ['body matches'],
           failIfBodyNotMatchesRegexp: ['body not maches'],
           failIfHeaderMatchesRegexp: [{ header: 'a header', regexp: 'matches', allowMissing: true }],
-          failIfHeaderNotMatchesRegexp: [{ header: 'a header', regexp: 'not matches', allowMissing: true }],
+          failIfHeaderNotMatchesRegexp: [{ header: 'a different header', regexp: 'not matches', allowMissing: true }],
         },
       },
     };
@@ -252,6 +252,11 @@ describe('HTTP', () => {
     expect(await within(validation).findByText('100')).toBeInTheDocument();
     expect(await within(validation).findByText('HTTP/1.0')).toBeInTheDocument();
     expect(await within(validation).findByText('Probe fails if SSL is not present.')).toBeInTheDocument();
+    expect(await within(validation).findAllByText('Check fails if response header matches')).toHaveLength(2);
+    const [header1, header2] = await within(validation).findAllByPlaceholderText('Header name');
+    expect(header1).toHaveValue('a header');
+    expect(header2).toHaveValue('a different header');
+    expect(await within(validation).findAllByText('Check fails if response body matches')).toHaveLength(2);
 
     const advancedOptions = await toggleSection('Advanced Options');
     expect(await within(advancedOptions).findByPlaceholderText('name')).toHaveValue('a great label');
@@ -316,6 +321,22 @@ describe('HTTP', () => {
       async () =>
         await userEvent.click(await within(await screen.findByLabelText('Select options menu')).findByText('HTTP/1.0'))
     );
+    userEvent.click(await screen.findByRole('button', { name: 'Add Regex Validation' }));
+    userEvent.click(await within(validationSection).findByText('FieldName'));
+    userEvent.click(await within(validationSection).findByText('Check fails if response header matches'));
+
+    await act(
+      async () =>
+        await userEvent.type(await within(validationSection).findByPlaceholderText('Header name'), 'Content-Type')
+    );
+
+    await act(
+      async () => await userEvent.type(await within(validationSection).findByPlaceholderText('Regex'), 'a header regex')
+    );
+
+    const [allowMissing, invertMatch] = await within(validationSection).findAllByRole('checkbox');
+    userEvent.click(allowMissing);
+    userEvent.click(invertMatch);
 
     await submitForm();
 
@@ -345,6 +366,10 @@ describe('HTTP', () => {
           validHTTPVersions: ['HTTP/1.0'],
           failIfNotSSL: false,
           failIfSSL: false,
+          failIfHeaderNotMatchesRegexp: [{ regexp: 'a header regex', allowMissing: true, header: 'Content-Type' }],
+          failIfHeaderMatchesRegexp: [],
+          failIfBodyMatchesRegexp: [],
+          failIfBodyNotMatchesRegexp: [],
           cacheBustingQueryParamName: '',
         },
       },

@@ -123,7 +123,7 @@ export const parseUrl = (url: string) => {
 // Takes a TS enum with matching string/value pairs and transforms it into an array of strings
 // Under the hood TS enums duplicate key/value pairs so a value can match a key and vice-versa
 export function enumToStringArray<T>(enumObject: T) {
-  return [...new Set(Object.keys(enumObject))];
+  return [...new Set(Object.keys(enumObject) as string[])];
 }
 
 // Matches a string against multiple options
