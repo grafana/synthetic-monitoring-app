@@ -18,7 +18,7 @@ export const LabelField: FC<Props> = ({ isEditor, limit }) => {
       <NameValueInput
         name="labels"
         disabled={!isEditor}
-        label="Label"
+        label="label"
         limit={limit ?? 5}
         validateName={validateLabelName}
         validateValue={validateLabelValue}

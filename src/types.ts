@@ -182,13 +182,36 @@ interface HttpHeaderFormValue {
   value: string;
 }
 
+export interface HttpRegexValidationFormValue {
+  matchType: SelectableValue<HttpRegexValidationType>;
+  expression: string;
+  inverted: boolean;
+  header?: string;
+  allowMissing?: boolean;
+}
+
 export interface HttpSettingsFormValues
-  extends Omit<HttpSettings, 'validStatusCodes' | 'validHTTPVersions' | 'method' | 'ipVersion' | 'headers'> {
+  extends Omit<
+    HttpSettings,
+    | 'validStatusCodes'
+    | 'validHTTPVersions'
+    | 'method'
+    | 'ipVersion'
+    | 'headers'
+    | 'failIfSSL'
+    | 'failIfNotSSL'
+    | 'failIfBodyMatchesRegexp'
+    | 'failIfBodyNotMatchesRegexp'
+    | 'failIfHeaderMatchesRegexp'
+    | 'failIfHeaderNotMatchesRegexp'
+  > {
+  sslOptions: SelectableValue<HttpSslOption>;
   validStatusCodes: Array<SelectableValue<number>>;
   validHTTPVersions: Array<SelectableValue<HttpVersion>>;
   method: SelectableValue<HttpMethod>;
   ipVersion: SelectableValue<IpVersion>;
   headers: HttpHeaderFormValue[];
+  regexValidations: HttpRegexValidationFormValue[];
 }
 
 export interface PingSettings {
@@ -322,4 +345,15 @@ export interface APIError {
 export interface OnUpdateSettingsArgs {
   settings: Settings;
   labels?: Label[];
+}
+
+export enum HttpSslOption {
+  Ignore,
+  FailIfPresent,
+  FailIfNotPresent,
+}
+
+export enum HttpRegexValidationType {
+  Header = 'Header',
+  Body = 'Body',
 }

@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.0.11
+
+- Streamline validation and SSL option fields for HTTP checks
+
 ## v0.0.10
 
 - Update check creation UX

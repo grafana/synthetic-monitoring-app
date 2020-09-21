@@ -89,10 +89,10 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
         >
           <Subheader>Check Details</Subheader>
           <HorizontalGroup justify="flex-start" spacing="md">
-            <Field label="Check Type" disabled={check.id ? true : false}>
+            <Field label="Check type" disabled={check.id ? true : false}>
               <Controller
                 name="checkType"
-                placeholder="Check Type"
+                placeholder="Check type"
                 control={formMethods.control}
                 as={Select}
                 options={CHECK_TYPE_OPTIONS}
@@ -106,7 +106,7 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
             </Field>
           </HorizontalGroup>
           <Field
-            label="Job Name"
+            label="Job name"
             description="Name used for job label"
             disabled={!isEditor}
             invalid={Boolean(formMethods.errors.job)}
