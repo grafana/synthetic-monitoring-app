@@ -35,7 +35,7 @@ describe('Default values', () => {
 
   test('DNS Settings', async () => {
     renderDnsSettings();
-    const dnsSettings = await screen.findByText('DNS Settings');
+    const dnsSettings = await screen.findByText('DNS settings');
     userEvent.click(dnsSettings);
     expect(await screen.findByText('A')).toBeInTheDocument();
     expect(await screen.findByText('UDP')).toBeInTheDocument();
@@ -47,7 +47,7 @@ describe('Default values', () => {
 
   test('Advanced options', async () => {
     renderDnsSettings();
-    const advancedExpand = await screen.findByText('Advanced Options');
+    const advancedExpand = await screen.findByText('Advanced options');
     userEvent.click(advancedExpand);
     const ipInput = await screen.findByText('V4');
     expect(ipInput).toBeInTheDocument();

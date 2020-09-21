@@ -14,9 +14,9 @@ export const TLSConfig: FC<Props> = ({ isEditor, checkType }) => {
   const [showTLS, setShowTLS] = useState(false);
   const { register, errors } = useFormContext();
   return (
-    <Collapse label="TLS Config" onToggle={() => setShowTLS(!showTLS)} isOpen={showTLS} collapsible>
+    <Collapse label="TLS config" onToggle={() => setShowTLS(!showTLS)} isOpen={showTLS} collapsible>
       <HorizontalGroup>
-        <Field label="Skip Validation" description="Disable target certificate validation" disabled={!isEditor}>
+        <Field label="Skip validation" description="Disable target certificate validation" disabled={!isEditor}>
           <Switch
             id="tls-config-skip-validation"
             ref={register}
@@ -25,7 +25,7 @@ export const TLSConfig: FC<Props> = ({ isEditor, checkType }) => {
           />
         </Field>
         <Field
-          label="Server Name"
+          label="Server name"
           description="Used to verify the hostname for the targets"
           disabled={!isEditor}
           invalid={Boolean(errors.settings?.[checkType]?.tlsConfig?.serverName)}
@@ -38,14 +38,14 @@ export const TLSConfig: FC<Props> = ({ isEditor, checkType }) => {
             })}
             name={`settings.${checkType}.tlsConfig.serverName`}
             type="text"
-            placeholder="ServerName"
+            placeholder="Server name"
             disabled={!isEditor}
           />
         </Field>
       </HorizontalGroup>
       <Container>
         <Field
-          label="CA Certificate"
+          label="CA certificate"
           description="The CA cert to use for the targets"
           disabled={!isEditor}
           invalid={Boolean(errors.settings?.[checkType]?.tlsConfig?.caCert)}
@@ -59,13 +59,13 @@ export const TLSConfig: FC<Props> = ({ isEditor, checkType }) => {
             name={`settings.${checkType}.tlsConfig.caCert`}
             rows={2}
             disabled={!isEditor}
-            placeholder="CA Certificate"
+            placeholder="CA certificate"
           />
         </Field>
       </Container>
       <Container>
         <Field
-          label="Client Certificate"
+          label="Client certificate"
           description="The client cert file for the targets"
           disabled={!isEditor}
           invalid={Boolean(errors?.settings?.[checkType]?.tlsConfig?.clientCert)}
@@ -79,13 +79,13 @@ export const TLSConfig: FC<Props> = ({ isEditor, checkType }) => {
             name={`settings.${checkType}.tlsConfig.clientCert`}
             rows={2}
             disabled={!isEditor}
-            placeholder="Client Certificate"
+            placeholder="Client certificate"
           />
         </Field>
       </Container>
       <Container>
         <Field
-          label="Client Key"
+          label="Client key"
           description="The client key file for the targets"
           disabled={!isEditor}
           invalid={Boolean(errors?.settings?.[checkType]?.tlsConfig?.clientKey)}
@@ -98,7 +98,7 @@ export const TLSConfig: FC<Props> = ({ isEditor, checkType }) => {
             type="password"
             rows={2}
             disabled={!isEditor}
-            placeholder="Client Key"
+            placeholder="Client key"
           />
         </Field>
       </Container>

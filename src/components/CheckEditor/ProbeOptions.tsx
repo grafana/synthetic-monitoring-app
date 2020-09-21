@@ -31,7 +31,7 @@ export const ProbeOptions: FC<Props> = ({ frequency, timeout, isEditor, probes }
 
   return (
     <div>
-      <Subheader>Probe Options</Subheader>
+      <Subheader>Probe options</Subheader>
 
       <Controller
         as={CheckProbes}

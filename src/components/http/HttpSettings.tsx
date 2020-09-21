@@ -188,14 +188,14 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
   return (
     <Container>
       <Collapse
-        label="HTTP Settings"
+        label="HTTP settings"
         onToggle={() => setShowHttpSettings(!showHttpSettings)}
         isOpen={showHttpSettings}
         collapsible
       >
         <HorizontalGroup>
           <Field
-            label="Request Method"
+            label="Request method"
             description="The HTTP method the probe will use"
             disabled={!isEditor}
             invalid={Boolean(errors?.settings?.http?.method)}
@@ -212,7 +212,7 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
         </HorizontalGroup>
         <Container>
           <Field
-            label="Request Body"
+            label="Request body"
             description="The body of the HTTP request used in probe."
             disabled={!isEditor}
             invalid={Boolean(errors?.settings?.http?.body)}
@@ -228,11 +228,11 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
           </Field>
         </Container>
         <Container>
-          <Field label="Request Headers" description="The HTTP headers set for the probe.." disabled={!isEditor}>
+          <Field label="Request headers" description="The HTTP headers set for the probe.." disabled={!isEditor}>
             <NameValueInput
               name="settings.http.headers"
               disabled={!isEditor}
-              label="Header"
+              label="header"
               limit={10}
               validateName={validateHTTPHeaderName}
               validateValue={validateHTTPHeaderValue}
@@ -249,7 +249,7 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
       >
         <VerticalGroup spacing="xs">
           <Field
-            label="Bearer Token"
+            label="Bearer token"
             description="Include bearer Authorization header in request"
             disabled={!isEditor}
             horizontal={true}
@@ -277,7 +277,7 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
                 })}
                 name="settings.http.bearerToken"
                 type="password"
-                placeholder="Bearer Token"
+                placeholder="Bearer token"
                 disabled={!isEditor}
               />
             </Field>
@@ -285,7 +285,7 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
         </VerticalGroup>
         <VerticalGroup spacing="xs">
           <Field
-            label="Basic Auth"
+            label="Basic auth"
             description="Include Basic Authorization header in request"
             disabled={!isEditor}
             horizontal={true}
@@ -311,14 +311,14 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
                 ref={register()}
                 name="settings.http.basicAuth.username"
                 type="text"
-                placeholder="username"
+                placeholder="Username"
                 disabled={!isEditor}
               />
               <Input
                 ref={register()}
                 name="settings.http.basicAuth.password"
                 type="password"
-                placeholder="password"
+                placeholder="Password"
                 disabled={!isEditor}
               />
             </HorizontalGroup>
@@ -333,7 +333,7 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
       >
         <div className={styles.validationGroup}>
           <Field
-            label="Valid Status Codes"
+            label="Valid status codes"
             description="Accepted status codes for this probe. Defaults to 2xx."
             disabled={!isEditor}
           >
@@ -345,7 +345,7 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
               disabled={!isEditor}
             />
           </Field>
-          <Field label="Valid HTTP Versions" description="Accepted HTTP versions for this probe" disabled={!isEditor}>
+          <Field label="Valid HTTP versions" description="Accepted HTTP versions for this probe" disabled={!isEditor}>
             <Controller
               as={MultiSelect}
               control={control}
@@ -356,7 +356,7 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
           </Field>
 
           <Field
-            label="SSL Options"
+            label="SSL options"
             description="Choose whether probe fails if SSL is present or not present"
             disabled={!isEditor}
           >
@@ -386,7 +386,7 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
                     <Controller
                       as={Select}
                       name={`${REGEX_FIELD_NAME}[${index}].matchType`}
-                      placeholder="FieldName"
+                      placeholder="Field name"
                       options={HTTP_REGEX_VALIDATION_OPTIONS}
                     />
                     <div className={styles.validationExpressions}>
@@ -430,18 +430,18 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
         </VerticalGroup>
       </Collapse>
       <Collapse
-        label="Advanced Options"
+        label="Advanced options"
         onToggle={() => setShowAdvanced(!showAdvanced)}
         isOpen={showAdvanced}
         collapsible
       >
         <div className={styles.maxWidth}>
           <LabelField isEditor={isEditor} />
-          <Field label="IP Version" description="The IP protocol of the HTTP request" disabled={!isEditor}>
+          <Field label="IP version" description="The IP protocol of the HTTP request" disabled={!isEditor}>
             <Controller as={Select} name="settings.http.ipVersion" options={IP_OPTIONS} />
           </Field>
           <Field
-            label="Follow Redirects"
+            label="Follow redirects"
             description="Whether or not the probe will follow any redirects."
             disabled={!isEditor}
           >
