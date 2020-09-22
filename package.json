@@ -9,6 +9,7 @@
     "dev": "grafana-toolkit plugin:dev",
     "watch": "grafana-toolkit plugin:dev --watch",
     "release": "release-it",
+    "release:ci": "release-it --ci",
     "release:test": "release-it --dry-run --no-git.requireCleanWorkingDir"
   },
   "husky": {
