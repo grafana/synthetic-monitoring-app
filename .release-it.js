@@ -1,6 +1,6 @@
 module.exports = {
   hooks: {
-    'before:init': ['yarn build', 'yarn test'],
+    'before:init': ['yarn build'],
   },
   git: {
     commitMessage: 'chore: release v${version} [skip ci]',
