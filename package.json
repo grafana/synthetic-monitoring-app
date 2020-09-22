@@ -9,7 +9,7 @@
     "dev": "grafana-toolkit plugin:dev",
     "watch": "grafana-toolkit plugin:dev --watch",
     "release": "release-it",
-    "release:dry-run": "release-it --dry-run"
+    "release:test": "release-it --dry-run --no-git.requireCleanWorkingDir"
   },
   "husky": {
     "hooks": {
@@ -26,6 +26,7 @@
     "@grafana/runtime": "7.0.6",
     "@grafana/toolkit": "^7.1.1",
     "@grafana/ui": "7.0.6",
+    "@release-it/conventional-changelog": "^2.0.0",
     "@testing-library/dom": "^7.21.6",
     "@testing-library/jest-dom": "^5.11.2",
     "@testing-library/react": "^10.4.7",
