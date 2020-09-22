@@ -113,6 +113,11 @@ jobs:
     executor: default_exec
     steps:
       - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - << pipeline.parameters.ssh-fingerprint >>
+            - '48:1b:33:86:08:6d:24:64:14:15:cf:e1:d8:70:3f:19'
+            - ${GITHUB_SSH_FINGERPRINT}
       - attach_workspace:
           at: .
       - restore_cache:
