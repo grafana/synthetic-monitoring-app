@@ -127,6 +127,8 @@ jobs:
       - run:
           name: 'bump version and commit changelog'
           command: |
+            git config user.email "circleci@grafana.com"
+            git config --global user.name "CircleCI Automation"
             yarn release:ci
 
   report:
