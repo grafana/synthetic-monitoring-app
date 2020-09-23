@@ -5,7 +5,6 @@ module.exports = {
   // },
   git: {
     commitMessage: 'chore: release v${version} [skip ci]',
-    tag: false,
   },
   github: {
     release: false,
