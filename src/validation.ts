@@ -210,16 +210,22 @@ function validateHttpTarget(target: string): string | undefined {
   if (!isValidUrl) {
     return 'Target must be a valid web URL';
   }
+  const parsedUrl = new URL(target);
+  if (!parsedUrl.protocol) {
+    return 'Target must have a valid protocol';
+  }
+
+  // isWebUri will allow some invalid hostnames, so we need addional validation
+  const hostname = new URL(target).hostname;
+  if (validateHostname(hostname)) {
+    return 'Target must have a valid hostname';
+  }
   return undefined;
 }
 
 function validateHostname(target: string): string | undefined {
-  // guess IP address first because some invalid IP addresses will look
-  // like valid hostnames
-
   const ipv4 = new Address4(target);
   const ipv6 = new Address6(target);
-  // it doesn't seem to be an IP address, let's try FQHN.
   const pc = punycode.toASCII(target);
   // note that \w matches "_"
   const re = new RegExp(/^[a-z]([-a-z0-9]{0,62}[a-z0-9])?(\.[a-z]([-a-z0-9]{0,62}[a-z0-9])?)+$/, 'i');
