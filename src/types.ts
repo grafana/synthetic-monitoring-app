@@ -357,3 +357,8 @@ export enum HttpRegexValidationType {
   Header = 'Header',
   Body = 'Body',
 }
+
+export interface SubmissionError {
+  status?: string;
+  message?: string;
+}

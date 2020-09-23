@@ -16,13 +16,16 @@ const defaultProbe = {
   onlineChange: 0,
 };
 const onReturn = jest.fn();
+const updateProbe = jest.fn().mockImplementation(() => Promise.resolve());
 
 beforeEach(() => {
   onReturn.mockReset();
 });
 
-const renderProbeEditor = ({ probe = defaultProbe } = {}) => {
-  const instance = { api: getInstanceMock(instanceSettings) };
+const renderProbeEditor = ({ probe = defaultProbe, updateProbeMock = updateProbe } = {}) => {
+  const mockedInstance = getInstanceMock(instanceSettings);
+  mockedInstance.updateProbe = updateProbeMock;
+  const instance = { api: mockedInstance };
 
   render(
     <InstanceContext.Provider value={{ instance, loading: false }}>
