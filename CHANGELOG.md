@@ -1,3 +1,10 @@
+## [0.3.2](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.1...0.3.2) (2020-09-23)
+
+
+### Bug Fixes
+
+* fix http follow redirect setting being unresponsive ([14ca222](https://github.com/grafana/synthetic-monitoring-app/commit/14ca2227a206ec032f9befdd445b99db11dabc04))
+
 ## [0.3.1](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.0...0.3.1) (2020-09-23)
 
 ### Bug Fixes
