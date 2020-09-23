@@ -96,6 +96,22 @@ describe('bad targets', () => {
     });
   });
 
+  it('should reject an http target without TLD', () => {
+    expect(CheckValidation.target(CheckType.HTTP, 'https://hostname/')).toEqual('Target must have a valid hostname');
+    expect(CheckValidation.target(CheckType.HTTP, 'https://suraj/dev')).toEqual('Target must have a valid hostname');
+  });
+
+  it('should reject http targets with ipv6 domains', () => {
+    [
+      'https://[2001:0db8:1001:1001:1001:1001:1001:1001]/',
+      'https://[2001:0db8:1001:1001:1001:1001:1001:1001]:8080/',
+      'http://[2001:0db8:1001:1001:1001:1001:1001:1001]/',
+      'http://[2001:0db8:1001:1001:1001:1001:1001:1001]:8080/',
+    ].forEach(() =>
+      expect(CheckValidation.target(CheckType.HTTP, 'https://hostname/')).toEqual('Target must have a valid hostname')
+    );
+  });
+
   it('should reject URLs without schema', () => {
     const testcases: string[] = ['example.org'];
     testcases.forEach((testcase: string) => {
@@ -144,16 +160,12 @@ describe('good targets', () => {
     });
   });
 
-  it('should accept URL with IP addresses as HTTP target', () => {
+  it('should accept URL with IPv4 addresses as HTTP target', () => {
     const testcases: string[] = [
       'http://1.2.3.4/',
       'http://1.2.3.4:8080/',
-      'http://[2001:0db8:1001:1001:1001:1001:1001:1001]/',
-      'http://[2001:0db8:1001:1001:1001:1001:1001:1001]:8080/',
       'https://1.2.3.4/',
       'https://1.2.3.4:8080/',
-      'https://[2001:0db8:1001:1001:1001:1001:1001:1001]/',
-      'https://[2001:0db8:1001:1001:1001:1001:1001:1001]:8080/',
     ];
     testcases.forEach((testcase: string) => {
       expect(CheckValidation.target(CheckType.HTTP, testcase)).toBe(undefined);
