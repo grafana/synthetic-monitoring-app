@@ -1,3 +1,10 @@
+## [0.3.1](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.0...0.3.1) (2020-09-23)
+
+
+### Bug Fixes
+
+* reject http targets without a valid TLD ([3339e2f](https://github.com/grafana/synthetic-monitoring-app/commit/3339e2fa374b192df3331e15a7706988dd1ca0f6))
+
 # 0.3.0 (2020-09-23)
 
 
