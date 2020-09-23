@@ -1,8 +1,20 @@
 import React, { FC, useState, useContext } from 'react';
 import { css } from 'emotion';
-import { Modal, Button, Container, ConfirmModal, Field, Input, HorizontalGroup, Switch, Legend } from '@grafana/ui';
+import {
+  Modal,
+  Button,
+  Container,
+  ConfirmModal,
+  Field,
+  Input,
+  HorizontalGroup,
+  Switch,
+  Legend,
+  Alert,
+} from '@grafana/ui';
 import { useForm, FormContext } from 'react-hook-form';
-import { Probe, OrgRole } from 'types';
+import { useAsyncCallback } from 'react-async-hook';
+import { Probe, OrgRole, SubmissionError } from 'types';
 import { hasRole } from 'utils';
 import { LabelField } from 'components/LabelField';
 import ProbeStatus from './ProbeStatus';
@@ -24,30 +36,32 @@ const ProbeEditor: FC<Props> = ({ probe, onReturn }) => {
   const { instance } = useContext(InstanceContext);
   const formMethods = useForm<Probe>({ defaultValues: probe, mode: 'onChange' });
 
-  if (!probe || !instance) {
-    return <div>Loading...</div>;
-  }
-
-  const onSave = async (formValues: Probe) => {
+  const { execute: onSave, error } = useAsyncCallback(async (formValues: Probe) => {
     // Form values always come back as a string, even for number inputs
     formValues.latitude = Number(formValues.latitude);
     formValues.longitude = Number(formValues.longitude);
 
     if (probe.id) {
-      await instance.api.updateProbe({
+      await instance?.api.updateProbe({
         ...probe,
         ...formValues,
       });
       onReturn(true);
     } else {
-      const info = await instance.api.addProbe({
+      const info = await instance?.api.addProbe({
         ...probe,
         ...formValues,
       });
       setShowTokenModal(true);
       setProbeToken(info.token);
     }
-  };
+  });
+
+  const submissionError = error as SubmissionError;
+
+  if (!probe || !instance) {
+    return <div>Loading...</div>;
+  }
 
   const onRemoveProbe = async () => {
     if (!probe.id) {
@@ -211,6 +225,17 @@ const ProbeEditor: FC<Props> = ({ probe, onReturn }) => {
                 </Button>
               </HorizontalGroup>
             </Container>
+            {submissionError && (
+              <div
+                className={css`
+                  margin-top: 1rem;
+                `}
+              >
+                <Alert title="Save failed" severity="error">
+                  {`${submissionError.status}: ${submissionError.message}`}
+                </Alert>
+              </div>
+            )}
             <Modal
               isOpen={showTokenModal}
               title="Probe Authentication Token"

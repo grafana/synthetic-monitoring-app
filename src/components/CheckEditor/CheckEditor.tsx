@@ -14,7 +14,7 @@ import {
   Spinner,
 } from '@grafana/ui';
 import { useAsyncCallback } from 'react-async-hook';
-import { Check, CheckType, OrgRole, CheckFormValues } from 'types';
+import { Check, CheckType, OrgRole, CheckFormValues, SubmissionError } from 'types';
 import { SMDataSource } from 'datasource/DataSource';
 import { hasRole } from 'utils';
 import { getDefaultValuesFromCheck, getCheckFromFormValues } from './checkFormTransformations';
@@ -30,11 +30,6 @@ interface Props {
   check: Check;
   instance: SMDataSource;
   onReturn: (reload: boolean) => void;
-}
-
-interface SubmissionError {
-  status?: string;
-  message?: string;
 }
 
 export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
