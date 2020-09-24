@@ -445,7 +445,7 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
             description="Whether or not the probe will follow any redirects."
             disabled={!isEditor}
           >
-            <Switch ref={register} name="settings.http.noFollowRedirects" disabled={!isEditor} />
+            <Switch ref={register} name="settings.http.followRedirects" disabled={!isEditor} />
           </Field>
           <Field
             label="Cache busting query parameter name"

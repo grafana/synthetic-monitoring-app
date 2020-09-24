@@ -160,6 +160,7 @@ const getHttpSettingsFormValues = (settings: Settings): HttpSettingsFormValues =
     failIfBodyNotMatchesRegexp,
     failIfHeaderMatchesRegexp,
     failIfHeaderNotMatchesRegexp,
+    noFollowRedirects,
     ...pickedSettings
   } = httpSettings;
 
@@ -171,6 +172,7 @@ const getHttpSettingsFormValues = (settings: Settings): HttpSettingsFormValues =
   });
   return {
     ...pickedSettings,
+    followRedirects: !noFollowRedirects,
     sslOptions: getHttpSettingsSslValue(httpSettings.failIfSSL ?? false, httpSettings.failIfNotSSL ?? false),
     validStatusCodes: httpSettings.validStatusCodes?.map(statusCode => selectableValueFrom(statusCode)) ?? [],
     validHTTPVersions: httpSettings.validHTTPVersions?.map(httpVersion => selectableValueFrom(httpVersion)) ?? [],
@@ -359,13 +361,14 @@ const getHttpSettings = (
   const validationRegexes = getHttpRegexValidationsFromFormValue(mergedSettings.regexValidations ?? []);
 
   // We need to pick the sslOptions key out of the settings, since the API doesn't expect this key
-  const { sslOptions, regexValidations, ...mergedSettingsToKeep } = mergedSettings;
+  const { sslOptions, regexValidations, followRedirects, ...mergedSettingsToKeep } = mergedSettings;
 
   return {
     ...fallbackValues,
     ...mergedSettingsToKeep,
     ...sslConfig,
     ...validationRegexes,
+    noFollowRedirects: !followRedirects,
     method,
     headers: formattedHeaders,
     ipVersion: getValueFromSelectable(settings?.ipVersion ?? defaultSettings?.ipVersion) ?? fallbackValues.ipVersion,
