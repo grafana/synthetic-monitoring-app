@@ -136,6 +136,7 @@ describe('PING', () => {
 
   it('correctly populates default values', async () => {
     const check = {
+      id: 32,
       job: 'carne asada',
       target: 'target.com',
       enabled: true,
@@ -182,9 +183,10 @@ describe('HTTP', () => {
     expect(advanced).toBeInTheDocument();
   });
 
-  it('correctly populates default values', async () => {
+  it('correctly populates default values for preexisting check', async () => {
     const check = {
       job: 'carne asada',
+      id: 32,
       target: 'https://target.com',
       enabled: true,
       labels: [{ name: 'a great label', value: 'totally awesome label' }],
@@ -262,6 +264,7 @@ describe('HTTP', () => {
     expect(await within(advancedOptions).findByPlaceholderText('name')).toHaveValue('a great label');
     expect(await within(advancedOptions).findByPlaceholderText('value')).toHaveValue('totally awesome label');
     expect(await within(advancedOptions).findByText('V6')).toBeInTheDocument();
+    // Follow redirect field
     expect(await within(advancedOptions).findByRole('checkbox')).not.toBeChecked();
     expect(
       await within(advancedOptions).findByLabelText('Cache busting query parameter name', { exact: false })
