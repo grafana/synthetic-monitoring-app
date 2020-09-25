@@ -70,7 +70,7 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
   return (
     <FormContext {...formMethods}>
       <form onSubmit={formMethods.handleSubmit(onSubmit)}>
-        <Legend>{check?.id ? 'Add Check' : 'Edit Check'}</Legend>
+        <Legend>{check?.id ? 'Edit Check' : 'Add Check'}</Legend>
         <div
           className={css`
             margin-bottom: 8px;
