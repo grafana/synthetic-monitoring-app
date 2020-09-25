@@ -27,7 +27,7 @@ import { CHECK_TYPE_OPTIONS } from 'components/constants';
 import { useForm, FormContext, Controller } from 'react-hook-form';
 
 interface Props {
-  check: Check;
+  check?: Check;
   instance: SMDataSource;
   onReturn: (reload: boolean) => void;
 }
@@ -44,7 +44,7 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
 
   const { execute: onSubmit, error, loading: submitting } = useAsyncCallback(async (values: CheckFormValues) => {
     const updatedCheck = getCheckFromFormValues(values, defaultValues);
-    if (check.id) {
+    if (check?.id) {
       await instance.updateCheck({
         id: check.id,
         tenantId: check.tenantId,
@@ -59,7 +59,7 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
   const submissionError = error as SubmissionError;
 
   const onRemoveCheck = async () => {
-    const id = check.id;
+    const id = check?.id;
     if (!id) {
       return;
     }
