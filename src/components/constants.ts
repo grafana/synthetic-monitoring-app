@@ -7,6 +7,7 @@ import {
   CheckType,
   HttpSslOption,
   HttpRegexValidationType,
+  Check,
 } from 'types';
 
 export const DNS_RESPONSE_CODES = enumToStringArray(DnsResponseCodes).map(responseCode => ({
@@ -142,3 +143,19 @@ export const HTTP_REGEX_VALIDATION_OPTIONS = [
   { label: 'Check fails if response header matches', value: HttpRegexValidationType.Header },
   { label: 'Check fails if response body matches', value: HttpRegexValidationType.Body },
 ];
+
+export const fallbackCheck = {
+  job: '',
+  target: '',
+  frequency: 60000,
+  timeout: 3000,
+  enabled: true,
+  labels: [],
+  probes: [],
+  settings: {
+    ping: {
+      ipVersion: IpVersion.V4,
+      dontFragment: false,
+    },
+  },
+} as Check;
