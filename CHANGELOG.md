@@ -1,3 +1,10 @@
+## [0.3.9](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.8...0.3.9) (2020-09-25)
+
+
+### Bug Fixes
+
+* stuck loading spinner on check creation ([d9a77ba](https://github.com/grafana/synthetic-monitoring-app/commit/d9a77ba12e3e355ad79eca820ed3615fd5e31534))
+
 ## [0.3.8](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.7...0.3.8) (2020-09-25)
 
 ## [0.3.7](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.6...0.3.7) (2020-09-25)
