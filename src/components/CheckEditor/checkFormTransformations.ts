@@ -34,24 +34,9 @@ import {
   DNS_RESPONSE_CODES,
   HTTP_SSL_OPTIONS,
   HTTP_REGEX_VALIDATION_OPTIONS,
+  fallbackCheck,
 } from 'components/constants';
 import { checkType } from 'utils';
-
-const fallbackCheck = {
-  job: '',
-  target: '',
-  frequency: 60000,
-  timeout: 3000,
-  enabled: true,
-  labels: [],
-  probes: [],
-  settings: {
-    ping: {
-      ipVersion: IpVersion.V4,
-      dontFragment: false,
-    },
-  },
-} as Check;
 
 export function selectableValueFrom<T>(value: T, label?: string): SelectableValue<T> {
   const labelValue = String(value);
