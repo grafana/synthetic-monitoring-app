@@ -1,3 +1,11 @@
+## [0.3.4](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.3...0.3.4) (2020-09-25)
+
+
+### Bug Fixes
+
+* invert noFollowRedirects in the UI ([c6d302e](https://github.com/grafana/synthetic-monitoring-app/commit/c6d302e713c4faed9c3c7c34d3560e66d72ec888))
+* make default values consistent for all check types ([56866bb](https://github.com/grafana/synthetic-monitoring-app/commit/56866bb77153ee7880f9f19b9b152db4c19a9b7c))
+
 ## [0.3.3](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.2...0.3.3) (2020-09-24)
 
 ## [0.3.2](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.1...0.3.2) (2020-09-23)
