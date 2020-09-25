@@ -1,13 +1,18 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { ChecksPage } from './ChecksPage';
 import { getInstanceMock } from 'datasource/__mocks__/DataSource';
 
-const renderChecksPage = () => {
+interface RenderArgs {
+  checkId?: string;
+}
+
+const renderChecksPage = ({ checkId }: RenderArgs = {}) => {
   const instance = getInstanceMock();
-  render(<ChecksPage instance={{ api: instance }} />);
+  render(<ChecksPage instance={{ api: instance }} id={checkId} />);
 };
 
-test('renders for existing check', () => {
-  expect(true).toBeTruthy();
+test('renders check editor existing check', () => {
+  renderChecksPage();
+  waitFor(() => expect(screen.getByText('Edit Check')).toBeInTheDocument());
 });

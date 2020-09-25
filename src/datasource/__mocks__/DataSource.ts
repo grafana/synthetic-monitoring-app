@@ -127,7 +127,26 @@ export const getInstanceMock = (settings: DataSourceInstanceSettings<SMOptions> 
   instance.deleteProbe = jest.fn();
   instance.updateProbe = jest.fn();
   instance.resetProbeToken = jest.fn();
-  instance.listChecks = jest.fn().mockImplementation(() => Promise.resolve({}));
+  instance.listChecks = jest.fn().mockImplementation(() =>
+    Promise.resolve([
+      {
+        job: 'a jobname',
+        id: 1,
+        target: 'example.com',
+        frequency: 60000,
+        timeout: 3000,
+        enabled: true,
+        labels: [],
+        probes: [],
+        settings: {
+          ping: {
+            ipVersion: 'V4',
+            dontFragment: false,
+          },
+        },
+      },
+    ])
+  );
   instance.deleteCheck = jest.fn();
   instance.updateCheck = jest.fn();
   return instance;
