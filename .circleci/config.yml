@@ -26,7 +26,7 @@ workflows:
       - version_bump:
           filters:
             branches:
-              ignore: /.*/
+              only: master
             tags:
               ignore: /.*/
           requires:
