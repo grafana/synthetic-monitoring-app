@@ -127,7 +127,7 @@ export const getInstanceMock = (settings: DataSourceInstanceSettings<SMOptions> 
   instance.deleteProbe = jest.fn();
   instance.updateProbe = jest.fn();
   instance.resetProbeToken = jest.fn();
-  instance.listChecks = jest.fn();
+  instance.listChecks = jest.fn().mockImplementation(() => Promise.resolve({}));
   instance.deleteCheck = jest.fn();
   instance.updateCheck = jest.fn();
   return instance;
