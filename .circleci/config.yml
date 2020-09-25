@@ -21,6 +21,8 @@ workflows:
           filters:
             branches:
               only: master
+            tags:
+              ignore: /^v.*/
       - version_bump:
           requires:
             - install_dependencies
