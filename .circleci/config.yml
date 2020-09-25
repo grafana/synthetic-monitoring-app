@@ -136,7 +136,14 @@ jobs:
           command: |
             git config user.email "circleci@grafana.com"
             git config --global user.name "CircleCI Automation"
-            yarn release:ci
+            TAG=$(git tag --points-at HEAD)
+            if [ "" == "$TAG" ]; then
+                echo "Updating version and changelog"
+                yarn release:ci
+            else
+                echo "Skipping versioning"
+                exit 0
+            fi
 
   report:
     executor: default_exec
