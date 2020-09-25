@@ -1,77 +1,65 @@
 import React, { FC, useState, useEffect, useContext } from 'react';
 import { Field } from '@grafana/ui';
-import { validateFrequency, validateProbes, validateTimeout } from 'validation';
 import CheckProbes from './CheckProbes';
 import { InstanceContext } from 'components/InstanceContext';
 import { Probe } from 'types';
 import { SliderInput } from 'components/SliderInput';
 import { Subheader } from 'components/Subheader';
-
-export interface OnChangeArgs {
-  timeout: number;
-  frequency: number;
-  probes: number[];
-}
+import { useFormContext, Controller } from 'react-hook-form';
+import { validateFrequency, validateProbes, validateTimeout } from 'validation';
 
 interface Props {
   isEditor: boolean;
   timeout: number;
   frequency: number;
   probes: number[];
-  onChange: (values: OnChangeArgs) => void;
 }
 
-export const ProbeOptions: FC<Props> = ({ frequency, timeout, isEditor, onChange, probes }) => {
-  const [timeoutValue, setTimeoutValue] = useState(timeout);
-  const [frequencyValue, setFrequencyValue] = useState(frequency);
-  const [selectedProbes, setSelectedProbes] = useState(probes);
+export const ProbeOptions: FC<Props> = ({ frequency, timeout, isEditor, probes }) => {
   const [availableProbes, setAvailableProbes] = useState<Probe[]>([]);
+  const { control, errors } = useFormContext();
   const { instance } = useContext(InstanceContext);
 
   useEffect(() => {
     const fetchProbes = async () => {
       const probes = await instance?.api.listProbes();
-
       setAvailableProbes(probes ?? []);
     };
 
     fetchProbes();
   }, [instance]);
 
-  useEffect(() => {
-    onChange({
-      timeout: timeoutValue,
-      frequency: frequencyValue,
-      probes: selectedProbes,
-    });
-  }, [timeoutValue, frequencyValue, selectedProbes, onChange]);
-
   return (
     <div>
-      <Subheader>Probe Options</Subheader>
-      <Field
-        label="Probe Locations"
-        description="Select up to 20 locations where this target will be checked from."
-        disabled={!isEditor}
-        invalid={!validateProbes(selectedProbes)}
-      >
-        <CheckProbes
-          probes={selectedProbes}
-          availableProbes={availableProbes}
-          onUpdate={setSelectedProbes}
-          isEditor={isEditor}
-        />
-      </Field>
+      <Subheader>Probe options</Subheader>
+
+      <Controller
+        as={CheckProbes}
+        control={control}
+        name="probes"
+        valueName="probes"
+        rules={{ validate: validateProbes }}
+        probes={probes}
+        availableProbes={availableProbes}
+        isEditor={isEditor}
+        invalid={errors.probes}
+        error={errors.probes?.message}
+      />
       <Field
         label="Frequency"
         description="How frequently the check should run."
         disabled={!isEditor}
-        invalid={!validateFrequency(frequencyValue)}
+        invalid={Boolean(errors.frequency)}
+        error={errors.frequency?.message}
       >
-        <SliderInput
+        <Controller
           id="probe-options-frequency"
-          value={frequencyValue / 1000}
-          onChange={value => setFrequencyValue(value * 1000)}
+          name="frequency"
+          rules={{ validate: validateFrequency }}
+          control={control}
+          value={frequency}
+          defaultValue={frequency / 1000}
+          as={SliderInput}
           min={10}
           max={120}
           separationLabel="every"
@@ -82,16 +70,20 @@ export const ProbeOptions: FC<Props> = ({ frequency, timeout, isEditor, onChange
         label="Timeout"
         description="Maximum execution time for a check"
         disabled={!isEditor}
-        invalid={!validateTimeout(timeoutValue)}
+        invalid={Boolean(errors.timeout)}
+        error={errors.timeout?.message}
       >
-        <SliderInput
+        <Controller
           id="probe-options-timeout"
-          value={timeout / 1000}
+          name="timeout"
+          rules={{ validate: validateTimeout }}
+          value={timeout}
+          defaultValue={timeout / 1000}
+          as={SliderInput}
           max={10}
           min={1}
           suffixLabel="seconds"
           separationLabel="after"
-          onChange={value => setTimeoutValue(value * 1000)}
         />
       </Field>
     </div>

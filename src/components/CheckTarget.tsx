@@ -1,17 +1,18 @@
-import React, { FC, useState, useEffect, ChangeEvent } from 'react';
+import React, { FC, ChangeEvent } from 'react';
 import { Field, Input } from '@grafana/ui';
 import { css } from 'emotion';
-import { validateTarget } from 'validation';
-import { CheckType, Settings } from 'types';
-import { checkType, parseUrl } from 'utils';
+import { CheckType } from 'types';
+import { parseUrl } from 'utils';
 import QueryParams from './QueryParams';
 
 interface Props {
   target: string;
   typeOfCheck?: CheckType;
-  checkSettings: Settings;
   disabled?: boolean;
   onChange: (target: string) => void;
+  onBlur?: () => void;
+  invalid?: boolean;
+  error?: string;
 }
 
 interface TargetHelpInfo {
@@ -57,35 +58,27 @@ const getTargetHelpText = (typeOfCheck: CheckType | undefined): TargetHelpInfo =
   return resp;
 };
 
-const CheckTarget: FC<Props> = ({ target, typeOfCheck, disabled, checkSettings, onChange }) => {
+const CheckTarget: FC<Props> = ({ target, typeOfCheck, disabled, onChange, onBlur, invalid, error }) => {
   const targetHelp = getTargetHelpText(typeOfCheck);
-  const [targetValue, updateTarget] = useState(target);
-
-  useEffect(() => {
-    onChange(targetValue);
-  }, [targetValue, onChange]);
-
-  const parsedURL = parseUrl(targetValue);
+  const parsedURL = parseUrl(target);
   return (
     <>
-      <Field
-        label="Target"
-        description={targetHelp.text}
-        disabled={disabled}
-        invalid={!validateTarget(checkType(checkSettings), target)}
-      >
+      <Field label="Target" description={targetHelp.text} disabled={disabled} invalid={invalid} error={error}>
         <Input
+          id="check-editor-target"
           type="string"
+          onBlur={onBlur}
           placeholder={targetHelp.example}
           value={target}
-          onChange={(e: ChangeEvent<HTMLInputElement>) => updateTarget(e.target.value)}
+          onChange={(e: ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
           required={true}
         />
       </Field>
       {typeOfCheck === CheckType.HTTP && parsedURL && (
         <QueryParams
           target={parsedURL}
-          onChange={(target: string) => updateTarget(target)}
+          onBlur={onBlur}
+          onChange={(target: string) => onChange(target)}
           className={css`
             padding-left: 1rem;
             margin-bottom: 1rem;

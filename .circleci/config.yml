@@ -15,9 +15,32 @@ aliases:
       only: /^v[1-9]*[0-9]+\.[1-9]*[0-9]+\.x$/
 
 workflows:
+  versioning:
+    jobs:
+      - install_dependencies:
+          filters:
+            branches:
+              only: master
+            tags:
+              ignore: /.*/
+      - version_bump:
+          filters:
+            branches:
+              only: master
+            tags:
+              ignore: /.*/
+          requires:
+            - install_dependencies
+
   plugin_workflow:
     jobs:
-      - build
+      - install_dependencies:
+          filters:
+            branches:
+              ignore: master
+      - build:
+          requires:
+            - install_dependencies
       - report:
           requires:
             - build
@@ -41,10 +64,12 @@ executors:
       - image: srclosson/grafana-plugin-ci-e2e:latest
 
 jobs:
-  build:
+  install_dependencies:
     executor: default_exec
     steps:
       - checkout
+      - attach_workspace:
+          at: .
       - restore_cache:
           name: restore node_modules
           keys:
@@ -60,6 +85,17 @@ jobs:
           paths:
             - ~/project/node_modules
           key: build-cache-{{ .Environment.CACHE_VERSION }}-{{ checksum "yarn.lock" }}
+
+  build:
+    executor: default_exec
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - restore_cache:
+          name: restore node_modules
+          keys:
+            - build-cache-{{ .Environment.CACHE_VERSION }}-{{ checksum "yarn.lock" }}
       - run:
           name: Build and test frontend
           command: ./node_modules/.bin/grafana-toolkit plugin:ci-build
@@ -79,6 +115,35 @@ jobs:
             - ci/grafana-test-env
       - store_artifacts:
           path: ci
+
+  version_bump:
+    executor: default_exec
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - << pipeline.parameters.ssh-fingerprint >>
+            - '48:1b:33:86:08:6d:24:64:14:15:cf:e1:d8:70:3f:19'
+            - ${GITHUB_SSH_FINGERPRINT}
+      - attach_workspace:
+          at: .
+      - restore_cache:
+          name: restore node_modules
+          keys:
+            - build-cache-{{ .Environment.CACHE_VERSION }}-{{ checksum "yarn.lock" }}
+      - run:
+          name: 'bump version and commit changelog'
+          command: |
+            git config user.email "circleci@grafana.com"
+            git config --global user.name "CircleCI Automation"
+            TAG=$(git tag --points-at HEAD)
+            if [ "" == "$TAG" ]; then
+                echo "Updating version and changelog"
+                yarn release:ci
+            else
+                echo "Skipping versioning"
+                exit 0
+            fi
 
   report:
     executor: default_exec

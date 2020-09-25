@@ -25,16 +25,7 @@ const renderCheckTarget = ({
   disabled = false,
   checkSettings = checkSettingsMock,
   onChange = onChangeMock,
-} = {}) =>
-  render(
-    <CheckTarget
-      target={target}
-      typeOfCheck={typeOfCheck}
-      disabled={disabled}
-      checkSettings={checkSettings}
-      onChange={onChange}
-    />
-  );
+} = {}) => render(<CheckTarget target={target} typeOfCheck={typeOfCheck} disabled={disabled} onChange={onChange} />);
 
 beforeEach(() => {
   onChangeMock.mockReset();

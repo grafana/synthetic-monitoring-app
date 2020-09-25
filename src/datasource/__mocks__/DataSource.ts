@@ -93,10 +93,10 @@ export const instanceSettings: DataSourceInstanceSettings<SMOptions> = {
   },
 };
 
-export const getInstanceMock = (settings: DataSourceInstanceSettings<SMOptions> = instanceSettings) => {
+export const getInstanceMock = (settings: DataSourceInstanceSettings<SMOptions> | undefined = instanceSettings) => {
   const instance = new SMDataSource(settings);
   instance.getMetricsDS = jest.fn().mockImplementation(() => ({ url: 'a url' }));
-  instance.addCheck = jest.fn();
+  instance.addCheck = jest.fn().mockImplementation(() => Promise.resolve());
   instance.listProbes = jest.fn().mockImplementation(() =>
     Promise.resolve([
       {
@@ -127,7 +127,26 @@ export const getInstanceMock = (settings: DataSourceInstanceSettings<SMOptions> 
   instance.deleteProbe = jest.fn();
   instance.updateProbe = jest.fn();
   instance.resetProbeToken = jest.fn();
-  instance.listChecks = jest.fn();
+  instance.listChecks = jest.fn().mockImplementation(() =>
+    Promise.resolve([
+      {
+        job: 'a jobname',
+        id: 1,
+        target: 'example.com',
+        frequency: 60000,
+        timeout: 3000,
+        enabled: true,
+        labels: [],
+        probes: [],
+        settings: {
+          ping: {
+            ipVersion: 'V4',
+            dontFragment: false,
+          },
+        },
+      },
+    ])
+  );
   instance.deleteCheck = jest.fn();
   instance.updateCheck = jest.fn();
   return instance;

@@ -30,6 +30,7 @@ export const ProbeList: FC<Props> = ({ probes, onAddNew, onSelectProbe }) => {
       {hasRole(OrgRole.EDITOR) && (
         <HorizontalGroup justify="flex-end">
           <Button
+            type="button"
             onClick={onAddNew}
             className={css`
               margin-bottom: 1rem;

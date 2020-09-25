@@ -1,5 +1,14 @@
 import { enumToStringArray } from '../utils';
-import { DnsResponseCodes, DnsRecordType, DnsProtocol, IpVersion, CheckType } from 'types';
+import {
+  DnsResponseCodes,
+  DnsRecordType,
+  DnsProtocol,
+  IpVersion,
+  CheckType,
+  HttpSslOption,
+  HttpRegexValidationType,
+  Check,
+} from 'types';
 
 export const DNS_RESPONSE_CODES = enumToStringArray(DnsResponseCodes).map(responseCode => ({
   label: responseCode,
@@ -95,3 +104,58 @@ export const CHECK_FILTER_OPTIONS = [
     value: CheckType.TCP,
   },
 ];
+
+export const CHECK_TYPE_OPTIONS = [
+  {
+    label: 'HTTP',
+    value: CheckType.HTTP,
+  },
+  {
+    label: 'PING',
+    value: CheckType.PING,
+  },
+  {
+    label: 'DNS',
+    value: CheckType.DNS,
+  },
+  {
+    label: 'TCP',
+    value: CheckType.TCP,
+  },
+];
+
+export const HTTP_SSL_OPTIONS = [
+  {
+    label: 'Ignore SSL',
+    value: HttpSslOption.Ignore,
+  },
+  {
+    label: 'Probe fails if SSL is present.',
+    value: HttpSslOption.FailIfPresent,
+  },
+  {
+    label: 'Probe fails if SSL is not present.',
+    value: HttpSslOption.FailIfNotPresent,
+  },
+];
+
+export const HTTP_REGEX_VALIDATION_OPTIONS = [
+  { label: 'Check fails if response header matches', value: HttpRegexValidationType.Header },
+  { label: 'Check fails if response body matches', value: HttpRegexValidationType.Body },
+];
+
+export const fallbackCheck = {
+  job: '',
+  target: '',
+  frequency: 60000,
+  timeout: 3000,
+  enabled: true,
+  labels: [],
+  probes: [],
+  settings: {
+    ping: {
+      ipVersion: IpVersion.V4,
+      dontFragment: false,
+    },
+  },
+} as Check;
