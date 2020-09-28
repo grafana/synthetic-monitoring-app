@@ -17,11 +17,23 @@ aliases:
       only: master
     tags:
       ignore: /.*/
+  - &filter-only-pr
+    branches:
+      ignore: master
+    tags:
+      ignore: /.*/
   - &filter-only-release
     branches:
       only: /^v[1-9]*[0-9]+\.[1-9]*[0-9]+\.x$/
 
 workflows:
+  pr_build:
+    jobs:
+      - install_dependencies:
+          filters: *filter-only-pr
+      - test:
+          requires:
+            - install_dependencies
   master_build:
     jobs:
       - install_dependencies:
@@ -48,24 +60,16 @@ workflows:
           requires:
             - build
 
-  plugin_workflow:
+  register_with_gcom:
     jobs:
-      - install_dependencies:
-          filters:
-            branches:
-              ignore: master
-      - build:
-          requires:
-            - install_dependencies
-      - report:
-          requires:
-            - build
+      - release_to_staging:
+          filters: *filter-only-release
       - approve_release:
           type: approval
           requires:
-            - report
+            - release_to_staging
           filters: *filter-only-release
-      - publish_github_release:
+      - release_to_production:
           requires:
             - approve_release
           filters: *filter-only-release
@@ -101,6 +105,20 @@ jobs:
           paths:
             - ~/project/node_modules
           key: build-cache-{{ .Environment.CACHE_VERSION }}-{{ checksum "yarn.lock" }}
+
+  test:
+    executor: default_exec
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - restore_cache:
+          name: restore node_modules
+          keys:
+            - build-cache-{{ .Environment.CACHE_VERSION }}-{{ checksum "yarn.lock" }}
+      - run:
+          name: Build and test frontend
+          command: ./node_modules/.bin/grafana-toolkit plugin:ci-build
 
   build:
     executor: default_exec
@@ -213,9 +231,8 @@ jobs:
       - run:
           name: 'Publish release to staging'
           command: |
-            # apk --no-cache add curl
-            # COMMIT=$(git rev-parse HEAD)
-            # curl -H "Authorization: Bearer $GRAFANA_API_KEY" https://grafana.com/api/plugins -d url=https://github.com/grafana/synthetic-monitoring-app -d commit=$COMMIT
+            apk --no-cache add curl
+            ./scripts/staging-install
 
   release_to_production:
     executor: default_exec
@@ -230,7 +247,6 @@ jobs:
       - run:
           name: 'Publish release to production'
           command: |
-            # apk --no-cache add curl
+            apk --no-cache add curl
             COMMIT=$(git rev-parse HEAD)
-            echo $COMMIT
-            # curl -H "Authorization: Bearer $GRAFANA_API_KEY" https://grafana.com/api/plugins -d url=https://github.com/grafana/synthetic-monitoring-app -d commit=$COMMIT
+            curl -H "Authorization: Bearer $GRAFANA_API_KEY" https://grafana.com/api/plugins -d url=https://github.com/grafana/synthetic-monitoring-app -d commit=$COMMIT
