@@ -24,9 +24,10 @@ gcom() {
 }
 
 GIT_TAG=$(git tag --points-at HEAD)
+#remove the leading v on the git tag
 TAG="${GIT_TAG//v}"
 
-INSTALL_COMMAND='grafana-cli --pluginUrl='"https://github.com/grafana/synthetic-monitoring-app/releases/download/v$TAG/grafana-synthetic-monitoring-app-$TAG.zip"' plugins install synthetic-monitoring-app'
+INSTALL_COMMAND='grafana-cli plugins remove synthetic-monitoring-app; grafana-cli --pluginUrl='"https://github.com/grafana/synthetic-monitoring-app/releases/download/v$TAG/grafana-synthetic-monitoring-app-$TAG.zip"' plugins install grafana-synthetic-monitoring-app'
 
 gcom /instances/syntheticmonitoring/config \
     -d config[hosted_grafana][custom_commands]="$INSTALL_COMMAND"
