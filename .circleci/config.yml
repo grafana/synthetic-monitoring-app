@@ -195,11 +195,11 @@ jobs:
     steps:
       - checkout
       - attach_workspace:
-        at: .
+          at: .
       - restore_cache:
-        name: restore node_modules
-        keys:
-          - build-cache-{{ .Environment.CACHE_VERSION }}-{{ checksum "yarn.lock" }}
+          name: restore node_modules
+          keys:
+            - build-cache-{{ .Environment.CACHE_VERSION }}-{{ checksum "yarn.lock" }}
       - run:
           name: 'Publish release to staging'
           command: |
@@ -212,11 +212,11 @@ jobs:
     steps:
       - checkout
       - attach_workspace:
-        at: .
+          at: .
       - restore_cache:
-        name: restore node_modules
-        keys:
-          - build-cache-{{ .Environment.CACHE_VERSION }}-{{ checksum "yarn.lock" }}
+          name: restore node_modules
+          keys:
+            - build-cache-{{ .Environment.CACHE_VERSION }}-{{ checksum "yarn.lock" }}
       - run:
           name: 'Publish release to production'
           command: |
