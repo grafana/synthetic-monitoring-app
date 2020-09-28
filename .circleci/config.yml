@@ -10,6 +10,8 @@ aliases:
   - &filter-only-tagged
     tags:
       only: /.*/
+    branches:
+      ignore: /.*/
   - &filter-only-master
     branches:
       only: master
