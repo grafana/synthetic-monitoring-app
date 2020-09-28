@@ -9,7 +9,7 @@ aliases:
   # Workflow filters
   - &filter-only-tagged
     tags:
-      only: /.*/
+      only: /^(([0-9]+)\.([0-9]+)\.([0-9]+))/
     branches:
       ignore: /.*/
   - &filter-only-master
