@@ -536,3 +536,33 @@ describe('DNS', () => {
     });
   });
 });
+
+describe('TCP', () => {
+  it('transforms data correctly', async () => {
+    const instance = await renderCheckEditor({ check: getMinimumCheck({ target: 'grafana.com:43' }) });
+    await selectCheckType(CheckType.TCP);
+    await submitForm();
+    expect(instance.addCheck).toHaveBeenCalledWith({
+      enabled: true,
+      frequency: 60000,
+      job: 'tacos',
+      labels: [],
+      probes: [1],
+      settings: {
+        tcp: {
+          ipVersion: 'V4',
+          tls: false,
+          tlsConfig: {
+            caCert: '',
+            clientCert: '',
+            clientKey: '',
+            insecureSkipVerify: false,
+            serverName: '',
+          },
+        },
+      },
+      target: 'grafana.com:43',
+      timeout: 3000,
+    });
+  });
+});
