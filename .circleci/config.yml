@@ -7,6 +7,9 @@ parameters:
 
 aliases:
   # Workflow filters
+  - &filter-only-tagged
+    tags:
+      only: /.*/
   - &filter-only-master
     branches:
       only: master
@@ -33,10 +36,15 @@ workflows:
               ignore: /.*/
           requires:
             - install_dependencies
+
+  publish_release:
+    jobs:
+      - build:
+          filters: *filter-only-tagged
       - publish_github_release:
-          filters: *filter-only-master
+          filters: *filter-only-tagged
           requires:
-            - version_bump
+            - build
 
   plugin_workflow:
     jobs:
