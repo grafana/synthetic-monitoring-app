@@ -38,24 +38,13 @@ workflows:
       - test:
           requires:
             - install_dependencies
+
   master_build:
-    when:
-      and:
-        - equal: [master, << pipeline.git.branch >>]
-        - not: << pipeline.git.tag >>
     jobs:
       - install_dependencies:
-          filters:
-            branches:
-              only: master
-            tags:
-              ignore: /.*/
+          filters: *filter-only-master
       - version_bump:
-          filters:
-            branches:
-              only: master
-            tags:
-              ignore: /.*/
+          filters: *filter-only-master
           requires:
             - install_dependencies
 
