@@ -1,0 +1,75 @@
+{
+  "type": "app",
+  "name": "Synthetic Monitoring",
+  "id": "grafana-synthetic-monitoring-app",
+  "info": {
+    "author": {
+      "name": "Grafana Labs",
+      "url": "https://grafana.com"
+    },
+    "logos": {
+      "small": "img/logo.svg",
+      "large": "img/logo.svg"
+    },
+    "screenshots": [
+      {
+        "name": "Summary Dashboard",
+        "path": "img/screenshot-dash-summary.png"
+      },
+      {
+        "name": "HTTP Dashboard",
+        "path": "img/screenshot-dash-http.png"
+      },
+      {
+        "name": "Check List",
+        "path": "img/screenshot-check-list.png"
+      }
+    ],
+    "version": "0.3.19",
+    "updated": "2020-09-29",
+    "build": {
+      "time": 1601416580487,
+      "repo": "git@github.com:grafana/synthetic-monitoring-app.git",
+      "branch": "",
+      "hash": "798bf3f8a6819685521052e0ac9d8c2c1c4a217c",
+      "number": 562
+    }
+  },
+  "includes": [
+    {
+      "type": "page",
+      "name": "Config",
+      "path": "/a/grafana-synthetic-monitoring-app/",
+      "addToNav": false
+    },
+    {
+      "type": "page",
+      "name": "Home",
+      "path": "/a/grafana-synthetic-monitoring-app/?page=redirect&dashboard=summary",
+      "addToNav": true
+    },
+    {
+      "type": "page",
+      "name": "Checks",
+      "path": "/a/grafana-synthetic-monitoring-app/?page=checks",
+      "addToNav": true
+    },
+    {
+      "type": "page",
+      "name": "Probes",
+      "path": "/a/grafana-synthetic-monitoring-app/?page=probes",
+      "addToNav": true
+    }
+  ],
+  "dependencies": {
+    "grafanaVersion": "7.0.x",
+    "plugins": [
+      {
+        "type": "panel",
+        "name": "Worldmap Panel",
+        "id": "grafana-worldmap-panel",
+        "version": "^0.3.2"
+      }
+    ]
+  }
+}
