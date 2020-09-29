@@ -230,15 +230,11 @@ jobs:
       - checkout
       - attach_workspace:
           at: .
-      - restore_cache:
-          name: restore node_modules
-          keys:
-            - build-cache-{{ .Environment.CACHE_VERSION }}-{{ checksum "yarn.lock" }}
       - run:
           name: 'Publish release to staging'
           command: |
             apk --no-cache add curl
-            ./scripts/staging-install.shl
+            ./scripts/staging-install.sh
 
   release_to_production:
     executor: default_exec
@@ -246,10 +242,6 @@ jobs:
       - checkout
       - attach_workspace:
           at: .
-      - restore_cache:
-          name: restore node_modules
-          keys:
-            - build-cache-{{ .Environment.CACHE_VERSION }}-{{ checksum "yarn.lock" }}
       - run:
           name: 'Publish release to production'
           command: |
