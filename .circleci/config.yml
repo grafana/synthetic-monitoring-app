@@ -42,7 +42,7 @@ workflows:
     when:
       and:
         - equal: [master, << pipeline.git.branch >>]
-        - equal: [false, << pipeline.git.tag >>]
+        - equal: ['', << pipeline.git.tag >>]
     jobs:
       - install_dependencies:
           filters:
