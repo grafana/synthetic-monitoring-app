@@ -32,4 +32,6 @@ INSTALL_COMMAND='grafana-cli plugins remove grafana-synthetic-monitoring-app; gr
 gcom /instances/syntheticmonitoring/config \
     -d config[hosted_grafana][custom_commands]="$INSTALL_COMMAND"
 
+sleep 10s
+
 gcom /instances/syntheticmonitoring/restart -d ''
