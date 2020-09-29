@@ -60,8 +60,9 @@ export const ProbeOptions: FC<Props> = ({ frequency, timeout, isEditor, probes }
           value={frequency}
           defaultValue={frequency / 1000}
           as={SliderInput}
-          min={10}
-          max={120}
+          step={0.5}
+          min={10.0}
+          max={120.0}
           separationLabel="every"
           suffixLabel="seconds"
         />
@@ -80,8 +81,9 @@ export const ProbeOptions: FC<Props> = ({ frequency, timeout, isEditor, probes }
           value={timeout}
           defaultValue={timeout / 1000}
           as={SliderInput}
-          max={10}
-          min={1}
+          max={10.0}
+          min={1.0}
+          step={0.5}
           suffixLabel="seconds"
           separationLabel="after"
         />
