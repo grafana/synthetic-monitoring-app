@@ -38,23 +38,13 @@ workflows:
       - test:
           requires:
             - install_dependencies
+
   master_build:
     jobs:
-      - exit_if_tagged
       - install_dependencies:
-          filters:
-            branches:
-              only: master
-            tags:
-              ignore: /.*/
-          requires:
-            - exit_if_tagged
+          filters: *filter-only-master
       - version_bump:
-          filters:
-            branches:
-              only: master
-            tags:
-              ignore: /.*/
+          filters: *filter-only-master
           requires:
             - install_dependencies
 
@@ -251,18 +241,3 @@ jobs:
             apk --no-cache add curl
             COMMIT=$(git rev-parse HEAD)
             curl -H "Authorization: Bearer $GRAFANA_API_KEY" https://grafana.com/api/plugins -d url=https://github.com/grafana/synthetic-monitoring-app -d commit=$COMMIT
-
-  exit_if_tagged:
-    executor: default_exec
-    steps:
-      - checkout
-      - attach_workspace:
-          at: .
-      - run:
-          name: 'Exit if tagged'
-          command: |
-            if [ "" == "$TAG" ]; then
-                exit 0
-            else
-                circleci-agent step halt
-            fi
