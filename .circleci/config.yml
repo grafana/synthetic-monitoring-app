@@ -47,6 +47,8 @@ workflows:
               only: master
             tags:
               ignore: /.*/
+          requires:
+            - exit_if_tagged
       - version_bump:
           filters:
             branches:
