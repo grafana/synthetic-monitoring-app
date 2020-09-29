@@ -1,3 +1,10 @@
+## [0.3.24](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.23...0.3.24) (2020-09-29)
+
+
+### Bug Fixes
+
+* specify a step size for slider input ([ec2fe5c](https://github.com/grafana/synthetic-monitoring-app/commit/ec2fe5ccda7943b14c8ffacfe6a045e21a5645c0))
+
 ## [0.3.23](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.22...0.3.23) (2020-09-29)
 
 ## [0.3.22](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.21...0.3.22) (2020-09-29)
