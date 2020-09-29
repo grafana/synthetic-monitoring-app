@@ -238,7 +238,7 @@ jobs:
           name: 'Publish release to staging'
           command: |
             apk --no-cache add curl
-            ./scripts/staging-install
+            ./scripts/staging-install.shl
 
   release_to_production:
     executor: default_exec
