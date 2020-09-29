@@ -7,6 +7,7 @@ parameters:
 
 aliases:
   # Workflow filters
+  # release-it adds a version tag without a leading "v", we want to run github deploys on those tags
   - &filter-only-tagged
     tags:
       only: /^(([0-9]+)\.([0-9]+)\.([0-9]+))/
@@ -22,6 +23,7 @@ aliases:
       ignore: master
     tags:
       ignore: /.*/
+  # Grafana toolkit adds a version tag with a leading "v" to github deploys, we only want to run releases on those tags
   - &filter-only-release
     branches:
       only: /^v[1-9]*[0-9]+\.[1-9]*[0-9]+\.x$/
