@@ -1,0 +1,38 @@
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+{
+  "plugin": "grafana-synthetic-monitoring-app",
+  "version": "0.3.24",
+  "files": {
+    "LICENSE": "6424c8b26451432c471c7c92ea2d96d74e0e32a9cf4ca1ebcfaab81a32ec9a3a",
+    "README.md": "ec663348af7470abe4c32b2826d613a61561869d6f5a7bf56a322ec29717b2dd",
+    "dashboards/sm-dns.json": "2300664c35bb4fa6617325367e96af99b9f3b116f61bae711e79d92a3ef4df3d",
+    "dashboards/sm-http.json": "7f5a1346ff4a29d81f091f69e9f5c7a6581d5471181b95b207c0f617b12f0914",
+    "dashboards/sm-ping.json": "3d0989e27935b5247cf3f6f3c4f560598a9fd7d9ba6f532a1a0fdd4a2882c349",
+    "dashboards/sm-summary.json": "ac4e6530eb6fe4723e17feb66eff2a37341c5d49d56ee2443ad3742ca1ac39e3",
+    "dashboards/sm-tcp.json": "0fb6ff0d1812ff022703fd2c399a1b933e591ccec9b4e84ed04723c0a3cdc15d",
+    "datasource/module.js": "1075fa7ad48e627e8a713a51e597de1b43fc1e222fe62e20f302fbccb9e162a5",
+    "datasource/module.js.LICENSE.txt": "0d8f66cd4afb566cb5b7e1540c68f43b939d3eba12ace290f18abc4f4cb53ed0",
+    "datasource/module.js.map": "7f81626001a4bf0a48744d011d3ca1ea692956140972f183fdf58503e6f38684",
+    "datasource/plugin.json": "004eb5ff67e8e54d362747d782889fa0964c541a9f8678f15e1694e9820b376d",
+    "legacy/config.html": "61bf70a512ebe27c51d95008e28e9f84bd02e808a9a13b264e611e6543f15e8b",
+    "module.js": "848005b67faefb919202e8628f21c8dc318f07f2045ff142b8329cc45352f628",
+    "module.js.LICENSE.txt": "1f752bc4e5d167317d5d8fab4447dbdb334f34855262b8c3bc2fad2587036747",
+    "module.js.map": "a4152fa83552190e5ace34187cb46b4e14206e4ce76131b7df0284cfa2bddc6c",
+    "plugin.json": "259f51e00b034b4b108d49b35e8bcf45d99fa7c00999776707f5bf73d304eb6f"
+  },
+  "time": 1601423756537,
+  "keyId": "7e4d0c6a708866e7"
+}
+-----BEGIN PGP SIGNATURE-----
+Version: OpenPGP.js v4.10.1
+Comment: https://openpgpjs.org
+
+wqIEARMKAAYFAl9zyYwACgkQfk0ManCIZue1ugIJAeuafpzfrrIWUT4iq0Qy
+vrt87SATsLyhU+YbNELrY8OE3WsSkC/WYYr44iSZgHg5pKHbgV5VK5c3AQ0D
+3banN9qIAgkBL1h3cQDYU54qqnxykiz+MwQgJHxqKLC0xim6aBrjCQ54d2j2
+hgQvLsViHvm/VdQp1SZBxCIGGVF0npwRDmFX1AE=
+=GUtA
+-----END PGP SIGNATURE-----
