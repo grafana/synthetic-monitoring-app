@@ -7,15 +7,22 @@ parameters:
 
 aliases:
   # Workflow filters
+  - &filter-only-tagged
+    tags:
+      only: /^(([0-9]+)\.([0-9]+)\.([0-9]+))/
+    branches:
+      ignore: /.*/
   - &filter-only-master
     branches:
       only: master
+    tags:
+      ignore: /.*/
   - &filter-only-release
     branches:
       only: /^v[1-9]*[0-9]+\.[1-9]*[0-9]+\.x$/
 
 workflows:
-  versioning:
+  master_build:
     jobs:
       - install_dependencies:
           filters:
@@ -31,6 +38,15 @@ workflows:
               ignore: /.*/
           requires:
             - install_dependencies
+
+  publish_release:
+    jobs:
+      - build:
+          filters: *filter-only-tagged
+      - publish_github_release:
+          filters: *filter-only-tagged
+          requires:
+            - build
 
   plugin_workflow:
     jobs:
@@ -181,6 +197,40 @@ jobs:
           name: 'Publish Release on GitHub'
           command: |
             ./node_modules/.bin/grafana-toolkit plugin:github-publish
-            apk --no-cache add curl
+      - store_artifacts:
+          path: ci
+
+  release_to_staging:
+    executor: default_exec
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - restore_cache:
+          name: restore node_modules
+          keys:
+            - build-cache-{{ .Environment.CACHE_VERSION }}-{{ checksum "yarn.lock" }}
+      - run:
+          name: 'Publish release to staging'
+          command: |
+            # apk --no-cache add curl
+            # COMMIT=$(git rev-parse HEAD)
+            # curl -H "Authorization: Bearer $GRAFANA_API_KEY" https://grafana.com/api/plugins -d url=https://github.com/grafana/synthetic-monitoring-app -d commit=$COMMIT
+
+  release_to_production:
+    executor: default_exec
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - restore_cache:
+          name: restore node_modules
+          keys:
+            - build-cache-{{ .Environment.CACHE_VERSION }}-{{ checksum "yarn.lock" }}
+      - run:
+          name: 'Publish release to production'
+          command: |
+            # apk --no-cache add curl
             COMMIT=$(git rev-parse HEAD)
-            curl -H "Authorization: Bearer $GRAFANA_API_KEY" https://grafana.com/api/plugins -d url=https://github.com/grafana/synthetic-monitoring-app -d commit=$COMMIT
+            echo $COMMIT
+            # curl -H "Authorization: Bearer $GRAFANA_API_KEY" https://grafana.com/api/plugins -d url=https://github.com/grafana/synthetic-monitoring-app -d commit=$COMMIT
