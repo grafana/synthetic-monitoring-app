@@ -313,6 +313,18 @@ describe('HTTP', () => {
     await act(async () => await userEvent.paste(screen.getByLabelText('Client Key', { exact: false }), 'client key'));
     await toggleSection('TLS config');
 
+    // Authentication
+    const authentication = await toggleSection('Authentication');
+    userEvent.click(await within(authentication).findByLabelText('Include bearer authorization header in request'));
+    const bearerTokenInput = await screen.findByPlaceholderText('Bearer token');
+    await act(async () => await userEvent.type(bearerTokenInput, 'a bearer token'));
+
+    userEvent.click(await within(authentication).findByLabelText('Include basic authorization header in request'));
+    const usernameInput = await within(authentication).findByPlaceholderText('Username');
+    const passwordInput = await within(authentication).findByPlaceholderText('Password');
+    await act(async () => await userEvent.type(usernameInput, 'a username'));
+    await act(async () => await userEvent.type(passwordInput, 'a password'));
+
     // Validation
     const validationSection = await toggleSection('Validation');
     const [statusCodeInput, httpVersionInput] = await within(validationSection).findAllByRole('textbox');
@@ -371,6 +383,11 @@ describe('HTTP', () => {
           validHTTPVersions: ['HTTP/1.0'],
           failIfNotSSL: false,
           failIfSSL: false,
+          basicAuth: {
+            password: 'a password',
+            username: 'a username',
+          },
+          bearerToken: 'a bearer token',
           failIfHeaderNotMatchesRegexp: [{ regexp: 'a header regex', allowMissing: true, header: 'Content-Type' }],
           failIfHeaderMatchesRegexp: [],
           failIfBodyMatchesRegexp: [],

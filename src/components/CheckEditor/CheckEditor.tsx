@@ -1,18 +1,6 @@
 import React, { FC, useState, useMemo } from 'react';
 import { css } from 'emotion';
-import {
-  Button,
-  ConfirmModal,
-  Field,
-  Input,
-  HorizontalGroup,
-  Checkbox,
-  Select,
-  Legend,
-  Alert,
-  Label,
-  useStyles,
-} from '@grafana/ui';
+import { Button, ConfirmModal, Field, Input, HorizontalGroup, Select, Legend, Alert, useStyles } from '@grafana/ui';
 import { useAsyncCallback } from 'react-async-hook';
 import { Check, CheckType, OrgRole, CheckFormValues, SubmissionError } from 'types';
 import { SMDataSource } from 'datasource/DataSource';

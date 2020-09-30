@@ -245,6 +245,7 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
         <VerticalGroup spacing="xs">
           <HorizonalCheckboxField
             label="Include bearer authorization header in request"
+            id="http-settings-bearer-authorization"
             disabled={!isEditor}
             className={
               !includeBearerToken
@@ -273,6 +274,7 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
         <VerticalGroup spacing="xs">
           <HorizonalCheckboxField
             label="Include basic authorization header in request"
+            id="http-settings-basic-authorization"
             disabled={!isEditor}
             className={
               !includeBasicAuth
