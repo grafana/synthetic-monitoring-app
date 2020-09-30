@@ -136,6 +136,7 @@ describe('PING', () => {
 
   it('correctly populates default values', async () => {
     const check = {
+      id: 32,
       job: 'carne asada',
       target: 'target.com',
       enabled: true,
@@ -182,9 +183,10 @@ describe('HTTP', () => {
     expect(advanced).toBeInTheDocument();
   });
 
-  it('correctly populates default values', async () => {
+  it('correctly populates default values for preexisting check', async () => {
     const check = {
       job: 'carne asada',
+      id: 32,
       target: 'https://target.com',
       enabled: true,
       labels: [{ name: 'a great label', value: 'totally awesome label' }],
@@ -262,7 +264,8 @@ describe('HTTP', () => {
     expect(await within(advancedOptions).findByPlaceholderText('name')).toHaveValue('a great label');
     expect(await within(advancedOptions).findByPlaceholderText('value')).toHaveValue('totally awesome label');
     expect(await within(advancedOptions).findByText('V6')).toBeInTheDocument();
-    expect(await within(advancedOptions).findByRole('checkbox')).toBeChecked();
+    // Follow redirect field
+    expect(await within(advancedOptions).findByRole('checkbox')).not.toBeChecked();
     expect(
       await within(advancedOptions).findByLabelText('Cache busting query parameter name', { exact: false })
     ).toHaveValue('busted');
@@ -530,6 +533,36 @@ describe('DNS', () => {
           },
         },
       });
+    });
+  });
+});
+
+describe('TCP', () => {
+  it('transforms data correctly', async () => {
+    const instance = await renderCheckEditor({ check: getMinimumCheck({ target: 'grafana.com:43' }) });
+    await selectCheckType(CheckType.TCP);
+    await submitForm();
+    expect(instance.addCheck).toHaveBeenCalledWith({
+      enabled: true,
+      frequency: 60000,
+      job: 'tacos',
+      labels: [],
+      probes: [1],
+      settings: {
+        tcp: {
+          ipVersion: 'V4',
+          tls: false,
+          tlsConfig: {
+            caCert: '',
+            clientCert: '',
+            clientKey: '',
+            insecureSkipVerify: false,
+            serverName: '',
+          },
+        },
+      },
+      target: 'grafana.com:43',
+      timeout: 3000,
     });
   });
 });

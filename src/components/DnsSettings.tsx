@@ -14,11 +14,10 @@ import {
   useTheme,
 } from '@grafana/ui';
 import { useFormContext, Controller, useFieldArray } from 'react-hook-form';
-import { CheckType, ResponseMatchType } from 'types';
+import { ResponseMatchType } from 'types';
 import { Collapse } from 'components/Collapse';
 import { LabelField } from './LabelField';
 import { DNS_RESPONSE_CODES, DNS_RECORD_TYPES, DNS_PROTOCOLS, IP_OPTIONS } from './constants';
-import { fallbackSettings } from './CheckEditor/checkFormTransformations';
 
 interface Props {
   isEditor: boolean;
@@ -29,8 +28,6 @@ const RESPONSE_MATCH_OPTIONS = [
   { label: `Validate ${ResponseMatchType.Answer} matches`, value: ResponseMatchType.Answer },
   { label: `Validate ${ResponseMatchType.Additional} matches`, value: ResponseMatchType.Additional },
 ];
-
-const fallbackValues = fallbackSettings(CheckType.DNS);
 
 const DnsSettingsForm: FC<Props> = ({ isEditor }) => {
   const { spacing } = useTheme();
@@ -58,12 +55,7 @@ const DnsSettingsForm: FC<Props> = ({ isEditor }) => {
           `}
         >
           <Field label="Record type" disabled={!isEditor}>
-            <Controller
-              as={Select}
-              name="settings.dns.recordType"
-              options={DNS_RECORD_TYPES}
-              defaultValue={fallbackValues.dns?.recordType}
-            />
+            <Controller as={Select} name="settings.dns.recordType" options={DNS_RECORD_TYPES} />
           </Field>
           <Field label="Server" disabled={!isEditor}>
             <Input
@@ -72,26 +64,13 @@ const DnsSettingsForm: FC<Props> = ({ isEditor }) => {
               name="settings.dns.server"
               type="text"
               placeholder="server"
-              defaultValue={fallbackValues.dns?.server}
             />
           </Field>
           <Field label="Protocol" disabled={!isEditor}>
-            <Controller
-              as={Select}
-              name="settings.dns.protocol"
-              options={DNS_PROTOCOLS}
-              defaultValue={fallbackValues.dns?.protocol}
-            />
+            <Controller as={Select} name="settings.dns.protocol" options={DNS_PROTOCOLS} />
           </Field>
           <Field label="Port" disabled={!isEditor}>
-            <Input
-              id="dns-settings-port"
-              ref={register}
-              name="settings.dns.port"
-              type="number"
-              placeholder="port"
-              defaultValue={fallbackValues.dns?.port}
-            />
+            <Input id="dns-settings-port" ref={register} name="settings.dns.port" type="number" placeholder="port" />
           </Field>
         </div>
       </Collapse>
@@ -178,7 +157,7 @@ const DnsSettingsForm: FC<Props> = ({ isEditor }) => {
         <LabelField isEditor={isEditor} />
         <HorizontalGroup>
           <Field label="IP version" description="The IP protocol of the ICMP request" disabled={!isEditor}>
-            <Controller name="settings.dns.ipVersion" as={Select} options={IP_OPTIONS} defaultValue={IP_OPTIONS[1]} />
+            <Controller name="settings.dns.ipVersion" as={Select} options={IP_OPTIONS} />
           </Field>
         </HorizontalGroup>
       </Collapse>

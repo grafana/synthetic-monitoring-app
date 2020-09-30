@@ -25,6 +25,7 @@ import {
   HttpSslOption,
   HttpRegexValidationType,
   HeaderMatch,
+  DnsResponseCodes,
 } from 'types';
 
 import {
@@ -33,6 +34,7 @@ import {
   DNS_RESPONSE_CODES,
   HTTP_SSL_OPTIONS,
   HTTP_REGEX_VALIDATION_OPTIONS,
+  fallbackCheck,
 } from 'components/constants';
 import { checkType } from 'utils';
 
@@ -68,6 +70,7 @@ export function fallbackSettings(t: CheckType): Settings {
           ipVersion: IpVersion.V4,
           protocol: DnsProtocol.UDP,
           port: 53,
+          validRCodes: [DnsResponseCodes.NOERROR],
         },
       };
     }
@@ -126,31 +129,28 @@ const getHttpRegexValidationFormValues = (
   const bodyRegexes = new Set(['failIfBodyMatchesRegexp', 'failIfBodyNotMatchesRegexp']);
   const headerRegexes = new Set(['failIfHeaderMatchesRegexp', 'failIfHeaderNotMatchesRegexp']);
   const invertedTypes = new Set(['failIfBodyNotMatchesRegexp', 'failIfHeaderNotMatchesRegexp']);
-  return Object.keys(validationSettings).reduce<HttpRegexValidationFormValue[]>(
-    (validationFormValues, regexType: keyof HttpSettingsValidations) => {
-      const validations = validationSettings[regexType] ?? [];
-      validations.forEach((validation: string | HeaderMatch) => {
-        if (bodyRegexes.has(regexType)) {
-          validationFormValues.push({
-            matchType: selectableValueFrom(HttpRegexValidationType.Body, HTTP_REGEX_VALIDATION_OPTIONS[1].label),
-            expression: validation as string,
-            inverted: invertedTypes.has(regexType),
-          });
-        } else if (headerRegexes.has(regexType)) {
-          const headerMatch = validation as HeaderMatch;
-          validationFormValues.push({
-            matchType: selectableValueFrom(HttpRegexValidationType.Header, HTTP_REGEX_VALIDATION_OPTIONS[0].label),
-            expression: headerMatch.regexp,
-            header: headerMatch.header,
-            allowMissing: headerMatch.allowMissing,
-            inverted: invertedTypes.has(regexType),
-          });
-        }
-      });
-      return validationFormValues;
-    },
-    []
-  );
+  return Object.keys(validationSettings).reduce<HttpRegexValidationFormValue[]>((validationFormValues, regexType) => {
+    const validations = validationSettings[regexType as keyof HttpSettingsValidations] ?? [];
+    validations.forEach((validation: string | HeaderMatch) => {
+      if (bodyRegexes.has(regexType)) {
+        validationFormValues.push({
+          matchType: selectableValueFrom(HttpRegexValidationType.Body, HTTP_REGEX_VALIDATION_OPTIONS[1].label),
+          expression: validation as string,
+          inverted: invertedTypes.has(regexType),
+        });
+      } else if (headerRegexes.has(regexType)) {
+        const headerMatch = validation as HeaderMatch;
+        validationFormValues.push({
+          matchType: selectableValueFrom(HttpRegexValidationType.Header, HTTP_REGEX_VALIDATION_OPTIONS[0].label),
+          expression: headerMatch.regexp,
+          header: headerMatch.header,
+          allowMissing: headerMatch.allowMissing,
+          inverted: invertedTypes.has(regexType),
+        });
+      }
+    });
+    return validationFormValues;
+  }, []);
 };
 
 const getHttpSettingsFormValues = (settings: Settings): HttpSettingsFormValues => {
@@ -160,6 +160,7 @@ const getHttpSettingsFormValues = (settings: Settings): HttpSettingsFormValues =
     failIfBodyNotMatchesRegexp,
     failIfHeaderMatchesRegexp,
     failIfHeaderNotMatchesRegexp,
+    noFollowRedirects,
     ...pickedSettings
   } = httpSettings;
 
@@ -171,6 +172,7 @@ const getHttpSettingsFormValues = (settings: Settings): HttpSettingsFormValues =
   });
   return {
     ...pickedSettings,
+    followRedirects: !noFollowRedirects,
     sslOptions: getHttpSettingsSslValue(httpSettings.failIfSSL ?? false, httpSettings.failIfNotSSL ?? false),
     validStatusCodes: httpSettings.validStatusCodes?.map(statusCode => selectableValueFrom(statusCode)) ?? [],
     validHTTPVersions: httpSettings.validHTTPVersions?.map(httpVersion => selectableValueFrom(httpVersion)) ?? [],
@@ -246,8 +248,19 @@ const getFormSettingsForCheck = (settings: Settings): SettingsFormValues => {
   }
 };
 
-export const getDefaultValuesFromCheck = (check: Check): CheckFormValues => {
+const getAllFormSettingsForCheck = (): SettingsFormValues => {
+  return {
+    http: getHttpSettingsFormValues(fallbackSettings(CheckType.HTTP)),
+    tcp: getTcpSettingsFormValues(fallbackSettings(CheckType.TCP)),
+    dns: getDnsSettingsFormValues(fallbackSettings(CheckType.DNS)),
+    ping: getPingSettingsFormValues(fallbackSettings(CheckType.PING)),
+  };
+};
+
+export const getDefaultValuesFromCheck = (check: Check = fallbackCheck): CheckFormValues => {
   const defaultCheckType = checkType(check.settings);
+  const settings = check.id ? getFormSettingsForCheck(check.settings) : getAllFormSettingsForCheck();
+
   return {
     ...check,
     timeout: check.timeout / 1000,
@@ -255,7 +268,7 @@ export const getDefaultValuesFromCheck = (check: Check): CheckFormValues => {
     probes: check.probes,
     checkType:
       CHECK_TYPE_OPTIONS.find(checkTypeOption => checkTypeOption.value === defaultCheckType) ?? CHECK_TYPE_OPTIONS[1],
-    settings: getFormSettingsForCheck(check.settings),
+    settings,
   };
 };
 
@@ -359,13 +372,14 @@ const getHttpSettings = (
   const validationRegexes = getHttpRegexValidationsFromFormValue(mergedSettings.regexValidations ?? []);
 
   // We need to pick the sslOptions key out of the settings, since the API doesn't expect this key
-  const { sslOptions, regexValidations, ...mergedSettingsToKeep } = mergedSettings;
+  const { sslOptions, regexValidations, followRedirects, ...mergedSettingsToKeep } = mergedSettings;
 
   return {
     ...fallbackValues,
     ...mergedSettingsToKeep,
     ...sslConfig,
     ...validationRegexes,
+    noFollowRedirects: !followRedirects,
     method,
     headers: formattedHeaders,
     ipVersion: getValueFromSelectable(settings?.ipVersion ?? defaultSettings?.ipVersion) ?? fallbackValues.ipVersion,

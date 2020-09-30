@@ -11,7 +11,6 @@ import {
   Select,
   Legend,
   Alert,
-  Spinner,
 } from '@grafana/ui';
 import { useAsyncCallback } from 'react-async-hook';
 import { Check, CheckType, OrgRole, CheckFormValues, SubmissionError } from 'types';
@@ -23,11 +22,11 @@ import CheckTarget from 'components/CheckTarget';
 import { Subheader } from 'components/Subheader';
 import { CheckSettings } from './CheckSettings';
 import { ProbeOptions } from './ProbeOptions';
-import { CHECK_TYPE_OPTIONS } from 'components/constants';
+import { CHECK_TYPE_OPTIONS, fallbackCheck } from 'components/constants';
 import { useForm, FormContext, Controller } from 'react-hook-form';
 
 interface Props {
-  check: Check;
+  check?: Check;
   instance: SMDataSource;
   onReturn: (reload: boolean) => void;
 }
@@ -44,7 +43,7 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
 
   const { execute: onSubmit, error, loading: submitting } = useAsyncCallback(async (values: CheckFormValues) => {
     const updatedCheck = getCheckFromFormValues(values, defaultValues);
-    if (check.id) {
+    if (check?.id) {
       await instance.updateCheck({
         id: check.id,
         tenantId: check.tenantId,
@@ -59,7 +58,7 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
   const submissionError = error as SubmissionError;
 
   const onRemoveCheck = async () => {
-    const id = check.id;
+    const id = check?.id;
     if (!id) {
       return;
     }
@@ -68,15 +67,10 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
   };
 
   const target = formMethods.watch('target', '') as string;
-
-  if (!check) {
-    return <Spinner />;
-  }
-
   return (
     <FormContext {...formMethods}>
       <form onSubmit={formMethods.handleSubmit(onSubmit)}>
-        <Legend>{check.id ? 'Add Check' : 'Edit Check'}</Legend>
+        <Legend>{check?.id ? 'Edit Check' : 'Add Check'}</Legend>
         <div
           className={css`
             margin-bottom: 8px;
@@ -84,7 +78,7 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
         >
           <Subheader>Check Details</Subheader>
           <HorizontalGroup justify="flex-start" spacing="md">
-            <Field label="Check type" disabled={check.id ? true : false}>
+            <Field label="Check type" disabled={check?.id ? true : false}>
               <Controller
                 name="checkType"
                 placeholder="Check type"
@@ -139,7 +133,12 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
               margin-top: 24px;
             `}
           />
-          <ProbeOptions isEditor={isEditor} timeout={check.timeout} frequency={check.frequency} probes={check.probes} />
+          <ProbeOptions
+            isEditor={isEditor}
+            timeout={check?.timeout ?? fallbackCheck.timeout}
+            frequency={check?.frequency ?? fallbackCheck.frequency}
+            probes={check?.probes ?? fallbackCheck.probes}
+          />
           <CheckSettings typeOfCheck={selectedCheckType} isEditor={isEditor} />
         </div>
         <HorizontalGroup>
@@ -149,7 +148,7 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
           >
             Save
           </Button>
-          {check.id && (
+          {check?.id && (
             <Button variant="destructive" onClick={() => setShowDeleteModal(true)} disabled={!isEditor} type="button">
               Delete Check
             </Button>

@@ -201,13 +201,7 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
             invalid={Boolean(errors?.settings?.http?.method)}
             error={errors?.settings?.http?.method}
           >
-            <Controller
-              as={Select}
-              rules={{ required: true }}
-              name="settings.http.method"
-              options={methodOptions}
-              defaultValue={methodOptions[0]}
-            />
+            <Controller as={Select} rules={{ required: true }} name="settings.http.method" options={methodOptions} />
           </Field>
         </HorizontalGroup>
         <Container>
@@ -445,7 +439,7 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
             description="Whether or not the probe will follow any redirects."
             disabled={!isEditor}
           >
-            <Switch ref={register} name="settings.http.noFollowRedirects" disabled={!isEditor} />
+            <Switch ref={register} name="settings.http.followRedirects" disabled={!isEditor} />
           </Field>
           <Field
             label="Cache busting query parameter name"

@@ -204,6 +204,7 @@ export interface HttpSettingsFormValues
     | 'failIfBodyNotMatchesRegexp'
     | 'failIfHeaderMatchesRegexp'
     | 'failIfHeaderNotMatchesRegexp'
+    | 'noFollowRedirects'
   > {
   sslOptions: SelectableValue<HttpSslOption>;
   validStatusCodes: Array<SelectableValue<number>>;
@@ -212,6 +213,7 @@ export interface HttpSettingsFormValues
   ipVersion: SelectableValue<IpVersion>;
   headers: HttpHeaderFormValue[];
   regexValidations: HttpRegexValidationFormValue[];
+  followRedirects: boolean;
 }
 
 export interface PingSettings {
