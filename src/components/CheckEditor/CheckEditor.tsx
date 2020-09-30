@@ -21,6 +21,7 @@ import { getDefaultValuesFromCheck, getCheckFromFormValues } from './checkFormTr
 import { validateJob, validateTarget } from 'validation';
 import CheckTarget from 'components/CheckTarget';
 import { Subheader } from 'components/Subheader';
+import { HorizonalCheckboxField } from 'components/HorizonalCheckboxField';
 import { CheckSettings } from './CheckSettings';
 import { ProbeOptions } from './ProbeOptions';
 import { CHECK_TYPE_OPTIONS, fallbackCheck } from 'components/constants';
@@ -107,17 +108,13 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
               width={30}
             />
           </Field>
-          <div className={styles.enabledField}>
-            <div className={styles.enabledCheckbox}>
-              <Checkbox name="enabled" ref={formMethods.register} disabled={!isEditor} id="check-form-enabled" />
-            </div>
-            <Label
-              description="If a check is enabled, metris and logs are published to your Grafana Cloud stack."
-              htmlFor="check-form-enabled"
-            >
-              Enabled
-            </Label>
-          </div>
+          <HorizonalCheckboxField
+            disabled={!isEditor}
+            name="enabled"
+            id="check-form-enabled"
+            label="Enabled"
+            description="If a check is enabled, metrics and logs are published to your Grafana Cloud stack."
+          />
           <Field
             label="Job name"
             description="Name used for job label"

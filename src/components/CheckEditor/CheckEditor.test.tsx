@@ -240,7 +240,7 @@ describe('HTTP', () => {
     expect(await within(httpSection).findByPlaceholderText('value')).toHaveValue('headerValue');
 
     await toggleSection('TLS config');
-    expect(await screen.findByLabelText('Skip validation', { exact: false })).toBeChecked();
+    expect(await screen.findByLabelText('Disable target certificate validation')).toBeChecked();
     expect(await screen.findByLabelText('Server name', { exact: false })).toHaveValue('serverName');
     expect(await screen.findByLabelText('CA certificate', { exact: false })).toHaveValue('caCert');
     expect(await screen.findByLabelText('Client certificate', { exact: false })).toHaveValue('clientCert');

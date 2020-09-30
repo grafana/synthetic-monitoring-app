@@ -25,6 +25,7 @@ import { TLSConfig } from 'components/TLSConfig';
 import { NameValueInput } from 'components/NameValueInput';
 import { validateBearerToken, validateHTTPBody, validateHTTPHeaderName, validateHTTPHeaderValue } from 'validation';
 import { GrafanaTheme } from '@grafana/data';
+import { HorizonalCheckboxField } from 'components/HorizonalCheckboxField';
 
 const httpVersionOptions = [
   {
@@ -242,11 +243,9 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
         collapsible
       >
         <VerticalGroup spacing="xs">
-          <Field
-            label="Bearer token"
-            description="Include bearer Authorization header in request"
+          <HorizonalCheckboxField
+            label="Include bearer authorization header in request"
             disabled={!isEditor}
-            horizontal={true}
             className={
               !includeBearerToken
                 ? undefined
@@ -254,15 +253,9 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
                     margin-bottom: 1px;
                   `
             }
-          >
-            <Container margin="sm">
-              <Switch
-                value={includeBearerToken}
-                onChange={() => setIncludeBearerToken(!includeBearerToken)}
-                disabled={!isEditor}
-              />
-            </Container>
-          </Field>
+            value={includeBearerToken}
+            onChange={() => setIncludeBearerToken(!includeBearerToken)}
+          />
           {includeBearerToken && (
             <Field invalid={Boolean(errors.settings?.http?.bearerToken)} error={errors.settings?.http?.bearerToken}>
               <Input
@@ -278,11 +271,9 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
           )}
         </VerticalGroup>
         <VerticalGroup spacing="xs">
-          <Field
-            label="Basic auth"
-            description="Include Basic Authorization header in request"
+          <HorizonalCheckboxField
+            label="Include basic authorization header in request"
             disabled={!isEditor}
-            horizontal={true}
             className={
               !includeBasicAuth
                 ? undefined
@@ -290,15 +281,9 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
                     margin-bottom: 1px;
                   `
             }
-          >
-            <Container margin="sm">
-              <Switch
-                value={includeBasicAuth}
-                onChange={() => setIncludeBasicAuth(!includeBasicAuth)}
-                disabled={!isEditor}
-              />
-            </Container>
-          </Field>
+            value={includeBasicAuth}
+            onChange={() => setIncludeBasicAuth(!includeBasicAuth)}
+          />
           {includeBasicAuth && (
             <HorizontalGroup>
               <Input
@@ -348,7 +333,6 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
               disabled={!isEditor}
             />
           </Field>
-
           <Field
             label="SSL options"
             description="Choose whether probe fails if SSL is present or not present"
@@ -434,13 +418,7 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
           <Field label="IP version" description="The IP protocol of the HTTP request" disabled={!isEditor}>
             <Controller as={Select} name="settings.http.ipVersion" options={IP_OPTIONS} />
           </Field>
-          <Field
-            label="Follow redirects"
-            description="Whether or not the probe will follow any redirects."
-            disabled={!isEditor}
-          >
-            <Switch ref={register} name="settings.http.followRedirects" disabled={!isEditor} />
-          </Field>
+          <HorizonalCheckboxField label="Follow redirects" disabled={!isEditor} name="settings.http.followRedirects" />
           <Field
             label="Cache busting query parameter name"
             description="The name of the query parameter used to prevent the server from using a cached response. Each probe will assign a random value to this parameter each time a request is made."
