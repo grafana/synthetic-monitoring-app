@@ -158,6 +158,7 @@ describe('PING', () => {
     expect(await screen.findByText('burritos')).toBeInTheDocument(); // display name of probe with id 42 returned in mocked listProbes call
     expect(await screen.findByLabelText('Frequency', { exact: false })).toHaveValue(120);
     expect(await screen.findByLabelText('Timeout', { exact: false })).toHaveValue(2);
+    expect(await screen.findByLabelText('Enabled', { exact: false })).toBeChecked();
     const advancedOption = await screen.findByText('Advanced options');
     userEvent.click(advancedOption);
     expect(await screen.findByPlaceholderText('name')).toHaveValue('a great label');
@@ -224,6 +225,7 @@ describe('HTTP', () => {
 
     await renderCheckEditor({ check });
     expect(await screen.findByLabelText('Job name', { exact: false })).toHaveValue('carne asada');
+    expect(await screen.findByLabelText('Enabled', { exact: false })).toBeChecked();
     expect(await screen.findByLabelText('Full URL to send requests to', { exact: false })).toHaveValue(
       'https://target.com'
     );

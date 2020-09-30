@@ -2,15 +2,16 @@ import React, { FC, useState, useMemo } from 'react';
 import { css } from 'emotion';
 import {
   Button,
-  Container,
   ConfirmModal,
   Field,
   Input,
   HorizontalGroup,
-  Switch,
+  Checkbox,
   Select,
   Legend,
   Alert,
+  Label,
+  useStyles,
 } from '@grafana/ui';
 import { useAsyncCallback } from 'react-async-hook';
 import { Check, CheckType, OrgRole, CheckFormValues, SubmissionError } from 'types';
@@ -24,6 +25,7 @@ import { CheckSettings } from './CheckSettings';
 import { ProbeOptions } from './ProbeOptions';
 import { CHECK_TYPE_OPTIONS, fallbackCheck } from 'components/constants';
 import { useForm, FormContext, Controller } from 'react-hook-form';
+import { GrafanaTheme } from '@grafana/data';
 
 interface Props {
   check?: Check;
@@ -31,8 +33,30 @@ interface Props {
   onReturn: (reload: boolean) => void;
 }
 
+const getStyles = (theme: GrafanaTheme) => ({
+  marginBotton: css`
+    margin-bottom: ${theme?.spacing.sm};
+  `,
+  enabledField: css`
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: ${theme?.spacing.md};
+  `,
+  enabledCheckbox: css`
+    margin-right: ${theme?.spacing.sm};
+    display: flex;
+  `,
+  breakLine: css`
+    margin-top: ${theme?.spacing.lg};
+  `,
+  submissionError: css`
+    margin-top: ${theme?.spacing.md};
+  `,
+});
+
 export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const styles = useStyles(getStyles);
 
   const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
 
@@ -71,29 +95,29 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
     <FormContext {...formMethods}>
       <form onSubmit={formMethods.handleSubmit(onSubmit)}>
         <Legend>{check?.id ? 'Edit Check' : 'Add Check'}</Legend>
-        <div
-          className={css`
-            margin-bottom: 8px;
-          `}
-        >
+        <div className={styles.marginBotton}>
           <Subheader>Check Details</Subheader>
-          <HorizontalGroup justify="flex-start" spacing="md">
-            <Field label="Check type" disabled={check?.id ? true : false}>
-              <Controller
-                name="checkType"
-                placeholder="Check type"
-                control={formMethods.control}
-                as={Select}
-                options={CHECK_TYPE_OPTIONS}
-                width={30}
-              />
-            </Field>
-            <Field label="Enabled" disabled={!isEditor}>
-              <Container padding="sm">
-                <Switch name="enabled" ref={formMethods.register} disabled={!isEditor} />
-              </Container>
-            </Field>
-          </HorizontalGroup>
+          <Field label="Check type" disabled={check?.id ? true : false}>
+            <Controller
+              name="checkType"
+              placeholder="Check type"
+              control={formMethods.control}
+              as={Select}
+              options={CHECK_TYPE_OPTIONS}
+              width={30}
+            />
+          </Field>
+          <div className={styles.enabledField}>
+            <div className={styles.enabledCheckbox}>
+              <Checkbox name="enabled" ref={formMethods.register} disabled={!isEditor} id="check-form-enabled" />
+            </div>
+            <Label
+              description="If a check is enabled, metris and logs are published to your Grafana Cloud stack."
+              htmlFor="check-form-enabled"
+            >
+              Enabled
+            </Label>
+          </div>
           <Field
             label="Job name"
             description="Name used for job label"
@@ -128,11 +152,7 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
             }}
             disabled={!isEditor}
           />
-          <hr
-            className={css`
-              margin-top: 24px;
-            `}
-          />
+          <hr className={styles.breakLine} />
           <ProbeOptions
             isEditor={isEditor}
             timeout={check?.timeout ?? fallbackCheck.timeout}
@@ -164,11 +184,7 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
           <a onClick={() => onReturn(true)}>Back</a>
         </HorizontalGroup>
         {submissionError && (
-          <div
-            className={css`
-              margin-top: 1rem;
-            `}
-          >
+          <div className={styles.submissionError}>
             <Alert title="Save failed" severity="error">
               {`${submissionError.status}: ${submissionError.message}`}
             </Alert>
