@@ -1,7 +1,8 @@
 import React, { FC, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
-import { HorizontalGroup, Field, Input, Container, TextArea, Switch } from '@grafana/ui';
+import { Field, Input, Container, TextArea } from '@grafana/ui';
 import { Collapse } from 'components/Collapse';
+import { HorizonalCheckboxField } from 'components/HorizonalCheckboxField';
 import { CheckType } from 'types';
 import { validateTLSCACert, validateTLSClientCert, validateTLSClientKey, validateTLSServerName } from 'validation';
 
@@ -15,34 +16,30 @@ export const TLSConfig: FC<Props> = ({ isEditor, checkType }) => {
   const { register, errors } = useFormContext();
   return (
     <Collapse label="TLS config" onToggle={() => setShowTLS(!showTLS)} isOpen={showTLS} collapsible>
-      <HorizontalGroup>
-        <Field label="Skip validation" description="Disable target certificate validation" disabled={!isEditor}>
-          <Switch
-            id="tls-config-skip-validation"
-            ref={register}
-            name={`settings.${checkType}.tlsConfig.insecureSkipVerify`}
-            disabled={!isEditor}
-          />
-        </Field>
-        <Field
-          label="Server name"
-          description="Used to verify the hostname for the targets"
+      <HorizonalCheckboxField
+        id="tls-config-skip-validation"
+        name={`settings.${checkType}.tlsConfig.insecureSkipVerify`}
+        disabled={!isEditor}
+        label="Disable target certificate validation"
+      />
+      <Field
+        label="Server name"
+        description="Used to verify the hostname for the targets"
+        disabled={!isEditor}
+        invalid={Boolean(errors.settings?.[checkType]?.tlsConfig?.serverName)}
+        error={errors.settings?.[checkType]?.tlsConfig?.serverName}
+      >
+        <Input
+          id="tls-config-server-name"
+          ref={register({
+            validate: validateTLSServerName,
+          })}
+          name={`settings.${checkType}.tlsConfig.serverName`}
+          type="text"
+          placeholder="Server name"
           disabled={!isEditor}
-          invalid={Boolean(errors.settings?.[checkType]?.tlsConfig?.serverName)}
-          error={errors.settings?.[checkType]?.tlsConfig?.serverName}
-        >
-          <Input
-            id="tls-config-server-name"
-            ref={register({
-              validate: validateTLSServerName,
-            })}
-            name={`settings.${checkType}.tlsConfig.serverName`}
-            type="text"
-            placeholder="Server name"
-            disabled={!isEditor}
-          />
-        </Field>
-      </HorizontalGroup>
+        />
+      </Field>
       <Container>
         <Field
           label="CA certificate"

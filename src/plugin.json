@@ -13,9 +13,9 @@
       "large": "img/logo.svg"
     },
     "screenshots": [
-      {"name": "Summary Dashboard", "path": "img/screenshot-dash-summary.png"},
-      {"name": "HTTP Dashboard", "path": "img/screenshot-dash-http.png"},
-      {"name": "Check List", "path": "img/screenshot-check-list.png"}
+      { "name": "Summary Dashboard", "path": "img/screenshot-dash-summary.png" },
+      { "name": "HTTP Dashboard", "path": "img/screenshot-dash-http.png" },
+      { "name": "Check List", "path": "img/screenshot-check-list.png" }
     ],
     "version": "%VERSION%",
     "updated": "%TODAY%"
@@ -49,7 +49,7 @@
   ],
 
   "dependencies": {
-    "grafanaVersion": "7.0.x",
+    "grafanaVersion": "7.2.x",
     "plugins": [
       {
         "type": "panel",

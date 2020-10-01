@@ -158,6 +158,7 @@ describe('PING', () => {
     expect(await screen.findByText('burritos')).toBeInTheDocument(); // display name of probe with id 42 returned in mocked listProbes call
     expect(await screen.findByLabelText('Frequency', { exact: false })).toHaveValue(120);
     expect(await screen.findByLabelText('Timeout', { exact: false })).toHaveValue(2);
+    expect(await screen.findByLabelText('Enabled', { exact: false })).toBeChecked();
     const advancedOption = await screen.findByText('Advanced options');
     userEvent.click(advancedOption);
     expect(await screen.findByPlaceholderText('name')).toHaveValue('a great label');
@@ -224,6 +225,7 @@ describe('HTTP', () => {
 
     await renderCheckEditor({ check });
     expect(await screen.findByLabelText('Job name', { exact: false })).toHaveValue('carne asada');
+    expect(await screen.findByLabelText('Enabled', { exact: false })).toBeChecked();
     expect(await screen.findByLabelText('Full URL to send requests to', { exact: false })).toHaveValue(
       'https://target.com'
     );
@@ -238,7 +240,7 @@ describe('HTTP', () => {
     expect(await within(httpSection).findByPlaceholderText('value')).toHaveValue('headerValue');
 
     await toggleSection('TLS config');
-    expect(await screen.findByLabelText('Skip validation', { exact: false })).toBeChecked();
+    expect(await screen.findByLabelText('Disable target certificate validation')).toBeChecked();
     expect(await screen.findByLabelText('Server name', { exact: false })).toHaveValue('serverName');
     expect(await screen.findByLabelText('CA certificate', { exact: false })).toHaveValue('caCert');
     expect(await screen.findByLabelText('Client certificate', { exact: false })).toHaveValue('clientCert');
@@ -264,8 +266,7 @@ describe('HTTP', () => {
     expect(await within(advancedOptions).findByPlaceholderText('name')).toHaveValue('a great label');
     expect(await within(advancedOptions).findByPlaceholderText('value')).toHaveValue('totally awesome label');
     expect(await within(advancedOptions).findByText('V6')).toBeInTheDocument();
-    // Follow redirect field
-    expect(await within(advancedOptions).findByRole('checkbox')).not.toBeChecked();
+    expect(await within(advancedOptions).findByLabelText('Follow redirects', { exact: false })).not.toBeChecked();
     expect(
       await within(advancedOptions).findByLabelText('Cache busting query parameter name', { exact: false })
     ).toHaveValue('busted');
@@ -310,6 +311,18 @@ describe('HTTP', () => {
     );
     await act(async () => await userEvent.paste(screen.getByLabelText('Client Key', { exact: false }), 'client key'));
     await toggleSection('TLS config');
+
+    // Authentication
+    const authentication = await toggleSection('Authentication');
+    userEvent.click(await within(authentication).findByLabelText('Include bearer authorization header in request'));
+    const bearerTokenInput = await screen.findByPlaceholderText('Bearer token');
+    await act(async () => await userEvent.type(bearerTokenInput, 'a bearer token'));
+
+    userEvent.click(await within(authentication).findByLabelText('Include basic authorization header in request'));
+    const usernameInput = await within(authentication).findByPlaceholderText('Username');
+    const passwordInput = await within(authentication).findByPlaceholderText('Password');
+    await act(async () => await userEvent.type(usernameInput, 'a username'));
+    await act(async () => await userEvent.type(passwordInput, 'a password'));
 
     // Validation
     const validationSection = await toggleSection('Validation');
@@ -369,6 +382,11 @@ describe('HTTP', () => {
           validHTTPVersions: ['HTTP/1.0'],
           failIfNotSSL: false,
           failIfSSL: false,
+          basicAuth: {
+            password: 'a password',
+            username: 'a username',
+          },
+          bearerToken: 'a bearer token',
           failIfHeaderNotMatchesRegexp: [{ regexp: 'a header regex', allowMissing: true, header: 'Content-Type' }],
           failIfHeaderMatchesRegexp: [],
           failIfBodyMatchesRegexp: [],

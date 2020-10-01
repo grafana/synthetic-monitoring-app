@@ -4,7 +4,7 @@ module.exports = {
     'before:init': ['yarn build'],
   },
   git: {
-    commitMessage: 'chore: release v${version}',
+    commitMessage: 'chore: release v${version} [skip ci]',
   },
   github: {
     release: false,
