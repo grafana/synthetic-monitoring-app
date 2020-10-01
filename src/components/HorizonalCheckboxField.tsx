@@ -8,7 +8,7 @@ const getStyles = (theme: GrafanaTheme) => ({
   container: css`
     display: flex;
     align-items: center;
-    margin-bottom: ${theme?.spacing.md};
+    margin-bottom: ${theme.spacing.md};
   `,
   checkbox: css`
     position: relative;
@@ -20,7 +20,7 @@ const getStyles = (theme: GrafanaTheme) => ({
 
 interface Props {
   disabled?: boolean;
-  id?: string;
+  id: string;
   name?: string;
   label?: string;
   description?: string;

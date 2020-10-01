@@ -266,8 +266,7 @@ describe('HTTP', () => {
     expect(await within(advancedOptions).findByPlaceholderText('name')).toHaveValue('a great label');
     expect(await within(advancedOptions).findByPlaceholderText('value')).toHaveValue('totally awesome label');
     expect(await within(advancedOptions).findByText('V6')).toBeInTheDocument();
-    // Follow redirect field
-    expect(await within(advancedOptions).findByRole('checkbox')).not.toBeChecked();
+    expect(await within(advancedOptions).findByLabelText('Follow redirects', { exact: false })).not.toBeChecked();
     expect(
       await within(advancedOptions).findByLabelText('Cache busting query parameter name', { exact: false })
     ).toHaveValue('busted');

@@ -135,14 +135,14 @@ const generateValidStatusCodes = () => {
 const validStatusCodes = generateValidStatusCodes();
 const REGEX_FIELD_NAME = 'settings.http.regexValidations';
 
-const getStyles = (theme?: GrafanaTheme) => ({
+const getStyles = (theme: GrafanaTheme) => ({
   validationGroup: css`
     max-width: 400px;
   `,
   validationGrid: css`
     display: grid;
     grid-template-columns: 300px auto 70px auto auto;
-    grid-gap: ${theme?.spacing.sm};
+    grid-gap: ${theme.spacing.sm};
     align-items: center;
     width: 100%;
   `,
@@ -160,7 +160,7 @@ const getStyles = (theme?: GrafanaTheme) => ({
     align-items: center;
   `,
   validationHeaderName: css`
-    margin-right: ${theme?.spacing.sm};
+    margin-right: ${theme.spacing.sm};
   `,
   validationAllowMissing: css`
     justify-self: center;
@@ -420,7 +420,12 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
           <Field label="IP version" description="The IP protocol of the HTTP request" disabled={!isEditor}>
             <Controller as={Select} name="settings.http.ipVersion" options={IP_OPTIONS} />
           </Field>
-          <HorizonalCheckboxField label="Follow redirects" disabled={!isEditor} name="settings.http.followRedirects" />
+          <HorizonalCheckboxField
+            id="http-settings-followRedirects"
+            label="Follow redirects"
+            disabled={!isEditor}
+            name="settings.http.followRedirects"
+          />
           <Field
             label="Cache busting query parameter name"
             description="The name of the query parameter used to prevent the server from using a cached response. Each probe will assign a random value to this parameter each time a request is made."

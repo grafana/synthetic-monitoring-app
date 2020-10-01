@@ -23,23 +23,23 @@ interface Props {
 }
 
 const getStyles = (theme: GrafanaTheme) => ({
-  marginBotton: css`
-    margin-bottom: ${theme?.spacing.sm};
+  formBody: css`
+    margin-bottom: ${theme.spacing.sm};
   `,
   enabledField: css`
     display: flex;
     align-items: flex-start;
-    margin-bottom: ${theme?.spacing.md};
+    margin-bottom: ${theme.spacing.md};
   `,
   enabledCheckbox: css`
-    margin-right: ${theme?.spacing.sm};
+    margin-right: ${theme.spacing.sm};
     display: flex;
   `,
   breakLine: css`
-    margin-top: ${theme?.spacing.lg};
+    margin-top: ${theme.spacing.lg};
   `,
   submissionError: css`
-    margin-top: ${theme?.spacing.md};
+    margin-top: ${theme.spacing.md};
   `,
 });
 
@@ -84,7 +84,7 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
     <FormContext {...formMethods}>
       <form onSubmit={formMethods.handleSubmit(onSubmit)}>
         <Legend>{check?.id ? 'Edit Check' : 'Add Check'}</Legend>
-        <div className={styles.marginBotton}>
+        <div className={styles.formBody}>
           <Subheader>Check Details</Subheader>
           <Field label="Check type" disabled={check?.id ? true : false}>
             <Controller
