@@ -32,7 +32,8 @@
       "type": "page",
       "name": "Home",
       "path": "/a/grafana-synthetic-monitoring-app/?page=redirect&dashboard=summary",
-      "addToNav": true
+      "addToNav": true,
+      "defaultNav": true
     },
     {
       "type": "page",
