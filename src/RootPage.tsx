@@ -12,6 +12,7 @@ import { TenantSetup } from './components/TenantSetup';
 import { InstanceContext } from './components/InstanceContext';
 import { ChecksPage } from 'page/ChecksPage';
 import { ProbesPage } from 'page/ProbesPage';
+import { WelcomePage } from 'page/WelcomePage';
 
 interface Props extends AppRootProps<GlobalSettings> {}
 interface State {
@@ -188,7 +189,10 @@ export class RootPage extends PureComponent<Props, State> {
   }
 
   renderPage() {
+    const { meta } = this.props;
     const { settings, valid, instance } = this.state;
+    console.log(meta);
+    return <WelcomePage meta={meta} />;
     if (settings.length > 1) {
       return this.renderMultipleConfigs();
     }

@@ -20,7 +20,7 @@
     {
       "path": "sm",
       "method": "POST",
-      "url": "{{.JsonData.apiHost}}/api/v1/",
+      "url": "{{.JsonData.apiHost}}/steve/v1/",
       "reqRole": "Editor",
       "headers": [
         {

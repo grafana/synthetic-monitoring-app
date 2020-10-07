@@ -20,7 +20,24 @@
     "version": "%VERSION%",
     "updated": "%TODAY%"
   },
-
+  "routes": [
+    {
+      "path": "init",
+      "method": "POST",
+      "url": "{{ .JsonData.apiHost }}/api/v1/register/init",
+      "reqRole": "Editor",
+      "headers": [
+        {
+          "name": "LogsPublisherToken",
+          "content": "{{ .SecureJsonData.hlPublisherToken }}"
+        },
+        {
+          "name": "MetricsPublisherToken",
+          "content": "{{ .SecureJsonData.hmPublisherToken }}"
+        }
+      ]
+    }
+  ],
   "includes": [
     {
       "type": "page",
