@@ -31,3 +31,5 @@ temp/
 
 # JetBrains IDEs
 .idea/
+
+.vscode
