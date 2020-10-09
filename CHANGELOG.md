@@ -1,3 +1,10 @@
+## [0.3.27](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.26...0.3.27) (2020-10-09)
+
+
+### Bug Fixes
+
+* allow hostnames to start with a number ([275070f](https://github.com/grafana/synthetic-monitoring-app/commit/275070fbd1f1c9d00260524609e633139e83370b))
+
 ## [0.3.26](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.25...0.3.26) (2020-10-02)
 
 ## [0.3.25](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.24...0.3.25) (2020-10-01)
