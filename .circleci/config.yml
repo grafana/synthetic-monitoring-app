@@ -239,5 +239,4 @@ jobs:
           name: 'Publish release to production'
           command: |
             apk --no-cache add curl
-            COMMIT=$(git rev-parse HEAD)
-            curl -H "Authorization: Bearer $GRAFANA_API_KEY" https://grafana.com/api/plugins -d url=https://github.com/grafana/synthetic-monitoring-app -d commit=$COMMIT
+            ./scripts/production-release.sh
