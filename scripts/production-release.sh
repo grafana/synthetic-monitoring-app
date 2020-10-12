@@ -24,9 +24,10 @@ gcom() {
 }
 
 GIT_TAG=$(git tag --points-at HEAD)
-URL="https://github.com/grafana/synthetic-monitoring-app/releases/download/$GIT_TAG/grafana-synthetic-monitoring-app-${GIT_TAG//v}.zip"
+URL='https://github.com/grafana/synthetic-monitoring-app/releases/download/'"$GIT_TAG"'/grafana-synthetic-monitoring-app-'"${GIT_TAG//v}"'.zip'
 PKG_SUM=$(curl -sL $URL | md5sum)
 gcom /plugins \
-  -d download[any][url]=$URL
-  -d download[any][md5]=$PKG_SUM
+  -d download[any][url]=$URL \
+  -d download[any][md5]=$PKG_SUM \
+	-d url=https://github.com/grafana/synthetic-monitoring-app
 
