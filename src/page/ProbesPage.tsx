@@ -18,9 +18,10 @@ export const ProbesPage: FC<Props> = ({ id }) => {
   const [probes, setProbes] = useState<Probe[]>([]);
   const [selectedProbe, setSelectedProbe] = useState<Probe | undefined>();
   const { instance, loading: instanceLoading } = useContext(InstanceContext);
+  const api = instance?.api ?? undefined;
   useEffect(() => {
     const fetchProbes = async () => {
-      const probes = await instance?.api.listProbes();
+      const probes = await api?.listProbes();
       if (probes) {
         setProbes(probes);
         setProbesLoading(false);
@@ -31,7 +32,7 @@ export const ProbesPage: FC<Props> = ({ id }) => {
       }
     };
     fetchProbes();
-  }, [instanceLoading, instance?.api, id]);
+  }, [instanceLoading, api, id]);
 
   const onGoBack = () => {
     setSelectedProbe(undefined);

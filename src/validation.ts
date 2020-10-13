@@ -228,7 +228,7 @@ function validateHostname(target: string): string | undefined {
   const ipv6 = new Address6(target);
   const pc = punycode.toASCII(target);
   // note that \w matches "_"
-  const re = new RegExp(/^[a-z]([-a-z0-9]{0,62}[a-z0-9])?(\.[a-z]([-a-z0-9]{0,62}[a-z0-9])?)+$/, 'i');
+  const re = new RegExp(/^[a-z0-9]([-a-z0-9]{0,62}[a-z0-9])?(\.[a-z]([-a-z0-9]{0,62}[a-z0-9])?)+$/, 'i');
   if (!pc.match(re) && !ipv4.isValid() && !ipv6.isValid()) {
     return 'Target must be a valid hostname';
   }

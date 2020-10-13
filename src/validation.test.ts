@@ -128,7 +128,7 @@ describe('bad targets', () => {
   });
 
   it('should reject ping targets with invalid hostnames', () => {
-    const testcases: string[] = ['1.org', 'x.', '.y', 'x=y.org'];
+    const testcases: string[] = ['x.', '.y', 'x=y.org'];
     testcases.forEach((testcase: string) => {
       expect(CheckValidation.target(CheckType.PING, testcase)).toBe('Target must be a valid hostname');
       expect(CheckValidation.target(CheckType.DNS, testcase)).toBe('Target must be a valid hostname');
@@ -151,6 +151,10 @@ describe('good targets', () => {
     testcases.forEach((testcase: string) => {
       expect(CheckValidation.target(CheckType.HTTP, testcase)).toBe(undefined);
     });
+  });
+
+  it('should accept hostnames with leading numbers', () => {
+    expect(CheckValidation.target(CheckType.HTTP, 'http://500grafana.com')).toBe(undefined);
   });
 
   it('should accept https schema as HTTP target', () => {

@@ -14,10 +14,11 @@ export function useMetricData(query: string, options?: MetricQueryOptions & UseM
   const [data, setData] = useState<any[]>([]);
   const [error, setError] = useState<string | undefined>();
 
+  const api = instance?.api ?? undefined;
   // refresh data every 60 seconds
   useEffect(() => {
     const getData = async () => {
-      const url = instance?.api?.getMetricsDS()?.url;
+      const url = api?.getMetricsDS()?.url;
       if (options?.skip || !url) {
         return;
       }
@@ -36,7 +37,7 @@ export function useMetricData(query: string, options?: MetricQueryOptions & UseM
     }, REFETCH_INTERVAL);
 
     return () => clearInterval(interval);
-  }, [query, instance?.api, options]);
+  }, [query, api, options]);
 
   return { loading: isFetchingData, data, error };
 }
