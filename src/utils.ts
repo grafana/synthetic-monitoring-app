@@ -50,21 +50,35 @@ export async function getHostedLokiAndPrometheusInfo(): Promise<DataSourceInstan
   return settings;
 }
 
-interface DatasourceSecureJson {
-  apiToken: string;
+interface DatasourcePayload {
+  accessToken: string;
+  apiHost: string;
 }
 
-export async function createNewApiInstance(secureJsonData: DatasourceSecureJson): Promise<DataSourceSettings> {
+export async function createNewApiInstance(
+  payload: DatasourcePayload,
+  dashboards: DashboardInfo[]
+): Promise<SMOptions> {
   return getBackendSrv().post('api/datasources', {
     name: 'Synthetic Monitoring',
     type: 'synthetic-monitoring-datasource',
     access: 'proxy',
     isDefault: false,
-    secureJsonData,
+    jsonData: {
+      apiHost: payload.apiHost,
+      dashboards,
+      initialized: true,
+    },
+    secureJsonData: {
+      accessToken: payload.accessToken,
+    },
   });
 }
 
-export async function setApiTokenInDatasource(secureJsonData: DatasourceSecureJson): Promise<DataSourceSettings> {
+export async function initializeDatasource(
+  datasourcePayload: DatasourcePayload,
+  dashboards: DashboardInfo[]
+): Promise<SMOptions> {
   const existingDatasource = findSMDataSources()?.[0];
   if (existingDatasource) {
     console.log('it exists', existingDatasource);
@@ -72,13 +86,17 @@ export async function setApiTokenInDatasource(secureJsonData: DatasourceSecureJs
       ...existingDatasource,
       access: 'proxy',
       isDefault: false,
-      secureJsonData,
+      secureJsonData: {
+        accessToken: datasourcePayload.accessToken,
+      },
       jsonData: {
+        apiHost: datasourcePayload.apiHost,
         initialized: true,
+        dashboards,
       },
     });
   }
-  return createNewApiInstance(secureJsonData);
+  return createNewApiInstance(datasourcePayload, dashboards);
 }
 
 export async function createHostedInstance(
@@ -123,15 +141,9 @@ export function hasRole(requiredRole: OrgRole): boolean {
 }
 
 /** Given hosted info, link to an existing instance */
-export function dashboardUID(checkType: string, ds: SMDataSource): DashboardInfo | undefined {
-  const dashboards = ds.instanceSettings.jsonData.dashboards;
-  let target: DashboardInfo | undefined = undefined;
-  for (const item of dashboards) {
-    if (item.json.toLocaleLowerCase() === `sm-${checkType}.json`) {
-      target = item;
-    }
-  }
-  return target;
+export function dashboardUID(checkType: string, ds?: SMDataSource): DashboardInfo | undefined {
+  const dashboards = ds?.instanceSettings?.jsonData?.dashboards;
+  return dashboards?.find(item => item.json.toLocaleLowerCase() === `sm-${checkType}.json`);
 }
 
 export const parseUrl = (url: string) => {

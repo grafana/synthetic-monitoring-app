@@ -7,17 +7,18 @@ import { GlobalSettings, RegistrationInfo, GrafanaInstances } from './types';
 import { SMDataSource } from 'datasource/DataSource';
 import { findSMDataSources, createNewApiInstance, dashboardUID } from 'utils';
 import { SMOptions } from 'datasource/types';
-import { getDataSourceSrv, getLocationSrv } from '@grafana/runtime';
+import { config, getDataSourceSrv, getLocationSrv } from '@grafana/runtime';
 import { TenantSetup } from './components/TenantSetup';
 import { InstanceContext } from './components/InstanceContext';
 import { ChecksPage } from 'page/ChecksPage';
 import { ProbesPage } from 'page/ProbesPage';
 import { WelcomePage } from 'page/WelcomePage';
+import { Spinner } from '@grafana/ui';
 
 interface Props extends AppRootProps<GlobalSettings> {}
 interface State {
   settings: Array<DataSourceInstanceSettings<SMOptions>>;
-  instance?: GrafanaInstances;
+  instances?: GrafanaInstances;
   loadingInstance: boolean;
   info?: RegistrationInfo;
   valid?: boolean;
@@ -38,33 +39,27 @@ export class RootPage extends PureComponent<Props, State> {
       const api = (await getDataSourceSrv().get(settings.name)) as SMDataSource;
       if (api) {
         let global = api.instanceSettings.jsonData;
-        const instance: GrafanaInstances = {
+        const instances: GrafanaInstances = {
           api,
           metrics: await loadDataSourceIfExists(global?.metrics?.grafanaName),
           logs: await loadDataSourceIfExists(global?.logs?.grafanaName),
         };
 
         this.setState({
-          instance,
+          instances,
           loadingInstance: false,
-          valid: isValid(instance),
+          valid: isValid(instances),
         });
         this.updateNav();
         return;
       }
     }
-
-    // Create a new instance
-    if (true) {
-      console.log('Creating a new datasource TODO, check user auth');
-      // await createNewApiInstance();
-      console.log('Reload the windows (will redirect)');
-      window.location.reload(); // force reload
-    }
+    this.setState({ loadingInstance: false });
   }
 
   async componentDidMount() {
-    this.updateNav();
+    this.loadInstances();
+    // this.updateNav();
     // this.loadInstances();
   }
 
@@ -148,15 +143,12 @@ export class RootPage extends PureComponent<Props, State> {
   }
 
   dashboardRedirect() {
-    const { instance } = this.state;
     const { query } = this.props;
-    if (!instance) {
-      return <div>Loading.... (or maybe a user permissions error?)</div>;
-    }
+    const { instances } = this.state;
     if (!query.dashboard) {
       return <div>Dashboard not found</div>;
     }
-    const target = dashboardUID(query.dashboard, instance!.api);
+    const target = dashboardUID(query.dashboard, instances?.api);
 
     if (!target) {
       console.log('dashboard not found.', query);
@@ -179,33 +171,44 @@ export class RootPage extends PureComponent<Props, State> {
   // Config
   //-----------------------------------------------------------------------------------------
   renderConfig() {
-    const { instance } = this.state;
-    if (!instance) {
+    const { instances } = this.state;
+    if (!instances) {
       return <div>Loading.... (or maybe a user permissions error?)</div>;
     }
 
-    return <TenantSetup instance={instance.api} />;
+    return <TenantSetup instance={instances.api} />;
   }
 
   renderPage() {
-    const { meta } = this.props;
-    const { settings, valid, instance } = this.state;
-    console.log(meta);
-    return <WelcomePage meta={meta} />;
-    if (settings.length > 1) {
-      return this.renderMultipleConfigs();
+    const { meta, query, ...rest } = this.props;
+    const { settings, valid, instances, loadingInstance } = this.state;
+    console.log(rest);
+    console.log('hello', instances?.api);
+    if (loadingInstance) {
+      return <Spinner />;
     }
-    const { query } = this.props;
-    if (!valid || query.page === 'config') {
-      return this.renderConfig();
+    if (
+      !instances?.api ||
+      !instances?.api?.instanceSettings?.jsonData?.initialized ||
+      !instances?.api?.instanceSettings
+    ) {
+      return <WelcomePage meta={meta} />;
     }
+
+    // if (settings.length > 1) {
+    //   return this.renderMultipleConfigs();
+    // }
+    // const { } = this.props;
+    // if (!valid || query.page === 'config') {
+    // return this.renderConfig();
+    // }
 
     if ('dashboard' in query) {
       return this.dashboardRedirect();
     }
 
     if (query.page === 'checks') {
-      return <ChecksPage instance={instance!} id={query.id} />;
+      return <ChecksPage instance={instances} id={query.id} />;
     }
     if (query.page === 'probes') {
       return <ProbesPage id={query.id} />;
@@ -215,10 +218,10 @@ export class RootPage extends PureComponent<Props, State> {
   }
 
   render() {
-    const { instance, loadingInstance } = this.state;
+    const { instances, loadingInstance } = this.state;
 
     return (
-      <InstanceContext.Provider value={{ instance, loading: loadingInstance }}>
+      <InstanceContext.Provider value={{ instance: instances, loading: loadingInstance }}>
         {this.renderPage()}
       </InstanceContext.Provider>
     );

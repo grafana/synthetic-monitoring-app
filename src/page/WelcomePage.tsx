@@ -3,7 +3,9 @@ import { Button, Alert } from '@grafana/ui';
 import { config, getBackendSrv } from '@grafana/runtime';
 import { AppPluginMeta } from '@grafana/data';
 import { GlobalSettings } from 'types';
-import { setApiTokenInDatasource } from 'utils';
+import { initializeDatasource } from 'utils';
+import { dashboardPaths, importAllDashboards, importDashboard } from 'dashboards/loader';
+import { DashboardInfo } from 'datasource/types';
 
 interface Props {
   meta: AppPluginMeta<GlobalSettings>;
@@ -18,7 +20,6 @@ export const WelcomePage: FC<Props> = ({ meta }) => {
     // } catch (e) {
     //   console.log(e);
     // }
-    console.log('config', config);
     const body = {
       orgSlug: 'rdubrock',
       orgId: meta.jsonData?.grafanaOrgId,
@@ -34,15 +35,22 @@ export const WelcomePage: FC<Props> = ({ meta }) => {
         hostedId: String(meta.jsonData?.logs?.hostedId),
       },
     };
-    console.log('hello', body);
     try {
-      const response = await getBackendSrv().request({
+      const { accessToken } = await getBackendSrv().request({
         url: `api/plugin-proxy/${meta.id}/register`,
         method: 'POST',
         data: body,
       });
-      console.log('SUCCESS');
-      const api = await setApiTokenInDatasource(response);
+      const dashboards = await importAllDashboards(
+        meta.jsonData?.metrics?.grafanaName,
+        meta.jsonData?.logs.grafanaName
+      );
+      console.log({ accessToken });
+      const datasourcePayload = {
+        apiHost: meta.jsonData?.apiHost,
+        accessToken,
+      };
+      const api = await initializeDatasource(datasourcePayload, dashboards);
       console.log('api', api);
     } catch (e) {
       console.log('hiiii', e);

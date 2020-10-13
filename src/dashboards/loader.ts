@@ -12,10 +12,10 @@ export const dashboardPaths = [
 async function findSyntheticMonitoringFolder(): Promise<FolderInfo> {
   const backendSrv = getBackendSrv();
   const folders = (await backendSrv.get(`api/folders`)) as FolderInfo[];
-  for (const folder of folders) {
-    if (folder.title === 'Synthetic Monitoring') {
-      return folder;
-    }
+  const smFolder = folders.find(folder => folder.title === 'Synthetic Monitoring');
+
+  if (smFolder) {
+    return smFolder;
   }
 
   return await backendSrv.post('api/folders', {
@@ -23,7 +23,16 @@ async function findSyntheticMonitoringFolder(): Promise<FolderInfo> {
   });
 }
 
-export async function importDashboard(path: string, options: SMOptions): Promise<DashboardInfo> {
+export async function importAllDashboards(metricsInstanceName: string, logsInstanceName: string) {
+  const folder = await findSyntheticMonitoringFolder();
+  return Promise.all(dashboardPaths.map(path => importDashboard(path, metricsInstanceName, logsInstanceName)));
+}
+
+export async function importDashboard(
+  path: string,
+  metricsInstanceName: string,
+  logsInstanceName: string
+): Promise<DashboardInfo> {
   const backendSrv = getBackendSrv();
 
   const json = await backendSrv.get(`public/plugins/grafana-synthetic-monitoring-app/dashboards/${path}`);
@@ -34,8 +43,8 @@ export async function importDashboard(path: string, options: SMOptions): Promise
     dashboard: json,
     overwrite: true, // UID?
     inputs: [
-      { name: 'DS_SM_METRICS', type: 'datasource', pluginId: 'prometheus', value: options.metrics.grafanaName },
-      { name: 'DS_SM_LOGS', type: 'datasource', pluginId: 'loki', value: options.logs.grafanaName },
+      { name: 'DS_SM_METRICS', type: 'datasource', pluginId: 'prometheus', value: metricsInstanceName },
+      { name: 'DS_SM_LOGS', type: 'datasource', pluginId: 'loki', value: logsInstanceName },
     ],
     folderId: folder.id,
   });
