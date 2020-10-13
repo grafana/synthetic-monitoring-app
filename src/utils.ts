@@ -50,13 +50,35 @@ export async function getHostedLokiAndPrometheusInfo(): Promise<DataSourceInstan
   return settings;
 }
 
-export async function createNewApiInstance(): Promise<DataSourceSettings> {
+interface DatasourceSecureJson {
+  apiToken: string;
+}
+
+export async function createNewApiInstance(secureJsonData: DatasourceSecureJson): Promise<DataSourceSettings> {
   return getBackendSrv().post('api/datasources', {
     name: 'Synthetic Monitoring',
     type: 'synthetic-monitoring-datasource',
     access: 'proxy',
     isDefault: false,
+    secureJsonData,
   });
+}
+
+export async function setApiTokenInDatasource(secureJsonData: DatasourceSecureJson): Promise<DataSourceSettings> {
+  const existingDatasource = findSMDataSources()?.[0];
+  if (existingDatasource) {
+    console.log('it exists', existingDatasource);
+    return getBackendSrv().put(`api/datasources/${existingDatasource.id}`, {
+      ...existingDatasource,
+      access: 'proxy',
+      isDefault: false,
+      secureJsonData,
+      jsonData: {
+        initialized: true,
+      },
+    });
+  }
+  return createNewApiInstance(secureJsonData);
 }
 
 export async function createHostedInstance(

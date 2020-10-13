@@ -22,9 +22,9 @@
   },
   "routes": [
     {
-      "path": "init",
-      "method": "POST",
-      "url": "{{ .JsonData.apiHost }}/api/v1/register/init",
+      "path": "register",
+      "method": "*",
+      "url": "{{ .JsonData.apiHost }}/api/v1/register/install",
       "reqRole": "Editor",
       "headers": [
         {

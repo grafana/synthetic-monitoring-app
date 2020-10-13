@@ -26,7 +26,6 @@ interface State {
 export class RootPage extends PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
-
     this.state = {
       settings: findSMDataSources(),
       loadingInstance: true,
@@ -58,7 +57,7 @@ export class RootPage extends PureComponent<Props, State> {
     // Create a new instance
     if (true) {
       console.log('Creating a new datasource TODO, check user auth');
-      await createNewApiInstance();
+      // await createNewApiInstance();
       console.log('Reload the windows (will redirect)');
       window.location.reload(); // force reload
     }
@@ -66,7 +65,7 @@ export class RootPage extends PureComponent<Props, State> {
 
   async componentDidMount() {
     this.updateNav();
-    this.loadInstances();
+    // this.loadInstances();
   }
 
   componentDidUpdate(prevProps: Props) {
