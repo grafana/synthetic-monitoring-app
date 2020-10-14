@@ -96,8 +96,8 @@ test('saves new probe', async () => {
   const validProbe = {
     name: 'valid probe',
     public: false,
-    latitude: 44,
-    longitude: 44,
+    latitude: 44.44,
+    longitude: 44.44,
     region: 'Narnia',
     labels: [],
     online: false,
