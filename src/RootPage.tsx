@@ -34,33 +34,23 @@ export class RootPage extends PureComponent<Props, State> {
   }
 
   async loadInstances() {
-    const settings = this.state.settings[0];
-    if (settings && settings.name) {
-      const api = (await getDataSourceSrv().get(settings.name)) as SMDataSource;
-      if (api) {
-        let global = api.instanceSettings.jsonData;
-        const instances: GrafanaInstances = {
-          api,
-          metrics: await loadDataSourceIfExists(global?.metrics?.grafanaName),
-          logs: await loadDataSourceIfExists(global?.logs?.grafanaName),
-        };
+    const { meta } = this.props;
+    const api = (await getDataSourceSrv().get('Synthetic Monitoring')) as SMDataSource;
+    const instances: GrafanaInstances = {
+      api,
+      metrics: await loadDataSourceIfExists(meta?.jsonData?.metrics?.grafanaName),
+      logs: await loadDataSourceIfExists(meta?.jsonData?.logs?.grafanaName),
+    };
 
-        this.setState({
-          instances,
-          loadingInstance: false,
-          valid: isValid(instances),
-        });
-        this.updateNav();
-        return;
-      }
-    }
-    this.setState({ loadingInstance: false });
+    this.setState({
+      instances,
+      loadingInstance: false,
+    });
   }
 
   async componentDidMount() {
+    this.updateNav();
     this.loadInstances();
-    // this.updateNav();
-    // this.loadInstances();
   }
 
   componentDidUpdate(prevProps: Props) {
@@ -73,9 +63,10 @@ export class RootPage extends PureComponent<Props, State> {
 
   updateNav() {
     const { path, onNavChanged, query, meta } = this.props;
+    const { instances } = this.state;
     const selected = query.page || 'checks';
     const tabs: NavModelItem[] = [];
-    if (this.state.valid && selected !== 'config' && selected !== 'redirect') {
+    if (instances?.api?.instanceSettings?.jsonData?.initialized && selected !== 'config' && selected !== 'redirect') {
       tabs.push({
         text: 'Checks',
         url: path + '?page=checks',
@@ -187,11 +178,9 @@ export class RootPage extends PureComponent<Props, State> {
     if (loadingInstance) {
       return <Spinner />;
     }
-    if (
-      !instances?.api ||
-      !instances?.api?.instanceSettings?.jsonData?.initialized ||
-      !instances?.api?.instanceSettings
-    ) {
+
+    const notInitialized = !instances || !instances?.api?.instanceSettings?.jsonData?.initialized;
+    if (notInitialized || query.page === 'config') {
       return <WelcomePage meta={meta} />;
     }
 
@@ -208,7 +197,8 @@ export class RootPage extends PureComponent<Props, State> {
     }
 
     if (query.page === 'checks') {
-      return <ChecksPage instance={instances} id={query.id} />;
+      console.log('we has instances', instances);
+      return <ChecksPage instance={instances!} id={query.id} />;
     }
     if (query.page === 'probes') {
       return <ProbesPage id={query.id} />;

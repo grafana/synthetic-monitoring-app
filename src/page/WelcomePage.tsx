@@ -1,6 +1,6 @@
 import React, { FC, useState } from 'react';
 import { Button, Alert } from '@grafana/ui';
-import { config, getBackendSrv } from '@grafana/runtime';
+import { config, getBackendSrv, getLocationSrv } from '@grafana/runtime';
 import { AppPluginMeta } from '@grafana/data';
 import { GlobalSettings } from 'types';
 import { initializeDatasource } from 'utils';
@@ -50,8 +50,11 @@ export const WelcomePage: FC<Props> = ({ meta }) => {
         apiHost: meta.jsonData?.apiHost,
         accessToken,
       };
-      const api = await initializeDatasource(datasourcePayload, dashboards);
-      console.log('api', api);
+      await initializeDatasource(datasourcePayload, dashboards);
+      getLocationSrv().update({
+        partial: false,
+        query: { page: 'checks' },
+      });
     } catch (e) {
       console.log('hiiii', e);
       setError(e.data?.msg);
