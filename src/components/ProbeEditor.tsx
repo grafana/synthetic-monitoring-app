@@ -135,6 +135,7 @@ const ProbeEditor: FC<Props> = ({ probe, onReturn }) => {
                   label="Latitude"
                   max={90}
                   min={-90}
+                  step={0.00001}
                   id="probe-editor-latitude"
                   type="number"
                   placeholder="0.0"
@@ -159,6 +160,7 @@ const ProbeEditor: FC<Props> = ({ probe, onReturn }) => {
                   name="longitude"
                   max={180}
                   min={-180}
+                  step={0.00001}
                   id="probe-editor-longitude"
                   type="number"
                   placeholder="0.0"
