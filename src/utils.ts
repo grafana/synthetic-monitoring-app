@@ -1,6 +1,6 @@
 import { DataSourceInstanceSettings, DataSourceSettings } from '@grafana/data';
 
-import { SMOptions, DashboardInfo } from './datasource/types';
+import { SMOptions, DashboardInfo, LinkedDatsourceInfo } from './datasource/types';
 
 import { config, getBackendSrv } from '@grafana/runtime';
 import { HostedInstance, User, OrgRole, CheckType, Settings } from 'types';
@@ -53,6 +53,8 @@ export async function getHostedLokiAndPrometheusInfo(): Promise<DataSourceInstan
 interface DatasourcePayload {
   accessToken: string;
   apiHost: string;
+  metrics: LinkedDatsourceInfo;
+  logs: LinkedDatsourceInfo;
 }
 
 export async function createNewApiInstance(
@@ -68,6 +70,8 @@ export async function createNewApiInstance(
       apiHost: payload.apiHost,
       dashboards,
       initialized: true,
+      metrics: payload.metrics,
+      logs: payload.logs,
     },
     secureJsonData: {
       accessToken: payload.accessToken,
@@ -93,6 +97,8 @@ export async function initializeDatasource(
         apiHost: datasourcePayload.apiHost,
         initialized: true,
         dashboards,
+        metrics: datasourcePayload.metrics,
+        logs: datasourcePayload.logs,
       },
     });
   }

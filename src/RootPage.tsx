@@ -35,7 +35,10 @@ export class RootPage extends PureComponent<Props, State> {
 
   async loadInstances() {
     const { meta } = this.props;
-    const api = (await getDataSourceSrv().get('Synthetic Monitoring')) as SMDataSource;
+    const api = (await getDataSourceSrv()
+      .get('Synthetic Monitoring')
+      .catch(e => null)) as SMDataSource | null;
+
     const instances: GrafanaInstances = {
       api,
       metrics: await loadDataSourceIfExists(meta?.jsonData?.metrics?.grafanaName),

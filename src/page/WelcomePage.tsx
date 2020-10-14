@@ -15,25 +15,10 @@ export const WelcomePage: FC<Props> = ({ meta }) => {
   const [error, setError] = useState();
 
   const onClick = async () => {
-    // try {
-    //   const response = await getBackendSrv().console.log(response);
-    // } catch (e) {
-    //   console.log(e);
-    // }
     const body = {
-      orgSlug: 'rdubrock',
-      orgId: meta.jsonData?.grafanaOrgId,
       stackId: parseInt(meta.jsonData?.grafanaInstanceId, 10),
-      metrics: {
-        grafanaName: meta.jsonData?.metrics.grafanaName,
-        url: meta.jsonData?.metrics.url,
-        hostedId: String(meta.jsonData?.metrics?.hostedId),
-      },
-      logs: {
-        grafanaName: meta.jsonData?.logs.grafanaName,
-        url: meta.jsonData?.logs.url,
-        hostedId: String(meta.jsonData?.logs?.hostedId),
-      },
+      metricsInstanceId: meta.jsonData?.metrics?.hostedId,
+      logsInstanceId: meta.jsonData?.logs?.hostedId,
     };
     try {
       const { accessToken } = await getBackendSrv().request({
@@ -45,16 +30,19 @@ export const WelcomePage: FC<Props> = ({ meta }) => {
         meta.jsonData?.metrics?.grafanaName,
         meta.jsonData?.logs.grafanaName
       );
-      console.log({ accessToken });
       const datasourcePayload = {
         apiHost: meta.jsonData?.apiHost,
         accessToken,
+        metrics: meta.jsonData?.metrics,
+        logs: meta.jsonData?.logs,
       };
+      console.log({ accessToken, dashboards, datasourcePayload });
       await initializeDatasource(datasourcePayload, dashboards);
       getLocationSrv().update({
         partial: false,
         query: { page: 'checks' },
       });
+      window.location.reload();
     } catch (e) {
       console.log('hiiii', e);
       setError(e.data?.msg);

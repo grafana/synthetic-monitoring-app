@@ -28,10 +28,6 @@
       "reqRole": "Editor",
       "headers": [
         {
-          "name": "LogsPublisherToken",
-          "content": "{{ .SecureJsonData.hlPublisherToken }}"
-        },
-        {
           "name": "MetricsPublisherToken",
           "content": "{{ .SecureJsonData.hmPublisherToken }}"
         }

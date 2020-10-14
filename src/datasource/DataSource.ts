@@ -16,6 +16,7 @@ import { Probe, Check, RegistrationInfo, HostedInstance } from '../types';
 export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   constructor(public instanceSettings: DataSourceInstanceSettings<SMOptions>) {
     super(instanceSettings);
+    console.log('instantiating', instanceSettings);
   }
 
   getMetricsDS(): DataSourceInstanceSettings {
