@@ -1,3 +1,10 @@
+## [0.3.30](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.29...0.3.30) (2020-10-14)
+
+
+### Bug Fixes
+
+* allow floats in probe lat/long ([d58f872](https://github.com/grafana/synthetic-monitoring-app/commit/d58f87215999f307680799a76e5040023b53acc0))
+
 ## [0.3.29](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.28...0.3.29) (2020-10-12)
 
 ## [0.3.28](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.27...0.3.28) (2020-10-12)
