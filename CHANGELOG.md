@@ -1,3 +1,10 @@
+## [0.3.31](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.30...0.3.31) (2020-10-14)
+
+
+### Bug Fixes
+
+* use new metric names ([#114](https://github.com/grafana/synthetic-monitoring-app/issues/114)) ([35fea5e](https://github.com/grafana/synthetic-monitoring-app/commit/35fea5e1de2945358ce611414f0f051494b644dc))
+
 ## [0.3.30](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.29...0.3.30) (2020-10-14)
 
 
