@@ -133,7 +133,7 @@
       },
       "targets": [
         {
-          "expr": "100*(1 - (sum(rate(probe_all_success_sum[${__range_s}s]) *  on (instance, job, probe, config_version) group_left(geohash) max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version, geohash)) by (probe, geohash)/ sum(rate(probe_all_success_count[${__range_s}s]) *  on (instance, job, probe, config_version) group_left(geohash) max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version, geohash)) by (probe, geohash)))",
+          "expr": "100*(1 - (sum((rate(probe_all_success_sum[${__range_s}s]) OR rate(probe_success_sum[${__range_s}s])) *  on (instance, job, probe, config_version) group_left(geohash) max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version, geohash)) by (probe, geohash)/ sum((rate(probe_all_success_count[${__range_s}s]) OR rate(probe_success_count[${__range_s}s])) *  on (instance, job, probe, config_version) group_left(geohash) max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version, geohash)) by (probe, geohash)))",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -213,7 +213,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "1 - (sum(rate(probe_all_success_sum[$__interval]) *  on (instance, job, probe, config_version) max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version)) / sum(rate(probe_all_success_count[$__interval]) *  on (instance, job, probe, config_version) max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version)))",
+          "expr": "1 - (sum((rate(probe_all_success_sum[$__interval]) OR rate(probe_success_sum[$__interval])) *  on (instance, job, probe, config_version) max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version)) / sum((rate(probe_all_success_count[$__interval]) OR rate(probe_success_count[$__interval])) *  on (instance, job, probe, config_version) max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version)))",
           "hide": false,
           "interval": "",
           "legendFormat": "% Errors",
@@ -388,7 +388,7 @@
       ],
       "targets": [
         {
-          "expr": "sum(rate(probe_all_success_sum[$__range]) * on (instance, job, probe, config_version) group_left(check_name) max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version, check_name)) by (instance, job, check_name) / sum(rate(probe_all_success_count[$__range]) * on (instance, job, probe, config_version) group_left(check_name) max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version, check_name)) by (instance, check_name, job)",
+          "expr": "sum((rate(probe_all_success_sum[$__range]) OR rate(probe_success_sum[$__range])) * on (instance, job, probe, config_version) group_left(check_name) max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version, check_name)) by (instance, job, check_name) / sum((rate(probe_all_success_count[$__range]) OR rate(probe_success_count[$__range])) * on (instance, job, probe, config_version) group_left(check_name) max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version, check_name)) by (instance, check_name, job)",
           "format": "table",
           "instant": true,
           "interval": "",
@@ -396,7 +396,7 @@
           "refId": "C"
         },
         {
-          "expr": "sum(rate(probe_all_duration_seconds_sum[$__range]) * on (instance, job, probe, config_version) group_left(check_name) max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version, check_name)) by (instance, job, check_name) / sum(rate(probe_all_duration_seconds_count[$__range]) * on (instance, job, probe, config_version) group_left(check_name) max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version, check_name)) by (instance, job, check_name)",
+          "expr": "sum((rate(probe_all_duration_seconds_sum[$__range]) OR rate(probe_duration_seconds_sum[$__range])) * on (instance, job, probe, config_version) group_left(check_name) max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version, check_name)) by (instance, job, check_name) / sum((rate(probe_all_duration_seconds_count[$__range]) OR rate(probe_duration_seconds_count[$__range])) * on (instance, job, probe, config_version) group_left(check_name) max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version, check_name)) by (instance, job, check_name)",
           "format": "table",
           "instant": true,
           "interval": "",
@@ -466,7 +466,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(probe_all_duration_seconds_sum[5m]) * on (instance, job, probe, config_version) group_left max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version))  by (job, instance) / sum(rate(probe_all_duration_seconds_count[5m]) * on (instance, job, probe, config_version) group_left max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version)) by (job, instance)",
+          "expr": "sum((rate(probe_all_duration_seconds_sum[5m]) OR rate(probe_duration_seconds_sum[5m])) * on (instance, job, probe, config_version) group_left max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version))  by (job, instance) / sum((rate(probe_all_duration_seconds_count[5m]) OR rate(probe_duration_seconds_count[5m])) * on (instance, job, probe, config_version) group_left max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version)) by (job, instance)",
           "hide": false,
           "interval": "",
           "legendFormat": "{{job}}/{{ instance }}",
@@ -608,5 +608,5 @@
   "timezone": "",
   "title": "Synthetic Monitoring Summary",
   "uid": "fU-WBSqWz",
-  "version": 37
+  "version": 38
 }
