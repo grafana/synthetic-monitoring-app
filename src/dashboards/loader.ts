@@ -26,7 +26,11 @@ async function findSyntheticMonitoringFolder(): Promise<FolderInfo> {
 export async function importDashboard(path: string, options: SMOptions): Promise<DashboardInfo> {
   const backendSrv = getBackendSrv();
 
-  const json = await backendSrv.get(`public/plugins/grafana-synthetic-monitoring-app/dashboards/${path}`);
+  const json = await backendSrv.request({
+    url: `public/plugins/grafana-synthetic-monitoring-app/dashboards/${path}`,
+    method: 'GET',
+    headers: { 'Cache-Control': 'no-cache' },
+  });
 
   const folder = await findSyntheticMonitoringFolder();
 
@@ -53,7 +57,11 @@ export async function listAppDashboards(): Promise<DashboardInfo[]> {
   const backendSrv = getBackendSrv();
   let dashboards: DashboardInfo[] = [];
   for (const p of dashboardPaths) {
-    const json = await backendSrv.get(`public/plugins/grafana-synthetic-monitoring-app/dashboards/${p}`);
+    const json = await backendSrv.request({
+      url: `public/plugins/grafana-synthetic-monitoring-app/dashboards/${p}`,
+      method: 'GET',
+      headers: { 'Cache-Control': 'no-cache' },
+    });
 
     const dInfo = {
       title: json.title,
