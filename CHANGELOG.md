@@ -1,3 +1,10 @@
+## [0.3.34](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.33...0.3.34) (2020-10-15)
+
+
+### Bug Fixes
+
+* send a no-cache header when fetching dashboards ([53d6f8a](https://github.com/grafana/synthetic-monitoring-app/commit/53d6f8a3658ccbf464adc73bcb81eb6d5ee102f3))
+
 ## [0.3.33](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.32...0.3.33) (2020-10-15)
 
 ## [0.3.32](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.31...0.3.32) (2020-10-15)
