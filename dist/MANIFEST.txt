@@ -1,0 +1,47 @@
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+{
+  "manifestVersion": "2.0.0",
+  "signatureType": "grafana",
+  "signedByOrg": "grafana",
+  "signedByOrgName": "Grafana Labs",
+  "plugin": "grafana-synthetic-monitoring-app",
+  "version": "0.3.34",
+  "time": 1602781872710,
+  "keyId": "7e4d0c6a708866e7",
+  "files": {
+    "img/screenshot-dash-summary.png": "1e058e6bddcd4a1f829d384cb42ac6f920d271fbe447454aa1652712d0638d1a",
+    "img/logo.svg": "f3045a6575b3c2bf6568205e1732e5a950ab745afd78fadfe1588aad78b95ba4",
+    "img/screenshot-check-list.png": "903283696838eea2ea0c29e9b8ab8dc19424700f997e257f4caee30c4d1b1138",
+    "img/screenshot-dash-http.png": "c214e65f9137fd858de01a8ee72c6c5ff5f3072c829ff0751d3114c9d65f05e1",
+    "datasource/img/logo.svg": "f3045a6575b3c2bf6568205e1732e5a950ab745afd78fadfe1588aad78b95ba4",
+    "datasource/plugin.json": "004eb5ff67e8e54d362747d782889fa0964c541a9f8678f15e1694e9820b376d",
+    "datasource/module.js": "1075fa7ad48e627e8a713a51e597de1b43fc1e222fe62e20f302fbccb9e162a5",
+    "datasource/module.js.map": "7f81626001a4bf0a48744d011d3ca1ea692956140972f183fdf58503e6f38684",
+    "datasource/module.js.LICENSE.txt": "0d8f66cd4afb566cb5b7e1540c68f43b939d3eba12ace290f18abc4f4cb53ed0",
+    "LICENSE": "6424c8b26451432c471c7c92ea2d96d74e0e32a9cf4ca1ebcfaab81a32ec9a3a",
+    "plugin.json": "1c29dce18ee2c3c2202845e35727c11b17108bde00fb09dad7fe213919dd63d0",
+    "module.js": "6e26436c4fe000508c21d35e1188dce981f363f256e0212c83c4923fb8f9b098",
+    "module.js.map": "ad2d14ccd9aceb26f44482005897f41d2dab0eccf778699629d079f3183eb070",
+    "module.js.LICENSE.txt": "1f752bc4e5d167317d5d8fab4447dbdb334f34855262b8c3bc2fad2587036747",
+    "legacy/config.html": "61bf70a512ebe27c51d95008e28e9f84bd02e808a9a13b264e611e6543f15e8b",
+    "dashboards/sm-summary.json": "9233c0ef925dd3ba99c83a9a515d4611fe8e3e6108e7b46967ffd24c48aa6ac3",
+    "dashboards/sm-ping.json": "1acf2ad830ee70375f1fbf7b54e6aaefc05a5315d33a51bd5b0158e58e57b241",
+    "dashboards/sm-http.json": "394bfa7f5332b3fa5ff8e871b15b2e4e83552f3b128b66371720e5e5ba2a22b3",
+    "dashboards/sm-tcp.json": "fbe5f21779e3d99bd908ac06f27d7480125318801c7bb2474e07e433c7eab1ba",
+    "dashboards/sm-dns.json": "f34e6da6b181647df9a1ec8c73d526adf6b0b9b5e9007317e133d48ba8d127e2",
+    "README.md": "ec663348af7470abe4c32b2826d613a61561869d6f5a7bf56a322ec29717b2dd"
+  }
+}
+-----BEGIN PGP SIGNATURE-----
+Version: OpenPGP.js v4.10.1
+Comment: https://openpgpjs.org
+
+wqAEARMKAAYFAl+IgrAACgkQfk0ManCIZudZmQIHQ+l8RHLKI1UP+WflhmYb
+hbQp9UJOB4w89S/FFuuJT8+fz6iWQ8gzuS7GNb6Uf8J6nEwqkh9cTymPBFVm
+DIcWgIoCBibiXrXrG3DSQBdZ9xtpC/6PSDlCUzziTQse8hUhiMXlfsHEI3Bf
+TKXFdAVqywNYQitR3q12P0kQyU8+i0GcYgZm
+=PRRm
+-----END PGP SIGNATURE-----
