@@ -19,60 +19,47 @@ export class DashboardList extends PureComponent<Props, State> {
   };
 
   async componentDidMount() {
-    const { checkUpdates, onChange } = this.props;
+    const { checkUpdates, onChange, options } = this.props;
     if (!checkUpdates || !onChange) {
       return;
     }
+    const latestDashboards = await listAppDashboards();
 
     // merge dashboards known to grafana with latest in the app.
-    let dashboards = [...this.state.dashboards];
-    const latestDashboards = await listAppDashboards();
-    for (const dashboard of latestDashboards) {
-      let i = dashboards.findIndex(item => {
-        return item.uid === dashboard.uid;
-      });
-      if (i < 0) {
-        dashboards.push(dashboard);
-      } else {
-        dashboards[i].latestVersion = dashboard.latestVersion;
-        if (!dashboards[i].version) {
-          dashboards[i].version = -1;
-        }
+    const dashboards = latestDashboards.map(template => {
+      const existingDashboard = options.dashboards.find(existing => template.uid === existing.uid);
+      if (!existingDashboard) {
+        return template;
       }
-    }
-    console.log(dashboards);
+      return {
+        ...existingDashboard,
+        latestVersion: template.latestVersion,
+      };
+    });
+
     this.setState({ dashboards });
   }
 
   onImport = (dashboard: DashboardInfo) => async () => {
-    const { onChange } = this.props;
+    const { onChange, options } = this.props;
     if (!onChange) {
       return;
     }
-    let options = { ...this.props.options };
-    const updated = await importDashboard(dashboard.json, options);
-    console.log('dashboard updated');
-    let i = options.dashboards.findIndex(item => {
-      return item.uid === updated.uid;
-    });
-    if (i < 0) {
-      options.dashboards.push(updated);
-    } else {
-      options.dashboards[i] = updated;
-    }
+    const updatedDashboard = await importDashboard(dashboard.json, options);
 
-    let dashboards = [...this.state.dashboards];
-    i = dashboards.findIndex(item => {
-      return item.uid === updated.uid;
+    const dashboards = options.dashboards.map(savedDashboard => {
+      if (savedDashboard.uid === updatedDashboard.uid) {
+        return updatedDashboard;
+      }
+      return savedDashboard;
     });
-    if (i < 0) {
-      dashboards.push(updated);
-    } else {
-      dashboards[i] = updated;
-    }
 
+    const updatedOptions = {
+      ...options,
+      dashboards,
+    };
     this.setState({ dashboards });
-    return onChange(options);
+    return onChange(updatedOptions);
   };
 
   onRemove = (dashboard: DashboardInfo) => async () => {

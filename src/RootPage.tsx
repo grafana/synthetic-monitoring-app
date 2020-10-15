@@ -12,6 +12,7 @@ import { TenantSetup } from './components/TenantSetup';
 import { InstanceContext } from './components/InstanceContext';
 import { ChecksPage } from 'page/ChecksPage';
 import { ProbesPage } from 'page/ProbesPage';
+import { importDashboard, listAppDashboards } from 'dashboards/loader';
 
 interface Props extends AppRootProps<GlobalSettings> {}
 interface State {
@@ -20,6 +21,8 @@ interface State {
   loadingInstance: boolean;
   info?: RegistrationInfo;
   valid?: boolean;
+  checkingForDashboardChanges: boolean;
+  dashboardsNeedUpdate?: boolean;
 }
 
 export class RootPage extends PureComponent<Props, State> {
@@ -29,6 +32,7 @@ export class RootPage extends PureComponent<Props, State> {
     this.state = {
       settings: findSMDataSources(),
       loadingInstance: true,
+      checkingForDashboardChanges: true,
     };
   }
 
@@ -44,12 +48,14 @@ export class RootPage extends PureComponent<Props, State> {
           logs: await loadDataSourceIfExists(global?.logs?.grafanaName),
         };
 
-        this.setState({
-          instance,
-          loadingInstance: false,
-          valid: isValid(instance),
-        });
-        this.updateNav();
+        this.setState(
+          {
+            instance,
+            loadingInstance: false,
+            valid: isValid(instance),
+          },
+          this.updateDashboards
+        );
         return;
       }
     }
@@ -65,7 +71,7 @@ export class RootPage extends PureComponent<Props, State> {
 
   async componentDidMount() {
     this.updateNav();
-    this.loadInstances();
+    await this.loadInstances();
   }
 
   componentDidUpdate(prevProps: Props) {
@@ -73,6 +79,47 @@ export class RootPage extends PureComponent<Props, State> {
       if (this.props.query.page !== prevProps.query.page) {
         this.updateNav();
       }
+    }
+  }
+
+  async updateDashboards() {
+    const { instance } = this.state;
+    const latestDashboards = await listAppDashboards();
+    const existingDashboards = instance?.api.instanceSettings.jsonData.dashboards ?? [];
+
+    const dashboardsNeedingUpdate = existingDashboards
+      .map(existingDashboard => {
+        const templateDashboard = latestDashboards.find(template => template.uid === existingDashboard.uid);
+        const templateVersion = templateDashboard?.latestVersion ?? -1;
+        if (templateDashboard && templateVersion > existingDashboard.version) {
+          return {
+            ...existingDashboard,
+            version: templateDashboard.latestVersion,
+            latestVersion: templateDashboard.latestVersion,
+          };
+        }
+        return null;
+      })
+      .filter(Boolean);
+
+    if (dashboardsNeedingUpdate.length) {
+      // import the new version of the dashboards into Grafana
+      const updatedDashboards = await Promise.all(
+        dashboardsNeedingUpdate.map(
+          dashboard => dashboard && importDashboard(dashboard?.json, instance?.api.instanceSettings.jsonData!)
+        )
+      );
+
+      // store the latest dashboard versions in the SM datasource
+      const mergedDashboards = existingDashboards.map(
+        dashboard => updatedDashboards.find(updatedDashboard => updatedDashboard?.uid === dashboard.uid) ?? dashboard
+      );
+      instance?.api.onOptionsChange({
+        ...instance.api.instanceSettings.jsonData,
+        dashboards: mergedDashboards,
+      });
+
+      this.updateNav();
     }
   }
 
@@ -189,6 +236,7 @@ export class RootPage extends PureComponent<Props, State> {
 
   renderPage() {
     const { settings, valid, instance } = this.state;
+
     if (settings.length > 1) {
       return this.renderMultipleConfigs();
     }
