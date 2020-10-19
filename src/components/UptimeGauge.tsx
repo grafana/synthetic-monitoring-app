@@ -63,8 +63,8 @@ export const UptimeGauge: FC<Props> = ({ labelNames, labelValues, height, width,
     }, [])
     .join(',');
 
-  const uptimeQuery = `sum(rate(probe_all_success_sum{${filter}}[3h])) / sum(rate(probe_all_success_count{${filter}}[3h]))`;
-  const sparklineQuery = `100 * sum(rate(probe_all_success_sum{${filter}}[10m])) / sum(rate(probe_all_success_count{${filter}}[10m]))`;
+  const uptimeQuery = `sum((rate(probe_all_success_sum{${filter}}[3h]) OR rate(probe_success_sum{${filter}}[3h]))) / sum((rate(probe_all_success_count{${filter}}[3h]) OR rate(probe_success_count{${filter}}[3h])))`;
+  const sparklineQuery = `100 * sum((rate(probe_all_success_sum{${filter}}[10m]) OR rate(probe_success_sum{${filter}}[10m]))) / sum((rate(probe_all_success_count{${filter}}[10m]) OR rate(probe_success_count{${filter}}[10m])))`;
 
   const lastUpdate = Math.floor(Date.now() / 1000);
 
