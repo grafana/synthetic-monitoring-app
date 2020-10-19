@@ -3,7 +3,7 @@ import React, { PureComponent } from 'react';
 
 // Types
 import { NavModelItem, AppRootProps, DataSourceInstanceSettings } from '@grafana/data';
-import { GlobalSettings, RegistrationInfo, GrafanaInstances } from './types';
+import { GlobalSettings, RegistrationInfo, GrafanaInstances, DashboardMeta } from './types';
 import { SMDataSource } from 'datasource/DataSource';
 import { findSMDataSources, createNewApiInstance, dashboardUID } from 'utils';
 import { SMOptions } from 'datasource/types';
@@ -13,6 +13,7 @@ import { InstanceContext } from './components/InstanceContext';
 import { ChecksPage } from 'page/ChecksPage';
 import { ProbesPage } from 'page/ProbesPage';
 import { importDashboard, listAppDashboards } from 'dashboards/loader';
+import { Button, HorizontalGroup, Modal, Spinner } from '@grafana/ui';
 
 interface Props extends AppRootProps<GlobalSettings> {}
 interface State {
@@ -21,8 +22,8 @@ interface State {
   loadingInstance: boolean;
   info?: RegistrationInfo;
   valid?: boolean;
-  checkingForDashboardChanges: boolean;
-  dashboardsNeedUpdate?: boolean;
+  dashboardsNeedingUpdate?: DashboardMeta[];
+  hasDismissedDashboardUpdate: boolean;
 }
 
 export class RootPage extends PureComponent<Props, State> {
@@ -32,7 +33,7 @@ export class RootPage extends PureComponent<Props, State> {
     this.state = {
       settings: findSMDataSources(),
       loadingInstance: true,
-      checkingForDashboardChanges: true,
+      hasDismissedDashboardUpdate: Boolean(window.sessionStorage.getItem('hasDismissedDashboardUpdate')),
     };
   }
 
@@ -47,14 +48,13 @@ export class RootPage extends PureComponent<Props, State> {
           metrics: await loadDataSourceIfExists(global?.metrics?.grafanaName),
           logs: await loadDataSourceIfExists(global?.logs?.grafanaName),
         };
-
         this.setState(
           {
             instance,
             loadingInstance: false,
             valid: isValid(instance),
           },
-          this.updateDashboards
+          this.getDashboardsNeedingUpdate
         );
         return;
       }
@@ -82,7 +82,7 @@ export class RootPage extends PureComponent<Props, State> {
     }
   }
 
-  async updateDashboards() {
+  async getDashboardsNeedingUpdate() {
     const { instance } = this.state;
     const latestDashboards = await listAppDashboards();
     const existingDashboards = instance?.api.instanceSettings.jsonData.dashboards ?? [];
@@ -100,9 +100,17 @@ export class RootPage extends PureComponent<Props, State> {
         }
         return null;
       })
-      .filter(Boolean);
+      .filter(Boolean) as DashboardMeta[];
 
-    if (dashboardsNeedingUpdate.length) {
+    this.setState({ dashboardsNeedingUpdate });
+    this.updateNav();
+  }
+
+  updateDashboards = async () => {
+    const { instance, dashboardsNeedingUpdate } = this.state;
+    const existingDashboards = instance?.api.instanceSettings.jsonData.dashboards ?? [];
+
+    if (dashboardsNeedingUpdate?.length) {
       // import the new version of the dashboards into Grafana
       const updatedDashboards = await Promise.all(
         dashboardsNeedingUpdate.map(
@@ -118,10 +126,16 @@ export class RootPage extends PureComponent<Props, State> {
         ...instance.api.instanceSettings.jsonData,
         dashboards: mergedDashboards,
       });
-
-      this.updateNav();
+      this.setState({ dashboardsNeedingUpdate: [] });
     }
-  }
+  };
+
+  skipDashboardUpdate = () => {
+    window.sessionStorage.setItem('hasDismissedDashboardUpdate', 'true');
+    this.setState({
+      hasDismissedDashboardUpdate: true,
+    });
+  };
 
   updateNav() {
     const { path, onNavChanged, query, meta } = this.props;
@@ -235,7 +249,11 @@ export class RootPage extends PureComponent<Props, State> {
   }
 
   renderPage() {
-    const { settings, valid, instance } = this.state;
+    const { settings, valid, instance, loadingInstance, dashboardsNeedingUpdate } = this.state;
+
+    if (loadingInstance || !dashboardsNeedingUpdate) {
+      return <Spinner />;
+    }
 
     if (settings.length > 1) {
       return this.renderMultipleConfigs();
@@ -260,11 +278,23 @@ export class RootPage extends PureComponent<Props, State> {
   }
 
   render() {
-    const { instance, loadingInstance } = this.state;
-
+    const { instance, loadingInstance, dashboardsNeedingUpdate, hasDismissedDashboardUpdate } = this.state;
     return (
       <InstanceContext.Provider value={{ instance, loading: loadingInstance }}>
         {this.renderPage()}
+        <Modal
+          title="Dashboards out of date"
+          onDismiss={this.skipDashboardUpdate}
+          isOpen={Boolean(dashboardsNeedingUpdate?.length) && !hasDismissedDashboardUpdate}
+        >
+          <p>It looks like your Synthetic Monitoring dashboards need an update.</p>
+          <HorizontalGroup>
+            <Button onClick={this.updateDashboards}>Update</Button>
+            <Button onClick={this.skipDashboardUpdate} variant="link">
+              Skip
+            </Button>
+          </HorizontalGroup>
+        </Modal>
       </InstanceContext.Provider>
     );
   }

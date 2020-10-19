@@ -364,3 +364,11 @@ export interface SubmissionError {
   status?: string;
   message?: string;
 }
+
+export interface DashboardMeta {
+  json: string;
+  latestVersion: number;
+  title: string;
+  uid: string;
+  version: number;
+}
