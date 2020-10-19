@@ -1,3 +1,36 @@
+## [0.3.36](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.35...0.3.36) (2020-10-16)
+
+
+### Bug Fixes
+
+* update queries for metrics used in the UI ([34bfa7d](https://github.com/grafana/synthetic-monitoring-app/commit/34bfa7da658eff10e07a8c92a9b3e1839bf0620d))
+* update TCP queries to use old and new metric names ([120696f](https://github.com/grafana/synthetic-monitoring-app/commit/120696f7bd51438f2417c1af6a5fb83dff3fa38a))
+
+## [0.3.35](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.34...0.3.35) (2020-10-16)
+
+
+### Bug Fixes
+
+* update queries that use the renamed metrics ([798c183](https://github.com/grafana/synthetic-monitoring-app/commit/798c183bf763625dcb79a31d13f0df10009a51fb))
+
+## [0.3.34](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.33...0.3.34) (2020-10-15)
+
+
+### Bug Fixes
+
+* send a no-cache header when fetching dashboards ([53d6f8a](https://github.com/grafana/synthetic-monitoring-app/commit/53d6f8a3658ccbf464adc73bcb81eb6d5ee102f3))
+
+## [0.3.33](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.32...0.3.33) (2020-10-15)
+
+## [0.3.32](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.31...0.3.32) (2020-10-15)
+
+## [0.3.31](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.30...0.3.31) (2020-10-14)
+
+
+### Bug Fixes
+
+* use new metric names ([#114](https://github.com/grafana/synthetic-monitoring-app/issues/114)) ([35fea5e](https://github.com/grafana/synthetic-monitoring-app/commit/35fea5e1de2945358ce611414f0f051494b644dc))
+
 ## [0.3.30](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.29...0.3.30) (2020-10-14)
 
 

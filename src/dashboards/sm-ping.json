@@ -128,7 +128,7 @@
       },
       "targets": [
         {
-          "expr": "100*(1 - (sum(rate(probe_success_sum{instance=\"$instance\", job=\"$job\"}[$__range]) *  on (instance, job, probe, config_version) group_left(geohash) max(sm_check_info{check_name=\"ping\", instance=\"$instance\", job=\"$job\"}) by (instance, job, probe, config_version, geohash)) by (probe, geohash)/ sum(rate(probe_success_count{instance=\"$instance\", job=\"$job\"}[$__range]) *  on (instance, job, probe, config_version) group_left(geohash) max(sm_check_info{check_name=\"ping\", instance=\"$instance\", job=\"$job\"}) by (instance, job, probe, config_version, geohash)) by (probe, geohash)))",
+          "expr": "100*(1 - (sum((rate(probe_all_success_sum{instance=\"$instance\", job=\"$job\"}[$__range]) OR rate(probe_success_sum{instance=\"$instance\", job=\"$job\"}[$__range])) *  on (instance, job, probe, config_version) group_left(geohash) max(sm_check_info{check_name=\"ping\", instance=\"$instance\", job=\"$job\"}) by (instance, job, probe, config_version, geohash)) by (probe, geohash)/ sum((rate(probe_all_success_count{instance=\"$instance\", job=\"$job\"}[$__range]) OR rate(probe_success_count{instance=\"$instance\", job=\"$job\"}[$__range])) *  on (instance, job, probe, config_version) group_left(geohash) max(sm_check_info{check_name=\"ping\", instance=\"$instance\", job=\"$job\"}) by (instance, job, probe, config_version, geohash)) by (probe, geohash)))",
           "format": "table",
           "instant": true,
           "interval": "",
@@ -213,7 +213,7 @@
       "pluginVersion": "7.0.3",
       "targets": [
         {
-          "expr": "sum(rate(probe_success_sum{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__range])) / sum(rate(probe_success_count{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__range]))",
+          "expr": "sum((rate(probe_all_success_sum{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__range]) OR rate(probe_success_sum{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__range]))) / sum((rate(probe_all_success_count{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__range]) OR rate(probe_success_count{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__range])))",
           "hide": false,
           "instant": false,
           "interval": "",
@@ -285,7 +285,7 @@
       "pluginVersion": "7.0.3",
       "targets": [
         {
-          "expr": "sum(rate(probe_duration_seconds_sum{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__range])) / sum(rate(probe_duration_seconds_count{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__range]))",
+          "expr": "sum((rate(probe_all_duration_seconds_sum{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__range]) OR rate(probe_duration_seconds_sum{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__range]))) / sum((rate(probe_all_duration_seconds_count{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__range]) OR rate(probe_duration_seconds_count{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__range])))",
           "hide": false,
           "instant": true,
           "interval": "",
@@ -433,7 +433,7 @@
       "steppedLine": true,
       "targets": [
         {
-          "expr": "100*(1-(sum(rate(probe_success_sum{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__interval])) / sum(rate(probe_success_count{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__interval]))))",
+          "expr": "100*(1-(sum((rate(probe_all_success_sum{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__interval]) OR rate(probe_success_sum{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__interval]))) / sum((rate(probe_all_success_count{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__interval]) OR rate(probe_success_count{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__interval])))))",
           "hide": false,
           "interval": "",
           "legendFormat": "errors",
@@ -860,5 +860,5 @@
   "timezone": "",
   "title": "Synthetic Monitoring Ping",
   "uid": "EHyn7ueZk",
-  "version": 23
+  "version": 25
 }
