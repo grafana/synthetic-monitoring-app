@@ -3,7 +3,7 @@ import React, { PureComponent } from 'react';
 
 // Types
 import { NavModelItem, AppRootProps, DataSourceInstanceSettings } from '@grafana/data';
-import { GlobalSettings, RegistrationInfo, GrafanaInstances } from './types';
+import { GlobalSettings, RegistrationInfo, GrafanaInstances, DashboardMeta } from './types';
 import { SMDataSource } from 'datasource/DataSource';
 import { findSMDataSources, createNewApiInstance, dashboardUID } from 'utils';
 import { SMOptions } from 'datasource/types';
@@ -12,6 +12,8 @@ import { TenantSetup } from './components/TenantSetup';
 import { InstanceContext } from './components/InstanceContext';
 import { ChecksPage } from 'page/ChecksPage';
 import { ProbesPage } from 'page/ProbesPage';
+import { importDashboard, listAppDashboards } from 'dashboards/loader';
+import { Button, HorizontalGroup, Modal, Spinner } from '@grafana/ui';
 
 interface Props extends AppRootProps<GlobalSettings> {}
 interface State {
@@ -20,6 +22,8 @@ interface State {
   loadingInstance: boolean;
   info?: RegistrationInfo;
   valid?: boolean;
+  dashboardsNeedingUpdate?: DashboardMeta[];
+  hasDismissedDashboardUpdate: boolean;
 }
 
 export class RootPage extends PureComponent<Props, State> {
@@ -29,6 +33,7 @@ export class RootPage extends PureComponent<Props, State> {
     this.state = {
       settings: findSMDataSources(),
       loadingInstance: true,
+      hasDismissedDashboardUpdate: Boolean(window.sessionStorage.getItem('hasDismissedDashboardUpdate')),
     };
   }
 
@@ -43,13 +48,14 @@ export class RootPage extends PureComponent<Props, State> {
           metrics: await loadDataSourceIfExists(global?.metrics?.grafanaName),
           logs: await loadDataSourceIfExists(global?.logs?.grafanaName),
         };
-
-        this.setState({
-          instance,
-          loadingInstance: false,
-          valid: isValid(instance),
-        });
-        this.updateNav();
+        this.setState(
+          {
+            instance,
+            loadingInstance: false,
+            valid: isValid(instance),
+          },
+          this.getDashboardsNeedingUpdate
+        );
         return;
       }
     }
@@ -65,7 +71,7 @@ export class RootPage extends PureComponent<Props, State> {
 
   async componentDidMount() {
     this.updateNav();
-    this.loadInstances();
+    await this.loadInstances();
   }
 
   componentDidUpdate(prevProps: Props) {
@@ -75,6 +81,61 @@ export class RootPage extends PureComponent<Props, State> {
       }
     }
   }
+
+  async getDashboardsNeedingUpdate() {
+    const { instance } = this.state;
+    const latestDashboards = await listAppDashboards();
+    const existingDashboards = instance?.api.instanceSettings.jsonData.dashboards ?? [];
+
+    const dashboardsNeedingUpdate = existingDashboards
+      .map(existingDashboard => {
+        const templateDashboard = latestDashboards.find(template => template.uid === existingDashboard.uid);
+        const templateVersion = templateDashboard?.latestVersion ?? -1;
+        if (templateDashboard && templateVersion > existingDashboard.version) {
+          return {
+            ...existingDashboard,
+            version: templateDashboard.latestVersion,
+            latestVersion: templateDashboard.latestVersion,
+          };
+        }
+        return null;
+      })
+      .filter(Boolean) as DashboardMeta[];
+
+    this.setState({ dashboardsNeedingUpdate });
+    this.updateNav();
+  }
+
+  updateDashboards = async () => {
+    const { instance, dashboardsNeedingUpdate } = this.state;
+    const existingDashboards = instance?.api.instanceSettings.jsonData.dashboards ?? [];
+
+    if (dashboardsNeedingUpdate?.length) {
+      // import the new version of the dashboards into Grafana
+      const updatedDashboards = await Promise.all(
+        dashboardsNeedingUpdate.map(
+          dashboard => dashboard && importDashboard(dashboard?.json, instance?.api.instanceSettings.jsonData!)
+        )
+      );
+
+      // store the latest dashboard versions in the SM datasource
+      const mergedDashboards = existingDashboards.map(
+        dashboard => updatedDashboards.find(updatedDashboard => updatedDashboard?.uid === dashboard.uid) ?? dashboard
+      );
+      instance?.api.onOptionsChange({
+        ...instance.api.instanceSettings.jsonData,
+        dashboards: mergedDashboards,
+      });
+      this.setState({ dashboardsNeedingUpdate: [] });
+    }
+  };
+
+  skipDashboardUpdate = () => {
+    window.sessionStorage.setItem('hasDismissedDashboardUpdate', 'true');
+    this.setState({
+      hasDismissedDashboardUpdate: true,
+    });
+  };
 
   updateNav() {
     const { path, onNavChanged, query, meta } = this.props;
@@ -188,7 +249,12 @@ export class RootPage extends PureComponent<Props, State> {
   }
 
   renderPage() {
-    const { settings, valid, instance } = this.state;
+    const { settings, valid, instance, loadingInstance, dashboardsNeedingUpdate } = this.state;
+
+    if (loadingInstance || !dashboardsNeedingUpdate) {
+      return <Spinner />;
+    }
+
     if (settings.length > 1) {
       return this.renderMultipleConfigs();
     }
@@ -212,11 +278,23 @@ export class RootPage extends PureComponent<Props, State> {
   }
 
   render() {
-    const { instance, loadingInstance } = this.state;
-
+    const { instance, loadingInstance, dashboardsNeedingUpdate, hasDismissedDashboardUpdate } = this.state;
     return (
       <InstanceContext.Provider value={{ instance, loading: loadingInstance }}>
         {this.renderPage()}
+        <Modal
+          title="Dashboards out of date"
+          onDismiss={this.skipDashboardUpdate}
+          isOpen={Boolean(dashboardsNeedingUpdate?.length) && !hasDismissedDashboardUpdate}
+        >
+          <p>It looks like your Synthetic Monitoring dashboards need an update.</p>
+          <HorizontalGroup>
+            <Button onClick={this.updateDashboards}>Update</Button>
+            <Button onClick={this.skipDashboardUpdate} variant="link">
+              Skip
+            </Button>
+          </HorizontalGroup>
+        </Modal>
       </InstanceContext.Provider>
     );
   }
