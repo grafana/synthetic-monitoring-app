@@ -80,7 +80,7 @@ export default class CheckProbes extends PureComponent<CheckProbesProps, CheckPr
           <>
             <Field
               label="Probe locations"
-              description="Select up to 20 locations where this target will be checked from."
+              description="Select locations where this target will be checked from."
               disabled={!isEditor}
               error={error}
               invalid={invalid}
