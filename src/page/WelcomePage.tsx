@@ -1,22 +1,22 @@
-import React, { FC, useState } from 'react';
+import React, { FC, useState, useContext } from 'react';
 import { Button, Alert } from '@grafana/ui';
-import { getBackendSrv } from '@grafana/runtime';
+import { getBackendSrv, getLocationSrv } from '@grafana/runtime';
 import { AppPluginMeta } from '@grafana/data';
 import { GlobalSettings } from 'types';
 import { initializeDatasource } from 'utils';
 import { importAllDashboards } from 'dashboards/loader';
+import { InstanceContext } from 'components/InstanceContext';
 
-interface Props {
-  meta: AppPluginMeta<GlobalSettings>;
-  onInitialized: () => void;
-}
+interface Props {}
 
-export const WelcomePage: FC<Props> = ({ meta, onInitialized }) => {
-  const [error, setError] = useState();
+export const WelcomePage: FC<Props> = () => {
+  const [error, setError] = useState('');
+  const { meta, updateApiDatasource } = useContext(InstanceContext);
 
   const onClick = async () => {
-    if (!meta.jsonData) {
-      throw new Error('Invalid configuration');
+    if (!meta?.jsonData) {
+      setError('Invalid plugin configuration');
+      return;
     }
     const body = {
       stackId: parseInt(meta.jsonData.grafanaInstanceId ?? '1', 10),
@@ -36,8 +36,13 @@ export const WelcomePage: FC<Props> = ({ meta, onInitialized }) => {
         metrics: meta.jsonData.metrics,
         logs: meta.jsonData.logs,
       };
-      await initializeDatasource(datasourcePayload, dashboards);
-      onInitialized();
+      const response = await initializeDatasource(datasourcePayload, dashboards);
+
+      updateApiDatasource(response.datasource);
+      getLocationSrv().update({
+        partial: false,
+        query: { page: 'checks' },
+      });
     } catch (e) {
       setError(e.data?.msg);
     }

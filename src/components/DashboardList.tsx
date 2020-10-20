@@ -40,7 +40,6 @@ export class DashboardList extends PureComponent<Props, State> {
         }
       }
     }
-    console.log(dashboards);
     this.setState({ dashboards });
   }
 

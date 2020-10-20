@@ -6,6 +6,7 @@ import { Check, GrafanaInstances } from 'types';
 import { getLocationSrv } from '@grafana/runtime';
 import { CheckEditor } from 'components/CheckEditor';
 import { CheckList } from 'components/CheckList';
+import { InstanceContext } from 'components/InstanceContext';
 
 interface Props {
   instance: GrafanaInstances;
@@ -21,6 +22,9 @@ interface State {
 }
 
 export class ChecksPage extends PureComponent<Props, State> {
+  static contextType = InstanceContext;
+  declare context: React.ContextType<typeof InstanceContext>;
+
   state: State = {
     checks: [],
     addNew: false,
@@ -28,10 +32,12 @@ export class ChecksPage extends PureComponent<Props, State> {
   };
 
   async componentDidMount() {
-    const { instance, id } = this.props;
-    const checks = await instance.api.listChecks();
+    const { id } = this.props;
+    const { instance } = this.context;
+    const checks = (await instance?.api?.listChecks()) ?? [];
+    console.log(checks);
     const num = id ? parseInt(id, 10) : -1;
-    const check = checks.find(c => c.id === num);
+    const check = checks?.find(c => c.id === num);
     this.setState({
       checks,
       check,
@@ -43,7 +49,7 @@ export class ChecksPage extends PureComponent<Props, State> {
     if (this.props.id !== oldProps.id) {
       const { id } = this.props;
       const num = id ? parseInt(id, 10) : -1;
-      const check = this.state.checks.find(c => c.id === num);
+      const check = this.state.checks?.find(c => c.id === num);
       this.setState({ check });
     }
   }
@@ -59,8 +65,8 @@ export class ChecksPage extends PureComponent<Props, State> {
   };
 
   onRefresh = async () => {
-    const { instance } = this.props;
-    const checks = await instance.api.listChecks();
+    const { instance } = this.context;
+    const checks = (await instance?.api?.listChecks()) ?? [];
     this.setState({
       checks,
     });
@@ -82,16 +88,16 @@ export class ChecksPage extends PureComponent<Props, State> {
   };
 
   render() {
-    const { instance } = this.props;
+    const { instance } = this.context;
     const { check, addNew, loading, checks } = this.state;
     if (loading) {
       return <div>Loading...</div>;
     }
     if (check) {
-      return <CheckEditor check={check} instance={instance.api} onReturn={this.onGoBack} />;
+      return <CheckEditor check={check} instance={instance?.api} onReturn={this.onGoBack} />;
     }
     if (addNew) {
-      return <CheckEditor instance={instance.api} onReturn={this.onGoBack} />;
+      return <CheckEditor instance={instance?.api} onReturn={this.onGoBack} />;
     }
     return <CheckList instance={instance} onAddNewClick={this.onAddNew} checks={checks} />;
   }

@@ -1,7 +1,6 @@
 import React, { PureComponent } from 'react';
 import { Button, ConfirmModal } from '@grafana/ui';
 import { RegistrationInfo, HostedInstance } from 'types';
-import { SMDataSource } from 'datasource/DataSource';
 import { isValid } from 'datasource/ConfigEditor';
 import { InstanceList } from './InstanceList';
 import { createHostedInstance, findHostedInstance, getHostedLokiAndPrometheusInfo } from 'utils';
@@ -11,10 +10,9 @@ import { dashboardPaths, importDashboard } from 'dashboards/loader';
 import { DashboardList } from './DashboardList';
 import TenantAPISetupForm from './TenantAPISetupForm';
 import { DEFAULT_API_HOST } from './constants';
+import { InstanceContext } from './InstanceContext';
 
-interface Props {
-  instance: SMDataSource;
-}
+interface Props {}
 
 interface State {
   adminApiToken?: string;
@@ -34,14 +32,16 @@ interface InitParams {
 }
 
 export class TenantSetup extends PureComponent<Props, State> {
+  static contextType = InstanceContext;
+
   state: State = {
     showResetModal: false,
     resetConfig: false,
   };
 
   onInit = async ({ apiHost = DEFAULT_API_HOST, adminApiToken }: InitParams) => {
-    const { instance } = this.props;
-    const info = await instance.registerInit(apiHost, adminApiToken).catch(err => {
+    const { instance } = this.context;
+    const info = await instance.api.registerInit(apiHost, adminApiToken).catch(err => {
       console.error('failed to init. ', err);
       if (err.data.msg) {
         this.setState({ userError: err.data.msg, backendError: undefined });
@@ -76,10 +76,10 @@ export class TenantSetup extends PureComponent<Props, State> {
   };
 
   createDataSource = async (name: string, hosted: HostedInstance) => {
-    const { instance } = this.props;
+    const { instance } = this.context;
     const { adminApiToken } = this.state;
     try {
-      const token = await instance.getViewerToken(adminApiToken!, hosted!);
+      const token = await instance.api.getViewerToken(adminApiToken!, hosted!);
       if (token) {
         return await createHostedInstance(name, hosted!, token);
       }
@@ -92,7 +92,7 @@ export class TenantSetup extends PureComponent<Props, State> {
   };
 
   onSave = async () => {
-    const { instance } = this.props;
+    const { instance } = this.context;
     const { info, adminApiToken, apiHost } = this.state;
     const name = instance?.instanceSettings.name;
 
@@ -191,35 +191,31 @@ export class TenantSetup extends PureComponent<Props, State> {
   };
 
   onOptionsChange = (options: SMOptions) => {
-    const { instance } = this.props;
-    return instance.onOptionsChange(options);
+    const { instance } = this.context;
+    return instance.api.onOptionsChange(options);
   };
 
   render() {
-    const { instance } = this.props;
-    if (!instance) {
+    const { instance } = this.context;
+    if (!instance.api) {
       return <div>Loading...</div>;
     }
-    const { showResetModal, resetConfig } = this.state;
-
-    if (!isValid(instance.instanceSettings?.jsonData) || resetConfig) {
-      return this.renderSetup();
-    }
+    // const { showResetModal, resetConfig } = this.state;
 
     return (
       <div>
         <DashboardList
-          options={instance.instanceSettings.jsonData}
+          options={instance.api.instanceSettings.jsonData}
           checkUpdates={true}
           onChange={this.onOptionsChange}
         />
         <br />
-        <TenantView settings={instance.instanceSettings.jsonData} />
-        <Button variant="destructive" onClick={this.showResetModal(true)}>
-          Reset
-        </Button>
+        <TenantView settings={instance.api.instanceSettings.jsonData} />
+        {/* <Button variant="destructive" onClick={this.showResetModal(true)}> */}
+        {/* Reset */}
+        {/* </Button> */}
         <ConfirmModal
-          isOpen={showResetModal}
+          isOpen={false}
           title="Reset Configuration"
           body="Are you sure you want to reset the configuration?"
           confirmText="Reset Configuration"
