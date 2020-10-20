@@ -1,24 +1,27 @@
 import React, { FC, useState } from 'react';
 import { Button, Alert } from '@grafana/ui';
-import { config, getBackendSrv, getLocationSrv } from '@grafana/runtime';
+import { getBackendSrv } from '@grafana/runtime';
 import { AppPluginMeta } from '@grafana/data';
 import { GlobalSettings } from 'types';
 import { initializeDatasource } from 'utils';
-import { dashboardPaths, importAllDashboards, importDashboard } from 'dashboards/loader';
-import { DashboardInfo } from 'datasource/types';
+import { importAllDashboards } from 'dashboards/loader';
 
 interface Props {
   meta: AppPluginMeta<GlobalSettings>;
+  onInitialized: () => void;
 }
 
-export const WelcomePage: FC<Props> = ({ meta }) => {
+export const WelcomePage: FC<Props> = ({ meta, onInitialized }) => {
   const [error, setError] = useState();
 
   const onClick = async () => {
+    if (!meta.jsonData) {
+      throw new Error('Invalid configuration');
+    }
     const body = {
-      stackId: parseInt(meta.jsonData?.grafanaInstanceId, 10),
-      metricsInstanceId: meta.jsonData?.metrics?.hostedId,
-      logsInstanceId: meta.jsonData?.logs?.hostedId,
+      stackId: parseInt(meta.jsonData.grafanaInstanceId ?? '1', 10),
+      metricsInstanceId: meta.jsonData.metrics.hostedId,
+      logsInstanceId: meta.jsonData.logs.hostedId,
     };
     try {
       const { accessToken } = await getBackendSrv().request({
@@ -26,25 +29,16 @@ export const WelcomePage: FC<Props> = ({ meta }) => {
         method: 'POST',
         data: body,
       });
-      const dashboards = await importAllDashboards(
-        meta.jsonData?.metrics?.grafanaName,
-        meta.jsonData?.logs.grafanaName
-      );
+      const dashboards = await importAllDashboards(meta.jsonData.metrics.grafanaName, meta.jsonData.logs.grafanaName);
       const datasourcePayload = {
-        apiHost: meta.jsonData?.apiHost,
+        apiHost: meta.jsonData.apiHost,
         accessToken,
-        metrics: meta.jsonData?.metrics,
-        logs: meta.jsonData?.logs,
+        metrics: meta.jsonData.metrics,
+        logs: meta.jsonData.logs,
       };
-      console.log({ accessToken, dashboards, datasourcePayload });
       await initializeDatasource(datasourcePayload, dashboards);
-      getLocationSrv().update({
-        partial: false,
-        query: { page: 'checks' },
-      });
-      window.location.reload();
+      onInitialized();
     } catch (e) {
-      console.log('hiiii', e);
       setError(e.data?.msg);
     }
   };

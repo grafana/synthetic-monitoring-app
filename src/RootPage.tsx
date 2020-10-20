@@ -5,9 +5,9 @@ import React, { PureComponent } from 'react';
 import { NavModelItem, AppRootProps, DataSourceInstanceSettings } from '@grafana/data';
 import { GlobalSettings, RegistrationInfo, GrafanaInstances } from './types';
 import { SMDataSource } from 'datasource/DataSource';
-import { findSMDataSources, createNewApiInstance, dashboardUID } from 'utils';
+import { findSMDataSources, dashboardUID } from 'utils';
 import { SMOptions } from 'datasource/types';
-import { config, getDataSourceSrv, getLocationSrv } from '@grafana/runtime';
+import { getDataSourceSrv, getLocationSrv } from '@grafana/runtime';
 import { TenantSetup } from './components/TenantSetup';
 import { InstanceContext } from './components/InstanceContext';
 import { ChecksPage } from 'page/ChecksPage';
@@ -35,9 +35,10 @@ export class RootPage extends PureComponent<Props, State> {
 
   async loadInstances() {
     const { meta } = this.props;
+    this.setState({ loadingInstance: true });
     const api = (await getDataSourceSrv()
       .get('Synthetic Monitoring')
-      .catch(e => null)) as SMDataSource | null;
+      .catch(e => null)) as SMDataSource | undefined;
 
     const instances: GrafanaInstances = {
       api,
@@ -161,12 +162,29 @@ export class RootPage extends PureComponent<Props, State> {
     return null;
   }
 
+  initializeRedirect() {
+    getLocationSrv().update({
+      partial: false,
+      query: { page: 'welcome' },
+    });
+    return null;
+  }
+
+  onInitialized = async () => {
+    await this.loadInstances();
+    getLocationSrv().update({
+      partial: false,
+      query: { page: 'checks' },
+    });
+    return null;
+  };
+
   //-----------------------------------------------------------------------------------------
   // Config
   //-----------------------------------------------------------------------------------------
   renderConfig() {
     const { instances } = this.state;
-    if (!instances) {
+    if (!instances || !instances.api) {
       return <div>Loading.... (or maybe a user permissions error?)</div>;
     }
 
@@ -174,33 +192,31 @@ export class RootPage extends PureComponent<Props, State> {
   }
 
   renderPage() {
-    const { meta, query, ...rest } = this.props;
-    const { settings, valid, instances, loadingInstance } = this.state;
-    console.log(rest);
-    console.log('hello', instances?.api);
+    const { meta, query } = this.props;
+    const { instances, loadingInstance } = this.state;
     if (loadingInstance) {
       return <Spinner />;
     }
 
     const notInitialized = !instances || !instances?.api?.instanceSettings?.jsonData?.initialized;
-    if (notInitialized || query.page === 'config') {
-      return <WelcomePage meta={meta} />;
+
+    if (notInitialized && query.page !== 'welcome') {
+      return this.initializeRedirect();
     }
 
-    // if (settings.length > 1) {
-    //   return this.renderMultipleConfigs();
-    // }
-    // const { } = this.props;
-    // if (!valid || query.page === 'config') {
-    // return this.renderConfig();
-    // }
+    if (query.page === 'config') {
+      return this.renderConfig();
+    }
+
+    if (query.page === 'welcome') {
+      return <WelcomePage meta={meta} onInitialized={this.onInitialized} />;
+    }
 
     if ('dashboard' in query) {
       return this.dashboardRedirect();
     }
 
     if (query.page === 'checks') {
-      console.log('we has instances', instances);
       return <ChecksPage instance={instances!} id={query.id} />;
     }
     if (query.page === 'probes') {
@@ -228,11 +244,4 @@ async function loadDataSourceIfExists(name?: string) {
     } catch {}
   }
   return undefined;
-}
-
-function isValid(instance: GrafanaInstances): boolean {
-  if (!instance || !instance.logs || !instance.metrics || !instance.api) {
-    return false;
-  }
-  return true;
 }

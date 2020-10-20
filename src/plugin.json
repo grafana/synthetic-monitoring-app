@@ -28,8 +28,8 @@
       "reqRole": "Editor",
       "headers": [
         {
-          "name": "MetricsPublisherToken",
-          "content": "{{ .SecureJsonData.hmPublisherToken }}"
+          "name": "PublisherToken",
+          "content": "{{ .SecureJsonData.publisherToken }}"
         }
       ]
     }

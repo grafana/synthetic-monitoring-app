@@ -1,5 +1,5 @@
 import { getBackendSrv } from '@grafana/runtime';
-import { DashboardInfo, FolderInfo, SMOptions } from 'datasource/types';
+import { DashboardInfo, FolderInfo } from 'datasource/types';
 
 export const dashboardPaths = [
   'sm-http.json', // The path
@@ -24,7 +24,6 @@ async function findSyntheticMonitoringFolder(): Promise<FolderInfo> {
 }
 
 export async function importAllDashboards(metricsInstanceName: string, logsInstanceName: string) {
-  const folder = await findSyntheticMonitoringFolder();
   return Promise.all(dashboardPaths.map(path => importDashboard(path, metricsInstanceName, logsInstanceName)));
 }
 

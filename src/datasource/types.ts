@@ -38,6 +38,7 @@ export interface FolderInfo {
 export interface SMOptions extends DataSourceJsonData {
   apiHost: string;
   metrics: LinkedDatsourceInfo;
+  initialized?: boolean;
   logs: LinkedDatsourceInfo;
   dashboards: DashboardInfo[];
 }

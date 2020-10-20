@@ -50,7 +50,7 @@ export class DashboardList extends PureComponent<Props, State> {
       return;
     }
     let options = { ...this.props.options };
-    const updated = await importDashboard(dashboard.json, options);
+    const updated = await importDashboard(dashboard.json, options.metrics.grafanaName, options.logs.grafanaName);
     console.log('dashboard updated');
     let i = options.dashboards.findIndex(item => {
       return item.uid === updated.uid;
