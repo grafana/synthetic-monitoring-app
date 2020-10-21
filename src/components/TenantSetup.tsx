@@ -1,7 +1,6 @@
 import React, { PureComponent } from 'react';
 import { Button, ConfirmModal } from '@grafana/ui';
 import { RegistrationInfo, HostedInstance } from 'types';
-import { isValid } from 'datasource/ConfigEditor';
 import { InstanceList } from './InstanceList';
 import { createHostedInstance, findHostedInstance, getHostedLokiAndPrometheusInfo } from 'utils';
 import { SMOptions } from 'datasource/types';
@@ -41,7 +40,7 @@ export class TenantSetup extends PureComponent<Props, State> {
 
   onInit = async ({ apiHost = DEFAULT_API_HOST, adminApiToken }: InitParams) => {
     const { instance } = this.context;
-    const info = await instance.api.registerInit(apiHost, adminApiToken).catch(err => {
+    const info = await instance.api.registerInit(apiHost, adminApiToken).catch((err: any) => {
       console.error('failed to init. ', err);
       if (err.data.msg) {
         this.setState({ userError: err.data.msg, backendError: undefined });
@@ -141,7 +140,7 @@ export class TenantSetup extends PureComponent<Props, State> {
 
     // Save the dashboard names
     for (const json of dashboardPaths) {
-      const d = await importDashboard(json, options);
+      const d = await importDashboard(json, metrics!.name, logs!.name);
       options.dashboards.push(d);
     }
     await instance!.registerSave(adminApiToken!, options, info?.accessToken!);

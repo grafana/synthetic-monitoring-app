@@ -1,4 +1,4 @@
-import { DataSourceInstanceSettings, DataSourceSettings } from '@grafana/data';
+import { DataSourceInstanceSettings } from '@grafana/data';
 
 import { SMOptions, DashboardInfo, LinkedDatsourceInfo } from './datasource/types';
 

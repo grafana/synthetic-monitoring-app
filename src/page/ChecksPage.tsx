@@ -2,14 +2,13 @@
 import React, { PureComponent } from 'react';
 
 // Types
-import { Check, GrafanaInstances } from 'types';
+import { Check } from 'types';
 import { getLocationSrv } from '@grafana/runtime';
 import { CheckEditor } from 'components/CheckEditor';
 import { CheckList } from 'components/CheckList';
 import { InstanceContext } from 'components/InstanceContext';
 
 interface Props {
-  instance: GrafanaInstances;
   id?: string;
   checksPerPage?: number;
 }
@@ -35,7 +34,6 @@ export class ChecksPage extends PureComponent<Props, State> {
     const { id } = this.props;
     const { instance } = this.context;
     const checks = (await instance?.api?.listChecks()) ?? [];
-    console.log(checks);
     const num = id ? parseInt(id, 10) : -1;
     const check = checks?.find(c => c.id === num);
     this.setState({
@@ -90,14 +88,14 @@ export class ChecksPage extends PureComponent<Props, State> {
   render() {
     const { instance } = this.context;
     const { check, addNew, loading, checks } = this.state;
-    if (loading) {
+    if (loading || !instance?.api) {
       return <div>Loading...</div>;
     }
     if (check) {
-      return <CheckEditor check={check} instance={instance?.api} onReturn={this.onGoBack} />;
+      return <CheckEditor check={check} instance={instance.api} onReturn={this.onGoBack} />;
     }
     if (addNew) {
-      return <CheckEditor instance={instance?.api} onReturn={this.onGoBack} />;
+      return <CheckEditor instance={instance.api} onReturn={this.onGoBack} />;
     }
     return <CheckList instance={instance} onAddNewClick={this.onAddNew} checks={checks} />;
   }

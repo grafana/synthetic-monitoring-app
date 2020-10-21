@@ -5,6 +5,8 @@ import { ProbesPage } from './ProbesPage';
 import { InstanceContext } from 'components/InstanceContext';
 import { getInstanceMock, instanceSettings } from '../datasource/__mocks__/DataSource';
 import * as runtime from '@grafana/runtime';
+import { AppPluginMeta } from '@grafana/data';
+import { GlobalSettings } from 'types';
 jest.setTimeout(10000);
 
 interface RenderArgs {
@@ -20,8 +22,9 @@ const WithRouter = ({ id, loading = false }: RenderArgs = {}) => {
       setRouterId(queryId);
     },
   }));
+  const meta = {} as AppPluginMeta<GlobalSettings>;
   return (
-    <InstanceContext.Provider value={{ instance: { api: getInstanceMock(instanceSettings) }, loading }}>
+    <InstanceContext.Provider value={{ instance: { api: getInstanceMock(instanceSettings) }, loading, meta }}>
       <ProbesPage id={routerId} />
     </InstanceContext.Provider>
   );

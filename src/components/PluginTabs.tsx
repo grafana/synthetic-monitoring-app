@@ -6,18 +6,39 @@ import { ChecksPage } from 'page/ChecksPage';
 import { ProbesPage } from 'page/ProbesPage';
 import { TenantSetup } from 'components/TenantSetup';
 import { InstanceContext } from './InstanceContext';
+import { getLocationSrv } from '@grafana/runtime';
+import { DashboardInfo } from 'datasource/types';
 
 type Tab = {
   label: string;
   id: string;
   icon?: string;
   enabledByFeatureFlag?: string;
-  render: (query: any) => React.ReactNode;
+  render: (query: any) => JSX.Element;
 };
 
 type RouterQuery = {
   page: string;
   id: string;
+};
+
+const pagesToRedirectIfNotInitialized = new Set(['checks', 'probes', 'config', 'redirect']);
+
+const pagesToRedirectIfInitialized = new Set(['setup']);
+
+const dashboardRedirects = new Set(['redirect']);
+
+const getRedirectDestination = (queryPage: string, isInitialized: boolean): string | undefined => {
+  if (!isInitialized && pagesToRedirectIfNotInitialized.has(queryPage)) {
+    return 'setup';
+  }
+  if (isInitialized && pagesToRedirectIfInitialized.has(queryPage)) {
+    return 'checks';
+  }
+  if (isInitialized && dashboardRedirects.has(queryPage)) {
+    return '';
+  }
+  return;
 };
 
 const tabs: Tab[] = [
@@ -29,7 +50,7 @@ const tabs: Tab[] = [
   {
     label: 'Probes',
     id: 'probes',
-    render: (query: RouterQuery) => <ProbesPage />,
+    render: (query: RouterQuery) => <ProbesPage id={query.id} />,
   },
 
   {
@@ -39,7 +60,7 @@ const tabs: Tab[] = [
   },
 ];
 
-function filterTabs(tabs: Tab[], query: RouterQuery, apiInitialized: boolean): Tab[] {
+function filterTabs(tabs: Tab[], apiInitialized: boolean): Tab[] {
   if (!apiInitialized) {
     return [
       {
@@ -52,8 +73,16 @@ function filterTabs(tabs: Tab[], query: RouterQuery, apiInitialized: boolean): T
   return tabs;
 }
 
-function findActiveTab(tabs: Tab[], query: RouterQuery, apiInitialized: boolean): Tab {
-  return tabs.find(tab => tab.id === query.page) ?? tabs[0];
+function findActiveTab(tabs: Tab[], queryPage: string, apiInitialized: boolean): Tab {
+  return tabs.find(tab => tab.id === queryPage) ?? tabs[0];
+}
+
+function handleDashboardRedirect(dashboard: string, dashboards: DashboardInfo[]) {
+  const targetDashboard = dashboards.find(dashboardJson => dashboardJson.json.indexOf(dashboard) > -1);
+  getLocationSrv().update({
+    partial: false,
+    path: `d/${targetDashboard?.uid}`,
+  });
 }
 
 function getNavModel(tabs: Tab[], path: string, activeTab: Tab, logoUrl: string) {
@@ -80,18 +109,31 @@ function getNavModel(tabs: Tab[], path: string, activeTab: Tab, logoUrl: string)
 
 export const PluginTabs: FC<AppRootProps<GlobalSettings>> = ({ query, onNavChanged, path, meta }) => {
   const { instance } = useContext(InstanceContext);
-  const apiInitialized = instance?.api?.instanceSettings?.jsonData?.initialized;
-  const filteredTabs = filterTabs(tabs, query, apiInitialized);
-  const [activeTab, setActiveTab] = useState(findActiveTab(tabs, query, apiInitialized));
-  console.log('do the tabs think things are initialized?', apiInitialized);
+  const apiInitialized = Boolean(instance?.api?.instanceSettings?.jsonData?.initialized);
+  const dashboards = instance?.api?.instanceSettings?.jsonData.dashboards;
+  const [activeTab, setActiveTab] = useState(findActiveTab(tabs, query.page, apiInitialized));
+  const logoUrl = meta.info.logos.large;
 
   useEffect(() => {
-    // const filteredTabs = filterTabs(tabs, query);
-    console.log('in the effect');
-    const activeTab = findActiveTab(filteredTabs, query, apiInitialized);
+    const redirectDestination = getRedirectDestination(query.page, apiInitialized);
+    if (redirectDestination) {
+      getLocationSrv().update({
+        partial: false,
+        path,
+        query: {
+          page: redirectDestination,
+        },
+      });
+      return;
+    }
+    if (query.page === 'redirect') {
+      return handleDashboardRedirect(query.dashboard, dashboards ?? []);
+    }
+    const filteredTabs = filterTabs(tabs, apiInitialized);
+    const activeTab = findActiveTab(filteredTabs, query.page, apiInitialized);
     setActiveTab(activeTab);
-    onNavChanged(getNavModel(filteredTabs, path, activeTab, meta.info.logos.large));
-  }, [query.id, apiInitialized]);
+    onNavChanged(getNavModel(filteredTabs, path, activeTab, logoUrl));
+  }, [query.page, query.dashboard, apiInitialized, logoUrl, onNavChanged, path, dashboards]);
 
   return activeTab.render(query);
 };

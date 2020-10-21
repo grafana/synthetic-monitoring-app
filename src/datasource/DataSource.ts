@@ -16,7 +16,6 @@ import { Probe, Check, RegistrationInfo, HostedInstance } from '../types';
 export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   constructor(public instanceSettings: DataSourceInstanceSettings<SMOptions>) {
     super(instanceSettings);
-    console.log('instantiating', instanceSettings);
   }
 
   getMetricsDS(): DataSourceInstanceSettings {
@@ -129,7 +128,10 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
         url: `${this.instanceSettings.url}/sm/check/list`,
       })
       .then((res: any) => {
-        return res.data;
+        if (Array.isArray(res.data)) {
+          return res.data;
+        }
+        return [];
       });
   }
 

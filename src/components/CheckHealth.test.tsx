@@ -2,8 +2,9 @@ import React from 'react';
 import { render, waitFor } from '@testing-library/react';
 import { CheckHealth } from './CheckHealth';
 import { InstanceContext } from './InstanceContext';
-import { Check } from 'types';
+import { Check, GlobalSettings } from 'types';
 import { getInstanceMock, instanceSettings } from '../datasource/__mocks__/DataSource';
+import { AppPluginMeta } from '@grafana/data';
 
 const defaultCheck = {
   id: 2,
@@ -30,8 +31,9 @@ const renderCheckHealth = (check: Check = defaultCheck) => {
   const instance = {
     api: getInstanceMock(instanceSettings),
   };
+  const meta = {} as AppPluginMeta<GlobalSettings>;
   return render(
-    <InstanceContext.Provider value={{ instance, loading: false }}>
+    <InstanceContext.Provider value={{ instance, loading: false, meta }}>
       <CheckHealth check={check} />
     </InstanceContext.Provider>
   );

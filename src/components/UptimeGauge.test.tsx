@@ -4,13 +4,16 @@ import { InstanceContext } from 'components/InstanceContext';
 import { getInstanceMock, instanceSettings } from '../datasource/__mocks__/DataSource';
 import { UptimeGauge } from './UptimeGauge';
 import * as utils from 'utils';
+import { AppPluginMeta } from '@grafana/data';
+import { GlobalSettings } from 'types';
 
 const renderUptimeGauge = (sparkline = false) => {
   const instance = {
     api: getInstanceMock(instanceSettings),
   };
+  const meta = {} as AppPluginMeta<GlobalSettings>;
   render(
-    <InstanceContext.Provider value={{ instance, loading: false }}>
+    <InstanceContext.Provider value={{ instance, loading: false, meta }}>
       <UptimeGauge
         labelNames={['tacos']}
         labelValues={['burritos']}

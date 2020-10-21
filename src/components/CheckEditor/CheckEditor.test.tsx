@@ -1,10 +1,20 @@
 import React from 'react';
 import { render, screen, waitFor, act, within } from '@testing-library/react';
-import { Check, IpVersion, CheckType, DnsResponseCodes, ResponseMatchType, HttpMethod, HttpVersion } from 'types';
+import {
+  Check,
+  IpVersion,
+  CheckType,
+  DnsResponseCodes,
+  ResponseMatchType,
+  HttpMethod,
+  HttpVersion,
+  GlobalSettings,
+} from 'types';
 import { CheckEditor } from './CheckEditor';
 import { getInstanceMock } from '../../datasource/__mocks__/DataSource';
 import userEvent from '@testing-library/user-event';
 import { InstanceContext } from 'components/InstanceContext';
+import { AppPluginMeta } from '@grafana/data';
 jest.setTimeout(30000);
 
 // Data mocks
@@ -74,8 +84,9 @@ const submitForm = async () => {
 // Test Renderer
 const renderCheckEditor = async ({ check = defaultCheck } = {}) => {
   const instance = getInstanceMock();
+  const meta = {} as AppPluginMeta<GlobalSettings>;
   render(
-    <InstanceContext.Provider value={{ instance: { api: instance }, loading: false }}>
+    <InstanceContext.Provider value={{ instance: { api: instance }, loading: false, meta }}>
       <CheckEditor check={check} instance={instance} onReturn={onReturn} />
     </InstanceContext.Provider>
   );

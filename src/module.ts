@@ -2,7 +2,6 @@
 import { ExampleConfigCtrl } from './legacy/config';
 import { AppPlugin } from '@grafana/data';
 import { GlobalSettings } from './types';
-import { RootPage } from 'RootPage';
 import { App } from 'components/App';
 
 // Legacy exports just for testing

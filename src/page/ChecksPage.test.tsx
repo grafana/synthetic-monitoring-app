@@ -3,6 +3,9 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { ChecksPage } from './ChecksPage';
 import { getInstanceMock } from 'datasource/__mocks__/DataSource';
 import userEvent from '@testing-library/user-event';
+import { InstanceContext } from 'components/InstanceContext';
+import { AppPluginMeta } from '@grafana/data';
+import { GlobalSettings } from 'types';
 jest.setTimeout(20000);
 
 interface RenderArgs {
@@ -11,7 +14,12 @@ interface RenderArgs {
 
 const renderChecksPage = ({ checkId }: RenderArgs = {}) => {
   const instance = getInstanceMock();
-  render(<ChecksPage instance={{ api: instance }} id={checkId} />);
+  const meta = {} as AppPluginMeta<GlobalSettings>;
+  render(
+    <InstanceContext.Provider value={{ instance: { api: instance }, loading: false, meta }}>
+      <ChecksPage id={checkId} />
+    </InstanceContext.Provider>
+  );
 };
 
 test('renders checks', () => {

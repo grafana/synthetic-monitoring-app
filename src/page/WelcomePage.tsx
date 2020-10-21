@@ -1,8 +1,6 @@
 import React, { FC, useState, useContext } from 'react';
 import { Button, Alert } from '@grafana/ui';
-import { getBackendSrv, getLocationSrv } from '@grafana/runtime';
-import { AppPluginMeta } from '@grafana/data';
-import { GlobalSettings } from 'types';
+import { getBackendSrv } from '@grafana/runtime';
 import { initializeDatasource } from 'utils';
 import { importAllDashboards } from 'dashboards/loader';
 import { InstanceContext } from 'components/InstanceContext';
@@ -11,9 +9,10 @@ interface Props {}
 
 export const WelcomePage: FC<Props> = () => {
   const [error, setError] = useState('');
-  const { meta, updateApiDatasource } = useContext(InstanceContext);
+  const { meta } = useContext(InstanceContext);
 
   const onClick = async () => {
+    console.log('calling on click');
     if (!meta?.jsonData) {
       setError('Invalid plugin configuration');
       return;
@@ -36,13 +35,11 @@ export const WelcomePage: FC<Props> = () => {
         metrics: meta.jsonData.metrics,
         logs: meta.jsonData.logs,
       };
-      const response = await initializeDatasource(datasourcePayload, dashboards);
 
-      updateApiDatasource(response.datasource);
-      getLocationSrv().update({
-        partial: false,
-        query: { page: 'checks' },
-      });
+      await initializeDatasource(datasourcePayload, dashboards);
+
+      // force reload so that GrafanaBootConfig is updated.
+      window.location.reload();
     } catch (e) {
       setError(e.data?.msg);
     }

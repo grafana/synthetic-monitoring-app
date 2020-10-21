@@ -4,6 +4,8 @@ import userEvent from '@testing-library/user-event';
 import ProbeEditor from './ProbeEditor';
 import { InstanceContext } from 'components/InstanceContext';
 import { getInstanceMock, instanceSettings } from '../datasource/__mocks__/DataSource';
+import { AppPluginMeta } from '@grafana/data';
+import { GlobalSettings } from 'types';
 
 const defaultProbe = {
   name: '',
@@ -26,9 +28,9 @@ const renderProbeEditor = ({ probe = defaultProbe, updateProbeMock = updateProbe
   const mockedInstance = getInstanceMock(instanceSettings);
   mockedInstance.updateProbe = updateProbeMock;
   const instance = { api: mockedInstance };
-
+  const meta = {} as AppPluginMeta<GlobalSettings>;
   render(
-    <InstanceContext.Provider value={{ instance, loading: false }}>
+    <InstanceContext.Provider value={{ instance, loading: false, meta }}>
       <ProbeEditor probe={probe} onReturn={onReturn} />
     </InstanceContext.Provider>
   );

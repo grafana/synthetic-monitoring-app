@@ -24,6 +24,7 @@ async function findSyntheticMonitoringFolder(): Promise<FolderInfo> {
 }
 
 export async function importAllDashboards(metricsInstanceName: string, logsInstanceName: string) {
+  await findSyntheticMonitoringFolder();
   return Promise.all(dashboardPaths.map(path => importDashboard(path, metricsInstanceName, logsInstanceName)));
 }
 
