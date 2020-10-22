@@ -3,14 +3,13 @@ import { InstanceContext } from 'components/InstanceContext';
 import { GlobalSettings, GrafanaInstances } from 'types';
 import { getDataSourceSrv } from '@grafana/runtime';
 import { SMDataSource } from 'datasource/DataSource';
-import { ErrorBoundaryAlert, Spinner } from '@grafana/ui';
+import { Spinner } from '@grafana/ui';
 import { AppPluginMeta } from '@grafana/data';
 import { MissingDatasources } from './MissingDatasources';
 
 async function fetchDatasources(metricInstanceName: string, logsInstanceName: string): Promise<GrafanaInstances> {
   const dataSourceSrv = getDataSourceSrv();
   const smApi = (await dataSourceSrv.get('Synthetic Monitoring').catch(e => undefined)) as SMDataSource | undefined;
-  console.log('metrics', metricInstanceName, logsInstanceName);
   const metrics = await dataSourceSrv.get(metricInstanceName).catch(e => undefined);
   const logs = await dataSourceSrv.get(logsInstanceName).catch(e => undefined);
   return {

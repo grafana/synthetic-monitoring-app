@@ -1,10 +1,10 @@
 import React, { FC, useState, useContext } from 'react';
-import { Button, Alert, useStyles, HorizontalGroup, VerticalGroup, Icon } from '@grafana/ui';
+import { Button, Alert, useStyles, HorizontalGroup, VerticalGroup } from '@grafana/ui';
 import { getBackendSrv, config } from '@grafana/runtime';
 import { initializeDatasource } from 'utils';
 import { importAllDashboards } from 'dashboards/loader';
 import { InstanceContext } from 'components/InstanceContext';
-import { GrafanaTheme } from '@grafana/data';
+import { DataSourceInstanceSettings, GrafanaTheme } from '@grafana/data';
 import { css } from 'emotion';
 import { colors } from 'components/constants';
 import dashboardScreenshot from 'img/screenshot-dash-http.png';
@@ -14,6 +14,7 @@ import circledLoki from 'img/circled-loki.svg';
 import circledAlert from 'img/circled-alert.svg';
 import circledSM from 'img/circled-sm.svg';
 import checkScreenshot from 'img/check-screenshot.png';
+import { CloudDatasourceJsonData } from 'datasource/types';
 
 const getStyles = (theme: GrafanaTheme) => {
   const textColor = theme.isDark ? colors.darkText : undefined;
@@ -133,12 +134,11 @@ export const WelcomePage: FC<Props> = () => {
   const styles = useStyles(getStyles);
 
   const metricsName = meta?.jsonData?.metrics.grafanaName ?? '';
-  const metricsDatasource = config.datasources[metricsName];
+  const metricsDatasource = config.datasources[metricsName] as DataSourceInstanceSettings<CloudDatasourceJsonData>;
   const logsName = meta?.jsonData?.logs.grafanaName ?? '';
-  const logsDatasource = config.datasources[logsName];
+  const logsDatasource = config.datasources[logsName] as DataSourceInstanceSettings<CloudDatasourceJsonData>;
 
   const onClick = async () => {
-    console.log('calling on click');
     if (!meta?.jsonData) {
       setError('Invalid plugin configuration');
       return;
@@ -244,25 +244,18 @@ export const WelcomePage: FC<Props> = () => {
             <VerticalGroup>
               <p>Metrics and logs from the checks that you create will be published to this Grafana Cloud stack.</p>
               <div className={styles.datasourceContainer}>
-                {metricsDatasource ? (
-                  <div className={styles.datasource}>
-                    <img className={styles.datasourceLogo} src={metricsDatasource.meta.info.logos.small} />
-                    <VerticalGroup>
-                      <h5 className={styles.datasourceTitle}>{metricsDatasource.name}</h5>
-                      <p>{metricsDatasource.jsonData.directUrl}</p>
-                    </VerticalGroup>
-                  </div>
-                ) : (
-                  <Alert title="Missing Prometheus datasource">
-                    Synthetic Monitoring requires a Prometheus datasource connected to an instance hosted in Grafana
-                    Cloud
-                  </Alert>
-                )}
                 <div className={styles.datasource}>
-                  <img className={styles.datasourceLogo} src={logsDatasource.meta.info.logos.small} />
+                  <img className={styles.datasourceLogo} src={metricsDatasource.meta.info.logos.small} />
                   <VerticalGroup>
                     <h5 className={styles.datasourceTitle}>{metricsDatasource.name}</h5>
                     <p>{metricsDatasource.jsonData.directUrl}</p>
+                  </VerticalGroup>
+                </div>
+                <div className={styles.datasource}>
+                  <img className={styles.datasourceLogo} src={logsDatasource.meta.info.logos.small} />
+                  <VerticalGroup>
+                    <h5 className={styles.datasourceTitle}>{logsDatasource.name}</h5>
+                    <p>{logsDatasource.jsonData.directUrl}</p>
                   </VerticalGroup>
                 </div>
               </div>

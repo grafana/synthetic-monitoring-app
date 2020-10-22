@@ -28,8 +28,8 @@
       "reqRole": "Editor",
       "headers": [
         {
-          "name": "PublisherToken",
-          "content": "{{ .SecureJsonData.publisherToken }}"
+          "name": "Authorization",
+          "content": "Bearer {{ .SecureJsonData.publisherToken }}"
         }
       ]
     }

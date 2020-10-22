@@ -49,3 +49,7 @@ export interface SMOptions extends DataSourceJsonData {
 export interface SecureJsonData {
   accessToken?: string;
 }
+
+export interface CloudDatasourceJsonData extends DataSourceJsonData {
+  directUrl: string;
+}
