@@ -4,12 +4,12 @@ import { GlobalSettings, GrafanaInstances } from 'types';
 
 interface InstanceContextValue {
   loading: boolean;
-  instance: GrafanaInstances | undefined;
+  instance: GrafanaInstances;
   meta: AppPluginMeta<GlobalSettings> | undefined;
 }
 
 export const InstanceContext = createContext<InstanceContextValue>({
-  instance: undefined,
+  instance: {},
   loading: true,
   meta: undefined,
 });

@@ -9,8 +9,8 @@ export class App extends PureComponent<AppRootProps<GlobalSettings>> {
     const { meta } = this.props;
     return (
       <InstanceProvider
-        metricInstanceName={meta.jsonData?.metrics?.grafanaName ?? ''}
-        logsInstanceName={meta.jsonData?.logs.grafanaName ?? ''}
+        metricInstanceName={meta.jsonData?.metrics?.grafanaName}
+        logsInstanceName={meta.jsonData?.logs?.grafanaName}
         meta={meta}
       >
         <PluginTabs {...this.props} />

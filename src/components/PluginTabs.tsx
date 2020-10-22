@@ -111,8 +111,8 @@ export const PluginTabs: FC<AppRootProps<GlobalSettings>> = ({ query, onNavChang
     Boolean(window.sessionStorage.getItem('hasDismissedDashboardUpdate'))
   );
   const [dashboardsNeedingUpdate, setDashboardsNeedingUpdate] = useState<DashboardMeta[] | undefined>();
-  const apiInitialized = Boolean(instance?.api?.instanceSettings?.jsonData?.initialized);
-  const dashboards = instance?.api?.instanceSettings?.jsonData.dashboards;
+  const apiInitialized = Boolean(instance.api?.instanceSettings?.jsonData?.initialized);
+  const dashboards = instance.api?.instanceSettings?.jsonData.dashboards;
   const [activeTab, setActiveTab] = useState(findActiveTab(tabs, query.page, apiInitialized));
   const logoUrl = meta.info.logos.large;
 

@@ -85,7 +85,6 @@ export async function initializeDatasource(
 ): Promise<SMOptions> {
   const existingDatasource = findSMDataSources()?.[0];
   if (existingDatasource) {
-    console.log('it exists', existingDatasource);
     return getBackendSrv().put(`api/datasources/${existingDatasource.id}`, {
       ...existingDatasource,
       access: 'proxy',

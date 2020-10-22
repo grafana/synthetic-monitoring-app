@@ -82,6 +82,7 @@ const getStyles = (theme: GrafanaTheme) => {
     `,
     getStartedTitle: css`
       color: ${textColor};
+      margin-bottom: ${theme.spacing.md};
     `,
     getStartedContent: css`
       display: flex;
@@ -131,9 +132,9 @@ export const WelcomePage: FC<Props> = () => {
   const { meta } = useContext(InstanceContext);
   const styles = useStyles(getStyles);
 
-  const metricsName = meta.jsonData.metrics.grafanaName;
+  const metricsName = meta?.jsonData?.metrics.grafanaName ?? '';
   const metricsDatasource = config.datasources[metricsName];
-  const logsName = meta.jsonData.logs.grafanaName;
+  const logsName = meta?.jsonData?.logs.grafanaName ?? '';
   const logsDatasource = config.datasources[logsName];
 
   const onClick = async () => {
@@ -144,8 +145,8 @@ export const WelcomePage: FC<Props> = () => {
     }
     const body = {
       stackId: parseInt(meta.jsonData.grafanaInstanceId ?? '1', 10),
-      metricsInstanceId: meta.jsonData.metrics.hostedId,
-      logsInstanceId: meta.jsonData.logs.hostedId,
+      metricsInstanceId: meta.jsonData.metrics?.hostedId,
+      logsInstanceId: meta.jsonData.logs?.hostedId,
     };
     try {
       const { accessToken } = await getBackendSrv().request({
@@ -235,19 +236,28 @@ export const WelcomePage: FC<Props> = () => {
                 Get started with Synthetic Monitoring by creating checks. You can choose from Ping, HTTP, DNS, or TCP.
               </p>
               <img src={checkScreenshot} className={styles.checkScreenshot} />
-              <Button onClick={onClick}>Create your first check</Button>
+              <Button onClick={onClick} disabled={!Boolean(metricsDatasource) || !Boolean(logsDatasource)}>
+                Create your first check
+              </Button>
               {error && <Alert title="Something went wrong:">{error}</Alert>}
             </div>
             <VerticalGroup>
               <p>Metrics and logs from the checks that you create will be published to this Grafana Cloud stack.</p>
               <div className={styles.datasourceContainer}>
-                <div className={styles.datasource}>
-                  <img className={styles.datasourceLogo} src={metricsDatasource.meta.info.logos.small} />
-                  <VerticalGroup>
-                    <h5 className={styles.datasourceTitle}>{metricsDatasource.name}</h5>
-                    <p>{metricsDatasource.jsonData.directUrl}</p>
-                  </VerticalGroup>
-                </div>
+                {metricsDatasource ? (
+                  <div className={styles.datasource}>
+                    <img className={styles.datasourceLogo} src={metricsDatasource.meta.info.logos.small} />
+                    <VerticalGroup>
+                      <h5 className={styles.datasourceTitle}>{metricsDatasource.name}</h5>
+                      <p>{metricsDatasource.jsonData.directUrl}</p>
+                    </VerticalGroup>
+                  </div>
+                ) : (
+                  <Alert title="Missing Prometheus datasource">
+                    Synthetic Monitoring requires a Prometheus datasource connected to an instance hosted in Grafana
+                    Cloud
+                  </Alert>
+                )}
                 <div className={styles.datasource}>
                   <img className={styles.datasourceLogo} src={logsDatasource.meta.info.logos.small} />
                   <VerticalGroup>

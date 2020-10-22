@@ -33,7 +33,7 @@ export class ChecksPage extends PureComponent<Props, State> {
   async componentDidMount() {
     const { id } = this.props;
     const { instance } = this.context;
-    const checks = (await instance?.api?.listChecks()) ?? [];
+    const checks = (await instance.api?.listChecks()) ?? [];
     const num = id ? parseInt(id, 10) : -1;
     const check = checks?.find(c => c.id === num);
     this.setState({
@@ -64,7 +64,7 @@ export class ChecksPage extends PureComponent<Props, State> {
 
   onRefresh = async () => {
     const { instance } = this.context;
-    const checks = (await instance?.api?.listChecks()) ?? [];
+    const checks = (await instance.api?.listChecks()) ?? [];
     this.setState({
       checks,
     });
@@ -88,7 +88,7 @@ export class ChecksPage extends PureComponent<Props, State> {
   render() {
     const { instance } = this.context;
     const { check, addNew, loading, checks } = this.state;
-    if (loading || !instance?.api) {
+    if (loading || !instance.api) {
       return <div>Loading...</div>;
     }
     if (check) {

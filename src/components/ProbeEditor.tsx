@@ -41,7 +41,7 @@ const ProbeEditor: FC<Props> = ({ probe, onReturn }) => {
     formValues.latitude = Number(formValues.latitude);
     formValues.longitude = Number(formValues.longitude);
 
-    if (!instance?.api) {
+    if (!instance.api) {
       return;
     }
 
@@ -68,7 +68,7 @@ const ProbeEditor: FC<Props> = ({ probe, onReturn }) => {
   }
 
   const onRemoveProbe = async () => {
-    if (!probe.id || !instance?.api) {
+    if (!probe.id || !instance.api) {
       return;
     }
     await instance.api.deleteProbe(probe.id);
@@ -76,7 +76,7 @@ const ProbeEditor: FC<Props> = ({ probe, onReturn }) => {
   };
 
   const onResetToken = async () => {
-    const info = await instance?.api?.resetProbeToken(probe);
+    const info = await instance.api?.resetProbeToken(probe);
     setShowTokenModal(true);
     setProbeToken(info.token);
   };
