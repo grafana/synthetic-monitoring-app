@@ -62,13 +62,7 @@ const tabs: Tab[] = [
 
 function filterTabs(tabs: Tab[], apiInitialized: boolean): Tab[] {
   if (!apiInitialized) {
-    return [
-      {
-        label: 'Setup',
-        id: 'setup',
-        render: (query: RouterQuery) => <WelcomePage />,
-      },
-    ];
+    return [];
   }
   return tabs;
 }
@@ -100,11 +94,13 @@ function getNavModel(tabs: Tab[], path: string, activeTab: Tab, logoUrl: string)
     url: path,
     children,
   };
-
-  return {
-    main: node,
-    node,
-  };
+  if (tabs.length) {
+    return {
+      main: node,
+      node,
+    };
+  }
+  return null;
 }
 
 export const PluginTabs: FC<AppRootProps<GlobalSettings>> = ({ query, onNavChanged, path, meta }) => {
@@ -132,8 +128,15 @@ export const PluginTabs: FC<AppRootProps<GlobalSettings>> = ({ query, onNavChang
     const filteredTabs = filterTabs(tabs, apiInitialized);
     const activeTab = findActiveTab(filteredTabs, query.page, apiInitialized);
     setActiveTab(activeTab);
-    onNavChanged(getNavModel(filteredTabs, path, activeTab, logoUrl));
+    const navModel = getNavModel(filteredTabs, path, activeTab, logoUrl);
+    if (navModel) {
+      onNavChanged(navModel);
+    }
   }, [query.page, query.dashboard, apiInitialized, logoUrl, onNavChanged, path, dashboards]);
+
+  if (query.page === 'setup') {
+    return <WelcomePage />;
+  }
 
   return activeTab.render(query);
 };
