@@ -163,5 +163,7 @@ export const fallbackCheck = {
 export const colors = {
   blue01: '#001a3e',
   blue02: '#001024',
+  blue03: '#6394EB',
   darkText: '#9FA7B3',
+  black: '#0B0C0E',
 };

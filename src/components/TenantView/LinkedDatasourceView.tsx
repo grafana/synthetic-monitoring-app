@@ -1,7 +1,7 @@
 import React, { FC } from 'react';
 import { LinkedDatsourceInfo } from 'datasource/types';
 import { config, getLocationSrv } from '@grafana/runtime';
-import { Button } from '@grafana/ui';
+import { Button, Spinner } from '@grafana/ui';
 
 interface Props {
   info: LinkedDatsourceInfo;
@@ -25,7 +25,7 @@ const LinkedDatasourceView: FC<Props> = ({ info }) => {
   };
 
   if (!datasource) {
-    return <div>Loading...</div>;
+    return <Spinner />;
   }
 
   return (
