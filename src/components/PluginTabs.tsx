@@ -1,6 +1,6 @@
 import React, { FC, useEffect, useState, useContext } from 'react';
 import { AppRootProps } from '@grafana/data';
-import { GlobalSettings } from 'types';
+import { DashboardMeta, GlobalSettings } from 'types';
 import { WelcomePage } from 'page/WelcomePage';
 import { ChecksPage } from 'page/ChecksPage';
 import { ProbesPage } from 'page/ProbesPage';
@@ -8,6 +8,8 @@ import { TenantSetup } from 'components/TenantSetup';
 import { InstanceContext } from './InstanceContext';
 import { getLocationSrv } from '@grafana/runtime';
 import { DashboardInfo } from 'datasource/types';
+import { listAppDashboards } from 'dashboards/loader';
+import { Button, HorizontalGroup, Modal } from '@grafana/ui';
 
 type Tab = {
   label: string;
@@ -105,11 +107,46 @@ function getNavModel(tabs: Tab[], path: string, activeTab: Tab, logoUrl: string)
 
 export const PluginTabs: FC<AppRootProps<GlobalSettings>> = ({ query, onNavChanged, path, meta }) => {
   const { instance } = useContext(InstanceContext);
+  const [hasDismissedDashboardUpdate, setHasDismissedDashboardUpdate] = useState(
+    Boolean(window.sessionStorage.getItem('hasDismissedDashboardUpdate'))
+  );
+  const [dashboardsNeedingUpdate, setDashboardsNeedingUpdate] = useState<DashboardMeta[] | undefined>();
   const apiInitialized = Boolean(instance?.api?.instanceSettings?.jsonData?.initialized);
   const dashboards = instance?.api?.instanceSettings?.jsonData.dashboards;
   const [activeTab, setActiveTab] = useState(findActiveTab(tabs, query.page, apiInitialized));
   const logoUrl = meta.info.logos.large;
 
+  function skipDashboardUpdate() {
+    window.sessionStorage.setItem('hasDismissedDashboardUpdate', 'true');
+    setHasDismissedDashboardUpdate(true);
+  }
+
+  // Prompt user to update dashboards that are out of date
+  useEffect(() => {
+    if (!hasDismissedDashboardUpdate) {
+      listAppDashboards().then(latestDashboards => {
+        const existingDashboards = dashboards ?? [];
+        const dashboardsNeedingUpdate = existingDashboards
+          .map(existingDashboard => {
+            const templateDashboard = latestDashboards.find(template => template.uid === existingDashboard.uid);
+            const templateVersion = templateDashboard?.latestVersion ?? -1;
+            if (templateDashboard && templateVersion > existingDashboard.version) {
+              return {
+                ...existingDashboard,
+                version: templateDashboard.latestVersion,
+                latestVersion: templateDashboard.latestVersion,
+              };
+            }
+            return null;
+          })
+          .filter(Boolean) as DashboardMeta[];
+
+        setDashboardsNeedingUpdate(dashboardsNeedingUpdate);
+      });
+    }
+  }, [dashboards, hasDismissedDashboardUpdate]);
+
+  // handle navigation
   useEffect(() => {
     const redirectDestination = getRedirectDestination(query.page, apiInitialized);
     if (redirectDestination) {
@@ -138,5 +175,34 @@ export const PluginTabs: FC<AppRootProps<GlobalSettings>> = ({ query, onNavChang
     return <WelcomePage />;
   }
 
-  return activeTab.render(query);
+  return (
+    <div>
+      {activeTab.render(query)}
+      <Modal
+        title="Dashboards out of date"
+        onDismiss={skipDashboardUpdate}
+        isOpen={Boolean(dashboardsNeedingUpdate?.length) && !hasDismissedDashboardUpdate}
+      >
+        <p>It looks like your Synthetic Monitoring dashboards need an update.</p>
+        <HorizontalGroup>
+          <Button
+            onClick={() => {
+              getLocationSrv().update({
+                partial: false,
+                query: {
+                  page: 'config',
+                },
+              });
+              skipDashboardUpdate();
+            }}
+          >
+            Update
+          </Button>
+          <Button onClick={skipDashboardUpdate} variant="link">
+            Skip
+          </Button>
+        </HorizontalGroup>
+      </Modal>
+    </div>
+  );
 };

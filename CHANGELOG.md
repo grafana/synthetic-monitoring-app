@@ -1,3 +1,11 @@
+## [0.3.37](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.36...0.3.37) (2020-10-20)
+
+
+### Bug Fixes
+
+* add dashboard update modal ([bce8d75](https://github.com/grafana/synthetic-monitoring-app/commit/bce8d753f2875e4980766a7d93706b93c450cf5c))
+* auto update dashboards on UI load ([a5293a5](https://github.com/grafana/synthetic-monitoring-app/commit/a5293a58028761ea8dbf910156225b701a27dded))
+
 ## [0.3.36](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.35...0.3.36) (2020-10-16)
 
 
