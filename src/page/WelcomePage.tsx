@@ -1,5 +1,5 @@
 import React, { FC, useState, useContext } from 'react';
-import { Button, Alert, useStyles, HorizontalGroup, VerticalGroup } from '@grafana/ui';
+import { Button, Alert, useStyles, HorizontalGroup, VerticalGroup, useTheme } from '@grafana/ui';
 import { getBackendSrv, config } from '@grafana/runtime';
 import { initializeDatasource } from 'utils';
 import { importAllDashboards } from 'dashboards/loader';
@@ -14,10 +14,11 @@ import circledLoki from 'img/circled-loki.svg';
 import circledAlert from 'img/circled-alert.svg';
 import circledSM from 'img/circled-sm.svg';
 import checkScreenshot from 'img/check-screenshot.png';
+import checkScreenshotLight from 'img/check-screenshot-light.png';
 import { CloudDatasourceJsonData } from 'datasource/types';
 
 const getStyles = (theme: GrafanaTheme) => {
-  const textColor = theme.isDark ? colors.darkText : undefined;
+  const textColor = theme.isDark ? colors.darkText : theme.colors.text;
   return {
     bannerContainer: css`
       background: linear-gradient(107.9deg, ${colors.blue01} 30.42%, ${colors.blue02} 100%);
@@ -131,6 +132,7 @@ interface Props {}
 export const WelcomePage: FC<Props> = () => {
   const [error, setError] = useState('');
   const { meta } = useContext(InstanceContext);
+  const theme = useTheme();
   const styles = useStyles(getStyles);
 
   const metricsName = meta?.jsonData?.metrics.grafanaName ?? '';
@@ -235,7 +237,7 @@ export const WelcomePage: FC<Props> = () => {
               <p>
                 Get started with Synthetic Monitoring by creating checks. You can choose from Ping, HTTP, DNS, or TCP.
               </p>
-              <img src={checkScreenshot} className={styles.checkScreenshot} />
+              <img src={theme.isDark ? checkScreenshot : checkScreenshotLight} className={styles.checkScreenshot} />
               <Button onClick={onClick} disabled={!Boolean(metricsDatasource) || !Boolean(logsDatasource)}>
                 Create your first check
               </Button>
