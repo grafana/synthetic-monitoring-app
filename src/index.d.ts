@@ -14,13 +14,3 @@ type ObjectKeys<T> = T extends object
 interface ObjectConstructor {
   keys<T>(o: T): ObjectKeys<T>;
 }
-
-declare module '*.png' {
-  const content: string;
-  export default content;
-}
-
-declare module '*.svg' {
-  const content: string;
-  export default content;
-}
