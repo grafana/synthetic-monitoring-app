@@ -4,7 +4,7 @@ import { HostedInstance } from 'types';
 import { css } from 'emotion';
 
 interface Props {
-  selected: number;
+  selected?: number;
   instances: HostedInstance[];
   onSelected: (id: number) => void;
 }

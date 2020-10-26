@@ -139,7 +139,7 @@ export const WelcomePage: FC<Props> = () => {
   const metricsDatasource = config.datasources[metricsName] as DataSourceInstanceSettings<CloudDatasourceJsonData>;
   const logsName = meta?.jsonData?.logs.grafanaName ?? '';
   const logsDatasource = config.datasources[logsName] as DataSourceInstanceSettings<CloudDatasourceJsonData>;
-
+  console.log({ meta });
   const onClick = async () => {
     if (!meta?.jsonData) {
       setError('Invalid plugin configuration');

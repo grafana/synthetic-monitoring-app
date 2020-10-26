@@ -5,7 +5,7 @@ import { getDataSourceSrv } from '@grafana/runtime';
 import { SMDataSource } from 'datasource/DataSource';
 import { Spinner } from '@grafana/ui';
 import { AppPluginMeta } from '@grafana/data';
-import { MissingDatasources } from './MissingDatasources';
+import { UnprovisionedSetup } from 'components/UnprovisionedSetup';
 
 async function fetchDatasources(metricInstanceName: string, logsInstanceName: string): Promise<GrafanaInstances> {
   const dataSourceSrv = getDataSourceSrv();
@@ -45,8 +45,9 @@ export const InstanceProvider: FC<Props> = ({ children, metricInstanceName, logs
   if (instancesLoading || !instances) {
     return <Spinner />;
   }
+  console.log(instances);
   if (!instances.metrics || !instances.logs) {
-    return <MissingDatasources />;
+    return <UnprovisionedSetup pluginId={meta.id} pluginName={meta.name} />;
   }
   return (
     <InstanceContext.Provider value={{ meta, instance: instances, loading: instancesLoading }}>

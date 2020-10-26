@@ -50,12 +50,48 @@ export async function getHostedLokiAndPrometheusInfo(): Promise<DataSourceInstan
   return settings;
 }
 
+export async function createDatasource(
+  name: string,
+  hosted: HostedInstance,
+  adminToken: string,
+  smDatasourceId: string
+) {
+  const token = await getViewerToken(adminToken, hosted, smDatasourceId);
+  if (!token) {
+    throw new Error('error getting token');
+  }
+  return await createHostedInstance(name, hosted, token);
+}
+
+async function getViewerToken(apiToken: string, instance: HostedInstance, smDatasourceId: string): Promise<string> {
+  return getBackendSrv()
+    .datasourceRequest({
+      method: 'POST',
+      url: `api/datasources/proxy/${smDatasourceId}/viewer-token`,
+      data: {
+        apiToken,
+        id: instance.id,
+        type: instance.type,
+      },
+      headers: {
+        // ensure the grafana backend doesn't use a cached copy of the
+        // datasource config, as it might not have the new apiHost set.
+        'X-Grafana-NoCache': 'true',
+      },
+    })
+    .then((res: any) => {
+      return res.data?.token;
+    });
+}
+
 interface DatasourcePayload {
   accessToken: string;
   apiHost: string;
   metrics: LinkedDatsourceInfo;
   logs: LinkedDatsourceInfo;
 }
+
+// Used for stubbing out the datasource when plugin is not provisioned
 
 export async function createNewApiInstance(
   payload: DatasourcePayload,

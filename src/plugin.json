@@ -22,7 +22,13 @@
   },
   "routes": [
     {
-      "path": "register",
+      "path": "init",
+      "method": "*",
+      "url": "{{ .JsonData.apiHost }}/api/v1/register/init",
+      "reqRole": "Editor"
+    },
+    {
+      "path": "install",
       "method": "*",
       "url": "{{ .JsonData.apiHost }}/api/v1/register/install",
       "reqRole": "Editor",

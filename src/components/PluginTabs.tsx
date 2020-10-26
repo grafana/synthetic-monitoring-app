@@ -74,10 +74,11 @@ function findActiveTab(tabs: Tab[], queryPage: string, apiInitialized: boolean):
 }
 
 function handleDashboardRedirect(dashboard: string, dashboards: DashboardInfo[]) {
-  const targetDashboard = dashboards.find(dashboardJson => dashboardJson.json.indexOf(dashboard) > -1);
+  console.log({ dashboard, dashboards });
+  const targetDashboard = dashboards.find(dashboardJson => dashboardJson.json.indexOf(dashboard) > -1) ?? dashboards[0];
   getLocationSrv().update({
     partial: false,
-    path: `d/${targetDashboard?.uid}`,
+    path: `d/${targetDashboard.uid}`,
   });
 }
 
@@ -169,9 +170,9 @@ export const PluginTabs: FC<AppRootProps<GlobalSettings>> = ({ query, onNavChang
     if (navModel) {
       onNavChanged(navModel);
     }
-  }, [query.page, query.dashboard, apiInitialized, logoUrl, onNavChanged, path, dashboards]);
+  }, [query, query.dashboard, apiInitialized, logoUrl, onNavChanged, path, dashboards]);
 
-  if (query.page === 'setup') {
+  if (query.page === 'setup' || !activeTab) {
     return <WelcomePage />;
   }
 
