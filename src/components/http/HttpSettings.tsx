@@ -373,20 +373,20 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
                       {isHeaderMatch && (
                         <div className={styles.validationHeaderName}>
                           <Input
-                            ref={register}
+                            ref={register()}
                             name={`${REGEX_FIELD_NAME}[${index}].header`}
                             placeholder="Header name"
                           />
                         </div>
                       )}
-                      <Input ref={register} name={`${REGEX_FIELD_NAME}[${index}].expression`} placeholder="Regex" />
+                      <Input ref={register()} name={`${REGEX_FIELD_NAME}[${index}].expression`} placeholder="Regex" />
                     </div>
                     <div className={styles.validationInverted}>
-                      <Checkbox ref={register} name={`${REGEX_FIELD_NAME}[${index}].inverted`} />
+                      <Checkbox ref={register()} name={`${REGEX_FIELD_NAME}[${index}].inverted`} />
                     </div>
                     {isHeaderMatch ? (
                       <div className={styles.validationAllowMissing}>
-                        <Switch ref={register} name={`${REGEX_FIELD_NAME}[${index}].allowMissing`} />
+                        <Switch ref={register()} name={`${REGEX_FIELD_NAME}[${index}].allowMissing`} />
                       </div>
                     ) : (
                       <div />
