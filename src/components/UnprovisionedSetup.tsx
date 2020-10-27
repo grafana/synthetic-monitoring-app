@@ -1,13 +1,16 @@
 import React, { FC, useState } from 'react';
 import TenantApiSetupForm from 'components/TenantAPISetupForm';
-import { config, getBackendSrv } from '@grafana/runtime';
 import { DEFAULT_API_HOST } from 'components/constants';
 import { InstanceSelection } from 'components/InstanceSelection';
 import { RegistrationInfo } from 'types';
-import { createDatasource, createNewApiInstance, findHostedInstance, getHostedLokiAndPrometheusInfo } from 'utils';
-import { importAllDashboards, listAppDashboards } from 'dashboards/loader';
-import { SMDataSource } from 'datasource/DataSource';
 import { Container } from '@grafana/ui';
+import {
+  getOrCreateMetricAndLokiDatasources,
+  initializeSMDatasource,
+  initializeTenant,
+  saveTenantInstanceIds,
+  updatePluginJsonData,
+} from 'fetchers';
 
 interface ApiSetupValues {
   adminApiToken: string;
@@ -19,6 +22,20 @@ interface Props {
   pluginName: string;
 }
 
+/* 
+This component exists to facilitate bootstrapping the app from an unprovisioned state (i.e. a Grafana instance running on prem)
+We need to do the following things in the setup process:
+1. Post an admin token to the proxied init endpoint
+2. We receive back a list of instances hosted in Grafana Cloud and an accessToken from the init endpoint
+3. Present the instances for selection by the user
+4. Once the desired instances are selected, we need to create the SM datasource with the accessToken and SM API url in the jsonData so it can be used in subsequent requests to the SM API
+5. Ensure there are datasources for the selected metrics and logs instances (if not, create them)
+6. Store metadata about the metrics and logs instances in the SM datasource
+7. Import all the dashboards (the name of the newly created logs/metrics datasources is required for this)
+8. Send the selected metric and logs instance metadata to the SM API (with the register/save endpoint)
+9. Reload the page and let the routing take control
+*/
+
 export const UnprovisionedSetup: FC<Props> = ({ pluginId, pluginName }) => {
   const [apiSetup, setApiSetup] = useState<ApiSetupValues | undefined>();
   const [apiSetupError, setApiSetupError] = useState<string | undefined>();
@@ -27,43 +44,10 @@ export const UnprovisionedSetup: FC<Props> = ({ pluginId, pluginName }) => {
 
   const onSetupSubmit = async (setupValues: ApiSetupValues) => {
     // put api host in plugin jsonData
-    const plugin = await getBackendSrv().get(`api/plugins/${pluginId}`);
-    const pluginSettings = await getBackendSrv().get(`api/plugins/${pluginId}/settings`);
     try {
-      await getBackendSrv().post(`api/plugins/${pluginId}/settings`, {
-        ...pluginSettings,
-        jsonData: {
-          ...(pluginSettings.jsonData ?? {}),
-          apiHost: apiSetup?.apiHost ?? DEFAULT_API_HOST,
-        },
-      });
-      // send admin token to the SM api
-      const info = await getBackendSrv()
-        .request({
-          url: `api/plugin-proxy/${pluginId}/init`,
-          method: 'POST',
-          data: {
-            apiToken: setupValues.adminApiToken,
-          },
-          headers: {
-            // ensure the grafana backend doesn't use a cached copy of the
-            // datasource config, as it might not have the new apiHost set.
-            'X-Grafana-NoCache': 'true',
-          },
-        })
-        .catch(err => {
-          if (err.data.msg) {
-            throw new Error(err.data.msg);
-          }
-          if (err.statusText) {
-            throw new Error(`${err.status}: ${err.statusText}`);
-          }
-          console.log({ err });
-          throw new Error('Failed to initialize with provided Admin API Key');
-        });
-
-      console.log({ info });
-      setTenantInfo(info);
+      await updatePluginJsonData(pluginId, { apiHost: apiSetup?.apiHost ?? DEFAULT_API_HOST });
+      const tenantInfo = await initializeTenant(pluginId, setupValues.adminApiToken);
+      setTenantInfo(tenantInfo);
       setApiSetup(setupValues);
     } catch (e) {
       setApiSetupError(e.message);
@@ -79,8 +63,8 @@ export const UnprovisionedSetup: FC<Props> = ({ pluginId, pluginName }) => {
       return;
     }
 
-    if (!apiSetup) {
-      setInstanceSelectionError('Missing admin token and api host');
+    if (!apiSetup || !apiSetup.apiHost || !tenantInfo?.accessToken) {
+      setInstanceSelectionError('Something went wrong setting up Synthetic Monitoring. Please refresh the page.');
       return;
     }
 
@@ -95,143 +79,36 @@ export const UnprovisionedSetup: FC<Props> = ({ pluginId, pluginName }) => {
       return;
     }
 
-    // const { instance } = this.props;
-    // const { info, adminApiToken, apiHost } = this.state;
-    // const name = instance?.instanceSettings.name;
-    // if (!apiHost) {
-    //   alert('Missing apiHost');
-    //   return;
-    // }
-
-    const smDatasource = config.datasources['Synthetic Monitoring'];
-    // Create incomplete SM datasource with tenantInfo so we can proxy further requests with the SM access token
-    const updateInfo = {
-      name: 'Synthetic Monitoring',
-      type: 'synthetic-monitoring-datasource',
-      access: 'proxy',
-      isDefault: false,
-      jsonData: {
-        apiHost: apiSetup.apiHost,
-        initialized: false,
-      },
-      secureJsonData: {
-        accessToken: tenantInfo?.accessToken,
-      },
-    };
-    let smDatasourceResponse;
-    if (!smDatasource) {
-      smDatasourceResponse = await getBackendSrv().post('api/datasources', updateInfo);
-    } else {
-      smDatasourceResponse = await getBackendSrv().put(`api/datasources/${smDatasource.id}`, updateInfo);
-    }
-
-    console.log(smDatasourceResponse);
-
-    // check to see if log/metric ds exists
-    // If so, post them to ds
-    // If not, create and then post to ds
-    // const dashboards =
-    // await importAllDashboards()
     try {
-      const hostedDatasources = await getHostedLokiAndPrometheusInfo();
-      console.log('creating metrics datasource');
-      const metricsDatasource =
-        findHostedInstance(hostedDatasources, hostedMetrics) ??
-        (await createDatasource(
-          `${pluginName} Metrics`,
-          hostedMetrics,
-          apiSetup.adminApiToken,
-          smDatasourceResponse.datasource.id
-        ));
+      const smDatasource = await initializeSMDatasource(apiSetup.apiHost, tenantInfo.accessToken);
+      await getOrCreateMetricAndLokiDatasources({
+        pluginName,
+        hostedLogs,
+        hostedMetrics,
+        adminApiToken: apiSetup.adminApiToken,
+        smDatasource,
+      });
 
-      const logsDatasource =
-        findHostedInstance(hostedDatasources, hostedLogs) ??
-        (await createDatasource(
-          `${pluginName} Logs`,
-          hostedLogs,
-          apiSetup.adminApiToken,
-          smDatasourceResponse.datasource.id
-        ));
+      await updatePluginJsonData(pluginId, {
+        logs: {
+          grafanaName: `${pluginName} Logs`,
+          hostedId: hostedLogs.id,
+        },
+        metrics: {
+          grafanaName: `${pluginName} Metrics`,
+          hostedId: hostedMetrics.id,
+        },
+      });
 
-      console.log({ metricsDatasource, logsDatasource });
-      // add linked datasource info to sm datasource
-      const dashboards = await importAllDashboards(metricsDatasource.name, logsDatasource.name);
-      await getBackendSrv().request({
-        url: `api/datasources/${smDatasourceResponse.datasource.id}`,
-        method: 'PUT',
-        headers: {
-          // ensure the grafana backend doesn't use a cached copy of the
-          // datasource config, as it might not have the new accessToken set.
-          'X-Grafana-NoCache': 'true',
-        },
-        data: {
-          ...smDatasourceResponse.datasource,
-          jsonData: {
-            ...smDatasourceResponse.datasource.jsonData,
-            logs: {
-              grafanaName: `${pluginName} Logs`,
-              hostedId: hostedLogs.id,
-            },
-            metrics: {
-              grafanaName: `${pluginName} Metrics`,
-              hostedId: hostedMetrics.id,
-            },
-            dashboards,
-            initialized: true,
-          },
-        },
-      });
-      const pluginSettings = await getBackendSrv().get(`api/plugins/${pluginId}/settings`);
-      await getBackendSrv().post(`api/plugins/${pluginId}/settings`, {
-        ...pluginSettings,
-        jsonData: {
-          ...(pluginSettings.jsonData ?? {}),
-          logs: {
-            grafanaName: `${pluginName} Logs`,
-            hostedId: hostedLogs.id,
-          },
-          metrics: {
-            grafanaName: `${pluginName} Metrics`,
-            hostedId: hostedMetrics.id,
-          },
-        },
-      });
-      console.log({ hostedMetrics, hostedLogs, tenantInfo, metricsInstanceId, logsInstanceId });
-      await getBackendSrv().request({
-        method: 'POST',
-        url: `api/datasources/proxy/${smDatasourceResponse.datasource.id}/save`,
-        headers: {
-          // ensure the grafana backend doesn't use a cached copy of the
-          // datasource config, as it might not have the new accessToken set.
-          'X-Grafana-NoCache': 'true',
-        },
-        data: {
-          apiToken: apiSetup.adminApiToken,
-          metricsInstanceId: hostedMetrics.id,
-          logsInstanceId: hostedLogs.id,
-        },
-      });
+      await saveTenantInstanceIds(apiSetup.adminApiToken, hostedMetrics.id, hostedLogs.id, smDatasource.id);
     } catch (e) {
       setInstanceSelectionError(e.message);
       return;
     }
-    // Save the dashboard names
-    // for (const json of dashboardPaths) {
-    //   const d = await importDashboard(json, options);
-    //   options.dashboards.push(d);
-    // }
-    // await instance!.registerSave(adminApiToken!, options, info?.accessToken!);
-    // force reload so that GrafanaBootConfig is updated.
+
     window.location.reload();
   };
 
-  if (!apiSetup) {
-    return (
-      <Container margin="lg" padding="lg">
-        <TenantApiSetupForm onSubmit={onSetupSubmit} submissionError={apiSetupError} />
-      </Container>
-    );
-  }
   if (tenantInfo) {
     return (
       <Container margin="lg" padding="lg">
@@ -244,9 +121,10 @@ export const UnprovisionedSetup: FC<Props> = ({ pluginId, pluginName }) => {
       </Container>
     );
   }
+
   return (
-    <div>
-      <div>Hello</div>
-    </div>
+    <Container margin="lg" padding="lg">
+      <TenantApiSetupForm onSubmit={onSetupSubmit} submissionError={apiSetupError} />
+    </Container>
   );
 };

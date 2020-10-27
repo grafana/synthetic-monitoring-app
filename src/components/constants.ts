@@ -65,8 +65,7 @@ export const DNS_PROTOCOLS = [
   },
 ];
 
-// export const DEFAULT_API_HOST = 'https://synthetic-monitoring-api.grafana.net';
-export const DEFAULT_API_HOST = 'http://localhost:4030';
+export const DEFAULT_API_HOST = 'https://synthetic-monitoring-api.grafana.net';
 
 export const IP_OPTIONS = [
   {
