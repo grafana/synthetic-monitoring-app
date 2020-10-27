@@ -239,4 +239,4 @@ jobs:
           name: 'Publish release to production'
           command: |
             apk --no-cache add curl
-            ./scripts/production-release.sh
+            ./scripts/production-release

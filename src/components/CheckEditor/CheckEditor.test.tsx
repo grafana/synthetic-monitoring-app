@@ -350,6 +350,13 @@ describe('HTTP', () => {
       async () => await userEvent.type(await within(validationSection).findByPlaceholderText('Regex'), 'a header regex')
     );
 
+    userEvent.click(await screen.findByRole('button', { name: 'Add Regex Validation' }));
+    userEvent.click(await within(validationSection).findByText('Field name'));
+    userEvent.click(await within(validationSection).findByText('Check fails if response body matches'));
+
+    const regexFields = await within(validationSection).findAllByPlaceholderText('Regex');
+    await act(async () => await userEvent.type(regexFields[1], 'a body regex'));
+
     const [allowMissing, invertMatch] = await within(validationSection).findAllByRole('checkbox');
     userEvent.click(allowMissing);
     userEvent.click(invertMatch);
@@ -389,7 +396,7 @@ describe('HTTP', () => {
           bearerToken: 'a bearer token',
           failIfHeaderNotMatchesRegexp: [{ regexp: 'a header regex', allowMissing: true, header: 'Content-Type' }],
           failIfHeaderMatchesRegexp: [],
-          failIfBodyMatchesRegexp: [],
+          failIfBodyMatchesRegexp: ['a body regex'],
           failIfBodyNotMatchesRegexp: [],
           cacheBustingQueryParamName: '',
         },
