@@ -324,6 +324,7 @@ const getHttpRegexValidationsFromFormValue = (validations: HttpRegexValidationFo
           } else {
             results.failIfBodyMatchesRegexp?.push(validation.expression);
           }
+          break;
         }
         case HttpRegexValidationType.Header: {
           if (validation.inverted) {
@@ -339,6 +340,7 @@ const getHttpRegexValidationsFromFormValue = (validations: HttpRegexValidationFo
               allowMissing: validation.allowMissing ?? false,
             });
           }
+          break;
         }
       }
       return results;
