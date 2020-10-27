@@ -45,7 +45,6 @@ export const InstanceProvider: FC<Props> = ({ children, metricInstanceName, logs
   if (instancesLoading || !instances) {
     return <Spinner />;
   }
-  console.log(instances);
   if (!instances.metrics || !instances.logs) {
     return <UnprovisionedSetup pluginId={meta.id} pluginName={meta.name} />;
   }

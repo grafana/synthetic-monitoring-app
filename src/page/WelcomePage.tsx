@@ -8,24 +8,32 @@ import { DataSourceInstanceSettings, GrafanaTheme } from '@grafana/data';
 import { css } from 'emotion';
 import { colors } from 'components/constants';
 import dashboardScreenshot from 'img/screenshot-dash-http.png';
-import circledCheck from 'img/circled-check.svg';
-import circledGraph from 'img/circled-graph.svg';
+import darkCircledCheck from 'img/dark-circled-check.svg';
+import darkCircledGraph from 'img/dark-circled-graph.svg';
+import darkCircledAlert from 'img/dark-circled-alert.svg';
+import darkCircledSM from 'img/dark-circled-sm.svg';
+import lightCircledCheck from 'img/light-circled-check.svg';
+import lightCircledGraph from 'img/light-circled-graph.svg';
+import lightCircledAlert from 'img/light-circled-alert.svg';
+import lightCircledSM from 'img/light-circled-sm.svg';
 import circledLoki from 'img/circled-loki.svg';
-import circledAlert from 'img/circled-alert.svg';
-import circledSM from 'img/circled-sm.svg';
-import checkScreenshot from 'img/check-screenshot.png';
-import checkScreenshotLight from 'img/check-screenshot-light.png';
+import darkCheckScreenshot from 'img/dark-check-screenshot.png';
+import lightCheckScreenshot from 'img/light-check-screenshot.png';
 import { CloudDatasourceJsonData } from 'datasource/types';
 
 const getStyles = (theme: GrafanaTheme) => {
-  const textColor = theme.isDark ? colors.darkText : theme.colors.text;
+  const textColor = theme.isDark ? colors.darkText : colors.lightText;
   return {
     bannerContainer: css`
-      background: linear-gradient(107.9deg, ${colors.blue01} 30.42%, ${colors.blue02} 100%);
+      background: linear-gradient(
+        107.9deg,
+        ${theme.isDark ? colors.darkThemeBlue1 : colors.lightThemeBlue1} 30.42%,
+        ${theme.isDark ? colors.darkThemeBlue2 : colors.lightThemeBlue2} 100%
+      );
       color: ${textColor};
     `,
     bannerBackground: css`
-      background-image: url(${circledSM});
+      background-image: url(${theme.isDark ? darkCircledSM : lightCircledSM});
       background-repeat: no-repeat;
       background-position: top 20px right;
       display: flex;
@@ -99,18 +107,20 @@ const getStyles = (theme: GrafanaTheme) => {
     checkScreenshot: css`
       min-width: 400px;
       margin-bottom: ${theme.spacing.lg};
+      box-shadow: 0px 4px 4px 0px rgb(0, 0, 0, 0.25);
     `,
     datasourceContainer: css`
       width: 100%;
-      border: 2px solid ${colors.blue03};
+      border: 2px solid ${theme.isDark ? colors.darkThemeBorderBlue : colors.lightThemeBorderBlue};
       border-radius: 4px;
-      background-color: ${colors.black};
-      box-shadow: 0px 0px 4px ${colors.blue03};
+      background-color: ${theme.isDark ? colors.black : colors.grey};
+      box-shadow: 0px 0px 4px ${theme.isDark ? colors.darkThemeBorderBlue : colors.lightThemeBorderBlue};
+      padding-bottom: ${theme.spacing.lg};
     `,
     datasource: css`
       display: flex;
       align-items: center;
-      padding: ${theme.spacing.lg};
+      padding: ${theme.spacing.lg} ${theme.spacing.lg} 0 ${theme.spacing.lg};
       width: 100%;
       p {
         margin-bottom: 0;
@@ -123,6 +133,9 @@ const getStyles = (theme: GrafanaTheme) => {
     datasourceLogo: css`
       height: 48px;
       margin-right: ${theme.spacing.sm};
+    `,
+    link: css`
+      text-decoration: underline;
     `,
   };
 };
@@ -139,7 +152,6 @@ export const WelcomePage: FC<Props> = () => {
   const metricsDatasource = config.datasources[metricsName] as DataSourceInstanceSettings<CloudDatasourceJsonData>;
   const logsName = meta?.jsonData?.logs.grafanaName ?? '';
   const logsDatasource = config.datasources[logsName] as DataSourceInstanceSettings<CloudDatasourceJsonData>;
-  console.log({ meta });
   const onClick = async () => {
     if (!meta?.jsonData) {
       setError('Invalid plugin configuration');
@@ -185,7 +197,10 @@ export const WelcomePage: FC<Props> = () => {
                 <p className={styles.headerSubtext}>
                   Synthetic Monitoring provides you with insights into how your applications and services are behaving
                   from an external point of view. We provide 21 probe locations from around the world which assess
-                  availability, performance, and correctness of your services. <a href="FIXME">Read more &gt;</a>
+                  availability, performance, and correctness of your services.{' '}
+                  <a className={styles.link} href="FIXME">
+                    Read more &gt;
+                  </a>
                 </p>
               </div>
             </div>
@@ -198,7 +213,7 @@ export const WelcomePage: FC<Props> = () => {
                     <HorizontalGroup>
                       <VerticalGroup spacing="md">
                         <HorizontalGroup align="center">
-                          <img src={circledCheck} />
+                          <img src={theme.isDark ? darkCircledCheck : lightCircledCheck} />
                           <p>Create checks to monitor your services from Grafana hosted or private probes</p>
                         </HorizontalGroup>
                         <HorizontalGroup>
@@ -208,11 +223,11 @@ export const WelcomePage: FC<Props> = () => {
                       </VerticalGroup>
                       <VerticalGroup spacing="md">
                         <HorizontalGroup>
-                          <img src={circledGraph} />
+                          <img src={theme.isDark ? darkCircledGraph : lightCircledGraph} />
                           <p>Visualize and query metrics and logs using pre-built dashboards</p>
                         </HorizontalGroup>
                         <HorizontalGroup>
-                          <img src={circledAlert} />
+                          <img src={theme.isDark ? darkCircledAlert : lightCircledAlert} />
                           <p>Set up Prometheus style alerts</p>
                         </HorizontalGroup>
                       </VerticalGroup>
@@ -221,7 +236,9 @@ export const WelcomePage: FC<Props> = () => {
                   <p>
                     Synthetic Monitoring is available to hosted Grafana Cloud customers. We bill you based on the
                     metrics and logs that are published to your Grafana Cloud stack.{' '}
-                    <a href="FIXME">Learn more about Synthetic Monitoring pricing &gt;</a>
+                    <a className={styles.link} href="FIXME">
+                      Learn more about Synthetic Monitoring pricing &gt;
+                    </a>
                   </p>
                 </div>
               </div>
@@ -237,7 +254,7 @@ export const WelcomePage: FC<Props> = () => {
               <p>
                 Get started with Synthetic Monitoring by creating checks. You can choose from Ping, HTTP, DNS, or TCP.
               </p>
-              <img src={theme.isDark ? checkScreenshot : checkScreenshotLight} className={styles.checkScreenshot} />
+              <img src={theme.isDark ? darkCheckScreenshot : lightCheckScreenshot} className={styles.checkScreenshot} />
               <Button onClick={onClick} disabled={!Boolean(metricsDatasource) || !Boolean(logsDatasource)}>
                 Create your first check
               </Button>
