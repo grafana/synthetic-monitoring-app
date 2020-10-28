@@ -82,7 +82,6 @@ export const UnprovisionedSetup: FC<Props> = ({ pluginId, pluginName }) => {
     try {
       const smDatasource = await initializeSMDatasource(apiSetup.apiHost, tenantInfo.accessToken);
       await getOrCreateMetricAndLokiDatasources({
-        pluginName,
         hostedLogs,
         hostedMetrics,
         adminApiToken: apiSetup.adminApiToken,
@@ -91,11 +90,11 @@ export const UnprovisionedSetup: FC<Props> = ({ pluginId, pluginName }) => {
 
       await updatePluginJsonData(pluginId, {
         logs: {
-          grafanaName: `${pluginName} Logs`,
+          grafanaName: `grafanacloud-${hostedLogs.name}`,
           hostedId: hostedLogs.id,
         },
         metrics: {
-          grafanaName: `${pluginName} Metrics`,
+          grafanaName: `grafanacloud-${hostedMetrics.name}`,
           hostedId: hostedMetrics.id,
         },
       });

@@ -50,17 +50,12 @@ export async function getHostedLokiAndPrometheusInfo(): Promise<DataSourceInstan
   return settings;
 }
 
-export async function createDatasource(
-  name: string,
-  hosted: HostedInstance,
-  adminToken: string,
-  smDatasourceId: string
-) {
+export async function createDatasource(hosted: HostedInstance, adminToken: string, smDatasourceId: string) {
   const token = await getViewerToken(adminToken, hosted, smDatasourceId);
   if (!token) {
     throw new Error('error getting token');
   }
-  return await createHostedInstance(name, hosted, token);
+  return await createHostedInstance(hosted, token);
 }
 
 async function getViewerToken(apiToken: string, instance: HostedInstance, smDatasourceId: string): Promise<string> {
@@ -140,13 +135,9 @@ export async function initializeDatasource(
   return createNewApiInstance(datasourcePayload, dashboards);
 }
 
-export async function createHostedInstance(
-  name: string,
-  info: HostedInstance,
-  key: string
-): Promise<DataSourceInstanceSettings> {
+export async function createHostedInstance(info: HostedInstance, key: string): Promise<DataSourceInstanceSettings> {
   const data = {
-    name,
+    name: info.name,
     url: info.url + (info.type === 'logs' ? '' : '/api/prom'),
     access: 'proxy',
     basicAuth: true,

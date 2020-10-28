@@ -90,7 +90,6 @@ export const initializeSMDatasource = async (apiHost: string, smApiAccessToken: 
 };
 
 interface CreateDatasourcesArgs {
-  pluginName: string;
   hostedMetrics: HostedInstance;
   hostedLogs: HostedInstance;
   adminApiToken: string;
@@ -98,7 +97,6 @@ interface CreateDatasourcesArgs {
 }
 
 export const getOrCreateMetricAndLokiDatasources = async ({
-  pluginName,
   hostedLogs,
   hostedMetrics,
   adminApiToken,
@@ -107,11 +105,11 @@ export const getOrCreateMetricAndLokiDatasources = async ({
   const hostedDatasources = await getHostedLokiAndPrometheusInfo();
   const metricsDatasource =
     findHostedInstance(hostedDatasources, hostedMetrics) ??
-    (await createDatasource(`${pluginName} Metrics`, hostedMetrics, adminApiToken, smDatasource.id));
+    (await createDatasource(hostedMetrics, adminApiToken, smDatasource.id));
 
   const logsDatasource =
     findHostedInstance(hostedDatasources, hostedLogs) ??
-    (await createDatasource(`${pluginName} Logs`, hostedLogs, adminApiToken, smDatasource.id));
+    (await createDatasource(hostedLogs, adminApiToken, smDatasource.id));
 
   // add linked datasource info to sm datasource
   const dashboards = await importAllDashboards(metricsDatasource.name, logsDatasource.name);
@@ -128,11 +126,11 @@ export const getOrCreateMetricAndLokiDatasources = async ({
       jsonData: {
         ...smDatasource.jsonData,
         logs: {
-          grafanaName: `${pluginName} Logs`,
+          grafanaName: `grafanacloud-${hostedLogs.name}`,
           hostedId: hostedLogs.id,
         },
         metrics: {
-          grafanaName: `${pluginName} Metrics`,
+          grafanaName: `grafanacloud-${hostedMetrics.name}`,
           hostedId: hostedMetrics.id,
         },
         dashboards,
