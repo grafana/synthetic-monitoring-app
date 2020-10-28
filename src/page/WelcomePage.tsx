@@ -6,7 +6,7 @@ import { importAllDashboards } from 'dashboards/loader';
 import { InstanceContext } from 'components/InstanceContext';
 import { DataSourceInstanceSettings, GrafanaTheme } from '@grafana/data';
 import { css } from 'emotion';
-import { colors } from 'components/constants';
+import { colors, LEGACY_LOGS_DS_NAME, LEGACY_METRICS_DS_NAME } from 'components/constants';
 import dashboardScreenshot from 'img/screenshot-dash-http.png';
 import darkCircledCheck from 'img/dark-circled-check.svg';
 import darkCircledGraph from 'img/dark-circled-graph.svg';
@@ -98,6 +98,20 @@ const getStyles = (theme: GrafanaTheme) => {
   };
 };
 
+function getMetricsName(provisionedName?: string) {
+  if (config.datasources[LEGACY_METRICS_DS_NAME]) {
+    return LEGACY_METRICS_DS_NAME;
+  }
+  return provisionedName ?? '';
+}
+
+function getLogsName(provisionedName?: string) {
+  if (config.datasources[LEGACY_LOGS_DS_NAME]) {
+    return LEGACY_LOGS_DS_NAME;
+  }
+  return provisionedName ?? '';
+}
+
 interface Props {}
 
 export const WelcomePage: FC<Props> = () => {
@@ -106,9 +120,9 @@ export const WelcomePage: FC<Props> = () => {
   const theme = useTheme();
   const styles = useStyles(getStyles);
 
-  const metricsName = meta?.jsonData?.metrics.grafanaName ?? '';
+  const metricsName = getMetricsName(meta?.jsonData?.metrics.grafanaName);
   const metricsDatasource = config.datasources[metricsName] as DataSourceInstanceSettings<CloudDatasourceJsonData>;
-  const logsName = meta?.jsonData?.logs.grafanaName ?? '';
+  const logsName = getLogsName(meta?.jsonData?.logs.grafanaName);
   const logsDatasource = config.datasources[logsName] as DataSourceInstanceSettings<CloudDatasourceJsonData>;
   const onClick = async () => {
     if (!meta?.jsonData) {
@@ -126,7 +140,7 @@ export const WelcomePage: FC<Props> = () => {
         method: 'POST',
         data: body,
       });
-      const dashboards = await importAllDashboards(meta.jsonData.metrics.grafanaName, meta.jsonData.logs.grafanaName);
+      const dashboards = await importAllDashboards(metricsName, logsName);
       const datasourcePayload = {
         apiHost: meta.jsonData.apiHost,
         accessToken,

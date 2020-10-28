@@ -172,3 +172,6 @@ export const colors = {
   black: '#0B0C0E',
   grey: '#F7F8FA',
 };
+
+export const LEGACY_METRICS_DS_NAME = 'Synthetic Monitoring Metrics';
+export const LEGACY_LOGS_DS_NAME = 'Synthetic Monitoring Logs';

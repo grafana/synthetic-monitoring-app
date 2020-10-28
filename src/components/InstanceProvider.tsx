@@ -33,6 +33,18 @@ export const InstanceProvider: FC<Props> = ({ children, metricInstanceName, logs
     setInstancesLoading(true);
     if (metricInstanceName && logsInstanceName) {
       fetchDatasources(metricInstanceName, logsInstanceName).then(loadedInstances => {
+        console.log({ loadedInstances });
+        if (!loadedInstances.metrics || !loadedInstances.logs) {
+          fetchDatasources('Synthetic Monitoring Metrics', 'Synthetic Monitoring Logs').then(
+            fallbackLoadedInstances => {
+              console.log({ fallbackLoadedInstances });
+              setInstances(fallbackLoadedInstances);
+              setInstancesLoading(false);
+            }
+          );
+          return;
+        }
+        console.log('got here?');
         setInstances(loadedInstances);
         setInstancesLoading(false);
       });
