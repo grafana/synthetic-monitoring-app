@@ -1,5 +1,5 @@
 import React, { FC, useState, useContext } from 'react';
-import { Button, Alert, useStyles, HorizontalGroup, VerticalGroup, useTheme } from '@grafana/ui';
+import { Button, Alert, useStyles, HorizontalGroup, useTheme } from '@grafana/ui';
 import { getBackendSrv, config } from '@grafana/runtime';
 import { initializeDatasource } from 'utils';
 import { importAllDashboards } from 'dashboards/loader';
@@ -28,11 +28,7 @@ const getStyles = (theme: GrafanaTheme) => {
       width: 100%;
       top: 0;
       left: 0;
-      background: linear-gradient(
-        107.9deg,
-        ${theme.isDark ? colors.darkThemeBlue1 : colors.lightThemeBlue1} 30.42%,
-        ${theme.isDark ? colors.darkThemeBlue2 : colors.lightThemeBlue2} 100%
-      );
+      background: ${theme.isDark ? colors.darkThemeBlueBackground : colors.lightThemeBlueBackground};
       color: ${textColor};
     `,
     bannerBackground: css`
@@ -78,6 +74,9 @@ const getStyles = (theme: GrafanaTheme) => {
       color: ${textColor};
     `,
     subheaderContent: css`
+      display: grid;
+      grid-template-columns: 50% 50%;
+      grid-gap: ${theme.spacing.xl};
       margin-bottom: ${theme.spacing.xl};
     `,
     screenshot: css`
@@ -168,7 +167,7 @@ export const WelcomePage: FC<Props> = () => {
                 Synthetic Monitoring provides you with insights into how your applications and services are behaving
                 from an external point of view. We provide 21 probe locations from around the world which assess
                 availability, performance, and correctness of your services.{' '}
-                <a className={styles.link} href="FIXME">
+                <a className={styles.link} href="https://grafana.com/docs/grafana-cloud/synthetic-monitoring/">
                   Read more &gt;
                 </a>
               </p>
@@ -179,37 +178,28 @@ export const WelcomePage: FC<Props> = () => {
             <div className={styles.subheaderTextContainer}>
               <h3 className={styles.subheaderTitle}>What you can do</h3>
               <div className={styles.subheaderContent}>
-                <HorizontalGroup>
-                  <VerticalGroup spacing="md">
-                    <HorizontalGroup align="center">
-                      <img src={theme.isDark ? darkCircledCheck : lightCircledCheck} />
-                      <p>Create checks to monitor your services from Grafana hosted or private probes</p>
-                    </HorizontalGroup>
-                    <HorizontalGroup>
-                      <img src={circledLoki} />
-                      <p>Troubleshoot issues using log exploration</p>
-                    </HorizontalGroup>
-                  </VerticalGroup>
-                  <VerticalGroup spacing="md">
-                    <HorizontalGroup>
-                      <img src={theme.isDark ? darkCircledGraph : lightCircledGraph} />
-                      <p>Visualize and query metrics and logs using pre-built dashboards</p>
-                    </HorizontalGroup>
-                    <HorizontalGroup>
-                      <img src={theme.isDark ? darkCircledAlert : lightCircledAlert} />
-                      <p>Set up Prometheus style alerts</p>
-                    </HorizontalGroup>
-                  </VerticalGroup>
+                <HorizontalGroup align="flex-start">
+                  <img src={theme.isDark ? darkCircledCheck : lightCircledCheck} />
+                  <p>Create checks to monitor your services from Grafana hosted or private probes</p>
+                </HorizontalGroup>
+                <HorizontalGroup align="flex-start">
+                  <img src={circledLoki} />
+                  <p>Troubleshoot issues using log exploration</p>
+                </HorizontalGroup>
+                <HorizontalGroup align="flex-start">
+                  <img src={theme.isDark ? darkCircledGraph : lightCircledGraph} />
+                  <p>Visualize and query metrics and logs using pre-built dashboards</p>
+                </HorizontalGroup>
+                <HorizontalGroup align="flex-start">
+                  <img src={theme.isDark ? darkCircledAlert : lightCircledAlert} />
+                  <p>Set up Prometheus style alerts</p>
                 </HorizontalGroup>
               </div>
             </div>
           </div>
           <div className={styles.explanation}>
             Synthetic Monitoring is available to hosted Grafana Cloud customers. We bill you based on the metrics and
-            logs that are published to your Grafana Cloud stack.{' '}
-            <a className={styles.link} href="FIXME">
-              Learn more about Synthetic Monitoring pricing &gt;
-            </a>
+            logs that are published to your Grafana Cloud stack.
           </div>
           <Button onClick={onClick} disabled={!Boolean(metricsDatasource) || !Boolean(logsDatasource)}>
             Get started

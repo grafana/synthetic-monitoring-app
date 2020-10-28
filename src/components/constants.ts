@@ -161,11 +161,9 @@ export const fallbackCheck = {
 } as Check;
 
 export const colors = {
-  darkThemeBlue1: '#001a3e',
-  darkThemeBlue2: '#001024',
+  darkThemeBlueBackground: '#021B39',
   darkThemeBorderBlue: '#6394EB',
-  lightThemeBlue1: '#E9F4FF',
-  lightThemeBlue2: '#E1EFFD',
+  lightThemeBlueBackground: '#E9F4FF',
   lightThemeBorderBlue: '#84AFF1',
   darkText: '#9FA7B3',
   lightText: '#464C54',

@@ -74,7 +74,6 @@ function findActiveTab(tabs: Tab[], queryPage: string, apiInitialized: boolean):
 }
 
 function handleDashboardRedirect(dashboard: string, dashboards: DashboardInfo[]) {
-  console.log({ dashboard, dashboards });
   const targetDashboard = dashboards.find(dashboardJson => dashboardJson.json.indexOf(dashboard) > -1) ?? dashboards[0];
   getLocationSrv().update({
     partial: false,

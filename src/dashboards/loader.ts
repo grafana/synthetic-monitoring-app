@@ -23,15 +23,15 @@ async function findSyntheticMonitoringFolder(): Promise<FolderInfo> {
   });
 }
 
-export async function importAllDashboards(metricsInstanceName: string, logsInstanceName: string) {
+export async function importAllDashboards(metricsDatasourceName: string, logsDatasourceName: string) {
   await findSyntheticMonitoringFolder();
-  return Promise.all(dashboardPaths.map(path => importDashboard(path, metricsInstanceName, logsInstanceName)));
+  return Promise.all(dashboardPaths.map(path => importDashboard(path, metricsDatasourceName, logsDatasourceName)));
 }
 
 export async function importDashboard(
   path: string,
-  metricsInstanceName: string,
-  logsInstanceName: string
+  metricsDatasourceName: string,
+  logsDatasourceName: string
 ): Promise<DashboardInfo> {
   const backendSrv = getBackendSrv();
 
@@ -47,8 +47,8 @@ export async function importDashboard(
     dashboard: json,
     overwrite: true, // UID?
     inputs: [
-      { name: 'DS_SM_METRICS', type: 'datasource', pluginId: 'prometheus', value: metricsInstanceName },
-      { name: 'DS_SM_LOGS', type: 'datasource', pluginId: 'loki', value: logsInstanceName },
+      { name: 'DS_SM_METRICS', type: 'datasource', pluginId: 'prometheus', value: metricsDatasourceName },
+      { name: 'DS_SM_LOGS', type: 'datasource', pluginId: 'loki', value: logsDatasourceName },
     ],
     folderId: folder.id,
   });
