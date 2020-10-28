@@ -64,8 +64,8 @@ const getStyles = (theme: GrafanaTheme) => {
       line-height: 20px;
     `,
     subheaderSection: css`
-      display: flex;
-      align-items: center;
+      display: grid;
+      grid-template-columns: 50% 50%;
     `,
     subheaderTextContainer: css`
       padding: 0 ${theme.spacing.xl};
@@ -81,8 +81,7 @@ const getStyles = (theme: GrafanaTheme) => {
       margin-bottom: ${theme.spacing.xl};
     `,
     screenshot: css`
-      max-height: 300px;
-      min-height: 200px;
+      max-width: 100%;
     `,
     getStartedContainer: css`
       display: flex;
