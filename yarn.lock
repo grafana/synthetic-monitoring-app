@@ -1263,10 +1263,20 @@
     typescript "3.9.3"
     yaml "^1.8.3"
 
-"@grafana/eslint-config@2.0.1":
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/@grafana/eslint-config/-/eslint-config-2.0.1.tgz#859f316e1f4985138e44b54fcd42a127b309fcbb"
-  integrity sha512-VN1DS9g2+0UoWJriBGUK8gPVXm9cgxSVpAP79iXnpMipGWThyGjn2K01j1VJJZNiJ9yOJdRBv6Hlwo4sQc0fgA==
+"@grafana/eslint-config@2.0.3":
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/@grafana/eslint-config/-/eslint-config-2.0.3.tgz#f5a90eb689458142d41974285c5225f43229175b"
+  integrity sha512-ib8d4bJaomxyXfe10KcBAqMzQkEwhJ2VekpEr7eLSIfINv1S5eA223WhIMY/7ZgVmjkxp1mf7i/U30cM4KXrUg==
+  dependencies:
+    "@typescript-eslint/eslint-plugin" "4.0.1"
+    "@typescript-eslint/parser" "4.0.1"
+    eslint "7.4.0"
+    eslint-config-prettier "6.11.0"
+    eslint-plugin-jsdoc "28.6.1"
+    eslint-plugin-prettier "3.1.4"
+    eslint-plugin-react-hooks "4.0.5"
+    prettier "1.19.1"
+    typescript "4.0.2"
 
 "@grafana/runtime@latest":
   version "7.2.0"
@@ -1300,15 +1310,15 @@
     tiny-invariant "^1.0.1"
     tiny-warning "^0.0.3"
 
-"@grafana/toolkit@canary":
-  version "7.3.0-pre.0-3928d0c531"
-  resolved "https://registry.yarnpkg.com/@grafana/toolkit/-/toolkit-7.3.0-pre.0-3928d0c531.tgz#9eb7dffdc2e30c4cbd33b537d7ea4822905fe864"
-  integrity sha512-8N40zi47cV0UQrRSA6RZ4RegjVp8+Pto0ftcdUAhVOcbwRFseM++nb+whc3Hrfqbu/ZvnQ2SnqIyz1E834yk3A==
+"@grafana/toolkit@latest":
+  version "7.3.0"
+  resolved "https://registry.yarnpkg.com/@grafana/toolkit/-/toolkit-7.3.0.tgz#7658dc88cee959922d88c07c4d151e63d7873592"
+  integrity sha512-38BXZZe49Ewk8A0icws//0tqQMBV+90UZqFMBlcOINkK+NTvT/nldjrg0++11lilgkLDyzKd2zbv80bnE9Y+JA==
   dependencies:
     "@babel/core" "7.9.0"
     "@babel/preset-env" "7.9.0"
     "@grafana/data" next
-    "@grafana/eslint-config" "2.0.1"
+    "@grafana/eslint-config" "2.0.3"
     "@grafana/tsconfig" "^1.0.0-rc1"
     "@grafana/ui" next
     "@types/command-exists" "^1.2.0"
@@ -11446,7 +11456,7 @@ prettier-linter-helpers@^1.0.0:
   dependencies:
     fast-diff "^1.1.2"
 
-prettier@^1.19.1:
+prettier@1.19.1, prettier@^1.19.1:
   version "1.19.1"
   resolved "https://registry.yarnpkg.com/prettier/-/prettier-1.19.1.tgz#f7d7f5ff8a9cd872a7be4ca142095956a60797cb"
   integrity sha512-s7PoyDv/II1ObgQunCbB9PdLmUcBZcnWOcxDh7O0N/UwDEsHyqkW+Qh28jW+mVuCdx7gLB0BotYI1Y6uI9iyew==
