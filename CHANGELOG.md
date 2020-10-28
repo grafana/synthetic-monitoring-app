@@ -1,3 +1,17 @@
+## [0.3.39](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.38...0.3.39) (2020-10-27)
+
+
+### Bug Fixes
+
+* handle http regex validation value deletion bug ([dd01f12](https://github.com/grafana/synthetic-monitoring-app/commit/dd01f1248cbe51de4d107a7cd319450ad69ea20f))
+
+## [0.3.38](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.37...0.3.38) (2020-10-27)
+
+
+### Bug Fixes
+
+* header validations in http checks persisting incorrectly ([3db912c](https://github.com/grafana/synthetic-monitoring-app/commit/3db912ca84db75e7d75726a9c411554b6fb2f1dd))
+
 ## [0.3.37](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.36...0.3.37) (2020-10-20)
 
 

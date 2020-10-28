@@ -324,6 +324,7 @@ const getHttpRegexValidationsFromFormValue = (validations: HttpRegexValidationFo
           } else {
             results.failIfBodyMatchesRegexp?.push(validation.expression);
           }
+          break;
         }
         case HttpRegexValidationType.Header: {
           if (validation.inverted) {
@@ -339,6 +340,7 @@ const getHttpRegexValidationsFromFormValue = (validations: HttpRegexValidationFo
               allowMissing: validation.allowMissing ?? false,
             });
           }
+          break;
         }
       }
       return results;
@@ -369,7 +371,7 @@ const getHttpSettings = (
     getValueFromSelectable(settings.sslOptions ?? defaultSettings?.sslOptions) ?? HttpSslOption.Ignore
   );
 
-  const validationRegexes = getHttpRegexValidationsFromFormValue(mergedSettings.regexValidations ?? []);
+  const validationRegexes = getHttpRegexValidationsFromFormValue(settings.regexValidations ?? []);
 
   // We need to pick the sslOptions key out of the settings, since the API doesn't expect this key
   const { sslOptions, regexValidations, followRedirects, ...mergedSettingsToKeep } = mergedSettings;
