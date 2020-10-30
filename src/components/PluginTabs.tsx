@@ -10,6 +10,7 @@ import { getLocationSrv } from '@grafana/runtime';
 import { DashboardInfo } from 'datasource/types';
 import { listAppDashboards } from 'dashboards/loader';
 import { Button, HorizontalGroup, Modal } from '@grafana/ui';
+import { hasDismissedDashboardUpdateModal, persistDashboardModalDismiss } from 'sessionStorage';
 
 type Tab = {
   label: string;
@@ -107,9 +108,7 @@ function getNavModel(tabs: Tab[], path: string, activeTab: Tab, logoUrl: string)
 
 export const PluginTabs: FC<AppRootProps<GlobalSettings>> = ({ query, onNavChanged, path, meta }) => {
   const { instance } = useContext(InstanceContext);
-  const [hasDismissedDashboardUpdate, setHasDismissedDashboardUpdate] = useState(
-    Boolean(window.sessionStorage.getItem('hasDismissedDashboardUpdate'))
-  );
+  const [hasDismissedDashboardUpdate, setHasDismissedDashboardUpdate] = useState(hasDismissedDashboardUpdateModal());
   const [dashboardsNeedingUpdate, setDashboardsNeedingUpdate] = useState<DashboardMeta[] | undefined>();
   const apiInitialized = Boolean(instance.api?.instanceSettings?.jsonData?.initialized);
   const dashboards = instance.api?.instanceSettings?.jsonData.dashboards;
@@ -117,7 +116,7 @@ export const PluginTabs: FC<AppRootProps<GlobalSettings>> = ({ query, onNavChang
   const logoUrl = meta.info.logos.large;
 
   function skipDashboardUpdate() {
-    window.sessionStorage.setItem('hasDismissedDashboardUpdate', 'true');
+    persistDashboardModalDismiss();
     setHasDismissedDashboardUpdate(true);
   }
 

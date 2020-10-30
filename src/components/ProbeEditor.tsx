@@ -42,7 +42,7 @@ const ProbeEditor: FC<Props> = ({ probe, onReturn }) => {
     formValues.longitude = Number(formValues.longitude);
 
     if (!instance.api) {
-      return;
+      throw new Error('Not connected to the Synthetic Montoring datasource');
     }
 
     if (probe.id) {
