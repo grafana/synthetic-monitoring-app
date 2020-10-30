@@ -36,7 +36,6 @@ export const InstanceProvider: FC<Props> = ({ children, metricInstanceName, logs
         if (!loadedInstances.metrics || !loadedInstances.logs) {
           fetchDatasources('Synthetic Monitoring Metrics', 'Synthetic Monitoring Logs').then(
             fallbackLoadedInstances => {
-              console.log({ fallbackLoadedInstances });
               setInstances(fallbackLoadedInstances);
               setInstancesLoading(false);
             }
@@ -52,9 +51,15 @@ export const InstanceProvider: FC<Props> = ({ children, metricInstanceName, logs
     }
   }, [logsInstanceName, metricInstanceName]);
 
-  if (instancesLoading || !instances) {
+  if (instancesLoading) {
     return <Spinner />;
   }
+
+  // this case should theoretically be impossible, since we are setting 'instances' to an object in the failure case
+  if (!instances) {
+    throw new Error('There was an error finding datasources required for Synthetic Monitoring');
+  }
+
   if (!instances.metrics || !instances.logs) {
     return <UnprovisionedSetup pluginId={meta.id} pluginName={meta.name} />;
   }

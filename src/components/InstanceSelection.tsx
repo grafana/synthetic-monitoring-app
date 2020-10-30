@@ -6,7 +6,7 @@ import { InstanceList } from 'components/InstanceList';
 interface Props {
   logsInstances: HostedInstance[];
   metricsInstances: HostedInstance[];
-  onSubmit: (metricsId: number | undefined, logsId: number | undefined) => void;
+  onSubmit: (metricsId?: number, logsId?: number) => void;
   error?: string;
 }
 

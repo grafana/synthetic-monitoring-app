@@ -10,7 +10,7 @@ import {
   initializeTenant,
   saveTenantInstanceIds,
   updatePluginJsonData,
-} from 'fetchers';
+} from 'initialization-utils';
 
 interface ApiSetupValues {
   adminApiToken: string;
@@ -54,10 +54,7 @@ export const UnprovisionedSetup: FC<Props> = ({ pluginId, pluginName }) => {
     }
   };
 
-  const onInstanceSelectionSubmit = async (
-    metricsInstanceId: number | undefined,
-    logsInstanceId: number | undefined
-  ) => {
+  const onInstanceSelectionSubmit = async (metricsInstanceId?: number, logsInstanceId?: number) => {
     if (!metricsInstanceId || !logsInstanceId) {
       setInstanceSelectionError('A logs and metrics instance must be selected');
       return;
@@ -68,8 +65,8 @@ export const UnprovisionedSetup: FC<Props> = ({ pluginId, pluginName }) => {
       return;
     }
 
-    const hostedMetrics = tenantInfo?.instances.find(tenantInstance => tenantInstance.id === metricsInstanceId);
-    const hostedLogs = tenantInfo?.instances.find(tenantInstance => tenantInstance.id === logsInstanceId);
+    const hostedMetrics = tenantInfo?.instances.find(({ id }) => id === metricsInstanceId);
+    const hostedLogs = tenantInfo?.instances.find(({ id }) => id === logsInstanceId);
     if (!hostedMetrics) {
       setInstanceSelectionError('Missing metrics instance');
       return;
