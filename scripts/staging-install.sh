@@ -52,15 +52,15 @@ custom_commands() {
 }
 
 
-# GIT_TAG=$(git tag --points-at HEAD)
-# #remove the leading v on the git tag
-# VERSION="${GIT_TAG//v}"
-# PLUGIN_NAME='grafana-synthetic-monitoring-app'
+GIT_TAG=$(git tag --points-at HEAD)
+#remove the leading v on the git tag
+VERSION="${GIT_TAG//v}"
+PLUGIN_NAME='grafana-synthetic-monitoring-app'
 
-# if [ -z "${GCLOUD_SERVICE_KEY}" ]; then
-# 	echo "Missing GCS Publish Key"
-# 	exit -1
-# fi
+if [ -z "${GCLOUD_SERVICE_KEY}" ]; then
+	echo "Missing GCS Publish Key"
+	exit -1
+fi
 
 echo ${GCLOUD_SERVICE_KEY} | gcloud auth activate-service-account --key-file=-
 
