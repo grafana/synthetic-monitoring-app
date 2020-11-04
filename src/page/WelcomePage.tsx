@@ -8,6 +8,7 @@ import { DataSourceInstanceSettings, GrafanaTheme } from '@grafana/data';
 import { css } from 'emotion';
 import { colors, LEGACY_LOGS_DS_NAME, LEGACY_METRICS_DS_NAME } from 'components/constants';
 import dashboardScreenshot from 'img/screenshot-dash-http.png';
+import dashboardScreenshotLight from 'img/screenshot-dash-http-light.png';
 import darkCircledCheck from 'img/dark-circled-check.svg';
 import darkCircledGraph from 'img/dark-circled-graph.svg';
 import darkCircledAlert from 'img/dark-circled-alert.svg';
@@ -62,6 +63,7 @@ const getStyles = (theme: GrafanaTheme) => {
     subheaderSection: css`
       display: grid;
       grid-template-columns: 50% 50%;
+      margin-bottom: ${theme.spacing.xl};
     `,
     subheaderTextContainer: css`
       padding: 0 ${theme.spacing.xl};
@@ -85,10 +87,6 @@ const getStyles = (theme: GrafanaTheme) => {
     getStartedContainer: css`
       display: flex;
       justify-content: center;
-    `,
-    explanation: css`
-      padding-top: 80px;
-      padding-bottom: 50px;
     `,
     link: css`
       text-decoration: underline;
@@ -168,13 +166,13 @@ export const WelcomePage: FC<Props> = () => {
                 from an external point of view. We provide 21 probe locations from around the world which assess
                 availability, performance, and correctness of your services.{' '}
                 <a className={styles.link} href="https://grafana.com/docs/grafana-cloud/synthetic-monitoring/">
-                  Read more &gt;
+                  Read more in Synthetic Monitoring docs &gt;
                 </a>
               </p>
             </div>
           </div>
           <div className={styles.subheaderSection}>
-            <img src={dashboardScreenshot} className={styles.screenshot} />
+            <img src={theme.isDark ? dashboardScreenshot : dashboardScreenshotLight} className={styles.screenshot} />
             <div className={styles.subheaderTextContainer}>
               <h3 className={styles.subheaderTitle}>What you can do</h3>
               <div className={styles.subheaderContent}>
@@ -195,14 +193,14 @@ export const WelcomePage: FC<Props> = () => {
                   <p>Set up Prometheus style alerts</p>
                 </HorizontalGroup>
               </div>
+              <div>
+                Synthetic Monitoring is available to hosted Grafana Cloud customers. We bill you based on the metrics
+                and logs that are published to your Grafana Cloud stack.
+              </div>
             </div>
           </div>
-          <div className={styles.explanation}>
-            Synthetic Monitoring is available to hosted Grafana Cloud customers. We bill you based on the metrics and
-            logs that are published to your Grafana Cloud stack.
-          </div>
           <Button onClick={onClick} disabled={!Boolean(metricsDatasource) || !Boolean(logsDatasource)}>
-            Get started
+            Monitor your systems
           </Button>
           {error && <Alert title="Something went wrong:">{error}</Alert>}
         </div>

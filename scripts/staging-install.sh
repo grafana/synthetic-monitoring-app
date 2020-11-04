@@ -24,7 +24,7 @@ gcom() {
 }
 
 custom_commands() {
-	URL=https://storage.googleapis.com/synthetic-monitoring-app-dev/canary/grafana-synthetic-monitoring-app.zip
+	URL=https://storage.cloud.google.com/integration-artifacts/grafana-synthetic-monitoring-app/canary/grafana-synthetic-monitoring-app.zip
 	plugin_id=grafana-synthetic-monitoring-app
 
 	cat <<-EOF
@@ -71,7 +71,7 @@ mkdir -p ./ci/builds
 curl -L -o ./ci/builds/$GIT_TAG.zip $URL
 
 # Push assets to GCS in version folder
-gsutil -m cp -r "./ci/builds/$GIT_TAG.zip" "gs://integration-artifacts/$PLUGIN_NAME/$VERSION"
+gsutil -m cp -r "./ci/builds/$GIT_TAG.zip" "gs://integration-artifacts/$PLUGIN_NAME/$VERSION/$PLUGIN_NAME.zip"
 # Also put the assets in canary for use with staging/dev
 gsutil -m cp -r "./ci/builds/$GIT_TAG.zip" "gs://integration-artifacts/$PLUGIN_NAME/canary/$PLUGIN_NAME.zip"
 
