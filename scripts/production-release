@@ -29,9 +29,10 @@ URL='https://github.com/grafana/synthetic-monitoring-app/releases/download/'"$GI
 PLUGIN_NAME='grafana-synthetic-monitoring-app'
 
 # Download release assets from github
-curl -L -o "./ci/builds/${VERSION}" $URL
+mkdir -p ./ci/builds
+curl -L -o "./ci/builds/latest.zip" $URL
 # Get a package hash for publishing to g-com
-PKG_SUM=$(md5sum ./ci/builds/${VERSION} | cut -d' ' -f1)
+PKG_SUM=$(md5sum ./ci/builds/latest.zip | cut -d' ' -f1)
 
 # Publish version to gcom plugin listings
 gcom /plugins \
@@ -42,4 +43,6 @@ gcom /plugins \
 
 # Push new version to GCS for hosted instances to consume
 echo ${GCLOUD_SERVICE_KEY} | gcloud auth activate-service-account --key-file=-
-gsutil -m cp -r "./ci/builds/${VERSION}/**" "gs://integration-artifacts/$PLUGIN_NAME/latest
+gsutil -m cp -r "./ci/builds/latest.zip" "gs://integration-artifacts/$PLUGIN_NAME/latest/$PLUGIN_NAME.zip"
+
+gsutil ls -r gs://integration-artifacts/${PLUGIN_NAME}
