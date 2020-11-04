@@ -41,14 +41,18 @@ const ProbeEditor: FC<Props> = ({ probe, onReturn }) => {
     formValues.latitude = Number(formValues.latitude);
     formValues.longitude = Number(formValues.longitude);
 
+    if (!instance.api) {
+      throw new Error('Not connected to the Synthetic Montoring datasource');
+    }
+
     if (probe.id) {
-      await instance?.api.updateProbe({
+      await instance.api.updateProbe({
         ...probe,
         ...formValues,
       });
       onReturn(true);
     } else {
-      const info = await instance?.api.addProbe({
+      const info = await instance.api.addProbe({
         ...probe,
         ...formValues,
       });
@@ -64,7 +68,7 @@ const ProbeEditor: FC<Props> = ({ probe, onReturn }) => {
   }
 
   const onRemoveProbe = async () => {
-    if (!probe.id) {
+    if (!probe.id || !instance.api) {
       return;
     }
     await instance.api.deleteProbe(probe.id);
@@ -72,7 +76,7 @@ const ProbeEditor: FC<Props> = ({ probe, onReturn }) => {
   };
 
   const onResetToken = async () => {
-    const info = await instance.api.resetProbeToken(probe);
+    const info = await instance.api?.resetProbeToken(probe);
     setShowTokenModal(true);
     setProbeToken(info.token);
   };

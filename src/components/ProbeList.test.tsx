@@ -4,6 +4,8 @@ import userEvent from '@testing-library/user-event';
 import { ProbeList } from './ProbeList';
 import { InstanceContext } from 'components/InstanceContext';
 import { getInstanceMock, instanceSettings } from '../datasource/__mocks__/DataSource';
+import { AppPluginMeta } from '@grafana/data';
+import { GlobalSettings } from 'types';
 
 const onAddNew = jest.fn();
 const onSelectProbe = jest.fn();
@@ -34,8 +36,9 @@ const defaultProbes = [
 ];
 
 const renderProbeList = ({ probes = defaultProbes } = {}) => {
+  const meta = {} as AppPluginMeta<GlobalSettings>;
   render(
-    <InstanceContext.Provider value={{ instance: { api: getInstanceMock(instanceSettings) }, loading: false }}>
+    <InstanceContext.Provider value={{ instance: { api: getInstanceMock(instanceSettings) }, loading: false, meta }}>
       <ProbeList probes={probes} onAddNew={onAddNew} onSelectProbe={onSelectProbe} />
     </InstanceContext.Provider>
   );

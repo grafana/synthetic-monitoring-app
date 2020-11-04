@@ -159,3 +159,17 @@ export const fallbackCheck = {
     },
   },
 } as Check;
+
+export const colors = {
+  darkThemeBlueBackground: '#021B39',
+  darkThemeBorderBlue: '#6394EB',
+  lightThemeBlueBackground: '#E9F4FF',
+  lightThemeBorderBlue: '#84AFF1',
+  darkText: '#9FA7B3',
+  lightText: '#464C54',
+  black: '#0B0C0E',
+  grey: '#F7F8FA',
+};
+
+export const LEGACY_METRICS_DS_NAME = 'Synthetic Monitoring Metrics';
+export const LEGACY_LOGS_DS_NAME = 'Synthetic Monitoring Logs';

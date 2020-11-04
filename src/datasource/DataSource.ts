@@ -127,9 +127,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
         method: 'GET',
         url: `${this.instanceSettings.url}/sm/check/list`,
       })
-      .then((res: any) => {
-        return res.data;
-      });
+      .then((res: any) => (Array.isArray(res.data) ? res.data : []));
   }
 
   async addCheck(check: Check): Promise<any> {

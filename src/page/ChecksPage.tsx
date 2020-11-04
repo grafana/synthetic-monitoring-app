@@ -2,13 +2,13 @@
 import React, { PureComponent } from 'react';
 
 // Types
-import { Check, GrafanaInstances } from 'types';
+import { Check } from 'types';
 import { getLocationSrv } from '@grafana/runtime';
 import { CheckEditor } from 'components/CheckEditor';
 import { CheckList } from 'components/CheckList';
+import { InstanceContext } from 'components/InstanceContext';
 
 interface Props {
-  instance: GrafanaInstances;
   id?: string;
   checksPerPage?: number;
 }
@@ -21,6 +21,9 @@ interface State {
 }
 
 export class ChecksPage extends PureComponent<Props, State> {
+  static contextType = InstanceContext;
+  declare context: React.ContextType<typeof InstanceContext>;
+
   state: State = {
     checks: [],
     addNew: false,
@@ -28,10 +31,11 @@ export class ChecksPage extends PureComponent<Props, State> {
   };
 
   async componentDidMount() {
-    const { instance, id } = this.props;
-    const checks = await instance.api.listChecks();
+    const { id } = this.props;
+    const { instance } = this.context;
+    const checks = (await instance.api?.listChecks()) ?? [];
     const num = id ? parseInt(id, 10) : -1;
-    const check = checks.find(c => c.id === num);
+    const check = checks?.find(c => c.id === num);
     this.setState({
       checks,
       check,
@@ -43,7 +47,7 @@ export class ChecksPage extends PureComponent<Props, State> {
     if (this.props.id !== oldProps.id) {
       const { id } = this.props;
       const num = id ? parseInt(id, 10) : -1;
-      const check = this.state.checks.find(c => c.id === num);
+      const check = this.state.checks?.find(c => c.id === num);
       this.setState({ check });
     }
   }
@@ -59,8 +63,8 @@ export class ChecksPage extends PureComponent<Props, State> {
   };
 
   onRefresh = async () => {
-    const { instance } = this.props;
-    const checks = await instance.api.listChecks();
+    const { instance } = this.context;
+    const checks = (await instance.api?.listChecks()) ?? [];
     this.setState({
       checks,
     });
@@ -82,9 +86,9 @@ export class ChecksPage extends PureComponent<Props, State> {
   };
 
   render() {
-    const { instance } = this.props;
+    const { instance } = this.context;
     const { check, addNew, loading, checks } = this.state;
-    if (loading) {
+    if (loading || !instance.api) {
       return <div>Loading...</div>;
     }
     if (check) {

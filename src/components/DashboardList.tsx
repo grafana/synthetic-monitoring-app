@@ -45,7 +45,11 @@ export class DashboardList extends PureComponent<Props, State> {
     if (!onChange) {
       return;
     }
-    const updatedDashboard = await importDashboard(dashboard.json, options);
+    const updatedDashboard = await importDashboard(
+      dashboard.json,
+      options.metrics.grafanaName,
+      options.logs.grafanaName
+    );
 
     const dashboards = options.dashboards.map(savedDashboard => {
       if (savedDashboard.uid === updatedDashboard.uid) {

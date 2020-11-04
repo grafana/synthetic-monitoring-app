@@ -1,5 +1,8 @@
 version: 2.1
 
+orbs:
+  gcp-cli: circleci/gcp-cli@1.8.4
+
 parameters:
   ssh-fingerprint:
     type: string
@@ -81,6 +84,9 @@ executors:
   e2e_exec:
     docker:
       - image: srclosson/grafana-plugin-ci-e2e:latest
+  cloud_sdk_exec:
+    docker:
+      - image: google/cloud-sdk
 
 jobs:
   install_dependencies:
@@ -218,25 +224,29 @@ jobs:
           path: ci
 
   release_to_staging:
-    executor: default_exec
+    executor: cloud_sdk_exec
     steps:
+      - gcp-cli/install
+      - gcp-cli/initialize
       - checkout
       - attach_workspace:
           at: .
       - run:
           name: 'Publish release to staging'
           command: |
-            apk --no-cache add curl
+            apt-get install curl
             ./scripts/staging-install.sh
 
   release_to_production:
-    executor: default_exec
+    executor: cloud_sdk_exec
     steps:
+      - gcp-cli/install
+      - gcp-cli/initialize
       - checkout
       - attach_workspace:
           at: .
       - run:
           name: 'Publish release to production'
           command: |
-            apk --no-cache add curl
+            apt-get install curl
             /bin/bash ./scripts/production-release

@@ -1,6 +1,6 @@
-import { DataSourceInstanceSettings, DataSourceSettings } from '@grafana/data';
+import { DataSourceInstanceSettings } from '@grafana/data';
 
-import { SMOptions, DashboardInfo } from './datasource/types';
+import { SMOptions, DashboardInfo, LinkedDatsourceInfo } from './datasource/types';
 
 import { config, getBackendSrv } from '@grafana/runtime';
 import { HostedInstance, User, OrgRole, CheckType, Settings } from 'types';
@@ -50,22 +50,94 @@ export async function getHostedLokiAndPrometheusInfo(): Promise<DataSourceInstan
   return settings;
 }
 
-export async function createNewApiInstance(): Promise<DataSourceSettings> {
+export async function createDatasource(hosted: HostedInstance, adminToken: string, smDatasourceId: string) {
+  const token = await getViewerToken(adminToken, hosted, smDatasourceId);
+  if (!token) {
+    throw new Error('error getting token');
+  }
+  return await createHostedInstance(hosted, token);
+}
+
+async function getViewerToken(apiToken: string, instance: HostedInstance, smDatasourceId: string): Promise<string> {
+  return getBackendSrv()
+    .datasourceRequest({
+      method: 'POST',
+      url: `api/datasources/proxy/${smDatasourceId}/viewer-token`,
+      data: {
+        apiToken,
+        id: instance.id,
+        type: instance.type,
+      },
+      headers: {
+        // ensure the grafana backend doesn't use a cached copy of the
+        // datasource config, as it might not have the new apiHost set.
+        'X-Grafana-NoCache': 'true',
+      },
+    })
+    .then((res: any) => {
+      return res.data?.token;
+    });
+}
+
+interface DatasourcePayload {
+  accessToken: string;
+  apiHost: string;
+  metrics: LinkedDatsourceInfo;
+  logs: LinkedDatsourceInfo;
+}
+
+// Used for stubbing out the datasource when plugin is not provisioned
+
+export async function createNewApiInstance(
+  payload: DatasourcePayload,
+  dashboards: DashboardInfo[]
+): Promise<SMOptions> {
   return getBackendSrv().post('api/datasources', {
     name: 'Synthetic Monitoring',
     type: 'synthetic-monitoring-datasource',
     access: 'proxy',
     isDefault: false,
+    jsonData: {
+      apiHost: payload.apiHost,
+      dashboards,
+      initialized: true,
+      metrics: payload.metrics,
+      logs: payload.logs,
+    },
+    secureJsonData: {
+      accessToken: payload.accessToken,
+    },
   });
 }
 
-export async function createHostedInstance(
-  name: string,
-  info: HostedInstance,
-  key: string
-): Promise<DataSourceInstanceSettings> {
+export async function initializeDatasource(
+  datasourcePayload: DatasourcePayload,
+  dashboards: DashboardInfo[]
+): Promise<SMOptions> {
+  const existingDatasource = findSMDataSources()?.[0];
+  if (existingDatasource) {
+    return getBackendSrv().put(`api/datasources/${existingDatasource.id}`, {
+      ...existingDatasource,
+      access: 'proxy',
+      isDefault: false,
+      secureJsonData: {
+        accessToken: datasourcePayload.accessToken,
+      },
+      jsonData: {
+        apiHost: datasourcePayload.apiHost,
+        initialized: true,
+        dashboards,
+        metrics: datasourcePayload.metrics,
+        logs: datasourcePayload.logs,
+      },
+    });
+  }
+  return createNewApiInstance(datasourcePayload, dashboards);
+}
+
+export async function createHostedInstance(info: HostedInstance, key: string): Promise<DataSourceInstanceSettings> {
   const data = {
-    name,
+    name: info.name,
     url: info.url + (info.type === 'logs' ? '' : '/api/prom'),
     access: 'proxy',
     basicAuth: true,
@@ -101,15 +173,9 @@ export function hasRole(requiredRole: OrgRole): boolean {
 }
 
 /** Given hosted info, link to an existing instance */
-export function dashboardUID(checkType: string, ds: SMDataSource): DashboardInfo | undefined {
-  const dashboards = ds.instanceSettings.jsonData.dashboards;
-  let target: DashboardInfo | undefined = undefined;
-  for (const item of dashboards) {
-    if (item.json.toLocaleLowerCase() === `sm-${checkType}.json`) {
-      target = item;
-    }
-  }
-  return target;
+export function dashboardUID(checkType: string, ds?: SMDataSource): DashboardInfo | undefined {
+  const dashboards = ds?.instanceSettings?.jsonData?.dashboards;
+  return dashboards?.find(item => item.json.toLocaleLowerCase() === `sm-${checkType}.json`);
 }
 
 export const parseUrl = (url: string) => {

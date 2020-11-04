@@ -20,7 +20,26 @@
     "version": "%VERSION%",
     "updated": "%TODAY%"
   },
-
+  "routes": [
+    {
+      "path": "init",
+      "method": "*",
+      "url": "{{ .JsonData.apiHost }}/api/v1/register/init",
+      "reqRole": "Editor"
+    },
+    {
+      "path": "install",
+      "method": "*",
+      "url": "{{ .JsonData.apiHost }}/api/v1/register/install",
+      "reqRole": "Editor",
+      "headers": [
+        {
+          "name": "Authorization",
+          "content": "Bearer {{ .SecureJsonData.publisherToken }}"
+        }
+      ]
+    }
+  ],
   "includes": [
     {
       "type": "page",

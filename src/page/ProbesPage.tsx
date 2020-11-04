@@ -18,7 +18,7 @@ export const ProbesPage: FC<Props> = ({ id }) => {
   const [probes, setProbes] = useState<Probe[]>([]);
   const [selectedProbe, setSelectedProbe] = useState<Probe | undefined>();
   const { instance, loading: instanceLoading } = useContext(InstanceContext);
-  const api = instance?.api ?? undefined;
+  const api = instance.api ?? undefined;
   useEffect(() => {
     const fetchProbes = async () => {
       const probes = await api?.listProbes();
