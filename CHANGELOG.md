@@ -1,3 +1,10 @@
+## [0.3.40](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.39...0.3.40) (2020-11-04)
+
+
+### Bug Fixes
+
+* update probe locations description typo ([#140](https://github.com/grafana/synthetic-monitoring-app/issues/140)) ([3840323](https://github.com/grafana/synthetic-monitoring-app/commit/384032323a876e7ef7ed561f9309ef85359cf93e))
+
 ## [0.3.39](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.38...0.3.39) (2020-10-27)
 
 
