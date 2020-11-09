@@ -7,11 +7,17 @@ import { Spinner } from '@grafana/ui';
 import { AppPluginMeta } from '@grafana/data';
 import { UnprovisionedSetup } from 'components/UnprovisionedSetup';
 
-async function fetchDatasources(metricInstanceName: string, logsInstanceName: string): Promise<GrafanaInstances> {
+async function fetchDatasources(
+  metricInstanceName: string | undefined,
+  logsInstanceName: string | undefined
+): Promise<GrafanaInstances> {
   const dataSourceSrv = getDataSourceSrv();
   const smApi = (await dataSourceSrv.get('Synthetic Monitoring').catch(e => undefined)) as SMDataSource | undefined;
-  const metrics = await dataSourceSrv.get(metricInstanceName).catch(e => undefined);
-  const logs = await dataSourceSrv.get(logsInstanceName).catch(e => undefined);
+  const metricsName = metricInstanceName ?? smApi?.instanceSettings?.jsonData?.metrics?.grafanaName;
+  const metrics = metricsName ? await dataSourceSrv.get(metricsName).catch(e => undefined) : undefined;
+
+  const logsName = logsInstanceName ?? smApi?.instanceSettings?.jsonData?.logs?.grafanaName;
+  const logs = logsName ? await dataSourceSrv.get(logsName).catch(e => undefined) : undefined;
   return {
     api: smApi,
     metrics,
@@ -28,27 +34,20 @@ interface Props {
 export const InstanceProvider: FC<Props> = ({ children, metricInstanceName, logsInstanceName, meta }) => {
   const [instances, setInstances] = useState<GrafanaInstances | null>(null);
   const [instancesLoading, setInstancesLoading] = useState(true);
-
   useEffect(() => {
     setInstancesLoading(true);
-    if (metricInstanceName && logsInstanceName) {
-      fetchDatasources(metricInstanceName, logsInstanceName).then(loadedInstances => {
-        if (!loadedInstances.metrics || !loadedInstances.logs) {
-          fetchDatasources('Synthetic Monitoring Metrics', 'Synthetic Monitoring Logs').then(
-            fallbackLoadedInstances => {
-              setInstances(fallbackLoadedInstances);
-              setInstancesLoading(false);
-            }
-          );
-          return;
-        }
-        setInstances(loadedInstances);
-        setInstancesLoading(false);
-      });
-    } else {
-      setInstances({});
+    fetchDatasources(metricInstanceName, logsInstanceName).then(loadedInstances => {
+      if (!loadedInstances.metrics || !loadedInstances.logs) {
+        fetchDatasources('Synthetic Monitoring Metrics', 'Synthetic Monitoring Logs').then(fallbackLoadedInstances => {
+          console.log('hellllooooo', { fallbackLoadedInstances });
+          setInstances(fallbackLoadedInstances);
+          setInstancesLoading(false);
+        });
+        return;
+      }
+      setInstances(loadedInstances);
       setInstancesLoading(false);
-    }
+    });
   }, [logsInstanceName, metricInstanceName]);
 
   if (instancesLoading) {

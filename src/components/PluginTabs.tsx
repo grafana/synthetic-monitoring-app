@@ -110,7 +110,9 @@ export const PluginTabs: FC<AppRootProps<GlobalSettings>> = ({ query, onNavChang
   const { instance } = useContext(InstanceContext);
   const [hasDismissedDashboardUpdate, setHasDismissedDashboardUpdate] = useState(hasDismissedDashboardUpdateModal());
   const [dashboardsNeedingUpdate, setDashboardsNeedingUpdate] = useState<DashboardMeta[] | undefined>();
-  const apiInitialized = Boolean(instance.api?.instanceSettings?.jsonData?.initialized);
+  const hasStackId = Boolean(instance.api?.instanceSettings?.jsonData?.stackId);
+  // We are using the presence of stack id in json data to determine whether the plugin has been provisioned or not
+  const apiInitialized = Boolean(instance.api?.instanceSettings?.jsonData?.initialized || !hasStackId);
   const dashboards = instance.api?.instanceSettings?.jsonData.dashboards;
   const [activeTab, setActiveTab] = useState(findActiveTab(tabs, query.page, apiInitialized));
   const logoUrl = meta.info.logos.large;

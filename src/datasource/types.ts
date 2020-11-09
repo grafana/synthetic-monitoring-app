@@ -37,6 +37,7 @@ export interface FolderInfo {
  */
 export interface SMOptions extends DataSourceJsonData {
   apiHost: string;
+  stackId?: string;
   metrics: LinkedDatsourceInfo;
   initialized?: boolean;
   logs: LinkedDatsourceInfo;
