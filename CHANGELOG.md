@@ -1,3 +1,10 @@
+## [0.3.42](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.41...0.3.42) (2020-11-09)
+
+
+### Bug Fixes
+
+* handle unprovisioned cloud bootstrapping ([#148](https://github.com/grafana/synthetic-monitoring-app/issues/148)) ([9580267](https://github.com/grafana/synthetic-monitoring-app/commit/9580267593338517532ac8a810a4af07fad144ba))
+
 ## [0.3.41](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.40...0.3.41) (2020-11-09)
 
 
