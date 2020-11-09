@@ -606,11 +606,11 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "avg(probe_dns_duration_seconds{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}) by (phase)",
+          "expr": "avg(probe_dns_duration_seconds{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}) by (probe)",
           "instant": false,
           "interval": "",
           "intervalFactor": 1,
-          "legendFormat": "{{phase}}",
+          "legendFormat": "{{probe}}",
           "refId": "A"
         }
       ],
@@ -916,5 +916,5 @@
   "timezone": "",
   "title": "Synthetic Monitoring - DNS",
   "uid": "lgL6odgGz",
-  "version": 14
+  "version": 15
 }
