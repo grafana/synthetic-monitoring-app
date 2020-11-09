@@ -19,6 +19,7 @@ import lightCircledAlert from 'img/light-circled-alert.svg';
 import lightCircledSM from 'img/light-circled-sm.svg';
 import circledLoki from 'img/circled-loki.svg';
 import { CloudDatasourceJsonData } from 'datasource/types';
+import { isNumber } from 'lodash';
 
 const getStyles = (theme: GrafanaTheme) => {
   const textColor = theme.isDark ? colors.darkText : colors.lightText;
@@ -120,13 +121,14 @@ export const WelcomePage: FC<Props> = () => {
   const metricsDatasource = config.datasources[metricsName] as DataSourceInstanceSettings<CloudDatasourceJsonData>;
   const logsName = getLogsName(meta?.jsonData?.logs.grafanaName);
   const logsDatasource = config.datasources[logsName] as DataSourceInstanceSettings<CloudDatasourceJsonData>;
+  const stackId = meta?.jsonData?.stackId;
   const onClick = async () => {
     if (!meta?.jsonData) {
       setError('Invalid plugin configuration');
       return;
     }
     const body = {
-      stackId: parseInt(meta.jsonData.grafanaInstanceId ?? '1', 10),
+      stackId: isNumber(stackId) ? stackId : parseInt(stackId ?? '1', 10),
       metricsInstanceId: meta.jsonData.metrics?.hostedId,
       logsInstanceId: meta.jsonData.logs?.hostedId,
     };
