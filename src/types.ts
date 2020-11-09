@@ -5,6 +5,7 @@ import { SMDataSource } from 'datasource/DataSource';
 export interface GlobalSettings {
   grafanaInstanceId: string;
   apiHost: string;
+  stackId?: number;
   metrics: LinkedDatsourceInfo;
   logs: LinkedDatsourceInfo;
 }
