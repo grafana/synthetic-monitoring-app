@@ -226,8 +226,8 @@ jobs:
   release_to_staging:
     executor: cloud_sdk_exec
     steps:
-      - gcp-cli/install
-      - gcp-cli/initialize
+      # - gcp-cli/install
+      # - gcp-cli/initialize
       - checkout
       - attach_workspace:
           at: .
@@ -240,8 +240,8 @@ jobs:
   release_to_production:
     executor: cloud_sdk_exec
     steps:
-      - gcp-cli/install
-      - gcp-cli/initialize
+      # - gcp-cli/install
+      # - gcp-cli/initialize
       - checkout
       - attach_workspace:
           at: .
