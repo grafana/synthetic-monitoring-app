@@ -1,3 +1,10 @@
+## [0.3.41](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.40...0.3.41) (2020-11-09)
+
+
+### Bug Fixes
+
+* legend displays "Value" instead of probe name ([#147](https://github.com/grafana/synthetic-monitoring-app/issues/147)) ([7fbbfba](https://github.com/grafana/synthetic-monitoring-app/commit/7fbbfbafbdc42cf11464f3feedba97aff072d9c0)), closes [#146](https://github.com/grafana/synthetic-monitoring-app/issues/146)
+
 ## [0.3.40](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.39...0.3.40) (2020-11-04)
 
 

@@ -646,7 +646,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Response Latency: $probe ⮕ $job / $instance",
+      "title": "Response latency by phase: $probe ⮕ $job / $instance",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -763,7 +763,7 @@
           "instant": false,
           "interval": "",
           "intervalFactor": 1,
-          "legendFormat": "{{phase}}",
+          "legendFormat": "{{probe}}",
           "refId": "A"
         }
       ],
@@ -771,7 +771,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Response Latency by Probe",
+      "title": "Response latency by probe",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -940,5 +940,5 @@
   "timezone": "",
   "title": "Synthetic Monitoring HTTP",
   "uid": "rq0JrllZz",
-  "version": 26
+  "version": 27
 }
