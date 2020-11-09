@@ -1,3 +1,10 @@
+## [0.3.43](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.42...0.3.43) (2020-11-09)
+
+
+### Bug Fixes
+
+* change stackId provisioning name ([#149](https://github.com/grafana/synthetic-monitoring-app/issues/149)) ([fd818ac](https://github.com/grafana/synthetic-monitoring-app/commit/fd818ac0662123f79f25a77977ddcdeeb5c5e6a7))
+
 ## [0.3.42](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.41...0.3.42) (2020-11-09)
 
 
