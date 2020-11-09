@@ -57,28 +57,30 @@ GIT_TAG=$(git tag --points-at HEAD)
 #remove the leading v on the git tag
 VERSION="${GIT_TAG//v}"
 
-if [ -z "${GCLOUD_SERVICE_KEY}" ]; then
-	echo "Missing GCS Publish Key"
-	exit -1
-fi
+# if [ -z "${GCLOUD_SERVICE_KEY}" ]; then
+# 	echo "Missing GCS Publish Key"
+# 	exit -1
+# fi
 
-echo ${GCLOUD_SERVICE_KEY} | gcloud auth activate-service-account --key-file=-
+# echo ${GCLOUD_SERVICE_KEY} | gcloud auth activate-service-account --key-file=-
 
 URL="https://github.com/grafana/synthetic-monitoring-app/releases/download/v$VERSION/grafana-synthetic-monitoring-app-$VERSION.zip"
 
 # Download built assets from Github
-mkdir -p ./ci/builds
-curl -L -o ./ci/builds/$GIT_TAG.zip $URL
+# mkdir -p ./ci/builds
+# curl -L -o ./ci/builds/$GIT_TAG.zip $URL
 
 # Push assets to GCS in version folder
-gsutil -m cp -r "./ci/builds/$GIT_TAG.zip" "gs://integration-artifacts/$PLUGIN_NAME/$VERSION/$PLUGIN_NAME.zip"
+# gsutil -m cp -r "./ci/builds/$GIT_TAG.zip" "gs://integration-artifacts/$PLUGIN_NAME/$VERSION/$PLUGIN_NAME.zip"
 # Also put the assets in canary for use with staging/dev
-gsutil -m cp -r "./ci/builds/$GIT_TAG.zip" "gs://integration-artifacts/$PLUGIN_NAME/canary/$PLUGIN_NAME.zip"
+# gsutil -m cp -r "./ci/builds/$GIT_TAG.zip" "gs://integration-artifacts/$PLUGIN_NAME/canary/$PLUGIN_NAME.zip"
 
 # Set syntheticmonitoring instance to use the canary plugin version
+# gcom /instances/syntheticmonitoring/config \
+#     -d config[hosted_grafana][custom_commands]="$(custom_commands)"
 
 gcom /instances/syntheticmonitoring/config \
-    -d config[hosted_grafana][custom_commands]="$(custom_commands)"
+	-d config[hosted_grafana][custom_commands]="grafana-cli --pluginUrl=${URL} plugins install ${PLUGIN_NAME}"
 
 sleep 10s
 

@@ -137,7 +137,7 @@ export async function initializeDatasource(
 
 export async function createHostedInstance(info: HostedInstance, key: string): Promise<DataSourceInstanceSettings> {
   const data = {
-    name: info.name,
+    name: `grafanacloud-${info.name}`,
     url: info.url + (info.type === 'logs' ? '' : '/api/prom'),
     access: 'proxy',
     basicAuth: true,

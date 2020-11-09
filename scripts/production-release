@@ -42,7 +42,7 @@ gcom /plugins \
 
 
 # Push new version to GCS for hosted instances to consume
-echo ${GCLOUD_SERVICE_KEY} | gcloud auth activate-service-account --key-file=-
-gsutil -m cp -r "./ci/builds/latest.zip" "gs://integration-artifacts/$PLUGIN_NAME/latest/$PLUGIN_NAME.zip"
+# echo ${GCLOUD_SERVICE_KEY} | gcloud auth activate-service-account --key-file=-
+# gsutil -m cp -r "./ci/builds/latest.zip" "gs://integration-artifacts/$PLUGIN_NAME/latest/$PLUGIN_NAME.zip"
 
-gsutil ls -r gs://integration-artifacts/${PLUGIN_NAME}
+# gsutil ls -r gs://integration-artifacts/${PLUGIN_NAME}
