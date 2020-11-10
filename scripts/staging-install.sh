@@ -78,9 +78,10 @@ URL="https://github.com/grafana/synthetic-monitoring-app/releases/download/v$VER
 # Set syntheticmonitoring instance to use the canary plugin version
 # gcom /instances/syntheticmonitoring/config \
 #     -d config[hosted_grafana][custom_commands]="$(custom_commands)"
+INSTALL_COMMAND='grafana-cli plugins remove grafana-synthetic-monitoring-app; grafana-cli --pluginUrl='"$URL"' plugins install grafana-synthetic-monitoring-app'
 
 gcom /instances/syntheticmonitoring/config \
-	-d config[hosted_grafana][custom_commands]="grafana-cli --pluginUrl=${URL} plugins install ${PLUGIN_NAME}"
+	-d config[hosted_grafana][custom_commands]="$INSTALL_COMMAND"
 
 sleep 10s
 

@@ -38,7 +38,11 @@ export const InstanceProvider: FC<Props> = ({ children, metricInstanceName, logs
     setInstancesLoading(true);
     fetchDatasources(metricInstanceName, logsInstanceName).then(loadedInstances => {
       if (!loadedInstances.metrics || !loadedInstances.logs) {
-        fetchDatasources('Synthetic Monitoring Metrics', 'Synthetic Monitoring Logs').then(fallbackLoadedInstances => {
+        const fallbackMetricDatasourceName =
+          loadedInstances.api?.instanceSettings?.jsonData?.metrics?.grafanaName ?? 'Synthetic Monitoring Metrics';
+        const fallbackLogsDatasourceName =
+          loadedInstances.api?.instanceSettings?.jsonData?.logs?.grafanaName ?? 'Synthetic Monitoring Logs';
+        fetchDatasources(fallbackMetricDatasourceName, fallbackLogsDatasourceName).then(fallbackLoadedInstances => {
           setInstances(fallbackLoadedInstances);
           setInstancesLoading(false);
         });

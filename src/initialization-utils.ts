@@ -126,11 +126,11 @@ export const getOrCreateMetricAndLokiDatasources = async ({
       jsonData: {
         ...smDatasource.jsonData,
         logs: {
-          grafanaName: `grafanacloud-${hostedLogs.name}`,
+          grafanaName: logsDatasource.name,
           hostedId: hostedLogs.id,
         },
         metrics: {
-          grafanaName: `grafanacloud-${hostedMetrics.name}`,
+          grafanaName: metricsDatasource.name,
           hostedId: hostedMetrics.id,
         },
         dashboards,
