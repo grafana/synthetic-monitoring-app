@@ -1,3 +1,10 @@
+## [0.3.45](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.44...0.3.45) (2020-11-10)
+
+
+### Bug Fixes
+
+* handle preexisting datasources ([#151](https://github.com/grafana/synthetic-monitoring-app/issues/151)) ([9c6e56b](https://github.com/grafana/synthetic-monitoring-app/commit/9c6e56b151784f390dbd9b4c51a72bdfab9edddd))
+
 ## [0.3.44](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.43...0.3.44) (2020-11-10)
 
 ## [0.3.43](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.42...0.3.43) (2020-11-09)
