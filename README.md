@@ -17,7 +17,19 @@ For each check, users can select 1 or more 'public' probe locations distributed 
 
 ### Configuration
 
-Synthetic Monitoring must be installed via [plugin provisioning](https://grafana.com/docs/grafana/latest/administration/provisioning/#plugins). Follow this provisioning template:
+Synthetic Monitoring requires a Grafana Cloud account, but can be set up to run in a local Grafana instance in two ways:
+
+#### Via an admin key
+
+Install the [Synthetic Monitoring plugin](https://grafana.com/grafana/plugins/grafana-synthetic-monitoring-app)
+
+Navigate to the plugins page in your Grafana instance, and enable the plugin
+
+Click on the Synthetic Monitoring plugin in the sidebar. Add an admin key from [grafana.com](https://grafana.com) into the input. The admin key is used to generate the required datasources, and then discarded. You can delete the admin key from grafana.com after setup is complete.
+
+#### Via provisioning
+
+Synthetic Monitoring can alternatively be installed via [plugin provisioning](https://grafana.com/docs/grafana/latest/administration/provisioning/#plugins). Follow this provisioning template:
 
 ```yaml
 apiVersion: 1
@@ -28,7 +40,7 @@ apps:
     disabled: false
     jsonData:
       apiHost: https://synthetic-monitoring-api.grafana.net
-      grafanaInstanceId: <instanceId>
+      stackId: <instanceId of your hosted grafana>
       logs:
         grafanaName: <Name of a Loki datasource pointed to a Grafana Cloud Loki instance>
         hostedId: <Grafana Cloud Loki instance ID>
