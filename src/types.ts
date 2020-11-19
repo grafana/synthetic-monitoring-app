@@ -375,3 +375,9 @@ export interface DashboardMeta {
   uid: string;
   version: number;
 }
+
+export enum TimeUnits {
+  seconds = 'seconds',
+  minutes = 'minutes',
+  hours = 'hours',
+}

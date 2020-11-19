@@ -8,6 +8,7 @@ import {
   HttpSslOption,
   HttpRegexValidationType,
   Check,
+  TimeUnits,
 } from 'types';
 
 export const DNS_RESPONSE_CODES = enumToStringArray(DnsResponseCodes).map(responseCode => ({
@@ -142,6 +143,23 @@ export const HTTP_SSL_OPTIONS = [
 export const HTTP_REGEX_VALIDATION_OPTIONS = [
   { label: 'Check fails if response header matches', value: HttpRegexValidationType.Header },
   { label: 'Check fails if response body matches', value: HttpRegexValidationType.Body },
+];
+
+export const TIME_UNIT_OPTIONS = [
+  {
+    label: TimeUnits.seconds,
+    value: TimeUnits.seconds,
+  },
+
+  {
+    label: TimeUnits.minutes,
+    value: TimeUnits.minutes,
+  },
+
+  {
+    label: TimeUnits.hours,
+    value: TimeUnits.hours,
+  },
 ];
 
 export const fallbackCheck = {
