@@ -47,6 +47,9 @@ const getStyles = (theme: GrafanaTheme) => ({
   select: css`
     max-width: 200px;
   `,
+  severityContainer: css`
+    margin-bottom: ${theme.spacing.md};
+  `,
 });
 
 export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
@@ -132,7 +135,7 @@ export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
             />
           </div>
         </div>
-        <div>
+        <div className={styles.severityContainer}>
           <Label>Severity</Label>
           <Controller as={Select} name="alert.severity" options={ALERTING_SEVERITY_OPTIONS} className={styles.select} />
         </div>

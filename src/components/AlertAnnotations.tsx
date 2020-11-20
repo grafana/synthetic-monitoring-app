@@ -1,5 +1,5 @@
 import React, { FC, Fragment } from 'react';
-import { TextArea, Input, Button, useStyles } from '@grafana/ui';
+import { TextArea, Input, Button, useStyles, Label } from '@grafana/ui';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { SubCollapse } from 'components/SubCollapse';
 import { GrafanaTheme } from '@grafana/data';
@@ -16,6 +16,9 @@ const getStyles = (theme: GrafanaTheme) => ({
     grid-column-gap: ${theme.spacing.lg};
     grid-row-gap: ${theme.spacing.sm};
   `,
+  addButton: css`
+    margin: ${theme.spacing.md} 0;
+  `,
 });
 
 export const AlertAnnotations: FC<Props> = () => {
@@ -30,14 +33,14 @@ export const AlertAnnotations: FC<Props> = () => {
       <div className={styles.grid}>
         {fields.length ? (
           <>
-            <span>Name</span>
-            <span>Annotation</span>
+            <Label>Name</Label>
+            <Label>Annotation</Label>
             <div />
           </>
         ) : null}
         {fields.map((field, index) => (
           <Fragment key={field.id}>
-            <Input ref={register()} name={`${NAME}[${index}].key`} placeholder="Name" />
+            <Input ref={register()} name={`${NAME}[${index}].name`} placeholder="Name" />
             <TextArea ref={register()} name={`${NAME}[${index}].value`} placeholder="Value" />
             <Button type="button" onClick={() => remove(index)} variant="link">
               Delete
@@ -45,7 +48,14 @@ export const AlertAnnotations: FC<Props> = () => {
           </Fragment>
         ))}
       </div>
-      <Button type="button" variant="link" icon="plus" onClick={() => append({})}>
+      <Button
+        type="button"
+        variant="link"
+        size="sm"
+        icon="plus"
+        onClick={() => append({})}
+        className={styles.addButton}
+      >
         Add annotation
       </Button>
     </SubCollapse>

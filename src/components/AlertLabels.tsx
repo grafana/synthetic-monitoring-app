@@ -1,4 +1,4 @@
-import { useStyles, Input, TextArea, Button } from '@grafana/ui';
+import { useStyles, Input, Button, Label } from '@grafana/ui';
 import React, { FC, Fragment } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { SubCollapse } from './SubCollapse';
@@ -16,6 +16,9 @@ const getStyles = (theme: GrafanaTheme) => ({
     grid-column-gap: ${theme.spacing.lg};
     grid-row-gap: ${theme.spacing.sm};
   `,
+  addButton: css`
+    margin: ${theme.spacing.md} 0;
+  `,
 });
 
 export const AlertLabels: FC<Props> = () => {
@@ -31,14 +34,14 @@ export const AlertLabels: FC<Props> = () => {
       <div className={styles.grid}>
         {fields.length ? (
           <>
-            <span>Name</span>
-            <span>Value</span>
+            <Label>Name</Label>
+            <Label>Value</Label>
             <div />
           </>
         ) : null}
         {fields.map((field, index) => (
           <Fragment key={field.id}>
-            <Input ref={register()} name={`${NAME}[${index}].key`} placeholder="Name" />
+            <Input ref={register()} name={`${NAME}[${index}].name`} placeholder="Name" />
             <Input ref={register()} name={`${NAME}[${index}].value`} placeholder="Value" />
             <Button type="button" onClick={() => remove(index)} variant="link">
               Delete
@@ -46,7 +49,14 @@ export const AlertLabels: FC<Props> = () => {
           </Fragment>
         ))}
       </div>
-      <Button type="button" variant="link" icon="plus" onClick={() => append({})}>
+      <Button
+        type="button"
+        variant="link"
+        size="sm"
+        icon="plus"
+        onClick={() => append({})}
+        className={styles.addButton}
+      >
         Add label
       </Button>
     </SubCollapse>

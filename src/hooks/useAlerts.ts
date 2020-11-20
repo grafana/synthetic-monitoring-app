@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { config, getBackendSrv } from '@grafana/runtime';
 import { parse, stringify } from 'yaml';
 import { SM_ALERTING_NAMESPACE } from 'components/constants';
-import { AlertFormValues, AlertRule } from 'types';
+import { AlertFormValues, AlertRule, Label } from 'types';
 
 const getRulerDatasource = () => config.datasources['grafanacloud-rdubrock-ruler'];
 
@@ -40,11 +40,21 @@ const deleteRulesForCheck = (checkId: number) => {
     .toPromise();
 };
 
+const tranformFormValues = (values: Label[]) =>
+  values.reduce<{ [key: string]: string }>((acc, { name, value }) => {
+    acc[name] = value;
+    return acc;
+  }, {}) ?? {};
+
 export function useAlerts(checkId?: number) {
   const [alertRules, setAlertRules] = useState<AlertRule[]>([]);
 
   const setRulesForCheck = async (checkId: number, alert: AlertFormValues, job: string, target: string) => {
     const ruler = getRulerDatasource();
+
+    const annotations = tranformFormValues(alert.annotations ?? []);
+
+    const labels = tranformFormValues(alert.labels ?? []);
 
     const ruleGroup = {
       name: checkId,
@@ -54,6 +64,8 @@ export function useAlerts(checkId?: number) {
           expr: `sum(1-probe_success{job="${job}", instance="${target}"}) by (job, instance)`,
           for: `${alert.timeCount}${alert.timeUnit.value}`,
           severity: alert.severity.value,
+          annotations,
+          labels,
         },
       ],
     };

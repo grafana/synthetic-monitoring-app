@@ -240,6 +240,8 @@ export interface AlertFormValues {
   timeCount: number;
   timeUnit: SelectableValue<TimeUnits>;
   severity: SelectableValue<AlertSeverity>;
+  labels: Label[];
+  annotations: Label[];
 }
 
 export interface CheckFormValues extends Omit<Check, 'settings' | 'labels'> {
