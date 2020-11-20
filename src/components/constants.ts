@@ -148,17 +148,17 @@ export const HTTP_REGEX_VALIDATION_OPTIONS = [
 
 export const TIME_UNIT_OPTIONS = [
   {
-    label: 'Seconds',
+    label: 'seconds',
     value: TimeUnits.seconds,
   },
 
   {
-    label: 'Minutes',
+    label: 'minutes',
     value: TimeUnits.minutes,
   },
 
   {
-    label: 'Hours',
+    label: 'hours',
     value: TimeUnits.hours,
   },
 ];

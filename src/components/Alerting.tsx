@@ -7,6 +7,8 @@ import { Controller, useFormContext } from 'react-hook-form';
 import { ALERTING_SEVERITY_OPTIONS, TIME_UNIT_OPTIONS } from './constants';
 import { AlertRule } from 'types';
 import { InstanceContext } from './InstanceContext';
+import { AlertAnnotations } from './AlertAnnotations';
+import { AlertLabels } from './AlertLabels';
 
 interface Props {
   alertRules: AlertRule[];
@@ -134,6 +136,8 @@ export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
           <Label>Severity</Label>
           <Controller as={Select} name="alert.severity" options={ALERTING_SEVERITY_OPTIONS} className={styles.select} />
         </div>
+        <AlertLabels />
+        <AlertAnnotations />
       </div>
     </Collapse>
   );
