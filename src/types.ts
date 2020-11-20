@@ -234,10 +234,19 @@ export interface SettingsFormValues {
   dns?: DnsSettingsFormValues;
   tcp?: TcpSettingsFormValues;
 }
+export interface AlertFormValues {
+  name: string;
+  probeCount: number;
+  timeCount: number;
+  timeUnit: SelectableValue<TimeUnits>;
+  severity: SelectableValue<AlertSeverity>;
+}
+
 export interface CheckFormValues extends Omit<Check, 'settings' | 'labels'> {
   checkType: SelectableValue<CheckType>;
   settings: SettingsFormValues;
   labels?: Label[];
+  alert?: AlertFormValues;
 }
 
 export interface Check extends BaseObject {
@@ -377,7 +386,26 @@ export interface DashboardMeta {
 }
 
 export enum TimeUnits {
-  seconds = 'seconds',
-  minutes = 'minutes',
-  hours = 'hours',
+  seconds = 's',
+  minutes = 'm',
+  hours = 'h',
 }
+
+export enum AlertSeverity {
+  critical = 'critical',
+  error = 'error',
+  warn = 'warn',
+  info = 'info',
+}
+
+export type AlertRule = {
+  alert: string;
+  expr: string;
+  for?: string;
+  labels?: {
+    [key: string]: string;
+  };
+  annotations?: {
+    [key: string]: string;
+  };
+};

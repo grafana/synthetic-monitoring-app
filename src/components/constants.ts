@@ -9,6 +9,7 @@ import {
   HttpRegexValidationType,
   Check,
   TimeUnits,
+  AlertSeverity,
 } from 'types';
 
 export const DNS_RESPONSE_CODES = enumToStringArray(DnsResponseCodes).map(responseCode => ({
@@ -147,17 +148,17 @@ export const HTTP_REGEX_VALIDATION_OPTIONS = [
 
 export const TIME_UNIT_OPTIONS = [
   {
-    label: TimeUnits.seconds,
+    label: 'Seconds',
     value: TimeUnits.seconds,
   },
 
   {
-    label: TimeUnits.minutes,
+    label: 'Minutes',
     value: TimeUnits.minutes,
   },
 
   {
-    label: TimeUnits.hours,
+    label: 'Hours',
     value: TimeUnits.hours,
   },
 ];
@@ -191,3 +192,22 @@ export const colors = {
 
 export const LEGACY_METRICS_DS_NAME = 'Synthetic Monitoring Metrics';
 export const LEGACY_LOGS_DS_NAME = 'Synthetic Monitoring Logs';
+export const SM_ALERTING_NAMESPACE = 'syntheticmonitoring';
+export const ALERTING_SEVERITY_OPTIONS = [
+  {
+    label: 'Critical',
+    value: AlertSeverity.critical,
+  },
+  {
+    label: 'Warning',
+    value: AlertSeverity.warn,
+  },
+  {
+    label: 'Error',
+    value: AlertSeverity.error,
+  },
+  {
+    label: 'Info',
+    value: AlertSeverity.info,
+  },
+];

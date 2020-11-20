@@ -17,6 +17,9 @@ import { useForm, FormContext, Controller } from 'react-hook-form';
 import { GrafanaTheme } from '@grafana/data';
 import { CheckUsage } from '../CheckUsage';
 import { Alerting } from 'components/Alerting';
+import { config, getBackendSrv } from '@grafana/runtime';
+import { parse, stringify } from 'yaml';
+import { useAlerts } from 'hooks/useAlerts';
 
 interface Props {
   check?: Check;
@@ -45,10 +48,45 @@ const getStyles = (theme: GrafanaTheme) => ({
   `,
 });
 
+const createAlert = async (checkId: number) => {
+  const ruler = config.datasources['grafanacloud-rdubrock-ruler'];
+  const rulesConfig = await getBackendSrv()
+    .fetch({
+      method: 'GET',
+      url: `${ruler.url}/rules`,
+      headers: {
+        'Content-Type': 'application/yaml',
+      },
+    })
+    .toPromise()
+    .then(response => {
+      return parse(response.data);
+    });
+
+  const rule = {
+    name: checkId,
+    rules: [{ alert: 'hi there', expr: 1 }],
+  };
+
+  getBackendSrv()
+    .fetch({
+      url: `${ruler.url}/rules/syntheticmonitoring`,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/yaml',
+      },
+      data: stringify(rule),
+    })
+    .toPromise()
+    .then(response => {
+      console.log({ postResponse: response });
+    });
+};
+
 export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const { alertRules, setRulesForCheck, deleteRulesForCheck } = useAlerts(check?.id);
   const styles = useStyles(getStyles);
-
   const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
 
   const formMethods = useForm<CheckFormValues>({ defaultValues, mode: 'onChange' });
@@ -56,19 +94,27 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
 
   const isEditor = hasRole(OrgRole.EDITOR);
 
-  const { execute: onSubmit, error, loading: submitting } = useAsyncCallback(async (values: CheckFormValues) => {
-    const updatedCheck = getCheckFromFormValues(values, defaultValues);
-    if (check?.id) {
-      await instance.updateCheck({
-        id: check.id,
-        tenantId: check.tenantId,
-        ...updatedCheck,
-      });
-    } else {
-      await instance.addCheck(updatedCheck);
+  const { execute: onSubmit, error, loading: submitting } = useAsyncCallback(
+    async ({ alert, ...checkValues }: CheckFormValues) => {
+      const updatedCheck = getCheckFromFormValues(checkValues, defaultValues);
+      if (check?.id) {
+        await instance.updateCheck({
+          id: check.id,
+          tenantId: check.tenantId,
+          ...updatedCheck,
+        });
+        if (alert) {
+          await setRulesForCheck(check.id, alert, checkValues.job, checkValues.target);
+        }
+      } else {
+        const { id } = await instance.addCheck(updatedCheck);
+        if (alert) {
+          await setRulesForCheck(id, alert, checkValues.job, checkValues.target);
+        }
+      }
+      onReturn(true);
     }
-    onReturn(true);
-  });
+  );
 
   const submissionError = error as SubmissionError;
 
@@ -78,6 +124,7 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
       return;
     }
     await instance.deleteCheck(id);
+    await deleteRulesForCheck(id);
     onReturn(true);
   };
 
@@ -148,7 +195,7 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
           />
           <CheckUsage />
           <CheckSettings typeOfCheck={selectedCheckType} isEditor={isEditor} />
-          <Alerting />
+          <Alerting alertRules={alertRules} editing={Boolean(check?.id)} checkId={check?.id} />
         </div>
         <HorizontalGroup>
           <Button
