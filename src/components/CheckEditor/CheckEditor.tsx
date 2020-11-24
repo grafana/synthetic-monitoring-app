@@ -48,41 +48,6 @@ const getStyles = (theme: GrafanaTheme) => ({
   `,
 });
 
-const createAlert = async (checkId: number) => {
-  const ruler = config.datasources['grafanacloud-rdubrock-ruler'];
-  const rulesConfig = await getBackendSrv()
-    .fetch({
-      method: 'GET',
-      url: `${ruler.url}/rules`,
-      headers: {
-        'Content-Type': 'application/yaml',
-      },
-    })
-    .toPromise()
-    .then(response => {
-      return parse(response.data);
-    });
-
-  const rule = {
-    name: checkId,
-    rules: [{ alert: 'hi there', expr: 1 }],
-  };
-
-  getBackendSrv()
-    .fetch({
-      url: `${ruler.url}/rules/syntheticmonitoring`,
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/yaml',
-      },
-      data: stringify(rule),
-    })
-    .toPromise()
-    .then(response => {
-      console.log({ postResponse: response });
-    });
-};
-
 export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const { alertRules, setRulesForCheck, deleteRulesForCheck } = useAlerts(check?.id);

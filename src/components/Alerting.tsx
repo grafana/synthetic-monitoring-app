@@ -57,6 +57,22 @@ export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
   const { instance } = useContext(InstanceContext);
   const { register } = useFormContext();
   const styles = useStyles(getStyles);
+
+  if (!instance.alertRuler) {
+    return (
+      <Collapse label="Alerting" onToggle={() => setShowAlerting(!showAlerting)} isOpen={showAlerting} collapsible>
+        <div className={styles.container}>
+          <p>
+            Alerts can only be created for Synthetic Monitoring checks from{' '}
+            <a href="https://grafana.com" className={styles.link}>
+              Grafana Cloud Alerting
+            </a>
+          </p>
+        </div>
+      </Collapse>
+    );
+  }
+
   if (alertRules.length && editing) {
     return (
       <Collapse label="Alerting" onToggle={() => setShowAlerting(!showAlerting)} isOpen={showAlerting} collapsible>

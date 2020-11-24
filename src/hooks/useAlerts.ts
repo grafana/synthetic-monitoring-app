@@ -4,7 +4,6 @@ import { parse, stringify } from 'yaml';
 import { SM_ALERTING_NAMESPACE } from 'components/constants';
 import { AlertFormValues, AlertRule, Label } from 'types';
 import { InstanceContext } from 'components/InstanceContext';
-import { DataSourceInstanceSettings } from '@grafana/data';
 
 const getRulerDatasource = () => config.datasources['grafanacloud-rdubrock-ruler'];
 
@@ -93,7 +92,6 @@ export function useAlerts(checkId?: number) {
   };
 
   useEffect(() => {
-    console.log('effect running');
     if (checkId && alertRulerUrl) {
       fetchRulesForCheck(checkId, alertRulerUrl).then(rules => {
         setAlertRules(rules);
