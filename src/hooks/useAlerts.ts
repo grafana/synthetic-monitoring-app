@@ -1,18 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { config, getBackendSrv } from '@grafana/runtime';
 import { parse, stringify } from 'yaml';
 import { SM_ALERTING_NAMESPACE } from 'components/constants';
 import { AlertFormValues, AlertRule, Label } from 'types';
+import { InstanceContext } from 'components/InstanceContext';
+import { DataSourceInstanceSettings } from '@grafana/data';
 
 const getRulerDatasource = () => config.datasources['grafanacloud-rdubrock-ruler'];
 
-const fetchRulesForCheck = async (checkId: number) => {
-  const ruler = getRulerDatasource();
+const fetchRulesForCheck = async (checkId: number, alertRulerUrl: string) => {
   try {
     return await getBackendSrv()
       .fetch<any>({
         method: 'GET',
-        url: `${ruler.url}/rules/${SM_ALERTING_NAMESPACE}/${checkId}`,
+        url: `${alertRulerUrl}/rules/${SM_ALERTING_NAMESPACE}/${checkId}`,
         headers: {
           'Content-Type': 'application/yaml',
         },
@@ -48,9 +49,16 @@ const tranformFormValues = (values: Label[]) =>
 
 export function useAlerts(checkId?: number) {
   const [alertRules, setAlertRules] = useState<AlertRule[]>([]);
+  const {
+    instance: { alertRuler },
+  } = useContext(InstanceContext);
+
+  const alertRulerUrl = alertRuler?.url;
 
   const setRulesForCheck = async (checkId: number, alert: AlertFormValues, job: string, target: string) => {
-    const ruler = getRulerDatasource();
+    if (!alertRuler) {
+      throw new Error('There is no alert ruler datasource configured for this Grafana instance');
+    }
 
     const annotations = tranformFormValues(alert.annotations ?? []);
 
@@ -72,7 +80,7 @@ export function useAlerts(checkId?: number) {
 
     const updateResponse = getBackendSrv()
       .fetch({
-        url: `${ruler.url}/rules/syntheticmonitoring`,
+        url: `${alertRulerUrl}/rules/syntheticmonitoring`,
         method: 'POST',
         headers: {
           'Content-Type': 'application/yaml',
@@ -85,12 +93,13 @@ export function useAlerts(checkId?: number) {
   };
 
   useEffect(() => {
-    if (checkId) {
-      fetchRulesForCheck(checkId).then(rules => {
+    console.log('effect running');
+    if (checkId && alertRulerUrl) {
+      fetchRulesForCheck(checkId, alertRulerUrl).then(rules => {
         setAlertRules(rules);
       });
     }
-  }, [checkId]);
+  }, [checkId, alertRulerUrl]);
 
   return { alertRules, setRulesForCheck, deleteRulesForCheck };
 }

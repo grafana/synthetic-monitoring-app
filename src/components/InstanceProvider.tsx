@@ -1,11 +1,15 @@
 import React, { useState, FC, useEffect } from 'react';
 import { InstanceContext } from 'components/InstanceContext';
 import { GlobalSettings, GrafanaInstances } from 'types';
-import { getDataSourceSrv } from '@grafana/runtime';
+import { config, getDataSourceSrv } from '@grafana/runtime';
 import { SMDataSource } from 'datasource/DataSource';
 import { Spinner } from '@grafana/ui';
 import { AppPluginMeta } from '@grafana/data';
 import { UnprovisionedSetup } from 'components/UnprovisionedSetup';
+
+function getRulerDatasource() {
+  return Object.values(config.datasources).find(ds => ds.type === 'grafana-ruler-datasource');
+}
 
 async function fetchDatasources(
   metricInstanceName: string | undefined,
@@ -18,10 +22,14 @@ async function fetchDatasources(
 
   const logsName = logsInstanceName ?? smApi?.instanceSettings?.jsonData?.logs?.grafanaName;
   const logs = logsName ? await dataSourceSrv.get(logsName).catch(e => undefined) : undefined;
+
+  const alertRuler = getRulerDatasource();
+
   return {
     api: smApi,
     metrics,
     logs,
+    alertRuler,
   };
 }
 

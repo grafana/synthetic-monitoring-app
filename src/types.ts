@@ -1,4 +1,4 @@
-import { DataSourceApi, SelectableValue } from '@grafana/data';
+import { DataSourceApi, DataSourceInstanceSettings, SelectableValue } from '@grafana/data';
 import { LinkedDatsourceInfo } from './datasource/types';
 import { SMDataSource } from 'datasource/DataSource';
 
@@ -312,6 +312,7 @@ export interface GrafanaInstances {
   api?: SMDataSource;
   metrics?: DataSourceApi;
   logs?: DataSourceApi;
+  alertRuler?: DataSourceInstanceSettings;
 }
 
 export interface User {
