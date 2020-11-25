@@ -1,3 +1,10 @@
+## [0.3.46](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.45...0.3.46) (2020-11-25)
+
+
+### Bug Fixes
+
+* open docs from welcome page in a new tab ([#154](https://github.com/grafana/synthetic-monitoring-app/issues/154)) ([151a3b5](https://github.com/grafana/synthetic-monitoring-app/commit/151a3b58f0586c1f0ed373c07a28a3a924c1ec76))
+
 ## [0.3.45](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.44...0.3.45) (2020-11-10)
 
 
