@@ -1,4 +1,3 @@
-import { toFixed } from '@grafana/data';
 import { CheckType } from './types';
 
 interface ActiveSeriesParams {
