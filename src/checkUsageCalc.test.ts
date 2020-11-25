@@ -1,4 +1,4 @@
-import { calculateUsage } from './checkUsage';
+import { calculateUsage } from './checkUsageCalc';
 import { CheckType } from './types';
 
 it('calculates http usage', () => {
