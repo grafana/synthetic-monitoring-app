@@ -224,7 +224,7 @@ jobs:
           path: ci
 
   release_to_staging:
-    executor: cloud_sdk_exec
+    executor: default_exec
     steps:
       # - gcp-cli/install
       # - gcp-cli/initialize
@@ -234,11 +234,12 @@ jobs:
       - run:
           name: 'Publish release to staging'
           command: |
-            apt-get install curl
+            apk --no-cache add curl
+            apk --no-cache add bash
             ./scripts/staging-install.sh
 
   release_to_production:
-    executor: cloud_sdk_exec
+    executor: default_exec
     steps:
       # - gcp-cli/install
       # - gcp-cli/initialize
@@ -248,5 +249,6 @@ jobs:
       - run:
           name: 'Publish release to production'
           command: |
-            apt-get install curl
+            apk --no-cache add curl
+            apk --no-cache add bash
             /bin/bash ./scripts/production-release
