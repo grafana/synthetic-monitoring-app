@@ -167,7 +167,12 @@ export const WelcomePage: FC<Props> = () => {
                 Synthetic Monitoring provides you with insights into how your applications and services are behaving
                 from an external point of view. We provide 21 probe locations from around the world which assess
                 availability, performance, and correctness of your services.{' '}
-                <a className={styles.link} href="https://grafana.com/docs/grafana-cloud/synthetic-monitoring/">
+                <a
+                  className={styles.link}
+                  href="https://grafana.com/docs/grafana-cloud/synthetic-monitoring/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   Read more in Synthetic Monitoring docs &gt;
                 </a>
               </p>
