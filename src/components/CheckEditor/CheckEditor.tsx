@@ -1,9 +1,8 @@
-import React, { FC, useState, useMemo } from 'react';
+import React, { FC, useState, useMemo, useContext } from 'react';
 import { css } from 'emotion';
 import { Button, ConfirmModal, Field, Input, HorizontalGroup, Select, Legend, Alert, useStyles } from '@grafana/ui';
 import { useAsyncCallback } from 'react-async-hook';
 import { Check, CheckType, OrgRole, CheckFormValues, SubmissionError } from 'types';
-import { SMDataSource } from 'datasource/DataSource';
 import { hasRole } from 'utils';
 import { getDefaultValuesFromCheck, getCheckFromFormValues } from './checkFormTransformations';
 import { validateJob, validateTarget } from 'validation';
@@ -17,13 +16,11 @@ import { useForm, FormContext, Controller } from 'react-hook-form';
 import { GrafanaTheme } from '@grafana/data';
 import { CheckUsage } from '../CheckUsage';
 import { Alerting } from 'components/Alerting';
-import { config, getBackendSrv } from '@grafana/runtime';
-import { parse, stringify } from 'yaml';
 import { useAlerts } from 'hooks/useAlerts';
+import { InstanceContext } from 'components/InstanceContext';
 
 interface Props {
   check?: Check;
-  instance: SMDataSource;
   onReturn: (reload: boolean) => void;
 }
 
@@ -48,7 +45,10 @@ const getStyles = (theme: GrafanaTheme) => ({
   `,
 });
 
-export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
+export const CheckEditor: FC<Props> = ({ check, onReturn }) => {
+  const {
+    instance: { api },
+  } = useContext(InstanceContext);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const { alertRules, setRulesForCheck, deleteRulesForCheck } = useAlerts(check?.id);
   const styles = useStyles(getStyles);
@@ -63,7 +63,7 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
     async ({ alert, ...checkValues }: CheckFormValues) => {
       const updatedCheck = getCheckFromFormValues(checkValues, defaultValues);
       if (check?.id) {
-        await instance.updateCheck({
+        await api?.updateCheck({
           id: check.id,
           tenantId: check.tenantId,
           ...updatedCheck,
@@ -72,7 +72,7 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
           await setRulesForCheck(check.id, alert, checkValues.job, checkValues.target);
         }
       } else {
-        const { id } = await instance.addCheck(updatedCheck);
+        const { id } = await api?.addCheck(updatedCheck);
         if (alert) {
           await setRulesForCheck(id, alert, checkValues.job, checkValues.target);
         }
@@ -88,7 +88,7 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
     if (!id) {
       return;
     }
-    await instance.deleteCheck(id);
+    await api?.deleteCheck(id);
     await deleteRulesForCheck(id);
     onReturn(true);
   };
