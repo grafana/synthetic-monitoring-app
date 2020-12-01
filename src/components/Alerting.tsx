@@ -63,10 +63,15 @@ export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
       <Collapse label="Alerting" onToggle={() => setShowAlerting(!showAlerting)} isOpen={showAlerting} collapsible>
         <div className={styles.container}>
           <p>
-            Alerts can only be created for Synthetic Monitoring checks from{' '}
-            <a href="https://grafana.com" className={styles.link}>
+            Synthetic Monitoring uses &nbsp;
+            <a href="https://grafana.com/docs/grafana-cloud/alerts/grafana-cloud-alerting/" className={styles.link}>
               Grafana Cloud Alerting
             </a>
+            &nbsp; for creating alert rules. You can edit this check in &nbsp;
+            <a href="https://grafana.com" className={styles.link}>
+              Grafana Cloud
+            </a>
+            &nbsp; to add alerts.
           </p>
         </div>
       </Collapse>

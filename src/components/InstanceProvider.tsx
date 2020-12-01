@@ -73,6 +73,7 @@ export const InstanceProvider: FC<Props> = ({ children, metricInstanceName, logs
   if (!instances.metrics || !instances.logs) {
     return <UnprovisionedSetup pluginId={meta.id} pluginName={meta.name} />;
   }
+
   return (
     <InstanceContext.Provider value={{ meta, instance: instances, loading: instancesLoading }}>
       {children}

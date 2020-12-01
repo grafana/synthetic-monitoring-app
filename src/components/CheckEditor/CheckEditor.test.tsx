@@ -647,7 +647,11 @@ describe('Alerting', () => {
   it('shows disabled message if no datasource', async () => {
     await renderCheckEditor({ check: getMinimumCheck({ target: 'grafana.com' }), withAlerting: false });
     await toggleSection('Alerting');
-    const disabledMessage = screen.getByText('Alerts can only be created for Synthetic Monitoring checks from');
+    // Using a partial string here since the message is broken up across html elements
+    const disabledMessage = screen.getByText(
+      'Synthetic Monitoring uses for creating alert rules. You can edit this check in to add alerts',
+      { exact: false }
+    );
     const cloudAlertingLink = screen.getByRole('link', { name: 'Grafana Cloud Alerting' });
     expect(disabledMessage).toBeInTheDocument();
     expect(cloudAlertingLink).toBeInTheDocument();
