@@ -4,6 +4,7 @@ import { calculateUsage } from '../checkUsageCalc';
 import { css } from 'emotion';
 import { GrafanaTheme } from '@grafana/data';
 import { useStyles } from '@grafana/ui';
+import { CheckFormValues } from 'types';
 
 const getStyles = (theme: GrafanaTheme) => ({
   container: css`
@@ -16,10 +17,9 @@ const getStyles = (theme: GrafanaTheme) => ({
 export const CheckUsage: FC = () => {
   const styles = useStyles(getStyles);
   const { watch } = useFormContext();
-  const checkType = watch('checkType');
-  const frequency = watch('frequency');
-  const probes = watch('probes');
-  if (!checkType || !frequency || !probes) {
+  const { checkType, frequency, probes }: Partial<CheckFormValues> = watch(['checkType', 'frequency', 'probes']);
+
+  if (!checkType?.value || !frequency || !probes) {
     return null;
   }
   const { checksPerMonth, activeSeries, logsGbPerMonth } = calculateUsage({

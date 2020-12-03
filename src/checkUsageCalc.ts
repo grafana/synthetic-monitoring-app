@@ -32,7 +32,7 @@ const getSeriesPerCheck = (checkType: CheckType) => {
   }
 };
 
-const getMonthlyChecks = (frequencySeconds: number) => {
+const getChecksPerMonth = (frequencySeconds: number) => {
   const checksPerMinute = Math.round(60 / frequencySeconds);
   const checksPerHour = checksPerMinute * 60;
   const checksPerMonth = checksPerHour * 730;
@@ -40,13 +40,13 @@ const getMonthlyChecks = (frequencySeconds: number) => {
 };
 
 const getTotalChecksPerMonth = (probeCount: number, frequencySeconds: number) => {
-  const checksPerMonth = getMonthlyChecks(frequencySeconds);
+  const checksPerMonth = getChecksPerMonth(frequencySeconds);
   return checksPerMonth * probeCount;
 };
 
 const getLogsGbPerMonth = (probeCount: number, frequencySeconds: number) => {
   const gbPerCheck = 0.0008;
-  const checksPerMonth = getMonthlyChecks(frequencySeconds);
+  const checksPerMonth = getChecksPerMonth(frequencySeconds);
   const logsGbPerMonth = (checksPerMonth * gbPerCheck * probeCount) / 1000;
   return parseFloat(logsGbPerMonth.toFixed(2));
 };
