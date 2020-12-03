@@ -15,7 +15,7 @@ import { getInstanceMock } from '../../datasource/__mocks__/DataSource';
 import userEvent from '@testing-library/user-event';
 import { InstanceContext } from 'components/InstanceContext';
 import { AppPluginMeta } from '@grafana/data';
-jest.setTimeout(30000);
+jest.setTimeout(60000);
 
 // Data mocks
 
