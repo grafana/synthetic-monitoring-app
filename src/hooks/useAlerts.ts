@@ -1,11 +1,9 @@
 import { useState, useEffect, useContext } from 'react';
-import { config, getBackendSrv } from '@grafana/runtime';
+import { getBackendSrv } from '@grafana/runtime';
 import { parse, stringify } from 'yaml';
 import { SM_ALERTING_NAMESPACE } from 'components/constants';
 import { AlertFormValues, AlertRule, Label } from 'types';
 import { InstanceContext } from 'components/InstanceContext';
-
-const getRulerDatasource = () => config.datasources['grafanacloud-rdubrock-ruler'];
 
 const fetchRulesForCheck = async (checkId: number, alertRulerUrl: string) => {
   try {
@@ -30,12 +28,11 @@ const fetchRulesForCheck = async (checkId: number, alertRulerUrl: string) => {
   }
 };
 
-const deleteRulesForCheck = (checkId: number) => {
-  const ruler = getRulerDatasource();
+const getDeleteRulesForCheck = (datasourceUrl: string) => (checkId: number) => {
   return getBackendSrv()
     .fetch<any>({
       method: 'DELETE',
-      url: `${ruler.url}/rules/${SM_ALERTING_NAMESPACE}/${checkId}`,
+      url: `${datasourceUrl}/rules/${SM_ALERTING_NAMESPACE}/${checkId}`,
     })
     .toPromise();
 };
@@ -99,5 +96,5 @@ export function useAlerts(checkId?: number) {
     }
   }, [checkId, alertRulerUrl]);
 
-  return { alertRules, setRulesForCheck, deleteRulesForCheck };
+  return { alertRules, setRulesForCheck, deleteRulesForCheck: getDeleteRulesForCheck(alertRulerUrl ?? '') };
 }
