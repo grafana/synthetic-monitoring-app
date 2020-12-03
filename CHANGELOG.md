@@ -1,3 +1,10 @@
+# [0.4.0](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.47...0.4.0) (2020-12-03)
+
+
+### Features
+
+* add a check usage calculator ([1c38252](https://github.com/grafana/synthetic-monitoring-app/commit/1c38252956ec58c70ddafb3aedee1acb3b5c6174))
+
 ## [0.3.47](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.46...0.3.47) (2020-11-25)
 
 ## [0.3.46](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.45...0.3.46) (2020-11-25)
