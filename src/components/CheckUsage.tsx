@@ -3,7 +3,7 @@ import { useFormContext } from 'react-hook-form';
 import { calculateUsage } from '../checkUsageCalc';
 import { css } from 'emotion';
 import { GrafanaTheme } from '@grafana/data';
-import { useStyles } from '@grafana/ui';
+import { useStyles, Icon, Label } from '@grafana/ui';
 import { CheckFormValues } from 'types';
 
 const getStyles = (theme: GrafanaTheme) => ({
@@ -11,6 +11,18 @@ const getStyles = (theme: GrafanaTheme) => ({
     background-color: ${theme.colors.bg2};
     padding: ${theme.spacing.lg};
     margin-bottom: ${theme.spacing.md};
+  `,
+  header: css`
+    margin-bottom: ${theme.spacing.md};
+  `,
+  icon: css`
+    margin-right: ${theme.spacing.sm};
+  `,
+  section: css`
+    margin-bottom: ${theme.spacing.sm};
+  `,
+  value: css`
+    margin-left: ${theme.spacing.xs};
   `,
 });
 
@@ -29,14 +41,19 @@ export const CheckUsage: FC = () => {
   });
   return (
     <div className={styles.container}>
-      <h5>Approximate expected usage for this check</h5>
-      <dl>
-        <dt>Checks per month</dt>
-        <dd>{checksPerMonth.toLocaleString()}</dd>
-        <dt>Active series</dt> <dd>{activeSeries.toLocaleString()}</dd>
-        <dt>Log usage per month (GB):</dt>
-        <dd>{logsGbPerMonth.toLocaleString()}</dd>
-      </dl>
+      <h5 className={styles.header}>Approximate expected usage for this check</h5>
+      <div className={styles.section}>
+        <Icon className={styles.icon} name={'calendar-alt'} />
+        Checks per month: <strong className={styles.value}>{checksPerMonth.toLocaleString()}</strong>
+      </div>
+      <div className={styles.section}>
+        <Icon className={styles.icon} name={'chart-line'} />
+        Active series: <strong className={styles.value}>{activeSeries.toLocaleString()}</strong>
+      </div>
+      <div className={styles.section}>
+        <Icon className={styles.icon} name={'database'} />
+        Log usage per month (GB): <strong className={styles.value}>{logsGbPerMonth.toLocaleString()}</strong>
+      </div>
     </div>
   );
 };

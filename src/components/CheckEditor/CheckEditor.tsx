@@ -145,9 +145,9 @@ export const CheckEditor: FC<Props> = ({ check, instance, onReturn }) => {
             frequency={check?.frequency ?? fallbackCheck.frequency}
             probes={check?.probes ?? fallbackCheck.probes}
           />
+          <CheckUsage />
           <CheckSettings typeOfCheck={selectedCheckType} isEditor={isEditor} />
         </div>
-        <CheckUsage />
         <HorizontalGroup>
           <Button
             type="submit"
