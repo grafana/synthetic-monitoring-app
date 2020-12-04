@@ -389,16 +389,16 @@ export interface DashboardMeta {
 }
 
 export enum TimeUnits {
-  seconds = 's',
-  minutes = 'm',
-  hours = 'h',
+  Seconds = 's',
+  Minutes = 'm',
+  Hours = 'h',
 }
 
 export enum AlertSeverity {
-  critical = 'critical',
-  error = 'error',
-  warn = 'warn',
-  info = 'info',
+  Critical = 'critical',
+  Error = 'error',
+  Warn = 'warn',
+  Info = 'info',
 }
 
 export type AlertRule = {

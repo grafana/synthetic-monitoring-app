@@ -5,8 +5,6 @@ import { SubCollapse } from 'components/SubCollapse';
 import { GrafanaTheme } from '@grafana/data';
 import { css } from 'emotion';
 
-interface Props {}
-
 const NAME = 'alert.annotations';
 
 const getStyles = (theme: GrafanaTheme) => ({
@@ -19,9 +17,12 @@ const getStyles = (theme: GrafanaTheme) => ({
   addButton: css`
     margin: ${theme.spacing.md} 0;
   `,
+  helpText: css`
+    font-size: ${theme.typography.size.sm};
+  `,
 });
 
-export const AlertAnnotations: FC<Props> = () => {
+export const AlertAnnotations: FC = () => {
   const styles = useStyles(getStyles);
   const { control, register } = useFormContext();
   const { fields, append, remove } = useFieldArray({
@@ -30,6 +31,10 @@ export const AlertAnnotations: FC<Props> = () => {
   });
   return (
     <SubCollapse title="Annotations">
+      <p className={styles.helpText}>
+        Annotations specify a set of informational labels that can be used to store longer additional information such
+        as alert descriptions or runbook links. The annotation values can be templated.
+      </p>
       <div className={styles.grid}>
         {fields.length ? (
           <>

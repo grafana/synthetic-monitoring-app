@@ -5,8 +5,6 @@ import { SubCollapse } from './SubCollapse';
 import { css } from 'emotion';
 import { GrafanaTheme } from '@grafana/data';
 
-interface Props {}
-
 const NAME = 'alert.labels';
 
 const getStyles = (theme: GrafanaTheme) => ({
@@ -19,9 +17,12 @@ const getStyles = (theme: GrafanaTheme) => ({
   addButton: css`
     margin: ${theme.spacing.md} 0;
   `,
+  helpText: css`
+    font-size: ${theme.typography.size.sm};
+  `,
 });
 
-export const AlertLabels: FC<Props> = () => {
+export const AlertLabels: FC = () => {
   const styles = useStyles(getStyles);
   const { control, register } = useFormContext();
   const { fields, append, remove } = useFieldArray({
@@ -31,6 +32,10 @@ export const AlertLabels: FC<Props> = () => {
 
   return (
     <SubCollapse title="Labels">
+      <p className={styles.helpText}>
+        Labels allow you to specify a set of additional labels to be attached to the alert. Any existing conflicting
+        labels will be overwritten. The label values can be templated.
+      </p>
       <div className={styles.grid}>
         {fields.length ? (
           <>

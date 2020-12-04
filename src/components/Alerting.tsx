@@ -117,7 +117,7 @@ export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
           />
         </div>
         <div className={styles.inputWrapper}>
-          <Label htmlFor="probe-count" description="If">
+          <Label htmlFor="probe-count" description="Fire alert if">
             Expression
           </Label>
           <div className={styles.horizontallyAligned}>
@@ -126,7 +126,7 @@ export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
               name="alert.probeCount"
               id="probe-count"
               type="number"
-              placeholder="#"
+              placeholder="number"
               className={styles.numberInput}
             />
             <span className={styles.text}>or more probes report connection errors</span>
@@ -144,7 +144,7 @@ export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
               ref={register()}
               name="alert.timeCount"
               id="alert-time-quantity"
-              placeholder="#"
+              placeholder="number"
               className={styles.numberInput}
             />
             <Controller

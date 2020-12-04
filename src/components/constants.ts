@@ -149,17 +149,17 @@ export const HTTP_REGEX_VALIDATION_OPTIONS = [
 export const TIME_UNIT_OPTIONS = [
   {
     label: 'seconds',
-    value: TimeUnits.seconds,
+    value: TimeUnits.Seconds,
   },
 
   {
     label: 'minutes',
-    value: TimeUnits.minutes,
+    value: TimeUnits.Minutes,
   },
 
   {
     label: 'hours',
-    value: TimeUnits.hours,
+    value: TimeUnits.Hours,
   },
 ];
 
@@ -196,18 +196,18 @@ export const SM_ALERTING_NAMESPACE = 'syntheticmonitoring';
 export const ALERTING_SEVERITY_OPTIONS = [
   {
     label: 'Critical',
-    value: AlertSeverity.critical,
+    value: AlertSeverity.Critical,
   },
   {
     label: 'Warning',
-    value: AlertSeverity.warn,
+    value: AlertSeverity.Warn,
   },
   {
     label: 'Error',
-    value: AlertSeverity.error,
+    value: AlertSeverity.Error,
   },
   {
     label: 'Info',
-    value: AlertSeverity.info,
+    value: AlertSeverity.Info,
   },
 ];
