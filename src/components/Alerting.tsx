@@ -67,11 +67,11 @@ export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
             <a href="https://grafana.com/docs/grafana-cloud/alerts/grafana-cloud-alerting/" className={styles.link}>
               Grafana Cloud Alerting
             </a>
-            &nbsp; for creating alert rules. You can edit this check in &nbsp;
+            , which is not accessible for Grafana instances running on-prem. Alert rules can be added to new or existing
+            checks in &nbsp;
             <a href="https://grafana.com" className={styles.link}>
-              Grafana Cloud
+              Grafana Cloud.
             </a>
-            &nbsp; to add alerts.
           </p>
         </div>
       </Collapse>
