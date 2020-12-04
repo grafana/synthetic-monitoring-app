@@ -1,7 +1,7 @@
 import React, { FC, useState, useContext } from 'react';
 import { css } from 'emotion';
 import { GrafanaTheme } from '@grafana/data';
-import { Input, Label, Select, useStyles } from '@grafana/ui';
+import { Field, Input, Label, Select, useStyles } from '@grafana/ui';
 import { Collapse } from './Collapse';
 import { Controller, useFormContext } from 'react-hook-form';
 import { ALERTING_SEVERITY_OPTIONS, TIME_UNIT_OPTIONS } from './constants';
@@ -55,8 +55,11 @@ const getStyles = (theme: GrafanaTheme) => ({
 export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
   const [showAlerting, setShowAlerting] = useState(false);
   const { instance } = useContext(InstanceContext);
-  const { register } = useFormContext();
+  const { register, watch, errors } = useFormContext();
   const styles = useStyles(getStyles);
+  const probeCount = watch('probes').length;
+
+  console.log({ errors });
 
   if (!instance.alertRuler) {
     return (
@@ -121,14 +124,19 @@ export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
             Expression
           </Label>
           <div className={styles.horizontallyAligned}>
-            <Input
-              ref={register()}
-              name="alert.probeCount"
-              id="probe-count"
-              type="number"
-              placeholder="number"
-              className={styles.numberInput}
-            />
+            <Field invalid={errors?.alert?.probeCount} error={errors?.alert?.probeCount?.message}>
+              <Input
+                ref={register({
+                  max: { value: probeCount, message: `There are ${probeCount} probes attached to this check` },
+                })}
+                name="alert.probeCount"
+                id="probe-count"
+                type="number"
+                placeholder="number"
+                className={styles.numberInput}
+              />
+            </Field>
+
             <span className={styles.text}>or more probes report connection errors</span>
           </div>
         </div>
