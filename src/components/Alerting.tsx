@@ -59,8 +59,6 @@ export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
   const styles = useStyles(getStyles);
   const probeCount = watch('probes').length;
 
-  console.log({ errors });
-
   if (!instance.alertRuler) {
     return (
       <Collapse label="Alerting" onToggle={() => setShowAlerting(!showAlerting)} isOpen={showAlerting} collapsible>
@@ -127,7 +125,7 @@ export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
             <Field invalid={errors?.alert?.probeCount} error={errors?.alert?.probeCount?.message}>
               <Input
                 ref={register({
-                  max: { value: probeCount, message: `There are ${probeCount} probes attached to this check` },
+                  max: { value: probeCount, message: `There are ${probeCount} probes configured for this check` },
                 })}
                 name="alert.probeCount"
                 id="probe-count"

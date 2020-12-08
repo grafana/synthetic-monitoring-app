@@ -380,8 +380,9 @@ describe('HTTP', () => {
 
     userEvent.click(await screen.findByRole('button', { name: 'Add Regex Validation' }));
     userEvent.click(await within(validationSection).findByText('Field name'));
-    userEvent.click(await within(validationSection).findByText('Check fails if response body matches'));
-
+    userEvent.click(
+      await within(validationSection).findByText('Check fails if response body matches', { exact: false })
+    );
     const regexFields = await within(validationSection).findAllByPlaceholderText('Regex');
     await act(async () => await userEvent.type(regexFields[1], 'a body regex'));
 
@@ -648,10 +649,7 @@ describe('Alerting', () => {
     await renderCheckEditor({ check: getMinimumCheck({ target: 'grafana.com' }), withAlerting: false });
     await toggleSection('Alerting');
     // Using a partial string here since the message is broken up across html elements
-    const disabledMessage = screen.getByText(
-      'Synthetic Monitoring uses for creating alert rules. You can edit this check in to add alerts',
-      { exact: false }
-    );
+    const disabledMessage = screen.getByText('Grafana instances running on-prem', { exact: false });
     const cloudAlertingLink = screen.getByRole('link', { name: 'Grafana Cloud Alerting' });
     expect(disabledMessage).toBeInTheDocument();
     expect(cloudAlertingLink).toBeInTheDocument();

@@ -25,6 +25,9 @@ const getStyles = (theme: GrafanaTheme) => ({
   hidden: css`
     display: none;
   `,
+  visible: css`
+    padding-left: ${theme.spacing.lg};
+  `,
 });
 
 export const SubCollapse: FC<Props> = ({ children, title }) => {
@@ -36,7 +39,7 @@ export const SubCollapse: FC<Props> = ({ children, title }) => {
         <Icon name={isOpen ? 'angle-up' : 'angle-down'} className={styles.headerIcon} />
         <span className={styles.title}>{title}</span>
       </div>
-      <div className={!isOpen ? styles.hidden : ''}>{children}</div>
+      <div className={!isOpen ? styles.hidden : styles.visible}>{children}</div>
     </>
   );
 };
