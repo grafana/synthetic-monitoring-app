@@ -151,79 +151,81 @@ export const CheckList: FC<Props> = ({ instance, onAddNewClick, checks }) => {
       </div>
       <section className="card-section card-list-layout-list">
         <ol className="card-list">
-          {filteredChecks.map((check, index) => {
-            if (!check.id) {
-              return null;
-            }
-            const checkType = getCheckType(check.settings);
-            return (
-              <li className="card-item-wrapper" key={index} aria-label="check-card">
-                <a
-                  className="card-item"
-                  onClick={() =>
-                    getLocationSrv().update({
-                      partial: true,
-                      query: {
-                        id: check.id,
-                      },
-                    })
-                  }
-                >
-                  <HorizontalGroup justify="space-between">
-                    <div className="card-item-body">
-                      <figure className="card-item-figure">
-                        <CheckHealth check={check} />
-                      </figure>
-                      <VerticalGroup>
-                        <div className="card-item-name">{check.target}</div>
-                        <div className="card-item-sub-name">{check.job}</div>
-                      </VerticalGroup>
-                    </div>
-                    <HorizontalGroup justify="flex-end">
-                      <div className="card-item-header">
-                        <div className="card-item-type">{checkType}</div>
-                        {check.labels.map((label: Label, index) => (
-                          <Button
-                            variant="secondary"
-                            key={index}
-                            className={css`
-                              border: none;
-                              background: inherit;
-                            `}
-                            onClick={e => {
-                              e.stopPropagation();
-                              setSearchFilter(`${label.name}=${label.value}`);
-                              setCurrentPage(1);
-                            }}
-                            type="button"
-                          >
-                            {label.name}={label.value}
-                          </Button>
-                        ))}
+          {filteredChecks
+            .map((check, index) => {
+              if (!check.id) {
+                return null;
+              }
+              const checkType = getCheckType(check.settings);
+              return (
+                <li className="card-item-wrapper" key={index} aria-label="check-card">
+                  <a
+                    className="card-item"
+                    onClick={() =>
+                      getLocationSrv().update({
+                        partial: true,
+                        query: {
+                          id: check.id,
+                        },
+                      })
+                    }
+                  >
+                    <HorizontalGroup justify="space-between">
+                      <div className="card-item-body">
+                        <figure className="card-item-figure">
+                          <CheckHealth check={check} />
+                        </figure>
+                        <VerticalGroup>
+                          <div className="card-item-name">{check.target}</div>
+                          <div className="card-item-sub-name">{check.job}</div>
+                        </VerticalGroup>
                       </div>
-                      <Container margin="lg">
-                        <IconButton
-                          name="apps"
-                          size="xl"
-                          onClick={e => {
-                            showDashboard(check, checkType);
-                            e.stopPropagation();
-                          }}
+                      <HorizontalGroup justify="flex-end">
+                        <div className="card-item-header">
+                          <div className="card-item-type">{checkType}</div>
+                          {check.labels.map((label: Label, index) => (
+                            <Button
+                              variant="secondary"
+                              key={index}
+                              className={css`
+                                border: none;
+                                background: inherit;
+                              `}
+                              onClick={e => {
+                                e.stopPropagation();
+                                setSearchFilter(`${label.name}=${label.value}`);
+                                setCurrentPage(1);
+                              }}
+                              type="button"
+                            >
+                              {label.name}={label.value}
+                            </Button>
+                          ))}
+                        </div>
+                        <Container margin="lg">
+                          <IconButton
+                            name="apps"
+                            size="xl"
+                            onClick={e => {
+                              showDashboard(check, checkType);
+                              e.stopPropagation();
+                            }}
+                          />
+                        </Container>
+                        <UptimeGauge
+                          labelNames={['instance', 'job']}
+                          labelValues={[check.target, check.job]}
+                          height={70}
+                          width={150}
+                          sparkline={false}
                         />
-                      </Container>
-                      <UptimeGauge
-                        labelNames={['instance', 'job']}
-                        labelValues={[check.target, check.job]}
-                        height={70}
-                        width={150}
-                        sparkline={false}
-                      />
+                      </HorizontalGroup>
                     </HorizontalGroup>
-                  </HorizontalGroup>
-                </a>
-              </li>
-            );
-          })}
+                  </a>
+                </li>
+              );
+            })
+            .slice((currentPage - 1) * CHECKS_PER_PAGE, currentPage * CHECKS_PER_PAGE)}
         </ol>
       </section>
       {totalPages > 1 && (
