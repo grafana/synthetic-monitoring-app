@@ -1,3 +1,10 @@
+## [0.4.1](https://github.com/grafana/synthetic-monitoring-app/compare/0.4.0...0.4.1) (2020-12-10)
+
+
+### Bug Fixes
+
+* paginate checks ([#165](https://github.com/grafana/synthetic-monitoring-app/issues/165)) ([a571cc1](https://github.com/grafana/synthetic-monitoring-app/commit/a571cc1322d9491da28ba4ad9d45743785f93e52))
+
 # [0.4.0](https://github.com/grafana/synthetic-monitoring-app/compare/0.3.47...0.4.0) (2020-12-03)
 
 
