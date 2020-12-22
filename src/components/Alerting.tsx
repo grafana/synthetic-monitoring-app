@@ -53,6 +53,13 @@ const getStyles = (theme: GrafanaTheme) => ({
   severityContainer: css`
     margin-bottom: ${theme.spacing.md};
   `,
+  promql: css`
+    padding: ${theme.spacing.sm};
+    color: ${theme.colors.textWeak};
+  `,
+  promqlSection: css`
+    margin-bottom: ${theme.spacing.md};
+  `,
 });
 
 export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
@@ -60,7 +67,14 @@ export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
   const { instance } = useContext(InstanceContext);
   const { register, watch, errors } = useFormContext();
   const styles = useStyles(getStyles);
+  const alertingUiUrl = `a/grafana-alerting-ui-app/?tab=rules&rulessource=${instance.metrics?.name}`;
   const probeCount = watch('probes').length;
+  const alertingProbeCount = watch('alert.probeCount');
+  const job = watch('job');
+  const target = watch('target');
+
+  const promqlAlertingExp = `sum(1 - probe_success{job="${job}", instance="${target}"}) by (job, instance) >= ${alertingProbeCount ||
+    `<value not selected>`}`;
 
   if (!instance.alertRuler) {
     return (
@@ -90,10 +104,7 @@ export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
           <p>
             {alertRules.length} alert{alertRules.length > 1 ? 's are' : ' is'} tied to this check. Edit this check's
             alerts in the <code>syntheticmonitoring &gt; {checkId}</code> section of{' '}
-            <a
-              href={`a/grafana-alerting-ui-app/?tab=rules&rulessource=${instance.metrics?.name}`}
-              className={styles.link}
-            >
+            <a href={alertingUiUrl} className={styles.link}>
               Cloud Alerting
             </a>
           </p>
@@ -105,7 +116,7 @@ export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
     <Collapse label="Alerting" onToggle={() => setShowAlerting(!showAlerting)} isOpen={showAlerting} collapsible>
       <p className={styles.subheader}>
         Set up alerts based on criteria that you define. These alerts can be created here and edited in the{' '}
-        <a href={`a/grafana-alerting-ui-app/?tab=rules&rulessource=${instance.metrics?.name}`} className={styles.link}>
+        <a href={alertingUiUrl} className={styles.link}>
           Alerting UI
         </a>
         .
@@ -169,6 +180,25 @@ export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
         <div className={styles.severityContainer}>
           <Label>Severity</Label>
           <Controller as={Select} name="alert.severity" options={ALERTING_SEVERITY_OPTIONS} className={styles.select} />
+        </div>
+        <div className={styles.promqlSection}>
+          <Label
+            description={
+              <p>
+                This alert will appear as promQL in the{' '}
+                <a className={styles.link} href={alertingUiUrl}>
+                  Alerting UI.
+                </a>{' '}
+                If you prefer to write alerts in promQL, you can do so from the Alerting UI.{' '}
+                <a href={'https://prometheus.io/docs/prometheus/latest/querying/basics/'} className={styles.link}>
+                  Learn more about PromQL.
+                </a>
+              </p>
+            }
+          >
+            PromQL preview
+          </Label>
+          <code className={styles.promql}>{promqlAlertingExp}</code>
         </div>
         <AlertLabels />
         <AlertAnnotations />
