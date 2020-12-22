@@ -1,7 +1,7 @@
 import { GrafanaTheme } from '@grafana/data';
 import { Icon, useStyles } from '@grafana/ui';
 import React, { FC, useState } from 'react';
-import { css } from 'emotion';
+import { css, cx } from 'emotion';
 
 interface Props {
   title: string;
@@ -14,6 +14,9 @@ const getStyles = (theme: GrafanaTheme) => ({
     align-items: center;
     padding: ${theme.spacing.sm} 0;
     cursor: pointer;
+  `,
+  headerOpen: css`
+    padding-bottom: 0;
   `,
   headerIcon: css`
     margin-right: ${theme.spacing.sm};
@@ -35,8 +38,8 @@ export const SubCollapse: FC<Props> = ({ children, title }) => {
   const styles = useStyles(getStyles);
   return (
     <>
-      <div className={styles.header} onClick={() => setIsOpen(!isOpen)}>
-        <Icon name={isOpen ? 'angle-up' : 'angle-down'} className={styles.headerIcon} />
+      <div className={cx(styles.header, { [styles.headerOpen]: isOpen })} onClick={() => setIsOpen(!isOpen)}>
+        <Icon name={isOpen ? 'angle-down' : 'angle-right'} className={styles.headerIcon} />
         <span className={styles.title}>{title}</span>
       </div>
       <div className={!isOpen ? styles.hidden : styles.visible}>{children}</div>

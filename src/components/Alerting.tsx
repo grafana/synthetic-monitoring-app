@@ -1,7 +1,7 @@
 import React, { FC, useState, useContext } from 'react';
 import { css } from 'emotion';
 import { GrafanaTheme } from '@grafana/data';
-import { Field, Input, Label, Select, useStyles } from '@grafana/ui';
+import { Field, Icon, Input, Label, Select, useStyles } from '@grafana/ui';
 import { Collapse } from './Collapse';
 import { Controller, useFormContext } from 'react-hook-form';
 import { ALERTING_SEVERITY_OPTIONS, TIME_UNIT_OPTIONS } from './constants';
@@ -28,6 +28,9 @@ const getStyles = (theme: GrafanaTheme) => ({
     padding: ${theme.spacing.md};
     display: flex;
     flex-direction: column;
+  `,
+  icon: css`
+    margin-right: ${theme.spacing.xs};
   `,
   inputWrapper: css`
     margin-bottom: ${theme.spacing.md};
@@ -64,6 +67,7 @@ export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
       <Collapse label="Alerting" onToggle={() => setShowAlerting(!showAlerting)} isOpen={showAlerting} collapsible>
         <div className={styles.container}>
           <p>
+            <Icon className={styles.icon} name="exclamation-triangle" />
             Synthetic Monitoring uses &nbsp;
             <a href="https://grafana.com/docs/grafana-cloud/alerts/grafana-cloud-alerting/" className={styles.link}>
               Grafana Cloud Alerting
@@ -102,7 +106,7 @@ export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
       <p className={styles.subheader}>
         Set up alerts based on criteria that you define. These alerts can be created here and edited in the{' '}
         <a href={`a/grafana-alerting-ui-app/?tab=rules&rulessource=${instance.metrics?.name}`} className={styles.link}>
-          Grafana Cloud Alerting UI
+          Alerting UI
         </a>
         .
       </p>
