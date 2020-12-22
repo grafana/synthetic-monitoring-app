@@ -54,7 +54,7 @@ export const CheckEditor: FC<Props> = ({ check, onReturn }) => {
   const styles = useStyles(getStyles);
   const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
 
-  const formMethods = useForm<CheckFormValues>({ defaultValues, mode: 'onBlur' });
+  const formMethods = useForm<CheckFormValues>({ defaultValues, mode: 'onChange' });
   const selectedCheckType = formMethods.watch('checkType').value as CheckType;
 
   const isEditor = hasRole(OrgRole.EDITOR);
