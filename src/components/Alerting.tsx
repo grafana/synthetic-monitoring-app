@@ -124,13 +124,15 @@ export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
       <div className={styles.container}>
         <div className={styles.inputWrapper}>
           <Label htmlFor="alert-name">Alert name</Label>
-          <Input
-            ref={register()}
-            name="alert.name"
-            id="alert-name"
-            type="text"
-            placeholder="Name to identify alert rule"
-          />
+          <Field invalid={errors?.alert?.name}>
+            <Input
+              ref={register()}
+              name="alert.name"
+              id="alert-name"
+              type="text"
+              placeholder="Name to identify alert rule"
+            />
+          </Field>
         </div>
         <div className={styles.inputWrapper}>
           <Label htmlFor="probe-count" description="Fire alert if">
@@ -161,13 +163,15 @@ export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
             For
           </Label>
           <div className={styles.horizontallyAligned}>
-            <Input
-              ref={register()}
-              name="alert.timeCount"
-              id="alert-time-quantity"
-              placeholder="number"
-              className={styles.numberInput}
-            />
+            <Field invalid={errors?.alert?.timeCount}>
+              <Input
+                ref={register()}
+                name="alert.timeCount"
+                id="alert-time-quantity"
+                placeholder="number"
+                className={styles.numberInput}
+              />
+            </Field>
             <Controller
               as={Select}
               name="alert.timeUnit"
