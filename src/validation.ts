@@ -210,17 +210,27 @@ function validateHttpTarget(target: string): string | undefined {
   if (!isValidUrl) {
     return 'Target must be a valid web URL';
   }
-  const parsedUrl = new URL(target);
-  if (!parsedUrl.protocol) {
-    return 'Target must have a valid protocol';
-  }
+  try {
+    const parsedUrl = new URL(target);
+    if (!parsedUrl.protocol) {
+      return 'Target must have a valid protocol';
+    }
 
-  // isWebUri will allow some invalid hostnames, so we need addional validation
-  const hostname = new URL(target).hostname;
-  if (validateHostname(hostname)) {
-    return 'Target must have a valid hostname';
+    // isWebUri will allow some invalid hostnames, so we need addional validation
+    const ipv6 = Address6.fromURL(target);
+    if (ipv6.address) {
+      return undefined;
+    }
+
+    const hostname = parsedUrl.hostname;
+    if (validateHostname(hostname)) {
+      return 'Target must have a valid hostname';
+    }
+    return undefined;
+  } catch (e) {
+    // The new URL constructor throws on invalid web URLs
+    return 'Target must be a valid web URL';
   }
-  return undefined;
 }
 
 function validateHostname(target: string): string | undefined {
@@ -229,7 +239,7 @@ function validateHostname(target: string): string | undefined {
   const pc = punycode.toASCII(target);
   // note that \w matches "_"
   const re = new RegExp(/^[a-z0-9]([-a-z0-9]{0,62}[a-z0-9])?(\.[a-z]([-a-z0-9]{0,62}[a-z0-9])?)+$/, 'i');
-  if (!pc.match(re) && !ipv4.isValid() && !ipv6.isValid()) {
+  if (!pc.match(re) && !ipv4.valid && !ipv6.valid) {
     return 'Target must be a valid hostname';
   }
 
