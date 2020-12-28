@@ -248,7 +248,7 @@ export interface CheckFormValues extends Omit<Check, 'settings' | 'labels'> {
   checkType: SelectableValue<CheckType>;
   settings: SettingsFormValues;
   labels?: Label[];
-  alert?: AlertFormValues;
+  alerts?: AlertFormValues[];
 }
 
 export interface Check extends BaseObject {

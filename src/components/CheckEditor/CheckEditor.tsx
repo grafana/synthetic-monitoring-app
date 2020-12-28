@@ -2,7 +2,7 @@ import React, { FC, useState, useMemo, useContext } from 'react';
 import { css } from 'emotion';
 import { Button, ConfirmModal, Field, Input, HorizontalGroup, Select, Legend, Alert, useStyles } from '@grafana/ui';
 import { useAsyncCallback } from 'react-async-hook';
-import { Check, CheckType, OrgRole, CheckFormValues, SubmissionError, AlertFormValues } from 'types';
+import { Check, CheckType, OrgRole, CheckFormValues, SubmissionError } from 'types';
 import { hasRole } from 'utils';
 import { getDefaultValuesFromCheck, getCheckFromFormValues } from './checkFormTransformations';
 import { validateJob, validateTarget } from 'validation';
@@ -60,7 +60,7 @@ export const CheckEditor: FC<Props> = ({ check, onReturn }) => {
   const isEditor = hasRole(OrgRole.EDITOR);
 
   const { execute: onSubmit, error, loading: submitting } = useAsyncCallback(
-    async ({ alert, ...checkValues }: CheckFormValues) => {
+    async ({ alerts, ...checkValues }: CheckFormValues) => {
       const updatedCheck = getCheckFromFormValues(checkValues, defaultValues);
       if (check?.id) {
         await api?.updateCheck({
@@ -68,13 +68,13 @@ export const CheckEditor: FC<Props> = ({ check, onReturn }) => {
           tenantId: check.tenantId,
           ...updatedCheck,
         });
-        if (alert) {
-          await setRulesForCheck(check.id, alert, checkValues.job, checkValues.target);
+        if (alerts?.length) {
+          await setRulesForCheck(check.id, alerts, checkValues.job, checkValues.target);
         }
       } else {
         const { id } = await api?.addCheck(updatedCheck);
-        if (alert) {
-          await setRulesForCheck(id, alert, checkValues.job, checkValues.target);
+        if (alerts) {
+          await setRulesForCheck(id, alerts, checkValues.job, checkValues.target);
         }
       }
       onReturn(true);

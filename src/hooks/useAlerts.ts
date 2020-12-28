@@ -51,27 +51,28 @@ export function useAlerts(checkId?: number) {
 
   const alertRulerUrl = alertRuler?.url;
 
-  const setRulesForCheck = async (checkId: number, alert: AlertFormValues, job: string, target: string) => {
+  const setRulesForCheck = async (checkId: number, alerts: AlertFormValues[], job: string, target: string) => {
     if (!alertRuler) {
       throw new Error('There is no alert ruler datasource configured for this Grafana instance');
     }
 
-    const annotations = tranformFormValues(alert.annotations ?? []);
+    const rules = alerts.map(alert => {
+      const annotations = tranformFormValues(alert.annotations ?? []);
+      const labels = tranformFormValues(alert.labels ?? []);
 
-    const labels = tranformFormValues(alert.labels ?? []);
+      return {
+        alert: alert.name,
+        expr: `sum(1-probe_success{job="${job}", instance="${target}"}) by (job, instance) >= ${alert.probeCount}`,
+        for: `${alert.timeCount}${alert.timeUnit.value}`,
+        severity: alert.severity.value,
+        annotations,
+        labels,
+      };
+    });
 
     const ruleGroup = {
       name: checkId,
-      rules: [
-        {
-          alert: alert.name,
-          expr: `sum(1-probe_success{job="${job}", instance="${target}"}) by (job, instance) >= ${alert.probeCount}`,
-          for: `${alert.timeCount}${alert.timeUnit.value}`,
-          severity: alert.severity.value,
-          annotations,
-          labels,
-        },
-      ],
+      rules,
     };
 
     const updateResponse = getBackendSrv()
