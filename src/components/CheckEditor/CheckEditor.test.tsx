@@ -625,23 +625,30 @@ describe('Alerting', () => {
   it('adds an alert if specified', async () => {
     await renderCheckEditor({ check: getMinimumCheck({ target: 'grafana.com' }) });
     const alertingSection = await toggleSection('Alerting');
-    await act(
-      async () => await userEvent.type(await within(alertingSection).findByLabelText('Alert name'), 'Horchata')
-    );
-    await act(
-      async () => await userEvent.type(await within(alertingSection).findByLabelText('If', { exact: false }), '1')
-    );
-    await act(
-      async () => await userEvent.type(await within(alertingSection).findByLabelText('For', { exact: false }), '5')
-    );
+    await userEvent.click(await within(alertingSection).findByRole('button', { name: 'Add alert rule', exact: false }));
+    const nameInput = await within(alertingSection).findByLabelText('Alert name');
+    const probeCountInput = await within(alertingSection).findByTestId('alert-probeCount-0');
+    const timeCountInput = await within(alertingSection).findByTestId('alert-timeCount-0');
+    userEvent.clear(nameInput);
+    await act(async () => await userEvent.type(nameInput, 'Horchata'));
+    userEvent.clear(probeCountInput);
+    await act(async () => await userEvent.paste(probeCountInput, '1'));
+    userEvent.clear(timeCountInput);
+    await act(async () => await userEvent.paste(timeCountInput, '10'));
+
     await submitForm();
-    const expectedValues = {
-      name: 'Horchata',
-      probeCount: '1',
-      severity: undefined,
-      timeCount: '5',
-      timeUnit: { label: 'minutes', value: 'm' },
-    };
+    const expectedValues = [
+      {
+        name: 'Horchata',
+        probeCount: '1',
+        severity: {
+          label: 'Warning',
+          value: 'warn',
+        },
+        timeCount: '10',
+        timeUnit: { label: 'minutes', value: 'm' },
+      },
+    ];
     expect(setRulesForCheck).toHaveBeenCalledWith(3, expectedValues, 'tacos', 'grafana.com');
   });
 

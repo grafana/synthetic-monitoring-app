@@ -34,7 +34,7 @@ const getStyles = (theme: GrafanaTheme) => ({
     margin-right: ${theme.spacing.xs};
   `,
   inputWrapper: css`
-    margin-bottom: ${theme.spacing.md};
+    margin-bottom: ${theme.spacing.sm};
   `,
   numberInput: css`
     max-width: 72px;
@@ -74,6 +74,12 @@ const getStyles = (theme: GrafanaTheme) => ({
   `,
   clearMarginBottom: css`
     margin-bottom: 0;
+  `,
+  halfWidth: css`
+    width: 50%;
+  `,
+  unsetMaxWidth: css`
+    max-width: unset;
   `,
 });
 
@@ -118,7 +124,7 @@ export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
             {alertRules.length} alert{alertRules.length > 1 ? 's are' : ' is'} tied to this check. Edit this check's
             alerts in the <code>syntheticmonitoring &gt; {checkId}</code> section of{' '}
             <a href={alertingUiUrl} className={styles.link}>
-              Cloud Alerting
+              Grafana Cloud Alerting
             </a>
           </p>
         </div>
@@ -128,9 +134,13 @@ export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
   return (
     <Collapse label="Alerting" onToggle={() => setShowAlerting(!showAlerting)} isOpen={showAlerting} collapsible>
       <p className={styles.subheader}>
-        Set up alerts based on criteria that you define. These alerts can be created here and edited in the{' '}
+        Set up alerts for this check here. You must visit{' '}
         <a href={alertingUiUrl} className={styles.link}>
-          Alerting UI
+          Grafana Cloud Alerting
+        </a>
+        &nbsp; to edit this alert and add receivers. Learn more about alert conditions and receivers in{' '}
+        <a href={'https://grafana.com/docs/grafana-cloud/alerts/grafana-cloud-alerting/'}>
+          Grafana Cloud documentation
         </a>
         .
       </p>
@@ -140,69 +150,73 @@ export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
         ].probeCount || `<value not selected>`}`;
         return (
           <div key={field.id} className={styles.container}>
+            <Label htmlFor={`alert-name-${index}`}>Alert name</Label>
+            <Field className={styles.halfWidth} invalid={errors?.alerts?.[index]?.name}>
+              <Input
+                ref={register({ required: true })}
+                name={`alerts[${index}].name`}
+                id={`alert-name-${index}`}
+                type="text"
+                placeholder="Name to identify alert rule"
+                defaultValue={field.name}
+              />
+            </Field>
+
             <div className={styles.inputWrapper}>
-              <Label htmlFor={`alert-name-${index}`}>Alert name</Label>
-              <Field invalid={errors?.alerts?.[index]?.name}>
-                <Input
-                  ref={register({ required: true })}
-                  name={`alerts[${index}].name`}
-                  id={`alert-name-${index}`}
-                  type="text"
-                  placeholder="Name to identify alert rule"
-                  defaultValue={field.name}
-                />
-              </Field>
-            </div>
-            <Label>Expression</Label>
-            <div className={styles.horizontalFlexRow}>
-              <div className={styles.horizontallyAligned}>
-                <span className={styles.text}>An alert will fire if</span>
+              <Label>Expression</Label>
+              <div className={styles.horizontalFlexRow}>
+                <div className={styles.horizontallyAligned}>
+                  <span className={styles.text}>An alert will fire if</span>
+                  <Field
+                    className={styles.clearMarginBottom}
+                    invalid={errors?.alerts?.[index]?.probeCount}
+                    error={errors?.alerts?.[index]?.probeCount?.message}
+                    horizontal
+                  >
+                    <Input
+                      ref={register({
+                        required: true,
+                        max: { value: probeCount, message: `There are ${probeCount} probes configured for this check` },
+                      })}
+                      name={`alerts[${index}].probeCount`}
+                      id={`probe-count-${index}`}
+                      type="number"
+                      placeholder="number"
+                      className={styles.numberInput}
+                      defaultValue={field.probeCount}
+                      data-testid={`alert-probeCount-${index}`}
+                    />
+                  </Field>
+
+                  <span className={styles.text}>or more probes report connection errors for</span>
+                </div>
+
                 <Field
                   className={styles.clearMarginBottom}
-                  invalid={errors?.alerts?.[index]?.probeCount}
-                  error={errors?.alerts?.[index]?.probeCount?.message}
+                  invalid={errors?.alerts?.[index]?.timeCount}
+                  error={errors?.alerts?.[index]?.timeCount?.message}
                   horizontal
                 >
                   <Input
-                    ref={register({
-                      required: true,
-                      max: { value: probeCount, message: `There are ${probeCount} probes configured for this check` },
-                    })}
-                    name={`alerts[${index}].probeCount`}
-                    id={`probe-count-${index}`}
-                    type="number"
+                    type={'number'}
+                    ref={register({ required: true })}
+                    name={`alerts[${index}].timeCount`}
+                    id={`alert-time-quantity-${index}`}
                     placeholder="number"
                     className={styles.numberInput}
-                    defaultValue={field.probeCount}
+                    defaultValue={field.timeCount}
+                    data-testid={`alert-timeCount-${index}`}
                   />
                 </Field>
-
-                <span className={styles.text}>or more probes report connection errors for</span>
-              </div>
-
-              <Field
-                className={styles.clearMarginBottom}
-                invalid={errors?.alerts?.[index]?.timeCount}
-                error={errors?.alerts?.[index]?.timeCount}
-                horizontal
-              >
-                <Input
-                  type={'number'}
-                  ref={register({ required: true })}
-                  name={`alerts[${index}].timeCount`}
-                  id={`alert-time-quantity-${index}`}
-                  placeholder="number"
-                  className={styles.numberInput}
-                  defaultValue={field.timeCount}
+                <Controller
+                  as={Select}
+                  name={`alerts[${index}].timeUnit`}
+                  options={TIME_UNIT_OPTIONS}
+                  className={styles.select}
+                  defaultValue={TIME_UNIT_OPTIONS[1]}
+                  data-testid={`alert-timeUnit-${index}`}
                 />
-              </Field>
-              <Controller
-                as={Select}
-                name={`alerts[${index}].timeUnit`}
-                options={TIME_UNIT_OPTIONS}
-                className={styles.select}
-                defaultValue={TIME_UNIT_OPTIONS[1]}
-              />
+              </div>
             </div>
             <div className={styles.severityContainer}>
               <Label>Severity</Label>
@@ -216,11 +230,12 @@ export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
             </div>
             <div className={styles.promqlSection}>
               <Label
+                className={styles.unsetMaxWidth}
                 description={
                   <p>
                     This alert will appear as promQL in the{' '}
                     <a className={styles.link} href={alertingUiUrl}>
-                      Alerting UI.
+                      Grafana Cloud Alerting.
                     </a>{' '}
                     If you prefer to write alerts in promQL, you can do so from the Alerting UI.{' '}
                     <a href={'https://prometheus.io/docs/prometheus/latest/querying/basics/'} className={styles.link}>
