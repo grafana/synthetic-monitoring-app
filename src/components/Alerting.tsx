@@ -142,9 +142,9 @@ export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
           <div key={field.id} className={styles.container}>
             <div className={styles.inputWrapper}>
               <Label htmlFor={`alert-name-${index}`}>Alert name</Label>
-              <Field invalid={errors?.alert?.name}>
+              <Field invalid={errors?.alerts?.[index]?.name}>
                 <Input
-                  ref={register()}
+                  ref={register({ required: true })}
                   name={`alerts[${index}].name`}
                   id={`alert-name-${index}`}
                   type="text"
@@ -159,12 +159,13 @@ export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
                 <span className={styles.text}>An alert will fire if</span>
                 <Field
                   className={styles.clearMarginBottom}
-                  invalid={errors?.alert?.probeCount}
-                  error={errors?.alert?.probeCount?.message}
+                  invalid={errors?.alerts?.[index]?.probeCount}
+                  error={errors?.alerts?.[index]?.probeCount?.message}
                   horizontal
                 >
                   <Input
                     ref={register({
+                      required: true,
                       max: { value: probeCount, message: `There are ${probeCount} probes configured for this check` },
                     })}
                     name={`alerts[${index}].probeCount`}
@@ -179,9 +180,15 @@ export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
                 <span className={styles.text}>or more probes report connection errors for</span>
               </div>
 
-              <Field className={styles.clearMarginBottom} invalid={errors?.alert?.timeCount} horizontal>
+              <Field
+                className={styles.clearMarginBottom}
+                invalid={errors?.alerts?.[index]?.timeCount}
+                error={errors?.alerts?.[index]?.timeCount}
+                horizontal
+              >
                 <Input
-                  ref={register()}
+                  type={'number'}
+                  ref={register({ required: true })}
                   name={`alerts[${index}].timeCount`}
                   id={`alert-time-quantity-${index}`}
                   placeholder="number"
@@ -204,6 +211,7 @@ export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
                 name={`alerts[${index}].severity`}
                 options={ALERTING_SEVERITY_OPTIONS}
                 className={styles.select}
+                defaultValue={ALERTING_SEVERITY_OPTIONS[1]}
               />
             </div>
             <div className={styles.promqlSection}>
@@ -237,7 +245,7 @@ export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
         );
       })}
       <Button
-        onClick={() => append({ name: '', timeCount: 5, probeCount: 1 })}
+        onClick={() => append({ name: job, timeCount: 5, probeCount: 1 })}
         variant="secondary"
         size="sm"
         type="button"

@@ -61,18 +61,6 @@ export const CheckEditor: FC<Props> = ({ check, onReturn }) => {
 
   const { execute: onSubmit, error, loading: submitting } = useAsyncCallback(
     async ({ alert, ...checkValues }: CheckFormValues) => {
-      const alertFieldNames: Array<keyof AlertFormValues> = ['name', 'probeCount', 'severity', 'timeCount'];
-      const isAddingAlert = alert?.name || alert?.probeCount || alert?.severity || alert?.timeCount;
-      const isValid = alert?.name && alert?.probeCount && alert?.severity && alert?.timeCount;
-      if (isAddingAlert && !isValid) {
-        console.log({ alert });
-        alertFieldNames.forEach(name => {
-          if (!alert?.[name]) {
-            formMethods.setError(`alert.${name}`, { type: 'manual', message: 'required' });
-          }
-        });
-        return;
-      }
       const updatedCheck = getCheckFromFormValues(checkValues, defaultValues);
       if (check?.id) {
         await api?.updateCheck({
