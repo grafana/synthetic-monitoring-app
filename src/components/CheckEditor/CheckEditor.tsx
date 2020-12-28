@@ -71,7 +71,7 @@ export const CheckEditor: FC<Props> = ({ check, onReturn }) => {
             formMethods.setError(`alert.${name}`, { type: 'manual', message: 'required' });
           }
         });
-        return null;
+        return;
       }
       const updatedCheck = getCheckFromFormValues(checkValues, defaultValues);
       if (check?.id) {
