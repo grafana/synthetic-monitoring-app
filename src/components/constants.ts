@@ -8,6 +8,8 @@ import {
   HttpSslOption,
   HttpRegexValidationType,
   Check,
+  TimeUnits,
+  AlertSeverity,
 } from 'types';
 
 export const DNS_RESPONSE_CODES = enumToStringArray(DnsResponseCodes).map(responseCode => ({
@@ -144,6 +146,23 @@ export const HTTP_REGEX_VALIDATION_OPTIONS = [
   { label: 'Check fails if response body matches', value: HttpRegexValidationType.Body },
 ];
 
+export const TIME_UNIT_OPTIONS = [
+  {
+    label: 'seconds',
+    value: TimeUnits.Seconds,
+  },
+
+  {
+    label: 'minutes',
+    value: TimeUnits.Minutes,
+  },
+
+  {
+    label: 'hours',
+    value: TimeUnits.Hours,
+  },
+];
+
 export const fallbackCheck = {
   job: '',
   target: '',
@@ -173,3 +192,22 @@ export const colors = {
 
 export const LEGACY_METRICS_DS_NAME = 'Synthetic Monitoring Metrics';
 export const LEGACY_LOGS_DS_NAME = 'Synthetic Monitoring Logs';
+export const SM_ALERTING_NAMESPACE = 'syntheticmonitoring';
+export const ALERTING_SEVERITY_OPTIONS = [
+  {
+    label: 'Critical',
+    value: AlertSeverity.Critical,
+  },
+  {
+    label: 'Warning',
+    value: AlertSeverity.Warn,
+  },
+  {
+    label: 'Error',
+    value: AlertSeverity.Error,
+  },
+  {
+    label: 'Info',
+    value: AlertSeverity.Info,
+  },
+];

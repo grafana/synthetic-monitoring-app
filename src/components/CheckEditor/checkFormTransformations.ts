@@ -494,7 +494,10 @@ const getSettingsFromFormValues = (formValues: Partial<CheckFormValues>, default
   }
 };
 
-export const getCheckFromFormValues = (formValues: CheckFormValues, defaultValues: CheckFormValues): Check => {
+export const getCheckFromFormValues = (
+  formValues: Omit<CheckFormValues, 'alert'>,
+  defaultValues: CheckFormValues
+): Check => {
   return {
     job: formValues.job,
     target: formValues.target,

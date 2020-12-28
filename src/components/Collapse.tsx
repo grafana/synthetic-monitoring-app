@@ -50,8 +50,8 @@ export const Collapse: FC<Props> = ({ isOpen, label, children, onToggle, ...prop
   return (
     <div className={cx(['panel-container', styles.container])}>
       <div className={styles.header} onClick={() => onToggle && onToggle(Boolean(isOpen))}>
-        <Icon name={isOpen ? 'angle-up' : 'angle-down'} className={styles.headerIcon} />
         <div className={styles.label}>{label}</div>
+        <Icon name={isOpen ? 'angle-down' : 'angle-right'} className={styles.headerIcon} />
       </div>
       <div className={cx(styles.body, { [styles.hidden]: !isOpen })}>{children}</div>
     </div>

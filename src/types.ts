@@ -1,4 +1,4 @@
-import { DataSourceApi, SelectableValue } from '@grafana/data';
+import { DataSourceApi, DataSourceInstanceSettings, SelectableValue } from '@grafana/data';
 import { LinkedDatsourceInfo } from './datasource/types';
 import { SMDataSource } from 'datasource/DataSource';
 
@@ -234,10 +234,21 @@ export interface SettingsFormValues {
   dns?: DnsSettingsFormValues;
   tcp?: TcpSettingsFormValues;
 }
+export interface AlertFormValues {
+  name: string;
+  probeCount: number;
+  timeCount: number;
+  timeUnit: SelectableValue<TimeUnits>;
+  severity: SelectableValue<AlertSeverity>;
+  labels: Label[];
+  annotations: Label[];
+}
+
 export interface CheckFormValues extends Omit<Check, 'settings' | 'labels'> {
   checkType: SelectableValue<CheckType>;
   settings: SettingsFormValues;
   labels?: Label[];
+  alerts?: AlertFormValues[];
 }
 
 export interface Check extends BaseObject {
@@ -301,6 +312,7 @@ export interface GrafanaInstances {
   api?: SMDataSource;
   metrics?: DataSourceApi;
   logs?: DataSourceApi;
+  alertRuler?: DataSourceInstanceSettings;
 }
 
 export interface User {
@@ -375,3 +387,28 @@ export interface DashboardMeta {
   uid: string;
   version: number;
 }
+
+export enum TimeUnits {
+  Seconds = 's',
+  Minutes = 'm',
+  Hours = 'h',
+}
+
+export enum AlertSeverity {
+  Critical = 'critical',
+  Error = 'error',
+  Warn = 'warn',
+  Info = 'info',
+}
+
+export type AlertRule = {
+  alert: string;
+  expr: string;
+  for?: string;
+  labels?: {
+    [key: string]: string;
+  };
+  annotations?: {
+    [key: string]: string;
+  };
+};
