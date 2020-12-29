@@ -116,21 +116,22 @@ export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
     );
   }
 
-  if (alertRules.length && editing) {
-    return (
-      <Collapse label="Alerting" onToggle={() => setShowAlerting(!showAlerting)} isOpen={showAlerting} collapsible>
-        <div className={styles.container}>
-          <p>
-            {alertRules.length} alert{alertRules.length > 1 ? 's are' : ' is'} tied to this check. Edit this check's
-            alerts in the <code>syntheticmonitoring &gt; {checkId}</code> section of{' '}
-            <a href={alertingUiUrl} className={styles.link}>
-              Grafana Cloud Alerting
-            </a>
-          </p>
-        </div>
-      </Collapse>
-    );
-  }
+  // if (alertRules.length && editing) {
+  //   return (
+  //     <Collapse label="Alerting" onToggle={() => setShowAlerting(!showAlerting)} isOpen={showAlerting} collapsible>
+  //       <div className={styles.container}>
+  //         <p>
+  //           {alertRules.length} alert{alertRules.length > 1 ? 's are' : ' is'} tied to this check. Edit this check's
+  //           alerts in the <code>syntheticmonitoring &gt; {checkId}</code> section of{' '}
+  //           <a href={alertingUiUrl} className={styles.link}>
+  //             Grafana Cloud Alerting
+  //           </a>
+  //         </p>
+  //       </div>
+  //     </Collapse>
+  //   );
+  // }
+  console.log({ fields, editing });
   return (
     <Collapse label="Alerting" onToggle={() => setShowAlerting(!showAlerting)} isOpen={showAlerting} collapsible>
       <p className={styles.subheader}>
@@ -145,9 +146,10 @@ export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
         .
       </p>
       {fields.map((field, index) => {
-        const promqlAlertingExp = `sum(1 - probe_success{job="${job}", instance="${target}"}) by (job, instance) >= ${alerts[
-          index
-        ].probeCount || `<value not selected>`}`;
+        const promqlAlertingExp =
+          field.expression ??
+          `sum(1 - probe_success{job="${job}", instance="${target}"}) by (job, instance) >= ${alerts[index]
+            ?.probeCount || `<value not selected>`}`;
         return (
           <div key={field.id} className={styles.container}>
             <Label htmlFor={`alert-name-${index}`}>Alert name</Label>
@@ -162,62 +164,67 @@ export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
               />
             </Field>
 
-            <div className={styles.inputWrapper}>
-              <Label>Expression</Label>
-              <div className={styles.horizontalFlexRow}>
-                <div className={styles.horizontallyAligned}>
-                  <span className={styles.text}>An alert will fire if</span>
+            {!editing && (
+              <div className={styles.inputWrapper}>
+                <Label>Expression</Label>
+                <div className={styles.horizontalFlexRow}>
+                  <div className={styles.horizontallyAligned}>
+                    <span className={styles.text}>An alert will fire if</span>
+                    <Field
+                      className={styles.clearMarginBottom}
+                      invalid={errors?.alerts?.[index]?.probeCount}
+                      error={errors?.alerts?.[index]?.probeCount?.message}
+                      horizontal
+                    >
+                      <Input
+                        ref={register({
+                          required: true,
+                          max: {
+                            value: probeCount,
+                            message: `There are ${probeCount} probes configured for this check`,
+                          },
+                        })}
+                        name={`alerts[${index}].probeCount`}
+                        id={`probe-count-${index}`}
+                        type="number"
+                        placeholder="number"
+                        className={styles.numberInput}
+                        defaultValue={field.probeCount}
+                        data-testid={`alert-probeCount-${index}`}
+                      />
+                    </Field>
+
+                    <span className={styles.text}>or more probes report connection errors for</span>
+                  </div>
+
                   <Field
                     className={styles.clearMarginBottom}
-                    invalid={errors?.alerts?.[index]?.probeCount}
-                    error={errors?.alerts?.[index]?.probeCount?.message}
+                    invalid={errors?.alerts?.[index]?.timeCount}
+                    error={errors?.alerts?.[index]?.timeCount?.message}
                     horizontal
                   >
                     <Input
-                      ref={register({
-                        required: true,
-                        max: { value: probeCount, message: `There are ${probeCount} probes configured for this check` },
-                      })}
-                      name={`alerts[${index}].probeCount`}
-                      id={`probe-count-${index}`}
-                      type="number"
+                      type={'number'}
+                      ref={register({ required: true })}
+                      name={`alerts[${index}].timeCount`}
+                      id={`alert-time-quantity-${index}`}
                       placeholder="number"
                       className={styles.numberInput}
-                      defaultValue={field.probeCount}
-                      data-testid={`alert-probeCount-${index}`}
+                      defaultValue={field.timeCount}
+                      data-testid={`alert-timeCount-${index}`}
                     />
                   </Field>
-
-                  <span className={styles.text}>or more probes report connection errors for</span>
-                </div>
-
-                <Field
-                  className={styles.clearMarginBottom}
-                  invalid={errors?.alerts?.[index]?.timeCount}
-                  error={errors?.alerts?.[index]?.timeCount?.message}
-                  horizontal
-                >
-                  <Input
-                    type={'number'}
-                    ref={register({ required: true })}
-                    name={`alerts[${index}].timeCount`}
-                    id={`alert-time-quantity-${index}`}
-                    placeholder="number"
-                    className={styles.numberInput}
-                    defaultValue={field.timeCount}
-                    data-testid={`alert-timeCount-${index}`}
+                  <Controller
+                    as={Select}
+                    name={`alerts[${index}].timeUnit`}
+                    options={TIME_UNIT_OPTIONS}
+                    className={styles.select}
+                    defaultValue={TIME_UNIT_OPTIONS[1]}
+                    data-testid={`alert-timeUnit-${index}`}
                   />
-                </Field>
-                <Controller
-                  as={Select}
-                  name={`alerts[${index}].timeUnit`}
-                  options={TIME_UNIT_OPTIONS}
-                  className={styles.select}
-                  defaultValue={TIME_UNIT_OPTIONS[1]}
-                  data-testid={`alert-timeUnit-${index}`}
-                />
+                </div>
               </div>
-            </div>
+            )}
             <div className={styles.severityContainer}>
               <Label>Severity</Label>
               <Controller

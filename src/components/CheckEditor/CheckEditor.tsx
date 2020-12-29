@@ -1,4 +1,4 @@
-import React, { FC, useState, useMemo, useContext } from 'react';
+import React, { FC, useState, useMemo, useContext, useEffect } from 'react';
 import { css } from 'emotion';
 import { Button, ConfirmModal, Field, Input, HorizontalGroup, Select, Legend, Alert, useStyles } from '@grafana/ui';
 import { useAsyncCallback } from 'react-async-hook';
@@ -52,10 +52,17 @@ export const CheckEditor: FC<Props> = ({ check, onReturn }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const { alertRules, setRulesForCheck, deleteRulesForCheck } = useAlerts(check?.id);
   const styles = useStyles(getStyles);
-  const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
+
+  const defaultValues = useMemo(() => getDefaultValuesFromCheck(check, alertRules), [check, alertRules]);
 
   const formMethods = useForm<CheckFormValues>({ defaultValues, mode: 'onChange' });
+
+  useEffect(() => {
+    formMethods.reset(defaultValues);
+  }, [defaultValues]);
+
   const selectedCheckType = formMethods.watch('checkType').value as CheckType;
+  console.log({ defaultValues });
 
   const isEditor = hasRole(OrgRole.EDITOR);
 

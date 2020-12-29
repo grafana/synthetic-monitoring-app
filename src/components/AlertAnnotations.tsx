@@ -53,12 +53,14 @@ export const AlertAnnotations: FC<Props> = ({ index }) => {
               name={`${NAME}[${annotationIndex}].name`}
               placeholder="Name"
               data-testid={`alert-${index}-annotationName-${annotationIndex}`}
+              defaultValue={field.name}
             />
             <TextArea
               ref={register()}
               name={`${NAME}[${annotationIndex}].value`}
               placeholder="Value"
               data-testid={`alert-${index}-annotationValue-${annotationIndex}`}
+              defaultValue={field.value}
             />
             <Button type="button" onClick={() => remove(index)} variant="link">
               Delete

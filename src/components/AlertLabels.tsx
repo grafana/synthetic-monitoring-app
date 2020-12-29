@@ -54,12 +54,14 @@ export const AlertLabels: FC<Props> = ({ index }) => {
               name={`${NAME}[${labelIndex}].name`}
               placeholder="Name"
               data-testid={`alert-${index}-labelName-${labelIndex}`}
+              defaultValue={field.name}
             />
             <Input
               ref={register()}
               name={`${NAME}[${labelIndex}].value`}
               placeholder="Value"
               data-testid={`alert-${index}-labelValue-${labelIndex}`}
+              defaultValue={field.value}
             />
             <Button type="button" onClick={() => remove(index)} variant="link">
               Delete

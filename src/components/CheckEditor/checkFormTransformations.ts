@@ -26,6 +26,8 @@ import {
   HttpRegexValidationType,
   HeaderMatch,
   DnsResponseCodes,
+  AlertRule,
+  AlertFormValues,
 } from 'types';
 
 import {
@@ -257,9 +259,29 @@ const getAllFormSettingsForCheck = (): SettingsFormValues => {
   };
 };
 
-export const getDefaultValuesFromCheck = (check: Check = fallbackCheck): CheckFormValues => {
+const getAlertFormValues = (
+  alertRules: AlertRule[]
+): Array<Pick<AlertFormValues, 'name' | 'annotations' | 'labels' | 'annotations'>> =>
+  alertRules.map(rule => ({
+    name: rule.alert,
+    expression: rule.expr,
+    annotations: Object.keys(rule.annotations ?? {}).map(annotationName => ({
+      name: annotationName,
+      value: rule.annotations?.[annotationName] ?? '',
+    })),
+    labels: Object.keys(rule.labels ?? {}).map(labelName => ({
+      name: labelName,
+      value: rule.labels?.[labelName] ?? '',
+    })),
+  }));
+
+export const getDefaultValuesFromCheck = (
+  check: Check = fallbackCheck,
+  alertRules: AlertRule[] = []
+): CheckFormValues => {
   const defaultCheckType = checkType(check.settings);
   const settings = check.id ? getFormSettingsForCheck(check.settings) : getAllFormSettingsForCheck();
+  const alerts = getAlertFormValues(alertRules);
 
   return {
     ...check,
@@ -269,6 +291,7 @@ export const getDefaultValuesFromCheck = (check: Check = fallbackCheck): CheckFo
     checkType:
       CHECK_TYPE_OPTIONS.find(checkTypeOption => checkTypeOption.value === defaultCheckType) ?? CHECK_TYPE_OPTIONS[1],
     settings,
+    alerts,
   };
 };
 
