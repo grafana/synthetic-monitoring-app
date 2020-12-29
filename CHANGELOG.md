@@ -1,3 +1,10 @@
+## [0.5.2](https://github.com/grafana/synthetic-monitoring-app/compare/0.5.1...0.5.2) (2020-12-29)
+
+
+### Bug Fixes
+
+* allow ipv6 hostnames for http checks ([#167](https://github.com/grafana/synthetic-monitoring-app/issues/167)) ([5fa39ed](https://github.com/grafana/synthetic-monitoring-app/commit/5fa39edb0089aacdaa8aee412aebeaef49531dbc))
+
 ## [0.5.1](https://github.com/grafana/synthetic-monitoring-app/compare/0.5.0...0.5.1) (2020-12-29)
 
 # [0.5.0](https://github.com/grafana/synthetic-monitoring-app/compare/0.4.1...0.5.0) (2020-12-28)
