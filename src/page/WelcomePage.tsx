@@ -1,7 +1,7 @@
 import React, { FC, useState, useContext } from 'react';
 import { Button, Alert, useStyles, HorizontalGroup, useTheme } from '@grafana/ui';
 import { getBackendSrv, config } from '@grafana/runtime';
-import { initializeDatasource } from 'utils';
+import { hasRole, initializeDatasource } from 'utils';
 import { importAllDashboards } from 'dashboards/loader';
 import { InstanceContext } from 'components/InstanceContext';
 import { DataSourceInstanceSettings, GrafanaTheme } from '@grafana/data';
@@ -20,6 +20,7 @@ import lightCircledSM from 'img/light-circled-sm.svg';
 import circledLoki from 'img/circled-loki.svg';
 import { CloudDatasourceJsonData } from 'datasource/types';
 import { isNumber } from 'lodash';
+import { OrgRole } from 'types';
 
 const getStyles = (theme: GrafanaTheme) => {
   const textColor = theme.isDark ? colors.darkText : colors.lightText;
@@ -206,7 +207,10 @@ export const WelcomePage: FC<Props> = () => {
               </div>
             </div>
           </div>
-          <Button onClick={onClick} disabled={!Boolean(metricsDatasource) || !Boolean(logsDatasource)}>
+          <Button
+            onClick={onClick}
+            disabled={!Boolean(metricsDatasource) || !Boolean(logsDatasource) || !hasRole(OrgRole.EDITOR)}
+          >
             Monitor your systems
           </Button>
           {error && <Alert title="Something went wrong:">{error}</Alert>}

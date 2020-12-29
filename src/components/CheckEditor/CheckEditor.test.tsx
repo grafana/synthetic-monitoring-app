@@ -14,8 +14,19 @@ import { CheckEditor } from './CheckEditor';
 import { getInstanceMock } from '../../datasource/__mocks__/DataSource';
 import userEvent from '@testing-library/user-event';
 import { InstanceContext } from 'components/InstanceContext';
-import { AppPluginMeta } from '@grafana/data';
+import { AppPluginMeta, DataSourceInstanceSettings } from '@grafana/data';
 jest.setTimeout(60000);
+
+// Mock useAlerts hook
+const setRulesForCheck = jest.fn();
+const deleteRulesForCheck = jest.fn();
+jest.mock('hooks/useAlerts', () => ({
+  useAlerts: () => ({
+    alertRules: [],
+    setRulesForCheck,
+    deleteRulesForCheck,
+  }),
+}));
 
 // Data mocks
 
@@ -44,6 +55,8 @@ const getMinimumCheck = (overrides: Partial<Check> = {}) => ({
 });
 
 const onReturn = jest.fn();
+
+beforeEach(() => jest.resetAllMocks());
 
 // Selectors
 
@@ -82,12 +95,16 @@ const submitForm = async () => {
 };
 
 // Test Renderer
-const renderCheckEditor = async ({ check = defaultCheck } = {}) => {
-  const instance = getInstanceMock();
+const renderCheckEditor = async ({ check = defaultCheck, withAlerting = true } = {}) => {
+  const api = getInstanceMock();
+  const instance = {
+    api,
+    alertRuler: withAlerting ? ({} as DataSourceInstanceSettings) : undefined,
+  };
   const meta = {} as AppPluginMeta<GlobalSettings>;
   render(
-    <InstanceContext.Provider value={{ instance: { api: instance }, loading: false, meta }}>
-      <CheckEditor check={check} instance={instance} onReturn={onReturn} />
+    <InstanceContext.Provider value={{ instance, loading: false, meta }}>
+      <CheckEditor check={check} onReturn={onReturn} />
     </InstanceContext.Provider>
   );
   await waitFor(() => expect(screen.getByText('Check Details')).toBeInTheDocument());
@@ -97,8 +114,8 @@ const renderCheckEditor = async ({ check = defaultCheck } = {}) => {
 it('Updates existing check', async () => {
   const instance = await renderCheckEditor({ check: getMinimumCheck({ target: 'grafana.com', id: 32, tenantId: 45 }) });
   await submitForm();
-  expect(instance.addCheck).toHaveBeenCalledTimes(0);
-  expect(instance.updateCheck).toHaveBeenCalledWith({
+  expect(instance.api.addCheck).toHaveBeenCalledTimes(0);
+  expect(instance.api.updateCheck).toHaveBeenCalledWith({
     job: 'tacos',
     id: 32,
     tenantId: 45,
@@ -128,7 +145,7 @@ describe('PING', () => {
     const labelValueInput = await screen.findByPlaceholderText('value');
     await act(async () => await userEvent.type(labelValueInput, 'labelValue'));
     await submitForm();
-    expect(instance.addCheck).toHaveBeenCalledWith({
+    expect(instance.api.addCheck).toHaveBeenCalledWith({
       job: 'tacos',
       target: 'grafana.com',
       enabled: true,
@@ -363,8 +380,9 @@ describe('HTTP', () => {
 
     userEvent.click(await screen.findByRole('button', { name: 'Add Regex Validation' }));
     userEvent.click(await within(validationSection).findByText('Field name'));
-    userEvent.click(await within(validationSection).findByText('Check fails if response body matches'));
-
+    userEvent.click(
+      await within(validationSection).findByText('Check fails if response body matches', { exact: false })
+    );
     const regexFields = await within(validationSection).findAllByPlaceholderText('Regex');
     await act(async () => await userEvent.type(regexFields[1], 'a body regex'));
 
@@ -374,7 +392,7 @@ describe('HTTP', () => {
 
     await submitForm();
 
-    expect(instance.addCheck).toHaveBeenCalledWith({
+    expect(instance.api.addCheck).toHaveBeenCalledWith({
       job: 'tacos',
       target: 'https://grafana.com',
       enabled: true,
@@ -441,7 +459,7 @@ describe('DNS', () => {
       const invertedCheckboxes = await screen.findAllByRole('checkbox');
       userEvent.click(invertedCheckboxes[1]);
       await submitForm();
-      expect(instance.addCheck).toHaveBeenCalledWith({
+      expect(instance.api.addCheck).toHaveBeenCalledWith({
         job: 'tacos',
         target: 'burritos.com',
         enabled: true,
@@ -489,7 +507,7 @@ describe('DNS', () => {
       userEvent.click(invertedCheckboxes[1]);
       await submitForm();
 
-      expect(instance.addCheck).toHaveBeenCalledWith({
+      expect(instance.api.addCheck).toHaveBeenCalledWith({
         job: 'tacos',
         target: 'burritos.com',
         enabled: true,
@@ -538,7 +556,7 @@ describe('DNS', () => {
 
       await submitForm();
 
-      expect(instance.addCheck).toHaveBeenCalledWith({
+      expect(instance.api.addCheck).toHaveBeenCalledWith({
         job: 'tacos',
         target: 'burritos.com',
         enabled: true,
@@ -578,7 +596,7 @@ describe('TCP', () => {
     const instance = await renderCheckEditor({ check: getMinimumCheck({ target: 'grafana.com:43' }) });
     await selectCheckType(CheckType.TCP);
     await submitForm();
-    expect(instance.addCheck).toHaveBeenCalledWith({
+    expect(instance.api.addCheck).toHaveBeenCalledWith({
       enabled: true,
       frequency: 60000,
       job: 'tacos',
@@ -600,5 +618,47 @@ describe('TCP', () => {
       target: 'grafana.com:43',
       timeout: 3000,
     });
+  });
+});
+
+describe('Alerting', () => {
+  it('adds an alert if specified', async () => {
+    await renderCheckEditor({ check: getMinimumCheck({ target: 'grafana.com' }) });
+    const alertingSection = await toggleSection('Alerting');
+    await userEvent.click(await within(alertingSection).findByRole('button', { name: 'Add alert rule', exact: false }));
+    const nameInput = await within(alertingSection).findByLabelText('Alert name');
+    const probeCountInput = await within(alertingSection).findByTestId('alert-probeCount-0');
+    const timeCountInput = await within(alertingSection).findByTestId('alert-timeCount-0');
+    userEvent.clear(nameInput);
+    await act(async () => await userEvent.type(nameInput, 'Horchata'));
+    userEvent.clear(probeCountInput);
+    await act(async () => await userEvent.paste(probeCountInput, '1'));
+    userEvent.clear(timeCountInput);
+    await act(async () => await userEvent.paste(timeCountInput, '10'));
+
+    await submitForm();
+    const expectedValues = [
+      {
+        name: 'Horchata',
+        probeCount: '1',
+        severity: {
+          label: 'Warning',
+          value: 'warn',
+        },
+        timeCount: '10',
+        timeUnit: { label: 'minutes', value: 'm' },
+      },
+    ];
+    expect(setRulesForCheck).toHaveBeenCalledWith(3, expectedValues, 'tacos', 'grafana.com');
+  });
+
+  it('shows disabled message if no datasource', async () => {
+    await renderCheckEditor({ check: getMinimumCheck({ target: 'grafana.com' }), withAlerting: false });
+    await toggleSection('Alerting');
+    // Using a partial string here since the message is broken up across html elements
+    const disabledMessage = screen.getByText('Grafana instances running on-prem', { exact: false });
+    const cloudAlertingLink = screen.getByRole('link', { name: 'Grafana Cloud Alerting' });
+    expect(disabledMessage).toBeInTheDocument();
+    expect(cloudAlertingLink).toBeInTheDocument();
   });
 });

@@ -1,3 +1,12 @@
+## [0.5.1](https://github.com/grafana/synthetic-monitoring-app/compare/0.5.0...0.5.1) (2020-12-29)
+
+# [0.5.0](https://github.com/grafana/synthetic-monitoring-app/compare/0.4.1...0.5.0) (2020-12-28)
+
+
+### Features
+
+* add alert creation to check editor ([3fdd8e1](https://github.com/grafana/synthetic-monitoring-app/commit/3fdd8e1572d40a868f2c4baaacbd58ffc471a840))
+
 ## [0.4.1](https://github.com/grafana/synthetic-monitoring-app/compare/0.4.0...0.4.1) (2020-12-10)
 
 

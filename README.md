@@ -17,19 +17,7 @@ For each check, users can select 1 or more 'public' probe locations distributed 
 
 ### Configuration
 
-Synthetic Monitoring requires a Grafana Cloud account, but can be set up to run in a local Grafana instance in two ways:
-
-#### Via an admin key
-
-Install the [Synthetic Monitoring plugin](https://grafana.com/grafana/plugins/grafana-synthetic-monitoring-app)
-
-Navigate to the plugins page in your Grafana instance, and enable the plugin
-
-Click on the Synthetic Monitoring plugin in the sidebar. Add an admin key from [grafana.com](https://grafana.com) into the input. The admin key is used to generate the required datasources, and then discarded. You can delete the admin key from grafana.com after setup is complete.
-
-#### Via provisioning
-
-Synthetic Monitoring can alternatively be installed via [plugin provisioning](https://grafana.com/docs/grafana/latest/administration/provisioning/#plugins). Follow this provisioning template:
+Synthetic Monitoring requires a Grafana Cloud account, and is installed by default in Grafana Cloud stacks. A local Grafana instance can be configured to connect to Synthetic Monitoring via a [provisioning file](https://grafana.com/docs/grafana/latest/administration/provisioning/#plugins):
 
 ```yaml
 apiVersion: 1
@@ -56,6 +44,33 @@ Prerequisites:
 1. A datasource pointed at a Prometheus instance hosted in Grafana Cloud
 2. A datasource pointed at a Loki instance hosted in Grafana Cloud
 
+**Note: The Prometheus and Loki instances must be part of the same stack**
+
+The required datasources can be [added via provisioning](https://grafana.com/docs/grafana/latest/administration/provisioning/#data-sources). The information needed can be copied from Prometheus and Loki datasources found in the datasources tab of a Cloud hosted Grafana instance:
+
+```yaml
+- name: grafanacloud-<instanceSlug>-logs
+  type: loki
+  access: proxy
+  url: https://logs-prod-us-central1.grafana.net
+  basicAuth: true
+  basicAuthUser: <Grafana Cloud Loki instance ID>
+  basicAuthPassword: <grafana.com api key>
+  jsonData:
+    maxLines: 1000
+
+- name: grafanacloud-<instanceSlug>-prom
+  type: prometheus
+  access: proxy
+  url: https://prometheus-us-central1.grafana.net/api/prom
+  basicAuth: true
+  basicAuthUser: <Grafana Cloud Prometheus instance ID>
+  jsonData:
+    timeInterval: 1s
+  secureJsonData:
+    basicAuthPassword: <grafana.com api key>
+```
+
 To start the using app:
 
 1. Navigate to Synthetic Monitoring via the sidebar
@@ -68,4 +83,4 @@ During the Initialization process, the Synthetic Monitoring backend will:
 3. The dashboards included with the App will then be imported.
 4. Finally, the Synthentic Monitoring Backend will be notified that the service is ready.
 
-Users can then create checks to monitor their remote targets.
+Users can then create checks to monitor their remote targets. Metrics and logs will flow into the selected Cloud stack.

@@ -1,11 +1,28 @@
 import React, { useState, FC, useEffect } from 'react';
 import { InstanceContext } from 'components/InstanceContext';
 import { GlobalSettings, GrafanaInstances } from 'types';
-import { getDataSourceSrv } from '@grafana/runtime';
+import { config, getDataSourceSrv, getBackendSrv } from '@grafana/runtime';
 import { SMDataSource } from 'datasource/DataSource';
 import { Spinner } from '@grafana/ui';
 import { AppPluginMeta } from '@grafana/data';
 import { UnprovisionedSetup } from 'components/UnprovisionedSetup';
+
+async function getRulerDatasource(metricDatasourceId?: number) {
+  if (!metricDatasourceId) {
+    return undefined;
+  }
+  const basicAuthUserId = await getBackendSrv()
+    .get(`api/datasources/${metricDatasourceId}`)
+    .then(settings => settings.basicAuthUser);
+  const rulers = Object.values(config.datasources).filter(ds => ds.type === 'grafana-ruler-datasource');
+  const rulerSettings = await Promise.all(
+    rulers.map(ruler => {
+      return getBackendSrv().get(`api/datasources/${ruler.id}`);
+    })
+  );
+  const matchedRuler = rulerSettings.find(ruler => ruler.basicAuthUser === basicAuthUserId);
+  return rulers.find(ruler => ruler.id === matchedRuler.id);
+}
 
 async function fetchDatasources(
   metricInstanceName: string | undefined,
@@ -18,10 +35,14 @@ async function fetchDatasources(
 
   const logsName = logsInstanceName ?? smApi?.instanceSettings?.jsonData?.logs?.grafanaName;
   const logs = logsName ? await dataSourceSrv.get(logsName).catch(e => undefined) : undefined;
+
+  const alertRuler = await getRulerDatasource(metrics?.id);
+
   return {
     api: smApi,
     metrics,
     logs,
+    alertRuler,
   };
 }
 
@@ -65,6 +86,7 @@ export const InstanceProvider: FC<Props> = ({ children, metricInstanceName, logs
   if (!instances.metrics || !instances.logs) {
     return <UnprovisionedSetup pluginId={meta.id} pluginName={meta.name} />;
   }
+
   return (
     <InstanceContext.Provider value={{ meta, instance: instances, loading: instancesLoading }}>
       {children}
