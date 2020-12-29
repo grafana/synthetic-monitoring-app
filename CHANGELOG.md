@@ -1,3 +1,10 @@
+## [0.5.3](https://github.com/grafana/synthetic-monitoring-app/compare/0.5.2...0.5.3) (2020-12-29)
+
+
+### Bug Fixes
+
+* annotation and labels in alerts not getting sent to ruler ([#171](https://github.com/grafana/synthetic-monitoring-app/issues/171)) ([82b1f85](https://github.com/grafana/synthetic-monitoring-app/commit/82b1f851d157ec5f2ece23295594e8f6c6627823))
+
 ## [0.5.2](https://github.com/grafana/synthetic-monitoring-app/compare/0.5.1...0.5.2) (2020-12-29)
 
 
