@@ -5,8 +5,6 @@ import { SubCollapse } from 'components/SubCollapse';
 import { GrafanaTheme } from '@grafana/data';
 import { css } from 'emotion';
 
-const NAME = 'alert.annotations';
-
 const getStyles = (theme: GrafanaTheme) => ({
   grid: css`
     display: grid;
@@ -22,7 +20,12 @@ const getStyles = (theme: GrafanaTheme) => ({
   `,
 });
 
-export const AlertAnnotations: FC = () => {
+type Props = {
+  index: number;
+};
+
+export const AlertAnnotations: FC<Props> = ({ index }) => {
+  const NAME = `alerts[${index}].annotations`;
   const styles = useStyles(getStyles);
   const { control, register } = useFormContext();
   const { fields, append, remove } = useFieldArray({
@@ -43,10 +46,20 @@ export const AlertAnnotations: FC = () => {
             <div />
           </>
         ) : null}
-        {fields.map((field, index) => (
+        {fields.map((field, annotationIndex) => (
           <Fragment key={field.id}>
-            <Input ref={register()} name={`${NAME}[${index}].name`} placeholder="Name" />
-            <TextArea ref={register()} name={`${NAME}[${index}].value`} placeholder="Value" />
+            <Input
+              ref={register()}
+              name={`${NAME}[${annotationIndex}].name`}
+              placeholder="Name"
+              data-testid={`alert-${index}-annotationName-${annotationIndex}`}
+            />
+            <TextArea
+              ref={register()}
+              name={`${NAME}[${annotationIndex}].value`}
+              placeholder="Value"
+              data-testid={`alert-${index}-annotationValue-${annotationIndex}`}
+            />
             <Button type="button" onClick={() => remove(index)} variant="link">
               Delete
             </Button>
