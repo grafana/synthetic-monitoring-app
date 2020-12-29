@@ -59,12 +59,14 @@ export function useAlerts(checkId?: number) {
     const rules = alerts.map(alert => {
       const annotations = tranformFormValues(alert.annotations ?? []);
       const labels = tranformFormValues(alert.labels ?? []);
+      if (alert.severity.value) {
+        labels.severity = alert.severity.value;
+      }
 
       return {
         alert: alert.name,
         expr: `sum(1-probe_success{job="${job}", instance="${target}"}) by (job, instance) >= ${alert.probeCount}`,
         for: `${alert.timeCount}${alert.timeUnit.value}`,
-        severity: alert.severity.value,
         annotations,
         labels,
       };
