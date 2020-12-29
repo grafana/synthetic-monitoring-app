@@ -101,17 +101,6 @@ describe('bad targets', () => {
     expect(CheckValidation.target(CheckType.HTTP, 'https://suraj/dev')).toEqual('Target must have a valid hostname');
   });
 
-  it('should reject http targets with ipv6 domains', () => {
-    [
-      'https://[2001:0db8:1001:1001:1001:1001:1001:1001]/',
-      'https://[2001:0db8:1001:1001:1001:1001:1001:1001]:8080/',
-      'http://[2001:0db8:1001:1001:1001:1001:1001:1001]/',
-      'http://[2001:0db8:1001:1001:1001:1001:1001:1001]:8080/',
-    ].forEach(() =>
-      expect(CheckValidation.target(CheckType.HTTP, 'https://hostname/')).toEqual('Target must have a valid hostname')
-    );
-  });
-
   it('should reject URLs without schema', () => {
     const testcases: string[] = ['example.org'];
     testcases.forEach((testcase: string) => {
@@ -125,6 +114,11 @@ describe('bad targets', () => {
       expect(CheckValidation.target(CheckType.PING, testcase)).toBe('Target must be a valid hostname');
       expect(CheckValidation.target(CheckType.DNS, testcase)).toBe('Target must be a valid hostname');
     });
+  });
+
+  it('should reject malformed ipv6 https targets', () => {
+    const url = 'https://[2001:0db8:1001:1001:1001:1001:1001:1001/';
+    expect(CheckValidation.target(CheckType.HTTP, url)).toBe('Target must be a valid web URL');
   });
 
   it('should reject ping targets with invalid hostnames', () => {
@@ -162,6 +156,15 @@ describe('good targets', () => {
     testcases.forEach((testcase: string) => {
       expect(CheckValidation.target(CheckType.HTTP, testcase)).toBe(undefined);
     });
+  });
+
+  it('should accept http targets with ipv6 domains', () => {
+    [
+      'https://[2001:0db8:1001:1001:1001:1001:1001:1001]/',
+      'https://[2001:0db8:1001:1001:1001:1001:1001:1001]:8080/',
+      'http://[2001:0db8:1001:1001:1001:1001:1001:1001]/',
+      'http://[2001:0db8:1001:1001:1001:1001:1001:1001]:8080/',
+    ].forEach(url => expect(CheckValidation.target(CheckType.HTTP, url)).toBe(undefined));
   });
 
   it('should accept URL with IPv4 addresses as HTTP target', () => {
