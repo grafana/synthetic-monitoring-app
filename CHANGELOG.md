@@ -1,3 +1,10 @@
+## [0.5.4](https://github.com/grafana/synthetic-monitoring-app/compare/0.5.3...0.5.4) (2020-12-29)
+
+
+### Bug Fixes
+
+* add severity as an alert rule label ([#172](https://github.com/grafana/synthetic-monitoring-app/issues/172)) ([1f74994](https://github.com/grafana/synthetic-monitoring-app/commit/1f7499444160d6f70b4bf305be3de4419e590732))
+
 ## [0.5.3](https://github.com/grafana/synthetic-monitoring-app/compare/0.5.2...0.5.3) (2020-12-29)
 
 
