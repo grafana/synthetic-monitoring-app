@@ -248,8 +248,8 @@ export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
               </Label>
               <code className={styles.promql}>{promqlAlertingExp}</code>
             </div>
-            <AlertLabels />
-            <AlertAnnotations />
+            <AlertLabels index={index} />
+            <AlertAnnotations index={index} />
             <div className={styles.deleteButton}>
               <Button onClick={() => remove(index)} size="sm" variant="destructive" type="button">
                 <Icon name="trash-alt" />
