@@ -1,3 +1,10 @@
+## [0.5.5](https://github.com/grafana/synthetic-monitoring-app/compare/0.5.4...0.5.5) (2020-12-30)
+
+
+### Bug Fixes
+
+* handle error response on welcome page ([#170](https://github.com/grafana/synthetic-monitoring-app/issues/170)) ([1e83510](https://github.com/grafana/synthetic-monitoring-app/commit/1e835101036824a078a462cee2b0e1946934e970))
+
 ## [0.5.4](https://github.com/grafana/synthetic-monitoring-app/compare/0.5.3...0.5.4) (2020-12-29)
 
 
