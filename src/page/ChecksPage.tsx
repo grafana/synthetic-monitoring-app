@@ -1,5 +1,5 @@
 // Libraries
-import React, { PureComponent } from 'react';
+import React, { FC, useContext, useState, useEffect } from 'react';
 
 // Types
 import { Check } from 'types';
@@ -10,72 +10,33 @@ import { InstanceContext } from 'components/InstanceContext';
 
 interface Props {
   id?: string;
-  checksPerPage?: number;
 }
 
-interface State {
-  checks: Check[];
-  check?: Check; // selected check
-  addNew: boolean;
-  loading: boolean;
-}
+export const ChecksPage: FC<Props> = ({ id }) => {
+  const { instance } = useContext(InstanceContext);
 
-export class ChecksPage extends PureComponent<Props, State> {
-  static contextType = InstanceContext;
-  declare context: React.ContextType<typeof InstanceContext>;
+  const [selectedCheck, setSelectedCheck] = useState<Check>();
+  const [checks, setChecks] = useState<Check[]>([]);
+  const [addNew, setAddNew] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  state: State = {
-    checks: [],
-    addNew: false,
-    loading: true,
-  };
+  useEffect(() => {
+    instance.api?.listChecks().then(checks => {
+      setChecks(checks);
+      setLoading(false);
+    });
+  }, [instance.api]);
 
-  async componentDidMount() {
-    const { id } = this.props;
-    const { instance } = this.context;
-    const checks = (await instance.api?.listChecks()) ?? [];
+  useEffect(() => {
     const num = id ? parseInt(id, 10) : -1;
     const check = checks?.find(c => c.id === num);
-    this.setState({
-      checks,
-      check,
-      loading: false,
-    });
-  }
+    setSelectedCheck(check);
+  }, [id, checks]);
 
-  componentDidUpdate(oldProps: Props) {
-    if (this.props.id !== oldProps.id) {
-      const { id } = this.props;
-      const num = id ? parseInt(id, 10) : -1;
-      const check = this.state.checks?.find(c => c.id === num);
-      this.setState({ check });
-    }
-  }
-
-  //-----------------------------------------------------------------
-  // CHECK List
-  //-----------------------------------------------------------------
-
-  onAddNew = () => {
-    this.setState({
-      addNew: true,
-    });
-  };
-
-  onRefresh = async () => {
-    const { instance } = this.context;
-    const checks = (await instance.api?.listChecks()) ?? [];
-    this.setState({
-      checks,
-    });
-  };
-
-  onGoBack = (refresh: boolean) => {
-    this.setState({
-      addNew: false,
-    });
+  const onGoBack = (refresh: boolean) => {
+    setAddNew(false);
     if (refresh) {
-      this.onRefresh();
+      onRefresh();
     }
     getLocationSrv().update({
       partial: true,
@@ -85,18 +46,21 @@ export class ChecksPage extends PureComponent<Props, State> {
     });
   };
 
-  render() {
-    const { instance } = this.context;
-    const { check, addNew, loading, checks } = this.state;
-    if (loading || !instance.api) {
-      return <div>Loading...</div>;
-    }
-    if (check) {
-      return <CheckEditor check={check} onReturn={this.onGoBack} />;
-    }
-    if (addNew) {
-      return <CheckEditor onReturn={this.onGoBack} />;
-    }
-    return <CheckList instance={instance} onAddNewClick={this.onAddNew} checks={checks} />;
+  const onRefresh = async () => {
+    const checks = (await instance.api?.listChecks()) ?? [];
+    setChecks(checks);
+  };
+
+  const onAddNew = () => setAddNew(true);
+
+  if (loading || !instance.api) {
+    return <div>Loading...</div>;
   }
-}
+  if (selectedCheck) {
+    return <CheckEditor check={selectedCheck} onReturn={onGoBack} />;
+  }
+  if (addNew) {
+    return <CheckEditor onReturn={onGoBack} />;
+  }
+  return <CheckList instance={instance} onAddNewClick={onAddNew} checks={checks} />;
+};
