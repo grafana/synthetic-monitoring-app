@@ -107,3 +107,5 @@ export function useAlerts(checkId?: number) {
 
   return { alertRules, loading, setRulesForCheck, deleteRulesForCheck: getDeleteRulesForCheck(alertRulerUrl ?? '') };
 }
+
+export type UseAlertsReturnType = ReturnType<typeof useAlerts>;

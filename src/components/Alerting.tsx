@@ -89,9 +89,7 @@ export const Alerting: FC<Props> = ({ editing, alertRules }) => {
   const { fields, append, remove } = useFieldArray({ control, name: 'alerts' });
   const styles = useStyles(getStyles);
   const alertingUiUrl = `a/grafana-alerting-ui-app/?tab=rules&rulessource=${instance.metrics?.name}`;
-  const alerts = watch('alerts');
   const job = watch('job');
-  const target = watch('target');
 
   if (!instance.alertRuler) {
     return (
@@ -129,7 +127,7 @@ export const Alerting: FC<Props> = ({ editing, alertRules }) => {
   //     </Collapse>
   //   );
   // }
-  console.log({ fields, editing });
+
   return (
     <Collapse label="Alerting" onToggle={() => setShowAlerting(!showAlerting)} isOpen={showAlerting} collapsible>
       <p className={styles.subheader}>

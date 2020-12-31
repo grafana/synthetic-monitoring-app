@@ -38,6 +38,7 @@ import {
   HTTP_REGEX_VALIDATION_OPTIONS,
   fallbackCheck,
   TIME_UNIT_OPTIONS,
+  ALERTING_SEVERITY_OPTIONS,
 } from 'components/constants';
 import { checkType, parseAlertTimeUnits } from 'utils';
 
@@ -260,16 +261,18 @@ const getAllFormSettingsForCheck = (): SettingsFormValues => {
   };
 };
 
-const getAlertFormValues = (
-  alertRules: AlertRule[]
-): Array<Pick<AlertFormValues, 'name' | 'annotations' | 'labels' | 'annotations'>> =>
+const getAlertFormValues = (alertRules: AlertRule[]): AlertFormValues[] =>
   alertRules.map(rule => {
     const { timeCount, timeUnit } = parseAlertTimeUnits(rule.for ?? '');
-    const timeOption = TIME_UNIT_OPTIONS.find(({ value }) => value === timeUnit);
+    const timeOption = TIME_UNIT_OPTIONS.find(({ value }) => value === timeUnit) ?? TIME_UNIT_OPTIONS[1];
+    const severityLabel = rule.labels?.severity;
+    const severity =
+      ALERTING_SEVERITY_OPTIONS.find(option => option.value === severityLabel) ?? ALERTING_SEVERITY_OPTIONS[1];
+
     return {
       name: rule.alert,
       expression: rule.expr,
-      timeCount,
+      timeCount: parseInt(timeCount, 10),
       timeUnit: timeOption,
       annotations: Object.keys(rule.annotations ?? {}).map(annotationName => ({
         name: annotationName,
@@ -279,6 +282,7 @@ const getAlertFormValues = (
         name: labelName,
         value: rule.labels?.[labelName] ?? '',
       })),
+      severity,
     };
   });
 
@@ -288,7 +292,6 @@ export const getDefaultValuesFromCheck = (
 ): CheckFormValues => {
   const defaultCheckType = checkType(check.settings);
   const settings = check.id ? getFormSettingsForCheck(check.settings) : getAllFormSettingsForCheck();
-  console.log({ alertRules });
   const alerts = getAlertFormValues(alertRules);
 
   return {

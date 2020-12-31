@@ -1,8 +1,7 @@
 import React, { FC } from 'react';
 import { Field, Input, Label, Select, useStyles } from '@grafana/ui';
 import { GrafanaTheme } from '@grafana/data';
-import { Controller, useFormContext, Field as FormField } from 'react-hook-form';
-import { AlertFormValues } from 'types';
+import { Controller, useFormContext, ArrayField } from 'react-hook-form';
 import { TIME_UNIT_OPTIONS } from './constants';
 
 import { css } from 'emotion';
@@ -37,7 +36,7 @@ const getStyles = (theme: GrafanaTheme) => ({
 
 interface Props {
   editing: boolean;
-  field: Pick<AlertFormValues, 'probeCount' | 'timeCount' | 'timeUnit'>;
+  field: Partial<ArrayField<Record<string, any>>>;
   index: number;
 }
 

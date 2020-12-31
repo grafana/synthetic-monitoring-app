@@ -17,13 +17,14 @@ import { GrafanaTheme } from '@grafana/data';
 import { CheckUsage } from '../CheckUsage';
 import { Alerting } from 'components/Alerting';
 import { InstanceContext } from 'components/InstanceContext';
+import { UseAlertsReturnType } from 'hooks/useAlerts';
 
 interface Props {
   check?: Check;
   onReturn: (reload: boolean) => void;
   alertRules: AlertRule[];
-  setRulesForCheck: () => void;
-  deleteRulesForCheck: () => void;
+  setRulesForCheck: UseAlertsReturnType['setRulesForCheck'];
+  deleteRulesForCheck: UseAlertsReturnType['deleteRulesForCheck'];
 }
 
 const getStyles = (theme: GrafanaTheme) => ({
@@ -60,9 +61,6 @@ export const CheckEditor: FC<Props> = ({ check, onReturn, alertRules, setRulesFo
   const formMethods = useForm<CheckFormValues>({ defaultValues, mode: 'onChange' });
 
   const selectedCheckType = formMethods.watch('checkType').value as CheckType;
-  const alerts = formMethods.watch('alerts');
-  console.log({ alerts });
-  console.log({ defaultValues });
 
   const isEditor = hasRole(OrgRole.EDITOR);
 
