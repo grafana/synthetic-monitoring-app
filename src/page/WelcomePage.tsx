@@ -93,6 +93,9 @@ const getStyles = (theme: GrafanaTheme) => {
     link: css`
       text-decoration: underline;
     `,
+    marginTop: css`
+      margin-top: ${theme.spacing.md};
+    `,
   };
 };
 
@@ -152,7 +155,7 @@ export const WelcomePage: FC<Props> = () => {
       // force reload so that GrafanaBootConfig is updated.
       window.location.reload();
     } catch (e) {
-      setError(e.data?.msg);
+      setError(e.data?.msg ?? e.data?.err);
     }
   };
 
@@ -213,7 +216,11 @@ export const WelcomePage: FC<Props> = () => {
           >
             Monitor your systems
           </Button>
-          {error && <Alert title="Something went wrong:">{error}</Alert>}
+          {error && (
+            <div className={styles.marginTop}>
+              <Alert title="Something went wrong:">{error}</Alert>
+            </div>
+          )}
         </div>
       </div>
     </div>
