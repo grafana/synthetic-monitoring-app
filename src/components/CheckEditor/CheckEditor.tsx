@@ -1,8 +1,8 @@
-import React, { FC, useState, useMemo, useContext, useEffect } from 'react';
+import React, { FC, useState, useMemo, useContext } from 'react';
 import { css } from 'emotion';
 import { Button, ConfirmModal, Field, Input, HorizontalGroup, Select, Legend, Alert, useStyles } from '@grafana/ui';
 import { useAsyncCallback } from 'react-async-hook';
-import { Check, CheckType, OrgRole, CheckFormValues, SubmissionError } from 'types';
+import { Check, CheckType, OrgRole, CheckFormValues, SubmissionError, AlertRule } from 'types';
 import { hasRole } from 'utils';
 import { getDefaultValuesFromCheck, getCheckFromFormValues } from './checkFormTransformations';
 import { validateJob, validateTarget } from 'validation';
@@ -16,12 +16,14 @@ import { useForm, FormContext, Controller } from 'react-hook-form';
 import { GrafanaTheme } from '@grafana/data';
 import { CheckUsage } from '../CheckUsage';
 import { Alerting } from 'components/Alerting';
-import { useAlerts } from 'hooks/useAlerts';
 import { InstanceContext } from 'components/InstanceContext';
 
 interface Props {
   check?: Check;
   onReturn: (reload: boolean) => void;
+  alertRules: AlertRule[];
+  setRulesForCheck: () => void;
+  deleteRulesForCheck: () => void;
 }
 
 const getStyles = (theme: GrafanaTheme) => ({
@@ -45,23 +47,21 @@ const getStyles = (theme: GrafanaTheme) => ({
   `,
 });
 
-export const CheckEditor: FC<Props> = ({ check, onReturn }) => {
+export const CheckEditor: FC<Props> = ({ check, onReturn, alertRules, setRulesForCheck, deleteRulesForCheck }) => {
   const {
     instance: { api },
   } = useContext(InstanceContext);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const { alertRules, setRulesForCheck, deleteRulesForCheck } = useAlerts(check?.id);
+
   const styles = useStyles(getStyles);
 
   const defaultValues = useMemo(() => getDefaultValuesFromCheck(check, alertRules), [check, alertRules]);
 
   const formMethods = useForm<CheckFormValues>({ defaultValues, mode: 'onChange' });
 
-  useEffect(() => {
-    formMethods.reset(defaultValues);
-  }, [defaultValues]);
-
   const selectedCheckType = formMethods.watch('checkType').value as CheckType;
+  const alerts = formMethods.watch('alerts');
+  console.log({ alerts });
   console.log({ defaultValues });
 
   const isEditor = hasRole(OrgRole.EDITOR);

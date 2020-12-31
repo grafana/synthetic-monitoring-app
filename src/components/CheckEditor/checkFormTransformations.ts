@@ -37,8 +37,9 @@ import {
   HTTP_SSL_OPTIONS,
   HTTP_REGEX_VALIDATION_OPTIONS,
   fallbackCheck,
+  TIME_UNIT_OPTIONS,
 } from 'components/constants';
-import { checkType } from 'utils';
+import { checkType, parseAlertTimeUnits } from 'utils';
 
 export function selectableValueFrom<T>(value: T, label?: string): SelectableValue<T> {
   const labelValue = String(value);
@@ -262,18 +263,24 @@ const getAllFormSettingsForCheck = (): SettingsFormValues => {
 const getAlertFormValues = (
   alertRules: AlertRule[]
 ): Array<Pick<AlertFormValues, 'name' | 'annotations' | 'labels' | 'annotations'>> =>
-  alertRules.map(rule => ({
-    name: rule.alert,
-    expression: rule.expr,
-    annotations: Object.keys(rule.annotations ?? {}).map(annotationName => ({
-      name: annotationName,
-      value: rule.annotations?.[annotationName] ?? '',
-    })),
-    labels: Object.keys(rule.labels ?? {}).map(labelName => ({
-      name: labelName,
-      value: rule.labels?.[labelName] ?? '',
-    })),
-  }));
+  alertRules.map(rule => {
+    const { timeCount, timeUnit } = parseAlertTimeUnits(rule.for ?? '');
+    const timeOption = TIME_UNIT_OPTIONS.find(({ value }) => value === timeUnit);
+    return {
+      name: rule.alert,
+      expression: rule.expr,
+      timeCount,
+      timeUnit: timeOption,
+      annotations: Object.keys(rule.annotations ?? {}).map(annotationName => ({
+        name: annotationName,
+        value: rule.annotations?.[annotationName] ?? '',
+      })),
+      labels: Object.keys(rule.labels ?? {}).map(labelName => ({
+        name: labelName,
+        value: rule.labels?.[labelName] ?? '',
+      })),
+    };
+  });
 
 export const getDefaultValuesFromCheck = (
   check: Check = fallbackCheck,
@@ -281,6 +288,7 @@ export const getDefaultValuesFromCheck = (
 ): CheckFormValues => {
   const defaultCheckType = checkType(check.settings);
   const settings = check.id ? getFormSettingsForCheck(check.settings) : getAllFormSettingsForCheck();
+  console.log({ alertRules });
   const alerts = getAlertFormValues(alertRules);
 
   return {

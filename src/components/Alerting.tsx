@@ -9,6 +9,8 @@ import { AlertRule } from 'types';
 import { InstanceContext } from './InstanceContext';
 import { AlertAnnotations } from './AlertAnnotations';
 import { AlertLabels } from './AlertLabels';
+import { ExpressionField } from './ExpressionField';
+import { PromqlExpression } from './PromqlExpression';
 
 interface Props {
   alertRules: AlertRule[];
@@ -78,19 +80,15 @@ const getStyles = (theme: GrafanaTheme) => ({
   halfWidth: css`
     width: 50%;
   `,
-  unsetMaxWidth: css`
-    max-width: unset;
-  `,
 });
 
-export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
+export const Alerting: FC<Props> = ({ editing, alertRules }) => {
   const [showAlerting, setShowAlerting] = useState(false);
   const { instance } = useContext(InstanceContext);
   const { register, watch, errors, control } = useFormContext();
   const { fields, append, remove } = useFieldArray({ control, name: 'alerts' });
   const styles = useStyles(getStyles);
   const alertingUiUrl = `a/grafana-alerting-ui-app/?tab=rules&rulessource=${instance.metrics?.name}`;
-  const probeCount = watch('probes').length;
   const alerts = watch('alerts');
   const job = watch('job');
   const target = watch('target');
@@ -146,10 +144,6 @@ export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
         .
       </p>
       {fields.map((field, index) => {
-        const promqlAlertingExp =
-          field.expression ??
-          `sum(1 - probe_success{job="${job}", instance="${target}"}) by (job, instance) >= ${alerts[index]
-            ?.probeCount || `<value not selected>`}`;
         return (
           <div key={field.id} className={styles.container}>
             <Label htmlFor={`alert-name-${index}`}>Alert name</Label>
@@ -163,68 +157,7 @@ export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
                 defaultValue={field.name}
               />
             </Field>
-
-            {!editing && (
-              <div className={styles.inputWrapper}>
-                <Label>Expression</Label>
-                <div className={styles.horizontalFlexRow}>
-                  <div className={styles.horizontallyAligned}>
-                    <span className={styles.text}>An alert will fire if</span>
-                    <Field
-                      className={styles.clearMarginBottom}
-                      invalid={errors?.alerts?.[index]?.probeCount}
-                      error={errors?.alerts?.[index]?.probeCount?.message}
-                      horizontal
-                    >
-                      <Input
-                        ref={register({
-                          required: true,
-                          max: {
-                            value: probeCount,
-                            message: `There are ${probeCount} probes configured for this check`,
-                          },
-                        })}
-                        name={`alerts[${index}].probeCount`}
-                        id={`probe-count-${index}`}
-                        type="number"
-                        placeholder="number"
-                        className={styles.numberInput}
-                        defaultValue={field.probeCount}
-                        data-testid={`alert-probeCount-${index}`}
-                      />
-                    </Field>
-
-                    <span className={styles.text}>or more probes report connection errors for</span>
-                  </div>
-
-                  <Field
-                    className={styles.clearMarginBottom}
-                    invalid={errors?.alerts?.[index]?.timeCount}
-                    error={errors?.alerts?.[index]?.timeCount?.message}
-                    horizontal
-                  >
-                    <Input
-                      type={'number'}
-                      ref={register({ required: true })}
-                      name={`alerts[${index}].timeCount`}
-                      id={`alert-time-quantity-${index}`}
-                      placeholder="number"
-                      className={styles.numberInput}
-                      defaultValue={field.timeCount}
-                      data-testid={`alert-timeCount-${index}`}
-                    />
-                  </Field>
-                  <Controller
-                    as={Select}
-                    name={`alerts[${index}].timeUnit`}
-                    options={TIME_UNIT_OPTIONS}
-                    className={styles.select}
-                    defaultValue={TIME_UNIT_OPTIONS[1]}
-                    data-testid={`alert-timeUnit-${index}`}
-                  />
-                </div>
-              </div>
-            )}
+            <ExpressionField editing={editing && Boolean(alertRules.length)} field={field} index={index} />
             <div className={styles.severityContainer}>
               <Label>Severity</Label>
               <Controller
@@ -235,26 +168,7 @@ export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
                 defaultValue={ALERTING_SEVERITY_OPTIONS[1]}
               />
             </div>
-            <div className={styles.promqlSection}>
-              <Label
-                className={styles.unsetMaxWidth}
-                description={
-                  <p>
-                    This alert will appear as promQL in the{' '}
-                    <a className={styles.link} href={alertingUiUrl}>
-                      Grafana Cloud Alerting.
-                    </a>{' '}
-                    If you prefer to write alerts in promQL, you can do so from the Alerting UI.{' '}
-                    <a href={'https://prometheus.io/docs/prometheus/latest/querying/basics/'} className={styles.link}>
-                      Learn more about PromQL.
-                    </a>
-                  </p>
-                }
-              >
-                PromQL preview
-              </Label>
-              <code className={styles.promql}>{promqlAlertingExp}</code>
-            </div>
+            <PromqlExpression alertingUiUrl={alertingUiUrl} index={index} />
             <AlertLabels index={index} />
             <AlertAnnotations index={index} />
             <div className={styles.deleteButton}>
@@ -267,7 +181,7 @@ export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
         );
       })}
       <Button
-        onClick={() => append({ name: job, timeCount: 5, probeCount: 1 })}
+        onClick={() => append({ name: job, timeCount: 5, timeUnit: TIME_UNIT_OPTIONS[1], probeCount: 1 })}
         variant="secondary"
         size="sm"
         type="button"

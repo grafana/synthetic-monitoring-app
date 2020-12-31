@@ -7,6 +7,7 @@ import { getLocationSrv } from '@grafana/runtime';
 import { CheckEditor } from 'components/CheckEditor';
 import { CheckList } from 'components/CheckList';
 import { InstanceContext } from 'components/InstanceContext';
+import { useAlerts } from 'hooks/useAlerts';
 
 interface Props {
   id?: string;
@@ -19,6 +20,9 @@ export const ChecksPage: FC<Props> = ({ id }) => {
   const [checks, setChecks] = useState<Check[]>([]);
   const [addNew, setAddNew] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { alertRules, loading: alertsLoading, setRulesForCheck, deleteRulesForCheck } = useAlerts(
+    id ? parseInt(id, 10) : undefined
+  );
 
   useEffect(() => {
     instance.api?.listChecks().then(checks => {
@@ -53,14 +57,16 @@ export const ChecksPage: FC<Props> = ({ id }) => {
 
   const onAddNew = () => setAddNew(true);
 
-  if (loading || !instance.api) {
+  const checkEditorProps = { alertRules, setRulesForCheck, deleteRulesForCheck };
+
+  if (loading || !instance.api || alertsLoading) {
     return <div>Loading...</div>;
   }
   if (selectedCheck) {
-    return <CheckEditor check={selectedCheck} onReturn={onGoBack} />;
+    return <CheckEditor check={selectedCheck} onReturn={onGoBack} {...checkEditorProps} />;
   }
   if (addNew) {
-    return <CheckEditor onReturn={onGoBack} />;
+    return <CheckEditor onReturn={onGoBack} {...checkEditorProps} />;
   }
   return <CheckList instance={instance} onAddNewClick={onAddNew} checks={checks} />;
 };

@@ -235,8 +235,9 @@ export interface SettingsFormValues {
   tcp?: TcpSettingsFormValues;
 }
 export interface AlertFormValues {
+  expression?: string;
   name: string;
-  probeCount: number;
+  probeCount?: number;
   timeCount: number;
   timeUnit: SelectableValue<TimeUnits>;
   severity: SelectableValue<AlertSeverity>;
@@ -389,9 +390,13 @@ export interface DashboardMeta {
 }
 
 export enum TimeUnits {
+  Milliseconds = 'ms',
   Seconds = 's',
   Minutes = 'm',
   Hours = 'h',
+  Days = 'd',
+  Weeks = 'w',
+  Years = 'y',
 }
 
 export enum AlertSeverity {

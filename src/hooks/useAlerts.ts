@@ -45,6 +45,7 @@ const tranformFormValues = (values: Label[]) =>
 
 export function useAlerts(checkId?: number) {
   const [alertRules, setAlertRules] = useState<AlertRule[]>([]);
+  const [loading, setLoading] = useState(false);
   const {
     instance: { alertRuler },
   } = useContext(InstanceContext);
@@ -62,7 +63,9 @@ export function useAlerts(checkId?: number) {
 
       return {
         alert: alert.name,
-        expr: `sum(1-probe_success{job="${job}", instance="${target}"}) by (job, instance) >= ${alert.probeCount}`,
+        expr:
+          alert.expression ||
+          `sum(1-probe_success{job="${job}", instance="${target}"}) by (job, instance) >= ${alert.probeCount}`,
         for: `${alert.timeCount}${alert.timeUnit.value}`,
         severity: alert.severity.value,
         annotations,
@@ -90,12 +93,17 @@ export function useAlerts(checkId?: number) {
   };
 
   useEffect(() => {
+    if (!checkId) {
+      setAlertRules([]);
+    }
     if (checkId && alertRulerUrl) {
+      setLoading(true);
       fetchRulesForCheck(checkId, alertRulerUrl).then(rules => {
         setAlertRules(rules);
+        setLoading(false);
       });
     }
   }, [checkId, alertRulerUrl]);
 
-  return { alertRules, setRulesForCheck, deleteRulesForCheck: getDeleteRulesForCheck(alertRulerUrl ?? '') };
+  return { alertRules, loading, setRulesForCheck, deleteRulesForCheck: getDeleteRulesForCheck(alertRulerUrl ?? '') };
 }

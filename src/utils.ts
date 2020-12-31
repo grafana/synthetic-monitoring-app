@@ -248,3 +248,9 @@ export const queryMetric = async (
     return { error: (e.message || e.data?.message) ?? 'Error fetching data', data: [] };
   }
 };
+
+export const parseAlertTimeUnits = (time: string) => {
+  const regexp = /(\d+)(\D+)/;
+  const [, timeCount, timeUnit] = regexp.exec(time) ?? ['', '', ''];
+  return { timeCount, timeUnit };
+};
