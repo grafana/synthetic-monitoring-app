@@ -5,6 +5,13 @@ import { SM_ALERTING_NAMESPACE } from 'components/constants';
 import { AlertFormValues, AlertRule, Label } from 'types';
 import { InstanceContext } from 'components/InstanceContext';
 
+type SetRulesForCheckArgs = {
+  checkId: number;
+  alerts: AlertFormValues[];
+  job: string;
+  target: string;
+};
+
 const fetchRulesForCheck = async (checkId: number, alertRulerUrl: string) => {
   try {
     return await getBackendSrv()
@@ -52,28 +59,29 @@ export function useAlerts(checkId?: number) {
 
   const alertRulerUrl = alertRuler?.url;
 
-  const setRulesForCheck = async (checkId: number, alerts: AlertFormValues[], job: string, target: string) => {
+  const setRulesForCheck = async ({ checkId, alerts, job, target }: SetRulesForCheckArgs) => {
     if (!alertRuler) {
       throw new Error('There is no alert ruler datasource configured for this Grafana instance');
     }
 
-    const rules = alerts.map(alert => {
-      const annotations = tranformFormValues(alert.annotations ?? []);
-      const labels = tranformFormValues(alert.labels ?? []);
-      if (alert.severity.value) {
-        labels.severity = alert.severity.value;
-      }
+    const rules =
+      alerts?.map(alert => {
+        const annotations = tranformFormValues(alert.annotations ?? []);
+        const labels = tranformFormValues(alert.labels ?? []);
+        if (alert.severity.value) {
+          labels.severity = alert.severity.value;
+        }
 
-      return {
-        alert: alert.name,
-        expr:
-          alert.expression ||
-          `sum(1-probe_success{job="${job}", instance="${target}"}) by (job, instance) >= ${alert.probeCount}`,
-        for: `${alert.timeCount}${alert.timeUnit.value}`,
-        annotations,
-        labels,
-      };
-    });
+        return {
+          alert: alert.name,
+          expr:
+            alert.expression ||
+            `sum(1-probe_success{job="${job}", instance="${target}"}) by (job, instance) >= ${alert.probeCount}`,
+          for: `${alert.timeCount}${alert.timeUnit.value}`,
+          annotations,
+          labels,
+        };
+      }) ?? [];
 
     const ruleGroup = {
       name: checkId,

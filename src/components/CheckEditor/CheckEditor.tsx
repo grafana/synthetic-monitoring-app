@@ -73,13 +73,15 @@ export const CheckEditor: FC<Props> = ({ check, onReturn, alertRules, setRulesFo
           tenantId: check.tenantId,
           ...updatedCheck,
         });
-        if (alerts?.length) {
-          await setRulesForCheck(check.id, alerts, checkValues.job, checkValues.target);
+        if (alerts) {
+          await setRulesForCheck({ checkId: check.id, alerts, job: checkValues.job, target: checkValues.target });
+        } else {
+          await deleteRulesForCheck(check.id);
         }
       } else {
         const { id } = await api?.addCheck(updatedCheck);
         if (alerts) {
-          await setRulesForCheck(id, alerts, checkValues.job, checkValues.target);
+          await setRulesForCheck({ checkId: id, alerts, job: checkValues.job, target: checkValues.target });
         }
       }
       onReturn(true);
