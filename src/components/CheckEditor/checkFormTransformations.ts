@@ -269,6 +269,13 @@ const getAlertFormValues = (alertRules: AlertRule[]): AlertFormValues[] =>
     const severity =
       ALERTING_SEVERITY_OPTIONS.find(option => option.value === severityLabel) ?? ALERTING_SEVERITY_OPTIONS[1];
 
+    const labels = Object.entries(rule.labels ?? {})
+      .map(([name, value]) => ({
+        name,
+        value,
+      }))
+      .filter(({ name }) => name !== 'severity'); // We give severity it's own location in the UI, so it needs to be removed from the labels section
+
     return {
       name: rule.alert,
       expression: rule.expr,
@@ -278,10 +285,7 @@ const getAlertFormValues = (alertRules: AlertRule[]): AlertFormValues[] =>
         name: annotationName,
         value: rule.annotations?.[annotationName] ?? '',
       })),
-      labels: Object.keys(rule.labels ?? {}).map(labelName => ({
-        name: labelName,
-        value: rule.labels?.[labelName] ?? '',
-      })),
+      labels,
       severity,
     };
   });

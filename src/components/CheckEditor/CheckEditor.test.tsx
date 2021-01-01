@@ -9,6 +9,7 @@ import {
   HttpMethod,
   HttpVersion,
   GlobalSettings,
+  AlertRule,
 } from 'types';
 import { CheckEditor } from './CheckEditor';
 import { getInstanceMock } from '../../datasource/__mocks__/DataSource';
@@ -95,16 +96,27 @@ const submitForm = async () => {
 };
 
 // Test Renderer
-const renderCheckEditor = async ({ check = defaultCheck, withAlerting = true } = {}) => {
+const renderCheckEditor = async ({
+  check = defaultCheck,
+  withAlerting = true,
+  alertRules = [] as AlertRule[],
+} = {}) => {
   const api = getInstanceMock();
   const instance = {
     api,
     alertRuler: withAlerting ? ({} as DataSourceInstanceSettings) : undefined,
   };
   const meta = {} as AppPluginMeta<GlobalSettings>;
+
   render(
     <InstanceContext.Provider value={{ instance, loading: false, meta }}>
-      <CheckEditor check={check} onReturn={onReturn} />
+      <CheckEditor
+        check={check}
+        onReturn={onReturn}
+        alertRules={alertRules}
+        setRulesForCheck={setRulesForCheck}
+        deleteRulesForCheck={deleteRulesForCheck}
+      />
     </InstanceContext.Provider>
   );
   await waitFor(() => expect(screen.getByText('Check Details')).toBeInTheDocument());
@@ -625,7 +637,8 @@ describe('Alerting', () => {
   it('adds an alert if specified', async () => {
     await renderCheckEditor({ check: getMinimumCheck({ target: 'grafana.com' }) });
     const alertingSection = await toggleSection('Alerting');
-    await userEvent.click(await within(alertingSection).findByRole('button', { name: 'Add alert rule', exact: false }));
+    const addRuleButton = await within(alertingSection).findByRole('button', { name: 'Add alert rule' });
+    await userEvent.click(addRuleButton);
     const nameInput = await within(alertingSection).findByLabelText('Alert name');
     const probeCountInput = await within(alertingSection).findByTestId('alert-probeCount-0');
     const timeCountInput = await within(alertingSection).findByTestId('alert-timeCount-0');
@@ -679,7 +692,54 @@ describe('Alerting', () => {
         ],
       },
     ];
-    expect(setRulesForCheck).toHaveBeenCalledWith(3, expectedValues, 'tacos', 'grafana.com');
+    expect(setRulesForCheck).toHaveBeenCalledWith({
+      checkId: 3,
+      alerts: expectedValues,
+      job: 'tacos',
+      target: 'grafana.com',
+    });
+  });
+
+  it('can edit alerts', async () => {
+    const alertRules = [
+      {
+        alert: 'tacos',
+        expr: 'sum(1-probe_success{job="tacos", instance="grafana.com"}) by (job, instance) >= 1',
+        for: '2h',
+        labels: {
+          severity: 'critical',
+          steve: 'mcsteveson',
+        },
+        annotations: {
+          bob: 'mcbobson',
+        },
+      },
+    ];
+    await renderCheckEditor({ check: getMinimumCheck({ target: 'grafana.com', id: 32 }), alertRules });
+    const alertingSection = await toggleSection('Alerting');
+
+    const nameInput = await within(alertingSection).findByLabelText('Alert name');
+    expect(nameInput).toHaveValue('tacos');
+    const probeCountInput = await within(alertingSection).queryByTestId('alert-probeCount-0');
+    expect(probeCountInput).not.toBeInTheDocument();
+    const timeCountInput = await within(alertingSection).findByTestId('alert-timeCount-0');
+    expect(timeCountInput).toHaveValue(2);
+    const timeUnitInput = await within(alertingSection).findByText('hours');
+    expect(timeUnitInput).toBeInTheDocument();
+
+    const labelsExpand = await within(alertingSection).findByText('Labels');
+    userEvent.click(labelsExpand);
+    const labelNameInput = await within(alertingSection).findByTestId('alert-0-labelName-0');
+    expect(labelNameInput).toHaveValue('steve');
+    const labelValueInput = await within(alertingSection).findByTestId('alert-0-labelValue-0');
+    expect(labelValueInput).toHaveValue('mcsteveson');
+
+    const annotationsExpand = await within(alertingSection).findByText('Annotations');
+    userEvent.click(annotationsExpand);
+    const annotationNameInput = await within(alertingSection).findByTestId('alert-0-annotationName-0');
+    expect(annotationNameInput).toHaveValue('bob');
+    const annotationValueInput = await within(alertingSection).findByTestId('alert-0-annotationValue-0');
+    expect(annotationValueInput).toHaveValue('mcbobson');
   });
 
   it('shows disabled message if no datasource', async () => {
