@@ -14,6 +14,7 @@ import { PromqlExpression } from './PromqlExpression';
 
 interface Props {
   alertRules: AlertRule[];
+  unparseable?: boolean;
   editing: boolean;
   checkId?: number;
 }
@@ -82,7 +83,7 @@ const getStyles = (theme: GrafanaTheme) => ({
   `,
 });
 
-export const Alerting: FC<Props> = ({ editing, alertRules }) => {
+export const Alerting: FC<Props> = ({ editing, alertRules, unparseable, checkId }) => {
   const [showAlerting, setShowAlerting] = useState(false);
   const { instance } = useContext(InstanceContext);
   const { register, watch, errors, control } = useFormContext();
@@ -112,21 +113,20 @@ export const Alerting: FC<Props> = ({ editing, alertRules }) => {
     );
   }
 
-  // if (alertRules.length && editing) {
-  //   return (
-  //     <Collapse label="Alerting" onToggle={() => setShowAlerting(!showAlerting)} isOpen={showAlerting} collapsible>
-  //       <div className={styles.container}>
-  //         <p>
-  //           {alertRules.length} alert{alertRules.length > 1 ? 's are' : ' is'} tied to this check. Edit this check's
-  //           alerts in the <code>syntheticmonitoring &gt; {checkId}</code> section of{' '}
-  //           <a href={alertingUiUrl} className={styles.link}>
-  //             Grafana Cloud Alerting
-  //           </a>
-  //         </p>
-  //       </div>
-  //     </Collapse>
-  //   );
-  // }
+  if (unparseable) {
+    return (
+      <Collapse label="Alerting" onToggle={() => setShowAlerting(!showAlerting)} isOpen={showAlerting} collapsible>
+        <div className={styles.container}>
+          The alerting rules for this check can't be edited here. Please to go the{' '}
+          <code>syntheticmonitoring &gt; {checkId}</code> section of &nbsp;
+          <a href={alertingUiUrl} className={styles.link}>
+            Grafana Cloud Alerting.
+          </a>{' '}
+          &nbsp; to edit.
+        </div>
+      </Collapse>
+    );
+  }
 
   return (
     <Collapse label="Alerting" onToggle={() => setShowAlerting(!showAlerting)} isOpen={showAlerting} collapsible>

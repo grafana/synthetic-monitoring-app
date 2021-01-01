@@ -742,6 +742,29 @@ describe('Alerting', () => {
     expect(annotationValueInput).toHaveValue('mcbobson');
   });
 
+  it('shows a disabled message on edit if a rule cant be parsed', async () => {
+    const alertRules = [
+      {
+        alert: 'tacos',
+        expr: 'sum(1-probe_success{job="tacos", instance="grafana.com"}) by (job, instance) >= 1',
+        for: 'one MILLION years',
+        labels: {
+          severity: 'something completely different',
+          steve: 'mcsteveson',
+        },
+        annotations: {
+          bob: 'mcbobson',
+        },
+      },
+    ];
+    await renderCheckEditor({ check: getMinimumCheck({ target: 'grafana.com', id: 32 }), alertRules });
+    const alertingSection = await toggleSection('Alerting');
+    const errorMessage = await within(
+      alertingSection
+    ).findByText("The alerting rules for this check can't be edited here.", { exact: false });
+    expect(errorMessage).toBeInTheDocument();
+  });
+
   it('shows disabled message if no datasource', async () => {
     await renderCheckEditor({ check: getMinimumCheck({ target: 'grafana.com' }), withAlerting: false });
     await toggleSection('Alerting');

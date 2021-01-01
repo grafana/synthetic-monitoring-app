@@ -56,7 +56,10 @@ export const CheckEditor: FC<Props> = ({ check, onReturn, alertRules, setRulesFo
 
   const styles = useStyles(getStyles);
 
-  const defaultValues = useMemo(() => getDefaultValuesFromCheck(check, alertRules), [check, alertRules]);
+  const { defaultValues, alertsUnparseable } = useMemo(() => getDefaultValuesFromCheck(check, alertRules), [
+    check,
+    alertRules,
+  ]);
 
   const formMethods = useForm<CheckFormValues>({ defaultValues, mode: 'onChange' });
 
@@ -167,7 +170,12 @@ export const CheckEditor: FC<Props> = ({ check, onReturn, alertRules, setRulesFo
           />
           <CheckUsage />
           <CheckSettings typeOfCheck={selectedCheckType} isEditor={isEditor} />
-          <Alerting alertRules={alertRules} editing={Boolean(check?.id)} checkId={check?.id} />
+          <Alerting
+            alertRules={alertRules}
+            editing={Boolean(check?.id)}
+            checkId={check?.id}
+            unparseable={alertsUnparseable}
+          />
         </div>
         <HorizontalGroup>
           <Button

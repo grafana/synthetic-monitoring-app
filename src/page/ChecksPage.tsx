@@ -57,16 +57,19 @@ export const ChecksPage: FC<Props> = ({ id }) => {
 
   const onAddNew = () => setAddNew(true);
 
-  const checkEditorProps = { alertRules, setRulesForCheck, deleteRulesForCheck };
-
   if (loading || !instance.api || alertsLoading) {
     return <div>Loading...</div>;
   }
-  if (selectedCheck) {
-    return <CheckEditor check={selectedCheck} onReturn={onGoBack} {...checkEditorProps} />;
-  }
-  if (addNew) {
-    return <CheckEditor onReturn={onGoBack} {...checkEditorProps} />;
+  if (selectedCheck || addNew) {
+    return (
+      <CheckEditor
+        check={selectedCheck ? selectedCheck : undefined}
+        onReturn={onGoBack}
+        alertRules={alertRules}
+        setRulesForCheck={setRulesForCheck}
+        deleteRulesForCheck={deleteRulesForCheck}
+      />
+    );
   }
   return <CheckList instance={instance} onAddNewClick={onAddNew} checks={checks} />;
 };

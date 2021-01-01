@@ -261,52 +261,72 @@ const getAllFormSettingsForCheck = (): SettingsFormValues => {
   };
 };
 
-const getAlertFormValues = (alertRules: AlertRule[]): AlertFormValues[] =>
-  alertRules.map(rule => {
-    const { timeCount, timeUnit } = parseAlertTimeUnits(rule.for ?? '');
-    const timeOption = TIME_UNIT_OPTIONS.find(({ value }) => value === timeUnit) ?? TIME_UNIT_OPTIONS[1];
-    const severityLabel = rule.labels?.severity;
-    const severity =
-      ALERTING_SEVERITY_OPTIONS.find(option => option.value === severityLabel) ?? ALERTING_SEVERITY_OPTIONS[1];
+type GetAlertFormValuesReturn = {
+  alerts: AlertFormValues[];
+  unparseable: boolean;
+};
 
-    const labels = Object.entries(rule.labels ?? {})
-      .map(([name, value]) => ({
-        name,
-        value,
-      }))
-      .filter(({ name }) => name !== 'severity'); // We give severity it's own location in the UI, so it needs to be removed from the labels section
+const getAlertFormValues = (alertRules: AlertRule[]): GetAlertFormValuesReturn =>
+  alertRules.reduce<GetAlertFormValuesReturn>(
+    (acc, rule) => {
+      const { timeCount, timeUnit } = parseAlertTimeUnits(rule.for ?? '');
+      const timeOption = TIME_UNIT_OPTIONS.find(({ value }) => value === timeUnit);
+      const severityLabel = rule.labels?.severity;
+      const severity = ALERTING_SEVERITY_OPTIONS.find(option => option.value === severityLabel);
 
-    return {
-      name: rule.alert,
-      expression: rule.expr,
-      timeCount: parseInt(timeCount, 10),
-      timeUnit: timeOption,
-      annotations: Object.keys(rule.annotations ?? {}).map(annotationName => ({
-        name: annotationName,
-        value: rule.annotations?.[annotationName] ?? '',
-      })),
-      labels,
-      severity,
-    };
-  });
+      if (!timeOption || !severity) {
+        acc.unparseable = true;
+      }
+
+      const labels = Object.entries(rule.labels ?? {})
+        .map(([name, value]) => ({
+          name,
+          value,
+        }))
+        .filter(({ name }) => name !== 'severity'); // We give severity it's own location in the UI, so it needs to be removed from the labels section
+
+      acc.alerts.push({
+        name: rule.alert,
+        expression: rule.expr,
+        timeCount: parseInt(timeCount, 10),
+        timeUnit: timeOption ?? {},
+        annotations: Object.keys(rule.annotations ?? {}).map(annotationName => ({
+          name: annotationName,
+          value: rule.annotations?.[annotationName] ?? '',
+        })),
+        labels,
+        severity: severity ?? {},
+      });
+      return acc;
+    },
+    { alerts: [], unparseable: false }
+  );
+
+type DefaultValuesReturn = {
+  defaultValues: CheckFormValues;
+  alertsUnparseable: boolean;
+};
 
 export const getDefaultValuesFromCheck = (
   check: Check = fallbackCheck,
   alertRules: AlertRule[] = []
-): CheckFormValues => {
+): DefaultValuesReturn => {
   const defaultCheckType = checkType(check.settings);
   const settings = check.id ? getFormSettingsForCheck(check.settings) : getAllFormSettingsForCheck();
-  const alerts = getAlertFormValues(alertRules);
+  const { alerts, unparseable } = getAlertFormValues(alertRules);
 
   return {
-    ...check,
-    timeout: check.timeout / 1000,
-    frequency: check.frequency / 1000,
-    probes: check.probes,
-    checkType:
-      CHECK_TYPE_OPTIONS.find(checkTypeOption => checkTypeOption.value === defaultCheckType) ?? CHECK_TYPE_OPTIONS[1],
-    settings,
-    alerts,
+    defaultValues: {
+      ...check,
+      timeout: check.timeout / 1000,
+      frequency: check.frequency / 1000,
+      probes: check.probes,
+      checkType:
+        CHECK_TYPE_OPTIONS.find(checkTypeOption => checkTypeOption.value === defaultCheckType) ?? CHECK_TYPE_OPTIONS[1],
+      settings,
+      alerts,
+    },
+    alertsUnparseable: unparseable,
   };
 };
 
