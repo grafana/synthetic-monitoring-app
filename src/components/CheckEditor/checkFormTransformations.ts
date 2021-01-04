@@ -274,10 +274,6 @@ const getAlertFormValues = (alertRules: AlertRule[]): GetAlertFormValuesReturn =
       const severityLabel = rule.labels?.severity;
       const severity = ALERTING_SEVERITY_OPTIONS.find(option => option.value === severityLabel);
 
-      if (!timeOption || !severity) {
-        acc.unparseable = true;
-      }
-
       const labels = Object.entries(rule.labels ?? {})
         .map(([name, value]) => ({
           name,
@@ -285,9 +281,14 @@ const getAlertFormValues = (alertRules: AlertRule[]): GetAlertFormValuesReturn =
         }))
         .filter(({ name }) => name !== 'severity'); // We give severity it's own location in the UI, so it needs to be removed from the labels section
 
+      const probeCount = parseInt(rule.expr.split(' >= ')?.[1], 10);
+
+      if (!timeOption || !severity || !probeCount) {
+        acc.unparseable = true;
+      }
       acc.alerts.push({
         name: rule.alert,
-        expression: rule.expr,
+        probeCount,
         timeCount: parseInt(timeCount, 10),
         timeUnit: timeOption ?? {},
         annotations: Object.keys(rule.annotations ?? {}).map(annotationName => ({

@@ -74,9 +74,7 @@ export function useAlerts(checkId?: number) {
 
         return {
           alert: alert.name,
-          expr:
-            alert.expression ||
-            `sum(1-probe_success{job="${job}", instance="${target}"}) by (job, instance) >= ${alert.probeCount}`,
+          expr: `sum(1-probe_success{job="${job}", instance="${target}"}) by (job, instance) >= ${alert.probeCount}`,
           for: `${alert.timeCount}${alert.timeUnit.value}`,
           annotations,
           labels,

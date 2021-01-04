@@ -704,7 +704,7 @@ describe('Alerting', () => {
     const alertRules = [
       {
         alert: 'tacos',
-        expr: 'sum(1-probe_success{job="tacos", instance="grafana.com"}) by (job, instance) >= 1',
+        expr: 'sum(1-probe_success{job="tacos", instance="grafana.com"}) by (job, instance) >= 2',
         for: '2h',
         labels: {
           severity: 'critical',
@@ -721,7 +721,7 @@ describe('Alerting', () => {
     const nameInput = await within(alertingSection).findByLabelText('Alert name');
     expect(nameInput).toHaveValue('tacos');
     const probeCountInput = await within(alertingSection).queryByTestId('alert-probeCount-0');
-    expect(probeCountInput).not.toBeInTheDocument();
+    expect(probeCountInput).toHaveValue(2);
     const timeCountInput = await within(alertingSection).findByTestId('alert-timeCount-0');
     expect(timeCountInput).toHaveValue(2);
     const timeUnitInput = await within(alertingSection).findByText('hours');

@@ -27,11 +27,15 @@ const getStyles = (theme: GrafanaTheme) => ({
     text-decoration: underline;
   `,
   container: css`
-    background: #202226;
+    background: ${theme.colors.bg2};
     padding: ${theme.spacing.md};
     display: flex;
     flex-direction: column;
     margin-bottom: ${theme.spacing.md};
+  `,
+  unparseableContainer: css`
+    background: ${theme.colors.bg2};
+    padding: ${theme.spacing.md};
   `,
   icon: css`
     margin-right: ${theme.spacing.xs};
@@ -116,13 +120,13 @@ export const Alerting: FC<Props> = ({ editing, alertRules, unparseable, checkId 
   if (unparseable) {
     return (
       <Collapse label="Alerting" onToggle={() => setShowAlerting(!showAlerting)} isOpen={showAlerting} collapsible>
-        <div className={styles.container}>
+        <div className={styles.unparseableContainer}>
           The alerting rules for this check can't be edited here. Please to go the{' '}
           <code>syntheticmonitoring &gt; {checkId}</code> section of &nbsp;
           <a href={alertingUiUrl} className={styles.link}>
-            Grafana Cloud Alerting.
+            Grafana Cloud Alerting
           </a>{' '}
-          &nbsp; to edit.
+          to edit.
         </div>
       </Collapse>
     );

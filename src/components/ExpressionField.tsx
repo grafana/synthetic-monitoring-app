@@ -48,38 +48,33 @@ export const ExpressionField: FC<Props> = ({ editing, field, index }) => {
     <div className={styles.inputWrapper}>
       <Label>Expression</Label>
       <div className={styles.horizontalFlexRow}>
-        {editing ? (
-          <span className={styles.text}>If probes report connection errors for</span>
-        ) : (
-          <div className={styles.horizontallyAligned}>
-            <span className={styles.text}>An alert will fire if</span>
-            <Field
-              className={styles.clearMarginBottom}
-              invalid={errors?.alerts?.[index]?.probeCount}
-              error={errors?.alerts?.[index]?.probeCount?.message}
-              horizontal
-            >
-              <Input
-                ref={register({
-                  required: true,
-                  max: {
-                    value: probeCount,
-                    message: `There are ${probeCount} probes configured for this check`,
-                  },
-                })}
-                name={`alerts[${index}].probeCount`}
-                id={`probe-count-${index}`}
-                type="number"
-                placeholder="number"
-                className={styles.numberInput}
-                defaultValue={field.probeCount}
-                data-testid={`alert-probeCount-${index}`}
-              />
-            </Field>
-
-            <span className={styles.text}>or more probes report connection errors for</span>
-          </div>
-        )}
+        <div className={styles.horizontallyAligned}>
+          <span className={styles.text}>An alert will fire if</span>
+          <Field
+            className={styles.clearMarginBottom}
+            invalid={errors?.alerts?.[index]?.probeCount}
+            error={errors?.alerts?.[index]?.probeCount?.message}
+            horizontal
+          >
+            <Input
+              ref={register({
+                required: true,
+                max: {
+                  value: probeCount,
+                  message: `There are ${probeCount} probes configured for this check`,
+                },
+              })}
+              name={`alerts[${index}].probeCount`}
+              id={`probe-count-${index}`}
+              type="number"
+              placeholder="number"
+              className={styles.numberInput}
+              defaultValue={field.probeCount}
+              data-testid={`alert-probeCount-${index}`}
+            />
+          </Field>
+          <span className={styles.text}>or more probes report connection errors for</span>
+        </div>
 
         <Field
           className={styles.clearMarginBottom}

@@ -14,6 +14,7 @@ const getStyles = (theme: GrafanaTheme) => ({
     font-size: ${theme.typography.size.md};
     display: block;
     width: 100%;
+    white-space: pre-wrap;
   `,
   promqlSection: css`
     margin-bottom: ${theme.spacing.md};
