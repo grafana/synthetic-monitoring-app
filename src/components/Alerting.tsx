@@ -1,14 +1,10 @@
 import React, { FC, useState, useContext } from 'react';
 import { css } from 'emotion';
 import { GrafanaTheme } from '@grafana/data';
-import { Button, Field, Icon, Input, Label, Select, useStyles } from '@grafana/ui';
+import { useStyles } from '@grafana/ui';
 import { Collapse } from './Collapse';
-import { Controller, useFieldArray, useFormContext } from 'react-hook-form';
-import { ALERTING_SEVERITY_OPTIONS, TIME_UNIT_OPTIONS } from './constants';
 import { AlertRule } from 'types';
 import { InstanceContext } from './InstanceContext';
-import { AlertAnnotations } from './AlertAnnotations';
-import { AlertLabels } from './AlertLabels';
 
 interface Props {
   alertRules: AlertRule[];
@@ -86,37 +82,31 @@ const getStyles = (theme: GrafanaTheme) => ({
 export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
   const [showAlerting, setShowAlerting] = useState(false);
   const { instance } = useContext(InstanceContext);
-  const { register, watch, errors, control } = useFormContext();
-  const { fields, append, remove } = useFieldArray({ control, name: 'alerts' });
   const styles = useStyles(getStyles);
   const alertingUiUrl = `a/grafana-alerting-ui-app/?tab=rules&rulessource=${instance.metrics?.name}`;
-  const probeCount = watch('probes').length;
-  const alerts = watch('alerts');
-  const job = watch('job');
-  const target = watch('target');
 
-  if (!instance.alertRuler) {
-    return (
-      <Collapse label="Alerting" onToggle={() => setShowAlerting(!showAlerting)} isOpen={showAlerting} collapsible>
-        <div className={styles.container}>
-          <p>
-            <Icon className={styles.icon} name="exclamation-triangle" />
-            Synthetic Monitoring uses &nbsp;
-            <a href="https://grafana.com/docs/grafana-cloud/alerts/grafana-cloud-alerting/" className={styles.link}>
-              Grafana Cloud Alerting
-            </a>
-            , which is not accessible for Grafana instances running on-prem. Alert rules can be added to new or existing
-            checks in &nbsp;
-            <a href="https://grafana.com" className={styles.link}>
-              Grafana Cloud.
-            </a>
-          </p>
-        </div>
-      </Collapse>
-    );
-  }
+  // if (!instance.alertRuler) {
+  //   return (
+  //     <Collapse label="Alerting" onToggle={() => setShowAlerting(!showAlerting)} isOpen={showAlerting} collapsible>
+  //       <div className={styles.container}>
+  //         <p>
+  //           <Icon className={styles.icon} name="exclamation-triangle" />
+  //           Synthetic Monitoring uses &nbsp;
+  //           <a href="https://grafana.com/docs/grafana-cloud/alerts/grafana-cloud-alerting/" className={styles.link}>
+  //             Grafana Cloud Alerting
+  //           </a>
+  //           , which is not accessible for Grafana instances running on-prem. Alert rules can be added to new or existing
+  //           checks in &nbsp;
+  //           <a href="https://grafana.com" className={styles.link}>
+  //             Grafana Cloud.
+  //           </a>
+  //         </p>
+  //       </div>
+  //     </Collapse>
+  //   );
+  // }
 
-  if (alertRules.length && editing) {
+  if (alertRules.length && editing && instance.alertRuler) {
     return (
       <Collapse label="Alerting" onToggle={() => setShowAlerting(!showAlerting)} isOpen={showAlerting} collapsible>
         <div className={styles.container}>
@@ -131,143 +121,5 @@ export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
       </Collapse>
     );
   }
-  return (
-    <Collapse label="Alerting" onToggle={() => setShowAlerting(!showAlerting)} isOpen={showAlerting} collapsible>
-      <p className={styles.subheader}>
-        Set up alerts for this check here. You must visit{' '}
-        <a href={alertingUiUrl} className={styles.link}>
-          Grafana Cloud Alerting
-        </a>
-        &nbsp; to edit this alert and add receivers. Learn more about alert conditions and receivers in{' '}
-        <a href={'https://grafana.com/docs/grafana-cloud/alerts/grafana-cloud-alerting/'}>
-          Grafana Cloud documentation
-        </a>
-        .
-      </p>
-      {fields.map((field, index) => {
-        const promqlAlertingExp = `sum(1 - probe_success{job="${job}", instance="${target}"}) by (job, instance) >= ${alerts[
-          index
-        ].probeCount || `<value not selected>`}`;
-        return (
-          <div key={field.id} className={styles.container}>
-            <Label htmlFor={`alert-name-${index}`}>Alert name</Label>
-            <Field className={styles.halfWidth} invalid={errors?.alerts?.[index]?.name}>
-              <Input
-                ref={register({ required: true })}
-                name={`alerts[${index}].name`}
-                id={`alert-name-${index}`}
-                type="text"
-                placeholder="Name to identify alert rule"
-                defaultValue={field.name}
-              />
-            </Field>
-
-            <div className={styles.inputWrapper}>
-              <Label>Expression</Label>
-              <div className={styles.horizontalFlexRow}>
-                <div className={styles.horizontallyAligned}>
-                  <span className={styles.text}>An alert will fire if</span>
-                  <Field
-                    className={styles.clearMarginBottom}
-                    invalid={errors?.alerts?.[index]?.probeCount}
-                    error={errors?.alerts?.[index]?.probeCount?.message}
-                    horizontal
-                  >
-                    <Input
-                      ref={register({
-                        required: true,
-                        max: { value: probeCount, message: `There are ${probeCount} probes configured for this check` },
-                      })}
-                      name={`alerts[${index}].probeCount`}
-                      id={`probe-count-${index}`}
-                      type="number"
-                      placeholder="number"
-                      className={styles.numberInput}
-                      defaultValue={field.probeCount}
-                      data-testid={`alert-probeCount-${index}`}
-                    />
-                  </Field>
-
-                  <span className={styles.text}>or more probes report connection errors for</span>
-                </div>
-
-                <Field
-                  className={styles.clearMarginBottom}
-                  invalid={errors?.alerts?.[index]?.timeCount}
-                  error={errors?.alerts?.[index]?.timeCount?.message}
-                  horizontal
-                >
-                  <Input
-                    type={'number'}
-                    ref={register({ required: true })}
-                    name={`alerts[${index}].timeCount`}
-                    id={`alert-time-quantity-${index}`}
-                    placeholder="number"
-                    className={styles.numberInput}
-                    defaultValue={field.timeCount}
-                    data-testid={`alert-timeCount-${index}`}
-                  />
-                </Field>
-                <Controller
-                  as={Select}
-                  name={`alerts[${index}].timeUnit`}
-                  options={TIME_UNIT_OPTIONS}
-                  className={styles.select}
-                  defaultValue={TIME_UNIT_OPTIONS[1]}
-                  data-testid={`alert-timeUnit-${index}`}
-                />
-              </div>
-            </div>
-            <div className={styles.severityContainer}>
-              <Label>Severity</Label>
-              <Controller
-                as={Select}
-                name={`alerts[${index}].severity`}
-                options={ALERTING_SEVERITY_OPTIONS}
-                className={styles.select}
-                defaultValue={ALERTING_SEVERITY_OPTIONS[1]}
-              />
-            </div>
-            <div className={styles.promqlSection}>
-              <Label
-                className={styles.unsetMaxWidth}
-                description={
-                  <p>
-                    This alert will appear as promQL in the{' '}
-                    <a className={styles.link} href={alertingUiUrl}>
-                      Grafana Cloud Alerting.
-                    </a>{' '}
-                    If you prefer to write alerts in promQL, you can do so from the Alerting UI.{' '}
-                    <a href={'https://prometheus.io/docs/prometheus/latest/querying/basics/'} className={styles.link}>
-                      Learn more about PromQL.
-                    </a>
-                  </p>
-                }
-              >
-                PromQL preview
-              </Label>
-              <code className={styles.promql}>{promqlAlertingExp}</code>
-            </div>
-            <AlertLabels index={index} />
-            <AlertAnnotations index={index} />
-            <div className={styles.deleteButton}>
-              <Button onClick={() => remove(index)} size="sm" variant="destructive" type="button">
-                <Icon name="trash-alt" />
-                &nbsp; Remove alert rule
-              </Button>
-            </div>
-          </div>
-        );
-      })}
-      <Button
-        onClick={() => append({ name: job, timeCount: 5, probeCount: 1 })}
-        variant="secondary"
-        size="sm"
-        type="button"
-      >
-        <Icon name="plus" />
-        &nbsp; Add alert rule
-      </Button>
-    </Collapse>
-  );
+  return null;
 };

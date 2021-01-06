@@ -622,73 +622,13 @@ describe('TCP', () => {
 });
 
 describe('Alerting', () => {
-  it('adds an alert if specified', async () => {
+  it('does not show alerting for new checks', async () => {
     await renderCheckEditor({ check: getMinimumCheck({ target: 'grafana.com' }) });
-    const alertingSection = await toggleSection('Alerting');
-    await userEvent.click(await within(alertingSection).findByRole('button', { name: 'Add alert rule', exact: false }));
-    const nameInput = await within(alertingSection).findByLabelText('Alert name');
-    const probeCountInput = await within(alertingSection).findByTestId('alert-probeCount-0');
-    const timeCountInput = await within(alertingSection).findByTestId('alert-timeCount-0');
-    userEvent.clear(nameInput);
-    await act(async () => await userEvent.type(nameInput, 'Horchata'));
-    userEvent.clear(probeCountInput);
-    await act(async () => await userEvent.type(probeCountInput, '1'));
-    userEvent.clear(timeCountInput);
-    await act(async () => await userEvent.type(timeCountInput, '10'));
-
-    const labelsExpand = await within(alertingSection).findByText('Labels');
-    userEvent.click(labelsExpand);
-    const addLabel = await within(alertingSection).findByRole('button', { name: 'Add label' });
-    userEvent.click(addLabel);
-    const labelNameInput = await within(alertingSection).findByTestId('alert-0-labelName-0');
-    await act(async () => await userEvent.type(labelNameInput, 'steve'));
-    const labelValueInput = await within(alertingSection).findByTestId('alert-0-labelValue-0');
-    await act(async () => await userEvent.type(labelValueInput, 'mcsteveson'));
-
-    const annotationsExpand = await within(alertingSection).findByText('Annotations');
-    userEvent.click(annotationsExpand);
-    const addAnnotation = await within(alertingSection).findByRole('button', { name: 'Add annotation' });
-    userEvent.click(addAnnotation);
-    const annotationNameInput = await within(alertingSection).findByTestId('alert-0-annotationName-0');
-    await act(async () => await userEvent.type(annotationNameInput, 'bob'));
-    const annotationValueInput = await within(alertingSection).findByTestId('alert-0-annotationValue-0');
-    await act(async () => await userEvent.paste(annotationValueInput, 'mcbobson'));
-
-    await submitForm();
-    const expectedValues = [
-      {
-        name: 'Horchata',
-        probeCount: '1',
-        severity: {
-          label: 'Warning',
-          value: 'warn',
-        },
-        timeCount: '10',
-        timeUnit: { label: 'minutes', value: 'm' },
-        labels: [
-          {
-            name: 'steve',
-            value: 'mcsteveson',
-          },
-        ],
-        annotations: [
-          {
-            name: 'bob',
-            value: 'mcbobson',
-          },
-        ],
-      },
-    ];
-    expect(setRulesForCheck).toHaveBeenCalledWith(3, expectedValues, 'tacos', 'grafana.com');
+    expect(await screen.queryByText('Alerting')).not.toBeInTheDocument();
   });
 
-  it('shows disabled message if no datasource', async () => {
+  it('does not show alerting if there are no rules', async () => {
     await renderCheckEditor({ check: getMinimumCheck({ target: 'grafana.com' }), withAlerting: false });
-    await toggleSection('Alerting');
-    // Using a partial string here since the message is broken up across html elements
-    const disabledMessage = screen.getByText('Grafana instances running on-prem', { exact: false });
-    const cloudAlertingLink = screen.getByRole('link', { name: 'Grafana Cloud Alerting' });
-    expect(disabledMessage).toBeInTheDocument();
-    expect(cloudAlertingLink).toBeInTheDocument();
+    expect(await screen.queryByText('Alerting')).not.toBeInTheDocument();
   });
 });
