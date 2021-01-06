@@ -1,3 +1,10 @@
+## [0.5.6](https://github.com/grafana/synthetic-monitoring-app/compare/0.5.5...0.5.6) (2021-01-06)
+
+
+### Bug Fixes
+
+* hide alerts for new checks ([#174](https://github.com/grafana/synthetic-monitoring-app/issues/174)) ([a7713f6](https://github.com/grafana/synthetic-monitoring-app/commit/a7713f638a5a552362934e1b649b3dd84e86aec2))
+
 ## [0.5.5](https://github.com/grafana/synthetic-monitoring-app/compare/0.5.4...0.5.5) (2020-12-30)
 
 
