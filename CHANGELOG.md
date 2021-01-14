@@ -1,3 +1,10 @@
+## [0.5.7](https://github.com/grafana/synthetic-monitoring-app/compare/0.5.6...0.5.7) (2021-01-14)
+
+
+### Bug Fixes
+
+* renavigate to checks page after deleting check ([550a14a](https://github.com/grafana/synthetic-monitoring-app/commit/550a14a2abdb6b414551260c616b198981abf1ed))
+
 ## [0.5.6](https://github.com/grafana/synthetic-monitoring-app/compare/0.5.5...0.5.6) (2021-01-06)
 
 
