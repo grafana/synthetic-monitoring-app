@@ -4,6 +4,7 @@ interface ActiveSeriesParams {
   probeCount: number;
   checkType: CheckType;
   frequencySeconds: number;
+  useFullMetrics: boolean;
 }
 
 interface UsageValues {
@@ -19,16 +20,24 @@ enum CheckSeries {
   TCP = 59,
 }
 
-const getSeriesPerCheck = (checkType: CheckType) => {
+enum CheckSeriesBasic {
+  PING = 25,
+  HTTP = 38,
+  DNS = 28,
+  TCP = 23,
+}
+
+const getSeriesPerCheck = (checkType: CheckType, useFullMetrics: boolean) => {
+  const Series = useFullMetrics ? CheckSeries : CheckSeriesBasic;
   switch (checkType) {
     case CheckType.PING:
-      return CheckSeries.PING;
+      return Series.PING;
     case CheckType.TCP:
-      return CheckSeries.TCP;
+      return Series.TCP;
     case CheckType.DNS:
-      return CheckSeries.DNS;
+      return Series.DNS;
     case CheckType.HTTP:
-      return CheckSeries.HTTP;
+      return Series.HTTP;
   }
 };
 
@@ -51,8 +60,13 @@ const getLogsGbPerMonth = (probeCount: number, frequencySeconds: number) => {
   return parseFloat(logsGbPerMonth.toFixed(2));
 };
 
-export const calculateUsage = ({ probeCount, checkType, frequencySeconds }: ActiveSeriesParams): UsageValues => {
-  const seriesPerCheck = getSeriesPerCheck(checkType);
+export const calculateUsage = ({
+  probeCount,
+  checkType,
+  frequencySeconds,
+  useFullMetrics,
+}: ActiveSeriesParams): UsageValues => {
+  const seriesPerCheck = getSeriesPerCheck(checkType, useFullMetrics);
   const activeSeries = seriesPerCheck * probeCount;
 
   return {

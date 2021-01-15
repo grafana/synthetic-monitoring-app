@@ -25,7 +25,7 @@ import { TLSConfig } from 'components/TLSConfig';
 import { NameValueInput } from 'components/NameValueInput';
 import { validateBearerToken, validateHTTPBody, validateHTTPHeaderName, validateHTTPHeaderValue } from 'validation';
 import { GrafanaTheme } from '@grafana/data';
-import { HorizonalCheckboxField } from 'components/HorizonalCheckboxField';
+import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 
 const httpVersionOptions = [
   {
@@ -243,7 +243,7 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
         collapsible
       >
         <VerticalGroup spacing="xs">
-          <HorizonalCheckboxField
+          <HorizontalCheckboxField
             label="Include bearer authorization header in request"
             id="http-settings-bearer-authorization"
             disabled={!isEditor}
@@ -272,7 +272,7 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
           )}
         </VerticalGroup>
         <VerticalGroup spacing="xs">
-          <HorizonalCheckboxField
+          <HorizontalCheckboxField
             label="Include basic authorization header in request"
             id="http-settings-basic-authorization"
             disabled={!isEditor}
@@ -420,7 +420,7 @@ export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
           <Field label="IP version" description="The IP protocol of the HTTP request" disabled={!isEditor}>
             <Controller as={Select} name="settings.http.ipVersion" options={IP_OPTIONS} />
           </Field>
-          <HorizonalCheckboxField
+          <HorizontalCheckboxField
             id="http-settings-followRedirects"
             label="Follow redirects"
             disabled={!isEditor}

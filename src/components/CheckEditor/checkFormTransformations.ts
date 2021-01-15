@@ -263,6 +263,7 @@ export const getDefaultValuesFromCheck = (check: Check = fallbackCheck): CheckFo
 
   return {
     ...check,
+    useFullMetrics: !check.basicMetricsOnly,
     timeout: check.timeout / 1000,
     frequency: check.frequency / 1000,
     probes: check.probes,
@@ -507,5 +508,6 @@ export const getCheckFromFormValues = (
     timeout: formValues.timeout * 1000,
     frequency: formValues.frequency * 1000,
     settings: getSettingsFromFormValues(formValues, defaultValues),
+    basicMetricsOnly: !formValues.useFullMetrics,
   };
 };

@@ -249,6 +249,7 @@ export interface CheckFormValues extends Omit<Check, 'settings' | 'labels'> {
   settings: SettingsFormValues;
   labels?: Label[];
   alerts?: AlertFormValues[];
+  useFullMetrics: boolean;
 }
 
 export interface Check extends BaseObject {
@@ -258,6 +259,7 @@ export interface Check extends BaseObject {
   offset?: number;
   timeout: number;
   enabled: boolean;
+  basicMetricsOnly: boolean;
 
   labels: Label[]; // Currently list of [name:value]... can it be Labels?
   settings: Settings; //
