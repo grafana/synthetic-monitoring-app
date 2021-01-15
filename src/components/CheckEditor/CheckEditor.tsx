@@ -94,7 +94,6 @@ export const CheckEditor: FC<Props> = ({ check, onReturn }) => {
   };
 
   const target = formMethods.watch('target', '') as string;
-  const useFullMetrics = formMethods.watch('useFullMetrics');
 
   return (
     <FormContext {...formMethods}>
