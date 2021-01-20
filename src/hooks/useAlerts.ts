@@ -72,6 +72,7 @@ const tranformFormValues = (values: Label[]) =>
 
 export function useAlerts(checkId?: number) {
   const [alertRules, setAlertRules] = useState<AlertRule[]>([]);
+  const [defaultRulesSetCount, setDefaultRulesSetCount] = useState(0);
   const {
     instance: { alertRuler },
   } = useContext(InstanceContext);
@@ -79,7 +80,7 @@ export function useAlerts(checkId?: number) {
   const alertRulerUrl = alertRuler?.url;
 
   const setDefaultRules = async () => {
-    return getBackendSrv()
+    await getBackendSrv()
       .fetch({
         url: `${alertRulerUrl}/rules/syntheticmonitoring`,
         method: 'POST',
@@ -89,9 +90,11 @@ export function useAlerts(checkId?: number) {
         data: stringify(defaultRules),
       })
       .toPromise();
+
+    setDefaultRulesSetCount(defaultRulesSetCount + 1);
   };
 
-  const setRulesForCheck = async (alerts: AlertFormValues[]) => {
+  const setRules = async (alerts: AlertFormValues[]) => {
     if (!alertRuler) {
       throw new Error('There is no alert ruler datasource configured for this Grafana instance');
     }
@@ -138,12 +141,12 @@ export function useAlerts(checkId?: number) {
         setAlertRules(rules);
       });
     }
-  }, [alertRulerUrl]);
+  }, [alertRulerUrl, defaultRulesSetCount]);
 
   return {
     alertRules,
     setDefaultRules,
-    setRulesForCheck,
+    setRules,
     deleteRulesForCheck: getDeleteRulesForCheck(alertRulerUrl ?? ''),
   };
 }
