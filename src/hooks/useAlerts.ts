@@ -2,15 +2,42 @@ import { useState, useEffect, useContext } from 'react';
 import { getBackendSrv } from '@grafana/runtime';
 import { parse, stringify } from 'yaml';
 import { SM_ALERTING_NAMESPACE } from 'components/constants';
-import { AlertFormValues, AlertRule, Label } from 'types';
+import { AlertFormValues, AlertRule, AlertSensitivity, Label } from 'types';
 import { InstanceContext } from 'components/InstanceContext';
 
-const fetchRulesForCheck = async (checkId: number, alertRulerUrl: string) => {
+enum AlertThresholds {
+  High = 0.95,
+  Medium = 0.9,
+  Low = 0.75,
+}
+
+const defaultRules = {
+  name: 'default',
+  rules: [
+    {
+      alert: 'High Sensitivity',
+      expr: `probe_success * on (instance, job, probe, config_version) group_left (check_name) sm_check_info{alert_sensitivity="${AlertSensitivity.High}"} < ${AlertThresholds.High}`,
+      for: '5m',
+    },
+    {
+      alert: 'Medium Sensitivity',
+      expr: `probe_success * on (instance, job, probe, config_version) group_left (check_name) sm_check_info{alert_sensitivity="${AlertSensitivity.Medium}"} < ${AlertThresholds.Medium}`,
+      for: '5m',
+    },
+    {
+      alert: 'Low Sensitivity',
+      expr: `probe_success * on (instance, job, probe, config_version) group_left (check_name) sm_check_info{alert_sensitivity="${AlertSensitivity.Low}"} < ${AlertThresholds.Low}`,
+      for: '5m',
+    },
+  ],
+};
+
+const fetchSMRules = async (alertRulerUrl: string) => {
   try {
     return await getBackendSrv()
       .fetch<any>({
         method: 'GET',
-        url: `${alertRulerUrl}/rules/${SM_ALERTING_NAMESPACE}/${checkId}`,
+        url: `${alertRulerUrl}/rules/${SM_ALERTING_NAMESPACE}/default`,
         headers: {
           'Content-Type': 'application/yaml',
         },
@@ -24,7 +51,7 @@ const fetchRulesForCheck = async (checkId: number, alertRulerUrl: string) => {
     if (e.status === 404) {
       return [];
     }
-    throw new Error(`Could not fetch alerting rules for check ${checkId}`);
+    throw new Error(`Could not fetch alerting rules for Synthetic Monitoring`);
   }
 };
 
@@ -51,7 +78,20 @@ export function useAlerts(checkId?: number) {
 
   const alertRulerUrl = alertRuler?.url;
 
-  const setRulesForCheck = async (checkId: number, alerts: AlertFormValues[], job: string, target: string) => {
+  const setDefaultRules = async () => {
+    return getBackendSrv()
+      .fetch({
+        url: `${alertRulerUrl}/rules/syntheticmonitoring`,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/yaml',
+        },
+        data: stringify(defaultRules),
+      })
+      .toPromise();
+  };
+
+  const setRulesForCheck = async (alerts: AlertFormValues[]) => {
     if (!alertRuler) {
       throw new Error('There is no alert ruler datasource configured for this Grafana instance');
     }
@@ -65,7 +105,8 @@ export function useAlerts(checkId?: number) {
 
       return {
         alert: alert.name,
-        expr: `sum(1-probe_success{job="${job}", instance="${target}"}) by (job, instance) >= ${alert.probeCount}`,
+        // expr: `sum(1-probe_success{job="${job}", instance="${target}"}) by (job, instance) >= ${alert.probeCount}`,
+        expr: 1,
         for: `${alert.timeCount}${alert.timeUnit.value}`,
         annotations,
         labels,
@@ -92,12 +133,17 @@ export function useAlerts(checkId?: number) {
   };
 
   useEffect(() => {
-    if (checkId && alertRulerUrl) {
-      fetchRulesForCheck(checkId, alertRulerUrl).then(rules => {
+    if (alertRulerUrl) {
+      fetchSMRules(alertRulerUrl).then(rules => {
         setAlertRules(rules);
       });
     }
-  }, [checkId, alertRulerUrl]);
+  }, [alertRulerUrl]);
 
-  return { alertRules, setRulesForCheck, deleteRulesForCheck: getDeleteRulesForCheck(alertRulerUrl ?? '') };
+  return {
+    alertRules,
+    setDefaultRules,
+    setRulesForCheck,
+    deleteRulesForCheck: getDeleteRulesForCheck(alertRulerUrl ?? ''),
+  };
 }

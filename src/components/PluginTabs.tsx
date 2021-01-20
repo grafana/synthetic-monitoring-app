@@ -11,6 +11,7 @@ import { DashboardInfo } from 'datasource/types';
 import { listAppDashboards } from 'dashboards/loader';
 import { Button, HorizontalGroup, Modal } from '@grafana/ui';
 import { hasDismissedDashboardUpdateModal, persistDashboardModalDismiss } from 'sessionStorage';
+import { Alerting } from './Alerting';
 
 type Tab = {
   label: string;
@@ -25,7 +26,7 @@ type RouterQuery = {
   id: string;
 };
 
-const pagesToRedirectIfNotInitialized = new Set(['checks', 'probes', 'config', 'redirect']);
+const pagesToRedirectIfNotInitialized = new Set(['checks', 'probes', 'config', 'alerts', 'redirect']);
 
 const pagesToRedirectIfInitialized = new Set(['setup']);
 
@@ -55,7 +56,11 @@ const tabs: Tab[] = [
     id: 'probes',
     render: (query: RouterQuery) => <ProbesPage id={query.id} />,
   },
-
+  {
+    label: 'Alerts',
+    id: 'alerts',
+    render: () => <Alerting />,
+  },
   {
     label: 'Config',
     id: 'config',

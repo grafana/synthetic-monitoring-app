@@ -15,7 +15,7 @@ import { CHECK_TYPE_OPTIONS, fallbackCheck } from 'components/constants';
 import { useForm, FormContext, Controller } from 'react-hook-form';
 import { GrafanaTheme } from '@grafana/data';
 import { CheckUsage } from '../CheckUsage';
-import { Alerting } from 'components/Alerting';
+import { CheckFormAlert } from 'components/CheckFormAlert';
 import { useAlerts } from 'hooks/useAlerts';
 import { InstanceContext } from 'components/InstanceContext';
 
@@ -155,7 +155,7 @@ export const CheckEditor: FC<Props> = ({ check, onReturn }) => {
           />
           <CheckUsage />
           <CheckSettings typeOfCheck={selectedCheckType} isEditor={isEditor} />
-          <Alerting alertRules={alertRules} editing={Boolean(check?.id)} checkId={check?.id} />
+          <CheckFormAlert alertRules={alertRules} editing={Boolean(check?.id)} checkId={check?.id} />
         </div>
         <HorizontalGroup>
           <Button
