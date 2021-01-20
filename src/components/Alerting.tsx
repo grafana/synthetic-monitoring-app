@@ -1,10 +1,12 @@
 import React, { FC, useState, useContext } from 'react';
 import { css } from 'emotion';
 import { GrafanaTheme } from '@grafana/data';
-import { useStyles } from '@grafana/ui';
+import { Icon, Select, useStyles } from '@grafana/ui';
 import { Collapse } from './Collapse';
 import { AlertRule } from 'types';
 import { InstanceContext } from './InstanceContext';
+import { Controller } from 'react-hook-form';
+import { ALERT_SENSITIVITY_OPTIONS } from './constants';
 
 interface Props {
   alertRules: AlertRule[];
@@ -85,41 +87,48 @@ export const Alerting: FC<Props> = ({ alertRules, editing, checkId }) => {
   const styles = useStyles(getStyles);
   const alertingUiUrl = `a/grafana-alerting-ui-app/?tab=rules&rulessource=${instance.metrics?.name}`;
 
-  // if (!instance.alertRuler) {
-  //   return (
-  //     <Collapse label="Alerting" onToggle={() => setShowAlerting(!showAlerting)} isOpen={showAlerting} collapsible>
-  //       <div className={styles.container}>
-  //         <p>
-  //           <Icon className={styles.icon} name="exclamation-triangle" />
-  //           Synthetic Monitoring uses &nbsp;
-  //           <a href="https://grafana.com/docs/grafana-cloud/alerts/grafana-cloud-alerting/" className={styles.link}>
-  //             Grafana Cloud Alerting
-  //           </a>
-  //           , which is not accessible for Grafana instances running on-prem. Alert rules can be added to new or existing
-  //           checks in &nbsp;
-  //           <a href="https://grafana.com" className={styles.link}>
-  //             Grafana Cloud.
-  //           </a>
-  //         </p>
-  //       </div>
-  //     </Collapse>
-  //   );
-  // }
-
-  if (alertRules.length && editing && instance.alertRuler) {
+  if (!instance.alertRuler) {
     return (
       <Collapse label="Alerting" onToggle={() => setShowAlerting(!showAlerting)} isOpen={showAlerting} collapsible>
         <div className={styles.container}>
           <p>
-            {alertRules.length} alert{alertRules.length > 1 ? 's are' : ' is'} tied to this check. Edit this check's
-            alerts in the <code>syntheticmonitoring &gt; {checkId}</code> section of{' '}
-            <a href={alertingUiUrl} className={styles.link}>
+            <Icon className={styles.icon} name="exclamation-triangle" />
+            Synthetic Monitoring uses &nbsp;
+            <a href="https://grafana.com/docs/grafana-cloud/alerts/grafana-cloud-alerting/" className={styles.link}>
               Grafana Cloud Alerting
+            </a>
+            , which is not accessible for Grafana instances running on-prem. Alert rules can be added to new or existing
+            checks in &nbsp;
+            <a href="https://grafana.com" className={styles.link}>
+              Grafana Cloud.
             </a>
           </p>
         </div>
       </Collapse>
     );
   }
-  return null;
+
+  return (
+    <Collapse label="Alerting" onToggle={() => setShowAlerting(!showAlerting)} isOpen={showAlerting} collapsible>
+      <div className={styles.container}>
+        <Controller name="alertSensitivity" as={Select} options={ALERT_SENSITIVITY_OPTIONS} />
+      </div>
+    </Collapse>
+  );
+
+  // if (alertRules.length && editing && instance.alertRuler) {
+  //   return (
+  //     <Collapse label="Alerting" onToggle={() => setShowAlerting(!showAlerting)} isOpen={showAlerting} collapsible>
+  //       <div className={styles.container}>
+  //         <p>
+  //           {alertRules.length} alert{alertRules.length > 1 ? 's are' : ' is'} tied to this check. Edit this check's
+  //           alerts in the <code>syntheticmonitoring &gt; {checkId}</code> section of{' '}
+  //           <a href={alertingUiUrl} className={styles.link}>
+  //             Grafana Cloud Alerting
+  //           </a>
+  //         </p>
+  //       </div>
+  //     </Collapse>
+  //   );
+  // }
 };

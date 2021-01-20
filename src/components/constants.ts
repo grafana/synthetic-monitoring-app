@@ -10,6 +10,7 @@ import {
   Check,
   TimeUnits,
   AlertSeverity,
+  AlertSensitivity,
 } from 'types';
 
 export const DNS_RESPONSE_CODES = enumToStringArray(DnsResponseCodes).map(responseCode => ({
@@ -171,6 +172,7 @@ export const fallbackCheck = {
   enabled: true,
   labels: [],
   probes: [],
+  alertSensitivity: AlertSensitivity.None,
   settings: {
     ping: {
       ipVersion: IpVersion.V4,
@@ -210,4 +212,11 @@ export const ALERTING_SEVERITY_OPTIONS = [
     label: 'Info',
     value: AlertSeverity.Info,
   },
+];
+
+export const ALERT_SENSITIVITY_OPTIONS = [
+  { label: 'None', value: AlertSensitivity.None },
+  { label: 'Low', value: AlertSensitivity.Low },
+  { label: 'Medium', value: AlertSensitivity.Medium },
+  { label: 'High', value: AlertSensitivity.High },
 ];

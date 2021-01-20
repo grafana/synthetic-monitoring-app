@@ -59,27 +59,22 @@ export const CheckEditor: FC<Props> = ({ check, onReturn }) => {
 
   const isEditor = hasRole(OrgRole.EDITOR);
 
-  const { execute: onSubmit, error, loading: submitting } = useAsyncCallback(
-    async ({ alerts, ...checkValues }: CheckFormValues) => {
-      const updatedCheck = getCheckFromFormValues(checkValues, defaultValues);
-      if (check?.id) {
-        await api?.updateCheck({
-          id: check.id,
-          tenantId: check.tenantId,
-          ...updatedCheck,
-        });
-        if (alerts?.length) {
-          await setRulesForCheck(check.id, alerts, checkValues.job, checkValues.target);
-        }
-      } else {
-        const { id } = await api?.addCheck(updatedCheck);
-        if (alerts) {
-          await setRulesForCheck(id, alerts, checkValues.job, checkValues.target);
-        }
-      }
-      onReturn(true);
+  console.log({ check });
+
+  const { execute: onSubmit, error, loading: submitting } = useAsyncCallback(async (checkValues: CheckFormValues) => {
+    const updatedCheck = getCheckFromFormValues(checkValues, defaultValues);
+    console.log({ updatedCheck });
+    if (check?.id) {
+      await api?.updateCheck({
+        id: check.id,
+        tenantId: check.tenantId,
+        ...updatedCheck,
+      });
+    } else {
+      await api?.addCheck(updatedCheck);
     }
-  );
+    onReturn(true);
+  });
 
   const submissionError = error as SubmissionError;
 

@@ -244,11 +244,11 @@ export interface AlertFormValues {
   annotations: Label[];
 }
 
-export interface CheckFormValues extends Omit<Check, 'settings' | 'labels'> {
+export interface CheckFormValues extends Omit<Check, 'settings' | 'labels' | 'alertSensitivity'> {
   checkType: SelectableValue<CheckType>;
   settings: SettingsFormValues;
   labels?: Label[];
-  alerts?: AlertFormValues[];
+  alertSensitivity: SelectableValue<AlertSensitivity>;
 }
 
 export interface Check extends BaseObject {
@@ -258,7 +258,7 @@ export interface Check extends BaseObject {
   offset?: number;
   timeout: number;
   enabled: boolean;
-
+  alertSensitivity: AlertSensitivity;
   labels: Label[]; // Currently list of [name:value]... can it be Labels?
   settings: Settings; //
 
@@ -399,6 +399,13 @@ export enum AlertSeverity {
   Error = 'error',
   Warn = 'warn',
   Info = 'info',
+}
+
+export enum AlertSensitivity {
+  None = 'none',
+  Low = 'low',
+  Medium = 'medium',
+  High = 'high',
 }
 
 export type AlertRule = {
