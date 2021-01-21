@@ -1,7 +1,7 @@
 import { AppEvents, GrafanaTheme, SelectableValue } from '@grafana/data';
 import { Alert, Button, Field, HorizontalGroup, Input, Label, Select, useStyles } from '@grafana/ui';
 import { Collapse } from 'components/Collapse';
-import React, { FC, useState } from 'react';
+import React, { FC, useState, useContext } from 'react';
 import { Controller, FormContext, useForm } from 'react-hook-form';
 import { AlertRule, AlertSensitivity, Label as LabelType } from 'types';
 import { TIME_UNIT_OPTIONS } from './constants';
@@ -10,6 +10,7 @@ import { AlertLabels } from './AlertLabels';
 import { AlertAnnotations } from './AlertAnnotations';
 import { useAsyncCallback } from 'react-async-hook';
 import appEvents from 'grafana/app/core/app_events';
+import { InstanceContext } from './InstanceContext';
 
 export enum TimeUnits {
   Milliseconds = 'ms',
@@ -89,6 +90,9 @@ const getStyles = (theme: GrafanaTheme) => ({
   submitFail: css`
     margin-top: ${theme.spacing.md};
   `,
+  link: css`
+    text-decoration: underline;
+  `,
 });
 
 type Props = {
@@ -106,6 +110,7 @@ const findSensitivity = (expression: string): AlertSensitivity | undefined => {
 export const AlertRuleForm: FC<Props> = ({ rule, onSubmit }) => {
   const sensitivity = findSensitivity(rule.expr);
   const defaultValues = getAlertFormValues(rule);
+  const { instance } = useContext(InstanceContext);
   const styles = useStyles(getStyles);
   const [isOpen, setIsOpen] = useState(false);
   const formMethods = useForm<AlertFormValues>({
@@ -125,8 +130,22 @@ export const AlertRuleForm: FC<Props> = ({ rule, onSubmit }) => {
   });
 
   if (!defaultValues || !sensitivity) {
-    return <div>Rule unparseable</div>;
+    return (
+      <Collapse label={rule.alert} isOpen={isOpen} onToggle={() => setIsOpen(!isOpen)} collapsible>
+        <div className={styles.container}>
+          It looks like this rule has been edited in Cloud Alerting, and can no longer be edited in Synthetic
+          Monitoring. To update this rule, visit{' '}
+          <a
+            href={`a/grafana-alerting-ui-app/?tab=rules&rulessource=${instance.metrics?.name}`}
+            className={styles.link}
+          >
+            Grafana Cloud Alerting
+          </a>
+        </div>
+      </Collapse>
+    );
   }
+
   return (
     <Collapse label={rule.alert} isOpen={isOpen} onToggle={() => setIsOpen(!isOpen)} collapsible>
       <FormContext {...formMethods}>
@@ -169,7 +188,9 @@ export const AlertRuleForm: FC<Props> = ({ rule, onSubmit }) => {
             <Button type="submit" disabled={submitting}>
               Save alert
             </Button>
-            <Button variant="secondary">Cancel</Button>
+            <Button variant="secondary" type="button">
+              Cancel
+            </Button>
           </HorizontalGroup>
           {error && (
             <div className={styles.submitFail}>

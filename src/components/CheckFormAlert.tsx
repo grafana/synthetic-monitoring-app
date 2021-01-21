@@ -1,9 +1,8 @@
-import React, { FC, useState, useContext } from 'react';
+import React, { FC, useState } from 'react';
 import { css } from 'emotion';
 import { GrafanaTheme } from '@grafana/data';
 import { Select, useStyles } from '@grafana/ui';
 import { Collapse } from './Collapse';
-import { InstanceContext } from './InstanceContext';
 import { Controller } from 'react-hook-form';
 import { ALERT_SENSITIVITY_OPTIONS } from './constants';
 
@@ -23,9 +22,7 @@ const getStyles = (theme: GrafanaTheme) => ({
 
 export const CheckFormAlert: FC<Props> = () => {
   const [showAlerting, setShowAlerting] = useState(false);
-  const { instance } = useContext(InstanceContext);
   const styles = useStyles(getStyles);
-  const alertingUiUrl = `a/grafana-alerting-ui-app/?tab=rules&rulessource=${instance.metrics?.name}`;
 
   return (
     <Collapse label="Alerting" onToggle={() => setShowAlerting(!showAlerting)} isOpen={showAlerting} collapsible>
