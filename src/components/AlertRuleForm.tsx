@@ -1,14 +1,15 @@
-import { GrafanaTheme, SelectableValue } from '@grafana/data';
+import { AppEvents, GrafanaTheme, SelectableValue } from '@grafana/data';
 import { Alert, Button, Field, HorizontalGroup, Input, Label, Select, useStyles } from '@grafana/ui';
 import { Collapse } from 'components/Collapse';
 import React, { FC, useState } from 'react';
 import { Controller, FormContext, useForm } from 'react-hook-form';
-import { AlertRule, Label as LabelType } from 'types';
+import { AlertRule, AlertSensitivity, Label as LabelType } from 'types';
 import { TIME_UNIT_OPTIONS } from './constants';
 import { css } from 'emotion';
 import { AlertLabels } from './AlertLabels';
 import { AlertAnnotations } from './AlertAnnotations';
 import { useAsyncCallback } from 'react-async-hook';
+import appEvents from 'grafana/app/core/app_events';
 
 export enum TimeUnits {
   Milliseconds = 'ms',
@@ -92,9 +93,18 @@ const getStyles = (theme: GrafanaTheme) => ({
 
 type Props = {
   rule: AlertRule;
+  onSubmit: (alertValues: AlertFormValues, sensitivity: AlertSensitivity) => Promise<void>;
 };
 
-export const AlertRuleForm: FC<Props> = ({ rule }) => {
+const findSensitivity = (expression: string): AlertSensitivity | undefined => {
+  const entry = Object.entries(AlertSensitivity).find(([_, sensitivityValue]) => {
+    return expression.match(`alert_sensitivity="${sensitivityValue}"`);
+  });
+  return entry?.[1];
+};
+
+export const AlertRuleForm: FC<Props> = ({ rule, onSubmit }) => {
+  const sensitivity = findSensitivity(rule.expr);
   const defaultValues = getAlertFormValues(rule);
   const styles = useStyles(getStyles);
   const [isOpen, setIsOpen] = useState(false);
@@ -103,18 +113,25 @@ export const AlertRuleForm: FC<Props> = ({ rule }) => {
   });
   const { register, control, handleSubmit, errors } = formMethods;
 
-  const { execute: onSubmit, error, loading: submitting } = useAsyncCallback(async (alertValues: AlertFormValues) => {
-    console.log(alertValues);
+  const { execute, error, loading: submitting } = useAsyncCallback(async (alertValues: AlertFormValues) => {
+    if (!sensitivity) {
+      return Promise.reject(
+        'It looks like this rule has been edited from Cloud Alerting and can no longer be edited from Synthetic Monitoring. Please go to Cloud Alerting to update this rule.'
+      );
+    }
+    await onSubmit(alertValues, sensitivity);
+    appEvents.emit(AppEvents.alertSuccess, ['Alert rule updated successfully']);
+    setIsOpen(false);
   });
 
-  if (!defaultValues) {
+  if (!defaultValues || !sensitivity) {
     return <div>Rule unparseable</div>;
   }
 
   return (
     <Collapse label={rule.alert} isOpen={isOpen} onToggle={() => setIsOpen(!isOpen)} collapsible>
       <FormContext {...formMethods}>
-        <form className={styles.container} onSubmit={handleSubmit(onSubmit)}>
+        <form className={styles.container} onSubmit={handleSubmit(execute)}>
           <Field label="Alert name">
             <Input ref={register({ required: true })} name="name" id="alert-name" />
           </Field>

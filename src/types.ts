@@ -236,10 +236,9 @@ export interface SettingsFormValues {
 }
 export interface AlertFormValues {
   name: string;
-  probeCount: number;
+  probePercentage: number;
   timeCount: number;
   timeUnit: SelectableValue<TimeUnits>;
-  severity: SelectableValue<AlertSeverity>;
   labels: Label[];
   annotations: Label[];
 }

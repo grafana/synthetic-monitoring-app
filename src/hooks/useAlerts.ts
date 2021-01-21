@@ -94,30 +94,30 @@ export function useAlerts(checkId?: number) {
     setDefaultRulesSetCount(defaultRulesSetCount + 1);
   };
 
-  const setRules = async (alerts: AlertFormValues[]) => {
+  const setRules = async (rules: AlertRule[]) => {
     if (!alertRuler) {
       throw new Error('There is no alert ruler datasource configured for this Grafana instance');
     }
 
-    const rules = alerts.map(alert => {
-      const annotations = tranformFormValues(alert.annotations ?? []);
-      const labels = tranformFormValues(alert.labels ?? []);
-      if (alert.severity.value) {
-        labels.severity = alert.severity.value;
-      }
+    // const rules = alerts.map(alert => {
+    // const annotations = tranformFormValues(alert.annotations ?? []);
+    // const labels = tranformFormValues(alert.labels ?? []);
+    // if (alert.severity.value) {
+    // labels.severity = alert.severity.value;
+    // }
 
-      return {
-        alert: alert.name,
-        // expr: `sum(1-probe_success{job="${job}", instance="${target}"}) by (job, instance) >= ${alert.probeCount}`,
-        expr: 1,
-        for: `${alert.timeCount}${alert.timeUnit.value}`,
-        annotations,
-        labels,
-      };
-    });
+    // return {
+    // alert: alert.name,
+    // expr: `sum(1-probe_success{job="${job}", instance="${target}"}) by (job, instance) >= ${alert.probeCount}`,
+    // expr: 1,
+    // for: `${alert.timeCount}${alert.timeUnit.value}`,
+    // annotations,
+    // labels,
+    //   };
+    // });
 
     const ruleGroup = {
-      name: checkId,
+      name: 'default',
       rules,
     };
 
