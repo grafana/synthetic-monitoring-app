@@ -1,10 +1,11 @@
 import { GrafanaTheme } from '@grafana/data';
-import { Button, Spinner, useStyles } from '@grafana/ui';
-import React, { FC, useState } from 'react';
+import { Button, Icon, Spinner, useStyles } from '@grafana/ui';
+import React, { FC, useState, useContext } from 'react';
 import { css } from 'emotion';
 import { useAlerts } from 'hooks/useAlerts';
 import { AlertRuleForm } from './AlertRuleForm';
 import { AlertFormValues, AlertRule, AlertSensitivity, Label } from 'types';
+import { InstanceContext } from './InstanceContext';
 
 const getStyles = (theme: GrafanaTheme) => ({
   emptyCard: css`
@@ -17,6 +18,12 @@ const getStyles = (theme: GrafanaTheme) => ({
   `,
   marginBottom: css`
     margin-bottom: ${theme.spacing.xl};
+  `,
+  link: css`
+    text-decoration: underline;
+  `,
+  icon: css`
+    margin-right: ${theme.spacing.xs};
   `,
 });
 
@@ -44,6 +51,7 @@ export const Alerting: FC = () => {
   const styles = useStyles(getStyles);
   const { alertRules, setDefaultRules, setRules } = useAlerts();
   const [updatingDefaultRules, setUpdatingDefaultRules] = useState(false);
+  const { instance } = useContext(InstanceContext);
 
   const populateDefaultAlerts = async () => {
     setUpdatingDefaultRules(true);
@@ -70,6 +78,23 @@ export const Alerting: FC = () => {
     return await setRules(updatedRules);
   };
 
+  if (!instance.alertRuler) {
+    return (
+      <div>
+        <Icon className={styles.icon} name="exclamation-triangle" />
+        Synthetic Monitoring uses &nbsp;
+        <a href="https://grafana.com/docs/grafana-cloud/alerts/grafana-cloud-alerting/" className={styles.link}>
+          Grafana Cloud Alerting
+        </a>
+        , which is not accessible for Grafana instances running on-prem. Alert rules can be added to new or existing
+        checks in &nbsp;
+        <a href="https://grafana.com" className={styles.link}>
+          Grafana Cloud.
+        </a>
+      </div>
+    );
+  }
+
   return (
     <div>
       <h2>Alerts</h2>
@@ -91,7 +116,7 @@ export const Alerting: FC = () => {
         </div>
       )}
       {alertRules?.map((alertRule, index) => (
-        <AlertRuleForm rule={alertRule} onSubmit={getUpdateRules(index)} />
+        <AlertRuleForm key={index} rule={alertRule} onSubmit={getUpdateRules(index)} />
       ))}
     </div>
   );

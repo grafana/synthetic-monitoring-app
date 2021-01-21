@@ -50,7 +50,6 @@ export const CheckEditor: FC<Props> = ({ check, onReturn }) => {
     instance: { api },
   } = useContext(InstanceContext);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const { alertRules, setRulesForCheck, deleteRulesForCheck } = useAlerts(check?.id);
   const styles = useStyles(getStyles);
   const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
 
@@ -59,11 +58,8 @@ export const CheckEditor: FC<Props> = ({ check, onReturn }) => {
 
   const isEditor = hasRole(OrgRole.EDITOR);
 
-  console.log({ check });
-
   const { execute: onSubmit, error, loading: submitting } = useAsyncCallback(async (checkValues: CheckFormValues) => {
     const updatedCheck = getCheckFromFormValues(checkValues, defaultValues);
-    console.log({ updatedCheck });
     if (check?.id) {
       await api?.updateCheck({
         id: check.id,
@@ -84,7 +80,6 @@ export const CheckEditor: FC<Props> = ({ check, onReturn }) => {
       return;
     }
     await api?.deleteCheck(id);
-    await deleteRulesForCheck(id);
     onReturn(false);
   };
 
@@ -155,7 +150,7 @@ export const CheckEditor: FC<Props> = ({ check, onReturn }) => {
           />
           <CheckUsage />
           <CheckSettings typeOfCheck={selectedCheckType} isEditor={isEditor} />
-          <CheckFormAlert alertRules={alertRules} editing={Boolean(check?.id)} checkId={check?.id} />
+          <CheckFormAlert />
         </div>
         <HorizontalGroup>
           <Button

@@ -2,7 +2,7 @@ import { useState, useEffect, useContext } from 'react';
 import { getBackendSrv } from '@grafana/runtime';
 import { parse, stringify } from 'yaml';
 import { SM_ALERTING_NAMESPACE } from 'components/constants';
-import { AlertFormValues, AlertRule, AlertSensitivity, Label } from 'types';
+import { AlertRule, AlertSensitivity } from 'types';
 import { InstanceContext } from 'components/InstanceContext';
 
 enum AlertThresholds {
@@ -48,6 +48,7 @@ const fetchSMRules = async (alertRulerUrl: string) => {
         return alertGroup.rules;
       });
   } catch (e) {
+    console.log('ERRRRRRORRR', e);
     if (e.status === 404) {
       return [];
     }
@@ -64,12 +65,6 @@ const getDeleteRulesForCheck = (datasourceUrl: string) => (checkId: number) => {
     .toPromise();
 };
 
-const tranformFormValues = (values: Label[]) =>
-  values.reduce<{ [key: string]: string }>((acc, { name, value }) => {
-    acc[name] = value;
-    return acc;
-  }, {}) ?? {};
-
 export function useAlerts(checkId?: number) {
   const [alertRules, setAlertRules] = useState<AlertRule[]>();
   const [defaultRulesSetCount, setDefaultRulesSetCount] = useState(0);
@@ -78,7 +73,7 @@ export function useAlerts(checkId?: number) {
   } = useContext(InstanceContext);
 
   const alertRulerUrl = alertRuler?.url;
-
+  console.log('******************* IN HOOK', getBackendSrv().fetch({ data: 'stuff' }));
   const setDefaultRules = async () => {
     await getBackendSrv()
       .fetch({

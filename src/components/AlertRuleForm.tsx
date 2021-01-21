@@ -127,7 +127,6 @@ export const AlertRuleForm: FC<Props> = ({ rule, onSubmit }) => {
   if (!defaultValues || !sensitivity) {
     return <div>Rule unparseable</div>;
   }
-
   return (
     <Collapse label={rule.alert} isOpen={isOpen} onToggle={() => setIsOpen(!isOpen)} collapsible>
       <FormContext {...formMethods}>
@@ -144,6 +143,7 @@ export const AlertRuleForm: FC<Props> = ({ rule, onSubmit }) => {
                 ref={register({ required: true, max: 100, min: 1 })}
                 name="probePercentage"
                 type="number"
+                data-testid="probePercentage"
                 id="alertProbePercentage"
               />
             </Field>
@@ -152,6 +152,7 @@ export const AlertRuleForm: FC<Props> = ({ rule, onSubmit }) => {
               <Input
                 ref={register({ required: true, min: 1, max: 999 })}
                 name="timeCount"
+                data-testid="timeCount"
                 type="number"
                 className={styles.numberInput}
                 id="alertTimeCount"

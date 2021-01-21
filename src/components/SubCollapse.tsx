@@ -37,12 +37,12 @@ export const SubCollapse: FC<Props> = ({ children, title }) => {
   const [isOpen, setIsOpen] = useState(false);
   const styles = useStyles(getStyles);
   return (
-    <>
+    <div>
       <div className={cx(styles.header, { [styles.headerOpen]: isOpen })} onClick={() => setIsOpen(!isOpen)}>
         <Icon name={isOpen ? 'angle-down' : 'angle-right'} className={styles.headerIcon} />
         <span className={styles.title}>{title}</span>
       </div>
       <div className={!isOpen ? styles.hidden : styles.visible}>{children}</div>
-    </>
+    </div>
   );
 };
