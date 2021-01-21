@@ -20,12 +20,9 @@ const getStyles = (theme: GrafanaTheme) => ({
   `,
 });
 
-type Props = {
-  index: number;
-};
+const NAME = 'annotations';
 
-export const AlertAnnotations: FC<Props> = ({ index }) => {
-  const NAME = `alerts[${index}].annotations`;
+export const AlertAnnotations: FC = () => {
   const styles = useStyles(getStyles);
   const { control, register } = useFormContext();
   const { fields, append, remove } = useFieldArray({
@@ -52,15 +49,15 @@ export const AlertAnnotations: FC<Props> = ({ index }) => {
               ref={register()}
               name={`${NAME}[${annotationIndex}].name`}
               placeholder="Name"
-              data-testid={`alert-${index}-annotationName-${annotationIndex}`}
+              data-testid={`alert-annotationName-${annotationIndex}`}
             />
             <TextArea
               ref={register()}
               name={`${NAME}[${annotationIndex}].value`}
               placeholder="Value"
-              data-testid={`alert-${index}-annotationValue-${annotationIndex}`}
+              data-testid={`alert-annotationValue-${annotationIndex}`}
             />
-            <Button type="button" onClick={() => remove(index)} variant="link">
+            <Button type="button" onClick={() => remove(annotationIndex)} variant="link">
               Delete
             </Button>
           </Fragment>

@@ -1,5 +1,5 @@
 import { GrafanaTheme } from '@grafana/data';
-import { Button, useStyles } from '@grafana/ui';
+import { Button, Spinner, useStyles } from '@grafana/ui';
 import React, { FC, useState } from 'react';
 import { css } from 'emotion';
 import { useAlerts } from 'hooks/useAlerts';
@@ -41,7 +41,8 @@ export const Alerting: FC = () => {
         select the alert sensitivity from the Alerting section of the check form when creating a check.{' '}
         <a href="FIXME">Learn more about alerting for Synthetic Monitoring.</a>
       </p>
-      {alertRules.length === 0 && (
+      {!alertRules && <Spinner />}
+      {alertRules?.length === 0 && (
         <div className={styles.emptyCard}>
           <span className={styles.marginBottom}>
             You do not have any default alerts for Synthetic Monitoring yet. Click below to get some default alerts. You
@@ -52,7 +53,7 @@ export const Alerting: FC = () => {
           </Button>
         </div>
       )}
-      {alertRules.map(alertRule => (
+      {alertRules?.map(alertRule => (
         <AlertRuleForm rule={alertRule} />
       ))}
     </div>

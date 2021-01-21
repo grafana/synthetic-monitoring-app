@@ -71,7 +71,7 @@ const tranformFormValues = (values: Label[]) =>
   }, {}) ?? {};
 
 export function useAlerts(checkId?: number) {
-  const [alertRules, setAlertRules] = useState<AlertRule[]>([]);
+  const [alertRules, setAlertRules] = useState<AlertRule[]>();
   const [defaultRulesSetCount, setDefaultRulesSetCount] = useState(0);
   const {
     instance: { alertRuler },

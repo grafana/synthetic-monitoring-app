@@ -19,13 +19,9 @@ const getStyles = (theme: GrafanaTheme) => ({
     font-size: ${theme.typography.size.sm};
   `,
 });
+const NAME = 'labels';
 
-type Props = {
-  index: number;
-};
-
-export const AlertLabels: FC<Props> = ({ index }) => {
-  const NAME = `alerts[${index}].labels`;
+export const AlertLabels: FC = () => {
   const styles = useStyles(getStyles);
   const { control, register } = useFormContext();
   const { fields, append, remove } = useFieldArray({
@@ -53,15 +49,15 @@ export const AlertLabels: FC<Props> = ({ index }) => {
               ref={register()}
               name={`${NAME}[${labelIndex}].name`}
               placeholder="Name"
-              data-testid={`alert-${index}-labelName-${labelIndex}`}
+              data-testid={`alert-labelName-${labelIndex}`}
             />
             <Input
               ref={register()}
               name={`${NAME}[${labelIndex}].value`}
               placeholder="Value"
-              data-testid={`alert-${index}-labelValue-${labelIndex}`}
+              data-testid={`alert-labelValue-${labelIndex}`}
             />
-            <Button type="button" onClick={() => remove(index)} variant="link">
+            <Button type="button" onClick={() => remove(labelIndex)} variant="link">
               Delete
             </Button>
           </Fragment>
