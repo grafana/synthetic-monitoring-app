@@ -92,23 +92,6 @@ export function useAlerts(checkId?: number) {
       throw new Error('There is no alert ruler datasource configured for this Grafana instance');
     }
 
-    // const rules = alerts.map(alert => {
-    // const annotations = tranformFormValues(alert.annotations ?? []);
-    // const labels = tranformFormValues(alert.labels ?? []);
-    // if (alert.severity.value) {
-    // labels.severity = alert.severity.value;
-    // }
-
-    // return {
-    // alert: alert.name,
-    // expr: `sum(1-probe_success{job="${job}", instance="${target}"}) by (job, instance) >= ${alert.probeCount}`,
-    // expr: 1,
-    // for: `${alert.timeCount}${alert.timeUnit.value}`,
-    // annotations,
-    // labels,
-    //   };
-    // });
-
     const ruleGroup = {
       name: 'default',
       rules,

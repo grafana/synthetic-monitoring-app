@@ -107,15 +107,15 @@ it('adds default alerts and edits alerts', async () => {
   const addLabelButton = await within(labels).findByRole('button', { name: 'Add label' });
   userEvent.click(addLabelButton);
   const labelNameInput = await within(labels).findByPlaceholderText('Name');
-  await userEvent.type(labelNameInput, 'a label name');
+  await userEvent.type(labelNameInput, 'a_label_name');
   const labelValueInput = await within(labels).findByPlaceholderText('Value');
-  await userEvent.type(labelValueInput, 'a label value');
+  await userEvent.type(labelValueInput, 'a_label_value');
 
   const annotations = await toggleSubsection(highSensitivity, 'Annotations');
   const addAnnotationsButton = await within(annotations).findByRole('button', { name: 'Add annotation' });
   userEvent.click(addAnnotationsButton);
   const annotationNameInput = await within(annotations).findByPlaceholderText('Name');
-  await userEvent.type(annotationNameInput, 'an annotation name');
+  await userEvent.type(annotationNameInput, 'an_annotation_name');
   const annotationValueInput = await within(annotations).findByPlaceholderText('Value');
   userEvent.paste(annotationValueInput, 'an annotation value');
 
@@ -127,11 +127,11 @@ it('adds default alerts and edits alerts', async () => {
   expect(setRules).toHaveBeenCalledWith([
     {
       alert: 'A different name',
-      annotations: { 'an annotation name': 'an annotation value' },
+      annotations: { an_annotation_name: 'an annotation value' },
       expr:
         'probe_success * on (instance, job, probe, config_version) group_left (check_name) sm_check_info{alert_sensitivity="high"} < 0.25',
       for: '2s',
-      labels: { 'a label name': 'a label value' },
+      labels: { a_label_name: 'a_label_value' },
     },
     {
       alert: 'Medium Sensitivity',
@@ -146,6 +146,4 @@ it('adds default alerts and edits alerts', async () => {
       for: '5m',
     },
   ]);
-
-  // const labels = await screenfind;
 });

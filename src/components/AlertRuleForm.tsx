@@ -149,13 +149,14 @@ export const AlertRuleForm: FC<Props> = ({ rule, onSubmit }) => {
         'It looks like this rule has been edited from Cloud Alerting and can no longer be edited from Synthetic Monitoring. Please go to Cloud Alerting to update this rule.'
       );
     }
-    const response = await onSubmit(alertValues, sensitivity);
-    if (response.ok) {
+    try {
+      await onSubmit(alertValues, sensitivity);
       appEvents.emit(AppEvents.alertSuccess, ['Alert rule updated successfully']);
       setIsOpen(false);
       return Promise.resolve();
+    } catch (e) {
+      return Promise.reject(e.message ?? 'Something went wrong');
     }
-    return Promise.reject('Something went wrong');
   });
 
   if (!defaultValues || !sensitivity) {

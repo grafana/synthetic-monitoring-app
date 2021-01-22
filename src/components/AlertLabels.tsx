@@ -30,8 +30,6 @@ export const AlertLabels: FC = () => {
     name: NAME,
   });
 
-  console.log(errors);
-
   return (
     <SubCollapse title="Labels">
       <p className={styles.helpText}>
