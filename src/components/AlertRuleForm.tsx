@@ -132,10 +132,15 @@ export const AlertRuleForm: FC<Props> = ({ rule, onSubmit }) => {
   const formMethods = useForm<AlertFormValues>({
     defaultValues,
   });
-  const { register, control, handleSubmit, errors, watch } = formMethods;
+  const { register, control, handleSubmit, errors, watch, reset } = formMethods;
   const currentValues = watch() as AlertFormValues;
   const currentLabels = watch('labels');
   const currentAnnotations = watch('annotations');
+
+  const onCancel = () => {
+    reset();
+    setIsOpen(false);
+  };
 
   const { execute, error, loading: submitting } = useAsyncCallback(async (alertValues: AlertFormValues) => {
     if (!sensitivity) {
@@ -226,7 +231,7 @@ export const AlertRuleForm: FC<Props> = ({ rule, onSubmit }) => {
                 <div>alert: {preview.alert}</div>
                 <div>expr: {preview.expr}</div>
                 <div>for: {preview.for}</div>
-                {currentLabels.length && (
+                {currentLabels.length ? (
                   <div>
                     labels:
                     {currentLabels.map(({ name, value }, index) => (
@@ -235,8 +240,8 @@ export const AlertRuleForm: FC<Props> = ({ rule, onSubmit }) => {
                       </div>
                     ))}
                   </div>
-                )}
-                {currentAnnotations && (
+                ) : null}
+                {currentAnnotations.length ? (
                   <div>
                     annotations:
                     {currentAnnotations.map(({ name, value }, index) => (
@@ -245,7 +250,7 @@ export const AlertRuleForm: FC<Props> = ({ rule, onSubmit }) => {
                       </div>
                     ))}
                   </div>
-                )}
+                ) : null}
               </div>
             </div>
           </SubCollapse>
@@ -254,7 +259,7 @@ export const AlertRuleForm: FC<Props> = ({ rule, onSubmit }) => {
             <Button type="submit" disabled={submitting}>
               Save alert
             </Button>
-            <Button variant="secondary" type="button">
+            <Button variant="secondary" type="button" onClick={onCancel}>
               Cancel
             </Button>
           </HorizontalGroup>
