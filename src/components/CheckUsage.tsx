@@ -29,15 +29,21 @@ const getStyles = (theme: GrafanaTheme) => ({
 export const CheckUsage: FC = () => {
   const styles = useStyles(getStyles);
   const { watch } = useFormContext();
-  const { checkType, frequency, probes }: Partial<CheckFormValues> = watch(['checkType', 'frequency', 'probes']);
+  const { checkType, frequency, probes, useFullMetrics }: Partial<CheckFormValues> = watch([
+    'checkType',
+    'frequency',
+    'probes',
+    'useFullMetrics',
+  ]);
 
-  if (!checkType?.value || !frequency || !probes) {
+  if (!checkType?.value || !frequency || !probes || useFullMetrics === undefined) {
     return null;
   }
   const { checksPerMonth, activeSeries, logsGbPerMonth } = calculateUsage({
     probeCount: probes.length,
     frequencySeconds: frequency,
     checkType: checkType.value,
+    useFullMetrics,
   });
   return (
     <div className={styles.container}>

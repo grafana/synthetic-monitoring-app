@@ -1,3 +1,10 @@
+# [0.6.0](https://github.com/grafana/synthetic-monitoring-app/compare/0.5.7...0.6.0) (2021-01-22)
+
+
+### Features
+
+* add field for basic metrics ([9113ffb](https://github.com/grafana/synthetic-monitoring-app/commit/9113ffb972b6a22bf5218d2db5e18a7708a6f4e4))
+
 ## [0.5.7](https://github.com/grafana/synthetic-monitoring-app/compare/0.5.6...0.5.7) (2021-01-14)
 
 

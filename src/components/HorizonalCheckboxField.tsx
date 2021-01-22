@@ -29,7 +29,7 @@ interface Props {
   onChange?: () => void;
 }
 
-export const HorizonalCheckboxField: FC<Props> = ({
+export const HorizontalCheckboxField: FC<Props> = ({
   disabled,
   id,
   name,

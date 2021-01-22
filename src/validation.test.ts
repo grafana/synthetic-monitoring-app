@@ -13,6 +13,7 @@ describe('trivial cases', () => {
       labels: [],
       probes: [1],
       enabled: true,
+      basicMetricsOnly: true,
       settings: {
         http: {
           method: HttpMethod.GET,
@@ -35,6 +36,7 @@ describe('trivial cases', () => {
       labels: [],
       probes: [1],
       enabled: true,
+      basicMetricsOnly: true,
       settings: {
         ping: {
           ipVersion: IpVersion.V4,
@@ -56,6 +58,7 @@ describe('trivial cases', () => {
       labels: [],
       probes: [1],
       enabled: true,
+      basicMetricsOnly: true,
       settings: {
         dns: {
           recordType: DnsRecordType.A,
@@ -80,6 +83,7 @@ describe('trivial cases', () => {
       labels: [],
       probes: [1],
       enabled: true,
+      basicMetricsOnly: true,
       settings: {
         tcp: {
           ipVersion: IpVersion.V4,

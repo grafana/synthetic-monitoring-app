@@ -46,6 +46,7 @@ const defaultCheck = {
       dontFragment: false,
     },
   },
+  basicMetricsOnly: false,
 } as Check;
 
 const getMinimumCheck = (overrides: Partial<Check> = {}) => ({
@@ -128,6 +129,7 @@ it('Updates existing check', async () => {
     probes: [1],
     timeout: 3000,
     frequency: 60000,
+    basicMetricsOnly: false,
     settings: {
       ping: {
         ipVersion: 'V4',
@@ -157,6 +159,7 @@ describe('PING', () => {
       probes: [1],
       timeout: 3000,
       frequency: 60000,
+      basicMetricsOnly: false,
       settings: {
         ping: {
           ipVersion: 'V4',
@@ -183,6 +186,7 @@ describe('PING', () => {
           dontFragment: true,
         },
       },
+      basicMetricsOnly: true,
     };
 
     await renderCheckEditor({ check });
@@ -228,6 +232,7 @@ describe('HTTP', () => {
       probes: [42],
       timeout: 2000,
       frequency: 120000,
+      basicMetricsOnly: true,
       settings: {
         http: {
           method: HttpMethod.GET,
@@ -411,6 +416,7 @@ describe('HTTP', () => {
       timeout: 3000,
       alertSensitivity: 'none',
       frequency: 60000,
+      basicMetricsOnly: false,
       settings: {
         http: {
           method: 'GET',
@@ -466,9 +472,9 @@ describe('DNS', () => {
       userEvent.click(addRegex);
       const expressionInputs = await screen.findAllByPlaceholderText('Type expression');
       await act(() => userEvent.type(expressionInputs[0], 'not inverted validation'));
-      await userEvent.type(expressionInputs[1], 'inverted validation');
+      await act(() => userEvent.type(expressionInputs[1], 'inverted validation'));
       const invertedCheckboxes = await screen.findAllByRole('checkbox');
-      userEvent.click(invertedCheckboxes[1]);
+      userEvent.click(invertedCheckboxes[2]);
       await submitForm();
       expect(instance.api.addCheck).toHaveBeenCalledWith({
         job: 'tacos',
@@ -479,6 +485,7 @@ describe('DNS', () => {
         timeout: 3000,
         frequency: 60000,
         alertSensitivity: 'none',
+        basicMetricsOnly: false,
         settings: {
           dns: {
             ipVersion: 'V4',
@@ -516,7 +523,7 @@ describe('DNS', () => {
       await act(() => userEvent.type(expressionInputs[0], 'not inverted validation'));
       await userEvent.type(expressionInputs[1], 'inverted validation');
       const invertedCheckboxes = await screen.findAllByRole('checkbox');
-      userEvent.click(invertedCheckboxes[1]);
+      userEvent.click(invertedCheckboxes[2]);
       await submitForm();
 
       expect(instance.api.addCheck).toHaveBeenCalledWith({
@@ -528,6 +535,7 @@ describe('DNS', () => {
         timeout: 3000,
         alertSensitivity: 'none',
         frequency: 60000,
+        basicMetricsOnly: false,
         settings: {
           dns: {
             ipVersion: 'V4',
@@ -565,7 +573,7 @@ describe('DNS', () => {
       await act(() => userEvent.type(expressionInputs[0], 'not inverted validation'));
       await userEvent.type(expressionInputs[1], 'inverted validation');
       const invertedCheckboxes = await screen.findAllByRole('checkbox');
-      userEvent.click(invertedCheckboxes[1]);
+      userEvent.click(invertedCheckboxes[2]);
 
       await submitForm();
 
@@ -578,6 +586,7 @@ describe('DNS', () => {
         timeout: 3000,
         frequency: 60000,
         alertSensitivity: 'none',
+        basicMetricsOnly: false,
         settings: {
           dns: {
             ipVersion: 'V4',
@@ -613,6 +622,7 @@ describe('TCP', () => {
     expect(instance.api.addCheck).toHaveBeenCalledWith({
       enabled: true,
       frequency: 60000,
+      basicMetricsOnly: false,
       job: 'tacos',
       labels: [],
       probes: [1],
