@@ -4,7 +4,7 @@ import React, { FC, useState, useContext } from 'react';
 import { css } from 'emotion';
 import { useAlerts } from 'hooks/useAlerts';
 import { AlertRuleForm } from './AlertRuleForm';
-import { AlertFormValues, AlertRule, AlertSensitivity, Label } from 'types';
+import { AlertFormValues, AlertSensitivity } from 'types';
 import { InstanceContext } from './InstanceContext';
 import { transformAlertFormValues } from './alertingTransformations';
 

@@ -11,33 +11,8 @@ import * as useAlerts from 'hooks/useAlerts';
 jest.setTimeout(30000);
 
 const setDefaultRules = jest.fn();
-const setRules = jest.fn().mockImplementation(() => Promise.resolve({}));
+const setRules = jest.fn().mockImplementation(() => Promise.resolve({ ok: true }));
 const deleteRulesForCheck = jest.fn();
-
-// jest.mock('hooks/useAlerts', () => ({
-//   useAlerts: () => ({
-//     alertRules: [],
-//     setDefaultRules,
-//     setRules,
-//     deleteRulesForCheck,
-//   }),
-// }));
-
-// jest.mock('@grafana/runtime', () => ({
-//   getBackendSrv: () => ({
-//     fetch: jest.fn().mockImplementation(request => {
-//       console.log('mocked request', { request });
-//       if (request.data) {
-//         return {
-//           toPromise: () => Promise.resolve(request.data),
-//         };
-//       }
-//       return {
-//         toPromise: () => Promise.resolve([]),
-//       };
-//     }),
-//   }),
-// }));
 
 const renderAlerting = async ({ withAlerting = true } = {}) => {
   const api = getInstanceMock();

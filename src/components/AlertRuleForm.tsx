@@ -3,7 +3,7 @@ import { Alert, Button, Field, HorizontalGroup, Input, Label, Select, useStyles 
 import { Collapse } from 'components/Collapse';
 import React, { FC, useState, useContext } from 'react';
 import { Controller, FormContext, useForm } from 'react-hook-form';
-import { AlertRule, AlertSensitivity, Label as LabelType } from 'types';
+import { AlertRule, AlertSensitivity, Label as LabelType, TimeUnits } from 'types';
 import { TIME_UNIT_OPTIONS } from './constants';
 import { css } from 'emotion';
 import { AlertLabels } from './AlertLabels';
@@ -15,7 +15,7 @@ import { SubCollapse } from './SubCollapse';
 import { transformAlertFormValues } from './alertingTransformations';
 import { FetchResponse } from '@grafana/runtime';
 
-export enum TimeUnits {
+export enum AlertTimeUnits {
   Milliseconds = 'ms',
   Seconds = 's',
   Minutes = 'm',
@@ -28,7 +28,7 @@ export enum TimeUnits {
 export interface AlertFormValues {
   expression?: string;
   name: string;
-  probePercentage?: number;
+  probePercentage: number;
   timeCount: number;
   timeUnit: SelectableValue<TimeUnits>;
   labels: LabelType[];
@@ -41,7 +41,7 @@ export const parseAlertTimeUnits = (time: string) => {
   return { timeCount, timeUnit };
 };
 
-const getAlertFormValues = (rule: AlertRule) => {
+const getAlertFormValues = (rule: AlertRule): AlertFormValues | undefined => {
   const { timeCount, timeUnit } = parseAlertTimeUnits(rule.for ?? '');
   const timeOption = TIME_UNIT_OPTIONS.find(({ value }) => value === timeUnit);
 
@@ -133,10 +133,9 @@ export const AlertRuleForm: FC<Props> = ({ rule, onSubmit }) => {
     defaultValues,
   });
   const { register, control, handleSubmit, errors, watch } = formMethods;
-  const currentValues = watch();
+  const currentValues = watch() as AlertFormValues;
   const currentLabels = watch('labels');
   const currentAnnotations = watch('annotations');
-  const preview = transformAlertFormValues(currentValues, sensitivity);
 
   const { execute, error, loading: submitting } = useAsyncCallback(async (alertValues: AlertFormValues) => {
     if (!sensitivity) {
@@ -144,9 +143,13 @@ export const AlertRuleForm: FC<Props> = ({ rule, onSubmit }) => {
         'It looks like this rule has been edited from Cloud Alerting and can no longer be edited from Synthetic Monitoring. Please go to Cloud Alerting to update this rule.'
       );
     }
-    await onSubmit(alertValues, sensitivity);
-    appEvents.emit(AppEvents.alertSuccess, ['Alert rule updated successfully']);
-    setIsOpen(false);
+    const response = await onSubmit(alertValues, sensitivity);
+    if (response.ok) {
+      appEvents.emit(AppEvents.alertSuccess, ['Alert rule updated successfully']);
+      setIsOpen(false);
+      return Promise.resolve();
+    }
+    return Promise.reject('Something went wrong');
   });
 
   if (!defaultValues || !sensitivity) {
@@ -165,6 +168,8 @@ export const AlertRuleForm: FC<Props> = ({ rule, onSubmit }) => {
       </Collapse>
     );
   }
+
+  const preview = transformAlertFormValues(currentValues, sensitivity);
 
   return (
     <Collapse label={rule.alert} isOpen={isOpen} onToggle={() => setIsOpen(!isOpen)} collapsible>

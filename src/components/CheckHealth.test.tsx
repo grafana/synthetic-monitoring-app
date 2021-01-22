@@ -2,12 +2,13 @@ import React from 'react';
 import { render, waitFor } from '@testing-library/react';
 import { CheckHealth } from './CheckHealth';
 import { InstanceContext } from './InstanceContext';
-import { Check, GlobalSettings } from 'types';
+import { AlertSensitivity, Check, GlobalSettings } from 'types';
 import { getInstanceMock, instanceSettings } from '../datasource/__mocks__/DataSource';
 import { AppPluginMeta } from '@grafana/data';
 
 const defaultCheck = {
   id: 2,
+  alertSensitivity: AlertSensitivity.None,
   tenantId: 1,
   frequency: 60000,
   offset: 0,

@@ -1,5 +1,5 @@
 import React, { FC, useState, useContext } from 'react';
-import { Button, Alert, useStyles, HorizontalGroup, useTheme, Spinner } from '@grafana/ui';
+import { Button, Alert, useStyles, HorizontalGroup, useTheme } from '@grafana/ui';
 import { getBackendSrv, config } from '@grafana/runtime';
 import { hasRole, initializeDatasource } from 'utils';
 import { importAllDashboards } from 'dashboards/loader';

@@ -1,11 +1,12 @@
 import { validateCheck, CheckValidation } from 'validation';
-import { Check, CheckType, HttpMethod, IpVersion, DnsRecordType, DnsProtocol } from 'types';
+import { Check, CheckType, HttpMethod, IpVersion, DnsRecordType, DnsProtocol, AlertSensitivity } from 'types';
 jest.unmock('utils');
 
 describe('trivial cases', () => {
   it('should be a valid http check', () => {
     const check: Check = {
       job: 'job-1',
+      alertSensitivity: AlertSensitivity.None,
       target: 'https://grafana.com/',
       frequency: 10000,
       timeout: 1000,
@@ -27,6 +28,7 @@ describe('trivial cases', () => {
   it('should be a valid ping check', () => {
     const check: Check = {
       job: 'job-1',
+      alertSensitivity: AlertSensitivity.None,
       target: 'grafana.com',
       frequency: 10000,
       timeout: 1000,
@@ -47,6 +49,7 @@ describe('trivial cases', () => {
   it('should be a valid dns check', () => {
     const check: Check = {
       job: 'job-1',
+      alertSensitivity: AlertSensitivity.None,
       target: 'grafana.com',
       frequency: 10000,
       timeout: 1000,
@@ -70,6 +73,7 @@ describe('trivial cases', () => {
   it('should be a valid tcp check', () => {
     const check: Check = {
       job: 'job-1',
+      alertSensitivity: AlertSensitivity.None,
       target: 'grafana.com:80',
       frequency: 10000,
       timeout: 1000,

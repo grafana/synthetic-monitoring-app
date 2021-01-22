@@ -16,7 +16,6 @@ import { useForm, FormContext, Controller } from 'react-hook-form';
 import { GrafanaTheme } from '@grafana/data';
 import { CheckUsage } from '../CheckUsage';
 import { CheckFormAlert } from 'components/CheckFormAlert';
-import { useAlerts } from 'hooks/useAlerts';
 import { InstanceContext } from 'components/InstanceContext';
 
 interface Props {
