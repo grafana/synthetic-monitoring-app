@@ -9,7 +9,7 @@ interface Props {
 
 const getStyles = (theme: GrafanaTheme) => ({
   header: css`
-    border-top: 1px solid #343b40;
+    border-top: 1px solid ${theme.isDark ? '#343b40' : '#c7d0d9'};
     display: flex;
     align-items: center;
     padding: ${theme.spacing.sm} 0;
@@ -23,7 +23,8 @@ const getStyles = (theme: GrafanaTheme) => ({
   `,
   title: css`
     font-size: ${theme.typography.size.sm};
-    font-weight: ${theme.typography.weight.bold};
+    font-weight: ${theme.typography.weight.semibold};
+    color: ${theme.colors.formLabel};
   `,
   hidden: css`
     display: none;

@@ -100,7 +100,8 @@ const getStyles = (theme: GrafanaTheme) => ({
     margin-top: ${theme.spacing.sm};
   `,
   preview: css`
-    background-color: ${theme.colors.bg1};
+    border: 1px solid ${theme.colors.panelBorder};
+    background-color: ${theme.colors.panelBg};
     margin-bottom: ${theme.spacing.sm};
     color: ${theme.colors.textWeak};
     line-height: 20px;
