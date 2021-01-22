@@ -1,9 +1,10 @@
 import React, { FC, Fragment } from 'react';
-import { TextArea, Input, Button, useStyles, Label } from '@grafana/ui';
+import { TextArea, Input, Button, useStyles, Label, Field } from '@grafana/ui';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { SubCollapse } from 'components/SubCollapse';
 import { GrafanaTheme } from '@grafana/data';
 import { css } from 'emotion';
+import { validateAnnotationName } from 'validation';
 
 const getStyles = (theme: GrafanaTheme) => ({
   grid: css`
@@ -24,7 +25,7 @@ const NAME = 'annotations';
 
 export const AlertAnnotations: FC = () => {
   const styles = useStyles(getStyles);
-  const { control, register } = useFormContext();
+  const { control, register, errors } = useFormContext();
   const { fields, append, remove } = useFieldArray({
     control,
     name: NAME,
@@ -45,12 +46,17 @@ export const AlertAnnotations: FC = () => {
         ) : null}
         {fields.map((field, annotationIndex) => (
           <Fragment key={field.id}>
-            <Input
-              ref={register()}
-              name={`${NAME}[${annotationIndex}].name`}
-              placeholder="Name"
-              data-testid={`alert-annotationName-${annotationIndex}`}
-            />
+            <Field
+              invalid={errors?.annotations?.[annotationIndex]?.name}
+              error={errors?.annotations?.[annotationIndex]?.name?.message}
+            >
+              <Input
+                ref={register({ validate: value => validateAnnotationName(value) })}
+                name={`${NAME}[${annotationIndex}].name`}
+                placeholder="Name"
+                data-testid={`alert-annotationName-${annotationIndex}`}
+              />
+            </Field>
             <TextArea
               ref={register()}
               name={`${NAME}[${annotationIndex}].value`}

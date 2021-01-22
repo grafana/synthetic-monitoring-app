@@ -112,12 +112,22 @@ export function validateLabelName(name: string): string | undefined {
 
 export function validateLabelValue(value: string): string | undefined {
   if (value.length > 32) {
-    return 'Label names must be 32 characters or less';
+    return 'Label values must be 32 characters or less';
   }
   if (!labelRegex.test(value)) {
     return 'Invalid label value';
   }
 
+  return undefined;
+}
+
+export function validateAnnotationName(name: string): string | undefined {
+  if (name.length > 32) {
+    return 'Label names must be 32 characters or less';
+  }
+  if (!labelRegex.test(name)) {
+    return 'Invalid annotation name';
+  }
   return undefined;
 }
 
