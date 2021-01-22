@@ -17,8 +17,9 @@ const getStyles = (theme: GrafanaTheme) => ({
     justify-content: center;
     padding: 48px 100px;
   `,
-  marginBottom: css`
+  defaultAlerts: css`
     margin-bottom: ${theme.spacing.xl};
+    text-align: center;
   `,
   link: css`
     text-decoration: underline;
@@ -87,7 +88,7 @@ export const Alerting: FC = () => {
       {!alertRules && <Spinner />}
       {alertRules?.length === 0 && (
         <div className={styles.emptyCard}>
-          <span className={styles.marginBottom}>
+          <span className={styles.defaultAlerts}>
             You do not have any default alerts for Synthetic Monitoring yet. Click below to get some default alerts. You
             can also create custom alerts for checks using Grafana Cloud Alerting.
           </span>
