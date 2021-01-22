@@ -177,6 +177,7 @@ export const fallbackCheck = {
       dontFragment: false,
     },
   },
+  basicMetricsOnly: true,
 } as Check;
 
 export const colors = {

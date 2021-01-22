@@ -8,7 +8,7 @@ import { getDefaultValuesFromCheck, getCheckFromFormValues } from './checkFormTr
 import { validateJob, validateTarget } from 'validation';
 import CheckTarget from 'components/CheckTarget';
 import { Subheader } from 'components/Subheader';
-import { HorizonalCheckboxField } from 'components/HorizonalCheckboxField';
+import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 import { CheckSettings } from './CheckSettings';
 import { ProbeOptions } from './ProbeOptions';
 import { CHECK_TYPE_OPTIONS, fallbackCheck } from 'components/constants';
@@ -94,6 +94,7 @@ export const CheckEditor: FC<Props> = ({ check, onReturn }) => {
   };
 
   const target = formMethods.watch('target', '') as string;
+
   return (
     <FormContext {...formMethods}>
       <form onSubmit={formMethods.handleSubmit(onSubmit)}>
@@ -110,7 +111,7 @@ export const CheckEditor: FC<Props> = ({ check, onReturn }) => {
               width={30}
             />
           </Field>
-          <HorizonalCheckboxField
+          <HorizontalCheckboxField
             disabled={!isEditor}
             name="enabled"
             id="check-form-enabled"
@@ -157,6 +158,12 @@ export const CheckEditor: FC<Props> = ({ check, onReturn }) => {
             timeout={check?.timeout ?? fallbackCheck.timeout}
             frequency={check?.frequency ?? fallbackCheck.frequency}
             probes={check?.probes ?? fallbackCheck.probes}
+          />
+          <HorizontalCheckboxField
+            id="useFullMetrics"
+            name="useFullMetrics"
+            label="Publish full set of metrics"
+            description={'Metrics are reduced by default'}
           />
           <CheckUsage />
           <CheckSettings typeOfCheck={selectedCheckType} isEditor={isEditor} />

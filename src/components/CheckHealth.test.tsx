@@ -7,6 +7,7 @@ import { getInstanceMock, instanceSettings } from '../datasource/__mocks__/DataS
 import { AppPluginMeta } from '@grafana/data';
 
 const defaultCheck = {
+  basicMetricsOnly: true,
   id: 2,
   tenantId: 1,
   frequency: 60000,
