@@ -11,6 +11,9 @@ import { AlertAnnotations } from './AlertAnnotations';
 import { useAsyncCallback } from 'react-async-hook';
 import appEvents from 'grafana/app/core/app_events';
 import { InstanceContext } from './InstanceContext';
+import { SubCollapse } from './SubCollapse';
+import { transformAlertFormValues } from './alertingTransformations';
+import { FetchResponse } from '@grafana/runtime';
 
 export enum TimeUnits {
   Milliseconds = 'ms',
@@ -93,11 +96,24 @@ const getStyles = (theme: GrafanaTheme) => ({
   link: css`
     text-decoration: underline;
   `,
+  previewHelpText: css`
+    margin-top: ${theme.spacing.sm};
+  `,
+  preview: css`
+    background-color: ${theme.colors.bg1};
+    margin-bottom: ${theme.spacing.sm};
+    color: ${theme.colors.textWeak};
+    line-height: 20px;
+    padding: ${theme.spacing.sm};
+  `,
+  indent: css`
+    margin-left: ${theme.spacing.sm};
+  `,
 });
 
 type Props = {
   rule: AlertRule;
-  onSubmit: (alertValues: AlertFormValues, sensitivity: AlertSensitivity) => Promise<void>;
+  onSubmit: (alertValues: AlertFormValues, sensitivity: AlertSensitivity) => Promise<FetchResponse<unknown>>;
 };
 
 const findSensitivity = (expression: string): AlertSensitivity | undefined => {
@@ -116,7 +132,11 @@ export const AlertRuleForm: FC<Props> = ({ rule, onSubmit }) => {
   const formMethods = useForm<AlertFormValues>({
     defaultValues,
   });
-  const { register, control, handleSubmit, errors } = formMethods;
+  const { register, control, handleSubmit, errors, watch } = formMethods;
+  const currentValues = watch();
+  const currentLabels = watch('labels');
+  const currentAnnotations = watch('annotations');
+  const preview = transformAlertFormValues(currentValues, sensitivity);
 
   const { execute, error, loading: submitting } = useAsyncCallback(async (alertValues: AlertFormValues) => {
     if (!sensitivity) {
@@ -183,6 +203,47 @@ export const AlertRuleForm: FC<Props> = ({ rule, onSubmit }) => {
           </HorizontalGroup>
           <AlertLabels />
           <AlertAnnotations />
+          <SubCollapse title="Config preview">
+            <div>
+              <p className={styles.previewHelpText}>
+                This alert will appear as an alert rule in Grafana Cloud Alerting, where you can use the full power of
+                Prometheus style alerting.{' '}
+                <a
+                  href="https://grafana.com/docs/grafana-cloud/alerts/grafana-cloud-alerting/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.link}
+                >
+                  Learn more{' '}
+                </a>
+              </p>
+              <div className={styles.preview}>
+                <div>alert: {preview.alert}</div>
+                <div>expr: {preview.expr}</div>
+                <div>for: {preview.for}</div>
+                {currentLabels.length && (
+                  <div>
+                    labels:
+                    {currentLabels.map(({ name, value }, index) => (
+                      <div className={styles.indent} key={index}>
+                        {name}: {value}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {currentAnnotations && (
+                  <div>
+                    annotations:
+                    {currentAnnotations.map(({ name, value }, index) => (
+                      <div className={styles.indent} key={index}>
+                        {name}: {value}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </SubCollapse>
           <hr className={styles.breakLine} />
           <HorizontalGroup>
             <Button type="submit" disabled={submitting}>

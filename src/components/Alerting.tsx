@@ -6,6 +6,7 @@ import { useAlerts } from 'hooks/useAlerts';
 import { AlertRuleForm } from './AlertRuleForm';
 import { AlertFormValues, AlertRule, AlertSensitivity, Label } from 'types';
 import { InstanceContext } from './InstanceContext';
+import { transformAlertFormValues } from './alertingTransformations';
 
 const getStyles = (theme: GrafanaTheme) => ({
   emptyCard: css`
@@ -27,26 +28,6 @@ const getStyles = (theme: GrafanaTheme) => ({
   `,
 });
 
-type PromLabel = { [key: string]: string };
-
-const labelToProm = (labels?: Label[]) => {
-  return labels?.reduce<PromLabel>((acc, label) => {
-    acc[label.name] = label.value;
-    return acc;
-  }, {});
-};
-
-const transformAlertValues = (alertValues: AlertFormValues, sensitivity: AlertSensitivity): AlertRule => {
-  return {
-    alert: alertValues.name,
-    expr: `probe_success * on (instance, job, probe, config_version) group_left (check_name) sm_check_info{alert_sensitivity="${sensitivity}"} < ${alertValues.probePercentage /
-      100}`,
-    for: `${alertValues.timeCount}${alertValues.timeUnit.value}`,
-    labels: labelToProm(alertValues.labels),
-    annotations: labelToProm(alertValues.annotations),
-  };
-};
-
 export const Alerting: FC = () => {
   const styles = useStyles(getStyles);
   const { alertRules, setDefaultRules, setRules } = useAlerts();
@@ -63,7 +44,7 @@ export const Alerting: FC = () => {
     alertValues: AlertFormValues,
     sensitivity: AlertSensitivity
   ) => {
-    const updatedRule = transformAlertValues(alertValues, sensitivity);
+    const updatedRule = transformAlertFormValues(alertValues, sensitivity);
 
     if (!alertRules) {
       return Promise.reject('Something went wrong');

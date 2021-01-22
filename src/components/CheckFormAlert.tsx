@@ -32,7 +32,7 @@ export const CheckFormAlert: FC<Props> = () => {
         <a
           href="a/grafana-synthetic-monitoring-app/?page=alerts"
           target="_blank"
-          rel="noopenner noreferrer"
+          rel="noopener noreferrer"
           className={styles.link}
         >
           alerts tab.

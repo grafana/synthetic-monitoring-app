@@ -48,7 +48,6 @@ const fetchSMRules = async (alertRulerUrl: string) => {
         return alertGroup.rules;
       });
   } catch (e) {
-    console.log('ERRRRRRORRR', e);
     if (e.status === 404) {
       return [];
     }
@@ -73,7 +72,6 @@ export function useAlerts(checkId?: number) {
   } = useContext(InstanceContext);
 
   const alertRulerUrl = alertRuler?.url;
-  console.log('******************* IN HOOK', getBackendSrv().fetch({ data: 'stuff' }));
   const setDefaultRules = async () => {
     await getBackendSrv()
       .fetch({
