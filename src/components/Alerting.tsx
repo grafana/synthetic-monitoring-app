@@ -1,5 +1,5 @@
 import { GrafanaTheme } from '@grafana/data';
-import { Button, Icon, Spinner, useStyles } from '@grafana/ui';
+import { Button, HorizontalGroup, Icon, Modal, Spinner, useStyles } from '@grafana/ui';
 import React, { FC, useState, useContext } from 'react';
 import { css } from 'emotion';
 import { useAlerts } from 'hooks/useAlerts';
@@ -33,6 +33,7 @@ export const Alerting: FC = () => {
   const styles = useStyles(getStyles);
   const { alertRules, setDefaultRules, setRules } = useAlerts();
   const [updatingDefaultRules, setUpdatingDefaultRules] = useState(false);
+  const [showResetModal, setShowResetModal] = useState(false);
   const { instance } = useContext(InstanceContext);
 
   const populateDefaultAlerts = async () => {
@@ -97,6 +98,32 @@ export const Alerting: FC = () => {
       {alertRules?.map((alertRule, index) => (
         <AlertRuleForm key={index} rule={alertRule} onSubmit={getUpdateRules(index)} />
       ))}
+      {Boolean(alertRules?.length) ? (
+        <HorizontalGroup justify="flex-end">
+          <Button variant="destructive" type="button" onClick={() => setShowResetModal(true)}>
+            Reset to defaults
+          </Button>
+        </HorizontalGroup>
+      ) : null}
+      <Modal isOpen={showResetModal} title="Reset default alert rules?" onDismiss={() => setShowResetModal(false)}>
+        Resetting the alert rules will overwrite any changes made in the <code>syntheticmonitoring {'>'} default</code>{' '}
+        rule group.
+        <HorizontalGroup justify="center">
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={() => {
+              populateDefaultAlerts();
+              setShowResetModal(false);
+            }}
+          >
+            Reset rules
+          </Button>
+          <Button type="button" variant="secondary" onClick={() => setShowResetModal(false)}>
+            Cancel
+          </Button>
+        </HorizontalGroup>
+      </Modal>
     </div>
   );
 };
