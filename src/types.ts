@@ -241,6 +241,7 @@ export interface AlertFormValues {
   timeUnit: SelectableValue<TimeUnits>;
   labels: Label[];
   annotations: Label[];
+  sensitivity: SelectableValue<AlertSensitivity>;
 }
 
 export interface CheckFormValues extends Omit<Check, 'settings' | 'labels' | 'alertSensitivity'> {

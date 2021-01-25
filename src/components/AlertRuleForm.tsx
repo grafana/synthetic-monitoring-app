@@ -4,7 +4,7 @@ import { Collapse } from 'components/Collapse';
 import React, { FC, useState, useContext } from 'react';
 import { Controller, FormContext, useForm } from 'react-hook-form';
 import { AlertRule, AlertSensitivity, Label as LabelType, TimeUnits } from 'types';
-import { TIME_UNIT_OPTIONS } from './constants';
+import { ALERT_SENSITIVITY_OPTIONS, TIME_UNIT_OPTIONS } from './constants';
 import { css } from 'emotion';
 import { AlertLabels } from './AlertLabels';
 import { AlertAnnotations } from './AlertAnnotations';
@@ -30,6 +30,7 @@ export interface AlertFormValues {
   name: string;
   probePercentage: number;
   timeCount: number;
+  sensitivity: SelectableValue<AlertSensitivity>;
   timeUnit: SelectableValue<TimeUnits>;
   labels: LabelType[];
   annotations: LabelType[];
@@ -41,9 +42,19 @@ export const parseAlertTimeUnits = (time: string) => {
   return { timeCount, timeUnit };
 };
 
+const findSensitivity = (expression: string): AlertSensitivity | undefined => {
+  const entry = Object.entries(AlertSensitivity).find(([_, sensitivityValue]) => {
+    return expression.match(`alert_sensitivity="${sensitivityValue}"`);
+  });
+  return entry?.[1];
+};
+
 const getAlertFormValues = (rule: AlertRule): AlertFormValues | undefined => {
   const { timeCount, timeUnit } = parseAlertTimeUnits(rule.for ?? '');
   const timeOption = TIME_UNIT_OPTIONS.find(({ value }) => value === timeUnit);
+
+  const sensitivityValue = findSensitivity(rule.expr);
+  const sensitivityOption = ALERT_SENSITIVITY_OPTIONS.find(({ value }) => value === sensitivityValue);
 
   const labels = Object.entries(rule.labels ?? {}).map(([name, value]) => ({
     name,
@@ -52,7 +63,7 @@ const getAlertFormValues = (rule: AlertRule): AlertFormValues | undefined => {
 
   const probePercentage = parseFloat(rule.expr.split(' < ')?.[1]) * 100;
 
-  if (!timeOption || !probePercentage) {
+  if (!timeOption || !probePercentage || !sensitivityOption) {
     return undefined;
   }
   return {
@@ -60,6 +71,7 @@ const getAlertFormValues = (rule: AlertRule): AlertFormValues | undefined => {
     probePercentage,
     timeCount: parseInt(timeCount, 10),
     timeUnit: timeOption ?? {},
+    sensitivity: sensitivityOption,
     annotations: Object.keys(rule.annotations ?? {}).map(annotationName => ({
       name: annotationName,
       value: rule.annotations?.[annotationName] ?? '',
@@ -76,7 +88,6 @@ const getStyles = (theme: GrafanaTheme) => ({
   inlineText: css`
     white-space: nowrap;
     flex-grow: 1;
-    margin-bottom: ${theme.spacing.md};
   `,
   numberInput: css`
     width: 75px;
@@ -85,10 +96,16 @@ const getStyles = (theme: GrafanaTheme) => ({
   selectInput: css`
     width: 100px;
     flex-grow: 0;
-    margin-bottom: ${theme.spacing.md};
+    margin-bottom: 0;
   `,
   breakLine: css`
     margin-top: 0;
+  `,
+  noMargin: css`
+    margin-bottom: 0;
+  `,
+  expressionContainer: css`
+    margin-bottom: ${theme.spacing.md};
   `,
   submitFail: css`
     margin-top: ${theme.spacing.md};
@@ -114,18 +131,10 @@ const getStyles = (theme: GrafanaTheme) => ({
 
 type Props = {
   rule: AlertRule;
-  onSubmit: (alertValues: AlertFormValues, sensitivity: AlertSensitivity) => Promise<FetchResponse<unknown>>;
-};
-
-const findSensitivity = (expression: string): AlertSensitivity | undefined => {
-  const entry = Object.entries(AlertSensitivity).find(([_, sensitivityValue]) => {
-    return expression.match(`alert_sensitivity="${sensitivityValue}"`);
-  });
-  return entry?.[1];
+  onSubmit: (alertValues: AlertFormValues) => Promise<FetchResponse<unknown>>;
 };
 
 export const AlertRuleForm: FC<Props> = ({ rule, onSubmit }) => {
-  const sensitivity = findSensitivity(rule.expr);
   const defaultValues = getAlertFormValues(rule);
   const { instance } = useContext(InstanceContext);
   const styles = useStyles(getStyles);
@@ -144,13 +153,8 @@ export const AlertRuleForm: FC<Props> = ({ rule, onSubmit }) => {
   };
 
   const { execute, error, loading: submitting } = useAsyncCallback(async (alertValues: AlertFormValues) => {
-    if (!sensitivity) {
-      return Promise.reject(
-        'It looks like this rule has been edited from Cloud Alerting and can no longer be edited from Synthetic Monitoring. Please go to Cloud Alerting to update this rule.'
-      );
-    }
     try {
-      await onSubmit(alertValues, sensitivity);
+      await onSubmit(alertValues);
       appEvents.emit(AppEvents.alertSuccess, ['Alert rule updated successfully']);
       setIsOpen(false);
       return Promise.resolve();
@@ -159,7 +163,7 @@ export const AlertRuleForm: FC<Props> = ({ rule, onSubmit }) => {
     }
   });
 
-  if (!defaultValues || !sensitivity) {
+  if (!defaultValues) {
     return (
       <Collapse label={rule.alert} isOpen={isOpen} onToggle={() => setIsOpen(!isOpen)} collapsible>
         <div className={styles.container}>
@@ -176,7 +180,7 @@ export const AlertRuleForm: FC<Props> = ({ rule, onSubmit }) => {
     );
   }
 
-  const preview = transformAlertFormValues(currentValues, sensitivity);
+  const preview = transformAlertFormValues(currentValues);
 
   return (
     <Collapse label={rule.alert} isOpen={isOpen} onToggle={() => setIsOpen(!isOpen)} collapsible>
@@ -185,34 +189,48 @@ export const AlertRuleForm: FC<Props> = ({ rule, onSubmit }) => {
           <Field label="Alert name">
             <Input ref={register({ required: true })} name="name" id="alert-name" />
           </Field>
-          <Label>Expression</Label>
-          <HorizontalGroup align="center">
-            <span className={styles.inlineText}>An alert will fire if</span>
-            <Field invalid={Boolean(errors?.probePercentage)} error={errors?.probePercentage?.message}>
-              <Input
-                className={styles.numberInput}
-                ref={register({ required: true, max: 100, min: 1 })}
-                name="probePercentage"
-                type="number"
-                data-testid="probePercentage"
-                id="alertProbePercentage"
-              />
-            </Field>
-            <span className={styles.inlineText}>% or more probes report connection errors for</span>
-            <Field invalid={Boolean(errors?.timeCount)} error={errors?.timeCount?.message}>
-              <Input
-                ref={register({ required: true, min: 1, max: 999 })}
-                name="timeCount"
-                data-testid="timeCount"
-                type="number"
-                className={styles.numberInput}
-                id="alertTimeCount"
-              />
-            </Field>
-            <div className={styles.selectInput}>
-              <Controller as={Select} control={control} name="timeUnit" options={TIME_UNIT_OPTIONS} />
-            </div>
-          </HorizontalGroup>
+          <div className={styles.expressionContainer}>
+            <Label>Expression</Label>
+            <HorizontalGroup align="center" wrap marginHeight={0}>
+              <span className={styles.inlineText}>Checks marked with a sensitivity level of</span>
+              <div className={styles.selectInput}>
+                <Controller as={Select} control={control} name="sensitivity" options={ALERT_SENSITIVITY_OPTIONS} />
+              </div>
+              <span className={styles.inlineText}>will fire an alert if</span>
+              <Field
+                invalid={Boolean(errors?.probePercentage)}
+                error={errors?.probePercentage?.message}
+                className={styles.noMargin}
+              >
+                <Input
+                  className={styles.numberInput}
+                  ref={register({ required: true, max: 100, min: 1 })}
+                  name="probePercentage"
+                  type="number"
+                  data-testid="probePercentage"
+                  id="alertProbePercentage"
+                />
+              </Field>
+              <span className={styles.inlineText}>% or more probes report connection errors for</span>
+              <Field
+                invalid={Boolean(errors?.timeCount)}
+                error={errors?.timeCount?.message}
+                className={styles.noMargin}
+              >
+                <Input
+                  ref={register({ required: true, min: 1, max: 999 })}
+                  name="timeCount"
+                  data-testid="timeCount"
+                  type="number"
+                  className={styles.numberInput}
+                  id="alertTimeCount"
+                />
+              </Field>
+              <div className={styles.selectInput}>
+                <Controller as={Select} control={control} name="timeUnit" options={TIME_UNIT_OPTIONS} />
+              </div>
+            </HorizontalGroup>
+          </div>
           <AlertLabels />
           <AlertAnnotations />
           <SubCollapse title="Config preview">
