@@ -38,7 +38,7 @@ export const CheckFormAlert: FC<Props> = () => {
           alerts tab.
         </a>
       </div>
-      <Field label="Select alert">
+      <Field label="Select alert sensitivity">
         <Controller name="alertSensitivity" as={Select} width={40} options={ALERT_SENSITIVITY_OPTIONS} />
       </Field>
     </Collapse>
