@@ -420,4 +420,5 @@ export type AlertRule = {
   annotations?: {
     [key: string]: string;
   };
+  record?: string;
 };

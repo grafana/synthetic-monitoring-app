@@ -195,7 +195,7 @@ export const colors = {
 
 export const LEGACY_METRICS_DS_NAME = 'Synthetic Monitoring Metrics';
 export const LEGACY_LOGS_DS_NAME = 'Synthetic Monitoring Logs';
-export const SM_ALERTING_NAMESPACE = 'syntheticmonitoring';
+export const SM_ALERTING_NAMESPACE = 'synthetic_monitoring';
 export const ALERTING_SEVERITY_OPTIONS = [
   {
     label: 'Critical',
@@ -221,3 +221,20 @@ export const ALERT_SENSITIVITY_OPTIONS = [
   { label: 'Medium', value: AlertSensitivity.Medium },
   { label: 'High', value: AlertSensitivity.High },
 ];
+
+export const DEFAULT_ALERT_NAMES_BY_SENSITIVITY = {
+  [AlertSensitivity.Low]: 'SyntheticMonitoringCheckFailureAtLowSensitivity',
+  [AlertSensitivity.Medium]: 'SyntheticMonitoringCheckFailureAtMediumSensitivity',
+  [AlertSensitivity.High]: 'SyntheticMonitoringCheckFailureAtHighSensitivity',
+};
+
+export const ALERT_RECORDING_METRIC = 'instance_job_severity:probe_success:mean5m';
+
+export const DEFAULT_ALERT_LABELS = {
+  namespace: 'synthetic_monitoring',
+};
+
+export const getDefaultAlertAnnotations = (percentage: number) => ({
+  description: `check job {{ $labels.job }} instance {{ $labels.instance }} has a success rate of {{ printf "%.1f" $value }}%.`,
+  summary: `check success below ${percentage}%`,
+});

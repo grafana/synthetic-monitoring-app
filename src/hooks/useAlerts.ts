@@ -1,7 +1,13 @@
 import { useState, useEffect, useContext } from 'react';
 import { getBackendSrv } from '@grafana/runtime';
 import { parse, stringify } from 'yaml';
-import { SM_ALERTING_NAMESPACE } from 'components/constants';
+import {
+  ALERT_RECORDING_METRIC,
+  DEFAULT_ALERT_LABELS,
+  DEFAULT_ALERT_NAMES_BY_SENSITIVITY,
+  SM_ALERTING_NAMESPACE,
+  getDefaultAlertAnnotations,
+} from 'components/constants';
 import { AlertRule, AlertSensitivity } from 'types';
 import { InstanceContext } from 'components/InstanceContext';
 
@@ -11,23 +17,38 @@ enum AlertThresholds {
   Low = 0.75,
 }
 
-const defaultRules = {
+export const defaultRules = {
   name: 'default',
   rules: [
     {
-      alert: 'High Sensitivity',
-      expr: `probe_success * on (instance, job, probe, config_version) group_left (check_name) sm_check_info{alert_sensitivity="${AlertSensitivity.High}"} < ${AlertThresholds.High}`,
-      for: '5m',
+      record: ALERT_RECORDING_METRIC,
+      expr: `(sum without(probe, config_version) (rate(probe_all_success_sum[5m]) *
+              on(instance, job, probe) group_left(alert_sensitivity) max by(instance, job,
+              probe, alert_sensitivity) (sm_check_info{alert_sensitivity!=""})) / sum
+              without(probe, config_version) (rate(probe_all_success_count[5m]) *
+              on(instance, job, probe) group_left(alert_sensitivity) max by(instance, job,
+              probe, alert_sensitivity) (sm_check_info{alert_sensitivity!=""}))) * 100`,
     },
     {
-      alert: 'Medium Sensitivity',
-      expr: `probe_success * on (instance, job, probe, config_version) group_left (check_name) sm_check_info{alert_sensitivity="${AlertSensitivity.Medium}"} < ${AlertThresholds.Medium}`,
+      alert: DEFAULT_ALERT_NAMES_BY_SENSITIVITY[AlertSensitivity.High],
+      expr: `${ALERT_RECORDING_METRIC}{alert_sensitivity="${AlertSensitivity.High}"} < ${AlertThresholds.High}`,
       for: '5m',
+      labels: DEFAULT_ALERT_LABELS,
+      annotations: getDefaultAlertAnnotations(AlertThresholds.High),
     },
     {
-      alert: 'Low Sensitivity',
-      expr: `probe_success * on (instance, job, probe, config_version) group_left (check_name) sm_check_info{alert_sensitivity="${AlertSensitivity.Low}"} < ${AlertThresholds.Low}`,
+      alert: DEFAULT_ALERT_NAMES_BY_SENSITIVITY[AlertSensitivity.Medium],
+      expr: `${ALERT_RECORDING_METRIC}{alert_sensitivity="${AlertSensitivity.Medium}"} < ${AlertThresholds.Medium}`,
       for: '5m',
+      labels: DEFAULT_ALERT_LABELS,
+      annotations: getDefaultAlertAnnotations(AlertThresholds.Medium),
+    },
+    {
+      alert: DEFAULT_ALERT_NAMES_BY_SENSITIVITY[AlertSensitivity.Low],
+      expr: `${ALERT_RECORDING_METRIC}{alert_sensitivity="${AlertSensitivity.Low}"} < ${AlertThresholds.Low}`,
+      for: '5m',
+      labels: DEFAULT_ALERT_LABELS,
+      annotations: getDefaultAlertAnnotations(AlertThresholds.Low),
     },
   ],
 };
@@ -75,7 +96,7 @@ export function useAlerts(checkId?: number) {
   const setDefaultRules = async () => {
     await getBackendSrv()
       .fetch({
-        url: `${alertRulerUrl}/rules/syntheticmonitoring`,
+        url: `${alertRulerUrl}/rules/${SM_ALERTING_NAMESPACE}`,
         method: 'POST',
         headers: {
           'Content-Type': 'application/yaml',

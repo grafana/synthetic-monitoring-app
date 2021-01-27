@@ -1,11 +1,12 @@
 import { Alerting } from 'components/Alerting';
+import { DEFAULT_ALERT_NAMES_BY_SENSITIVITY } from 'components/constants';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import React from 'react';
 import userEvent from '@testing-library/user-event';
 import { InstanceContext } from './InstanceContext';
 import { getInstanceMock } from 'datasource/__mocks__/DataSource';
 import { AppPluginMeta, DataSourceInstanceSettings } from '@grafana/data';
-import { AlertSensitivity, GlobalSettings } from 'types';
+import { AlertRule, AlertSensitivity, GlobalSettings } from 'types';
 import * as useAlerts from 'hooks/useAlerts';
 
 jest.setTimeout(30000);
@@ -38,23 +39,7 @@ const mockAlertsHook = () => {
       deleteRulesForCheck,
     }))
     .mockImplementation(() => ({
-      alertRules: [
-        {
-          alert: 'High Sensitivity',
-          expr: `probe_success * on (instance, job, probe, config_version) group_left (check_name) sm_check_info{alert_sensitivity="${AlertSensitivity.High}"} < 0.95`,
-          for: '5m',
-        },
-        {
-          alert: 'Medium Sensitivity',
-          expr: `probe_success * on (instance, job, probe, config_version) group_left (check_name) sm_check_info{alert_sensitivity="${AlertSensitivity.Medium}"} < 0.8`,
-          for: '5m',
-        },
-        {
-          alert: 'Low Sensitivity',
-          expr: `probe_success * on (instance, job, probe, config_version) group_left (check_name) sm_check_info{alert_sensitivity="${AlertSensitivity.Low}"} < 0.75`,
-          for: '5m',
-        },
-      ],
+      alertRules: useAlerts.defaultRules.rules as AlertRule[],
       setDefaultRules,
       setRules,
       deleteRulesForCheck,
@@ -75,11 +60,11 @@ it('adds default alerts and edits alerts', async () => {
   await waitFor(() => expect(defaultAlertButton).not.toBeDisabled());
   expect(setDefaultRules).toHaveBeenCalledTimes(1);
 
-  const button = await screen.findByRole('button', { name: 'High Sensitivity' });
+  const button = await screen.findByRole('button', { name: DEFAULT_ALERT_NAMES_BY_SENSITIVITY[AlertSensitivity.High] });
   userEvent.click(button);
 
   const alertNameInput = await screen.findByLabelText('Alert name');
-  expect(alertNameInput).toHaveValue('High Sensitivity');
+  expect(alertNameInput).toHaveValue(DEFAULT_ALERT_NAMES_BY_SENSITIVITY[AlertSensitivity.High]);
   await userEvent.clear(alertNameInput);
   await userEvent.type(alertNameInput, 'A different name');
 
@@ -101,18 +86,18 @@ it('adds default alerts and edits alerts', async () => {
   const labels = await toggleSection('Labels');
   const addLabelButton = await within(labels).findByRole('button', { name: 'Add label' });
   userEvent.click(addLabelButton);
-  const labelNameInput = await within(labels).findByPlaceholderText('Name');
-  await userEvent.type(labelNameInput, 'a_label_name');
-  const labelValueInput = await within(labels).findByPlaceholderText('Value');
-  await userEvent.type(labelValueInput, 'a_label_value');
+  const labelNameInputs = await within(labels).findAllByPlaceholderText('Name');
+  await userEvent.type(labelNameInputs[labelNameInputs.length - 1], 'a_label_name');
+  const labelValueInputs = await within(labels).findAllByPlaceholderText('Value');
+  await userEvent.type(labelValueInputs[labelValueInputs.length - 1], 'a_label_value');
 
   const annotations = await toggleSection('Annotations');
   const addAnnotationsButton = await within(annotations).findByRole('button', { name: 'Add annotation' });
   userEvent.click(addAnnotationsButton);
-  const annotationNameInput = await within(annotations).findByPlaceholderText('Name');
-  await userEvent.type(annotationNameInput, 'an_annotation_name');
-  const annotationValueInput = await within(annotations).findByPlaceholderText('Value');
-  userEvent.paste(annotationValueInput, 'an annotation value');
+  const annotationNameInputs = await within(annotations).findAllByPlaceholderText('Name');
+  await userEvent.type(annotationNameInputs[annotationNameInputs.length - 1], 'an_annotation_name');
+  const annotationValueInputs = await within(annotations).findAllByPlaceholderText('Value');
+  userEvent.paste(annotationValueInputs[annotationValueInputs.length - 1], 'an annotation value');
 
   const submitButton = await screen.findByRole('button', { name: 'Save alert' });
   userEvent.click(submitButton);
@@ -122,23 +107,57 @@ it('adds default alerts and edits alerts', async () => {
   expect(setRules).toHaveBeenCalledWith([
     {
       alert: 'A different name',
-      annotations: { an_annotation_name: 'an annotation value' },
-      expr:
-        'probe_success * on (instance, job, probe, config_version) group_left (check_name) sm_check_info{alert_sensitivity="high"} < 0.25',
+      annotations: {
+        an_annotation_name: 'an annotation value',
+        description:
+          'check job {{ $labels.job }} instance {{ $labels.instance }} has a success rate of {{ printf "%.1f" $value }}%.',
+        summary: 'check success below 0.95%',
+      },
+      expr: 'instance_job_severity:probe_success:mean5m{alert_sensitivity="high"} < 0.25',
       for: '2s',
-      labels: { a_label_name: 'a_label_value' },
+      labels: {
+        a_label_name: 'a_label_value',
+        namespace: 'synthetic_monitoring',
+      },
     },
     {
-      alert: 'Medium Sensitivity',
-      expr:
-        'probe_success * on (instance, job, probe, config_version) group_left (check_name) sm_check_info{alert_sensitivity="medium"} < 0.8',
+      alert: 'SyntheticMonitoringCheckFailureAtHighSensitivity',
+      annotations: {
+        description:
+          'check job {{ $labels.job }} instance {{ $labels.instance }} has a success rate of {{ printf "%.1f" $value }}%.',
+        summary: 'check success below 0.95%',
+      },
+      expr: 'instance_job_severity:probe_success:mean5m{alert_sensitivity="high"} < 0.95',
       for: '5m',
+      labels: {
+        namespace: 'synthetic_monitoring',
+      },
     },
     {
-      alert: 'Low Sensitivity',
-      expr:
-        'probe_success * on (instance, job, probe, config_version) group_left (check_name) sm_check_info{alert_sensitivity="low"} < 0.75',
+      alert: 'SyntheticMonitoringCheckFailureAtMediumSensitivity',
+      annotations: {
+        description:
+          'check job {{ $labels.job }} instance {{ $labels.instance }} has a success rate of {{ printf "%.1f" $value }}%.',
+        summary: 'check success below 0.9%',
+      },
+      expr: 'instance_job_severity:probe_success:mean5m{alert_sensitivity="medium"} < 0.9',
       for: '5m',
+      labels: {
+        namespace: 'synthetic_monitoring',
+      },
+    },
+    {
+      alert: 'SyntheticMonitoringCheckFailureAtLowSensitivity',
+      annotations: {
+        description:
+          'check job {{ $labels.job }} instance {{ $labels.instance }} has a success rate of {{ printf "%.1f" $value }}%.',
+        summary: 'check success below 0.75%',
+      },
+      expr: 'instance_job_severity:probe_success:mean5m{alert_sensitivity="low"} < 0.75',
+      for: '5m',
+      labels: {
+        namespace: 'synthetic_monitoring',
+      },
     },
   ]);
 });

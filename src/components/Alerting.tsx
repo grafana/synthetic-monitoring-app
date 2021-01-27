@@ -85,6 +85,26 @@ export const Alerting: FC = () => {
           Learn more about alerting for Synthetic Monitoring.
         </a>
       </p>
+      <p>
+        Routes and receivers must be configured in{' '}
+        <a
+          href={`/a/grafana-alerting-ui-app/?tab=config`}
+          className={styles.link}
+          target="blank"
+          rel="noopener noreferer"
+        >
+          Grafana Cloud Alerting Alertmanager
+        </a>{' '}
+        in order to be notified when an alert fires.{' '}
+        <a
+          href="https://grafana.com/blog/2020/02/25/step-by-step-guide-to-setting-up-prometheus-alertmanager-with-slack-pagerduty-and-gmail/"
+          target="blank"
+          rel="noopener noreferer"
+          className={styles.link}
+        >
+          Learn more about configuring Alertmanager
+        </a>
+      </p>
       {!alertRules && <Spinner />}
       {alertRules?.length === 0 && (
         <div className={styles.emptyCard}>
@@ -97,9 +117,11 @@ export const Alerting: FC = () => {
           </Button>
         </div>
       )}
-      {alertRules?.map((alertRule, index) => (
-        <AlertRuleForm key={index} rule={alertRule} onSubmit={getUpdateRules(index)} />
-      ))}
+      {alertRules
+        ?.filter(rule => !rule?.record)
+        .map((alertRule, index) => (
+          <AlertRuleForm key={index} rule={alertRule} onSubmit={getUpdateRules(index)} />
+        ))}
       {Boolean(alertRules?.length) ? (
         <HorizontalGroup justify="flex-end">
           <Button variant="destructive" type="button" onClick={() => setShowResetModal(true)}>
