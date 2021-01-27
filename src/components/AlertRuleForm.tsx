@@ -1,5 +1,5 @@
 import { AppEvents, GrafanaTheme, SelectableValue } from '@grafana/data';
-import { Alert, Button, Field, HorizontalGroup, Input, Label, Select, useStyles } from '@grafana/ui';
+import { Alert, Button, Field, HorizontalGroup, Icon, Input, Label, Select, useStyles } from '@grafana/ui';
 import { Collapse } from 'components/Collapse';
 import React, { FC, useState, useContext } from 'react';
 import { Controller, FormContext, useForm } from 'react-hook-form';
@@ -84,6 +84,7 @@ const getStyles = (theme: GrafanaTheme) => ({
   container: css`
     background-color: ${theme.colors.bg2};
     padding: ${theme.spacing.md};
+    margin-bottom: ${theme.spacing.sm};
   `,
   inlineText: css`
     white-space: nowrap;
@@ -126,6 +127,15 @@ const getStyles = (theme: GrafanaTheme) => ({
   `,
   indent: css`
     margin-left: ${theme.spacing.sm};
+  `,
+  button: css`
+    color: ${theme.colors.textHeading};
+    background-color: ${theme.colors.bg2};
+    width: 100%;
+    border: none;
+    text-align: left;
+    padding: ${theme.spacing.md};
+    margin-bottom: ${theme.spacing.sm};
   `,
 });
 
@@ -183,113 +193,119 @@ export const AlertRuleForm: FC<Props> = ({ rule, onSubmit }) => {
   const preview = transformAlertFormValues(currentValues);
 
   return (
-    <Collapse label={rule.alert} isOpen={isOpen} onToggle={() => setIsOpen(!isOpen)} collapsible>
-      <FormContext {...formMethods}>
-        <form className={styles.container} onSubmit={handleSubmit(execute)}>
-          <Field label="Alert name">
-            <Input ref={register({ required: true })} name="name" id="alert-name" />
-          </Field>
-          <div className={styles.expressionContainer}>
-            <Label>Expression</Label>
-            <HorizontalGroup align="center" wrap marginHeight={0}>
-              <span className={styles.inlineText}>Checks marked with a sensitivity level of</span>
-              <div className={styles.selectInput}>
-                <Controller as={Select} control={control} name="sensitivity" options={ALERT_SENSITIVITY_OPTIONS} />
-              </div>
-              <span className={styles.inlineText}>will fire an alert if</span>
-              <Field
-                invalid={Boolean(errors?.probePercentage)}
-                error={errors?.probePercentage?.message}
-                className={styles.noMargin}
-              >
-                <Input
-                  className={styles.numberInput}
-                  ref={register({ required: true, max: 100, min: 1 })}
-                  name="probePercentage"
-                  type="number"
-                  data-testid="probePercentage"
-                  id="alertProbePercentage"
-                />
-              </Field>
-              <span className={styles.inlineText}>% or more probes report connection errors for</span>
-              <Field
-                invalid={Boolean(errors?.timeCount)}
-                error={errors?.timeCount?.message}
-                className={styles.noMargin}
-              >
-                <Input
-                  ref={register({ required: true, min: 1, max: 999 })}
-                  name="timeCount"
-                  data-testid="timeCount"
-                  type="number"
-                  className={styles.numberInput}
-                  id="alertTimeCount"
-                />
-              </Field>
-              <div className={styles.selectInput}>
-                <Controller as={Select} control={control} name="timeUnit" options={TIME_UNIT_OPTIONS} />
-              </div>
-            </HorizontalGroup>
-          </div>
-          <AlertLabels />
-          <AlertAnnotations />
-          <SubCollapse title="Config preview">
-            <div>
-              <p className={styles.previewHelpText}>
-                This alert will appear as an alert rule in Grafana Cloud Alerting, where you can use the full power of
-                Prometheus style alerting.{' '}
-                <a
-                  href="https://grafana.com/docs/grafana-cloud/alerts/grafana-cloud-alerting/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.link}
+    <>
+      {!isOpen ? (
+        <button className={styles.button} onClick={() => setIsOpen(!isOpen)}>
+          <Icon name="angle-right" /> {rule.alert}
+        </button>
+      ) : (
+        <FormContext {...formMethods}>
+          <form className={styles.container} onSubmit={handleSubmit(execute)}>
+            <Field label="Alert name">
+              <Input ref={register({ required: true })} name="name" id="alert-name" />
+            </Field>
+            <div className={styles.expressionContainer}>
+              <Label>Expression</Label>
+              <HorizontalGroup align="center" wrap marginHeight={0}>
+                <span className={styles.inlineText}>Checks marked with a sensitivity level of</span>
+                <div className={styles.selectInput}>
+                  <Controller as={Select} control={control} name="sensitivity" options={ALERT_SENSITIVITY_OPTIONS} />
+                </div>
+                <span className={styles.inlineText}>will fire an alert if</span>
+                <Field
+                  invalid={Boolean(errors?.probePercentage)}
+                  error={errors?.probePercentage?.message}
+                  className={styles.noMargin}
                 >
-                  Learn more{' '}
-                </a>
-              </p>
-              <div className={styles.preview}>
-                <div>alert: {preview.alert}</div>
-                <div>expr: {preview.expr}</div>
-                <div>for: {preview.for}</div>
-                {currentLabels.length ? (
-                  <div>
-                    labels:
-                    {currentLabels.map(({ name, value }, index) => (
-                      <div className={styles.indent} key={index}>
-                        {name}: {value}
-                      </div>
-                    ))}
-                  </div>
-                ) : null}
-                {currentAnnotations.length ? (
-                  <div>
-                    annotations:
-                    {currentAnnotations.map(({ name, value }, index) => (
-                      <div className={styles.indent} key={index}>
-                        {name}: {value}
-                      </div>
-                    ))}
-                  </div>
-                ) : null}
+                  <Input
+                    className={styles.numberInput}
+                    ref={register({ required: true, max: 100, min: 1 })}
+                    name="probePercentage"
+                    type="number"
+                    data-testid="probePercentage"
+                    id="alertProbePercentage"
+                  />
+                </Field>
+                <span className={styles.inlineText}>% or more probes report connection errors for</span>
+                <Field
+                  invalid={Boolean(errors?.timeCount)}
+                  error={errors?.timeCount?.message}
+                  className={styles.noMargin}
+                >
+                  <Input
+                    ref={register({ required: true, min: 1, max: 999 })}
+                    name="timeCount"
+                    data-testid="timeCount"
+                    type="number"
+                    className={styles.numberInput}
+                    id="alertTimeCount"
+                  />
+                </Field>
+                <div className={styles.selectInput}>
+                  <Controller as={Select} control={control} name="timeUnit" options={TIME_UNIT_OPTIONS} />
+                </div>
+              </HorizontalGroup>
+            </div>
+            <AlertLabels />
+            <AlertAnnotations />
+            <SubCollapse title="Config preview">
+              <div>
+                <p className={styles.previewHelpText}>
+                  This alert will appear as an alert rule in Grafana Cloud Alerting, where you can use the full power of
+                  Prometheus style alerting.{' '}
+                  <a
+                    href="https://grafana.com/docs/grafana-cloud/alerts/grafana-cloud-alerting/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.link}
+                  >
+                    Learn more{' '}
+                  </a>
+                </p>
+                <div className={styles.preview}>
+                  <div>alert: {preview.alert}</div>
+                  <div>expr: {preview.expr}</div>
+                  <div>for: {preview.for}</div>
+                  {currentLabels.length ? (
+                    <div>
+                      labels:
+                      {currentLabels.map(({ name, value }, index) => (
+                        <div className={styles.indent} key={index}>
+                          {name}: {value}
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                  {currentAnnotations.length ? (
+                    <div>
+                      annotations:
+                      {currentAnnotations.map(({ name, value }, index) => (
+                        <div className={styles.indent} key={index}>
+                          {name}: {value}
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
               </div>
-            </div>
-          </SubCollapse>
-          <hr className={styles.breakLine} />
-          <HorizontalGroup>
-            <Button type="submit" disabled={submitting}>
-              Save alert
-            </Button>
-            <Button variant="secondary" type="button" onClick={onCancel}>
-              Cancel
-            </Button>
-          </HorizontalGroup>
-          {error && (
-            <div className={styles.submitFail}>
-              <Alert title="There was an error updating the alert rule">{error}</Alert>
-            </div>
-          )}
-        </form>
-      </FormContext>
-    </Collapse>
+            </SubCollapse>
+            <hr className={styles.breakLine} />
+            <HorizontalGroup>
+              <Button type="submit" disabled={submitting}>
+                Save alert
+              </Button>
+              <Button variant="secondary" type="button" onClick={onCancel}>
+                Cancel
+              </Button>
+            </HorizontalGroup>
+            {error && (
+              <div className={styles.submitFail}>
+                <Alert title="There was an error updating the alert rule">{error}</Alert>
+              </div>
+            )}
+          </form>
+        </FormContext>
+      )}
+    </>
   );
 };

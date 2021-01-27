@@ -67,12 +67,6 @@ const toggleSection = async (sectionName: string): Promise<HTMLElement> => {
   return sectionHeader.parentElement?.parentElement ?? new HTMLElement();
 };
 
-const toggleSubsection = async (parentSection: HTMLElement, sectionName: string): Promise<HTMLElement> => {
-  const sectionHeader = await within(parentSection).findByText(sectionName);
-  userEvent.click(sectionHeader);
-  return sectionHeader.parentElement?.parentElement ?? new HTMLElement();
-};
-
 it('adds default alerts and edits alerts', async () => {
   mockAlertsHook();
   await renderAlerting();
@@ -81,29 +75,30 @@ it('adds default alerts and edits alerts', async () => {
   await waitFor(() => expect(defaultAlertButton).not.toBeDisabled());
   expect(setDefaultRules).toHaveBeenCalledTimes(1);
 
-  const highSensitivity = await toggleSection('High Sensitivity');
+  const button = await screen.findByRole('button', { name: 'High Sensitivity' });
+  userEvent.click(button);
 
-  const alertNameInput = await within(highSensitivity).findByLabelText('Alert name');
+  const alertNameInput = await screen.findByLabelText('Alert name');
   expect(alertNameInput).toHaveValue('High Sensitivity');
   await userEvent.clear(alertNameInput);
   await userEvent.type(alertNameInput, 'A different name');
 
-  const probePercentage = await within(highSensitivity).findByTestId('probePercentage');
+  const probePercentage = await screen.findByTestId('probePercentage');
   expect(probePercentage).toHaveValue(95);
   await userEvent.clear(probePercentage);
   await userEvent.type(probePercentage, '25');
 
-  const timeCount = await within(highSensitivity).findByTestId('timeCount');
+  const timeCount = await screen.findByTestId('timeCount');
   expect(timeCount).toHaveValue(5);
   await userEvent.clear(timeCount);
   await userEvent.type(timeCount, '2');
 
-  const timeUnit = await within(highSensitivity).findByText('minutes');
+  const timeUnit = await screen.findByText('minutes');
   userEvent.click(timeUnit);
-  const option = await within(highSensitivity).findByText('seconds');
+  const option = await screen.findByText('seconds');
   userEvent.click(option);
 
-  const labels = await toggleSubsection(highSensitivity, 'Labels');
+  const labels = await toggleSection('Labels');
   const addLabelButton = await within(labels).findByRole('button', { name: 'Add label' });
   userEvent.click(addLabelButton);
   const labelNameInput = await within(labels).findByPlaceholderText('Name');
@@ -111,7 +106,7 @@ it('adds default alerts and edits alerts', async () => {
   const labelValueInput = await within(labels).findByPlaceholderText('Value');
   await userEvent.type(labelValueInput, 'a_label_value');
 
-  const annotations = await toggleSubsection(highSensitivity, 'Annotations');
+  const annotations = await toggleSection('Annotations');
   const addAnnotationsButton = await within(annotations).findByRole('button', { name: 'Add annotation' });
   userEvent.click(addAnnotationsButton);
   const annotationNameInput = await within(annotations).findByPlaceholderText('Name');
@@ -119,7 +114,7 @@ it('adds default alerts and edits alerts', async () => {
   const annotationValueInput = await within(annotations).findByPlaceholderText('Value');
   userEvent.paste(annotationValueInput, 'an annotation value');
 
-  const submitButton = await within(highSensitivity).findByRole('button', { name: 'Save alert' });
+  const submitButton = await screen.findByRole('button', { name: 'Save alert' });
   userEvent.click(submitButton);
   await waitFor(() => {
     expect(setRules).toHaveBeenCalledTimes(1);
