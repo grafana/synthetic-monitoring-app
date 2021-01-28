@@ -4,9 +4,14 @@ import React, { FC, useState, useContext } from 'react';
 import { css } from 'emotion';
 import { useAlerts } from 'hooks/useAlerts';
 import { AlertRuleForm } from './AlertRuleForm';
-import { AlertFormValues } from 'types';
+import { AlertFormValues, AlertRule } from 'types';
 import { InstanceContext } from './InstanceContext';
 import { transformAlertFormValues } from './alertingTransformations';
+
+type SplitAlertRules = {
+  recordingRules: AlertRule[];
+  alertingRules: AlertRule[];
+};
 
 const getStyles = (theme: GrafanaTheme) => ({
   emptyCard: css`
@@ -36,6 +41,18 @@ export const Alerting: FC = () => {
   const [showResetModal, setShowResetModal] = useState(false);
   const { instance } = useContext(InstanceContext);
 
+  const { recordingRules, alertingRules } = alertRules?.reduce<SplitAlertRules>(
+    (rules, currentRule) => {
+      if (currentRule.record) {
+        rules.recordingRules.push(currentRule);
+      } else {
+        rules.alertingRules.push(currentRule);
+      }
+      return rules;
+    },
+    { recordingRules: [], alertingRules: [] }
+  ) ?? { recordingRules: [], alertingRules: [] };
+
   const populateDefaultAlerts = async () => {
     setUpdatingDefaultRules(true);
     await setDefaultRules();
@@ -49,13 +66,13 @@ export const Alerting: FC = () => {
       return Promise.reject('Something went wrong');
     }
 
-    const updatedRules = alertRules?.map((rule, index) => {
+    const updatedRules = alertingRules?.map((rule, index) => {
       if (index === updatedIndex) {
         return updatedRule;
       }
       return rule;
     });
-    return await setRules(updatedRules);
+    return await setRules([...recordingRules, ...updatedRules]);
   };
 
   if (!instance.alertRuler) {
@@ -117,11 +134,9 @@ export const Alerting: FC = () => {
           </Button>
         </div>
       )}
-      {alertRules
-        ?.filter(rule => !rule?.record)
-        .map((alertRule, index) => (
-          <AlertRuleForm key={index} rule={alertRule} onSubmit={getUpdateRules(index)} />
-        ))}
+      {alertingRules.map((alertRule, index) => (
+        <AlertRuleForm key={`${alertRule.alert}-${index}`} rule={alertRule} onSubmit={getUpdateRules(index)} />
+      ))}
       {Boolean(alertRules?.length) ? (
         <HorizontalGroup justify="flex-end">
           <Button variant="destructive" type="button" onClick={() => setShowResetModal(true)}>

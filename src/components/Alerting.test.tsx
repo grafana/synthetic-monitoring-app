@@ -106,6 +106,15 @@ it('adds default alerts and edits alerts', async () => {
   });
   expect(setRules).toHaveBeenCalledWith([
     {
+      expr: `(sum without(probe, config_version) (rate(probe_all_success_sum[5m]) *
+              on(instance, job, probe) group_left(alert_sensitivity) max by(instance, job,
+              probe, alert_sensitivity) (sm_check_info{alert_sensitivity!=\"\"})) / sum
+              without(probe, config_version) (rate(probe_all_success_count[5m]) *
+              on(instance, job, probe) group_left(alert_sensitivity) max by(instance, job,
+              probe, alert_sensitivity) (sm_check_info{alert_sensitivity!=\"\"}))) * 100`,
+      record: 'instance_job_severity:probe_success:mean5m',
+    },
+    {
       alert: 'A different name',
       annotations: {
         an_annotation_name: 'an annotation value',
@@ -117,19 +126,6 @@ it('adds default alerts and edits alerts', async () => {
       for: '2s',
       labels: {
         a_label_name: 'a_label_value',
-        namespace: 'synthetic_monitoring',
-      },
-    },
-    {
-      alert: 'SyntheticMonitoringCheckFailureAtHighSensitivity',
-      annotations: {
-        description:
-          'check job {{ $labels.job }} instance {{ $labels.instance }} has a success rate of {{ printf "%.1f" $value }}%.',
-        summary: 'check success below 0.95%',
-      },
-      expr: 'instance_job_severity:probe_success:mean5m{alert_sensitivity="high"} < 0.95',
-      for: '5m',
-      labels: {
         namespace: 'synthetic_monitoring',
       },
     },

@@ -129,6 +129,8 @@ export function useAlerts(checkId?: number) {
       })
       .toPromise();
 
+    setDefaultRulesSetCount(defaultRulesSetCount + 1);
+
     return updateResponse;
   };
 

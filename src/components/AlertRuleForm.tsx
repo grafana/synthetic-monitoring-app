@@ -166,6 +166,7 @@ export const AlertRuleForm: FC<Props> = ({ rule, onSubmit }) => {
     try {
       await onSubmit(alertValues);
       appEvents.emit(AppEvents.alertSuccess, ['Alert rule updated successfully']);
+      formMethods.reset(alertValues);
       setIsOpen(false);
       return Promise.resolve();
     } catch (e) {
