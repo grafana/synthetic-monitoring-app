@@ -120,7 +120,7 @@ export function useAlerts(checkId?: number) {
 
     const updateResponse = getBackendSrv()
       .fetch({
-        url: `${alertRulerUrl}/rules/syntheticmonitoring`,
+        url: `${alertRulerUrl}/rules/${SM_ALERTING_NAMESPACE}`,
         method: 'POST',
         headers: {
           'Content-Type': 'application/yaml',
