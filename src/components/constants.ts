@@ -230,6 +230,13 @@ export const DEFAULT_ALERT_NAMES_BY_SENSITIVITY = {
 
 export const ALERT_RECORDING_METRIC = 'instance_job_severity:probe_success:mean5m';
 
+export const ALERT_RECORDING_EXPR = `(sum without(probe, config_version) (rate(probe_all_success_sum[5m]) *
+on(instance, job, probe) group_left(alert_sensitivity) max by(instance, job,
+probe, alert_sensitivity) (sm_check_info{alert_sensitivity!=""})) / sum
+without(probe, config_version) (rate(probe_all_success_count[5m]) *
+on(instance, job, probe) group_left(alert_sensitivity) max by(instance, job,
+probe, alert_sensitivity) (sm_check_info{alert_sensitivity!=""}))) * 100`;
+
 export const DEFAULT_ALERT_LABELS = {
   namespace: 'synthetic_monitoring',
 };

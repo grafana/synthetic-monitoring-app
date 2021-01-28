@@ -2,6 +2,7 @@ import { useState, useEffect, useContext } from 'react';
 import { getBackendSrv } from '@grafana/runtime';
 import { parse, stringify } from 'yaml';
 import {
+  ALERT_RECORDING_EXPR,
   ALERT_RECORDING_METRIC,
   DEFAULT_ALERT_LABELS,
   DEFAULT_ALERT_NAMES_BY_SENSITIVITY,
@@ -22,12 +23,7 @@ export const defaultRules = {
   rules: [
     {
       record: ALERT_RECORDING_METRIC,
-      expr: `(sum without(probe, config_version) (rate(probe_all_success_sum[5m]) *
-              on(instance, job, probe) group_left(alert_sensitivity) max by(instance, job,
-              probe, alert_sensitivity) (sm_check_info{alert_sensitivity!=""})) / sum
-              without(probe, config_version) (rate(probe_all_success_count[5m]) *
-              on(instance, job, probe) group_left(alert_sensitivity) max by(instance, job,
-              probe, alert_sensitivity) (sm_check_info{alert_sensitivity!=""}))) * 100`,
+      expr: ALERT_RECORDING_EXPR,
     },
     {
       alert: DEFAULT_ALERT_NAMES_BY_SENSITIVITY[AlertSensitivity.High],

@@ -1,5 +1,5 @@
 import { Alerting } from 'components/Alerting';
-import { DEFAULT_ALERT_NAMES_BY_SENSITIVITY } from 'components/constants';
+import { ALERT_RECORDING_EXPR, DEFAULT_ALERT_NAMES_BY_SENSITIVITY } from 'components/constants';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import React from 'react';
 import userEvent from '@testing-library/user-event';
@@ -106,12 +106,7 @@ it('adds default alerts and edits alerts', async () => {
   });
   expect(setRules).toHaveBeenCalledWith([
     {
-      expr: `(sum without(probe, config_version) (rate(probe_all_success_sum[5m]) *
-              on(instance, job, probe) group_left(alert_sensitivity) max by(instance, job,
-              probe, alert_sensitivity) (sm_check_info{alert_sensitivity!=\"\"})) / sum
-              without(probe, config_version) (rate(probe_all_success_count[5m]) *
-              on(instance, job, probe) group_left(alert_sensitivity) max by(instance, job,
-              probe, alert_sensitivity) (sm_check_info{alert_sensitivity!=\"\"}))) * 100`,
+      expr: ALERT_RECORDING_EXPR,
       record: 'instance_job_severity:probe_success:mean5m',
     },
     {

@@ -1,6 +1,5 @@
 import { AppEvents, GrafanaTheme, SelectableValue } from '@grafana/data';
 import { Alert, Button, Field, HorizontalGroup, Icon, Input, Label, Select, useStyles } from '@grafana/ui';
-import { Collapse } from 'components/Collapse';
 import React, { FC, useState, useContext } from 'react';
 import { Controller, FormContext, useForm } from 'react-hook-form';
 import { AlertRule, AlertSensitivity, Label as LabelType, TimeUnits } from 'types';
@@ -175,19 +174,18 @@ export const AlertRuleForm: FC<Props> = ({ rule, onSubmit }) => {
   });
 
   if (!defaultValues) {
-    return (
-      <Collapse label={rule.alert} isOpen={isOpen} onToggle={() => setIsOpen(!isOpen)} collapsible>
-        <div className={styles.container}>
-          It looks like this rule has been edited in Cloud Alerting, and can no longer be edited in Synthetic
-          Monitoring. To update this rule, visit{' '}
-          <a
-            href={`a/grafana-alerting-ui-app/?tab=rules&rulessource=${instance.metrics?.name}`}
-            className={styles.link}
-          >
-            Grafana Cloud Alerting
-          </a>
-        </div>
-      </Collapse>
+    return !isOpen ? (
+      <button className={styles.button} onClick={() => setIsOpen(!isOpen)}>
+        <Icon name="angle-right" /> {rule.alert}
+      </button>
+    ) : (
+      <div className={styles.container}>
+        It looks like this rule has been edited in Cloud Alerting, and can no longer be edited in Synthetic Monitoring.
+        To update this rule, visit{' '}
+        <a href={`a/grafana-alerting-ui-app/?tab=rules&rulessource=${instance.metrics?.name}`} className={styles.link}>
+          Grafana Cloud Alerting
+        </a>
+      </div>
     );
   }
 

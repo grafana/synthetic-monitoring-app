@@ -79,7 +79,7 @@ export const CheckEditor: FC<Props> = ({ check, onReturn }) => {
       return;
     }
     await api?.deleteCheck(id);
-    onReturn(false);
+    onReturn(true);
   };
 
   const target = formMethods.watch('target', '') as string;
