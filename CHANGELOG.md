@@ -1,3 +1,10 @@
+## [0.6.1](https://github.com/grafana/synthetic-monitoring-app/compare/0.6.0...0.6.1) (2021-01-29)
+
+
+### Bug Fixes
+
+* update tcp query response to send and parse base64 ([#187](https://github.com/grafana/synthetic-monitoring-app/issues/187)) ([64c096e](https://github.com/grafana/synthetic-monitoring-app/commit/64c096e062be7290efb448f008d59e030d2532f6))
+
 # [0.6.0](https://github.com/grafana/synthetic-monitoring-app/compare/0.5.7...0.6.0) (2021-01-22)
 
 
