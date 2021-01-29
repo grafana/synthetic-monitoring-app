@@ -26,6 +26,7 @@ import {
   HttpRegexValidationType,
   HeaderMatch,
   DnsResponseCodes,
+  TCPQueryResponse,
 } from 'types';
 
 import {
@@ -36,7 +37,8 @@ import {
   HTTP_REGEX_VALIDATION_OPTIONS,
   fallbackCheck,
 } from 'components/constants';
-import { checkType } from 'utils';
+import { checkType, toBase64 } from 'utils';
+import isBase64 from 'is-base64';
 
 export function selectableValueFrom<T>(value: T, label?: string): SelectableValue<T> {
   const labelValue = String(value);
@@ -183,11 +185,34 @@ const getHttpSettingsFormValues = (settings: Settings): HttpSettingsFormValues =
   };
 };
 
+const getTcpQueryResponseFormValues = (queryResponses?: TCPQueryResponse[]) => {
+  if (!queryResponses) {
+    return undefined;
+  }
+  return queryResponses.map(({ send, expect, startTLS }) => {
+    try {
+      return {
+        startTLS,
+        send: atob(send),
+        expect: atob(expect),
+      };
+    } catch {
+      return {
+        startTLS,
+        send,
+        expect,
+      };
+    }
+  });
+};
+
 const getTcpSettingsFormValues = (settings: Settings): TcpSettingsFormValues => {
   const tcpSettings = settings.tcp ?? (fallbackSettings(CheckType.TCP) as TcpSettings);
+  const formattedQueryResponse = getTcpQueryResponseFormValues(tcpSettings.queryResponse);
   return {
     ...tcpSettings,
     ipVersion: selectableValueFrom(tcpSettings.ipVersion),
+    queryResponse: formattedQueryResponse,
   };
 };
 
@@ -391,6 +416,19 @@ const getHttpSettings = (
   };
 };
 
+const getTcpQueryResponseFromFormFields = (queryResponses?: TCPQueryResponse[]) => {
+  if (!queryResponses) {
+    return undefined;
+  }
+  return queryResponses.map(({ send, expect, startTLS }) => {
+    return {
+      startTLS,
+      send: isBase64(send) ? send : toBase64(send),
+      expect: isBase64(expect) ? expect : toBase64(expect),
+    };
+  });
+};
+
 const getTcpSettings = (
   settings: Partial<TcpSettingsFormValues> | undefined,
   defaultSettings: TcpSettingsFormValues | undefined
@@ -404,6 +442,7 @@ const getTcpSettings = (
     ...fallbackValues,
     ...mergedSettings,
     ipVersion: getValueFromSelectable(settings?.ipVersion ?? defaultSettings?.ipVersion) ?? fallbackValues.ipVersion,
+    queryResponse: getTcpQueryResponseFromFormFields(settings?.queryResponse),
   };
 };
 

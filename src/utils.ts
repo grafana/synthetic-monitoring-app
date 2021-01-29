@@ -248,3 +248,11 @@ export const queryMetric = async (
     return { error: (e.message || e.data?.message) ?? 'Error fetching data', data: [] };
   }
 };
+
+export const toBase64 = (value: string) => {
+  try {
+    return btoa(value);
+  } catch {
+    return value;
+  }
+};
