@@ -1,3 +1,10 @@
+# [0.7.0](https://github.com/grafana/synthetic-monitoring-app/compare/0.6.2...0.7.0) (2021-01-29)
+
+
+### Features
+
+* Add alerts  ([af5b835](https://github.com/grafana/synthetic-monitoring-app/commit/af5b83575344d85688455802a74c0cfc1dad7d82))
+
 ## [0.6.2](https://github.com/grafana/synthetic-monitoring-app/compare/0.6.1...0.6.2) (2021-01-29)
 
 ## [0.6.1](https://github.com/grafana/synthetic-monitoring-app/compare/0.6.0...0.6.1) (2021-01-29)
