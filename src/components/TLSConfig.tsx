@@ -46,7 +46,7 @@ export const TLSConfig: FC<Props> = ({ isEditor, checkType }) => {
           description="The CA cert to use for the targets"
           disabled={!isEditor}
           invalid={Boolean(errors.settings?.[checkType]?.tlsConfig?.caCert)}
-          error={errors.settings?.[checkType]?.tlsConfig?.caCert}
+          error={errors.settings?.[checkType]?.tlsConfig?.caCert?.message}
         >
           <TextArea
             id="tls-config-ca-certificate"
@@ -66,7 +66,7 @@ export const TLSConfig: FC<Props> = ({ isEditor, checkType }) => {
           description="The client cert file for the targets"
           disabled={!isEditor}
           invalid={Boolean(errors?.settings?.[checkType]?.tlsConfig?.clientCert)}
-          error={errors?.settings?.[checkType]?.tlsConfig?.clientCert}
+          error={errors?.settings?.[checkType]?.tlsConfig?.clientCert?.message}
         >
           <TextArea
             id="tls-config-client-cert"

@@ -2273,6 +2273,11 @@
   dependencies:
     "@types/jsbn" "*"
 
+"@types/is-base64@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@types/is-base64/-/is-base64-1.1.0.tgz#8f0e0874ba0df223a413e46fa12e681708d19080"
+  integrity sha512-rigoMG77vfIXWjYUDBMPCY0qVzY1dGtEILSsjCcvDH/UgB2ENTZl0uKQknJq4W4nEUqVZqX0M9Uw/VRZ/vwzWQ==
+
 "@types/istanbul-lib-coverage@*", "@types/istanbul-lib-coverage@^2.0.0", "@types/istanbul-lib-coverage@^2.0.1":
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/@types/istanbul-lib-coverage/-/istanbul-lib-coverage-2.0.3.tgz#4ba8ddb720221f432e443bd5f9117fd22cfd4762"
@@ -7860,6 +7865,11 @@ is-arrayish@^0.3.1:
   version "0.3.2"
   resolved "https://registry.yarnpkg.com/is-arrayish/-/is-arrayish-0.3.2.tgz#4574a2ae56f7ab206896fb431eaeed066fdf8f03"
   integrity sha512-eVRqCvVlZbuw3GrM63ovNSNAeA1K16kaR/LRY/92w0zxQ5/1YzwblUX652i4Xs9RwAGjW9d9y6X88t8OaAJfWQ==
+
+is-base64@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/is-base64/-/is-base64-1.1.0.tgz#8ce1d719895030a457c59a7dcaf39b66d99d56b4"
+  integrity sha512-Nlhg7Z2dVC4/PTvIFkgVVNvPHSO2eR/Yd0XzhGiXCXEvWnptXlXa/clQ8aePPiMuxEGcWfzWbGw2Fe3d+Y3v1g==
 
 is-binary-path@^1.0.0:
   version "1.0.1"

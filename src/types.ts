@@ -380,6 +380,7 @@ export enum HttpRegexValidationType {
 export interface SubmissionError {
   status?: string;
   message?: string;
+  msg?: string;
 }
 
 export interface DashboardMeta {
