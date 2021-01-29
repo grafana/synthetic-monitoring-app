@@ -194,7 +194,7 @@ export const CheckEditor: FC<Props> = ({ check, onReturn }) => {
         {submissionError && (
           <div className={styles.submissionError}>
             <Alert title="Save failed" severity="error">
-              {`${submissionError.status}: ${submissionError.message}`}
+              {`${submissionError.status}: ${submissionError.message ?? submissionError.msg ?? 'Something went wrong'}`}
             </Alert>
           </div>
         )}
