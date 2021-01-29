@@ -37,7 +37,7 @@ import {
   HTTP_REGEX_VALIDATION_OPTIONS,
   fallbackCheck,
 } from 'components/constants';
-import { checkType } from 'utils';
+import { checkType, toBase64 } from 'utils';
 import isBase64 from 'is-base64';
 
 export function selectableValueFrom<T>(value: T, label?: string): SelectableValue<T> {
@@ -190,11 +190,19 @@ const getTcpQueryResponseFormValues = (queryResponses?: TCPQueryResponse[]) => {
     return undefined;
   }
   return queryResponses.map(({ send, expect, startTLS }) => {
-    return {
-      startTLS,
-      send: atob(send),
-      expect: atob(expect),
-    };
+    try {
+      return {
+        startTLS,
+        send: atob(send),
+        expect: atob(expect),
+      };
+    } catch {
+      return {
+        startTLS,
+        send,
+        expect,
+      };
+    }
   });
 };
 
@@ -415,8 +423,8 @@ const getTcpQueryResponseFromFormFields = (queryResponses?: TCPQueryResponse[]) 
   return queryResponses.map(({ send, expect, startTLS }) => {
     return {
       startTLS,
-      send: isBase64(send) ? send : btoa(send),
-      expect: isBase64(expect) ? expect : btoa(expect),
+      send: isBase64(send) ? send : toBase64(send),
+      expect: isBase64(expect) ? expect : toBase64(expect),
     };
   });
 };
