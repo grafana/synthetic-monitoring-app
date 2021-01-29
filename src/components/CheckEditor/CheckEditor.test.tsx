@@ -9,6 +9,7 @@ import {
   HttpMethod,
   HttpVersion,
   GlobalSettings,
+  AlertSensitivity,
 } from 'types';
 import { CheckEditor } from './CheckEditor';
 import { getInstanceMock } from '../../datasource/__mocks__/DataSource';
@@ -32,6 +33,7 @@ jest.mock('hooks/useAlerts', () => ({
 
 const defaultCheck = {
   job: '',
+  alertSensitivity: 'none',
   target: '',
   frequency: 60000,
   timeout: 3000,
@@ -120,6 +122,7 @@ it('Updates existing check', async () => {
     job: 'tacos',
     id: 32,
     tenantId: 45,
+    alertSensitivity: 'none',
     target: 'grafana.com',
     enabled: true,
     labels: [],
@@ -150,6 +153,7 @@ describe('PING', () => {
     expect(instance.api.addCheck).toHaveBeenCalledWith({
       job: 'tacos',
       target: 'grafana.com',
+      alertSensitivity: 'none',
       enabled: true,
       labels: [{ name: 'labelName', value: 'labelValue' }],
       probes: [1],
@@ -170,6 +174,7 @@ describe('PING', () => {
       id: 32,
       job: 'carne asada',
       target: 'target.com',
+      alertSensitivity: AlertSensitivity.Medium,
       enabled: true,
       labels: [{ name: 'a great label', value: 'totally awesome label' }],
       probes: [42],
@@ -220,6 +225,7 @@ describe('HTTP', () => {
     const check = {
       job: 'carne asada',
       id: 32,
+      alertSensitivity: AlertSensitivity.Medium,
       target: 'https://target.com',
       enabled: true,
       labels: [{ name: 'a great label', value: 'totally awesome label' }],
@@ -303,6 +309,10 @@ describe('HTTP', () => {
     expect(
       await within(advancedOptions).findByLabelText('Cache busting query parameter name', { exact: false })
     ).toHaveValue('busted');
+
+    const alerting = await toggleSection('Alerting');
+    const alertingValue = await within(alerting).findByText('Medium');
+    expect(alertingValue).toBeInTheDocument();
   });
 
   it('transforms values to correct format', async () => {
@@ -404,6 +414,7 @@ describe('HTTP', () => {
       labels: [],
       probes: [42],
       timeout: 3000,
+      alertSensitivity: 'none',
       frequency: 60000,
       basicMetricsOnly: false,
       settings: {
@@ -473,6 +484,7 @@ describe('DNS', () => {
         probes: [1],
         timeout: 3000,
         frequency: 60000,
+        alertSensitivity: 'none',
         basicMetricsOnly: false,
         settings: {
           dns: {
@@ -521,6 +533,7 @@ describe('DNS', () => {
         labels: [],
         probes: [1],
         timeout: 3000,
+        alertSensitivity: 'none',
         frequency: 60000,
         basicMetricsOnly: false,
         settings: {
@@ -572,6 +585,7 @@ describe('DNS', () => {
         probes: [1],
         timeout: 3000,
         frequency: 60000,
+        alertSensitivity: 'none',
         basicMetricsOnly: false,
         settings: {
           dns: {
@@ -612,6 +626,7 @@ describe('TCP', () => {
       job: 'tacos',
       labels: [],
       probes: [1],
+      alertSensitivity: 'none',
       settings: {
         tcp: {
           ipVersion: 'V4',
@@ -628,17 +643,5 @@ describe('TCP', () => {
       target: 'grafana.com:43',
       timeout: 3000,
     });
-  });
-});
-
-describe('Alerting', () => {
-  it('does not show alerting for new checks', async () => {
-    await renderCheckEditor({ check: getMinimumCheck({ target: 'grafana.com' }) });
-    expect(await screen.queryByText('Alerting')).not.toBeInTheDocument();
-  });
-
-  it('does not show alerting if there are no rules', async () => {
-    await renderCheckEditor({ check: getMinimumCheck({ target: 'grafana.com' }), withAlerting: false });
-    expect(await screen.queryByText('Alerting')).not.toBeInTheDocument();
   });
 });

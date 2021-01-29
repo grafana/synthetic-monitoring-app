@@ -20,6 +20,7 @@ const LinkedDatasourceView: FC<Props> = ({ info }) => {
       getLocationSrv().update({
         partial: false,
         path: `datasources/edit/${datasource?.id}/`,
+        query: {},
       });
     }
   };

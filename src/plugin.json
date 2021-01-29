@@ -65,6 +65,12 @@
       "name": "Probes",
       "path": "/a/grafana-synthetic-monitoring-app/?page=probes",
       "addToNav": true
+    },
+    {
+      "type": "page",
+      "name": "Alerts",
+      "path": "/a/grafana-synthetic-monitoring-app/?page=alerts",
+      "addToNav": true
     }
   ],
 

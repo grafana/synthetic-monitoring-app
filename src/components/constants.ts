@@ -10,6 +10,7 @@ import {
   Check,
   TimeUnits,
   AlertSeverity,
+  AlertSensitivity,
 } from 'types';
 
 export const DNS_RESPONSE_CODES = enumToStringArray(DnsResponseCodes).map(responseCode => ({
@@ -171,6 +172,7 @@ export const fallbackCheck = {
   enabled: true,
   labels: [],
   probes: [],
+  alertSensitivity: AlertSensitivity.None,
   settings: {
     ping: {
       ipVersion: IpVersion.V4,
@@ -193,7 +195,7 @@ export const colors = {
 
 export const LEGACY_METRICS_DS_NAME = 'Synthetic Monitoring Metrics';
 export const LEGACY_LOGS_DS_NAME = 'Synthetic Monitoring Logs';
-export const SM_ALERTING_NAMESPACE = 'syntheticmonitoring';
+export const SM_ALERTING_NAMESPACE = 'synthetic_monitoring';
 export const ALERTING_SEVERITY_OPTIONS = [
   {
     label: 'Critical',
@@ -212,3 +214,34 @@ export const ALERTING_SEVERITY_OPTIONS = [
     value: AlertSeverity.Info,
   },
 ];
+
+export const ALERT_SENSITIVITY_OPTIONS = [
+  { label: 'None', value: AlertSensitivity.None },
+  { label: 'Low', value: AlertSensitivity.Low },
+  { label: 'Medium', value: AlertSensitivity.Medium },
+  { label: 'High', value: AlertSensitivity.High },
+];
+
+export const DEFAULT_ALERT_NAMES_BY_SENSITIVITY = {
+  [AlertSensitivity.Low]: 'SyntheticMonitoringCheckFailureAtLowSensitivity',
+  [AlertSensitivity.Medium]: 'SyntheticMonitoringCheckFailureAtMediumSensitivity',
+  [AlertSensitivity.High]: 'SyntheticMonitoringCheckFailureAtHighSensitivity',
+};
+
+export const ALERT_RECORDING_METRIC = 'instance_job_severity:probe_success:mean5m';
+
+export const ALERT_RECORDING_EXPR = `(sum without(probe, config_version) (rate(probe_all_success_sum[5m]) *
+on(instance, job, probe) group_left(alert_sensitivity) max by(instance, job,
+probe, alert_sensitivity) (sm_check_info{alert_sensitivity!=""})) / sum
+without(probe, config_version) (rate(probe_all_success_count[5m]) *
+on(instance, job, probe) group_left(alert_sensitivity) max by(instance, job,
+probe, alert_sensitivity) (sm_check_info{alert_sensitivity!=""}))) * 100`;
+
+export const DEFAULT_ALERT_LABELS = {
+  namespace: 'synthetic_monitoring',
+};
+
+export const getDefaultAlertAnnotations = (percentage: number) => ({
+  description: `check job {{ $labels.job }} instance {{ $labels.instance }} has a success rate of {{ printf "%.1f" $value }}%.`,
+  summary: `check success below ${percentage}%`,
+});

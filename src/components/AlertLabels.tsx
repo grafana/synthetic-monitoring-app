@@ -1,9 +1,10 @@
-import { useStyles, Input, Button, Label } from '@grafana/ui';
+import { useStyles, Input, Button, Label, Field } from '@grafana/ui';
 import React, { FC, Fragment } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { SubCollapse } from './SubCollapse';
 import { css } from 'emotion';
 import { GrafanaTheme } from '@grafana/data';
+import { validateLabelName, validateLabelValue } from 'validation';
 
 const getStyles = (theme: GrafanaTheme) => ({
   grid: css`
@@ -13,21 +14,17 @@ const getStyles = (theme: GrafanaTheme) => ({
     grid-row-gap: ${theme.spacing.sm};
   `,
   addButton: css`
-    margin: ${theme.spacing.md} 0;
+    margin-bottom: ${theme.spacing.md};
   `,
   helpText: css`
     font-size: ${theme.typography.size.sm};
   `,
 });
+const NAME = 'labels';
 
-type Props = {
-  index: number;
-};
-
-export const AlertLabels: FC<Props> = ({ index }) => {
-  const NAME = `alerts[${index}].labels`;
+export const AlertLabels: FC = () => {
   const styles = useStyles(getStyles);
-  const { control, register } = useFormContext();
+  const { control, register, errors } = useFormContext();
   const { fields, append, remove } = useFieldArray({
     control,
     name: NAME,
@@ -49,19 +46,23 @@ export const AlertLabels: FC<Props> = ({ index }) => {
         ) : null}
         {fields.map((field, labelIndex) => (
           <Fragment key={field.id}>
-            <Input
-              ref={register()}
-              name={`${NAME}[${labelIndex}].name`}
-              placeholder="Name"
-              data-testid={`alert-${index}-labelName-${labelIndex}`}
-            />
-            <Input
-              ref={register()}
-              name={`${NAME}[${labelIndex}].value`}
-              placeholder="Value"
-              data-testid={`alert-${index}-labelValue-${labelIndex}`}
-            />
-            <Button type="button" onClick={() => remove(index)} variant="link">
+            <Field error={errors?.labels?.[labelIndex]?.name?.message} invalid={errors?.labels?.[labelIndex]?.name}>
+              <Input
+                ref={register({ validate: value => validateLabelName(value) })}
+                name={`${NAME}[${labelIndex}].name`}
+                placeholder="Name"
+                data-testid={`alert-labelName-${labelIndex}`}
+              />
+            </Field>
+            <Field error={errors?.labels?.[labelIndex]?.value?.message} invalid={errors?.labels?.[labelIndex]?.value}>
+              <Input
+                ref={register({ validate: value => validateLabelValue(value) })}
+                name={`${NAME}[${labelIndex}].value`}
+                placeholder="Value"
+                data-testid={`alert-labelValue-${labelIndex}`}
+              />
+            </Field>
+            <Button type="button" onClick={() => remove(labelIndex)} variant="link">
               Delete
             </Button>
           </Fragment>

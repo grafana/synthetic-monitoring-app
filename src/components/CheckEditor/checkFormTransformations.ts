@@ -26,6 +26,7 @@ import {
   HttpRegexValidationType,
   HeaderMatch,
   DnsResponseCodes,
+  AlertSensitivity,
   TCPQueryResponse,
 } from 'types';
 
@@ -36,6 +37,7 @@ import {
   HTTP_SSL_OPTIONS,
   HTTP_REGEX_VALIDATION_OPTIONS,
   fallbackCheck,
+  ALERT_SENSITIVITY_OPTIONS,
 } from 'components/constants';
 import { checkType, toBase64 } from 'utils';
 import isBase64 from 'is-base64';
@@ -292,6 +294,8 @@ export const getDefaultValuesFromCheck = (check: Check = fallbackCheck): CheckFo
     timeout: check.timeout / 1000,
     frequency: check.frequency / 1000,
     probes: check.probes,
+    alertSensitivity:
+      ALERT_SENSITIVITY_OPTIONS.find(({ value }) => value === check.alertSensitivity) ?? ALERT_SENSITIVITY_OPTIONS[0],
     checkType:
       CHECK_TYPE_OPTIONS.find(checkTypeOption => checkTypeOption.value === defaultCheckType) ?? CHECK_TYPE_OPTIONS[1],
     settings,
@@ -546,6 +550,7 @@ export const getCheckFromFormValues = (
     probes: formValues.probes,
     timeout: formValues.timeout * 1000,
     frequency: formValues.frequency * 1000,
+    alertSensitivity: getValueFromSelectable(formValues.alertSensitivity) ?? AlertSensitivity.None,
     settings: getSettingsFromFormValues(formValues, defaultValues),
     basicMetricsOnly: !formValues.useFullMetrics,
   };

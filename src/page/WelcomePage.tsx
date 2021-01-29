@@ -117,6 +117,7 @@ interface Props {}
 
 export const WelcomePage: FC<Props> = () => {
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const { meta } = useContext(InstanceContext);
   const theme = useTheme();
   const styles = useStyles(getStyles);
@@ -131,6 +132,7 @@ export const WelcomePage: FC<Props> = () => {
       setError('Invalid plugin configuration');
       return;
     }
+    setLoading(true);
     const body = {
       stackId: isNumber(stackId) ? stackId : parseInt(stackId ?? '1', 10),
       metricsInstanceId: meta.jsonData.metrics?.hostedId,
@@ -156,6 +158,7 @@ export const WelcomePage: FC<Props> = () => {
       window.location.reload();
     } catch (e) {
       setError(e.data?.msg ?? e.data?.err);
+      setLoading(false);
     }
   };
 
@@ -212,7 +215,7 @@ export const WelcomePage: FC<Props> = () => {
           </div>
           <Button
             onClick={onClick}
-            disabled={!Boolean(metricsDatasource) || !Boolean(logsDatasource) || !hasRole(OrgRole.EDITOR)}
+            disabled={loading || !Boolean(metricsDatasource) || !Boolean(logsDatasource) || !hasRole(OrgRole.EDITOR)}
           >
             Monitor your systems
           </Button>

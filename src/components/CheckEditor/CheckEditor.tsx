@@ -15,8 +15,7 @@ import { CHECK_TYPE_OPTIONS, fallbackCheck } from 'components/constants';
 import { useForm, FormContext, Controller } from 'react-hook-form';
 import { GrafanaTheme } from '@grafana/data';
 import { CheckUsage } from '../CheckUsage';
-import { Alerting } from 'components/Alerting';
-import { useAlerts } from 'hooks/useAlerts';
+import { CheckFormAlert } from 'components/CheckFormAlert';
 import { InstanceContext } from 'components/InstanceContext';
 
 interface Props {
@@ -50,7 +49,6 @@ export const CheckEditor: FC<Props> = ({ check, onReturn }) => {
     instance: { api },
   } = useContext(InstanceContext);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const { alertRules, setRulesForCheck, deleteRulesForCheck } = useAlerts(check?.id);
   const styles = useStyles(getStyles);
   const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
 
@@ -59,27 +57,19 @@ export const CheckEditor: FC<Props> = ({ check, onReturn }) => {
 
   const isEditor = hasRole(OrgRole.EDITOR);
 
-  const { execute: onSubmit, error, loading: submitting } = useAsyncCallback(
-    async ({ alerts, ...checkValues }: CheckFormValues) => {
-      const updatedCheck = getCheckFromFormValues(checkValues, defaultValues);
-      if (check?.id) {
-        await api?.updateCheck({
-          id: check.id,
-          tenantId: check.tenantId,
-          ...updatedCheck,
-        });
-        if (alerts?.length) {
-          await setRulesForCheck(check.id, alerts, checkValues.job, checkValues.target);
-        }
-      } else {
-        const { id } = await api?.addCheck(updatedCheck);
-        if (alerts) {
-          await setRulesForCheck(id, alerts, checkValues.job, checkValues.target);
-        }
-      }
-      onReturn(true);
+  const { execute: onSubmit, error, loading: submitting } = useAsyncCallback(async (checkValues: CheckFormValues) => {
+    const updatedCheck = getCheckFromFormValues(checkValues, defaultValues);
+    if (check?.id) {
+      await api?.updateCheck({
+        id: check.id,
+        tenantId: check.tenantId,
+        ...updatedCheck,
+      });
+    } else {
+      await api?.addCheck(updatedCheck);
     }
-  );
+    onReturn(true);
+  });
 
   const submissionError = error as SubmissionError;
 
@@ -89,8 +79,7 @@ export const CheckEditor: FC<Props> = ({ check, onReturn }) => {
       return;
     }
     await api?.deleteCheck(id);
-    await deleteRulesForCheck(id);
-    onReturn(false);
+    onReturn(true);
   };
 
   const target = formMethods.watch('target', '') as string;
@@ -167,7 +156,7 @@ export const CheckEditor: FC<Props> = ({ check, onReturn }) => {
           />
           <CheckUsage />
           <CheckSettings typeOfCheck={selectedCheckType} isEditor={isEditor} />
-          <Alerting alertRules={alertRules} editing={Boolean(check?.id)} checkId={check?.id} />
+          <CheckFormAlert />
         </div>
         <HorizontalGroup>
           <Button

@@ -236,19 +236,19 @@ export interface SettingsFormValues {
 }
 export interface AlertFormValues {
   name: string;
-  probeCount: number;
+  probePercentage: number;
   timeCount: number;
   timeUnit: SelectableValue<TimeUnits>;
-  severity: SelectableValue<AlertSeverity>;
   labels: Label[];
   annotations: Label[];
+  sensitivity: SelectableValue<AlertSensitivity>;
 }
 
-export interface CheckFormValues extends Omit<Check, 'settings' | 'labels'> {
+export interface CheckFormValues extends Omit<Check, 'settings' | 'labels' | 'alertSensitivity'> {
   checkType: SelectableValue<CheckType>;
   settings: SettingsFormValues;
   labels?: Label[];
-  alerts?: AlertFormValues[];
+  alertSensitivity: SelectableValue<AlertSensitivity>;
   useFullMetrics: boolean;
 }
 
@@ -259,8 +259,8 @@ export interface Check extends BaseObject {
   offset?: number;
   timeout: number;
   enabled: boolean;
+  alertSensitivity: AlertSensitivity;
   basicMetricsOnly: boolean;
-
   labels: Label[]; // Currently list of [name:value]... can it be Labels?
   settings: Settings; //
 
@@ -404,6 +404,13 @@ export enum AlertSeverity {
   Info = 'info',
 }
 
+export enum AlertSensitivity {
+  None = 'none',
+  Low = 'low',
+  Medium = 'medium',
+  High = 'high',
+}
+
 export type AlertRule = {
   alert: string;
   expr: string;
@@ -414,4 +421,5 @@ export type AlertRule = {
   annotations?: {
     [key: string]: string;
   };
+  record?: string;
 };
