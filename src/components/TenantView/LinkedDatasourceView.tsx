@@ -1,7 +1,7 @@
 import React, { FC } from 'react';
 import { LinkedDatsourceInfo } from 'datasource/types';
 import { config, getLocationSrv } from '@grafana/runtime';
-import { Button, Spinner } from '@grafana/ui';
+import { Spinner } from '@grafana/ui';
 
 interface Props {
   info: LinkedDatsourceInfo;
@@ -34,9 +34,6 @@ const LinkedDatasourceView: FC<Props> = ({ info }) => {
       <div className="add-data-source-item-text-wrapper">
         <span className="add-data-source-item-text">{datasource.name}</span>
         <span className="add-data-source-item-desc">{datasource.type}</span>
-      </div>
-      <div className="add-data-source-item-actions">
-        <Button>Edit</Button>
       </div>
     </div>
   );
