@@ -42,7 +42,10 @@ async function fetchDatasources(
 
   if (!tenant || tenant.status === 1) {
     // If the tenant has been deactivated, short circuit and kick the user back to the setup page
-    return {};
+    return {
+      metrics,
+      logs,
+    };
   }
 
   return {

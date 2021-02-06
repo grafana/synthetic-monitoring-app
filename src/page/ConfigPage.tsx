@@ -1,21 +1,41 @@
 import { PluginConfigPageProps, AppPluginMeta } from '@grafana/data';
-import { Button } from '@grafana/ui';
+import { getLocationSrv } from '@grafana/runtime';
+import { Button, Spinner } from '@grafana/ui';
+import { DisablePluginModal } from 'components/DisablePluginModal';
+import { InstanceContext } from 'components/InstanceContext';
 import { InstanceProvider } from 'components/InstanceProvider';
 import { TenantSetup } from 'components/TenantSetup';
 import React, { PureComponent } from 'react';
 import { GlobalSettings } from 'types';
 
-type AppSettings = {};
-
 interface Props extends PluginConfigPageProps<AppPluginMeta<GlobalSettings>> {}
 
 export class ConfigPage extends PureComponent<Props> {
+  state = {
+    showDisableModal: false,
+  };
+
   handleDisable = () => {
-    console.log('disable');
+    this.setState({ showDisableModal: true });
+  };
+
+  handleSetup = () => {
+    getLocationSrv().update({
+      partial: false,
+      path: 'a/grafana-synthetic-monitoring-app/?page=setup',
+      query: {
+        page: 'setup',
+      },
+    });
+  };
+
+  closeModal = () => {
+    this.setState({ showDisableModal: false });
   };
 
   render() {
     const { plugin } = this.props;
+    const { showDisableModal } = this.state;
 
     return (
       <InstanceProvider
@@ -24,12 +44,11 @@ export class ConfigPage extends PureComponent<Props> {
         meta={plugin.meta}
       >
         <div>
-          <h1>Hi</h1>
           <div className="card-item">
             <div>
               <h4>Synthetic Monitoring App</h4>
             </div>
-            <div ng-if="!ctrl.configured">
+            <div>
               <p>
                 Synthetic Monitoring is a blackbox monitoring solution provided as part of{' '}
                 <a className="highlight-word" href="https://grafana.com/products/cloud/" target="_blank">
@@ -39,28 +58,41 @@ export class ConfigPage extends PureComponent<Props> {
                 <a className="highlight-word" href="https://grafana.com/signup/cloud" target="_blank">
                   sign up now{' '}
                 </a>
-                <br />
-                <br />
-                Click below to enable and initialize the App and start monitoring your network services today.
               </p>
             </div>
-            <div ng-if="ctrl.configured">
+            <div>
               <p>
                 Synthetic Monitoring is a blackbox monitoring solution provided as part of{' '}
                 <a className="highlight-word" href="https://grafana.com/products/cloud/" target="_blank">
                   Grafana Cloud
                 </a>
                 .
-                <br />
-                <br />
-                Click <b>Update</b> to edit the App's configuration.
               </p>
             </div>
           </div>
+          <br />
           <TenantSetup />
-          <Button variant="destructive" onClick={this.handleDisable}>
-            Disable synthetic monitoring
-          </Button>
+          <br />
+          <InstanceContext.Consumer>
+            {({ instance, loading }) => {
+              if (loading) {
+                return <Spinner />;
+              }
+              if (instance?.api) {
+                return (
+                  <Button variant="destructive" onClick={this.handleDisable}>
+                    Disable synthetic monitoring
+                  </Button>
+                );
+              }
+              return (
+                <Button variant="primary" onClick={this.handleSetup}>
+                  Setup
+                </Button>
+              );
+            }}
+          </InstanceContext.Consumer>
+          <DisablePluginModal isOpen={showDisableModal} onDismiss={this.closeModal} />
         </div>
       </InstanceProvider>
     );

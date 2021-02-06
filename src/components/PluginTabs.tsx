@@ -4,7 +4,6 @@ import { DashboardMeta, GlobalSettings } from 'types';
 import { WelcomePage } from 'page/WelcomePage';
 import { ChecksPage } from 'page/ChecksPage';
 import { ProbesPage } from 'page/ProbesPage';
-import { TenantSetup } from 'components/TenantSetup';
 import { InstanceContext } from './InstanceContext';
 import { getLocationSrv } from '@grafana/runtime';
 import { DashboardInfo } from 'datasource/types';
@@ -26,7 +25,7 @@ type RouterQuery = {
   id: string;
 };
 
-const pagesToRedirectIfNotInitialized = new Set(['checks', 'probes', 'config', 'alerts', 'redirect']);
+const pagesToRedirectIfNotInitialized = new Set(['checks', 'probes', 'alerts', 'redirect']);
 
 const pagesToRedirectIfInitialized = new Set(['setup']);
 
@@ -60,11 +59,6 @@ const tabs: Tab[] = [
     label: 'Alerts',
     id: 'alerts',
     render: () => <Alerting />,
-  },
-  {
-    label: 'Config',
-    id: 'config',
-    render: (query: RouterQuery) => <TenantSetup />,
   },
 ];
 
@@ -195,9 +189,8 @@ export const PluginTabs: FC<AppRootProps<GlobalSettings>> = ({ query, onNavChang
             onClick={() => {
               getLocationSrv().update({
                 partial: false,
-                query: {
-                  page: 'config',
-                },
+                path: 'plugins/grafana-synthetic-monitoring-app/',
+                query: {},
               });
               skipDashboardUpdate();
             }}
