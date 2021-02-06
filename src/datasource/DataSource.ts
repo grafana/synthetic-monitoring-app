@@ -166,6 +166,19 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       });
   }
 
+  async getTenant(): Promise<any> {
+    console.log('here');
+    return getBackendSrv()
+      .datasourceRequest({ method: 'GET', url: `${this.instanceSettings.url}/sm/tenant` })
+      .then((res: any) => {
+        console.log({ stuff: res.data });
+        return res.data;
+      })
+      .catch(e => {
+        console.log('hiiii', e);
+      });
+  }
+
   //--------------------------------------------------------------------------------
   // SETUP
   //--------------------------------------------------------------------------------

@@ -38,6 +38,13 @@ async function fetchDatasources(
 
   const alertRuler = await getRulerDatasource(metrics?.id);
 
+  const tenant = await smApi?.getTenant();
+
+  if (!tenant || tenant.status === 1) {
+    // If the tenant has been deactivated, short circuit and kick the user back to the setup page
+    return {};
+  }
+
   return {
     api: smApi,
     metrics,
