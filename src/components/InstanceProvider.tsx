@@ -1,4 +1,4 @@
-import React, { useState, FC, useEffect } from 'react';
+import React, { useState, FC, useEffect, PropsWithChildren } from 'react';
 import { InstanceContext } from 'components/InstanceContext';
 import { GlobalSettings, GrafanaInstances } from 'types';
 import { config, getDataSourceSrv, getBackendSrv } from '@grafana/runtime';
@@ -52,7 +52,7 @@ interface Props {
   meta: AppPluginMeta<GlobalSettings>;
 }
 
-export const InstanceProvider: FC<Props> = ({ children, metricInstanceName, logsInstanceName, meta }) => {
+export const InstanceProvider: FC<PropsWithChildren<Props>> = ({ children, metricInstanceName, logsInstanceName, meta }) => {
   const [instances, setInstances] = useState<GrafanaInstances | null>(null);
   const [instancesLoading, setInstancesLoading] = useState(true);
   useEffect(() => {
