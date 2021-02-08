@@ -12,7 +12,6 @@ export const DisablePluginModal: FC<Props> = ({ isOpen, onDismiss }) => {
   const [error, setError] = useState();
 
   const disableTenant = async () => {
-    console.log('disable the tenant');
     try {
       await instance.api?.disableTenant();
     } catch (e) {
@@ -22,7 +21,7 @@ export const DisablePluginModal: FC<Props> = ({ isOpen, onDismiss }) => {
 
   return (
     <Modal title="Disable synthetic monitoring" isOpen={isOpen} onDismiss={onDismiss}>
-      Are you sure? Disabling the plugin will also disable all your checks.
+      <p>Are you sure? Disabling the plugin will also disable all your checks.</p>
       {loading ? (
         <Spinner />
       ) : (

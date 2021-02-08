@@ -41,7 +41,7 @@ async function fetchDatasources(
   const tenant = await smApi?.getTenant();
 
   if (!tenant || tenant.status === 1) {
-    // If the tenant has been deactivated, short circuit and kick the user back to the setup page
+    // If the tenant does not exist or has been deactivated, short circuit and kick the user back to the setup page
     return {
       metrics,
       logs,
