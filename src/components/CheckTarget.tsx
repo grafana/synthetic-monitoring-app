@@ -1,4 +1,4 @@
-import React, { FC, ChangeEvent } from 'react';
+import React, { ChangeEvent } from 'react';
 import { Field, Input } from '@grafana/ui';
 import { css } from 'emotion';
 import { CheckType } from 'types';
@@ -58,7 +58,7 @@ const getTargetHelpText = (typeOfCheck: CheckType | undefined): TargetHelpInfo =
   return resp;
 };
 
-const CheckTarget: FC<Props> = ({ target, typeOfCheck, disabled, onChange, onBlur, invalid, error }) => {
+const CheckTarget = ({ target, typeOfCheck, disabled, onChange, onBlur, invalid, error }: Props) => {
   const targetHelp = getTargetHelpText(typeOfCheck);
   const parsedURL = parseUrl(target);
   return (

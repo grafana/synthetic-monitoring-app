@@ -68,7 +68,7 @@ export default class CheckProbes extends PureComponent<CheckProbesProps, CheckPr
     }
     let selectedProbes: SelectableValue[] = [];
     for (const p of probes) {
-      let existing = options.find(item => item.value === p);
+      let existing = options.find((item) => item.value === p);
       if (existing) {
         selectedProbes.push(existing);
       }
@@ -76,7 +76,7 @@ export default class CheckProbes extends PureComponent<CheckProbesProps, CheckPr
 
     return (
       <ThemeContext.Consumer>
-        {theme => (
+        {(theme) => (
           <>
             <Field
               label="Probe locations"

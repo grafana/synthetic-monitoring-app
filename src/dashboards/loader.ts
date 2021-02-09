@@ -12,7 +12,7 @@ export const dashboardPaths = [
 async function findSyntheticMonitoringFolder(): Promise<FolderInfo> {
   const backendSrv = getBackendSrv();
   const folders = (await backendSrv.get(`api/folders`)) as FolderInfo[];
-  const smFolder = folders.find(folder => folder.title === 'Synthetic Monitoring');
+  const smFolder = folders.find((folder) => folder.title === 'Synthetic Monitoring');
 
   if (smFolder) {
     return smFolder;
@@ -25,7 +25,7 @@ async function findSyntheticMonitoringFolder(): Promise<FolderInfo> {
 
 export async function importAllDashboards(metricsDatasourceName: string, logsDatasourceName: string) {
   await findSyntheticMonitoringFolder();
-  return Promise.all(dashboardPaths.map(path => importDashboard(path, metricsDatasourceName, logsDatasourceName)));
+  return Promise.all(dashboardPaths.map((path) => importDashboard(path, metricsDatasourceName, logsDatasourceName)));
 }
 
 export async function importDashboard(

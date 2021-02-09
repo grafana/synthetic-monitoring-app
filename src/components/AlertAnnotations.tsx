@@ -1,4 +1,4 @@
-import React, { FC, Fragment } from 'react';
+import React, { Fragment } from 'react';
 import { TextArea, Input, Button, useStyles, Label, Field } from '@grafana/ui';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { SubCollapse } from 'components/SubCollapse';
@@ -23,7 +23,7 @@ const getStyles = (theme: GrafanaTheme) => ({
 
 const NAME = 'annotations';
 
-export const AlertAnnotations: FC = () => {
+export const AlertAnnotations = () => {
   const styles = useStyles(getStyles);
   const { control, register, errors } = useFormContext();
   const { fields, append, remove } = useFieldArray({
@@ -51,7 +51,7 @@ export const AlertAnnotations: FC = () => {
               error={errors?.annotations?.[annotationIndex]?.name?.message}
             >
               <Input
-                ref={register({ validate: value => validateAnnotationName(value) })}
+                ref={register({ validate: (value) => validateAnnotationName(value) })}
                 name={`${NAME}[${annotationIndex}].name`}
                 placeholder="Name"
                 data-testid={`alert-annotationName-${annotationIndex}`}

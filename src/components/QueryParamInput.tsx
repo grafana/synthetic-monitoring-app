@@ -1,4 +1,4 @@
-import React, { FC, ChangeEvent } from 'react';
+import React, { ChangeEvent } from 'react';
 import { Input, IconButton } from '@grafana/ui';
 
 export interface QueryParam {
@@ -16,7 +16,7 @@ interface Props {
   onBlur?: () => void;
 }
 
-const QueryParamInput: FC<Props> = ({ queryParam, onChange, onDelete, onBlur }) => (
+const QueryParamInput = ({ queryParam, onChange, onDelete, onBlur }: Props) => (
   <>
     <Input
       label="Key"

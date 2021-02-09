@@ -1,4 +1,4 @@
-import React, { FC, useState } from 'react';
+import React, { useState } from 'react';
 import { css } from 'emotion';
 import {
   Badge,
@@ -58,7 +58,7 @@ const getBadgeStatus = (online: boolean): BadgeStatus => {
   };
 };
 
-const ProbeStatus: FC<Props> = ({ probe, onResetToken }) => {
+const ProbeStatus = ({ probe, onResetToken }: Props) => {
   const [showResetModal, setShowResetModal] = useState(false);
   const theme = useTheme();
 

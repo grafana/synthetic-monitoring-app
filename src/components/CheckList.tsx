@@ -1,5 +1,5 @@
 // Libraries
-import React, { FC, useState } from 'react';
+import React, { useState } from 'react';
 
 // Types
 import { OrgRole, Check, Label, GrafanaInstances, CheckType } from 'types';
@@ -43,10 +43,7 @@ const matchesSearchFilter = ({ target, job, labels }: Check, searchFilter: strin
 
   // allow users to search using <term>=<somevalue>.
   // <term> can be one of target, job or a label name
-  const filterParts = searchFilter
-    .toLowerCase()
-    .trim()
-    .split('=');
+  const filterParts = searchFilter.toLowerCase().trim().split('=');
 
   const labelMatches = labels.reduce((acc, { name, value }) => {
     acc.push(name);
@@ -54,7 +51,7 @@ const matchesSearchFilter = ({ target, job, labels }: Check, searchFilter: strin
     return acc;
   }, [] as string[]);
 
-  return filterParts.some(filterPart => matchStrings(filterPart, [target, job, ...labelMatches]));
+  return filterParts.some((filterPart) => matchStrings(filterPart, [target, job, ...labelMatches]));
 };
 
 interface Props {
@@ -63,7 +60,7 @@ interface Props {
   checks: Check[];
 }
 
-export const CheckList: FC<Props> = ({ instance, onAddNewClick, checks }) => {
+export const CheckList = ({ instance, onAddNewClick, checks }: Props) => {
   const [searchFilter, setSearchFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
@@ -110,7 +107,7 @@ export const CheckList: FC<Props> = ({ instance, onAddNewClick, checks }) => {
   }
 
   const filteredChecks = checks
-    .filter(check => matchesFilterType(check, typeFilter) && matchesSearchFilter(check, searchFilter))
+    .filter((check) => matchesFilterType(check, typeFilter) && matchesSearchFilter(check, searchFilter))
     .sort((a, b) => b.job.localeCompare(a.job));
 
   const totalPages = Math.ceil(checks.length / CHECKS_PER_PAGE);
@@ -126,7 +123,7 @@ export const CheckList: FC<Props> = ({ instance, onAddNewClick, checks }) => {
             width={40}
             type="text"
             value={searchFilter ? unEscapeStringFromRegex(searchFilter) : ''}
-            onChange={event => setSearchFilter(escapeStringForRegex(event.currentTarget.value))}
+            onChange={(event) => setSearchFilter(escapeStringForRegex(event.currentTarget.value))}
             placeholder="search checks"
           />
         </div>
@@ -137,7 +134,7 @@ export const CheckList: FC<Props> = ({ instance, onAddNewClick, checks }) => {
             <Select
               aria-label="Types"
               options={CHECK_FILTER_OPTIONS}
-              onChange={selected => setTypeFilter(selected?.value ?? typeFilter)}
+              onChange={(selected) => setTypeFilter(selected?.value ?? typeFilter)}
               value={typeFilter}
             />
           </div>
@@ -191,7 +188,7 @@ export const CheckList: FC<Props> = ({ instance, onAddNewClick, checks }) => {
                                 border: none;
                                 background: inherit;
                               `}
-                              onClick={e => {
+                              onClick={(e) => {
                                 e.stopPropagation();
                                 setSearchFilter(`${label.name}=${label.value}`);
                                 setCurrentPage(1);
@@ -206,7 +203,7 @@ export const CheckList: FC<Props> = ({ instance, onAddNewClick, checks }) => {
                           <IconButton
                             name="apps"
                             size="xl"
-                            onClick={e => {
+                            onClick={(e) => {
                               showDashboard(check, checkType);
                               e.stopPropagation();
                             }}

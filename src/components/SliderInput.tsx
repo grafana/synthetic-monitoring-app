@@ -1,6 +1,6 @@
-import React, { FC, ChangeEvent } from 'react';
+import React from 'react';
 import { useFormContext, Controller, ValidationOptions } from 'react-hook-form';
-import { Slider, Input, useStyles } from '@grafana/ui';
+import { Slider, useStyles } from '@grafana/ui';
 import { css } from 'emotion';
 import { GrafanaTheme } from '@grafana/data';
 
@@ -41,25 +41,11 @@ const getStyles = (theme: GrafanaTheme) => ({
   `,
 });
 
-export const SliderInput: FC<Props> = ({
-  value,
-  min,
-  max,
-  id,
-  onChange,
-  prefixLabel,
-  suffixLabel,
-  invalid,
-  name,
-  step = 1,
-  onBlur,
-  rules,
-  defaultValue,
-}) => {
+export const SliderInput = ({ min, max, prefixLabel, suffixLabel, name, step = 1, rules, defaultValue }: Props) => {
   const styles = useStyles(getStyles);
-  const { control, errors } = useFormContext();
+  const { control } = useFormContext();
   return (
-    <div className={styles.container}>
+    <div className={styles.container} data-testid={name}>
       {prefixLabel}
       <div className={styles.slider}>
         <Controller

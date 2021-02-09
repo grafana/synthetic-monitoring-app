@@ -44,7 +44,7 @@ export class QueryEditor extends PureComponent<Props, State> {
       <div className="gf-form">
         <Select
           options={types}
-          value={types.find(t => t.value === query.queryType)}
+          value={types.find((t) => t.value === query.queryType)}
           onChange={this.onQueryTypeChanged}
         />
       </div>

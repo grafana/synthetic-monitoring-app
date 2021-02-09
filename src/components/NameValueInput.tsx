@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import React from 'react';
 import { css } from 'emotion';
 import { HorizontalGroup, Input, IconButton, VerticalGroup, Icon, Button, Field, useTheme } from '@grafana/ui';
 import { useFieldArray, useFormContext } from 'react-hook-form';
@@ -12,7 +12,7 @@ interface Props {
   validateValue?: (value: string) => string | undefined;
 }
 
-export const NameValueInput: FC<Props> = ({ name, disabled, limit, label, validateName, validateValue }) => {
+export const NameValueInput = ({ name, disabled, limit, label, validateName, validateValue }: Props) => {
   const { register, control, errors } = useFormContext();
   const { fields, append, remove } = useFieldArray({ control, name });
   const theme = useTheme();

@@ -24,7 +24,7 @@ test('Should handle initial value', async () => {
   const inputs = (await screen.findAllByRole('textbox')) as HTMLInputElement[];
   expect(inputs.length).toBe(4);
   const expectedValues = ['test', '1', 'another', 'tacos'];
-  inputs.forEach(input => {
+  inputs.forEach((input) => {
     expect(expectedValues.includes(input.value)).toBe(true);
   });
 });
