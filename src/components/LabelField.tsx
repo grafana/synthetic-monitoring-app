@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import React from 'react';
 import { Field } from '@grafana/ui';
 import { NameValueInput } from './NameValueInput';
 import { validateLabelName, validateLabelValue } from 'validation';
@@ -8,7 +8,7 @@ interface Props {
   limit?: number;
 }
 
-export const LabelField: FC<Props> = ({ isEditor, limit }) => {
+export const LabelField = ({ isEditor, limit }: Props) => {
   return (
     <Field
       label="Labels"

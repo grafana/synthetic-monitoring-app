@@ -1,6 +1,6 @@
 import { GrafanaTheme } from '@grafana/data';
 import { Icon, useStyles } from '@grafana/ui';
-import React, { FC, useState } from 'react';
+import React, { PropsWithChildren, useState } from 'react';
 import { css, cx } from 'emotion';
 
 interface Props {
@@ -34,7 +34,7 @@ const getStyles = (theme: GrafanaTheme) => ({
   `,
 });
 
-export const SubCollapse: FC<Props> = ({ children, title }) => {
+export const SubCollapse = ({ children, title }: PropsWithChildren<Props>) => {
   const [isOpen, setIsOpen] = useState(false);
   const styles = useStyles(getStyles);
   return (

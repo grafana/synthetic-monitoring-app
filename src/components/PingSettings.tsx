@@ -1,4 +1,4 @@
-import React, { FC, useState } from 'react';
+import React, { useState } from 'react';
 import { css } from 'emotion';
 import { Field, Select, Switch } from '@grafana/ui';
 import { Collapse } from 'components/Collapse';
@@ -10,7 +10,7 @@ interface Props {
   isEditor: boolean;
 }
 
-export const PingSettingsForm: FC<Props> = ({ isEditor }) => {
+export const PingSettingsForm = ({ isEditor }: Props) => {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const { control, register } = useFormContext();
   return (

@@ -100,7 +100,7 @@ const getPingSettingsFormValues = (settings: Settings): PingSettingsFormValues =
 };
 
 const headersToLabels = (headers: string[] | undefined): Label[] =>
-  headers?.map(header => {
+  headers?.map((header) => {
     const parts = header.split(':', 2);
     return {
       name: parts[0],
@@ -178,8 +178,8 @@ const getHttpSettingsFormValues = (settings: Settings): HttpSettingsFormValues =
     ...pickedSettings,
     followRedirects: !noFollowRedirects,
     sslOptions: getHttpSettingsSslValue(httpSettings.failIfSSL ?? false, httpSettings.failIfNotSSL ?? false),
-    validStatusCodes: httpSettings.validStatusCodes?.map(statusCode => selectableValueFrom(statusCode)) ?? [],
-    validHTTPVersions: httpSettings.validHTTPVersions?.map(httpVersion => selectableValueFrom(httpVersion)) ?? [],
+    validStatusCodes: httpSettings.validStatusCodes?.map((statusCode) => selectableValueFrom(statusCode)) ?? [],
+    validHTTPVersions: httpSettings.validHTTPVersions?.map((httpVersion) => selectableValueFrom(httpVersion)) ?? [],
     method: selectableValueFrom(httpSettings.method),
     ipVersion: selectableValueFrom(httpSettings.ipVersion),
     headers: headersToLabels(httpSettings.headers),
@@ -223,7 +223,7 @@ type GetDnsValidationArgs = { [key in ResponseMatchType]: DNSRRValidator | undef
 const getDnsValidations = (validations: GetDnsValidationArgs): DnsValidationFormValue[] =>
   Object.keys(validations).reduce<DnsValidationFormValue[]>((formValues, validationType) => {
     const responseMatch = validationType as ResponseMatchType;
-    validations[responseMatch]?.failIfMatchesRegexp?.forEach(expression => {
+    validations[responseMatch]?.failIfMatchesRegexp?.forEach((expression) => {
       formValues.push({
         expression,
         inverted: false,
@@ -231,7 +231,7 @@ const getDnsValidations = (validations: GetDnsValidationArgs): DnsValidationForm
       });
     });
 
-    validations[responseMatch]?.failIfNotMatchesRegexp?.forEach(expression => {
+    validations[responseMatch]?.failIfNotMatchesRegexp?.forEach((expression) => {
       formValues.push({
         expression,
         inverted: true,
@@ -250,7 +250,7 @@ const getDnsSettingsFormValues = (settings: Settings): DnsSettingsFormValues => 
     recordType: selectableValueFrom(dnsSettings.recordType),
     validRCodes:
       (dnsSettings.validRCodes
-        ?.map(responseCode => DNS_RESPONSE_CODES.find(option => option.value === responseCode))
+        ?.map((responseCode) => DNS_RESPONSE_CODES.find((option) => option.value === responseCode))
         .filter(Boolean) as Array<SelectableValue<string>>) ?? [],
     validations: getDnsValidations({
       [ResponseMatchType.Answer]: dnsSettings.validateAnswerRRS,
@@ -297,7 +297,7 @@ export const getDefaultValuesFromCheck = (check: Check = fallbackCheck): CheckFo
     alertSensitivity:
       ALERT_SENSITIVITY_OPTIONS.find(({ value }) => value === check.alertSensitivity) ?? ALERT_SENSITIVITY_OPTIONS[0],
     checkType:
-      CHECK_TYPE_OPTIONS.find(checkTypeOption => checkTypeOption.value === defaultCheckType) ?? CHECK_TYPE_OPTIONS[1],
+      CHECK_TYPE_OPTIONS.find((checkTypeOption) => checkTypeOption.value === defaultCheckType) ?? CHECK_TYPE_OPTIONS[1],
     settings,
   };
 };
@@ -310,7 +310,7 @@ function getValueFromSelectable<T>(selectable: SelectableValue<T> | undefined): 
 }
 
 function getValuesFromMultiSelectables<T>(selectables: Array<SelectableValue<T>> | undefined): T[] | undefined {
-  return selectables?.map(selectable => getValueFromSelectable(selectable)).filter(Boolean) as T[];
+  return selectables?.map((selectable) => getValueFromSelectable(selectable)).filter(Boolean) as T[];
 }
 
 const getHttpSslOptionsFromFormValue = (sslOption: HttpSslOption): Pick<HttpSettings, 'failIfSSL' | 'failIfNotSSL'> => {
@@ -389,7 +389,7 @@ const getHttpSettings = (
 ): HttpSettings => {
   const fallbackValues = fallbackSettings(CheckType.HTTP).http as HttpSettings;
   const headers = settings.headers ?? defaultSettings?.headers;
-  const formattedHeaders = headers?.map(header => `${header.name}:${header.value}`) ?? [];
+  const formattedHeaders = headers?.map((header) => `${header.name}:${header.value}`) ?? [];
 
   const mergedSettings = {
     ...(defaultSettings ?? {}),

@@ -32,7 +32,7 @@ export const initializeTenant = async (pluginId: string, adminApiToken: string):
         'X-Grafana-NoCache': 'true',
       },
     })
-    .catch(err => {
+    .catch((err) => {
       if (err.data.msg) {
         throw new Error(err.data.msg);
       }

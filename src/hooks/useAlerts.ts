@@ -60,7 +60,7 @@ const fetchSMRules = async (alertRulerUrl: string) => {
         },
       })
       .toPromise()
-      .then(response => {
+      .then((response) => {
         const alertGroup = parse(response.data);
         return alertGroup.rules;
       });
@@ -132,7 +132,7 @@ export function useAlerts(checkId?: number) {
 
   useEffect(() => {
     if (alertRulerUrl) {
-      fetchSMRules(alertRulerUrl).then(rules => {
+      fetchSMRules(alertRulerUrl).then((rules) => {
         setAlertRules(rules);
       });
     }

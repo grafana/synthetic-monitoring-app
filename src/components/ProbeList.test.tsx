@@ -55,7 +55,7 @@ it('renders offline probes', async () => {
 });
 
 it('renders online probes', async () => {
-  const onlineProbes = defaultProbes.map(probe => ({ ...probe, online: true }));
+  const onlineProbes = defaultProbes.map((probe) => ({ ...probe, online: true }));
   renderProbeList({ probes: onlineProbes });
   const onlineStatus = await screen.findAllByText('Online');
   expect(onlineStatus.length).toBe(2);

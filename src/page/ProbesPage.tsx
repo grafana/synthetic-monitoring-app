@@ -1,5 +1,5 @@
 // Libraries
-import React, { FC, useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 
 // Types
 import { Probe } from 'types';
@@ -12,7 +12,7 @@ interface Props {
   id?: string;
 }
 
-export const ProbesPage: FC<Props> = ({ id }) => {
+export const ProbesPage = ({ id }: Props) => {
   const [isAddingNew, setAddingNew] = useState(false);
   const [probesLoading, setProbesLoading] = useState(true);
   const [probes, setProbes] = useState<Probe[]>([]);
@@ -27,7 +27,7 @@ export const ProbesPage: FC<Props> = ({ id }) => {
         setProbesLoading(false);
       }
       if (id) {
-        const selectedProbe = probes?.find(probe => probe.id === parseInt(id, 10));
+        const selectedProbe = probes?.find((probe) => probe.id === parseInt(id, 10));
         setSelectedProbe(selectedProbe);
       }
     };

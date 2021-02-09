@@ -1,4 +1,4 @@
-import React, { FC, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Container,
   HorizontalGroup,
@@ -21,7 +21,7 @@ interface Props {
   isEditor: boolean;
 }
 
-export const TcpSettingsForm: FC<Props> = ({ isEditor }) => {
+export const TcpSettingsForm = ({ isEditor }: Props) => {
   const [showTCPSettings, setShowTCPSettings] = useState(false);
   const [showQueryResponse, setShowQueryResponse] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);

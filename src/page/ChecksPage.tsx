@@ -35,7 +35,7 @@ export class ChecksPage extends PureComponent<Props, State> {
     const { instance } = this.context;
     const checks = (await instance.api?.listChecks()) ?? [];
     const num = id ? parseInt(id, 10) : -1;
-    const check = checks?.find(c => c.id === num);
+    const check = checks?.find((c) => c.id === num);
     this.setState({
       checks,
       check,
@@ -47,7 +47,7 @@ export class ChecksPage extends PureComponent<Props, State> {
     if (this.props.id !== oldProps.id) {
       const { id } = this.props;
       const num = id ? parseInt(id, 10) : -1;
-      const check = this.state.checks?.find(c => c.id === num);
+      const check = this.state.checks?.find((c) => c.id === num);
       this.setState({ check });
     }
   }

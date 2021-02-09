@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import React from 'react';
 import { IconName, Icon } from '@grafana/ui';
 import { Check } from 'types';
 import { useMetricData } from 'hooks/useMetricData';
@@ -40,7 +40,7 @@ const getIconClassName = (error: string | undefined, noData: boolean, uptime: nu
   return 'ok';
 };
 
-export const CheckHealth: FC<Props> = ({ check }) => {
+export const CheckHealth = ({ check }: Props) => {
   const filter = `instance="${check.target}", job="${check.job}"`;
   const query = `sum(probe_success{${filter}}) / count(probe_success{${filter}})`;
   const { data, error } = useMetricData(query);

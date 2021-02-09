@@ -26,8 +26,8 @@ export class DashboardList extends PureComponent<Props, State> {
     const latestDashboards = await listAppDashboards();
 
     // merge dashboards known to grafana with latest in the app.
-    const dashboards = latestDashboards.map(template => {
-      const existingDashboard = options.dashboards.find(existing => template.uid === existing.uid);
+    const dashboards = latestDashboards.map((template) => {
+      const existingDashboard = options.dashboards.find((existing) => template.uid === existing.uid);
       if (!existingDashboard) {
         return template;
       }
@@ -51,7 +51,7 @@ export class DashboardList extends PureComponent<Props, State> {
       options.logs.grafanaName
     );
 
-    const dashboards = options.dashboards.map(savedDashboard => {
+    const dashboards = options.dashboards.map((savedDashboard) => {
       if (savedDashboard.uid === updatedDashboard.uid) {
         return updatedDashboard;
       }
@@ -74,7 +74,7 @@ export class DashboardList extends PureComponent<Props, State> {
     let options = { ...this.props.options };
     await removeDashboard(dashboard);
 
-    let i = options.dashboards.findIndex(item => {
+    let i = options.dashboards.findIndex((item) => {
       return item.uid === dashboard.uid;
     });
 
@@ -83,7 +83,7 @@ export class DashboardList extends PureComponent<Props, State> {
     }
 
     let dashboards = [...this.state.dashboards];
-    i = dashboards.findIndex(item => {
+    i = dashboards.findIndex((item) => {
       return item.uid === dashboard.uid;
     });
     if (i >= 0) {
@@ -130,7 +130,7 @@ export class DashboardList extends PureComponent<Props, State> {
         <h3>Dashboards:</h3>
         <table className="filter-table">
           <tbody>
-            {dashboards.map(d => {
+            {dashboards.map((d) => {
               return (
                 <tr key={d.uid}>
                   <td className="width-1">

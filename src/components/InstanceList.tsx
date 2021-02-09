@@ -14,7 +14,7 @@ export class InstanceList extends PureComponent<Props> {
     const { selected } = this.props;
     return (
       <div>
-        {this.props.instances.map(instance => {
+        {this.props.instances.map((instance) => {
           const isSelected = selected === instance.id;
           let logo = 'public/app/plugins/datasource/prometheus/img/prometheus_logo.svg';
           let hostedType = 'metrics';

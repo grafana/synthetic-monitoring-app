@@ -172,7 +172,7 @@ describe('good targets', () => {
       'https://[2001:0db8:1001:1001:1001:1001:1001:1001]:8080/',
       'http://[2001:0db8:1001:1001:1001:1001:1001:1001]/',
       'http://[2001:0db8:1001:1001:1001:1001:1001:1001]:8080/',
-    ].forEach(url => expect(CheckValidation.target(CheckType.HTTP, url)).toBe(undefined));
+    ].forEach((url) => expect(CheckValidation.target(CheckType.HTTP, url)).toBe(undefined));
   });
 
   it('should accept URL with IPv4 addresses as HTTP target', () => {
