@@ -18,7 +18,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     super(instanceSettings);
   }
 
-  getMetricsDS(): DataSourceInstanceSettings {
+  getMetricsDS() {
     return config.datasources[this.instanceSettings.jsonData.metrics.grafanaName];
   }
 

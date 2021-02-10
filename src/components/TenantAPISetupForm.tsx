@@ -1,4 +1,4 @@
-import React, { FC, useState } from 'react';
+import React, { useState } from 'react';
 import { Alert, Button, Container, Field, Form, HorizontalGroup, InfoBox, Input } from '@grafana/ui';
 import { Collapse } from 'components/Collapse';
 import { DEFAULT_API_HOST } from './constants';
@@ -13,7 +13,7 @@ interface Props {
   submissionError?: string;
 }
 
-const TenantAPISetupForm: FC<Props> = ({ onSubmit, submissionError }) => {
+const TenantAPISetupForm = ({ onSubmit, submissionError }: Props) => {
   const [showAdvanced, setShowAdvanced] = useState(false);
   return (
     <Form
@@ -36,7 +36,12 @@ const TenantAPISetupForm: FC<Props> = ({ onSubmit, submissionError }) => {
                 stored. Once the initialization is complete you can safely delete the key.
                 <br />
                 <br />
-                <a className="highlight-word" href="//grafana.com/profile/api-keys" target="_blank">
+                <a
+                  className="highlight-word"
+                  href="//grafana.com/profile/api-keys"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   Generate a new API key
                 </a>
               </p>
@@ -63,7 +68,7 @@ const TenantAPISetupForm: FC<Props> = ({ onSubmit, submissionError }) => {
               <Field label="Backend Address" invalid={Boolean(errors.apiHost)} error={errors.apiHost?.message}>
                 <Input
                   ref={register({
-                    validate: value => {
+                    validate: (value) => {
                       try {
                         new URL(value);
                       } catch ({ message }) {

@@ -1,29 +1,31 @@
-import React, { FC, ChangeEvent } from 'react';
-import { Slider, Input } from '@grafana/ui';
+import React from 'react';
+import { useFormContext, Controller, ValidationOptions } from 'react-hook-form';
+import { Slider, useStyles } from '@grafana/ui';
 import { css } from 'emotion';
+import { GrafanaTheme } from '@grafana/data';
 
 interface Props {
-  value: number;
+  defaultValue: number;
   min: number;
   max: number;
+  name: string;
   id?: string;
-  separationLabel?: string;
+  rules: ValidationOptions;
+  prefixLabel?: string;
   step?: number;
   suffixLabel?: string;
   invalid?: boolean;
-  onChange: (value: number) => void;
-  onBlur: () => void;
 }
 
-const styles = {
+const getStyles = (theme: GrafanaTheme) => ({
   container: css`
     display: flex;
     align-items: center;
   `,
   slider: css`
-    width: 14rem;
-    margin-right: 1.5rem;
-    margin-left: 0;
+    width: 250px;
+    margin-right: ${theme.spacing.sm};
+    margin-left: ${theme.spacing.sm};
   `,
   inputGroupWrapper: css`
     margin-top: 1rem;
@@ -37,50 +39,29 @@ const styles = {
     width: 40px;
     margin-right: 0.5rem;
   `,
-};
+});
 
-export const SliderInput: FC<Props> = ({
-  value,
-  min,
-  max,
-  id,
-  onChange,
-  separationLabel,
-  suffixLabel,
-  invalid,
-  step = 1,
-  onBlur,
-}) => (
-  <div className={styles.container}>
-    <div className={styles.slider}>
-      <Slider
-        tooltipAlwaysVisible={false}
-        css={styles.slider}
-        min={min}
-        max={max}
-        step={step}
-        value={[value]}
-        onAfterChange={([value]) => {
-          onChange(value);
-          onBlur();
-        }}
-      />
-    </div>
-    <div className={styles.inputGroupWrapper}>
-      <span className={styles.rightMargin}>{separationLabel}</span>
-      <Input
-        id={id}
-        invalid={invalid}
-        onBlur={onBlur}
-        className={styles.sliderInput}
-        type="number"
-        value={value}
-        step={step}
-        max={max}
-        min={min}
-        onChange={(e: ChangeEvent<HTMLInputElement>) => onChange(e.target.valueAsNumber)}
-      />
+export const SliderInput = ({ min, max, prefixLabel, suffixLabel, name, step = 1, rules, defaultValue }: Props) => {
+  const styles = useStyles(getStyles);
+  const { control } = useFormContext();
+  return (
+    <div className={styles.container} data-testid={name}>
+      {prefixLabel}
+      <div className={styles.slider}>
+        <Controller
+          as={Slider}
+          control={control}
+          rules={rules}
+          name={name}
+          tooltipAlwaysVisible={false}
+          css={styles.slider}
+          min={min}
+          max={max}
+          step={step}
+          defaultValue={[defaultValue]}
+        />
+      </div>
       {suffixLabel}
     </div>
-  </div>
-);
+  );
+};

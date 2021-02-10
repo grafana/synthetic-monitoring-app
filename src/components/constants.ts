@@ -13,7 +13,7 @@ import {
   AlertSensitivity,
 } from 'types';
 
-export const DNS_RESPONSE_CODES = enumToStringArray(DnsResponseCodes).map(responseCode => ({
+export const DNS_RESPONSE_CODES = enumToStringArray(DnsResponseCodes).map((responseCode) => ({
   label: responseCode,
   value: responseCode,
 }));

@@ -1,4 +1,4 @@
-import React, { FC, useReducer, useEffect, useState } from 'react';
+import React, { useReducer, useEffect, useState } from 'react';
 import { css } from 'emotion';
 import { Field, Label, Button } from '@grafana/ui';
 import QueryParamInput, { QueryParam } from './QueryParamInput';
@@ -22,7 +22,7 @@ function init(target: URL) {
   const formatted = params
     .replace('?', '')
     .split('&')
-    .map(queryParam => {
+    .map((queryParam) => {
       const [name, value] = queryParam.split('=');
       return { name, value };
     });
@@ -58,7 +58,7 @@ function queryParamReducer(state: QueryParam[], action: Action) {
   }
 }
 
-const QueryParams: FC<Props> = ({ target, onChange, className, onBlur }) => {
+const QueryParams = ({ target, onChange, className, onBlur }: Props) => {
   const [formattedParams, dispatch] = useReducer(queryParamReducer, target, init);
   const [shouldUpdate, setShouldUpdate] = useState(false);
 
@@ -105,7 +105,7 @@ const QueryParams: FC<Props> = ({ target, onChange, className, onBlur }) => {
               onBlur={onBlur}
               key={index}
               onDelete={handleDelete(index)}
-              onChange={updatedParam => {
+              onChange={(updatedParam) => {
                 dispatch({ type: 'change', queryParam: updatedParam, index: index });
                 setShouldUpdate(true);
               }}

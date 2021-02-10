@@ -11,7 +11,7 @@ import { SMDataSource } from 'datasource/DataSource';
  * Find all synthetic-monitoring datasources
  */
 export function findSMDataSources(): Array<DataSourceInstanceSettings<SMOptions>> {
-  return Object.values(config.datasources).filter(ds => {
+  return Object.values(config.datasources).filter((ds) => {
     return ds.type === 'synthetic-monitoring-datasource';
   }) as Array<DataSourceInstanceSettings<SMOptions>>;
 }
@@ -149,7 +149,7 @@ export async function createHostedInstance(info: HostedInstance, key: string): P
   };
   return getBackendSrv()
     .post('api/datasources', data)
-    .then(d => {
+    .then((d) => {
       return d.datasource;
     });
 }
@@ -175,7 +175,7 @@ export function hasRole(requiredRole: OrgRole): boolean {
 /** Given hosted info, link to an existing instance */
 export function dashboardUID(checkType: string, ds?: SMDataSource): DashboardInfo | undefined {
   const dashboards = ds?.instanceSettings?.jsonData?.dashboards;
-  return dashboards?.find(item => item.json.toLocaleLowerCase() === `sm-${checkType}.json`);
+  return dashboards?.find((item) => item.json.toLocaleLowerCase() === `sm-${checkType}.json`);
 }
 
 export const parseUrl = (url: string) => {
@@ -195,7 +195,7 @@ export function enumToStringArray<T>(enumObject: T) {
 // Matches a string against multiple options
 export const matchStrings = (string: string, comparisons: string[]): boolean => {
   const lowerCased = string.toLowerCase();
-  return comparisons.some(comparison => comparison.toLowerCase().match(lowerCased));
+  return comparisons.some((comparison) => comparison.toLowerCase().match(lowerCased));
 };
 
 export function checkType(settings: Settings): CheckType {

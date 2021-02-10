@@ -5,7 +5,7 @@ import React from 'react';
 import userEvent from '@testing-library/user-event';
 import { InstanceContext } from './InstanceContext';
 import { getInstanceMock } from 'datasource/__mocks__/DataSource';
-import { AppPluginMeta, DataSourceInstanceSettings } from '@grafana/data';
+import { AppPluginMeta, DataSourceSettings } from '@grafana/data';
 import { AlertRule, AlertSensitivity, GlobalSettings } from 'types';
 import * as useAlerts from 'hooks/useAlerts';
 
@@ -19,7 +19,7 @@ const renderAlerting = async ({ withAlerting = true } = {}) => {
   const api = getInstanceMock();
   const instance = {
     api,
-    alertRuler: withAlerting ? ({ url: 'alertUrl' } as DataSourceInstanceSettings) : undefined,
+    alertRuler: withAlerting ? (({ url: 'alertUrl' } as unknown) as DataSourceSettings) : undefined,
   };
   const meta = {} as AppPluginMeta<GlobalSettings>;
   return render(
@@ -78,10 +78,8 @@ it('adds default alerts and edits alerts', async () => {
   await userEvent.clear(timeCount);
   await userEvent.type(timeCount, '2');
 
-  const timeUnit = await screen.findByText('minutes');
-  userEvent.click(timeUnit);
-  const option = await screen.findByText('seconds');
-  userEvent.click(option);
+  const timeUnit = await screen.findAllByTestId('select');
+  userEvent.selectOptions(timeUnit[1], 's');
 
   const labels = await toggleSection('Labels');
   const addLabelButton = await within(labels).findByRole('button', { name: 'Add label' });

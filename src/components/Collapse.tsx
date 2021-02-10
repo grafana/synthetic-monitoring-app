@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import React, { PropsWithChildren } from 'react';
 import { Icon, useTheme } from '@grafana/ui';
 import { css, cx } from 'emotion';
 import { GrafanaTheme } from '@grafana/data';
@@ -43,7 +43,7 @@ const getStyles = (theme: GrafanaTheme) => ({
   `,
 });
 
-export const Collapse: FC<Props> = ({ isOpen, label, children, onToggle, ...props }) => {
+export const Collapse = ({ isOpen, label, children, onToggle, ...props }: PropsWithChildren<Props>) => {
   const theme = useTheme();
   const styles = getStyles(theme);
 

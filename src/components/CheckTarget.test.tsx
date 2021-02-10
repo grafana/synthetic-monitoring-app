@@ -71,11 +71,11 @@ describe('HTTP targets', () => {
     const expectedValueValues = ['bar', 'delicious'];
     expect(paramNameInputs.length).toBe(2);
     expect(paramValueInputs.length).toBe(2);
-    paramNameInputs.forEach(input => {
+    paramNameInputs.forEach((input) => {
       expect(expectedNameValues.includes(input.value)).toBe(true);
     });
 
-    paramValueInputs.forEach(input => {
+    paramValueInputs.forEach((input) => {
       expect(expectedValueValues.includes(input.value)).toBe(true);
     });
   });

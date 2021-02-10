@@ -1,4 +1,4 @@
-import React, { FC, useState, Fragment } from 'react';
+import React, { useState, Fragment } from 'react';
 import {
   Container,
   HorizontalGroup,
@@ -171,7 +171,7 @@ interface Props {
   isEditor: boolean;
 }
 
-export const HttpSettingsForm: FC<Props> = ({ isEditor }) => {
+export const HttpSettingsForm = ({ isEditor }: Props) => {
   const { register, watch, control, errors } = useFormContext();
   const [showHttpSettings, setShowHttpSettings] = useState(false);
   const [showAuthentication, setShowAuthentication] = useState(false);

@@ -1,4 +1,4 @@
-import React, { FC, useState } from 'react';
+import React, { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { Field, Input, Container, TextArea } from '@grafana/ui';
 import { Collapse } from 'components/Collapse';
@@ -11,7 +11,7 @@ interface Props {
   checkType: CheckType;
 }
 
-export const TLSConfig: FC<Props> = ({ isEditor, checkType }) => {
+export const TLSConfig = ({ isEditor, checkType }: Props) => {
   const [showTLS, setShowTLS] = useState(false);
   const { register, errors } = useFormContext();
   return (

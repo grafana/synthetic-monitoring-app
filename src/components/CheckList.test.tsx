@@ -6,7 +6,6 @@ import { GrafanaInstances, Check } from 'types';
 import { getInstanceMock } from '../datasource/__mocks__/DataSource';
 
 const onAddNewMock = jest.fn();
-
 interface RenderChecklist {
   checks?: Check[];
 }
@@ -186,10 +185,8 @@ test('clicking label value adds to filter', async () => {
 
 test('filters by check type', async () => {
   renderCheckList();
-  const selectInput = await screen.findByText('All');
-  userEvent.click(selectInput);
-  const httpOption = await screen.findByText('HTTP');
-  userEvent.click(httpOption);
+  const selectInput = await screen.findByTestId('select');
+  userEvent.selectOptions(selectInput, 'http');
   const checks = await screen.findAllByLabelText('check-card');
   expect(checks.length).toBe(1);
 });

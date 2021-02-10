@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { AppRootProps } from '@grafana/data';
 import { DashboardMeta, GlobalSettings } from 'types';
 import { WelcomePage } from 'page/WelcomePage';
@@ -17,12 +17,6 @@ type Tab = {
   id: string;
   icon?: string;
   enabledByFeatureFlag?: string;
-  render: (query: any) => JSX.Element;
-};
-
-type RouterQuery = {
-  page: string;
-  id: string;
 };
 
 const pagesToRedirectIfNotInitialized = new Set(['checks', 'probes', 'alerts', 'redirect']);
@@ -48,17 +42,14 @@ const tabs: Tab[] = [
   {
     label: 'Checks',
     id: 'checks',
-    render: (query: RouterQuery) => <ChecksPage id={query.id} />,
   },
   {
     label: 'Probes',
     id: 'probes',
-    render: (query: RouterQuery) => <ProbesPage id={query.id} />,
   },
   {
     label: 'Alerts',
     id: 'alerts',
-    render: () => <Alerting />,
   },
 ];
 
@@ -70,11 +61,12 @@ function filterTabs(tabs: Tab[], apiInitialized: boolean): Tab[] {
 }
 
 function findActiveTab(tabs: Tab[], queryPage: string, apiInitialized: boolean): Tab {
-  return tabs.find(tab => tab.id === queryPage) ?? tabs[0];
+  return tabs.find((tab) => tab.id === queryPage) ?? tabs[0];
 }
 
 function handleDashboardRedirect(dashboard: string, dashboards: DashboardInfo[]) {
-  const targetDashboard = dashboards.find(dashboardJson => dashboardJson.json.indexOf(dashboard) > -1) ?? dashboards[0];
+  const targetDashboard =
+    dashboards.find((dashboardJson) => dashboardJson.json.indexOf(dashboard) > -1) ?? dashboards[0];
   getLocationSrv().update({
     partial: false,
     path: `d/${targetDashboard.uid}`,
@@ -82,7 +74,7 @@ function handleDashboardRedirect(dashboard: string, dashboards: DashboardInfo[])
 }
 
 function getNavModel(tabs: Tab[], path: string, activeTab: Tab, logoUrl: string) {
-  const children = tabs.map(tab => ({
+  const children = tabs.map((tab) => ({
     text: tab.label,
     id: tab.id,
     active: tab.id === activeTab.id,
@@ -105,7 +97,7 @@ function getNavModel(tabs: Tab[], path: string, activeTab: Tab, logoUrl: string)
   return null;
 }
 
-export const PluginTabs: FC<AppRootProps<GlobalSettings>> = ({ query, onNavChanged, path, meta }) => {
+export const PluginTabs = ({ query, onNavChanged, path, meta }: AppRootProps<GlobalSettings>) => {
   const { instance } = useContext(InstanceContext);
   const [hasDismissedDashboardUpdate, setHasDismissedDashboardUpdate] = useState(hasDismissedDashboardUpdateModal());
   const [dashboardsNeedingUpdate, setDashboardsNeedingUpdate] = useState<DashboardMeta[] | undefined>();
@@ -124,11 +116,11 @@ export const PluginTabs: FC<AppRootProps<GlobalSettings>> = ({ query, onNavChang
   // Prompt user to update dashboards that are out of date
   useEffect(() => {
     if (!hasDismissedDashboardUpdate) {
-      listAppDashboards().then(latestDashboards => {
+      listAppDashboards().then((latestDashboards) => {
         const existingDashboards = dashboards ?? [];
         const dashboardsNeedingUpdate = existingDashboards
-          .map(existingDashboard => {
-            const templateDashboard = latestDashboards.find(template => template.uid === existingDashboard.uid);
+          .map((existingDashboard) => {
+            const templateDashboard = latestDashboards.find((template) => template.uid === existingDashboard.uid);
             const templateVersion = templateDashboard?.latestVersion ?? -1;
             if (templateDashboard && templateVersion > existingDashboard.version) {
               return {
@@ -175,9 +167,21 @@ export const PluginTabs: FC<AppRootProps<GlobalSettings>> = ({ query, onNavChang
     return <WelcomePage />;
   }
 
+  const getPage = () => {
+    switch (activeTab.id) {
+      case 'probes':
+        return <ProbesPage id={query.id} />;
+      case 'alerts':
+        return <Alerting />;
+      case 'checks':
+      default:
+        return <ChecksPage id={query.id} />;
+    }
+  };
+
   return (
     <div>
-      {activeTab.render(query)}
+      {getPage()}
       <Modal
         title="Dashboards out of date"
         onDismiss={skipDashboardUpdate}

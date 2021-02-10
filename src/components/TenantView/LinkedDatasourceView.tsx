@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import React from 'react';
 import { LinkedDatsourceInfo } from 'datasource/types';
 import { config, getLocationSrv } from '@grafana/runtime';
 import { Spinner } from '@grafana/ui';
@@ -7,7 +7,7 @@ interface Props {
   info: LinkedDatsourceInfo;
 }
 
-const LinkedDatasourceView: FC<Props> = ({ info }) => {
+const LinkedDatasourceView = ({ info }: Props) => {
   const datasource = config.datasources[info.grafanaName];
 
   const handleClick = () => {
