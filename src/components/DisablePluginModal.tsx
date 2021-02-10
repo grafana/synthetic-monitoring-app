@@ -1,5 +1,5 @@
 import { Alert, Button, HorizontalGroup, Modal, Spinner } from '@grafana/ui';
-import React, { FC, useContext, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { InstanceContext } from './InstanceContext';
 
 type Props = {
@@ -7,7 +7,7 @@ type Props = {
   onDismiss: () => void;
 };
 
-export const DisablePluginModal: FC<Props> = ({ isOpen, onDismiss }) => {
+export const DisablePluginModal = ({ isOpen, onDismiss }: Props) => {
   const { instance, loading } = useContext(InstanceContext);
   const [error, setError] = useState();
 

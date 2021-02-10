@@ -186,11 +186,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
         },
       })
       .then((res: any) => {
-        console.log({ stuff: res.data });
         return res.data;
-      })
-      .catch(e => {
-        console.log('hiiii', e);
       });
   }
 

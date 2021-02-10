@@ -45,7 +45,7 @@ async function fetchDatasources(
     return {
       metrics,
       logs,
-    };
+    } as GrafanaInstances;
   }
 
   return {

@@ -25,11 +25,21 @@ export class ConfigPage extends PureComponent<Props> {
             <div>
               <p>
                 Synthetic Monitoring is a blackbox monitoring solution provided as part of{' '}
-                <a className="highlight-word" href="https://grafana.com/products/cloud/" target="_blank">
+                <a
+                  className="highlight-word"
+                  href="https://grafana.com/products/cloud/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   Grafana Cloud
                 </a>
-                . If you don't already have a Grafana Cloud service,{' '}
-                <a className="highlight-word" href="https://grafana.com/signup/cloud" target="_blank">
+                . If you don&apos;t already have a Grafana Cloud service,{' '}
+                <a
+                  className="highlight-word"
+                  href="https://grafana.com/signup/cloud"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   sign up now{' '}
                 </a>
               </p>
@@ -37,7 +47,12 @@ export class ConfigPage extends PureComponent<Props> {
             <div>
               <p>
                 Synthetic Monitoring is a blackbox monitoring solution provided as part of{' '}
-                <a className="highlight-word" href="https://grafana.com/products/cloud/" target="_blank">
+                <a
+                  className="highlight-word"
+                  href="https://grafana.com/products/cloud/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   Grafana Cloud
                 </a>
                 .
