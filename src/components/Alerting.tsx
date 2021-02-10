@@ -4,9 +4,10 @@ import React, { FC, useState, useContext } from 'react';
 import { css } from 'emotion';
 import { useAlerts } from 'hooks/useAlerts';
 import { AlertRuleForm } from './AlertRuleForm';
-import { AlertFormValues, AlertRule } from 'types';
+import { AlertFormValues, AlertRule, OrgRole } from 'types';
 import { InstanceContext } from './InstanceContext';
 import { transformAlertFormValues } from './alertingTransformations';
+import { hasRole } from 'utils';
 
 type SplitAlertRules = {
   recordingRules: AlertRule[];
@@ -74,6 +75,20 @@ export const Alerting: FC = () => {
     });
     return await setRules([...recordingRules, ...updatedRules]);
   };
+
+  if (!hasRole(OrgRole.ADMIN)) {
+    return (
+      <div>
+        <h2>Alerts</h2>
+        <Icon className={styles.icon} name="exclamation-triangle" />
+        Synthetic Monitoring uses &nbsp;
+        <a href="https://grafana.com/docs/grafana-cloud/alerts/grafana-cloud-alerting/" className={styles.link}>
+          Grafana Cloud Alerting
+        </a>
+        , which is not accessible for users without an admin role.
+      </div>
+    );
+  }
 
   if (!instance.alertRuler) {
     return (
