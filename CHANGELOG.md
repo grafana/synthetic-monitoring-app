@@ -1,3 +1,10 @@
+## [0.7.4](https://github.com/grafana/synthetic-monitoring-app/compare/0.7.3...0.7.4) (2021-02-10)
+
+
+### Bug Fixes
+
+* Gate alerts by admin role ([#196](https://github.com/grafana/synthetic-monitoring-app/issues/196)) ([af31088](https://github.com/grafana/synthetic-monitoring-app/commit/af31088c1303e8cadba1b545a988907d24cf817b))
+
 ## [0.7.3](https://github.com/grafana/synthetic-monitoring-app/compare/0.7.2...0.7.3) (2021-02-10)
 
 ## [0.7.2](https://github.com/grafana/synthetic-monitoring-app/compare/0.7.1...0.7.2) (2021-02-09)
