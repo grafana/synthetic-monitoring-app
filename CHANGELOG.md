@@ -1,3 +1,10 @@
+## [0.7.5](https://github.com/grafana/synthetic-monitoring-app/compare/0.7.4...0.7.5) (2021-02-10)
+
+
+### Bug Fixes
+
+* allow hostnames that start with a number and have a subdomain ([#194](https://github.com/grafana/synthetic-monitoring-app/issues/194)) ([c9d04ec](https://github.com/grafana/synthetic-monitoring-app/commit/c9d04ec6d9640842d24f3190402b29c5cae4f68f))
+
 ## [0.7.4](https://github.com/grafana/synthetic-monitoring-app/compare/0.7.3...0.7.4) (2021-02-10)
 
 
