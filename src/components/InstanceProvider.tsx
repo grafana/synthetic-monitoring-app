@@ -1,27 +1,28 @@
-import React, { useState, FC, useEffect } from 'react';
+import React, { useState, useEffect, PropsWithChildren } from 'react';
 import { InstanceContext } from 'components/InstanceContext';
-import { GlobalSettings, GrafanaInstances } from 'types';
+import { GlobalSettings, GrafanaInstances, OrgRole } from 'types';
 import { config, getDataSourceSrv, getBackendSrv } from '@grafana/runtime';
 import { SMDataSource } from 'datasource/DataSource';
 import { Spinner } from '@grafana/ui';
 import { AppPluginMeta } from '@grafana/data';
 import { UnprovisionedSetup } from 'components/UnprovisionedSetup';
+import { hasRole } from 'utils';
 
 async function getRulerDatasource(metricDatasourceId?: number) {
-  if (!metricDatasourceId) {
+  if (!metricDatasourceId || !hasRole(OrgRole.ADMIN)) {
     return undefined;
   }
   const basicAuthUserId = await getBackendSrv()
     .get(`api/datasources/${metricDatasourceId}`)
-    .then(settings => settings.basicAuthUser);
-  const rulers = Object.values(config.datasources).filter(ds => ds.type === 'grafana-ruler-datasource');
+    .then((settings) => settings.basicAuthUser);
+  const rulers = Object.values(config.datasources).filter((ds) => ds.type === 'grafana-ruler-datasource');
   const rulerSettings = await Promise.all(
-    rulers.map(ruler => {
+    rulers.map((ruler) => {
       return getBackendSrv().get(`api/datasources/${ruler.id}`);
     })
   );
-  const matchedRuler = rulerSettings.find(ruler => ruler.basicAuthUser === basicAuthUserId);
-  return rulers.find(ruler => ruler.id === matchedRuler.id);
+  const matchedRuler = rulerSettings.find((ruler) => ruler.basicAuthUser === basicAuthUserId);
+  return rulers.find((ruler) => ruler.id === matchedRuler.id);
 }
 
 async function fetchDatasources(
@@ -29,21 +30,31 @@ async function fetchDatasources(
   logsInstanceName: string | undefined
 ): Promise<GrafanaInstances> {
   const dataSourceSrv = getDataSourceSrv();
-  const smApi = (await dataSourceSrv.get('Synthetic Monitoring').catch(e => undefined)) as SMDataSource | undefined;
+  const smApi = (await dataSourceSrv.get('Synthetic Monitoring').catch((e) => undefined)) as SMDataSource | undefined;
   const metricsName = metricInstanceName ?? smApi?.instanceSettings?.jsonData?.metrics?.grafanaName;
-  const metrics = metricsName ? await dataSourceSrv.get(metricsName).catch(e => undefined) : undefined;
+  const metrics = metricsName ? await dataSourceSrv.get(metricsName).catch((e) => undefined) : undefined;
 
   const logsName = logsInstanceName ?? smApi?.instanceSettings?.jsonData?.logs?.grafanaName;
-  const logs = logsName ? await dataSourceSrv.get(logsName).catch(e => undefined) : undefined;
+  const logs = logsName ? await dataSourceSrv.get(logsName).catch((e) => undefined) : undefined;
 
   const alertRuler = await getRulerDatasource(metrics?.id);
+
+  const tenant = await smApi?.getTenant();
+
+  if (!tenant || tenant.status === 1) {
+    // If the tenant does not exist or has been deactivated, short circuit and kick the user back to the setup page
+    return {
+      metrics,
+      logs,
+    } as GrafanaInstances;
+  }
 
   return {
     api: smApi,
     metrics,
     logs,
     alertRuler,
-  };
+  } as GrafanaInstances;
 }
 
 interface Props {
@@ -52,18 +63,23 @@ interface Props {
   meta: AppPluginMeta<GlobalSettings>;
 }
 
-export const InstanceProvider: FC<Props> = ({ children, metricInstanceName, logsInstanceName, meta }) => {
+export const InstanceProvider = ({
+  children,
+  metricInstanceName,
+  logsInstanceName,
+  meta,
+}: PropsWithChildren<Props>) => {
   const [instances, setInstances] = useState<GrafanaInstances | null>(null);
   const [instancesLoading, setInstancesLoading] = useState(true);
   useEffect(() => {
     setInstancesLoading(true);
-    fetchDatasources(metricInstanceName, logsInstanceName).then(loadedInstances => {
+    fetchDatasources(metricInstanceName, logsInstanceName).then((loadedInstances) => {
       if (!loadedInstances.metrics || !loadedInstances.logs) {
         const fallbackMetricDatasourceName =
           loadedInstances.api?.instanceSettings?.jsonData?.metrics?.grafanaName ?? 'Synthetic Monitoring Metrics';
         const fallbackLogsDatasourceName =
           loadedInstances.api?.instanceSettings?.jsonData?.logs?.grafanaName ?? 'Synthetic Monitoring Logs';
-        fetchDatasources(fallbackMetricDatasourceName, fallbackLogsDatasourceName).then(fallbackLoadedInstances => {
+        fetchDatasources(fallbackMetricDatasourceName, fallbackLogsDatasourceName).then((fallbackLoadedInstances) => {
           setInstances(fallbackLoadedInstances);
           setInstancesLoading(false);
         });

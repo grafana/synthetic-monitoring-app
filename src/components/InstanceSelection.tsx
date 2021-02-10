@@ -1,4 +1,4 @@
-import React, { FC, useState } from 'react';
+import React, { useState } from 'react';
 import { Alert, Button } from '@grafana/ui';
 import { HostedInstance } from 'types';
 import { InstanceList } from 'components/InstanceList';
@@ -10,7 +10,7 @@ interface Props {
   error?: string;
 }
 
-export const InstanceSelection: FC<Props> = ({ logsInstances, metricsInstances, onSubmit, error }) => {
+export const InstanceSelection = ({ logsInstances, metricsInstances, onSubmit, error }: Props) => {
   const [selectedMetricsInstance, setSelectedMetricsInstance] = useState<number | undefined>(metricsInstances?.[0].id);
 
   const [selectedLogsInstance, setSelectedLogsInstance] = useState<number | undefined>(logsInstances?.[0].id);

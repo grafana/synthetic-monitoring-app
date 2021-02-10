@@ -15,7 +15,7 @@ import { CheckEditor } from './CheckEditor';
 import { getInstanceMock } from '../../datasource/__mocks__/DataSource';
 import userEvent from '@testing-library/user-event';
 import { InstanceContext } from 'components/InstanceContext';
-import { AppPluginMeta, DataSourceInstanceSettings } from '@grafana/data';
+import { AppPluginMeta, DataSourceSettings } from '@grafana/data';
 jest.setTimeout(60000);
 
 // Mock useAlerts hook
@@ -66,22 +66,18 @@ beforeEach(() => jest.resetAllMocks());
 const selectCheckType = async (checkType: CheckType) => {
   const checkTypeInput = await screen.findByText('PING');
   userEvent.click(checkTypeInput);
-  const selectMenu = await screen.findByLabelText('Select options menu');
-  const option = await within(selectMenu).findByText(checkType.toUpperCase());
-  userEvent.click(option);
+  const selectMenus = await screen.findAllByTestId('select');
+  userEvent.selectOptions(selectMenus[0], checkType);
   await screen.findByText(checkType.toUpperCase());
 };
 
-const openDnsValidations = async () => {
-  await selectCheckType(CheckType.DNS);
-  userEvent.click(await screen.findByText('Validation'));
-};
-
-const selectDnsResponseMatchType = async (responseMatch: ResponseMatchType) => {
-  const responseMatchInput = await screen.findByText('Validate Authority matches');
-  userEvent.click(responseMatchInput);
-  const options = await screen.findAllByText(`Validate ${responseMatch} matches`);
-  userEvent.click(options[options.length - 1]);
+const selectDnsResponseMatchType = async (container: HTMLElement, responseMatch: ResponseMatchType) => {
+  const selectMenus = await within(container).findAllByTestId('select');
+  // const responseMatchInput = selectMenus.find('Validate Authority matches')
+  // userEvent.click(responseMatchInput);
+  userEvent.selectOptions(selectMenus[selectMenus.length - 1], [responseMatch]);
+  // const options = await screen.findAllByText(`Validate ${responseMatch} matches`);
+  // userEvent.click(options[options.length - 1]);
 };
 
 const toggleSection = async (sectionName: string): Promise<HTMLElement> => {
@@ -97,12 +93,18 @@ const submitForm = async () => {
   await waitFor(() => expect(onReturn).toHaveBeenCalledWith(true));
 };
 
+const getSlider = async (formName: string) => {
+  const container = await screen.findByTestId(formName);
+  const input = (await within(container).findByRole('textbox')) as HTMLInputElement;
+  return input;
+};
+
 // Test Renderer
 const renderCheckEditor = async ({ check = defaultCheck, withAlerting = true } = {}) => {
   const api = getInstanceMock();
   const instance = {
     api,
-    alertRuler: withAlerting ? ({} as DataSourceInstanceSettings) : undefined,
+    alertRuler: withAlerting ? ({} as DataSourceSettings) : undefined,
   };
   const meta = {} as AppPluginMeta<GlobalSettings>;
   render(
@@ -193,8 +195,8 @@ describe('PING', () => {
     expect(await screen.findByLabelText('Job Name', { exact: false })).toHaveValue('carne asada');
     expect(await screen.findByLabelText('Target', { exact: false })).toHaveValue('target.com');
     expect(await screen.findByText('burritos')).toBeInTheDocument(); // display name of probe with id 42 returned in mocked listProbes call
-    expect(await screen.findByLabelText('Frequency', { exact: false })).toHaveValue(120);
-    expect(await screen.findByLabelText('Timeout', { exact: false })).toHaveValue(2);
+    expect(await getSlider('frequency')).toHaveValue('120');
+    expect(await getSlider('timeout')).toHaveValue('2');
     expect(await screen.findByLabelText('Enabled', { exact: false })).toBeChecked();
     const advancedOption = await screen.findByText('Advanced options');
     userEvent.click(advancedOption);
@@ -269,8 +271,8 @@ describe('HTTP', () => {
       'https://target.com'
     );
     expect(await screen.findByText('burritos')).toBeInTheDocument(); // display name of probe with id 42 returned in mocked listProbes call
-    expect(await screen.findByLabelText('Frequency', { exact: false })).toHaveValue(120);
-    expect(await screen.findByLabelText('Timeout', { exact: false })).toHaveValue(2);
+    expect(await getSlider('frequency')).toHaveValue('120');
+    expect(await getSlider('timeout')).toHaveValue('2');
 
     const httpSection = await toggleSection('HTTP settings');
     expect(await screen.findByText('GET')).toBeInTheDocument();
@@ -295,11 +297,9 @@ describe('HTTP', () => {
     expect(await within(validation).findByText('100')).toBeInTheDocument();
     expect(await within(validation).findByText('HTTP/1.0')).toBeInTheDocument();
     expect(await within(validation).findByText('Probe fails if SSL is not present.')).toBeInTheDocument();
-    expect(await within(validation).findAllByText('Check fails if response header matches')).toHaveLength(2);
     const [header1, header2] = await within(validation).findAllByPlaceholderText('Header name');
     expect(header1).toHaveValue('a header');
     expect(header2).toHaveValue('a different header');
-    expect(await within(validation).findAllByText('Check fails if response body matches')).toHaveLength(2);
 
     const advancedOptions = await toggleSection('Advanced options');
     expect(await within(advancedOptions).findByPlaceholderText('name')).toHaveValue('a great label');
@@ -330,10 +330,9 @@ describe('HTTP', () => {
       throw new Error('Couldnt find Probe Options');
     }
 
-    userEvent.click(within(probeOptions).getByText('Choose'));
     // Select burritos probe options
-    const probeSelectMenu = await screen.findByLabelText('Select options menu');
-    userEvent.click(await within(probeSelectMenu).findByText('burritos'));
+    const probeSelectMenu = await within(probeOptions).findByTestId('select');
+    userEvent.selectOptions(probeSelectMenu, within(probeSelectMenu).getByText('burritos'));
 
     // HTTP Settings
     await toggleSection('HTTP settings');
@@ -369,20 +368,17 @@ describe('HTTP', () => {
 
     // Validation
     const validationSection = await toggleSection('Validation');
-    const [statusCodeInput, httpVersionInput] = await within(validationSection).findAllByRole('textbox');
-    await act(async () => await userEvent.click(statusCodeInput));
-    await act(
-      async () =>
-        await userEvent.click(await within(await screen.findByLabelText('Select options menu')).findByText('100'))
-    );
-    userEvent.click(httpVersionInput);
-    await act(
-      async () =>
-        await userEvent.click(await within(await screen.findByLabelText('Select options menu')).findByText('HTTP/1.0'))
-    );
+    const [statusCodeInput, httpVersionInput] = await within(validationSection).findAllByTestId('select');
+    await userEvent.selectOptions(statusCodeInput, [within(validationSection).getByText('100')]);
+    await userEvent.selectOptions(httpVersionInput, [within(validationSection).getByText('HTTP/1.0')]);
     userEvent.click(await screen.findByRole('button', { name: 'Add Regex Validation' }));
-    userEvent.click(await within(validationSection).findByText('Field name'));
-    userEvent.click(await within(validationSection).findByText('Check fails if response header matches'));
+    userEvent.click(await screen.findByRole('button', { name: 'Add Regex Validation' }));
+    const selectMenus = await within(validationSection).findAllByTestId('select');
+    const [matchSelect1, matchSelect2] = selectMenus.slice(-2);
+    userEvent.selectOptions(
+      matchSelect1,
+      within(validationSection).getAllByText('Check fails if response header matches')[0]
+    );
 
     await act(
       async () =>
@@ -390,15 +386,13 @@ describe('HTTP', () => {
     );
 
     await act(
-      async () => await userEvent.type(await within(validationSection).findByPlaceholderText('Regex'), 'a header regex')
+      async () =>
+        await userEvent.type(await within(validationSection).getAllByPlaceholderText('Regex')[0], 'a header regex')
     );
 
-    userEvent.click(await screen.findByRole('button', { name: 'Add Regex Validation' }));
-    userEvent.click(await within(validationSection).findByText('Field name'));
-    userEvent.click(
-      await within(validationSection).findByText('Check fails if response body matches', { exact: false })
-    );
-    const regexFields = await within(validationSection).findAllByPlaceholderText('Regex');
+    const option = within(validationSection).getAllByText('Check fails if response body matches')[1];
+    userEvent.selectOptions(matchSelect2, option);
+    const regexFields = await within(validationSection).getAllByPlaceholderText('Regex');
     await act(async () => await userEvent.type(regexFields[1], 'a body regex'));
 
     const [allowMissing, invertMatch] = await within(validationSection).findAllByRole('checkbox');
@@ -466,7 +460,8 @@ describe('DNS', () => {
   describe('Validations', () => {
     it('handles authority validations', async () => {
       const instance = await renderCheckEditor({ check: getMinimumCheck() });
-      await openDnsValidations();
+      await selectCheckType(CheckType.DNS);
+      await toggleSection('Validation');
       const addRegex = await screen.findByRole('button', { name: 'Add RegEx Validation' });
       userEvent.click(addRegex);
       userEvent.click(addRegex);
@@ -513,12 +508,13 @@ describe('DNS', () => {
 
     it('handles answer validations', async () => {
       const instance = await renderCheckEditor({ check: getMinimumCheck() });
-      await openDnsValidations();
+      await selectCheckType(CheckType.DNS);
+      const dnsValidations = await toggleSection('Validation');
       const addRegex = await screen.findByRole('button', { name: 'Add RegEx Validation' });
       userEvent.click(addRegex);
-      await selectDnsResponseMatchType(ResponseMatchType.Answer);
+      await selectDnsResponseMatchType(dnsValidations, ResponseMatchType.Answer);
       userEvent.click(addRegex);
-      await selectDnsResponseMatchType(ResponseMatchType.Answer);
+      await selectDnsResponseMatchType(dnsValidations, ResponseMatchType.Answer);
       const expressionInputs = await screen.findAllByPlaceholderText('Type expression');
       await act(() => userEvent.type(expressionInputs[0], 'not inverted validation'));
       await userEvent.type(expressionInputs[1], 'inverted validation');
@@ -563,12 +559,13 @@ describe('DNS', () => {
 
     it('handles additional validations', async () => {
       const instance = await renderCheckEditor({ check: getMinimumCheck() });
-      await openDnsValidations();
+      await selectCheckType(CheckType.DNS);
+      const DnsValidations = await toggleSection('Validation');
       const addRegex = await screen.findByRole('button', { name: 'Add RegEx Validation' });
       userEvent.click(addRegex);
-      await selectDnsResponseMatchType(ResponseMatchType.Additional);
+      await selectDnsResponseMatchType(DnsValidations, ResponseMatchType.Additional);
       userEvent.click(addRegex);
-      await selectDnsResponseMatchType(ResponseMatchType.Additional);
+      await selectDnsResponseMatchType(DnsValidations, ResponseMatchType.Additional);
       const expressionInputs = await screen.findAllByPlaceholderText('Type expression');
       await act(() => userEvent.type(expressionInputs[0], 'not inverted validation'));
       await userEvent.type(expressionInputs[1], 'inverted validation');

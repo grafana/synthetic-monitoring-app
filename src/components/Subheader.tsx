@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import React from 'react';
 import { css } from 'emotion';
 
 interface Props {
@@ -6,7 +6,7 @@ interface Props {
   className?: string;
 }
 
-export const Subheader: FC<Props> = ({ children, className }) => (
+export const Subheader = ({ children, className }: Props) => (
   <h3
     className={css`
       font-size: 19px;

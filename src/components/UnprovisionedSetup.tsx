@@ -1,4 +1,4 @@
-import React, { FC, useState } from 'react';
+import React, { useState } from 'react';
 import TenantApiSetupForm from 'components/TenantAPISetupForm';
 import { DEFAULT_API_HOST } from 'components/constants';
 import { InstanceSelection } from 'components/InstanceSelection';
@@ -36,7 +36,7 @@ We need to do the following things in the setup process:
 9. Reload the page and let the routing take control
 */
 
-export const UnprovisionedSetup: FC<Props> = ({ pluginId, pluginName }) => {
+export const UnprovisionedSetup = ({ pluginId }: Props) => {
   const [apiSetup, setApiSetup] = useState<ApiSetupValues | undefined>();
   const [apiSetupError, setApiSetupError] = useState<string | undefined>();
   const [tenantInfo, setTenantInfo] = useState<RegistrationInfo | undefined>();
@@ -109,8 +109,8 @@ export const UnprovisionedSetup: FC<Props> = ({ pluginId, pluginName }) => {
     return (
       <Container margin="lg" padding="lg">
         <InstanceSelection
-          logsInstances={tenantInfo.instances.filter(instance => instance.type === 'logs')}
-          metricsInstances={tenantInfo.instances.filter(instance => instance.type === 'prometheus')}
+          logsInstances={tenantInfo.instances.filter((instance) => instance.type === 'logs')}
+          metricsInstances={tenantInfo.instances.filter((instance) => instance.type === 'prometheus')}
           onSubmit={onInstanceSelectionSubmit}
           error={instanceSelectionError}
         />

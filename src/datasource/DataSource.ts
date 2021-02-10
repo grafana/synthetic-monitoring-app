@@ -18,7 +18,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     super(instanceSettings);
   }
 
-  getMetricsDS(): DataSourceInstanceSettings {
+  getMetricsDS() {
     return config.datasources[this.instanceSettings.jsonData.metrics.grafanaName];
   }
 
@@ -160,6 +160,30 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
         method: 'POST',
         url: `${this.instanceSettings.url}/sm/check/update`,
         data: check,
+      })
+      .then((res: any) => {
+        return res.data;
+      });
+  }
+
+  async getTenant(): Promise<any> {
+    return getBackendSrv()
+      .datasourceRequest({ method: 'GET', url: `${this.instanceSettings.url}/sm/tenant` })
+      .then((res: any) => {
+        return res.data;
+      });
+  }
+
+  async disableTenant(): Promise<any> {
+    const tenant = await this.getTenant();
+    return getBackendSrv()
+      .datasourceRequest({
+        method: 'POST',
+        url: `${this.instanceSettings.url}/sm/tenant/update`,
+        data: {
+          ...tenant,
+          status: 1,
+        },
       })
       .then((res: any) => {
         return res.data;

@@ -7,6 +7,7 @@ import { getInstanceMock, instanceSettings } from '../datasource/__mocks__/DataS
 import * as runtime from '@grafana/runtime';
 import { AppPluginMeta } from '@grafana/data';
 import { GlobalSettings } from 'types';
+jest.unmock('@grafana/runtime');
 jest.setTimeout(10000);
 
 interface RenderArgs {

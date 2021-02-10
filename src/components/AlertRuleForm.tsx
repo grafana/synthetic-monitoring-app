@@ -1,6 +1,6 @@
 import { AppEvents, GrafanaTheme, SelectableValue } from '@grafana/data';
 import { Alert, Button, Field, HorizontalGroup, Icon, Input, Label, Select, useStyles } from '@grafana/ui';
-import React, { FC, useState, useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import { Controller, FormContext, useForm } from 'react-hook-form';
 import { AlertRule, AlertSensitivity, Label as LabelType, TimeUnits } from 'types';
 import { ALERT_SENSITIVITY_OPTIONS, TIME_UNIT_OPTIONS } from './constants';
@@ -71,7 +71,7 @@ const getAlertFormValues = (rule: AlertRule): AlertFormValues | undefined => {
     timeCount: parseInt(timeCount, 10),
     timeUnit: timeOption ?? {},
     sensitivity: sensitivityOption,
-    annotations: Object.keys(rule.annotations ?? {}).map(annotationName => ({
+    annotations: Object.keys(rule.annotations ?? {}).map((annotationName) => ({
       name: annotationName,
       value: rule.annotations?.[annotationName] ?? '',
     })),
@@ -143,7 +143,7 @@ type Props = {
   onSubmit: (alertValues: AlertFormValues) => Promise<FetchResponse<unknown>>;
 };
 
-export const AlertRuleForm: FC<Props> = ({ rule, onSubmit }) => {
+export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
   const defaultValues = getAlertFormValues(rule);
   const { instance } = useContext(InstanceContext);
   const styles = useStyles(getStyles);

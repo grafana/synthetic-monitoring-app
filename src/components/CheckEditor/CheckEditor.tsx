@@ -1,4 +1,4 @@
-import React, { FC, useState, useMemo, useContext } from 'react';
+import React, { useState, useMemo, useContext } from 'react';
 import { css } from 'emotion';
 import { Button, ConfirmModal, Field, Input, HorizontalGroup, Select, Legend, Alert, useStyles } from '@grafana/ui';
 import { useAsyncCallback } from 'react-async-hook';
@@ -44,7 +44,7 @@ const getStyles = (theme: GrafanaTheme) => ({
   `,
 });
 
-export const CheckEditor: FC<Props> = ({ check, onReturn }) => {
+export const CheckEditor = ({ check, onReturn }: Props) => {
   const {
     instance: { api },
   } = useContext(InstanceContext);
@@ -137,7 +137,7 @@ export const CheckEditor: FC<Props> = ({ check, onReturn }) => {
             error={formMethods.errors.target?.message}
             rules={{
               required: true,
-              validate: target => validateTarget(selectedCheckType, target),
+              validate: (target) => validateTarget(selectedCheckType, target),
             }}
             disabled={!isEditor}
           />

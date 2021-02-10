@@ -1,6 +1,6 @@
-import React, { FC, useState } from 'react';
+import React, { useState } from 'react';
 import { BigValueColorMode, BigValueGraphMode, BigValue, Container } from '@grafana/ui';
-import { GraphSeriesValue, DisplayValue } from '@grafana/data';
+import { DisplayValue, ArrayVector, FieldType } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import { useMetricData } from 'hooks/useMetricData';
 
@@ -43,19 +43,22 @@ const getSparklineValue = (data: any[], loading: boolean, showSparkline: boolean
     return;
   }
 
-  const points: GraphSeriesValue[][] =
+  const points =
     data[0]?.values?.map((value: string[], index: number) => {
-      return [index, parseFloat(value[1])];
+      return parseFloat(value[1]);
     }) ?? [];
 
   return {
-    yMin: 0,
-    yMax: 150,
-    data: points,
+    y: {
+      name: '',
+      values: new ArrayVector(points),
+      type: FieldType.number,
+      config: {},
+    },
   };
 };
 
-export const UptimeGauge: FC<Props> = ({ labelNames, labelValues, height, width, sparkline, onClick }) => {
+export const UptimeGauge = ({ labelNames, labelValues, height, width, sparkline, onClick }: Props) => {
   const filter = labelNames
     .reduce<string[]>((filters, labelName, index) => {
       filters.push(`${labelName}="${labelValues[index]}"`);

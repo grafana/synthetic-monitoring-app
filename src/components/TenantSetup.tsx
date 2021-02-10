@@ -15,7 +15,7 @@ export class TenantSetup extends PureComponent {
   render() {
     const { instance } = this.context;
     if (!instance.api) {
-      return <div>Loading...</div>;
+      return null;
     }
 
     return (

@@ -1,4 +1,4 @@
-import React, { FC, useState, useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import { css } from 'emotion';
 import {
   Modal,
@@ -29,7 +29,7 @@ const minInputWidth = css`
   min-width: 200px;
 `;
 
-const ProbeEditor: FC<Props> = ({ probe, onReturn }) => {
+const ProbeEditor = ({ probe, onReturn }: Props) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [probeToken, setProbeToken] = useState('');

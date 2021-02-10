@@ -1,4 +1,4 @@
-import React, { FC, useState, Fragment } from 'react';
+import React, { useState, Fragment } from 'react';
 import { css } from 'emotion';
 import {
   Container,
@@ -29,7 +29,7 @@ const RESPONSE_MATCH_OPTIONS = [
   { label: `Validate ${ResponseMatchType.Additional} matches`, value: ResponseMatchType.Additional },
 ];
 
-const DnsSettingsForm: FC<Props> = ({ isEditor }) => {
+const DnsSettingsForm = ({ isEditor }: Props) => {
   const { spacing } = useTheme();
 
   const { register, control } = useFormContext();

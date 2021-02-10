@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import React from 'react';
 import { css, cx } from 'emotion';
 import { useStyles, Checkbox, Label } from '@grafana/ui';
 import { GrafanaTheme } from '@grafana/data';
@@ -29,7 +29,7 @@ interface Props {
   onChange?: () => void;
 }
 
-export const HorizontalCheckboxField: FC<Props> = ({
+export const HorizontalCheckboxField = ({
   disabled,
   id,
   name,
@@ -38,7 +38,7 @@ export const HorizontalCheckboxField: FC<Props> = ({
   className,
   value,
   onChange,
-}) => {
+}: Props) => {
   const styles = useStyles(getStyles);
   const { register } = useFormContext();
 

@@ -1,4 +1,4 @@
-import React, { FC, useContext } from 'react';
+import React, { useContext } from 'react';
 import { css } from 'emotion';
 import { Badge, Button, HorizontalGroup } from '@grafana/ui';
 import { InstanceContext } from 'components/InstanceContext';
@@ -14,7 +14,7 @@ interface Props {
 
 const labelsToString = (labels: Label[]) => labels.map(({ name, value }) => `${name}=${value}`);
 
-export const ProbeList: FC<Props> = ({ probes, onAddNew, onSelectProbe }) => {
+export const ProbeList = ({ probes, onAddNew, onSelectProbe }: Props) => {
   const { instance, loading: instanceLoading } = useContext(InstanceContext);
 
   if (instanceLoading || !instance) {
@@ -42,8 +42,8 @@ export const ProbeList: FC<Props> = ({ probes, onAddNew, onSelectProbe }) => {
       )}
       {probes
         .sort((probeA, probeB) => probeA.name.localeCompare(probeB.name))
-        .filter(probe => Boolean(probe.id))
-        .map(probe => {
+        .filter((probe) => Boolean(probe.id))
+        .map((probe) => {
           const onlineTxt = probe.online ? 'Online' : 'Offline';
           const onlineIcon = probe.online ? 'heart' : 'heart-break';
           const color = probe.online ? 'green' : 'red';
