@@ -4,7 +4,6 @@ import { DashboardMeta, GlobalSettings } from 'types';
 import { WelcomePage } from 'page/WelcomePage';
 import { ChecksPage } from 'page/ChecksPage';
 import { ProbesPage } from 'page/ProbesPage';
-import { TenantSetup } from 'components/TenantSetup';
 import { InstanceContext } from './InstanceContext';
 import { getLocationSrv } from '@grafana/runtime';
 import { DashboardInfo } from 'datasource/types';
@@ -20,7 +19,7 @@ type Tab = {
   enabledByFeatureFlag?: string;
 };
 
-const pagesToRedirectIfNotInitialized = new Set(['checks', 'probes', 'config', 'alerts', 'redirect']);
+const pagesToRedirectIfNotInitialized = new Set(['checks', 'probes', 'alerts', 'redirect']);
 
 const pagesToRedirectIfInitialized = new Set(['setup']);
 
@@ -51,10 +50,6 @@ const tabs: Tab[] = [
   {
     label: 'Alerts',
     id: 'alerts',
-  },
-  {
-    label: 'Config',
-    id: 'config',
   },
 ];
 
@@ -178,8 +173,6 @@ export const PluginTabs = ({ query, onNavChanged, path, meta }: AppRootProps<Glo
         return <ProbesPage id={query.id} />;
       case 'alerts':
         return <Alerting />;
-      case 'config':
-        return <TenantSetup />;
       case 'checks':
       default:
         return <ChecksPage id={query.id} />;
@@ -200,9 +193,8 @@ export const PluginTabs = ({ query, onNavChanged, path, meta }: AppRootProps<Glo
             onClick={() => {
               getLocationSrv().update({
                 partial: false,
-                query: {
-                  page: 'config',
-                },
+                path: 'plugins/grafana-synthetic-monitoring-app/',
+                query: {},
               });
               skipDashboardUpdate();
             }}
