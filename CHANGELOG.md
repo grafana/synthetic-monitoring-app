@@ -1,3 +1,10 @@
+## [0.7.11](https://github.com/grafana/synthetic-monitoring-app/compare/0.7.10...0.7.11) (2021-02-11)
+
+
+### Bug Fixes
+
+* remove broken config link ([#202](https://github.com/grafana/synthetic-monitoring-app/issues/202)) ([b1287e3](https://github.com/grafana/synthetic-monitoring-app/commit/b1287e35ed339cdf7c2501cade5ae6fc9a47bbee))
+
 ## [0.7.10](https://github.com/grafana/synthetic-monitoring-app/compare/0.7.9...0.7.10) (2021-02-11)
 
 ## [0.7.9](https://github.com/grafana/synthetic-monitoring-app/compare/0.7.8...0.7.9) (2021-02-11)
