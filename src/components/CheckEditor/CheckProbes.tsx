@@ -104,7 +104,13 @@ export default class CheckProbes extends PureComponent<CheckProbesProps, CheckPr
                 <Button onClick={this.onAllLocations} disabled={!isEditor} variant="secondary" size="sm" type="button">
                   All&nbsp;&nbsp;
                 </Button>
-                <Button onClick={this.onClearLocations} disabled={!isEditor} variant="secondary" size="sm" type="reset">
+                <Button
+                  onClick={this.onClearLocations}
+                  disabled={!isEditor}
+                  variant="secondary"
+                  size="sm"
+                  type="button"
+                >
                   Clear
                 </Button>
               </HorizontalGroup>
