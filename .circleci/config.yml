@@ -140,7 +140,9 @@ jobs:
           command: ./node_modules/.bin/grafana-toolkit plugin:ci-build
       - run:
           name: Move results to ci folder
-          command: ./node_modules/.bin/grafana-toolkit plugin:ci-build --finish
+          command: |
+            ./node_modules/.bin/grafana-toolkit plugin:sign
+            ./node_modules/.bin/grafana-toolkit plugin:ci-build --finish
       - run:
           name: Package distribution
           command: |
@@ -219,7 +221,6 @@ jobs:
       - run:
           name: 'Publish Release on GitHub'
           command: |
-            ./node_modules/.bin/grafana-toolkit plugin:sign
             ./node_modules/.bin/grafana-toolkit plugin:github-publish
       - store_artifacts:
           path: ci
