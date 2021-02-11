@@ -157,6 +157,7 @@ describe('good targets', () => {
 
   it('should accept hostnames with leading numbers', () => {
     expect(CheckValidation.target(CheckType.HTTP, 'http://500grafana.com')).toBe(undefined);
+    expect(CheckValidation.target(CheckType.HTTP, 'http://www.500grafana.com')).toBe(undefined);
   });
 
   it('should accept https schema as HTTP target', () => {
