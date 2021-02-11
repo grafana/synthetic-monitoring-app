@@ -1,3 +1,10 @@
+## [0.7.12](https://github.com/grafana/synthetic-monitoring-app/compare/0.7.11...0.7.12) (2021-02-11)
+
+
+### Bug Fixes
+
+* prevent clearing probes from clearing the whole form ([#203](https://github.com/grafana/synthetic-monitoring-app/issues/203)) ([a031656](https://github.com/grafana/synthetic-monitoring-app/commit/a0316568576dd360107f5eae5b9f9b531f5d560d))
+
 ## [0.7.11](https://github.com/grafana/synthetic-monitoring-app/compare/0.7.10...0.7.11) (2021-02-11)
 
 
