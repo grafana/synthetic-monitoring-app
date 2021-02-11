@@ -1,1 +1,0 @@
-export { CheckEditor } from './CheckEditor';
