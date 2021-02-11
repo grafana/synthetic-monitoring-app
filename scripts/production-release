@@ -25,24 +25,16 @@ gcom() {
 
 GIT_TAG=$(git tag --points-at HEAD)
 VERSION="${GIT_TAG//v}"
-URL='https://github.com/grafana/synthetic-monitoring-app/releases/download/'"$GIT_TAG"'/grafana-synthetic-monitoring-app-'"${VERSION}"'.zip'
+PLUGIN_URL='https://github.com/grafana/synthetic-monitoring-app/releases/download/'"$GIT_TAG"'/grafana-synthetic-monitoring-app-'"${VERSION}"'.zip'
+MD5URL='https://github.com/grafana/synthetic-monitoring-app/releases/download/'"$GIT_TAG"'/info.json'
 PLUGIN_NAME='grafana-synthetic-monitoring-app'
 
-# Download release assets from github
-mkdir -p ./ci/builds
-curl -L -o "./ci/builds/latest.zip" $URL
-# Get a package hash for publishing to g-com
-PKG_SUM=$(md5sum ./ci/builds/latest.zip | cut -d' ' -f1)
+# Get a package hash for publishing to g-com from published github assets
+PKG_SUM=$(curl -L -H "Accept: application/json" $URL | jq .plugin.md5)
+
 
 # Publish version to gcom plugin listings
 gcom /plugins \
-  -d "download[any][url]=$URL" \
+  -d "download[any][url]=$PLUGIN_URL" \
   -d "download[any][md5]=$PKG_SUM" \
   -d url=https://github.com/grafana/synthetic-monitoring-app
-
-
-# Push new version to GCS for hosted instances to consume
-# echo ${GCLOUD_SERVICE_KEY} | gcloud auth activate-service-account --key-file=-
-# gsutil -m cp -r "./ci/builds/latest.zip" "gs://integration-artifacts/$PLUGIN_NAME/latest/$PLUGIN_NAME.zip"
-
-# gsutil ls -r gs://integration-artifacts/${PLUGIN_NAME}
