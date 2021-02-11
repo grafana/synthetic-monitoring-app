@@ -1,1 +1,0 @@
-export { TenantView } from './TenantView';
