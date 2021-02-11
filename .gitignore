@@ -33,3 +33,4 @@ temp/
 .idea/
 
 .vscode
+.DS_Store
