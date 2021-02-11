@@ -137,10 +137,8 @@ jobs:
             - build-cache-{{ .Environment.CACHE_VERSION }}-{{ checksum "yarn.lock" }}
       - run:
           name: Build and test frontend
-          command: ./node_modules/.bin/grafana-toolkit plugin:ci-build
-      - run:
-          name: Move results to ci folder
           command: |
+            ./node_modules/.bin/grafana-toolkit plugin:build
             ./node_modules/.bin/grafana-toolkit plugin:sign
             ./node_modules/.bin/grafana-toolkit plugin:ci-build --finish
       - run:
