@@ -35,7 +35,7 @@ export const instanceSettings: DataSourceInstanceSettings<SMOptions> = {
     module: 'plugins/synthetic-monitoring-datasource/module',
     baseUrl: 'public/plugins/synthetic-monitoring-datasource',
     category: '',
-    signature: PluginSignatureStatus.unsigned,
+    signature: PluginSignatureStatus.valid,
     annotations: false,
     metrics: true,
     alerting: false,
