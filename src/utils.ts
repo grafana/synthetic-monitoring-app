@@ -256,3 +256,11 @@ export const toBase64 = (value: string) => {
     return value;
   }
 };
+
+export const fromBase64 = (value: string) => {
+  try {
+    return atob(value);
+  } catch {
+    return value;
+  }
+};

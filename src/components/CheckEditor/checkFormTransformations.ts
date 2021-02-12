@@ -28,6 +28,7 @@ import {
   DnsResponseCodes,
   AlertSensitivity,
   TCPQueryResponse,
+  TLSConfig,
 } from 'types';
 
 import {
@@ -39,8 +40,10 @@ import {
   fallbackCheck,
   ALERT_SENSITIVITY_OPTIONS,
 } from 'components/constants';
-import { checkType, toBase64 } from 'utils';
+import { checkType, fromBase64, toBase64 } from 'utils';
 import isBase64 from 'is-base64';
+
+const ensureBase64 = (value: string) => (isBase64(value) ? value : toBase64(value));
 
 export function selectableValueFrom<T>(value: T, label?: string): SelectableValue<T> {
   const labelValue = String(value);
@@ -127,6 +130,20 @@ const getHttpSettingsSslValue = (failIfSSL: boolean, failIfNotSSL: boolean): Sel
   return HTTP_SSL_OPTIONS[0];
 };
 
+const getTlsConfigFormValues = (tlsConfig?: TLSConfig) => {
+  if (!tlsConfig) {
+    return {};
+  }
+  return {
+    tlsConfig: {
+      ...tlsConfig,
+      caCert: fromBase64(tlsConfig.caCert),
+      clientCert: fromBase64(tlsConfig.clientCert),
+      clientKey: fromBase64(tlsConfig.clientKey),
+    },
+  };
+};
+
 const getHttpRegexValidationFormValues = (
   validationSettings: HttpSettingsValidations
 ): HttpRegexValidationFormValue[] => {
@@ -165,6 +182,7 @@ const getHttpSettingsFormValues = (settings: Settings): HttpSettingsFormValues =
     failIfHeaderMatchesRegexp,
     failIfHeaderNotMatchesRegexp,
     noFollowRedirects,
+    tlsConfig,
     ...pickedSettings
   } = httpSettings;
 
@@ -174,8 +192,12 @@ const getHttpSettingsFormValues = (settings: Settings): HttpSettingsFormValues =
     failIfHeaderMatchesRegexp,
     failIfHeaderNotMatchesRegexp,
   });
+
+  const transformedTlsConfig = getTlsConfigFormValues(tlsConfig);
+
   return {
     ...pickedSettings,
+    ...transformedTlsConfig,
     followRedirects: !noFollowRedirects,
     sslOptions: getHttpSettingsSslValue(httpSettings.failIfSSL ?? false, httpSettings.failIfNotSSL ?? false),
     validStatusCodes: httpSettings.validStatusCodes?.map((statusCode) => selectableValueFrom(statusCode)) ?? [],
@@ -191,28 +213,20 @@ const getTcpQueryResponseFormValues = (queryResponses?: TCPQueryResponse[]) => {
   if (!queryResponses) {
     return undefined;
   }
-  return queryResponses.map(({ send, expect, startTLS }) => {
-    try {
-      return {
-        startTLS,
-        send: atob(send),
-        expect: atob(expect),
-      };
-    } catch {
-      return {
-        startTLS,
-        send,
-        expect,
-      };
-    }
-  });
+  return queryResponses.map(({ send, expect, startTLS }) => ({
+    startTLS,
+    send: fromBase64(send),
+    expect: fromBase64(expect),
+  }));
 };
 
 const getTcpSettingsFormValues = (settings: Settings): TcpSettingsFormValues => {
   const tcpSettings = settings.tcp ?? (fallbackSettings(CheckType.TCP) as TcpSettings);
   const formattedQueryResponse = getTcpQueryResponseFormValues(tcpSettings.queryResponse);
+  const tlsConfig = getTlsConfigFormValues(tcpSettings.tlsConfig);
   return {
     ...tcpSettings,
+    ...tlsConfig,
     ipVersion: selectableValueFrom(tcpSettings.ipVersion),
     queryResponse: formattedQueryResponse,
   };
@@ -336,6 +350,21 @@ const getHttpSslOptionsFromFormValue = (sslOption: HttpSslOption): Pick<HttpSett
   }
 };
 
+const getTlsConfigFromFormValues = (tlsConfig?: TLSConfig) => {
+  if (!tlsConfig) {
+    return {};
+  }
+  return {
+    tlsConfig: {
+      clientCert: ensureBase64(tlsConfig.clientCert),
+      caCert: ensureBase64(tlsConfig.caCert),
+      clientKey: ensureBase64(tlsConfig.clientKey),
+      insecureSkipVerify: tlsConfig.insecureSkipVerify,
+      serverName: tlsConfig.serverName,
+    },
+  };
+};
+
 type HttpSettingsValidations = Pick<
   HttpSettings,
   | 'failIfBodyMatchesRegexp'
@@ -404,13 +433,16 @@ const getHttpSettings = (
   const validationRegexes = getHttpRegexValidationsFromFormValue(settings.regexValidations ?? []);
 
   // We need to pick the sslOptions key out of the settings, since the API doesn't expect this key
-  const { sslOptions, regexValidations, followRedirects, ...mergedSettingsToKeep } = mergedSettings;
+  const { sslOptions, regexValidations, followRedirects, tlsConfig, ...mergedSettingsToKeep } = mergedSettings;
+
+  const transformedTlsConfig = getTlsConfigFromFormValues(tlsConfig);
 
   return {
     ...fallbackValues,
     ...mergedSettingsToKeep,
     ...sslConfig,
     ...validationRegexes,
+    ...transformedTlsConfig,
     noFollowRedirects: !followRedirects,
     method,
     headers: formattedHeaders,
@@ -427,8 +459,8 @@ const getTcpQueryResponseFromFormFields = (queryResponses?: TCPQueryResponse[]) 
   return queryResponses.map(({ send, expect, startTLS }) => {
     return {
       startTLS,
-      send: isBase64(send) ? send : toBase64(send),
-      expect: isBase64(expect) ? expect : toBase64(expect),
+      send: ensureBase64(send),
+      expect: ensureBase64(expect),
     };
   });
 };
@@ -442,9 +474,13 @@ const getTcpSettings = (
     ...(defaultSettings ?? {}),
     ...settings,
   };
+
+  const tlsConfig = getTlsConfigFromFormValues(mergedSettings.tlsConfig);
+
   return {
     ...fallbackValues,
     ...mergedSettings,
+    ...tlsConfig,
     ipVersion: getValueFromSelectable(settings?.ipVersion ?? defaultSettings?.ipVersion) ?? fallbackValues.ipVersion,
     queryResponse: getTcpQueryResponseFromFormFields(settings?.queryResponse),
   };
