@@ -1,3 +1,10 @@
+## [0.7.14](https://github.com/grafana/synthetic-monitoring-app/compare/0.7.13...0.7.14) (2021-02-12)
+
+
+### Bug Fixes
+
+* encode/decode tls certificates to/from base 64 ([#205](https://github.com/grafana/synthetic-monitoring-app/issues/205)) ([39daa19](https://github.com/grafana/synthetic-monitoring-app/commit/39daa19bd57c0f2bedac1118b8f965c4f120ab7d))
+
 ## [0.7.13](https://github.com/grafana/synthetic-monitoring-app/compare/0.7.12...0.7.13) (2021-02-11)
 
 ## [0.7.12](https://github.com/grafana/synthetic-monitoring-app/compare/0.7.11...0.7.12) (2021-02-11)
