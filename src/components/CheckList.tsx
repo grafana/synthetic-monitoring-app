@@ -2,26 +2,12 @@
 import React, { useState } from 'react';
 
 // Types
-import { OrgRole, Check, Label, GrafanaInstances, CheckType } from 'types';
-import {
-  Button,
-  IconButton,
-  HorizontalGroup,
-  Icon,
-  VerticalGroup,
-  Container,
-  Select,
-  Input,
-  Pagination,
-  InfoBox,
-} from '@grafana/ui';
-import { css } from 'emotion';
+import { OrgRole, Check, Label, GrafanaInstances } from 'types';
+import { Button, Icon, Select, Input, Pagination, InfoBox } from '@grafana/ui';
 import { unEscapeStringFromRegex, escapeStringForRegex } from '@grafana/data';
-import { getLocationSrv } from '@grafana/runtime';
-import { CheckHealth } from 'components/CheckHealth';
-import { UptimeGauge } from 'components/UptimeGauge';
-import { hasRole, dashboardUID, checkType as getCheckType, matchStrings } from 'utils';
+import { hasRole, checkType as getCheckType, matchStrings } from 'utils';
 import { CHECK_FILTER_OPTIONS } from './constants';
+import { CheckCard } from './CheckCard';
 
 const CHECKS_PER_PAGE = 15;
 
@@ -65,22 +51,9 @@ export const CheckList = ({ instance, onAddNewClick, checks }: Props) => {
   const [typeFilter, setTypeFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
 
-  const showDashboard = (check: Check, checkType: CheckType) => {
-    const target = dashboardUID(checkType, instance.api);
-
-    if (!target) {
-      console.log('dashboard not found.', checkType);
-      return;
-    }
-
-    getLocationSrv().update({
-      partial: false,
-      path: `d/${target.uid}`,
-      query: {
-        'var-instance': check.target,
-        'var-job': check.job,
-      },
-    });
+  const handleLabelSelect = (label: Label) => {
+    setSearchFilter(`${label.name}=${label.value}`);
+    setCurrentPage(1);
   };
 
   if (!checks) {
@@ -107,7 +80,9 @@ export const CheckList = ({ instance, onAddNewClick, checks }: Props) => {
   }
 
   const filteredChecks = checks
-    .filter((check) => matchesFilterType(check, typeFilter) && matchesSearchFilter(check, searchFilter))
+    .filter(
+      (check) => matchesFilterType(check, typeFilter) && matchesSearchFilter(check, searchFilter) && Boolean(check.id)
+    )
     .sort((a, b) => b.job.localeCompare(a.job));
 
   const totalPages = Math.ceil(checks.length / CHECKS_PER_PAGE);
@@ -149,79 +124,7 @@ export const CheckList = ({ instance, onAddNewClick, checks }: Props) => {
       <section className="card-section card-list-layout-list">
         <ol className="card-list">
           {filteredChecks
-            .map((check, index) => {
-              if (!check.id) {
-                return null;
-              }
-              const checkType = getCheckType(check.settings);
-              return (
-                <li className="card-item-wrapper" key={index} aria-label="check-card">
-                  <a
-                    className="card-item"
-                    onClick={() =>
-                      getLocationSrv().update({
-                        partial: true,
-                        query: {
-                          id: check.id,
-                        },
-                      })
-                    }
-                  >
-                    <HorizontalGroup justify="space-between">
-                      <div className="card-item-body">
-                        <figure className="card-item-figure">
-                          <CheckHealth check={check} />
-                        </figure>
-                        <VerticalGroup>
-                          <div className="card-item-name">{check.target}</div>
-                          <div className="card-item-sub-name">{check.job}</div>
-                        </VerticalGroup>
-                      </div>
-                      <HorizontalGroup justify="flex-end">
-                        <div className="card-item-header">
-                          <div className="card-item-type">{checkType}</div>
-                          {check.labels.map((label: Label, index) => (
-                            <Button
-                              variant="secondary"
-                              key={index}
-                              className={css`
-                                border: none;
-                                background: inherit;
-                              `}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSearchFilter(`${label.name}=${label.value}`);
-                                setCurrentPage(1);
-                              }}
-                              type="button"
-                            >
-                              {label.name}={label.value}
-                            </Button>
-                          ))}
-                        </div>
-                        <Container margin="lg">
-                          <IconButton
-                            name="apps"
-                            size="xl"
-                            onClick={(e) => {
-                              showDashboard(check, checkType);
-                              e.stopPropagation();
-                            }}
-                          />
-                        </Container>
-                        <UptimeGauge
-                          labelNames={['instance', 'job']}
-                          labelValues={[check.target, check.job]}
-                          height={70}
-                          width={150}
-                          sparkline={false}
-                        />
-                      </HorizontalGroup>
-                    </HorizontalGroup>
-                  </a>
-                </li>
-              );
-            })
+            .map((check, index) => <CheckCard check={check} key={index} onLabelSelect={handleLabelSelect} />)
             .slice((currentPage - 1) * CHECKS_PER_PAGE, currentPage * CHECKS_PER_PAGE)}
         </ol>
       </section>
