@@ -142,11 +142,11 @@ export const CheckCard = ({ check, onLabelSelect }: Props) => {
         <SuccessRateGauge
           labelNames={['instance', 'job']}
           labelValues={[check.target, check.job]}
-          height={70}
-          width={150}
+          height={75}
+          width={120}
           sparkline={false}
         />
-        <LatencyGauge target={check.target} job={check.job} height={70} width={150} />
+        <LatencyGauge target={check.target} job={check.job} height={75} width={120} />
       </div>
     </div>
   );
