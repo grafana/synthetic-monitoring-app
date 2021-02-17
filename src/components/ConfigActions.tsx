@@ -1,22 +1,39 @@
-import { getLocationSrv } from '@grafana/runtime';
+import { getBackendSrv, getLocationSrv } from '@grafana/runtime';
 import { Button, Spinner } from '@grafana/ui';
-import React, { FC, useContext, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { DisablePluginModal } from './DisablePluginModal';
 import { InstanceContext } from './InstanceContext';
 
-const handleSetup = () => {
-  getLocationSrv().update({
-    partial: false,
-    path: 'a/grafana-synthetic-monitoring-app/?page=setup',
-    query: {
-      page: 'setup',
-    },
-  });
-};
+interface Props {
+  enabled?: boolean;
+  pluginId: string;
+}
 
-export const ConfigActions: FC = () => {
+export const ConfigActions = ({ enabled, pluginId }: Props) => {
   const { instance, loading } = useContext(InstanceContext);
   const [showDisableModal, setShowDisableModal] = useState(false);
+
+  const handleEnable = async () => {
+    await getBackendSrv().datasourceRequest({
+      url: `/api/plugins/${pluginId}/settings`,
+      method: 'POST',
+      data: {
+        enabled: true,
+        pinned: true,
+      },
+    });
+    window.location.reload();
+  };
+
+  const handleSetup = () => {
+    getLocationSrv().update({
+      partial: false,
+      path: 'a/grafana-synthetic-monitoring-app/?page=setup',
+      query: {
+        page: 'setup',
+      },
+    });
+  };
 
   const getAction = () => {
     if (loading) {
@@ -29,6 +46,15 @@ export const ConfigActions: FC = () => {
         </Button>
       );
     }
+
+    if (!enabled) {
+      return (
+        <Button variant="primary" onClick={handleEnable}>
+          Enable plugin
+        </Button>
+      );
+    }
+
     return (
       <Button variant="primary" onClick={handleSetup}>
         Setup
@@ -39,7 +65,7 @@ export const ConfigActions: FC = () => {
   return (
     <>
       {getAction()}
-      <DisablePluginModal isOpen={showDisableModal} onDismiss={() => setShowDisableModal(false)} />
+      <DisablePluginModal isOpen={showDisableModal} onDismiss={() => setShowDisableModal(false)} pluginId={pluginId} />
     </>
   );
 };

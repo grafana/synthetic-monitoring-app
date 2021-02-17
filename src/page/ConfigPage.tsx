@@ -44,25 +44,11 @@ export class ConfigPage extends PureComponent<Props> {
                 </a>
               </p>
             </div>
-            <div>
-              <p>
-                Synthetic Monitoring is a blackbox monitoring solution provided as part of{' '}
-                <a
-                  className="highlight-word"
-                  href="https://grafana.com/products/cloud/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Grafana Cloud
-                </a>
-                .
-              </p>
-            </div>
           </div>
           <br />
           <TenantSetup />
           <br />
-          <ConfigActions />
+          <ConfigActions enabled={plugin.meta.enabled} pluginId={plugin.meta.id} />
         </div>
       </InstanceProvider>
     );
