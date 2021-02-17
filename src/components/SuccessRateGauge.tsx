@@ -58,7 +58,7 @@ const getSparklineValue = (data: any[], loading: boolean, showSparkline: boolean
   };
 };
 
-export const UptimeGauge = ({ labelNames, labelValues, height, width, sparkline, onClick }: Props) => {
+export const SuccessRateGauge = ({ labelNames, labelValues, height, width, sparkline, onClick }: Props) => {
   const filter = labelNames
     .reduce<string[]>((filters, labelName, index) => {
       filters.push(`${labelName}="${labelValues[index]}"`);

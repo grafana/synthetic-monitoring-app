@@ -1,16 +1,16 @@
 import { getLocationSrv } from '@grafana/runtime';
 import React, { useContext } from 'react';
 import appEvents from 'grafana/app/core/app_events';
-import { CheckHealth } from 'components/CheckHealth';
-import { UptimeGauge } from 'components/UptimeGauge';
+import { SuccessRateGauge } from 'components/SuccessRateGauge';
 import { checkType as getCheckType, dashboardUID } from 'utils';
 // Types
 import { Check, CheckType, Label } from 'types';
-import { Button, IconButton, HorizontalGroup, VerticalGroup, useStyles, Checkbox, ButtonGroup } from '@grafana/ui';
+import { IconButton, useStyles, Checkbox, ButtonGroup } from '@grafana/ui';
 import { css } from 'emotion';
 import { InstanceContext } from './InstanceContext';
 import { AppEvents, GrafanaTheme } from '@grafana/data';
 import { calculateUsage } from 'checkUsageCalc';
+import { CheckCardLabel } from './CheckCardLabel';
 
 interface Props {
   check: Check;
@@ -40,15 +40,20 @@ const getStyles = (theme: GrafanaTheme) => ({
     flex-grow: 1;
     border-right: 1px solid #343b40;
     padding-right: ${theme.spacing.md};
+    overflow: hidden;
   `,
   checkInfoContainer: css`
     flex-grow: 1;
+    overflow: hidden;
   `,
   checkTarget: css`
     font-size: ${theme.typography.size.sm};
     line-height: ${theme.typography.lineHeight.sm};
     font-weight: ${theme.typography.weight.bold};
     margin-bottom: ${theme.spacing.sm};
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   `,
   checkDetails: css`
     font-size: ${theme.typography.size.sm};
@@ -109,28 +114,15 @@ export const CheckCard = ({ check, onLabelSelect }: Props) => {
           </div>
           <div>
             {check.labels.map((label: Label, index) => (
-              <Button
-                variant="secondary"
-                key={index}
-                className={css`
-                  border: none;
-                  background: inherit;
-                `}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onLabelSelect(label);
-                }}
-                type="button"
-              >
-                {label.name}={label.value}
-              </Button>
+              <CheckCardLabel key={index} label={label} onLabelSelect={onLabelSelect} />
             ))}
           </div>
         </div>
         <ButtonGroup>
           <IconButton
             name="pen"
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               getLocationSrv().update({
                 partial: true,
                 query: {
@@ -143,7 +135,7 @@ export const CheckCard = ({ check, onLabelSelect }: Props) => {
         </ButtonGroup>
       </div>
       <div className={styles.stats}>
-        <UptimeGauge
+        <SuccessRateGauge
           labelNames={['instance', 'job']}
           labelValues={[check.target, check.job]}
           height={70}
