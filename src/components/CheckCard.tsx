@@ -114,7 +114,7 @@ export const CheckCard = ({ check, onLabelSelect }: Props) => {
           <h3>{check.job}</h3>
           <div className={styles.checkTarget}>{check.target}</div>
           <div className={styles.checkDetails}>
-            {checkType} | {check.frequency / 1000}s frequency | {usage.activeSeries} active series
+            {checkType.toUpperCase()} | {check.frequency / 1000}s frequency | {usage.activeSeries} active series
           </div>
           <div>
             {check.labels.map((label: Label, index) => (
