@@ -11,6 +11,7 @@ import { InstanceContext } from './InstanceContext';
 import { AppEvents, GrafanaTheme } from '@grafana/data';
 import { calculateUsage } from 'checkUsageCalc';
 import { CheckCardLabel } from './CheckCardLabel';
+import { LatencyGauge } from './LatencyGauge';
 
 interface Props {
   check: Check;
@@ -60,7 +61,10 @@ const getStyles = (theme: GrafanaTheme) => ({
     line-height: ${theme.typography.lineHeight.sm};
     margin-bottom: ${theme.spacing.sm};
   `,
-  stats: css``,
+  stats: css`
+    display: flex;
+    flex-direction: row;
+  `,
 });
 
 export const CheckCard = ({ check, onLabelSelect }: Props) => {
@@ -142,6 +146,7 @@ export const CheckCard = ({ check, onLabelSelect }: Props) => {
           width={150}
           sparkline={false}
         />
+        <LatencyGauge target={check.target} job={check.job} height={70} width={150} />
       </div>
     </div>
   );

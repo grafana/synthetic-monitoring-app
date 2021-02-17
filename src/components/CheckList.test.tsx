@@ -175,7 +175,7 @@ test('filter matches label name', async () => {
 
 test('clicking label value adds to filter', async () => {
   renderCheckList();
-  const labelValue = await screen.findByRole('button', { name: 'agreat=label' });
+  const labelValue = await screen.findByText('agreat: label');
   userEvent.click(labelValue);
   const checks = await screen.findAllByLabelText('check-card');
   const filterInput = await screen.findByPlaceholderText('search checks');
