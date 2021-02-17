@@ -1,3 +1,4 @@
+import { getBackendSrv } from '@grafana/runtime';
 import { Alert, Button, HorizontalGroup, Modal, Spinner } from '@grafana/ui';
 import React, { useContext, useState } from 'react';
 import { InstanceContext } from './InstanceContext';
@@ -5,15 +6,25 @@ import { InstanceContext } from './InstanceContext';
 type Props = {
   isOpen: boolean;
   onDismiss: () => void;
+  pluginId: string;
 };
 
-export const DisablePluginModal = ({ isOpen, onDismiss }: Props) => {
+export const DisablePluginModal = ({ isOpen, onDismiss, pluginId }: Props) => {
   const { instance, loading } = useContext(InstanceContext);
   const [error, setError] = useState();
 
   const disableTenant = async () => {
     try {
       await instance.api?.disableTenant();
+      await getBackendSrv().datasourceRequest({
+        url: `/api/plugins/${pluginId}/settings`,
+        method: 'POST',
+        headers: { 'X-Grafana-NoCache': 'true' },
+        data: {
+          enabled: false,
+        },
+      });
+      window.location.reload();
     } catch (e) {
       setError(e.message ?? 'Something went wrong trying to disable the plugin. Please contact support.');
     }
