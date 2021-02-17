@@ -1,3 +1,10 @@
+## [0.7.15](https://github.com/grafana/synthetic-monitoring-app/compare/0.7.14...0.7.15) (2021-02-17)
+
+
+### Bug Fixes
+
+* add plugin enable action ([#206](https://github.com/grafana/synthetic-monitoring-app/issues/206)) ([abee206](https://github.com/grafana/synthetic-monitoring-app/commit/abee206a65e4f144926a6aeb8400d5e079f89bfc))
+
 ## [0.7.14](https://github.com/grafana/synthetic-monitoring-app/compare/0.7.13...0.7.14) (2021-02-12)
 
 
