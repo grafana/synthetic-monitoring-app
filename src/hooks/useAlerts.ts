@@ -49,28 +49,31 @@ export const defaultRules = {
   ],
 };
 
-const fetchSMRules = async (alertRulerUrl: string) => {
-  try {
-    return await getBackendSrv()
-      .fetch<any>({
-        method: 'GET',
-        url: `${alertRulerUrl}/rules/${SM_ALERTING_NAMESPACE}/default`,
-        headers: {
-          'Content-Type': 'application/yaml',
-        },
-      })
-      .toPromise()
-      .then((response) => {
-        const alertGroup = parse(response.data);
-        return alertGroup.rules;
-      });
-  } catch (e) {
-    if (e.status === 404) {
-      return [];
-    }
-    throw new Error(`Could not fetch alerting rules for Synthetic Monitoring`);
-  }
-};
+interface RuleResponse {
+  rules: AlertRule[];
+  error?: string;
+}
+
+const fetchSMRules = (alertRulerUrl: string): Promise<RuleResponse> =>
+  getBackendSrv()
+    .fetch<any>({
+      method: 'GET',
+      url: `${alertRulerUrl}/rules/${SM_ALERTING_NAMESPACE}/default`,
+      headers: {
+        'Content-Type': 'application/yaml',
+      },
+    })
+    .toPromise()
+    .then((response) => {
+      const alertGroup = parse(response.data);
+      return { rules: alertGroup.rules };
+    })
+    .catch((e) => {
+      if (e.status === 404) {
+        return { rules: [] };
+      }
+      return { rules: [], error: e.data?.message ?? 'We ran into a problem and could fetch the alert rules' };
+    });
 
 const getDeleteRulesForCheck = (datasourceUrl: string) => (checkId: number) => {
   return getBackendSrv()
@@ -84,6 +87,7 @@ const getDeleteRulesForCheck = (datasourceUrl: string) => (checkId: number) => {
 export function useAlerts(checkId?: number) {
   const [alertRules, setAlertRules] = useState<AlertRule[]>();
   const [defaultRulesSetCount, setDefaultRulesSetCount] = useState(0);
+  const [alertError, setAlertError] = useState('');
   const {
     instance: { alertRuler },
   } = useContext(InstanceContext);
@@ -132,14 +136,18 @@ export function useAlerts(checkId?: number) {
 
   useEffect(() => {
     if (alertRulerUrl) {
-      fetchSMRules(alertRulerUrl).then((rules) => {
+      fetchSMRules(alertRulerUrl).then(({ rules, error }) => {
         setAlertRules(rules);
+        if (error) {
+          setAlertError(error);
+        }
       });
     }
   }, [alertRulerUrl, defaultRulesSetCount]);
 
   return {
     alertRules,
+    alertError,
     setDefaultRules,
     setRules,
     deleteRulesForCheck: getDeleteRulesForCheck(alertRulerUrl ?? ''),

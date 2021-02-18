@@ -1,5 +1,5 @@
 import { GrafanaTheme } from '@grafana/data';
-import { Button, HorizontalGroup, Icon, Modal, Spinner, useStyles } from '@grafana/ui';
+import { Button, HorizontalGroup, Icon, Modal, Spinner, useStyles, Alert } from '@grafana/ui';
 import React, { FC, useState, useContext } from 'react';
 import { css } from 'emotion';
 import { useAlerts } from 'hooks/useAlerts';
@@ -37,7 +37,7 @@ const getStyles = (theme: GrafanaTheme) => ({
 
 export const Alerting: FC = () => {
   const styles = useStyles(getStyles);
-  const { alertRules, setDefaultRules, setRules } = useAlerts();
+  const { alertRules, setDefaultRules, setRules, alertError } = useAlerts();
   const [updatingDefaultRules, setUpdatingDefaultRules] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
   const { instance } = useContext(InstanceContext);
@@ -106,6 +106,7 @@ export const Alerting: FC = () => {
       </div>
     );
   }
+  console.log({ alertRules, alertError });
 
   return (
     <div>
@@ -138,7 +139,12 @@ export const Alerting: FC = () => {
         </a>
       </p>
       {!alertRules && <Spinner />}
-      {alertRules?.length === 0 && (
+      {alertError && (
+        <Alert title="Error fetching alert rules" severity="error">
+          {alertError}
+        </Alert>
+      )}
+      {alertRules?.length === 0 && !Boolean(alertError) && (
         <div className={styles.emptyCard}>
           <span className={styles.defaultAlerts}>
             You do not have any default alerts for Synthetic Monitoring yet. Click below to get some default alerts. You
