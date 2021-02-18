@@ -1,10 +1,10 @@
 import { getLocationSrv } from '@grafana/runtime';
-import React, { useContext } from 'react';
+import React, { useContext, ChangeEvent } from 'react';
 import appEvents from 'grafana/app/core/app_events';
 import { SuccessRateGauge } from 'components/SuccessRateGauge';
 import { checkType as getCheckType, dashboardUID } from 'utils';
 // Types
-import { Check, CheckType, Label } from 'types';
+import { Check, CheckType, FilteredCheck, Label } from 'types';
 import { IconButton, useStyles, Checkbox, ButtonGroup } from '@grafana/ui';
 import { css } from 'emotion';
 import { InstanceContext } from './InstanceContext';
@@ -14,8 +14,10 @@ import { CheckCardLabel } from './CheckCardLabel';
 import { LatencyGauge } from './LatencyGauge';
 
 interface Props {
-  check: Check;
+  check: FilteredCheck;
+  selected: boolean;
   onLabelSelect: (label: Label) => void;
+  onToggleCheckbox: (checkId: number) => void;
 }
 
 const getStyles = (theme: GrafanaTheme) => ({
@@ -67,7 +69,7 @@ const getStyles = (theme: GrafanaTheme) => ({
   `,
 });
 
-export const CheckCard = ({ check, onLabelSelect }: Props) => {
+export const CheckCard = ({ check, onLabelSelect, selected, onToggleCheckbox }: Props) => {
   const { instance } = useContext(InstanceContext);
   const styles = useStyles(getStyles);
   const checkType = getCheckType(check.settings);
@@ -106,8 +108,14 @@ export const CheckCard = ({ check, onLabelSelect }: Props) => {
       className={styles.cardWrapper}
       aria-label="check-card"
     >
-      <div className={styles.checkbox}>
-        <Checkbox />
+      <div className={styles.checkbox} onClick={(e) => e.stopPropagation()}>
+        <Checkbox
+          onChange={(e: ChangeEvent<HTMLInputElement>) => {
+            e.stopPropagation();
+            onToggleCheckbox(check.id);
+          }}
+          checked={selected}
+        />
       </div>
       <div className={styles.body}>
         <div className={styles.checkInfoContainer}>

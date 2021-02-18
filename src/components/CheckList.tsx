@@ -1,13 +1,14 @@
 // Libraries
-import React, { useState } from 'react';
+import React, { useState, ChangeEvent } from 'react';
 
 // Types
-import { OrgRole, Check, Label, GrafanaInstances } from 'types';
-import { Button, Icon, Select, Input, Pagination, InfoBox } from '@grafana/ui';
-import { unEscapeStringFromRegex, escapeStringForRegex } from '@grafana/data';
+import { OrgRole, Check, Label, GrafanaInstances, FilteredCheck } from 'types';
+import { Button, Icon, Select, Input, Pagination, InfoBox, Checkbox, ButtonGroup, useStyles } from '@grafana/ui';
+import { unEscapeStringFromRegex, escapeStringForRegex, GrafanaTheme } from '@grafana/data';
 import { hasRole, checkType as getCheckType, matchStrings } from 'utils';
 import { CHECK_FILTER_OPTIONS } from './constants';
 import { CheckCard } from './CheckCard';
+import { css } from 'emotion';
 
 const CHECKS_PER_PAGE = 15;
 
@@ -40,6 +41,21 @@ const matchesSearchFilter = ({ target, job, labels }: Check, searchFilter: strin
   return filterParts.some((filterPart) => matchStrings(filterPart, [target, job, ...labelMatches]));
 };
 
+const getStyles = (theme: GrafanaTheme) => ({
+  bulkActionContainer: css`
+    padding: ${theme.spacing.sm};
+    display: flex;
+    min-height: 48px;
+    align-items: center;
+  `,
+  checkboxContainer: css`
+    position: relative;
+  `,
+  marginRightSmall: css`
+    margin-right: ${theme.spacing.sm};
+  `,
+});
+
 interface Props {
   instance: GrafanaInstances;
   onAddNewClick: () => void;
@@ -50,10 +66,41 @@ export const CheckList = ({ instance, onAddNewClick, checks }: Props) => {
   const [searchFilter, setSearchFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedChecks, setSelectedChecks] = useState<Set<number>>(new Set());
+  const styles = useStyles(getStyles);
+
+  const totalPages = Math.ceil(checks.length / CHECKS_PER_PAGE);
+  const filteredChecks = checks
+    .filter(
+      (check) => matchesFilterType(check, typeFilter) && matchesSearchFilter(check, searchFilter) && Boolean(check.id)
+    )
+    .sort((a, b) => b.job.localeCompare(a.job)) as FilteredCheck[];
 
   const handleLabelSelect = (label: Label) => {
     setSearchFilter(`${label.name}=${label.value}`);
     setCurrentPage(1);
+  };
+
+  const currentPageChecks = filteredChecks.slice((currentPage - 1) * CHECKS_PER_PAGE, currentPage * CHECKS_PER_PAGE);
+
+  const toggleVisibleCheckSelection = (e: ChangeEvent<HTMLInputElement>) => {
+    const checked = e.target.checked;
+    if (checked) {
+      setSelectedChecks(new Set(currentPageChecks.map((check) => check.id)));
+      return;
+    }
+    setSelectedChecks(new Set());
+  };
+
+  const handleCheckSelect = (checkId: number) => {
+    if (!selectedChecks.has(checkId)) {
+      console.log('adding to', selectedChecks);
+      setSelectedChecks(new Set(selectedChecks.add(checkId)));
+      return;
+    }
+    selectedChecks.delete(checkId);
+    console.log('deleted from', selectedChecks);
+    setSelectedChecks(new Set(selectedChecks));
   };
 
   if (!checks) {
@@ -78,14 +125,6 @@ export const CheckList = ({ instance, onAddNewClick, checks }: Props) => {
       </InfoBox>
     );
   }
-
-  const filteredChecks = checks
-    .filter(
-      (check) => matchesFilterType(check, typeFilter) && matchesSearchFilter(check, searchFilter) && Boolean(check.id)
-    )
-    .sort((a, b) => b.job.localeCompare(a.job));
-
-  const totalPages = Math.ceil(checks.length / CHECKS_PER_PAGE);
 
   return (
     <div>
@@ -121,11 +160,40 @@ export const CheckList = ({ instance, onAddNewClick, checks }: Props) => {
           </Button>
         )}
       </div>
+      <div className={styles.bulkActionContainer}>
+        <div className={styles.checkboxContainer}>
+          <Checkbox onChange={toggleVisibleCheckSelection} />
+        </div>
+        {selectedChecks.size > 0 && (
+          <>
+            <span className={styles.marginRightSmall}>{selectedChecks.size} checks are selected.</span>
+            <ButtonGroup>
+              {selectedChecks.size < filteredChecks.length && (
+                <Button type="button" variant="link" size="sm">
+                  Select all {filteredChecks.length} checks
+                </Button>
+              )}
+              <Button type="button" variant="destructive">
+                Delete
+              </Button>
+              <Button type="button" variant="secondary">
+                Disable
+              </Button>
+            </ButtonGroup>
+          </>
+        )}
+      </div>
       <section className="card-section card-list-layout-list">
         <ol className="card-list">
-          {filteredChecks
-            .map((check, index) => <CheckCard check={check} key={index} onLabelSelect={handleLabelSelect} />)
-            .slice((currentPage - 1) * CHECKS_PER_PAGE, currentPage * CHECKS_PER_PAGE)}
+          {currentPageChecks.map((check, index) => (
+            <CheckCard
+              check={check}
+              key={index}
+              onLabelSelect={handleLabelSelect}
+              onToggleCheckbox={handleCheckSelect}
+              selected={selectedChecks.has(check.id)}
+            />
+          ))}
         </ol>
       </section>
       {totalPages > 1 && (

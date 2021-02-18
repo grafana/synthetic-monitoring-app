@@ -270,6 +270,10 @@ export interface Check extends BaseObject {
   tenantId?: number;
 }
 
+export interface FilteredCheck extends Omit<Check, 'id'> {
+  id: number;
+}
+
 export interface Settings {
   http?: HttpSettings;
   ping?: PingSettings;
