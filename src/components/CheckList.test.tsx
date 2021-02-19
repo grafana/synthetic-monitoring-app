@@ -185,8 +185,8 @@ test('clicking label value adds to filter', async () => {
 
 test('filters by check type', async () => {
   renderCheckList();
-  const selectInput = await screen.findByTestId('select');
-  userEvent.selectOptions(selectInput, 'http');
+  const selectInputs = await screen.findAllByTestId('select');
+  userEvent.selectOptions(selectInputs[0], 'http');
   const checks = await screen.findAllByLabelText('check-card');
   expect(checks.length).toBe(1);
 });

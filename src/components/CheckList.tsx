@@ -2,16 +2,16 @@
 import React, { useState, ChangeEvent } from 'react';
 
 // Types
-import { OrgRole, Check, Label, GrafanaInstances, FilteredCheck } from 'types';
+import { OrgRole, Check, Label, GrafanaInstances, FilteredCheck, CheckSort } from 'types';
 import appEvents from 'grafana/app/core/app_events';
 import { Button, Icon, Select, Input, Pagination, InfoBox, Checkbox, useStyles } from '@grafana/ui';
-import { unEscapeStringFromRegex, escapeStringForRegex, GrafanaTheme, AppEvents } from '@grafana/data';
+import { unEscapeStringFromRegex, escapeStringForRegex, GrafanaTheme, AppEvents, SelectableValue } from '@grafana/data';
 import { hasRole, checkType as getCheckType, matchStrings } from 'utils';
-import { CHECK_FILTER_OPTIONS } from './constants';
+import { CHECK_FILTER_OPTIONS, CHECK_LIST_SORT_OPTIONS } from './constants';
 import { CheckCard } from './CheckCard';
 import { css } from 'emotion';
 
-const CHECKS_PER_PAGE = 5;
+const CHECKS_PER_PAGE = 15;
 
 const matchesFilterType = (check: Check, typeFilter: string) => {
   if (typeFilter === 'all') {
@@ -45,10 +45,12 @@ const matchesSearchFilter = ({ target, job, labels }: Check, searchFilter: strin
 const getStyles = (theme: GrafanaTheme) => ({
   bulkActionContainer: css`
     padding: ${theme.spacing.sm};
-    margin-bottom: ${theme.spacing.sm};
     display: flex;
     min-height: 48px;
     align-items: center;
+  `,
+  flexGrow: css`
+    flex-grow: 1;
   `,
   buttonGroup: css`
     display: flex;
@@ -73,19 +75,30 @@ interface Props {
   onCheckUpdate: () => void;
 }
 
+const sortChecks = (checks: FilteredCheck[], sortType: CheckSort) => {
+  switch (sortType) {
+    case CheckSort.AToZ:
+      return checks.sort((a, b) => a.job.localeCompare(b.job)) as FilteredCheck[];
+    case CheckSort.ZToA:
+      return checks.sort((a, b) => b.job.localeCompare(a.job)) as FilteredCheck[];
+  }
+};
+
 export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Props) => {
   const [searchFilter, setSearchFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedChecks, setSelectedChecks] = useState<Set<number>>(new Set());
+  const [sortType, setSortType] = useState<CheckSort>(CheckSort.AToZ);
   const styles = useStyles(getStyles);
 
   const totalPages = Math.ceil(checks.length / CHECKS_PER_PAGE);
-  const filteredChecks = checks
-    .filter(
+  const filteredChecks = sortChecks(
+    checks.filter(
       (check) => matchesFilterType(check, typeFilter) && matchesSearchFilter(check, searchFilter) && Boolean(check.id)
-    )
-    .sort((a, b) => b.job.localeCompare(a.job)) as FilteredCheck[];
+    ) as FilteredCheck[],
+    sortType
+  );
 
   const handleLabelSelect = (label: Label) => {
     setSearchFilter(`${label.name}=${label.value}`);
@@ -203,6 +216,12 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
     onCheckUpdate();
   };
 
+  const updateSortMethod = ({ value }: SelectableValue<CheckSort>) => {
+    if (value) {
+      setSortType(value);
+    }
+  };
+
   if (!checks) {
     return null;
   }
@@ -293,6 +312,19 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
             </div>
           </>
         )}
+        <div className={styles.flexGrow} />
+        <div>
+          <Select
+            prefix={
+              <div>
+                <Icon name="sort-amount-down" /> Sort
+              </div>
+            }
+            options={CHECK_LIST_SORT_OPTIONS}
+            defaultValue={CHECK_LIST_SORT_OPTIONS[0]}
+            onChange={updateSortMethod}
+          />
+        </div>
       </div>
       <section className="card-section card-list-layout-list">
         <ol className="card-list">

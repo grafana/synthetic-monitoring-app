@@ -427,3 +427,8 @@ export type AlertRule = {
   };
   record?: string;
 };
+
+export enum CheckSort {
+  AToZ,
+  ZToA,
+}

@@ -11,6 +11,7 @@ import {
   TimeUnits,
   AlertSeverity,
   AlertSensitivity,
+  CheckSort,
 } from 'types';
 
 export const DNS_RESPONSE_CODES = enumToStringArray(DnsResponseCodes).map((responseCode) => ({
@@ -245,3 +246,14 @@ export const getDefaultAlertAnnotations = (percentage: number) => ({
   description: `check job {{ $labels.job }} instance {{ $labels.instance }} has a success rate of {{ printf "%.1f" $value }}%.`,
   summary: `check success below ${percentage}%`,
 });
+
+export const CHECK_LIST_SORT_OPTIONS = [
+  {
+    label: 'A-Z',
+    value: CheckSort.AToZ,
+  },
+  {
+    label: 'Z-A',
+    value: CheckSort.ZToA,
+  },
+];
