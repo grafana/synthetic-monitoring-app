@@ -44,11 +44,20 @@ const matchesSearchFilter = ({ target, job, labels }: Check, searchFilter: strin
 const getStyles = (theme: GrafanaTheme) => ({
   bulkActionContainer: css`
     padding: ${theme.spacing.sm};
+    margin-bottom: ${theme.spacing.sm};
     display: flex;
     min-height: 48px;
     align-items: center;
   `,
+  buttonGroup: css`
+    display: flex;
+    align-items: center;
+  `,
   checkboxContainer: css`
+    margin-right: ${theme.spacing.sm};
+    height: 45px;
+  `,
+  checkbox: css`
     position: relative;
   `,
   marginRightSmall: css`
@@ -89,6 +98,14 @@ export const CheckList = ({ instance, onAddNewClick, checks }: Props) => {
       setSelectedChecks(new Set(currentPageChecks.map((check) => check.id)));
       return;
     }
+    clearSelectedChecks();
+  };
+
+  const toggleAllCheckSelection = () => {
+    setSelectedChecks(new Set(filteredChecks.map((check) => check.id)));
+  };
+
+  const clearSelectedChecks = () => {
     setSelectedChecks(new Set());
   };
 
@@ -162,24 +179,30 @@ export const CheckList = ({ instance, onAddNewClick, checks }: Props) => {
       </div>
       <div className={styles.bulkActionContainer}>
         <div className={styles.checkboxContainer}>
-          <Checkbox onChange={toggleVisibleCheckSelection} />
+          <Checkbox onChange={toggleVisibleCheckSelection} className={styles.checkbox} />
         </div>
         {selectedChecks.size > 0 && (
           <>
             <span className={styles.marginRightSmall}>{selectedChecks.size} checks are selected.</span>
-            <ButtonGroup>
+            <div className={styles.buttonGroup}>
               {selectedChecks.size < filteredChecks.length && (
-                <Button type="button" variant="link" size="sm">
+                <Button
+                  type="button"
+                  variant="link"
+                  size="sm"
+                  className={styles.marginRightSmall}
+                  onClick={toggleAllCheckSelection}
+                >
                   Select all {filteredChecks.length} checks
                 </Button>
               )}
-              <Button type="button" variant="destructive">
+              <Button type="button" variant="destructive" className={styles.marginRightSmall}>
                 Delete
               </Button>
               <Button type="button" variant="secondary">
                 Disable
               </Button>
-            </ButtonGroup>
+            </div>
           </>
         )}
       </div>
