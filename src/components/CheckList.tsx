@@ -3,14 +3,15 @@ import React, { useState, ChangeEvent } from 'react';
 
 // Types
 import { OrgRole, Check, Label, GrafanaInstances, FilteredCheck } from 'types';
-import { Button, Icon, Select, Input, Pagination, InfoBox, Checkbox, ButtonGroup, useStyles } from '@grafana/ui';
-import { unEscapeStringFromRegex, escapeStringForRegex, GrafanaTheme } from '@grafana/data';
+import appEvents from 'grafana/app/core/app_events';
+import { Button, Icon, Select, Input, Pagination, InfoBox, Checkbox, useStyles } from '@grafana/ui';
+import { unEscapeStringFromRegex, escapeStringForRegex, GrafanaTheme, AppEvents } from '@grafana/data';
 import { hasRole, checkType as getCheckType, matchStrings } from 'utils';
 import { CHECK_FILTER_OPTIONS } from './constants';
 import { CheckCard } from './CheckCard';
 import { css } from 'emotion';
 
-const CHECKS_PER_PAGE = 15;
+const CHECKS_PER_PAGE = 5;
 
 const matchesFilterType = (check: Check, typeFilter: string) => {
   if (typeFilter === 'all') {
@@ -69,9 +70,10 @@ interface Props {
   instance: GrafanaInstances;
   onAddNewClick: () => void;
   checks: Check[];
+  onCheckUpdate: () => void;
 }
 
-export const CheckList = ({ instance, onAddNewClick, checks }: Props) => {
+export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Props) => {
   const [searchFilter, setSearchFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
@@ -111,13 +113,94 @@ export const CheckList = ({ instance, onAddNewClick, checks }: Props) => {
 
   const handleCheckSelect = (checkId: number) => {
     if (!selectedChecks.has(checkId)) {
-      console.log('adding to', selectedChecks);
       setSelectedChecks(new Set(selectedChecks.add(checkId)));
       return;
     }
     selectedChecks.delete(checkId);
-    console.log('deleted from', selectedChecks);
     setSelectedChecks(new Set(selectedChecks));
+  };
+
+  const getChecksFromSelected = () =>
+    Array.from(selectedChecks)
+      .map((checkId) => checks.find((check) => check.id && check.id === checkId))
+      .filter(Boolean) as FilteredCheck[];
+
+  const disableSelectedChecks = async () => {
+    const checkUpdates = getChecksFromSelected()
+      .filter((check) => check && check.enabled)
+      .map((check) => {
+        if (!check) {
+          return Promise.reject('Could not find check with specified id');
+        }
+        return instance.api?.updateCheck({
+          ...check,
+          enabled: false,
+        });
+      });
+
+    const resolvedCheckUpdates = await Promise.allSettled(checkUpdates);
+    const { successCount, errorCount } = resolvedCheckUpdates.reduce(
+      (acc, { status }) => {
+        if (status === 'fulfilled') {
+          acc.successCount = acc.successCount + 1;
+        }
+        if (status === 'rejected') {
+          acc.errorCount = acc.errorCount + 1;
+        }
+        return acc;
+      },
+      {
+        successCount: 0,
+        errorCount: 0,
+      }
+    );
+
+    const notUpdatedCount = selectedChecks.size - resolvedCheckUpdates.length;
+
+    if (successCount > 0) {
+      appEvents.emit(AppEvents.alertSuccess, [`${successCount} check${successCount > 1 ? 's' : ''} disabled`]);
+    }
+    if (errorCount > 0) {
+      appEvents.emit(AppEvents.alertError, [`${errorCount} check${errorCount > 1 ? 's' : ''} were not disabled`]);
+    }
+    if (notUpdatedCount > 0) {
+      appEvents.emit(AppEvents.alertWarning, [
+        `${notUpdatedCount} check${notUpdatedCount > 1 ? 's' : ''} were already disabled`,
+      ]);
+    }
+
+    clearSelectedChecks();
+  };
+
+  const deleteSelectedChecks = async () => {
+    const checkDeletions = Array.from(selectedChecks).map((checkId) => instance.api?.deleteCheck(checkId));
+
+    const resolvedCheckUpdates = await Promise.allSettled(checkDeletions);
+    const { successCount, errorCount } = resolvedCheckUpdates.reduce(
+      (acc, { status }) => {
+        if (status === 'fulfilled') {
+          acc.successCount = acc.successCount + 1;
+        }
+        if (status === 'rejected') {
+          acc.errorCount = acc.errorCount + 1;
+        }
+        return acc;
+      },
+      {
+        successCount: 0,
+        errorCount: 0,
+      }
+    );
+
+    if (successCount > 0) {
+      appEvents.emit(AppEvents.alertSuccess, [`${successCount} check${successCount > 1 ? 's' : ''} deleted`]);
+    }
+    if (errorCount > 0) {
+      appEvents.emit(AppEvents.alertError, [`${errorCount} check${errorCount > 1 ? 's' : ''} were not deleted`]);
+    }
+
+    clearSelectedChecks();
+    onCheckUpdate();
   };
 
   if (!checks) {
@@ -196,10 +279,15 @@ export const CheckList = ({ instance, onAddNewClick, checks }: Props) => {
                   Select all {filteredChecks.length} checks
                 </Button>
               )}
-              <Button type="button" variant="destructive" className={styles.marginRightSmall}>
+              <Button
+                type="button"
+                variant="destructive"
+                className={styles.marginRightSmall}
+                onClick={deleteSelectedChecks}
+              >
                 Delete
               </Button>
-              <Button type="button" variant="secondary">
+              <Button type="button" variant="secondary" onClick={disableSelectedChecks}>
                 Disable
               </Button>
             </div>

@@ -108,7 +108,7 @@ const renderCheckList = ({ checks = defaultChecks } = {} as RenderChecklist) => 
     metrics: {},
     logs: {},
   } as GrafanaInstances;
-  render(<CheckList instance={instance} onAddNewClick={onAddNewMock} checks={checks} />);
+  render(<CheckList instance={instance} onAddNewClick={onAddNewMock} checks={checks} onCheckUpdate={jest.fn()} />);
 };
 
 test('renders empty state', async () => {
