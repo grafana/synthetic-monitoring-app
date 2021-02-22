@@ -127,7 +127,7 @@ test('renders list of checks', async () => {
 
 test('filters by text', async () => {
   renderCheckList();
-  const filterInput = await screen.findByPlaceholderText('search checks');
+  const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
   userEvent.type(filterInput, 'example');
   const checks = await screen.findAllByLabelText('check-card');
   expect(checks.length).toBe(1);
@@ -135,7 +135,7 @@ test('filters by text', async () => {
 
 test('filter is case insensitive', async () => {
   renderCheckList();
-  const filterInput = await screen.findByPlaceholderText('search checks');
+  const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
   userEvent.type(filterInput, 'EXAMPLE');
   const checks = await screen.findAllByLabelText('check-card');
   expect(checks.length).toBe(1);
@@ -143,7 +143,7 @@ test('filter is case insensitive', async () => {
 
 test('filter matches job value', async () => {
   renderCheckList();
-  const filterInput = await screen.findByPlaceholderText('search checks');
+  const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
   userEvent.type(filterInput, 'tacos');
   const checks = await screen.findAllByLabelText('check-card');
   expect(checks.length).toBe(1);
@@ -151,7 +151,7 @@ test('filter matches job value', async () => {
 
 test('filter matches target value', async () => {
   renderCheckList();
-  const filterInput = await screen.findByPlaceholderText('search checks');
+  const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
   userEvent.type(filterInput, 'asada');
   const checks = await screen.findAllByLabelText('check-card');
   expect(checks.length).toBe(1);
@@ -159,7 +159,7 @@ test('filter matches target value', async () => {
 
 test('filter matches label value', async () => {
   renderCheckList();
-  const filterInput = await screen.findByPlaceholderText('search checks');
+  const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
   userEvent.type(filterInput, 'nachos.com');
   const checks = await screen.findAllByLabelText('check-card');
   expect(checks.length).toBe(1);
@@ -167,7 +167,7 @@ test('filter matches label value', async () => {
 
 test('filter matches label name', async () => {
   renderCheckList();
-  const filterInput = await screen.findByPlaceholderText('search checks');
+  const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
   userEvent.type(filterInput, 'carne');
   const checks = await screen.findAllByLabelText('check-card');
   expect(checks.length).toBe(1);
@@ -178,7 +178,7 @@ test('clicking label value adds to filter', async () => {
   const labelValue = await screen.findByText('agreat: label');
   userEvent.click(labelValue);
   const checks = await screen.findAllByLabelText('check-card');
-  const filterInput = await screen.findByPlaceholderText('search checks');
+  const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
   expect(filterInput).toHaveValue('agreat=label');
   expect(checks.length).toBe(1);
 });
@@ -193,7 +193,7 @@ test('filters by check type', async () => {
 
 test('clicking add new is handled', async () => {
   renderCheckList();
-  const addNewButton = await screen.findByRole('button', { name: 'New Check' });
+  const addNewButton = await screen.findByRole('button', { name: 'Add new check' });
   userEvent.click(addNewButton);
   expect(onAddNewMock).toHaveBeenCalledTimes(1);
 });

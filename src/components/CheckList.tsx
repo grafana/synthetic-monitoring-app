@@ -43,6 +43,30 @@ const matchesSearchFilter = ({ target, job, labels }: Check, searchFilter: strin
 };
 
 const getStyles = (theme: GrafanaTheme) => ({
+  headerContainer: css`
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: ${theme.spacing.md};
+  `,
+  header: css`
+    font-size: ${theme.typography.heading.h4};
+    font-weight: ${theme.typography.weight.bold};
+    margin-bottom: ${theme.spacing.xs};
+  `,
+  subheader: css``,
+  searchSortContainer: css`
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  `,
+  sortContainer: css`
+    display: flex;
+    flex-direction: row;
+    width: 300px;
+  `,
   bulkActionContainer: css`
     padding: ${theme.spacing.sm};
     display: flex;
@@ -78,9 +102,9 @@ interface Props {
 const sortChecks = (checks: FilteredCheck[], sortType: CheckSort) => {
   switch (sortType) {
     case CheckSort.AToZ:
-      return checks.sort((a, b) => a.job.localeCompare(b.job)) as FilteredCheck[];
+      return checks.sort((a, b) => a.job.localeCompare(b.job));
     case CheckSort.ZToA:
-      return checks.sort((a, b) => b.job.localeCompare(a.job)) as FilteredCheck[];
+      return checks.sort((a, b) => b.job.localeCompare(a.job));
   }
 };
 
@@ -185,6 +209,53 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
     clearSelectedChecks();
   };
 
+  const enableSelectedChecks = async () => {
+    const checkUpdates = getChecksFromSelected()
+      .filter((check) => check && !check.enabled)
+      .map((check) => {
+        if (!check) {
+          return Promise.reject('Could not find check with specified id');
+        }
+        return instance.api?.updateCheck({
+          ...check,
+          enabled: true,
+        });
+      });
+
+    const resolvedCheckUpdates = await Promise.allSettled(checkUpdates);
+    const { successCount, errorCount } = resolvedCheckUpdates.reduce(
+      (acc, { status }) => {
+        if (status === 'fulfilled') {
+          acc.successCount = acc.successCount + 1;
+        }
+        if (status === 'rejected') {
+          acc.errorCount = acc.errorCount + 1;
+        }
+        return acc;
+      },
+      {
+        successCount: 0,
+        errorCount: 0,
+      }
+    );
+
+    const notUpdatedCount = selectedChecks.size - resolvedCheckUpdates.length;
+
+    if (successCount > 0) {
+      appEvents.emit(AppEvents.alertSuccess, [`${successCount} check${successCount > 1 ? 's' : ''} enabled`]);
+    }
+    if (errorCount > 0) {
+      appEvents.emit(AppEvents.alertError, [`${errorCount} check${errorCount > 1 ? 's' : ''} were not enabled`]);
+    }
+    if (notUpdatedCount > 0) {
+      appEvents.emit(AppEvents.alertWarning, [
+        `${notUpdatedCount} check${notUpdatedCount > 1 ? 's' : ''} were already enabled`,
+      ]);
+    }
+
+    clearSelectedChecks();
+  };
+
   const deleteSelectedChecks = async () => {
     const checkDeletions = Array.from(selectedChecks).map((checkId) => instance.api?.deleteCheck(checkId));
 
@@ -247,37 +318,51 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
 
   return (
     <div>
-      <div className="page-action-bar">
-        <div className="gf-form gf-form--grow">
-          <Input
-            // Replaces the usage of ref
-            autoFocus
-            prefix={<Icon name="search" />}
-            width={40}
-            type="text"
-            value={searchFilter ? unEscapeStringFromRegex(searchFilter) : ''}
-            onChange={(event) => setSearchFilter(escapeStringForRegex(event.currentTarget.value))}
-            placeholder="search checks"
-          />
-        </div>
-        <div className="gf-form">
-          <label className="gf-form-label">Types</label>
-
-          <div className="width-13">
-            <Select
-              aria-label="Types"
-              options={CHECK_FILTER_OPTIONS}
-              onChange={(selected) => setTypeFilter(selected?.value ?? typeFilter)}
-              value={typeFilter}
-            />
+      <div className={styles.headerContainer}>
+        <div>
+          <h4 className={styles.header}>All checks</h4>
+          <div className={styles.subheader}>
+            Currently showing {currentPageChecks.length} of {checks.length} total checks
           </div>
         </div>
-        <div className="page-action-bar__spacer" />
-        {hasRole(OrgRole.EDITOR) && (
-          <Button variant="secondary" onClick={onAddNewClick} type="button">
-            New Check
-          </Button>
-        )}
+        <div>
+          {hasRole(OrgRole.EDITOR) && (
+            <Button variant="primary" onClick={onAddNewClick} type="button">
+              Add new check
+            </Button>
+          )}
+        </div>
+      </div>
+      <div className={styles.searchSortContainer}>
+        <Input
+          autoFocus
+          prefix={<Icon name="search" />}
+          width={40}
+          type="text"
+          value={searchFilter ? unEscapeStringFromRegex(searchFilter) : ''}
+          onChange={(event) => setSearchFilter(escapeStringForRegex(event.currentTarget.value))}
+          placeholder="Search by job name, endpoint, or label"
+        />
+        <div className={styles.sortContainer}>
+          <Select
+            aria-label="Types"
+            className={styles.marginRightSmall}
+            prefix="Types"
+            options={CHECK_FILTER_OPTIONS}
+            onChange={(selected) => setTypeFilter(selected?.value ?? typeFilter)}
+            value={typeFilter}
+          />
+          <Select
+            prefix={
+              <div>
+                <Icon name="sort-amount-down" /> Sort
+              </div>
+            }
+            options={CHECK_LIST_SORT_OPTIONS}
+            defaultValue={CHECK_LIST_SORT_OPTIONS[0]}
+            onChange={updateSortMethod}
+          />
+        </div>
       </div>
       <div className={styles.bulkActionContainer}>
         <div className={styles.checkboxContainer}>
@@ -306,6 +391,14 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
               >
                 Delete
               </Button>
+              <Button
+                type="button"
+                variant="primary"
+                onClick={enableSelectedChecks}
+                className={styles.marginRightSmall}
+              >
+                Enable
+              </Button>
               <Button type="button" variant="secondary" onClick={disableSelectedChecks}>
                 Disable
               </Button>
@@ -313,18 +406,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
           </>
         )}
         <div className={styles.flexGrow} />
-        <div>
-          <Select
-            prefix={
-              <div>
-                <Icon name="sort-amount-down" /> Sort
-              </div>
-            }
-            options={CHECK_LIST_SORT_OPTIONS}
-            defaultValue={CHECK_LIST_SORT_OPTIONS[0]}
-            onChange={updateSortMethod}
-          />
-        </div>
+        <div></div>
       </div>
       <section className="card-section card-list-layout-list">
         <ol className="card-list">
