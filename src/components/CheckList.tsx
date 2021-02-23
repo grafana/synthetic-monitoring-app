@@ -4,12 +4,25 @@ import React, { useState, ChangeEvent } from 'react';
 // Types
 import { OrgRole, Check, Label, GrafanaInstances, FilteredCheck, CheckSort } from 'types';
 import appEvents from 'grafana/app/core/app_events';
-import { Button, Icon, Select, Input, Pagination, InfoBox, Checkbox, useStyles } from '@grafana/ui';
+import {
+  Button,
+  Icon,
+  Select,
+  Input,
+  Pagination,
+  InfoBox,
+  Checkbox,
+  useStyles,
+  ButtonCascader,
+  CascaderOption,
+  MultiSelect,
+} from '@grafana/ui';
 import { unEscapeStringFromRegex, escapeStringForRegex, GrafanaTheme, AppEvents, SelectableValue } from '@grafana/data';
 import { hasRole, checkType as getCheckType, matchStrings } from 'utils';
 import { CHECK_FILTER_OPTIONS, CHECK_LIST_SORT_OPTIONS } from './constants';
 import { CheckCard } from './CheckCard';
 import { css } from 'emotion';
+import { LabelFilterInput } from './LabelFilterInput';
 
 const CHECKS_PER_PAGE = 15;
 
@@ -40,6 +53,13 @@ const matchesSearchFilter = ({ target, job, labels }: Check, searchFilter: strin
   }, [] as string[]);
 
   return filterParts.some((filterPart) => matchStrings(filterPart, [target, job, ...labelMatches]));
+};
+
+const matchesLabelFilter = ({ labels }: Check, labelFilters: string[]) => {
+  if (labelFilters.length === 0) {
+    return true;
+  }
+  return labels.some(({ name, value }) => labelFilters.some((filter) => filter === `${name}: ${value}`));
 };
 
 const getStyles = (theme: GrafanaTheme) => ({
@@ -110,6 +130,7 @@ const sortChecks = (checks: FilteredCheck[], sortType: CheckSort) => {
 
 export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Props) => {
   const [searchFilter, setSearchFilter] = useState('');
+  const [labelFilters, setLabelFilters] = useState<string[]>([]);
   const [typeFilter, setTypeFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedChecks, setSelectedChecks] = useState<Set<number>>(new Set());
@@ -119,13 +140,17 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
   const totalPages = Math.ceil(checks.length / CHECKS_PER_PAGE);
   const filteredChecks = sortChecks(
     checks.filter(
-      (check) => matchesFilterType(check, typeFilter) && matchesSearchFilter(check, searchFilter) && Boolean(check.id)
+      (check) =>
+        matchesFilterType(check, typeFilter) &&
+        matchesSearchFilter(check, searchFilter) &&
+        Boolean(check.id) &&
+        matchesLabelFilter(check, labelFilters)
     ) as FilteredCheck[],
     sortType
   );
 
   const handleLabelSelect = (label: Label) => {
-    setSearchFilter(`${label.name}=${label.value}`);
+    setLabelFilters([...labelFilters, `${label.name}: ${label.value}`]);
     setCurrentPage(1);
   };
 
@@ -364,6 +389,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
           />
         </div>
       </div>
+      <LabelFilterInput checks={checks} onChange={(labels) => setLabelFilters(labels)} labelFilters={labelFilters} />
       <div className={styles.bulkActionContainer}>
         <div className={styles.checkboxContainer}>
           <Checkbox onChange={toggleVisibleCheckSelection} className={styles.checkbox} />
