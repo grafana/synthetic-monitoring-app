@@ -257,3 +257,9 @@ export const CHECK_LIST_SORT_OPTIONS = [
     value: CheckSort.ZToA,
   },
 ];
+
+export const CHECK_LIST_STATUS_OPTIONS = [
+  { label: 'All', value: 'All' },
+  { label: 'Enabled', value: 'Enabled' },
+  { label: 'Disabled', value: 'Disabled' },
+];

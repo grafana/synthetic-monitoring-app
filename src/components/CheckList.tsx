@@ -19,7 +19,7 @@ import {
 } from '@grafana/ui';
 import { unEscapeStringFromRegex, escapeStringForRegex, GrafanaTheme, AppEvents, SelectableValue } from '@grafana/data';
 import { hasRole, checkType as getCheckType, matchStrings } from 'utils';
-import { CHECK_FILTER_OPTIONS, CHECK_LIST_SORT_OPTIONS } from './constants';
+import { CHECK_FILTER_OPTIONS, CHECK_LIST_SORT_OPTIONS, CHECK_LIST_STATUS_OPTIONS } from './constants';
 import { CheckCard } from './CheckCard';
 import { css } from 'emotion';
 import { LabelFilterInput } from './LabelFilterInput';
@@ -62,6 +62,13 @@ const matchesLabelFilter = ({ labels }: Check, labelFilters: string[]) => {
   return labels.some(({ name, value }) => labelFilters.some((filter) => filter === `${name}: ${value}`));
 };
 
+const matchesStatusFilter = ({ enabled }: Check, { value }: SelectableValue) => {
+  if (value === 'All' || (value === 'Enabled' && enabled) || (value === 'Disabled' && !enabled)) {
+    return true;
+  }
+  return false;
+};
+
 const getStyles = (theme: GrafanaTheme) => ({
   headerContainer: css`
     display: flex;
@@ -82,6 +89,10 @@ const getStyles = (theme: GrafanaTheme) => ({
     align-items: center;
     justify-content: space-between;
     margin-bottom: ${theme.spacing.sm};
+  `,
+  flexRow: css`
+    display: flex;
+    flex-direction: row;
   `,
   sortContainer: css`
     display: flex;
@@ -133,6 +144,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
   const [searchFilter, setSearchFilter] = useState('');
   const [labelFilters, setLabelFilters] = useState<string[]>([]);
   const [typeFilter, setTypeFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState(CHECK_LIST_STATUS_OPTIONS[0]);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedChecks, setSelectedChecks] = useState<Set<number>>(new Set());
   const [sortType, setSortType] = useState<CheckSort>(CheckSort.AToZ);
@@ -145,7 +157,8 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
         matchesFilterType(check, typeFilter) &&
         matchesSearchFilter(check, searchFilter) &&
         Boolean(check.id) &&
-        matchesLabelFilter(check, labelFilters)
+        matchesLabelFilter(check, labelFilters) &&
+        matchesStatusFilter(check, statusFilter)
     ) as FilteredCheck[],
     sortType
   );
@@ -314,7 +327,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
   };
 
   const updateSortMethod = ({ value }: SelectableValue<CheckSort>) => {
-    if (value) {
+    if (value !== undefined) {
       setSortType(value);
     }
   };
@@ -371,14 +384,6 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
         />
         <div className={styles.sortContainer}>
           <Select
-            aria-label="Types"
-            className={styles.marginRightSmall}
-            prefix="Types"
-            options={CHECK_FILTER_OPTIONS}
-            onChange={(selected) => setTypeFilter(selected?.value ?? typeFilter)}
-            value={typeFilter}
-          />
-          <Select
             prefix={
               <div>
                 <Icon name="sort-amount-down" /> Sort
@@ -390,7 +395,32 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
           />
         </div>
       </div>
-      <LabelFilterInput checks={checks} onChange={(labels) => setLabelFilters(labels)} labelFilters={labelFilters} />
+      <div className={styles.searchSortContainer}>
+        <LabelFilterInput
+          className={styles.marginRightSmall}
+          checks={checks}
+          onChange={(labels) => setLabelFilters(labels)}
+          labelFilters={labelFilters}
+        />
+        <div className={styles.flexRow}>
+          <Select
+            prefix="Status"
+            className={styles.marginRightSmall}
+            options={CHECK_LIST_STATUS_OPTIONS}
+            width={20}
+            onChange={(option) => setStatusFilter(option)}
+            value={statusFilter}
+          />
+          <Select
+            aria-label="Types"
+            prefix="Types"
+            options={CHECK_FILTER_OPTIONS}
+            width={20}
+            onChange={(selected) => setTypeFilter(selected?.value ?? typeFilter)}
+            value={typeFilter}
+          />
+        </div>
+      </div>
       <div className={styles.bulkActionContainer}>
         <div className={styles.checkboxContainer}>
           <Checkbox onChange={toggleVisibleCheckSelection} className={styles.checkbox} />

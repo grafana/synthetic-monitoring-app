@@ -2,11 +2,12 @@ import { GrafanaTheme, SelectableValue } from '@grafana/data';
 import { CascaderOption, MultiSelect, ButtonCascader, useStyles } from '@grafana/ui';
 import React, { useMemo, useState } from 'react';
 import { Check, Label } from 'types';
-import { css } from 'emotion';
+import { css, cx } from 'emotion';
 
 interface Props {
   checks: Check[];
   labelFilters: string[];
+  className?: string;
   onChange: (labels: string[]) => void;
 }
 
@@ -18,14 +19,18 @@ const getStyles = (theme: GrafanaTheme) => ({
   prefix: css`
     margin-left: -${theme.spacing.sm};
     z-index: 1000;
+    height: 100%;
   `,
   cascader: css`
     border-top-right-radius: 0px;
     border-bottom-right-radius: 0px;
   `,
+  container: css`
+    max-width: 400px;
+  `,
 });
 
-export const LabelFilterInput = ({ checks, labelFilters, onChange }: Props) => {
+export const LabelFilterInput = ({ checks, labelFilters, onChange, className }: Props) => {
   const styles = useStyles(getStyles);
   const aggregatedLabels = useMemo(
     () =>
@@ -75,6 +80,7 @@ export const LabelFilterInput = ({ checks, labelFilters, onChange }: Props) => {
           </ButtonCascader>
         </div>
       }
+      className={cx(styles.container, className)}
       options={labelFilterOptions}
       onChange={(filters) => onChange(filters.map(({ value }) => value ?? ''))}
       value={labelFilters}
