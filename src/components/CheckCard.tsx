@@ -5,7 +5,7 @@ import { SuccessRateGauge } from 'components/SuccessRateGauge';
 import { checkType as getCheckType, dashboardUID } from 'utils';
 // Types
 import { Check, CheckType, FilteredCheck, Label } from 'types';
-import { IconButton, useStyles, Checkbox, ButtonGroup } from '@grafana/ui';
+import { IconButton, useStyles, Checkbox, ButtonGroup, HorizontalGroup, TagList } from '@grafana/ui';
 import { css } from 'emotion';
 import { InstanceContext } from './InstanceContext';
 import { AppEvents, GrafanaTheme } from '@grafana/data';
@@ -125,9 +125,11 @@ export const CheckCard = ({ check, onLabelSelect, selected, onToggleCheckbox }: 
             {checkType.toUpperCase()} | {check.frequency / 1000}s frequency | {usage.activeSeries} active series
           </div>
           <div>
-            {check.labels.map((label: Label, index) => (
-              <CheckCardLabel key={index} label={label} onLabelSelect={onLabelSelect} />
-            ))}
+            <HorizontalGroup wrap>
+              {check.labels.map((label: Label, index) => (
+                <CheckCardLabel key={index} label={label} onLabelSelect={onLabelSelect} />
+              ))}
+            </HorizontalGroup>
           </div>
         </div>
         <ButtonGroup>

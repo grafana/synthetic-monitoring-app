@@ -1,7 +1,8 @@
-import { SelectableValue } from '@grafana/data';
-import { CascaderOption, MultiSelect, ButtonCascader } from '@grafana/ui';
+import { GrafanaTheme, SelectableValue } from '@grafana/data';
+import { CascaderOption, MultiSelect, ButtonCascader, useStyles } from '@grafana/ui';
 import React, { useMemo, useState } from 'react';
 import { Check, Label } from 'types';
+import { css } from 'emotion';
 
 interface Props {
   checks: Check[];
@@ -13,16 +14,32 @@ interface AggregateLabels {
   [key: string]: string[];
 }
 
+const getStyles = (theme: GrafanaTheme) => ({
+  prefix: css`
+    margin-left: -${theme.spacing.sm};
+    z-index: 1000;
+  `,
+  cascader: css`
+    border-top-right-radius: 0px;
+    border-bottom-right-radius: 0px;
+  `,
+});
+
 export const LabelFilterInput = ({ checks, labelFilters, onChange }: Props) => {
-  const aggregatedLabels = checks.reduce<AggregateLabels>((acc, check) => {
-    check.labels?.forEach(({ name, value }) => {
-      if (acc[name]) {
-        acc[name].push(value);
-      }
-      acc[name] = [value];
-    });
-    return acc;
-  }, {});
+  const styles = useStyles(getStyles);
+  const aggregatedLabels = useMemo(
+    () =>
+      checks.reduce<AggregateLabels>((acc, check) => {
+        check.labels?.forEach(({ name, value }) => {
+          if (acc[name]) {
+            acc[name].push(value);
+          }
+          acc[name] = [value];
+        });
+        return acc;
+      }, {}),
+    [checks]
+  );
 
   const labelCascadeOptions: CascaderOption[] = useMemo(() => {
     return Object.entries(aggregatedLabels).map(([name, value]) => {
@@ -52,8 +69,8 @@ export const LabelFilterInput = ({ checks, labelFilters, onChange }: Props) => {
   return (
     <MultiSelect
       prefix={
-        <div>
-          <ButtonCascader options={labelCascadeOptions} onChange={handleCascadeLabelSelect}>
+        <div className={styles.prefix} onMouseDown={(e) => e.stopPropagation()}>
+          <ButtonCascader options={labelCascadeOptions} onChange={handleCascadeLabelSelect} className={styles.cascader}>
             Labels
           </ButtonCascader>
         </div>
@@ -61,6 +78,7 @@ export const LabelFilterInput = ({ checks, labelFilters, onChange }: Props) => {
       options={labelFilterOptions}
       onChange={(filters) => onChange(filters.map(({ value }) => value ?? ''))}
       value={labelFilters}
+      isClearable
     />
   );
 };

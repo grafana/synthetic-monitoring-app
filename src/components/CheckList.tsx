@@ -81,6 +81,7 @@ const getStyles = (theme: GrafanaTheme) => ({
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
+    margin-bottom: ${theme.spacing.sm};
   `,
   sortContainer: css`
     display: flex;
