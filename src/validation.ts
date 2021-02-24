@@ -144,6 +144,9 @@ export const validateTLSServerName = (serverName: string) => {
 };
 
 export const validateTLSCACert = (caCert: string) => {
+  if (!caCert) {
+    return undefined;
+  }
   if (caCert.indexOf('-----BEGIN CERTIFICATE-----') < 0 || caCert.indexOf('-----END CERTIFICATE-----') < 0) {
     return 'Certificate must be in the PEM format.';
   }
@@ -151,6 +154,9 @@ export const validateTLSCACert = (caCert: string) => {
 };
 
 export const validateTLSClientCert = (clientCert: string) => {
+  if (!clientCert) {
+    return undefined;
+  }
   if (clientCert.indexOf('-----BEGIN CERTIFICATE-----') < 0 || clientCert.indexOf('-----END CERTIFICATE-----') < 0) {
     return 'Certificate must be in the PEM format.';
   }
@@ -158,8 +164,14 @@ export const validateTLSClientCert = (clientCert: string) => {
 };
 
 export const validateTLSClientKey = (clientKey: string) => {
-  if (clientKey.indexOf('-----BEGIN CERTIFICATE-----') < 0 || clientKey.indexOf('-----END CERTIFICATE-----') < 0) {
-    return 'Certificate must be in the PEM format.';
+  if (!clientKey) {
+    return undefined;
+  }
+  if (
+    clientKey.indexOf('-----BEGIN RSA PRIVATE KEY-----') < 0 ||
+    clientKey.indexOf('-----END RSA PRIVATE KEY-----') < 0
+  ) {
+    return 'Key must be in the PEM format.';
   }
   return undefined;
 };

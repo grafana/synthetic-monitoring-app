@@ -14,6 +14,7 @@ interface Props {
 export const TLSConfig = ({ isEditor, checkType }: Props) => {
   const [showTLS, setShowTLS] = useState(false);
   const { register, errors } = useFormContext();
+
   return (
     <Collapse label="TLS config" onToggle={() => setShowTLS(!showTLS)} isOpen={showTLS} collapsible>
       <HorizontalCheckboxField
@@ -33,6 +34,7 @@ export const TLSConfig = ({ isEditor, checkType }: Props) => {
           id="tls-config-server-name"
           ref={register({
             validate: validateTLSServerName,
+            required: false,
           })}
           name={`settings.${checkType}.tlsConfig.serverName`}
           type="text"
@@ -52,6 +54,7 @@ export const TLSConfig = ({ isEditor, checkType }: Props) => {
             id="tls-config-ca-certificate"
             ref={register({
               validate: validateTLSCACert,
+              required: false,
             })}
             name={`settings.${checkType}.tlsConfig.caCert`}
             rows={2}
@@ -72,6 +75,7 @@ export const TLSConfig = ({ isEditor, checkType }: Props) => {
             id="tls-config-client-cert"
             ref={register({
               validate: validateTLSClientCert,
+              required: false,
             })}
             name={`settings.${checkType}.tlsConfig.clientCert`}
             rows={2}
@@ -86,11 +90,11 @@ export const TLSConfig = ({ isEditor, checkType }: Props) => {
           description="The client key file for the targets. The key must be in the PEM format."
           disabled={!isEditor}
           invalid={Boolean(errors?.settings?.[checkType]?.tlsConfig?.clientKey)}
-          error={errors?.settings?.[checkType]?.tlsConfig?.clientKey}
+          error={errors?.settings?.[checkType]?.tlsConfig?.clientKey?.message}
         >
           <TextArea
             id="tls-config-client-key"
-            ref={register({ validate: validateTLSClientKey })}
+            ref={register({ validate: validateTLSClientKey, required: false })}
             name={`settings.${checkType}.tlsConfig.clientKey`}
             type="password"
             rows={2}
