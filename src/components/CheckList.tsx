@@ -131,7 +131,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
   const [searchFilter, setSearchFilter] = useState('');
   const [labelFilters, setLabelFilters] = useState<string[]>([]);
   const [typeFilter, setTypeFilter] = useState('all');
-  const [statusFilter, setStatusFilter] = useState(CHECK_LIST_STATUS_OPTIONS[0]);
+  const [statusFilter, setStatusFilter] = useState<SelectableValue<CheckEnabledStatus>>(CHECK_LIST_STATUS_OPTIONS[0]);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedChecks, setSelectedChecks] = useState<Set<number>>(new Set());
   const [sortType, setSortType] = useState<CheckSort>(CheckSort.AToZ);
@@ -383,7 +383,9 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
             className={styles.marginRightSmall}
             options={CHECK_LIST_STATUS_OPTIONS}
             width={20}
-            onChange={(option) => setStatusFilter(option)}
+            onChange={(option) => {
+              setStatusFilter(option);
+            }}
             value={statusFilter}
           />
           <Select

@@ -5,7 +5,7 @@ import { SuccessRateGauge } from 'components/SuccessRateGauge';
 import { checkType as getCheckType, dashboardUID } from 'utils';
 // Types
 import { Check, CheckType, FilteredCheck, Label } from 'types';
-import { IconButton, useStyles, Checkbox, ButtonGroup, HorizontalGroup, TagList, Badge } from '@grafana/ui';
+import { IconButton, useStyles, Checkbox, ButtonGroup, HorizontalGroup, Button } from '@grafana/ui';
 import { css, cx } from 'emotion';
 import { InstanceContext } from './InstanceContext';
 import { AppEvents, GrafanaTheme } from '@grafana/data';
@@ -30,7 +30,6 @@ const getStyles = (theme: GrafanaTheme) => ({
     border-radius: 2px;
     width: 100%;
     padding: ${theme.spacing.md};
-    cursor: pointer;
     margin-bottom: ${theme.spacing.sm};
   `,
   checkbox: css`
@@ -72,8 +71,13 @@ const getStyles = (theme: GrafanaTheme) => ({
     flex-direction: row;
     align-items: center;
   `,
+  actionContainer: css`
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+  `,
   actionButtonGroup: css`
-    align-self: flex-start;
     display: flex;
     align-items: center;
   `,
@@ -113,15 +117,8 @@ export const CheckCard = ({ check, onLabelSelect, selected, onToggleCheckbox }: 
   });
 
   return (
-    <div
-      onClick={(e) => {
-        e.stopPropagation();
-        showDashboard(check, checkType);
-      }}
-      className={styles.cardWrapper}
-      aria-label="check-card"
-    >
-      <div className={styles.checkbox} onClick={(e) => e.stopPropagation()}>
+    <div className={styles.cardWrapper} aria-label="check-card">
+      <div className={styles.checkbox}>
         <Checkbox
           onChange={(e: ChangeEvent<HTMLInputElement>) => {
             e.stopPropagation();
@@ -159,23 +156,27 @@ export const CheckCard = ({ check, onLabelSelect, selected, onToggleCheckbox }: 
             <LatencyGauge target={check.target} job={check.job} height={75} width={120} />
           </>
         )}
-        <div className={styles.actionButtonGroup}>
-          <CheckStatusPill enabled={check.enabled} className={styles.statusPill} />
-          <ButtonGroup>
-            <IconButton
-              name="pen"
-              onClick={(e) => {
-                e.stopPropagation();
-                getLocationSrv().update({
-                  partial: true,
-                  query: {
-                    id: check.id,
-                  },
-                });
-              }}
-            />
-            <IconButton name="trash-alt" />
-          </ButtonGroup>
+        <div className={styles.actionContainer}>
+          <div className={styles.actionButtonGroup}>
+            <CheckStatusPill enabled={check.enabled} className={styles.statusPill} />
+            <ButtonGroup>
+              <IconButton
+                name="pen"
+                onClick={() => {
+                  getLocationSrv().update({
+                    partial: true,
+                    query: {
+                      id: check.id,
+                    },
+                  });
+                }}
+              />
+              <IconButton name="trash-alt" />
+            </ButtonGroup>
+          </div>
+          <Button size="sm" type="button" onClick={() => showDashboard(check, checkType)}>
+            View dashboard
+          </Button>
         </div>
       </div>
     </div>
