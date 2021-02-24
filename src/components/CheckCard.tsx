@@ -32,6 +32,9 @@ const getStyles = (theme: GrafanaTheme) => ({
     padding: ${theme.spacing.md};
     margin-bottom: ${theme.spacing.sm};
   `,
+  disabledCard: css`
+    background-color: ${theme.colors.bg3};
+  `,
   checkbox: css`
     margin-right: ${theme.spacing.sm};
     display: flex;
@@ -117,7 +120,7 @@ export const CheckCard = ({ check, onLabelSelect, selected, onToggleCheckbox }: 
   });
 
   return (
-    <div className={styles.cardWrapper} aria-label="check-card">
+    <div className={cx(styles.cardWrapper, { [styles.disabledCard]: !check.enabled })} aria-label="check-card">
       <div className={styles.checkbox}>
         <Checkbox
           onChange={(e: ChangeEvent<HTMLInputElement>) => {
@@ -132,7 +135,8 @@ export const CheckCard = ({ check, onLabelSelect, selected, onToggleCheckbox }: 
           <h3>{check.job}</h3>
           <div className={styles.checkTarget}>{check.target}</div>
           <div className={styles.checkDetails}>
-            {checkType.toUpperCase()} | {check.frequency / 1000}s frequency | {usage.activeSeries} active series
+            {checkType.toUpperCase()} &nbsp;&nbsp;|&nbsp;&nbsp; {check.frequency / 1000}s frequency
+            &nbsp;&nbsp;|&nbsp;&nbsp; {usage.activeSeries} active series
           </div>
           <div>
             <HorizontalGroup wrap>
@@ -160,6 +164,7 @@ export const CheckCard = ({ check, onLabelSelect, selected, onToggleCheckbox }: 
           <div className={styles.actionButtonGroup}>
             <CheckStatusPill enabled={check.enabled} className={styles.statusPill} />
             <ButtonGroup>
+              <IconButton name="apps" onClick={() => showDashboard(check, checkType)} />
               <IconButton
                 name="pen"
                 onClick={() => {
@@ -174,9 +179,6 @@ export const CheckCard = ({ check, onLabelSelect, selected, onToggleCheckbox }: 
               <IconButton name="trash-alt" />
             </ButtonGroup>
           </div>
-          <Button size="sm" type="button" onClick={() => showDashboard(check, checkType)}>
-            View dashboard
-          </Button>
         </div>
       </div>
     </div>

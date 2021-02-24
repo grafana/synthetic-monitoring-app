@@ -25,9 +25,6 @@ const getStyles = (theme: GrafanaTheme) => ({
     border-top-right-radius: 0px;
     border-bottom-right-radius: 0px;
   `,
-  container: css`
-    max-width: 400px;
-  `,
 });
 
 export const LabelFilterInput = ({ checks, labelFilters, onChange, className }: Props) => {
@@ -80,7 +77,7 @@ export const LabelFilterInput = ({ checks, labelFilters, onChange, className }: 
           </ButtonCascader>
         </div>
       }
-      className={cx(styles.container, className)}
+      className={className}
       options={labelFilterOptions}
       onChange={(filters) => onChange(filters.map(({ value }) => value ?? ''))}
       value={labelFilters}

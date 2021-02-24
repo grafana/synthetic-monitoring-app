@@ -368,15 +368,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
           value={searchFilter ? unEscapeStringFromRegex(searchFilter) : ''}
           onChange={(event) => setSearchFilter(escapeStringForRegex(event.currentTarget.value))}
           placeholder="Search by job name, endpoint, or label"
-        />
-      </div>
-      <div className={styles.searchSortContainer}>
-        <LabelFilterInput
-          className={styles.marginRightSmall}
-          checks={checks}
-          onChange={(labels) => setLabelFilters(labels)}
-          labelFilters={labelFilters}
-        />
+        />{' '}
         <div className={styles.flexRow}>
           <Select
             prefix="Status"
@@ -397,6 +389,9 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
             value={typeFilter}
           />
         </div>
+      </div>
+      <div className={styles.searchSortContainer}>
+        <LabelFilterInput checks={checks} onChange={(labels) => setLabelFilters(labels)} labelFilters={labelFilters} />
       </div>
       <div className={styles.bulkActionContainer}>
         <div className={styles.checkboxContainer}>
