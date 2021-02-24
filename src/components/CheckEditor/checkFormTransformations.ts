@@ -130,16 +130,25 @@ const getHttpSettingsSslValue = (failIfSSL: boolean, failIfNotSSL: boolean): Sel
   return HTTP_SSL_OPTIONS[0];
 };
 
+const getDecodedIfPEM = (cert: string) => {
+  const decoded = fromBase64(cert);
+  if (decoded.indexOf('BEGIN CERTIFICATE')) {
+    return decoded;
+  }
+  return cert;
+};
+
 const getTlsConfigFormValues = (tlsConfig?: TLSConfig) => {
   if (!tlsConfig) {
     return {};
   }
+
   return {
     tlsConfig: {
       ...tlsConfig,
-      caCert: fromBase64(tlsConfig.caCert),
-      clientCert: fromBase64(tlsConfig.clientCert),
-      clientKey: fromBase64(tlsConfig.clientKey),
+      caCert: getDecodedIfPEM(tlsConfig.caCert),
+      clientCert: getDecodedIfPEM(tlsConfig.clientCert),
+      clientKey: getDecodedIfPEM(tlsConfig.clientKey),
     },
   };
 };

@@ -43,7 +43,7 @@ export const TLSConfig = ({ isEditor, checkType }: Props) => {
       <Container>
         <Field
           label="CA certificate"
-          description="The CA cert to use for the targets"
+          description="Certificate must be in the PEM format."
           disabled={!isEditor}
           invalid={Boolean(errors.settings?.[checkType]?.tlsConfig?.caCert)}
           error={errors.settings?.[checkType]?.tlsConfig?.caCert?.message}
@@ -63,7 +63,7 @@ export const TLSConfig = ({ isEditor, checkType }: Props) => {
       <Container>
         <Field
           label="Client certificate"
-          description="The client cert file for the targets"
+          description="The client cert file for the targets. The certificate muse be in the PEM format."
           disabled={!isEditor}
           invalid={Boolean(errors?.settings?.[checkType]?.tlsConfig?.clientCert)}
           error={errors?.settings?.[checkType]?.tlsConfig?.clientCert?.message}
@@ -83,7 +83,7 @@ export const TLSConfig = ({ isEditor, checkType }: Props) => {
       <Container>
         <Field
           label="Client key"
-          description="The client key file for the targets"
+          description="The client key file for the targets. The key must be in the PEM format."
           disabled={!isEditor}
           invalid={Boolean(errors?.settings?.[checkType]?.tlsConfig?.clientKey)}
           error={errors?.settings?.[checkType]?.tlsConfig?.clientKey}
