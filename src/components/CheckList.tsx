@@ -2,21 +2,9 @@
 import React, { useState, ChangeEvent } from 'react';
 
 // Types
-import { OrgRole, Check, Label, GrafanaInstances, FilteredCheck, CheckSort } from 'types';
+import { OrgRole, Check, Label, GrafanaInstances, FilteredCheck, CheckSort, CheckEnabledStatus } from 'types';
 import appEvents from 'grafana/app/core/app_events';
-import {
-  Button,
-  Icon,
-  Select,
-  Input,
-  Pagination,
-  InfoBox,
-  Checkbox,
-  useStyles,
-  ButtonCascader,
-  CascaderOption,
-  MultiSelect,
-} from '@grafana/ui';
+import { Button, Icon, Select, Input, Pagination, InfoBox, Checkbox, useStyles } from '@grafana/ui';
 import { unEscapeStringFromRegex, escapeStringForRegex, GrafanaTheme, AppEvents, SelectableValue } from '@grafana/data';
 import { hasRole, checkType as getCheckType, matchStrings } from 'utils';
 import { CHECK_FILTER_OPTIONS, CHECK_LIST_SORT_OPTIONS, CHECK_LIST_STATUS_OPTIONS } from './constants';
@@ -63,7 +51,11 @@ const matchesLabelFilter = ({ labels }: Check, labelFilters: string[]) => {
 };
 
 const matchesStatusFilter = ({ enabled }: Check, { value }: SelectableValue) => {
-  if (value === 'All' || (value === 'Enabled' && enabled) || (value === 'Disabled' && !enabled)) {
+  if (
+    value === CheckEnabledStatus.All ||
+    (value === CheckEnabledStatus.Enabled && enabled) ||
+    (value === CheckEnabledStatus.Disabled && !enabled)
+  ) {
     return true;
   }
   return false;
@@ -94,13 +86,8 @@ const getStyles = (theme: GrafanaTheme) => ({
     display: flex;
     flex-direction: row;
   `,
-  sortContainer: css`
-    display: flex;
-    flex-direction: row;
-    width: 300px;
-  `,
   bulkActionContainer: css`
-    padding: ${theme.spacing.sm};
+    padding: 0 0 ${theme.spacing.sm} ${theme.spacing.sm};
     display: flex;
     min-height: 48px;
     align-items: center;
@@ -382,18 +369,6 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
           onChange={(event) => setSearchFilter(escapeStringForRegex(event.currentTarget.value))}
           placeholder="Search by job name, endpoint, or label"
         />
-        <div className={styles.sortContainer}>
-          <Select
-            prefix={
-              <div>
-                <Icon name="sort-amount-down" /> Sort
-              </div>
-            }
-            options={CHECK_LIST_SORT_OPTIONS}
-            defaultValue={CHECK_LIST_SORT_OPTIONS[0]}
-            onChange={updateSortMethod}
-          />
-        </div>
       </div>
       <div className={styles.searchSortContainer}>
         <LabelFilterInput
@@ -463,7 +438,17 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
           </>
         )}
         <div className={styles.flexGrow} />
-        <div></div>
+        <Select
+          prefix={
+            <div>
+              <Icon name="sort-amount-down" /> Sort
+            </div>
+          }
+          options={CHECK_LIST_SORT_OPTIONS}
+          defaultValue={CHECK_LIST_SORT_OPTIONS[0]}
+          width={20}
+          onChange={updateSortMethod}
+        />
       </div>
       <section className="card-section card-list-layout-list">
         <ol className="card-list">

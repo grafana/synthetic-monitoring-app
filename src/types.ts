@@ -432,3 +432,9 @@ export enum CheckSort {
   AToZ,
   ZToA,
 }
+
+export enum CheckEnabledStatus {
+  All,
+  Enabled,
+  Disabled,
+}

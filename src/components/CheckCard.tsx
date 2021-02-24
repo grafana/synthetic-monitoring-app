@@ -5,13 +5,14 @@ import { SuccessRateGauge } from 'components/SuccessRateGauge';
 import { checkType as getCheckType, dashboardUID } from 'utils';
 // Types
 import { Check, CheckType, FilteredCheck, Label } from 'types';
-import { IconButton, useStyles, Checkbox, ButtonGroup, HorizontalGroup, TagList } from '@grafana/ui';
-import { css } from 'emotion';
+import { IconButton, useStyles, Checkbox, ButtonGroup, HorizontalGroup, TagList, Badge } from '@grafana/ui';
+import { css, cx } from 'emotion';
 import { InstanceContext } from './InstanceContext';
 import { AppEvents, GrafanaTheme } from '@grafana/data';
 import { calculateUsage } from 'checkUsageCalc';
 import { CheckCardLabel } from './CheckCardLabel';
 import { LatencyGauge } from './LatencyGauge';
+import { CheckStatusPill } from './CheckStatusPill';
 
 interface Props {
   check: FilteredCheck;
@@ -45,6 +46,9 @@ const getStyles = (theme: GrafanaTheme) => ({
     padding-right: ${theme.spacing.md};
     overflow: hidden;
   `,
+  noBorder: css`
+    border-right: none;
+  `,
   checkInfoContainer: css`
     flex-grow: 1;
     overflow: hidden;
@@ -66,6 +70,15 @@ const getStyles = (theme: GrafanaTheme) => ({
   stats: css`
     display: flex;
     flex-direction: row;
+    align-items: center;
+  `,
+  actionButtonGroup: css`
+    align-self: flex-start;
+    display: flex;
+    align-items: center;
+  `,
+  statusPill: css`
+    margin-right: ${theme.spacing.xs};
   `,
 });
 
@@ -117,7 +130,7 @@ export const CheckCard = ({ check, onLabelSelect, selected, onToggleCheckbox }: 
           checked={selected}
         />
       </div>
-      <div className={styles.body}>
+      <div className={cx(styles.body, { [styles.noBorder]: !check.enabled })}>
         <div className={styles.checkInfoContainer}>
           <h3>{check.job}</h3>
           <div className={styles.checkTarget}>{check.target}</div>
@@ -132,31 +145,38 @@ export const CheckCard = ({ check, onLabelSelect, selected, onToggleCheckbox }: 
             </HorizontalGroup>
           </div>
         </div>
-        <ButtonGroup>
-          <IconButton
-            name="pen"
-            onClick={(e) => {
-              e.stopPropagation();
-              getLocationSrv().update({
-                partial: true,
-                query: {
-                  id: check.id,
-                },
-              });
-            }}
-          />
-          <IconButton name="trash-alt" />
-        </ButtonGroup>
       </div>
       <div className={styles.stats}>
-        <SuccessRateGauge
-          labelNames={['instance', 'job']}
-          labelValues={[check.target, check.job]}
-          height={75}
-          width={120}
-          sparkline={false}
-        />
-        <LatencyGauge target={check.target} job={check.job} height={75} width={120} />
+        {check.enabled && (
+          <>
+            <SuccessRateGauge
+              labelNames={['instance', 'job']}
+              labelValues={[check.target, check.job]}
+              height={75}
+              width={120}
+              sparkline={false}
+            />
+            <LatencyGauge target={check.target} job={check.job} height={75} width={120} />
+          </>
+        )}
+        <div className={styles.actionButtonGroup}>
+          <CheckStatusPill enabled={check.enabled} className={styles.statusPill} />
+          <ButtonGroup>
+            <IconButton
+              name="pen"
+              onClick={(e) => {
+                e.stopPropagation();
+                getLocationSrv().update({
+                  partial: true,
+                  query: {
+                    id: check.id,
+                  },
+                });
+              }}
+            />
+            <IconButton name="trash-alt" />
+          </ButtonGroup>
+        </div>
       </div>
     </div>
   );
