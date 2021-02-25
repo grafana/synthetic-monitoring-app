@@ -1,4 +1,4 @@
-import React, { ChangeEvent } from 'react';
+import React, { ChangeEvent, useState } from 'react';
 import { SuccessRateGauge } from 'components/SuccessRateGauge';
 import { checkType as getCheckType } from 'utils';
 // Types
@@ -11,6 +11,7 @@ import { CheckCardLabel } from '../CheckCardLabel';
 import { LatencyGauge } from '../LatencyGauge';
 import { CheckItemActionButtons } from './CheckItemActionButtons';
 import { CheckListItemDetails } from './CheckListItemDetails';
+import { CheckStatusType } from './CheckStatusType';
 
 interface Props {
   check: FilteredCheck;
@@ -35,10 +36,10 @@ const getStyles = (theme: GrafanaTheme) => ({
   `,
   listCardWrapper: css`
     display: grid;
-    height: 48px;
-    grid-template-columns: auto 300px auto auto auto;
+    grid-template-columns: auto 145px minmax(1px, 1fr) auto auto auto;
     align-content: center;
     grid-column-gap: ${theme.spacing.md};
+    padding: 12px ${theme.spacing.md};
   `,
   disabledCard: css`
     background-color: ${theme.colors.bg3};
@@ -71,14 +72,33 @@ const getStyles = (theme: GrafanaTheme) => ({
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    max-width: 100%;
   `,
   checkTargetListView: css`
-    max-width: 400px;
     margin-bottom: 0px;
+    justify-self: left;
+    font-weight: ${theme.typography.weight.regular};
+    line-height: ${theme.typography.lineHeight.md};
+    display: flex;
+    align-items: center;
   `,
   checkJobListView: css`
     flex-grow: 1;
     white-space: nowrap;
+    margin-bottom: 0px;
+    justify-self: left;
+    display: flex;
+    align-items: center;
+  `,
+  listLabels: css`
+    padding-top: ${theme.spacing.sm};
+    grid-column: span 6;
+    display: none;
+  `,
+  listLabelsOpen: css`
+    display: unset;
+  `,
+  listItemDetails: css`
     margin-bottom: 0px;
   `,
   stats: css`
@@ -103,6 +123,7 @@ export const CheckListItem = ({
 }: Props) => {
   const styles = useStyles(getStyles);
   const checkType = getCheckType(check.settings);
+  const [listItemLabelsOpen, setListItemLabelsOpen] = useState(false);
 
   const usage = calculateUsage({
     probeCount: check.probes.length,
@@ -124,10 +145,23 @@ export const CheckListItem = ({
               checked={selected}
             />
           </div>
-          <h4 className={styles.checkJobListView}>{check.job}</h4>
+          <span className={styles.checkJobListView}>{check.job}</span>
           <div className={cx(styles.checkTarget, styles.checkTargetListView)}>{check.target}</div>
-          <CheckListItemDetails checkType={checkType} frequency={check.frequency} activeSeries={usage.activeSeries} />
+          <CheckStatusType enabled={check.enabled} checkType={checkType} />
+          <CheckListItemDetails
+            frequency={check.frequency}
+            activeSeries={usage.activeSeries}
+            className={styles.listItemDetails}
+            onViewLabelsClick={() => setListItemLabelsOpen(!listItemLabelsOpen)}
+          />
           <CheckItemActionButtons check={check} />
+          <div className={cx(styles.listLabels, { [styles.listLabelsOpen]: listItemLabelsOpen })}>
+            <HorizontalGroup wrap>
+              {check.labels.map((label: Label, index) => (
+                <CheckCardLabel key={index} label={label} onLabelSelect={onLabelSelect} />
+              ))}
+            </HorizontalGroup>
+          </div>
         </div>
       </div>
     );
@@ -149,7 +183,7 @@ export const CheckListItem = ({
           <div className={styles.checkInfoContainer}>
             <h3>{check.job}</h3>
             <div className={styles.checkTarget}>{check.target}</div>
-            <CheckListItemDetails checkType={checkType} frequency={check.frequency} activeSeries={usage.activeSeries} />
+            <CheckListItemDetails frequency={check.frequency} activeSeries={usage.activeSeries} />
             <div>
               <HorizontalGroup wrap>
                 {check.labels.map((label: Label, index) => (

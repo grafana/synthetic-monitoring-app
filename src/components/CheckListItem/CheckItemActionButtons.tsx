@@ -7,14 +7,12 @@ import { dashboardUID, checkType as getCheckType } from 'utils';
 import { InstanceContext } from 'components/InstanceContext';
 import appEvents from 'grafana/app/core/app_events';
 import { getLocationSrv } from '@grafana/runtime';
-import { CheckStatusPill } from 'components/CheckStatusPill';
 
 const getStyles = (theme: GrafanaTheme) => ({
   actionButtonGroup: css`
     display: flex;
     align-items: center;
   `,
-
   statusPill: css`
     margin-right: ${theme.spacing.xs};
   `,
@@ -48,7 +46,6 @@ export const CheckItemActionButtons = ({ check }: Props) => {
 
   return (
     <div className={styles.actionButtonGroup}>
-      <CheckStatusPill enabled={check.enabled} className={styles.statusPill} />
       <ButtonGroup>
         <IconButton name="apps" onClick={() => showDashboard(check, checkType)} />
         <IconButton

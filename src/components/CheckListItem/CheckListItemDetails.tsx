@@ -1,28 +1,36 @@
 import { GrafanaTheme } from '@grafana/data';
-import { useStyles } from '@grafana/ui';
+import { Button, useStyles } from '@grafana/ui';
 import React from 'react';
-import { css } from 'emotion';
+import { css, cx } from 'emotion';
 
 const getStyles = (theme: GrafanaTheme) => ({
   checkDetails: css`
     font-size: ${theme.typography.size.sm};
     line-height: ${theme.typography.lineHeight.sm};
-    margin-bottom: ${theme.spacing.sm};
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    width: 284px;
+    justify-content: flex-end;
   `,
 });
 
 interface Props {
-  checkType: string;
   frequency: number;
   activeSeries: number;
+  className?: string;
+  onViewLabelsClick: () => void;
 }
 
-export const CheckListItemDetails = ({ checkType, frequency, activeSeries }: Props) => {
+export const CheckListItemDetails = ({ frequency, activeSeries, className, onViewLabelsClick }: Props) => {
   const styles = useStyles(getStyles);
   return (
-    <div className={styles.checkDetails}>
-      {checkType.toUpperCase()} &nbsp;&nbsp;<strong>|</strong>&nbsp;&nbsp; {frequency / 1000}s frequency &nbsp;&nbsp;
-      <strong>|</strong>&nbsp;&nbsp; {activeSeries} active series
+    <div className={cx(styles.checkDetails, className)}>
+      {frequency / 1000}s frequency &nbsp;&nbsp;<strong>|</strong>&nbsp;&nbsp; {activeSeries} active series &nbsp;&nbsp;
+      <strong>|</strong> &nbsp;&nbsp;
+      <Button type="button" variant="link" size="sm" onClick={onViewLabelsClick}>
+        View labels
+      </Button>
     </div>
   );
 };
