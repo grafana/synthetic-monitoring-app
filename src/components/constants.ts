@@ -13,6 +13,7 @@ import {
   AlertSensitivity,
   CheckSort,
   CheckEnabledStatus,
+  CheckListViewType,
 } from 'types';
 
 export const DNS_RESPONSE_CODES = enumToStringArray(DnsResponseCodes).map((responseCode) => ({
@@ -263,4 +264,9 @@ export const CHECK_LIST_STATUS_OPTIONS = [
   { label: 'All', value: CheckEnabledStatus.All },
   { label: 'Enabled', value: CheckEnabledStatus.Enabled },
   { label: 'Disabled', value: CheckEnabledStatus.Disabled },
+];
+
+export const CHECK_LIST_VIEW_TYPE_OPTIONS = [
+  { description: 'Card view', value: CheckListViewType.Card, icon: 'check-square' },
+  { description: 'List view', value: CheckListViewType.List, icon: 'list-ul' },
 ];

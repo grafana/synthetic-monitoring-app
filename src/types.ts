@@ -438,3 +438,8 @@ export enum CheckEnabledStatus {
   Enabled,
   Disabled,
 }
+
+export enum CheckListViewType {
+  Card,
+  List,
+}

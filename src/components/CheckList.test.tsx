@@ -178,15 +178,15 @@ test('clicking label value adds to filter', async () => {
   const labelValue = await screen.findAllByText('agreat: label');
   userEvent.click(labelValue[1]);
   const checks = await screen.findAllByLabelText('check-card');
-  const filterInput = await screen.findAllByTestId('select');
-  expect(filterInput[0]).toHaveValue(['agreat: label']);
+  const filterInput = await screen.findByTestId('check-label-filter');
+  expect(filterInput).toHaveValue(['agreat: label']);
   expect(checks.length).toBe(1);
 });
 
 test('filters by check type', async () => {
   renderCheckList();
-  const selectInputs = await screen.findAllByTestId('select');
-  userEvent.selectOptions(selectInputs[2], 'http');
+  const typeFilter = await screen.findByTestId('check-type-filter');
+  userEvent.selectOptions(typeFilter, 'http');
   const checks = await screen.findAllByLabelText('check-card');
   expect(checks.length).toBe(1);
 });

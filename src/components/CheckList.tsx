@@ -1,14 +1,28 @@
 // Libraries
-import React, { useState, ChangeEvent } from 'react';
+import React, { useState } from 'react';
 
 // Types
-import { OrgRole, Check, Label, GrafanaInstances, FilteredCheck, CheckSort, CheckEnabledStatus } from 'types';
+import {
+  OrgRole,
+  Check,
+  Label,
+  GrafanaInstances,
+  FilteredCheck,
+  CheckSort,
+  CheckEnabledStatus,
+  CheckListViewType,
+} from 'types';
 import appEvents from 'grafana/app/core/app_events';
-import { Button, Icon, Select, Input, Pagination, InfoBox, Checkbox, useStyles } from '@grafana/ui';
+import { Button, Icon, Select, Input, Pagination, InfoBox, Checkbox, useStyles, RadioButtonGroup } from '@grafana/ui';
 import { unEscapeStringFromRegex, escapeStringForRegex, GrafanaTheme, AppEvents, SelectableValue } from '@grafana/data';
 import { hasRole, checkType as getCheckType, matchStrings } from 'utils';
-import { CHECK_FILTER_OPTIONS, CHECK_LIST_SORT_OPTIONS, CHECK_LIST_STATUS_OPTIONS } from './constants';
-import { CheckCard } from './CheckCard';
+import {
+  CHECK_FILTER_OPTIONS,
+  CHECK_LIST_SORT_OPTIONS,
+  CHECK_LIST_STATUS_OPTIONS,
+  CHECK_LIST_VIEW_TYPE_OPTIONS,
+} from './constants';
+import { CheckListItem } from './CheckListItem';
 import { css } from 'emotion';
 import { LabelFilterInput } from './LabelFilterInput';
 
@@ -100,7 +114,7 @@ const getStyles = (theme: GrafanaTheme) => ({
     align-items: center;
   `,
   checkboxContainer: css`
-    margin-right: ${theme.spacing.sm};
+    margin-right: ${theme.spacing.md};
     height: 45px;
   `,
   checkbox: css`
@@ -134,6 +148,8 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
   const [statusFilter, setStatusFilter] = useState<SelectableValue<CheckEnabledStatus>>(CHECK_LIST_STATUS_OPTIONS[0]);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedChecks, setSelectedChecks] = useState<Set<number>>(new Set());
+  const [selectAll, setSelectAll] = useState(false);
+  const [viewType, setViewType] = useState(CheckListViewType.Card);
   const [sortType, setSortType] = useState<CheckSort>(CheckSort.AToZ);
   const styles = useStyles(getStyles);
 
@@ -157,9 +173,9 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
 
   const currentPageChecks = filteredChecks.slice((currentPage - 1) * CHECKS_PER_PAGE, currentPage * CHECKS_PER_PAGE);
 
-  const toggleVisibleCheckSelection = (e: ChangeEvent<HTMLInputElement>) => {
-    const checked = e.target.checked;
-    if (checked) {
+  const toggleVisibleCheckSelection = () => {
+    setSelectAll(!selectAll);
+    if (!selectAll) {
       setSelectedChecks(new Set(currentPageChecks.map((check) => check.id)));
       return;
     }
@@ -364,6 +380,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
           autoFocus
           prefix={<Icon name="search" />}
           width={40}
+          data-testid="check-search-input"
           type="text"
           value={searchFilter ? unEscapeStringFromRegex(searchFilter) : ''}
           onChange={(event) => setSearchFilter(escapeStringForRegex(event.currentTarget.value))}
@@ -372,6 +389,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
         <div className={styles.flexRow}>
           <Select
             prefix="Status"
+            data-testid="check-status-filter"
             className={styles.marginRightSmall}
             options={CHECK_LIST_STATUS_OPTIONS}
             width={20}
@@ -383,6 +401,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
           <Select
             aria-label="Types"
             prefix="Types"
+            data-testid="check-type-filter"
             options={CHECK_FILTER_OPTIONS}
             width={20}
             onChange={(selected) => setTypeFilter(selected?.value ?? typeFilter)}
@@ -395,9 +414,9 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
       </div>
       <div className={styles.bulkActionContainer}>
         <div className={styles.checkboxContainer}>
-          <Checkbox onChange={toggleVisibleCheckSelection} className={styles.checkbox} />
+          <Checkbox onChange={toggleVisibleCheckSelection} value={selectAll} className={styles.checkbox} />
         </div>
-        {selectedChecks.size > 0 && (
+        {selectedChecks.size > 0 ? (
           <>
             <span className={styles.marginRightSmall}>{selectedChecks.size} checks are selected.</span>
             <div className={styles.buttonGroup}>
@@ -433,6 +452,16 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
               </Button>
             </div>
           </>
+        ) : (
+          <RadioButtonGroup
+            value={viewType}
+            onChange={(value) => {
+              if (value !== undefined) {
+                setViewType(value);
+              }
+            }}
+            options={CHECK_LIST_VIEW_TYPE_OPTIONS}
+          />
         )}
         <div className={styles.flexGrow} />
         <Select
@@ -450,12 +479,13 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
       <section className="card-section card-list-layout-list">
         <ol className="card-list">
           {currentPageChecks.map((check, index) => (
-            <CheckCard
+            <CheckListItem
               check={check}
               key={index}
               onLabelSelect={handleLabelSelect}
               onToggleCheckbox={handleCheckSelect}
               selected={selectedChecks.has(check.id)}
+              viewType={viewType}
             />
           ))}
         </ol>

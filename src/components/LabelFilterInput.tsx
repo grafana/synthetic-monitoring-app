@@ -2,7 +2,7 @@ import { GrafanaTheme, SelectableValue } from '@grafana/data';
 import { CascaderOption, MultiSelect, ButtonCascader, useStyles } from '@grafana/ui';
 import React, { useMemo } from 'react';
 import { Check } from 'types';
-import { css, cx } from 'emotion';
+import { css } from 'emotion';
 
 interface Props {
   checks: Check[];
@@ -77,6 +77,7 @@ export const LabelFilterInput = ({ checks, labelFilters, onChange, className }: 
           </ButtonCascader>
         </div>
       }
+      data-testid="check-label-filter"
       className={className}
       options={labelFilterOptions}
       onChange={(filters) => onChange(filters.map(({ value }) => value ?? ''))}
