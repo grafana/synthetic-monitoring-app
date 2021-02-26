@@ -1,5 +1,5 @@
 import { GrafanaTheme, AppEvents } from '@grafana/data';
-import { ButtonGroup, IconButton, useStyles } from '@grafana/ui';
+import { Button, ButtonGroup, IconButton, useStyles } from '@grafana/ui';
 import React, { useContext } from 'react';
 import { css } from 'emotion';
 import { Check, CheckType } from 'types';
@@ -13,15 +13,14 @@ const getStyles = (theme: GrafanaTheme) => ({
     display: flex;
     align-items: center;
   `,
-  statusPill: css`
-    margin-right: ${theme.spacing.xs};
-  `,
 });
 
 interface Props {
   check: Check;
+  showViewDashboard?: boolean;
 }
-export const CheckItemActionButtons = ({ check }: Props) => {
+
+export const CheckItemActionButtons = ({ check, showViewDashboard }: Props) => {
   const styles = useStyles(getStyles);
   const checkType = getCheckType(check.settings);
   const { instance } = useContext(InstanceContext);
@@ -45,22 +44,24 @@ export const CheckItemActionButtons = ({ check }: Props) => {
   };
 
   return (
-    <div className={styles.actionButtonGroup}>
-      <ButtonGroup>
-        <IconButton name="apps" onClick={() => showDashboard(check, checkType)} />
-        <IconButton
-          name="pen"
-          onClick={() => {
-            getLocationSrv().update({
-              partial: true,
-              query: {
-                id: check.id,
-              },
-            });
-          }}
-        />
-        <IconButton name="trash-alt" />
-      </ButtonGroup>
-    </div>
+    <ButtonGroup className={styles.actionButtonGroup}>
+      {showViewDashboard && (
+        <Button onClick={() => showDashboard(check, checkType)} size="sm" variant="link">
+          View dashboard
+        </Button>
+      )}
+      <IconButton
+        name="pen"
+        onClick={() => {
+          getLocationSrv().update({
+            partial: true,
+            query: {
+              id: check.id,
+            },
+          });
+        }}
+      />
+      <IconButton name="trash-alt" />
+    </ButtonGroup>
   );
 };

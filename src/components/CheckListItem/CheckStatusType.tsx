@@ -9,6 +9,7 @@ import { css } from 'emotion';
 interface Props {
   checkType: CheckType;
   enabled: boolean;
+  className?: string;
   onClickStatus?: (enabled: boolean) => void;
   onClickType?: (checkType: CheckType) => void;
 }
@@ -19,10 +20,10 @@ const getStyles = (theme: GrafanaTheme) => ({
   `,
 });
 
-export const CheckStatusType = ({ checkType, enabled, onClickStatus, onClickType }: Props) => {
+export const CheckStatusType = ({ checkType, enabled, onClickStatus, onClickType, className }: Props) => {
   const styles = useStyles(getStyles);
   return (
-    <ButtonGroup>
+    <ButtonGroup className={className}>
       <CheckTypePill checkType={checkType} className={styles.marginRight} onClick={onClickType} />
       <CheckStatusPill enabled={enabled} onClick={onClickStatus} />
     </ButtonGroup>

@@ -35,6 +35,8 @@ const getStyles = (theme: GrafanaTheme) => ({
     display: flex;
     flex-direction: row;
     padding: ${theme.spacing.md};
+    padding-bottom: ${theme.spacing.sm};
+    overflow: none;
   `,
   listCardWrapper: css`
     display: grid;
@@ -47,6 +49,7 @@ const getStyles = (theme: GrafanaTheme) => ({
     background-color: ${theme.colors.bg3};
   `,
   checkbox: css`
+    padding-top: ${theme.spacing.xxs};
     margin-right: ${theme.spacing.sm};
     display: flex;
     align-items: flex-start;
@@ -55,16 +58,22 @@ const getStyles = (theme: GrafanaTheme) => ({
     display: flex;
     flex-direction: row;
     flex-grow: 1;
-    border-right: 1px solid #343b40;
     padding-right: ${theme.spacing.md};
     overflow: hidden;
-  `,
-  noBorder: css`
-    border-right: none;
+    border-bottom: 1px solid #343b40;
   `,
   checkInfoContainer: css`
     flex-grow: 1;
     overflow: hidden;
+  `,
+  statusDetailsCardView: css`
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: ${theme.spacing.sm};
+  `,
+  statusTypeCardView: css`
+    margin-right: ${theme.spacing.sm};
   `,
   checkTarget: css`
     font-size: ${theme.typography.size.sm};
@@ -101,13 +110,25 @@ const getStyles = (theme: GrafanaTheme) => ({
     display: unset;
   `,
   listItemDetails: css`
-    margin-bottom: 0px;
     justify-content: flex-end;
   `,
   stats: css`
     display: flex;
     flex-direction: row;
     align-items: center;
+  `,
+  footer: css`
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    width: 100%;
+    padding-top: ${theme.spacing.sm};
+  `,
+  verticalGroup: css`
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    overflow: hidden;
   `,
   actionContainer: css`
     display: flex;
@@ -189,35 +210,46 @@ export const CheckListItem = ({
             checked={selected}
           />
         </div>
-        <div className={cx(styles.body, { [styles.noBorder]: !check.enabled })}>
-          <div className={styles.checkInfoContainer}>
-            <h3>{check.job}</h3>
-            <div className={styles.checkTarget}>{check.target}</div>
-            <CheckListItemDetails frequency={check.frequency} activeSeries={usage.activeSeries} />
-            <div>
-              <HorizontalGroup wrap>
-                {check.labels.map((label: Label, index) => (
-                  <CheckCardLabel key={index} label={label} onLabelSelect={onLabelSelect} />
-                ))}
-              </HorizontalGroup>
+        <div className={styles.verticalGroup}>
+          <div className={styles.body}>
+            <div className={styles.checkInfoContainer}>
+              <h3>{check.job}</h3>
+              <div className={styles.checkTarget}>{check.target}</div>
+              <div className={styles.statusDetailsCardView}>
+                <CheckStatusType
+                  enabled={check.enabled}
+                  checkType={checkType}
+                  onClickStatus={onStatusSelect}
+                  onClickType={onTypeSelect}
+                  className={styles.statusTypeCardView}
+                />
+                <CheckListItemDetails frequency={check.frequency} activeSeries={usage.activeSeries} />
+              </div>
+            </div>
+            <div className={styles.stats}>
+              {check.enabled && (
+                <>
+                  <SuccessRateGauge
+                    labelNames={['instance', 'job']}
+                    labelValues={[check.target, check.job]}
+                    height={75}
+                    width={120}
+                    sparkline={false}
+                  />
+                  <LatencyGauge target={check.target} job={check.job} height={75} width={120} />
+                </>
+              )}
             </div>
           </div>
-        </div>
-        <div className={styles.stats}>
-          {check.enabled && (
-            <>
-              <SuccessRateGauge
-                labelNames={['instance', 'job']}
-                labelValues={[check.target, check.job]}
-                height={75}
-                width={120}
-                sparkline={false}
-              />
-              <LatencyGauge target={check.target} job={check.job} height={75} width={120} />
-            </>
-          )}
-          <div className={styles.actionContainer}>
-            <CheckItemActionButtons check={check} />
+          <div className={styles.footer}>
+            <HorizontalGroup wrap>
+              {check.labels.map((label: Label, index) => (
+                <CheckCardLabel key={index} label={label} onLabelSelect={onLabelSelect} />
+              ))}
+            </HorizontalGroup>
+            <div className={styles.actionContainer}>
+              <CheckItemActionButtons check={check} showViewDashboard />
+            </div>
           </div>
         </div>
       </div>

@@ -11,7 +11,6 @@ const getStyles = (theme: GrafanaTheme) => ({
     display: flex;
     align-items: center;
     width: 284px;
-    margin-bottom: ${theme.spacing.sm};
   `,
 });
 
