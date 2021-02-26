@@ -2,7 +2,7 @@ import React, { ChangeEvent, useState } from 'react';
 import { SuccessRateGauge } from 'components/SuccessRateGauge';
 import { checkType as getCheckType } from 'utils';
 // Types
-import { CheckListViewType, FilteredCheck, Label } from 'types';
+import { CheckListViewType, CheckType, FilteredCheck, Label } from 'types';
 import { useStyles, Checkbox, HorizontalGroup } from '@grafana/ui';
 import { css, cx } from 'emotion';
 import { GrafanaTheme } from '@grafana/data';
@@ -18,6 +18,8 @@ interface Props {
   selected: boolean;
   onLabelSelect: (label: Label) => void;
   onToggleCheckbox: (checkId: number) => void;
+  onTypeSelect: (checkType: CheckType) => void;
+  onStatusSelect: (checkStatus: boolean) => void;
   viewType: CheckListViewType;
 }
 
@@ -100,6 +102,7 @@ const getStyles = (theme: GrafanaTheme) => ({
   `,
   listItemDetails: css`
     margin-bottom: 0px;
+    justify-content: flex-end;
   `,
   stats: css`
     display: flex;
@@ -117,6 +120,8 @@ const getStyles = (theme: GrafanaTheme) => ({
 export const CheckListItem = ({
   check,
   onLabelSelect,
+  onTypeSelect,
+  onStatusSelect,
   selected,
   onToggleCheckbox,
   viewType = CheckListViewType.Card,
@@ -147,7 +152,12 @@ export const CheckListItem = ({
           </div>
           <span className={styles.checkJobListView}>{check.job}</span>
           <div className={cx(styles.checkTarget, styles.checkTargetListView)}>{check.target}</div>
-          <CheckStatusType enabled={check.enabled} checkType={checkType} />
+          <CheckStatusType
+            enabled={check.enabled}
+            checkType={checkType}
+            onClickStatus={onStatusSelect}
+            onClickType={onTypeSelect}
+          />
           <CheckListItemDetails
             frequency={check.frequency}
             activeSeries={usage.activeSeries}

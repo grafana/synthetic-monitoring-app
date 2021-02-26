@@ -11,6 +11,7 @@ import {
   CheckSort,
   CheckEnabledStatus,
   CheckListViewType,
+  CheckType,
 } from 'types';
 import appEvents from 'grafana/app/core/app_events';
 import { Button, Icon, Select, Input, Pagination, InfoBox, Checkbox, useStyles, RadioButtonGroup } from '@grafana/ui';
@@ -169,6 +170,19 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
   const handleLabelSelect = (label: Label) => {
     setLabelFilters([...labelFilters, `${label.name}: ${label.value}`]);
     setCurrentPage(1);
+  };
+
+  const handleTypeSelect = (checkType: CheckType) => {
+    console.log('helllllo', checkType);
+    setTypeFilter(checkType);
+  };
+
+  const handleStatusSelect = (enabled: boolean) => {
+    const status = enabled ? CheckEnabledStatus.Enabled : CheckEnabledStatus.Disabled;
+    const option = CHECK_LIST_STATUS_OPTIONS.find(({ value }) => value === status);
+    if (option) {
+      setStatusFilter(option);
+    }
   };
 
   const currentPageChecks = filteredChecks.slice((currentPage - 1) * CHECKS_PER_PAGE, currentPage * CHECKS_PER_PAGE);
@@ -483,6 +497,8 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
               check={check}
               key={index}
               onLabelSelect={handleLabelSelect}
+              onStatusSelect={handleStatusSelect}
+              onTypeSelect={handleTypeSelect}
               onToggleCheckbox={handleCheckSelect}
               selected={selectedChecks.has(check.id)}
               viewType={viewType}

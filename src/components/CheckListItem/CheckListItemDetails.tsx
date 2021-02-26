@@ -11,7 +11,7 @@ const getStyles = (theme: GrafanaTheme) => ({
     display: flex;
     align-items: center;
     width: 284px;
-    justify-content: flex-end;
+    margin-bottom: ${theme.spacing.sm};
   `,
 });
 
@@ -19,18 +19,22 @@ interface Props {
   frequency: number;
   activeSeries: number;
   className?: string;
-  onViewLabelsClick: () => void;
+  onViewLabelsClick?: () => void;
 }
 
 export const CheckListItemDetails = ({ frequency, activeSeries, className, onViewLabelsClick }: Props) => {
   const styles = useStyles(getStyles);
   return (
     <div className={cx(styles.checkDetails, className)}>
-      {frequency / 1000}s frequency &nbsp;&nbsp;<strong>|</strong>&nbsp;&nbsp; {activeSeries} active series &nbsp;&nbsp;
-      <strong>|</strong> &nbsp;&nbsp;
-      <Button type="button" variant="link" size="sm" onClick={onViewLabelsClick}>
-        View labels
-      </Button>
+      {frequency / 1000}s frequency &nbsp;&nbsp;<strong>|</strong>&nbsp;&nbsp; {activeSeries} active series
+      {onViewLabelsClick && (
+        <>
+          &nbsp;&nbsp;<strong>|</strong>
+          <Button type="button" variant="link" size="sm" onClick={onViewLabelsClick}>
+            View labels
+          </Button>
+        </>
+      )}
     </div>
   );
 };
