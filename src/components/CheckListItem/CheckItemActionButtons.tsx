@@ -2,8 +2,8 @@ import { GrafanaTheme, AppEvents } from '@grafana/data';
 import { Button, ButtonGroup, ConfirmModal, IconButton, useStyles } from '@grafana/ui';
 import React, { useContext, useState } from 'react';
 import { css } from 'emotion';
-import { Check, CheckType } from 'types';
-import { dashboardUID, checkType as getCheckType } from 'utils';
+import { Check, CheckType, OrgRole } from 'types';
+import { dashboardUID, checkType as getCheckType, hasRole } from 'utils';
 import { InstanceContext } from 'components/InstanceContext';
 import appEvents from 'grafana/app/core/app_events';
 import { getLocationSrv } from '@grafana/runtime';
@@ -62,8 +62,9 @@ export const CheckItemActionButtons = ({ check, showViewDashboard, onRemoveCheck
             },
           });
         }}
+        disabled={!hasRole(OrgRole.EDITOR)}
       />
-      <IconButton name="trash-alt" onClick={() => setShowDeleteModal(true)} />
+      <IconButton name="trash-alt" onClick={() => setShowDeleteModal(true)} disabled={!hasRole(OrgRole.EDITOR)} />
       <ConfirmModal
         isOpen={showDeleteModal}
         title="Delete check"

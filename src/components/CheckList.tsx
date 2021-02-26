@@ -176,7 +176,6 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
   };
 
   const handleTypeSelect = (checkType: CheckType) => {
-    console.log('helllllo', checkType);
     setTypeFilter(checkType);
   };
 
@@ -266,6 +265,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
     }
 
     clearSelectedChecks();
+    onCheckUpdate();
   };
 
   const enableSelectedChecks = async () => {
@@ -313,6 +313,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
     }
 
     clearSelectedChecks();
+    onCheckUpdate();
   };
 
   const deleteSingleCheck = async (check: Check) => {
@@ -459,6 +460,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
                   size="sm"
                   className={styles.marginRightSmall}
                   onClick={toggleAllCheckSelection}
+                  disabled={!hasRole(OrgRole.EDITOR)}
                 >
                   Select all {filteredChecks.length} checks
                 </Button>
@@ -468,6 +470,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
                 variant="destructive"
                 className={styles.marginRightSmall}
                 onClick={deleteSelectedChecks}
+                disabled={!hasRole(OrgRole.EDITOR)}
               >
                 Delete
               </Button>
@@ -476,6 +479,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
                 variant="primary"
                 onClick={enableSelectedChecks}
                 className={styles.marginRightSmall}
+                disabled={!hasRole(OrgRole.EDITOR)}
               >
                 Enable
               </Button>
