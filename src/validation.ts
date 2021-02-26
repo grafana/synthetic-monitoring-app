@@ -3,6 +3,7 @@ import { checkType } from 'utils';
 import * as punycode from 'punycode';
 import { Address4, Address6 } from 'ip-address';
 import validUrl from 'valid-url';
+import { PEM_HEADER, PEM_FOOTER } from 'components/constants';
 
 export const CheckValidation = {
   job: validateJob,
@@ -143,15 +144,33 @@ export const validateTLSServerName = (serverName: string) => {
   return undefined;
 };
 
-export const validateTLSCACert = (caCert: string) => {
+export const validateTLSCACert = (caCert?: string) => {
+  if (!caCert) {
+    return undefined;
+  }
+  if (caCert.indexOf(PEM_HEADER) < 0 || caCert.indexOf(PEM_FOOTER) < 0) {
+    return 'Certificate must be in the PEM format.';
+  }
   return undefined;
 };
 
-export const validateTLSClientCert = (clientCert: string) => {
+export const validateTLSClientCert = (clientCert?: string) => {
+  if (!clientCert) {
+    return undefined;
+  }
+  if (clientCert.indexOf(PEM_HEADER) < 0 || clientCert.indexOf(PEM_FOOTER) < 0) {
+    return 'Certificate must be in the PEM format.';
+  }
   return undefined;
 };
 
-export const validateTLSClientKey = (clientKey: string) => {
+export const validateTLSClientKey = (clientKey?: string) => {
+  if (!clientKey) {
+    return undefined;
+  }
+  if (clientKey.indexOf('-----BEGIN') < 0 || clientKey.indexOf('-----END') < 0) {
+    return 'Key must be in the PEM format.';
+  }
   return undefined;
 };
 
