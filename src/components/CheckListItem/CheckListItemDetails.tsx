@@ -1,5 +1,5 @@
 import { GrafanaTheme } from '@grafana/data';
-import { Button, useStyles } from '@grafana/ui';
+import { Button, Tooltip, useStyles } from '@grafana/ui';
 import React from 'react';
 import { css, cx } from 'emotion';
 
@@ -18,10 +18,11 @@ interface Props {
   frequency: number;
   activeSeries: number;
   className?: string;
+  labelCount?: number;
   onViewLabelsClick?: () => void;
 }
 
-export const CheckListItemDetails = ({ frequency, activeSeries, className, onViewLabelsClick }: Props) => {
+export const CheckListItemDetails = ({ frequency, activeSeries, className, labelCount, onViewLabelsClick }: Props) => {
   const styles = useStyles(getStyles);
   return (
     <div className={cx(styles.checkDetails, className)}>
@@ -29,8 +30,8 @@ export const CheckListItemDetails = ({ frequency, activeSeries, className, onVie
       {onViewLabelsClick && (
         <>
           &nbsp;&nbsp;<strong>|</strong>
-          <Button type="button" variant="link" size="sm" onClick={onViewLabelsClick}>
-            View labels
+          <Button disabled={labelCount === 0} type="button" variant="link" size="sm" onClick={onViewLabelsClick}>
+            View {labelCount} label{labelCount === 1 ? '' : 's'}
           </Button>
         </>
       )}

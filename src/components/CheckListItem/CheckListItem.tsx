@@ -183,11 +183,12 @@ export const CheckListItem = ({
             frequency={check.frequency}
             activeSeries={usage.activeSeries}
             className={styles.listItemDetails}
+            labelCount={check.labels.length}
             onViewLabelsClick={() => setListItemLabelsOpen(!listItemLabelsOpen)}
           />
           <CheckItemActionButtons check={check} />
           <div className={cx(styles.listLabels, { [styles.listLabelsOpen]: listItemLabelsOpen })}>
-            <HorizontalGroup wrap>
+            <HorizontalGroup justify="flex-end" wrap>
               {check.labels.map((label: Label, index) => (
                 <CheckCardLabel key={index} label={label} onLabelSelect={onLabelSelect} />
               ))}
