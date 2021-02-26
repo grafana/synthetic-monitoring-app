@@ -1,7 +1,9 @@
 import { GrafanaTheme } from '@grafana/data';
-import { Button, Tooltip, useStyles } from '@grafana/ui';
-import React from 'react';
+import { Button, HorizontalGroup, Tooltip, useStyles } from '@grafana/ui';
+import React, { useState } from 'react';
 import { css, cx } from 'emotion';
+import { Label } from 'types';
+import { CheckCardLabel } from 'components/CheckCardLabel';
 
 const getStyles = (theme: GrafanaTheme) => ({
   checkDetails: css`
@@ -19,20 +21,32 @@ interface Props {
   activeSeries: number;
   className?: string;
   labelCount?: number;
-  onViewLabelsClick?: () => void;
+  labels?: Label[];
+  onLabelClick?: (label: Label) => void;
 }
 
-export const CheckListItemDetails = ({ frequency, activeSeries, className, labelCount, onViewLabelsClick }: Props) => {
+export const CheckListItemDetails = ({ frequency, activeSeries, className, labels, onLabelClick }: Props) => {
   const styles = useStyles(getStyles);
   return (
     <div className={cx(styles.checkDetails, className)}>
       {frequency / 1000}s frequency &nbsp;&nbsp;<strong>|</strong>&nbsp;&nbsp; {activeSeries} active series
-      {onViewLabelsClick && (
+      {labels && onLabelClick && (
         <>
           &nbsp;&nbsp;<strong>|</strong>
-          <Button disabled={labelCount === 0} type="button" variant="link" size="sm" onClick={onViewLabelsClick}>
-            View {labelCount} label{labelCount === 1 ? '' : 's'}
-          </Button>
+          <Tooltip
+            placement="bottom-end"
+            content={
+              <HorizontalGroup justify="flex-end" wrap>
+                {labels.map((label: Label, index) => (
+                  <CheckCardLabel key={index} label={label} onLabelSelect={onLabelClick} />
+                ))}
+              </HorizontalGroup>
+            }
+          >
+            <Button disabled={labels.length === 0} type="button" variant="link" size="sm">
+              View {labels.length} label{labels.length === 1 ? '' : 's'}
+            </Button>
+          </Tooltip>
         </>
       )}
     </div>

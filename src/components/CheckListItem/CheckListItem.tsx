@@ -101,14 +101,6 @@ const getStyles = (theme: GrafanaTheme) => ({
     display: flex;
     align-items: center;
   `,
-  listLabels: css`
-    padding-top: ${theme.spacing.sm};
-    grid-column: span 6;
-    display: none;
-  `,
-  listLabelsOpen: css`
-    display: unset;
-  `,
   listItemDetails: css`
     justify-content: flex-end;
   `,
@@ -184,16 +176,10 @@ export const CheckListItem = ({
             activeSeries={usage.activeSeries}
             className={styles.listItemDetails}
             labelCount={check.labels.length}
-            onViewLabelsClick={() => setListItemLabelsOpen(!listItemLabelsOpen)}
+            labels={check.labels}
+            onLabelClick={onLabelSelect}
           />
           <CheckItemActionButtons check={check} />
-          <div className={cx(styles.listLabels, { [styles.listLabelsOpen]: listItemLabelsOpen })}>
-            <HorizontalGroup justify="flex-end" wrap>
-              {check.labels.map((label: Label, index) => (
-                <CheckCardLabel key={index} label={label} onLabelSelect={onLabelSelect} />
-              ))}
-            </HorizontalGroup>
-          </div>
         </div>
       </div>
     );
