@@ -27,7 +27,8 @@ import { CheckListItem } from './CheckListItem';
 import { css } from 'emotion';
 import { LabelFilterInput } from './LabelFilterInput';
 
-const CHECKS_PER_PAGE = 15;
+const CHECKS_PER_PAGE_CARD = 15;
+const CHECKS_PER_PAGE_LIST = 50;
 
 const matchesFilterType = (check: Check, typeFilter: string) => {
   if (typeFilter === 'all') {
@@ -154,7 +155,9 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
   const [sortType, setSortType] = useState<CheckSort>(CheckSort.AToZ);
   const styles = useStyles(getStyles);
 
-  const totalPages = Math.ceil(checks.length / CHECKS_PER_PAGE);
+  const checksPerPage = viewType === CheckListViewType.Card ? CHECKS_PER_PAGE_CARD : CHECKS_PER_PAGE_LIST;
+
+  const totalPages = Math.ceil(checks.length / checksPerPage);
   const filteredChecks = sortChecks(
     checks.filter(
       (check) =>
@@ -185,7 +188,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
     }
   };
 
-  const currentPageChecks = filteredChecks.slice((currentPage - 1) * CHECKS_PER_PAGE, currentPage * CHECKS_PER_PAGE);
+  const currentPageChecks = filteredChecks.slice((currentPage - 1) * checksPerPage, currentPage * checksPerPage);
 
   const toggleVisibleCheckSelection = () => {
     setSelectAll(!selectAll);
