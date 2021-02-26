@@ -245,3 +245,7 @@ export const getDefaultAlertAnnotations = (percentage: number) => ({
   description: `check job {{ $labels.job }} instance {{ $labels.instance }} has a success rate of {{ printf "%.1f" $value }}%.`,
   summary: `check success below ${percentage}%`,
 });
+
+export const PEM_HEADER = '-----BEGIN CERTIFICATE-----';
+
+export const PEM_FOOTER = '-----END CERTIFICATE-----';
