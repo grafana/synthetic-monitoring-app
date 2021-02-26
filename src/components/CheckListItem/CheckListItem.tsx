@@ -1,8 +1,8 @@
-import React, { ChangeEvent, useState } from 'react';
+import React, { ChangeEvent } from 'react';
 import { SuccessRateGauge } from 'components/SuccessRateGauge';
 import { checkType as getCheckType } from 'utils';
 // Types
-import { CheckListViewType, CheckType, FilteredCheck, Label } from 'types';
+import { Check, CheckListViewType, CheckType, FilteredCheck, Label } from 'types';
 import { useStyles, Checkbox, HorizontalGroup } from '@grafana/ui';
 import { css, cx } from 'emotion';
 import { GrafanaTheme } from '@grafana/data';
@@ -20,6 +20,7 @@ interface Props {
   onToggleCheckbox: (checkId: number) => void;
   onTypeSelect: (checkType: CheckType) => void;
   onStatusSelect: (checkStatus: boolean) => void;
+  onDeleteCheck: (check: Check) => void;
   viewType: CheckListViewType;
 }
 
@@ -135,13 +136,13 @@ export const CheckListItem = ({
   onLabelSelect,
   onTypeSelect,
   onStatusSelect,
+  onDeleteCheck,
   selected,
   onToggleCheckbox,
   viewType = CheckListViewType.Card,
 }: Props) => {
   const styles = useStyles(getStyles);
   const checkType = getCheckType(check.settings);
-  const [listItemLabelsOpen, setListItemLabelsOpen] = useState(false);
 
   const usage = calculateUsage({
     probeCount: check.probes.length,
@@ -179,7 +180,7 @@ export const CheckListItem = ({
             labels={check.labels}
             onLabelClick={onLabelSelect}
           />
-          <CheckItemActionButtons check={check} />
+          <CheckItemActionButtons check={check} onRemoveCheck={onDeleteCheck} />
         </div>
       </div>
     );
@@ -235,7 +236,7 @@ export const CheckListItem = ({
               ))}
             </HorizontalGroup>
             <div className={styles.actionContainer}>
-              <CheckItemActionButtons check={check} showViewDashboard />
+              <CheckItemActionButtons check={check} onRemoveCheck={onDeleteCheck} showViewDashboard />
             </div>
           </div>
         </div>

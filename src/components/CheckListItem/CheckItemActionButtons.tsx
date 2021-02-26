@@ -1,6 +1,6 @@
 import { GrafanaTheme, AppEvents } from '@grafana/data';
-import { Button, ButtonGroup, IconButton, useStyles } from '@grafana/ui';
-import React, { useContext } from 'react';
+import { Button, ButtonGroup, ConfirmModal, IconButton, useStyles } from '@grafana/ui';
+import React, { useContext, useState } from 'react';
 import { css } from 'emotion';
 import { Check, CheckType } from 'types';
 import { dashboardUID, checkType as getCheckType } from 'utils';
@@ -18,10 +18,12 @@ const getStyles = (theme: GrafanaTheme) => ({
 interface Props {
   check: Check;
   showViewDashboard?: boolean;
+  onRemoveCheck: (check: Check) => void;
 }
 
-export const CheckItemActionButtons = ({ check, showViewDashboard }: Props) => {
+export const CheckItemActionButtons = ({ check, showViewDashboard, onRemoveCheck }: Props) => {
   const styles = useStyles(getStyles);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const checkType = getCheckType(check.settings);
   const { instance } = useContext(InstanceContext);
 
@@ -61,7 +63,18 @@ export const CheckItemActionButtons = ({ check, showViewDashboard }: Props) => {
           });
         }}
       />
-      <IconButton name="trash-alt" />
+      <IconButton name="trash-alt" onClick={() => setShowDeleteModal(true)} />
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        title="Delete check"
+        body="Are you sure you want to delete this check?"
+        confirmText="Delete check"
+        onConfirm={() => {
+          onRemoveCheck(check);
+          setShowDeleteModal(false);
+        }}
+        onDismiss={() => setShowDeleteModal(false)}
+      />
     </ButtonGroup>
   );
 };

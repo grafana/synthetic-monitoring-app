@@ -315,6 +315,21 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
     clearSelectedChecks();
   };
 
+  const deleteSingleCheck = async (check: Check) => {
+    try {
+      if (!check.id) {
+        appEvents.emit(AppEvents.alertError, ['There was an error deleting the check']);
+        return;
+      }
+      await instance.api?.deleteCheck(check.id);
+      appEvents.emit(AppEvents.alertSuccess, ['Check deleted successfully']);
+      onCheckUpdate();
+    } catch (e) {
+      const errorMessage = e?.data?.err ?? '';
+      appEvents.emit(AppEvents.alertError, [`Could not delete check. ${errorMessage}`]);
+    }
+  };
+
   const deleteSelectedChecks = async () => {
     const checkDeletions = Array.from(selectedChecks).map((checkId) => instance.api?.deleteCheck(checkId));
 
@@ -505,6 +520,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
               onToggleCheckbox={handleCheckSelect}
               selected={selectedChecks.has(check.id)}
               viewType={viewType}
+              onDeleteCheck={deleteSingleCheck}
             />
           ))}
         </ol>
