@@ -72,7 +72,7 @@ const fetchSMRules = (alertRulerUrl: string): Promise<RuleResponse> =>
       if (e.status === 404) {
         return { rules: [] };
       }
-      return { rules: [], error: e.data?.message ?? 'We ran into a problem and could fetch the alert rules' };
+      return { rules: [], error: e.data?.message ?? 'We ran into a problem and could not fetch the alert rules' };
     });
 
 const getDeleteRulesForCheck = (datasourceUrl: string) => (checkId: number) => {

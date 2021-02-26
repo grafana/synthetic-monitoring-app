@@ -106,7 +106,6 @@ export const Alerting: FC = () => {
       </div>
     );
   }
-  console.log({ alertRules, alertError });
 
   return (
     <div>
