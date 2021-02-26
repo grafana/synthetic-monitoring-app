@@ -1,3 +1,12 @@
+## [0.7.17](https://github.com/grafana/synthetic-monitoring-app/compare/0.7.16...0.7.17) (2021-02-26)
+
+
+### Bug Fixes
+
+* Add validation and messaging to enforce PEM certs for checks with TLS ([73fecca](https://github.com/grafana/synthetic-monitoring-app/commit/73fecca701ca635a457a6023e63a4174f6cab671))
+
+## [0.7.16](https://github.com/grafana/synthetic-monitoring-app/compare/0.7.15...0.7.16) (2021-02-17)
+
 ## [0.7.15](https://github.com/grafana/synthetic-monitoring-app/compare/0.7.14...0.7.15) (2021-02-17)
 
 

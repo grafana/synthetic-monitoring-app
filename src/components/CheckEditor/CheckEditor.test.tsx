@@ -29,6 +29,56 @@ jest.mock('hooks/useAlerts', () => ({
   }),
 }));
 
+const validCert = `-----BEGIN CERTIFICATE-----
+MIICUTCCAfugAwIBAgIBADANBgkqhkiG9w0BAQQFADBXMQswCQYDVQQGEwJDTjEL
+MAkGA1UECBMCUE4xCzAJBgNVBAcTAkNOMQswCQYDVQQKEwJPTjELMAkGA1UECxMC
+VU4xFDASBgNVBAMTC0hlcm9uZyBZYW5nMB4XDTA1MDcxNTIxMTk0N1oXDTA1MDgx
+NDIxMTk0N1owVzELMAkGA1UEBhMCQ04xCzAJBgNVBAgTAlBOMQswCQYDVQQHEwJD
+TjELMAkGA1UEChMCT04xCzAJBgNVBAsTAlVOMRQwEgYDVQQDEwtIZXJvbmcgWWFu
+ZzBcMA0GCSqGSIb3DQEBAQUAA0sAMEgCQQCp5hnG7ogBhtlynpOS21cBewKE/B7j
+V14qeyslnr26xZUsSVko36ZnhiaO/zbMOoRcKK9vEcgMtcLFuQTWDl3RAgMBAAGj
+gbEwga4wHQYDVR0OBBYEFFXI70krXeQDxZgbaCQoR4jUDncEMH8GA1UdIwR4MHaA
+FFXI70krXeQDxZgbaCQoR4jUDncEoVukWTBXMQswCQYDVQQGEwJDTjELMAkGA1UE
+CBMCUE4xCzAJBgNVBAcTAkNOMQswCQYDVQQKEwJPTjELMAkGA1UECxMCVU4xFDAS
+BgNVBAMTC0hlcm9uZyBZYW5nggEAMAwGA1UdEwQFMAMBAf8wDQYJKoZIhvcNAQEE
+BQADQQA/ugzBrjjK9jcWnDVfGHlk3icNRq0oV7Ri32z/+HQX67aRfgZu7KWdI+Ju
+Wm7DCfrPNGVwFWUQOmsPue9rZBgO
+-----END CERTIFICATE-----`;
+
+const validKey = `-----BEGIN RSA PRIVATE KEY-----
+Proc-Type: 4,ENCRYPTED
+DEK-Info: DES-EDE3-CBC,F57524B7B26F4694
+
+IJ/e6Xrf4pTBSO+CHdcqGocyAj5ysUre5BwTp6Yk2w9P/r7si7YA+pivghbUzYKc
+uy2hFwWG+LVajZXaG0dFXmbDHd9oYlW/SeJhPrxMvxaqC9R/x4MugAMFOhCQGMq3
+XW58R70L48BIuG6TCSOAGIwMDowv5ToL4nZYnqIRT77aACcsM0ozC+LCyqmLvvsU
+NV/YX4ZgMhzaT2eVK+mtOut6m1Wb7t6iUCS14dB/fTF+RaGYYZYMGut/alFaPqj0
+/KKlTNxCRD99+UZDbg3TnxIFSZd00zY75votTZnlLypoB9pUFP5iQglvuQ4pD3Ux
+bzU4cO0/hrdo04wORwWG/DUoAPlq8wjGei5jbEwHQJ8fNBzCl3Zy5Fx3bcAaaXEK
+zB97cyqhr80f2KnyiAKzk7vmyuRtMO/6Y4yE+1mLFE7NWcRkGXLEd3+wEt8DEq2R
+nQibvRTbT26HkO0bcfBAaeOYxHawdNcF2SZ1dUSZeo/teHNBI2JD5xRgtEPekXRs
+bBuCmxUevuh2+Q632oOpNNpFWBJTsyTcp9cAsxTEkbOCicxLN6c1+GvwyIqfSykR
+G08Y5M88n7Ey5GZ43KUbGh60vV5QN/mzhf3SotBl9+wetpm+4AmkKVUQyQVdRrn2
+1jXrkUZcSN8VbYk2tB74/FFXuaaF2WRQNawceXjrvegxz3/AkjZ7ahYI4rgptCqz
+OXvMk+le5tmVKbJfl1G+EZm2CqDLly5makeMKvX3fSWefKoZSbN0NuW28RgSJIQC
+pqja3dWZyGl7Z9dlM+big0nbLhMdIvT8526lD+p+9aMMuBL14MhWGp4IIfvXOPR+
+Ots3ZoGR9vtPQyO6YN5/CtRp1DBbRA48W9xk0BnnjSNpFBLY4ykqZj/cS01Up88x
+UMATqoMLiBwKCyaeibiIXpzqPTagG3PEEJkYPsrG/zql1EktjTtNo4LaYdFuZZzb
+fMmcEpFZLerCIgu2cOnhhKwCHYWbZ2MSVsgoiu6RyqqBblAfNkttthiPtCLY82sQ
+2ejN3NMsq+xlc/ISc21eClUaoUXmvyaSf2E3D4CN3FAi8fD74fP64EiKr+JjMNUC
+DWZ79UdwZcpl2VJ7JUAAyRzEt66U5PwQqv1U8ITjsBjykxRQ68/c/+HCOfg9NYn3
+cmpK5UxdFGj6261c6nVRlLVmV0+mPj1+sWHow5jZiH81IuoL3zqGkKzqy5FkTgs4
+MG3hViN9lHEmMPZdK16EPhCwvff0eBV+vhfPjmGoAE6TK3YY/yh9bfhMliLoc1jr
+NmPxL0FWrNzqWxZwMtDYcXu4KUesBL6/Hr+K9HSUa8zF+4UbELJTPOd1QAU6HF7a
+9BidzGMZ+J2Vjqa/NGpWckBRjWb6S7aItK6rrtORU1QHmpQlYpqEh49sreo6DCrb
+s8yejjKm2gSB/KhTe1nJXcTM16Xa4qWXTv11x46FNTZPUWQ7KoI0AzzScn6StBdo
+YCvzqCrla1em/Kakkws7Qu/pVj9R8ndHzoLktOi3l6lwwy5d4L697DyhP+02+eLt
+SBefoVnBNp449CSHW+brvPEyKD3D5CVpTIDfu2y8+nHszfBL22wuO4T+oem5h55A
+-----END RSA PRIVATE KEY-----`;
+
+const transformedValidCert = btoa(validCert);
+const transformedValidKey = btoa(validKey);
+
 // Data mocks
 
 const defaultCheck = {
@@ -244,9 +294,9 @@ describe('HTTP', () => {
           noFollowRedirects: true,
           tlsConfig: {
             insecureSkipVerify: true,
-            caCert: 'Y2FDZXJ0',
-            clientCert: 'Y2xpZW50Q2VydA==',
-            clientKey: 'Y2xpZW50IGtleQ==',
+            caCert: transformedValidCert,
+            clientCert: transformedValidCert,
+            clientKey: transformedValidKey,
             serverName: 'serverName',
           },
           validStatusCodes: [100],
@@ -283,9 +333,9 @@ describe('HTTP', () => {
     await toggleSection('TLS config');
     expect(await screen.findByLabelText('Disable target certificate validation')).toBeChecked();
     expect(await screen.findByLabelText('Server name', { exact: false })).toHaveValue('serverName');
-    expect(await screen.findByLabelText('CA certificate', { exact: false })).toHaveValue('caCert');
-    expect(await screen.findByLabelText('Client certificate', { exact: false })).toHaveValue('clientCert');
-    expect(await screen.findByLabelText('Client key', { exact: false })).toHaveValue('client key');
+    expect(await screen.findByLabelText('CA certificate', { exact: false })).toHaveValue(validCert);
+    expect(await screen.findByLabelText('Client certificate', { exact: false })).toHaveValue(validCert);
+    expect(await screen.findByLabelText('Client key', { exact: false })).toHaveValue(validKey);
 
     await toggleSection('Authentication');
     expect(await screen.findByPlaceholderText('Bearer token')).toHaveValue('a bear');
@@ -347,11 +397,11 @@ describe('HTTP', () => {
     await toggleSection('TLS config');
     await act(async () => await userEvent.type(screen.getByLabelText('Server Name', { exact: false }), 'serverName'));
     // TextArea components misbehave when using userEvent.type, using paste for now as a workaround
-    await act(async () => await userEvent.paste(screen.getByLabelText('CA Certificate', { exact: false }), 'caCert'));
+    await act(async () => await userEvent.paste(screen.getByLabelText('CA Certificate', { exact: false }), validCert));
     await act(
-      async () => await userEvent.paste(screen.getByLabelText('Client Certificate', { exact: false }), 'clientCert')
+      async () => await userEvent.paste(screen.getByLabelText('Client Certificate', { exact: false }), validCert)
     );
-    await act(async () => await userEvent.paste(screen.getByLabelText('Client Key', { exact: false }), 'client key'));
+    await act(async () => await userEvent.paste(screen.getByLabelText('Client Key', { exact: false }), validKey));
     await toggleSection('TLS config');
 
     // Authentication
@@ -420,9 +470,9 @@ describe('HTTP', () => {
           noFollowRedirects: false,
           tlsConfig: {
             insecureSkipVerify: false,
-            caCert: 'Y2FDZXJ0',
-            clientCert: 'Y2xpZW50Q2VydA==',
-            clientKey: 'Y2xpZW50IGtleQ==',
+            caCert: transformedValidCert,
+            clientCert: transformedValidCert,
+            clientKey: transformedValidKey,
             serverName: 'serverName',
           },
           validStatusCodes: [100],
