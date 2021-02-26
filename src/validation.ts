@@ -167,10 +167,7 @@ export const validateTLSClientKey = (clientKey: string) => {
   if (!clientKey) {
     return undefined;
   }
-  if (
-    clientKey.indexOf('-----BEGIN RSA PRIVATE KEY-----') < 0 ||
-    clientKey.indexOf('-----END RSA PRIVATE KEY-----') < 0
-  ) {
+  if (clientKey.indexOf('-----BEGIN') < 0 || clientKey.indexOf('-----END') < 0) {
     return 'Key must be in the PEM format.';
   }
   return undefined;
