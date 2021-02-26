@@ -1,7 +1,6 @@
 import React, { ChangeEvent } from 'react';
 import { SuccessRateGauge } from 'components/SuccessRateGauge';
 import { checkType as getCheckType } from 'utils';
-// Types
 import { Check, CheckListViewType, CheckType, FilteredCheck, Label } from 'types';
 import { useStyles, Checkbox, HorizontalGroup } from '@grafana/ui';
 import { css, cx } from 'emotion';

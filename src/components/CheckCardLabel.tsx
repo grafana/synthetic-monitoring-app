@@ -11,7 +11,6 @@ interface Props {
 
 const getStyles = (theme: GrafanaTheme) => ({
   container: css`
-    /* padding: ${theme.spacing.xs}; */
     background-color: #9933cc;
     border-radius: 1px;
   `,
@@ -20,19 +19,6 @@ const getStyles = (theme: GrafanaTheme) => ({
 export const CheckCardLabel = ({ label, onLabelSelect }: Props) => {
   const styles = useStyles(getStyles);
   return (
-    <div onClick={(e) => e.stopPropagation()}>
-      <Tag onClick={() => onLabelSelect(label)} name={`${label.name}: ${label.value}`} className={styles.container} />
-    </div>
+    <Tag onClick={() => onLabelSelect(label)} name={`${label.name}: ${label.value}`} className={styles.container} />
   );
-  // return (
-  //   <div
-  //     className={styles.container}
-  //     onClick={(e) => {
-  //       e.stopPropagation();
-  //       onLabelSelect(label);
-  //     }}
-  //   >
-  //     {label.name}: {label.value}
-  //   </div>
-  // );
 };
