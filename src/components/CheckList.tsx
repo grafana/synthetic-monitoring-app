@@ -172,11 +172,13 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
 
   const handleLabelSelect = (label: Label) => {
     setLabelFilters([...labelFilters, `${label.name}: ${label.value}`]);
+    clearSelectedChecks();
     setCurrentPage(1);
   };
 
   const handleTypeSelect = (checkType: CheckType) => {
     setTypeFilter(checkType);
+    clearSelectedChecks();
   };
 
   const handleStatusSelect = (enabled: boolean) => {
@@ -184,6 +186,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
     const option = CHECK_LIST_STATUS_OPTIONS.find(({ value }) => value === status);
     if (option) {
       setStatusFilter(option);
+      clearSelectedChecks();
     }
   };
 
@@ -204,6 +207,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
 
   const clearSelectedChecks = () => {
     setSelectedChecks(new Set());
+    setSelectAll(false);
   };
 
   const handleCheckSelect = (checkId: number) => {
@@ -213,6 +217,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
     }
     selectedChecks.delete(checkId);
     setSelectedChecks(new Set(selectedChecks));
+    setSelectAll(false);
   };
 
   const getChecksFromSelected = () =>
@@ -264,6 +269,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
       ]);
     }
     clearSelectedChecks();
+    setSelectAll(false);
     onCheckUpdate();
   };
 
@@ -312,6 +318,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
     }
 
     clearSelectedChecks();
+    setSelectAll(false);
     onCheckUpdate();
   };
 
@@ -358,6 +365,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
     }
 
     clearSelectedChecks();
+    setSelectAll(false);
     onCheckUpdate();
   };
 
@@ -415,7 +423,10 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
           data-testid="check-search-input"
           type="text"
           value={searchFilter ? unEscapeStringFromRegex(searchFilter) : ''}
-          onChange={(event) => setSearchFilter(escapeStringForRegex(event.currentTarget.value))}
+          onChange={(event) => {
+            setSearchFilter(escapeStringForRegex(event.currentTarget.value));
+            clearSelectedChecks();
+          }}
           placeholder="Search by job name, endpoint, or label"
         />{' '}
         <div className={styles.flexRow}>
@@ -427,6 +438,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
             width={20}
             onChange={(option) => {
               setStatusFilter(option);
+              clearSelectedChecks();
             }}
             value={statusFilter}
           />
@@ -436,13 +448,23 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
             data-testid="check-type-filter"
             options={CHECK_FILTER_OPTIONS}
             width={20}
-            onChange={(selected) => setTypeFilter(selected?.value ?? typeFilter)}
+            onChange={(selected) => {
+              setTypeFilter(selected?.value ?? typeFilter);
+              clearSelectedChecks();
+            }}
             value={typeFilter}
           />
         </div>
       </div>
       <div className={styles.searchSortContainer}>
-        <LabelFilterInput checks={checks} onChange={(labels) => setLabelFilters(labels)} labelFilters={labelFilters} />
+        <LabelFilterInput
+          checks={checks}
+          onChange={(labels) => {
+            setLabelFilters(labels);
+            clearSelectedChecks();
+          }}
+          labelFilters={labelFilters}
+        />
       </div>
       <div className={styles.bulkActionContainer}>
         <div className={styles.checkboxContainer}>
