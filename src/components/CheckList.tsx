@@ -22,6 +22,7 @@ import {
   CHECK_LIST_SORT_OPTIONS,
   CHECK_LIST_STATUS_OPTIONS,
   CHECK_LIST_VIEW_TYPE_OPTIONS,
+  CHECK_LIST_VIEW_TYPE_LS_KEY,
 } from './constants';
 import { CheckListItem } from './CheckListItem';
 import { css } from 'emotion';
@@ -143,6 +144,18 @@ const sortChecks = (checks: FilteredCheck[], sortType: CheckSort) => {
   }
 };
 
+const getViewTypeFromLS = () => {
+  const lsValue = window.localStorage.getItem(CHECK_LIST_VIEW_TYPE_LS_KEY);
+  if (lsValue) {
+    try {
+      return parseInt(lsValue, 10);
+    } catch {
+      return undefined;
+    }
+  }
+  return undefined;
+};
+
 export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Props) => {
   const [searchFilter, setSearchFilter] = useState('');
   const [labelFilters, setLabelFilters] = useState<string[]>([]);
@@ -151,7 +164,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedChecks, setSelectedChecks] = useState<Set<number>>(new Set());
   const [selectAll, setSelectAll] = useState(false);
-  const [viewType, setViewType] = useState(CheckListViewType.Card);
+  const [viewType, setViewType] = useState(getViewTypeFromLS() ?? CheckListViewType.Card);
   const [sortType, setSortType] = useState<CheckSort>(CheckSort.AToZ);
   const styles = useStyles(getStyles);
 
@@ -520,6 +533,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
             onChange={(value) => {
               if (value !== undefined) {
                 setViewType(value);
+                window.localStorage.setItem(CHECK_LIST_VIEW_TYPE_LS_KEY, String(value));
               }
             }}
             options={CHECK_LIST_VIEW_TYPE_OPTIONS}
