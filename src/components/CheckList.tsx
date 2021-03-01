@@ -263,7 +263,6 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
         `${notUpdatedCount} check${notUpdatedCount > 1 ? 's' : ''} were already disabled`,
       ]);
     }
-
     clearSelectedChecks();
     onCheckUpdate();
   };
@@ -447,7 +446,12 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
       </div>
       <div className={styles.bulkActionContainer}>
         <div className={styles.checkboxContainer}>
-          <Checkbox onChange={toggleVisibleCheckSelection} value={selectAll} className={styles.checkbox} />
+          <Checkbox
+            onChange={toggleVisibleCheckSelection}
+            value={selectAll}
+            className={styles.checkbox}
+            data-testid="selectAll"
+          />
         </div>
         {selectedChecks.size > 0 ? (
           <>
