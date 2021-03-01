@@ -1,3 +1,10 @@
+## [0.7.18](https://github.com/grafana/synthetic-monitoring-app/compare/0.7.17...0.7.18) (2021-03-01)
+
+
+### Bug Fixes
+
+* handle tls config with undefined cert ([#217](https://github.com/grafana/synthetic-monitoring-app/issues/217)) ([f728a18](https://github.com/grafana/synthetic-monitoring-app/commit/f728a18bb5f49a393966de62e3a0e9637e8265fe))
+
 ## [0.7.17](https://github.com/grafana/synthetic-monitoring-app/compare/0.7.16...0.7.17) (2021-02-26)
 
 

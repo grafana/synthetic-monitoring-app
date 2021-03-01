@@ -130,8 +130,11 @@ const getHttpSettingsSslValue = (failIfSSL: boolean, failIfNotSSL: boolean): Sel
   return HTTP_SSL_OPTIONS[0];
 };
 
-const getDecodedIfPEM = (cert: string) => {
+const getDecodedIfPEM = (cert = '') => {
   const decoded = fromBase64(cert);
+  if (decoded === undefined) {
+    return cert;
+  }
   if (decoded.indexOf('BEGIN') > 0) {
     return decoded;
   }
