@@ -4,6 +4,7 @@ import { render, screen, waitForElementToBeRemoved } from '@testing-library/reac
 import userEvent from '@testing-library/user-event';
 import { GrafanaInstances, Check } from 'types';
 import { getInstanceMock } from '../datasource/__mocks__/DataSource';
+jest.setTimeout(20000);
 
 const onAddNewMock = jest.fn();
 interface RenderChecklist {
