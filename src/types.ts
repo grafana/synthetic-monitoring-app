@@ -270,6 +270,10 @@ export interface Check extends BaseObject {
   tenantId?: number;
 }
 
+export interface FilteredCheck extends Omit<Check, 'id'> {
+  id: number;
+}
+
 export interface Settings {
   http?: HttpSettings;
   ping?: PingSettings;
@@ -423,3 +427,19 @@ export type AlertRule = {
   };
   record?: string;
 };
+
+export enum CheckSort {
+  AToZ,
+  ZToA,
+}
+
+export enum CheckEnabledStatus {
+  All,
+  Enabled,
+  Disabled,
+}
+
+export enum CheckListViewType {
+  Card,
+  List,
+}

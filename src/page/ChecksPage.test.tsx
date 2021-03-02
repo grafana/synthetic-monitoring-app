@@ -29,8 +29,8 @@ test('renders checks', () => {
 
 test('renders check editor new check', async () => {
   renderChecksPage();
-  await waitFor(() => screen.getByRole('button', { name: 'New Check' }));
-  userEvent.click(screen.getByRole('button', { name: 'New Check' }));
+  await waitFor(() => screen.getByRole('button', { name: 'Add new check' }));
+  userEvent.click(screen.getByRole('button', { name: 'Add new check' }));
   expect(await screen.findByText('Add Check')).toBeInTheDocument();
 });
 
