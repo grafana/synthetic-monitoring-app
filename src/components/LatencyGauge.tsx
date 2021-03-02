@@ -28,7 +28,7 @@ const getDisplayValue = (data: any[], loading: boolean): DisplayValue => {
     };
   }
 
-  const latency = parseFloat(data[0].value[1]) * 100;
+  const latency = parseFloat(data[0].value[1]) * 1000;
   return {
     title: 'Latency',
     color: latency > 1000 ? 'red' : 'green',
