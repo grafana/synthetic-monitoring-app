@@ -166,6 +166,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
   const [selectAll, setSelectAll] = useState(false);
   const [viewType, setViewType] = useState(getViewTypeFromLS() ?? CheckListViewType.Card);
   const [sortType, setSortType] = useState<CheckSort>(CheckSort.AToZ);
+  const [bulkActionInProgress, setBulkActionInProgress] = useState(false);
   const styles = useStyles(getStyles);
 
   const filteredChecks = sortChecks(
@@ -239,6 +240,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
       .filter(Boolean) as FilteredCheck[];
 
   const disableSelectedChecks = async () => {
+    setBulkActionInProgress(true);
     const checkUpdates = getChecksFromSelected()
       .filter((check) => check && check.enabled)
       .map((check) => {
@@ -282,11 +284,13 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
       ]);
     }
     clearSelectedChecks();
+    setBulkActionInProgress(false);
     setSelectAll(false);
     onCheckUpdate();
   };
 
   const enableSelectedChecks = async () => {
+    setBulkActionInProgress(true);
     const checkUpdates = getChecksFromSelected()
       .filter((check) => check && !check.enabled)
       .map((check) => {
@@ -332,6 +336,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
 
     clearSelectedChecks();
     setSelectAll(false);
+    setBulkActionInProgress(false);
     onCheckUpdate();
   };
 
@@ -351,6 +356,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
   };
 
   const deleteSelectedChecks = async () => {
+    setBulkActionInProgress(true);
     const checkDeletions = Array.from(selectedChecks).map((checkId) => instance.api?.deleteCheck(checkId));
 
     const resolvedCheckUpdates = await Promise.allSettled(checkDeletions);
@@ -380,6 +386,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
     clearSelectedChecks();
     setSelectAll(false);
     onCheckUpdate();
+    setBulkActionInProgress(false);
   };
 
   const updateSortMethod = ({ value }: SelectableValue<CheckSort>) => {
@@ -513,7 +520,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
                 variant="destructive"
                 className={styles.marginRightSmall}
                 onClick={deleteSelectedChecks}
-                disabled={!hasRole(OrgRole.EDITOR)}
+                disabled={!hasRole(OrgRole.EDITOR) || bulkActionInProgress}
               >
                 Delete
               </Button>
@@ -522,11 +529,16 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
                 variant="primary"
                 onClick={enableSelectedChecks}
                 className={styles.marginRightSmall}
-                disabled={!hasRole(OrgRole.EDITOR)}
+                disabled={!hasRole(OrgRole.EDITOR) || bulkActionInProgress}
               >
                 Enable
               </Button>
-              <Button type="button" variant="secondary" onClick={disableSelectedChecks}>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={disableSelectedChecks}
+                disabled={!hasRole(OrgRole.EDITOR) || bulkActionInProgress}
+              >
                 Disable
               </Button>
             </div>
