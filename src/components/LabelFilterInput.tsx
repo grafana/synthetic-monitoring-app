@@ -35,8 +35,9 @@ export const LabelFilterInput = ({ checks, labelFilters, onChange, className }: 
         check.labels?.forEach(({ name, value }) => {
           if (acc[name]) {
             acc[name].push(value);
+          } else {
+            acc[name] = [value];
           }
-          acc[name] = [value];
         });
         return acc;
       }, {}),
