@@ -1,3 +1,10 @@
+# [0.8.0](https://github.com/grafana/synthetic-monitoring-app/compare/0.7.18...0.8.0) (2021-03-02)
+
+
+### Features
+
+* Updated checks page  ([2385caa](https://github.com/grafana/synthetic-monitoring-app/commit/2385caa3f23c5b95edd70d72e17de9eaab534ec7))
+
 ## [0.7.18](https://github.com/grafana/synthetic-monitoring-app/compare/0.7.17...0.7.18) (2021-03-01)
 
 
