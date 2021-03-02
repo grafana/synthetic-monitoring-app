@@ -168,9 +168,6 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
   const [sortType, setSortType] = useState<CheckSort>(CheckSort.AToZ);
   const styles = useStyles(getStyles);
 
-  const checksPerPage = viewType === CheckListViewType.Card ? CHECKS_PER_PAGE_CARD : CHECKS_PER_PAGE_LIST;
-
-  const totalPages = Math.ceil(checks.length / checksPerPage);
   const filteredChecks = sortChecks(
     checks.filter(
       (check) =>
@@ -182,6 +179,9 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
     ) as FilteredCheck[],
     sortType
   );
+
+  const checksPerPage = viewType === CheckListViewType.Card ? CHECKS_PER_PAGE_CARD : CHECKS_PER_PAGE_LIST;
+  const totalPages = Math.ceil(filteredChecks.length / checksPerPage);
 
   const handleLabelSelect = (label: Label) => {
     setLabelFilters([...labelFilters, `${label.name}: ${label.value}`]);
@@ -439,6 +439,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
           onChange={(event) => {
             setSearchFilter(escapeStringForRegex(event.currentTarget.value));
             clearSelectedChecks();
+            setCurrentPage(1);
           }}
           placeholder="Search by job name, endpoint, or label"
         />{' '}
@@ -452,6 +453,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
             onChange={(option) => {
               setStatusFilter(option);
               clearSelectedChecks();
+              setCurrentPage(1);
             }}
             value={statusFilter}
           />
@@ -464,6 +466,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
             onChange={(selected) => {
               setTypeFilter(selected?.value ?? typeFilter);
               clearSelectedChecks();
+              setCurrentPage(1);
             }}
             value={typeFilter}
           />
@@ -475,6 +478,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
           onChange={(labels) => {
             setLabelFilters(labels);
             clearSelectedChecks();
+            setCurrentPage(1);
           }}
           labelFilters={labelFilters}
         />
@@ -534,6 +538,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
               if (value !== undefined) {
                 setViewType(value);
                 window.localStorage.setItem(CHECK_LIST_VIEW_TYPE_LS_KEY, String(value));
+                setCurrentPage(1);
               }
             }}
             options={CHECK_LIST_VIEW_TYPE_OPTIONS}
