@@ -1,10 +1,10 @@
-import { ButtonGroup, useStyles } from '@grafana/ui';
+import { useStyles } from '@grafana/ui';
 import { CheckStatusPill } from 'components/CheckStatusPill';
 import { CheckTypePill } from './CheckTypePill';
 import React from 'react';
 import { CheckType } from 'types';
 import { GrafanaTheme } from '@grafana/data';
-import { css } from 'emotion';
+import { css, cx } from 'emotion';
 
 interface Props {
   checkType: CheckType;
@@ -15,6 +15,11 @@ interface Props {
 }
 
 const getStyles = (theme: GrafanaTheme) => ({
+  container: css`
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+  `,
   marginRight: css`
     margin-right: ${theme.spacing.sm};
   `,
@@ -23,9 +28,9 @@ const getStyles = (theme: GrafanaTheme) => ({
 export const CheckStatusType = ({ checkType, enabled, onClickStatus, onClickType, className }: Props) => {
   const styles = useStyles(getStyles);
   return (
-    <ButtonGroup className={className}>
+    <div className={cx(styles.container, className)}>
       <CheckTypePill checkType={checkType} className={styles.marginRight} onClick={onClickType} />
       <CheckStatusPill enabled={enabled} onClick={onClickStatus} />
-    </ButtonGroup>
+    </div>
   );
 };
