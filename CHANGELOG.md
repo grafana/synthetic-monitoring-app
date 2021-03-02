@@ -1,3 +1,10 @@
+## [0.8.3](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.2...0.8.3) (2021-03-02)
+
+
+### Bug Fixes
+
+* latency was showing centiseconds instead of milliseconds ([#220](https://github.com/grafana/synthetic-monitoring-app/issues/220)) ([e7f7e37](https://github.com/grafana/synthetic-monitoring-app/commit/e7f7e3740cfae8e9cf4546cc7e8d89e6dafc76cb))
+
 ## [0.8.2](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.1...0.8.2) (2021-03-02)
 
 ## [0.8.1](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.0...0.8.1) (2021-03-02)
