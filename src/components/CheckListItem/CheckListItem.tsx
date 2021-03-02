@@ -26,7 +26,7 @@ interface Props {
 const getStyles = (theme: GrafanaTheme) => ({
   container: css`
     background-color: ${theme.colors.bg2};
-    border: 1px solid #343b40;
+    border: 1px solid ${theme.isDark ? theme.colors.border2 : theme.colors.border1};
     border-radius: 2px;
     width: 100%;
     margin-bottom: ${theme.spacing.sm};
@@ -47,6 +47,7 @@ const getStyles = (theme: GrafanaTheme) => ({
   `,
   disabledCard: css`
     background-color: ${theme.colors.bg3};
+    border-color: ${theme.isDark ? theme.colors.border3 : theme.colors.border2};
   `,
   checkbox: css`
     padding-top: ${theme.spacing.xxs};
@@ -60,7 +61,10 @@ const getStyles = (theme: GrafanaTheme) => ({
     flex-grow: 1;
     padding-right: ${theme.spacing.md};
     overflow: hidden;
-    border-bottom: 1px solid #343b40;
+    border-bottom: 1px solid ${theme.isDark ? theme.colors.border2 : theme.colors.border1};
+  `,
+  bodyDisabled: css`
+    border-color: ${theme.isDark ? theme.colors.border3 : theme.colors.border2};
   `,
   checkInfoContainer: css`
     flex-grow: 1;
@@ -198,7 +202,7 @@ export const CheckListItem = ({
           />
         </div>
         <div className={styles.verticalGroup}>
-          <div className={styles.body}>
+          <div className={cx(styles.body, { [styles.bodyDisabled]: !check.enabled })}>
             <div className={styles.checkInfoContainer}>
               <h3>{check.job}</h3>
               <div className={styles.checkTarget}>{check.target}</div>
