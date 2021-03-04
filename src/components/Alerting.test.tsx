@@ -34,12 +34,14 @@ const mockAlertsHook = () => {
     .spyOn(useAlerts, 'useAlerts')
     .mockImplementationOnce(() => ({
       alertRules: [],
+      alertError: '',
       setDefaultRules,
       setRules,
       deleteRulesForCheck,
     }))
     .mockImplementation(() => ({
       alertRules: useAlerts.defaultRules.rules as AlertRule[],
+      alertError: '',
       setDefaultRules,
       setRules,
       deleteRulesForCheck,
