@@ -1,3 +1,5 @@
+## [0.8.4](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.3...0.8.4) (2021-03-04)
+
 ## [0.8.3](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.2...0.8.3) (2021-03-02)
 
 
