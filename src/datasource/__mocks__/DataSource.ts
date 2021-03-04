@@ -148,6 +148,6 @@ export const getInstanceMock = (settings: DataSourceInstanceSettings<SMOptions> 
     ])
   );
   instance.deleteCheck = jest.fn();
-  instance.updateCheck = jest.fn();
+  instance.updateCheck = jest.fn().mockImplementation(() => Promise.resolve({ data: {} }));
   return instance;
 };

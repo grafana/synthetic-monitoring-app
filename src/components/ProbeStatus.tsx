@@ -13,7 +13,7 @@ import {
 } from '@grafana/ui';
 import { Probe, OrgRole } from 'types';
 import { hasRole } from 'utils';
-import { UptimeGauge } from './UptimeGauge';
+import { SuccessRateGauge } from './SuccessRateGauge';
 import { GrafanaTheme } from '@grafana/data';
 
 interface Props {
@@ -98,7 +98,7 @@ const ProbeStatus = ({ probe, onResetToken }: Props) => {
           </Container>
         )}
       </div>
-      <UptimeGauge labelNames={['probe']} labelValues={[probe.name]} height={200} width={300} sparkline={true} />
+      <SuccessRateGauge labelNames={['probe']} labelValues={[probe.name]} height={200} width={300} sparkline={true} />
     </Container>
   );
 };

@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { css } from 'emotion';
 import { Badge, Button, HorizontalGroup } from '@grafana/ui';
 import { InstanceContext } from 'components/InstanceContext';
-import { UptimeGauge } from 'components/UptimeGauge';
+import { SuccessRateGauge } from 'components/SuccessRateGauge';
 import { OrgRole, Probe, Label } from 'types';
 import { hasRole } from 'utils';
 
@@ -56,7 +56,7 @@ export const ProbeList = ({ probes, onAddNew, onSelectProbe }: Props) => {
                   <div>{labelsToString(probe.labels)}</div>
                 </span>
               </div>
-              <UptimeGauge
+              <SuccessRateGauge
                 labelNames={['probe']}
                 labelValues={[probe.name]}
                 height={60}

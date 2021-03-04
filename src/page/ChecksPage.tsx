@@ -97,6 +97,8 @@ export class ChecksPage extends PureComponent<Props, State> {
     if (addNew) {
       return <CheckEditor onReturn={this.onGoBack} />;
     }
-    return <CheckList instance={instance} onAddNewClick={this.onAddNew} checks={checks} />;
+    return (
+      <CheckList instance={instance} onAddNewClick={this.onAddNew} checks={checks} onCheckUpdate={this.onRefresh} />
+    );
   }
 }

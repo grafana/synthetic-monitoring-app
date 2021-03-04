@@ -1,4 +1,10 @@
-import { validateCheck, CheckValidation } from 'validation';
+import {
+  validateCheck,
+  CheckValidation,
+  validateTLSCACert,
+  validateTLSClientCert,
+  validateTLSClientKey,
+} from 'validation';
 import { Check, CheckType, HttpMethod, IpVersion, DnsRecordType, DnsProtocol, AlertSensitivity } from 'types';
 jest.unmock('utils');
 
@@ -144,6 +150,17 @@ describe('bad targets', () => {
     expect(CheckValidation.target(CheckType.TCP, 'x:y:65536')).toBe('Must be a valid host:port combination');
     expect(CheckValidation.target(CheckType.TCP, 'grafana.com:65536')).toBe('Port must be less than 65535');
     expect(CheckValidation.target(CheckType.TCP, 'grafana.com:0')).toBe('Port must be greater than 0');
+  });
+
+  it('should reject invalid certificates', () => {
+    const invalidCert = 'not a legit cert';
+    expect(validateTLSCACert(invalidCert)).toBe('Certificate must be in the PEM format.');
+    expect(validateTLSClientCert(invalidCert)).toBe('Certificate must be in the PEM format.');
+  });
+
+  it('should reject invalid tls keys', () => {
+    const invalidKey = 'not a legit cert';
+    expect(validateTLSClientKey(invalidKey)).toBe('Key must be in the PEM format.');
   });
 });
 

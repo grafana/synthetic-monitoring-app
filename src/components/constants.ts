@@ -11,6 +11,9 @@ import {
   TimeUnits,
   AlertSeverity,
   AlertSensitivity,
+  CheckSort,
+  CheckEnabledStatus,
+  CheckListViewType,
 } from 'types';
 
 export const DNS_RESPONSE_CODES = enumToStringArray(DnsResponseCodes).map((responseCode) => ({
@@ -245,3 +248,30 @@ export const getDefaultAlertAnnotations = (percentage: number) => ({
   description: `check job {{ $labels.job }} instance {{ $labels.instance }} has a success rate of {{ printf "%.1f" $value }}%.`,
   summary: `check success below ${percentage}%`,
 });
+
+export const CHECK_LIST_SORT_OPTIONS = [
+  {
+    label: 'A-Z',
+    value: CheckSort.AToZ,
+  },
+  {
+    label: 'Z-A',
+    value: CheckSort.ZToA,
+  },
+];
+
+export const CHECK_LIST_STATUS_OPTIONS = [
+  { label: 'All', value: CheckEnabledStatus.All },
+  { label: 'Enabled', value: CheckEnabledStatus.Enabled },
+  { label: 'Disabled', value: CheckEnabledStatus.Disabled },
+];
+
+export const CHECK_LIST_VIEW_TYPE_OPTIONS = [
+  { description: 'Card view', value: CheckListViewType.Card, icon: 'check-square' },
+  { description: 'List view', value: CheckListViewType.List, icon: 'list-ul' },
+];
+export const PEM_HEADER = '-----BEGIN CERTIFICATE-----';
+
+export const PEM_FOOTER = '-----END CERTIFICATE-----';
+
+export const CHECK_LIST_VIEW_TYPE_LS_KEY = 'grafana.sm.checklist.viewType';

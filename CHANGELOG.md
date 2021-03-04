@@ -1,3 +1,35 @@
+## [0.8.3](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.2...0.8.3) (2021-03-02)
+
+
+### Bug Fixes
+
+* latency was showing centiseconds instead of milliseconds ([#220](https://github.com/grafana/synthetic-monitoring-app/issues/220)) ([e7f7e37](https://github.com/grafana/synthetic-monitoring-app/commit/e7f7e3740cfae8e9cf4546cc7e8d89e6dafc76cb))
+
+## [0.8.2](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.1...0.8.2) (2021-03-02)
+
+## [0.8.1](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.0...0.8.1) (2021-03-02)
+
+# [0.8.0](https://github.com/grafana/synthetic-monitoring-app/compare/0.7.18...0.8.0) (2021-03-02)
+
+
+### Features
+
+* Updated checks page  ([2385caa](https://github.com/grafana/synthetic-monitoring-app/commit/2385caa3f23c5b95edd70d72e17de9eaab534ec7))
+
+## [0.7.18](https://github.com/grafana/synthetic-monitoring-app/compare/0.7.17...0.7.18) (2021-03-01)
+
+
+### Bug Fixes
+
+* handle tls config with undefined cert ([#217](https://github.com/grafana/synthetic-monitoring-app/issues/217)) ([f728a18](https://github.com/grafana/synthetic-monitoring-app/commit/f728a18bb5f49a393966de62e3a0e9637e8265fe))
+
+## [0.7.17](https://github.com/grafana/synthetic-monitoring-app/compare/0.7.16...0.7.17) (2021-02-26)
+
+
+### Bug Fixes
+
+* Add validation and messaging to enforce PEM certs for checks with TLS ([73fecca](https://github.com/grafana/synthetic-monitoring-app/commit/73fecca701ca635a457a6023e63a4174f6cab671))
+
 ## [0.7.16](https://github.com/grafana/synthetic-monitoring-app/compare/0.7.15...0.7.16) (2021-02-17)
 
 ## [0.7.15](https://github.com/grafana/synthetic-monitoring-app/compare/0.7.14...0.7.15) (2021-02-17)
