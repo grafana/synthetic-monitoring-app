@@ -2,7 +2,7 @@ import { GrafanaTheme, AppEvents } from '@grafana/data';
 import { Button, ButtonGroup, ConfirmModal, IconButton, useStyles } from '@grafana/ui';
 import React, { useContext, useState } from 'react';
 import { css } from 'emotion';
-import { Check, CheckType, OrgRole } from 'types';
+import { Check, OrgRole } from 'types';
 import { dashboardUID, checkType as getCheckType, hasRole } from 'utils';
 import { InstanceContext } from 'components/InstanceContext';
 import appEvents from 'grafana/app/core/app_events';
@@ -17,17 +17,17 @@ const getStyles = (theme: GrafanaTheme) => ({
 
 interface Props {
   check: Check;
-  showViewDashboard?: boolean;
+  viewDashboardAsIcon?: boolean;
   onRemoveCheck: (check: Check) => void;
 }
 
-export const CheckItemActionButtons = ({ check, showViewDashboard, onRemoveCheck }: Props) => {
+export const CheckItemActionButtons = ({ check, viewDashboardAsIcon, onRemoveCheck }: Props) => {
   const styles = useStyles(getStyles);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const checkType = getCheckType(check.settings);
   const { instance } = useContext(InstanceContext);
 
-  const showDashboard = (check: Check, checkType: CheckType) => {
+  const showDashboard = () => {
     const target = dashboardUID(checkType, instance.api);
 
     if (!target) {
@@ -47,8 +47,10 @@ export const CheckItemActionButtons = ({ check, showViewDashboard, onRemoveCheck
 
   return (
     <ButtonGroup className={styles.actionButtonGroup}>
-      {showViewDashboard && (
-        <Button onClick={() => showDashboard(check, checkType)} size="sm" variant="link">
+      {viewDashboardAsIcon ? (
+        <IconButton name="apps" onClick={showDashboard} />
+      ) : (
+        <Button onClick={showDashboard} size="sm" variant="link">
           View dashboard
         </Button>
       )}
