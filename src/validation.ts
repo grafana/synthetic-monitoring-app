@@ -28,8 +28,8 @@ export function validateCheck(check: Check): boolean {
 }
 
 export function validateJob(job: string): string | undefined {
-  if (job.length > 32) {
-    return 'Job name must be 32 characters or less';
+  if (job.length > 128) {
+    return 'Job name must be 128 characters or less';
   }
   return undefined;
 }

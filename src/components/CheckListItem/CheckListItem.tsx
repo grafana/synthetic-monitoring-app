@@ -96,14 +96,20 @@ const getStyles = (theme: GrafanaTheme) => ({
     line-height: ${theme.typography.lineHeight.md};
     display: flex;
     align-items: center;
+    width: 100%;
   `,
-  checkJobListView: css`
-    flex-grow: 1;
-    white-space: nowrap;
-    margin-bottom: 0px;
-    justify-self: left;
+  checkJobListViewContainer: css`
     display: flex;
     align-items: center;
+    justify-self: left;
+    width: 100%;
+  `,
+  truncatedText: css`
+    margin-bottom: 0px;
+    width: 100%;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
   `,
   listItemDetails: css`
     justify-content: flex-end;
@@ -167,8 +173,16 @@ export const CheckListItem = ({
               checked={selected}
             />
           </div>
-          <span className={styles.checkJobListView}>{check.job}</span>
-          <div className={cx(styles.checkTarget, styles.checkTargetListView)}>{check.target}</div>
+          <div className={styles.checkJobListViewContainer}>
+            <span className={styles.truncatedText} title={check.job}>
+              {check.job}
+            </span>
+          </div>
+          <div className={cx(styles.checkTarget, styles.checkTargetListView)}>
+            <span className={styles.truncatedText} title={check.target}>
+              {check.target}
+            </span>
+          </div>
           <CheckStatusType
             enabled={check.enabled}
             checkType={checkType}
@@ -183,7 +197,7 @@ export const CheckListItem = ({
             labels={check.labels}
             onLabelClick={onLabelSelect}
           />
-          <CheckItemActionButtons check={check} onRemoveCheck={onDeleteCheck} />
+          <CheckItemActionButtons check={check} onRemoveCheck={onDeleteCheck} viewDashboardAsIcon />
         </div>
       </div>
     );
@@ -239,7 +253,7 @@ export const CheckListItem = ({
               ))}
             </HorizontalGroup>
             <div className={styles.actionContainer}>
-              <CheckItemActionButtons check={check} onRemoveCheck={onDeleteCheck} showViewDashboard />
+              <CheckItemActionButtons check={check} onRemoveCheck={onDeleteCheck} />
             </div>
           </div>
         </div>
