@@ -1,3 +1,10 @@
+## [0.8.5](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.4...0.8.5) (2021-03-05)
+
+
+### Bug Fixes
+
+* increase job name length limit ([#223](https://github.com/grafana/synthetic-monitoring-app/issues/223)) ([720d0ca](https://github.com/grafana/synthetic-monitoring-app/commit/720d0cafc69595a3407c1c8403c390e693e53bcd))
+
 ## [0.8.4](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.3...0.8.4) (2021-03-04)
 
 ## [0.8.3](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.2...0.8.3) (2021-03-02)
