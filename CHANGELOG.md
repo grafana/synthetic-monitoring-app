@@ -1,3 +1,10 @@
+## [0.8.8](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.7...0.8.8) (2021-03-08)
+
+
+### Bug Fixes
+
+* deduplicate label filter values ([#227](https://github.com/grafana/synthetic-monitoring-app/issues/227)) ([824474a](https://github.com/grafana/synthetic-monitoring-app/commit/824474a6538b028fd9b95d3c25bae7c74ae4d571))
+
 ## [0.8.7](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.6...0.8.7) (2021-03-08)
 
 
