@@ -41,12 +41,13 @@ describe('validation', () => {
   test('probe name', async () => {
     renderProbeEditor();
     const nameInput = await screen.findByLabelText('Probe Name', { exact: false });
-    await act(async () => {
-      await userEvent.type(
-        nameInput,
-        'a name that is definitely too long and should definitely not be allowed to get typed'
-      );
-    });
+    await act(
+      async () =>
+        await userEvent.type(
+          nameInput,
+          'a name that is definitely too long and should definitely not be allowed to get typed'
+        )
+    );
     const maxLengthString = 'a name that is definitely too lo';
     expect(nameInput).toHaveValue(maxLengthString);
   });

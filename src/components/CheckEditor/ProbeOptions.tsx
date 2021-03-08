@@ -21,12 +21,16 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, probes }: Props) =>
   const { instance } = useContext(InstanceContext);
 
   useEffect(() => {
+    const abortController = new AbortController();
     const fetchProbes = async () => {
       const probes = await instance.api?.listProbes();
-      setAvailableProbes(probes ?? []);
+      if (!abortController.signal.aborted) {
+        setAvailableProbes(probes ?? []);
+      }
     };
 
     fetchProbes();
+    return () => abortController.abort();
   }, [instance]);
 
   return (
