@@ -1,3 +1,10 @@
+## [0.8.7](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.6...0.8.7) (2021-03-08)
+
+
+### Bug Fixes
+
+* corrects alert expression wording in alert edit form ([#229](https://github.com/grafana/synthetic-monitoring-app/issues/229)) ([2e2ac62](https://github.com/grafana/synthetic-monitoring-app/commit/2e2ac6218727dc99fde7e05f443d4a64588aa7eb))
+
 ## [0.8.6](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.5...0.8.6) (2021-03-08)
 
 ## [0.8.5](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.4...0.8.5) (2021-03-05)
