@@ -33,7 +33,7 @@ export const LabelFilterInput = ({ checks, labelFilters, onChange, className }: 
     () =>
       checks.reduce<AggregateLabels>((acc, check) => {
         check.labels?.forEach(({ name, value }) => {
-          if (acc[name]) {
+          if (acc[name] && !acc[name].find((preexisting) => preexisting === value)) {
             acc[name].push(value);
           } else {
             acc[name] = [value];
