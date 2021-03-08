@@ -115,7 +115,7 @@ const ProbeEditor = ({ probe, onReturn }: Props) => {
               </Field>
               <Field label="Public" description="Public probes are run by Grafana Labs and can be used by all users">
                 <Container padding="sm">
-                  <Switch ref={formMethods.register} name="public" disabled={!isEditor} />
+                  <Switch ref={formMethods.register()} name="public" disabled={!isEditor} />
                 </Container>
               </Field>
             </Container>
@@ -200,10 +200,7 @@ const ProbeEditor = ({ probe, onReturn }: Props) => {
                 <Button
                   type="submit"
                   disabled={
-                    !isEditor ||
-                    !formMethods.formState.isValid ||
-                    !formMethods.formState.touched ||
-                    formMethods.formState.isSubmitting
+                    !isEditor || formMethods.formState.isSubmitting || Object.keys(formMethods.errors).length > 0
                   }
                 >
                   Save
