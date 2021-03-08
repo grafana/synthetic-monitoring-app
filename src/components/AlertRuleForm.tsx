@@ -206,11 +206,11 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
             <div className={styles.expressionContainer}>
               <Label>Expression</Label>
               <HorizontalGroup align="center" wrap marginHeight={0}>
-                <span className={styles.inlineText}>Checks marked with a sensitivity level of</span>
+                <span className={styles.inlineText}>Checks with a sensitivity level of</span>
                 <div className={styles.selectInput}>
                   <Controller as={Select} control={control} name="sensitivity" options={ALERT_SENSITIVITY_OPTIONS} />
                 </div>
-                <span className={styles.inlineText}>will fire an alert if</span>
+                <span className={styles.inlineText}>will fire an alert if less than </span>
                 <Field
                   invalid={Boolean(errors?.probePercentage)}
                   error={errors?.probePercentage?.message}
@@ -225,7 +225,7 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
                     id="alertProbePercentage"
                   />
                 </Field>
-                <span className={styles.inlineText}>% or more probes report connection errors for</span>
+                <span className={styles.inlineText}>% of probes report connection success for</span>
                 <Field
                   invalid={Boolean(errors?.timeCount)}
                   error={errors?.timeCount?.message}
