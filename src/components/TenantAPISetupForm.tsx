@@ -85,7 +85,7 @@ const TenantAPISetupForm = ({ onSubmit, submissionError }: Props) => {
               </Field>
             </HorizontalGroup>
           </Collapse>
-          <Button variant="primary" type="submit" disabled={formState.isSubmitting || !formState.isValid}>
+          <Button variant="primary" type="submit" disabled={formState.isSubmitting || Object.keys(errors).length > 0}>
             Initialize
           </Button>
           {submissionError && (
