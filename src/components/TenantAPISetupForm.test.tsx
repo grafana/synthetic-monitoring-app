@@ -10,9 +10,7 @@ test('submits just an apiKey if no advanced', async () => {
   await userEvent.type(apiKeyInput, 'anapikey', { delay: 5 });
   const submitButton = await screen.findByRole('button', { name: 'Initialize' });
   // Validation on change makes the <Form> component misbehave and has to be wrapped in an act call
-  await act(async () => {
-    userEvent.click(submitButton);
-  });
+  await act(async () => userEvent.click(submitButton));
   expect(onSubmitMock).toHaveBeenCalledTimes(1);
   // FIXME: form submission is behaving oddly in the test environment, I think it's an issue with jsdom. It's returning the entire form element on submit instead of the form values
   // expect(onSubmitMock).toHaveBeenCalledWith({ adminApiToken: 'anapikey' });
@@ -26,9 +24,7 @@ test('host url has default', async () => {
   const advanced = await screen.findByText('Advanced');
   userEvent.click(advanced);
   const submitButton = await screen.findByRole('button', { name: 'Initialize' });
-  await act(async () => {
-    userEvent.click(submitButton);
-  });
+  await act(async () => userEvent.click(submitButton));
   expect(onSubmitMock).toHaveBeenCalledTimes(1);
   expect(onSubmitMock).toHaveBeenCalledWith({
     adminApiToken: 'anapikey',
