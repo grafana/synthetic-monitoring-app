@@ -13,9 +13,9 @@ import { AlertRule, AlertSensitivity } from 'types';
 import { InstanceContext } from 'components/InstanceContext';
 
 enum AlertThresholds {
-  High = 0.95,
-  Medium = 0.9,
-  Low = 0.75,
+  High = 95,
+  Medium = 90,
+  Low = 75,
 }
 
 export const defaultRules = {

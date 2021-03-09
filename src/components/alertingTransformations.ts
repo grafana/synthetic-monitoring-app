@@ -14,7 +14,7 @@ export const transformAlertFormValues = (alertValues: AlertFormValues | undefine
   return {
     alert: alertValues?.name ?? '',
     expr: `${ALERT_RECORDING_METRIC}{alert_sensitivity="${alertValues?.sensitivity?.value}"} < ${
-      alertValues?.probePercentage ? alertValues.probePercentage / 100 : ''
+      alertValues?.probePercentage ?? ''
     }`,
     for: `${alertValues?.timeCount}${alertValues?.timeUnit?.value}`,
     labels: labelToProm(alertValues?.labels),

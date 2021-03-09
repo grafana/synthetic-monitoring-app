@@ -60,7 +60,7 @@ const getAlertFormValues = (rule: AlertRule): AlertFormValues | undefined => {
     value,
   }));
 
-  const probePercentage = parseFloat(rule.expr.split(' < ')?.[1]) * 100;
+  const probePercentage = parseFloat(rule.expr.split(' < ')?.[1]);
 
   if (!timeOption || !probePercentage || !sensitivityOption) {
     return undefined;
