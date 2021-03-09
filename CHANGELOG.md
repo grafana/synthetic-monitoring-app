@@ -1,3 +1,10 @@
+## [0.8.9](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.8...0.8.9) (2021-03-09)
+
+
+### Bug Fixes
+
+* update percentage unit to match recording rule ([#230](https://github.com/grafana/synthetic-monitoring-app/issues/230)) ([47bc2b1](https://github.com/grafana/synthetic-monitoring-app/commit/47bc2b13db73bd0af7eac7ffcc6affe2dc20d39c))
+
 ## [0.8.8](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.7...0.8.8) (2021-03-08)
 
 
