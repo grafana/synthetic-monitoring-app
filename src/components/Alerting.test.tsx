@@ -115,9 +115,9 @@ it('adds default alerts and edits alerts', async () => {
         an_annotation_name: 'an annotation value',
         description:
           'check job {{ $labels.job }} instance {{ $labels.instance }} has a success rate of {{ printf "%.1f" $value }}%.',
-        summary: 'check success below 0.95%',
+        summary: 'check success below 95%',
       },
-      expr: 'instance_job_severity:probe_success:mean5m{alert_sensitivity="high"} < 0.25',
+      expr: 'instance_job_severity:probe_success:mean5m{alert_sensitivity="high"} < 25',
       for: '2s',
       labels: {
         a_label_name: 'a_label_value',
@@ -129,9 +129,9 @@ it('adds default alerts and edits alerts', async () => {
       annotations: {
         description:
           'check job {{ $labels.job }} instance {{ $labels.instance }} has a success rate of {{ printf "%.1f" $value }}%.',
-        summary: 'check success below 0.9%',
+        summary: 'check success below 90%',
       },
-      expr: 'instance_job_severity:probe_success:mean5m{alert_sensitivity="medium"} < 0.9',
+      expr: 'instance_job_severity:probe_success:mean5m{alert_sensitivity="medium"} < 90',
       for: '5m',
       labels: {
         namespace: 'synthetic_monitoring',
@@ -142,9 +142,9 @@ it('adds default alerts and edits alerts', async () => {
       annotations: {
         description:
           'check job {{ $labels.job }} instance {{ $labels.instance }} has a success rate of {{ printf "%.1f" $value }}%.',
-        summary: 'check success below 0.75%',
+        summary: 'check success below 75%',
       },
-      expr: 'instance_job_severity:probe_success:mean5m{alert_sensitivity="low"} < 0.75',
+      expr: 'instance_job_severity:probe_success:mean5m{alert_sensitivity="low"} < 75',
       for: '5m',
       labels: {
         namespace: 'synthetic_monitoring',
