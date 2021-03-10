@@ -1,5 +1,5 @@
 import { GrafanaTheme, AppEvents } from '@grafana/data';
-import { Button, ButtonGroup, ConfirmModal, IconButton, useStyles } from '@grafana/ui';
+import { Button, ConfirmModal, IconButton, useStyles } from '@grafana/ui';
 import React, { useContext, useState } from 'react';
 import { css } from 'emotion';
 import { Check, OrgRole } from 'types';
@@ -12,6 +12,12 @@ const getStyles = (theme: GrafanaTheme) => ({
   actionButtonGroup: css`
     display: flex;
     align-items: center;
+  `,
+  marginRightSmall: css`
+    margin-right: ${theme.spacing.sm};
+  `,
+  marginRightExtraSmall: css`
+    margin-right: ${theme.spacing.xs};
   `,
 });
 
@@ -46,11 +52,11 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon, onRemoveChe
   };
 
   return (
-    <ButtonGroup className={styles.actionButtonGroup}>
+    <div className={styles.actionButtonGroup}>
       {viewDashboardAsIcon ? (
-        <IconButton name="apps" onClick={showDashboard} />
+        <IconButton name="apps" onClick={showDashboard} className={styles.marginRightSmall} />
       ) : (
-        <Button onClick={showDashboard} size="sm" variant="link">
+        <Button onClick={showDashboard} size="sm" variant="link" className={styles.marginRightExtraSmall}>
           View dashboard
         </Button>
       )}
@@ -65,6 +71,7 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon, onRemoveChe
           });
         }}
         disabled={!hasRole(OrgRole.EDITOR)}
+        className={styles.marginRightSmall}
       />
       <IconButton name="trash-alt" onClick={() => setShowDeleteModal(true)} disabled={!hasRole(OrgRole.EDITOR)} />
       <ConfirmModal
@@ -78,6 +85,6 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon, onRemoveChe
         }}
         onDismiss={() => setShowDeleteModal(false)}
       />
-    </ButtonGroup>
+    </div>
   );
 };
