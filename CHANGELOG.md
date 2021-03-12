@@ -1,3 +1,10 @@
+## [0.8.11](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.10...0.8.11) (2021-03-12)
+
+
+### Bug Fixes
+
+* label cascader options were overwriting each other ([#235](https://github.com/grafana/synthetic-monitoring-app/issues/235)) ([f22eb38](https://github.com/grafana/synthetic-monitoring-app/commit/f22eb383924c44d37801114a20cb5c4c4c4cdaaf))
+
 ## [0.8.10](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.9...0.8.10) (2021-03-12)
 
 
