@@ -120,9 +120,6 @@ const getStyles = (theme: GrafanaTheme) => ({
     margin-right: ${theme.spacing.md};
     height: 45px;
   `,
-  checkbox: css`
-    position: relative;
-  `,
   marginRightSmall: css`
     margin-right: ${theme.spacing.sm};
   `,
@@ -492,12 +489,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
       </div>
       <div className={styles.bulkActionContainer}>
         <div className={styles.checkboxContainer}>
-          <Checkbox
-            onChange={toggleVisibleCheckSelection}
-            value={selectAll}
-            className={styles.checkbox}
-            data-testid="selectAll"
-          />
+          <Checkbox onChange={toggleVisibleCheckSelection} value={selectAll} data-testid="selectAll" />
         </div>
         {selectedChecks.size > 0 ? (
           <>
