@@ -1,3 +1,10 @@
+## [0.8.10](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.9...0.8.10) (2021-03-12)
+
+
+### Bug Fixes
+
+* prevent crashing on grafana v7.3 ([#234](https://github.com/grafana/synthetic-monitoring-app/issues/234)) ([9c5ff31](https://github.com/grafana/synthetic-monitoring-app/commit/9c5ff3180a0447be17e326dd9adc60cfb8d9f6d3))
+
 ## [0.8.9](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.8...0.8.9) (2021-03-09)
 
 
