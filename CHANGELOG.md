@@ -1,3 +1,10 @@
+## [0.8.12](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.11...0.8.12) (2021-03-17)
+
+
+### Bug Fixes
+
+* prevent probe editor from erroring out when form is not instantiated ([#236](https://github.com/grafana/synthetic-monitoring-app/issues/236)) ([0163b3f](https://github.com/grafana/synthetic-monitoring-app/commit/0163b3f4afd10c79494ce9425b49d6ad12e3f903))
+
 ## [0.8.11](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.10...0.8.11) (2021-03-12)
 
 
