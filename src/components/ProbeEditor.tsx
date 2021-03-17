@@ -200,7 +200,7 @@ const ProbeEditor = ({ probe, onReturn }: Props) => {
                 <Button
                   type="submit"
                   disabled={
-                    !isEditor || formMethods.formState.isSubmitting || Object.keys(formMethods.errors).length > 0
+                    !isEditor || formMethods.formState.isSubmitting || Object.keys(formMethods.errors ?? {}).length > 0
                   }
                 >
                   Save
