@@ -18,6 +18,7 @@ enum CheckSeries {
   HTTP = 128,
   DNS = 79,
   TCP = 59,
+  Traceroute = 20,
 }
 
 enum CheckSeriesBasic {
@@ -25,6 +26,7 @@ enum CheckSeriesBasic {
   HTTP = 38,
   DNS = 28,
   TCP = 23,
+  Traceroute = 20,
 }
 
 const getSeriesPerCheck = (checkType: CheckType, useFullMetrics: boolean) => {
@@ -38,6 +40,8 @@ const getSeriesPerCheck = (checkType: CheckType, useFullMetrics: boolean) => {
       return Series.DNS;
     case CheckType.HTTP:
       return Series.HTTP;
+    case CheckType.Traceroute:
+      return Series.Traceroute;
   }
 };
 

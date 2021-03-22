@@ -128,6 +128,7 @@ export const CHECK_TYPE_OPTIONS = [
     label: 'TCP',
     value: CheckType.TCP,
   },
+  { label: 'Traceroute', value: CheckType.Traceroute },
 ];
 
 export const HTTP_SSL_OPTIONS = [

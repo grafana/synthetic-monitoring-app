@@ -54,6 +54,13 @@ const getTargetHelpText = (typeOfCheck: CheckType | undefined): TargetHelpInfo =
       };
       break;
     }
+    case CheckType.Traceroute: {
+      resp = {
+        text: 'Hostname to send traceroute',
+        example: 'grafana.com',
+      };
+      break;
+    }
   }
   return resp;
 };

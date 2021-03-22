@@ -51,6 +51,7 @@ export const CheckEditor = ({ check, onReturn }: Props) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const styles = useStyles(getStyles);
   const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
+  console.log(defaultValues);
 
   const formMethods = useForm<CheckFormValues>({ defaultValues, mode: 'onChange' });
   const selectedCheckType = formMethods.watch('checkType').value as CheckType;

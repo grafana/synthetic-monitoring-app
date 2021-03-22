@@ -29,6 +29,8 @@ import {
   AlertSensitivity,
   TCPQueryResponse,
   TLSConfig,
+  TracerouteSettings,
+  TracerouteSettingsFormValues,
 } from 'types';
 
 import {
@@ -86,6 +88,17 @@ export function fallbackSettings(t: CheckType): Settings {
         tcp: {
           ipVersion: IpVersion.V4,
           tls: false,
+        },
+      };
+    }
+    case CheckType.Traceroute: {
+      return {
+        traceroute: {
+          firstHop: 1,
+          maxHops: 64,
+          retries: 3,
+          packetSize: 52,
+          port: 33434,
         },
       };
     }
@@ -286,6 +299,11 @@ const getDnsSettingsFormValues = (settings: Settings): DnsSettingsFormValues => 
   };
 };
 
+const getTracerouteSettingsFormValues = (settings: Settings): TracerouteSettingsFormValues => {
+  const tracerouteSettings = settings.traceroute ?? (fallbackSettings(CheckType.Traceroute) as TracerouteSettings);
+  return tracerouteSettings;
+};
+
 const getFormSettingsForCheck = (settings: Settings): SettingsFormValues => {
   const type = checkType(settings);
   switch (type) {
@@ -295,6 +313,8 @@ const getFormSettingsForCheck = (settings: Settings): SettingsFormValues => {
       return { tcp: getTcpSettingsFormValues(settings) };
     case CheckType.DNS:
       return { dns: getDnsSettingsFormValues(settings) };
+    case CheckType.Traceroute:
+      return { traceroute: getTracerouteSettingsFormValues(settings) };
     case CheckType.PING:
     default:
       return { ping: getPingSettingsFormValues(settings) };
@@ -307,6 +327,7 @@ const getAllFormSettingsForCheck = (): SettingsFormValues => {
     tcp: getTcpSettingsFormValues(fallbackSettings(CheckType.TCP)),
     dns: getDnsSettingsFormValues(fallbackSettings(CheckType.DNS)),
     ping: getPingSettingsFormValues(fallbackSettings(CheckType.PING)),
+    traceroute: getTracerouteSettingsFormValues(fallbackSettings(CheckType.Traceroute)),
   };
 };
 
@@ -570,6 +591,14 @@ const getDnsSettings = (
   };
 };
 
+const getTracerouteSettings = (
+  settings: TracerouteSettingsFormValues | undefined,
+  defaultSettings: TracerouteSettingsFormValues | undefined
+): TracerouteSettings => {
+  const fallbackValues = fallbackSettings(CheckType.Traceroute).traceroute as TracerouteSettings;
+  return settings ?? defaultSettings ?? fallbackValues;
+};
+
 const getSettingsFromFormValues = (formValues: Partial<CheckFormValues>, defaultValues: CheckFormValues): Settings => {
   const checkType = getValueFromSelectable(formValues.checkType ?? defaultValues.checkType);
   switch (checkType) {
@@ -581,6 +610,8 @@ const getSettingsFromFormValues = (formValues: Partial<CheckFormValues>, default
       return { dns: getDnsSettings(formValues.settings?.dns, defaultValues.settings.dns) };
     case CheckType.PING:
       return { ping: getPingSettings(formValues.settings?.ping, defaultValues.settings.ping) };
+    case CheckType.Traceroute:
+      return { traceroute: getTracerouteSettings(formValues.settings?.traceroute, defaultValues.settings.traceroute) };
     default:
       throw new Error(`Check type of ${checkType} is invalid`);
   }

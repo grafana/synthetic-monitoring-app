@@ -1,4 +1,14 @@
-import { Check, CheckType, Settings, HttpSettings, PingSettings, DnsSettings, TcpSettings, Label } from 'types';
+import {
+  Check,
+  CheckType,
+  Settings,
+  HttpSettings,
+  PingSettings,
+  DnsSettings,
+  TcpSettings,
+  Label,
+  TracerouteSettings,
+} from 'types';
 import { checkType } from 'utils';
 import * as punycode from 'punycode';
 import { Address4, Address6 } from 'ip-address';
@@ -51,6 +61,9 @@ export function validateTarget(typeOfCheck: CheckType, target: string): string |
     }
     case CheckType.TCP: {
       return validateHostPort(target);
+    }
+    case CheckType.Traceroute: {
+      return validateHostname(target);
     }
     default: {
       // we want to make sure that we are validating the target for all
@@ -193,6 +206,9 @@ export function validateSettings(settings: Settings): string | undefined {
     case CheckType.TCP: {
       return validateSettingsTCP(settings.tcp!);
     }
+    case CheckType.Traceroute: {
+      return validateSettingsTraceroute(settings.traceroute);
+    }
   }
 }
 
@@ -217,6 +233,10 @@ export const validateHTTPHeaderName = (name: string) => {
 export const validateHTTPHeaderValue = (name: string) => {
   return undefined;
 };
+
+export function validateSettingsTraceroute(settings?: TracerouteSettings): string | undefined {
+  return undefined;
+}
 
 export function validateSettingsHTTP(settings: HttpSettings): string | undefined {
   return undefined;

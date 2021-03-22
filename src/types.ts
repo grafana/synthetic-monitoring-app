@@ -219,6 +219,16 @@ export interface HttpSettingsFormValues
   followRedirects: boolean;
 }
 
+export interface TracerouteSettings {
+  firstHop: number;
+  maxHops: number;
+  retries: number;
+  packetSize: number;
+  port: number;
+}
+
+export interface TracerouteSettingsFormValues extends TracerouteSettings {}
+
 export interface PingSettings {
   ipVersion: IpVersion;
   dontFragment: boolean;
@@ -233,6 +243,7 @@ export interface SettingsFormValues {
   ping?: PingSettingsFormValues;
   dns?: DnsSettingsFormValues;
   tcp?: TcpSettingsFormValues;
+  traceroute?: TracerouteSettingsFormValues;
 }
 export interface AlertFormValues {
   name: string;
@@ -279,6 +290,7 @@ export interface Settings {
   ping?: PingSettings;
   dns?: DnsSettings;
   tcp?: TcpSettings;
+  traceroute?: TracerouteSettings;
 }
 
 export enum CheckType {
@@ -286,6 +298,7 @@ export enum CheckType {
   PING = 'ping',
   DNS = 'dns',
   TCP = 'tcp',
+  Traceroute = 'traceroute',
 }
 
 export interface HostedInstance {
