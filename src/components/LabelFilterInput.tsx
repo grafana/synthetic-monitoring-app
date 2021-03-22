@@ -33,8 +33,10 @@ export const LabelFilterInput = ({ checks, labelFilters, onChange, className }: 
     () =>
       checks.reduce<AggregateLabels>((acc, check) => {
         check.labels?.forEach(({ name, value }) => {
-          if (acc[name] && !acc[name].find((preexisting) => preexisting === value)) {
-            acc[name].push(value);
+          if (acc[name]) {
+            if (!acc[name].find((preexisting) => preexisting === value)) {
+              acc[name].push(value);
+            }
           } else {
             acc[name] = [value];
           }
@@ -56,6 +58,8 @@ export const LabelFilterInput = ({ checks, labelFilters, onChange, className }: 
       };
     });
   }, [aggregatedLabels]);
+
+  console.log({ labelCascadeOptions });
 
   const labelFilterOptions: Array<SelectableValue<string>> = useMemo(() => {
     return Object.entries(aggregatedLabels).reduce<Array<SelectableValue<string>>>((acc, [name, value]) => {

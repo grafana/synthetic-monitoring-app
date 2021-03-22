@@ -1,3 +1,31 @@
+## [0.8.12](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.11...0.8.12) (2021-03-17)
+
+
+### Bug Fixes
+
+* prevent probe editor from erroring out when form is not instantiated ([#236](https://github.com/grafana/synthetic-monitoring-app/issues/236)) ([0163b3f](https://github.com/grafana/synthetic-monitoring-app/commit/0163b3f4afd10c79494ce9425b49d6ad12e3f903))
+
+## [0.8.11](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.10...0.8.11) (2021-03-12)
+
+
+### Bug Fixes
+
+* label cascader options were overwriting each other ([#235](https://github.com/grafana/synthetic-monitoring-app/issues/235)) ([f22eb38](https://github.com/grafana/synthetic-monitoring-app/commit/f22eb383924c44d37801114a20cb5c4c4c4cdaaf))
+
+## [0.8.10](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.9...0.8.10) (2021-03-12)
+
+
+### Bug Fixes
+
+* prevent crashing on grafana v7.3 ([#234](https://github.com/grafana/synthetic-monitoring-app/issues/234)) ([9c5ff31](https://github.com/grafana/synthetic-monitoring-app/commit/9c5ff3180a0447be17e326dd9adc60cfb8d9f6d3))
+
+## [0.8.9](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.8...0.8.9) (2021-03-09)
+
+
+### Bug Fixes
+
+* update percentage unit to match recording rule ([#230](https://github.com/grafana/synthetic-monitoring-app/issues/230)) ([47bc2b1](https://github.com/grafana/synthetic-monitoring-app/commit/47bc2b13db73bd0af7eac7ffcc6affe2dc20d39c))
+
 ## [0.8.8](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.7...0.8.8) (2021-03-08)
 
 
