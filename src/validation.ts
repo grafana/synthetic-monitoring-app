@@ -101,8 +101,8 @@ export function validateLabel(label: Label): string | undefined {
 }
 
 export function validateLabelName(name: string): string | undefined {
-  if (name.length > 32) {
-    return 'Label names must be 32 characters or less';
+  if (name.length > 128) {
+    return 'Label names must be 128 characters or less';
   }
   if (!labelRegex.test(name)) {
     return 'Invalid label name';
@@ -112,8 +112,8 @@ export function validateLabelName(name: string): string | undefined {
 }
 
 export function validateLabelValue(value: string): string | undefined {
-  if (value.length > 32) {
-    return 'Label values must be 32 characters or less';
+  if (value.length > 128) {
+    return 'Label values must be 128 characters or less';
   }
   if (!labelRegex.test(value)) {
     return 'Invalid label value';

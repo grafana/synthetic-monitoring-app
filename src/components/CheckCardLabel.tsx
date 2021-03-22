@@ -13,6 +13,10 @@ const getStyles = (theme: GrafanaTheme) => ({
   container: css`
     background-color: #9933cc;
     border-radius: 1px;
+    max-width: 600px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
   `,
 });
 
