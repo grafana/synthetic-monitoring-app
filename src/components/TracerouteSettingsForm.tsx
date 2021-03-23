@@ -28,16 +28,15 @@ export const TracerouteSettingsForm = ({ isEditor }: Props) => {
         <Field label="First hop" description="Starting TTL value" disabled={!isEditor}>
           <Input
             id="traceroute-settings-first-hop"
-            ref={register()}
+            ref={register({ min: 1, max: 63 })}
             name="settings.traceroute.firstHop"
-            type="number"
             disabled={!isEditor}
           />
         </Field>
         <Field label="Max hops" description="Maximum TTL for the trace" disabled={!isEditor}>
           <Input
             id="traceroute-settings-max-hops"
-            ref={register()}
+            ref={register({ min: 1, max: 64 })}
             name="settings.traceroute.maxHops"
             type="number"
             disabled={!isEditor}
@@ -46,7 +45,7 @@ export const TracerouteSettingsForm = ({ isEditor }: Props) => {
         <Field label="Retries" description="Quantity of times to retry a hop" disabled={!isEditor}>
           <Input
             id="traceroute-settings-retries"
-            ref={register()}
+            ref={register({ min: 1, max: 3 })}
             name="settings.traceroute.retries"
             type="number"
             disabled={!isEditor}
@@ -55,7 +54,7 @@ export const TracerouteSettingsForm = ({ isEditor }: Props) => {
         <Field label="Packet size" description="Size of the packet to send" disabled={!isEditor}>
           <Input
             id="traceroute-settings-packet-size"
-            ref={register()}
+            ref={register({ min: 1, max: 1000 })}
             name="settings.traceroute.packetSize"
             type="number"
             disabled={!isEditor}
@@ -64,7 +63,7 @@ export const TracerouteSettingsForm = ({ isEditor }: Props) => {
         <Field label="Port" description="Port to send requests" disabled={!isEditor}>
           <Input
             id="traceroute-settings-port"
-            ref={register()}
+            ref={register({ min: 0, max: 65535 })}
             name="settings.traceroute.port"
             type="number"
             disabled={!isEditor}

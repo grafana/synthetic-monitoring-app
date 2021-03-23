@@ -596,7 +596,14 @@ const getTracerouteSettings = (
   defaultSettings: TracerouteSettingsFormValues | undefined
 ): TracerouteSettings => {
   const fallbackValues = fallbackSettings(CheckType.Traceroute).traceroute as TracerouteSettings;
-  return settings ?? defaultSettings ?? fallbackValues;
+  const updatedSettings = settings ?? defaultSettings ?? fallbackValues;
+  return {
+    firstHop: parseInt(String(updatedSettings.firstHop), 10),
+    maxHops: parseInt(String(updatedSettings.maxHops), 10),
+    packetSize: parseInt(String(updatedSettings.packetSize), 10),
+    port: parseInt(String(updatedSettings.port), 10),
+    retries: parseInt(String(updatedSettings.retries), 10),
+  };
 };
 
 const getSettingsFromFormValues = (formValues: Partial<CheckFormValues>, defaultValues: CheckFormValues): Settings => {
@@ -611,7 +618,12 @@ const getSettingsFromFormValues = (formValues: Partial<CheckFormValues>, default
     case CheckType.PING:
       return { ping: getPingSettings(formValues.settings?.ping, defaultValues.settings.ping) };
     case CheckType.Traceroute:
-      return { traceroute: getTracerouteSettings(formValues.settings?.traceroute, defaultValues.settings.traceroute) };
+      return {
+        traceroute: {
+          timeout: formValues.timeout * 1000,
+          ...getTracerouteSettings(formValues.settings?.traceroute, defaultValues.settings.traceroute),
+        },
+      };
     default:
       throw new Error(`Check type of ${checkType} is invalid`);
   }

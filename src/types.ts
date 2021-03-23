@@ -227,7 +227,13 @@ export interface TracerouteSettings {
   port: number;
 }
 
-export interface TracerouteSettingsFormValues extends TracerouteSettings {}
+export interface TracerouteSettingsFormValues {
+  firstHop: string;
+  maxHops: string;
+  retries: string;
+  packetSize: string;
+  port: string;
+}
 
 export interface PingSettings {
   ipVersion: IpVersion;

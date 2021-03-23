@@ -51,7 +51,8 @@ export const CheckEditor = ({ check, onReturn }: Props) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const styles = useStyles(getStyles);
   const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
-  console.log(defaultValues);
+
+  console.log({ defaultValues });
 
   const formMethods = useForm<CheckFormValues>({ defaultValues, mode: 'onChange' });
   const selectedCheckType = formMethods.watch('checkType').value as CheckType;
@@ -60,6 +61,7 @@ export const CheckEditor = ({ check, onReturn }: Props) => {
 
   const { execute: onSubmit, error, loading: submitting } = useAsyncCallback(async (checkValues: CheckFormValues) => {
     const updatedCheck = getCheckFromFormValues(checkValues, defaultValues);
+    console.log({ updatedCheck });
     if (check?.id) {
       await api?.updateCheck({
         id: check.id,
@@ -184,7 +186,9 @@ export const CheckEditor = ({ check, onReturn }: Props) => {
         {submissionError && (
           <div className={styles.submissionError}>
             <Alert title="Save failed" severity="error">
-              {`${submissionError.status}: ${submissionError.message ?? submissionError.msg ?? 'Something went wrong'}`}
+              {`${submissionError.status}: ${
+                submissionError.message ?? submissionError.data?.msg ?? 'Something went wrong'
+              }`}
             </Alert>
           </div>
         )}
