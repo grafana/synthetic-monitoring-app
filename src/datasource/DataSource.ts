@@ -12,6 +12,8 @@ import { SMQuery, SMOptions, QueryType } from './types';
 
 import { config, getBackendSrv } from '@grafana/runtime';
 import { Probe, Check, RegistrationInfo, HostedInstance } from '../types';
+import { queryLogs } from 'utils';
+import { makeEdgesDataFrame } from '@grafana/ui/components/NodeGraph/utils';
 
 export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   constructor(public instanceSettings: DataSourceInstanceSettings<SMOptions>) {
@@ -20,6 +22,10 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
 
   getMetricsDS() {
     return config.datasources[this.instanceSettings.jsonData.metrics.grafanaName];
+  }
+
+  getLogsDS() {
+    return config.datasources[this.instanceSettings.jsonData.logs.grafanaName];
   }
 
   async query(options: DataQueryRequest<SMQuery>): Promise<DataQueryResponse> {
@@ -48,6 +54,87 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
 
         console.log('FRAME', frame.length);
         data.push(copy);
+      } else if (query.queryType === QueryType.Traceroute) {
+        const logsUrl = this.getLogsDS().url;
+        if (!logsUrl) {
+          console.log('Could not find logs datasource');
+          return { data };
+        }
+        const response = await queryLogs(logsUrl);
+
+        const groupedByTraceID = response.data.reduce((acc, { stream }) => {
+          const traceId = stream['TraceID'];
+          if (!traceId) {
+            return acc;
+          }
+
+          if (acc[traceId]) {
+            acc[traceId].push(stream);
+          } else {
+            acc[traceId] = [stream];
+          }
+          return acc;
+        }, {});
+
+        console.log({ groupedByTraceID });
+
+        const groupedByHost = response.data.reduce((acc, { stream }, index) => {
+          const traceId = stream.TraceID;
+          if (!traceId) {
+            return acc;
+          }
+          const ttl = parseInt(stream.TTL, 10);
+          const nextNode = groupedByTraceID[traceId].find(
+            (destinationNode) => parseInt(destinationNode.TTL, 10) === ttl + 1
+          );
+          if (nextNode) {
+            stream.nextHost = nextNode.Host;
+          }
+
+          if (acc[stream.Host]) {
+            acc[stream.Host].push(stream);
+          } else {
+            acc[stream.Host] = [stream];
+          }
+          return acc;
+        }, {});
+
+        console.log({ groupedByHost });
+
+        const frameData = Object.entries(groupedByHost).reduce(
+          (acc, [host, streamArray], index) => {
+            // const host = stream.Host;
+
+            streamArray.forEach((stream) => {
+              if (stream.nextHost) {
+                acc.edges.push({
+                  id: `${host}${stream.nextHost}`,
+                  source: host,
+                  target: stream.nextHost,
+                });
+              }
+            });
+
+            acc.nodes.push({
+              id: host,
+              mainStat: host,
+              title: streamArray[0].ElapsedTime,
+              arc_node: 1,
+            });
+            return acc;
+          },
+          { nodes: [], edges: [] }
+        );
+        const nodeFrame = new ArrayDataFrame(frameData.nodes);
+        nodeFrame.meta = {
+          preferredVisualisationType: 'nodeGraph',
+        };
+        const edgeFrame = new ArrayDataFrame(frameData.edges);
+        edgeFrame.meta = {
+          preferredVisualisationType: 'nodeGraph',
+        };
+        data.push(nodeFrame);
+        data.push(edgeFrame);
       }
     }
     return { data };

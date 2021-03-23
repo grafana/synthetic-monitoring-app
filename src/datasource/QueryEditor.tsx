@@ -12,6 +12,7 @@ interface State {}
 const types = [
   { label: 'Probes', value: QueryType.Probes },
   { label: 'Checks', value: QueryType.Checks },
+  { label: 'Traceroute', value: QueryType.Traceroute },
 ];
 
 export class QueryEditor extends PureComponent<Props, State> {

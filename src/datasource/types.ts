@@ -3,6 +3,7 @@ import { DataQuery, DataSourceJsonData } from '@grafana/data';
 export enum QueryType {
   Probes = 'probes',
   Checks = 'checks',
+  Traceroute = 'traceroute',
 }
 
 export interface SMQuery extends DataQuery {

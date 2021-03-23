@@ -249,6 +249,36 @@ export const queryMetric = async (
   }
 };
 
+export const queryLogs = async (url: string): Promise<MetricQueryResponse> => {
+  const backendSrv = getBackendSrv();
+
+  const params = {
+    direction: 'BACKWARD',
+    limit: 1000,
+    query: '{check_name="traceroute"} | logfmt',
+    start: 1616530483000000000,
+    end: 1616534084000000000,
+    step: 2,
+  };
+
+  // http://localhost:3000/api/datasources/proxy/1/api/v1/query_range?direction=BACKWARD&limit=1000&query={check_name="traceroute"&start=1616530483000000000&end=1616534084000000000&step=2
+  try {
+    const response = await backendSrv.datasourceRequest({
+      method: 'GET',
+      url: `${url}/loki/api/v1/query_range`,
+      params,
+    });
+    if (!response.ok) {
+      return { error: 'Error fetching data', data: [] };
+    }
+    return {
+      data: response.data?.data?.result ?? [],
+    };
+  } catch (e) {
+    return { error: (e.message || e.data?.message) ?? 'Error fetching data', data: [] };
+  }
+};
+
 export const toBase64 = (value: string) => {
   try {
     return btoa(value);
