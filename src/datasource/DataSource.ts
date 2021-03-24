@@ -57,9 +57,27 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
         const logsUrl = this.getLogsDS().url;
         if (!logsUrl) {
           console.log('Could not find logs datasource');
-          return { data };
+          return {
+            data: [],
+            error: {
+              data: {
+                message: 'Could not find a Loki datasource',
+              },
+            },
+          };
         }
-        const response = await queryLogs(logsUrl);
+        if (!query.job || !query.instance) {
+          console.log('no job or instance');
+          return {
+            data: [],
+            error: {
+              data: {
+                message: 'A check must be selected',
+              },
+            },
+          };
+        }
+        const response = await queryLogs(logsUrl, query.job, query.instance);
 
         console.log({ response });
 

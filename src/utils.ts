@@ -1,4 +1,11 @@
-import { ArrayVector, DataSourceInstanceSettings, FieldColorModeId, FieldType, MutableDataFrame } from '@grafana/data';
+import {
+  ArrayVector,
+  DataSourceInstanceSettings,
+  FieldColorModeId,
+  FieldType,
+  getNamedColorPalette,
+  MutableDataFrame,
+} from '@grafana/data';
 
 import {
   SMOptions,
@@ -257,15 +264,15 @@ export const queryMetric = async (
   }
 };
 
-export const queryLogs = async (url: string): Promise<LogQueryResponse> => {
+export const queryLogs = async (url: string, job: string, instance: string): Promise<LogQueryResponse> => {
   const backendSrv = getBackendSrv();
 
   const params = {
     direction: 'BACKWARD',
     limit: 1000,
-    query: '{check_name="traceroute"} | logfmt',
-    start: 1616530483000000000,
-    end: 1616534084000000000,
+    query: `{job="${job}", instance="${instance}"} | logfmt`,
+    start: 1616621677000000000,
+    end: 1616621978000000000,
     step: 2,
   };
 
@@ -338,6 +345,13 @@ const getNodeGraphFields = () => {
     config: { color: { fixedColor: 'green', mode: FieldColorModeId.Fixed } },
   };
 
+  const nodeStartField = {
+    name: NodeGraphDataFrameFieldNames.arc + 'start',
+    type: FieldType.number,
+    values: new ArrayVector(),
+    config: { color: { fixedColor: 'blue', mode: FieldColorModeId.Fixed } },
+  };
+
   const nodeDestinationField = {
     name: NodeGraphDataFrameFieldNames.arc + 'destination',
     type: FieldType.number,
@@ -348,6 +362,7 @@ const getNodeGraphFields = () => {
   return {
     nodeIdField,
     nodeTitleField,
+    nodeStartField,
     nodeMainStatField,
     nodeSuccessField,
     nodeDestinationField,
@@ -404,6 +419,7 @@ export const parseTracerouteLogs = (queryResponse: LogQueryResponse): MutableDat
     nodeMainStatField,
     nodeSuccessField,
     nodeDestinationField,
+    nodeStartField,
   } = getNodeGraphFields();
   const { edgeIdField, edgeSourceField, edgeTargetField } = getNodeGraphEdgeFields();
 
@@ -443,6 +459,7 @@ export const parseTracerouteLogs = (queryResponse: LogQueryResponse): MutableDat
           acc[stream.Host] = {
             nextHosts: nextHost ? new Set([nextHost]) : new Set(),
             elapsedTimes: [stream.ElapsedTime],
+            isStart: stream.TTL === 1,
           };
         }
       });
@@ -464,12 +481,19 @@ export const parseTracerouteLogs = (queryResponse: LogQueryResponse): MutableDat
       edgeSourceField.values.add(host);
       edgeTargetField.values.add(nextHost);
     });
-    if (hostData.nextHosts?.size === 0) {
+    if (hostData.isStart) {
+      console.log('we getting a start?');
+      nodeStartField.values.add(1);
+      nodeDestinationField.values.add(0);
+      nodeSuccessField.values.add(0);
+    } else if (hostData.nextHosts?.size === 0) {
       nodeDestinationField.values.add(1);
       nodeSuccessField.values.add(0);
+      nodeStartField.values.add(0);
     } else {
       nodeSuccessField.values.add(1);
       nodeDestinationField.values.add(0);
+      nodeStartField.values.add(0);
     }
   });
 
@@ -479,7 +503,7 @@ export const parseTracerouteLogs = (queryResponse: LogQueryResponse): MutableDat
     new MutableDataFrame({
       name: 'nodes',
       refId: 'nodeRefId',
-      fields: [nodeIdField, nodeTitleField, nodeMainStatField, nodeSuccessField, nodeDestinationField],
+      fields: [nodeIdField, nodeTitleField, nodeMainStatField, nodeSuccessField, nodeDestinationField, nodeStartField],
       meta: {
         preferredVisualisationType: 'nodeGraph',
       },

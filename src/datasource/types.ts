@@ -8,6 +8,8 @@ export enum QueryType {
 
 export interface SMQuery extends DataQuery {
   queryType: QueryType;
+  instance?: string;
+  job?: string;
 }
 
 export const defaultQuery: SMQuery = {
@@ -91,6 +93,7 @@ export interface LogsAggregatedByTrace {
 export interface ParsedTraceHost {
   nextHosts?: Set<string>;
   elapsedTimes: string[];
+  isStart: boolean;
 }
 
 export interface TracesByHost {
