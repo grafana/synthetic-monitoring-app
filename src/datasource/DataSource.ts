@@ -77,7 +77,14 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
             },
           };
         }
-        const response = await queryLogs(logsUrl, query.job, query.instance);
+        console.log({ query, options });
+        const response = await queryLogs(
+          logsUrl,
+          query.job,
+          query.instance,
+          options.range.from.unix(),
+          options.range.to.unix()
+        );
 
         console.log({ response });
 

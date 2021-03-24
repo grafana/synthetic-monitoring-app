@@ -264,15 +264,20 @@ export const queryMetric = async (
   }
 };
 
-export const queryLogs = async (url: string, job: string, instance: string): Promise<LogQueryResponse> => {
+export const queryLogs = async (
+  url: string,
+  job: string,
+  instance: string,
+  start: number,
+  end: number
+): Promise<LogQueryResponse> => {
   const backendSrv = getBackendSrv();
-
   const params = {
     direction: 'BACKWARD',
     limit: 1000,
     query: `{job="${job}", instance="${instance}"} | logfmt`,
-    start: 1616621677000000000,
-    end: 1616621978000000000,
+    start: start,
+    end: end,
     step: 2,
   };
 
