@@ -401,9 +401,13 @@ export enum HttpRegexValidationType {
 }
 
 export interface SubmissionError {
-  status?: string;
   message?: string;
   msg?: string;
+}
+
+export interface SubmissionErrorWrapper {
+  data: SubmissionError;
+  status?: string;
 }
 
 export interface DashboardMeta {
@@ -461,4 +465,46 @@ export enum CheckEnabledStatus {
 export enum CheckListViewType {
   Card,
   List,
+}
+
+export interface LogStream {
+  ElapsedTime: string;
+  Host: string;
+  Success: string;
+  TTL: string;
+  TraceID: string;
+  check_name: string;
+  instance: string;
+  job: string;
+  probe: string;
+  probe_success: string;
+  region: string;
+  source: string;
+  target: string;
+}
+
+export interface ParsedLogStream extends Omit<LogStream, 'TTL'> {
+  TTL: number;
+}
+
+export interface LogLine {
+  stream: LogStream;
+  values: string[];
+}
+
+export interface LogQueryResponse {
+  data: LogLine[];
+}
+
+export interface LogsAggregatedByTrace {
+  [key: string]: ParsedLogStream[];
+}
+
+export interface ParsedTraceHost {
+  nextHosts?: Set<string>;
+  elapsedTime: string;
+}
+
+export interface TracesByHost {
+  [key: string]: ParsedTraceHost;
 }

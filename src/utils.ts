@@ -1,11 +1,29 @@
-import { DataSourceInstanceSettings } from '@grafana/data';
+import {
+  ArrayDataFrame,
+  ArrayVector,
+  DataSourceInstanceSettings,
+  FieldColorModeId,
+  FieldType,
+  MutableDataFrame,
+} from '@grafana/data';
 
 import { SMOptions, DashboardInfo, LinkedDatsourceInfo } from './datasource/types';
 
 import { config, getBackendSrv } from '@grafana/runtime';
-import { HostedInstance, User, OrgRole, CheckType, Settings } from 'types';
+import {
+  HostedInstance,
+  User,
+  OrgRole,
+  CheckType,
+  Settings,
+  LogQueryResponse,
+  LogsAggregatedByTrace,
+  TracesByHost,
+} from 'types';
 
 import { SMDataSource } from 'datasource/DataSource';
+import { NodeGraphDataFrameFieldNames } from '@grafana/ui';
+import { getNodeFields } from '@grafana/ui/components/NodeGraph/utils';
 
 /**
  * Find all synthetic-monitoring datasources
@@ -249,7 +267,7 @@ export const queryMetric = async (
   }
 };
 
-export const queryLogs = async (url: string): Promise<MetricQueryResponse> => {
+export const queryLogs = async (url: string): Promise<LogQueryResponse> => {
   const backendSrv = getBackendSrv();
 
   const params = {
@@ -293,4 +311,191 @@ export const fromBase64 = (value: string) => {
   } catch {
     return value;
   }
+};
+
+const getNodeGraphFields = () => {
+  const nodeIdField = {
+    name: NodeGraphDataFrameFieldNames.id,
+    type: FieldType.string,
+    values: new ArrayVector(),
+  };
+
+  const nodeTitleField = {
+    name: NodeGraphDataFrameFieldNames.title,
+    type: FieldType.string,
+    values: new ArrayVector(),
+    config: { displayName: 'Host' },
+  };
+
+  // const typeField = {
+  //   name: NodeGraphDataFrameFieldNames.subTitle,
+  //   type: FieldType.string,
+  //   values: new ArrayVector(),
+  //   config: { displayName: 'Type' },
+  // };
+
+  const nodeMainStatField = {
+    name: NodeGraphDataFrameFieldNames.mainStat,
+    type: FieldType.string,
+    values: new ArrayVector(),
+    config: { displayName: 'Elapsed time' },
+  };
+
+  const nodeSuccessField = {
+    name: NodeGraphDataFrameFieldNames.arc + 'success',
+    type: FieldType.number,
+    values: new ArrayVector(),
+    config: { color: { fixedColor: 'green', mode: FieldColorModeId.Fixed } },
+  };
+
+  const nodeDestinationField = {
+    name: NodeGraphDataFrameFieldNames.arc + 'destination',
+    type: FieldType.number,
+    values: new ArrayVector(),
+    config: { color: { fixedColor: 'purple', mode: FieldColorModeId.Fixed } },
+  };
+
+  return {
+    nodeIdField,
+    nodeTitleField,
+    nodeMainStatField,
+    nodeSuccessField,
+    nodeDestinationField,
+  };
+};
+
+const getNodeGraphEdgeFields = () => {
+  const edgeIdField = {
+    name: NodeGraphDataFrameFieldNames.id,
+    type: FieldType.string,
+    values: new ArrayVector(),
+  };
+  const edgeSourceField = {
+    name: NodeGraphDataFrameFieldNames.source,
+    type: FieldType.string,
+    values: new ArrayVector(),
+  };
+  const edgeTargetField = {
+    name: NodeGraphDataFrameFieldNames.target,
+    type: FieldType.string,
+    values: new ArrayVector(),
+  };
+
+  // These are needed for links to work
+  // const edgeSourceNameField = {
+  //   name: 'sourceName',
+  //   type: FieldType.string,
+  //   values: new ArrayVector(),
+  // };
+  // const edgeTargetNameField = {
+  //   name: 'targetName',
+  //   type: FieldType.string,
+  //   values: new ArrayVector(),
+  // };
+
+  // const edgeMainStatField = {
+  //   name: NodeGraphDataFrameFieldNames.mainStat,
+  //   type: FieldType.string,
+  //   values: new ArrayVector(),
+  //   config: { displayName: 'Response percentage' },
+  // };
+
+  return {
+    edgeIdField,
+    edgeSourceField,
+    edgeTargetField,
+  };
+};
+
+export const parseTracerouteLogs = (queryResponse: LogQueryResponse): MutableDataFrame[] => {
+  const {
+    nodeIdField,
+    nodeTitleField,
+    nodeMainStatField,
+    nodeSuccessField,
+    nodeDestinationField,
+  } = getNodeGraphFields();
+  const { edgeIdField, edgeSourceField, edgeTargetField } = getNodeGraphEdgeFields();
+
+  const groupedByTraceID = queryResponse.data.reduce<LogsAggregatedByTrace>((acc, { stream }) => {
+    const traceId = stream.TraceID;
+    if (!traceId) {
+      return acc;
+    }
+
+    const updatedStream = {
+      ...stream,
+      TTL: parseInt(stream.TTL, 10),
+    };
+
+    if (acc[traceId]) {
+      acc[traceId].push(updatedStream);
+    } else {
+      acc[traceId] = [updatedStream];
+    }
+    return acc;
+  }, {});
+
+  console.log({ groupedByTraceID });
+
+  const groupedByHost = Object.entries(groupedByTraceID).reduce<TracesByHost>((acc, [traceId, streamArray]) => {
+    streamArray
+      .sort((a, b) => a.TTL - b.TTL)
+      .forEach((stream, index, arr) => {
+        const nextHost = arr[index + 1]?.Host;
+        const currentHost = acc[stream.Host];
+        if (currentHost) {
+          if (nextHost && !currentHost.nextHosts?.has(nextHost)) {
+            currentHost.nextHosts?.add(nextHost);
+          }
+        } else {
+          acc[stream.Host] = {
+            // TODO: Parse this to a number
+            nextHosts: nextHost ? new Set([nextHost]) : new Set(),
+            elapsedTime: stream.ElapsedTime,
+          };
+        }
+      });
+    return acc;
+  }, {});
+
+  Object.entries(groupedByHost).forEach(([host, hostData]) => {
+    nodeIdField.values.add(host);
+    nodeTitleField.values.add(host);
+    nodeMainStatField.values.add(hostData.elapsedTime);
+    Array.from(hostData.nextHosts ?? new Set([])).forEach((nextHost) => {
+      edgeIdField.values.add(`${host}_${nextHost}`);
+      edgeSourceField.values.add(host);
+      edgeTargetField.values.add(nextHost);
+    });
+    if (hostData.nextHosts?.size === 0) {
+      console.log('hello');
+      nodeDestinationField.values.add(1);
+      nodeSuccessField.values.add(0);
+    } else {
+      nodeSuccessField.values.add(1);
+      nodeDestinationField.values.add(0);
+    }
+  });
+
+  console.log({ groupedByHost });
+
+  return [
+    new MutableDataFrame({
+      name: 'nodes',
+      refId: 'nodeRefId',
+      fields: [nodeIdField, nodeTitleField, nodeMainStatField, nodeSuccessField, nodeDestinationField],
+      meta: {
+        preferredVisualisationType: 'nodeGraph',
+      },
+    }),
+    new MutableDataFrame({
+      name: 'edges',
+      refId: 'edgesRefId',
+      fields: [edgeIdField, edgeSourceField, edgeTargetField],
+      meta: {
+        preferredVisualisationType: 'nodeGraph',
+      },
+    }),
+  ];
 };

@@ -2,7 +2,7 @@ import React, { useState, useMemo, useContext } from 'react';
 import { css } from 'emotion';
 import { Button, ConfirmModal, Field, Input, HorizontalGroup, Select, Legend, Alert, useStyles } from '@grafana/ui';
 import { useAsyncCallback } from 'react-async-hook';
-import { Check, CheckType, OrgRole, CheckFormValues, SubmissionError } from 'types';
+import { Check, CheckType, OrgRole, CheckFormValues, SubmissionErrorWrapper } from 'types';
 import { hasRole } from 'utils';
 import { getDefaultValuesFromCheck, getCheckFromFormValues } from './checkFormTransformations';
 import { validateJob, validateTarget } from 'validation';
@@ -74,7 +74,7 @@ export const CheckEditor = ({ check, onReturn }: Props) => {
     onReturn(true);
   });
 
-  const submissionError = error as SubmissionError;
+  const submissionError = (error as unknown) as SubmissionErrorWrapper;
 
   const onRemoveCheck = async () => {
     const id = check?.id;
@@ -186,9 +186,7 @@ export const CheckEditor = ({ check, onReturn }: Props) => {
         {submissionError && (
           <div className={styles.submissionError}>
             <Alert title="Save failed" severity="error">
-              {`${submissionError.status}: ${
-                submissionError.message ?? submissionError.data?.msg ?? 'Something went wrong'
-              }`}
+              {`${submissionError.status}: ${submissionError.data?.msg ?? 'Something went wrong'}`}
             </Alert>
           </div>
         )}
