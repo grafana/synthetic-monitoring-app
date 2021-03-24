@@ -1,29 +1,19 @@
-import {
-  ArrayDataFrame,
-  ArrayVector,
-  DataSourceInstanceSettings,
-  FieldColorModeId,
-  FieldType,
-  MutableDataFrame,
-} from '@grafana/data';
+import { ArrayVector, DataSourceInstanceSettings, FieldColorModeId, FieldType, MutableDataFrame } from '@grafana/data';
 
-import { SMOptions, DashboardInfo, LinkedDatsourceInfo } from './datasource/types';
-
-import { config, getBackendSrv } from '@grafana/runtime';
 import {
-  HostedInstance,
-  User,
-  OrgRole,
-  CheckType,
-  Settings,
+  SMOptions,
+  DashboardInfo,
+  LinkedDatsourceInfo,
   LogQueryResponse,
   LogsAggregatedByTrace,
   TracesByHost,
-} from 'types';
+} from './datasource/types';
+
+import { config, getBackendSrv } from '@grafana/runtime';
+import { HostedInstance, User, OrgRole, CheckType, Settings } from 'types';
 
 import { SMDataSource } from 'datasource/DataSource';
 import { NodeGraphDataFrameFieldNames } from '@grafana/ui';
-import { getNodeFields } from '@grafana/ui/components/NodeGraph/utils';
 
 /**
  * Find all synthetic-monitoring datasources
@@ -336,9 +326,9 @@ const getNodeGraphFields = () => {
 
   const nodeMainStatField = {
     name: NodeGraphDataFrameFieldNames.mainStat,
-    type: FieldType.string,
+    type: FieldType.number,
     values: new ArrayVector(),
-    config: { displayName: 'Elapsed time' },
+    config: { unit: 'ms', displayName: 'Elapsed time' },
   };
 
   const nodeSuccessField = {
@@ -448,11 +438,11 @@ export const parseTracerouteLogs = (queryResponse: LogQueryResponse): MutableDat
           if (nextHost && !currentHost.nextHosts?.has(nextHost)) {
             currentHost.nextHosts?.add(nextHost);
           }
+          currentHost.elapsedTimes.push(stream.ElapsedTime);
         } else {
           acc[stream.Host] = {
-            // TODO: Parse this to a number
             nextHosts: nextHost ? new Set([nextHost]) : new Set(),
-            elapsedTime: stream.ElapsedTime,
+            elapsedTimes: [stream.ElapsedTime],
           };
         }
       });
@@ -462,14 +452,19 @@ export const parseTracerouteLogs = (queryResponse: LogQueryResponse): MutableDat
   Object.entries(groupedByHost).forEach(([host, hostData]) => {
     nodeIdField.values.add(host);
     nodeTitleField.values.add(host);
-    nodeMainStatField.values.add(hostData.elapsedTime);
+    const totalElapsedTime = hostData.elapsedTimes.reduce((totalTime, elapsedTime) => {
+      const cleanedString = elapsedTime.replace('ms', '');
+      const int = parseInt(cleanedString, 10);
+      return totalTime + int;
+    }, 0);
+    const averageElapsedTime = totalElapsedTime / hostData.elapsedTimes.length;
+    nodeMainStatField.values.add(Math.round(averageElapsedTime));
     Array.from(hostData.nextHosts ?? new Set([])).forEach((nextHost) => {
       edgeIdField.values.add(`${host}_${nextHost}`);
       edgeSourceField.values.add(host);
       edgeTargetField.values.add(nextHost);
     });
     if (hostData.nextHosts?.size === 0) {
-      console.log('hello');
       nodeDestinationField.values.add(1);
       nodeSuccessField.values.add(0);
     } else {
