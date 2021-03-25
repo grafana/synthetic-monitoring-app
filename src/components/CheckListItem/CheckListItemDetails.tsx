@@ -14,6 +14,9 @@ const getStyles = (theme: GrafanaTheme) => ({
     align-items: center;
     width: 284px;
   `,
+  labelWidth: css`
+    max-width: 350px;
+  `,
 });
 
 interface Props {
@@ -38,7 +41,12 @@ export const CheckListItemDetails = ({ frequency, activeSeries, className, label
             content={
               <HorizontalGroup justify="flex-end" wrap>
                 {labels.map((label: Label, index) => (
-                  <CheckCardLabel key={index} label={label} onLabelSelect={onLabelClick} />
+                  <CheckCardLabel
+                    key={index}
+                    label={label}
+                    onLabelSelect={onLabelClick}
+                    className={styles.labelWidth}
+                  />
                 ))}
               </HorizontalGroup>
             }
