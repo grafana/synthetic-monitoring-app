@@ -1,3 +1,10 @@
+## [0.8.14](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.13...0.8.14) (2021-03-25)
+
+
+### Bug Fixes
+
+* validate that labels names are not duplicated ([#246](https://github.com/grafana/synthetic-monitoring-app/issues/246)) ([78758fd](https://github.com/grafana/synthetic-monitoring-app/commit/78758fddb7395f768863201ed3414e324a8f73f2))
+
 ## [0.8.13](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.12...0.8.13) (2021-03-23)
 
 
