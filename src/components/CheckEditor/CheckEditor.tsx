@@ -159,10 +159,7 @@ export const CheckEditor = ({ check, onReturn }: Props) => {
           <CheckFormAlert />
         </div>
         <HorizontalGroup>
-          <Button
-            type="submit"
-            disabled={formMethods.formState.isSubmitting || submitting || Object.keys(formMethods.errors).length > 0}
-          >
+          <Button type="submit" disabled={formMethods.formState.isSubmitting || submitting}>
             Save
           </Button>
           {check?.id && (

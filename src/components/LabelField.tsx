@@ -2,6 +2,7 @@ import React from 'react';
 import { Field } from '@grafana/ui';
 import { NameValueInput } from './NameValueInput';
 import { validateLabelName, validateLabelValue } from 'validation';
+import { useFormContext } from 'react-hook-form';
 
 interface Props {
   isEditor: boolean;
@@ -9,6 +10,8 @@ interface Props {
 }
 
 export const LabelField = ({ isEditor, limit }: Props) => {
+  const { watch } = useFormContext();
+  const labels = watch('labels');
   return (
     <Field
       label="Labels"
@@ -20,7 +23,7 @@ export const LabelField = ({ isEditor, limit }: Props) => {
         disabled={!isEditor}
         label="label"
         limit={limit ?? 5}
-        validateName={validateLabelName}
+        validateName={(labelName) => validateLabelName(labelName, labels)}
         validateValue={validateLabelValue}
       />
     </Field>

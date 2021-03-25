@@ -97,10 +97,24 @@ export function validateLabels(labels: Label[]): boolean {
 const labelRegex = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
 
 export function validateLabel(label: Label): string | undefined {
-  return validateLabelName(label.name) && validateLabelValue(label.value);
+  return validateLabelName(label.name, []) && validateLabelValue(label.value);
 }
 
-export function validateLabelName(name: string): string | undefined {
+export function validateLabelName(name: string, labels: Label[]): string | undefined {
+  const labelNames = new Set<string>();
+  const duplicateLabels = new Set<string>();
+  labels.forEach((label) => {
+    if (labelNames.has(label.name)) {
+      duplicateLabels.add(label.name);
+    } else {
+      labelNames.add(label.name);
+    }
+  });
+
+  if (duplicateLabels.has(name)) {
+    return 'Label names cannot be duplicated';
+  }
+
   if (name.length > 32) {
     return 'Label names must be 32 characters or less';
   }

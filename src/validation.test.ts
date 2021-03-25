@@ -4,6 +4,7 @@ import {
   validateTLSCACert,
   validateTLSClientCert,
   validateTLSClientKey,
+  validateLabelName,
 } from 'validation';
 import { Check, CheckType, HttpMethod, IpVersion, DnsRecordType, DnsProtocol, AlertSensitivity } from 'types';
 jest.unmock('utils');
@@ -240,5 +241,15 @@ describe('good targets', () => {
     testcases.forEach((testcase: string) => {
       expect(CheckValidation.target(CheckType.TCP, testcase)).toBe(undefined);
     });
+  });
+});
+
+describe('labels', () => {
+  it('rejects duplicate label names', () => {
+    const error = validateLabelName('a_name', [
+      { name: 'a_name', value: 'a_value' },
+      { name: 'a_name', value: 'a_different_value' },
+    ]);
+    expect(error).toBe('Label names cannot be duplicated');
   });
 });
