@@ -12,16 +12,23 @@ const getGrafanaDependencyVersion = () => {
 };
 
 const getCompatibleGrafanaVersion = () => {
-  return pluginJson.dependencies.grafanaVersion;
+  const grafanaDependency = pluginJson.dependencies.grafanaDependency.replace('>=', '');
+  const grafanaVersion = pluginJson.dependencies.grafanaVersion;
+  return {
+    grafanaDependency,
+    grafanaVersion,
+  };
 };
 
 const majorMinorVersion = (version: string) => {
-  return version.split('.').slice(0, 1).join('.');
+  return version.split('.').slice(0, 2).join('.');
 };
 
-it('plugin json compatibility should reflack whats in the package json dependencies', () => {
+it('plugin json compatibility should reflact whats in the package json dependencies', () => {
   const { data, runtime, toolkit, ui } = getGrafanaDependencyVersion();
-  const compatibleVersion = majorMinorVersion(getCompatibleGrafanaVersion());
+  const { grafanaVersion, grafanaDependency } = getCompatibleGrafanaVersion();
+  const compatibleVersion = majorMinorVersion(grafanaVersion);
+  expect(compatibleVersion).toEqual(majorMinorVersion(grafanaDependency));
   expect(majorMinorVersion(data)).toEqual(compatibleVersion);
   expect(majorMinorVersion(runtime)).toEqual(compatibleVersion);
   expect(majorMinorVersion(toolkit)).toEqual(compatibleVersion);
