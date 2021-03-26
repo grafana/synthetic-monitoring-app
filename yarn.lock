@@ -1182,10 +1182,10 @@
     minimatch "^3.0.4"
     strip-json-comments "^3.1.1"
 
-"@grafana/data@7.5.0":
-  version "7.5.0"
-  resolved "https://registry.yarnpkg.com/@grafana/data/-/data-7.5.0.tgz#c20479a95084a69a153b95f74a753e3f533bf943"
-  integrity sha512-sIbXcDSoRgR0WecPBOsNLDLlMGelRpmZFoJFVByjqPbVIBY8C3sxUKqffSbI6RmVr1uRiiv+h4TwNBDS89uHlA==
+"@grafana/data@7.5.1":
+  version "7.5.1"
+  resolved "https://registry.yarnpkg.com/@grafana/data/-/data-7.5.1.tgz#5cee5d105c3470eadf26e1780490bb097d963e54"
+  integrity sha512-c8CBMGr++9gbovdoYMLLGEb8o2we+AE7CBqLOeT2n1E2bbGcpdjKRf0cVPvLmMKJE99pRQ6AVWh2dv40a9CBlA==
   dependencies:
     "@braintree/sanitize-url" "4.0.0"
     "@types/d3-interpolate" "^1.3.1"
@@ -1196,10 +1196,10 @@
     rxjs "6.6.3"
     xss "1.0.6"
 
-"@grafana/e2e-selectors@7.5.0":
-  version "7.5.0"
-  resolved "https://registry.yarnpkg.com/@grafana/e2e-selectors/-/e2e-selectors-7.5.0.tgz#e53c6e142af717156fa081a6354f15970fbb300f"
-  integrity sha512-ravj4DycULMU72UZGDXrZRtVm/1owOaY144/8zq0z1bh6CIDiYhFc/Dj92yKTp5S/FM2nwjzA4NwJz66LfCULA==
+"@grafana/e2e-selectors@7.5.1":
+  version "7.5.1"
+  resolved "https://registry.yarnpkg.com/@grafana/e2e-selectors/-/e2e-selectors-7.5.1.tgz#711c7affc8b100473c8983db22d9c5ffb2bbe33e"
+  integrity sha512-BkRIXMOLHx6rLzoTkCo0s/DUddpqBywCBp6s+J5574DymqEcm48UdcWeD3HHZox/U7R6pETJ7tC/DzZ2mE1YVg==
   dependencies:
     "@grafana/tsconfig" "^1.0.0-rc1"
     commander "5.0.0"
@@ -1223,13 +1223,13 @@
     prettier "2.2.1"
     typescript "4.1.3"
 
-"@grafana/runtime@7.5.0":
-  version "7.5.0"
-  resolved "https://registry.yarnpkg.com/@grafana/runtime/-/runtime-7.5.0.tgz#2da021ae7395e48cb54f0a359994c9926ff22f76"
-  integrity sha512-RySlvA/clXs0eHHL8TOrbuYtffZ0Gvs+xxHAswfLGuVckOP8rCPz2l2yyIQwQStdP2L2KuG+JMVco73QYKOohw==
+"@grafana/runtime@7.5.1":
+  version "7.5.1"
+  resolved "https://registry.yarnpkg.com/@grafana/runtime/-/runtime-7.5.1.tgz#178a84cebfb2a16b06777e58c31034b5ea6785e0"
+  integrity sha512-4aR3y+Zr8BGg1cd3LPKL7gsUff+Mx9Z9bnd20EIGvHpOxROUUA4ijYG3zhGpd4jbtbjmaIO+LVO3yWcfCMpXCg==
   dependencies:
-    "@grafana/data" "7.5.0"
-    "@grafana/ui" "7.5.0"
+    "@grafana/data" "7.5.1"
+    "@grafana/ui" "7.5.1"
     systemjs "0.20.19"
     systemjs-plugin-css "0.1.37"
 
@@ -1255,17 +1255,17 @@
     tiny-invariant "^1.0.1"
     tiny-warning "^0.0.3"
 
-"@grafana/toolkit@7.5.0":
-  version "7.5.0"
-  resolved "https://registry.yarnpkg.com/@grafana/toolkit/-/toolkit-7.5.0.tgz#0c62e848c5461e5dfc9ad48e4af2e6eef598bf5b"
-  integrity sha512-SqWhRUCJ7XqVMxpU1+0UNlxpzB1Ames5YqtSd72Viw53uC3pih+QmbwdXG6amcUgzjBgAsZrAKrjPrtDbGRq0Q==
+"@grafana/toolkit@7.5.1":
+  version "7.5.1"
+  resolved "https://registry.yarnpkg.com/@grafana/toolkit/-/toolkit-7.5.1.tgz#7bdbdf84dccbaad3ed45c2b54887fa25fd58556c"
+  integrity sha512-xJvvgqM7bmRTlD+xenLVZ2epRM/txxM9vb25XPXfMuMqdhtg2cYmvcSe0NqsEwY8pEVfRh93UERBmBNBrWBLUg==
   dependencies:
     "@babel/core" "7.9.0"
     "@babel/preset-env" "7.9.0"
-    "@grafana/data" "7.5.0"
+    "@grafana/data" "7.5.1"
     "@grafana/eslint-config" "2.3.0"
     "@grafana/tsconfig" "^1.0.0-rc1"
-    "@grafana/ui" "7.5.0"
+    "@grafana/ui" "7.5.1"
     "@types/command-exists" "^1.2.0"
     "@types/execa" "^0.9.0"
     "@types/expect-puppeteer" "3.3.1"
@@ -1348,14 +1348,14 @@
   resolved "https://registry.yarnpkg.com/@grafana/tsconfig/-/tsconfig-1.0.0-rc1.tgz#d07ea16755a50cae21000113f30546b61647a200"
   integrity sha512-nucKPGyzlSKYSiJk5RA8GzMdVWhdYNdF+Hh65AXxjD9PlY69JKr5wANj8bVdQboag6dgg0BFKqgKPyY+YtV4Iw==
 
-"@grafana/ui@7.5.0":
-  version "7.5.0"
-  resolved "https://registry.yarnpkg.com/@grafana/ui/-/ui-7.5.0.tgz#b070893852426a6f67752735071a222d7ecc7392"
-  integrity sha512-36luPhiCQP/StUHVYP5rrT1Wr6n4EIWOjaoC+wajSCVW9lvUS3F7S9JnoUDiPq83bRxRw/EAjw0ShV/7e9SJcQ==
+"@grafana/ui@7.5.1":
+  version "7.5.1"
+  resolved "https://registry.yarnpkg.com/@grafana/ui/-/ui-7.5.1.tgz#55160ec779c8601f9e39674a7acf0282e5ffdee4"
+  integrity sha512-r9k8q1F4Z4XCejJSJr2D4S8I3rdgJ9nitnCirfeuE6TdJznoHx/oZrXhK42bvFLnd6sIO7ZhaH3DKz3A9hOe/A==
   dependencies:
     "@emotion/core" "10.0.27"
-    "@grafana/data" "7.5.0"
-    "@grafana/e2e-selectors" "7.5.0"
+    "@grafana/data" "7.5.1"
+    "@grafana/e2e-selectors" "7.5.1"
     "@grafana/slate-react" "0.22.9-grafana"
     "@grafana/tsconfig" "^1.0.0-rc1"
     "@iconscout/react-unicons" "1.1.4"
