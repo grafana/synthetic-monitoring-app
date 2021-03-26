@@ -24,11 +24,13 @@ const NAME = 'labels';
 
 export const AlertLabels: FC = () => {
   const styles = useStyles(getStyles);
-  const { control, register, errors } = useFormContext();
+  const { control, register, errors, watch } = useFormContext();
   const { fields, append, remove } = useFieldArray({
     control,
     name: NAME,
   });
+
+  const labels = watch('labels');
 
   return (
     <SubCollapse title="Labels">
@@ -48,7 +50,7 @@ export const AlertLabels: FC = () => {
           <Fragment key={field.id}>
             <Field error={errors?.labels?.[labelIndex]?.name?.message} invalid={errors?.labels?.[labelIndex]?.name}>
               <Input
-                ref={register({ validate: (value) => validateLabelName(value) })}
+                ref={register({ validate: (value) => validateLabelName(value, labels) })}
                 name={`${NAME}[${labelIndex}].name`}
                 placeholder="Name"
                 data-testid={`alert-labelName-${labelIndex}`}
