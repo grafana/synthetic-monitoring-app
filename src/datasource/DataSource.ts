@@ -51,7 +51,6 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
           length: checks.length,
         };
 
-        console.log('FRAME', frame.length);
         data.push(copy);
       } else if (query.queryType === QueryType.Traceroute) {
         const logsUrl = this.getLogsDS().url;
@@ -67,7 +66,6 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
           };
         }
         if (!query.job || !query.instance) {
-          console.log('no job or instance');
           return {
             data: [],
             error: {
@@ -77,7 +75,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
             },
           };
         }
-        console.log({ query, options });
+
         const response = await queryLogs(
           logsUrl,
           query.job,
@@ -85,8 +83,6 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
           options.range.from.unix(),
           options.range.to.unix()
         );
-
-        console.log({ response });
 
         const dataFrames = parseTracerouteLogs(response);
 

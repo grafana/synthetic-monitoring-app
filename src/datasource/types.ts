@@ -84,6 +84,7 @@ export interface LogLine {
 
 export interface LogQueryResponse {
   data: LogLine[];
+  error?: string;
 }
 
 export interface LogsAggregatedByTrace {

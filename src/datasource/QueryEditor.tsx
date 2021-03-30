@@ -99,9 +99,7 @@ export class QueryEditor extends PureComponent<Props, State> {
   };
 
   onTracerouteCheckChange = async (check: SelectableValue<TracerouteCheckOptionValue>) => {
-    const { onChange, onRunQuery, query, ...rest } = this.props;
-
-    console.log({ rest });
+    const { onChange, onRunQuery, query } = this.props;
 
     onChange({
       ...query,

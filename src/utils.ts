@@ -1,11 +1,4 @@
-import {
-  ArrayVector,
-  DataSourceInstanceSettings,
-  FieldColorModeId,
-  FieldType,
-  getNamedColorPalette,
-  MutableDataFrame,
-} from '@grafana/data';
+import { ArrayVector, DataSourceInstanceSettings, FieldColorModeId, FieldType, MutableDataFrame } from '@grafana/data';
 
 import {
   SMOptions,
@@ -204,7 +197,8 @@ export const parseUrl = (url: string) => {
 // Takes a TS enum with matching string/value pairs and transforms it into an array of strings
 // Under the hood TS enums duplicate key/value pairs so a value can match a key and vice-versa
 export function enumToStringArray<T>(enumObject: T) {
-  return [...new Set(Object.keys(enumObject) as string[])];
+  const set = new Set(Object.keys(enumObject) as string[]);
+  return Array.from(set);
 }
 
 // Matches a string against multiple options
@@ -281,7 +275,6 @@ export const queryLogs = async (
     step: 2,
   };
 
-  // http://localhost:3000/api/datasources/proxy/1/api/v1/query_range?direction=BACKWARD&limit=1000&query={check_name="traceroute"&start=1616530483000000000&end=1616534084000000000&step=2
   try {
     const response = await backendSrv.datasourceRequest({
       method: 'GET',

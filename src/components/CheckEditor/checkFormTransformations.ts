@@ -301,7 +301,14 @@ const getDnsSettingsFormValues = (settings: Settings): DnsSettingsFormValues => 
 
 const getTracerouteSettingsFormValues = (settings: Settings): TracerouteSettingsFormValues => {
   const tracerouteSettings = settings.traceroute ?? (fallbackSettings(CheckType.Traceroute) as TracerouteSettings);
-  return tracerouteSettings;
+
+  return {
+    firstHop: String(tracerouteSettings.firstHop),
+    maxHops: String(tracerouteSettings.maxHops),
+    retries: String(tracerouteSettings.retries),
+    packetSize: String(tracerouteSettings.packetSize),
+    port: String(tracerouteSettings.port),
+  };
 };
 
 const getFormSettingsForCheck = (settings: Settings): SettingsFormValues => {
@@ -620,7 +627,6 @@ const getSettingsFromFormValues = (formValues: Partial<CheckFormValues>, default
     case CheckType.Traceroute:
       return {
         traceroute: {
-          timeout: formValues.timeout * 1000,
           ...getTracerouteSettings(formValues.settings?.traceroute, defaultValues.settings.traceroute),
         },
       };
