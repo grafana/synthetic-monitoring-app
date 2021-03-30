@@ -1,3 +1,19 @@
+## [0.8.15](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.14...0.8.15) (2021-03-26)
+
+## [0.8.14](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.13...0.8.14) (2021-03-25)
+
+
+### Bug Fixes
+
+* validate that labels names are not duplicated ([#246](https://github.com/grafana/synthetic-monitoring-app/issues/246)) ([78758fd](https://github.com/grafana/synthetic-monitoring-app/commit/78758fddb7395f768863201ed3414e324a8f73f2))
+
+## [0.8.13](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.12...0.8.13) (2021-03-23)
+
+
+### Bug Fixes
+
+* add validation for label names and values, truncate long labels in the card view, and handle label deletion ([#241](https://github.com/grafana/synthetic-monitoring-app/issues/241)) ([15b0050](https://github.com/grafana/synthetic-monitoring-app/commit/15b00504bbcdc512428f725a9d73dc691946a92a))
+
 ## [0.8.12](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.11...0.8.12) (2021-03-17)
 
 

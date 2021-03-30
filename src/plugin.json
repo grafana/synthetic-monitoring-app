@@ -65,11 +65,18 @@
       "name": "Alerts",
       "path": "/a/grafana-synthetic-monitoring-app/?page=alerts",
       "addToNav": true
+    },
+    {
+      "type": "page",
+      "name": "Config",
+      "path": "/plugins/grafana-synthetic-monitoring-app",
+      "addToNav": true
     }
   ],
 
   "dependencies": {
-    "grafanaVersion": "7.2.x",
+    "grafanaDependency": ">=7.5.0",
+    "grafanaVersion": "7.5",
     "plugins": [
       {
         "type": "panel",

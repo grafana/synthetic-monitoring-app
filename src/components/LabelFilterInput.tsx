@@ -59,8 +59,6 @@ export const LabelFilterInput = ({ checks, labelFilters, onChange, className }: 
     });
   }, [aggregatedLabels]);
 
-  console.log({ labelCascadeOptions });
-
   const labelFilterOptions: Array<SelectableValue<string>> = useMemo(() => {
     return Object.entries(aggregatedLabels).reduce<Array<SelectableValue<string>>>((acc, [name, value]) => {
       return acc.concat(

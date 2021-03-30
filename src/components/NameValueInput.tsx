@@ -31,7 +31,7 @@ export const NameValueInput = ({ name, disabled, limit, label, validateName, val
             `}
           >
             <Input
-              ref={register({ required: true })}
+              ref={register({ required: true, validate: validateName })}
               name={`${name}[${index}].name`}
               type="text"
               placeholder="name"
@@ -46,7 +46,7 @@ export const NameValueInput = ({ name, disabled, limit, label, validateName, val
             `}
           >
             <Input
-              ref={register({ required: true })}
+              ref={register({ required: true, validate: validateValue })}
               name={`${name}[${index}].value`}
               type="text"
               placeholder="value"

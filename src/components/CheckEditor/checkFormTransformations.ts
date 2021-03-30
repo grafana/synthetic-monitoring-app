@@ -637,7 +637,7 @@ export const getCheckFromFormValues = (
     job: formValues.job,
     target: formValues.target,
     enabled: formValues.enabled,
-    labels: formValues.labels ?? defaultValues.labels ?? [],
+    labels: formValues.labels ?? [],
     probes: formValues.probes,
     timeout: formValues.timeout * 1000,
     frequency: formValues.frequency * 1000,
