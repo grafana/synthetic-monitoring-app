@@ -1,12 +1,13 @@
 import React, { PureComponent } from 'react';
 import { defaults } from 'lodash';
-import { GrafanaTheme, QueryEditorProps, SelectableValue } from '@grafana/data';
+import { GrafanaTheme, locationUtil, QueryEditorProps, SelectableValue } from '@grafana/data';
 import { SMDataSource } from './DataSource';
 import { SMQuery, SMOptions, QueryType, defaultQuery } from './types';
 import { getTheme, Select, Spinner } from '@grafana/ui';
 import { css } from 'emotion';
 import { checkType } from 'utils';
 import { CheckType } from 'types';
+import { getTemplateSrv } from '@grafana/runtime';
 
 type Props = QueryEditorProps<SMDataSource, SMQuery, SMOptions>;
 
@@ -100,16 +101,34 @@ export class QueryEditor extends PureComponent<Props, State> {
 
   onTracerouteCheckChange = async (check: SelectableValue<TracerouteCheckOptionValue>) => {
     const { onChange, onRunQuery, query } = this.props;
-
     onChange({
       ...query,
       queryType: QueryType.Traceroute,
       instance: check.value?.instance,
       job: check.value?.job,
     });
-
+    this.setState({ selectedTracerouteCheckOption: check.value });
     onRunQuery();
   };
+
+  getSelectedDashboardTracerouteOption(): TracerouteCheckOptionValue | undefined {
+    const { tracerouteCheckOptions } = this.state;
+    const dashboardVars = getTemplateSrv().getVariables() ?? [];
+    const instance = dashboardVars.find((variable) => variable.name === 'instance');
+    const job = dashboardVars.find((variable) => variable.name === 'job');
+    const dashboardInstance = instance?.current?.value;
+    const dashboardJob = job?.current?.value;
+
+    const selected = tracerouteCheckOptions.find(
+      (option) => option.value?.job === dashboardJob && option.value?.instance === dashboardInstance
+    );
+
+    console.log({ dashboardInstance, dashboardJob, selected });
+    if (dashboardInstance && dashboardJob && selected) {
+      return selected?.value;
+    }
+    return undefined;
+  }
 
   render() {
     const query = defaults(this.props.query, defaultQuery);
@@ -119,6 +138,9 @@ export class QueryEditor extends PureComponent<Props, State> {
     if (tracerouteCheckOptionsLoading) {
       return <Spinner />;
     }
+    const selectedDashboardOption = this.getSelectedDashboardTracerouteOption();
+    const selected = selectedDashboardOption ?? selectedTracerouteCheckOption;
+    console.log('frontend', { query });
 
     return (
       <div>
@@ -134,8 +156,9 @@ export class QueryEditor extends PureComponent<Props, State> {
             <Select
               options={tracerouteCheckOptions}
               prefix="Check"
-              value={tracerouteCheckOptions.find((option) => option.value === selectedTracerouteCheckOption)}
+              value={tracerouteCheckOptions.find((option) => option.value === selected)}
               onChange={this.onTracerouteCheckChange}
+              disabled={Boolean(selectedDashboardOption)}
             />
           </div>
         )}

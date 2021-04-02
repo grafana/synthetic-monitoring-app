@@ -272,7 +272,7 @@ export const queryLogs = async (
     query: `{job="${job}", instance="${instance}"} | logfmt`,
     start: start,
     end: end,
-    step: 2,
+    // step: ,
   };
 
   try {
@@ -440,8 +440,6 @@ export const parseTracerouteLogs = (queryResponse: LogQueryResponse): MutableDat
     return acc;
   }, {});
 
-  console.log({ groupedByTraceID });
-
   const groupedByHost = Object.entries(groupedByTraceID).reduce<TracesByHost>((acc, [traceId, streamArray]) => {
     streamArray
       .sort((a, b) => a.TTL - b.TTL)
@@ -480,7 +478,6 @@ export const parseTracerouteLogs = (queryResponse: LogQueryResponse): MutableDat
       edgeTargetField.values.add(nextHost);
     });
     if (hostData.isStart) {
-      console.log('we getting a start?');
       nodeStartField.values.add(1);
       nodeDestinationField.values.add(0);
       nodeSuccessField.values.add(0);
@@ -495,7 +492,7 @@ export const parseTracerouteLogs = (queryResponse: LogQueryResponse): MutableDat
     }
   });
 
-  console.log({ groupedByHost });
+  console.log(nodeIdField);
 
   return [
     new MutableDataFrame({

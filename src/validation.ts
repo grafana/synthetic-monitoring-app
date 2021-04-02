@@ -84,12 +84,15 @@ export function validateFrequency(frequency: number): string | undefined {
   return undefined;
 }
 
-export function validateTimeout(timeout: number): string | undefined {
+export function validateTimeout(timeout: number, checkType: CheckType): string | undefined {
+  // const maxTimeout = checkType === CheckType.Traceroute ? 30 : 10;
+  const maxTimeout = 30;
+  // console.log('validation', { maxTimeout, checkType });
   if (timeout < 1) {
     return 'Timeout must be at least 1 second';
   }
-  if (timeout > 10) {
-    return 'Timeout cannot be greater than 10 seconds';
+  if (timeout > maxTimeout) {
+    return `Timeout cannot be greater than ${maxTimeout} seconds`;
   }
   return undefined;
 }

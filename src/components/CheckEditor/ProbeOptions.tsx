@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { Field } from '@grafana/ui';
 import CheckProbes from './CheckProbes';
 import { InstanceContext } from 'components/InstanceContext';
-import { Probe } from 'types';
+import { CheckType, Probe } from 'types';
 import { SliderInput } from 'components/SliderInput';
 import { Subheader } from 'components/Subheader';
 import { useFormContext, Controller } from 'react-hook-form';
@@ -17,8 +17,11 @@ interface Props {
 
 export const ProbeOptions = ({ frequency, timeout, isEditor, probes }: Props) => {
   const [availableProbes, setAvailableProbes] = useState<Probe[]>([]);
-  const { control, errors } = useFormContext();
+  const { control, errors, watch } = useFormContext();
   const { instance } = useContext(InstanceContext);
+
+  const checkType = watch('checkType').value;
+  console.log({ checkType });
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -75,9 +78,9 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, probes }: Props) =>
       >
         <SliderInput
           name="timeout"
-          rules={{ validate: validateTimeout }}
+          rules={{ validate: (timeout) => validateTimeout(timeout, checkType) }}
           defaultValue={timeout / 1000}
-          max={10.0}
+          max={checkType === CheckType.Traceroute ? 30.0 : 10.0}
           min={1.0}
           step={0.5}
           suffixLabel="seconds"

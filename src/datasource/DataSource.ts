@@ -6,11 +6,13 @@ import {
   FieldType,
   ArrayDataFrame,
   DataFrame,
+  MetricFindValue,
+  VariableModel,
 } from '@grafana/data';
 
 import { SMQuery, SMOptions, QueryType } from './types';
 
-import { config, getBackendSrv } from '@grafana/runtime';
+import { config, getBackendSrv, getTemplateSrv } from '@grafana/runtime';
 import { Probe, Check, RegistrationInfo, HostedInstance } from '../types';
 import { parseTracerouteLogs, queryLogs } from 'utils';
 
@@ -55,7 +57,6 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       } else if (query.queryType === QueryType.Traceroute) {
         const logsUrl = this.getLogsDS().url;
         if (!logsUrl) {
-          console.log('Could not find logs datasource');
           return {
             data: [],
             error: {
@@ -65,7 +66,12 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
             },
           };
         }
-        if (!query.job || !query.instance) {
+
+        const dashboardVars = getTemplateSrv().getVariables();
+
+        const queryToExecute = dashboardVars ? this.getQueryFromDashboardVars(dashboardVars, query) : query;
+
+        if (!queryToExecute.job || !queryToExecute.instance) {
           return {
             data: [],
             error: {
@@ -78,8 +84,8 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
 
         const response = await queryLogs(
           logsUrl,
-          query.job,
-          query.instance,
+          queryToExecute.job,
+          queryToExecute.instance,
           options.range.from.unix(),
           options.range.to.unix()
         );
@@ -90,6 +96,22 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       }
     }
     return { data };
+  }
+
+  getQueryFromDashboardVars(dashboardVars: VariableModel[], query: SMQuery): SMQuery {
+    const job = dashboardVars.find((variable) => variable.name === 'job');
+    const instance = dashboardVars.find((variable) => variable.name === 'instance');
+
+    // const value = dashboardVar.current?.value ?? '';
+    // const [job, instance] = value.split(':').map((val: string) => val.trim());
+    if (!job || !instance) {
+      return query;
+    }
+    return {
+      ...query,
+      job: job?.current?.value ?? query.job,
+      instance: instance?.current?.value ?? query.instance,
+    };
   }
 
   //--------------------------------------------------------------------------------
@@ -105,6 +127,18 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       .then((res: any) => {
         return res.data;
       });
+  }
+
+  async metricFindQuery(query: string, options?: any): Promise<MetricFindValue[]> {
+    const checks = await this.listChecks();
+    const metricFindValues = checks.map<MetricFindValue>((check) => {
+      const value = `${check.job}: ${check.target}`;
+      return {
+        value,
+        text: value,
+      };
+    });
+    return metricFindValues;
   }
 
   async addProbe(probe: Probe): Promise<any> {
