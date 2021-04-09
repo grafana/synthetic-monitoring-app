@@ -123,7 +123,6 @@ export class QueryEditor extends PureComponent<Props, State> {
       (option) => option.value?.job === dashboardJob && option.value?.instance === dashboardInstance
     );
 
-    console.log({ dashboardInstance, dashboardJob, selected });
     if (dashboardInstance && dashboardJob && selected) {
       return selected?.value;
     }
@@ -140,7 +139,6 @@ export class QueryEditor extends PureComponent<Props, State> {
     }
     const selectedDashboardOption = this.getSelectedDashboardTracerouteOption();
     const selected = selectedDashboardOption ?? selectedTracerouteCheckOption;
-    console.log('frontend', { query });
 
     return (
       <div>

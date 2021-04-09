@@ -267,9 +267,9 @@ export const queryLogs = async (
 ): Promise<LogQueryResponse> => {
   const backendSrv = getBackendSrv();
   const params = {
-    direction: 'BACKWARD',
+    direction: 'FORWARD',
     limit: 1000,
-    query: `{job="${job}", instance="${instance}"} | logfmt`,
+    query: `{job="${job}", instance="${instance}", check_name="traceroute"} | logfmt`,
     start: start,
     end: end,
     // step: ,
@@ -336,11 +336,11 @@ const getNodeGraphFields = () => {
     config: { unit: 'ms', displayName: 'Elapsed time' },
   };
 
-  const nodeSuccessField = {
+  const nodeGenericField = {
     name: NodeGraphDataFrameFieldNames.arc + 'success',
     type: FieldType.number,
     values: new ArrayVector(),
-    config: { color: { fixedColor: 'green', mode: FieldColorModeId.Fixed } },
+    config: { color: { fixedColor: 'gray', mode: FieldColorModeId.Fixed } },
   };
 
   const nodeStartField = {
@@ -357,13 +357,29 @@ const getNodeGraphFields = () => {
     config: { color: { fixedColor: 'purple', mode: FieldColorModeId.Fixed } },
   };
 
+  const nodeMostRecentField = {
+    name: NodeGraphDataFrameFieldNames.arc + 'most_recent',
+    type: FieldType.number,
+    values: new ArrayVector(),
+    config: { color: { fixedColor: 'yellow', mode: FieldColorModeId.Fixed } },
+  };
+
+  const nodeMostRecentDestinationField = {
+    name: NodeGraphDataFrameFieldNames.arc + 'most_recent_destination',
+    type: FieldType.number,
+    values: new ArrayVector(),
+    config: { color: { fixedColor: 'green', mode: FieldColorModeId.Fixed } },
+  };
+
   return {
     nodeIdField,
     nodeTitleField,
     nodeStartField,
     nodeMainStatField,
-    nodeSuccessField,
+    nodeGenericField,
     nodeDestinationField,
+    nodeMostRecentField,
+    nodeMostRecentDestinationField,
   };
 };
 
@@ -415,14 +431,23 @@ export const parseTracerouteLogs = (queryResponse: LogQueryResponse): MutableDat
     nodeIdField,
     nodeTitleField,
     nodeMainStatField,
-    nodeSuccessField,
+    nodeGenericField,
     nodeDestinationField,
     nodeStartField,
+    nodeMostRecentField,
+    nodeMostRecentDestinationField,
   } = getNodeGraphFields();
   const { edgeIdField, edgeSourceField, edgeTargetField } = getNodeGraphEdgeFields();
 
-  const groupedByTraceID = queryResponse.data.reduce<LogsAggregatedByTrace>((acc, { stream }) => {
+  let mostRecentTraceId: string;
+
+  const groupedByTraceID = queryResponse.data.reduce<LogsAggregatedByTrace>((acc, { stream, values }, index) => {
     const traceId = stream.TraceID;
+    console.log(values[0][0], new Date(values[0][0]).getTime());
+    console.log('each stream', index, stream);
+    if (index === 0 && traceId) {
+      mostRecentTraceId = traceId;
+    }
     if (!traceId) {
       return acc;
     }
@@ -446,16 +471,21 @@ export const parseTracerouteLogs = (queryResponse: LogQueryResponse): MutableDat
       .forEach((stream, index, arr) => {
         const nextHost = arr[index + 1]?.Host;
         const currentHost = acc[stream.Host];
+
         if (currentHost) {
           if (nextHost && !currentHost.nextHosts?.has(nextHost)) {
             currentHost.nextHosts?.add(nextHost);
           }
           currentHost.elapsedTimes.push(stream.ElapsedTime);
+          if (traceId === mostRecentTraceId) {
+            currentHost.isMostRecent = true;
+          }
         } else {
           acc[stream.Host] = {
             nextHosts: nextHost ? new Set([nextHost]) : new Set(),
             elapsedTimes: [stream.ElapsedTime],
             isStart: stream.TTL === 1,
+            isMostRecent: traceId === mostRecentTraceId,
           };
         }
       });
@@ -480,25 +510,50 @@ export const parseTracerouteLogs = (queryResponse: LogQueryResponse): MutableDat
     if (hostData.isStart) {
       nodeStartField.values.add(1);
       nodeDestinationField.values.add(0);
-      nodeSuccessField.values.add(0);
+      nodeGenericField.values.add(0);
+      nodeMostRecentDestinationField.values.add(0);
+      nodeMostRecentField.values.add(0);
     } else if (hostData.nextHosts?.size === 0) {
-      nodeDestinationField.values.add(1);
-      nodeSuccessField.values.add(0);
+      if (hostData.isMostRecent) {
+        nodeMostRecentDestinationField.values.add(1);
+        nodeDestinationField.values.add(0);
+      } else {
+        nodeDestinationField.values.add(1);
+        nodeMostRecentDestinationField.values.add(0);
+      }
+      nodeGenericField.values.add(0);
+      nodeStartField.values.add(0);
+      nodeMostRecentField.values.add(0);
+      nodeMostRecentDestinationField.values.add(0);
+    } else if (hostData.isMostRecent) {
+      nodeMostRecentField.values.add(1);
+      nodeDestinationField.values.add(0);
+      nodeMostRecentDestinationField.values.add(0);
+      nodeGenericField.values.add(0);
       nodeStartField.values.add(0);
     } else {
-      nodeSuccessField.values.add(1);
+      nodeGenericField.values.add(1);
       nodeDestinationField.values.add(0);
+      nodeMostRecentDestinationField.values.add(0);
       nodeStartField.values.add(0);
+      nodeMostRecentField.values.add(0);
     }
   });
-
-  console.log(nodeIdField);
 
   return [
     new MutableDataFrame({
       name: 'nodes',
       refId: 'nodeRefId',
-      fields: [nodeIdField, nodeTitleField, nodeMainStatField, nodeSuccessField, nodeDestinationField, nodeStartField],
+      fields: [
+        nodeIdField,
+        nodeTitleField,
+        nodeMainStatField,
+        nodeGenericField,
+        nodeMostRecentField,
+        nodeDestinationField,
+        nodeStartField,
+        nodeMostRecentDestinationField,
+      ],
       meta: {
         preferredVisualisationType: 'nodeGraph',
       },

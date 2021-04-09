@@ -96,6 +96,7 @@ export interface ParsedTraceHost {
   nextHosts?: Set<string>;
   elapsedTimes: string[];
   isStart: boolean;
+  isMostRecent: boolean;
 }
 
 export interface TracesByHost {
