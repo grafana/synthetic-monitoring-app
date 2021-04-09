@@ -1,3 +1,10 @@
+## [0.8.17](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.16...0.8.17) (2021-04-09)
+
+
+### Bug Fixes
+
+* increase label length validation to allow 128 characters ([#248](https://github.com/grafana/synthetic-monitoring-app/issues/248)) ([142f5f4](https://github.com/grafana/synthetic-monitoring-app/commit/142f5f443a165e467f616de2ebcb94b58b029dff))
+
 ## [0.8.16](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.15...0.8.16) (2021-04-09)
 
 ## [0.8.15](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.14...0.8.15) (2021-03-26)
