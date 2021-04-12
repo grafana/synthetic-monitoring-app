@@ -1,3 +1,10 @@
+## [0.8.18](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.17...0.8.18) (2021-04-12)
+
+
+### Bug Fixes
+
+* allow curly brackets in http url params ([#252](https://github.com/grafana/synthetic-monitoring-app/issues/252)) ([20ac472](https://github.com/grafana/synthetic-monitoring-app/commit/20ac4722fb8754dcc5fee5bb4d1eac588ec77602))
+
 ## [0.8.17](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.16...0.8.17) (2021-04-09)
 
 
