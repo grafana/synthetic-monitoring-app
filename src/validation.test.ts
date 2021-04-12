@@ -186,6 +186,10 @@ describe('good targets', () => {
     });
   });
 
+  it('should accept urls with curly brackets in param values', () => {
+    expect(CheckValidation.target(CheckType.HTTP, 'https://example.com?data={name%3Asteve}')).toBe(undefined);
+  });
+
   it('should accept http targets with ipv6 domains', () => {
     [
       'https://[2001:0db8:1001:1001:1001:1001:1001:1001]/',

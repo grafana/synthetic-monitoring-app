@@ -3,7 +3,7 @@ import { checkType } from 'utils';
 import * as punycode from 'punycode';
 import { Address4, Address6 } from 'ip-address';
 import validUrl from 'valid-url';
-import { PEM_HEADER, PEM_FOOTER } from 'components/constants';
+import { PEM_HEADER, PEM_FOOTER, INVALID_WEB_URL_MESSAGE } from 'components/constants';
 
 export const CheckValidation = {
   job: validateJob,
@@ -249,12 +249,22 @@ export function validateSettingsTCP(settings: TcpSettings): string | undefined {
 }
 
 function validateHttpTarget(target: string): string | undefined {
-  const isValidUrl = Boolean(validUrl.isWebUri(target));
-  if (!isValidUrl) {
-    return 'Target must be a valid web URL';
+  try {
+    // valid url will fail if curly brackets are not URI encoded, but curly brackets are technically allowed and work in the real world.
+    // We encode the target before checking to get around that
+    // encodeURI can throw in certain circumstances, so we must wrap it in a try/catch
+    const httpEncoded = encodeURI(target);
+    const isValidUrl = Boolean(validUrl.isWebUri(httpEncoded));
+    if (!isValidUrl) {
+      return INVALID_WEB_URL_MESSAGE;
+    }
+  } catch (e) {
+    return INVALID_WEB_URL_MESSAGE;
   }
+
   try {
     const parsedUrl = new URL(target);
+
     if (!parsedUrl.protocol) {
       return 'Target must have a valid protocol';
     }
@@ -272,7 +282,7 @@ function validateHttpTarget(target: string): string | undefined {
     return undefined;
   } catch (e) {
     // The new URL constructor throws on invalid web URLs
-    return 'Target must be a valid web URL';
+    return INVALID_WEB_URL_MESSAGE;
   }
 }
 
