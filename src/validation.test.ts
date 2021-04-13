@@ -5,6 +5,7 @@ import {
   validateTLSClientCert,
   validateTLSClientKey,
   validateLabelName,
+  validateLabelValue,
 } from 'validation';
 import { Check, CheckType, HttpMethod, IpVersion, DnsRecordType, DnsProtocol, AlertSensitivity } from 'types';
 jest.unmock('utils');
@@ -185,6 +186,10 @@ describe('good targets', () => {
     });
   });
 
+  it('should accept urls with curly brackets in param values', () => {
+    expect(CheckValidation.target(CheckType.HTTP, 'https://example.com?data={name%3Asteve}')).toBe(undefined);
+  });
+
   it('should accept http targets with ipv6 domains', () => {
     [
       'https://[2001:0db8:1001:1001:1001:1001:1001:1001]/',
@@ -251,5 +256,23 @@ describe('labels', () => {
       { name: 'a_name', value: 'a_different_value' },
     ]);
     expect(error).toBe('Label names cannot be duplicated');
+  });
+
+  it('rejects label names that are too long', () => {
+    const longLabelName =
+      'LoremipsumdolorsitametconsecteturadipiscingelitSedhendreritnonnibhetaliquetPraesentquisjustoacnibhtempusidstoacnibhtempusidstoacnibhtempusidstoacnibhtempusid';
+    const error = validateLabelName(longLabelName, []);
+    const shortEnough = validateLabelName(longLabelName.slice(0, 127), []);
+    expect(error).toBe('Label names must be 128 characters or less');
+    expect(shortEnough).toBe(undefined);
+  });
+
+  it('rejects label values that are too long', () => {
+    const longLabelValue =
+      'LoremipsumdolorsitametconsecteturadipiscingelitSedhendreritnonnibhetaliquetPraesentquisjustoacnibhtempusidstoacnibhtempusidstoacnibhtempusidstoacnibhtempusid';
+    const error = validateLabelValue(longLabelValue);
+    const shortEnough = validateLabelValue(longLabelValue.slice(0, 127));
+    expect(error).toBe('Label values must be 128 characters or less');
+    expect(shortEnough).toBe(undefined);
   });
 });
