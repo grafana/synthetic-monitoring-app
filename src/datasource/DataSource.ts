@@ -165,7 +165,6 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   }
 
   async updateProbe(probe: Probe): Promise<any> {
-    console.log('updating probe.', probe);
     return getBackendSrv()
       .datasourceRequest({
         method: 'POST',
@@ -178,7 +177,6 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   }
 
   async resetProbeToken(probe: Probe): Promise<any> {
-    console.log('updating probe.', probe);
     return getBackendSrv()
       .datasourceRequest({
         method: 'POST',
@@ -227,7 +225,6 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   }
 
   async updateCheck(check: Check): Promise<any> {
-    console.log('updating check.', check);
     return getBackendSrv()
       .datasourceRequest({
         method: 'POST',
@@ -309,8 +306,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       jsonData: options,
       access: 'proxy',
     };
-    const info = await getBackendSrv().put(`api/datasources/${this.instanceSettings.id}`, data);
-    console.log('updated datasource config', info);
+    await getBackendSrv().put(`api/datasources/${this.instanceSettings.id}`, data);
   }
 
   async registerSave(apiToken: string, options: SMOptions, accessToken: string): Promise<any> {
@@ -322,8 +318,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       },
       access: 'proxy',
     };
-    const info = await getBackendSrv().put(`api/datasources/${this.instanceSettings.id}`, data);
-    console.log('Saved accessToken, now update our configs', info);
+    await getBackendSrv().put(`api/datasources/${this.instanceSettings.id}`, data);
 
     // Note the accessToken above must be saved first!
     return await getBackendSrv().datasourceRequest({

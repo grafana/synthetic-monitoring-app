@@ -59,11 +59,13 @@ export interface CloudDatasourceJsonData extends DataSourceJsonData {
 }
 
 export interface LogStream {
-  ElapsedTime: string;
+  AvgMs: string;
   Host: string;
   Success: string;
   TTL: string;
   TraceID: string;
+  LossPercent: string;
+  Destination: string;
   check_name: string;
   instance: string;
   job: string;
@@ -97,6 +99,7 @@ export interface ParsedTraceHost {
   elapsedTimes: string[];
   isStart: boolean;
   isMostRecent: boolean;
+  packetLossAverages: number[];
 }
 
 export interface TracesByHost {

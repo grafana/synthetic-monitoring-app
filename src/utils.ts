@@ -7,6 +7,7 @@ import {
   LogQueryResponse,
   LogsAggregatedByTrace,
   TracesByHost,
+  ParsedLogStream,
 } from './datasource/types';
 
 import { config, getBackendSrv } from '@grafana/runtime';
@@ -34,7 +35,6 @@ export function findHostedInstance(
     const instanceUrl = info.url + (info.type === 'logs' ? '' : '/api/prom');
     for (const ds of known) {
       if (ds.url === instanceUrl) {
-        console.log('MAYBE:', basicAuthUser, (ds as any).basicAuthUser, ds);
         if (basicAuthUser === (ds as any).basicAuthUser) {
           return ds;
         }
@@ -267,7 +267,7 @@ export const queryLogs = async (
 ): Promise<LogQueryResponse> => {
   const backendSrv = getBackendSrv();
   const params = {
-    direction: 'FORWARD',
+    direction: 'BACKWARD',
     limit: 1000,
     query: `{job="${job}", instance="${instance}", check_name="traceroute"} | logfmt`,
     start: start,
@@ -333,14 +333,7 @@ const getNodeGraphFields = () => {
     name: NodeGraphDataFrameFieldNames.mainStat,
     type: FieldType.number,
     values: new ArrayVector(),
-    config: { unit: 'ms', displayName: 'Elapsed time' },
-  };
-
-  const nodeGenericField = {
-    name: NodeGraphDataFrameFieldNames.arc + 'success',
-    type: FieldType.number,
-    values: new ArrayVector(),
-    config: { color: { fixedColor: 'gray', mode: FieldColorModeId.Fixed } },
+    config: { unit: 'ms', displayName: 'Average Ms' },
   };
 
   const nodeStartField = {
@@ -350,18 +343,25 @@ const getNodeGraphFields = () => {
     config: { color: { fixedColor: 'blue', mode: FieldColorModeId.Fixed } },
   };
 
+  const nodeSuccessField = {
+    name: NodeGraphDataFrameFieldNames.arc + 'success',
+    type: FieldType.number,
+    values: new ArrayVector(),
+    config: { color: { fixedColor: 'green', mode: FieldColorModeId.Fixed } },
+  };
+
+  const nodeErrorField = {
+    name: NodeGraphDataFrameFieldNames.arc + 'error',
+    type: FieldType.number,
+    values: new ArrayVector(),
+    config: { color: { fixedColor: 'red', mode: FieldColorModeId.Fixed } },
+  };
+
   const nodeDestinationField = {
     name: NodeGraphDataFrameFieldNames.arc + 'destination',
     type: FieldType.number,
     values: new ArrayVector(),
     config: { color: { fixedColor: 'purple', mode: FieldColorModeId.Fixed } },
-  };
-
-  const nodeMostRecentField = {
-    name: NodeGraphDataFrameFieldNames.arc + 'most_recent',
-    type: FieldType.number,
-    values: new ArrayVector(),
-    config: { color: { fixedColor: 'yellow', mode: FieldColorModeId.Fixed } },
   };
 
   const nodeMostRecentDestinationField = {
@@ -376,10 +376,10 @@ const getNodeGraphFields = () => {
     nodeTitleField,
     nodeStartField,
     nodeMainStatField,
-    nodeGenericField,
     nodeDestinationField,
-    nodeMostRecentField,
     nodeMostRecentDestinationField,
+    nodeSuccessField,
+    nodeErrorField,
   };
 };
 
@@ -427,33 +427,26 @@ const getNodeGraphEdgeFields = () => {
 };
 
 export const parseTracerouteLogs = (queryResponse: LogQueryResponse): MutableDataFrame[] => {
-  const {
-    nodeIdField,
-    nodeTitleField,
-    nodeMainStatField,
-    nodeGenericField,
-    nodeDestinationField,
-    nodeStartField,
-    nodeMostRecentField,
-    nodeMostRecentDestinationField,
-  } = getNodeGraphFields();
   const { edgeIdField, edgeSourceField, edgeTargetField } = getNodeGraphEdgeFields();
 
   let mostRecentTraceId: string;
 
+  const destinations = new Set<string>();
+
   const groupedByTraceID = queryResponse.data.reduce<LogsAggregatedByTrace>((acc, { stream, values }, index) => {
     const traceId = stream.TraceID;
-    console.log(values[0][0], new Date(values[0][0]).getTime());
-    console.log('each stream', index, stream);
-    if (index === 0 && traceId) {
+    if (traceId && !mostRecentTraceId) {
       mostRecentTraceId = traceId;
     }
     if (!traceId) {
       return acc;
     }
 
+    const host = stream.Host || `??? TTL${stream.TTL}`;
+    destinations.add(stream.Destination);
     const updatedStream = {
       ...stream,
+      Host: host,
       TTL: parseInt(stream.TTL, 10),
     };
 
@@ -465,78 +458,113 @@ export const parseTracerouteLogs = (queryResponse: LogQueryResponse): MutableDat
     return acc;
   }, {});
 
+  type NextHost = {
+    Host: string;
+    TTL: number;
+  };
+
+  const findNextHost = (currentTTL: number, streamArr: ParsedLogStream[]): NextHost | undefined => {
+    const nextHostStreamIndex = streamArr.findIndex((stream) => stream.TTL > currentTTL && Boolean(stream.Host));
+    if (nextHostStreamIndex > -1) {
+      return { Host: streamArr[nextHostStreamIndex]?.Host, TTL: streamArr[nextHostStreamIndex]?.TTL };
+    }
+    return;
+  };
+
   const groupedByHost = Object.entries(groupedByTraceID).reduce<TracesByHost>((acc, [traceId, streamArray]) => {
     streamArray
       .sort((a, b) => a.TTL - b.TTL)
+      // .filter((stream) => Boolean(stream.Host))
       .forEach((stream, index, arr) => {
-        const nextHost = arr[index + 1]?.Host;
+        // const nextHost = arr[index + 1]?.Host;
+        // const host =
+        const nextHost = findNextHost(stream.TTL, arr);
+        // if (nextHost && !nextHost.Host) {
+        //   console.log('empty host');
+        //   nextHost.Host = `??? - TTL${stream.TTL}`;
+        // }
+        // const host = stream.Host === '' ? `??? - TTL${stream.TTL}` : stream.Host;
         const currentHost = acc[stream.Host];
 
         if (currentHost) {
-          if (nextHost && !currentHost.nextHosts?.has(nextHost)) {
-            currentHost.nextHosts?.add(nextHost);
+          if (nextHost && !currentHost.nextHosts?.has(nextHost.Host)) {
+            currentHost.nextHosts?.add(nextHost.Host);
           }
-          currentHost.elapsedTimes.push(stream.ElapsedTime);
+          currentHost.elapsedTimes.push(stream.AvgMs);
+          currentHost.packetLossAverages.push(parseInt(stream.LossPercent, 10));
           if (traceId === mostRecentTraceId) {
             currentHost.isMostRecent = true;
           }
         } else {
           acc[stream.Host] = {
-            nextHosts: nextHost ? new Set([nextHost]) : new Set(),
-            elapsedTimes: [stream.ElapsedTime],
+            nextHosts: nextHost ? new Set([nextHost.Host]) : new Set(),
+            elapsedTimes: [stream.AvgMs],
             isStart: stream.TTL === 1,
             isMostRecent: traceId === mostRecentTraceId,
+            packetLossAverages: [parseInt(stream.LossPercent, 10)],
           };
         }
       });
     return acc;
   }, {});
 
+  const {
+    nodeIdField,
+    nodeTitleField,
+    nodeMainStatField,
+    nodeDestinationField,
+    nodeStartField,
+    nodeMostRecentDestinationField,
+    nodeSuccessField,
+    nodeErrorField,
+  } = getNodeGraphFields();
+
   Object.entries(groupedByHost).forEach(([host, hostData]) => {
-    nodeIdField.values.add(host);
-    nodeTitleField.values.add(host);
     const totalElapsedTime = hostData.elapsedTimes.reduce((totalTime, elapsedTime) => {
       const cleanedString = elapsedTime.replace('ms', '');
       const int = parseInt(cleanedString, 10);
       return totalTime + int;
     }, 0);
     const averageElapsedTime = totalElapsedTime / hostData.elapsedTimes.length;
+
+    const totalPacketLoss = hostData.packetLossAverages.reduce((acc, packetLoss) => packetLoss + acc, 0);
+
+    const packetLossStat = totalPacketLoss / hostData.packetLossAverages.length / 100;
+    const packetSuccessStat = 1 - packetLossStat;
+
+    nodeIdField.values.add(host);
+    nodeTitleField.values.add(host);
     nodeMainStatField.values.add(Math.round(averageElapsedTime));
+
     Array.from(hostData.nextHosts ?? new Set([])).forEach((nextHost) => {
       edgeIdField.values.add(`${host}_${nextHost}`);
       edgeSourceField.values.add(host);
       edgeTargetField.values.add(nextHost);
     });
+
     if (hostData.isStart) {
-      nodeStartField.values.add(1);
-      nodeDestinationField.values.add(0);
-      nodeGenericField.values.add(0);
       nodeMostRecentDestinationField.values.add(0);
-      nodeMostRecentField.values.add(0);
-    } else if (hostData.nextHosts?.size === 0) {
+      nodeDestinationField.values.add(0);
+      nodeStartField.values.add(1);
+      nodeSuccessField.values.add(0);
+      nodeErrorField.values.add(0);
+    } else if (destinations.has(host)) {
       if (hostData.isMostRecent) {
         nodeMostRecentDestinationField.values.add(1);
         nodeDestinationField.values.add(0);
       } else {
-        nodeDestinationField.values.add(1);
         nodeMostRecentDestinationField.values.add(0);
+        nodeDestinationField.values.add(1);
       }
-      nodeGenericField.values.add(0);
       nodeStartField.values.add(0);
-      nodeMostRecentField.values.add(0);
-      nodeMostRecentDestinationField.values.add(0);
-    } else if (hostData.isMostRecent) {
-      nodeMostRecentField.values.add(1);
-      nodeDestinationField.values.add(0);
-      nodeMostRecentDestinationField.values.add(0);
-      nodeGenericField.values.add(0);
-      nodeStartField.values.add(0);
+      nodeSuccessField.values.add(0);
+      nodeErrorField.values.add(0);
     } else {
-      nodeGenericField.values.add(1);
       nodeDestinationField.values.add(0);
       nodeMostRecentDestinationField.values.add(0);
       nodeStartField.values.add(0);
-      nodeMostRecentField.values.add(0);
+      nodeSuccessField.values.add(packetSuccessStat);
+      nodeErrorField.values.add(packetLossStat);
     }
   });
 
@@ -548,11 +576,11 @@ export const parseTracerouteLogs = (queryResponse: LogQueryResponse): MutableDat
         nodeIdField,
         nodeTitleField,
         nodeMainStatField,
-        nodeGenericField,
-        nodeMostRecentField,
         nodeDestinationField,
         nodeStartField,
         nodeMostRecentDestinationField,
+        nodeSuccessField,
+        nodeErrorField,
       ],
       meta: {
         preferredVisualisationType: 'nodeGraph',
