@@ -129,9 +129,6 @@ export function validateLabelValue(value: string): string | undefined {
   if (value.length > 128) {
     return 'Label values must be 128 characters or less';
   }
-  if (!labelRegex.test(value)) {
-    return 'Invalid label value';
-  }
 
   return undefined;
 }
