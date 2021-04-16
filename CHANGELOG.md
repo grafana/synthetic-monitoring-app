@@ -1,3 +1,10 @@
+## [0.8.19](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.18...0.8.19) (2021-04-16)
+
+
+### Bug Fixes
+
+* allow all characters in label values ([#257](https://github.com/grafana/synthetic-monitoring-app/issues/257)) ([5780876](https://github.com/grafana/synthetic-monitoring-app/commit/5780876bfcf47b7217bb5f52565d70b2354d5451))
+
 ## [0.8.18](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.17...0.8.18) (2021-04-12)
 
 
