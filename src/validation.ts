@@ -74,12 +74,14 @@ export function validateTarget(typeOfCheck: CheckType, target: string): string |
   }
 }
 
-export function validateFrequency(frequency: number): string | undefined {
-  if (frequency < 10) {
-    return 'Frequency must be at least 10 seconds';
+export function validateFrequency(frequency: number, selectedCheckType: CheckType): string | undefined {
+  const min = selectedCheckType === CheckType.Traceroute ? 60 : 10;
+  const max = selectedCheckType === CheckType.Traceroute ? 240 : 120;
+  if (frequency < min) {
+    return `Frequency must be at least ${min} seconds`;
   }
-  if (frequency > 120) {
-    return 'Frequency cannot be greater than 120 seconds';
+  if (frequency > max) {
+    return `Frequency cannot be greater than ${max} seconds`;
   }
   return undefined;
 }

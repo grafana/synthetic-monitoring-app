@@ -60,12 +60,14 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, probes }: Props) =>
         error={errors.frequency?.message}
       >
         <SliderInput
-          rules={{ validate: validateFrequency }}
+          rules={{
+            validate: (value) => validateFrequency(value, checkType),
+          }}
           name="frequency"
           prefixLabel={'Every'}
           suffixLabel={'seconds'}
-          min={10.0}
-          max={120.0}
+          min={checkType === CheckType.Traceroute ? 60.0 : 10.0}
+          max={checkType === CheckType.Traceroute ? 240 : 120.0}
           defaultValue={frequency / 1000}
         />
       </Field>

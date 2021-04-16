@@ -59,7 +59,7 @@ export interface CloudDatasourceJsonData extends DataSourceJsonData {
 }
 
 export interface LogStream {
-  AvgMs: string;
+  ElapsedTime: string;
   Host: string;
   Success: string;
   TTL: string;
