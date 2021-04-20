@@ -16,14 +16,14 @@ aliases:
       only: /^(([0-9]+)\.([0-9]+)\.([0-9]+))/
     branches:
       ignore: /.*/
-  - &filter-only-master
+  - &filter-only-main
     branches:
-      only: master
+      only: main
     tags:
       ignore: /.*/
   - &filter-only-pr
     branches:
-      ignore: master
+      ignore: main
     tags:
       ignore: /.*/
   # Grafana toolkit adds a version tag with a leading "v" to github deploys, we only want to run releases on those tags
@@ -45,9 +45,9 @@ workflows:
   master_build:
     jobs:
       - install_dependencies:
-          filters: *filter-only-master
+          filters: *filter-only-main
       - version_bump:
-          filters: *filter-only-master
+          filters: *filter-only-main
           requires:
             - install_dependencies
 
