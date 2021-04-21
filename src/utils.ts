@@ -453,7 +453,15 @@ export const parseTracerouteLogs = (queryResponse: LogQueryResponse): MutableDat
     if (acc[traceId]) {
       acc[traceId].push(updatedStream);
     } else {
-      acc[traceId] = [updatedStream];
+      const probe = {
+        ...updatedStream,
+        LossPercent: '0',
+        ElapsedTime: '0ms',
+        Success: 'true',
+        TTL: 0,
+        Host: stream.probe,
+      };
+      acc[traceId] = [probe, updatedStream];
     }
     return acc;
   }, {});
@@ -491,7 +499,7 @@ export const parseTracerouteLogs = (queryResponse: LogQueryResponse): MutableDat
           acc[stream.Host] = {
             nextHosts: nextHost ? new Set([nextHost.Host]) : new Set(),
             elapsedTimes: [stream.ElapsedTime],
-            isStart: stream.TTL === 1,
+            isStart: stream.TTL === 0,
             isMostRecent: traceId === mostRecentTraceId,
             packetLossAverages: [parseInt(stream.LossPercent, 10)],
             TTL: stream.TTL,
