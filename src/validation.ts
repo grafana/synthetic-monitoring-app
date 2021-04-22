@@ -47,7 +47,7 @@ export function validateTarget(typeOfCheck: CheckType, target: string): string |
       return validateHostname(target);
     }
     case CheckType.DNS: {
-      return validateHostname(target);
+      return validateDomain(target);
     }
     case CheckType.TCP: {
       return validateHostPort(target);
@@ -284,6 +284,96 @@ function validateHttpTarget(target: string): string | undefined {
     // The new URL constructor throws on invalid web URLs
     return INVALID_WEB_URL_MESSAGE;
   }
+}
+
+function validateDomain(target: string): string | undefined {
+  const ipv4 = new Address4(target);
+  const ipv6 = new Address6(target);
+
+  if (ipv4.isValid() || ipv6.isValid()) {
+    return 'IP addresses are not valid DNS targets';
+  }
+
+  if (target.length === 0 || target.length > 255) {
+    return 'Hostname must be between 0 and 255 characters';
+  }
+
+  const rawElements = target.split('.');
+
+  if (rawElements.length < 2) {
+    return 'Invalid number of elements in hostname';
+  }
+
+  const filteredElements = rawElements.filter((element, index) => {
+    const isLast = index === rawElements.length - 1;
+    if (isLast && element === '') {
+      return false;
+    }
+    return true;
+  });
+
+  const errors = filteredElements
+    .map((element, index) => {
+      const isLast = index === filteredElements.length - 1;
+      const error = validateDomainElement(element, isLast);
+      if (error) {
+        return error;
+      }
+      return undefined;
+    })
+    .filter(Boolean);
+
+  return errors[0] ?? undefined;
+}
+
+function isCharacterNumber(character: string): boolean {
+  const numberRegex = new RegExp(/[0-9]/);
+  return Boolean(character.match(numberRegex)?.length);
+}
+
+function isCharacterLetter(character: string): boolean {
+  const letterRegex = new RegExp(/[a-zA-Z]/);
+  return Boolean(character.match(letterRegex)?.length);
+}
+
+function isValidDomainCharacter(character: string): boolean {
+  const regex = new RegExp(/[-A-Za-z0-9\.]/);
+  return Boolean(!character.match(regex)?.length);
+}
+
+function validateDomainElement(element: string, isLast: boolean): string | undefined {
+  if ((!isLast && element.length === 0) || element.length > 63) {
+    return 'Invalid domain element length. Each element must be between 1 and 62 characters';
+  }
+
+  // This is to allow trailing '.' characters in dns records
+  if (isLast && element.length === 0) {
+    return undefined;
+  }
+
+  const first = element[0];
+  const last = element[element.length - 1];
+  if (!isCharacterLetter(first) && !isCharacterNumber(first)) {
+    return 'A domain element must begin with a letter or number';
+  }
+
+  if (!isCharacterNumber(last) && !isCharacterLetter(last)) {
+    return 'A domain element must end with a letter or number';
+  }
+
+  if (isLast) {
+    const hasNonNumbers = element.split('').some((character) => !isCharacterNumber(character));
+    if (!hasNonNumbers) {
+      return 'A domain TLD cannot contain only numbers';
+    }
+  }
+
+  const hasInvalidCharacter = element.split('').some((character) => isValidDomainCharacter(character));
+  if (hasInvalidCharacter) {
+    return 'Invalid character in domain name. Only letters, numbers and "-" are allowed';
+  }
+
+  return undefined;
 }
 
 function validateHostname(target: string): string | undefined {
