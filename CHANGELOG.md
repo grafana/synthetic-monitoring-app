@@ -1,3 +1,10 @@
+## [0.8.22](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.21...0.8.22) (2021-04-22)
+
+
+### Bug Fixes
+
+* allow disabled plugin to be enabled before prompting for bootstrapping flow ([#256](https://github.com/grafana/synthetic-monitoring-app/issues/256)) ([75f7781](https://github.com/grafana/synthetic-monitoring-app/commit/75f77815c4bbd4e2e24fa2735839558fdecfbd56))
+
 ## [0.8.21](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.20...0.8.21) (2021-04-20)
 
 ## [0.8.20](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.19...0.8.20) (2021-04-20)
