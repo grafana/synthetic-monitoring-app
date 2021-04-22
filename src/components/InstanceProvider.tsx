@@ -99,7 +99,7 @@ export const InstanceProvider = ({
     throw new Error('There was an error finding datasources required for Synthetic Monitoring');
   }
 
-  if (!instances.metrics || !instances.logs) {
+  if (meta.enabled && (!instances.metrics || !instances.logs)) {
     return <UnprovisionedSetup pluginId={meta.id} pluginName={meta.name} />;
   }
 
