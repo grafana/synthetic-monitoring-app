@@ -1,3 +1,10 @@
+## [0.8.23](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.22...0.8.23) (2021-04-26)
+
+
+### Bug Fixes
+
+* allow trailing dots in DNS targets ([#262](https://github.com/grafana/synthetic-monitoring-app/issues/262)) ([7eb3847](https://github.com/grafana/synthetic-monitoring-app/commit/7eb3847cb2ab9c6fabdf3af11e8be746d2adb1a9))
+
 ## [0.8.22](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.21...0.8.22) (2021-04-22)
 
 
