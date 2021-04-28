@@ -19,7 +19,12 @@ import { css } from 'emotion';
 import { useFormContext, Controller, useFieldArray } from 'react-hook-form';
 import { HttpMethod, HttpVersion, CheckType, HttpRegexValidationType } from 'types';
 import { Collapse } from 'components/Collapse';
-import { HTTP_REGEX_VALIDATION_OPTIONS, HTTP_SSL_OPTIONS, IP_OPTIONS } from '../constants';
+import {
+  HTTP_COMPRESSION_ALGO_OPTIONS,
+  HTTP_REGEX_VALIDATION_OPTIONS,
+  HTTP_SSL_OPTIONS,
+  IP_OPTIONS,
+} from '../constants';
 import { LabelField } from 'components/LabelField';
 import { TLSConfig } from 'components/TLSConfig';
 import { NameValueInput } from 'components/NameValueInput';
@@ -232,6 +237,15 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
               validateName={validateHTTPHeaderName}
               validateValue={validateHTTPHeaderValue}
             />
+          </Field>
+        </Container>
+        <Container>
+          <Field
+            label="Compression option"
+            description="The compression algorithm to expect in the response body"
+            disabled={!isEditor}
+          >
+            <Controller as={Select} name="settings.http.compression" options={HTTP_COMPRESSION_ALGO_OPTIONS} />
           </Field>
         </Container>
       </Collapse>

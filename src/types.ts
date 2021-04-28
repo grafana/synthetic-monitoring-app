@@ -443,3 +443,11 @@ export enum CheckListViewType {
   Card,
   List,
 }
+
+export enum HTTPCompressionAlgo {
+  None = '',
+  Identity = 'identity',
+  Br = 'br',
+  Gzip = 'gzip',
+  Deflate = 'deflate',
+}
