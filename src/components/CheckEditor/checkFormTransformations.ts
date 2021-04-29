@@ -97,8 +97,7 @@ export function fallbackSettings(t: CheckType): Settings {
           firstHop: 1,
           maxHops: 64,
           retries: 3,
-          packetSize: 52,
-          port: 33434,
+          maxUnknownHops: 10,
         },
       };
     }
@@ -306,8 +305,7 @@ const getTracerouteSettingsFormValues = (settings: Settings): TracerouteSettings
     firstHop: String(tracerouteSettings.firstHop),
     maxHops: String(tracerouteSettings.maxHops),
     retries: String(tracerouteSettings.retries),
-    packetSize: String(tracerouteSettings.packetSize),
-    port: String(tracerouteSettings.port),
+    maxUnknownHops: String(tracerouteSettings.maxUnknownHops),
   };
 };
 
@@ -607,9 +605,8 @@ const getTracerouteSettings = (
   return {
     firstHop: parseInt(String(updatedSettings.firstHop), 10),
     maxHops: parseInt(String(updatedSettings.maxHops), 10),
-    packetSize: parseInt(String(updatedSettings.packetSize), 10),
-    port: parseInt(String(updatedSettings.port), 10),
     retries: parseInt(String(updatedSettings.retries), 10),
+    maxUnknownHops: parseInt(String(updatedSettings.maxUnknownHops), 10),
   };
 };
 

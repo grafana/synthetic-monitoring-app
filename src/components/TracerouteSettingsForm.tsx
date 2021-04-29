@@ -51,20 +51,15 @@ export const TracerouteSettingsForm = ({ isEditor }: Props) => {
             disabled={!isEditor}
           />
         </Field>
-        <Field label="Packet size" description="Size of the packet to send" disabled={!isEditor}>
+        <Field
+          label="Max unknown hops"
+          description="Maximimum number of hosts to traverse that give no response"
+          disabled={!isEditor}
+        >
           <Input
-            id="traceroute-settings-packet-size"
-            ref={register({ min: 1, max: 1000 })}
-            name="settings.traceroute.packetSize"
-            type="number"
-            disabled={!isEditor}
-          />
-        </Field>
-        <Field label="Port" description="Port to send requests" disabled={!isEditor}>
-          <Input
-            id="traceroute-settings-port"
-            ref={register({ min: 0, max: 65535 })}
-            name="settings.traceroute.port"
+            id="traceroute-settings-unknown-hops"
+            ref={register({ min: 0, max: 20 })}
+            name="settings.traceroute.maxUnknownHops"
             type="number"
             disabled={!isEditor}
           />

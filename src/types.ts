@@ -223,16 +223,14 @@ export interface TracerouteSettings {
   firstHop: number;
   maxHops: number;
   retries: number;
-  packetSize: number;
-  port: number;
+  maxUnknownHops: number;
 }
 
 export interface TracerouteSettingsFormValues {
   firstHop: string;
   maxHops: string;
   retries: string;
-  packetSize: string;
-  port: string;
+  maxUnknownHops: string;
 }
 
 export interface PingSettings {

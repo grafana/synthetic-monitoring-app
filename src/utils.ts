@@ -432,7 +432,6 @@ export const parseTracerouteLogs = (queryResponse: LogQueryResponse): MutableDat
   let mostRecentTraceId: string;
 
   const destinations = new Set<string>();
-
   const groupedByTraceID = queryResponse.data.reduce<LogsAggregatedByTrace>((acc, { stream, values }, index) => {
     const traceId = stream.TraceID;
     if (traceId && !mostRecentTraceId) {
@@ -442,11 +441,11 @@ export const parseTracerouteLogs = (queryResponse: LogQueryResponse): MutableDat
       return acc;
     }
 
-    const host = stream.Host || `??? TTL${stream.TTL}`;
+    const hosts = stream.Hosts === '' ? [`??? TTL${stream.TTL}`] : stream.Hosts?.split(',');
     destinations.add(stream.Destination);
     const updatedStream = {
       ...stream,
-      Host: host,
+      Hosts: hosts,
       TTL: parseInt(stream.TTL, 10),
     };
 
@@ -459,7 +458,7 @@ export const parseTracerouteLogs = (queryResponse: LogQueryResponse): MutableDat
         ElapsedTime: '0ms',
         Success: 'true',
         TTL: 0,
-        Host: stream.probe,
+        Hosts: [stream.probe],
       };
       acc[traceId] = [probe, updatedStream];
     }
@@ -467,14 +466,14 @@ export const parseTracerouteLogs = (queryResponse: LogQueryResponse): MutableDat
   }, {});
 
   type NextHost = {
-    Host: string;
+    addresses: string[];
     TTL: number;
   };
 
-  const findNextHost = (currentTTL: number, streamArr: ParsedLogStream[]): NextHost | undefined => {
-    const nextHostStreamIndex = streamArr.findIndex((stream) => stream.TTL > currentTTL && Boolean(stream.Host));
+  const findNextHosts = (currentTTL: number, streamArr: ParsedLogStream[]): NextHost | undefined => {
+    const nextHostStreamIndex = streamArr.findIndex((stream) => stream.TTL > currentTTL && Boolean(stream.Hosts));
     if (nextHostStreamIndex > -1) {
-      return { Host: streamArr[nextHostStreamIndex]?.Host, TTL: streamArr[nextHostStreamIndex]?.TTL };
+      return { addresses: streamArr[nextHostStreamIndex]?.Hosts, TTL: streamArr[nextHostStreamIndex]?.TTL };
     }
     return;
   };
@@ -483,28 +482,34 @@ export const parseTracerouteLogs = (queryResponse: LogQueryResponse): MutableDat
     streamArray
       .sort((a, b) => a.TTL - b.TTL)
       .forEach((stream, index, arr) => {
-        const nextHost = destinations.has(stream.Host) ? undefined : findNextHost(stream.TTL, arr);
-        const currentHost = acc[stream.Host];
+        stream.Hosts.forEach((host) => {
+          const nextHosts = destinations.has(host) ? undefined : findNextHosts(stream.TTL, arr);
+          const currentHost = acc[host];
 
-        if (currentHost) {
-          if (nextHost && !currentHost.nextHosts?.has(nextHost.Host)) {
-            currentHost.nextHosts?.add(nextHost.Host);
+          if (currentHost) {
+            if (nextHosts) {
+              nextHosts.addresses.forEach((nextHost) => {
+                if (!currentHost.nextHosts?.has(nextHost)) {
+                  currentHost.nextHosts?.add(nextHost);
+                }
+              });
+            }
+            currentHost.elapsedTimes.push(stream.ElapsedTime);
+            currentHost.packetLossAverages.push(parseInt(stream.LossPercent, 10));
+            if (traceId === mostRecentTraceId) {
+              currentHost.isMostRecent = true;
+            }
+          } else {
+            acc[host] = {
+              nextHosts: nextHosts?.addresses ? new Set(nextHosts.addresses) : new Set(),
+              elapsedTimes: [stream.ElapsedTime],
+              isStart: stream.TTL === 0,
+              isMostRecent: traceId === mostRecentTraceId,
+              packetLossAverages: [parseInt(stream.LossPercent, 10)],
+              TTL: stream.TTL,
+            };
           }
-          currentHost.elapsedTimes.push(stream.ElapsedTime);
-          currentHost.packetLossAverages.push(parseInt(stream.LossPercent, 10));
-          if (traceId === mostRecentTraceId) {
-            currentHost.isMostRecent = true;
-          }
-        } else {
-          acc[stream.Host] = {
-            nextHosts: nextHost ? new Set([nextHost.Host]) : new Set(),
-            elapsedTimes: [stream.ElapsedTime],
-            isStart: stream.TTL === 0,
-            isMostRecent: traceId === mostRecentTraceId,
-            packetLossAverages: [parseInt(stream.LossPercent, 10)],
-            TTL: stream.TTL,
-          };
-        }
+        });
       });
     return acc;
   }, {});
