@@ -6,6 +6,7 @@ import { SuccessRateGauge } from './SuccessRateGauge';
 import * as utils from 'utils';
 import { AppPluginMeta } from '@grafana/data';
 import { GlobalSettings } from 'types';
+import { SuccessRateTypes } from './SuccessRateContext';
 
 const renderSuccessRateGauge = (sparkline = false) => {
   const instance = {
@@ -15,6 +16,8 @@ const renderSuccessRateGauge = (sparkline = false) => {
   render(
     <InstanceContext.Provider value={{ instance, loading: false, meta }}>
       <SuccessRateGauge
+        id={4}
+        type={SuccessRateTypes.Checks}
         labelNames={['tacos']}
         labelValues={['burritos']}
         height={200}

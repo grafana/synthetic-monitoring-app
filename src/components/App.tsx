@@ -3,6 +3,7 @@ import { InstanceProvider } from 'components/InstanceProvider';
 import { PluginTabs } from 'components/PluginTabs';
 import { AppRootProps } from '@grafana/data';
 import { GlobalSettings } from 'types';
+import { SuccessRateContextProvider } from './SuccessRateContextProvider';
 
 export class App extends PureComponent<AppRootProps<GlobalSettings>> {
   render() {
@@ -13,7 +14,9 @@ export class App extends PureComponent<AppRootProps<GlobalSettings>> {
         logsInstanceName={meta.jsonData?.logs?.grafanaName}
         meta={meta}
       >
-        <PluginTabs {...this.props} />
+        <SuccessRateContextProvider>
+          <PluginTabs {...this.props} />
+        </SuccessRateContextProvider>
       </InstanceProvider>
     );
   }

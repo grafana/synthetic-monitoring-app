@@ -5,6 +5,7 @@ import { InstanceContext } from 'components/InstanceContext';
 import { SuccessRateGauge } from 'components/SuccessRateGauge';
 import { OrgRole, Probe, Label } from 'types';
 import { hasRole } from 'utils';
+import { SuccessRateTypes } from './SuccessRateContext';
 
 interface Props {
   probes: Probe[];
@@ -57,6 +58,8 @@ export const ProbeList = ({ probes, onAddNew, onSelectProbe }: Props) => {
                 </span>
               </div>
               <SuccessRateGauge
+                type={SuccessRateTypes.Probes}
+                id={probe.id!} // We are guarunteeing the presence of the ID in the filter before this map
                 labelNames={['probe']}
                 labelValues={[probe.name]}
                 height={60}

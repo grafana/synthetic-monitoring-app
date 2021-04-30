@@ -7,6 +7,7 @@ import { getInstanceMock, instanceSettings } from '../datasource/__mocks__/DataS
 import * as runtime from '@grafana/runtime';
 import { AppPluginMeta } from '@grafana/data';
 import { GlobalSettings } from 'types';
+import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
 jest.unmock('@grafana/runtime');
 jest.setTimeout(10000);
 
@@ -26,7 +27,9 @@ const WithRouter = ({ id, loading = false }: RenderArgs = {}) => {
   const meta = {} as AppPluginMeta<GlobalSettings>;
   return (
     <InstanceContext.Provider value={{ instance: { api: getInstanceMock(instanceSettings) }, loading, meta }}>
-      <ProbesPage id={routerId} />
+      <SuccessRateContextProvider>
+        <ProbesPage id={routerId} />
+      </SuccessRateContextProvider>
     </InstanceContext.Provider>
   );
 };

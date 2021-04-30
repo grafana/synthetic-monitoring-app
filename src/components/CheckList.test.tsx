@@ -2,8 +2,9 @@ import React from 'react';
 import { CheckList } from './CheckList';
 import { render, screen, waitForElementToBeRemoved } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { GrafanaInstances, Check } from 'types';
+import { GrafanaInstances, Check, CheckSort } from 'types';
 import { getInstanceMock } from '../datasource/__mocks__/DataSource';
+import { SuccessRateContextProvider } from './SuccessRateContextProvider';
 jest.setTimeout(20000);
 
 const onAddNewMock = jest.fn();
@@ -111,7 +112,11 @@ const renderCheckList = ({ checks = defaultChecks } = {} as RenderChecklist) => 
     metrics: {},
     logs: {},
   } as GrafanaInstances;
-  render(<CheckList instance={instance} onAddNewClick={onAddNewMock} checks={checks} onCheckUpdate={onCheckUpdate} />);
+  render(
+    <SuccessRateContextProvider>
+      <CheckList instance={instance} onAddNewClick={onAddNewMock} checks={checks} onCheckUpdate={onCheckUpdate} />
+    </SuccessRateContextProvider>
+  );
   return instance;
 };
 
@@ -330,4 +335,13 @@ test('cascader adds labels to label filter', async () => {
 
   const labelFilterInput = await screen.findByTestId('check-label-filter');
   expect(labelFilterInput).toHaveValue(['carne: asada']);
+});
+
+test('Sorting by success rate should not crash', async () => {
+  renderCheckList();
+  const sortPicker = await screen.findByTestId('check-list-sort');
+
+  userEvent.selectOptions(sortPicker, CheckSort.SuccessRate.toString());
+  const checks = await screen.findAllByLabelText('check-card');
+  expect(checks.length).toBe(4);
 });

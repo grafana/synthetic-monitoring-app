@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { BigValueColorMode, BigValueGraphMode, BigValue, Container } from '@grafana/ui';
 import { DisplayValue, ArrayVector, FieldType } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import { useMetricData } from 'hooks/useMetricData';
+import { SuccessRateContext, SuccessRateTypes } from 'components/SuccessRateContext';
 
 interface Props {
+  type: SuccessRateTypes;
+  id: number;
   labelNames: string[];
   labelValues: string[];
   height: number;
@@ -58,7 +61,9 @@ const getSparklineValue = (data: any[], loading: boolean, showSparkline: boolean
   };
 };
 
-export const SuccessRateGauge = ({ labelNames, labelValues, height, width, sparkline, onClick }: Props) => {
+export const SuccessRateGauge = ({ type, id, labelNames, labelValues, height, width, sparkline, onClick }: Props) => {
+  const { updateSuccessRate } = useContext(SuccessRateContext);
+
   const filter = labelNames
     .reduce<string[]>((filters, labelName, index) => {
       filters.push(`${labelName}="${labelValues[index]}"`);
@@ -82,6 +87,7 @@ export const SuccessRateGauge = ({ labelNames, labelValues, height, width, spark
   const { data: uptimeData, loading: uptimeLoading } = useMetricData(uptimeQuery);
   const { data: sparklineData, loading: sparklineLoading } = useMetricData(sparklineQuery, sparklineOptions);
   const value = getDisplayValue(uptimeData, uptimeLoading);
+  updateSuccessRate(type, id, isNaN(value.numeric) ? undefined : value.numeric);
   const sparklineValue = getSparklineValue(sparklineData, sparklineLoading, sparkline);
   return (
     <Container>
