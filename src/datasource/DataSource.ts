@@ -14,7 +14,8 @@ import { SMQuery, SMOptions, QueryType } from './types';
 
 import { config, getBackendSrv, getTemplateSrv } from '@grafana/runtime';
 import { Probe, Check, RegistrationInfo, HostedInstance } from '../types';
-import { parseTracerouteLogs, queryLogs } from 'utils';
+import { queryLogs } from 'utils';
+import { parseTracerouteLogs } from './traceroute-utils';
 
 export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   constructor(public instanceSettings: DataSourceInstanceSettings<SMOptions>) {
