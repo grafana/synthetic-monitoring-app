@@ -15,7 +15,7 @@ const renderSuccessRateGauge = (sparkline = false) => {
   };
   const meta = {} as AppPluginMeta<GlobalSettings>;
   render(
-    <InstanceContext.Provider value={{ instance, loading: false, meta }}>
+    <InstanceContext.Provider value={{ instance, loading: true, meta }}>
       <SuccessRateContextProvider checks={[{ id: 4, job: 'burritos', target: 'tacos' } as Check]}>
         <SuccessRateGauge
           id={4}
@@ -48,7 +48,7 @@ test('shows N/A if no data', async () => {
             job: 'burritos',
             instance: 'tacos',
           },
-          value: [123, null],
+          value: [],
         },
       ],
     })

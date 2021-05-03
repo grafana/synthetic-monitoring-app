@@ -15,6 +15,7 @@ export type SuccessRates = {
 
 interface SuccessRateContextValue {
   values: SuccessRates;
+  loading: boolean;
   updateSuccessRate: (type: SuccessRateTypes, id: number, successRate: number | undefined) => void;
 }
 
@@ -27,4 +28,4 @@ const updateSuccessRate = (type: SuccessRateTypes, id: number, successRate: numb
   values[type][id] = successRate;
 };
 
-export const SuccessRateContext = createContext<SuccessRateContextValue>({ values, updateSuccessRate });
+export const SuccessRateContext = createContext<SuccessRateContextValue>({ values, loading: true, updateSuccessRate });

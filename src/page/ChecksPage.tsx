@@ -45,7 +45,6 @@ export class ChecksPage extends PureComponent<Props, State> {
   }
 
   componentDidUpdate(oldProps: Props) {
-    console.log('updating', oldProps.id, this.props.id);
     if (this.props.id !== oldProps.id) {
       const { id } = this.props;
       const num = id ? parseInt(id, 10) : -1;

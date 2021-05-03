@@ -24,7 +24,7 @@ const getDisplayValue = (value: number | undefined, loading: boolean): DisplayVa
       text: 'loading...',
     };
   }
-  if (!value) {
+  if (value === undefined) {
     return {
       numeric: 0,
       text: 'N/A',
@@ -62,7 +62,7 @@ const getSparklineValue = (data: any[], loading: boolean, showSparkline: boolean
 };
 
 export const SuccessRateGauge = ({ type, id, labelNames, labelValues, height, width, sparkline, onClick }: Props) => {
-  const { values } = useContext(SuccessRateContext);
+  const { values, loading } = useContext(SuccessRateContext);
 
   const filter = labelNames
     .reduce<string[]>((filters, labelName, index) => {
@@ -84,7 +84,7 @@ export const SuccessRateGauge = ({ type, id, labelNames, labelValues, height, wi
   });
 
   const { data: sparklineData, loading: sparklineLoading } = useMetricData(sparklineQuery, sparklineOptions);
-  const value = getDisplayValue(values[type]?.[id], values[type]?.[id] === undefined);
+  const value = getDisplayValue(values[type]?.[id], loading);
   const sparklineValue = getSparklineValue(sparklineData, sparklineLoading, sparkline);
   return (
     <Container>
