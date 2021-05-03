@@ -107,8 +107,6 @@ export class ChecksPage extends PureComponent<Props, State> {
 
   render() {
     const { checks } = this.state;
-    console.log('rendering');
     return <SuccessRateContextProvider checks={checks}>{this.renderPage()}</SuccessRateContextProvider>;
-    // return this.renderPage();
   }
 }

@@ -46,7 +46,7 @@ export function SuccessRateContextProvider({ checks, children }: PropsWithChildr
   };
 
   useEffect(() => {
-    const seedSuccessRates = async () => {
+    const getSuccessRates = async () => {
       const uptimeQuery = `sum(rate(probe_all_success_sum[3h])) by (job, instance) / sum(rate(probe_all_success_count[3h])) by (job, instance)`;
       const url = instance?.api?.getMetricsDS()?.url;
       if (!url) {
@@ -77,7 +77,14 @@ export function SuccessRateContextProvider({ checks, children }: PropsWithChildr
       });
     };
 
-    seedSuccessRates();
+    // Fetch on initial load
+    getSuccessRates();
+    // Refresh data every 60 seconds
+    const interval = setInterval(() => {
+      getSuccessRates();
+    }, 60 * 1000);
+
+    return () => clearInterval(interval);
   }, [checks, instance.api]);
 
   return (
