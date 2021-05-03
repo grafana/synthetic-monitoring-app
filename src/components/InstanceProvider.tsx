@@ -102,7 +102,7 @@ export const InstanceProvider = ({
   if (meta.enabled && (!instances.metrics || !instances.logs)) {
     return <UnprovisionedSetup pluginId={meta.id} pluginName={meta.name} />;
   }
-
+  console.log('hello', { instances });
   return (
     <InstanceContext.Provider value={{ meta, instance: instances, loading: instancesLoading }}>
       {children}

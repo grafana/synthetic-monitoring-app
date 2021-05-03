@@ -32,7 +32,7 @@ const renderProbeEditor = ({ probe = defaultProbe, updateProbeMock = updateProbe
   const meta = {} as AppPluginMeta<GlobalSettings>;
   render(
     <InstanceContext.Provider value={{ instance, loading: false, meta }}>
-      <SuccessRateContextProvider>
+      <SuccessRateContextProvider checks={[]}>
         <ProbeEditor probe={probe} onReturn={onReturn} />
       </SuccessRateContextProvider>
     </InstanceContext.Provider>

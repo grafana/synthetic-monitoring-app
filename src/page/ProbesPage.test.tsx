@@ -27,7 +27,7 @@ const WithRouter = ({ id, loading = false }: RenderArgs = {}) => {
   const meta = {} as AppPluginMeta<GlobalSettings>;
   return (
     <InstanceContext.Provider value={{ instance: { api: getInstanceMock(instanceSettings) }, loading, meta }}>
-      <SuccessRateContextProvider>
+      <SuccessRateContextProvider checks={[]}>
         <ProbesPage id={routerId} />
       </SuccessRateContextProvider>
     </InstanceContext.Provider>

@@ -113,7 +113,7 @@ const renderCheckList = ({ checks = defaultChecks } = {} as RenderChecklist) => 
     logs: {},
   } as GrafanaInstances;
   render(
-    <SuccessRateContextProvider>
+    <SuccessRateContextProvider checks={checks}>
       <CheckList instance={instance} onAddNewClick={onAddNewMock} checks={checks} onCheckUpdate={onCheckUpdate} />
     </SuccessRateContextProvider>
   );

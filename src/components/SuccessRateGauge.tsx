@@ -16,7 +16,7 @@ interface Props {
   onClick?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
 }
 
-const getDisplayValue = (data: any[], loading: boolean): DisplayValue => {
+const getDisplayValue = (value: number | undefined, loading: boolean): DisplayValue => {
   if (loading) {
     return {
       numeric: 0,
@@ -24,7 +24,7 @@ const getDisplayValue = (data: any[], loading: boolean): DisplayValue => {
       text: 'loading...',
     };
   }
-  if (!data || data.length < 1) {
+  if (!value) {
     return {
       numeric: 0,
       text: 'N/A',
@@ -32,7 +32,7 @@ const getDisplayValue = (data: any[], loading: boolean): DisplayValue => {
     };
   }
 
-  const uptime = parseFloat(data[0].value[1]) * 100;
+  const uptime = value * 100;
   return {
     title: 'Success rate',
     color: uptime < 99 ? 'red' : 'green',
@@ -62,7 +62,7 @@ const getSparklineValue = (data: any[], loading: boolean, showSparkline: boolean
 };
 
 export const SuccessRateGauge = ({ type, id, labelNames, labelValues, height, width, sparkline, onClick }: Props) => {
-  const { updateSuccessRate } = useContext(SuccessRateContext);
+  const { values } = useContext(SuccessRateContext);
 
   const filter = labelNames
     .reduce<string[]>((filters, labelName, index) => {
@@ -71,7 +71,6 @@ export const SuccessRateGauge = ({ type, id, labelNames, labelValues, height, wi
     }, [])
     .join(',');
 
-  const uptimeQuery = `sum((rate(probe_all_success_sum{${filter}}[3h]) OR rate(probe_success_sum{${filter}}[3h]))) / sum((rate(probe_all_success_count{${filter}}[3h]) OR rate(probe_success_count{${filter}}[3h])))`;
   const sparklineQuery = `100 * sum((rate(probe_all_success_sum{${filter}}[10m]) OR rate(probe_success_sum{${filter}}[10m]))) / sum((rate(probe_all_success_count{${filter}}[10m]) OR rate(probe_success_count{${filter}}[10m])))`;
 
   const lastUpdate = Math.floor(Date.now() / 1000);
@@ -84,10 +83,8 @@ export const SuccessRateGauge = ({ type, id, labelNames, labelValues, height, wi
     step: 600,
   });
 
-  const { data: uptimeData, loading: uptimeLoading } = useMetricData(uptimeQuery);
   const { data: sparklineData, loading: sparklineLoading } = useMetricData(sparklineQuery, sparklineOptions);
-  const value = getDisplayValue(uptimeData, uptimeLoading);
-  updateSuccessRate(type, id, isNaN(value.numeric) ? undefined : value.numeric);
+  const value = getDisplayValue(values[type]?.[id], values[type]?.[id] === undefined);
   const sparklineValue = getSparklineValue(sparklineData, sparklineLoading, sparkline);
   return (
     <Container>
