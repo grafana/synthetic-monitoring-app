@@ -1,0 +1,58 @@
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+{
+  "manifestVersion": "2.0.0",
+  "signatureType": "grafana",
+  "signedByOrg": "grafana",
+  "signedByOrgName": "Grafana Labs",
+  "plugin": "grafana-synthetic-monitoring-app",
+  "version": "0.9.0",
+  "time": 1620137561065,
+  "keyId": "7e4d0c6a708866e7",
+  "files": {
+    "datasource/module.js": "30b34cdab7738da214ffa0086e973da2449721fdc6db5112d5cd749f5cefde57",
+    "datasource/module.js.LICENSE.txt": "0d8f66cd4afb566cb5b7e1540c68f43b939d3eba12ace290f18abc4f4cb53ed0",
+    "datasource/module.js.map": "a37cba9450c9fe51792bdec34426a67a4c73f6f1b007ccadfb1afa75c474c083",
+    "datasource/img/logo.svg": "f3045a6575b3c2bf6568205e1732e5a950ab745afd78fadfe1588aad78b95ba4",
+    "datasource/plugin.json": "138e6590bcbe726b2ce51b4171c17734bf7b40501d5a19e68d9a2387f1d19838",
+    "module.js": "371ea2592e5e4771ecb7df8eb13506ffbe859e664ba7797c3b56ec2f7a53b243",
+    "module.js.LICENSE.txt": "ca472aefbe569b33ca51a93de7874f78cc6595ecf7503821975b92c8bb1ee1fd",
+    "module.js.map": "b8830fba1ae02dcef83508d4ce1e84d3a7c65fdde4b0cd2892013df92f64165f",
+    "img/circled-loki.svg": "3d4f6c426a0784598e22cc7c64e6e33e0a854cd62ce1048b6d89c95ab9d2b4b9",
+    "img/dark-circled-alert.svg": "89a9f9658c4f84d51a71a28e1e607d7280357562ca511d838256bd3b8ac0307f",
+    "img/dark-circled-check.svg": "f6a972da4a124bc37d786c3721cfc7f9fe9bdf63096d3f738688bcc6c62aff05",
+    "img/dark-circled-graph.svg": "93c2a50216fffb70f866f34fd27cc88a357fffe8687e65d6c246680eb5eaaf0e",
+    "img/dark-circled-sm.svg": "488bbfd048f37c698864b08bdd5a034f23a0842a0efc1013f21633c4c29ccc04",
+    "img/light-circled-alert.svg": "d0bad98c5d12e6cc6319538bd1803c32e5032894c23dcc05a7029e88d843f355",
+    "img/light-circled-check.svg": "d6ea125aa66565192950735db3490d114f7b25f69c2be0b0a12b7121156009f0",
+    "img/light-circled-graph.svg": "a1c03db8fab346c1dce0fc8549c8a98d472f77c202bcaed8afe5586201345418",
+    "img/light-circled-sm.svg": "4f8603a0d8c2ce962b69db771beed3e68326cdedc41bf514b2780f7e88c04cbd",
+    "img/screenshot-dash-http-light.png": "c8486daa635f1f6633c4f6bf133c49fd414761cded18eaa1f6aeafb7df9becaa",
+    "img/screenshot-dash-http.png": "c214e65f9137fd858de01a8ee72c6c5ff5f3072c829ff0751d3114c9d65f05e1",
+    "img/img.d.ts": "89b14892a7725e6f87c85ed45d5a274931c67038c5c21be43449aadbd30f09ee",
+    "img/logo.svg": "f3045a6575b3c2bf6568205e1732e5a950ab745afd78fadfe1588aad78b95ba4",
+    "img/screenshot-check-list.png": "903283696838eea2ea0c29e9b8ab8dc19424700f997e257f4caee30c4d1b1138",
+    "img/screenshot-dash-summary.png": "1e058e6bddcd4a1f829d384cb42ac6f920d271fbe447454aa1652712d0638d1a",
+    "README.md": "a95c392d81214b6f2a4c282beae080f4a291f17d017128389b21cd403092fba4",
+    "plugin.json": "5f4012ab496812f6275cd39b564b865e7bf58b8063cbcc9e4674116ebc5d2bef",
+    "LICENSE": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+    "CHANGELOG.md": "48c6bdd0b828d697d996ae6bc69d1cc37cdb26b38c218f3da70c670890f39c9b",
+    "dashboards/sm-dns.json": "1f3270d449d4dbcc1aeeaecf222a04d78d7175c41864153dd2253295178b7c53",
+    "dashboards/sm-http.json": "4c662ebd1a171254707767ea4f93c020b278e54ca5ea8e3904140fefca0d3f54",
+    "dashboards/sm-ping.json": "65bb6ef8a20a03ab2e94e304eb2e6ed6025bf9b243f68557aab7bf106756e018",
+    "dashboards/sm-summary.json": "ce34dff7cfcaf8c1d9928dcc9c8a6279177bc84f825e7561a4991c97adf7ca02",
+    "dashboards/sm-tcp.json": "68f7671b304fbbf7d53c0534b52167007ff0ad8ea6bb467ecfddfd336fb10098"
+  }
+}
+-----BEGIN PGP SIGNATURE-----
+Version: OpenPGP.js v4.10.1
+Comment: https://openpgpjs.org
+
+wqAEARMKAAYFAmCRVlkACgkQfk0ManCIZue4hAIIr6c0hTlH0WN0FmJNclBB
+LyBw6ukX3O844nHCsot1hWkVVJQ9WqADh3DJBR4/TfV6BMG3KA4V6o3ciuRq
+MOdlQDcCB1gQFMuGLfxuALukmZvkEAuQ6YJkmZyoslCyRPncB+/XtYtWc6ys
+wIyVPBDmMo05hh273Jj4jsnnnivbVS7v7/Ak
+=BtJK
+-----END PGP SIGNATURE-----
