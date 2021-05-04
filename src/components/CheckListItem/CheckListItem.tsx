@@ -11,6 +11,7 @@ import { LatencyGauge } from '../LatencyGauge';
 import { CheckItemActionButtons } from './CheckItemActionButtons';
 import { CheckListItemDetails } from './CheckListItemDetails';
 import { CheckStatusType } from './CheckStatusType';
+import { SuccessRateTypes } from 'components/SuccessRateContext';
 
 interface Props {
   check: FilteredCheck;
@@ -235,6 +236,8 @@ export const CheckListItem = ({
               {check.enabled && (
                 <>
                   <SuccessRateGauge
+                    type={SuccessRateTypes.Checks}
+                    id={check.id}
                     labelNames={['instance', 'job']}
                     labelValues={[check.target, check.job]}
                     height={75}

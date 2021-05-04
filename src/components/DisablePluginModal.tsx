@@ -16,14 +16,16 @@ export const DisablePluginModal = ({ isOpen, onDismiss, pluginId }: Props) => {
   const disableTenant = async () => {
     try {
       await instance.api?.disableTenant();
-      await getBackendSrv().datasourceRequest({
-        url: `/api/plugins/${pluginId}/settings`,
-        method: 'POST',
-        headers: { 'X-Grafana-NoCache': 'true' },
-        data: {
-          enabled: false,
-        },
-      });
+      await getBackendSrv()
+        .fetch({
+          url: `/api/plugins/${pluginId}/settings`,
+          method: 'POST',
+          headers: { 'X-Grafana-NoCache': 'true' },
+          data: {
+            enabled: false,
+          },
+        })
+        .toPromise();
       window.location.reload();
     } catch (e) {
       setError(e.message ?? 'Something went wrong trying to disable the plugin. Please contact support.');

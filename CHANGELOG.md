@@ -1,3 +1,37 @@
+# [0.9.0](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.24...0.9.0) (2021-05-04)
+
+
+### Features
+
+* add the ability to sort checks by success rate ([#265](https://github.com/grafana/synthetic-monitoring-app/issues/265)) ([5b69891](https://github.com/grafana/synthetic-monitoring-app/commit/5b69891e7e780a5a882e13c8463d4b98a03cb773))
+
+## [0.8.24](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.23...0.8.24) (2021-05-03)
+
+## [0.8.23](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.22...0.8.23) (2021-04-26)
+
+
+### Bug Fixes
+
+* allow trailing dots in DNS targets ([#262](https://github.com/grafana/synthetic-monitoring-app/issues/262)) ([7eb3847](https://github.com/grafana/synthetic-monitoring-app/commit/7eb3847cb2ab9c6fabdf3af11e8be746d2adb1a9))
+
+## [0.8.22](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.21...0.8.22) (2021-04-22)
+
+
+### Bug Fixes
+
+* allow disabled plugin to be enabled before prompting for bootstrapping flow ([#256](https://github.com/grafana/synthetic-monitoring-app/issues/256)) ([75f7781](https://github.com/grafana/synthetic-monitoring-app/commit/75f77815c4bbd4e2e24fa2735839558fdecfbd56))
+
+## [0.8.21](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.20...0.8.21) (2021-04-20)
+
+## [0.8.20](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.19...0.8.20) (2021-04-20)
+
+## [0.8.19](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.18...0.8.19) (2021-04-16)
+
+
+### Bug Fixes
+
+* allow all characters in label values ([#257](https://github.com/grafana/synthetic-monitoring-app/issues/257)) ([5780876](https://github.com/grafana/synthetic-monitoring-app/commit/5780876bfcf47b7217bb5f52565d70b2354d5451))
+
 ## [0.8.18](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.17...0.8.18) (2021-04-12)
 
 

@@ -15,6 +15,7 @@ import { Probe, OrgRole } from 'types';
 import { hasRole } from 'utils';
 import { SuccessRateGauge } from './SuccessRateGauge';
 import { GrafanaTheme } from '@grafana/data';
+import { SuccessRateTypes } from './SuccessRateContext';
 
 interface Props {
   probe: Probe;
@@ -98,7 +99,15 @@ const ProbeStatus = ({ probe, onResetToken }: Props) => {
           </Container>
         )}
       </div>
-      <SuccessRateGauge labelNames={['probe']} labelValues={[probe.name]} height={200} width={300} sparkline={true} />
+      <SuccessRateGauge
+        id={probe.id!}
+        type={SuccessRateTypes.Probes}
+        labelNames={['probe']}
+        labelValues={[probe.name]}
+        height={200}
+        width={300}
+        sparkline={true}
+      />
     </Container>
   );
 };

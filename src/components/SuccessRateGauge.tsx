@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { BigValueColorMode, BigValueGraphMode, BigValue, Container } from '@grafana/ui';
 import { DisplayValue, ArrayVector, FieldType } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import { useMetricData } from 'hooks/useMetricData';
+import { SuccessRateContext, SuccessRateTypes } from 'components/SuccessRateContext';
 
 interface Props {
+  type: SuccessRateTypes;
+  id: number;
   labelNames: string[];
   labelValues: string[];
   height: number;
@@ -13,7 +16,7 @@ interface Props {
   onClick?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
 }
 
-const getDisplayValue = (data: any[], loading: boolean): DisplayValue => {
+const getDisplayValue = (value: number | undefined, loading: boolean): DisplayValue => {
   if (loading) {
     return {
       numeric: 0,
@@ -21,7 +24,7 @@ const getDisplayValue = (data: any[], loading: boolean): DisplayValue => {
       text: 'loading...',
     };
   }
-  if (!data || data.length < 1) {
+  if (value === undefined) {
     return {
       numeric: 0,
       text: 'N/A',
@@ -29,7 +32,7 @@ const getDisplayValue = (data: any[], loading: boolean): DisplayValue => {
     };
   }
 
-  const uptime = parseFloat(data[0].value[1]) * 100;
+  const uptime = value * 100;
   return {
     title: 'Success rate',
     color: uptime < 99 ? 'red' : 'green',
@@ -58,7 +61,9 @@ const getSparklineValue = (data: any[], loading: boolean, showSparkline: boolean
   };
 };
 
-export const SuccessRateGauge = ({ labelNames, labelValues, height, width, sparkline, onClick }: Props) => {
+export const SuccessRateGauge = ({ type, id, labelNames, labelValues, height, width, sparkline, onClick }: Props) => {
+  const { values, loading } = useContext(SuccessRateContext);
+
   const filter = labelNames
     .reduce<string[]>((filters, labelName, index) => {
       filters.push(`${labelName}="${labelValues[index]}"`);
@@ -66,7 +71,6 @@ export const SuccessRateGauge = ({ labelNames, labelValues, height, width, spark
     }, [])
     .join(',');
 
-  const uptimeQuery = `sum((rate(probe_all_success_sum{${filter}}[3h]) OR rate(probe_success_sum{${filter}}[3h]))) / sum((rate(probe_all_success_count{${filter}}[3h]) OR rate(probe_success_count{${filter}}[3h])))`;
   const sparklineQuery = `100 * sum((rate(probe_all_success_sum{${filter}}[10m]) OR rate(probe_success_sum{${filter}}[10m]))) / sum((rate(probe_all_success_count{${filter}}[10m]) OR rate(probe_success_count{${filter}}[10m])))`;
 
   const lastUpdate = Math.floor(Date.now() / 1000);
@@ -79,9 +83,8 @@ export const SuccessRateGauge = ({ labelNames, labelValues, height, width, spark
     step: 600,
   });
 
-  const { data: uptimeData, loading: uptimeLoading } = useMetricData(uptimeQuery);
   const { data: sparklineData, loading: sparklineLoading } = useMetricData(sparklineQuery, sparklineOptions);
-  const value = getDisplayValue(uptimeData, uptimeLoading);
+  const value = getDisplayValue(values[type]?.[id], loading);
   const sparklineValue = getSparklineValue(sparklineData, sparklineLoading, sparkline);
   return (
     <Container>

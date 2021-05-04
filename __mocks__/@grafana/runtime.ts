@@ -1,7 +1,9 @@
 import * as runtime from '@grafana/runtime';
 
 export const getBackendSrv = () => ({
-  datasourceRequest: jest.fn().mockImplementation(() => ({ ok: true })),
+  fetch: {
+    toPromise: () => jest.fn().mockResolvedValue({ ok: true }),
+  },
 });
 
 export const getLocationSrv = () => ({

@@ -25,6 +25,7 @@ apiVersion: 1
 apps:
   - type: grafana-synthetic-monitoring-app
     name: grafana-synthetic-monitoring-app
+    org_id: <defaults to 1>
     disabled: false
     jsonData:
       apiHost: https://synthetic-monitoring-api.grafana.net
@@ -39,12 +40,14 @@ apps:
       publisherToken: <A metric publisher token from grafana.com>
 ```
 
+Note: you can add a provisioning block per [org](https://grafana.com/docs/grafana/latest/manage-users/server-admin/server-admin-manage-orgs/) to provision the plugin for multiple orgs. You can provide different values for each org block and connect to a different cloud stack per org.
+
 Prerequisites:
 
 1. A datasource pointed at a Prometheus instance hosted in Grafana Cloud
 2. A datasource pointed at a Loki instance hosted in Grafana Cloud
 
-**Note: The Prometheus and Loki instances must be part of the same stack**
+**Note: The Prometheus and Loki instances must be part of the same Cloud stack**
 
 The required datasources can be [added via provisioning](https://grafana.com/docs/grafana/latest/administration/provisioning/#data-sources). The information needed can be copied from Prometheus and Loki datasources found in the datasources tab of a Cloud hosted Grafana instance:
 

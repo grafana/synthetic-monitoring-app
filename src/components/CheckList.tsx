@@ -1,5 +1,5 @@
 // Libraries
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 
 // Types
 import {
@@ -27,6 +27,7 @@ import {
 import { CheckListItem } from './CheckListItem';
 import { css } from 'emotion';
 import { LabelFilterInput } from './LabelFilterInput';
+import { SuccessRateContext, SuccessRateTypes } from './SuccessRateContext';
 
 const CHECKS_PER_PAGE_CARD = 15;
 const CHECKS_PER_PAGE_LIST = 50;
@@ -132,15 +133,6 @@ interface Props {
   onCheckUpdate: () => void;
 }
 
-const sortChecks = (checks: FilteredCheck[], sortType: CheckSort) => {
-  switch (sortType) {
-    case CheckSort.AToZ:
-      return checks.sort((a, b) => a.job.localeCompare(b.job));
-    case CheckSort.ZToA:
-      return checks.sort((a, b) => b.job.localeCompare(a.job));
-  }
-};
-
 const getViewTypeFromLS = () => {
   const lsValue = window.localStorage.getItem(CHECK_LIST_VIEW_TYPE_LS_KEY);
   if (lsValue) {
@@ -165,6 +157,22 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
   const [sortType, setSortType] = useState<CheckSort>(CheckSort.AToZ);
   const [bulkActionInProgress, setBulkActionInProgress] = useState(false);
   const styles = useStyles(getStyles);
+  const successRateContext = useContext(SuccessRateContext);
+
+  const sortChecks = (checks: FilteredCheck[], sortType: CheckSort) => {
+    switch (sortType) {
+      case CheckSort.AToZ:
+        return checks.sort((a, b) => a.job.localeCompare(b.job));
+      case CheckSort.ZToA:
+        return checks.sort((a, b) => b.job.localeCompare(a.job));
+      case CheckSort.SuccessRate:
+        return checks.sort((a, b) => {
+          const checkA = successRateContext.values[SuccessRateTypes.Checks][a.id] ?? 100;
+          const checkB = successRateContext.values[SuccessRateTypes.Checks][b.id] ?? 100;
+          return checkA - checkB;
+        });
+    }
+  };
 
   const filteredChecks = sortChecks(
     checks.filter(
@@ -555,6 +563,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
               <Icon name="sort-amount-down" /> Sort
             </div>
           }
+          data-testid="check-list-sort"
           options={CHECK_LIST_SORT_OPTIONS}
           defaultValue={CHECK_LIST_SORT_OPTIONS[0]}
           width={20}

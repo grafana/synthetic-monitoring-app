@@ -121,10 +121,11 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
 
   async listProbes(): Promise<Probe[]> {
     return getBackendSrv()
-      .datasourceRequest({
+      .fetch({
         method: 'GET',
         url: `${this.instanceSettings.url}/sm/probe/list`,
       })
+      .toPromise()
       .then((res: any) => {
         return res.data;
       });
@@ -144,11 +145,12 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
 
   async addProbe(probe: Probe): Promise<any> {
     return getBackendSrv()
-      .datasourceRequest({
+      .fetch({
         method: 'POST',
         url: `${this.instanceSettings.url}/sm/probe/add`,
         data: probe,
       })
+      .toPromise()
       .then((res: any) => {
         return res.data;
       });
@@ -156,10 +158,11 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
 
   async deleteProbe(id: number): Promise<any> {
     return getBackendSrv()
-      .datasourceRequest({
+      .fetch({
         method: 'DELETE',
         url: `${this.instanceSettings.url}/sm/probe/delete/${id}`,
       })
+      .toPromise()
       .then((res: any) => {
         return res.data;
       });
@@ -167,11 +170,12 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
 
   async updateProbe(probe: Probe): Promise<any> {
     return getBackendSrv()
-      .datasourceRequest({
+      .fetch({
         method: 'POST',
         url: `${this.instanceSettings.url}/sm/probe/update`,
         data: probe,
       })
+      .toPromise()
       .then((res: any) => {
         return res.data;
       });
@@ -179,11 +183,12 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
 
   async resetProbeToken(probe: Probe): Promise<any> {
     return getBackendSrv()
-      .datasourceRequest({
+      .fetch({
         method: 'POST',
         url: `${this.instanceSettings.url}/sm/probe/update?reset-token=true`,
         data: probe,
       })
+      .toPromise()
       .then((res: any) => {
         return res.data;
       });
@@ -195,20 +200,22 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
 
   async listChecks(): Promise<Check[]> {
     return getBackendSrv()
-      .datasourceRequest({
+      .fetch({
         method: 'GET',
         url: `${this.instanceSettings.url}/sm/check/list`,
       })
+      .toPromise()
       .then((res: any) => (Array.isArray(res.data) ? res.data : []));
   }
 
   async addCheck(check: Check): Promise<any> {
     return getBackendSrv()
-      .datasourceRequest({
+      .fetch({
         method: 'POST',
         url: `${this.instanceSettings.url}/sm/check/add`,
         data: check,
       })
+      .toPromise()
       .then((res: any) => {
         return res.data;
       });
@@ -216,10 +223,11 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
 
   async deleteCheck(id: number): Promise<any> {
     return getBackendSrv()
-      .datasourceRequest({
+      .fetch({
         method: 'DELETE',
         url: `${this.instanceSettings.url}/sm/check/delete/${id}`,
       })
+      .toPromise()
       .then((res: any) => {
         return res.data;
       });
@@ -227,11 +235,12 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
 
   async updateCheck(check: Check): Promise<any> {
     return getBackendSrv()
-      .datasourceRequest({
+      .fetch({
         method: 'POST',
         url: `${this.instanceSettings.url}/sm/check/update`,
         data: check,
       })
+      .toPromise()
       .then((res: any) => {
         return res.data;
       });
@@ -239,7 +248,8 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
 
   async getTenant(): Promise<any> {
     return getBackendSrv()
-      .datasourceRequest({ method: 'GET', url: `${this.instanceSettings.url}/sm/tenant` })
+      .fetch({ method: 'GET', url: `${this.instanceSettings.url}/sm/tenant` })
+      .toPromise()
       .then((res: any) => {
         return res.data;
       });
@@ -248,7 +258,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   async disableTenant(): Promise<any> {
     const tenant = await this.getTenant();
     return getBackendSrv()
-      .datasourceRequest({
+      .fetch({
         method: 'POST',
         url: `${this.instanceSettings.url}/sm/tenant/update`,
         data: {
@@ -256,6 +266,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
           status: 1,
         },
       })
+      .toPromise()
       .then((res: any) => {
         return res.data;
       });
@@ -286,7 +297,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     };
     await backendSrv.put(`api/datasources/${this.instanceSettings.id}`, data);
     return backendSrv
-      .datasourceRequest({
+      .fetch({
         method: 'POST',
         url: `${this.instanceSettings.url}/sm/register/init`,
         data: { apiToken },
@@ -296,6 +307,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
           'X-Grafana-NoCache': 'true',
         },
       })
+      .toPromise()
       .then((res: any) => {
         return res.data;
       });
@@ -322,7 +334,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     await getBackendSrv().put(`api/datasources/${this.instanceSettings.id}`, data);
 
     // Note the accessToken above must be saved first!
-    return await getBackendSrv().datasourceRequest({
+    return await getBackendSrv().fetch({
       method: 'POST',
       url: `${this.instanceSettings.url}/sm/register/save`,
       headers: {
@@ -340,7 +352,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
 
   async getViewerToken(apiToken: string, instance: HostedInstance): Promise<string> {
     return getBackendSrv()
-      .datasourceRequest({
+      .fetch({
         method: 'POST',
         url: `${this.instanceSettings.url}/sm/register/viewer-token`,
         data: {
@@ -349,6 +361,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
           type: instance.type,
         },
       })
+      .toPromise()
       .then((res: any) => {
         return res.data?.token;
       });

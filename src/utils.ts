@@ -59,7 +59,7 @@ export async function createDatasource(hosted: HostedInstance, adminToken: strin
 
 async function getViewerToken(apiToken: string, instance: HostedInstance, smDatasourceId: string): Promise<string> {
   return getBackendSrv()
-    .datasourceRequest({
+    .fetch({
       method: 'POST',
       url: `api/datasources/proxy/${smDatasourceId}/viewer-token`,
       data: {
@@ -73,6 +73,7 @@ async function getViewerToken(apiToken: string, instance: HostedInstance, smData
         'X-Grafana-NoCache': 'true',
       },
     })
+    .toPromise()
     .then((res: any) => {
       return res.data?.token;
     });
@@ -211,6 +212,14 @@ interface MetricQueryResponse {
   data: any[];
 }
 
+interface MetricDatasourceResponseWrapper {
+  data: MetricDatasourceResponse;
+}
+
+interface MetricDatasourceResponse {
+  result: any[];
+}
+
 export interface MetricQueryOptions {
   start: number;
   end: number;
@@ -233,11 +242,13 @@ export const queryMetric = async (
   const path = options?.step ? '/api/v1/query_range' : '/api/v1/query';
 
   try {
-    const response = await backendSrv.datasourceRequest({
-      method: 'GET',
-      url: `${url}${path}`,
-      params,
-    });
+    const response = await backendSrv
+      .fetch<MetricDatasourceResponseWrapper>({
+        method: 'GET',
+        url: `${url}${path}`,
+        params,
+      })
+      .toPromise();
     if (!response.ok) {
       return { error: 'Error fetching data', data: [] };
     }
