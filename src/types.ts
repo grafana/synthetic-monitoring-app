@@ -431,6 +431,7 @@ export type AlertRule = {
 export enum CheckSort {
   AToZ,
   ZToA,
+  SuccessRate,
 }
 
 export enum CheckEnabledStatus {

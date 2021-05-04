@@ -9,7 +9,10 @@ const queryMetric = jest.fn().mockImplementation(() => {
   return Promise.resolve({
     data: [
       {
-        metric: {},
+        metric: {
+          instance: 'tacos',
+          job: 'burritos',
+        },
         value: [1598535155, '1'],
       },
     ],

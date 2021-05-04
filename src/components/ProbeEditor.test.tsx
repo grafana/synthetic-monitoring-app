@@ -6,6 +6,7 @@ import { InstanceContext } from 'components/InstanceContext';
 import { getInstanceMock, instanceSettings } from '../datasource/__mocks__/DataSource';
 import { AppPluginMeta } from '@grafana/data';
 import { GlobalSettings } from 'types';
+import { SuccessRateContextProvider } from './SuccessRateContextProvider';
 
 const defaultProbe = {
   name: '',
@@ -31,7 +32,9 @@ const renderProbeEditor = ({ probe = defaultProbe, updateProbeMock = updateProbe
   const meta = {} as AppPluginMeta<GlobalSettings>;
   render(
     <InstanceContext.Provider value={{ instance, loading: false, meta }}>
-      <ProbeEditor probe={probe} onReturn={onReturn} />
+      <SuccessRateContextProvider checks={[]}>
+        <ProbeEditor probe={probe} onReturn={onReturn} />
+      </SuccessRateContextProvider>
     </InstanceContext.Provider>
   );
   return instance;
