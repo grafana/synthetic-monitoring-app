@@ -259,6 +259,10 @@ export const CHECK_LIST_SORT_OPTIONS = [
     label: 'Z-A',
     value: CheckSort.ZToA,
   },
+  {
+    label: 'Success',
+    value: CheckSort.SuccessRate,
+  },
 ];
 
 export const CHECK_LIST_STATUS_OPTIONS = [

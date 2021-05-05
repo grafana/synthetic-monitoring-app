@@ -14,14 +14,16 @@ export const ConfigActions = ({ enabled, pluginId }: Props) => {
   const [showDisableModal, setShowDisableModal] = useState(false);
 
   const handleEnable = async () => {
-    await getBackendSrv().datasourceRequest({
-      url: `/api/plugins/${pluginId}/settings`,
-      method: 'POST',
-      data: {
-        enabled: true,
-        pinned: true,
-      },
-    });
+    await getBackendSrv()
+      .fetch({
+        url: `/api/plugins/${pluginId}/settings`,
+        method: 'POST',
+        data: {
+          enabled: true,
+          pinned: true,
+        },
+      })
+      .toPromise();
     window.location.reload();
   };
 

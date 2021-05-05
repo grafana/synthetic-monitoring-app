@@ -7,6 +7,7 @@ import { getLocationSrv } from '@grafana/runtime';
 import { CheckEditor } from 'components/CheckEditor';
 import { CheckList } from 'components/CheckList';
 import { InstanceContext } from 'components/InstanceContext';
+import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
 
 interface Props {
   id?: string;
@@ -85,9 +86,10 @@ export class ChecksPage extends PureComponent<Props, State> {
     });
   };
 
-  render() {
-    const { instance } = this.context;
+  renderPage() {
     const { check, addNew, loading, checks } = this.state;
+    const { instance } = this.context;
+
     if (loading || !instance.api) {
       return <div>Loading...</div>;
     }
@@ -100,5 +102,10 @@ export class ChecksPage extends PureComponent<Props, State> {
     return (
       <CheckList instance={instance} onAddNewClick={this.onAddNew} checks={checks} onCheckUpdate={this.onRefresh} />
     );
+  }
+
+  render() {
+    const { checks } = this.state;
+    return <SuccessRateContextProvider checks={checks}>{this.renderPage()}</SuccessRateContextProvider>;
   }
 }

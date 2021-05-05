@@ -1,3 +1,19 @@
+# [0.9.0](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.24...0.9.0) (2021-05-04)
+
+
+### Features
+
+* add the ability to sort checks by success rate ([#265](https://github.com/grafana/synthetic-monitoring-app/issues/265)) ([5b69891](https://github.com/grafana/synthetic-monitoring-app/commit/5b69891e7e780a5a882e13c8463d4b98a03cb773))
+
+## [0.8.24](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.23...0.8.24) (2021-05-03)
+
+## [0.8.23](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.22...0.8.23) (2021-04-26)
+
+
+### Bug Fixes
+
+* allow trailing dots in DNS targets ([#262](https://github.com/grafana/synthetic-monitoring-app/issues/262)) ([7eb3847](https://github.com/grafana/synthetic-monitoring-app/commit/7eb3847cb2ab9c6fabdf3af11e8be746d2adb1a9))
+
 ## [0.8.22](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.21...0.8.22) (2021-04-22)
 
 

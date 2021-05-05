@@ -162,6 +162,7 @@ export interface HttpSettings {
   ipVersion: IpVersion;
   noFollowRedirects: boolean;
   tlsConfig?: TLSConfig;
+  compression: HTTPCompressionAlgo | undefined;
 
   // Authentication
   bearerToken?: string;
@@ -208,6 +209,7 @@ export interface HttpSettingsFormValues
     | 'failIfHeaderMatchesRegexp'
     | 'failIfHeaderNotMatchesRegexp'
     | 'noFollowRedirects'
+    | 'compression'
   > {
   sslOptions: SelectableValue<HttpSslOption>;
   validStatusCodes: Array<SelectableValue<number>>;
@@ -217,6 +219,7 @@ export interface HttpSettingsFormValues
   headers: HttpHeaderFormValue[];
   regexValidations: HttpRegexValidationFormValue[];
   followRedirects: boolean;
+  compression: SelectableValue<HTTPCompressionAlgo>;
 }
 
 export interface PingSettings {
@@ -431,6 +434,7 @@ export type AlertRule = {
 export enum CheckSort {
   AToZ,
   ZToA,
+  SuccessRate,
 }
 
 export enum CheckEnabledStatus {
