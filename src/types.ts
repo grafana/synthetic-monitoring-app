@@ -450,8 +450,8 @@ export enum CheckListViewType {
 
 export enum HTTPCompressionAlgo {
   None = '',
-  Identity = 'identity',
-  Br = 'br',
-  Gzip = 'gzip',
-  Deflate = 'deflate',
+  identity = 'identity',
+  br = 'br',
+  gzip = 'gzip',
+  deflate = 'deflate',
 }

@@ -239,15 +239,21 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
             />
           </Field>
         </Container>
-        <Container>
+        <HorizontalGroup>
           <Field
             label="Compression option"
             description="The compression algorithm to expect in the response body"
             disabled={!isEditor}
           >
-            <Controller as={Select} name="settings.http.compression" options={HTTP_COMPRESSION_ALGO_OPTIONS} />
+            <Controller
+              id="http-compression"
+              data-testid="http-compression"
+              as={Select}
+              name="settings.http.compression"
+              options={HTTP_COMPRESSION_ALGO_OPTIONS}
+            />
           </Field>
-        </Container>
+        </HorizontalGroup>
       </Collapse>
       <TLSConfig isEditor={isEditor} checkType={CheckType.HTTP} />
       <Collapse

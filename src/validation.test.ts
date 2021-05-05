@@ -7,7 +7,16 @@ import {
   validateLabelName,
   validateLabelValue,
 } from 'validation';
-import { Check, CheckType, HttpMethod, IpVersion, DnsRecordType, DnsProtocol, AlertSensitivity } from 'types';
+import {
+  Check,
+  CheckType,
+  HttpMethod,
+  IpVersion,
+  DnsRecordType,
+  DnsProtocol,
+  AlertSensitivity,
+  HTTPCompressionAlgo,
+} from 'types';
 jest.unmock('utils');
 
 describe('trivial cases', () => {
@@ -24,6 +33,7 @@ describe('trivial cases', () => {
       basicMetricsOnly: true,
       settings: {
         http: {
+          compression: HTTPCompressionAlgo.None,
           method: HttpMethod.GET,
           ipVersion: IpVersion.V4,
           noFollowRedirects: false,

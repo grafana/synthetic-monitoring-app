@@ -285,9 +285,9 @@ export const CHECK_LIST_VIEW_TYPE_LS_KEY = 'grafana.sm.checklist.viewType';
 export const INVALID_WEB_URL_MESSAGE = 'Target must be a valid web URL';
 
 export const HTTP_COMPRESSION_ALGO_OPTIONS = [
-  { label: 'None', value: HTTPCompressionAlgo.None },
-  { label: 'Identity', value: HTTPCompressionAlgo.Identity },
-  { label: 'BR', value: HTTPCompressionAlgo.Br },
-  { label: 'GZIP', value: HTTPCompressionAlgo.Gzip },
-  { label: 'Deflate', value: HTTPCompressionAlgo.Deflate },
+  { label: 'none', value: HTTPCompressionAlgo.None },
+  { label: 'identity', value: HTTPCompressionAlgo.identity },
+  { label: 'br', value: HTTPCompressionAlgo.br },
+  { label: 'gzip', value: HTTPCompressionAlgo.gzip },
+  { label: 'deflate', value: HTTPCompressionAlgo.deflate },
 ];

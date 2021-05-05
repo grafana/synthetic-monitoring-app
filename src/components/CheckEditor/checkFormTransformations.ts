@@ -40,6 +40,7 @@ import {
   HTTP_REGEX_VALIDATION_OPTIONS,
   fallbackCheck,
   ALERT_SENSITIVITY_OPTIONS,
+  HTTP_COMPRESSION_ALGO_OPTIONS,
 } from 'components/constants';
 import { checkType, fromBase64, toBase64 } from 'utils';
 import isBase64 from 'is-base64';
@@ -59,7 +60,7 @@ export function fallbackSettings(t: CheckType): Settings {
           method: HttpMethod.GET,
           ipVersion: IpVersion.V4,
           noFollowRedirects: false,
-          compression: undefined,
+          compression: HTTPCompressionAlgo.None,
         },
       };
     }
@@ -221,7 +222,7 @@ const getHttpSettingsFormValues = (settings: Settings): HttpSettingsFormValues =
     ipVersion: selectableValueFrom(httpSettings.ipVersion),
     headers: headersToLabels(httpSettings.headers),
     regexValidations,
-    compression: compression ? selectableValueFrom(compression) : selectableValueFrom(HTTPCompressionAlgo.None),
+    compression: compression ? selectableValueFrom(compression) : HTTP_COMPRESSION_ALGO_OPTIONS[0],
   };
 };
 
