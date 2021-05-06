@@ -33,7 +33,7 @@ describe('trivial cases', () => {
       basicMetricsOnly: true,
       settings: {
         http: {
-          compression: HTTPCompressionAlgo.None,
+          compression: HTTPCompressionAlgo.none,
           method: HttpMethod.GET,
           ipVersion: IpVersion.V4,
           noFollowRedirects: false,
