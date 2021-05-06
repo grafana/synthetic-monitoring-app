@@ -60,7 +60,7 @@ export function fallbackSettings(t: CheckType): Settings {
           method: HttpMethod.GET,
           ipVersion: IpVersion.V4,
           noFollowRedirects: false,
-          compression: HTTPCompressionAlgo.None,
+          compression: HTTPCompressionAlgo.none,
         },
       };
     }
