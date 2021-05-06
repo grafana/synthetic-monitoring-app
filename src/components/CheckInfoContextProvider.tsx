@@ -13,7 +13,6 @@ export function CheckInfoContextProvider({ children }: PropsWithChildren<Props>)
   useEffect(() => {
     setLoading(true);
     instance.api?.getCheckInfo().then((checkInfo) => {
-      console.log('fetched check info', { checkInfo });
       setCheckInfo(checkInfo);
       setLoading(false);
     });

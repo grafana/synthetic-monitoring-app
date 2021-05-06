@@ -13,7 +13,7 @@ const addSSL = (check: Partial<Check>, baseClass: CheckType) => {
   }
 
   if (baseClass === CheckType.TCP) {
-    if (check.settings?.tcp?.tls) {
+    if (check.settings?.tcp?.tlsConfig) {
       return `${baseClass}_ssl`;
     }
   }
@@ -48,7 +48,6 @@ export function useUsageCalc(check?: Partial<Check>) {
   }
 
   const seriesPerCheck = checkInfo.AccountingClasses[accountingClass]?.Series;
-
   if (seriesPerCheck === undefined) {
     return;
   }
