@@ -281,18 +281,3 @@ export const PEM_FOOTER = '-----END CERTIFICATE-----';
 export const CHECK_LIST_VIEW_TYPE_LS_KEY = 'grafana.sm.checklist.viewType';
 
 export const INVALID_WEB_URL_MESSAGE = 'Target must be a valid web URL';
-
-// export const ACCOUNTING_CLASS_NAMES = {
-//   dns: AccountingClassNames.DNS,
-//   dns_basic: AccountingClassNames.DNS_BASIC,
-//   http: AccountingClassNames.HTTP,
-//   http_basic: AccountingClassNames.HTTP_BASIC,
-//   http_ssl: AccountingClassNames.HTTP_SSL,
-//   http_ssl_basic: AccountingClassNames.HTTP_SSL_BASIC,
-//   ping: AccountingClassNames.PING,
-//   PING_BASIC = 'ping_basic',
-//   TCP = 'tcp',
-//   TCP_BASIC = 'tcp_basic',
-//   TCP_SSL = 'tcp_ssl',
-//   TCP_SSL_BASIC = 'tcp_ssl_basic',
-// };
