@@ -6,8 +6,9 @@ import { Check } from 'types';
 import { getLocationSrv } from '@grafana/runtime';
 import { CheckEditor } from 'components/CheckEditor';
 import { CheckList } from 'components/CheckList';
-import { InstanceContext } from 'components/InstanceContext';
+import { InstanceContext } from 'contexts/InstanceContext';
 import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
+import { CheckInfoContextProvider } from 'components/CheckInfoContextProvider';
 
 interface Props {
   id?: string;
@@ -106,6 +107,10 @@ export class ChecksPage extends PureComponent<Props, State> {
 
   render() {
     const { checks } = this.state;
-    return <SuccessRateContextProvider checks={checks}>{this.renderPage()}</SuccessRateContextProvider>;
+    return (
+      <SuccessRateContextProvider checks={checks}>
+        <CheckInfoContextProvider>{this.renderPage()}</CheckInfoContextProvider>
+      </SuccessRateContextProvider>
+    );
   }
 }

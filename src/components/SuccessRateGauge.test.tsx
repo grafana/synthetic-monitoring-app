@@ -1,12 +1,12 @@
 import React from 'react';
 import { render, screen, waitForElementToBeRemoved } from '@testing-library/react';
-import { InstanceContext } from 'components/InstanceContext';
+import { InstanceContext } from 'contexts/InstanceContext';
 import { getInstanceMock, instanceSettings } from '../datasource/__mocks__/DataSource';
 import { SuccessRateGauge } from './SuccessRateGauge';
 import * as utils from 'utils';
 import { AppPluginMeta } from '@grafana/data';
 import { Check, GlobalSettings } from 'types';
-import { SuccessRateTypes } from './SuccessRateContext';
+import { SuccessRateTypes } from 'contexts/SuccessRateContext';
 import { SuccessRateContextProvider } from './SuccessRateContextProvider';
 
 const renderSuccessRateGauge = (sparkline = false) => {

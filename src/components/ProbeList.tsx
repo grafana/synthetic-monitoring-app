@@ -1,11 +1,11 @@
 import React, { useContext } from 'react';
 import { css } from 'emotion';
 import { Badge, Button, HorizontalGroup } from '@grafana/ui';
-import { InstanceContext } from 'components/InstanceContext';
+import { InstanceContext } from 'contexts/InstanceContext';
 import { SuccessRateGauge } from 'components/SuccessRateGauge';
 import { OrgRole, Probe, Label } from 'types';
 import { hasRole } from 'utils';
-import { SuccessRateTypes } from './SuccessRateContext';
+import { SuccessRateTypes } from 'contexts/SuccessRateContext';
 
 interface Props {
   probes: Probe[];

@@ -2,7 +2,7 @@ import { getBackendSrv, getLocationSrv } from '@grafana/runtime';
 import { Button, Spinner } from '@grafana/ui';
 import React, { useContext, useState } from 'react';
 import { DisablePluginModal } from './DisablePluginModal';
-import { InstanceContext } from './InstanceContext';
+import { InstanceContext } from 'contexts/InstanceContext';
 
 interface Props {
   enabled?: boolean;

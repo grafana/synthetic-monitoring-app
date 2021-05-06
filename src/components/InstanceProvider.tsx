@@ -1,5 +1,5 @@
 import React, { useState, useEffect, PropsWithChildren } from 'react';
-import { InstanceContext } from 'components/InstanceContext';
+import { InstanceContext } from 'contexts/InstanceContext';
 import { GlobalSettings, GrafanaInstances, OrgRole } from 'types';
 import { config, getDataSourceSrv, getBackendSrv } from '@grafana/runtime';
 import { SMDataSource } from 'datasource/DataSource';

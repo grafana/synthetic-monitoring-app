@@ -27,7 +27,7 @@ import {
 import { CheckListItem } from './CheckListItem';
 import { css } from 'emotion';
 import { LabelFilterInput } from './LabelFilterInput';
-import { SuccessRateContext, SuccessRateTypes } from './SuccessRateContext';
+import { SuccessRateContext, SuccessRateTypes } from 'contexts/SuccessRateContext';
 
 const CHECKS_PER_PAGE_CARD = 15;
 const CHECKS_PER_PAGE_LIST = 50;

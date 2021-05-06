@@ -1,7 +1,7 @@
 import { getBackendSrv } from '@grafana/runtime';
 import { Alert, Button, HorizontalGroup, Modal, Spinner } from '@grafana/ui';
 import React, { useContext, useState } from 'react';
-import { InstanceContext } from './InstanceContext';
+import { InstanceContext } from 'contexts/InstanceContext';
 
 type Props = {
   isOpen: boolean;

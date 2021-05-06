@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Field } from '@grafana/ui';
 import CheckProbes from './CheckProbes';
-import { InstanceContext } from 'components/InstanceContext';
+import { InstanceContext } from 'contexts/InstanceContext';
 import { Probe } from 'types';
 import { SliderInput } from 'components/SliderInput';
 import { Subheader } from 'components/Subheader';
