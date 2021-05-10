@@ -10,7 +10,7 @@ import {
   VariableModel,
 } from '@grafana/data';
 
-import { SMQuery, SMOptions, QueryType, CheckInfo } from './types';
+import { SMQuery, SMOptions, QueryType, CheckInfo, DashboardVariable } from './types';
 
 import { config, getBackendSrv, getTemplateSrv } from '@grafana/runtime';
 import { Probe, Check, RegistrationInfo, HostedInstance } from '../types';
@@ -100,14 +100,15 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   }
 
   getQueryFromDashboardVars(dashboardVars: VariableModel[], query: SMQuery): SMQuery {
-    const job = dashboardVars.find((variable) => variable.name === 'job');
-    const instance = dashboardVars.find((variable) => variable.name === 'instance');
+    const job = dashboardVars.find((variable) => variable.name === 'job') as DashboardVariable | undefined;
+    const instance = dashboardVars.find((variable) => variable.name === 'instance') as DashboardVariable | undefined;
 
     // const value = dashboardVar.current?.value ?? '';
     // const [job, instance] = value.split(':').map((val: string) => val.trim());
     if (!job || !instance) {
       return query;
     }
+
     return {
       ...query,
       job: job?.current?.value ?? query.job,

@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import { defaults } from 'lodash';
 import { GrafanaTheme, QueryEditorProps, SelectableValue } from '@grafana/data';
 import { SMDataSource } from './DataSource';
-import { SMQuery, SMOptions, QueryType, defaultQuery } from './types';
+import { SMQuery, SMOptions, QueryType, defaultQuery, DashboardVariable } from './types';
 import { getTheme, Select, Spinner } from '@grafana/ui';
 import { css } from 'emotion';
 import { checkType } from 'utils';
@@ -114,8 +114,8 @@ export class QueryEditor extends PureComponent<Props, State> {
   getSelectedDashboardTracerouteOption(): TracerouteCheckOptionValue | undefined {
     const { tracerouteCheckOptions } = this.state;
     const dashboardVars = getTemplateSrv().getVariables() ?? [];
-    const instance = dashboardVars.find((variable) => variable.name === 'instance');
-    const job = dashboardVars.find((variable) => variable.name === 'job');
+    const instance = dashboardVars.find((variable) => variable.name === 'instance') as DashboardVariable | undefined;
+    const job = dashboardVars.find((variable) => variable.name === 'job') as DashboardVariable | undefined;
     const dashboardInstance = instance?.current?.value;
     const dashboardJob = job?.current?.value;
 
