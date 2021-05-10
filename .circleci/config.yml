@@ -138,13 +138,13 @@ jobs:
       - run:
           name: Build and test frontend
           command: |
-            ./node_modules/.bin/grafana-toolkit plugin:build
-            ./node_modules/.bin/grafana-toolkit plugin:sign
-            ./node_modules/.bin/grafana-toolkit plugin:ci-build --finish
+            yarn build
+            yarn sign
+            yarn ci-build:finish
       - run:
           name: Package distribution
           command: |
-            ./node_modules/.bin/grafana-toolkit plugin:ci-package
+            yarn ci-package
       - persist_to_workspace:
           root: .
           paths:
@@ -197,7 +197,7 @@ jobs:
       - run:
           name: Toolkit report
           command: |
-            ./node_modules/.bin/grafana-toolkit plugin:ci-report
+            yarn ci-report
       - store_artifacts:
           path: ci
 
@@ -219,7 +219,7 @@ jobs:
       - run:
           name: 'Publish Release on GitHub'
           command: |
-            ./node_modules/.bin/grafana-toolkit plugin:github-publish
+            yarn github-publish
       - store_artifacts:
           path: ci
 
