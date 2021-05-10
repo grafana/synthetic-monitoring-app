@@ -3,7 +3,7 @@ import { BigValueColorMode, BigValueGraphMode, BigValue, Container } from '@graf
 import { DisplayValue, ArrayVector, FieldType } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import { useMetricData } from 'hooks/useMetricData';
-import { SuccessRateContext, SuccessRateTypes } from 'components/SuccessRateContext';
+import { SuccessRateContext, SuccessRateTypes } from 'contexts/SuccessRateContext';
 
 interface Props {
   type: SuccessRateTypes;

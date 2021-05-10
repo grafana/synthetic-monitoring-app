@@ -9,7 +9,7 @@ import { AlertLabels } from './AlertLabels';
 import { AlertAnnotations } from './AlertAnnotations';
 import { useAsyncCallback } from 'react-async-hook';
 import appEvents from 'grafana/app/core/app_events';
-import { InstanceContext } from './InstanceContext';
+import { InstanceContext } from 'contexts/InstanceContext';
 import { SubCollapse } from './SubCollapse';
 import { transformAlertFormValues } from './alertingTransformations';
 import { FetchResponse } from '@grafana/runtime';

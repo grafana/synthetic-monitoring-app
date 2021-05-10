@@ -3,7 +3,7 @@ import { ALERT_RECORDING_EXPR, DEFAULT_ALERT_NAMES_BY_SENSITIVITY } from 'compon
 import { render, screen, waitFor, within } from '@testing-library/react';
 import React from 'react';
 import userEvent from '@testing-library/user-event';
-import { InstanceContext } from './InstanceContext';
+import { InstanceContext } from 'contexts/InstanceContext';
 import { getInstanceMock } from 'datasource/__mocks__/DataSource';
 import { AppPluginMeta, DataSourceSettings } from '@grafana/data';
 import { AlertRule, AlertSensitivity, GlobalSettings } from 'types';

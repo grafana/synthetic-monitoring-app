@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ProbeList } from './ProbeList';
-import { InstanceContext } from 'components/InstanceContext';
+import { InstanceContext } from 'contexts/InstanceContext';
 import { getInstanceMock, instanceSettings } from '../datasource/__mocks__/DataSource';
 import { AppPluginMeta } from '@grafana/data';
 import { GlobalSettings } from 'types';
@@ -21,6 +21,7 @@ const defaultProbes = [
     labels: [],
     online: false,
     onlineChange: 0,
+    version: 'v1',
   },
   {
     name: 'burritos',
@@ -32,6 +33,7 @@ const defaultProbes = [
     labels: [{ name: 'chimi', value: 'churri' }],
     online: false,
     onlineChange: 0,
+    version: 'v1',
   },
 ];
 

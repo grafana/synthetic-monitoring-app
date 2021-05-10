@@ -1,11 +1,16 @@
 {
   "name": "synthetic-monitoring-app",
-  "version": "0.9.0",
+  "version": "0.10.2",
   "description": "Grafana Synthetic Monitoring App",
   "scripts": {
     "lint": "eslint --cache --ignore-path .gitignore --ext .js,.jsx,.ts,.tsx .",
     "build": "grafana-toolkit plugin:build",
     "test": "grafana-toolkit plugin:test",
+    "sign": "grafana-toolkit plugin:sign",
+    "ci-build:finish": "grafana-toolkit plugin:ci-build --finish",
+    "ci-package": "grafana-toolkit plugin:ci-package",
+    "ci-report": "grafana-toolkit plugin:ci-report",
+    "github-publish": "grafana-toolkit plugin:github-publish",
     "dev": "grafana-toolkit plugin:dev",
     "watch": "grafana-toolkit plugin:dev --watch",
     "release": "release-it",
@@ -23,14 +28,15 @@
   "devDependencies": {
     "@commitlint/cli": "^9.1.1",
     "@commitlint/config-conventional": "^9.1.1",
-    "@grafana/data": "7.5.1",
-    "@grafana/runtime": "7.5.1",
-    "@grafana/toolkit": "7.5.1",
-    "@grafana/ui": "7.5.1",
+    "@grafana/data": "7.5.5",
+    "@grafana/runtime": "7.5.5",
+    "@grafana/toolkit": "7.5.5",
+    "@grafana/ui": "7.5.5",
     "@release-it/conventional-changelog": "^2.0.0",
     "@testing-library/dom": "^7.21.6",
     "@testing-library/jest-dom": "^5.11.2",
     "@testing-library/react": "^10.4.7",
+    "@testing-library/react-hooks": "^5.1.2",
     "@testing-library/user-event": "^12.0.17",
     "@types/eslint": "^7.2.4",
     "@types/ip-address": "latest",
@@ -41,7 +47,8 @@
     "eslint-plugin-react-hooks": "^4.1.0",
     "husky": "^4.2.5",
     "jest-environment-jsdom-fifteen": "^1.0.2",
-    "release-it": "^14.0.3"
+    "release-it": "^14.0.3",
+    "tslib": "^2.2.0"
   },
   "dependencies": {
     "ip-address": "^6.3.0",

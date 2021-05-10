@@ -4,7 +4,7 @@ import React, { useContext, useState } from 'react';
 import { css } from 'emotion';
 import { Check, OrgRole } from 'types';
 import { dashboardUID, checkType as getCheckType, hasRole } from 'utils';
-import { InstanceContext } from 'components/InstanceContext';
+import { InstanceContext } from 'contexts/InstanceContext';
 import appEvents from 'grafana/app/core/app_events';
 import { getLocationSrv } from '@grafana/runtime';
 

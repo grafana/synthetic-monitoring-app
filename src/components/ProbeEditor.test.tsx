@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ProbeEditor from './ProbeEditor';
-import { InstanceContext } from 'components/InstanceContext';
+import { InstanceContext } from 'contexts/InstanceContext';
 import { getInstanceMock, instanceSettings } from '../datasource/__mocks__/DataSource';
 import { AppPluginMeta } from '@grafana/data';
 import { GlobalSettings } from 'types';
@@ -17,6 +17,7 @@ const defaultProbe = {
   labels: [],
   online: false,
   onlineChange: 0,
+  version: 'v1',
 };
 const onReturn = jest.fn();
 const updateProbe = jest.fn().mockImplementation(() => Promise.resolve());
@@ -87,6 +88,7 @@ test('save button is disabled by invalid values', async () => {
     labels: [],
     online: false,
     onlineChange: 0,
+    version: 'v1',
   };
   renderProbeEditor({ probe: validProbe });
   const saveButton = await screen.findByRole('button', { name: 'Save' });
@@ -108,6 +110,7 @@ test('saves new probe', async () => {
     labels: [],
     online: false,
     onlineChange: 0,
+    version: 'v1',
   };
   const instance = renderProbeEditor({ probe: validProbe });
   const saveButton = await screen.findByRole('button', { name: 'Save' });
@@ -127,6 +130,7 @@ test('updates existing probe', async () => {
     labels: [],
     online: false,
     onlineChange: 0,
+    version: 'v1',
   };
   const instance = renderProbeEditor({ probe: validProbe });
   const saveButton = await screen.findByRole('button', { name: 'Save' });

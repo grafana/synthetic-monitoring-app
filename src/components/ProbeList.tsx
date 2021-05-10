@@ -1,11 +1,11 @@
 import React, { useContext } from 'react';
 import { css } from 'emotion';
 import { Badge, Button, HorizontalGroup } from '@grafana/ui';
-import { InstanceContext } from 'components/InstanceContext';
+import { InstanceContext } from 'contexts/InstanceContext';
 import { SuccessRateGauge } from 'components/SuccessRateGauge';
 import { OrgRole, Probe, Label } from 'types';
 import { hasRole } from 'utils';
-import { SuccessRateTypes } from './SuccessRateContext';
+import { SuccessRateTypes } from 'contexts/SuccessRateContext';
 
 interface Props {
   probes: Probe[];
@@ -55,6 +55,7 @@ export const ProbeList = ({ probes, onAddNew, onSelectProbe }: Props) => {
                 <span className="add-data-source-item-desc">
                   <Badge color={color} icon={onlineIcon} text={onlineTxt} />
                   <div>{labelsToString(probe.labels)}</div>
+                  <div>Version: {probe.version}</div>
                 </span>
               </div>
               <SuccessRateGauge

@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Field } from '@grafana/ui';
 import CheckProbes from './CheckProbes';
-import { InstanceContext } from 'components/InstanceContext';
-import { CheckType, Probe } from 'types';
+import { InstanceContext } from 'contexts/InstanceContext';
+import { Probe, CheckType } from 'types';
 import { SliderInput } from 'components/SliderInput';
 import { Subheader } from 'components/Subheader';
 import { useFormContext, Controller } from 'react-hook-form';
@@ -21,7 +21,6 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, probes }: Props) =>
   const { instance } = useContext(InstanceContext);
 
   const checkType = watch('checkType').value;
-  console.log({ checkType });
 
   useEffect(() => {
     const abortController = new AbortController();

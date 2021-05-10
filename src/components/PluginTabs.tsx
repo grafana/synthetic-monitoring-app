@@ -4,7 +4,7 @@ import { DashboardMeta, GlobalSettings } from 'types';
 import { WelcomePage } from 'page/WelcomePage';
 import { ChecksPage } from 'page/ChecksPage';
 import { ProbesPage } from 'page/ProbesPage';
-import { InstanceContext } from './InstanceContext';
+import { InstanceContext } from 'contexts/InstanceContext';
 import { getLocationSrv } from '@grafana/runtime';
 import { DashboardInfo } from 'datasource/types';
 import { listAppDashboards } from 'dashboards/loader';

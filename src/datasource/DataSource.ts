@@ -10,7 +10,7 @@ import {
   VariableModel,
 } from '@grafana/data';
 
-import { SMQuery, SMOptions, QueryType } from './types';
+import { SMQuery, SMOptions, QueryType, CheckInfo } from './types';
 
 import { config, getBackendSrv, getTemplateSrv } from '@grafana/runtime';
 import { Probe, Check, RegistrationInfo, HostedInstance } from '../types';
@@ -113,6 +113,18 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       job: job?.current?.value ?? query.job,
       instance: instance?.current?.value ?? query.instance,
     };
+  }
+
+  async getCheckInfo(): Promise<CheckInfo> {
+    return getBackendSrv()
+      .fetch({
+        method: 'GET',
+        url: `${this.instanceSettings.url}/sm/checks/info`,
+      })
+      .toPromise()
+      .then((res: any) => {
+        return res.data as CheckInfo;
+      });
   }
 
   //--------------------------------------------------------------------------------

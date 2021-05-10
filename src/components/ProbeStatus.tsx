@@ -15,7 +15,7 @@ import { Probe, OrgRole } from 'types';
 import { hasRole } from 'utils';
 import { SuccessRateGauge } from './SuccessRateGauge';
 import { GrafanaTheme } from '@grafana/data';
-import { SuccessRateTypes } from './SuccessRateContext';
+import { SuccessRateTypes } from 'contexts/SuccessRateContext';
 
 interface Props {
   probe: Probe;

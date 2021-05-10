@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import { SMOptions } from 'datasource/types';
 import { TenantView } from 'components/TenantView';
 import { DashboardList } from './DashboardList';
-import { InstanceContext } from './InstanceContext';
+import { InstanceContext } from 'contexts/InstanceContext';
 
 export class TenantSetup extends PureComponent {
   static contextType = InstanceContext;

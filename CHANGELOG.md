@@ -1,3 +1,24 @@
+## [0.10.2](https://github.com/grafana/synthetic-monitoring-app/compare/0.10.1...0.10.2) (2021-05-10)
+
+
+### Bug Fixes
+
+* add probe success rate to context ([#269](https://github.com/grafana/synthetic-monitoring-app/issues/269)) ([46b501c](https://github.com/grafana/synthetic-monitoring-app/commit/46b501c91330ac129425ae1d7598f6cb5da81105))
+
+## [0.10.1](https://github.com/grafana/synthetic-monitoring-app/compare/0.10.0...0.10.1) (2021-05-10)
+
+
+### Bug Fixes
+
+* show probe version in the probe list ([#268](https://github.com/grafana/synthetic-monitoring-app/issues/268)) ([b30d626](https://github.com/grafana/synthetic-monitoring-app/commit/b30d626feb79645516075cbe891b3cf704c76746))
+
+# [0.10.0](https://github.com/grafana/synthetic-monitoring-app/compare/0.9.0...0.10.0) (2021-05-10)
+
+
+### Features
+
+* Usage endpoint ([#267](https://github.com/grafana/synthetic-monitoring-app/issues/267)) ([e26d5e1](https://github.com/grafana/synthetic-monitoring-app/commit/e26d5e1c0a1c0e833f88da2994bbcf68de1ab836))
+
 # [0.9.0](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.24...0.9.0) (2021-05-04)
 
 

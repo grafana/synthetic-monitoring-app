@@ -10,7 +10,7 @@ import {
   getDefaultAlertAnnotations,
 } from 'components/constants';
 import { AlertRule, AlertSensitivity } from 'types';
-import { InstanceContext } from 'components/InstanceContext';
+import { InstanceContext } from 'contexts/InstanceContext';
 
 enum AlertThresholds {
   High = 95,

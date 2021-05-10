@@ -5,8 +5,9 @@ import React, { useContext, useState, useEffect } from 'react';
 import { Probe } from 'types';
 import { getLocationSrv } from '@grafana/runtime';
 import ProbeEditor from 'components/ProbeEditor';
-import { InstanceContext } from 'components/InstanceContext';
+import { InstanceContext } from 'contexts/InstanceContext';
 import { ProbeList } from 'components/ProbeList';
+import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
 
 interface Props {
   id?: string;
@@ -72,8 +73,13 @@ export const ProbesPage = ({ id }: Props) => {
       labels: [],
       online: false,
       onlineChange: 0,
+      version: 'unknown',
     } as Probe;
     return <ProbeEditor probe={template} onReturn={onGoBack} />;
   }
-  return <ProbeList probes={probes} onAddNew={() => setAddingNew(true)} onSelectProbe={onSelectProbe} />;
+  return (
+    <SuccessRateContextProvider probes={probes}>
+      <ProbeList probes={probes} onAddNew={() => setAddingNew(true)} onSelectProbe={onSelectProbe} />
+    </SuccessRateContextProvider>
+  );
 };

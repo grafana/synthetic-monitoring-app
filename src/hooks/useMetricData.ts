@@ -1,5 +1,5 @@
 import { useContext, useState, useEffect } from 'react';
-import { InstanceContext } from 'components/InstanceContext';
+import { InstanceContext } from 'contexts/InstanceContext';
 import { queryMetric, MetricQueryOptions } from 'utils';
 
 interface UseMetricOptions {

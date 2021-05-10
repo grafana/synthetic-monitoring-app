@@ -18,7 +18,7 @@ import { Probe, OrgRole, SubmissionErrorWrapper } from 'types';
 import { hasRole } from 'utils';
 import { LabelField } from 'components/LabelField';
 import ProbeStatus from './ProbeStatus';
-import { InstanceContext } from 'components/InstanceContext';
+import { InstanceContext } from 'contexts/InstanceContext';
 
 interface Props {
   probe: Probe;

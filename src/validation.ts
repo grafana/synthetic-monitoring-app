@@ -26,11 +26,12 @@ export const CheckValidation = {
 };
 
 export function validateCheck(check: Check): boolean {
+  const type = checkType(check.settings);
   return Boolean(
     CheckValidation.job(check.job) &&
       CheckValidation.target(checkType(check.settings), check.target) &&
-      CheckValidation.frequency(check.frequency) &&
-      CheckValidation.timeout(check.timeout) &&
+      CheckValidation.frequency(check.frequency, type) &&
+      CheckValidation.timeout(check.timeout, type) &&
       CheckValidation.labels(check.labels) &&
       CheckValidation.settings(check.settings) &&
       CheckValidation.probes(check.probes)

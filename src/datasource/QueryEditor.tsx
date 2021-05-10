@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react';
 import { defaults } from 'lodash';
-import { GrafanaTheme, locationUtil, QueryEditorProps, SelectableValue } from '@grafana/data';
+import { GrafanaTheme, QueryEditorProps, SelectableValue } from '@grafana/data';
 import { SMDataSource } from './DataSource';
 import { SMQuery, SMOptions, QueryType, defaultQuery } from './types';
 import { getTheme, Select, Spinner } from '@grafana/ui';
