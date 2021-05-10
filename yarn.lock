@@ -1187,7 +1187,7 @@
   resolved "https://registry.yarnpkg.com/@grafana/aws-sdk/-/aws-sdk-0.0.3.tgz#bc632c6c77971a5474acbe45847420503679fc75"
   integrity sha512-V0PJLk+oU1C33knurXp8BkT5N2ctDu9b21zpK16vkJAs5aOiH/OaOhQ/IP9ipxYhB+b9PFjr8RXagV/8XJ8xwg==
 
-"@grafana/data@7.5.5", "@grafana/data@^7.5.5":
+"@grafana/data@7.5.5":
   version "7.5.5"
   resolved "https://registry.yarnpkg.com/@grafana/data/-/data-7.5.5.tgz#4009d7d1e8e91080a9031048703be280a6cfffce"
   integrity sha512-9APYz1w/0V38u/d10QGVwP2yPZRrlTfwIZFRkkhtMzXEPtbW7L3PzJEX2nvD+W1KNNdbmZV0YhEZcHmPiNw1xg==
@@ -1228,7 +1228,7 @@
     prettier "2.2.1"
     typescript "4.1.3"
 
-"@grafana/runtime@^7.5.5":
+"@grafana/runtime@7.5.5":
   version "7.5.5"
   resolved "https://registry.yarnpkg.com/@grafana/runtime/-/runtime-7.5.5.tgz#861c88a56e3d14ebd5eb176bda86bcdd80e2d503"
   integrity sha512-Hm+ef0eePL3QoVKY40ZO2JenZJoE6esWQdI3xIlRQ4T1K82pCYVvE/LCMG2B1C85fuS8Jx57OHTsKTr6RO37+A==
@@ -1260,7 +1260,7 @@
     tiny-invariant "^1.0.1"
     tiny-warning "^0.0.3"
 
-"@grafana/toolkit@^7.5.5":
+"@grafana/toolkit@7.5.5":
   version "7.5.5"
   resolved "https://registry.yarnpkg.com/@grafana/toolkit/-/toolkit-7.5.5.tgz#1ab8bcd462264bbb8bf3513d40e68362ba74a7b3"
   integrity sha512-CLaJEtB5mNhnWEcQIkwRZtPhmMoV46bTiCezR/JX5rkXoKtnS1O8D7e/fCfquf4alfiggMV2+fBruojuCT6blw==
@@ -1352,7 +1352,7 @@
   resolved "https://registry.yarnpkg.com/@grafana/tsconfig/-/tsconfig-1.0.0-rc1.tgz#d07ea16755a50cae21000113f30546b61647a200"
   integrity sha512-nucKPGyzlSKYSiJk5RA8GzMdVWhdYNdF+Hh65AXxjD9PlY69JKr5wANj8bVdQboag6dgg0BFKqgKPyY+YtV4Iw==
 
-"@grafana/ui@7.5.5", "@grafana/ui@^7.5.5":
+"@grafana/ui@7.5.5":
   version "7.5.5"
   resolved "https://registry.yarnpkg.com/@grafana/ui/-/ui-7.5.5.tgz#a1d22657254b31e2bab6d8e0d4acc2280594c910"
   integrity sha512-dvzW2qV5aUv9IgGlE2ZEVp24ivEfDzSkTVxcnFy0Jw+l12R08jjIj8xvg8PgR7qVYuTeD56A+NyoP+b3fxalKg==
