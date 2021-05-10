@@ -1,3 +1,10 @@
+## [0.10.1](https://github.com/grafana/synthetic-monitoring-app/compare/0.10.0...0.10.1) (2021-05-10)
+
+
+### Bug Fixes
+
+* show probe version in the probe list ([#268](https://github.com/grafana/synthetic-monitoring-app/issues/268)) ([b30d626](https://github.com/grafana/synthetic-monitoring-app/commit/b30d626feb79645516075cbe891b3cf704c76746))
+
 # [0.10.0](https://github.com/grafana/synthetic-monitoring-app/compare/0.9.0...0.10.0) (2021-05-10)
 
 
