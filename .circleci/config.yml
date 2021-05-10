@@ -123,7 +123,7 @@ jobs:
             - build-cache-{{ .Environment.CACHE_VERSION }}-{{ checksum "yarn.lock" }}
       - run:
           name: Build and test frontend
-          command: ./node_modules/.bin/grafana-toolkit plugin:build
+          command: yarn build
 
   build:
     executor: default_exec
