@@ -21,6 +21,7 @@ const defaultProbes = [
     labels: [],
     online: false,
     onlineChange: 0,
+    version: 'v1',
   },
   {
     name: 'burritos',
@@ -32,6 +33,7 @@ const defaultProbes = [
     labels: [{ name: 'chimi', value: 'churri' }],
     online: false,
     onlineChange: 0,
+    version: 'v1',
   },
 ];
 
