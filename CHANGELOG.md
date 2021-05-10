@@ -1,3 +1,10 @@
+# [0.10.0](https://github.com/grafana/synthetic-monitoring-app/compare/0.9.0...0.10.0) (2021-05-10)
+
+
+### Features
+
+* Usage endpoint ([#267](https://github.com/grafana/synthetic-monitoring-app/issues/267)) ([e26d5e1](https://github.com/grafana/synthetic-monitoring-app/commit/e26d5e1c0a1c0e833f88da2994bbcf68de1ab836))
+
 # [0.9.0](https://github.com/grafana/synthetic-monitoring-app/compare/0.8.24...0.9.0) (2021-05-04)
 
 
