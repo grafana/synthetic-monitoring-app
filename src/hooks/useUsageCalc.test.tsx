@@ -1,0 +1,274 @@
+import React, { PropsWithChildren } from 'react';
+import { renderHook, act } from '@testing-library/react-hooks';
+import { CheckInfoContextProvider } from 'components/CheckInfoContextProvider';
+import { Check, DnsSettings, GlobalSettings, HttpSettings, PingSettings, TcpSettings } from 'types';
+import { useUsageCalc } from './useUsageCalc';
+import { InstanceContext } from 'contexts/InstanceContext';
+import { getInstanceMock } from 'datasource/__mocks__/DataSource';
+import { AppPluginMeta } from '@grafana/data';
+
+interface Wrapper {}
+
+const renderUsage = async (check: Partial<Check>) => {
+  const api = getInstanceMock();
+  const meta = {} as AppPluginMeta<GlobalSettings>;
+  const wrapper = ({ children }: PropsWithChildren<Wrapper>) => (
+    <InstanceContext.Provider value={{ instance: { api }, loading: false, meta }}>
+      <CheckInfoContextProvider>{children}</CheckInfoContextProvider>
+    </InstanceContext.Provider>
+  );
+  const hook = renderHook(() => useUsageCalc(check), { wrapper });
+  await act(async () => hook.waitForNextUpdate());
+  return hook;
+};
+
+describe('http usage', () => {
+  test('calculates with full metrics', async () => {
+    const { result: basic } = await renderUsage({
+      probes: [1],
+      settings: {
+        http: {} as HttpSettings,
+      },
+      frequency: 60000,
+    });
+    expect(basic.current).toStrictEqual({
+      checksPerMonth: 43800,
+      activeSeries: 118,
+      logsGbPerMonth: 0.04,
+    });
+
+    const { result: multipleProbes } = await renderUsage({
+      probes: [1, 2, 3, 4],
+      settings: {
+        http: {} as HttpSettings,
+      },
+      frequency: 60000,
+    });
+    expect(multipleProbes.current).toStrictEqual({
+      checksPerMonth: 175200,
+      activeSeries: 472,
+      logsGbPerMonth: 0.14,
+    });
+
+    const { result: differentFrequency } = await renderUsage({
+      probes: [1],
+      settings: {
+        http: {} as HttpSettings,
+      },
+      frequency: 10000,
+    });
+    expect(differentFrequency.current).toStrictEqual({
+      checksPerMonth: 262800,
+      activeSeries: 118,
+      logsGbPerMonth: 0.21,
+    });
+
+    const { result: withSSL } = await renderUsage({
+      probes: [1],
+      settings: {
+        http: {
+          tlsConfig: {},
+        } as HttpSettings,
+      },
+      frequency: 10000,
+    });
+    expect(withSSL.current).toStrictEqual({
+      checksPerMonth: 262800,
+      activeSeries: 122,
+      logsGbPerMonth: 0.21,
+    });
+  });
+
+  test('calculates with basic metrics', async () => {
+    const { result: basic } = await renderUsage({
+      probes: [1],
+      settings: {
+        http: {} as HttpSettings,
+      },
+      frequency: 60000,
+      basicMetricsOnly: true,
+    });
+
+    expect(basic.current).toStrictEqual({
+      checksPerMonth: 43800,
+      activeSeries: 34,
+      logsGbPerMonth: 0.04,
+    });
+
+    const { result: multipleProbes } = await renderUsage({
+      probes: [1, 2, 3, 4],
+      settings: {
+        http: {} as HttpSettings,
+      },
+      frequency: 60000,
+      basicMetricsOnly: true,
+    });
+    expect(multipleProbes.current).toStrictEqual({
+      checksPerMonth: 175200,
+      activeSeries: 136,
+      logsGbPerMonth: 0.14,
+    });
+
+    const { result: differentFrequency } = await renderUsage({
+      probes: [1],
+      settings: {
+        http: {} as HttpSettings,
+      },
+      frequency: 10000,
+      basicMetricsOnly: true,
+    });
+    expect(differentFrequency.current).toStrictEqual({
+      checksPerMonth: 262800,
+      activeSeries: 34,
+      logsGbPerMonth: 0.21,
+    });
+
+    const { result: withSSL } = await renderUsage({
+      probes: [1],
+      settings: {
+        http: {
+          tlsConfig: {},
+        } as HttpSettings,
+      },
+      frequency: 10000,
+      basicMetricsOnly: true,
+    });
+    expect(withSSL.current).toStrictEqual({
+      checksPerMonth: 262800,
+      activeSeries: 38,
+      logsGbPerMonth: 0.21,
+    });
+  });
+});
+
+describe('ping usage', () => {
+  test('calculates with full metrics', async () => {
+    const { result: basic } = await renderUsage({
+      probes: [1],
+      settings: {
+        ping: {} as PingSettings,
+      },
+      frequency: 60000,
+    });
+    expect(basic.current).toStrictEqual({
+      checksPerMonth: 43800,
+      activeSeries: 81,
+      logsGbPerMonth: 0.04,
+    });
+  });
+
+  test('calculates with basic metrics', async () => {
+    const { result: basic } = await renderUsage({
+      probes: [1],
+      settings: {
+        ping: {} as PingSettings,
+      },
+      frequency: 60000,
+      basicMetricsOnly: true,
+    });
+
+    expect(basic.current).toStrictEqual({
+      checksPerMonth: 43800,
+      activeSeries: 25,
+      logsGbPerMonth: 0.04,
+    });
+  });
+});
+
+describe('tcp usage', () => {
+  test('calculates with full metrics', async () => {
+    const { result: basic } = await renderUsage({
+      probes: [1],
+      settings: {
+        tcp: {} as TcpSettings,
+      },
+      frequency: 60000,
+    });
+    expect(basic.current).toStrictEqual({
+      checksPerMonth: 43800,
+      activeSeries: 37,
+      logsGbPerMonth: 0.04,
+    });
+
+    const { result: withSSL } = await renderUsage({
+      probes: [1],
+      settings: {
+        tcp: {
+          tlsConfig: {},
+        } as TcpSettings,
+      },
+      frequency: 10000,
+    });
+    expect(withSSL.current).toStrictEqual({
+      checksPerMonth: 262800,
+      activeSeries: 41,
+      logsGbPerMonth: 0.21,
+    });
+  });
+
+  test('calculates with basic metrics', async () => {
+    const { result: basic } = await renderUsage({
+      probes: [1],
+      settings: {
+        tcp: {} as TcpSettings,
+      },
+      frequency: 60000,
+      basicMetricsOnly: true,
+    });
+    expect(basic.current).toStrictEqual({
+      checksPerMonth: 43800,
+      activeSeries: 23,
+      logsGbPerMonth: 0.04,
+    });
+
+    const { result: withSSL } = await renderUsage({
+      probes: [1],
+      settings: {
+        tcp: {
+          tlsConfig: {},
+        } as TcpSettings,
+      },
+      frequency: 10000,
+      basicMetricsOnly: true,
+    });
+    expect(withSSL.current).toStrictEqual({
+      checksPerMonth: 262800,
+      activeSeries: 27,
+      logsGbPerMonth: 0.21,
+    });
+  });
+});
+
+describe('dns usage', () => {
+  test('calculates with full metrics', async () => {
+    const { result: basic } = await renderUsage({
+      probes: [1],
+      settings: {
+        dns: {} as DnsSettings,
+      },
+      frequency: 60000,
+    });
+    expect(basic.current).toStrictEqual({
+      checksPerMonth: 43800,
+      activeSeries: 84,
+      logsGbPerMonth: 0.04,
+    });
+  });
+
+  test('calculates with basic metrics', async () => {
+    const { result: basic } = await renderUsage({
+      probes: [1],
+      settings: {
+        dns: {} as DnsSettings,
+      },
+      frequency: 60000,
+      basicMetricsOnly: true,
+    });
+
+    expect(basic.current).toStrictEqual({
+      checksPerMonth: 43800,
+      activeSeries: 28,
+      logsGbPerMonth: 0.04,
+    });
+  });
+});

@@ -1,8 +1,8 @@
 import React, { PropsWithChildren, useContext, useEffect, useState } from 'react';
 import { Check } from 'types';
 import { queryMetric } from 'utils';
-import { InstanceContext } from './InstanceContext';
-import { SuccessRates, SuccessRateContext, SuccessRateTypes, SuccessRate } from './SuccessRateContext';
+import { InstanceContext } from 'contexts/InstanceContext';
+import { SuccessRates, SuccessRateContext, SuccessRateTypes, SuccessRate } from 'contexts/SuccessRateContext';
 
 interface Props {
   checks: Check[];

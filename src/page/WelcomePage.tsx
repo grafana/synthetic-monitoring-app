@@ -3,7 +3,7 @@ import { Button, Alert, useStyles, HorizontalGroup, useTheme } from '@grafana/ui
 import { getBackendSrv, config } from '@grafana/runtime';
 import { hasRole, initializeDatasource } from 'utils';
 import { importAllDashboards } from 'dashboards/loader';
-import { InstanceContext } from 'components/InstanceContext';
+import { InstanceContext } from 'contexts/InstanceContext';
 import { DataSourceInstanceSettings, GrafanaTheme } from '@grafana/data';
 import { css } from 'emotion';
 import { colors, LEGACY_LOGS_DS_NAME, LEGACY_METRICS_DS_NAME } from 'components/constants';

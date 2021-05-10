@@ -1,10 +1,10 @@
 import React, { FC } from 'react';
 import { useFormContext } from 'react-hook-form';
-import { calculateUsage } from '../checkUsageCalc';
 import { css } from 'emotion';
 import { GrafanaTheme } from '@grafana/data';
 import { useStyles, Icon } from '@grafana/ui';
-import { CheckFormValues } from 'types';
+import { Check, CheckFormValues, CheckType } from 'types';
+import { useUsageCalc } from 'hooks/useUsageCalc';
 
 const getStyles = (theme: GrafanaTheme) => ({
   container: css`
@@ -26,6 +26,25 @@ const getStyles = (theme: GrafanaTheme) => ({
   `,
 });
 
+const getCheckFromValues = (
+  checkType: CheckType | undefined,
+  frequency = 0,
+  probes: number[] = [],
+  useFullMetrics = false
+): Partial<Check> | undefined => {
+  if (!checkType) {
+    return;
+  }
+  return {
+    frequency: frequency * 1000,
+    probes,
+    basicMetricsOnly: !useFullMetrics,
+    settings: {
+      [checkType]: {},
+    },
+  };
+};
+
 export const CheckUsage: FC = () => {
   const styles = useStyles(getStyles);
   const { watch } = useFormContext();
@@ -35,30 +54,26 @@ export const CheckUsage: FC = () => {
     'probes',
     'useFullMetrics',
   ]);
-
-  if (!checkType?.value || !frequency || !probes || useFullMetrics === undefined) {
+  const check = getCheckFromValues(checkType?.value, frequency, probes, useFullMetrics);
+  const usage = useUsageCalc(check);
+  if (!usage) {
     return null;
   }
-  const { checksPerMonth, activeSeries, logsGbPerMonth } = calculateUsage({
-    probeCount: probes.length,
-    frequencySeconds: frequency,
-    checkType: checkType.value,
-    useFullMetrics,
-  });
+
   return (
     <div className={styles.container}>
       <h5 className={styles.header}>Approximate expected usage for this check</h5>
       <div className={styles.section}>
         <Icon className={styles.icon} name={'calendar-alt'} />
-        Checks per month: <strong className={styles.value}>{checksPerMonth.toLocaleString()}</strong>
+        Checks per month: <strong className={styles.value}>{usage.checksPerMonth.toLocaleString()}</strong>
       </div>
       <div className={styles.section}>
         <Icon className={styles.icon} name={'chart-line'} />
-        Active series: <strong className={styles.value}>{activeSeries.toLocaleString()}</strong>
+        Active series: <strong className={styles.value}>{usage.activeSeries.toLocaleString()}</strong>
       </div>
       <div className={styles.section}>
         <Icon className={styles.icon} name={'database'} />
-        Log usage per month (GB): <strong className={styles.value}>{logsGbPerMonth.toLocaleString()}</strong>
+        Log usage per month (GB): <strong className={styles.value}>{usage.logsGbPerMonth.toLocaleString()}</strong>
       </div>
     </div>
   );

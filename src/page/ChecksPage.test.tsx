@@ -3,7 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { ChecksPage } from './ChecksPage';
 import { getInstanceMock } from 'datasource/__mocks__/DataSource';
 import userEvent from '@testing-library/user-event';
-import { InstanceContext } from 'components/InstanceContext';
+import { InstanceContext } from 'contexts/InstanceContext';
 import { AppPluginMeta } from '@grafana/data';
 import { GlobalSettings } from 'types';
 jest.setTimeout(20000);

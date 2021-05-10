@@ -5,7 +5,7 @@ import React, { useContext, useState, useEffect } from 'react';
 import { Probe } from 'types';
 import { getLocationSrv } from '@grafana/runtime';
 import ProbeEditor from 'components/ProbeEditor';
-import { InstanceContext } from 'components/InstanceContext';
+import { InstanceContext } from 'contexts/InstanceContext';
 import { ProbeList } from 'components/ProbeList';
 
 interface Props {

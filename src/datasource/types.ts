@@ -53,3 +53,31 @@ export interface SecureJsonData {
 export interface CloudDatasourceJsonData extends DataSourceJsonData {
   directUrl: string;
 }
+
+export enum AccountingClassNames {
+  dns = 'dns',
+  dns_basic = 'dns_basic',
+  http = 'http',
+  http_basic = 'http_basic',
+  http_ssl = 'http_ssl',
+  http_ssl_basic = 'http_ssl_basic',
+  ping = 'ping',
+  ping_basic = 'ping_basic',
+  tcp = 'tcp',
+  tcp_basic = 'tcp_basic',
+  tcp_ssl = 'tcp_ssl',
+  tcp_ssl_basic = 'tcp_ssl_basic',
+}
+
+interface AccountingClass {
+  CheckType: number;
+  Series: number;
+}
+
+export type CheckAccountingClasses = {
+  [key in AccountingClassNames]: AccountingClass;
+};
+
+export interface CheckInfo {
+  AccountingClasses: CheckAccountingClasses;
+}

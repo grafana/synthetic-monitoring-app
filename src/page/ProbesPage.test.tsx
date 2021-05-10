@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ProbesPage } from './ProbesPage';
-import { InstanceContext } from 'components/InstanceContext';
+import { InstanceContext } from 'contexts/InstanceContext';
 import { getInstanceMock, instanceSettings } from '../datasource/__mocks__/DataSource';
 import * as runtime from '@grafana/runtime';
 import { AppPluginMeta } from '@grafana/data';

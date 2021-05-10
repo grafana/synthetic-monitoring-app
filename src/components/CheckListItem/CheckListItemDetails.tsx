@@ -21,7 +21,7 @@ const getStyles = (theme: GrafanaTheme) => ({
 
 interface Props {
   frequency: number;
-  activeSeries: number;
+  activeSeries?: number;
   className?: string;
   labelCount?: number;
   labels?: Label[];
@@ -30,9 +30,10 @@ interface Props {
 
 export const CheckListItemDetails = ({ frequency, activeSeries, className, labels, onLabelClick }: Props) => {
   const styles = useStyles(getStyles);
+  const activeSeriesMessage = activeSeries !== undefined ? `${activeSeries} active series` : null;
   return (
     <div className={cx(styles.checkDetails, className)}>
-      {frequency / 1000}s frequency &nbsp;&nbsp;<strong>|</strong>&nbsp;&nbsp; {activeSeries} active series
+      {frequency / 1000}s frequency &nbsp;&nbsp;<strong>|</strong>&nbsp;&nbsp; {activeSeriesMessage}
       {labels && onLabelClick && (
         <>
           &nbsp;&nbsp;<strong>|</strong>

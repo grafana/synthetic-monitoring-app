@@ -147,6 +147,22 @@ export const getInstanceMock = (settings: DataSourceInstanceSettings<SMOptions> 
       },
     ])
   );
+  instance.getCheckInfo = jest.fn().mockResolvedValue({
+    AccountingClasses: {
+      dns: { Series: 84 },
+      dns_basic: { Series: 28 },
+      http: { Series: 118 },
+      http_basic: { Series: 34 },
+      http_ssl: { Series: 122 },
+      http_ssl_basic: { Series: 38 },
+      ping: { Series: 81 },
+      ping_basic: { Series: 25 },
+      tcp: { Series: 37 },
+      tcp_basic: { Series: 23 },
+      tcp_ssl: { Series: 41 },
+      tcp_ssl_basic: { Series: 27 },
+    },
+  });
   instance.deleteCheck = jest.fn();
   instance.updateCheck = jest.fn().mockImplementation(() => Promise.resolve({ data: {} }));
   return instance;

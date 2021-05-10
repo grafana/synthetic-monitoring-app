@@ -5,13 +5,13 @@ import { Check, CheckListViewType, CheckType, FilteredCheck, Label } from 'types
 import { useStyles, Checkbox, HorizontalGroup } from '@grafana/ui';
 import { css, cx } from 'emotion';
 import { GrafanaTheme } from '@grafana/data';
-import { calculateUsage } from 'checkUsageCalc';
 import { CheckCardLabel } from '../CheckCardLabel';
 import { LatencyGauge } from '../LatencyGauge';
 import { CheckItemActionButtons } from './CheckItemActionButtons';
 import { CheckListItemDetails } from './CheckListItemDetails';
 import { CheckStatusType } from './CheckStatusType';
-import { SuccessRateTypes } from 'components/SuccessRateContext';
+import { SuccessRateTypes } from 'contexts/SuccessRateContext';
+import { useUsageCalc } from 'hooks/useUsageCalc';
 
 interface Props {
   check: FilteredCheck;
@@ -154,12 +154,7 @@ export const CheckListItem = ({
   const styles = useStyles(getStyles);
   const checkType = getCheckType(check.settings);
 
-  const usage = calculateUsage({
-    probeCount: check.probes.length,
-    checkType,
-    frequencySeconds: check.frequency / 1000,
-    useFullMetrics: !check.basicMetricsOnly,
-  });
+  const usage = useUsageCalc(check);
 
   if (viewType === CheckListViewType.List) {
     return (
@@ -192,7 +187,7 @@ export const CheckListItem = ({
           />
           <CheckListItemDetails
             frequency={check.frequency}
-            activeSeries={usage.activeSeries}
+            activeSeries={usage?.activeSeries}
             className={styles.listItemDetails}
             labelCount={check.labels.length}
             labels={check.labels}
@@ -229,7 +224,7 @@ export const CheckListItem = ({
                   onClickType={onTypeSelect}
                   className={styles.statusTypeCardView}
                 />
-                <CheckListItemDetails frequency={check.frequency} activeSeries={usage.activeSeries} />
+                <CheckListItemDetails frequency={check.frequency} activeSeries={usage?.activeSeries} />
               </div>
             </div>
             <div className={styles.stats}>

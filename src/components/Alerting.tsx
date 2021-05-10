@@ -5,7 +5,7 @@ import { css } from 'emotion';
 import { useAlerts } from 'hooks/useAlerts';
 import { AlertRuleForm } from './AlertRuleForm';
 import { AlertFormValues, AlertRule, OrgRole } from 'types';
-import { InstanceContext } from './InstanceContext';
+import { InstanceContext } from 'contexts/InstanceContext';
 import { transformAlertFormValues } from './alertingTransformations';
 import { hasRole } from 'utils';
 

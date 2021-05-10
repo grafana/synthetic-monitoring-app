@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ProbeEditor from './ProbeEditor';
-import { InstanceContext } from 'components/InstanceContext';
+import { InstanceContext } from 'contexts/InstanceContext';
 import { getInstanceMock, instanceSettings } from '../datasource/__mocks__/DataSource';
 import { AppPluginMeta } from '@grafana/data';
 import { GlobalSettings } from 'types';

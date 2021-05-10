@@ -14,7 +14,7 @@ import {
 import { CheckEditor } from './CheckEditor';
 import { getInstanceMock } from '../../datasource/__mocks__/DataSource';
 import userEvent from '@testing-library/user-event';
-import { InstanceContext } from 'components/InstanceContext';
+import { InstanceContext } from 'contexts/InstanceContext';
 import { AppPluginMeta, DataSourceSettings } from '@grafana/data';
 jest.setTimeout(60000);
 
