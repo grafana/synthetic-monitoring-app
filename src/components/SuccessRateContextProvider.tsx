@@ -1,11 +1,12 @@
 import React, { PropsWithChildren, useContext, useEffect, useState } from 'react';
-import { Check } from 'types';
+import { Check, Probe } from 'types';
 import { queryMetric } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { SuccessRates, SuccessRateContext, SuccessRateTypes, SuccessRate } from 'contexts/SuccessRateContext';
 
 interface Props {
-  checks: Check[];
+  checks?: Check[];
+  probes?: Probe[];
 }
 
 const values: SuccessRates = {
@@ -16,6 +17,7 @@ const values: SuccessRates = {
 type SeedRequestMetric = {
   instance: string;
   job: string;
+  probe: string;
 };
 
 type SeedRequestValue = [number, string];
@@ -27,7 +29,63 @@ type SeedRequestItem = {
 
 type SeedRequestResponse = SeedRequestItem[];
 
-export function SuccessRateContextProvider({ checks, children }: PropsWithChildren<Props>) {
+const parseCheckResults = (checks: Check[] | undefined, data: any) => {
+  if (!checks) {
+    return;
+  }
+
+  const response = data as SeedRequestResponse;
+  const resultsPerCheck = checks.reduce<SuccessRate>((acc, check) => {
+    if (!check.id) {
+      return acc;
+    }
+    acc[check.id] = undefined;
+    return acc;
+  }, {});
+
+  response.forEach((item) => {
+    const check = checks?.find((check) => check.job === item.metric.job && check.target === item.metric.instance);
+    if (check && check.id) {
+      const returnedValue = item.value?.[1];
+      if (returnedValue !== undefined) {
+        const float = parseFloat(returnedValue);
+        resultsPerCheck[check.id] = float;
+      }
+    }
+  });
+
+  return resultsPerCheck;
+};
+
+const parseProbeResults = (probes: Probe[] | undefined, data: any) => {
+  if (!probes) {
+    return {};
+  }
+
+  const response = data as SeedRequestResponse;
+  const resultsPerCheck = probes.reduce<SuccessRate>((acc, probe) => {
+    if (!probe.id) {
+      return acc;
+    }
+    acc[probe.id] = undefined;
+    return acc;
+  }, {});
+
+  response.forEach((item) => {
+    const check = probes?.find((probe) => probe.name === item.metric.probe);
+    if (check && check.id) {
+      const returnedValue = item.value?.[1];
+      if (returnedValue !== undefined) {
+        const float = parseFloat(returnedValue);
+        resultsPerCheck[check.id] = float;
+      }
+    }
+  });
+
+  return resultsPerCheck;
+};
+
+export function SuccessRateContextProvider({ checks, probes, children }: PropsWithChildren<Props>) {
   const { instance } = useContext(InstanceContext);
   const [successRateValues, setSuccessRate] = useState<SuccessRates>(values);
   const [loading, setLoading] = useState(true);
@@ -49,11 +107,25 @@ export function SuccessRateContextProvider({ checks, children }: PropsWithChildr
   useEffect(() => {
     const getSuccessRates = async () => {
       setLoading(true);
-      const uptimeQuery = `sum(rate(probe_all_success_sum[3h])) by (job, instance) / sum(rate(probe_all_success_count[3h])) by (job, instance)`;
+      const checkUptimeQuery =
+        'sum(rate(probe_all_success_sum[3h])) by (job, instance) / sum(rate(probe_all_success_count[3h])) by (job, instance)';
+      const probeUptimeQuery =
+        'sum(rate(probe_all_success_sum[3h])) by (probe) / sum(rate(probe_all_success_count[3h])) by (probe)';
+
+      const successRateType = checks ? SuccessRateTypes.Checks : SuccessRateTypes.Probes;
+
+      const uptimeQuery = successRateType === SuccessRateTypes.Checks ? checkUptimeQuery : probeUptimeQuery;
+
       const url = instance?.api?.getMetricsDS()?.url;
-      if (!url || !checks.length) {
+
+      if (
+        !url ||
+        (successRateType === SuccessRateTypes.Checks && !checks?.length) ||
+        (successRateType === SuccessRateTypes.Probes && !probes?.length)
+      ) {
         return;
       }
+
       const now = Math.floor(Date.now() / 1000);
       const start = now - 60 * 60 * 3;
       const options = {
@@ -63,35 +135,17 @@ export function SuccessRateContextProvider({ checks, children }: PropsWithChildr
       };
       const { error, data } = await queryMetric(url, uptimeQuery, options);
 
+      const resultsByType =
+        successRateType === SuccessRateTypes.Checks ? parseCheckResults(checks, data) : parseProbeResults(probes, data);
+
       if (error || !data) {
         setLoading(false);
         return;
       }
 
-      const resultsPerCheck = checks.reduce<SuccessRate>((acc, check) => {
-        if (!check.id) {
-          return acc;
-        }
-        acc[check.id] = undefined;
-        return acc;
-      }, {});
-
-      const response = data as SeedRequestResponse;
-
-      response.forEach((item) => {
-        const check = checks?.find((check) => check.job === item.metric.job && check.target === item.metric.instance);
-        if (check && check.id) {
-          const returnedValue = item.value?.[1];
-          if (returnedValue !== undefined) {
-            const float = parseFloat(returnedValue);
-            resultsPerCheck[check.id] = float;
-          }
-        }
-      });
-
       setSuccessRate((state) => ({
         ...state,
-        [SuccessRateTypes.Checks]: resultsPerCheck,
+        [successRateType]: resultsByType,
       }));
       setLoading(false);
     };
@@ -104,7 +158,7 @@ export function SuccessRateContextProvider({ checks, children }: PropsWithChildr
     }, 60 * 1000);
 
     return () => clearInterval(interval);
-  }, [checks, instance.api]);
+  }, [checks, instance.api, probes]);
 
   return (
     <SuccessRateContext.Provider value={{ values: successRateValues, loading, updateSuccessRate }}>

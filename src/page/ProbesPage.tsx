@@ -7,6 +7,7 @@ import { getLocationSrv } from '@grafana/runtime';
 import ProbeEditor from 'components/ProbeEditor';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { ProbeList } from 'components/ProbeList';
+import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
 
 interface Props {
   id?: string;
@@ -76,5 +77,9 @@ export const ProbesPage = ({ id }: Props) => {
     } as Probe;
     return <ProbeEditor probe={template} onReturn={onGoBack} />;
   }
-  return <ProbeList probes={probes} onAddNew={() => setAddingNew(true)} onSelectProbe={onSelectProbe} />;
+  return (
+    <SuccessRateContextProvider probes={probes}>
+      <ProbeList probes={probes} onAddNew={() => setAddingNew(true)} onSelectProbe={onSelectProbe} />
+    </SuccessRateContextProvider>
+  );
 };
