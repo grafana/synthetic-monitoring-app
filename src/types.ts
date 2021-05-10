@@ -98,6 +98,7 @@ export interface Probe extends BaseObject {
   online: boolean;
   onlineChange: number;
   labels: Label[];
+  version: string;
 }
 
 export enum ResponseMatchType {
