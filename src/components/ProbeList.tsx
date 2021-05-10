@@ -55,6 +55,7 @@ export const ProbeList = ({ probes, onAddNew, onSelectProbe }: Props) => {
                 <span className="add-data-source-item-desc">
                   <Badge color={color} icon={onlineIcon} text={onlineTxt} />
                   <div>{labelsToString(probe.labels)}</div>
+                  <div>Version: {probe.version}</div>
                 </span>
               </div>
               <SuccessRateGauge
