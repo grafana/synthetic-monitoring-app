@@ -216,7 +216,7 @@ test('clicking status chiclet adds it to filter', async () => {
   userEvent.click(disabledChiclet[1]);
   const statusFilter = await screen.findByTestId('check-status-filter');
   const checks = await screen.findAllByLabelText('check-card');
-  expect(statusFilter).toHaveValue('0');
+  expect(statusFilter).toHaveValue('2');
   expect(checks.length).toBe(1);
 });
 
