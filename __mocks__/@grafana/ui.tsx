@@ -1,7 +1,7 @@
 import * as ui from '@grafana/ui';
-import React from 'react';
+import React, { forwardRef } from 'react';
 
-const Select = ({ options, value, onChange, multiple = false, prefix, id, ...rest }: any) => {
+const Select = forwardRef(({ options, value, onChange, multiple = false, prefix, id, ...rest }: any, ref: any) => {
   function handleChange(event) {
     const option = options.find((option) => {
       return String(option.value) === event.currentTarget.value;
@@ -18,6 +18,7 @@ const Select = ({ options, value, onChange, multiple = false, prefix, id, ...res
       {prefix}
       <select
         id={id}
+        ref={ref}
         data-testid={rest['data-testid'] ?? 'select'}
         value={value?.value ?? value}
         onChange={handleChange}
@@ -31,9 +32,13 @@ const Select = ({ options, value, onChange, multiple = false, prefix, id, ...res
       </select>
     </div>
   );
-};
+});
 
-const MultiSelect = (props) => <Select {...props} multiple={true} />;
+Select.displayName = 'Select';
+
+const MultiSelect = forwardRef((props, ref) => <Select {...props} ref={ref} multiple={true} />);
+
+MultiSelect.displayName = 'MultiSelect';
 
 module.exports = {
   ...ui,

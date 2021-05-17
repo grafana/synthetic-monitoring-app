@@ -29,9 +29,8 @@ export const PingSettingsForm = ({ isEditor }: Props) => {
         <Field label="IP version" description="The IP protocol of the ICMP request" disabled={!isEditor}>
           <Controller
             name="settings.ping.ipVersion"
-            as={Select}
             control={control}
-            options={IP_OPTIONS}
+            render={({ field }) => <Select {...field} options={IP_OPTIONS} />}
             rules={{ required: true }}
           />
         </Field>
@@ -40,12 +39,7 @@ export const PingSettingsForm = ({ isEditor }: Props) => {
           description="Set the DF-bit in the IP-header. Only works with ipV4"
           disabled={!isEditor}
         >
-          <Switch
-            id="ping-settings-dont-fragment"
-            ref={register()}
-            name="settings.ping.dontFragment"
-            disabled={!isEditor}
-          />
+          <Switch id="ping-settings-dont-fragment" {...register('settings.ping.dontFragment')} disabled={!isEditor} />
         </Field>
       </div>
     </Collapse>

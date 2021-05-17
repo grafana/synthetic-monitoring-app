@@ -177,7 +177,12 @@ interface Props {
 }
 
 export const HttpSettingsForm = ({ isEditor }: Props) => {
-  const { register, watch, control, errors } = useFormContext();
+  const {
+    register,
+    watch,
+    control,
+    formState: { errors },
+  } = useFormContext();
   const [showHttpSettings, setShowHttpSettings] = useState(false);
   const [showAuthentication, setShowAuthentication] = useState(false);
   const [showValidation, setShowValidation] = useState(false);
@@ -207,7 +212,11 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
             invalid={Boolean(errors?.settings?.http?.method)}
             error={errors?.settings?.http?.method}
           >
-            <Controller as={Select} rules={{ required: true }} name="settings.http.method" options={methodOptions} />
+            <Controller
+              render={({ field }) => <Select {...field} options={methodOptions} />}
+              rules={{ required: true }}
+              name="settings.http.method"
+            />
           </Field>
         </HorizontalGroup>
         <Container>
@@ -220,8 +229,7 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
           >
             <TextArea
               id="http-settings-request-body"
-              ref={register({ validate: validateHTTPBody })}
-              name="settings.http.body"
+              {...register('settings.http.body', { validate: validateHTTPBody })}
               rows={2}
               disabled={!isEditor}
             />
@@ -246,11 +254,15 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
             disabled={!isEditor}
           >
             <Controller
-              id="http-compression"
-              data-testid="http-compression"
-              as={Select}
               name="settings.http.compression"
-              options={HTTP_COMPRESSION_ALGO_OPTIONS}
+              render={({ field }) => (
+                <Select
+                  {...field}
+                  id="http-compression"
+                  data-testid="http-compression"
+                  options={HTTP_COMPRESSION_ALGO_OPTIONS}
+                />
+              )}
             />
           </Field>
         </HorizontalGroup>
@@ -280,10 +292,9 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
           {includeBearerToken && (
             <Field invalid={Boolean(errors.settings?.http?.bearerToken)} error={errors.settings?.http?.bearerToken}>
               <Input
-                ref={register({
+                {...register('settings.http.bearerToken', {
                   validate: validateBearerToken,
                 })}
-                name="settings.http.bearerToken"
                 type="password"
                 placeholder="Bearer token"
                 disabled={!isEditor}
@@ -309,15 +320,13 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
           {includeBasicAuth && (
             <HorizontalGroup>
               <Input
-                ref={register()}
-                name="settings.http.basicAuth.username"
+                {...register('settings.http.basicAuth.username')}
                 type="text"
                 placeholder="Username"
                 disabled={!isEditor}
               />
               <Input
-                ref={register()}
-                name="settings.http.basicAuth.password"
+                {...register('settings.http.basicAuth.password')}
                 type="password"
                 placeholder="Password"
                 disabled={!isEditor}
@@ -339,20 +348,16 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
             disabled={!isEditor}
           >
             <Controller
-              as={MultiSelect}
               control={control}
               name="settings.http.validStatusCodes"
-              options={validStatusCodes}
-              disabled={!isEditor}
+              render={({ field }) => <MultiSelect {...field} options={validStatusCodes} disabled={!isEditor} />}
             />
           </Field>
           <Field label="Valid HTTP versions" description="Accepted HTTP versions for this probe" disabled={!isEditor}>
             <Controller
-              as={MultiSelect}
               control={control}
               name="settings.http.validHTTPVersions"
-              options={httpVersionOptions}
-              disabled={!isEditor}
+              render={({ field }) => <MultiSelect {...field} options={httpVersionOptions} disabled={!isEditor} />}
             />
           </Field>
           <Field
@@ -361,11 +366,9 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
             disabled={!isEditor}
           >
             <Controller
-              as={Select}
               name="settings.http.sslOptions"
               control={control}
-              options={HTTP_SSL_OPTIONS}
-              disabled={!isEditor}
+              render={({ field }) => <Select {...field} options={HTTP_SSL_OPTIONS} disabled={!isEditor} />}
             />
           </Field>
         </div>
@@ -384,29 +387,25 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
                 return (
                   <Fragment key={field.id}>
                     <Controller
-                      as={Select}
+                      render={({ field }) => (
+                        <Select {...field} placeholder="Field name" options={HTTP_REGEX_VALIDATION_OPTIONS} />
+                      )}
                       name={`${REGEX_FIELD_NAME}[${index}].matchType`}
-                      placeholder="Field name"
-                      options={HTTP_REGEX_VALIDATION_OPTIONS}
                     />
                     <div className={styles.validationExpressions}>
                       {isHeaderMatch && (
                         <div className={styles.validationHeaderName}>
-                          <Input
-                            ref={register()}
-                            name={`${REGEX_FIELD_NAME}[${index}].header`}
-                            placeholder="Header name"
-                          />
+                          <Input {...register(`${REGEX_FIELD_NAME}[${index}].header`)} placeholder="Header name" />
                         </div>
                       )}
-                      <Input ref={register()} name={`${REGEX_FIELD_NAME}[${index}].expression`} placeholder="Regex" />
+                      <Input {...register(`${REGEX_FIELD_NAME}[${index}].expression`)} placeholder="Regex" />
                     </div>
                     <div className={styles.validationInverted}>
-                      <Checkbox ref={register()} name={`${REGEX_FIELD_NAME}[${index}].inverted`} />
+                      <Checkbox {...register(`${REGEX_FIELD_NAME}[${index}].inverted`)} />
                     </div>
                     {isHeaderMatch ? (
                       <div className={styles.validationAllowMissing}>
-                        <Switch ref={register()} name={`${REGEX_FIELD_NAME}[${index}].allowMissing`} />
+                        <Switch {...register(`${REGEX_FIELD_NAME}[${index}].allowMissing`)} />
                       </div>
                     ) : (
                       <div />
@@ -438,7 +437,10 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
         <div className={styles.maxWidth}>
           <LabelField isEditor={isEditor} />
           <Field label="IP version" description="The IP protocol of the HTTP request" disabled={!isEditor}>
-            <Controller as={Select} name="settings.http.ipVersion" options={IP_OPTIONS} />
+            <Controller
+              render={({ field }) => <Select {...field} options={IP_OPTIONS} />}
+              name="settings.http.ipVersion"
+            />
           </Field>
           <HorizontalCheckboxField
             id="http-settings-followRedirects"
@@ -452,8 +454,7 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
           >
             <Input
               id="https-settings-cache-busting-query"
-              ref={register}
-              name="settings.http.cacheBustingQueryParamName"
+              {...register('settings.http.cacheBustingQueryParamName')}
               type="string"
               placeholder="cache-bust"
               disabled={!isEditor}

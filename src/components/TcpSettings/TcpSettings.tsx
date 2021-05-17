@@ -42,7 +42,7 @@ export const TcpSettingsForm = ({ isEditor }: Props) => {
           disabled={!isEditor}
         >
           <Container padding="sm">
-            <Switch ref={register} title="Use TLS" name="settings.tcp.tls" disabled={!isEditor} />
+            <Switch {...register('settings.tcp.tls')} title="Use TLS" disabled={!isEditor} />
           </Container>
         </Field>
       </Collapse>
@@ -61,15 +61,13 @@ export const TcpSettingsForm = ({ isEditor }: Props) => {
             {fields.map((field, index) => (
               <HorizontalGroup key={field.id}>
                 <Input
-                  ref={register}
-                  name={`settings.tcp.queryResponse[${index}].expect`}
+                  {...register(`settings.tcp.queryResponse[${index}].expect`)}
                   type="text"
                   placeholder="Response to expect"
                   disabled={!isEditor}
                 />
                 <TextArea
-                  ref={register}
-                  name={`settings.tcp.queryResponse[${index}].send`}
+                  {...register(`settings.tcp.queryResponse[${index}].send`)}
                   type="text"
                   placeholder="Data to send"
                   rows={1}
@@ -78,8 +76,7 @@ export const TcpSettingsForm = ({ isEditor }: Props) => {
                 <span>StartTLS</span>
                 <Container padding="sm">
                   <Switch
-                    ref={register}
-                    name={`settings.tcp.queryResponse[${index}].startTLS`}
+                    {...register(`settings.tcp.queryResponse[${index}].startTLS`)}
                     label="StartTLS"
                     disabled={!isEditor}
                   />
@@ -107,7 +104,10 @@ export const TcpSettingsForm = ({ isEditor }: Props) => {
         <HorizontalGroup>
           <div>
             <Field label="IP version" description="The IP protocol of the ICMP request" disabled={!isEditor}>
-              <Controller as={Select} name="settings.tcp.ipVersion" options={IP_OPTIONS} defaultValue={IP_OPTIONS[1]} />
+              <Controller
+                name="settings.tcp.ipVersion"
+                render={({ field }) => <Select {...field} options={IP_OPTIONS} defaultValue={IP_OPTIONS[1]} />}
+              />
             </Field>
           </div>
         </HorizontalGroup>

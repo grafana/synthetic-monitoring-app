@@ -17,7 +17,10 @@ interface Props {
 
 export const ProbeOptions = ({ frequency, timeout, isEditor, probes }: Props) => {
   const [availableProbes, setAvailableProbes] = useState<Probe[]>([]);
-  const { control, errors } = useFormContext();
+  const {
+    control,
+    formState: { errors },
+  } = useFormContext();
   const { instance } = useContext(InstanceContext);
 
   useEffect(() => {
@@ -38,16 +41,19 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, probes }: Props) =>
       <Subheader>Probe options</Subheader>
 
       <Controller
-        as={CheckProbes}
         control={control}
         name="probes"
-        valueName="probes"
         rules={{ validate: validateProbes }}
-        probes={probes}
-        availableProbes={availableProbes}
-        isEditor={isEditor}
-        invalid={errors.probes}
-        error={errors.probes?.message}
+        render={({ field }) => (
+          <CheckProbes
+            {...field}
+            probes={probes}
+            availableProbes={availableProbes}
+            isEditor={isEditor}
+            invalid={errors.probes}
+            error={errors.probes?.message}
+          />
+        )}
       />
       <Field
         label="Frequency"

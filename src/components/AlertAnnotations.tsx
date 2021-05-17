@@ -25,7 +25,11 @@ const NAME = 'annotations';
 
 export const AlertAnnotations = () => {
   const styles = useStyles(getStyles);
-  const { control, register, errors } = useFormContext();
+  const {
+    control,
+    register,
+    formState: { errors },
+  } = useFormContext();
   const { fields, append, remove } = useFieldArray({
     control,
     name: NAME,
@@ -51,15 +55,15 @@ export const AlertAnnotations = () => {
               error={errors?.annotations?.[annotationIndex]?.name?.message}
             >
               <Input
-                ref={register({ validate: (value) => validateAnnotationName(value) })}
-                name={`${NAME}[${annotationIndex}].name`}
+                {...register(`${NAME}[${annotationIndex}].name`, {
+                  validate: (value) => validateAnnotationName(value),
+                })}
                 placeholder="Name"
                 data-testid={`alert-annotationName-${annotationIndex}`}
               />
             </Field>
             <TextArea
-              ref={register()}
-              name={`${NAME}[${annotationIndex}].value`}
+              {...register(`${NAME}[${annotationIndex}].value`)}
               placeholder="Value"
               data-testid={`alert-annotationValue-${annotationIndex}`}
             />

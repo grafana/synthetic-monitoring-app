@@ -1,5 +1,5 @@
 import React from 'react';
-import { useFormContext, Controller, ValidationOptions } from 'react-hook-form';
+import { useFormContext, Controller } from 'react-hook-form';
 import { Slider, useStyles } from '@grafana/ui';
 import { css } from 'emotion';
 import { GrafanaTheme } from '@grafana/data';
@@ -10,7 +10,7 @@ interface Props {
   max: number;
   name: string;
   id?: string;
-  rules: ValidationOptions;
+  rules: any;
   prefixLabel?: string;
   step?: number;
   suffixLabel?: string;
@@ -49,16 +49,13 @@ export const SliderInput = ({ min, max, prefixLabel, suffixLabel, name, step = 1
       {prefixLabel}
       <div className={styles.slider}>
         <Controller
-          as={Slider}
           control={control}
-          rules={rules}
           name={name}
-          tooltipAlwaysVisible={false}
-          css={styles.slider}
-          min={min}
-          max={max}
-          step={step}
+          rules={rules}
           defaultValue={[defaultValue]}
+          render={({ field }) => (
+            <Slider {...field} tooltipAlwaysVisible={false} css={styles.slider} min={min} max={max} step={step} />
+          )}
         />
       </div>
       {suffixLabel}

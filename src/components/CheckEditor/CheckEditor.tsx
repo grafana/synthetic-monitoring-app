@@ -12,7 +12,7 @@ import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 import { CheckSettings } from './CheckSettings';
 import { ProbeOptions } from './ProbeOptions';
 import { CHECK_TYPE_OPTIONS, fallbackCheck } from 'components/constants';
-import { useForm, FormContext, Controller } from 'react-hook-form';
+import { useForm, FormProvider, Controller } from 'react-hook-form';
 import { GrafanaTheme } from '@grafana/data';
 import { CheckUsage } from '../CheckUsage';
 import { CheckFormAlert } from 'components/CheckFormAlert';
@@ -53,7 +53,7 @@ export const CheckEditor = ({ check, onReturn }: Props) => {
   const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
 
   const formMethods = useForm<CheckFormValues>({ defaultValues, mode: 'onChange' });
-  const selectedCheckType = formMethods.watch('checkType').value as CheckType;
+  const selectedCheckType = formMethods.watch('checkType').value ?? CheckType.PING;
 
   const isEditor = hasRole(OrgRole.EDITOR);
 
@@ -85,7 +85,7 @@ export const CheckEditor = ({ check, onReturn }: Props) => {
   const target = formMethods.watch('target', '') as string;
 
   return (
-    <FormContext {...formMethods}>
+    <FormProvider {...formMethods}>
       <form onSubmit={formMethods.handleSubmit(onSubmit)}>
         <Legend>{check?.id ? 'Edit Check' : 'Add Check'}</Legend>
         <div className={styles.formBody}>
@@ -93,11 +93,10 @@ export const CheckEditor = ({ check, onReturn }: Props) => {
           <Field label="Check type" disabled={check?.id ? true : false}>
             <Controller
               name="checkType"
-              placeholder="Check type"
               control={formMethods.control}
-              as={Select}
-              options={CHECK_TYPE_OPTIONS}
-              width={30}
+              render={({ field }) => (
+                <Select {...field} placeholder="Check type" options={CHECK_TYPE_OPTIONS} width={30} />
+              )}
             />
           </Field>
           <HorizontalCheckboxField
@@ -111,16 +110,15 @@ export const CheckEditor = ({ check, onReturn }: Props) => {
             label="Job name"
             description="Name used for job label"
             disabled={!isEditor}
-            invalid={Boolean(formMethods.errors.job)}
-            error={formMethods.errors.job?.message}
+            invalid={Boolean(formMethods.formState.errors.job)}
+            error={formMethods.formState.errors.job?.message}
           >
             <Input
               id="check-editor-job-input"
-              ref={formMethods.register({
+              {...formMethods.register('job', {
                 required: true,
                 validate: validateJob,
               })}
-              name="job"
               type="string"
               placeholder="jobName"
             />
@@ -128,18 +126,21 @@ export const CheckEditor = ({ check, onReturn }: Props) => {
 
           <Controller
             name="target"
-            as={CheckTarget}
             control={formMethods.control}
-            target={target}
-            valueName="target"
-            typeOfCheck={selectedCheckType}
-            invalid={Boolean(formMethods.errors.target)}
-            error={formMethods.errors.target?.message}
             rules={{
               required: true,
               validate: (target) => validateTarget(selectedCheckType, target),
             }}
-            disabled={!isEditor}
+            render={({ field }) => (
+              <CheckTarget
+                {...field}
+                target={target}
+                typeOfCheck={selectedCheckType}
+                invalid={Boolean(formMethods.formState.errors.target)}
+                error={formMethods.formState.errors.target?.message}
+                disabled={!isEditor}
+              />
+            )}
           />
           <hr className={styles.breakLine} />
           <ProbeOptions
@@ -185,6 +186,6 @@ export const CheckEditor = ({ check, onReturn }: Props) => {
           </div>
         )}
       </form>
-    </FormContext>
+    </FormProvider>
   );
 };

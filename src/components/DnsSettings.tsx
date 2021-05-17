@@ -55,22 +55,27 @@ const DnsSettingsForm = ({ isEditor }: Props) => {
           `}
         >
           <Field label="Record type" disabled={!isEditor}>
-            <Controller as={Select} name="settings.dns.recordType" options={DNS_RECORD_TYPES} />
+            <Controller
+              name="settings.dns.recordType"
+              render={({ field }) => <Select {...field} options={DNS_RECORD_TYPES} />}
+            />
           </Field>
           <Field label="Server" disabled={!isEditor}>
             <Input
               id="dns-settings-server-address"
-              ref={register}
-              name="settings.dns.server"
+              {...register('settings.dns.server')}
               type="text"
               placeholder="server"
             />
           </Field>
           <Field label="Protocol" disabled={!isEditor}>
-            <Controller as={Select} name="settings.dns.protocol" options={DNS_PROTOCOLS} />
+            <Controller
+              render={({ field }) => <Select {...field} options={DNS_PROTOCOLS} />}
+              name="settings.dns.protocol"
+            />
           </Field>
           <Field label="Port" disabled={!isEditor}>
-            <Input id="dns-settings-port" ref={register} name="settings.dns.port" type="number" placeholder="port" />
+            <Input id="dns-settings-port" {...register('settings.dns.port')} type="number" placeholder="port" />
           </Field>
         </div>
       </Collapse>
@@ -83,10 +88,10 @@ const DnsSettingsForm = ({ isEditor }: Props) => {
         <HorizontalGroup>
           <Field label="Valid response codes" description="List of valid response codes" disabled={!isEditor}>
             <Controller
-              as={MultiSelect}
               name="settings.dns.validRCodes"
-              options={DNS_RESPONSE_CODES}
-              defaultValue={[DNS_RESPONSE_CODES[0]]}
+              render={({ field }) => (
+                <MultiSelect {...field} options={DNS_RESPONSE_CODES} defaultValue={[DNS_RESPONSE_CODES[0]]} />
+              )}
             />
           </Field>
         </HorizontalGroup>
@@ -107,16 +112,12 @@ const DnsSettingsForm = ({ isEditor }: Props) => {
             {fields.map((field, index) => (
               <Fragment key={field.id}>
                 <Controller
-                  as={Select}
                   name={`settings.dns.validations[${index}].responseMatch`}
-                  options={RESPONSE_MATCH_OPTIONS}
-                  defaultValue={RESPONSE_MATCH_OPTIONS[0]}
+                  render={({ field }) => (
+                    <Select {...field} options={RESPONSE_MATCH_OPTIONS} defaultValue={RESPONSE_MATCH_OPTIONS[0]} />
+                  )}
                 />
-                <Input
-                  ref={register}
-                  name={`settings.dns.validations[${index}].expression`}
-                  placeholder="Type expression"
-                />
+                <Input {...register(`settings.dns.validations[${index}].expression`)} placeholder="Type expression" />
                 <div
                   className={css`
                     position: relative;
@@ -125,8 +126,7 @@ const DnsSettingsForm = ({ isEditor }: Props) => {
                   `}
                 >
                   <Checkbox
-                    ref={register}
-                    name={`settings.dns.validations[${index}].inverted`}
+                    {...register(`settings.dns.validations[${index}].inverted`)}
                     aria-label="dns-validation-inverted"
                   />
                 </div>
@@ -157,7 +157,10 @@ const DnsSettingsForm = ({ isEditor }: Props) => {
         <LabelField isEditor={isEditor} />
         <HorizontalGroup>
           <Field label="IP version" description="The IP protocol of the ICMP request" disabled={!isEditor}>
-            <Controller name="settings.dns.ipVersion" as={Select} options={IP_OPTIONS} />
+            <Controller
+              name="settings.dns.ipVersion"
+              render={({ field }) => <Select {...field} options={IP_OPTIONS} />}
+            />
           </Field>
         </HorizontalGroup>
       </Collapse>

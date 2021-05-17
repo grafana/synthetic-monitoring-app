@@ -48,12 +48,7 @@ const getCheckFromValues = (
 export const CheckUsage: FC = () => {
   const styles = useStyles(getStyles);
   const { watch } = useFormContext();
-  const { checkType, frequency, probes, useFullMetrics }: Partial<CheckFormValues> = watch([
-    'checkType',
-    'frequency',
-    'probes',
-    'useFullMetrics',
-  ]);
+  const [checkType, frequency, probes, useFullMetrics] = watch(['checkType', 'frequency', 'probes', 'useFullMetrics']);
   const check = getCheckFromValues(checkType?.value, frequency, probes, useFullMetrics);
   const usage = useUsageCalc(check);
   if (!usage) {
