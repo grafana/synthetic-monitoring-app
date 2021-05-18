@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor, act, within } from '@testing-library/react';
+import { render, screen, waitFor, act, within, fireEvent } from '@testing-library/react';
 import {
   Check,
   IpVersion,
@@ -375,7 +375,8 @@ describe('HTTP', () => {
     });
     // Set Check Details
     await selectCheckType(CheckType.HTTP);
-    await act(async () => await userEvent.type(await screen.findByLabelText('Job Name', { exact: false }), 'tacos'));
+    const jobInput = await screen.findByLabelText('Job Name', { exact: false });
+    userEvent.type(jobInput, 'tacos');
 
     // Set probe options
     const probeOptions = screen.getByText('Probe options').parentElement;
@@ -394,9 +395,7 @@ describe('HTTP', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Add header' }));
     await act(async () => await userEvent.type(await screen.findByPlaceholderText('name'), 'headerName'));
     await act(async () => await userEvent.type(await screen.findByPlaceholderText('value'), 'headerValue'));
-    const compression = await screen.findByLabelText('The compression algorithm to expect in the response body', {
-      exact: false,
-    });
+    const compression = await screen.findByTestId('http-compression');
     userEvent.selectOptions(compression, 'deflate');
     await toggleSection('HTTP settings');
 
@@ -524,8 +523,8 @@ describe('DNS', () => {
       userEvent.click(addRegex);
       userEvent.click(addRegex);
       const expressionInputs = await screen.findAllByPlaceholderText('Type expression');
-      await act(() => userEvent.type(expressionInputs[0], 'not inverted validation'));
-      await act(() => userEvent.type(expressionInputs[1], 'inverted validation'));
+      await act(async () => await userEvent.type(expressionInputs[0], 'not inverted validation'));
+      await act(async () => await userEvent.type(expressionInputs[1], 'inverted validation'));
       const invertedCheckboxes = await screen.findAllByRole('checkbox');
       userEvent.click(invertedCheckboxes[2]);
       await submitForm();
@@ -574,7 +573,7 @@ describe('DNS', () => {
       userEvent.click(addRegex);
       await selectDnsResponseMatchType(dnsValidations, ResponseMatchType.Answer);
       const expressionInputs = await screen.findAllByPlaceholderText('Type expression');
-      await act(() => userEvent.type(expressionInputs[0], 'not inverted validation'));
+      await act(async () => await userEvent.type(expressionInputs[0], 'not inverted validation'));
       await userEvent.type(expressionInputs[1], 'inverted validation');
       const invertedCheckboxes = await screen.findAllByRole('checkbox');
       userEvent.click(invertedCheckboxes[2]);
@@ -625,7 +624,7 @@ describe('DNS', () => {
       userEvent.click(addRegex);
       await selectDnsResponseMatchType(DnsValidations, ResponseMatchType.Additional);
       const expressionInputs = await screen.findAllByPlaceholderText('Type expression');
-      await act(() => userEvent.type(expressionInputs[0], 'not inverted validation'));
+      await act(async () => await userEvent.type(expressionInputs[0], 'not inverted validation'));
       await userEvent.type(expressionInputs[1], 'inverted validation');
       const invertedCheckboxes = await screen.findAllByRole('checkbox');
       userEvent.click(invertedCheckboxes[2]);
@@ -685,6 +684,7 @@ describe('TCP', () => {
       settings: {
         tcp: {
           ipVersion: 'V4',
+          queryResponse: [],
           tls: false,
           tlsConfig: {
             caCert: '',

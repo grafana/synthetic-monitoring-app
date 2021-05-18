@@ -82,8 +82,6 @@ export const CheckEditor = ({ check, onReturn }: Props) => {
     onReturn(true);
   };
 
-  const target = formMethods.watch('target', '') as string;
-
   return (
     <FormProvider {...formMethods}>
       <form onSubmit={formMethods.handleSubmit(onSubmit)}>
@@ -119,7 +117,7 @@ export const CheckEditor = ({ check, onReturn }: Props) => {
                 required: true,
                 validate: validateJob,
               })}
-              type="string"
+              type="text"
               placeholder="jobName"
             />
           </Field>
@@ -134,7 +132,6 @@ export const CheckEditor = ({ check, onReturn }: Props) => {
             render={({ field }) => (
               <CheckTarget
                 {...field}
-                target={target}
                 typeOfCheck={selectedCheckType}
                 invalid={Boolean(formMethods.formState.errors.target)}
                 error={formMethods.formState.errors.target?.message}

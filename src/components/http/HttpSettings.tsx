@@ -256,12 +256,7 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
             <Controller
               name="settings.http.compression"
               render={({ field }) => (
-                <Select
-                  {...field}
-                  id="http-compression"
-                  data-testid="http-compression"
-                  options={HTTP_COMPRESSION_ALGO_OPTIONS}
-                />
+                <Select {...field} data-testid="http-compression" options={HTTP_COMPRESSION_ALGO_OPTIONS} />
               )}
             />
           </Field>

@@ -112,12 +112,11 @@ const DnsSettingsForm = ({ isEditor }: Props) => {
             {fields.map((field, index) => (
               <Fragment key={field.id}>
                 <Controller
-                  name={`settings.dns.validations[${index}].responseMatch`}
-                  render={({ field }) => (
-                    <Select {...field} options={RESPONSE_MATCH_OPTIONS} defaultValue={RESPONSE_MATCH_OPTIONS[0]} />
-                  )}
+                  name={`settings.dns.validations.${index}.responseMatch`}
+                  defaultValue={RESPONSE_MATCH_OPTIONS[0]}
+                  render={({ field }) => <Select {...field} options={RESPONSE_MATCH_OPTIONS} />}
                 />
-                <Input {...register(`settings.dns.validations[${index}].expression`)} placeholder="Type expression" />
+                <Input {...register(`settings.dns.validations.${index}.expression`)} placeholder="Type expression" />
                 <div
                   className={css`
                     position: relative;
@@ -126,7 +125,7 @@ const DnsSettingsForm = ({ isEditor }: Props) => {
                   `}
                 >
                   <Checkbox
-                    {...register(`settings.dns.validations[${index}].inverted`)}
+                    {...register(`settings.dns.validations.${index}.inverted`)}
                     aria-label="dns-validation-inverted"
                   />
                 </div>

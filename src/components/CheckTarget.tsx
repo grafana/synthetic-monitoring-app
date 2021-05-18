@@ -6,7 +6,7 @@ import { parseUrl } from 'utils';
 import QueryParams from './QueryParams';
 
 interface Props {
-  target: string;
+  value: string;
   typeOfCheck?: CheckType;
   disabled?: boolean;
   onChange: (target: string) => void;
@@ -59,9 +59,9 @@ const getTargetHelpText = (typeOfCheck: CheckType | undefined): TargetHelpInfo =
 };
 
 const CheckTarget = forwardRef(
-  ({ target, typeOfCheck, disabled, onChange, onBlur, invalid, error }: Props, ref: React.Ref<HTMLInputElement>) => {
+  ({ value, typeOfCheck, disabled, onChange, onBlur, invalid, error }: Props, ref: React.Ref<HTMLInputElement>) => {
     const targetHelp = getTargetHelpText(typeOfCheck);
-    const parsedURL = parseUrl(target);
+    const parsedURL = parseUrl(value);
     return (
       <>
         <Field label="Target" description={targetHelp.text} disabled={disabled} invalid={invalid} error={error}>
@@ -71,7 +71,7 @@ const CheckTarget = forwardRef(
             type="string"
             onBlur={onBlur}
             placeholder={targetHelp.example}
-            value={target}
+            value={value}
             onChange={(e: ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
             required={true}
           />
