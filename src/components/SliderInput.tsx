@@ -1,5 +1,5 @@
-import React from 'react';
-import { useFormContext, Controller } from 'react-hook-form';
+import React, { useEffect } from 'react';
+import { useFormContext } from 'react-hook-form';
 import { Slider, useStyles } from '@grafana/ui';
 import { css } from 'emotion';
 import { GrafanaTheme } from '@grafana/data';
@@ -10,7 +10,7 @@ interface Props {
   max: number;
   name: string;
   id?: string;
-  rules: any;
+  validate?: (value: number) => string | undefined;
   prefixLabel?: string;
   step?: number;
   suffixLabel?: string;
@@ -41,24 +41,45 @@ const getStyles = (theme: GrafanaTheme) => ({
   `,
 });
 
-export const SliderInput = ({ min, max, prefixLabel, suffixLabel, name, step = 1, rules, defaultValue }: Props) => {
+export const SliderInput = ({ min, max, prefixLabel, suffixLabel, name, step = 1, validate, defaultValue }: Props) => {
   const styles = useStyles(getStyles);
-  const { control } = useFormContext();
+  const { register, setValue, setError } = useFormContext();
+
+  useEffect(() => {
+    register(name);
+  }, [name, register]);
+
   return (
     <div className={styles.container} data-testid={name}>
       {prefixLabel}
       <div className={styles.slider}>
-        <Controller
-          control={control}
-          name={name}
-          rules={rules}
-          defaultValue={[defaultValue]}
-          render={({ field }) => (
-            <Slider {...field} tooltipAlwaysVisible={false} css={styles.slider} min={min} max={max} step={step} />
-          )}
+        <Slider
+          tooltipAlwaysVisible={false}
+          css={styles.slider}
+          min={min}
+          max={max}
+          step={step}
+          onChange={(value) => {
+            const error = validate && validate(value);
+            if (error) {
+              setError(name, { message: error });
+            } else {
+              setValue(name, value);
+            }
+          }}
         />
       </div>
       {suffixLabel}
     </div>
   );
 };
+// <Controller
+//   control={control}
+//   name={name}
+//   rules={rules}
+//   defaultValue={[defaultValue]}
+//   render={({ field }) => {
+//     const picked =
+//    return <Slider {...field} tooltipAlwaysVisible={false} css={styles.slider} min={min} max={max} step={step} />
+//   }}
+// />

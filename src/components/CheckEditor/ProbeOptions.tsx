@@ -63,7 +63,7 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, probes }: Props) =>
         error={errors.frequency?.message}
       >
         <SliderInput
-          rules={{ validate: validateFrequency }}
+          validate={validateFrequency}
           name="frequency"
           prefixLabel={'Every'}
           suffixLabel={'seconds'}
@@ -81,7 +81,7 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, probes }: Props) =>
       >
         <SliderInput
           name="timeout"
-          rules={{ validate: validateTimeout }}
+          validate={validateTimeout}
           defaultValue={timeout / 1000}
           max={10.0}
           min={1.0}

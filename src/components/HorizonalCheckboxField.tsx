@@ -41,12 +41,11 @@ export const HorizontalCheckboxField = ({
 }: Props) => {
   const styles = useStyles(getStyles);
   const { register } = useFormContext();
-
+  const registered = name ? register(name) : {};
   return (
     <div className={cx(styles.container, className)}>
       <Checkbox
-        name={name}
-        ref={name ? register : undefined}
+        {...registered}
         disabled={disabled}
         id={id}
         style={{ position: 'relative' }}

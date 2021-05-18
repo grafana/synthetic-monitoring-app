@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import { ChecksPage } from './ChecksPage';
 import { getInstanceMock } from 'datasource/__mocks__/DataSource';
 import userEvent from '@testing-library/user-event';
@@ -22,19 +22,19 @@ const renderChecksPage = ({ checkId }: RenderArgs = {}) => {
   );
 };
 
-test('renders checks', () => {
+test('renders checks', async () => {
   renderChecksPage();
-  waitFor(() => expect(screen.getByText('a jobname')).toBeInTheDocument());
+  await waitFor(() => expect(screen.getByText('a jobname')).toBeInTheDocument());
 });
 
 test('renders check editor new check', async () => {
   renderChecksPage();
   await waitFor(() => screen.getByRole('button', { name: 'Add new check' }));
-  userEvent.click(screen.getByRole('button', { name: 'Add new check' }));
+  act(() => userEvent.click(screen.getByRole('button', { name: 'Add new check' })));
   expect(await screen.findByText('Add Check')).toBeInTheDocument();
 });
 
-test('renders check editor existing check', () => {
+test('renders check editor existing check', async () => {
   renderChecksPage({ checkId: '1' });
-  waitFor(() => expect(screen.getByText('Edit Check')).toBeInTheDocument());
+  await waitFor(() => expect(screen.getByText('Edit Check')).toBeInTheDocument());
 });

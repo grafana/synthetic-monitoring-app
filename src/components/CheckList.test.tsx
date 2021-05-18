@@ -137,7 +137,7 @@ test('renders list of checks', async () => {
 test('search by text', async () => {
   renderCheckList();
   const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
-  userEvent.type(filterInput, 'example');
+  await userEvent.paste(filterInput, 'example');
   const checks = await screen.findAllByLabelText('check-card');
   expect(checks.length).toBe(1);
 });
@@ -145,7 +145,7 @@ test('search by text', async () => {
 test('search is case insensitive', async () => {
   renderCheckList();
   const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
-  userEvent.type(filterInput, 'EXAMPLE');
+  await userEvent.paste(filterInput, 'EXAMPLE');
   const checks = await screen.findAllByLabelText('check-card');
   expect(checks.length).toBe(1);
 });
@@ -153,7 +153,7 @@ test('search is case insensitive', async () => {
 test('search matches job value', async () => {
   renderCheckList();
   const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
-  userEvent.type(filterInput, 'tacos');
+  await userEvent.paste(filterInput, 'tacos');
   const checks = await screen.findAllByLabelText('check-card');
   expect(checks.length).toBe(1);
 });
@@ -161,7 +161,7 @@ test('search matches job value', async () => {
 test('search matches target value', async () => {
   renderCheckList();
   const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
-  userEvent.type(filterInput, 'asada');
+  await userEvent.paste(filterInput, 'asada');
   const checks = await screen.findAllByLabelText('check-card');
   expect(checks.length).toBe(1);
 });
@@ -169,7 +169,7 @@ test('search matches target value', async () => {
 test('search matches label value', async () => {
   renderCheckList();
   const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
-  userEvent.type(filterInput, 'nachos.com');
+  await userEvent.paste(filterInput, 'nachos.com');
   const checks = await screen.findAllByLabelText('check-card');
   expect(checks.length).toBe(1);
 });
@@ -177,7 +177,7 @@ test('search matches label value', async () => {
 test('search matches label name', async () => {
   renderCheckList();
   const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
-  userEvent.type(filterInput, 'carne');
+  await userEvent.paste(filterInput, 'carne');
   const checks = await screen.findAllByLabelText('check-card');
   expect(checks.length).toBe(1);
 });
