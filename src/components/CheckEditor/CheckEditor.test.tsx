@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor, act, within, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor, act, within } from '@testing-library/react';
 import {
   Check,
   IpVersion,

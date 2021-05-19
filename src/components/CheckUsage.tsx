@@ -3,7 +3,7 @@ import { useFormContext } from 'react-hook-form';
 import { css } from 'emotion';
 import { GrafanaTheme } from '@grafana/data';
 import { useStyles, Icon } from '@grafana/ui';
-import { Check, CheckFormValues, CheckType } from 'types';
+import { Check, CheckType } from 'types';
 import { useUsageCalc } from 'hooks/useUsageCalc';
 
 const getStyles = (theme: GrafanaTheme) => ({
