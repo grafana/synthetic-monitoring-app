@@ -55,7 +55,7 @@ export const AlertAnnotations = () => {
               error={errors?.annotations?.[annotationIndex]?.name?.message}
             >
               <Input
-                {...register(`${NAME}[${annotationIndex}].name`, {
+                {...register(`${NAME}.${annotationIndex}.name` as const, {
                   validate: (value) => validateAnnotationName(value),
                 })}
                 placeholder="Name"
@@ -63,7 +63,7 @@ export const AlertAnnotations = () => {
               />
             </Field>
             <TextArea
-              {...register(`${NAME}[${annotationIndex}].value`)}
+              {...register(`${NAME}.${annotationIndex}.value` as const)}
               placeholder="Value"
               data-testid={`alert-annotationValue-${annotationIndex}`}
             />

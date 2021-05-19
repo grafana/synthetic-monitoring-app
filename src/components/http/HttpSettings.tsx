@@ -378,29 +378,32 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
               <div />
               {fields.map((field, index) => {
                 const isHeaderMatch =
-                  watch(`${REGEX_FIELD_NAME}[${index}].matchType`)?.value === HttpRegexValidationType.Header;
+                  watch(`${REGEX_FIELD_NAME}.${index}.matchType`)?.value === HttpRegexValidationType.Header;
                 return (
                   <Fragment key={field.id}>
                     <Controller
                       render={({ field }) => (
                         <Select {...field} placeholder="Field name" options={HTTP_REGEX_VALIDATION_OPTIONS} />
                       )}
-                      name={`${REGEX_FIELD_NAME}[${index}].matchType`}
+                      name={`${REGEX_FIELD_NAME}.${index}.matchType` as const}
                     />
                     <div className={styles.validationExpressions}>
                       {isHeaderMatch && (
                         <div className={styles.validationHeaderName}>
-                          <Input {...register(`${REGEX_FIELD_NAME}[${index}].header`)} placeholder="Header name" />
+                          <Input
+                            {...register(`${REGEX_FIELD_NAME}.${index}.header` as const)}
+                            placeholder="Header name"
+                          />
                         </div>
                       )}
-                      <Input {...register(`${REGEX_FIELD_NAME}[${index}].expression`)} placeholder="Regex" />
+                      <Input {...register(`${REGEX_FIELD_NAME}.${index}.expression` as const)} placeholder="Regex" />
                     </div>
                     <div className={styles.validationInverted}>
-                      <Checkbox {...register(`${REGEX_FIELD_NAME}[${index}].inverted`)} />
+                      <Checkbox {...register(`${REGEX_FIELD_NAME}.${index}.inverted` as const)} />
                     </div>
                     {isHeaderMatch ? (
                       <div className={styles.validationAllowMissing}>
-                        <Switch {...register(`${REGEX_FIELD_NAME}[${index}].allowMissing`)} />
+                        <Switch {...register(`${REGEX_FIELD_NAME}.${index}.allowMissing` as const)} />
                       </div>
                     ) : (
                       <div />

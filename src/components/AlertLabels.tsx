@@ -55,14 +55,18 @@ export const AlertLabels: FC = () => {
           <Fragment key={field.id}>
             <Field error={errors?.labels?.[labelIndex]?.name?.message} invalid={errors?.labels?.[labelIndex]?.name}>
               <Input
-                {...register(`${NAME}[${labelIndex}].name`, { validate: (value) => validateLabelName(value, labels) })}
+                {...register(`${NAME}.${labelIndex}.name` as const, {
+                  validate: (value) => validateLabelName(value, labels),
+                })}
                 placeholder="Name"
                 data-testid={`alert-labelName-${labelIndex}`}
               />
             </Field>
             <Field error={errors?.labels?.[labelIndex]?.value?.message} invalid={errors?.labels?.[labelIndex]?.value}>
               <Input
-                {...register(`${NAME}[${labelIndex}].value`, { validate: (value) => validateLabelValue(value) })}
+                {...register(`${NAME}.${labelIndex}.value` as const, {
+                  validate: (value) => validateLabelValue(value),
+                })}
                 placeholder="Value"
                 data-testid={`alert-labelValue-${labelIndex}`}
               />

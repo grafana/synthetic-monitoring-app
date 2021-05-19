@@ -61,13 +61,13 @@ export const TcpSettingsForm = ({ isEditor }: Props) => {
             {fields.map((field, index) => (
               <HorizontalGroup key={field.id}>
                 <Input
-                  {...register(`settings.tcp.queryResponse[${index}].expect`)}
+                  {...register(`settings.tcp.queryResponse.${index}.expect` as const)}
                   type="text"
                   placeholder="Response to expect"
                   disabled={!isEditor}
                 />
                 <TextArea
-                  {...register(`settings.tcp.queryResponse[${index}].send`)}
+                  {...register(`settings.tcp.queryResponse.${index}.send` as const)}
                   type="text"
                   placeholder="Data to send"
                   rows={1}
@@ -76,7 +76,7 @@ export const TcpSettingsForm = ({ isEditor }: Props) => {
                 <span>StartTLS</span>
                 <Container padding="sm">
                   <Switch
-                    {...register(`settings.tcp.queryResponse[${index}].startTLS`)}
+                    {...register(`settings.tcp.queryResponse.${index}.startTLS` as const)}
                     label="StartTLS"
                     disabled={!isEditor}
                   />
