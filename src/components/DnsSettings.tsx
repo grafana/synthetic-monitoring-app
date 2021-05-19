@@ -14,25 +14,24 @@ import {
   useTheme,
 } from '@grafana/ui';
 import { useFormContext, Controller, useFieldArray } from 'react-hook-form';
-import { ResponseMatchType } from 'types';
 import { Collapse } from 'components/Collapse';
 import { LabelField } from './LabelField';
-import { DNS_RESPONSE_CODES, DNS_RECORD_TYPES, DNS_PROTOCOLS, IP_OPTIONS } from './constants';
+import {
+  DNS_RESPONSE_CODES,
+  DNS_RESPONSE_MATCH_OPTIONS,
+  DNS_RECORD_TYPES,
+  DNS_PROTOCOLS,
+  IP_OPTIONS,
+} from './constants';
 
 interface Props {
   isEditor: boolean;
 }
 
-const RESPONSE_MATCH_OPTIONS = [
-  { label: `Validate ${ResponseMatchType.Authority} matches`, value: ResponseMatchType.Authority },
-  { label: `Validate ${ResponseMatchType.Answer} matches`, value: ResponseMatchType.Answer },
-  { label: `Validate ${ResponseMatchType.Additional} matches`, value: ResponseMatchType.Additional },
-];
-
 const DnsSettingsForm = ({ isEditor }: Props) => {
   const { spacing } = useTheme();
 
-  const { register, control } = useFormContext();
+  const { register, control, getValues } = useFormContext();
   const { fields, append, remove } = useFieldArray({
     control,
     name: 'settings.dns.validations',
@@ -113,8 +112,12 @@ const DnsSettingsForm = ({ isEditor }: Props) => {
               <Fragment key={field.id}>
                 <Controller
                   name={`settings.dns.validations.${index}.responseMatch`}
-                  defaultValue={RESPONSE_MATCH_OPTIONS[0]}
-                  render={({ field }) => <Select {...field} options={RESPONSE_MATCH_OPTIONS} />}
+                  defaultValue={
+                    getValues(`settings.dns.validations.${index}.responseMatch`) ?? DNS_RESPONSE_MATCH_OPTIONS[0]
+                  }
+                  render={({ field }) => {
+                    return <Select {...field} value={field.value} options={DNS_RESPONSE_MATCH_OPTIONS} />;
+                  }}
                 />
                 <Input {...register(`settings.dns.validations.${index}.expression`)} placeholder="Type expression" />
                 <div
@@ -135,7 +138,7 @@ const DnsSettingsForm = ({ isEditor }: Props) => {
           </div>
         )}
         <Button
-          onClick={() => append({ responseMatch: RESPONSE_MATCH_OPTIONS[0], expression: '', inverted: false })}
+          onClick={() => append({ responseMatch: DNS_RESPONSE_MATCH_OPTIONS[0], expression: '', inverted: false })}
           type="button"
           variant="secondary"
           className={css`
