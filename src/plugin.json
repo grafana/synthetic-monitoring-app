@@ -75,8 +75,8 @@
   ],
 
   "dependencies": {
-    "grafanaDependency": ">=7.5.1",
-    "grafanaVersion": "7.5",
+    "grafanaDependency": ">=8.0.0",
+    "grafanaVersion": "8.0",
     "plugins": [
       {
         "type": "panel",

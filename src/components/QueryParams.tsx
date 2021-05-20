@@ -1,5 +1,5 @@
 import React, { useReducer, useEffect, useState } from 'react';
-import { css } from 'emotion';
+import { css } from '@emotion/css';
 import { Field, Label, Button } from '@grafana/ui';
 import QueryParamInput, { QueryParam } from './QueryParamInput';
 

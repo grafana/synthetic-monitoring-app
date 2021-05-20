@@ -11,7 +11,7 @@ import {
   Button,
   IconButton,
   Label,
-  useTheme,
+  useTheme2,
 } from '@grafana/ui';
 import { useFormContext, Controller, useFieldArray } from 'react-hook-form';
 import { Collapse } from 'components/Collapse';
@@ -29,9 +29,9 @@ interface Props {
 }
 
 const DnsSettingsForm = ({ isEditor }: Props) => {
-  const { spacing } = useTheme();
+  const { spacing } = useTheme2();
 
-  const { register, control, getValues } = useFormContext();
+  const { register, control } = useFormContext();
   const { fields, append, remove } = useFieldArray({
     control,
     name: 'settings.dns.validations',
@@ -100,7 +100,7 @@ const DnsSettingsForm = ({ isEditor }: Props) => {
             className={css`
               display: grid;
               grid-template-columns: auto auto 70px auto;
-              grid-gap: ${spacing.sm};
+              grid-gap: ${spacing(1)};
               align-items: center;
             `}
           >
@@ -143,7 +143,7 @@ const DnsSettingsForm = ({ isEditor }: Props) => {
           type="button"
           variant="secondary"
           className={css`
-            margin: ${spacing.sm} 0 ${spacing.md} 0;
+            margin: ${spacing(1)} 0 ${spacing(2)} 0;
           `}
           size="sm"
           disabled={!isEditor}

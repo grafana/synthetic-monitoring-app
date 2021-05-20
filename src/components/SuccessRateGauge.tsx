@@ -89,7 +89,7 @@ export const SuccessRateGauge = ({ type, id, labelNames, labelValues, height, wi
   return (
     <Container>
       <BigValue
-        theme={config.theme}
+        theme={config.theme2}
         colorMode={BigValueColorMode.Value}
         height={height}
         width={width}

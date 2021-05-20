@@ -96,8 +96,8 @@ export default class CheckProbes extends PureComponent<CheckProbesProps, CheckPr
             </Field>
             <div
               className={css`
-                margin-top: ${theme.spacing.sm};
-                margin-bottom: ${theme.spacing.md};
+                margin-top: ${theme.spacing(1)};
+                margin-bottom: ${theme.spacing(2)};
               `}
             >
               <HorizontalGroup spacing="sm">
