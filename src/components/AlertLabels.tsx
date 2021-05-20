@@ -2,7 +2,7 @@ import { useStyles, Input, Button, Label, Field } from '@grafana/ui';
 import React, { FC, Fragment } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { SubCollapse } from './SubCollapse';
-import { css } from 'emotion';
+import { css } from '@emotion/css';
 import { GrafanaTheme } from '@grafana/data';
 import { validateLabelName, validateLabelValue } from 'validation';
 

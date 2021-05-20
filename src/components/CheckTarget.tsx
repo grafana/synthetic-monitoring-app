@@ -1,6 +1,6 @@
 import React, { ChangeEvent, forwardRef } from 'react';
 import { Field, Input } from '@grafana/ui';
-import { css } from 'emotion';
+import { css } from '@emotion/css';
 import { CheckType } from 'types';
 import { parseUrl } from 'utils';
 import QueryParams from './QueryParams';

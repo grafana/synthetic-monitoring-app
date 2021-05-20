@@ -1,5 +1,5 @@
 import React from 'react';
-import { css, cx } from 'emotion';
+import { css, cx } from '@emotion/css';
 import { useStyles, Checkbox, Label } from '@grafana/ui';
 import { GrafanaTheme } from '@grafana/data';
 import { useFormContext } from 'react-hook-form';

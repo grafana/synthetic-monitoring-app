@@ -15,7 +15,7 @@ import {
   IconButton,
   Button,
 } from '@grafana/ui';
-import { css } from 'emotion';
+import { css } from '@emotion/css';
 import { useFormContext, Controller, useFieldArray } from 'react-hook-form';
 import { HttpMethod, HttpVersion, CheckType, HttpRegexValidationType } from 'types';
 import { Collapse } from 'components/Collapse';

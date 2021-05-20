@@ -1,6 +1,6 @@
 import React, { FC } from 'react';
 import { useFormContext } from 'react-hook-form';
-import { css } from 'emotion';
+import { css } from '@emotion/css';
 import { GrafanaTheme } from '@grafana/data';
 import { useStyles, Icon } from '@grafana/ui';
 import { Check, CheckType } from 'types';

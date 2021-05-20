@@ -4,7 +4,7 @@ import React, { useState, useContext } from 'react';
 import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { AlertRule, AlertSensitivity, Label as LabelType, TimeUnits } from 'types';
 import { ALERT_SENSITIVITY_OPTIONS, TIME_UNIT_OPTIONS } from './constants';
-import { css } from 'emotion';
+import { css } from '@emotion/css';
 import { AlertLabels } from './AlertLabels';
 import { AlertAnnotations } from './AlertAnnotations';
 import { useAsyncCallback } from 'react-async-hook';

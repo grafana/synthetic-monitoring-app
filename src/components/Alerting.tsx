@@ -1,7 +1,7 @@
 import { GrafanaTheme } from '@grafana/data';
 import { Button, HorizontalGroup, Icon, Modal, Spinner, useStyles, Alert } from '@grafana/ui';
 import React, { FC, useState, useContext } from 'react';
-import { css } from 'emotion';
+import { css } from '@emotion/css';
 import { useAlerts } from 'hooks/useAlerts';
 import { AlertRuleForm } from './AlertRuleForm';
 import { AlertFormValues, AlertRule, OrgRole } from 'types';

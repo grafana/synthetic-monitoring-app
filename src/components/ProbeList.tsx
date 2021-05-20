@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { css } from 'emotion';
+import { css } from '@emotion/css';
 import { Badge, Button, HorizontalGroup } from '@grafana/ui';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { SuccessRateGauge } from 'components/SuccessRateGauge';

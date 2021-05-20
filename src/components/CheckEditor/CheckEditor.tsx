@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useContext } from 'react';
-import { css } from 'emotion';
+import { css } from '@emotion/css';
 import { Button, ConfirmModal, Field, Input, HorizontalGroup, Select, Legend, Alert, useStyles } from '@grafana/ui';
 import { useAsyncCallback } from 'react-async-hook';
 import { Check, CheckType, OrgRole, CheckFormValues, SubmissionError } from 'types';

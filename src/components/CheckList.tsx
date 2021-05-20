@@ -25,7 +25,7 @@ import {
   CHECK_LIST_VIEW_TYPE_LS_KEY,
 } from './constants';
 import { CheckListItem } from './CheckListItem';
-import { css } from 'emotion';
+import { css } from '@emotion/css';
 import { LabelFilterInput } from './LabelFilterInput';
 import { SuccessRateContext, SuccessRateTypes } from 'contexts/SuccessRateContext';
 

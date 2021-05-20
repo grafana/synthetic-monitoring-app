@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import { css } from 'emotion';
+import { css } from '@emotion/css';
 import { Button, HorizontalGroup, MultiSelect, ThemeContext, Field } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
 import { Probe } from 'types';

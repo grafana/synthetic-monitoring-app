@@ -28,10 +28,10 @@
   "devDependencies": {
     "@commitlint/cli": "^9.1.1",
     "@commitlint/config-conventional": "^9.1.1",
-    "@grafana/data": "7.5.7",
-    "@grafana/runtime": "7.5.7",
-    "@grafana/toolkit": "7.5.7",
-    "@grafana/ui": "7.5.7",
+    "@grafana/data": "8.0.0-beta.2",
+    "@grafana/runtime": "8.0.0-beta.2",
+    "@grafana/toolkit": "8.0.0-beta.2.1",
+    "@grafana/ui": "8.0.0-beta.2",
     "@release-it/conventional-changelog": "^2.0.0",
     "@testing-library/dom": "7.31.0",
     "@testing-library/jest-dom": "^5.12.0",
@@ -51,6 +51,7 @@
     "tslib": "^2.2.0"
   },
   "dependencies": {
+    "@types/jest": "^26.0.23",
     "ip-address": "^6.3.0",
     "is-base64": "^1.1.0",
     "punycode": "^2.1.1",

@@ -3,7 +3,7 @@ import { TextArea, Input, Button, useStyles, Label, Field } from '@grafana/ui';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { SubCollapse } from 'components/SubCollapse';
 import { GrafanaTheme } from '@grafana/data';
-import { css } from 'emotion';
+import { css } from '@emotion/css';
 import { validateAnnotationName } from 'validation';
 
 const getStyles = (theme: GrafanaTheme) => ({

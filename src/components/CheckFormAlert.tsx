@@ -1,5 +1,5 @@
 import React, { FC, useState } from 'react';
-import { css } from 'emotion';
+import { css } from '@emotion/css';
 import { GrafanaTheme } from '@grafana/data';
 import { Field, Select, useStyles } from '@grafana/ui';
 import { Collapse } from './Collapse';

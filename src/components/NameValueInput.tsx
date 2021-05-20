@@ -1,5 +1,5 @@
 import React from 'react';
-import { css } from 'emotion';
+import { css } from '@emotion/css';
 import { HorizontalGroup, Input, IconButton, VerticalGroup, Icon, Button, Field, useTheme } from '@grafana/ui';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 
