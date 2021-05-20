@@ -14,6 +14,7 @@ import {
   CheckSort,
   CheckEnabledStatus,
   CheckListViewType,
+  HTTPCompressionAlgo,
 } from 'types';
 
 export const DNS_RESPONSE_CODES = enumToStringArray(DnsResponseCodes).map((responseCode) => ({
@@ -275,6 +276,7 @@ export const CHECK_LIST_VIEW_TYPE_OPTIONS = [
   { description: 'Card view', value: CheckListViewType.Card, icon: 'check-square' },
   { description: 'List view', value: CheckListViewType.List, icon: 'list-ul' },
 ];
+
 export const PEM_HEADER = '-----BEGIN CERTIFICATE-----';
 
 export const PEM_FOOTER = '-----END CERTIFICATE-----';
@@ -282,3 +284,11 @@ export const PEM_FOOTER = '-----END CERTIFICATE-----';
 export const CHECK_LIST_VIEW_TYPE_LS_KEY = 'grafana.sm.checklist.viewType';
 
 export const INVALID_WEB_URL_MESSAGE = 'Target must be a valid web URL';
+
+export const HTTP_COMPRESSION_ALGO_OPTIONS = [
+  { label: 'none', value: HTTPCompressionAlgo.none },
+  { label: 'identity', value: HTTPCompressionAlgo.identity },
+  { label: 'br', value: HTTPCompressionAlgo.br },
+  { label: 'gzip', value: HTTPCompressionAlgo.gzip },
+  { label: 'deflate', value: HTTPCompressionAlgo.deflate },
+];

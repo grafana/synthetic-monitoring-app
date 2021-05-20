@@ -1,3 +1,10 @@
+# [0.11.0](https://github.com/grafana/synthetic-monitoring-app/compare/0.10.2...0.11.0) (2021-05-11)
+
+
+### Features
+
+* add http check configuration option for endpoints with compressed responses. ([f16f42f](https://github.com/grafana/synthetic-monitoring-app/commit/f16f42f53aca19f9c904a5b089e00d05c0f1000f))
+
 ## [0.10.2](https://github.com/grafana/synthetic-monitoring-app/compare/0.10.1...0.10.2) (2021-05-10)
 
 

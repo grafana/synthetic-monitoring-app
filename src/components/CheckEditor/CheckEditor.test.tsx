@@ -10,6 +10,7 @@ import {
   HttpVersion,
   GlobalSettings,
   AlertSensitivity,
+  HTTPCompressionAlgo,
 } from 'types';
 import { CheckEditor } from './CheckEditor';
 import { getInstanceMock } from '../../datasource/__mocks__/DataSource';
@@ -288,6 +289,7 @@ describe('HTTP', () => {
       settings: {
         http: {
           method: HttpMethod.GET,
+          compression: HTTPCompressionAlgo.gzip,
           headers: ['headerName:headerValue'],
           body: 'requestbody',
           ipVersion: IpVersion.V6,
@@ -329,6 +331,7 @@ describe('HTTP', () => {
     expect(await screen.findByLabelText('Request body', { exact: false })).toHaveValue('requestbody');
     expect(await within(httpSection).findByPlaceholderText('name')).toHaveValue('headerName');
     expect(await within(httpSection).findByPlaceholderText('value')).toHaveValue('headerValue');
+    expect(within(httpSection).getByTestId('http-compression')).toHaveValue('gzip');
 
     await toggleSection('TLS config');
     expect(await screen.findByLabelText('Disable target certificate validation')).toBeChecked();
@@ -391,6 +394,10 @@ describe('HTTP', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Add header' }));
     await act(async () => await userEvent.type(await screen.findByPlaceholderText('name'), 'headerName'));
     await act(async () => await userEvent.type(await screen.findByPlaceholderText('value'), 'headerValue'));
+    const compression = await screen.findByLabelText('The compression algorithm to expect in the response body', {
+      exact: false,
+    });
+    userEvent.selectOptions(compression, 'deflate');
     await toggleSection('HTTP settings');
 
     // TLS Config
@@ -466,6 +473,7 @@ describe('HTTP', () => {
           method: 'GET',
           headers: ['headerName:headerValue'],
           body: 'requestbody',
+          compression: 'deflate',
           ipVersion: 'V4',
           noFollowRedirects: false,
           tlsConfig: {

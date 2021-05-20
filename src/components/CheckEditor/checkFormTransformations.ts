@@ -31,6 +31,7 @@ import {
   TLSConfig,
   TracerouteSettings,
   TracerouteSettingsFormValues,
+  HTTPCompressionAlgo,
 } from 'types';
 
 import {
@@ -41,6 +42,7 @@ import {
   HTTP_REGEX_VALIDATION_OPTIONS,
   fallbackCheck,
   ALERT_SENSITIVITY_OPTIONS,
+  HTTP_COMPRESSION_ALGO_OPTIONS,
 } from 'components/constants';
 import { checkType, fromBase64, toBase64 } from 'utils';
 import isBase64 from 'is-base64';
@@ -60,6 +62,7 @@ export function fallbackSettings(t: CheckType): Settings {
           method: HttpMethod.GET,
           ipVersion: IpVersion.V4,
           noFollowRedirects: false,
+          compression: HTTPCompressionAlgo.none,
         },
       };
     }
@@ -207,6 +210,7 @@ const getHttpSettingsFormValues = (settings: Settings): HttpSettingsFormValues =
     failIfHeaderNotMatchesRegexp,
     noFollowRedirects,
     tlsConfig,
+    compression,
     ...pickedSettings
   } = httpSettings;
 
@@ -230,6 +234,7 @@ const getHttpSettingsFormValues = (settings: Settings): HttpSettingsFormValues =
     ipVersion: selectableValueFrom(httpSettings.ipVersion),
     headers: headersToLabels(httpSettings.headers),
     regexValidations,
+    compression: compression ? selectableValueFrom(compression) : HTTP_COMPRESSION_ALGO_OPTIONS[0],
   };
 };
 
@@ -468,6 +473,8 @@ const getHttpSettings = (
     getValueFromSelectable(settings.sslOptions ?? defaultSettings?.sslOptions) ?? HttpSslOption.Ignore
   );
 
+  const compression = getValueFromSelectable(settings.compression);
+
   const validationRegexes = getHttpRegexValidationsFromFormValue(settings.regexValidations ?? []);
 
   // We need to pick the sslOptions key out of the settings, since the API doesn't expect this key
@@ -487,6 +494,7 @@ const getHttpSettings = (
     ipVersion: getValueFromSelectable(settings?.ipVersion ?? defaultSettings?.ipVersion) ?? fallbackValues.ipVersion,
     validStatusCodes: getValuesFromMultiSelectables(settings?.validStatusCodes ?? defaultSettings?.validStatusCodes),
     validHTTPVersions: getValuesFromMultiSelectables(settings?.validHTTPVersions ?? defaultSettings?.validHTTPVersions),
+    compression,
   };
 };
 
