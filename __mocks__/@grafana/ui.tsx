@@ -40,8 +40,11 @@ const MultiSelect = forwardRef((props, ref) => <Select {...props} ref={ref} mult
 
 MultiSelect.displayName = 'MultiSelect';
 
+const Icon = (props) => <svg {...props} />;
+
 module.exports = {
   ...ui,
   MultiSelect,
   Select,
+  Icon,
 };
