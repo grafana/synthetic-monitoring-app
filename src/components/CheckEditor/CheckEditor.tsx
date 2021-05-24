@@ -2,7 +2,7 @@ import React, { useState, useMemo, useContext } from 'react';
 import { css } from 'emotion';
 import { Button, ConfirmModal, Field, Input, HorizontalGroup, Select, Legend, Alert, useStyles } from '@grafana/ui';
 import { useAsyncCallback } from 'react-async-hook';
-import { Check, CheckType, OrgRole, CheckFormValues, SubmissionErrorWrapper } from 'types';
+import { Check, CheckType, OrgRole, CheckFormValues, SubmissionErrorWrapper, FeatureName } from 'types';
 import { hasRole } from 'utils';
 import { getDefaultValuesFromCheck, getCheckFromFormValues } from './checkFormTransformations';
 import { validateJob, validateTarget } from 'validation';
@@ -13,10 +13,12 @@ import { CheckSettings } from './CheckSettings';
 import { ProbeOptions } from './ProbeOptions';
 import { CHECK_TYPE_OPTIONS, fallbackCheck } from 'components/constants';
 import { useForm, FormContext, Controller } from 'react-hook-form';
-import { GrafanaTheme } from '@grafana/data';
+import { GrafanaTheme, SelectableValue } from '@grafana/data';
 import { CheckUsage } from '../CheckUsage';
 import { CheckFormAlert } from 'components/CheckFormAlert';
 import { InstanceContext } from 'contexts/InstanceContext';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
+import { SelectOptions, SelectValue } from '@grafana/ui/components/Select/types';
 
 interface Props {
   check?: Check;
@@ -51,6 +53,7 @@ export const CheckEditor = ({ check, onReturn }: Props) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const styles = useStyles(getStyles);
   const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
+  const { isEnabled: tracerouteEnabled } = useFeatureFlag(FeatureName.Traceroute);
 
   const formMethods = useForm<CheckFormValues>({ defaultValues, mode: 'onChange' });
   const selectedCheckType = formMethods.watch('checkType').value as CheckType;
@@ -96,7 +99,11 @@ export const CheckEditor = ({ check, onReturn }: Props) => {
               placeholder="Check type"
               control={formMethods.control}
               as={Select}
-              options={CHECK_TYPE_OPTIONS}
+              options={
+                tracerouteEnabled
+                  ? CHECK_TYPE_OPTIONS
+                  : CHECK_TYPE_OPTIONS.filter(({ value }) => value !== CheckType.Traceroute)
+              }
               width={30}
             />
           </Field>
@@ -112,7 +119,7 @@ export const CheckEditor = ({ check, onReturn }: Props) => {
             description="Name used for job label"
             disabled={!isEditor}
             invalid={Boolean(formMethods.errors.job)}
-            error={formMethods.errors.job?.message}
+            error={formMethods.errors.job?.message as string}
           >
             <Input
               id="check-editor-job-input"
@@ -134,10 +141,15 @@ export const CheckEditor = ({ check, onReturn }: Props) => {
             valueName="target"
             typeOfCheck={selectedCheckType}
             invalid={Boolean(formMethods.errors.target)}
-            error={formMethods.errors.target?.message}
+            error={formMethods.errors.target?.message?.toString()}
             rules={{
               required: true,
-              validate: (target) => validateTarget(selectedCheckType, target),
+              validate: (target) => {
+                // We have to get refetch the check type value from form state in the validation because the value will be stale if we rely on the the .watch method in the render
+                const targetFormValue = formMethods.getValues().checkType as SelectableValue<CheckType>;
+                const selectedCheckType = targetFormValue.value as CheckType;
+                return validateTarget(selectedCheckType, target);
+              },
             }}
             disabled={!isEditor}
           />
