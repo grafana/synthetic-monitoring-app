@@ -10,7 +10,9 @@ interface FeatureFlagContextValue {
 
 function isFeatureEnabled(name: FeatureName) {
   const isEnabledThroughQueryParam = urlUtil.getUrlSearchParams()['features']?.includes(name);
-  return Boolean(config.featureToggles[name]) || isEnabledThroughQueryParam;
+  // @ts-ignore
+  // the type definitions in grafana core for feature toggles aren't quite right
+  return Boolean(config.featureToggles[name]?.live) || isEnabledThroughQueryParam;
 }
 
 export function getFeatureContextValues() {
