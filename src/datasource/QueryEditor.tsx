@@ -6,8 +6,9 @@ import { SMQuery, SMOptions, QueryType, defaultQuery, DashboardVariable } from '
 import { getTheme, Select, Spinner } from '@grafana/ui';
 import { css } from 'emotion';
 import { checkType } from 'utils';
-import { CheckType } from 'types';
+import { CheckType, FeatureName } from 'types';
 import { getTemplateSrv } from '@grafana/runtime';
+import { FeatureFlag } from 'components/FeatureFlag';
 
 type Props = QueryEditorProps<SMDataSource, SMQuery, SMOptions>;
 
@@ -141,26 +142,33 @@ export class QueryEditor extends PureComponent<Props, State> {
     const selected = selectedDashboardOption ?? selectedTracerouteCheckOption;
 
     return (
-      <div>
-        <div className="gf-form">
-          <Select
-            options={types}
-            value={types.find((t) => t.value === query.queryType)}
-            onChange={this.onQueryTypeChanged}
-          />
-        </div>
-        {query.queryType === QueryType.Traceroute && (
-          <div className={styles.tracerouteFieldWrapper}>
-            <Select
-              options={tracerouteCheckOptions}
-              prefix="Check"
-              value={tracerouteCheckOptions.find((option) => option.value === selected)}
-              onChange={this.onTracerouteCheckChange}
-              disabled={Boolean(selectedDashboardOption)}
-            />
-          </div>
-        )}
-      </div>
+      <FeatureFlag name={FeatureName.Traceroute}>
+        {({ isEnabled }) => {
+          const queryTypes = isEnabled ? types : types.filter(({ value }) => value !== QueryType.Traceroute);
+          return (
+            <div>
+              <div className="gf-form">
+                <Select
+                  options={queryTypes}
+                  value={queryTypes.find((t) => t.value === query.queryType)}
+                  onChange={this.onQueryTypeChanged}
+                />
+              </div>
+              {isEnabled && query.queryType === QueryType.Traceroute && (
+                <div className={styles.tracerouteFieldWrapper}>
+                  <Select
+                    options={tracerouteCheckOptions}
+                    prefix="Check"
+                    value={tracerouteCheckOptions.find((option) => option.value === selected)}
+                    onChange={this.onTracerouteCheckChange}
+                    disabled={Boolean(selectedDashboardOption)}
+                  />
+                </div>
+              )}
+            </div>
+          );
+        }}
+      </FeatureFlag>
     );
   }
 }

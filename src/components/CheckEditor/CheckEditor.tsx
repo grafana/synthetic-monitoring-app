@@ -18,7 +18,6 @@ import { CheckUsage } from '../CheckUsage';
 import { CheckFormAlert } from 'components/CheckFormAlert';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
-import { SelectOptions, SelectValue } from '@grafana/ui/components/Select/types';
 
 interface Props {
   check?: Check;
