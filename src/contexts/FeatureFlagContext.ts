@@ -8,11 +8,11 @@ interface FeatureFlagContextValue {
   isFeatureEnabled: (name: FeatureName) => boolean;
 }
 
-function isFeatureEnabled(name: FeatureName) {
+export function isFeatureEnabled(name: FeatureName) {
   const isEnabledThroughQueryParam = urlUtil.getUrlSearchParams()['features']?.includes(name);
   // @ts-ignore
   // the type definitions in grafana core for feature toggles aren't quite right
-  return Boolean(config.featureToggles[name]?.live) || isEnabledThroughQueryParam;
+  return Boolean(config.featureToggles[name]) || isEnabledThroughQueryParam;
 }
 
 export function getFeatureContextValues() {

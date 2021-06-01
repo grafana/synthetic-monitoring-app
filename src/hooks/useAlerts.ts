@@ -9,8 +9,9 @@ import {
   SM_ALERTING_NAMESPACE,
   getDefaultAlertAnnotations,
 } from 'components/constants';
-import { AlertRule, AlertSensitivity } from 'types';
+import { AlertRule, AlertSensitivity, FeatureName } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
+import { useFeatureFlag } from './useFeatureFlag';
 
 enum AlertThresholds {
   High = 95,
@@ -54,7 +55,7 @@ interface RuleResponse {
   error?: string;
 }
 
-const fetchSMRules = (alertRulerUrl: string): Promise<RuleResponse> =>
+const legacyFetchSMRules = (alertRulerUrl: string): Promise<RuleResponse> =>
   getBackendSrv()
     .fetch<any>({
       method: 'GET',
@@ -67,6 +68,24 @@ const fetchSMRules = (alertRulerUrl: string): Promise<RuleResponse> =>
     .then((response) => {
       const alertGroup = parse(response.data);
       return { rules: alertGroup.rules };
+    })
+    .catch((e) => {
+      if (e.status === 404) {
+        return { rules: [] };
+      }
+      return { rules: [], error: e.data?.message ?? 'We ran into a problem and could not fetch the alert rules' };
+    });
+
+const fetchSMRules = (metricInstanceId: number): Promise<RuleResponse> =>
+  getBackendSrv()
+    .fetch<any>({
+      method: 'GET',
+      url: `/api/ruler/${metricInstanceId}/api/v1/rules/${SM_ALERTING_NAMESPACE}/default`,
+    })
+    .toPromise()
+    .then(({ data }) => {
+      console.log(data?.rules);
+      return { rules: data?.rules ?? [] };
     })
     .catch((e) => {
       if (e.status === 404) {
@@ -88,8 +107,10 @@ export function useAlerts(checkId?: number) {
   const [alertRules, setAlertRules] = useState<AlertRule[]>();
   const [defaultRulesSetCount, setDefaultRulesSetCount] = useState(0);
   const [alertError, setAlertError] = useState('');
+  const { isEnabled: isUnifiedAlertsEnabled } = useFeatureFlag(FeatureName.UnifiedAlerting);
+
   const {
-    instance: { alertRuler },
+    instance: { alertRuler, metrics },
   } = useContext(InstanceContext);
 
   const alertRulerUrl = alertRuler?.url;
@@ -135,15 +156,22 @@ export function useAlerts(checkId?: number) {
   };
 
   useEffect(() => {
-    if (alertRulerUrl) {
-      fetchSMRules(alertRulerUrl).then(({ rules, error }) => {
+    if (alertRulerUrl && !isUnifiedAlertsEnabled) {
+      legacyFetchSMRules(alertRulerUrl).then(({ rules, error }) => {
+        setAlertRules(rules);
+        if (error) {
+          setAlertError(error);
+        }
+      });
+    } else if (isUnifiedAlertsEnabled && metrics) {
+      fetchSMRules(metrics.id).then(({ rules, error }) => {
         setAlertRules(rules);
         if (error) {
           setAlertError(error);
         }
       });
     }
-  }, [alertRulerUrl, defaultRulesSetCount]);
+  }, [alertRulerUrl, defaultRulesSetCount, isUnifiedAlertsEnabled, metrics]);
 
   return {
     alertRules,
