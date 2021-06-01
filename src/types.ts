@@ -456,3 +456,5 @@ export enum HTTPCompressionAlgo {
   gzip = 'gzip',
   deflate = 'deflate',
 }
+
+export enum FeatureName {}

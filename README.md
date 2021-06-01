@@ -25,22 +25,23 @@ apiVersion: 1
 apps:
   - type: grafana-synthetic-monitoring-app
     name: grafana-synthetic-monitoring-app
-    org_id: <defaults to 1>
     disabled: false
     jsonData:
       apiHost: https://synthetic-monitoring-api.grafana.net
-      stackId: <instanceId of your hosted grafana>
+      stackId: <instance ID of your hosted grafana>
       logs:
-        grafanaName: <Name of a Loki datasource pointed to a Grafana Cloud Loki instance>
+        grafanaName: <name of an existing Loki datasource pointing to the Grafana Cloud Loki instance>
         hostedId: <Grafana Cloud Loki instance ID>
       metrics:
-        grafanaName: <Name of a Prometheus datasource pointed to a Grafana Cloud Prometheus instance>
+        grafanaName: <name of an existing Prometheus datasource pointing to the Grafana Cloud Prometheus instance>
         hostedId: <Grafana Cloud Prometheus instance ID>
     secureJsonData:
-      publisherToken: <A metric publisher token from grafana.com>
+      publisherToken: <metric publisher token from grafana.com>
 ```
 
 Note: you can add a provisioning block per [org](https://grafana.com/docs/grafana/latest/manage-users/server-admin/server-admin-manage-orgs/) to provision the plugin for multiple orgs. You can provide different values for each org block and connect to a different cloud stack per org.
+
+The names of the datasources specified in the provisioning file _must_ match the names of existing datasources in Grafana. If you are also provisioning the datasources using the procedure below, make sure the datasource names match.
 
 Prerequisites:
 
@@ -52,26 +53,32 @@ Prerequisites:
 The required datasources can be [added via provisioning](https://grafana.com/docs/grafana/latest/administration/provisioning/#data-sources). The information needed can be copied from Prometheus and Loki datasources found in the datasources tab of a Cloud hosted Grafana instance:
 
 ```yaml
-- name: grafanacloud-<instanceSlug>-logs
-  type: loki
-  access: proxy
-  url: https://logs-prod-us-central1.grafana.net
-  basicAuth: true
-  basicAuthUser: <Grafana Cloud Loki instance ID>
-  basicAuthPassword: <grafana.com api key>
-  jsonData:
-    maxLines: 1000
+apiVersion: 1
 
-- name: grafanacloud-<instanceSlug>-prom
-  type: prometheus
-  access: proxy
-  url: https://prometheus-us-central1.grafana.net/api/prom
-  basicAuth: true
-  basicAuthUser: <Grafana Cloud Prometheus instance ID>
-  jsonData:
-    timeInterval: 1s
-  secureJsonData:
-    basicAuthPassword: <grafana.com api key>
+datasources:
+  - name: <datasource name>
+    type: loki
+    access: proxy
+    url: https://logs-prod-us-central1.grafana.net
+    basicAuth: true
+    basicAuthUser: <Grafana Cloud Loki instance ID>
+    jsonData:
+      maxLines: 1000
+    secureJsonData:
+      basicAuthPassword: <viewer token from grafana.com>
+    version: 1
+
+  - name: <datasource name>
+    type: prometheus
+    access: proxy
+    url: https://prometheus-us-central1.grafana.net/api/prom
+    basicAuth: true
+    basicAuthUser: <Grafana Cloud Prometheus instance ID>
+    jsonData:
+      timeInterval: 1s
+    secureJsonData:
+      basicAuthPassword: <viewer token from grafana.com>
+    version: 1
 ```
 
 To start the using app:
