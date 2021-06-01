@@ -31,7 +31,7 @@ interface Props {
 const DnsSettingsForm = ({ isEditor }: Props) => {
   const { spacing } = useTheme2();
 
-  const { register, control } = useFormContext();
+  const { register, control, formState } = useFormContext();
   const { fields, append, remove } = useFieldArray({
     control,
     name: 'settings.dns.validations',
@@ -112,9 +112,17 @@ const DnsSettingsForm = ({ isEditor }: Props) => {
               <Fragment key={field.id}>
                 <Controller
                   name={`settings.dns.validations.${index}.responseMatch` as const}
-                  defaultValue={DNS_RESPONSE_MATCH_OPTIONS[0]}
+                  rules={{ required: true }}
                   render={({ field }) => {
-                    return <Select {...field} value={field.value} options={DNS_RESPONSE_MATCH_OPTIONS} />;
+                    return (
+                      <Select
+                        {...field}
+                        value={field.value}
+                        data-testid={`dnsValidationResponseMatch${index}`}
+                        options={DNS_RESPONSE_MATCH_OPTIONS}
+                        invalid={formState.errors.settings?.dns?.validations?.[index]?.responseMatch}
+                      />
+                    );
                   }}
                 />
                 <Input

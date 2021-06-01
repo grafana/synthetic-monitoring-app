@@ -5,7 +5,6 @@ import {
   IpVersion,
   CheckType,
   DnsResponseCodes,
-  ResponseMatchType,
   HttpMethod,
   HttpVersion,
   GlobalSettings,
@@ -17,6 +16,7 @@ import { getInstanceMock } from '../../datasource/__mocks__/DataSource';
 import userEvent from '@testing-library/user-event';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { AppPluginMeta, DataSourceSettings } from '@grafana/data';
+import { DNS_RESPONSE_MATCH_OPTIONS } from 'components/constants';
 jest.setTimeout(60000);
 
 // Mock useAlerts hook
@@ -118,15 +118,6 @@ const selectCheckType = async (checkType: CheckType) => {
   const selectMenus = await screen.findAllByTestId('select');
   userEvent.selectOptions(selectMenus[0], checkType);
   await screen.findByText(checkType.toUpperCase());
-};
-
-const selectDnsResponseMatchType = async (container: HTMLElement, responseMatch: ResponseMatchType) => {
-  const selectMenus = await within(container).findAllByTestId('select');
-  // const responseMatchInput = selectMenus.find('Validate Authority matches')
-  // userEvent.click(responseMatchInput);
-  userEvent.selectOptions(selectMenus[selectMenus.length - 1], [responseMatch]);
-  // const options = await screen.findAllByText(`Validate ${responseMatch} matches`);
-  // userEvent.click(options[options.length - 1]);
 };
 
 const toggleSection = async (sectionName: string): Promise<HTMLElement> => {
@@ -520,6 +511,10 @@ describe('DNS', () => {
       const addRegex = await screen.findByRole('button', { name: 'Add RegEx Validation' });
       userEvent.click(addRegex);
       userEvent.click(addRegex);
+      const responseMatch1 = await screen.findByTestId('dnsValidationResponseMatch0');
+      userEvent.selectOptions(responseMatch1, DNS_RESPONSE_MATCH_OPTIONS[0].value);
+      const responseMatch2 = await screen.findByTestId('dnsValidationResponseMatch1');
+      userEvent.selectOptions(responseMatch2, DNS_RESPONSE_MATCH_OPTIONS[0].value);
       const expressionInputs = await screen.findAllByPlaceholderText('Type expression');
       await act(async () => await userEvent.type(expressionInputs[0], 'not inverted validation'));
       await act(async () => await userEvent.type(expressionInputs[1], 'inverted validation'));
@@ -544,7 +539,7 @@ describe('DNS', () => {
             recordType: 'A',
             server: '8.8.8.8',
             validRCodes: [DnsResponseCodes.NOERROR],
-            validateAdditionalRRS: {
+            validateAditionalRRS: {
               failIfMatchesRegexp: [],
               failIfNotMatchesRegexp: [],
             },
@@ -564,12 +559,16 @@ describe('DNS', () => {
     it('handles answer validations', async () => {
       const instance = await renderCheckEditor({ check: getMinimumCheck() });
       await selectCheckType(CheckType.DNS);
-      const dnsValidations = await toggleSection('Validation');
+      await toggleSection('Validation');
       const addRegex = await screen.findByRole('button', { name: 'Add RegEx Validation' });
       userEvent.click(addRegex);
-      await selectDnsResponseMatchType(dnsValidations, ResponseMatchType.Answer);
+      // await selectDnsResponseMatchType(dnsValidations, ResponseMatchType.Answer);
       userEvent.click(addRegex);
-      await selectDnsResponseMatchType(dnsValidations, ResponseMatchType.Answer);
+      const responseMatch1 = await screen.findByTestId('dnsValidationResponseMatch0');
+      userEvent.selectOptions(responseMatch1, DNS_RESPONSE_MATCH_OPTIONS[1].value);
+      const responseMatch2 = await screen.findByTestId('dnsValidationResponseMatch1');
+      userEvent.selectOptions(responseMatch2, DNS_RESPONSE_MATCH_OPTIONS[1].value);
+      // await selectDnsResponseMatchType(dnsValidations, ResponseMatchType.Answer);
       const expressionInputs = await screen.findAllByPlaceholderText('Type expression');
       await act(async () => await userEvent.type(expressionInputs[0], 'not inverted validation'));
       await userEvent.type(expressionInputs[1], 'inverted validation');
@@ -595,7 +594,7 @@ describe('DNS', () => {
             recordType: 'A',
             server: '8.8.8.8',
             validRCodes: [DnsResponseCodes.NOERROR],
-            validateAdditionalRRS: {
+            validateAditionalRRS: {
               failIfMatchesRegexp: [],
               failIfNotMatchesRegexp: [],
             },
@@ -615,12 +614,14 @@ describe('DNS', () => {
     it('handles additional validations', async () => {
       const instance = await renderCheckEditor({ check: getMinimumCheck() });
       await selectCheckType(CheckType.DNS);
-      const DnsValidations = await toggleSection('Validation');
+      await toggleSection('Validation');
       const addRegex = await screen.findByRole('button', { name: 'Add RegEx Validation' });
       userEvent.click(addRegex);
-      await selectDnsResponseMatchType(DnsValidations, ResponseMatchType.Additional);
       userEvent.click(addRegex);
-      await selectDnsResponseMatchType(DnsValidations, ResponseMatchType.Additional);
+      const responseMatch1 = await screen.findByTestId('dnsValidationResponseMatch0');
+      userEvent.selectOptions(responseMatch1, DNS_RESPONSE_MATCH_OPTIONS[2].value);
+      const responseMatch2 = await screen.findByTestId('dnsValidationResponseMatch1');
+      userEvent.selectOptions(responseMatch2, DNS_RESPONSE_MATCH_OPTIONS[2].value);
       const expressionInputs = await screen.findAllByPlaceholderText('Type expression');
       await act(async () => await userEvent.type(expressionInputs[0], 'not inverted validation'));
       await userEvent.type(expressionInputs[1], 'inverted validation');
@@ -647,7 +648,7 @@ describe('DNS', () => {
             recordType: 'A',
             server: '8.8.8.8',
             validRCodes: [DnsResponseCodes.NOERROR],
-            validateAdditionalRRS: {
+            validateAditionalRRS: {
               failIfMatchesRegexp: ['inverted validation'],
               failIfNotMatchesRegexp: ['not inverted validation'],
             },
