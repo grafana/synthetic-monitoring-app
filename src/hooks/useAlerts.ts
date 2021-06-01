@@ -84,7 +84,6 @@ const fetchSMRules = (metricInstanceId: number): Promise<RuleResponse> =>
     })
     .toPromise()
     .then(({ data }) => {
-      console.log(data?.rules);
       return { rules: data?.rules ?? [] };
     })
     .catch((e) => {
@@ -93,15 +92,6 @@ const fetchSMRules = (metricInstanceId: number): Promise<RuleResponse> =>
       }
       return { rules: [], error: e.data?.message ?? 'We ran into a problem and could not fetch the alert rules' };
     });
-
-const getDeleteRulesForCheck = (datasourceUrl: string) => (checkId: number) => {
-  return getBackendSrv()
-    .fetch<any>({
-      method: 'DELETE',
-      url: `${datasourceUrl}/rules/${SM_ALERTING_NAMESPACE}/${checkId}`,
-    })
-    .toPromise();
-};
 
 export function useAlerts(checkId?: number) {
   const [alertRules, setAlertRules] = useState<AlertRule[]>();
@@ -114,7 +104,7 @@ export function useAlerts(checkId?: number) {
   } = useContext(InstanceContext);
 
   const alertRulerUrl = alertRuler?.url;
-  const setDefaultRules = async () => {
+  const legacySetDefaultRules = async () => {
     await getBackendSrv()
       .fetch({
         url: `${alertRulerUrl}/rules/${SM_ALERTING_NAMESPACE}`,
@@ -129,7 +119,25 @@ export function useAlerts(checkId?: number) {
     setDefaultRulesSetCount(defaultRulesSetCount + 1);
   };
 
-  const setRules = async (rules: AlertRule[]) => {
+  const setDefaultRules = async () => {
+    if (!metrics) {
+      return;
+    }
+    await getBackendSrv()
+      .fetch({
+        url: `/api/ruler/${metrics.id}/api/v1/rules/${SM_ALERTING_NAMESPACE}`,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        data: defaultRules,
+      })
+      .toPromise();
+
+    setDefaultRulesSetCount(defaultRulesSetCount + 1);
+  };
+
+  const legacySetRules = async (rules: AlertRule[]) => {
     if (!alertRuler) {
       throw new Error('There is no alert ruler datasource configured for this Grafana instance');
     }
@@ -147,6 +155,32 @@ export function useAlerts(checkId?: number) {
           'Content-Type': 'application/yaml',
         },
         data: stringify(ruleGroup),
+      })
+      .toPromise();
+
+    setDefaultRulesSetCount(defaultRulesSetCount + 1);
+
+    return updateResponse;
+  };
+
+  const setRules = async (rules: AlertRule[]) => {
+    if (!metrics) {
+      throw new Error('There is no alert ruler datasource configured for this Grafana instance');
+    }
+
+    const ruleGroup = {
+      name: 'default',
+      rules,
+    };
+
+    const updateResponse = getBackendSrv()
+      .fetch({
+        url: `/api/ruler/${metrics.id}/api/v1/rules/${SM_ALERTING_NAMESPACE}`,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        data: ruleGroup,
       })
       .toPromise();
 
@@ -176,8 +210,7 @@ export function useAlerts(checkId?: number) {
   return {
     alertRules,
     alertError,
-    setDefaultRules,
-    setRules,
-    deleteRulesForCheck: getDeleteRulesForCheck(alertRulerUrl ?? ''),
+    setDefaultRules: isUnifiedAlertsEnabled ? setDefaultRules : legacySetDefaultRules,
+    setRules: isUnifiedAlertsEnabled ? setRules : legacySetRules,
   };
 }

@@ -21,12 +21,10 @@ jest.setTimeout(60000);
 
 // Mock useAlerts hook
 const setRulesForCheck = jest.fn();
-const deleteRulesForCheck = jest.fn();
 jest.mock('hooks/useAlerts', () => ({
   useAlerts: () => ({
     alertRules: [],
     setRulesForCheck,
-    deleteRulesForCheck,
   }),
 }));
 
