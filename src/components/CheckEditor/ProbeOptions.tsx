@@ -17,7 +17,11 @@ interface Props {
 
 export const ProbeOptions = ({ frequency, timeout, isEditor, probes }: Props) => {
   const [availableProbes, setAvailableProbes] = useState<Probe[]>([]);
-  const { control, errors, watch } = useFormContext();
+  const {
+    control,
+    watch,
+    formState: { errors },
+  } = useFormContext();
   const { instance } = useContext(InstanceContext);
 
   const checkType = watch('checkType').value;
@@ -40,16 +44,19 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, probes }: Props) =>
       <Subheader>Probe options</Subheader>
 
       <Controller
-        as={CheckProbes}
         control={control}
         name="probes"
-        valueName="probes"
         rules={{ validate: validateProbes }}
-        probes={probes}
-        availableProbes={availableProbes}
-        isEditor={isEditor}
-        invalid={errors.probes}
-        error={errors.probes?.message}
+        render={({ field }) => (
+          <CheckProbes
+            {...field}
+            probes={probes}
+            availableProbes={availableProbes}
+            isEditor={isEditor}
+            invalid={errors.probes}
+            error={errors.probes?.message}
+          />
+        )}
       />
       <Field
         label="Frequency"
@@ -59,9 +66,7 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, probes }: Props) =>
         error={errors.frequency?.message}
       >
         <SliderInput
-          rules={{
-            validate: (value) => validateFrequency(value, checkType),
-          }}
+          validate={(value) => validateFrequency(value, checkType)}
           name="frequency"
           prefixLabel={'Every'}
           suffixLabel={'seconds'}
@@ -79,7 +84,7 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, probes }: Props) =>
       >
         <SliderInput
           name="timeout"
-          rules={{ validate: (timeout) => validateTimeout(timeout, checkType) }}
+          validate={(value) => validateTimeout(value, checkType)}
           defaultValue={timeout / 1000}
           max={checkType === CheckType.Traceroute ? 30.0 : 10.0}
           min={1.0}

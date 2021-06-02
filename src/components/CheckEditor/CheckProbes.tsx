@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import { css } from 'emotion';
+import { css } from '@emotion/css';
 import { Button, HorizontalGroup, MultiSelect, ThemeContext, Field } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
 import { Probe } from 'types';
@@ -96,8 +96,8 @@ export default class CheckProbes extends PureComponent<CheckProbesProps, CheckPr
             </Field>
             <div
               className={css`
-                margin-top: ${theme.spacing.sm};
-                margin-bottom: ${theme.spacing.md};
+                margin-top: ${theme.spacing(1)};
+                margin-bottom: ${theme.spacing(2)};
               `}
             >
               <HorizontalGroup spacing="sm">

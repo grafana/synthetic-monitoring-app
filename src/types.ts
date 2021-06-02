@@ -124,7 +124,7 @@ export interface DnsSettings {
   validRCodes?: string[];
   validateAnswerRRS?: DNSRRValidator;
   validateAuthorityRRS?: DNSRRValidator;
-  validateAdditionalRRS?: DNSRRValidator;
+  validateAditionalRRS?: DNSRRValidator;
 }
 
 export interface DnsSettingsFormValues
@@ -480,4 +480,5 @@ export enum HTTPCompressionAlgo {
 
 export enum FeatureName {
   Traceroute = 'traceroute',
+  UnifiedAlerting = 'ngalert',
 }

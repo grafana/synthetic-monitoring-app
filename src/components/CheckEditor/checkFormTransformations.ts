@@ -43,6 +43,7 @@ import {
   fallbackCheck,
   ALERT_SENSITIVITY_OPTIONS,
   HTTP_COMPRESSION_ALGO_OPTIONS,
+  DNS_RESPONSE_MATCH_OPTIONS,
 } from 'components/constants';
 import { checkType, fromBase64, toBase64 } from 'utils';
 import isBase64 from 'is-base64';
@@ -270,7 +271,8 @@ const getDnsValidations = (validations: GetDnsValidationArgs): DnsValidationForm
       formValues.push({
         expression,
         inverted: false,
-        responseMatch: selectableValueFrom(responseMatch),
+        responseMatch:
+          DNS_RESPONSE_MATCH_OPTIONS.find(({ value }) => value === responseMatch) ?? DNS_RESPONSE_MATCH_OPTIONS[0],
       });
     });
 
@@ -278,7 +280,8 @@ const getDnsValidations = (validations: GetDnsValidationArgs): DnsValidationForm
       formValues.push({
         expression,
         inverted: true,
-        responseMatch: selectableValueFrom(responseMatch),
+        responseMatch:
+          DNS_RESPONSE_MATCH_OPTIONS.find(({ value }) => value === responseMatch) ?? DNS_RESPONSE_MATCH_OPTIONS[0],
       });
     });
     return formValues;
@@ -298,7 +301,7 @@ const getDnsSettingsFormValues = (settings: Settings): DnsSettingsFormValues => 
     validations: getDnsValidations({
       [ResponseMatchType.Answer]: dnsSettings.validateAnswerRRS,
       [ResponseMatchType.Authority]: dnsSettings.validateAuthorityRRS,
-      [ResponseMatchType.Additional]: dnsSettings.validateAdditionalRRS,
+      [ResponseMatchType.Additional]: dnsSettings.validateAditionalRRS,
     }),
   };
 };
@@ -548,7 +551,7 @@ const getPingSettings = (
   };
 };
 
-type DnsValidations = Pick<DnsSettings, 'validateAdditionalRRS' | 'validateAnswerRRS' | 'validateAuthorityRRS'>;
+type DnsValidations = Pick<DnsSettings, 'validateAditionalRRS' | 'validateAnswerRRS' | 'validateAuthorityRRS'>;
 
 const getDnsValidationsFromFormValues = (validations: DnsValidationFormValue[]): DnsValidations =>
   validations.reduce<DnsValidations>(
@@ -557,7 +560,7 @@ const getDnsValidationsFromFormValues = (validations: DnsValidationFormValue[]):
       const responseMatch = getValueFromSelectable(validation.responseMatch);
       switch (responseMatch) {
         case ResponseMatchType.Additional:
-          acc.validateAdditionalRRS![destinationName].push(validation.expression);
+          acc.validateAditionalRRS![destinationName].push(validation.expression);
           break;
         case ResponseMatchType.Answer:
           acc.validateAnswerRRS![destinationName].push(validation.expression);
@@ -577,7 +580,7 @@ const getDnsValidationsFromFormValues = (validations: DnsValidationFormValue[]):
         failIfMatchesRegexp: [],
         failIfNotMatchesRegexp: [],
       },
-      validateAdditionalRRS: {
+      validateAditionalRRS: {
         failIfMatchesRegexp: [],
         failIfNotMatchesRegexp: [],
       },

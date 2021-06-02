@@ -1,5 +1,5 @@
 import React from 'react';
-import { css } from 'emotion';
+import { css } from '@emotion/css';
 import { HorizontalGroup, Input, IconButton, VerticalGroup, Icon, Button, Field, useTheme } from '@grafana/ui';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 
@@ -13,7 +13,11 @@ interface Props {
 }
 
 export const NameValueInput = ({ name, disabled, limit, label, validateName, validateValue }: Props) => {
-  const { register, control, errors } = useFormContext();
+  const {
+    register,
+    control,
+    formState: { errors },
+  } = useFormContext();
   const { fields, append, remove } = useFieldArray({ control, name });
   const theme = useTheme();
   const fieldError = name
@@ -31,8 +35,7 @@ export const NameValueInput = ({ name, disabled, limit, label, validateName, val
             `}
           >
             <Input
-              ref={register({ required: true, validate: validateName })}
-              name={`${name}[${index}].name`}
+              {...register(`${name}.${index}.name` as const, { required: true, validate: validateName })}
               type="text"
               placeholder="name"
               disabled={disabled}
@@ -46,8 +49,7 @@ export const NameValueInput = ({ name, disabled, limit, label, validateName, val
             `}
           >
             <Input
-              ref={register({ required: true, validate: validateValue })}
-              name={`${name}[${index}].value`}
+              {...register(`${name}.${index}.value` as const, { required: true, validate: validateValue })}
               type="text"
               placeholder="value"
               disabled={disabled}

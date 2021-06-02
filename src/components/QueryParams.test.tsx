@@ -33,9 +33,9 @@ test('Returns a query string onChange', async () => {
   const target = new URL('http://example.com');
   render(<QueryParams target={target} onChange={onChange} />);
   const queryNameInput = await screen.findByPlaceholderText('Key');
-  await userEvent.type(queryNameInput, 'queryName');
+  await userEvent.paste(queryNameInput, 'queryName');
   const queryValueInput = await screen.findByPlaceholderText('Value');
-  await userEvent.type(queryValueInput, 'queryValue');
+  await userEvent.paste(queryValueInput, 'queryValue');
   expect(onChange).toHaveBeenLastCalledWith('http://example.com/?queryName=queryValue');
 });
 

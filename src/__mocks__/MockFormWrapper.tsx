@@ -1,5 +1,5 @@
 import React, { PropsWithChildren } from 'react';
-import { useForm, FormContext } from 'react-hook-form';
+import { useForm, FormProvider } from 'react-hook-form';
 
 interface Props {
   defaultValues: any;
@@ -7,5 +7,5 @@ interface Props {
 
 export const MockFormWrapper = ({ defaultValues, children }: PropsWithChildren<Props>) => {
   const formMethods = useForm({ defaultValues });
-  return <FormContext {...formMethods}>{children}</FormContext>;
+  return <FormProvider {...formMethods}>{children}</FormProvider>;
 };

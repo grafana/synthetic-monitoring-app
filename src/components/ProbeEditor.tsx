@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { css } from 'emotion';
+import { css } from '@emotion/css';
 import {
   Modal,
   Button,
@@ -12,7 +12,7 @@ import {
   Legend,
   Alert,
 } from '@grafana/ui';
-import { useForm, FormContext } from 'react-hook-form';
+import { useForm, FormProvider } from 'react-hook-form';
 import { useAsyncCallback } from 'react-async-hook';
 import { Probe, OrgRole, SubmissionErrorWrapper } from 'types';
 import { hasRole } from 'utils';
@@ -87,14 +87,14 @@ const ProbeEditor = ({ probe, onReturn }: Props) => {
 
   return (
     <HorizontalGroup align="flex-start">
-      <FormContext {...formMethods}>
+      <FormProvider {...formMethods}>
         <form onSubmit={formMethods.handleSubmit(onSave)}>
           <div>
             <Legend>{legend}</Legend>
             <Container margin="md">
               <Field
                 error="Name is required"
-                invalid={Boolean(formMethods.errors.name)}
+                invalid={Boolean(formMethods.formState.errors.name)}
                 label="Probe Name"
                 description="Unique name of probe"
                 disabled={!isEditor}
@@ -104,18 +104,17 @@ const ProbeEditor = ({ probe, onReturn }: Props) => {
                 <Input
                   type="text"
                   maxLength={32}
-                  ref={formMethods.register({
+                  {...formMethods.register('name', {
                     required: true,
                     maxLength: 32,
                   })}
                   id="probe-name-input"
                   placeholder="Probe name"
-                  name="name"
                 />
               </Field>
               <Field label="Public" description="Public probes are run by Grafana Labs and can be used by all users">
                 <Container padding="sm">
-                  <Switch ref={formMethods.register()} name="public" disabled={!isEditor} />
+                  <Switch {...formMethods.register('public')} disabled={!isEditor} />
                 </Container>
               </Field>
             </Container>
@@ -123,7 +122,7 @@ const ProbeEditor = ({ probe, onReturn }: Props) => {
               <Legend>Location information</Legend>
               <Field
                 error="Must be between -90 and 90"
-                invalid={Boolean(formMethods.errors.latitude)}
+                invalid={Boolean(formMethods.formState.errors.latitude)}
                 required
                 label="Latitude"
                 description="Latitude coordinates of this probe"
@@ -131,7 +130,7 @@ const ProbeEditor = ({ probe, onReturn }: Props) => {
                 className={minInputWidth}
               >
                 <Input
-                  ref={formMethods.register({
+                  {...formMethods.register('latitude', {
                     required: true,
                     max: 90,
                     min: -90,
@@ -143,25 +142,23 @@ const ProbeEditor = ({ probe, onReturn }: Props) => {
                   id="probe-editor-latitude"
                   type="number"
                   placeholder="0.0"
-                  name="latitude"
                 />
               </Field>
               <Field
                 error="Must be between -180 and 180"
-                invalid={Boolean(formMethods.errors.longitude)}
+                invalid={Boolean(formMethods.formState.errors.longitude)}
                 required
                 label="Longitude"
                 description="Longitude coordinates of this probe"
                 disabled={!isEditor}
               >
                 <Input
-                  ref={formMethods.register({
+                  {...formMethods.register('longitude', {
                     required: true,
                     max: 180,
                     min: -180,
                   })}
                   label="Longitude"
-                  name="longitude"
                   max={180}
                   min={-180}
                   step={0.00001}
@@ -174,7 +171,7 @@ const ProbeEditor = ({ probe, onReturn }: Props) => {
             <Container margin="md">
               <Field
                 error="Region is required"
-                invalid={Boolean(formMethods.errors.region)}
+                invalid={Boolean(formMethods.formState.errors.region)}
                 required
                 label="Region"
                 description="Region of this probe"
@@ -182,8 +179,7 @@ const ProbeEditor = ({ probe, onReturn }: Props) => {
                 className={minInputWidth}
               >
                 <Input
-                  ref={formMethods.register({ required: true })}
-                  name="region"
+                  {...formMethods.register('region', { required: true })}
                   label="Region"
                   type="string"
                   placeholder="Region"
@@ -191,7 +187,11 @@ const ProbeEditor = ({ probe, onReturn }: Props) => {
               </Field>
             </Container>
             <Container margin="md">
-              <Field label="Labels" invalid={Boolean(formMethods.errors.labels)} error="Name and value are required">
+              <Field
+                label="Labels"
+                invalid={Boolean(formMethods.formState.errors.labels)}
+                error="Name and value are required"
+              >
                 <LabelField isEditor={isEditor} limit={3} />
               </Field>
             </Container>
@@ -200,7 +200,9 @@ const ProbeEditor = ({ probe, onReturn }: Props) => {
                 <Button
                   type="submit"
                   disabled={
-                    !isEditor || formMethods.formState.isSubmitting || Object.keys(formMethods.errors ?? {}).length > 0
+                    !isEditor ||
+                    formMethods.formState.isSubmitting ||
+                    Object.keys(formMethods.formState.errors ?? {}).length > 0
                   }
                 >
                   Save
@@ -251,7 +253,7 @@ const ProbeEditor = ({ probe, onReturn }: Props) => {
             </Modal>
           </div>
         </form>
-      </FormContext>
+      </FormProvider>
       {probe.id && <ProbeStatus probe={probe} onResetToken={onResetToken} />}
     </HorizontalGroup>
   );

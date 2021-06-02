@@ -1,12 +1,12 @@
-import React, { ChangeEvent } from 'react';
+import React, { ChangeEvent, forwardRef } from 'react';
 import { Field, Input } from '@grafana/ui';
-import { css } from 'emotion';
+import { css } from '@emotion/css';
 import { CheckType } from 'types';
 import { parseUrl } from 'utils';
 import QueryParams from './QueryParams';
 
 interface Props {
-  target: string;
+  value: string;
   typeOfCheck?: CheckType;
   disabled?: boolean;
   onChange: (target: string) => void;
@@ -65,35 +65,40 @@ const getTargetHelpText = (typeOfCheck: CheckType | undefined): TargetHelpInfo =
   return resp;
 };
 
-const CheckTarget = ({ target, typeOfCheck, disabled, onChange, onBlur, invalid, error }: Props) => {
-  const targetHelp = getTargetHelpText(typeOfCheck);
-  const parsedURL = parseUrl(target);
-  return (
-    <>
-      <Field label="Target" description={targetHelp.text} disabled={disabled} invalid={invalid} error={error}>
-        <Input
-          id="check-editor-target"
-          type="string"
-          onBlur={onBlur}
-          placeholder={targetHelp.example}
-          value={target}
-          onChange={(e: ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
-          required={true}
-        />
-      </Field>
-      {typeOfCheck === CheckType.HTTP && parsedURL && (
-        <QueryParams
-          target={parsedURL}
-          onBlur={onBlur}
-          onChange={(target: string) => onChange(target)}
-          className={css`
-            padding-left: 1rem;
-            margin-bottom: 1rem;
-          `}
-        />
-      )}
-    </>
-  );
-};
+const CheckTarget = forwardRef(
+  ({ value, typeOfCheck, disabled, onChange, onBlur, invalid, error }: Props, ref: React.Ref<HTMLInputElement>) => {
+    const targetHelp = getTargetHelpText(typeOfCheck);
+    const parsedURL = parseUrl(value);
+    return (
+      <>
+        <Field label="Target" description={targetHelp.text} disabled={disabled} invalid={invalid} error={error}>
+          <Input
+            id="check-editor-target"
+            ref={ref}
+            type="string"
+            onBlur={onBlur}
+            placeholder={targetHelp.example}
+            value={value}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
+            required={true}
+          />
+        </Field>
+        {typeOfCheck === CheckType.HTTP && parsedURL && (
+          <QueryParams
+            target={parsedURL}
+            onBlur={onBlur}
+            onChange={(target: string) => onChange(target)}
+            className={css`
+              padding-left: 1rem;
+              margin-bottom: 1rem;
+            `}
+          />
+        )}
+      </>
+    );
+  }
+);
+
+CheckTarget.displayName = 'CheckTarget';
 
 export default CheckTarget;

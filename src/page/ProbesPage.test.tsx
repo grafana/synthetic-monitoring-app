@@ -53,7 +53,7 @@ it('shows probe editor when adding new', async () => {
   userEvent.click(goBack);
   // Requery to determine if we are back on the probe page
   const secondAddNew = await getAddNew();
-  waitFor(() => expect(secondAddNew).toBeInTheDocument());
+  await waitFor(() => expect(secondAddNew).toBeInTheDocument());
 });
 
 it('shows a probe when clicked', async () => {
@@ -69,5 +69,5 @@ it('shows a probe when clicked', async () => {
   userEvent.click(goBack);
   // Requery to determine if we are back on the probe page
   const secondProbe = await screen.findByText('tacos');
-  waitFor(() => expect(secondProbe).toBeInTheDocument());
+  await waitFor(() => expect(secondProbe).toBeInTheDocument());
 });

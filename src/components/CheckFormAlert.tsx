@@ -1,5 +1,5 @@
 import React, { FC, useState } from 'react';
-import { css } from 'emotion';
+import { css } from '@emotion/css';
 import { GrafanaTheme } from '@grafana/data';
 import { Field, Select, useStyles } from '@grafana/ui';
 import { Collapse } from './Collapse';
@@ -39,7 +39,10 @@ export const CheckFormAlert: FC<Props> = () => {
         </a>
       </div>
       <Field label="Select alert sensitivity">
-        <Controller name="alertSensitivity" as={Select} width={40} options={ALERT_SENSITIVITY_OPTIONS} />
+        <Controller
+          name="alertSensitivity"
+          render={({ field }) => <Select {...field} width={40} options={ALERT_SENSITIVITY_OPTIONS} />}
+        />
       </Field>
     </Collapse>
   );

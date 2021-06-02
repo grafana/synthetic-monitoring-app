@@ -4,7 +4,8 @@
   "compilerOptions": {
     "rootDir": "./src",
     "baseUrl": "./src",
-    "typeRoots": ["./node_modules/@types"],
+    "typeRoots": ["node_modules/@types"],
+    "types": ["@emotion/react/types/css-prop", "jest", "@testing-library/jest-dom"],
     "lib": ["DOM", "ES6", "DOM.Iterable", "ScriptHost", "ES2020"]
   }
 }

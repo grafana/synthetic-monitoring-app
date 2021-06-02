@@ -5,7 +5,7 @@ import { hasRole, initializeDatasource } from 'utils';
 import { importAllDashboards } from 'dashboards/loader';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { DataSourceInstanceSettings, GrafanaTheme } from '@grafana/data';
-import { css } from 'emotion';
+import { css } from '@emotion/css';
 import { colors, LEGACY_LOGS_DS_NAME, LEGACY_METRICS_DS_NAME } from 'components/constants';
 import dashboardScreenshot from 'img/screenshot-dash-http.png';
 import dashboardScreenshotLight from 'img/screenshot-dash-http-light.png';

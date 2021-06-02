@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useContext } from 'react';
-import { css } from 'emotion';
+import { css } from '@emotion/css';
 import { Button, ConfirmModal, Field, Input, HorizontalGroup, Select, Legend, Alert, useStyles } from '@grafana/ui';
 import { useAsyncCallback } from 'react-async-hook';
 import { Check, CheckType, OrgRole, CheckFormValues, SubmissionErrorWrapper, FeatureName } from 'types';
@@ -12,8 +12,8 @@ import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 import { CheckSettings } from './CheckSettings';
 import { ProbeOptions } from './ProbeOptions';
 import { CHECK_TYPE_OPTIONS, fallbackCheck } from 'components/constants';
-import { useForm, FormContext, Controller } from 'react-hook-form';
-import { GrafanaTheme, SelectableValue } from '@grafana/data';
+import { useForm, FormProvider, Controller } from 'react-hook-form';
+import { GrafanaTheme } from '@grafana/data';
 import { CheckUsage } from '../CheckUsage';
 import { CheckFormAlert } from 'components/CheckFormAlert';
 import { InstanceContext } from 'contexts/InstanceContext';
@@ -55,7 +55,7 @@ export const CheckEditor = ({ check, onReturn }: Props) => {
   const { isEnabled: tracerouteEnabled } = useFeatureFlag(FeatureName.Traceroute);
 
   const formMethods = useForm<CheckFormValues>({ defaultValues, mode: 'onChange' });
-  const selectedCheckType = formMethods.watch('checkType').value as CheckType;
+  const selectedCheckType = formMethods.watch('checkType').value ?? CheckType.PING;
 
   const isEditor = hasRole(OrgRole.EDITOR);
 
@@ -84,10 +84,8 @@ export const CheckEditor = ({ check, onReturn }: Props) => {
     onReturn(true);
   };
 
-  const target = formMethods.watch('target', '') as string;
-
   return (
-    <FormContext {...formMethods}>
+    <FormProvider {...formMethods}>
       <form onSubmit={formMethods.handleSubmit(onSubmit)}>
         <Legend>{check?.id ? 'Edit Check' : 'Add Check'}</Legend>
         <div className={styles.formBody}>
@@ -95,15 +93,19 @@ export const CheckEditor = ({ check, onReturn }: Props) => {
           <Field label="Check type" disabled={check?.id ? true : false}>
             <Controller
               name="checkType"
-              placeholder="Check type"
               control={formMethods.control}
-              as={Select}
-              options={
-                tracerouteEnabled
-                  ? CHECK_TYPE_OPTIONS
-                  : CHECK_TYPE_OPTIONS.filter(({ value }) => value !== CheckType.Traceroute)
-              }
-              width={30}
+              render={({ field }) => (
+                <Select
+                  {...field}
+                  placeholder="Check type"
+                  options={
+                    tracerouteEnabled
+                      ? CHECK_TYPE_OPTIONS
+                      : CHECK_TYPE_OPTIONS.filter(({ value }) => value !== CheckType.Traceroute)
+                  }
+                  width={30}
+                />
+              )}
             />
           </Field>
           <HorizontalCheckboxField
@@ -117,40 +119,41 @@ export const CheckEditor = ({ check, onReturn }: Props) => {
             label="Job name"
             description="Name used for job label"
             disabled={!isEditor}
-            invalid={Boolean(formMethods.errors.job)}
-            error={formMethods.errors.job?.message as string}
+            invalid={Boolean(formMethods.formState.errors.job)}
+            error={formMethods.formState.errors.job?.message}
           >
             <Input
               id="check-editor-job-input"
-              ref={formMethods.register({
+              {...formMethods.register('job', {
                 required: true,
                 validate: validateJob,
               })}
-              name="job"
-              type="string"
+              type="text"
               placeholder="jobName"
             />
           </Field>
 
           <Controller
             name="target"
-            as={CheckTarget}
             control={formMethods.control}
-            target={target}
-            valueName="target"
-            typeOfCheck={selectedCheckType}
-            invalid={Boolean(formMethods.errors.target)}
-            error={formMethods.errors.target?.message?.toString()}
             rules={{
               required: true,
               validate: (target) => {
                 // We have to get refetch the check type value from form state in the validation because the value will be stale if we rely on the the .watch method in the render
-                const targetFormValue = formMethods.getValues().checkType as SelectableValue<CheckType>;
+                const targetFormValue = formMethods.getValues().checkType;
                 const selectedCheckType = targetFormValue.value as CheckType;
                 return validateTarget(selectedCheckType, target);
               },
             }}
-            disabled={!isEditor}
+            render={({ field }) => (
+              <CheckTarget
+                {...field}
+                typeOfCheck={selectedCheckType}
+                invalid={Boolean(formMethods.formState.errors.target)}
+                error={formMethods.formState.errors.target?.message}
+                disabled={!isEditor}
+              />
+            )}
           />
           <hr className={styles.breakLine} />
           <ProbeOptions
@@ -196,6 +199,6 @@ export const CheckEditor = ({ check, onReturn }: Props) => {
           </div>
         )}
       </form>
-    </FormContext>
+    </FormProvider>
   );
 };
