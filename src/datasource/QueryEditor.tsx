@@ -4,7 +4,7 @@ import { GrafanaTheme, QueryEditorProps, SelectableValue } from '@grafana/data';
 import { SMDataSource } from './DataSource';
 import { SMQuery, SMOptions, QueryType, defaultQuery, DashboardVariable } from './types';
 import { getTheme, Select, Spinner } from '@grafana/ui';
-import { css } from 'emotion';
+import { css } from '@emotion/css';
 import { checkType } from 'utils';
 import { CheckType, FeatureName } from 'types';
 import { getTemplateSrv } from '@grafana/runtime';

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { css } from 'emotion';
+import { css } from '@emotion/css';
 import { Field, Input } from '@grafana/ui';
 import { Collapse } from 'components/Collapse';
 import { LabelField } from 'components/LabelField';
@@ -28,16 +28,14 @@ export const TracerouteSettingsForm = ({ isEditor }: Props) => {
         <Field label="First hop" description="Starting TTL value" disabled={!isEditor}>
           <Input
             id="traceroute-settings-first-hop"
-            ref={register({ min: 1, max: 63 })}
-            name="settings.traceroute.firstHop"
+            {...register('settings.traceroute.firstHop', { min: 1, max: 63 })}
             disabled={!isEditor}
           />
         </Field>
         <Field label="Max hops" description="Maximum TTL for the trace" disabled={!isEditor}>
           <Input
             id="traceroute-settings-max-hops"
-            ref={register({ min: 1, max: 64 })}
-            name="settings.traceroute.maxHops"
+            {...register('settings.traceroute.maxHops', { min: 1, max: 64 })}
             type="number"
             disabled={!isEditor}
           />
@@ -45,8 +43,7 @@ export const TracerouteSettingsForm = ({ isEditor }: Props) => {
         <Field label="Retries" description="Quantity of times to retry a hop" disabled={!isEditor}>
           <Input
             id="traceroute-settings-retries"
-            ref={register({ min: 1, max: 3 })}
-            name="settings.traceroute.retries"
+            {...register('settings.traceroute.retries', { min: 1, max: 3 })}
             type="number"
             disabled={!isEditor}
           />
@@ -58,8 +55,7 @@ export const TracerouteSettingsForm = ({ isEditor }: Props) => {
         >
           <Input
             id="traceroute-settings-unknown-hops"
-            ref={register({ min: 0, max: 20 })}
-            name="settings.traceroute.maxUnknownHops"
+            {...register('settings.traceroute.maxUnknownHops', { min: 0, max: 20 })}
             type="number"
             disabled={!isEditor}
           />
