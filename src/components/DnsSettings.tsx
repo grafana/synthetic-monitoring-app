@@ -132,7 +132,6 @@ const DnsSettingsForm = ({ isEditor }: Props) => {
                 <div
                   className={css`
                     position: relative;
-                    margin-top: -20px;
                     justify-self: center;
                   `}
                 >

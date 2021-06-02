@@ -119,7 +119,6 @@ const getStyles = (theme: GrafanaTheme) => ({
   `,
   checkboxContainer: css`
     margin-right: ${theme.spacing.md};
-    height: 45px;
   `,
   marginRightSmall: css`
     margin-right: ${theme.spacing.sm};
