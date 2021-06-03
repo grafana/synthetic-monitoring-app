@@ -24,13 +24,13 @@ import {
   CHECK_LIST_STATUS_OPTIONS,
   CHECK_LIST_VIEW_TYPE_OPTIONS,
   CHECK_LIST_VIEW_TYPE_LS_KEY,
-  CHECK_TYPE_OPTIONS,
 } from './constants';
 import { CheckListItem } from './CheckListItem';
 import { css } from '@emotion/css';
 import { LabelFilterInput } from './LabelFilterInput';
 import { SuccessRateContext, SuccessRateTypes } from 'contexts/SuccessRateContext';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
+import { ChecksVisualization } from './ChecksVisualization';
 
 const CHECKS_PER_PAGE_CARD = 15;
 const CHECKS_PER_PAGE_LIST = 50;
@@ -578,7 +578,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
         />
       </div>
       {viewType === CheckListViewType.Viz ? (
-        <div>Totes viz</div>
+        <ChecksVisualization checks={checks} />
       ) : (
         <div>
           <section className="card-section card-list-layout-list">

@@ -38,6 +38,8 @@
     "@testing-library/react": "^11.2.7",
     "@testing-library/react-hooks": "^5.1.2",
     "@testing-library/user-event": "13.1.9",
+    "@types/d3": "^6.7.0",
+    "@types/d3-hexbin": "^0.2.3",
     "@types/eslint": "^7.2.4",
     "@types/ip-address": "latest",
     "@types/is-base64": "^1.1.0",
@@ -52,6 +54,8 @@
   },
   "dependencies": {
     "@types/jest": "^26.0.23",
+    "d3": "^6.7.0",
+    "d3-hexbin": "^0.2.2",
     "ip-address": "^6.3.0",
     "is-base64": "^1.1.0",
     "punycode": "^2.1.1",
