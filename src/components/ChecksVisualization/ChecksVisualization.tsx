@@ -1,10 +1,10 @@
-import React, { useEffect, useRef, useContext } from 'react';
+import React, { useEffect, useRef, useContext, useState } from 'react';
 import * as d3 from 'd3';
 import * as d3hexbin from 'd3-hexbin';
 import { Check } from 'types';
-import { useTheme2 } from '@grafana/ui';
+import { Spinner, Tooltip, useTheme2 } from '@grafana/ui';
 import { SuccessRateContext } from 'contexts/SuccessRateContext';
-import { getHexFillColor, getLayout } from './checksVizUtils';
+import { getHexFillColor, getLayout, getMouseXY } from './checksVizUtils';
 
 interface Props {
   checks: Check[];
@@ -21,6 +21,13 @@ export function ChecksVisualization({ checks }: Props) {
     if (!hexRadius || !svgEl.current || loading) {
       return;
     }
+
+    const tooltip = d3
+      .select('body')
+      .append('div')
+      .attr('id', 'sm-check-viz-tooltip')
+      .attr('class', 'polystat-panel-tooltip')
+      .style('opacity', 0);
 
     var svg = d3
       .select(svgEl.current)
@@ -45,7 +52,29 @@ export function ChecksVisualization({ checks }: Props) {
       .attr('stroke-width', '1px')
       .style('fill', function (data, index) {
         return getHexFillColor(data, index, checks, values);
+      })
+      .on('mousemove', () => {
+        let { xpos, ypos } = getMouseXY();
+        tooltip.style('left', xpos + 'px').style('top', ypos + 'px');
+      })
+      .on('mouseover', (d: any) => {
+        let { xpos, ypos } = getMouseXY();
+        tooltip.transition().duration(200).style('opacity', 0.9);
+        tooltip
+          .html('hi')
+          .style('font-size', '16px')
+          .style('font-family', 'Roboto')
+          .style('left', xpos + 'px')
+          .style('top', ypos + 'px');
+      })
+      .on('mouseout', () => {
+        tooltip.transition().duration(500).style('opacity', 0);
       });
+    // .on('mouseover', () => {
+    //   console.log('mosing over');
+    //   setShowTooltip(true);
+    // });
+    // .on('mouseout', () => setShowTooltip(false));
   }, [checks, values, theme, svgEl, loading]);
 
   // TODO: adding a loading state prevents the ref from getting set on mount. Use a callback ref?
@@ -54,5 +83,10 @@ export function ChecksVisualization({ checks }: Props) {
   // }
 
   // render svg element and use ref callback to store reference
-  return <svg ref={svgEl} />;
+  return (
+    <div>
+      {loading ? <Spinner /> : null}
+      <svg ref={svgEl} />
+    </div>
+  );
 }
