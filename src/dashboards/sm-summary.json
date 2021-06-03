@@ -67,7 +67,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": null,
-  "iteration": 1622660155942,
+  "iteration": 1622741207696,
   "links": [],
   "panels": [
     {
@@ -81,8 +81,8 @@
       },
       "id": 10,
       "panels": [],
-      "repeat": "check_type",
-      "title": "$check_type",
+      "repeat": "check_type_hidden",
+      "title": "[[check_type_hidden]]",
       "type": "row"
     },
     {
@@ -131,7 +131,7 @@
       },
       "targets": [
         {
-          "expr": "100*(1 - (sum((rate(probe_all_success_sum[${__range_s}s]) OR rate(probe_success_sum[${__range_s}s])) *  on (instance, job, probe, config_version) group_left(geohash) max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version, geohash)) by (probe, geohash)/ sum((rate(probe_all_success_count[${__range_s}s]) OR rate(probe_success_count[${__range_s}s])) *  on (instance, job, probe, config_version) group_left(geohash) max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version, geohash)) by (probe, geohash)))",
+          "expr": "100*(1 - (sum((rate(probe_all_success_sum[${__range_s}s]) OR rate(probe_success_sum[${__range_s}s])) *  on (instance, job, probe, config_version) group_left(geohash) max(sm_check_info{check_name=\"[[check_type_hidden]]\", [[label0]]=~\"^[[label0value]]$\", [[label1]]=~\"^[[label1value]]$\", [[label2]]=~\"^[[label2value]]$\"}) by (instance, job, probe, config_version, geohash)) by (probe, geohash)/ sum((rate(probe_all_success_count[${__range_s}s]) OR rate(probe_success_count[${__range_s}s])) *  on (instance, job, probe, config_version) group_left(geohash) max(sm_check_info{check_name=\"[[check_type_hidden]]\", [[label0]]=~\"^[[label0value]]$\", [[label1]]=~\"^[[label1value]]$\", [[label2]]=~\"^[[label2value]]$\"}) by (instance, job, probe, config_version, geohash)) by (probe, geohash)))",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -143,7 +143,7 @@
       "thresholds": "0.5,1",
       "timeFrom": null,
       "timeShift": null,
-      "title": "$check_type reachability",
+      "title": "[[check_type_hidden]] reachability",
       "type": "grafana-worldmap-panel",
       "unitPlural": "%",
       "unitSingle": "",
@@ -213,7 +213,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "1 - (sum((rate(probe_all_success_sum[$__rate_interval]) OR rate(probe_success_sum[$__rate_interval])) *  on (instance, job, probe, config_version) max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version)) / sum((rate(probe_all_success_count[$__rate_interval]) OR rate(probe_success_count[$__rate_interval])) *  on (instance, job, probe, config_version) max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version)))",
+          "expr": "1 - (sum((rate(probe_all_success_sum[$__rate_interval]) OR rate(probe_success_sum[$__rate_interval])) *  on (instance, job, probe, config_version) max(sm_check_info{check_name=\"[[check_type_hidden]]\", [[label0]]=~\"^[[label0value]]$\", [[label1]]=~\"^[[label1value]]$\", [[label2]]=~\"^[[label2value]]$\"}) by (instance, job, probe, config_version)) / sum((rate(probe_all_success_count[$__rate_interval]) OR rate(probe_success_count[$__rate_interval])) *  on (instance, job, probe, config_version) max(sm_check_info{check_name=\"[[check_type_hidden]]\", [[label0]]=~\"^[[label0value]]$\", [[label1]]=~\"^[[label1value]]$\", [[label2]]=~\"^[[label2value]]$\"}) by (instance, job, probe, config_version)))",
           "hide": false,
           "interval": "1m",
           "intervalFactor": 1,
@@ -225,7 +225,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "$check_type check error percentage",
+      "title": "[[check_type_hidden]] check error percentage",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -441,7 +441,7 @@
                 "value": [
                   {
                     "title": "Show details...",
-                    "url": "/a/grafana-synthetic-monitoring-app/?page=redirect&dashboard=$check_type&var-probe=All&var-instance=${__data.fields.instance}&var-job=${__data.fields.job}&from=${__from}&to=${__to}"
+                    "url": "/a/grafana-synthetic-monitoring-app/?page=redirect&dashboard=[[check_type_hidden]]&var-probe=All&var-instance=${__data.fields.instance}&var-job=${__data.fields.job}&from=${__from}&to=${__to}"
                   }
                 ]
               }
@@ -482,7 +482,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum by (instance, job, check_name)\n(\n  (\n    rate(probe_all_success_sum[$__range])\n    OR\n    rate(probe_success_sum[$__range])\n  )\n  *\n  on (instance, job, probe, config_version)\n  group_left(check_name)\n  max\n  by (instance, job, probe, config_version, check_name)\n  (sm_check_info{check_name=\"$check_type\", region=~\"$region\"})\n)\n/\nsum by (instance, check_name, job)\n(\n  (\n    rate(probe_all_success_count[$__range])\n    OR\n    rate(probe_success_count[$__range])\n  )\n  *\n  on (instance, job, probe, config_version)\n  group_left(check_name)\n  max\n  by (instance, job, probe, config_version, check_name)\n  (sm_check_info{check_name=\"$check_type\", region=~\"$region\"})\n)",
+          "expr": "sum by (instance, job, check_name)\n(\n  (\n    rate(probe_all_success_sum[$__range])\n    OR\n    rate(probe_success_sum[$__range])\n  )\n  *\n  on (instance, job, probe, config_version)\n  group_left(check_name)\n  max\n  by (instance, job, probe, config_version, check_name)\n  (sm_check_info{check_name=\"[[check_type_hidden]]\", [[label0]]=~\"^[[label0value]]$\", [[label1]]=~\"^[[label1value]]$\", [[label2]]=~\"^[[label2value]]$\"})\n)\n/\nsum by (instance, check_name, job)\n(\n  (\n    rate(probe_all_success_count[$__range])\n    OR\n    rate(probe_success_count[$__range])\n  )\n  *\n  on (instance, job, probe, config_version)\n  group_left(check_name)\n  max\n  by (instance, job, probe, config_version, check_name)\n  (sm_check_info{check_name=\"[[check_type_hidden]]\", [[label0]]=~\"^[[label0value]]$\", [[label1]]=~\"^[[label1value]]$\", [[label2]]=~\"^[[label2value]]$\"})\n)",
           "format": "table",
           "instant": true,
           "interval": "",
@@ -491,7 +491,7 @@
         },
         {
           "exemplar": true,
-          "expr": "sum by (instance, job, check_name)\n(\n  (\n    rate(probe_all_duration_seconds_sum[$__range])\n    OR\n    rate(probe_duration_seconds_sum[$__range])\n  )\n  *\n  on (instance, job, probe, config_version)\n  group_left(check_name)\n  max by (instance, job, probe, config_version, check_name)\n  (sm_check_info{check_name=\"$check_type\", region=~\"$region\"})\n)\n/\nsum by (instance, job, check_name)\n(\n  (\n    rate(probe_all_duration_seconds_count[$__range])\n    OR\n    rate(probe_duration_seconds_count[$__range])\n  )\n  *\n  on (instance, job, probe, config_version)\n  group_left(check_name)\n  max by (instance, job, probe, config_version, check_name)\n  (sm_check_info{check_name=\"$check_type\", region=~\"$region\"})\n)",
+          "expr": "sum by (instance, job, check_name)\n(\n  (\n    rate(probe_all_duration_seconds_sum[$__range])\n    OR\n    rate(probe_duration_seconds_sum[$__range])\n  )\n  *\n  on (instance, job, probe, config_version)\n  group_left(check_name)\n  max by (instance, job, probe, config_version, check_name)\n  (sm_check_info{check_name=\"[[check_type_hidden]]\", [[label0]]=~\"^[[label0value]]$\", [[label1]]=~\"^[[label1value]]$\", [[label2]]=~\"^[[label2value]]$\"})\n)\n/\nsum by (instance, job, check_name)\n(\n  (\n    rate(probe_all_duration_seconds_count[$__range])\n    OR\n    rate(probe_duration_seconds_count[$__range])\n  )\n  *\n  on (instance, job, probe, config_version)\n  group_left(check_name)\n  max by (instance, job, probe, config_version, check_name)\n  (sm_check_info{check_name=\"[[check_type_hidden]]\", [[label0]]=~\"^[[label0value]]$\", [[label1]]=~\"^[[label1value]]$\", [[label2]]=~\"^[[label2value]]$\"})\n)",
           "format": "table",
           "instant": true,
           "interval": "",
@@ -500,7 +500,7 @@
         },
         {
           "exemplar": true,
-          "expr": "ceil(\n  sum by (instance, job, check_name)\n  (\n    (\n      rate(probe_all_success_sum[5m])\n      OR\n      rate(probe_success_sum[5m])\n    )\n    *\n    on (instance, job, probe, config_version)\n    group_left(check_name)\n    max\n    by (instance, job, probe, config_version, check_name)\n    (sm_check_info{check_name=\"$check_type\", region=~\"$region\"})\n  )\n  /\n  sum by (instance, check_name, job)\n  (\n    (\n      rate(probe_all_success_count[5m])\n      OR\n      rate(probe_success_count[5m])\n    )\n    *\n    on (instance, job, probe, config_version)\n    group_left(check_name)\n    max\n    by (instance, job, probe, config_version, check_name)\n    (sm_check_info{check_name=\"$check_type\", region=~\"$region\"})\n  )\n)",
+          "expr": "ceil(\n  sum by (instance, job, check_name)\n  (\n    (\n      rate(probe_all_success_sum[5m])\n      OR\n      rate(probe_success_sum[5m])\n    )\n    *\n    on (instance, job, probe, config_version)\n    group_left(check_name)\n    max\n    by (instance, job, probe, config_version, check_name)\n    (sm_check_info{check_name=\"[[check_type_hidden]]\", [[label0]]=~\"^[[label0value]]$\", [[label1]]=~\"^[[label1value]]$\", [[label2]]=~\"^[[label2value]]$\"})\n  )\n  /\n  sum by (instance, check_name, job)\n  (\n    (\n      rate(probe_all_success_count[5m])\n      OR\n      rate(probe_success_count[5m])\n    )\n    *\n    on (instance, job, probe, config_version)\n    group_left(check_name)\n    max\n    by (instance, job, probe, config_version, check_name)\n    (sm_check_info{check_name=\"[[check_type_hidden]]\", [[label0]]=~\"^[[label0value]]$\", [[label1]]=~\"^[[label1value]]$\", [[label2]]=~\"^[[label2value]]$\"})\n  )\n)",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -510,7 +510,7 @@
         },
         {
           "exemplar": true,
-          "expr": "sum_over_time(\n  (\n    ceil(\n      sum by (instance, job) (idelta(probe_all_success_sum[5m]) * on (instance, job, probe, config_version) sm_check_info{check_name=\"$check_type\"})\n      /\n      sum by (instance, job) (idelta(probe_all_success_count[5m]))\n    )\n  )[$__range:]\n)\n/\ncount_over_time(\n  (\n      sum by (instance, job) (idelta(probe_all_success_count[5m]))\n  )[$__range:]\n)",
+          "expr": "sum_over_time(\n  (\n    ceil(\n      sum by (instance, job) (idelta(probe_all_success_sum[5m]) * on (instance, job, probe, config_version) sm_check_info{check_name=\"[[check_type_hidden]]\", [[label0]]=~\"^[[label0value]]$\", [[label1]]=~\"^[[label1value]]$\", [[label2]]=~\"^[[label2value]]$\"})\n      /\n      sum by (instance, job) (idelta(probe_all_success_count[5m]))\n    )\n  )[$__range:]\n)\n/\ncount_over_time(\n  (\n      sum by (instance, job) (idelta(probe_all_success_count[5m]))\n  )[$__range:]\n)",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -521,7 +521,7 @@
       ],
       "timeFrom": null,
       "timeShift": null,
-      "title": "$check_type checks",
+      "title": "[[check_type_hidden]] checks",
       "transformations": [
         {
           "id": "merge",
@@ -598,7 +598,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum((rate(probe_all_duration_seconds_sum[5m]) OR rate(probe_duration_seconds_sum[5m])) * on (instance, job, probe, config_version) group_left max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version))  by (job, instance) / sum((rate(probe_all_duration_seconds_count[5m]) OR rate(probe_duration_seconds_count[5m])) * on (instance, job, probe, config_version) group_left max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version)) by (job, instance)",
+          "expr": "sum((rate(probe_all_duration_seconds_sum[5m]) OR rate(probe_duration_seconds_sum[5m])) * on (instance, job, probe, config_version) group_left max(sm_check_info{check_name=\"[[check_type_hidden]]\", [[label0]]=~\"^[[label0value]]$\", [[label1]]=~\"^[[label1value]]$\", [[label2]]=~\"^[[label2value]]$\"}) by (instance, job, probe, config_version))  by (job, instance) / sum((rate(probe_all_duration_seconds_count[5m]) OR rate(probe_duration_seconds_count[5m])) * on (instance, job, probe, config_version) group_left max(sm_check_info{check_name=\"[[check_type_hidden]]\", [[label0]]=~\"^[[label0value]]$\", [[label1]]=~\"^[[label1value]]$\", [[label2]]=~\"^[[label2value]]$\"}) by (instance, job, probe, config_version)) by (job, instance)",
           "hide": false,
           "interval": "",
           "legendFormat": "{{job}}/{{ instance }}",
@@ -609,7 +609,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "$check_type latency",
+      "title": "[[check_type_hidden]] latency",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -658,7 +658,11 @@
     "list": [
       {
         "allValue": null,
-        "current": {},
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
         "datasource": "${DS_SM_METRICS}",
         "definition": "label_values(sm_check_info, check_name)",
         "description": null,
@@ -672,33 +676,6 @@
         "query": {
           "query": "label_values(sm_check_info, check_name)",
           "refId": "${DS_SM_METRICS}-check_type-Variable-Query"
-        },
-        "refresh": 1,
-        "regex": "",
-        "skipUrlSync": false,
-        "sort": 0,
-        "tagValuesQuery": "",
-        "tags": [],
-        "tagsQuery": "",
-        "type": "query",
-        "useTags": false
-      },
-      {
-        "allValue": ".*",
-        "current": {},
-        "datasource": "${DS_SM_METRICS}",
-        "definition": "label_values(sm_check_info, region)",
-        "description": null,
-        "error": null,
-        "hide": 0,
-        "includeAll": true,
-        "label": null,
-        "multi": true,
-        "name": "region",
-        "options": [],
-        "query": {
-          "query": "label_values(sm_check_info, region)",
-          "refId": "${DS_SM_METRICS}-region-Variable-Query"
         },
         "refresh": 1,
         "regex": "",
@@ -731,6 +708,223 @@
             "selected": false
           }
         ]
+      },
+      {
+        "allValue": null,
+        "current": {
+          "selected": false,
+          "text": "region",
+          "value": "region"
+        },
+        "datasource": "${DS_SM_METRICS}",
+        "definition": "label_names()",
+        "description": "The first label to use for filtering. Specify its value in the next drop down.",
+        "error": null,
+        "hide": 0,
+        "includeAll": false,
+        "label": "First filter",
+        "multi": false,
+        "name": "label0",
+        "options": [],
+        "query": {
+          "query": "label_names()",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "/^alert_sensitivity$|^instance$|^job$|^region$|^probe$|^label_/",
+        "skipUrlSync": false,
+        "sort": 5,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": "${DS_SM_METRICS}",
+        "definition": "label_values(sm_check_info{check_name=~\"[[check_type]]\"}, [[label0]])",
+        "description": null,
+        "error": null,
+        "hide": 1,
+        "includeAll": true,
+        "label": null,
+        "multi": false,
+        "name": "label0value",
+        "options": [],
+        "query": {
+          "query": "label_values(sm_check_info{check_name=~\"[[check_type]]\"}, [[label0]])",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 5,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "selected": false,
+          "text": "job",
+          "value": "job"
+        },
+        "datasource": "${DS_SM_METRICS}",
+        "definition": "label_names()",
+        "description": "The second label to use for filtering. Specify its value in the next drop down.",
+        "error": null,
+        "hide": 0,
+        "includeAll": false,
+        "label": "Second filter",
+        "multi": false,
+        "name": "label1",
+        "options": [],
+        "query": {
+          "query": "label_names()",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "/^alert_sensitivity$|^instance$|^job$|^region$|^probe$|^label_/",
+        "skipUrlSync": false,
+        "sort": 5,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": "${DS_SM_METRICS}",
+        "definition": "label_values(sm_check_info{check_name=~\"[[check_type]]\"}, [[label1]])",
+        "description": null,
+        "error": null,
+        "hide": 1,
+        "includeAll": true,
+        "label": null,
+        "multi": false,
+        "name": "label1value",
+        "options": [],
+        "query": {
+          "query": "label_values(sm_check_info{check_name=~\"[[check_type]]\"}, [[label1]])",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 5,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "selected": false,
+          "text": "instance",
+          "value": "instance"
+        },
+        "datasource": "${DS_SM_METRICS}",
+        "definition": "label_names()",
+        "description": "The third label to use for filtering. Specify its value in the next drop down.",
+        "error": null,
+        "hide": 0,
+        "includeAll": false,
+        "label": "Third filter",
+        "multi": false,
+        "name": "label2",
+        "options": [],
+        "query": {
+          "query": "label_names()",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "/^alert_sensitivity$|^instance$|^job$|^region$|^probe$|^label_/",
+        "skipUrlSync": false,
+        "sort": 5,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": "${DS_SM_METRICS}",
+        "definition": "label_values(sm_check_info{check_name=~\"[[check_type]]\"}, [[label2]])",
+        "description": null,
+        "error": null,
+        "hide": 1,
+        "includeAll": true,
+        "label": null,
+        "multi": false,
+        "name": "label2value",
+        "options": [],
+        "query": {
+          "query": "label_values(sm_check_info{check_name=~\"[[check_type]]\"}, [[label2]])",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 5,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": "${DS_SM_METRICS}",
+        "definition": "label_values(sm_check_info{[[label0]]=~\"[[label0value]]\", [[label1]]=~\"[[label1value]]\", [[label2]]=~\"[[label2value]]\"}, check_name)",
+        "description": null,
+        "error": null,
+        "hide": 2,
+        "includeAll": true,
+        "label": null,
+        "multi": true,
+        "name": "check_type_hidden",
+        "options": [],
+        "query": {
+          "query": "label_values(sm_check_info{[[label0]]=~\"[[label0value]]\", [[label1]]=~\"[[label1value]]\", [[label2]]=~\"[[label2value]]\"}, check_name)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 5,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
       }
     ]
   },
@@ -754,5 +948,5 @@
   "timezone": "",
   "title": "Synthetic Monitoring Summary",
   "uid": "fU-WBSqWz",
-  "version": 39
+  "version": 42
 }
