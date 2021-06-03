@@ -12,6 +12,7 @@ import {
   CheckEnabledStatus,
   CheckListViewType,
   CheckType,
+  FeatureName,
 } from 'types';
 import appEvents from 'grafana/app/core/app_events';
 import { Button, Icon, Select, Input, Pagination, InfoBox, Checkbox, useStyles, RadioButtonGroup } from '@grafana/ui';
@@ -23,11 +24,13 @@ import {
   CHECK_LIST_STATUS_OPTIONS,
   CHECK_LIST_VIEW_TYPE_OPTIONS,
   CHECK_LIST_VIEW_TYPE_LS_KEY,
+  CHECK_TYPE_OPTIONS,
 } from './constants';
 import { CheckListItem } from './CheckListItem';
 import { css } from '@emotion/css';
 import { LabelFilterInput } from './LabelFilterInput';
 import { SuccessRateContext, SuccessRateTypes } from 'contexts/SuccessRateContext';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
 
 const CHECKS_PER_PAGE_CARD = 15;
 const CHECKS_PER_PAGE_LIST = 50;
@@ -157,6 +160,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
   const [bulkActionInProgress, setBulkActionInProgress] = useState(false);
   const styles = useStyles(getStyles);
   const successRateContext = useContext(SuccessRateContext);
+  const { isEnabled: vizViewEnabled } = useFeatureFlag(FeatureName.VizView);
 
   const sortChecks = (checks: FilteredCheck[], sortType: CheckSort) => {
     switch (sortType) {
@@ -552,7 +556,11 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
                 setCurrentPage(1);
               }
             }}
-            options={CHECK_LIST_VIEW_TYPE_OPTIONS}
+            options={
+              vizViewEnabled
+                ? CHECK_LIST_VIEW_TYPE_OPTIONS
+                : CHECK_LIST_VIEW_TYPE_OPTIONS.filter(({ value }) => value !== CheckListViewType.Viz)
+            }
           />
         )}
         <div className={styles.flexGrow} />
@@ -569,29 +577,35 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
           onChange={updateSortMethod}
         />
       </div>
-      <section className="card-section card-list-layout-list">
-        <ol className="card-list">
-          {currentPageChecks.map((check, index) => (
-            <CheckListItem
-              check={check}
-              key={index}
-              onLabelSelect={handleLabelSelect}
-              onStatusSelect={handleStatusSelect}
-              onTypeSelect={handleTypeSelect}
-              onToggleCheckbox={handleCheckSelect}
-              selected={selectedChecks.has(check.id)}
-              viewType={viewType}
-              onDeleteCheck={deleteSingleCheck}
+      {viewType === CheckListViewType.Viz ? (
+        <div>Totes viz</div>
+      ) : (
+        <div>
+          <section className="card-section card-list-layout-list">
+            <ol className="card-list">
+              {currentPageChecks.map((check, index) => (
+                <CheckListItem
+                  check={check}
+                  key={index}
+                  onLabelSelect={handleLabelSelect}
+                  onStatusSelect={handleStatusSelect}
+                  onTypeSelect={handleTypeSelect}
+                  onToggleCheckbox={handleCheckSelect}
+                  selected={selectedChecks.has(check.id)}
+                  viewType={viewType}
+                  onDeleteCheck={deleteSingleCheck}
+                />
+              ))}
+            </ol>
+          </section>
+          {totalPages > 1 && (
+            <Pagination
+              numberOfPages={totalPages}
+              currentPage={currentPage}
+              onNavigate={(toPage: number) => setCurrentPage(toPage)}
             />
-          ))}
-        </ol>
-      </section>
-      {totalPages > 1 && (
-        <Pagination
-          numberOfPages={totalPages}
-          currentPage={currentPage}
-          onNavigate={(toPage: number) => setCurrentPage(toPage)}
-        />
+          )}
+        </div>
       )}
     </div>
   );

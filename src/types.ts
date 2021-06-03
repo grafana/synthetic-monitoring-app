@@ -447,6 +447,7 @@ export enum CheckEnabledStatus {
 export enum CheckListViewType {
   Card,
   List,
+  Viz,
 }
 
 export enum HTTPCompressionAlgo {
@@ -459,4 +460,5 @@ export enum HTTPCompressionAlgo {
 
 export enum FeatureName {
   UnifiedAlerting = 'ngalert',
+  VizView = 'sm-viz-view',
 }
