@@ -22,13 +22,13 @@
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "7.0.3"
+      "version": "7.5.7"
     },
     {
       "type": "panel",
       "id": "grafana-worldmap-panel",
       "name": "Worldmap Panel",
-      "version": "0.2.1"
+      "version": "0.3.2"
     },
     {
       "type": "panel",
@@ -44,8 +44,8 @@
     },
     {
       "type": "panel",
-      "id": "table-old",
-      "name": "Table (old)",
+      "id": "table",
+      "name": "Table",
       "version": ""
     }
   ],
@@ -67,7 +67,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": null,
-  "iteration": 1592844495556,
+  "iteration": 1622660155942,
   "links": [],
   "panels": [
     {
@@ -100,9 +100,7 @@
       "esLocationName": "probe",
       "esMetric": "Count",
       "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
+        "defaults": {},
         "overrides": []
       },
       "gridPos": {
@@ -145,7 +143,7 @@
       "thresholds": "0.5,1",
       "timeFrom": null,
       "timeShift": null,
-      "title": "$check_type Downtime",
+      "title": "$check_type reachability",
       "type": "grafana-worldmap-panel",
       "unitPlural": "%",
       "unitSingle": "",
@@ -158,9 +156,10 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "${DS_SM_METRICS}",
+      "description": "",
       "fieldConfig": {
         "defaults": {
-          "custom": {}
+          "links": []
         },
         "overrides": []
       },
@@ -196,9 +195,10 @@
       "maxDataPoints": "100",
       "nullPointMode": "null",
       "options": {
-        "dataLinks": []
+        "alertThreshold": true
       },
       "percentage": false,
+      "pluginVersion": "7.5.7",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -213,9 +213,10 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "1 - (sum((rate(probe_all_success_sum[$__interval]) OR rate(probe_success_sum[$__interval])) *  on (instance, job, probe, config_version) max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version)) / sum((rate(probe_all_success_count[$__interval]) OR rate(probe_success_count[$__interval])) *  on (instance, job, probe, config_version) max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version)))",
+          "expr": "1 - (sum((rate(probe_all_success_sum[$__rate_interval]) OR rate(probe_success_sum[$__rate_interval])) *  on (instance, job, probe, config_version) max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version)) / sum((rate(probe_all_success_count[$__rate_interval]) OR rate(probe_success_count[$__rate_interval])) *  on (instance, job, probe, config_version) max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version)))",
           "hide": false,
-          "interval": "",
+          "interval": "1m",
+          "intervalFactor": 1,
           "legendFormat": "% Errors",
           "refId": "A"
         }
@@ -224,7 +225,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "$check_type Check Error Percent",
+      "title": "$check_type check error percentage",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -263,15 +264,208 @@
       }
     },
     {
-      "columns": [],
       "datasource": "${DS_SM_METRICS}",
+      "description": "* **instance**: the instance that corresponds to this check.\n* **job**: the job that corresponds to this check.\n* **reachability**: the percentage of all the checks that have succeeded during the whole time period.\n* **latency**: the average time to receive an answer across all the checks during the whole time period.\n* **state**: whether the target was up or down the last time it was checked.\n* **uptime**: the fraction of time the target was up  during the whole period.",
       "fieldConfig": {
         "defaults": {
-          "custom": {}
+          "color": {
+            "mode": "continuous-RdYlGr"
+          },
+          "custom": {
+            "align": null,
+            "displayMode": "auto",
+            "filterable": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #reachability"
+            },
+            "properties": [
+              {
+                "id": "custom.displayMode",
+                "value": "color-background"
+              },
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "displayName",
+                "value": "reachability"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #latency"
+            },
+            "properties": [
+              {
+                "id": "custom.displayMode",
+                "value": "color-background"
+              },
+              {
+                "id": "displayName",
+                "value": "latency"
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 0.5
+                    },
+                    {
+                      "color": "red",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "unit",
+                "value": "s"
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "thresholds"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #state"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "state"
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "from": "",
+                    "id": 1,
+                    "text": "down",
+                    "to": "",
+                    "type": 1,
+                    "value": "0"
+                  },
+                  {
+                    "from": "",
+                    "id": 2,
+                    "text": "up",
+                    "to": "",
+                    "type": 1,
+                    "value": "1"
+                  }
+                ]
+              },
+              {
+                "id": "custom.displayMode",
+                "value": "color-background"
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": null
+                    },
+                    {
+                      "color": "green",
+                      "value": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "id": "color"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #uptime"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "uptime"
+              },
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "custom.displayMode",
+                "value": "color-background"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "instance"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Show details...",
+                    "url": "/a/grafana-synthetic-monitoring-app/?page=redirect&dashboard=$check_type&var-probe=All&var-instance=${__data.fields.instance}&var-job=${__data.fields.job}&from=${__from}&to=${__to}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "job"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Show details...",
+                    "url": "/a/grafana-synthetic-monitoring-app/?page=redirect&dashboard=${__data.fields[1]}&var-probe=All&var-instance=${__data.fields.instance}&var-job=${__data.fields.job}&from=${__from}&to=${__to}"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
       },
-      "fontSize": "100%",
       "gridPos": {
         "h": 9,
         "w": 10,
@@ -279,137 +473,73 @@
         "y": 1
       },
       "id": 2,
-      "pageSize": null,
-      "showHeader": true,
-      "sort": {
-        "col": 1,
-        "desc": true
+      "options": {
+        "showHeader": true
       },
-      "styles": [
-        {
-          "alias": "instance",
-          "align": "auto",
-          "dateFormat": "YYYY-MM-DD HH:mm:ss",
-          "link": true,
-          "linkTooltip": "",
-          "linkUrl": "/a/grafana-synthetic-monitoring-app/?page=redirect&dashboard=${__cell_1}&var-probe=All&var-instance=${__cell}&var-job=${__cell_3}&from=${__from}&to=${__to}",
-          "mappingType": 1,
-          "pattern": "instance",
-          "rangeMaps": [],
-          "type": "string",
-          "valueMaps": []
-        },
-        {
-          "alias": "Uptime",
-          "align": "right",
-          "colorMode": "row",
-          "colors": [
-            "rgba(245, 54, 54, 0.9)",
-            "#FF780A",
-            "#56A64B"
-          ],
-          "decimals": 2,
-          "pattern": "Value #C",
-          "thresholds": [
-            "0.99",
-            "0.995"
-          ],
-          "type": "number",
-          "unit": "percentunit"
-        },
-        {
-          "alias": "",
-          "align": "auto",
-          "colorMode": null,
-          "colors": [
-            "rgba(245, 54, 54, 0.9)",
-            "rgba(237, 129, 40, 0.89)",
-            "rgba(50, 172, 45, 0.97)"
-          ],
-          "dateFormat": "YYYY-MM-DD HH:mm:ss",
-          "decimals": 2,
-          "mappingType": 1,
-          "pattern": "Time",
-          "thresholds": [],
-          "type": "hidden",
-          "unit": "short"
-        },
-        {
-          "alias": "Latency",
-          "align": "right",
-          "colorMode": null,
-          "colors": [
-            "rgba(245, 54, 54, 0.9)",
-            "rgba(237, 129, 40, 0.89)",
-            "rgba(50, 172, 45, 0.97)"
-          ],
-          "dateFormat": "YYYY-MM-DD HH:mm:ss",
-          "decimals": 2,
-          "mappingType": 1,
-          "pattern": "Value #A",
-          "thresholds": [],
-          "type": "number",
-          "unit": "s"
-        },
-        {
-          "alias": "",
-          "align": "auto",
-          "colorMode": null,
-          "colors": [
-            "rgba(245, 54, 54, 0.9)",
-            "rgba(237, 129, 40, 0.89)",
-            "rgba(50, 172, 45, 0.97)"
-          ],
-          "dateFormat": "YYYY-MM-DD HH:mm:ss",
-          "decimals": 2,
-          "mappingType": 1,
-          "pattern": "check_name",
-          "thresholds": [],
-          "type": "hidden",
-          "unit": "short"
-        },
-        {
-          "alias": "",
-          "align": "left",
-          "colorMode": null,
-          "colors": [
-            "rgba(245, 54, 54, 0.9)",
-            "rgba(237, 129, 40, 0.89)",
-            "rgba(50, 172, 45, 0.97)"
-          ],
-          "dateFormat": "YYYY-MM-DD HH:mm:ss",
-          "decimals": 2,
-          "mappingType": 1,
-          "pattern": "job",
-          "thresholds": [],
-          "type": "string",
-          "unit": "short"
-        }
-      ],
+      "pluginVersion": "7.5.7",
+      "repeat": null,
+      "repeatDirection": "v",
       "targets": [
         {
-          "expr": "sum((rate(probe_all_success_sum[$__range]) OR rate(probe_success_sum[$__range])) * on (instance, job, probe, config_version) group_left(check_name) max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version, check_name)) by (instance, job, check_name) / sum((rate(probe_all_success_count[$__range]) OR rate(probe_success_count[$__range])) * on (instance, job, probe, config_version) group_left(check_name) max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version, check_name)) by (instance, check_name, job)",
+          "exemplar": true,
+          "expr": "sum by (instance, job, check_name)\n(\n  (\n    rate(probe_all_success_sum[$__range])\n    OR\n    rate(probe_success_sum[$__range])\n  )\n  *\n  on (instance, job, probe, config_version)\n  group_left(check_name)\n  max\n  by (instance, job, probe, config_version, check_name)\n  (sm_check_info{check_name=\"$check_type\", region=~\"$region\"})\n)\n/\nsum by (instance, check_name, job)\n(\n  (\n    rate(probe_all_success_count[$__range])\n    OR\n    rate(probe_success_count[$__range])\n  )\n  *\n  on (instance, job, probe, config_version)\n  group_left(check_name)\n  max\n  by (instance, job, probe, config_version, check_name)\n  (sm_check_info{check_name=\"$check_type\", region=~\"$region\"})\n)",
           "format": "table",
           "instant": true,
           "interval": "",
           "legendFormat": "{{check_name}}-{{instance}}-uptime",
-          "refId": "C"
+          "refId": "reachability"
         },
         {
-          "expr": "sum((rate(probe_all_duration_seconds_sum[$__range]) OR rate(probe_duration_seconds_sum[$__range])) * on (instance, job, probe, config_version) group_left(check_name) max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version, check_name)) by (instance, job, check_name) / sum((rate(probe_all_duration_seconds_count[$__range]) OR rate(probe_duration_seconds_count[$__range])) * on (instance, job, probe, config_version) group_left(check_name) max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version, check_name)) by (instance, job, check_name)",
+          "exemplar": true,
+          "expr": "sum by (instance, job, check_name)\n(\n  (\n    rate(probe_all_duration_seconds_sum[$__range])\n    OR\n    rate(probe_duration_seconds_sum[$__range])\n  )\n  *\n  on (instance, job, probe, config_version)\n  group_left(check_name)\n  max by (instance, job, probe, config_version, check_name)\n  (sm_check_info{check_name=\"$check_type\", region=~\"$region\"})\n)\n/\nsum by (instance, job, check_name)\n(\n  (\n    rate(probe_all_duration_seconds_count[$__range])\n    OR\n    rate(probe_duration_seconds_count[$__range])\n  )\n  *\n  on (instance, job, probe, config_version)\n  group_left(check_name)\n  max by (instance, job, probe, config_version, check_name)\n  (sm_check_info{check_name=\"$check_type\", region=~\"$region\"})\n)",
           "format": "table",
           "instant": true,
           "interval": "",
           "legendFormat": "{{check_name}}-{{instance}}-latency",
-          "refId": "A"
+          "refId": "latency"
+        },
+        {
+          "exemplar": true,
+          "expr": "ceil(\n  sum by (instance, job, check_name)\n  (\n    (\n      rate(probe_all_success_sum[5m])\n      OR\n      rate(probe_success_sum[5m])\n    )\n    *\n    on (instance, job, probe, config_version)\n    group_left(check_name)\n    max\n    by (instance, job, probe, config_version, check_name)\n    (sm_check_info{check_name=\"$check_type\", region=~\"$region\"})\n  )\n  /\n  sum by (instance, check_name, job)\n  (\n    (\n      rate(probe_all_success_count[5m])\n      OR\n      rate(probe_success_count[5m])\n    )\n    *\n    on (instance, job, probe, config_version)\n    group_left(check_name)\n    max\n    by (instance, job, probe, config_version, check_name)\n    (sm_check_info{check_name=\"$check_type\", region=~\"$region\"})\n  )\n)",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "interval": "",
+          "legendFormat": "{{check_name}}-{{instance}}-uptime",
+          "refId": "state"
+        },
+        {
+          "exemplar": true,
+          "expr": "sum_over_time(\n  (\n    ceil(\n      sum by (instance, job) (idelta(probe_all_success_sum[5m]) * on (instance, job, probe, config_version) sm_check_info{check_name=\"$check_type\"})\n      /\n      sum by (instance, job) (idelta(probe_all_success_count[5m]))\n    )\n  )[$__range:]\n)\n/\ncount_over_time(\n  (\n      sum by (instance, job) (idelta(probe_all_success_count[5m]))\n  )[$__range:]\n)",
+          "format": "table",
+          "hide": false,
+          "instant": true,
+          "interval": "",
+          "legendFormat": "",
+          "refId": "uptime"
         }
       ],
       "timeFrom": null,
       "timeShift": null,
-      "title": "$check_type Checks",
-      "transform": "table",
-      "transformations": [],
-      "type": "table-old"
+      "title": "$check_type checks",
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "check_name": true
+            },
+            "indexByName": {},
+            "renameByName": {}
+          }
+        }
+      ],
+      "type": "table"
     },
     {
       "aliasColors": {},
@@ -417,9 +547,10 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "${DS_SM_METRICS}",
+      "description": "",
       "fieldConfig": {
         "defaults": {
-          "custom": {}
+          "links": []
         },
         "overrides": []
       },
@@ -449,9 +580,10 @@
       "maxDataPoints": "100",
       "nullPointMode": "null",
       "options": {
-        "dataLinks": []
+        "alertThreshold": true
       },
       "percentage": false,
+      "pluginVersion": "7.5.7",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -477,7 +609,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "$check_type Latency",
+      "title": "$check_type latency",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -517,7 +649,7 @@
     }
   ],
   "refresh": false,
-  "schemaVersion": 25,
+  "schemaVersion": 27,
   "style": "dark",
   "tags": [
     "synthetic-monitoring"
@@ -529,13 +661,18 @@
         "current": {},
         "datasource": "${DS_SM_METRICS}",
         "definition": "label_values(sm_check_info, check_name)",
+        "description": null,
+        "error": null,
         "hide": 0,
         "includeAll": true,
         "label": "Check Type",
         "multi": false,
         "name": "check_type",
         "options": [],
-        "query": "label_values(sm_check_info, check_name)",
+        "query": {
+          "query": "label_values(sm_check_info, check_name)",
+          "refId": "${DS_SM_METRICS}-check_type-Variable-Query"
+        },
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -551,13 +688,18 @@
         "current": {},
         "datasource": "${DS_SM_METRICS}",
         "definition": "label_values(sm_check_info, region)",
+        "description": null,
+        "error": null,
         "hide": 0,
         "includeAll": true,
         "label": null,
         "multi": true,
         "name": "region",
         "options": [],
-        "query": "label_values(sm_check_info, region)",
+        "query": {
+          "query": "label_values(sm_check_info, region)",
+          "refId": "${DS_SM_METRICS}-region-Variable-Query"
+        },
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -569,22 +711,26 @@
         "useTags": false
       },
       {
-        "current": {
-          "value": "${DS_SM_LOGS}",
-          "text": "${DS_SM_LOGS}"
-        },
+        "description": null,
+        "error": null,
         "hide": 2,
         "label": null,
         "name": "_DS_SM_LOGS",
+        "query": "${DS_SM_LOGS}",
+        "skipUrlSync": false,
+        "type": "constant",
+        "current": {
+          "value": "${DS_SM_LOGS}",
+          "text": "${DS_SM_LOGS}",
+          "selected": false
+        },
         "options": [
           {
             "value": "${DS_SM_LOGS}",
-            "text": "${DS_SM_LOGS}"
+            "text": "${DS_SM_LOGS}",
+            "selected": false
           }
-        ],
-        "query": "${DS_SM_LOGS}",
-        "skipUrlSync": false,
-        "type": "constant"
+        ]
       }
     ]
   },
@@ -608,5 +754,5 @@
   "timezone": "",
   "title": "Synthetic Monitoring Summary",
   "uid": "fU-WBSqWz",
-  "version": 38
+  "version": 39
 }
