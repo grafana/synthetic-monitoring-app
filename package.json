@@ -1,6 +1,6 @@
 {
   "name": "synthetic-monitoring-app",
-  "version": "0.11.4",
+  "version": "0.11.5",
   "description": "Grafana Synthetic Monitoring App",
   "scripts": {
     "lint": "eslint --cache --ignore-path .gitignore --ext .js,.jsx,.ts,.tsx .",

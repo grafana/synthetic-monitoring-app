@@ -1,3 +1,5 @@
+## [0.11.5](https://github.com/grafana/synthetic-monitoring-app/compare/0.11.4...0.11.5) (2021-06-04)
+
 ## [0.11.4](https://github.com/grafana/synthetic-monitoring-app/compare/0.11.3...0.11.4) (2021-06-03)
 
 ## [0.11.3](https://github.com/grafana/synthetic-monitoring-app/compare/0.11.2...0.11.3) (2021-06-03)
