@@ -1201,10 +1201,35 @@
     rxjs "6.6.3"
     xss "1.0.6"
 
+"@grafana/data@7.5.7":
+  version "7.5.7"
+  resolved "https://registry.yarnpkg.com/@grafana/data/-/data-7.5.7.tgz#37331e04ea70875c455c7ce79c6314cbcecc2551"
+  integrity sha512-nJVbK8qWtUZodWz+JCcxkr2rOrwK676Fl5kZwKTM9JELbCRF9ntIVOGhfAcLsyju1YRhJNRPiH0XjNMrdKciRg==
+  dependencies:
+    "@braintree/sanitize-url" "4.0.0"
+    "@types/d3-interpolate" "^1.3.1"
+    apache-arrow "0.16.0"
+    eventemitter3 "4.0.7"
+    lodash "4.17.21"
+    marked "2.0.1"
+    rxjs "6.6.3"
+    xss "1.0.6"
+
 "@grafana/e2e-selectors@7.5.5":
   version "7.5.5"
   resolved "https://registry.yarnpkg.com/@grafana/e2e-selectors/-/e2e-selectors-7.5.5.tgz#30eaf028ccf0aa86149142150874ce1889169eab"
   integrity sha512-FbQeKIrpIJ0FXyUlBGuxBiJcJg6b8LY7hn7aAtpUVGhBvXkt1DtxEJwzrJcQ93NnzrC4FDGzsJBaDcTtwgE9dw==
+  dependencies:
+    "@grafana/tsconfig" "^1.0.0-rc1"
+    commander "5.0.0"
+    execa "4.0.0"
+    typescript "4.1.2"
+    yaml "^1.8.3"
+
+"@grafana/e2e-selectors@7.5.7":
+  version "7.5.7"
+  resolved "https://registry.yarnpkg.com/@grafana/e2e-selectors/-/e2e-selectors-7.5.7.tgz#ad3cf25657e343848251e23ded4c0120af0e5d35"
+  integrity sha512-2c+QErlEwJieBWEPbqJ5XewCwWfYFXMQjjQtTz9vVRitJKwbXMQ2iYRk25poX0q0ODVhwil2U1Z3BLCTbStx/w==
   dependencies:
     "@grafana/tsconfig" "^1.0.0-rc1"
     commander "5.0.0"
@@ -1228,13 +1253,13 @@
     prettier "2.2.1"
     typescript "4.1.3"
 
-"@grafana/runtime@7.5.5":
-  version "7.5.5"
-  resolved "https://registry.yarnpkg.com/@grafana/runtime/-/runtime-7.5.5.tgz#861c88a56e3d14ebd5eb176bda86bcdd80e2d503"
-  integrity sha512-Hm+ef0eePL3QoVKY40ZO2JenZJoE6esWQdI3xIlRQ4T1K82pCYVvE/LCMG2B1C85fuS8Jx57OHTsKTr6RO37+A==
+"@grafana/runtime@7.5.7":
+  version "7.5.7"
+  resolved "https://registry.yarnpkg.com/@grafana/runtime/-/runtime-7.5.7.tgz#9037924444544b81b32c20422d8929bc7da76c37"
+  integrity sha512-BSKU2HJyPLlEe2Px4T/tLU9ZQpgjsoL1CSWAA8SRwQQjfiUJHf73xj5IksWG2IZPnUDnaZvt7bgW54GXo+HA4A==
   dependencies:
-    "@grafana/data" "7.5.5"
-    "@grafana/ui" "7.5.5"
+    "@grafana/data" "7.5.7"
+    "@grafana/ui" "7.5.7"
     systemjs "0.20.19"
     systemjs-plugin-css "0.1.37"
 
@@ -1410,6 +1435,65 @@
     slate "0.47.8"
     tinycolor2 "1.4.1"
     uplot "1.6.8"
+
+"@grafana/ui@7.5.7":
+  version "7.5.7"
+  resolved "https://registry.yarnpkg.com/@grafana/ui/-/ui-7.5.7.tgz#1ceb3c7347c1d94503f48e714562c7be3d2d7f49"
+  integrity sha512-MCYNhRKddHhKMTjRN1AvExXJkEDisqpSEVRJX3aCIhnt2qWVkrjBDUtcmBF5v9xKxcSok+pHBWNtYkCoGsYSxQ==
+  dependencies:
+    "@emotion/core" "10.0.27"
+    "@grafana/aws-sdk" "0.0.3"
+    "@grafana/data" "7.5.7"
+    "@grafana/e2e-selectors" "7.5.7"
+    "@grafana/slate-react" "0.22.9-grafana"
+    "@grafana/tsconfig" "^1.0.0-rc1"
+    "@iconscout/react-unicons" "1.1.4"
+    "@popperjs/core" "2.5.4"
+    "@sentry/browser" "5.25.0"
+    "@testing-library/jest-dom" "5.11.9"
+    "@torkelo/react-select" "3.0.8"
+    "@types/hoist-non-react-statics" "3.3.1"
+    "@types/react-beautiful-dnd" "12.1.2"
+    "@types/react-color" "3.0.1"
+    "@types/react-select" "3.0.8"
+    "@types/react-table" "7.0.12"
+    "@types/slate" "0.47.1"
+    "@types/slate-react" "0.22.5"
+    "@visx/event" "1.3.0"
+    "@visx/gradient" "1.0.0"
+    "@visx/scale" "1.4.0"
+    "@visx/shape" "1.4.0"
+    "@visx/tooltip" "1.3.0"
+    classnames "2.2.6"
+    d3 "5.15.0"
+    emotion "10.0.27"
+    hoist-non-react-statics "3.3.2"
+    immutable "3.8.2"
+    jquery "3.5.1"
+    lodash "4.17.21"
+    moment "2.24.0"
+    monaco-editor "0.20.0"
+    papaparse "5.3.0"
+    rc-cascader "1.0.1"
+    rc-drawer "3.1.3"
+    rc-slider "9.6.4"
+    rc-time-picker "^3.7.3"
+    react "17.0.1"
+    react-beautiful-dnd "13.0.0"
+    react-calendar "2.19.2"
+    react-color "2.18.0"
+    react-custom-scrollbars "4.2.1"
+    react-dom "17.0.1"
+    react-highlight-words "0.16.0"
+    react-hook-form "5.1.3"
+    react-monaco-editor "0.36.0"
+    react-popper "2.2.4"
+    react-storybook-addon-props-combinations "1.1.0"
+    react-table "7.0.0"
+    react-transition-group "4.4.1"
+    slate "0.47.8"
+    tinycolor2 "1.4.1"
+    uplot "1.6.9"
 
 "@iarna/toml@2.2.5":
   version "2.2.5"
@@ -14382,6 +14466,11 @@ uplot@1.6.8:
   version "1.6.8"
   resolved "https://registry.yarnpkg.com/uplot/-/uplot-1.6.8.tgz#0a7920018de24fa9aa0ba78ab59c99b4a23f8322"
   integrity sha512-Hqg7iv/3fJlD9nockD7heaUj28RhrIwzugXglnoX//W27wgRAJIJMV2VFMZ5oRVM0RIchByAle1ylf/GdnXgjA==
+
+uplot@1.6.9:
+  version "1.6.9"
+  resolved "https://registry.yarnpkg.com/uplot/-/uplot-1.6.9.tgz#0f10e10b5882cb80eb58d63f870b8a77e8d95962"
+  integrity sha512-uWIegRdqbqJwnB5SDBt29lyJIgHLIqt5AnwlLGxuA3gKKXGtY7d68RR6oDF2u5pK9jpIb1djrQnm5n0BiAnUgA==
 
 upper-case@^1.1.1:
   version "1.1.3"
