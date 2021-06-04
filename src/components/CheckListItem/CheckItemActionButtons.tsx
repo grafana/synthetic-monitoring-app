@@ -43,7 +43,7 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon, onRemoveChe
 
     getLocationSrv().update({
       partial: false,
-      path: `d/${target.uid}`,
+      path: `/d/${target.uid}`,
       query: {
         'var-instance': check.target,
         'var-job': check.job,
