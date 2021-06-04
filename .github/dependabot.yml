@@ -3,9 +3,9 @@
 
 version: 2
 updates:
-  - package-ecosystem: "yarn"
-    directory: "/"
+  - package-ecosystem: 'npm'
+    directory: '/'
     labels:
-      - "dependencies"
+      - 'dependencies'
     schedule:
-      interval: "daily"
+      interval: 'daily'
