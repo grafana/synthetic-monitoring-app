@@ -126,6 +126,11 @@ const getStyles = (theme: GrafanaTheme) => ({
   marginRightSmall: css`
     margin-right: ${theme.spacing.sm};
   `,
+  vizContainer: css`
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  `,
 });
 
 interface Props {
@@ -578,7 +583,9 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
         />
       </div>
       {viewType === CheckListViewType.Viz ? (
-        <ChecksVisualization checks={checks} />
+        <div className={styles.vizContainer}>
+          <ChecksVisualization checks={checks} />
+        </div>
       ) : (
         <div>
           <section className="card-section card-list-layout-list">
