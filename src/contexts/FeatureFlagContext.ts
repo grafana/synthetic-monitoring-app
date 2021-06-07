@@ -2,17 +2,21 @@ import { createContext } from 'react';
 import { FeatureToggles, urlUtil } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import { FeatureName } from 'types';
+import { isArray } from 'lodash';
 
 interface FeatureFlagContextValue {
   featureToggles: FeatureToggles;
   isFeatureEnabled: (name: FeatureName) => boolean;
 }
 
-function isFeatureEnabled(name: FeatureName) {
-  const isEnabledThroughQueryParam = urlUtil.getUrlSearchParams()['features']?.includes(name);
-  // @ts-ignore
-  // the type definitions in grafana core for feature toggles aren't quite right
-  return Boolean(config.featureToggles[name]?.live) || isEnabledThroughQueryParam;
+export function isFeatureEnabled(name: FeatureName) {
+  const featuresParam = urlUtil.getUrlSearchParams()['features'];
+  let isEnabledThroughQueryParam = false;
+  if (isArray(featuresParam)) {
+    const stringParams = featuresParam as string[];
+    isEnabledThroughQueryParam = stringParams.includes(name);
+  }
+  return Boolean(config.featureToggles[name]) || isEnabledThroughQueryParam;
 }
 
 export function getFeatureContextValues() {

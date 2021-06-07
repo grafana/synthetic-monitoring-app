@@ -2,7 +2,7 @@ import { GrafanaTheme } from '@grafana/data';
 import { Tag, useStyles } from '@grafana/ui';
 import React from 'react';
 import { Label } from 'types';
-import { css, cx } from 'emotion';
+import { css, cx } from '@emotion/css';
 
 interface Props {
   label: Label;

@@ -2,7 +2,7 @@ import { useStyles, Input, Button, Label, Field } from '@grafana/ui';
 import React, { FC, Fragment } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { SubCollapse } from './SubCollapse';
-import { css } from 'emotion';
+import { css } from '@emotion/css';
 import { GrafanaTheme } from '@grafana/data';
 import { validateLabelName, validateLabelValue } from 'validation';
 
@@ -24,7 +24,12 @@ const NAME = 'labels';
 
 export const AlertLabels: FC = () => {
   const styles = useStyles(getStyles);
-  const { control, register, errors, watch } = useFormContext();
+  const {
+    control,
+    register,
+    formState: { errors },
+    watch,
+  } = useFormContext();
   const { fields, append, remove } = useFieldArray({
     control,
     name: NAME,
@@ -50,16 +55,18 @@ export const AlertLabels: FC = () => {
           <Fragment key={field.id}>
             <Field error={errors?.labels?.[labelIndex]?.name?.message} invalid={errors?.labels?.[labelIndex]?.name}>
               <Input
-                ref={register({ validate: (value) => validateLabelName(value, labels) })}
-                name={`${NAME}[${labelIndex}].name`}
+                {...register(`${NAME}.${labelIndex}.name` as const, {
+                  validate: (value) => validateLabelName(value, labels),
+                })}
                 placeholder="Name"
                 data-testid={`alert-labelName-${labelIndex}`}
               />
             </Field>
             <Field error={errors?.labels?.[labelIndex]?.value?.message} invalid={errors?.labels?.[labelIndex]?.value}>
               <Input
-                ref={register({ validate: (value) => validateLabelValue(value) })}
-                name={`${NAME}[${labelIndex}].value`}
+                {...register(`${NAME}.${labelIndex}.value` as const, {
+                  validate: (value) => validateLabelValue(value),
+                })}
                 placeholder="Value"
                 data-testid={`alert-labelValue-${labelIndex}`}
               />

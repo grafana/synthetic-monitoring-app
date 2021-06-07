@@ -15,12 +15,19 @@ import {
   CheckEnabledStatus,
   CheckListViewType,
   HTTPCompressionAlgo,
+  ResponseMatchType,
 } from 'types';
 
 export const DNS_RESPONSE_CODES = enumToStringArray(DnsResponseCodes).map((responseCode) => ({
   label: responseCode,
   value: responseCode,
 }));
+
+export const DNS_RESPONSE_MATCH_OPTIONS = [
+  { label: `Validate ${ResponseMatchType.Authority} matches`, value: ResponseMatchType.Authority },
+  { label: `Validate ${ResponseMatchType.Answer} matches`, value: ResponseMatchType.Answer },
+  { label: `Validate ${ResponseMatchType.Additional} matches`, value: ResponseMatchType.Additional },
+];
 
 export const DNS_RECORD_TYPES = [
   {

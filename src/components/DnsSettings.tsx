@@ -1,5 +1,5 @@
 import React, { useState, Fragment } from 'react';
-import { css } from 'emotion';
+import { css } from '@emotion/css';
 import {
   Container,
   HorizontalGroup,
@@ -11,28 +11,27 @@ import {
   Button,
   IconButton,
   Label,
-  useTheme,
+  useTheme2,
 } from '@grafana/ui';
 import { useFormContext, Controller, useFieldArray } from 'react-hook-form';
-import { ResponseMatchType } from 'types';
 import { Collapse } from 'components/Collapse';
 import { LabelField } from './LabelField';
-import { DNS_RESPONSE_CODES, DNS_RECORD_TYPES, DNS_PROTOCOLS, IP_OPTIONS } from './constants';
+import {
+  DNS_RESPONSE_CODES,
+  DNS_RESPONSE_MATCH_OPTIONS,
+  DNS_RECORD_TYPES,
+  DNS_PROTOCOLS,
+  IP_OPTIONS,
+} from './constants';
 
 interface Props {
   isEditor: boolean;
 }
 
-const RESPONSE_MATCH_OPTIONS = [
-  { label: `Validate ${ResponseMatchType.Authority} matches`, value: ResponseMatchType.Authority },
-  { label: `Validate ${ResponseMatchType.Answer} matches`, value: ResponseMatchType.Answer },
-  { label: `Validate ${ResponseMatchType.Additional} matches`, value: ResponseMatchType.Additional },
-];
-
 const DnsSettingsForm = ({ isEditor }: Props) => {
-  const { spacing } = useTheme();
+  const { spacing } = useTheme2();
 
-  const { register, control } = useFormContext();
+  const { register, control, formState } = useFormContext();
   const { fields, append, remove } = useFieldArray({
     control,
     name: 'settings.dns.validations',
@@ -55,22 +54,27 @@ const DnsSettingsForm = ({ isEditor }: Props) => {
           `}
         >
           <Field label="Record type" disabled={!isEditor}>
-            <Controller as={Select} name="settings.dns.recordType" options={DNS_RECORD_TYPES} />
+            <Controller
+              name="settings.dns.recordType"
+              render={({ field }) => <Select {...field} options={DNS_RECORD_TYPES} />}
+            />
           </Field>
           <Field label="Server" disabled={!isEditor}>
             <Input
               id="dns-settings-server-address"
-              ref={register}
-              name="settings.dns.server"
+              {...register('settings.dns.server')}
               type="text"
               placeholder="server"
             />
           </Field>
           <Field label="Protocol" disabled={!isEditor}>
-            <Controller as={Select} name="settings.dns.protocol" options={DNS_PROTOCOLS} />
+            <Controller
+              render={({ field }) => <Select {...field} options={DNS_PROTOCOLS} />}
+              name="settings.dns.protocol"
+            />
           </Field>
           <Field label="Port" disabled={!isEditor}>
-            <Input id="dns-settings-port" ref={register} name="settings.dns.port" type="number" placeholder="port" />
+            <Input id="dns-settings-port" {...register('settings.dns.port')} type="number" placeholder="port" />
           </Field>
         </div>
       </Collapse>
@@ -83,10 +87,10 @@ const DnsSettingsForm = ({ isEditor }: Props) => {
         <HorizontalGroup>
           <Field label="Valid response codes" description="List of valid response codes" disabled={!isEditor}>
             <Controller
-              as={MultiSelect}
               name="settings.dns.validRCodes"
-              options={DNS_RESPONSE_CODES}
-              defaultValue={[DNS_RESPONSE_CODES[0]]}
+              render={({ field }) => (
+                <MultiSelect {...field} options={DNS_RESPONSE_CODES} defaultValue={[DNS_RESPONSE_CODES[0]]} />
+              )}
             />
           </Field>
         </HorizontalGroup>
@@ -96,7 +100,7 @@ const DnsSettingsForm = ({ isEditor }: Props) => {
             className={css`
               display: grid;
               grid-template-columns: auto auto 70px auto;
-              grid-gap: ${spacing.sm};
+              grid-gap: ${spacing(1)};
               align-items: center;
             `}
           >
@@ -107,26 +111,32 @@ const DnsSettingsForm = ({ isEditor }: Props) => {
             {fields.map((field, index) => (
               <Fragment key={field.id}>
                 <Controller
-                  as={Select}
-                  name={`settings.dns.validations[${index}].responseMatch`}
-                  options={RESPONSE_MATCH_OPTIONS}
-                  defaultValue={RESPONSE_MATCH_OPTIONS[0]}
+                  name={`settings.dns.validations.${index}.responseMatch` as const}
+                  rules={{ required: true }}
+                  render={({ field }) => {
+                    return (
+                      <Select
+                        {...field}
+                        value={field.value}
+                        data-testid={`dnsValidationResponseMatch${index}`}
+                        options={DNS_RESPONSE_MATCH_OPTIONS}
+                        invalid={formState.errors.settings?.dns?.validations?.[index]?.responseMatch}
+                      />
+                    );
+                  }}
                 />
                 <Input
-                  ref={register}
-                  name={`settings.dns.validations[${index}].expression`}
+                  {...register(`settings.dns.validations.${index}.expression` as const)}
                   placeholder="Type expression"
                 />
                 <div
                   className={css`
                     position: relative;
-                    margin-top: -20px;
                     justify-self: center;
                   `}
                 >
                   <Checkbox
-                    ref={register}
-                    name={`settings.dns.validations[${index}].inverted`}
+                    {...register(`settings.dns.validations.${index}.inverted` as const)}
                     aria-label="dns-validation-inverted"
                   />
                 </div>
@@ -136,11 +146,11 @@ const DnsSettingsForm = ({ isEditor }: Props) => {
           </div>
         )}
         <Button
-          onClick={() => append({ responseMatch: RESPONSE_MATCH_OPTIONS[0], expression: '', inverted: false })}
+          onClick={() => append({ responseMatch: DNS_RESPONSE_MATCH_OPTIONS[0], expression: '', inverted: false })}
           type="button"
           variant="secondary"
           className={css`
-            margin: ${spacing.sm} 0 ${spacing.md} 0;
+            margin: ${spacing(1)} 0 ${spacing(2)} 0;
           `}
           size="sm"
           disabled={!isEditor}
@@ -157,7 +167,10 @@ const DnsSettingsForm = ({ isEditor }: Props) => {
         <LabelField isEditor={isEditor} />
         <HorizontalGroup>
           <Field label="IP version" description="The IP protocol of the ICMP request" disabled={!isEditor}>
-            <Controller name="settings.dns.ipVersion" as={Select} options={IP_OPTIONS} />
+            <Controller
+              name="settings.dns.ipVersion"
+              render={({ field }) => <Select {...field} options={IP_OPTIONS} />}
+            />
           </Field>
         </HorizontalGroup>
       </Collapse>

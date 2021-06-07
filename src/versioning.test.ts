@@ -38,6 +38,6 @@ it('plugin json compatibility should reflact whats in the package json dependenc
 it('has consistent grafana dependency versions', () => {
   const { data, runtime, toolkit, ui } = getGrafanaDependencyVersion();
   expect(runtime).toEqual(data);
-  expect(toolkit).toEqual(data);
+  expect(majorMinorVersion(toolkit)).toEqual(majorMinorVersion(data));
   expect(ui).toEqual(data);
 });

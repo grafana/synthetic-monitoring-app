@@ -41,6 +41,7 @@ import {
   fallbackCheck,
   ALERT_SENSITIVITY_OPTIONS,
   HTTP_COMPRESSION_ALGO_OPTIONS,
+  DNS_RESPONSE_MATCH_OPTIONS,
 } from 'components/constants';
 import { checkType, fromBase64, toBase64 } from 'utils';
 import isBase64 from 'is-base64';
@@ -258,7 +259,8 @@ const getDnsValidations = (validations: GetDnsValidationArgs): DnsValidationForm
       formValues.push({
         expression,
         inverted: false,
-        responseMatch: selectableValueFrom(responseMatch),
+        responseMatch:
+          DNS_RESPONSE_MATCH_OPTIONS.find(({ value }) => value === responseMatch) ?? DNS_RESPONSE_MATCH_OPTIONS[0],
       });
     });
 
@@ -266,7 +268,8 @@ const getDnsValidations = (validations: GetDnsValidationArgs): DnsValidationForm
       formValues.push({
         expression,
         inverted: true,
-        responseMatch: selectableValueFrom(responseMatch),
+        responseMatch:
+          DNS_RESPONSE_MATCH_OPTIONS.find(({ value }) => value === responseMatch) ?? DNS_RESPONSE_MATCH_OPTIONS[0],
       });
     });
     return formValues;

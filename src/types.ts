@@ -457,4 +457,6 @@ export enum HTTPCompressionAlgo {
   deflate = 'deflate',
 }
 
-export enum FeatureName {}
+export enum FeatureName {
+  UnifiedAlerting = 'ngalert',
+}

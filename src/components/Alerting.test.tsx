@@ -13,7 +13,6 @@ jest.setTimeout(30000);
 
 const setDefaultRules = jest.fn();
 const setRules = jest.fn().mockImplementation(() => Promise.resolve({ ok: true }));
-const deleteRulesForCheck = jest.fn();
 
 const renderAlerting = async ({ withAlerting = true } = {}) => {
   const api = getInstanceMock();
@@ -37,14 +36,12 @@ const mockAlertsHook = () => {
       alertError: '',
       setDefaultRules,
       setRules,
-      deleteRulesForCheck,
     }))
     .mockImplementation(() => ({
       alertRules: useAlerts.defaultRules.rules as AlertRule[],
       alertError: '',
       setDefaultRules,
       setRules,
-      deleteRulesForCheck,
     }));
 };
 

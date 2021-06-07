@@ -1,7 +1,7 @@
 import { GrafanaTheme, AppEvents } from '@grafana/data';
 import { Button, ConfirmModal, IconButton, useStyles } from '@grafana/ui';
 import React, { useContext, useState } from 'react';
-import { css } from 'emotion';
+import { css } from '@emotion/css';
 import { Check, OrgRole } from 'types';
 import { dashboardUID, checkType as getCheckType, hasRole } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
@@ -43,7 +43,7 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon, onRemoveChe
 
     getLocationSrv().update({
       partial: false,
-      path: `d/${target.uid}`,
+      path: `/d/${target.uid}`,
       query: {
         'var-instance': check.target,
         'var-job': check.job,

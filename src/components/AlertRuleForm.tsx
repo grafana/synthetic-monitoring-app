@@ -1,10 +1,10 @@
 import { AppEvents, GrafanaTheme, SelectableValue } from '@grafana/data';
 import { Alert, Button, Field, HorizontalGroup, Icon, Input, Label, Select, useStyles } from '@grafana/ui';
 import React, { useState, useContext } from 'react';
-import { Controller, FormContext, useForm } from 'react-hook-form';
+import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { AlertRule, AlertSensitivity, Label as LabelType, TimeUnits } from 'types';
 import { ALERT_SENSITIVITY_OPTIONS, TIME_UNIT_OPTIONS } from './constants';
-import { css } from 'emotion';
+import { css } from '@emotion/css';
 import { AlertLabels } from './AlertLabels';
 import { AlertAnnotations } from './AlertAnnotations';
 import { useAsyncCallback } from 'react-async-hook';
@@ -151,7 +151,14 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
   const formMethods = useForm<AlertFormValues>({
     defaultValues,
   });
-  const { register, control, handleSubmit, errors, watch, reset } = formMethods;
+  const {
+    register,
+    control,
+    handleSubmit,
+    formState: { errors },
+    watch,
+    reset,
+  } = formMethods;
   const currentValues = watch() as AlertFormValues;
   const currentLabels = watch('labels');
   const currentAnnotations = watch('annotations');
@@ -198,17 +205,21 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
           <Icon name="angle-right" /> {rule.alert}
         </button>
       ) : (
-        <FormContext {...formMethods}>
+        <FormProvider {...formMethods}>
           <form className={styles.container} onSubmit={handleSubmit(execute)}>
             <Field label="Alert name">
-              <Input ref={register({ required: true })} name="name" id="alert-name" />
+              <Input {...register('name', { required: true })} id="alert-name" />
             </Field>
             <div className={styles.expressionContainer}>
               <Label>Expression</Label>
               <HorizontalGroup align="center" wrap marginHeight={0}>
                 <span className={styles.inlineText}>Checks with a sensitivity level of</span>
                 <div className={styles.selectInput}>
-                  <Controller as={Select} control={control} name="sensitivity" options={ALERT_SENSITIVITY_OPTIONS} />
+                  <Controller
+                    render={({ field }) => <Select {...field} options={ALERT_SENSITIVITY_OPTIONS} />}
+                    control={control}
+                    name="sensitivity"
+                  />
                 </div>
                 <span className={styles.inlineText}>will fire an alert if less than </span>
                 <Field
@@ -218,8 +229,7 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
                 >
                   <Input
                     className={styles.numberInput}
-                    ref={register({ required: true, max: 100, min: 1 })}
-                    name="probePercentage"
+                    {...register('probePercentage', { required: true, max: 100, min: 1 })}
                     type="number"
                     data-testid="probePercentage"
                     id="alertProbePercentage"
@@ -232,8 +242,7 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
                   className={styles.noMargin}
                 >
                   <Input
-                    ref={register({ required: true, min: 1, max: 999 })}
-                    name="timeCount"
+                    {...register('timeCount', { required: true, min: 1, max: 999 })}
                     data-testid="timeCount"
                     type="number"
                     className={styles.numberInput}
@@ -241,7 +250,11 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
                   />
                 </Field>
                 <div className={styles.selectInput}>
-                  <Controller as={Select} control={control} name="timeUnit" options={TIME_UNIT_OPTIONS} />
+                  <Controller
+                    render={({ field }) => <Select {...field} options={TIME_UNIT_OPTIONS} />}
+                    control={control}
+                    name="timeUnit"
+                  />
                 </div>
               </HorizontalGroup>
             </div>
@@ -303,7 +316,7 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
               </div>
             )}
           </form>
-        </FormContext>
+        </FormProvider>
       )}
     </>
   );

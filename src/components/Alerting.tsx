@@ -1,13 +1,14 @@
 import { GrafanaTheme } from '@grafana/data';
 import { Button, HorizontalGroup, Icon, Modal, Spinner, useStyles, Alert } from '@grafana/ui';
 import React, { FC, useState, useContext } from 'react';
-import { css } from 'emotion';
+import { css } from '@emotion/css';
 import { useAlerts } from 'hooks/useAlerts';
 import { AlertRuleForm } from './AlertRuleForm';
-import { AlertFormValues, AlertRule, OrgRole } from 'types';
+import { AlertFormValues, AlertRule, FeatureName, OrgRole } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { transformAlertFormValues } from './alertingTransformations';
 import { hasRole } from 'utils';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
 
 type SplitAlertRules = {
   recordingRules: AlertRule[];
@@ -41,6 +42,7 @@ export const Alerting: FC = () => {
   const [updatingDefaultRules, setUpdatingDefaultRules] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
   const { instance } = useContext(InstanceContext);
+  const { isEnabled: isUnifiedAlertingEnabled } = useFeatureFlag(FeatureName.UnifiedAlerting);
 
   const { recordingRules, alertingRules } = alertRules?.reduce<SplitAlertRules>(
     (rules, currentRule) => {
@@ -90,7 +92,7 @@ export const Alerting: FC = () => {
     );
   }
 
-  if (!instance.alertRuler) {
+  if (!instance.alertRuler && !isUnifiedAlertingEnabled) {
     return (
       <div>
         <Icon className={styles.icon} name="exclamation-triangle" />

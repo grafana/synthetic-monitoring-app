@@ -9,8 +9,9 @@ import {
   SM_ALERTING_NAMESPACE,
   getDefaultAlertAnnotations,
 } from 'components/constants';
-import { AlertRule, AlertSensitivity } from 'types';
+import { AlertRule, AlertSensitivity, FeatureName } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
+import { useFeatureFlag } from './useFeatureFlag';
 
 enum AlertThresholds {
   High = 95,
@@ -54,7 +55,7 @@ interface RuleResponse {
   error?: string;
 }
 
-const fetchSMRules = (alertRulerUrl: string): Promise<RuleResponse> =>
+const legacyFetchSMRules = (alertRulerUrl: string): Promise<RuleResponse> =>
   getBackendSrv()
     .fetch<any>({
       method: 'GET',
@@ -75,25 +76,35 @@ const fetchSMRules = (alertRulerUrl: string): Promise<RuleResponse> =>
       return { rules: [], error: e.data?.message ?? 'We ran into a problem and could not fetch the alert rules' };
     });
 
-const getDeleteRulesForCheck = (datasourceUrl: string) => (checkId: number) => {
-  return getBackendSrv()
+const fetchSMRules = (metricInstanceId: number): Promise<RuleResponse> =>
+  getBackendSrv()
     .fetch<any>({
-      method: 'DELETE',
-      url: `${datasourceUrl}/rules/${SM_ALERTING_NAMESPACE}/${checkId}`,
+      method: 'GET',
+      url: `/api/ruler/${metricInstanceId}/api/v1/rules/${SM_ALERTING_NAMESPACE}/default`,
     })
-    .toPromise();
-};
+    .toPromise()
+    .then(({ data }) => {
+      return { rules: data?.rules ?? [] };
+    })
+    .catch((e) => {
+      if (e.status === 404) {
+        return { rules: [] };
+      }
+      return { rules: [], error: e.data?.message ?? 'We ran into a problem and could not fetch the alert rules' };
+    });
 
 export function useAlerts(checkId?: number) {
   const [alertRules, setAlertRules] = useState<AlertRule[]>();
   const [defaultRulesSetCount, setDefaultRulesSetCount] = useState(0);
   const [alertError, setAlertError] = useState('');
+  const { isEnabled: isUnifiedAlertsEnabled } = useFeatureFlag(FeatureName.UnifiedAlerting);
+
   const {
-    instance: { alertRuler },
+    instance: { alertRuler, metrics },
   } = useContext(InstanceContext);
 
   const alertRulerUrl = alertRuler?.url;
-  const setDefaultRules = async () => {
+  const legacySetDefaultRules = async () => {
     await getBackendSrv()
       .fetch({
         url: `${alertRulerUrl}/rules/${SM_ALERTING_NAMESPACE}`,
@@ -108,7 +119,25 @@ export function useAlerts(checkId?: number) {
     setDefaultRulesSetCount(defaultRulesSetCount + 1);
   };
 
-  const setRules = async (rules: AlertRule[]) => {
+  const setDefaultRules = async () => {
+    if (!metrics) {
+      return;
+    }
+    await getBackendSrv()
+      .fetch({
+        url: `/api/ruler/${metrics.id}/api/v1/rules/${SM_ALERTING_NAMESPACE}`,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        data: defaultRules,
+      })
+      .toPromise();
+
+    setDefaultRulesSetCount(defaultRulesSetCount + 1);
+  };
+
+  const legacySetRules = async (rules: AlertRule[]) => {
     if (!alertRuler) {
       throw new Error('There is no alert ruler datasource configured for this Grafana instance');
     }
@@ -134,22 +163,54 @@ export function useAlerts(checkId?: number) {
     return updateResponse;
   };
 
+  const setRules = async (rules: AlertRule[]) => {
+    if (!metrics) {
+      throw new Error('There is no alert ruler datasource configured for this Grafana instance');
+    }
+
+    const ruleGroup = {
+      name: 'default',
+      rules,
+    };
+
+    const updateResponse = getBackendSrv()
+      .fetch({
+        url: `/api/ruler/${metrics.id}/api/v1/rules/${SM_ALERTING_NAMESPACE}`,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        data: ruleGroup,
+      })
+      .toPromise();
+
+    setDefaultRulesSetCount(defaultRulesSetCount + 1);
+
+    return updateResponse;
+  };
+
   useEffect(() => {
-    if (alertRulerUrl) {
-      fetchSMRules(alertRulerUrl).then(({ rules, error }) => {
+    if (alertRulerUrl && !isUnifiedAlertsEnabled) {
+      legacyFetchSMRules(alertRulerUrl).then(({ rules, error }) => {
+        setAlertRules(rules);
+        if (error) {
+          setAlertError(error);
+        }
+      });
+    } else if (isUnifiedAlertsEnabled && metrics) {
+      fetchSMRules(metrics.id).then(({ rules, error }) => {
         setAlertRules(rules);
         if (error) {
           setAlertError(error);
         }
       });
     }
-  }, [alertRulerUrl, defaultRulesSetCount]);
+  }, [alertRulerUrl, defaultRulesSetCount, isUnifiedAlertsEnabled, metrics]);
 
   return {
     alertRules,
     alertError,
-    setDefaultRules,
-    setRules,
-    deleteRulesForCheck: getDeleteRulesForCheck(alertRulerUrl ?? ''),
+    setDefaultRules: isUnifiedAlertsEnabled ? setDefaultRules : legacySetDefaultRules,
+    setRules: isUnifiedAlertsEnabled ? setRules : legacySetRules,
   };
 }

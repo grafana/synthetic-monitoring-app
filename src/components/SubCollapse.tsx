@@ -1,7 +1,7 @@
 import { GrafanaTheme } from '@grafana/data';
 import { Icon, useStyles } from '@grafana/ui';
 import React, { PropsWithChildren, useState } from 'react';
-import { css, cx } from 'emotion';
+import { css, cx } from '@emotion/css';
 
 interface Props {
   title: string;

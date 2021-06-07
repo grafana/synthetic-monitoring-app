@@ -44,7 +44,7 @@ export const LatencyGauge = ({ target, job, height, width }: Props) => {
   const value = getDisplayValue(data, loading);
   return (
     <BigValue
-      theme={config.theme}
+      theme={config.theme2}
       colorMode={BigValueColorMode.Value}
       height={height}
       width={width}

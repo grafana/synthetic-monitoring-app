@@ -4,7 +4,7 @@ import { CheckTypePill } from './CheckTypePill';
 import React from 'react';
 import { CheckType } from 'types';
 import { GrafanaTheme } from '@grafana/data';
-import { css, cx } from 'emotion';
+import { css, cx } from '@emotion/css';
 
 interface Props {
   checkType: CheckType;

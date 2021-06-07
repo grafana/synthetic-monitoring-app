@@ -3,7 +3,7 @@ import { SuccessRateGauge } from 'components/SuccessRateGauge';
 import { checkType as getCheckType } from 'utils';
 import { Check, CheckListViewType, CheckType, FilteredCheck, Label } from 'types';
 import { useStyles, Checkbox, HorizontalGroup } from '@grafana/ui';
-import { css, cx } from 'emotion';
+import { css, cx } from '@emotion/css';
 import { GrafanaTheme } from '@grafana/data';
 import { CheckCardLabel } from '../CheckCardLabel';
 import { LatencyGauge } from '../LatencyGauge';

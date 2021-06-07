@@ -26,10 +26,13 @@ test('host url has default', async () => {
   const submitButton = await screen.findByRole('button', { name: 'Initialize' });
   await act(async () => userEvent.click(submitButton));
   expect(onSubmitMock).toHaveBeenCalledTimes(1);
-  expect(onSubmitMock).toHaveBeenCalledWith({
-    adminApiToken: 'anapikey',
-    apiHost: 'https://synthetic-monitoring-api.grafana.net',
-  });
+  expect(onSubmitMock).toHaveBeenCalledWith(
+    {
+      adminApiToken: 'anapikey',
+      apiHost: 'https://synthetic-monitoring-api.grafana.net',
+    },
+    expect.anything()
+  );
 });
 
 test('submits host url', async () => {
@@ -44,10 +47,13 @@ test('submits host url', async () => {
   const submitButton = await screen.findByRole('button', { name: 'Initialize' });
   await act(async () => {
     await userEvent.type(hostInput, 'https://grafana.com');
-    userEvent.click(submitButton);
   });
+  await act(async () => userEvent.click(submitButton));
   expect(onSubmitMock).toHaveBeenCalledTimes(1);
-  expect(onSubmitMock).toHaveBeenCalledWith({ adminApiToken: 'anapikey', apiHost: 'https://grafana.com' });
+  expect(onSubmitMock).toHaveBeenCalledWith(
+    { adminApiToken: 'anapikey', apiHost: 'https://grafana.com' },
+    expect.anything()
+  );
 });
 
 test('validates host url', async () => {

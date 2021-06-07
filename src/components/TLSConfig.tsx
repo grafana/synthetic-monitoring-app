@@ -13,7 +13,10 @@ interface Props {
 
 export const TLSConfig = ({ isEditor, checkType }: Props) => {
   const [showTLS, setShowTLS] = useState(false);
-  const { register, errors } = useFormContext();
+  const {
+    register,
+    formState: { errors },
+  } = useFormContext();
 
   return (
     <Collapse label="TLS config" onToggle={() => setShowTLS(!showTLS)} isOpen={showTLS} collapsible>
@@ -32,11 +35,10 @@ export const TLSConfig = ({ isEditor, checkType }: Props) => {
       >
         <Input
           id="tls-config-server-name"
-          ref={register({
+          {...register(`settings.${checkType}.tlsConfig.serverName`, {
             validate: validateTLSServerName,
             required: false,
           })}
-          name={`settings.${checkType}.tlsConfig.serverName`}
           type="text"
           placeholder="Server name"
           disabled={!isEditor}
@@ -52,11 +54,10 @@ export const TLSConfig = ({ isEditor, checkType }: Props) => {
         >
           <TextArea
             id="tls-config-ca-certificate"
-            ref={register({
+            {...register(`settings.${checkType}.tlsConfig.caCert`, {
               validate: validateTLSCACert,
               required: false,
             })}
-            name={`settings.${checkType}.tlsConfig.caCert`}
             rows={2}
             disabled={!isEditor}
             placeholder="CA certificate"
@@ -73,11 +74,10 @@ export const TLSConfig = ({ isEditor, checkType }: Props) => {
         >
           <TextArea
             id="tls-config-client-cert"
-            ref={register({
+            {...register(`settings.${checkType}.tlsConfig.clientCert`, {
               validate: validateTLSClientCert,
               required: false,
             })}
-            name={`settings.${checkType}.tlsConfig.clientCert`}
             rows={2}
             disabled={!isEditor}
             placeholder="Client certificate"
@@ -94,8 +94,10 @@ export const TLSConfig = ({ isEditor, checkType }: Props) => {
         >
           <TextArea
             id="tls-config-client-key"
-            ref={register({ validate: validateTLSClientKey, required: false })}
-            name={`settings.${checkType}.tlsConfig.clientKey`}
+            {...register(`settings.${checkType}.tlsConfig.clientKey`, {
+              validate: validateTLSClientKey,
+              required: false,
+            })}
             type="password"
             rows={2}
             disabled={!isEditor}
