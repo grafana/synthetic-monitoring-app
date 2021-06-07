@@ -1,3 +1,15 @@
+# [1.0.0](https://github.com/grafana/synthetic-monitoring-app/compare/0.11.4...1.0.0) (2021-06-07)
+
+
+### Feat
+
+* support grafana v8 ([c27534f](https://github.com/grafana/synthetic-monitoring-app/commit/c27534fb7d8923a5207a01648751636558ff93b2))
+
+
+### BREAKING CHANGES
+
+* Updates plugin to be compatible with Grafana v8
+
 ## [0.11.4](https://github.com/grafana/synthetic-monitoring-app/compare/0.11.3...0.11.4) (2021-06-03)
 
 ## [0.11.3](https://github.com/grafana/synthetic-monitoring-app/compare/0.11.2...0.11.3) (2021-06-03)
