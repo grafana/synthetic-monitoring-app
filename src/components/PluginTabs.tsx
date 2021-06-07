@@ -69,7 +69,7 @@ function handleDashboardRedirect(dashboard: string, dashboards: DashboardInfo[])
     dashboards.find((dashboardJson) => dashboardJson.json.indexOf(dashboard) > -1) ?? dashboards[0];
   getLocationSrv().update({
     partial: false,
-    path: `d/${targetDashboard.uid}`,
+    path: `/d/${targetDashboard.uid}`,
   });
 }
 
