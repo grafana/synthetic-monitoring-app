@@ -124,7 +124,7 @@ export interface DnsSettings {
   validRCodes?: string[];
   validateAnswerRRS?: DNSRRValidator;
   validateAuthorityRRS?: DNSRRValidator;
-  validateAditionalRRS?: DNSRRValidator;
+  validateAdditionalRRS?: DNSRRValidator;
 }
 
 export interface DnsSettingsFormValues

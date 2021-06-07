@@ -539,7 +539,7 @@ describe('DNS', () => {
             recordType: 'A',
             server: '8.8.8.8',
             validRCodes: [DnsResponseCodes.NOERROR],
-            validateAditionalRRS: {
+            validateAdditionalRRS: {
               failIfMatchesRegexp: [],
               failIfNotMatchesRegexp: [],
             },
@@ -594,7 +594,7 @@ describe('DNS', () => {
             recordType: 'A',
             server: '8.8.8.8',
             validRCodes: [DnsResponseCodes.NOERROR],
-            validateAditionalRRS: {
+            validateAdditionalRRS: {
               failIfMatchesRegexp: [],
               failIfNotMatchesRegexp: [],
             },
@@ -648,7 +648,7 @@ describe('DNS', () => {
             recordType: 'A',
             server: '8.8.8.8',
             validRCodes: [DnsResponseCodes.NOERROR],
-            validateAditionalRRS: {
+            validateAdditionalRRS: {
               failIfMatchesRegexp: ['inverted validation'],
               failIfNotMatchesRegexp: ['not inverted validation'],
             },
