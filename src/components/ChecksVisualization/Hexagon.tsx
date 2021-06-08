@@ -12,7 +12,7 @@ import { checkType as getCheckType, dashboardUID } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
 
 interface Props {
-  onMouseOver: (e: React.MouseEvent, check: Check) => void;
+  onMouseMove: (e: React.MouseEvent, check: Check) => void;
   onMouseOut: (e: React.MouseEvent) => void;
   check: Check;
   hexPath: d3hexbin.HexbinBin<[number, number]>;
@@ -27,7 +27,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
 });
 
-export const Hexagon = ({ onMouseOver, onMouseOut, check, hexPath, hexRadius }: Props) => {
+export const Hexagon = ({ onMouseMove, onMouseOut, check, hexPath, hexRadius }: Props) => {
   const { values } = useContext(SuccessRateContext);
   const { instance } = useContext(InstanceContext);
   const hexbin = d3hexbin.hexbin().radius(hexRadius);
@@ -57,7 +57,7 @@ export const Hexagon = ({ onMouseOver, onMouseOut, check, hexPath, hexRadius }: 
       className={styles.hexagon}
       d={`M${hexPath.x},${hexPath.y}${hexbin.hexagon()}`}
       fill={getHexFillColor(check, values)}
-      onMouseOver={(e) => onMouseOver(e, check)}
+      onMouseMove={(e) => onMouseMove(e, check)}
       onMouseOut={onMouseOut}
       onClick={() => navigateToDashboard()}
     />

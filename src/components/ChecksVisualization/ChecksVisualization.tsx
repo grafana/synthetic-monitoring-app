@@ -27,6 +27,9 @@ const getStyles = (theme: GrafanaTheme2) => ({
   hexagon: css`
     cursor: pointer;
   `,
+  hidden: css`
+    display: none;
+  `,
 });
 
 export function ChecksVisualization({ checks }: Props) {
@@ -66,16 +69,6 @@ export function ChecksVisualization({ checks }: Props) {
 
   const hideTooltip = () => {
     setHoveredCheck(undefined);
-    setVirtualElement({
-      getBoundingClientRect: () => ({
-        width: 0,
-        height: 0,
-        top: -200,
-        right: 0,
-        bottom: 0,
-        left: -200,
-      }),
-    });
   };
 
   return (
@@ -87,7 +80,7 @@ export function ChecksVisualization({ checks }: Props) {
               key={checks[index].id ?? index}
               hexPath={hex}
               hexRadius={hexRadius}
-              onMouseOver={updateTooltipLocation}
+              onMouseMove={updateTooltipLocation}
               onMouseOut={hideTooltip}
               check={checks[index]}
             />
@@ -98,7 +91,7 @@ export function ChecksVisualization({ checks }: Props) {
         ref={popperElement}
         style={popperStyles.popper}
         {...attributes.popper}
-        className={cx('popper__background', styles.tooltipContainer)}
+        className={cx('popper__background', styles.tooltipContainer, { [styles.hidden]: !hoveredCheck })}
       >
         <h3>{hoveredCheck?.job}</h3>
         <div>{hoveredCheck?.target}</div>
