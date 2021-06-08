@@ -584,7 +584,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
       </div>
       {viewType === CheckListViewType.Viz ? (
         <div className={styles.vizContainer}>
-          <ChecksVisualization checks={checks} />
+          <ChecksVisualization checks={filteredChecks} />
         </div>
       ) : (
         <div>
