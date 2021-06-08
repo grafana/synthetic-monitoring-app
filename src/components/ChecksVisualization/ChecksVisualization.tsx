@@ -23,6 +23,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
   tooltipContainer: css`
     padding: ${theme.spacing(2)};
+    border-radius: 3px;
   `,
   hidden: css`
     display: none;
@@ -56,8 +57,8 @@ export function ChecksVisualization({ checks }: Props) {
       getBoundingClientRect: () => ({
         width: 0,
         height: 0,
-        top: e.clientY + 5,
-        bottom: e.clientY + 5,
+        top: e.clientY + 25,
+        bottom: e.clientY + 25,
         left: e.clientX,
         right: e.clientX,
       }),
