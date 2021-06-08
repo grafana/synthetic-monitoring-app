@@ -25,20 +25,23 @@ export const getHexFillColor = (check: Check, successRates: SuccessRates) => {
   }
 };
 
-export const getLayout = (checksLength: number) => {
-  //SVG sizes and margins
-
-  //The number of columns and rows of the heatmap
+export const getLayout = (checksLength: number, width: number) => {
   const sideLength = Math.ceil(Math.sqrt(checksLength));
+  const trimmedWidth = width - 32;
+  const hexSize = 48;
+  const needsWrap = sideLength * hexSize > trimmedWidth;
+  //The number of columns and rows of the heatmap
+  const columnCount = needsWrap ? Math.floor(trimmedWidth / hexSize) : sideLength;
+  const rowCount = needsWrap ? Math.ceil(checksLength / columnCount) : sideLength;
 
-  const width = sideLength * 64;
-  const height = sideLength * 64;
   //The maximum radius the hexagons can have to still fit the screen
-  var hexRadius = d3.min([width / ((sideLength + 0.5) * Math.sqrt(3)), height / ((sideLength + 1 / 3) * 1.5)]) ?? 0;
+  var hexRadius =
+    d3.min([width / ((columnCount + 0.5) * Math.sqrt(3)), (rowCount * hexSize) / ((rowCount + 1 / 3) * 1.5)]) ?? 0;
+
   var hexCenters: Array<[number, number]> = [];
 
-  for (var i = 0; i < sideLength; i++) {
-    for (var j = 0; j < sideLength; j++) {
+  for (var i = 0; i < rowCount; i++) {
+    for (var j = 0; j < columnCount; j++) {
       var x = hexRadius * j * Math.sqrt(3);
       //Offset each uneven row by half of a "hex-width" to the right
       if (i % 2 === 1) {
@@ -51,5 +54,5 @@ export const getLayout = (checksLength: number) => {
     }
   }
 
-  return { width, height, hexRadius, hexCenters };
+  return { svgWidth: columnCount * hexSize + hexSize * 2, height: rowCount * hexSize, hexRadius, hexCenters };
 };

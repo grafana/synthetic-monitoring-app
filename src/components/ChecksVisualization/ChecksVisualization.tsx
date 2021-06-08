@@ -10,6 +10,8 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { usePopper } from 'react-popper';
 import { SuccessRateGauge } from 'components/SuccessRateGauge';
 import { Hexagon } from './Hexagon';
+import { Autosizer } from 'components/Autosizer';
+import { debounce } from 'lodash';
 
 interface Props {
   checks: Check[];
@@ -46,12 +48,7 @@ export function ChecksVisualization({ checks }: Props) {
   });
   const { styles: popperStyles, attributes } = usePopper(virtualElement, popperElement.current, {});
 
-  // Use d3 to do layout math
-  const { hexRadius, hexCenters, width, height } = getLayout(checks.length);
-  const hexbin = d3hexbin.hexbin().radius(hexRadius);
-  const hexbins = hexbin(hexCenters);
-
-  const updateTooltipLocation = (e: React.MouseEvent, check: Check) => {
+  const updateTooltipLocation = debounce((e: React.MouseEvent, check: Check) => {
     setHoveredCheck(check);
     setVirtualElement({
       getBoundingClientRect: () => ({
@@ -63,28 +60,39 @@ export function ChecksVisualization({ checks }: Props) {
         right: e.clientX,
       }),
     });
-  };
+  });
 
   const hideTooltip = () => {
     setHoveredCheck(undefined);
   };
 
   return (
-    <div>
-      <svg width={width + hexRadius * 2} height={height + hexRadius * 2}>
-        <g transform={`translate(${hexRadius + 1}, ${hexRadius + 1})`}>
-          {hexbins.map((hex, index) => (
-            <Hexagon
-              key={checks[index].id ?? index}
-              hexPath={hex}
-              hexRadius={hexRadius}
-              onMouseMove={updateTooltipLocation}
-              onMouseOut={hideTooltip}
-              check={checks[index]}
-            />
-          ))}
-        </g>
-      </svg>
+    <>
+      <Autosizer>
+        {({ width }) => {
+          // Use d3 to do layout math
+          const { hexRadius, hexCenters, height, svgWidth } = getLayout(checks.length, width);
+          const hexbin = d3hexbin.hexbin().radius(hexRadius);
+          const hexbins = hexbin(hexCenters);
+
+          return (
+            <svg width={svgWidth} height={height + hexRadius * 2}>
+              <g transform={`translate(${hexRadius + 1}, ${hexRadius + 1})`}>
+                {hexbins.map((hex, index) => (
+                  <Hexagon
+                    key={index}
+                    hexPath={hex}
+                    hexRadius={hexRadius}
+                    onMouseMove={updateTooltipLocation}
+                    onMouseOut={hideTooltip}
+                    check={checks[index]}
+                  />
+                ))}
+              </g>
+            </svg>
+          );
+        }}
+      </Autosizer>
       <div
         ref={popperElement}
         style={popperStyles.popper}
@@ -105,6 +113,6 @@ export function ChecksVisualization({ checks }: Props) {
           />
         </div>
       </div>
-    </div>
+    </>
   );
 }
