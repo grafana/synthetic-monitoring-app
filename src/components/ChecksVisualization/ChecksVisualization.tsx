@@ -24,9 +24,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
   tooltipContainer: css`
     padding: ${theme.spacing(2)};
   `,
-  hexagon: css`
-    cursor: pointer;
-  `,
   hidden: css`
     display: none;
   `,

@@ -1,9 +1,9 @@
 import { SuccessRateContext } from 'contexts/SuccessRateContext';
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import * as d3hexbin from 'd3-hexbin';
 import { Check } from 'types';
 import { getHexFillColor } from './checksVizUtils';
-import { getLocationSrv } from '@grafana/runtime';
+import { getLocationSrv, config } from '@grafana/runtime';
 import appEvents from 'grafana/app/core/app_events';
 import { useStyles2 } from '@grafana/ui';
 import { GrafanaTheme2, AppEvents } from '@grafana/data';
@@ -30,6 +30,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
 export const Hexagon = ({ onMouseMove, onMouseOut, check, hexPath, hexRadius }: Props) => {
   const { values } = useContext(SuccessRateContext);
   const { instance } = useContext(InstanceContext);
+  const [hovering, setHovering] = useState(false);
   const hexbin = d3hexbin.hexbin().radius(hexRadius);
   const styles = useStyles2(getStyles);
 
@@ -52,13 +53,23 @@ export const Hexagon = ({ onMouseMove, onMouseOut, check, hexPath, hexRadius }: 
     });
   };
 
+  const fillColor = getHexFillColor(check, values);
+
   return (
     <path
       className={styles.hexagon}
       d={`M${hexPath.x},${hexPath.y}${hexbin.hexagon()}`}
-      fill={getHexFillColor(check, values)}
-      onMouseMove={(e) => onMouseMove(e, check)}
-      onMouseOut={onMouseOut}
+      fill={hovering ? config.theme2.colors.emphasize(fillColor, 0.8) : fillColor}
+      onMouseMove={(e) => {
+        if (!hovering) {
+          setHovering(true);
+        }
+        onMouseMove(e, check);
+      }}
+      onMouseOut={(e) => {
+        setHovering(false);
+        onMouseOut(e);
+      }}
       onClick={() => navigateToDashboard()}
     />
   );
