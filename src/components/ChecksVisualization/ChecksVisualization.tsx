@@ -24,6 +24,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     justify-content: center;
   `,
   tooltipContainer: css`
+    pointer-events: none;
     padding: ${theme.spacing(2)};
     border-radius: 3px;
   `,
@@ -46,16 +47,22 @@ export function ChecksVisualization({ checks }: Props) {
       left: -100,
     }),
   });
-  const { styles: popperStyles, attributes } = usePopper(virtualElement, popperElement.current, {});
+  const { styles: popperStyles, attributes } = usePopper(virtualElement, popperElement.current, {
+    placement: 'right-start',
+    modifiers: [
+      { name: 'offset', options: { offset: [10, 20] } },
+      { name: 'preventOverflow', enabled: true, options: { rootBoundary: 'viewport' } },
+    ],
+  });
 
-  const updateTooltipLocation = debounce((e: React.MouseEvent, check: Check) => {
+  const updateTooltipLocation = debounce((e: React.MouseEvent<Element>, check: Check) => {
     setHoveredCheck(check);
     setVirtualElement({
       getBoundingClientRect: () => ({
         width: 0,
         height: 0,
-        top: e.clientY + 25,
-        bottom: e.clientY + 25,
+        top: e.clientY,
+        bottom: e.clientY,
         left: e.clientX,
         right: e.clientX,
       }),
@@ -63,7 +70,14 @@ export function ChecksVisualization({ checks }: Props) {
   });
 
   const hideTooltip = () => {
-    setHoveredCheck(undefined);
+    setTimeout(() => {
+      setHoveredCheck((state) => {
+        if (state === hoveredCheck) {
+          return undefined;
+        }
+        return state;
+      });
+    }, 25);
   };
 
   return (

@@ -12,8 +12,8 @@ import { checkType as getCheckType, dashboardUID } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
 
 interface Props {
-  onMouseMove: (e: React.MouseEvent, check: Check) => void;
-  onMouseOut: (e: React.MouseEvent) => void;
+  onMouseMove?: (e: React.MouseEvent, check: Check) => void;
+  onMouseOut?: (e: React.MouseEvent) => void;
   check: Check;
   hexPath: d3hexbin.HexbinBin<[number, number]>;
   hexRadius: number;
@@ -64,11 +64,15 @@ export const Hexagon = ({ onMouseMove, onMouseOut, check, hexPath, hexRadius }: 
         if (!hovering) {
           setHovering(true);
         }
-        onMouseMove(e, check);
+        if (onMouseMove) {
+          onMouseMove(e, check);
+        }
       }}
       onMouseOut={(e) => {
         setHovering(false);
-        onMouseOut(e);
+        if (onMouseOut) {
+          onMouseOut(e);
+        }
       }}
       onClick={() => navigateToDashboard()}
     />

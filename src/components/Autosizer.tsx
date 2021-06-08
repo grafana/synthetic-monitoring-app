@@ -16,6 +16,8 @@ const getStyles = (theme: GrafanaTheme2) => ({
   fill: css`
     flex-grow: 1;
     max-width: 100%;
+    display: flex;
+    justify-content: center;
   `,
   fillContainer: css`
     display: flex;
