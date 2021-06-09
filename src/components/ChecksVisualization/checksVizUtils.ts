@@ -6,16 +6,15 @@ import { Check } from 'types';
 // TODO: wrap this so there isn't a new instance on every render
 export const getHexFillColor = (check: Check, successRates: SuccessRates) => {
   const theme = config.theme2;
-  if (!check) {
-    return theme.colors.background.secondary;
+
+  if (!check || !check?.enabled || !check.id) {
+    return theme.colors.text.disabled;
   }
-  if (!check?.enabled || !check.id) {
-    return theme.colors.secondary.shade;
-  }
+
   const successRate = successRates.checks[check.id];
 
   if (successRate === undefined) {
-    return theme.colors.secondary.shade;
+    return theme.colors.text.disabled;
   }
 
   if (successRate && successRate > 0.9) {

@@ -59,7 +59,7 @@ export const Hexagon = ({ onMouseMove, onMouseOut, check, hexPath, hexRadius }: 
       className={styles.hexagon}
       data-testid="viz-hexagon"
       d={`M${hexPath.x},${hexPath.y}${hexbin.hexagon()}`}
-      fill={hovering ? config.theme2.colors.emphasize(fillColor, 0.8) : fillColor}
+      fill={hovering ? config.theme2.colors.emphasize(fillColor, config.theme2.colors.hoverFactor) : fillColor}
       onMouseMove={(e) => {
         if (!hovering) {
           setHovering(true);
