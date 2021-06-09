@@ -26,6 +26,9 @@ export const getHexFillColor = (check: Check, successRates: SuccessRates) => {
 };
 
 export const getLayout = (checksLength: number, width: number) => {
+  if (width === 0) {
+    return { svgWidth: 0, height: 0, hexSize: 0, hexRadius: 0, hexCenters: [] };
+  }
   const sideLength = Math.ceil(Math.sqrt(checksLength));
   const trimmedWidth = width - 32;
   const hexSize = 42;

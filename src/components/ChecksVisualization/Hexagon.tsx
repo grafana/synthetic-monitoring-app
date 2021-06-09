@@ -57,6 +57,7 @@ export const Hexagon = ({ onMouseMove, onMouseOut, check, hexPath, hexRadius }: 
   return (
     <path
       className={styles.hexagon}
+      data-testid="viz-hexagon"
       d={`M${hexPath.x},${hexPath.y}${hexbin.hexagon()}`}
       fill={hovering ? config.theme2.colors.emphasize(fillColor, 0.8) : fillColor}
       onMouseMove={(e) => {

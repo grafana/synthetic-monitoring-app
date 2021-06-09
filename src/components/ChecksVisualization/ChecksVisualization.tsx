@@ -110,6 +110,7 @@ export function ChecksVisualization({ checks }: Props) {
       <div
         ref={popperElement}
         style={popperStyles.popper}
+        data-testid="check-viz-tooltip"
         {...attributes.popper}
         className={cx('popper__background', styles.tooltipContainer, { [styles.hidden]: !hoveredCheck })}
       >

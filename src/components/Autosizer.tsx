@@ -13,14 +13,9 @@ interface Props {
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({
-  fill: css`
-    flex-grow: 1;
-    max-width: 100%;
-    display: flex;
-    justify-content: center;
-  `,
   fillContainer: css`
     display: flex;
+    justify-content: center;
     max-width: 1300px;
     margin-left: auto;
     margin-right: auto;
@@ -34,17 +29,16 @@ export const Autosizer = ({ children }: Props) => {
   const [size, setSize] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
-    const rect = el.current?.getBoundingClientRect();
-    if (rect) {
-      setSize({ width: rect.width, height: rect.height });
+    const width = el.current?.scrollWidth;
+    const height = el.current?.scrollHeight;
+    if (width !== undefined && height !== undefined) {
+      setSize({ width, height });
     }
   }, [el]);
 
   return (
-    <div className={styles.fillContainer}>
-      <div className={styles.fill} ref={el}>
-        {children(size)}
-      </div>
+    <div className={styles.fillContainer} ref={el}>
+      {children(size)}
     </div>
   );
 };
