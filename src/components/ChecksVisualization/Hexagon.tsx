@@ -21,7 +21,7 @@ interface Props {
 
 const getStyles = (theme: GrafanaTheme2) => ({
   hexagon: css`
-    stroke: ${theme.colors.getContrastText(theme.colors.background.secondary)};
+    stroke: ${theme.colors.background.secondary};
     stroke-width: 1;
     cursor: pointer;
   `,
