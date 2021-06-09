@@ -29,10 +29,9 @@ export const Autosizer = ({ children }: Props) => {
   const [size, setSize] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
-    const width = el.current?.scrollWidth;
-    const height = el.current?.scrollHeight;
-    if (width !== undefined && height !== undefined) {
-      setSize({ width, height });
+    const rect = el.current?.getBoundingClientRect();
+    if (rect) {
+      setSize({ width: rect.width, height: rect.height });
     }
   }, [el]);
 

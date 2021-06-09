@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/grafana/synthetic-monitoring-app/compare/1.0.0...1.0.1) (2021-06-07)
+
+
+### Bug Fixes
+
+* home dashboard redirect issue ([#290](https://github.com/grafana/synthetic-monitoring-app/issues/290)) ([f10bcdd](https://github.com/grafana/synthetic-monitoring-app/commit/f10bcddede54052d3e64aaefa500a71de642dcf5))
+
 # [1.0.0](https://github.com/grafana/synthetic-monitoring-app/compare/0.11.4...1.0.0) (2021-06-07)
 
 
