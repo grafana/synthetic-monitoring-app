@@ -55,7 +55,6 @@
   },
   "dependencies": {
     "@popperjs/core": "^2.9.2",
-    "@types/jest": "^26.0.23",
     "d3": "^6.7.0",
     "d3-hexbin": "^0.2.2",
     "ip-address": "^6.3.0",

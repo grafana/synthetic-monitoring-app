@@ -3,7 +3,6 @@ import { SuccessRates } from 'contexts/SuccessRateContext';
 import * as d3 from 'd3';
 import { Check } from 'types';
 
-// TODO: wrap this so there isn't a new instance on every render
 export const getHexFillColor = (check: Check, successRates: SuccessRates) => {
   const theme = config.theme2;
 
@@ -36,7 +35,6 @@ export const getLayout = (checksLength: number, width: number) => {
   const columnCount = needsWrap ? Math.floor(trimmedWidth / hexSize) : sideLength;
   const rowCount = needsWrap ? Math.ceil(checksLength / columnCount) : sideLength;
 
-  //The maximum radius the hexagons can have to still fit the screen
   var hexRadius =
     d3.min([width / ((columnCount + 0.5) * Math.sqrt(3)), (rowCount * hexSize) / ((rowCount + 1 / 3) * 1.5)]) ?? 0;
 
