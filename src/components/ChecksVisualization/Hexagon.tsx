@@ -54,7 +54,6 @@ export const Hexagon = ({ onMouseMove, onMouseOut, check, hexPath, hexRadius }: 
   };
 
   const fillColor = getHexFillColor(check, values);
-
   return (
     <path
       className={styles.hexagon}

@@ -28,7 +28,7 @@ export const getHexFillColor = (check: Check, successRates: SuccessRates) => {
 export const getLayout = (checksLength: number, width: number) => {
   const sideLength = Math.ceil(Math.sqrt(checksLength));
   const trimmedWidth = width - 32;
-  const hexSize = 48;
+  const hexSize = 42;
   const needsWrap = sideLength * hexSize > trimmedWidth;
   //The number of columns and rows of the heatmap
   const columnCount = needsWrap ? Math.floor(trimmedWidth / hexSize) : sideLength;

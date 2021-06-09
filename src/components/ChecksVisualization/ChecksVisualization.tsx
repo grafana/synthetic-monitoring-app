@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useCallback } from 'react';
 import { VirtualElement } from '@popperjs/core';
 import * as d3hexbin from 'd3-hexbin';
 import { Check } from 'types';
@@ -11,7 +11,6 @@ import { usePopper } from 'react-popper';
 import { SuccessRateGauge } from 'components/SuccessRateGauge';
 import { Hexagon } from './Hexagon';
 import { Autosizer } from 'components/Autosizer';
-import { debounce } from 'lodash';
 
 interface Props {
   checks: Check[];
@@ -55,8 +54,9 @@ export function ChecksVisualization({ checks }: Props) {
     ],
   });
 
-  const updateTooltipLocation = debounce((e: React.MouseEvent<Element>, check: Check) => {
+  const updateTooltipLocation = useCallback((e: React.MouseEvent<Element>, check: Check) => {
     setHoveredCheck(check);
+
     setVirtualElement({
       getBoundingClientRect: () => ({
         width: 0,
@@ -67,9 +67,9 @@ export function ChecksVisualization({ checks }: Props) {
         right: e.clientX,
       }),
     });
-  });
+  }, []);
 
-  const hideTooltip = () => {
+  const hideTooltip = useCallback(() => {
     setTimeout(() => {
       setHoveredCheck((state) => {
         if (state === hoveredCheck) {
@@ -78,7 +78,7 @@ export function ChecksVisualization({ checks }: Props) {
         return state;
       });
     }, 25);
-  };
+  }, [hoveredCheck]);
 
   return (
     <>

@@ -1,6 +1,6 @@
 import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
-import React, { useRef } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { css } from '@emotion/css';
 
 interface ChildrenArgs {
@@ -31,13 +31,19 @@ const getStyles = (theme: GrafanaTheme2) => ({
 export const Autosizer = ({ children }: Props) => {
   const el = useRef<HTMLDivElement>(null);
   const styles = useStyles2(getStyles);
+  const [size, setSize] = useState({ width: 0, height: 0 });
 
-  const rect = el.current?.getBoundingClientRect();
+  useEffect(() => {
+    const rect = el.current?.getBoundingClientRect();
+    if (rect) {
+      setSize({ width: rect.width, height: rect.height });
+    }
+  }, [el]);
 
   return (
     <div className={styles.fillContainer}>
       <div className={styles.fill} ref={el}>
-        {rect ? children({ width: rect.width, height: rect.height }) : null}
+        {children(size)}
       </div>
     </div>
   );
