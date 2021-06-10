@@ -28,6 +28,7 @@ import { CheckListItem } from './CheckListItem';
 import { css } from '@emotion/css';
 import { LabelFilterInput } from './LabelFilterInput';
 import { SuccessRateContext, SuccessRateTypes } from 'contexts/SuccessRateContext';
+import { ChecksVisualization } from './ChecksVisualization';
 
 const CHECKS_PER_PAGE_CARD = 15;
 const CHECKS_PER_PAGE_LIST = 50;
@@ -122,6 +123,11 @@ const getStyles = (theme: GrafanaTheme) => ({
   `,
   marginRightSmall: css`
     margin-right: ${theme.spacing.sm};
+  `,
+  vizContainer: css`
+    width: 100%;
+    display: flex;
+    justify-content: center;
   `,
 });
 
@@ -569,29 +575,37 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
           onChange={updateSortMethod}
         />
       </div>
-      <section className="card-section card-list-layout-list">
-        <ol className="card-list">
-          {currentPageChecks.map((check, index) => (
-            <CheckListItem
-              check={check}
-              key={index}
-              onLabelSelect={handleLabelSelect}
-              onStatusSelect={handleStatusSelect}
-              onTypeSelect={handleTypeSelect}
-              onToggleCheckbox={handleCheckSelect}
-              selected={selectedChecks.has(check.id)}
-              viewType={viewType}
-              onDeleteCheck={deleteSingleCheck}
+      {viewType === CheckListViewType.Viz ? (
+        <div className={styles.vizContainer}>
+          <ChecksVisualization checks={filteredChecks} />
+        </div>
+      ) : (
+        <div>
+          <section className="card-section card-list-layout-list">
+            <ol className="card-list">
+              {currentPageChecks.map((check, index) => (
+                <CheckListItem
+                  check={check}
+                  key={index}
+                  onLabelSelect={handleLabelSelect}
+                  onStatusSelect={handleStatusSelect}
+                  onTypeSelect={handleTypeSelect}
+                  onToggleCheckbox={handleCheckSelect}
+                  selected={selectedChecks.has(check.id)}
+                  viewType={viewType}
+                  onDeleteCheck={deleteSingleCheck}
+                />
+              ))}
+            </ol>
+          </section>
+          {totalPages > 1 && (
+            <Pagination
+              numberOfPages={totalPages}
+              currentPage={currentPage}
+              onNavigate={(toPage: number) => setCurrentPage(toPage)}
             />
-          ))}
-        </ol>
-      </section>
-      {totalPages > 1 && (
-        <Pagination
-          numberOfPages={totalPages}
-          currentPage={currentPage}
-          onNavigate={(toPage: number) => setCurrentPage(toPage)}
-        />
+          )}
+        </div>
       )}
     </div>
   );

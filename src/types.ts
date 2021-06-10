@@ -124,7 +124,7 @@ export interface DnsSettings {
   validRCodes?: string[];
   validateAnswerRRS?: DNSRRValidator;
   validateAuthorityRRS?: DNSRRValidator;
-  validateAdditionalRRS?: DNSRRValidator;
+  validateAditionalRRS?: DNSRRValidator;
 }
 
 export interface DnsSettingsFormValues
@@ -447,6 +447,7 @@ export enum CheckEnabledStatus {
 export enum CheckListViewType {
   Card,
   List,
+  Viz,
 }
 
 export enum HTTPCompressionAlgo {
