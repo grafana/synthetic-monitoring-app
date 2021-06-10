@@ -12,7 +12,6 @@ import {
   CheckEnabledStatus,
   CheckListViewType,
   CheckType,
-  FeatureName,
 } from 'types';
 import appEvents from 'grafana/app/core/app_events';
 import { Button, Icon, Select, Input, Pagination, InfoBox, Checkbox, useStyles, RadioButtonGroup } from '@grafana/ui';
@@ -29,7 +28,6 @@ import { CheckListItem } from './CheckListItem';
 import { css } from '@emotion/css';
 import { LabelFilterInput } from './LabelFilterInput';
 import { SuccessRateContext, SuccessRateTypes } from 'contexts/SuccessRateContext';
-import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { ChecksVisualization } from './ChecksVisualization';
 
 const CHECKS_PER_PAGE_CARD = 15;
@@ -165,7 +163,6 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
   const [bulkActionInProgress, setBulkActionInProgress] = useState(false);
   const styles = useStyles(getStyles);
   const successRateContext = useContext(SuccessRateContext);
-  const { isEnabled: vizViewEnabled } = useFeatureFlag(FeatureName.VizView);
 
   const sortChecks = (checks: FilteredCheck[], sortType: CheckSort) => {
     switch (sortType) {
@@ -561,11 +558,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
                 setCurrentPage(1);
               }
             }}
-            options={
-              vizViewEnabled
-                ? CHECK_LIST_VIEW_TYPE_OPTIONS
-                : CHECK_LIST_VIEW_TYPE_OPTIONS.filter(({ value }) => value !== CheckListViewType.Viz)
-            }
+            options={CHECK_LIST_VIEW_TYPE_OPTIONS}
           />
         )}
         <div className={styles.flexGrow} />

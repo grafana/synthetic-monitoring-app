@@ -460,5 +460,4 @@ export enum HTTPCompressionAlgo {
 
 export enum FeatureName {
   UnifiedAlerting = 'ngalert',
-  VizView = 'sm-viz-view',
 }
