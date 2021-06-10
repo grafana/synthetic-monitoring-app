@@ -47,7 +47,7 @@
     "@types/lodash": "latest",
     "@types/valid-url": "^1.0.3",
     "eslint-plugin-import": "^2.22.0",
-    "eslint-plugin-react-hooks": "^4.1.0",
+    "eslint-plugin-react-hooks": "^4.2.0",
     "husky": "^4.2.5",
     "jest-environment-jsdom-fifteen": "^1.0.2",
     "release-it": "^14.0.3",
