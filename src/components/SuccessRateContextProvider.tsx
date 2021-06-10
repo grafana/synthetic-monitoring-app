@@ -1,18 +1,19 @@
 import React, { PropsWithChildren, useContext, useEffect, useState } from 'react';
 import { Check, Probe } from 'types';
-import { queryMetric } from 'utils';
+import { getSuccessRateThresholdColor, queryMetric } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { SuccessRates, SuccessRateContext, SuccessRateTypes, SuccessRate } from 'contexts/SuccessRateContext';
+import {
+  SuccessRates,
+  SuccessRateContext,
+  SuccessRateTypes,
+  SuccessRate,
+  defaultValues,
+} from 'contexts/SuccessRateContext';
 
 interface Props {
   checks?: Check[];
   probes?: Probe[];
 }
-
-const values: SuccessRates = {
-  checks: {},
-  probes: {},
-};
 
 type SeedRequestMetric = {
   instance: string;
@@ -39,7 +40,7 @@ const parseCheckResults = (checks: Check[] | undefined, data: any) => {
     if (!check.id) {
       return acc;
     }
-    acc[check.id] = undefined;
+    acc[check.id] = defaultValues.defaults;
     return acc;
   }, {});
 
@@ -48,8 +49,12 @@ const parseCheckResults = (checks: Check[] | undefined, data: any) => {
     if (check && check.id) {
       const returnedValue = item.value?.[1];
       if (returnedValue !== undefined) {
-        const float = parseFloat(returnedValue);
-        resultsPerCheck[check.id] = float;
+        const float = parseFloat(returnedValue) * 100;
+        resultsPerCheck[check.id] = {
+          value: parseFloat(float.toFixed(1)),
+          displayValue: `${float.toFixed(1)}%`,
+          thresholdColor: getSuccessRateThresholdColor(float),
+        };
       }
     }
   });
@@ -63,31 +68,35 @@ const parseProbeResults = (probes: Probe[] | undefined, data: any) => {
   }
 
   const response = data as SeedRequestResponse;
-  const resultsPerCheck = probes.reduce<SuccessRate>((acc, probe) => {
+  const resultsPerProbe = probes.reduce<SuccessRate>((acc, probe) => {
     if (!probe.id) {
       return acc;
     }
-    acc[probe.id] = undefined;
+    acc[probe.id] = defaultValues.defaults;
     return acc;
   }, {});
 
   response.forEach((item) => {
-    const check = probes?.find((probe) => probe.name === item.metric.probe);
-    if (check && check.id) {
+    const probe = probes.find((probe) => probe.name === item.metric.probe);
+    if (probe && probe.id) {
       const returnedValue = item.value?.[1];
       if (returnedValue !== undefined) {
-        const float = parseFloat(returnedValue);
-        resultsPerCheck[check.id] = float;
+        const float = parseFloat(returnedValue) * 100;
+        resultsPerProbe[probe.id] = {
+          value: parseFloat(float.toFixed(1)),
+          displayValue: float.toFixed(1),
+          thresholdColor: getSuccessRateThresholdColor(float),
+        };
       }
     }
   });
 
-  return resultsPerCheck;
+  return resultsPerProbe;
 };
 
 export function SuccessRateContextProvider({ checks, probes, children }: PropsWithChildren<Props>) {
   const { instance } = useContext(InstanceContext);
-  const [successRateValues, setSuccessRate] = useState<SuccessRates>(values);
+  const [successRateValues, setSuccessRate] = useState<SuccessRates>(defaultValues);
   const [loading, setLoading] = useState(true);
 
   const updateSuccessRate = (type: SuccessRateTypes, id: number | undefined, successRate: number | undefined) => {

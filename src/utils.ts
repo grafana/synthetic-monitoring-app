@@ -26,7 +26,6 @@ export function findHostedInstance(
     const instanceUrl = info.url + (info.type === 'logs' ? '' : '/api/prom');
     for (const ds of known) {
       if (ds.url === instanceUrl) {
-        console.log('MAYBE:', basicAuthUser, (ds as any).basicAuthUser, ds);
         if (basicAuthUser === (ds as any).basicAuthUser) {
           return ds;
         }
@@ -274,4 +273,17 @@ export const fromBase64 = (value: string) => {
   } catch {
     return value;
   }
+};
+
+export const getSuccessRateThresholdColor = (value: number | undefined) => {
+  if (value === undefined) {
+    return config.theme2.colors.text.disabled;
+  }
+  if (value >= 99.5) {
+    return config.theme2.colors.success.main;
+  }
+  if (value >= 99) {
+    return config.theme2.colors.warning.main;
+  }
+  return config.theme2.colors.error.main;
 };

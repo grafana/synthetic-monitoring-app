@@ -172,9 +172,11 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
         return checks.sort((a, b) => b.job.localeCompare(a.job));
       case CheckSort.SuccessRate:
         return checks.sort((a, b) => {
-          const checkA = successRateContext.values[SuccessRateTypes.Checks][a.id] ?? 100;
-          const checkB = successRateContext.values[SuccessRateTypes.Checks][b.id] ?? 100;
-          return checkA - checkB;
+          const checkA = successRateContext.values[SuccessRateTypes.Checks][a.id] ?? successRateContext.values.defaults;
+          const checkB = successRateContext.values[SuccessRateTypes.Checks][b.id] ?? successRateContext.values.defaults;
+          const sortA = checkA.noData ? 101 : checkA.value;
+          const sortB = checkB.noData ? 101 : checkB.value;
+          return sortA - sortB;
         });
     }
   };

@@ -1,8 +1,7 @@
-import { SuccessRateContext } from 'contexts/SuccessRateContext';
+import { SuccessRateContext, SuccessRateTypes } from 'contexts/SuccessRateContext';
 import React, { useContext, useState } from 'react';
 import * as d3hexbin from 'd3-hexbin';
 import { Check } from 'types';
-import { getHexFillColor } from './checksVizUtils';
 import { getLocationSrv, config } from '@grafana/runtime';
 import appEvents from 'grafana/app/core/app_events';
 import { useStyles2 } from '@grafana/ui';
@@ -53,13 +52,17 @@ export const Hexagon = ({ onMouseMove, onMouseOut, check, hexPath, hexRadius }: 
     });
   };
 
-  const fillColor = getHexFillColor(check, values);
+  const successValue = values[SuccessRateTypes.Checks][check.id ?? 0] ?? values.defaults.value;
   return (
     <path
       className={styles.hexagon}
       data-testid="viz-hexagon"
       d={`M${hexPath.x},${hexPath.y}${hexbin.hexagon()}`}
-      fill={hovering ? config.theme2.colors.emphasize(fillColor, config.theme2.colors.hoverFactor) : fillColor}
+      fill={
+        hovering
+          ? config.theme2.colors.emphasize(successValue.thresholdColor, config.theme2.colors.hoverFactor)
+          : successValue.thresholdColor
+      }
       onMouseMove={(e) => {
         if (!hovering) {
           setHovering(true);
