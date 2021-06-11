@@ -1,1 +1,5 @@
+<<<<<<< HEAD
 yarn commitlint --edit $1
+=======
+commitlint -E HUSKY_GIT_PARAMS
+>>>>>>> 5e637155d307600070a57355adeeed02fc60d377

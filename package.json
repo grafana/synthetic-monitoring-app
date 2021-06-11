@@ -15,8 +15,12 @@
     "watch": "grafana-toolkit plugin:dev --watch",
     "release": "release-it",
     "release:ci": "release-it --ci",
+<<<<<<< HEAD
     "release:test": "release-it --dry-run --no-git.requireCleanWorkingDir",
     "prepare": "husky install"
+=======
+    "release:test": "release-it --dry-run --no-git.requireCleanWorkingDir"
+>>>>>>> 5e637155d307600070a57355adeeed02fc60d377
   },
   "author": "Grafana Labs",
   "license": "Apache-2.0",
