@@ -11,10 +11,10 @@ updates:
       interval: 'daily'
     ignore:
       - dependency-name: '@grafana/runtime'
-        update-types: ['version-update: semver-patch']
+        update-types: ['version-update:semver-patch']
       - dependency-name: '@grafana/data'
-        update-types: ['version-update: semver-patch']
+        update-types: ['version-update:semver-patch']
       - dependency-name: '@grafana/ui'
-        update-types: ['version-update: semver-patch']
+        update-types: ['version-update:semver-patch']
       - dependency-name: '@grafana/toolkit'
-        update-types: ['version-update: semver-patch']
+        update-types: ['version-update:semver-patch']
