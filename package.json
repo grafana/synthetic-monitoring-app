@@ -50,7 +50,7 @@
   },
   "dependencies": {
     "@popperjs/core": "^2.9.2",
-    "d3": "^6.7.0",
+    "d3": "^7.0.0",
     "d3-hexbin": "^0.2.2",
     "ip-address": "^7.1.0",
     "is-base64": "^1.1.0",
