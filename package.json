@@ -28,7 +28,7 @@
     "@grafana/toolkit": "8.0.1",
     "@grafana/ui": "8.0.1",
     "@release-it/conventional-changelog": "^3.0.0",
-    "@testing-library/dom": "7.31.0",
+    "@testing-library/dom": "^7.31.2",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^11.2.7",
     "@testing-library/react-hooks": "^7.0.0",
