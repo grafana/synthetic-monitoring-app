@@ -60,7 +60,7 @@
     "ip-address": "^6.3.0",
     "is-base64": "^1.1.0",
     "punycode": "^2.1.1",
-    "react-async-hook": "^3.6.1",
+    "react-async-hook": "^3.6.2",
     "react-hook-form": "7.2.3",
     "react-popper": "^2.2.5",
     "valid-url": "^1.0.9",
