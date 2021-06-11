@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import QueryParams from './QueryParams';
 
@@ -44,5 +44,6 @@ test('Delete button deletes a query param', async () => {
   render(<QueryParams target={target} onChange={onChange} />);
   const buttons = await screen.findAllByRole('button');
   userEvent.click(buttons[1]);
+  await waitFor(() => expect(onChange).toHaveBeenCalledTimes(1));
   expect(onChange).toHaveBeenCalledWith('https://example.com/?robert=bob&jim=james');
 });
