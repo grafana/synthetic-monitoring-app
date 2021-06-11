@@ -307,7 +307,7 @@ const isIpV6FromUrl = (target: string): boolean => {
   let isIpV6 = true;
   try {
     const address = Address6.fromURL(target);
-    isIpV6 = address.valid;
+    isIpV6 = Boolean(address.address?.isCorrect());
   } catch (e) {
     isIpV6 = false;
   }
