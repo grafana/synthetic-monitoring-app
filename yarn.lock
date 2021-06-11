@@ -1215,6 +1215,11 @@
   resolved "https://registry.yarnpkg.com/@braintree/sanitize-url/-/sanitize-url-5.0.1.tgz#3c76855aea4a71904a35c92f433462c775583452"
   integrity sha512-KzIC8q/UsT8g6bwRAQ0NbOCNxRoGbPKtqGBUtDaN8WN80xqsbHFs8z+Eq0fR0W1wcrcTB5oKNACsrbkK4X+FWA==
 
+"@braintree/sanitize-url@5.0.2":
+  version "5.0.2"
+  resolved "https://registry.yarnpkg.com/@braintree/sanitize-url/-/sanitize-url-5.0.2.tgz#b23080fa35520e993a8a37a0f5bca26aa4650a48"
+  integrity sha512-NBEJlHWrhQucLhZGHtSxM2loSaNUMajC7KOYJLyfcdW/6goVoff2HoYI3bz8YCDN0wKGbxtUL0gx2dvHpvnWlw==
+
 "@cnakazawa/watch@^1.0.3":
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/@cnakazawa/watch/-/watch-1.0.4.tgz#f864ae85004d0fcab6f50be9141c4da368d1656a"
@@ -1506,10 +1511,35 @@
     rxjs "6.6.3"
     xss "1.0.6"
 
+"@grafana/data@8.0.1":
+  version "8.0.1"
+  resolved "https://registry.yarnpkg.com/@grafana/data/-/data-8.0.1.tgz#b7efe017182b5eb61b7a7333565179f5b77ae91f"
+  integrity sha512-bVF74tIvp9IquAWzRDFFv+U8gLnwNBpBJXGBhsddRIdsYDZ0ks7yD0q0JKSpxpIXF+/ePWRXBvEhxN4QEEdc/A==
+  dependencies:
+    "@braintree/sanitize-url" "5.0.2"
+    "@types/d3-interpolate" "^1.3.1"
+    date-fns "^2.21.3"
+    eventemitter3 "4.0.7"
+    lodash "4.17.21"
+    marked "2.0.1"
+    rxjs "6.6.3"
+    xss "1.0.6"
+
 "@grafana/e2e-selectors@8.0.0-beta.3":
   version "8.0.0-beta.3"
   resolved "https://registry.yarnpkg.com/@grafana/e2e-selectors/-/e2e-selectors-8.0.0-beta.3.tgz#ba15edf753e1fed0234016432bda74a474dc79f5"
   integrity sha512-hagSXvl9D76STLDPW7tH8YshcadZl+8tEHOFTN78RQaGf1dx7PS7sBrmPNLNwT50pUuqpW3YIOsvNb9LDUDUlg==
+  dependencies:
+    "@grafana/tsconfig" "^1.0.0-rc1"
+    commander "5.0.0"
+    execa "4.0.0"
+    typescript "4.2.4"
+    yaml "^1.8.3"
+
+"@grafana/e2e-selectors@8.0.1":
+  version "8.0.1"
+  resolved "https://registry.yarnpkg.com/@grafana/e2e-selectors/-/e2e-selectors-8.0.1.tgz#4e1799131e9f2e4ae413049add6dbc6f8130b10c"
+  integrity sha512-lMrqvYamkzDr8I1rbxDyFprzzph809KHRfJUO6uhjhHICyKZwAgeTIlk+qkGAEq8/JBuFgxWKg0K13L9gNuF6w==
   dependencies:
     "@grafana/tsconfig" "^1.0.0-rc1"
     commander "5.0.0"
@@ -1709,6 +1739,57 @@
     slate "0.47.8"
     tinycolor2 "1.4.1"
     uplot "1.6.10"
+
+"@grafana/ui@8.0.1":
+  version "8.0.1"
+  resolved "https://registry.yarnpkg.com/@grafana/ui/-/ui-8.0.1.tgz#da5dfa5fcea6ba66b932328ac8bbea098df833f3"
+  integrity sha512-346XZvS9sQLQz9rozoXXawQCHoWOtu5eOYVfFHtuyAarKBDTNK8TRi5+W8YobUlcIvLaZJowXKUpJZmly/pp7w==
+  dependencies:
+    "@emotion/css" "11.1.3"
+    "@emotion/react" "11.1.5"
+    "@grafana/aws-sdk" "0.0.3"
+    "@grafana/data" "8.0.1"
+    "@grafana/e2e-selectors" "8.0.1"
+    "@grafana/slate-react" "0.22.10-grafana"
+    "@grafana/tsconfig" "^1.0.0-rc1"
+    "@monaco-editor/react" "4.1.1"
+    "@popperjs/core" "2.5.4"
+    "@sentry/browser" "5.25.0"
+    "@visx/event" "1.3.0"
+    "@visx/gradient" "1.0.0"
+    "@visx/scale" "1.4.0"
+    "@visx/shape" "1.4.0"
+    "@visx/tooltip" "1.7.2"
+    classnames "2.2.6"
+    d3 "5.15.0"
+    hoist-non-react-statics "3.3.2"
+    immutable "3.8.2"
+    jquery "3.5.1"
+    lodash "4.17.21"
+    moment "2.29.1"
+    monaco-editor "0.21.2"
+    papaparse "5.3.0"
+    rc-cascader "1.0.1"
+    rc-drawer "3.1.3"
+    rc-slider "9.6.4"
+    rc-time-picker "^3.7.3"
+    react "17.0.1"
+    react-beautiful-dnd "13.0.0"
+    react-calendar "2.19.2"
+    react-colorful "5.1.2"
+    react-custom-scrollbars "4.2.1"
+    react-dom "17.0.1"
+    react-highlight-words "0.16.0"
+    react-hook-form "7.5.3"
+    react-popper "2.2.4"
+    react-router-dom "^5.2.0"
+    react-select "4.3.0"
+    react-storybook-addon-props-combinations "1.1.0"
+    react-table "7.0.0"
+    react-transition-group "4.4.1"
+    slate "0.47.8"
+    tinycolor2 "1.4.1"
+    uplot "1.6.12"
 
 "@iarna/toml@2.2.5":
   version "2.2.5"
@@ -10475,15 +10556,10 @@ modify-values@^1.0.0:
   resolved "https://registry.yarnpkg.com/modify-values/-/modify-values-1.0.1.tgz#b3939fa605546474e3e3e3c63d64bd43b4ee6022"
   integrity sha512-xV2bxeN6F7oYjZWTe/YPAy6MN2M+sL4u/Rlm2AHCIVGfo2p1yGmBHQ6vHehl4bRTZBdHu3TSkWdYgkwpYzAGSw==
 
-moment@2.29.1:
+moment@2.29.1, moment@2.x:
   version "2.29.1"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.29.1.tgz#b2be769fa31940be9eeea6469c075e35006fa3d3"
   integrity sha512-kHmoybcPV8Sqy59DwNDY3Jefr64lK/by/da0ViFcuA4DH0vQg5Q6Ze5VimxkfQNSC+Mls/Kx53s7TjP1RhFEDQ==
-
-moment@2.x:
-  version "2.27.0"
-  resolved "https://registry.yarnpkg.com/moment/-/moment-2.27.0.tgz#8bff4e3e26a236220dfe3e36de756b6ebaa0105d"
-  integrity sha512-al0MUK7cpIcglMv3YF13qSgdAIqxHTO7brRtaz3DlSULbqfazqkc5kEjNrLDOM7fsjshoFIihnU8snrP7zUvhQ==
 
 monaco-editor@0.21.2:
   version "0.21.2"
@@ -14915,6 +14991,11 @@ uplot@1.6.10:
   version "1.6.10"
   resolved "https://registry.yarnpkg.com/uplot/-/uplot-1.6.10.tgz#6dd1adf3180203777f5c369ef6f6aab312661943"
   integrity sha512-9MIscZoF+gA6Y6EAFTZl3zBU4MDaSbJ9Qy4nQ3LaXifGuluAhq4UuQOADKC6qZJjC9QoepeZ2eh7LpJn2xbLSQ==
+
+uplot@1.6.12:
+  version "1.6.12"
+  resolved "https://registry.yarnpkg.com/uplot/-/uplot-1.6.12.tgz#a2741f224c3d3b4f4f25a53797c1687ddfef2989"
+  integrity sha512-afBjwy/9SM0E7w29Gen+wQ+UAe6ipiA2zE/s1dMCidMXQYvYkCpEgxLRkVA179/8eRJz+og2r7ZFS1HIzT75fQ==
 
 upper-case@^1.1.1:
   version "1.1.3"
