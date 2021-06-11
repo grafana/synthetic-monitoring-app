@@ -30,7 +30,7 @@
     "@commitlint/config-conventional": "^12.1.4",
     "@grafana/data": "8.0.0-beta.3",
     "@grafana/runtime": "8.0.0-beta.3",
-    "@grafana/toolkit": "8.0.0-beta.3",
+    "@grafana/toolkit": "8.0.1",
     "@grafana/ui": "8.0.0-beta.3",
     "@release-it/conventional-changelog": "^2.0.1",
     "@testing-library/dom": "7.31.0",
