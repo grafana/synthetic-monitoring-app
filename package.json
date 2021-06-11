@@ -27,7 +27,7 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@commitlint/cli": "^12.1.4",
-    "@commitlint/config-conventional": "^9.1.1",
+    "@commitlint/config-conventional": "^12.1.4",
     "@grafana/data": "8.0.0-beta.3",
     "@grafana/runtime": "8.0.0-beta.3",
     "@grafana/toolkit": "8.0.0-beta.3",
@@ -46,7 +46,7 @@
     "@types/jest": "^26.0.23",
     "@types/lodash": "latest",
     "@types/valid-url": "^1.0.3",
-    "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-import": "^2.23.4",
     "eslint-plugin-react-hooks": "^4.2.0",
     "husky": "^4.2.5",
     "jest-environment-jsdom-fifteen": "^1.0.2",
