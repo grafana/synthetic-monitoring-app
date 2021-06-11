@@ -122,7 +122,7 @@ describe('http', () => {
     });
   });
 
-  it('should reject an http target without TLD', () => {
+  it.only('should reject an http target without TLD', () => {
     expect(CheckValidation.target(CheckType.HTTP, 'https://hostname/')).toEqual('Target must have a valid hostname');
     expect(CheckValidation.target(CheckType.HTTP, 'https://suraj/dev')).toEqual('Target must have a valid hostname');
   });
