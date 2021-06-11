@@ -27,7 +27,7 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@commitlint/cli": "^12.1.4",
-    "@commitlint/config-conventional": "^9.1.1",
+    "@commitlint/config-conventional": "^12.1.4",
     "@grafana/data": "8.0.0-beta.3",
     "@grafana/runtime": "8.0.0-beta.3",
     "@grafana/toolkit": "8.0.0-beta.3",
