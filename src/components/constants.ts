@@ -281,7 +281,7 @@ export const CHECK_LIST_STATUS_OPTIONS = [
 export const CHECK_LIST_VIEW_TYPE_OPTIONS = [
   { description: 'Card view', value: CheckListViewType.Card, icon: 'check-square' },
   { description: 'List view', value: CheckListViewType.List, icon: 'list-ul' },
-  { description: 'Visualization view', value: CheckListViewType.Viz, icon: 'chart-line' },
+  { description: 'Visualization view', value: CheckListViewType.Viz, icon: 'gf-grid' },
 ];
 
 export const PEM_HEADER = '-----BEGIN CERTIFICATE-----';
