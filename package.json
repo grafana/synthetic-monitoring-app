@@ -15,40 +15,35 @@
     "watch": "grafana-toolkit plugin:dev --watch",
     "release": "release-it",
     "release:ci": "release-it --ci",
-    "release:test": "release-it --dry-run --no-git.requireCleanWorkingDir"
-  },
-  "husky": {
-    "hooks": {
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
-      "pre-push": "yarn lint && yarn test"
-    }
+    "release:test": "release-it --dry-run --no-git.requireCleanWorkingDir",
+    "prepare": "husky install"
   },
   "author": "Grafana Labs",
   "license": "Apache-2.0",
   "devDependencies": {
     "@commitlint/cli": "^12.1.4",
     "@commitlint/config-conventional": "^12.1.4",
-    "@grafana/data": "8.0.0-beta.3",
-    "@grafana/runtime": "8.0.0-beta.3",
-    "@grafana/toolkit": "8.0.0-beta.3",
-    "@grafana/ui": "8.0.0-beta.3",
-    "@release-it/conventional-changelog": "^2.0.1",
-    "@testing-library/dom": "7.31.0",
-    "@testing-library/jest-dom": "^5.12.0",
+    "@grafana/data": "8.0.1",
+    "@grafana/runtime": "8.0.1",
+    "@grafana/toolkit": "8.0.1",
+    "@grafana/ui": "8.0.1",
+    "@release-it/conventional-changelog": "^3.0.0",
+    "@testing-library/dom": "^7.31.2",
+    "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^11.2.7",
     "@testing-library/react-hooks": "^7.0.0",
     "@testing-library/user-event": "13.1.9",
     "@types/d3": "^6.7.0",
     "@types/d3-hexbin": "^0.2.3",
     "@types/eslint": "^7.2.4",
-    "@types/ip-address": "latest",
+    "@types/ip-address": "^7.0.0",
     "@types/is-base64": "^1.1.0",
     "@types/jest": "^26.0.23",
     "@types/lodash": "latest",
     "@types/valid-url": "^1.0.3",
     "eslint-plugin-import": "^2.23.4",
     "eslint-plugin-react-hooks": "^4.2.0",
-    "husky": "^4.2.5",
+    "husky": "^6.0.0",
     "jest-environment-jsdom-fifteen": "^1.0.2",
     "release-it": "^14.0.3",
     "tslib": "^2.2.0"
@@ -57,13 +52,13 @@
     "@popperjs/core": "^2.9.2",
     "d3": "^6.7.0",
     "d3-hexbin": "^0.2.2",
-    "ip-address": "^6.3.0",
+    "ip-address": "^7.1.0",
     "is-base64": "^1.1.0",
     "punycode": "^2.1.1",
     "react-async-hook": "^3.6.1",
     "react-hook-form": "7.2.3",
     "react-popper": "^2.2.5",
     "valid-url": "^1.0.9",
-    "yaml": "^1.10.0"
+    "yaml": "^1.10.2"
   }
 }
