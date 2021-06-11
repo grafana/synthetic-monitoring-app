@@ -2112,10 +2112,10 @@
   resolved "https://registry.yarnpkg.com/@popperjs/core/-/core-2.9.2.tgz#adea7b6953cbb34651766b0548468e743c6a2353"
   integrity sha512-VZMYa7+fXHdwIq1TDhSXoVmSPEGM/aa+6Aiq3nVVJ9bXr24zScr+NlKFKC3iPljA7ho/GAZr+d2jOf5GIRC30Q==
 
-"@release-it/conventional-changelog@^2.0.1":
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/@release-it/conventional-changelog/-/conventional-changelog-2.0.1.tgz#bdd52ad3ecc0d6e39d637592d6ea2bd6d28e5ecb"
-  integrity sha512-q67D3Jod935kZt6wThsDeOmhY+RWYPMY7nYyl0YxiXK8vVZzD+9z957fXGz+8Uk3iugmgDaucht7VxTaZlu6nA==
+"@release-it/conventional-changelog@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@release-it/conventional-changelog/-/conventional-changelog-3.0.0.tgz#4c7ab37ecae93ac69a8c53e1a0b092712383abe4"
+  integrity sha512-8viDnZaCkImYTxnZqJeO/8BhCrXDfsPhhtUbTJx1ZX/TbcsmR49Zr+MoKIKWJKfeRTvXMa/NNyO//9FRQa2XbA==
   dependencies:
     concat-stream "^2.0.0"
     conventional-changelog "^3.1.24"
