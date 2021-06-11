@@ -75,7 +75,7 @@
   ],
 
   "dependencies": {
-    "grafanaDependency": ">=8.0.0",
+    "grafanaDependency": ">=8.0.1",
     "grafanaVersion": "8.0",
     "plugins": [
       {
