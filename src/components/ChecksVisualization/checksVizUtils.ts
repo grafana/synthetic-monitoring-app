@@ -1,27 +1,4 @@
-import { config } from '@grafana/runtime';
-import { SuccessRates } from 'contexts/SuccessRateContext';
 import * as d3 from 'd3';
-import { Check } from 'types';
-
-export const getHexFillColor = (check: Check, successRates: SuccessRates) => {
-  const theme = config.theme2;
-
-  if (!check || !check?.enabled || !check.id) {
-    return theme.colors.text.disabled;
-  }
-
-  const successRate = successRates.checks[check.id];
-
-  if (successRate === undefined) {
-    return theme.colors.text.disabled;
-  }
-
-  if (successRate && successRate > 0.9) {
-    return theme.colors.success.main;
-  } else {
-    return theme.colors.error.main;
-  }
-};
 
 export const getLayout = (checksLength: number, width: number) => {
   if (width === 0) {
