@@ -28,6 +28,11 @@ if [ "$(docker ps -aq -f name=$NAME)" ]; then
     docker rm $NAME
 fi
 
+if [ ! "$(docker volume ls -f name=grafana-storage)" ]; then
+  docker volume create grafana-storage
+fi
+
+
 echo 'Starting up'
 # run your container
 docker run \
@@ -36,6 +41,7 @@ docker run \
   -v "$(pwd):/var/lib/grafana/plugins/grafana-synthetic-monitoring-app" \
   -v "$(pwd)/scripts/local-provisioning:/etc/grafana/provisioning"  \
   -v "$(pwd)/scripts/custom.ini:/etc/grafana/grafana.ini"\
+  -v grafana-storage:/var/lib/grafana \
   --name="$NAME" \
   grafana/grafana:"$grafanaVersion"
 
