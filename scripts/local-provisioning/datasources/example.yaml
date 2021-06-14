@@ -1,0 +1,22 @@
+# apiVersion: 1
+# datasources:
+#   - name: grafanacloud-<orgslug>-logs
+#     type: loki
+#     access: proxy
+#     url: https://logs-prod-us-central1.grafana.net
+#     basicAuth: true
+#     basicAuthUser: <instanceID>
+#     basicAuthPassword: <grafana.com api key>
+#     jsonData:
+#       maxLines: 1000
+
+#   - name: grafanacloud-<orgslug>-prom
+#     type: prometheus
+#     access: proxy
+#     url: https://prometheus-us-central1.grafana.net/api/prom
+#     basicAuth: true
+#     basicAuthUser: <instanceID>
+#     jsonData:
+#       timeInterval: 1s
+#     secureJsonData:
+#       basicAuthPassword: <grafana.com api key>
