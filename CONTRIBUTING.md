@@ -38,9 +38,9 @@ Grafana configuration can be adjusted using the `custom.ini` file located in `/s
 ### Run
 
 - Run `yarn watch`
-- In a seperate terminal window, run `./scripts/run-local`. You can pass an optional `-v` flag to pick a specific version of Grafana to run. i.e. `./scripts/run-local -v 8.0.1`
+- In a separate terminal window, run `./scripts/run-local.sh`. You can pass an optional `-v` flag to pick a specific version of Grafana to run. i.e. `./scripts/run-local.sh -v 8.0.1`
 - Go to `localhost:3000`
-- Changes to the plugin code require refreshing the browser. Changes to provisioning require restarting Grafana (which will happen if you just rerun the `run-local` script).
+- Changes to the plugin code require refreshing the browser. Changes to provisioning require restarting Grafana (which will happen if you just rerun the `run-local.sh` script).
 
 ### Running the entire stack locally
 
