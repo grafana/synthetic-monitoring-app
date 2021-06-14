@@ -21,6 +21,7 @@ import circledLoki from 'img/circled-loki.svg';
 import { CloudDatasourceJsonData } from 'datasource/types';
 import { isNumber } from 'lodash';
 import { OrgRole } from 'types';
+import { trackEvent, trackException } from 'analytics';
 
 const getStyles = (theme: GrafanaTheme) => {
   const textColor = theme.isDark ? colors.darkText : colors.lightText;
@@ -128,8 +129,10 @@ export const WelcomePage: FC<Props> = () => {
   const logsDatasource = config.datasources[logsName] as DataSourceInstanceSettings<CloudDatasourceJsonData>;
   const stackId = meta?.jsonData?.stackId;
   const onClick = async () => {
+    trackEvent('provisionedSetupSubmit');
     if (!meta?.jsonData) {
       setError('Invalid plugin configuration');
+      trackException('provisionedSetupSubmitError: Invalid plugin configuration');
       return;
     }
     setLoading(true);
@@ -159,6 +162,7 @@ export const WelcomePage: FC<Props> = () => {
     } catch (e) {
       setError(e.data?.msg ?? e.data?.err);
       setLoading(false);
+      trackException(`provisionedSetupSubmitError: ${e.data?.msg ?? e.data?.err}`);
     }
   };
 
