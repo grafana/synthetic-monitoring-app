@@ -9,14 +9,12 @@ while getopts ":v:" flag; do
   esac
 done
 
-if [ ! "$grafanaVersion" ]; then
-  echo 'Specifying a grafana version with -v flag is required'
-  exit
+if [ ! $grafanaVersion ]; then
+  echo 'No grafana version specified, using latest'
+  grafanaVersion='latest'
 fi
 
 NAME="grafana-$grafanaVersion"
-
-echo $NAME
 
 if [ "$(docker ps -q -f name=$NAME)" ]; then
   docker stop "$(docker ps -q -f name=$NAME)"
@@ -34,14 +32,14 @@ fi
 
 
 echo 'Starting up'
+
 # run your container
 docker run \
-  -d \
   -p 3000:3000 \
   -v "$(pwd):/var/lib/grafana/plugins/grafana-synthetic-monitoring-app" \
   -v "$(pwd)/scripts/local-provisioning:/etc/grafana/provisioning"  \
   -v "$(pwd)/scripts/custom.ini:/etc/grafana/grafana.ini"\
   -v grafana-storage:/var/lib/grafana \
   --name="$NAME" \
-  grafana/grafana:"$grafanaVersion"
+  grafana/grafana":$grafanaVersion"
 

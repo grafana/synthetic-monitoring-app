@@ -34,7 +34,3 @@ temp/
 
 .vscode
 .DS_Store
-
-#local build config
-# scripts/local-provisioning/datasources/*
-# scripts/local-provisioning/plugins/*
