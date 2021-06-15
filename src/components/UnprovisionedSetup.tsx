@@ -11,6 +11,7 @@ import {
   saveTenantInstanceIds,
   updatePluginJsonData,
 } from 'initialization-utils';
+import { trackEvent, trackException } from 'analytics';
 
 interface ApiSetupValues {
   adminApiToken: string;
@@ -45,11 +46,13 @@ export const UnprovisionedSetup = ({ pluginId }: Props) => {
   const onSetupSubmit = async (setupValues: ApiSetupValues) => {
     // put api host in plugin jsonData
     try {
+      trackEvent('unprovisionedSetupSubmit');
       await updatePluginJsonData(pluginId, { apiHost: apiSetup?.apiHost ?? DEFAULT_API_HOST });
       const tenantInfo = await initializeTenant(pluginId, setupValues.adminApiToken);
       setTenantInfo(tenantInfo);
       setApiSetup(setupValues);
     } catch (e) {
+      trackException(`unprovisionedSetupSubmit error: ${e.message}`);
       setApiSetupError(e.message);
     }
   };

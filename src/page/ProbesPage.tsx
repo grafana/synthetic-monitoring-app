@@ -8,6 +8,7 @@ import ProbeEditor from 'components/ProbeEditor';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { ProbeList } from 'components/ProbeList';
 import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
+import { trackEvent } from 'analytics';
 
 interface Props {
   id?: string;
@@ -78,7 +79,14 @@ export const ProbesPage = ({ id }: Props) => {
       {selectedProbe ? (
         <ProbeEditor probe={selectedProbe} onReturn={onGoBack} />
       ) : (
-        <ProbeList probes={probes} onAddNew={() => setAddingNew(true)} onSelectProbe={onSelectProbe} />
+        <ProbeList
+          probes={probes}
+          onAddNew={() => {
+            trackEvent('viewAddProbe');
+            setAddingNew(true);
+          }}
+          onSelectProbe={onSelectProbe}
+        />
       )}
     </SuccessRateContextProvider>
   );
