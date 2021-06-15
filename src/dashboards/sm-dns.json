@@ -84,11 +84,7 @@
     {
       "circleMaxSize": "10",
       "circleMinSize": "2",
-      "colors": [
-        "#37872D",
-        "#FA6400",
-        "#C4162A"
-      ],
+      "colors": ["#37872D", "#FA6400", "#C4162A"],
       "datasource": "${DS_SM_METRICS}",
       "decimals": 2,
       "description": "What's the error percentage for each probe that is observing the given target.",
@@ -194,17 +190,13 @@
       "options": {
         "colorMode": "value",
         "fieldOptions": {
-          "calcs": [
-            "lastNotNull"
-          ]
+          "calcs": ["lastNotNull"]
         },
         "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "horizontal",
         "reduceOptions": {
-          "calcs": [
-            "mean"
-          ],
+          "calcs": ["mean"],
           "fields": "",
           "values": false
         },
@@ -276,17 +268,13 @@
       "options": {
         "colorMode": "value",
         "fieldOptions": {
-          "calcs": [
-            "lastNotNull"
-          ]
+          "calcs": ["lastNotNull"]
         },
         "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "horizontal",
         "reduceOptions": {
-          "calcs": [
-            "mean"
-          ],
+          "calcs": ["mean"],
           "fields": "",
           "values": false
         },
@@ -350,17 +338,13 @@
       "options": {
         "colorMode": "value",
         "fieldOptions": {
-          "calcs": [
-            "lastNotNull"
-          ]
+          "calcs": ["lastNotNull"]
         },
         "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "horizontal",
         "reduceOptions": {
-          "calcs": [
-            "last"
-          ],
+          "calcs": ["last"],
           "fields": "",
           "values": false
         },
@@ -421,17 +405,13 @@
       "options": {
         "colorMode": "value",
         "fieldOptions": {
-          "calcs": [
-            "lastNotNull"
-          ]
+          "calcs": ["lastNotNull"]
         },
         "graphMode": "none",
         "justifyMode": "auto",
         "orientation": "horizontal",
         "reduceOptions": {
-          "calcs": [
-            "mean"
-          ],
+          "calcs": ["mean"],
           "fields": "",
           "values": false
         },
@@ -491,9 +471,7 @@
         "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "/^frequency$/",
           "values": false
         },
@@ -919,7 +897,7 @@
       },
       "targets": [
         {
-          "expr": "{probe=~\"$probe\",instance=\"$instance\", job=\"$job\", probe_success=\"0\"}",
+          "expr": "{probe=~\"$probe\", instance=\"$instance\", job=\"$job\", probe_success=\"0\"} | logfmt | line_format \"level={{.level}} target={{.target}} probe={{.probe}} msg={{.msg}}\"",
           "refId": "A"
         }
       ],
@@ -932,9 +910,7 @@
   "refresh": "1m",
   "schemaVersion": 27,
   "style": "dark",
-  "tags": [
-    "synthetic-monitoring"
-  ],
+  "tags": ["synthetic-monitoring"],
   "templating": {
     "list": [
       {
@@ -1025,20 +1001,10 @@
     "to": "now"
   },
   "timepicker": {
-    "refresh_intervals": [
-      "10s",
-      "30s",
-      "1m",
-      "5m",
-      "15m",
-      "30m",
-      "1h",
-      "2h",
-      "1d"
-    ]
+    "refresh_intervals": ["10s", "30s", "1m", "5m", "15m", "30m", "1h", "2h", "1d"]
   },
   "timezone": "",
   "title": "Synthetic Monitoring - DNS",
   "uid": "lgL6odgGz",
-  "version": 16
+  "version": 17
 }
