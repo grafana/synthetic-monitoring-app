@@ -1,3 +1,10 @@
+## [1.0.12](https://github.com/grafana/synthetic-monitoring-app/compare/1.0.11...1.0.12) (2021-06-16)
+
+
+### Bug Fixes
+
+* format dashboard log panel to include the probe name ([#314](https://github.com/grafana/synthetic-monitoring-app/issues/314)) ([8529027](https://github.com/grafana/synthetic-monitoring-app/commit/85290276382addf3df0b6fd04e2c782dd72bc064))
+
 ## [1.0.11](https://github.com/grafana/synthetic-monitoring-app/compare/1.0.10...1.0.11) (2021-06-15)
 
 ## [1.0.10](https://github.com/grafana/synthetic-monitoring-app/compare/1.0.9...1.0.10) (2021-06-14)
