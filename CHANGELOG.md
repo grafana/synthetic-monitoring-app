@@ -1,3 +1,10 @@
+## [1.0.13](https://github.com/grafana/synthetic-monitoring-app/compare/1.0.12...1.0.13) (2021-06-16)
+
+
+### Bug Fixes
+
+* add backend host to plugin config page ([#316](https://github.com/grafana/synthetic-monitoring-app/issues/316)) ([07e91c0](https://github.com/grafana/synthetic-monitoring-app/commit/07e91c0a1e54dd62ea7d6de7a5251b4a291ead7b))
+
 ## [1.0.12](https://github.com/grafana/synthetic-monitoring-app/compare/1.0.11...1.0.12) (2021-06-16)
 
 
