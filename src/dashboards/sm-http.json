@@ -878,14 +878,15 @@
       "id": 46,
       "options": {
         "dedupStrategy": "none",
-        "showLabels": false,
+        "enableLogDetails": true,
+        "showLabels": true,
         "showTime": true,
         "sortOrder": "Descending",
         "wrapLogMessage": true
       },
       "targets": [
         {
-          "expr": "{probe=~\"$probe\", instance=\"$instance\", job=\"$job\", probe_success=\"0\"} | logfmt | line_format \"level={{.level}} target={{.target}} probe={{.probe}} msg={{.msg}}\"",
+          "expr": "{probe=~\"$probe\", instance=\"$instance\", job=\"$job\", probe_success=\"0\"}",
           "refId": "A"
         }
       ],
