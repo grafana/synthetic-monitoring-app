@@ -14,7 +14,18 @@ import {
   CheckType,
 } from 'types';
 import appEvents from 'grafana/app/core/app_events';
-import { Button, Icon, Select, Input, Pagination, InfoBox, Checkbox, useStyles, RadioButtonGroup } from '@grafana/ui';
+import {
+  Button,
+  Icon,
+  Select,
+  Input,
+  Pagination,
+  InfoBox,
+  Checkbox,
+  useStyles,
+  RadioButtonGroup,
+  InlineSwitch,
+} from '@grafana/ui';
 import { unEscapeStringFromRegex, escapeStringForRegex, GrafanaTheme, AppEvents, SelectableValue } from '@grafana/data';
 import { hasRole, checkType as getCheckType, matchStrings } from 'utils';
 import {
@@ -160,6 +171,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
   const [selectAll, setSelectAll] = useState(false);
   const [viewType, setViewType] = useState(getViewTypeFromLS() ?? CheckListViewType.Card);
   const [sortType, setSortType] = useState<CheckSort>(CheckSort.AToZ);
+  const [showVizIconOverlay, setShowVizIconOverlay] = useState(false);
   const [bulkActionInProgress, setBulkActionInProgress] = useState(false);
   const styles = useStyles(getStyles);
   const successRateContext = useContext(SuccessRateContext);
@@ -563,6 +575,15 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
             options={CHECK_LIST_VIEW_TYPE_OPTIONS}
           />
         )}
+        {viewType === CheckListViewType.Viz && (
+          <InlineSwitch
+            label="Show icons"
+            showLabel
+            transparent
+            value={showVizIconOverlay}
+            onChange={(e) => setShowVizIconOverlay(e.currentTarget.checked)}
+          />
+        )}
         <div className={styles.flexGrow} />
         <Select
           prefix={
@@ -579,7 +600,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
       </div>
       {viewType === CheckListViewType.Viz ? (
         <div className={styles.vizContainer}>
-          <ChecksVisualization checks={filteredChecks} />
+          <ChecksVisualization checks={filteredChecks} showIcons={showVizIconOverlay} />
         </div>
       ) : (
         <div>

@@ -87,6 +87,7 @@ const parseProbeResults = (probes: Probe[] | undefined, data: any) => {
           value: parseFloat(float.toFixed(1)),
           displayValue: float.toFixed(1),
           thresholdColor: getSuccessRateThresholdColor(float),
+          icon: getSuccessRateIcon(float),
         };
       }
     }

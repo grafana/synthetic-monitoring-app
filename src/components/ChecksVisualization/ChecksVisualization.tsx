@@ -1,10 +1,10 @@
-import React, { useRef, useState, useCallback, useContext } from 'react';
+import React, { useRef, useState, useCallback } from 'react';
 import { VirtualElement } from '@popperjs/core';
 import * as d3hexbin from 'd3-hexbin';
 import { Check } from 'types';
 import { useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
-import { SuccessRateContext, SuccessRateTypes } from 'contexts/SuccessRateContext';
+import { SuccessRateTypes } from 'contexts/SuccessRateContext';
 import { getLayout } from './checksVizUtils';
 import { GrafanaTheme2 } from '@grafana/data';
 import { usePopper } from 'react-popper';
@@ -15,6 +15,7 @@ import { IconOverlay } from './IconOverlay';
 
 interface Props {
   checks: Check[];
+  showIcons: boolean;
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({
@@ -33,8 +34,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
 });
 
-export function ChecksVisualization({ checks }: Props) {
-  const { values: successRates } = useContext(SuccessRateContext);
+export function ChecksVisualization({ checks, showIcons }: Props) {
   const styles = useStyles2(getStyles);
   const popperElement = useRef<HTMLDivElement>(null);
   const [hoveredCheck, setHoveredCheck] = useState<Check>();
@@ -108,13 +108,15 @@ export function ChecksVisualization({ checks }: Props) {
                   ))}
                 </g>
               </svg>
-              <IconOverlay
-                width={svgWidth}
-                height={adjustedHeight}
-                hexCenters={hexCenters}
-                hexRadius={hexRadius}
-                checks={checks}
-              />
+              {showIcons && (
+                <IconOverlay
+                  width={svgWidth}
+                  height={adjustedHeight}
+                  hexCenters={hexCenters}
+                  hexRadius={hexRadius}
+                  checks={checks}
+                />
+              )}
             </>
           );
         }}
