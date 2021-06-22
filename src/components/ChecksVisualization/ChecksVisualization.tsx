@@ -1,16 +1,17 @@
-import React, { useRef, useState, useCallback } from 'react';
+import React, { useRef, useState, useCallback, useContext } from 'react';
 import { VirtualElement } from '@popperjs/core';
 import * as d3hexbin from 'd3-hexbin';
 import { Check } from 'types';
 import { useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
-import { SuccessRateTypes } from 'contexts/SuccessRateContext';
+import { SuccessRateContext, SuccessRateTypes } from 'contexts/SuccessRateContext';
 import { getLayout } from './checksVizUtils';
 import { GrafanaTheme2 } from '@grafana/data';
 import { usePopper } from 'react-popper';
 import { SuccessRateGauge } from 'components/SuccessRateGauge';
 import { Hexagon } from './Hexagon';
 import { Autosizer } from 'components/Autosizer';
+import { IconOverlay } from './IconOverlay';
 
 interface Props {
   checks: Check[];
@@ -33,6 +34,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
 });
 
 export function ChecksVisualization({ checks }: Props) {
+  const { values: successRates } = useContext(SuccessRateContext);
   const styles = useStyles2(getStyles);
   const popperElement = useRef<HTMLDivElement>(null);
   const [hoveredCheck, setHoveredCheck] = useState<Check>();
@@ -88,22 +90,32 @@ export function ChecksVisualization({ checks }: Props) {
           const { hexRadius, hexCenters, height, svgWidth } = getLayout(checks.length, width);
           const hexbin = d3hexbin.hexbin().radius(hexRadius);
           const hexbins = hexbin(hexCenters);
+          const adjustedHeight = height + hexRadius * 2;
 
           return (
-            <svg width={svgWidth} height={height + hexRadius * 2}>
-              <g transform={`translate(${hexRadius + 1}, ${hexRadius + 1})`}>
-                {hexbins.map((hex, index) => (
-                  <Hexagon
-                    key={index}
-                    hexPath={hex}
-                    hexRadius={hexRadius}
-                    onMouseMove={updateTooltipLocation}
-                    onMouseOut={hideTooltip}
-                    check={checks[index]}
-                  />
-                ))}
-              </g>
-            </svg>
+            <>
+              <svg width={svgWidth} height={adjustedHeight}>
+                <g transform={`translate(${hexRadius + 1}, ${hexRadius + 1})`}>
+                  {hexbins.map((hex, index) => (
+                    <Hexagon
+                      key={index}
+                      hexPath={hex}
+                      hexRadius={hexRadius}
+                      onMouseMove={updateTooltipLocation}
+                      onMouseOut={hideTooltip}
+                      check={checks[index]}
+                    />
+                  ))}
+                </g>
+              </svg>
+              <IconOverlay
+                width={svgWidth}
+                height={adjustedHeight}
+                hexCenters={hexCenters}
+                hexRadius={hexRadius}
+                checks={checks}
+              />
+            </>
           );
         }}
       </Autosizer>

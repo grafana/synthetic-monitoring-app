@@ -6,6 +6,7 @@ import { config, getBackendSrv } from '@grafana/runtime';
 import { HostedInstance, User, OrgRole, CheckType, Settings } from 'types';
 
 import { SMDataSource } from 'datasource/DataSource';
+import { IconName } from '@grafana/ui';
 
 /**
  * Find all synthetic-monitoring datasources
@@ -286,4 +287,17 @@ export const getSuccessRateThresholdColor = (value: number | undefined) => {
     return config.theme2.colors.warning.main;
   }
   return config.theme2.colors.error.main;
+};
+
+export const getSuccessRateIcon = (value: number | undefined): IconName => {
+  if (value === undefined) {
+    return 'minus';
+  }
+  if (value >= 99.5) {
+    return 'check';
+  }
+  if (value >= 99) {
+    return 'exclamation-triangle';
+  }
+  return 'x';
 };

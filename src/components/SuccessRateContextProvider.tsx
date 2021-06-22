@@ -1,6 +1,6 @@
 import React, { PropsWithChildren, useContext, useEffect, useState } from 'react';
 import { Check, Probe } from 'types';
-import { getSuccessRateThresholdColor, queryMetric } from 'utils';
+import { getSuccessRateIcon, getSuccessRateThresholdColor, queryMetric } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
 import {
   SuccessRates,
@@ -54,6 +54,7 @@ const parseCheckResults = (checks: Check[] | undefined, data: any) => {
           value: parseFloat(float.toFixed(1)),
           displayValue: `${float.toFixed(1)}%`,
           thresholdColor: getSuccessRateThresholdColor(float),
+          icon: getSuccessRateIcon(float),
         };
       }
     }

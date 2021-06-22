@@ -1,4 +1,5 @@
 import { config } from '@grafana/runtime';
+import { IconName } from '@grafana/ui';
 import { createContext } from 'react';
 import { getSuccessRateThresholdColor } from 'utils';
 
@@ -12,6 +13,7 @@ export interface SuccessRateValue {
   displayValue: string;
   thresholdColor: string;
   noData?: boolean;
+  icon: IconName;
 }
 export interface SuccessRate {
   [key: number]: SuccessRateValue;
@@ -39,6 +41,7 @@ export const defaultValues: SuccessRates = {
     value: 0,
     displayValue: 'N/A',
     noData: true,
+    icon: 'minus',
   },
 };
 
@@ -50,6 +53,7 @@ const updateSuccessRate = (type: SuccessRateTypes, id: number, successRate: numb
     displayValue: successRate === undefined ? 'N/A' : successRate.toFixed(1),
     thresholdColor,
     noData: successRate === undefined,
+    icon: 'minus',
   };
 };
 
