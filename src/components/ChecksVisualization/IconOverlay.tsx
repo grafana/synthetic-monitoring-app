@@ -7,7 +7,7 @@ interface Props {
   width: number;
   height: number;
   hexRadius: number;
-  hexCenters: never[] | Array<[number, number]>;
+  hexCenters: Array<[number, number]>;
   checks: Check[];
 }
 
@@ -23,7 +23,6 @@ export const IconOverlay = ({ width, height, hexCenters, hexRadius, checks }: Pr
       }}
     >
       {hexCenters.map(([x, y], index) => {
-        console.log(x, y);
         return (
           <Icon
             key={index}
