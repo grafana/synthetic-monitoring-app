@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/grafana/synthetic-monitoring-app/compare/1.0.13...1.1.0) (2021-06-23)
+
+
+### Features
+
+* add an icon overlay to the check visualization to improve accessibility ([c724eab](https://github.com/grafana/synthetic-monitoring-app/commit/c724eab7aa7bfea3cd582acd9a1a2c1aa70069fd))
+
 ## [1.0.13](https://github.com/grafana/synthetic-monitoring-app/compare/1.0.12...1.0.13) (2021-06-16)
 
 
