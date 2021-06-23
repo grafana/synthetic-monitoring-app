@@ -11,9 +11,11 @@ import { usePopper } from 'react-popper';
 import { SuccessRateGauge } from 'components/SuccessRateGauge';
 import { Hexagon } from './Hexagon';
 import { Autosizer } from 'components/Autosizer';
+import { IconOverlay } from './IconOverlay';
 
 interface Props {
   checks: Check[];
+  showIcons: boolean;
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({
@@ -32,7 +34,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
 });
 
-export function ChecksVisualization({ checks }: Props) {
+export function ChecksVisualization({ checks, showIcons }: Props) {
   const styles = useStyles2(getStyles);
   const popperElement = useRef<HTMLDivElement>(null);
   const [hoveredCheck, setHoveredCheck] = useState<Check>();
@@ -88,22 +90,34 @@ export function ChecksVisualization({ checks }: Props) {
           const { hexRadius, hexCenters, height, svgWidth } = getLayout(checks.length, width);
           const hexbin = d3hexbin.hexbin().radius(hexRadius);
           const hexbins = hexbin(hexCenters);
+          const adjustedHeight = height + hexRadius * 2;
 
           return (
-            <svg width={svgWidth} height={height + hexRadius * 2}>
-              <g transform={`translate(${hexRadius + 1}, ${hexRadius + 1})`}>
-                {hexbins.map((hex, index) => (
-                  <Hexagon
-                    key={index}
-                    hexPath={hex}
-                    hexRadius={hexRadius}
-                    onMouseMove={updateTooltipLocation}
-                    onMouseOut={hideTooltip}
-                    check={checks[index]}
-                  />
-                ))}
-              </g>
-            </svg>
+            <>
+              <svg width={svgWidth} height={adjustedHeight}>
+                <g transform={`translate(${hexRadius + 1}, ${hexRadius + 1})`}>
+                  {hexbins.map((hex, index) => (
+                    <Hexagon
+                      key={index}
+                      hexPath={hex}
+                      hexRadius={hexRadius}
+                      onMouseMove={updateTooltipLocation}
+                      onMouseOut={hideTooltip}
+                      check={checks[index]}
+                    />
+                  ))}
+                </g>
+              </svg>
+              {showIcons && (
+                <IconOverlay
+                  width={svgWidth}
+                  height={adjustedHeight}
+                  hexCenters={hexCenters}
+                  hexRadius={hexRadius}
+                  checks={checks}
+                />
+              )}
+            </>
           );
         }}
       </Autosizer>

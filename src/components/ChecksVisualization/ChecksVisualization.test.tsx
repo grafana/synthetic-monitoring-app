@@ -113,7 +113,7 @@ const renderChecksViz = ({ checks = defaultChecks }: RenderArgs = {}) => {
     <InstanceContext.Provider value={{ instance: { api: instance }, loading: false, meta }}>
       <SuccessRateContextProvider checks={checks}>
         <div style={{ height: '500px', width: '500px' }}>
-          <ChecksVisualization checks={checks} />
+          <ChecksVisualization checks={checks} showIcons />
         </div>
       </SuccessRateContextProvider>
     </InstanceContext.Provider>
