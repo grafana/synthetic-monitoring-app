@@ -34,6 +34,7 @@ import {
   CHECK_LIST_STATUS_OPTIONS,
   CHECK_LIST_VIEW_TYPE_OPTIONS,
   CHECK_LIST_VIEW_TYPE_LS_KEY,
+  CHECK_LIST_ICON_OVERLAY_LS_KEY,
 } from './constants';
 import { CheckListItem } from './CheckListItem';
 import { css } from '@emotion/css';
@@ -149,6 +150,20 @@ interface Props {
   onCheckUpdate: () => void;
 }
 
+const getIconOverlayToggleFromLS = () => {
+  const lsValue = window.localStorage.getItem(CHECK_LIST_ICON_OVERLAY_LS_KEY);
+
+  if (!lsValue) {
+    return false;
+  }
+
+  try {
+    return Boolean(JSON.parse(lsValue));
+  } catch {
+    return false;
+  }
+};
+
 const getViewTypeFromLS = () => {
   const lsValue = window.localStorage.getItem(CHECK_LIST_VIEW_TYPE_LS_KEY);
   if (lsValue) {
@@ -171,7 +186,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
   const [selectAll, setSelectAll] = useState(false);
   const [viewType, setViewType] = useState(getViewTypeFromLS() ?? CheckListViewType.Card);
   const [sortType, setSortType] = useState<CheckSort>(CheckSort.AToZ);
-  const [showVizIconOverlay, setShowVizIconOverlay] = useState(false);
+  const [showVizIconOverlay, setShowVizIconOverlay] = useState(getIconOverlayToggleFromLS());
   const [bulkActionInProgress, setBulkActionInProgress] = useState(false);
   const styles = useStyles(getStyles);
   const successRateContext = useContext(SuccessRateContext);
@@ -581,7 +596,10 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
             showLabel
             transparent
             value={showVizIconOverlay}
-            onChange={(e) => setShowVizIconOverlay(e.currentTarget.checked)}
+            onChange={(e) => {
+              window.localStorage.setItem(CHECK_LIST_ICON_OVERLAY_LS_KEY, String(e.currentTarget.checked));
+              setShowVizIconOverlay(e.currentTarget.checked);
+            }}
           />
         )}
         <div className={styles.flexGrow} />
