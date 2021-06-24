@@ -299,5 +299,5 @@ export const getSuccessRateIcon = (value: number | undefined): IconName => {
   if (value >= 99) {
     return 'exclamation-triangle';
   }
-  return 'x';
+  return 'times-square' as IconName;
 };
