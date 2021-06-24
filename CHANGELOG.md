@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/grafana/synthetic-monitoring-app/compare/1.1.0...1.2.0) (2021-06-24)
+
+
+### Features
+
+* **ui:** add locations count in checks list ([#322](https://github.com/grafana/synthetic-monitoring-app/issues/322)) ([1c35f79](https://github.com/grafana/synthetic-monitoring-app/commit/1c35f79aa45085f6de072392b4f95b3a303284a9)), closes [#321](https://github.com/grafana/synthetic-monitoring-app/issues/321)
+
 # [1.1.0](https://github.com/grafana/synthetic-monitoring-app/compare/1.0.13...1.1.0) (2021-06-23)
 
 
