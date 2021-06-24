@@ -20,6 +20,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
   icon: css`
     position: absolute;
+    color: black;
   `,
 });
 
