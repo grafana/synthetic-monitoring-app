@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.0...1.2.1) (2021-06-24)
+
+
+### Bug Fixes
+
+* update check viz icon color ([#323](https://github.com/grafana/synthetic-monitoring-app/issues/323)) ([20367f0](https://github.com/grafana/synthetic-monitoring-app/commit/20367f04092503b636d904424c3a4a80de1e91ea))
+
 # [1.2.0](https://github.com/grafana/synthetic-monitoring-app/compare/1.1.0...1.2.0) (2021-06-24)
 
 
