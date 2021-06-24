@@ -18,9 +18,10 @@ We need to configure our local Grafana using provisioning. Provisioning does thr
 - Creates the necessary datasources
 - Provides some data to the plugin so it knows how to connect to the SM API and Cloud.
 
-Example provisioning files can be found in `/local-provisioning/datasources` and `/local-provisioning/plugins`
+Example provisioning files can be found in `scripts/local-provisioning/datasources` and `scripts/local-provisioning/plugins`
 
-- Create a new `yaml` file in each of `datasources` and `plugins` (they can be named anything). Copy the content from each example file and uncomment everything. These files will be mounted as volumes in the Grafana docker container.
+- Create new `yaml` files in `scripts/local-provisioning/datasources` and `scripts/local-provisioning/plugins` folders (they can be named anything).
+- Copy the content from each example file and uncomment everything. These files will be mounted as volumes in the Grafana docker container.
 - Fill in the values for the provisioning files.
   - Datasource info:
     - You'll need to input the basicAuthUser and password. You can find this information by going to your cloud portal, and copying the user info from the prometheus/loki datasource config UI
