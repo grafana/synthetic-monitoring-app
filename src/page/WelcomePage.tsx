@@ -34,6 +34,7 @@ const getStyles = (theme: GrafanaTheme) => {
       left: 0;
       background: ${theme.isDark ? colors.darkThemeBlueBackground : colors.lightThemeBlueBackground};
       color: ${textColor};
+      z-index: 1;
     `,
     bannerBackground: css`
       background-image: url(${theme.isDark ? darkCircledSM : lightCircledSM});
