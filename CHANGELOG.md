@@ -1,3 +1,10 @@
+## [1.2.2](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.1...1.2.2) (2021-06-30)
+
+
+### Bug Fixes
+
+* hide footer on welcome page ([#324](https://github.com/grafana/synthetic-monitoring-app/issues/324)) ([ed3b99a](https://github.com/grafana/synthetic-monitoring-app/commit/ed3b99aee24c5d4c38d02ab53b3a2cc54167b35f))
+
 ## [1.2.1](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.0...1.2.1) (2021-06-24)
 
 
