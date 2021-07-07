@@ -1,3 +1,10 @@
+## [1.2.3](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.2...1.2.3) (2021-07-07)
+
+
+### Bug Fixes
+
+* fix typo in http TLS setting label ([#325](https://github.com/grafana/synthetic-monitoring-app/issues/325)) ([9093f8d](https://github.com/grafana/synthetic-monitoring-app/commit/9093f8de53e4100e7840dfe311520d3b8d4ad8d4))
+
 ## [1.2.2](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.1...1.2.2) (2021-06-30)
 
 
