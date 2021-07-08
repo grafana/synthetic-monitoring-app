@@ -324,7 +324,7 @@ export const getDefaultValuesFromCheck = (check: Check = fallbackCheck): CheckFo
 
   return {
     ...check,
-    useFullMetrics: !check.basicMetricsOnly,
+    publishAdvancedMetrics: !check.basicMetricsOnly,
     timeout: check.timeout / 1000,
     frequency: check.frequency / 1000,
     probes: check.probes,
@@ -611,6 +611,6 @@ export const getCheckFromFormValues = (
     frequency: formValues.frequency * 1000,
     alertSensitivity: getValueFromSelectable(formValues.alertSensitivity) ?? AlertSensitivity.None,
     settings: getSettingsFromFormValues(formValues, defaultValues),
-    basicMetricsOnly: !formValues.useFullMetrics,
+    basicMetricsOnly: !formValues.publishAdvancedMetrics,
   };
 };
