@@ -1,4 +1,4 @@
-import React, { FC, useEffect } from 'react';
+import React, { FC } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { css } from '@emotion/css';
 import { GrafanaTheme } from '@grafana/data';
