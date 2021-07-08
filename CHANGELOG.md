@@ -1,3 +1,10 @@
+## [1.2.4](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.3...1.2.4) (2021-07-08)
+
+
+### Bug Fixes
+
+* checking show advanced metrics updates usage calculation ([#327](https://github.com/grafana/synthetic-monitoring-app/issues/327)) ([8728f27](https://github.com/grafana/synthetic-monitoring-app/commit/8728f273a6a8017f7f47b952678adf910d4af734))
+
 ## [1.2.3](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.2...1.2.3) (2021-07-07)
 
 

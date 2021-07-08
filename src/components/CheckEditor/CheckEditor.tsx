@@ -152,8 +152,8 @@ export const CheckEditor = ({ check, onReturn }: Props) => {
             probes={check?.probes ?? fallbackCheck.probes}
           />
           <HorizontalCheckboxField
-            id="useFullMetrics"
-            name="useFullMetrics"
+            name="publishAdvancedMetrics"
+            id="publishAdvancedMetrics"
             label="Publish full set of metrics"
             description={'Metrics are reduced by default'}
           />

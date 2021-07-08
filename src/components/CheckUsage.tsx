@@ -30,7 +30,7 @@ const getCheckFromValues = (
   checkType: CheckType | undefined,
   frequency = 0,
   probes: number[] = [],
-  useFullMetrics = false
+  publishAdvancedMetrics = false
 ): Partial<Check> | undefined => {
   if (!checkType) {
     return;
@@ -38,7 +38,7 @@ const getCheckFromValues = (
   return {
     frequency: frequency * 1000,
     probes,
-    basicMetricsOnly: !useFullMetrics,
+    basicMetricsOnly: !publishAdvancedMetrics,
     settings: {
       [checkType]: {},
     },
@@ -48,9 +48,15 @@ const getCheckFromValues = (
 export const CheckUsage: FC = () => {
   const styles = useStyles(getStyles);
   const { watch } = useFormContext();
-  const [checkType, frequency, probes, useFullMetrics] = watch(['checkType', 'frequency', 'probes', 'useFullMetrics']);
-  const check = getCheckFromValues(checkType?.value, frequency, probes, useFullMetrics);
+  const [checkType, frequency, probes, publishAdvancedMetrics] = watch([
+    'checkType',
+    'frequency',
+    'probes',
+    'publishAdvancedMetrics',
+  ]);
+  const check = getCheckFromValues(checkType?.value, frequency, probes, publishAdvancedMetrics);
   const usage = useUsageCalc(check);
+
   if (!usage) {
     return null;
   }

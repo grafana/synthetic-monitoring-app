@@ -42,15 +42,16 @@ export const HorizontalCheckboxField = ({
   const styles = useStyles(getStyles);
   const { register } = useFormContext();
   const registered = name ? register(name) : {};
+
   return (
     <div className={cx(styles.container, className)}>
       <Checkbox
-        {...registered}
         disabled={disabled}
         id={id}
         style={{ position: 'relative' }}
         value={value}
         onChange={onChange}
+        {...registered}
       />
       <Label description={description} htmlFor={id} className={styles.label}>
         {label}

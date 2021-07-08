@@ -253,7 +253,7 @@ export interface CheckFormValues extends Omit<Check, 'settings' | 'labels' | 'al
   settings: SettingsFormValues;
   labels?: Label[];
   alertSensitivity: SelectableValue<AlertSensitivity>;
-  useFullMetrics: boolean;
+  publishAdvancedMetrics: boolean;
 }
 
 export interface Check extends BaseObject {
