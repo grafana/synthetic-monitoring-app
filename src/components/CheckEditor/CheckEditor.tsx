@@ -151,20 +151,11 @@ export const CheckEditor = ({ check, onReturn }: Props) => {
             frequency={check?.frequency ?? fallbackCheck.frequency}
             probes={check?.probes ?? fallbackCheck.probes}
           />
-          <Controller
+          <HorizontalCheckboxField
             name="publishAdvancedMetrics"
-            control={formMethods.control}
-            rules={{
-              required: false,
-            }}
-            render={({ field }) => (
-              <HorizontalCheckboxField
-                {...field}
-                id="publishAdvancedMetrics"
-                label="Publish full set of metrics"
-                description={'Metrics are reduced by default'}
-              />
-            )}
+            id="publishAdvancedMetrics"
+            label="Publish full set of metrics"
+            description={'Metrics are reduced by default'}
           />
           <CheckUsage />
           <CheckSettings typeOfCheck={selectedCheckType} isEditor={isEditor} />
