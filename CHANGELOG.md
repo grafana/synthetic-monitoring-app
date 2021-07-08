@@ -1,3 +1,10 @@
+## [1.2.5](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.4...1.2.5) (2021-07-08)
+
+
+### Bug Fixes
+
+* add some help text around less frequent checks and alert flapping ([#328](https://github.com/grafana/synthetic-monitoring-app/issues/328)) ([6bf87d3](https://github.com/grafana/synthetic-monitoring-app/commit/6bf87d3180e724cc11da8bdde3771cea52035fa9))
+
 ## [1.2.4](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.3...1.2.4) (2021-07-08)
 
 
