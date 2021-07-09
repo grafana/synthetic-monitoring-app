@@ -20,13 +20,13 @@ const getDisplayValue = (successRate: SuccessRateValue, loading: boolean): Displ
   if (loading) {
     return {
       numeric: 0,
-      title: 'Success rate',
+      title: 'Reachability',
       text: 'loading...',
     };
   }
 
   return {
-    title: 'Success rate',
+    title: 'Reachability',
     color: successRate.thresholdColor,
     numeric: successRate.value,
     text: successRate.noData ? 'N/A' : successRate.value + '%',
