@@ -1,3 +1,10 @@
+## [1.2.6](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.5...1.2.6) (2021-07-09)
+
+
+### Bug Fixes
+
+* rename the success rate panels to reachability ([#329](https://github.com/grafana/synthetic-monitoring-app/issues/329)) ([43f30d7](https://github.com/grafana/synthetic-monitoring-app/commit/43f30d717c654cbda845570246371d178fd5c266))
+
 ## [1.2.5](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.4...1.2.5) (2021-07-08)
 
 
