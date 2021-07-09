@@ -1,3 +1,10 @@
+## [1.2.7](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.6...1.2.7) (2021-07-09)
+
+
+### Bug Fixes
+
+* make HTTP the default check type ([#330](https://github.com/grafana/synthetic-monitoring-app/issues/330)) ([bd58ce1](https://github.com/grafana/synthetic-monitoring-app/commit/bd58ce1e4ff2ab9f4496ddcc064445e8d39fecfa))
+
 ## [1.2.6](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.5...1.2.6) (2021-07-09)
 
 
