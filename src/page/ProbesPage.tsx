@@ -8,6 +8,7 @@ import ProbeEditor from 'components/ProbeEditor';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { ProbeList } from 'components/ProbeList';
 import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
+import { trackEvent } from 'analytics';
 
 interface Props {
   id?: string;
@@ -59,10 +60,6 @@ export const ProbesPage = ({ id }: Props) => {
     return <div>Loading...</div>;
   }
 
-  if (selectedProbe) {
-    return <ProbeEditor probe={selectedProbe} onReturn={onGoBack} />;
-  }
-
   if (isAddingNew) {
     const template = {
       name: '',
@@ -79,7 +76,18 @@ export const ProbesPage = ({ id }: Props) => {
   }
   return (
     <SuccessRateContextProvider probes={probes}>
-      <ProbeList probes={probes} onAddNew={() => setAddingNew(true)} onSelectProbe={onSelectProbe} />
+      {selectedProbe ? (
+        <ProbeEditor probe={selectedProbe} onReturn={onGoBack} />
+      ) : (
+        <ProbeList
+          probes={probes}
+          onAddNew={() => {
+            trackEvent('viewAddProbe');
+            setAddingNew(true);
+          }}
+          onSelectProbe={onSelectProbe}
+        />
+      )}
     </SuccessRateContextProvider>
   );
 };

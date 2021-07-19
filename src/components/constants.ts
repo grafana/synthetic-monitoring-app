@@ -16,6 +16,9 @@ import {
   CheckListViewType,
   HTTPCompressionAlgo,
   ResponseMatchType,
+  HttpSettings,
+  Settings,
+  HttpMethod,
 } from 'types';
 
 export const DNS_RESPONSE_CODES = enumToStringArray(DnsResponseCodes).map((responseCode) => ({
@@ -186,10 +189,7 @@ export const fallbackCheck = {
   probes: [],
   alertSensitivity: AlertSensitivity.None,
   settings: {
-    ping: {
-      ipVersion: IpVersion.V4,
-      dontFragment: false,
-    },
+    http: fallbackSettings(CheckType.HTTP) as HttpSettings,
   },
   basicMetricsOnly: true,
 } as Check;
@@ -282,6 +282,7 @@ export const CHECK_LIST_STATUS_OPTIONS = [
 export const CHECK_LIST_VIEW_TYPE_OPTIONS = [
   { description: 'Card view', value: CheckListViewType.Card, icon: 'check-square' },
   { description: 'List view', value: CheckListViewType.List, icon: 'list-ul' },
+  { description: 'Visualization view', value: CheckListViewType.Viz, icon: 'gf-grid' },
 ];
 
 export const PEM_HEADER = '-----BEGIN CERTIFICATE-----';
@@ -289,6 +290,8 @@ export const PEM_HEADER = '-----BEGIN CERTIFICATE-----';
 export const PEM_FOOTER = '-----END CERTIFICATE-----';
 
 export const CHECK_LIST_VIEW_TYPE_LS_KEY = 'grafana.sm.checklist.viewType';
+
+export const CHECK_LIST_ICON_OVERLAY_LS_KEY = 'grafana.sm.checklist.iconOverlay';
 
 export const INVALID_WEB_URL_MESSAGE = 'Target must be a valid web URL';
 
@@ -299,3 +302,48 @@ export const HTTP_COMPRESSION_ALGO_OPTIONS = [
   { label: 'gzip', value: HTTPCompressionAlgo.gzip },
   { label: 'deflate', value: HTTPCompressionAlgo.deflate },
 ];
+
+export function fallbackSettings(t: CheckType): Settings {
+  switch (t) {
+    case CheckType.HTTP: {
+      return {
+        http: {
+          method: HttpMethod.GET,
+          ipVersion: IpVersion.V4,
+          noFollowRedirects: false,
+          compression: HTTPCompressionAlgo.none,
+        },
+      };
+    }
+    case CheckType.PING: {
+      return {
+        ping: {
+          ipVersion: IpVersion.V4,
+          dontFragment: false,
+        },
+      };
+    }
+    case CheckType.DNS: {
+      return {
+        dns: {
+          recordType: DnsRecordType.A,
+          server: '8.8.8.8',
+          ipVersion: IpVersion.V4,
+          protocol: DnsProtocol.UDP,
+          port: 53,
+          validRCodes: [DnsResponseCodes.NOERROR],
+        },
+      };
+    }
+    case CheckType.TCP: {
+      return {
+        tcp: {
+          ipVersion: IpVersion.V4,
+          tls: false,
+        },
+      };
+    }
+    default:
+      throw new Error(`Cannot find values for invalid check type ${t}`);
+  }
+}

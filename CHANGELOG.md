@@ -1,3 +1,123 @@
+## [1.2.8](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.7...1.2.8) (2021-07-13)
+
+## [1.2.7](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.6...1.2.7) (2021-07-09)
+
+
+### Bug Fixes
+
+* make HTTP the default check type ([#330](https://github.com/grafana/synthetic-monitoring-app/issues/330)) ([bd58ce1](https://github.com/grafana/synthetic-monitoring-app/commit/bd58ce1e4ff2ab9f4496ddcc064445e8d39fecfa))
+
+## [1.2.6](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.5...1.2.6) (2021-07-09)
+
+
+### Bug Fixes
+
+* rename the success rate panels to reachability ([#329](https://github.com/grafana/synthetic-monitoring-app/issues/329)) ([43f30d7](https://github.com/grafana/synthetic-monitoring-app/commit/43f30d717c654cbda845570246371d178fd5c266))
+
+## [1.2.5](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.4...1.2.5) (2021-07-08)
+
+
+### Bug Fixes
+
+* add some help text around less frequent checks and alert flapping ([#328](https://github.com/grafana/synthetic-monitoring-app/issues/328)) ([6bf87d3](https://github.com/grafana/synthetic-monitoring-app/commit/6bf87d3180e724cc11da8bdde3771cea52035fa9))
+
+## [1.2.4](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.3...1.2.4) (2021-07-08)
+
+
+### Bug Fixes
+
+* checking show advanced metrics updates usage calculation ([#327](https://github.com/grafana/synthetic-monitoring-app/issues/327)) ([8728f27](https://github.com/grafana/synthetic-monitoring-app/commit/8728f273a6a8017f7f47b952678adf910d4af734))
+
+## [1.2.3](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.2...1.2.3) (2021-07-07)
+
+
+### Bug Fixes
+
+* fix typo in http TLS setting label ([#325](https://github.com/grafana/synthetic-monitoring-app/issues/325)) ([9093f8d](https://github.com/grafana/synthetic-monitoring-app/commit/9093f8de53e4100e7840dfe311520d3b8d4ad8d4))
+
+## [1.2.2](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.1...1.2.2) (2021-06-30)
+
+
+### Bug Fixes
+
+* hide footer on welcome page ([#324](https://github.com/grafana/synthetic-monitoring-app/issues/324)) ([ed3b99a](https://github.com/grafana/synthetic-monitoring-app/commit/ed3b99aee24c5d4c38d02ab53b3a2cc54167b35f))
+
+## [1.2.1](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.0...1.2.1) (2021-06-24)
+
+
+### Bug Fixes
+
+* update check viz icon color ([#323](https://github.com/grafana/synthetic-monitoring-app/issues/323)) ([20367f0](https://github.com/grafana/synthetic-monitoring-app/commit/20367f04092503b636d904424c3a4a80de1e91ea))
+
+# [1.2.0](https://github.com/grafana/synthetic-monitoring-app/compare/1.1.0...1.2.0) (2021-06-24)
+
+
+### Features
+
+* **ui:** add locations count in checks list ([#322](https://github.com/grafana/synthetic-monitoring-app/issues/322)) ([1c35f79](https://github.com/grafana/synthetic-monitoring-app/commit/1c35f79aa45085f6de072392b4f95b3a303284a9)), closes [#321](https://github.com/grafana/synthetic-monitoring-app/issues/321)
+
+# [1.1.0](https://github.com/grafana/synthetic-monitoring-app/compare/1.0.13...1.1.0) (2021-06-23)
+
+
+### Features
+
+* add an icon overlay to the check visualization to improve accessibility ([c724eab](https://github.com/grafana/synthetic-monitoring-app/commit/c724eab7aa7bfea3cd582acd9a1a2c1aa70069fd))
+
+## [1.0.13](https://github.com/grafana/synthetic-monitoring-app/compare/1.0.12...1.0.13) (2021-06-16)
+
+
+### Bug Fixes
+
+* add backend host to plugin config page ([#316](https://github.com/grafana/synthetic-monitoring-app/issues/316)) ([07e91c0](https://github.com/grafana/synthetic-monitoring-app/commit/07e91c0a1e54dd62ea7d6de7a5251b4a291ead7b))
+
+## [1.0.12](https://github.com/grafana/synthetic-monitoring-app/compare/1.0.11...1.0.12) (2021-06-16)
+
+
+### Bug Fixes
+
+* format dashboard log panel to include the probe name ([#314](https://github.com/grafana/synthetic-monitoring-app/issues/314)) ([8529027](https://github.com/grafana/synthetic-monitoring-app/commit/85290276382addf3df0b6fd04e2c782dd72bc064))
+
+## [1.0.11](https://github.com/grafana/synthetic-monitoring-app/compare/1.0.10...1.0.11) (2021-06-15)
+
+## [1.0.10](https://github.com/grafana/synthetic-monitoring-app/compare/1.0.9...1.0.10) (2021-06-14)
+
+## [1.0.9](https://github.com/grafana/synthetic-monitoring-app/compare/1.0.7...1.0.9) (2021-06-11)
+
+## [1.0.7](https://github.com/grafana/synthetic-monitoring-app/compare/1.0.6...1.0.7) (2021-06-11)
+
+## [1.0.6](https://github.com/grafana/synthetic-monitoring-app/compare/1.0.5...1.0.6) (2021-06-11)
+
+## [1.0.5](https://github.com/grafana/synthetic-monitoring-app/compare/1.0.4...1.0.5) (2021-06-11)
+
+## [1.0.4](https://github.com/grafana/synthetic-monitoring-app/compare/1.0.3...1.0.4) (2021-06-11)
+
+## [1.0.3](https://github.com/grafana/synthetic-monitoring-app/compare/1.0.2...1.0.3) (2021-06-10)
+
+## [1.0.2](https://github.com/grafana/synthetic-monitoring-app/compare/1.0.1...1.0.2) (2021-06-10)
+
+## [1.0.1](https://github.com/grafana/synthetic-monitoring-app/compare/1.0.0...1.0.1) (2021-06-07)
+
+
+### Bug Fixes
+
+* home dashboard redirect issue ([#290](https://github.com/grafana/synthetic-monitoring-app/issues/290)) ([f10bcdd](https://github.com/grafana/synthetic-monitoring-app/commit/f10bcddede54052d3e64aaefa500a71de642dcf5))
+
+# [1.0.0](https://github.com/grafana/synthetic-monitoring-app/compare/0.11.4...1.0.0) (2021-06-07)
+
+
+### Feat
+
+* support grafana v8 ([c27534f](https://github.com/grafana/synthetic-monitoring-app/commit/c27534fb7d8923a5207a01648751636558ff93b2))
+
+
+### BREAKING CHANGES
+
+* Updates plugin to be compatible with Grafana v8
+
+## [0.11.4](https://github.com/grafana/synthetic-monitoring-app/compare/0.11.3...0.11.4) (2021-06-03)
+
+## [0.11.3](https://github.com/grafana/synthetic-monitoring-app/compare/0.11.2...0.11.3) (2021-06-03)
+
 ## [0.11.2](https://github.com/grafana/synthetic-monitoring-app/compare/0.11.1...0.11.2) (2021-05-28)
 
 ## [0.11.1](https://github.com/grafana/synthetic-monitoring-app/compare/0.11.0...0.11.1) (2021-05-24)

@@ -1,16 +1,12 @@
 import { SelectableValue } from '@grafana/data';
 import {
   CheckType,
-  DnsRecordType,
-  DnsProtocol,
   CheckFormValues,
   Settings,
   SettingsFormValues,
   PingSettingsFormValues,
-  IpVersion,
   PingSettings,
   HttpSettings,
-  HttpMethod,
   HttpSettingsFormValues,
   HttpRegexValidationFormValue,
   Label,
@@ -25,13 +21,11 @@ import {
   HttpSslOption,
   HttpRegexValidationType,
   HeaderMatch,
-  DnsResponseCodes,
   AlertSensitivity,
   TCPQueryResponse,
   TLSConfig,
   TracerouteSettings,
   TracerouteSettingsFormValues,
-  HTTPCompressionAlgo,
 } from 'types';
 
 import {
@@ -44,6 +38,7 @@ import {
   ALERT_SENSITIVITY_OPTIONS,
   HTTP_COMPRESSION_ALGO_OPTIONS,
   DNS_RESPONSE_MATCH_OPTIONS,
+  fallbackSettings,
 } from 'components/constants';
 import { checkType, fromBase64, toBase64 } from 'utils';
 import isBase64 from 'is-base64';
@@ -54,62 +49,6 @@ export function selectableValueFrom<T>(value: T, label?: string): SelectableValu
   const labelValue = String(value);
   return { label: label ?? labelValue, value };
 }
-
-export function fallbackSettings(t: CheckType): Settings {
-  switch (t) {
-    case CheckType.HTTP: {
-      return {
-        http: {
-          method: HttpMethod.GET,
-          ipVersion: IpVersion.V4,
-          noFollowRedirects: false,
-          compression: HTTPCompressionAlgo.none,
-        },
-      };
-    }
-    case CheckType.PING: {
-      return {
-        ping: {
-          ipVersion: IpVersion.V4,
-          dontFragment: false,
-        },
-      };
-    }
-    case CheckType.DNS: {
-      return {
-        dns: {
-          recordType: DnsRecordType.A,
-          server: '8.8.8.8',
-          ipVersion: IpVersion.V4,
-          protocol: DnsProtocol.UDP,
-          port: 53,
-          validRCodes: [DnsResponseCodes.NOERROR],
-        },
-      };
-    }
-    case CheckType.TCP: {
-      return {
-        tcp: {
-          ipVersion: IpVersion.V4,
-          tls: false,
-        },
-      };
-    }
-    case CheckType.Traceroute: {
-      return {
-        traceroute: {
-          firstHop: 1,
-          maxHops: 64,
-          retries: 3,
-          maxUnknownHops: 10,
-        },
-      };
-    }
-    default:
-      throw new Error(`Cannot find values for invalid check type ${t}`);
-  }
-}
-
 const getPingSettingsFormValues = (settings: Settings): PingSettingsFormValues => {
   const pingSettings = settings.ping ?? (fallbackSettings(CheckType.PING) as PingSettings);
   return {
@@ -350,7 +289,7 @@ export const getDefaultValuesFromCheck = (check: Check = fallbackCheck): CheckFo
 
   return {
     ...check,
-    useFullMetrics: !check.basicMetricsOnly,
+    publishAdvancedMetrics: !check.basicMetricsOnly,
     timeout: check.timeout / 1000,
     frequency: check.frequency / 1000,
     probes: check.probes,
@@ -657,6 +596,6 @@ export const getCheckFromFormValues = (
     frequency: formValues.frequency * 1000,
     alertSensitivity: getValueFromSelectable(formValues.alertSensitivity) ?? AlertSensitivity.None,
     settings: getSettingsFromFormValues(formValues, defaultValues),
-    basicMetricsOnly: !formValues.useFullMetrics,
+    basicMetricsOnly: !formValues.publishAdvancedMetrics,
   };
 };

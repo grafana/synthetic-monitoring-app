@@ -188,6 +188,7 @@ export const CheckListItem = ({
           <CheckListItemDetails
             frequency={check.frequency}
             activeSeries={usage?.activeSeries}
+            probeLocations={check.probes.length}
             className={styles.listItemDetails}
             labelCount={check.labels.length}
             labels={check.labels}
@@ -224,7 +225,11 @@ export const CheckListItem = ({
                   onClickType={onTypeSelect}
                   className={styles.statusTypeCardView}
                 />
-                <CheckListItemDetails frequency={check.frequency} activeSeries={usage?.activeSeries} />
+                <CheckListItemDetails
+                  frequency={check.frequency}
+                  activeSeries={usage?.activeSeries}
+                  probeLocations={check.probes.length}
+                />
               </div>
             </div>
             <div className={styles.stats}>

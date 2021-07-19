@@ -19,6 +19,7 @@ import { hasRole } from 'utils';
 import { LabelField } from 'components/LabelField';
 import ProbeStatus from './ProbeStatus';
 import { InstanceContext } from 'contexts/InstanceContext';
+import { trackEvent, trackException } from 'analytics';
 
 interface Props {
   probe: Probe;
@@ -37,6 +38,7 @@ const ProbeEditor = ({ probe, onReturn }: Props) => {
   const formMethods = useForm<Probe>({ defaultValues: probe, mode: 'onChange' });
 
   const { execute: onSave, error } = useAsyncCallback(async (formValues: Probe) => {
+    trackEvent('addNewProbeSubmit');
     // Form values always come back as a string, even for number inputs
     formValues.latitude = Number(formValues.latitude);
     formValues.longitude = Number(formValues.longitude);
@@ -62,6 +64,10 @@ const ProbeEditor = ({ probe, onReturn }: Props) => {
   });
 
   const submissionError = (error as unknown) as SubmissionErrorWrapper;
+
+  if (error) {
+    trackException(`addNewProbeSubmitException: ${error}`);
+  }
 
   if (!probe || !instance) {
     return <div>Loading...</div>;

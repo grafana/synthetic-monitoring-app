@@ -12,7 +12,7 @@ const getStyles = (theme: GrafanaTheme) => ({
     white-space: nowrap;
     display: flex;
     align-items: center;
-    width: 284px;
+    width: 370px;
   `,
   labelWidth: css`
     max-width: 350px;
@@ -22,18 +22,28 @@ const getStyles = (theme: GrafanaTheme) => ({
 interface Props {
   frequency: number;
   activeSeries?: number;
+  probeLocations: number;
   className?: string;
   labelCount?: number;
   labels?: Label[];
   onLabelClick?: (label: Label) => void;
 }
 
-export const CheckListItemDetails = ({ frequency, activeSeries, className, labels, onLabelClick }: Props) => {
+export const CheckListItemDetails = ({
+  frequency,
+  activeSeries,
+  probeLocations,
+  className,
+  labels,
+  onLabelClick,
+}: Props) => {
   const styles = useStyles(getStyles);
   const activeSeriesMessage = activeSeries !== undefined ? `${activeSeries} active series` : null;
+  const probeLocationsMessage = probeLocations === 1 ? `${probeLocations} location` : `${probeLocations} locations`;
   return (
     <div className={cx(styles.checkDetails, className)}>
       {frequency / 1000}s frequency &nbsp;&nbsp;<strong>|</strong>&nbsp;&nbsp; {activeSeriesMessage}
+      &nbsp;&nbsp;<strong>|</strong>&nbsp;&nbsp; {probeLocationsMessage}
       {labels && onLabelClick && (
         <>
           &nbsp;&nbsp;<strong>|</strong>

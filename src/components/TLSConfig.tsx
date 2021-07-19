@@ -67,7 +67,7 @@ export const TLSConfig = ({ isEditor, checkType }: Props) => {
       <Container>
         <Field
           label="Client certificate"
-          description="The client cert file for the targets. The certificate muse be in PEM format."
+          description="The client cert file for the targets. The certificate must be in PEM format."
           disabled={!isEditor}
           invalid={Boolean(errors?.settings?.[checkType]?.tlsConfig?.clientCert)}
           error={errors?.settings?.[checkType]?.tlsConfig?.clientCert?.message}

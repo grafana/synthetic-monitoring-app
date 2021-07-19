@@ -14,7 +14,18 @@ import {
   CheckType,
 } from 'types';
 import appEvents from 'grafana/app/core/app_events';
-import { Button, Icon, Select, Input, Pagination, InfoBox, Checkbox, useStyles, RadioButtonGroup } from '@grafana/ui';
+import {
+  Button,
+  Icon,
+  Select,
+  Input,
+  Pagination,
+  InfoBox,
+  Checkbox,
+  useStyles,
+  RadioButtonGroup,
+  InlineSwitch,
+} from '@grafana/ui';
 import { unEscapeStringFromRegex, escapeStringForRegex, GrafanaTheme, AppEvents, SelectableValue } from '@grafana/data';
 import { hasRole, checkType as getCheckType, matchStrings } from 'utils';
 import {
@@ -23,11 +34,13 @@ import {
   CHECK_LIST_STATUS_OPTIONS,
   CHECK_LIST_VIEW_TYPE_OPTIONS,
   CHECK_LIST_VIEW_TYPE_LS_KEY,
+  CHECK_LIST_ICON_OVERLAY_LS_KEY,
 } from './constants';
 import { CheckListItem } from './CheckListItem';
 import { css } from '@emotion/css';
 import { LabelFilterInput } from './LabelFilterInput';
 import { SuccessRateContext, SuccessRateTypes } from 'contexts/SuccessRateContext';
+import { ChecksVisualization } from './ChecksVisualization';
 
 const CHECKS_PER_PAGE_CARD = 15;
 const CHECKS_PER_PAGE_LIST = 50;
@@ -123,6 +136,11 @@ const getStyles = (theme: GrafanaTheme) => ({
   marginRightSmall: css`
     margin-right: ${theme.spacing.sm};
   `,
+  vizContainer: css`
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  `,
 });
 
 interface Props {
@@ -131,6 +149,20 @@ interface Props {
   checks: Check[];
   onCheckUpdate: () => void;
 }
+
+const getIconOverlayToggleFromLS = () => {
+  const lsValue = window.localStorage.getItem(CHECK_LIST_ICON_OVERLAY_LS_KEY);
+
+  if (!lsValue) {
+    return false;
+  }
+
+  try {
+    return Boolean(JSON.parse(lsValue));
+  } catch {
+    return false;
+  }
+};
 
 const getViewTypeFromLS = () => {
   const lsValue = window.localStorage.getItem(CHECK_LIST_VIEW_TYPE_LS_KEY);
@@ -154,6 +186,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
   const [selectAll, setSelectAll] = useState(false);
   const [viewType, setViewType] = useState(getViewTypeFromLS() ?? CheckListViewType.Card);
   const [sortType, setSortType] = useState<CheckSort>(CheckSort.AToZ);
+  const [showVizIconOverlay, setShowVizIconOverlay] = useState(getIconOverlayToggleFromLS());
   const [bulkActionInProgress, setBulkActionInProgress] = useState(false);
   const styles = useStyles(getStyles);
   const successRateContext = useContext(SuccessRateContext);
@@ -166,9 +199,11 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
         return checks.sort((a, b) => b.job.localeCompare(a.job));
       case CheckSort.SuccessRate:
         return checks.sort((a, b) => {
-          const checkA = successRateContext.values[SuccessRateTypes.Checks][a.id] ?? 100;
-          const checkB = successRateContext.values[SuccessRateTypes.Checks][b.id] ?? 100;
-          return checkA - checkB;
+          const checkA = successRateContext.values[SuccessRateTypes.Checks][a.id] ?? successRateContext.values.defaults;
+          const checkB = successRateContext.values[SuccessRateTypes.Checks][b.id] ?? successRateContext.values.defaults;
+          const sortA = checkA.noData ? 101 : checkA.value;
+          const sortB = checkB.noData ? 101 : checkB.value;
+          return sortA - sortB;
         });
     }
   };
@@ -555,6 +590,18 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
             options={CHECK_LIST_VIEW_TYPE_OPTIONS}
           />
         )}
+        {viewType === CheckListViewType.Viz && (
+          <InlineSwitch
+            label="Show icons"
+            showLabel
+            transparent
+            value={showVizIconOverlay}
+            onChange={(e) => {
+              window.localStorage.setItem(CHECK_LIST_ICON_OVERLAY_LS_KEY, String(e.currentTarget.checked));
+              setShowVizIconOverlay(e.currentTarget.checked);
+            }}
+          />
+        )}
         <div className={styles.flexGrow} />
         <Select
           prefix={
@@ -569,29 +616,37 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
           onChange={updateSortMethod}
         />
       </div>
-      <section className="card-section card-list-layout-list">
-        <ol className="card-list">
-          {currentPageChecks.map((check, index) => (
-            <CheckListItem
-              check={check}
-              key={index}
-              onLabelSelect={handleLabelSelect}
-              onStatusSelect={handleStatusSelect}
-              onTypeSelect={handleTypeSelect}
-              onToggleCheckbox={handleCheckSelect}
-              selected={selectedChecks.has(check.id)}
-              viewType={viewType}
-              onDeleteCheck={deleteSingleCheck}
+      {viewType === CheckListViewType.Viz ? (
+        <div className={styles.vizContainer}>
+          <ChecksVisualization checks={filteredChecks} showIcons={showVizIconOverlay} />
+        </div>
+      ) : (
+        <div>
+          <section className="card-section card-list-layout-list">
+            <ol className="card-list">
+              {currentPageChecks.map((check, index) => (
+                <CheckListItem
+                  check={check}
+                  key={index}
+                  onLabelSelect={handleLabelSelect}
+                  onStatusSelect={handleStatusSelect}
+                  onTypeSelect={handleTypeSelect}
+                  onToggleCheckbox={handleCheckSelect}
+                  selected={selectedChecks.has(check.id)}
+                  viewType={viewType}
+                  onDeleteCheck={deleteSingleCheck}
+                />
+              ))}
+            </ol>
+          </section>
+          {totalPages > 1 && (
+            <Pagination
+              numberOfPages={totalPages}
+              currentPage={currentPage}
+              onNavigate={(toPage: number) => setCurrentPage(toPage)}
             />
-          ))}
-        </ol>
-      </section>
-      {totalPages > 1 && (
-        <Pagination
-          numberOfPages={totalPages}
-          currentPage={currentPage}
-          onNavigate={(toPage: number) => setCurrentPage(toPage)}
-        />
+          )}
+        </div>
       )}
     </div>
   );

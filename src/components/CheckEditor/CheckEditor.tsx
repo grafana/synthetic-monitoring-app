@@ -18,6 +18,7 @@ import { CheckUsage } from '../CheckUsage';
 import { CheckFormAlert } from 'components/CheckFormAlert';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
+import { trackEvent, trackException } from 'analytics';
 
 interface Props {
   check?: Check;
@@ -62,18 +63,23 @@ export const CheckEditor = ({ check, onReturn }: Props) => {
   const { execute: onSubmit, error, loading: submitting } = useAsyncCallback(async (checkValues: CheckFormValues) => {
     const updatedCheck = getCheckFromFormValues(checkValues, defaultValues);
     if (check?.id) {
+      trackEvent('editCheckSubmit');
       await api?.updateCheck({
         id: check.id,
         tenantId: check.tenantId,
         ...updatedCheck,
       });
     } else {
+      trackEvent('addNewCheckSubmit');
       await api?.addCheck(updatedCheck);
     }
     onReturn(true);
   });
 
   const submissionError = (error as unknown) as SubmissionErrorWrapper;
+  if (error) {
+    trackException(`addNewCheckSubmitException: ${error}`);
+  }
 
   const onRemoveCheck = async () => {
     const id = check?.id;
@@ -163,8 +169,8 @@ export const CheckEditor = ({ check, onReturn }: Props) => {
             probes={check?.probes ?? fallbackCheck.probes}
           />
           <HorizontalCheckboxField
-            id="useFullMetrics"
-            name="useFullMetrics"
+            name="publishAdvancedMetrics"
+            id="publishAdvancedMetrics"
             label="Publish full set of metrics"
             description={'Metrics are reduced by default'}
           />

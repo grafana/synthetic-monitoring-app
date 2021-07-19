@@ -21,6 +21,9 @@ export class TenantView extends PureComponent<Props> {
           <LinkedDatasourceView info={settings.metrics} />
           <LinkedDatasourceView info={settings.logs} />
         </Container>
+
+        <h3>Backend address</h3>
+        {settings.apiHost}
       </div>
     );
   }

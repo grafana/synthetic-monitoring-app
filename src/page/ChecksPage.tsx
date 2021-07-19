@@ -9,6 +9,7 @@ import { CheckList } from 'components/CheckList';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
 import { CheckInfoContextProvider } from 'components/CheckInfoContextProvider';
+import { trackEvent } from 'analytics';
 
 interface Props {
   id?: string;
@@ -59,6 +60,7 @@ export class ChecksPage extends PureComponent<Props, State> {
   //-----------------------------------------------------------------
 
   onAddNew = () => {
+    trackEvent('viewAddNewCheck');
     this.setState({
       addNew: true,
     });

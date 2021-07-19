@@ -293,8 +293,8 @@ function validateHttpTarget(target: string): string | undefined {
     }
 
     // isWebUri will allow some invalid hostnames, so we need addional validation
-    const ipv6 = Address6.fromURL(target);
-    if (ipv6.address) {
+    const ipv6 = isIpV6FromUrl(target);
+    if (ipv6) {
       return undefined;
     }
 
@@ -309,11 +309,41 @@ function validateHttpTarget(target: string): string | undefined {
   }
 }
 
-function validateDomain(target: string): string | undefined {
-  const ipv4 = new Address4(target);
-  const ipv6 = new Address6(target);
+const isIpV4 = (target: string): boolean => {
+  let isIpV4 = true;
+  try {
+    new Address4(target);
+  } catch (e) {
+    isIpV4 = false;
+  }
+  return isIpV4;
+};
 
-  if (ipv4.isValid() || ipv6.isValid()) {
+const isIpV6 = (target: string): boolean => {
+  let isIpV6 = true;
+  try {
+    new Address6(target);
+  } catch (e) {
+    isIpV6 = false;
+  }
+  return isIpV6;
+};
+
+const isIpV6FromUrl = (target: string): boolean => {
+  let isIpV6 = true;
+  try {
+    const address = Address6.fromURL(target);
+    isIpV6 = Boolean(address.address);
+  } catch (e) {
+    isIpV6 = false;
+  }
+  return isIpV6;
+};
+
+function validateDomain(target: string): string | undefined {
+  const isIpAddress = isIpV4(target) || isIpV6(target);
+
+  if (isIpAddress) {
     return 'IP addresses are not valid DNS targets';
   }
 
@@ -400,15 +430,15 @@ function validateDomainElement(element: string, isLast: boolean): string | undef
 }
 
 function validateHostname(target: string): string | undefined {
-  const ipv4 = new Address4(target);
-  const ipv6 = new Address6(target);
+  const ipv4 = isIpV4(target);
+  const ipv6 = isIpV6(target);
   const pc = punycode.toASCII(target);
   // note that \w matches "_"
   const re = new RegExp(
     /^[a-z0-9]([-a-z0-9]{0,62}[a-z0-9])?(\.[a-z0-9]([-a-z0-9]{0,62}[a-z0-9])?)*\.([a-z]|[a-z0-9]([-a-z0-9]{0,62}[a-z])|[a-z]([-a-z0-9]{0,62}[a-z0-9])?)$/,
     'i'
   );
-  if (!pc.match(re) && !ipv4.valid && !ipv6.valid) {
+  if (!pc.match(re) && !ipv4 && !ipv6) {
     return 'Target must be a valid hostname';
   }
 

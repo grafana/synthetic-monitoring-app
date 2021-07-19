@@ -35,7 +35,7 @@ const renderSuccessRateGauge = (sparkline = false) => {
 test('shows a value if data', async () => {
   renderSuccessRateGauge();
   await waitForElementToBeRemoved(() => screen.queryByText('loading...'));
-  const value = await screen.findByText('100.00%');
+  const value = await screen.findByText('100%');
   expect(value).toBeInTheDocument();
 });
 
