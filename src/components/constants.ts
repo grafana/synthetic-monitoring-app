@@ -139,6 +139,7 @@ export const CHECK_TYPE_OPTIONS = [
     label: 'TCP',
     value: CheckType.TCP,
   },
+  { label: 'Traceroute', value: CheckType.Traceroute },
 ];
 
 export const HTTP_SSL_OPTIONS = [
@@ -339,6 +340,16 @@ export function fallbackSettings(t: CheckType): Settings {
         tcp: {
           ipVersion: IpVersion.V4,
           tls: false,
+        },
+      };
+    }
+    case CheckType.Traceroute: {
+      return {
+        traceroute: {
+          firstHop: 1,
+          maxHops: 64,
+          retries: 0,
+          maxUnknownHops: 15,
         },
       };
     }

@@ -75,3 +75,13 @@ export const SliderInput = ({ min, max, prefixLabel, suffixLabel, name, step = 1
     </div>
   );
 };
+// <Controller
+//   control={control}
+//   name={name}
+//   rules={rules}
+//   defaultValue={[defaultValue]}
+//   render={({ field }) => {
+//     const picked =
+//    return <Slider {...field} tooltipAlwaysVisible={false} css={styles.slider} min={min} max={max} step={step} />
+//   }}
+// />

@@ -223,6 +223,20 @@ export interface HttpSettingsFormValues
   compression: SelectableValue<HTTPCompressionAlgo>;
 }
 
+export interface TracerouteSettings {
+  firstHop: number;
+  maxHops: number;
+  retries: number;
+  maxUnknownHops: number;
+}
+
+export interface TracerouteSettingsFormValues {
+  firstHop: string;
+  maxHops: string;
+  retries: string;
+  maxUnknownHops: string;
+}
+
 export interface PingSettings {
   ipVersion: IpVersion;
   dontFragment: boolean;
@@ -237,6 +251,7 @@ export interface SettingsFormValues {
   ping?: PingSettingsFormValues;
   dns?: DnsSettingsFormValues;
   tcp?: TcpSettingsFormValues;
+  traceroute?: TracerouteSettingsFormValues;
 }
 export interface AlertFormValues {
   name: string;
@@ -283,6 +298,7 @@ export interface Settings {
   ping?: PingSettings;
   dns?: DnsSettings;
   tcp?: TcpSettings;
+  traceroute?: TracerouteSettings;
 }
 
 export enum CheckType {
@@ -290,6 +306,7 @@ export enum CheckType {
   PING = 'ping',
   DNS = 'dns',
   TCP = 'tcp',
+  Traceroute = 'traceroute',
 }
 
 export interface HostedInstance {
@@ -386,9 +403,13 @@ export enum HttpRegexValidationType {
 }
 
 export interface SubmissionError {
-  status?: string;
   message?: string;
   msg?: string;
+}
+
+export interface SubmissionErrorWrapper {
+  data: SubmissionError;
+  status?: string;
 }
 
 export interface DashboardMeta {
@@ -459,5 +480,6 @@ export enum HTTPCompressionAlgo {
 }
 
 export enum FeatureName {
+  Traceroute = 'traceroute',
   UnifiedAlerting = 'ngalert',
 }
