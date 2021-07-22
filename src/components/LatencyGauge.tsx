@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { BigValueColorMode, BigValueGraphMode, BigValue } from '@grafana/ui';
 import { DisplayValue } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import { useMetricData } from 'hooks/useMetricData';
+import { SuccessRateContext, ThresholdSettings } from 'contexts/SuccessRateContext';
 
 interface Props {
   target: string;
@@ -12,7 +13,7 @@ interface Props {
   onClick?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
 }
 
-const getDisplayValue = (data: any[], loading: boolean): DisplayValue => {
+const getDisplayValue = (data: any[], loading: boolean, thresholds: ThresholdSettings): DisplayValue => {
   if (loading) {
     return {
       numeric: 0,
@@ -29,19 +30,28 @@ const getDisplayValue = (data: any[], loading: boolean): DisplayValue => {
   }
 
   const latency = parseFloat(data[0].value[1]) * 1000;
+  // Pick color based on tenant threshold settings
+  const color =
+    latency < thresholds.latency.lower_limit
+      ? config.theme2.colors.success.main
+      : latency > thresholds.latency.lower_limit && latency < thresholds.latency.upper_limit
+      ? config.theme2.colors.warning.main
+      : config.theme2.colors.error.main;
+
   return {
     title: 'Latency',
-    color: latency > 1000 ? 'red' : 'green',
+    color: color,
     numeric: latency,
-    text: latency.toFixed(2) + 'ms',
+    text: latency.toFixed(0) + 'ms',
   };
 };
 
 export const LatencyGauge = ({ target, job, height, width }: Props) => {
+  const { thresholds } = useContext(SuccessRateContext);
   const query = `sum((rate(probe_all_duration_seconds_sum{probe=~".*", instance="${target}", job="${job}"}[6h]) OR rate(probe_duration_seconds_sum{probe=~".*", instance="${target}", job="${job}"}[6h]))) / sum((rate(probe_all_duration_seconds_count{probe=~".*", instance="${target}", job="${job}"}[6h]) OR rate(probe_duration_seconds_count{probe=~".*", instance="${target}", job="${job}"}[6h])))`;
 
   const { data, loading } = useMetricData(query);
-  const value = getDisplayValue(data, loading);
+  const value = getDisplayValue(data, loading, thresholds);
   return (
     <BigValue
       theme={config.theme2}

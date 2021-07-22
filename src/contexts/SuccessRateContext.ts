@@ -15,6 +15,16 @@ export interface SuccessRateValue {
   noData?: boolean;
   icon: IconName;
 }
+
+export interface ThresholdValues {
+  upper_limit: number;
+  lower_limit: number;
+}
+export interface ThresholdSettings {
+  uptime: ThresholdValues;
+  reachability: ThresholdValues;
+  latency: ThresholdValues;
+}
 export interface SuccessRate {
   [key: number]: SuccessRateValue;
 }
@@ -30,7 +40,9 @@ export interface SuccessRates extends SuccessRatesByType {
 interface SuccessRateContextValue {
   values: SuccessRates;
   loading: boolean;
+  thresholds: ThresholdSettings;
   updateSuccessRate: (type: SuccessRateTypes, id: number, successRate: number | undefined) => void;
+  updateThresholds: () => void;
 }
 
 export const defaultValues: SuccessRates = {
@@ -44,6 +56,23 @@ export const defaultValues: SuccessRates = {
     icon: 'minus',
   },
 };
+
+export const defaultThresholds: ThresholdSettings = {
+  uptime: {
+    upper_limit: 90,
+    lower_limit: 75,
+  },
+  reachability: {
+    upper_limit: 90,
+    lower_limit: 75,
+  },
+  latency: {
+    upper_limit: 10,
+    lower_limit: 5,
+  },
+};
+
+const updateThresholds = () => {};
 
 const updateSuccessRate = (type: SuccessRateTypes, id: number, successRate: number | undefined) => {
   const thresholdColor = getSuccessRateThresholdColor(successRate);
@@ -61,4 +90,6 @@ export const SuccessRateContext = createContext<SuccessRateContextValue>({
   values: defaultValues,
   loading: true,
   updateSuccessRate,
+  thresholds: defaultThresholds,
+  updateThresholds,
 });

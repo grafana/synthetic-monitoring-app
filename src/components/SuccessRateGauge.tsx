@@ -3,7 +3,7 @@ import { BigValueColorMode, BigValueGraphMode, BigValue, Container } from '@graf
 import { DisplayValue, ArrayVector, FieldType } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import { useMetricData } from 'hooks/useMetricData';
-import { SuccessRateContext, SuccessRateTypes, SuccessRateValue } from 'contexts/SuccessRateContext';
+import { SuccessRateContext, SuccessRateTypes, SuccessRateValue, ThresholdSettings } from 'contexts/SuccessRateContext';
 
 interface Props {
   type: SuccessRateTypes;
@@ -16,7 +16,11 @@ interface Props {
   onClick?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
 }
 
-const getDisplayValue = (successRate: SuccessRateValue, loading: boolean): DisplayValue => {
+const getDisplayValue = (
+  successRate: SuccessRateValue,
+  loading: boolean,
+  thresholds: ThresholdSettings
+): DisplayValue => {
   if (loading) {
     return {
       numeric: 0,
@@ -25,9 +29,18 @@ const getDisplayValue = (successRate: SuccessRateValue, loading: boolean): Displ
     };
   }
 
+  // Pick color based on tenant threshold settings
+  const color =
+    successRate.value > thresholds.reachability.upper_limit
+      ? config.theme2.colors.success.main
+      : successRate.value < thresholds.reachability.upper_limit &&
+        successRate.value > thresholds.reachability.lower_limit
+      ? config.theme2.colors.warning.main
+      : config.theme2.colors.error.main;
+
   return {
     title: 'Reachability',
-    color: successRate.thresholdColor,
+    color: color,
     numeric: successRate.value,
     text: successRate.noData ? 'N/A' : successRate.value + '%',
   };
@@ -54,7 +67,7 @@ const getSparklineValue = (data: any[], loading: boolean, showSparkline: boolean
 };
 
 export const SuccessRateGauge = ({ type, id, labelNames, labelValues, height, width, sparkline, onClick }: Props) => {
-  const { values, loading } = useContext(SuccessRateContext);
+  const { values, loading, thresholds } = useContext(SuccessRateContext);
 
   const filter = labelNames
     .reduce<string[]>((filters, labelName, index) => {
@@ -76,7 +89,7 @@ export const SuccessRateGauge = ({ type, id, labelNames, labelValues, height, wi
   });
 
   const { data: sparklineData, loading: sparklineLoading } = useMetricData(sparklineQuery, sparklineOptions);
-  const value = getDisplayValue(values[type]?.[id] ?? values.defaults, loading);
+  const value = getDisplayValue(values[type]?.[id] ?? values.defaults, loading, thresholds);
   const sparklineValue = getSparklineValue(sparklineData, sparklineLoading, sparkline);
   return (
     <Container>

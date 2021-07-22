@@ -8,6 +8,8 @@ import {
   SuccessRateTypes,
   SuccessRate,
   defaultValues,
+  ThresholdSettings,
+  defaultThresholds,
 } from 'contexts/SuccessRateContext';
 
 interface Props {
@@ -100,6 +102,7 @@ export function SuccessRateContextProvider({ checks, probes, children }: PropsWi
   const { instance } = useContext(InstanceContext);
   const [successRateValues, setSuccessRate] = useState<SuccessRates>(defaultValues);
   const [loading, setLoading] = useState(true);
+  const [thresholds, setThresholds] = useState<ThresholdSettings>(defaultThresholds);
 
   const updateSuccessRate = (type: SuccessRateTypes, id: number | undefined, successRate: number | undefined) => {
     if (!id) {
@@ -171,8 +174,21 @@ export function SuccessRateContextProvider({ checks, probes, children }: PropsWi
     return () => clearInterval(interval);
   }, [checks, instance.api, probes]);
 
+  const updateThresholds = async () => {
+    const thresholds = await instance.api?.getTenantSettings();
+    setThresholds(thresholds);
+  };
+
+  // Call this once on first render
+  useEffect(() => {
+    updateThresholds();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
-    <SuccessRateContext.Provider value={{ values: successRateValues, loading, updateSuccessRate }}>
+    <SuccessRateContext.Provider
+      value={{ values: successRateValues, loading, updateSuccessRate, thresholds, updateThresholds }}
+    >
       {children}
     </SuccessRateContext.Provider>
   );

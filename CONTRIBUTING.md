@@ -46,6 +46,6 @@ Grafana configuration can be adjusted using the `custom.ini` file located in `/s
 ### Running the entire stack locally
 
 - See the instructions for [setting up the api](https://github.com/grafana/synthetic-monitoring-api/blob/main/DEVELOPMENT.md)
-- Change the `apiHost` variable in your plugin provisioning yaml file to point at your locally running API
+- Change the `apiHost` variable in your plugin provisioning yaml file to point at your locally running API. To allow docker to reach your local API URL, you need to provision the Synthetic Monitoring app with `apiHost: http://host.docker.internal:4030`.
 - You will need to run a private probe on your machine
 - NOTE: This will still push data to Cloud
