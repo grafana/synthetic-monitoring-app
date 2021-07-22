@@ -1,6 +1,11 @@
-import { ArrayVector, FieldColorModeId, FieldType, MutableDataFrame } from '@grafana/data';
+import {
+  ArrayVector,
+  FieldColorModeId,
+  FieldType,
+  MutableDataFrame,
+  NodeGraphDataFrameFieldNames,
+} from '@grafana/data';
 import { LogQueryResponse, LogsAggregatedByTrace, TracesByHost, ParsedLogStream } from './types';
-import { NodeGraphDataFrameFieldNames } from '@grafana/ui';
 
 const getNodeGraphFields = () => {
   const nodeIdField = {
@@ -34,35 +39,38 @@ const getNodeGraphFields = () => {
     name: NodeGraphDataFrameFieldNames.arc + 'start',
     type: FieldType.number,
     values: new ArrayVector(),
-    config: { color: { fixedColor: 'blue', mode: FieldColorModeId.Fixed } },
+    config: { color: { fixedColor: 'blue', mode: FieldColorModeId.Fixed }, displayName: 'Start nodes' },
   };
 
   const nodeSuccessField = {
     name: NodeGraphDataFrameFieldNames.arc + 'success',
     type: FieldType.number,
     values: new ArrayVector(),
-    config: { color: { fixedColor: 'green', mode: FieldColorModeId.Fixed } },
+    config: { color: { fixedColor: 'green', mode: FieldColorModeId.Fixed }, displayName: 'Successful packets' },
   };
 
   const nodeErrorField = {
     name: NodeGraphDataFrameFieldNames.arc + 'error',
     type: FieldType.number,
     values: new ArrayVector(),
-    config: { color: { fixedColor: 'red', mode: FieldColorModeId.Fixed } },
+    config: { color: { fixedColor: 'red', mode: FieldColorModeId.Fixed }, displayName: 'Packet loss' },
   };
 
   const nodeDestinationField = {
     name: NodeGraphDataFrameFieldNames.arc + 'destination',
     type: FieldType.number,
     values: new ArrayVector(),
-    config: { color: { fixedColor: 'purple', mode: FieldColorModeId.Fixed } },
+    config: { color: { fixedColor: 'purple', mode: FieldColorModeId.Fixed }, displayName: 'Destination node' },
   };
 
   const nodeMostRecentDestinationField = {
     name: NodeGraphDataFrameFieldNames.arc + 'most_recent_destination',
     type: FieldType.number,
     values: new ArrayVector(),
-    config: { color: { fixedColor: 'purple', mode: FieldColorModeId.Fixed } },
+    config: {
+      color: { fixedColor: 'yellow', mode: FieldColorModeId.Fixed },
+      displayName: 'Most recent destination node',
+    },
   };
 
   return {

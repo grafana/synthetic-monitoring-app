@@ -7,6 +7,7 @@ export const dashboardPaths = [
   'sm-dns.json',
   'sm-tcp.json',
   'sm-summary.json',
+  'sm-traceroute.json',
 ];
 
 async function findSyntheticMonitoringFolder(): Promise<FolderInfo> {
