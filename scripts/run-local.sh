@@ -41,6 +41,7 @@ docker run \
   -v "$(pwd)/scripts/local-provisioning:/etc/grafana/provisioning"  \
   -v "$(pwd)/scripts/custom.ini:/etc/grafana/grafana.ini"\
   -v grafana-storage:/var/lib/grafana \
+  -e "GF_INSTALL_PLUGINS=grafana-worldmap-panel" \
   --name="$NAME" \
   grafana/grafana":$grafanaVersion"
 
