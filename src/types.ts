@@ -222,7 +222,7 @@ export interface HttpSettingsFormValues
   regexValidations: HttpRegexValidationFormValue[];
   followRedirects: boolean;
   compression: SelectableValue<HTTPCompressionAlgo>;
-  proxyUrl: string;
+  proxyURL?: string;
 }
 
 export interface PingSettings {
