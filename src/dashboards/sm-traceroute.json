@@ -147,7 +147,7 @@
       "type": "row"
     },
     {
-      "datasource": "${DS_SM_METRICS}",
+      "datasource": "${DS_SM_LOGS}",
       "fieldConfig": {
         "defaults": {
           "color": {
