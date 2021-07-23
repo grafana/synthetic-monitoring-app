@@ -24,15 +24,22 @@ async function findSyntheticMonitoringFolder(): Promise<FolderInfo> {
   });
 }
 
-export async function importAllDashboards(metricsDatasourceName: string, logsDatasourceName: string) {
+export async function importAllDashboards(
+  metricsDatasourceName: string,
+  logsDatasourceName: string,
+  smDatasourceName: string
+) {
   await findSyntheticMonitoringFolder();
-  return Promise.all(dashboardPaths.map((path) => importDashboard(path, metricsDatasourceName, logsDatasourceName)));
+  return Promise.all(
+    dashboardPaths.map((path) => importDashboard(path, metricsDatasourceName, logsDatasourceName, smDatasourceName))
+  );
 }
 
 export async function importDashboard(
   path: string,
   metricsDatasourceName: string,
-  logsDatasourceName: string
+  logsDatasourceName: string,
+  smDatasourceName: string
 ): Promise<DashboardInfo> {
   const backendSrv = getBackendSrv();
 
@@ -44,12 +51,14 @@ export async function importDashboard(
 
   const folder = await findSyntheticMonitoringFolder();
 
+  console.log('SM DATASOURCE NAME', smDatasourceName);
   const info = await backendSrv.post('api/dashboards/import', {
     dashboard: json,
     overwrite: true, // UID?
     inputs: [
       { name: 'DS_SM_METRICS', type: 'datasource', pluginId: 'prometheus', value: metricsDatasourceName },
       { name: 'DS_SM_LOGS', type: 'datasource', pluginId: 'loki', value: logsDatasourceName },
+      { name: 'DS_SM_SM', type: 'datasource', pluginId: 'grafana-synthetic-monitoring-app', value: smDatasourceName },
     ],
     folderId: folder.id,
   });

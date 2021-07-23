@@ -57,6 +57,12 @@
       "version": "1.0.0"
     },
     {
+      "type": "datasource",
+      "id": "grafana-synthetic-monitoring-app",
+      "name": "Synthetic Monitoring",
+      "version": "1.0.0"
+    },
+    {
       "type": "panel",
       "id": "stat",
       "name": "Stat",
