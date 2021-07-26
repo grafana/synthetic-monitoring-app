@@ -42,7 +42,7 @@ custom_commands() {
 		    name: grafana-synthetic-monitoring-app
 		    disabled: false
 		    jsonData:
-		      apiHost: https://worldping-api-dev.grafana.net
+		      apiHost: ${STAGING_API_URL}
 		      stackId: 141076
 		      logs:
 		        grafanaName: grafanacloud-syntheticmonitoring-logs
