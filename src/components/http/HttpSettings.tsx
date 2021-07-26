@@ -261,6 +261,11 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
             />
           </Field>
         </HorizontalGroup>
+        <Container>
+          <Field label="Proxy URL" description="HTTP proxy server to use to connect to the target" disabled={!isEditor}>
+            <Input id="proxyUrl" {...register('settings.http.proxyURL')} type="text" />
+          </Field>
+        </Container>
       </Collapse>
       <TLSConfig isEditor={isEditor} checkType={CheckType.HTTP} />
       <Collapse
