@@ -301,6 +301,7 @@ describe('HTTP', () => {
           failIfSSL: false,
           bearerToken: 'a bear',
           basicAuth: { username: 'steve', password: 'stevessecurepassword' },
+          proxyURL: 'https://grafana.com',
           cacheBustingQueryParamName: 'busted',
           failIfBodyMatchesRegexp: ['body matches'],
           failIfBodyNotMatchesRegexp: ['body not maches'],
@@ -326,6 +327,7 @@ describe('HTTP', () => {
     expect(await within(httpSection).findByPlaceholderText('name')).toHaveValue('headerName');
     expect(await within(httpSection).findByPlaceholderText('value')).toHaveValue('headerValue');
     expect(within(httpSection).getByTestId('http-compression')).toHaveValue('gzip');
+    expect(await screen.findByLabelText('Proxy URL', { exact: false })).toHaveValue('https://grafana.com');
 
     await toggleSection('TLS config');
     expect(await screen.findByLabelText('Disable target certificate validation')).toBeChecked();
@@ -391,6 +393,10 @@ describe('HTTP', () => {
     await act(async () => await userEvent.type(await screen.findByPlaceholderText('value'), 'headerValue'));
     const compression = await screen.findByTestId('http-compression');
     userEvent.selectOptions(compression, 'deflate');
+
+    const proxyUrlInput = await screen.findByLabelText('Proxy URL', { exact: false });
+    await userEvent.paste(proxyUrlInput, 'https://grafana.com');
+
     await toggleSection('HTTP settings');
 
     // TLS Config
@@ -468,6 +474,7 @@ describe('HTTP', () => {
           body: 'requestbody',
           compression: 'deflate',
           ipVersion: 'V4',
+          proxyURL: 'https://grafana.com',
           noFollowRedirects: false,
           tlsConfig: {
             insecureSkipVerify: false,

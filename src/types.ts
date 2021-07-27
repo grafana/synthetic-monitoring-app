@@ -164,6 +164,7 @@ export interface HttpSettings {
   noFollowRedirects: boolean;
   tlsConfig?: TLSConfig;
   compression: HTTPCompressionAlgo | undefined;
+  proxyURL?: string;
 
   // Authentication
   bearerToken?: string;
@@ -221,6 +222,7 @@ export interface HttpSettingsFormValues
   regexValidations: HttpRegexValidationFormValue[];
   followRedirects: boolean;
   compression: SelectableValue<HTTPCompressionAlgo>;
+  proxyURL?: string;
 }
 
 export interface TracerouteSettings {
