@@ -22,6 +22,7 @@ import ProbeStatus from './ProbeStatus';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { trackEvent, trackException } from 'analytics';
 import { GrafanaTheme2 } from '@grafana/data';
+import { Clipboard } from 'components/Clipboard';
 
 interface Props {
   probe: Probe;
@@ -260,7 +261,7 @@ const ProbeEditor = ({ probe, onReturn }: Props) => {
               icon={'lock'}
               onDismiss={() => (probe.id ? setShowTokenModal(false) : onReturn(false))}
             >
-              <div className={styles.modalBody}>{probeToken}</div>
+              <Clipboard content={probeToken} />
             </Modal>
           </div>
         </form>
