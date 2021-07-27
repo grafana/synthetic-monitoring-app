@@ -11,6 +11,7 @@ import {
   Switch,
   Legend,
   Alert,
+  useStyles2,
 } from '@grafana/ui';
 import { useForm, FormProvider } from 'react-hook-form';
 import { useAsyncCallback } from 'react-async-hook';
@@ -20,15 +21,24 @@ import { LabelField } from 'components/LabelField';
 import ProbeStatus from './ProbeStatus';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { trackEvent, trackException } from 'analytics';
+import { GrafanaTheme2 } from '@grafana/data';
 
 interface Props {
   probe: Probe;
   onReturn: (reload: boolean) => void;
 }
 
-const minInputWidth = css`
-  min-width: 200px;
-`;
+const getStyles = (theme: GrafanaTheme2) => ({
+  minInputWidth: css`
+    min-width: 200px;
+  `,
+  modalBody: css`
+    word-break: break-all;
+  `,
+  marginTop: css`
+    margin-top: ${theme.spacing(2)};
+  `,
+});
 
 const ProbeEditor = ({ probe, onReturn }: Props) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -36,6 +46,7 @@ const ProbeEditor = ({ probe, onReturn }: Props) => {
   const [probeToken, setProbeToken] = useState('');
   const { instance } = useContext(InstanceContext);
   const formMethods = useForm<Probe>({ defaultValues: probe, mode: 'onChange' });
+  const styles = useStyles2(getStyles);
 
   const { execute: onSave, error } = useAsyncCallback(async (formValues: Probe) => {
     trackEvent('addNewProbeSubmit');
@@ -104,7 +115,7 @@ const ProbeEditor = ({ probe, onReturn }: Props) => {
                 label="Probe Name"
                 description="Unique name of probe"
                 disabled={!isEditor}
-                className={minInputWidth}
+                className={styles.minInputWidth}
                 required
               >
                 <Input
@@ -133,7 +144,7 @@ const ProbeEditor = ({ probe, onReturn }: Props) => {
                 label="Latitude"
                 description="Latitude coordinates of this probe"
                 disabled={!isEditor}
-                className={minInputWidth}
+                className={styles.minInputWidth}
               >
                 <Input
                   {...formMethods.register('latitude', {
@@ -182,7 +193,7 @@ const ProbeEditor = ({ probe, onReturn }: Props) => {
                 label="Region"
                 description="Region of this probe"
                 disabled={!isEditor}
-                className={minInputWidth}
+                className={styles.minInputWidth}
               >
                 <Input
                   {...formMethods.register('region', { required: true })}
@@ -237,11 +248,7 @@ const ProbeEditor = ({ probe, onReturn }: Props) => {
               </HorizontalGroup>
             </Container>
             {submissionError && (
-              <div
-                className={css`
-                  margin-top: 1rem;
-                `}
-              >
+              <div className={styles.marginTop}>
                 <Alert title="Save failed" severity="error">
                   {`${submissionError.status}: ${submissionError.message}`}
                 </Alert>
@@ -253,7 +260,7 @@ const ProbeEditor = ({ probe, onReturn }: Props) => {
               icon={'lock'}
               onDismiss={() => (probe.id ? setShowTokenModal(false) : onReturn(false))}
             >
-              {probeToken}
+              <div className={styles.modalBody}>{probeToken}</div>
             </Modal>
           </div>
         </form>
