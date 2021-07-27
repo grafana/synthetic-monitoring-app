@@ -4,6 +4,7 @@ import { SuccessRateContext } from 'contexts/SuccessRateContext';
 import React, { useContext } from 'react';
 import { Check } from 'types';
 import { css } from '@emotion/css';
+import { getSuccessRateIcon } from 'utils';
 
 interface Props {
   width: number;
@@ -25,8 +26,9 @@ const getStyles = (theme: GrafanaTheme2) => ({
 });
 
 export const IconOverlay = ({ width, height, hexCenters, hexRadius, checks }: Props) => {
-  const { values: successRates } = useContext(SuccessRateContext);
+  const { values: successRates, thresholds } = useContext(SuccessRateContext);
   const styles = useStyles2(getStyles);
+
   return (
     <div
       className={styles.container}
@@ -36,10 +38,16 @@ export const IconOverlay = ({ width, height, hexCenters, hexRadius, checks }: Pr
       }}
     >
       {hexCenters.map(([x, y], index) => {
+        const icon = getSuccessRateIcon(
+          thresholds,
+          'reachability',
+          successRates.checks?.[checks[index]?.id ?? 0]?.reachabilityValue
+        );
+
         return (
           <Icon
             key={index}
-            name={successRates.checks?.[checks[index]?.id ?? 0]?.icon}
+            name={icon}
             className={styles.icon}
             style={{
               left: x + hexRadius - 7, // Subtract 7 because it's half the width of the icon element

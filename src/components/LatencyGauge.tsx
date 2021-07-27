@@ -4,6 +4,7 @@ import { DisplayValue } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import { useMetricData } from 'hooks/useMetricData';
 import { SuccessRateContext, ThresholdSettings } from 'contexts/SuccessRateContext';
+import { getSuccessRateThresholdColor } from 'utils';
 
 interface Props {
   target: string;
@@ -30,13 +31,7 @@ const getDisplayValue = (data: any[], loading: boolean, thresholds: ThresholdSet
   }
 
   const latency = parseFloat(data[0].value[1]) * 1000;
-  // Pick color based on tenant threshold settings
-  const color =
-    latency < thresholds.latency.lower_limit
-      ? config.theme2.colors.success.main
-      : latency > thresholds.latency.lower_limit && latency < thresholds.latency.upper_limit
-      ? config.theme2.colors.warning.main
-      : config.theme2.colors.error.main;
+  const color = getSuccessRateThresholdColor(thresholds, 'latency', latency);
 
   return {
     title: 'Latency',

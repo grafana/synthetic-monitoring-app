@@ -1,7 +1,4 @@
-import { config } from '@grafana/runtime';
-import { IconName } from '@grafana/ui';
 import { createContext } from 'react';
-import { getSuccessRateThresholdColor } from 'utils';
 
 export enum SuccessRateTypes {
   Checks = 'checks',
@@ -9,11 +6,11 @@ export enum SuccessRateTypes {
 }
 
 export interface SuccessRateValue {
-  value: number;
-  displayValue: string;
-  thresholdColor: string;
+  reachabilityValue: number;
+  reachabilityDisplayValue: string;
   noData?: boolean;
-  icon: IconName;
+  uptimeValue?: number;
+  uptimeDisplayValue?: string;
 }
 
 export interface ThresholdValues {
@@ -21,6 +18,7 @@ export interface ThresholdValues {
   lower_limit: number;
 }
 export interface ThresholdSettings {
+  [key: string]: ThresholdValues;
   uptime: ThresholdValues;
   reachability: ThresholdValues;
   latency: ThresholdValues;
@@ -49,11 +47,11 @@ export const defaultValues: SuccessRates = {
   checks: {},
   probes: {},
   defaults: {
-    thresholdColor: config.theme2.colors.text.disabled,
-    value: 0,
-    displayValue: 'N/A',
+    reachabilityValue: 0,
+    reachabilityDisplayValue: 'N/A',
     noData: true,
-    icon: 'minus',
+    uptimeValue: 0,
+    uptimeDisplayValue: 'N/A',
   },
 };
 
@@ -75,14 +73,12 @@ export const defaultThresholds: ThresholdSettings = {
 const updateThresholds = () => {};
 
 const updateSuccessRate = (type: SuccessRateTypes, id: number, successRate: number | undefined) => {
-  const thresholdColor = getSuccessRateThresholdColor(successRate);
-
   defaultValues[type][id] = {
-    value: successRate ?? 0,
-    displayValue: successRate === undefined ? 'N/A' : successRate.toFixed(1),
-    thresholdColor,
+    reachabilityValue: successRate ?? 0,
+    reachabilityDisplayValue: successRate === undefined ? 'N/A' : successRate.toFixed(1),
     noData: successRate === undefined,
-    icon: 'minus',
+    uptimeValue: 0,
+    uptimeDisplayValue: 'N/A',
   };
 };
 

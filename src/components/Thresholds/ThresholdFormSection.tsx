@@ -39,6 +39,15 @@ const getDotStyles = (color: string) => (theme: GrafanaTheme2) => ({
   `,
 });
 
+const getSectionStyles = () => (theme: GrafanaTheme2) => ({
+  estimate: css`
+    margin-bottom: 0px;
+    font-style: italic;
+    align-self: center;
+    font-size: 0.7rem;
+  `,
+});
+
 const Dot = ({ color, title }: LabelProps) => {
   const styles = useStyles2(getDotStyles(color));
   return (
@@ -49,11 +58,27 @@ const Dot = ({ color, title }: LabelProps) => {
   );
 };
 
-// Revert values for latency
+const displayDowntimeEstimate = (percentage: number) => {
+  // 43800 minutes per month
+  // 730 hours per month
+  const minutesOfUptime = (percentage / 100) * 43800;
+  const hoursOfDowntime = 730 - minutesOfUptime / 60;
+
+  if (hoursOfDowntime < 1) {
+    const minutes = hoursOfDowntime * 60;
+    return `This translates to approximately ${minutes.toFixed(0)} minutes of downtime per month or ${(
+      minutes / 31
+    ).toFixed(0)} minute(s) per day.`;
+  } else if (Number(hoursOfDowntime.toFixed(0)) === 1) {
+    return `This translates to approximately one hour of downtime per month`;
+  } else {
+    return `This translates to approximately ${hoursOfDowntime.toFixed(0)} hours of downtime per month.`;
+  }
+};
 
 const ThresholdFormSection = ({ label, unit, description, thresholds, setThresholds }: ThresholdSectionProps) => {
+  const styles = useStyles2(getSectionStyles());
   const isLatency = unit === 'ms';
-  // prevent overlap
   const handleUpdateThreshold = useCallback(
     (key: string, newValue: number) => {
       const newThresholds = {
@@ -80,8 +105,8 @@ const ThresholdFormSection = ({ label, unit, description, thresholds, setThresho
               const key = isLatency ? 'lower_limit' : 'upper_limit';
               handleUpdateThreshold(key, e.currentTarget.valueAsNumber);
             }}
-            max={isLatency ? undefined : 100}
-            min={0}
+            max={isLatency ? thresholds.upper_limit : 100}
+            min={isLatency ? 0 : thresholds.lower_limit}
             step={isLatency ? 1 : 0.1}
             placeholder="value"
             type="number"
@@ -89,18 +114,19 @@ const ThresholdFormSection = ({ label, unit, description, thresholds, setThresho
             width={12}
           />
         </InlineField>
+        {!isLatency && <p className={styles.estimate}>{displayDowntimeEstimate(thresholds.upper_limit)}</p>}
       </InlineFieldRow>
       <InlineFieldRow>
         <Dot color={config.theme2.colors.warning.main} title="Warning" />
-        <InlineField label=">=" transparent>
+        <InlineField label={isLatency ? '<=' : '>='} transparent>
           <Input
             value={isLatency ? thresholds.upper_limit : thresholds.lower_limit}
             onChange={(e: React.FormEvent<HTMLInputElement>) => {
               const key = isLatency ? 'upper_limit' : 'lower_limit';
               handleUpdateThreshold(key, e.currentTarget.valueAsNumber);
             }}
-            max={isLatency ? undefined : 100}
-            min={0}
+            max={isLatency ? undefined : thresholds.upper_limit}
+            min={isLatency ? thresholds.lower_limit : 0}
             step={isLatency ? 1 : 0.1}
             placeholder="value"
             type="number"
@@ -108,15 +134,15 @@ const ThresholdFormSection = ({ label, unit, description, thresholds, setThresho
             width={12}
           />
         </InlineField>
-        <InlineField label="and <" transparent>
+        <InlineField label={isLatency ? 'and >' : 'and <'} transparent>
           <Input
             value={isLatency ? thresholds.lower_limit : thresholds.upper_limit}
             onChange={(e: React.FormEvent<HTMLInputElement>) => {
               const key = isLatency ? 'lower_limit' : 'upper_limit';
               handleUpdateThreshold(key, e.currentTarget.valueAsNumber);
             }}
-            max={isLatency ? undefined : 100}
-            min={0}
+            max={isLatency ? undefined : thresholds.upper_limit}
+            min={isLatency ? thresholds.upper_limit : thresholds.lower_limit}
             step={isLatency ? 1 : 0.1}
             placeholder="value"
             type="number"
@@ -134,8 +160,8 @@ const ThresholdFormSection = ({ label, unit, description, thresholds, setThresho
               const key = isLatency ? 'upper_limit' : 'lower_limit';
               handleUpdateThreshold(key, e.currentTarget.valueAsNumber);
             }}
-            max={isLatency ? undefined : 100}
-            min={0}
+            max={isLatency ? undefined : thresholds.lower_limit}
+            min={isLatency ? thresholds.lower_limit : 0}
             step={isLatency ? 1 : 0.1}
             placeholder="value"
             type="number"
@@ -143,6 +169,7 @@ const ThresholdFormSection = ({ label, unit, description, thresholds, setThresho
             width={12}
           />
         </InlineField>
+        {!isLatency && <p className={styles.estimate}>{displayDowntimeEstimate(thresholds.lower_limit)}</p>}
       </InlineFieldRow>
     </CollapsableSection>
   );

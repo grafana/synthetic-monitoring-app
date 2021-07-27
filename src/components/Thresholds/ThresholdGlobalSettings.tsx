@@ -24,11 +24,8 @@ const thresholdPercentDefaults: Threshold = {
 
 const thresholdMsDefaults: Threshold = {
   upper_limit: 1000,
-  lower_limit: 1000,
+  lower_limit: 200,
 };
-
-// get current thresholds
-// set thresholds in context on save
 
 const ThresholdGlobalSettings = ({ onDismiss, onSuccess, onError, isOpen }: Props) => {
   const { instance } = useContext(InstanceContext);
@@ -37,8 +34,6 @@ const ThresholdGlobalSettings = ({ onDismiss, onSuccess, onError, isOpen }: Prop
   const [uptimeThresholds, setUptimeThresholds] = useState<Threshold>(thresholds.uptime);
   const [reachabilityThresholds, setReachabilityThresholds] = useState<Threshold>(thresholds.reachability);
   const [latencyThresholds, setLatencyThresholds] = useState<Threshold>(thresholds.latency);
-
-  console.log({ thresholds });
 
   const handleSetDefaults = () => {
     setUptimeThresholds(thresholdPercentDefaults);
@@ -91,27 +86,30 @@ const ThresholdGlobalSettings = ({ onDismiss, onSuccess, onError, isOpen }: Prop
   }, [thresholds]);
 
   return (
-    <Modal title="Global Threshold Settings" isOpen={isOpen} onDismiss={onDismiss}>
+    <Modal title="Threshold Settings" isOpen={isOpen} onDismiss={onDismiss}>
       <HorizontalGroup spacing="sm">
         <Button onClick={handleSaveThresholds}>Save changes</Button>
         <Button variant="secondary" onClick={handleSetDefaults}>
           Reset all to defaults
         </Button>
       </HorizontalGroup>
+      <p style={{ marginTop: '20px', marginBottom: '20px', fontStyle: 'italic', fontSize: '.9rem' }}>
+        Note: these settings apply only to the check list view.
+      </p>
       <div style={{ marginTop: '20px', marginBottom: '20px' }}>
         <ThresholdFormSection
           thresholds={uptimeThresholds}
           setThresholds={setUptimeThresholds}
           label="Uptime"
           unit="%"
-          description="How often all probes are able to reach an endpoint."
+          description="How often any single probe is able to reach an endpoint."
         />
         <ThresholdFormSection
           thresholds={reachabilityThresholds}
           setThresholds={setReachabilityThresholds}
           label="Reachability"
           unit="%"
-          description="How often a single probe is able to reach an endpoint."
+          description="The aggregate success rate of all probes."
         />
         <ThresholdFormSection
           thresholds={latencyThresholds}

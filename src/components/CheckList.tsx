@@ -205,8 +205,8 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
         return checks.sort((a, b) => {
           const checkA = successRateContext.values[SuccessRateTypes.Checks][a.id] ?? successRateContext.values.defaults;
           const checkB = successRateContext.values[SuccessRateTypes.Checks][b.id] ?? successRateContext.values.defaults;
-          const sortA = checkA.noData ? 101 : checkA.value;
-          const sortB = checkB.noData ? 101 : checkB.value;
+          const sortA = checkA.noData ? 101 : checkA.reachabilityValue;
+          const sortB = checkB.noData ? 101 : checkB.reachabilityValue;
           return sortA - sortB;
         });
     }
@@ -478,7 +478,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
                 onClick={() => setShowThresholdModal((v) => !v)}
                 className={styles.marginRightSmall}
               >
-                Set Global Thresholds
+                Set Thresholds
               </Button>
               <Button variant="primary" onClick={onAddNewClick} type="button">
                 Add new check

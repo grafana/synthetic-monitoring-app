@@ -7,6 +7,7 @@ import { HostedInstance, User, OrgRole, CheckType, Settings } from 'types';
 
 import { SMDataSource } from 'datasource/DataSource';
 import { IconName } from '@grafana/ui';
+import { ThresholdSettings } from 'contexts/SuccessRateContext';
 
 /**
  * Find all synthetic-monitoring datasources
@@ -276,28 +277,26 @@ export const fromBase64 = (value: string) => {
   }
 };
 
-export const getSuccessRateThresholdColor = (value: number | undefined) => {
-  if (value === undefined) {
-    return config.theme2.colors.text.disabled;
-  }
-  if (value >= 99.5) {
-    return config.theme2.colors.success.main;
-  }
-  if (value >= 99) {
-    return config.theme2.colors.warning.main;
-  }
-  return config.theme2.colors.error.main;
+export const getSuccessRateThresholdColor = (
+  thresholds: ThresholdSettings,
+  key: 'reachability' | 'uptime' | 'latency',
+  compareValue: number
+) => {
+  return compareValue < thresholds[key].lower_limit
+    ? config.theme2.colors.success.main
+    : compareValue > thresholds[key].lower_limit && compareValue < thresholds[key].upper_limit
+    ? config.theme2.colors.warning.main
+    : config.theme2.colors.error.main;
 };
 
-export const getSuccessRateIcon = (value: number | undefined): IconName => {
-  if (value === undefined) {
-    return 'minus';
-  }
-  if (value >= 99.5) {
-    return 'check';
-  }
-  if (value >= 99) {
-    return 'exclamation-triangle';
-  }
-  return 'times-square' as IconName;
+export const getSuccessRateIcon = (
+  thresholds: ThresholdSettings,
+  key: 'reachability' | 'uptime' | 'latency',
+  compareValue: number
+): IconName => {
+  return compareValue < thresholds[key].lower_limit
+    ? 'check'
+    : compareValue > thresholds[key].lower_limit && compareValue < thresholds[key].upper_limit
+    ? 'exclamation-triangle'
+    : ('times-square' as IconName);
 };
