@@ -74,9 +74,10 @@ const parseCheckResults = (
 
         resultsPerCheck[check.id] = {
           reachabilityValue: parseFloat(reachabilityValue.toFixed(1)),
-          reachabilityDisplayValue: `${reachabilityValue.toFixed(1)}%`,
+          reachabilityDisplayValue:
+            reachabilityValue === 100 ? `${reachabilityValue}%` : `${reachabilityValue.toFixed(1)}%`,
           uptimeValue: parseFloat(uptimeValue.toFixed(1)),
-          uptimeDisplayValue: `${uptimeValue.toFixed(1)}%`,
+          uptimeDisplayValue: uptimeValue === 100 ? `${uptimeValue}%` : `${uptimeValue.toFixed(1)}%`,
         };
       }
     }

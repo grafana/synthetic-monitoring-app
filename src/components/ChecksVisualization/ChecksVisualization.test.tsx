@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import { ChecksVisualization } from './ChecksVisualization';
 import { getInstanceMock } from 'datasource/__mocks__/DataSource';
 import userEvent from '@testing-library/user-event';
@@ -127,7 +127,9 @@ test('renders viz', async () => {
 });
 
 test('handles no checks', async () => {
-  renderChecksViz({ checks: [] });
+  await act(async () => {
+    await renderChecksViz({ checks: [] });
+  });
   const checks = await screen.queryAllByTestId('viz-hexagon');
   expect(checks.length).toBe(0);
 });

@@ -26,7 +26,7 @@
     "@grafana/data": "8.0.1",
     "@grafana/runtime": "8.0.1",
     "@grafana/toolkit": "8.0.1",
-    "@grafana/ui": "^8.0.5",
+    "@grafana/ui": "8.0.1",
     "@release-it/conventional-changelog": "^3.0.0",
     "@testing-library/dom": "^7.31.2",
     "@testing-library/jest-dom": "^5.14.1",

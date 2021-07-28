@@ -2,9 +2,12 @@ import React from 'react';
 import { CheckList } from './CheckList';
 import { render, screen, waitForElementToBeRemoved } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { GrafanaInstances, Check, CheckSort } from 'types';
+import { GrafanaInstances, Check, CheckSort, GlobalSettings } from 'types';
 import { getInstanceMock } from '../datasource/__mocks__/DataSource';
 import { SuccessRateContextProvider } from './SuccessRateContextProvider';
+import { InstanceProvider } from './InstanceProvider';
+import { InstanceContext } from 'contexts/InstanceContext';
+import { AppPluginMeta } from '@grafana/data';
 jest.setTimeout(20000);
 
 const onAddNewMock = jest.fn();
@@ -112,10 +115,14 @@ const renderCheckList = ({ checks = defaultChecks } = {} as RenderChecklist) => 
     metrics: {},
     logs: {},
   } as GrafanaInstances;
+  const meta = {} as AppPluginMeta<GlobalSettings>;
+
   render(
-    <SuccessRateContextProvider checks={checks}>
-      <CheckList instance={instance} onAddNewClick={onAddNewMock} checks={checks} onCheckUpdate={onCheckUpdate} />
-    </SuccessRateContextProvider>
+    <InstanceContext.Provider value={{ instance, loading: false, meta }}>
+      <SuccessRateContextProvider checks={checks}>
+        <CheckList instance={instance} onAddNewClick={onAddNewMock} checks={checks} onCheckUpdate={onCheckUpdate} />
+      </SuccessRateContextProvider>
+    </InstanceContext.Provider>
   );
   return instance;
 };
