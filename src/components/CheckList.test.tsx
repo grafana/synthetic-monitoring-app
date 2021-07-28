@@ -5,7 +5,6 @@ import userEvent from '@testing-library/user-event';
 import { GrafanaInstances, Check, CheckSort, GlobalSettings } from 'types';
 import { getInstanceMock } from '../datasource/__mocks__/DataSource';
 import { SuccessRateContextProvider } from './SuccessRateContextProvider';
-import { InstanceProvider } from './InstanceProvider';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { AppPluginMeta } from '@grafana/data';
 jest.setTimeout(20000);
