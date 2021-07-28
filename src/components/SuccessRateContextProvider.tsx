@@ -1,6 +1,6 @@
 import React, { PropsWithChildren, useContext, useEffect, useState } from 'react';
 import { Check, Probe } from 'types';
-import { getSuccessRateIcon, queryMetric } from 'utils';
+import { queryMetric } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
 import {
   SuccessRates,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { ChecksVisualization } from './ChecksVisualization';
 import { getInstanceMock } from 'datasource/__mocks__/DataSource';
 import userEvent from '@testing-library/user-event';
