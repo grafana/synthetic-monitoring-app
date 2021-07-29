@@ -168,9 +168,9 @@ export const getInstanceMock = (settings: DataSourceInstanceSettings<SMOptions> 
   instance.getTenantSettings = jest.fn().mockImplementation(() =>
     Promise.resolve({
       thresholds: {
-        uptime: { upper_limit: 94.4, lower_limit: 75 },
-        reachability: { upper_limit: 71.7, lower_limit: 70 },
-        latency: { upper_limit: 249, lower_limit: 182 },
+        uptime: { upperLimit: 94.4, lowerLimit: 75 },
+        reachability: { upperLimit: 71.7, lowerLimit: 70 },
+        latency: { upperLimit: 249, lowerLimit: 182 },
       },
     })
   );

@@ -100,13 +100,13 @@ const ThresholdFormSection = ({ label, unit, description, thresholds, setThresho
         <Dot color={config.theme2.colors.success.main} title="Good" />
         <InlineField label={isLatency ? '<=' : '>='} transparent>
           <Input
-            value={isLatency ? thresholds.lower_limit : thresholds.upper_limit}
+            value={isLatency ? thresholds.lowerLimit : thresholds.upperLimit}
             onChange={(e: React.FormEvent<HTMLInputElement>) => {
-              const key = isLatency ? 'lower_limit' : 'upper_limit';
+              const key = isLatency ? 'lowerLimit' : 'upperLimit';
               handleUpdateThreshold(key, e.currentTarget.valueAsNumber);
             }}
-            max={isLatency ? thresholds.upper_limit : 100}
-            min={isLatency ? 0 : thresholds.lower_limit}
+            max={isLatency ? thresholds.upperLimit : 100}
+            min={isLatency ? 0 : thresholds.lowerLimit}
             step={isLatency ? 1 : 0.1}
             placeholder="value"
             type="number"
@@ -114,19 +114,19 @@ const ThresholdFormSection = ({ label, unit, description, thresholds, setThresho
             width={12}
           />
         </InlineField>
-        {!isLatency && <p className={styles.estimate}>{displayDowntimeEstimate(thresholds.upper_limit)}</p>}
+        {!isLatency && <p className={styles.estimate}>{displayDowntimeEstimate(thresholds.upperLimit)}</p>}
       </InlineFieldRow>
       <InlineFieldRow>
         <Dot color={config.theme2.colors.warning.main} title="Warning" />
         <InlineField label={isLatency ? '<=' : '>='} transparent>
           <Input
-            value={isLatency ? thresholds.upper_limit : thresholds.lower_limit}
+            value={isLatency ? thresholds.upperLimit : thresholds.lowerLimit}
             onChange={(e: React.FormEvent<HTMLInputElement>) => {
-              const key = isLatency ? 'upper_limit' : 'lower_limit';
+              const key = isLatency ? 'upperLimit' : 'lowerLimit';
               handleUpdateThreshold(key, e.currentTarget.valueAsNumber);
             }}
-            max={isLatency ? undefined : thresholds.upper_limit}
-            min={isLatency ? thresholds.lower_limit : 0}
+            max={isLatency ? undefined : thresholds.upperLimit}
+            min={isLatency ? thresholds.lowerLimit : 0}
             step={isLatency ? 1 : 0.1}
             placeholder="value"
             type="number"
@@ -136,13 +136,13 @@ const ThresholdFormSection = ({ label, unit, description, thresholds, setThresho
         </InlineField>
         <InlineField label={isLatency ? 'and >' : 'and <'} transparent>
           <Input
-            value={isLatency ? thresholds.lower_limit : thresholds.upper_limit}
+            value={isLatency ? thresholds.lowerLimit : thresholds.upperLimit}
             onChange={(e: React.FormEvent<HTMLInputElement>) => {
-              const key = isLatency ? 'lower_limit' : 'upper_limit';
+              const key = isLatency ? 'lowerLimit' : 'upperLimit';
               handleUpdateThreshold(key, e.currentTarget.valueAsNumber);
             }}
-            max={isLatency ? undefined : thresholds.upper_limit}
-            min={isLatency ? thresholds.upper_limit : thresholds.lower_limit}
+            max={isLatency ? undefined : thresholds.upperLimit}
+            min={isLatency ? thresholds.upperLimit : thresholds.lowerLimit}
             step={isLatency ? 1 : 0.1}
             placeholder="value"
             type="number"
@@ -155,13 +155,13 @@ const ThresholdFormSection = ({ label, unit, description, thresholds, setThresho
         <Dot color={config.theme2.colors.error.main} title="Critical" />
         <InlineField label={isLatency ? '>=' : '<='} transparent>
           <Input
-            value={isLatency ? thresholds.upper_limit : thresholds.lower_limit}
+            value={isLatency ? thresholds.upperLimit : thresholds.lowerLimit}
             onChange={(e: React.FormEvent<HTMLInputElement>) => {
-              const key = isLatency ? 'upper_limit' : 'lower_limit';
+              const key = isLatency ? 'upperLimit' : 'lowerLimit';
               handleUpdateThreshold(key, e.currentTarget.valueAsNumber);
             }}
-            max={isLatency ? undefined : thresholds.lower_limit}
-            min={isLatency ? thresholds.lower_limit : 0}
+            max={isLatency ? undefined : thresholds.lowerLimit}
+            min={isLatency ? thresholds.lowerLimit : 0}
             step={isLatency ? 1 : 0.1}
             placeholder="value"
             type="number"
@@ -169,7 +169,7 @@ const ThresholdFormSection = ({ label, unit, description, thresholds, setThresho
             width={12}
           />
         </InlineField>
-        {!isLatency && <p className={styles.estimate}>{displayDowntimeEstimate(thresholds.lower_limit)}</p>}
+        {!isLatency && <p className={styles.estimate}>{displayDowntimeEstimate(thresholds.lowerLimit)}</p>}
       </InlineFieldRow>
     </CollapsableSection>
   );

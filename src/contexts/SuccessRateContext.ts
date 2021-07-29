@@ -14,8 +14,8 @@ export interface SuccessRateValue {
 }
 
 export interface ThresholdValues {
-  upper_limit: number;
-  lower_limit: number;
+  upperLimit: number;
+  lowerLimit: number;
 }
 export interface ThresholdSettings {
   [key: string]: ThresholdValues;
@@ -57,16 +57,16 @@ export const defaultValues: SuccessRates = {
 
 export const defaultThresholds: ThresholdSettings = {
   uptime: {
-    upper_limit: 90,
-    lower_limit: 75,
+    upperLimit: 90,
+    lowerLimit: 75,
   },
   reachability: {
-    upper_limit: 90,
-    lower_limit: 75,
+    upperLimit: 90,
+    lowerLimit: 75,
   },
   latency: {
-    upper_limit: 10,
-    lower_limit: 5,
+    upperLimit: 10,
+    lowerLimit: 5,
   },
 };
 

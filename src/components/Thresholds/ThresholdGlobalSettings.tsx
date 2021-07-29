@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useContext, useEffect } from 'react';
 
 import { Modal, Button, HorizontalGroup } from '@grafana/ui';
-import { SuccessRateContext } from 'contexts/SuccessRateContext';
+import { SuccessRateContext, ThresholdValues } from 'contexts/SuccessRateContext';
 import { InstanceContext } from 'contexts/InstanceContext';
 import ThresholdFormSection from './ThresholdFormSection';
 
@@ -12,28 +12,23 @@ interface Props {
   isOpen: boolean;
 }
 
-export interface Threshold {
-  upper_limit: number;
-  lower_limit: number;
-}
-
-const thresholdPercentDefaults: Threshold = {
-  upper_limit: 99,
-  lower_limit: 75,
+const thresholdPercentDefaults: ThresholdValues = {
+  upperLimit: 99,
+  lowerLimit: 75,
 };
 
-const thresholdMsDefaults: Threshold = {
-  upper_limit: 1000,
-  lower_limit: 200,
+const thresholdMsDefaults: ThresholdValues = {
+  upperLimit: 1000,
+  lowerLimit: 200,
 };
 
 const ThresholdGlobalSettings = ({ onDismiss, onSuccess, onError, isOpen }: Props) => {
   const { instance } = useContext(InstanceContext);
   const { thresholds, updateThresholds } = useContext(SuccessRateContext);
 
-  const [uptimeThresholds, setUptimeThresholds] = useState<Threshold>(thresholds.uptime);
-  const [reachabilityThresholds, setReachabilityThresholds] = useState<Threshold>(thresholds.reachability);
-  const [latencyThresholds, setLatencyThresholds] = useState<Threshold>(thresholds.latency);
+  const [uptimeThresholds, setUptimeThresholds] = useState<ThresholdValues>(thresholds.uptime);
+  const [reachabilityThresholds, setReachabilityThresholds] = useState<ThresholdValues>(thresholds.reachability);
+  const [latencyThresholds, setLatencyThresholds] = useState<ThresholdValues>(thresholds.latency);
 
   const handleSetDefaults = () => {
     setUptimeThresholds(thresholdPercentDefaults);

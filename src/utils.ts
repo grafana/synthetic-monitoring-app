@@ -282,9 +282,9 @@ export const getSuccessRateThresholdColor = (
   key: 'reachability' | 'uptime' | 'latency',
   compareValue: number
 ) => {
-  return compareValue < thresholds[key].lower_limit
+  return compareValue < thresholds[key].lowerLimit
     ? config.theme2.colors.success.main
-    : compareValue > thresholds[key].lower_limit && compareValue < thresholds[key].upper_limit
+    : compareValue > thresholds[key].lowerLimit && compareValue < thresholds[key].upperLimit
     ? config.theme2.colors.warning.main
     : config.theme2.colors.error.main;
 };
@@ -294,9 +294,9 @@ export const getSuccessRateIcon = (
   key: 'reachability' | 'uptime' | 'latency',
   compareValue: number
 ): IconName => {
-  return compareValue < thresholds[key].lower_limit
+  return compareValue < thresholds[key].lowerLimit
     ? 'check'
-    : compareValue > thresholds[key].lower_limit && compareValue < thresholds[key].upper_limit
+    : compareValue > thresholds[key].lowerLimit && compareValue < thresholds[key].upperLimit
     ? 'exclamation-triangle'
     : ('times-square' as IconName);
 };
