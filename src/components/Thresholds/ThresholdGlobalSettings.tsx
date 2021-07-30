@@ -83,8 +83,10 @@ const ThresholdGlobalSettings = ({ onDismiss, onSuccess, onError, isOpen }: Prop
   return (
     <Modal title="Threshold Settings" isOpen={isOpen} onDismiss={onDismiss}>
       <HorizontalGroup spacing="sm">
-        <Button onClick={handleSaveThresholds}>Save changes</Button>
-        <Button variant="secondary" onClick={handleSetDefaults}>
+        <Button data-testid="threshold-save" onClick={handleSaveThresholds}>
+          Save changes
+        </Button>
+        <Button data-testid="threshold-defaults" variant="secondary" onClick={handleSetDefaults}>
           Reset all to defaults
         </Button>
       </HorizontalGroup>

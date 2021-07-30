@@ -1,11 +1,11 @@
 import React, { useCallback } from 'react';
 
-import { InlineFieldRow, InlineField, Input, CollapsableSection, useStyles2 } from '@grafana/ui';
+import { InlineFieldRow, InlineField, Input, CollapsableSection, VerticalGroup, useStyles2 } from '@grafana/ui';
 
 import { config } from '@grafana/runtime';
 import { GrafanaTheme2 } from '@grafana/data';
 import { css } from '@emotion/css';
-import { Threshold } from './ThresholdGlobalSettings';
+import { ThresholdValues } from 'contexts/SuccessRateContext';
 
 interface LabelProps {
   color: string;
@@ -16,8 +16,8 @@ interface ThresholdSectionProps {
   label: string;
   unit: '%' | 'ms';
   description: string;
-  thresholds: Threshold;
-  setThresholds: (threshold: Threshold) => void;
+  thresholds: ThresholdValues;
+  setThresholds: (threshold: ThresholdValues) => void;
 }
 
 const getDotStyles = (color: string) => (theme: GrafanaTheme2) => ({
@@ -45,6 +45,19 @@ const getSectionStyles = () => (theme: GrafanaTheme2) => ({
     font-style: italic;
     align-self: center;
     font-size: 0.7rem;
+  `,
+  disabled: css`
+    // This is a hack, can't seem to get the disabled prop on Input to work
+    div > input {
+      cursor: not-allowed;
+      background-color: rgba(204, 204, 220, 0.07);
+      color: rgba(204, 204, 220, 0.4);
+      border: 1px solid rgba(204, 204, 220, 0.07);
+    }
+  `,
+  group: css`
+    margin-top: 25px;
+    margin-bottom: 25px;
   `,
 });
 
@@ -93,13 +106,15 @@ const ThresholdFormSection = ({ label, unit, description, thresholds, setThresho
   const After = <div style={{ display: 'flex', alignItems: 'center', padding: '5px' }}>{unit}</div>;
 
   return (
-    <CollapsableSection label={label} isOpen={true}>
+    <div className={styles.group}>
+      <h3>{label}</h3>
       <p>{description}</p>
 
       <InlineFieldRow>
         <Dot color={config.theme2.colors.success.main} title="Good" />
         <InlineField label={isLatency ? '<=' : '>='} transparent>
           <Input
+            data-testid="upper-limit"
             value={isLatency ? thresholds.lowerLimit : thresholds.upperLimit}
             onChange={(e: React.FormEvent<HTMLInputElement>) => {
               const key = isLatency ? 'lowerLimit' : 'upperLimit';
@@ -120,32 +135,22 @@ const ThresholdFormSection = ({ label, unit, description, thresholds, setThresho
         <Dot color={config.theme2.colors.warning.main} title="Warning" />
         <InlineField label={isLatency ? '<=' : '>='} transparent>
           <Input
+            className={styles.disabled}
             value={isLatency ? thresholds.upperLimit : thresholds.lowerLimit}
-            onChange={(e: React.FormEvent<HTMLInputElement>) => {
-              const key = isLatency ? 'upperLimit' : 'lowerLimit';
-              handleUpdateThreshold(key, e.currentTarget.valueAsNumber);
-            }}
-            max={isLatency ? undefined : thresholds.upperLimit}
-            min={isLatency ? thresholds.lowerLimit : 0}
+            disabled={true}
             step={isLatency ? 1 : 0.1}
             placeholder="value"
-            type="number"
             addonAfter={After}
             width={12}
           />
         </InlineField>
         <InlineField label={isLatency ? 'and >' : 'and <'} transparent>
           <Input
+            className={styles.disabled}
             value={isLatency ? thresholds.lowerLimit : thresholds.upperLimit}
-            onChange={(e: React.FormEvent<HTMLInputElement>) => {
-              const key = isLatency ? 'lowerLimit' : 'upperLimit';
-              handleUpdateThreshold(key, e.currentTarget.valueAsNumber);
-            }}
-            max={isLatency ? undefined : thresholds.upperLimit}
-            min={isLatency ? thresholds.upperLimit : thresholds.lowerLimit}
+            disabled={true}
             step={isLatency ? 1 : 0.1}
             placeholder="value"
-            type="number"
             addonAfter={After}
             width={12}
           />
@@ -155,12 +160,13 @@ const ThresholdFormSection = ({ label, unit, description, thresholds, setThresho
         <Dot color={config.theme2.colors.error.main} title="Critical" />
         <InlineField label={isLatency ? '>=' : '<='} transparent>
           <Input
+            data-testid="lower-limit"
             value={isLatency ? thresholds.upperLimit : thresholds.lowerLimit}
             onChange={(e: React.FormEvent<HTMLInputElement>) => {
               const key = isLatency ? 'upperLimit' : 'lowerLimit';
               handleUpdateThreshold(key, e.currentTarget.valueAsNumber);
             }}
-            max={isLatency ? undefined : thresholds.lowerLimit}
+            max={isLatency ? undefined : thresholds.upperLimit}
             min={isLatency ? thresholds.lowerLimit : 0}
             step={isLatency ? 1 : 0.1}
             placeholder="value"
@@ -171,7 +177,7 @@ const ThresholdFormSection = ({ label, unit, description, thresholds, setThresho
         </InlineField>
         {!isLatency && <p className={styles.estimate}>{displayDowntimeEstimate(thresholds.lowerLimit)}</p>}
       </InlineFieldRow>
-    </CollapsableSection>
+    </div>
   );
 };
 

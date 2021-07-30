@@ -174,5 +174,6 @@ export const getInstanceMock = (settings: DataSourceInstanceSettings<SMOptions> 
       },
     })
   );
+  instance.updateTenantSettings = jest.fn();
   return instance;
 };
