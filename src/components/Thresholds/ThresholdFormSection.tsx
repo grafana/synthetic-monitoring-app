@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 
-import { InlineFieldRow, InlineField, Input, CollapsableSection, VerticalGroup, useStyles2 } from '@grafana/ui';
+import { InlineFieldRow, InlineField, Input, useStyles2 } from '@grafana/ui';
 
 import { config } from '@grafana/runtime';
 import { GrafanaTheme2 } from '@grafana/data';
