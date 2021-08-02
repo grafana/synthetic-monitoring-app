@@ -59,6 +59,11 @@ const getSectionStyles = () => (theme: GrafanaTheme2) => ({
     margin-top: 25px;
     margin-bottom: 25px;
   `,
+  after: css`
+    display: flex;
+    align-items: center;
+    padding: 5px;
+  `,
 });
 
 const Dot = ({ color, title }: LabelProps) => {
@@ -103,7 +108,7 @@ const ThresholdFormSection = ({ label, unit, description, thresholds, setThresho
     [thresholds, setThresholds]
   );
 
-  const After = <div style={{ display: 'flex', alignItems: 'center', padding: '5px' }}>{unit}</div>;
+  const After = <div className={styles.after}>{unit}</div>;
 
   return (
     <div className={styles.group}>

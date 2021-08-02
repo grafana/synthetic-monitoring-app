@@ -282,11 +282,13 @@ export const getSuccessRateThresholdColor = (
   key: 'reachability' | 'uptime' | 'latency',
   compareValue: number
 ) => {
-  return compareValue < thresholds[key].lowerLimit
-    ? config.theme2.colors.success.main
-    : compareValue > thresholds[key].lowerLimit && compareValue < thresholds[key].upperLimit
-    ? config.theme2.colors.warning.main
-    : config.theme2.colors.error.main;
+  if (compareValue < thresholds[key].lowerLimit) {
+    return config.theme2.colors.success.main;
+  } else if (compareValue > thresholds[key].lowerLimit && compareValue < thresholds[key].upperLimit) {
+    return config.theme2.colors.warning.main;
+  } else {
+    return config.theme2.colors.error.main;
+  }
 };
 
 export const getSuccessRateIcon = (
@@ -294,9 +296,11 @@ export const getSuccessRateIcon = (
   key: 'reachability' | 'uptime' | 'latency',
   compareValue: number
 ): IconName => {
-  return compareValue < thresholds[key].lowerLimit
-    ? 'check'
-    : compareValue > thresholds[key].lowerLimit && compareValue < thresholds[key].upperLimit
-    ? 'exclamation-triangle'
-    : ('times-square' as IconName);
+  if (compareValue < thresholds[key].lowerLimit) {
+    return 'check';
+  } else if (compareValue > thresholds[key].lowerLimit && compareValue < thresholds[key].upperLimit) {
+    return 'exclamation-triangle';
+  } else {
+    return 'times-square' as IconName;
+  }
 };

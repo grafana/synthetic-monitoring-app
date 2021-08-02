@@ -65,8 +65,8 @@ export const defaultThresholds: ThresholdSettings = {
     lowerLimit: 75,
   },
   latency: {
-    upperLimit: 10,
-    lowerLimit: 5,
+    upperLimit: 1000,
+    lowerLimit: 200,
   },
 };
 

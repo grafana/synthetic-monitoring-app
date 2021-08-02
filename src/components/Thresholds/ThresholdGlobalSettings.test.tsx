@@ -48,13 +48,19 @@ test('has default values in form', async () => {
   expect(upperLimitInputs[0]).toHaveValue(90);
   expect(lowerLimitInputs[0]).toHaveValue(75);
   // Latency
-  expect(upperLimitInputs[2]).toHaveValue(5);
-  expect(lowerLimitInputs[2]).toHaveValue(10);
+  expect(upperLimitInputs[2]).toHaveValue(200);
+  expect(lowerLimitInputs[2]).toHaveValue(1000);
 });
 
 test('submits the form', async () => {
   const instance = renderThresholdSettingsForm();
   const saveButton = await screen.getByTestId('threshold-save');
   userEvent.click(saveButton);
-  expect(instance.api?.updateTenantSettings).toHaveBeenCalled();
+  expect(instance.api?.updateTenantSettings).toHaveBeenCalledWith({
+    thresholds: {
+      uptime: { upperLimit: 94.4, lowerLimit: 75 },
+      reachability: { upperLimit: 71.7, lowerLimit: 70 },
+      latency: { upperLimit: 249, lowerLimit: 182 },
+    },
+  });
 });
