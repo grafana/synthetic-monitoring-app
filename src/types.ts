@@ -27,7 +27,7 @@ export enum HttpMethod {
 export enum HttpVersion {
   HTTP1_0 = 'HTTP/1.0',
   HTTP1_1 = 'HTTP/1.1',
-  HTTP2_0 = 'HTTP/2',
+  HTTP2_0 = 'HTTP/2.0',
 }
 
 export enum DnsRecordType {

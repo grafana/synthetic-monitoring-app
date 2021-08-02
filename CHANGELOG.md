@@ -1,3 +1,14 @@
+## [1.2.16](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.15...1.2.16) (2021-07-29)
+
+
+### Bug Fixes
+
+* http version 2 value ([#341](https://github.com/grafana/synthetic-monitoring-app/issues/341)) ([85ef0bf](https://github.com/grafana/synthetic-monitoring-app/commit/85ef0bf6589c299410ef9caa7940bc6ad590cc40))
+
+## [1.2.15](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.14...1.2.15) (2021-07-29)
+
+## [1.2.14](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.13...1.2.14) (2021-07-27)
+
 ## [1.2.13](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.12...1.2.13) (2021-07-27)
 
 ## [1.2.12](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.11...1.2.12) (2021-07-26)
