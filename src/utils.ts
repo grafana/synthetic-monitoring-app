@@ -282,6 +282,20 @@ export const getSuccessRateThresholdColor = (
   key: 'reachability' | 'uptime' | 'latency',
   compareValue: number
 ) => {
+  if (compareValue > thresholds[key].upperLimit) {
+    return config.theme2.colors.success.main;
+  } else if (compareValue > thresholds[key].lowerLimit && compareValue < thresholds[key].upperLimit) {
+    return config.theme2.colors.warning.main;
+  } else {
+    return config.theme2.colors.error.main;
+  }
+};
+
+export const getLatencySuccessRateThresholdColor = (
+  thresholds: ThresholdSettings,
+  key: 'latency',
+  compareValue: number
+) => {
   if (compareValue < thresholds[key].lowerLimit) {
     return config.theme2.colors.success.main;
   } else if (compareValue > thresholds[key].lowerLimit && compareValue < thresholds[key].upperLimit) {
@@ -296,7 +310,7 @@ export const getSuccessRateIcon = (
   key: 'reachability' | 'uptime' | 'latency',
   compareValue: number
 ): IconName => {
-  if (compareValue < thresholds[key].lowerLimit) {
+  if (compareValue > thresholds[key].upperLimit) {
     return 'check';
   } else if (compareValue > thresholds[key].lowerLimit && compareValue < thresholds[key].upperLimit) {
     return 'exclamation-triangle';

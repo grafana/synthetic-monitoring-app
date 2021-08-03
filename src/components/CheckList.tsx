@@ -190,7 +190,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
   const [showVizIconOverlay, setShowVizIconOverlay] = useState(getIconOverlayToggleFromLS());
   const [bulkActionInProgress, setBulkActionInProgress] = useState(false);
 
-  const [showThresholdModal, setShowThresholdModal] = useState(true);
+  const [showThresholdModal, setShowThresholdModal] = useState(false);
 
   const styles = useStyles(getStyles);
   const successRateContext = useContext(SuccessRateContext);
