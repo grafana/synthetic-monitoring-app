@@ -249,9 +249,9 @@ const getTracerouteSettingsFormValues = (settings: Settings): TracerouteSettings
   const tracerouteSettings = settings.traceroute ?? (fallbackSettings(CheckType.Traceroute) as TracerouteSettings);
 
   return {
-    firstHop: String(tracerouteSettings.firstHop),
+    firstHop: String(tracerouteSettings.firstHop ?? 1),
     maxHops: String(tracerouteSettings.maxHops),
-    retries: String(tracerouteSettings.retries),
+    retries: String(tracerouteSettings.retries ?? 0),
     maxUnknownHops: String(tracerouteSettings.maxUnknownHops),
   };
 };
@@ -555,7 +555,7 @@ const getTracerouteSettings = (
   return {
     firstHop: parseInt(String(updatedSettings.firstHop), 10),
     maxHops: parseInt(String(updatedSettings.maxHops), 10),
-    retries: parseInt(String(updatedSettings.retries), 10),
+    retries: 0,
     maxUnknownHops: parseInt(String(updatedSettings.maxUnknownHops), 10),
   };
 };

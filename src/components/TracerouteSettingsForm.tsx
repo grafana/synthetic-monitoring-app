@@ -40,14 +40,6 @@ export const TracerouteSettingsForm = ({ isEditor }: Props) => {
             disabled={!isEditor}
           />
         </Field>
-        <Field label="Retries" description="Quantity of times to retry a hop" disabled={!isEditor}>
-          <Input
-            id="traceroute-settings-retries"
-            {...register('settings.traceroute.retries', { min: 1, max: 3 })}
-            type="number"
-            disabled={!isEditor}
-          />
-        </Field>
         <Field
           label="Max unknown hops"
           description="Maximimum number of hosts to traverse that give no response"
