@@ -582,6 +582,20 @@ const getSettingsFromFormValues = (formValues: Partial<CheckFormValues>, default
   }
 };
 
+const getTimeoutFromFormValue = (timeout: number, checkType?: CheckType): number => {
+  if (checkType === CheckType.Traceroute) {
+    return 30000;
+  }
+  return timeout * 1000;
+};
+
+const getFrequencyFromFormValue = (frequency: number, checkType?: CheckType): number => {
+  if (checkType === CheckType.Traceroute) {
+    return 120000;
+  }
+  return frequency * 1000;
+};
+
 export const getCheckFromFormValues = (
   formValues: Omit<CheckFormValues, 'alert'>,
   defaultValues: CheckFormValues
@@ -592,8 +606,8 @@ export const getCheckFromFormValues = (
     enabled: formValues.enabled,
     labels: formValues.labels ?? [],
     probes: formValues.probes,
-    timeout: formValues.timeout * 1000,
-    frequency: formValues.frequency * 1000,
+    timeout: getTimeoutFromFormValue(formValues.timeout, getValueFromSelectable(formValues.checkType)),
+    frequency: getFrequencyFromFormValue(formValues.frequency, getValueFromSelectable(formValues.checkType)),
     alertSensitivity: getValueFromSelectable(formValues.alertSensitivity) ?? AlertSensitivity.None,
     settings: getSettingsFromFormValues(formValues, defaultValues),
     basicMetricsOnly: !formValues.publishAdvancedMetrics,

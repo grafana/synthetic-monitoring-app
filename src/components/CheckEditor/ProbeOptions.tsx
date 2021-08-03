@@ -21,7 +21,6 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, probes }: Props) =>
     control,
     watch,
     formState: { errors },
-    register,
   } = useFormContext();
   const { instance } = useContext(InstanceContext);
 
@@ -67,7 +66,8 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, probes }: Props) =>
         error={errors.frequency?.message}
       >
         {checkType === CheckType.Traceroute ? (
-          <Input {...register('frequency')} value={120} prefix="Every" suffix="seconds" width={20} />
+          // This is just a placeholder for now, the frequency for traceroute checks is hardcoded in the submit
+          <Input value={120} prefix="Every" suffix="seconds" width={20} />
         ) : (
           <SliderInput
             validate={(value) => validateFrequency(value, checkType)}
@@ -75,7 +75,7 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, probes }: Props) =>
             prefixLabel={'Every'}
             suffixLabel={'seconds'}
             min={checkType === CheckType.Traceroute ? 60.0 : 10.0}
-            max={checkType === CheckType.Traceroute ? 240 : 120.0}
+            max={checkType === CheckType.Traceroute ? 240.0 : 120.0}
             defaultValue={checkType === CheckType.Traceroute ? 120 : frequency / 1000}
           />
         )}
@@ -88,7 +88,8 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, probes }: Props) =>
         error={errors.timeout?.message}
       >
         {checkType === CheckType.Traceroute ? (
-          <Input {...register('timeout')} value={30} prefix="Every" suffix="seconds" width={20} />
+          // This is just a placeholder for now, the timeout for traceroute checks is hardcoded in the submit
+          <Input value={30} prefix="Every" suffix="seconds" width={20} />
         ) : (
           <SliderInput
             name="timeout"

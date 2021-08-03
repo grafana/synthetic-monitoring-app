@@ -60,10 +60,8 @@ export const CheckEditor = ({ check, onReturn }: Props) => {
 
   const isEditor = hasRole(OrgRole.EDITOR);
 
-  console.log(formMethods.formState.errors);
   const { execute: onSubmit, error, loading: submitting } = useAsyncCallback(async (checkValues: CheckFormValues) => {
     const updatedCheck = getCheckFromFormValues(checkValues, defaultValues);
-    console.log('hello');
     if (check?.id) {
       trackEvent('editCheckSubmit');
       await api?.updateCheck({
@@ -72,7 +70,6 @@ export const CheckEditor = ({ check, onReturn }: Props) => {
         ...updatedCheck,
       });
     } else {
-      console.log('we submitting or what?');
       trackEvent('addNewCheckSubmit');
       await api?.addCheck(updatedCheck);
     }
