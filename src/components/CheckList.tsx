@@ -665,7 +665,9 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
         onDismiss={() => setShowThresholdModal(false)}
         isOpen={showThresholdModal}
         onSuccess={() => appEvents.emit(AppEvents.alertSuccess, ['Thresholds updated'])}
-        onError={() => appEvents.emit(AppEvents.alertError, ['Error updating thresholds'])}
+        onError={() =>
+          appEvents.emit(AppEvents.alertError, [`Error updating thresholds. make sure your values don't overlap`])
+        }
       />
     </div>
   );
