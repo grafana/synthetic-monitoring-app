@@ -18,13 +18,13 @@ const renderSuccessRateGauge = (sparkline = false) => {
     <InstanceContext.Provider value={{ instance, loading: true, meta }}>
       <SuccessRateContextProvider checks={[{ id: 4, job: 'burritos', target: 'tacos' } as Check]}>
         <SuccessRateGauge
+          title="Reachability"
           id={4}
           type={SuccessRateTypes.Checks}
           labelNames={['tacos']}
           labelValues={['burritos']}
           height={200}
           width={200}
-          sparkline={sparkline}
           onClick={jest.fn()}
         />
       </SuccessRateContextProvider>

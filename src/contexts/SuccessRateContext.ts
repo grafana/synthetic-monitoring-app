@@ -1,7 +1,4 @@
-import { config } from '@grafana/runtime';
-import { IconName } from '@grafana/ui';
 import { createContext } from 'react';
-import { getSuccessRateThresholdColor } from 'utils';
 
 export enum SuccessRateTypes {
   Checks = 'checks',
@@ -9,11 +6,22 @@ export enum SuccessRateTypes {
 }
 
 export interface SuccessRateValue {
-  value: number;
-  displayValue: string;
-  thresholdColor: string;
+  reachabilityValue: number;
+  reachabilityDisplayValue: string;
   noData?: boolean;
-  icon: IconName;
+  uptimeValue?: number;
+  uptimeDisplayValue?: string;
+}
+
+export interface ThresholdValues {
+  upperLimit: number;
+  lowerLimit: number;
+}
+export interface ThresholdSettings {
+  [key: string]: ThresholdValues;
+  uptime: ThresholdValues;
+  reachability: ThresholdValues;
+  latency: ThresholdValues;
 }
 export interface SuccessRate {
   [key: number]: SuccessRateValue;
@@ -30,30 +38,47 @@ export interface SuccessRates extends SuccessRatesByType {
 interface SuccessRateContextValue {
   values: SuccessRates;
   loading: boolean;
+  thresholds: ThresholdSettings;
   updateSuccessRate: (type: SuccessRateTypes, id: number, successRate: number | undefined) => void;
+  updateThresholds: () => void;
 }
 
 export const defaultValues: SuccessRates = {
   checks: {},
   probes: {},
   defaults: {
-    thresholdColor: config.theme2.colors.text.disabled,
-    value: 0,
-    displayValue: 'N/A',
+    reachabilityValue: 0,
+    reachabilityDisplayValue: 'N/A',
     noData: true,
-    icon: 'minus',
+    uptimeValue: 0,
+    uptimeDisplayValue: 'N/A',
   },
 };
 
-const updateSuccessRate = (type: SuccessRateTypes, id: number, successRate: number | undefined) => {
-  const thresholdColor = getSuccessRateThresholdColor(successRate);
+export const defaultThresholds: ThresholdSettings = {
+  uptime: {
+    upperLimit: 90,
+    lowerLimit: 75,
+  },
+  reachability: {
+    upperLimit: 90,
+    lowerLimit: 75,
+  },
+  latency: {
+    upperLimit: 1000,
+    lowerLimit: 200,
+  },
+};
 
+const updateThresholds = () => {};
+
+const updateSuccessRate = (type: SuccessRateTypes, id: number, successRate: number | undefined) => {
   defaultValues[type][id] = {
-    value: successRate ?? 0,
-    displayValue: successRate === undefined ? 'N/A' : successRate.toFixed(1),
-    thresholdColor,
+    reachabilityValue: successRate ?? 0,
+    reachabilityDisplayValue: successRate === undefined ? 'N/A' : successRate.toFixed(1),
     noData: successRate === undefined,
-    icon: 'minus',
+    uptimeValue: 0,
+    uptimeDisplayValue: 'N/A',
   };
 };
 
@@ -61,4 +86,6 @@ export const SuccessRateContext = createContext<SuccessRateContextValue>({
   values: defaultValues,
   loading: true,
   updateSuccessRate,
+  thresholds: defaultThresholds,
+  updateThresholds,
 });

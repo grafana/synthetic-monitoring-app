@@ -7,6 +7,7 @@ import { HostedInstance, User, OrgRole, CheckType, Settings } from 'types';
 
 import { SMDataSource } from 'datasource/DataSource';
 import { IconName } from '@grafana/ui';
+import { ThresholdSettings } from 'contexts/SuccessRateContext';
 
 /**
  * Find all synthetic-monitoring datasources
@@ -276,28 +277,44 @@ export const fromBase64 = (value: string) => {
   }
 };
 
-export const getSuccessRateThresholdColor = (value: number | undefined) => {
-  if (value === undefined) {
-    return config.theme2.colors.text.disabled;
-  }
-  if (value >= 99.5) {
+export const getSuccessRateThresholdColor = (
+  thresholds: ThresholdSettings,
+  key: 'reachability' | 'uptime' | 'latency',
+  compareValue: number
+) => {
+  if (compareValue > thresholds[key].upperLimit) {
     return config.theme2.colors.success.main;
-  }
-  if (value >= 99) {
+  } else if (compareValue > thresholds[key].lowerLimit && compareValue < thresholds[key].upperLimit) {
     return config.theme2.colors.warning.main;
+  } else {
+    return config.theme2.colors.error.main;
   }
-  return config.theme2.colors.error.main;
 };
 
-export const getSuccessRateIcon = (value: number | undefined): IconName => {
-  if (value === undefined) {
-    return 'minus';
+export const getLatencySuccessRateThresholdColor = (
+  thresholds: ThresholdSettings,
+  key: 'latency',
+  compareValue: number
+) => {
+  if (compareValue < thresholds[key].lowerLimit) {
+    return config.theme2.colors.success.main;
+  } else if (compareValue > thresholds[key].lowerLimit && compareValue < thresholds[key].upperLimit) {
+    return config.theme2.colors.warning.main;
+  } else {
+    return config.theme2.colors.error.main;
   }
-  if (value >= 99.5) {
+};
+
+export const getSuccessRateIcon = (
+  thresholds: ThresholdSettings,
+  key: 'reachability' | 'uptime' | 'latency',
+  compareValue: number
+): IconName => {
+  if (compareValue > thresholds[key].upperLimit) {
     return 'check';
-  }
-  if (value >= 99) {
+  } else if (compareValue > thresholds[key].lowerLimit && compareValue < thresholds[key].upperLimit) {
     return 'exclamation-triangle';
+  } else {
+    return 'times-square' as IconName;
   }
-  return 'times-square' as IconName;
 };

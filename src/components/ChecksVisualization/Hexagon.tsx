@@ -7,7 +7,7 @@ import appEvents from 'grafana/app/core/app_events';
 import { useStyles2 } from '@grafana/ui';
 import { GrafanaTheme2, AppEvents } from '@grafana/data';
 import { css } from '@emotion/css';
-import { checkType as getCheckType, dashboardUID } from 'utils';
+import { checkType as getCheckType, dashboardUID, getSuccessRateThresholdColor } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
 
 interface Props {
@@ -27,7 +27,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
 });
 
 export const Hexagon = ({ onMouseMove, onMouseOut, check, hexPath, hexRadius }: Props) => {
-  const { values } = useContext(SuccessRateContext);
+  const { values, thresholds } = useContext(SuccessRateContext);
   const { instance } = useContext(InstanceContext);
   const [hovering, setHovering] = useState(false);
   const hexbin = d3hexbin.hexbin().radius(hexRadius);
@@ -52,17 +52,19 @@ export const Hexagon = ({ onMouseMove, onMouseOut, check, hexPath, hexRadius }: 
     });
   };
 
-  const successValue = values[SuccessRateTypes.Checks][check.id ?? 0] ?? values.defaults.value;
+  const successValue =
+    check.id && values[SuccessRateTypes.Checks][check.id]
+      ? values[SuccessRateTypes.Checks][check.id].reachabilityValue
+      : values.defaults.reachabilityValue;
+
+  const fillColor = getSuccessRateThresholdColor(thresholds, 'reachability', successValue);
+
   return (
     <path
       className={styles.hexagon}
       data-testid="viz-hexagon"
       d={`M${hexPath.x},${hexPath.y}${hexbin.hexagon()}`}
-      fill={
-        hovering
-          ? config.theme2.colors.emphasize(successValue.thresholdColor, config.theme2.colors.hoverFactor)
-          : successValue.thresholdColor
-      }
+      fill={hovering ? config.theme2.colors.emphasize(fillColor, config.theme2.colors.hoverFactor) : fillColor}
       onMouseMove={(e) => {
         if (!hovering) {
           setHovering(true);

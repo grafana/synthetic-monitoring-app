@@ -1,6 +1,6 @@
 import React, { PropsWithChildren, useContext, useEffect, useState } from 'react';
 import { Check, Probe } from 'types';
-import { getSuccessRateIcon, getSuccessRateThresholdColor, queryMetric } from 'utils';
+import { queryMetric } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
 import {
   SuccessRates,
@@ -8,6 +8,8 @@ import {
   SuccessRateTypes,
   SuccessRate,
   defaultValues,
+  ThresholdSettings,
+  defaultThresholds,
 } from 'contexts/SuccessRateContext';
 
 interface Props {
@@ -30,31 +32,52 @@ type SeedRequestItem = {
 
 type SeedRequestResponse = SeedRequestItem[];
 
-const parseCheckResults = (checks: Check[] | undefined, data: any) => {
+type KeyedValueData = {
+  [key: string]: string;
+};
+
+const keyDataByCheckId = (checks: Check[], data: SeedRequestResponse): KeyedValueData => {
+  const keyedData = checks.reduce((acc, check) => {
+    const valueForCheck = data.find((item) => check.job === item.metric.job && check.target === item.metric.instance);
+    return {
+      ...acc,
+      [String(check.id)]: valueForCheck?.value[1],
+    };
+  }, {});
+
+  return keyedData;
+};
+
+const parseCheckResults = (
+  checks: Check[] | undefined,
+  reachabilityData: SeedRequestResponse,
+  uptimeData: SeedRequestResponse
+) => {
   if (!checks) {
     return;
   }
+  const resultsPerCheck: SuccessRate = {};
 
-  const response = data as SeedRequestResponse;
-  const resultsPerCheck = checks.reduce<SuccessRate>((acc, check) => {
-    if (!check.id) {
-      return acc;
-    }
-    acc[check.id] = defaultValues.defaults;
-    return acc;
-  }, {});
+  const reachabilityValuesById = keyDataByCheckId(checks, reachabilityData);
+  const uptimeValuesById = keyDataByCheckId(checks, uptimeData);
 
-  response.forEach((item) => {
-    const check = checks?.find((check) => check.job === item.metric.job && check.target === item.metric.instance);
-    if (check && check.id) {
-      const returnedValue = item.value?.[1];
-      if (returnedValue !== undefined) {
-        const float = parseFloat(returnedValue) * 100;
+  checks.forEach((check) => {
+    if (check.id) {
+      // If new check and no data yet, return defaults
+      if (!reachabilityValuesById[check.id] || !uptimeValuesById[check.id]) {
         resultsPerCheck[check.id] = {
-          value: parseFloat(float.toFixed(1)),
-          displayValue: `${float.toFixed(1)}%`,
-          thresholdColor: getSuccessRateThresholdColor(float),
-          icon: getSuccessRateIcon(float),
+          ...defaultValues.defaults,
+        };
+      } else {
+        const reachabilityValue = parseFloat(reachabilityValuesById[check.id]) * 100;
+        const uptimeValue = parseFloat(uptimeValuesById[check.id]) * 100;
+
+        resultsPerCheck[check.id] = {
+          reachabilityValue: parseFloat(reachabilityValue.toFixed(1)),
+          reachabilityDisplayValue:
+            reachabilityValue === 100 ? `${reachabilityValue}%` : `${reachabilityValue.toFixed(1)}%`,
+          uptimeValue: parseFloat(uptimeValue.toFixed(1)),
+          uptimeDisplayValue: uptimeValue === 100 ? `${uptimeValue}%` : `${uptimeValue.toFixed(1)}%`,
         };
       }
     }
@@ -77,6 +100,7 @@ const parseProbeResults = (probes: Probe[] | undefined, data: any) => {
     return acc;
   }, {});
 
+  // TODO: Re-type latency check data
   response.forEach((item) => {
     const probe = probes.find((probe) => probe.name === item.metric.probe);
     if (probe && probe.id) {
@@ -84,10 +108,8 @@ const parseProbeResults = (probes: Probe[] | undefined, data: any) => {
       if (returnedValue !== undefined) {
         const float = parseFloat(returnedValue) * 100;
         resultsPerProbe[probe.id] = {
-          value: parseFloat(float.toFixed(1)),
-          displayValue: float.toFixed(1),
-          thresholdColor: getSuccessRateThresholdColor(float),
-          icon: getSuccessRateIcon(float),
+          reachabilityValue: parseFloat(float.toFixed(1)),
+          reachabilityDisplayValue: float.toFixed(1),
         };
       }
     }
@@ -100,6 +122,7 @@ export function SuccessRateContextProvider({ checks, probes, children }: PropsWi
   const { instance } = useContext(InstanceContext);
   const [successRateValues, setSuccessRate] = useState<SuccessRates>(defaultValues);
   const [loading, setLoading] = useState(true);
+  const [thresholds, setThresholds] = useState<ThresholdSettings>(defaultThresholds);
 
   const updateSuccessRate = (type: SuccessRateTypes, id: number | undefined, successRate: number | undefined) => {
     if (!id) {
@@ -118,14 +141,18 @@ export function SuccessRateContextProvider({ checks, probes, children }: PropsWi
   useEffect(() => {
     const getSuccessRates = async () => {
       setLoading(true);
-      const checkUptimeQuery =
+      const checkReachabilityQuery =
         'sum(rate(probe_all_success_sum[3h])) by (job, instance) / sum(rate(probe_all_success_count[3h])) by (job, instance)';
-      const probeUptimeQuery =
+      const probeReachabilityQuery =
         'sum(rate(probe_all_success_sum[3h])) by (probe) / sum(rate(probe_all_success_count[3h])) by (probe)';
+
+      const checkUptimeQuery = `sum_over_time((ceil(sum by (instance, job) (idelta(probe_all_success_sum[5m])) / sum by (instance, job) (idelta(probe_all_success_count[5m]))))[3h:]) 
+            / count_over_time((sum by (instance, job) (idelta(probe_all_success_count[5m])))[3h:])`;
 
       const successRateType = checks ? SuccessRateTypes.Checks : SuccessRateTypes.Probes;
 
-      const uptimeQuery = successRateType === SuccessRateTypes.Checks ? checkUptimeQuery : probeUptimeQuery;
+      const reachabilityQuery =
+        successRateType === SuccessRateTypes.Checks ? checkReachabilityQuery : probeReachabilityQuery;
 
       const url = instance?.api?.getMetricsDS()?.url;
 
@@ -144,12 +171,15 @@ export function SuccessRateContextProvider({ checks, probes, children }: PropsWi
         end: now,
         step: 0,
       };
-      const { error, data } = await queryMetric(url, uptimeQuery, options);
+      const { error: reachabilityError, data: reachabilityData } = await queryMetric(url, reachabilityQuery, options);
+      const { error: uptimeError, data: uptimeData } = await queryMetric(url, checkUptimeQuery, options);
 
       const resultsByType =
-        successRateType === SuccessRateTypes.Checks ? parseCheckResults(checks, data) : parseProbeResults(probes, data);
+        successRateType === SuccessRateTypes.Checks
+          ? parseCheckResults(checks, reachabilityData, uptimeData)
+          : parseProbeResults(probes, reachabilityData);
 
-      if (error || !data) {
+      if (reachabilityError || uptimeError || !reachabilityData || !uptimeData) {
         setLoading(false);
         return;
       }
@@ -171,8 +201,21 @@ export function SuccessRateContextProvider({ checks, probes, children }: PropsWi
     return () => clearInterval(interval);
   }, [checks, instance.api, probes]);
 
+  const updateThresholds = async () => {
+    const { thresholds } = await instance.api?.getTenantSettings();
+    setThresholds(thresholds);
+  };
+
+  // Call this once on first render
+  useEffect(() => {
+    updateThresholds();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
-    <SuccessRateContext.Provider value={{ values: successRateValues, loading, updateSuccessRate }}>
+    <SuccessRateContext.Provider
+      value={{ values: successRateValues, loading, updateSuccessRate, thresholds, updateThresholds }}
+    >
       {children}
     </SuccessRateContext.Provider>
   );

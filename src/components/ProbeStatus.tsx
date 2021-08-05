@@ -100,13 +100,13 @@ const ProbeStatus = ({ probe, onResetToken }: Props) => {
         )}
       </div>
       <SuccessRateGauge
+        title="Reachability"
         id={probe.id!}
         type={SuccessRateTypes.Probes}
         labelNames={['probe']}
         labelValues={[probe.name]}
         height={200}
         width={300}
-        sparkline={true}
       />
     </Container>
   );

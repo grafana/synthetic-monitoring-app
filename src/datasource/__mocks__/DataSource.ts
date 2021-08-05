@@ -165,5 +165,15 @@ export const getInstanceMock = (settings: DataSourceInstanceSettings<SMOptions> 
   });
   instance.deleteCheck = jest.fn();
   instance.updateCheck = jest.fn().mockImplementation(() => Promise.resolve({ data: {} }));
+  instance.getTenantSettings = jest.fn().mockImplementation(() =>
+    Promise.resolve({
+      thresholds: {
+        uptime: { upperLimit: 94.4, lowerLimit: 75 },
+        reachability: { upperLimit: 71.7, lowerLimit: 70 },
+        latency: { upperLimit: 249, lowerLimit: 182 },
+      },
+    })
+  );
+  instance.updateTenantSettings = jest.fn();
   return instance;
 };

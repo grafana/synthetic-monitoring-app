@@ -59,13 +59,13 @@ export const ProbeList = ({ probes, onAddNew, onSelectProbe }: Props) => {
                 </span>
               </div>
               <SuccessRateGauge
+                title="Reachability"
                 type={SuccessRateTypes.Probes}
                 id={probe.id!} // We are guarunteeing the presence of the ID in the filter before this map
                 labelNames={['probe']}
                 labelValues={[probe.name]}
                 height={60}
                 width={150}
-                sparkline={false}
               />
               <div className="add-data-source-item-actions">
                 <Button>Select</Button>

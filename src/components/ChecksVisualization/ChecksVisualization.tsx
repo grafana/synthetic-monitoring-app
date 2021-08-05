@@ -132,13 +132,13 @@ export function ChecksVisualization({ checks, showIcons }: Props) {
         <div>{hoveredCheck?.target}</div>
         <div className={styles.successGaugeContainer}>
           <SuccessRateGauge
+            title="Reachability"
             type={SuccessRateTypes.Checks}
             id={hoveredCheck?.id ?? 0}
             height={100}
             width={100}
             labelNames={[]}
             labelValues={[]}
-            sparkline={false}
           />
         </div>
       </div>
