@@ -82,7 +82,7 @@ const ThresholdGlobalSettings = ({ onDismiss, onSuccess, onError, isOpen }: Prop
 
   return (
     <Modal title="Threshold Settings" isOpen={isOpen} onDismiss={onDismiss}>
-      <HorizontalGroup spacing="sm">
+      <HorizontalGroup spacing="sm" height={35}>
         <Button data-testid="threshold-save" onClick={handleSaveThresholds}>
           Save changes
         </Button>
