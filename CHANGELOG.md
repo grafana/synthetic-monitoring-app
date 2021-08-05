@@ -1,3 +1,10 @@
+## [1.2.18](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.17...1.2.18) (2021-08-05)
+
+
+### Bug Fixes
+
+* set height for HorizontalGroup to satisfy firefox ([#342](https://github.com/grafana/synthetic-monitoring-app/issues/342)) ([f2d0a2d](https://github.com/grafana/synthetic-monitoring-app/commit/f2d0a2d268162baf29335a52ec6130670450d8db))
+
 ## [1.2.17](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.16...1.2.17) (2021-08-05)
 
 ## [1.2.16](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.15...1.2.16) (2021-07-29)
