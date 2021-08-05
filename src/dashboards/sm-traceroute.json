@@ -84,6 +84,12 @@
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
         "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
         "type": "dashboard"
       }
     ]
@@ -91,8 +97,8 @@
   "editable": false,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": null,
-  "iteration": 1626980695200,
+  "id": 15,
+  "iteration": 1628191729213,
   "links": [],
   "panels": [
     {
@@ -110,7 +116,7 @@
       "type": "row"
     },
     {
-      "datasource": "${DS_SM_SM}",
+      "datasource": "Synthetic Monitoring",
       "description": "Shows all the routes a check takes to the destination",
       "gridPos": {
         "h": 13,
@@ -145,6 +151,91 @@
       "panels": [],
       "title": "Hosts",
       "type": "row"
+    },
+    {
+      "datasource": "${DS_SM_METRICS}",
+      "description": "Shows the hashed value of all the hosts traversed in a single traceroute. Can be used to determine the volatility of the routes over time",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 18,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 14,
+        "x": 0,
+        "y": 15
+      },
+      "id": 28,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "probe_traceroute_route_hash{job=\"$job\", instance=\"$instance\"}",
+          "interval": "",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "Route hash",
+      "type": "timeseries"
     },
     {
       "datasource": "${DS_SM_LOGS}",
@@ -202,8 +293,8 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 12,
-        "x": 0,
+        "w": 5,
+        "x": 14,
         "y": 15
       },
       "id": 12,
@@ -218,7 +309,7 @@
           }
         ]
       },
-      "pluginVersion": "8.0.6",
+      "pluginVersion": "8.1.0",
       "targets": [
         {
           "expr": "sum by (Hosts) (count_over_time({check_name=\"traceroute\", job=\"$job\", instance=\"$instance\"} | logfmt | Hosts != \"\" [$__interval]))",
@@ -229,6 +320,18 @@
         }
       ],
       "title": "Most common hosts",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {},
+            "renameByName": {}
+          }
+        }
+      ],
       "type": "table"
     },
     {
@@ -275,8 +378,8 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 12,
-        "x": 12,
+        "w": 5,
+        "x": 19,
         "y": 15
       },
       "id": 14,
@@ -290,7 +393,7 @@
           }
         ]
       },
-      "pluginVersion": "8.0.6",
+      "pluginVersion": "8.1.0",
       "targets": [
         {
           "expr": "(avg_over_time({check_name=\"traceroute\", job=\"$job\", instance=\"$instance\"} | logfmt | Hosts != \"\" | unwrap duration_seconds(ElapsedTime) [$__interval]) by (Hosts))",
@@ -300,6 +403,18 @@
         }
       ],
       "title": "Slowest hosts",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {},
+            "renameByName": {}
+          }
+        }
+      ],
       "type": "table"
     },
     {
@@ -354,7 +469,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "8.0.6",
+      "pluginVersion": "8.1.0",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -460,7 +575,7 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "8.0.6",
+      "pluginVersion": "8.1.0",
       "targets": [
         {
           "exemplar": false,
@@ -519,7 +634,7 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "8.0.6",
+      "pluginVersion": "8.1.0",
       "targets": [
         {
           "exemplar": true,
@@ -558,7 +673,9 @@
       "options": {
         "dedupStrategy": "none",
         "enableLogDetails": true,
-        "showLabels": false,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": true,
         "showTime": true,
         "sortOrder": "Ascending",
         "wrapLogMessage": false
@@ -582,7 +699,11 @@
     "list": [
       {
         "allValue": ".*",
-        "current": {},
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
         "datasource": "${DS_SM_METRICS}",
         "definition": "label_values(sm_check_info{check_name=\"traceroute\"},probe)",
         "description": null,
@@ -608,7 +729,11 @@
       },
       {
         "allValue": null,
-        "current": {},
+        "current": {
+          "selected": true,
+          "text": "grafaaaana",
+          "value": "grafaaaana"
+        },
         "datasource": "${DS_SM_METRICS}",
         "definition": "label_values(sm_check_info{check_name=\"traceroute\", probe=~\"$probe\"},job)",
         "description": null,
@@ -634,7 +759,11 @@
       },
       {
         "allValue": null,
-        "current": {},
+        "current": {
+          "selected": false,
+          "text": "grafana.com",
+          "value": "grafana.com"
+        },
         "datasource": "${DS_SM_METRICS}",
         "definition": "label_values(sm_check_info{check_name=\"traceroute\", job=\"$job\", probe=~\"$probe\"},instance)",
         "description": null,
@@ -670,5 +799,5 @@
   "timezone": "",
   "title": "Synthetic Monitoring Traceroute",
   "uid": "tiIwCSWnk",
-  "version": 1
+  "version": 2
 }
