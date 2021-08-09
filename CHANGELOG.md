@@ -1,3 +1,10 @@
+## [1.2.19](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.18...1.2.19) (2021-08-09)
+
+
+### Bug Fixes
+
+* hide thresholds until API is up to date ([#343](https://github.com/grafana/synthetic-monitoring-app/issues/343)) ([4e52e66](https://github.com/grafana/synthetic-monitoring-app/commit/4e52e66ff83bbae11801ac58988578fa83a90937))
+
 ## [1.2.18](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.17...1.2.18) (2021-08-05)
 
 
