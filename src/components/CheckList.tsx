@@ -41,7 +41,7 @@ import { css } from '@emotion/css';
 import { LabelFilterInput } from './LabelFilterInput';
 import { SuccessRateContext, SuccessRateTypes } from 'contexts/SuccessRateContext';
 import { ChecksVisualization } from './ChecksVisualization';
-import ThresholdGlobalSettings from './Thresholds/ThresholdGlobalSettings';
+// import ThresholdGlobalSettings from './Thresholds/ThresholdGlobalSettings';
 
 const CHECKS_PER_PAGE_CARD = 15;
 const CHECKS_PER_PAGE_LIST = 50;
@@ -190,7 +190,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
   const [showVizIconOverlay, setShowVizIconOverlay] = useState(getIconOverlayToggleFromLS());
   const [bulkActionInProgress, setBulkActionInProgress] = useState(false);
 
-  const [showThresholdModal, setShowThresholdModal] = useState(false);
+  // const [showThresholdModal, setShowThresholdModal] = useState(false);
 
   const styles = useStyles(getStyles);
   const successRateContext = useContext(SuccessRateContext);
@@ -473,13 +473,13 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
         <div>
           {hasRole(OrgRole.EDITOR) && (
             <>
-              <Button
+              {/* <Button
                 variant="secondary"
                 onClick={() => setShowThresholdModal((v) => !v)}
                 className={styles.marginRightSmall}
               >
                 Set Thresholds
-              </Button>
+              </Button> */}
               <Button variant="primary" onClick={onAddNewClick} type="button">
                 Add new check
               </Button>
@@ -661,14 +661,14 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
           )}
         </div>
       )}
-      <ThresholdGlobalSettings
+      {/* <ThresholdGlobalSettings
         onDismiss={() => setShowThresholdModal(false)}
         isOpen={showThresholdModal}
         onSuccess={() => appEvents.emit(AppEvents.alertSuccess, ['Thresholds updated'])}
         onError={() =>
           appEvents.emit(AppEvents.alertError, [`Error updating thresholds. make sure your values don't overlap`])
         }
-      />
+      /> */}
     </div>
   );
 };
