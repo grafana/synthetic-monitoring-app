@@ -114,12 +114,19 @@ const ProbeEditor = ({ probe, onReturn }: Props) => {
           <div>
             <Legend>{legend}</Legend>
             <Container margin="md">
-              {probe.public && (
+              {probe.public ? (
                 <Label
                   description="Public probes are run by Grafana Labs and can be used by all users"
                   className={styles.marginBottom}
                 >
                   This probe is public
+                </Label>
+              ) : (
+                <Label
+                  description="Private probes are operated by your organization and can only run your checks."
+                  className={styles.marginBottom}
+                >
+                  This probe is private
                 </Label>
               )}
               <Field
