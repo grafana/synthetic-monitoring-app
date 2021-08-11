@@ -1,56 +1,48 @@
 import React, { FC, useState, useContext } from 'react';
-import { Button, Alert, useStyles, HorizontalGroup, useTheme } from '@grafana/ui';
+import { Button, Alert, HorizontalGroup, useStyles2, Link } from '@grafana/ui';
 import { getBackendSrv, config } from '@grafana/runtime';
 import { hasRole, initializeDatasource } from 'utils';
 import { importAllDashboards } from 'dashboards/loader';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { DataSourceInstanceSettings, GrafanaTheme } from '@grafana/data';
-import { css } from '@emotion/css';
+import { DataSourceInstanceSettings, GrafanaTheme2 } from '@grafana/data';
+import { css, cx } from '@emotion/css';
 import { colors, LEGACY_LOGS_DS_NAME, LEGACY_METRICS_DS_NAME } from 'components/constants';
 import dashboardScreenshot from 'img/screenshot-dash-http.png';
 import dashboardScreenshotLight from 'img/screenshot-dash-http-light.png';
-import darkCircledCheck from 'img/dark-circled-check.svg';
-import darkCircledGraph from 'img/dark-circled-graph.svg';
-import darkCircledAlert from 'img/dark-circled-alert.svg';
-import darkCircledSM from 'img/dark-circled-sm.svg';
-import lightCircledCheck from 'img/light-circled-check.svg';
-import lightCircledGraph from 'img/light-circled-graph.svg';
-import lightCircledAlert from 'img/light-circled-alert.svg';
-import lightCircledSM from 'img/light-circled-sm.svg';
-import circledLoki from 'img/circled-loki.svg';
+import bell from 'img/bell.svg';
+import bellLight from 'img/bell-light.svg';
+import welcomeGraph from 'img/welcomegraph.svg';
+import welcomeGraphLight from 'img/welcomegraph-light.svg';
+import loki from 'img/loki.svg';
+import checkInSquare from 'img/checkinsquare.svg';
+import checkInSquareLight from 'img/checkinsquare-light.svg';
+import whatYouCanDoBG from 'img/welcomepage-bg.svg';
+import whatYouCanDoBGLight from 'img/welcomepage-bg-light.svg';
+import dividingLine from 'img/dividingline.svg';
 import { CloudDatasourceJsonData } from 'datasource/types';
 import { isNumber } from 'lodash';
 import { OrgRole } from 'types';
 import { trackEvent, trackException } from 'analytics';
 
-const getStyles = (theme: GrafanaTheme) => {
+const getStyles = (theme: GrafanaTheme2) => {
   const textColor = theme.isDark ? colors.darkText : colors.lightText;
   return {
-    bannerContainer: css`
+    container: css`
       position: absolute;
       height: 100%;
       width: 100%;
       top: 0;
       left: 0;
-      background: ${theme.isDark ? colors.darkThemeBlueBackground : colors.lightThemeBlueBackground};
+      background: ${theme.colors.background.canvas};
       color: ${textColor};
       z-index: 1;
-    `,
-    bannerBackground: css`
-      background-image: url(${theme.isDark ? darkCircledSM : lightCircledSM});
-      background-repeat: no-repeat;
-      background-position: top 20px right;
-      display: flex;
-      justify-content: center;
-    `,
-    banner: css`
       max-width: 1500px;
       padding: 60px 120px 120px 120px;
     `,
     headerSection: css`
       display: flex;
       align-items: center;
-      margin-bottom: ${theme.spacing.xl};
+      margin-bottom: ${theme.spacing(4)};
     `,
     headerTitle: css`
       color: ${textColor};
@@ -58,32 +50,65 @@ const getStyles = (theme: GrafanaTheme) => {
     headerLogo: css`
       height: 78px;
       width: 78px;
-      margin-right: ${theme.spacing.lg};
+      margin-right: ${theme.spacing(3)};
     `,
     headerSubtext: css`
       margin-bottom: 0;
       line-height: 20px;
     `,
-    subheaderSection: css`
+    mediumMarginBottom: css`
+      margin-bottom: ${theme.spacing(4)};
+    `,
+    whatYouCanDoHeader: css`
+      color: #ffffff;
+      margin-bottom: ${theme.spacing(1)};
+    `,
+    whatYouCanDoContainer: css`
+      margin-bottom: ${theme.spacing(3)};
+      background-image: url(${theme.isDark ? whatYouCanDoBG : whatYouCanDoBGLight});
+      background-repeat: no-repeat;
+      background-position: left bottom;
+      padding: ${theme.spacing(4)};
+      box-shadow: 0px 4px 10px 0px rgba(0, 0, 0, 0.6);
+      box-shadow: ${theme.isDark ? '0px 4px 10px 0px rgba(0, 0, 0, 0.6)' : '0px 4px 10px 0px rgba(195, 195, 195, 0.2)'};
+    `,
+    cardGrid: css`
       display: grid;
-      grid-template-columns: 50% 50%;
-      margin-bottom: ${theme.spacing.xl};
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 240px auto;
+      grid-template-areas:
+        'billing screenshot'
+        'start   screenshot';
+      grid-gap: ${theme.spacing(4)};
     `,
-    subheaderTextContainer: css`
-      padding: 0 ${theme.spacing.xl};
-      p {
-        margin-bottom: 0;
-      }
+    card: css`
+      background-color: ${theme.colors.background.primary};
+      border: 1px solid ${theme.isDark ? theme.colors.border.medium : theme.colors.border.weak};
+      padding: ${theme.spacing(4)};
+      box-shadow: ${theme.isDark ? '0px 4px 10px 0px rgba(0, 0, 0, 0.6)' : '0px 4px 10px 0px rgba(195, 195, 195, 0.2)'};
     `,
-    subheaderTitle: css`
-      margin-bottom: ${theme.spacing.md};
-      color: ${textColor};
+    billing: css`
+      grid-area: 'billing';
     `,
-    subheaderContent: css`
-      display: grid;
-      grid-template-columns: 50% 50%;
-      grid-gap: ${theme.spacing.xl};
-      margin-bottom: ${theme.spacing.xl};
+    screenshotContainer: css`
+      grid-area: 'screenshot';
+    `,
+    screenshotCard: css`
+      padding: ${theme.spacing(2)};
+    `,
+    start: css`
+      grid-area: 'start';
+    `,
+    heading: css`
+      margin-bottom: ${theme.spacing(2)};
+      color: ${theme.colors.text.maxContrast};
+    `,
+    divider: css`
+      margin-right: ${theme.spacing(2)};
+      /* margin-left: ${theme.spacing(1)}; */
+    `,
+    text: css`
+      color: ${theme.colors.text.primary};
     `,
     screenshot: css`
       max-width: 100%;
@@ -93,10 +118,10 @@ const getStyles = (theme: GrafanaTheme) => {
       justify-content: center;
     `,
     link: css`
-      text-decoration: underline;
+      color: ${theme.colors.text.link};
     `,
     marginTop: css`
-      margin-top: ${theme.spacing.md};
+      margin-top: ${theme.spacing(3)};
     `,
   };
 };
@@ -121,8 +146,7 @@ export const WelcomePage: FC<Props> = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { meta } = useContext(InstanceContext);
-  const theme = useTheme();
-  const styles = useStyles(getStyles);
+  const styles = useStyles2(getStyles);
 
   const metricsName = getMetricsName(meta?.jsonData?.metrics.grafanaName);
   const metricsDatasource = config.datasources[metricsName] as DataSourceInstanceSettings<CloudDatasourceJsonData>;
@@ -168,69 +192,88 @@ export const WelcomePage: FC<Props> = () => {
   };
 
   return (
-    <div className={styles.bannerContainer}>
-      <div className={styles.bannerBackground}>
-        <div className={styles.banner}>
-          <div className={styles.headerSection}>
-            <img src={meta?.info.logos.small} className={styles.headerLogo} />
-            <div>
-              <h2 className={styles.headerTitle}>Welcome to Grafana Cloud Synthetic Monitoring</h2>
-              <p className={styles.headerSubtext}>
-                Synthetic Monitoring provides you with insights into how your applications and services are behaving
-                from an external point of view. We provide 21 probe locations from around the world which assess
-                availability, performance, and correctness of your services.{' '}
-                <a
-                  className={styles.link}
-                  href="https://grafana.com/docs/grafana-cloud/synthetic-monitoring/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Read more in Synthetic Monitoring docs &gt;
-                </a>
-              </p>
-            </div>
+    <div className={styles.container}>
+      <div className={styles.headerSection}>
+        <img src={meta?.info.logos.small} className={styles.headerLogo} />
+        <div>
+          <h2 className={styles.headerTitle}>Welcome to Grafana Cloud Synthetic Monitoring</h2>
+          <p className={styles.headerSubtext}>
+            Synthetic monitoring provides you with insights into how your applications and services are behaving from an
+            external point of view. We provide 21 probe locations from around the world which assess availability,
+            performance, and correctness of your services.
+          </p>
+        </div>
+      </div>
+      <div className={styles.whatYouCanDoContainer}>
+        <h2 className={cx(styles.heading, styles.whatYouCanDoHeader)}>What you can do</h2>
+        <div className={styles.mediumMarginBottom}>
+          <Link
+            href="https://grafana.com/docs/grafana-cloud/synthetic-monitoring/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.link}
+          >
+            Read more in Synthetic Monitoring docs &gt;
+          </Link>
+        </div>
+        <HorizontalGroup spacing="md">
+          <HorizontalGroup spacing="lg" align="center">
+            <img src={config.theme2.isDark ? checkInSquare : checkInSquareLight} />
+            <span className={styles.text}>
+              Create checks to monitor your services from Grafana hosted or private probes
+            </span>
+          </HorizontalGroup>
+          <img src={dividingLine} className={styles.divider} />
+          <HorizontalGroup spacing="lg" align="center">
+            <img src={config.theme2.isDark ? welcomeGraph : welcomeGraphLight} />
+            <span className={styles.text}>Visualize and query metrics and logs using pre-built dashboards</span>
+          </HorizontalGroup>
+          <img src={dividingLine} className={styles.divider} />
+          <HorizontalGroup spacing="lg" align="center">
+            <img src={loki} />
+            <span className={styles.text}>Troubleshoot issues using log exploration</span>
+          </HorizontalGroup>
+          <img src={dividingLine} className={styles.divider} />
+          <HorizontalGroup spacing="lg" align="center">
+            <img src={config.theme2.isDark ? bell : bellLight} />
+            <span className={styles.text}>
+              Activate pre-built Prometheus style alerts right from the synthetic monitoring UI
+            </span>
+          </HorizontalGroup>
+        </HorizontalGroup>
+      </div>
+      <div className={styles.cardGrid}>
+        <div className={cx(styles.card, styles.billing)}>
+          <h3 className={styles.heading}>How billing works</h3>
+          <p>
+            Synthetic monitoring is available to all hosted Grafana Cloud customers, no matter which plan you have.{' '}
+          </p>
+          <p>We bill you based on the metrics and logs that are published to your Grafana Cloud stack.</p>
+          <Link className={styles.link}>Read more about billing &gt;</Link>
+        </div>
+        <div className={styles.screenshotContainer}>
+          <div className={cx(styles.card, styles.screenshotCard)}>
+            <img
+              src={config.theme2.isDark ? dashboardScreenshot : dashboardScreenshotLight}
+              className={styles.screenshot}
+            />
           </div>
-          <div className={styles.subheaderSection}>
-            <img src={theme.isDark ? dashboardScreenshot : dashboardScreenshotLight} className={styles.screenshot} />
-            <div className={styles.subheaderTextContainer}>
-              <h3 className={styles.subheaderTitle}>What you can do</h3>
-              <div className={styles.subheaderContent}>
-                <HorizontalGroup align="flex-start">
-                  <img src={theme.isDark ? darkCircledCheck : lightCircledCheck} />
-                  <p>Create checks to monitor your services from Grafana hosted or private probes</p>
-                </HorizontalGroup>
-                <HorizontalGroup align="flex-start">
-                  <img src={circledLoki} />
-                  <p>Troubleshoot issues using log exploration</p>
-                </HorizontalGroup>
-                <HorizontalGroup align="flex-start">
-                  <img src={theme.isDark ? darkCircledGraph : lightCircledGraph} />
-                  <p>Visualize and query metrics and logs using pre-built dashboards</p>
-                </HorizontalGroup>
-                <HorizontalGroup align="flex-start">
-                  <img src={theme.isDark ? darkCircledAlert : lightCircledAlert} />
-                  <p>Set up Prometheus style alerts</p>
-                </HorizontalGroup>
-              </div>
-              <div>
-                Synthetic Monitoring is available to hosted Grafana Cloud customers. We bill you based on the metrics
-                and logs that are published to your Grafana Cloud stack.
-              </div>
-            </div>
-          </div>
+        </div>
+        <div className={cx(styles.card, styles.start)}>
+          <h3 className={styles.heading}>Ready to start using synthetic monitoring?</h3>
           <Button
             onClick={onClick}
             disabled={loading || !Boolean(metricsDatasource) || !Boolean(logsDatasource) || !hasRole(OrgRole.EDITOR)}
           >
-            Monitor your systems
+            Initialize the plugin
           </Button>
-          {error && (
-            <div className={styles.marginTop}>
-              <Alert title="Something went wrong:">{error}</Alert>
-            </div>
-          )}
         </div>
       </div>
+      {error && (
+        <div className={styles.marginTop}>
+          <Alert title="Something went wrong:">{error}</Alert>
+        </div>
+      )}
     </div>
   );
 };
