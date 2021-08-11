@@ -1,3 +1,10 @@
+## [1.2.22](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.21...1.2.22) (2021-08-11)
+
+
+### Bug Fixes
+
+* remove unused public control from probes page ([#346](https://github.com/grafana/synthetic-monitoring-app/issues/346)) ([95aadf0](https://github.com/grafana/synthetic-monitoring-app/commit/95aadf059f8e73b41fb317c023270d7e0575161d))
+
 ## [1.2.21](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.20...1.2.21) (2021-08-10)
 
 
