@@ -8,7 +8,6 @@ import {
   Field,
   Input,
   HorizontalGroup,
-  Switch,
   Legend,
   Alert,
   useStyles2,
@@ -69,6 +68,7 @@ const ProbeEditor = ({ probe, onReturn }: Props) => {
       const info = await instance.api.addProbe({
         ...probe,
         ...formValues,
+        public: false,
       });
       setShowTokenModal(true);
       setProbeToken(info.token);
@@ -129,11 +129,6 @@ const ProbeEditor = ({ probe, onReturn }: Props) => {
                   id="probe-name-input"
                   placeholder="Probe name"
                 />
-              </Field>
-              <Field label="Public" description="Public probes are run by Grafana Labs and can be used by all users">
-                <Container padding="sm">
-                  <Switch {...formMethods.register('public')} disabled={!isEditor} />
-                </Container>
               </Field>
             </Container>
             <Container margin="md">
