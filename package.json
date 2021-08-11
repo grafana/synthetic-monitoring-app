@@ -1,6 +1,6 @@
 {
   "name": "synthetic-monitoring-app",
-  "version": "1.2.16",
+  "version": "1.2.21",
   "description": "Grafana Synthetic Monitoring App",
   "scripts": {
     "lint": "eslint --cache --ignore-path .gitignore --ext .js,.jsx,.ts,.tsx .",
@@ -24,6 +24,7 @@
     "@commitlint/cli": "^12.1.4",
     "@commitlint/config-conventional": "^12.1.4",
     "@grafana/data": "8.0.1",
+    "@grafana/eslint-config": "^2.5.0",
     "@grafana/runtime": "8.0.1",
     "@grafana/toolkit": "8.0.1",
     "@grafana/ui": "8.0.1",
@@ -42,7 +43,9 @@
     "@types/lodash": "latest",
     "@types/valid-url": "^1.0.3",
     "eslint-plugin-import": "^2.23.4",
+    "eslint-plugin-jest-dom": "^3.9.0",
     "eslint-plugin-react-hooks": "^4.2.0",
+    "eslint-plugin-testing-library": "^4.10.1",
     "husky": "^6.0.0",
     "jest-environment-jsdom-fifteen": "^1.0.2",
     "release-it": "^14.8.0",

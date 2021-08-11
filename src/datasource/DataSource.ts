@@ -268,6 +268,31 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       });
   }
 
+  async getTenantSettings(): Promise<any> {
+    return getBackendSrv()
+      .fetch({ method: 'GET', url: `${this.instanceSettings.url}/sm/tenant/settings` })
+      .toPromise()
+      .then((res: any) => {
+        return res.data;
+      });
+  }
+
+  // do type
+  async updateTenantSettings(settings: any): Promise<any> {
+    return getBackendSrv()
+      .fetch({
+        method: 'POST',
+        url: `${this.instanceSettings.url}/sm/tenant/settings/update`,
+        data: {
+          ...settings,
+        },
+      })
+      .toPromise()
+      .then((res: any) => {
+        return res.data;
+      });
+  }
+
   async disableTenant(): Promise<any> {
     const tenant = await this.getTenant();
     return getBackendSrv()

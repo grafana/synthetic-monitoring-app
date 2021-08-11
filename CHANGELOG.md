@@ -1,3 +1,33 @@
+## [1.2.21](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.20...1.2.21) (2021-08-10)
+
+
+### Bug Fixes
+
+* hiding thresholds again ([#345](https://github.com/grafana/synthetic-monitoring-app/issues/345)) ([478d74b](https://github.com/grafana/synthetic-monitoring-app/commit/478d74b458ea781e97e4ede1fd86b99d90b84425))
+
+## [1.2.20](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.19...1.2.20) (2021-08-10)
+
+
+### Bug Fixes
+
+* unhide thresholds for when API is released ([#344](https://github.com/grafana/synthetic-monitoring-app/issues/344)) ([717fd44](https://github.com/grafana/synthetic-monitoring-app/commit/717fd44fee30fe2779c4d37f461849f83e47c068))
+
+## [1.2.19](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.18...1.2.19) (2021-08-09)
+
+
+### Bug Fixes
+
+* hide thresholds until API is up to date ([#343](https://github.com/grafana/synthetic-monitoring-app/issues/343)) ([4e52e66](https://github.com/grafana/synthetic-monitoring-app/commit/4e52e66ff83bbae11801ac58988578fa83a90937))
+
+## [1.2.18](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.17...1.2.18) (2021-08-05)
+
+
+### Bug Fixes
+
+* set height for HorizontalGroup to satisfy firefox ([#342](https://github.com/grafana/synthetic-monitoring-app/issues/342)) ([f2d0a2d](https://github.com/grafana/synthetic-monitoring-app/commit/f2d0a2d268162baf29335a52ec6130670450d8db))
+
+## [1.2.17](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.16...1.2.17) (2021-08-05)
+
 ## [1.2.16](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.15...1.2.16) (2021-07-29)
 
 

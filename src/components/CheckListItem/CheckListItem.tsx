@@ -236,15 +236,24 @@ export const CheckListItem = ({
               {check.enabled && (
                 <>
                   <SuccessRateGauge
+                    title="Uptime"
                     type={SuccessRateTypes.Checks}
                     id={check.id}
                     labelNames={['instance', 'job']}
                     labelValues={[check.target, check.job]}
                     height={75}
-                    width={120}
-                    sparkline={false}
+                    width={150}
                   />
-                  <LatencyGauge target={check.target} job={check.job} height={75} width={120} />
+                  <SuccessRateGauge
+                    title="Reachability"
+                    type={SuccessRateTypes.Checks}
+                    id={check.id}
+                    labelNames={['instance', 'job']}
+                    labelValues={[check.target, check.job]}
+                    height={75}
+                    width={150}
+                  />
+                  <LatencyGauge target={check.target} job={check.job} height={75} width={175} />
                 </>
               )}
             </div>
