@@ -11,6 +11,7 @@ import {
   Legend,
   Alert,
   useStyles2,
+  Label,
 } from '@grafana/ui';
 import { useForm, FormProvider } from 'react-hook-form';
 import { useAsyncCallback } from 'react-async-hook';
@@ -37,6 +38,9 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
   marginTop: css`
     margin-top: ${theme.spacing(2)};
+  `,
+  marginBottom: css`
+    margin-bottom: ${theme.spacing(2)};
   `,
 });
 
@@ -110,6 +114,14 @@ const ProbeEditor = ({ probe, onReturn }: Props) => {
           <div>
             <Legend>{legend}</Legend>
             <Container margin="md">
+              {probe.public && (
+                <Label
+                  description="Public probes are run by Grafana Labs and can be used by all users"
+                  className={styles.marginBottom}
+                >
+                  This probe is public
+                </Label>
+              )}
               <Field
                 error="Name is required"
                 invalid={Boolean(formMethods.formState.errors.name)}

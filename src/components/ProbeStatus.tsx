@@ -30,7 +30,7 @@ interface BadgeStatus {
 
 const getStyles = stylesFactory((theme: GrafanaTheme) => ({
   legend: css`
-    margin: ${theme.spacing.sm} ${theme.spacing.sm} 0 0;
+    margin: 0 ${theme.spacing.sm} 0 0;
     width: auto;
   `,
   container: css`
