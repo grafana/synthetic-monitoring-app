@@ -691,7 +691,7 @@
       "type": "logs"
     }
   ],
-  "refresh": false,
+  "refresh": "1m",
   "schemaVersion": 30,
   "style": "dark",
   "tags": ["synthetic-monitoring"],
