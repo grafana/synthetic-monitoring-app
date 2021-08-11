@@ -1,5 +1,5 @@
 import React, { FC, useState, useContext } from 'react';
-import { Button, Alert, HorizontalGroup, useStyles2, Link } from '@grafana/ui';
+import { Button, Alert, HorizontalGroup, useStyles2 } from '@grafana/ui';
 import { getBackendSrv, config } from '@grafana/runtime';
 import { hasRole, initializeDatasource } from 'utils';
 import { importAllDashboards } from 'dashboards/loader';
@@ -68,7 +68,7 @@ const getStyles = (theme: GrafanaTheme2) => {
       background-image: url(${theme.isDark ? whatYouCanDoBG : whatYouCanDoBGLight});
       background-repeat: no-repeat;
       background-position: left bottom;
-      padding: ${theme.spacing(4)};
+      padding: ${theme.spacing(6)};
       box-shadow: 0px 4px 10px 0px rgba(0, 0, 0, 0.6);
       box-shadow: ${theme.isDark ? '0px 4px 10px 0px rgba(0, 0, 0, 0.6)' : '0px 4px 10px 0px rgba(195, 195, 195, 0.2)'};
     `,
@@ -207,14 +207,14 @@ export const WelcomePage: FC<Props> = () => {
       <div className={styles.whatYouCanDoContainer}>
         <h2 className={cx(styles.heading, styles.whatYouCanDoHeader)}>What you can do</h2>
         <div className={styles.mediumMarginBottom}>
-          <Link
+          <a
             href="https://grafana.com/docs/grafana-cloud/synthetic-monitoring/"
             target="_blank"
             rel="noopener noreferrer"
             className={styles.link}
           >
             Read more in Synthetic Monitoring docs &gt;
-          </Link>
+          </a>
         </div>
         <HorizontalGroup spacing="md">
           <HorizontalGroup spacing="lg" align="center">
@@ -249,7 +249,14 @@ export const WelcomePage: FC<Props> = () => {
             Synthetic monitoring is available to all hosted Grafana Cloud customers, no matter which plan you have.{' '}
           </p>
           <p>We bill you based on the metrics and logs that are published to your Grafana Cloud stack.</p>
-          <Link className={styles.link}>Read more about billing &gt;</Link>
+          <a
+            href="https://grafana.com/docs/grafana-cloud/synthetic-monitoring/synthetic-monitoring-billing/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.link}
+          >
+            Read more about billing &gt;
+          </a>
         </div>
         <div className={styles.screenshotContainer}>
           <div className={cx(styles.card, styles.screenshotCard)}>
@@ -264,6 +271,7 @@ export const WelcomePage: FC<Props> = () => {
           <Button
             onClick={onClick}
             disabled={loading || !Boolean(metricsDatasource) || !Boolean(logsDatasource) || !hasRole(OrgRole.EDITOR)}
+            size="lg"
           >
             Initialize the plugin
           </Button>
