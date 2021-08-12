@@ -36,7 +36,8 @@ const getStyles = (theme: GrafanaTheme2) => {
       background: ${theme.colors.background.canvas};
       color: ${textColor};
       z-index: 1;
-      max-width: 1500px;
+      max-width: 1800px;
+      min-width: 1200px;
       padding: 60px 120px 120px 120px;
     `,
     headerSection: css`
