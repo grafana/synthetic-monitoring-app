@@ -72,10 +72,16 @@ const getStyles = (theme: GrafanaTheme2) => {
       box-shadow: 0px 4px 10px 0px rgba(0, 0, 0, 0.6);
       box-shadow: ${theme.isDark ? '0px 4px 10px 0px rgba(0, 0, 0, 0.6)' : '0px 4px 10px 0px rgba(195, 195, 195, 0.2)'};
     `,
+    featuresContainer: css`
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      grid-auto-flow: row dense;
+      grid-gap: ${theme.spacing(3)};
+    `,
     cardGrid: css`
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      grid-template-rows: 240px auto;
+      grid-template-columns: 1fr minmax(500px, 1fr);
+      grid-template-rows: 240px 1fr;
       grid-template-areas:
         'billing screenshot'
         'start   screenshot';
@@ -109,6 +115,7 @@ const getStyles = (theme: GrafanaTheme2) => {
     `,
     text: css`
       color: ${theme.colors.text.primary};
+      min-width: 150px;
     `,
     screenshot: css`
       max-width: 100%;
@@ -216,31 +223,33 @@ export const WelcomePage: FC<Props> = () => {
             Read more in Synthetic Monitoring docs &gt;
           </a>
         </div>
-        <HorizontalGroup spacing="md">
+        {/* <HorizontalGroup spacing="md"> */}
+        <div className={styles.featuresContainer}>
           <HorizontalGroup spacing="lg" align="center">
             <img src={config.theme2.isDark ? checkInSquare : checkInSquareLight} />
             <span className={styles.text}>
               Create checks to monitor your services from Grafana hosted or private probes
             </span>
+            <img src={dividingLine} className={styles.divider} />
           </HorizontalGroup>
-          <img src={dividingLine} className={styles.divider} />
           <HorizontalGroup spacing="lg" align="center">
             <img src={config.theme2.isDark ? welcomeGraph : welcomeGraphLight} />
             <span className={styles.text}>Visualize and query metrics and logs using pre-built dashboards</span>
+            <img src={dividingLine} className={styles.divider} />
           </HorizontalGroup>
-          <img src={dividingLine} className={styles.divider} />
           <HorizontalGroup spacing="lg" align="center">
             <img src={loki} />
             <span className={styles.text}>Troubleshoot issues using log exploration</span>
+            <img src={dividingLine} className={styles.divider} />
           </HorizontalGroup>
-          <img src={dividingLine} className={styles.divider} />
           <HorizontalGroup spacing="lg" align="center">
             <img src={config.theme2.isDark ? bell : bellLight} />
             <span className={styles.text}>
               Activate pre-built Prometheus style alerts right from the synthetic monitoring UI
             </span>
           </HorizontalGroup>
-        </HorizontalGroup>
+        </div>
+        {/* </HorizontalGroup> */}
       </div>
       <div className={styles.cardGrid}>
         <div className={cx(styles.card, styles.billing)}>
