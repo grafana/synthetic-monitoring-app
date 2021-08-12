@@ -1,3 +1,10 @@
+## [1.2.24](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.23...1.2.24) (2021-08-12)
+
+
+### Bug Fixes
+
+* update welcome page designs ([#348](https://github.com/grafana/synthetic-monitoring-app/issues/348)) ([44b2de8](https://github.com/grafana/synthetic-monitoring-app/commit/44b2de86e73e7fc3e7b7b10d86f093ffd0885f07))
+
 ## [1.2.23](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.22...1.2.23) (2021-08-12)
 
 
