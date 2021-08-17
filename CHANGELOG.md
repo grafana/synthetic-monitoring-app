@@ -1,3 +1,10 @@
+## [1.2.25](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.24...1.2.25) (2021-08-17)
+
+
+### Bug Fixes
+
+* store results of import in sm datasource from dashboard import modal ([#349](https://github.com/grafana/synthetic-monitoring-app/issues/349)) ([e5f76d9](https://github.com/grafana/synthetic-monitoring-app/commit/e5f76d9c122850d54a0a704f7e9c95ea24a0cd54))
+
 ## [1.2.24](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.23...1.2.24) (2021-08-12)
 
 
