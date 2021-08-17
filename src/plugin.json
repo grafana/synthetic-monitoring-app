@@ -44,7 +44,7 @@
     {
       "type": "page",
       "name": "Home",
-      "path": "/a/grafana-synthetic-monitoring-app/?page=redirect&dashboard=summary",
+      "path": "/a/grafana-synthetic-monitoring-app/?page=home",
       "addToNav": true,
       "defaultNav": true
     },

@@ -1,16 +1,17 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { AppRootProps } from '@grafana/data';
-import { DashboardMeta, GlobalSettings } from 'types';
+import { DashboardMeta, FeatureName, GlobalSettings } from 'types';
 import { WelcomePage } from 'page/WelcomePage';
 import { ChecksPage } from 'page/ChecksPage';
 import { ProbesPage } from 'page/ProbesPage';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { getLocationSrv } from '@grafana/runtime';
+import { config, getLocationSrv } from '@grafana/runtime';
 import { DashboardInfo } from 'datasource/types';
 import { importAllDashboards, listAppDashboards } from 'dashboards/loader';
 import { Button, HorizontalGroup, Modal } from '@grafana/ui';
 import { hasDismissedDashboardUpdateModal, persistDashboardModalDismiss } from 'sessionStorage';
 import { Alerting } from './Alerting';
+import HomePage from 'page/HomePage';
 
 type Tab = {
   label: string;
@@ -19,7 +20,7 @@ type Tab = {
   enabledByFeatureFlag?: string;
 };
 
-const pagesToRedirectIfNotInitialized = new Set(['checks', 'probes', 'alerts', 'redirect']);
+const pagesToRedirectIfNotInitialized = new Set(['checks', 'probes', 'alerts', 'redirect', 'home']);
 
 const pagesToRedirectIfInitialized = new Set(['setup']);
 
@@ -30,6 +31,9 @@ const getRedirectDestination = (queryPage: string, isInitialized: boolean): stri
     return 'setup';
   }
   if (isInitialized && pagesToRedirectIfInitialized.has(queryPage)) {
+    if (config.featureToggles[FeatureName.Homepage]) {
+      return 'home';
+    }
     return 'checks';
   }
   if (isInitialized && dashboardRedirects.has(queryPage)) {
@@ -52,6 +56,13 @@ const tabs: Tab[] = [
     id: 'alerts',
   },
 ];
+
+if (config.featureToggles[FeatureName.Homepage]) {
+  tabs.unshift({
+    label: 'Home',
+    id: 'home',
+  });
+}
 
 function filterTabs(tabs: Tab[], apiInitialized: boolean): Tab[] {
   if (!apiInitialized) {
@@ -174,10 +185,14 @@ export const PluginTabs = ({ query, onNavChanged, path, meta }: AppRootProps<Glo
       case 'alerts':
         return <Alerting />;
       case 'checks':
-      default:
         return <ChecksPage id={query.id} />;
+      case 'home':
+      default:
+        return <HomePage />;
     }
   };
+
+  console.log(activeTab.id);
 
   return (
     <div>
