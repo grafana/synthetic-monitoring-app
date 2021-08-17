@@ -38,7 +38,7 @@ export async function importDashboard(
   const json = await backendSrv.request({
     url: `public/plugins/grafana-synthetic-monitoring-app/dashboards/${path}`,
     method: 'GET',
-    headers: { 'Cache-Control': 'no-cache' },
+    headers: { 'Cache-Control': 'no-store' },
   });
 
   const folder = await findSyntheticMonitoringFolder();
@@ -69,7 +69,7 @@ export async function listAppDashboards(): Promise<DashboardInfo[]> {
     const json = await backendSrv.request({
       url: `public/plugins/grafana-synthetic-monitoring-app/dashboards/${p}`,
       method: 'GET',
-      headers: { 'Cache-Control': 'no-cache' },
+      headers: { 'Cache-Control': 'no-store' },
     });
 
     const dInfo = {
