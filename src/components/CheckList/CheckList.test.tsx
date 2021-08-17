@@ -1,6 +1,6 @@
 import React from 'react';
 import { CheckList } from './CheckList';
-import { fireEvent, render, screen, waitForElementToBeRemoved, within } from '@testing-library/react';
+import { render, screen, waitForElementToBeRemoved } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { GrafanaInstances, Check, CheckSort, GlobalSettings } from 'types';
 import { getInstanceMock } from '../../datasource/__mocks__/DataSource';
