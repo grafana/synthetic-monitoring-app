@@ -1,4 +1,6 @@
 import { Check, CheckEnabledStatus } from 'types';
+import { CheckFilters } from './CheckList';
+
 import { SelectableValue } from '@grafana/data';
 import { checkType as getCheckType, matchStrings } from 'utils';
 
@@ -56,4 +58,16 @@ export const matchesSelectedProbes = (check: Check, selectedProbes: SelectableVa
     const probeIds = selectedProbes.map((p) => p.value);
     return check.probes.some((id) => probeIds.includes(id));
   }
+};
+
+export const matchesAllFilters = (check: Check, checkFilters: CheckFilters) => {
+  const { type, search, labels, status, probes } = checkFilters;
+  return (
+    Boolean(check.id) &&
+    matchesFilterType(check, type) &&
+    matchesSearchFilter(check, search) &&
+    matchesLabelFilter(check, labels) &&
+    matchesStatusFilter(check, status) &&
+    matchesSelectedProbes(check, probes)
+  );
 };

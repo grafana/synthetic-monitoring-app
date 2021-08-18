@@ -1,5 +1,5 @@
 // Libraries
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect, useCallback } from 'react';
 
 // Types
 import {
@@ -28,13 +28,16 @@ import {
   AsyncMultiSelect,
 } from '@grafana/ui';
 import { unEscapeStringFromRegex, escapeStringForRegex, GrafanaTheme, AppEvents, SelectableValue } from '@grafana/data';
+import { matchesAllFilters } from './checkFilters';
 import {
-  matchesFilterType,
-  matchesSearchFilter,
-  matchesLabelFilter,
-  matchesSelectedProbes,
-  matchesStatusFilter,
-} from './checkFilters';
+  fetchProbes,
+  deleteSelectedChecks,
+  deleteSingleCheck,
+  getIconOverlayToggleFromLS,
+  getViewTypeFromLS,
+  enableSelectedChecks,
+  disableSelectedChecks,
+} from './actions';
 import { hasRole } from 'utils';
 import {
   CHECK_FILTER_OPTIONS,
@@ -43,6 +46,8 @@ import {
   CHECK_LIST_VIEW_TYPE_OPTIONS,
   CHECK_LIST_VIEW_TYPE_LS_KEY,
   CHECK_LIST_ICON_OVERLAY_LS_KEY,
+  CHECKS_PER_PAGE_CARD,
+  CHECKS_PER_PAGE_LIST,
 } from '../constants';
 import { CheckListItem } from '../CheckListItem';
 import { css } from '@emotion/css';
@@ -50,9 +55,6 @@ import { LabelFilterInput } from '../LabelFilterInput';
 import { SuccessRateContext, SuccessRateTypes } from 'contexts/SuccessRateContext';
 import { ChecksVisualization } from '../ChecksVisualization';
 import ThresholdGlobalSettings from '../Thresholds/ThresholdGlobalSettings';
-
-const CHECKS_PER_PAGE_CARD = 15;
-const CHECKS_PER_PAGE_LIST = 50;
 
 const getStyles = (theme: GrafanaTheme) => ({
   headerContainer: css`
@@ -112,37 +114,26 @@ interface Props {
   onCheckUpdate: () => void;
 }
 
-const getIconOverlayToggleFromLS = () => {
-  const lsValue = window.localStorage.getItem(CHECK_LIST_ICON_OVERLAY_LS_KEY);
+export interface CheckFilters {
+  search: string;
+  labels: string[];
+  type: CheckType | 'all';
+  status: SelectableValue<CheckEnabledStatus>;
+  probes: SelectableValue[] | [];
+}
 
-  if (!lsValue) {
-    return false;
-  }
-
-  try {
-    return Boolean(JSON.parse(lsValue));
-  } catch {
-    return false;
-  }
-};
-
-const getViewTypeFromLS = () => {
-  const lsValue = window.localStorage.getItem(CHECK_LIST_VIEW_TYPE_LS_KEY);
-  if (lsValue) {
-    try {
-      return parseInt(lsValue, 10);
-    } catch {
-      return undefined;
-    }
-  }
-  return undefined;
+const defaultFilters: CheckFilters = {
+  search: '',
+  labels: [],
+  type: 'all',
+  status: CHECK_LIST_STATUS_OPTIONS[0],
+  probes: [],
 };
 
 export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Props) => {
-  const [searchFilter, setSearchFilter] = useState('');
-  const [labelFilters, setLabelFilters] = useState<string[]>([]);
-  const [typeFilter, setTypeFilter] = useState('all');
-  const [statusFilter, setStatusFilter] = useState<SelectableValue<CheckEnabledStatus>>(CHECK_LIST_STATUS_OPTIONS[0]);
+  const [checkFilters, setCheckFilters] = useState<CheckFilters>(defaultFilters);
+  const [filteredChecks, setFilteredChecks] = useState<FilteredCheck[] | []>([]);
+
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedChecks, setSelectedChecks] = useState<Set<number>>(new Set());
   const [selectAll, setSelectAll] = useState(false);
@@ -151,73 +142,71 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
   const [showVizIconOverlay, setShowVizIconOverlay] = useState(getIconOverlayToggleFromLS());
   const [bulkActionInProgress, setBulkActionInProgress] = useState(false);
 
-  const [selectedProbes, setSelectedProbes] = useState<SelectableValue[] | []>([]);
   const [showThresholdModal, setShowThresholdModal] = useState(false);
 
   const styles = useStyles(getStyles);
   const successRateContext = useContext(SuccessRateContext);
 
-  const fetchProbes = async () => {
-    const probes = await instance.api?.listProbes();
-    if (probes) {
-      return probes.map((p) => {
-        return { label: p.name, value: p.id };
-      });
-    } else {
-      return [{ label: 'No probes available', value: 0 }];
-    }
-  };
-
-  const sortChecks = (checks: FilteredCheck[], sortType: CheckSort) => {
-    switch (sortType) {
-      case CheckSort.AToZ:
-        return checks.sort((a, b) => a.job.localeCompare(b.job));
-      case CheckSort.ZToA:
-        return checks.sort((a, b) => b.job.localeCompare(a.job));
-      case CheckSort.SuccessRate:
-        return checks.sort((a, b) => {
-          const checkA = successRateContext.values[SuccessRateTypes.Checks][a.id] ?? successRateContext.values.defaults;
-          const checkB = successRateContext.values[SuccessRateTypes.Checks][b.id] ?? successRateContext.values.defaults;
-          const sortA = checkA.noData ? 101 : checkA.reachabilityValue;
-          const sortB = checkB.noData ? 101 : checkB.reachabilityValue;
-          return sortA - sortB;
-        });
-    }
-  };
-
-  const filteredChecks = sortChecks(
-    checks.filter(
-      (check) =>
-        matchesFilterType(check, typeFilter) &&
-        matchesSearchFilter(check, searchFilter) &&
-        Boolean(check.id) &&
-        matchesLabelFilter(check, labelFilters) &&
-        matchesStatusFilter(check, statusFilter) &&
-        matchesSelectedProbes(check, selectedProbes)
-    ) as FilteredCheck[],
-    sortType
+  const sortChecks = useCallback(
+    (checks: FilteredCheck[], sortType: CheckSort) => {
+      switch (sortType) {
+        case CheckSort.AToZ:
+          return checks.sort((a, b) => a.job.localeCompare(b.job));
+        case CheckSort.ZToA:
+          return checks.sort((a, b) => b.job.localeCompare(a.job));
+        case CheckSort.SuccessRate:
+          return checks.sort((a, b) => {
+            const checkA =
+              successRateContext.values[SuccessRateTypes.Checks][a.id] ?? successRateContext.values.defaults;
+            const checkB =
+              successRateContext.values[SuccessRateTypes.Checks][b.id] ?? successRateContext.values.defaults;
+            const sortA = checkA.noData ? 101 : checkA.reachabilityValue;
+            const sortB = checkB.noData ? 101 : checkB.reachabilityValue;
+            return sortA - sortB;
+          });
+      }
+    },
+    [successRateContext.values]
   );
+
+  useEffect(() => {
+    const filtered = sortChecks(
+      checks.filter((check) => matchesAllFilters(check, checkFilters)) as FilteredCheck[],
+      sortType
+    );
+    setFilteredChecks(filtered);
+    clearSelectedChecks();
+    setCurrentPage(1);
+  }, [checkFilters, sortType, checks, sortChecks]);
 
   const checksPerPage = viewType === CheckListViewType.Card ? CHECKS_PER_PAGE_CARD : CHECKS_PER_PAGE_LIST;
   const totalPages = Math.ceil(filteredChecks.length / checksPerPage);
 
   const handleLabelSelect = (label: Label) => {
-    setLabelFilters([...labelFilters, `${label.name}: ${label.value}`]);
-    clearSelectedChecks();
-    setCurrentPage(1);
+    setCheckFilters((cf) => {
+      return {
+        ...cf,
+        labels: [...cf.labels, `${label.name}: ${label.value}`],
+      };
+    });
   };
 
   const handleTypeSelect = (checkType: CheckType) => {
-    setTypeFilter(checkType);
-    clearSelectedChecks();
+    setCheckFilters((cf) => {
+      return { ...cf, type: checkType };
+    });
   };
 
   const handleStatusSelect = (enabled: boolean) => {
     const status = enabled ? CheckEnabledStatus.Enabled : CheckEnabledStatus.Disabled;
     const option = CHECK_LIST_STATUS_OPTIONS.find(({ value }) => value === status);
     if (option) {
-      setStatusFilter(option);
-      clearSelectedChecks();
+      setCheckFilters((cf) => {
+        return {
+          ...cf,
+          status: option,
+        };
+      });
     }
   };
 
@@ -256,150 +245,31 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
       .map((checkId) => checks.find((check) => check.id && check.id === checkId))
       .filter(Boolean) as FilteredCheck[];
 
-  const disableSelectedChecks = async () => {
+  const handleDisableSelectedChecks = async () => {
     setBulkActionInProgress(true);
-    const checkUpdates = getChecksFromSelected()
-      .filter((check) => check && check.enabled)
-      .map((check) => {
-        if (!check) {
-          return Promise.reject('Could not find check with specified id');
-        }
-        return instance.api?.updateCheck({
-          ...check,
-          enabled: false,
-        });
-      });
-
-    const resolvedCheckUpdates = await Promise.allSettled(checkUpdates);
-    const { successCount, errorCount } = resolvedCheckUpdates.reduce(
-      (acc, { status }) => {
-        if (status === 'fulfilled') {
-          acc.successCount = acc.successCount + 1;
-        }
-        if (status === 'rejected') {
-          acc.errorCount = acc.errorCount + 1;
-        }
-        return acc;
-      },
-      {
-        successCount: 0,
-        errorCount: 0,
-      }
-    );
-
-    const notUpdatedCount = selectedChecks.size - resolvedCheckUpdates.length;
-
-    if (successCount > 0) {
-      appEvents.emit(AppEvents.alertSuccess, [`${successCount} check${successCount > 1 ? 's' : ''} disabled`]);
-    }
-    if (errorCount > 0) {
-      appEvents.emit(AppEvents.alertError, [`${errorCount} check${errorCount > 1 ? 's' : ''} were not disabled`]);
-    }
-    if (notUpdatedCount > 0) {
-      appEvents.emit(AppEvents.alertWarning, [
-        `${notUpdatedCount} check${notUpdatedCount > 1 ? 's' : ''} were already disabled`,
-      ]);
-    }
-    clearSelectedChecks();
-    setBulkActionInProgress(false);
-    setSelectAll(false);
-    onCheckUpdate();
-  };
-
-  const enableSelectedChecks = async () => {
-    setBulkActionInProgress(true);
-    const checkUpdates = getChecksFromSelected()
-      .filter((check) => check && !check.enabled)
-      .map((check) => {
-        if (!check) {
-          return Promise.reject('Could not find check with specified id');
-        }
-        return instance.api?.updateCheck({
-          ...check,
-          enabled: true,
-        });
-      });
-
-    const resolvedCheckUpdates = await Promise.allSettled(checkUpdates);
-    const { successCount, errorCount } = resolvedCheckUpdates.reduce(
-      (acc, { status }) => {
-        if (status === 'fulfilled') {
-          acc.successCount = acc.successCount + 1;
-        }
-        if (status === 'rejected') {
-          acc.errorCount = acc.errorCount + 1;
-        }
-        return acc;
-      },
-      {
-        successCount: 0,
-        errorCount: 0,
-      }
-    );
-
-    const notUpdatedCount = selectedChecks.size - resolvedCheckUpdates.length;
-
-    if (successCount > 0) {
-      appEvents.emit(AppEvents.alertSuccess, [`${successCount} check${successCount > 1 ? 's' : ''} enabled`]);
-    }
-    if (errorCount > 0) {
-      appEvents.emit(AppEvents.alertError, [`${errorCount} check${errorCount > 1 ? 's' : ''} were not enabled`]);
-    }
-    if (notUpdatedCount > 0) {
-      appEvents.emit(AppEvents.alertWarning, [
-        `${notUpdatedCount} check${notUpdatedCount > 1 ? 's' : ''} were already enabled`,
-      ]);
-    }
-
+    await disableSelectedChecks(instance, selectedChecks, getChecksFromSelected);
     clearSelectedChecks();
     setSelectAll(false);
     setBulkActionInProgress(false);
     onCheckUpdate();
   };
 
-  const deleteSingleCheck = async (check: Check) => {
-    try {
-      if (!check.id) {
-        appEvents.emit(AppEvents.alertError, ['There was an error deleting the check']);
-        return;
-      }
-      await instance.api?.deleteCheck(check.id);
-      appEvents.emit(AppEvents.alertSuccess, ['Check deleted successfully']);
-      onCheckUpdate();
-    } catch (e) {
-      const errorMessage = e?.data?.err ?? '';
-      appEvents.emit(AppEvents.alertError, [`Could not delete check. ${errorMessage}`]);
-    }
+  const handleEnableSelectedChecks = async () => {
+    setBulkActionInProgress(true);
+    await enableSelectedChecks(instance, selectedChecks, getChecksFromSelected);
+    clearSelectedChecks();
+    setSelectAll(false);
+    setBulkActionInProgress(false);
+    onCheckUpdate();
   };
 
-  const deleteSelectedChecks = async () => {
+  const handleDeleteSingleCheck = async (check: Check) => {
+    await deleteSingleCheck(instance, check, onCheckUpdate);
+  };
+
+  const handleDeleteSelectedChecks = async () => {
     setBulkActionInProgress(true);
-    const checkDeletions = Array.from(selectedChecks).map((checkId) => instance.api?.deleteCheck(checkId));
-
-    const resolvedCheckUpdates = await Promise.allSettled(checkDeletions);
-    const { successCount, errorCount } = resolvedCheckUpdates.reduce(
-      (acc, { status }) => {
-        if (status === 'fulfilled') {
-          acc.successCount = acc.successCount + 1;
-        }
-        if (status === 'rejected') {
-          acc.errorCount = acc.errorCount + 1;
-        }
-        return acc;
-      },
-      {
-        successCount: 0,
-        errorCount: 0,
-      }
-    );
-
-    if (successCount > 0) {
-      appEvents.emit(AppEvents.alertSuccess, [`${successCount} check${successCount > 1 ? 's' : ''} deleted`]);
-    }
-    if (errorCount > 0) {
-      appEvents.emit(AppEvents.alertError, [`${errorCount} check${errorCount > 1 ? 's' : ''} were not deleted`]);
-    }
-
+    await deleteSelectedChecks(instance, selectedChecks);
     clearSelectedChecks();
     setSelectAll(false);
     onCheckUpdate();
@@ -468,11 +338,14 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
           width={40}
           data-testid="check-search-input"
           type="text"
-          value={searchFilter ? unEscapeStringFromRegex(searchFilter) : ''}
+          value={checkFilters.search ? unEscapeStringFromRegex(checkFilters.search) : ''}
           onChange={(event) => {
-            setSearchFilter(escapeStringForRegex(event.currentTarget.value));
-            clearSelectedChecks();
-            setCurrentPage(1);
+            setCheckFilters((cf) => {
+              return {
+                ...cf,
+                search: escapeStringForRegex(event.currentTarget.value),
+              };
+            });
           }}
           placeholder="Search by job name, endpoint, or label"
         />
@@ -484,11 +357,14 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
             options={CHECK_LIST_STATUS_OPTIONS}
             width={20}
             onChange={(option) => {
-              setStatusFilter(option);
-              clearSelectedChecks();
-              setCurrentPage(1);
+              setCheckFilters((cf) => {
+                return {
+                  ...cf,
+                  status: option,
+                };
+              });
             }}
-            value={statusFilter}
+            value={checkFilters.status}
           />
           <Select
             aria-label="Types"
@@ -496,12 +372,15 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
             data-testid="check-type-filter"
             options={CHECK_FILTER_OPTIONS}
             width={20}
-            onChange={(selected) => {
-              setTypeFilter(selected?.value ?? typeFilter);
-              clearSelectedChecks();
-              setCurrentPage(1);
+            onChange={(selected: SelectableValue) => {
+              setCheckFilters((cf) => {
+                return {
+                  ...cf,
+                  type: selected?.value ?? checkFilters.type,
+                };
+              });
             }}
-            value={typeFilter}
+            value={checkFilters.type}
           />
         </div>
       </div>
@@ -509,20 +388,30 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
         <LabelFilterInput
           checks={checks}
           onChange={(labels) => {
-            setLabelFilters(labels);
-            clearSelectedChecks();
-            setCurrentPage(1);
+            setCheckFilters((cf) => {
+              return {
+                ...cf,
+                labels,
+              };
+            });
           }}
-          labelFilters={labelFilters}
+          labelFilters={checkFilters.labels}
           className={styles.marginRightSmall}
         />
         <AsyncMultiSelect
           data-testid="probe-filter"
           prefix="Probes"
-          onChange={setSelectedProbes}
+          onChange={(v) => {
+            setCheckFilters((cf) => {
+              return {
+                ...cf,
+                probes: v,
+              };
+            });
+          }}
           defaultOptions
-          loadOptions={fetchProbes}
-          value={selectedProbes}
+          loadOptions={() => fetchProbes(instance)}
+          value={checkFilters.probes}
           placeholder="All probes"
           allowCustomValue={false}
           isSearchable={true}
@@ -554,7 +443,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
                 type="button"
                 variant="destructive"
                 className={styles.marginRightSmall}
-                onClick={deleteSelectedChecks}
+                onClick={handleDeleteSelectedChecks}
                 disabled={!hasRole(OrgRole.EDITOR) || bulkActionInProgress}
               >
                 Delete
@@ -562,7 +451,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
               <Button
                 type="button"
                 variant="primary"
-                onClick={enableSelectedChecks}
+                onClick={handleEnableSelectedChecks}
                 className={styles.marginRightSmall}
                 disabled={!hasRole(OrgRole.EDITOR) || bulkActionInProgress}
               >
@@ -571,7 +460,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
               <Button
                 type="button"
                 variant="secondary"
-                onClick={disableSelectedChecks}
+                onClick={handleDisableSelectedChecks}
                 disabled={!hasRole(OrgRole.EDITOR) || bulkActionInProgress}
               >
                 Disable
@@ -635,7 +524,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
                   onToggleCheckbox={handleCheckSelect}
                   selected={selectedChecks.has(check.id)}
                   viewType={viewType}
-                  onDeleteCheck={deleteSingleCheck}
+                  onDeleteCheck={() => handleDeleteSingleCheck(check)}
                 />
               ))}
             </ol>
