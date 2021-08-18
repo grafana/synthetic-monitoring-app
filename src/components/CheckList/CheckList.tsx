@@ -519,9 +519,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
         <AsyncMultiSelect
           data-testid="probe-filter"
           prefix="Probes"
-          onChange={(v) => {
-            setSelectedProbes(v);
-          }}
+          onChange={setSelectedProbes}
           defaultOptions
           loadOptions={fetchProbes}
           value={selectedProbes}

@@ -5,7 +5,7 @@ import React, { PureComponent } from 'react';
 import { Check } from 'types';
 import { getLocationSrv } from '@grafana/runtime';
 import { CheckEditor } from 'components/CheckEditor';
-import { CheckList } from 'components/CheckList/CheckList';
+import { CheckList } from 'components/CheckList';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
 import { CheckInfoContextProvider } from 'components/CheckInfoContextProvider';
