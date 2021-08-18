@@ -25,9 +25,17 @@ import {
   useStyles,
   RadioButtonGroup,
   InlineSwitch,
+  AsyncMultiSelect,
 } from '@grafana/ui';
 import { unEscapeStringFromRegex, escapeStringForRegex, GrafanaTheme, AppEvents, SelectableValue } from '@grafana/data';
-import { hasRole, checkType as getCheckType, matchStrings } from 'utils';
+import {
+  matchesFilterType,
+  matchesSearchFilter,
+  matchesLabelFilter,
+  matchesSelectedProbes,
+  matchesStatusFilter,
+} from './checkFilters';
+import { hasRole } from 'utils';
 import {
   CHECK_FILTER_OPTIONS,
   CHECK_LIST_SORT_OPTIONS,
@@ -35,63 +43,16 @@ import {
   CHECK_LIST_VIEW_TYPE_OPTIONS,
   CHECK_LIST_VIEW_TYPE_LS_KEY,
   CHECK_LIST_ICON_OVERLAY_LS_KEY,
-} from './constants';
-import { CheckListItem } from './CheckListItem';
+} from '../constants';
+import { CheckListItem } from '../CheckListItem';
 import { css } from '@emotion/css';
-import { LabelFilterInput } from './LabelFilterInput';
+import { LabelFilterInput } from '../LabelFilterInput';
 import { SuccessRateContext, SuccessRateTypes } from 'contexts/SuccessRateContext';
-import { ChecksVisualization } from './ChecksVisualization';
-import ThresholdGlobalSettings from './Thresholds/ThresholdGlobalSettings';
+import { ChecksVisualization } from '../ChecksVisualization';
+import ThresholdGlobalSettings from '../Thresholds/ThresholdGlobalSettings';
 
 const CHECKS_PER_PAGE_CARD = 15;
 const CHECKS_PER_PAGE_LIST = 50;
-
-const matchesFilterType = (check: Check, typeFilter: string) => {
-  if (typeFilter === 'all') {
-    return true;
-  }
-  const checkType = getCheckType(check.settings);
-  if (checkType === typeFilter) {
-    return true;
-  }
-  return false;
-};
-
-const matchesSearchFilter = ({ target, job, labels }: Check, searchFilter: string) => {
-  if (!searchFilter) {
-    return true;
-  }
-
-  // allow users to search using <term>=<somevalue>.
-  // <term> can be one of target, job or a label name
-  const filterParts = searchFilter.toLowerCase().trim().split('=');
-
-  const labelMatches = labels.reduce((acc, { name, value }) => {
-    acc.push(name);
-    acc.push(value);
-    return acc;
-  }, [] as string[]);
-
-  return filterParts.some((filterPart) => matchStrings(filterPart, [target, job, ...labelMatches]));
-};
-
-const matchesLabelFilter = ({ labels }: Check, labelFilters: string[]) => {
-  if (labelFilters.length === 0) {
-    return true;
-  }
-  return labels.some(({ name, value }) => labelFilters.some((filter) => filter === `${name}: ${value}`));
-};
-
-const matchesStatusFilter = ({ enabled }: Check, { value }: SelectableValue) => {
-  if (
-    value === CheckEnabledStatus.All ||
-    (value === CheckEnabledStatus.Enabled && enabled) ||
-    (value === CheckEnabledStatus.Disabled && !enabled)
-  ) {
-    return true;
-  }
-  return false;
-};
 
 const getStyles = (theme: GrafanaTheme) => ({
   headerContainer: css`
@@ -190,10 +151,22 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
   const [showVizIconOverlay, setShowVizIconOverlay] = useState(getIconOverlayToggleFromLS());
   const [bulkActionInProgress, setBulkActionInProgress] = useState(false);
 
+  const [selectedProbes, setSelectedProbes] = useState<SelectableValue[] | []>([]);
   const [showThresholdModal, setShowThresholdModal] = useState(false);
 
   const styles = useStyles(getStyles);
   const successRateContext = useContext(SuccessRateContext);
+
+  const fetchProbes = async () => {
+    const probes = await instance.api?.listProbes();
+    if (probes) {
+      return probes.map((p) => {
+        return { label: p.name, value: p.id };
+      });
+    } else {
+      return [{ label: 'No probes available', value: 0 }];
+    }
+  };
 
   const sortChecks = (checks: FilteredCheck[], sortType: CheckSort) => {
     switch (sortType) {
@@ -219,7 +192,8 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
         matchesSearchFilter(check, searchFilter) &&
         Boolean(check.id) &&
         matchesLabelFilter(check, labelFilters) &&
-        matchesStatusFilter(check, statusFilter)
+        matchesStatusFilter(check, statusFilter) &&
+        matchesSelectedProbes(check, selectedProbes)
     ) as FilteredCheck[],
     sortType
   );
@@ -501,7 +475,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
             setCurrentPage(1);
           }}
           placeholder="Search by job name, endpoint, or label"
-        />{' '}
+        />
         <div className={styles.flexRow}>
           <Select
             prefix="Status"
@@ -540,6 +514,20 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
             setCurrentPage(1);
           }}
           labelFilters={labelFilters}
+          className={styles.marginRightSmall}
+        />
+        <AsyncMultiSelect
+          data-testid="probe-filter"
+          prefix="Probes"
+          onChange={setSelectedProbes}
+          defaultOptions
+          loadOptions={fetchProbes}
+          value={selectedProbes}
+          placeholder="All probes"
+          allowCustomValue={false}
+          isSearchable={true}
+          isClearable={true}
+          closeMenuOnSelect={false}
         />
       </div>
       <div className={styles.bulkActionContainer}>

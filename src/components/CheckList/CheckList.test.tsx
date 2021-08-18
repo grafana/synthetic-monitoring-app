@@ -3,8 +3,8 @@ import { CheckList } from './CheckList';
 import { render, screen, waitForElementToBeRemoved } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { GrafanaInstances, Check, CheckSort, GlobalSettings } from 'types';
-import { getInstanceMock } from '../datasource/__mocks__/DataSource';
-import { SuccessRateContextProvider } from './SuccessRateContextProvider';
+import { getInstanceMock } from '../../datasource/__mocks__/DataSource';
+import { SuccessRateContextProvider } from '../SuccessRateContextProvider';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { AppPluginMeta } from '@grafana/data';
 jest.setTimeout(20000);
@@ -74,7 +74,7 @@ const defaultChecks = [
         dontFragment: false,
       },
     },
-    probes: [1],
+    probes: [22],
     target: 'example.com',
     job: 'chimichurri',
     created: 1597928965.8595479,
@@ -99,7 +99,7 @@ const defaultChecks = [
         dontFragment: false,
       },
     },
-    probes: [1],
+    probes: [1, 22],
     target: 'grafana.com',
     job: 'test3',
     created: 1597934254.494585,
@@ -206,6 +206,14 @@ test('filters by check type', async () => {
   expect(checks.length).toBe(1);
 });
 
+test('filters by probe', async () => {
+  renderCheckList();
+  const probeFilter = await screen.getByTestId('probe-filter');
+  userEvent.selectOptions(probeFilter, 'Chicago');
+  const checks = await screen.findAllByLabelText('check-card');
+  expect(checks.length).toBe(2);
+});
+
 test('clicking type chiclet adds it to filter', async () => {
   renderCheckList();
   const httpTypeChiclet = await screen.findAllByText('HTTP');
@@ -268,7 +276,7 @@ test('select all performs disable action on all visible checks', async () => {
     labels: [{ name: 'carne', value: 'asada' }],
     modified: 1597928965.8595479,
     offset: 0,
-    probes: [1],
+    probes: [22],
     settings: { http: { dontFragment: false, ipVersion: 'V4' } },
     target: 'example.com',
     tenantId: 1,
@@ -321,7 +329,7 @@ test('select all performs enable action on all visible checks', async () => {
         dontFragment: false,
       },
     },
-    probes: [1],
+    probes: [1, 22],
     target: 'grafana.com',
     job: 'test3',
     created: 1597934254.494585,
