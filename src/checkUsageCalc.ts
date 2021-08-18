@@ -4,7 +4,7 @@ interface ActiveSeriesParams {
   seriesPerCheck: number;
 }
 
-interface UsageValues {
+export interface UsageValues {
   checksPerMonth: number;
   activeSeries: number;
   logsGbPerMonth: number;

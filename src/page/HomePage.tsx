@@ -13,9 +13,14 @@ import {
 import { DisplayCard } from 'components/DisplayCard';
 import { FeaturesBanner } from 'components/FeaturesBanner';
 import { css, cx } from '@emotion/css';
-import React from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { PLUGIN_URL_PATH } from 'components/constants';
 import { config } from '@grafana/runtime';
+import { InstanceContext } from 'contexts/InstanceContext';
+import { calculateUsage, UsageValues } from 'checkUsageCalc';
+import { getAccountingClass } from 'hooks/useUsageCalc';
+import { AccountingClassNames } from 'datasource/types';
+import { CheckInfoContext } from 'contexts/CheckInfoContext';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   flexRow: css`
@@ -74,8 +79,46 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
 });
 
+interface OverallUsage extends UsageValues {
+  totalChecks: number;
+}
+
 const HomePage = () => {
   const styles = useStyles2(getStyles);
+  const { instance } = useContext(InstanceContext);
+  const [overallUsage, setOverallUsage] = useState<OverallUsage | undefined>();
+  const { checkInfo } = useContext(CheckInfoContext);
+
+  useEffect(() => {
+    instance.api?.listChecks().then((checks) => {
+      const { logsGbPerMonth, activeSeries, checksPerMonth } = checks.reduce<UsageValues>(
+        (total, check) => {
+          const accountingClass = getAccountingClass(check);
+          if (!accountingClass || !checkInfo) {
+            return total;
+          }
+          const usage = calculateUsage({
+            probeCount: check.probes.length,
+            frequencySeconds: check.frequency / 1000,
+            seriesPerCheck: checkInfo.AccountingClasses[accountingClass].Series,
+          });
+          return {
+            activeSeries: total.activeSeries + usage.activeSeries,
+            logsGbPerMonth: total.logsGbPerMonth + usage.logsGbPerMonth,
+            checksPerMonth: total.checksPerMonth + usage.checksPerMonth,
+          };
+        },
+        { logsGbPerMonth: 0, activeSeries: 0, checksPerMonth: 0 }
+      );
+      setOverallUsage({
+        totalChecks: checks.length,
+        logsGbPerMonth: parseFloat(logsGbPerMonth.toFixed(2)),
+        activeSeries,
+        checksPerMonth,
+      });
+    });
+  }, [instance.api, checkInfo]);
+
   return (
     <div>
       <DisplayCard className={cx(styles.card, styles.marginBottom)}>
@@ -169,10 +212,10 @@ const HomePage = () => {
             height={100}
             width={150}
             value={{
-              numeric: 122,
+              numeric: overallUsage?.totalChecks ?? 0,
               color: config.theme2.colors.text.primary,
               title: 'Total checks',
-              text: '122',
+              text: String(overallUsage?.totalChecks ?? 'N/A'),
             }}
           />
           <BigValue
@@ -183,10 +226,10 @@ const HomePage = () => {
             height={100}
             width={150}
             value={{
-              numeric: 35830,
+              numeric: overallUsage?.activeSeries ?? 0,
               color: config.theme2.colors.text.primary,
               title: 'Total active series',
-              text: '35,830',
+              text: String(overallUsage?.activeSeries ?? 'N/A'),
             }}
           />
           <BigValue
@@ -197,10 +240,10 @@ const HomePage = () => {
             height={100}
             width={150}
             value={{
-              numeric: 3608,
+              numeric: overallUsage?.checksPerMonth ?? 0,
               color: config.theme2.colors.text.primary,
-              title: 'Metrics',
-              text: '3,608',
+              title: 'Checks run per month',
+              text: String(overallUsage?.checksPerMonth ?? 'N/A'),
             }}
           />
           <BigValue
@@ -211,10 +254,10 @@ const HomePage = () => {
             height={100}
             width={125}
             value={{
-              numeric: 4.0,
+              numeric: overallUsage?.logsGbPerMonth ?? 0,
               color: config.theme2.colors.text.primary,
               title: 'Logs',
-              text: '4GB',
+              text: `${overallUsage?.logsGbPerMonth ?? 0}GB`,
             }}
           />
         </DisplayCard>

@@ -21,7 +21,7 @@ const addSSL = (check: Partial<Check>, baseClass: CheckType) => {
   return baseClass;
 };
 
-const getAccountingClass = (check: Partial<Check>): AccountingClassNames | undefined => {
+export const getAccountingClass = (check: Partial<Check>): AccountingClassNames | undefined => {
   if (!check.settings) {
     return;
   }
