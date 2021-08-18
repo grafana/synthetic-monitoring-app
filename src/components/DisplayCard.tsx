@@ -2,8 +2,11 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import React, { ReactChildren } from 'react';
+import bell from 'img/bell.svg';
+import checkSquare from 'img/checkinsquare.svg';
+import brackets from 'img/brackets.svg';
 
-const getStyles = (theme: GrafanaTheme2) => ({
+const getCardStyles = (theme: GrafanaTheme2) => ({
   container: css`
     background-color: ${theme.colors.background.primary};
     border: 1px solid ${theme.isDark ? theme.colors.border.medium : theme.colors.border.weak};
@@ -18,10 +21,57 @@ interface Props {
 }
 
 export const DisplayCard = ({ children, className, ...rest }: Props | React.HTMLAttributes<HTMLDivElement>) => {
-  const styles = useStyles2(getStyles);
+  const styles = useStyles2(getCardStyles);
   return (
     <div className={cx(styles.container, className)} {...rest}>
       {children}
     </div>
   );
 };
+
+const getHeaderStyles = (theme: GrafanaTheme2) => ({
+  container: css`
+    display: flex;
+    align-items: center;
+    margin-bottom: ${theme.spacing(2)};
+  `,
+  icon: css`
+    width: 20px;
+    height: 20px;
+    margin-right: ${theme.spacing(1)};
+  `,
+  heading: css`
+    margin-bottom: 0;
+  `,
+});
+
+const getHeaderIcon = (icon: HeaderIcons): string => {
+  switch (icon) {
+    case 'check-square':
+      return checkSquare;
+    case 'bell':
+      return bell;
+    case 'brackets':
+      return brackets;
+  }
+};
+
+type HeaderIcons = 'check-square' | 'brackets' | 'bell';
+
+interface HeaderProps {
+  text: string;
+  icon: HeaderIcons;
+  className?: string;
+}
+
+const DisplayCardHeader = ({ text, icon, className }: HeaderProps) => {
+  const styles = useStyles2(getHeaderStyles);
+  return (
+    <div className={cx(styles.container, className)}>
+      <img src={getHeaderIcon(icon)} className={styles.icon} />
+      <h3 className={styles.heading}>{text}</h3>
+    </div>
+  );
+};
+
+DisplayCard.Header = DisplayCardHeader;
