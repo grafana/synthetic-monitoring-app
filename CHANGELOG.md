@@ -1,3 +1,10 @@
+## [1.2.27](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.26...1.2.27) (2021-08-18)
+
+
+### Bug Fixes
+
+* remove duplicate label field in probe editor ([#353](https://github.com/grafana/synthetic-monitoring-app/issues/353)) ([756b04e](https://github.com/grafana/synthetic-monitoring-app/commit/756b04eff028893ae1d1a5cf181832ff8a2a3eb9))
+
 ## [1.2.26](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.25...1.2.26) (2021-08-18)
 
 ## [1.2.25](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.24...1.2.25) (2021-08-17)

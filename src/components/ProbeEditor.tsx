@@ -219,13 +219,7 @@ const ProbeEditor = ({ probe, onReturn }: Props) => {
               </Field>
             </Container>
             <Container margin="md">
-              <Field
-                label="Labels"
-                invalid={Boolean(formMethods.formState.errors.labels)}
-                error="Name and value are required"
-              >
-                <LabelField isEditor={isEditor} limit={3} />
-              </Field>
+              <LabelField isEditor={isEditor} limit={3} />
             </Container>
             <Container margin="md">
               <HorizontalGroup>
