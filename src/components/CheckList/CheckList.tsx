@@ -222,7 +222,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
   };
 
   const toggleAllCheckSelection = () => {
-    setSelectedChecks(new Set(filteredChecks.map((check) => check.id)));
+    setSelectedChecks(new Set(filteredChecks.map((check: FilteredCheck) => check.id)));
   };
 
   const clearSelectedChecks = () => {

@@ -4,7 +4,7 @@ import { CheckFilters } from './CheckList';
 import { SelectableValue } from '@grafana/data';
 import { checkType as getCheckType, matchStrings } from 'utils';
 
-export const matchesFilterType = (check: Check, typeFilter: string) => {
+const matchesFilterType = (check: Check, typeFilter: string) => {
   if (typeFilter === 'all') {
     return true;
   }
@@ -15,7 +15,7 @@ export const matchesFilterType = (check: Check, typeFilter: string) => {
   return false;
 };
 
-export const matchesSearchFilter = ({ target, job, labels }: Check, searchFilter: string) => {
+const matchesSearchFilter = ({ target, job, labels }: Check, searchFilter: string) => {
   if (!searchFilter) {
     return true;
   }
@@ -33,14 +33,14 @@ export const matchesSearchFilter = ({ target, job, labels }: Check, searchFilter
   return filterParts.some((filterPart) => matchStrings(filterPart, [target, job, ...labelMatches]));
 };
 
-export const matchesLabelFilter = ({ labels }: Check, labelFilters: string[]) => {
+const matchesLabelFilter = ({ labels }: Check, labelFilters: string[]) => {
   if (labelFilters.length === 0) {
     return true;
   }
   return labels.some(({ name, value }) => labelFilters.some((filter) => filter === `${name}: ${value}`));
 };
 
-export const matchesStatusFilter = ({ enabled }: Check, { value }: SelectableValue) => {
+const matchesStatusFilter = ({ enabled }: Check, { value }: SelectableValue) => {
   if (
     value === CheckEnabledStatus.All ||
     (value === CheckEnabledStatus.Enabled && enabled) ||
@@ -51,7 +51,7 @@ export const matchesStatusFilter = ({ enabled }: Check, { value }: SelectableVal
   return false;
 };
 
-export const matchesSelectedProbes = (check: Check, selectedProbes: SelectableValue[]) => {
+const matchesSelectedProbes = (check: Check, selectedProbes: SelectableValue[]) => {
   if (selectedProbes.length === 0) {
     return true;
   } else {
