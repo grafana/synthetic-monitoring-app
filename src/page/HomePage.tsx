@@ -6,7 +6,6 @@ import {
   BigValueTextMode,
   HorizontalGroup,
   Icon,
-  Link,
   LinkButton,
   useStyles2,
 } from '@grafana/ui';
@@ -82,7 +81,6 @@ const HomePage = () => {
   const { instance } = useContext(InstanceContext);
   const [checks, setChecks] = useState<Check[]>([]);
   const usage = useUsageCalc(checks);
-
   useEffect(() => {
     instance.api?.listChecks().then((checks) => {
       setChecks(checks);
@@ -128,7 +126,7 @@ const HomePage = () => {
             Set up Ping, HTTP, DNS, and TCP checks across your entire website to ensure that all parts are up and
             running for your users.
           </p>
-          <Link className={styles.link}>Read more about setting up checks {'>'}</Link>
+          <a className={styles.link}>Read more about setting up checks {'>'}</a>
           <div className={styles.actionContainer}>
             <LinkButton variant="secondary" href={`${PLUGIN_URL_PATH}?page=checks`}>
               Create a check
@@ -138,7 +136,7 @@ const HomePage = () => {
         <DisplayCard className={cx(styles.card, styles.rowCard)}>
           <DisplayCard.Header text="Set up checks programmatically" icon="brackets" />
           <p>Create, configure, and manage checks programmatically via Grizzly or Terraform.</p>
-          <Link className={styles.link}>Learn more about creating checks programmatically {'>'}</Link>
+          <a className={styles.link}>Learn more about creating checks programmatically {'>'}</a>
           <div className={styles.actionContainer}>
             <HorizontalGroup>
               <LinkButton
@@ -164,7 +162,7 @@ const HomePage = () => {
         <DisplayCard className={cx(styles.card, styles.rowCard)}>
           <DisplayCard.Header text="Configure alerts for your checks" icon="bell" />
           <p>Use default alerts for your checks or customize these alerts to meet your needs.</p>
-          <Link className={styles.link}>Read more about synthetic monitoring alerts {'>'}</Link>
+          <a className={styles.link}>Read more about synthetic monitoring alerts {'>'}</a>
           <div className={styles.actionContainer}>
             <LinkButton variant="secondary" href={`${PLUGIN_URL_PATH}?page=alerts`}>
               Configure alerts

@@ -137,7 +137,7 @@ export const getInstanceMock = (settings: DataSourceInstanceSettings<SMOptions> 
         timeout: 3000,
         enabled: true,
         labels: [],
-        probes: [],
+        probes: [1],
         settings: {
           ping: {
             ipVersion: 'V4',
