@@ -464,3 +464,9 @@ export enum FeatureName {
   UnifiedAlerting = 'ngalert',
   Homepage = 'homepage',
 }
+
+export interface UsageValues {
+  checksPerMonth: number;
+  activeSeries: number;
+  logsGbPerMonth: number;
+}

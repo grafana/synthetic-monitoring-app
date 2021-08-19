@@ -8,7 +8,6 @@ import { CheckEditor } from 'components/CheckEditor';
 import { CheckList } from 'components/CheckList';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
-import { CheckInfoContextProvider } from 'components/CheckInfoContextProvider';
 import { trackEvent } from 'analytics';
 
 interface Props {

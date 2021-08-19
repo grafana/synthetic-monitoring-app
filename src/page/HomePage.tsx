@@ -17,10 +17,8 @@ import React, { useState, useEffect, useContext } from 'react';
 import { PLUGIN_URL_PATH } from 'components/constants';
 import { config } from '@grafana/runtime';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { calculateUsage, UsageValues } from 'checkUsageCalc';
-import { getAccountingClass } from 'hooks/useUsageCalc';
-import { AccountingClassNames } from 'datasource/types';
-import { CheckInfoContext } from 'contexts/CheckInfoContext';
+import { Check } from 'types';
+import { useUsageCalc } from 'hooks/useUsageCalc';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   flexRow: css`
@@ -61,7 +59,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
   usageGrid: css`
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, auto));
+    grid-template-columns: repeat(auto-fit, minmax(250px, auto));
     grid-gap: ${theme.spacing(1)};
   `,
   link: css`
@@ -79,45 +77,17 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
 });
 
-interface OverallUsage extends UsageValues {
-  totalChecks: number;
-}
-
 const HomePage = () => {
   const styles = useStyles2(getStyles);
   const { instance } = useContext(InstanceContext);
-  const [overallUsage, setOverallUsage] = useState<OverallUsage | undefined>();
-  const { checkInfo } = useContext(CheckInfoContext);
+  const [checks, setChecks] = useState<Check[]>([]);
+  const usage = useUsageCalc(checks);
 
   useEffect(() => {
     instance.api?.listChecks().then((checks) => {
-      const { logsGbPerMonth, activeSeries, checksPerMonth } = checks.reduce<UsageValues>(
-        (total, check) => {
-          const accountingClass = getAccountingClass(check);
-          if (!accountingClass || !checkInfo) {
-            return total;
-          }
-          const usage = calculateUsage({
-            probeCount: check.probes.length,
-            frequencySeconds: check.frequency / 1000,
-            seriesPerCheck: checkInfo.AccountingClasses[accountingClass].Series,
-          });
-          return {
-            activeSeries: total.activeSeries + usage.activeSeries,
-            logsGbPerMonth: total.logsGbPerMonth + usage.logsGbPerMonth,
-            checksPerMonth: total.checksPerMonth + usage.checksPerMonth,
-          };
-        },
-        { logsGbPerMonth: 0, activeSeries: 0, checksPerMonth: 0 }
-      );
-      setOverallUsage({
-        totalChecks: checks.length,
-        logsGbPerMonth: parseFloat(logsGbPerMonth.toFixed(2)),
-        activeSeries,
-        checksPerMonth,
-      });
+      setChecks(checks);
     });
-  }, [instance.api, checkInfo]);
+  }, [instance.api]);
 
   return (
     <div>
@@ -212,10 +182,10 @@ const HomePage = () => {
             height={100}
             width={150}
             value={{
-              numeric: overallUsage?.totalChecks ?? 0,
+              numeric: checks.length,
               color: config.theme2.colors.text.primary,
               title: 'Total checks',
-              text: String(overallUsage?.totalChecks ?? 'N/A'),
+              text: String(checks.length),
             }}
           />
           <BigValue
@@ -226,10 +196,10 @@ const HomePage = () => {
             height={100}
             width={150}
             value={{
-              numeric: overallUsage?.activeSeries ?? 0,
+              numeric: usage?.activeSeries ?? 0,
               color: config.theme2.colors.text.primary,
               title: 'Total active series',
-              text: String(overallUsage?.activeSeries ?? 'N/A'),
+              text: String(usage?.activeSeries ?? 'N/A'),
             }}
           />
           <BigValue
@@ -238,12 +208,12 @@ const HomePage = () => {
             colorMode={BigValueColorMode.Value}
             graphMode={BigValueGraphMode.Area}
             height={100}
-            width={150}
+            width={250}
             value={{
-              numeric: overallUsage?.checksPerMonth ?? 0,
+              numeric: usage?.checksPerMonth ?? 0,
               color: config.theme2.colors.text.primary,
               title: 'Checks run per month',
-              text: String(overallUsage?.checksPerMonth ?? 'N/A'),
+              text: String(usage?.checksPerMonth ?? 'N/A'),
             }}
           />
           <BigValue
@@ -252,12 +222,12 @@ const HomePage = () => {
             colorMode={BigValueColorMode.Value}
             graphMode={BigValueGraphMode.Area}
             height={100}
-            width={125}
+            width={200}
             value={{
-              numeric: overallUsage?.logsGbPerMonth ?? 0,
+              numeric: usage?.logsGbPerMonth ?? 0,
               color: config.theme2.colors.text.primary,
               title: 'Logs',
-              text: `${overallUsage?.logsGbPerMonth ?? 0}GB`,
+              text: `${usage?.logsGbPerMonth.toFixed(2) ?? 0}GB`,
             }}
           />
         </DisplayCard>

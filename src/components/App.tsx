@@ -4,7 +4,6 @@ import { PluginTabs } from 'components/PluginTabs';
 import { AppRootProps } from '@grafana/data';
 import { GlobalSettings } from 'types';
 import { FeatureFlagProvider } from './FeatureFlagProvider';
-import { CheckInfoContext } from 'contexts/CheckInfoContext';
 import { CheckInfoContextProvider } from './CheckInfoContextProvider';
 
 export class App extends PureComponent<AppRootProps<GlobalSettings>> {
