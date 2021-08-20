@@ -13,7 +13,7 @@ interface Props {
   onSelectProbe: (probeId: number) => void;
 }
 
-const labelsToString = (labels: Label[]) => labels.map(({ name, value }) => `${name}=${value}`);
+const labelsToString = (labels: Label[]) => labels.map(({ name, value }) => `${name}:${value}`).join(', ');
 
 export const ProbeList = ({ probes, onAddNew, onSelectProbe }: Props) => {
   const { instance, loading: instanceLoading } = useContext(InstanceContext);
