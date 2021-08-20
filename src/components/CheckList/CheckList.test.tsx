@@ -192,9 +192,9 @@ test('clicking label value adds to label filter', async () => {
   renderCheckList();
   const labelValue = await screen.findAllByText('agreat: label');
   userEvent.click(labelValue[1]);
-  const checks = await screen.findAllByLabelText('check-card');
   const filterInput = await screen.findByTestId('check-label-filter');
   expect(filterInput).toHaveValue(['agreat: label']);
+  const checks = await screen.findAllByLabelText('check-card');
   expect(checks.length).toBe(1);
 });
 

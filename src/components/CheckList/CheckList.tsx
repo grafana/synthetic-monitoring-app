@@ -340,10 +340,11 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
           type="text"
           value={checkFilters.search ? unEscapeStringFromRegex(checkFilters.search) : ''}
           onChange={(event) => {
+            const value = event.currentTarget.value;
             setCheckFilters((cf) => {
               return {
                 ...cf,
-                search: escapeStringForRegex(event.currentTarget.value),
+                search: escapeStringForRegex(value),
               };
             });
           }}
