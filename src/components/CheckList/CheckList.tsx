@@ -176,7 +176,6 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
     );
     setFilteredChecks(filtered);
     clearSelectedChecks();
-    setCurrentPage(1);
   }, [checkFilters, sortType, checks, sortChecks]);
 
   const checksPerPage = viewType === CheckListViewType.Card ? CHECKS_PER_PAGE_CARD : CHECKS_PER_PAGE_LIST;
@@ -189,12 +188,14 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
         labels: [...cf.labels, `${label.name}: ${label.value}`],
       };
     });
+    setCurrentPage(1);
   };
 
   const handleTypeSelect = (checkType: CheckType) => {
     setCheckFilters((cf) => {
       return { ...cf, type: checkType };
     });
+    setCurrentPage(1);
   };
 
   const handleStatusSelect = (enabled: boolean) => {
@@ -207,6 +208,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
           status: option,
         };
       });
+      setCurrentPage(1);
     }
   };
 
@@ -358,6 +360,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
             options={CHECK_LIST_STATUS_OPTIONS}
             width={20}
             onChange={(option) => {
+              setCurrentPage(1);
               setCheckFilters((cf) => {
                 return {
                   ...cf,
@@ -374,6 +377,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
             options={CHECK_FILTER_OPTIONS}
             width={20}
             onChange={(selected: SelectableValue) => {
+              setCurrentPage(1);
               setCheckFilters((cf) => {
                 return {
                   ...cf,
@@ -389,6 +393,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
         <LabelFilterInput
           checks={checks}
           onChange={(labels) => {
+            setCurrentPage(1);
             setCheckFilters((cf) => {
               return {
                 ...cf,
@@ -403,6 +408,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
           data-testid="probe-filter"
           prefix="Probes"
           onChange={(v) => {
+            setCurrentPage(1);
             setCheckFilters((cf) => {
               return {
                 ...cf,
