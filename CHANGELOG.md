@@ -1,3 +1,10 @@
+## [1.2.28](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.27...1.2.28) (2021-08-20)
+
+
+### Bug Fixes
+
+* **ui:** probe label display on probes page ([#354](https://github.com/grafana/synthetic-monitoring-app/issues/354)) ([af1605f](https://github.com/grafana/synthetic-monitoring-app/commit/af1605f6560c708e2b3d4d79ab3fa16cade3f753))
+
 ## [1.2.27](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.26...1.2.27) (2021-08-18)
 
 
