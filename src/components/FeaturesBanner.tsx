@@ -10,7 +10,7 @@ import dividingLine from 'img/dividingline.svg';
 import whatYouCanDoBG from 'img/welcomepage-bg.svg';
 import whatYouCanDoBGLight from 'img/welcomepage-bg-light.svg';
 import { GrafanaTheme2 } from '@grafana/data';
-import { HorizontalGroup, useStyles2 } from '@grafana/ui';
+import { HorizontalGroup, Icon, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { config } from '@grafana/runtime';
 
@@ -29,7 +29,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
     box-shadow: ${theme.isDark ? '0px 4px 10px 0px rgba(0, 0, 0, 0.6)' : '0px 4px 10px 0px rgba(195, 195, 195, 0.2)'};
   `,
   whatYouCanDoHeader: css`
-    color: #ffffff;
     margin-bottom: ${theme.spacing(1)};
   `,
   featuresContainer: css`
@@ -49,7 +48,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     min-width: 150px;
   `,
   link: css`
-    color: ${theme.colors.text.link};
+    color: ${theme.isDark ? theme.colors.text.link : theme.colors.text.secondary};
   `,
 });
 
