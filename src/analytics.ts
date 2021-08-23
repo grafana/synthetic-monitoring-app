@@ -5,7 +5,7 @@ export function trackEvent(action: string, label?: string) {
   if (trackGa) {
     trackGa('event', 'send', EVENT_CATEGORY, action, label);
   } else {
-    console.log('Tracking action', EVENT_CATEGORY, action, label);
+    return;
   }
 }
 
@@ -18,6 +18,6 @@ export function trackException(description: string, fatal?: boolean) {
       exDescription: description,
     });
   } else {
-    console.warn('Tracking exception', description);
+    return;
   }
 }
