@@ -1,6 +1,6 @@
 import React from 'react';
 import { CheckList } from './CheckList';
-import { render, screen, waitForElementToBeRemoved } from '@testing-library/react';
+import { act, render, screen, waitForElementToBeRemoved } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { GrafanaInstances, Check, CheckSort, GlobalSettings } from 'types';
 import { getInstanceMock } from '../../datasource/__mocks__/DataSource';
@@ -143,7 +143,9 @@ test('renders list of checks', async () => {
 test('search by text', async () => {
   renderCheckList();
   const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
-  await userEvent.paste(filterInput, 'example');
+  await act(async () => {
+    await userEvent.paste(filterInput, 'example');
+  });
   const checks = await screen.findAllByLabelText('check-card');
   expect(checks.length).toBe(1);
 });
@@ -151,7 +153,9 @@ test('search by text', async () => {
 test('search is case insensitive', async () => {
   renderCheckList();
   const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
-  await userEvent.paste(filterInput, 'EXAMPLE');
+  await act(async () => {
+    await userEvent.paste(filterInput, 'EXAMPLE');
+  });
   const checks = await screen.findAllByLabelText('check-card');
   expect(checks.length).toBe(1);
 });
@@ -159,7 +163,9 @@ test('search is case insensitive', async () => {
 test('search matches job value', async () => {
   renderCheckList();
   const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
-  await userEvent.paste(filterInput, 'tacos');
+  await act(async () => {
+    await userEvent.paste(filterInput, 'tacos');
+  });
   const checks = await screen.findAllByLabelText('check-card');
   expect(checks.length).toBe(1);
 });
@@ -167,7 +173,9 @@ test('search matches job value', async () => {
 test('search matches target value', async () => {
   renderCheckList();
   const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
-  await userEvent.paste(filterInput, 'asada');
+  await act(async () => {
+    await userEvent.paste(filterInput, 'asada');
+  });
   const checks = await screen.findAllByLabelText('check-card');
   expect(checks.length).toBe(1);
 });
@@ -175,7 +183,9 @@ test('search matches target value', async () => {
 test('search matches label value', async () => {
   renderCheckList();
   const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
-  await userEvent.paste(filterInput, 'nachos.com');
+  await act(async () => {
+    await userEvent.paste(filterInput, 'nachos.com');
+  });
   const checks = await screen.findAllByLabelText('check-card');
   expect(checks.length).toBe(1);
 });
@@ -183,7 +193,9 @@ test('search matches label value', async () => {
 test('search matches label name', async () => {
   renderCheckList();
   const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
-  await userEvent.paste(filterInput, 'carne');
+  await act(async () => {
+    await userEvent.paste(filterInput, 'carne');
+  });
   const checks = await screen.findAllByLabelText('check-card');
   expect(checks.length).toBe(1);
 });
@@ -191,7 +203,9 @@ test('search matches label name', async () => {
 test('clicking label value adds to label filter', async () => {
   renderCheckList();
   const labelValue = await screen.findAllByText('agreat: label');
-  userEvent.click(labelValue[1]);
+  act(() => {
+    userEvent.click(labelValue[1]);
+  });
   const filterInput = await screen.findByTestId('check-label-filter');
   expect(filterInput).toHaveValue(['agreat: label']);
   const checks = await screen.findAllByLabelText('check-card');
@@ -208,7 +222,7 @@ test('filters by check type', async () => {
 
 test('filters by probe', async () => {
   renderCheckList();
-  const probeFilter = await screen.getByTestId('probe-filter');
+  const probeFilter = await screen.findByTestId('probe-filter');
   userEvent.selectOptions(probeFilter, 'Chicago');
   const checks = await screen.findAllByLabelText('check-card');
   expect(checks.length).toBe(2);
