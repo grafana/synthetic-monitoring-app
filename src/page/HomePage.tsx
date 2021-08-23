@@ -146,7 +146,7 @@ const HomePage = () => {
             numeric: checks.length,
             color: config.theme2.colors.text.primary,
             title: 'Total checks',
-            text: String(checks.length),
+            text: checks.length.toLocaleString(),
           }}
         />
         <BigValue
@@ -160,7 +160,7 @@ const HomePage = () => {
             numeric: usage?.activeSeries ?? 0,
             color: config.theme2.colors.text.primary,
             title: 'Total active series',
-            text: String(usage?.activeSeries ?? 'N/A'),
+            text: usage?.activeSeries.toLocaleString() ?? 'N/A',
           }}
         />
         <BigValue
@@ -174,7 +174,7 @@ const HomePage = () => {
             numeric: usage?.checksPerMonth ?? 0,
             color: config.theme2.colors.text.primary,
             title: 'Checks executions per month',
-            text: String(usage?.checksPerMonth ?? 'N/A'),
+            text: usage?.checksPerMonth.toLocaleString() ?? 'N/A',
           }}
         />
         <BigValue
@@ -199,7 +199,14 @@ const HomePage = () => {
             Set up Ping, HTTP, DNS, and TCP checks across your entire website to ensure that all parts are up and
             running for your users.
           </p>
-          <a className={styles.link}>Read more about setting up checks {'>'}</a>
+          <a
+            className={styles.link}
+            target="_blank"
+            rel="noopenner noreferrer"
+            href="https://grafana.com/docs/grafana-cloud/synthetic-monitoring/checks/"
+          >
+            Read more about setting up checks {'>'}
+          </a>
           <div className={styles.actionContainer}>
             <LinkButton variant="secondary" href={`${PLUGIN_URL_PATH}?page=checks`}>
               Create a check
@@ -234,7 +241,14 @@ const HomePage = () => {
         <DisplayCard className={cx(styles.nestedCard, styles.rowCard)}>
           <DisplayCard.Header text="Configure alerts for your checks" icon="bell" />
           <p>Use default alerts for your checks or customize these alerts to meet your needs.</p>
-          <a className={styles.link}>Read more about synthetic monitoring alerts {'>'}</a>
+          <a
+            className={styles.link}
+            href="https://grafana.com/docs/grafana-cloud/synthetic-monitoring/synthetic-monitoring-alerting/"
+            target="_blank"
+            rel="noopenner noreferrer"
+          >
+            Read more about synthetic monitoring alerts {'>'}
+          </a>
           <div className={styles.actionContainer}>
             <LinkButton variant="secondary" href={`${PLUGIN_URL_PATH}?page=alerts`}>
               Configure alerts
