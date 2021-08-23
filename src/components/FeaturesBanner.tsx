@@ -1,14 +1,16 @@
 import React from 'react';
-import bell from 'img/bell.svg';
-import bellLight from 'img/bell-light.svg';
-import welcomeGraph from 'img/welcomegraph.svg';
-import welcomeGraphLight from 'img/welcomegraph-light.svg';
-import loki from 'img/loki.svg';
-import checkInSquare from 'img/checkinsquare.svg';
-import checkInSquareLight from 'img/checkinsquare-light.svg';
-import dividingLine from 'img/dividingline.svg';
-import whatYouCanDoBG from 'img/welcomepage-bg.svg';
-import whatYouCanDoBGLight from 'img/welcomepage-bg-light.svg';
+import {
+  bell,
+  bellLight,
+  welcomeGraph,
+  welcomeGraphLight,
+  loki,
+  dividingLine,
+  whatYouCanDoBG,
+  whatYouCanDoBGLight,
+  checkSquare,
+  checkSquareLight,
+} from 'img';
 import { GrafanaTheme2 } from '@grafana/data';
 import { HorizontalGroup, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
@@ -69,7 +71,7 @@ export const FeaturesBanner = () => {
       </div>
       <div className={styles.featuresContainer}>
         <HorizontalGroup spacing="lg" align="center">
-          <img src={config.theme2.isDark ? checkInSquare : checkInSquareLight} />
+          <img src={config.theme2.isDark ? checkSquare : checkSquareLight} />
           <span className={styles.text}>
             Create checks to monitor your services from Grafana hosted or private probes
           </span>
