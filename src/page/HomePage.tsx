@@ -44,6 +44,8 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
   grow: css`
     flex-grow: 1;
+    overflow-y: auto;
+    max-height: 500px;
   `,
   nestedCard: css`
     background-color: ${theme.colors.background.primary};
@@ -54,7 +56,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     padding: ${theme.spacing(2)};
     display: flex;
     cursor: pointer;
-    min-width: min-content;
+    width: 100%;
     white-space: nowrap;
     margin-bottom: ${theme.spacing(1)};
   `,

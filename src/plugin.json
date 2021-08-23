@@ -50,6 +50,12 @@
     },
     {
       "type": "page",
+      "name": "Summary",
+      "path": "/a/grafana-synthetic-monitoring-app/?page=redirect&dashboard=summary",
+      "addToNav": true
+    },
+    {
+      "type": "page",
       "name": "Checks",
       "path": "/a/grafana-synthetic-monitoring-app/?page=checks",
       "addToNav": true
