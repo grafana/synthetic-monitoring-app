@@ -216,7 +216,14 @@ const HomePage = () => {
         <DisplayCard className={cx(styles.nestedCard, styles.rowCard)}>
           <DisplayCard.Header text="Set up checks programmatically" icon="brackets" />
           <p>Create, configure, and manage checks programmatically via Grizzly or Terraform.</p>
-          <a className={styles.link}>Learn more about creating checks programmatically {'>'}</a>
+          <a
+            className={styles.link}
+            href="https://grafana.com/docs/grafana-cloud/synthetic-monitoring/?manage-checks-with-the-api--config-as-code#manage-checks-with-the-api--config-as-code"
+            target="_blank"
+            rel="noopenner noreferrer"
+          >
+            Learn more about creating checks programmatically {'>'}
+          </a>
           <div className={styles.actionContainer}>
             <HorizontalGroup>
               <LinkButton
