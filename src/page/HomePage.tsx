@@ -125,11 +125,20 @@ const HomePage = () => {
 
         <DisplayCard className={cx(styles.card, styles.grow)}>
           <h3>What&apos;s new</h3>
-          <p>We&apos;ve recently made some updates to probes</p>
+          <p>
+            We will making some updates to our probes in Grafana Cloud synthetic monitoring. The changes will include:
+          </p>
           <ul>
-            <li>Changed Chicago to Boston</li>
-            <li>Removed Sao Paolo</li>
-            <li>Finally fixed the typo in Seoul</li>
+            <li>
+              Deprecating the <code>San Jose</code> probe. We recommend moving to the <code>San Francisco</code> probe
+              as a replacement.
+            </li>
+            <li>
+              Deprecating <code>Chicago</code>. We recommend moving to <code>Boston</code> as a replacement
+            </li>
+            <li>
+              Fixing a typo: <code>Seol</code> will become <code>Seoul</code>
+            </li>
           </ul>
         </DisplayCard>
       </div>

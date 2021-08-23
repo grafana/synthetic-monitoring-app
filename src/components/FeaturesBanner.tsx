@@ -10,7 +10,7 @@ import dividingLine from 'img/dividingline.svg';
 import whatYouCanDoBG from 'img/welcomepage-bg.svg';
 import whatYouCanDoBGLight from 'img/welcomepage-bg-light.svg';
 import { GrafanaTheme2 } from '@grafana/data';
-import { HorizontalGroup, Icon, useStyles2 } from '@grafana/ui';
+import { HorizontalGroup, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { config } from '@grafana/runtime';
 
