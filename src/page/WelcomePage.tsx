@@ -13,7 +13,7 @@ import { isNumber } from 'lodash';
 import { OrgRole } from 'types';
 import { trackEvent, trackException } from 'analytics';
 import { DisplayCard } from 'components/DisplayCard';
-import { FeaturesBanner } from 'components/FeaturesBanner';
+import FeaturesBanner from 'components/FeaturesBanner';
 
 const getStyles = (theme: GrafanaTheme2) => {
   const textColor = theme.isDark ? colors.darkText : colors.lightText;

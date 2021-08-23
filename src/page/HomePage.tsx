@@ -10,7 +10,7 @@ import {
   useStyles2,
 } from '@grafana/ui';
 import { DisplayCard } from 'components/DisplayCard';
-import { FeaturesBanner } from 'components/FeaturesBanner';
+import FeaturesBanner from 'components/FeaturesBanner';
 import { css, cx } from '@emotion/css';
 import React, { useState, useEffect, useContext } from 'react';
 import { PLUGIN_URL_PATH } from 'components/constants';
@@ -18,6 +18,7 @@ import { config } from '@grafana/runtime';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { Check } from 'types';
 import { useUsageCalc } from 'hooks/useUsageCalc';
+import { DashboardInfo } from 'datasource/types';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   flexRow: css`
@@ -88,15 +89,29 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
 });
 
+const sortSummaryToTop = (dashboardA: DashboardInfo, dashboardB: DashboardInfo) => {
+  if (dashboardA.title === 'Synthetic Monitoring Summary') {
+    return -1;
+  }
+  if (dashboardB.title === 'Synthetic Monitoring Summary') {
+    return 1;
+  }
+  return 0;
+};
+
 const HomePage = () => {
   const styles = useStyles2(getStyles);
   const { instance } = useContext(InstanceContext);
   const [checks, setChecks] = useState<Check[]>([]);
+  const [dashboards, setDashboards] = useState<DashboardInfo[]>([]);
   const usage = useUsageCalc(checks);
   useEffect(() => {
     instance.api?.listChecks().then((checks) => {
       setChecks(checks);
     });
+    // Sort to make sure the summary dashboard is at the top of the list
+    const sortedDashboards = instance.api?.instanceSettings.jsonData.dashboards.sort(sortSummaryToTop) ?? [];
+    setDashboards(sortedDashboards);
   }, [instance.api]);
 
   return (
@@ -104,25 +119,14 @@ const HomePage = () => {
       <FeaturesBanner />
       <div className={styles.cardFlex}>
         <DisplayCard className={cx(styles.card, styles.rowCard, styles.linksContainer)}>
-          {instance.api?.instanceSettings.jsonData.dashboards
-            // Sort to make sure the summary dashboard is at the top of the list
-            .sort((dashA, dashB) => {
-              if (dashA.title === 'Synthetic Monitoring Summary') {
-                return -1;
-              }
-              if (dashB.title === 'Synthetic Monitoring Summary') {
-                return 1;
-              }
-              return 0;
-            })
-            .map((dashboard) => {
-              return (
-                <a className={styles.quickLink} href={`d/${dashboard.uid}`} key={dashboard.uid}>
-                  <Icon name="apps" size="lg" className={styles.quickLinkIcon} />
-                  View the {dashboard.title} dashboard
-                </a>
-              );
-            })}
+          {dashboards.map((dashboard) => {
+            return (
+              <a className={styles.quickLink} href={`d/${dashboard.uid}`} key={dashboard.uid}>
+                <Icon name="apps" size="lg" className={styles.quickLinkIcon} />
+                View the {dashboard.title} dashboard
+              </a>
+            );
+          })}
         </DisplayCard>
 
         <DisplayCard className={cx(styles.card, styles.grow)}>

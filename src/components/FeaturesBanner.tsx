@@ -54,7 +54,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
 });
 
-export const FeaturesBanner = () => {
+const FeaturesBanner = () => {
   const styles = useStyles2(getStyles);
   return (
     <div className={styles.whatYouCanDoContainer}>
@@ -97,3 +97,5 @@ export const FeaturesBanner = () => {
     </div>
   );
 };
+
+export default FeaturesBanner;
