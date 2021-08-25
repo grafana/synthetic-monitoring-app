@@ -63,7 +63,7 @@ export interface LogStream {
   Hosts: string;
   Success: string;
   TTL: string;
-  TraceID: string;
+  TracerouteID: string;
   LossPercent: string;
   Destination: string;
   check_name: string;

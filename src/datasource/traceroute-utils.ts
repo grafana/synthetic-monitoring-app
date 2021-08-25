@@ -135,7 +135,7 @@ export const parseTracerouteLogs = (queryResponse: LogQueryResponse): MutableDat
 
   const destinations = new Set<string>();
   const groupedByTraceID = queryResponse.data.reduce<LogsAggregatedByTrace>((acc, { stream, values }, index) => {
-    const traceId = stream.TraceID;
+    const traceId = stream.TracerouteID;
     if (traceId && !mostRecentTraceId) {
       mostRecentTraceId = traceId;
     }
