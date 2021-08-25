@@ -8,10 +8,10 @@ import {
   Field,
   Input,
   HorizontalGroup,
-  Switch,
   Legend,
   Alert,
   useStyles2,
+  Label,
 } from '@grafana/ui';
 import { useForm, FormProvider } from 'react-hook-form';
 import { useAsyncCallback } from 'react-async-hook';
@@ -38,6 +38,9 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
   marginTop: css`
     margin-top: ${theme.spacing(2)};
+  `,
+  marginBottom: css`
+    margin-bottom: ${theme.spacing(2)};
   `,
 });
 
@@ -69,6 +72,7 @@ const ProbeEditor = ({ probe, onReturn }: Props) => {
       const info = await instance.api.addProbe({
         ...probe,
         ...formValues,
+        public: false,
       });
       setShowTokenModal(true);
       setProbeToken(info.token);
@@ -110,6 +114,21 @@ const ProbeEditor = ({ probe, onReturn }: Props) => {
           <div>
             <Legend>{legend}</Legend>
             <Container margin="md">
+              {probe.public ? (
+                <Label
+                  description="Public probes are run by Grafana Labs and can be used by all users"
+                  className={styles.marginBottom}
+                >
+                  This probe is public
+                </Label>
+              ) : (
+                <Label
+                  description="Private probes are operated by your organization and can only run your checks."
+                  className={styles.marginBottom}
+                >
+                  This probe is private
+                </Label>
+              )}
               <Field
                 error="Name is required"
                 invalid={Boolean(formMethods.formState.errors.name)}
@@ -129,11 +148,6 @@ const ProbeEditor = ({ probe, onReturn }: Props) => {
                   id="probe-name-input"
                   placeholder="Probe name"
                 />
-              </Field>
-              <Field label="Public" description="Public probes are run by Grafana Labs and can be used by all users">
-                <Container padding="sm">
-                  <Switch {...formMethods.register('public')} disabled={!isEditor} />
-                </Container>
               </Field>
             </Container>
             <Container margin="md">
@@ -205,13 +219,7 @@ const ProbeEditor = ({ probe, onReturn }: Props) => {
               </Field>
             </Container>
             <Container margin="md">
-              <Field
-                label="Labels"
-                invalid={Boolean(formMethods.formState.errors.labels)}
-                error="Name and value are required"
-              >
-                <LabelField isEditor={isEditor} limit={3} />
-              </Field>
+              <LabelField isEditor={isEditor} limit={3} />
             </Container>
             <Container margin="md">
               <HorizontalGroup>

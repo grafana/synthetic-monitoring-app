@@ -8,18 +8,25 @@ import { GrafanaInstances, GlobalSettings } from 'types';
 import { AppPluginMeta } from '@grafana/data';
 import { getInstanceMock } from 'datasource/__mocks__/DataSource';
 import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
+import { act } from '@testing-library/react-hooks';
 
 const onDismiss = jest.fn();
 const onSuccess = jest.fn();
 const onError = jest.fn();
 
-const renderThresholdSettingsForm = () => {
+const renderThresholdSettingsForm = (defaultValues = false) => {
   const instance = {
     api: getInstanceMock(),
     metrics: {},
     logs: {},
   } as GrafanaInstances;
   const meta = {} as AppPluginMeta<GlobalSettings>;
+
+  if (defaultValues) {
+    instance.api!.getTenantSettings = jest.fn(() =>
+      Promise.resolve({ thresholds: { uptime: {}, reachability: {}, latency: {} } })
+    );
+  }
 
   render(
     <InstanceContext.Provider value={{ instance, loading: false, meta }}>
@@ -34,16 +41,16 @@ const renderThresholdSettingsForm = () => {
 
 test('shows the form', async () => {
   renderThresholdSettingsForm();
-  const saveButton = await screen.getByTestId('threshold-save');
-  const inputs = await screen.getAllByPlaceholderText('value');
+  const saveButton = await screen.findByTestId('threshold-save');
+  const inputs = await screen.findAllByPlaceholderText('value');
   expect(saveButton).toBeInTheDocument();
   expect(inputs).toHaveLength(12);
 });
 
 test('has default values in form', async () => {
-  renderThresholdSettingsForm();
-  const upperLimitInputs = await screen.getAllByTestId('upper-limit');
-  const lowerLimitInputs = await screen.getAllByTestId('lower-limit');
+  renderThresholdSettingsForm(true);
+  const upperLimitInputs = await screen.findAllByTestId('upper-limit');
+  const lowerLimitInputs = await screen.findAllByTestId('lower-limit');
   // Uptime/reachability
   expect(upperLimitInputs[0]).toHaveValue(90);
   expect(lowerLimitInputs[0]).toHaveValue(75);
@@ -54,8 +61,10 @@ test('has default values in form', async () => {
 
 test('submits the form', async () => {
   const instance = renderThresholdSettingsForm();
-  const saveButton = await screen.getByTestId('threshold-save');
-  userEvent.click(saveButton);
+  await act(async () => {
+    const saveButton = await screen.findByTestId('threshold-save');
+    userEvent.click(saveButton);
+  });
   expect(instance.api?.updateTenantSettings).toHaveBeenCalledWith({
     thresholds: {
       uptime: { upperLimit: 94.4, lowerLimit: 75 },

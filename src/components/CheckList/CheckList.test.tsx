@@ -1,10 +1,10 @@
 import React from 'react';
 import { CheckList } from './CheckList';
-import { render, screen, waitForElementToBeRemoved } from '@testing-library/react';
+import { act, render, screen, waitForElementToBeRemoved } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { GrafanaInstances, Check, CheckSort, GlobalSettings } from 'types';
-import { getInstanceMock } from '../datasource/__mocks__/DataSource';
-import { SuccessRateContextProvider } from './SuccessRateContextProvider';
+import { getInstanceMock } from '../../datasource/__mocks__/DataSource';
+import { SuccessRateContextProvider } from '../SuccessRateContextProvider';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { AppPluginMeta } from '@grafana/data';
 jest.setTimeout(20000);
@@ -74,7 +74,7 @@ const defaultChecks = [
         dontFragment: false,
       },
     },
-    probes: [1],
+    probes: [22],
     target: 'example.com',
     job: 'chimichurri',
     created: 1597928965.8595479,
@@ -99,7 +99,7 @@ const defaultChecks = [
         dontFragment: false,
       },
     },
-    probes: [1],
+    probes: [1, 22],
     target: 'grafana.com',
     job: 'test3',
     created: 1597934254.494585,
@@ -143,7 +143,9 @@ test('renders list of checks', async () => {
 test('search by text', async () => {
   renderCheckList();
   const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
-  await userEvent.paste(filterInput, 'example');
+  await act(async () => {
+    await userEvent.paste(filterInput, 'example');
+  });
   const checks = await screen.findAllByLabelText('check-card');
   expect(checks.length).toBe(1);
 });
@@ -151,7 +153,9 @@ test('search by text', async () => {
 test('search is case insensitive', async () => {
   renderCheckList();
   const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
-  await userEvent.paste(filterInput, 'EXAMPLE');
+  await act(async () => {
+    await userEvent.paste(filterInput, 'EXAMPLE');
+  });
   const checks = await screen.findAllByLabelText('check-card');
   expect(checks.length).toBe(1);
 });
@@ -159,7 +163,9 @@ test('search is case insensitive', async () => {
 test('search matches job value', async () => {
   renderCheckList();
   const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
-  await userEvent.paste(filterInput, 'tacos');
+  await act(async () => {
+    await userEvent.paste(filterInput, 'tacos');
+  });
   const checks = await screen.findAllByLabelText('check-card');
   expect(checks.length).toBe(1);
 });
@@ -167,7 +173,9 @@ test('search matches job value', async () => {
 test('search matches target value', async () => {
   renderCheckList();
   const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
-  await userEvent.paste(filterInput, 'asada');
+  await act(async () => {
+    await userEvent.paste(filterInput, 'asada');
+  });
   const checks = await screen.findAllByLabelText('check-card');
   expect(checks.length).toBe(1);
 });
@@ -175,7 +183,9 @@ test('search matches target value', async () => {
 test('search matches label value', async () => {
   renderCheckList();
   const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
-  await userEvent.paste(filterInput, 'nachos.com');
+  await act(async () => {
+    await userEvent.paste(filterInput, 'nachos.com');
+  });
   const checks = await screen.findAllByLabelText('check-card');
   expect(checks.length).toBe(1);
 });
@@ -183,7 +193,9 @@ test('search matches label value', async () => {
 test('search matches label name', async () => {
   renderCheckList();
   const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
-  await userEvent.paste(filterInput, 'carne');
+  await act(async () => {
+    await userEvent.paste(filterInput, 'carne');
+  });
   const checks = await screen.findAllByLabelText('check-card');
   expect(checks.length).toBe(1);
 });
@@ -191,10 +203,12 @@ test('search matches label name', async () => {
 test('clicking label value adds to label filter', async () => {
   renderCheckList();
   const labelValue = await screen.findAllByText('agreat: label');
-  userEvent.click(labelValue[1]);
-  const checks = await screen.findAllByLabelText('check-card');
+  act(() => {
+    userEvent.click(labelValue[1]);
+  });
   const filterInput = await screen.findByTestId('check-label-filter');
   expect(filterInput).toHaveValue(['agreat: label']);
+  const checks = await screen.findAllByLabelText('check-card');
   expect(checks.length).toBe(1);
 });
 
@@ -204,6 +218,14 @@ test('filters by check type', async () => {
   userEvent.selectOptions(typeFilter, 'http');
   const checks = await screen.findAllByLabelText('check-card');
   expect(checks.length).toBe(1);
+});
+
+test('filters by probe', async () => {
+  renderCheckList();
+  const probeFilter = await screen.findByTestId('probe-filter');
+  userEvent.selectOptions(probeFilter, 'Chicago');
+  const checks = await screen.findAllByLabelText('check-card');
+  expect(checks.length).toBe(2);
 });
 
 test('clicking type chiclet adds it to filter', async () => {
@@ -268,7 +290,7 @@ test('select all performs disable action on all visible checks', async () => {
     labels: [{ name: 'carne', value: 'asada' }],
     modified: 1597928965.8595479,
     offset: 0,
-    probes: [1],
+    probes: [22],
     settings: { http: { dontFragment: false, ipVersion: 'V4' } },
     target: 'example.com',
     tenantId: 1,
@@ -321,7 +343,7 @@ test('select all performs enable action on all visible checks', async () => {
         dontFragment: false,
       },
     },
-    probes: [1],
+    probes: [1, 22],
     target: 'grafana.com',
     job: 'test3',
     created: 1597934254.494585,

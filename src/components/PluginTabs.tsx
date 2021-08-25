@@ -7,7 +7,7 @@ import { ProbesPage } from 'page/ProbesPage';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { getLocationSrv } from '@grafana/runtime';
 import { DashboardInfo } from 'datasource/types';
-import { listAppDashboards } from 'dashboards/loader';
+import { importAllDashboards, listAppDashboards } from 'dashboards/loader';
 import { Button, HorizontalGroup, Modal } from '@grafana/ui';
 import { hasDismissedDashboardUpdateModal, persistDashboardModalDismiss } from 'sessionStorage';
 import { Alerting } from './Alerting';
@@ -190,13 +190,28 @@ export const PluginTabs = ({ query, onNavChanged, path, meta }: AppRootProps<Glo
         <p>It looks like your Synthetic Monitoring dashboards need an update.</p>
         <HorizontalGroup>
           <Button
-            onClick={() => {
+            onClick={async () => {
+              if (!instance.api) {
+                return;
+              }
+              const responses = await importAllDashboards(
+                instance.metrics?.name ?? '',
+                instance.logs?.name ?? '',
+                instance.api?.name ?? ''
+              );
+              const updatedSettings = {
+                ...instance.api.instanceSettings.jsonData,
+                dashboards: responses,
+              };
+              await instance.api?.onOptionsChange(updatedSettings);
+
               getLocationSrv().update({
                 partial: false,
                 path: 'plugins/grafana-synthetic-monitoring-app/',
                 query: {},
               });
               skipDashboardUpdate();
+              window.location.reload();
             }}
           >
             Update

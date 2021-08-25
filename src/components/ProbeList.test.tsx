@@ -65,7 +65,7 @@ it('renders online probes', async () => {
 
 it('renders labels', async () => {
   renderProbeList();
-  const label = await screen.findByText('chimi=churri');
+  const label = await screen.findByText('chimi:churri');
   expect(label).toBeInTheDocument();
 });
 

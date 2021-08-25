@@ -1,3 +1,51 @@
+## [1.2.30](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.29...1.2.30) (2021-08-23)
+
+## [1.2.29](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.28...1.2.29) (2021-08-23)
+
+## [1.2.28](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.27...1.2.28) (2021-08-20)
+
+
+### Bug Fixes
+
+* **ui:** probe label display on probes page ([#354](https://github.com/grafana/synthetic-monitoring-app/issues/354)) ([af1605f](https://github.com/grafana/synthetic-monitoring-app/commit/af1605f6560c708e2b3d4d79ab3fa16cade3f753))
+
+## [1.2.27](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.26...1.2.27) (2021-08-18)
+
+
+### Bug Fixes
+
+* remove duplicate label field in probe editor ([#353](https://github.com/grafana/synthetic-monitoring-app/issues/353)) ([756b04e](https://github.com/grafana/synthetic-monitoring-app/commit/756b04eff028893ae1d1a5cf181832ff8a2a3eb9))
+
+## [1.2.26](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.25...1.2.26) (2021-08-18)
+
+## [1.2.25](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.24...1.2.25) (2021-08-17)
+
+
+### Bug Fixes
+
+* store results of import in sm datasource from dashboard import modal ([#349](https://github.com/grafana/synthetic-monitoring-app/issues/349)) ([e5f76d9](https://github.com/grafana/synthetic-monitoring-app/commit/e5f76d9c122850d54a0a704f7e9c95ea24a0cd54))
+
+## [1.2.24](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.23...1.2.24) (2021-08-12)
+
+
+### Bug Fixes
+
+* update welcome page designs ([#348](https://github.com/grafana/synthetic-monitoring-app/issues/348)) ([44b2de8](https://github.com/grafana/synthetic-monitoring-app/commit/44b2de86e73e7fc3e7b7b10d86f093ffd0885f07))
+
+## [1.2.23](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.22...1.2.23) (2021-08-12)
+
+
+### Bug Fixes
+
+* showing thresholds again ([#347](https://github.com/grafana/synthetic-monitoring-app/issues/347)) ([f78dbf7](https://github.com/grafana/synthetic-monitoring-app/commit/f78dbf798a0b66192f85426db741041557fe870a))
+
+## [1.2.22](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.21...1.2.22) (2021-08-11)
+
+
+### Bug Fixes
+
+* remove unused public control from probes page ([#346](https://github.com/grafana/synthetic-monitoring-app/issues/346)) ([95aadf0](https://github.com/grafana/synthetic-monitoring-app/commit/95aadf059f8e73b41fb317c023270d7e0575161d))
+
 ## [1.2.21](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.20...1.2.21) (2021-08-10)
 
 
