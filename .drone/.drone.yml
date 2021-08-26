@@ -72,6 +72,7 @@ steps:
     pull: if-not-exists
     commands:
       # runs release-it commands
+      - git push -u origin main
       - yarn release:ci
 
   - name: Publish Release
