@@ -98,7 +98,7 @@ trigger:
   event:
     - push
   branch:
-    - drone_migration
+    - main
   paths:
     - .drone/**
     - src/**
