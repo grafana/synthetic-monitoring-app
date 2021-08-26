@@ -1,133 +1,556 @@
 ---
+image_pull_secrets:
+  - dockerconfigjson
 kind: pipeline
-type: docker
-name: SM App - test
-
+name: test-pr
 platform:
-  os: linux
   arch: amd64
-
+  os: linux
+services:
+  - environment:
+      GCP_KEY:
+        from_secret: gcp_key
+    image: grafana/plugin-build-report-service:0.0.5
+    name: plugin-build-report-service
 steps:
-  - name: Install dependencies
-    image: node:14-stretch
-    pull: if-not-exists
-    commands:
-      - yarn install --frozen-lockfile
-
-  - name: Tests
-    image: node:14-stretch
-    pull: if-not-exists
-    commands:
-      - yarn test
-
-  - name: Linting
-    image: node:14-stretch
-    pull: if-not-exists
-    commands:
-      - yarn lint
-
+  - commands:
+      - if [ -z "$GRABPL_VERSION" ]; then GRABPL_VERSION=2.3.2; fi
+      - if [ -z "$DOCKERIZE_VERSION" ]; then DOCKERIZE_VERSION=0.6.1; fi
+      - mkdir -p bin
+      - curl -fL -o bin/grabpl https://grafana-downloads.storage.googleapis.com/grafana-build-pipeline/v$GRABPL_VERSION/grabpl
+      - chmod +x bin/grabpl
+      - mkdir ci
+      - curl -fLO https://github.com/jwilder/dockerize/releases/download/v$${DOCKERIZE_VERSION}/dockerize-linux-amd64-v$${DOCKERIZE_VERSION}.tar.gz
+      - tar -C bin -xzvf dockerize-linux-amd64-v$${DOCKERIZE_VERSION}.tar.gz
+      - rm dockerize-linux-amd64-v$${DOCKERIZE_VERSION}.tar.gz
+      - yarn install --frozen-lockfile --no-progress
+      - rm -rf node_modules/@grafana/data/node_modules
+    environment:
+      GRABPL_VERSION:
+        from_secret: grabpl_version
+    image: grafana/grafana-plugin-ci:1.2.0-alpine
+    name: initialize
+  - commands:
+      - ./node_modules/.bin/grafana-toolkit plugin:ci-build
+    depends_on:
+      - initialize
+    image: grafana/grafana-plugin-ci:1.2.0-alpine
+    name: build-and-test-frontend
+  - commands:
+      - ./node_modules/.bin/grafana-toolkit plugin:ci-build --finish
+      - ./bin/grabpl plugin package
+    depends_on:
+      - build-and-test-frontend
+    environment:
+      GRAFANA_API_KEY:
+        from_secret: grafana_api_key
+    image: grafana/grafana-plugin-ci:1.2.0-alpine
+    name: package
+  - commands:
+      - ./bin/dockerize -wait tcp://plugin-build-report-service:5432 -timeout 120s
+      - ./bin/grabpl plugin create-build-report
+    depends_on:
+      - initialize
+    image: grafana/grafana-plugin-ci:1.2.0-alpine
+    name: create-build-report
+  - commands:
+      - if [ -z "$GCP_KEY" ]; then echo "Missing GCS Publish Key"; exit -1; fi
+      - apt update
+      - apt install -y jq git-lfs
+      - PLUGIN_NAME=`jq -r .id ci/jobs/package/dist/plugin.json`
+      - VERSION=`jq -r .info.version ci/jobs/package/dist/plugin.json`
+      - printenv GCP_KEY > /tmp/gcpkey.json
+      - gcloud auth activate-service-account --key-file=/tmp/gcpkey.json
+      - gsutil -m cp -r ci/packages/** gs://integration-artifacts/$${PLUGIN_NAME}/$${VERSION}/$${DRONE_BRANCH}/$${DRONE_COMMIT_SHA}
+      - gsutil rm -f gs://integration-artifacts/$${PLUGIN_NAME}/$${VERSION}/$${DRONE_BRANCH}/latest/** || true
+      - echo "Copying artifacts to $${PLUGIN_NAME}/$${VERSION}/$${DRONE_BRANCH}/latest"
+      - gsutil -m cp -r ci/packages/** gs://integration-artifacts/$${PLUGIN_NAME}/$${VERSION}/$${DRONE_BRANCH}/latest
+    depends_on:
+      - package
+    environment:
+      GCP_KEY:
+        from_secret: gcp_key
+    image: google/cloud-sdk:352.0.0
+    name: publish-gcs-artifacts
+  - commands:
+      - '[ -n "${CRON_E2E_GRAFANA_VERSION}" ] && E2E_GRAFANA_VERSION="${CRON_E2E_GRAFANA_VERSION}" || true'
+      - apt update
+      - apt install -y jq git-lfs
+      - ./bin/grabpl plugin e2etests
+    depends_on:
+      - package
+    environment:
+      CRON_E2E_GRAFANA_VERSION:
+        from_secret: CRON_E2E_GRAFANA_VERSION
+      E2E_GRAFANA_VERSION:
+        from_secret: E2E_GRAFANA_VERSION
+      GITHUB_TOKEN:
+        from_secret: github_token
+      GRAFANA_LICENSE_KEY:
+        from_secret: license_key
+    image: grafana/grafana-plugin-ci-e2e:1.3.0
+    name: run-e2e
+  - commands:
+      - printenv GCP_KEY > /tmp/gcpkey.json
+      - gcloud auth activate-service-account --key-file=/tmp/gcpkey.json
+      - gsutil cp ci/jobs/package/dist/plugin.json gs://plugins-ci/drone/$${DRONE_REPO}/pull-requests/$${DRONE_PULL_REQUEST}/meta/plugin.json
+      - gsutil -m rsync -r ci/packages gs://plugins-ci/drone/$${DRONE_REPO}/pull-requests/$${DRONE_PULL_REQUEST}/packages
+      - if [ -d cypress ]; then gsutil -m rsync -r cypress/videos gs://plugins-ci/drone/$${DRONE_REPO}/pull-requests/$${DRONE_PULL_REQUEST}/artifacts/; fi
+      - if [ -d cypress ]; then gsutil -m rsync -r cypress/screenshots gs://plugins-ci/drone/$${DRONE_REPO}/pull-requests/$${DRONE_PULL_REQUEST}/artifacts/; fi
+    depends_on:
+      - run-e2e
+    environment:
+      GCP_KEY:
+        from_secret: gcp_key
+    image: grafana/grafana-plugin-ci:1.2.0-alpine
+    name: upload-artifacts
+  - commands:
+      - ./bin/dockerize -wait tcp://plugin-build-report-service:5432 -timeout 120s
+      - ./bin/grabpl plugin store-stats-and-artifacts
+    depends_on:
+      - publish-gcs-artifacts
+      - upload-artifacts
+    environment:
+      GCP_KEY:
+        from_secret: gcp_key
+    image: google/cloud-sdk:352.0.0
+    name: store-stats-and-artifacts
+  - commands:
+      - if [ -f failed ]; then return 1; else return 0; fi
+    depends_on:
+      - upload-artifacts
+    image: grafana/grafana-plugin-ci:1.2.0-alpine
+    name: check-e2e
+  - commands:
+      - ./bin/dockerize -wait tcp://plugin-build-report-service:5432 -timeout 120s
+      - ./bin/grabpl plugin store-build-report
+    depends_on:
+      - store-stats-and-artifacts
+    environment:
+      GCP_KEY:
+        from_secret: gcp_key
+    image: google/cloud-sdk:352.0.0
+    name: store-build-report
+  - commands:
+      - ./bin/dockerize -wait tcp://plugin-build-report-service:5432 -timeout 120s
+      - ./bin/grabpl plugin store-build-report --failed-pipeline
+    depends_on:
+      - build-and-test-frontend
+      - package
+      - publish-gcs-artifacts
+      - check-e2e
+    environment:
+      GCP_KEY:
+        from_secret: gcp_key
+    image: google/cloud-sdk:352.0.0
+    name: finalize-failed-build-report
+    when:
+      status:
+        - failure
 trigger:
   event:
-    - push
     - pull_request
-  branch:
-    exclude:
-      - main
-  paths:
-    - .drone/**
-    - src/**
-    - package.json
+type: docker
 
 ---
+image_pull_secrets:
+  - dockerconfigjson
 kind: pipeline
-type: docker
-name: SM App - create release
-
+name: test-main
 platform:
-  os: linux
   arch: amd64
-
+  os: linux
+services:
+  - environment:
+      GCP_KEY:
+        from_secret: gcp_key
+    image: grafana/plugin-build-report-service:0.0.5
+    name: plugin-build-report-service
 steps:
-  - name: Install dependencies
-    image: node:14-stretch
-    pull: if-not-exists
-    commands:
-      - yarn install --frozen-lockfile
-
-  # - name: Build Plugin
-  #   image: node:14-stretch
-  #   pull: if-not-exists
-  #   commands:
-  #     - apt-get update
-  #     - apt-get install zip
-  #     - yarn build
-  #     - yarn sign
-  #     - zip -r synthetic-monitoring-app-${DRONE_COMMIT_SHA:0:7}.zip ./dist
-  #   environment:
-  #     GCOM_TOKEN:
-  #       from_secret: gcom_token
-
-  - name: Bump Version
-    image: srclosson/grafana-plugin-ci-alpine:latest
-    pull: if-not-exists
-    commands:
-      # runs release-it commands
-      - yarn release:ci
-    settings:
-      id_rsa:
-        from_secret: github_token
-
-  - name: Publish Release
-    image: plugins/github-release
-    pull: if-not-exists
-    commands:
-      - TAG=`git tag --points-at HEAD`
-    settings:
-      api_key:
-        from_secret: github_token
-      files: synthetic-monitoring-app-${DRONE_COMMIT_SHA:0:7}.zip
-      title: ${TAG}
-
-  - name: Publish to staging
-    image: srclosson/grafana-plugin-ci-alpine:latest
-    pull: if-not-exists
-    commands:
-      - /bin/bash ./scripts/staging-install.sh
+  - commands:
+      - if [ -z "$GRABPL_VERSION" ]; then GRABPL_VERSION=2.3.2; fi
+      - if [ -z "$DOCKERIZE_VERSION" ]; then DOCKERIZE_VERSION=0.6.1; fi
+      - mkdir -p bin
+      - curl -fL -o bin/grabpl https://grafana-downloads.storage.googleapis.com/grafana-build-pipeline/v$GRABPL_VERSION/grabpl
+      - chmod +x bin/grabpl
+      - mkdir ci
+      - curl -fLO https://github.com/jwilder/dockerize/releases/download/v$${DOCKERIZE_VERSION}/dockerize-linux-amd64-v$${DOCKERIZE_VERSION}.tar.gz
+      - tar -C bin -xzvf dockerize-linux-amd64-v$${DOCKERIZE_VERSION}.tar.gz
+      - rm dockerize-linux-amd64-v$${DOCKERIZE_VERSION}.tar.gz
+      - yarn install --frozen-lockfile --no-progress
+      - rm -rf node_modules/@grafana/data/node_modules
     environment:
-      GCOM_TOKEN:
-        from_secret: gcom_token
-
+      GRABPL_VERSION:
+        from_secret: grabpl_version
+    image: grafana/grafana-plugin-ci:1.2.0-alpine
+    name: initialize
+  - commands:
+      - ./node_modules/.bin/grafana-toolkit plugin:ci-build
+    depends_on:
+      - initialize
+    image: grafana/grafana-plugin-ci:1.2.0-alpine
+    name: build-and-test-frontend
+  - commands:
+      - ./node_modules/.bin/grafana-toolkit plugin:ci-build --finish
+      - ./bin/grabpl plugin package
+    depends_on:
+      - build-and-test-frontend
+    environment:
+      GRAFANA_API_KEY:
+        from_secret: grafana_api_key
+    image: grafana/grafana-plugin-ci:1.2.0-alpine
+    name: package
+  - commands:
+      - ./bin/dockerize -wait tcp://plugin-build-report-service:5432 -timeout 120s
+      - ./bin/grabpl plugin create-build-report
+    depends_on:
+      - initialize
+    image: grafana/grafana-plugin-ci:1.2.0-alpine
+    name: create-build-report
+  - commands:
+      - if [ -z "$GCP_KEY" ]; then echo "Missing GCS Publish Key"; exit -1; fi
+      - apt update
+      - apt install -y jq git-lfs
+      - PLUGIN_NAME=`jq -r .id ci/jobs/package/dist/plugin.json`
+      - VERSION=`jq -r .info.version ci/jobs/package/dist/plugin.json`
+      - printenv GCP_KEY > /tmp/gcpkey.json
+      - gcloud auth activate-service-account --key-file=/tmp/gcpkey.json
+      - gsutil -m cp -r ci/packages/** gs://integration-artifacts/$${PLUGIN_NAME}/$${VERSION}/$${DRONE_BRANCH}/$${DRONE_COMMIT_SHA}
+      - gsutil rm -f gs://integration-artifacts/$${PLUGIN_NAME}/$${VERSION}/$${DRONE_BRANCH}/latest/** || true
+      - echo "Copying artifacts to $${PLUGIN_NAME}/$${VERSION}/$${DRONE_BRANCH}/latest"
+      - gsutil -m cp -r ci/packages/** gs://integration-artifacts/$${PLUGIN_NAME}/$${VERSION}/$${DRONE_BRANCH}/latest
+    depends_on:
+      - package
+    environment:
+      GCP_KEY:
+        from_secret: gcp_key
+    image: google/cloud-sdk:352.0.0
+    name: publish-gcs-artifacts
+  - commands:
+      - '[ -n "${CRON_E2E_GRAFANA_VERSION}" ] && E2E_GRAFANA_VERSION="${CRON_E2E_GRAFANA_VERSION}" || true'
+      - apt update
+      - apt install -y jq git-lfs
+      - ./bin/grabpl plugin e2etests
+    depends_on:
+      - package
+    environment:
+      CRON_E2E_GRAFANA_VERSION:
+        from_secret: CRON_E2E_GRAFANA_VERSION
+      E2E_GRAFANA_VERSION:
+        from_secret: E2E_GRAFANA_VERSION
+      GITHUB_TOKEN:
+        from_secret: github_token
+      GRAFANA_LICENSE_KEY:
+        from_secret: license_key
+    image: grafana/grafana-plugin-ci-e2e:1.3.0
+    name: run-e2e
+  - commands:
+      - printenv GCP_KEY > /tmp/gcpkey.json
+      - gcloud auth activate-service-account --key-file=/tmp/gcpkey.json
+      - gsutil cp ci/jobs/package/dist/plugin.json gs://plugins-ci/drone/$${DRONE_REPO}/$${DRONE_BRANCH}/$${DRONE_BUILD_NUMBER}/meta/plugin.json
+      - gsutil -m rsync -r ci/packages gs://plugins-ci/drone/$${DRONE_REPO}/$${DRONE_BRANCH}/$${DRONE_BUILD_NUMBER}/packages
+      - if [ -d cypress ]; then gsutil -m rsync -r cypress/videos gs://plugins-ci/drone/$${DRONE_REPO}/$${DRONE_BRANCH}/$${DRONE_BUILD_NUMBER}/artifacts/; fi
+      - if [ -d cypress ]; then gsutil -m rsync -r cypress/screenshots gs://plugins-ci/drone/$${DRONE_REPO}/$${DRONE_BRANCH}/$${DRONE_BUILD_NUMBER}/artifacts/; fi
+    depends_on:
+      - run-e2e
+    environment:
+      GCP_KEY:
+        from_secret: gcp_key
+    image: grafana/grafana-plugin-ci:1.2.0-alpine
+    name: upload-artifacts
+  - commands:
+      - ./bin/dockerize -wait tcp://plugin-build-report-service:5432 -timeout 120s
+      - ./bin/grabpl plugin store-stats-and-artifacts
+    depends_on:
+      - publish-gcs-artifacts
+      - upload-artifacts
+    environment:
+      GCP_KEY:
+        from_secret: gcp_key
+    image: google/cloud-sdk:352.0.0
+    name: store-stats-and-artifacts
+  - commands:
+      - if [ -f failed ]; then return 1; else return 0; fi
+    depends_on:
+      - upload-artifacts
+    image: grafana/grafana-plugin-ci:1.2.0-alpine
+    name: check-e2e
+  - commands:
+      - ./bin/dockerize -wait tcp://plugin-build-report-service:5432 -timeout 120s
+      - ./bin/grabpl plugin store-build-report
+    depends_on:
+      - store-stats-and-artifacts
+    environment:
+      GCP_KEY:
+        from_secret: gcp_key
+    image: google/cloud-sdk:352.0.0
+    name: store-build-report
+  - commands:
+      - ./bin/dockerize -wait tcp://plugin-build-report-service:5432 -timeout 120s
+      - ./bin/grabpl plugin store-build-report --failed-pipeline
+    depends_on:
+      - build-and-test-frontend
+      - package
+      - publish-gcs-artifacts
+      - check-e2e
+    environment:
+      GCP_KEY:
+        from_secret: gcp_key
+    image: google/cloud-sdk:352.0.0
+    name: finalize-failed-build-report
+    when:
+      status:
+        - failure
+  - commands:
+      - if [ -z "$GCP_KEY" ]; then echo "Missing GCS Publish Key"; exit -1; fi
+      - apt update
+      - apt install -y jq git-lfs
+      - PLUGIN_NAME=`jq -r .id ci/jobs/package/dist/plugin.json`
+      - VERSION=`jq -r .info.version ci/jobs/package/dist/plugin.json`
+      - printenv GCP_KEY > /tmp/gcpkey.json
+      - gcloud auth activate-service-account --key-file=/tmp/gcpkey.json
+      - gsutil rm -f gs://integration-artifacts/$${PLUGIN_NAME}/$${DRONE_BRANCH}/latest/** || true
+      - gsutil -m cp -r ci/packages/** gs://integration-artifacts/$${PLUGIN_NAME}/$${DRONE_BRANCH}/latest
+    depends_on:
+      - publish-gcs-artifacts
+      - check-e2e
+    environment:
+      GCP_KEY:
+        from_secret: gcp_key
+    image: google/cloud-sdk:352.0.0
+    name: update-gcs-master-latest
+  - commands:
+      - PLUGIN_NAME=`jq -r .id ci/jobs/package/dist/plugin.json`
+      - integration-bot.js update-enterprise-master $PLUGIN_NAME $DRONE_REPO_NAME
+    depends_on:
+      - update-gcs-master-latest
+    environment:
+      GCLOUD_SERVICE_KEY:
+        from_secret: gcp_key
+      GITHUB_BOT_EMAIL: grafanabot@grafana.com
+      GITHUB_BOT_TOKEN:
+        from_secret: github_token
+      GITHUB_BOT_USER: grafanabot
+    image: us.gcr.io/kubernetes-dev/integration-bot:v11
+    name: integration-bot-main
 trigger:
+  branch:
+    - master
+    - main
   event:
     - push
-  branch:
-    - main
-  paths:
-    - .drone/**
-    - src/**
-    - package.json
+type: docker
+
+---
+image_pull_secrets:
+  - dockerconfigjson
+kind: pipeline
+name: test-cron
+platform:
+  arch: amd64
+  os: linux
+services:
+  - environment:
+      GCP_KEY:
+        from_secret: gcp_key
+    image: grafana/plugin-build-report-service:0.0.5
+    name: plugin-build-report-service
+steps:
+  - commands:
+      - if [ -z "$GRABPL_VERSION" ]; then GRABPL_VERSION=2.3.2; fi
+      - if [ -z "$DOCKERIZE_VERSION" ]; then DOCKERIZE_VERSION=0.6.1; fi
+      - mkdir -p bin
+      - curl -fL -o bin/grabpl https://grafana-downloads.storage.googleapis.com/grafana-build-pipeline/v$GRABPL_VERSION/grabpl
+      - chmod +x bin/grabpl
+      - mkdir ci
+      - curl -fLO https://github.com/jwilder/dockerize/releases/download/v$${DOCKERIZE_VERSION}/dockerize-linux-amd64-v$${DOCKERIZE_VERSION}.tar.gz
+      - tar -C bin -xzvf dockerize-linux-amd64-v$${DOCKERIZE_VERSION}.tar.gz
+      - rm dockerize-linux-amd64-v$${DOCKERIZE_VERSION}.tar.gz
+      - yarn install --frozen-lockfile --no-progress
+      - rm -rf node_modules/@grafana/data/node_modules
+    environment:
+      GRABPL_VERSION:
+        from_secret: grabpl_version
+    image: grafana/grafana-plugin-ci:1.2.0-alpine
+    name: initialize
+  - commands:
+      - ./node_modules/.bin/grafana-toolkit plugin:ci-build
+    depends_on:
+      - initialize
+    image: grafana/grafana-plugin-ci:1.2.0-alpine
+    name: build-and-test-frontend
+  - commands:
+      - ./node_modules/.bin/grafana-toolkit plugin:ci-build --finish
+      - ./bin/grabpl plugin package
+    depends_on:
+      - build-and-test-frontend
+    environment:
+      GRAFANA_API_KEY:
+        from_secret: grafana_api_key
+    image: grafana/grafana-plugin-ci:1.2.0-alpine
+    name: package
+  - commands:
+      - ./bin/dockerize -wait tcp://plugin-build-report-service:5432 -timeout 120s
+      - ./bin/grabpl plugin create-build-report
+    depends_on:
+      - initialize
+    image: grafana/grafana-plugin-ci:1.2.0-alpine
+    name: create-build-report
+  - commands:
+      - if [ -z "$GCP_KEY" ]; then echo "Missing GCS Publish Key"; exit -1; fi
+      - apt update
+      - apt install -y jq git-lfs
+      - PLUGIN_NAME=`jq -r .id ci/jobs/package/dist/plugin.json`
+      - VERSION=`jq -r .info.version ci/jobs/package/dist/plugin.json`
+      - printenv GCP_KEY > /tmp/gcpkey.json
+      - gcloud auth activate-service-account --key-file=/tmp/gcpkey.json
+      - gsutil -m cp -r ci/packages/** gs://integration-artifacts/$${PLUGIN_NAME}/$${VERSION}/$${DRONE_BRANCH}/$${DRONE_COMMIT_SHA}
+      - gsutil rm -f gs://integration-artifacts/$${PLUGIN_NAME}/$${VERSION}/$${DRONE_BRANCH}/latest/** || true
+      - echo "Copying artifacts to $${PLUGIN_NAME}/$${VERSION}/$${DRONE_BRANCH}/latest"
+      - gsutil -m cp -r ci/packages/** gs://integration-artifacts/$${PLUGIN_NAME}/$${VERSION}/$${DRONE_BRANCH}/latest
+    depends_on:
+      - package
+    environment:
+      GCP_KEY:
+        from_secret: gcp_key
+    image: google/cloud-sdk:352.0.0
+    name: publish-gcs-artifacts
+  - commands:
+      - '[ -n "${CRON_E2E_GRAFANA_VERSION}" ] && E2E_GRAFANA_VERSION="${CRON_E2E_GRAFANA_VERSION}" || true'
+      - apt update
+      - apt install -y jq git-lfs
+      - ./bin/grabpl plugin e2etests
+    depends_on:
+      - package
+    environment:
+      CRON_E2E_GRAFANA_VERSION:
+        from_secret: CRON_E2E_GRAFANA_VERSION
+      E2E_GRAFANA_VERSION:
+        from_secret: E2E_GRAFANA_VERSION
+      GITHUB_TOKEN:
+        from_secret: github_token
+      GRAFANA_LICENSE_KEY:
+        from_secret: license_key
+    image: grafana/grafana-plugin-ci-e2e:1.3.0
+    name: run-e2e
+  - commands:
+      - printenv GCP_KEY > /tmp/gcpkey.json
+      - gcloud auth activate-service-account --key-file=/tmp/gcpkey.json
+      - gsutil cp ci/jobs/package/dist/plugin.json gs://plugins-ci/drone/$${DRONE_REPO}/cron/$${DRONE_BRANCH}/$${DRONE_BUILD_NUMBER}/meta/plugin.json
+      - gsutil -m rsync -r ci/packages gs://plugins-ci/drone/$${DRONE_REPO}/cron/$${DRONE_BRANCH}/$${DRONE_BUILD_NUMBER}/packages
+      - if [ -d cypress ]; then gsutil -m rsync -r cypress/videos gs://plugins-ci/drone/$${DRONE_REPO}/cron/$${DRONE_BRANCH}/$${DRONE_BUILD_NUMBER}/artifacts/; fi
+      - if [ -d cypress ]; then gsutil -m rsync -r cypress/screenshots gs://plugins-ci/drone/$${DRONE_REPO}/cron/$${DRONE_BRANCH}/$${DRONE_BUILD_NUMBER}/artifacts/; fi
+    depends_on:
+      - run-e2e
+    environment:
+      GCP_KEY:
+        from_secret: gcp_key
+    image: grafana/grafana-plugin-ci:1.2.0-alpine
+    name: upload-artifacts
+  - commands:
+      - ./bin/dockerize -wait tcp://plugin-build-report-service:5432 -timeout 120s
+      - ./bin/grabpl plugin store-stats-and-artifacts
+    depends_on:
+      - publish-gcs-artifacts
+      - upload-artifacts
+    environment:
+      GCP_KEY:
+        from_secret: gcp_key
+    image: google/cloud-sdk:352.0.0
+    name: store-stats-and-artifacts
+  - commands:
+      - if [ -f failed ]; then return 1; else return 0; fi
+    depends_on:
+      - upload-artifacts
+    image: grafana/grafana-plugin-ci:1.2.0-alpine
+    name: check-e2e
+  - commands:
+      - ./bin/dockerize -wait tcp://plugin-build-report-service:5432 -timeout 120s
+      - ./bin/grabpl plugin store-build-report
+    depends_on:
+      - store-stats-and-artifacts
+    environment:
+      GCP_KEY:
+        from_secret: gcp_key
+    image: google/cloud-sdk:352.0.0
+    name: store-build-report
+  - commands:
+      - ./bin/dockerize -wait tcp://plugin-build-report-service:5432 -timeout 120s
+      - ./bin/grabpl plugin store-build-report --failed-pipeline
+    depends_on:
+      - build-and-test-frontend
+      - package
+      - publish-gcs-artifacts
+      - check-e2e
+    environment:
+      GCP_KEY:
+        from_secret: gcp_key
+    image: google/cloud-sdk:352.0.0
+    name: finalize-failed-build-report
+    when:
+      status:
+        - failure
+trigger:
+  event:
+    - cron
+type: docker
+
+---
+get:
+  name: grafana_api_key
+  path: infra/data/ci/drone-plugins
+kind: secret
+name: grafana_api_key
+
+---
+get:
+  name: gcp_key
+  path: infra/data/ci/drone-plugins
+kind: secret
+name: gcp_key
+
+---
+get:
+  name: license_key
+  path: infra/data/ci/drone-plugins
+kind: secret
+name: license_key
+
+---
+get:
+  name: github_token
+  path: infra/data/ci/drone-plugins
+kind: secret
+name: github_token
+
+---
+get:
+  name: srcclr_api_token
+  path: infra/data/ci/drone-plugins
+kind: secret
+name: srcclr_api_token
+
+---
+get:
+  name: .dockerconfigjson
+  path: secret/data/common/gcr
+kind: secret
+name: dockerconfigjson
 
 ---
 kind: pipeline
-type: docker
-name: SM App - production release
-
+name: deploy-publish
 platform:
-  os: linux
   arch: amd64
-
-steps:
-  - name: Publish to Grafana.com
-    image: srclosson/grafana-plugin-ci-alpine:latest
-    pull: if-not-exists
-    commands:
-      - /bin/bash ./scripts/production-release
-    environment:
-      GCOM_TOKEN:
-        from_secret: gcom_token
-
+  os: linux
+steps: []
 trigger:
   event:
     - promote
   target:
-    - production
+    - publish
+type: docker
+
+---
+kind: signature
+hmac: e1708bbe1b02aada75a3e9a5ed478da46f12d444b0536d87dcc8e1ef06d3eebc
