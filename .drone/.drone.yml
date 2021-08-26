@@ -34,7 +34,9 @@ trigger:
     exclude:
       - main
   paths:
+    - .drone/**
     - src/**
+    - package.json
 
 ---
 kind: pipeline
@@ -98,7 +100,9 @@ trigger:
   branch:
     - main
   paths:
+    - .drone/**
     - src/**
+    - package.json
 
 ---
 kind: pipeline
