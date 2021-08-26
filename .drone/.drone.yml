@@ -76,10 +76,9 @@ steps:
       - git config --global user.name "Drone Automation"
       - git push --set-upstream origin main
       - yarn release:ci
-    environment:
-      GIT_KEY:
+    settings:
+      id_rsa:
         from_secret: github_token
-      GIT_SSH_COMMAND: "ssh -i $GIT_KEY"
 
   - name: Publish Release
     image: plugins/github-release
