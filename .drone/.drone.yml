@@ -1,0 +1,126 @@
+---
+kind: pipeline
+type: docker
+name: SM App - test
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+  - name: Install dependencies
+    image: node:14-stretch
+    pull: if-not-exists
+    commands:
+      - yarn install --frozen-lockfile
+
+  - name: Tests
+    image: node:14-stretch
+    pull: if-not-exists
+    commands:
+      - yarn test
+
+  - name: Linting
+    image: node:14-stretch
+    pull: if-not-exists
+    commands:
+      - yarn lint
+
+trigger:
+  event:
+    - push
+    - pull_request
+  branch:
+    exclude:
+      - main
+  paths:
+    - src/**
+
+---
+kind: pipeline
+type: docker
+name: SM App - create release
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+  - name: Install dependencies
+    image: node:14-stretch
+    pull: if-not-exists
+    commands:
+      - yarn install --frozen-lockfile
+
+  - name: Build Plugin
+    image: node:14-stretch
+    pull: if-not-exists
+    commands:
+      - apt-get update
+      - apt-get install zip
+      - yarn build
+      - yarn sign
+      - zip -r synthetic-monitoring-app-${DRONE_COMMIT_SHA:0:7}.zip ./dist
+    environment:
+      GCOM_TOKEN:
+        from_secret: gcom_token
+
+  - name: Bump Version
+    image: node:14-stretch
+    pull: if-not-exists
+    commands:
+      # runs release-it commands
+      - yarn release:ci
+
+  - name: Publish Release
+    image: plugins/github-release
+    pull: if-not-exists
+    commands:
+      - TAG=`git tag --points-at HEAD`
+    settings:
+      api_key:
+        from_secret: github_token
+      files: synthetic-monitoring-app-${DRONE_COMMIT_SHA:0:7}.zip
+      title: ${TAG}
+
+  - name: Publish to staging
+    image: srclosson/grafana-plugin-ci-alpine:latest
+    pull: if-not-exists
+    commands:
+      - /bin/bash ./scripts/staging-install.sh
+    environment:
+      GCOM_TOKEN:
+        from_secret: gcom_token
+
+trigger:
+  event:
+    - push
+  branch:
+    - main
+  paths:
+    - src/**
+
+---
+kind: pipeline
+type: docker
+name: SM App - production release
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+  - name: Publish to Grafana.com
+    image: srclosson/grafana-plugin-ci-alpine:latest
+    pull: if-not-exists
+    commands:
+      - /bin/bash ./scripts/production-release
+    environment:
+      GCOM_TOKEN:
+        from_secret: gcom_token
+
+trigger:
+  event:
+    - promote
+  target:
+    - production
