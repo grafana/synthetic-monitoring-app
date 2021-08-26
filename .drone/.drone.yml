@@ -72,8 +72,14 @@ steps:
     pull: if-not-exists
     commands:
       # runs release-it commands
+      - git config user.email "drone@grafana.com"
+      - git config --global user.name "Drone Automation"
       - git push -u origin main
       - yarn release:ci
+    environment:
+      GIT_KEY:
+        from_secret: github_token
+      GIT_SSH_COMMAND: "ssh -i ~/.ssh/$GIT_KEY"
 
   - name: Publish Release
     image: plugins/github-release
