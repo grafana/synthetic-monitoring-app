@@ -32,7 +32,7 @@ trigger:
     - pull_request
   branch:
     exclude:
-      - drone_migration
+      - main
   paths:
     - .drone/**
     - src/**
