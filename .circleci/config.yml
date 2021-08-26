@@ -7,10 +7,17 @@ parameters:
   ssh-fingerprint:
     type: string
     default: ${GITHUB_SSH_FINGERPRINT}
+  git-branch:
+    default: non-existing-branch
+    type: string
 
 aliases:
   # Workflow filters
   # release-it adds a version tag without a leading "v", we want to run github deploys on those tags
+  - &filter-non-existing-branch
+    branches:
+      only:
+        - << pipeline.parameters.git-branch >>
   - &filter-only-tagged
     tags:
       only: /^(([0-9]+)\.([0-9]+)\.([0-9]+))/
@@ -37,7 +44,7 @@ workflows:
   pr_build:
     jobs:
       - install_dependencies:
-          filters: *filter-only-pr
+          filters: *filter-non-existing-branch
       - test:
           requires:
             - install_dependencies
@@ -45,36 +52,36 @@ workflows:
   master_build:
     jobs:
       - install_dependencies:
-          filters: *filter-only-main
+          filters: *filter-non-existing-branch
       - version_bump:
-          filters: *filter-only-main
+          filters: *filter-non-existing-branch
           requires:
             - install_dependencies
 
   publish_release:
     jobs:
       - install_dependencies:
-          filters: *filter-only-tagged
+          filters: *filter-non-existing-branch
       - build:
-          filters: *filter-only-tagged
+          filters: *filter-non-existing-branch
       - publish_github_release:
-          filters: *filter-only-tagged
+          filters: *filter-non-existing-branch
           requires:
             - build
 
   register_with_gcom:
     jobs:
       - release_to_staging:
-          filters: *filter-only-release
+          filters: *filter-non-existing-branch
       - approve_release:
           type: approval
           requires:
             - release_to_staging
-          filters: *filter-only-release
+          filters: *filter-non-existing-branch
       - release_to_production:
           requires:
             - approve_release
-          filters: *filter-only-release
+          filters: *filter-non-existing-branch
 
 executors:
   default_exec: # declares a reusable executor
@@ -162,7 +169,7 @@ jobs:
       - add_ssh_keys:
           fingerprints:
             - << pipeline.parameters.ssh-fingerprint >>
-            - '48:1b:33:86:08:6d:24:64:14:15:cf:e1:d8:70:3f:19'
+            - "48:1b:33:86:08:6d:24:64:14:15:cf:e1:d8:70:3f:19"
             - ${GITHUB_SSH_FINGERPRINT}
       - attach_workspace:
           at: .
@@ -171,7 +178,7 @@ jobs:
           keys:
             - build-cache-{{ .Environment.CACHE_VERSION }}-{{ checksum "yarn.lock" }}
       - run:
-          name: 'bump version and commit changelog'
+          name: "bump version and commit changelog"
           command: |
             git config user.email "circleci@grafana.com"
             git config --global user.name "CircleCI Automation"
@@ -208,7 +215,7 @@ jobs:
       - add_ssh_keys:
           fingerprints:
             - << pipeline.parameters.ssh-fingerprint >>
-            - '48:1b:33:86:08:6d:24:64:14:15:cf:e1:d8:70:3f:19'
+            - "48:1b:33:86:08:6d:24:64:14:15:cf:e1:d8:70:3f:19"
             - ${GITHUB_SSH_FINGERPRINT}
       - attach_workspace:
           at: .
@@ -217,7 +224,7 @@ jobs:
           keys:
             - build-cache-{{ .Environment.CACHE_VERSION }}-{{ checksum "yarn.lock" }}
       - run:
-          name: 'Publish Release on GitHub'
+          name: "Publish Release on GitHub"
           command: |
             yarn github-publish
       - store_artifacts:
@@ -232,7 +239,7 @@ jobs:
       - attach_workspace:
           at: .
       - run:
-          name: 'Publish release to staging'
+          name: "Publish release to staging"
           command: |
             apk --no-cache add curl
             apk --no-cache add bash
@@ -247,7 +254,7 @@ jobs:
       - attach_workspace:
           at: .
       - run:
-          name: 'Publish release to production'
+          name: "Publish release to production"
           command: |
             apk --no-cache add curl
             apk --no-cache add bash
