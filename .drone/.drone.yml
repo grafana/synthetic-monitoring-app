@@ -72,10 +72,8 @@ steps:
     pull: if-not-exists
     commands:
       # runs release-it commands
-      - git remote add origin https://github.com/grafana/synthetic-monitoring-app.git
       - git config user.email "drone@grafana.com"
       - git config --global user.name "Drone Automation"
-      - git push -u origin main
       - yarn release:ci
     environment:
       GIT_KEY:
