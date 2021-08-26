@@ -74,6 +74,7 @@ steps:
       # runs release-it commands
       - git config user.email "drone@grafana.com"
       - git config --global user.name "Drone Automation"
+      - git push --set-upstream origin main
       - yarn release:ci
     environment:
       GIT_KEY:
