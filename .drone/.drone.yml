@@ -72,10 +72,6 @@ steps:
     pull: if-not-exists
     commands:
       # runs release-it commands
-      - git config user.email "drone@grafana.com"
-      - git config --global user.name "Drone Automation"
-      - git push --set-upstream origin main
-      - git config -l
       - yarn release:ci
     settings:
       id_rsa:
