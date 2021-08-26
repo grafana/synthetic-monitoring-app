@@ -1,6 +1,5 @@
 ---
 kind: pipeline
-type: docker
 name: SM App - test
 
 platform:
@@ -40,7 +39,6 @@ trigger:
 
 ---
 kind: pipeline
-type: docker
 name: SM App - create release
 
 platform:
@@ -106,7 +104,6 @@ trigger:
 
 ---
 kind: pipeline
-type: docker
 name: SM App - production release
 
 platform:
