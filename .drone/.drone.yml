@@ -54,24 +54,25 @@ steps:
     commands:
       - yarn install --frozen-lockfile
 
-  - name: Build Plugin
-    image: node:14-stretch
-    pull: if-not-exists
-    commands:
-      - apt-get update
-      - apt-get install zip
-      - yarn build
-      - yarn sign
-      - zip -r synthetic-monitoring-app-${DRONE_COMMIT_SHA:0:7}.zip ./dist
-    environment:
-      GCOM_TOKEN:
-        from_secret: gcom_token
+  # - name: Build Plugin
+  #   image: node:14-stretch
+  #   pull: if-not-exists
+  #   commands:
+  #     - apt-get update
+  #     - apt-get install zip
+  #     - yarn build
+  #     - yarn sign
+  #     - zip -r synthetic-monitoring-app-${DRONE_COMMIT_SHA:0:7}.zip ./dist
+  #   environment:
+  #     GCOM_TOKEN:
+  #       from_secret: gcom_token
 
   - name: Bump Version
     image: node:14-stretch
     pull: if-not-exists
     commands:
       # runs release-it commands
+      - git remote add origin https://github.com/grafana/synthetic-monitoring-app.git
       - git config user.email "drone@grafana.com"
       - git config --global user.name "Drone Automation"
       - git push -u origin main
