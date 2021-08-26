@@ -79,7 +79,7 @@ steps:
     environment:
       GIT_KEY:
         from_secret: github_token
-      GIT_SSH_COMMAND: "ssh -i ~/.ssh/$GIT_KEY"
+      GIT_SSH_COMMAND: "ssh -i $GIT_KEY"
 
   - name: Publish Release
     image: plugins/github-release
