@@ -683,7 +683,7 @@ steps:
       GCLOUD_SERVICE_KEY:
         from_secret: gcp_key
       GCOM_PUBLISH_TOKEN:
-        from_secret: gcom_publish_token
+        from_secret: gcom_token
       GITHUB_TOKEN:
         from_secret: github_token
     image: grafana/integration-grafana-publisher:v7
