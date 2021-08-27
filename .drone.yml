@@ -688,18 +688,18 @@ steps:
         from_secret: github_token
     image: grafana/integration-grafana-publisher:v7
     name: publish-to-gcom
-  - commands:
-      - PLUGIN_NAME=`jq -r .id ci/meta/plugin.json`
-      - VERSION=`jq -r .info.version ci/meta/plugin.json`
-      - bin/grabpl plugin publish-docs --github-token $GITHUB_TOKEN --commit-author-name grafanabot --commit-author-email grafanabot@grafana.com --plugin-version $VERSION --plugin-id $PLUGIN_NAME
-    depends_on:
-      - get-grabpl
-      - publish-to-gcom
-    environment:
-      GITHUB_TOKEN:
-        from_secret: github_token
-    image: grafana/integration-grafana-publisher:v7
-    name: publish-docs-to-gcom
+  # - commands:
+  #     - PLUGIN_NAME=`jq -r .id ci/meta/plugin.json`
+  #     - VERSION=`jq -r .info.version ci/meta/plugin.json`
+  #     - bin/grabpl plugin publish-docs --github-token $GITHUB_TOKEN --commit-author-name grafanabot --commit-author-email grafanabot@grafana.com --plugin-version $VERSION --plugin-id $PLUGIN_NAME
+  #   depends_on:
+  #     - get-grabpl
+  #     - publish-to-gcom
+  #   environment:
+  #     GITHUB_TOKEN:
+  #       from_secret: github_token
+  #   image: grafana/integration-grafana-publisher:v7
+  #   name: publish-docs-to-gcom
   - commands:
       - PLUGIN_NAME=`jq -r .id ci/meta/plugin.json`
       - integration-bot.js update-enterprise-latest $PLUGIN_NAME $DRONE_REPO_NAME
