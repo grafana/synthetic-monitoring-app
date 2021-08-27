@@ -613,6 +613,8 @@ steps:
     name: publish-backend-gcs-release
   - commands:
       - echo "start publish frontend GCS release"
+      - apt update
+      - apt install -y jq
       - PLUGIN_NAME=`jq -r .id ci/meta/plugin.json`
       - VERSION=`jq -r .info.version ci/meta/plugin.json`
       - BACKEND=`jq -r .info.executable ci/meta/plugin.json`
@@ -683,8 +685,6 @@ steps:
     image: grafana/integration-grafana-publisher:v7
     name: publish-to-gcom
   - commands:
-      - apt update
-      - apt install -y jq
       - PLUGIN_NAME=`jq -r .id ci/meta/plugin.json`
       - VERSION=`jq -r .info.version ci/meta/plugin.json`
       - bin/grabpl plugin publish-docs --github-token $GITHUB_TOKEN --commit-author-name grafanabot --commit-author-email grafanabot@grafana.com --plugin-version $VERSION --plugin-id $PLUGIN_NAME
