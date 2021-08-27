@@ -618,6 +618,9 @@ steps:
       - PLUGIN_NAME=`jq -r .id ci/meta/plugin.json`
       - VERSION=`jq -r .info.version ci/meta/plugin.json`
       - BACKEND=`jq -r .info.executable ci/meta/plugin.json`
+      - if [ -z "$GCP_KEY" ]; then echo "Missing GCS Publish Key"; exit -1; fi
+      - printenv GCP_KEY > /tmp/gcpkey.json
+      - gcloud auth activate-service-account --key-file=/tmp/gcpkey.json
       - if [ "$BACKEND" != "null" ]; then echo "Backend plugin. Skipping frontend release"; exit 0; fi
       - echo "Copying artifacts to $PLUGIN_NAME/release/$VERSION"
       - gsutil -m cp ci/packages/$${PLUGIN_NAME}-$${VERSION}.zip gs://integration-artifacts/$${PLUGIN_NAME}/release/$${VERSION}/any/$${PLUGIN_NAME}-$${VERSION}.any.zip
@@ -632,6 +635,8 @@ steps:
     name: publish-frontend-gcs-release
   - commands:
       - echo "start publish github release"
+      - apt update
+      - apt install -y jq
       - mkdir -p artifacts
       - cp ci/packages/* artifacts
       - PLUGIN_NAME=`jq -r .id ci/meta/plugin.json`
