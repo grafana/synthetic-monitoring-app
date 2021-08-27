@@ -8,7 +8,7 @@ parameters:
     type: string
     default: ${GITHUB_SSH_FINGERPRINT}
   git-branch:
-    default: non-existing-branch
+    default: non-existing-branchh
     type: string
 
 aliases:
