@@ -37,6 +37,25 @@ steps:
     image: grafana/grafana-plugin-ci:1.2.0-alpine
     name: build-and-test-frontend
   - commands:
+      - echo "Starting veracode scan..."
+      - apk add curl
+      - "# Increase heap size or the scanner will die."
+      - export _JAVA_OPTIONS=-Xmx4g
+      - mkdir -p ci/jobs/security_scan
+      - curl -sSL https://download.sourceclear.com/ci.sh | sh -s scan --skip-compile --quick --allow-dirty
+      - "##"
+      - "# Not failing builds now if we detect items we deem a problem in the scan output, but the following"
+      - "# Would be an example"
+      - "#"
+      - '# grep "High Risk" ci/jobs/security_scan/sourclear_scan.out && false || true'
+    depends_on:
+      - build-and-test-frontend
+    environment:
+      SRCCLR_API_TOKEN:
+        from_secret: srcclr_api_token
+    image: grafana/grafana-plugin-ci:1.2.0-alpine
+    name: security-scan
+  - commands:
       - ./node_modules/.bin/grafana-toolkit plugin:ci-build --finish
       - ./bin/grabpl plugin package
     depends_on:
@@ -136,6 +155,7 @@ steps:
       - ./bin/grabpl plugin store-build-report --failed-pipeline
     depends_on:
       - build-and-test-frontend
+      - security-scan
       - package
       - publish-gcs-artifacts
       - check-e2e
@@ -190,6 +210,25 @@ steps:
       - initialize
     image: grafana/grafana-plugin-ci:1.2.0-alpine
     name: build-and-test-frontend
+  - commands:
+      - echo "Starting veracode scan..."
+      - apk add curl
+      - "# Increase heap size or the scanner will die."
+      - export _JAVA_OPTIONS=-Xmx4g
+      - mkdir -p ci/jobs/security_scan
+      - curl -sSL https://download.sourceclear.com/ci.sh | sh -s scan --skip-compile --quick --allow-dirty
+      - "##"
+      - "# Not failing builds now if we detect items we deem a problem in the scan output, but the following"
+      - "# Would be an example"
+      - "#"
+      - '# grep "High Risk" ci/jobs/security_scan/sourclear_scan.out && false || true'
+    depends_on:
+      - build-and-test-frontend
+    environment:
+      SRCCLR_API_TOKEN:
+        from_secret: srcclr_api_token
+    image: grafana/grafana-plugin-ci:1.2.0-alpine
+    name: security-scan
   - commands:
       - ./node_modules/.bin/grafana-toolkit plugin:ci-build --finish
       - ./bin/grabpl plugin package
@@ -290,6 +329,7 @@ steps:
       - ./bin/grabpl plugin store-build-report --failed-pipeline
     depends_on:
       - build-and-test-frontend
+      - security-scan
       - package
       - publish-gcs-artifacts
       - check-e2e
@@ -379,6 +419,25 @@ steps:
       - initialize
     image: grafana/grafana-plugin-ci:1.2.0-alpine
     name: build-and-test-frontend
+  - commands:
+      - echo "Starting veracode scan..."
+      - apk add curl
+      - "# Increase heap size or the scanner will die."
+      - export _JAVA_OPTIONS=-Xmx4g
+      - mkdir -p ci/jobs/security_scan
+      - curl -sSL https://download.sourceclear.com/ci.sh | sh -s scan --skip-compile --quick --allow-dirty
+      - "##"
+      - "# Not failing builds now if we detect items we deem a problem in the scan output, but the following"
+      - "# Would be an example"
+      - "#"
+      - '# grep "High Risk" ci/jobs/security_scan/sourclear_scan.out && false || true'
+    depends_on:
+      - build-and-test-frontend
+    environment:
+      SRCCLR_API_TOKEN:
+        from_secret: srcclr_api_token
+    image: grafana/grafana-plugin-ci:1.2.0-alpine
+    name: security-scan
   - commands:
       - ./node_modules/.bin/grafana-toolkit plugin:ci-build --finish
       - ./bin/grabpl plugin package
@@ -479,6 +538,7 @@ steps:
       - ./bin/grabpl plugin store-build-report --failed-pipeline
     depends_on:
       - build-and-test-frontend
+      - security-scan
       - package
       - publish-gcs-artifacts
       - check-e2e
@@ -553,4 +613,4 @@ type: docker
 
 ---
 kind: signature
-hmac: e1708bbe1b02aada75a3e9a5ed478da46f12d444b0536d87dcc8e1ef06d3eebc
+hmac: f8e869f83b970ed8392f8b7009d0fe394ed90e4bd24045dee2ca2c8444032d42
