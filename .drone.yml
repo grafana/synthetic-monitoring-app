@@ -635,8 +635,7 @@ steps:
     name: publish-frontend-gcs-release
   - commands:
       - echo "start publish github release"
-      - apt update
-      - apt install -y jq
+      - apk add --no-cache jq
       - mkdir -p artifacts
       - cp ci/packages/* artifacts
       - PLUGIN_NAME=`jq -r .id ci/meta/plugin.json`
