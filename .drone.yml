@@ -758,19 +758,5 @@ kind: secret
 name: dockerconfigjson
 
 ---
-kind: pipeline
-name: deploy-publish
-platform:
-  arch: amd64
-  os: linux
-steps: []
-trigger:
-  event:
-    - promote
-  target:
-    - publish
-type: docker
-
----
 kind: signature
 hmac: ece337836bc638e75bc009c3ed76acc88e5439190c222db32dbeccb6624cc6e3
