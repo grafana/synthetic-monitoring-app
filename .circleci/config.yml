@@ -7,17 +7,10 @@ parameters:
   ssh-fingerprint:
     type: string
     default: ${GITHUB_SSH_FINGERPRINT}
-  git-branch:
-    default: non-existing-branchh
-    type: string
 
 aliases:
   # Workflow filters
   # release-it adds a version tag without a leading "v", we want to run github deploys on those tags
-  - &filter-non-existing-branch
-    branches:
-      only:
-        - << pipeline.parameters.git-branch >>
   - &filter-only-tagged
     tags:
       only: /^(([0-9]+)\.([0-9]+)\.([0-9]+))/
@@ -44,7 +37,7 @@ workflows:
   pr_build:
     jobs:
       - install_dependencies:
-          filters: *filter-non-existing-branch
+          filters: *filter-only-pr
       - test:
           requires:
             - install_dependencies
@@ -52,36 +45,36 @@ workflows:
   master_build:
     jobs:
       - install_dependencies:
-          filters: *filter-non-existing-branch
+          filters: *filter-only-main
       - version_bump:
-          filters: *filter-non-existing-branch
+          filters: *filter-only-main
           requires:
             - install_dependencies
 
   publish_release:
     jobs:
       - install_dependencies:
-          filters: *filter-non-existing-branch
+          filters: *filter-only-tagged
       - build:
-          filters: *filter-non-existing-branch
+          filters: *filter-only-tagged
       - publish_github_release:
-          filters: *filter-non-existing-branch
+          filters: *filter-only-tagged
           requires:
             - build
 
   register_with_gcom:
     jobs:
       - release_to_staging:
-          filters: *filter-non-existing-branch
+          filters: *filter-only-release
       - approve_release:
           type: approval
           requires:
             - release_to_staging
-          filters: *filter-non-existing-branch
+          filters: *filter-only-release
       - release_to_production:
           requires:
             - approve_release
-          filters: *filter-non-existing-branch
+          filters: *filter-only-release
 
 executors:
   default_exec: # declares a reusable executor
@@ -190,7 +183,6 @@ jobs:
                 echo "Skipping versioning"
                 exit 0
             fi
-
   report:
     executor: default_exec
     steps:
@@ -244,7 +236,6 @@ jobs:
             apk --no-cache add curl
             apk --no-cache add bash
             ./scripts/staging-install.sh
-
   release_to_production:
     executor: default_exec
     steps:
