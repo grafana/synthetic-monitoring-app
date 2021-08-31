@@ -162,7 +162,7 @@ jobs:
       - add_ssh_keys:
           fingerprints:
             - << pipeline.parameters.ssh-fingerprint >>
-            - '48:1b:33:86:08:6d:24:64:14:15:cf:e1:d8:70:3f:19'
+            - "48:1b:33:86:08:6d:24:64:14:15:cf:e1:d8:70:3f:19"
             - ${GITHUB_SSH_FINGERPRINT}
       - attach_workspace:
           at: .
@@ -171,7 +171,7 @@ jobs:
           keys:
             - build-cache-{{ .Environment.CACHE_VERSION }}-{{ checksum "yarn.lock" }}
       - run:
-          name: 'bump version and commit changelog'
+          name: "bump version and commit changelog"
           command: |
             git config user.email "circleci@grafana.com"
             git config --global user.name "CircleCI Automation"
@@ -183,7 +183,6 @@ jobs:
                 echo "Skipping versioning"
                 exit 0
             fi
-
   report:
     executor: default_exec
     steps:
@@ -208,7 +207,7 @@ jobs:
       - add_ssh_keys:
           fingerprints:
             - << pipeline.parameters.ssh-fingerprint >>
-            - '48:1b:33:86:08:6d:24:64:14:15:cf:e1:d8:70:3f:19'
+            - "48:1b:33:86:08:6d:24:64:14:15:cf:e1:d8:70:3f:19"
             - ${GITHUB_SSH_FINGERPRINT}
       - attach_workspace:
           at: .
@@ -217,7 +216,7 @@ jobs:
           keys:
             - build-cache-{{ .Environment.CACHE_VERSION }}-{{ checksum "yarn.lock" }}
       - run:
-          name: 'Publish Release on GitHub'
+          name: "Publish Release on GitHub"
           command: |
             yarn github-publish
       - store_artifacts:
@@ -232,12 +231,11 @@ jobs:
       - attach_workspace:
           at: .
       - run:
-          name: 'Publish release to staging'
+          name: "Publish release to staging"
           command: |
             apk --no-cache add curl
             apk --no-cache add bash
             ./scripts/staging-install.sh
-
   release_to_production:
     executor: default_exec
     steps:
@@ -247,7 +245,7 @@ jobs:
       - attach_workspace:
           at: .
       - run:
-          name: 'Publish release to production'
+          name: "Publish release to production"
           command: |
             apk --no-cache add curl
             apk --no-cache add bash
