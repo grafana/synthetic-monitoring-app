@@ -87,6 +87,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
           logsUrl,
           queryToExecute.job,
           queryToExecute.instance,
+          queryToExecute.probe,
           options.range.from.unix(),
           options.range.to.unix()
         );
@@ -99,13 +100,21 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     return { data };
   }
 
+  getProbeValueFromVar(probe: string | undefined): string {
+    if (!probe || probe === '$__all') {
+      return '.+';
+    }
+    return probe;
+  }
+
   getQueryFromDashboardVars(dashboardVars: VariableModel[], query: SMQuery): SMQuery {
     const job = dashboardVars.find((variable) => variable.name === 'job') as DashboardVariable | undefined;
     const instance = dashboardVars.find((variable) => variable.name === 'instance') as DashboardVariable | undefined;
+    const probe = dashboardVars.find((variable) => variable.name === 'probe') as DashboardVariable | undefined;
 
     // const value = dashboardVar.current?.value ?? '';
     // const [job, instance] = value.split(':').map((val: string) => val.trim());
-    if (!job || !instance) {
+    if (!job || !instance || !probe) {
       return query;
     }
 
@@ -113,6 +122,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       ...query,
       job: job?.current?.value ?? query.job,
       instance: instance?.current?.value ?? query.instance,
+      probe: this.getProbeValueFromVar(probe?.current?.value ?? query.probe),
     };
   }
 

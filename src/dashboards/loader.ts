@@ -51,7 +51,6 @@ export async function importDashboard(
 
   const folder = await findSyntheticMonitoringFolder();
 
-  console.log('SM DATASOURCE NAME', smDatasourceName);
   const info = await backendSrv.post('api/dashboards/import', {
     dashboard: json,
     overwrite: true, // UID?

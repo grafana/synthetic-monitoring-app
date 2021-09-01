@@ -97,9 +97,10 @@
   "editable": false,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 15,
-  "iteration": 1628191729213,
+  "id": null,
+  "iteration": 1630531323353,
   "links": [],
+  "liveNow": false,
   "panels": [
     {
       "collapsed": false,
@@ -228,17 +229,18 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "probe_traceroute_route_hash{job=\"$job\", instance=\"$instance\"}",
+          "expr": "probe_traceroute_route_hash{probe=~\"$probe\", job=\"$job\", instance=\"$instance\"}",
           "interval": "",
           "legendFormat": "",
-          "refId": "A"
+          "refId": "A",
+          "stepMode": "min"
         }
       ],
       "title": "Route hash",
       "type": "timeseries"
     },
     {
-      "datasource": "${DS_SM_LOGS}",
+      "datasource": "grafanacloud-syntheticmonitoring-logs",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -312,7 +314,7 @@
       "pluginVersion": "8.1.0",
       "targets": [
         {
-          "expr": "sum by (Hosts) (count_over_time({check_name=\"traceroute\", job=\"$job\", instance=\"$instance\"} | logfmt | Hosts != \"\" [$__interval]))",
+          "expr": "sum by (Hosts) (count_over_time({check_name=\"traceroute\", job=\"$job\", instance=\"$instance\", probe=~\"$probe\"} | logfmt | Hosts != \"\" [$__interval]))",
           "instant": true,
           "legendFormat": "",
           "range": false,
@@ -396,7 +398,7 @@
       "pluginVersion": "8.1.0",
       "targets": [
         {
-          "expr": "(avg_over_time({check_name=\"traceroute\", job=\"$job\", instance=\"$instance\"} | logfmt | Hosts != \"\" | unwrap duration_seconds(ElapsedTime) [$__interval]) by (Hosts))",
+          "expr": "(avg_over_time({check_name=\"traceroute\", job=\"$job\", instance=\"$instance\", probe=~\"$probe\"} | logfmt | Hosts != \"\" | unwrap duration_seconds(ElapsedTime) [$__interval]) by (Hosts))",
           "instant": true,
           "range": false,
           "refId": "A"
@@ -480,10 +482,11 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "probe_traceroute_packet_loss_percent{instance=\"$instance\", job=\"$job\"}",
+          "expr": "probe_traceroute_packet_loss_percent{instance=\"$instance\", job=\"$job\", probe=~\"$probe\"}",
           "interval": "",
           "legendFormat": "",
-          "refId": "A"
+          "refId": "A",
+          "stepMode": "min"
         }
       ],
       "thresholds": [],
@@ -622,30 +625,29 @@
       },
       "id": 4,
       "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
+        "displayMode": "gradient",
         "orientation": "auto",
         "reduceOptions": {
           "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
-        "text": {},
-        "textMode": "auto"
+        "showUnfilled": true,
+        "text": {}
       },
       "pluginVersion": "8.1.0",
       "targets": [
         {
           "exemplar": true,
-          "expr": "probe_traceroute_total_hops{instance=\"$instance\", job=\"$job\"}",
+          "expr": "probe_traceroute_total_hops{instance=\"$instance\", job=\"$job\", probe=~\"$probe\"}",
           "interval": "",
-          "legendFormat": "",
-          "refId": "A"
+          "legendFormat": "{{probe}}",
+          "refId": "A",
+          "stepMode": "min"
         }
       ],
       "title": "Average Total Hops",
-      "type": "stat"
+      "type": "bargauge"
     },
     {
       "collapsed": false,
@@ -683,7 +685,7 @@
       "pluginVersion": "7.5.2",
       "targets": [
         {
-          "expr": "{instance=\"$instance\", job=\"$job\", check_name=\"traceroute\"}",
+          "expr": "{instance=\"$instance\", job=\"$job\", probe=~\"$probe\", check_name=\"traceroute\"}",
           "refId": "A"
         }
       ],
@@ -729,11 +731,7 @@
       },
       {
         "allValue": null,
-        "current": {
-          "selected": true,
-          "text": "grafaaaana",
-          "value": "grafaaaana"
-        },
+        "current": {},
         "datasource": "${DS_SM_METRICS}",
         "definition": "label_values(sm_check_info{check_name=\"traceroute\", probe=~\"$probe\"},job)",
         "description": null,
@@ -759,11 +757,7 @@
       },
       {
         "allValue": null,
-        "current": {
-          "selected": false,
-          "text": "grafana.com",
-          "value": "grafana.com"
-        },
+        "current": {},
         "datasource": "${DS_SM_METRICS}",
         "definition": "label_values(sm_check_info{check_name=\"traceroute\", job=\"$job\", probe=~\"$probe\"},instance)",
         "description": null,
@@ -790,7 +784,7 @@
     ]
   },
   "time": {
-    "from": "now-6h",
+    "from": "now-30m",
     "to": "now"
   },
   "timepicker": {
@@ -798,6 +792,6 @@
   },
   "timezone": "",
   "title": "Synthetic Monitoring Traceroute",
-  "uid": "tiIwCSWnk",
-  "version": 2
+  "uid": "hk8gHB4nk",
+  "version": 4
 }

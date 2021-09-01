@@ -10,6 +10,7 @@ export interface SMQuery extends DataQuery {
   queryType: QueryType;
   instance?: string;
   job?: string;
+  probe?: string;
   query: string;
 }
 

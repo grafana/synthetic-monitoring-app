@@ -266,14 +266,16 @@ export const queryLogs = async (
   url: string,
   job: string,
   instance: string,
+  probe: string | undefined,
   start: number,
   end: number
 ): Promise<LogQueryResponse> => {
+  console.log('PROBE', probe);
   const backendSrv = getBackendSrv();
   const params = {
     direction: 'BACKWARD',
     limit: 1000,
-    query: `{job="${job}", instance="${instance}", check_name="traceroute"} | logfmt`,
+    query: `{probe=~"${probe ?? '.+'}", job="${job}", instance="${instance}", check_name="traceroute"} | logfmt`,
     start: start,
     end: end,
     // step: ,

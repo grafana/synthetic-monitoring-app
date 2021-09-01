@@ -120,6 +120,10 @@ export const CHECK_FILTER_OPTIONS = [
     label: 'TCP',
     value: CheckType.TCP,
   },
+  {
+    label: 'Traceroute',
+    value: CheckType.Traceroute,
+  },
 ];
 
 export const CHECK_TYPE_OPTIONS = [
