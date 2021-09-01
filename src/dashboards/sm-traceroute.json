@@ -21,7 +21,7 @@
       "label": "Synthetic Monitoring DS",
       "description": "",
       "type": "datasource",
-      "pluginId": "grafana-synthetic-monitoring-app",
+      "pluginId": "synthetic-monitoring-datasource",
       "pluginName": "Synthetic Monitoring"
     }
   ],

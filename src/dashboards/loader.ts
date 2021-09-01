@@ -58,7 +58,7 @@ export async function importDashboard(
     inputs: [
       { name: 'DS_SM_METRICS', type: 'datasource', pluginId: 'prometheus', value: metricsDatasourceName },
       { name: 'DS_SM_LOGS', type: 'datasource', pluginId: 'loki', value: logsDatasourceName },
-      { name: 'DS_SM_SM', type: 'datasource', pluginId: 'grafana-synthetic-monitoring-app', value: smDatasourceName },
+      { name: 'DS_SM_SM', type: 'datasource', pluginId: 'synthetic-monitoring-datasource', value: smDatasourceName },
     ],
     folderId: folder.id,
   });
