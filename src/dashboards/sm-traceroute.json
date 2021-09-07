@@ -98,9 +98,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": null,
-  "iteration": 1630531323353,
   "links": [],
-  "liveNow": false,
   "panels": [
     {
       "collapsed": false,
@@ -211,7 +209,7 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 14,
+        "w": 10,
         "x": 0,
         "y": 15
       },
@@ -231,7 +229,7 @@
           "exemplar": true,
           "expr": "probe_traceroute_route_hash{probe=~\"$probe\", job=\"$job\", instance=\"$instance\"}",
           "interval": "",
-          "legendFormat": "",
+          "legendFormat": "{{probe}}",
           "refId": "A",
           "stepMode": "min"
         }
@@ -290,13 +288,25 @@
                 "value": 221
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Hosts"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 214
+              }
+            ]
           }
         ]
       },
       "gridPos": {
         "h": 8,
-        "w": 5,
-        "x": 14,
+        "w": 7,
+        "x": 10,
         "y": 15
       },
       "id": 12,
@@ -311,7 +321,7 @@
           }
         ]
       },
-      "pluginVersion": "8.1.0",
+      "pluginVersion": "8.1.2",
       "targets": [
         {
           "expr": "sum by (Hosts) (count_over_time({check_name=\"traceroute\", job=\"$job\", instance=\"$instance\", probe=~\"$probe\"} | logfmt | Hosts != \"\" [$__interval]))",
@@ -375,13 +385,25 @@
                 "value": "Average Elapsed Time"
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Hosts"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 196
+              }
+            ]
           }
         ]
       },
       "gridPos": {
         "h": 8,
-        "w": 5,
-        "x": 19,
+        "w": 7,
+        "x": 17,
         "y": 15
       },
       "id": 14,
@@ -395,7 +417,7 @@
           }
         ]
       },
-      "pluginVersion": "8.1.0",
+      "pluginVersion": "8.1.2",
       "targets": [
         {
           "expr": "(avg_over_time({check_name=\"traceroute\", job=\"$job\", instance=\"$instance\", probe=~\"$probe\"} | logfmt | Hosts != \"\" | unwrap duration_seconds(ElapsedTime) [$__interval]) by (Hosts))",
@@ -449,7 +471,7 @@
       "fillGradient": 0,
       "gridPos": {
         "h": 8,
-        "w": 12,
+        "w": 10,
         "x": 0,
         "y": 24
       },
@@ -471,7 +493,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "8.1.0",
+      "pluginVersion": "8.1.2",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -484,7 +506,7 @@
           "exemplar": true,
           "expr": "probe_traceroute_packet_loss_percent{instance=\"$instance\", job=\"$job\", probe=~\"$probe\"}",
           "interval": "",
-          "legendFormat": "",
+          "legendFormat": "{{probe}}",
           "refId": "A",
           "stepMode": "min"
         }
@@ -560,8 +582,8 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 7,
-        "x": 12,
+        "w": 5,
+        "x": 10,
         "y": 24
       },
       "id": 10,
@@ -578,7 +600,7 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "8.1.0",
+      "pluginVersion": "8.1.2",
       "targets": [
         {
           "exemplar": false,
@@ -619,14 +641,14 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 5,
-        "x": 19,
+        "w": 9,
+        "x": 15,
         "y": 24
       },
       "id": 4,
       "options": {
         "displayMode": "gradient",
-        "orientation": "auto",
+        "orientation": "horizontal",
         "reduceOptions": {
           "calcs": ["lastNotNull"],
           "fields": "",
@@ -635,7 +657,7 @@
         "showUnfilled": true,
         "text": {}
       },
-      "pluginVersion": "8.1.0",
+      "pluginVersion": "8.1.2",
       "targets": [
         {
           "exemplar": true,
@@ -693,7 +715,7 @@
       "type": "logs"
     }
   ],
-  "refresh": "1m",
+  "refresh": "",
   "schemaVersion": 30,
   "style": "dark",
   "tags": ["synthetic-monitoring"],
@@ -793,5 +815,5 @@
   "timezone": "",
   "title": "Synthetic Monitoring Traceroute",
   "uid": "hk8gHB4nk",
-  "version": 4
+  "version": 5
 }
