@@ -270,7 +270,6 @@ export const queryLogs = async (
   start: number,
   end: number
 ): Promise<LogQueryResponse> => {
-  console.log('PROBE', probe);
   const backendSrv = getBackendSrv();
   const params = {
     direction: 'BACKWARD',

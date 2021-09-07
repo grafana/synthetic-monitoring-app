@@ -19,7 +19,9 @@ import {
   HttpSettings,
   Settings,
   HttpMethod,
+  FeatureName,
 } from 'types';
+import { config } from '@grafana/runtime';
 
 export const DNS_RESPONSE_CODES = enumToStringArray(DnsResponseCodes).map((responseCode) => ({
   label: responseCode,
@@ -120,10 +122,6 @@ export const CHECK_FILTER_OPTIONS = [
     label: 'TCP',
     value: CheckType.TCP,
   },
-  {
-    label: 'Traceroute',
-    value: CheckType.Traceroute,
-  },
 ];
 
 export const CHECK_TYPE_OPTIONS = [
@@ -143,8 +141,18 @@ export const CHECK_TYPE_OPTIONS = [
     label: 'TCP',
     value: CheckType.TCP,
   },
-  { label: 'Traceroute', value: CheckType.Traceroute },
 ];
+
+if (config.featureToggles[FeatureName.Traceroute]) {
+  CHECK_FILTER_OPTIONS.push({
+    label: 'Traceroute',
+    value: CheckType.Traceroute,
+  });
+  CHECK_TYPE_OPTIONS.push({
+    label: 'Traceroute',
+    value: CheckType.Traceroute,
+  });
+}
 
 export const HTTP_SSL_OPTIONS = [
   {
