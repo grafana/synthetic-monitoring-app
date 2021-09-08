@@ -1,3 +1,10 @@
+## [1.3.2](https://github.com/grafana/synthetic-monitoring-app/compare/1.3.1...1.3.2) (2021-09-08)
+
+
+### Bug Fixes
+
+* check type selector should be disabled on edit ([#360](https://github.com/grafana/synthetic-monitoring-app/issues/360)) ([dda165e](https://github.com/grafana/synthetic-monitoring-app/commit/dda165e6187370d2726d4db0e31b8af2fe5bfa36))
+
 ## [1.3.1](https://github.com/grafana/synthetic-monitoring-app/compare/1.3.0...1.3.1) (2021-08-28)
 
 # [1.3.0](https://github.com/grafana/synthetic-monitoring-app/compare/1.2.30...1.3.0) (2021-08-28)
