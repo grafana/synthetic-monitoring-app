@@ -110,6 +110,7 @@ export const CheckEditor = ({ check, onReturn }: Props) => {
                       : CHECK_TYPE_OPTIONS.filter(({ value }) => value !== CheckType.Traceroute)
                   }
                   width={30}
+                  disabled={check?.id ? true : false}
                 />
               )}
             />
