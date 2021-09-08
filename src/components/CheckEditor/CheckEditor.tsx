@@ -98,7 +98,13 @@ export const CheckEditor = ({ check, onReturn }: Props) => {
               name="checkType"
               control={formMethods.control}
               render={({ field }) => (
-                <Select {...field} placeholder="Check type" options={CHECK_TYPE_OPTIONS} width={30} />
+                <Select
+                  {...field}
+                  placeholder="Check type"
+                  options={CHECK_TYPE_OPTIONS}
+                  width={30}
+                  disabled={check?.id ? true : false}
+                />
               )}
             />
           </Field>
