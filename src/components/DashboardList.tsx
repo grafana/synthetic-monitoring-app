@@ -2,6 +2,7 @@ import React, { PureComponent } from 'react';
 import { Icon } from '@grafana/ui';
 import { DashboardInfo, SMOptions } from 'datasource/types';
 import { listAppDashboards, importDashboard, removeDashboard } from 'dashboards/loader';
+import { InstanceContext } from 'contexts/InstanceContext';
 
 interface Props {
   checkUpdates: boolean;
@@ -14,6 +15,8 @@ interface State {
 }
 
 export class DashboardList extends PureComponent<Props, State> {
+  static contextType = InstanceContext;
+
   state: State = {
     dashboards: this.props.options.dashboards,
   };
@@ -42,21 +45,32 @@ export class DashboardList extends PureComponent<Props, State> {
 
   onImport = (dashboard: DashboardInfo) => async () => {
     const { onChange, options } = this.props;
+    const { instance } = this.context;
     if (!onChange) {
       return;
     }
+    const smDsName = instance?.api?.instanceSettings.name;
     const updatedDashboard = await importDashboard(
       dashboard.json,
       options.metrics.grafanaName,
-      options.logs.grafanaName
+      options.logs.grafanaName,
+      smDsName
     );
+
+    let updated = false;
 
     const dashboards = options.dashboards.map((savedDashboard) => {
       if (savedDashboard.uid === updatedDashboard.uid) {
+        updated = true;
         return updatedDashboard;
       }
       return savedDashboard;
     });
+
+    // Handles the case of a new dashboard being added instead of an existing one being updated
+    if (!updated) {
+      dashboards.push(updatedDashboard);
+    }
 
     const updatedOptions = {
       ...options,

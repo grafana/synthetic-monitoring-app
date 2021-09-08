@@ -1,5 +1,6 @@
-import { getBackendSrv } from '@grafana/runtime';
+import { config, getBackendSrv } from '@grafana/runtime';
 import { DashboardInfo, FolderInfo } from 'datasource/types';
+import { FeatureName } from 'types';
 
 export const dashboardPaths = [
   'sm-http.json', // The path
@@ -8,6 +9,10 @@ export const dashboardPaths = [
   'sm-tcp.json',
   'sm-summary.json',
 ];
+
+if (config.featureToggles[FeatureName.Traceroute]) {
+  dashboardPaths.push('sm-traceroute.json');
+}
 
 async function findSyntheticMonitoringFolder(): Promise<FolderInfo> {
   const backendSrv = getBackendSrv();
@@ -23,15 +28,22 @@ async function findSyntheticMonitoringFolder(): Promise<FolderInfo> {
   });
 }
 
-export async function importAllDashboards(metricsDatasourceName: string, logsDatasourceName: string) {
+export async function importAllDashboards(
+  metricsDatasourceName: string,
+  logsDatasourceName: string,
+  smDatasourceName: string
+) {
   await findSyntheticMonitoringFolder();
-  return Promise.all(dashboardPaths.map((path) => importDashboard(path, metricsDatasourceName, logsDatasourceName)));
+  return Promise.all(
+    dashboardPaths.map((path) => importDashboard(path, metricsDatasourceName, logsDatasourceName, smDatasourceName))
+  );
 }
 
 export async function importDashboard(
   path: string,
   metricsDatasourceName: string,
-  logsDatasourceName: string
+  logsDatasourceName: string,
+  smDatasourceName: string
 ): Promise<DashboardInfo> {
   const backendSrv = getBackendSrv();
 
@@ -49,6 +61,7 @@ export async function importDashboard(
     inputs: [
       { name: 'DS_SM_METRICS', type: 'datasource', pluginId: 'prometheus', value: metricsDatasourceName },
       { name: 'DS_SM_LOGS', type: 'datasource', pluginId: 'loki', value: logsDatasourceName },
+      { name: 'DS_SM_SM', type: 'datasource', pluginId: 'synthetic-monitoring-datasource', value: smDatasourceName },
     ],
     folderId: folder.id,
   });

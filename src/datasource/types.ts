@@ -1,12 +1,17 @@
-import { DataQuery, DataSourceJsonData } from '@grafana/data';
+import { DataQuery, DataSourceJsonData, VariableModel } from '@grafana/data';
 
 export enum QueryType {
   Probes = 'probes',
   Checks = 'checks',
+  Traceroute = 'traceroute',
 }
 
 export interface SMQuery extends DataQuery {
   queryType: QueryType;
+  instance?: string;
+  job?: string;
+  probe?: string;
+  query: string;
 }
 
 export const defaultQuery: SMQuery = {
@@ -54,6 +59,56 @@ export interface CloudDatasourceJsonData extends DataSourceJsonData {
   directUrl: string;
 }
 
+export interface LogStream {
+  ElapsedTime: string;
+  Hosts: string;
+  Success: string;
+  TTL: string;
+  TracerouteID: string;
+  LossPercent: string;
+  Destination: string;
+  check_name: string;
+  instance: string;
+  job: string;
+  probe: string;
+  probe_success: string;
+  region: string;
+  source: string;
+  target: string;
+}
+
+export interface ParsedLogStream extends Omit<LogStream, 'TTL' | 'Hosts'> {
+  TTL: number;
+  Hosts: string[];
+}
+
+export interface LogLine {
+  stream: LogStream;
+  values: string[];
+}
+
+export interface LogQueryResponse {
+  data: LogLine[];
+  error?: string;
+}
+
+export interface LogsAggregatedByTrace {
+  [key: string]: ParsedLogStream[];
+}
+
+export interface ParsedTraceHost {
+  nextHosts?: Set<string>;
+  elapsedTimes: string[];
+  isStart: boolean;
+  isMostRecent: boolean;
+  packetLossAverages: number[];
+  TTL: number;
+}
+
+export interface TracesByHost {
+  [key: string]: ParsedTraceHost;
+}
+
 export enum AccountingClassNames {
   dns = 'dns',
   dns_basic = 'dns_basic',
@@ -67,6 +122,8 @@ export enum AccountingClassNames {
   tcp_basic = 'tcp_basic',
   tcp_ssl = 'tcp_ssl',
   tcp_ssl_basic = 'tcp_ssl_basic',
+  traceroute = 'traceroute',
+  traceroute_basic = 'traceroute_basic',
 }
 
 interface AccountingClass {
@@ -80,4 +137,12 @@ export type CheckAccountingClasses = {
 
 export interface CheckInfo {
   AccountingClasses: CheckAccountingClasses;
+}
+
+interface CurrentVariableModel {
+  value: string | undefined;
+}
+
+export interface DashboardVariable extends VariableModel {
+  current?: CurrentVariableModel;
 }

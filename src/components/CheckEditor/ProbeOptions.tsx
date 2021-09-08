@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Field } from '@grafana/ui';
+import { Field, Input } from '@grafana/ui';
 import CheckProbes from './CheckProbes';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { Probe } from 'types';
+import { Probe, CheckType } from 'types';
 import { SliderInput } from 'components/SliderInput';
 import { Subheader } from 'components/Subheader';
 import { useFormContext, Controller } from 'react-hook-form';
@@ -19,9 +19,12 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, probes }: Props) =>
   const [availableProbes, setAvailableProbes] = useState<Probe[]>([]);
   const {
     control,
+    watch,
     formState: { errors },
   } = useFormContext();
   const { instance } = useContext(InstanceContext);
+
+  const checkType = watch('checkType').value;
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -58,37 +61,47 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, probes }: Props) =>
       <Field
         label="Frequency"
         description="How frequently the check should run."
-        disabled={!isEditor}
+        disabled={!isEditor || checkType === CheckType.Traceroute}
         invalid={Boolean(errors.frequency)}
         error={errors.frequency?.message}
       >
-        <SliderInput
-          validate={validateFrequency}
-          name="frequency"
-          prefixLabel={'Every'}
-          suffixLabel={'seconds'}
-          min={10.0}
-          max={120.0}
-          defaultValue={frequency / 1000}
-        />
+        {checkType === CheckType.Traceroute ? (
+          // This is just a placeholder for now, the frequency for traceroute checks is hardcoded in the submit
+          <Input value={120} prefix="Every" suffix="seconds" width={20} />
+        ) : (
+          <SliderInput
+            validate={(value) => validateFrequency(value, checkType)}
+            name="frequency"
+            prefixLabel={'Every'}
+            suffixLabel={'seconds'}
+            min={checkType === CheckType.Traceroute ? 60.0 : 10.0}
+            max={checkType === CheckType.Traceroute ? 240.0 : 120.0}
+            defaultValue={checkType === CheckType.Traceroute ? 120 : frequency / 1000}
+          />
+        )}
       </Field>
       <Field
         label="Timeout"
         description="Maximum execution time for a check"
-        disabled={!isEditor}
+        disabled={!isEditor || checkType === CheckType.Traceroute}
         invalid={Boolean(errors.timeout)}
         error={errors.timeout?.message}
       >
-        <SliderInput
-          name="timeout"
-          validate={validateTimeout}
-          defaultValue={timeout / 1000}
-          max={10.0}
-          min={1.0}
-          step={0.5}
-          suffixLabel="seconds"
-          prefixLabel="After"
-        />
+        {checkType === CheckType.Traceroute ? (
+          // This is just a placeholder for now, the timeout for traceroute checks is hardcoded in the submit
+          <Input value={30} prefix="Every" suffix="seconds" width={20} />
+        ) : (
+          <SliderInput
+            name="timeout"
+            validate={(value) => validateTimeout(value, checkType)}
+            defaultValue={checkType === CheckType.Traceroute ? 30 : timeout / 1000}
+            max={checkType === CheckType.Traceroute ? 30.0 : 10.0}
+            min={1.0}
+            step={0.5}
+            suffixLabel="seconds"
+            prefixLabel="After"
+          />
+        )}
       </Field>
     </div>
   );

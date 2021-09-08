@@ -24,6 +24,8 @@ import {
   AlertSensitivity,
   TCPQueryResponse,
   TLSConfig,
+  TracerouteSettings,
+  TracerouteSettingsFormValues,
 } from 'types';
 
 import {
@@ -243,6 +245,17 @@ const getDnsSettingsFormValues = (settings: Settings): DnsSettingsFormValues => 
   };
 };
 
+const getTracerouteSettingsFormValues = (settings: Settings): TracerouteSettingsFormValues => {
+  const tracerouteSettings = settings.traceroute ?? (fallbackSettings(CheckType.Traceroute) as TracerouteSettings);
+
+  return {
+    firstHop: String(tracerouteSettings.firstHop ?? 1),
+    maxHops: String(tracerouteSettings.maxHops),
+    retries: String(tracerouteSettings.retries ?? 0),
+    maxUnknownHops: String(tracerouteSettings.maxUnknownHops),
+  };
+};
+
 const getFormSettingsForCheck = (settings: Settings): SettingsFormValues => {
   const type = checkType(settings);
   switch (type) {
@@ -252,6 +265,8 @@ const getFormSettingsForCheck = (settings: Settings): SettingsFormValues => {
       return { tcp: getTcpSettingsFormValues(settings) };
     case CheckType.DNS:
       return { dns: getDnsSettingsFormValues(settings) };
+    case CheckType.Traceroute:
+      return { traceroute: getTracerouteSettingsFormValues(settings) };
     case CheckType.PING:
     default:
       return { ping: getPingSettingsFormValues(settings) };
@@ -264,6 +279,7 @@ const getAllFormSettingsForCheck = (): SettingsFormValues => {
     tcp: getTcpSettingsFormValues(fallbackSettings(CheckType.TCP)),
     dns: getDnsSettingsFormValues(fallbackSettings(CheckType.DNS)),
     ping: getPingSettingsFormValues(fallbackSettings(CheckType.PING)),
+    traceroute: getTracerouteSettingsFormValues(fallbackSettings(CheckType.Traceroute)),
   };
 };
 
@@ -530,6 +546,20 @@ const getDnsSettings = (
   };
 };
 
+const getTracerouteSettings = (
+  settings: TracerouteSettingsFormValues | undefined,
+  defaultSettings: TracerouteSettingsFormValues | undefined
+): TracerouteSettings => {
+  const fallbackValues = fallbackSettings(CheckType.Traceroute).traceroute as TracerouteSettings;
+  const updatedSettings = settings ?? defaultSettings ?? fallbackValues;
+  return {
+    firstHop: parseInt(String(updatedSettings.firstHop), 10),
+    maxHops: parseInt(String(updatedSettings.maxHops), 10),
+    retries: 0,
+    maxUnknownHops: parseInt(String(updatedSettings.maxUnknownHops), 10),
+  };
+};
+
 const getSettingsFromFormValues = (formValues: Partial<CheckFormValues>, defaultValues: CheckFormValues): Settings => {
   const checkType = getValueFromSelectable(formValues.checkType ?? defaultValues.checkType);
   switch (checkType) {
@@ -541,9 +571,29 @@ const getSettingsFromFormValues = (formValues: Partial<CheckFormValues>, default
       return { dns: getDnsSettings(formValues.settings?.dns, defaultValues.settings.dns) };
     case CheckType.PING:
       return { ping: getPingSettings(formValues.settings?.ping, defaultValues.settings.ping) };
+    case CheckType.Traceroute:
+      return {
+        traceroute: {
+          ...getTracerouteSettings(formValues.settings?.traceroute, defaultValues.settings.traceroute),
+        },
+      };
     default:
       throw new Error(`Check type of ${checkType} is invalid`);
   }
+};
+
+const getTimeoutFromFormValue = (timeout: number, checkType?: CheckType): number => {
+  if (checkType === CheckType.Traceroute) {
+    return 30000;
+  }
+  return timeout * 1000;
+};
+
+const getFrequencyFromFormValue = (frequency: number, checkType?: CheckType): number => {
+  if (checkType === CheckType.Traceroute) {
+    return 120000;
+  }
+  return frequency * 1000;
 };
 
 export const getCheckFromFormValues = (
@@ -556,8 +606,8 @@ export const getCheckFromFormValues = (
     enabled: formValues.enabled,
     labels: formValues.labels ?? [],
     probes: formValues.probes,
-    timeout: formValues.timeout * 1000,
-    frequency: formValues.frequency * 1000,
+    timeout: getTimeoutFromFormValue(formValues.timeout, getValueFromSelectable(formValues.checkType)),
+    frequency: getFrequencyFromFormValue(formValues.frequency, getValueFromSelectable(formValues.checkType)),
     alertSensitivity: getValueFromSelectable(formValues.alertSensitivity) ?? AlertSensitivity.None,
     settings: getSettingsFromFormValues(formValues, defaultValues),
     basicMetricsOnly: !formValues.publishAdvancedMetrics,
