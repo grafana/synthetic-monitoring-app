@@ -342,7 +342,7 @@ export function fallbackSettings(t: CheckType): Settings {
       return {
         dns: {
           recordType: DnsRecordType.A,
-          server: 'dns.google',
+          server: '8.8.8.8',
           ipVersion: IpVersion.V4,
           protocol: DnsProtocol.UDP,
           port: 53,
