@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { AppRootProps } from '@grafana/data';
-import { DashboardMeta, FeatureName, GlobalSettings } from 'types';
+import { DashboardMeta, GlobalSettings } from 'types';
 import { WelcomePage } from 'page/WelcomePage';
 import { ChecksPage } from 'page/ChecksPage';
 import { ProbesPage } from 'page/ProbesPage';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { config, getLocationSrv } from '@grafana/runtime';
+import { getLocationSrv } from '@grafana/runtime';
 import { DashboardInfo } from 'datasource/types';
 import { importAllDashboards, listAppDashboards } from 'dashboards/loader';
 import { Button, HorizontalGroup, Modal } from '@grafana/ui';
@@ -31,10 +31,7 @@ const getRedirectDestination = (queryPage: string, isInitialized: boolean): stri
     return 'setup';
   }
   if (isInitialized && pagesToRedirectIfInitialized.has(queryPage)) {
-    if (config.featureToggles[FeatureName.Homepage]) {
-      return 'home';
-    }
-    return 'checks';
+    return 'home';
   }
   if (isInitialized && dashboardRedirects.has(queryPage)) {
     return '';
@@ -43,6 +40,10 @@ const getRedirectDestination = (queryPage: string, isInitialized: boolean): stri
 };
 
 const tabs: Tab[] = [
+  {
+    label: 'Home',
+    id: 'home',
+  },
   {
     label: 'Checks',
     id: 'checks',
@@ -56,13 +57,6 @@ const tabs: Tab[] = [
     id: 'alerts',
   },
 ];
-
-if (config.featureToggles[FeatureName.Homepage]) {
-  tabs.unshift({
-    label: 'Home',
-    id: 'home',
-  });
-}
 
 function filterTabs(tabs: Tab[], apiInitialized: boolean): Tab[] {
   if (!apiInitialized) {

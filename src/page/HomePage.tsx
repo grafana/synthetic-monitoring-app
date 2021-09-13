@@ -79,7 +79,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
   linksContainer: css`
     margin-right: ${theme.spacing(2)};
-    min-width: 450px;
+    min-width: 475px;
   `,
   marginBottom: css`
     margin-bottom: ${theme.spacing(2)};
@@ -131,21 +131,39 @@ const HomePage = () => {
 
         <DisplayCard className={cx(styles.card, styles.grow)}>
           <h3>What&apos;s new</h3>
-          <p>
-            We will making some updates to our probes in Grafana Cloud synthetic monitoring. The changes will include:
-          </p>
+          <p>We are making some updates to our probes in Grafana Cloud synthetic monitoring. The changes include:</p>
           <ul>
             <li>
-              Deprecating the <code>San Jose</code> probe. We recommend moving to the <code>San Francisco</code> probe
-              as a replacement.
+              Deprecating <code>San Jose</code> (We recommend using the existing probe “San Francisco” as a replacement)
             </li>
             <li>
-              Deprecating <code>Chicago</code>. We recommend moving to <code>Boston</code> as a replacement
+              Replacing <code>Chicago</code> with <code>Boston</code>
             </li>
             <li>
-              Fixing a typo: <code>Seol</code> will become <code>Seoul</code>
+              Replacing <code>Seol</code> with <code>Seoul</code>
+            </li>
+            <li>
+              Adding <code>SaoPaulo</code>
+            </li>
+            <li>
+              Adding <code>CapeTown</code>
             </li>
           </ul>
+          <br />
+          <p>
+            We are making these changes in an ongoing effort to ensure reliability across our services, and to provide
+            probe coverage on every continent (New probes in South America and Africa!)
+          </p>
+          <p>This change will be happening on October 7th</p>
+          <p>
+            If you have checks that use a probe that is deprecated, your check will have one less probe attached to it.
+            If you have any checks that use only 1 probe, and we have deprecated this probe, your check will still exist
+            but no longer be running. You must edit the check and add a different probe in order for the check to run
+            again. If you have checks that use a probe that we are replacing, your check will automatically be updated
+            with the new probe. These changes apply only to probes that we host, and no changes will be made to
+            self-hosted private probes. If you have any dashboards or alerts where you have hard-coded probe names for
+            probes we have either deprecated or changed, you will need to manually change or delete the probe name.
+          </p>
         </DisplayCard>
       </div>
       <DisplayCard className={cx(styles.card, styles.usageGrid, styles.marginBottom)}>

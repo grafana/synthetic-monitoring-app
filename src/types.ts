@@ -484,7 +484,6 @@ export enum HTTPCompressionAlgo {
 export enum FeatureName {
   Traceroute = 'traceroute',
   UnifiedAlerting = 'ngalert',
-  Homepage = 'homepage',
 }
 
 export interface UsageValues {
