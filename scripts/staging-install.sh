@@ -25,12 +25,13 @@ gcom() {
 
 custom_commands() {
 	PLUGIN_NAME='grafana-synthetic-monitoring-app'
-	GIT_TAG=$(git tag --points-at HEAD)
-	#remove the leading v on the git tag
-	VERSION="${GIT_TAG//v}"
-	URL="https://github.com/grafana/synthetic-monitoring-app/releases/download/v$VERSION/grafana-synthetic-monitoring-app-$VERSION.zip"
+	PACKAGE_VERSION=$(cat package.json \
+		| grep version \
+		| head -1 \
+		| awk -F: '{ print $2 }' \
+		| sed 's/[",]//g')
 
-	plugin_id=grafana-synthetic-monitoring-app
+	URL="https://storage.googleapis.com/integration-artifacts/grafana-synthetic-monitoring-app/main/latest/grafana-synthetic-monitoring-app-${PACKAGE_VERSION}.any.zip"
 
 	cat <<-EOF
 		grafana-cli --pluginUrl=${URL} plugins install ${PLUGIN_NAME}
@@ -55,6 +56,7 @@ custom_commands() {
 		YAMLEOF
 	EOF
 }
+
 
 gcom /instances/syntheticmonitoring/config \
 	-d config[hosted_grafana][custom_commands]="$(custom_commands)"
