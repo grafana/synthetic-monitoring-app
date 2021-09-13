@@ -80,7 +80,7 @@ describe('trivial cases', () => {
       settings: {
         dns: {
           recordType: DnsRecordType.A,
-          server: '8.8.8.8',
+          server: 'dns.google',
           ipVersion: IpVersion.V4,
           protocol: DnsProtocol.TCP,
           port: 53,

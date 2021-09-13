@@ -14,7 +14,7 @@ const checkSettingsMock = {
     port: 53,
     protocol: DnsProtocol.TCP,
     recordType: DnsRecordType.A,
-    server: '8.8.8.8',
+    server: 'dns.google',
   },
   tcp: { ipVersion: IpVersion.V4, tls: false },
 };

@@ -549,7 +549,7 @@ describe('DNS', () => {
             port: 53,
             protocol: 'UDP',
             recordType: 'A',
-            server: '8.8.8.8',
+            server: 'dns.google',
             validRCodes: [DnsResponseCodes.NOERROR],
             validateAditionalRRS: {
               failIfMatchesRegexp: [],
@@ -604,7 +604,7 @@ describe('DNS', () => {
             port: 53,
             protocol: 'UDP',
             recordType: 'A',
-            server: '8.8.8.8',
+            server: 'dns.google',
             validRCodes: [DnsResponseCodes.NOERROR],
             validateAditionalRRS: {
               failIfMatchesRegexp: [],
@@ -658,7 +658,7 @@ describe('DNS', () => {
             port: 53,
             protocol: 'UDP',
             recordType: 'A',
-            server: '8.8.8.8',
+            server: 'dns.google',
             validRCodes: [DnsResponseCodes.NOERROR],
             validateAditionalRRS: {
               failIfMatchesRegexp: ['inverted validation'],
