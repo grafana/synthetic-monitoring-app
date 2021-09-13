@@ -1,13 +1,9 @@
+import { UsageValues } from 'types';
+
 interface ActiveSeriesParams {
   probeCount: number;
   frequencySeconds: number;
   seriesPerCheck: number;
-}
-
-interface UsageValues {
-  checksPerMonth: number;
-  activeSeries: number;
-  logsGbPerMonth: number;
 }
 
 const getChecksPerMonth = (frequencySeconds: number) => {

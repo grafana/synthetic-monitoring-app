@@ -4,6 +4,7 @@ import { PluginTabs } from 'components/PluginTabs';
 import { AppRootProps } from '@grafana/data';
 import { GlobalSettings } from 'types';
 import { FeatureFlagProvider } from './FeatureFlagProvider';
+import { CheckInfoContextProvider } from './CheckInfoContextProvider';
 
 export class App extends PureComponent<AppRootProps<GlobalSettings>> {
   render() {
@@ -15,7 +16,9 @@ export class App extends PureComponent<AppRootProps<GlobalSettings>> {
           logsInstanceName={meta.jsonData?.logs?.grafanaName}
           meta={meta}
         >
-          <PluginTabs {...this.props} />
+          <CheckInfoContextProvider>
+            <PluginTabs {...this.props} />
+          </CheckInfoContextProvider>
         </InstanceProvider>
       </FeatureFlagProvider>
     );

@@ -11,6 +11,7 @@ import { importAllDashboards, listAppDashboards } from 'dashboards/loader';
 import { Button, HorizontalGroup, Modal } from '@grafana/ui';
 import { hasDismissedDashboardUpdateModal, persistDashboardModalDismiss } from 'sessionStorage';
 import { Alerting } from './Alerting';
+import HomePage from 'page/HomePage';
 
 type Tab = {
   label: string;
@@ -19,7 +20,7 @@ type Tab = {
   enabledByFeatureFlag?: string;
 };
 
-const pagesToRedirectIfNotInitialized = new Set(['checks', 'probes', 'alerts', 'redirect']);
+const pagesToRedirectIfNotInitialized = new Set(['checks', 'probes', 'alerts', 'redirect', 'home']);
 
 const pagesToRedirectIfInitialized = new Set(['setup']);
 
@@ -30,7 +31,7 @@ const getRedirectDestination = (queryPage: string, isInitialized: boolean): stri
     return 'setup';
   }
   if (isInitialized && pagesToRedirectIfInitialized.has(queryPage)) {
-    return 'checks';
+    return 'home';
   }
   if (isInitialized && dashboardRedirects.has(queryPage)) {
     return '';
@@ -39,6 +40,10 @@ const getRedirectDestination = (queryPage: string, isInitialized: boolean): stri
 };
 
 const tabs: Tab[] = [
+  {
+    label: 'Home',
+    id: 'home',
+  },
   {
     label: 'Checks',
     id: 'checks',
@@ -174,10 +179,14 @@ export const PluginTabs = ({ query, onNavChanged, path, meta }: AppRootProps<Glo
       case 'alerts':
         return <Alerting />;
       case 'checks':
-      default:
         return <ChecksPage id={query.id} />;
+      case 'home':
+      default:
+        return <HomePage />;
     }
   };
+
+  console.log(activeTab.id);
 
   return (
     <div>

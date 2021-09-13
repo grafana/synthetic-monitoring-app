@@ -485,3 +485,9 @@ export enum FeatureName {
   Traceroute = 'traceroute',
   UnifiedAlerting = 'ngalert',
 }
+
+export interface UsageValues {
+  checksPerMonth: number;
+  activeSeries: number;
+  logsGbPerMonth: number;
+}

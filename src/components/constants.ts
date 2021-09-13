@@ -372,3 +372,5 @@ export function fallbackSettings(t: CheckType): Settings {
       throw new Error(`Cannot find values for invalid check type ${t}`);
   }
 }
+
+export const PLUGIN_URL_PATH = '/a/grafana-synthetic-monitoring-app/';

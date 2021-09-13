@@ -2,7 +2,7 @@ import { calculateUsage } from 'checkUsageCalc';
 import { CheckInfoContext } from 'contexts/CheckInfoContext';
 import { AccountingClassNames } from 'datasource/types';
 import { useContext } from 'react';
-import { Check, CheckType } from 'types';
+import { Check, CheckType, UsageValues } from 'types';
 import { checkType as getCheckType } from 'utils';
 
 const addSSL = (check: Partial<Check>, baseClass: CheckType) => {
@@ -21,7 +21,7 @@ const addSSL = (check: Partial<Check>, baseClass: CheckType) => {
   return baseClass;
 };
 
-const getAccountingClass = (check: Partial<Check>): AccountingClassNames | undefined => {
+export const getAccountingClass = (check: Partial<Check>): AccountingClassNames | undefined => {
   if (!check.settings) {
     return;
   }
@@ -34,14 +34,42 @@ const getAccountingClass = (check: Partial<Check>): AccountingClassNames | undef
   return AccountingClassNames[withBasic as keyof typeof AccountingClassNames];
 };
 
-export function useUsageCalc(check?: Partial<Check>) {
+export function useUsageCalc(checks?: Partial<Check> | Check[]) {
   const { loading, checkInfo } = useContext(CheckInfoContext);
 
-  if (loading || !checkInfo || !check || !check.settings) {
+  if (loading || !checkInfo || !checks) {
     return;
   }
 
-  const accountingClass = getAccountingClass(check);
+  // Calculating usage for multiple checks at once
+  if (Array.isArray(checks)) {
+    return checks.reduce<UsageValues>(
+      (total, check) => {
+        const accountingClass = getAccountingClass(check);
+        if (!accountingClass) {
+          return total;
+        }
+        const usage = calculateUsage({
+          probeCount: check.probes.length,
+          frequencySeconds: check.frequency / 1000,
+          seriesPerCheck: checkInfo.AccountingClasses[accountingClass].Series,
+        });
+        return {
+          activeSeries: total.activeSeries + usage.activeSeries,
+          logsGbPerMonth: total.logsGbPerMonth + usage.logsGbPerMonth,
+          checksPerMonth: total.checksPerMonth + usage.checksPerMonth,
+        };
+      },
+      { logsGbPerMonth: 0, activeSeries: 0, checksPerMonth: 0 }
+    );
+  }
+
+  // In this case, we're just calculating for an individual check
+  if (!checks.settings) {
+    return;
+  }
+
+  const accountingClass = getAccountingClass(checks);
 
   if (!accountingClass) {
     return;
@@ -53,8 +81,8 @@ export function useUsageCalc(check?: Partial<Check>) {
   }
 
   return calculateUsage({
-    probeCount: check.probes?.length ?? 0,
-    frequencySeconds: (check.frequency ?? 0) / 1000,
+    probeCount: checks.probes?.length ?? 0,
+    frequencySeconds: (checks.frequency ?? 0) / 1000,
     seriesPerCheck: checkInfo.AccountingClasses[accountingClass].Series,
   });
 }
