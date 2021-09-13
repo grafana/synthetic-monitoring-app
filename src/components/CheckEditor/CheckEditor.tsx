@@ -2,7 +2,7 @@ import React, { useState, useMemo, useContext } from 'react';
 import { css } from '@emotion/css';
 import { Button, ConfirmModal, Field, Input, HorizontalGroup, Select, Legend, Alert, useStyles } from '@grafana/ui';
 import { useAsyncCallback } from 'react-async-hook';
-import { Check, CheckType, OrgRole, CheckFormValues, SubmissionError } from 'types';
+import { Check, CheckType, OrgRole, CheckFormValues, SubmissionErrorWrapper, FeatureName } from 'types';
 import { hasRole } from 'utils';
 import { getDefaultValuesFromCheck, getCheckFromFormValues } from './checkFormTransformations';
 import { validateJob, validateTarget } from 'validation';
@@ -17,6 +17,7 @@ import { GrafanaTheme } from '@grafana/data';
 import { CheckUsage } from '../CheckUsage';
 import { CheckFormAlert } from 'components/CheckFormAlert';
 import { InstanceContext } from 'contexts/InstanceContext';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { trackEvent, trackException } from 'analytics';
 
 interface Props {
@@ -52,6 +53,8 @@ export const CheckEditor = ({ check, onReturn }: Props) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const styles = useStyles(getStyles);
   const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
+  const { isEnabled: tracerouteEnabled } = useFeatureFlag(FeatureName.Traceroute);
+
   const formMethods = useForm<CheckFormValues>({ defaultValues, mode: 'onChange' });
   const selectedCheckType = formMethods.watch('checkType').value ?? CheckType.PING;
 
@@ -73,7 +76,7 @@ export const CheckEditor = ({ check, onReturn }: Props) => {
     onReturn(true);
   });
 
-  const submissionError = error as SubmissionError;
+  const submissionError = (error as unknown) as SubmissionErrorWrapper;
   if (error) {
     trackException(`addNewCheckSubmitException: ${error}`);
   }
@@ -98,7 +101,17 @@ export const CheckEditor = ({ check, onReturn }: Props) => {
               name="checkType"
               control={formMethods.control}
               render={({ field }) => (
-                <Select {...field} placeholder="Check type" options={CHECK_TYPE_OPTIONS} width={30} />
+                <Select
+                  {...field}
+                  placeholder="Check type"
+                  options={
+                    tracerouteEnabled
+                      ? CHECK_TYPE_OPTIONS
+                      : CHECK_TYPE_OPTIONS.filter(({ value }) => value !== CheckType.Traceroute)
+                  }
+                  width={30}
+                  disabled={check?.id ? true : false}
+                />
               )}
             />
           </Field>
@@ -132,7 +145,12 @@ export const CheckEditor = ({ check, onReturn }: Props) => {
             control={formMethods.control}
             rules={{
               required: true,
-              validate: (target) => validateTarget(selectedCheckType, target),
+              validate: (target) => {
+                // We have to get refetch the check type value from form state in the validation because the value will be stale if we rely on the the .watch method in the render
+                const targetFormValue = formMethods.getValues().checkType;
+                const selectedCheckType = targetFormValue.value as CheckType;
+                return validateTarget(selectedCheckType, target);
+              },
             }}
             render={({ field }) => (
               <CheckTarget
@@ -183,7 +201,7 @@ export const CheckEditor = ({ check, onReturn }: Props) => {
         {submissionError && (
           <div className={styles.submissionError}>
             <Alert title="Save failed" severity="error">
-              {`${submissionError.status}: ${submissionError.message ?? submissionError.msg ?? 'Something went wrong'}`}
+              {`${submissionError.status}: ${submissionError.data?.msg ?? 'Something went wrong'}`}
             </Alert>
           </div>
         )}

@@ -142,6 +142,7 @@ const ThresholdFormSection = ({ label, unit, description, thresholds, setThresho
           <Input
             className={styles.disabled}
             value={isLatency ? thresholds.upperLimit : thresholds.lowerLimit}
+            readOnly
             disabled={true}
             step={isLatency ? 1 : 0.1}
             placeholder="value"
@@ -153,6 +154,7 @@ const ThresholdFormSection = ({ label, unit, description, thresholds, setThresho
           <Input
             className={styles.disabled}
             value={isLatency ? thresholds.lowerLimit : thresholds.upperLimit}
+            readOnly
             disabled={true}
             step={isLatency ? 1 : 0.1}
             placeholder="value"

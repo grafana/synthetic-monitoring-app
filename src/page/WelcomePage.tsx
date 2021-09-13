@@ -1,7 +1,7 @@
 import React, { FC, useState, useContext } from 'react';
 import { Button, Alert, useStyles2 } from '@grafana/ui';
 import { getBackendSrv, config } from '@grafana/runtime';
-import { hasRole, initializeDatasource } from 'utils';
+import { findSMDataSources, hasRole, initializeDatasource } from 'utils';
 import { importAllDashboards } from 'dashboards/loader';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { DataSourceInstanceSettings, GrafanaTheme2 } from '@grafana/data';
@@ -135,7 +135,9 @@ export const WelcomePage: FC<Props> = () => {
         method: 'POST',
         data: body,
       });
-      const dashboards = await importAllDashboards(metricsName, logsName);
+      const smDatasources = await findSMDataSources();
+      const smDatasourceName = smDatasources.length ? smDatasources[0].name : 'Synthetic Monitoring';
+      const dashboards = await importAllDashboards(metricsName, logsName, smDatasourceName);
       const datasourcePayload = {
         apiHost: meta.jsonData.apiHost,
         accessToken,

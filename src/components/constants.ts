@@ -19,7 +19,9 @@ import {
   HttpSettings,
   Settings,
   HttpMethod,
+  FeatureName,
 } from 'types';
+import { config } from '@grafana/runtime';
 
 export const DNS_RESPONSE_CODES = enumToStringArray(DnsResponseCodes).map((responseCode) => ({
   label: responseCode,
@@ -140,6 +142,17 @@ export const CHECK_TYPE_OPTIONS = [
     value: CheckType.TCP,
   },
 ];
+
+if (config.featureToggles[FeatureName.Traceroute]) {
+  CHECK_FILTER_OPTIONS.push({
+    label: 'Traceroute',
+    value: CheckType.Traceroute,
+  });
+  CHECK_TYPE_OPTIONS.push({
+    label: 'Traceroute',
+    value: CheckType.Traceroute,
+  });
+}
 
 export const HTTP_SSL_OPTIONS = [
   {
@@ -284,6 +297,9 @@ export const CHECK_LIST_VIEW_TYPE_OPTIONS = [
   { description: 'Visualization view', value: CheckListViewType.Viz, icon: 'gf-grid' },
 ];
 
+export const CHECKS_PER_PAGE_CARD = 15;
+export const CHECKS_PER_PAGE_LIST = 50;
+
 export const PEM_HEADER = '-----BEGIN CERTIFICATE-----';
 
 export const PEM_FOOTER = '-----END CERTIFICATE-----';
@@ -339,6 +355,16 @@ export function fallbackSettings(t: CheckType): Settings {
         tcp: {
           ipVersion: IpVersion.V4,
           tls: false,
+        },
+      };
+    }
+    case CheckType.Traceroute: {
+      return {
+        traceroute: {
+          firstHop: 1,
+          maxHops: 64,
+          retries: 0,
+          maxUnknownHops: 15,
         },
       };
     }

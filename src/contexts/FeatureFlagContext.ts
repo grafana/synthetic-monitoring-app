@@ -4,7 +4,7 @@ import { config } from '@grafana/runtime';
 import { FeatureName } from 'types';
 import { isArray } from 'lodash';
 
-interface FeatureFlagContextValue {
+export interface FeatureFlagContextValue {
   featureToggles: FeatureToggles;
   isFeatureEnabled: (name: FeatureName) => boolean;
 }

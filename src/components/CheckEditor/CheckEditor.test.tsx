@@ -15,8 +15,9 @@ import { CheckEditor } from './CheckEditor';
 import { getInstanceMock } from '../../datasource/__mocks__/DataSource';
 import userEvent from '@testing-library/user-event';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { AppPluginMeta, DataSourceSettings } from '@grafana/data';
+import { AppPluginMeta, DataSourceSettings, FeatureToggles } from '@grafana/data';
 import { DNS_RESPONSE_MATCH_OPTIONS } from 'components/constants';
+import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
 jest.setTimeout(60000);
 
 // Mock useAlerts hook
@@ -147,10 +148,14 @@ const renderCheckEditor = async ({ check = defaultCheck, withAlerting = true } =
     alertRuler: withAlerting ? ({} as DataSourceSettings) : undefined,
   };
   const meta = {} as AppPluginMeta<GlobalSettings>;
+  const featureToggles = ({ traceroute: true } as unknown) as FeatureToggles;
+  const isFeatureEnabled = jest.fn(() => true);
   render(
-    <InstanceContext.Provider value={{ instance, loading: false, meta }}>
-      <CheckEditor check={check} onReturn={onReturn} />
-    </InstanceContext.Provider>
+    <FeatureFlagProvider overrides={{ featureToggles, isFeatureEnabled }}>
+      <InstanceContext.Provider value={{ instance, loading: false, meta }}>
+        <CheckEditor check={check} onReturn={onReturn} />
+      </InstanceContext.Provider>
+    </FeatureFlagProvider>
   );
   await waitFor(() => expect(screen.getByText('Check Details')).toBeInTheDocument());
   return instance;

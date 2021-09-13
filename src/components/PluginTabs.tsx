@@ -209,7 +209,11 @@ export const PluginTabs = ({ query, onNavChanged, path, meta }: AppRootProps<Glo
               if (!instance.api) {
                 return;
               }
-              const responses = await importAllDashboards(instance.metrics?.name ?? '', instance.logs?.name ?? '');
+              const responses = await importAllDashboards(
+                instance.metrics?.name ?? '',
+                instance.logs?.name ?? '',
+                instance.api?.name ?? ''
+              );
               const updatedSettings = {
                 ...instance.api.instanceSettings.jsonData,
                 dashboards: responses,

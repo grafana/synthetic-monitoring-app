@@ -1,4 +1,14 @@
-import { Check, CheckType, Settings, HttpSettings, PingSettings, DnsSettings, TcpSettings, Label } from 'types';
+import {
+  Check,
+  CheckType,
+  Settings,
+  HttpSettings,
+  PingSettings,
+  DnsSettings,
+  TcpSettings,
+  Label,
+  TracerouteSettings,
+} from 'types';
 import { checkType } from 'utils';
 import * as punycode from 'punycode';
 import { Address4, Address6 } from 'ip-address';
@@ -16,11 +26,12 @@ export const CheckValidation = {
 };
 
 export function validateCheck(check: Check): boolean {
+  const type = checkType(check.settings);
   return Boolean(
     CheckValidation.job(check.job) &&
       CheckValidation.target(checkType(check.settings), check.target) &&
-      CheckValidation.frequency(check.frequency) &&
-      CheckValidation.timeout(check.timeout) &&
+      CheckValidation.frequency(check.frequency, type) &&
+      CheckValidation.timeout(check.timeout, type) &&
       CheckValidation.labels(check.labels) &&
       CheckValidation.settings(check.settings) &&
       CheckValidation.probes(check.probes)
@@ -52,6 +63,9 @@ export function validateTarget(typeOfCheck: CheckType, target: string): string |
     case CheckType.TCP: {
       return validateHostPort(target);
     }
+    case CheckType.Traceroute: {
+      return validateHostname(target);
+    }
     default: {
       // we want to make sure that we are validating the target for all
       // check types; if someone adds a check type but forgets to update
@@ -61,22 +75,27 @@ export function validateTarget(typeOfCheck: CheckType, target: string): string |
   }
 }
 
-export function validateFrequency(frequency: number): string | undefined {
-  if (frequency < 10) {
-    return 'Frequency must be at least 10 seconds';
+export function validateFrequency(frequency: number, selectedCheckType: CheckType): string | undefined {
+  const min = selectedCheckType === CheckType.Traceroute ? 60 : 10;
+  const max = selectedCheckType === CheckType.Traceroute ? 240 : 120;
+  if (frequency < min) {
+    return `Frequency must be at least ${min} seconds`;
   }
-  if (frequency > 120) {
-    return 'Frequency cannot be greater than 120 seconds';
+  if (frequency > max) {
+    return `Frequency cannot be greater than ${max} seconds`;
   }
   return undefined;
 }
 
-export function validateTimeout(timeout: number): string | undefined {
+export function validateTimeout(timeout: number, checkType: CheckType): string | undefined {
+  // const maxTimeout = checkType === CheckType.Traceroute ? 30 : 10;
+  const maxTimeout = 30;
+  // console.log('validation', { maxTimeout, checkType });
   if (timeout < 1) {
     return 'Timeout must be at least 1 second';
   }
-  if (timeout > 10) {
-    return 'Timeout cannot be greater than 10 seconds';
+  if (timeout > maxTimeout) {
+    return `Timeout cannot be greater than ${maxTimeout} seconds`;
   }
   return undefined;
 }
@@ -204,6 +223,9 @@ export function validateSettings(settings: Settings): string | undefined {
     case CheckType.TCP: {
       return validateSettingsTCP(settings.tcp!);
     }
+    case CheckType.Traceroute: {
+      return validateSettingsTraceroute(settings.traceroute);
+    }
   }
 }
 
@@ -228,6 +250,10 @@ export const validateHTTPHeaderName = (name: string) => {
 export const validateHTTPHeaderValue = (name: string) => {
   return undefined;
 };
+
+export function validateSettingsTraceroute(settings?: TracerouteSettings): string | undefined {
+  return undefined;
+}
 
 export function validateSettingsHTTP(settings: HttpSettings): string | undefined {
   return undefined;

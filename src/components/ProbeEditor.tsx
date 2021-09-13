@@ -15,7 +15,7 @@ import {
 } from '@grafana/ui';
 import { useForm, FormProvider } from 'react-hook-form';
 import { useAsyncCallback } from 'react-async-hook';
-import { Probe, OrgRole, SubmissionError } from 'types';
+import { Probe, OrgRole, SubmissionErrorWrapper } from 'types';
 import { hasRole } from 'utils';
 import { LabelField } from 'components/LabelField';
 import ProbeStatus from './ProbeStatus';
@@ -79,7 +79,7 @@ const ProbeEditor = ({ probe, onReturn }: Props) => {
     }
   });
 
-  const submissionError = error as SubmissionError;
+  const submissionError = (error as unknown) as SubmissionErrorWrapper;
 
   if (error) {
     trackException(`addNewProbeSubmitException: ${error}`);
@@ -259,7 +259,9 @@ const ProbeEditor = ({ probe, onReturn }: Props) => {
             {submissionError && (
               <div className={styles.marginTop}>
                 <Alert title="Save failed" severity="error">
-                  {`${submissionError.status}: ${submissionError.message}`}
+                  {`${submissionError.status}: ${
+                    submissionError.data.msg ?? submissionError.data.message ?? 'There was an error saving the check'
+                  }`}
                 </Alert>
               </div>
             )}

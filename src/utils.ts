@@ -1,6 +1,6 @@
 import { DataSourceInstanceSettings } from '@grafana/data';
 
-import { SMOptions, DashboardInfo, LinkedDatsourceInfo } from './datasource/types';
+import { SMOptions, DashboardInfo, LinkedDatsourceInfo, LogQueryResponse } from './datasource/types';
 
 import { config, getBackendSrv } from '@grafana/runtime';
 import { HostedInstance, User, OrgRole, CheckType, Settings } from 'types';
@@ -191,7 +191,8 @@ export const parseUrl = (url: string) => {
 // Takes a TS enum with matching string/value pairs and transforms it into an array of strings
 // Under the hood TS enums duplicate key/value pairs so a value can match a key and vice-versa
 export function enumToStringArray<T>(enumObject: T) {
-  return [...new Set(Object.keys(enumObject) as string[])];
+  const set = new Set(Object.keys(enumObject) as string[]);
+  return Array.from(set);
 }
 
 // Matches a string against multiple options
@@ -250,6 +251,41 @@ export const queryMetric = async (
         params,
       })
       .toPromise();
+    if (!response.ok) {
+      return { error: 'Error fetching data', data: [] };
+    }
+    return {
+      data: response.data?.data?.result ?? [],
+    };
+  } catch (e) {
+    return { error: (e.message || e.data?.message) ?? 'Error fetching data', data: [] };
+  }
+};
+
+export const queryLogs = async (
+  url: string,
+  job: string,
+  instance: string,
+  probe: string | undefined,
+  start: number,
+  end: number
+): Promise<LogQueryResponse> => {
+  const backendSrv = getBackendSrv();
+  const params = {
+    direction: 'BACKWARD',
+    limit: 1000,
+    query: `{probe=~"${probe ?? '.+'}", job="${job}", instance="${instance}", check_name="traceroute"} | logfmt`,
+    start: start,
+    end: end,
+    // step: ,
+  };
+
+  try {
+    const response = await backendSrv.datasourceRequest({
+      method: 'GET',
+      url: `${url}/loki/api/v1/query_range`,
+      params,
+    });
     if (!response.ok) {
       return { error: 'Error fetching data', data: [] };
     }
