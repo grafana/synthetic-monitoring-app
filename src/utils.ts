@@ -257,7 +257,7 @@ export const queryMetric = async (
     return {
       data: response.data?.data?.result ?? [],
     };
-  } catch (e) {
+  } catch (e: any) {
     return { error: (e.message || e.data?.message) ?? 'Error fetching data', data: [] };
   }
 };
