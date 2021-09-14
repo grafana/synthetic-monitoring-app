@@ -29,8 +29,8 @@ export const ConfigActions = ({ enabled, pluginId }: Props) => {
 
   const handleSetup = () => {
     getLocationSrv().update({
-      partial: false,
-      path: 'a/grafana-synthetic-monitoring-app/?page=setup',
+      replace: true,
+      path: '/a/grafana-synthetic-monitoring-app/?page=setup',
       query: {
         page: 'setup',
       },
