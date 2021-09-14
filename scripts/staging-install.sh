@@ -29,7 +29,8 @@ custom_commands() {
 		| grep version \
 		| head -1 \
 		| awk -F: '{ print $2 }' \
-		| sed 's/[",]//g')
+		| sed 's/[",]//g' \
+		| sed 's/^ *//g')
 
 	URL="https://storage.googleapis.com/integration-artifacts/grafana-synthetic-monitoring-app/main/latest/grafana-synthetic-monitoring-app-${PACKAGE_VERSION}.any.zip"
 
