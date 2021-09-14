@@ -143,7 +143,7 @@ export const parseTracerouteLogs = (queryResponse: LogQueryResponse): MutableDat
       return acc;
     }
 
-    const hosts = stream.Hosts === '' ? [`??? TTL${stream.TTL}`] : stream.Hosts?.split(',');
+    const hosts = stream.Hosts === '' ? [`??? TTL${stream.TTL + stream.probe}`] : stream.Hosts?.split(',');
     destinations.add(stream.Destination);
     const updatedStream = {
       ...stream,

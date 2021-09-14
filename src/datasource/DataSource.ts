@@ -16,7 +16,6 @@ import { config, getBackendSrv, getTemplateSrv } from '@grafana/runtime';
 import { Probe, Check, RegistrationInfo, HostedInstance } from '../types';
 import { queryLogs } from 'utils';
 import { parseTracerouteLogs } from './traceroute-utils';
-import { values } from 'lodash';
 
 export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   constructor(public instanceSettings: DataSourceInstanceSettings<SMOptions>) {
@@ -105,11 +104,11 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     const allProbes = '.+';
     const isArray = Array.isArray(probe);
 
-    if (!isArray && (!probe || probe === '$__all')) {
+    if (!probe || (!isArray && (!probe || probe === '$__all'))) {
       return allProbes;
     }
     if (isArray && probe.length > 1) {
-      return probe.join('|');
+      return (probe as string[]).join('|');
     } else if (isArray && probe.length === 1) {
       if (!probe[0] || probe[0] === '$__all') {
         return allProbes;

@@ -735,7 +735,7 @@
         "hide": 0,
         "includeAll": true,
         "label": null,
-        "multi": false,
+        "multi": true,
         "name": "probe",
         "options": [],
         "query": {
@@ -815,5 +815,5 @@
   "timezone": "",
   "title": "Synthetic Monitoring Traceroute",
   "uid": "hk8gHB4nk",
-  "version": 5
+  "version": 6
 }
