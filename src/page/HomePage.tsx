@@ -67,7 +67,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
   usageGrid: css`
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, auto));
+    grid-template-columns: repeat(auto-fit, minmax(160px, auto));
     grid-gap: ${theme.spacing(1)};
   `,
   usageHeader: css`
@@ -167,14 +167,14 @@ const HomePage = () => {
         </DisplayCard>
       </div>
       <DisplayCard className={cx(styles.card, styles.usageGrid, styles.marginBottom)}>
-        <h2 className={styles.usageHeader}>Your Grafana Cloud synthetic monitoring usage</h2>
+        <h2 className={styles.usageHeader}>Your Grafana Cloud Synthetic Monitoring usage</h2>
         <BigValue
           theme={config.theme2}
           textMode={BigValueTextMode.ValueAndName}
           colorMode={BigValueColorMode.Value}
           graphMode={BigValueGraphMode.Area}
-          height={100}
-          width={150}
+          height={80}
+          width={75}
           value={{
             numeric: checks.length,
             color: config.theme2.colors.text.primary,
@@ -187,8 +187,8 @@ const HomePage = () => {
           textMode={BigValueTextMode.ValueAndName}
           colorMode={BigValueColorMode.Value}
           graphMode={BigValueGraphMode.Area}
-          height={100}
-          width={150}
+          height={80}
+          width={115}
           value={{
             numeric: usage?.activeSeries ?? 0,
             color: config.theme2.colors.text.primary,
@@ -201,8 +201,8 @@ const HomePage = () => {
           textMode={BigValueTextMode.ValueAndName}
           colorMode={BigValueColorMode.Value}
           graphMode={BigValueGraphMode.Area}
-          height={100}
-          width={225}
+          height={80}
+          width={175}
           value={{
             numeric: usage?.checksPerMonth ?? 0,
             color: config.theme2.colors.text.primary,
@@ -215,12 +215,12 @@ const HomePage = () => {
           textMode={BigValueTextMode.ValueAndName}
           colorMode={BigValueColorMode.Value}
           graphMode={BigValueGraphMode.Area}
-          height={100}
-          width={200}
+          height={80}
+          width={150}
           value={{
             numeric: usage?.logsGbPerMonth ?? 0,
             color: config.theme2.colors.text.primary,
-            title: 'Logs',
+            title: 'Logs per month',
             text: `${usage?.logsGbPerMonth.toFixed(2) ?? 0}GB`,
           }}
         />
