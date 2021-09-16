@@ -33,5 +33,5 @@ test('shows usage', async () => {
   await assertBigValue('Total checks', '1');
   await assertBigValue('Total active series', '81');
   await assertBigValue('Checks executions per month', '43,800');
-  await assertBigValue('Logs', '0.04GB');
+  await assertBigValue('Logs per month', '0.04GB');
 });
