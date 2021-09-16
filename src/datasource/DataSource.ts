@@ -70,7 +70,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
 
         const dashboardVars = getTemplateSrv().getVariables();
 
-        const queryToExecute = dashboardVars ? this.getQueryFromDashboardVars(dashboardVars, query) : query;
+        const queryToExecute = dashboardVars ? this.getQueryFromVars(dashboardVars, query) : query;
 
         if (!queryToExecute.job || !queryToExecute.instance) {
           return {
@@ -100,14 +100,26 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     return { data };
   }
 
-  getProbeValueFromVar(probe: string | undefined): string {
-    if (!probe || probe === '$__all') {
-      return '.+';
+  getProbeValueFromVar(probe: string | string[] | undefined): string {
+    const allProbes = '.+';
+    const isArray = Array.isArray(probe);
+
+    if (!probe || (!isArray && (!probe || probe === '$__all'))) {
+      return allProbes;
     }
-    return probe;
+    if (isArray && probe.length > 1) {
+      return (probe as string[]).join('|');
+    } else if (isArray && probe.length === 1) {
+      if (!probe[0] || probe[0] === '$__all') {
+        return allProbes;
+      }
+      return probe[0];
+    }
+
+    return allProbes;
   }
 
-  getQueryFromDashboardVars(dashboardVars: VariableModel[], query: SMQuery): SMQuery {
+  getQueryFromVars(dashboardVars: VariableModel[], query: SMQuery): SMQuery {
     const job = dashboardVars.find((variable) => variable.name === 'job') as DashboardVariable | undefined;
     const instance = dashboardVars.find((variable) => variable.name === 'instance') as DashboardVariable | undefined;
     const probe = dashboardVars.find((variable) => variable.name === 'probe') as DashboardVariable | undefined;
@@ -122,7 +134,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       ...query,
       job: job?.current?.value ?? query.job,
       instance: instance?.current?.value ?? query.instance,
-      probe: this.getProbeValueFromVar(probe?.current?.value ?? query.probe),
+      probe: this.getProbeValueFromVar(probe.current?.value ?? query.probe),
     };
   }
 
