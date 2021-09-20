@@ -238,7 +238,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": "grafanacloud-syntheticmonitoring-logs",
+      "datasource": "${DS_SM_LOGS}",
       "fieldConfig": {
         "defaults": {
           "color": {
