@@ -26,6 +26,7 @@ import {
   RadioButtonGroup,
   InlineSwitch,
   AsyncMultiSelect,
+  ButtonCascader,
 } from '@grafana/ui';
 import { unEscapeStringFromRegex, escapeStringForRegex, GrafanaTheme, AppEvents, SelectableValue } from '@grafana/data';
 import { matchesAllFilters } from './checkFilters';
@@ -55,6 +56,7 @@ import { LabelFilterInput } from '../LabelFilterInput';
 import { SuccessRateContext, SuccessRateTypes } from 'contexts/SuccessRateContext';
 import { ChecksVisualization } from '../ChecksVisualization';
 import ThresholdGlobalSettings from '../Thresholds/ThresholdGlobalSettings';
+import BulkEditModal from 'components/CheckEditor/BulkEditModal';
 
 const getStyles = (theme: GrafanaTheme) => ({
   headerContainer: css`
@@ -143,6 +145,8 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
   const [bulkActionInProgress, setBulkActionInProgress] = useState(false);
 
   const [showThresholdModal, setShowThresholdModal] = useState(false);
+  // const [showBulkEditModal, setShowBulkEditModal] = useState(false);
+  const [bulkEditAction, setBulkEditAction] = useState<'add' | 'remove' | null>(null);
 
   const styles = useStyles(getStyles);
   const successRateContext = useContext(SuccessRateContext);
@@ -445,18 +449,29 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
                   Select all {filteredChecks.length} checks
                 </Button>
               )}
-              <Button
-                type="button"
-                variant="destructive"
-                className={styles.marginRightSmall}
-                onClick={handleDeleteSelectedChecks}
-                disabled={!hasRole(OrgRole.EDITOR) || bulkActionInProgress}
-              >
-                Delete
-              </Button>
+              {selectedChecks.size > 1 && (
+                <ButtonCascader
+                  options={[
+                    {
+                      label: 'Add probes',
+                      value: 'add',
+                    },
+                    {
+                      label: 'Remove probes',
+                      value: 'remove',
+                    },
+                  ]}
+                  className={styles.marginRightSmall}
+                  disabled={!hasRole(OrgRole.EDITOR) || bulkActionInProgress}
+                  onChange={(value) => setBulkEditAction(value[0] as any)}
+                >
+                  Bulk Edit Probes
+                </ButtonCascader>
+              )}
               <Button
                 type="button"
                 variant="primary"
+                fill="text"
                 onClick={handleEnableSelectedChecks}
                 className={styles.marginRightSmall}
                 disabled={!hasRole(OrgRole.EDITOR) || bulkActionInProgress}
@@ -466,10 +481,23 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
               <Button
                 type="button"
                 variant="secondary"
+                fill="text"
                 onClick={handleDisableSelectedChecks}
+                className={styles.marginRightSmall}
                 disabled={!hasRole(OrgRole.EDITOR) || bulkActionInProgress}
               >
                 Disable
+              </Button>
+
+              <Button
+                type="button"
+                variant="destructive"
+                fill="text"
+                className={styles.marginRightSmall}
+                onClick={handleDeleteSelectedChecks}
+                disabled={!hasRole(OrgRole.EDITOR) || bulkActionInProgress}
+              >
+                Delete
               </Button>
             </div>
           </>
@@ -551,6 +579,13 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
         onError={() =>
           appEvents.emit(AppEvents.alertError, [`Error updating thresholds. make sure your values don't overlap`])
         }
+      />
+      <BulkEditModal
+        instance={instance}
+        selectedChecks={getChecksFromSelected}
+        onDismiss={() => setBulkEditAction(null)}
+        action={bulkEditAction}
+        isOpen={bulkEditAction !== null}
       />
     </div>
   );

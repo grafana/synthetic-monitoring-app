@@ -43,7 +43,7 @@ const getStyles = (theme: GrafanaTheme) => ({
 
 export const SliderInput = ({ min, max, prefixLabel, suffixLabel, name, step = 1, validate, defaultValue }: Props) => {
   const styles = useStyles(getStyles);
-  const { register, setValue, setError, getValues } = useFormContext();
+  const { register, setValue, setError, getValues, clearErrors } = useFormContext();
 
   useEffect(() => {
     register(name);
@@ -57,7 +57,7 @@ export const SliderInput = ({ min, max, prefixLabel, suffixLabel, name, step = 1
         <Slider
           tooltipAlwaysVisible={false}
           css={styles.slider}
-          min={min}
+          min={0}
           max={max}
           step={step}
           value={getValues(name)}
@@ -66,6 +66,7 @@ export const SliderInput = ({ min, max, prefixLabel, suffixLabel, name, step = 1
             if (error) {
               setError(name, { message: error });
             } else {
+              clearErrors(name);
               setValue(name, value);
             }
           }}

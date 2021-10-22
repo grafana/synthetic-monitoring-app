@@ -368,3 +368,37 @@ export function fallbackSettings(t: CheckType): Settings {
 }
 
 export const PLUGIN_URL_PATH = '/a/grafana-synthetic-monitoring-app/';
+
+interface RegionMapping {
+  [key: string]: string;
+}
+
+export const PROBE_REGION_MAPPING: RegionMapping = {
+  Amsterdam: 'EU',
+  Atlanta: 'Americas',
+  Bangalore: 'Asia',
+  CapeTown: 'Africas',
+  Chicago: 'Americas',
+  Dallas: 'Americas',
+  Frankfurt: 'EU',
+  London: 'EU',
+  LosAngeles: 'Americas',
+  Miami: 'Americas',
+  Mumbai: 'Africas',
+  NewYork: 'Americas',
+  Newark: 'Americas',
+  NorthCalifornia: 'Americas',
+  NorthVirginia: 'Americas',
+  Ohio: 'Americas',
+  Oregon: 'Americas',
+  Paris: 'EU',
+  SanFrancisco: 'Americas',
+  SanJose: 'Americas',
+  SaoPaulo: 'Americas',
+  Seattle: 'Americas',
+  Seol: 'Asia',
+  Singapore: 'Asia',
+  Sydney: 'OCE',
+  Tokyo: 'Asia',
+  Toronto: 'Americas',
+};
