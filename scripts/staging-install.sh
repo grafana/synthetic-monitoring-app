@@ -32,7 +32,7 @@ custom_commands() {
 		| sed 's/[",]//g' \
 		| sed 's/^ *//g')
 
-	URL="https://storage.googleapis.com/integration-artifacts/grafana-synthetic-monitoring-app/main/latest/grafana-synthetic-monitoring-app-${PACKAGE_VERSION}.any.zip"
+	URL="https://storage.googleapis.com/integration-artifacts/grafana-synthetic-monitoring-app/${PACKAGE_VERSION}/main/latest/grafana-synthetic-monitoring-app-${PACKAGE_VERSION}.any.zip"
 
 	cat <<-EOF
 		grafana-cli --pluginUrl=${URL} plugins install ${PLUGIN_NAME}
