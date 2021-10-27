@@ -99,6 +99,7 @@ export interface Probe extends BaseObject {
   onlineChange: number;
   labels: Label[];
   version: string;
+  deprecated: boolean;
 }
 
 export enum ResponseMatchType {
