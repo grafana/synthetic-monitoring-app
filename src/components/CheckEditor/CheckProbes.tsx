@@ -1,7 +1,8 @@
 import React, { useState, useCallback } from 'react';
 import { css } from '@emotion/css';
 import { Button, HorizontalGroup, MultiSelect, ThemeContext, Field } from '@grafana/ui';
-import { SelectableValue } from '@grafana/data';
+import { SelectableValue, AppEvents } from '@grafana/data';
+import appEvents from 'grafana/app/core/app_events';
 import { Probe } from 'types';
 
 interface Props {
@@ -19,11 +20,20 @@ const CheckProbes = ({ probes, availableProbes, isEditor, onChange, onBlur, inva
 
   const onChangeSelect = useCallback(
     (items: Array<SelectableValue<number>>) => {
+      // On adding a new probe, check deprecation status
+      if (currentProbes.length < items.length) {
+        const newItem = items.find((item) => !currentProbes.includes(item.value as number));
+        // Prevent adding to list if probe is deprecated
+        if (newItem && newItem.deprecated) {
+          appEvents.emit(AppEvents.alertWarning, [`Deprecated probes cannot be added to checks`]);
+          return;
+        }
+      }
       const probes = items.map((p) => p.value && p.value) as number[];
       setCurrentProbes(probes);
       onChange(probes);
     },
-    [onChange]
+    [onChange, currentProbes]
   );
 
   const onClearLocations = () => {
@@ -32,16 +42,17 @@ const CheckProbes = ({ probes, availableProbes, isEditor, onChange, onBlur, inva
   };
 
   const onAllLocations = () => {
-    const probes = availableProbes.map((p) => p.id) as number[];
+    const probes = availableProbes.filter((p) => !p.deprecated).map((p) => p.id) as number[];
     setCurrentProbes(probes);
     onChange(probes);
   };
 
   const options = availableProbes.map((p) => {
     return {
-      label: p.name,
+      label: p.deprecated ? `${p.name} (deprecated)` : p.name,
       value: p.id,
       description: p.online ? 'Online' : 'Offline',
+      deprecated: p.deprecated,
     };
   });
 
@@ -53,7 +64,7 @@ const CheckProbes = ({ probes, availableProbes, isEditor, onChange, onBlur, inva
         <>
           <Field
             label="Probe locations"
-            description="Select one, multiple, or all probes where this target will be checked from."
+            description="Select one, multiple, or all probes where this target will be checked from. Deprecated probes can be removed, but they cannot be added."
             disabled={!isEditor}
             error={error}
             invalid={invalid}
