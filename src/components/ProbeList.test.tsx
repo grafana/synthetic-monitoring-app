@@ -22,6 +22,7 @@ const defaultProbes = [
     online: false,
     onlineChange: 0,
     version: 'v1',
+    deprecated: false,
   },
   {
     name: 'burritos',
@@ -34,6 +35,7 @@ const defaultProbes = [
     online: false,
     onlineChange: 0,
     version: 'v1',
+    deprecated: false,
   },
 ];
 
