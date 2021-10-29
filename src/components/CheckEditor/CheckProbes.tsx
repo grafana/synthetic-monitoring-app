@@ -1,10 +1,11 @@
-import React, { PureComponent } from 'react';
+import React, { useState, useCallback } from 'react';
 import { css } from '@emotion/css';
 import { Button, HorizontalGroup, MultiSelect, ThemeContext, Field } from '@grafana/ui';
-import { SelectableValue } from '@grafana/data';
+import { SelectableValue, AppEvents } from '@grafana/data';
+import appEvents from 'grafana/app/core/app_events';
 import { Probe } from 'types';
 
-interface CheckProbesProps {
+interface Props {
   probes: number[];
   availableProbes: Probe[];
   isEditor: boolean;
@@ -14,110 +15,88 @@ interface CheckProbesProps {
   error?: string;
 }
 
-interface CheckProbesState {
-  probes: number[];
-  probeStr: string;
-}
+const CheckProbes = ({ probes, availableProbes, isEditor, onChange, onBlur, invalid, error }: Props) => {
+  const [currentProbes, setCurrentProbes] = useState<number[]>(probes);
 
-export default class CheckProbes extends PureComponent<CheckProbesProps, CheckProbesState> {
-  state = {
-    probes: this.props.probes || [],
-    probeStr: this.props.probes.join(','),
-  };
-
-  onChange = (item: Array<SelectableValue<number>>) => {
-    let probes: number[] = [];
-    for (const p of item.values()) {
-      if (p.value) {
-        probes.push(p.value);
+  const onChangeSelect = useCallback(
+    (items: Array<SelectableValue<number>>) => {
+      // On adding a new probe, check deprecation status
+      if (currentProbes.length < items.length) {
+        const newItem = items.find((item) => !currentProbes.includes(item.value as number));
+        // Prevent adding to list if probe is deprecated
+        if (newItem && newItem.deprecated) {
+          appEvents.emit(AppEvents.alertWarning, [`Deprecated probes cannot be added to checks`]);
+          return;
+        }
       }
-    }
-    const str = probes.join(',');
-    this.setState({ probes: probes, probeStr: str }, this.onUpdate);
+      const probes = items.map((p) => p.value && p.value) as number[];
+      setCurrentProbes(probes);
+      onChange(probes);
+    },
+    [onChange, currentProbes]
+  );
+
+  const onClearLocations = () => {
+    setCurrentProbes([]);
+    onChange([]);
   };
 
-  onUpdate = () => {
-    this.props.onChange(this.state.probes);
+  const onAllLocations = () => {
+    const probes = availableProbes.filter((p) => !p.deprecated).map((p) => p.id) as number[];
+    setCurrentProbes(probes);
+    onChange(probes);
   };
 
-  onAllLocations = () => {
-    let probes: number[] = [];
-    for (const p of this.props.availableProbes) {
-      if (p.id) {
-        probes.push(p.id);
-      }
-    }
-    const str = probes.join(',');
-    this.setState({ probes: probes, probeStr: str }, this.onUpdate);
-  };
-  onClearLocations = () => {
-    let probes: number[] = [];
-    this.setState({ probes: probes, probeStr: '' }, this.onUpdate);
-  };
+  const options = availableProbes.map((p) => {
+    return {
+      label: p.deprecated ? `${p.name} (deprecated)` : p.name,
+      value: p.id,
+      description: p.online ? 'Online' : 'Offline',
+      deprecated: p.deprecated,
+    };
+  });
 
-  render() {
-    const { probes } = this.state;
-    const { availableProbes, isEditor, onBlur, invalid, error } = this.props;
-    let options: SelectableValue[] = [];
-    for (const p of availableProbes) {
-      options.push({
-        label: p.name,
-        value: p.id,
-        description: p.online ? 'Online' : 'Offline',
-      });
-    }
-    let selectedProbes: SelectableValue[] = [];
-    for (const p of probes) {
-      let existing = options.find((item) => item.value === p);
-      if (existing) {
-        selectedProbes.push(existing);
-      }
-    }
+  const selectedProbes = options.filter((p) => currentProbes.includes(p.value as number));
 
-    return (
-      <ThemeContext.Consumer>
-        {(theme) => (
-          <>
-            <Field
-              label="Probe locations"
-              description="Select one, multiple, or all probes where this target will be checked from."
+  return (
+    <ThemeContext.Consumer>
+      {(theme) => (
+        <>
+          <Field
+            label="Probe locations"
+            description="Select one, multiple, or all probes where this target will be checked from. Deprecated probes can be removed, but they cannot be added."
+            disabled={!isEditor}
+            error={error}
+            invalid={invalid}
+          >
+            <MultiSelect
+              options={options}
+              value={selectedProbes}
+              onChange={onChangeSelect}
               disabled={!isEditor}
-              error={error}
-              invalid={invalid}
-            >
-              <MultiSelect
-                options={options}
-                value={selectedProbes}
-                onChange={this.onChange}
-                disabled={!isEditor}
-                closeMenuOnSelect={false}
-                onBlur={onBlur}
-              />
-            </Field>
-            <div
-              className={css`
-                margin-top: ${theme.spacing(1)};
-                margin-bottom: ${theme.spacing(2)};
-              `}
-            >
-              <HorizontalGroup spacing="sm">
-                <Button onClick={this.onAllLocations} disabled={!isEditor} variant="secondary" size="sm" type="button">
-                  All&nbsp;&nbsp;
-                </Button>
-                <Button
-                  onClick={this.onClearLocations}
-                  disabled={!isEditor}
-                  variant="secondary"
-                  size="sm"
-                  type="button"
-                >
-                  Clear
-                </Button>
-              </HorizontalGroup>
-            </div>
-          </>
-        )}
-      </ThemeContext.Consumer>
-    );
-  }
-}
+              closeMenuOnSelect={false}
+              onBlur={onBlur}
+            />
+          </Field>
+          <div
+            className={css`
+              margin-top: ${theme.spacing(1)};
+              margin-bottom: ${theme.spacing(2)};
+            `}
+          >
+            <HorizontalGroup spacing="sm">
+              <Button onClick={onAllLocations} disabled={!isEditor} variant="secondary" size="sm" type="button">
+                All&nbsp;&nbsp;
+              </Button>
+              <Button onClick={onClearLocations} disabled={!isEditor} variant="secondary" size="sm" type="button">
+                Clear
+              </Button>
+            </HorizontalGroup>
+          </div>
+        </>
+      )}
+    </ThemeContext.Consumer>
+  );
+};
+
+export default CheckProbes;

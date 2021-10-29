@@ -18,6 +18,7 @@ const defaultProbe = {
   online: false,
   onlineChange: 0,
   version: 'v1',
+  deprecated: false,
 };
 const onReturn = jest.fn();
 const updateProbe = jest.fn().mockImplementation(() => Promise.resolve());
@@ -89,6 +90,7 @@ test('save button is disabled by invalid values', async () => {
     online: false,
     onlineChange: 0,
     version: 'v1',
+    deprecated: false,
   };
   renderProbeEditor({ probe: validProbe });
   const saveButton = await screen.findByRole('button', { name: 'Save' });
@@ -111,6 +113,7 @@ test('saves new probe', async () => {
     online: false,
     onlineChange: 0,
     version: 'v1',
+    deprecated: false,
   };
   const instance = renderProbeEditor({ probe: validProbe });
   const saveButton = await screen.findByRole('button', { name: 'Save' });
@@ -131,6 +134,7 @@ test('updates existing probe', async () => {
     online: false,
     onlineChange: 0,
     version: 'v1',
+    deprecated: false,
   };
   const instance = renderProbeEditor({ probe: validProbe });
   const saveButton = await screen.findByRole('button', { name: 'Save' });

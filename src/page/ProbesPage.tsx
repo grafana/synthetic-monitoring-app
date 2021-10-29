@@ -71,6 +71,7 @@ export const ProbesPage = ({ id }: Props) => {
       online: false,
       onlineChange: 0,
       version: 'unknown',
+      deprecated: false,
     } as Probe;
     return <ProbeEditor probe={template} onReturn={onGoBack} />;
   }

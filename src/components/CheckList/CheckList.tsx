@@ -175,7 +175,6 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
       sortType
     );
     setFilteredChecks(filtered);
-    clearSelectedChecks();
   }, [checkFilters, sortType, checks, sortChecks]);
 
   const checksPerPage = viewType === CheckListViewType.Card ? CHECKS_PER_PAGE_CARD : CHECKS_PER_PAGE_LIST;
