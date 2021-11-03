@@ -4,6 +4,7 @@ import { Field, Input } from '@grafana/ui';
 import { Collapse } from 'components/Collapse';
 import { LabelField } from 'components/LabelField';
 import { useFormContext } from 'react-hook-form';
+import { HorizontalCheckboxField } from './HorizonalCheckboxField';
 
 interface Props {
   isEditor: boolean;
@@ -52,6 +53,13 @@ export const TracerouteSettingsForm = ({ isEditor }: Props) => {
             disabled={!isEditor}
           />
         </Field>
+        <HorizontalCheckboxField
+          id="traceroute-settings-ptr-lookup"
+          label="PTR lookup"
+          name="settings.traceroute.ptrLookup"
+          description="Reverse lookup hostnames from IP addresses"
+          disabled={!isEditor}
+        />
       </div>
     </Collapse>
   );

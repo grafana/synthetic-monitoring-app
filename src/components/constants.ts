@@ -363,8 +363,8 @@ export function fallbackSettings(t: CheckType): Settings {
         traceroute: {
           firstHop: 1,
           maxHops: 64,
-          retries: 0,
           maxUnknownHops: 15,
+          ptrLookup: true,
         },
       };
     }
