@@ -26,13 +26,6 @@ export const TracerouteSettingsForm = ({ isEditor }: Props) => {
         `}
       >
         <LabelField isEditor={isEditor} />
-        <Field label="First hop" description="Starting TTL value" disabled={!isEditor}>
-          <Input
-            id="traceroute-settings-first-hop"
-            {...register('settings.traceroute.firstHop', { min: 1, max: 63 })}
-            disabled={!isEditor}
-          />
-        </Field>
         <Field label="Max hops" description="Maximum TTL for the trace" disabled={!isEditor}>
           <Input
             id="traceroute-settings-max-hops"

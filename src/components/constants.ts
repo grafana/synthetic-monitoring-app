@@ -361,7 +361,6 @@ export function fallbackSettings(t: CheckType): Settings {
     case CheckType.Traceroute: {
       return {
         traceroute: {
-          firstHop: 1,
           maxHops: 64,
           maxUnknownHops: 15,
           ptrLookup: true,

@@ -227,14 +227,12 @@ export interface HttpSettingsFormValues
 }
 
 export interface TracerouteSettings {
-  firstHop: number;
   maxHops: number;
   maxUnknownHops: number;
   ptrLookup: boolean;
 }
 
 export interface TracerouteSettingsFormValues {
-  firstHop: string;
   maxHops: string;
   maxUnknownHops: string;
   ptrLookup: boolean;
