@@ -23,7 +23,7 @@
   "devDependencies": {
     "@commitlint/cli": "^12.1.4",
     "@commitlint/config-conventional": "^12.1.4",
-    "@grafana/data": "8.0.1",
+    "@grafana/data": "8.2.3",
     "@grafana/eslint-config": "^2.5.0",
     "@grafana/runtime": "8.0.1",
     "@grafana/toolkit": "8.0.1",
