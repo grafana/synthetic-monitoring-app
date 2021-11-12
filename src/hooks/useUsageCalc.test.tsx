@@ -35,6 +35,7 @@ describe('http usage', () => {
       checksPerMonth: 43800,
       activeSeries: 118,
       logsGbPerMonth: 0.04,
+      dpm: 118,
     });
 
     const { result: multipleProbes } = await renderUsage({
@@ -48,6 +49,7 @@ describe('http usage', () => {
       checksPerMonth: 175200,
       activeSeries: 472,
       logsGbPerMonth: 0.14,
+      dpm: 472,
     });
 
     const { result: differentFrequency } = await renderUsage({
@@ -61,6 +63,7 @@ describe('http usage', () => {
       checksPerMonth: 262800,
       activeSeries: 118,
       logsGbPerMonth: 0.21,
+      dpm: 708,
     });
 
     const { result: withSSL } = await renderUsage({
@@ -76,6 +79,7 @@ describe('http usage', () => {
       checksPerMonth: 262800,
       activeSeries: 122,
       logsGbPerMonth: 0.21,
+      dpm: 732,
     });
   });
 
@@ -93,6 +97,7 @@ describe('http usage', () => {
       checksPerMonth: 43800,
       activeSeries: 34,
       logsGbPerMonth: 0.04,
+      dpm: 34,
     });
 
     const { result: multipleProbes } = await renderUsage({
@@ -107,6 +112,7 @@ describe('http usage', () => {
       checksPerMonth: 175200,
       activeSeries: 136,
       logsGbPerMonth: 0.14,
+      dpm: 136,
     });
 
     const { result: differentFrequency } = await renderUsage({
@@ -121,6 +127,7 @@ describe('http usage', () => {
       checksPerMonth: 262800,
       activeSeries: 34,
       logsGbPerMonth: 0.21,
+      dpm: 204,
     });
 
     const { result: withSSL } = await renderUsage({
@@ -137,6 +144,7 @@ describe('http usage', () => {
       checksPerMonth: 262800,
       activeSeries: 38,
       logsGbPerMonth: 0.21,
+      dpm: 228,
     });
   });
 });
@@ -154,6 +162,7 @@ describe('ping usage', () => {
       checksPerMonth: 43800,
       activeSeries: 81,
       logsGbPerMonth: 0.04,
+      dpm: 81,
     });
   });
 
@@ -171,6 +180,7 @@ describe('ping usage', () => {
       checksPerMonth: 43800,
       activeSeries: 25,
       logsGbPerMonth: 0.04,
+      dpm: 25,
     });
   });
 });
@@ -188,6 +198,7 @@ describe('tcp usage', () => {
       checksPerMonth: 43800,
       activeSeries: 37,
       logsGbPerMonth: 0.04,
+      dpm: 37,
     });
 
     const { result: withSSL } = await renderUsage({
@@ -203,6 +214,7 @@ describe('tcp usage', () => {
       checksPerMonth: 262800,
       activeSeries: 41,
       logsGbPerMonth: 0.21,
+      dpm: 246,
     });
   });
 
@@ -219,6 +231,7 @@ describe('tcp usage', () => {
       checksPerMonth: 43800,
       activeSeries: 23,
       logsGbPerMonth: 0.04,
+      dpm: 23,
     });
 
     const { result: withSSL } = await renderUsage({
@@ -235,6 +248,7 @@ describe('tcp usage', () => {
       checksPerMonth: 262800,
       activeSeries: 27,
       logsGbPerMonth: 0.21,
+      dpm: 162,
     });
   });
 });
@@ -252,6 +266,7 @@ describe('dns usage', () => {
       checksPerMonth: 43800,
       activeSeries: 84,
       logsGbPerMonth: 0.04,
+      dpm: 84,
     });
   });
 
@@ -269,6 +284,7 @@ describe('dns usage', () => {
       checksPerMonth: 43800,
       activeSeries: 28,
       logsGbPerMonth: 0.04,
+      dpm: 28,
     });
   });
 });

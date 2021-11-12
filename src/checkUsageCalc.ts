@@ -25,11 +25,17 @@ const getLogsGbPerMonth = (probeCount: number, frequencySeconds: number) => {
   return parseFloat(logsGbPerMonth.toFixed(2));
 };
 
+const getDataPointsPerMinute = (activeSeries: number, frequencySeconds: number) => {
+  const dpm = activeSeries * Math.max(1, 60 / frequencySeconds);
+  return Math.ceil(dpm);
+};
+
 export const calculateUsage = ({ probeCount, frequencySeconds, seriesPerCheck }: ActiveSeriesParams): UsageValues => {
   const activeSeries = seriesPerCheck * probeCount;
   return {
     checksPerMonth: getTotalChecksPerMonth(probeCount, frequencySeconds),
     activeSeries,
     logsGbPerMonth: getLogsGbPerMonth(probeCount, frequencySeconds),
+    dpm: getDataPointsPerMinute(activeSeries, frequencySeconds),
   };
 };

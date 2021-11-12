@@ -21,8 +21,14 @@ const getStyles = (theme: GrafanaTheme) => ({
   section: css`
     margin-bottom: ${theme.spacing.sm};
   `,
+  helpSection: css`
+    margin-top: ${theme.spacing.md};
+  `,
   value: css`
     margin-left: ${theme.spacing.xs};
+  `,
+  link: css`
+    text-decoration: underline;
   `,
 });
 
@@ -65,16 +71,30 @@ export const CheckUsage: FC = () => {
     <div className={styles.container}>
       <h5 className={styles.header}>Approximate expected usage for this check</h5>
       <div className={styles.section}>
-        <Icon className={styles.icon} name={'calendar-alt'} />
+        <Icon className={styles.icon} name="calendar-alt" />
         Checks per month: <strong className={styles.value}>{usage.checksPerMonth.toLocaleString()}</strong>
       </div>
       <div className={styles.section}>
-        <Icon className={styles.icon} name={'chart-line'} />
+        <Icon className={styles.icon} name="chart-line" />
         Active series: <strong className={styles.value}>{usage.activeSeries.toLocaleString()}</strong>
       </div>
       <div className={styles.section}>
-        <Icon className={styles.icon} name={'database'} />
+        <Icon className={styles.icon} name="clock-nine" />
+        Data points per minute : <strong className={styles.value}>{usage.dpm.toLocaleString()}</strong>
+      </div>
+      <div className={styles.section}>
+        <Icon className={styles.icon} name="database" />
         Log usage per month (GB): <strong className={styles.value}>{usage.logsGbPerMonth.toLocaleString()}</strong>
+      </div>
+      <div className={styles.helpSection}>
+        <a
+          href="https://grafana.com/docs/grafana-cloud/fundamentals/active-series-and-dpm/"
+          className={styles.link}
+          target="_blank"
+          rel="noopenner noreferrer"
+        >
+          Learn more about active series and data points per minute
+        </a>
       </div>
     </div>
   );
