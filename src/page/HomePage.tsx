@@ -202,6 +202,20 @@ const HomePage = () => {
           colorMode={BigValueColorMode.Value}
           graphMode={BigValueGraphMode.Area}
           height={80}
+          width={115}
+          value={{
+            numeric: usage?.dpm ?? 0,
+            color: config.theme2.colors.text.primary,
+            title: 'Data points per minute',
+            text: usage?.dpm.toLocaleString() ?? 'N/A',
+          }}
+        />
+        <BigValue
+          theme={config.theme2}
+          textMode={BigValueTextMode.ValueAndName}
+          colorMode={BigValueColorMode.Value}
+          graphMode={BigValueGraphMode.Area}
+          height={80}
           width={175}
           value={{
             numeric: usage?.checksPerMonth ?? 0,

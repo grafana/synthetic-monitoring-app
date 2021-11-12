@@ -491,4 +491,5 @@ export interface UsageValues {
   checksPerMonth: number;
   activeSeries: number;
   logsGbPerMonth: number;
+  dpm: number;
 }

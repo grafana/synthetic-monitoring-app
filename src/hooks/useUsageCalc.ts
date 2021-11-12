@@ -58,9 +58,10 @@ export function useUsageCalc(checks?: Partial<Check> | Check[]) {
           activeSeries: total.activeSeries + usage.activeSeries,
           logsGbPerMonth: total.logsGbPerMonth + usage.logsGbPerMonth,
           checksPerMonth: total.checksPerMonth + usage.checksPerMonth,
+          dpm: total.dpm + usage.dpm,
         };
       },
-      { logsGbPerMonth: 0, activeSeries: 0, checksPerMonth: 0 }
+      { logsGbPerMonth: 0, activeSeries: 0, checksPerMonth: 0, dpm: 0 }
     );
   }
 
