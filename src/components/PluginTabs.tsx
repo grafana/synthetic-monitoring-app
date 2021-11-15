@@ -186,8 +186,6 @@ export const PluginTabs = ({ query, onNavChanged, path, meta }: AppRootProps<Glo
     }
   };
 
-  console.log(activeTab.id);
-
   return (
     <div>
       {getPage()}

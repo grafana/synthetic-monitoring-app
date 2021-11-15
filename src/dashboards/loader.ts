@@ -1,6 +1,5 @@
-import { config, getBackendSrv } from '@grafana/runtime';
+import { getBackendSrv } from '@grafana/runtime';
 import { DashboardInfo, FolderInfo } from 'datasource/types';
-import { FeatureName } from 'types';
 
 export const dashboardPaths = [
   'sm-http.json', // The path
@@ -8,11 +7,8 @@ export const dashboardPaths = [
   'sm-dns.json',
   'sm-tcp.json',
   'sm-summary.json',
+  'sm-traceroute.json',
 ];
-
-if (config.featureToggles[FeatureName.Traceroute]) {
-  dashboardPaths.push('sm-traceroute.json');
-}
 
 async function findSyntheticMonitoringFolder(): Promise<FolderInfo> {
   const backendSrv = getBackendSrv();
