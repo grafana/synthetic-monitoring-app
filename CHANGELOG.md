@@ -1,5 +1,11 @@
 # Change Log
 
+# [1.5.6](https://github.com/grafana/synthetic-monitoring-app/compare/v1.5.5...v1.5.6) (2021-11-15)
+
+### Bug Fixes
+
+- Add data points per minute to usage calculator
+
 # [1.5.5](https://github.com/grafana/synthetic-monitoring-app/compare/v1.5.4...v1.5.5) (2021-10-29)
 
 ### Features
