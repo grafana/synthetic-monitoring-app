@@ -4,6 +4,7 @@ import { Field, Input } from '@grafana/ui';
 import { Collapse } from 'components/Collapse';
 import { LabelField } from 'components/LabelField';
 import { useFormContext } from 'react-hook-form';
+import { HorizontalCheckboxField } from './HorizonalCheckboxField';
 
 interface Props {
   isEditor: boolean;
@@ -25,13 +26,6 @@ export const TracerouteSettingsForm = ({ isEditor }: Props) => {
         `}
       >
         <LabelField isEditor={isEditor} />
-        <Field label="First hop" description="Starting TTL value" disabled={!isEditor}>
-          <Input
-            id="traceroute-settings-first-hop"
-            {...register('settings.traceroute.firstHop', { min: 1, max: 63 })}
-            disabled={!isEditor}
-          />
-        </Field>
         <Field label="Max hops" description="Maximum TTL for the trace" disabled={!isEditor}>
           <Input
             id="traceroute-settings-max-hops"
@@ -52,6 +46,13 @@ export const TracerouteSettingsForm = ({ isEditor }: Props) => {
             disabled={!isEditor}
           />
         </Field>
+        <HorizontalCheckboxField
+          id="traceroute-settings-ptr-lookup"
+          label="PTR lookup"
+          name="settings.traceroute.ptrLookup"
+          description="Reverse lookup hostnames from IP addresses"
+          disabled={!isEditor}
+        />
       </div>
     </Collapse>
   );
