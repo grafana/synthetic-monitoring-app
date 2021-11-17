@@ -1,6 +1,6 @@
 import React from 'react';
 import { CheckList } from './CheckList';
-import { act, render, screen, waitForElementToBeRemoved } from '@testing-library/react';
+import { act, render, screen, waitFor, waitForElementToBeRemoved } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { GrafanaInstances, Check, CheckSort, GlobalSettings } from 'types';
 import { getInstanceMock } from '../../datasource/__mocks__/DataSource';
@@ -356,9 +356,9 @@ test('cascader adds labels to label filter', async () => {
   userEvent.click(cascader);
   const labelMenuItems = await screen.findAllByRole('menuitem');
   expect(labelMenuItems.length).toBe(2);
-  const labelName = await screen.findByText('carne');
-  userEvent.click(labelName);
-  const labelValue = await screen.findByText('asada');
+  const labelName = await screen.findByRole('menuitem', { name: 'carne' });
+  await waitFor(() => userEvent.click(labelName));
+  const labelValue = await screen.findByRole('menuitem', { name: 'asada' });
   userEvent.click(labelValue);
 
   const labelFilterInput = await screen.findByTestId('check-label-filter');
