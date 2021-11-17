@@ -1,5 +1,11 @@
 # Change Log
 
+# [1.6.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.5.6...v1.6.0) (2021-11-17)
+
+### Features
+
+- Add traceroute check type
+
 # [1.5.6](https://github.com/grafana/synthetic-monitoring-app/compare/v1.5.5...v1.5.6) (2021-11-15)
 
 ### Bug Fixes
