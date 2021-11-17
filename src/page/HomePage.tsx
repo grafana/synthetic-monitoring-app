@@ -20,6 +20,7 @@ import { Check } from 'types';
 import { useUsageCalc } from 'hooks/useUsageCalc';
 import { DashboardInfo } from 'datasource/types';
 import dashScreenshot from 'img/screenshot-dash-traceroute.png';
+import dashScreenshotLight from 'img/screenshot-dash-traceroute-light.png';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   flexRow: css`
@@ -140,9 +141,9 @@ const HomePage = () => {
           <h3>What&apos;s new</h3>
           <p>
             We have a new type of check: traceroute. Traceroute checks show routes through network to a target. Check
-            out packet loss, hop distance, and timing from probes any synthetic monitoring probe.
+            out packet loss, hop distance, and timing from any synthetic monitoring probe.
           </p>
-          <img className={styles.image} src={dashScreenshot} />
+          <img className={styles.image} src={config.theme2.isDark ? dashScreenshot : dashScreenshotLight} />
         </DisplayCard>
       </div>
       <DisplayCard className={cx(styles.card, styles.usageGrid, styles.marginBottom)}>
