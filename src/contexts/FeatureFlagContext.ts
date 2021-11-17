@@ -10,6 +10,10 @@ export interface FeatureFlagContextValue {
 }
 
 export function isFeatureEnabled(name: FeatureName) {
+  // Override traceroute feature flag until we're sure we don't need it anymore
+  if (name === FeatureName.Traceroute) {
+    return true;
+  }
   const featuresParam = urlUtil.getUrlSearchParams()['features'];
   let isEnabledThroughQueryParam = false;
   if (isArray(featuresParam)) {
