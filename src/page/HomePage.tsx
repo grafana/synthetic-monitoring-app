@@ -19,6 +19,8 @@ import { InstanceContext } from 'contexts/InstanceContext';
 import { Check } from 'types';
 import { useUsageCalc } from 'hooks/useUsageCalc';
 import { DashboardInfo } from 'datasource/types';
+import dashScreenshot from 'img/screenshot-dash-traceroute.png';
+import dashScreenshotLight from 'img/screenshot-dash-traceroute-light.png';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   flexRow: css`
@@ -87,6 +89,12 @@ const getStyles = (theme: GrafanaTheme2) => ({
   actionContainer: css`
     margin-top: auto;
   `,
+  image: css`
+    max-width: 100%;
+    max-height: 75%;
+    display: block;
+    margin: auto;
+  `,
 });
 
 const sortSummaryToTop = (dashboardA: DashboardInfo, dashboardB: DashboardInfo) => {
@@ -131,39 +139,11 @@ const HomePage = () => {
 
         <DisplayCard className={cx(styles.card, styles.grow)}>
           <h3>What&apos;s new</h3>
-          <p>We are making some updates to our probes in Grafana Cloud synthetic monitoring. The changes include:</p>
-          <ul>
-            <li>
-              Deprecating <code>San Jose</code> (We recommend using the existing probe “San Francisco” as a replacement)
-            </li>
-            <li>
-              Replacing <code>Chicago</code> with <code>Boston</code>
-            </li>
-            <li>
-              Replacing <code>Seol</code> with <code>Seoul</code>
-            </li>
-            <li>
-              Adding <code>SaoPaulo</code>
-            </li>
-            <li>
-              Adding <code>CapeTown</code>
-            </li>
-          </ul>
-          <br />
           <p>
-            We are making these changes in an ongoing effort to ensure reliability across our services, and to provide
-            probe coverage on every continent (New probes in South America and Africa!)
+            We have a new type of check: traceroute. Traceroute checks show routes through network to a target. Check
+            out packet loss, hop distance, and timing from any synthetic monitoring probe.
           </p>
-          <p>This change will be happening on October 7th</p>
-          <p>
-            If you have checks that use a probe that is deprecated, your check will have one less probe attached to it.
-            If you have any checks that use only 1 probe, and we have deprecated this probe, your check will still exist
-            but no longer be running. You must edit the check and add a different probe in order for the check to run
-            again. If you have checks that use a probe that we are replacing, your check will automatically be updated
-            with the new probe. These changes apply only to probes that we host, and no changes will be made to
-            self-hosted private probes. If you have any dashboards or alerts where you have hard-coded probe names for
-            probes we have either deprecated or changed, you will need to manually change or delete the probe name.
-          </p>
+          <img className={styles.image} src={config.theme2.isDark ? dashScreenshot : dashScreenshotLight} />
         </DisplayCard>
       </div>
       <DisplayCard className={cx(styles.card, styles.usageGrid, styles.marginBottom)}>
