@@ -7,6 +7,7 @@ export const instanceSettings: DataSourceInstanceSettings<SMOptions> = {
   uid: 'testuid',
   type: 'synthetic-monitoring-datasource',
   name: 'Synthetic Monitoring',
+  access: 'proxy',
   meta: {
     type: PluginType.datasource,
     name: 'Synthetic Monitoring API',

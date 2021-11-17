@@ -13,7 +13,7 @@ interface Props extends React.ComponentProps<typeof Button> {
 export const CopyToClipboard = (props: Props) => {
   const clipboardRef = useRef<HTMLButtonElement>(null);
   let clipboard: Clipboard;
-  const { getText, onClipboardCopy, onClipboardError } = props;
+  const { getText, onClipboardCopy, onClipboardError, ...rest } = props;
 
   const initClipboard = () => {
     if (clipboardRef.current) {
@@ -42,7 +42,7 @@ export const CopyToClipboard = (props: Props) => {
   }, [getText]);
 
   return (
-    <Button {...props} ref={clipboardRef}>
+    <Button {...rest} ref={clipboardRef}>
       {props.children}
     </Button>
   );
