@@ -31,7 +31,7 @@ import {
 import { unEscapeStringFromRegex, escapeStringForRegex, GrafanaTheme, AppEvents, SelectableValue } from '@grafana/data';
 import { matchesAllFilters } from './checkFilters';
 import {
-  fetchProbes,
+  fetchProbeOptions,
   deleteSelectedChecks,
   deleteSingleCheck,
   getIconOverlayToggleFromLS,
@@ -145,7 +145,6 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
   const [bulkActionInProgress, setBulkActionInProgress] = useState(false);
 
   const [showThresholdModal, setShowThresholdModal] = useState(false);
-  // const [showBulkEditModal, setShowBulkEditModal] = useState(false);
   const [bulkEditAction, setBulkEditAction] = useState<'add' | 'remove' | null>(null);
 
   const styles = useStyles(getStyles);
@@ -420,7 +419,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
             });
           }}
           defaultOptions
-          loadOptions={() => fetchProbes(instance)}
+          loadOptions={() => fetchProbeOptions(instance)}
           value={checkFilters.probes}
           placeholder="All probes"
           allowCustomValue={false}
@@ -586,6 +585,13 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
         onDismiss={() => setBulkEditAction(null)}
         action={bulkEditAction}
         isOpen={bulkEditAction !== null}
+        onSuccess={() => {
+          onCheckUpdate();
+          appEvents.emit(AppEvents.alertSuccess, ['All checks successfully updated']);
+        }}
+        onError={(err) => {
+          appEvents.emit(AppEvents.alertError, [`There was an error updating checks: ${err}`]);
+        }}
       />
     </div>
   );

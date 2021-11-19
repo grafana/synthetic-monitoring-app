@@ -1,17 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { Button, HorizontalGroup, Modal, useStyles, Tooltip } from '@grafana/ui';
-import { FilteredCheck, GrafanaInstances } from 'types';
-import { fetchProbes } from 'components/CheckList/actions';
+import { Button, HorizontalGroup, Modal, useStyles } from '@grafana/ui';
+import { FilteredCheck, GrafanaInstances, Probe } from 'types';
 import { GrafanaTheme } from '@grafana/data';
 import { css } from '@emotion/css';
 import { intersection } from 'lodash';
-import { PROBE_REGION_MAPPING } from 'components/constants';
-
-interface Probe {
-  label: string;
-  value: number | undefined;
-}
 
 interface ProbeById {
   [key: number]: Probe;
@@ -19,6 +12,8 @@ interface ProbeById {
 
 interface Props {
   onDismiss: () => void;
+  onSuccess: () => void;
+  onError: (err: any) => void;
   selectedChecks: () => FilteredCheck[];
   instance: GrafanaInstances;
   action: 'add' | 'remove' | null;
@@ -66,7 +61,7 @@ const style = (theme: GrafanaTheme) => ({
 });
 
 const ProbeButton = ({ probe, selectedProbes, commonProbes, addOrRemoveProbe }: ProbeButtonProps) => {
-  const isCommonProbe = probe.value && commonProbes.includes(probe.value);
+  const isCommonProbe = probe.id && commonProbes.includes(probe.id);
 
   return (
     <Button
@@ -75,7 +70,7 @@ const ProbeButton = ({ probe, selectedProbes, commonProbes, addOrRemoveProbe }: 
       size="sm"
       onClick={() => addOrRemoveProbe(probe)}
     >
-      {probe.label}
+      {probe.name}
     </Button>
   );
 };
@@ -87,14 +82,9 @@ interface RegionMapping {
 const ProbesByRegion = ({ probes, selectedProbes, commonProbes, addOrRemoveProbe }: ProbesByRegionProps) => {
   const styles = useStyles(style);
 
-  const {
-    EU: probesEU,
-    Americas: probesAmerica,
-    Asia: probesAsia,
-    Africas: probesAfrica,
-    OCE: probesOCE,
-  } = probes.reduce<RegionMapping>((acc, probe) => {
-    const currentRegion: string = PROBE_REGION_MAPPING[probe.label];
+  // Group probes by region
+  const probesByRegion = probes.reduce<RegionMapping>((acc, probe) => {
+    const currentRegion: string = probe.region;
 
     if (typeof acc[currentRegion] === 'undefined') {
       acc[currentRegion] = [];
@@ -107,86 +97,32 @@ const ProbesByRegion = ({ probes, selectedProbes, commonProbes, addOrRemoveProbe
   return (
     <div className={styles.probesWrapper}>
       <div>
-        <h5>Americas</h5>
-        <div className={styles.buttonGroup}>
-          {probesAmerica.map((p) => {
-            return (
-              <ProbeButton
-                key={p.value}
-                probe={p}
-                selectedProbes={selectedProbes}
-                commonProbes={commonProbes}
-                addOrRemoveProbe={addOrRemoveProbe}
-              />
-            );
-          })}
-        </div>
-        <h5>EU</h5>
-        <div className={styles.buttonGroup}>
-          {probesEU.map((p) => {
-            return (
-              <ProbeButton
-                key={p.value}
-                probe={p}
-                selectedProbes={selectedProbes}
-                commonProbes={commonProbes}
-                addOrRemoveProbe={addOrRemoveProbe}
-              />
-            );
-          })}
-        </div>
-        <h5>Asia</h5>
-        <div className={styles.buttonGroup}>
-          {probesAsia.map((p) => {
-            return (
-              <ProbeButton
-                key={p.value}
-                probe={p}
-                selectedProbes={selectedProbes}
-                commonProbes={commonProbes}
-                addOrRemoveProbe={addOrRemoveProbe}
-              />
-            );
-          })}
-        </div>
-        <div>
-          <h5>Africas</h5>
-          <div className={styles.buttonGroup}>
-            {probesAfrica.map((p) => {
-              return (
-                <ProbeButton
-                  key={p.value}
-                  probe={p}
-                  selectedProbes={selectedProbes}
-                  commonProbes={commonProbes}
-                  addOrRemoveProbe={addOrRemoveProbe}
-                />
-              );
-            })}
-          </div>
-        </div>
-        <div>
-          <h5>OCE</h5>
-          <div className={styles.buttonGroup}>
-            {probesOCE.map((p) => {
-              return (
-                <ProbeButton
-                  key={p.value}
-                  probe={p}
-                  selectedProbes={selectedProbes}
-                  commonProbes={commonProbes}
-                  addOrRemoveProbe={addOrRemoveProbe}
-                />
-              );
-            })}
-          </div>
-        </div>
+        {Object.keys(probesByRegion).map((region: string) => {
+          return (
+            <>
+              <h5>{region}</h5>
+              <div className={styles.buttonGroup}>
+                {probesByRegion[region].map((p) => {
+                  return (
+                    <ProbeButton
+                      key={p.name}
+                      probe={p}
+                      selectedProbes={selectedProbes}
+                      commonProbes={commonProbes}
+                      addOrRemoveProbe={addOrRemoveProbe}
+                    />
+                  );
+                })}
+              </div>
+            </>
+          );
+        })}
       </div>
     </div>
   );
 };
 
-const BulkEditModal = ({ onDismiss, isOpen, selectedChecks, action, instance }: Props) => {
+const BulkEditModal = ({ onDismiss, onSuccess, onError, isOpen, selectedChecks, action, instance }: Props) => {
   const [probes, setProbes] = useState<Probe[]>();
   const [probesById, setProbesById] = useState<ProbeById>({});
   const [selectedProbes, setSelectedProbes] = useState<Probe[]>([]);
@@ -194,6 +130,32 @@ const BulkEditModal = ({ onDismiss, isOpen, selectedChecks, action, instance }: 
   const checks = selectedChecks();
 
   const styles = useStyles(style);
+
+  const submitProbeUpdates = useCallback(async () => {
+    let newChecks: FilteredCheck[] = [];
+    // Add or remove based on action
+    if (action === 'add') {
+      newChecks = checks.map((check) => {
+        // Using a Set to avoid duplicates
+        const newProbes = new Set([...check.probes, ...selectedProbes.map((p) => p.id!)]);
+        return { ...check, probes: [...newProbes] };
+      });
+    } else if (action === 'remove') {
+      newChecks = checks.map((check) => {
+        const newProbes = check.probes.filter((p) => !probesToRemove.includes(p));
+        return { ...check, probes: newProbes };
+      });
+    }
+    try {
+      await instance.api?.bulkUpdateChecks(newChecks);
+      onDismiss();
+      onSuccess();
+    } catch (error) {
+      onDismiss();
+      onError(error);
+    }
+    console.log({ newChecks });
+  }, [selectedProbes, checks, instance, action, probesToRemove, onDismiss, onError, onSuccess]);
 
   const addOrRemoveProbe = useCallback(
     (probe) => {
@@ -225,16 +187,16 @@ const BulkEditModal = ({ onDismiss, isOpen, selectedChecks, action, instance }: 
   };
 
   const getProbes = useCallback(async () => {
-    const p = await fetchProbes(instance);
+    const p = await instance.api!.listProbes();
     console.log({ p });
     const byId = p.reduce((acc, probe) => {
       return {
         ...acc,
-        [probe.value!]: probe,
+        [probe.id as number]: probe,
       };
-    });
+    }, {});
 
-    setProbes(p.sort((a: any, b: any) => (a.label < b.label ? -1 : 1)));
+    setProbes(p.sort((a: any, b: any) => (a.name < b.name ? -1 : 1)));
     setProbesById(byId);
   }, [instance]);
 
@@ -242,9 +204,9 @@ const BulkEditModal = ({ onDismiss, isOpen, selectedChecks, action, instance }: 
     getProbes();
   }, [getProbes]);
 
+  // fix implicit state
   const commonProbes: number[] = intersection(...checks.map((check) => check.probes));
 
-  console.log({ action });
   return (
     <Modal
       title={
@@ -278,31 +240,38 @@ const BulkEditModal = ({ onDismiss, isOpen, selectedChecks, action, instance }: 
           </div>
         </div>
       ) : (
-        <div className={styles.bottomSpace}>
-          {commonProbes.length ? (
-            commonProbes.map((p) => {
-              return (
-                <Tooltip key={p} content="Click to remove from selected probes">
+        <div>
+          <div className={styles.verticalSpace}>
+            <i>Select probes to remove from all selected checks.</i>
+          </div>
+          <div className={styles.buttonGroup}>
+            {commonProbes.length ? (
+              commonProbes.map((p) => {
+                return (
                   <Button
+                    key={p}
                     variant={probesToRemove.includes(p) ? 'destructive' : 'secondary'}
                     fill="outline"
                     size="sm"
                     onClick={() => addOrRemoveCommonProbe(p)}
                   >
-                    {probesToRemove.includes(p) ? <del>{probesById[p].label}</del> : probesById[p].label}
+                    {probesToRemove.includes(p) ? <del>{probesById[p].name}</del> : probesById[p].name}
                   </Button>
-                </Tooltip>
-              );
-            })
-          ) : (
-            <div>None</div>
-          )}
+                );
+              })
+            ) : (
+              <div>None</div>
+            )}
+          </div>
         </div>
       )}
 
       <div className={styles.verticalSpace}>
         <HorizontalGroup>
-          <Button disabled={checks.length === 0 || (selectedProbes.length === 0 && probesToRemove.length === 0)}>
+          <Button
+            onClick={submitProbeUpdates}
+            disabled={checks.length === 0 || (selectedProbes.length === 0 && probesToRemove.length === 0)}
+          >
             Submit
           </Button>
           <Button variant="secondary" onClick={() => clearSelections()}>
