@@ -27,6 +27,7 @@ export class TenantSetup extends PureComponent {
         />
         <br />
         <TenantView settings={instance.api.instanceSettings.jsonData} />
+        <br />
       </div>
     );
   }

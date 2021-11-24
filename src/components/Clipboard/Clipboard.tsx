@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useStyles } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { css, cx } from '@emotion/css';
 import { GrafanaTheme } from '@grafana/data';
 import { CopyToClipboard } from './CopyToClipboard';
 
@@ -8,6 +8,8 @@ const getStyles = (theme: GrafanaTheme) => ({
   code: css`
     width: 100%;
     word-break: break-all;
+    overflow-y: scroll;
+    max-height: 100%;
   `,
   container: css`
     display: flex;
@@ -20,13 +22,14 @@ const getStyles = (theme: GrafanaTheme) => ({
 
 interface Props {
   content: string;
+  className?: string;
 }
 
-export function Clipboard({ content }: Props) {
+export function Clipboard({ content, className }: Props) {
   const styles = useStyles(getStyles);
   const [copyClipboard, setCopyclipboard] = useState(false);
   return (
-    <div className={styles.container}>
+    <div className={cx(styles.container, className)}>
       <pre className={styles.code}>{content}</pre>
 
       <CopyToClipboard
