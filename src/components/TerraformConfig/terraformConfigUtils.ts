@@ -27,7 +27,7 @@ const settingsToTF = (check: Check): TFCheckSettings => {
   switch (type) {
     case CheckType.TCP:
       if (!check.settings.tcp) {
-        throw new Error('could not translate settings to terraform config');
+        throw new Error(`could not translate settings to terraform config for check ${check.job}`);
       }
       return {
         tcp: {
@@ -39,7 +39,7 @@ const settingsToTF = (check: Check): TFCheckSettings => {
       };
     case CheckType.PING:
       if (!check.settings.ping) {
-        throw new Error('could not translate settings to terraform config');
+        throw new Error(`could not translate settings to terraform config for check ${check.job}`);
       }
       return {
         ping: {
@@ -49,7 +49,7 @@ const settingsToTF = (check: Check): TFCheckSettings => {
       };
     case CheckType.HTTP:
       if (!check.settings.http) {
-        throw new Error('could not translate settings to terraform config');
+        throw new Error(`could not translate settings to terraform config for check ${check.job}`);
       }
       return {
         http: {
@@ -74,7 +74,7 @@ const settingsToTF = (check: Check): TFCheckSettings => {
       };
     case CheckType.DNS:
       if (!check.settings.dns) {
-        throw new Error('could not translate settings to terraform config');
+        throw new Error(`could not translate settings to terraform config for check ${check.job}`);
       }
       return {
         dns: {
@@ -98,31 +98,43 @@ const settingsToTF = (check: Check): TFCheckSettings => {
           },
         },
       };
+    case CheckType.Traceroute:
+      throw new Error('traceroute checks are not yet supported in the Grafana Terraform provider');
+    // if (!check.settings.traceroute) {
+    //   throw new Error(`could not translate settings to terraform config for check ${check.job}`);
+    // }
+    // return {
+    //   traceroute: {
+    //     max_hops: check.settings.traceroute.maxHops,
+    //     max_unknown_hops: check.settings.traceroute.maxUnknownHops,
+    //     ptr_lookup: check.settings.traceroute.ptrLookup,
+    //   },
+    // };
     default:
       throw new Error(`could not translate settings for check to terraform config: ${check.job}`);
   }
 };
 
-const probeIDsToTF = (probeIDs: number[], probes: Probe[]): string[] => {
-  const BASE = 'data.grafana_synthetic_monitoring_probes.main.probes';
-  return probeIDs.reduce<string[]>((acc, probeID) => {
-    const probe = probes.find((probe) => probe.id === probeID);
-    if (probe) {
-      acc.push(`${BASE}.${probe.name}`);
-    }
-    return acc;
-  }, []);
-};
-
-export const checkToTF = (check: Check, probes: Probe[]): TFCheck => {
+export const checkToTF = (check: Check): TFCheck => {
   const tfCheck = {
     job: check.job,
     target: check.target,
     enabled: check.enabled,
-    probes: probeIDsToTF(check.probes, probes),
+    probes: check.probes,
     labels: checkLabelsToTFLabels(check.labels),
     settings: settingsToTF(check),
   };
 
   return tfCheck;
+};
+
+export const sanitizeJobName = (job: string): string => {
+  const regex = new RegExp(/[^A-Za-z0-9_-]/);
+  const sanitized = job.split('').map((char) => {
+    if (regex.test(char)) {
+      return '_';
+    }
+    return char;
+  });
+  return sanitized.join('');
 };

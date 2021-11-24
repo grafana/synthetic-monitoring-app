@@ -1,13 +1,14 @@
 import { Alert, Button, Link, Modal, useStyles2 } from '@grafana/ui';
+import { config as runtimeConfig } from '@grafana/runtime';
 import { InstanceContext } from 'contexts/InstanceContext';
 import React, { useContext, useState } from 'react';
 import { Clipboard } from 'components/Clipboard';
-import { checkType } from 'utils';
 import { css } from '@emotion/css';
-import { CheckType } from 'types';
 import { GrafanaTheme2 } from '@grafana/data';
 import { TFCheckConfig, TFConfig } from './terraformTypes';
-import { checkToTF } from './terraformConfigUtils';
+import { checkToTF, sanitizeJobName } from './terraformConfigUtils';
+import { checkType } from 'utils';
+import { CheckType } from 'types';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   modal: css`
@@ -30,8 +31,7 @@ export const TerraformConfig = () => {
 
   const generateTFConfig = async (): Promise<TFConfig> => {
     const checks = await instance.api?.listChecks();
-    const probes = await instance.api?.listProbes();
-    if (!checks || !probes) {
+    if (!checks) {
       throw new Error("Couldn't generate TF config");
     }
     const checksConfig = checks?.reduce<TFCheckConfig>((acc, check) => {
@@ -39,15 +39,31 @@ export const TerraformConfig = () => {
       if (type === CheckType.Traceroute) {
         return acc;
       }
-      const checkConfig = checkToTF(check, probes ?? []);
-      if (!acc[type]) {
-        acc[type] = [checkConfig];
+      const checkConfig = checkToTF(check);
+      const formattedJob = sanitizeJobName(check.job);
+      if (!acc[formattedJob]) {
+        acc[formattedJob] = checkConfig;
       } else {
-        acc[type]?.push(checkConfig);
+        throw new Error(`Cannot generate TF config for checks with duplicate job names: ${check.job}`);
       }
       return acc;
     }, {});
     return {
+      terraform: {
+        required_providers: {
+          grafana: {
+            source: 'grafana/grafana',
+          },
+        },
+      },
+      provider: {
+        grafana: {
+          url: runtimeConfig.appUrl,
+          auth: '<add an api key from grafana.com>',
+          sm_url: instance.api?.instanceSettings.jsonData.apiHost ?? '<ADD SM API URL>',
+          sm_access_token: '<add an sm access token>',
+        },
+      },
       resource: {
         grafana_synthetic_monitoring_check: {
           ...checksConfig,

@@ -1,25 +1,23 @@
 import { DnsSettings, HttpSettings, BasicAuth, HeaderMatch, TcpSettings, TCPQueryResponse } from 'types';
 
 export interface TFConfig {
-  // provider: any;
+  provider: any;
+  terraform: any;
+  // data: any;
   resource: {
     grafana_synthetic_monitoring_check: TFCheckConfig;
   };
 }
 
 export interface TFCheckConfig {
-  dns?: TFCheck[];
-  http?: TFCheck[];
-  ping?: TFCheck[];
-  tcp?: TFCheck[];
-  traceroute?: TFCheck[];
+  [key: string]: TFCheck;
 }
 
 export interface TFCheck {
   job: string;
   target: string;
   enabled: boolean;
-  probes: string[];
+  probes: number[];
   labels: TFLabels;
   settings: TFCheckSettings;
 }
@@ -98,7 +96,9 @@ interface TFTcpSettings extends Omit<TcpSettings, 'ipVersion' | 'queryResponse' 
 }
 
 interface TFTracerouteSettings {
-  steve: string;
+  max_hops: number;
+  max_unknown_hops: number;
+  ptr_lookup: boolean;
 }
 
 interface TFHeaderMatch extends Omit<HeaderMatch, 'allowMissing'> {
