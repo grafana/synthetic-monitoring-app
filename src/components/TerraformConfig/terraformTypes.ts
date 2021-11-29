@@ -1,11 +1,12 @@
-import { DnsSettings, HttpSettings, BasicAuth, HeaderMatch, TcpSettings, TCPQueryResponse } from 'types';
+import { DnsSettings, HttpSettings, BasicAuth, HeaderMatch, TcpSettings, TCPQueryResponse, Probe } from 'types';
 
 export interface TFConfig {
   provider: any;
   terraform: any;
   // data: any;
   resource: {
-    grafana_synthetic_monitoring_check: TFCheckConfig;
+    grafana_synthetic_monitoring_check?: TFCheckConfig;
+    grafana_synthetic_monitoring_probe?: TFProbeConfig;
   };
 }
 
@@ -111,4 +112,12 @@ export interface TFTlsConfig {
   client_key: string;
   insecure_skip_verify: boolean;
   server_name: string;
+}
+
+export interface TFProbeConfig {
+  [key: string]: TFProbe;
+}
+
+export interface TFProbe extends Omit<Probe, 'online' | 'onlineChange' | 'version' | 'deprecated' | 'labels'> {
+  labels: TFLabels;
 }

@@ -1,12 +1,12 @@
-import { Alert, Button, Link, Modal, useStyles2 } from '@grafana/ui';
+import { Alert, Button, Modal, useStyles2 } from '@grafana/ui';
 import { config as runtimeConfig } from '@grafana/runtime';
 import { InstanceContext } from 'contexts/InstanceContext';
 import React, { useContext, useState } from 'react';
 import { Clipboard } from 'components/Clipboard';
 import { css } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
-import { TFCheckConfig, TFConfig } from './terraformTypes';
-import { checkToTF, sanitizeJobName } from './terraformConfigUtils';
+import { TFCheckConfig, TFConfig, TFProbeConfig } from './terraformTypes';
+import { checkToTF, probeToTF, sanitizeName } from './terraformConfigUtils';
 import { checkType } from 'utils';
 import { CheckType } from 'types';
 
@@ -31,7 +31,8 @@ export const TerraformConfig = () => {
 
   const generateTFConfig = async (): Promise<TFConfig> => {
     const checks = await instance.api?.listChecks();
-    if (!checks) {
+    const probes = await instance.api?.listProbes();
+    if (!checks || !probes) {
       throw new Error("Couldn't generate TF config");
     }
     const checksConfig = checks?.reduce<TFCheckConfig>((acc, check) => {
@@ -40,7 +41,7 @@ export const TerraformConfig = () => {
         return acc;
       }
       const checkConfig = checkToTF(check);
-      const formattedJob = sanitizeJobName(check.job);
+      const formattedJob = sanitizeName(check.job);
       if (!acc[formattedJob]) {
         acc[formattedJob] = checkConfig;
       } else {
@@ -48,7 +49,22 @@ export const TerraformConfig = () => {
       }
       return acc;
     }, {});
-    return {
+
+    const probesConfig = probes?.reduce<TFProbeConfig>((acc, probe) => {
+      if (probe.public) {
+        return acc;
+      }
+      const probeConfig = probeToTF(probe);
+      const sanitizedName = sanitizeName(probe.name);
+      if (!acc[sanitizedName]) {
+        acc[sanitizedName] = probeConfig;
+      } else {
+        throw new Error(`Cannot generate TF config for probes with duplicate job names: ${probe.name}`);
+      }
+      return acc;
+    }, {});
+
+    const config: TFConfig = {
       terraform: {
         required_providers: {
           grafana: {
@@ -64,12 +80,17 @@ export const TerraformConfig = () => {
           sm_access_token: '<add an sm access token>',
         },
       },
-      resource: {
-        grafana_synthetic_monitoring_check: {
-          ...checksConfig,
-        },
-      },
+      resource: {},
     };
+
+    if (Object.keys(checksConfig).length > 0) {
+      config.resource.grafana_synthetic_monitoring_check = checksConfig;
+    }
+    if (Object.keys(probesConfig).length > 0) {
+      config.resource.grafana_synthetic_monitoring_probe = probesConfig;
+    }
+
+    return config;
   };
 
   const showConfigModal = async () => {
@@ -104,7 +125,7 @@ export const TerraformConfig = () => {
             <Alert title="Terraform and JSON" severity="info">
               The exported config is using{' '}
               <a href="https://www.terraform.io/docs/language/syntax/json.html">Terraform JSON syntax</a>. You can place
-              this config in a <pre>{'<filename>.tf.json'}</pre> and import as a module.
+              this config in a file with a <strong>tf.json</strong> extension and import as a module.
             </Alert>
             <Clipboard content={JSON.stringify(config, null, 2)} className={styles.clipboard} />
           </>

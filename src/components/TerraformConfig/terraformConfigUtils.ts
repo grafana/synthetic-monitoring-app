@@ -1,8 +1,8 @@
-import { Check, CheckType, Label, TLSConfig } from 'types';
+import { Check, CheckType, Label, Probe, TLSConfig } from 'types';
 import { checkType } from 'utils';
-import { TFCheck, TFCheckSettings, TFLabels, TFTlsConfig } from './terraformTypes';
+import { TFCheck, TFCheckSettings, TFLabels, TFProbe, TFTlsConfig } from './terraformTypes';
 
-const checkLabelsToTFLabels = (labels: Label[]): TFLabels =>
+const labelsToTFLabels = (labels: Label[]): TFLabels =>
   labels.reduce<TFLabels>((acc, label) => {
     acc[label.name] = label.value;
     return acc;
@@ -121,16 +121,16 @@ export const checkToTF = (check: Check): TFCheck => {
     target: check.target,
     enabled: check.enabled,
     probes: check.probes,
-    labels: checkLabelsToTFLabels(check.labels),
+    labels: labelsToTFLabels(check.labels),
     settings: settingsToTF(check),
   };
 
   return tfCheck;
 };
 
-export const sanitizeJobName = (job: string): string => {
+export const sanitizeName = (name: string): string => {
   const regex = new RegExp(/[^A-Za-z0-9_-]/);
-  const sanitized = job.split('').map((char) => {
+  const sanitized = name.split('').map((char) => {
     if (regex.test(char)) {
       return '_';
     }
@@ -138,3 +138,12 @@ export const sanitizeJobName = (job: string): string => {
   });
   return sanitized.join('');
 };
+
+export const probeToTF = (probe: Probe): TFProbe => ({
+  name: probe.name,
+  latitude: probe.latitude,
+  longitude: probe.longitude,
+  region: probe.region,
+  public: false,
+  labels: labelsToTFLabels(probe.labels),
+});

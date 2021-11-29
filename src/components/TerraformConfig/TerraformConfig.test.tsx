@@ -56,6 +56,18 @@ it('displays correct config', async () => {
           settings: { ping: { ip_version: 'V4', dont_fragment: false } },
         },
       },
+      grafana_synthetic_monitoring_probe: {
+        tacos: {
+          labels: {
+            Mr: 'Orange',
+          },
+          latitude: 0,
+          longitude: 0,
+          name: 'tacos',
+          public: false,
+          region: '',
+        },
+      },
     },
   };
   if (!config.textContent) {
