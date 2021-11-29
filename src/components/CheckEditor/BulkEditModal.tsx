@@ -133,6 +133,13 @@ const BulkEditModal = ({ onDismiss, onSuccess, onError, isOpen, selectedChecks, 
 
   const submitProbeUpdates = useCallback(async () => {
     let newChecks: FilteredCheck[] = [];
+    // Short circuit remove action if all checks only have one probe
+    const checksHaveOneProbe = checks.every((check) => check.probes.length === 1);
+    if (action === 'remove' && checksHaveOneProbe) {
+      onDismiss();
+      onError('Operation canceled - all checks only have one probe');
+      return;
+    }
     // Add or remove based on action
     if (action === 'add') {
       newChecks = checks.map((check) => {
@@ -141,7 +148,9 @@ const BulkEditModal = ({ onDismiss, onSuccess, onError, isOpen, selectedChecks, 
         return { ...check, probes: [...newProbes] };
       });
     } else if (action === 'remove') {
-      newChecks = checks.map((check) => {
+      // Filter out checks with only one probe
+      const checksWithMultipleProbes = checks.filter((check) => check.probes.length > 1);
+      newChecks = checksWithMultipleProbes.map((check) => {
         const newProbes = check.probes.filter((p) => !probesToRemove.includes(p));
         return { ...check, probes: newProbes };
       });
@@ -152,9 +161,8 @@ const BulkEditModal = ({ onDismiss, onSuccess, onError, isOpen, selectedChecks, 
       onSuccess();
     } catch (error) {
       onDismiss();
-      onError(error);
+      onError(error.data.err);
     }
-    console.log({ newChecks });
   }, [selectedProbes, checks, instance, action, probesToRemove, onDismiss, onError, onSuccess]);
 
   const addOrRemoveProbe = useCallback(
@@ -224,8 +232,8 @@ const BulkEditModal = ({ onDismiss, onSuccess, onError, isOpen, selectedChecks, 
         <div>
           <div className={styles.verticalSpace}>
             <i>
-              Disabled probes are already included in all selected checks. On submission, any checks that already use
-              probes selected here will be unaffected.
+              Disabled probes are already included in all selected checks. Any checks whos configuration would not
+              change will be unaffected on submission.
             </i>
           </div>
           <div>
@@ -242,7 +250,10 @@ const BulkEditModal = ({ onDismiss, onSuccess, onError, isOpen, selectedChecks, 
       ) : (
         <div>
           <div className={styles.verticalSpace}>
-            <i>Select probes to remove from all selected checks.</i>
+            <i>
+              Select probes to remove from all selected checks. Any checks using only a single probe will be excluded
+              from the operation on submission.
+            </i>
           </div>
           <div className={styles.buttonGroup}>
             {commonProbes.length ? (
