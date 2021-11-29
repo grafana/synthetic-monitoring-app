@@ -1,4 +1,4 @@
-import { Check, CheckType, Label, Probe, TLSConfig } from 'types';
+import { Check, CheckType, Label, TLSConfig } from 'types';
 import { checkType } from 'utils';
 import { TFCheck, TFCheckSettings, TFLabels, TFTlsConfig } from './terraformTypes';
 

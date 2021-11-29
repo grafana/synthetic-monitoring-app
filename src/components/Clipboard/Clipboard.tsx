@@ -30,7 +30,9 @@ export function Clipboard({ content, className }: Props) {
   const [copyClipboard, setCopyclipboard] = useState(false);
   return (
     <div className={cx(styles.container, className)}>
-      <pre className={styles.code}>{content}</pre>
+      <pre className={styles.code} data-testid="clipboard-content">
+        {content}
+      </pre>
 
       <CopyToClipboard
         className={styles.button}

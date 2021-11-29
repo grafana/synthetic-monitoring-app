@@ -103,9 +103,8 @@ export const TerraformConfig = () => {
             </Alert>
             <Alert title="Terraform and JSON" severity="info">
               The exported config is using{' '}
-              <Link href="https://www.terraform.io/docs/language/syntax/json.html">Terraform JSON syntax</Link>. Further
-              information on how to use this config can be found{' '}
-              <Link href="https://discuss.hashicorp.com/t/how-to-work-with-json/2345">here</Link>
+              <a href="https://www.terraform.io/docs/language/syntax/json.html">Terraform JSON syntax</a>. You can place
+              this config in a <pre>{'<filename>.tf.json'}</pre> and import as a module.
             </Alert>
             <Clipboard content={JSON.stringify(config, null, 2)} className={styles.clipboard} />
           </>
