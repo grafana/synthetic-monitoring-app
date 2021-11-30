@@ -32,7 +32,7 @@ export const AccessToken = () => {
           <Link href="https://registry.terraform.io/providers/grafana/grafana/latest/docs">
             Grafana Terraform Provider
           </Link>{' '}
-          to learn more about how to interact with the synthetic monitoring API.
+          documentation to learn more about how to interact with the synthetic monitoring API.
         </div>
         <Button onClick={() => showTokenModal()}>Generate access token</Button>
       </div>
