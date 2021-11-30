@@ -26,7 +26,7 @@ export const AccessToken = () => {
         <div>
           You can use an SM access token to authenticate with the synthetic monitoring api. Check out the{' '}
           <Link href="https://github.com/grafana/synthetic-monitoring-api-go-client">
-            synthetic monitoring go client
+            Synthetic Monitoring API Go client
           </Link>{' '}
           or the{' '}
           <Link href="https://registry.terraform.io/providers/grafana/grafana/latest/docs">
