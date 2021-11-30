@@ -1,6 +1,7 @@
 import { PluginConfigPageProps, AppPluginMeta } from '@grafana/data';
 import { ConfigActions } from 'components/ConfigActions';
 import { InstanceProvider } from 'components/InstanceProvider';
+import { ProgrammaticManagement } from 'components/ProgrammaticManagement';
 import { TenantSetup } from 'components/TenantSetup';
 import React, { PureComponent } from 'react';
 import { GlobalSettings } from 'types';
@@ -47,6 +48,10 @@ export class ConfigPage extends PureComponent<Props> {
           </div>
           <br />
           <TenantSetup />
+          <br />
+          {plugin.meta.enabled && <ProgrammaticManagement />}
+          <br />
+          <br />
           <br />
           <ConfigActions enabled={plugin.meta.enabled} pluginId={plugin.meta.id} />
         </div>
