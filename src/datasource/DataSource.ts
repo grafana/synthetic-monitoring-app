@@ -428,7 +428,6 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   }
 
   async createApiToken(): Promise<string> {
-    console.log('hello?');
     return getBackendSrv()
       .fetch({
         method: 'POST',

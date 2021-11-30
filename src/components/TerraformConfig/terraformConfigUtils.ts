@@ -136,7 +136,7 @@ export const sanitizeName = (name: string): string => {
     }
     return char;
   });
-  return sanitized.join('');
+  return sanitized.join('').slice(0, 50);
 };
 
 export const probeToTF = (probe: Probe): TFProbe => ({

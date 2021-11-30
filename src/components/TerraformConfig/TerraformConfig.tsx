@@ -41,11 +41,11 @@ export const TerraformConfig = () => {
         return acc;
       }
       const checkConfig = checkToTF(check);
-      const formattedJob = sanitizeName(check.job);
-      if (!acc[formattedJob]) {
-        acc[formattedJob] = checkConfig;
+      const resourceName = sanitizeName(`${check.job}_${check.target}`);
+      if (!acc[resourceName]) {
+        acc[resourceName] = checkConfig;
       } else {
-        throw new Error(`Cannot generate TF config for checks with duplicate job names: ${check.job}`);
+        throw new Error(`Cannot generate TF config for checks with duplicate resource names: ${resourceName}`);
       }
       return acc;
     }, {});
