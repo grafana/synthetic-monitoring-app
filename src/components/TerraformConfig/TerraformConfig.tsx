@@ -59,7 +59,7 @@ export const TerraformConfig = () => {
       if (!acc[sanitizedName]) {
         acc[sanitizedName] = probeConfig;
       } else {
-        throw new Error(`Cannot generate TF config for probes with duplicate job names: ${probe.name}`);
+        throw new Error(`Cannot generate TF config for probes with duplicate probe names: ${probe.name}`);
       }
       return acc;
     }, {});

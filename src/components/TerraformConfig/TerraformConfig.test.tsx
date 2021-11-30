@@ -47,7 +47,7 @@ it('displays correct config', async () => {
     },
     resource: {
       grafana_synthetic_monitoring_check: {
-        a_jobname: {
+        a_jobname_example_com: {
           job: 'a jobname',
           target: 'example.com',
           enabled: true,
