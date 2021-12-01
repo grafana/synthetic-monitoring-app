@@ -1,5 +1,12 @@
 # Change Log
 
+# [1.7.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.61...v1.7.0) (2021-12-01)
+
+### Features
+
+- Add the ability to export checks and probes as terraform config from the plugin config page
+- Add a button to generate a new API key in the plugin config page
+
 # [1.6.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.5.6...v1.6.0) (2021-11-17)
 
 ### Features
