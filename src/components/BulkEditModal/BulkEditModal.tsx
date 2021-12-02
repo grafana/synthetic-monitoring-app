@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import ProbesByRegion from './ProbesByRegion';
 
 import { Button, HorizontalGroup, Modal, useStyles } from '@grafana/ui';
 import { FilteredCheck, GrafanaInstances, Probe } from 'types';
@@ -13,28 +14,14 @@ interface ProbeById {
 interface Props {
   onDismiss: () => void;
   onSuccess: () => void;
-  onError: (err: any) => void;
+  onError: (err: string) => void;
   selectedChecks: () => FilteredCheck[];
   instance: GrafanaInstances;
   action: 'add' | 'remove' | null;
   isOpen: boolean;
 }
 
-interface ProbesByRegionProps {
-  probes: Probe[];
-  selectedProbes: Probe[];
-  commonProbes: number[];
-  addOrRemoveProbe: (probe: Probe) => void;
-}
-
-interface ProbeButtonProps {
-  probe: Probe;
-  selectedProbes: Probe[];
-  commonProbes: number[];
-  addOrRemoveProbe: (probe: Probe) => void;
-}
-
-const style = (theme: GrafanaTheme) => ({
+export const style = (theme: GrafanaTheme) => ({
   buttonGroup: css`
     margin: ${theme.spacing.md};
     margin-left: 0;
@@ -59,68 +46,6 @@ const style = (theme: GrafanaTheme) => ({
     width: 50%;
   `,
 });
-
-const ProbeButton = ({ probe, selectedProbes, commonProbes, addOrRemoveProbe }: ProbeButtonProps) => {
-  const isCommonProbe = probe.id && commonProbes.includes(probe.id);
-
-  return (
-    <Button
-      variant={selectedProbes?.includes(probe) ? 'primary' : 'secondary'}
-      disabled={isCommonProbe ? true : false}
-      size="sm"
-      onClick={() => addOrRemoveProbe(probe)}
-    >
-      {probe.name}
-    </Button>
-  );
-};
-
-interface RegionMapping {
-  [key: string]: Probe[];
-}
-
-const ProbesByRegion = ({ probes, selectedProbes, commonProbes, addOrRemoveProbe }: ProbesByRegionProps) => {
-  const styles = useStyles(style);
-
-  // Group probes by region
-  const probesByRegion = probes.reduce<RegionMapping>((acc, probe) => {
-    const currentRegion: string = probe.region;
-
-    if (typeof acc[currentRegion] === 'undefined') {
-      acc[currentRegion] = [];
-    }
-    acc[currentRegion].push(probe);
-
-    return acc;
-  }, {});
-
-  return (
-    <div className={styles.probesWrapper}>
-      <div>
-        {Object.keys(probesByRegion).map((region: string) => {
-          return (
-            <>
-              <h5>{region}</h5>
-              <div className={styles.buttonGroup}>
-                {probesByRegion[region].map((p) => {
-                  return (
-                    <ProbeButton
-                      key={p.name}
-                      probe={p}
-                      selectedProbes={selectedProbes}
-                      commonProbes={commonProbes}
-                      addOrRemoveProbe={addOrRemoveProbe}
-                    />
-                  );
-                })}
-              </div>
-            </>
-          );
-        })}
-      </div>
-    </div>
-  );
-};
 
 const BulkEditModal = ({ onDismiss, onSuccess, onError, isOpen, selectedChecks, action, instance }: Props) => {
   const [probes, setProbes] = useState<Probe[]>();
@@ -158,9 +83,11 @@ const BulkEditModal = ({ onDismiss, onSuccess, onError, isOpen, selectedChecks, 
     try {
       await instance.api?.bulkUpdateChecks(newChecks);
       onDismiss();
+      clearSelections();
       onSuccess();
     } catch (error) {
       onDismiss();
+      clearSelections();
       onError(error.data.err);
     }
   }, [selectedProbes, checks, instance, action, probesToRemove, onDismiss, onError, onSuccess]);
@@ -212,7 +139,6 @@ const BulkEditModal = ({ onDismiss, onSuccess, onError, isOpen, selectedChecks, 
     getProbes();
   }, [getProbes]);
 
-  // fix implicit state
   const commonProbes: number[] = intersection(...checks.map((check) => check.probes));
 
   return (
@@ -224,16 +150,16 @@ const BulkEditModal = ({ onDismiss, onSuccess, onError, isOpen, selectedChecks, 
       }
       isOpen={isOpen}
       onDismiss={() => {
-        onDismiss();
         clearSelections();
+        onDismiss();
       }}
     >
       {action && action === 'add' ? (
         <div>
           <div className={styles.verticalSpace}>
             <i>
-              Disabled probes are already included in all selected checks. Any checks whos configuration would not
-              change will be unaffected on submission.
+              Disabled probes are already included in all selected checks. Any checks in which the configuration would
+              not change will be unaffected on submission.
             </i>
           </div>
           <div>

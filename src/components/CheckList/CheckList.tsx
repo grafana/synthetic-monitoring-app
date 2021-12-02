@@ -56,7 +56,7 @@ import { LabelFilterInput } from '../LabelFilterInput';
 import { SuccessRateContext, SuccessRateTypes } from 'contexts/SuccessRateContext';
 import { ChecksVisualization } from '../ChecksVisualization';
 import ThresholdGlobalSettings from '../Thresholds/ThresholdGlobalSettings';
-import BulkEditModal from 'components/CheckEditor/BulkEditModal';
+import { BulkEditModal } from 'components/BulkEditModal';
 
 const getStyles = (theme: GrafanaTheme) => ({
   headerContainer: css`

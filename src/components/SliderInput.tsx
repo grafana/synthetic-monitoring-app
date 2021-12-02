@@ -57,7 +57,7 @@ export const SliderInput = ({ min, max, prefixLabel, suffixLabel, name, step = 1
         <Slider
           tooltipAlwaysVisible={false}
           css={styles.slider}
-          min={0}
+          min={min ?? 0}
           max={max}
           step={step}
           value={getValues(name)}
