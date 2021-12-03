@@ -26,6 +26,7 @@ const ProbeButton = ({ probe, selectedProbes, commonProbes, addOrRemoveProbe }: 
 
   return (
     <Button
+      data-testid="probe-button"
       variant={selectedProbes?.includes(probe) ? 'primary' : 'secondary'}
       disabled={isCommonProbe ? true : false}
       size="sm"
@@ -56,13 +57,13 @@ const ProbesByRegion = ({ probes, selectedProbes, commonProbes, addOrRemoveProbe
       <div>
         {Object.keys(probesByRegion).map((region: string) => {
           return (
-            <>
+            <React.Fragment key={region}>
               <h5>{region}</h5>
               <div className={styles.buttonGroup}>
                 {probesByRegion[region].map((p) => {
                   return (
                     <ProbeButton
-                      key={p.name}
+                      key={p.id}
                       probe={p}
                       selectedProbes={selectedProbes}
                       commonProbes={commonProbes}
@@ -71,7 +72,7 @@ const ProbesByRegion = ({ probes, selectedProbes, commonProbes, addOrRemoveProbe
                   );
                 })}
               </div>
-            </>
+            </React.Fragment>
           );
         })}
       </div>

@@ -123,7 +123,6 @@ const BulkEditModal = ({ onDismiss, onSuccess, onError, isOpen, selectedChecks, 
 
   const getProbes = useCallback(async () => {
     const p = await instance.api!.listProbes();
-    console.log({ p });
     const byId = p.reduce((acc, probe) => {
       return {
         ...acc,
