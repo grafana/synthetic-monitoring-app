@@ -1,5 +1,11 @@
 # Change Log
 
+# [1.7.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.7.0...v1.7.1) (2021-12-13)
+
+### Bug Fixes
+
+- Upgrade dependencies
+
 # [1.7.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.61...v1.7.0) (2021-12-01)
 
 ### Features
