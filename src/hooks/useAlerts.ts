@@ -66,7 +66,7 @@ const legacyFetchSMRules = (alertRulerUrl: string): Promise<RuleResponse> =>
     })
     .toPromise()
     .then((response) => {
-      const alertGroup = parse(response.data);
+      const alertGroup = parse(response?.data);
       return { rules: alertGroup.rules };
     })
     .catch((e) => {
@@ -83,8 +83,8 @@ const fetchSMRules = (metricInstanceId: number): Promise<RuleResponse> =>
       url: `/api/ruler/${metricInstanceId}/api/v1/rules/${SM_ALERTING_NAMESPACE}/default`,
     })
     .toPromise()
-    .then(({ data }) => {
-      return { rules: data?.rules ?? [] };
+    .then((resp) => {
+      return { rules: resp?.data?.rules ?? [] };
     })
     .catch((e) => {
       if (e.status === 404) {

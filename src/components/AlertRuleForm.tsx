@@ -140,7 +140,7 @@ const getStyles = (theme: GrafanaTheme) => ({
 
 type Props = {
   rule: AlertRule;
-  onSubmit: (alertValues: AlertFormValues) => Promise<FetchResponse<unknown>>;
+  onSubmit: (alertValues: AlertFormValues) => Promise<FetchResponse<unknown> | undefined>;
 };
 
 export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
@@ -176,7 +176,8 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
       setIsOpen(false);
       return Promise.resolve();
     } catch (e) {
-      return Promise.reject(e.message ?? 'Something went wrong');
+      const err = e as Error;
+      return Promise.reject(err.message ?? 'Something went wrong');
     }
   });
 

@@ -11,7 +11,7 @@ type Props = {
 
 export const DisablePluginModal = ({ isOpen, onDismiss, pluginId }: Props) => {
   const { instance, loading } = useContext(InstanceContext);
-  const [error, setError] = useState();
+  const [error, setError] = useState<string | undefined>();
 
   const disableTenant = async () => {
     try {
@@ -28,7 +28,8 @@ export const DisablePluginModal = ({ isOpen, onDismiss, pluginId }: Props) => {
         .toPromise();
       window.location.reload();
     } catch (e) {
-      setError(e.message ?? 'Something went wrong trying to disable the plugin. Please contact support.');
+      const err = e as Error;
+      setError(err.message ?? 'Something went wrong trying to disable the plugin. Please contact support.');
     }
   };
 

@@ -3,7 +3,7 @@ import { DataSourceInstanceSettings } from '@grafana/data';
 import { SMOptions, DashboardInfo, LinkedDatsourceInfo, LogQueryResponse } from './datasource/types';
 
 import { config, getBackendSrv } from '@grafana/runtime';
-import { HostedInstance, User, OrgRole, CheckType, Settings } from 'types';
+import { HostedInstance, User, OrgRole, CheckType, Settings, SubmissionErrorWrapper } from 'types';
 
 import { SMDataSource } from 'datasource/DataSource';
 import { IconName } from '@grafana/ui';
@@ -251,7 +251,7 @@ export const queryMetric = async (
         params,
       })
       .toPromise();
-    if (!response.ok) {
+    if (!response?.ok) {
       return { error: 'Error fetching data', data: [] };
     }
     return {
@@ -293,7 +293,8 @@ export const queryLogs = async (
       data: response.data?.data?.result ?? [],
     };
   } catch (e) {
-    return { error: (e.message || e.data?.message) ?? 'Error fetching data', data: [] };
+    const err = e as SubmissionErrorWrapper;
+    return { error: (err.message || err.data?.message) ?? 'Error fetching data', data: [] };
   }
 };
 

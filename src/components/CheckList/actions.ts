@@ -1,4 +1,4 @@
-import { GrafanaInstances, Check, FilteredCheck } from 'types';
+import { GrafanaInstances, Check, FilteredCheck, SubmissionErrorWrapper } from 'types';
 import appEvents from 'grafana/app/core/app_events';
 import { AppEvents } from '@grafana/data';
 import { CHECK_LIST_ICON_OVERLAY_LS_KEY, CHECK_LIST_VIEW_TYPE_LS_KEY } from 'components/constants';
@@ -150,7 +150,8 @@ export const deleteSingleCheck = async (instance: GrafanaInstances, check: Check
     appEvents.emit(AppEvents.alertSuccess, ['Check deleted successfully']);
     onUpdate();
   } catch (e) {
-    const errorMessage = e?.data?.err ?? '';
+    const err = e as SubmissionErrorWrapper;
+    const errorMessage = err?.data?.err ?? '';
     appEvents.emit(AppEvents.alertError, [`Could not delete check. ${errorMessage}`]);
   }
 };
