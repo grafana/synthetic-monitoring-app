@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { InstanceContext } from 'contexts/InstanceContext';
 import BulkEditModal from './BulkEditModal';
@@ -52,42 +52,42 @@ const selectedChecksSingleProbe = jest.fn().mockReturnValue([
   },
 ]);
 
-const selectedChecksMultiProbe = jest.fn().mockReturnValue([
-  {
-    job: '',
-    alertSensitivity: 'none',
-    target: '',
-    frequency: 60000,
-    timeout: 3000,
-    enabled: true,
-    labels: [],
-    probes: [32, 42],
-    settings: {
-      ping: {
-        ipVersion: IpVersion.V4,
-        dontFragment: false,
-      },
-    },
-    basicMetricsOnly: false,
-  },
-  {
-    job: '',
-    alertSensitivity: 'none',
-    target: '',
-    frequency: 60000,
-    timeout: 3000,
-    enabled: true,
-    labels: [],
-    probes: [32, 42],
-    settings: {
-      ping: {
-        ipVersion: IpVersion.V4,
-        dontFragment: false,
-      },
-    },
-    basicMetricsOnly: false,
-  },
-]);
+// const selectedChecksMultiProbe = jest.fn().mockReturnValue([
+//   {
+//     job: '',
+//     alertSensitivity: 'none',
+//     target: '',
+//     frequency: 60000,
+//     timeout: 3000,
+//     enabled: true,
+//     labels: [],
+//     probes: [32, 42],
+//     settings: {
+//       ping: {
+//         ipVersion: IpVersion.V4,
+//         dontFragment: false,
+//       },
+//     },
+//     basicMetricsOnly: false,
+//   },
+//   {
+//     job: '',
+//     alertSensitivity: 'none',
+//     target: '',
+//     frequency: 60000,
+//     timeout: 3000,
+//     enabled: true,
+//     labels: [],
+//     probes: [32, 42],
+//     settings: {
+//       ping: {
+//         ipVersion: IpVersion.V4,
+//         dontFragment: false,
+//       },
+//     },
+//     basicMetricsOnly: false,
+//   },
+// ]);
 
 const renderBulkEditModal = (action: 'add' | 'remove' | null, selectedChecks: () => FilteredCheck[]) => {
   const instance = {
