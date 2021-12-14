@@ -46,6 +46,9 @@ export function ChecksVisualization({ checks, showIcons }: Props) {
       right: 0,
       bottom: 0,
       left: -100,
+      x: 0,
+      y: 0,
+      toJSON: () => {},
     }),
   });
   const { styles: popperStyles, attributes } = usePopper(virtualElement, popperElement.current, {
@@ -67,6 +70,9 @@ export function ChecksVisualization({ checks, showIcons }: Props) {
         bottom: e.clientY,
         left: e.clientX,
         right: e.clientX,
+        x: e.clientX,
+        y: e.clientY,
+        toJSON: () => {},
       }),
     });
   }, []);

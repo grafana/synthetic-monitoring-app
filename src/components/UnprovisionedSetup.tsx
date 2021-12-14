@@ -52,8 +52,9 @@ export const UnprovisionedSetup = ({ pluginId }: Props) => {
       setTenantInfo(tenantInfo);
       setApiSetup(setupValues);
     } catch (e) {
-      trackException(`unprovisionedSetupSubmit error: ${e.message}`);
-      setApiSetupError(e.message);
+      const err = e as Error;
+      trackException(`unprovisionedSetupSubmit error: ${err.message}`);
+      setApiSetupError(err.message);
     }
   };
 
@@ -101,7 +102,8 @@ export const UnprovisionedSetup = ({ pluginId }: Props) => {
 
       await saveTenantInstanceIds(apiSetup.adminApiToken, hostedMetrics.id, hostedLogs.id, smDatasource.id);
     } catch (e) {
-      setInstanceSelectionError(e.message);
+      const err = e as Error;
+      setInstanceSelectionError(err.message);
       return;
     }
 

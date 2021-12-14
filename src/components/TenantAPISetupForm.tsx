@@ -73,8 +73,9 @@ const TenantAPISetupForm = ({ onSubmit, submissionError }: Props) => {
                   validate: (value) => {
                     try {
                       new URL(value);
+                      return;
                     } catch ({ message }) {
-                      return message;
+                      return message as string;
                     }
                   },
                 })}

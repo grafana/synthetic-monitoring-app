@@ -10,7 +10,7 @@ import { colors, LEGACY_LOGS_DS_NAME, LEGACY_METRICS_DS_NAME } from 'components/
 import { dashboardScreenshot, dashboardScreenshotLight } from 'img';
 import { CloudDatasourceJsonData } from 'datasource/types';
 import { isNumber } from 'lodash';
-import { OrgRole } from 'types';
+import { OrgRole, SubmissionErrorWrapper } from 'types';
 import { trackEvent, trackException } from 'analytics';
 import { DisplayCard } from 'components/DisplayCard';
 import FeaturesBanner from 'components/FeaturesBanner';
@@ -150,9 +150,10 @@ export const WelcomePage: FC<Props> = () => {
       // force reload so that GrafanaBootConfig is updated.
       window.location.reload();
     } catch (e) {
-      setError(e.data?.msg ?? e.data?.err);
+      const err = (e as unknown) as SubmissionErrorWrapper;
+      setError(err.data?.msg ?? err.data?.err ?? 'Something went wrong');
       setLoading(false);
-      trackException(`provisionedSetupSubmitError: ${e.data?.msg ?? e.data?.err}`);
+      trackException(`provisionedSetupSubmitError: ${err.data?.msg ?? err.data?.err}`);
     }
   };
 
