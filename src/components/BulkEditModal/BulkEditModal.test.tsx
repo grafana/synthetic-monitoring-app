@@ -52,42 +52,42 @@ const selectedChecksSingleProbe = jest.fn().mockReturnValue([
   },
 ]);
 
-// const selectedChecksMultiProbe = jest.fn().mockReturnValue([
-//   {
-//     job: '',
-//     alertSensitivity: 'none',
-//     target: '',
-//     frequency: 60000,
-//     timeout: 3000,
-//     enabled: true,
-//     labels: [],
-//     probes: [32, 42],
-//     settings: {
-//       ping: {
-//         ipVersion: IpVersion.V4,
-//         dontFragment: false,
-//       },
-//     },
-//     basicMetricsOnly: false,
-//   },
-//   {
-//     job: '',
-//     alertSensitivity: 'none',
-//     target: '',
-//     frequency: 60000,
-//     timeout: 3000,
-//     enabled: true,
-//     labels: [],
-//     probes: [32, 42],
-//     settings: {
-//       ping: {
-//         ipVersion: IpVersion.V4,
-//         dontFragment: false,
-//       },
-//     },
-//     basicMetricsOnly: false,
-//   },
-// ]);
+const selectedChecksMultiProbe = jest.fn().mockReturnValue([
+  {
+    job: '',
+    alertSensitivity: 'none',
+    target: '',
+    frequency: 60000,
+    timeout: 3000,
+    enabled: true,
+    labels: [],
+    probes: [32, 42],
+    settings: {
+      ping: {
+        ipVersion: IpVersion.V4,
+        dontFragment: false,
+      },
+    },
+    basicMetricsOnly: false,
+  },
+  {
+    job: '',
+    alertSensitivity: 'none',
+    target: '',
+    frequency: 60000,
+    timeout: 3000,
+    enabled: true,
+    labels: [],
+    probes: [32, 42],
+    settings: {
+      ping: {
+        ipVersion: IpVersion.V4,
+        dontFragment: false,
+      },
+    },
+    basicMetricsOnly: false,
+  },
+]);
 
 const renderBulkEditModal = (action: 'add' | 'remove' | null, selectedChecks: () => FilteredCheck[]) => {
   const instance = {
@@ -172,49 +172,49 @@ test('successfully adds probes', async () => {
   ]);
 });
 
-// test.only('successfully removes probes', async () => {
-//   const instance = renderBulkEditModal('remove', selectedChecksMultiProbe);
-//   expect(instance.api?.listProbes).toHaveBeenCalled();
-//   await act(async () => {
-//     const burritoProbe = await screen.findByText('burritos');
-//     userEvent.click(burritoProbe);
-//     const submitButton = await screen.findByText('Submit');
-//     userEvent.click(submitButton);
-//   });
-//   expect(instance.api?.bulkUpdateChecks).toHaveBeenCalledWith([
-//     {
-//       job: '',
-//       alertSensitivity: 'none',
-//       target: '',
-//       frequency: 60000,
-//       timeout: 3000,
-//       enabled: true,
-//       labels: [],
-//       probes: [32],
-//       settings: {
-//         ping: {
-//           ipVersion: IpVersion.V4,
-//           dontFragment: false,
-//         },
-//       },
-//       basicMetricsOnly: false,
-//     },
-//     {
-//       job: '',
-//       alertSensitivity: 'none',
-//       target: '',
-//       frequency: 60000,
-//       timeout: 3000,
-//       enabled: true,
-//       labels: [],
-//       probes: [32],
-//       settings: {
-//         ping: {
-//           ipVersion: IpVersion.V4,
-//           dontFragment: false,
-//         },
-//       },
-//       basicMetricsOnly: false,
-//     },
-//   ]);
-// });
+test('successfully removes probes', async () => {
+  const instance = renderBulkEditModal('remove', selectedChecksMultiProbe);
+  expect(instance.api?.listProbes).toHaveBeenCalled();
+  await act(async () => {
+    const burritoProbe = await screen.findByText('burritos');
+    userEvent.click(burritoProbe);
+    const submitButton = await screen.findByText('Submit');
+    userEvent.click(submitButton);
+  });
+  expect(instance.api?.bulkUpdateChecks).toHaveBeenCalledWith([
+    {
+      job: '',
+      alertSensitivity: 'none',
+      target: '',
+      frequency: 60000,
+      timeout: 3000,
+      enabled: true,
+      labels: [],
+      probes: [32],
+      settings: {
+        ping: {
+          ipVersion: IpVersion.V4,
+          dontFragment: false,
+        },
+      },
+      basicMetricsOnly: false,
+    },
+    {
+      job: '',
+      alertSensitivity: 'none',
+      target: '',
+      frequency: 60000,
+      timeout: 3000,
+      enabled: true,
+      labels: [],
+      probes: [32],
+      settings: {
+        ping: {
+          ipVersion: IpVersion.V4,
+          dontFragment: false,
+        },
+      },
+      basicMetricsOnly: false,
+    },
+  ]);
+});

@@ -49,7 +49,7 @@ export const style = (theme: GrafanaTheme) => ({
 
 const BulkEditModal = ({ onDismiss, onSuccess, onError, isOpen, selectedChecks, action, instance }: Props) => {
   const [probes, setProbes] = useState<Probe[]>();
-  const [probesById, setProbesById] = useState<ProbeById>({});
+  const [probesById, setProbesById] = useState<ProbeById | undefined>(undefined);
   const [selectedProbes, setSelectedProbes] = useState<Probe[]>([]);
   const [probesToRemove, setProbesToRemove] = useState<number[]>([]);
   const checks = selectedChecks();
@@ -185,7 +185,7 @@ const BulkEditModal = ({ onDismiss, onSuccess, onError, isOpen, selectedChecks, 
             </i>
           </div>
           <div className={styles.buttonGroup}>
-            {commonProbes.length ? (
+            {probesById && commonProbes.length ? (
               commonProbes.map((p) => {
                 return (
                   <Button
