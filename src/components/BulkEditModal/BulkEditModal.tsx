@@ -122,17 +122,21 @@ const BulkEditModal = ({ onDismiss, onSuccess, onError, isOpen, selectedChecks, 
   };
 
   const getProbes = useCallback(async () => {
-    const p = await instance.api!.listProbes();
-    const byId = p.reduce((acc, probe) => {
-      return {
-        ...acc,
-        [probe.id as number]: probe,
-      };
-    }, {});
-
-    setProbes(p.sort((a: any, b: any) => (a.name < b.name ? -1 : 1)));
-    setProbesById(byId);
-  }, [instance]);
+    const p = await instance.api?.listProbes();
+    if (p !== undefined) {
+      const byId = p.reduce((acc, probe) => {
+        return {
+          ...acc,
+          [Number(probe.id)]: probe,
+        };
+      }, {});
+      setProbes(p.sort((a: Probe, b: Probe) => (a.name < b.name ? -1 : 1)));
+      setProbesById(byId);
+    } else {
+      onError('Failed to get probes');
+      onDismiss();
+    }
+  }, [instance, onDismiss, onError]);
 
   useEffect(() => {
     getProbes();

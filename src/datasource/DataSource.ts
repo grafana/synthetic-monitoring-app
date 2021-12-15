@@ -281,7 +281,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       });
   }
 
-  async bulkUpdateChecks(checks: Check[]): Promise<any> {
+  async bulkUpdateChecks(checks: Check[]): Promise<boolean> {
     return getBackendSrv()
       .fetch({
         method: 'POST',
