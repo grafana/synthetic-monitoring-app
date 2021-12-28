@@ -1,13 +1,22 @@
-import { Alert, Button, Link, Modal } from '@grafana/ui';
+import { Alert, Button, Link, Modal, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 import { InstanceContext } from 'contexts/InstanceContext';
 import React, { useContext, useState } from 'react';
 import { Clipboard } from 'components/Clipboard';
+import { GrafanaTheme2 } from '@grafana/data';
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  vericalSpace: css`
+    margin-top: 10px;
+  `,
+});
 
 export const AccessToken = () => {
   const { instance } = useContext(InstanceContext);
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState<string | undefined>();
   const [token, setToken] = useState<string | undefined>();
+  const styles = useStyles2(getStyles);
 
   const showTokenModal = async () => {
     try {
@@ -34,7 +43,9 @@ export const AccessToken = () => {
           </Link>{' '}
           documentation to learn more about how to interact with the synthetic monitoring API.
         </div>
-        <Button onClick={() => showTokenModal()}>Generate access token</Button>
+        <Button className={styles.vericalSpace} onClick={() => showTokenModal()}>
+          Generate access token
+        </Button>
       </div>
       <Modal title="Access Token" isOpen={showModal} onDismiss={() => setShowModal(false)}>
         <>

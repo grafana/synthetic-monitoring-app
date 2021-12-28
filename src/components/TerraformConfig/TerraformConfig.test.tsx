@@ -34,7 +34,7 @@ it('renders without crashing', async () => {
 
 it('displays correct config', async () => {
   await openConfig();
-  const config = await screen.findByTestId('clipboard-content');
+  const config = await screen.findAllByTestId('clipboard-content');
   const expectedConfig = {
     terraform: { required_providers: { grafana: { source: 'grafana/grafana' } } },
     provider: {
@@ -70,8 +70,8 @@ it('displays correct config', async () => {
       },
     },
   };
-  if (!config.textContent) {
+  if (!config[0].textContent) {
     throw new Error('config has not content');
   }
-  expect(JSON.parse(config.textContent)).toEqual(expectedConfig);
+  expect(JSON.parse(config[0].textContent)).toEqual(expectedConfig);
 });

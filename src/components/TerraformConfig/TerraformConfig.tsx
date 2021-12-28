@@ -5,7 +5,7 @@ import React, { useContext, useState } from 'react';
 import { Clipboard } from 'components/Clipboard';
 import { css } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
-import { TFCheckConfig, TFConfig, TFProbeConfig } from './terraformTypes';
+import { TFCheckConfig, TFConfig, TFProbeConfig, TFOutput } from './terraformTypes';
 import { checkToTF, probeToTF, sanitizeName } from './terraformConfigUtils';
 import { checkType } from 'utils';
 import { CheckType } from 'types';
@@ -16,9 +16,15 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
   clipboard: css`
     max-height: 500px;
+    margin-top: 10px;
+    margin-bottom: 10px;
   `,
   text: css`
     max-width: 600px;
+  `,
+  vericalSpace: css`
+    margin-top: 10px;
+    margin-bottom: 10px;
   `,
 });
 
@@ -27,9 +33,10 @@ export const TerraformConfig = () => {
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState<string | undefined>();
   const [config, setConfig] = useState<TFConfig | undefined>();
+  const [checkCommands, setCheckCommands] = useState<string[]>([]);
   const styles = useStyles2(getStyles);
 
-  const generateTFConfig = async (): Promise<TFConfig> => {
+  const generateTFConfig = async (): Promise<TFOutput> => {
     const checks = await instance.api?.listChecks();
     const probes = await instance.api?.listProbes();
     if (!checks || !probes) {
@@ -90,13 +97,20 @@ export const TerraformConfig = () => {
       config.resource.grafana_synthetic_monitoring_probe = probesConfig;
     }
 
-    return config;
+    const checkCommands = checks.map((check) => {
+      return `terraform import grafana_synthetic_monitoring_check.${sanitizeName(`${check.job}_${check.target}`)} ${
+        check.id
+      }`;
+    });
+
+    return { config, checkCommands };
   };
 
   const showConfigModal = async () => {
     try {
-      const configGen = await generateTFConfig();
-      setConfig(configGen);
+      const { config, checkCommands } = await generateTFConfig();
+      setConfig(config);
+      setCheckCommands(checkCommands);
     } catch (e) {
       const cast = e as Error;
       setError(cast?.message ?? 'There was an error creating the terraform config');
@@ -108,7 +122,9 @@ export const TerraformConfig = () => {
     <div>
       <h5>Terraform</h5>
       <div>You can manage synthetic monitoring checks via Terraform. Export your current checks as config</div>
-      <Button onClick={() => showConfigModal()}>Generate config</Button>
+      <Button className={styles.vericalSpace} onClick={() => showConfigModal()}>
+        Generate config
+      </Button>
       <Modal
         title="Terraform config"
         isOpen={showModal}
@@ -127,7 +143,15 @@ export const TerraformConfig = () => {
               <a href="https://www.terraform.io/docs/language/syntax/json.html">Terraform JSON syntax</a>. You can place
               this config in a file with a <strong>tf.json</strong> extension and import as a module.
             </Alert>
+            <h5>tf.json</h5>
             <Clipboard content={JSON.stringify(config, null, 2)} className={styles.clipboard} />
+            <h5>Import existing checks into Terraform</h5>
+            <Clipboard content={checkCommands.join(' && ')} className={styles.clipboard} truncate />
+            <h5>Import custom probes into Terraform</h5>
+            <Clipboard
+              content="terraform import grafana_synthetic_monitoring_probe.{{probe_name}} {{probe_id}}"
+              className={styles.clipboard}
+            />
           </>
         )}
       </Modal>
