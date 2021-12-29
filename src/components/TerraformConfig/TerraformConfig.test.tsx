@@ -71,7 +71,7 @@ it('displays correct config', async () => {
     },
   };
   if (!config[0].textContent) {
-    throw new Error('config has not content');
+    throw new Error('config has no content');
   }
   expect(JSON.parse(config[0].textContent)).toEqual(expectedConfig);
 });

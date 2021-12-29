@@ -99,17 +99,16 @@ const settingsToTF = (check: Check): TFCheckSettings => {
         },
       };
     case CheckType.Traceroute:
-      throw new Error('traceroute checks are not yet supported in the Grafana Terraform provider');
-    // if (!check.settings.traceroute) {
-    //   throw new Error(`could not translate settings to terraform config for check ${check.job}`);
-    // }
-    // return {
-    //   traceroute: {
-    //     max_hops: check.settings.traceroute.maxHops,
-    //     max_unknown_hops: check.settings.traceroute.maxUnknownHops,
-    //     ptr_lookup: check.settings.traceroute.ptrLookup,
-    //   },
-    // };
+      if (!check.settings.traceroute) {
+        throw new Error(`could not translate settings to terraform config for check ${check.job}`);
+      }
+      return {
+        traceroute: {
+          max_hops: check.settings.traceroute.maxHops,
+          max_unknown_hops: check.settings.traceroute.maxUnknownHops,
+          ptr_lookup: check.settings.traceroute.ptrLookup,
+        },
+      };
     default:
       throw new Error(`could not translate settings for check to terraform config: ${check.job}`);
   }
