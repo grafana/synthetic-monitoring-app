@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useStyles } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
-import { GrafanaTheme } from '@grafana/data';
+import { AppEvents } from '@grafana/data';
+import appEvents from 'grafana/app/core/app_events';
 import { CopyToClipboard } from './CopyToClipboard';
 
-const getStyles = (theme: GrafanaTheme) => ({
+const getStyles = () => ({
   code: css`
     width: 100%;
     word-break: break-all;
@@ -23,30 +24,29 @@ const getStyles = (theme: GrafanaTheme) => ({
 interface Props {
   content: string;
   className?: string;
+  truncate?: boolean;
 }
 
-export function Clipboard({ content, className }: Props) {
+export function Clipboard({ content, className, truncate }: Props) {
   const styles = useStyles(getStyles);
-  const [copyClipboard, setCopyclipboard] = useState(false);
+
   return (
     <div className={cx(styles.container, className)}>
       <pre className={styles.code} data-testid="clipboard-content">
-        {content}
+        {truncate ? content.slice(0, 150) + '...' : content}
       </pre>
 
       <CopyToClipboard
         className={styles.button}
         variant="primary"
         fill="text"
-        icon={!copyClipboard ? 'clipboard-alt' : 'check'}
-        onClick={(e) => e.preventDefault()}
-        getText={() => {
-          setCopyclipboard(true);
-          return content;
+        buttonText="Copy to clipboard"
+        buttonTextCopied="Copied to clipboard"
+        content={content}
+        onClipboardError={(err) => {
+          appEvents.emit(AppEvents.alertError, [`Failed to copy to clipboard: ${err}`]);
         }}
-      >
-        {!copyClipboard ? 'Copy to clipboard' : 'Copied to clipboard'}
-      </CopyToClipboard>
+      />
     </div>
   );
 }

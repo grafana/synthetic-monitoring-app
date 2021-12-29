@@ -1,5 +1,10 @@
 import { DnsSettings, HttpSettings, BasicAuth, HeaderMatch, TcpSettings, TCPQueryResponse, Probe } from 'types';
 
+export interface TFOutput {
+  config: TFConfig;
+  checkCommands: string[];
+}
+
 export interface TFConfig {
   provider: any;
   terraform: any;
