@@ -209,7 +209,7 @@
         {
           "datasource": "${DS_SM_METRICS}",
           "exemplar": false,
-          "expr": "100*(1 - (sum((rate(probe_all_success_sum[${__range_s}s]) OR rate(probe_success_sum[${__range_s}s])) *  on (instance, job, probe, config_version) group_left(geohash) max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version, geohash)) by (probe, geohash)/ sum((rate(probe_all_success_count[${__range_s}s]) OR rate(probe_success_count[${__range_s}s])) *  on (instance, job, probe, config_version) group_left(geohash) max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version, geohash)) by (probe, geohash)))",
+          "expr": "100 * (\n  sum by (probe, geohash)\n (\n (\n rate(probe_all_success_sum[$__range])\n OR\n rate(probe_success_sum[$__range])\n)\n *\n on (instance, job, probe, config_version)\n group_left(geohash)\n max\n by (instance, job, probe, config_version, check_name, geohash)\n (sm_check_info{check_name=\"$check_type\", region=~\".*\"})\n) \n / \n sum by (probe, geohash)\n (\n (\n rate(probe_all_success_count[$__range])\n OR\n rate(probe_success_count[$__range])\n)\n *\n on (instance, job, probe, config_version)\n group_left(geohash)\n max\n by (instance, job, probe, config_version, check_name, geohash)\n (sm_check_info{check_name=\"$check_type\", region=~\".*\"})\n)\n)",
           "format": "table",
           "hide": false,
           "instant": true,
