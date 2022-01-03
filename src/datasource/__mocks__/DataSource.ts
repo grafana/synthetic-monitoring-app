@@ -64,7 +64,7 @@ export const instanceSettings: DataSourceInstanceSettings<SMOptions> = {
       {
         json: 'sm-dns.json',
         latestVersion: 9,
-        title: 'Synthetic Monitoring - DNS',
+        title: 'Synthetic Monitoring DNS',
         uid: 'lgL6odgGz',
         version: 9,
       },

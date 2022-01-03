@@ -209,7 +209,7 @@
         {
           "datasource": "${DS_SM_METRICS}",
           "exemplar": false,
-          "expr": "100 * (1 - (\n  sum by (probe, geohash)\n (\n (\n rate(probe_all_success_sum[$__range])\n OR\n rate(probe_success_sum[$__range])\n)\n *\n on (instance, job, probe, config_version)\n group_left(geohash)\n max\n by (instance, job, probe, config_version, check_name, geohash)\n (sm_check_info{check_name=\"$check_type\", region=~\".*\"})\n) \n / \n sum by (probe, geohash)\n (\n (\n rate(probe_all_success_count[$__range])\n OR\n rate(probe_success_count[$__range])\n)\n *\n on (instance, job, probe, config_version)\n group_left(geohash)\n max\n by (instance, job, probe, config_version, check_name, geohash)\n (sm_check_info{check_name=\"$check_type\", region=~\".*\"})\n)\n))",
+          "expr": "100 * (1 - (\n  sum by (probe, geohash)\n (\n (\n rate(probe_all_success_sum[$__range])\n OR\n rate(probe_success_sum[$__range])\n)\n *\n on (instance, job, probe, config_version)\n group_left(geohash)\n max\n by (instance, job, probe, config_version, check_name, geohash)\n (sm_check_info{check_name=\"$check_type\", region=~\"$region\"})\n) \n / \n sum by (probe, geohash)\n (\n (\n rate(probe_all_success_count[$__range])\n OR\n rate(probe_success_count[$__range])\n)\n *\n on (instance, job, probe, config_version)\n group_left(geohash)\n max\n by (instance, job, probe, config_version, check_name, geohash)\n (sm_check_info{check_name=\"$check_type\", region=~\"$region\"})\n)\n))",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -284,7 +284,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "1 - (sum((rate(probe_all_success_sum[$__rate_interval]) OR rate(probe_success_sum[$__rate_interval])) *  on (instance, job, probe, config_version) max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version)) / sum((rate(probe_all_success_count[$__rate_interval]) OR rate(probe_success_count[$__rate_interval])) *  on (instance, job, probe, config_version) max(sm_check_info{check_name=\"$check_type\", region=~\"$region\"}) by (instance, job, probe, config_version)))",
+          "expr": "1 - (  sum( ( rate(probe_all_success_sum[$__range]) OR rate(probe_success_sum[$__range])) * on (instance, job, probe, config_version) group_left(geohash) max by (instance, job, probe, config_version, check_name, geohash) (sm_check_info{check_name=\"$check_type\", region=~\"$region\"})) /  sum( ( rate(probe_all_success_count[$__range]) OR rate(probe_success_count[$__range])) * on (instance, job, probe, config_version) group_left(geohash) max by (instance, job, probe, config_version, check_name, geohash) (sm_check_info{check_name=\"$check_type\", region=~\"$region\"})))",
           "hide": false,
           "interval": "1m",
           "intervalFactor": 1,
