@@ -81,15 +81,7 @@
   ],
 
   "dependencies": {
-    "grafanaDependency": ">=8.3.2",
-    "grafanaVersion": "8.3",
-    "plugins": [
-      {
-        "type": "panel",
-        "name": "Worldmap Panel",
-        "id": "grafana-worldmap-panel",
-        "version": "^0.3.2"
-      }
-    ]
+    "grafanaDependency": ">=8.3.3",
+    "grafanaVersion": "8.3"
   }
 }

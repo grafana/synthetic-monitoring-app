@@ -22,13 +22,7 @@
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "7.5.7"
-    },
-    {
-      "type": "panel",
-      "id": "grafana-worldmap-panel",
-      "name": "Worldmap Panel",
-      "version": "0.3.2"
+      "version": "8.3.3"
     },
     {
       "type": "panel",
@@ -82,65 +76,152 @@
   "links": [],
   "panels": [
     {
-      "circleMaxSize": "10",
-      "circleMinSize": "2",
-      "colors": ["#37872D", "#FA6400", "#C4162A"],
-      "datasource": "${DS_SM_METRICS}",
-      "decimals": 2,
-      "description": "What's the error percentage for each probe that is observing the given target.",
-      "esGeoPoint": "geohash",
-      "esLocationName": "probe",
-      "esMetric": "Count",
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
+      "id": 34,
       "gridPos": {
         "h": 9,
         "w": 12,
         "x": 0,
         "y": 0
       },
-      "hideEmpty": false,
-      "hideZero": false,
-      "id": 34,
-      "initialZoom": 1,
-      "locationData": "table",
-      "mapCenter": "(0°, 0°)",
-      "mapCenterLatitude": 0,
-      "mapCenterLongitude": 0,
-      "maxDataPoints": "",
-      "mouseWheelZoom": false,
-      "showLegend": false,
-      "stickyLabels": false,
-      "tableQueryOptions": {
-        "geohashField": "geohash",
-        "labelField": "probe",
-        "latitudeField": "latitude",
-        "longitudeField": "longitude",
-        "metricField": "Value",
-        "queryType": "geohash"
+      "type": "geomap",
+      "title": "Error rate by probe",
+      "datasource": "${DS_SM_METRICS}",
+      "pluginVersion": "8.3.3",
+      "description": "What's the error percentage for each probe that is observing the given target.",
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#37872D",
+                "value": null
+              },
+              {
+                "color": "#FA6400",
+                "value": 0.5
+              },
+              {
+                "color": "#C4162A",
+                "value": 1
+              }
+            ]
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "Value #A": {
+                  "text": "Error rate",
+                  "index": 0
+                }
+              }
+            }
+          ],
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 2,
+          "unit": "percent",
+          "min": 0,
+          "max": 100
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value #A"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Error rate"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "view": {
+          "id": "zero",
+          "lat": 0,
+          "lon": 0,
+          "zoom": 1
+        },
+        "controls": {
+          "showZoom": true,
+          "mouseWheelZoom": false,
+          "showAttribution": true,
+          "showScale": false,
+          "showDebug": false
+        },
+        "basemap": {
+          "name": "Basemap",
+          "type": "default"
+        },
+        "layers": [
+          {
+            "config": {
+              "showLegend": false,
+              "style": {
+                "color": {
+                  "fixed": "dark-green",
+                  "field": "Value #A"
+                },
+                "opacity": 0.4,
+                "rotation": {
+                  "fixed": 0,
+                  "max": 360,
+                  "min": -360,
+                  "mode": "mod"
+                },
+                "size": {
+                  "field": "Value #A",
+                  "fixed": 5,
+                  "max": 10,
+                  "min": 4
+                },
+                "symbol": {
+                  "fixed": "img/icons/marker/circle.svg",
+                  "mode": "fixed"
+                },
+                "textConfig": {
+                  "fontSize": 12,
+                  "offsetX": 0,
+                  "offsetY": 5,
+                  "textAlign": "center",
+                  "textBaseline": "top"
+                },
+                "text": {
+                  "fixed": "",
+                  "mode": "field"
+                }
+              }
+            },
+            "location": {
+              "geohash": "geohash",
+              "latitude": "Value #A",
+              "longitude": "Value #A",
+              "mode": "geohash"
+            },
+            "name": "Layer 1",
+            "type": "markers"
+          }
+        ]
       },
       "targets": [
         {
-          "exemplar": true,
           "expr": "100*(\n  1 - (\n    sum by (probe, geohash)\n    (\n      (\n        rate(probe_all_success_sum{instance=\"$instance\", job=\"$job\"}[$__range])\n        OR\n        rate(probe_success_sum{instance=\"$instance\", job=\"$job\"}[$__range])\n      )\n      *\n      on (instance, job, probe, config_version)\n      group_left(geohash)\n      max by (instance, job, probe, config_version, geohash)\n      (\n        sm_check_info{instance=\"$instance\", job=\"$job\"}\n      )\n    )\n    /\n    sum by (probe, geohash)\n    (\n      (\n        rate(probe_all_success_count{instance=\"$instance\", job=\"$job\"}[$__range])\n        OR\n        rate(probe_success_count{instance=\"$instance\", job=\"$job\"}[$__range])\n      )\n      *\n      on (instance, job, probe, config_version)\n      group_left(geohash)\n      max by (instance, job, probe, config_version, geohash)\n      (\n        sm_check_info{instance=\"$instance\", job=\"$job\"}\n      )\n    )\n  )\n)",
+          "legendFormat": "",
+          "interval": "",
+          "exemplar": false,
+          "datasource": "${DS_SM_METRICS}",
           "format": "table",
           "instant": true,
-          "interval": "",
-          "legendFormat": "",
           "refId": "A"
         }
       ],
-      "thresholds": "0.5,1",
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "Error rate by probe",
-      "type": "grafana-worldmap-panel",
-      "unitPlural": "%",
-      "unitSingle": "",
-      "unitSingular": "%",
-      "valueName": "current"
+      "maxDataPoints": ""
     },
     {
       "cacheTimeout": null,
@@ -995,5 +1076,5 @@
   "timezone": "",
   "title": "Synthetic Monitoring HTTP",
   "uid": "rq0JrllZz",
-  "version": 29
+  "version": 31
 }
