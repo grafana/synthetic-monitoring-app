@@ -98,22 +98,22 @@
           },
           "decimals": 2,
           "mappings": [],
-          "max": 100,
+          "max": 1,
           "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "dark-red",
+                "color": "dark-green",
                 "value": null
               },
               {
                 "color": "dark-orange",
-                "value": 99
+                "value": 0.5
               },
               {
-                "color": "dark-green",
-                "value": 99.5
+                "color": "dark-red",
+                "value": 1
               }
             ]
           },
@@ -128,7 +128,7 @@
             "properties": [
               {
                 "id": "displayName",
-                "value": "Reachability"
+                "value": "Error rate"
               }
             ]
           }
@@ -209,7 +209,7 @@
         {
           "datasource": "${DS_SM_METRICS}",
           "exemplar": false,
-          "expr": "100 * (\n  sum by (probe, geohash)\n (\n (\n rate(probe_all_success_sum[$__range])\n OR\n rate(probe_success_sum[$__range])\n)\n *\n on (instance, job, probe, config_version)\n group_left(geohash)\n max\n by (instance, job, probe, config_version, check_name, geohash)\n (sm_check_info{check_name=\"$check_type\", region=~\".*\"})\n) \n / \n sum by (probe, geohash)\n (\n (\n rate(probe_all_success_count[$__range])\n OR\n rate(probe_success_count[$__range])\n)\n *\n on (instance, job, probe, config_version)\n group_left(geohash)\n max\n by (instance, job, probe, config_version, check_name, geohash)\n (sm_check_info{check_name=\"$check_type\", region=~\".*\"})\n)\n)",
+          "expr": "100 * (1 - (\n  sum by (probe, geohash)\n (\n (\n rate(probe_all_success_sum[$__range])\n OR\n rate(probe_success_sum[$__range])\n)\n *\n on (instance, job, probe, config_version)\n group_left(geohash)\n max\n by (instance, job, probe, config_version, check_name, geohash)\n (sm_check_info{check_name=\"$check_type\", region=~\".*\"})\n) \n / \n sum by (probe, geohash)\n (\n (\n rate(probe_all_success_count[$__range])\n OR\n rate(probe_success_count[$__range])\n)\n *\n on (instance, job, probe, config_version)\n group_left(geohash)\n max\n by (instance, job, probe, config_version, check_name, geohash)\n (sm_check_info{check_name=\"$check_type\", region=~\".*\"})\n)\n))",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -218,7 +218,7 @@
           "refId": "A"
         }
       ],
-      "title": "$check_type reachability",
+      "title": "$check_type error rate",
       "type": "geomap"
     },
     {
