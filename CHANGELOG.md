@@ -1,5 +1,11 @@
 # Change Log
 
+# [1.8.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.8.0...v1.8.1) (2022-1-04)
+
+### Bug Fixes
+
+- Update the README with additional configuration details
+
 # [1.8.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.7.0...v1.8.0) (2022-1-04)
 
 ### Features
