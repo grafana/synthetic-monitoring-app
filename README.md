@@ -27,7 +27,7 @@ apps:
     name: grafana-synthetic-monitoring-app
     disabled: false
     jsonData:
-      apiHost: https://synthetic-monitoring-api.grafana.net || https://synthetic-monitoring-api-eu-west.grafana.net
+      apiHost: <synthetic monitoring api url for your grafana cloud stack>
       stackId: <instance ID of your hosted grafana>
       logs:
         grafanaName: <name of an existing Loki datasource pointing to the Grafana Cloud Loki instance>
