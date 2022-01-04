@@ -1,10 +1,16 @@
 # Change Log
 
-# [1.7.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.7.0...v1.7.1) (2021-12-13)
+# [1.8.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.7.0...v1.8.0) (2022-1-04)
+
+### Features
+
+- Add a `terraform import` command to the terraform config download. This allows users to generate intial TF state.
 
 ### Bug Fixes
 
-- Upgrade dependencies
+- Replace worldmap panel plugin with geomap panel in all the dashboards
+- Use the updated timeseries panel in the summary dashboard
+- Rename the DNS dashboard to align with the other dashboards
 
 # [1.7.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.61...v1.7.0) (2021-12-01)
 
