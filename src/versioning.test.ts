@@ -24,6 +24,10 @@
 //   return version.split('.').slice(0, 2).join('.');
 // };
 
+it('FIXME: passes a bogus test', () => {
+  expect(true).toBeTruthy();
+});
+
 // it('plugin json compatibility should reflact whats in the package json dependencies', () => {
 //   const { data, runtime, toolkit, ui } = getGrafanaDependencyVersion();
 //   const { grafanaVersion, grafanaDependency } = getCompatibleGrafanaVersion();
