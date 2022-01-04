@@ -40,6 +40,9 @@ apps:
 ```
 
 Configuration details:
+
+- `apiHost` expects Synthetic Monitoring API URL, [see more details here](https://github.com/grafana/synthetic-monitoring-api-go-client/blob/main/docs/API.md#api-url)
+
 - `stackId` expects an integer and can be found using `gcom /instances/<orgSlug>`, or by visiting `https://grafana.com/orgs/<orgSlug>/stacks` and clicking the `details` button on stack you are connecting to. The id will be in the URL.
 - The `logs` and `metrics` section are instructing the plugin which datasources it needs to use.
   - The `grafanaName` needs to exactly match the names specified in your datasource provisioning
