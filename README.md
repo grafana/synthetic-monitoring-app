@@ -27,7 +27,7 @@ apps:
     name: grafana-synthetic-monitoring-app
     disabled: false
     jsonData:
-      apiHost: https://synthetic-monitoring-api.grafana.net
+      apiHost: https://synthetic-monitoring-api.grafana.net || https://synthetic-monitoring-api-eu-west.grafana.net
       stackId: <instance ID of your hosted grafana>
       logs:
         grafanaName: <name of an existing Loki datasource pointing to the Grafana Cloud Loki instance>
@@ -39,10 +39,15 @@ apps:
       publisherToken: <metric publisher token from grafana.com>
 ```
 
+Configuration details:
+- `stackId` expects an integer and can be found using `gcom /instances/<orgSlug>`, or by visiting `https://grafana.com/orgs/<orgSlug>/stacks` and clicking the `details` button on stack you are connecting to. The id will be in the URL.
+- The `logs` and `metrics` section are instructing the plugin which datasources it needs to use.
+  - The `grafanaName` needs to exactly match the names specified in your datasource provisioning
+  - The `hostedId` expects an integer and is the same value as the `basicAuthUser` in your datasource provisioning. The value can also be found from the `details` page of loki or prometheus at `https://grafana.com/orgs/<orgSlug>/stacks`. 
+- `publisherToken` needs to be a grafana.com api key with a `MetricsPublisher` role. This is what the probes use to publish metrics to your cloud stack.
+
 Note: you can add a provisioning block per [org](https://grafana.com/docs/grafana/latest/manage-users/server-admin/server-admin-manage-orgs/) to provision the plugin for multiple orgs. You can provide different values for each org block and connect to a different cloud stack per org.
-
-The names of the datasources specified in the provisioning file _must_ match the names of existing datasources in Grafana. If you are also provisioning the datasources using the procedure below, make sure the datasource names match.
-
+    
 Prerequisites:
 
 1. A datasource pointed at a Prometheus instance hosted in Grafana Cloud
