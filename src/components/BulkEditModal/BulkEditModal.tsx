@@ -75,17 +75,20 @@ const BulkEditModal = ({ onDismiss, onSuccess, onError, isOpen, selectedChecks, 
     } else if (action === 'remove') {
       // Filter out checks with only one probe
       const checksWithMultipleProbes = checks.filter((check) => check.probes.length > 1);
-      newChecks = checksWithMultipleProbes.map((check) => {
-        const newProbes = check.probes.filter((p) => !probesToRemove.includes(p));
-        return { ...check, probes: newProbes };
-      });
+      // Update probes for each check and the remove any checks that would end up with zero probes
+      newChecks = checksWithMultipleProbes
+        .map((check) => {
+          const newProbes = check.probes.filter((p) => !probesToRemove.includes(p));
+          return { ...check, probes: newProbes };
+        })
+        .filter((check) => check.probes.length > 0);
     }
     try {
       await instance.api?.bulkUpdateChecks(newChecks);
       onDismiss();
       clearSelections();
       onSuccess();
-    } catch (error) {
+    } catch (error: any) {
       onDismiss();
       clearSelections();
       onError(error.data.err);
@@ -180,8 +183,8 @@ const BulkEditModal = ({ onDismiss, onSuccess, onError, isOpen, selectedChecks, 
         <div>
           <div className={styles.verticalSpace}>
             <i>
-              Select probes to remove from all selected checks. Any checks using only a single probe will be excluded
-              from the operation on submission.
+              Select probes to remove from all selected checks. Any checks using only a single probe or any that would
+              result in using zero probes will be excluded from the operation.
             </i>
           </div>
           <div className={styles.buttonGroup}>

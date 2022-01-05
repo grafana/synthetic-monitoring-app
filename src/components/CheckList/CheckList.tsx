@@ -587,7 +587,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
         isOpen={bulkEditAction !== null}
         onSuccess={() => {
           onCheckUpdate();
-          appEvents.emit(AppEvents.alertSuccess, ['All checks successfully updated']);
+          appEvents.emit(AppEvents.alertSuccess, ['All selected checks successfully updated']);
         }}
         onError={(err) => {
           appEvents.emit(AppEvents.alertError, [`There was an error updating checks: ${err}`]);
