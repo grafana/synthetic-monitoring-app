@@ -1,5 +1,11 @@
 # Change Log
 
+# [1.9.2](https://github.com/grafana/synthetic-monitoring-app/compare/v1.8.1...v1.9.2) (2022-1-06)
+
+### Features
+
+- Added the ability to bulk edit probes for checks
+
 # [1.8.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.8.0...v1.8.1) (2022-1-04)
 
 ### Bug Fixes
