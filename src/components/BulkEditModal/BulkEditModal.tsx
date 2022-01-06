@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import ProbesByRegion from './ProbesByRegion';
 
-import { Button, HorizontalGroup, Modal, useStyles } from '@grafana/ui';
+import { Button, HorizontalGroup, Modal, LoadingPlaceholder, useStyles } from '@grafana/ui';
 import { FilteredCheck, GrafanaInstances, Probe } from 'types';
 import { GrafanaTheme } from '@grafana/data';
 import { css } from '@emotion/css';
@@ -52,6 +52,7 @@ const BulkEditModal = ({ onDismiss, onSuccess, onError, isOpen, selectedChecks, 
   const [probesById, setProbesById] = useState<ProbeById | undefined>(undefined);
   const [selectedProbes, setSelectedProbes] = useState<Probe[]>([]);
   const [probesToRemove, setProbesToRemove] = useState<number[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
   const checks = selectedChecks();
 
   const styles = useStyles(style);
@@ -84,11 +85,14 @@ const BulkEditModal = ({ onDismiss, onSuccess, onError, isOpen, selectedChecks, 
         .filter((check) => check.probes.length > 0);
     }
     try {
+      setLoading(true);
       await instance.api?.bulkUpdateChecks(newChecks);
+      setLoading(false);
       onDismiss();
       clearSelections();
       onSuccess();
     } catch (error: any) {
+      setLoading(false);
       onDismiss();
       clearSelections();
       onError(error.data.err);
@@ -210,17 +214,21 @@ const BulkEditModal = ({ onDismiss, onSuccess, onError, isOpen, selectedChecks, 
       )}
 
       <div className={styles.verticalSpace}>
-        <HorizontalGroup>
-          <Button
-            onClick={submitProbeUpdates}
-            disabled={checks.length === 0 || (selectedProbes.length === 0 && probesToRemove.length === 0)}
-          >
-            Submit
-          </Button>
-          <Button variant="secondary" onClick={() => clearSelections()}>
-            Clear
-          </Button>
-        </HorizontalGroup>
+        {loading ? (
+          <LoadingPlaceholder text="Submitting..." />
+        ) : (
+          <HorizontalGroup>
+            <Button
+              onClick={submitProbeUpdates}
+              disabled={checks.length === 0 || (selectedProbes.length === 0 && probesToRemove.length === 0)}
+            >
+              Submit
+            </Button>
+            <Button variant="secondary" onClick={() => clearSelections()}>
+              Clear
+            </Button>
+          </HorizontalGroup>
+        )}
       </div>
     </Modal>
   );
