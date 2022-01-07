@@ -57,7 +57,7 @@
     {
       "type": "page",
       "name": "Checks",
-      "path": "/a/grafana-synthetic-monitoring-app/?page=checks",
+      "path": "/a/grafana-synthetic-monitoring-app/checks",
       "addToNav": true
     },
     {

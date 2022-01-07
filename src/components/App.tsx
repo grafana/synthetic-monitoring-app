@@ -5,6 +5,8 @@ import { AppRootProps } from '@grafana/data';
 import { GlobalSettings } from 'types';
 import { FeatureFlagProvider } from './FeatureFlagProvider';
 import { CheckInfoContextProvider } from './CheckInfoContextProvider';
+import { Routing } from 'components/Routing';
+import { BrowserRouter } from 'react-router-dom';
 
 export class App extends PureComponent<AppRootProps<GlobalSettings>> {
   render() {
@@ -17,7 +19,8 @@ export class App extends PureComponent<AppRootProps<GlobalSettings>> {
           meta={meta}
         >
           <CheckInfoContextProvider>
-            <PluginTabs {...this.props} />
+            {/* <PluginTabs {...this.props} /> */}
+            <Routing {...this.props} />
           </CheckInfoContextProvider>
         </InstanceProvider>
       </FeatureFlagProvider>

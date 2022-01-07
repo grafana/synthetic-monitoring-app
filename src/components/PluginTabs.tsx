@@ -143,52 +143,8 @@ export const PluginTabs = ({ query, onNavChanged, path, meta }: AppRootProps<Glo
     }
   }, [dashboards, hasDismissedDashboardUpdate]);
 
-  // handle navigation
-  useEffect(() => {
-    const redirectDestination = getRedirectDestination(query.page, apiInitialized);
-    if (redirectDestination) {
-      getLocationSrv().update({
-        partial: false,
-        path,
-        query: {
-          page: redirectDestination,
-        },
-      });
-      return;
-    }
-    if (query.page === 'redirect') {
-      return handleDashboardRedirect(query.dashboard, dashboards ?? []);
-    }
-    const filteredTabs = filterTabs(tabs, apiInitialized);
-    const activeTab = findActiveTab(filteredTabs, query.page, apiInitialized);
-    setActiveTab(activeTab);
-    const navModel = getNavModel(filteredTabs, path, activeTab, logoUrl);
-    if (navModel) {
-      onNavChanged(navModel);
-    }
-  }, [query, query.dashboard, apiInitialized, logoUrl, onNavChanged, path, dashboards]);
-
-  if (query.page === 'setup' || !activeTab) {
-    return <WelcomePage />;
-  }
-
-  const getPage = () => {
-    switch (activeTab.id) {
-      case 'probes':
-        return <ProbesPage id={query.id} />;
-      case 'alerts':
-        return <Alerting />;
-      case 'checks':
-        return <ChecksPage id={query.id} />;
-      case 'home':
-      default:
-        return <HomePage />;
-    }
-  };
-
   return (
     <div>
-      {getPage()}
       <Modal
         title="Dashboards out of date"
         onDismiss={skipDashboardUpdate}
