@@ -50,9 +50,6 @@ export const Routing = ({ onNavChanged, meta, ...rest }: AppRootProps) => {
         <Route exact path={`${PLUGIN_URL_PATH}${ROUTES.Redirect}`}>
           <DashboardRedirecter />
         </Route>
-        <Route exact path="/">
-          <Redirect to={`${PLUGIN_URL_PATH}${ROUTES.Home}`} />
-        </Route>
         <Route path={`${PLUGIN_URL_PATH}${ROUTES.Setup}`}>
           {initialized ? <Redirect to={`${PLUGIN_URL_PATH}${ROUTES.Home}`} /> : <WelcomePage />}
         </Route>
@@ -70,6 +67,9 @@ export const Routing = ({ onNavChanged, meta, ...rest }: AppRootProps) => {
         </Route>
         <Route exact path={`${PLUGIN_URL_PATH}${ROUTES.Checks}`}>
           <ChecksPage />
+        </Route>
+        <Route exact path="*">
+          <Redirect to={`${PLUGIN_URL_PATH}${ROUTES.Home}`} />
         </Route>
       </Switch>
     </div>

@@ -7,6 +7,7 @@ import { dashboardUID, checkType as getCheckType, hasRole } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
 import appEvents from 'grafana/app/core/app_events';
 import { getLocationSrv } from '@grafana/runtime';
+import { useNavigation } from 'hooks/useNavigation';
 
 const getStyles = (theme: GrafanaTheme) => ({
   actionButtonGroup: css`
@@ -32,6 +33,7 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon, onRemoveChe
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const checkType = getCheckType(check.settings);
   const { instance } = useContext(InstanceContext);
+  const navigate = useNavigation();
 
   const showDashboard = () => {
     const target = dashboardUID(checkType, instance.api);
@@ -41,14 +43,14 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon, onRemoveChe
       return;
     }
 
-    getLocationSrv().update({
-      partial: false,
-      path: `/d/${target.uid}`,
-      query: {
+    navigate(
+      `/d/${target.uid}`,
+      {
         'var-instance': check.target,
         'var-job': check.job,
       },
-    });
+      true
+    );
   };
 
   return (
