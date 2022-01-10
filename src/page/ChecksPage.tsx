@@ -1,113 +1,62 @@
-// Libraries
-import React, { PureComponent } from 'react';
-
-// Types
-import { Check } from 'types';
-import { getLocationSrv } from '@grafana/runtime';
+import React, { useContext, useState, useEffect, useCallback } from 'react';
+import { Check, CheckPageParams, ROUTES } from 'types';
 import { CheckEditor } from 'components/CheckEditor';
 import { CheckList } from 'components/CheckList';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
-import { trackEvent } from 'analytics';
+import { useParams } from 'react-router-dom';
+import { useNavigation } from 'hooks/useNavigation';
 
-interface Props {
-  id?: string;
-  checksPerPage?: number;
-}
+export function ChecksPage() {
+  const { instance } = useContext(InstanceContext);
+  const [checks, setChecks] = useState<Check[]>();
+  const [loading, setLoading] = useState(true);
+  const [selectedCheck, setSelectedCheck] = useState<Check>();
+  const { view, id } = useParams<CheckPageParams>();
+  const navigate = useNavigation();
 
-interface State {
-  checks: Check[];
-  check?: Check; // selected check
-  addNew: boolean;
-  loading: boolean;
-}
-
-export class ChecksPage extends PureComponent<Props, State> {
-  static contextType = InstanceContext;
-  declare context: React.ContextType<typeof InstanceContext>;
-
-  state: State = {
-    checks: [],
-    addNew: false,
-    loading: true,
-  };
-
-  async componentDidMount() {
-    const { id } = this.props;
-    const { instance } = this.context;
-    const checks = (await instance.api?.listChecks()) ?? [];
-    const num = id ? parseInt(id, 10) : -1;
-    const check = checks?.find((c) => c.id === num);
-    this.setState({
-      checks,
-      check,
-      loading: false,
+  const fetchChecks = useCallback(() => {
+    instance.api?.listChecks().then((resp) => {
+      setChecks(resp);
+      setLoading(false);
     });
-  }
+  }, [instance.api]);
 
-  componentDidUpdate(oldProps: Props) {
-    if (this.props.id !== oldProps.id) {
-      const { id } = this.props;
+  useEffect(() => {
+    fetchChecks();
+  }, [fetchChecks]);
+
+  useEffect(() => {
+    if (checks) {
       const num = id ? parseInt(id, 10) : -1;
-      const check = this.state.checks?.find((c) => c.id === num);
-      this.setState({ check });
+      const check = checks?.find((c) => c.id === num);
+      setSelectedCheck(check);
     }
-  }
+  }, [checks, id]);
 
-  //-----------------------------------------------------------------
-  // CHECK List
-  //-----------------------------------------------------------------
-
-  onAddNew = () => {
-    trackEvent('viewAddNewCheck');
-    this.setState({
-      addNew: true,
-    });
+  const returnToList = (refetch?: boolean) => {
+    navigate(ROUTES.Checks);
+    if (refetch) {
+      fetchChecks();
+    }
   };
 
-  onRefresh = async () => {
-    const { instance } = this.context;
-    const checks = (await instance.api?.listChecks()) ?? [];
-    this.setState({
-      checks,
-    });
+  const getView = () => {
+    switch (view) {
+      case 'new': {
+        return <CheckEditor onReturn={returnToList} />;
+      }
+      case 'edit': {
+        return <CheckEditor onReturn={returnToList} check={selectedCheck} />;
+      }
+      default:
+        return <CheckList instance={instance} checks={checks ?? []} onCheckUpdate={returnToList} />;
+    }
   };
 
-  onGoBack = (refresh: boolean) => {
-    this.setState({
-      addNew: false,
-    });
-    if (refresh) {
-      this.onRefresh();
-    }
-    getLocationSrv().update({
-      partial: true,
-      query: {
-        id: '',
-      },
-    });
-  };
-
-  renderPage() {
-    const { check, addNew, loading, checks } = this.state;
-    const { instance } = this.context;
-
-    if (loading || !instance.api) {
-      return <div>Loading...</div>;
-    }
-    if (check) {
-      return <CheckEditor check={check} onReturn={this.onGoBack} />;
-    }
-    if (addNew) {
-      return <CheckEditor onReturn={this.onGoBack} />;
-    }
-    return (
-      <CheckList instance={instance} onAddNewClick={this.onAddNew} checks={checks} onCheckUpdate={this.onRefresh} />
-    );
+  if (loading || !instance.api || !checks) {
+    return <div>Loading...</div>;
   }
 
-  render() {
-    const { checks } = this.state;
-    return <SuccessRateContextProvider checks={checks}>{this.renderPage()}</SuccessRateContextProvider>;
-  }
+  return <SuccessRateContextProvider checks={checks}>{getView()}</SuccessRateContextProvider>;
 }

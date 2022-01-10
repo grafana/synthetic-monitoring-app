@@ -65,7 +65,7 @@ export const Routing = ({ onNavChanged, meta, ...rest }: AppRootProps) => {
         <Route exact path={`${PLUGIN_URL_PATH}${ROUTES.Alerts}`}>
           <Alerting />
         </Route>
-        <Route exact path={`${PLUGIN_URL_PATH}${ROUTES.Checks}`}>
+        <Route exact path={`${PLUGIN_URL_PATH}${ROUTES.Checks}/:view?/:id?`}>
           <ChecksPage />
         </Route>
         <Route exact path="*">

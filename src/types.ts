@@ -502,4 +502,11 @@ export enum ROUTES {
   Probes = 'probes',
   Alerts = 'alerts',
   Checks = 'checks',
+  NewCheck = 'checks/new',
+  EditCheck = 'checks/edit',
+}
+
+export interface CheckPageParams {
+  view: string;
+  id: string;
 }

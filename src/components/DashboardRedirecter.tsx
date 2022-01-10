@@ -18,7 +18,7 @@ export function DashboardRedirecter() {
     dashboards?.find((dashboardJson) => dashboardJson.json.indexOf(dashboard) > -1) ?? dashboards[0];
 
   if (targetDashboard) {
-    nav(`/d/${targetDashboard.uid}`, true);
+    nav(`/d/${targetDashboard.uid}`, {}, true);
     return null;
   }
 

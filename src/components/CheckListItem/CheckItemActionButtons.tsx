@@ -2,7 +2,7 @@ import { GrafanaTheme, AppEvents } from '@grafana/data';
 import { Button, ConfirmModal, IconButton, useStyles } from '@grafana/ui';
 import React, { useContext, useState } from 'react';
 import { css } from '@emotion/css';
-import { Check, OrgRole } from 'types';
+import { Check, OrgRole, ROUTES } from 'types';
 import { dashboardUID, checkType as getCheckType, hasRole } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
 import appEvents from 'grafana/app/core/app_events';
@@ -65,12 +65,7 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon, onRemoveChe
       <IconButton
         name="pen"
         onClick={() => {
-          getLocationSrv().update({
-            partial: true,
-            query: {
-              id: check.id,
-            },
-          });
+          navigate(`${ROUTES.EditCheck}/${check.id}`);
         }}
         disabled={!hasRole(OrgRole.EDITOR)}
         className={styles.marginRightSmall}

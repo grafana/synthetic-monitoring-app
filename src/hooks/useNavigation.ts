@@ -8,7 +8,7 @@ type QueryParamMap = {
 
 export function useNavigation() {
   const history = useHistory();
-  const navigate = (url: string, queryParams: QueryParamMap, external?: boolean) => {
+  const navigate = (url: string, queryParams?: QueryParamMap, external?: boolean) => {
     const normalized = url.startsWith('/') ? url.slice(1) : url;
     if (external) {
       getLocationSrv().update({ partial: false, path: `/${normalized}`, query: queryParams });
