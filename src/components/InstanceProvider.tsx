@@ -5,7 +5,6 @@ import { config, getDataSourceSrv, getBackendSrv } from '@grafana/runtime';
 import { SMDataSource } from 'datasource/DataSource';
 import { Spinner } from '@grafana/ui';
 import { AppPluginMeta } from '@grafana/data';
-import { UnprovisionedSetup } from 'components/UnprovisionedSetup';
 import { hasRole } from 'utils';
 
 async function getRulerDatasource(metricDatasourceId?: number) {
@@ -97,10 +96,6 @@ export const InstanceProvider = ({
   // this case should theoretically be impossible, since we are setting 'instances' to an object in the failure case
   if (!instances) {
     throw new Error('There was an error finding datasources required for Synthetic Monitoring');
-  }
-
-  if (meta.enabled && (!instances.metrics || !instances.logs)) {
-    return <UnprovisionedSetup pluginId={meta.id} pluginName={meta.name} />;
   }
 
   return (

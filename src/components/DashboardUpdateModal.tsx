@@ -1,117 +1,16 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { AppRootProps } from '@grafana/data';
-import { DashboardMeta, GlobalSettings } from 'types';
-import { WelcomePage } from 'page/WelcomePage';
-import { ChecksPage } from 'page/ChecksPage';
-import { ProbesPage } from 'page/ProbesPage';
+import { DashboardMeta } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { getLocationSrv } from '@grafana/runtime';
-import { DashboardInfo } from 'datasource/types';
 import { importAllDashboards, listAppDashboards } from 'dashboards/loader';
 import { Button, HorizontalGroup, Modal } from '@grafana/ui';
 import { hasDismissedDashboardUpdateModal, persistDashboardModalDismiss } from 'sessionStorage';
-import { Alerting } from './Alerting';
-import HomePage from 'page/HomePage';
 
-type Tab = {
-  label: string;
-  id: string;
-  icon?: string;
-  enabledByFeatureFlag?: string;
-};
-
-const pagesToRedirectIfNotInitialized = new Set(['checks', 'probes', 'alerts', 'redirect', 'home']);
-
-const pagesToRedirectIfInitialized = new Set(['setup']);
-
-const dashboardRedirects = new Set(['redirect']);
-
-const getRedirectDestination = (queryPage: string, isInitialized: boolean): string | undefined => {
-  if (!isInitialized && pagesToRedirectIfNotInitialized.has(queryPage)) {
-    return 'setup';
-  }
-  if (isInitialized && pagesToRedirectIfInitialized.has(queryPage)) {
-    return 'home';
-  }
-  if (isInitialized && dashboardRedirects.has(queryPage)) {
-    return '';
-  }
-  return;
-};
-
-const tabs: Tab[] = [
-  {
-    label: 'Home',
-    id: 'home',
-  },
-  {
-    label: 'Checks',
-    id: 'checks',
-  },
-  {
-    label: 'Probes',
-    id: 'probes',
-  },
-  {
-    label: 'Alerts',
-    id: 'alerts',
-  },
-];
-
-function filterTabs(tabs: Tab[], apiInitialized: boolean): Tab[] {
-  if (!apiInitialized) {
-    return [];
-  }
-  return tabs;
-}
-
-function findActiveTab(tabs: Tab[], queryPage: string, apiInitialized: boolean): Tab {
-  return tabs.find((tab) => tab.id === queryPage) ?? tabs[0];
-}
-
-function handleDashboardRedirect(dashboard: string, dashboards: DashboardInfo[]) {
-  const targetDashboard =
-    dashboards.find((dashboardJson) => dashboardJson.json.indexOf(dashboard) > -1) ?? dashboards[0];
-  getLocationSrv().update({
-    partial: false,
-    path: `/d/${targetDashboard.uid}`,
-  });
-}
-
-function getNavModel(tabs: Tab[], path: string, activeTab: Tab, logoUrl: string) {
-  const children = tabs.map((tab) => ({
-    text: tab.label,
-    id: tab.id,
-    active: tab.id === activeTab.id,
-    url: `${path}?page=${tab.id}`,
-  }));
-
-  const node = {
-    text: 'Synthetic Monitoring',
-    img: logoUrl,
-    subTitle: 'Grafana Cloud Synthetic Monitoring',
-    url: path,
-    children,
-  };
-  if (tabs.length) {
-    return {
-      main: node,
-      node,
-    };
-  }
-  return null;
-}
-
-export const PluginTabs = ({ query, onNavChanged, path, meta }: AppRootProps<GlobalSettings>) => {
+export const DashboardUpdateModal = () => {
   const { instance } = useContext(InstanceContext);
   const [hasDismissedDashboardUpdate, setHasDismissedDashboardUpdate] = useState(hasDismissedDashboardUpdateModal());
   const [dashboardsNeedingUpdate, setDashboardsNeedingUpdate] = useState<DashboardMeta[] | undefined>();
-  const hasStackId = Boolean(meta?.jsonData?.stackId);
-  // We are using the presence of stack id in json data to determine whether the plugin has been provisioned or not
-  const apiInitialized = Boolean(instance.api?.instanceSettings?.jsonData?.initialized || !hasStackId);
   const dashboards = instance.api?.instanceSettings?.jsonData.dashboards;
-  const [activeTab, setActiveTab] = useState(findActiveTab(tabs, query.page, apiInitialized));
-  const logoUrl = meta.info.logos.large;
 
   function skipDashboardUpdate() {
     persistDashboardModalDismiss();

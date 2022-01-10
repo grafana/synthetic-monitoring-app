@@ -493,3 +493,13 @@ export interface UsageValues {
   logsGbPerMonth: number;
   dpm: number;
 }
+
+export enum ROUTES {
+  Redirect = 'redirect',
+  Home = 'home',
+  Setup = 'setup',
+  Unprovisioned = 'unprovisioned',
+  Probes = 'probes',
+  Alerts = 'alerts',
+  Checks = 'checks',
+}
