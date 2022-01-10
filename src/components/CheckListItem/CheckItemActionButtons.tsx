@@ -6,7 +6,6 @@ import { Check, OrgRole, ROUTES } from 'types';
 import { dashboardUID, checkType as getCheckType, hasRole } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
 import appEvents from 'grafana/app/core/app_events';
-import { getLocationSrv } from '@grafana/runtime';
 import { useNavigation } from 'hooks/useNavigation';
 
 const getStyles = (theme: GrafanaTheme) => ({

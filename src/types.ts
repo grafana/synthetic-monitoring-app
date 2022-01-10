@@ -500,6 +500,8 @@ export enum ROUTES {
   Setup = 'setup',
   Unprovisioned = 'unprovisioned',
   Probes = 'probes',
+  NewProbe = 'probes/new',
+  EditProbe = 'probes/edit',
   Alerts = 'alerts',
   Checks = 'checks',
   NewCheck = 'checks/new',
@@ -509,4 +511,9 @@ export enum ROUTES {
 export interface CheckPageParams {
   view: string;
   id: string;
+}
+
+export interface ProbePageParams {
+  view?: string;
+  id?: string;
 }
