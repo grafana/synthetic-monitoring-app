@@ -1,15 +1,16 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { DashboardMeta } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { getLocationSrv } from '@grafana/runtime';
 import { importAllDashboards, listAppDashboards } from 'dashboards/loader';
 import { Button, HorizontalGroup, Modal } from '@grafana/ui';
 import { hasDismissedDashboardUpdateModal, persistDashboardModalDismiss } from 'sessionStorage';
+import { useNavigation } from 'hooks/useNavigation';
 
 export const DashboardUpdateModal = () => {
   const { instance } = useContext(InstanceContext);
   const [hasDismissedDashboardUpdate, setHasDismissedDashboardUpdate] = useState(hasDismissedDashboardUpdateModal());
   const [dashboardsNeedingUpdate, setDashboardsNeedingUpdate] = useState<DashboardMeta[] | undefined>();
+  const navigate = useNavigation();
   const dashboards = instance.api?.instanceSettings?.jsonData.dashboards;
 
   function skipDashboardUpdate() {
@@ -67,11 +68,7 @@ export const DashboardUpdateModal = () => {
               };
               await instance.api?.onOptionsChange(updatedSettings);
 
-              getLocationSrv().update({
-                partial: false,
-                path: 'plugins/grafana-synthetic-monitoring-app/',
-                query: {},
-              });
+              navigate('plugins/grafana-synthetic-monitoring-app/', {}, true);
               skipDashboardUpdate();
               window.location.reload();
             }}

@@ -1,8 +1,10 @@
-import { getBackendSrv, getLocationSrv } from '@grafana/runtime';
+import { getBackendSrv } from '@grafana/runtime';
 import { Button, Spinner } from '@grafana/ui';
 import React, { useContext, useState } from 'react';
 import { DisablePluginModal } from './DisablePluginModal';
 import { InstanceContext } from 'contexts/InstanceContext';
+import { useNavigation } from 'hooks/useNavigation';
+import { ROUTES } from 'types';
 
 interface Props {
   enabled?: boolean;
@@ -12,6 +14,7 @@ interface Props {
 export const ConfigActions = ({ enabled, pluginId }: Props) => {
   const { instance, loading } = useContext(InstanceContext);
   const [showDisableModal, setShowDisableModal] = useState(false);
+  const navigate = useNavigation();
 
   const handleEnable = async () => {
     await getBackendSrv()
@@ -28,13 +31,7 @@ export const ConfigActions = ({ enabled, pluginId }: Props) => {
   };
 
   const handleSetup = () => {
-    getLocationSrv().update({
-      replace: true,
-      path: '/a/grafana-synthetic-monitoring-app/?page=setup',
-      query: {
-        page: 'setup',
-      },
-    });
+    navigate(ROUTES.Setup);
   };
 
   const getAction = () => {
