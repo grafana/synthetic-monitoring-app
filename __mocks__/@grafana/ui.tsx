@@ -1,4 +1,7 @@
-import * as ui from '@grafana/ui';
+// @ts-ignore
+window.__react_router_build__ = undefined;
+
+const ui = jest.requireActual('@grafana/ui');
 import React, { forwardRef } from 'react';
 
 const Select = forwardRef(({ options, value, onChange, multiple = false, prefix, id, ...rest }: any, ref: any) => {
