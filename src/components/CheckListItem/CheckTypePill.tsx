@@ -1,4 +1,3 @@
-import { useTheme } from '@grafana/ui';
 import { Pill } from 'components/Pill';
 import React from 'react';
 import { CheckType } from 'types';
@@ -10,11 +9,9 @@ interface Props {
 }
 
 export const CheckTypePill = ({ checkType, onClick, className }: Props) => {
-  const theme = useTheme();
-
   return (
     <Pill
-      color={theme.palette.blue77}
+      color="rgb(110, 159, 255)"
       className={className}
       onClick={() => {
         if (onClick) {
