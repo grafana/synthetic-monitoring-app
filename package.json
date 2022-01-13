@@ -49,8 +49,6 @@
     "eslint-plugin-testing-library": "^4.10.1",
     "husky": "^6.0.0",
     "jest-environment-jsdom-fifteen": "^1.0.2",
-    "react-router": "^5.2.0",
-    "react-router-dom": "^5.2.0",
     "release-it": "^14.8.0",
     "tslib": "^2.3.1"
   },

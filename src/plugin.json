@@ -44,14 +44,14 @@
     {
       "type": "page",
       "name": "Home",
-      "path": "/a/grafana-synthetic-monitoring-app/?page=home",
+      "path": "/a/grafana-synthetic-monitoring-app/home",
       "addToNav": true,
       "defaultNav": true
     },
     {
       "type": "page",
       "name": "Summary",
-      "path": "/a/grafana-synthetic-monitoring-app/?page=redirect&dashboard=summary",
+      "path": "/a/grafana-synthetic-monitoring-app/redirect?dashboard=summary",
       "addToNav": true
     },
     {
@@ -63,13 +63,13 @@
     {
       "type": "page",
       "name": "Probes",
-      "path": "/a/grafana-synthetic-monitoring-app/?page=probes",
+      "path": "/a/grafana-synthetic-monitoring-app/probes",
       "addToNav": true
     },
     {
       "type": "page",
       "name": "Alerts",
-      "path": "/a/grafana-synthetic-monitoring-app/?page=alerts",
+      "path": "/a/grafana-synthetic-monitoring-app/alerts",
       "addToNav": true
     },
     {
