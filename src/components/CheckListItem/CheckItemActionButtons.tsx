@@ -63,6 +63,7 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon, onRemoveChe
       )}
       <IconButton
         name="pen"
+        data-testid="edit-check-button"
         onClick={() => {
           navigate(`${ROUTES.EditCheck}/${check.id}`);
         }}

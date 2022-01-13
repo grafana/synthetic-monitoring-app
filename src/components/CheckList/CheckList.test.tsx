@@ -2,14 +2,24 @@ import React from 'react';
 import { CheckList } from './CheckList';
 import { act, fireEvent, render, screen, waitFor, waitForElementToBeRemoved } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { GrafanaInstances, Check, CheckSort, GlobalSettings } from 'types';
+import { GrafanaInstances, Check, CheckSort, GlobalSettings, ROUTES } from 'types';
 import { getInstanceMock } from '../../datasource/__mocks__/DataSource';
 import { SuccessRateContextProvider } from '../SuccessRateContextProvider';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { AppPluginMeta } from '@grafana/data';
+import { MemoryRouter } from 'react-router-dom';
+import { PLUGIN_URL_PATH } from 'components/constants';
+jest.mock('hooks/useNavigation', () => {
+  const actual = jest.requireActual('hooks/useNavigation');
+  return {
+    __esModule: true,
+    ...actual,
+  };
+});
+const useNavigationHook = require('hooks/useNavigation');
+
 jest.setTimeout(20000);
 
-const onAddNewMock = jest.fn();
 interface RenderChecklist {
   checks?: Check[];
 }
@@ -117,11 +127,13 @@ const renderCheckList = ({ checks = defaultChecks } = {} as RenderChecklist) => 
   const meta = {} as AppPluginMeta<GlobalSettings>;
 
   render(
-    <InstanceContext.Provider value={{ instance, loading: false, meta }}>
-      <SuccessRateContextProvider checks={checks}>
-        <CheckList instance={instance} onAddNewClick={onAddNewMock} checks={checks} onCheckUpdate={onCheckUpdate} />
-      </SuccessRateContextProvider>
-    </InstanceContext.Provider>
+    <MemoryRouter initialEntries={[`${PLUGIN_URL_PATH}${ROUTES.Checks}`]}>
+      <InstanceContext.Provider value={{ instance, loading: false, meta }}>
+        <SuccessRateContextProvider checks={checks}>
+          <CheckList instance={instance} checks={checks} onCheckUpdate={onCheckUpdate} />
+        </SuccessRateContextProvider>
+      </InstanceContext.Provider>
+    </MemoryRouter>
   );
   return instance;
 };
@@ -249,10 +261,12 @@ test('clicking status chiclet adds it to filter', async () => {
 });
 
 test('clicking add new is handled', async () => {
+  const navigate = jest.fn();
+  useNavigationHook.useNavigation = jest.fn(() => navigate);
   renderCheckList();
   const addNewButton = await screen.findByRole('button', { name: 'Add new check' });
   userEvent.click(addNewButton);
-  expect(onAddNewMock).toHaveBeenCalledTimes(1);
+  expect(navigate).toHaveBeenCalledWith(ROUTES.NewCheck);
 });
 
 test('select all performs disable action on all visible checks', async () => {

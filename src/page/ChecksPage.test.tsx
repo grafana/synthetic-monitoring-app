@@ -5,20 +5,23 @@ import { getInstanceMock } from 'datasource/__mocks__/DataSource';
 import userEvent from '@testing-library/user-event';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { AppPluginMeta } from '@grafana/data';
-import { GlobalSettings } from 'types';
+import { GlobalSettings, ROUTES } from 'types';
+import { MemoryRouter, Route } from 'react-router-dom';
+import { PLUGIN_URL_PATH } from 'components/constants';
+
 jest.setTimeout(20000);
 
-interface RenderArgs {
-  checkId?: string;
-}
-
-const renderChecksPage = ({ checkId }: RenderArgs = {}) => {
+const renderChecksPage = () => {
   const instance = getInstanceMock();
   const meta = {} as AppPluginMeta<GlobalSettings>;
   render(
-    <InstanceContext.Provider value={{ instance: { api: instance }, loading: false, meta }}>
-      <ChecksPage id={checkId} />
-    </InstanceContext.Provider>
+    <MemoryRouter initialEntries={[`${PLUGIN_URL_PATH}${ROUTES.Checks}`]}>
+      <Route path={`${PLUGIN_URL_PATH}${ROUTES.Checks}/:view?/:id?`}>
+        <InstanceContext.Provider value={{ instance: { api: instance }, loading: false, meta }}>
+          <ChecksPage />
+        </InstanceContext.Provider>
+      </Route>
+    </MemoryRouter>
   );
 };
 
@@ -35,6 +38,8 @@ test('renders check editor new check', async () => {
 });
 
 test('renders check editor existing check', async () => {
-  renderChecksPage({ checkId: '1' });
+  renderChecksPage();
+  const edit = await screen.findByTestId('edit-check-button');
+  userEvent.click(edit);
   await waitFor(() => expect(screen.getByText('Edit Check')).toBeInTheDocument());
 });
