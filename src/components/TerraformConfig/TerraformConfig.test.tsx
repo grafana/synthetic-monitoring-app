@@ -65,7 +65,7 @@ it('displays correct config', async () => {
           longitude: 0,
           name: 'tacos',
           public: false,
-          region: '',
+          region: 'EMEA',
         },
       },
     },

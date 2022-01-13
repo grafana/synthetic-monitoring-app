@@ -281,6 +281,19 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       });
   }
 
+  async bulkUpdateChecks(checks: Check[]): Promise<boolean> {
+    return getBackendSrv()
+      .fetch({
+        method: 'POST',
+        url: `${this.instanceSettings.url}/sm/check/update/bulk`,
+        data: checks,
+      })
+      .toPromise()
+      .then((res: any) => {
+        return res.data;
+      });
+  }
+
   async getTenant(): Promise<any> {
     return getBackendSrv()
       .fetch({ method: 'GET', url: `${this.instanceSettings.url}/sm/tenant` })

@@ -6,6 +6,7 @@ import { SMDataSource } from 'datasource/DataSource';
 import { Spinner } from '@grafana/ui';
 import { AppPluginMeta } from '@grafana/data';
 import { hasRole } from 'utils';
+import appEvents from 'grafana/app/core/app_events';
 
 async function getRulerDatasource(metricDatasourceId?: number) {
   if (!metricDatasourceId || !hasRole(OrgRole.ADMIN)) {
@@ -38,7 +39,17 @@ async function fetchDatasources(
 
   const alertRuler = await getRulerDatasource(metrics?.id);
 
-  const tenant = await smApi?.getTenant();
+  let tenant;
+  try {
+    tenant = await smApi?.getTenant();
+  } catch (e: any) {
+    console.error(e);
+    appEvents.emit('alert-error', [`Api failed to connect: ${e.data.message}`, `please check API configuration`]);
+    return {
+      metrics,
+      logs,
+    } as GrafanaInstances;
+  }
 
   if (!tenant || tenant.status === 1) {
     // If the tenant does not exist or has been deactivated, short circuit and kick the user back to the setup page
@@ -72,6 +83,7 @@ export const InstanceProvider = ({
   const [instancesLoading, setInstancesLoading] = useState(true);
   useEffect(() => {
     setInstancesLoading(true);
+
     fetchDatasources(metricInstanceName, logsInstanceName).then((loadedInstances) => {
       if (!loadedInstances.metrics || !loadedInstances.logs) {
         const fallbackMetricDatasourceName =
