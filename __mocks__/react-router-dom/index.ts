@@ -1,8 +1,10 @@
 //@ts-ignore
 window.__react_router_build__ = undefined;
 
-const rrd = jest.requireActual('react-router-dom');
+const rrds = jest.requireActual('react-router-dom');
+console.log('ARRRRRRRRRRR', Object.keys(rrds));
 
 module.exports = {
-  ...rrd,
+  __esModule: true,
+  ...rrds,
 };
