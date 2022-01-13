@@ -43,6 +43,26 @@ export const DashboardUpdateModal = () => {
     }
   }, [dashboards, hasDismissedDashboardUpdate]);
 
+  const handleUpdateClick = async () => {
+    if (!instance.api) {
+      return;
+    }
+    const responses = await importAllDashboards(
+      instance.metrics?.name ?? '',
+      instance.logs?.name ?? '',
+      instance.api?.name ?? ''
+    );
+    const updatedSettings = {
+      ...instance.api.instanceSettings.jsonData,
+      dashboards: responses,
+    };
+    await instance.api?.onOptionsChange(updatedSettings);
+
+    navigate('plugins/grafana-synthetic-monitoring-app/', {}, true);
+    skipDashboardUpdate();
+    window.location.reload();
+  };
+
   return (
     <div>
       <Modal
@@ -52,29 +72,7 @@ export const DashboardUpdateModal = () => {
       >
         <p>It looks like your Synthetic Monitoring dashboards need an update.</p>
         <HorizontalGroup>
-          <Button
-            onClick={async () => {
-              if (!instance.api) {
-                return;
-              }
-              const responses = await importAllDashboards(
-                instance.metrics?.name ?? '',
-                instance.logs?.name ?? '',
-                instance.api?.name ?? ''
-              );
-              const updatedSettings = {
-                ...instance.api.instanceSettings.jsonData,
-                dashboards: responses,
-              };
-              await instance.api?.onOptionsChange(updatedSettings);
-
-              navigate('plugins/grafana-synthetic-monitoring-app/', {}, true);
-              skipDashboardUpdate();
-              window.location.reload();
-            }}
-          >
-            Update
-          </Button>
+          <Button onClick={handleUpdateClick}>Update</Button>
           <Button onClick={skipDashboardUpdate} variant="link">
             Skip
           </Button>
