@@ -1,11 +1,12 @@
 {
   "name": "synthetic-monitoring-app",
-  "version": "1.7.0",
+  "version": "1.9.3",
   "description": "Grafana Synthetic Monitoring App",
   "scripts": {
     "lint": "eslint --cache --ignore-path .gitignore --ext .js,.jsx,.ts,.tsx .",
     "build": "grafana-toolkit plugin:build",
     "test": "grafana-toolkit plugin:test",
+    "test:accessibility": "pa11y --runner axe --reporter json http://localhost:3000/a/grafana-synthetic-monitoring-app/?page=checks > pa11y-report.json",
     "sign": "grafana-toolkit plugin:sign",
     "ci-build:finish": "grafana-toolkit plugin:ci-build --finish",
     "ci-package": "grafana-toolkit plugin:ci-package",
@@ -26,7 +27,7 @@
     "@grafana/data": "8.3.2",
     "@grafana/eslint-config": "^2.5.0",
     "@grafana/runtime": "8.3.2",
-    "@grafana/toolkit": "8.3.2",
+    "@grafana/toolkit": "8.2.7",
     "@grafana/ui": "8.3.2",
     "@release-it/conventional-changelog": "^3.0.0",
     "@testing-library/dom": "^7.31.2",
@@ -48,6 +49,7 @@
     "eslint-plugin-testing-library": "^4.10.1",
     "husky": "^6.0.0",
     "jest-environment-jsdom-fifteen": "^1.0.2",
+    "pa11y": "^6.1.1",
     "release-it": "^14.8.0",
     "tslib": "^2.3.1"
   },

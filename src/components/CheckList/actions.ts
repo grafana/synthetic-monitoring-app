@@ -3,7 +3,7 @@ import appEvents from 'grafana/app/core/app_events';
 import { AppEvents } from '@grafana/data';
 import { CHECK_LIST_ICON_OVERLAY_LS_KEY, CHECK_LIST_VIEW_TYPE_LS_KEY } from 'components/constants';
 
-export const fetchProbes = async (instance: GrafanaInstances) => {
+export const fetchProbeOptions = async (instance: GrafanaInstances) => {
   const probes = await instance.api?.listProbes();
   if (probes) {
     return probes.map((p) => {

@@ -1,10 +1,34 @@
 # Change Log
 
-# [1.7.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.7.0...v1.7.1) (2021-12-13)
+# [1.9.3](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.2...v1.9.3) (2022-1-10)
+
+### Bug fixes
+
+- Gracefully handle inability to connect to API
+
+# [1.9.2](https://github.com/grafana/synthetic-monitoring-app/compare/v1.8.1...v1.9.2) (2022-1-06)
+
+### Features
+
+- Added the ability to bulk edit probes for checks
+
+# [1.8.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.8.0...v1.8.1) (2022-1-04)
 
 ### Bug Fixes
 
-- Upgrade dependencies
+- Update the README with additional configuration details
+
+# [1.8.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.7.0...v1.8.0) (2022-1-04)
+
+### Features
+
+- Add a `terraform import` command to the terraform config download. This allows users to generate intial TF state.
+
+### Bug Fixes
+
+- Replace worldmap panel plugin with geomap panel in all the dashboards
+- Use the updated timeseries panel in the summary dashboard
+- Rename the DNS dashboard to align with the other dashboards
 
 # [1.7.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.61...v1.7.0) (2021-12-01)
 

@@ -61,6 +61,7 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon, onRemoveChe
         </Button>
       )}
       <IconButton
+        aria-label="Edit check"
         name="pen"
         onClick={() => {
           getLocationSrv().update({
@@ -73,7 +74,12 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon, onRemoveChe
         disabled={!hasRole(OrgRole.EDITOR)}
         className={styles.marginRightSmall}
       />
-      <IconButton name="trash-alt" onClick={() => setShowDeleteModal(true)} disabled={!hasRole(OrgRole.EDITOR)} />
+      <IconButton
+        aria-label="Delete check"
+        name="trash-alt"
+        onClick={() => setShowDeleteModal(true)}
+        disabled={!hasRole(OrgRole.EDITOR)}
+      />
       <ConfirmModal
         isOpen={showDeleteModal}
         title="Delete check"

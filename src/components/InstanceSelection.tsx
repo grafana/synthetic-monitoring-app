@@ -32,6 +32,7 @@ export const InstanceSelection = ({ logsInstances, metricsInstances, onSubmit, e
       <br />
       <Button
         variant="primary"
+        disabled={!selectedMetricsInstance || !selectedLogsInstance}
         onClick={() => {
           onSubmit(selectedMetricsInstance, selectedLogsInstance);
         }}

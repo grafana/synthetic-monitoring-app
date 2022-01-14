@@ -26,11 +26,12 @@ import {
   RadioButtonGroup,
   InlineSwitch,
   AsyncMultiSelect,
+  ButtonCascader,
 } from '@grafana/ui';
 import { unEscapeStringFromRegex, escapeStringForRegex, GrafanaTheme, AppEvents, SelectableValue } from '@grafana/data';
 import { matchesAllFilters } from './checkFilters';
 import {
-  fetchProbes,
+  fetchProbeOptions,
   deleteSelectedChecks,
   deleteSingleCheck,
   getIconOverlayToggleFromLS,
@@ -55,6 +56,7 @@ import { LabelFilterInput } from '../LabelFilterInput';
 import { SuccessRateContext, SuccessRateTypes } from 'contexts/SuccessRateContext';
 import { ChecksVisualization } from '../ChecksVisualization';
 import ThresholdGlobalSettings from '../Thresholds/ThresholdGlobalSettings';
+import { BulkEditModal } from 'components/BulkEditModal';
 
 const getStyles = (theme: GrafanaTheme) => ({
   headerContainer: css`
@@ -143,6 +145,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
   const [bulkActionInProgress, setBulkActionInProgress] = useState(false);
 
   const [showThresholdModal, setShowThresholdModal] = useState(false);
+  const [bulkEditAction, setBulkEditAction] = useState<'add' | 'remove' | null>(null);
 
   const styles = useStyles(getStyles);
   const successRateContext = useContext(SuccessRateContext);
@@ -335,6 +338,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
       <div className={styles.searchSortContainer}>
         <Input
           autoFocus
+          aria-label="Search checks"
           prefix={<Icon name="search" />}
           width={40}
           data-testid="check-search-input"
@@ -354,6 +358,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
         <div className={styles.flexRow}>
           <Select
             prefix="Status"
+            aria-label="Filter by status"
             data-testid="check-status-filter"
             className={styles.marginRightSmall}
             options={CHECK_LIST_STATUS_OPTIONS}
@@ -370,7 +375,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
             value={checkFilters.status}
           />
           <Select
-            aria-label="Types"
+            aria-label="Filter by type"
             prefix="Types"
             data-testid="check-type-filter"
             options={CHECK_FILTER_OPTIONS}
@@ -404,6 +409,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
           className={styles.marginRightSmall}
         />
         <AsyncMultiSelect
+          aria-label="Filter by probe"
           data-testid="probe-filter"
           prefix="Probes"
           onChange={(v) => {
@@ -416,7 +422,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
             });
           }}
           defaultOptions
-          loadOptions={() => fetchProbes(instance)}
+          loadOptions={() => fetchProbeOptions(instance)}
           value={checkFilters.probes}
           placeholder="All probes"
           allowCustomValue={false}
@@ -427,7 +433,12 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
       </div>
       <div className={styles.bulkActionContainer}>
         <div className={styles.checkboxContainer}>
-          <Checkbox onChange={toggleVisibleCheckSelection} value={selectAll} data-testid="selectAll" />
+          <Checkbox
+            onChange={toggleVisibleCheckSelection}
+            value={selectAll}
+            aria-label="Select all"
+            data-testid="selectAll"
+          />
         </div>
         {selectedChecks.size > 0 ? (
           <>
@@ -445,18 +456,29 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
                   Select all {filteredChecks.length} checks
                 </Button>
               )}
-              <Button
-                type="button"
-                variant="destructive"
-                className={styles.marginRightSmall}
-                onClick={handleDeleteSelectedChecks}
-                disabled={!hasRole(OrgRole.EDITOR) || bulkActionInProgress}
-              >
-                Delete
-              </Button>
+              {selectedChecks.size > 1 && (
+                <ButtonCascader
+                  options={[
+                    {
+                      label: 'Add probes',
+                      value: 'add',
+                    },
+                    {
+                      label: 'Remove probes',
+                      value: 'remove',
+                    },
+                  ]}
+                  className={styles.marginRightSmall}
+                  disabled={!hasRole(OrgRole.EDITOR) || bulkActionInProgress}
+                  onChange={(value) => setBulkEditAction(value[0] as any)}
+                >
+                  Bulk Edit Probes
+                </ButtonCascader>
+              )}
               <Button
                 type="button"
                 variant="primary"
+                fill="text"
                 onClick={handleEnableSelectedChecks}
                 className={styles.marginRightSmall}
                 disabled={!hasRole(OrgRole.EDITOR) || bulkActionInProgress}
@@ -466,10 +488,23 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
               <Button
                 type="button"
                 variant="secondary"
+                fill="text"
                 onClick={handleDisableSelectedChecks}
+                className={styles.marginRightSmall}
                 disabled={!hasRole(OrgRole.EDITOR) || bulkActionInProgress}
               >
                 Disable
+              </Button>
+
+              <Button
+                type="button"
+                variant="destructive"
+                fill="text"
+                className={styles.marginRightSmall}
+                onClick={handleDeleteSelectedChecks}
+                disabled={!hasRole(OrgRole.EDITOR) || bulkActionInProgress}
+              >
+                Delete
               </Button>
             </div>
           </>
@@ -500,6 +535,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
         )}
         <div className={styles.flexGrow} />
         <Select
+          aria-label="Sort"
           prefix={
             <div>
               <Icon name="sort-amount-down" /> Sort
@@ -519,7 +555,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
       ) : (
         <div>
           <section className="card-section card-list-layout-list">
-            <ol className="card-list">
+            <div className="card-list">
               {currentPageChecks.map((check, index) => (
                 <CheckListItem
                   check={check}
@@ -533,7 +569,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
                   onDeleteCheck={() => handleDeleteSingleCheck(check)}
                 />
               ))}
-            </ol>
+            </div>
           </section>
           {totalPages > 1 && (
             <Pagination
@@ -551,6 +587,20 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
         onError={() =>
           appEvents.emit(AppEvents.alertError, [`Error updating thresholds. make sure your values don't overlap`])
         }
+      />
+      <BulkEditModal
+        instance={instance}
+        selectedChecks={getChecksFromSelected}
+        onDismiss={() => setBulkEditAction(null)}
+        action={bulkEditAction}
+        isOpen={bulkEditAction !== null}
+        onSuccess={() => {
+          onCheckUpdate();
+          appEvents.emit(AppEvents.alertSuccess, ['All selected checks successfully updated']);
+        }}
+        onError={(err) => {
+          appEvents.emit(AppEvents.alertError, [`There was an error updating checks: ${err}`]);
+        }}
       />
     </div>
   );

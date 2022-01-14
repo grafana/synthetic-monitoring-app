@@ -136,7 +136,7 @@ test('renders empty state', async () => {
 
 test('renders list of checks', async () => {
   renderCheckList();
-  const checks = await screen.findAllByLabelText('check-card');
+  const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(4);
 });
 
@@ -146,7 +146,7 @@ test('search by text', async () => {
   await act(async () => {
     await userEvent.paste(filterInput, 'example');
   });
-  const checks = await screen.findAllByLabelText('check-card');
+  const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(1);
 });
 
@@ -156,7 +156,7 @@ test('search is case insensitive', async () => {
   await act(async () => {
     await userEvent.paste(filterInput, 'EXAMPLE');
   });
-  const checks = await screen.findAllByLabelText('check-card');
+  const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(1);
 });
 
@@ -166,7 +166,7 @@ test('search matches job value', async () => {
   await act(async () => {
     await userEvent.paste(filterInput, 'tacos');
   });
-  const checks = await screen.findAllByLabelText('check-card');
+  const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(1);
 });
 
@@ -176,7 +176,7 @@ test('search matches target value', async () => {
   await act(async () => {
     await userEvent.paste(filterInput, 'asada');
   });
-  const checks = await screen.findAllByLabelText('check-card');
+  const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(1);
 });
 
@@ -186,7 +186,7 @@ test('search matches label value', async () => {
   await act(async () => {
     await userEvent.paste(filterInput, 'nachos.com');
   });
-  const checks = await screen.findAllByLabelText('check-card');
+  const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(1);
 });
 
@@ -196,7 +196,7 @@ test('search matches label name', async () => {
   await act(async () => {
     await userEvent.paste(filterInput, 'carne');
   });
-  const checks = await screen.findAllByLabelText('check-card');
+  const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(1);
 });
 
@@ -208,7 +208,7 @@ test('clicking label value adds to label filter', async () => {
   });
   const filterInput = await screen.findByTestId('check-label-filter');
   expect(filterInput).toHaveValue(['agreat: label']);
-  const checks = await screen.findAllByLabelText('check-card');
+  const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(1);
 });
 
@@ -216,7 +216,7 @@ test('filters by check type', async () => {
   renderCheckList();
   const typeFilter = await screen.findByTestId('check-type-filter');
   userEvent.selectOptions(typeFilter, 'http');
-  const checks = await screen.findAllByLabelText('check-card');
+  const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(1);
 });
 
@@ -224,7 +224,7 @@ test('filters by probe', async () => {
   renderCheckList();
   const probeFilter = await screen.findByTestId('probe-filter');
   userEvent.selectOptions(probeFilter, 'Chicago');
-  const checks = await screen.findAllByLabelText('check-card');
+  const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(2);
 });
 
@@ -233,7 +233,7 @@ test('clicking type chiclet adds it to filter', async () => {
   const httpTypeChiclet = await screen.findAllByText('HTTP');
   userEvent.click(httpTypeChiclet[1]);
   const typeFilter = await screen.findByTestId('check-type-filter');
-  const checks = await screen.findAllByLabelText('check-card');
+  const checks = await screen.findAllByTestId('check-card');
   expect(typeFilter).toHaveValue('http');
   expect(checks.length).toBe(1);
 });
@@ -243,7 +243,7 @@ test('clicking status chiclet adds it to filter', async () => {
   const disabledChiclet = await screen.findAllByText('Disabled');
   userEvent.click(disabledChiclet[1]);
   const statusFilter = await screen.findByTestId('check-status-filter');
-  const checks = await screen.findAllByLabelText('check-card');
+  const checks = await screen.findAllByTestId('check-card');
   expect(statusFilter).toHaveValue('2');
   expect(checks.length).toBe(1);
 });
@@ -370,6 +370,6 @@ test('Sorting by success rate should not crash', async () => {
   const sortPicker = await screen.findByTestId('check-list-sort');
 
   userEvent.selectOptions(sortPicker, CheckSort.SuccessRate.toString());
-  const checks = await screen.findAllByLabelText('check-card');
+  const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(4);
 });

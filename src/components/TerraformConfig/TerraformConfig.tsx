@@ -133,7 +133,9 @@ export const TerraformConfig = () => {
             <Alert title="Terraform and JSON" severity="info">
               The exported config is using{' '}
               <a href="https://www.terraform.io/docs/language/syntax/json.html">Terraform JSON syntax</a>. You can place
-              this config in a file with a <strong>tf.json</strong> extension and import as a module.
+              this config in a file with a <strong>tf.json</strong> extension and import as a module. See Terraform
+              providor{' '}
+              <a href="https://registry.terraform.io/providers/grafana/grafana/latest/docs">docs for more details</a>
             </Alert>
             <h5>tf.json</h5>
             <Clipboard content={JSON.stringify(config, null, 2)} className={styles.clipboard} />
@@ -141,7 +143,7 @@ export const TerraformConfig = () => {
             <Clipboard content={checkCommands.join(' && ')} className={styles.clipboard} truncate />
             <h5>Import custom probes into Terraform</h5>
             <Clipboard
-              content="terraform import grafana_synthetic_monitoring_probe.{{probe_name}} {{probe_id}}"
+              content="terraform import grafana_synthetic_monitoring_probe.{{probe_name}} {{probe_id}}:{{probe_auth_token}}"
               className={styles.clipboard}
             />
           </>

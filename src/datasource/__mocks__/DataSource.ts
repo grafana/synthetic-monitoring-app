@@ -64,7 +64,7 @@ export const instanceSettings: DataSourceInstanceSettings<SMOptions> = {
       {
         json: 'sm-dns.json',
         latestVersion: 9,
-        title: 'Synthetic Monitoring - DNS',
+        title: 'Synthetic Monitoring DNS',
         uid: 'lgL6odgGz',
         version: 9,
       },
@@ -106,7 +106,7 @@ export const getInstanceMock = (settings: DataSourceInstanceSettings<SMOptions> 
         public: false,
         latitude: 0.0,
         longitude: 0.0,
-        region: '',
+        region: 'EMEA',
         labels: [{ name: 'Mr', value: 'Orange' }],
         online: true,
         onlineChange: 0,
@@ -117,7 +117,7 @@ export const getInstanceMock = (settings: DataSourceInstanceSettings<SMOptions> 
         public: true,
         latitude: 0.0,
         longitude: 0.0,
-        region: '',
+        region: 'AMER',
         labels: [{ name: 'Mr', value: 'Pink' }],
         online: false,
         onlineChange: 0,
@@ -176,5 +176,6 @@ export const getInstanceMock = (settings: DataSourceInstanceSettings<SMOptions> 
     })
   );
   instance.updateTenantSettings = jest.fn();
+  instance.bulkUpdateChecks = jest.fn();
   return instance;
 };

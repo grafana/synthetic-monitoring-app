@@ -80,6 +80,7 @@ export const LabelFilterInput = ({ checks, labelFilters, onChange, className }: 
           </ButtonCascader>
         </div>
       }
+      aria-label="Filter by label"
       data-testid="check-label-filter"
       className={className}
       options={labelFilterOptions}

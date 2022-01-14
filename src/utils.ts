@@ -324,7 +324,7 @@ export const getSuccessRateThresholdColor = (
   } else if (compareValue > thresholds[key].lowerLimit && compareValue < thresholds[key].upperLimit) {
     return config.theme2.colors.warning.main;
   } else {
-    return config.theme2.colors.error.main;
+    return config.theme2.colors.error.shade;
   }
 };
 
@@ -338,7 +338,7 @@ export const getLatencySuccessRateThresholdColor = (
   } else if (compareValue > thresholds[key].lowerLimit && compareValue < thresholds[key].upperLimit) {
     return config.theme2.colors.warning.main;
   } else {
-    return config.theme2.colors.error.main;
+    return config.theme2.colors.error.shade;
   }
 };
 
