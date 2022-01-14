@@ -7,8 +7,6 @@ import { css } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
 import { TFCheckConfig, TFConfig, TFProbeConfig, TFOutput } from './terraformTypes';
 import { checkToTF, probeToTF, sanitizeName } from './terraformConfigUtils';
-import { checkType } from 'utils';
-import { CheckType } from 'types';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   modal: css`
@@ -43,10 +41,6 @@ export const TerraformConfig = () => {
       throw new Error("Couldn't generate TF config");
     }
     const checksConfig = checks?.reduce<TFCheckConfig>((acc, check) => {
-      const type = checkType(check.settings);
-      if (type === CheckType.Traceroute) {
-        return acc;
-      }
       const checkConfig = checkToTF(check);
       const resourceName = sanitizeName(`${check.job}_${check.target}`);
       if (!acc[resourceName]) {
@@ -134,10 +128,6 @@ export const TerraformConfig = () => {
         {error && <Alert title={error} />}
         {config && (
           <>
-            <Alert title="Traceroute checks" severity="warning">
-              Traceroute checks are not yet supported by the Grafana Terraform provider. They have been ignored from the
-              generated config.
-            </Alert>
             <Alert title="Terraform and JSON" severity="info">
               The exported config is using{' '}
               <a href="https://www.terraform.io/docs/language/syntax/json.html">Terraform JSON syntax</a>. You can place
