@@ -7,8 +7,6 @@ import { css } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
 import { TFCheckConfig, TFConfig, TFProbeConfig, TFOutput } from './terraformTypes';
 import { checkToTF, probeToTF, sanitizeName } from './terraformConfigUtils';
-import { checkType } from 'utils';
-import { CheckType } from 'types';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   modal: css`
