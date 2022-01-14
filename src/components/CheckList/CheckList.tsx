@@ -338,6 +338,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
       <div className={styles.searchSortContainer}>
         <Input
           autoFocus
+          aria-label="Search checks"
           prefix={<Icon name="search" />}
           width={40}
           data-testid="check-search-input"
@@ -357,6 +358,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
         <div className={styles.flexRow}>
           <Select
             prefix="Status"
+            aria-label="Filter by status"
             data-testid="check-status-filter"
             className={styles.marginRightSmall}
             options={CHECK_LIST_STATUS_OPTIONS}
@@ -373,7 +375,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
             value={checkFilters.status}
           />
           <Select
-            aria-label="Types"
+            aria-label="Filter by type"
             prefix="Types"
             data-testid="check-type-filter"
             options={CHECK_FILTER_OPTIONS}
@@ -407,6 +409,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
           className={styles.marginRightSmall}
         />
         <AsyncMultiSelect
+          aria-label="Filter by probe"
           data-testid="probe-filter"
           prefix="Probes"
           onChange={(v) => {
@@ -430,7 +433,12 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
       </div>
       <div className={styles.bulkActionContainer}>
         <div className={styles.checkboxContainer}>
-          <Checkbox onChange={toggleVisibleCheckSelection} value={selectAll} data-testid="selectAll" />
+          <Checkbox
+            onChange={toggleVisibleCheckSelection}
+            value={selectAll}
+            aria-label="Select all"
+            data-testid="selectAll"
+          />
         </div>
         {selectedChecks.size > 0 ? (
           <>
@@ -527,6 +535,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
         )}
         <div className={styles.flexGrow} />
         <Select
+          aria-label="Sort"
           prefix={
             <div>
               <Icon name="sort-amount-down" /> Sort
@@ -546,7 +555,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
       ) : (
         <div>
           <section className="card-section card-list-layout-list">
-            <ol className="card-list">
+            <div className="card-list">
               {currentPageChecks.map((check, index) => (
                 <CheckListItem
                   check={check}
@@ -560,7 +569,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
                   onDeleteCheck={() => handleDeleteSingleCheck(check)}
                 />
               ))}
-            </ol>
+            </div>
           </section>
           {totalPages > 1 && (
             <Pagination

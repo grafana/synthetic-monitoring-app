@@ -162,6 +162,7 @@ export const CheckListItem = ({
         <div className={styles.listCardWrapper}>
           <div className={styles.checkbox}>
             <Checkbox
+              label="Select check"
               onChange={(e: ChangeEvent<HTMLInputElement>) => {
                 e.stopPropagation();
                 onToggleCheckbox(check.id);
@@ -202,7 +203,7 @@ export const CheckListItem = ({
 
   return (
     <div className={cx(styles.container, { [styles.disabledCard]: !check.enabled })}>
-      <div className={styles.cardWrapper} aria-label="check-card">
+      <div className={styles.cardWrapper} data-testid="check-card">
         <div className={styles.checkbox}>
           <Checkbox
             onChange={(e: ChangeEvent<HTMLInputElement>) => {
