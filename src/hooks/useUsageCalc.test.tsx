@@ -77,9 +77,9 @@ describe('http usage', () => {
     });
     expect(withSSL.current).toStrictEqual({
       checksPerMonth: 262800,
-      activeSeries: 122,
+      activeSeries: 118,
       logsGbPerMonth: 0.21,
-      dpm: 732,
+      dpm: 708,
     });
   });
 
@@ -142,9 +142,9 @@ describe('http usage', () => {
     });
     expect(withSSL.current).toStrictEqual({
       checksPerMonth: 262800,
-      activeSeries: 38,
+      activeSeries: 34,
       logsGbPerMonth: 0.21,
-      dpm: 228,
+      dpm: 204,
     });
   });
 });
@@ -212,9 +212,9 @@ describe('tcp usage', () => {
     });
     expect(withSSL.current).toStrictEqual({
       checksPerMonth: 262800,
-      activeSeries: 41,
+      activeSeries: 37,
       logsGbPerMonth: 0.21,
-      dpm: 246,
+      dpm: 222,
     });
   });
 
@@ -246,9 +246,9 @@ describe('tcp usage', () => {
     });
     expect(withSSL.current).toStrictEqual({
       checksPerMonth: 262800,
-      activeSeries: 27,
+      activeSeries: 23,
       logsGbPerMonth: 0.21,
-      dpm: 162,
+      dpm: 138,
     });
   });
 });

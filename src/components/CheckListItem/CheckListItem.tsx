@@ -162,7 +162,7 @@ export const CheckListItem = ({
         <div className={styles.listCardWrapper}>
           <div className={styles.checkbox}>
             <Checkbox
-              label="Select check"
+              aria-label="Select check"
               onChange={(e: ChangeEvent<HTMLInputElement>) => {
                 e.stopPropagation();
                 onToggleCheckbox(check.id);
@@ -206,6 +206,7 @@ export const CheckListItem = ({
       <div className={styles.cardWrapper} data-testid="check-card">
         <div className={styles.checkbox}>
           <Checkbox
+            aria-label="Select check"
             onChange={(e: ChangeEvent<HTMLInputElement>) => {
               e.stopPropagation();
               onToggleCheckbox(check.id);
