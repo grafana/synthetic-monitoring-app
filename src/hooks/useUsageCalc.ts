@@ -7,13 +7,13 @@ import { checkType as getCheckType } from 'utils';
 
 const addSSL = (check: Partial<Check>, baseClass: CheckType) => {
   if (baseClass === CheckType.HTTP) {
-    if (check.settings?.http?.tlsConfig) {
+    if (check.settings?.http?.tlsConfig && Object.keys(check.settings.http.tlsConfig).length > 0) {
       return `${baseClass}_ssl`;
     }
   }
 
   if (baseClass === CheckType.TCP) {
-    if (check.settings?.tcp?.tlsConfig) {
+    if (check.settings?.tcp?.tlsConfig && Object.keys(check.settings.tcp.tlsConfig).length > 0) {
       return `${baseClass}_ssl`;
     }
   }
