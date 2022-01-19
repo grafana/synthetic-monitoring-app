@@ -23,6 +23,7 @@ import { InstanceContext } from 'contexts/InstanceContext';
 import { trackEvent, trackException } from 'analytics';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Clipboard } from 'components/Clipboard';
+import { SimpleMap } from './SimpleMap';
 
 interface Props {
   probe: Probe;
@@ -106,6 +107,7 @@ const ProbeEditor = ({ probe, onReturn }: Props) => {
   const legend = probe.id ? 'Configuration' : 'Add Probe';
 
   const isEditor = !probe.public && hasRole(OrgRole.EDITOR);
+  const { latitude, longitude } = formMethods.watch();
 
   return (
     <HorizontalGroup align="flex-start">
@@ -199,6 +201,7 @@ const ProbeEditor = ({ probe, onReturn }: Props) => {
                   placeholder="0.0"
                 />
               </Field>
+              <SimpleMap latitude={latitude} longitude={longitude} />
             </Container>
             <Container margin="md">
               <Field
