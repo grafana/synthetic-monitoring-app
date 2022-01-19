@@ -1,10 +1,11 @@
 import React, { PureComponent } from 'react';
 import { InstanceProvider } from 'components/InstanceProvider';
-import { PluginTabs } from 'components/PluginTabs';
+import { DashboardUpdateModal } from 'components/DashboardUpdateModal';
 import { AppRootProps } from '@grafana/data';
 import { GlobalSettings } from 'types';
 import { FeatureFlagProvider } from './FeatureFlagProvider';
 import { CheckInfoContextProvider } from './CheckInfoContextProvider';
+import { Routing } from 'components/Routing';
 
 export class App extends PureComponent<AppRootProps<GlobalSettings>> {
   render() {
@@ -17,7 +18,8 @@ export class App extends PureComponent<AppRootProps<GlobalSettings>> {
           meta={meta}
         >
           <CheckInfoContextProvider>
-            <PluginTabs {...this.props} />
+            <Routing {...this.props} />
+            <DashboardUpdateModal />
           </CheckInfoContextProvider>
         </InstanceProvider>
       </FeatureFlagProvider>

@@ -12,6 +12,7 @@ import {
   CheckEnabledStatus,
   CheckListViewType,
   CheckType,
+  ROUTES,
 } from 'types';
 import appEvents from 'grafana/app/core/app_events';
 import {
@@ -56,6 +57,7 @@ import { LabelFilterInput } from '../LabelFilterInput';
 import { SuccessRateContext, SuccessRateTypes } from 'contexts/SuccessRateContext';
 import { ChecksVisualization } from '../ChecksVisualization';
 import ThresholdGlobalSettings from '../Thresholds/ThresholdGlobalSettings';
+import { useNavigation } from 'hooks/useNavigation';
 import { BulkEditModal } from 'components/BulkEditModal';
 
 const getStyles = (theme: GrafanaTheme) => ({
@@ -111,7 +113,6 @@ const getStyles = (theme: GrafanaTheme) => ({
 
 interface Props {
   instance: GrafanaInstances;
-  onAddNewClick: () => void;
   checks: Check[];
   onCheckUpdate: () => void;
 }
@@ -132,7 +133,7 @@ const defaultFilters: CheckFilters = {
   probes: [],
 };
 
-export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Props) => {
+export const CheckList = ({ instance, checks, onCheckUpdate }: Props) => {
   const [checkFilters, setCheckFilters] = useState<CheckFilters>(defaultFilters);
   const [filteredChecks, setFilteredChecks] = useState<FilteredCheck[] | []>([]);
 
@@ -146,6 +147,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
 
   const [showThresholdModal, setShowThresholdModal] = useState(false);
   const [bulkEditAction, setBulkEditAction] = useState<'add' | 'remove' | null>(null);
+  const navigate = useNavigation();
 
   const styles = useStyles(getStyles);
   const successRateContext = useContext(SuccessRateContext);
@@ -301,7 +303,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
           services with Grafana Cloud.
         </p>
         {hasRole(OrgRole.EDITOR) && (
-          <Button variant="primary" onClick={onAddNewClick} type="button">
+          <Button variant="primary" onClick={() => navigate(ROUTES.NewCheck)} type="button">
             New Check
           </Button>
         )}
@@ -328,7 +330,7 @@ export const CheckList = ({ instance, onAddNewClick, checks, onCheckUpdate }: Pr
               >
                 Set Thresholds
               </Button>
-              <Button variant="primary" onClick={onAddNewClick} type="button">
+              <Button variant="primary" onClick={() => navigate(ROUTES.NewCheck)} type="button">
                 Add new check
               </Button>
             </>

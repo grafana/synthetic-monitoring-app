@@ -1,27 +1,23 @@
 import React from 'react';
 import { LinkedDatsourceInfo } from 'datasource/types';
-import { config, getLocationSrv } from '@grafana/runtime';
+import { config } from '@grafana/runtime';
 import { Spinner } from '@grafana/ui';
+import { useNavigation } from 'hooks/useNavigation';
+import { ROUTES } from 'types';
 
 interface Props {
   info: LinkedDatsourceInfo;
 }
 
 const LinkedDatasourceView = ({ info }: Props) => {
+  const navigate = useNavigation();
   const datasource = config.datasources[info.grafanaName];
 
   const handleClick = () => {
     if (datasource?.type === 'synthetic-monitoring-datasource') {
-      getLocationSrv().update({
-        partial: false,
-        path: `a/grafana-synthetic-monitoring-app/`,
-      });
+      navigate(ROUTES.Home);
     } else {
-      getLocationSrv().update({
-        partial: false,
-        path: `datasources/edit/${datasource?.id}/`,
-        query: {},
-      });
+      navigate(`datasources/edit/${datasource?.id}/`, {}, true);
     }
   };
 

@@ -2,13 +2,14 @@ import { SuccessRateContext, SuccessRateTypes } from 'contexts/SuccessRateContex
 import React, { useContext, useState } from 'react';
 import * as d3hexbin from 'd3-hexbin';
 import { Check } from 'types';
-import { getLocationSrv, config } from '@grafana/runtime';
+import { config } from '@grafana/runtime';
 import appEvents from 'grafana/app/core/app_events';
 import { useStyles2 } from '@grafana/ui';
 import { GrafanaTheme2, AppEvents } from '@grafana/data';
 import { css } from '@emotion/css';
 import { checkType as getCheckType, dashboardUID, getSuccessRateThresholdColor } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
+import { useNavigation } from 'hooks/useNavigation';
 
 interface Props {
   onMouseMove?: (e: React.MouseEvent, check: Check) => void;
@@ -32,6 +33,7 @@ export const Hexagon = ({ onMouseMove, onMouseOut, check, hexPath, hexRadius }: 
   const [hovering, setHovering] = useState(false);
   const hexbin = d3hexbin.hexbin().radius(hexRadius);
   const styles = useStyles2(getStyles);
+  const navigate = useNavigation();
 
   const navigateToDashboard = () => {
     const checkType = getCheckType(check.settings);
@@ -42,14 +44,14 @@ export const Hexagon = ({ onMouseMove, onMouseOut, check, hexPath, hexRadius }: 
       return;
     }
 
-    getLocationSrv().update({
-      partial: false,
-      path: `/d/${target.uid}`,
-      query: {
+    navigate(
+      `/d/${target.uid}`,
+      {
         'var-instance': check.target,
         'var-job': check.job,
       },
-    });
+      true
+    );
   };
 
   const successValue =

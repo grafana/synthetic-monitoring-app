@@ -1,94 +1,97 @@
 // Libraries
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect, useCallback } from 'react';
 
 // Types
-import { Probe } from 'types';
-import { getLocationSrv } from '@grafana/runtime';
+import { Probe, ProbePageParams, ROUTES } from 'types';
 import ProbeEditor from 'components/ProbeEditor';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { ProbeList } from 'components/ProbeList';
 import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
 import { trackEvent } from 'analytics';
+import { useParams } from 'react-router-dom';
+import { useNavigation } from 'hooks/useNavigation';
 
-interface Props {
-  id?: string;
-}
+const TEMPLATE_PROBE = {
+  name: '',
+  public: false,
+  latitude: 0.0,
+  longitude: 0.0,
+  region: '',
+  labels: [],
+  online: false,
+  onlineChange: 0,
+  version: 'unknown',
+  deprecated: false,
+} as Probe;
 
-export const ProbesPage = ({ id }: Props) => {
-  const [isAddingNew, setAddingNew] = useState(false);
+export const ProbesPage = () => {
   const [probesLoading, setProbesLoading] = useState(true);
   const [probes, setProbes] = useState<Probe[]>([]);
   const [selectedProbe, setSelectedProbe] = useState<Probe | undefined>();
   const { instance, loading: instanceLoading } = useContext(InstanceContext);
-  const api = instance.api ?? undefined;
+  const { view, id } = useParams<ProbePageParams>();
+  const navigate = useNavigation();
+
+  const findSelectedProbe = useCallback(() => {
+    if (id && probes) {
+      const idInt = parseInt(id, 10);
+      return probes.find((probe) => probe.id === idInt);
+    }
+    return;
+  }, [id, probes]);
+
   useEffect(() => {
     const fetchProbes = async () => {
-      const probes = await api?.listProbes();
+      const probes = await instance.api?.listProbes();
       if (probes) {
         setProbes(probes);
         setProbesLoading(false);
       }
-      if (id) {
-        const selectedProbe = probes?.find((probe) => probe.id === parseInt(id, 10));
-        setSelectedProbe(selectedProbe);
-      }
     };
     fetchProbes();
-  }, [instanceLoading, api, id]);
+  }, [instanceLoading, instance.api]);
+
+  useEffect(() => {
+    const selected = findSelectedProbe();
+    setSelectedProbe(selected);
+  }, [id, findSelectedProbe]);
 
   const onGoBack = () => {
     setSelectedProbe(undefined);
-    setAddingNew(false);
-    getLocationSrv().update({
-      partial: true,
-      query: {
-        id: '',
-      },
-    });
+    navigate(ROUTES.Probes);
   };
 
   const onSelectProbe = (id: number) => {
-    getLocationSrv().update({
-      partial: true,
-      query: {
-        id,
-      },
-    });
+    navigate(`${ROUTES.EditProbe}/${id}`);
+  };
+
+  const getView = () => {
+    switch (view) {
+      case 'new':
+        return <ProbeEditor probe={TEMPLATE_PROBE} onReturn={onGoBack} />;
+      case 'edit': {
+        if (selectedProbe) {
+          return <ProbeEditor probe={selectedProbe} onReturn={onGoBack} />;
+        }
+        return null;
+      }
+      default:
+        return (
+          <ProbeList
+            probes={probes}
+            onAddNew={() => {
+              trackEvent('viewAddProbe');
+              navigate(ROUTES.NewProbe);
+            }}
+            onSelectProbe={onSelectProbe}
+          />
+        );
+    }
   };
 
   if (probesLoading || instanceLoading) {
     return <div>Loading...</div>;
   }
 
-  if (isAddingNew) {
-    const template = {
-      name: '',
-      public: false,
-      latitude: 0.0,
-      longitude: 0.0,
-      region: '',
-      labels: [],
-      online: false,
-      onlineChange: 0,
-      version: 'unknown',
-      deprecated: false,
-    } as Probe;
-    return <ProbeEditor probe={template} onReturn={onGoBack} />;
-  }
-  return (
-    <SuccessRateContextProvider probes={probes}>
-      {selectedProbe ? (
-        <ProbeEditor probe={selectedProbe} onReturn={onGoBack} />
-      ) : (
-        <ProbeList
-          probes={probes}
-          onAddNew={() => {
-            trackEvent('viewAddProbe');
-            setAddingNew(true);
-          }}
-          onSelectProbe={onSelectProbe}
-        />
-      )}
-    </SuccessRateContextProvider>
-  );
+  return <SuccessRateContextProvider probes={probes}>{getView()}</SuccessRateContextProvider>;
 };

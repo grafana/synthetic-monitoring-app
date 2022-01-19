@@ -11,3 +11,8 @@
 //     dispatchEvent: jest.fn(),
 //   })),
 // });
+
+Object.defineProperty(window, '__react_router_build__', {
+  value: undefined,
+  writable: true,
+});

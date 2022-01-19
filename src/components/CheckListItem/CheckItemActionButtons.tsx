@@ -2,11 +2,11 @@ import { GrafanaTheme, AppEvents } from '@grafana/data';
 import { Button, ConfirmModal, IconButton, useStyles } from '@grafana/ui';
 import React, { useContext, useState } from 'react';
 import { css } from '@emotion/css';
-import { Check, OrgRole } from 'types';
+import { Check, OrgRole, ROUTES } from 'types';
 import { dashboardUID, checkType as getCheckType, hasRole } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
 import appEvents from 'grafana/app/core/app_events';
-import { getLocationSrv } from '@grafana/runtime';
+import { useNavigation } from 'hooks/useNavigation';
 
 const getStyles = (theme: GrafanaTheme) => ({
   actionButtonGroup: css`
@@ -32,6 +32,7 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon, onRemoveChe
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const checkType = getCheckType(check.settings);
   const { instance } = useContext(InstanceContext);
+  const navigate = useNavigation();
 
   const showDashboard = () => {
     const target = dashboardUID(checkType, instance.api);
@@ -41,14 +42,14 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon, onRemoveChe
       return;
     }
 
-    getLocationSrv().update({
-      partial: false,
-      path: `/d/${target.uid}`,
-      query: {
+    navigate(
+      `/d/${target.uid}`,
+      {
         'var-instance': check.target,
         'var-job': check.job,
       },
-    });
+      true
+    );
   };
 
   return (
@@ -63,13 +64,9 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon, onRemoveChe
       <IconButton
         aria-label="Edit check"
         name="pen"
+        data-testid="edit-check-button"
         onClick={() => {
-          getLocationSrv().update({
-            partial: true,
-            query: {
-              id: check.id,
-            },
-          });
+          navigate(`${ROUTES.EditCheck}/${check.id}`);
         }}
         disabled={!hasRole(OrgRole.EDITOR)}
         className={styles.marginRightSmall}

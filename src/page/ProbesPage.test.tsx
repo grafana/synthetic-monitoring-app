@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ProbesPage } from './ProbesPage';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { getInstanceMock, instanceSettings } from '../datasource/__mocks__/DataSource';
-import * as runtime from '@grafana/runtime';
 import { AppPluginMeta } from '@grafana/data';
-import { GlobalSettings } from 'types';
+import { GlobalSettings, ROUTES } from 'types';
 import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
+import { MemoryRouter, Route, Switch } from 'react-router-dom';
+import { PLUGIN_URL_PATH } from 'components/constants';
 jest.unmock('@grafana/runtime');
 jest.setTimeout(10000);
 
@@ -16,26 +17,21 @@ interface RenderArgs {
   loading?: boolean;
 }
 
-const WithRouter = ({ id, loading = false }: RenderArgs = {}) => {
-  const [routerId, setRouterId] = useState(id);
-  jest.spyOn(runtime, 'getLocationSrv').mockImplementation(() => ({
-    update: ({ query }) => {
-      const queryId = query?.id?.toString() ?? '';
-      setRouterId(queryId);
-    },
-  }));
-  const meta = {} as AppPluginMeta<GlobalSettings>;
-  return (
-    <InstanceContext.Provider value={{ instance: { api: getInstanceMock(instanceSettings) }, loading, meta }}>
-      <SuccessRateContextProvider checks={[]}>
-        <ProbesPage id={routerId} />
-      </SuccessRateContextProvider>
-    </InstanceContext.Provider>
-  );
-};
-
 const renderProbesPage = ({ id, loading = false }: RenderArgs = {}) => {
-  render(<WithRouter id={id} loading={loading} />);
+  const meta = {} as AppPluginMeta<GlobalSettings>;
+  return render(
+    <MemoryRouter initialIndex={0} initialEntries={[`${PLUGIN_URL_PATH}${ROUTES.Probes}`]}>
+      <Switch>
+        <Route path={`${PLUGIN_URL_PATH}${ROUTES.Probes}/:view?/:id?`}>
+          <InstanceContext.Provider value={{ instance: { api: getInstanceMock(instanceSettings) }, loading, meta }}>
+            <SuccessRateContextProvider checks={[]}>
+              <ProbesPage />
+            </SuccessRateContextProvider>
+          </InstanceContext.Provider>
+        </Route>
+      </Switch>
+    </MemoryRouter>
+  );
 };
 
 const getAddNew = async () => {
