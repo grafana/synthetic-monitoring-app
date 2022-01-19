@@ -1,5 +1,17 @@
 # Change Log
 
+# [1.9.4](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.3...v1.9.4) (2022-1-19)
+
+### Bug fixes
+
+- Update routing to use React router
+- Fix a bug in the usage prediction calculation
+- Accessibility fixes
+
+### Features
+
+- Include traceroute checks in the Terraform config export
+
 # [1.9.3](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.2...v1.9.3) (2022-1-10)
 
 ### Bug fixes
