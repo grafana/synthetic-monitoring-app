@@ -13,14 +13,14 @@ import { DisplayCard } from 'components/DisplayCard';
 import FeaturesBanner from 'components/FeaturesBanner';
 import { css, cx } from '@emotion/css';
 import React, { useState, useEffect, useContext } from 'react';
-import { PLUGIN_URL_PATH } from 'components/constants';
 import { config } from '@grafana/runtime';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { Check } from 'types';
+import { Check, ROUTES } from 'types';
 import { useUsageCalc } from 'hooks/useUsageCalc';
 import { DashboardInfo } from 'datasource/types';
 import dashScreenshot from 'img/screenshot-dash-traceroute.png';
 import dashScreenshotLight from 'img/screenshot-dash-traceroute-light.png';
+import { useNavigation } from 'hooks/useNavigation';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   flexRow: css`
@@ -113,6 +113,8 @@ const HomePage = () => {
   const [checks, setChecks] = useState<Check[]>([]);
   const [dashboards, setDashboards] = useState<DashboardInfo[]>([]);
   const usage = useUsageCalc(checks);
+  const navigate = useNavigation();
+
   useEffect(() => {
     instance.api?.listChecks().then((checks) => {
       setChecks(checks);
@@ -235,7 +237,7 @@ const HomePage = () => {
             Read more about setting up checks {'>'}
           </a>
           <div className={styles.actionContainer}>
-            <LinkButton variant="secondary" href={`${PLUGIN_URL_PATH}?page=checks`}>
+            <LinkButton variant="secondary" onClick={() => navigate(ROUTES.NewCheck)}>
               Create a check
             </LinkButton>
           </div>
@@ -284,7 +286,7 @@ const HomePage = () => {
             Read more about synthetic monitoring alerts {'>'}
           </a>
           <div className={styles.actionContainer}>
-            <LinkButton variant="secondary" href={`${PLUGIN_URL_PATH}?page=alerts`}>
+            <LinkButton variant="secondary" onClick={() => navigate(ROUTES.Alerts)}>
               Configure alerts
             </LinkButton>
           </div>
