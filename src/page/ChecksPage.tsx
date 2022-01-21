@@ -47,6 +47,9 @@ export function ChecksPage() {
         return <CheckEditor onReturn={returnToList} />;
       }
       case 'edit': {
+        if (!selectedCheck) {
+          return <div>Loading...</div>;
+        }
         return <CheckEditor onReturn={returnToList} check={selectedCheck} />;
       }
       default:
