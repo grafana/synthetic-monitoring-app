@@ -22,7 +22,7 @@ export const LabelField = ({ isEditor, limit }: Props) => {
         name="labels"
         disabled={!isEditor}
         label="label"
-        limit={limit ?? 5}
+        limit={limit ?? 10}
         validateName={(labelName) => validateLabelName(labelName, labels)}
         validateValue={validateLabelValue}
       />
