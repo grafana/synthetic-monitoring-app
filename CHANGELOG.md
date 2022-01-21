@@ -1,5 +1,11 @@
 # Change Log
 
+# [1.9.5](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.4...v1.9.5) (2022-1-21)
+
+### Bug fixes
+
+- Fix a race condition that prevented values from showing up when navigating to the edit check form
+
 # [1.9.4](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.3...v1.9.4) (2022-1-19)
 
 ### Bug fixes
