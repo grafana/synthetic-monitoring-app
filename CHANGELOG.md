@@ -1,5 +1,11 @@
 # Change Log
 
+# [1.9.6](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.5...v1.9.6) (2022-1-21)
+
+### Features
+
+- Increase the maximum quantity of labels per check to 10.
+
 # [1.9.5](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.4...v1.9.5) (2022-1-21)
 
 ### Bug fixes
