@@ -1,5 +1,5 @@
 import { AlertFormValues, AlertRule, Label } from 'types';
-import { ALERT_RECORDING_METRIC } from 'components/constants';
+import { ALERT_PROBE_SUCCESS_RECORDING_METRIC } from 'components/constants';
 
 type PromLabel = { [key: string]: string };
 
@@ -13,7 +13,7 @@ export const labelToProm = (labels?: Label[]) => {
 export const transformAlertFormValues = (alertValues: AlertFormValues | undefined): AlertRule => {
   return {
     alert: alertValues?.name ?? '',
-    expr: `${ALERT_RECORDING_METRIC}{alert_sensitivity="${alertValues?.sensitivity?.value}"} < ${
+    expr: `${ALERT_PROBE_SUCCESS_RECORDING_METRIC}{alert_sensitivity="${alertValues?.sensitivity?.value}"} < ${
       alertValues?.probePercentage ?? ''
     }`,
     for: `${alertValues?.timeCount}${alertValues?.timeUnit?.value}`,

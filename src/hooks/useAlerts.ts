@@ -2,14 +2,14 @@ import { useState, useEffect, useContext } from 'react';
 import { getBackendSrv } from '@grafana/runtime';
 import { parse, stringify } from 'yaml';
 import {
-  ALERT_RECORDING_EXPR,
-  ALERT_RECORDING_METRIC,
+  ALERT_PROBE_SUCCESS_RECORDING_EXPR,
+  ALERT_PROBE_SUCCESS_RECORDING_METRIC,
   DEFAULT_ALERT_LABELS,
-  DEFAULT_ALERT_NAMES_BY_SENSITIVITY,
+  DEFAULT_ALERT_NAMES_BY_FAMILY_AND_SENSITIVITY,
   SM_ALERTING_NAMESPACE,
   getDefaultAlertAnnotations,
 } from 'components/constants';
-import { AlertRule, AlertSensitivity, FeatureName } from 'types';
+import { AlertFamily, AlertRule, AlertSensitivity, FeatureName } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { useFeatureFlag } from './useFeatureFlag';
 
@@ -23,26 +23,26 @@ export const defaultRules = {
   name: 'default',
   rules: [
     {
-      record: ALERT_RECORDING_METRIC,
-      expr: ALERT_RECORDING_EXPR,
+      record: ALERT_PROBE_SUCCESS_RECORDING_METRIC,
+      expr: ALERT_PROBE_SUCCESS_RECORDING_EXPR,
     },
     {
-      alert: DEFAULT_ALERT_NAMES_BY_SENSITIVITY[AlertSensitivity.High],
-      expr: `${ALERT_RECORDING_METRIC}{alert_sensitivity="${AlertSensitivity.High}"} < ${AlertThresholds.High}`,
+      alert: DEFAULT_ALERT_NAMES_BY_FAMILY_AND_SENSITIVITY[AlertFamily.ProbeSuccess][AlertSensitivity.High],
+      expr: `${ALERT_PROBE_SUCCESS_RECORDING_METRIC}{alert_sensitivity="${AlertSensitivity.High}"} < ${AlertThresholds.High}`,
       for: '5m',
       labels: DEFAULT_ALERT_LABELS,
       annotations: getDefaultAlertAnnotations(AlertThresholds.High),
     },
     {
-      alert: DEFAULT_ALERT_NAMES_BY_SENSITIVITY[AlertSensitivity.Medium],
-      expr: `${ALERT_RECORDING_METRIC}{alert_sensitivity="${AlertSensitivity.Medium}"} < ${AlertThresholds.Medium}`,
+      alert: DEFAULT_ALERT_NAMES_BY_FAMILY_AND_SENSITIVITY[AlertFamily.ProbeSuccess][AlertSensitivity.Medium],
+      expr: `${ALERT_PROBE_SUCCESS_RECORDING_METRIC}{alert_sensitivity="${AlertSensitivity.Medium}"} < ${AlertThresholds.Medium}`,
       for: '5m',
       labels: DEFAULT_ALERT_LABELS,
       annotations: getDefaultAlertAnnotations(AlertThresholds.Medium),
     },
     {
-      alert: DEFAULT_ALERT_NAMES_BY_SENSITIVITY[AlertSensitivity.Low],
-      expr: `${ALERT_RECORDING_METRIC}{alert_sensitivity="${AlertSensitivity.Low}"} < ${AlertThresholds.Low}`,
+      alert: DEFAULT_ALERT_NAMES_BY_FAMILY_AND_SENSITIVITY[AlertFamily.ProbeSuccess][AlertSensitivity.Low],
+      expr: `${ALERT_PROBE_SUCCESS_RECORDING_METRIC}{alert_sensitivity="${AlertSensitivity.Low}"} < ${AlertThresholds.Low}`,
       for: '5m',
       labels: DEFAULT_ALERT_LABELS,
       annotations: getDefaultAlertAnnotations(AlertThresholds.Low),

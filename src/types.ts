@@ -429,6 +429,10 @@ export enum TimeUnits {
   Hours = 'h',
 }
 
+export enum AlertFamily {
+  ProbeSuccess = 'probeSuccess',
+}
+
 export enum AlertSeverity {
   Critical = 'critical',
   Error = 'error',

@@ -1,12 +1,15 @@
 import { Alerting } from 'components/Alerting';
-import { ALERT_RECORDING_EXPR, DEFAULT_ALERT_NAMES_BY_SENSITIVITY } from 'components/constants';
+import {
+  ALERT_PROBE_SUCCESS_RECORDING_EXPR,
+  DEFAULT_ALERT_NAMES_BY_FAMILY_AND_SENSITIVITY,
+} from 'components/constants';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import React from 'react';
 import userEvent from '@testing-library/user-event';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { getInstanceMock } from 'datasource/__mocks__/DataSource';
 import { AppPluginMeta, DataSourceSettings } from '@grafana/data';
-import { AlertRule, AlertSensitivity, GlobalSettings } from 'types';
+import { AlertFamily, AlertRule, AlertSensitivity, GlobalSettings } from 'types';
 import * as useAlerts from 'hooks/useAlerts';
 
 jest.setTimeout(30000);
@@ -59,11 +62,15 @@ it('adds default alerts and edits alerts', async () => {
   await waitFor(() => expect(defaultAlertButton).not.toBeDisabled());
   expect(setDefaultRules).toHaveBeenCalledTimes(1);
 
-  const button = await screen.findByRole('button', { name: DEFAULT_ALERT_NAMES_BY_SENSITIVITY[AlertSensitivity.High] });
+  const button = await screen.findByRole('button', {
+    name: DEFAULT_ALERT_NAMES_BY_FAMILY_AND_SENSITIVITY[AlertFamily.ProbeSuccess][AlertSensitivity.High],
+  });
   userEvent.click(button);
 
   const alertNameInput = await screen.findByLabelText('Alert name');
-  expect(alertNameInput).toHaveValue(DEFAULT_ALERT_NAMES_BY_SENSITIVITY[AlertSensitivity.High]);
+  expect(alertNameInput).toHaveValue(
+    DEFAULT_ALERT_NAMES_BY_FAMILY_AND_SENSITIVITY[AlertFamily.ProbeSuccess][AlertSensitivity.High]
+  );
   await userEvent.clear(alertNameInput);
   await userEvent.type(alertNameInput, 'A different name');
 
@@ -103,7 +110,7 @@ it('adds default alerts and edits alerts', async () => {
   });
   expect(setRules).toHaveBeenCalledWith([
     {
-      expr: ALERT_RECORDING_EXPR,
+      expr: ALERT_PROBE_SUCCESS_RECORDING_EXPR,
       record: 'instance_job_severity:probe_success:mean5m',
     },
     {
