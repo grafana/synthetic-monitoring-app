@@ -9,6 +9,7 @@ import {
   HttpRegexValidationType,
   Check,
   TimeUnits,
+  AlertFamily,
   AlertSeverity,
   AlertSensitivity,
   CheckSort,
@@ -241,15 +242,17 @@ export const ALERT_SENSITIVITY_OPTIONS = [
   { label: 'High', value: AlertSensitivity.High },
 ];
 
-export const DEFAULT_ALERT_NAMES_BY_SENSITIVITY = {
-  [AlertSensitivity.Low]: 'SyntheticMonitoringCheckFailureAtLowSensitivity',
-  [AlertSensitivity.Medium]: 'SyntheticMonitoringCheckFailureAtMediumSensitivity',
-  [AlertSensitivity.High]: 'SyntheticMonitoringCheckFailureAtHighSensitivity',
+export const DEFAULT_ALERT_NAMES_BY_FAMILY_AND_SENSITIVITY = {
+  [AlertFamily.ProbeSuccess]: {
+    [AlertSensitivity.Low]: 'SyntheticMonitoringCheckFailureAtLowSensitivity',
+    [AlertSensitivity.Medium]: 'SyntheticMonitoringCheckFailureAtMediumSensitivity',
+    [AlertSensitivity.High]: 'SyntheticMonitoringCheckFailureAtHighSensitivity',
+  },
 };
 
-export const ALERT_RECORDING_METRIC = 'instance_job_severity:probe_success:mean5m';
+export const ALERT_PROBE_SUCCESS_RECORDING_METRIC = 'instance_job_severity:probe_success:mean5m';
 
-export const ALERT_RECORDING_EXPR = `(sum without(probe, config_version) (rate(probe_all_success_sum[5m]) *
+export const ALERT_PROBE_SUCCESS_RECORDING_EXPR = `(sum without(probe, config_version) (rate(probe_all_success_sum[5m]) *
 on(instance, job, probe) group_left(alert_sensitivity) max by(instance, job,
 probe, alert_sensitivity) (sm_check_info{alert_sensitivity!=""})) / sum
 without(probe, config_version) (rate(probe_all_success_count[5m]) *
