@@ -1,5 +1,11 @@
 # Change Log
 
+# [1.9.7](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.6...v1.9.7) (2022-1-25)
+
+## Features
+
+- Adds a map to the probe edit page to visualize longitude & latitude
+
 # [1.9.6](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.5...v1.9.6) (2022-1-21)
 
 ### Features
