@@ -48,7 +48,7 @@ export const HorizontalCheckboxField = ({
       <Checkbox
         disabled={disabled}
         id={id}
-        style={{ position: 'relative' }}
+        style={{ position: 'relative', marginRight: '10px' }}
         value={value}
         onChange={onChange}
         {...registered}

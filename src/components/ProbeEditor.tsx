@@ -15,7 +15,7 @@ import {
 } from '@grafana/ui';
 import { useForm, FormProvider } from 'react-hook-form';
 import { useAsyncCallback } from 'react-async-hook';
-import { Probe, OrgRole, SubmissionErrorWrapper } from 'types';
+import { Probe, OrgRole, SubmissionErrorWrapper, ProbePageParams } from 'types';
 import { hasRole } from 'utils';
 import { LabelField } from 'components/LabelField';
 import ProbeStatus from './ProbeStatus';
@@ -24,11 +24,25 @@ import { trackEvent, trackException } from 'analytics';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Clipboard } from 'components/Clipboard';
 import { SimpleMap } from './SimpleMap';
+import { useLocation, useParams } from 'react-router-dom';
 
 interface Props {
-  probe: Probe;
+  probes?: Probe[];
   onReturn: (reload: boolean) => void;
 }
+
+const TEMPLATE_PROBE = {
+  name: '',
+  public: false,
+  latitude: 0.0,
+  longitude: 0.0,
+  region: '',
+  labels: [],
+  online: false,
+  onlineChange: 0,
+  version: 'unknown',
+  deprecated: false,
+} as Probe;
 
 const getStyles = (theme: GrafanaTheme2) => ({
   minInputWidth: css`
@@ -45,11 +59,20 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
 });
 
-const ProbeEditor = ({ probe, onReturn }: Props) => {
+const ProbeEditor = ({ probes, onReturn }: Props) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [probeToken, setProbeToken] = useState('');
   const { instance } = useContext(InstanceContext);
+
+  // If editing, find probe by id
+  const { id } = useParams<ProbePageParams>();
+  let probe: Probe = TEMPLATE_PROBE;
+  if (id && probes) {
+    const idInt = parseInt(id, 10);
+    probe = probes.find((probe) => probe.id === idInt) ?? TEMPLATE_PROBE;
+  }
+
   const formMethods = useForm<Probe>({ defaultValues: probe, mode: 'onChange' });
   const styles = useStyles2(getStyles);
 
@@ -212,6 +235,7 @@ const ProbeEditor = ({ probe, onReturn }: Props) => {
                 description="Region of this probe"
                 disabled={!isEditor}
                 className={styles.minInputWidth}
+                aria-label="Region"
               >
                 <Input
                   {...formMethods.register('region', { required: true })}

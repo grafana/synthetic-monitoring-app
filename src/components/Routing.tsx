@@ -1,6 +1,6 @@
-import { ChecksPage } from 'page/ChecksPage';
+import { CheckRouter } from 'page/CheckRouter';
 import HomePage from 'page/HomePage';
-import { ProbesPage } from 'page/ProbesPage';
+import { ProbeRouter } from 'page/ProbeRouter';
 import React, { useEffect, useContext } from 'react';
 import { Redirect, Route, Switch, useLocation } from 'react-router-dom';
 import { Alerting } from 'components/Alerting';
@@ -59,14 +59,14 @@ export const Routing = ({ onNavChanged, meta, ...rest }: AppRootProps) => {
         <Route exact path={`${PLUGIN_URL_PATH}${ROUTES.Home}`}>
           <HomePage />
         </Route>
-        <Route path={`${PLUGIN_URL_PATH}${ROUTES.Probes}/:view?/:id?`}>
-          <ProbesPage />
+        <Route path={`${PLUGIN_URL_PATH}${ROUTES.Probes}`}>
+          <ProbeRouter />
         </Route>
         <Route exact path={`${PLUGIN_URL_PATH}${ROUTES.Alerts}`}>
           <Alerting />
         </Route>
-        <Route exact path={`${PLUGIN_URL_PATH}${ROUTES.Checks}/:view?/:id?`}>
-          <ChecksPage />
+        <Route path={`${PLUGIN_URL_PATH}${ROUTES.Checks}`}>
+          <CheckRouter />
         </Route>
         <Route exact path="*">
           <Redirect to={`${PLUGIN_URL_PATH}${ROUTES.Home}`} />

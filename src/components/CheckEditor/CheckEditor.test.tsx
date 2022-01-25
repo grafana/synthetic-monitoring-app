@@ -10,14 +10,18 @@ import {
   GlobalSettings,
   AlertSensitivity,
   HTTPCompressionAlgo,
+  ROUTES,
+  FilteredCheck,
 } from 'types';
-import { CheckEditor } from './CheckEditor';
 import { getInstanceMock } from '../../datasource/__mocks__/DataSource';
 import userEvent from '@testing-library/user-event';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { AppPluginMeta, DataSourceSettings, FeatureToggles } from '@grafana/data';
-import { DNS_RESPONSE_MATCH_OPTIONS } from 'components/constants';
+import { DNS_RESPONSE_MATCH_OPTIONS, PLUGIN_URL_PATH } from 'components/constants';
 import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
+import { MemoryRouter, Route } from 'react-router-dom';
+import { CheckRouter } from 'page/CheckRouter';
+import { CheckEditor } from './CheckEditor';
 jest.setTimeout(60000);
 
 // Mock useAlerts hook
@@ -81,6 +85,46 @@ const transformedValidKey = btoa(validKey);
 
 // Data mocks
 
+const CHECK_LIST = [
+  {
+    job: 'tacos',
+    id: 1,
+    tenantId: 45,
+    alertSensitivity: 'none',
+    target: 'grafana.com',
+    enabled: true,
+    labels: [],
+    probes: [1],
+    timeout: 3000,
+    frequency: 60000,
+    basicMetricsOnly: false,
+    settings: {
+      ping: {
+        ipVersion: 'V4',
+        dontFragment: false,
+      },
+    },
+  },
+  {
+    job: 'burritos',
+    id: 2,
+    alertSensitivity: 'none',
+    target: 'grafana.com',
+    frequency: 60000,
+    timeout: 3000,
+    enabled: true,
+    labels: [],
+    probes: [1],
+    settings: {
+      ping: {
+        ipVersion: IpVersion.V4,
+        dontFragment: false,
+      },
+    },
+    basicMetricsOnly: false,
+  },
+] as Check[];
+
 const defaultCheck = {
   job: '',
   alertSensitivity: 'none',
@@ -107,7 +151,7 @@ const getMinimumCheck = (overrides: Partial<Check> = {}) => ({
   ...overrides,
 });
 
-const onReturn = jest.fn();
+const onReturn = jest.fn().mockImplementation(() => true);
 
 beforeEach(() => jest.resetAllMocks());
 
@@ -141,7 +185,7 @@ const getSlider = async (formName: string) => {
 };
 
 // Test Renderer
-const renderCheckEditor = async ({ check = defaultCheck, withAlerting = true } = {}) => {
+const renderCheckEditor = async ({ route = '/', check = defaultCheck, withAlerting = true } = {}) => {
   const api = getInstanceMock();
   const instance = {
     api,
@@ -151,23 +195,30 @@ const renderCheckEditor = async ({ check = defaultCheck, withAlerting = true } =
   const featureToggles = ({ traceroute: true } as unknown) as FeatureToggles;
   const isFeatureEnabled = jest.fn(() => true);
   render(
-    <FeatureFlagProvider overrides={{ featureToggles, isFeatureEnabled }}>
-      <InstanceContext.Provider value={{ instance, loading: false, meta }}>
-        <CheckEditor check={check} onReturn={onReturn} />
-      </InstanceContext.Provider>
-    </FeatureFlagProvider>
+    <MemoryRouter initialEntries={[`${PLUGIN_URL_PATH}${ROUTES.Checks}${route}`]}>
+      <FeatureFlagProvider overrides={{ featureToggles, isFeatureEnabled }}>
+        <InstanceContext.Provider value={{ instance, loading: false, meta }}>
+          <Route path={`${PLUGIN_URL_PATH}${ROUTES.Checks}/new`}>
+            <CheckEditor checks={CHECK_LIST} onReturn={onReturn} />
+          </Route>
+          <Route path={`${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`}>
+            <CheckEditor checks={CHECK_LIST} onReturn={onReturn} />
+          </Route>
+        </InstanceContext.Provider>
+      </FeatureFlagProvider>
+    </MemoryRouter>
   );
   await waitFor(() => expect(screen.getByText('Check Details')).toBeInTheDocument());
   return instance;
 };
 
 it('Updates existing check', async () => {
-  const instance = await renderCheckEditor({ check: getMinimumCheck({ target: 'grafana.com', id: 32, tenantId: 45 }) });
+  const instance = await renderCheckEditor({ route: '/edit/1' });
   await submitForm();
   expect(instance.api.addCheck).toHaveBeenCalledTimes(0);
   expect(instance.api.updateCheck).toHaveBeenCalledWith({
     job: 'tacos',
-    id: 32,
+    id: 1,
     tenantId: 45,
     alertSensitivity: 'none',
     target: 'grafana.com',
@@ -187,8 +238,8 @@ it('Updates existing check', async () => {
 });
 
 describe('PING', () => {
-  it('transforms values to correct format', async () => {
-    const instance = await renderCheckEditor({ check: getMinimumCheck({ target: 'grafana.com' }) });
+  it.only('transforms values to correct format', async () => {
+    const instance = await renderCheckEditor({ route: '/edit/2' });
     await toggleSection('Advanced options');
     const addLabel = await screen.findByRole('button', { name: 'Add label' });
     userEvent.click(addLabel);
@@ -198,7 +249,7 @@ describe('PING', () => {
     await act(async () => await userEvent.type(labelValueInput, 'labelValue'));
     await submitForm();
     expect(instance.api.addCheck).toHaveBeenCalledWith({
-      job: 'tacos',
+      job: 'burritos',
       target: 'grafana.com',
       alertSensitivity: 'none',
       enabled: true,

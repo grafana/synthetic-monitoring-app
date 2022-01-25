@@ -1,19 +1,20 @@
 import React, { useContext, useState, useEffect, useCallback } from 'react';
-import { Check, CheckPageParams, ROUTES } from 'types';
+import { Check, ROUTES } from 'types';
 import { CheckEditor } from 'components/CheckEditor';
 import { CheckList } from 'components/CheckList';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
-import { useParams } from 'react-router-dom';
+import { Switch, Route, useRouteMatch } from 'react-router-dom';
 import { useNavigation } from 'hooks/useNavigation';
 
-export function ChecksPage() {
+export function CheckRouter() {
   const { instance } = useContext(InstanceContext);
   const [checks, setChecks] = useState<Check[]>();
   const [loading, setLoading] = useState(true);
-  const [selectedCheck, setSelectedCheck] = useState<Check>();
-  const { view, id } = useParams<CheckPageParams>();
+
   const navigate = useNavigation();
+  const { path } = useRouteMatch();
+  console.log({ path });
 
   const fetchChecks = useCallback(() => {
     instance.api?.listChecks().then((resp) => {
@@ -26,14 +27,6 @@ export function ChecksPage() {
     fetchChecks();
   }, [fetchChecks]);
 
-  useEffect(() => {
-    if (checks) {
-      const num = id ? parseInt(id, 10) : -1;
-      const check = checks?.find((c) => c.id === num);
-      setSelectedCheck(check);
-    }
-  }, [checks, id]);
-
   const returnToList = (refetch?: boolean) => {
     navigate(ROUTES.Checks);
     if (refetch) {
@@ -41,25 +34,25 @@ export function ChecksPage() {
     }
   };
 
-  const getView = () => {
-    switch (view) {
-      case 'new': {
-        return <CheckEditor onReturn={returnToList} />;
-      }
-      case 'edit': {
-        if (!selectedCheck) {
-          return <div>Loading...</div>;
-        }
-        return <CheckEditor onReturn={returnToList} check={selectedCheck} />;
-      }
-      default:
-        return <CheckList instance={instance} checks={checks ?? []} onCheckUpdate={returnToList} />;
-    }
-  };
+  console.log({ checks });
 
   if (loading || !instance.api || !checks) {
     return <div>Loading...</div>;
   }
 
-  return <SuccessRateContextProvider checks={checks}>{getView()}</SuccessRateContextProvider>;
+  return (
+    <SuccessRateContextProvider checks={checks}>
+      <Switch>
+        <Route path={path} exact>
+          <CheckList instance={instance} checks={checks ?? []} onCheckUpdate={returnToList} />
+        </Route>
+        <Route path={`${path}/new`} exact>
+          <CheckEditor onReturn={returnToList} />;
+        </Route>
+        <Route path={`${path}/edit/:id`} exact>
+          <CheckEditor onReturn={returnToList} checks={checks} />;
+        </Route>
+      </Switch>
+    </SuccessRateContextProvider>
+  );
 }
