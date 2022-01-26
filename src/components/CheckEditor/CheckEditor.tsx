@@ -77,8 +77,12 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
 
   const isEditor = hasRole(OrgRole.EDITOR);
 
+  // console.log('form values', formMethods.getValues());
+  // console.log('form errors', formMethods.formState);
+
   const { execute: onSubmit, error, loading: submitting } = useAsyncCallback(async (checkValues: CheckFormValues) => {
     const updatedCheck = getCheckFromFormValues(checkValues, defaultValues);
+    console.log('submit');
     if (check?.id) {
       trackEvent('editCheckSubmit');
       await api?.updateCheck({
@@ -95,6 +99,7 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
 
   const submissionError = (error as unknown) as SubmissionErrorWrapper;
   if (error) {
+    console.log({ error });
     trackException(`addNewCheckSubmitException: ${error}`);
   }
 
@@ -166,6 +171,7 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
                 // We have to get refetch the check type value from form state in the validation because the value will be stale if we rely on the the .watch method in the render
                 const targetFormValue = formMethods.getValues().checkType;
                 const selectedCheckType = targetFormValue.value as CheckType;
+                console.log({ target });
                 return validateTarget(selectedCheckType, target);
               },
             }}

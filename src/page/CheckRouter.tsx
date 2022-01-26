@@ -14,7 +14,6 @@ export function CheckRouter() {
 
   const navigate = useNavigation();
   const { path } = useRouteMatch();
-  console.log({ path });
 
   const fetchChecks = useCallback(() => {
     instance.api?.listChecks().then((resp) => {
@@ -34,8 +33,6 @@ export function CheckRouter() {
     }
   };
 
-  console.log({ checks });
-
   if (loading || !instance.api || !checks) {
     return <div>Loading...</div>;
   }
@@ -50,7 +47,7 @@ export function CheckRouter() {
           <CheckEditor onReturn={returnToList} />;
         </Route>
         <Route path={`${path}/edit/:id`} exact>
-          <CheckEditor onReturn={returnToList} checks={checks} />;
+          <CheckEditor onReturn={returnToList} checks={checks} />
         </Route>
       </Switch>
     </SuccessRateContextProvider>
