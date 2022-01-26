@@ -3,10 +3,10 @@ import { Button, HorizontalGroup, Icon, Modal, Spinner, useStyles, Alert } from 
 import React, { FC, useState, useContext } from 'react';
 import { css } from '@emotion/css';
 import { useAlerts } from 'hooks/useAlerts';
-import { AlertRuleForm } from './AlertRuleForm';
-import { AlertFormValues, AlertRule, FeatureName, OrgRole } from 'types';
+import { ProbeDurationAlertForm, AlertRuleForm, SSLCertExpiryAlertForm } from './AlertRuleForm';
+import { AlertFormValues, AlertRule, AlertFamily, FeatureName, OrgRole } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { transformAlertFormValues } from './alertingTransformations';
+import { transformAlertFormValues, alertFamilyFromRule } from './alertingTransformations';
 import { hasRole } from 'utils';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 
@@ -156,9 +156,20 @@ export const Alerting: FC = () => {
           </Button>
         </div>
       )}
-      {alertingRules.map((alertRule, index) => (
-        <AlertRuleForm key={`${alertRule.alert}-${index}`} rule={alertRule} onSubmit={getUpdateRules(index)} />
-      ))}
+      {alertingRules.map((rule, index) => {
+        switch (alertFamilyFromRule(rule)) {
+          case AlertFamily.ProbeDuration:
+            return <ProbeDurationAlertForm rule={rule} onSubmit={getUpdateRules(index)} />;
+
+          case AlertFamily.ProbeSuccess:
+            return <AlertRuleForm key={`${rule.alert}-${index}`} rule={rule} onSubmit={getUpdateRules(index)} />;
+
+          case AlertFamily.SSLCertExpiry:
+            return <SSLCertExpiryAlertForm rule={rule} onSubmit={getUpdateRules(index)} />;
+        }
+
+        return undefined;
+      })}
       {Boolean(alertRules?.length) ? (
         <HorizontalGroup justify="flex-end">
           <Button variant="destructive" type="button" onClick={() => setShowResetModal(true)}>

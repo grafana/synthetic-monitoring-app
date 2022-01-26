@@ -2,21 +2,39 @@ import { useState, useEffect, useContext } from 'react';
 import { getBackendSrv } from '@grafana/runtime';
 import { parse, stringify } from 'yaml';
 import {
+  ALERT_PROBE_DURATION_RECORDING_EXPR,
+  ALERT_PROBE_DURATION_RECORDING_METRIC,
   ALERT_PROBE_SUCCESS_RECORDING_EXPR,
   ALERT_PROBE_SUCCESS_RECORDING_METRIC,
+  ALERT_SSL_CERT_VALIDITY_RECORDING_EXPR,
+  ALERT_SSL_CERT_VALIDITY_RECORDING_METRIC,
   DEFAULT_ALERT_LABELS,
   DEFAULT_ALERT_NAMES_BY_FAMILY_AND_SENSITIVITY,
   SM_ALERTING_NAMESPACE,
-  getDefaultAlertAnnotations,
+  getDefaultAlertDurationAnnotations,
+  getDefaultAlertSSLCertExpiryAnnotations,
+  getDefaultAlertSuccessAnnotations,
 } from 'components/constants';
 import { AlertFamily, AlertRule, AlertSensitivity, FeatureName } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { useFeatureFlag } from './useFeatureFlag';
 
-enum AlertThresholds {
+enum AlertSuccessThresholds {
   High = 95,
   Medium = 90,
   Low = 75,
+}
+
+enum AlertDurationThresholds {
+  High = 100, // ms
+  Medium = 150,
+  Low = 200,
+}
+
+enum AlertSSLCertExpiryThresholds {
+  High = 90, // days
+  Medium = 60,
+  Low = 30,
 }
 
 export const defaultRules = {
@@ -27,25 +45,78 @@ export const defaultRules = {
       expr: ALERT_PROBE_SUCCESS_RECORDING_EXPR,
     },
     {
-      alert: DEFAULT_ALERT_NAMES_BY_FAMILY_AND_SENSITIVITY[AlertFamily.ProbeSuccess][AlertSensitivity.High],
-      expr: `${ALERT_PROBE_SUCCESS_RECORDING_METRIC}{alert_sensitivity="${AlertSensitivity.High}"} < ${AlertThresholds.High}`,
+      record: ALERT_SSL_CERT_VALIDITY_RECORDING_METRIC,
+      expr: ALERT_SSL_CERT_VALIDITY_RECORDING_EXPR,
+    },
+    {
+      record: ALERT_PROBE_DURATION_RECORDING_METRIC,
+      expr: ALERT_PROBE_DURATION_RECORDING_EXPR,
+    },
+    // probe duration
+    {
+      alert: DEFAULT_ALERT_NAMES_BY_FAMILY_AND_SENSITIVITY[AlertFamily.ProbeDuration][AlertSensitivity.High],
+      expr: `${ALERT_PROBE_DURATION_RECORDING_METRIC}{alert_sensitivity="${AlertSensitivity.High}"} * 1000 > ${AlertDurationThresholds.High}`,
       for: '5m',
       labels: DEFAULT_ALERT_LABELS,
-      annotations: getDefaultAlertAnnotations(AlertThresholds.High),
+      annotations: getDefaultAlertDurationAnnotations(AlertDurationThresholds.High),
+    },
+    {
+      alert: DEFAULT_ALERT_NAMES_BY_FAMILY_AND_SENSITIVITY[AlertFamily.ProbeDuration][AlertSensitivity.Medium],
+      expr: `${ALERT_PROBE_DURATION_RECORDING_METRIC}{alert_sensitivity="${AlertSensitivity.Medium}"} * 1000 > ${AlertDurationThresholds.Medium}`,
+      for: '5m',
+      labels: DEFAULT_ALERT_LABELS,
+      annotations: getDefaultAlertDurationAnnotations(AlertDurationThresholds.Medium),
+    },
+    {
+      alert: DEFAULT_ALERT_NAMES_BY_FAMILY_AND_SENSITIVITY[AlertFamily.ProbeDuration][AlertSensitivity.Low],
+      expr: `${ALERT_PROBE_DURATION_RECORDING_METRIC}{alert_sensitivity="${AlertSensitivity.Low}"} * 1000 > ${AlertDurationThresholds.Low}`,
+      for: '5m',
+      labels: DEFAULT_ALERT_LABELS,
+      annotations: getDefaultAlertDurationAnnotations(AlertDurationThresholds.Low),
+    },
+    // probe success
+    {
+      alert: DEFAULT_ALERT_NAMES_BY_FAMILY_AND_SENSITIVITY[AlertFamily.ProbeSuccess][AlertSensitivity.High],
+      expr: `${ALERT_PROBE_SUCCESS_RECORDING_METRIC}{alert_sensitivity="${AlertSensitivity.High}"} < ${AlertSuccessThresholds.High}`,
+      for: '5m',
+      labels: DEFAULT_ALERT_LABELS,
+      annotations: getDefaultAlertSuccessAnnotations(AlertSuccessThresholds.High),
     },
     {
       alert: DEFAULT_ALERT_NAMES_BY_FAMILY_AND_SENSITIVITY[AlertFamily.ProbeSuccess][AlertSensitivity.Medium],
-      expr: `${ALERT_PROBE_SUCCESS_RECORDING_METRIC}{alert_sensitivity="${AlertSensitivity.Medium}"} < ${AlertThresholds.Medium}`,
+      expr: `${ALERT_PROBE_SUCCESS_RECORDING_METRIC}{alert_sensitivity="${AlertSensitivity.Medium}"} < ${AlertSuccessThresholds.Medium}`,
       for: '5m',
       labels: DEFAULT_ALERT_LABELS,
-      annotations: getDefaultAlertAnnotations(AlertThresholds.Medium),
+      annotations: getDefaultAlertSuccessAnnotations(AlertSuccessThresholds.Medium),
     },
     {
       alert: DEFAULT_ALERT_NAMES_BY_FAMILY_AND_SENSITIVITY[AlertFamily.ProbeSuccess][AlertSensitivity.Low],
-      expr: `${ALERT_PROBE_SUCCESS_RECORDING_METRIC}{alert_sensitivity="${AlertSensitivity.Low}"} < ${AlertThresholds.Low}`,
+      expr: `${ALERT_PROBE_SUCCESS_RECORDING_METRIC}{alert_sensitivity="${AlertSensitivity.Low}"} < ${AlertSuccessThresholds.Low}`,
       for: '5m',
       labels: DEFAULT_ALERT_LABELS,
-      annotations: getDefaultAlertAnnotations(AlertThresholds.Low),
+      annotations: getDefaultAlertSuccessAnnotations(AlertSuccessThresholds.Low),
+    },
+    // SSL certificate expiration
+    {
+      alert: DEFAULT_ALERT_NAMES_BY_FAMILY_AND_SENSITIVITY[AlertFamily.SSLCertExpiry][AlertSensitivity.High],
+      expr: `${ALERT_SSL_CERT_VALIDITY_RECORDING_METRIC}{alert_sensitivity="${AlertSensitivity.High}"} < ${AlertSSLCertExpiryThresholds.High}`,
+      for: '5m',
+      labels: DEFAULT_ALERT_LABELS,
+      annotations: getDefaultAlertSSLCertExpiryAnnotations(AlertSSLCertExpiryThresholds.High),
+    },
+    {
+      alert: DEFAULT_ALERT_NAMES_BY_FAMILY_AND_SENSITIVITY[AlertFamily.SSLCertExpiry][AlertSensitivity.Medium],
+      expr: `${ALERT_SSL_CERT_VALIDITY_RECORDING_METRIC}{alert_sensitivity="${AlertSensitivity.Medium}"} < ${AlertSSLCertExpiryThresholds.Medium}`,
+      for: '5m',
+      labels: DEFAULT_ALERT_LABELS,
+      annotations: getDefaultAlertSSLCertExpiryAnnotations(AlertSSLCertExpiryThresholds.Medium),
+    },
+    {
+      alert: DEFAULT_ALERT_NAMES_BY_FAMILY_AND_SENSITIVITY[AlertFamily.SSLCertExpiry][AlertSensitivity.Low],
+      expr: `${ALERT_SSL_CERT_VALIDITY_RECORDING_METRIC}{alert_sensitivity="${AlertSensitivity.Low}"} < ${AlertSSLCertExpiryThresholds.Low}`,
+      for: '5m',
+      labels: DEFAULT_ALERT_LABELS,
+      annotations: getDefaultAlertSSLCertExpiryAnnotations(AlertSSLCertExpiryThresholds.Low),
     },
   ],
 };
