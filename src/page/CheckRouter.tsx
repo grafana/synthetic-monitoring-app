@@ -44,7 +44,7 @@ export function CheckRouter() {
           <CheckList instance={instance} checks={checks ?? []} onCheckUpdate={returnToList} />
         </Route>
         <Route path={`${path}/new`} exact>
-          <CheckEditor onReturn={returnToList} />;
+          <CheckEditor onReturn={returnToList} />
         </Route>
         <Route path={`${path}/edit/:id`} exact>
           <CheckEditor onReturn={returnToList} checks={checks} />

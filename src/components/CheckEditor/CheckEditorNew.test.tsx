@@ -1,27 +1,15 @@
 import React from 'react';
-import { render, screen, waitFor, act, within, fireEvent } from '@testing-library/react';
-import {
-  Check,
-  IpVersion,
-  CheckType,
-  DnsResponseCodes,
-  HttpMethod,
-  HttpVersion,
-  GlobalSettings,
-  AlertSensitivity,
-  HTTPCompressionAlgo,
-  ROUTES,
-  FilteredCheck,
-} from 'types';
+import { render, screen, waitFor } from '@testing-library/react';
+import { CheckType, GlobalSettings, ROUTES } from 'types';
 import { getInstanceMock } from '../../datasource/__mocks__/DataSource';
-import userEvent from '@testing-library/user-event';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { AppPluginMeta, DataSourceSettings, FeatureToggles } from '@grafana/data';
-import { DNS_RESPONSE_MATCH_OPTIONS, PLUGIN_URL_PATH } from 'components/constants';
+import { PLUGIN_URL_PATH } from 'components/constants';
 import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
-import { MemoryRouter, Router } from 'react-router-dom';
+import { Router } from 'react-router-dom';
 import { CheckEditor } from './CheckEditor';
-import { selectCheckType, submitForm, BASIC_HTTP_CHECK } from './testHelpers';
+import { selectCheckType, submitForm, fillBasicCheckFields, fillDnsValidationFields } from './testHelpers';
+import { BASIC_HTTP_CHECK, BASIC_PING_CHECK, BASIC_TCP_CHECK, BASIC_DNS_CHECK } from './testConstants';
 import { locationService } from '@grafana/runtime';
 
 jest.setTimeout(60000);
@@ -108,44 +96,38 @@ describe('new checks', () => {
 
   it('can create a new HTTP check', async () => {
     const instance = await renderNewCheckEditor();
-    await selectCheckType(CheckType.HTTP);
 
-    const jobNameInput = await screen.findByLabelText('Job Name', { exact: false });
+    await fillBasicCheckFields(CheckType.HTTP, 'Job name', 'https://grafana.com');
 
-    await act(async () => await userEvent.paste(jobNameInput, 'Job name'));
-    // expect(jobNameInput).toHaveAttribute('value', 'Job Name');
-
-    const targetInput = await screen.findByTestId('check-editor-target');
-    // console.log({ targetInput });
-
-    userEvent.type(targetInput, 'https://grafana.com');
-    // expect(targetInput).toHaveAttribute('value', 'https://grafana.com');
-    // screen.debug(targetInput);
-    // fireEvent.change(targetInput, { target: { value: 'https://grafana.com' } });
-    // console.log({ targetInput });
-
-    // Set probe options
-    const probeOptions = screen.getByText('Probe options').parentElement;
-    if (!probeOptions) {
-      throw new Error('Couldnt find Probe Options');
-    }
-
-    // Select burritos probe options
-    const probeSelectMenu = await within(probeOptions).findByTestId('select');
-    await act(
-      async () => await userEvent.selectOptions(probeSelectMenu, within(probeSelectMenu).getByText('burritos'))
-    );
-
-    // expect(jobNameInput).toHaveAttribute('value', 'Job Name');
     await submitForm(onReturn);
-    // console.log('api', instance.api.addCheck);
     expect(instance.api.addCheck).toHaveBeenCalledWith(BASIC_HTTP_CHECK);
+  });
 
-    // const addLabel = await screen.findByRole('button', { name: 'Add label' });
-    // userEvent.click(addLabel);
-    // const labelNameInput = await screen.findByPlaceholderText('name');
-    // await act(async () => await userEvent.type(labelNameInput, 'labelName'));
-    // const labelValueInput = await screen.findByPlaceholderText('value');
-    // await act(async () => await userEvent.type(labelValueInput, 'labelValue'));
+  it('can create a new PING check', async () => {
+    const instance = await renderNewCheckEditor();
+
+    await fillBasicCheckFields(CheckType.PING, 'Job name', 'grafana.com');
+
+    await submitForm(onReturn);
+    expect(instance.api.addCheck).toHaveBeenCalledWith(BASIC_PING_CHECK);
+  });
+
+  it('can create a new TCP check', async () => {
+    const instance = await renderNewCheckEditor();
+
+    await fillBasicCheckFields(CheckType.TCP, 'Job name', 'grafana.com:43');
+
+    await submitForm(onReturn);
+    expect(instance.api.addCheck).toHaveBeenCalledWith(BASIC_TCP_CHECK);
+  });
+
+  it.only('can create a new DNS check', async () => {
+    const instance = await renderNewCheckEditor();
+
+    await fillBasicCheckFields(CheckType.DNS, 'Job name', 'grafana.com');
+    await fillDnsValidationFields();
+
+    await submitForm(onReturn);
+    expect(instance.api.addCheck).toHaveBeenCalledWith(BASIC_DNS_CHECK);
   });
 });
