@@ -97,7 +97,7 @@ describe('editing checks', () => {
     expect(header2).toHaveValue('a different header');
 
     const advancedOptions = await toggleSection('Advanced options');
-    expect(await within(advancedOptions).findByPlaceholderText('name')).toHaveValue('a great label');
+    expect(await within(advancedOptions).findByPlaceholderText('name')).toHaveValue('agreatlabel');
     expect(await within(advancedOptions).findByPlaceholderText('value')).toHaveValue('totally awesome label');
     expect(await within(advancedOptions).findByText('V6')).toBeInTheDocument();
     expect(await within(advancedOptions).findByLabelText('Follow redirects', { exact: false })).not.toBeChecked();
@@ -130,9 +130,10 @@ describe('editing checks', () => {
     await toggleSection('HTTP settings');
     const requestBodyInput = await screen.findByLabelText('Request Body', { exact: false });
     await userEvent.paste(requestBodyInput, 'requestbody');
-    await userEvent.click(await screen.findByRole('button', { name: 'Add header' }));
-    await act(async () => await userEvent.type(await screen.findByPlaceholderText('name'), 'headerName'));
-    await act(async () => await userEvent.type(await screen.findByPlaceholderText('value'), 'headerValue'));
+    userEvent.click(await screen.findByRole('button', { name: 'Add header' }));
+
+    await act(async () => await userEvent.type(await screen.findByTestId('header-name-1'), 'headerName'));
+    await act(async () => await userEvent.type(await screen.findByTestId('header-value-1'), 'headerValue'));
     const compression = await screen.findByTestId('http-compression');
     userEvent.selectOptions(compression, 'deflate');
 
@@ -154,11 +155,15 @@ describe('editing checks', () => {
 
     // Authentication
     const authentication = await toggleSection('Authentication');
-    userEvent.click(await within(authentication).findByLabelText('Include bearer authorization header in request'));
+
+    // No need to check this checkbox because is already opened on load
+    // await userEvent.click(await within(authentication).findByTestId('http-settings-bearer-authorization'));
+
     const bearerTokenInput = await screen.findByPlaceholderText('Bearer token');
     await act(async () => await userEvent.type(bearerTokenInput, 'a bearer token'));
 
-    userEvent.click(await within(authentication).findByLabelText('Include basic authorization header in request'));
+    // No need to check this checkbox because is already opened on load
+    // userEvent.click(await within(authentication).findByLabelText('Include basic authorization header in request'));
     const usernameInput = await within(authentication).findByPlaceholderText('Username');
     const passwordInput = await within(authentication).findByPlaceholderText('Password');
     await act(async () => await userEvent.type(usernameInput, 'a username'));
@@ -169,18 +174,15 @@ describe('editing checks', () => {
     const [statusCodeInput, httpVersionInput] = await within(validationSection).findAllByTestId('select');
     await userEvent.selectOptions(statusCodeInput, [within(validationSection).getByText('100')]);
     await userEvent.selectOptions(httpVersionInput, [within(validationSection).getByText('HTTP/1.0')]);
-    userEvent.click(await screen.findByRole('button', { name: 'Add Regex Validation' }));
-    userEvent.click(await screen.findByRole('button', { name: 'Add Regex Validation' }));
+    // userEvent.click(await screen.findByRole('button', { name: 'Add Regex Validation' }));
+    // userEvent.click(await screen.findByRole('button', { name: 'Add Regex Validation' }));
     const selectMenus = await within(validationSection).findAllByTestId('select');
     const [matchSelect1, matchSelect2] = selectMenus.slice(-2);
-    userEvent.selectOptions(
-      matchSelect1,
-      within(validationSection).getAllByText('Check fails if response header matches')[0]
-    );
+    userEvent.selectOptions(matchSelect1, ['Header']);
 
     await act(
       async () =>
-        await userEvent.type(await within(validationSection).findByPlaceholderText('Header name'), 'Content-Type')
+        await userEvent.type(await within(validationSection).getAllByPlaceholderText('Header name')[0], 'Content-Type')
     );
 
     await act(
@@ -188,8 +190,8 @@ describe('editing checks', () => {
         await userEvent.type(await within(validationSection).getAllByPlaceholderText('Regex')[0], 'a header regex')
     );
 
-    const option = within(validationSection).getAllByText('Check fails if response body matches')[1];
-    userEvent.selectOptions(matchSelect2, option);
+    // const option = within(validationSection).getAllByText('Check fails if response body matches')[1];
+    userEvent.selectOptions(matchSelect2, ['Body']);
     const regexFields = await within(validationSection).getAllByPlaceholderText('Regex');
     await act(async () => await userEvent.type(regexFields[1], 'a body regex'));
 
@@ -198,6 +200,7 @@ describe('editing checks', () => {
     userEvent.click(invertMatch);
 
     await submitForm(onReturn);
-    expect(instance.api.addCheck).toHaveBeenCalledWith(EDITED_HTTP_CHECK);
+    expect(instance.api.addCheck).toHaveBeenCalledTimes(0);
+    expect(instance.api.updateCheck).toHaveBeenCalledWith(EDITED_HTTP_CHECK);
   });
 });
