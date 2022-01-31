@@ -9,9 +9,16 @@ import { Router, Route } from 'react-router-dom';
 import { CheckEditor } from './CheckEditor';
 import { locationService } from '@grafana/runtime';
 
-import { BASIC_CHECK_LIST, EDITED_HTTP_CHECK, validCert, validKey } from './testConstants';
-import { PLUGIN_URL_PATH } from 'components/constants';
-import { getSlider, submitForm, toggleSection } from './testHelpers';
+import {
+  BASIC_CHECK_LIST,
+  EDITED_DNS_CHECK,
+  EDITED_HTTP_CHECK,
+  EDITED_TCP_CHECK,
+  validCert,
+  validKey,
+} from './testConstants';
+import { DNS_RESPONSE_MATCH_OPTIONS, PLUGIN_URL_PATH } from 'components/constants';
+import { getSlider, selectCheckType, submitForm, toggleSection } from './testHelpers';
 import userEvent from '@testing-library/user-event';
 
 jest.setTimeout(60000);
@@ -110,7 +117,7 @@ describe('editing checks', () => {
     expect(alertingValue).toBeInTheDocument();
   });
 
-  it.only('transforms data from existing check', async () => {
+  it('transforms data from existing HTTP check', async () => {
     const instance = await renderExistingCheckEditor('/edit/1');
 
     const jobInput = await screen.findByLabelText('Job Name', { exact: false });
@@ -146,24 +153,25 @@ describe('editing checks', () => {
     await toggleSection('TLS config');
     await act(async () => await userEvent.type(screen.getByLabelText('Server Name', { exact: false }), 'serverName'));
     // TextArea components misbehave when using userEvent.type, using paste for now as a workaround
+    await act(async () => await userEvent.clear(screen.getByLabelText('CA Certificate', { exact: false })));
     await act(async () => await userEvent.paste(screen.getByLabelText('CA Certificate', { exact: false }), validCert));
+
+    await act(async () => await userEvent.clear(screen.getByLabelText('Client Certificate', { exact: false })));
     await act(
       async () => await userEvent.paste(screen.getByLabelText('Client Certificate', { exact: false }), validCert)
     );
+
+    await act(async () => await userEvent.clear(screen.getByLabelText('Client Key', { exact: false })));
     await act(async () => await userEvent.paste(screen.getByLabelText('Client Key', { exact: false }), validKey));
     await toggleSection('TLS config');
 
     // Authentication
     const authentication = await toggleSection('Authentication');
 
-    // No need to check this checkbox because is already opened on load
-    // await userEvent.click(await within(authentication).findByTestId('http-settings-bearer-authorization'));
-
     const bearerTokenInput = await screen.findByPlaceholderText('Bearer token');
     await act(async () => await userEvent.type(bearerTokenInput, 'a bearer token'));
 
     // No need to check this checkbox because is already opened on load
-    // userEvent.click(await within(authentication).findByLabelText('Include basic authorization header in request'));
     const usernameInput = await within(authentication).findByPlaceholderText('Username');
     const passwordInput = await within(authentication).findByPlaceholderText('Password');
     await act(async () => await userEvent.type(usernameInput, 'a username'));
@@ -174,8 +182,6 @@ describe('editing checks', () => {
     const [statusCodeInput, httpVersionInput] = await within(validationSection).findAllByTestId('select');
     await userEvent.selectOptions(statusCodeInput, [within(validationSection).getByText('100')]);
     await userEvent.selectOptions(httpVersionInput, [within(validationSection).getByText('HTTP/1.0')]);
-    // userEvent.click(await screen.findByRole('button', { name: 'Add Regex Validation' }));
-    // userEvent.click(await screen.findByRole('button', { name: 'Add Regex Validation' }));
     const selectMenus = await within(validationSection).findAllByTestId('select');
     const [matchSelect1, matchSelect2] = selectMenus.slice(-2);
     userEvent.selectOptions(matchSelect1, ['Header']);
@@ -202,5 +208,35 @@ describe('editing checks', () => {
     await submitForm(onReturn);
     expect(instance.api.addCheck).toHaveBeenCalledTimes(0);
     expect(instance.api.updateCheck).toHaveBeenCalledWith(EDITED_HTTP_CHECK);
+  });
+
+  it('transforms data correctly for TCP check', async () => {
+    const instance = await renderExistingCheckEditor('/edit/4');
+
+    await submitForm(onReturn);
+    expect(instance.api.addCheck).toHaveBeenCalledTimes(0);
+    expect(instance.api.updateCheck).toHaveBeenCalledWith(EDITED_TCP_CHECK);
+  });
+
+  it('transforms data correctly for DNS check', async () => {
+    const instance = await renderExistingCheckEditor('/edit/2');
+    await selectCheckType(CheckType.DNS);
+    await toggleSection('Validation');
+
+    const responseMatch1 = await screen.findByTestId('dnsValidationResponseMatch0');
+    userEvent.selectOptions(responseMatch1, DNS_RESPONSE_MATCH_OPTIONS[1].value);
+    const responseMatch2 = await screen.findByTestId('dnsValidationResponseMatch1');
+    userEvent.selectOptions(responseMatch2, DNS_RESPONSE_MATCH_OPTIONS[1].value);
+
+    const expressionInputs = await screen.findAllByPlaceholderText('Type expression');
+    await act(async () => await userEvent.clear(expressionInputs[0]));
+    await act(async () => await userEvent.clear(expressionInputs[1]));
+    await act(async () => await userEvent.type(expressionInputs[0], 'not inverted validation'));
+    await userEvent.type(expressionInputs[1], 'inverted validation');
+    const invertedCheckboxes = await screen.findAllByRole('checkbox');
+    userEvent.click(invertedCheckboxes[2]);
+    await submitForm(onReturn);
+    expect(instance.api.addCheck).toHaveBeenCalledTimes(0);
+    expect(instance.api.updateCheck).toHaveBeenCalledWith(EDITED_DNS_CHECK);
   });
 });

@@ -228,18 +228,18 @@ export const BASIC_CHECK_LIST = [
 ] as Check[];
 
 export const EDITED_HTTP_CHECK = {
-    id: 1,
-    tenantId: undefined,
-    job: 'carne asadatacos',
-    target: 'https://target.com',
-    basicMetricsOnly: true,
-    enabled: true,
-    labels: [ { name: 'agreatlabel', value: 'totally awesome label' } ],
-    probes: [ 42 ],
-    timeout: 2000,
-    frequency: 120000,
-    alertSensitivity: 'medium',
-    settings: {
+  id: 1,
+  tenantId: undefined,
+  job: 'carne asadatacos',
+  target: 'https://target.com',
+  basicMetricsOnly: true,
+  enabled: true,
+  labels: [{ name: 'agreatlabel', value: 'totally awesome label' }],
+  probes: [42],
+  timeout: 2000,
+  frequency: 120000,
+  alertSensitivity: 'medium',
+  settings: {
     http: {
       basicAuth: { username: 'stevea username', password: 'stevessecurepassworda password' },
       method: 'GET',
@@ -255,10 +255,7 @@ export const EDITED_HTTP_CHECK = {
         serverName: 'serverNameserverName',
         insecureSkipVerify: true,
       },
-      headers: [
-        'headerName:headerValue',
-        'headerName:headerValue',
-      ],
+      headers: ['headerName:headerValue', 'headerName:headerValue'],
       validStatusCodes: [100],
       validHTTPVersions: ['HTTP/1.0'],
       failIfNotSSL: true,
@@ -269,6 +266,70 @@ export const EDITED_HTTP_CHECK = {
       failIfBodyNotMatchesRegexp: ['body matchesa header regex', 'not matches'],
       failIfHeaderNotMatchesRegexp: [],
       cacheBustingQueryParamName: 'busted',
+    },
+  },
+};
+
+export const EDITED_TCP_CHECK = {
+  id: 4,
+  enabled: true,
+  frequency: 60000,
+  basicMetricsOnly: true,
+  job: 'Job name',
+  labels: [{ name: 'labelName', value: 'labelValue' }],
+  probes: [42],
+  alertSensitivity: 'none',
+  settings: {
+    tcp: {
+      ipVersion: 'V4',
+      queryResponse: [],
+      tls: false,
+      tlsConfig: {
+        caCert: '',
+        clientCert: '',
+        clientKey: '',
+        insecureSkipVerify: false,
+        serverName: '',
+      },
+    },
+  },
+  target: 'grafana.com:43',
+  tenantId: undefined,
+  timeout: 3000,
+};
+
+export const EDITED_DNS_CHECK = {
+  id: 2,
+  job: 'Job name',
+  target: 'grafana.com',
+  tenantId: undefined,
+  enabled: true,
+  labels: [{ name: 'labelName', value: 'labelValue' }],
+  probes: [42],
+  timeout: 3000,
+  frequency: 60000,
+  alertSensitivity: 'none',
+  basicMetricsOnly: true,
+  settings: {
+    dns: {
+      ipVersion: 'V4',
+      port: 53,
+      protocol: 'UDP',
+      recordType: 'A',
+      server: 'dns.google',
+      validRCodes: [DnsResponseCodes.NOERROR],
+      validateAditionalRRS: {
+        failIfMatchesRegexp: [],
+        failIfNotMatchesRegexp: [],
+      },
+      validateAnswerRRS: {
+        failIfMatchesRegexp: [],
+        failIfNotMatchesRegexp: ['not inverted validation', 'inverted validation'],
+      },
+      validateAuthorityRRS: {
+        failIfMatchesRegexp: [],
+        failIfNotMatchesRegexp: [],
+      },
     },
   },
 };

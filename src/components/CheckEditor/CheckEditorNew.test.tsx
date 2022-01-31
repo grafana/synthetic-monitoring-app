@@ -121,7 +121,7 @@ describe('new checks', () => {
     expect(instance.api.addCheck).toHaveBeenCalledWith(BASIC_TCP_CHECK);
   });
 
-  it.only('can create a new DNS check', async () => {
+  it('can create a new DNS check', async () => {
     const instance = await renderNewCheckEditor();
 
     await fillBasicCheckFields(CheckType.DNS, 'Job name', 'grafana.com');

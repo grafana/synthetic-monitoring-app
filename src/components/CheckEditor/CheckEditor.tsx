@@ -64,7 +64,6 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
 
   // If we're editing, grab the appropriate check from the list
   const { id } = useParams<CheckPageParams>();
-  console.log({ id });
   let check: Check = fallbackCheck;
   if (id) {
     check = checks?.find((c) => c.id === Number(id)) ?? fallbackCheck;
@@ -78,12 +77,8 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
 
   const isEditor = hasRole(OrgRole.EDITOR);
 
-  console.log('form values', formMethods.getValues());
-  // console.log('form errors', formMethods.formState);
-
   const { execute: onSubmit, error, loading: submitting } = useAsyncCallback(async (checkValues: CheckFormValues) => {
     const updatedCheck = getCheckFromFormValues(checkValues, defaultValues);
-    console.log({ updatedCheck });
     if (check?.id) {
       trackEvent('editCheckSubmit');
       await api?.updateCheck({
