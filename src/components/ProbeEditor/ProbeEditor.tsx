@@ -18,13 +18,13 @@ import { useAsyncCallback } from 'react-async-hook';
 import { Probe, OrgRole, SubmissionErrorWrapper, ProbePageParams } from 'types';
 import { hasRole } from 'utils';
 import { LabelField } from 'components/LabelField';
-import ProbeStatus from './ProbeStatus';
+import ProbeStatus from '../ProbeStatus';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { trackEvent, trackException } from 'analytics';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Clipboard } from 'components/Clipboard';
-import { SimpleMap } from './SimpleMap';
-import { useLocation, useParams } from 'react-router-dom';
+import { SimpleMap } from '../SimpleMap';
+import { useParams } from 'react-router-dom';
 
 interface Props {
   probes?: Probe[];
@@ -240,7 +240,7 @@ const ProbeEditor = ({ probes, onReturn }: Props) => {
                 <Input
                   {...formMethods.register('region', { required: true })}
                   label="Region"
-                  type="string"
+                  type="text"
                   placeholder="Region"
                 />
               </Field>

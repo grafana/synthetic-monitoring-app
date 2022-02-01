@@ -3,7 +3,7 @@ import React, { useContext, useState, useEffect } from 'react';
 
 // Types
 import { Probe, ROUTES } from 'types';
-import ProbeEditor from 'components/ProbeEditor';
+import ProbeEditor from 'components/ProbeEditor/ProbeEditor';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { ProbeList } from 'components/ProbeList';
 import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
