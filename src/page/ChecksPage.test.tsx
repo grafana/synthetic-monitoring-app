@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
-import { ChecksPage } from './ChecksPage';
+import { CheckRouter } from './CheckRouter';
 import { getInstanceMock } from 'datasource/__mocks__/DataSource';
 import userEvent from '@testing-library/user-event';
 import { InstanceContext } from 'contexts/InstanceContext';
@@ -16,9 +16,9 @@ const renderChecksPage = () => {
   const meta = {} as AppPluginMeta<GlobalSettings>;
   render(
     <MemoryRouter initialEntries={[`${PLUGIN_URL_PATH}${ROUTES.Checks}`]}>
-      <Route path={`${PLUGIN_URL_PATH}${ROUTES.Checks}/:view?/:id?`}>
+      <Route path={`${PLUGIN_URL_PATH}${ROUTES.Checks}`}>
         <InstanceContext.Provider value={{ instance: { api: instance }, loading: false, meta }}>
-          <ChecksPage />
+          <CheckRouter />
         </InstanceContext.Provider>
       </Route>
     </MemoryRouter>

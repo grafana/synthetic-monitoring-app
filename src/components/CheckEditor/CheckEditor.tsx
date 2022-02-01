@@ -2,7 +2,15 @@ import React, { useState, useMemo, useContext } from 'react';
 import { css } from '@emotion/css';
 import { Button, ConfirmModal, Field, Input, HorizontalGroup, Select, Legend, Alert, useStyles } from '@grafana/ui';
 import { useAsyncCallback } from 'react-async-hook';
-import { Check, CheckType, OrgRole, CheckFormValues, SubmissionErrorWrapper, FeatureName } from 'types';
+import {
+  Check,
+  CheckType,
+  OrgRole,
+  CheckFormValues,
+  SubmissionErrorWrapper,
+  FeatureName,
+  CheckPageParams,
+} from 'types';
 import { hasRole } from 'utils';
 import { getDefaultValuesFromCheck, getCheckFromFormValues } from './checkFormTransformations';
 import { validateJob, validateTarget } from 'validation';
@@ -19,9 +27,10 @@ import { CheckFormAlert } from 'components/CheckFormAlert';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { trackEvent, trackException } from 'analytics';
+import { useParams } from 'react-router-dom';
 
 interface Props {
-  check?: Check;
+  checks?: Check[];
   onReturn: (reload: boolean) => void;
 }
 
@@ -46,12 +55,20 @@ const getStyles = (theme: GrafanaTheme) => ({
   `,
 });
 
-export const CheckEditor = ({ check, onReturn }: Props) => {
+export const CheckEditor = ({ checks, onReturn }: Props) => {
   const {
     instance: { api },
   } = useContext(InstanceContext);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const styles = useStyles(getStyles);
+
+  // If we're editing, grab the appropriate check from the list
+  const { id } = useParams<CheckPageParams>();
+  let check: Check = fallbackCheck;
+  if (id) {
+    check = checks?.find((c) => c.id === Number(id)) ?? fallbackCheck;
+  }
+
   const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
   const { isEnabled: tracerouteEnabled } = useFeatureFlag(FeatureName.Traceroute);
 

@@ -74,8 +74,9 @@ const CheckTarget = forwardRef(
         <Field label="Target" description={targetHelp.text} disabled={disabled} invalid={invalid} error={error}>
           <Input
             id="check-editor-target"
+            data-testid="check-editor-target"
             ref={ref}
-            type="string"
+            type="text"
             onBlur={onBlur}
             placeholder={targetHelp.example}
             value={value}

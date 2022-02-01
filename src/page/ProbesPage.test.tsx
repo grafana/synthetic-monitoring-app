@@ -1,13 +1,12 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { ProbesPage } from './ProbesPage';
+import { ProbeRouter } from './ProbeRouter';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { getInstanceMock, instanceSettings } from '../datasource/__mocks__/DataSource';
 import { AppPluginMeta } from '@grafana/data';
 import { GlobalSettings, ROUTES } from 'types';
-import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
-import { MemoryRouter, Route, Switch } from 'react-router-dom';
+import { MemoryRouter, Route } from 'react-router-dom';
 import { PLUGIN_URL_PATH } from 'components/constants';
 jest.unmock('@grafana/runtime');
 jest.setTimeout(10000);
@@ -20,16 +19,12 @@ interface RenderArgs {
 const renderProbesPage = ({ id, loading = false }: RenderArgs = {}) => {
   const meta = {} as AppPluginMeta<GlobalSettings>;
   return render(
-    <MemoryRouter initialIndex={0} initialEntries={[`${PLUGIN_URL_PATH}${ROUTES.Probes}`]}>
-      <Switch>
-        <Route path={`${PLUGIN_URL_PATH}${ROUTES.Probes}/:view?/:id?`}>
-          <InstanceContext.Provider value={{ instance: { api: getInstanceMock(instanceSettings) }, loading, meta }}>
-            <SuccessRateContextProvider checks={[]}>
-              <ProbesPage />
-            </SuccessRateContextProvider>
-          </InstanceContext.Provider>
-        </Route>
-      </Switch>
+    <MemoryRouter initialEntries={[`${PLUGIN_URL_PATH}${ROUTES.Probes}`]}>
+      <Route path={`${PLUGIN_URL_PATH}${ROUTES.Probes}`}>
+        <InstanceContext.Provider value={{ instance: { api: getInstanceMock(instanceSettings) }, loading, meta }}>
+          <ProbeRouter />
+        </InstanceContext.Provider>
+      </Route>
     </MemoryRouter>
   );
 };
