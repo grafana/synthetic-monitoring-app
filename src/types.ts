@@ -460,6 +460,13 @@ export type AlertRule = {
   record?: string;
 };
 
+export type AlertDescription = {
+  metric: string;
+  sensitivity: AlertSensitivity;
+  operator: string;
+  threshold: number;
+};
+
 export enum CheckSort {
   AToZ,
   ZToA,

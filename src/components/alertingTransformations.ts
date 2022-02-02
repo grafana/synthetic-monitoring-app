@@ -1,5 +1,5 @@
-import { AlertFormValues, AlertRule, Label } from 'types';
-import { ALERT_PROBE_SUCCESS_RECORDING_METRIC } from 'components/constants';
+import { AlertDescription, AlertFormValues, AlertRule, AlertSensitivity, Label } from 'types';
+import { ALERT_PROBE_SUCCESS_RECORDING_METRIC, ALERT_RULE_EXPR_REGEX } from 'components/constants';
 
 type PromLabel = { [key: string]: string };
 
@@ -20,4 +20,30 @@ export const transformAlertFormValues = (alertValues: AlertFormValues | undefine
     labels: labelToProm(alertValues?.labels),
     annotations: labelToProm(alertValues?.annotations),
   };
+};
+
+const isAlertSensitivity = (value: string): AlertSensitivity | undefined => {
+  return ((Object.values(AlertSensitivity) as unknown) as string[]).includes(value)
+    ? ((value as unknown) as AlertSensitivity)
+    : undefined;
+};
+
+export const alertDescriptionFromRule = (rule: AlertRule): AlertDescription | undefined => {
+  const result = ALERT_RULE_EXPR_REGEX.exec(rule.expr);
+  if (!result) {
+    return undefined;
+  }
+
+  const sensitivity = isAlertSensitivity(result?.groups?.sensitivity ?? '');
+  if (!sensitivity) {
+    return undefined;
+  }
+
+  const desc: AlertDescription = {
+    metric: result?.groups?.metric ?? '',
+    sensitivity: sensitivity,
+    operator: result?.groups?.operator ?? '',
+    threshold: Number(result?.groups?.threshold),
+  };
+  return desc;
 };
