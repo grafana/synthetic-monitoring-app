@@ -1,5 +1,5 @@
 import React, { FC, useState, useContext } from 'react';
-import { Button, Alert, useStyles2 } from '@grafana/ui';
+import { Button, Alert, useStyles2, Spinner } from '@grafana/ui';
 import { getBackendSrv, config } from '@grafana/runtime';
 import { findSMDataSources, hasRole, initializeDatasource } from 'utils';
 import { importAllDashboards } from 'dashboards/loader';
@@ -202,7 +202,7 @@ export const WelcomePage: FC<Props> = () => {
             disabled={loading || !Boolean(metricsDatasource) || !Boolean(logsDatasource) || !hasRole(OrgRole.EDITOR)}
             size="lg"
           >
-            Initialize the plugin
+            {loading ? <Spinner /> : 'Initialize the plugin'}
           </Button>
         </DisplayCard>
       </div>
