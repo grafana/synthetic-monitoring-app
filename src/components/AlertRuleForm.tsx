@@ -11,7 +11,7 @@ import { useAsyncCallback } from 'react-async-hook';
 import appEvents from 'grafana/app/core/app_events';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { SubCollapse } from './SubCollapse';
-import { transformAlertFormValues } from './alertingTransformations';
+import { transformAlertFormValues, alertDescriptionFromRule } from './alertingTransformations';
 import { FetchResponse } from '@grafana/runtime';
 
 export enum AlertTimeUnits {
@@ -41,30 +41,28 @@ export const parseAlertTimeUnits = (time: string) => {
   return { timeCount, timeUnit };
 };
 
-const findSensitivity = (expression: string): AlertSensitivity | undefined => {
-  const entry = Object.entries(AlertSensitivity).find(([_, sensitivityValue]) => {
-    return expression.match(`alert_sensitivity="${sensitivityValue}"`);
-  });
-  return entry?.[1];
-};
-
 const getAlertFormValues = (rule: AlertRule): AlertFormValues | undefined => {
   const { timeCount, timeUnit } = parseAlertTimeUnits(rule.for ?? '');
   const timeOption = TIME_UNIT_OPTIONS.find(({ value }) => value === timeUnit);
+  const desc = alertDescriptionFromRule(rule);
 
-  const sensitivityValue = findSensitivity(rule.expr);
-  const sensitivityOption = ALERT_SENSITIVITY_OPTIONS.find(({ value }) => value === sensitivityValue);
+  if (!desc) {
+    return undefined;
+  }
+
+  const sensitivityOption = ALERT_SENSITIVITY_OPTIONS.find(({ value }) => value === desc.sensitivity);
 
   const labels = Object.entries(rule.labels ?? {}).map(([name, value]) => ({
     name,
     value,
   }));
 
-  const probePercentage = parseFloat(rule.expr.split(' < ')?.[1]);
+  const probePercentage = desc.threshold;
 
   if (!timeOption || !probePercentage || !sensitivityOption) {
     return undefined;
   }
+
   return {
     name: rule.alert,
     probePercentage,
