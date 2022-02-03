@@ -56,6 +56,7 @@ const CheckFilterGroup = ({ children, onReset, filters }: Props) => {
     let active = 0;
     // Count which filters have been applied
     Object.keys(filters).map((key) => {
+      // Search filter is handled separately
       if (key !== 'search' && filters[key] !== defaultFilters[key]) {
         active += 1;
       }
