@@ -12,9 +12,9 @@ import {
 
 import { SMQuery, SMOptions, QueryType, CheckInfo, DashboardVariable } from './types';
 
-import { config, getBackendSrv, getTemplateSrv } from '@grafana/runtime';
+import { getBackendSrv, getTemplateSrv } from '@grafana/runtime';
 import { Probe, Check, RegistrationInfo, HostedInstance } from '../types';
-import { queryLogs } from 'utils';
+import { findLinkedDatasource, queryLogs } from 'utils';
 import { parseTracerouteLogs } from './traceroute-utils';
 
 export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
@@ -23,11 +23,11 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   }
 
   getMetricsDS() {
-    return config.datasources[this.instanceSettings.jsonData.metrics.grafanaName];
+    return findLinkedDatasource(this.instanceSettings.jsonData.metrics);
   }
 
   getLogsDS() {
-    return config.datasources[this.instanceSettings.jsonData.logs.grafanaName];
+    return findLinkedDatasource(this.instanceSettings.jsonData.logs);
   }
 
   async query(options: DataQueryRequest<SMQuery>): Promise<DataQueryResponse> {
@@ -56,7 +56,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
 
         data.push(copy);
       } else if (query.queryType === QueryType.Traceroute) {
-        const logsUrl = this.getLogsDS().url;
+        const logsUrl = this.getLogsDS()?.url;
         if (!logsUrl) {
           return {
             data: [],
