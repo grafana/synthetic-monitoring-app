@@ -2,7 +2,7 @@
   "type": "app",
   "name": "Synthetic Monitoring",
   "id": "grafana-synthetic-monitoring-app",
-
+  "preload": true,
   "info": {
     "author": {
       "name": "Grafana Labs",

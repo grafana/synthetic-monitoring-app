@@ -1,5 +1,6 @@
 import { getBackendSrv } from '@grafana/runtime';
 import { DashboardInfo, FolderInfo } from 'datasource/types';
+import { DashboardMeta } from 'types';
 
 export const dashboardPaths = [
   'sm-http.json', // The path
@@ -96,4 +97,22 @@ export async function listAppDashboards(): Promise<DashboardInfo[]> {
 export async function removeDashboard(dashboard: DashboardInfo): Promise<any> {
   const backendSrv = getBackendSrv();
   return backendSrv.delete(`/api/dashboards/uid/${dashboard.uid}`);
+}
+
+export async function dashboardsNeedingUpdate(dsDashboards: DashboardInfo[] = []): Promise<DashboardMeta[]> {
+  const latestDashboards = await listAppDashboards();
+  return dsDashboards
+    .map((existingDashboard) => {
+      const templateDashboard = latestDashboards.find((template) => template.uid === existingDashboard.uid);
+      const templateVersion = templateDashboard?.latestVersion ?? -1;
+      if (templateDashboard && templateVersion > existingDashboard.version) {
+        return {
+          ...existingDashboard,
+          version: templateDashboard.latestVersion,
+          latestVersion: templateDashboard.latestVersion,
+        };
+      }
+      return null;
+    })
+    .filter(Boolean) as DashboardMeta[];
 }

@@ -1,7 +1,7 @@
 import { PluginMeta } from '@grafana/data';
 import { config, getBackendSrv } from '@grafana/runtime';
 import { importAllDashboards } from 'dashboards/loader';
-import { HostedInstance, RegistrationInfo } from 'types';
+import { GlobalSettings, HostedInstance, RegistrationInfo } from 'types';
 import { createDatasource, findHostedInstance, getHostedLokiAndPrometheusInfo } from 'utils';
 
 export const fetchPluginSettings = async (pluginId: string) =>
@@ -87,6 +87,32 @@ export const initializeSMDatasource = async (apiHost: string, smApiAccessToken: 
   }
   const datasourceResponse = await getBackendSrv().put(`api/datasources/${smDatasource.id}`, updateInfo);
   return datasourceResponse.datasource;
+};
+
+export const updateSMDatasource = async (dsName: string, pluginSettings: GlobalSettings) => {
+  const smDatasource = config.datasources[dsName];
+
+  // Create incomplete SM datasource with tenantInfo so we can proxy further requests with the SM access token
+  const updateInfo = {
+    ...smDatasource,
+    jsonData: {
+      ...smDatasource.jsonData,
+      apiHost: pluginSettings.apiHost,
+      logs: pluginSettings.logs,
+      metrics: pluginSettings.metrics,
+    },
+  };
+  console.log('whats the deal?', updateInfo);
+  const resp = await getBackendSrv()
+    .fetch({
+      url: `/api/datasources/${smDatasource.id}`,
+      method: 'PUT',
+      headers: { 'Cache-Control': 'no-store' },
+      data: updateInfo,
+    })
+    .toPromise();
+  console.log(resp);
+  return resp;
 };
 
 interface CreateDatasourcesArgs {
