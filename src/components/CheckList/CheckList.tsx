@@ -21,7 +21,6 @@ import {
   Select,
   Input,
   Pagination,
-  InfoBox,
   Checkbox,
   useStyles,
   RadioButtonGroup,
@@ -59,6 +58,8 @@ import { ChecksVisualization } from '../ChecksVisualization';
 import ThresholdGlobalSettings from '../Thresholds/ThresholdGlobalSettings';
 import { useNavigation } from 'hooks/useNavigation';
 import { BulkEditModal } from 'components/BulkEditModal';
+import CheckFilterGroup from './CheckFilterGroup';
+import EmptyCheckList from './EmptyCheckList';
 
 const getStyles = (theme: GrafanaTheme) => ({
   headerContainer: css`
@@ -109,15 +110,21 @@ const getStyles = (theme: GrafanaTheme) => ({
     display: flex;
     justify-content: center;
   `,
+  verticalSpace: css`
+    margin-top: 10px;
+    margin-bottom: 10px;
+    margin-right: ${theme.spacing.sm};
+  `,
 });
 
 interface Props {
   instance: GrafanaInstances;
   checks: Check[];
-  onCheckUpdate: () => void;
+  onCheckUpdate: (refetch?: boolean) => void;
 }
 
 export interface CheckFilters {
+  [key: string]: any;
   search: string;
   labels: string[];
   type: CheckType | 'all';
@@ -125,7 +132,7 @@ export interface CheckFilters {
   probes: SelectableValue[] | [];
 }
 
-const defaultFilters: CheckFilters = {
+export const defaultFilters: CheckFilters = {
   search: '',
   labels: [],
   type: 'all',
@@ -184,6 +191,10 @@ export const CheckList = ({ instance, checks, onCheckUpdate }: Props) => {
 
   const checksPerPage = viewType === CheckListViewType.Card ? CHECKS_PER_PAGE_CARD : CHECKS_PER_PAGE_LIST;
   const totalPages = Math.ceil(filteredChecks.length / checksPerPage);
+
+  const handleResetFilters = () => {
+    setCheckFilters(defaultFilters);
+  };
 
   const handleLabelSelect = (label: Label) => {
     setCheckFilters((cf) => {
@@ -257,7 +268,7 @@ export const CheckList = ({ instance, checks, onCheckUpdate }: Props) => {
     clearSelectedChecks();
     setSelectAll(false);
     setBulkActionInProgress(false);
-    onCheckUpdate();
+    onCheckUpdate(true);
   };
 
   const handleEnableSelectedChecks = async () => {
@@ -266,11 +277,12 @@ export const CheckList = ({ instance, checks, onCheckUpdate }: Props) => {
     clearSelectedChecks();
     setSelectAll(false);
     setBulkActionInProgress(false);
-    onCheckUpdate();
+    onCheckUpdate(true);
   };
 
   const handleDeleteSingleCheck = async (check: Check) => {
     await deleteSingleCheck(instance, check, onCheckUpdate);
+    onCheckUpdate(true);
   };
 
   const handleDeleteSelectedChecks = async () => {
@@ -278,7 +290,7 @@ export const CheckList = ({ instance, checks, onCheckUpdate }: Props) => {
     await deleteSelectedChecks(instance, selectedChecks);
     clearSelectedChecks();
     setSelectAll(false);
-    onCheckUpdate();
+    onCheckUpdate(true);
     setBulkActionInProgress(false);
   };
 
@@ -293,22 +305,7 @@ export const CheckList = ({ instance, checks, onCheckUpdate }: Props) => {
   }
 
   if (checks.length === 0) {
-    return (
-      <InfoBox
-        title="Grafana Cloud Synthetic Monitoring"
-        url={'https://grafana.com/docs/grafana-cloud/synthetic-monitoring/'}
-      >
-        <p>
-          This account does not currently have any checks configured. Click the button below to start monitoring your
-          services with Grafana Cloud.
-        </p>
-        {hasRole(OrgRole.EDITOR) && (
-          <Button variant="primary" onClick={() => navigate(ROUTES.NewCheck)} type="button">
-            New Check
-          </Button>
-        )}
-      </InfoBox>
-    );
+    return <EmptyCheckList />;
   }
 
   return (
@@ -320,11 +317,109 @@ export const CheckList = ({ instance, checks, onCheckUpdate }: Props) => {
             Currently showing {currentPageChecks.length} of {checks.length} total checks
           </div>
         </div>
-        <div>
+        <div className={styles.flexRow}>
+          <Input
+            className={styles.marginRightSmall}
+            autoFocus
+            aria-label="Search checks"
+            prefix={<Icon name="search" />}
+            width={40}
+            data-testid="check-search-input"
+            type="text"
+            value={checkFilters.search ? unEscapeStringFromRegex(checkFilters.search) : ''}
+            onChange={(event) => {
+              const value = event.currentTarget.value;
+              setCheckFilters((cf) => {
+                return {
+                  ...cf,
+                  search: escapeStringForRegex(value),
+                };
+              });
+            }}
+            placeholder="Search by job name, endpoint, or label"
+          />
+          <CheckFilterGroup onReset={handleResetFilters} filters={checkFilters}>
+            <div className={styles.flexRow}>
+              <Select
+                prefix="Status"
+                aria-label="Filter by status"
+                data-testid="check-status-filter"
+                options={CHECK_LIST_STATUS_OPTIONS}
+                width={20}
+                className={styles.verticalSpace}
+                onChange={(option) => {
+                  setCurrentPage(1);
+                  setCheckFilters((cf) => {
+                    return {
+                      ...cf,
+                      status: option,
+                    };
+                  });
+                }}
+                value={checkFilters.status}
+              />
+              <Select
+                aria-label="Filter by type"
+                prefix="Types"
+                data-testid="check-type-filter"
+                options={CHECK_FILTER_OPTIONS}
+                className={styles.verticalSpace}
+                width={20}
+                onChange={(selected: SelectableValue) => {
+                  setCurrentPage(1);
+                  setCheckFilters((cf) => {
+                    return {
+                      ...cf,
+                      type: selected?.value ?? checkFilters.type,
+                    };
+                  });
+                }}
+                value={checkFilters.type}
+              />
+            </div>
+            <LabelFilterInput
+              checks={checks}
+              onChange={(labels) => {
+                setCurrentPage(1);
+                setCheckFilters((cf) => {
+                  return {
+                    ...cf,
+                    labels,
+                  };
+                });
+              }}
+              labelFilters={checkFilters.labels}
+              className={styles.verticalSpace}
+            />
+            <AsyncMultiSelect
+              aria-label="Filter by probe"
+              data-testid="probe-filter"
+              prefix="Probes"
+              onChange={(v) => {
+                setCurrentPage(1);
+                setCheckFilters((cf) => {
+                  return {
+                    ...cf,
+                    probes: v,
+                  };
+                });
+              }}
+              defaultOptions
+              loadOptions={() => fetchProbeOptions(instance)}
+              value={checkFilters.probes}
+              placeholder="All probes"
+              allowCustomValue={false}
+              isSearchable={true}
+              isClearable={true}
+              closeMenuOnSelect={false}
+              className={styles.verticalSpace}
+            />
+          </CheckFilterGroup>
           {hasRole(OrgRole.EDITOR) && (
             <>
               <Button
                 variant="secondary"
+                fill="outline"
                 onClick={() => setShowThresholdModal((v) => !v)}
                 className={styles.marginRightSmall}
               >
@@ -338,100 +433,7 @@ export const CheckList = ({ instance, checks, onCheckUpdate }: Props) => {
         </div>
       </div>
       <div className={styles.searchSortContainer}>
-        <Input
-          autoFocus
-          aria-label="Search checks"
-          prefix={<Icon name="search" />}
-          width={40}
-          data-testid="check-search-input"
-          type="text"
-          value={checkFilters.search ? unEscapeStringFromRegex(checkFilters.search) : ''}
-          onChange={(event) => {
-            const value = event.currentTarget.value;
-            setCheckFilters((cf) => {
-              return {
-                ...cf,
-                search: escapeStringForRegex(value),
-              };
-            });
-          }}
-          placeholder="Search by job name, endpoint, or label"
-        />
-        <div className={styles.flexRow}>
-          <Select
-            prefix="Status"
-            aria-label="Filter by status"
-            data-testid="check-status-filter"
-            className={styles.marginRightSmall}
-            options={CHECK_LIST_STATUS_OPTIONS}
-            width={20}
-            onChange={(option) => {
-              setCurrentPage(1);
-              setCheckFilters((cf) => {
-                return {
-                  ...cf,
-                  status: option,
-                };
-              });
-            }}
-            value={checkFilters.status}
-          />
-          <Select
-            aria-label="Filter by type"
-            prefix="Types"
-            data-testid="check-type-filter"
-            options={CHECK_FILTER_OPTIONS}
-            width={20}
-            onChange={(selected: SelectableValue) => {
-              setCurrentPage(1);
-              setCheckFilters((cf) => {
-                return {
-                  ...cf,
-                  type: selected?.value ?? checkFilters.type,
-                };
-              });
-            }}
-            value={checkFilters.type}
-          />
-        </div>
-      </div>
-      <div className={styles.searchSortContainer}>
-        <LabelFilterInput
-          checks={checks}
-          onChange={(labels) => {
-            setCurrentPage(1);
-            setCheckFilters((cf) => {
-              return {
-                ...cf,
-                labels,
-              };
-            });
-          }}
-          labelFilters={checkFilters.labels}
-          className={styles.marginRightSmall}
-        />
-        <AsyncMultiSelect
-          aria-label="Filter by probe"
-          data-testid="probe-filter"
-          prefix="Probes"
-          onChange={(v) => {
-            setCurrentPage(1);
-            setCheckFilters((cf) => {
-              return {
-                ...cf,
-                probes: v,
-              };
-            });
-          }}
-          defaultOptions
-          loadOptions={() => fetchProbeOptions(instance)}
-          value={checkFilters.probes}
-          placeholder="All probes"
-          allowCustomValue={false}
-          isSearchable={true}
-          isClearable={true}
-          closeMenuOnSelect={false}
-        />
+        <div className={styles.flexRow}></div>
       </div>
       <div className={styles.bulkActionContainer}>
         <div className={styles.checkboxContainer}>
