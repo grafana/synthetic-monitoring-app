@@ -102,8 +102,7 @@ export const updateSMDatasource = async (dsName: string, pluginSettings: GlobalS
       metrics: pluginSettings.metrics,
     },
   };
-  console.log('whats the deal?', updateInfo);
-  const resp = await getBackendSrv()
+  return getBackendSrv()
     .fetch({
       url: `/api/datasources/${smDatasource.id}`,
       method: 'PUT',
@@ -111,8 +110,6 @@ export const updateSMDatasource = async (dsName: string, pluginSettings: GlobalS
       data: updateInfo,
     })
     .toPromise();
-  console.log(resp);
-  return resp;
 };
 
 interface CreateDatasourcesArgs {

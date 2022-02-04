@@ -48,7 +48,6 @@ const preloadInit = async () => {
     }
 
     const dashboardsToUpdate = await getDashboardsNeedingUpdate(smDS.jsonData.dashboards);
-    console.log({ dashboardsToUpdate });
     if (dashboardsToUpdate.length > 0) {
       importAllDashboards(
         pluginSettings.metrics.uid ?? pluginSettings.metrics.grafanaName,
