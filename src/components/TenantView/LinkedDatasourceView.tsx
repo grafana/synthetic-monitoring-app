@@ -13,7 +13,6 @@ const LinkedDatasourceView = ({ info }: Props) => {
   const navigate = useNavigation();
   const datasource = findLinkedDatasource(info);
 
-  console.log({ datasource, info });
   const handleClick = () => {
     if (datasource?.type === 'synthetic-monitoring-datasource') {
       navigate(ROUTES.Home);
