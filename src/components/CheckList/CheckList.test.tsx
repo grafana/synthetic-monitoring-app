@@ -214,7 +214,7 @@ test('search matches label name', async () => {
 
 test('clicking label value adds to label filter', async () => {
   renderCheckList();
-  const additionalFilters = await screen.findByText('Additional Filters');
+  const additionalFilters = await screen.findByRole('button', { name: 'Additional Filters', exact: false });
   userEvent.click(additionalFilters);
   const labelValue = await screen.findAllByText('agreat: label');
   act(() => {
@@ -228,7 +228,7 @@ test('clicking label value adds to label filter', async () => {
 
 test('filters by check type', async () => {
   renderCheckList();
-  const additionalFilters = await screen.findByText('Additional Filters');
+  const additionalFilters = await screen.findByRole('button', { name: 'Additional Filters', exact: false });
   userEvent.click(additionalFilters);
   const typeFilter = await screen.findByTestId('check-type-filter');
   userEvent.selectOptions(typeFilter, 'http');
@@ -238,7 +238,7 @@ test('filters by check type', async () => {
 
 test('filters by probe', async () => {
   renderCheckList();
-  const additionalFilters = await screen.findByText('Additional Filters');
+  const additionalFilters = await screen.findByRole('button', { name: 'Additional Filters', exact: false });
   userEvent.click(additionalFilters);
   const probeFilter = await screen.findByTestId('probe-filter');
   userEvent.selectOptions(probeFilter, 'Chicago');
@@ -248,7 +248,7 @@ test('filters by probe', async () => {
 
 test('clicking type chiclet adds it to filter', async () => {
   renderCheckList();
-  const additionalFilters = await screen.findByText('Additional Filters');
+  const additionalFilters = await screen.findByRole('button', { name: 'Additional Filters', exact: false });
   userEvent.click(additionalFilters);
   const httpTypeChiclet = await screen.findAllByText('HTTP');
   userEvent.click(httpTypeChiclet[1]);
@@ -260,7 +260,7 @@ test('clicking type chiclet adds it to filter', async () => {
 
 test('clicking status chiclet adds it to filter', async () => {
   renderCheckList();
-  const additionalFilters = await screen.findByText('Additional Filters');
+  const additionalFilters = await screen.findByRole('button', { name: 'Additional Filters', exact: false });
   userEvent.click(additionalFilters);
   const disabledChiclet = await screen.findAllByText('Disabled');
   userEvent.click(disabledChiclet[1]);
@@ -376,7 +376,7 @@ test('select all performs enable action on all visible checks', async () => {
 
 test('cascader adds labels to label filter', async () => {
   renderCheckList();
-  const additionalFilters = await screen.findByText('Additional Filters');
+  const additionalFilters = await screen.findByRole('button', { name: 'Additional Filters', exact: false });
   userEvent.click(additionalFilters);
   const cascader = await screen.findByRole('button', { name: 'Labels' });
   userEvent.click(cascader);
