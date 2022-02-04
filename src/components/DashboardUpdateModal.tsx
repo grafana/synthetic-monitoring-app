@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { DashboardMeta } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { importAllDashboards, listAppDashboards } from 'dashboards/loader';
+import { getDashboardsNeedingUpdate, importAllDashboards } from 'dashboards/loader';
 import { Button, HorizontalGroup, Modal } from '@grafana/ui';
 import { hasDismissedDashboardUpdateModal, persistDashboardModalDismiss } from 'sessionStorage';
 import { useNavigation } from 'hooks/useNavigation';
@@ -21,24 +21,8 @@ export const DashboardUpdateModal = () => {
   // Prompt user to update dashboards that are out of date
   useEffect(() => {
     if (!hasDismissedDashboardUpdate) {
-      listAppDashboards().then((latestDashboards) => {
-        const existingDashboards = dashboards ?? [];
-        const dashboardsNeedingUpdate = existingDashboards
-          .map((existingDashboard) => {
-            const templateDashboard = latestDashboards.find((template) => template.uid === existingDashboard.uid);
-            const templateVersion = templateDashboard?.latestVersion ?? -1;
-            if (templateDashboard && templateVersion > existingDashboard.version) {
-              return {
-                ...existingDashboard,
-                version: templateDashboard.latestVersion,
-                latestVersion: templateDashboard.latestVersion,
-              };
-            }
-            return null;
-          })
-          .filter(Boolean) as DashboardMeta[];
-
-        setDashboardsNeedingUpdate(dashboardsNeedingUpdate);
+      getDashboardsNeedingUpdate().then((toUpdate) => {
+        setDashboardsNeedingUpdate(toUpdate);
       });
     }
   }, [dashboards, hasDismissedDashboardUpdate]);

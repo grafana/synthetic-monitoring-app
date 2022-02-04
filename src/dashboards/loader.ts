@@ -99,7 +99,7 @@ export async function removeDashboard(dashboard: DashboardInfo): Promise<any> {
   return backendSrv.delete(`/api/dashboards/uid/${dashboard.uid}`);
 }
 
-export async function dashboardsNeedingUpdate(dsDashboards: DashboardInfo[] = []): Promise<DashboardMeta[]> {
+export async function getDashboardsNeedingUpdate(dsDashboards: DashboardInfo[] = []): Promise<DashboardMeta[]> {
   const latestDashboards = await listAppDashboards();
   return dsDashboards
     .map((existingDashboard) => {

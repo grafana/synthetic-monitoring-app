@@ -5,7 +5,7 @@ import { ConfigPage } from 'page/ConfigPage';
 import { findSMDataSources } from 'utils';
 import { getBackendSrv } from '@grafana/runtime';
 import { updateSMDatasource } from 'initialization-utils';
-import { dashboardsNeedingUpdate, importAllDashboards, importDashboard } from 'dashboards/loader';
+import { getDashboardsNeedingUpdate, importAllDashboards } from 'dashboards/loader';
 
 export const plugin = new AppPlugin<GlobalSettings>().setRootPage(App).addConfigPage({
   title: 'Config',
@@ -47,7 +47,8 @@ const preloadInit = async () => {
       await updateSMDatasource(smDS.name, pluginSettings);
     }
 
-    const dashboardsToUpdate = await dashboardsNeedingUpdate(smDS.jsonData.dashboards);
+    const dashboardsToUpdate = await getDashboardsNeedingUpdate(smDS.jsonData.dashboards);
+    console.log({ dashboardsToUpdate });
     if (dashboardsToUpdate.length > 0) {
       importAllDashboards(
         pluginSettings.metrics.uid ?? pluginSettings.metrics.grafanaName,
