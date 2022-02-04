@@ -18,9 +18,10 @@ export const defaultQuery: SMQuery = {
   queryType: QueryType.Probes,
 } as SMQuery;
 
-export interface LinkedDatsourceInfo {
+export interface LinkedDatasourceInfo {
   grafanaName: string;
   hostedId: number;
+  uid?: string;
 }
 
 export interface DashboardInfo {
@@ -42,9 +43,9 @@ export interface FolderInfo {
  */
 export interface SMOptions extends DataSourceJsonData {
   apiHost: string;
-  metrics: LinkedDatsourceInfo;
+  metrics: LinkedDatasourceInfo;
   initialized?: boolean;
-  logs: LinkedDatsourceInfo;
+  logs: LinkedDatasourceInfo;
   dashboards: DashboardInfo[];
 }
 

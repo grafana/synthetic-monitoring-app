@@ -138,7 +138,11 @@ export const getOrCreateMetricAndLokiDatasources = async ({
     (await createDatasource(hostedLogs, adminApiToken, smDatasource.id));
 
   // add linked datasource info to sm datasource
-  const dashboards = await importAllDashboards(metricsDatasource.name, logsDatasource.name, smDatasource.name);
+  const dashboards = await importAllDashboards(
+    metricsDatasource.uid ?? metricsDatasource.name,
+    logsDatasource.uid ?? logsDatasource.name,
+    smDatasource.name
+  );
   await getBackendSrv().request({
     url: `api/datasources/${smDatasource.id}`,
     method: 'PUT',
@@ -153,10 +157,12 @@ export const getOrCreateMetricAndLokiDatasources = async ({
         ...smDatasource.jsonData,
         logs: {
           grafanaName: logsDatasource.name,
+          uid: logsDatasource.uid,
           hostedId: hostedLogs.id,
         },
         metrics: {
           grafanaName: metricsDatasource.name,
+          uid: metricsDatasource.uid,
           hostedId: hostedMetrics.id,
         },
         dashboards,
