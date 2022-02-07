@@ -1,9 +1,9 @@
-import { DataSourceInstanceSettings } from '@grafana/data';
+import { DataSourceInstanceSettings, PluginMeta } from '@grafana/data';
 
 import { SMOptions, DashboardInfo, LinkedDatasourceInfo, LogQueryResponse } from './datasource/types';
 
 import { config, getBackendSrv } from '@grafana/runtime';
-import { HostedInstance, User, OrgRole, CheckType, Settings, SubmissionErrorWrapper } from 'types';
+import { HostedInstance, User, OrgRole, CheckType, Settings, SubmissionErrorWrapper, GlobalSettings } from 'types';
 
 import { SMDataSource } from 'datasource/DataSource';
 import { IconName } from '@grafana/ui';
@@ -17,6 +17,16 @@ export function findSMDataSources(): Array<DataSourceInstanceSettings<SMOptions>
     return ds.type === 'synthetic-monitoring-datasource';
   }) as Array<DataSourceInstanceSettings<SMOptions>>;
 }
+
+export const getPluginSettings = async () =>
+  await getBackendSrv()
+    .fetch<PluginMeta<GlobalSettings>>({
+      url: `/api/plugins/grafana-synthetic-monitoring-app/settings`,
+      method: 'GET',
+      headers: { 'Cache-Control': 'no-store' },
+    })
+    .toPromise()
+    .then((response) => response?.data?.jsonData);
 
 export function findLinkedDatasource(linkedDSInfo: LinkedDatasourceInfo): DataSourceInstanceSettings | undefined {
   if (linkedDSInfo.uid) {

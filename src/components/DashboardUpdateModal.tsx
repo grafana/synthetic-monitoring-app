@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { DashboardMeta } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { getDashboardsNeedingUpdate, importAllDashboards } from 'dashboards/loader';
+import { importAllDashboards } from 'dashboards/loader';
 import { Button, HorizontalGroup, Modal } from '@grafana/ui';
 import { hasDismissedDashboardUpdateModal, persistDashboardModalDismiss } from 'sessionStorage';
 import { useNavigation } from 'hooks/useNavigation';
+import { getDashboardsNeedingUpdate } from 'auto-update';
 
 export const DashboardUpdateModal = () => {
   const { instance } = useContext(InstanceContext);
