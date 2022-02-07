@@ -55,8 +55,19 @@ jest.mock('dashboards/loader', () => {
   };
 });
 
+beforeEach(() => {
+  //@ts-ignore
+  loader.importAllDashboards.mockReset();
+  //@ts-ignore
+  initUtils.updateSMDatasource.mockReset();
+  //@ts-ignore
+  appEvents.emit.mockReset();
+});
+
 it('skips updates if none is required', () => {
   autoUpdate();
+  expect(loader.importAllDashboards).not.toHaveBeenCalled();
+  expect(initUtils.updateSMDatasource).not.toHaveBeenCalled();
   expect(appEvents.emit).not.toHaveBeenCalled();
 });
 
@@ -79,6 +90,7 @@ it('updates datasource', async () => {
       grafanaName: 'metrics name',
     },
   });
+  expect(loader.importAllDashboards).not.toHaveBeenCalled();
   expect(appEvents.emit).not.toHaveBeenCalled();
 });
 
@@ -89,6 +101,14 @@ it('updates dashboards', async () => {
       type: 'synthetic-monitoring-datasource',
       name: 'a totally rad datasource',
       jsonData: {
+        //@ts-ignore
+        apiHost: 'sm_api.com',
+        logs: {
+          grafanaName: 'logs name',
+        },
+        metrics: {
+          grafanaName: 'metrics name',
+        },
         //@ts-ignore
         dashboards: [
           {
@@ -185,6 +205,8 @@ it('updates dashboards', async () => {
     ])
   );
   await autoUpdate();
+
+  expect(initUtils.updateSMDatasource).not.toHaveBeenCalled();
   expect(loader.importAllDashboards).toHaveBeenCalledWith('metrics name', 'logs name', 'a totally rad datasource');
   expect(appEvents.emit).toHaveBeenCalledWith({ name: 'alert-success' }, ['Synthetic Monitoring dashboards updated']);
 });
