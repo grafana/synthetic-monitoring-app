@@ -1,4 +1,4 @@
-import { AppPlugin, PluginMeta } from '@grafana/data';
+import { AppPlugin, PluginMeta, AppEvents } from '@grafana/data';
 import { GlobalSettings } from './types';
 import { App } from 'components/App';
 import { ConfigPage } from 'page/ConfigPage';
@@ -6,6 +6,7 @@ import { findSMDataSources } from 'utils';
 import { getBackendSrv } from '@grafana/runtime';
 import { updateSMDatasource } from 'initialization-utils';
 import { getDashboardsNeedingUpdate, importAllDashboards } from 'dashboards/loader';
+import appEvents from 'grafana/app/core/app_events';
 
 export const plugin = new AppPlugin<GlobalSettings>().setRootPage(App).addConfigPage({
   title: 'Config',
@@ -38,23 +39,29 @@ const needToUpdateDSJson = (ds: GlobalSettings, plugin: GlobalSettings): boolean
 
 const preloadInit = async () => {
   const smDatasources = findSMDataSources();
-  const pluginSettings = await getPluginSettings();
   // if there is no SM datasource, we have nothing to do. If there is more than 1 we don't know what to do.
-  if (smDatasources?.length === 1 && pluginSettings) {
-    const smDS = smDatasources[0];
-    const dsUpdateNeeded = needToUpdateDSJson(smDS.jsonData, pluginSettings);
-    if (dsUpdateNeeded) {
-      await updateSMDatasource(smDS.name, pluginSettings);
-    }
+  if (smDatasources.length !== 1) {
+    return;
+  }
+  const pluginSettings = await getPluginSettings();
+  if (!pluginSettings) {
+    return;
+  }
+  const smDS = smDatasources[0];
+  const dsUpdateNeeded = needToUpdateDSJson(smDS.jsonData, pluginSettings);
+  if (dsUpdateNeeded) {
+    await updateSMDatasource(smDS.name, pluginSettings);
+  }
 
-    const dashboardsToUpdate = await getDashboardsNeedingUpdate(smDS.jsonData.dashboards);
-    if (dashboardsToUpdate.length > 0) {
-      importAllDashboards(
-        pluginSettings.metrics.uid ?? pluginSettings.metrics.grafanaName,
-        pluginSettings.logs.uid ?? pluginSettings.metrics.grafanaName,
-        smDS.name
-      );
-    }
+  const dashboardsToUpdate = await getDashboardsNeedingUpdate(smDS.jsonData.dashboards);
+  if (dashboardsToUpdate.length > 0) {
+    importAllDashboards(
+      pluginSettings.metrics.uid ?? pluginSettings.metrics.grafanaName,
+      pluginSettings.logs.uid ?? pluginSettings.metrics.grafanaName,
+      smDS.name
+    );
+
+    appEvents.emit(AppEvents.alertSuccess, ['Synthetic Monitoring dashboards updated']);
   }
 };
 
