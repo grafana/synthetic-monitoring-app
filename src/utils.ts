@@ -1,6 +1,6 @@
 import { DataSourceInstanceSettings } from '@grafana/data';
 
-import { SMOptions, DashboardInfo, LinkedDatsourceInfo, LogQueryResponse } from './datasource/types';
+import { SMOptions, DashboardInfo, LinkedDatasourceInfo, LogQueryResponse } from './datasource/types';
 
 import { config, getBackendSrv } from '@grafana/runtime';
 import { HostedInstance, User, OrgRole, CheckType, Settings, SubmissionErrorWrapper } from 'types';
@@ -16,6 +16,16 @@ export function findSMDataSources(): Array<DataSourceInstanceSettings<SMOptions>
   return Object.values(config.datasources).filter((ds) => {
     return ds.type === 'synthetic-monitoring-datasource';
   }) as Array<DataSourceInstanceSettings<SMOptions>>;
+}
+
+export function findLinkedDatasource(linkedDSInfo: LinkedDatasourceInfo): DataSourceInstanceSettings | undefined {
+  if (linkedDSInfo.uid) {
+    const linkedDS = Object.values(config.datasources).find((ds) => ds.uid === linkedDSInfo.uid);
+    if (linkedDS) {
+      return linkedDS;
+    }
+  }
+  return config.datasources[linkedDSInfo.grafanaName];
 }
 
 /** Given hosted info, link to an existing instance */
@@ -84,8 +94,8 @@ async function getViewerToken(apiToken: string, instance: HostedInstance, smData
 interface DatasourcePayload {
   accessToken: string;
   apiHost: string;
-  metrics: LinkedDatsourceInfo;
-  logs: LinkedDatsourceInfo;
+  metrics: LinkedDatasourceInfo;
+  logs: LinkedDatasourceInfo;
 }
 
 // Used for stubbing out the datasource when plugin is not provisioned

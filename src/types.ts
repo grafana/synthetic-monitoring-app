@@ -1,12 +1,12 @@
 import { DataSourceSettings, SelectableValue } from '@grafana/data';
-import { LinkedDatsourceInfo } from './datasource/types';
+import { LinkedDatasourceInfo } from './datasource/types';
 import { SMDataSource } from 'datasource/DataSource';
 
 export interface GlobalSettings {
   apiHost: string;
   stackId?: number;
-  metrics: LinkedDatsourceInfo;
-  logs: LinkedDatsourceInfo;
+  metrics: LinkedDatasourceInfo;
+  logs: LinkedDatasourceInfo;
 }
 
 export enum IpVersion {

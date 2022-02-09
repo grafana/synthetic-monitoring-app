@@ -1,17 +1,17 @@
 import React from 'react';
-import { LinkedDatsourceInfo } from 'datasource/types';
-import { config } from '@grafana/runtime';
+import { LinkedDatasourceInfo } from 'datasource/types';
 import { Spinner } from '@grafana/ui';
 import { useNavigation } from 'hooks/useNavigation';
 import { ROUTES } from 'types';
+import { findLinkedDatasource } from 'utils';
 
 interface Props {
-  info: LinkedDatsourceInfo;
+  info: LinkedDatasourceInfo;
 }
 
 const LinkedDatasourceView = ({ info }: Props) => {
   const navigate = useNavigation();
-  const datasource = config.datasources[info.grafanaName];
+  const datasource = findLinkedDatasource(info);
 
   const handleClick = () => {
     if (datasource?.type === 'synthetic-monitoring-datasource') {

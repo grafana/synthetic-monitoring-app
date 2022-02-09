@@ -3,7 +3,7 @@ import { Button, HorizontalGroup, Icon, Modal, Spinner, useStyles, Alert } from 
 import React, { FC, useState, useContext } from 'react';
 import { css } from '@emotion/css';
 import { useAlerts } from 'hooks/useAlerts';
-import { AlertRuleForm } from './AlertRuleForm';
+import { AlertRuleForm } from 'components/AlertRuleForm';
 import {
   AlertFormValues,
   AlertRule,
