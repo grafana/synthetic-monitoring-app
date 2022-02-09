@@ -256,7 +256,9 @@ export interface SettingsFormValues {
 }
 export interface AlertFormValues {
   name: string;
-  probePercentage: number;
+  metric: string;
+  threshold: number;
+  operator: string;
   timeCount: number;
   timeUnit: SelectableValue<TimeUnits>;
   labels: Label[];
@@ -430,7 +432,9 @@ export enum TimeUnits {
 }
 
 export enum AlertFamily {
+  ProbeDuration = 'probeDuration',
   ProbeSuccess = 'probeSuccess',
+  SSLCertExpiry = 'SSLCertExpiry',
 }
 
 export enum AlertSeverity {
@@ -528,3 +532,19 @@ export interface ProbePageParams {
   view?: string;
   id?: string;
 }
+
+export type AlertFormExpressionContent = {
+  willFireIf: string;
+  conditionFor: string;
+};
+
+export type AlertFormValidations = {
+  threshold: {
+    max: number;
+    min: number;
+  };
+  timeCount: {
+    max: number;
+    min: number;
+  };
+};

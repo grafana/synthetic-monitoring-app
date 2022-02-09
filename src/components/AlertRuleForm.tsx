@@ -2,7 +2,14 @@ import { AppEvents, GrafanaTheme, SelectableValue } from '@grafana/data';
 import { Alert, Button, Field, HorizontalGroup, Icon, Input, Label, Select, useStyles } from '@grafana/ui';
 import React, { useState, useContext } from 'react';
 import { Controller, FormProvider, useForm } from 'react-hook-form';
-import { AlertRule, AlertSensitivity, Label as LabelType, TimeUnits } from 'types';
+import {
+  AlertFormExpressionContent,
+  AlertFormValidations,
+  AlertRule,
+  AlertSensitivity,
+  Label as LabelType,
+  TimeUnits,
+} from 'types';
 import { ALERT_SENSITIVITY_OPTIONS, TIME_UNIT_OPTIONS } from './constants';
 import { css } from '@emotion/css';
 import { AlertLabels } from './AlertLabels';
@@ -24,10 +31,11 @@ export enum AlertTimeUnits {
   Years = 'y',
 }
 
-export interface AlertFormValues {
-  expression?: string;
+interface AlertFormValues {
   name: string;
-  probePercentage: number;
+  metric: string;
+  threshold: number;
+  operator: string;
   timeCount: number;
   sensitivity: SelectableValue<AlertSensitivity>;
   timeUnit: SelectableValue<TimeUnits>;
@@ -57,15 +65,15 @@ const getAlertFormValues = (rule: AlertRule): AlertFormValues | undefined => {
     value,
   }));
 
-  const probePercentage = desc.threshold;
-
-  if (!timeOption || !probePercentage || !sensitivityOption) {
+  if (!timeOption || !desc.threshold || !sensitivityOption) {
     return undefined;
   }
 
   return {
     name: rule.alert,
-    probePercentage,
+    metric: desc.metric,
+    threshold: desc.threshold,
+    operator: desc.operator,
     timeCount: parseInt(timeCount, 10),
     timeUnit: timeOption ?? {},
     sensitivity: sensitivityOption,
@@ -138,10 +146,12 @@ const getStyles = (theme: GrafanaTheme) => ({
 
 type Props = {
   rule: AlertRule;
+  expressionContent: AlertFormExpressionContent;
+  validations: AlertFormValidations;
   onSubmit: (alertValues: AlertFormValues) => Promise<FetchResponse<unknown> | undefined>;
 };
 
-export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
+export const AlertRuleForm = ({ rule, onSubmit, expressionContent, validations }: Props) => {
   const defaultValues = getAlertFormValues(rule);
   const { instance } = useContext(InstanceContext);
   const styles = useStyles(getStyles);
@@ -220,28 +230,36 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
                     name="sensitivity"
                   />
                 </div>
-                <span className={styles.inlineText}>will fire an alert if less than </span>
+                <span className={styles.inlineText}>{expressionContent.willFireIf}</span>
                 <Field
-                  invalid={Boolean(errors?.probePercentage)}
-                  error={errors?.probePercentage?.message?.toString()}
+                  invalid={Boolean(errors?.threshold)}
+                  error={errors?.threshold?.message?.toString()}
                   className={styles.noMargin}
                 >
                   <Input
                     className={styles.numberInput}
-                    {...register('probePercentage', { required: true, max: 100, min: 1 })}
+                    {...register('threshold', {
+                      required: true,
+                      max: validations.threshold.max,
+                      min: validations.threshold.min,
+                    })}
                     type="number"
-                    data-testid="probePercentage"
-                    id="alertProbePercentage"
+                    data-testid="threshold"
+                    id="alertThreshold"
                   />
                 </Field>
-                <span className={styles.inlineText}>% of probes report connection success for</span>
+                <span className={styles.inlineText}>{expressionContent.conditionFor}</span>
                 <Field
                   invalid={Boolean(errors?.timeCount)}
                   error={errors?.timeCount?.message?.toString()}
                   className={styles.noMargin}
                 >
                   <Input
-                    {...register('timeCount', { required: true, min: 1, max: 999 })}
+                    {...register('timeCount', {
+                      required: true,
+                      min: validations.timeCount.min,
+                      max: validations.timeCount.max,
+                    })}
                     data-testid="timeCount"
                     type="number"
                     className={styles.numberInput}

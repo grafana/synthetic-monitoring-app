@@ -243,14 +243,22 @@ export const ALERT_SENSITIVITY_OPTIONS = [
 ];
 
 export const DEFAULT_ALERT_NAMES_BY_FAMILY_AND_SENSITIVITY = {
+  [AlertFamily.SSLCertExpiry]: {
+    [AlertSensitivity.Low]: 'SyntheticMonitoringSSLCertExpiryAtLowSensitivity',
+    [AlertSensitivity.Medium]: 'SyntheticMonitoringSSLCertExpiryAtMediumSensitivity',
+    [AlertSensitivity.High]: 'SyntheticMonitoringSSLCertExpiryAtHighSensitivity',
+  },
+  [AlertFamily.ProbeDuration]: {
+    [AlertSensitivity.Low]: 'SyntheticMonitoringProbeDurationAtLowSensitivity',
+    [AlertSensitivity.Medium]: 'SyntheticMonitoringProbeDurationAtMediumSensitivity',
+    [AlertSensitivity.High]: 'SyntheticMonitoringProbeDurationAtHighSensitivity',
+  },
   [AlertFamily.ProbeSuccess]: {
     [AlertSensitivity.Low]: 'SyntheticMonitoringCheckFailureAtLowSensitivity',
     [AlertSensitivity.Medium]: 'SyntheticMonitoringCheckFailureAtMediumSensitivity',
     [AlertSensitivity.High]: 'SyntheticMonitoringCheckFailureAtHighSensitivity',
   },
 };
-
-export const ALERT_RULE_EXPR_REGEX = /^(?<metric>[A-Za-z0-9:_]+)\{alert_sensitivity="(?<sensitivity>[^"]+)"\}(?:\s*\*\s*\d+)?\s*(?<operator><|<=|==|>|>=)\s*(?<threshold>[+-]?\d+(?:\.\d+)?)$/;
 
 export const ALERT_PROBE_SUCCESS_RECORDING_METRIC = 'instance_job_severity:probe_success:mean5m';
 
@@ -261,13 +269,73 @@ without(probe, config_version) (rate(probe_all_success_count[5m]) *
 on(instance, job, probe) group_left(alert_sensitivity) max by(instance, job,
 probe, alert_sensitivity) (sm_check_info{alert_sensitivity!=""}))) * 100`;
 
+export const ALERT_SSL_CERT_VALIDITY_RECORDING_METRIC = 'instance_job_severity:ssl_cert_validity_days:min';
+
+export const ALERT_SSL_CERT_VALIDITY_RECORDING_EXPR = `(
+    min without(probe, config_version) (
+        probe_ssl_earliest_cert_expiry
+        *
+        on(instance, job, probe)
+        group_left(alert_sensitivity)
+        max by(instance, job, probe, alert_sensitivity) (
+            sm_check_info{alert_sensitivity!=""}
+        )
+    )
+    -
+    time()
+)
+/
+(60*60*24)`;
+
+export const ALERT_PROBE_DURATION_RECORDING_METRIC = 'instance_job_probe_severity:probe_all_duration_seconds:mean5m';
+
+export const ALERT_PROBE_DURATION_RECORDING_EXPR = `sum
+without (config_version)
+(
+    rate(probe_all_duration_seconds_sum[5m])
+    *
+    on (instance, job, probe)
+    group_left (check_name, alert_sensitivity)
+    max(sm_check_info{alert_sensitivity!=""})
+    by (instance, job, probe, check_name, alert_sensitivity)
+)
+/
+sum
+without (config_version)
+(
+    rate(probe_all_duration_seconds_count[5m])
+    *
+    on (instance, job, probe)
+    group_left (check_name, alert_sensitivity)
+    max(sm_check_info{alert_sensitivity!=""})
+    by (instance, job, probe, check_name, alert_sensitivity)
+)`;
+
+export const ALERT_METRIC_TO_ALERT_FAMILY_MAP: Map<string, AlertFamily> = new Map([
+  [ALERT_PROBE_DURATION_RECORDING_METRIC, AlertFamily.ProbeDuration],
+  [ALERT_PROBE_SUCCESS_RECORDING_METRIC, AlertFamily.ProbeSuccess],
+  [ALERT_SSL_CERT_VALIDITY_RECORDING_METRIC, AlertFamily.SSLCertExpiry],
+]);
+
+export const ALERT_RULE_EXPR_REGEX = /^(?<metric>[A-Za-z0-9:_]+)\{alert_sensitivity="(?<sensitivity>[^"]+)"\}(?:\s*\*\s*\d+)?\s*(?<operator><|<=|==|>|>=)\s*(?<threshold>[+-]?\d+(?:\.\d+)?)$/;
+
 export const DEFAULT_ALERT_LABELS = {
   namespace: 'synthetic_monitoring',
 };
 
-export const getDefaultAlertAnnotations = (percentage: number) => ({
+export const getDefaultAlertDurationAnnotations = (duration: number) => ({
+  description: `{{ $labels.check_name }} check, job {{ $labels.job }}, instance {{ $labels.instance }}, on probe {{ $labels.probe }} has a duration of {{ printf "%.3f" $value }} seconds.`,
+  summary: `probe duration above ${duration} ms`,
+});
+
+export const getDefaultAlertSuccessAnnotations = (percentage: number) => ({
   description: `check job {{ $labels.job }} instance {{ $labels.instance }} has a success rate of {{ printf "%.1f" $value }}%.`,
   summary: `check success below ${percentage}%`,
+});
+
+export const getDefaultAlertSSLCertExpiryAnnotations = (days: number) => ({
+  description: `SSL certificate for instance {{ $labels.instance }} and job {{ $labels.job }} is expiring in {{ printf "%.1f" $value }} days.`,
+  summary: `SSL certificate expiration in ${days} days`,
 });
 
 export const CHECK_LIST_SORT_OPTIONS = [
