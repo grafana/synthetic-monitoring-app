@@ -532,3 +532,19 @@ export interface ProbePageParams {
   view?: string;
   id?: string;
 }
+
+export type AlertFormExpressionContent = {
+  willFireIf: string;
+  conditionFor: string;
+};
+
+export type AlertFormValidations = {
+  threshold: {
+    max: number;
+    min: number;
+  };
+  timeCount: {
+    max: number;
+    min: number;
+  };
+};

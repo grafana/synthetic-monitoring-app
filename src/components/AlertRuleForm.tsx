@@ -2,7 +2,14 @@ import { AppEvents, GrafanaTheme, SelectableValue } from '@grafana/data';
 import { Alert, Button, Field, HorizontalGroup, Icon, Input, Label, Select, useStyles } from '@grafana/ui';
 import React, { useState, useContext } from 'react';
 import { Controller, FormProvider, useForm } from 'react-hook-form';
-import { AlertRule, AlertSensitivity, Label as LabelType, TimeUnits } from 'types';
+import {
+  AlertFormExpressionContent,
+  AlertFormValidations,
+  AlertRule,
+  AlertSensitivity,
+  Label as LabelType,
+  TimeUnits,
+} from 'types';
 import { ALERT_SENSITIVITY_OPTIONS, TIME_UNIT_OPTIONS } from './constants';
 import { css } from '@emotion/css';
 import { AlertLabels } from './AlertLabels';
@@ -139,14 +146,12 @@ const getStyles = (theme: GrafanaTheme) => ({
 
 type Props = {
   rule: AlertRule;
+  expressionContent: AlertFormExpressionContent;
+  validations: AlertFormValidations;
   onSubmit: (alertValues: AlertFormValues) => Promise<FetchResponse<unknown> | undefined>;
 };
 
-const CommonAlertForm = (
-  rule: AlertRule,
-  onSubmit: (alertValues: AlertFormValues) => Promise<FetchResponse<unknown> | undefined>,
-  expressionContent: (styles: any, control: any, errors: any, register: any) => any
-) => {
+export const AlertRuleForm = ({ rule, onSubmit, expressionContent, validations }: Props) => {
   const defaultValues = getAlertFormValues(rule);
   const { instance } = useContext(InstanceContext);
   const styles = useStyles(getStyles);
@@ -217,7 +222,57 @@ const CommonAlertForm = (
             <div className={styles.expressionContainer}>
               <Label>Expression</Label>
               <HorizontalGroup align="center" wrap marginHeight={0}>
-                {expressionContent(styles, control, errors, register)}
+                <span className={styles.inlineText}>Checks with a sensitivity level of</span>
+                <div className={styles.selectInput}>
+                  <Controller
+                    render={({ field }) => <Select {...field} options={ALERT_SENSITIVITY_OPTIONS} />}
+                    control={control}
+                    name="sensitivity"
+                  />
+                </div>
+                <span className={styles.inlineText}>{expressionContent.willFireIf}</span>
+                <Field
+                  invalid={Boolean(errors?.threshold)}
+                  error={errors?.threshold?.message?.toString()}
+                  className={styles.noMargin}
+                >
+                  <Input
+                    className={styles.numberInput}
+                    {...register('threshold', {
+                      required: true,
+                      max: validations.threshold.max,
+                      min: validations.threshold.min,
+                    })}
+                    type="number"
+                    data-testid="threshold"
+                    id="alertThreshold"
+                  />
+                </Field>
+                <span className={styles.inlineText}>{expressionContent.conditionFor}</span>
+                <Field
+                  invalid={Boolean(errors?.timeCount)}
+                  error={errors?.timeCount?.message?.toString()}
+                  className={styles.noMargin}
+                >
+                  <Input
+                    {...register('timeCount', {
+                      required: true,
+                      min: validations.timeCount.min,
+                      max: validations.timeCount.max,
+                    })}
+                    data-testid="timeCount"
+                    type="number"
+                    className={styles.numberInput}
+                    id="alertTimeCount"
+                  />
+                </Field>
+                <div className={styles.selectInput}>
+                  <Controller
+                    render={({ field }) => <Select {...field} options={TIME_UNIT_OPTIONS} />}
+                    control={control}
+                    name="timeUnit"
+                  />
+                </div>
               </HorizontalGroup>
             </div>
             <AlertLabels />
@@ -282,169 +337,4 @@ const CommonAlertForm = (
       )}
     </>
   );
-};
-
-export const ProbeDurationAlertForm = ({ rule, onSubmit }: Props) => {
-  const expressionContent = (styles: any, control: any, errors: any, register: any) => {
-    return (
-      <>
-        <span className={styles.inlineText}>Checks with a sensitivity level of</span>
-        <div className={styles.selectInput}>
-          <Controller
-            render={({ field }) => <Select {...field} options={ALERT_SENSITIVITY_OPTIONS} />}
-            control={control}
-            name="sensitivity"
-          />
-        </div>
-        <span className={styles.inlineText}>will fire an alert if the target takes longer than </span>
-        <Field
-          invalid={Boolean(errors?.threshold)}
-          error={errors?.threshold?.message?.toString()}
-          className={styles.noMargin}
-        >
-          <Input
-            className={styles.numberInput}
-            {...register('threshold', { required: true, max: 100, min: 1 })}
-            type="number"
-            data-testid="threshold"
-            id="alertProbePercentage"
-          />
-        </Field>
-        <span className={styles.inlineText}> ms to complete for</span>
-        <Field
-          invalid={Boolean(errors?.timeCount)}
-          error={errors?.timeCount?.message?.toString()}
-          className={styles.noMargin}
-        >
-          <Input
-            {...register('timeCount', { required: true, min: 1, max: 999 })}
-            data-testid="timeCount"
-            type="number"
-            className={styles.numberInput}
-            id="alertTimeCount"
-          />
-        </Field>
-        <div className={styles.selectInput}>
-          <Controller
-            render={({ field }) => <Select {...field} options={TIME_UNIT_OPTIONS} />}
-            control={control}
-            name="timeUnit"
-          />
-        </div>
-      </>
-    );
-  };
-
-  return CommonAlertForm(rule, onSubmit, expressionContent);
-};
-
-export const SSLCertExpiryAlertForm = ({ rule, onSubmit }: Props) => {
-  const expressionContent = (styles: any, control: any, errors: any, register: any) => {
-    return (
-      <>
-        <span className={styles.inlineText}>Checks with a sensitivity level of</span>
-        <div className={styles.selectInput}>
-          <Controller
-            render={({ field }) => <Select {...field} options={ALERT_SENSITIVITY_OPTIONS} />}
-            control={control}
-            name="sensitivity"
-          />
-        </div>
-        <span className={styles.inlineText}>
-          {' '}
-          will fire an alert the SSL certificate is going to expire in less than{' '}
-        </span>
-        <Field
-          invalid={Boolean(errors?.threshold)}
-          error={errors?.threshold?.message?.toString()}
-          className={styles.noMargin}
-        >
-          <Input
-            className={styles.numberInput}
-            {...register('threshold', { required: true, max: 100, min: 1 })}
-            type="number"
-            data-testid="threshold"
-            id="alertProbePercentage"
-          />
-        </Field>
-        <span className={styles.inlineText}> days for</span>
-        <Field
-          invalid={Boolean(errors?.timeCount)}
-          error={errors?.timeCount?.message?.toString()}
-          className={styles.noMargin}
-        >
-          <Input
-            {...register('timeCount', { required: true, min: 1, max: 999 })}
-            data-testid="timeCount"
-            type="number"
-            className={styles.numberInput}
-            id="alertTimeCount"
-          />
-        </Field>
-        <div className={styles.selectInput}>
-          <Controller
-            render={({ field }) => <Select {...field} options={TIME_UNIT_OPTIONS} />}
-            control={control}
-            name="timeUnit"
-          />
-        </div>
-      </>
-    );
-  };
-
-  return CommonAlertForm(rule, onSubmit, expressionContent);
-};
-
-export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
-  const expressionContent = (styles: any, control: any, errors: any, register: any) => {
-    return (
-      <>
-        <span className={styles.inlineText}>Checks with a sensitivity level of</span>
-        <div className={styles.selectInput}>
-          <Controller
-            render={({ field }) => <Select {...field} options={ALERT_SENSITIVITY_OPTIONS} />}
-            control={control}
-            name="sensitivity"
-          />
-        </div>
-        <span className={styles.inlineText}>will fire an alert if less than </span>
-        <Field
-          invalid={Boolean(errors?.threshold)}
-          error={errors?.threshold?.message?.toString()}
-          className={styles.noMargin}
-        >
-          <Input
-            className={styles.numberInput}
-            {...register('threshold', { required: true, max: 100, min: 1 })}
-            type="number"
-            data-testid="threshold"
-            id="alertProbePercentage"
-          />
-        </Field>
-        <span className={styles.inlineText}>% of probes report connection success for</span>
-        <Field
-          invalid={Boolean(errors?.timeCount)}
-          error={errors?.timeCount?.message?.toString()}
-          className={styles.noMargin}
-        >
-          <Input
-            {...register('timeCount', { required: true, min: 1, max: 999 })}
-            data-testid="timeCount"
-            type="number"
-            className={styles.numberInput}
-            id="alertTimeCount"
-          />
-        </Field>
-        <div className={styles.selectInput}>
-          <Controller
-            render={({ field }) => <Select {...field} options={TIME_UNIT_OPTIONS} />}
-            control={control}
-            name="timeUnit"
-          />
-        </div>
-      </>
-    );
-  };
-
-  return CommonAlertForm(rule, onSubmit, expressionContent);
 };

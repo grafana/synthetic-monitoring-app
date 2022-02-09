@@ -3,8 +3,16 @@ import { Button, HorizontalGroup, Icon, Modal, Spinner, useStyles, Alert } from 
 import React, { FC, useState, useContext } from 'react';
 import { css } from '@emotion/css';
 import { useAlerts } from 'hooks/useAlerts';
-import { ProbeDurationAlertForm, AlertRuleForm, SSLCertExpiryAlertForm } from './AlertRuleForm';
-import { AlertFormValues, AlertRule, AlertFamily, FeatureName, OrgRole } from 'types';
+import { AlertRuleForm } from './AlertRuleForm';
+import {
+  AlertFormValues,
+  AlertRule,
+  AlertFamily,
+  FeatureName,
+  OrgRole,
+  AlertFormValidations,
+  AlertFormExpressionContent,
+} from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { transformAlertFormValues, alertFamilyFromRule } from './alertingTransformations';
 import { hasRole } from 'utils';
@@ -14,6 +22,39 @@ type SplitAlertRules = {
   recordingRules: AlertRule[];
   alertingRules: AlertRule[];
 };
+
+function getAlertFormParams(
+  rule: AlertRule
+): { validations: AlertFormValidations; expressionContent: AlertFormExpressionContent } {
+  switch (alertFamilyFromRule(rule)) {
+    case AlertFamily.ProbeDuration:
+      return {
+        validations: { threshold: { min: 1, max: 100 }, timeCount: { min: 1, max: 999 } },
+        expressionContent: {
+          willFireIf: 'will fire an alert if the target takes longer than',
+          conditionFor: 'ms to complete for',
+        },
+      };
+
+    case AlertFamily.SSLCertExpiry:
+      return {
+        validations: { threshold: { min: 1, max: 100 }, timeCount: { min: 1, max: 999 } },
+        expressionContent: {
+          willFireIf: 'will fire an alert if the SSL certificate is going to expire in less than',
+          conditionFor: 'days for',
+        },
+      };
+    case AlertFamily.ProbeSuccess:
+    default:
+      return {
+        validations: { threshold: { min: 1, max: 100 }, timeCount: { min: 1, max: 999 } },
+        expressionContent: {
+          willFireIf: 'will fire an alert if less than',
+          conditionFor: '% of probe sreport connection success for',
+        },
+      };
+  }
+}
 
 const getStyles = (theme: GrafanaTheme) => ({
   emptyCard: css`
@@ -157,18 +198,16 @@ export const Alerting: FC = () => {
         </div>
       )}
       {alertingRules.map((rule, index) => {
-        switch (alertFamilyFromRule(rule)) {
-          case AlertFamily.ProbeDuration:
-            return <ProbeDurationAlertForm rule={rule} onSubmit={getUpdateRules(index)} />;
-
-          case AlertFamily.ProbeSuccess:
-            return <AlertRuleForm key={`${rule.alert}-${index}`} rule={rule} onSubmit={getUpdateRules(index)} />;
-
-          case AlertFamily.SSLCertExpiry:
-            return <SSLCertExpiryAlertForm rule={rule} onSubmit={getUpdateRules(index)} />;
-        }
-
-        return undefined;
+        const { validations, expressionContent } = getAlertFormParams(rule);
+        return (
+          <AlertRuleForm
+            key={`${rule.alert}-${index}`}
+            rule={rule}
+            onSubmit={getUpdateRules(index)}
+            validations={validations}
+            expressionContent={expressionContent}
+          />
+        );
       })}
       {Boolean(alertRules?.length) ? (
         <HorizontalGroup justify="flex-end">
