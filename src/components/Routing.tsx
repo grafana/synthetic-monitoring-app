@@ -31,6 +31,9 @@ export const Routing = ({ onNavChanged, meta, ...rest }: AppRootProps) => {
     if (meta.enabled && (!instance.metrics || !instance.logs) && !location.pathname.includes('unprovisioned')) {
       navigate(ROUTES.Unprovisioned);
     }
+    if (meta.enabled && instance.metrics && instance.logs && location.pathname.includes('unprovisioned')) {
+      navigate(ROUTES.Home);
+    }
     if (meta.enabled && !instance.api && !location.pathname.includes('setup')) {
       navigate(ROUTES.Setup);
     }
