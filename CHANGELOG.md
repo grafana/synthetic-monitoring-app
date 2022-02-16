@@ -1,5 +1,12 @@
 # Change Log
 
+# [1.9.10](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.9...v1.9.10) (2022-2-16)
+
+### Bug fixes
+
+- Use datasource UIDs when creating dashboards instead of names
+- Fix a potential infinite routing loop when initializing on prem
+
 # [1.9.9](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.8...v1.9.9) (2022-2-04)
 
 ## Features
