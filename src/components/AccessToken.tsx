@@ -1,4 +1,4 @@
-import { Alert, Button, Link, Modal, useStyles2 } from '@grafana/ui';
+import { Alert, Button, Modal, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { InstanceContext } from 'contexts/InstanceContext';
 import React, { useContext, useState } from 'react';
@@ -34,13 +34,23 @@ export const AccessToken = () => {
       <div>
         <div>
           You can use an SM access token to authenticate with the synthetic monitoring api. Check out the{' '}
-          <Link href="https://github.com/grafana/synthetic-monitoring-api-go-client">
+          <a
+            className="highlight-word"
+            href="https://github.com/grafana/synthetic-monitoring-api-go-client"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             Synthetic Monitoring API Go client
-          </Link>{' '}
+          </a>{' '}
           or the{' '}
-          <Link href="https://registry.terraform.io/providers/grafana/grafana/latest/docs">
+          <a
+            className="highlight-word"
+            href="https://registry.terraform.io/providers/grafana/grafana/latest/docs"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             Grafana Terraform Provider
-          </Link>{' '}
+          </a>{' '}
           documentation to learn more about how to interact with the synthetic monitoring API.
         </div>
         <Button className={styles.vericalSpace} onClick={() => showTokenModal()}>
