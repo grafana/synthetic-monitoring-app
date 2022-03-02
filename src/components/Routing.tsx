@@ -10,7 +10,7 @@ import { PLUGIN_URL_PATH } from './constants';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { WelcomePage } from 'page/WelcomePage';
 import { UnprovisionedSetup } from './UnprovisionedSetup';
-import { useNavigation } from 'hooks/useNavigation';
+import { QueryParamMap, useNavigation } from 'hooks/useNavigation';
 import { useQuery } from 'hooks/useQuery';
 import { DashboardRedirecter } from './DashboardRedirecter';
 import { ROUTES } from 'types';
@@ -44,7 +44,10 @@ export const Routing = ({ onNavChanged, meta, ...rest }: AppRootProps) => {
     queryParams.delete('page');
     const params = queryParams.toString();
     const path = `${page}${params ? '?' : ''}${params}`;
-    navigate(path);
+    const translated: QueryParamMap = {};
+    queryParams.forEach((value, name) => (translated[name] = value));
+    navigate(path, translated);
+    window.location.reload();
   }
 
   return (

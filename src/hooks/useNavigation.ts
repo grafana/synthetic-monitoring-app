@@ -2,7 +2,7 @@ import { getLocationSrv } from '@grafana/runtime';
 import { PLUGIN_URL_PATH } from 'components/constants';
 import { useHistory } from 'react-router-dom';
 
-type QueryParamMap = {
+export type QueryParamMap = {
   [key: string]: string;
 };
 
