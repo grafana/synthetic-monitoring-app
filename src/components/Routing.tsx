@@ -40,15 +40,16 @@ export const Routing = ({ onNavChanged, meta, ...rest }: AppRootProps) => {
   }, [meta.enabled, instance.metrics, instance.logs, location.pathname, navigate, instance.api]);
 
   const page = queryParams.get('page');
-  if (page) {
-    queryParams.delete('page');
-    const params = queryParams.toString();
-    const path = `${page}${params ? '?' : ''}${params}`;
-    const translated: QueryParamMap = {};
-    queryParams.forEach((value, name) => (translated[name] = value));
-    navigate(path, translated);
-    window.location.reload();
-  }
+  useEffect(() => {
+    if (page) {
+      queryParams.delete('page');
+      const params = queryParams.toString();
+      const path = `${page}${params ? '?' : ''}${params}`;
+      const translated: QueryParamMap = {};
+      queryParams.forEach((value, name) => (translated[name] = value));
+      navigate(path, translated);
+    }
+  }, [page, navigate, queryParams]);
 
   return (
     <div>
