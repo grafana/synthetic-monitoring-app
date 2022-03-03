@@ -521,7 +521,7 @@
                 "value": [
                   {
                     "title": "Show details...",
-                    "url": "/a/grafana-synthetic-monitoring-app/?page=redirect&dashboard=$check_type&var-probe=All&var-instance=${__data.fields.instance}&var-job=${__data.fields.job}&from=${__from}&to=${__to}"
+                    "url": "/a/grafana-synthetic-monitoring-app/redirect?dashboard=$check_type&var-probe=All&var-instance=${__data.fields.instance}&var-job=${__data.fields.job}&from=${__from}&to=${__to}"
                   }
                 ]
               }
@@ -538,7 +538,7 @@
                 "value": [
                   {
                     "title": "Show details...",
-                    "url": "/a/grafana-synthetic-monitoring-app/?page=redirect&dashboard=${__data.fields[1]}&var-probe=All&var-instance=${__data.fields.instance}&var-job=${__data.fields.job}&from=${__from}&to=${__to}"
+                    "url": "/a/grafana-synthetic-monitoring-app/redirect?dashboard=${__data.fields[1]}&var-probe=All&var-instance=${__data.fields.instance}&var-job=${__data.fields.job}&from=${__from}&to=${__to}"
                   }
                 ]
               }
@@ -829,6 +829,6 @@
   "timezone": "",
   "title": "Synthetic Monitoring Summary",
   "uid": "fU-WBSqWz",
-  "version": 41,
+  "version": 42,
   "weekStart": ""
 }
