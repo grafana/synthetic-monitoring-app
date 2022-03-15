@@ -268,7 +268,7 @@ export interface CheckFormValues extends Omit<Check, 'settings' | 'labels' | 'al
   checkType: SelectableValue<CheckType>;
   settings: SettingsFormValues;
   labels?: Label[];
-  alertSensitivity: SelectableValue<AlertSensitivity>;
+  alertSensitivity: SelectableValue<string>;
   publishAdvancedMetrics: boolean;
 }
 
@@ -279,7 +279,7 @@ export interface Check extends BaseObject {
   offset?: number;
   timeout: number;
   enabled: boolean;
-  alertSensitivity: AlertSensitivity;
+  alertSensitivity: AlertSensitivity | string;
   basicMetricsOnly: boolean;
   labels: Label[]; // Currently list of [name:value]... can it be Labels?
   settings: Settings; //

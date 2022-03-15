@@ -3,7 +3,7 @@ import { css } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Field, Select, useStyles2 } from '@grafana/ui';
 import { Collapse } from './Collapse';
-import { Controller } from 'react-hook-form';
+import { Controller, useFormContext } from 'react-hook-form';
 import { ALERT_SENSITIVITY_OPTIONS } from './constants';
 
 interface Props {
@@ -22,6 +22,10 @@ const getStyles = (theme: GrafanaTheme2) => ({
 export const CheckFormAlert: FC<Props> = () => {
   const [showAlerting, setShowAlerting] = useState(false);
   const styles = useStyles2(getStyles);
+  const { watch } = useFormContext();
+  const alertSensitivity = watch('alertSensitivity');
+
+  const isCustomSensitivity = !Boolean(ALERT_SENSITIVITY_OPTIONS.find((option) => option.value === alertSensitivity));
 
   return (
     <Collapse label="Alerting" onToggle={() => setShowAlerting(!showAlerting)} isOpen={showAlerting} collapsible>
@@ -41,10 +45,18 @@ export const CheckFormAlert: FC<Props> = () => {
         </p>
         <p>Tip: adding multiple probes can help to prevent alert flapping for less frequent checks</p>
       </div>
-      <Field label="Select alert sensitivity">
+      <Field label="Select alert sensitivity" disabled={isCustomSensitivity}>
         <Controller
           name="alertSensitivity"
-          render={({ field }) => <Select {...field} width={40} options={ALERT_SENSITIVITY_OPTIONS} />}
+          render={({ field }) => (
+            <Select
+              {...field}
+              width={40}
+              disabled={isCustomSensitivity}
+              data-testid="alertSensitivityInput"
+              options={isCustomSensitivity ? [alertSensitivity] : ALERT_SENSITIVITY_OPTIONS}
+            />
+          )}
         />
       </Field>
     </Collapse>

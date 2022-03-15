@@ -282,6 +282,21 @@ const getAllFormSettingsForCheck = (): SettingsFormValues => {
   };
 };
 
+const getAlertSensitivityValueFromCheck = (sensitivity: string): SelectableValue<string> => {
+  const found = ALERT_SENSITIVITY_OPTIONS.find(({ value }) => value === sensitivity);
+  // We have a custom sensitivity value
+  if (sensitivity && !found) {
+    return {
+      value: sensitivity,
+      label: sensitivity,
+    };
+  }
+  if (found) {
+    return found;
+  }
+  return ALERT_SENSITIVITY_OPTIONS[0];
+};
+
 export const getDefaultValuesFromCheck = (check: Check = fallbackCheck): CheckFormValues => {
   const defaultCheckType = checkType(check.settings);
   const settings = check.id ? getFormSettingsForCheck(check.settings) : getAllFormSettingsForCheck();
@@ -292,8 +307,7 @@ export const getDefaultValuesFromCheck = (check: Check = fallbackCheck): CheckFo
     timeout: check.timeout / 1000,
     frequency: check.frequency / 1000,
     probes: check.probes,
-    alertSensitivity:
-      ALERT_SENSITIVITY_OPTIONS.find(({ value }) => value === check.alertSensitivity) ?? ALERT_SENSITIVITY_OPTIONS[0],
+    alertSensitivity: getAlertSensitivityValueFromCheck(check.alertSensitivity),
     checkType:
       CHECK_TYPE_OPTIONS.find((checkTypeOption) => checkTypeOption.value === defaultCheckType) ?? CHECK_TYPE_OPTIONS[1],
     settings,

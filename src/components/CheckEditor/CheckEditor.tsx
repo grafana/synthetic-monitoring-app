@@ -73,7 +73,7 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
   const { isEnabled: tracerouteEnabled } = useFeatureFlag(FeatureName.Traceroute);
 
   const formMethods = useForm<CheckFormValues>({ defaultValues, mode: 'onChange' });
-  const selectedCheckType = formMethods.watch('checkType').value ?? CheckType.PING;
+  const selectedCheckType = formMethods.watch('checkType')?.value ?? CheckType.PING;
 
   const isEditor = hasRole(OrgRole.EDITOR);
 
