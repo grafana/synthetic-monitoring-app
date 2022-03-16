@@ -180,6 +180,40 @@ export const BASIC_DNS_CHECK = {
   },
 };
 
+export const CUSTOM_ALERT_SENSITIVITY_CHECK = {
+  job: 'Job name',
+  target: 'grafana.com',
+  enabled: true,
+  labels: [{ name: 'labelName', value: 'labelValue' }],
+  probes: [42],
+  timeout: 3000,
+  frequency: 60000,
+  alertSensitivity: 'slightly sensitive',
+  basicMetricsOnly: true,
+  settings: {
+    dns: {
+      ipVersion: 'V4',
+      port: 53,
+      protocol: 'UDP',
+      recordType: 'A',
+      server: 'dns.google',
+      validRCodes: [DnsResponseCodes.NOERROR],
+      validateAditionalRRS: {
+        failIfMatchesRegexp: [],
+        failIfNotMatchesRegexp: [],
+      },
+      validateAnswerRRS: {
+        failIfMatchesRegexp: [],
+        failIfNotMatchesRegexp: [],
+      },
+      validateAuthorityRRS: {
+        failIfMatchesRegexp: ['inverted validation'],
+        failIfNotMatchesRegexp: ['not inverted validation'],
+      },
+    },
+  },
+};
+
 export const BASIC_CHECK_LIST = [
   {
     job: 'carne asada',
@@ -225,6 +259,7 @@ export const BASIC_CHECK_LIST = [
   { id: 2, ...BASIC_DNS_CHECK },
   { id: 3, ...BASIC_PING_CHECK },
   { id: 4, ...BASIC_TCP_CHECK },
+  { id: 5, ...CUSTOM_ALERT_SENSITIVITY_CHECK },
 ] as Check[];
 
 export const EDITED_HTTP_CHECK = {

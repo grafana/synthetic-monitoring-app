@@ -1,6 +1,6 @@
 import React from 'react';
 import { act, render, screen, waitFor, within } from '@testing-library/react';
-import { CheckType, GlobalSettings, ROUTES } from 'types';
+import { GlobalSettings, ROUTES } from 'types';
 import { getInstanceMock } from '../../datasource/__mocks__/DataSource';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { AppPluginMeta, DataSourceSettings, FeatureToggles } from '@grafana/data';
@@ -18,7 +18,7 @@ import {
   validKey,
 } from './testConstants';
 import { DNS_RESPONSE_MATCH_OPTIONS, PLUGIN_URL_PATH } from 'components/constants';
-import { getSlider, selectCheckType, submitForm, toggleSection } from './testHelpers';
+import { getSlider, submitForm, toggleSection } from './testHelpers';
 import userEvent from '@testing-library/user-event';
 
 jest.setTimeout(60000);
@@ -220,7 +220,6 @@ describe('editing checks', () => {
 
   it('transforms data correctly for DNS check', async () => {
     const instance = await renderExistingCheckEditor('/edit/2');
-    await selectCheckType(CheckType.DNS);
     await toggleSection('Validation');
 
     const responseMatch1 = await screen.findByTestId('dnsValidationResponseMatch0');
@@ -238,5 +237,14 @@ describe('editing checks', () => {
     await submitForm(onReturn);
     expect(instance.api.addCheck).toHaveBeenCalledTimes(0);
     expect(instance.api.updateCheck).toHaveBeenCalledWith(EDITED_DNS_CHECK);
+  });
+
+  it('handles custom alert severities', async () => {
+    await renderExistingCheckEditor('/edit/5');
+    expect(true).toBeTruthy();
+    await toggleSection('Alerting');
+
+    const alertSensitivityInput = await screen.findByTestId('alertSensitivityInput');
+    expect(alertSensitivityInput).toHaveValue('slightly sensitive');
   });
 });
