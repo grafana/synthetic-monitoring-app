@@ -123,7 +123,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Value #A"
+              "options": "Value"
             },
             "properties": [
               {
@@ -160,7 +160,7 @@
               "showLegend": true,
               "style": {
                 "color": {
-                  "field": "Value #A",
+                  "field": "Value",
                   "fixed": "dark-green"
                 },
                 "opacity": 0.4,
@@ -171,7 +171,7 @@
                   "mode": "mod"
                 },
                 "size": {
-                  "field": "Value #A",
+                  "field": "Value",
                   "fixed": 5,
                   "max": 10,
                   "min": 4
@@ -829,6 +829,6 @@
   "timezone": "",
   "title": "Synthetic Monitoring Summary",
   "uid": "fU-WBSqWz",
-  "version": 42,
+  "version": 43,
   "weekStart": ""
 }

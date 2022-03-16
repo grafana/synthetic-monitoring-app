@@ -112,7 +112,7 @@
             {
               "type": "value",
               "options": {
-                "Value #A": {
+                "Value": {
                   "text": "Error rate",
                   "index": 0
                 }
@@ -131,7 +131,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "Value #A"
+              "options": "Value"
             },
             "properties": [
               {
@@ -167,7 +167,7 @@
               "style": {
                 "color": {
                   "fixed": "dark-green",
-                  "field": "Value #A"
+                  "field": "Value"
                 },
                 "opacity": 0.4,
                 "rotation": {
@@ -177,7 +177,7 @@
                   "mode": "mod"
                 },
                 "size": {
-                  "field": "Value #A",
+                  "field": "Value",
                   "fixed": 5,
                   "max": 10,
                   "min": 4
@@ -201,8 +201,8 @@
             },
             "location": {
               "geohash": "geohash",
-              "latitude": "Value #A",
-              "longitude": "Value #A",
+              "latitude": "Value",
+              "longitude": "Value",
               "mode": "geohash"
             },
             "name": "Layer 1",
@@ -1089,5 +1089,5 @@
   "timezone": "",
   "title": "Synthetic Monitoring DNS",
   "uid": "lgL6odgGz",
-  "version": 18
+  "version": 19
 }
