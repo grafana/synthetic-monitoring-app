@@ -25,7 +25,9 @@ export const CheckFormAlert: FC<Props> = () => {
   const { watch } = useFormContext();
   const alertSensitivity = watch('alertSensitivity');
 
-  const isCustomSensitivity = !Boolean(ALERT_SENSITIVITY_OPTIONS.find((option) => option.value === alertSensitivity));
+  const isCustomSensitivity = !Boolean(
+    ALERT_SENSITIVITY_OPTIONS.find((option) => option.value === alertSensitivity.value)
+  );
 
   return (
     <Collapse label="Alerting" onToggle={() => setShowAlerting(!showAlerting)} isOpen={showAlerting} collapsible>
