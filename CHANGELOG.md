@@ -1,6 +1,13 @@
 # Change Log
 
-# [1.9.10](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.10...v1.9.11) (2022-3-3)
+# [1.9.12](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.11...v1.9.12) (2022-3-16)
+
+### Bug fixes
+
+- Dashboard maps weren't displaying thresholds correctly
+- Show custom alert thresholds in the check editor form
+
+# [1.9.11](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.10...v1.9.11) (2022-3-3)
 
 ### Bug fixes
 
