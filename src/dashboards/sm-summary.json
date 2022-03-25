@@ -599,7 +599,7 @@
         {
           "datasource": "${DS_SM_METRICS}",
           "exemplar": false,
-          "expr": "sum_over_time(\n  (\n    ceil(\n      sum by (instance, job) (idelta(probe_all_success_sum[5m]) * on (instance, job, probe, config_version) sm_check_info{check_name=\"$check_type\"})\n      /\n      sum by (instance, job) (idelta(probe_all_success_count[5m]))\n    )\n  )[$__range:]\n)\n/\ncount_over_time(\n  (\n      sum by (instance, job) (idelta(probe_all_success_count[5m]))\n  )[$__range:]\n)",
+          "expr": "sum_over_time(\n  (\n    ceil(\n      sum by (instance, job) (increase(probe_all_success_sum[5m]) * on (instance, job, probe, config_version) sm_check_info{check_name=\"$check_type\"})\n      /\n      sum by (instance, job) (increase(probe_all_success_count[5m]))\n    )\n  )[$__range:]\n)\n/\ncount_over_time(\n  (\n      sum by (instance, job) (increase(probe_all_success_count[5m]))\n  )[$__range:]\n)",
           "format": "table",
           "hide": false,
           "instant": true,

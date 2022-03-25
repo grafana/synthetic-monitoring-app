@@ -289,7 +289,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum_over_time(\n  (\n    ceil(\n      sum by (instance, job) (idelta(probe_all_success_sum{instance=\"$instance\", job=\"$job\"}[5m]))\n      /\n      sum by (instance, job) (idelta(probe_all_success_count{instance=\"$instance\", job=\"$job\"}[5m]))\n    )\n  )[$__range:]\n)\n/\ncount_over_time(\n  (\n      sum by (instance, job) (idelta(probe_all_success_count{instance=\"$instance\", job=\"$job\"}[5m]))\n  )[$__range:]\n)",
+          "expr": "sum_over_time(\n  (\n    ceil(\n      sum by (instance, job) (increase(probe_all_success_sum{instance=\"$instance\", job=\"$job\"}[5m]))\n      /\n      sum by (instance, job) (increase(probe_all_success_count{instance=\"$instance\", job=\"$job\"}[5m]))\n    )\n  )[$__range:]\n)\n/\ncount_over_time(\n  (\n      sum by (instance, job) (increase(probe_all_success_count{instance=\"$instance\", job=\"$job\"}[5m]))\n  )[$__range:]\n)",
           "hide": false,
           "instant": true,
           "interval": "",
