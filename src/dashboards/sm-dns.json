@@ -367,7 +367,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum(\n  (\n    delta(probe_all_success_sum{instance=\"$instance\", job=\"$job\", probe=~\"$probe\"}[$__range])\n    OR\n    delta(probe_success_sum{instance=\"$instance\", job=\"$job\", probe=~\"$probe\"}[$__range])\n  )\n)\n/\nsum(\n  (\n    delta(probe_all_success_count{instance=\"$instance\", job=\"$job\", probe=~\"$probe\"}[$__range])\n    OR\n    delta(probe_success_count{instance=\"$instance\", job=\"$job\", probe=~\"$probe\"}[$__range])\n  )\n)",
+          "expr": "sum(\n  (\n    increase(probe_all_success_sum{instance=\"$instance\", job=\"$job\", probe=~\"$probe\"}[$__range])\n    OR\n    increase(probe_success_sum{instance=\"$instance\", job=\"$job\", probe=~\"$probe\"}[$__range])\n  )\n)\n/\nsum(\n  (\n    increase(probe_all_success_count{instance=\"$instance\", job=\"$job\", probe=~\"$probe\"}[$__range])\n    OR\n    increase(probe_success_count{instance=\"$instance\", job=\"$job\", probe=~\"$probe\"}[$__range])\n  )\n)",
           "hide": false,
           "instant": true,
           "interval": "",
