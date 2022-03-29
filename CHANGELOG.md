@@ -1,5 +1,12 @@
 # Change Log
 
+# [1.9.13](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.12...v1.9.13) (2022-3-29)
+
+### Bug fixes
+
+- Fixes reachability queries that could sometimes be over 100% for long time windows
+- Hides dashboard update modal from users that don't have permissions to update dashboards
+
 # [1.9.12](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.11...v1.9.12) (2022-3-16)
 
 ### Bug fixes
