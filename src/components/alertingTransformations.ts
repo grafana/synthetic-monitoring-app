@@ -1,5 +1,5 @@
-import { AlertDescription, AlertFormValues, AlertRule, AlertSensitivity, Label } from 'types';
-import { ALERT_PROBE_SUCCESS_RECORDING_METRIC, ALERT_RULE_EXPR_REGEX } from 'components/constants';
+import { AlertDescription, AlertFamily, AlertFormValues, AlertRule, AlertSensitivity, Label } from 'types';
+import { ALERT_RULE_EXPR_REGEX, ALERT_METRIC_TO_ALERT_FAMILY_MAP } from 'components/constants';
 
 type PromLabel = { [key: string]: string };
 
@@ -13,8 +13,8 @@ export const labelToProm = (labels?: Label[]) => {
 export const transformAlertFormValues = (alertValues: AlertFormValues | undefined): AlertRule => {
   return {
     alert: alertValues?.name ?? '',
-    expr: `${ALERT_PROBE_SUCCESS_RECORDING_METRIC}{alert_sensitivity="${alertValues?.sensitivity?.value}"} < ${
-      alertValues?.probePercentage ?? ''
+    expr: `${alertValues?.metric}{alert_sensitivity="${alertValues?.sensitivity?.value}"} ${alertValues?.operator} ${
+      alertValues?.threshold ?? ''
     }`,
     for: `${alertValues?.timeCount}${alertValues?.timeUnit?.value}`,
     labels: labelToProm(alertValues?.labels),
@@ -46,4 +46,14 @@ export const alertDescriptionFromRule = (rule: AlertRule): AlertDescription | un
     threshold: Number(result?.groups?.threshold),
   };
   return desc;
+};
+
+export const alertFamilyFromRule = (rule: AlertRule): AlertFamily | undefined => {
+  const desc = alertDescriptionFromRule(rule);
+  if (!desc) {
+    return undefined;
+  }
+
+  const family = ALERT_METRIC_TO_ALERT_FAMILY_MAP.get(desc.metric);
+  return family;
 };

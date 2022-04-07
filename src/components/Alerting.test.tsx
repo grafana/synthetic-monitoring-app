@@ -1,6 +1,11 @@
 import { Alerting } from 'components/Alerting';
 import {
+  ALERT_PROBE_DURATION_RECORDING_EXPR,
+  ALERT_PROBE_DURATION_RECORDING_METRIC,
   ALERT_PROBE_SUCCESS_RECORDING_EXPR,
+  ALERT_PROBE_SUCCESS_RECORDING_METRIC,
+  ALERT_SSL_CERT_VALIDITY_RECORDING_EXPR,
+  ALERT_SSL_CERT_VALIDITY_RECORDING_METRIC,
   DEFAULT_ALERT_NAMES_BY_FAMILY_AND_SENSITIVITY,
 } from 'components/constants';
 import { render, screen, waitFor, within } from '@testing-library/react';
@@ -74,10 +79,10 @@ it('adds default alerts and edits alerts', async () => {
   await userEvent.clear(alertNameInput);
   await userEvent.type(alertNameInput, 'A different name');
 
-  const probePercentage = await screen.findByTestId('probePercentage');
-  expect(probePercentage).toHaveValue(95);
-  await userEvent.clear(probePercentage);
-  await userEvent.type(probePercentage, '25');
+  const threshold = await screen.findByTestId('threshold');
+  expect(threshold).toHaveValue(95);
+  await userEvent.clear(threshold);
+  await userEvent.type(threshold, '25');
 
   const timeCount = await screen.findByTestId('timeCount');
   expect(timeCount).toHaveValue(5);
@@ -111,8 +116,57 @@ it('adds default alerts and edits alerts', async () => {
   expect(setRules).toHaveBeenCalledWith([
     {
       expr: ALERT_PROBE_SUCCESS_RECORDING_EXPR,
-      record: 'instance_job_severity:probe_success:mean5m',
+      record: ALERT_PROBE_SUCCESS_RECORDING_METRIC,
     },
+    {
+      expr: ALERT_SSL_CERT_VALIDITY_RECORDING_EXPR,
+      record: ALERT_SSL_CERT_VALIDITY_RECORDING_METRIC,
+    },
+    {
+      expr: ALERT_PROBE_DURATION_RECORDING_EXPR,
+      record: ALERT_PROBE_DURATION_RECORDING_METRIC,
+    },
+    // probe duration
+    {
+      alert: 'SyntheticMonitoringProbeDurationAtHighSensitivity',
+      annotations: {
+        description:
+          '{{ $labels.check_name }} check, job {{ $labels.job }}, instance {{ $labels.instance }}, on probe {{ $labels.probe }} has a duration of {{ printf "%.3f" $value }} seconds.',
+        summary: 'probe duration above 100 ms',
+      },
+      expr: 'instance_job_probe_severity:probe_all_duration_seconds:mean5m{alert_sensitivity="high"} * 1000 > 100',
+      for: '5m',
+      labels: {
+        namespace: 'synthetic_monitoring',
+      },
+    },
+    {
+      alert: 'SyntheticMonitoringProbeDurationAtMediumSensitivity',
+      annotations: {
+        description:
+          '{{ $labels.check_name }} check, job {{ $labels.job }}, instance {{ $labels.instance }}, on probe {{ $labels.probe }} has a duration of {{ printf "%.3f" $value }} seconds.',
+        summary: 'probe duration above 150 ms',
+      },
+      expr: 'instance_job_probe_severity:probe_all_duration_seconds:mean5m{alert_sensitivity="medium"} * 1000 > 150',
+      for: '5m',
+      labels: {
+        namespace: 'synthetic_monitoring',
+      },
+    },
+    {
+      alert: 'SyntheticMonitoringProbeDurationAtLowSensitivity',
+      annotations: {
+        description:
+          '{{ $labels.check_name }} check, job {{ $labels.job }}, instance {{ $labels.instance }}, on probe {{ $labels.probe }} has a duration of {{ printf "%.3f" $value }} seconds.',
+        summary: 'probe duration above 200 ms',
+      },
+      expr: 'instance_job_probe_severity:probe_all_duration_seconds:mean5m{alert_sensitivity="low"} * 1000 > 200',
+      for: '5m',
+      labels: {
+        namespace: 'synthetic_monitoring',
+      },
+    },
+    // probe success
     {
       alert: 'A different name',
       annotations: {
@@ -149,6 +203,46 @@ it('adds default alerts and edits alerts', async () => {
         summary: 'check success below 75%',
       },
       expr: 'instance_job_severity:probe_success:mean5m{alert_sensitivity="low"} < 75',
+      for: '5m',
+      labels: {
+        namespace: 'synthetic_monitoring',
+      },
+    },
+    // SSL certificate expiration
+    {
+      alert: 'SyntheticMonitoringSSLCertExpiryAtHighSensitivity',
+      annotations: {
+        description:
+          'SSL certificate for instance {{ $labels.instance }} and job {{ $labels.job }} is expiring in {{ printf "%.1f" $value }} days.',
+        summary: `SSL certificate expiration in 90 days`,
+      },
+      expr: 'instance_job_severity:ssl_cert_validity_days:min{alert_sensitivity="high"} < 90',
+      for: '5m',
+      labels: {
+        namespace: 'synthetic_monitoring',
+      },
+    },
+    {
+      alert: 'SyntheticMonitoringSSLCertExpiryAtMediumSensitivity',
+      annotations: {
+        description:
+          'SSL certificate for instance {{ $labels.instance }} and job {{ $labels.job }} is expiring in {{ printf "%.1f" $value }} days.',
+        summary: `SSL certificate expiration in 60 days`,
+      },
+      expr: 'instance_job_severity:ssl_cert_validity_days:min{alert_sensitivity="medium"} < 60',
+      for: '5m',
+      labels: {
+        namespace: 'synthetic_monitoring',
+      },
+    },
+    {
+      alert: 'SyntheticMonitoringSSLCertExpiryAtLowSensitivity',
+      annotations: {
+        description:
+          'SSL certificate for instance {{ $labels.instance }} and job {{ $labels.job }} is expiring in {{ printf "%.1f" $value }} days.',
+        summary: `SSL certificate expiration in 30 days`,
+      },
+      expr: 'instance_job_severity:ssl_cert_validity_days:min{alert_sensitivity="low"} < 30',
       for: '5m',
       labels: {
         namespace: 'synthetic_monitoring',
