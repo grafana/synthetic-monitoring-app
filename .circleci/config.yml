@@ -131,9 +131,6 @@ jobs:
       - run:
           name: Build and test frontend
           command: yarn build
-      - run:
-          name: Lint Dashboards
-          command: yarn lint:dashboards
 
   build:
     executor: default_exec
