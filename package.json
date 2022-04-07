@@ -4,6 +4,7 @@
   "description": "Grafana Synthetic Monitoring App",
   "scripts": {
     "lint": "eslint --cache --ignore-path .gitignore --ext .js,.jsx,.ts,.tsx .",
+    "lint:dashboards": "./scripts/lint-dashboards.sh",
     "build": "grafana-toolkit plugin:build",
     "test": "grafana-toolkit plugin:test",
     "test:accessibility": "pa11y --runner axe --reporter json http://localhost:3000/a/grafana-synthetic-monitoring-app/?page=checks > pa11y-report.json",

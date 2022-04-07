@@ -1,0 +1,5 @@
+exclusions:
+  panel-datasource-rule:
+    reason: "Plugin will replace these when loading"
+  template-datasource-rule:
+    reason: "Plugin will replace these when loading"
