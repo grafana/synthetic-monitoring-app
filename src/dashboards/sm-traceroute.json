@@ -604,7 +604,7 @@
       "targets": [
         {
           "exemplar": false,
-          "expr": "sum((rate(probe_all_duration_seconds_sum{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__range]) OR rate(probe_duration_seconds_sum{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__range]))) by (probe) / sum((rate(probe_all_duration_seconds_count{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__range]) OR rate(probe_duration_seconds_count{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__range]))) by (probe)",
+          "expr": "sum(rate(probe_all_duration_seconds_sum{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__range])) by (probe) / sum(rate(probe_all_duration_seconds_count{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__range])) by (probe)",
           "format": "time_series",
           "instant": true,
           "interval": "",
@@ -815,5 +815,5 @@
   "timezone": "",
   "title": "Synthetic Monitoring Traceroute",
   "uid": "hk8gHB4nk",
-  "version": 7
+  "version": 8
 }

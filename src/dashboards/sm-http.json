@@ -211,7 +211,7 @@
       },
       "targets": [
         {
-          "expr": "100*(\n  1 - (\n    sum by (probe, geohash)\n    (\n      (\n        rate(probe_all_success_sum{instance=\"$instance\", job=\"$job\"}[$__range])\n        OR\n        rate(probe_success_sum{instance=\"$instance\", job=\"$job\"}[$__range])\n      )\n      *\n      on (instance, job, probe, config_version)\n      group_left(geohash)\n      max by (instance, job, probe, config_version, geohash)\n      (\n        sm_check_info{instance=\"$instance\", job=\"$job\"}\n      )\n    )\n    /\n    sum by (probe, geohash)\n    (\n      (\n        rate(probe_all_success_count{instance=\"$instance\", job=\"$job\"}[$__range])\n        OR\n        rate(probe_success_count{instance=\"$instance\", job=\"$job\"}[$__range])\n      )\n      *\n      on (instance, job, probe, config_version)\n      group_left(geohash)\n      max by (instance, job, probe, config_version, geohash)\n      (\n        sm_check_info{instance=\"$instance\", job=\"$job\"}\n      )\n    )\n  )\n)",
+          "expr": "100*(\n  1 - (\n    sum by (probe, geohash)\n    (\n      rate(probe_all_success_sum{instance=\"$instance\", job=\"$job\"}[$__range])\n      *\n      on (instance, job, probe, config_version)\n      group_left(geohash)\n      max by (instance, job, probe, config_version, geohash)\n      (\n        sm_check_info{instance=\"$instance\", job=\"$job\"}\n      )\n    )\n    /\n    sum by (probe, geohash)\n    (\n      rate(probe_all_success_count{instance=\"$instance\", job=\"$job\"}[$__range])\n        *\n      on (instance, job, probe, config_version)\n      group_left(geohash)\n      max by (instance, job, probe, config_version, geohash)\n      (\n        sm_check_info{instance=\"$instance\", job=\"$job\"}\n      )\n    )\n  )\n)",
           "legendFormat": "",
           "interval": "",
           "exemplar": false,
@@ -366,7 +366,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum(\n  (\n    increase(probe_all_success_sum{instance=\"$instance\", job=\"$job\", probe=~\"$probe\"}[$__range])\n    OR\n    increase(probe_success_sum{instance=\"$instance\", job=\"$job\", probe=~\"$probe\"}[$__range])\n  )\n)\n/\nsum(\n  (\n    increase(probe_all_success_count{instance=\"$instance\", job=\"$job\", probe=~\"$probe\"}[$__range])\n    OR\n    increase(probe_success_count{instance=\"$instance\", job=\"$job\", probe=~\"$probe\"}[$__range])\n  )\n)",
+          "expr": "sum(\n  increase(probe_all_success_sum{instance=\"$instance\", job=\"$job\", probe=~\"$probe\"}[$__range])\n   )\n/\nsum(\n  increase(probe_all_success_count{instance=\"$instance\", job=\"$job\", probe=~\"$probe\"}[$__range])\n)",
           "hide": false,
           "instant": true,
           "interval": "",
@@ -435,7 +435,7 @@
       "pluginVersion": "7.5.7",
       "targets": [
         {
-          "expr": "sum((rate(probe_all_duration_seconds_sum{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__range]) OR rate(probe_duration_seconds_sum{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__range]))) / sum((rate(probe_all_duration_seconds_count{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__range]) OR rate(probe_duration_seconds_count{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__range])))",
+          "expr": "sum(rate(probe_all_duration_seconds_sum{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__range])) / sum(rate(probe_all_duration_seconds_count{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__range]))",
           "hide": false,
           "instant": true,
           "interval": "",
@@ -641,7 +641,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "100*(\n  1 - (\n    sum(\n      (\n        rate(probe_all_success_sum{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__rate_interval])\n        OR\n        rate(probe_success_sum{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__rate_interval])\n      )\n    )\n    /\n    sum(\n      (\n        rate(probe_all_success_count{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__rate_interval])\n        OR\n        rate(probe_success_count{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__rate_interval])\n      )\n    )\n  )\n)",
+          "expr": "100*(\n  1 - (\n    sum(\n      rate(probe_all_success_sum{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__rate_interval])\n        )\n    /\n    sum(\n      rate(probe_all_success_count{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__rate_interval])\n    )\n  )\n)",
           "hide": false,
           "interval": "1m",
           "intervalFactor": 1,
@@ -1076,5 +1076,5 @@
   "timezone": "",
   "title": "Synthetic Monitoring HTTP",
   "uid": "rq0JrllZz",
-  "version": 33
+  "version": 34
 }
