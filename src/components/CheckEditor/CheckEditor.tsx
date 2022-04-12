@@ -218,7 +218,9 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
         {submissionError && (
           <div className={styles.submissionError}>
             <Alert title="Save failed" severity="error">
-              {`${submissionError.status}: ${submissionError.data?.msg ?? 'Something went wrong'}`}
+              {`${submissionError.status}: ${
+                submissionError.data?.msg?.concat(', ', submissionError.data?.err ?? '') ?? 'Something went wrong'
+              }`}
             </Alert>
           </div>
         )}
