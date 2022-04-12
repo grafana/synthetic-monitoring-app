@@ -48,12 +48,18 @@ export const ProbeList = ({ probes, onAddNew, onSelectProbe }: Props) => {
           const onlineTxt = probe.online ? 'Online' : 'Offline';
           const onlineIcon = probe.online ? 'heart' : 'heart-break';
           const color = probe.online ? 'green' : 'red';
+          const probeTypeText = probe.public ? 'Public' : 'Private';
+          const probeTypeIcon = probe.public ? 'cloud' : 'lock';
           return (
             <div key={probe.id} className="add-data-source-item" onClick={() => onSelectProbe(probe.id!)}>
               <div className="add-data-source-item-text-wrapper">
                 <span className="add-data-source-item-text">{probe.name}</span>
                 <span className="add-data-source-item-desc">
                   <Badge color={color} icon={onlineIcon} text={onlineTxt} />
+                  <a> </a>
+                  <Badge color="blue" icon="compass" text={probe.region} />
+                  <a> </a>
+                  <Badge color="blue" icon={probeTypeIcon} text={probeTypeText} />
                   <div>{labelsToString(probe.labels)}</div>
                   <div>Version: {probe.version}</div>
                 </span>
