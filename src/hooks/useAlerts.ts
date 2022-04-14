@@ -9,9 +9,9 @@ import {
   SM_ALERTING_NAMESPACE,
   getDefaultAlertAnnotations,
 } from 'components/constants';
-import { AlertFamily, AlertRule, AlertSensitivity, FeatureName } from 'types';
+import { AlertFamily, AlertRule, AlertSensitivity } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { useFeatureFlag } from './useFeatureFlag';
+import useUnifiedAlertsEnabled from './useUnifiedAlertsEnabled';
 
 enum AlertThresholds {
   High = 95,
@@ -97,7 +97,7 @@ export function useAlerts(checkId?: number) {
   const [alertRules, setAlertRules] = useState<AlertRule[]>();
   const [defaultRulesSetCount, setDefaultRulesSetCount] = useState(0);
   const [alertError, setAlertError] = useState('');
-  const { isEnabled: isUnifiedAlertsEnabled } = useFeatureFlag(FeatureName.UnifiedAlerting);
+  const isUnifiedAlertsEnabled = useUnifiedAlertsEnabled();
 
   const {
     instance: { alertRuler, metrics },

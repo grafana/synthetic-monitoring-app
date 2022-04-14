@@ -4,11 +4,11 @@ import React, { FC, useState, useContext } from 'react';
 import { css } from '@emotion/css';
 import { useAlerts } from 'hooks/useAlerts';
 import { AlertRuleForm } from './AlertRuleForm';
-import { AlertFormValues, AlertRule, FeatureName, OrgRole } from 'types';
+import { AlertFormValues, AlertRule, OrgRole } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { transformAlertFormValues } from './alertingTransformations';
 import { hasRole } from 'utils';
-import { useFeatureFlag } from 'hooks/useFeatureFlag';
+import useUnifiedAlertsEnabled from 'hooks/useUnifiedAlertsEnabled';
 
 type SplitAlertRules = {
   recordingRules: AlertRule[];
@@ -42,7 +42,7 @@ export const Alerting: FC = () => {
   const [updatingDefaultRules, setUpdatingDefaultRules] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
   const { instance } = useContext(InstanceContext);
-  const { isEnabled: isUnifiedAlertingEnabled } = useFeatureFlag(FeatureName.UnifiedAlerting);
+  const isUnifiedAlertingEnabled = useUnifiedAlertsEnabled();
 
   const { recordingRules, alertingRules } = alertRules?.reduce<SplitAlertRules>(
     (rules, currentRule) => {
@@ -97,11 +97,10 @@ export const Alerting: FC = () => {
       <div>
         <Icon className={styles.icon} name="exclamation-triangle" />
         Synthetic Monitoring uses &nbsp;
-        <a href="https://grafana.com/docs/grafana-cloud/alerts/grafana-cloud-alerting/" className={styles.link}>
-          Grafana Cloud Alerting
+        <a href="https://grafana.com/docs/grafana/latest/alerting/unified-alerting/" className={styles.link}>
+          Unified Alerting
         </a>
-        , which is not accessible for Grafana instances running on-prem. Alert rules can be added to new or existing
-        checks in &nbsp;
+        , which is not enabled in this Grafana instance. Alert rules can be added to new or existing checks in &nbsp;
         <a href="https://grafana.com" className={styles.link}>
           Grafana Cloud.
         </a>
