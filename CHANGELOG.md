@@ -1,5 +1,9 @@
 # Change Log
 
+# [1.9.14](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.13...v1.9.14) (2022-4-15)
+
+- Fixes a bug where there alerting tab could end up in a disabled state when it shouldn't
+
 # [1.9.13](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.12...v1.9.13) (2022-3-29)
 
 ### Bug fixes
