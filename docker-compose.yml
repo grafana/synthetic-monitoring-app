@@ -1,0 +1,13 @@
+version: '3.0'
+
+services:
+  grafana:
+    container_name: 'synthetic-monitoring-app'
+    build:
+      context: ./
+      args:
+        grafana_version: ${GRAFANA_VERSION:-8.5.0}
+    ports:
+      - 3000:3000/tcp
+    volumes:
+      - ./dist:/var/lib/grafana/plugins/synthetic-monitoring-app
