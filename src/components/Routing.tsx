@@ -19,7 +19,7 @@ export const Routing = ({ onNavChanged, meta, ...rest }: AppRootProps) => {
   const queryParams = useQuery();
   const navigate = useNavigation();
   const location = useLocation();
-  const { instance } = useContext(InstanceContext);
+  const { instance, provisioned } = useContext(InstanceContext);
   const initialized = meta.enabled && instance.api;
 
   useEffect(() => {
@@ -28,16 +28,24 @@ export const Routing = ({ onNavChanged, meta, ...rest }: AppRootProps) => {
   }, [meta.info.logos.large, onNavChanged, location.pathname]);
 
   useEffect(() => {
-    if (meta.enabled && (!instance.metrics || !instance.logs) && !location.pathname.includes('unprovisioned')) {
+    // not provisioned and not initialized
+    if (
+      meta.enabled &&
+      (!instance.metrics || !instance.logs) &&
+      !provisioned &&
+      !location.pathname.includes('unprovisioned')
+    ) {
       navigate(ROUTES.Unprovisioned);
     }
+    // not provisioned and just initialized
     if (meta.enabled && instance.metrics && instance.logs && location.pathname.includes('unprovisioned')) {
       navigate(ROUTES.Home);
     }
-    if (meta.enabled && !instance.api && !location.pathname.includes('setup')) {
+    // Provisioned but not initialized
+    if (meta.enabled && !instance.api && provisioned && !location.pathname.includes('setup')) {
       navigate(ROUTES.Setup);
     }
-  }, [meta.enabled, instance.metrics, instance.logs, location.pathname, navigate, instance.api]);
+  }, [meta.enabled, instance.metrics, instance.logs, location.pathname, navigate, instance.api, provisioned]);
 
   const page = queryParams.get('page');
   useEffect(() => {
