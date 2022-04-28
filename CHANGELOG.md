@@ -1,5 +1,10 @@
 # Change Log
 
+# [1.9.15](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.14...v1.9.15) (2022-4-28)
+
+- Fixes a routing issue where the unprovisioned plugin could get stuck in an infinite loop
+- Fixes a routing issue where the plugin could prevent navigation to other parts of Grafana
+
 # [1.9.14](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.13...v1.9.14) (2022-4-15)
 
 - Fixes a bug where there alerting tab could end up in a disabled state when it shouldn't
