@@ -15,13 +15,14 @@ import {
 } from '@grafana/ui';
 import { useForm, FormProvider } from 'react-hook-form';
 import { useAsyncCallback } from 'react-async-hook';
+import appEvents from 'grafana/app/core/app_events';
 import { Probe, OrgRole, SubmissionErrorWrapper, ProbePageParams } from 'types';
 import { hasRole } from 'utils';
 import { LabelField } from 'components/LabelField';
 import ProbeStatus from '../ProbeStatus';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { trackEvent, trackException } from 'analytics';
-import { GrafanaTheme2 } from '@grafana/data';
+import { GrafanaTheme2, AppEvents } from '@grafana/data';
 import { Clipboard } from 'components/Clipboard';
 import { SimpleMap } from '../SimpleMap';
 import { useParams } from 'react-router-dom';
@@ -115,10 +116,17 @@ const ProbeEditor = ({ probes, onReturn }: Props) => {
 
   const onRemoveProbe = async () => {
     if (!probe.id || !instance.api) {
+      appEvents.emit(AppEvents.alertError, ['Could not delete probe, please refresh and try again']);
       return;
     }
-    await instance.api.deleteProbe(probe.id);
-    onReturn(true);
+    try {
+      await instance.api.deleteProbe(probe.id);
+      onReturn(true);
+    } catch (e) {
+      const err = e as SubmissionErrorWrapper;
+      const message = `${err.data?.msg} Make sure there are no checks assigned to this probe and try again.`;
+      appEvents.emit(AppEvents.alertError, [message]);
+    }
   };
 
   const onResetToken = async () => {
