@@ -1,5 +1,9 @@
 # Change Log
 
+# [1.9.16](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.15...v1.9.16) (2022-6-3)
+
+- Adds a more helpful error message when probe deletion fails
+
 # [1.9.15](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.14...v1.9.15) (2022-4-28)
 
 - Fixes a routing issue where the unprovisioned plugin could get stuck in an infinite loop
