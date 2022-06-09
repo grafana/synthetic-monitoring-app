@@ -12,6 +12,7 @@ import {
 import { AlertFamily, AlertRule, AlertSensitivity } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
 import useUnifiedAlertsEnabled from './useUnifiedAlertsEnabled';
+import useGrafanaVersion from './useGrafanaVersion';
 
 enum AlertThresholds {
   High = 95,
@@ -76,11 +77,11 @@ const legacyFetchSMRules = (alertRulerUrl: string): Promise<RuleResponse> =>
       return { rules: [], error: e.data?.message ?? 'We ran into a problem and could not fetch the alert rules' };
     });
 
-const fetchSMRules = (metricInstanceId: number): Promise<RuleResponse> =>
+const fetchSMRules = (metricInstanceIdentifier: string | number): Promise<RuleResponse> =>
   getBackendSrv()
     .fetch<any>({
       method: 'GET',
-      url: `/api/ruler/${metricInstanceId}/api/v1/rules/${SM_ALERTING_NAMESPACE}/default`,
+      url: `/api/ruler/${metricInstanceIdentifier}/api/v1/rules/${SM_ALERTING_NAMESPACE}/default`,
     })
     .toPromise()
     .then((resp) => {
@@ -98,6 +99,7 @@ export function useAlerts(checkId?: number) {
   const [defaultRulesSetCount, setDefaultRulesSetCount] = useState(0);
   const [alertError, setAlertError] = useState('');
   const isUnifiedAlertsEnabled = useUnifiedAlertsEnabled();
+  const { major: grafanaVersion } = useGrafanaVersion();
 
   const {
     instance: { alertRuler, metrics },
@@ -198,14 +200,16 @@ export function useAlerts(checkId?: number) {
         }
       });
     } else if (isUnifiedAlertsEnabled && metrics) {
-      fetchSMRules(metrics.id).then(({ rules, error }) => {
+      // There was a breaking change in the alert ruler api in Grafana v9. It switched from fetching by datasource ID to fetching by datasource UID.
+      const metricsIdentifier = grafanaVersion >= 9 ? metrics.uid : metrics.id;
+      fetchSMRules(metricsIdentifier).then(({ rules, error }) => {
         setAlertRules(rules);
         if (error) {
           setAlertError(error);
         }
       });
     }
-  }, [alertRulerUrl, defaultRulesSetCount, isUnifiedAlertsEnabled, metrics]);
+  }, [alertRulerUrl, defaultRulesSetCount, isUnifiedAlertsEnabled, metrics, grafanaVersion]);
 
   return {
     alertRules,
