@@ -1,5 +1,9 @@
 # Change Log
 
+# [1.9.17](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.16...v1.9.17) (2022-6-9)
+
+- Handles a breaking change in the alerting api for Grafana v9
+
 # [1.9.16](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.15...v1.9.16) (2022-6-3)
 
 - Adds a more helpful error message when probe deletion fails
