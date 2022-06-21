@@ -1,5 +1,9 @@
 # Change Log
 
+# [1.9.18](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.17...v1.9.18) (2022-6-21)
+
+- Fix a bug with settting default alert rules in Grafana v9
+
 # [1.9.17](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.16...v1.9.17) (2022-6-9)
 
 - Handles a breaking change in the alerting api for Grafana v9
