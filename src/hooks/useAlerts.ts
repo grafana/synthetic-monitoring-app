@@ -98,12 +98,20 @@ export function useAlerts(checkId?: number) {
   const [alertRules, setAlertRules] = useState<AlertRule[]>();
   const [defaultRulesSetCount, setDefaultRulesSetCount] = useState(0);
   const [alertError, setAlertError] = useState('');
+  const [metricsIdentifier, setMetricsIdentifier] = useState<string | number>('');
   const isUnifiedAlertsEnabled = useUnifiedAlertsEnabled();
   const { major: grafanaVersion } = useGrafanaVersion();
-
   const {
     instance: { alertRuler, metrics },
   } = useContext(InstanceContext);
+
+  useEffect(() => {
+    // There was a breaking change in the alert ruler api in Grafana v9. It switched from fetching by datasource ID to fetching by datasource UID.
+    const id = grafanaVersion >= 9 ? metrics?.uid : metrics?.id;
+    if (id) {
+      setMetricsIdentifier(id);
+    }
+  }, [metrics?.id, metrics?.uid, grafanaVersion]);
 
   const alertRulerUrl = alertRuler?.url;
   const legacySetDefaultRules = async () => {
@@ -127,7 +135,7 @@ export function useAlerts(checkId?: number) {
     }
     await getBackendSrv()
       .fetch({
-        url: `/api/ruler/${metrics.id}/api/v1/rules/${SM_ALERTING_NAMESPACE}`,
+        url: `/api/ruler/${metricsIdentifier}/api/v1/rules/${SM_ALERTING_NAMESPACE}`,
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -177,7 +185,7 @@ export function useAlerts(checkId?: number) {
 
     const updateResponse = getBackendSrv()
       .fetch({
-        url: `/api/ruler/${metrics.id}/api/v1/rules/${SM_ALERTING_NAMESPACE}`,
+        url: `/api/ruler/${metricsIdentifier}/api/v1/rules/${SM_ALERTING_NAMESPACE}`,
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -192,6 +200,9 @@ export function useAlerts(checkId?: number) {
   };
 
   useEffect(() => {
+    if (!metricsIdentifier) {
+      return;
+    }
     if (alertRulerUrl && !isUnifiedAlertsEnabled) {
       legacyFetchSMRules(alertRulerUrl).then(({ rules, error }) => {
         setAlertRules(rules);
@@ -201,7 +212,6 @@ export function useAlerts(checkId?: number) {
       });
     } else if (isUnifiedAlertsEnabled && metrics) {
       // There was a breaking change in the alert ruler api in Grafana v9. It switched from fetching by datasource ID to fetching by datasource UID.
-      const metricsIdentifier = grafanaVersion >= 9 ? metrics.uid : metrics.id;
       fetchSMRules(metricsIdentifier).then(({ rules, error }) => {
         setAlertRules(rules);
         if (error) {
@@ -209,7 +219,7 @@ export function useAlerts(checkId?: number) {
         }
       });
     }
-  }, [alertRulerUrl, defaultRulesSetCount, isUnifiedAlertsEnabled, metrics, grafanaVersion]);
+  }, [alertRulerUrl, defaultRulesSetCount, isUnifiedAlertsEnabled, metrics, metricsIdentifier]);
 
   return {
     alertRules,
