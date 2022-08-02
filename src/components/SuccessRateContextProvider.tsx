@@ -48,6 +48,17 @@ const keyDataByCheckId = (checks: Check[], data: SeedRequestResponse): KeyedValu
   return keyedData;
 };
 
+const formatDigits = (value: string): number => {
+  const withDefault = !value ? '0' : value;
+  const number = parseFloat(withDefault) * 100;
+  const fixed = parseFloat(number.toFixed(1));
+  // sometimes the query results in 100.0, we need to make sure and format those
+  if (fixed === 100) {
+    return Math.trunc(fixed);
+  }
+  return fixed;
+};
+
 const parseCheckResults = (
   checks: Check[] | undefined,
   reachabilityData: SeedRequestResponse,
@@ -69,15 +80,14 @@ const parseCheckResults = (
           ...defaultValues.defaults,
         };
       } else {
-        const reachabilityValue = parseFloat(reachabilityValuesById[check.id]) * 100;
-        const uptimeValue = parseFloat(uptimeValuesById[check.id]) * 100;
+        const reachabilityValue = formatDigits(reachabilityValuesById[check.id]);
+        const uptimeValue = formatDigits(uptimeValuesById[check.id]);
 
         resultsPerCheck[check.id] = {
-          reachabilityValue: parseFloat(reachabilityValue.toFixed(1)),
-          reachabilityDisplayValue:
-            reachabilityValue === 100 ? `${reachabilityValue}%` : `${reachabilityValue.toFixed(1)}%`,
-          uptimeValue: parseFloat(uptimeValue.toFixed(1)),
-          uptimeDisplayValue: uptimeValue === 100 ? `${uptimeValue}%` : `${uptimeValue.toFixed(1)}%`,
+          reachabilityValue,
+          reachabilityDisplayValue: `${reachabilityValue}%`,
+          uptimeValue,
+          uptimeDisplayValue: `${uptimeValue}%`,
         };
       }
     }
