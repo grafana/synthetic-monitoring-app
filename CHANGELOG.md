@@ -1,5 +1,13 @@
 # Change Log
 
+# [1.9.20](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.19...v1.9.20) (2022-8-2)
+
+- Make sure 100% is never rendered as 100.0%
+
+# [1.9.19](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.18...v1.9.19) (2022-6-21)
+
+- Fix a bug with some promql queries that could result in values over 100%
+
 # [1.9.18](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.17...v1.9.18) (2022-6-21)
 
 - Fix a bug with settting default alert rules in Grafana v9
