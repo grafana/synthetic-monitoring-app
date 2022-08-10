@@ -1,5 +1,9 @@
 # Change Log
 
+# [1.9.21](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.20...v1.9.21) (2022-8-10)
+
+- Update link to alerting UI
+
 # [1.9.20](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.19...v1.9.20) (2022-8-2)
 
 - Make sure 100% is never rendered as 100.0%
