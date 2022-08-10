@@ -120,13 +120,8 @@ export const Alerting: FC = () => {
       </p>
       <p>
         Routes and receivers must be configured in{' '}
-        <a
-          href={`/a/grafana-alerting-ui-app/?tab=config`}
-          className={styles.link}
-          target="blank"
-          rel="noopener noreferer"
-        >
-          Grafana Cloud Alerting Alertmanager
+        <a href={'/alerting/list'} className={styles.link} target="blank" rel="noopener noreferer">
+          Grafana Alerting
         </a>{' '}
         in order to be notified when an alert fires.{' '}
         <a
