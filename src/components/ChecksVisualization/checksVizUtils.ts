@@ -12,19 +12,19 @@ export const getLayout = (checksLength: number, width: number) => {
   const columnCount = needsWrap ? Math.floor(trimmedWidth / hexSize) : sideLength;
   const rowCount = needsWrap ? Math.ceil(checksLength / columnCount) : sideLength;
 
-  var hexRadius =
+  const hexRadius =
     d3.min([width / ((columnCount + 0.5) * Math.sqrt(3)), (rowCount * hexSize) / ((rowCount + 1 / 3) * 1.5)]) ?? 0;
 
-  var hexCenters: Array<[number, number]> = [];
+  const hexCenters: Array<[number, number]> = [];
 
-  for (var i = 0; i < rowCount; i++) {
-    for (var j = 0; j < columnCount; j++) {
-      var x = hexRadius * j * Math.sqrt(3);
+  for (let i = 0; i < rowCount; i++) {
+    for (let j = 0; j < columnCount; j++) {
+      let x = hexRadius * j * Math.sqrt(3);
       //Offset each uneven row by half of a "hex-width" to the right
       if (i % 2 === 1) {
         x += (hexRadius * Math.sqrt(3)) / 2;
       }
-      var y = hexRadius * i * 1.5;
+      let y = hexRadius * i * 1.5;
       if (hexCenters.length < checksLength) {
         hexCenters.push([x, y]);
       }
