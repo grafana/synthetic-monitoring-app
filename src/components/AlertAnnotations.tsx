@@ -67,20 +67,13 @@ export const AlertAnnotations = () => {
               placeholder="Value"
               data-testid={`alert-annotationValue-${annotationIndex}`}
             />
-            <Button type="button" onClick={() => remove(annotationIndex)} variant="link">
+            <Button type="button" onClick={() => remove(annotationIndex)} fill="text">
               Delete
             </Button>
           </Fragment>
         ))}
       </div>
-      <Button
-        type="button"
-        variant="link"
-        size="sm"
-        icon="plus"
-        onClick={() => append({})}
-        className={styles.addButton}
-      >
+      <Button type="button" fill="text" size="sm" icon="plus" onClick={() => append({})} className={styles.addButton}>
         Add annotation
       </Button>
     </SubCollapse>
