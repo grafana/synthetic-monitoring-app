@@ -28,7 +28,7 @@
     "@grafana/data": "next",
     "@grafana/eslint-config": "^2.5.0",
     "@grafana/runtime": "next",
-    "@grafana/toolkit": "8.2.7",
+    "@grafana/toolkit": "latest",
     "@grafana/ui": "next",
     "@release-it/conventional-changelog": "^3.0.0",
     "@testing-library/dom": "^7.31.2",

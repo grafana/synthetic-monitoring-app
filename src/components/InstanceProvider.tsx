@@ -1,15 +1,15 @@
 import React, { useState, useEffect, PropsWithChildren } from 'react';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { GlobalSettings, GrafanaInstances, OrgRole } from 'types';
+import { GlobalSettings, GrafanaInstances } from 'types';
 import { config, getDataSourceSrv, getBackendSrv } from '@grafana/runtime';
 import { SMDataSource } from 'datasource/DataSource';
 import { Spinner } from '@grafana/ui';
-import { AppPluginMeta } from '@grafana/data';
+import { AppPluginMeta, OrgRole } from '@grafana/data';
 import { hasRole } from 'utils';
 import appEvents from 'grafana/app/core/app_events';
 
 async function getRulerDatasource(metricDatasourceId?: number) {
-  if (!metricDatasourceId || !hasRole(OrgRole.ADMIN)) {
+  if (!metricDatasourceId || !hasRole(OrgRole.Admin)) {
     return undefined;
   }
   const basicAuthUserId = await getBackendSrv()

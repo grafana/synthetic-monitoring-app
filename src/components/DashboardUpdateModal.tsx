@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { DashboardMeta, OrgRole } from 'types';
+import { DashboardMeta } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { importAllDashboards, listAppDashboards } from 'dashboards/loader';
 import { Button, HorizontalGroup, Modal } from '@grafana/ui';
 import { hasDismissedDashboardUpdateModal, persistDashboardModalDismiss } from 'sessionStorage';
 import { hasRole } from 'utils';
+import { OrgRole } from '@grafana/data';
 
 export const DashboardUpdateModal = () => {
   const { instance } = useContext(InstanceContext);
@@ -66,12 +67,12 @@ export const DashboardUpdateModal = () => {
       <Modal
         title="Dashboards out of date"
         onDismiss={skipDashboardUpdate}
-        isOpen={Boolean(dashboardsNeedingUpdate?.length) && !hasDismissedDashboardUpdate && hasRole(OrgRole.ADMIN)}
+        isOpen={Boolean(dashboardsNeedingUpdate?.length) && !hasDismissedDashboardUpdate && hasRole(OrgRole.Admin)}
       >
         <p>It looks like your Synthetic Monitoring dashboards need an update.</p>
         <HorizontalGroup>
           <Button onClick={handleUpdateClick}>Update</Button>
-          <Button onClick={skipDashboardUpdate} variant="link">
+          <Button onClick={skipDashboardUpdate} fill="text">
             Skip
           </Button>
         </HorizontalGroup>

@@ -4,13 +4,13 @@ import { getBackendSrv, config } from '@grafana/runtime';
 import { findSMDataSources, hasRole, initializeDatasource } from 'utils';
 import { importAllDashboards } from 'dashboards/loader';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { DataSourceInstanceSettings, GrafanaTheme2 } from '@grafana/data';
+import { DataSourceInstanceSettings, GrafanaTheme2, OrgRole } from '@grafana/data';
 import { css } from '@emotion/css';
 import { colors, LEGACY_LOGS_DS_NAME, LEGACY_METRICS_DS_NAME } from 'components/constants';
 import { dashboardScreenshot, dashboardScreenshotLight } from 'img';
 import { CloudDatasourceJsonData } from 'datasource/types';
 import { isNumber } from 'lodash';
-import { OrgRole, SubmissionErrorWrapper } from 'types';
+import { SubmissionErrorWrapper } from 'types';
 import { trackEvent, trackException } from 'analytics';
 import { DisplayCard } from 'components/DisplayCard';
 import FeaturesBanner from 'components/FeaturesBanner';
@@ -199,7 +199,7 @@ export const WelcomePage: FC<Props> = () => {
           <h3 className={styles.heading}>Ready to start using synthetic monitoring?</h3>
           <Button
             onClick={onClick}
-            disabled={loading || !Boolean(metricsDatasource) || !Boolean(logsDatasource) || !hasRole(OrgRole.EDITOR)}
+            disabled={loading || !Boolean(metricsDatasource) || !Boolean(logsDatasource) || !hasRole(OrgRole.Editor)}
             size="lg"
           >
             {loading ? <Spinner /> : 'Initialize the plugin'}

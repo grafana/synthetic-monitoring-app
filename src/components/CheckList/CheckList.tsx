@@ -3,7 +3,6 @@ import React, { useState, useContext, useEffect, useCallback } from 'react';
 
 // Types
 import {
-  OrgRole,
   Check,
   Label,
   GrafanaInstances,
@@ -28,7 +27,14 @@ import {
   AsyncMultiSelect,
   ButtonCascader,
 } from '@grafana/ui';
-import { unEscapeStringFromRegex, escapeStringForRegex, GrafanaTheme, AppEvents, SelectableValue } from '@grafana/data';
+import {
+  unEscapeStringFromRegex,
+  escapeStringForRegex,
+  GrafanaTheme,
+  AppEvents,
+  SelectableValue,
+  OrgRole,
+} from '@grafana/data';
 import { matchesAllFilters } from './checkFilters';
 import {
   fetchProbeOptions,
@@ -415,7 +421,7 @@ export const CheckList = ({ instance, checks, onCheckUpdate }: Props) => {
               className={styles.verticalSpace}
             />
           </CheckFilterGroup>
-          {hasRole(OrgRole.EDITOR) && (
+          {hasRole(OrgRole.Editor) && (
             <>
               <Button
                 variant="secondary"
@@ -451,11 +457,11 @@ export const CheckList = ({ instance, checks, onCheckUpdate }: Props) => {
               {selectedChecks.size < filteredChecks.length && (
                 <Button
                   type="button"
-                  variant="link"
+                  fill="text"
                   size="sm"
                   className={styles.marginRightSmall}
                   onClick={toggleAllCheckSelection}
-                  disabled={!hasRole(OrgRole.EDITOR)}
+                  disabled={!hasRole(OrgRole.Editor)}
                 >
                   Select all {filteredChecks.length} checks
                 </Button>
@@ -473,7 +479,7 @@ export const CheckList = ({ instance, checks, onCheckUpdate }: Props) => {
                     },
                   ]}
                   className={styles.marginRightSmall}
-                  disabled={!hasRole(OrgRole.EDITOR) || bulkActionInProgress}
+                  disabled={!hasRole(OrgRole.Editor) || bulkActionInProgress}
                   onChange={(value) => setBulkEditAction(value[0] as any)}
                 >
                   Bulk Edit Probes
@@ -485,7 +491,7 @@ export const CheckList = ({ instance, checks, onCheckUpdate }: Props) => {
                 fill="text"
                 onClick={handleEnableSelectedChecks}
                 className={styles.marginRightSmall}
-                disabled={!hasRole(OrgRole.EDITOR) || bulkActionInProgress}
+                disabled={!hasRole(OrgRole.Editor) || bulkActionInProgress}
               >
                 Enable
               </Button>
@@ -495,7 +501,7 @@ export const CheckList = ({ instance, checks, onCheckUpdate }: Props) => {
                 fill="text"
                 onClick={handleDisableSelectedChecks}
                 className={styles.marginRightSmall}
-                disabled={!hasRole(OrgRole.EDITOR) || bulkActionInProgress}
+                disabled={!hasRole(OrgRole.Editor) || bulkActionInProgress}
               >
                 Disable
               </Button>
@@ -506,7 +512,7 @@ export const CheckList = ({ instance, checks, onCheckUpdate }: Props) => {
                 fill="text"
                 className={styles.marginRightSmall}
                 onClick={handleDeleteSelectedChecks}
-                disabled={!hasRole(OrgRole.EDITOR) || bulkActionInProgress}
+                disabled={!hasRole(OrgRole.Editor) || bulkActionInProgress}
               >
                 Delete
               </Button>

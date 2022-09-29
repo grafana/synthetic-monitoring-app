@@ -2,15 +2,7 @@ import React, { useState, useMemo, useContext } from 'react';
 import { css } from '@emotion/css';
 import { Button, ConfirmModal, Field, Input, HorizontalGroup, Select, Legend, Alert, useStyles } from '@grafana/ui';
 import { useAsyncCallback } from 'react-async-hook';
-import {
-  Check,
-  CheckType,
-  OrgRole,
-  CheckFormValues,
-  SubmissionErrorWrapper,
-  FeatureName,
-  CheckPageParams,
-} from 'types';
+import { Check, CheckType, CheckFormValues, SubmissionErrorWrapper, FeatureName, CheckPageParams } from 'types';
 import { hasRole } from 'utils';
 import { getDefaultValuesFromCheck, getCheckFromFormValues } from './checkFormTransformations';
 import { validateJob, validateTarget } from 'validation';
@@ -21,7 +13,7 @@ import { CheckSettings } from './CheckSettings';
 import { ProbeOptions } from './ProbeOptions';
 import { CHECK_TYPE_OPTIONS, fallbackCheck } from 'components/constants';
 import { useForm, FormProvider, Controller } from 'react-hook-form';
-import { GrafanaTheme } from '@grafana/data';
+import { GrafanaTheme, OrgRole } from '@grafana/data';
 import { CheckUsage } from '../CheckUsage';
 import { CheckFormAlert } from 'components/CheckFormAlert';
 import { InstanceContext } from 'contexts/InstanceContext';
@@ -75,7 +67,7 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
   const formMethods = useForm<CheckFormValues>({ defaultValues, mode: 'onChange' });
   const selectedCheckType = formMethods.watch('checkType')?.value ?? CheckType.PING;
 
-  const isEditor = hasRole(OrgRole.EDITOR);
+  const isEditor = hasRole(OrgRole.Editor);
 
   const { execute: onSubmit, error, loading: submitting } = useAsyncCallback(async (checkValues: CheckFormValues) => {
     const updatedCheck = getCheckFromFormValues(checkValues, defaultValues);

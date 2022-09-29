@@ -1,8 +1,8 @@
-import { GrafanaTheme, AppEvents } from '@grafana/data';
+import { GrafanaTheme, AppEvents, OrgRole } from '@grafana/data';
 import { Button, ConfirmModal, IconButton, useStyles } from '@grafana/ui';
 import React, { useContext, useState } from 'react';
 import { css } from '@emotion/css';
-import { Check, OrgRole, ROUTES } from 'types';
+import { Check, ROUTES } from 'types';
 import { dashboardUID, checkType as getCheckType, hasRole } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
 import appEvents from 'grafana/app/core/app_events';
@@ -57,7 +57,7 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon, onRemoveChe
       {viewDashboardAsIcon ? (
         <IconButton name="apps" onClick={showDashboard} className={styles.marginRightSmall} />
       ) : (
-        <Button onClick={showDashboard} size="sm" variant="link" className={styles.marginRightExtraSmall}>
+        <Button onClick={showDashboard} size="sm" fill="text" className={styles.marginRightExtraSmall}>
           View dashboard
         </Button>
       )}
@@ -68,14 +68,14 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon, onRemoveChe
         onClick={() => {
           navigate(`${ROUTES.EditCheck}/${check.id}`);
         }}
-        disabled={!hasRole(OrgRole.EDITOR)}
+        disabled={!hasRole(OrgRole.Editor)}
         className={styles.marginRightSmall}
       />
       <IconButton
         aria-label="Delete check"
         name="trash-alt"
         onClick={() => setShowDeleteModal(true)}
-        disabled={!hasRole(OrgRole.EDITOR)}
+        disabled={!hasRole(OrgRole.Editor)}
       />
       <ConfirmModal
         isOpen={showDeleteModal}

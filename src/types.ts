@@ -1,4 +1,4 @@
-import { DataSourceSettings, SelectableValue } from '@grafana/data';
+import { DataSourceSettings, OrgRole, SelectableValue } from '@grafana/data';
 import { LinkedDatasourceInfo } from './datasource/types';
 import { SMDataSource } from 'datasource/DataSource';
 
@@ -351,12 +351,6 @@ export interface User {
   orgId: number;
   orgName: string;
   orgRole: OrgRole;
-}
-
-export enum OrgRole {
-  ADMIN = 'Admin',
-  EDITOR = 'Editor',
-  VIEWER = 'Viewer',
 }
 
 export enum DnsResponseCodes {
