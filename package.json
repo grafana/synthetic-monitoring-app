@@ -70,6 +70,6 @@
     "react-popper": "^2.2.5",
     "react-simple-maps": "^2.3.0",
     "valid-url": "^1.0.9",
-    "yaml": "1.10.2"
+    "yaml": "^2.1.1"
   }
 }
