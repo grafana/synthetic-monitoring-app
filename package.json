@@ -25,9 +25,9 @@
   "devDependencies": {
     "@commitlint/cli": "^12.1.4",
     "@commitlint/config-conventional": "^12.1.4",
-    "@grafana/data": "9.2.0-beta1",
+    "@grafana/data": "9.1.1",
     "@grafana/eslint-config": "^5.0.0",
-    "@grafana/runtime": "9.2.0-beta1",
+    "@grafana/runtime": "9.1.1",
     "@grafana/toolkit": "9.1.1",
     "@grafana/ui": "9.1.1",
     "@release-it/conventional-changelog": "^3.0.0",
