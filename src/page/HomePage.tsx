@@ -21,6 +21,7 @@ import { DashboardInfo } from 'datasource/types';
 import dashScreenshot from 'img/screenshot-dash-traceroute.png';
 import dashScreenshotLight from 'img/screenshot-dash-traceroute-light.png';
 import { useNavigation } from 'hooks/useNavigation';
+import { PluginPage } from 'components/PluginPage';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   flexRow: css`
@@ -125,7 +126,7 @@ const HomePage = () => {
   }, [instance.api]);
 
   return (
-    <div>
+    <PluginPage>
       <FeaturesBanner />
       <div className={styles.cardFlex}>
         <DisplayCard className={cx(styles.card, styles.rowCard, styles.linksContainer)}>
@@ -292,7 +293,7 @@ const HomePage = () => {
           </div>
         </DisplayCard>
       </DisplayCard>
-    </div>
+    </PluginPage>
   );
 };
 

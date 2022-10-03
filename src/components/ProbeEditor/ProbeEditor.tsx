@@ -26,6 +26,7 @@ import { GrafanaTheme2, AppEvents, OrgRole } from '@grafana/data';
 import { Clipboard } from 'components/Clipboard';
 import { SimpleMap } from '../SimpleMap';
 import { useParams } from 'react-router-dom';
+import { PluginPage } from '@grafana/runtime';
 
 interface Props {
   probes?: Probe[];
@@ -104,7 +105,7 @@ const ProbeEditor = ({ probes, onReturn }: Props) => {
     }
   });
 
-  const submissionError = (error as unknown) as SubmissionErrorWrapper;
+  const submissionError = error as unknown as SubmissionErrorWrapper;
 
   if (error) {
     trackException(`addNewProbeSubmitException: ${error}`);
@@ -141,178 +142,180 @@ const ProbeEditor = ({ probes, onReturn }: Props) => {
   const { latitude, longitude } = formMethods.watch();
 
   return (
-    <HorizontalGroup align="flex-start">
-      <FormProvider {...formMethods}>
-        <form onSubmit={formMethods.handleSubmit(onSave)}>
-          <div>
-            <Legend>{legend}</Legend>
-            <Container margin="md">
-              {probe.public ? (
-                <Label
-                  description="Public probes are run by Grafana Labs and can be used by all users"
-                  className={styles.marginBottom}
-                >
-                  This probe is public
-                </Label>
-              ) : (
-                <Label
-                  description="Private probes are operated by your organization and can only run your checks."
-                  className={styles.marginBottom}
-                >
-                  This probe is private
-                </Label>
-              )}
-              <Field
-                error="Name is required"
-                invalid={Boolean(formMethods.formState.errors.name)}
-                label="Probe Name"
-                description="Unique name of probe"
-                disabled={!isEditor}
-                className={styles.minInputWidth}
-                required
-              >
-                <Input
-                  type="text"
-                  maxLength={32}
-                  {...formMethods.register('name', {
-                    required: true,
-                    maxLength: 32,
-                  })}
-                  id="probe-name-input"
-                  placeholder="Probe name"
-                />
-              </Field>
-            </Container>
-            <Container margin="md">
-              <Legend>Location information</Legend>
-              <Field
-                error="Must be between -90 and 90"
-                invalid={Boolean(formMethods.formState.errors.latitude)}
-                required
-                label="Latitude"
-                description="Latitude coordinates of this probe"
-                disabled={!isEditor}
-                className={styles.minInputWidth}
-              >
-                <Input
-                  {...formMethods.register('latitude', {
-                    required: true,
-                    max: 90,
-                    min: -90,
-                  })}
-                  label="Latitude"
-                  max={90}
-                  min={-90}
-                  step={0.00001}
-                  id="probe-editor-latitude"
-                  type="number"
-                  placeholder="0.0"
-                />
-              </Field>
-              <Field
-                error="Must be between -180 and 180"
-                invalid={Boolean(formMethods.formState.errors.longitude)}
-                required
-                label="Longitude"
-                description="Longitude coordinates of this probe"
-                disabled={!isEditor}
-              >
-                <Input
-                  {...formMethods.register('longitude', {
-                    required: true,
-                    max: 180,
-                    min: -180,
-                  })}
-                  label="Longitude"
-                  max={180}
-                  min={-180}
-                  step={0.00001}
-                  id="probe-editor-longitude"
-                  type="number"
-                  placeholder="0.0"
-                />
-              </Field>
-              <SimpleMap latitude={latitude} longitude={longitude} />
-            </Container>
-            <Container margin="md">
-              <Field
-                error="Region is required"
-                invalid={Boolean(formMethods.formState.errors.region)}
-                required
-                label="Region"
-                description="Region of this probe"
-                disabled={!isEditor}
-                className={styles.minInputWidth}
-                aria-label="Region"
-              >
-                <Input
-                  {...formMethods.register('region', { required: true })}
-                  label="Region"
-                  type="text"
-                  placeholder="Region"
-                />
-              </Field>
-            </Container>
-            <Container margin="md">
-              <LabelField isEditor={isEditor} limit={3} />
-            </Container>
-            <Container margin="md">
-              <HorizontalGroup>
-                <Button
-                  type="submit"
-                  disabled={
-                    !isEditor ||
-                    formMethods.formState.isSubmitting ||
-                    Object.keys(formMethods.formState.errors ?? {}).length > 0
-                  }
-                >
-                  Save
-                </Button>
-                {probe.id && (
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    onClick={() => setShowDeleteModal(true)}
-                    disabled={!isEditor}
+    <PluginPage pageNav={{ text: probe.id ? probe.name : 'Add probe', description: 'Probe configuration' }}>
+      <HorizontalGroup align="flex-start">
+        <FormProvider {...formMethods}>
+          <form onSubmit={formMethods.handleSubmit(onSave)}>
+            <div>
+              <Legend>{legend}</Legend>
+              <Container margin="md">
+                {probe.public ? (
+                  <Label
+                    description="Public probes are run by Grafana Labs and can be used by all users"
+                    className={styles.marginBottom}
                   >
-                    Delete Probe
-                  </Button>
+                    This probe is public
+                  </Label>
+                ) : (
+                  <Label
+                    description="Private probes are operated by your organization and can only run your checks."
+                    className={styles.marginBottom}
+                  >
+                    This probe is private
+                  </Label>
                 )}
-                <ConfirmModal
-                  isOpen={showDeleteModal}
-                  title="Delete Probe"
-                  body="Are you sure you want to delete this Probe?"
-                  confirmText="Delete Probe"
-                  onConfirm={onRemoveProbe}
-                  onDismiss={() => setShowDeleteModal(false)}
-                />
-                <Button variant="secondary" onClick={() => onReturn(false)} type="button">
-                  Back
-                </Button>
-              </HorizontalGroup>
-            </Container>
-            {submissionError && (
-              <div className={styles.marginTop}>
-                <Alert title="Save failed" severity="error">
-                  {`${submissionError.status}: ${
-                    submissionError.data.msg ?? submissionError.data.message ?? 'There was an error saving the check'
-                  }`}
-                </Alert>
-              </div>
-            )}
-            <Modal
-              isOpen={showTokenModal}
-              title="Probe Authentication Token"
-              icon={'lock'}
-              onDismiss={() => (probe.id ? setShowTokenModal(false) : onReturn(false))}
-            >
-              <Clipboard content={probeToken} />
-            </Modal>
-          </div>
-        </form>
-      </FormProvider>
-      {probe.id && <ProbeStatus probe={probe} onResetToken={onResetToken} />}
-    </HorizontalGroup>
+                <Field
+                  error="Name is required"
+                  invalid={Boolean(formMethods.formState.errors.name)}
+                  label="Probe Name"
+                  description="Unique name of probe"
+                  disabled={!isEditor}
+                  className={styles.minInputWidth}
+                  required
+                >
+                  <Input
+                    type="text"
+                    maxLength={32}
+                    {...formMethods.register('name', {
+                      required: true,
+                      maxLength: 32,
+                    })}
+                    id="probe-name-input"
+                    placeholder="Probe name"
+                  />
+                </Field>
+              </Container>
+              <Container margin="md">
+                <Legend>Location information</Legend>
+                <Field
+                  error="Must be between -90 and 90"
+                  invalid={Boolean(formMethods.formState.errors.latitude)}
+                  required
+                  label="Latitude"
+                  description="Latitude coordinates of this probe"
+                  disabled={!isEditor}
+                  className={styles.minInputWidth}
+                >
+                  <Input
+                    {...formMethods.register('latitude', {
+                      required: true,
+                      max: 90,
+                      min: -90,
+                    })}
+                    label="Latitude"
+                    max={90}
+                    min={-90}
+                    step={0.00001}
+                    id="probe-editor-latitude"
+                    type="number"
+                    placeholder="0.0"
+                  />
+                </Field>
+                <Field
+                  error="Must be between -180 and 180"
+                  invalid={Boolean(formMethods.formState.errors.longitude)}
+                  required
+                  label="Longitude"
+                  description="Longitude coordinates of this probe"
+                  disabled={!isEditor}
+                >
+                  <Input
+                    {...formMethods.register('longitude', {
+                      required: true,
+                      max: 180,
+                      min: -180,
+                    })}
+                    label="Longitude"
+                    max={180}
+                    min={-180}
+                    step={0.00001}
+                    id="probe-editor-longitude"
+                    type="number"
+                    placeholder="0.0"
+                  />
+                </Field>
+                <SimpleMap latitude={latitude} longitude={longitude} />
+              </Container>
+              <Container margin="md">
+                <Field
+                  error="Region is required"
+                  invalid={Boolean(formMethods.formState.errors.region)}
+                  required
+                  label="Region"
+                  description="Region of this probe"
+                  disabled={!isEditor}
+                  className={styles.minInputWidth}
+                  aria-label="Region"
+                >
+                  <Input
+                    {...formMethods.register('region', { required: true })}
+                    label="Region"
+                    type="text"
+                    placeholder="Region"
+                  />
+                </Field>
+              </Container>
+              <Container margin="md">
+                <LabelField isEditor={isEditor} limit={3} />
+              </Container>
+              <Container margin="md">
+                <HorizontalGroup>
+                  <Button
+                    type="submit"
+                    disabled={
+                      !isEditor ||
+                      formMethods.formState.isSubmitting ||
+                      Object.keys(formMethods.formState.errors ?? {}).length > 0
+                    }
+                  >
+                    Save
+                  </Button>
+                  {probe.id && (
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      onClick={() => setShowDeleteModal(true)}
+                      disabled={!isEditor}
+                    >
+                      Delete Probe
+                    </Button>
+                  )}
+                  <ConfirmModal
+                    isOpen={showDeleteModal}
+                    title="Delete Probe"
+                    body="Are you sure you want to delete this Probe?"
+                    confirmText="Delete Probe"
+                    onConfirm={onRemoveProbe}
+                    onDismiss={() => setShowDeleteModal(false)}
+                  />
+                  <Button variant="secondary" onClick={() => onReturn(false)} type="button">
+                    Back
+                  </Button>
+                </HorizontalGroup>
+              </Container>
+              {submissionError && (
+                <div className={styles.marginTop}>
+                  <Alert title="Save failed" severity="error">
+                    {`${submissionError.status}: ${
+                      submissionError.data.msg ?? submissionError.data.message ?? 'There was an error saving the check'
+                    }`}
+                  </Alert>
+                </div>
+              )}
+              <Modal
+                isOpen={showTokenModal}
+                title="Probe Authentication Token"
+                icon={'lock'}
+                onDismiss={() => (probe.id ? setShowTokenModal(false) : onReturn(false))}
+              >
+                <Clipboard content={probeToken} />
+              </Modal>
+            </div>
+          </form>
+        </FormProvider>
+        {probe.id && <ProbeStatus probe={probe} onResetToken={onResetToken} />}
+      </HorizontalGroup>
+    </PluginPage>
   );
 };
 

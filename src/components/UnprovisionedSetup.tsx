@@ -12,6 +12,7 @@ import {
   updatePluginJsonData,
 } from 'initialization-utils';
 import { trackEvent, trackException } from 'analytics';
+import { PluginPage } from '@grafana/runtime';
 
 interface ApiSetupValues {
   adminApiToken: string;
@@ -112,20 +113,24 @@ export const UnprovisionedSetup = ({ pluginId }: Props) => {
 
   if (tenantInfo) {
     return (
-      <Container margin="lg" padding="lg">
-        <InstanceSelection
-          logsInstances={tenantInfo.instances.filter((instance) => instance.type === 'logs')}
-          metricsInstances={tenantInfo.instances.filter((instance) => instance.type === 'prometheus')}
-          onSubmit={onInstanceSelectionSubmit}
-          error={instanceSelectionError}
-        />
-      </Container>
+      <PluginPage pageNav={{ text: 'Setup', description: 'Set up the plugin' }}>
+        <Container margin="lg" padding="lg">
+          <InstanceSelection
+            logsInstances={tenantInfo.instances.filter((instance) => instance.type === 'logs')}
+            metricsInstances={tenantInfo.instances.filter((instance) => instance.type === 'prometheus')}
+            onSubmit={onInstanceSelectionSubmit}
+            error={instanceSelectionError}
+          />
+        </Container>
+      </PluginPage>
     );
   }
 
   return (
-    <Container margin="lg" padding="lg">
-      <TenantApiSetupForm onSubmit={onSetupSubmit} submissionError={apiSetupError} />
-    </Container>
+    <PluginPage pageNav={{ text: 'Setup', description: 'Set up the plugin' }}>
+      <Container margin="lg" padding="lg">
+        <TenantApiSetupForm onSubmit={onSetupSubmit} submissionError={apiSetupError} />
+      </Container>
+    </PluginPage>
   );
 };

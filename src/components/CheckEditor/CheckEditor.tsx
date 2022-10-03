@@ -20,6 +20,7 @@ import { InstanceContext } from 'contexts/InstanceContext';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { trackEvent, trackException } from 'analytics';
 import { useParams } from 'react-router-dom';
+import { PluginPage } from '@grafana/runtime';
 
 interface Props {
   checks?: Check[];
@@ -69,7 +70,11 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
 
   const isEditor = hasRole(OrgRole.Editor);
 
-  const { execute: onSubmit, error, loading: submitting } = useAsyncCallback(async (checkValues: CheckFormValues) => {
+  const {
+    execute: onSubmit,
+    error,
+    loading: submitting,
+  } = useAsyncCallback(async (checkValues: CheckFormValues) => {
     const updatedCheck = getCheckFromFormValues(checkValues, defaultValues);
     if (check?.id) {
       trackEvent('editCheckSubmit');
@@ -85,7 +90,7 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
     onReturn(true);
   });
 
-  const submissionError = (error as unknown) as SubmissionErrorWrapper;
+  const submissionError = error as unknown as SubmissionErrorWrapper;
   if (error) {
     trackException(`addNewCheckSubmitException: ${error}`);
   }
@@ -100,123 +105,125 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
   };
 
   return (
-    <FormProvider {...formMethods}>
-      <form onSubmit={formMethods.handleSubmit(onSubmit)}>
-        <Legend>{check?.id ? 'Edit Check' : 'Add Check'}</Legend>
-        <div className={styles.formBody}>
-          <Subheader>Check Details</Subheader>
-          <Field label="Check type" disabled={check?.id ? true : false}>
+    <PluginPage pageNav={{ text: check?.job ? check.job : 'Add check', description: 'Check configuration' }}>
+      <FormProvider {...formMethods}>
+        <form onSubmit={formMethods.handleSubmit(onSubmit)}>
+          <Legend>{check?.id ? 'Edit Check' : 'Add Check'}</Legend>
+          <div className={styles.formBody}>
+            <Subheader>Check Details</Subheader>
+            <Field label="Check type" disabled={check?.id ? true : false}>
+              <Controller
+                name="checkType"
+                control={formMethods.control}
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    placeholder="Check type"
+                    options={
+                      tracerouteEnabled
+                        ? CHECK_TYPE_OPTIONS
+                        : CHECK_TYPE_OPTIONS.filter(({ value }) => value !== CheckType.Traceroute)
+                    }
+                    width={30}
+                    disabled={check?.id ? true : false}
+                  />
+                )}
+              />
+            </Field>
+            <HorizontalCheckboxField
+              disabled={!isEditor}
+              name="enabled"
+              id="check-form-enabled"
+              label="Enabled"
+              description="If a check is enabled, metrics and logs are published to your Grafana Cloud stack."
+            />
+            <Field
+              label="Job name"
+              description="Name used for job label"
+              disabled={!isEditor}
+              invalid={Boolean(formMethods.formState.errors.job)}
+              error={formMethods.formState.errors.job?.message}
+            >
+              <Input
+                id="check-editor-job-input"
+                {...formMethods.register('job', {
+                  required: true,
+                  validate: validateJob,
+                })}
+                type="text"
+                placeholder="jobName"
+              />
+            </Field>
+
             <Controller
-              name="checkType"
+              name="target"
               control={formMethods.control}
+              rules={{
+                required: true,
+                validate: (target) => {
+                  // We have to get refetch the check type value from form state in the validation because the value will be stale if we rely on the the .watch method in the render
+                  const targetFormValue = formMethods.getValues().checkType;
+                  const selectedCheckType = targetFormValue.value as CheckType;
+                  return validateTarget(selectedCheckType, target);
+                },
+              }}
               render={({ field }) => (
-                <Select
+                <CheckTarget
                   {...field}
-                  placeholder="Check type"
-                  options={
-                    tracerouteEnabled
-                      ? CHECK_TYPE_OPTIONS
-                      : CHECK_TYPE_OPTIONS.filter(({ value }) => value !== CheckType.Traceroute)
-                  }
-                  width={30}
-                  disabled={check?.id ? true : false}
+                  typeOfCheck={selectedCheckType}
+                  invalid={Boolean(formMethods.formState.errors.target)}
+                  error={formMethods.formState.errors.target?.message}
+                  disabled={!isEditor}
                 />
               )}
             />
-          </Field>
-          <HorizontalCheckboxField
-            disabled={!isEditor}
-            name="enabled"
-            id="check-form-enabled"
-            label="Enabled"
-            description="If a check is enabled, metrics and logs are published to your Grafana Cloud stack."
-          />
-          <Field
-            label="Job name"
-            description="Name used for job label"
-            disabled={!isEditor}
-            invalid={Boolean(formMethods.formState.errors.job)}
-            error={formMethods.formState.errors.job?.message}
-          >
-            <Input
-              id="check-editor-job-input"
-              {...formMethods.register('job', {
-                required: true,
-                validate: validateJob,
-              })}
-              type="text"
-              placeholder="jobName"
+            <hr className={styles.breakLine} />
+            <ProbeOptions
+              isEditor={isEditor}
+              timeout={check?.timeout ?? fallbackCheck.timeout}
+              frequency={check?.frequency ?? fallbackCheck.frequency}
+              probes={check?.probes ?? fallbackCheck.probes}
             />
-          </Field>
-
-          <Controller
-            name="target"
-            control={formMethods.control}
-            rules={{
-              required: true,
-              validate: (target) => {
-                // We have to get refetch the check type value from form state in the validation because the value will be stale if we rely on the the .watch method in the render
-                const targetFormValue = formMethods.getValues().checkType;
-                const selectedCheckType = targetFormValue.value as CheckType;
-                return validateTarget(selectedCheckType, target);
-              },
-            }}
-            render={({ field }) => (
-              <CheckTarget
-                {...field}
-                typeOfCheck={selectedCheckType}
-                invalid={Boolean(formMethods.formState.errors.target)}
-                error={formMethods.formState.errors.target?.message}
-                disabled={!isEditor}
-              />
-            )}
-          />
-          <hr className={styles.breakLine} />
-          <ProbeOptions
-            isEditor={isEditor}
-            timeout={check?.timeout ?? fallbackCheck.timeout}
-            frequency={check?.frequency ?? fallbackCheck.frequency}
-            probes={check?.probes ?? fallbackCheck.probes}
-          />
-          <HorizontalCheckboxField
-            name="publishAdvancedMetrics"
-            id="publishAdvancedMetrics"
-            label="Publish full set of metrics"
-            description={'Metrics are reduced by default'}
-          />
-          <CheckUsage />
-          <CheckSettings typeOfCheck={selectedCheckType} isEditor={isEditor} />
-          <CheckFormAlert />
-        </div>
-        <HorizontalGroup>
-          <Button type="submit" disabled={formMethods.formState.isSubmitting || submitting}>
-            Save
-          </Button>
-          {check?.id && (
-            <Button variant="destructive" onClick={() => setShowDeleteModal(true)} disabled={!isEditor} type="button">
-              Delete Check
-            </Button>
-          )}
-          <ConfirmModal
-            isOpen={showDeleteModal}
-            title="Delete check"
-            body="Are you sure you want to delete this check?"
-            confirmText="Delete check"
-            onConfirm={onRemoveCheck}
-            onDismiss={() => setShowDeleteModal(false)}
-          />
-          <a onClick={() => onReturn(true)}>Back</a>
-        </HorizontalGroup>
-        {submissionError && (
-          <div className={styles.submissionError}>
-            <Alert title="Save failed" severity="error">
-              {`${submissionError.status}: ${
-                submissionError.data?.msg?.concat(', ', submissionError.data?.err ?? '') ?? 'Something went wrong'
-              }`}
-            </Alert>
+            <HorizontalCheckboxField
+              name="publishAdvancedMetrics"
+              id="publishAdvancedMetrics"
+              label="Publish full set of metrics"
+              description={'Metrics are reduced by default'}
+            />
+            <CheckUsage />
+            <CheckSettings typeOfCheck={selectedCheckType} isEditor={isEditor} />
+            <CheckFormAlert />
           </div>
-        )}
-      </form>
-    </FormProvider>
+          <HorizontalGroup>
+            <Button type="submit" disabled={formMethods.formState.isSubmitting || submitting}>
+              Save
+            </Button>
+            {check?.id && (
+              <Button variant="destructive" onClick={() => setShowDeleteModal(true)} disabled={!isEditor} type="button">
+                Delete Check
+              </Button>
+            )}
+            <ConfirmModal
+              isOpen={showDeleteModal}
+              title="Delete check"
+              body="Are you sure you want to delete this check?"
+              confirmText="Delete check"
+              onConfirm={onRemoveCheck}
+              onDismiss={() => setShowDeleteModal(false)}
+            />
+            <a onClick={() => onReturn(true)}>Back</a>
+          </HorizontalGroup>
+          {submissionError && (
+            <div className={styles.submissionError}>
+              <Alert title="Save failed" severity="error">
+                {`${submissionError.status}: ${
+                  submissionError.data?.msg?.concat(', ', submissionError.data?.err ?? '') ?? 'Something went wrong'
+                }`}
+              </Alert>
+            </div>
+          )}
+        </form>
+      </FormProvider>
+    </PluginPage>
   );
 };

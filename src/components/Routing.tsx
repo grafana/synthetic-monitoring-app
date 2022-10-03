@@ -14,6 +14,7 @@ import { QueryParamMap, useNavigation } from 'hooks/useNavigation';
 import { useQuery } from 'hooks/useQuery';
 import { DashboardRedirecter } from './DashboardRedirecter';
 import { ROUTES } from 'types';
+import { config, PluginPage } from '@grafana/runtime';
 
 export const Routing = ({ onNavChanged, meta, ...rest }: AppRootProps) => {
   const queryParams = useQuery();
@@ -24,7 +25,10 @@ export const Routing = ({ onNavChanged, meta, ...rest }: AppRootProps) => {
 
   useEffect(() => {
     const navModel = getNavModel(meta.info.logos.large, location.pathname);
-    onNavChanged(navModel);
+    if (!config.featureToggles.topnav) {
+      console.log('on nav changing');
+      onNavChanged(navModel);
+    }
   }, [meta.info.logos.large, onNavChanged, location.pathname]);
 
   useEffect(() => {
@@ -78,7 +82,9 @@ export const Routing = ({ onNavChanged, meta, ...rest }: AppRootProps) => {
           <ProbeRouter />
         </Route>
         <Route exact path={`${PLUGIN_URL_PATH}${ROUTES.Alerts}`}>
-          <Alerting />
+          <PluginPage>
+            <Alerting />
+          </PluginPage>
         </Route>
         <Route path={`${PLUGIN_URL_PATH}${ROUTES.Checks}`}>
           <CheckRouter />

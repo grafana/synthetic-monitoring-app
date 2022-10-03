@@ -26,6 +26,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     background-image: url(${theme.isDark ? whatYouCanDoBG : whatYouCanDoBGLight});
     background-repeat: no-repeat;
     background-position: left bottom;
+    background-size: cover;
     padding: ${theme.spacing(6)};
     box-shadow: 0px 4px 10px 0px rgba(0, 0, 0, 0.6);
     box-shadow: ${theme.isDark ? '0px 4px 10px 0px rgba(0, 0, 0, 0.6)' : '0px 4px 10px 0px rgba(195, 195, 195, 0.2)'};

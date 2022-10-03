@@ -4,16 +4,16 @@ import { getBackendSrv, config } from '@grafana/runtime';
 import { findSMDataSources, hasRole, initializeDatasource } from 'utils';
 import { importAllDashboards } from 'dashboards/loader';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { DataSourceInstanceSettings, GrafanaTheme2, OrgRole } from '@grafana/data';
+import { DataSourceInstanceSettings, DataSourceJsonData, GrafanaTheme2, OrgRole } from '@grafana/data';
 import { css } from '@emotion/css';
 import { colors, LEGACY_LOGS_DS_NAME, LEGACY_METRICS_DS_NAME } from 'components/constants';
 import { dashboardScreenshot, dashboardScreenshotLight } from 'img';
-import { CloudDatasourceJsonData } from 'datasource/types';
 import { isNumber } from 'lodash';
 import { SubmissionErrorWrapper } from 'types';
 import { trackEvent, trackException } from 'analytics';
 import { DisplayCard } from 'components/DisplayCard';
 import FeaturesBanner from 'components/FeaturesBanner';
+import { PluginPage } from 'components/PluginPage';
 
 const getStyles = (theme: GrafanaTheme2) => {
   const textColor = theme.isDark ? colors.darkText : colors.lightText;
@@ -112,9 +112,9 @@ export const WelcomePage: FC<Props> = () => {
   const styles = useStyles2(getStyles);
 
   const metricsName = getMetricsName(meta?.jsonData?.metrics.grafanaName);
-  const metricsDatasource = config.datasources[metricsName] as DataSourceInstanceSettings<CloudDatasourceJsonData>;
+  const metricsDatasource = config.datasources[metricsName] as DataSourceInstanceSettings<DataSourceJsonData>;
   const logsName = getLogsName(meta?.jsonData?.logs.grafanaName);
-  const logsDatasource = config.datasources[logsName] as DataSourceInstanceSettings<CloudDatasourceJsonData>;
+  const logsDatasource = config.datasources[logsName] as DataSourceInstanceSettings<DataSourceJsonData>;
   const stackId = meta?.jsonData?.stackId;
   const onClick = async () => {
     trackEvent('provisionedSetupSubmit');
@@ -150,7 +150,7 @@ export const WelcomePage: FC<Props> = () => {
       // force reload so that GrafanaBootConfig is updated.
       window.location.reload();
     } catch (e) {
-      const err = (e as unknown) as SubmissionErrorWrapper;
+      const err = e as unknown as SubmissionErrorWrapper;
       setError(err.data?.msg ?? err.data?.err ?? 'Something went wrong');
       setLoading(false);
       trackException(`provisionedSetupSubmitError: ${err.data?.msg ?? err.data?.err}`);
@@ -158,59 +158,61 @@ export const WelcomePage: FC<Props> = () => {
   };
 
   return (
-    <div className={styles.container}>
-      <div className={styles.headerSection}>
-        <img src={meta?.info.logos.small} className={styles.headerLogo} />
-        <div>
-          <h2 className={styles.headerTitle}>Welcome to Grafana Cloud Synthetic Monitoring</h2>
-          <p className={styles.headerSubtext}>
-            Synthetic monitoring provides you with insights into how your applications and services are behaving from an
-            external point of view. We provide 21 probe locations from around the world which assess availability,
-            performance, and correctness of your services.
-          </p>
+    <PluginPage pageNav={{ text: 'Welcome', description: 'Welcome to synthetic monitoring' }}>
+      <div className={styles.container}>
+        <div className={styles.headerSection}>
+          <img src={meta?.info.logos.small} className={styles.headerLogo} />
+          <div>
+            <h2 className={styles.headerTitle}>Welcome to Grafana Cloud Synthetic Monitoring</h2>
+            <p className={styles.headerSubtext}>
+              Synthetic monitoring provides you with insights into how your applications and services are behaving from
+              an external point of view. We provide 21 probe locations from around the world which assess availability,
+              performance, and correctness of your services.
+            </p>
+          </div>
         </div>
-      </div>
-      <FeaturesBanner />
-      <div className={styles.cardGrid}>
-        <DisplayCard className={styles.billing}>
-          <h3 className={styles.heading}>How billing works</h3>
-          <p>
-            Synthetic monitoring is available to all hosted Grafana Cloud customers, no matter which plan you have.{' '}
-          </p>
-          <p>We bill you based on the metrics and logs that are published to your Grafana Cloud stack.</p>
-          <a
-            href="https://grafana.com/docs/grafana-cloud/synthetic-monitoring/synthetic-monitoring-billing/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.link}
-          >
-            Read more about billing &gt;
-          </a>
-        </DisplayCard>
-        <div className={styles.screenshotContainer}>
-          <DisplayCard className={styles.screenshotCard}>
-            <img
-              src={config.theme2.isDark ? dashboardScreenshot : dashboardScreenshotLight}
-              className={styles.screenshot}
-            />
+        <FeaturesBanner />
+        <div className={styles.cardGrid}>
+          <DisplayCard className={styles.billing}>
+            <h3 className={styles.heading}>How billing works</h3>
+            <p>
+              Synthetic monitoring is available to all hosted Grafana Cloud customers, no matter which plan you have.{' '}
+            </p>
+            <p>We bill you based on the metrics and logs that are published to your Grafana Cloud stack.</p>
+            <a
+              href="https://grafana.com/docs/grafana-cloud/synthetic-monitoring/synthetic-monitoring-billing/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.link}
+            >
+              Read more about billing &gt;
+            </a>
+          </DisplayCard>
+          <div className={styles.screenshotContainer}>
+            <DisplayCard className={styles.screenshotCard}>
+              <img
+                src={config.theme2.isDark ? dashboardScreenshot : dashboardScreenshotLight}
+                className={styles.screenshot}
+              />
+            </DisplayCard>
+          </div>
+          <DisplayCard className={styles.start}>
+            <h3 className={styles.heading}>Ready to start using synthetic monitoring?</h3>
+            <Button
+              onClick={onClick}
+              disabled={loading || !Boolean(metricsDatasource) || !Boolean(logsDatasource) || !hasRole(OrgRole.Editor)}
+              size="lg"
+            >
+              {loading ? <Spinner /> : 'Initialize the plugin'}
+            </Button>
           </DisplayCard>
         </div>
-        <DisplayCard className={styles.start}>
-          <h3 className={styles.heading}>Ready to start using synthetic monitoring?</h3>
-          <Button
-            onClick={onClick}
-            disabled={loading || !Boolean(metricsDatasource) || !Boolean(logsDatasource) || !hasRole(OrgRole.Editor)}
-            size="lg"
-          >
-            {loading ? <Spinner /> : 'Initialize the plugin'}
-          </Button>
-        </DisplayCard>
+        {error && (
+          <div className={styles.marginTop}>
+            <Alert title="Something went wrong:">{error}</Alert>
+          </div>
+        )}
       </div>
-      {error && (
-        <div className={styles.marginTop}>
-          <Alert title="Something went wrong:">{error}</Alert>
-        </div>
-      )}
-    </div>
+    </PluginPage>
   );
 };
