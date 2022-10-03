@@ -14,7 +14,8 @@ import { QueryParamMap, useNavigation } from 'hooks/useNavigation';
 import { useQuery } from 'hooks/useQuery';
 import { DashboardRedirecter } from './DashboardRedirecter';
 import { ROUTES } from 'types';
-import { config, PluginPage } from '@grafana/runtime';
+import { config } from '@grafana/runtime';
+import { PluginPage } from 'components/PluginPage';
 
 export const Routing = ({ onNavChanged, meta, ...rest }: AppRootProps) => {
   const queryParams = useQuery();

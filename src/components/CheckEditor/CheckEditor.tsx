@@ -20,7 +20,7 @@ import { InstanceContext } from 'contexts/InstanceContext';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { trackEvent, trackException } from 'analytics';
 import { useParams } from 'react-router-dom';
-import { PluginPage } from '@grafana/runtime';
+import { PluginPage } from 'components/PluginPage';
 
 interface Props {
   checks?: Check[];

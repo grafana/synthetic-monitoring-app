@@ -26,7 +26,7 @@ import { GrafanaTheme2, AppEvents, OrgRole } from '@grafana/data';
 import { Clipboard } from 'components/Clipboard';
 import { SimpleMap } from '../SimpleMap';
 import { useParams } from 'react-router-dom';
-import { PluginPage } from '@grafana/runtime';
+import { PluginPage } from 'components/PluginPage';
 
 interface Props {
   probes?: Probe[];

@@ -12,7 +12,7 @@ import {
   updatePluginJsonData,
 } from 'initialization-utils';
 import { trackEvent, trackException } from 'analytics';
-import { PluginPage } from '@grafana/runtime';
+import { PluginPage } from 'components/PluginPage';
 
 interface ApiSetupValues {
   adminApiToken: string;

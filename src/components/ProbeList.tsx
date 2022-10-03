@@ -7,7 +7,7 @@ import { Probe, Label } from 'types';
 import { hasRole } from 'utils';
 import { SuccessRateTypes } from 'contexts/SuccessRateContext';
 import { OrgRole } from '@grafana/data';
-import { PluginPage } from '@grafana/runtime';
+import { PluginPage } from 'components/PluginPage';
 
 interface Props {
   probes: Probe[];

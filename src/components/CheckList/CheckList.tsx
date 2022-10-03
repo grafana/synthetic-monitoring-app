@@ -66,7 +66,7 @@ import { useNavigation } from 'hooks/useNavigation';
 import { BulkEditModal } from 'components/BulkEditModal';
 import CheckFilterGroup from './CheckFilterGroup';
 import EmptyCheckList from './EmptyCheckList';
-import { PluginPage } from '@grafana/runtime';
+import { PluginPage } from 'components/PluginPage';
 
 const getStyles = (theme: GrafanaTheme) => ({
   headerContainer: css`
