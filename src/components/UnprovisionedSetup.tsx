@@ -114,23 +114,19 @@ export const UnprovisionedSetup = ({ pluginId }: Props) => {
   if (tenantInfo) {
     return (
       <PluginPage pageNav={{ text: 'Setup', description: 'Set up the plugin' }}>
-        <Container margin="lg" padding="lg">
-          <InstanceSelection
-            logsInstances={tenantInfo.instances.filter((instance) => instance.type === 'logs')}
-            metricsInstances={tenantInfo.instances.filter((instance) => instance.type === 'prometheus')}
-            onSubmit={onInstanceSelectionSubmit}
-            error={instanceSelectionError}
-          />
-        </Container>
+        <InstanceSelection
+          logsInstances={tenantInfo.instances.filter((instance) => instance.type === 'logs')}
+          metricsInstances={tenantInfo.instances.filter((instance) => instance.type === 'prometheus')}
+          onSubmit={onInstanceSelectionSubmit}
+          error={instanceSelectionError}
+        />
       </PluginPage>
     );
   }
 
   return (
     <PluginPage pageNav={{ text: 'Setup', description: 'Set up the plugin' }}>
-      <Container margin="lg" padding="lg">
-        <TenantApiSetupForm onSubmit={onSetupSubmit} submissionError={apiSetupError} />
-      </Container>
+      <TenantApiSetupForm onSubmit={onSetupSubmit} submissionError={apiSetupError} />
     </PluginPage>
   );
 };
