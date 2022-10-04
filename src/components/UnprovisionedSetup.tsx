@@ -3,7 +3,6 @@ import TenantApiSetupForm from 'components/TenantAPISetupForm';
 import { DEFAULT_API_HOST } from 'components/constants';
 import { InstanceSelection } from 'components/InstanceSelection';
 import { RegistrationInfo } from 'types';
-import { Container } from '@grafana/ui';
 import {
   getOrCreateMetricAndLokiDatasources,
   initializeSMDatasource,
