@@ -25,6 +25,14 @@ const TenantAPISetupForm = ({ onSubmit, submissionError }: Props) => {
     defaultValues: { apiHost: DEFAULT_API_HOST, adminApiToken: '' },
   });
 
+  const renderAPIKeyLink = (text: string) => (<a
+    className="external-link"
+    href="//grafana.com/profile/api-keys"
+    target="_blank"
+    rel="noopener noreferrer"
+  >{text}</a>
+  );
+
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <div>
@@ -33,23 +41,11 @@ const TenantAPISetupForm = ({ onSubmit, submissionError }: Props) => {
             title="Initialize Synthetic Monitoring App"
             url={'https://grafana.com/grafana/plugins/grafana-synthetic-monitoring-app/'}
           >
-            <p>
-              To initialize the App and connect it to your Grafana Cloud service you will need a Admin API key for you
-              Grafana.com account. The <b>API key</b> is only needed for the initialization process and will not be
-              stored. Once the initialization is complete you can safely delete the key.
-              <br />
-              <br />
-              <a
-                className="highlight-word"
-                href="//grafana.com/profile/api-keys"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Generate a new API key
-              </a>
-            </p>
+            To initialize the App and connect it to your Grafana Cloud service you will need a admin {renderAPIKeyLink("API key")} for you
+            Grafana.com account. The {renderAPIKeyLink("API key")} is only needed for the initialization process and will not be
+            stored. Once the initialization is complete you can safely delete the key.
           </InfoBox>
-          <Field label="Admin API Key" required invalid={Boolean(errors.adminApiToken)}>
+          <Field label="Admin API Key" required invalid={Boolean(errors.adminApiToken)} description={<>You can generate a new API key {renderAPIKeyLink("here")}.</>}>
             <Input
               {...register('adminApiToken', { required: true })}
               id="tenant-setup-api-key"
