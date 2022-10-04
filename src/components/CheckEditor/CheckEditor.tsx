@@ -21,6 +21,7 @@ import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { trackEvent, trackException } from 'analytics';
 import { useParams } from 'react-router-dom';
 import { PluginPage } from 'components/PluginPage';
+import { config } from '@grafana/runtime';
 
 interface Props {
   checks?: Check[];
@@ -108,7 +109,7 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
     <PluginPage pageNav={{ text: check?.job ? check.job : 'Add check', description: 'Check configuration' }}>
       <FormProvider {...formMethods}>
         <form onSubmit={formMethods.handleSubmit(onSubmit)}>
-          <Legend>{check?.id ? 'Edit Check' : 'Add Check'}</Legend>
+          {!config.featureToggles.topnav && <Legend>{check?.id ? 'Edit Check' : 'Add Check'}</Legend>}
           <div className={styles.formBody}>
             <Subheader>Check Details</Subheader>
             <Field label="Check type" disabled={check?.id ? true : false}>
@@ -216,9 +217,8 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
           {submissionError && (
             <div className={styles.submissionError}>
               <Alert title="Save failed" severity="error">
-                {`${submissionError.status}: ${
-                  submissionError.data?.msg?.concat(', ', submissionError.data?.err ?? '') ?? 'Something went wrong'
-                }`}
+                {`${submissionError.status}: ${submissionError.data?.msg?.concat(', ', submissionError.data?.err ?? '') ?? 'Something went wrong'
+                  }`}
               </Alert>
             </div>
           )}
