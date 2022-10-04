@@ -501,7 +501,7 @@ export interface UsageValues {
 
 export enum ROUTES {
   Redirect = 'redirect',
-  Home = '',
+  Home = 'home',
   Setup = 'setup',
   Unprovisioned = 'unprovisioned',
   Probes = 'probes',

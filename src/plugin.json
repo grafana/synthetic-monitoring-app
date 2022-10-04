@@ -52,7 +52,7 @@
     {
       "type": "page",
       "name": "Home",
-      "path": "/a/grafana-synthetic-monitoring-app",
+      "path": "/a/grafana-synthetic-monitoring-app/home",
       "addToNav": true,
       "defaultNav": true
     },
