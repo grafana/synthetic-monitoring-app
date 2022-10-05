@@ -3,9 +3,10 @@ import { css } from '@emotion/css';
 import { Badge, Button, HorizontalGroup } from '@grafana/ui';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { SuccessRateGauge } from 'components/SuccessRateGauge';
-import { OrgRole, Probe, Label } from 'types';
+import { Probe, Label } from 'types';
 import { hasRole } from 'utils';
 import { SuccessRateTypes } from 'contexts/SuccessRateContext';
+import { OrgRole } from '@grafana/data';
 
 interface Props {
   probes: Probe[];
@@ -28,7 +29,7 @@ export const ProbeList = ({ probes, onAddNew, onSelectProbe }: Props) => {
 
   return (
     <div>
-      {hasRole(OrgRole.EDITOR) && (
+      {hasRole(OrgRole.Editor) && (
         <HorizontalGroup justify="flex-end">
           <Button
             type="button"

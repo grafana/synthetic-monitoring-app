@@ -62,7 +62,7 @@ export const CheckListItemDetails = ({
               </HorizontalGroup>
             }
           >
-            <Button disabled={labels.length === 0} type="button" variant="link" size="sm">
+            <Button disabled={labels.length === 0} type="button" fill="text" size="sm">
               View {labels.length} label{labels.length === 1 ? '' : 's'}
             </Button>
           </Tooltip>

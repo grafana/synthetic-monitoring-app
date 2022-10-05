@@ -71,20 +71,13 @@ export const AlertLabels: FC = () => {
                 data-testid={`alert-labelValue-${labelIndex}`}
               />
             </Field>
-            <Button type="button" onClick={() => remove(labelIndex)} variant="link">
+            <Button type="button" onClick={() => remove(labelIndex)} fill="text">
               Delete
             </Button>
           </Fragment>
         ))}
       </div>
-      <Button
-        type="button"
-        variant="link"
-        size="sm"
-        icon="plus"
-        onClick={() => append({})}
-        className={styles.addButton}
-      >
+      <Button type="button" fill="text" size="sm" icon="plus" onClick={() => append({})} className={styles.addButton}>
         Add label
       </Button>
     </SubCollapse>

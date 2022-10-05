@@ -1,9 +1,9 @@
-import { DataSourceInstanceSettings } from '@grafana/data';
+import { DataSourceInstanceSettings, OrgRole } from '@grafana/data';
 
 import { SMOptions, DashboardInfo, LinkedDatasourceInfo, LogQueryResponse } from './datasource/types';
 
 import { config, getBackendSrv } from '@grafana/runtime';
-import { HostedInstance, User, OrgRole, CheckType, Settings, SubmissionErrorWrapper } from 'types';
+import { HostedInstance, CheckType, Settings, SubmissionErrorWrapper } from 'types';
 
 import { SMDataSource } from 'datasource/DataSource';
 import { IconName } from '@grafana/ui';
@@ -167,16 +167,16 @@ export async function createHostedInstance(info: HostedInstance, key: string): P
 }
 
 export function hasRole(requiredRole: OrgRole): boolean {
-  const user: User = config.bootData.user;
+  const user = config.bootData.user;
   switch (requiredRole) {
-    case OrgRole.ADMIN: {
-      return user.orgRole === OrgRole.ADMIN;
+    case OrgRole.Admin: {
+      return user.orgRole === OrgRole.Admin;
     }
-    case OrgRole.EDITOR: {
-      return user.orgRole === OrgRole.ADMIN || user.orgRole === OrgRole.EDITOR;
+    case OrgRole.Editor: {
+      return user.orgRole === OrgRole.Admin || user.orgRole === OrgRole.Editor;
     }
-    case OrgRole.VIEWER: {
-      return user.orgRole === OrgRole.ADMIN || user.orgRole === OrgRole.EDITOR || user.orgRole === OrgRole.VIEWER;
+    case OrgRole.Viewer: {
+      return user.orgRole === OrgRole.Admin || user.orgRole === OrgRole.Editor || user.orgRole === OrgRole.Viewer;
     }
     default: {
       return false;
@@ -200,7 +200,7 @@ export const parseUrl = (url: string) => {
 
 // Takes a TS enum with matching string/value pairs and transforms it into an array of strings
 // Under the hood TS enums duplicate key/value pairs so a value can match a key and vice-versa
-export function enumToStringArray<T>(enumObject: T) {
+export function enumToStringArray(enumObject: {}) {
   const set = new Set(Object.keys(enumObject) as string[]);
   return Array.from(set);
 }

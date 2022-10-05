@@ -11,10 +11,10 @@ import {
   stylesFactory,
   useTheme,
 } from '@grafana/ui';
-import { Probe, OrgRole } from 'types';
+import { Probe } from 'types';
 import { hasRole } from 'utils';
 import { SuccessRateGauge } from './SuccessRateGauge';
-import { GrafanaTheme } from '@grafana/data';
+import { GrafanaTheme, OrgRole } from '@grafana/data';
 import { SuccessRateTypes } from 'contexts/SuccessRateContext';
 
 interface Props {
@@ -66,7 +66,7 @@ const ProbeStatus = ({ probe, onResetToken }: Props) => {
   if (!probe) {
     return null;
   }
-  const isEditor = !probe.public && hasRole(OrgRole.EDITOR);
+  const isEditor = !probe.public && hasRole(OrgRole.Editor);
   const badgeStatus = getBadgeStatus(probe.online);
 
   const styles = getStyles(theme);

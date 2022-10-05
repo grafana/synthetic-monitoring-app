@@ -380,11 +380,11 @@ test('cascader adds labels to label filter', async () => {
   userEvent.click(additionalFilters);
   const cascader = await screen.findByRole('button', { name: 'Labels' });
   userEvent.click(cascader);
-  const labelMenuItems = await screen.findAllByRole('menuitem');
+  const labelMenuItems = await screen.findAllByRole('menuitemcheckbox');
   expect(labelMenuItems.length).toBe(2);
-  const labelName = await screen.findByRole('menuitem', { name: 'carne' });
+  const labelName = await screen.findByRole('menuitemcheckbox', { name: 'carne' });
   await waitFor(() => fireEvent.click(labelName));
-  const labelValue = await screen.findByRole('menuitem', { name: 'asada' });
+  const labelValue = await screen.findByRole('menuitemcheckbox', { name: 'asada' });
   await waitFor(() => fireEvent.click(labelValue));
 
   const labelFilterInput = await screen.findByTestId('check-label-filter');

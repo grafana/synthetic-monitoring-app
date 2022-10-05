@@ -16,13 +16,13 @@ import {
 import { useForm, FormProvider } from 'react-hook-form';
 import { useAsyncCallback } from 'react-async-hook';
 import appEvents from 'grafana/app/core/app_events';
-import { Probe, OrgRole, SubmissionErrorWrapper, ProbePageParams } from 'types';
+import { Probe, SubmissionErrorWrapper, ProbePageParams } from 'types';
 import { hasRole } from 'utils';
 import { LabelField } from 'components/LabelField';
 import ProbeStatus from '../ProbeStatus';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { trackEvent, trackException } from 'analytics';
-import { GrafanaTheme2, AppEvents } from '@grafana/data';
+import { GrafanaTheme2, AppEvents, OrgRole } from '@grafana/data';
 import { Clipboard } from 'components/Clipboard';
 import { SimpleMap } from '../SimpleMap';
 import { useParams } from 'react-router-dom';
@@ -137,7 +137,7 @@ const ProbeEditor = ({ probes, onReturn }: Props) => {
 
   const legend = probe.id ? 'Configuration' : 'Add Probe';
 
-  const isEditor = !probe.public && hasRole(OrgRole.EDITOR);
+  const isEditor = !probe.public && hasRole(OrgRole.Editor);
   const { latitude, longitude } = formMethods.watch();
 
   return (
