@@ -25,12 +25,10 @@ const TenantAPISetupForm = ({ onSubmit, submissionError }: Props) => {
     defaultValues: { apiHost: DEFAULT_API_HOST, adminApiToken: '' },
   });
 
-  const renderAPIKeyLink = (text: string) => (<a
-    className="external-link"
-    href="//grafana.com/profile/api-keys"
-    target="_blank"
-    rel="noopener noreferrer"
-  >{text}</a>
+  const renderAPIKeyLink = (text: string) => (
+    <a className="external-link" href="//grafana.com/profile/api-keys" target="_blank" rel="noopener noreferrer">
+      {text}
+    </a>
   );
 
   return (
@@ -41,11 +39,17 @@ const TenantAPISetupForm = ({ onSubmit, submissionError }: Props) => {
             title="Initialize Synthetic Monitoring App"
             url={'https://grafana.com/grafana/plugins/grafana-synthetic-monitoring-app/'}
           >
-            To initialize the App and connect it to your Grafana Cloud service you will need a admin {renderAPIKeyLink("API key")} for you
-            Grafana.com account. The {renderAPIKeyLink("API key")} is only needed for the initialization process and will not be
-            stored. Once the initialization is complete you can safely delete the key.
+            To initialize the App and connect it to your Grafana Cloud service you will need a admin{' '}
+            {renderAPIKeyLink('API key')} for you Grafana.com account. The {renderAPIKeyLink('API key')} is only needed
+            for the initialization process and will not be stored. Once the initialization is complete you can safely
+            delete the key.
           </InfoBox>
-          <Field label="Admin API Key" required invalid={Boolean(errors.adminApiToken)} description={<>You can generate a new API key {renderAPIKeyLink("here")}.</>}>
+          <Field
+            label="Admin API Key"
+            required
+            invalid={Boolean(errors.adminApiToken)}
+            description={<>You can generate a new API key {renderAPIKeyLink('here')}.</>}
+          >
             <Input
               {...register('adminApiToken', { required: true })}
               id="tenant-setup-api-key"
