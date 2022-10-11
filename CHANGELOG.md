@@ -1,5 +1,9 @@
 # Change Log
 
+# [1.9.24](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.23...v1.9.24) (2022-10-11)
+
+- Fix a bug with dashboard redirects that were causing them to lose query params
+
 # [1.9.23](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.22...v1.9.23) (2022-10-5)
 
 - Bump Grafana dependencies to version 9
