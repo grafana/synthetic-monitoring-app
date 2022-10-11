@@ -6,6 +6,7 @@ import { InstanceContext } from 'contexts/InstanceContext';
 import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
 import { Switch, Route, useRouteMatch } from 'react-router-dom';
 import { useNavigation } from 'hooks/useNavigation';
+import { PluginPage } from 'components/PluginPage';
 
 export function CheckRouter() {
   const { instance } = useContext(InstanceContext);
@@ -34,7 +35,7 @@ export function CheckRouter() {
   };
 
   if (loading || !instance.api || !checks) {
-    return <div>Loading...</div>;
+    return <PluginPage>Loading...</PluginPage>;
   }
 
   return (
