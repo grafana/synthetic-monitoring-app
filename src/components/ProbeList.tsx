@@ -31,7 +31,7 @@ export const ProbeList = ({ probes, onAddNew, onSelectProbe }: Props) => {
   return (
     <PluginPage>
       {hasRole(OrgRole.Editor) && (
-        <HorizontalGroup justify="flex-end">
+        <HorizontalGroup justify="flex-end" height="auto">
           <Button
             type="button"
             onClick={onAddNew}

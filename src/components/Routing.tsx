@@ -65,37 +65,35 @@ export const Routing = ({ onNavChanged, meta, ...rest }: AppRootProps) => {
   }, [page, navigate, queryParams]);
 
   return (
-    <div>
-      <Switch>
-        <Route exact path={`${PLUGIN_URL_PATH}${ROUTES.Redirect}`}>
-          <DashboardRedirecter />
-        </Route>
-        <Route path={`${PLUGIN_URL_PATH}${ROUTES.Setup}`}>
-          {initialized ? <Redirect to={`${PLUGIN_URL_PATH}${ROUTES.Home}`} /> : <WelcomePage />}
-        </Route>
-        <Route path={`${PLUGIN_URL_PATH}${ROUTES.Unprovisioned}`}>
-          <UnprovisionedSetup pluginId={meta.id} pluginName={meta.name} />
-        </Route>
-        <Route exact path={`${PLUGIN_URL_PATH}${ROUTES.Home}`}>
-          <HomePage />
-        </Route>
-        <Route path={`${PLUGIN_URL_PATH}${ROUTES.Probes}`}>
-          <ProbeRouter />
-        </Route>
-        <Route exact path={`${PLUGIN_URL_PATH}${ROUTES.Alerts}`}>
-          <PluginPage>
-            <Alerting />
-          </PluginPage>
-        </Route>
-        <Route path={`${PLUGIN_URL_PATH}${ROUTES.Checks}`}>
-          <CheckRouter />
-        </Route>
+    <Switch>
+      <Route exact path={`${PLUGIN_URL_PATH}${ROUTES.Redirect}`}>
+        <DashboardRedirecter />
+      </Route>
+      <Route path={`${PLUGIN_URL_PATH}${ROUTES.Setup}`}>
+        {initialized ? <Redirect to={`${PLUGIN_URL_PATH}${ROUTES.Home}`} /> : <WelcomePage />}
+      </Route>
+      <Route path={`${PLUGIN_URL_PATH}${ROUTES.Unprovisioned}`}>
+        <UnprovisionedSetup pluginId={meta.id} pluginName={meta.name} />
+      </Route>
+      <Route exact path={`${PLUGIN_URL_PATH}${ROUTES.Home}`}>
+        <HomePage />
+      </Route>
+      <Route path={`${PLUGIN_URL_PATH}${ROUTES.Probes}`}>
+        <ProbeRouter />
+      </Route>
+      <Route exact path={`${PLUGIN_URL_PATH}${ROUTES.Alerts}`}>
+        <PluginPage>
+          <Alerting />
+        </PluginPage>
+      </Route>
+      <Route path={`${PLUGIN_URL_PATH}${ROUTES.Checks}`}>
+        <CheckRouter />
+      </Route>
 
-        {/* Default route (only redirect if the path matches the plugin's URL) */}
-        <Route path={PLUGIN_URL_PATH}>
-          <Redirect to={`${PLUGIN_URL_PATH}${ROUTES.Home}`} />
-        </Route>
-      </Switch>
-    </div>
+      {/* Default route (only redirect if the path matches the plugin's URL) */}
+      <Route path={PLUGIN_URL_PATH}>
+        <Redirect to={`${PLUGIN_URL_PATH}${ROUTES.Home}`} />
+      </Route>
+    </Switch>
   );
 };

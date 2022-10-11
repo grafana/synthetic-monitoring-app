@@ -7,6 +7,7 @@ import { Spinner } from '@grafana/ui';
 import { AppPluginMeta, OrgRole } from '@grafana/data';
 import { hasRole } from 'utils';
 import appEvents from 'grafana/app/core/app_events';
+import { PluginPage } from './PluginPage';
 
 async function getRulerDatasource(metricDatasourceId?: number) {
   if (!metricDatasourceId || !hasRole(OrgRole.Admin)) {
@@ -102,7 +103,11 @@ export const InstanceProvider = ({
   }, [logsInstanceName, metricInstanceName]);
 
   if (instancesLoading) {
-    return <Spinner />;
+    return (
+      <PluginPage>
+        <Spinner />
+      </PluginPage>
+    );
   }
 
   // this case should theoretically be impossible, since we are setting 'instances' to an object in the failure case
