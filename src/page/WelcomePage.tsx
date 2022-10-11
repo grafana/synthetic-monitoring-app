@@ -4,7 +4,7 @@ import { getBackendSrv, config } from '@grafana/runtime';
 import { findSMDataSources, hasRole, initializeDatasource } from 'utils';
 import { importAllDashboards } from 'dashboards/loader';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { DataSourceInstanceSettings, DataSourceJsonData, GrafanaTheme2, OrgRole } from '@grafana/data';
+import { DataSourceInstanceSettings, GrafanaTheme2, OrgRole, DataSourceJsonData  } from '@grafana/data';
 import { css } from '@emotion/css';
 import { colors, LEGACY_LOGS_DS_NAME, LEGACY_METRICS_DS_NAME } from 'components/constants';
 import { dashboardScreenshot, dashboardScreenshotLight } from 'img';
@@ -212,6 +212,16 @@ export const WelcomePage: FC<Props> = () => {
             <Alert title="Something went wrong:">{error}</Alert>
           </div>
         )}
+        <DisplayCard className={styles.start}>
+          <h3 className={styles.heading}>Ready to start using synthetic monitoring?</h3>
+          <Button
+            onClick={onClick}
+            disabled={loading || !Boolean(metricsDatasource) || !Boolean(logsDatasource) || !hasRole(OrgRole.Editor)}
+            size="lg"
+          >
+            {loading ? <Spinner /> : 'Initialize the plugin'}
+          </Button>
+        </DisplayCard>
       </div>
     </PluginPage>
   );

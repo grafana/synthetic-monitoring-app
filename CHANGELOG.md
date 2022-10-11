@@ -1,5 +1,13 @@
 # Change Log
 
+# [1.9.23](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.22...v1.9.23) (2022-10-5)
+
+- Bump Grafana dependencies to version 9
+
+# [1.9.22](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.21...v1.9.22) (2022-9-15)
+
+- Update worldmap panel dependency
+
 # [1.9.21](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.20...v1.9.21) (2022-8-10)
 
 - Update link to alerting UI
