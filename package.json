@@ -25,11 +25,11 @@
   "devDependencies": {
     "@commitlint/cli": "^12.1.4",
     "@commitlint/config-conventional": "^12.1.4",
-    "@grafana/data": "9.1.1",
+    "@grafana/data": "^9.2.0",
     "@grafana/eslint-config": "^5.0.0",
-    "@grafana/runtime": "9.2.0-beta1",
-    "@grafana/toolkit": "9.1.1",
-    "@grafana/ui": "9.1.1",
+    "@grafana/runtime": "^9.2.0",
+    "@grafana/toolkit": "^9.2.0",
+    "@grafana/ui": "^9.2.0",
     "@release-it/conventional-changelog": "^3.0.0",
     "@testing-library/dom": "^7.31.2",
     "@testing-library/jest-dom": "^5.14.1",
@@ -71,5 +71,9 @@
     "react-simple-maps": "^2.3.0",
     "valid-url": "^1.0.9",
     "yaml": "^2.1.1"
+  },
+  "peerDependencies": {
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2"
   }
 }

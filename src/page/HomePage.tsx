@@ -126,7 +126,7 @@ const HomePage = () => {
   }, [instance.api]);
 
   return (
-    <PluginPage>
+    <PluginPage pageNav={{ text: 'Home', description: 'Synthetic Monitoring Home' }}>
       <FeaturesBanner />
       <div className={styles.cardFlex}>
         <DisplayCard className={cx(styles.card, styles.rowCard, styles.linksContainer)}>
