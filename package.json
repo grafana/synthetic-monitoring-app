@@ -56,7 +56,9 @@
     "jest-environment-jsdom-fifteen": "^1.0.2",
     "pa11y": "^6.1.1",
     "release-it": "^14.8.0",
-    "tslib": "^2.3.1"
+    "tslib": "^2.3.1",
+    "react": "17.0.2",
+    "react-dom": "17.0.2"
   },
   "dependencies": {
     "@popperjs/core": "^2.9.2",
@@ -71,9 +73,5 @@
     "react-simple-maps": "^2.3.0",
     "valid-url": "^1.0.9",
     "yaml": "^2.1.1"
-  },
-  "peerDependencies": {
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2"
   }
 }
