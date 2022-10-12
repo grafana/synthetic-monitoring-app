@@ -1,5 +1,5 @@
 import { InstanceContext } from 'contexts/InstanceContext';
-import { useNavigation } from 'hooks/useNavigation';
+import { QueryParamMap, useNavigation } from 'hooks/useNavigation';
 import { useQuery } from 'hooks/useQuery';
 import { useContext } from 'react';
 import { ROUTES } from 'types';
@@ -18,7 +18,12 @@ export function DashboardRedirecter() {
     dashboards?.find((dashboardJson) => dashboardJson.json.indexOf(dashboard) > -1) ?? dashboards[0];
 
   if (targetDashboard) {
-    nav(`/d/${targetDashboard.uid}`, {}, true);
+    console.log(queryParams);
+    const queryParamsParsed: QueryParamMap = {};
+    queryParams.forEach((value, key) => {
+      queryParamsParsed[key] = value;
+    });
+    nav(`/d/${targetDashboard.uid}`, queryParamsParsed, true);
     return null;
   }
 
