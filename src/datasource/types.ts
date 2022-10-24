@@ -56,10 +56,6 @@ export interface SecureJsonData {
   accessToken?: string;
 }
 
-export interface CloudDatasourceJsonData extends DataSourceJsonData {
-  directUrl: string;
-}
-
 export interface LogStream {
   ElapsedTime: string;
   Hosts: string;

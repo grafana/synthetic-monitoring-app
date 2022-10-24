@@ -3,7 +3,6 @@ import TenantApiSetupForm from 'components/TenantAPISetupForm';
 import { DEFAULT_API_HOST } from 'components/constants';
 import { InstanceSelection } from 'components/InstanceSelection';
 import { RegistrationInfo } from 'types';
-import { Container } from '@grafana/ui';
 import {
   getOrCreateMetricAndLokiDatasources,
   initializeSMDatasource,
@@ -12,6 +11,7 @@ import {
   updatePluginJsonData,
 } from 'initialization-utils';
 import { trackEvent, trackException } from 'analytics';
+import { PluginPage } from 'components/PluginPage';
 
 interface ApiSetupValues {
   adminApiToken: string;
@@ -112,20 +112,20 @@ export const UnprovisionedSetup = ({ pluginId }: Props) => {
 
   if (tenantInfo) {
     return (
-      <Container margin="lg" padding="lg">
+      <PluginPage pageNav={{ text: 'Setup', description: 'Set up the plugin' }}>
         <InstanceSelection
           logsInstances={tenantInfo.instances.filter((instance) => instance.type === 'logs')}
           metricsInstances={tenantInfo.instances.filter((instance) => instance.type === 'prometheus')}
           onSubmit={onInstanceSelectionSubmit}
           error={instanceSelectionError}
         />
-      </Container>
+      </PluginPage>
     );
   }
 
   return (
-    <Container margin="lg" padding="lg">
+    <PluginPage pageNav={{ text: 'Setup', description: 'Set up the plugin' }}>
       <TenantApiSetupForm onSubmit={onSetupSubmit} submissionError={apiSetupError} />
-    </Container>
+    </PluginPage>
   );
 };

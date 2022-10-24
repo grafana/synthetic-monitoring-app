@@ -66,6 +66,8 @@ import { useNavigation } from 'hooks/useNavigation';
 import { BulkEditModal } from 'components/BulkEditModal';
 import CheckFilterGroup from './CheckFilterGroup';
 import EmptyCheckList from './EmptyCheckList';
+import { PluginPage } from 'components/PluginPage';
+import { config } from '@grafana/runtime';
 
 const getStyles = (theme: GrafanaTheme) => ({
   headerContainer: css`
@@ -311,14 +313,18 @@ export const CheckList = ({ instance, checks, onCheckUpdate }: Props) => {
   }
 
   if (checks.length === 0) {
-    return <EmptyCheckList />;
+    return (
+      <PluginPage pageNav={{ text: 'Checks', description: 'List of checks' }}>
+        <EmptyCheckList />
+      </PluginPage>
+    );
   }
 
   return (
-    <div>
+    <PluginPage>
       <div className={styles.headerContainer}>
         <div>
-          <h4 className={styles.header}>All checks</h4>
+          {!config.featureToggles.topnav && <h4 className={styles.header}>All checks</h4>}
           <div className={styles.subheader}>
             Currently showing {currentPageChecks.length} of {checks.length} total checks
           </div>
@@ -612,6 +618,6 @@ export const CheckList = ({ instance, checks, onCheckUpdate }: Props) => {
           appEvents.emit(AppEvents.alertError, [`There was an error updating checks: ${err}`]);
         }}
       />
-    </div>
+    </PluginPage>
   );
 };

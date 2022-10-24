@@ -15,7 +15,7 @@ import { ThresholdSettings } from 'contexts/SuccessRateContext';
 export function findSMDataSources(): Array<DataSourceInstanceSettings<SMOptions>> {
   return Object.values(config.datasources).filter((ds) => {
     return ds.type === 'synthetic-monitoring-datasource';
-  }) as Array<DataSourceInstanceSettings<SMOptions>>;
+  }) as unknown as Array<DataSourceInstanceSettings<SMOptions>>;
 }
 
 export function findLinkedDatasource(linkedDSInfo: LinkedDatasourceInfo): DataSourceInstanceSettings | undefined {

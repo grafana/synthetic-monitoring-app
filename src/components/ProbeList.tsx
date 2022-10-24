@@ -7,6 +7,7 @@ import { Probe, Label } from 'types';
 import { hasRole } from 'utils';
 import { SuccessRateTypes } from 'contexts/SuccessRateContext';
 import { OrgRole } from '@grafana/data';
+import { PluginPage } from 'components/PluginPage';
 
 interface Props {
   probes: Probe[];
@@ -28,9 +29,9 @@ export const ProbeList = ({ probes, onAddNew, onSelectProbe }: Props) => {
   }
 
   return (
-    <div>
+    <PluginPage>
       {hasRole(OrgRole.Editor) && (
-        <HorizontalGroup justify="flex-end">
+        <HorizontalGroup justify="flex-end" height="auto">
           <Button
             type="button"
             onClick={onAddNew}
@@ -81,6 +82,6 @@ export const ProbeList = ({ probes, onAddNew, onSelectProbe }: Props) => {
           );
         })}
       <br />
-    </div>
+    </PluginPage>
   );
 };
