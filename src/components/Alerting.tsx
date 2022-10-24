@@ -82,7 +82,7 @@ export const Alerting: FC = () => {
   if (!hasRole(OrgRole.Admin)) {
     return (
       <div>
-        {!config.featureToggles && <h2>Alerts</h2>}
+        {!config.featureToggles.topnav && <h2>Alerts</h2>}
         <Icon className={styles.icon} name="exclamation-triangle" />
         Synthetic Monitoring uses &nbsp;
         <a href="https://grafana.com/docs/grafana-cloud/alerts/grafana-cloud-alerting/" className={styles.link}>
@@ -111,7 +111,7 @@ export const Alerting: FC = () => {
 
   return (
     <div>
-      {!config.featureToggles && <h2>Alerts</h2>}
+      {!config.featureToggles.topnav && <h2>Alerts</h2>}
       <p>
         View and edit default alerts for Synthetic Monitoring here. To tie one of these alerts to a check, you must
         select the alert sensitivity from the Alerting section of the check form when creating a check.{' '}
