@@ -1,5 +1,9 @@
 # Change Log
 
+# [1.9.26](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.25...v1.9.26) (2022-11-2)
+
+- Fix a duplicate button on the setup page
+
 # [1.9.25](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.24...v1.9.25) (2022-10-24)
 
 - Support the new Grafana navigation setup
