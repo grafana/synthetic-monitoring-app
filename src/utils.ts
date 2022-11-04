@@ -272,19 +272,12 @@ export const queryMetric = async (
   }
 };
 
-export const queryLogs = async (
-  url: string,
-  job: string,
-  instance: string,
-  probe: string | undefined,
-  start: number,
-  end: number
-): Promise<LogQueryResponse> => {
+export const queryLogs = async (url: string, query: string, start: number, end: number): Promise<LogQueryResponse> => {
   const backendSrv = getBackendSrv();
   const params = {
     direction: 'BACKWARD',
     limit: 1000,
-    query: `{probe=~"${probe ?? '.+'}", job="${job}", instance="${instance}", check_name="traceroute"} | logfmt`,
+    query,
     start: start,
     end: end,
     // step: ,
@@ -293,7 +286,7 @@ export const queryLogs = async (
   try {
     const response = await backendSrv.datasourceRequest({
       method: 'GET',
-      url: `${url}/loki/api/v1/query_range`,
+      url: `${url}/loki/api/v1/query`,
       params,
     });
     if (!response.ok) {
