@@ -263,7 +263,10 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
       </FormProvider>
       <CheckTestResultsModal
         isOpen={isTestModalOpen}
-        onDismiss={() => setTestModalOpen(false)}
+        onDismiss={() => {
+          setTestModalOpen(false);
+          setTestResponse(undefined);
+        }}
         testResponse={testResponse}
       />
       <ConfirmModal

@@ -5,7 +5,7 @@ import { GrafanaTheme } from '@grafana/data';
 
 interface Props {
   isOpen?: boolean;
-  label: string;
+  label: string | JSX.Element;
   loading?: boolean;
   collapsible?: boolean;
   onToggle?: (isOpen: boolean) => void;
