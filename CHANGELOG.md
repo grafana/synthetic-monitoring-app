@@ -1,5 +1,9 @@
 # Change Log
 
+# [1.9.27](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.26...v1.9.27) (2022-11-8)
+
+- Fix error message on non-traceroutes timeout field
+
 # [1.9.26](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.25...v1.9.26) (2022-11-2)
 
 - Fix a duplicate button on the setup page
