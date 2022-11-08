@@ -1,17 +1,7 @@
-import {
-  ArrayVector,
-  DateTime,
-  FieldType,
-  GrafanaTheme2,
-  LoadingState,
-  PanelData,
-  TimeRange,
-  toDataFrame,
-} from '@grafana/data';
-import { Badge, Collapse, Icon, Label, Spinner, useStyles2 } from '@grafana/ui';
+import { DateTime, GrafanaTheme2 } from '@grafana/data';
+import { Badge, Collapse, Icon, Spinner, useStyles2 } from '@grafana/ui';
 import React, { useState } from 'react';
 import { css, cx } from '@emotion/css';
-import { PanelRenderer } from '@grafana/runtime';
 
 interface Props {
   probeName: string;
@@ -21,8 +11,6 @@ interface Props {
   end: DateTime;
   logs: any[];
 }
-
-const getDataFrame = (log: any) => {};
 
 export function CheckTestResult({ probeName, success, loading, logs, start, end }: Props) {
   const [isOpen, setIsOpen] = useState(false);

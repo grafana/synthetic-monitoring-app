@@ -1,5 +1,5 @@
 import { dateTime } from '@grafana/data';
-import { Badge, Modal, Spinner, Collapse } from '@grafana/ui';
+import { Modal, Spinner } from '@grafana/ui';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { useLogData } from 'hooks/useLogData';
 import React, { useState, useEffect, useContext } from 'react';
@@ -13,8 +13,6 @@ interface Props {
 }
 
 export function CheckTestResultsModal({ testResponse, isOpen, onDismiss }: Props) {
-  console.log('hello', testResponse?.id, testResponse);
-
   const { instance } = useContext(InstanceContext);
   const query = `{type="adhoc"} |= "${testResponse?.id}"`;
   const [now] = useState(Date.now());
@@ -66,7 +64,7 @@ export function CheckTestResultsModal({ testResponse, isOpen, onDismiss }: Props
         const probe = probes?.find((probe) => probe.id === testProbe);
         const resultKey = `${probe?.name}${testResponse.id}`;
         const result = resultsByProbe[resultKey];
-        const successMetric = result?.timeseries.find((timeseries) => timeseries.name === 'probe_success');
+        const successMetric = result?.timeseries.find((timeseries: any) => timeseries.name === 'probe_success');
         const success = successMetric?.metric?.[0]?.gauge?.value;
 
         console.log({ testProbe, testResponse, probe, probes, result, successMetric, success, resultsByProbe });
