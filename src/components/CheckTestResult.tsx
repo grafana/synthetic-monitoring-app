@@ -1,7 +1,8 @@
-import { DateTime, GrafanaTheme2 } from '@grafana/data';
+import { DataFrame, dateTime, DateTime, GrafanaTheme2, LoadingState } from '@grafana/data';
 import { Badge, Collapse, Icon, Spinner, useStyles2 } from '@grafana/ui';
 import React, { useState } from 'react';
-import { css, cx } from '@emotion/css';
+import { css } from '@emotion/css';
+import { PanelRenderer } from '@grafana/runtime';
 
 interface Props {
   probeName: string;
@@ -33,20 +34,6 @@ export function CheckTestResult({ probeName, success, loading, logs, start, end 
     </div>
   );
 
-  // logsDF.fields.unshift({
-  //   name: 'Line',
-  //   type: FieldType.string,
-  //   values: new ArrayVector(logs?.map((log) => log.msg)),
-  //   config: {},
-  // });
-  // const range: TimeRange = {
-  //   from: start,
-  //   to: end,
-  //   raw: {
-  //     from: start,
-  //     to: end,
-  //   },
-  // };
   return (
     <Collapse
       label={header}
@@ -59,28 +46,24 @@ export function CheckTestResult({ probeName, success, loading, logs, start, end 
     >
       {!loading && logs ? (
         <div>
-          {logs.map((log, index) => {
-            return (
-              <div className={styles.logLine} key={index}>
-                <div
-                  className={cx(styles.logLevelIndicator, {
-                    [styles.logLevelNone]: log.level !== 'info' || log.level !== 'error',
-                    [styles.logLevelInfo]: log.level === 'info',
-                    [styles.logLevelError]: log.level === 'error',
-                  })}
-                />
-                <div>
-                  {Object.keys(log).map((logLabel, index) => {
-                    return (
-                      <span key={index}>
-                        <strong>{logLabel}:</strong>&nbsp;{log[logLabel]}{' '}
-                      </span>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })}
+          <PanelRenderer
+            title="Logs"
+            pluginId="logs"
+            width={658}
+            height={300}
+            data={{
+              state: LoadingState.Done,
+              series: [logs as unknown as DataFrame],
+              timeRange: {
+                from: dateTime(),
+                to: dateTime(),
+                raw: {
+                  from: 'now',
+                  to: 'now',
+                },
+              },
+            }}
+          />
         </div>
       ) : (
         <Spinner />

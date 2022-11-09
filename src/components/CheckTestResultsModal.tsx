@@ -1,4 +1,4 @@
-import { dateTime } from '@grafana/data';
+import { ArrayVector, dateTime, FieldType } from '@grafana/data';
 import { Modal, Spinner } from '@grafana/ui';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { useLogData } from 'hooks/useLogData';
@@ -10,6 +10,53 @@ interface Props {
   testResponse?: AdHocCheckResponse;
   isOpen: boolean;
   onDismiss: () => void;
+}
+
+function buildLogsDf(logs: Array<Record<string, any>>) {
+  const tsValues = new Array(logs.length).fill(Date.now());
+  const fields: Record<string, any> = {
+    // a timestamp is required for the panel to render. we don't care about/have a timestamp so we just fill with the time for right now
+    ts: {
+      name: 'ts',
+      type: FieldType.time,
+      config: { displayName: 'Time' },
+      values: new ArrayVector(tsValues),
+    },
+  };
+  // We need to loop through all the logs and build up a complete list of fields.
+  logs.forEach((log, index) => {
+    Object.keys(log).forEach((fieldName) => {
+      if (!fields[fieldName]) {
+        const values = new Array(logs.length).fill(undefined);
+        values[index] = log[fieldName];
+        fields[fieldName] = {
+          name: fieldName,
+          type: FieldType.string,
+          values: new ArrayVector(values),
+          config: {},
+        };
+      } else {
+        fields[fieldName].values.set(index, log[fieldName]);
+      }
+    });
+  });
+  const dataframe = {
+    refId: 'A',
+    // the first string field is what gets displayed as the log line. We want that to be the 'msg' field
+    fields: Object.keys(fields)
+      .sort((a, b) => {
+        if (a === 'msg') {
+          return -1;
+        }
+        if (b === 'msg') {
+          return 1;
+        }
+        return 0;
+      })
+      .map((fieldName) => fields[fieldName]),
+    length: logs.length,
+  };
+  return dataframe;
 }
 
 export function CheckTestResultsModal({ testResponse, isOpen, onDismiss }: Props) {
@@ -26,7 +73,6 @@ export function CheckTestResultsModal({ testResponse, isOpen, onDismiss }: Props
     const abortController = new AbortController();
     const fetchProbes = async () => {
       const probes = await instance.api?.listProbes();
-      console.log('fetching probes', probes, abortController.signal.aborted);
       if (!abortController.signal.aborted) {
         setProbes(probes ?? []);
       }
@@ -43,6 +89,8 @@ export function CheckTestResultsModal({ testResponse, isOpen, onDismiss }: Props
       const logsStr = item.values?.[0]?.[1];
       try {
         const info = JSON.parse(logsStr);
+        const df = buildLogsDf(info.logs);
+        info.logs = df;
         if (!resultsByProbe[`${info.probe}${testResponse.id}`] && info.id === testResponse.id) {
           setResultsByProbe({ ...resultsByProbe, [`${info.probe}${testResponse.id}`]: info });
         }

@@ -231,6 +231,9 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
                   <Button
                     type="button"
                     variant="secondary"
+                    disabled={
+                      !formMethods.formState.isValid || formMethods.getValues().checkType.value === CheckType.Traceroute
+                    }
                     onClick={() => {
                       const values = formMethods.getValues();
                       const check = getCheckFromFormValues(values, defaultValues);
