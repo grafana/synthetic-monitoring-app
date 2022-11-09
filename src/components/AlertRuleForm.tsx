@@ -305,7 +305,7 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
               </div>
             </SubCollapse>
             <hr className={styles.breakLine} />
-            <HorizontalGroup>
+            <HorizontalGroup height="40px">
               <Button type="submit" disabled={submitting}>
                 Save alert
               </Button>
