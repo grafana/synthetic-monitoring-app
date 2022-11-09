@@ -42,6 +42,7 @@ import { useParams } from 'react-router-dom';
 import { PluginPage } from 'components/PluginPage';
 import { config } from '@grafana/runtime';
 import { CheckTestResultsModal } from 'components/CheckTestResultsModal';
+import { FeatureFlag } from 'components/FeatureFlag';
 
 interface Props {
   checks?: Check[];
@@ -224,22 +225,29 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
             <Button type="submit" disabled={formMethods.formState.isSubmitting || submitting}>
               Save
             </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => {
-                const values = formMethods.getValues();
-                const check = getCheckFromFormValues(values, defaultValues);
-                console.log({ check });
-                api?.testCheck(check).then((resp) => {
-                  console.log(resp);
-                  setTestModalOpen(true);
-                  setTestResponse(resp);
-                });
+            <FeatureFlag name={FeatureName.AdhocChecks}>
+              {({ isEnabled }) => {
+                return isEnabled ? (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => {
+                      const values = formMethods.getValues();
+                      const check = getCheckFromFormValues(values, defaultValues);
+                      api?.testCheck(check).then((resp) => {
+                        console.log(resp);
+                        setTestModalOpen(true);
+                        setTestResponse(resp);
+                      });
+                    }}
+                  >
+                    Test
+                  </Button>
+                ) : (
+                  <div />
+                );
               }}
-            >
-              Test
-            </Button>
+            </FeatureFlag>
             {check?.id && (
               <Button variant="destructive" onClick={() => setShowDeleteModal(true)} disabled={!isEditor} type="button">
                 Delete Check

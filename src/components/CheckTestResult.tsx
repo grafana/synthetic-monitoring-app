@@ -22,7 +22,7 @@ export function CheckTestResult({ probeName, success, loading, logs, start, end 
         <div className={styles.headerBadges}>
           <Badge
             text={success ? 'Success' : 'Fail'}
-            icon={success ? 'check-circle' : 'x'}
+            icon={success ? 'check-circle' : 'exclamation-circle'}
             color={success ? 'green' : 'red'}
           />
           <Icon name={isOpen ? 'angle-down' : 'angle-right'} />
@@ -48,7 +48,15 @@ export function CheckTestResult({ probeName, success, loading, logs, start, end 
   //   },
   // };
   return (
-    <Collapse label={header} isOpen={isOpen} onToggle={(isOpen) => setIsOpen(isOpen)}>
+    <Collapse
+      label={header}
+      isOpen={isOpen}
+      onToggle={(isOpen) => {
+        if (!loading) {
+          setIsOpen(isOpen);
+        }
+      }}
+    >
       {!loading && logs ? (
         <div>
           {logs.map((log, index) => {

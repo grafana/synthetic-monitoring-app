@@ -32,9 +32,11 @@ export function CheckTestResultsModal({ testResponse, isOpen, onDismiss }: Props
       }
     };
 
-    fetchProbes();
+    if (isOpen) {
+      fetchProbes();
+    }
     return () => abortController.abort();
-  }, [instance]);
+  }, [instance, isOpen]);
 
   if (testResponse) {
     data.forEach((item) => {
@@ -55,7 +57,6 @@ export function CheckTestResultsModal({ testResponse, isOpen, onDismiss }: Props
       title="Test check"
       isOpen={isOpen}
       onDismiss={() => {
-        console.log('clearing results');
         setResultsByProbe({});
         onDismiss();
       }}
@@ -66,8 +67,6 @@ export function CheckTestResultsModal({ testResponse, isOpen, onDismiss }: Props
         const result = resultsByProbe[resultKey];
         const successMetric = result?.timeseries.find((timeseries: any) => timeseries.name === 'probe_success');
         const success = successMetric?.metric?.[0]?.gauge?.value;
-
-        console.log({ testProbe, testResponse, probe, probes, result, successMetric, success, resultsByProbe });
 
         return (
           <CheckTestResult
