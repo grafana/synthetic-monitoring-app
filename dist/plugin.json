@@ -1,0 +1,102 @@
+{
+  "type": "app",
+  "name": "Synthetic Monitoring",
+  "id": "grafana-synthetic-monitoring-app",
+  "info": {
+    "author": {
+      "name": "Grafana Labs",
+      "url": "https://grafana.com"
+    },
+    "logos": {
+      "small": "img/logo.svg",
+      "large": "img/logo.svg"
+    },
+    "screenshots": [
+      {
+        "name": "Summary Dashboard",
+        "path": "img/screenshot-dash-summary.png"
+      },
+      {
+        "name": "HTTP Dashboard",
+        "path": "img/screenshot-dash-http.png"
+      },
+      {
+        "name": "Check List",
+        "path": "img/screenshot-check-list.png"
+      }
+    ],
+    "version": "1.9.28",
+    "updated": "2022-11-09"
+  },
+  "routes": [
+    {
+      "path": "init",
+      "method": "*",
+      "url": "{{ .JsonData.apiHost }}/api/v1/register/init",
+      "reqRole": "Editor"
+    },
+    {
+      "path": "install",
+      "method": "*",
+      "url": "{{ .JsonData.apiHost }}/api/v1/register/install",
+      "reqRole": "Editor",
+      "headers": [
+        {
+          "name": "Authorization",
+          "content": "Bearer {{ .SecureJsonData.publisherToken }}"
+        }
+      ]
+    }
+  ],
+  "includes": [
+    {
+      "type": "page",
+      "name": "Home",
+      "path": "/a/grafana-synthetic-monitoring-app/home",
+      "addToNav": true,
+      "defaultNav": true
+    },
+    {
+      "type": "page",
+      "name": "Summary",
+      "path": "/a/grafana-synthetic-monitoring-app/redirect?dashboard=summary",
+      "addToNav": true
+    },
+    {
+      "type": "page",
+      "name": "Checks",
+      "path": "/a/grafana-synthetic-monitoring-app/checks",
+      "addToNav": true
+    },
+    {
+      "type": "page",
+      "name": "Probes",
+      "path": "/a/grafana-synthetic-monitoring-app/probes",
+      "addToNav": true
+    },
+    {
+      "type": "page",
+      "name": "Alerts",
+      "path": "/a/grafana-synthetic-monitoring-app/alerts",
+      "addToNav": true
+    },
+    {
+      "type": "page",
+      "name": "Config",
+      "path": "/plugins/grafana-synthetic-monitoring-app",
+      "addToNav": true
+    }
+  ],
+  "dependencies": {
+    "grafanaDependency": ">=8.3.3",
+    "grafanaVersion": "8.3",
+    "plugins": [
+      {
+        "type": "panel",
+        "name": "Worldmap Panel",
+        "id": "grafana-worldmap-panel",
+        "version": "^0.3.3"
+      }
+    ]
+  }
+}
