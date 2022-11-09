@@ -166,7 +166,11 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
     setIsOpen(false);
   };
 
-  const { execute, error, loading: submitting } = useAsyncCallback(async (alertValues: AlertFormValues) => {
+  const {
+    execute,
+    error,
+    loading: submitting,
+  } = useAsyncCallback(async (alertValues: AlertFormValues) => {
     try {
       await onSubmit(alertValues);
       appEvents.emit(AppEvents.alertSuccess, ['Alert rule updated successfully']);
@@ -188,7 +192,7 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
       <div className={styles.container}>
         It looks like this rule has been edited in Cloud Alerting, and can no longer be edited in Synthetic Monitoring.
         To update this rule, visit{' '}
-        <a href={`a/grafana-alerting-ui-app/?tab=rules&rulessource=${instance.metrics?.name}`} className={styles.link}>
+        <a href={`alerting/list?dataSource=${instance.metrics?.name}`} className={styles.link}>
           Grafana Cloud Alerting
         </a>
       </div>
@@ -301,7 +305,7 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
               </div>
             </SubCollapse>
             <hr className={styles.breakLine} />
-            <HorizontalGroup>
+            <HorizontalGroup height="40px">
               <Button type="submit" disabled={submitting}>
                 Save alert
               </Button>

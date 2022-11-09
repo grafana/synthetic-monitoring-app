@@ -9,8 +9,8 @@ import {
   Legend,
   Alert,
   useStyles,
-  ButtonGroup,
   LinkButton,
+  HorizontalGroup,
 } from '@grafana/ui';
 import { useAsyncCallback } from 'react-async-hook';
 import {
@@ -221,7 +221,7 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
             <CheckSettings typeOfCheck={selectedCheckType} isEditor={isEditor} />
             <CheckFormAlert />
           </div>
-          <ButtonGroup className={styles.buttonGroup}>
+          <HorizontalGroup height="40px">
             <Button type="submit" disabled={formMethods.formState.isSubmitting || submitting}>
               Save
             </Button>
@@ -260,7 +260,7 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
             <LinkButton onClick={() => onReturn(true)} fill="text">
               Back
             </LinkButton>
-          </ButtonGroup>
+          </HorizontalGroup>
           {submissionError && (
             <div className={styles.submissionError}>
               <Alert title="Save failed" severity="error">

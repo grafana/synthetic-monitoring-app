@@ -155,7 +155,7 @@ export const Alerting: FC = () => {
         <AlertRuleForm key={`${alertRule.alert}-${index}`} rule={alertRule} onSubmit={getUpdateRules(index)} />
       ))}
       {Boolean(alertRules?.length) ? (
-        <HorizontalGroup justify="flex-end">
+        <HorizontalGroup justify="flex-end" height="70px">
           <Button variant="destructive" type="button" onClick={() => setShowResetModal(true)}>
             Reset to defaults
           </Button>
