@@ -195,7 +195,7 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
             <CheckSettings typeOfCheck={selectedCheckType} isEditor={isEditor} />
             <CheckFormAlert />
           </div>
-          <HorizontalGroup>
+          <HorizontalGroup height="40px">
             <Button type="submit" disabled={formMethods.formState.isSubmitting || submitting}>
               Save
             </Button>
