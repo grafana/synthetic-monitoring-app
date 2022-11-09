@@ -192,7 +192,7 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
       <div className={styles.container}>
         It looks like this rule has been edited in Cloud Alerting, and can no longer be edited in Synthetic Monitoring.
         To update this rule, visit{' '}
-        <a href={`alerting/list&dataSource=${instance.metrics?.name}`} className={styles.link}>
+        <a href={`alerting/list?dataSource=${instance.metrics?.name}`} className={styles.link}>
           Grafana Cloud Alerting
         </a>
       </div>
