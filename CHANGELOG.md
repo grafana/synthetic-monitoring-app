@@ -1,5 +1,9 @@
 # Change Log
 
+# [1.9.28](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.27...v1.9.28) (2022-11-9)
+
+- Update Alert URL for compatiblity with Grafana 9
+
 # [1.9.27](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.26...v1.9.27) (2022-11-8)
 
 - Fix error message on non-traceroutes timeout field
