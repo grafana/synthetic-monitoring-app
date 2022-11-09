@@ -21,6 +21,7 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, probes }: Props) =>
     control,
     watch,
     formState: { errors },
+    clearErrors,
   } = useFormContext();
   const { instance } = useContext(InstanceContext);
 
@@ -38,6 +39,10 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, probes }: Props) =>
     fetchProbes();
     return () => abortController.abort();
   }, [instance]);
+
+  useEffect(() => {
+    clearErrors();
+  }, [checkType, clearErrors]);
 
   return (
     <div>

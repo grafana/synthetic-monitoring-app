@@ -88,9 +88,7 @@ export function validateFrequency(frequency: number, selectedCheckType: CheckTyp
 }
 
 export function validateTimeout(timeout: number, checkType: CheckType): string | undefined {
-  // const maxTimeout = checkType === CheckType.Traceroute ? 30 : 10;
-  const maxTimeout = 30;
-  // console.log('validation', { maxTimeout, checkType });
+  const maxTimeout = checkType === CheckType.Traceroute ? 30 : 10;
   if (timeout < 1) {
     return 'Timeout must be at least 1 second';
   }
