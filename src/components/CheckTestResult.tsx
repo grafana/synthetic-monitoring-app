@@ -56,6 +56,7 @@ export function CheckTestResult({ probeName, success, loading, logs, start, end 
               <div className={styles.logLine} key={index}>
                 <div
                   className={cx(styles.logLevelIndicator, {
+                    [styles.logLevelNone]: log.level !== 'info' || log.level !== 'error',
                     [styles.logLevelInfo]: log.level === 'info',
                     [styles.logLevelError]: log.level === 'error',
                   })}
@@ -99,7 +100,12 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
   logLevelIndicator: css`
     width: 3px;
+    min-width: 3px;
+    max-width: 3px;
     margin-right: ${theme.spacing(1)};
+  `,
+  logLevelNone: css`
+    background-color: ${theme.colors.info.main};
   `,
   logLevelInfo: css`
     background-color: ${theme.colors.success.main};
