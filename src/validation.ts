@@ -8,6 +8,7 @@ import {
   TcpSettings,
   Label,
   TracerouteSettings,
+  MultiHttpSettings,
 } from 'types';
 import { checkType } from 'utils';
 import * as punycode from 'punycode';
@@ -18,6 +19,7 @@ import { PEM_HEADER, PEM_FOOTER, INVALID_WEB_URL_MESSAGE } from 'components/cons
 export const CheckValidation = {
   job: validateJob,
   target: validateTarget,
+  urls: validateMultiHttp,
   frequency: validateFrequency,
   timeout: validateTimeout,
   labels: validateLabels,
@@ -43,6 +45,16 @@ export function validateJob(job: string): string | undefined {
     return 'Job name must be 128 characters or less';
   }
   return undefined;
+}
+
+export function validateMultiHttp(input: string) {
+  if (input.includes(',')) {
+    return input.split(',').map((i, index) => {
+      validateHttpTarget(i.trim(), true);
+    });
+  } else {
+    return validateHttpTarget(input, true);
+  }
 }
 
 export function validateTarget(typeOfCheck: CheckType, target: string): string | undefined {
@@ -207,10 +219,13 @@ export function validateSettings(settings: Settings): string | undefined {
   if (!settings[checkT]) {
     return 'Settings values required';
   }
-
+  // WHAT IS THIS FUNCTION FOR??
   switch (checkT) {
     case CheckType.HTTP: {
       return validateSettingsHTTP(settings.http!);
+    }
+    case CheckType.MULTI_HTTP: {
+      return validateSettingsMultiHTTP(settings.multiHttp!);
     }
     case CheckType.PING: {
       return validateSettingsPING(settings.ping!);
@@ -257,6 +272,10 @@ export function validateSettingsHTTP(settings: HttpSettings): string | undefined
   return undefined;
 }
 
+export function validateSettingsMultiHTTP(settings: MultiHttpSettings): string | undefined {
+  return undefined;
+}
+
 export function validateSettingsPING(settings: PingSettings): string | undefined {
   return undefined;
 }
@@ -269,7 +288,10 @@ export function validateSettingsTCP(settings: TcpSettings): string | undefined {
   return undefined;
 }
 
-function validateHttpTarget(target: string): string | undefined {
+function validateHttpTarget(target: string, isMultiHttp?: boolean): string | undefined {
+  if (isMultiHttp) {
+    return undefined;
+  }
   try {
     // valid url will fail if curly brackets are not URI encoded, but curly brackets are technically allowed and work in the real world.
     // We encode the target before checking to get around that

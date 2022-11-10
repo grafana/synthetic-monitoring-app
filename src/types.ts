@@ -166,6 +166,7 @@ export interface HttpSettings {
   tlsConfig?: TLSConfig;
   compression: HTTPCompressionAlgo | undefined;
   proxyURL?: string;
+  mutliURLs?: string[];
 
   // Authentication
   bearerToken?: string;
@@ -182,6 +183,10 @@ export interface HttpSettings {
   failIfHeaderNotMatchesRegexp?: HeaderMatch[];
 
   cacheBustingQueryParamName?: string;
+}
+
+export interface MultiHttpSettings extends HttpSettings {
+  mutliURLs: string[];
 }
 
 interface HttpHeaderFormValue {
@@ -274,6 +279,7 @@ export interface CheckFormValues extends Omit<Check, 'settings' | 'labels' | 'al
 
 export interface Check extends BaseObject {
   job: string;
+  multiHTTP?: string;
   target: string;
   frequency: number;
   offset?: number;
@@ -296,6 +302,7 @@ export interface FilteredCheck extends Omit<Check, 'id'> {
 
 export interface Settings {
   http?: HttpSettings;
+  multiHttp?: MultiHttpSettings;
   ping?: PingSettings;
   dns?: DnsSettings;
   tcp?: TcpSettings;
@@ -308,6 +315,7 @@ export enum CheckType {
   DNS = 'dns',
   TCP = 'tcp',
   Traceroute = 'traceroute',
+  MULTI_HTTP = 'multiHttp',
 }
 
 export interface HostedInstance {

@@ -8,6 +8,7 @@ import {
   PingSettings,
   HttpSettings,
   HttpSettingsFormValues,
+  MultiHttpSettings,
   HttpRegexValidationFormValue,
   Label,
   TcpSettingsFormValues,
@@ -412,9 +413,12 @@ const getHttpRegexValidationsFromFormValue = (validations: HttpRegexValidationFo
 
 const getHttpSettings = (
   settings: Partial<HttpSettingsFormValues> | undefined = {},
-  defaultSettings: HttpSettingsFormValues | undefined
+  defaultSettings: HttpSettingsFormValues | undefined,
+  isMultiHttp?: boolean
 ): HttpSettings => {
-  const fallbackValues = fallbackSettings(CheckType.HTTP).http as HttpSettings;
+  const fallbackValues = !isMultiHttp
+    ? (fallbackSettings(CheckType.HTTP).http as HttpSettings)
+    : (fallbackSettings(CheckType.MULTI_HTTP).multiHttp as MultiHttpSettings);
   const headers = settings.headers ?? defaultSettings?.headers;
   const formattedHeaders = headers?.map((header) => `${header.name}:${header.value}`) ?? [];
 
@@ -577,6 +581,8 @@ const getSettingsFromFormValues = (formValues: Partial<CheckFormValues>, default
   switch (checkType) {
     case CheckType.HTTP:
       return { http: getHttpSettings(formValues.settings?.http, defaultValues.settings.http) };
+    case CheckType.MULTI_HTTP:
+      return { http: getHttpSettings(formValues.settings?.multiHttp, defaultValues.settings.multiHttp) };
     case CheckType.TCP:
       return { tcp: getTcpSettings(formValues.settings?.tcp, defaultValues.settings.tcp) };
     case CheckType.DNS:

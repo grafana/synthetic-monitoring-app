@@ -19,6 +19,9 @@ export const CheckSettings: FC<Props> = ({ isEditor, typeOfCheck }) => {
     case CheckType.HTTP: {
       return <HttpSettingsForm isEditor={isEditor} />;
     }
+    case CheckType.MULTI_HTTP: {
+      return <HttpSettingsForm isEditor={isEditor} />;
+    }
     case CheckType.DNS: {
       return <DnsSettingsForm isEditor={isEditor} />;
     }

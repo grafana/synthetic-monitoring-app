@@ -33,6 +33,13 @@ const getTargetHelpText = (typeOfCheck: CheckType | undefined): TargetHelpInfo =
       };
       break;
     }
+    case CheckType.MULTI_HTTP: {
+      resp = {
+        text: 'Target name to assign this set of checks',
+        example: `"Grafana.com Checks - CET" or "https://grafana.com/"`,
+      };
+      break;
+    }
     case CheckType.PING: {
       resp = {
         text: 'Hostname to ping',
