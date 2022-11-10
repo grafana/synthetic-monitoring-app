@@ -25,7 +25,7 @@ import {
 } from 'types';
 import { hasRole } from 'utils';
 import { getDefaultValuesFromCheck, getCheckFromFormValues } from './checkFormTransformations';
-import { validateJob, validateTarget } from 'validation';
+import { validateJob, validateTarget, validateMultiHttp } from 'validation';
 import CheckTarget from 'components/CheckTarget';
 import { Subheader } from 'components/Subheader';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
@@ -82,6 +82,7 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
   const [isTestModalOpen, setTestModalOpen] = useState(false);
   const [testResponse, setTestResponse] = useState<AdHocCheckResponse>();
   const [testRequestInFlight, setTestRequestInFlight] = useState(false);
+  const [multiHttps, setMultiHttps] = useState<string[] | EventTarget>([]);
   const styles = useStyles(getStyles);
 
   // If we're editing, grab the appropriate check from the list
@@ -206,6 +207,28 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
                 />
               )}
             />
+            {selectedCheckType === CheckType.MULTI_HTTP && (
+              <>
+                <Field label="HTTP addresses" description="Enter a comma-separated list of https to check">
+                  <Input
+                    width={40}
+                    {...formMethods.register('multiHTTP', {
+                      required: true,
+                      validate: validateMultiHttp,
+                    })}
+                    type="text"
+                    onChange={debounce((evt) => {
+                      const targetFormValue = formMethods.getValues().checkType;
+                      const selectedCheckType = targetFormValue.value as CheckType;
+
+                      setMultiHttps(evt.target?.value);
+                      return validateMultiHttp(evt.target?.value);
+                    }, 4000)}
+                  />
+                </Field>
+              </>
+            )}
+
             <hr className={styles.breakLine} />
             <ProbeOptions
               isEditor={isEditor}

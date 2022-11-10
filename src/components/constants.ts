@@ -20,6 +20,7 @@ import {
   HttpSettings,
   Settings,
   HttpMethod,
+  MultiHttpSettings,
 } from 'types';
 
 export const DNS_RESPONSE_CODES = enumToStringArray(DnsResponseCodes).map((responseCode) => ({
@@ -108,6 +109,10 @@ export const CHECK_FILTER_OPTIONS = [
     value: CheckType.HTTP,
   },
   {
+    label: 'MULTI_HTTP',
+    value: CheckType.MULTI_HTTP,
+  },
+  {
     label: 'PING',
     value: CheckType.PING,
   },
@@ -129,6 +134,10 @@ export const CHECK_TYPE_OPTIONS = [
   {
     label: 'HTTP',
     value: CheckType.HTTP,
+  },
+  {
+    label: 'MULTI_HTTP',
+    value: CheckType.MULTI_HTTP,
   },
   {
     label: 'PING',
@@ -196,6 +205,7 @@ export const fallbackCheck = {
   alertSensitivity: AlertSensitivity.None,
   settings: {
     http: fallbackSettings(CheckType.HTTP) as HttpSettings,
+    multiHttp: fallbackSettings(CheckType.MULTI_HTTP) as MultiHttpSettings,
   },
   basicMetricsOnly: true,
 } as Check;
