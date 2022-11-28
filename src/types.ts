@@ -130,14 +130,14 @@ export interface DnsSettings {
 
 export interface DnsSettingsFormValues
   extends Omit<
-  DnsSettings,
-  | 'ipVersion'
-  | 'protocol'
-  | 'recordType'
-  | 'validRCodes'
-  | 'validateAnswerRRS'
-  | 'validateAuthorityRRS'
-  | 'validateAdditionalRRS'
+    DnsSettings,
+    | 'ipVersion'
+    | 'protocol'
+    | 'recordType'
+    | 'validRCodes'
+    | 'validateAnswerRRS'
+    | 'validateAuthorityRRS'
+    | 'validateAdditionalRRS'
   > {
   ipVersion: SelectableValue<IpVersion>;
   protocol: SelectableValue<DnsProtocol>;
@@ -199,20 +199,20 @@ export interface HttpRegexValidationFormValue {
 
 export interface HttpSettingsFormValues
   extends Omit<
-  HttpSettings,
-  | 'validStatusCodes'
-  | 'validHTTPVersions'
-  | 'method'
-  | 'ipVersion'
-  | 'headers'
-  | 'failIfSSL'
-  | 'failIfNotSSL'
-  | 'failIfBodyMatchesRegexp'
-  | 'failIfBodyNotMatchesRegexp'
-  | 'failIfHeaderMatchesRegexp'
-  | 'failIfHeaderNotMatchesRegexp'
-  | 'noFollowRedirects'
-  | 'compression'
+    HttpSettings,
+    | 'validStatusCodes'
+    | 'validHTTPVersions'
+    | 'method'
+    | 'ipVersion'
+    | 'headers'
+    | 'failIfSSL'
+    | 'failIfNotSSL'
+    | 'failIfBodyMatchesRegexp'
+    | 'failIfBodyNotMatchesRegexp'
+    | 'failIfHeaderMatchesRegexp'
+    | 'failIfHeaderNotMatchesRegexp'
+    | 'noFollowRedirects'
+    | 'compression'
   > {
   sslOptions: SelectableValue<HttpSslOption>;
   validStatusCodes: Array<SelectableValue<number>>;
@@ -489,6 +489,7 @@ export enum HTTPCompressionAlgo {
 
 export enum FeatureName {
   Traceroute = 'traceroute',
+  AdhocChecks = 'synthetics-adhocchecks',
   UnifiedAlerting = 'ngalert',
 }
 
@@ -521,4 +522,13 @@ export interface CheckPageParams {
 export interface ProbePageParams {
   view?: string;
   id?: string;
+}
+
+export interface AdHocCheckResponse {
+  id: string;
+  tenantId: number;
+  timeout: number;
+  settings: Settings;
+  probes: number[];
+  target: string;
 }

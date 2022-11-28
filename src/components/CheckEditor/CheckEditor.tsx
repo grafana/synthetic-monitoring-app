@@ -1,8 +1,27 @@
 import React, { useState, useMemo, useContext } from 'react';
 import { css } from '@emotion/css';
-import { Button, ConfirmModal, Field, Input, HorizontalGroup, Select, Legend, Alert, useStyles } from '@grafana/ui';
+import {
+  Button,
+  ConfirmModal,
+  Field,
+  Input,
+  Select,
+  Legend,
+  Alert,
+  useStyles,
+  LinkButton,
+  HorizontalGroup,
+} from '@grafana/ui';
 import { useAsyncCallback } from 'react-async-hook';
-import { Check, CheckType, CheckFormValues, SubmissionErrorWrapper, FeatureName, CheckPageParams } from 'types';
+import {
+  Check,
+  CheckType,
+  CheckFormValues,
+  SubmissionErrorWrapper,
+  FeatureName,
+  CheckPageParams,
+  AdHocCheckResponse,
+} from 'types';
 import { hasRole } from 'utils';
 import { getDefaultValuesFromCheck, getCheckFromFormValues } from './checkFormTransformations';
 import { validateJob, validateTarget } from 'validation';
@@ -22,6 +41,8 @@ import { trackEvent, trackException } from 'analytics';
 import { useParams } from 'react-router-dom';
 import { PluginPage } from 'components/PluginPage';
 import { config } from '@grafana/runtime';
+import { CheckTestResultsModal } from 'components/CheckTestResultsModal';
+import { FeatureFlag } from 'components/FeatureFlag';
 
 interface Props {
   checks?: Check[];
@@ -47,6 +68,9 @@ const getStyles = (theme: GrafanaTheme) => ({
   submissionError: css`
     margin-top: ${theme.spacing.md};
   `,
+  buttonGroup: css`
+    gap: ${theme.spacing.sm};
+  `,
 });
 
 export const CheckEditor = ({ checks, onReturn }: Props) => {
@@ -54,6 +78,8 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
     instance: { api },
   } = useContext(InstanceContext);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isTestModalOpen, setTestModalOpen] = useState(false);
+  const [testResponse, setTestResponse] = useState<AdHocCheckResponse>();
   const styles = useStyles(getStyles);
 
   // If we're editing, grab the appropriate check from the list
@@ -199,20 +225,41 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
             <Button type="submit" disabled={formMethods.formState.isSubmitting || submitting}>
               Save
             </Button>
+            <FeatureFlag name={FeatureName.AdhocChecks}>
+              {({ isEnabled }) => {
+                return isEnabled ? (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    disabled={
+                      !formMethods.formState.isValid || formMethods.getValues().checkType.value === CheckType.Traceroute
+                    }
+                    onClick={() => {
+                      const values = formMethods.getValues();
+                      const check = getCheckFromFormValues(values, defaultValues);
+                      api?.testCheck(check).then((resp) => {
+                        console.log(resp);
+                        setTestModalOpen(true);
+                        setTestResponse(resp);
+                      });
+                    }}
+                  >
+                    Test
+                  </Button>
+                ) : (
+                  <div />
+                );
+              }}
+            </FeatureFlag>
             {check?.id && (
               <Button variant="destructive" onClick={() => setShowDeleteModal(true)} disabled={!isEditor} type="button">
                 Delete Check
               </Button>
             )}
-            <ConfirmModal
-              isOpen={showDeleteModal}
-              title="Delete check"
-              body="Are you sure you want to delete this check?"
-              confirmText="Delete check"
-              onConfirm={onRemoveCheck}
-              onDismiss={() => setShowDeleteModal(false)}
-            />
-            <a onClick={() => onReturn(true)}>Back</a>
+
+            <LinkButton onClick={() => onReturn(true)} fill="text">
+              Back
+            </LinkButton>
           </HorizontalGroup>
           {submissionError && (
             <div className={styles.submissionError}>
@@ -225,6 +272,22 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
           )}
         </form>
       </FormProvider>
+      <CheckTestResultsModal
+        isOpen={isTestModalOpen}
+        onDismiss={() => {
+          setTestModalOpen(false);
+          setTestResponse(undefined);
+        }}
+        testResponse={testResponse}
+      />
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        title="Delete check"
+        body="Are you sure you want to delete this check?"
+        confirmText="Delete check"
+        onConfirm={onRemoveCheck}
+        onDismiss={() => setShowDeleteModal(false)}
+      />
     </PluginPage>
   );
 };

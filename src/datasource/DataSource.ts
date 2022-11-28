@@ -16,6 +16,7 @@ import { getBackendSrv, getTemplateSrv } from '@grafana/runtime';
 import { Probe, Check, RegistrationInfo, HostedInstance } from '../types';
 import { findLinkedDatasource, queryLogs } from 'utils';
 import { parseTracerouteLogs } from './traceroute-utils';
+import { firstValueFrom } from 'rxjs';
 
 export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   constructor(public instanceSettings: DataSourceInstanceSettings<SMOptions>) {
@@ -83,14 +84,10 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
           };
         }
 
-        const response = await queryLogs(
-          logsUrl,
-          queryToExecute.job,
-          queryToExecute.instance,
-          queryToExecute.probe,
-          options.range.from.unix(),
-          options.range.to.unix()
-        );
+        const finalQuery = `{probe=~"${query.probe ?? '.+'}", job="${query.job}", instance="${
+          query.instance
+        }", check_name="traceroute"} | logfmt`;
+        const response = await queryLogs(logsUrl, finalQuery, options.range.from.unix(), options.range.to.unix());
 
         const dataFrames = parseTracerouteLogs(response);
 
@@ -241,6 +238,21 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       })
       .toPromise()
       .then((res: any) => (Array.isArray(res.data) ? res.data : []));
+  }
+
+  async testCheck(check: Check): Promise<any> {
+    if (check.timeout > 2500) {
+      check.timeout = 2500;
+    }
+    return firstValueFrom(
+      getBackendSrv().fetch({
+        method: 'POST',
+        url: `${this.instanceSettings.url}/sm/check/adhoc`,
+        data: check,
+      })
+    ).then((res: any) => {
+      return res.data;
+    });
   }
 
   async addCheck(check: Check): Promise<any> {
