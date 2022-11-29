@@ -11,6 +11,7 @@ import {
   useStyles,
   LinkButton,
   HorizontalGroup,
+  Spinner,
 } from '@grafana/ui';
 import { useAsyncCallback } from 'react-async-hook';
 import {
@@ -80,6 +81,7 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isTestModalOpen, setTestModalOpen] = useState(false);
   const [testResponse, setTestResponse] = useState<AdHocCheckResponse>();
+  const [testRequestInFlight, setTestRequestInFlight] = useState(false);
   const styles = useStyles(getStyles);
 
   // If we're editing, grab the appropriate check from the list
@@ -232,19 +234,27 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
                     type="button"
                     variant="secondary"
                     disabled={
-                      !formMethods.formState.isValid || formMethods.getValues().checkType.value === CheckType.Traceroute
+                      !formMethods.formState.isValid ||
+                      formMethods.getValues().checkType.value === CheckType.Traceroute ||
+                      testRequestInFlight
                     }
                     onClick={() => {
                       const values = formMethods.getValues();
                       const check = getCheckFromFormValues(values, defaultValues);
-                      api?.testCheck(check).then((resp) => {
-                        console.log(resp);
-                        setTestModalOpen(true);
-                        setTestResponse(resp);
-                      });
+                      setTestRequestInFlight(true);
+                      api
+                        ?.testCheck(check)
+                        .then((resp) => {
+                          console.log(resp);
+                          setTestModalOpen(true);
+                          setTestResponse(resp);
+                        })
+                        .finally(() => {
+                          setTestRequestInFlight(false);
+                        });
                     }}
                   >
-                    Test
+                    {testRequestInFlight ? <Spinner /> : 'Test'}
                   </Button>
                 ) : (
                   <div />
