@@ -77,6 +77,7 @@ export function CheckTestResultsModal({ testResponse, isOpen, onDismiss }: Props
         const resultCount = Object.keys(resultsByProbe).filter((key) => key.includes(testResponse.id)).length;
         const hasResultsForAllProbes = resultCount === testResponse.probes.length;
         if (!hasResultsForAllProbes) {
+          const resultsToUpdate: Record<string, any> = {};
           testResponse.probes.forEach((probeId) => {
             const probe = probes?.find((probe) => probe.id === probeId);
             if (probe) {
@@ -87,10 +88,11 @@ export function CheckTestResultsModal({ testResponse, isOpen, onDismiss }: Props
                   logs: df,
                   timeseries: [{ name: 'probe_success', metric: [{ gauge: { value: 0 } }] }],
                 };
-                setResultsByProbe({ ...resultsByProbe, [resultKey]: info });
+                resultsToUpdate[resultKey] = info;
               }
             }
           });
+          setResultsByProbe({ ...resultsByProbe, ...resultsToUpdate });
         }
       }, 30000);
     }
