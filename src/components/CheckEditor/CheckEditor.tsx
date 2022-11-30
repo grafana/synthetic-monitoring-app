@@ -245,7 +245,6 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
                       api
                         ?.testCheck(check)
                         .then((resp) => {
-                          console.log(resp);
                           setTestModalOpen(true);
                           setTestResponse(resp);
                         })
