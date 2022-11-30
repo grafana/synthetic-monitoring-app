@@ -69,6 +69,34 @@ export function CheckTestResultsModal({ testResponse, isOpen, onDismiss }: Props
   const end = dateTime(now);
   const { data } = useLogData(query, { start, end, skip: !testResponse || !isOpen });
 
+  // This effect is to handle the whole test taking longer than 30 seconds. It checks for any probes that haven't given a response and fills in a fake metrics/logs response that indicates a failure.
+  useEffect(() => {
+    let timeoutId: any;
+    if (testResponse && probes) {
+      timeoutId = setTimeout(() => {
+        const resultCount = Object.keys(resultsByProbe).filter((key) => key.includes(testResponse.id)).length;
+        const hasResultsForAllProbes = resultCount === testResponse.probes.length;
+        if (!hasResultsForAllProbes) {
+          testResponse.probes.forEach((probeId) => {
+            const probe = probes?.find((probe) => probe.id === probeId);
+            if (probe) {
+              const resultKey = `${probe.name}${testResponse.id}`;
+              if (!resultsByProbe[resultKey]) {
+                const df = buildLogsDf([{ level: 'error', msg: 'timed out waiting for a response' }]);
+                const info = {
+                  logs: df,
+                  timeseries: [{ name: 'probe_success', metric: [{ gauge: { value: 0 } }] }],
+                };
+                setResultsByProbe({ ...resultsByProbe, [resultKey]: info });
+              }
+            }
+          });
+        }
+      }, 30000);
+    }
+    return () => clearTimeout(timeoutId);
+  }, [testResponse, probes, resultsByProbe]);
+
   useEffect(() => {
     const abortController = new AbortController();
     const fetchProbes = async () => {
