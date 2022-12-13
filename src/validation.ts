@@ -19,7 +19,7 @@ import { PEM_HEADER, PEM_FOOTER, INVALID_WEB_URL_MESSAGE } from 'components/cons
 export const CheckValidation = {
   job: validateJob,
   target: validateTarget,
-  urls: validateMultiHttp,
+  multiUrls: validateMultiHttp, // NOT SURE I NEED THIS
   frequency: validateFrequency,
   timeout: validateTimeout,
   labels: validateLabels,
@@ -28,10 +28,11 @@ export const CheckValidation = {
 };
 
 export function validateCheck(check: Check): boolean {
+  // THIS FUNCTION ISNT USED ANYWHER IN APP
   const type = checkType(check.settings);
   return Boolean(
     CheckValidation.job(check.job) &&
-      CheckValidation.target(checkType(check.settings), check.target) &&
+      CheckValidation.target(checkType(check.settings), check.target) && // TODO: CHECK FOR MULTI_HTTP?
       CheckValidation.frequency(check.frequency, type) &&
       CheckValidation.timeout(check.timeout, type) &&
       CheckValidation.labels(check.labels) &&
@@ -65,6 +66,10 @@ export function validateTarget(typeOfCheck: CheckType, target: string): string |
   switch (typeOfCheck) {
     case CheckType.HTTP: {
       return validateHttpTarget(target);
+    }
+    case CheckType.MULTI_HTTP: {
+      //NOT SURE AI NEED THIS SINCE TARGET WILL BE USED DIFFERENTLY HERE
+      return validateHttpTarget(target, true);
     }
     case CheckType.PING: {
       return validateHostname(target);

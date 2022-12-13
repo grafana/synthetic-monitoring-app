@@ -166,7 +166,6 @@ export interface HttpSettings {
   tlsConfig?: TLSConfig;
   compression: HTTPCompressionAlgo | undefined;
   proxyURL?: string;
-  mutliURLs?: string[];
 
   // Authentication
   bearerToken?: string;
@@ -186,7 +185,7 @@ export interface HttpSettings {
 }
 
 export interface MultiHttpSettings extends HttpSettings {
-  mutliURLs: string[];
+  mutliUrls: string[];
 }
 
 interface HttpHeaderFormValue {
@@ -231,6 +230,10 @@ export interface HttpSettingsFormValues
   proxyURL?: string;
 }
 
+export interface MultiHttpSettingsFormValues extends HttpSettingsFormValues {
+  multiUrls: string[];
+}
+
 export interface TracerouteSettings {
   maxHops: number;
   maxUnknownHops: number;
@@ -254,6 +257,7 @@ export interface PingSettingsFormValues extends Omit<PingSettings, 'ipVersion'> 
 
 export interface SettingsFormValues {
   http?: HttpSettingsFormValues;
+  multiHttp?: MultiHttpSettingsFormValues; // MultiHttpSettingsFormValues?? NO I THINK THIS IS FINE LIKE THIS
   ping?: PingSettingsFormValues;
   dns?: DnsSettingsFormValues;
   tcp?: TcpSettingsFormValues;

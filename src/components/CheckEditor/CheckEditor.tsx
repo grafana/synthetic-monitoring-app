@@ -211,6 +211,7 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
               <>
                 <Field label="HTTP addresses" description="Enter a comma-separated list of https to check">
                   <Input
+                    id="multiHttp"
                     width={40}
                     {...formMethods.register('multiHTTP', {
                       required: true,
