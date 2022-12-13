@@ -339,6 +339,16 @@ export function fallbackSettings(t: CheckType): Settings {
         },
       };
     }
+    case CheckType.MULTI_HTTP: {
+      return {
+        http: {
+          method: HttpMethod.GET, // DOES THIS NEED TO BE DIFF FOR MULTI_HTTP?
+          ipVersion: IpVersion.V4,
+          noFollowRedirects: false,
+          compression: HTTPCompressionAlgo.none,
+        },
+      };
+    }
     case CheckType.PING: {
       return {
         ping: {
