@@ -82,6 +82,7 @@ export const BASIC_HTTP_CHECK = {
       headers: [],
       body: '',
       proxyURL: '',
+      proxyConnectHeaders: [],
       cacheBustingQueryParamName: '',
       compression: undefined,
       failIfNotSSL: false,

@@ -141,6 +141,7 @@ describe('editing checks', () => {
 
     await act(async () => await userEvent.type(await screen.findByTestId('header-name-1'), 'headerName'));
     await act(async () => await userEvent.type(await screen.findByTestId('header-value-1'), 'headerValue'));
+
     const compression = await screen.findByTestId('http-compression');
     userEvent.selectOptions(compression, 'deflate');
 

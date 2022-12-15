@@ -166,6 +166,7 @@ export interface HttpSettings {
   tlsConfig?: TLSConfig;
   compression: HTTPCompressionAlgo | undefined;
   proxyURL?: string;
+  proxyConnectHeaders?: string[];
 
   // Authentication
   bearerToken?: string;
