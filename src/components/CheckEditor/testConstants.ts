@@ -292,6 +292,7 @@ export const EDITED_HTTP_CHECK = {
         insecureSkipVerify: true,
       },
       headers: ['headerName:headerValue', 'headerName:headerValue'],
+      proxyConnectHeaders: [],
       validStatusCodes: [100],
       validHTTPVersions: ['HTTP/1.0'],
       failIfNotSSL: true,
