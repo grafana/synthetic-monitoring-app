@@ -265,6 +265,16 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
           <Field label="Proxy URL" description="HTTP proxy server to use to connect to the target" disabled={!isEditor}>
             <Input id="proxyUrl" {...register('settings.http.proxyURL')} type="text" />
           </Field>
+          <Field label="Proxy connect headers" description="The HTTP headers sent to the proxy." disabled={!isEditor}>
+            <NameValueInput
+              name="settings.http.proxyConnectHeaders"
+              disabled={!isEditor}
+              label="proxy connect header"
+              limit={10}
+              validateName={validateHTTPHeaderName}
+              validateValue={validateHTTPHeaderValue}
+            />
+          </Field>
         </Container>
       </Collapse>
       <TLSConfig isEditor={isEditor} checkType={CheckType.HTTP} />

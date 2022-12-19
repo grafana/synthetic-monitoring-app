@@ -166,6 +166,7 @@ export interface HttpSettings {
   tlsConfig?: TLSConfig;
   compression: HTTPCompressionAlgo | undefined;
   proxyURL?: string;
+  proxyConnectHeaders?: string[];
 
   // Authentication
   bearerToken?: string;
@@ -205,6 +206,7 @@ export interface HttpSettingsFormValues
     | 'method'
     | 'ipVersion'
     | 'headers'
+    | 'proxyConnectHeaders'
     | 'failIfSSL'
     | 'failIfNotSSL'
     | 'failIfBodyMatchesRegexp'
@@ -220,6 +222,7 @@ export interface HttpSettingsFormValues
   method: SelectableValue<HttpMethod>;
   ipVersion: SelectableValue<IpVersion>;
   headers: HttpHeaderFormValue[];
+  proxyConnectHeaders: HttpHeaderFormValue[];
   regexValidations: HttpRegexValidationFormValue[];
   followRedirects: boolean;
   compression: SelectableValue<HTTPCompressionAlgo>;

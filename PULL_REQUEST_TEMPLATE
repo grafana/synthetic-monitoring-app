@@ -10,7 +10,7 @@ Thank you for sending a pull request! Here are some tips:
 
 4. If you can not merge your Pull Request due to a merge conflict, Rebase it. This gets it in sync with the main branch.
 
-5. Name your PR as using convential commits "<commit_type>: Describe your change", e.g. feat: prevent race condition. The PR name is what gets added to the changelog and determines versioning. For a list of commit types visit https://www.conventionalcommits.org/en/v1.0.0-beta.2/
+5. Name your PR as using conventional commits "<commit_type>: Describe your change", e.g. feat: prevent race condition. The PR name is what gets added to the changelog and determines versioning. For a list of commit types visit https://www.conventionalcommits.org/en/v1.0.0-beta.2/
 -->
 
 **What this PR does / why we need it**:
@@ -29,7 +29,6 @@ Fixes #
 
 **Special notes for your reviewer**:
 
-<!-- 
+<!--
   Please include helpful screenshots and/or videos/gifs to help demonstrate your changes
 -->
-
