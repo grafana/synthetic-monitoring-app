@@ -1,1 +1,1 @@
-{ "ignorePaths": ["node_modules/**", "dist/**"], "words": ["grafana", "datasource", "datasources", "gifs"] }
+{ "ignorePaths": ["**/*"], "words": ["grafana", "datasource", "datasources", "gifs"] }
