@@ -173,6 +173,7 @@ const getHttpSettingsFormValues = (settings: Settings): HttpSettingsFormValues =
     method: selectableValueFrom(httpSettings.method),
     ipVersion: selectableValueFrom(httpSettings.ipVersion),
     headers: headersToLabels(httpSettings.headers),
+    proxyConnectHeaders: headersToLabels(httpSettings.proxyConnectHeaders),
     regexValidations,
     compression: compression ? selectableValueFrom(compression) : HTTP_COMPRESSION_ALGO_OPTIONS[0],
   };
@@ -417,6 +418,8 @@ const getHttpSettings = (
   const fallbackValues = fallbackSettings(CheckType.HTTP).http as HttpSettings;
   const headers = settings.headers ?? defaultSettings?.headers;
   const formattedHeaders = headers?.map((header) => `${header.name}:${header.value}`) ?? [];
+  const proxyHeaders = settings.proxyConnectHeaders ?? defaultSettings?.proxyConnectHeaders;
+  const formattedProxyHeaders = proxyHeaders?.map((header) => `${header.name}:${header.value}`) ?? [];
 
   const mergedSettings = {
     ...(defaultSettings ?? {}),
@@ -446,6 +449,7 @@ const getHttpSettings = (
     noFollowRedirects: !followRedirects,
     method,
     headers: formattedHeaders,
+    proxyConnectHeaders: formattedProxyHeaders,
     ipVersion: getValueFromSelectable(settings?.ipVersion ?? defaultSettings?.ipVersion) ?? fallbackValues.ipVersion,
     validStatusCodes: getValuesFromMultiSelectables(settings?.validStatusCodes ?? defaultSettings?.validStatusCodes),
     validHTTPVersions: getValuesFromMultiSelectables(settings?.validHTTPVersions ?? defaultSettings?.validHTTPVersions),
