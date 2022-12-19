@@ -1,4 +1,5 @@
 {
-  "ignorePaths": ["node_modules", "**/*.{ts,tsx,js,go,md,mdx,yml,yaml,json,scss,css}"],
-  "words": ["grafana", "datasource", "datasources", "gifs"]
+  "ignorePaths": ["node_modules"],
+  "ignoreRegExpList": [".*"],
+  "words": ["grafana", "datasource", "datasources", "gifs", ".*"]
 }
