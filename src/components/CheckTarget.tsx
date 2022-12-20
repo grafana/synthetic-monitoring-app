@@ -1,5 +1,5 @@
-import React, { ChangeEvent, forwardRef } from 'react';
-import { Field, Input } from '@grafana/ui';
+import React, { ChangeEvent, forwardRef, Dispatch, SetStateAction } from 'react';
+import { Field, Input, VerticalGroup } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { CheckType } from 'types';
 import { parseUrl } from 'utils';
@@ -73,25 +73,32 @@ const getTargetHelpText = (typeOfCheck: CheckType | undefined): TargetHelpInfo =
 };
 
 const CheckTarget = forwardRef(
-  ({ value, typeOfCheck, disabled, onChange, onBlur, invalid, error }: Props, ref: React.Ref<HTMLInputElement>) => {
+  (
+    { value, typeOfCheck, disabled, onChange, onBlur, invalid, error, setTargetValue }: Props,
+    ref: React.Ref<HTMLInputElement>
+  ) => {
     const targetHelp = getTargetHelpText(typeOfCheck);
     const parsedURL = parseUrl(value);
+
     return (
       <>
-        <Field label="Target" description={targetHelp.text} disabled={disabled} invalid={invalid} error={error}>
+        <Field label="Target" description={targetHelp?.text} disabled={disabled} invalid={invalid} error={error}>
           <Input
             id="check-editor-target"
             data-testid="check-editor-target"
             ref={ref}
             type="text"
             onBlur={onBlur}
-            placeholder={targetHelp.example}
+            placeholder={targetHelp?.example}
             value={value}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => {
+              onChange(e.target.value);
+              setTargetValue(parsedURL);
+            }}
             required={true}
           />
         </Field>
-        {typeOfCheck === CheckType.HTTP && parsedURL && (
+        {/* {((typeOfCheck === CheckType.HTTP && parsedURL) || (typeOfCheck === CheckType.MULTI_HTTP && parsedURL)) && (
           <QueryParams
             target={parsedURL}
             onBlur={onBlur}
@@ -101,7 +108,7 @@ const CheckTarget = forwardRef(
               margin-bottom: 1rem;
             `}
           />
-        )}
+        )} */}
       </>
     );
   }

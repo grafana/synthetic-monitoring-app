@@ -8,8 +8,9 @@ import {
   PingSettings,
   HttpSettings,
   HttpSettingsFormValues,
-  MultiHttpSettings,
   HttpRegexValidationFormValue,
+  MultiHttpSettings,
+  MultiHttpSettingsFormValues,
   Label,
   TcpSettingsFormValues,
   TcpSettings,
@@ -256,6 +257,14 @@ const getTracerouteSettingsFormValues = (settings: Settings): TracerouteSettings
   };
 };
 
+const getMultiHttpSettingsFormValues = (settings: Settings): MultiHttpSettingsFormValues => {
+  const multiHttpSettings = settings.multiHttp ?? (fallbackSettings(CheckType.MULTI_HTTP) as MultiHttpSettings);
+
+  return {
+    multiUrls: multiHttpSettings.mutliUrls,
+  };
+};
+
 const getFormSettingsForCheck = (settings: Settings): SettingsFormValues => {
   const type = checkType(settings);
   switch (type) {
@@ -267,6 +276,8 @@ const getFormSettingsForCheck = (settings: Settings): SettingsFormValues => {
       return { dns: getDnsSettingsFormValues(settings) };
     case CheckType.Traceroute:
       return { traceroute: getTracerouteSettingsFormValues(settings) };
+    case CheckType.MULTI_HTTP:
+      return { multiHttp: getMultiHttpSettingsFormValues(settings) };
     case CheckType.PING:
     default:
       return { ping: getPingSettingsFormValues(settings) };

@@ -257,7 +257,7 @@ export interface PingSettingsFormValues extends Omit<PingSettings, 'ipVersion'> 
 
 export interface SettingsFormValues {
   http?: HttpSettingsFormValues;
-  multiHttp?: MultiHttpSettingsFormValues; // MultiHttpSettingsFormValues?? NO I THINK THIS IS FINE LIKE THIS
+  multiHttp?: MultiHttpSettingsFormValues;
   ping?: PingSettingsFormValues;
   dns?: DnsSettingsFormValues;
   tcp?: TcpSettingsFormValues;
@@ -293,6 +293,7 @@ export interface Check extends BaseObject {
   basicMetricsOnly: boolean;
   labels: Label[]; // Currently list of [name:value]... can it be Labels?
   settings: Settings; //
+  k6MultiHttpCheckName: string;
 
   // Link to probes
   probes: number[];
@@ -503,6 +504,7 @@ export enum FeatureName {
   Traceroute = 'traceroute',
   AdhocChecks = 'synthetics-adhocchecks',
   UnifiedAlerting = 'ngalert',
+  MultiHttp = 'multi-http',
 }
 
 export interface UsageValues {
