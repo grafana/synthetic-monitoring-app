@@ -19,7 +19,7 @@ export const TLSConfig = ({ isEditor, checkType }: Props) => {
   } = useFormContext();
 
   return (
-    <Collapse label="TLS config" onToggle={() => setShowTLS(!showTLS)} isOpen={showTLS} collapsible>
+    <Collapse label="TLS config (optional)" onToggle={() => setShowTLS(!showTLS)} isOpen={showTLS} collapsible>
       <HorizontalCheckboxField
         id="tls-config-skip-validation"
         name={`settings.${checkType}.tlsConfig.insecureSkipVerify`}

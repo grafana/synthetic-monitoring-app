@@ -24,7 +24,9 @@ import {
   HTTP_REGEX_VALIDATION_OPTIONS,
   HTTP_SSL_OPTIONS,
   IP_OPTIONS,
-} from '../constants';
+  methodOptions,
+} from 'components/constants';
+
 import { LabelField } from 'components/LabelField';
 import { TLSConfig } from 'components/TLSConfig';
 import { NameValueInput } from 'components/NameValueInput';
@@ -44,33 +46,6 @@ const httpVersionOptions = [
   {
     label: 'HTTP/2',
     value: HttpVersion.HTTP2_0,
-  },
-];
-
-const methodOptions = [
-  {
-    label: 'GET',
-    value: HttpMethod.GET,
-  },
-  {
-    label: 'HEAD',
-    value: HttpMethod.HEAD,
-  },
-  {
-    label: 'PUT',
-    value: HttpMethod.PUT,
-  },
-  {
-    label: 'POST',
-    value: HttpMethod.POST,
-  },
-  {
-    label: 'DELETE',
-    value: HttpMethod.DELETE,
-  },
-  {
-    label: 'OPTIONS',
-    value: HttpMethod.OPTIONS,
   },
 ];
 
@@ -198,7 +173,7 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
   return (
     <Container>
       <Collapse
-        label="HTTP settings"
+        label="HTTP settings (optional)"
         onToggle={() => setShowHttpSettings(!showHttpSettings)}
         isOpen={showHttpSettings}
         collapsible
@@ -278,7 +253,7 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
       </Collapse>
       <TLSConfig isEditor={isEditor} checkType={CheckType.HTTP} />
       <Collapse
-        label="Authentication"
+        label="Authentication (optional)"
         onToggle={() => setShowAuthentication(!showAuthentication)}
         isOpen={showAuthentication}
         collapsible
@@ -345,7 +320,7 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
         </VerticalGroup>
       </Collapse>
       <Collapse
-        label="Validation"
+        label="Validation (optional)"
         onToggle={() => setShowValidation(!showValidation)}
         isOpen={showValidation}
         collapsible
@@ -461,7 +436,7 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
         </VerticalGroup>
       </Collapse>
       <Collapse
-        label="Advanced options"
+        label="Advanced options (optional)"
         onToggle={() => setShowAdvanced(!showAdvanced)}
         isOpen={showAdvanced}
         collapsible

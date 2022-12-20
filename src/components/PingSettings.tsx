@@ -15,7 +15,7 @@ export const PingSettingsForm = ({ isEditor }: Props) => {
   const { control, register } = useFormContext();
   return (
     <Collapse
-      label="Advanced options"
+      label="Advanced options (optional)"
       collapsible={true}
       onToggle={() => setShowAdvanced(!showAdvanced)}
       isOpen={showAdvanced}

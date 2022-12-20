@@ -30,7 +30,12 @@ export const CheckFormAlert: FC<Props> = () => {
   );
 
   return (
-    <Collapse label="Alerting" onToggle={() => setShowAlerting(!showAlerting)} isOpen={showAlerting} collapsible>
+    <Collapse
+      label="Alerting (optional)"
+      onToggle={() => setShowAlerting(!showAlerting)}
+      isOpen={showAlerting}
+      collapsible
+    >
       <div className={styles.marginBottom}>
         <p>
           Synthetic Monitoring provides some default alert rules via Cloud Alerting. By selecting an alert sensitivity,
