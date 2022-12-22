@@ -1,6 +1,7 @@
 import { DataSourceSettings, OrgRole, SelectableValue } from '@grafana/data';
 import { LinkedDatasourceInfo } from './datasource/types';
 import { SMDataSource } from 'datasource/DataSource';
+import { Entry } from 'har-to-k6';
 
 export interface GlobalSettings {
   apiHost: string;
@@ -184,9 +185,9 @@ export interface HttpSettings {
   cacheBustingQueryParamName?: string;
 }
 
-export interface MultiHttpSettings extends HttpSettings {
-  mutliUrls: string[];
-}
+// export interface MultiHttpSettings extends HttpSettings {
+//   mutliUrls: string[];
+// }
 
 interface HttpHeaderFormValue {
   name: string;
@@ -545,4 +546,93 @@ export interface AdHocCheckResponse {
   settings: Settings;
   probes: number[];
   target: string;
+}
+
+export interface MultiHttpSettings {
+  entries: MultiHttpEntry[];
+}
+
+export interface MultiHttpEntry {
+  pageRef?: string;
+  comment?: string;
+  request: MultiHttpEntryRequest;
+  assertions?: MultiHttpEntryAssertion[];
+  variables?: MultiHttpEntryVariable[];
+}
+
+export enum MultiHttpEntryVariableType {
+  JSON_PATH = 0,
+  REGEX = 1,
+  CSS_SELECTOR = 2,
+}
+
+export enum MultiHttpEntryAssertionType {
+  TEXT = 0,
+  JSON_PATH_VALUE = 1,
+  JSON_PATH_ASSERTION = 2,
+  REGEX_ASSERTION = 3,
+}
+
+export enum MultiHttpEntryAssertionSubjectVariant {
+  RESPONSE_BODY = 0,
+  RESPONSE_HEADERS = 1,
+  HTTP_STATUS_CODE = 2,
+}
+
+export enum MultiHttpEntryAssertionConditionVariant {
+  CONTAINS = 0,
+  NOT_CONTAINS = 1,
+  EQUALS = 2,
+  STARTS_WITH = 3,
+  ENDS_WITH = 4,
+  TYPE_OF = 5,
+}
+
+export interface MultiHttpEntryVariable {
+  type: MultiHttpEntryVariableType;
+  name: string;
+  attribute?: string;
+  expression: string;
+}
+
+export interface MultiHttpEntryAssertion {
+  type: MultiHttpEntryAssertionType;
+  subject?: MultiHttpEntryAssertionSubjectVariant;
+  condition?: MultiHttpEntryAssertionConditionVariant;
+  value?: string;
+  expression?: string;
+}
+
+export interface MultiHttpEntryRequest {
+  method: string;
+  url: string;
+  httpVersion?: string;
+  headers?: MultiHttpRequestHeader[];
+  queryString?: MultiHttpRequestQueryString[];
+  postData?: MultiHttpRequestPostData;
+}
+
+export interface MultiHttpRequestHeader {
+  name: string;
+  value: string;
+}
+
+export interface MultiHttpRequestQueryString {
+  name: string;
+  value: string;
+}
+
+export interface MultiHttpRequestPostData {
+  mimeType: string;
+  params?: MultiHttpRequestPostDataParam[];
+  text: string;
+  comment?: string;
+}
+
+export interface MultiHttpRequestPostDataParam {
+  name: string;
+  value?: string;
+  fileName?: string;
+  contentType?: string;
+  contentTransferEncoding?: string;
 }
