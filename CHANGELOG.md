@@ -1,5 +1,9 @@
 # Change Log
 
+# [1.9.29](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.28...v1.9.29) (2023-1-4)
+
+- Add proxy headers to HTTP checks
+
 # [1.9.28](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.27...v1.9.28) (2022-11-9)
 
 - Update Alert URL for compatiblity with Grafana 9
