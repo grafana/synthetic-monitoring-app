@@ -83,8 +83,6 @@ export const DNS_PROTOCOLS = [
   },
 ];
 
-export const DEFAULT_API_HOST = 'https://synthetic-monitoring-api.grafana.net';
-
 export const IP_OPTIONS = [
   {
     label: 'Any',
@@ -250,7 +248,8 @@ export const DEFAULT_ALERT_NAMES_BY_FAMILY_AND_SENSITIVITY = {
   },
 };
 
-export const ALERT_RULE_EXPR_REGEX = /^(?<metric>[A-Za-z0-9:_]+)\{alert_sensitivity="(?<sensitivity>[^"]+)"\}(?:\s*\*\s*\d+)?\s*(?<operator><|<=|==|>|>=)\s*(?<threshold>[+-]?\d+(?:\.\d+)?)$/;
+export const ALERT_RULE_EXPR_REGEX =
+  /^(?<metric>[A-Za-z0-9:_]+)\{alert_sensitivity="(?<sensitivity>[^"]+)"\}(?:\s*\*\s*\d+)?\s*(?<operator><|<=|==|>|>=)\s*(?<threshold>[+-]?\d+(?:\.\d+)?)$/;
 
 export const ALERT_PROBE_SUCCESS_RECORDING_METRIC = 'instance_job_severity:probe_success:mean5m';
 
