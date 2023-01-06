@@ -20,11 +20,11 @@ export const UnprovisionedSetup = () => {
     <PluginPage pageNav={{ text: 'Invalid provisioning', description: 'Provisioning missing or invalid' }}>
       <div className={styles.container}>
         <Alert title="Provisioning missing or invalid" severity="error">
-          Provisioning is required for Synthetic Monitoring
+          Provisioning is required for Synthetic Monitoring.
         </Alert>
         <p>
           It looks like your Grafana instance hasn&apos;t been provisioned correctly to use the Synthetic Monitoring
-          plugin.
+          plugin. <strong>Remember to restart your Grafana instance after making provisiong changes.</strong>
         </p>
         <ul>
           <li>
