@@ -35,8 +35,8 @@ const getTargetHelpText = (typeOfCheck: CheckType | undefined): TargetHelpInfo =
     }
     case CheckType.MULTI_HTTP: {
       resp = {
-        text: 'Target name to assign this set of checks',
-        example: `"Grafana.com Checks - CET" or "https://grafana.com/"`,
+        text: 'Full URL to send requests to, one part of multi-http',
+        example: `https://grafana.com/`,
       };
       break;
     }
@@ -82,7 +82,14 @@ const CheckTarget = forwardRef(
 
     return (
       <>
-        <Field label="Target" description={targetHelp?.text} disabled={disabled} invalid={invalid} error={error}>
+        <Field
+          label="Target"
+          description={targetHelp?.text}
+          disabled={disabled}
+          invalid={invalid}
+          error={error}
+          required
+        >
           <Input
             id="check-editor-target"
             data-testid="check-editor-target"
@@ -98,17 +105,6 @@ const CheckTarget = forwardRef(
             required={true}
           />
         </Field>
-        {/* {((typeOfCheck === CheckType.HTTP && parsedURL) || (typeOfCheck === CheckType.MULTI_HTTP && parsedURL)) && (
-          <QueryParams
-            target={parsedURL}
-            onBlur={onBlur}
-            onChange={(target: string) => onChange(target)}
-            className={css`
-              padding-left: 1rem;
-              margin-bottom: 1rem;
-            `}
-          />
-        )} */}
       </>
     );
   }

@@ -6,6 +6,7 @@ import { useParams } from 'react-router-dom';
 import validUrl from 'valid-url';
 
 import {
+  Button,
   Container,
   Field,
   HorizontalGroup,
@@ -98,7 +99,7 @@ export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => 
     }
     onReturn(true);
   });
-  const [activeTab, setActiveTab] = useState('options');
+  const [activeTab, setActiveTab] = useState('headers');
 
   const styles = useStyles2(getStyles);
   let check: Check = fallbackCheck;
@@ -109,6 +110,11 @@ export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => 
   const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
   const formMethods = useForm<CheckFormValues>({ defaultValues, mode: 'onChange' });
   const selectedCheckType = formMethods.watch('checkType')?.value ?? CheckType.PING;
+
+  const onSubmit = (e: any) => {
+    e.preventDefault();
+    console.log('e', e);
+  };
 
   // TAB funcs
   const RequestTabs = ({
@@ -176,9 +182,9 @@ export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => 
         disabled={!isEditor}
         invalid={Boolean(formMethods.formState.errors.job)}
         error={formMethods.formState.errors.job?.message}
+        required
       >
         <Input
-          // id="check-editor-job-input"
           {...formMethods.register('k6MultiHttpCheckName', {
             required: true,
           })}
@@ -201,9 +207,16 @@ export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => 
         />
       </Field>
 
+      {/* Individual targets */}
+      <hr />
+      <h4>Requests</h4>
+      <Field label="At least one target HTTP is required. Let's get started.">
+        <></>
+      </Field>
       <div className={styles.request}>
         <VerticalGroup>
-          <VerticalGroup>
+          {/* <FormProvider {...formMethods}> */}
+          <form onSubmit={onSubmit} /** {formMethods.handleSubmit(onSubmit)} */>
             <Controller
               name="target"
               control={formMethods.control}
@@ -230,34 +243,39 @@ export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => 
                 );
               }}
             />
-          </VerticalGroup>
-          <TabsBar>
-            <Tab
-              label={'Headers'}
-              active={activeTab === 'headers'}
-              onChangeTab={() => setActiveTab('headers')}
-              default
-            />
-            <Tab label={'Body'} active={activeTab === 'body'} onChangeTab={() => setActiveTab('body')} />
-            <Tab
-              label={'Query Params'}
-              active={activeTab === 'queryParams'}
-              onChangeTab={() => (!formMethods.getValues().target ? null : setActiveTab('queryParams'))}
-            />
-          </TabsBar>
-          <TabContent className={styles.tabsContent}>
-            <RequestTabs
-              activeTab={activeTab}
-              isEditor={isEditor}
-              errors
-              register={register}
-              // field={field}
-              selectCheckType={selectCheckType}
-              formMethods={formMethods}
-              value={formMethods.getValues().target}
-              onChange={() => setActiveTab(activeTab)}
-            />
-          </TabContent>
+            <TabsBar className={styles.tabsBar}>
+              <Tab
+                label={'Headers'}
+                active={activeTab === 'headers'}
+                onChangeTab={() => setActiveTab('headers')}
+                default={true}
+              />
+              <Tab label={'Body'} active={activeTab === 'body'} onChangeTab={() => setActiveTab('body')} />
+              <Tab
+                label={'Query Params'}
+                active={activeTab === 'queryParams'}
+                onChangeTab={() => (!formMethods.getValues().target ? null : setActiveTab('queryParams'))}
+              />
+            </TabsBar>
+            <TabContent className={styles.tabsContent}>
+              <RequestTabs
+                activeTab={activeTab}
+                isEditor={isEditor}
+                errors
+                register={register}
+                // field={field}
+                selectCheckType={selectCheckType}
+                formMethods={formMethods}
+                value={formMethods.getValues().target}
+                onChange={() => setActiveTab(activeTab)}
+              />
+            </TabContent>
+            <input type="submit" />
+            {/* <Button type="submit" variant="secondary" fill="outline" style={{ marginBottom: '22px' }}>
+              Add to multi-HTTP targets
+            </Button> */}
+          </form>
+          {/* </FormProvider> */}
         </VerticalGroup>
       </div>
 
@@ -273,33 +291,6 @@ export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => 
           `}
         >
           <LabelField isEditor={isEditor} />
-          <Field label="Max hops" description="Maximum TTL for the trace" disabled={!isEditor}>
-            <Input
-              id="traceroute-settings-max-hops"
-              {...register('settings.traceroute.maxHops', { min: 1, max: 64 })}
-              type="number"
-              disabled={!isEditor}
-            />
-          </Field>
-          <Field
-            label="Max unknown hops"
-            description="Maximimum number of hosts to traverse that give no response"
-            disabled={!isEditor}
-          >
-            <Input
-              id="traceroute-settings-unknown-hops"
-              {...register('settings.traceroute.maxUnknownHops', { min: 0, max: 20 })}
-              type="number"
-              disabled={!isEditor}
-            />
-          </Field>
-          <HorizontalCheckboxField
-            id="traceroute-settings-ptr-lookup"
-            label="PTR lookup"
-            name="settings.traceroute.ptrLookup"
-            description="Reverse lookup hostnames from IP addresses"
-            disabled={!isEditor}
-          />
         </div>
       </Collapse>
     </>
@@ -310,7 +301,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   request: css`
     display: flex;
     flex-direction: column;
-    margin-top: 30px;
+    margin-top: 15px;
     justify-content: space-evenly;
     gap: 20px;
     align-self: flex-start;
@@ -325,7 +316,10 @@ const getStyles = (theme: GrafanaTheme2) => ({
     margin-top: ${theme.spacing('lg')};
   `,
   tabsContent: css`
-    min-height: 125px;
+    min-height: 75px;
+  `,
+  tabsBar: css`
+    margin-top: -10px;
   `,
 });
 
@@ -337,7 +331,7 @@ const HeadersTab = ({ isEditor }: { isEditor: boolean }) => {
         <NameValueInput
           name="settings.http.headers"
           disabled={!isEditor}
-          label="header"
+          label="headers"
           limit={10}
           validateName={validateHTTPHeaderName}
           validateValue={validateHTTPHeaderValue}
