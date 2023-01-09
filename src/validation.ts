@@ -230,7 +230,7 @@ export function validateSettings(settings: Settings): string | undefined {
       return validateSettingsHTTP(settings.http!);
     }
     case CheckType.MULTI_HTTP: {
-      return validateSettingsMultiHTTP(settings.multiHttp!);
+      return validateSettingsMultiHTTP(settings.multihttp!);
     }
     case CheckType.PING: {
       return validateSettingsPING(settings.ping!);

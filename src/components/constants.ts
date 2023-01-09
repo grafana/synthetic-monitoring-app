@@ -205,7 +205,7 @@ export const fallbackCheck = {
   alertSensitivity: AlertSensitivity.None,
   settings: {
     http: fallbackSettings(CheckType.HTTP) as HttpSettings,
-    multiHttp: fallbackSettings(CheckType.MULTI_HTTP) as MultiHttpSettings,
+    multihttp: fallbackSettings(CheckType.MULTI_HTTP) as MultiHttpSettings,
   },
   basicMetricsOnly: true,
 } as Check;

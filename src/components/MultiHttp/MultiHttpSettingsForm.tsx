@@ -9,16 +9,15 @@ import {
   Button,
   Container,
   Field,
-  HorizontalGroup,
   VerticalGroup,
   Input,
   Select,
   TextArea,
   useStyles2,
-  useTheme2,
   TabsBar,
   TabContent,
   Tab,
+  HorizontalGroup,
 } from '@grafana/ui';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { config } from '@grafana/runtime';
@@ -65,145 +64,58 @@ interface Props {
 
 export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => {
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [showHeaders, setShowHeaders] = useState(false);
-  const [submittedMultiModalValues, setSubmittedMultiModalValues] = useState();
-  const [showMultiHttpList, setShowMultiHttpList] = useState(false);
   const [targetValue, setTargetValue] = useState<URL>();
+  const [activeTab, setActiveTab] = useState('headers');
+  const styles = useStyles2(getStyles);
+
   const {
     register,
     watch,
     control,
+    getValues,
+    handleSubmit,
     formState: { errors },
   } = useFormContext();
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: 'settings.multihttp.entries',
+  });
   const {
     instance: { api },
   } = useContext(InstanceContext);
-  const {
-    execute: onSubmit,
-    error,
-    loading: submitting,
-  } = useAsyncCallback(async (checkValues: CheckFormValues) => {
-    console.log('checkValues', checkValues);
-
-    const updatedCheck = getCheckFromFormValues(checkValues, defaultValues);
-    if (check?.id) {
-      // trackEvent('editCheckSubmit');
-      await api?.updateCheck({
-        id: check.id,
-        tenantId: check.tenantId,
-        ...updatedCheck,
-      });
-    } else {
-      trackEvent('addNewCheckSubmit');
-      await api?.addCheck(updatedCheck);
-    }
-    onReturn(true);
-  });
-  const [activeTab, setActiveTab] = useState('headers');
-
-  const styles = useStyles2(getStyles);
   let check: Check = fallbackCheck;
   const { id } = useParams<CheckPageParams>();
   if (id) {
     check = checks?.find((c) => c.id === Number(id)) ?? fallbackCheck;
   }
   const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
-  const formMethods = useForm<CheckFormValues>({ defaultValues, mode: 'onChange' });
-  const selectedCheckType = formMethods.watch('checkType')?.value ?? CheckType.PING;
+  const formMethods = useForm({ defaultValues, mode: 'onChange' });
+  const selectedCheckType = watch('checkType')?.value ?? CheckType.MULTI_HTTP;
 
-  const onSubmit = (e: any) => {
-    e.preventDefault();
-    console.log('e', e);
-  };
+  // const onSubmit = (data: any, evt) => {
+  //   evt.preventDefault();
+  //   console.log('girl youre logging data, evt', data, evt, 'getValues', getValues());
+  //   // e.preventDefault();
+  // };
 
-  // TAB funcs
-  const RequestTabs = ({
-    activeTab,
-    isEditor,
-    errors,
-    register,
-    // field,
-    selectCheckType,
-    formMethods,
-    value,
-    onChange,
-  }) => {
-    const httpEncoded = encodeURI(value);
-    const isValidUrl = Boolean(validUrl.isWebUri(httpEncoded));
-    console.log('$$$$$$$', value, activeTab);
-
-    switch (activeTab) {
-      case 'headers':
-        return <HeadersTab isEditor={isEditor} />;
-      case 'body':
-        return <BodyTab isEditor={isEditor} errors={errors} register={register} />;
-      case 'queryParams':
-        return isValidUrl ? (
-          <QueryParamsTab
-            selectedCheckType={selectCheckType}
-            formMethods={formMethods}
-            isEditor
-            value={parseUrl(value)}
-            onChange={onChange}
-            // onBlur={onBlur}
-          />
-        ) : (
-          <HeadersTab isEditor={isEditor} />
-        );
-      default:
-        return <HeadersTab isEditor={isEditor} />;
-      // With this, typescript can help us find all the places where we need to handle a tab having been added
-      // return exhaustive(activeTab);
-    }
-  };
-
-  const QueryParamsTab = ({ selectedCheckType, formMethods, isEditor, value, onChange }) => {
-    return (
-      <QueryParams
-        target={value}
-        // onBlur={onBlur}
-        onChange={(target: string) => onChange(target)}
-        className={css`
-          padding-left: 1rem;
-          margin-bottom: 1rem;
-        `}
-        selectedCheckType={selectedCheckType}
-      />
-    );
-  };
-  // End Tab funcs
+  // const onError = (error: any) => {
+  //   console.log('girl youre logging errors', error, 'getValues', getValues());
+  // };
 
   return (
     <>
-      {showMultiHttpList && submittedMultiModalValues && <MultiHttpList https={[submittedMultiModalValues?.target]} />}
       <hr className={styles.breakLine} />
       <Field
         label="Check name"
         disabled={!isEditor}
-        invalid={Boolean(formMethods.formState.errors.job)}
-        error={formMethods.formState.errors.job?.message}
-        required
+        required /** invalid={Boolean(errors.job)} error={errors.job?.message}*/
       >
         <Input
-          {...formMethods.register('k6MultiHttpCheckName', {
+          {...register('job', {
             required: true,
           })}
           type="text"
           placeholder="Unnamed request"
-        />
-      </Field>
-      <Field
-        className={styles.reqMethod}
-        label="Request method"
-        description="Default HTTP method is GET"
-        disabled={!isEditor}
-        invalid={Boolean(errors?.settings?.http?.method)}
-        error={errors?.settings?.http?.method}
-      >
-        <Controller
-          render={({ field }) => <Select {...field} options={methodOptions} />}
-          rules={{ required: true }}
-          name="settings.http.method"
         />
       </Field>
 
@@ -321,41 +233,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   tabsBar: css`
     margin-top: -10px;
   `,
+  addRequestButton: css`
+    margin-bottom: 16px;
+  `,
 });
-
-// Additional tabs
-const HeadersTab = ({ isEditor }: { isEditor: boolean }) => {
-  return (
-    <Container>
-      <Field label="Request headers" description="The HTTP headers set for the probe.." disabled={!isEditor}>
-        <NameValueInput
-          name="settings.http.headers"
-          disabled={!isEditor}
-          label="headers"
-          limit={10}
-          validateName={validateHTTPHeaderName}
-          validateValue={validateHTTPHeaderValue}
-        />
-      </Field>
-    </Container>
-  );
-};
-
-const BodyTab = ({ isEditor, errors, register }) => {
-  return (
-    <Field
-      label="Request body"
-      description="The body of the HTTP request used in probe."
-      disabled={!isEditor}
-      invalid={Boolean(errors?.settings?.http?.body)}
-      error={errors?.settings?.http?.body}
-    >
-      <TextArea
-        id="http-settings-request-body"
-        {...register('settings.http.body', { validate: validateHTTPBody })}
-        rows={2}
-        disabled={!isEditor}
-      />
-    </Field>
-  );
-};

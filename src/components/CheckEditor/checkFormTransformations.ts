@@ -10,7 +10,6 @@ import {
   HttpSettingsFormValues,
   HttpRegexValidationFormValue,
   MultiHttpSettings,
-  MultiHttpSettingsFormValues,
   Label,
   TcpSettingsFormValues,
   TcpSettings,
@@ -259,11 +258,11 @@ const getTracerouteSettingsFormValues = (settings: Settings): TracerouteSettings
   };
 };
 
-const getMultiHttpSettingsFormValues = (settings: Settings): MultiHttpSettingsFormValues => {
-  const multiHttpSettings = settings.multiHttp ?? (fallbackSettings(CheckType.MULTI_HTTP) as MultiHttpSettings);
+const getMultiHttpSettingsFormValues = (settings: Settings): MultiHttpSettings => {
+  const multiHttpSettings = settings.multihttp ?? (fallbackSettings(CheckType.MULTI_HTTP) as MultiHttpSettings);
 
   return {
-    multiUrls: multiHttpSettings.mutliUrls,
+    entries: multiHttpSettings.entries,
   };
 };
 
@@ -279,7 +278,7 @@ const getFormSettingsForCheck = (settings: Settings): SettingsFormValues => {
     case CheckType.Traceroute:
       return { traceroute: getTracerouteSettingsFormValues(settings) };
     case CheckType.MULTI_HTTP:
-      return { multiHttp: getMultiHttpSettingsFormValues(settings) };
+      return { multihttp: getMultiHttpSettingsFormValues(settings) };
     case CheckType.PING:
     default:
       return { ping: getPingSettingsFormValues(settings) };
@@ -431,7 +430,7 @@ const getHttpSettings = (
 ): HttpSettings => {
   const fallbackValues = !isMultiHttp
     ? (fallbackSettings(CheckType.HTTP).http as HttpSettings)
-    : (fallbackSettings(CheckType.MULTI_HTTP).multiHttp as MultiHttpSettings);
+    : (fallbackSettings(CheckType.MULTI_HTTP).multihttp as MultiHttpSettings);
   const headers = settings.headers ?? defaultSettings?.headers;
   const formattedHeaders = headers?.map((header) => `${header.name}:${header.value}`) ?? [];
   const proxyHeaders = settings.proxyConnectHeaders ?? defaultSettings?.proxyConnectHeaders;
@@ -598,7 +597,7 @@ const getSettingsFromFormValues = (formValues: Partial<CheckFormValues>, default
     case CheckType.HTTP:
       return { http: getHttpSettings(formValues.settings?.http, defaultValues.settings.http) };
     case CheckType.MULTI_HTTP:
-      return { http: getHttpSettings(formValues.settings?.multiHttp, defaultValues.settings.multiHttp) };
+      return { http: getHttpSettings(formValues.settings?.multihttp, defaultValues.settings.multihttp) };
     case CheckType.TCP:
       return { tcp: getTcpSettings(formValues.settings?.tcp, defaultValues.settings.tcp) };
     case CheckType.DNS:
