@@ -1,6 +1,7 @@
 import { DataSourceSettings, OrgRole, SelectableValue } from '@grafana/data';
 import { LinkedDatasourceInfo } from './datasource/types';
 import { SMDataSource } from 'datasource/DataSource';
+import { VariableType, HeaderType, MultiHttpEntries } from 'components/MultiHttp/MultiHttpTypes';
 
 export interface GlobalSettings {
   apiHost: string;
@@ -184,10 +185,6 @@ export interface HttpSettings {
   cacheBustingQueryParamName?: string;
 }
 
-export interface MultiHttpSettings extends HttpSettings {
-  mutliUrls: string[];
-}
-
 interface HttpHeaderFormValue {
   name: string;
   value: string;
@@ -229,9 +226,8 @@ export interface HttpSettingsFormValues
   compression: SelectableValue<HTTPCompressionAlgo>;
   proxyURL?: string;
 }
-
-export interface MultiHttpSettingsFormValues extends HttpSettingsFormValues {
-  multiUrls: string[];
+export interface MultiHttpSettings {
+  entries: MultiHttpEntries[];
 }
 
 export interface TracerouteSettings {
@@ -257,7 +253,7 @@ export interface PingSettingsFormValues extends Omit<PingSettings, 'ipVersion'> 
 
 export interface SettingsFormValues {
   http?: HttpSettingsFormValues;
-  multiHttp?: MultiHttpSettingsFormValues;
+  multihttp?: MultiHttpSettings;
   ping?: PingSettingsFormValues;
   dns?: DnsSettingsFormValues;
   tcp?: TcpSettingsFormValues;
@@ -283,7 +279,6 @@ export interface CheckFormValues extends Omit<Check, 'settings' | 'labels' | 'al
 
 export interface Check extends BaseObject {
   job: string;
-  multiHTTP?: string;
   target: string;
   frequency: number;
   offset?: number;
@@ -293,7 +288,6 @@ export interface Check extends BaseObject {
   basicMetricsOnly: boolean;
   labels: Label[]; // Currently list of [name:value]... can it be Labels?
   settings: Settings; //
-  k6MultiHttpCheckName: string;
 
   // Link to probes
   probes: number[];
@@ -307,7 +301,7 @@ export interface FilteredCheck extends Omit<Check, 'id'> {
 
 export interface Settings {
   http?: HttpSettings;
-  multiHttp?: MultiHttpSettings;
+  multihttp?: MultiHttpSettings;
   ping?: PingSettings;
   dns?: DnsSettings;
   tcp?: TcpSettings;
@@ -320,7 +314,7 @@ export enum CheckType {
   DNS = 'dns',
   TCP = 'tcp',
   Traceroute = 'traceroute',
-  MULTI_HTTP = 'multiHttp',
+  MULTI_HTTP = 'multihttp',
 }
 
 export interface HostedInstance {
