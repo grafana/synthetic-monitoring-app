@@ -153,7 +153,6 @@ const getStyles = (theme: GrafanaTheme) => ({
   `,
   validationInverted: css`
     position: relative;
-    margin-top: -20px;
     justify-self: center;
   `,
   maxWidth: css`
@@ -168,7 +167,7 @@ const getStyles = (theme: GrafanaTheme) => ({
     margin-right: ${theme.spacing.sm};
   `,
   validationAllowMissing: css`
-    justify-self: center;
+    justify-self: start;
   `,
 });
 
@@ -394,12 +393,32 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
               {fields.map((field, index) => {
                 const isHeaderMatch =
                   watch(`${REGEX_FIELD_NAME}.${index}.matchType`)?.value === HttpRegexValidationType.Header;
+                const disallowBodyMatching = watch('settings.http.method').value === HttpMethod.HEAD;
                 return (
                   <Fragment key={field.id}>
                     <Controller
                       render={({ field }) => (
-                        <Select {...field} placeholder="Field name" options={HTTP_REGEX_VALIDATION_OPTIONS} />
+                        <Select
+                          {...field}
+                          placeholder="Field name"
+                          options={HTTP_REGEX_VALIDATION_OPTIONS}
+                          invalid={
+                            disallowBodyMatching &&
+                            errors?.settings?.http?.regexValidations?.[index]?.matchType?.message
+                          }
+                        />
                       )}
+                      rules={{
+                        validate: (value) => {
+                          if (disallowBodyMatching) {
+                            if (value?.value === HttpRegexValidationType.Body) {
+                              return 'Cannot validate the body of a HEAD request';
+                            }
+                            return false;
+                          }
+                          return false;
+                        },
+                      }}
                       name={`${REGEX_FIELD_NAME}.${index}.matchType` as const}
                     />
                     <div className={styles.validationExpressions}>
