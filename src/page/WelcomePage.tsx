@@ -27,9 +27,13 @@ const getStyles = (theme: GrafanaTheme2) => {
       background: ${theme.colors.background.canvas};
       color: ${textColor};
       z-index: 1;
-      max-width: 1800px;
       min-width: 1200px;
       padding: 60px 120px 120px 120px;
+      display: flex;
+      justify-content: center;
+    `,
+    maxWidth: css`
+      max-width: 1800px;
     `,
     headerSection: css`
       display: flex;
@@ -160,58 +164,62 @@ export const WelcomePage: FC<Props> = () => {
   return (
     <PluginPage pageNav={{ text: 'Welcome', description: 'Welcome to synthetic monitoring' }}>
       <div className={styles.container}>
-        <div className={styles.headerSection}>
-          <img src={meta?.info.logos.small} className={styles.headerLogo} />
-          <div>
-            <h2 className={styles.headerTitle}>Welcome to Grafana Cloud Synthetic Monitoring</h2>
-            <p className={styles.headerSubtext}>
-              Synthetic monitoring provides you with insights into how your applications and services are behaving from
-              an external point of view. We provide 21 probe locations from around the world which assess availability,
-              performance, and correctness of your services.
-            </p>
+        <div className={styles.maxWidth}>
+          <div className={styles.headerSection}>
+            <img src={meta?.info.logos.small} className={styles.headerLogo} />
+            <div>
+              <h2 className={styles.headerTitle}>Welcome to Grafana Cloud Synthetic Monitoring</h2>
+              <p className={styles.headerSubtext}>
+                Synthetic monitoring provides you with insights into how your applications and services are behaving
+                from an external point of view. We provide 21 probe locations from around the world which assess
+                availability, performance, and correctness of your services.
+              </p>
+            </div>
           </div>
-        </div>
-        <FeaturesBanner />
-        <div className={styles.cardGrid}>
-          <DisplayCard className={styles.billing}>
-            <h3 className={styles.heading}>How billing works</h3>
-            <p>
-              Synthetic monitoring is available to all hosted Grafana Cloud customers, no matter which plan you have.{' '}
-            </p>
-            <p>We bill you based on the metrics and logs that are published to your Grafana Cloud stack.</p>
-            <a
-              href="https://grafana.com/docs/grafana-cloud/synthetic-monitoring/synthetic-monitoring-billing/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.link}
-            >
-              Read more about billing &gt;
-            </a>
-          </DisplayCard>
-          <div className={styles.screenshotContainer}>
-            <DisplayCard className={styles.screenshotCard}>
-              <img
-                src={config.theme2.isDark ? dashboardScreenshot : dashboardScreenshotLight}
-                className={styles.screenshot}
-              />
+          <FeaturesBanner />
+          <div className={styles.cardGrid}>
+            <DisplayCard className={styles.billing}>
+              <h3 className={styles.heading}>How billing works</h3>
+              <p>
+                Synthetic monitoring is available to all hosted Grafana Cloud customers, no matter which plan you have.{' '}
+              </p>
+              <p>We bill you based on the metrics and logs that are published to your Grafana Cloud stack.</p>
+              <a
+                href="https://grafana.com/docs/grafana-cloud/synthetic-monitoring/synthetic-monitoring-billing/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.link}
+              >
+                Read more about billing &gt;
+              </a>
+            </DisplayCard>
+            <div className={styles.screenshotContainer}>
+              <DisplayCard className={styles.screenshotCard}>
+                <img
+                  src={config.theme2.isDark ? dashboardScreenshot : dashboardScreenshotLight}
+                  className={styles.screenshot}
+                />
+              </DisplayCard>
+            </div>
+            <DisplayCard className={styles.start}>
+              <h3 className={styles.heading}>Ready to start using synthetic monitoring?</h3>
+              <Button
+                onClick={onClick}
+                disabled={
+                  loading || !Boolean(metricsDatasource) || !Boolean(logsDatasource) || !hasRole(OrgRole.Editor)
+                }
+                size="lg"
+              >
+                {loading ? <Spinner /> : 'Initialize the plugin'}
+              </Button>
             </DisplayCard>
           </div>
-          <DisplayCard className={styles.start}>
-            <h3 className={styles.heading}>Ready to start using synthetic monitoring?</h3>
-            <Button
-              onClick={onClick}
-              disabled={loading || !Boolean(metricsDatasource) || !Boolean(logsDatasource) || !hasRole(OrgRole.Editor)}
-              size="lg"
-            >
-              {loading ? <Spinner /> : 'Initialize the plugin'}
-            </Button>
-          </DisplayCard>
+          {error && (
+            <div className={styles.marginTop}>
+              <Alert title="Something went wrong:">{error}</Alert>
+            </div>
+          )}
         </div>
-        {error && (
-          <div className={styles.marginTop}>
-            <Alert title="Something went wrong:">{error}</Alert>
-          </div>
-        )}
       </div>
     </PluginPage>
   );
