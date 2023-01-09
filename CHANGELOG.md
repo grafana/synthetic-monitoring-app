@@ -1,5 +1,9 @@
 # Change Log
 
+# [1.9.30](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.29...v1.9.30) (2023-1-9)
+
+- Remove deprecated initialization flow
+
 # [1.9.29](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.28...v1.9.29) (2023-1-4)
 
 - Add proxy headers to HTTP checks
