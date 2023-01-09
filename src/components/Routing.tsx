@@ -73,7 +73,7 @@ export const Routing = ({ onNavChanged, meta, ...rest }: AppRootProps) => {
         {initialized ? <Redirect to={`${PLUGIN_URL_PATH}${ROUTES.Home}`} /> : <WelcomePage />}
       </Route>
       <Route path={`${PLUGIN_URL_PATH}${ROUTES.Unprovisioned}`}>
-        <UnprovisionedSetup pluginId={meta.id} pluginName={meta.name} />
+        <UnprovisionedSetup />
       </Route>
       <Route exact path={`${PLUGIN_URL_PATH}${ROUTES.Home}`}>
         <HomePage />

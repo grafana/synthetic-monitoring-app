@@ -329,16 +329,6 @@ export interface HostedInstance {
   currentUsage: number;
 }
 
-export interface RegistrationInfo {
-  accessToken: string;
-  tenantInfo: {
-    id: number;
-    metricInstance: HostedInstance;
-    logInstance: HostedInstance;
-  };
-  instances: HostedInstance[];
-}
-
 export interface GrafanaInstances {
   api?: SMDataSource;
   metrics?: DataSourceSettings;
