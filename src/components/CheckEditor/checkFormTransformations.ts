@@ -425,12 +425,9 @@ const getHttpRegexValidationsFromFormValue = (validations: HttpRegexValidationFo
 
 const getHttpSettings = (
   settings: Partial<HttpSettingsFormValues> | undefined = {},
-  defaultSettings: HttpSettingsFormValues | undefined,
-  isMultiHttp?: boolean
+  defaultSettings: HttpSettingsFormValues | undefined
 ): HttpSettings => {
-  const fallbackValues = !isMultiHttp
-    ? (fallbackSettings(CheckType.HTTP).http as HttpSettings)
-    : (fallbackSettings(CheckType.MULTI_HTTP).multihttp as MultiHttpSettings);
+  const fallbackValues = fallbackSettings(CheckType.HTTP).http as HttpSettings;
   const headers = settings.headers ?? defaultSettings?.headers;
   const formattedHeaders = headers?.map((header) => `${header.name}:${header.value}`) ?? [];
   const proxyHeaders = settings.proxyConnectHeaders ?? defaultSettings?.proxyConnectHeaders;
@@ -470,6 +467,10 @@ const getHttpSettings = (
     validHTTPVersions: getValuesFromMultiSelectables(settings?.validHTTPVersions ?? defaultSettings?.validHTTPVersions),
     compression,
   };
+};
+
+const getMultiHttpSettings = (settings: MultiHttpSettings) => {
+  return settings.entries;
 };
 
 const getTcpQueryResponseFromFormFields = (queryResponses?: TCPQueryResponse[]) => {
@@ -597,7 +598,7 @@ const getSettingsFromFormValues = (formValues: Partial<CheckFormValues>, default
     case CheckType.HTTP:
       return { http: getHttpSettings(formValues.settings?.http, defaultValues.settings.http) };
     case CheckType.MULTI_HTTP:
-      return { http: getHttpSettings(formValues.settings?.multihttp, defaultValues.settings.multihttp) };
+      return { multihttp: formValues.settings?.multihttp };
     case CheckType.TCP:
       return { tcp: getTcpSettings(formValues.settings?.tcp, defaultValues.settings.tcp) };
     case CheckType.DNS:

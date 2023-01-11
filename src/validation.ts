@@ -19,7 +19,6 @@ import { PEM_HEADER, PEM_FOOTER, INVALID_WEB_URL_MESSAGE } from 'components/cons
 export const CheckValidation = {
   job: validateJob,
   target: validateTarget,
-  multiUrls: validateMultiHttp, // NOT SURE I NEED THIS
   frequency: validateFrequency,
   timeout: validateTimeout,
   labels: validateLabels,
@@ -28,7 +27,6 @@ export const CheckValidation = {
 };
 
 export function validateCheck(check: Check): boolean {
-  // THIS FUNCTION ISNT USED ANYWHER IN APP
   const type = checkType(check.settings);
   return Boolean(
     CheckValidation.job(check.job) &&
@@ -46,16 +44,6 @@ export function validateJob(job: string): string | undefined {
     return 'Job name must be 128 characters or less';
   }
   return undefined;
-}
-
-export function validateMultiHttp(input: string) {
-  if (input.includes(',')) {
-    return input.split(',').map((i, index) => {
-      validateHttpTarget(i.trim(), true);
-    });
-  } else {
-    return validateHttpTarget(input, true);
-  }
 }
 
 export function validateTarget(typeOfCheck: CheckType, target: string): string | undefined {

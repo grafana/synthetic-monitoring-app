@@ -20,7 +20,6 @@ import {
   HttpSettings,
   Settings,
   HttpMethod,
-  MultiHttpSettings,
 } from 'types';
 
 export const DNS_RESPONSE_CODES = enumToStringArray(DnsResponseCodes).map((responseCode) => ({
@@ -205,7 +204,6 @@ export const fallbackCheck = {
   alertSensitivity: AlertSensitivity.None,
   settings: {
     http: fallbackSettings(CheckType.HTTP) as HttpSettings,
-    multihttp: fallbackSettings(CheckType.MULTI_HTTP) as MultiHttpSettings,
   },
   basicMetricsOnly: true,
 } as Check;
@@ -341,11 +339,15 @@ export function fallbackSettings(t: CheckType): Settings {
     }
     case CheckType.MULTI_HTTP: {
       return {
-        http: {
-          method: HttpMethod.GET, // DOES THIS NEED TO BE DIFF FOR MULTI_HTTP?
-          ipVersion: IpVersion.V4,
-          noFollowRedirects: false,
-          compression: HTTPCompressionAlgo.none,
+        multihttp: {
+          entries: [
+            {
+              request: {
+                method: 'GET',
+                url: '',
+              },
+            },
+          ],
         },
       };
     }
