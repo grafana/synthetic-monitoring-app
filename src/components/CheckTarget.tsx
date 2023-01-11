@@ -1,5 +1,5 @@
-import React, { ChangeEvent, forwardRef, Dispatch, SetStateAction } from 'react';
-import { Field, Input, VerticalGroup } from '@grafana/ui';
+import React, { ChangeEvent, forwardRef } from 'react';
+import { Field, Input } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { CheckType } from 'types';
 import { parseUrl } from 'utils';

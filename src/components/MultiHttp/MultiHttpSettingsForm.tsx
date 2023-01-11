@@ -1,72 +1,34 @@
 import React, { useState, useMemo, useContext, useCallback } from 'react';
-import { isString } from 'lodash';
 import { css } from '@emotion/css';
-import {
-  FormProvider,
-  useForm,
-  Controller,
-  useFieldArray,
-  useFormContext,
-  UseFormRegister,
-  FieldValues,
-} from 'react-hook-form';
-import { useAsyncCallback } from 'react-async-hook';
+import { FormProvider, useForm, Controller, useFieldArray, useFormContext } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
-import validUrl from 'valid-url';
 
 import {
   Button,
-  Container,
   Field,
   VerticalGroup,
   Input,
   Select,
-  TextArea,
   useStyles2,
   TabsBar,
   TabContent,
   Tab,
   HorizontalGroup,
 } from '@grafana/ui';
-import { useFeatureFlag } from 'hooks/useFeatureFlag';
-import { config } from '@grafana/runtime';
-import { GrafanaTheme2, SelectableValue } from '@grafana/data';
-import {
-  getDefaultValuesFromCheck,
-  selectableValueFrom,
-  getCheckFromFormValues,
-} from 'components/CheckEditor/checkFormTransformations';
+import { GrafanaTheme2 } from '@grafana/data';
+import { getDefaultValuesFromCheck, selectableValueFrom } from 'components/CheckEditor/checkFormTransformations';
 import { Collapse } from 'components/Collapse';
 import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
 import { LabelField } from 'components/LabelField';
-import { PluginPage } from 'components/PluginPage';
-import { CHECK_TYPE_OPTIONS, methodOptions } from 'components/constants';
+import { methodOptions } from 'components/constants';
 import { multiHttpFallbackCheck } from './consts';
-import {
-  // validateJob,
-  // validateBearerToken,
-  validateTarget,
-  validateHTTPBody,
-  validateHTTPHeaderName,
-  validateHTTPHeaderValue /** validateMultiHttp*/,
-} from 'validation';
+import { validateTarget } from 'validation';
 import CheckTarget from 'components/CheckTarget';
-import QueryParams from 'components/QueryParams';
-import { BodyTab, HeadersTab, RequestTabs } from './Tabs/Tabs';
+import { RequestTabs } from './Tabs/Tabs';
 
-import {
-  CheckFormValues,
-  // HttpMethod,
-  // HttpVersion,
-  Check,
-  CheckPageParams,
-  CheckType,
-  // HttpRegexValidationType,
-  // FeatureName,
-} from 'types';
+import { CheckFormValues, Check, CheckPageParams, CheckType } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { NameValueInput } from 'components/NameValueInput';
-import { trackEvent, trackException } from 'analytics';
+import { trackEvent } from 'analytics';
 import { selectCheckType } from 'components/CheckEditor/testHelpers';
 
 interface Props {
@@ -77,8 +39,7 @@ interface Props {
 
 export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => {
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [targetValue, setTargetValue] = useState<URL>();
-  const [activeTab, setActiveTab] = useState('headers');
+  const [activeTab, setActiveTab] = useState('header');
   const styles = useStyles2(getStyles);
 
   const {
@@ -140,11 +101,7 @@ export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => 
   return (
     <>
       <hr className={styles.breakLine} />
-      <Field
-        label="Check name"
-        disabled={!isEditor}
-        required /** invalid={Boolean(errors.job)} error={errors.job?.message}*/
-      >
+      <Field label="Check name" disabled={!isEditor} required invalid={Boolean(errors.job)} error={errors.job?.message}>
         <Input
           {...register('job', {
             required: true,
@@ -154,7 +111,6 @@ export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => 
         />
       </Field>
 
-      {/* Individual targets */}
       <hr />
       <h4>Requests</h4>
       <Field label="At least one target HTTP is required. Let's get started.">
@@ -163,7 +119,6 @@ export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => 
       <div className={styles.request}>
         <VerticalGroup>
           <FormProvider {...formMethods}>
-            {/* <form onSubmit={handleSubmit((data, evt) => onSubmit(data, evt), onError)}> */}
             <form onSubmit={handleSubmit(onSubmit)}>
               {fields.map(({ id }, index) => {
                 return (
@@ -189,8 +144,8 @@ export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => 
                               {...field}
                               onBlur={field.onBlur}
                               typeOfCheck={selectedCheckType}
-                              // invalid={Boolean(errors.url)}
-                              // error={errors.url?.message}
+                              invalid={Boolean(errors.url)}
+                              error={errors.url?.message}
                               disabled={!isEditor}
                             />
                           );
@@ -200,8 +155,8 @@ export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => 
                         label="Request method"
                         description="The HTTP method used"
                         // disabled={!isEditor}
-                        // invalid={Boolean(errors?.settings?.http?.method)}
-                        // error={errors?.settings?.http?.method}
+                        invalid={Boolean(errors?.settings?.http?.method)}
+                        error={errors?.settings?.http?.method}
                       >
                         <Controller
                           {...register(`settings.multihttp.entries[${index}].request.method`, {
@@ -224,15 +179,21 @@ export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => 
                     <TabsBar className={styles.tabsBar}>
                       <Tab
                         label={'Headers'}
-                        active={activeTab === 'headers'}
-                        onChangeTab={() => setActiveTab('headers')}
+                        active={activeTab === 'header'}
+                        onChangeTab={() => setActiveTab('header')}
                         default={true}
                       />
                       <Tab label={'Body'} active={activeTab === 'body'} onChangeTab={() => setActiveTab('body')} />
                       <Tab
                         label={'Query Params'}
                         active={activeTab === 'queryParams'}
-                        onChangeTab={() => (!getValues().target ? null : setActiveTab('queryParams'))}
+                        onChangeTab={
+                          () => setActiveTab('queryParams')
+                          //() =>
+                          // !getValues().settings.multihttp.entries[index].request.url
+                          //   ? null
+                          //   : setActiveTab('queryParams')
+                        }
                       />
                     </TabsBar>
                     <TabContent className={styles.tabsContent}>

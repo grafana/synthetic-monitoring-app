@@ -1,10 +1,10 @@
 import React from 'react';
 import { css } from '@emotion/css';
-import { UseFormRegister, FieldValues } from 'react-hook-form';
+import { UseFormRegister, useFieldArray, useFormContext, FieldValues } from 'react-hook-form';
 import validUrl from 'valid-url';
 
 import { parseUrl } from 'utils';
-import { Container, Field, TextArea } from '@grafana/ui';
+import { Button, Container, Field, HorizontalGroup, Icon, IconButton, TextArea, VerticalGroup } from '@grafana/ui';
 import { validateHTTPBody, validateHTTPHeaderName, validateHTTPHeaderValue } from 'validation';
 import QueryParams from 'components/QueryParams';
 
@@ -12,36 +12,69 @@ export const HeadersTab = ({
   index,
   isEditor,
   register,
+  label = 'header',
 }: {
   index: string;
   isEditor: boolean;
   register: UseFormRegister<FieldValues>;
+  label: string;
 }) => {
+  const {
+    // register,
+    control,
+    // formState: { errors },
+  } = useFormContext();
+  const { fields, append, remove } = useFieldArray({ control, name });
+
   return (
-    <Container>
-      <Field label="Request headers" description="The HTTP headers set for the probe." disabled={!isEditor}>
-        <>
-          <input
-            {...register(`settings.multihttp.entries[${index}].request.headers[${index}].name` as const, {
-              required: true,
-              validate: validateHTTPHeaderName,
-            })}
-            type="text"
-            placeholder="name"
-            disabled={!isEditor}
-          />
-          <input
-            {...register(`settings.multihttp.entries[${index}].request.headers[${index}].value` as const, {
-              required: true,
-              validate: validateHTTPHeaderValue,
-            })}
-            type="text"
-            placeholder="value"
-            disabled={!isEditor}
-          />
-        </>
-      </Field>
-    </Container>
+    <VerticalGroup justify="space-between">
+      <Container>
+        {fields.map((field, index) => (
+          <HorizontalGroup key={field.id} align="flex-start">
+            <Field label="Request headers" description="The HTTP headers set for the probe." disabled={!isEditor}>
+              <>
+                <input
+                  {...register(`settings.multihttp.entries[${index}].request.headers[${index}].name` as const, {
+                    required: true,
+                    validate: validateHTTPHeaderName,
+                  })}
+                  type="text"
+                  placeholder="name"
+                  disabled={!isEditor}
+                />
+                <input
+                  {...register(`settings.multihttp.entries[${index}].request.headers[${index}].value` as const, {
+                    required: true,
+                    validate: validateHTTPHeaderValue,
+                  })}
+                  type="text"
+                  placeholder="value"
+                  disabled={!isEditor}
+                />
+              </>
+            </Field>
+            <IconButton
+              // className={css`
+              //   margin-top: ${theme.spacing.sm};
+              // `}
+              name="minus-circle"
+              type="button"
+              onClick={() => remove(index)}
+            />
+          </HorizontalGroup>
+        ))}
+        <Button
+          onClick={() => append({ name: '', value: '' })}
+          // disabled={disabled}
+          variant="secondary"
+          size="sm"
+          type="button"
+        >
+          <Icon name="plus" />
+          &nbsp; Add {label}
+        </Button>
+      </Container>
+    </VerticalGroup>
   );
 };
 
@@ -50,11 +83,13 @@ export const BodyTab = ({
   isEditor,
   errors,
   register,
+  label = 'body',
 }: {
   index: string;
   isEditor: boolean;
   errors: any;
   register: UseFormRegister<FieldValues>;
+  label: string;
 }) => {
   return (
     <Field
@@ -73,16 +108,18 @@ export const BodyTab = ({
   );
 };
 
-const QueryParamsTab = ({ selectedCheckType, formMethods, isEditor, value, onChange }) => {
+const QueryParamsTab = ({ value, onChange }) => {
+  const parsedURL = parseUrl(value);
+
   return (
     <QueryParams
-      target={value}
+      target={parsedURL || value}
       onChange={(target: string) => onChange(target)}
+      // onBlur={onBlur}
       className={css`
         padding-left: 1rem;
         margin-bottom: 1rem;
       `}
-      selectedCheckType={selectedCheckType}
     />
   );
 };
@@ -98,28 +135,28 @@ export const RequestTabs = ({
   value,
   onChange,
   index,
+  label,
+  // onBlur,
 }) => {
   const httpEncoded = encodeURI(value);
   const isValidUrl = Boolean(validUrl.isWebUri(httpEncoded));
+
   switch (activeTab) {
-    case 'headers':
-      return <HeadersTab isEditor={isEditor} index={index} register={register} />;
+    case 'header':
+      return <HeadersTab isEditor={isEditor} index={index} register={register} label="header" />;
     case 'body':
-      return <BodyTab isEditor={isEditor} index={index} errors={errors} register={register} />;
+      return <BodyTab isEditor={isEditor} index={index} errors={errors} register={register} label="body" />;
     case 'queryParams':
       return isValidUrl ? (
         <QueryParamsTab
-          selectedCheckType={selectCheckType}
-          formMethods={formMethods}
-          isEditor
           value={parseUrl(value)}
           onChange={onChange}
           // onBlur={onBlur}
         />
       ) : (
-        <HeadersTab isEditor={isEditor} index={index} register={register} />
+        <HeadersTab isEditor={isEditor} index={index} register={register} label="header" />
       );
     default:
-      return <HeadersTab isEditor={isEditor} index={index} register={register} />;
+      return <HeadersTab isEditor={isEditor} index={index} register={register} label="header" />;
   }
 };
