@@ -414,9 +414,9 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
                             if (value?.value === HttpRegexValidationType.Body) {
                               return 'Cannot validate the body of a HEAD request';
                             }
-                            return false;
+                            return;
                           }
-                          return false;
+                          return;
                         },
                       }}
                       name={`${REGEX_FIELD_NAME}.${index}.matchType` as const}
