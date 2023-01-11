@@ -73,10 +73,7 @@ const getTargetHelpText = (typeOfCheck: CheckType | undefined): TargetHelpInfo =
 };
 
 const CheckTarget = forwardRef(
-  (
-    { value, typeOfCheck, disabled, onChange, onBlur, invalid, error, setTargetValue }: Props,
-    ref: React.Ref<HTMLInputElement>
-  ) => {
+  ({ value, typeOfCheck, disabled, onChange, onBlur, invalid, error }: Props, ref: React.Ref<HTMLInputElement>) => {
     const targetHelp = getTargetHelpText(typeOfCheck);
     const parsedURL = parseUrl(value);
 
@@ -100,11 +97,21 @@ const CheckTarget = forwardRef(
             value={value}
             onChange={(e: ChangeEvent<HTMLInputElement>) => {
               onChange(e.target.value);
-              setTargetValue(parsedURL);
             }}
             required={true}
           />
         </Field>
+        {typeOfCheck === CheckType.HTTP && parsedURL && (
+          <QueryParams
+            target={parsedURL}
+            onBlur={onBlur}
+            onChange={(target: string) => onChange(target)}
+            className={css`
+              padding-left: 1rem;
+              margin-bottom: 1rem;
+            `}
+          />
+        )}
       </>
     );
   }

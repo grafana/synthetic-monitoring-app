@@ -130,12 +130,6 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
     onReturn(true);
   };
 
-  // const onSetSubmittedMultiModalValues = (evt: any) => {
-  //   // evt.preventDefault();
-  //   setSubmittedMultiModalValues(evt);
-  //   console.log('submittedMultiModalValues', evt);
-  // };
-
   return (
     <PluginPage pageNav={{ text: check?.job ? check.job : 'Add check', description: 'Check configuration' }}>
       <FormProvider {...formMethods}>

@@ -10,7 +10,7 @@ type HeaderType = {
 };
 
 export interface MultiHttpEntries {
-  variables: VariableType[];
+  variables?: VariableType[];
   request: {
     method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'OPTIONS' | 'HEAD';
     url: string;

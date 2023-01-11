@@ -1,6 +1,15 @@
-import React, { useState, useMemo, useContext } from 'react';
+import React, { useState, useMemo, useContext, useCallback } from 'react';
+import { isString } from 'lodash';
 import { css } from '@emotion/css';
-import { FormProvider, useForm, Controller, useFieldArray, useFormContext } from 'react-hook-form';
+import {
+  FormProvider,
+  useForm,
+  Controller,
+  useFieldArray,
+  useFormContext,
+  UseFormRegister,
+  FieldValues,
+} from 'react-hook-form';
 import { useAsyncCallback } from 'react-async-hook';
 import { useParams } from 'react-router-dom';
 import validUrl from 'valid-url';
@@ -21,16 +30,21 @@ import {
 } from '@grafana/ui';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { config } from '@grafana/runtime';
-import { GrafanaTheme2 } from '@grafana/data';
-import { getDefaultValuesFromCheck, getCheckFromFormValues } from 'components/CheckEditor/checkFormTransformations';
+import { GrafanaTheme2, SelectableValue } from '@grafana/data';
+import {
+  getDefaultValuesFromCheck,
+  selectableValueFrom,
+  getCheckFromFormValues,
+} from 'components/CheckEditor/checkFormTransformations';
 import { Collapse } from 'components/Collapse';
+import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
 import { LabelField } from 'components/LabelField';
 import { PluginPage } from 'components/PluginPage';
-import { HorizontalCheckboxField } from '../HorizonalCheckboxField';
-import { CHECK_TYPE_OPTIONS, fallbackCheck, methodOptions } from 'components/constants';
+import { CHECK_TYPE_OPTIONS, methodOptions } from 'components/constants';
+import { multiHttpFallbackCheck } from './consts';
 import {
-  validateJob,
-  validateBearerToken,
+  // validateJob,
+  // validateBearerToken,
   validateTarget,
   validateHTTPBody,
   validateHTTPHeaderName,
@@ -38,23 +52,22 @@ import {
 } from 'validation';
 import CheckTarget from 'components/CheckTarget';
 import QueryParams from 'components/QueryParams';
+import { BodyTab, HeadersTab, RequestTabs } from './Tabs/Tabs';
 
 import {
   CheckFormValues,
-  HttpMethod,
-  HttpVersion,
+  // HttpMethod,
+  // HttpVersion,
   Check,
   CheckPageParams,
   CheckType,
-  HttpRegexValidationType,
-  FeatureName,
+  // HttpRegexValidationType,
+  // FeatureName,
 } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { NameValueInput } from 'components/NameValueInput';
 import { trackEvent, trackException } from 'analytics';
-import MultiHttpList from 'components/MultiHttp/MultiHttpList';
 import { selectCheckType } from 'components/CheckEditor/testHelpers';
-import { parseUrl } from 'utils';
 
 interface Props {
   isEditor: boolean;
@@ -83,24 +96,46 @@ export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => 
   const {
     instance: { api },
   } = useContext(InstanceContext);
-  let check: Check = fallbackCheck;
+
+  let check: Check = multiHttpFallbackCheck;
   const { id } = useParams<CheckPageParams>();
   if (id) {
-    check = checks?.find((c) => c.id === Number(id)) ?? fallbackCheck;
+    check = checks?.find((c) => c.id === Number(id)) ?? multiHttpFallbackCheck;
   }
   const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
-  const formMethods = useForm({ defaultValues, mode: 'onChange' });
+  const formMethods = useForm<CheckFormValues>({ defaultValues, mode: 'onChange' });
   const selectedCheckType = watch('checkType')?.value ?? CheckType.MULTI_HTTP;
 
-  // const onSubmit = (data: any, evt) => {
-  //   evt.preventDefault();
-  //   console.log('girl youre logging data, evt', data, evt, 'getValues', getValues());
-  //   // e.preventDefault();
-  // };
+  const onSubmit = useCallback(
+    async (evt: any, data: any) => {
+      const updatedCheck = {
+        alertSensitivity: getValues().alertSensitivity.value,
+        basicMetricsOnly: getValues().basicMetricsOnly,
+        enabled: getValues().enabled,
+        frequency: 120000,
+        job: getValues().job,
+        settings: { multihttp: getValues().settings.multihttp },
+        labels: getValues().labels,
+        probes: [1],
+        target: getValues().settings.multihttp.entries[0].request.url,
+        timeout: 3000,
+      };
 
-  // const onError = (error: any) => {
-  //   console.log('girl youre logging errors', error, 'getValues', getValues());
-  // };
+      if (check?.id) {
+        trackEvent('editCheckSubmit');
+        await api?.updateCheck({
+          id: check.id,
+          tenantId: check.tenantId,
+          ...updatedCheck,
+        });
+      } else {
+        trackEvent('addNewCheckSubmit');
+        await api?.addCheck(updatedCheck);
+      }
+      onReturn && onReturn(true);
+    },
+    [api, getValues, onReturn, check.tenantId, check.id]
+  );
 
   return (
     <>
@@ -127,67 +162,120 @@ export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => 
       </Field>
       <div className={styles.request}>
         <VerticalGroup>
-          {/* <FormProvider {...formMethods}> */}
-          <form onSubmit={onSubmit} /** {formMethods.handleSubmit(onSubmit)} */>
-            <Controller
-              name="target"
-              control={formMethods.control}
-              rules={{
-                required: true,
-                validate: (target) => {
-                  // We have to get refetch the check type value from form state in the validation because the value will be stale if we rely on the the .watch method in the render
-                  const targetFormValue = formMethods.getValues().checkType;
-                  const selectedCheckType = targetFormValue.value as CheckType;
-                  return validateTarget(selectedCheckType, target);
-                },
-              }}
-              render={({ field }) => {
+          <FormProvider {...formMethods}>
+            {/* <form onSubmit={handleSubmit((data, evt) => onSubmit(data, evt), onError)}> */}
+            <form onSubmit={handleSubmit(onSubmit)}>
+              {fields.map(({ id }, index) => {
                 return (
-                  <CheckTarget
-                    {...field}
-                    onBlur={field.onBlur}
-                    typeOfCheck={selectedCheckType}
-                    invalid={Boolean(formMethods.formState.errors.target)}
-                    error={formMethods.formState.errors.target?.message}
-                    disabled={!isEditor}
-                    setTargetValue={() => setTargetValue}
-                  />
+                  <div key={id}>
+                    <HorizontalGroup>
+                      <Controller
+                        {...register(`settings.multihttp.entries[${index}].request.url`, {
+                          required: true,
+                        })}
+                        control={control}
+                        rules={{
+                          required: true,
+                          validate: (url) => {
+                            // We have to get refetch the check type value from form state in the validation because the value will be stale if we rely on the the .watch method in the render
+                            const targetFormValue = getValues().checkType;
+                            const selectedCheckType = targetFormValue.value as CheckType;
+                            return validateTarget(selectedCheckType, url);
+                          },
+                        }}
+                        render={({ field }) => {
+                          return (
+                            <CheckTarget
+                              {...field}
+                              onBlur={field.onBlur}
+                              typeOfCheck={selectedCheckType}
+                              // invalid={Boolean(errors.url)}
+                              // error={errors.url?.message}
+                              disabled={!isEditor}
+                            />
+                          );
+                        }}
+                      />
+                      <Field
+                        label="Request method"
+                        description="The HTTP method used"
+                        // disabled={!isEditor}
+                        // invalid={Boolean(errors?.settings?.http?.method)}
+                        // error={errors?.settings?.http?.method}
+                      >
+                        <Controller
+                          {...register(`settings.multihttp.entries[${index}].request.method`, {
+                            required: true,
+                          })}
+                          control={control}
+                          render={(field) => (
+                            <Select {...field} options={methodOptions} onChange={(val) => selectableValueFrom(val)} />
+                          )}
+                          rules={{ required: true }}
+                          defaultValue="GET"
+                        />
+                      </Field>
+
+                      <button type="button" onClick={() => remove(parseInt(id, 10))}>
+                        Remove
+                      </button>
+                    </HorizontalGroup>
+
+                    <TabsBar className={styles.tabsBar}>
+                      <Tab
+                        label={'Headers'}
+                        active={activeTab === 'headers'}
+                        onChangeTab={() => setActiveTab('headers')}
+                        default={true}
+                      />
+                      <Tab label={'Body'} active={activeTab === 'body'} onChangeTab={() => setActiveTab('body')} />
+                      <Tab
+                        label={'Query Params'}
+                        active={activeTab === 'queryParams'}
+                        onChangeTab={() => (!getValues().target ? null : setActiveTab('queryParams'))}
+                      />
+                    </TabsBar>
+                    <TabContent className={styles.tabsContent}>
+                      <RequestTabs
+                        index={index}
+                        activeTab={activeTab}
+                        isEditor={isEditor}
+                        errors
+                        register={register}
+                        selectCheckType={selectCheckType}
+                        formMethods={formMethods}
+                        value={getValues().target}
+                        onChange={() => setActiveTab(activeTab)}
+                      />
+                    </TabContent>
+                  </div>
                 );
-              }}
-            />
-            <TabsBar className={styles.tabsBar}>
-              <Tab
-                label={'Headers'}
-                active={activeTab === 'headers'}
-                onChangeTab={() => setActiveTab('headers')}
-                default={true}
-              />
-              <Tab label={'Body'} active={activeTab === 'body'} onChangeTab={() => setActiveTab('body')} />
-              <Tab
-                label={'Query Params'}
-                active={activeTab === 'queryParams'}
-                onChangeTab={() => (!formMethods.getValues().target ? null : setActiveTab('queryParams'))}
-              />
-            </TabsBar>
-            <TabContent className={styles.tabsContent}>
-              <RequestTabs
-                activeTab={activeTab}
+              })}
+              <Button
+                type="button"
+                fill="text"
+                size="lg"
+                icon="plus"
+                onClick={() => append({})}
+                className={styles.addRequestButton}
+              >
+                Add a request to Multi-HTTP check
+              </Button>
+              <ProbeOptions
+                {...register('probes' as const, {
+                  required: true,
+                })}
                 isEditor={isEditor}
-                errors
-                register={register}
-                // field={field}
-                selectCheckType={selectCheckType}
-                formMethods={formMethods}
-                value={formMethods.getValues().target}
-                onChange={() => setActiveTab(activeTab)}
+                timeout={check?.timeout ?? multiHttpFallbackCheck.timeout}
+                frequency={check?.frequency ?? multiHttpFallbackCheck.frequency}
+                probes={[1]}
               />
-            </TabContent>
-            <input type="submit" />
-            {/* <Button type="submit" variant="secondary" fill="outline" style={{ marginBottom: '22px' }}>
-              Add to multi-HTTP targets
-            </Button> */}
-          </form>
-          {/* </FormProvider> */}
+
+              <Button type="button" onClick={(evt, data) => onSubmit(evt, data)}>
+                Submit
+              </Button>
+            </form>
+          </FormProvider>
         </VerticalGroup>
       </div>
 

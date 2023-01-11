@@ -1,7 +1,7 @@
 import { DataSourceSettings, OrgRole, SelectableValue } from '@grafana/data';
 import { LinkedDatasourceInfo } from './datasource/types';
 import { SMDataSource } from 'datasource/DataSource';
-import { VariableType, HeaderType, MultiHttpEntries } from 'components/MultiHttp/MultiHttpTypes';
+import { MultiHttpEntries } from 'components/MultiHttp/MultiHttpTypes';
 
 export interface GlobalSettings {
   apiHost: string;
