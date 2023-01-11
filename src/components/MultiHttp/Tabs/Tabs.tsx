@@ -1,20 +1,15 @@
 import React from 'react';
-import { css } from '@emotion/css';
 import { UseFormRegister, useFieldArray, useFormContext, FieldValues } from 'react-hook-form';
 import validUrl from 'valid-url';
 
-import { parseUrl } from 'utils';
 import { Button, Container, Field, HorizontalGroup, Icon, IconButton, TextArea, VerticalGroup } from '@grafana/ui';
 import { validateHTTPBody, validateHTTPHeaderName, validateHTTPHeaderValue } from 'validation';
-import QueryParams from 'components/QueryParams';
 
 export const HeadersTab = ({
-  index,
   isEditor,
   register,
   label = 'header',
 }: {
-  index: string;
   isEditor: boolean;
   register: UseFormRegister<FieldValues>;
   label: string;
@@ -83,13 +78,11 @@ export const BodyTab = ({
   isEditor,
   errors,
   register,
-  label = 'body',
 }: {
   index: string;
   isEditor: boolean;
   errors: any;
   register: UseFormRegister<FieldValues>;
-  label: string;
 }) => {
   return (
     <Field
@@ -108,57 +101,65 @@ export const BodyTab = ({
   );
 };
 
-const QueryParamsTab = ({ value, onChange, index, register }) => {
-  const parsedURL = parseUrl(value);
+const QueryParamsTab = ({ register }) => {
+  const { control } = useFormContext();
+  const { fields, append, remove } = useFieldArray({ control, name });
 
   return (
-    <QueryParams
-      {...register(`settings.multihttp.entries[${index}].request.queryString`)}
-      target={parsedURL || value}
-      onChange={(target: string) => onChange(target)}
-      className={css`
-        padding-left: 1rem;
-        margin-bottom: 1rem;
-      `}
-    />
+    <VerticalGroup justify="space-between">
+      <Container>
+        {fields.map((field, index) => (
+          <HorizontalGroup key={field.id} align="flex-start">
+            <Field label="Query params">
+              <>
+                <input
+                  {...register(`settings.multihttp.entries[${index}].request.queryString[${index}].name` as const, {
+                    required: true,
+                  })}
+                  type="text"
+                  placeholder="Parameter name"
+                />
+                <input
+                  {...register(`settings.multihttp.entries[${index}].request.queryString[${index}].value` as const, {
+                    required: true,
+                  })}
+                  type="text"
+                  placeholder="Parameter value"
+                />
+              </>
+            </Field>
+            <IconButton
+              // className={css`
+              //   margin-top: ${theme.spacing.sm};
+              // `}
+              name="minus-circle"
+              type="button"
+              onClick={() => remove(index)}
+            />
+          </HorizontalGroup>
+        ))}
+        <Button onClick={() => append({ name: '', value: '' })} variant="secondary" size="sm" type="button">
+          <Icon name="plus" />
+          &nbsp; Add query param
+        </Button>
+      </Container>
+    </VerticalGroup>
   );
 };
 
-export const RequestTabs = ({
-  activeTab,
-  isEditor,
-  errors,
-  register,
-  // field,
-  selectCheckType,
-  formMethods,
-  value,
-  onChange,
-  index,
-  label,
-  // onBlur,
-}) => {
-  const httpEncoded = encodeURI(value);
-  const isValidUrl = Boolean(validUrl.isWebUri(httpEncoded));
-
+export const RequestTabs = ({ activeTab, isEditor, errors, register, value, index, onChange }) => {
   switch (activeTab) {
     case 'header':
-      return <HeadersTab isEditor={isEditor} index={index} register={register} label="header" />;
+      onChange('header');
+      return <HeadersTab isEditor={isEditor} register={register} label="header" />;
     case 'body':
-      return <BodyTab isEditor={isEditor} index={index} errors={errors} register={register} label="body" />;
+      onChange('body');
+      return <BodyTab isEditor={isEditor} index={index} errors={errors} register={register} />;
     case 'queryParams':
-      return isValidUrl ? (
-        <QueryParamsTab
-          {...register(`settings.multihttp.entries[${index}].request.queryString`)}
-          value={parseUrl(value)}
-          onChange={onChange}
-          index={index}
-          register={register}
-        />
-      ) : (
-        <HeadersTab isEditor={isEditor} index={index} register={register} label="header" />
-      );
+      onChange('queryParams');
+      return <QueryParamsTab register={register} />;
     default:
-      return <HeadersTab isEditor={isEditor} index={index} register={register} label="header" />;
+      onChange('header');
+      return <HeadersTab isEditor={isEditor} register={register} label="header" />;
   }
 };

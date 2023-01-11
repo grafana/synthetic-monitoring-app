@@ -197,11 +197,8 @@ export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => 
                         isEditor={isEditor}
                         errors
                         register={register}
-                        selectCheckType={selectCheckType}
-                        formMethods={formMethods}
                         value={`${getValues().settings.multihttp.entries[`${index}`].request.url}`}
                         onChange={() => setActiveTab(activeTab)}
-                        label={activeTab}
                       />
                     </TabContent>
                   </div>
@@ -273,6 +270,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
   tabsContent: css`
     min-height: 75px;
+    margin-bottom: 15px;
   `,
   tabsBar: css`
     margin-top: -10px;
