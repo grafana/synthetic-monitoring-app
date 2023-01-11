@@ -87,7 +87,7 @@ const QueryParams = ({ target, onChange, className, onBlur }: Props) => {
 
   return (
     <div className={className}>
-      <Field>
+      <Field label="Query params" description="Query params for the target URL">
         <div
           className={css`
             display: grid;

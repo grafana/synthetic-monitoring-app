@@ -290,6 +290,7 @@ const getAllFormSettingsForCheck = (): SettingsFormValues => {
     dns: getDnsSettingsFormValues(fallbackSettings(CheckType.DNS)),
     ping: getPingSettingsFormValues(fallbackSettings(CheckType.PING)),
     traceroute: getTracerouteSettingsFormValues(fallbackSettings(CheckType.Traceroute)),
+    multihttp: getMultiHttpSettings(fallbackSettings(CheckType.MULTI_HTTP)),
   };
 };
 
