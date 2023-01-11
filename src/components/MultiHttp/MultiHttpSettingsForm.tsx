@@ -187,13 +187,7 @@ export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => 
                       <Tab
                         label={'Query Params'}
                         active={activeTab === 'queryParams'}
-                        onChangeTab={
-                          () => setActiveTab('queryParams')
-                          //() =>
-                          // !getValues().settings.multihttp.entries[index].request.url
-                          //   ? null
-                          //   : setActiveTab('queryParams')
-                        }
+                        onChangeTab={() => setActiveTab('queryParams')}
                       />
                     </TabsBar>
                     <TabContent className={styles.tabsContent}>
@@ -205,8 +199,9 @@ export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => 
                         register={register}
                         selectCheckType={selectCheckType}
                         formMethods={formMethods}
-                        value={getValues().target}
+                        value={`${getValues().settings.multihttp.entries[`${index}`].request.url}`}
                         onChange={() => setActiveTab(activeTab)}
+                        label={activeTab}
                       />
                     </TabContent>
                   </div>

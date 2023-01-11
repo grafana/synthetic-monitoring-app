@@ -96,8 +96,8 @@ export const BodyTab = ({
       label="Request body"
       description="The body of the HTTP request used in probe."
       disabled={!isEditor}
-      // invalid={Boolean(errors?.settings?.http?.body)}
-      // error={errors?.settings?.http?.body}
+      invalid={Boolean(errors?.settings?.http?.body)}
+      error={errors?.settings?.http?.body}
     >
       <TextArea
         {...register(`settings.multihttp.entries[${index}].request.body`, { validate: validateHTTPBody })}
@@ -108,14 +108,14 @@ export const BodyTab = ({
   );
 };
 
-const QueryParamsTab = ({ value, onChange }) => {
+const QueryParamsTab = ({ value, onChange, index, register }) => {
   const parsedURL = parseUrl(value);
 
   return (
     <QueryParams
+      {...register(`settings.multihttp.entries[${index}].request.queryString`)}
       target={parsedURL || value}
       onChange={(target: string) => onChange(target)}
-      // onBlur={onBlur}
       className={css`
         padding-left: 1rem;
         margin-bottom: 1rem;
@@ -149,9 +149,11 @@ export const RequestTabs = ({
     case 'queryParams':
       return isValidUrl ? (
         <QueryParamsTab
+          {...register(`settings.multihttp.entries[${index}].request.queryString`)}
           value={parseUrl(value)}
           onChange={onChange}
-          // onBlur={onBlur}
+          index={index}
+          register={register}
         />
       ) : (
         <HeadersTab isEditor={isEditor} index={index} register={register} label="header" />
