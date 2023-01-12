@@ -14,7 +14,7 @@ import { SMQuery, SMOptions, QueryType, CheckInfo, DashboardVariable } from './t
 
 import { getBackendSrv, getTemplateSrv } from '@grafana/runtime';
 import { Probe, Check, HostedInstance } from '../types';
-import { findLinkedDatasource, queryLogs } from 'utils';
+import { findLinkedDatasource, getRandomProbes, queryLogs } from 'utils';
 import { parseTracerouteLogs } from './traceroute-utils';
 import { firstValueFrom } from 'rxjs';
 
@@ -244,6 +244,10 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     if (check.timeout > 2500) {
       check.timeout = 2500;
     }
+
+    const randomSelection = getRandomProbes(check.probes, 5);
+    check.probes = randomSelection;
+
     return firstValueFrom(
       getBackendSrv().fetch({
         method: 'POST',

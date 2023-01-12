@@ -295,3 +295,15 @@ export const getSuccessRateIcon = (
     return 'times-square' as IconName;
   }
 };
+
+export function getRandomProbes(probes: number[], quantity: number): number[] {
+  if (quantity >= probes.length) {
+    return probes;
+  }
+  const randomProbes = new Set([] as number[]);
+  while (randomProbes.size < quantity) {
+    const index = Math.floor(Math.random() * probes.length);
+    randomProbes.add(probes[index]);
+  }
+  return Array.from(randomProbes).sort();
+}
