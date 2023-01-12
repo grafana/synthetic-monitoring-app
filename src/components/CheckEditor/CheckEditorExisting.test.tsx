@@ -117,7 +117,7 @@ describe('editing checks', () => {
     expect(alertingValue).toBeInTheDocument();
   });
 
-  it.only('transforms data from existing HTTP check', async () => {
+  it('transforms data from existing HTTP check', async () => {
     const instance = await renderExistingCheckEditor('/edit/1');
 
     const jobInput = await screen.findByLabelText('Job Name', { exact: false });
