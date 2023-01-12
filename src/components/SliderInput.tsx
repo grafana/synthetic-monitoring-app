@@ -24,7 +24,7 @@ const getStyles = (theme: GrafanaTheme) => ({
   `,
   slider: css`
     width: 250px;
-    margin-right: ${theme.spacing.sm};
+    margin-right: ${theme.spacing.md};
     margin-left: ${theme.spacing.sm};
   `,
   inputGroupWrapper: css`
