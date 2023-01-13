@@ -305,5 +305,5 @@ export function getRandomProbes(probes: number[], quantity: number): number[] {
     const index = Math.floor(Math.random() * probes.length);
     randomProbes.add(probes[index]);
   }
-  return Array.from(randomProbes).sort();
+  return Array.from(randomProbes).sort((a, b) => a - b);
 }
