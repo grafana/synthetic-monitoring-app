@@ -1,8 +1,23 @@
 import React from 'react';
-import { UseFormRegister, useFieldArray, useFormContext, FieldValues } from 'react-hook-form';
-import validUrl from 'valid-url';
+import { css } from '@emotion/css';
+import { Controller, UseFormRegister, useFieldArray, useFormContext, FieldValues } from 'react-hook-form';
 
-import { Button, Container, Field, HorizontalGroup, Icon, IconButton, TextArea, VerticalGroup } from '@grafana/ui';
+import {
+  Button,
+  Container,
+  Field,
+  HorizontalGroup,
+  Icon,
+  IconButton,
+  Input,
+  Select,
+  TextArea,
+  VerticalGroup,
+  useStyles2,
+} from '@grafana/ui';
+import { GrafanaTheme2 } from '@grafana/data';
+import { headerNameOptions } from 'components/constants';
+import { selectableValueFrom } from 'components/CheckEditor/checkFormTransformations';
 import { validateHTTPBody, validateHTTPHeaderName, validateHTTPHeaderValue } from 'validation';
 
 export const HeadersTab = ({
@@ -20,54 +35,64 @@ export const HeadersTab = ({
     // formState: { errors },
   } = useFormContext();
   const { fields, append, remove } = useFieldArray({ control, name });
+  const styles = useStyles2(getStyles);
 
   return (
     <VerticalGroup justify="space-between">
       <Container>
-        {fields.map((field, index) => (
-          <HorizontalGroup key={field.id} align="flex-start">
-            <Field label="Request headers" description="The HTTP headers set for the probe." disabled={!isEditor}>
-              <>
-                <input
-                  {...register(`settings.multihttp.entries[${index}].request.headers[${index}].name` as const, {
-                    required: true,
-                    validate: validateHTTPHeaderName,
-                  })}
-                  type="text"
-                  placeholder="name"
-                  disabled={!isEditor}
+        <Field label="Request headers" description="The HTTP headers set for the probe." disabled={!isEditor}>
+          <>
+            {fields.map((field, index) => (
+              <HorizontalGroup key={field.id} spacing="md" align="center" className={styles.headersQueryInputs}>
+                <HorizontalGroup key={field.id} spacing="md" align="center" className={styles.headersQueryInputs}>
+                  <Controller
+                    {...register(`settings.multihttp.entries[${index}].request.headers[${index}].name` as const, {
+                      required: true,
+                      validate: validateHTTPHeaderName,
+                    })}
+                    control={control}
+                    render={({ field }) => {
+                      return (
+                        <Select
+                          {...field}
+                          options={headerNameOptions}
+                          onChange={(val) => selectableValueFrom(val)}
+                          disabled={!isEditor}
+                        />
+                      );
+                    }}
+                    defaultValue={headerNameOptions.find((val) => val.value === 'Content-Type')?.value}
+                  />
+                  <Input
+                    {...register(`settings.multihttp.entries[${index}].request.headers[${index}].value` as const, {
+                      required: true,
+                      validate: validateHTTPHeaderValue,
+                    })}
+                    type="text"
+                    placeholder="value"
+                    disabled={!isEditor}
+                  />
+                </HorizontalGroup>
+                <IconButton
+                  className={styles.removeIcon}
+                  name="minus-circle"
+                  type="button"
+                  onClick={() => remove(index)}
                 />
-                <input
-                  {...register(`settings.multihttp.entries[${index}].request.headers[${index}].value` as const, {
-                    required: true,
-                    validate: validateHTTPHeaderValue,
-                  })}
-                  type="text"
-                  placeholder="value"
-                  disabled={!isEditor}
-                />
-              </>
-            </Field>
-            <IconButton
-              // className={css`
-              //   margin-top: ${theme.spacing.sm};
-              // `}
-              name="minus-circle"
+              </HorizontalGroup>
+            ))}
+            <Button
+              onClick={() => append({})}
+              variant="secondary"
+              size="sm"
               type="button"
-              onClick={() => remove(index)}
-            />
-          </HorizontalGroup>
-        ))}
-        <Button
-          onClick={() => append({ name: '', value: '' })}
-          // disabled={disabled}
-          variant="secondary"
-          size="sm"
-          type="button"
-        >
-          <Icon name="plus" />
-          &nbsp; Add {label}
-        </Button>
+              className={styles.addHeaderQueryButton}
+            >
+              <Icon name="plus" />
+              &nbsp; Add {label}
+            </Button>
+          </>
+        </Field>
       </Container>
     </VerticalGroup>
   );
@@ -104,44 +129,51 @@ export const BodyTab = ({
 const QueryParamsTab = ({ register }) => {
   const { control } = useFormContext();
   const { fields, append, remove } = useFieldArray({ control, name });
+  const styles = useStyles2(getStyles);
 
   return (
     <VerticalGroup justify="space-between">
       <Container>
-        {fields.map((field, index) => (
-          <HorizontalGroup key={field.id} align="flex-start">
-            <Field label="Query params">
-              <>
-                <input
-                  {...register(`settings.multihttp.entries[${index}].request.queryString[${index}].name` as const, {
-                    required: true,
-                  })}
-                  type="text"
-                  placeholder="Parameter name"
+        <Field label="Query params">
+          <>
+            {fields.map((field, index) => (
+              <HorizontalGroup key={field.id} align="flex-start" spacing="md" className={styles.headersQueryInputs}>
+                <HorizontalGroup key={field.id} spacing="md" align="center" className={styles.headersQueryInputs}>
+                  <Input
+                    {...register(`settings.multihttp.entries[${index}].request.queryString[${index}].name` as const, {
+                      required: true,
+                    })}
+                    type="text"
+                    placeholder="Parameter name"
+                  />
+                  <Input
+                    {...register(`settings.multihttp.entries[${index}].request.queryString[${index}].value` as const, {
+                      required: true,
+                    })}
+                    type="text"
+                    placeholder="Parameter value"
+                  />
+                </HorizontalGroup>
+                <IconButton
+                  className={styles.removeIcon}
+                  name="minus-circle"
+                  type="button"
+                  onClick={() => remove(index)}
                 />
-                <input
-                  {...register(`settings.multihttp.entries[${index}].request.queryString[${index}].value` as const, {
-                    required: true,
-                  })}
-                  type="text"
-                  placeholder="Parameter value"
-                />
-              </>
-            </Field>
-            <IconButton
-              // className={css`
-              //   margin-top: ${theme.spacing.sm};
-              // `}
-              name="minus-circle"
+              </HorizontalGroup>
+            ))}
+            <Button
+              onClick={() => append({})}
+              variant="secondary"
+              size="sm"
               type="button"
-              onClick={() => remove(index)}
-            />
-          </HorizontalGroup>
-        ))}
-        <Button onClick={() => append({ name: '', value: '' })} variant="secondary" size="sm" type="button">
-          <Icon name="plus" />
-          &nbsp; Add query param
-        </Button>
+              className={styles.addHeaderQueryButton}
+            >
+              <Icon name="plus" />
+              &nbsp; Add query param
+            </Button>
+          </>
+        </Field>
       </Container>
     </VerticalGroup>
   );
@@ -163,3 +195,15 @@ export const RequestTabs = ({ activeTab, isEditor, errors, register, value, inde
       return <HeadersTab isEditor={isEditor} register={register} label="header" />;
   }
 };
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  removeIcon: css`
+    margin-top: 6px;
+  `,
+  headersQueryInputs: css`
+    margin: 100px 0;
+  `,
+  addHeaderQueryButton: css`
+    margin-top: 8px;
+  `,
+});

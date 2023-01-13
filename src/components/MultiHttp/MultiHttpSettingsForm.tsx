@@ -29,7 +29,6 @@ import { RequestTabs } from './Tabs/Tabs';
 import { CheckFormValues, Check, CheckPageParams, CheckType } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { trackEvent } from 'analytics';
-import { selectCheckType } from 'components/CheckEditor/testHelpers';
 
 interface Props {
   isEditor: boolean;
@@ -122,85 +121,98 @@ export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => 
             <form onSubmit={handleSubmit(onSubmit)}>
               {fields.map(({ id }, index) => {
                 return (
-                  <div key={id}>
-                    <HorizontalGroup>
-                      <Controller
-                        {...register(`settings.multihttp.entries[${index}].request.url`, {
-                          required: true,
-                        })}
-                        control={control}
-                        rules={{
-                          required: true,
-                          validate: (url) => {
-                            // We have to get refetch the check type value from form state in the validation because the value will be stale if we rely on the the .watch method in the render
-                            const targetFormValue = getValues().checkType;
-                            const selectedCheckType = targetFormValue.value as CheckType;
-                            return validateTarget(selectedCheckType, url);
-                          },
-                        }}
-                        render={({ field }) => {
-                          return (
-                            <CheckTarget
-                              {...field}
-                              onBlur={field.onBlur}
-                              typeOfCheck={selectedCheckType}
-                              invalid={Boolean(errors.url)}
-                              error={errors.url?.message}
-                              disabled={!isEditor}
-                            />
-                          );
-                        }}
-                      />
-                      <Field
-                        label="Request method"
-                        description="The HTTP method used"
-                        // disabled={!isEditor}
-                        invalid={Boolean(errors?.settings?.http?.method)}
-                        error={errors?.settings?.http?.method}
-                      >
+                  <div key={index}>
+                    <VerticalGroup>
+                      <HorizontalGroup spacing="lg" align="center">
                         <Controller
-                          {...register(`settings.multihttp.entries[${index}].request.method`, {
+                          {...register(`settings.multihttp.entries[${index}].request.url`, {
                             required: true,
                           })}
                           control={control}
-                          render={(field) => (
-                            <Select {...field} options={methodOptions} onChange={(val) => selectableValueFrom(val)} />
-                          )}
-                          rules={{ required: true }}
-                          defaultValue="GET"
+                          rules={{
+                            required: true,
+                            validate: (url) => {
+                              // We have to get refetch the check type value from form state in the validation because the value will be stale if we rely on the the .watch method in the render
+                              const targetFormValue = getValues().checkType;
+                              const selectedCheckType = targetFormValue.value as CheckType;
+                              return validateTarget(selectedCheckType, url);
+                            },
+                          }}
+                          render={({ field }) => {
+                            return (
+                              <CheckTarget
+                                {...field}
+                                onBlur={field.onBlur}
+                                typeOfCheck={selectedCheckType}
+                                invalid={Boolean(errors.url)}
+                                error={errors.url?.message}
+                                disabled={!isEditor}
+                              />
+                            );
+                          }}
                         />
-                      </Field>
+                        <Field
+                          label="Request method"
+                          description="The HTTP method used"
+                          // disabled={!isEditor}
+                          invalid={Boolean(errors?.settings?.http?.method)}
+                          error={errors?.settings?.http?.method}
+                        >
+                          <Controller
+                            {...register(`settings.multihttp.entries[${index}].request.method`, {
+                              required: true,
+                            })}
+                            control={control}
+                            render={({ field }) => {
+                              console.log('field', field);
 
-                      <button type="button" onClick={() => remove(parseInt(id, 10))}>
-                        Remove
-                      </button>
-                    </HorizontalGroup>
+                              return (
+                                <Select
+                                  {...field}
+                                  options={methodOptions}
+                                  onChange={(val) => selectableValueFrom(val)}
+                                />
+                              );
+                            }}
+                            rules={{ required: true }}
+                            defaultValue={methodOptions.find((val) => val.value === 'GET')?.value}
+                          />
+                        </Field>
+                        <Button
+                          variant="secondary"
+                          onClick={() => remove(index)}
+                          className={styles.removeRequestButton}
+                        >
+                          Remove
+                        </Button>
+                      </HorizontalGroup>
 
-                    <TabsBar className={styles.tabsBar}>
-                      <Tab
-                        label={'Headers'}
-                        active={activeTab === 'header'}
-                        onChangeTab={() => setActiveTab('header')}
-                        default={true}
-                      />
-                      <Tab label={'Body'} active={activeTab === 'body'} onChangeTab={() => setActiveTab('body')} />
-                      <Tab
-                        label={'Query Params'}
-                        active={activeTab === 'queryParams'}
-                        onChangeTab={() => setActiveTab('queryParams')}
-                      />
-                    </TabsBar>
-                    <TabContent className={styles.tabsContent}>
-                      <RequestTabs
-                        index={index}
-                        activeTab={activeTab}
-                        isEditor={isEditor}
-                        errors
-                        register={register}
-                        value={`${getValues().settings.multihttp.entries[`${index}`].request.url}`}
-                        onChange={() => setActiveTab(activeTab)}
-                      />
-                    </TabContent>
+                      <TabsBar className={styles.tabsBar}>
+                        <Tab
+                          label={'Headers'}
+                          active={activeTab === 'header'}
+                          onChangeTab={() => setActiveTab('header')}
+                          default={true}
+                        />
+                        <Tab label={'Body'} active={activeTab === 'body'} onChangeTab={() => setActiveTab('body')} />
+                        <Tab
+                          label={'Query Params'}
+                          active={activeTab === 'queryParams'}
+                          onChangeTab={() => setActiveTab('queryParams')}
+                        />
+                      </TabsBar>
+                      <TabContent className={styles.tabsContent}>
+                        <RequestTabs
+                          index={index}
+                          activeTab={activeTab}
+                          isEditor={isEditor}
+                          errors
+                          register={register}
+                          value={`${getValues().settings.multihttp.entries[`${index}`].request.url}`}
+                          onChange={() => setActiveTab(activeTab)}
+                        />
+                      </TabContent>
+                    </VerticalGroup>
                   </div>
                 );
               })}
@@ -277,5 +289,9 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
   addRequestButton: css`
     margin-bottom: 16px;
+  `,
+  removeRequestButton: css`
+    align-self: auto;
+    margin-top: 20px;
   `,
 });

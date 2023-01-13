@@ -421,3 +421,11 @@ export const methodOptions = [
     value: HttpMethod.OPTIONS,
   },
 ];
+
+export const headerNameOptions = [
+  { label: 'Accept', value: 'Accept' },
+  { label: 'Accept-Charset', value: 'Accept-Charset' },
+  { label: 'Authorization', value: 'Authorization' },
+  { label: 'Cache-Control', value: 'Cache-Control' },
+  { label: 'Content-Type', value: 'Content-Type' },
+];
