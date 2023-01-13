@@ -1,5 +1,12 @@
 # Change Log
 
+# [1.9.31](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.30...v1.9.31) (2023-1-13)
+
+- Fix a bug where checks weren't refetched after bulk updating probes
+- Add some information on how to set up a private probe after creating a token
+- Show error state if validating the body of an HTTP HEAD request
+- Remove the legacy initialization flow
+
 # [1.9.30](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.29...v1.9.30) (2023-1-9)
 
 - Remove deprecated initialization flow
