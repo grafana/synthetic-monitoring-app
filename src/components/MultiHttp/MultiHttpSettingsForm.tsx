@@ -18,7 +18,7 @@ import {
   HorizontalGroup,
 } from '@grafana/ui';
 import { GrafanaTheme2 } from '@grafana/data';
-import { getDefaultValuesFromCheck, selectableValueFrom } from 'components/CheckEditor/checkFormTransformations';
+import { getDefaultValuesFromCheck } from 'components/CheckEditor/checkFormTransformations';
 import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
 import { methodOptions } from 'components/constants';
 import { multiHttpFallbackCheck } from './consts';
