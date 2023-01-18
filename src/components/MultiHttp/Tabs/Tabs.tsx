@@ -1,6 +1,14 @@
 import React from 'react';
 import { css } from '@emotion/css';
-import { Controller, UseFormRegister, useFieldArray, useFormContext, FieldValues } from 'react-hook-form';
+import {
+  Controller,
+  UseFormRegister,
+  useFieldArray,
+  useForm,
+  useFormContext,
+  FieldValues,
+  FormProvider,
+} from 'react-hook-form';
 
 import {
   Button,
@@ -30,71 +38,92 @@ export const HeadersTab = ({
   label: string;
 }) => {
   const {
-    // register,
     control,
-    // formState: { errors },
+    formState: { errors },
   } = useFormContext();
   const { fields, append, remove } = useFieldArray({ control, name });
   const styles = useStyles2(getStyles);
+  const formMethods = useForm({ mode: 'onChange' });
 
   return (
-    <VerticalGroup justify="space-between">
-      <Container>
-        <Field label="Request headers" description="The HTTP headers set for the probe." disabled={!isEditor}>
-          <>
-            {fields.map((field, index) => (
-              <HorizontalGroup key={field.id} spacing="md" align="center" className={styles.headersQueryInputs}>
-                <HorizontalGroup key={field.id} spacing="md" align="center" className={styles.headersQueryInputs}>
-                  <Controller
-                    {...register(`settings.multihttp.entries[${index}].request.headers[${index}].name` as const, {
-                      required: true,
-                      validate: validateHTTPHeaderName,
-                    })}
-                    control={control}
-                    render={({ field }) => {
-                      return (
-                        <Select
-                          {...field}
-                          options={headerNameOptions}
-                          onChange={(val) => selectableValueFrom(val)}
-                          disabled={!isEditor}
+    <div className={styles.inputsContainer}>
+      <FormProvider {...formMethods}>
+        <VerticalGroup justify="space-between" className={styles.inputsContainer}>
+          <Container>
+            <Field label="Request headers" description="The HTTP headers set for the probe." disabled={!isEditor}>
+              <>
+                {fields.map((field, index) => (
+                  <HorizontalGroup key={field.id} spacing="md" align="center" className={styles.headersQueryInputs}>
+                    <HorizontalGroup key={field.id} spacing="md" align="center" className={styles.headersQueryInputs}>
+                      <Input
+                        {...register(`settings.multihttp.entries[${index}].request.headers[${index}].name` as const, {
+                          required: true,
+                          validate: validateHTTPHeaderName,
+                        })}
+                        type="text"
+                        placeholder="name"
+                        disabled={!isEditor}
+                      />
+                      {/* <Field
+                        label="Name"
+                        disabled={!isEditor}
+                        invalid={Boolean(errors?.settings?.http?.method)}
+                        error={errors?.settings?.http?.method}
+                      >
+                        <Controller
+                          control={control}
+                          render={({ field: { onChange, value } }) => {
+                            console.log('valuuuuuu', value);
+
+                            return (
+                              <Select
+                                {...field}
+                                options={headerNameOptions}
+                                onChange={(val) => onChange(val.value)}
+                                value={value}
+                                placeholder="header name"
+                              />
+                            );
+                          }}
+                          rules={{ required: true }}
+                          name={`settings.multihttp.entries[${index}].request.headers[${index}].name` as const}
                         />
-                      );
-                    }}
-                    defaultValue={headerNameOptions.find((val) => val.value === 'Content-Type')?.value}
-                  />
-                  <Input
-                    {...register(`settings.multihttp.entries[${index}].request.headers[${index}].value` as const, {
-                      required: true,
-                      validate: validateHTTPHeaderValue,
-                    })}
-                    type="text"
-                    placeholder="value"
-                    disabled={!isEditor}
-                  />
-                </HorizontalGroup>
-                <IconButton
-                  className={styles.removeIcon}
-                  name="minus-circle"
+                      </Field> */}
+
+                      <Input
+                        {...register(`settings.multihttp.entries[${index}].request.headers[${index}].value` as const, {
+                          required: true,
+                          validate: validateHTTPHeaderValue,
+                        })}
+                        type="text"
+                        placeholder="value"
+                        disabled={!isEditor}
+                      />
+                    </HorizontalGroup>
+                    <IconButton
+                      className={styles.removeIcon}
+                      name="minus-circle"
+                      type="button"
+                      onClick={() => remove(index)}
+                    />
+                  </HorizontalGroup>
+                ))}
+                <Button
+                  onClick={() => append({})}
+                  variant="secondary"
+                  size="sm"
                   type="button"
-                  onClick={() => remove(index)}
-                />
-              </HorizontalGroup>
-            ))}
-            <Button
-              onClick={() => append({})}
-              variant="secondary"
-              size="sm"
-              type="button"
-              className={styles.addHeaderQueryButton}
-            >
-              <Icon name="plus" />
-              &nbsp; Add {label}
-            </Button>
-          </>
-        </Field>
-      </Container>
-    </VerticalGroup>
+                  className={styles.addHeaderQueryButton}
+                >
+                  <Icon name="plus" />
+                  &nbsp; Add {label}
+                </Button>
+              </>
+            </Field>
+          </Container>
+        </VerticalGroup>
+      </FormProvider>
+    </div>
   );
 };
 
@@ -137,8 +166,8 @@ const QueryParamsTab = ({ register }) => {
         <Field label="Query params">
           <>
             {fields.map((field, index) => (
-              <HorizontalGroup key={field.id} align="flex-start" spacing="md" className={styles.headersQueryInputs}>
-                <HorizontalGroup key={field.id} spacing="md" align="center" className={styles.headersQueryInputs}>
+              <HorizontalGroup key={field.id} align="flex-start" spacing="md">
+                <HorizontalGroup key={field.id} spacing="md" align="center">
                   <Input
                     {...register(`settings.multihttp.entries[${index}].request.queryString[${index}].name` as const, {
                       required: true,
@@ -205,5 +234,8 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
   addHeaderQueryButton: css`
     margin-top: 8px;
+  `,
+  inputsContainer: css`
+    padding: 12px;
   `,
 });
