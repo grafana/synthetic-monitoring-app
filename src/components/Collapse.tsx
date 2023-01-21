@@ -9,6 +9,9 @@ interface Props {
   loading?: boolean;
   collapsible?: boolean;
   onToggle?: (isOpen: boolean) => void;
+  className?: string | string[];
+  iconFirst: boolean;
+  index?: number;
 }
 
 const getStyles = (theme: GrafanaTheme) => ({
@@ -43,15 +46,33 @@ const getStyles = (theme: GrafanaTheme) => ({
   `,
 });
 
-export const Collapse = ({ isOpen, label, children, onToggle, ...props }: PropsWithChildren<Props>) => {
+export const Collapse = ({
+  isOpen,
+  label,
+  children,
+  onToggle,
+  className,
+  iconFirst,
+  index,
+  ...props
+}: PropsWithChildren<Props>) => {
   const theme = useTheme();
   const styles = getStyles(theme);
 
   return (
-    <div className={cx(['panel-container', styles.container])}>
+    <div className={cx([!className ? 'panel-container' : className, styles.container])}>
       <div className={styles.header} onClick={() => onToggle && onToggle(Boolean(isOpen))}>
-        <div className={styles.label}>{label}</div>
-        <Icon name={isOpen ? 'angle-down' : 'angle-right'} className={styles.headerIcon} />
+        {!iconFirst ? (
+          <>
+            <div className={styles.label}>{label}</div>
+            <Icon name={isOpen ? 'angle-down' : 'angle-right'} className={styles.headerIcon} />
+          </>
+        ) : (
+          <>
+            <Icon name={isOpen ? 'angle-down' : 'angle-right'} className={styles.headerIcon} />
+            <div className={styles.label}>{label}</div>
+          </>
+        )}
       </div>
       <div className={cx(styles.body, { [styles.hidden]: !isOpen })}>{children}</div>
     </div>
