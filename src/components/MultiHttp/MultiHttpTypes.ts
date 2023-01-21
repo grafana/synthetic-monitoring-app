@@ -5,6 +5,11 @@ type VariableType = {
 };
 
 type HeaderType = {
+  name: 'Accept' | 'Accept-Charset' | 'Authorization' | 'Cache-Control' | 'Content-Type';
+  value: string;
+};
+
+type QueryParams = {
   name: string;
   value: string;
 };
@@ -15,6 +20,7 @@ export interface MultiHttpEntries {
     method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'OPTIONS' | 'HEAD';
     url: string;
     headers?: HeaderType[];
+    queryString?: QueryParams[];
     postData?: {
       mimeType: string;
       text: string;
