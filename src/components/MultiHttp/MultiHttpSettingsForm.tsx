@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useContext, useCallback } from 'react';
+import React, { useState, useMemo } from 'react';
 import { FormProvider, useForm, Controller, useFieldArray, useFormContext } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 
@@ -6,8 +6,8 @@ import { Alert, Button, Field, VerticalGroup, Input, Select, useStyles2, Horizon
 import { getDefaultValuesFromCheck } from 'components/CheckEditor/checkFormTransformations';
 import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
 import { methodOptions } from 'components/constants';
-import { Collapse } from 'components/Collapse';
-import { multiHttpFallbackCheck, getUpdatedCheck } from './consts';
+import { MultiHttpCollapse } from 'components/MultiHttp/MultiHttpCollapse';
+import { multiHttpFallbackCheck } from './consts';
 import { Subheader } from 'components/Subheader';
 import { validateTarget } from 'validation';
 import CheckTarget from 'components/CheckTarget';
@@ -15,8 +15,7 @@ import { TabSection } from './Tabs/TabSection';
 import { getMultiHttpFormStyles } from './MultiHttpSettingsForm.styles';
 
 import { CheckFormValues, Check, CheckPageParams, CheckType } from 'types';
-import { InstanceContext } from 'contexts/InstanceContext';
-import { trackEvent } from 'analytics';
+import { useOnSubmit as onSubmit } from 'components/MultiHttp/MultiApi';
 
 interface Props {
   isEditor: boolean;
@@ -27,9 +26,9 @@ interface Props {
 export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => {
   const [activeTab, setActiveTab] = useState('header');
   const styles = useStyles2(getMultiHttpFormStyles);
-  const [showRequest, setShowRequest] = useState(true);
+  const [showRequest, setShowRequest] = useState<Array<{ [key: number]: boolean }>>([]);
   const [urls, setUrls] = useState<any[]>([]);
-  const [errorMessages, setErrorMessages] = useState([]);
+  const [errorMessages, setErrorMessages] = useState<any[]>();
 
   const {
     register,
@@ -45,9 +44,6 @@ export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => 
     control,
     name: 'settings.multihttp.entries',
   });
-  const {
-    instance: { api },
-  } = useContext(InstanceContext);
 
   let check: Check = multiHttpFallbackCheck;
   const { id } = useParams<CheckPageParams>();
@@ -58,38 +54,21 @@ export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => 
   const formMethods = useForm<CheckFormValues>({ defaultValues, mode: 'onChange' });
   const selectedCheckType = watch('checkType')?.value ?? CheckType.MULTI_HTTP;
 
-  const onSubmit = useCallback(async () => {
-    try {
-      if (check?.id) {
-        trackEvent('editCheckSubmit');
-        await api?.updateCheck({
-          id: check.id,
-          tenantId: check.tenantId,
-          ...getUpdatedCheck(getValues),
-        });
-      } else {
-        trackEvent('addNewCheckSubmit');
-        await api?.addCheck(getUpdatedCheck(getValues));
-      }
-      onReturn && onReturn(true);
-    } catch (err) {
-      setErrorMessages([err?.data?.err || err?.data?.msg]);
-    }
-  }, [api, getValues, onReturn, check.tenantId, check.id]);
-
   const clearAlert = () => {
     setErrorMessages([]);
   };
 
   const getErrorMessages = () => {
     return (
-      <Alert title="DS creation failed" severity="error" onRemove={clearAlert}>
-        <>
-          {errorMessages.map((ms, index) => {
-            return <div key={index}>{ms}</div>;
-          })}
-        </>
-      </Alert>
+      errorMessages && (
+        <Alert title="Multi-http ruqest creation failed" severity="error" onRemove={clearAlert}>
+          <>
+            {errorMessages.map((ms, index) => {
+              return <div key={index}>{ms}</div>;
+            })}
+          </>
+        </Alert>
+      )
     );
   };
 
@@ -129,17 +108,29 @@ export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => 
           <FormProvider {...formMethods}>
             <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
               {fields.map((field, index) => {
-                const urlName = (urls?.length && urls[index] ? Object.values(urls[index]) : '') as string;
+                const urlForIndex = watch(`settings.multihttp.entries[${index}].request.url`);
 
                 return (
-                  <Collapse
-                    label={urlName}
+                  <MultiHttpCollapse
+                    label={urlForIndex}
                     key={field.id}
-                    onToggle={() => setShowRequest(!showRequest)}
-                    isOpen={showRequest}
+                    onToggle={(idx: number) => {
+                      setShowRequest((prevReqs) => {
+                        return prevReqs.map((req, i) => {
+                          console.log('i, idx', i, idx, 'req', req);
+                          if (i === idx) {
+                            console.log('{ [i]: !!!req[i] }', { [i]: !!!req[i] });
+                            return { [i]: !!!req[i] };
+                          } else {
+                            return req;
+                          }
+                        });
+                      });
+                    }}
                     collapsible
                     className={styles.collapseTarget}
-                    iconFirst
+                    index={index}
+                    item={showRequest.find((i, ind) => ind === index)}
                   >
                     <VerticalGroup height={'100%'}>
                       <HorizontalGroup spacing="lg" align="center">
@@ -164,14 +155,6 @@ export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => 
                                 invalid={Boolean(errors.url)}
                                 error={errors.url?.message}
                                 disabled={!isEditor}
-                                onBlur={(url) => {
-                                  if (!urls.find((u, i) => i === index)) {
-                                    setUrls([...urls, { [index]: url.target.value }]);
-                                  } else {
-                                    const filteredChecks = urls.filter((u, i) => i !== index);
-                                    setUrls([...filteredChecks, { [index]: url.target.value }]);
-                                  }
-                                }}
                               />
                             );
                           }}
@@ -223,7 +206,7 @@ export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => 
                         trigger={trigger}
                       />
                     </VerticalGroup>
-                  </Collapse>
+                  </MultiHttpCollapse>
                 );
               })}
               <Button
@@ -231,16 +214,25 @@ export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => 
                 fill="text"
                 size="md"
                 icon="plus"
-                onClick={() => append({})}
+                onClick={() => {
+                  append({});
+
+                  if (showRequest && showRequest.length > 0) {
+                    const newFinalIndex = showRequest.length;
+                    setShowRequest([...showRequest, { [newFinalIndex]: true }]);
+                  } else {
+                    setShowRequest([{ [0]: true }]);
+                  }
+                }}
                 className={styles.addRequestButton}
               >
                 Add request
               </Button>
 
-              {errorMessages.length > 0 && getErrorMessages()}
+              {errorMessages && errorMessages?.length > 0 && getErrorMessages()}
               <Button
                 type="button"
-                onClick={onSubmit}
+                onClick={onSubmit as React.MouseEventHandler<HTMLButtonElement>}
                 fullWidth={true}
                 className={styles.submitMultiHttpButton}
                 size="lg"

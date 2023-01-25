@@ -224,8 +224,8 @@ const QueryParamsTab = ({ register, unregister, index, errors }: Props) => {
                       }}
                     />
                   </HorizontalGroup>
-                  {(errors?.settings?.multihttp?.entries[index]?.request?.headers[i]?.name ||
-                    errors?.settings?.multihttp?.entries[index]?.request?.headers[i]?.value) && (
+                  {(errors?.settings?.multihttp?.entries[index]?.request?.queryString[i]?.name ||
+                    errors?.settings?.multihttp?.entries[index]?.request?.queryString[i]?.value) && (
                     <>
                       <div style={{ color: 'red' }}>Enter at least one character</div>
                       <br />

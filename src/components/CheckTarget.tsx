@@ -10,7 +10,7 @@ interface Props {
   typeOfCheck?: CheckType;
   disabled?: boolean;
   onChange: (target: string) => void;
-  onBlur?: () => void;
+  onBlur?: (() => void) | ((evt: React.FormEvent<HTMLInputElement>) => void);
   invalid?: boolean;
   error?: string;
 }

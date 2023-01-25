@@ -17,6 +17,7 @@ export const getMultiHttpFormStyles = (theme: GrafanaTheme2) => ({
     background-color: ${theme.colors.background.secondary};
     padding: 16px !important;
     max-height: 100%;
+    margin-bottom: 10px !important;
   `,
   jobNameInput: css`
     width: 100%;
