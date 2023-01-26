@@ -13,8 +13,8 @@ interface RequestTabsProps {
   control?: any;
   trigger?: any;
   unregister?: any;
-  activeTab: string;
-  onChange: (tab: string) => void;
+  activeTab: 'header' | 'queryParams' | 'body';
+  onChange: (tab: RequestTabsProps['activeTab']) => void;
 }
 
 export const TabSection = ({
@@ -36,7 +36,13 @@ export const TabSection = ({
         <Tab
           label={'Headers'}
           active={activeTab === 'header'}
-          onChangeTab={() => onChange('header')}
+          onChangeTab={() => {
+            if (errors?.settings?.multihttp?.entries[index]?.request) {
+              return;
+            } else {
+              onChange('header');
+            }
+          }}
           default={true}
           className={styles.tabs}
         />
@@ -44,12 +50,24 @@ export const TabSection = ({
           className={styles.tabs}
           label={'Body'}
           active={activeTab === 'body'}
-          onChangeTab={() => onChange('body')}
+          onChangeTab={() => {
+            if (errors?.settings?.multihttp?.entries[index]?.request) {
+              return;
+            } else {
+              onChange('body');
+            }
+          }}
         />
         <Tab
           label={'Query Params'}
           active={activeTab === 'queryParams'}
-          onChangeTab={() => onChange('queryParams')}
+          onChangeTab={() => {
+            if (errors?.settings?.multihttp?.entries[index]?.request) {
+              return;
+            } else {
+              onChange('queryParams');
+            }
+          }}
           className={styles.tabs}
         />
       </TabsBar>
