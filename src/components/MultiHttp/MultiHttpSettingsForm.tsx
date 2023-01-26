@@ -1,21 +1,21 @@
-import React, { useState, useMemo } from 'react';
+import React, { useCallback, useContext, useState, useMemo } from 'react';
 import { FormProvider, useForm, Controller, useFieldArray, useFormContext } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
+import { trackEvent } from 'analytics';
 
 import { Alert, Button, Field, VerticalGroup, Input, Select, useStyles2, HorizontalGroup } from '@grafana/ui';
 import { getDefaultValuesFromCheck } from 'components/CheckEditor/checkFormTransformations';
 import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
 import { methodOptions } from 'components/constants';
 import { MultiHttpCollapse } from 'components/MultiHttp/MultiHttpCollapse';
-import { multiHttpFallbackCheck } from './consts';
+import { getUpdatedCheck, multiHttpFallbackCheck } from './consts';
 import { Subheader } from 'components/Subheader';
 import { validateTarget } from 'validation';
 import CheckTarget from 'components/CheckTarget';
 import { TabSection } from './Tabs/TabSection';
 import { getMultiHttpFormStyles } from './MultiHttpSettingsForm.styles';
-
 import { CheckFormValues, Check, CheckPageParams, CheckType } from 'types';
-import { useOnSubmit as onSubmit } from 'components/MultiHttp/MultiApi';
+import { InstanceContext } from 'contexts/InstanceContext';
 
 interface Props {
   isEditor: boolean;
@@ -24,7 +24,7 @@ interface Props {
 }
 
 export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => {
-  const [activeTab, setActiveTab] = useState('header');
+  const [activeTab, setActiveTab] = useState<'header' | 'queryParams' | 'body'>('header');
   const styles = useStyles2(getMultiHttpFormStyles);
   const [showRequest, setShowRequest] = useState<Array<{ [key: number]: boolean }>>([]);
   const [urls, setUrls] = useState<any[]>([]);
@@ -50,9 +50,30 @@ export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => 
   if (id) {
     check = checks?.find((c) => c.id === Number(id)) ?? multiHttpFallbackCheck;
   }
+  const {
+    instance: { api },
+  } = useContext(InstanceContext);
   const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
   const formMethods = useForm<CheckFormValues>({ defaultValues, mode: 'onChange' });
   const selectedCheckType = watch('checkType')?.value ?? CheckType.MULTI_HTTP;
+  const onSubmit = useCallback(async () => {
+    try {
+      if (check?.id) {
+        trackEvent('editCheckSubmit');
+        await api?.updateCheck({
+          id: check.id,
+          tenantId: check.tenantId,
+          ...getUpdatedCheck(getValues),
+        });
+      } else {
+        trackEvent('addNewCheckSubmit');
+        await api?.addCheck(getUpdatedCheck(getValues));
+      }
+      onReturn && onReturn(true);
+    } catch (err) {
+      setErrorMessages([err?.data?.err || err?.data?.msg]);
+    }
+  }, [api, getValues, onReturn, check.tenantId, check.id, setErrorMessages]);
 
   const clearAlert = () => {
     setErrorMessages([]);
@@ -61,7 +82,7 @@ export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => 
   const getErrorMessages = () => {
     return (
       errorMessages && (
-        <Alert title="Multi-http ruqest creation failed" severity="error" onRemove={clearAlert}>
+        <Alert title="Multi-http request creation failed" severity="error" onRemove={clearAlert}>
           <>
             {errorMessages.map((ms, index) => {
               return <div key={index}>{ms}</div>;
@@ -75,7 +96,7 @@ export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => 
   return (
     <>
       <hr className={styles.breakLine} />
-      <Subheader>Check name</Subheader>
+      <Subheader>Check job name</Subheader>
       <Field disabled={!isEditor} invalid={Boolean(errors.job)} error={errors.job?.message}>
         <Input
           {...register('job', {
@@ -117,9 +138,7 @@ export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => 
                     onToggle={(idx: number) => {
                       setShowRequest((prevReqs) => {
                         return prevReqs.map((req, i) => {
-                          console.log('i, idx', i, idx, 'req', req);
                           if (i === idx) {
-                            console.log('{ [i]: !!!req[i] }', { [i]: !!!req[i] });
                             return { [i]: !!!req[i] };
                           } else {
                             return req;
@@ -202,7 +221,6 @@ export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => 
                         unregister={unregister}
                         index={index}
                         onChange={setActiveTab}
-                        control={control}
                         trigger={trigger}
                       />
                     </VerticalGroup>
@@ -232,10 +250,10 @@ export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => 
               {errorMessages && errorMessages?.length > 0 && getErrorMessages()}
               <Button
                 type="button"
-                onClick={onSubmit as React.MouseEventHandler<HTMLButtonElement>}
+                onClick={onSubmit}
                 fullWidth={true}
                 className={styles.submitMultiHttpButton}
-                size="lg"
+                size="md"
               >
                 Submit
               </Button>

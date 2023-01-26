@@ -10,7 +10,6 @@ import {
   Icon,
   IconButton,
   Input,
-  // Select,
   TextArea,
   VerticalGroup,
   useStyles2,
@@ -28,31 +27,23 @@ interface Props {
   control?: any;
   trigger?: any;
   unregister?: any;
+  activeTab?: 'header' | 'queryParams' | 'body';
 }
 
 interface RequestTabsProps {
   isEditor?: boolean;
   register: UseFormRegister<FieldValues>;
-  label?: string;
   errors?: any;
   index: number;
   control?: any;
   trigger?: any;
   unregister?: any;
-  activeTab: string;
+  activeTab: 'header' | 'queryParams' | 'body';
   onChange: (tab: string) => void;
 }
 
-export const HeadersTab = ({
-  control,
-  isEditor,
-  register,
-  unregister,
-  trigger,
-  label = 'header',
-  errors,
-  index,
-}: Props) => {
+export const HeadersTab = ({ isEditor, register, unregister, trigger, label = 'header', errors, index }: Props) => {
+  const { control } = useFormContext();
   const { fields, append, remove } = useFieldArray({ name, control });
   const styles = useStyles2(getStyles);
 
@@ -62,88 +53,65 @@ export const HeadersTab = ({
         <Container>
           <Field label="Request headers" description="The HTTP headers set for the probe." disabled={!isEditor}>
             <>
-              {fields.map((field, i) => (
-                <>
-                  <HorizontalGroup key={field.id} spacing="md" align="center" className={styles.headersQueryInputs}>
+              {fields.map((field, i) => {
+                const headersNamePrefix = `settings.multihttp.entries[${index}].request.headers[${i}]`;
+
+                return (
+                  <>
                     <HorizontalGroup key={field.id} spacing="md" align="center" className={styles.headersQueryInputs}>
-                      <Input
-                        {...register(`settings.multihttp.entries[${index}].request.headers[${i}].name` as const, {
-                          required: true,
-                          // validate: (val) => validateHTTPHeaderName(val),
-                        })}
-                        type="text"
-                        placeholder="name"
-                        disabled={!isEditor}
-                        onMouseLeave={() =>
-                          trigger(`settings.multihttp.entries[${index}].request.headers[${i}].name`, {
-                            shouldFocus: true,
-                            shouldUnregister: true,
-                          })
-                        }
-                      />
-                      {/* TODO: FIX SELECT COMPONENT  */}
-                      {/* <Field
-                      label="Name"
-                      disabled={!isEditor}
-                      invalid={Boolean(errors?.settings?.http?.method)}
-                      error={errors?.settings?.http?.method}
-                    >
-                      <Controller
-                        control={control}
-                        render={({ field: { onChange, value } }) => {
-                          console.log('valuuuuuu', value);
-
-                          return (
-                            <Select
-                              {...field}
-                              options={headerNameOptions}
-                              onChange={(val) => onChange(val.value)}
-                              value={value ?? undefined}
-                              placeholder="header name"
-                            />
-                          );
+                      <HorizontalGroup key={field.id} spacing="md" align="center" className={styles.headersQueryInputs}>
+                        {/* TODO: MAKE A SELECT COMPONENT INSTEAD */}
+                        <Input
+                          {...register(`${headersNamePrefix}.name` as const, {
+                            required: true,
+                          })}
+                          type="text"
+                          placeholder="name"
+                          disabled={!isEditor}
+                          onMouseLeave={() =>
+                            trigger(`${headersNamePrefix}.name`, {
+                              shouldFocus: true,
+                              shouldUnregister: true,
+                            })
+                          }
+                        />
+                        <Input
+                          {...register(`${headersNamePrefix}.value` as const, {
+                            required: true,
+                            minLength: 1,
+                            validate: validateHTTPHeaderValue,
+                          })}
+                          type="text"
+                          placeholder="value"
+                          disabled={!isEditor}
+                          onMouseLeave={() =>
+                            trigger(`${headersNamePrefix}.value`, {
+                              shouldFocus: true,
+                              shouldUnregister: true,
+                            })
+                          }
+                        />
+                      </HorizontalGroup>
+                      <IconButton
+                        className={styles.removeIcon}
+                        name="minus-circle"
+                        type="button"
+                        onClick={() => {
+                          remove(i);
+                          unregister([`${headersNamePrefix}`]);
                         }}
-                        rules={{ required: true }}
-                        name={`settings.multihttp.entries[${index}].request.headers[${index}].name` as const}
-                      />
-                    </Field> */}
-
-                      <Input
-                        {...register(`settings.multihttp.entries[${index}].request.headers[${i}].value` as const, {
-                          required: true,
-                          minLength: 1,
-                          validate: validateHTTPHeaderValue,
-                        })}
-                        type="text"
-                        placeholder="value"
-                        disabled={!isEditor}
-                        onMouseLeave={() =>
-                          trigger(`settings.multihttp.entries[${index}].request.headers[${i}].value`, {
-                            shouldFocus: true,
-                            shouldUnregister: true,
-                          })
-                        }
                       />
                     </HorizontalGroup>
-                    <IconButton
-                      className={styles.removeIcon}
-                      name="minus-circle"
-                      type="button"
-                      onClick={() => {
-                        remove(i);
-                        unregister([`settings.multihttp.entries[${index}].request.headers[${i}]`]);
-                      }}
-                    />
-                  </HorizontalGroup>
-                  {(errors?.settings?.multihttp?.entries[index]?.request?.headers[i]?.name ||
-                    errors?.settings?.multihttp?.entries[index]?.request?.headers[i]?.value) && (
-                    <>
-                      <div style={{ color: 'red' }}>Enter at least one character</div>
-                      <br />
-                    </>
-                  )}
-                </>
-              ))}
+                    {(errors?.settings?.multihttp?.entries[index]?.request?.headers[i]?.name ||
+                      errors?.settings?.multihttp?.entries[index]?.request?.headers[i]?.value) && (
+                      <>
+                        <div className={styles.errorMsg}>Enter at least one character</div>
+                        <br />
+                      </>
+                    )}
+                  </>
+                );
+              })}
               <Button
                 onClick={() => append({})}
                 variant="secondary"
@@ -184,7 +152,7 @@ export const BodyTab = ({ index, isEditor, errors, register }: Props) => {
   );
 };
 
-const QueryParamsTab = ({ register, unregister, index, errors }: Props) => {
+const QueryParamsTab = ({ register, unregister, index, errors, trigger, label }: Props) => {
   const { control } = useFormContext();
   const { fields, append, remove } = useFieldArray({ control, name });
   const styles = useStyles2(getStyles);
@@ -195,44 +163,62 @@ const QueryParamsTab = ({ register, unregister, index, errors }: Props) => {
         <Container>
           <Field label="Query params">
             <>
-              {fields.map((field, i) => (
-                <>
-                  <HorizontalGroup key={field.id} align="flex-start" spacing="md">
-                    <HorizontalGroup key={field.id} spacing="md" align="center">
-                      <Input
-                        {...register(`settings.multihttp.entries[${index}].request.queryString[${i}].name` as const, {
-                          required: true,
-                        })}
-                        type="text"
-                        placeholder="Parameter name"
-                      />
-                      <Input
-                        {...register(`settings.multihttp.entries[${index}].request.queryString[${i}].value` as const, {
-                          required: true,
-                        })}
-                        type="text"
-                        placeholder="Parameter value"
+              {fields.map((field, i) => {
+                const queryParamsNamePrefix = `settings.multihttp.entries[${index}].request.queryString[${i}]`;
+
+                return (
+                  <>
+                    <HorizontalGroup key={field.id} align="flex-start" spacing="md">
+                      <HorizontalGroup key={field.id} spacing="md" align="center">
+                        <Input
+                          {...register(`${queryParamsNamePrefix}.name` as const, {
+                            required: true,
+                            minLength: 1,
+                          })}
+                          type="text"
+                          placeholder="Parameter name"
+                          onMouseLeave={() =>
+                            trigger(`${queryParamsNamePrefix}.name` as const, {
+                              shouldFocus: true,
+                              shouldUnregister: true,
+                            })
+                          }
+                        />
+                        <Input
+                          {...register(`${queryParamsNamePrefix}.value` as const, {
+                            required: true,
+                            minLength: 1,
+                          })}
+                          type="text"
+                          placeholder="Parameter value"
+                          onMouseLeave={() =>
+                            trigger(`${queryParamsNamePrefix}.value` as const, {
+                              shouldFocus: true,
+                              shouldUnregister: true,
+                            })
+                          }
+                        />
+                      </HorizontalGroup>
+                      <IconButton
+                        className={styles.removeIcon}
+                        name="minus-circle"
+                        type="button"
+                        onClick={() => {
+                          remove(i);
+                          unregister([`${queryParamsNamePrefix}`]);
+                        }}
                       />
                     </HorizontalGroup>
-                    <IconButton
-                      className={styles.removeIcon}
-                      name="minus-circle"
-                      type="button"
-                      onClick={() => {
-                        remove(i);
-                        unregister([`settings.multihttp.entries[${index}].request.queryString[${i}]`]);
-                      }}
-                    />
-                  </HorizontalGroup>
-                  {(errors?.settings?.multihttp?.entries[index]?.request?.queryString[i]?.name ||
-                    errors?.settings?.multihttp?.entries[index]?.request?.queryString[i]?.value) && (
-                    <>
-                      <div style={{ color: 'red' }}>Enter at least one character</div>
-                      <br />
-                    </>
-                  )}
-                </>
-              ))}
+                    {(errors?.settings?.multihttp?.entries[index]?.request?.queryString[i]?.name ||
+                      errors?.settings?.multihttp?.entries[index]?.request?.queryString[i]?.value) && (
+                      <>
+                        <div className={styles.errorMsg}>Enter at least one character</div>
+                        <br />
+                      </>
+                    )}
+                  </>
+                );
+              })}
               <Button
                 onClick={() => append({})}
                 variant="secondary"
@@ -259,7 +245,6 @@ export const RequestTabs = ({
   unregister,
   index,
   onChange,
-  control,
   trigger,
 }: RequestTabsProps) => {
   switch (activeTab) {
@@ -269,7 +254,6 @@ export const RequestTabs = ({
         <HeadersTab
           unregister={unregister}
           trigger={trigger}
-          control={control}
           isEditor={isEditor}
           register={register}
           label="header"
@@ -282,14 +266,22 @@ export const RequestTabs = ({
       return <BodyTab isEditor={isEditor} index={index} errors={errors} register={register} />;
     case 'queryParams':
       onChange('queryParams');
-      return <QueryParamsTab register={register} index={index} unregister={unregister} />;
+      return (
+        <QueryParamsTab
+          register={register}
+          index={index}
+          unregister={unregister}
+          errors={errors}
+          trigger={trigger}
+          label="queryParams"
+        />
+      );
     default:
       onChange('header');
       return (
         <HeadersTab
           unregister={unregister}
           trigger={trigger}
-          control={control}
           isEditor={isEditor}
           register={register}
           label="header"
@@ -312,5 +304,8 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
   inputsContainer: css`
     padding: 12px;
+  `,
+  errorMsg: css`
+    color: ${theme.colors.error.text};
   `,
 });
