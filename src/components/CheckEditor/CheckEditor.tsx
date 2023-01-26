@@ -25,7 +25,7 @@ import {
 } from 'types';
 import { hasRole } from 'utils';
 import { getDefaultValuesFromCheck, getCheckFromFormValues } from './checkFormTransformations';
-import { validateJob, validateTarget /** validateMultiHttp*/ } from 'validation';
+import { validateJob, validateTarget } from 'validation';
 import CheckTarget from 'components/CheckTarget';
 import { Subheader } from 'components/Subheader';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
@@ -165,10 +165,8 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
             description="If a check is enabled, metrics and logs are published to your Grafana Cloud stack."
           />
 
-          {/* As a start to greater flexibility and to use alternatives to 
-              blackbox exporter, we'll use different form values going forward.
-              Here, the standard form vals; the second form includes K6-compatible fields
-            */}
+          {/* Multi-http checks use a separate form because it doesnt use blackbox exporter and the
+              data shape looks different, so if it's a multi-http check, we send them elsewhere */}
           {selectedCheckType !== CheckType.MULTI_HTTP ? (
             <>
               {/* Standard Form */}
