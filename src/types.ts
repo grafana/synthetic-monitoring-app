@@ -1,7 +1,7 @@
 import { DataSourceSettings, OrgRole, SelectableValue } from '@grafana/data';
 import { LinkedDatasourceInfo } from './datasource/types';
 import { SMDataSource } from 'datasource/DataSource';
-import { MultiHttpEntries } from 'components/MultiHttp/MultiHttpTypes';
+import { MultiHttpEntry } from 'components/MultiHttp/MultiHttpTypes';
 
 export interface GlobalSettings {
   apiHost: string;
@@ -231,7 +231,10 @@ export interface HttpSettingsFormValues
   proxyURL?: string;
 }
 export interface MultiHttpSettings {
-  entries: MultiHttpEntries[];
+  entries: MultiHttpEntry[];
+}
+export interface MultiHttpSettingsFormValues {
+  entries: MultiHttpEntry[];
 }
 
 export interface TracerouteSettings {
@@ -257,7 +260,7 @@ export interface PingSettingsFormValues extends Omit<PingSettings, 'ipVersion'> 
 
 export interface SettingsFormValues {
   http?: HttpSettingsFormValues;
-  multihttp?: MultiHttpSettings;
+  multihttp?: MultiHttpSettingsFormValues;
   ping?: PingSettingsFormValues;
   dns?: DnsSettingsFormValues;
   tcp?: TcpSettingsFormValues;
