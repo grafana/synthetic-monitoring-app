@@ -34,7 +34,7 @@ const renderNewCheckEditor = async () => {
     alertRuler: {} as DataSourceSettings,
   };
   const meta = {} as AppPluginMeta<GlobalSettings>;
-  const featureToggles = ({ traceroute: true } as unknown) as FeatureToggles;
+  const featureToggles = { traceroute: true } as unknown as FeatureToggles;
   const isFeatureEnabled = jest.fn(() => true);
 
   render(

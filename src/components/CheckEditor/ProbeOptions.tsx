@@ -25,7 +25,7 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, probes }: Props) =>
   } = useFormContext();
   const { instance } = useContext(InstanceContext);
 
-  const checkType = watch('checkType').value;
+  const checkType = watch('checkType')?.value;
 
   useEffect(() => {
     const abortController = new AbortController();
