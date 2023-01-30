@@ -1,5 +1,7 @@
 import isEmpty from 'lodash';
+import { UseFormGetValues, FieldValues } from 'react-hook-form';
 import { CheckType, Check, AlertSensitivity, MultiHttpSettings } from 'types';
+import { MultiHttpEntry, KeyTypes } from 'components/MultiHttp/MultiHttpTypes';
 import { fallbackSettings } from 'components/constants';
 
 export const multiHttpFallbackCheck = {
@@ -17,28 +19,34 @@ export const multiHttpFallbackCheck = {
   basicMetricsOnly: true,
 } as Check;
 
-const removeEmptyFields = (getValues) => {
+const removeEmptyFields = (getValues: any) => {
   const entries = getValues().settings.multihttp;
-
-  getValues().settings.multihttp.entries.forEach((ent) => {
+  getValues().settings.multihttp.entries.forEach((ent: MultiHttpEntry) => {
     const request = ent.request;
-    Object.keys(request).forEach((key) => {
+
+    // @ts-ignore
+    Object.keys(request).forEach((key: KeyTypes) => {
       if (request[key] === '' || request[key] == null || isEmpty(request[key]) || request[key].length === 0) {
         delete request[key];
       } else if (typeof request[key] === 'object') {
-        return Object.keys(request[key]).map((k, index) => {
-          return Object.values(request[key][k]).forEach((i) => {
-            return i.length === 0 ? delete request[key][k] : request[key][k];
+        // @ts-ignore
+        return Object.keys(request[key]).map((k) => {
+          // @ts-ignore
+          return Object.values(request[key][k]).forEach((i: any) => {
+            // @ts-ignore
+            return i.length === 0 ? delete request[key][k] : request[requestKey][k];
           });
         });
       }
+
+      return;
     });
     return request;
   });
   return entries;
 };
 
-export const getUpdatedCheck = (getValues) => {
+export const getUpdatedCheck = (getValues: UseFormGetValues<FieldValues>) => {
   const prunedFields = removeEmptyFields(getValues);
 
   return {

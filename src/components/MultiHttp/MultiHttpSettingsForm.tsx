@@ -70,7 +70,7 @@ export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => 
         await api?.addCheck(getUpdatedCheck(getValues));
       }
       onReturn && onReturn(true);
-    } catch (err) {
+    } catch (err: any) {
       setErrorMessages([err?.data?.err || err?.data?.msg]);
     }
   }, [api, getValues, onReturn, check.tenantId, check.id, setErrorMessages]);

@@ -10,6 +10,7 @@ import {
   HttpSettingsFormValues,
   HttpRegexValidationFormValue,
   MultiHttpSettings,
+  MultiHttpSettingsFormValues,
   Label,
   TcpSettingsFormValues,
   TcpSettings,
@@ -256,7 +257,7 @@ const getTracerouteSettingsFormValues = (settings: Settings): TracerouteSettings
   };
 };
 
-const getMultiHttpSettingsFormValues = (settings: Settings): MultiHttpSettings => {
+const getMultiHttpSettingsFormValues = (settings: Settings): MultiHttpSettingsFormValues => {
   const multiHttpSettings = settings.multihttp ?? (fallbackSettings(CheckType.MULTI_HTTP) as MultiHttpSettings);
 
   return {

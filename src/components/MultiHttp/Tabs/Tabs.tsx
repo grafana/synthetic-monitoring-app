@@ -39,7 +39,7 @@ interface RequestTabsProps {
   trigger?: any;
   unregister?: any;
   activeTab: 'header' | 'queryParams' | 'body';
-  onChange: (tab: string) => void;
+  onChange: (tab: RequestTabsProps['activeTab']) => void;
 }
 
 export const HeadersTab = ({ isEditor, register, unregister, trigger, label = 'header', errors, index }: Props) => {
