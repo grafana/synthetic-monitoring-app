@@ -173,7 +173,7 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
   return (
     <Container>
       <Collapse
-        label="HTTP settings (optional)"
+        label="HTTP settings"
         onToggle={() => setShowHttpSettings(!showHttpSettings)}
         isOpen={showHttpSettings}
         collapsible
@@ -253,7 +253,7 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
       </Collapse>
       <TLSConfig isEditor={isEditor} checkType={CheckType.HTTP} />
       <Collapse
-        label="Authentication (optional)"
+        label="Authentication"
         onToggle={() => setShowAuthentication(!showAuthentication)}
         isOpen={showAuthentication}
         collapsible
@@ -320,7 +320,7 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
         </VerticalGroup>
       </Collapse>
       <Collapse
-        label="Validation (optional)"
+        label="Validation"
         onToggle={() => setShowValidation(!showValidation)}
         isOpen={showValidation}
         collapsible
@@ -436,7 +436,7 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
         </VerticalGroup>
       </Collapse>
       <Collapse
-        label="Advanced options (optional)"
+        label="Advanced options"
         onToggle={() => setShowAdvanced(!showAdvanced)}
         isOpen={showAdvanced}
         collapsible

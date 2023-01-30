@@ -30,7 +30,7 @@ export function validateCheck(check: Check): boolean {
   const type = checkType(check.settings);
   return Boolean(
     CheckValidation.job(check.job) &&
-      CheckValidation.target(checkType(check.settings), check.target) && // TODO: CHECK FOR MULTI_HTTP?
+      CheckValidation.target(checkType(check.settings), check.target) &&
       CheckValidation.frequency(check.frequency, type) &&
       CheckValidation.timeout(check.timeout, type) &&
       CheckValidation.labels(check.labels) &&
@@ -56,7 +56,6 @@ export function validateTarget(typeOfCheck: CheckType, target: string): string |
       return validateHttpTarget(target);
     }
     case CheckType.MULTI_HTTP: {
-      //NOT SURE AI NEED THIS SINCE TARGET WILL BE USED DIFFERENTLY HERE
       return validateHttpTarget(target, true);
     }
     case CheckType.PING: {

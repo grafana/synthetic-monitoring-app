@@ -108,7 +108,7 @@ export const CHECK_FILTER_OPTIONS = [
     value: CheckType.HTTP,
   },
   {
-    label: 'MULTI_HTTP',
+    label: 'MULTI-HTTP',
     value: CheckType.MULTI_HTTP,
   },
   {
@@ -135,7 +135,7 @@ export const CHECK_TYPE_OPTIONS = [
     value: CheckType.HTTP,
   },
   {
-    label: 'MULTI_HTTP',
+    label: 'MULTI-HTTP',
     value: CheckType.MULTI_HTTP,
   },
   {
