@@ -291,7 +291,7 @@ const getAllFormSettingsForCheck = (): SettingsFormValues => {
     dns: getDnsSettingsFormValues(fallbackSettings(CheckType.DNS)),
     ping: getPingSettingsFormValues(fallbackSettings(CheckType.PING)),
     traceroute: getTracerouteSettingsFormValues(fallbackSettings(CheckType.Traceroute)),
-    multihttp: getMultiHttpSettings(fallbackSettings(CheckType.MULTI_HTTP)),
+    multihttp: getMultiHttpFormValues(fallbackSettings(CheckType.MULTI_HTTP)),
   };
 };
 
@@ -466,8 +466,25 @@ const getHttpSettings = (
   };
 };
 
-const getMultiHttpSettings = (settings: MultiHttpSettings) => {
-  return settings.entries;
+const getMultiHttpSettings = (settings: MultiHttpSettingsFormValues): MultiHttpSettings => {
+  console.log('settings', settings);
+
+  return settings;
+};
+
+const getMultiHttpFormValues = (settings: Settings): MultiHttpSettingsFormValues => {
+  const multiHttpSettings = settings.multihttp ?? (fallbackSettings(CheckType.MULTI_HTTP) as MultiHttpSettings);
+  return {
+    entries: multiHttpSettings.entries?.map((entry) => {
+      return {
+        ...entry,
+        request: {
+          ...entry.request,
+          method: selectableValueFrom(entry.request.method),
+        },
+      };
+    }),
+  };
 };
 
 const getTcpQueryResponseFromFormFields = (queryResponses?: TCPQueryResponse[]) => {

@@ -24,13 +24,12 @@ const removeEmptyFields = (getValues: any) => {
   getValues().settings.multihttp.entries.forEach((ent: MultiHttpEntry) => {
     const request = ent.request;
 
-    // @ts-ignore
-    Object.keys(request).forEach((key: KeyTypes) => {
-      if (request[key] === '' || request[key] == null || isEmpty(request[key]) || request[key].length === 0) {
+    Object.keys(request).forEach((k) => {
+      const key = k as KeyTypes;
+      if (request[key] === '' || request[key] == null || isEmpty(request[key])) {
         delete request[key];
       } else if (typeof request[key] === 'object') {
-        // @ts-ignore
-        return Object.keys(request[key]).map((k) => {
+        return Object.keys(request[key] as unknown as any).map((k) => {
           // @ts-ignore
           return Object.values(request[key][k]).forEach((i: any) => {
             // @ts-ignore

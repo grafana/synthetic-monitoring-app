@@ -56,7 +56,6 @@ export const getMultiHttpFormStyles = (theme: GrafanaTheme2) => ({
     position: relative;
   `,
   submitMultiHttpButton: css`
-    margin-top: 24px;
     width: 90vw;
   `,
 });

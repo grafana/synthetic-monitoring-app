@@ -44,7 +44,10 @@ interface RequestTabsProps {
 
 export const HeadersTab = ({ isEditor, register, unregister, trigger, label = 'header', errors, index }: Props) => {
   const { control } = useFormContext();
-  const { fields, append, remove } = useFieldArray({ name, control });
+  const { fields, append, remove } = useFieldArray({
+    name: `settings.multihttp.entries[${index}].request.headers`,
+    control,
+  });
   const styles = useStyles2(getStyles);
 
   return (
