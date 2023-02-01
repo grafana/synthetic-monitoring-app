@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FieldValues, UseFormRegister } from 'react-hook-form';
 import { useStyles2, TabsBar, TabContent, Tab } from '@grafana/ui';
 import { RequestTabs } from './../Tabs/Tabs';
 import { getMultiHttpFormStyles } from './../MultiHttpSettingsForm.styles';
 
+type ActiveTabTypes = 'header' | 'queryParams' | 'body';
 interface RequestTabsProps {
   isEditor?: boolean;
   register: UseFormRegister<FieldValues>;
@@ -13,21 +14,10 @@ interface RequestTabsProps {
   control?: any;
   trigger?: any;
   unregister?: any;
-  activeTab: 'header' | 'queryParams' | 'body';
-  onChange: (tab: RequestTabsProps['activeTab']) => void;
 }
 
-export const TabSection = ({
-  activeTab,
-  isEditor,
-  errors,
-  register,
-  unregister,
-  index,
-  onChange,
-  control,
-  trigger,
-}: RequestTabsProps) => {
+export const TabSection = ({ isEditor, errors, register, unregister, index, control, trigger }: RequestTabsProps) => {
+  const [activeTab, setActiveTab] = useState<ActiveTabTypes>('header');
   const styles = useStyles2(getMultiHttpFormStyles);
 
   return (
@@ -40,7 +30,7 @@ export const TabSection = ({
             if (errors?.settings?.multihttp?.entries[index]?.request) {
               return;
             } else {
-              onChange('header');
+              setActiveTab('header');
             }
           }}
           default={true}
@@ -54,7 +44,7 @@ export const TabSection = ({
             if (errors?.settings?.multihttp?.entries[index]?.request) {
               return;
             } else {
-              onChange('body');
+              setActiveTab('body');
             }
           }}
         />
@@ -65,7 +55,7 @@ export const TabSection = ({
             if (errors?.settings?.multihttp?.entries[index]?.request) {
               return;
             } else {
-              onChange('queryParams');
+              setActiveTab('queryParams');
             }
           }}
           className={styles.tabs}
@@ -81,7 +71,6 @@ export const TabSection = ({
           isEditor={isEditor}
           errors={errors}
           register={register}
-          onChange={onChange}
         />
       </TabContent>
     </div>

@@ -24,7 +24,6 @@ interface Props {
 }
 
 export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => {
-  const [activeTab, setActiveTab] = useState<'header' | 'queryParams' | 'body'>('header');
   const styles = useStyles2(getMultiHttpFormStyles);
   const [urls, setUrls] = useState<any[]>([]);
   const [errorMessages, setErrorMessages] = useState<any[]>();
@@ -195,13 +194,12 @@ export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => 
                       </HorizontalGroup>
 
                       <TabSection
-                        activeTab={activeTab}
+                        key={index}
                         isEditor={isEditor}
                         errors={errors}
                         register={register}
                         unregister={unregister}
                         index={index}
-                        onChange={setActiveTab}
                         trigger={trigger}
                       />
                     </VerticalGroup>
