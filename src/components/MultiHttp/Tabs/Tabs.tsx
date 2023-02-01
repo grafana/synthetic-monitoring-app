@@ -39,7 +39,6 @@ interface RequestTabsProps {
   trigger?: any;
   unregister?: any;
   activeTab: 'header' | 'queryParams' | 'body';
-  onChange: (tab: RequestTabsProps['activeTab']) => void;
 }
 
 export const HeadersTab = ({ isEditor, register, unregister, trigger, label = 'header', errors, index }: Props) => {
@@ -247,12 +246,10 @@ export const RequestTabs = ({
   register,
   unregister,
   index,
-  onChange,
   trigger,
 }: RequestTabsProps) => {
   switch (activeTab) {
     case 'header':
-      onChange('header');
       return (
         <HeadersTab
           unregister={unregister}
@@ -265,10 +262,8 @@ export const RequestTabs = ({
         />
       );
     case 'body':
-      onChange('body');
       return <BodyTab isEditor={isEditor} index={index} errors={errors} register={register} />;
     case 'queryParams':
-      onChange('queryParams');
       return (
         <QueryParamsTab
           register={register}
@@ -280,7 +275,6 @@ export const RequestTabs = ({
         />
       );
     default:
-      onChange('header');
       return (
         <HeadersTab
           unregister={unregister}

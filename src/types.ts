@@ -234,7 +234,15 @@ export interface MultiHttpSettings {
   entries: MultiHttpEntry[];
 }
 export interface MultiHttpSettingsFormValues {
-  entries: MultiHttpEntry[];
+  entries: MultiHttpEntryFormValues[];
+}
+
+export interface MultiHttpEntryFormValues extends Omit<MultiHttpEntry, 'request'> {
+  request: MultiHttpRequestFormValues;
+}
+
+export interface MultiHttpRequestFormValues extends Omit<RequestProps, 'method'> {
+  method: SelectableValue<RequestMethods>;
 }
 
 export interface TracerouteSettings {
