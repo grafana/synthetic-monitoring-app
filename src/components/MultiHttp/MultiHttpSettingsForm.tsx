@@ -26,7 +26,6 @@ interface Props {
 export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => {
   const [activeTab, setActiveTab] = useState<'header' | 'queryParams' | 'body'>('header');
   const styles = useStyles2(getMultiHttpFormStyles);
-  const [showRequest, setShowRequest] = useState<Array<{ [key: number]: boolean }>>([]);
   const [urls, setUrls] = useState<any[]>([]);
   const [errorMessages, setErrorMessages] = useState<any[]>();
 
@@ -132,25 +131,7 @@ export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => 
                 const urlForIndex = watch(`settings.multihttp.entries[${index}].request.url`);
 
                 return (
-                  <MultiHttpCollapse
-                    label={urlForIndex}
-                    key={field.id}
-                    onToggle={(idx: number) => {
-                      setShowRequest((prevReqs) => {
-                        return prevReqs.map((req, i) => {
-                          if (i === idx) {
-                            return { [i]: !!!req[i] };
-                          } else {
-                            return req;
-                          }
-                        });
-                      });
-                    }}
-                    collapsible
-                    className={styles.collapseTarget}
-                    index={index}
-                    item={showRequest.find((i, ind) => ind === index)}
-                  >
+                  <MultiHttpCollapse label={urlForIndex} key={field.id} className={styles.collapseTarget}>
                     <VerticalGroup height={'100%'}>
                       <HorizontalGroup spacing="lg" align="center">
                         <Controller
@@ -234,13 +215,6 @@ export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => 
                 icon="plus"
                 onClick={() => {
                   append({});
-
-                  if (showRequest && showRequest.length > 0) {
-                    const newFinalIndex = showRequest.length;
-                    setShowRequest([...showRequest, { [newFinalIndex]: true }]);
-                  } else {
-                    setShowRequest([{ [0]: true }]);
-                  }
                 }}
                 className={styles.addRequestButton}
               >
