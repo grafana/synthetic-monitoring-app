@@ -1,7 +1,7 @@
 import React, { useState, PropsWithChildren } from 'react';
-import { Icon, useTheme } from '@grafana/ui';
+import { Icon, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
-import { GrafanaTheme } from '@grafana/data';
+import { GrafanaTheme2 } from '@grafana/data';
 
 interface Props {
   label: string | JSX.Element;
@@ -10,8 +10,7 @@ interface Props {
 }
 
 export const MultiHttpCollapse = ({ label, children, className }: PropsWithChildren<Props>) => {
-  const theme = useTheme();
-  const styles = getStyles(theme);
+  const styles = useStyles2(getStyles);
   const [isOpen, setIsOpen] = useState<boolean>(true);
 
   return (
@@ -32,13 +31,13 @@ export const MultiHttpCollapse = ({ label, children, className }: PropsWithChild
   );
 };
 
-const getStyles = (theme: GrafanaTheme) => ({
+const getStyles = (theme: GrafanaTheme2) => ({
   container: css`
     border-left: none;
     border-right: none;
     border-bottom: none;
     margin-bottom: 0;
-    padding: ${theme.spacing.md} 0;
+    padding: ${theme.spacing(2)} 0;
   `,
   header: css`
     display: flex;
@@ -47,17 +46,17 @@ const getStyles = (theme: GrafanaTheme) => ({
     cursor: pointer;
   `,
   headerExpanded: css`
-    padding-bottom: ${theme.spacing.sm};
+    padding-bottom: ${theme.spacing(1)};
   `,
   headerIcon: css`
-    margin-right: ${theme.spacing.sm};
+    margin-right: ${theme.spacing(1)};
   `,
   label: css`
-    margin-right: ${theme.spacing.sm};
-    font-size: ${theme.typography.heading.h4};
+    margin-right: ${theme.spacing(1)};
+    font-size: ${theme.typography.h4.fontSize};
   `,
   body: css`
-    padding-top: ${theme.spacing.sm};
+    padding-top: ${theme.spacing(1)};
   `,
   hidden: css`
     display: none;
