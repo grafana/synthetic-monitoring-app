@@ -1,7 +1,4 @@
-import isEmpty from 'lodash';
-import { UseFormGetValues, FieldValues } from 'react-hook-form';
 import { CheckType, Check, AlertSensitivity, MultiHttpSettings } from 'types';
-import { MultiHttpEntry, KeyTypes } from 'components/MultiHttp/MultiHttpTypes';
 import { fallbackSettings } from 'components/constants';
 
 export const multiHttpFallbackCheck = {
@@ -18,46 +15,3 @@ export const multiHttpFallbackCheck = {
   },
   basicMetricsOnly: true,
 } as Check;
-
-const removeEmptyFields = (getValues: any) => {
-  const entries = getValues().settings.multihttp;
-  getValues().settings.multihttp.entries.forEach((ent: MultiHttpEntry) => {
-    const request = ent.request;
-
-    Object.keys(request).forEach((k) => {
-      const key = k as KeyTypes;
-      if (request[key] === '' || request[key] == null || isEmpty(request[key])) {
-        delete request[key];
-      } else if (typeof request[key] === 'object') {
-        return Object.keys(request[key] as unknown as any).map((k) => {
-          // @ts-ignore
-          return Object.values(request[key][k]).forEach((i: any) => {
-            // @ts-ignore
-            return i.length === 0 ? delete request[key][k] : request[requestKey][k];
-          });
-        });
-      }
-
-      return;
-    });
-    return request;
-  });
-  return entries;
-};
-
-export const getUpdatedCheck = (getValues: UseFormGetValues<FieldValues>) => {
-  const prunedFields = removeEmptyFields(getValues);
-
-  return {
-    alertSensitivity: getValues().alertSensitivity.value,
-    basicMetricsOnly: getValues().basicMetricsOnly,
-    enabled: getValues().enabled,
-    frequency: 120000,
-    job: getValues().job,
-    settings: { multihttp: prunedFields },
-    labels: getValues().labels,
-    probes: getValues().probes,
-    target: getValues().settings.multihttp.entries[0].request.url, // TODO: FIX. Should be dynamic index
-    timeout: 3000,
-  } as Check;
-};

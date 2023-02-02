@@ -259,14 +259,6 @@ const getTracerouteSettingsFormValues = (settings: Settings): TracerouteSettings
   };
 };
 
-const getMultiHttpSettingsFormValues = (settings: Settings): MultiHttpSettingsFormValues => {
-  const multiHttpSettings = settings.multihttp ?? (fallbackSettings(CheckType.MULTI_HTTP) as MultiHttpSettings);
-
-  return {
-    entries: multiHttpSettings.entries,
-  };
-};
-
 const getFormSettingsForCheck = (settings: Settings): SettingsFormValues => {
   const type = checkType(settings);
   switch (type) {
@@ -279,7 +271,7 @@ const getFormSettingsForCheck = (settings: Settings): SettingsFormValues => {
     case CheckType.Traceroute:
       return { traceroute: getTracerouteSettingsFormValues(settings) };
     case CheckType.MULTI_HTTP:
-      return { multihttp: getMultiHttpSettingsFormValues(settings) };
+      return { multihttp: getMultiHttpFormValues(settings) };
     case CheckType.PING:
     default:
       return { ping: getPingSettingsFormValues(settings) };
@@ -329,7 +321,7 @@ export const getDefaultValuesFromCheck = (check: Check = fallbackCheck): CheckFo
   };
 };
 
-function getValueFromSelectable<T>(selectable: SelectableValue<T> | undefined): T | undefined {
+export function getValueFromSelectable<T>(selectable: SelectableValue<T> | undefined): T | undefined {
   if (!selectable?.value) {
     return undefined;
   }
@@ -471,14 +463,27 @@ const getHttpSettings = (
   };
 };
 
-const getMultiHttpSettings = (settings: MultiHttpSettingsFormValues): MultiHttpSettings => {
-  console.log('settings', settings);
+const getMultiHttpSettings = (settings?: MultiHttpSettingsFormValues): MultiHttpSettings => {
+  if (!settings) {
+    return fallbackSettings(CheckType.MULTI_HTTP) as MultiHttpSettings;
+  }
 
-  return settings;
+  return {
+    entries: settings.entries?.map((entry) => {
+      return {
+        ...entry,
+        request: {
+          ...entry.request,
+          method: getValueFromSelectable(entry.request.method) ?? 'GET',
+        },
+      };
+    }),
+  };
 };
 
 const getMultiHttpFormValues = (settings: Settings): MultiHttpSettingsFormValues => {
   const multiHttpSettings = settings.multihttp ?? (fallbackSettings(CheckType.MULTI_HTTP) as MultiHttpSettings);
+
   return {
     entries: multiHttpSettings.entries?.map((entry) => {
       return {
@@ -617,7 +622,7 @@ const getSettingsFromFormValues = (formValues: Partial<CheckFormValues>, default
     case CheckType.HTTP:
       return { http: getHttpSettings(formValues.settings?.http, defaultValues.settings.http) };
     case CheckType.MULTI_HTTP:
-      return { multihttp: formValues.settings?.multihttp };
+      return { multihttp: getMultiHttpSettings(formValues.settings?.multihttp) };
     case CheckType.TCP:
       return { tcp: getTcpSettings(formValues.settings?.tcp, defaultValues.settings.tcp) };
     case CheckType.DNS:
