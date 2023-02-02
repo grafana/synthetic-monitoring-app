@@ -154,7 +154,7 @@ export const BodyTab = ({ index, isEditor, errors, register }: Props) => {
   );
 };
 
-const QueryParamsTab = ({ register, unregister, index, errors, trigger, label, check }: Props) => {
+const QueryParamsTab = ({ register, unregister, index, errors, trigger, label }: Props) => {
   const { control } = useFormContext();
   const { fields, append, remove } = useFieldArray({
     control,
