@@ -5,7 +5,6 @@ import { GrafanaTheme2 } from '@grafana/data';
 
 interface Props {
   label: string | JSX.Element;
-  onToggle?: (index: number) => void;
   className?: string | string[];
 }
 
@@ -36,8 +35,8 @@ const getStyles = (theme: GrafanaTheme2) => ({
     border-left: none;
     border-right: none;
     border-bottom: none;
-    margin-bottom: 0;
-    padding: ${theme.spacing(2)} 0;
+    margin-bottom: 10px;
+    padding: ${theme.spacing(2)};
   `,
   header: css`
     display: flex;
