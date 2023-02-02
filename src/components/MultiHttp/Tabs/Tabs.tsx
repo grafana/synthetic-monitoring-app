@@ -154,9 +154,12 @@ export const BodyTab = ({ index, isEditor, errors, register }: Props) => {
   );
 };
 
-const QueryParamsTab = ({ register, unregister, index, errors, trigger, label }: Props) => {
+const QueryParamsTab = ({ register, unregister, index, errors, trigger, label, check }: Props) => {
   const { control } = useFormContext();
-  const { fields, append, remove } = useFieldArray({ control, name });
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: `settings.multihttp.entries[${index}].request.queryString`,
+  });
   const styles = useStyles2(getStyles);
 
   return (
