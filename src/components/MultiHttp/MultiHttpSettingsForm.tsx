@@ -1,14 +1,14 @@
-import React, { useCallback, useContext, useState, useMemo } from 'react';
+import React, { useContext, useState, useMemo, useCallback } from 'react';
 import { FormProvider, useForm, Controller, useFieldArray, useFormContext } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 import { trackEvent } from 'analytics';
 
 import { Alert, Button, Field, VerticalGroup, Input, Select, useStyles2, HorizontalGroup } from '@grafana/ui';
-import { getDefaultValuesFromCheck } from 'components/CheckEditor/checkFormTransformations';
+import { getDefaultValuesFromCheck, getCheckFromFormValues } from 'components/CheckEditor/checkFormTransformations';
 import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
 import { methodOptions } from 'components/constants';
 import { MultiHttpCollapse } from 'components/MultiHttp/MultiHttpCollapse';
-import { getUpdatedCheck, multiHttpFallbackCheck } from './consts';
+import { multiHttpFallbackCheck } from './consts';
 import { Subheader } from 'components/Subheader';
 import { validateTarget } from 'validation';
 import CheckTarget from 'components/CheckTarget';
@@ -55,23 +55,31 @@ export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => 
   const formMethods = useForm<CheckFormValues>({ defaultValues, mode: 'onChange' });
   const selectedCheckType = watch('checkType')?.value ?? CheckType.MULTI_HTTP;
   const onSubmit = useCallback(async () => {
+    const checkValues = getValues() as CheckFormValues;
+    const updatedCheck = getCheckFromFormValues(checkValues, defaultValues);
+
+    const updatedCheckWithTempTarget = {
+      ...updatedCheck,
+      target: getValues().settings.multihttp.entries[0].request.url, // TODO: delete, when BE is updated to no longer need this
+    } as Check;
+
     try {
       if (check?.id) {
         trackEvent('editCheckSubmit');
         await api?.updateCheck({
           id: check.id,
           tenantId: check.tenantId,
-          ...getUpdatedCheck(getValues),
+          ...updatedCheckWithTempTarget,
         });
       } else {
         trackEvent('addNewCheckSubmit');
-        await api?.addCheck(getUpdatedCheck(getValues));
+        await api?.addCheck(updatedCheckWithTempTarget);
       }
       onReturn && onReturn(true);
     } catch (err: any) {
       setErrorMessages([err?.data?.err || err?.data?.msg]);
     }
-  }, [api, getValues, onReturn, check.tenantId, check.id, setErrorMessages]);
+  }, [api, getValues, onReturn, check.tenantId, check.id, setErrorMessages, defaultValues]);
 
   const clearAlert = () => {
     setErrorMessages([]);
@@ -220,13 +228,7 @@ export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => 
               </Button>
 
               {errorMessages && errorMessages?.length > 0 && getErrorMessages()}
-              <Button
-                type="button"
-                onClick={onSubmit}
-                fullWidth={true}
-                className={styles.submitMultiHttpButton}
-                size="md"
-              >
+              <Button onClick={onSubmit} fullWidth={true} className={styles.submitMultiHttpButton} size="md">
                 Submit
               </Button>
             </form>
