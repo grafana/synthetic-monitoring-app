@@ -1,7 +1,9 @@
 import React, { useContext, useState, useEffect, useCallback } from 'react';
 import { Check, ROUTES } from 'types';
 import { CheckEditor } from 'components/CheckEditor';
+import { ChooseCheckType } from 'components/ChooseCheckType';
 import { CheckList } from 'components/CheckList';
+import { MultiHttpSettingsForm } from 'components/MultiHttp/MultiHttpSettingsForm';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
 import { Switch, Route, useRouteMatch } from 'react-router-dom';
@@ -49,6 +51,12 @@ export function CheckRouter() {
         </Route>
         <Route path={`${path}/edit/:id`} exact>
           <CheckEditor onReturn={returnToList} checks={checks} />
+        </Route>
+        <Route path={`${path}/type`} exact>
+          <ChooseCheckType onReturn={returnToList} checks={checks} />
+        </Route>
+        <Route path={`${path}/new-multi`} exact>
+          <MultiHttpSettingsForm onReturn={returnToList} checks={checks} />
         </Route>
       </Switch>
     </SuccessRateContextProvider>
