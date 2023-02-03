@@ -35,7 +35,6 @@ import { GrafanaTheme, OrgRole } from '@grafana/data';
 import { CheckUsage } from '../CheckUsage';
 import { CheckFormAlert } from 'components/CheckFormAlert';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { trackEvent, trackException } from 'analytics';
 import { useParams, useHistory } from 'react-router-dom';
 import { PluginPage } from 'components/PluginPage';
@@ -193,7 +192,7 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
               description={'Metrics are reduced by default'}
             />
             <CheckUsage />
-            <CheckSettings typeOfCheck={selectedCheckType?.value} isEditor={isEditor} />
+            <CheckSettings typeOfCheck={selectedCheckType.value ?? CheckType.PING} isEditor={isEditor} />
             <CheckFormAlert />
             <HorizontalGroup height="40px">
               <Button type="submit" disabled={formMethods.formState.isSubmitting || submitting}>
