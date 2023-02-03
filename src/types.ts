@@ -532,7 +532,7 @@ export enum ROUTES {
   NewCheck = 'checks/new',
   NewCheckMulti = 'checks/new-multi',
   EditCheck = 'checks/edit',
-  ChooseCheckType = 'checks/type',
+  ChooseCheckType = 'checks/choose-type',
 }
 
 export interface CheckPageParams {

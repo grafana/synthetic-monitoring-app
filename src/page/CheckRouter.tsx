@@ -52,7 +52,7 @@ export function CheckRouter() {
         <Route path={`${path}/edit/:id`} exact>
           <CheckEditor onReturn={returnToList} checks={checks} />
         </Route>
-        <Route path={`${path}/type`} exact>
+        <Route path={`${path}/choose-type`} exact>
           <ChooseCheckType onReturn={returnToList} checks={checks} />
         </Route>
         <Route path={`${path}/new-multi`} exact>

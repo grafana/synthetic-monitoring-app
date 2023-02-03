@@ -6,7 +6,7 @@ import { trackEvent } from 'analytics';
 import { Alert, Button, Field, VerticalGroup, Input, Select, useStyles2, Legend, HorizontalGroup } from '@grafana/ui';
 import { getDefaultValuesFromCheck, getCheckFromFormValues } from 'components/CheckEditor/checkFormTransformations';
 import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
-import { methodOptions } from 'components/constants';
+import { METHOD_OPTIONS } from 'components/constants';
 import { MultiHttpCollapse } from 'components/MultiHttp/MultiHttpCollapse';
 import { multiHttpFallbackCheck } from './consts';
 import { Subheader } from 'components/Subheader';
@@ -191,7 +191,7 @@ export const MultiHttpSettingsForm = ({ isEditor = true, checks, onReturn }: Pro
                                 return (
                                   <Select
                                     {...field}
-                                    options={methodOptions}
+                                    options={METHOD_OPTIONS}
                                     onChange={(val) => onChange(val.value)}
                                     value={value}
                                   />

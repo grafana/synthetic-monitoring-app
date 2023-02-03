@@ -24,7 +24,7 @@ import {
   HTTP_REGEX_VALIDATION_OPTIONS,
   HTTP_SSL_OPTIONS,
   IP_OPTIONS,
-  methodOptions,
+  METHOD_OPTIONS,
 } from 'components/constants';
 
 import { LabelField } from 'components/LabelField';
@@ -188,7 +188,7 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
             error={errors?.settings?.http?.method}
           >
             <Controller
-              render={({ field }) => <Select {...field} options={methodOptions} />}
+              render={({ field }) => <Select {...field} options={METHOD_OPTIONS} />}
               rules={{ required: true }}
               name="settings.http.method"
             />
