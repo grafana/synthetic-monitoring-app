@@ -13,8 +13,6 @@ export function useNavigation() {
     if (external) {
       getLocationSrv().update({ partial: false, path: `/${normalized}`, query: queryParams });
     } else {
-      console.log('queryParams', queryParams, 'additionalState', additionalState);
-
       const paramString = Object.entries(queryParams ?? {}).reduce(
         (acc, [key, val]) => acc.concat(`&${key}=${val}`),
         ''
