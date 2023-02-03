@@ -1,5 +1,5 @@
 import React, { useContext, useState, useMemo, useCallback } from 'react';
-import { FormProvider, useForm, Controller, useFieldArray, useFormContext } from 'react-hook-form';
+import { FormProvider, useForm, Controller, useFieldArray, FieldValues } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 import { trackEvent } from 'analytics';
 
@@ -27,22 +27,6 @@ export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => 
   const styles = useStyles2(getMultiHttpFormStyles);
   const [urls, setUrls] = useState<any[]>([]);
   const [errorMessages, setErrorMessages] = useState<any[]>();
-
-  const {
-    register,
-    unregister,
-    watch,
-    control,
-    getValues,
-    handleSubmit,
-    trigger,
-    formState: { errors },
-  } = useFormContext();
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: 'settings.multihttp.entries',
-  });
-
   let check: Check = multiHttpFallbackCheck;
   const { id } = useParams<CheckPageParams>();
   if (id) {
@@ -52,15 +36,33 @@ export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => 
     instance: { api },
   } = useContext(InstanceContext);
   const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
-  const formMethods = useForm<CheckFormValues>({ defaultValues, mode: 'onChange' });
-  const selectedCheckType = watch('checkType')?.value ?? CheckType.MULTI_HTTP;
+  const {
+    register,
+    unregister,
+    watch,
+    control,
+    getValues,
+    handleSubmit,
+    trigger,
+    formState: { errors },
+  } = useForm<CheckFormValues | FieldValues>({ defaultValues });
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: 'settings.multihttp.entries',
+  });
+
+  const formMethods = useForm<CheckFormValues | FieldValues>({ defaultValues, mode: 'onChange' });
+  const selectedCheckType = CheckType.MULTI_HTTP;
   const onSubmit = useCallback(async () => {
     const checkValues = getValues() as CheckFormValues;
     const updatedCheck = getCheckFromFormValues(checkValues, defaultValues);
-
+    // All other types of SM checks so far require a `target` to execute, at the root of the submitted object.
+    // This is not the case for multihttp checks, whose targets are called `url`s and are nested under
+    // `settings.multihttp?.entries[0].request.url`. Yet, the BE still requires a root-level `target`, even in
+    // the case of multihttp, even though it wont be used. So we will pass this safety `target`.
     const updatedCheckWithTempTarget = {
       ...updatedCheck,
-      target: getValues().settings.multihttp.entries[0].request.url, // TODO: delete, when BE is updated to no longer need this
+      target: getValues().settings.multihttp?.entries[0].request.url, // TODO: delete, if BE is updated to no longer need this
     } as Check;
 
     try {
@@ -101,39 +103,39 @@ export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => 
 
   return (
     <>
-      <hr className={styles.breakLine} />
-      <Subheader>Check job name</Subheader>
-      <Field disabled={!isEditor} invalid={Boolean(errors.job)} error={errors.job?.message}>
-        <Input
-          {...register('job', {
-            required: true,
-            minLength: 1,
-          })}
-          type="text"
-          placeholder="Unnamed request"
-          className={styles.jobNameInput}
-        />
-      </Field>
-      <ProbeOptions
-        {...register('probes' as const, {
-          required: true,
-          minLength: 1,
-        })}
-        isEditor={isEditor}
-        timeout={check?.timeout ?? multiHttpFallbackCheck.timeout}
-        frequency={check?.frequency ?? multiHttpFallbackCheck.frequency}
-        probes={check?.probes ?? multiHttpFallbackCheck.probes}
-      />
+      <VerticalGroup>
+        <FormProvider {...formMethods}>
+          <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
+            <hr className={styles.breakLine} />
+            <Subheader>Check job name</Subheader>
+            <Field disabled={!isEditor} invalid={Boolean(errors.job)} error={errors.job?.message}>
+              <Input
+                {...register('job', {
+                  required: true,
+                  minLength: 1,
+                })}
+                type="text"
+                placeholder="Unnamed request"
+                className={styles.jobNameInput}
+              />
+            </Field>
+            <ProbeOptions
+              {...register('probes' as const, {
+                required: true,
+                minLength: 1,
+              })}
+              isEditor={isEditor}
+              timeout={check?.timeout ?? multiHttpFallbackCheck.timeout}
+              frequency={check?.frequency ?? multiHttpFallbackCheck.frequency}
+              probes={check?.probes ?? multiHttpFallbackCheck.probes}
+            />
 
-      <hr />
-      <h3>Requests</h3>
-      <Field label="At least one target HTTP is required. Let's get started.">
-        <></>
-      </Field>
-      <div className={styles.request}>
-        <VerticalGroup>
-          <FormProvider {...formMethods}>
-            <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
+            <hr />
+            <h3>Requests</h3>
+            <Field label="At least one target HTTP is required. Let's get started.">
+              <></>
+            </Field>
+            <div className={styles.request}>
               {fields.map((field, index) => {
                 const urlForIndex = watch(`settings.multihttp.entries[${index}].request.url`);
 
@@ -142,7 +144,7 @@ export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => 
                     <VerticalGroup height={'100%'}>
                       <HorizontalGroup spacing="lg" align="center">
                         <Controller
-                          {...register(`settings.multihttp.entries[${index}].request.url`)}
+                          name={`settings.multihttp.entries[${index}].request.url` as const}
                           control={control}
                           rules={{
                             required: true,
@@ -159,8 +161,8 @@ export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => 
                                 {...field}
                                 value={field.value || Object.values(urls[index] || {})}
                                 typeOfCheck={selectedCheckType}
-                                invalid={Boolean(errors.url)}
-                                error={errors.url?.message}
+                                invalid={Boolean(errors?.settings?.multihttp?.entries[index]?.request?.url)}
+                                error={errors?.settings?.multihttp?.entries[index]?.request?.url?.message}
                                 disabled={!isEditor}
                               />
                             );
@@ -231,10 +233,10 @@ export const MultiHttpSettingsForm = ({ isEditor, checks, onReturn }: Props) => 
               <Button onClick={onSubmit} fullWidth={true} className={styles.submitMultiHttpButton} size="md">
                 Submit
               </Button>
-            </form>
-          </FormProvider>
-        </VerticalGroup>
-      </div>
+            </div>
+          </form>
+        </FormProvider>
+      </VerticalGroup>
     </>
   );
 };

@@ -132,44 +132,41 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
 
   return (
     <PluginPage pageNav={{ text: check?.job ? check.job : 'Add check', description: 'Check configuration' }}>
-      <FormProvider {...formMethods}>
-        <form onSubmit={formMethods.handleSubmit(onSubmit)}>
-          {!config.featureToggles.topnav && <Legend>{check?.id ? 'Edit Check' : 'Add Check'}</Legend>}
-          <Subheader>Check Details</Subheader>
-          <Field label="Check type" disabled={check?.id ? true : false}>
-            <Controller
-              name="checkType"
-              control={formMethods.control}
-              render={({ field }) => (
-                <Select
-                  {...field}
-                  placeholder="Check type"
-                  options={
-                    !tracerouteEnabled
-                      ? CHECK_TYPE_OPTIONS.filter(({ value }) => value !== CheckType.Traceroute)
-                      : !multiHttpEnabled
-                      ? CHECK_TYPE_OPTIONS.filter(({ value }) => value !== CheckType.MULTI_HTTP)
-                      : CHECK_TYPE_OPTIONS
-                  }
-                  width={30}
-                  disabled={check?.id ? true : false}
-                />
-              )}
-            />
-          </Field>
-          <HorizontalCheckboxField
-            disabled={!isEditor}
-            name="enabled"
-            id="check-form-enabled"
-            label="Enabled"
-            description="If a check is enabled, metrics and logs are published to your Grafana Cloud stack."
+      <>
+        {!config.featureToggles.topnav && <Legend>{check?.id ? 'Edit Check' : 'Add Check'}</Legend>}
+        <Subheader>Check Details</Subheader>
+        <Field label="Check type" disabled={check?.id ? true : false}>
+          <Controller
+            name="checkType"
+            control={formMethods.control}
+            render={({ field }) => (
+              <Select
+                {...field}
+                placeholder="Check type"
+                options={
+                  !tracerouteEnabled
+                    ? CHECK_TYPE_OPTIONS.filter(({ value }) => value !== CheckType.Traceroute)
+                    : !multiHttpEnabled
+                    ? CHECK_TYPE_OPTIONS.filter(({ value }) => value !== CheckType.MULTI_HTTP)
+                    : CHECK_TYPE_OPTIONS
+                }
+                width={30}
+                disabled={check?.id ? true : false}
+              />
+            )}
           />
+        </Field>
 
-          {/* Multi-http checks use a separate form because it doesnt use blackbox exporter and the
-              data shape looks different, so if it's a multi-http check, we send them elsewhere */}
-          {selectedCheckType !== CheckType.MULTI_HTTP ? (
-            <>
-              {/* Standard Form */}
+        {selectedCheckType !== CheckType.MULTI_HTTP ? (
+          <FormProvider {...formMethods}>
+            <form onSubmit={formMethods.handleSubmit(onSubmit)}>
+              <HorizontalCheckboxField
+                disabled={!isEditor}
+                name="enabled"
+                id="check-form-enabled"
+                label="Enabled"
+                description="If a check is enabled, metrics and logs are published to your Grafana Cloud stack."
+              />
               <Field
                 label="Job name"
                 description={'Name used for job label (in metrics it will appear as `jobName=X`)'}
@@ -287,17 +284,16 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
                   </Alert>
                 </div>
               )}
-              {/* End Standard Form */}
-            </>
-          ) : (
-            <>
-              {/* Begin K6 MultiHttp Form */}
-              <MultiHttpSettingsForm isEditor={isEditor} onReturn={onReturn} />
-              {/* End K6 MultiHttp Form */}
-            </>
-          )}
-        </form>
-      </FormProvider>
+            </form>
+          </FormProvider>
+        ) : (
+          <>
+            {/* Begin K6 MultiHttp Form */}
+            <MultiHttpSettingsForm isEditor={isEditor} onReturn={onReturn} />
+            {/* End K6 MultiHttp Form */}
+          </>
+        )}
+      </>
       <CheckTestResultsModal
         isOpen={isTestModalOpen}
         onDismiss={() => {

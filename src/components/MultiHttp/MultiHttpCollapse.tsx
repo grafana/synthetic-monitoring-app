@@ -4,7 +4,7 @@ import { css, cx } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
 
 interface Props {
-  label: string | JSX.Element;
+  label: string;
   className?: string | string[];
 }
 
