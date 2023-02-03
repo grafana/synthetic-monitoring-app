@@ -395,7 +395,7 @@ export function fallbackSettings(t: CheckType): Settings {
 
 export const PLUGIN_URL_PATH = '/a/grafana-synthetic-monitoring-app/';
 
-export const methodOptions = [
+export const METHOD_OPTIONS = [
   {
     label: 'GET',
     value: HttpMethod.GET,

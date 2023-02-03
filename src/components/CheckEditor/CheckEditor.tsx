@@ -171,7 +171,7 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
               render={({ field }) => (
                 <CheckTarget
                   {...field}
-                  typeOfCheck={selectedCheckType}
+                  typeOfCheck={selectedCheckType.value}
                   invalid={Boolean(formMethods.formState.errors.target)}
                   error={formMethods.formState.errors.target?.message}
                   disabled={!isEditor}
@@ -193,7 +193,7 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
               description={'Metrics are reduced by default'}
             />
             <CheckUsage />
-            <CheckSettings typeOfCheck={selectedCheckType} isEditor={isEditor} />
+            <CheckSettings typeOfCheck={selectedCheckType?.value} isEditor={isEditor} />
             <CheckFormAlert />
             <HorizontalGroup height="40px">
               <Button type="submit" disabled={formMethods.formState.isSubmitting || submitting}>

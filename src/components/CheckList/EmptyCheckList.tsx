@@ -11,7 +11,7 @@ const EmptyCheckList = () => {
       severity="info"
       title="Grafana Cloud Synthetic Monitoring"
       buttonContent={<span>New Check</span>}
-      onRemove={(event: React.MouseEvent) => navigate(ROUTES.NewCheck)}
+      onRemove={(event: React.MouseEvent) => navigate(ROUTES.ChooseCheckType)}
     >
       This account does not currently have any checks configured. Click the New Check button to start monitoring your
       services with Grafana Cloud, or{' '}
