@@ -437,7 +437,7 @@ export const CheckList = ({ instance, checks, onCheckUpdate }: Props) => {
               >
                 Set Thresholds
               </Button>
-              <Button variant="primary" onClick={() => navigate(ROUTES.NewCheck)} type="button">
+              <Button variant="primary" onClick={() => navigate(ROUTES.ChooseCheckType)} type="button">
                 Add new check
               </Button>
             </>

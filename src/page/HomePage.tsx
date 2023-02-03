@@ -238,7 +238,7 @@ const HomePage = () => {
             Read more about setting up checks {'>'}
           </a>
           <div className={styles.actionContainer}>
-            <LinkButton variant="secondary" onClick={() => navigate(ROUTES.NewCheck)}>
+            <LinkButton variant="secondary" onClick={() => navigate(ROUTES.ChooseCheckType)}>
               Create a check
             </LinkButton>
           </div>
