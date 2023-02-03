@@ -45,13 +45,7 @@ export function ChooseCheckType({ checks }: Props) {
     : CHECK_TYPE_OPTIONS;
 
   React.useEffect(() => {
-    selectedCheckType &&
-      navigate(
-        selectedCheckType.value === CheckType.MULTI_HTTP ? ROUTES.NewCheckMulti : ROUTES.NewCheck,
-        {},
-        false,
-        selectedCheckType
-      );
+    selectedCheckType && navigate(`${ROUTES.NewCheck}/${selectedCheckType.value}`, {}, false, selectedCheckType);
   });
 
   return (

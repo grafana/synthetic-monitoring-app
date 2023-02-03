@@ -524,7 +524,6 @@ export enum ROUTES {
   Alerts = 'alerts',
   Checks = 'checks',
   NewCheck = 'checks/new',
-  NewCheckMulti = 'checks/new-multi',
   EditCheck = 'checks/edit',
   Config = 'config',
   ChooseCheckType = 'checks/choose-type',

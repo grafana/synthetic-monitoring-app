@@ -1,12 +1,12 @@
 import React, { useContext, useState, useEffect, useCallback } from 'react';
-import { Check, ROUTES } from 'types';
+import { Check, CheckType, ROUTES } from 'types';
 import { CheckEditor } from 'components/CheckEditor';
 import { ChooseCheckType } from 'components/ChooseCheckType';
 import { CheckList } from 'components/CheckList';
 import { MultiHttpSettingsForm } from 'components/MultiHttp/MultiHttpSettingsForm';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
-import { Switch, Route, useRouteMatch } from 'react-router-dom';
+import { Switch, Route, useRouteMatch, RouteChildrenProps } from 'react-router-dom';
 import { useNavigation } from 'hooks/useNavigation';
 import { PluginPage } from 'components/PluginPage';
 
@@ -46,17 +46,20 @@ export function CheckRouter() {
         <Route path={path} exact>
           <CheckList instance={instance} checks={checks ?? []} onCheckUpdate={returnToList} />
         </Route>
-        <Route path={`${path}/new`} exact>
-          <CheckEditor onReturn={returnToList} />
+        <Route path={`${path}/new/:checkType`} exact>
+          {({ match }: RouteChildrenProps<{ checkType: string }>) =>
+            match?.params.checkType !== CheckType.MULTI_HTTP ? (
+              <CheckEditor onReturn={returnToList} />
+            ) : (
+              <MultiHttpSettingsForm onReturn={returnToList} checks={checks} />
+            )
+          }
         </Route>
         <Route path={`${path}/edit/:id`} exact>
           <CheckEditor onReturn={returnToList} checks={checks} />
         </Route>
         <Route path={`${path}/choose-type`} exact>
           <ChooseCheckType onReturn={returnToList} checks={checks} />
-        </Route>
-        <Route path={`${path}/new-multi`} exact>
-          <MultiHttpSettingsForm onReturn={returnToList} checks={checks} />
         </Route>
       </Switch>
     </SuccessRateContextProvider>
