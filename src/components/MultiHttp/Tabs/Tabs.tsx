@@ -15,12 +15,12 @@ import {
   useStyles2,
 } from '@grafana/ui';
 import { GrafanaTheme2 } from '@grafana/data';
-// import { headerNameOptions } from 'components/constants';
 import { validateHTTPBody, validateHTTPHeaderValue } from 'validation';
+import { CheckFormValues } from 'types';
 
 interface Props {
   isEditor?: boolean;
-  register: UseFormRegister<FieldValues>;
+  register: UseFormRegister<CheckFormValues | FieldValues>;
   label?: string;
   errors?: any;
   index: number;
@@ -32,7 +32,7 @@ interface Props {
 
 interface RequestTabsProps {
   isEditor?: boolean;
-  register: UseFormRegister<FieldValues>;
+  register: UseFormRegister<CheckFormValues | FieldValues>;
   errors?: any;
   index: number;
   control?: any;
@@ -62,7 +62,6 @@ export const HeadersTab = ({ isEditor, register, unregister, trigger, label = 'h
                   <>
                     <HorizontalGroup key={field.id} spacing="md" align="center" className={styles.headersQueryInputs}>
                       <HorizontalGroup key={field.id} spacing="md" align="center" className={styles.headersQueryInputs}>
-                        {/* TODO: MAKE A SELECT COMPONENT INSTEAD */}
                         <Input
                           {...register(`${headersNamePrefix}.name` as const, {
                             required: true,

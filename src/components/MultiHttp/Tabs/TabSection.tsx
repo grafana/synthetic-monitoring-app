@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { FieldValues, UseFormRegister } from 'react-hook-form';
 import { useStyles2, TabsBar, TabContent, Tab } from '@grafana/ui';
 import { RequestTabs } from './../Tabs/Tabs';
+import { CheckFormValues } from 'types';
 import { getMultiHttpFormStyles } from './../MultiHttpSettingsForm.styles';
 
 type ActiveTabTypes = 'header' | 'queryParams' | 'body';
 interface RequestTabsProps {
   isEditor?: boolean;
-  register: UseFormRegister<FieldValues>;
+  register: UseFormRegister<CheckFormValues | FieldValues>;
   label?: string;
   errors?: any;
   index: number;
