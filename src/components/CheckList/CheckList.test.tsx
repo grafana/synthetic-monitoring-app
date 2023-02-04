@@ -276,7 +276,7 @@ test('clicking add new is handled', async () => {
   renderCheckList();
   const addNewButton = await screen.findByRole('button', { name: 'Add new check' });
   userEvent.click(addNewButton);
-  expect(navigate).toHaveBeenCalledWith(ROUTES.NewCheck);
+  expect(navigate).toHaveBeenCalledWith(ROUTES.ChooseCheckType);
 });
 
 test('select all performs disable action on all visible checks', async () => {

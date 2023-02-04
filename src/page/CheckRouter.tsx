@@ -59,7 +59,7 @@ export function CheckRouter() {
           <CheckEditor onReturn={returnToList} checks={checks} />
         </Route>
         <Route path={`${path}/choose-type`} exact>
-          <ChooseCheckType onReturn={returnToList} checks={checks} />
+          <ChooseCheckType />
         </Route>
       </Switch>
     </SuccessRateContextProvider>

@@ -17,7 +17,6 @@ import {
   CheckListViewType,
   HTTPCompressionAlgo,
   ResponseMatchType,
-  HttpSettings,
   Settings,
   HttpMethod,
 } from 'types';
@@ -193,20 +192,32 @@ export const TIME_UNIT_OPTIONS = [
   },
 ];
 
-export const fallbackCheck = {
-  job: '',
-  target: '',
-  frequency: 60000,
-  timeout: 3000,
-  enabled: true,
-  labels: [],
-  probes: [],
-  alertSensitivity: AlertSensitivity.None,
-  settings: {
-    http: fallbackSettings(CheckType.HTTP) as HttpSettings,
-  },
-  basicMetricsOnly: true,
-} as Check;
+export const fallbackCheck = (checkType: CheckType) => {
+  const fallbackTypeBasedOnCheck = checkType ? fallbackType[checkType] : CheckType.HTTP;
+  return {
+    job: '',
+    target: '',
+    frequency: 60000,
+    timeout: 3000,
+    enabled: true,
+    labels: [],
+    probes: [],
+    alertSensitivity: AlertSensitivity.None,
+    settings: {
+      [checkType]: fallbackTypeBasedOnCheck,
+    },
+    basicMetricsOnly: true,
+  } as Check;
+};
+
+const fallbackType = {
+  http: fallbackSettings(CheckType.HTTP),
+  tcp: fallbackSettings(CheckType.TCP),
+  dns: fallbackSettings(CheckType.DNS),
+  ping: fallbackSettings(CheckType.PING),
+  traceroute: fallbackSettings(CheckType.Traceroute),
+  multihttp: fallbackSettings(CheckType.MULTI_HTTP),
+};
 
 export const colors = {
   darkThemeBlueBackground: '#021B39',

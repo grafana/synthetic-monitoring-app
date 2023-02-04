@@ -153,7 +153,6 @@ export const CheckListItem = ({
 }: Props) => {
   const styles = useStyles(getStyles);
   const checkType = getCheckType(check.settings);
-
   const usage = useUsageCalc(check);
 
   if (viewType === CheckListViewType.List) {

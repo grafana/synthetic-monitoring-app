@@ -1,41 +1,19 @@
-import React, { useState, useMemo, useContext } from 'react';
-import { useParams, useHistory } from 'react-router-dom';
+import React, { useState } from 'react';
 
 import { css } from '@emotion/css';
 import { Card, useStyles2, VerticalGroup } from '@grafana/ui';
-import { GrafanaTheme2, OrgRole } from '@grafana/data';
-import { Check, CheckType, CheckFormValues, FeatureName, CheckPageParams, ROUTES } from 'types';
-import { hasRole } from 'utils';
-import { getDefaultValuesFromCheck } from 'components/CheckEditor/checkFormTransformations';
-import { CHECK_TYPE_OPTIONS, fallbackCheck } from 'components/constants';
-import { useForm } from 'react-hook-form';
-import { InstanceContext } from 'contexts/InstanceContext';
+import { GrafanaTheme2 } from '@grafana/data';
+import { CheckType, CheckFormValues, FeatureName, ROUTES } from 'types';
+import { CHECK_TYPE_OPTIONS } from 'components/constants';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useNavigation } from 'hooks/useNavigation';
 
-interface Props {
-  checks?: Check[];
-  onReturn: (reload: boolean) => void;
-}
-export function ChooseCheckType({ checks }: Props) {
-  const {
-    instance: { api },
-  } = useContext(InstanceContext);
-  const history = useHistory();
-
-  // If we're editing, grab the appropriate check from the list
-  const { id } = useParams<CheckPageParams>();
-  let check: Check = fallbackCheck;
-  if (id) {
-    check = checks?.find((c) => c.id === Number(id)) ?? fallbackCheck;
-  }
+export function ChooseCheckType() {
   const styles = useStyles2(getStyles);
-  const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
   const { isEnabled: tracerouteEnabled } = useFeatureFlag(FeatureName.Traceroute);
   const { isEnabled: multiHttpEnabled } = useFeatureFlag(FeatureName.MultiHttp);
-  const formMethods = useForm<CheckFormValues>({ defaultValues, mode: 'onChange' });
+  // If we're editing, grab the appropriate check from the list
   const [selectedCheckType, setSelectedCheckType] = useState<CheckFormValues['checkType']>();
-  const isEditor = hasRole(OrgRole.Editor);
   const navigate = useNavigation();
 
   const options = !tracerouteEnabled

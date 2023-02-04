@@ -80,19 +80,19 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
   const [testResponse, setTestResponse] = useState<AdHocCheckResponse>();
   const [testRequestInFlight, setTestRequestInFlight] = useState(false);
   const styles = useStyles(getStyles);
-
+  const history = useHistory();
+  const selectedCheckType = (history.location.state as CheckFormValues['checkType']) ?? CheckType.PING;
   // If we're editing, grab the appropriate check from the list
   const { id } = useParams<CheckPageParams>();
-  let check: Check = fallbackCheck;
+  let check: Check = fallbackCheck(selectedCheckType?.value ?? CheckType.PING);
   if (id) {
-    check = checks?.find((c) => c.id === Number(id)) ?? fallbackCheck;
+    check = checks?.find((c) => c.id === Number(id)) ?? fallbackCheck(selectedCheckType?.value ?? CheckType.PING);
   }
 
   const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
   const formMethods = useForm<CheckFormValues>({ defaultValues, mode: 'onChange' });
   const isEditor = hasRole(OrgRole.Editor);
-  const history = useHistory();
-  const selectedCheckType = (history.location.state as CheckFormValues['checkType']) ?? CheckType.PING;
+
   const {
     execute: onSubmit,
     error,
@@ -161,10 +161,8 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
               rules={{
                 required: true,
                 validate: (target) => {
-                  // We have to get refetch the check type value from form state in the validation because the value will be stale if we rely on the the .watch method in the render
-                  const targetFormValue = formMethods.getValues().checkType;
-                  const selectedCheckType = targetFormValue.value as CheckType;
-                  return validateTarget(selectedCheckType, target);
+                  const checkType: CheckType = selectedCheckType.value ?? CheckType.PING;
+                  return validateTarget(checkType, target);
                 },
               }}
               render={({ field }) => (
@@ -181,9 +179,9 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
             <hr className={styles.breakLine} />
             <ProbeOptions
               isEditor={isEditor}
-              timeout={check?.timeout ?? fallbackCheck.timeout}
-              frequency={check?.frequency ?? fallbackCheck.frequency}
-              probes={check?.probes ?? fallbackCheck.probes}
+              timeout={check?.timeout ?? fallbackCheck(selectedCheckType.value as CheckType).timeout}
+              frequency={check?.frequency ?? fallbackCheck(selectedCheckType.value as CheckType).frequency}
+              probes={check?.probes ?? fallbackCheck(selectedCheckType.value as CheckType).probes}
             />
             <HorizontalCheckboxField
               name="publishAdvancedMetrics"
@@ -206,7 +204,7 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
                       variant="secondary"
                       disabled={
                         !formMethods.formState.isValid ||
-                        formMethods.getValues().checkType.value === CheckType.Traceroute ||
+                        selectedCheckType.value === CheckType.Traceroute ||
                         testRequestInFlight
                       }
                       onClick={() => {
