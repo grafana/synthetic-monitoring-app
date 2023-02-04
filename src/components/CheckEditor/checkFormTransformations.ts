@@ -36,7 +36,6 @@ import {
   DNS_RESPONSE_CODES,
   HTTP_SSL_OPTIONS,
   HTTP_REGEX_VALIDATION_OPTIONS,
-  fallbackCheck,
   ALERT_SENSITIVITY_OPTIONS,
   HTTP_COMPRESSION_ALGO_OPTIONS,
   DNS_RESPONSE_MATCH_OPTIONS,
@@ -302,7 +301,7 @@ const getAlertSensitivityValueFromCheck = (sensitivity: string): SelectableValue
   return ALERT_SENSITIVITY_OPTIONS[0];
 };
 
-export const getDefaultValuesFromCheck = (check: Check = fallbackCheck): CheckFormValues => {
+export const getDefaultValuesFromCheck = (check: Check): CheckFormValues => {
   const defaultCheckType = checkType(check.settings);
   const settings = check.id ? getFormSettingsForCheck(check.settings) : getAllFormSettingsForCheck();
 
