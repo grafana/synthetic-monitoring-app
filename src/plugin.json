@@ -77,7 +77,7 @@
     {
       "type": "page",
       "name": "Config",
-      "path": "/plugins/grafana-synthetic-monitoring-app",
+      "path": "/a/grafana-synthetic-monitoring-app/config",
       "addToNav": true
     }
   ],

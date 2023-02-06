@@ -505,6 +505,7 @@ export enum ROUTES {
   Checks = 'checks',
   NewCheck = 'checks/new',
   EditCheck = 'checks/edit',
+  Config = 'config',
 }
 
 export interface CheckPageParams {
