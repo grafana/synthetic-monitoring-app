@@ -665,3 +665,18 @@ export const getCheckFromFormValues = (
     basicMetricsOnly: !formValues.publishAdvancedMetrics,
   };
 };
+
+export function checkTypeParamToCheckType(checkType?: string): CheckType {
+  switch (checkType) {
+    case CheckType.DNS:
+      return CheckType.DNS;
+    case CheckType.HTTP:
+      return CheckType.HTTP;
+    case CheckType.Traceroute:
+      return CheckType.Traceroute;
+    case CheckType.TCP:
+      return CheckType.TCP;
+    default:
+      return CheckType.PING;
+  }
+}
