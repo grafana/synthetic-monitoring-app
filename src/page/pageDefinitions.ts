@@ -32,6 +32,11 @@ const pages: NavModelItem[] = [
     id: 'alerts',
     url: `${PLUGIN_URL_PATH}alerts`,
   },
+  {
+    text: 'Config',
+    id: 'config',
+    url: `${PLUGIN_URL_PATH}config`,
+  },
 ];
 
 export const getNavModel = (logo: string, path: string) => {
