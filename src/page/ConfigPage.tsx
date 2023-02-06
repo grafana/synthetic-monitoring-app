@@ -47,6 +47,10 @@ export function ConfigPage() {
       <br />
       <br />
       <ConfigActions enabled={meta?.enabled} pluginId={meta?.id ?? 'grafana-synthetic-monitoring-app'} />
+      <br />
+      <br />
+      <br />
+      <div>Plugin version: {meta?.info.version}</div>
     </div>
   );
 }
