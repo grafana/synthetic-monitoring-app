@@ -3,7 +3,19 @@ import { FormProvider, useForm, Controller, useFieldArray, FieldValues } from 'r
 import { useParams, useHistory } from 'react-router-dom';
 import { trackEvent } from 'analytics';
 
-import { Alert, Button, Field, VerticalGroup, Input, Select, useStyles2, Legend, HorizontalGroup } from '@grafana/ui';
+import {
+  Alert,
+  Button,
+  ConfirmModal,
+  Field,
+  LinkButton,
+  VerticalGroup,
+  Input,
+  Select,
+  useStyles2,
+  Legend,
+  HorizontalGroup,
+} from '@grafana/ui';
 import { getDefaultValuesFromCheck, getCheckFromFormValues } from 'components/CheckEditor/checkFormTransformations';
 import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
 import { METHOD_OPTIONS } from 'components/constants';
@@ -22,10 +34,10 @@ import { config } from '@grafana/runtime';
 interface Props {
   isEditor?: boolean;
   checks?: Check[];
-  onReturn?: (reload: boolean) => void;
+  onReturn?: (reload?: boolean) => void;
 }
 
-export const MultiHttpSettingsForm = ({ isEditor = true, checks, onReturn }: Props) => {
+export const MultiHttpSettingsForm = ({ isEditor = false, checks, onReturn }: Props) => {
   const styles = useStyles2(getMultiHttpFormStyles);
   const [urls, setUrls] = useState<any[]>([]);
   const [errorMessages, setErrorMessages] = useState<any[]>();
@@ -57,10 +69,11 @@ export const MultiHttpSettingsForm = ({ isEditor = true, checks, onReturn }: Pro
 
   const formMethods = useForm<CheckFormValues | FieldValues>({ defaultValues, mode: 'onChange' });
   const selectedCheckType = CheckType.MULTI_HTTP;
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const onSubmit = useCallback(async () => {
     const checkValues = getValues() as CheckFormValues;
     const updatedCheck = getCheckFromFormValues(checkValues, defaultValues);
-    // All other types of SM checks so far require a `target` to execute, at the root of the submitted object.
+    // All other types of SM checks so far require a `target` to execute at the root of the submitted object.
     // This is not the case for multihttp checks, whose targets are called `url`s and are nested under
     // `settings.multihttp?.entries[0].request.url`. Yet, the BE still requires a root-level `target`, even in
     // the case of multihttp, even though it wont be used. So we will pass this safety `target`.
@@ -105,6 +118,15 @@ export const MultiHttpSettingsForm = ({ isEditor = true, checks, onReturn }: Pro
     );
   };
 
+  const onRemoveCheck = async () => {
+    const id = check?.id;
+    if (!id) {
+      return;
+    }
+    await api?.deleteCheck(id);
+    onReturn && onReturn(true);
+  };
+
   React.useEffect(() => {
     history.location.state && setValue('checkType', history.location.state);
   }, [history, setValue]);
@@ -118,7 +140,7 @@ export const MultiHttpSettingsForm = ({ isEditor = true, checks, onReturn }: Pro
             <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
               <hr className={styles.breakLine} />
               <Subheader>Check job name</Subheader>
-              <Field disabled={!isEditor} invalid={Boolean(errors.job)} error={errors.job?.message}>
+              <Field invalid={Boolean(errors.job)} error={errors.job?.message}>
                 <Input
                   {...register('job', {
                     required: true,
@@ -159,10 +181,7 @@ export const MultiHttpSettingsForm = ({ isEditor = true, checks, onReturn }: Pro
                             rules={{
                               required: true,
                               validate: (url) => {
-                                // We have to get refetch the check type value from form state in the validation because the value will be stale if we rely on the the .watch method in the render
-                                const targetFormValue = getValues().checkType;
-                                const selectedCheckType = targetFormValue.value as CheckType;
-                                return validateTarget(selectedCheckType, url);
+                                return validateTarget(CheckType.MULTI_HTTP, url, check);
                               },
                             }}
                             render={({ field }) => {
@@ -173,7 +192,6 @@ export const MultiHttpSettingsForm = ({ isEditor = true, checks, onReturn }: Pro
                                   typeOfCheck={selectedCheckType}
                                   invalid={Boolean(errors?.settings?.multihttp?.entries[index]?.request?.url)}
                                   error={errors?.settings?.multihttp?.entries[index]?.request?.url?.message}
-                                  disabled={!isEditor}
                                 />
                               );
                             }}
@@ -181,7 +199,6 @@ export const MultiHttpSettingsForm = ({ isEditor = true, checks, onReturn }: Pro
                           <Field
                             label="Request method"
                             description="The HTTP method used"
-                            disabled={!isEditor}
                             invalid={Boolean(errors?.settings?.http?.method)}
                             error={errors?.settings?.http?.method}
                           >
@@ -215,7 +232,6 @@ export const MultiHttpSettingsForm = ({ isEditor = true, checks, onReturn }: Pro
 
                         <TabSection
                           key={index}
-                          isEditor={isEditor}
                           errors={errors}
                           register={register}
                           unregister={unregister}
@@ -240,13 +256,42 @@ export const MultiHttpSettingsForm = ({ isEditor = true, checks, onReturn }: Pro
                 </Button>
 
                 {errorMessages && errorMessages?.length > 0 && getErrorMessages()}
-                <Button onClick={onSubmit} fullWidth={true} className={styles.submitMultiHttpButton} size="md">
-                  Submit
-                </Button>
+                {!isEditor ? (
+                  <Button onClick={onSubmit} fullWidth={true} className={styles.submitMultiHttpButton} size="md">
+                    Submit
+                  </Button>
+                ) : (
+                  <HorizontalGroup height="40px">
+                    <Button type="submit" disabled={formMethods.formState.isSubmitting}>
+                      Save
+                    </Button>
+                    {check?.id && (
+                      <Button
+                        variant="destructive"
+                        onClick={() => setShowDeleteModal(true)}
+                        disabled={!isEditor}
+                        type="button"
+                      >
+                        Delete Check
+                      </Button>
+                    )}
+                    <LinkButton onClick={() => onReturn && onReturn(true)} fill="text">
+                      Back
+                    </LinkButton>
+                  </HorizontalGroup>
+                )}
               </div>
             </form>
           </FormProvider>
         </VerticalGroup>
+        <ConfirmModal
+          isOpen={showDeleteModal}
+          title="Delete check"
+          body="Are you sure you want to delete this check?"
+          confirmText="Delete check"
+          onConfirm={onRemoveCheck}
+          onDismiss={() => setShowDeleteModal(false)}
+        />
       </PluginPage>
     </>
   );

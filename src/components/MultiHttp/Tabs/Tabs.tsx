@@ -19,7 +19,6 @@ import { validateHTTPBody, validateHTTPHeaderValue } from 'validation';
 import { CheckFormValues } from 'types';
 
 interface Props {
-  isEditor?: boolean;
   register: UseFormRegister<CheckFormValues | FieldValues>;
   label?: string;
   errors?: any;
@@ -31,7 +30,6 @@ interface Props {
 }
 
 interface RequestTabsProps {
-  isEditor?: boolean;
   register: UseFormRegister<CheckFormValues | FieldValues>;
   errors?: any;
   index: number;
@@ -41,7 +39,7 @@ interface RequestTabsProps {
   activeTab: 'header' | 'queryParams' | 'body';
 }
 
-export const HeadersTab = ({ isEditor, register, unregister, trigger, label = 'header', errors, index }: Props) => {
+export const HeadersTab = ({ register, unregister, trigger, label = 'header', errors, index }: Props) => {
   const { control } = useFormContext();
   const { fields, append, remove } = useFieldArray({
     name: `settings.multihttp.entries[${index}].request.headers`,
@@ -53,7 +51,7 @@ export const HeadersTab = ({ isEditor, register, unregister, trigger, label = 'h
     <div className={styles.inputsContainer}>
       <VerticalGroup justify="space-between" className={styles.inputsContainer}>
         <Container>
-          <Field label="Request headers" description="The HTTP headers set for the probe." disabled={!isEditor}>
+          <Field label="Request headers" description="The HTTP headers set for the probe.">
             <>
               {fields.map((field, i) => {
                 const headersNamePrefix = `settings.multihttp.entries[${index}].request.headers[${i}]`;
@@ -68,7 +66,6 @@ export const HeadersTab = ({ isEditor, register, unregister, trigger, label = 'h
                           })}
                           type="text"
                           placeholder="name"
-                          disabled={!isEditor}
                           onMouseLeave={() =>
                             trigger(`${headersNamePrefix}.name`, {
                               shouldFocus: true,
@@ -84,7 +81,6 @@ export const HeadersTab = ({ isEditor, register, unregister, trigger, label = 'h
                           })}
                           type="text"
                           placeholder="value"
-                          disabled={!isEditor}
                           onMouseLeave={() =>
                             trigger(`${headersNamePrefix}.value`, {
                               shouldFocus: true,
@@ -131,7 +127,7 @@ export const HeadersTab = ({ isEditor, register, unregister, trigger, label = 'h
   );
 };
 
-export const BodyTab = ({ index, isEditor, errors, register }: Props) => {
+export const BodyTab = ({ index, errors, register }: Props) => {
   const styles = useStyles2(getStyles);
 
   return (
@@ -139,14 +135,12 @@ export const BodyTab = ({ index, isEditor, errors, register }: Props) => {
       <Field
         label="Request body"
         description="The body of the HTTP request used in probe."
-        disabled={!isEditor}
         invalid={Boolean(errors?.settings?.http?.body)}
         error={errors?.settings?.http?.body}
       >
         <TextArea
           {...register(`settings.multihttp.entries[${index}].request.body`, { validate: validateHTTPBody })}
           rows={2}
-          disabled={!isEditor}
         />
       </Field>
     </div>
@@ -241,22 +235,13 @@ const QueryParamsTab = ({ register, unregister, index, errors, trigger, label }:
   );
 };
 
-export const RequestTabs = ({
-  activeTab,
-  isEditor,
-  errors,
-  register,
-  unregister,
-  index,
-  trigger,
-}: RequestTabsProps) => {
+export const RequestTabs = ({ activeTab, errors, register, unregister, index, trigger }: RequestTabsProps) => {
   switch (activeTab) {
     case 'header':
       return (
         <HeadersTab
           unregister={unregister}
           trigger={trigger}
-          isEditor={isEditor}
           register={register}
           label="header"
           index={index}
@@ -264,7 +249,7 @@ export const RequestTabs = ({
         />
       );
     case 'body':
-      return <BodyTab isEditor={isEditor} index={index} errors={errors} register={register} />;
+      return <BodyTab index={index} errors={errors} register={register} />;
     case 'queryParams':
       return (
         <QueryParamsTab
@@ -281,7 +266,6 @@ export const RequestTabs = ({
         <HeadersTab
           unregister={unregister}
           trigger={trigger}
-          isEditor={isEditor}
           register={register}
           label="header"
           index={index}

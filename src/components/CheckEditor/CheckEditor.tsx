@@ -23,7 +23,11 @@ import {
   AdHocCheckResponse,
 } from 'types';
 import { hasRole } from 'utils';
-import { getDefaultValuesFromCheck, getCheckFromFormValues } from './checkFormTransformations';
+import {
+  getDefaultValuesFromCheck,
+  getCheckFromFormValues,
+  checkTypeParamToCheckType,
+} from './checkFormTransformations';
 import { validateJob, validateTarget } from 'validation';
 import CheckTarget from 'components/CheckTarget';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
@@ -36,7 +40,7 @@ import { CheckUsage } from '../CheckUsage';
 import { CheckFormAlert } from 'components/CheckFormAlert';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { trackEvent, trackException } from 'analytics';
-import { useParams, useHistory } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { PluginPage } from 'components/PluginPage';
 import { config } from '@grafana/runtime';
 import { CheckTestResultsModal } from 'components/CheckTestResultsModal';
@@ -80,13 +84,12 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
   const [testResponse, setTestResponse] = useState<AdHocCheckResponse>();
   const [testRequestInFlight, setTestRequestInFlight] = useState(false);
   const styles = useStyles(getStyles);
-  const history = useHistory();
-  const selectedCheckType = (history.location.state as CheckFormValues['checkType']) ?? CheckType.PING;
   // If we're editing, grab the appropriate check from the list
-  const { id } = useParams<CheckPageParams>();
-  let check: Check = fallbackCheck(selectedCheckType?.value ?? CheckType.PING);
+  const { id, checkType: checkTypeParam } = useParams<CheckPageParams>();
+  const checkType = checkTypeParamToCheckType(checkTypeParam);
+  let check: Check = fallbackCheck(checkType);
   if (id) {
-    check = checks?.find((c) => c.id === Number(id)) ?? fallbackCheck(selectedCheckType?.value ?? CheckType.PING);
+    check = checks?.find((c) => c.id === Number(id)) ?? fallbackCheck(checkType);
   }
 
   const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
@@ -98,6 +101,8 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
     error,
     loading: submitting,
   } = useAsyncCallback(async (checkValues: CheckFormValues) => {
+    checkValues.checkType = { label: checkType, value: checkType };
+
     const updatedCheck = getCheckFromFormValues(checkValues, defaultValues);
     if (check?.id) {
       trackEvent('editCheckSubmit');
@@ -161,14 +166,14 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
               rules={{
                 required: true,
                 validate: (target) => {
-                  const checkType: CheckType = selectedCheckType.value ?? CheckType.PING;
-                  return validateTarget(checkType, target);
+                  const targetCheckType: CheckType = checkType;
+                  return validateTarget(targetCheckType, target, check);
                 },
               }}
               render={({ field }) => (
                 <CheckTarget
                   {...field}
-                  typeOfCheck={selectedCheckType.value}
+                  typeOfCheck={checkType}
                   invalid={Boolean(formMethods.formState.errors.target)}
                   error={formMethods.formState.errors.target?.message}
                   disabled={!isEditor}
@@ -179,9 +184,9 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
             <hr className={styles.breakLine} />
             <ProbeOptions
               isEditor={isEditor}
-              timeout={check?.timeout ?? fallbackCheck(selectedCheckType.value as CheckType).timeout}
-              frequency={check?.frequency ?? fallbackCheck(selectedCheckType.value as CheckType).frequency}
-              probes={check?.probes ?? fallbackCheck(selectedCheckType.value as CheckType).probes}
+              timeout={check?.timeout ?? fallbackCheck(checkType).timeout}
+              frequency={check?.frequency ?? fallbackCheck(checkType).frequency}
+              probes={check?.probes ?? fallbackCheck(checkType).probes}
             />
             <HorizontalCheckboxField
               name="publishAdvancedMetrics"
@@ -190,7 +195,10 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
               description={'Metrics are reduced by default'}
             />
             <CheckUsage />
-            <CheckSettings typeOfCheck={selectedCheckType.value ?? CheckType.PING} isEditor={isEditor} />
+            <CheckSettings
+              typeOfCheck={(String(Object.keys(check.settings)) as CheckType) ?? CheckType.PING}
+              isEditor={isEditor}
+            />
             <CheckFormAlert />
             <HorizontalGroup height="40px">
               <Button type="submit" disabled={formMethods.formState.isSubmitting || submitting}>
@@ -203,9 +211,7 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
                       type="button"
                       variant="secondary"
                       disabled={
-                        !formMethods.formState.isValid ||
-                        selectedCheckType.value === CheckType.Traceroute ||
-                        testRequestInFlight
+                        !formMethods.formState.isValid || checkType === CheckType.Traceroute || testRequestInFlight
                       }
                       onClick={() => {
                         const values = formMethods.getValues();

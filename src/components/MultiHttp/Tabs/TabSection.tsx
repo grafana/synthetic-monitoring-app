@@ -7,7 +7,6 @@ import { getMultiHttpFormStyles } from './../MultiHttpSettingsForm.styles';
 
 type ActiveTabTypes = 'header' | 'queryParams' | 'body';
 interface RequestTabsProps {
-  isEditor?: boolean;
   register: UseFormRegister<CheckFormValues | FieldValues>;
   label?: string;
   errors?: any;
@@ -17,7 +16,7 @@ interface RequestTabsProps {
   unregister?: any;
 }
 
-export const TabSection = ({ isEditor, errors, register, unregister, index, control, trigger }: RequestTabsProps) => {
+export const TabSection = ({ errors, register, unregister, index, control, trigger }: RequestTabsProps) => {
   const [activeTab, setActiveTab] = useState<ActiveTabTypes>('header');
   const styles = useStyles2(getMultiHttpFormStyles);
 
@@ -69,7 +68,6 @@ export const TabSection = ({ isEditor, errors, register, unregister, index, cont
           control={control}
           index={index}
           activeTab={activeTab}
-          isEditor={isEditor}
           errors={errors}
           register={register}
         />

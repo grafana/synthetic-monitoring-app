@@ -532,6 +532,7 @@ export enum ROUTES {
 export interface CheckPageParams {
   view: string;
   id: string;
+  checkType?: string;
 }
 
 export interface ProbePageParams {
