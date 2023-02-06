@@ -1,5 +1,9 @@
 # Change Log
 
+# [1.9.32](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.31...v1.9.32) (2023-2-06)
+
+- Fix a bug with the config page not rendering in cloud instances
+
 # [1.9.31](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.30...v1.9.31) (2023-1-13)
 
 - Fix a bug where checks weren't refetched after bulk updating probes
