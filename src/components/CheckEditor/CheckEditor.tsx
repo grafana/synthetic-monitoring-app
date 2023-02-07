@@ -88,6 +88,7 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
   const { id, checkType: checkTypeParam } = useParams<CheckPageParams>();
   const checkType = checkTypeParamToCheckType(checkTypeParam);
   let check: Check = fallbackCheck(checkType);
+
   if (id) {
     check = checks?.find((c) => c.id === Number(id)) ?? fallbackCheck(checkType);
   }
@@ -128,10 +129,11 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
     onReturn(true);
   };
 
+  const headerText = check?.id ? 'Edit Check' : `Add ${checkType.toUpperCase()} Check`;
   return (
-    <PluginPage pageNav={{ text: check?.job ? check.job : 'Add check', description: 'Check configuration' }}>
+    <PluginPage pageNav={{ text: check?.job ? check.job : headerText, description: 'Check configuration' }}>
       <>
-        {!config.featureToggles.topnav && <Legend>{check?.id ? 'Edit Check' : 'Add Check'}</Legend>}
+        {!config.featureToggles.topnav && <Legend>{headerText}</Legend>}
         <FormProvider {...formMethods}>
           <form onSubmit={formMethods.handleSubmit(onSubmit)}>
             <HorizontalCheckboxField
