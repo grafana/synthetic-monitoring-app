@@ -1,7 +1,6 @@
 import React, { useContext, useState, useMemo, useCallback } from 'react';
-import { FormProvider, useForm, Controller, useFieldArray, FieldValues } from 'react-hook-form';
-import { useParams, useHistory } from 'react-router-dom';
-import { trackEvent } from 'analytics';
+import { FormProvider, useForm, Controller, useFieldArray } from 'react-hook-form';
+import { useParams } from 'react-router-dom';
 
 import {
   Alert,
@@ -30,18 +29,18 @@ import { CheckFormValues, Check, CheckPageParams, CheckType } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { PluginPage } from 'components/PluginPage';
 import { config } from '@grafana/runtime';
+import { OrgRole } from '@grafana/data';
+import { hasRole } from 'utils';
 
 interface Props {
-  isEditor?: boolean;
   checks?: Check[];
   onReturn?: (reload?: boolean) => void;
 }
 
-export const MultiHttpSettingsForm = ({ isEditor = false, checks, onReturn }: Props) => {
+export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
   const styles = useStyles2(getMultiHttpFormStyles);
   const [urls, setUrls] = useState<any[]>([]);
   const [errorMessages, setErrorMessages] = useState<any[]>();
-  const history = useHistory();
   let check: Check = multiHttpFallbackCheck;
   const { id } = useParams<CheckPageParams>();
   if (id) {
@@ -51,54 +50,62 @@ export const MultiHttpSettingsForm = ({ isEditor = false, checks, onReturn }: Pr
     instance: { api },
   } = useContext(InstanceContext);
   const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
+  const formMethods = useForm<CheckFormValues>({ defaultValues, reValidateMode: 'onBlur' });
+
   const {
     register,
-    unregister,
     watch,
     control,
-    getValues,
     handleSubmit,
-    trigger,
-    setValue,
     formState: { errors },
-  } = useForm<CheckFormValues | FieldValues>({ defaultValues });
+  } = formMethods;
+
   const { fields, append, remove } = useFieldArray({
     control,
     name: 'settings.multihttp.entries',
   });
+  const isEditor = hasRole(OrgRole.Editor);
 
-  const formMethods = useForm<CheckFormValues | FieldValues>({ defaultValues, mode: 'onChange' });
-  const selectedCheckType = CheckType.MULTI_HTTP;
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const onSubmit = useCallback(async () => {
-    const checkValues = getValues() as CheckFormValues;
-    const updatedCheck = getCheckFromFormValues(checkValues, defaultValues);
-    // All other types of SM checks so far require a `target` to execute at the root of the submitted object.
-    // This is not the case for multihttp checks, whose targets are called `url`s and are nested under
-    // `settings.multihttp?.entries[0].request.url`. Yet, the BE still requires a root-level `target`, even in
-    // the case of multihttp, even though it wont be used. So we will pass this safety `target`.
-    const updatedCheckWithTempTarget = {
-      ...updatedCheck,
-      target: getValues().settings.multihttp?.entries[0].request.url, // TODO: delete, if BE is updated to no longer need this
-    } as Check;
 
-    try {
-      if (check?.id) {
-        trackEvent('editCheckSubmit');
-        await api?.updateCheck({
-          id: check.id,
-          tenantId: check.tenantId,
-          ...updatedCheckWithTempTarget,
-        });
-      } else {
-        trackEvent('addNewCheckSubmit');
-        await api?.addCheck(updatedCheckWithTempTarget);
+  console.log(formMethods.formState.errors);
+  const onSubmit = useCallback(
+    async (values: CheckFormValues) => {
+      console.log({ values });
+      const target = values.settings.multihttp?.entries?.[0]?.request?.url ?? '';
+      if (!target) {
+        throw new Error('At least one request with a URL is required');
       }
-      onReturn && onReturn(true);
-    } catch (err: any) {
-      setErrorMessages([err?.data?.err || err?.data?.msg]);
-    }
-  }, [api, getValues, onReturn, check.tenantId, check.id, setErrorMessages, defaultValues]);
+
+      console.log({ values });
+      // All other types of SM checks so far require a `target` to execute at the root of the submitted object.
+      // This is not the case for multihttp checks, whose targets are called `url`s and are nested under
+      // `settings.multihttp?.entries[0].request.url`. Yet, the BE still requires a root-level `target`, even in
+      // the case of multihttp, even though it wont be used. So we will pass this safety `target`.values.target = target;
+      const updatedCheck = getCheckFromFormValues(values, defaultValues, CheckType.MULTI_HTTP);
+
+      console.log({ updatedCheck });
+
+      // try {
+      //   if (check?.id) {
+      //     trackEvent('editCheckSubmit');
+      //     await api?.updateCheck({
+      //       id: check.id,
+      //       tenantId: check.tenantId,
+      //       ...updatedCheck,
+      //     });
+      //   } else {
+      //     trackEvent('addNewCheckSubmit');
+      //     await api?.addCheck(updatedCheck);
+      //   }
+      //   onReturn && onReturn(true);
+      // } catch (err: any) {
+      //   setErrorMessages([err?.data?.err || err?.data?.msg]);
+      // }
+    },
+    // [api, onReturn, check.tenantId, check.id, setErrorMessages, defaultValues]
+    [defaultValues]
+  );
 
   const clearAlert = () => {
     setErrorMessages([]);
@@ -126,10 +133,6 @@ export const MultiHttpSettingsForm = ({ isEditor = false, checks, onReturn }: Pr
     await api?.deleteCheck(id);
     onReturn && onReturn(true);
   };
-
-  React.useEffect(() => {
-    history.location.state && setValue('checkType', history.location.state);
-  }, [history, setValue]);
 
   return (
     <>
@@ -169,19 +172,19 @@ export const MultiHttpSettingsForm = ({ isEditor = false, checks, onReturn }: Pr
               </Field>
               <div className={styles.request}>
                 {fields.map((field, index) => {
-                  const urlForIndex = watch(`settings.multihttp.entries[${index}].request.url`);
+                  const urlForIndex = watch(`settings.multihttp.entries.${index}.request.url`);
 
                   return (
                     <MultiHttpCollapse label={urlForIndex} key={field.id} className={styles.collapseTarget}>
                       <VerticalGroup height={'100%'}>
                         <HorizontalGroup spacing="lg" align="center">
                           <Controller
-                            name={`settings.multihttp.entries[${index}].request.url` as const}
+                            name={`settings.multihttp.entries.${index}.request.url` as const}
                             control={control}
                             rules={{
                               required: true,
                               validate: (url) => {
-                                return validateTarget(CheckType.MULTI_HTTP, url, check);
+                                return validateTarget(CheckType.MULTI_HTTP, url);
                               },
                             }}
                             render={({ field }) => {
@@ -189,9 +192,9 @@ export const MultiHttpSettingsForm = ({ isEditor = false, checks, onReturn }: Pr
                                 <CheckTarget
                                   {...field}
                                   value={field.value || Object.values(urls[index] || {})}
-                                  typeOfCheck={selectedCheckType}
-                                  invalid={Boolean(errors?.settings?.multihttp?.entries[index]?.request?.url)}
-                                  error={errors?.settings?.multihttp?.entries[index]?.request?.url?.message}
+                                  typeOfCheck={CheckType.MULTI_HTTP}
+                                  invalid={Boolean(errors?.settings?.multihttp?.entries?.[index]?.request?.url)}
+                                  error={errors?.settings?.multihttp?.entries?.[index]?.request?.url?.message}
                                 />
                               );
                             }}
@@ -215,7 +218,7 @@ export const MultiHttpSettingsForm = ({ isEditor = false, checks, onReturn }: Pr
                                 );
                               }}
                               rules={{ required: true }}
-                              name={`settings.multihttp.entries[${index}].request.method`}
+                              name={`settings.multihttp.entries.${index}.request.method`}
                             />
                           </Field>
                           <Button
@@ -230,14 +233,7 @@ export const MultiHttpSettingsForm = ({ isEditor = false, checks, onReturn }: Pr
                           </Button>
                         </HorizontalGroup>
 
-                        <TabSection
-                          key={index}
-                          errors={errors}
-                          register={register}
-                          unregister={unregister}
-                          index={index}
-                          trigger={trigger}
-                        />
+                        <TabSection index={index} />
                       </VerticalGroup>
                     </MultiHttpCollapse>
                   );
@@ -257,7 +253,7 @@ export const MultiHttpSettingsForm = ({ isEditor = false, checks, onReturn }: Pr
 
                 {errorMessages && errorMessages?.length > 0 && getErrorMessages()}
                 {!isEditor ? (
-                  <Button onClick={onSubmit} fullWidth={true} className={styles.submitMultiHttpButton} size="md">
+                  <Button type="submit" fullWidth={true} className={styles.submitMultiHttpButton} size="md">
                     Submit
                   </Button>
                 ) : (

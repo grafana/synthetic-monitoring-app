@@ -101,9 +101,7 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
     error,
     loading: submitting,
   } = useAsyncCallback(async (checkValues: CheckFormValues) => {
-    checkValues.checkType = { label: checkType, value: checkType };
-
-    const updatedCheck = getCheckFromFormValues(checkValues, defaultValues);
+    const updatedCheck = getCheckFromFormValues(checkValues, defaultValues, checkType);
     if (check?.id) {
       trackEvent('editCheckSubmit');
       await api?.updateCheck({
@@ -166,8 +164,7 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
               rules={{
                 required: true,
                 validate: (target) => {
-                  const targetCheckType: CheckType = checkType;
-                  return validateTarget(targetCheckType, target, check);
+                  return validateTarget(checkType, target);
                 },
               }}
               render={({ field }) => (
@@ -215,7 +212,7 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
                       }
                       onClick={() => {
                         const values = formMethods.getValues();
-                        const check = getCheckFromFormValues(values, defaultValues);
+                        const check = getCheckFromFormValues(values, defaultValues, checkType);
                         setTestRequestInFlight(true);
                         api
                           ?.testCheck(check)
