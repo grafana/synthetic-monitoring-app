@@ -22,7 +22,7 @@ import {
   CheckPageParams,
   AdHocCheckResponse,
 } from 'types';
-import { hasRole } from 'utils';
+import { hasRole, checkType as getCheckType } from 'utils';
 import {
   getDefaultValuesFromCheck,
   getCheckFromFormValues,
@@ -86,11 +86,12 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
   const styles = useStyles(getStyles);
   // If we're editing, grab the appropriate check from the list
   const { id, checkType: checkTypeParam } = useParams<CheckPageParams>();
-  const checkType = checkTypeParamToCheckType(checkTypeParam);
+  let checkType = checkTypeParamToCheckType(checkTypeParam);
   let check: Check = fallbackCheck(checkType);
 
   if (id) {
     check = checks?.find((c) => c.id === Number(id)) ?? fallbackCheck(checkType);
+    checkType = getCheckType(check.settings);
   }
 
   const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
@@ -183,6 +184,7 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
             <hr className={styles.breakLine} />
             <ProbeOptions
               isEditor={isEditor}
+              checkType={checkType}
               timeout={check?.timeout ?? fallbackCheck(checkType).timeout}
               frequency={check?.frequency ?? fallbackCheck(checkType).frequency}
               probes={check?.probes ?? fallbackCheck(checkType).probes}

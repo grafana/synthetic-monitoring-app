@@ -13,19 +13,17 @@ interface Props {
   timeout: number;
   frequency: number;
   probes: number[];
+  checkType: CheckType;
 }
 
-export const ProbeOptions = ({ frequency, timeout, isEditor, probes }: Props) => {
+export const ProbeOptions = ({ frequency, timeout, isEditor, probes, checkType }: Props) => {
   const [availableProbes, setAvailableProbes] = useState<Probe[]>([]);
   const {
     control,
-    watch,
     formState: { errors },
     clearErrors,
   } = useFormContext();
   const { instance } = useContext(InstanceContext);
-
-  const checkType = watch('checkType')?.value;
 
   useEffect(() => {
     const abortController = new AbortController();
