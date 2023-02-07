@@ -30,11 +30,11 @@ test('renders checks', async () => {
   await waitFor(() => expect(screen.getByText('a jobname')).toBeInTheDocument());
 });
 
-test('renders check editor new check', async () => {
+test('renders check selection', async () => {
   renderChecksPage();
   await waitFor(() => screen.getByRole('button', { name: 'Add new check' }));
   act(() => userEvent.click(screen.getByRole('button', { name: 'Add new check' })));
-  expect(await screen.findByText('Add Check')).toBeInTheDocument();
+  expect(await screen.findByText('Choose check type')).toBeInTheDocument();
 });
 
 test('renders check editor existing check', async () => {
