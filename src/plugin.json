@@ -89,7 +89,7 @@
         "type": "panel",
         "name": "Worldmap Panel",
         "id": "grafana-worldmap-panel",
-        "version": "^0.3.3"
+        "version": "^1.0.3"
       }
     ]
   }
