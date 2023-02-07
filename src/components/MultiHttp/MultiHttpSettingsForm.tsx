@@ -71,40 +71,35 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
   console.log(formMethods.formState.errors);
   const onSubmit = useCallback(
     async (values: CheckFormValues) => {
-      console.log({ values });
       const target = values.settings.multihttp?.entries?.[0]?.request?.url ?? '';
       if (!target) {
         throw new Error('At least one request with a URL is required');
       }
 
-      console.log({ values });
       // All other types of SM checks so far require a `target` to execute at the root of the submitted object.
       // This is not the case for multihttp checks, whose targets are called `url`s and are nested under
       // `settings.multihttp?.entries[0].request.url`. Yet, the BE still requires a root-level `target`, even in
       // the case of multihttp, even though it wont be used. So we will pass this safety `target`.values.target = target;
       const updatedCheck = getCheckFromFormValues(values, defaultValues, CheckType.MULTI_HTTP);
 
-      console.log({ updatedCheck });
-
-      // try {
-      //   if (check?.id) {
-      //     trackEvent('editCheckSubmit');
-      //     await api?.updateCheck({
-      //       id: check.id,
-      //       tenantId: check.tenantId,
-      //       ...updatedCheck,
-      //     });
-      //   } else {
-      //     trackEvent('addNewCheckSubmit');
-      //     await api?.addCheck(updatedCheck);
-      //   }
-      //   onReturn && onReturn(true);
-      // } catch (err: any) {
-      //   setErrorMessages([err?.data?.err || err?.data?.msg]);
-      // }
+      try {
+        if (check?.id) {
+          // trackEvent('editCheckSubmit');
+          await api?.updateCheck({
+            id: check.id,
+            tenantId: check.tenantId,
+            ...updatedCheck,
+          });
+        } else {
+          // trackEvent('addNewCheckSubmit');
+          await api?.addCheck(updatedCheck);
+        }
+        onReturn && onReturn(true);
+      } catch (err: any) {
+        setErrorMessages([err?.data?.err || err?.data?.msg]);
+      }
     },
-    // [api, onReturn, check.tenantId, check.id, setErrorMessages, defaultValues]
-    [defaultValues]
+    [api, onReturn, check.tenantId, check.id, setErrorMessages, defaultValues]
   );
 
   const clearAlert = () => {
