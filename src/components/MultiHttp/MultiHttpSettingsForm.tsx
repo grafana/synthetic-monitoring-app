@@ -163,6 +163,7 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
                 timeout={check?.timeout ?? multiHttpFallbackCheck.timeout}
                 frequency={check?.frequency ?? multiHttpFallbackCheck.frequency}
                 probes={check?.probes ?? multiHttpFallbackCheck.probes}
+                checkType={CheckType.MULTI_HTTP}
               />
 
               <hr />
