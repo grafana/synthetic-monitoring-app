@@ -1,6 +1,6 @@
 import { AppPluginMeta, DataSourceSettings, FeatureToggles } from '@grafana/data';
 import { locationService } from '@grafana/runtime';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { PLUGIN_URL_PATH } from 'components/constants';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { getInstanceMock } from 'datasource/__mocks__/DataSource';
