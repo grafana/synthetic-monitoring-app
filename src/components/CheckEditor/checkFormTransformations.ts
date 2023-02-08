@@ -39,6 +39,7 @@ import {
   HTTP_COMPRESSION_ALGO_OPTIONS,
   DNS_RESPONSE_MATCH_OPTIONS,
   fallbackSettings,
+  METHOD_OPTIONS,
 } from 'components/constants';
 import { checkType as getCheckType, fromBase64, toBase64 } from 'utils';
 import isBase64 from 'is-base64';
@@ -484,7 +485,7 @@ const getMultiHttpFormValues = (settings: Settings): MultiHttpSettingsFormValues
         ...entry,
         request: {
           ...entry.request,
-          method: selectableValueFrom(entry.request.method),
+          method: METHOD_OPTIONS.find(({ value }) => value === entry.request.method) ?? METHOD_OPTIONS[0],
         },
       };
     }),

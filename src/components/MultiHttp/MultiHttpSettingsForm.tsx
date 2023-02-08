@@ -20,9 +20,7 @@ import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
 import { METHOD_OPTIONS } from 'components/constants';
 import { MultiHttpCollapse } from 'components/MultiHttp/MultiHttpCollapse';
 import { multiHttpFallbackCheck } from './consts';
-import { Subheader } from 'components/Subheader';
 import { validateTarget } from 'validation';
-import CheckTarget from 'components/CheckTarget';
 import { TabSection } from './Tabs/TabSection';
 import { getMultiHttpFormStyles } from './MultiHttpSettingsForm.styles';
 import { CheckFormValues, Check, CheckPageParams, CheckType } from 'types';
@@ -50,28 +48,28 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
     instance: { api },
   } = useContext(InstanceContext);
   const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
+
   const formMethods = useForm<CheckFormValues>({ defaultValues, reValidateMode: 'onBlur' });
 
   const {
     register,
     watch,
-    control,
     handleSubmit,
     formState: { errors },
   } = formMethods;
 
   const { fields, append, remove } = useFieldArray({
-    control,
+    control: formMethods.control,
     name: 'settings.multihttp.entries',
   });
   const isEditor = hasRole(OrgRole.Editor);
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  console.log(formMethods.formState.errors);
   const onSubmit = useCallback(
     async (values: CheckFormValues) => {
       const target = values.settings.multihttp?.entries?.[0]?.request?.url ?? '';
+
       if (!target) {
         throw new Error('At least one request with a URL is required');
       }
@@ -137,23 +135,19 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
           <FormProvider {...formMethods}>
             <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
               <hr className={styles.breakLine} />
-              <Subheader>Check job name</Subheader>
-              <Field invalid={Boolean(errors.job)} error={errors.job?.message}>
+              <Field label="Job name" invalid={Boolean(errors.job)} error={errors.job?.message}>
                 <Input
                   {...register('job', {
                     required: true,
                     minLength: 1,
                   })}
                   type="text"
+                  id="check-editor-job-input"
                   placeholder="Unnamed request"
                   className={styles.jobNameInput}
                 />
               </Field>
               <ProbeOptions
-                {...register('probes' as const, {
-                  required: true,
-                  minLength: 1,
-                })}
                 isEditor={isEditor}
                 timeout={check?.timeout ?? multiHttpFallbackCheck.timeout}
                 frequency={check?.frequency ?? multiHttpFallbackCheck.frequency}
@@ -174,47 +168,32 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
                     <MultiHttpCollapse label={urlForIndex} key={field.id} className={styles.collapseTarget}>
                       <VerticalGroup height={'100%'}>
                         <HorizontalGroup spacing="lg" align="center">
-                          <Controller
-                            name={`settings.multihttp.entries.${index}.request.url` as const}
-                            control={control}
-                            rules={{
-                              required: true,
-                              validate: (url) => {
-                                return validateTarget(CheckType.MULTI_HTTP, url);
-                              },
-                            }}
-                            render={({ field }) => {
-                              return (
-                                <CheckTarget
-                                  {...field}
-                                  value={field.value || Object.values(urls[index] || {})}
-                                  typeOfCheck={CheckType.MULTI_HTTP}
-                                  invalid={Boolean(errors?.settings?.multihttp?.entries?.[index]?.request?.url)}
-                                  error={errors?.settings?.multihttp?.entries?.[index]?.request?.url?.message}
-                                />
-                              );
-                            }}
-                          />
+                          <Field
+                            label="Request target"
+                            description="Full URL to send request to"
+                            invalid={Boolean(errors?.settings?.multihttp?.entries?.[index]?.request?.url?.message)}
+                            error={errors?.settings?.multihttp?.entries?.[index]?.request?.url?.message}
+                          >
+                            <Input
+                              id={`request-target-url-${index}`}
+                              {...register(`settings.multihttp.entries.${index}.request.url` as const, {
+                                required: true,
+                                validate: (url) => validateTarget(CheckType.MULTI_HTTP, url),
+                              })}
+                            />
+                          </Field>
                           <Field
                             label="Request method"
                             description="The HTTP method used"
-                            invalid={Boolean(errors?.settings?.http?.method)}
-                            error={errors?.settings?.http?.method}
+                            invalid={Boolean(errors?.settings?.multihttp?.entries?.[index]?.request?.method)}
+                            error={errors?.settings?.multihttp?.entries?.[index]?.request?.method}
                           >
                             <Controller
-                              control={control}
-                              render={({ field: { onChange, value } }) => {
-                                return (
-                                  <Select
-                                    {...field}
-                                    options={METHOD_OPTIONS}
-                                    onChange={(val) => onChange(val.value)}
-                                    value={value}
-                                  />
-                                );
-                              }}
-                              rules={{ required: true }}
                               name={`settings.multihttp.entries.${index}.request.method`}
+                              render={({ field }) => (
+                                <Select {...field} options={METHOD_OPTIONS} data-testid="request-method" />
+                              )}
+                              rules={{ required: true }}
                             />
                           </Field>
                           <Button
@@ -248,30 +227,24 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
                 </Button>
 
                 {errorMessages && errorMessages?.length > 0 && getErrorMessages()}
-                {!isEditor ? (
-                  <Button type="submit" fullWidth={true} className={styles.submitMultiHttpButton} size="md">
-                    Submit
+                <HorizontalGroup height="40px">
+                  <Button type="submit" disabled={formMethods.formState.isSubmitting}>
+                    Save
                   </Button>
-                ) : (
-                  <HorizontalGroup height="40px">
-                    <Button type="submit" disabled={formMethods.formState.isSubmitting}>
-                      Save
+                  {check?.id && (
+                    <Button
+                      variant="destructive"
+                      onClick={() => setShowDeleteModal(true)}
+                      disabled={!isEditor}
+                      type="button"
+                    >
+                      Delete Check
                     </Button>
-                    {check?.id && (
-                      <Button
-                        variant="destructive"
-                        onClick={() => setShowDeleteModal(true)}
-                        disabled={!isEditor}
-                        type="button"
-                      >
-                        Delete Check
-                      </Button>
-                    )}
-                    <LinkButton onClick={() => onReturn && onReturn(true)} fill="text">
-                      Back
-                    </LinkButton>
-                  </HorizontalGroup>
-                )}
+                  )}
+                  <LinkButton onClick={() => onReturn && onReturn(true)} fill="text">
+                    Back
+                  </LinkButton>
+                </HorizontalGroup>
               </div>
             </form>
           </FormProvider>

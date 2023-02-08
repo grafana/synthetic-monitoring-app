@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import { css } from '@emotion/css';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 
@@ -46,9 +46,9 @@ export const HeadersTab = ({ label = 'header', index }: Props) => {
                 const headersNamePrefix = `settings.multihttp.entries[${index}].request.headers[${i}]`;
 
                 return (
-                  <>
-                    <HorizontalGroup key={field.id} spacing="md" align="center" className={styles.headersQueryInputs}>
-                      <HorizontalGroup key={field.id} spacing="md" align="center" className={styles.headersQueryInputs}>
+                  <Fragment key={field.id}>
+                    <HorizontalGroup spacing="md" align="center" className={styles.headersQueryInputs}>
+                      <HorizontalGroup spacing="md" align="center" className={styles.headersQueryInputs}>
                         <Input
                           {...register(`${headersNamePrefix}.name` as const, {
                             required: true,
@@ -56,6 +56,7 @@ export const HeadersTab = ({ label = 'header', index }: Props) => {
                           })}
                           type="text"
                           placeholder="name"
+                          data-testid={`header-name-${index}`}
                         />
                         <Input
                           {...register(`${headersNamePrefix}.value` as const, {
@@ -63,6 +64,7 @@ export const HeadersTab = ({ label = 'header', index }: Props) => {
                             minLength: 1,
                           })}
                           type="text"
+                          data-testid={`header-value-${index}`}
                           placeholder="value"
                         />
                       </HorizontalGroup>
@@ -83,7 +85,7 @@ export const HeadersTab = ({ label = 'header', index }: Props) => {
                         <br />
                       </>
                     )}
-                  </>
+                  </Fragment>
                 );
               })}
               <Button
@@ -109,7 +111,7 @@ export const BodyTab = ({ index }: Props) => {
   const { formState, register } = useFormContext();
 
   return (
-    <div className={styles.inputsContainer}>
+    <div className={styles.inputsContainer} data-testid="body-tab">
       <Field
         label="Request body"
         description="The body of the HTTP request used in probe."
@@ -119,6 +121,7 @@ export const BodyTab = ({ index }: Props) => {
         <TextArea
           {...register(`settings.multihttp.entries[${index}].request.body`, { validate: validateHTTPBody })}
           rows={2}
+          id={`request-body-${index}`}
         />
       </Field>
     </div>
@@ -144,9 +147,9 @@ const QueryParamsTab = ({ index, label }: Props) => {
                 const queryParamsNamePrefix = `settings.multihttp.entries[${index}].request.queryString[${i}]`;
 
                 return (
-                  <>
-                    <HorizontalGroup key={field.id} align="flex-start" spacing="md">
-                      <HorizontalGroup key={field.id} spacing="md" align="center">
+                  <Fragment key={field.id}>
+                    <HorizontalGroup align="flex-start" spacing="md">
+                      <HorizontalGroup spacing="md" align="center">
                         <Input
                           {...register(`${queryParamsNamePrefix}.name` as const, {
                             required: true,
@@ -154,6 +157,7 @@ const QueryParamsTab = ({ index, label }: Props) => {
                           })}
                           type="text"
                           placeholder="Parameter name"
+                          data-testid="query-param-name"
                         />
                         <Input
                           {...register(`${queryParamsNamePrefix}.value` as const, {
@@ -162,6 +166,7 @@ const QueryParamsTab = ({ index, label }: Props) => {
                           })}
                           type="text"
                           placeholder="Parameter value"
+                          data-testid="query-param-value"
                         />
                       </HorizontalGroup>
                       <IconButton
@@ -180,7 +185,7 @@ const QueryParamsTab = ({ index, label }: Props) => {
                         <br />
                       </>
                     )}
-                  </>
+                  </Fragment>
                 );
               })}
               <Button

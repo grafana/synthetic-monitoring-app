@@ -8,7 +8,7 @@ export const multiHttpFallbackCheck = {
   timeout: 3000,
   enabled: true,
   labels: [],
-  probes: [1],
+  probes: [],
   alertSensitivity: AlertSensitivity.None,
   settings: {
     multihttp: fallbackSettings(CheckType.MULTI_HTTP) as MultiHttpSettings,
