@@ -60,6 +60,7 @@ interface TFHttpSettings
     | 'noFollowRedirects'
     | 'tlsConfig'
     | 'proxyURL'
+    | 'proxyConnectHeaders'
     | 'bearerToken'
     | 'basicAuth'
     | 'failIfSSL'
@@ -84,6 +85,7 @@ interface TFHttpSettings
   ip_version: string;
   no_follow_redirects?: boolean;
   proxy_url?: string;
+  proxy_connect_headers?: string[];
   tls_config?: TFTlsConfig;
   valid_http_versions?: string[];
   valid_status_codes?: number[];

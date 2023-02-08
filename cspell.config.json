@@ -1,0 +1,5 @@
+{
+  "ignorePaths": ["node_modules"],
+  "ignoreRegExpList": [".*"],
+  "words": ["grafana", "datasource", "datasources", "gifs", ".*"]
+}

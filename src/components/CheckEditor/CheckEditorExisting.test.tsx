@@ -58,7 +58,7 @@ const renderExistingCheckEditor = async (route: string) => {
     </FeatureFlagProvider>
   );
 
-  await waitFor(() => expect(screen.getByText('Check Details')).toBeInTheDocument());
+  await waitFor(() => expect(screen.getByText('Probe options')).toBeInTheDocument());
   return instance;
 };
 
@@ -141,6 +141,7 @@ describe('editing checks', () => {
 
     await act(async () => await userEvent.type(await screen.findByTestId('header-name-1'), 'headerName'));
     await act(async () => await userEvent.type(await screen.findByTestId('header-value-1'), 'headerValue'));
+
     const compression = await screen.findByTestId('http-compression');
     userEvent.selectOptions(compression, 'deflate');
 

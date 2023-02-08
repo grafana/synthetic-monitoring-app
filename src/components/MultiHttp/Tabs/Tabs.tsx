@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import { css } from '@emotion/css';
-import { UseFormRegister, useFieldArray, useFormContext, FieldValues } from 'react-hook-form';
+import { useFieldArray, useFormContext } from 'react-hook-form';
 
 import {
   Button,
@@ -15,32 +15,21 @@ import {
   useStyles2,
 } from '@grafana/ui';
 import { GrafanaTheme2 } from '@grafana/data';
-import { validateHTTPBody, validateHTTPHeaderValue } from 'validation';
-import { CheckFormValues } from 'types';
+import { validateHTTPBody } from 'validation';
 
 interface Props {
-  register: UseFormRegister<CheckFormValues | FieldValues>;
   label?: string;
-  errors?: any;
   index: number;
-  control?: any;
-  trigger?: any;
-  unregister?: any;
   activeTab?: 'header' | 'queryParams' | 'body';
 }
 
 interface RequestTabsProps {
-  register: UseFormRegister<CheckFormValues | FieldValues>;
-  errors?: any;
   index: number;
-  control?: any;
-  trigger?: any;
-  unregister?: any;
   activeTab: 'header' | 'queryParams' | 'body';
 }
 
-export const HeadersTab = ({ register, unregister, trigger, label = 'header', errors, index }: Props) => {
-  const { control } = useFormContext();
+export const HeadersTab = ({ label = 'header', index }: Props) => {
+  const { control, register, unregister, formState } = useFormContext();
   const { fields, append, remove } = useFieldArray({
     name: `settings.multihttp.entries[${index}].request.headers`,
     control,
@@ -57,36 +46,26 @@ export const HeadersTab = ({ register, unregister, trigger, label = 'header', er
                 const headersNamePrefix = `settings.multihttp.entries[${index}].request.headers[${i}]`;
 
                 return (
-                  <>
-                    <HorizontalGroup key={field.id} spacing="md" align="center" className={styles.headersQueryInputs}>
-                      <HorizontalGroup key={field.id} spacing="md" align="center" className={styles.headersQueryInputs}>
+                  <Fragment key={field.id}>
+                    <HorizontalGroup spacing="md" align="center" className={styles.headersQueryInputs}>
+                      <HorizontalGroup spacing="md" align="center" className={styles.headersQueryInputs}>
                         <Input
                           {...register(`${headersNamePrefix}.name` as const, {
                             required: true,
+                            minLength: 1,
                           })}
                           type="text"
                           placeholder="name"
-                          onMouseLeave={() =>
-                            trigger(`${headersNamePrefix}.name`, {
-                              shouldFocus: true,
-                              shouldUnregister: true,
-                            })
-                          }
+                          data-testid={`header-name-${index}`}
                         />
                         <Input
                           {...register(`${headersNamePrefix}.value` as const, {
                             required: true,
                             minLength: 1,
-                            validate: validateHTTPHeaderValue,
                           })}
                           type="text"
+                          data-testid={`header-value-${index}`}
                           placeholder="value"
-                          onMouseLeave={() =>
-                            trigger(`${headersNamePrefix}.value`, {
-                              shouldFocus: true,
-                              shouldUnregister: true,
-                            })
-                          }
                         />
                       </HorizontalGroup>
                       <IconButton
@@ -99,14 +78,14 @@ export const HeadersTab = ({ register, unregister, trigger, label = 'header', er
                         }}
                       />
                     </HorizontalGroup>
-                    {(errors?.settings?.multihttp?.entries[index]?.request?.headers[i]?.name ||
-                      errors?.settings?.multihttp?.entries[index]?.request?.headers[i]?.value) && (
+                    {(formState.errors?.settings?.multihttp?.entries[index]?.request?.headers[i]?.name ||
+                      formState.errors?.settings?.multihttp?.entries[index]?.request?.headers[i]?.value) && (
                       <>
                         <div className={styles.errorMsg}>Enter at least one character</div>
                         <br />
                       </>
                     )}
-                  </>
+                  </Fragment>
                 );
               })}
               <Button
@@ -127,33 +106,36 @@ export const HeadersTab = ({ register, unregister, trigger, label = 'header', er
   );
 };
 
-export const BodyTab = ({ index, errors, register }: Props) => {
+export const BodyTab = ({ index }: Props) => {
   const styles = useStyles2(getStyles);
+  const { formState, register } = useFormContext();
 
   return (
-    <div className={styles.inputsContainer}>
+    <div className={styles.inputsContainer} data-testid="body-tab">
       <Field
         label="Request body"
         description="The body of the HTTP request used in probe."
-        invalid={Boolean(errors?.settings?.http?.body)}
-        error={errors?.settings?.http?.body}
+        invalid={Boolean(formState?.errors?.settings?.http?.body?.message)}
+        error={formState.errors?.settings?.http?.body?.message}
       >
         <TextArea
           {...register(`settings.multihttp.entries[${index}].request.body`, { validate: validateHTTPBody })}
           rows={2}
+          id={`request-body-${index}`}
         />
       </Field>
     </div>
   );
 };
 
-const QueryParamsTab = ({ register, unregister, index, errors, trigger, label }: Props) => {
+const QueryParamsTab = ({ index, label }: Props) => {
   const { control } = useFormContext();
   const { fields, append, remove } = useFieldArray({
     control,
     name: `settings.multihttp.entries[${index}].request.queryString`,
   });
   const styles = useStyles2(getStyles);
+  const { register, formState } = useFormContext();
 
   return (
     <div className={styles.inputsContainer}>
@@ -165,9 +147,9 @@ const QueryParamsTab = ({ register, unregister, index, errors, trigger, label }:
                 const queryParamsNamePrefix = `settings.multihttp.entries[${index}].request.queryString[${i}]`;
 
                 return (
-                  <>
-                    <HorizontalGroup key={field.id} align="flex-start" spacing="md">
-                      <HorizontalGroup key={field.id} spacing="md" align="center">
+                  <Fragment key={field.id}>
+                    <HorizontalGroup align="flex-start" spacing="md">
+                      <HorizontalGroup spacing="md" align="center">
                         <Input
                           {...register(`${queryParamsNamePrefix}.name` as const, {
                             required: true,
@@ -175,12 +157,7 @@ const QueryParamsTab = ({ register, unregister, index, errors, trigger, label }:
                           })}
                           type="text"
                           placeholder="Parameter name"
-                          onMouseLeave={() =>
-                            trigger(`${queryParamsNamePrefix}.name` as const, {
-                              shouldFocus: true,
-                              shouldUnregister: true,
-                            })
-                          }
+                          data-testid="query-param-name"
                         />
                         <Input
                           {...register(`${queryParamsNamePrefix}.value` as const, {
@@ -189,12 +166,7 @@ const QueryParamsTab = ({ register, unregister, index, errors, trigger, label }:
                           })}
                           type="text"
                           placeholder="Parameter value"
-                          onMouseLeave={() =>
-                            trigger(`${queryParamsNamePrefix}.value` as const, {
-                              shouldFocus: true,
-                              shouldUnregister: true,
-                            })
-                          }
+                          data-testid="query-param-value"
                         />
                       </HorizontalGroup>
                       <IconButton
@@ -203,18 +175,17 @@ const QueryParamsTab = ({ register, unregister, index, errors, trigger, label }:
                         type="button"
                         onClick={() => {
                           remove(i);
-                          unregister([`${queryParamsNamePrefix}`]);
                         }}
                       />
                     </HorizontalGroup>
-                    {(errors?.settings?.multihttp?.entries[index]?.request?.queryString[i]?.name ||
-                      errors?.settings?.multihttp?.entries[index]?.request?.queryString[i]?.value) && (
+                    {(formState.errors?.settings?.multihttp?.entries[index]?.request?.queryString[i]?.name ||
+                      formState.errors?.settings?.multihttp?.entries[index]?.request?.queryString[i]?.value) && (
                       <>
                         <div className={styles.errorMsg}>Enter at least one character</div>
                         <br />
                       </>
                     )}
-                  </>
+                  </Fragment>
                 );
               })}
               <Button
@@ -235,43 +206,16 @@ const QueryParamsTab = ({ register, unregister, index, errors, trigger, label }:
   );
 };
 
-export const RequestTabs = ({ activeTab, errors, register, unregister, index, trigger }: RequestTabsProps) => {
+export const RequestTabs = ({ activeTab, index }: RequestTabsProps) => {
   switch (activeTab) {
     case 'header':
-      return (
-        <HeadersTab
-          unregister={unregister}
-          trigger={trigger}
-          register={register}
-          label="header"
-          index={index}
-          errors={errors}
-        />
-      );
+      return <HeadersTab label="header" index={index} />;
     case 'body':
-      return <BodyTab index={index} errors={errors} register={register} />;
+      return <BodyTab index={index} />;
     case 'queryParams':
-      return (
-        <QueryParamsTab
-          register={register}
-          index={index}
-          unregister={unregister}
-          errors={errors}
-          trigger={trigger}
-          label="queryParams"
-        />
-      );
+      return <QueryParamsTab index={index} label="queryParams" />;
     default:
-      return (
-        <HeadersTab
-          unregister={unregister}
-          trigger={trigger}
-          register={register}
-          label="header"
-          index={index}
-          errors={errors}
-        />
-      );
+      return <HeadersTab label="header" index={index} />;
   }
 };
 

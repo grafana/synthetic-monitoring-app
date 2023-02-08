@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 import { css } from '@emotion/css';
 import { Card, useStyles2, VerticalGroup } from '@grafana/ui';
 import { GrafanaTheme2 } from '@grafana/data';
-import { CheckType, CheckFormValues, FeatureName, ROUTES } from 'types';
+import { CheckType, FeatureName, ROUTES } from 'types';
 import { CHECK_TYPE_OPTIONS } from 'components/constants';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useNavigation } from 'hooks/useNavigation';
@@ -13,17 +13,16 @@ export function ChooseCheckType() {
   const { isEnabled: tracerouteEnabled } = useFeatureFlag(FeatureName.Traceroute);
   const { isEnabled: multiHttpEnabled } = useFeatureFlag(FeatureName.MultiHttp);
   // If we're editing, grab the appropriate check from the list
-  const [selectedCheckType, setSelectedCheckType] = useState<CheckFormValues['checkType']>();
   const navigate = useNavigation();
 
-  const options = !tracerouteEnabled
-    ? CHECK_TYPE_OPTIONS.filter(({ value }) => value !== CheckType.Traceroute)
-    : !multiHttpEnabled
-    ? CHECK_TYPE_OPTIONS.filter(({ value }) => value !== CheckType.MULTI_HTTP)
-    : CHECK_TYPE_OPTIONS;
-
-  React.useEffect(() => {
-    selectedCheckType && navigate(`${ROUTES.NewCheck}/${selectedCheckType.value}`, {}, false, selectedCheckType);
+  const options = CHECK_TYPE_OPTIONS.filter(({ value }) => {
+    if (!tracerouteEnabled && value === CheckType.Traceroute) {
+      return false;
+    }
+    if (!multiHttpEnabled && value === CheckType.MULTI_HTTP) {
+      return false;
+    }
+    return true;
   });
 
   return (
@@ -36,7 +35,7 @@ export function ChooseCheckType() {
               key={check?.label || ''}
               className={styles.cards}
               onClick={() => {
-                setSelectedCheckType(check);
+                navigate(`${ROUTES.NewCheck}/${check.value}`);
               }}
             >
               <Card.Heading>{check.label}</Card.Heading>

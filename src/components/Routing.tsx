@@ -16,6 +16,7 @@ import { DashboardRedirecter } from './DashboardRedirecter';
 import { ROUTES } from 'types';
 import { config } from '@grafana/runtime';
 import { PluginPage } from 'components/PluginPage';
+import { ConfigPage } from 'page/ConfigPage';
 
 export const Routing = ({ onNavChanged, meta, ...rest }: AppRootProps) => {
   const queryParams = useQuery();
@@ -73,7 +74,7 @@ export const Routing = ({ onNavChanged, meta, ...rest }: AppRootProps) => {
         {initialized ? <Redirect to={`${PLUGIN_URL_PATH}${ROUTES.Home}`} /> : <WelcomePage />}
       </Route>
       <Route path={`${PLUGIN_URL_PATH}${ROUTES.Unprovisioned}`}>
-        <UnprovisionedSetup pluginId={meta.id} pluginName={meta.name} />
+        <UnprovisionedSetup />
       </Route>
       <Route exact path={`${PLUGIN_URL_PATH}${ROUTES.Home}`}>
         <HomePage />
@@ -88,6 +89,11 @@ export const Routing = ({ onNavChanged, meta, ...rest }: AppRootProps) => {
       </Route>
       <Route path={`${PLUGIN_URL_PATH}${ROUTES.Checks}`}>
         <CheckRouter />
+      </Route>
+      <Route path={`${PLUGIN_URL_PATH}${ROUTES.Config}`}>
+        <PluginPage>
+          <ConfigPage />
+        </PluginPage>
       </Route>
 
       {/* Default route (only redirect if the path matches the plugin's URL) */}

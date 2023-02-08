@@ -30,12 +30,6 @@
   },
   "routes": [
     {
-      "path": "init",
-      "method": "*",
-      "url": "{{ .JsonData.apiHost }}/api/v1/register/init",
-      "reqRole": "Editor"
-    },
-    {
       "path": "install",
       "method": "*",
       "url": "{{ .JsonData.apiHost }}/api/v1/register/install",
@@ -83,7 +77,7 @@
     {
       "type": "page",
       "name": "Config",
-      "path": "/plugins/grafana-synthetic-monitoring-app",
+      "path": "/a/grafana-synthetic-monitoring-app/config",
       "addToNav": true
     }
   ],
@@ -95,7 +89,7 @@
         "type": "panel",
         "name": "Worldmap Panel",
         "id": "grafana-worldmap-panel",
-        "version": "^0.3.3"
+        "version": "^1.0.3"
       }
     ]
   }

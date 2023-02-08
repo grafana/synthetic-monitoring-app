@@ -1,24 +1,20 @@
 import React, { useState } from 'react';
-import { FieldValues, UseFormRegister } from 'react-hook-form';
 import { useStyles2, TabsBar, TabContent, Tab } from '@grafana/ui';
-import { RequestTabs } from './../Tabs/Tabs';
-import { CheckFormValues } from 'types';
+import { RequestTabs } from 'components/MultiHttp/Tabs/Tabs';
 import { getMultiHttpFormStyles } from './../MultiHttpSettingsForm.styles';
+import { useFormContext } from 'react-hook-form';
 
 type ActiveTabTypes = 'header' | 'queryParams' | 'body';
 interface RequestTabsProps {
-  register: UseFormRegister<CheckFormValues | FieldValues>;
   label?: string;
-  errors?: any;
   index: number;
-  control?: any;
-  trigger?: any;
-  unregister?: any;
 }
 
-export const TabSection = ({ errors, register, unregister, index, control, trigger }: RequestTabsProps) => {
+export const TabSection = ({ index }: RequestTabsProps) => {
   const [activeTab, setActiveTab] = useState<ActiveTabTypes>('header');
   const styles = useStyles2(getMultiHttpFormStyles);
+
+  const { formState } = useFormContext();
 
   return (
     <div className={styles.tabsContent}>
@@ -27,7 +23,7 @@ export const TabSection = ({ errors, register, unregister, index, control, trigg
           label={'Headers'}
           active={activeTab === 'header'}
           onChangeTab={() => {
-            if (errors?.settings?.multihttp?.entries[index]?.request) {
+            if (formState.errors?.settings?.multihttp?.entries[index]?.request) {
               return;
             } else {
               setActiveTab('header');
@@ -41,7 +37,7 @@ export const TabSection = ({ errors, register, unregister, index, control, trigg
           label={'Body'}
           active={activeTab === 'body'}
           onChangeTab={() => {
-            if (errors?.settings?.multihttp?.entries[index]?.request) {
+            if (formState.errors?.settings?.multihttp?.entries[index]?.request) {
               return;
             } else {
               setActiveTab('body');
@@ -52,7 +48,7 @@ export const TabSection = ({ errors, register, unregister, index, control, trigg
           label={'Query Params'}
           active={activeTab === 'queryParams'}
           onChangeTab={() => {
-            if (errors?.settings?.multihttp?.entries[index]?.request) {
+            if (formState.errors?.settings?.multihttp?.entries[index]?.request) {
               return;
             } else {
               setActiveTab('queryParams');
@@ -62,15 +58,7 @@ export const TabSection = ({ errors, register, unregister, index, control, trigg
         />
       </TabsBar>
       <TabContent className={styles.tabsContent}>
-        <RequestTabs
-          unregister={unregister}
-          trigger={trigger}
-          control={control}
-          index={index}
-          activeTab={activeTab}
-          errors={errors}
-          register={register}
-        />
+        <RequestTabs index={index} activeTab={activeTab} />
       </TabContent>
     </div>
   );

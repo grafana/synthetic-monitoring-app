@@ -611,7 +611,7 @@ export const CheckList = ({ instance, checks, onCheckUpdate }: Props) => {
         action={bulkEditAction}
         isOpen={bulkEditAction !== null}
         onSuccess={() => {
-          onCheckUpdate();
+          onCheckUpdate(true);
           appEvents.emit(AppEvents.alertSuccess, ['All selected checks successfully updated']);
         }}
         onError={(err) => {

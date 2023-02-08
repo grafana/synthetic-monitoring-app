@@ -17,7 +17,7 @@ import {
 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { useFormContext, Controller, useFieldArray } from 'react-hook-form';
-import { HttpVersion, CheckType, HttpRegexValidationType } from 'types';
+import { HttpVersion, CheckType, HttpRegexValidationType, HttpMethod } from 'types';
 import { Collapse } from 'components/Collapse';
 import {
   HTTP_COMPRESSION_ALGO_OPTIONS,
@@ -128,7 +128,6 @@ const getStyles = (theme: GrafanaTheme) => ({
   `,
   validationInverted: css`
     position: relative;
-    margin-top: -20px;
     justify-self: center;
   `,
   maxWidth: css`
@@ -143,7 +142,7 @@ const getStyles = (theme: GrafanaTheme) => ({
     margin-right: ${theme.spacing.sm};
   `,
   validationAllowMissing: css`
-    justify-self: center;
+    justify-self: start;
   `,
 });
 
@@ -239,6 +238,16 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
         <Container>
           <Field label="Proxy URL" description="HTTP proxy server to use to connect to the target" disabled={!isEditor}>
             <Input id="proxyUrl" {...register('settings.http.proxyURL')} type="text" />
+          </Field>
+          <Field label="Proxy connect headers" description="The HTTP headers sent to the proxy." disabled={!isEditor}>
+            <NameValueInput
+              name="settings.http.proxyConnectHeaders"
+              disabled={!isEditor}
+              label="proxy connect header"
+              limit={10}
+              validateName={validateHTTPHeaderName}
+              validateValue={validateHTTPHeaderValue}
+            />
           </Field>
         </Container>
       </Collapse>
@@ -359,12 +368,32 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
               {fields.map((field, index) => {
                 const isHeaderMatch =
                   watch(`${REGEX_FIELD_NAME}.${index}.matchType`)?.value === HttpRegexValidationType.Header;
+                const disallowBodyMatching = watch('settings.http.method').value === HttpMethod.HEAD;
                 return (
                   <Fragment key={field.id}>
                     <Controller
                       render={({ field }) => (
-                        <Select {...field} placeholder="Field name" options={HTTP_REGEX_VALIDATION_OPTIONS} />
+                        <Select
+                          {...field}
+                          placeholder="Field name"
+                          options={HTTP_REGEX_VALIDATION_OPTIONS}
+                          invalid={
+                            disallowBodyMatching &&
+                            errors?.settings?.http?.regexValidations?.[index]?.matchType?.message
+                          }
+                        />
                       )}
+                      rules={{
+                        validate: (value) => {
+                          if (disallowBodyMatching) {
+                            if (value?.value === HttpRegexValidationType.Body) {
+                              return 'Cannot validate the body of a HEAD request';
+                            }
+                            return;
+                          }
+                          return;
+                        },
+                      }}
                       name={`${REGEX_FIELD_NAME}.${index}.matchType` as const}
                     />
                     <div className={styles.validationExpressions}>

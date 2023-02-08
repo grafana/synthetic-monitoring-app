@@ -5,7 +5,6 @@ import { HttpSettingsForm } from 'components/http/HttpSettings';
 import DnsSettingsForm from 'components/DnsSettings';
 import { TcpSettingsForm } from 'components/TcpSettings';
 import { TracerouteSettingsForm } from 'components/TracerouteSettingsForm';
-import { MultiHttpSettingsForm } from 'components/MultiHttp/MultiHttpSettingsForm';
 interface Props {
   isEditor: boolean;
   typeOfCheck: CheckType;
@@ -19,9 +18,6 @@ export const CheckSettings: FC<Props> = ({ isEditor, typeOfCheck }) => {
     case CheckType.HTTP: {
       return <HttpSettingsForm isEditor={isEditor} />;
     }
-    case CheckType.MULTI_HTTP: {
-      return <MultiHttpSettingsForm isEditor={isEditor} />;
-    }
     case CheckType.DNS: {
       return <DnsSettingsForm isEditor={isEditor} />;
     }
@@ -30,6 +26,9 @@ export const CheckSettings: FC<Props> = ({ isEditor, typeOfCheck }) => {
     }
     case CheckType.Traceroute: {
       return <TracerouteSettingsForm isEditor={isEditor} />;
+    }
+    case CheckType.MULTI_HTTP: {
+      throw new Error('Invalid check type for this location');
     }
   }
 };

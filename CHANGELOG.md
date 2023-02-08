@@ -1,5 +1,24 @@
 # Change Log
 
+# [1.9.32](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.31...v1.9.32) (2023-2-06)
+
+- Fix a bug with the config page not rendering in cloud instances
+
+# [1.9.31](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.30...v1.9.31) (2023-1-13)
+
+- Fix a bug where checks weren't refetched after bulk updating probes
+- Add some information on how to set up a private probe after creating a token
+- Show error state if validating the body of an HTTP HEAD request
+- Remove the legacy initialization flow
+
+# [1.9.30](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.29...v1.9.30) (2023-1-9)
+
+- Remove deprecated initialization flow
+
+# [1.9.29](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.28...v1.9.29) (2023-1-4)
+
+- Add proxy headers to HTTP checks
+
 # [1.9.28](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.27...v1.9.28) (2022-11-9)
 
 - Update Alert URL for compatiblity with Grafana 9
