@@ -30,8 +30,7 @@ export const getSlider = async (formName: string) => {
   return input;
 };
 
-export const fillBasicCheckFields = async (checkType: CheckType, jobName: string, target: string) => {
-  await selectCheckType(checkType);
+export const fillBasicCheckFields = async (jobName: string, target: string) => {
   const jobNameInput = await screen.findByLabelText('Job Name', { exact: false });
   userEvent.type(jobNameInput, jobName);
   const targetInput = await screen.findByTestId('check-editor-target');

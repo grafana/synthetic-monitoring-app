@@ -22,7 +22,7 @@ import {
   CheckPageParams,
   AdHocCheckResponse,
 } from 'types';
-import { hasRole } from 'utils';
+import { hasRole, checkType as getCheckType } from 'utils';
 import {
   getDefaultValuesFromCheck,
   getCheckFromFormValues,
@@ -86,10 +86,12 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
   const styles = useStyles(getStyles);
   // If we're editing, grab the appropriate check from the list
   const { id, checkType: checkTypeParam } = useParams<CheckPageParams>();
-  const checkType = checkTypeParamToCheckType(checkTypeParam);
+  let checkType = checkTypeParamToCheckType(checkTypeParam);
   let check: Check = fallbackCheck(checkType);
+
   if (id) {
     check = checks?.find((c) => c.id === Number(id)) ?? fallbackCheck(checkType);
+    checkType = getCheckType(check.settings);
   }
 
   const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
@@ -101,9 +103,7 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
     error,
     loading: submitting,
   } = useAsyncCallback(async (checkValues: CheckFormValues) => {
-    checkValues.checkType = { label: checkType, value: checkType };
-
-    const updatedCheck = getCheckFromFormValues(checkValues, defaultValues);
+    const updatedCheck = getCheckFromFormValues(checkValues, defaultValues, checkType);
     if (check?.id) {
       trackEvent('editCheckSubmit');
       await api?.updateCheck({
@@ -130,10 +130,11 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
     onReturn(true);
   };
 
+  const headerText = check?.id ? 'Edit Check' : `Add ${checkType.toUpperCase()} Check`;
   return (
-    <PluginPage pageNav={{ text: check?.job ? check.job : 'Add check', description: 'Check configuration' }}>
+    <PluginPage pageNav={{ text: check?.job ? check.job : headerText, description: 'Check configuration' }}>
       <>
-        {!config.featureToggles.topnav && <Legend>{check?.id ? 'Edit Check' : 'Add Check'}</Legend>}
+        {!config.featureToggles.topnav && <Legend>{headerText}</Legend>}
         <FormProvider {...formMethods}>
           <form onSubmit={formMethods.handleSubmit(onSubmit)}>
             <HorizontalCheckboxField
@@ -166,8 +167,7 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
               rules={{
                 required: true,
                 validate: (target) => {
-                  const targetCheckType: CheckType = checkType;
-                  return validateTarget(targetCheckType, target, check);
+                  return validateTarget(checkType, target);
                 },
               }}
               render={({ field }) => (
@@ -184,6 +184,7 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
             <hr className={styles.breakLine} />
             <ProbeOptions
               isEditor={isEditor}
+              checkType={checkType}
               timeout={check?.timeout ?? fallbackCheck(checkType).timeout}
               frequency={check?.frequency ?? fallbackCheck(checkType).frequency}
               probes={check?.probes ?? fallbackCheck(checkType).probes}
@@ -215,7 +216,7 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
                       }
                       onClick={() => {
                         const values = formMethods.getValues();
-                        const check = getCheckFromFormValues(values, defaultValues);
+                        const check = getCheckFromFormValues(values, defaultValues, checkType);
                         setTestRequestInFlight(true);
                         api
                           ?.testCheck(check)

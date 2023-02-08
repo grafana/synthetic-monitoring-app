@@ -6,9 +6,9 @@ import { InstanceContext } from 'contexts/InstanceContext';
 import { AppPluginMeta, DataSourceSettings, FeatureToggles } from '@grafana/data';
 import { PLUGIN_URL_PATH } from 'components/constants';
 import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
-import { Router } from 'react-router-dom';
+import { Route, Router } from 'react-router-dom';
 import { CheckEditor } from './CheckEditor';
-import { selectCheckType, submitForm, fillBasicCheckFields, fillDnsValidationFields } from './testHelpers';
+import { submitForm, fillBasicCheckFields, fillDnsValidationFields } from './testHelpers';
 import { BASIC_HTTP_CHECK, BASIC_PING_CHECK, BASIC_TCP_CHECK, BASIC_DNS_CHECK } from './testConstants';
 import { locationService } from '@grafana/runtime';
 
@@ -26,8 +26,9 @@ jest.mock('hooks/useAlerts', () => ({
 beforeEach(() => jest.resetAllMocks());
 const onReturn = jest.fn();
 
-const renderNewCheckEditor = async () => {
-  locationService.push(`${PLUGIN_URL_PATH}${ROUTES.Checks}/new`);
+const renderNewCheckEditor = async (checkType: CheckType) => {
+  locationService.push(`${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${checkType}`);
+  // jest.spyOn(ReactRouter, 'useParams').mockReturnValue({ checkType });
   const api = getInstanceMock();
   const instance = {
     api,
@@ -41,25 +42,27 @@ const renderNewCheckEditor = async () => {
     <FeatureFlagProvider overrides={{ featureToggles, isFeatureEnabled }}>
       <InstanceContext.Provider value={{ instance, loading: false, meta }}>
         <Router history={locationService.getHistory()}>
-          <CheckEditor onReturn={onReturn} />
+          <Route path={`${PLUGIN_URL_PATH}${ROUTES.Checks}/new/:checkType`}>
+            <CheckEditor onReturn={onReturn} />
+          </Route>
         </Router>
       </InstanceContext.Provider>
     </FeatureFlagProvider>
   );
 
-  await waitFor(() => expect(screen.getByText('Check Details')).toBeInTheDocument());
+  await waitFor(() => expect(screen.getByText('Probe options')).toBeInTheDocument());
   return instance;
 };
 
 describe('new checks', () => {
   it('renders the new check form', async () => {
-    await renderNewCheckEditor();
-    expect(screen.getByText('Add Check')).toBeInTheDocument();
+    await renderNewCheckEditor(CheckType.HTTP);
+    expect(screen.getByText('Add HTTP Check')).toBeInTheDocument();
   });
 
   it('has correct sections for HTTP', async () => {
-    await renderNewCheckEditor();
-    await selectCheckType(CheckType.HTTP);
+    await renderNewCheckEditor(CheckType.HTTP);
+    // await selectCheckType(CheckType.HTTP);
     const httpSettings = await screen.findByText('HTTP settings');
     expect(httpSettings).toBeInTheDocument();
     const tlsConfig = await screen.findByText('TLS config');
@@ -73,8 +76,8 @@ describe('new checks', () => {
   });
 
   it('has correct sections for DNS', async () => {
-    await renderNewCheckEditor();
-    await selectCheckType(CheckType.DNS);
+    await renderNewCheckEditor(CheckType.DNS);
+    // await selectCheckType(CheckType.DNS);
     const dnsSettings = await screen.findByText('DNS settings');
     expect(dnsSettings).toBeInTheDocument();
     const validation = await screen.findByText('Validation');
@@ -84,8 +87,8 @@ describe('new checks', () => {
   });
 
   it('has correct sections for TCP', async () => {
-    await renderNewCheckEditor();
-    await selectCheckType(CheckType.TCP);
+    await renderNewCheckEditor(CheckType.TCP);
+    // await selectCheckType(CheckType.TCP);
     const dnsSettings = await screen.findByText('TCP settings');
     expect(dnsSettings).toBeInTheDocument();
     const query = await screen.findAllByText('Query/Response');
@@ -95,36 +98,36 @@ describe('new checks', () => {
   });
 
   it('can create a new HTTP check', async () => {
-    const instance = await renderNewCheckEditor();
+    const instance = await renderNewCheckEditor(CheckType.HTTP);
 
-    await fillBasicCheckFields(CheckType.HTTP, 'Job name', 'https://grafana.com');
+    await fillBasicCheckFields('Job name', 'https://grafana.com');
 
     await submitForm(onReturn);
     expect(instance.api.addCheck).toHaveBeenCalledWith(BASIC_HTTP_CHECK);
   });
 
   it('can create a new PING check', async () => {
-    const instance = await renderNewCheckEditor();
+    const instance = await renderNewCheckEditor(CheckType.PING);
 
-    await fillBasicCheckFields(CheckType.PING, 'Job name', 'grafana.com');
+    await fillBasicCheckFields('Job name', 'grafana.com');
 
     await submitForm(onReturn);
     expect(instance.api.addCheck).toHaveBeenCalledWith(BASIC_PING_CHECK);
   });
 
   it('can create a new TCP check', async () => {
-    const instance = await renderNewCheckEditor();
+    const instance = await renderNewCheckEditor(CheckType.TCP);
 
-    await fillBasicCheckFields(CheckType.TCP, 'Job name', 'grafana.com:43');
+    await fillBasicCheckFields('Job name', 'grafana.com:43');
 
     await submitForm(onReturn);
     expect(instance.api.addCheck).toHaveBeenCalledWith(BASIC_TCP_CHECK);
   });
 
   it('can create a new DNS check', async () => {
-    const instance = await renderNewCheckEditor();
+    const instance = await renderNewCheckEditor(CheckType.DNS);
 
-    await fillBasicCheckFields(CheckType.DNS, 'Job name', 'grafana.com');
+    await fillBasicCheckFields('Job name', 'grafana.com');
     await fillDnsValidationFields();
 
     await submitForm(onReturn);

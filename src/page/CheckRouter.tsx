@@ -56,7 +56,7 @@ export function CheckRouter() {
           }
         </Route>
         <Route path={`${path}/edit/multihttp/:id`} exact>
-          <MultiHttpSettingsForm onReturn={returnToList} checks={checks} instance={instance} isEditor={true} />
+          <MultiHttpSettingsForm onReturn={returnToList} checks={checks} />
         </Route>
         <Route path={`${path}/edit/:checkType/:id`} exact>
           <CheckEditor onReturn={returnToList} checks={checks} />

@@ -168,7 +168,6 @@ export interface HttpSettings {
   compression: HTTPCompressionAlgo | undefined;
   proxyURL?: string;
   proxyConnectHeaders?: string[];
-  mutliURLs?: string[];
 
   // Authentication
   bearerToken?: string;
@@ -285,7 +284,6 @@ export interface AlertFormValues {
 }
 
 export interface CheckFormValues extends Omit<Check, 'settings' | 'labels' | 'alertSensitivity'> {
-  checkType: SelectableValue<CheckType>;
   settings: SettingsFormValues;
   labels?: Label[];
   alertSensitivity: SelectableValue<string>;

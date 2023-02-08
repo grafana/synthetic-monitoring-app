@@ -17,7 +17,7 @@ import {
 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { useFormContext, Controller, useFieldArray } from 'react-hook-form';
-import { HttpVersion, CheckType, HttpRegexValidationType } from 'types';
+import { HttpVersion, CheckType, HttpRegexValidationType, HttpMethod } from 'types';
 import { Collapse } from 'components/Collapse';
 import {
   HTTP_COMPRESSION_ALGO_OPTIONS,

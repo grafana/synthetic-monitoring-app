@@ -31,7 +31,6 @@ import {
 } from 'types';
 
 import {
-  CHECK_TYPE_OPTIONS,
   IP_OPTIONS,
   DNS_RESPONSE_CODES,
   HTTP_SSL_OPTIONS,
@@ -40,8 +39,9 @@ import {
   HTTP_COMPRESSION_ALGO_OPTIONS,
   DNS_RESPONSE_MATCH_OPTIONS,
   fallbackSettings,
+  METHOD_OPTIONS,
 } from 'components/constants';
-import { checkType, fromBase64, toBase64 } from 'utils';
+import { checkType as getCheckType, fromBase64, toBase64 } from 'utils';
 import isBase64 from 'is-base64';
 
 const ensureBase64 = (value: string) => (isBase64(value) ? value : toBase64(value));
@@ -259,7 +259,7 @@ const getTracerouteSettingsFormValues = (settings: Settings): TracerouteSettings
 };
 
 const getFormSettingsForCheck = (settings: Settings): SettingsFormValues => {
-  const type = checkType(settings);
+  const type = getCheckType(settings);
   switch (type) {
     case CheckType.HTTP:
       return { http: getHttpSettingsFormValues(settings) };
@@ -304,7 +304,6 @@ const getAlertSensitivityValueFromCheck = (sensitivity: string): SelectableValue
 };
 
 export const getDefaultValuesFromCheck = (check: Check): CheckFormValues => {
-  const defaultCheckType = checkType(check.settings);
   const settings = check.id ? getFormSettingsForCheck(check.settings) : getAllFormSettingsForCheck();
 
   return {
@@ -314,8 +313,6 @@ export const getDefaultValuesFromCheck = (check: Check): CheckFormValues => {
     frequency: check.frequency / 1000,
     probes: check.probes,
     alertSensitivity: getAlertSensitivityValueFromCheck(check.alertSensitivity),
-    checkType:
-      CHECK_TYPE_OPTIONS.find((checkTypeOption) => checkTypeOption.value === defaultCheckType) ?? CHECK_TYPE_OPTIONS[1],
     settings,
   };
 };
@@ -489,7 +486,7 @@ const getMultiHttpFormValues = (settings: Settings): MultiHttpSettingsFormValues
         ...entry,
         request: {
           ...entry.request,
-          method: selectableValueFrom(entry.request.method),
+          method: METHOD_OPTIONS.find(({ value }) => value === entry.request.method) ?? METHOD_OPTIONS[0],
         },
       };
     }),
@@ -615,8 +612,11 @@ const getTracerouteSettings = (
   };
 };
 
-const getSettingsFromFormValues = (formValues: Partial<CheckFormValues>, defaultValues: CheckFormValues): Settings => {
-  const checkType = getValueFromSelectable(formValues.checkType ?? defaultValues.checkType);
+const getSettingsFromFormValues = (
+  formValues: Partial<CheckFormValues>,
+  defaultValues: CheckFormValues,
+  checkType: CheckType
+): Settings => {
   switch (checkType) {
     case CheckType.HTTP:
       return { http: getHttpSettings(formValues.settings?.http, defaultValues.settings.http) };
@@ -655,7 +655,8 @@ const getFrequencyFromFormValue = (frequency: number, checkType?: CheckType): nu
 
 export const getCheckFromFormValues = (
   formValues: Omit<CheckFormValues, 'alert'>,
-  defaultValues: CheckFormValues
+  defaultValues: CheckFormValues,
+  checkType: CheckType
 ): Check => {
   return {
     job: formValues.job,
@@ -663,10 +664,10 @@ export const getCheckFromFormValues = (
     enabled: formValues.enabled,
     labels: formValues.labels ?? [],
     probes: formValues.probes,
-    timeout: getTimeoutFromFormValue(formValues.timeout, getValueFromSelectable(formValues.checkType)),
-    frequency: getFrequencyFromFormValue(formValues.frequency, getValueFromSelectable(formValues.checkType)),
+    timeout: getTimeoutFromFormValue(formValues.timeout, checkType),
+    frequency: getFrequencyFromFormValue(formValues.frequency, checkType),
     alertSensitivity: getValueFromSelectable(formValues.alertSensitivity) ?? AlertSensitivity.None,
-    settings: getSettingsFromFormValues(formValues, defaultValues),
+    settings: getSettingsFromFormValues(formValues, defaultValues, checkType),
     basicMetricsOnly: !formValues.publishAdvancedMetrics,
   };
 };
