@@ -1,14 +1,15 @@
 import React from 'react';
 import { css, cx } from '@emotion/css';
-import { useStyles, Checkbox, Label } from '@grafana/ui';
-import { GrafanaTheme } from '@grafana/data';
+import { Checkbox, Label, useStyles2 } from '@grafana/ui';
+import { GrafanaTheme2 } from '@grafana/data';
 import { useFormContext } from 'react-hook-form';
 
-const getStyles = (theme: GrafanaTheme) => ({
+const getStyles = (theme: GrafanaTheme2) => ({
   container: css`
     display: flex;
     align-items: center;
-    margin-bottom: ${theme.spacing.md};
+    margin-bottom: ${theme.spacing(2)};
+    gap: ${theme.spacing(2)};
   `,
   checkbox: css`
     position: relative;
@@ -39,7 +40,7 @@ export const HorizontalCheckboxField = ({
   value,
   onChange,
 }: Props) => {
-  const styles = useStyles(getStyles);
+  const styles = useStyles2(getStyles);
   const { register } = useFormContext();
   const registered = name ? register(name) : {};
 
@@ -48,7 +49,7 @@ export const HorizontalCheckboxField = ({
       <Checkbox
         disabled={disabled}
         id={id}
-        style={{ position: 'relative', marginRight: '10px' }}
+        style={{ marginRight: '10px' }}
         value={value}
         onChange={onChange}
         {...registered}

@@ -139,6 +139,7 @@ export function CheckTestResultsModal({ testResponse, isOpen, onDismiss }: Props
         onDismiss();
       }}
     >
+      <p>Tests will run on up to 5 randomly selected probes</p>
       {testResponse?.probes.map((testProbe) => {
         const probe = probes?.find((probe) => probe.id === testProbe);
         const resultKey = `${probe?.name}${testResponse.id}`;

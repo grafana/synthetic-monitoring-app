@@ -67,6 +67,7 @@ const settingsToTF = (check: Check): TFCheckSettings => {
           ip_version: check.settings.http.ipVersion,
           no_follow_redirects: check.settings.http.noFollowRedirects,
           proxy_url: check.settings.http.proxyURL,
+          proxy_connect_headers: check.settings.http.proxyConnectHeaders,
           tls_config: tlsConfigToTF(check.settings.http.tlsConfig),
           valid_http_versions: check.settings.http.validHTTPVersions,
           valid_status_codes: check.settings.http.validStatusCodes,

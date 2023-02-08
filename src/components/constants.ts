@@ -27,9 +27,9 @@ export const DNS_RESPONSE_CODES = enumToStringArray(DnsResponseCodes).map((respo
 }));
 
 export const DNS_RESPONSE_MATCH_OPTIONS = [
-  { label: `Validate ${ResponseMatchType.Authority} matches`, value: ResponseMatchType.Authority },
-  { label: `Validate ${ResponseMatchType.Answer} matches`, value: ResponseMatchType.Answer },
-  { label: `Validate ${ResponseMatchType.Additional} matches`, value: ResponseMatchType.Additional },
+  { label: `Fail if ${ResponseMatchType.Authority} matches`, value: ResponseMatchType.Authority },
+  { label: `Fail if ${ResponseMatchType.Answer} matches`, value: ResponseMatchType.Answer },
+  { label: `Fail if ${ResponseMatchType.Additional} matches`, value: ResponseMatchType.Additional },
 ];
 
 export const DNS_RECORD_TYPES = [
@@ -81,8 +81,6 @@ export const DNS_PROTOCOLS = [
     value: DnsProtocol.TCP,
   },
 ];
-
-export const DEFAULT_API_HOST = 'https://synthetic-monitoring-api.grafana.net';
 
 export const IP_OPTIONS = [
   {

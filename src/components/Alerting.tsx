@@ -85,8 +85,8 @@ export const Alerting: FC = () => {
         {!config.featureToggles.topnav && <h2>Alerts</h2>}
         <Icon className={styles.icon} name="exclamation-triangle" />
         Synthetic Monitoring uses &nbsp;
-        <a href="https://grafana.com/docs/grafana-cloud/alerts/grafana-cloud-alerting/" className={styles.link}>
-          Grafana Cloud Alerting
+        <a href="https://grafana.com/docs/grafana-cloud/alerting/" className={styles.link}>
+          Alerting
         </a>
         , which is not accessible for users without an admin role.
       </div>

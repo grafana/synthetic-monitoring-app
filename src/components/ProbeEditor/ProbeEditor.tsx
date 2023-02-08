@@ -12,6 +12,7 @@ import {
   Alert,
   useStyles2,
   Label,
+  Icon,
 } from '@grafana/ui';
 import { useForm, FormProvider } from 'react-hook-form';
 import { useAsyncCallback } from 'react-async-hook';
@@ -58,6 +59,14 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
   marginBottom: css`
     margin-bottom: ${theme.spacing(2)};
+  `,
+  externalLink: css`
+    display: flex;
+    align-items: center;
+    gap: ${theme.spacing(1)};
+  `,
+  link: css`
+    text-decoration: underline;
   `,
 });
 
@@ -309,6 +318,17 @@ const ProbeEditor = ({ probes, onReturn }: Props) => {
                 onDismiss={() => (probe.id ? setShowTokenModal(false) : onReturn(false))}
               >
                 <Clipboard content={probeToken} />
+                <div className={styles.externalLink}>
+                  <a
+                    href="https://grafana.com/docs/grafana-cloud/synthetic-monitoring/private-probes/#add-a-new-probe-in-your-grafana-instance"
+                    target="blank"
+                    rel="noopener noreferer"
+                    className={styles.link}
+                  >
+                    Learn how to run a private probe
+                  </a>
+                  <Icon name="external-link-alt" />
+                </div>
               </Modal>
             </div>
           </form>

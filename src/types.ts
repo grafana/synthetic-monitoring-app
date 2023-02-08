@@ -167,6 +167,7 @@ export interface HttpSettings {
   tlsConfig?: TLSConfig;
   compression: HTTPCompressionAlgo | undefined;
   proxyURL?: string;
+  proxyConnectHeaders?: string[];
 
   // Authentication
   bearerToken?: string;
@@ -206,6 +207,7 @@ export interface HttpSettingsFormValues
     | 'method'
     | 'ipVersion'
     | 'headers'
+    | 'proxyConnectHeaders'
     | 'failIfSSL'
     | 'failIfNotSSL'
     | 'failIfBodyMatchesRegexp'
@@ -221,6 +223,7 @@ export interface HttpSettingsFormValues
   method: SelectableValue<HttpMethod>;
   ipVersion: SelectableValue<IpVersion>;
   headers: HttpHeaderFormValue[];
+  proxyConnectHeaders: HttpHeaderFormValue[];
   regexValidations: HttpRegexValidationFormValue[];
   followRedirects: boolean;
   compression: SelectableValue<HTTPCompressionAlgo>;
@@ -341,16 +344,6 @@ export interface HostedInstance {
   currentActiveSeries: number;
   currentDpm: number;
   currentUsage: number;
-}
-
-export interface RegistrationInfo {
-  accessToken: string;
-  tenantInfo: {
-    id: number;
-    metricInstance: HostedInstance;
-    logInstance: HostedInstance;
-  };
-  instances: HostedInstance[];
 }
 
 export interface GrafanaInstances {
@@ -531,6 +524,7 @@ export enum ROUTES {
   NewCheck = 'checks/new',
   EditCheck = 'checks/edit',
   ChooseCheckType = 'checks/choose-type',
+  Config = 'config',
 }
 
 export interface CheckPageParams {

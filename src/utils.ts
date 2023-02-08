@@ -28,69 +28,6 @@ export function findLinkedDatasource(linkedDSInfo: LinkedDatasourceInfo): DataSo
   return config.datasources[linkedDSInfo.grafanaName];
 }
 
-/** Given hosted info, link to an existing instance */
-export function findHostedInstance(
-  known: DataSourceInstanceSettings[],
-  info?: HostedInstance
-): DataSourceInstanceSettings | undefined {
-  if (info) {
-    const basicAuthUser = `${info.id}`;
-    const instanceUrl = info.url + (info.type === 'logs' ? '' : '/api/prom');
-    for (const ds of known) {
-      if (ds.url === instanceUrl) {
-        if (basicAuthUser === (ds as any).basicAuthUser) {
-          return ds;
-        }
-      }
-    }
-  }
-  return undefined;
-}
-
-/** Given hosted info, link to an existing instance */
-export async function getHostedLokiAndPrometheusInfo(): Promise<DataSourceInstanceSettings[]> {
-  const settings: DataSourceInstanceSettings[] = [];
-  for (const ds of Object.values(config.datasources)) {
-    if (ds.type === 'prometheus' || ds.type === 'loki') {
-      const s = await getBackendSrv().get(`api/datasources/${ds.id}`);
-      if (s.url && s.url.indexOf('grafana.net') > 0) {
-        settings.push(s as DataSourceInstanceSettings);
-      }
-    }
-  }
-  return settings;
-}
-
-export async function createDatasource(hosted: HostedInstance, adminToken: string, smDatasourceId: string) {
-  const token = await getViewerToken(adminToken, hosted, smDatasourceId);
-  if (!token) {
-    throw new Error('error getting token');
-  }
-  return await createHostedInstance(hosted, token);
-}
-
-async function getViewerToken(apiToken: string, instance: HostedInstance, smDatasourceId: string): Promise<string> {
-  return getBackendSrv()
-    .fetch({
-      method: 'POST',
-      url: `api/datasources/proxy/${smDatasourceId}/viewer-token`,
-      data: {
-        apiToken,
-        id: instance.id,
-        type: instance.type,
-      },
-      headers: {
-        // ensure the grafana backend doesn't use a cached copy of the
-        // datasource config, as it might not have the new apiHost set.
-        'X-Grafana-NoCache': 'true',
-      },
-    })
-    .toPromise()
-    .then((res: any) => {
-      return res.data?.token;
-    });
-}
-
 interface DatasourcePayload {
   accessToken: string;
   apiHost: string;
@@ -358,3 +295,15 @@ export const getSuccessRateIcon = (
     return 'times-square' as IconName;
   }
 };
+
+export function getRandomProbes(probes: number[], quantity: number): number[] {
+  if (quantity >= probes.length) {
+    return probes;
+  }
+  const randomProbes = new Set([] as number[]);
+  while (randomProbes.size < quantity) {
+    const index = Math.floor(Math.random() * probes.length);
+    randomProbes.add(probes[index]);
+  }
+  return Array.from(randomProbes).sort((a, b) => a - b);
+}
