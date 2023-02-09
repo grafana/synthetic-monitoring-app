@@ -40,6 +40,7 @@ import {
   DNS_RESPONSE_MATCH_OPTIONS,
   fallbackSettings,
   METHOD_OPTIONS,
+  MULTI_HTTP_VARIABLE_TYPE_OPTIONS,
 } from 'components/constants';
 import { checkType as getCheckType, fromBase64, toBase64 } from 'utils';
 import isBase64 from 'is-base64';
@@ -472,6 +473,15 @@ const getMultiHttpSettings = (settings?: MultiHttpSettingsFormValues): MultiHttp
           ...entry.request,
           method: getValueFromSelectable(entry.request.method) ?? 'GET',
         },
+        variables: entry.variables?.map((variable) => {
+          if (variable.type.value === undefined) {
+            throw new Error('Selecting a variable type is required');
+          }
+          return {
+            ...variable,
+            type: variable.type.value,
+          };
+        }),
       };
     }),
   };
@@ -483,11 +493,21 @@ const getMultiHttpFormValues = (settings: Settings): MultiHttpSettingsFormValues
   return {
     entries: multiHttpSettings.entries?.map((entry) => {
       return {
-        ...entry,
         request: {
           ...entry.request,
           method: METHOD_OPTIONS.find(({ value }) => value === entry.request.method) ?? METHOD_OPTIONS[0],
         },
+        variables:
+          entry.variables?.map(({ type, name, expression, attribute }) => {
+            return {
+              type:
+                MULTI_HTTP_VARIABLE_TYPE_OPTIONS.find(({ value }) => value === type) ??
+                MULTI_HTTP_VARIABLE_TYPE_OPTIONS[0],
+              name,
+              expression,
+              attribute,
+            };
+          }) ?? [],
       };
     }),
   };

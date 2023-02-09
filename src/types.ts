@@ -1,7 +1,7 @@
 import { DataSourceSettings, OrgRole, SelectableValue } from '@grafana/data';
 import { LinkedDatasourceInfo } from './datasource/types';
 import { SMDataSource } from 'datasource/DataSource';
-import { MultiHttpEntry, RequestProps, RequestMethods } from 'components/MultiHttp/MultiHttpTypes';
+import { MultiHttpEntry, RequestProps, RequestMethods, MultiHttpVariable } from 'components/MultiHttp/MultiHttpTypes';
 
 export interface GlobalSettings {
   apiHost: string;
@@ -236,12 +236,17 @@ export interface MultiHttpSettingsFormValues {
   entries: MultiHttpEntryFormValues[];
 }
 
-export interface MultiHttpEntryFormValues extends Omit<MultiHttpEntry, 'request'> {
+export interface MultiHttpEntryFormValues extends Omit<MultiHttpEntry, 'request' | 'variables'> {
   request: MultiHttpRequestFormValues;
+  variables: MultiHttpVariablesFormValues[];
 }
 
 export interface MultiHttpRequestFormValues extends Omit<RequestProps, 'method'> {
   method: SelectableValue<RequestMethods>;
+}
+
+export interface MultiHttpVariablesFormValues extends Omit<MultiHttpVariable, 'type'> {
+  type: SelectableValue<MultiHttpVariableType>;
 }
 
 export interface TracerouteSettings {
@@ -549,7 +554,7 @@ export interface AdHocCheckResponse {
 
 export type MultiHttpFormTabs = 'header' | 'queryParams' | 'body' | 'variables';
 
-export enum MultiHttpVariable {
+export enum MultiHttpVariableType {
   JSON_PATH = 0,
   REGEX = 1,
   CSS_SELECTOR = 2,
