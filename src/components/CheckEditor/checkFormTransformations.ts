@@ -59,10 +59,18 @@ const getPingSettingsFormValues = (settings: Settings): PingSettingsFormValues =
 
 const headersToLabels = (headers: string[] | undefined): Label[] =>
   headers?.map((header) => {
-    const parts = header.split(':', 2);
+    const parts = header.split(':');
+    const value = parts
+      .map((part, index) => {
+        if (index === 0) {
+          return '';
+        }
+        return part;
+      })
+      .join('');
     return {
       name: parts[0],
-      value: parts[1],
+      value: value,
     };
   }) ?? [];
 
