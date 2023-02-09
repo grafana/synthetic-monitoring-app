@@ -67,7 +67,7 @@ const headersToLabels = (headers: string[] | undefined): Label[] =>
         }
         return part;
       })
-      .join('');
+      .join(':');
     return {
       name: parts[0],
       value: value,
