@@ -250,6 +250,11 @@ export const BASIC_MULTIHTTP_CHECK = {
               },
             ],
           },
+          variables: [
+            { type: 0, name: 'enchiladas', expression: 'mole' },
+            { type: 1, name: 'salsa', expression: 'picante' },
+            { type: 2, name: 'chimichanga', expression: 'delicioso', attribute: 'churro' },
+          ],
         },
         {
           request: {
@@ -267,8 +272,10 @@ export const BASIC_MULTIHTTP_CHECK = {
                 name: 'query',
                 value: 'param',
               },
+              { name: 'using variable', value: '${enchiladas}' },
             ],
           },
+          variables: [],
         },
       ],
     },

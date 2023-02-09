@@ -2,6 +2,7 @@ export type MultiHttpVariable = {
   type: number;
   name: string;
   expression: string;
+  attribute?: string;
 };
 
 export type HeaderType = {

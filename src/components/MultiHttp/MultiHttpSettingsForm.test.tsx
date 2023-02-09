@@ -98,6 +98,10 @@ describe('editing multihttp check', () => {
     expect(queryParamValues[0]).toHaveValue('delicious');
     expect(queryParamValues[1]).toHaveValue('param');
 
+    const variablesTabs = await screen.findAllByLabelText('Tab Variables');
+    userEvent.click(variablesTabs[0]);
+    userEvent.click(variablesTabs[1]);
+
     const submitButton = await screen.findByRole('button', { name: 'Save' });
     userEvent.click(submitButton);
 

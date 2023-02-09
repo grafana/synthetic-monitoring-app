@@ -2,8 +2,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { ClipboardButton, Field, useStyles2 } from '@grafana/ui';
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
-import { SettingsFormValues } from 'types';
-import { MultiHttpVariable } from './MultiHttpTypes';
+import { MultiHttpVariablesFormValues, SettingsFormValues } from 'types';
 import { css } from '@emotion/css';
 
 interface Props {
@@ -25,7 +24,7 @@ export function AvailableVariables({ index }: Props) {
   const { watch } = useFormContext();
   const settings = (watch('settings') as SettingsFormValues) ?? {};
   const availableVars =
-    settings.multihttp?.entries?.reduce<MultiHttpVariable[]>((acc, entry, requestIndex) => {
+    settings.multihttp?.entries?.reduce<MultiHttpVariablesFormValues[]>((acc, entry, requestIndex) => {
       if (index > requestIndex) {
         return acc.concat(entry.variables ?? []);
       }

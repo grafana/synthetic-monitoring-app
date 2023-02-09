@@ -210,8 +210,8 @@ const QueryParamsTab = ({ index, label }: Props) => {
 };
 
 const VariablesTab = ({ index, label }: Props) => {
-  const variableFieldName = `settings.multihttp.entries[${index}].variables`;
-  const { control, register, watch } = useFormContext();
+  const variableFieldName = `settings.multihttp.entries.${index}.variables`;
+  const { control, register, watch, formState } = useFormContext();
   const { fields, append, remove } = useFieldArray({
     control,
     name: variableFieldName,
@@ -223,31 +223,36 @@ const VariablesTab = ({ index, label }: Props) => {
       {fields.map((field, variableIndex) => {
         const variableTypeName = `${variableFieldName}.${variableIndex}.type`;
         const variableTypeValue = watch(variableTypeName)?.value;
+        const errorPath = formState.errors.settings?.multihttp?.entries?.[index]?.variables?.[variableIndex];
+
         return (
           <HorizontalGroup key={field.id}>
             <Controller
-              render={({ field: typeField }) => (
-                <Field label="Variable type">
-                  <Select
-                    id={`multihttp-variable-type-${index}-${variableIndex}`}
-                    options={MULTI_HTTP_VARIABLE_TYPE_OPTIONS}
-                    className={styles.minInputWidth}
-                    {...typeField}
-                  />
-                </Field>
-              )}
-              defaultValue={MULTI_HTTP_VARIABLE_TYPE_OPTIONS[0]}
               name={variableTypeName}
+              render={({ field: typeField }) => {
+                return (
+                  <Field label="Variable type" invalid={errorPath?.type}>
+                    <Select
+                      id={`multihttp-variable-type-${index}-${variableIndex}`}
+                      className={styles.minInputWidth}
+                      {...typeField}
+                      options={MULTI_HTTP_VARIABLE_TYPE_OPTIONS}
+                    />
+                  </Field>
+                );
+              }}
+              rules={{ required: true }}
             />
-            <Field label="Variable name">
+            <Field label="Variable name" invalid={errorPath?.name}>
               <Input
                 placeholder="Variable name"
                 id={`multihttp-variable-name-${index}-${variableIndex}`}
-                {...register(`${variableFieldName}.${variableIndex}.name`)}
+                invalid={formState.errors.settings?.multihttp?.entries?.[index]?.variables?.[variableIndex]?.type}
+                {...register(`${variableFieldName}.${variableIndex}.name`, { required: true })}
               />
             </Field>
             {variableTypeValue === MultiHttpVariableType.CSS_SELECTOR && (
-              <Field label="Attribute">
+              <Field label="Attribute" invalid={errorPath?.attribute}>
                 <Input
                   placeholder="Attribute"
                   id={`multihttp-variable-attribute-${index}-${variableIndex}`}
@@ -255,11 +260,11 @@ const VariablesTab = ({ index, label }: Props) => {
                 />
               </Field>
             )}
-            <Field label="Variable expression">
+            <Field label="Variable expression" invalid={errorPath?.expression}>
               <Input
                 placeholder="Variable expression"
                 id={`multihttp-variable-expression-${index}-${variableIndex}`}
-                {...register(`${variableFieldName}.${variableIndex}.expression`)}
+                {...register(`${variableFieldName}.${variableIndex}.expression`, { required: true })}
               />
             </Field>
             <IconButton name="trash-alt" onClick={() => remove(variableIndex)} />
@@ -268,7 +273,7 @@ const VariablesTab = ({ index, label }: Props) => {
       })}
       <Button
         onClick={() => {
-          append({ type: MULTI_HTTP_VARIABLE_TYPE_OPTIONS[0], name: '', expression: '' });
+          append({ type: undefined, name: '', expression: '' });
         }}
         variant="secondary"
         size="sm"

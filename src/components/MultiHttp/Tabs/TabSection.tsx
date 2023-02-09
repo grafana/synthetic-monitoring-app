@@ -16,7 +16,6 @@ export const TabSection = ({ index }: RequestTabsProps) => {
 
   const { formState } = useFormContext();
 
-  console.log({ activeTab });
   return (
     <div className={styles.tabsContent}>
       <TabsBar className={styles.tabsBar}>
@@ -59,15 +58,15 @@ export const TabSection = ({ index }: RequestTabsProps) => {
         />
         <Tab
           label="Variables"
-          className={styles.tabs}
           active={activeTab === 'variables'}
           onChangeTab={() => {
-            if (formState.errors?.settings?.multihttp?.entries[index]?.request) {
+            if (formState.errors?.settings?.multihttp?.entries[index]?.variables) {
               return;
             } else {
               setActiveTab('variables');
             }
           }}
+          className={styles.tabs}
         />
       </TabsBar>
       <TabContent className={styles.tabsContent}>
