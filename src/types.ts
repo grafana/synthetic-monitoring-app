@@ -546,3 +546,11 @@ export interface AdHocCheckResponse {
   probes: number[];
   target: string;
 }
+
+export type MultiHttpFormTabs = 'header' | 'queryParams' | 'body' | 'variables';
+
+export enum MultiHttpVariable {
+  JSON_PATH = 0,
+  REGEX = 1,
+  CSS_SELECTOR = 2,
+}

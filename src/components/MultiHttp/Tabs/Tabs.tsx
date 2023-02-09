@@ -1,6 +1,6 @@
-import React, { Fragment } from 'react';
+import React, { Fragment, useState } from 'react';
 import { css } from '@emotion/css';
-import { useFieldArray, useFormContext } from 'react-hook-form';
+import { Controller, useFieldArray, useFormContext } from 'react-hook-form';
 
 import {
   Button,
@@ -13,19 +13,21 @@ import {
   TextArea,
   VerticalGroup,
   useStyles2,
+  Select,
 } from '@grafana/ui';
 import { GrafanaTheme2 } from '@grafana/data';
 import { validateHTTPBody } from 'validation';
+import { MultiHttpFormTabs, MultiHttpVariable } from 'types';
 
 interface Props {
   label?: string;
   index: number;
-  activeTab?: 'header' | 'queryParams' | 'body';
+  activeTab?: MultiHttpFormTabs;
 }
 
 interface RequestTabsProps {
   index: number;
-  activeTab: 'header' | 'queryParams' | 'body';
+  activeTab: MultiHttpFormTabs;
 }
 
 export const HeadersTab = ({ label = 'header', index }: Props) => {
@@ -206,6 +208,62 @@ const QueryParamsTab = ({ index, label }: Props) => {
   );
 };
 
+const VariablesTab = ({ index, label }: Props) => {
+  const variableFieldName = `settings.multihttp.entries[${index}].variables`;
+  const { control, register, watch } = useFormContext();
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: variableFieldName,
+  });
+  const styles = useStyles2(getStyles);
+
+  return (
+    <div className={styles.inputsContainer}>
+      {fields.map((field, variableIndex) => {
+        const variableTypeName = `${variableFieldName}.${variableIndex}.type`;
+        const variableTypeValue = watch(variableTypeName);
+        return (
+          <HorizontalGroup key={field.id}>
+            <Controller
+              render={({ field: typeField }) => (
+                <Field label="Variable type">
+                  <Select
+                    id={`multihttp-variable-type-${index}-${variableIndex}`}
+                    options={[
+                      { label: 'JSON Path', value: MultiHttpVariable.JSON_PATH },
+                      { label: 'Regular Expression', value: MultiHttpVariable.REGEX },
+                      { label: 'CSS Selector', value: MultiHttpVariable.CSS_SELECTOR },
+                    ]}
+                    {...typeField}
+                  />
+                </Field>
+              )}
+              name={variableTypeName}
+            />
+            <Field label="Variable name">
+              <Input placeholder="Variable name" {...register(`${variableFieldName}.${variableIndex}.name`)} />
+            </Field>
+            <Field label="Variable expression">
+              <Input
+                placeholder="Variable expression"
+                {...register(`${variableFieldName}.${variableIndex}.expression`)}
+              />
+            </Field>
+            {/* {variableTypeValue === MultiHttpVariable.CSS_SELECTOR && <Controller />} */}
+          </HorizontalGroup>
+        );
+      })}
+      <Button
+        onClick={() => {
+          append({ type: MultiHttpVariable.JSON_PATH, name: '', expression: '' });
+        }}
+      >
+        Add variable
+      </Button>
+    </div>
+  );
+};
+
 export const RequestTabs = ({ activeTab, index }: RequestTabsProps) => {
   switch (activeTab) {
     case 'header':
@@ -214,6 +272,8 @@ export const RequestTabs = ({ activeTab, index }: RequestTabsProps) => {
       return <BodyTab index={index} />;
     case 'queryParams':
       return <QueryParamsTab index={index} label="queryParams" />;
+    case 'variables':
+      return <VariablesTab index={index} label="variables" />;
     default:
       return <HeadersTab label="header" index={index} />;
   }
