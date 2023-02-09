@@ -19,6 +19,7 @@ import {
   ResponseMatchType,
   Settings,
   HttpMethod,
+  MultiHttpVariable,
 } from 'types';
 
 export const DNS_RESPONSE_CODES = enumToStringArray(DnsResponseCodes).map((responseCode) => ({
@@ -439,4 +440,10 @@ export const headerNameOptions = [
   { label: 'Authorization', value: 'Authorization' },
   { label: 'Cache-Control', value: 'Cache-Control' },
   { label: 'Content-Type', value: 'Content-Type' },
+];
+
+export const MULTI_HTTP_VARIABLE_TYPE_OPTIONS = [
+  { label: 'JSON Path', value: MultiHttpVariable.JSON_PATH },
+  { label: 'Regular Expression', value: MultiHttpVariable.REGEX },
+  { label: 'CSS Selector', value: MultiHttpVariable.CSS_SELECTOR },
 ];

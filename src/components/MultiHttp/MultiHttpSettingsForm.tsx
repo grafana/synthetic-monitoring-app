@@ -29,6 +29,7 @@ import { PluginPage } from 'components/PluginPage';
 import { config } from '@grafana/runtime';
 import { OrgRole } from '@grafana/data';
 import { hasRole } from 'utils';
+import { AvailableVariables } from './AvailableVariables';
 
 interface Props {
   checks?: Check[];
@@ -207,6 +208,8 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
                             Remove
                           </Button>
                         </HorizontalGroup>
+
+                        <AvailableVariables index={index} />
 
                         <TabSection index={index} />
                       </VerticalGroup>

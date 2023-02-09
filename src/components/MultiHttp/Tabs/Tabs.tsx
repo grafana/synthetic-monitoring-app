@@ -18,6 +18,7 @@ import {
 import { GrafanaTheme2 } from '@grafana/data';
 import { validateHTTPBody } from 'validation';
 import { MultiHttpFormTabs, MultiHttpVariable } from 'types';
+import { MULTI_HTTP_VARIABLE_TYPE_OPTIONS } from 'components/constants';
 
 interface Props {
   label?: string;
@@ -221,7 +222,7 @@ const VariablesTab = ({ index, label }: Props) => {
     <div className={styles.inputsContainer}>
       {fields.map((field, variableIndex) => {
         const variableTypeName = `${variableFieldName}.${variableIndex}.type`;
-        const variableTypeValue = watch(variableTypeName);
+        const variableTypeValue = watch(variableTypeName)?.value;
         return (
           <HorizontalGroup key={field.id}>
             <Controller
@@ -229,11 +230,9 @@ const VariablesTab = ({ index, label }: Props) => {
                 <Field label="Variable type">
                   <Select
                     id={`multihttp-variable-type-${index}-${variableIndex}`}
-                    options={[
-                      { label: 'JSON Path', value: MultiHttpVariable.JSON_PATH },
-                      { label: 'Regular Expression', value: MultiHttpVariable.REGEX },
-                      { label: 'CSS Selector', value: MultiHttpVariable.CSS_SELECTOR },
-                    ]}
+                    options={MULTI_HTTP_VARIABLE_TYPE_OPTIONS}
+                    defaultValue={MULTI_HTTP_VARIABLE_TYPE_OPTIONS[0]}
+                    className={styles.minInputWidth}
                     {...typeField}
                   />
                 </Field>
@@ -241,21 +240,35 @@ const VariablesTab = ({ index, label }: Props) => {
               name={variableTypeName}
             />
             <Field label="Variable name">
-              <Input placeholder="Variable name" {...register(`${variableFieldName}.${variableIndex}.name`)} />
+              <Input
+                placeholder="Variable name"
+                id={`multihttp-variable-name-${index}-${variableIndex}`}
+                {...register(`${variableFieldName}.${variableIndex}.name`)}
+              />
             </Field>
+            {variableTypeValue === MultiHttpVariable.CSS_SELECTOR && (
+              <Field label="Attribute">
+                <Input
+                  placeholder="Attribute"
+                  id={`multihttp-variable-attribute-${index}-${variableIndex}`}
+                  {...register(`${variableFieldName}.${variableIndex}.attribute`)}
+                />
+              </Field>
+            )}
             <Field label="Variable expression">
               <Input
                 placeholder="Variable expression"
+                id={`multihttp-variable-expression-${index}-${variableIndex}`}
                 {...register(`${variableFieldName}.${variableIndex}.expression`)}
               />
             </Field>
-            {/* {variableTypeValue === MultiHttpVariable.CSS_SELECTOR && <Controller />} */}
+            <IconButton name="trash-alt" onClick={() => remove(variableIndex)} />
           </HorizontalGroup>
         );
       })}
       <Button
         onClick={() => {
-          append({ type: MultiHttpVariable.JSON_PATH, name: '', expression: '' });
+          append({ type: MULTI_HTTP_VARIABLE_TYPE_OPTIONS[0], name: '', expression: '' });
         }}
       >
         Add variable
@@ -294,5 +307,8 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
   errorMsg: css`
     color: ${theme.colors.error.text};
+  `,
+  minInputWidth: css`
+    min-width: 200px;
   `,
 });
