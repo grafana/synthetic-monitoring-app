@@ -1,9 +1,9 @@
 import { GrafanaTheme2 } from '@grafana/data';
-import { ClipboardButton, Field, HorizontalGroup, useStyles2 } from '@grafana/ui';
+import { ClipboardButton, Field, useStyles2 } from '@grafana/ui';
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 import { SettingsFormValues } from 'types';
-import { VariableType } from './MultiHttpTypes';
+import { MultiHttpVariable } from './MultiHttpTypes';
 import { css } from '@emotion/css';
 
 interface Props {
@@ -14,6 +14,8 @@ function getStyles(theme: GrafanaTheme2) {
   return {
     container: css`
       margin-top: ${theme.spacing(1)};
+      display: flex;
+      gap: ${theme.spacing(1)};
     `,
   };
 }
@@ -23,7 +25,7 @@ export function AvailableVariables({ index }: Props) {
   const { watch } = useFormContext();
   const settings = (watch('settings') as SettingsFormValues) ?? {};
   const availableVars =
-    settings.multihttp?.entries?.reduce<VariableType[]>((acc, entry, requestIndex) => {
+    settings.multihttp?.entries?.reduce<MultiHttpVariable[]>((acc, entry, requestIndex) => {
       if (index > requestIndex) {
         return acc.concat(entry.variables ?? []);
       }
@@ -38,14 +40,11 @@ export function AvailableVariables({ index }: Props) {
     <Field label="Available variables">
       <div className={styles.container}>
         {availableVars.map((variable, i) => {
+          const variableText = '${' + variable.name + '}';
           return (
-            <ClipboardButton
-              key={i}
-              getText={() => '${' + variable.name + '}'}
-              variant="secondary"
-              fill="text"
-              icon="copy"
-            >{`\$\{${variable.name}\}`}</ClipboardButton>
+            <ClipboardButton key={i} getText={() => variableText} variant="secondary" fill="outline" icon="copy">
+              {variableText}
+            </ClipboardButton>
           );
         })}
       </div>

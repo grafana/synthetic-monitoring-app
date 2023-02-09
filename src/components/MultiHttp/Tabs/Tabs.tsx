@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from 'react';
+import React, { Fragment } from 'react';
 import { css } from '@emotion/css';
 import { Controller, useFieldArray, useFormContext } from 'react-hook-form';
 
@@ -17,7 +17,7 @@ import {
 } from '@grafana/ui';
 import { GrafanaTheme2 } from '@grafana/data';
 import { validateHTTPBody } from 'validation';
-import { MultiHttpFormTabs, MultiHttpVariable } from 'types';
+import { MultiHttpFormTabs, MultiHttpVariableType } from 'types';
 import { MULTI_HTTP_VARIABLE_TYPE_OPTIONS } from 'components/constants';
 
 interface Props {
@@ -231,12 +231,12 @@ const VariablesTab = ({ index, label }: Props) => {
                   <Select
                     id={`multihttp-variable-type-${index}-${variableIndex}`}
                     options={MULTI_HTTP_VARIABLE_TYPE_OPTIONS}
-                    defaultValue={MULTI_HTTP_VARIABLE_TYPE_OPTIONS[0]}
                     className={styles.minInputWidth}
                     {...typeField}
                   />
                 </Field>
               )}
+              defaultValue={MULTI_HTTP_VARIABLE_TYPE_OPTIONS[0]}
               name={variableTypeName}
             />
             <Field label="Variable name">
@@ -246,7 +246,7 @@ const VariablesTab = ({ index, label }: Props) => {
                 {...register(`${variableFieldName}.${variableIndex}.name`)}
               />
             </Field>
-            {variableTypeValue === MultiHttpVariable.CSS_SELECTOR && (
+            {variableTypeValue === MultiHttpVariableType.CSS_SELECTOR && (
               <Field label="Attribute">
                 <Input
                   placeholder="Attribute"
@@ -270,8 +270,13 @@ const VariablesTab = ({ index, label }: Props) => {
         onClick={() => {
           append({ type: MULTI_HTTP_VARIABLE_TYPE_OPTIONS[0], name: '', expression: '' });
         }}
+        variant="secondary"
+        size="sm"
+        type="button"
+        className={styles.addHeaderQueryButton}
       >
-        Add variable
+        <Icon name="plus" />
+        &nbsp; Add variable
       </Button>
     </div>
   );

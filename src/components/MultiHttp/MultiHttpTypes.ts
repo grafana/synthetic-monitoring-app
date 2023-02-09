@@ -1,4 +1,4 @@
-export type VariableType = {
+export type MultiHttpVariable = {
   type: number;
   name: string;
   expression: string;
@@ -30,6 +30,6 @@ export type RequestProps = {
 export type KeyTypes = 'url' | 'body' | 'method' | 'headers' | 'queryString' | 'postData';
 
 export interface MultiHttpEntry {
-  variables?: VariableType[];
+  variables?: MultiHttpVariable[];
   request: RequestProps;
 }

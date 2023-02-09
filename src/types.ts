@@ -549,7 +549,7 @@ export interface AdHocCheckResponse {
 
 export type MultiHttpFormTabs = 'header' | 'queryParams' | 'body' | 'variables';
 
-export enum MultiHttpVariable {
+export enum MultiHttpVariableType {
   JSON_PATH = 0,
   REGEX = 1,
   CSS_SELECTOR = 2,
