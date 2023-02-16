@@ -1,5 +1,9 @@
 # Change Log
 
+# [1.9.35](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.43...v1.9.35) (2023-2-16)
+
+- Fix a bug with rendering data in the node panel for traceroute checks
+
 # [1.9.34](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.33...v1.9.34) (2023-2-09)
 
 - Fix a bug with the config page not rendering in cloud instances

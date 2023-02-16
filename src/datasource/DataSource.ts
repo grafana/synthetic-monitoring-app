@@ -7,7 +7,7 @@ import {
   ArrayDataFrame,
   DataFrame,
   MetricFindValue,
-  VariableModel,
+  TypedVariableModel,
 } from '@grafana/data';
 
 import { SMQuery, SMOptions, QueryType, CheckInfo, DashboardVariable } from './types';
@@ -84,9 +84,10 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
           };
         }
 
-        const finalQuery = `{probe=~"${query.probe ?? '.+'}", job="${query.job}", instance="${
-          query.instance
+        const finalQuery = `{probe=~"${queryToExecute.probe ?? '.+'}", job="${queryToExecute.job}", instance="${
+          queryToExecute.instance
         }", check_name="traceroute"} | logfmt`;
+
         const response = await queryLogs(logsUrl, finalQuery, options.range.from.unix(), options.range.to.unix());
 
         const dataFrames = parseTracerouteLogs(response);
@@ -116,7 +117,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     return allProbes;
   }
 
-  getQueryFromVars(dashboardVars: VariableModel[], query: SMQuery): SMQuery {
+  getQueryFromVars(dashboardVars: TypedVariableModel[], query: SMQuery): SMQuery {
     const job = dashboardVars.find((variable) => variable.name === 'job') as DashboardVariable | undefined;
     const instance = dashboardVars.find((variable) => variable.name === 'instance') as DashboardVariable | undefined;
     const probe = dashboardVars.find((variable) => variable.name === 'probe') as DashboardVariable | undefined;
