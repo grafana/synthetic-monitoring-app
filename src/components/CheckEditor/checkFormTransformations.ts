@@ -666,6 +666,13 @@ const getTimeoutFromFormValue = (timeout: number, checkType?: CheckType): number
   return timeout * 1000;
 };
 
+const getTargetFromFormValue = (target: string, formValues: Partial<CheckFormValues>): string => {
+  if (target === '' && formValues.settings?.multihttp) {
+    return formValues.settings?.multihttp?.entries?.[0]?.request?.url;
+  }
+  return target;
+};
+
 const getFrequencyFromFormValue = (frequency: number, checkType?: CheckType): number => {
   if (checkType === CheckType.Traceroute) {
     return 120000;
@@ -680,7 +687,7 @@ export const getCheckFromFormValues = (
 ): Check => {
   return {
     job: formValues.job,
-    target: formValues.target,
+    target: getTargetFromFormValue(formValues.target, formValues),
     enabled: formValues.enabled,
     labels: formValues.labels ?? [],
     probes: formValues.probes,
