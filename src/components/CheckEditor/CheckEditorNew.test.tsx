@@ -62,7 +62,6 @@ describe('new checks', () => {
 
   it('has correct sections for HTTP', async () => {
     await renderNewCheckEditor(CheckType.HTTP);
-    // await selectCheckType(CheckType.HTTP);
     const httpSettings = await screen.findByText('HTTP settings');
     expect(httpSettings).toBeInTheDocument();
     const tlsConfig = await screen.findByText('TLS config');

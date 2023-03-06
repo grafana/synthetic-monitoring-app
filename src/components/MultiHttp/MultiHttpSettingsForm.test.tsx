@@ -1,17 +1,17 @@
+import React from 'react';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { Route, Router } from 'react-router-dom';
 import { AppPluginMeta, DataSourceSettings, FeatureToggles } from '@grafana/data';
 import { locationService } from '@grafana/runtime';
-import { render, screen, waitFor, within } from '@testing-library/react';
 import { PLUGIN_URL_PATH } from 'components/constants';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { getInstanceMock } from 'datasource/__mocks__/DataSource';
-import React from 'react';
-import { Route, Router } from 'react-router-dom';
 import { GlobalSettings, ROUTES } from 'types';
 import { MultiHttpSettingsForm } from './MultiHttpSettingsForm';
 import { BASIC_CHECK_LIST, BASIC_MULTIHTTP_CHECK } from 'components/CheckEditor/testConstants';
 import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
 import { getSlider } from 'components/CheckEditor/testHelpers';
-import userEvent from '@testing-library/user-event';
 
 beforeEach(() => jest.resetAllMocks());
 const onReturn = jest.fn();
