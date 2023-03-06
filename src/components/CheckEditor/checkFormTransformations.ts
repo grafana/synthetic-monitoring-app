@@ -666,9 +666,10 @@ const getTimeoutFromFormValue = (timeout: number, checkType?: CheckType): number
   return timeout * 1000;
 };
 
-const getTargetFromFormValue = (target: string, formValues: Partial<CheckFormValues>): string => {
-  if (target === '' && formValues.settings?.multihttp) {
-    return formValues.settings?.multihttp?.entries?.[0]?.request?.url;
+const getTargetFromFormValue = (target: string, formValues: Partial<CheckFormValues>) => {
+  const pluckedTarget = formValues?.settings?.multihttp?.entries[0].request.url;
+  if ((target === '' && formValues.settings?.multihttp) || target !== pluckedTarget) {
+    return pluckedTarget;
   }
   return target;
 };
@@ -687,7 +688,7 @@ export const getCheckFromFormValues = (
 ): Check => {
   return {
     job: formValues.job,
-    target: getTargetFromFormValue(formValues.target, formValues),
+    target: getTargetFromFormValue(formValues.target, formValues) ?? '',
     enabled: formValues.enabled,
     labels: formValues.labels ?? [],
     probes: formValues.probes,
