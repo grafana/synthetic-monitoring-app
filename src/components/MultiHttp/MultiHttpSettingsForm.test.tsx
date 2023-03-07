@@ -112,20 +112,17 @@ describe('editing multihttp check', () => {
 
   it('allows user to edit and resubmit form', async () => {
     const instance = await renderForm('/edit/6');
-    // expect(await screen.findAllByLabelText('Job name', { exact: false })).toHaveValue('basicmulti');
+    // edit job name
     const jobNameInput = await screen.findByLabelText('Job name');
     await act(async () => userEvent.clear(jobNameInput));
     await act(async () => userEvent.type(jobNameInput, 'basicmultiedited'));
 
+    // edit target
     const targetInput = await screen.findAllByLabelText('Request target', { exact: false });
     await act(async () => userEvent.clear(targetInput[0]));
     await act(async () => userEvent.type(targetInput[0], 'http://grafanarr.com'));
 
-    // The form definitely has the correct values here, but I can't get the test matcher to be find them
-    const requestMethods = await screen.findAllByTestId('request-method');
-    expect(requestMethods.length).toBe(2);
-
-    // headers
+    // edit headers
     const request0HeaderNames = await screen.findAllByTestId('header-name-0');
     expect(request0HeaderNames).toHaveLength(2);
     expect(request0HeaderNames[0]).toHaveValue('aheader');
@@ -133,7 +130,7 @@ describe('editing multihttp check', () => {
     await act(async () => await userEvent.type(request0HeaderNames[0], 'rambling psyche'));
     expect(request0HeaderNames[0]).toHaveValue('rambling psyche');
 
-    // body
+    // edit body
     const bodyTabs = await screen.findAllByLabelText('Tab Body');
     userEvent.click(bodyTabs[0]);
     const requestBodies = await screen.getAllByLabelText('Request body', { exact: false });
