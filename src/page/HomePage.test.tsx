@@ -20,11 +20,11 @@ const renderHomePage = () => {
 
 const assertBigValue = async (label: string, value: string) => {
   const labelEl = await screen.findByText(label);
-  const sibling = labelEl.nextElementSibling as HTMLElement;
-  if (!sibling) {
+  const parent = labelEl.parentElement;
+  if (!parent) {
     throw new Error(`Could not find label with text ${label}`);
   }
-  const valueEl = await within(sibling).findByText(value);
+  const valueEl = await within(parent).findByText(value);
   expect(valueEl).toBeInTheDocument();
 };
 

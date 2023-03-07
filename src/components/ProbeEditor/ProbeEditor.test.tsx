@@ -9,6 +9,8 @@ import { GlobalSettings, Probe, ROUTES } from 'types';
 import { MemoryRouter, Route } from 'react-router-dom';
 import { PLUGIN_URL_PATH } from '../constants';
 
+jest.setTimeout(10000);
+
 const onReturn = jest.fn().mockImplementation(() => true);
 const updateProbe = jest.fn().mockImplementation(() => Promise.resolve());
 

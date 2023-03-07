@@ -1,4 +1,5 @@
 declare module 'react-leaflet';
+declare module 'body-parser';
 // We need this import because of https://github.com/grafana/grafana/issues/26512
 import {} from '@emotion/core';
 

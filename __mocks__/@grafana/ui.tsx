@@ -55,10 +55,29 @@ AsyncMultiSelect.displayName = 'AsyncMultiSelect';
 
 const Icon = (props) => <svg {...props} />;
 
+interface BigValueProps {
+  value: {
+    numeric: number;
+    text?: string;
+    title?: string;
+  };
+}
+
+export function BigValue({ value }: BigValueProps) {
+  return (
+    <div>
+      {/* {value.numeric} */}
+      {value.text && <span>{value.text}</span>}
+      {value.title && <label>{value.title}</label>}
+    </div>
+  );
+}
+
 module.exports = {
   ...ui,
   MultiSelect,
   Select,
   Icon,
   AsyncMultiSelect,
+  BigValue,
 };

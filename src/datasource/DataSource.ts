@@ -37,16 +37,16 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       if (query.queryType === QueryType.Probes) {
         const probes = await this.listProbes();
         const frame = new ArrayDataFrame(probes);
-        frame.setFieldType('onlineChange', FieldType.time, (s: number) => s * 1000); // seconds to ms
-        frame.setFieldType('created', FieldType.time, (s: number) => s * 1000); // seconds to ms
-        frame.setFieldType('modified', FieldType.time, (s: number) => s * 1000); // seconds to ms
+        frame.setFieldType('onlineChange', FieldType.time, (s) => (s as number) * 1000); // seconds to ms
+        frame.setFieldType('created', FieldType.time, (s) => (s as number) * 1000); // seconds to ms
+        frame.setFieldType('modified', FieldType.time, (s) => (s as number) * 1000); // seconds to ms
         frame.refId = query.refId;
         data.push(frame);
       } else if (query.queryType === QueryType.Checks) {
         const checks = await this.listChecks();
         const frame = new ArrayDataFrame(checks);
-        frame.setFieldType('created', FieldType.time, (s: number) => s * 1000); // seconds to ms
-        frame.setFieldType('modified', FieldType.time, (s: number) => s * 1000); // seconds to ms
+        frame.setFieldType('created', FieldType.time, (s) => (s as number) * 1000); // seconds to ms
+        frame.setFieldType('modified', FieldType.time, (s) => (s as number) * 1000); // seconds to ms
         frame.refId = query.refId;
 
         const copy: DataFrame = {
