@@ -10,7 +10,26 @@ import { InstanceContext } from 'contexts/InstanceContext';
 import { getInstanceMock } from 'datasource/__mocks__/DataSource';
 import { AppPluginMeta, DataSourceSettings } from '@grafana/data';
 import { AlertFamily, AlertRule, AlertSensitivity, GlobalSettings } from 'types';
-import * as useAlerts from 'hooks/useAlerts';
+jest.mock('hooks/useAlerts', () => {
+  const { defaultRules } = jest.requireActual('hooks/useAlerts');
+  const useAlertsMock = jest
+    .fn()
+    .mockImplementationOnce(() => ({
+      alertRules: [],
+      alertError: '',
+      setDefaultRules,
+      setRules,
+    }))
+    .mockImplementation(() => ({
+      alertRules: defaultRules.rules as AlertRule[],
+      alertError: '',
+      setDefaultRules,
+      setRules,
+    }));
+  return { useAlerts: useAlertsMock, defaultRules };
+});
+
+// import * as useAlerts from 'hooks/useAlerts';
 
 jest.setTimeout(30000);
 
@@ -21,7 +40,7 @@ const renderAlerting = async ({ withAlerting = true } = {}) => {
   const api = getInstanceMock();
   const instance = {
     api,
-    alertRuler: withAlerting ? (({ url: 'alertUrl' } as unknown) as DataSourceSettings) : undefined,
+    alertRuler: withAlerting ? ({ url: 'alertUrl' } as unknown as DataSourceSettings) : undefined,
   };
   const meta = {} as AppPluginMeta<GlobalSettings>;
   return render(
@@ -31,22 +50,7 @@ const renderAlerting = async ({ withAlerting = true } = {}) => {
   );
 };
 
-const mockAlertsHook = () => {
-  jest
-    .spyOn(useAlerts, 'useAlerts')
-    .mockImplementationOnce(() => ({
-      alertRules: [],
-      alertError: '',
-      setDefaultRules,
-      setRules,
-    }))
-    .mockImplementation(() => ({
-      alertRules: useAlerts.defaultRules.rules as AlertRule[],
-      alertError: '',
-      setDefaultRules,
-      setRules,
-    }));
-};
+// const mockAlertsHook = () => {};
 
 const toggleSection = async (sectionName: string): Promise<HTMLElement> => {
   const sectionHeader = await screen.findByText(sectionName);
@@ -55,7 +59,7 @@ const toggleSection = async (sectionName: string): Promise<HTMLElement> => {
 };
 
 it('adds default alerts and edits alerts', async () => {
-  mockAlertsHook();
+  // mockAlertsHook();
   await renderAlerting();
   const defaultAlertButton = await screen.findByRole('button', { name: 'Populate default alerts' });
   userEvent.click(defaultAlertButton);
