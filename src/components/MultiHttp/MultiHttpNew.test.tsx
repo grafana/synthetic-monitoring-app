@@ -61,12 +61,19 @@ describe('new checks', () => {
     if (!probeOptions) {
       throw new Error('Couldnt find Probe Options');
     }
-
     // // Select burritos probe options
     const probeSelectMenu = await screen.findByTestId('select');
     await act(
       async () => await userEvent.selectOptions(probeSelectMenu, within(probeSelectMenu).getByText('burritos'))
     );
+
+    const addRequestButton = await screen.findByText('Add request');
+    userEvent.click(addRequestButton);
+
+    const secondTargetInput = await screen.findAllByLabelText('Request target', { exact: false });
+    userEvent.type(secondTargetInput[1], 'http://grafanalalala.com');
+    const secondRequestOptions = await screen.findAllByTestId('request-method');
+    await act(async () => await userEvent.selectOptions(secondRequestOptions[1], 'GET'));
 
     await submitForm(onReturn);
     expect(instance.api.addCheck).toHaveBeenCalledTimes(1);
@@ -74,7 +81,10 @@ describe('new checks', () => {
       expect.objectContaining({
         settings: {
           multihttp: {
-            entries: [{ request: { headers: [], method: 'POST', url: 'http://grafanarr.com' }, variables: undefined }],
+            entries: [
+              { request: { headers: [], method: 'POST', url: 'http://grafanarr.com' }, variables: undefined },
+              { request: { headers: [], method: 'GET', url: 'http://grafanalalala.com' }, variables: undefined },
+            ],
           },
         },
       })
