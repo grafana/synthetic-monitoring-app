@@ -8,14 +8,14 @@ const config = async (env): Promise<Configuration> => {
 
   return merge(baseConfig, {
     // Add custom config here...
-    module: {
-      rules: [
-        {
-          test: /\.svg$/i,
-          type: 'asset/source',
-        },
-      ],
-    },
+    // module: {
+    //   rules: [
+    //     {
+    //       test: /\.svg$/i,
+    //       type: 'asset/source',
+    //     },
+    //   ],
+    // },
     output: {
       asyncChunks: true,
     },
