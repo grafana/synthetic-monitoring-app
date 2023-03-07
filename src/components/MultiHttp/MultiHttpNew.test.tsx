@@ -47,7 +47,7 @@ describe('new checks', () => {
   it('can create a new MULTI-HTTP check', async () => {
     const instance = await renderNewMultiForm();
 
-    const jobNameInput = await screen.findByLabelText('Job Name', { exact: false });
+    const jobNameInput = await screen.findByLabelText('Job name', { exact: false });
     userEvent.type(jobNameInput, 'basicmulti');
 
     const targetInput = await screen.findByLabelText('Request target', { exact: false });

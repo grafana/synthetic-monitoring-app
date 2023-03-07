@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Route, Router } from 'react-router-dom';
 import { AppPluginMeta, DataSourceSettings, FeatureToggles } from '@grafana/data';
@@ -108,5 +108,69 @@ describe('editing multihttp check', () => {
     await waitFor(() => expect(onReturn).toHaveBeenCalledWith(true));
     expect(instance.api.updateCheck).toHaveBeenCalledTimes(1);
     expect(instance.api.updateCheck).toHaveBeenCalledWith({ id: 6, tenantId: undefined, ...BASIC_MULTIHTTP_CHECK });
+  });
+
+  it('allows user to edit and resubmit form', async () => {
+    const instance = await renderForm('/edit/6');
+    // expect(await screen.findAllByLabelText('Job name', { exact: false })).toHaveValue('basicmulti');
+    const jobNameInput = await screen.findByLabelText('Job name');
+    await act(async () => userEvent.clear(jobNameInput));
+    await act(async () => userEvent.type(jobNameInput, 'basicmultiedited'));
+
+    const targetInput = await screen.findAllByLabelText('Request target', { exact: false });
+    await act(async () => userEvent.clear(targetInput[0]));
+    await act(async () => userEvent.type(targetInput[0], 'http://grafanarr.com'));
+
+    // The form definitely has the correct values here, but I can't get the test matcher to be find them
+    const requestMethods = await screen.findAllByTestId('request-method');
+    expect(requestMethods.length).toBe(2);
+
+    // headers
+    const request0HeaderNames = await screen.findAllByTestId('header-name-0');
+    expect(request0HeaderNames).toHaveLength(2);
+    expect(request0HeaderNames[0]).toHaveValue('aheader');
+    await act(async () => await userEvent.clear(request0HeaderNames[0]));
+    await act(async () => await userEvent.type(request0HeaderNames[0], 'rambling psyche'));
+    expect(request0HeaderNames[0]).toHaveValue('rambling psyche');
+
+    // body
+    const bodyTabs = await screen.findAllByLabelText('Tab Body');
+    userEvent.click(bodyTabs[0]);
+    const requestBodies = await screen.getAllByLabelText('Request body', { exact: false });
+    expect(requestBodies[0]).toHaveValue('');
+    await act(async () => await userEvent.clear(requestBodies[0]));
+    await act(async () => await userEvent.type(requestBodies[0], 'terriblyinteresting'));
+
+    const submitButton = await screen.findByRole('button', { name: 'Save' });
+    userEvent.click(submitButton);
+
+    await waitFor(() => expect(onReturn).toHaveBeenCalledWith(true));
+    expect(instance.api.updateCheck).toHaveBeenCalledTimes(1);
+    expect(instance.api.updateCheck).toHaveBeenCalledWith(
+      expect.objectContaining({
+        job: 'basicmultiedited',
+      })
+    );
+    expect(instance.api.updateCheck).toHaveBeenCalledWith(
+      expect.objectContaining({
+        settings: {
+          multihttp: {
+            entries: expect.arrayContaining([
+              {
+                request: {
+                  body: 'terriblyinteresting',
+                  headers: [
+                    { name: 'rambling psyche', value: 'yarp' },
+                    { name: 'carne', value: 'asada' },
+                  ],
+                  method: 'GET',
+                  url: 'http://grafanarr.com',
+                },
+              },
+            ]),
+          },
+        },
+      })
+    );
   });
 });
