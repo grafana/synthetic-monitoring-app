@@ -1,14 +1,15 @@
 import React from 'react';
-import { CheckList } from './CheckList';
 import { act, fireEvent, render, screen, waitFor, waitForElementToBeRemoved } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
+import { CheckList } from './CheckList';
 import { GrafanaInstances, Check, CheckSort, GlobalSettings, ROUTES } from 'types';
 import { getInstanceMock } from '../../datasource/__mocks__/DataSource';
 import { SuccessRateContextProvider } from '../SuccessRateContextProvider';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { AppPluginMeta } from '@grafana/data';
-import { MemoryRouter } from 'react-router-dom';
 import { PLUGIN_URL_PATH } from 'components/constants';
+
 jest.mock('hooks/useNavigation', () => {
   const actual = jest.requireActual('hooks/useNavigation');
   return {

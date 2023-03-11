@@ -1,27 +1,33 @@
 import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
+import { MemoryRouter, Route } from 'react-router-dom';
+import userEvent from '@testing-library/user-event';
 import { CheckRouter } from './CheckRouter';
 import { getInstanceMock } from 'datasource/__mocks__/DataSource';
-import userEvent from '@testing-library/user-event';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { AppPluginMeta } from '@grafana/data';
+import { AppPluginMeta, FeatureToggles } from '@grafana/data';
 import { GlobalSettings, ROUTES } from 'types';
-import { MemoryRouter, Route } from 'react-router-dom';
 import { PLUGIN_URL_PATH } from 'components/constants';
+import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
 
 jest.setTimeout(20000);
 
-const renderChecksPage = () => {
+const renderChecksPage = (multiHttpEnabled = false) => {
   const instance = getInstanceMock();
   const meta = {} as AppPluginMeta<GlobalSettings>;
+  const featureToggles = { 'multi-http': multiHttpEnabled } as unknown as FeatureToggles;
+  const isFeatureEnabled = jest.fn(() => multiHttpEnabled);
+
   render(
-    <MemoryRouter initialEntries={[`${PLUGIN_URL_PATH}${ROUTES.Checks}`]}>
-      <Route path={`${PLUGIN_URL_PATH}${ROUTES.Checks}`}>
-        <InstanceContext.Provider value={{ instance: { api: instance }, loading: false, meta }}>
-          <CheckRouter />
-        </InstanceContext.Provider>
-      </Route>
-    </MemoryRouter>
+    <FeatureFlagProvider overrides={{ featureToggles, isFeatureEnabled }}>
+      <MemoryRouter initialEntries={[`${PLUGIN_URL_PATH}${ROUTES.Checks}`]}>
+        <Route path={`${PLUGIN_URL_PATH}${ROUTES.Checks}`}>
+          <InstanceContext.Provider value={{ instance: { api: instance }, loading: false, meta }}>
+            <CheckRouter />
+          </InstanceContext.Provider>
+        </Route>
+      </MemoryRouter>
+    </FeatureFlagProvider>
   );
 };
 
@@ -30,11 +36,18 @@ test('renders checks', async () => {
   await waitFor(() => expect(screen.getByText('a jobname')).toBeInTheDocument());
 });
 
-test('renders check selection', async () => {
-  renderChecksPage();
+test('renders check selection page if multi-http feature flag is ON', async () => {
+  renderChecksPage(true);
   await waitFor(() => screen.getByRole('button', { name: 'Add new check' }));
   act(() => userEvent.click(screen.getByRole('button', { name: 'Add new check' })));
   expect(await screen.findByText('Choose check type')).toBeInTheDocument();
+});
+
+test('doesnt render check selection page if multi-http feature flag is OFF', async () => {
+  renderChecksPage(false);
+  await waitFor(() => screen.getByRole('button', { name: 'Add new check' }));
+  act(() => userEvent.click(screen.getByRole('button', { name: 'Add new check' })));
+  expect(await screen.queryByText('Choose check type')).not.toBeInTheDocument();
 });
 
 test('renders check editor existing check', async () => {
