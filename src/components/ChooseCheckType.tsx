@@ -27,7 +27,7 @@ export function ChooseCheckType() {
 
   return (
     <div className={styles.container}>
-      <h2>Choose check type</h2>
+      <h2>Choose a check type</h2>
       <VerticalGroup>
         {options?.map((check) => {
           return (
@@ -38,7 +38,7 @@ export function ChooseCheckType() {
                 navigate(`${ROUTES.NewCheck}/${check.value}`);
               }}
             >
-              <Card.Heading>{check.label}</Card.Heading>
+              <Card.Heading className={styles.cardsHeader}>{check.label}</Card.Heading>
             </Card>
           );
         })}
@@ -50,7 +50,7 @@ export function ChooseCheckType() {
 const getStyles = (theme: GrafanaTheme2) => ({
   container: css`
     justify-content: space-between;
-    width: 50vw;
+    width: 100%;
     margin: ${theme.spacing(3)};
     padding: ${theme.spacing(2)};
     place-items: center;
@@ -58,7 +58,10 @@ const getStyles = (theme: GrafanaTheme2) => ({
     justify-content: center;
   `,
   cards: css`
-    width: 100%;
-    margin: ${theme.spacing(1)};
+    width: 260px;
+  `,
+  cardsHeader: css`
+    text-align: center;
+    justify-content: center;
   `,
 });
