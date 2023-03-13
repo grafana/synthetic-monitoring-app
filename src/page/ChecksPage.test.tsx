@@ -54,7 +54,7 @@ test('doesnt render check selection page if multi-http feature flag is OFF', asy
   expect(await screen.queryByRole('button', { name: 'HTTP' })).not.toBeInTheDocument();
   expect(await screen.queryByRole('button', { name: 'MULTI-HTTP' })).not.toBeInTheDocument();
   expect(await screen.queryByRole('button', { name: 'Traceroute' })).not.toBeInTheDocument();
-  expect(await screen.findByRole('button', { name: 'PING' })).not.toBeInTheDocument();
+  expect(await screen.queryByRole('button', { name: 'PING' })).not.toBeInTheDocument();
   expect(await screen.queryByRole('button', { name: 'DNS' })).not.toBeInTheDocument();
 });
 
