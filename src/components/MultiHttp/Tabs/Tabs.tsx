@@ -16,7 +16,6 @@ import {
   Select,
 } from '@grafana/ui';
 import { GrafanaTheme2 } from '@grafana/data';
-import { validateHTTPBody } from 'validation';
 import { MultiHttpFormTabs, MultiHttpVariableType } from 'types';
 import { MULTI_HTTP_VARIABLE_TYPE_OPTIONS } from 'components/constants';
 
@@ -122,7 +121,7 @@ export const BodyTab = ({ index }: Props) => {
         error={formState.errors?.settings?.http?.body?.message}
       >
         <TextArea
-          {...register(`settings.multihttp.entries[${index}].request.body`, { validate: validateHTTPBody })}
+          {...register(`settings.multihttp.entries[${index}].request.body` as const)}
           rows={2}
           id={`request-body-${index}`}
         />
@@ -210,7 +209,7 @@ const QueryParamsTab = ({ index, label }: Props) => {
 };
 
 const VariablesTab = ({ index, label }: Props) => {
-  const variableFieldName = `settings.multihttp.entries.${index}.variables`;
+  const variableFieldName = `settings.multihttp.entries[${index}].variables`;
   const { control, register, watch, formState } = useFormContext();
   const { fields, append, remove } = useFieldArray({
     control,
@@ -221,7 +220,7 @@ const VariablesTab = ({ index, label }: Props) => {
   return (
     <div className={styles.inputsContainer}>
       {fields.map((field, variableIndex) => {
-        const variableTypeName = `${variableFieldName}.${variableIndex}.type`;
+        const variableTypeName = `${variableFieldName}[${variableIndex}].type`;
         const variableTypeValue = watch(variableTypeName)?.value;
         const errorPath = formState.errors.settings?.multihttp?.entries?.[index]?.variables?.[variableIndex];
 
@@ -248,7 +247,7 @@ const VariablesTab = ({ index, label }: Props) => {
                 placeholder="Variable name"
                 id={`multihttp-variable-name-${index}-${variableIndex}`}
                 invalid={formState.errors.settings?.multihttp?.entries?.[index]?.variables?.[variableIndex]?.type}
-                {...register(`${variableFieldName}.${variableIndex}.name`, { required: true })}
+                {...register(`${variableFieldName}[${variableIndex}].name`, { required: true })}
               />
             </Field>
             {variableTypeValue === MultiHttpVariableType.CSS_SELECTOR && (
@@ -256,7 +255,7 @@ const VariablesTab = ({ index, label }: Props) => {
                 <Input
                   placeholder="Attribute"
                   id={`multihttp-variable-attribute-${index}-${variableIndex}`}
-                  {...register(`${variableFieldName}.${variableIndex}.attribute`)}
+                  {...register(`${variableFieldName}[${variableIndex}].attribute`)}
                 />
               </Field>
             )}
@@ -264,7 +263,7 @@ const VariablesTab = ({ index, label }: Props) => {
               <Input
                 placeholder="Variable expression"
                 id={`multihttp-variable-expression-${index}-${variableIndex}`}
-                {...register(`${variableFieldName}.${variableIndex}.expression`, { required: true })}
+                {...register(`${variableFieldName}[${variableIndex}].expression`, { required: true })}
               />
             </Field>
             <IconButton name="trash-alt" onClick={() => remove(variableIndex)} />
