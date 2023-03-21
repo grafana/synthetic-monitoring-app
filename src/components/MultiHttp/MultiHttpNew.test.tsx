@@ -82,8 +82,8 @@ describe('new checks', () => {
         settings: {
           multihttp: {
             entries: [
-              { request: { headers: [], method: 'POST', url: 'http://grafanarr.com' }, variables: undefined },
-              { request: { headers: [], method: 'GET', url: 'http://grafanalalala.com' }, variables: undefined },
+              { request: { headers: [], method: 'POST', url: 'http://grafanarr.com' }, variables: [] },
+              { request: { headers: [], method: 'GET', url: 'http://grafanalalala.com' }, variables: [] },
             ],
           },
         },

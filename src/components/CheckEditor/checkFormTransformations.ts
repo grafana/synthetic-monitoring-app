@@ -470,7 +470,7 @@ const getMultiHttpSettings = (
 
   return {
     entries: settings.entries?.map((entry, index) => {
-      const variables = entry.variables ?? defaultSettings?.entries[index].variables ?? [];
+      const variables = entry.variables ?? defaultSettings?.entries[index]?.variables ?? [];
 
       return {
         ...defaultSettings?.entries[index],

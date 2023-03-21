@@ -148,26 +148,44 @@ describe('editing multihttp check', () => {
         job: 'basicmultiedited',
       })
     );
-    expect(instance.api.updateCheck).toHaveBeenCalledWith(
-      expect.objectContaining({
-        settings: {
-          multihttp: {
-            entries: expect.arrayContaining([
-              {
-                request: {
-                  body: 'terriblyinteresting',
-                  headers: [
-                    { name: 'rambling psyche', value: 'yarp' },
-                    { name: 'carne', value: 'asada' },
-                  ],
-                  method: 'GET',
-                  url: 'http://grafanarr.com',
-                },
+    expect(instance.api.updateCheck).toHaveBeenCalledWith({
+      ...BASIC_CHECK_LIST,
+      settings: {
+        multihttp: {
+          entries: expect.arrayContaining([
+            {
+              request: {
+                body: 'terriblyinteresting',
+                headers: [
+                  { name: 'rambling psyche', value: 'yarp' },
+                  { name: 'carne', value: 'asada' },
+                ],
+                method: 'GET',
+                url: 'http://grafanarr.com',
+                queryString: [{ name: 'tacos', value: 'delicious' }],
               },
-            ]),
-          },
+              variables: [
+                {
+                  expression: 'mole',
+                  name: 'enchiladas',
+                  type: 0,
+                },
+                {
+                  expression: 'picante',
+                  name: 'salsa',
+                  type: 1,
+                },
+                {
+                  attribute: 'churro',
+                  expression: 'delicioso',
+                  name: 'chimichanga',
+                  type: 2,
+                },
+              ],
+            },
+          ]),
         },
-      })
-    );
+      },
+    });
   });
 });
