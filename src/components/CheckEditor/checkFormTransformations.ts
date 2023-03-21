@@ -460,20 +460,27 @@ const getHttpSettings = (
   };
 };
 
-const getMultiHttpSettings = (settings?: MultiHttpSettingsFormValues): MultiHttpSettings => {
+const getMultiHttpSettings = (
+  settings: MultiHttpSettingsFormValues | undefined,
+  defaultSettings: MultiHttpSettingsFormValues | undefined
+): MultiHttpSettings => {
   if (!settings) {
     return fallbackSettings(CheckType.MULTI_HTTP) as MultiHttpSettings;
   }
 
   return {
-    entries: settings.entries?.map((entry) => {
+    entries: settings.entries?.map((entry, index) => {
+      const variables = entry.variables ?? defaultSettings?.entries[index].variables ?? [];
+
       return {
+        ...defaultSettings?.entries[index],
         ...entry,
         request: {
+          ...defaultSettings?.entries[index].request,
           ...entry.request,
           method: getValueFromSelectable(entry.request.method) ?? 'GET',
         },
-        variables: entry.variables?.map((variable) => {
+        variables: variables?.map((variable) => {
           if (variable.type.value === undefined) {
             throw new Error('Selecting a variable type is required');
           }
@@ -641,7 +648,7 @@ const getSettingsFromFormValues = (
     case CheckType.HTTP:
       return { http: getHttpSettings(formValues.settings?.http, defaultValues.settings.http) };
     case CheckType.MULTI_HTTP:
-      return { multihttp: getMultiHttpSettings(formValues.settings?.multihttp) };
+      return { multihttp: getMultiHttpSettings(formValues.settings?.multihttp, defaultValues.settings.multihttp) };
     case CheckType.TCP:
       return { tcp: getTcpSettings(formValues.settings?.tcp, defaultValues.settings.tcp) };
     case CheckType.DNS:

@@ -222,7 +222,7 @@ const VariablesTab = ({ index, label }: Props) => {
       {fields.map((field, variableIndex) => {
         const variableTypeName = `${variableFieldName}[${variableIndex}].type`;
         const variableTypeValue = watch(variableTypeName)?.value;
-        const errorPath = formState.errors.settings?.multihttp?.entries?.[index]?.variables?.[variableIndex];
+        const errorPath = formState.errors.settings?.multihttp?.entries[index]?.variables[variableIndex];
 
         return (
           <HorizontalGroup key={field.id}>
@@ -236,6 +236,7 @@ const VariablesTab = ({ index, label }: Props) => {
                       className={styles.minInputWidth}
                       {...typeField}
                       options={MULTI_HTTP_VARIABLE_TYPE_OPTIONS}
+                      menuPlacement="bottom"
                     />
                   </Field>
                 );
@@ -246,7 +247,7 @@ const VariablesTab = ({ index, label }: Props) => {
               <Input
                 placeholder="Variable name"
                 id={`multihttp-variable-name-${index}-${variableIndex}`}
-                invalid={formState.errors.settings?.multihttp?.entries?.[index]?.variables?.[variableIndex]?.type}
+                invalid={formState.errors.settings?.multihttp?.entries[index]?.variables[variableIndex]?.type}
                 {...register(`${variableFieldName}[${variableIndex}].name`, { required: true })}
               />
             </Field>

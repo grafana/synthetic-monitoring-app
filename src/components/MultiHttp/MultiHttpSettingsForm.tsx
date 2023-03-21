@@ -69,16 +69,15 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
 
   const onSubmit = useCallback(
     async (values: CheckFormValues) => {
-      const target = values.settings.multihttp?.entries?.[0]?.request?.url ?? '';
-
-      if (!target) {
-        throw new Error('At least one request with a URL is required');
-      }
-
       // All other types of SM checks so far require a `target` to execute at the root of the submitted object.
       // This is not the case for multihttp checks, whose targets are called `url`s and are nested under
       // `settings.multihttp?.entries[0].request.url`. Yet, the BE still requires a root-level `target`, even in
       // the case of multihttp, even though it wont be used. So we will pass this safety `target`.values.target = target;
+      const target = values.settings.multihttp?.entries?.[0]?.request?.url ?? '';
+      if (!target) {
+        throw new Error('At least one request with a URL is required');
+      }
+
       const updatedCheck = getCheckFromFormValues(values, defaultValues, CheckType.MULTI_HTTP);
 
       try {
