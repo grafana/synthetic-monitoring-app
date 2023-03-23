@@ -157,7 +157,7 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
 
               <hr />
               <h3>Requests</h3>
-              <Field label="At least one target HTTP is required. Let's get started.">
+              <Field label="At least one target HTTP is required; limit 10 requests per check. Let's get started.">
                 <></>
               </Field>
               <div className={styles.request}>

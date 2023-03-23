@@ -220,7 +220,7 @@ const VariablesTab = ({ index, label }: Props) => {
   return (
     <div className={styles.inputsContainer}>
       {fields.map((field, variableIndex) => {
-        const variableTypeName = `${variableFieldName}[${variableIndex}].type`;
+        const variableTypeName = `${variableFieldName}[${variableIndex}].type` ?? '';
         const variableTypeValue = watch(variableTypeName)?.value;
         const errorPath = formState.errors.settings?.multihttp?.entries[index]?.variables[variableIndex];
 
