@@ -13,10 +13,9 @@ import {
   VariableValueSelectors,
   VizPanel,
 } from '@grafana/scenes';
-import { DataSourceRef } from '@grafana/schema';
 import { PLUGIN_URL_PATH } from 'components/constants';
 import { DashboardSceneAppConfig, ROUTES } from 'types';
-import { getSummaryScene } from './summaryScene';
+import { getSummaryScene } from './Summary';
 
 function getTab1Scene() {
   return getBasicScene(false, '__server_names');
