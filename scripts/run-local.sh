@@ -12,10 +12,10 @@ done
 if [ ! $grafanaVersion ]; then
   echo 'No grafana version specified, using latest'
   grafanaVersion='latest'
-  docker pull grafana/grafana:latest
+  docker pull grafana/grafana-dev:latest
 fi
 
-NAME="grafana-$grafanaVersion"
+NAME="grafana-dev-$grafanaVersion"
 
 if [ "$(docker ps -q -f name=$NAME)" ]; then
   docker stop "$(docker ps -q -f name=$NAME)"
@@ -44,5 +44,5 @@ docker run \
   -e "GF_INSTALL_PLUGINS=grafana-worldmap-panel" \
   -t \
   --name="$NAME" \
-  grafana/grafana":$grafanaVersion"
+  grafana/grafana-dev":$grafanaVersion"
 

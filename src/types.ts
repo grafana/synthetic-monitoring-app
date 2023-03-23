@@ -1,6 +1,7 @@
 import { DataSourceSettings, OrgRole, SelectableValue } from '@grafana/data';
 import { LinkedDatasourceInfo } from './datasource/types';
 import { SMDataSource } from 'datasource/DataSource';
+import { DataSourceRef } from '@grafana/schema';
 
 export interface GlobalSettings {
   apiHost: string;
@@ -506,6 +507,7 @@ export enum ROUTES {
   NewCheck = 'checks/new',
   EditCheck = 'checks/edit',
   Config = 'config',
+  Scene = 'scene',
 }
 
 export interface CheckPageParams {
@@ -525,4 +527,9 @@ export interface AdHocCheckResponse {
   settings: Settings;
   probes: number[];
   target: string;
+}
+
+export interface DashboardSceneAppConfig {
+  metrics: DataSourceRef;
+  logs: DataSourceRef;
 }
