@@ -476,7 +476,7 @@ const getMultiHttpSettings = (
         ...defaultSettings?.entries[index],
         ...entry,
         request: {
-          ...defaultSettings?.entries[index].request,
+          ...defaultSettings?.entries[index]?.request,
           ...entry.request,
           method: getValueFromSelectable(entry.request.method) ?? 'GET',
         },
