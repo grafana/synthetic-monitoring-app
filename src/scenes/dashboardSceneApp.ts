@@ -1,7 +1,7 @@
 import { SceneApp, SceneAppPage } from '@grafana/scenes';
 import { PLUGIN_URL_PATH } from 'components/constants';
 import { DashboardSceneAppConfig, ROUTES } from 'types';
-import { getHTTPScene } from './Http';
+import { getHTTPScene } from './HTTP';
 import { getSummaryScene } from './Summary';
 
 export function getDashboardSceneApp(config: DashboardSceneAppConfig) {

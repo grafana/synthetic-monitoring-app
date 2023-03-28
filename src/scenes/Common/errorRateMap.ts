@@ -49,7 +49,7 @@ function getMapQueryRunner(variableSet: SceneVariableSet, metrics: DataSourceRef
   return queryRunner;
 }
 
-export function getHttpErrorRateMapPanel(variableSet: SceneVariableSet, metrics: DataSourceRef) {
+export function getErrorRateMapPanel(variableSet: SceneVariableSet, metrics: DataSourceRef) {
   const mapPanel = new VizPanel({
     pluginId: 'geomap',
     title: 'Error rate by probe',

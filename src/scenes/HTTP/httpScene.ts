@@ -1,25 +1,26 @@
 import {
   EmbeddedScene,
-  QueryVariable,
   SceneControlsSpacer,
   SceneFlexLayout,
   SceneRefreshPicker,
   SceneTimePicker,
   SceneTimeRange,
-  SceneVariableSet,
   VariableValueSelectors,
 } from '@grafana/scenes';
-import { DashboardSceneAppConfig } from 'types';
-import { getAvgLatencyStat } from './avgLatencyStat';
-import { getErrorLogs } from './errorLogs';
-import { getHttpErrorRateMapPanel } from './errorRateMap';
+import { CheckType, DashboardSceneAppConfig } from 'types';
+import {
+  getAvgLatencyStat,
+  getErrorLogs,
+  getUptimeStat,
+  getReachabilityStat,
+  getFrequencyStat,
+  getLatencyByProbePanel,
+  getErrorRateMapPanel,
+  getVariables,
+} from '../Common';
 import { getErrorRateTimeseries } from './errorRateTimeseries';
-import { getFrequencyStat } from './frequencyStat';
 import { getLatencyByPhasePanel } from './latencyByPhase';
-import { getLatencyByProbePanel } from './latencyByProbe';
-import { getReachabilityStat } from './reachabilityStat';
 import { getSSLExpiryStat } from './sslExpiryStat';
-import { getUptimeStat } from './uptimeStat';
 
 export function getHTTPScene({ metrics, logs }: DashboardSceneAppConfig) {
   return () => {
@@ -28,32 +29,9 @@ export function getHTTPScene({ metrics, logs }: DashboardSceneAppConfig) {
       to: 'now',
     });
 
-    // Variable definition
-    const probe = new QueryVariable({
-      includeAll: true,
-      allValue: '.*',
-      name: 'probe',
-      query: { query: 'label_values(sm_check_info{check_name="http"},probe)' },
-      datasource: metrics,
-    });
+    const variableSet = getVariables(CheckType.HTTP, metrics);
 
-    const job = new QueryVariable({
-      name: 'job',
-      $variables: new SceneVariableSet({ variables: [probe] }),
-      query: { query: 'label_values(sm_check_info{check_name="http", probe=~"$probe"},job)' },
-      datasource: metrics,
-    });
-
-    const instance = new QueryVariable({
-      name: 'instance',
-      $variables: new SceneVariableSet({ variables: [probe, job] }),
-      query: { query: 'label_values(sm_check_info{check_name="http", job="$job", probe=~"$probe"},instance)' },
-      datasource: metrics,
-    });
-
-    const variableSet = new SceneVariableSet({ variables: [probe, job, instance] });
-
-    const mapPanel = getHttpErrorRateMapPanel(variableSet, metrics);
+    const mapPanel = getErrorRateMapPanel(variableSet, metrics);
     const uptime = getUptimeStat(variableSet, metrics);
     const reachability = getReachabilityStat(variableSet, metrics);
     const avgLatency = getAvgLatencyStat(variableSet, metrics);
