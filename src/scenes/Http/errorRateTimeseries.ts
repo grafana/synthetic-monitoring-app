@@ -27,7 +27,7 @@ function getQueryRunner(variables: SceneVariableSet, metrics: DataSourceRef) {
         interval: '1m',
         intervalFactor: 1,
         legendFormat: 'errors',
-        refId: 'E',
+        refId: 'A',
       },
     ],
   });
@@ -41,24 +41,8 @@ export function getErrorRateTimeseries(variables: SceneVariableSet, metrics: Dat
     options: {
       yaxes: [
         {
-          //       $$hashKey: 'object:254',
-          //       decimals: null,
           format: 'percent',
-          //       label: '',
-          //       logBase: 1,
-          //       max: '100',
-          //       min: '0',
-          //       show: true,
         },
-        //     {
-        //       $$hashKey: 'object:255',
-        //       format: 'short',
-        //       label: null,
-        //       logBase: 1,
-        //       max: null,
-        //       min: null,
-        //       show: true,
-        //     },
       ],
     },
   });

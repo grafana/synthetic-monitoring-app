@@ -3,18 +3,20 @@ import {
   QueryVariable,
   SceneControlsSpacer,
   SceneFlexLayout,
-  SceneQueryRunner,
   SceneRefreshPicker,
   SceneTimePicker,
   SceneTimeRange,
   SceneVariableSet,
   VariableValueSelectors,
 } from '@grafana/scenes';
-import { CheckType, DashboardSceneAppConfig } from 'types';
+import { DashboardSceneAppConfig } from 'types';
 import { getAvgLatencyStat } from './avgLatencyStat';
+import { getErrorLogs } from './errorLogs';
 import { getHttpErrorRateMapPanel } from './errorRateMap';
 import { getErrorRateTimeseries } from './errorRateTimeseries';
 import { getFrequencyStat } from './frequencyStat';
+import { getLatencyByPhasePanel } from './latencyByPhase';
+import { getLatencyByProbePanel } from './latencyByProbe';
 import { getReachabilityStat } from './reachabilityStat';
 import { getSSLExpiryStat } from './sslExpiryStat';
 import { getUptimeStat } from './uptimeStat';
@@ -72,6 +74,27 @@ export function getHTTPScene({ metrics, logs }: DashboardSceneAppConfig) {
       children: [statRow, errorTimeseries],
     });
 
+    const topRow = new SceneFlexLayout({
+      direction: 'row',
+      children: [mapPanel, statColumn],
+    });
+
+    const latencyByPhase = getLatencyByPhasePanel(variableSet, metrics);
+    // TODO: This is rendering as a stacked bar chart instead of points
+    const latencyByProbe = getLatencyByProbePanel(variableSet, metrics);
+
+    const latencyRow = new SceneFlexLayout({
+      direction: 'row',
+      children: [latencyByPhase, latencyByProbe],
+    });
+
+    const errorLogs = getErrorLogs(variableSet, logs);
+
+    const logsRow = new SceneFlexLayout({
+      direction: 'row',
+      children: [errorLogs],
+    });
+
     return new EmbeddedScene({
       $timeRange: timeRange,
       $variables: variableSet,
@@ -85,8 +108,8 @@ export function getHTTPScene({ metrics, logs }: DashboardSceneAppConfig) {
         }),
       ],
       body: new SceneFlexLayout({
-        direction: 'row',
-        children: [mapPanel, statColumn],
+        direction: 'column',
+        children: [topRow, latencyRow, logsRow],
       }),
     });
   };

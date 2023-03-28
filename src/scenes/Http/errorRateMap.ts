@@ -58,6 +58,7 @@ export function getHttpErrorRateMapPanel(variableSet: SceneVariableSet, metrics:
       width: 500,
     },
     $data: getMapQueryRunner(variableSet, metrics),
+    $variables: variableSet,
     options: {
       basemap: {
         name: 'Basemap',
