@@ -1,6 +1,7 @@
 import { SceneApp, SceneAppPage } from '@grafana/scenes';
 import { PLUGIN_URL_PATH } from 'components/constants';
 import { DashboardSceneAppConfig, ROUTES } from 'types';
+import { getDNSScene } from './DNS';
 import { getHTTPScene } from './HTTP';
 import { getSummaryScene } from './Summary';
 
@@ -24,6 +25,11 @@ export function getDashboardSceneApp(config: DashboardSceneAppConfig) {
             title: 'HTTP',
             url: `${PLUGIN_URL_PATH}${ROUTES.Scene}/http`,
             getScene: getHTTPScene(config),
+          }),
+          new SceneAppPage({
+            title: 'DNS',
+            url: `${PLUGIN_URL_PATH}${ROUTES.Scene}/dns`,
+            getScene: getDNSScene(config),
           }),
           // new SceneAppPage({
           //   title: 'DNS',
