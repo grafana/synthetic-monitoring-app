@@ -1,0 +1,66 @@
+import {
+  EmbeddedScene,
+  SceneControlsSpacer,
+  SceneFlexLayout,
+  SceneRefreshPicker,
+  SceneTimePicker,
+  SceneTimeRange,
+  VariableValueSelectors,
+} from '@grafana/scenes';
+import { getVariables } from 'scenes/Common';
+import { CheckType, DashboardSceneAppConfig } from 'types';
+import { getAverageHopsPanel } from './averageHops';
+import { getCommonHostsPanel } from './commonHosts';
+import { getLogsPanel } from './logs';
+import { getNodeGraphPanel } from './nodeGraph';
+import { getPacketLossPanel } from './packetLoss';
+import { getRouteHashPanel } from './routeHash';
+import { getTraceTimePanel } from './traceTime';
+
+export function getTracerouteScene({ metrics, logs, sm }: DashboardSceneAppConfig) {
+  return () => {
+    const timeRange = new SceneTimeRange({
+      from: 'now-30m',
+      to: 'now',
+    });
+    const variables = getVariables(CheckType.Traceroute, metrics);
+
+    const nodeGraph = getNodeGraphPanel(variables, sm);
+
+    const routeHash = getRouteHashPanel(variables, metrics);
+    const commonHosts = getCommonHostsPanel(variables, logs);
+
+    const hosts = new SceneFlexLayout({
+      direction: 'row',
+      children: [routeHash, commonHosts],
+    });
+
+    const packetLoss = getPacketLossPanel(variables, metrics);
+    const traceTime = getTraceTimePanel(variables, metrics);
+    const avgHops = getAverageHopsPanel(variables, metrics);
+    const overall = new SceneFlexLayout({
+      direction: 'row',
+      children: [packetLoss, traceTime, avgHops],
+    });
+
+    const logsPanel = getLogsPanel(variables, logs);
+
+    return new EmbeddedScene({
+      $timeRange: timeRange,
+      $variables: variables,
+      controls: [
+        new VariableValueSelectors({}),
+        new SceneControlsSpacer(),
+        new SceneTimePicker({ isOnCanvas: true }),
+        new SceneRefreshPicker({
+          intervals: ['5s', '1m', '1h'],
+          isOnCanvas: true,
+        }),
+      ],
+      body: new SceneFlexLayout({
+        direction: 'column',
+        children: [nodeGraph, hosts, overall, logsPanel],
+      }),
+    });
+  };
+}

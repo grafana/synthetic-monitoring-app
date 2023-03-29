@@ -20,12 +20,12 @@ function getQueryRunner(variableSet: SceneVariableSet, metrics: DataSourceRef) {
 }
 
 export function getUptimeStat(variableSet: SceneVariableSet, metrics: DataSourceRef) {
-  const queryRunner = getQueryRunner(variableSet, metrics);
   return new VizPanel({
     pluginId: 'stat',
     title: 'Uptime',
     description: 'The fraction of time the target was up during the whole period.',
-    $data: queryRunner,
+    $data: getQueryRunner(variableSet, metrics),
+    $variables: variableSet,
     placement: {
       // width: 200,
       height: 90,
@@ -36,9 +36,13 @@ export function getUptimeStat(variableSet: SceneVariableSet, metrics: DataSource
         // mappings: [
         //   {
         //     // op: '=',
-        //     text: 'N/A',
+        //     // text: 'N/A',
         //     type: MappingType.ValueToText,
-        //     value: 'null',
+        //     options: {
+        //       [SpecialValueMatch.Empty]: {
+        //         text: 'N/A',
+        //       },
+        //     },
         //   },
         // ],
         thresholds: {

@@ -6,3 +6,4 @@ export { getLatencyByProbePanel } from './latencyByProbe';
 export { getReachabilityStat } from './reachabilityStat';
 export { getUptimeStat } from './uptimeStat';
 export { getVariables } from './variables';
+export { getSSLExpiryStat } from './sslExpiryStat';

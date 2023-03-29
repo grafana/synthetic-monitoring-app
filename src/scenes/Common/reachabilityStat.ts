@@ -4,7 +4,6 @@ import { DataSourceRef, ThresholdsMode } from '@grafana/schema';
 function getQueryRunner(variableSet: SceneVariableSet, metrics: DataSourceRef) {
   return new SceneQueryRunner({
     datasource: metrics,
-    $variables: variableSet,
     queries: [
       {
         exemplar: true,

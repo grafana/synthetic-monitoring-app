@@ -5,7 +5,7 @@ import { getDashboardSceneApp } from 'scenes/dashboardSceneApp';
 
 export function DashboardPage() {
   const { instance } = useContext(InstanceContext);
-  if (!instance.metrics || !instance.logs) {
+  if (!instance.metrics || !instance.logs || !instance.api) {
     return <Spinner />;
   }
   const metricsDef = {
@@ -16,6 +16,10 @@ export function DashboardPage() {
     uid: instance.logs.uid,
     type: instance.logs.type,
   };
-  const scene = getDashboardSceneApp({ metrics: metricsDef, logs: logsDef });
+  const smDef = {
+    uid: instance.api.uid,
+    type: instance.api.type,
+  };
+  const scene = getDashboardSceneApp({ metrics: metricsDef, logs: logsDef, sm: smDef });
   return <scene.Component model={scene} />;
 }

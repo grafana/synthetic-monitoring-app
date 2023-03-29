@@ -7,74 +7,79 @@ import {
   SceneTimeRange,
   VariableValueSelectors,
 } from '@grafana/scenes';
-import { CheckType, DashboardSceneAppConfig } from 'types';
 import {
   getAvgLatencyStat,
   getErrorLogs,
-  getUptimeStat,
-  getReachabilityStat,
+  getErrorRateMapPanel,
   getFrequencyStat,
   getLatencyByProbePanel,
-  getErrorRateMapPanel,
+  getReachabilityStat,
+  getUptimeStat,
   getVariables,
-  getSSLExpiryStat,
-} from '../Common';
-import { getErrorRateTimeseries } from './errorRateTimeseries';
+} from 'scenes/Common';
+import { getErrorRateTimeseries } from 'scenes/HTTP/errorRateTimeseries';
+import { CheckType, DashboardSceneAppConfig } from 'types';
 import { getLatencyByPhasePanel } from './latencyByPhase';
 
-export function getHTTPScene({ metrics, logs }: DashboardSceneAppConfig) {
+export function getPingScene({ metrics, logs }: DashboardSceneAppConfig) {
   return () => {
     const timeRange = new SceneTimeRange({
       from: 'now-6h',
       to: 'now',
     });
 
-    const variableSet = getVariables(CheckType.HTTP, metrics);
+    const variables = getVariables(CheckType.PING, metrics);
+    const errorMap = getErrorRateMapPanel(variables, metrics);
 
-    const mapPanel = getErrorRateMapPanel(variableSet, metrics);
-    const uptime = getUptimeStat(variableSet, metrics);
-    const reachability = getReachabilityStat(variableSet, metrics);
-    const avgLatency = getAvgLatencyStat(variableSet, metrics);
-    const sslExpiryStat = getSSLExpiryStat(variableSet, metrics);
-    const frequency = getFrequencyStat(variableSet, metrics);
-    const errorTimeseries = getErrorRateTimeseries(variableSet, metrics);
+    const uptime = getUptimeStat(variables, metrics);
+    const reachability = getReachabilityStat(variables, metrics);
+    const avgLatency = getAvgLatencyStat(variables, metrics);
+    const frequency = getFrequencyStat(variables, metrics);
 
     const statRow = new SceneFlexLayout({
       direction: 'row',
       placement: {
         height: 90,
       },
-      children: [uptime, reachability, avgLatency, sslExpiryStat, frequency],
+      children: [uptime, reachability, avgLatency, frequency],
     });
 
-    const statColumn = new SceneFlexLayout({
+    const errorRateTimeseries = getErrorRateTimeseries(variables, metrics);
+    const topRight = new SceneFlexLayout({
       direction: 'column',
-      children: [statRow, errorTimeseries],
+      children: [statRow, errorRateTimeseries],
     });
 
     const topRow = new SceneFlexLayout({
       direction: 'row',
-      children: [mapPanel, statColumn],
+      placement: {
+        height: 500,
+      },
+      children: [errorMap, topRight],
     });
 
-    const latencyByPhase = getLatencyByPhasePanel(variableSet, metrics);
-    const latencyByProbe = getLatencyByProbePanel(variableSet, metrics);
+    const latencyByPhase = getLatencyByPhasePanel(variables, metrics);
+    const latencyByProbe = getLatencyByProbePanel(variables, metrics);
 
     const latencyRow = new SceneFlexLayout({
       direction: 'row',
+      placement: {
+        height: 300,
+      },
       children: [latencyByPhase, latencyByProbe],
     });
 
-    const errorLogs = getErrorLogs(variableSet, logs);
-
     const logsRow = new SceneFlexLayout({
       direction: 'row',
-      children: [errorLogs],
+      placement: {
+        height: 500,
+      },
+      children: [getErrorLogs(variables, metrics)],
     });
 
     return new EmbeddedScene({
       $timeRange: timeRange,
-      $variables: variableSet,
+      $variables: variables,
       controls: [
         new VariableValueSelectors({}),
         new SceneControlsSpacer(),

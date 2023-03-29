@@ -532,4 +532,5 @@ export interface AdHocCheckResponse {
 export interface DashboardSceneAppConfig {
   metrics: DataSourceRef;
   logs: DataSourceRef;
+  sm: DataSourceRef;
 }

@@ -122,6 +122,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     const instance = dashboardVars.find((variable) => variable.name === 'instance') as DashboardVariable | undefined;
     const probe = dashboardVars.find((variable) => variable.name === 'probe') as DashboardVariable | undefined;
 
+    console.log('hiiii', job, instance, probe, dashboardVars, query);
     // const value = dashboardVar.current?.value ?? '';
     // const [job, instance] = value.split(':').map((val: string) => val.trim());
     if (!job || !instance || !probe) {
