@@ -31,6 +31,7 @@ import {
 } from 'types';
 
 import {
+  CHECK_TYPE_OPTIONS,
   IP_OPTIONS,
   DNS_RESPONSE_CODES,
   HTTP_SSL_OPTIONS,
@@ -305,6 +306,7 @@ const getAlertSensitivityValueFromCheck = (sensitivity: string): SelectableValue
 };
 
 export const getDefaultValuesFromCheck = (check: Check): CheckFormValues => {
+  const defaultCheckType = getCheckType(check.settings);
   const settings = check.id ? getFormSettingsForCheck(check.settings) : getAllFormSettingsForCheck();
 
   return {
@@ -314,6 +316,8 @@ export const getDefaultValuesFromCheck = (check: Check): CheckFormValues => {
     frequency: check.frequency / 1000,
     probes: check.probes,
     alertSensitivity: getAlertSensitivityValueFromCheck(check.alertSensitivity),
+    checkType:
+      CHECK_TYPE_OPTIONS.find((checkTypeOption) => checkTypeOption.value === defaultCheckType) ?? CHECK_TYPE_OPTIONS[1],
     settings,
   };
 };

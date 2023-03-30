@@ -10,6 +10,7 @@ import {
   useStyles,
   LinkButton,
   HorizontalGroup,
+  Select,
   Spinner,
 } from '@grafana/ui';
 import { useAsyncCallback } from 'react-async-hook';
@@ -33,7 +34,7 @@ import CheckTarget from 'components/CheckTarget';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 import { CheckSettings } from './CheckSettings';
 import { ProbeOptions } from './ProbeOptions';
-import { fallbackCheck } from 'components/constants';
+import { CHECK_TYPE_OPTIONS, fallbackCheck } from 'components/constants';
 import { useForm, FormProvider, Controller } from 'react-hook-form';
 import { GrafanaTheme, OrgRole } from '@grafana/data';
 import { CheckUsage } from '../CheckUsage';
@@ -45,6 +46,7 @@ import { PluginPage } from 'components/PluginPage';
 import { config } from '@grafana/runtime';
 import { CheckTestResultsModal } from 'components/CheckTestResultsModal';
 import { FeatureFlag } from 'components/FeatureFlag';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
 
 interface Props {
   checks?: Check[];
@@ -84,6 +86,7 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
   const [testResponse, setTestResponse] = useState<AdHocCheckResponse>();
   const [testRequestInFlight, setTestRequestInFlight] = useState(false);
   const styles = useStyles(getStyles);
+  const { isEnabled: tracerouteEnabled } = useFeatureFlag(FeatureName.Traceroute);
   // If we're editing, grab the appropriate check from the list
   const { id, checkType: checkTypeParam } = useParams<CheckPageParams>();
   let checkType = checkTypeParamToCheckType(checkTypeParam);
@@ -91,11 +94,17 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
 
   if (id) {
     check = checks?.find((c) => c.id === Number(id)) ?? fallbackCheck(checkType);
-    checkType = getCheckType(check.settings);
   }
-
   const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
   const formMethods = useForm<CheckFormValues>({ defaultValues, mode: 'onChange' });
+  const selectedCheckType = formMethods.watch('checkType')?.value ?? null;
+
+  if (id) {
+    checkType = getCheckType(check.settings);
+  } else if (selectedCheckType && !id) {
+    checkType = selectedCheckType;
+  }
+
   const isEditor = hasRole(OrgRole.Editor);
 
   const {
@@ -130,13 +139,47 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
     onReturn(true);
   };
 
-  const headerText = check?.id ? 'Edit Check' : `Add ${checkType.toUpperCase()} Check`;
+  const capitalizedCheckType = checkType.slice(0, 1).toUpperCase().concat(checkType.split('').slice(1).join(''));
+  const headerText = check?.id ? 'Edit Check' : `Add ${capitalizedCheckType} check`;
   return (
     <PluginPage pageNav={{ text: check?.job ? check.job : headerText, description: 'Check configuration' }}>
       <>
         {!config.featureToggles.topnav && <Legend>{headerText}</Legend>}
         <FormProvider {...formMethods}>
           <form onSubmit={formMethods.handleSubmit(onSubmit)}>
+            <FeatureFlag name={FeatureName.MultiHttp}>
+              {({ isEnabled }) => {
+                return !isEnabled ? (
+                  <Field label="Check type" disabled={check?.id ? true : false}>
+                    <Controller
+                      name="checkType"
+                      control={formMethods.control}
+                      defaultValue={checkType ?? CheckType.PING}
+                      render={({ field }) => {
+                        const STANDARD_CHECK_TYPE_OPTIONS = CHECK_TYPE_OPTIONS.filter(
+                          ({ value }) => value !== CheckType.MULTI_HTTP
+                        );
+                        return (
+                          <Select
+                            {...field}
+                            placeholder="Check type"
+                            options={
+                              tracerouteEnabled
+                                ? STANDARD_CHECK_TYPE_OPTIONS
+                                : STANDARD_CHECK_TYPE_OPTIONS.filter(({ value }) => value !== CheckType.Traceroute)
+                            }
+                            width={30}
+                            disabled={check?.id ? true : false}
+                          />
+                        );
+                      }}
+                    />
+                  </Field>
+                ) : (
+                  <></>
+                );
+              }}
+            </FeatureFlag>
             <HorizontalCheckboxField
               disabled={!isEditor}
               name="enabled"
@@ -197,7 +240,9 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
             />
             <CheckUsage />
             <CheckSettings
-              typeOfCheck={(String(Object.keys(check.settings)) as CheckType) ?? CheckType.PING}
+              typeOfCheck={
+                (selectedCheckType as CheckType) ?? (String(Object.keys(check.settings)) as CheckType) ?? CheckType.PING
+              }
               isEditor={isEditor}
             />
             <CheckFormAlert />

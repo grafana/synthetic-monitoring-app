@@ -26,17 +26,16 @@ jest.mock('hooks/useAlerts', () => ({
 beforeEach(() => jest.resetAllMocks());
 const onReturn = jest.fn();
 
-const renderNewCheckEditor = async (checkType: CheckType) => {
+const renderNewCheckEditor = async (checkType?: CheckType) => {
   locationService.push(`${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${checkType}`);
-  // jest.spyOn(ReactRouter, 'useParams').mockReturnValue({ checkType });
   const api = getInstanceMock();
   const instance = {
     api,
     alertRuler: {} as DataSourceSettings,
   };
   const meta = {} as AppPluginMeta<GlobalSettings>;
-  const featureToggles = { traceroute: true } as unknown as FeatureToggles;
-  const isFeatureEnabled = jest.fn(() => true);
+  const featureToggles = { traceroute: true, 'multi-http': false } as unknown as FeatureToggles;
+  const isFeatureEnabled = jest.fn(() => false);
 
   render(
     <FeatureFlagProvider overrides={{ featureToggles, isFeatureEnabled }}>
@@ -55,9 +54,23 @@ const renderNewCheckEditor = async (checkType: CheckType) => {
 };
 
 describe('new checks', () => {
-  it('renders the new check form', async () => {
+  it('renders the new check form with PING if no checkType is passed in', async () => {
+    await renderNewCheckEditor();
+    expect(screen.getByText('Add Ping check')).toBeInTheDocument();
+  });
+
+  it('renders selectable options if multi-http FF is off AND should not include CheckType.MULTI_HTTP', async () => {
+    await renderNewCheckEditor();
+    await waitFor(() => expect(screen.getByText('Check type')).toBeInTheDocument());
+    expect(screen.getByRole('option', { name: 'HTTP' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'DNS' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'TCP' })).toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: 'MULTI-HTTP' })).not.toBeInTheDocument();
+  });
+
+  it('renders the new check form with HTTP is checkType is passed in', async () => {
     await renderNewCheckEditor(CheckType.HTTP);
-    expect(screen.getByText('Add HTTP Check')).toBeInTheDocument();
+    expect(screen.getByText('Add Http check')).toBeInTheDocument();
   });
 
   it('has correct sections for HTTP', async () => {
