@@ -13,19 +13,17 @@ interface Props {
   timeout: number;
   frequency: number;
   probes: number[];
+  checkType: CheckType;
 }
 
-export const ProbeOptions = ({ frequency, timeout, isEditor, probes }: Props) => {
+export const ProbeOptions = ({ frequency, timeout, isEditor, probes, checkType }: Props) => {
   const [availableProbes, setAvailableProbes] = useState<Probe[]>([]);
   const {
     control,
-    watch,
     formState: { errors },
-    clearErrors,
   } = useFormContext();
   const { instance } = useContext(InstanceContext);
-
-  const checkType = watch('checkType').value;
+  const isTraceroute = checkType === CheckType.Traceroute;
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -39,10 +37,6 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, probes }: Props) =>
     fetchProbes();
     return () => abortController.abort();
   }, [instance]);
-
-  useEffect(() => {
-    clearErrors();
-  }, [checkType, clearErrors]);
 
   return (
     <div>
@@ -66,7 +60,7 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, probes }: Props) =>
       <Field
         label="Frequency"
         description="How frequently the check should run."
-        disabled={!isEditor || checkType === CheckType.Traceroute}
+        disabled={!isEditor || isTraceroute}
         invalid={Boolean(errors.frequency)}
         error={errors.frequency?.message}
       >
@@ -79,9 +73,9 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, probes }: Props) =>
             name="frequency"
             prefixLabel={'Every'}
             suffixLabel={'seconds'}
-            min={checkType === CheckType.Traceroute ? 60.0 : 10.0}
-            max={checkType === CheckType.Traceroute ? 240.0 : 120.0}
-            defaultValue={checkType === CheckType.Traceroute ? 120 : frequency / 1000}
+            min={isTraceroute ? 60.0 : 10.0}
+            max={isTraceroute ? 240.0 : 120.0}
+            defaultValue={isTraceroute ? 120 : frequency / 1000}
           />
         )}
       </Field>
@@ -99,8 +93,8 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, probes }: Props) =>
           <SliderInput
             name="timeout"
             validate={(value) => validateTimeout(value, checkType)}
-            defaultValue={checkType === CheckType.Traceroute ? 30 : timeout / 1000}
-            max={checkType === CheckType.Traceroute ? 30.0 : 10.0}
+            defaultValue={isTraceroute ? 30 : timeout / 1000}
+            max={isTraceroute ? 30.0 : 10.0}
             min={1.0}
             step={0.5}
             suffixLabel="seconds"

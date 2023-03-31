@@ -33,6 +33,13 @@ const getTargetHelpText = (typeOfCheck: CheckType | undefined): TargetHelpInfo =
       };
       break;
     }
+    case CheckType.MULTI_HTTP: {
+      resp = {
+        text: 'Full URL to send requests to, one part of multi-http',
+        example: `https://grafana.com/`,
+      };
+      break;
+    }
     case CheckType.PING: {
       resp = {
         text: 'Hostname to ping',
@@ -69,18 +76,28 @@ const CheckTarget = forwardRef(
   ({ value, typeOfCheck, disabled, onChange, onBlur, invalid, error }: Props, ref: React.Ref<HTMLInputElement>) => {
     const targetHelp = getTargetHelpText(typeOfCheck);
     const parsedURL = parseUrl(value);
+
     return (
       <>
-        <Field label="Target" description={targetHelp.text} disabled={disabled} invalid={invalid} error={error}>
+        <Field
+          label="Target"
+          description={targetHelp?.text}
+          disabled={disabled}
+          invalid={invalid}
+          error={error}
+          required
+        >
           <Input
             id="check-editor-target"
             data-testid="check-editor-target"
             ref={ref}
             type="text"
             onBlur={onBlur}
-            placeholder={targetHelp.example}
+            placeholder={targetHelp?.example}
             value={value}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => {
+              onChange(e.target.value);
+            }}
             required={true}
           />
         </Field>

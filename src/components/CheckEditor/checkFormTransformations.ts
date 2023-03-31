@@ -9,6 +9,8 @@ import {
   HttpSettings,
   HttpSettingsFormValues,
   HttpRegexValidationFormValue,
+  MultiHttpSettings,
+  MultiHttpSettingsFormValues,
   Label,
   TcpSettingsFormValues,
   TcpSettings,
@@ -34,13 +36,14 @@ import {
   DNS_RESPONSE_CODES,
   HTTP_SSL_OPTIONS,
   HTTP_REGEX_VALIDATION_OPTIONS,
-  fallbackCheck,
   ALERT_SENSITIVITY_OPTIONS,
   HTTP_COMPRESSION_ALGO_OPTIONS,
   DNS_RESPONSE_MATCH_OPTIONS,
   fallbackSettings,
+  METHOD_OPTIONS,
+  MULTI_HTTP_VARIABLE_TYPE_OPTIONS,
 } from 'components/constants';
-import { checkType, fromBase64, toBase64 } from 'utils';
+import { checkType as getCheckType, fromBase64, toBase64 } from 'utils';
 import isBase64 from 'is-base64';
 
 const ensureBase64 = (value: string) => (isBase64(value) ? value : toBase64(value));
@@ -258,7 +261,7 @@ const getTracerouteSettingsFormValues = (settings: Settings): TracerouteSettings
 };
 
 const getFormSettingsForCheck = (settings: Settings): SettingsFormValues => {
-  const type = checkType(settings);
+  const type = getCheckType(settings);
   switch (type) {
     case CheckType.HTTP:
       return { http: getHttpSettingsFormValues(settings) };
@@ -268,6 +271,8 @@ const getFormSettingsForCheck = (settings: Settings): SettingsFormValues => {
       return { dns: getDnsSettingsFormValues(settings) };
     case CheckType.Traceroute:
       return { traceroute: getTracerouteSettingsFormValues(settings) };
+    case CheckType.MULTI_HTTP:
+      return { multihttp: getMultiHttpFormValues(settings) };
     case CheckType.PING:
     default:
       return { ping: getPingSettingsFormValues(settings) };
@@ -281,6 +286,7 @@ const getAllFormSettingsForCheck = (): SettingsFormValues => {
     dns: getDnsSettingsFormValues(fallbackSettings(CheckType.DNS)),
     ping: getPingSettingsFormValues(fallbackSettings(CheckType.PING)),
     traceroute: getTracerouteSettingsFormValues(fallbackSettings(CheckType.Traceroute)),
+    multihttp: getMultiHttpFormValues(fallbackSettings(CheckType.MULTI_HTTP)),
   };
 };
 
@@ -299,8 +305,8 @@ const getAlertSensitivityValueFromCheck = (sensitivity: string): SelectableValue
   return ALERT_SENSITIVITY_OPTIONS[0];
 };
 
-export const getDefaultValuesFromCheck = (check: Check = fallbackCheck): CheckFormValues => {
-  const defaultCheckType = checkType(check.settings);
+export const getDefaultValuesFromCheck = (check: Check): CheckFormValues => {
+  const defaultCheckType = getCheckType(check.settings);
   const settings = check.id ? getFormSettingsForCheck(check.settings) : getAllFormSettingsForCheck();
 
   return {
@@ -316,7 +322,7 @@ export const getDefaultValuesFromCheck = (check: Check = fallbackCheck): CheckFo
   };
 };
 
-function getValueFromSelectable<T>(selectable: SelectableValue<T> | undefined): T | undefined {
+export function getValueFromSelectable<T>(selectable: SelectableValue<T> | undefined): T | undefined {
   if (!selectable?.value) {
     return undefined;
   }
@@ -458,6 +464,66 @@ const getHttpSettings = (
   };
 };
 
+const getMultiHttpSettings = (
+  settings: MultiHttpSettingsFormValues | undefined,
+  defaultSettings: MultiHttpSettingsFormValues | undefined
+): MultiHttpSettings => {
+  if (!settings) {
+    return fallbackSettings(CheckType.MULTI_HTTP) as MultiHttpSettings;
+  }
+
+  return {
+    entries: settings.entries?.map((entry, index) => {
+      const variables = entry.variables ?? defaultSettings?.entries[index]?.variables ?? [];
+
+      return {
+        ...defaultSettings?.entries[index],
+        ...entry,
+        request: {
+          ...defaultSettings?.entries[index]?.request,
+          ...entry.request,
+          method: getValueFromSelectable(entry.request.method) ?? 'GET',
+        },
+        variables: variables?.map((variable) => {
+          if (variable.type.value === undefined) {
+            throw new Error('Selecting a variable type is required');
+          }
+          return {
+            ...variable,
+            type: variable.type.value,
+          };
+        }),
+      };
+    }),
+  };
+};
+
+const getMultiHttpFormValues = (settings: Settings): MultiHttpSettingsFormValues => {
+  const multiHttpSettings = settings.multihttp ?? (fallbackSettings(CheckType.MULTI_HTTP) as MultiHttpSettings);
+
+  return {
+    entries: multiHttpSettings.entries?.map((entry) => {
+      return {
+        request: {
+          ...entry.request,
+          method: METHOD_OPTIONS.find(({ value }) => value === entry.request.method) ?? METHOD_OPTIONS[0],
+        },
+        variables:
+          entry.variables?.map(({ type, name, expression, attribute }) => {
+            return {
+              type:
+                MULTI_HTTP_VARIABLE_TYPE_OPTIONS.find(({ value }) => value === type) ??
+                MULTI_HTTP_VARIABLE_TYPE_OPTIONS[0],
+              name,
+              expression,
+              attribute,
+            };
+          }) ?? [],
+      };
+    }),
+  };
+};
+
 const getTcpQueryResponseFromFormFields = (queryResponses?: TCPQueryResponse[]) => {
   if (!queryResponses) {
     return undefined;
@@ -577,11 +643,16 @@ const getTracerouteSettings = (
   };
 };
 
-const getSettingsFromFormValues = (formValues: Partial<CheckFormValues>, defaultValues: CheckFormValues): Settings => {
-  const checkType = getValueFromSelectable(formValues.checkType ?? defaultValues.checkType);
+const getSettingsFromFormValues = (
+  formValues: Partial<CheckFormValues>,
+  defaultValues: CheckFormValues,
+  checkType: CheckType
+): Settings => {
   switch (checkType) {
     case CheckType.HTTP:
       return { http: getHttpSettings(formValues.settings?.http, defaultValues.settings.http) };
+    case CheckType.MULTI_HTTP:
+      return { multihttp: getMultiHttpSettings(formValues.settings?.multihttp, defaultValues.settings.multihttp) };
     case CheckType.TCP:
       return { tcp: getTcpSettings(formValues.settings?.tcp, defaultValues.settings.tcp) };
     case CheckType.DNS:
@@ -606,6 +677,16 @@ const getTimeoutFromFormValue = (timeout: number, checkType?: CheckType): number
   return timeout * 1000;
 };
 
+const getTargetFromFormValue = (target: string, formValues: Partial<CheckFormValues>, checkType?: CheckType) => {
+  if (checkType === CheckType.MULTI_HTTP) {
+    const pluckedTarget = formValues?.settings?.multihttp?.entries[0].request.url;
+    if (target === '' || target !== pluckedTarget) {
+      return pluckedTarget;
+    }
+  }
+  return target;
+};
+
 const getFrequencyFromFormValue = (frequency: number, checkType?: CheckType): number => {
   if (checkType === CheckType.Traceroute) {
     return 120000;
@@ -615,18 +696,34 @@ const getFrequencyFromFormValue = (frequency: number, checkType?: CheckType): nu
 
 export const getCheckFromFormValues = (
   formValues: Omit<CheckFormValues, 'alert'>,
-  defaultValues: CheckFormValues
+  defaultValues: CheckFormValues,
+  checkType: CheckType
 ): Check => {
   return {
     job: formValues.job,
-    target: formValues.target,
+    target: getTargetFromFormValue(formValues.target, formValues, checkType) ?? '',
     enabled: formValues.enabled,
     labels: formValues.labels ?? [],
     probes: formValues.probes,
-    timeout: getTimeoutFromFormValue(formValues.timeout, getValueFromSelectable(formValues.checkType)),
-    frequency: getFrequencyFromFormValue(formValues.frequency, getValueFromSelectable(formValues.checkType)),
+    timeout: getTimeoutFromFormValue(formValues.timeout, checkType),
+    frequency: getFrequencyFromFormValue(formValues.frequency, checkType),
     alertSensitivity: getValueFromSelectable(formValues.alertSensitivity) ?? AlertSensitivity.None,
-    settings: getSettingsFromFormValues(formValues, defaultValues),
+    settings: getSettingsFromFormValues(formValues, defaultValues, checkType),
     basicMetricsOnly: !formValues.publishAdvancedMetrics,
   };
 };
+
+export function checkTypeParamToCheckType(checkType?: string): CheckType {
+  switch (checkType) {
+    case CheckType.DNS:
+      return CheckType.DNS;
+    case CheckType.HTTP:
+      return CheckType.HTTP;
+    case CheckType.Traceroute:
+      return CheckType.Traceroute;
+    case CheckType.TCP:
+      return CheckType.TCP;
+    default:
+      return CheckType.PING;
+  }
+}

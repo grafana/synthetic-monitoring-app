@@ -66,7 +66,7 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon, onRemoveChe
         name="pen"
         data-testid="edit-check-button"
         onClick={() => {
-          navigate(`${ROUTES.EditCheck}/${check.id}`);
+          navigate(`${ROUTES.EditCheck}/${checkType}/${check.id}`);
         }}
         disabled={!hasRole(OrgRole.Editor)}
         className={styles.marginRightSmall}

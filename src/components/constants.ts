@@ -17,9 +17,9 @@ import {
   CheckListViewType,
   HTTPCompressionAlgo,
   ResponseMatchType,
-  HttpSettings,
   Settings,
   HttpMethod,
+  MultiHttpVariableType,
 } from 'types';
 
 export const DNS_RESPONSE_CODES = enumToStringArray(DnsResponseCodes).map((responseCode) => ({
@@ -108,6 +108,10 @@ export const CHECK_FILTER_OPTIONS = [
     value: CheckType.HTTP,
   },
   {
+    label: 'MULTI-HTTP',
+    value: CheckType.MULTI_HTTP,
+  },
+  {
     label: 'PING',
     value: CheckType.PING,
   },
@@ -129,6 +133,10 @@ export const CHECK_TYPE_OPTIONS = [
   {
     label: 'HTTP',
     value: CheckType.HTTP,
+  },
+  {
+    label: 'MULTI-HTTP',
+    value: CheckType.MULTI_HTTP,
   },
   {
     label: 'PING',
@@ -185,20 +193,32 @@ export const TIME_UNIT_OPTIONS = [
   },
 ];
 
-export const fallbackCheck = {
-  job: '',
-  target: '',
-  frequency: 60000,
-  timeout: 3000,
-  enabled: true,
-  labels: [],
-  probes: [],
-  alertSensitivity: AlertSensitivity.None,
-  settings: {
-    http: fallbackSettings(CheckType.HTTP) as HttpSettings,
-  },
-  basicMetricsOnly: true,
-} as Check;
+export const fallbackCheck = (checkType: CheckType) => {
+  const fallbackTypeBasedOnCheck = checkType ? fallbackType[checkType] : CheckType.HTTP;
+  return {
+    job: '',
+    target: '',
+    frequency: 60000,
+    timeout: 3000,
+    enabled: true,
+    labels: [],
+    probes: [],
+    alertSensitivity: AlertSensitivity.None,
+    settings: {
+      [checkType]: fallbackTypeBasedOnCheck,
+    },
+    basicMetricsOnly: true,
+  } as Check;
+};
+
+const fallbackType = {
+  http: fallbackSettings(CheckType.HTTP),
+  tcp: fallbackSettings(CheckType.TCP),
+  dns: fallbackSettings(CheckType.DNS),
+  ping: fallbackSettings(CheckType.PING),
+  traceroute: fallbackSettings(CheckType.Traceroute),
+  multihttp: fallbackSettings(CheckType.MULTI_HTTP),
+};
 
 export const colors = {
   darkThemeBlueBackground: '#021B39',
@@ -329,6 +349,20 @@ export function fallbackSettings(t: CheckType): Settings {
         },
       };
     }
+    case CheckType.MULTI_HTTP: {
+      return {
+        multihttp: {
+          entries: [
+            {
+              request: {
+                method: 'GET',
+                url: '',
+              },
+            },
+          ],
+        },
+      };
+    }
     case CheckType.PING: {
       return {
         ping: {
@@ -372,3 +406,44 @@ export function fallbackSettings(t: CheckType): Settings {
 }
 
 export const PLUGIN_URL_PATH = '/a/grafana-synthetic-monitoring-app/';
+
+export const METHOD_OPTIONS = [
+  {
+    label: 'GET',
+    value: HttpMethod.GET,
+  },
+  {
+    label: 'HEAD',
+    value: HttpMethod.HEAD,
+  },
+  {
+    label: 'PUT',
+    value: HttpMethod.PUT,
+  },
+  {
+    label: 'POST',
+    value: HttpMethod.POST,
+  },
+  {
+    label: 'DELETE',
+    value: HttpMethod.DELETE,
+  },
+  {
+    label: 'OPTIONS',
+    value: HttpMethod.OPTIONS,
+  },
+];
+
+export const headerNameOptions = [
+  { label: 'Accept', value: 'Accept' },
+  { label: 'Accept-Charset', value: 'Accept-Charset' },
+  { label: 'Authorization', value: 'Authorization' },
+  { label: 'Cache-Control', value: 'Cache-Control' },
+  { label: 'Content-Type', value: 'Content-Type' },
+];
+
+export const MULTI_HTTP_VARIABLE_TYPE_OPTIONS = [
+  { label: 'JSON Path', value: MultiHttpVariableType.JSON_PATH },
+  { label: 'Regular Expression', value: MultiHttpVariableType.REGEX },
+  { label: 'CSS Selector', value: MultiHttpVariableType.CSS_SELECTOR },
+];

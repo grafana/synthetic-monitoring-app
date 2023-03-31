@@ -8,6 +8,7 @@ import {
   TcpSettings,
   Label,
   TracerouteSettings,
+  MultiHttpSettings,
 } from 'types';
 import { checkType } from 'utils';
 import * as punycode from 'punycode';
@@ -53,6 +54,9 @@ export function validateTarget(typeOfCheck: CheckType, target: string): string |
   switch (typeOfCheck) {
     case CheckType.HTTP: {
       return validateHttpTarget(target);
+    }
+    case CheckType.MULTI_HTTP: {
+      return validateHttpTarget(target, true);
     }
     case CheckType.PING: {
       return validateHostname(target);
@@ -207,10 +211,13 @@ export function validateSettings(settings: Settings): string | undefined {
   if (!settings[checkT]) {
     return 'Settings values required';
   }
-
+  // WHAT IS THIS FUNCTION FOR??
   switch (checkT) {
     case CheckType.HTTP: {
       return validateSettingsHTTP(settings.http!);
+    }
+    case CheckType.MULTI_HTTP: {
+      return validateSettingsMultiHTTP(settings.multihttp!);
     }
     case CheckType.PING: {
       return validateSettingsPING(settings.ping!);
@@ -257,6 +264,10 @@ export function validateSettingsHTTP(settings: HttpSettings): string | undefined
   return undefined;
 }
 
+export function validateSettingsMultiHTTP(settings: MultiHttpSettings): string | undefined {
+  return undefined;
+}
+
 export function validateSettingsPING(settings: PingSettings): string | undefined {
   return undefined;
 }
@@ -269,7 +280,10 @@ export function validateSettingsTCP(settings: TcpSettings): string | undefined {
   return undefined;
 }
 
-function validateHttpTarget(target: string): string | undefined {
+function validateHttpTarget(target: string, isMultiHttp?: boolean): string | undefined {
+  if (isMultiHttp) {
+    return undefined;
+  }
   try {
     // valid url will fail if curly brackets are not URI encoded, but curly brackets are technically allowed and work in the real world.
     // We encode the target before checking to get around that
