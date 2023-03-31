@@ -1,10 +1,9 @@
-import { SceneQueryRunner, SceneVariableSet, VizPanel } from '@grafana/scenes';
+import { SceneQueryRunner, VizPanel } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
 
-function getQueryRunner(variableSet: SceneVariableSet, metrics: DataSourceRef) {
+function getQueryRunner(metrics: DataSourceRef) {
   return new SceneQueryRunner({
     datasource: metrics,
-    $variables: variableSet,
     queries: [
       {
         expr: `sum by (frequency) (
@@ -19,14 +18,13 @@ function getQueryRunner(variableSet: SceneVariableSet, metrics: DataSourceRef) {
   });
 }
 
-export function getFrequencyStat(variableSet: SceneVariableSet, metrics: DataSourceRef) {
-  const queryRunner = getQueryRunner(variableSet, metrics);
+export function getFrequencyStat(metrics: DataSourceRef) {
+  const queryRunner = getQueryRunner(metrics);
   return new VizPanel({
     pluginId: 'stat',
     title: 'Frequency',
     description: 'How often is the target checked?',
     $data: queryRunner,
-    $variables: variableSet,
     placement: {
       height: 90,
     },

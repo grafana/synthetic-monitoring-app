@@ -1,4 +1,4 @@
-import { SceneQueryRunner, SceneVariableSet, VizPanel } from '@grafana/scenes';
+import { SceneQueryRunner, VizPanel } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
 
 const query = `
@@ -15,10 +15,9 @@ const query = `
   )
 `;
 
-function getQueryRunner(variables: SceneVariableSet, metrics: DataSourceRef) {
+function getQueryRunner(metrics: DataSourceRef) {
   return new SceneQueryRunner({
     datasource: metrics,
-    $variables: variables,
     queries: [
       {
         exemplar: true,
@@ -33,11 +32,11 @@ function getQueryRunner(variables: SceneVariableSet, metrics: DataSourceRef) {
   });
 }
 
-export function getErrorRateTimeseries(variables: SceneVariableSet, metrics: DataSourceRef) {
+export function getErrorRateTimeseries(metrics: DataSourceRef) {
   return new VizPanel({
     pluginId: 'timeseries',
     title: 'Error Rate : $probe ⮕ $job / $instance',
-    $data: getQueryRunner(variables, metrics),
+    $data: getQueryRunner(metrics),
     options: {
       yaxes: [
         {

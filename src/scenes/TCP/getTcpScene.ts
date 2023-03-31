@@ -29,13 +29,13 @@ export function getTcpScene({ metrics, logs }: DashboardSceneAppConfig) {
     });
 
     const variables = getVariables(CheckType.TCP, metrics);
-    const errorMap = getErrorRateMapPanel(variables, metrics);
+    const errorMap = getErrorRateMapPanel(metrics);
 
-    const uptime = getUptimeStat(variables, metrics);
-    const reachability = getReachabilityStat(variables, metrics);
-    const avgLatency = getAvgLatencyStat(variables, metrics);
-    const sslExpiry = getSSLExpiryStat(variables, metrics);
-    const frequency = getFrequencyStat(variables, metrics);
+    const uptime = getUptimeStat(metrics);
+    const reachability = getReachabilityStat(metrics);
+    const avgLatency = getAvgLatencyStat(metrics);
+    const sslExpiry = getSSLExpiryStat(metrics);
+    const frequency = getFrequencyStat(metrics);
 
     const statRow = new SceneFlexLayout({
       direction: 'row',
@@ -45,7 +45,7 @@ export function getTcpScene({ metrics, logs }: DashboardSceneAppConfig) {
       children: [uptime, reachability, avgLatency, sslExpiry, frequency],
     });
 
-    const errorRateTimeseries = getErrorRateTimeseries(variables, metrics);
+    const errorRateTimeseries = getErrorRateTimeseries(metrics);
     const topRight = new SceneFlexLayout({
       direction: 'column',
       children: [statRow, errorRateTimeseries],
@@ -59,7 +59,7 @@ export function getTcpScene({ metrics, logs }: DashboardSceneAppConfig) {
       children: [errorMap, topRight],
     });
 
-    const latencyByProbe = getLatencyByProbePanel(variables, metrics);
+    const latencyByProbe = getLatencyByProbePanel(metrics);
 
     const latencyRow = new SceneFlexLayout({
       direction: 'row',
@@ -74,7 +74,7 @@ export function getTcpScene({ metrics, logs }: DashboardSceneAppConfig) {
       placement: {
         height: 500,
       },
-      children: [getErrorLogs(variables, metrics)],
+      children: [getErrorLogs(logs)],
     });
 
     return new EmbeddedScene({

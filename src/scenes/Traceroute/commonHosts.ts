@@ -1,10 +1,9 @@
-import { SceneDataTransformer, SceneQueryRunner, SceneVariableSet, VizPanel } from '@grafana/scenes';
+import { SceneDataTransformer, SceneQueryRunner, VizPanel } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
 
-function getQueryRunner(variables: SceneVariableSet, logs: DataSourceRef) {
+function getQueryRunner(logs: DataSourceRef) {
   const queryRunner = new SceneQueryRunner({
     datasource: logs,
-    $variables: variables,
     maxDataPoints: 1,
     queries: [
       {
@@ -19,7 +18,6 @@ function getQueryRunner(variables: SceneVariableSet, logs: DataSourceRef) {
 
   const transformed = new SceneDataTransformer({
     $data: queryRunner,
-    $variables: variables,
     transformations: [
       {
         id: 'organize',
@@ -37,9 +35,9 @@ function getQueryRunner(variables: SceneVariableSet, logs: DataSourceRef) {
   return transformed;
 }
 
-export function getCommonHostsPanel(variables: SceneVariableSet, logs: DataSourceRef) {
+export function getCommonHostsPanel(logs: DataSourceRef) {
   const nodeGraph = new VizPanel({
-    $data: getQueryRunner(variables, logs),
+    $data: getQueryRunner(logs),
     title: 'Common hosts',
     pluginId: 'table',
     fieldConfig: {

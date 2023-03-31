@@ -1,4 +1,4 @@
-import { SceneQueryRunner, SceneVariableSet, VizPanel } from '@grafana/scenes';
+import { SceneQueryRunner, VizPanel } from '@grafana/scenes';
 import { DataSourceRef, ThresholdsMode } from '@grafana/schema';
 
 function getErrorMapQuery() {
@@ -30,10 +30,9 @@ function getErrorMapQuery() {
   `;
 }
 
-function getMapQueryRunner(variableSet: SceneVariableSet, metrics: DataSourceRef) {
+function getMapQueryRunner(metrics: DataSourceRef) {
   const queryRunner = new SceneQueryRunner({
     datasource: metrics,
-    $variables: variableSet,
     queries: [
       {
         expr: getErrorMapQuery(),
@@ -49,7 +48,7 @@ function getMapQueryRunner(variableSet: SceneVariableSet, metrics: DataSourceRef
   return queryRunner;
 }
 
-export function getErrorRateMapPanel(variableSet: SceneVariableSet, metrics: DataSourceRef) {
+export function getErrorRateMapPanel(metrics: DataSourceRef) {
   const mapPanel = new VizPanel({
     pluginId: 'geomap',
     title: 'Error rate by probe',
@@ -57,8 +56,7 @@ export function getErrorRateMapPanel(variableSet: SceneVariableSet, metrics: Dat
       height: 500,
       width: 500,
     },
-    $data: getMapQueryRunner(variableSet, metrics),
-    $variables: variableSet,
+    $data: getMapQueryRunner(metrics),
     options: {
       basemap: {
         name: 'Basemap',

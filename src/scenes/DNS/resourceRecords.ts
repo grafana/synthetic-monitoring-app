@@ -1,4 +1,4 @@
-import { SceneQueryRunner, SceneVariableSet, VizPanel } from '@grafana/scenes';
+import { SceneQueryRunner, VizPanel } from '@grafana/scenes';
 import { DataSourceRef, ThresholdsMode } from '@grafana/schema';
 
 // {
@@ -63,10 +63,9 @@ import { DataSourceRef, ThresholdsMode } from '@grafana/schema';
 //   "timeShift": null
 // }
 
-function getQueryRunner(variables: SceneVariableSet, metrics: DataSourceRef) {
+function getQueryRunner(metrics: DataSourceRef) {
   return new SceneQueryRunner({
     datasource: metrics,
-    $variables: variables,
     queries: [
       {
         expr: 'avg(probe_dns_answer_rrs{probe=~"$probe", instance="$instance", job="$job"})',
@@ -96,10 +95,10 @@ function getQueryRunner(variables: SceneVariableSet, metrics: DataSourceRef) {
   });
 }
 
-export function getResourcesRecordsPanel(variables: SceneVariableSet, metrics: DataSourceRef) {
+export function getResourcesRecordsPanel(metrics: DataSourceRef) {
   return new VizPanel({
     pluginId: 'timeseries',
-    $data: getQueryRunner(variables, metrics),
+    $data: getQueryRunner(metrics),
     title: 'Resource records',
     placement: {
       height: 300,

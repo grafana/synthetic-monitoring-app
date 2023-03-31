@@ -1,7 +1,7 @@
-import { SceneQueryRunner, SceneVariableSet, VizPanel } from '@grafana/scenes';
+import { SceneQueryRunner, VizPanel } from '@grafana/scenes';
 import { DataSourceRef, ThresholdsMode } from '@grafana/schema';
 
-function getQueryRunner(variableSet: SceneVariableSet, metrics: DataSourceRef) {
+function getQueryRunner(metrics: DataSourceRef) {
   return new SceneQueryRunner({
     datasource: metrics,
     queries: [
@@ -18,8 +18,8 @@ function getQueryRunner(variableSet: SceneVariableSet, metrics: DataSourceRef) {
   });
 }
 
-export function getReachabilityStat(variableSet: SceneVariableSet, metrics: DataSourceRef) {
-  const queryRunner = getQueryRunner(variableSet, metrics);
+export function getReachabilityStat(metrics: DataSourceRef) {
+  const queryRunner = getQueryRunner(metrics);
   return new VizPanel({
     pluginId: 'stat',
     title: 'Reachability',

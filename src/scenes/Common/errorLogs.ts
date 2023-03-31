@@ -1,10 +1,9 @@
-import { SceneQueryRunner, SceneVariableSet, VizPanel } from '@grafana/scenes';
+import { SceneQueryRunner, VizPanel } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
 
-function getQueryRunner(variables: SceneVariableSet, logs: DataSourceRef) {
+function getQueryRunner(logs: DataSourceRef) {
   return new SceneQueryRunner({
     datasource: logs,
-    $variables: variables,
     queries: [
       {
         expr: '{probe=~"$probe", instance="$instance", job="$job", probe_success="0"}',
@@ -14,11 +13,11 @@ function getQueryRunner(variables: SceneVariableSet, logs: DataSourceRef) {
   });
 }
 
-export function getErrorLogs(variables: SceneVariableSet, logs: DataSourceRef) {
+export function getErrorLogs(logs: DataSourceRef) {
   return new VizPanel({
     pluginId: 'logs',
     title: 'Logs for failed checks: $probe ⮕ $job / $instance',
-    $data: getQueryRunner(variables, logs),
+    $data: getQueryRunner(logs),
     placement: {
       height: 500,
     },

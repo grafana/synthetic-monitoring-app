@@ -29,12 +29,12 @@ export function getPingScene({ metrics, logs }: DashboardSceneAppConfig) {
     });
 
     const variables = getVariables(CheckType.PING, metrics);
-    const errorMap = getErrorRateMapPanel(variables, metrics);
+    const errorMap = getErrorRateMapPanel(metrics);
 
-    const uptime = getUptimeStat(variables, metrics);
-    const reachability = getReachabilityStat(variables, metrics);
-    const avgLatency = getAvgLatencyStat(variables, metrics);
-    const frequency = getFrequencyStat(variables, metrics);
+    const uptime = getUptimeStat(metrics);
+    const reachability = getReachabilityStat(metrics);
+    const avgLatency = getAvgLatencyStat(metrics);
+    const frequency = getFrequencyStat(metrics);
 
     const statRow = new SceneFlexLayout({
       direction: 'row',
@@ -44,7 +44,7 @@ export function getPingScene({ metrics, logs }: DashboardSceneAppConfig) {
       children: [uptime, reachability, avgLatency, frequency],
     });
 
-    const errorRateTimeseries = getErrorRateTimeseries(variables, metrics);
+    const errorRateTimeseries = getErrorRateTimeseries(metrics);
     const topRight = new SceneFlexLayout({
       direction: 'column',
       children: [statRow, errorRateTimeseries],
@@ -58,8 +58,8 @@ export function getPingScene({ metrics, logs }: DashboardSceneAppConfig) {
       children: [errorMap, topRight],
     });
 
-    const latencyByPhase = getLatencyByPhasePanel(variables, metrics);
-    const latencyByProbe = getLatencyByProbePanel(variables, metrics);
+    const latencyByPhase = getLatencyByPhasePanel(metrics);
+    const latencyByProbe = getLatencyByProbePanel(metrics);
 
     const latencyRow = new SceneFlexLayout({
       direction: 'row',
@@ -74,7 +74,7 @@ export function getPingScene({ metrics, logs }: DashboardSceneAppConfig) {
       placement: {
         height: 500,
       },
-      children: [getErrorLogs(variables, metrics)],
+      children: [getErrorLogs(logs)],
     });
 
     return new EmbeddedScene({

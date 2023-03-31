@@ -1,10 +1,9 @@
-import { SceneQueryRunner, SceneVariableSet, VizPanel } from '@grafana/scenes';
+import { SceneQueryRunner, VizPanel } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
 
-function getQueryRunner(variables: SceneVariableSet, metrics: DataSourceRef) {
+function getQueryRunner(metrics: DataSourceRef) {
   return new SceneQueryRunner({
     datasource: metrics,
-    $variables: variables,
     queries: [
       {
         expr: 'avg(probe_icmp_duration_seconds{probe=~"$probe", instance="$instance", job="$job"}) by (phase)',
@@ -18,11 +17,11 @@ function getQueryRunner(variables: SceneVariableSet, metrics: DataSourceRef) {
   });
 }
 
-export function getLatencyByPhasePanel(variables: SceneVariableSet, metrics: DataSourceRef) {
+export function getLatencyByPhasePanel(metrics: DataSourceRef) {
   return new VizPanel({
     pluginId: 'barchart',
     title: 'Response latency by phase: $probe ⮕ $job / $instance',
-    $data: getQueryRunner(variables, metrics),
+    $data: getQueryRunner(metrics),
     fieldConfig: {
       defaults: {
         unit: 's',

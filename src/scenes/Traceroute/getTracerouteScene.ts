@@ -25,25 +25,25 @@ export function getTracerouteScene({ metrics, logs, sm }: DashboardSceneAppConfi
     });
     const variables = getVariables(CheckType.Traceroute, metrics);
 
-    const nodeGraph = getNodeGraphPanel(variables, sm);
+    const nodeGraph = getNodeGraphPanel(sm);
 
-    const routeHash = getRouteHashPanel(variables, metrics);
-    const commonHosts = getCommonHostsPanel(variables, logs);
+    const routeHash = getRouteHashPanel(metrics);
+    const commonHosts = getCommonHostsPanel(logs);
 
     const hosts = new SceneFlexLayout({
       direction: 'row',
       children: [routeHash, commonHosts],
     });
 
-    const packetLoss = getPacketLossPanel(variables, metrics);
-    const traceTime = getTraceTimePanel(variables, metrics);
-    const avgHops = getAverageHopsPanel(variables, metrics);
+    const packetLoss = getPacketLossPanel(metrics);
+    const traceTime = getTraceTimePanel(metrics);
+    const avgHops = getAverageHopsPanel(metrics);
     const overall = new SceneFlexLayout({
       direction: 'row',
       children: [packetLoss, traceTime, avgHops],
     });
 
-    const logsPanel = getLogsPanel(variables, logs);
+    const logsPanel = getLogsPanel(logs);
 
     return new EmbeddedScene({
       $timeRange: timeRange,

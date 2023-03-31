@@ -31,13 +31,13 @@ export function getHTTPScene({ metrics, logs }: DashboardSceneAppConfig) {
 
     const variableSet = getVariables(CheckType.HTTP, metrics);
 
-    const mapPanel = getErrorRateMapPanel(variableSet, metrics);
-    const uptime = getUptimeStat(variableSet, metrics);
-    const reachability = getReachabilityStat(variableSet, metrics);
-    const avgLatency = getAvgLatencyStat(variableSet, metrics);
-    const sslExpiryStat = getSSLExpiryStat(variableSet, metrics);
-    const frequency = getFrequencyStat(variableSet, metrics);
-    const errorTimeseries = getErrorRateTimeseries(variableSet, metrics);
+    const mapPanel = getErrorRateMapPanel(metrics);
+    const uptime = getUptimeStat(metrics);
+    const reachability = getReachabilityStat(metrics);
+    const avgLatency = getAvgLatencyStat(metrics);
+    const sslExpiryStat = getSSLExpiryStat(metrics);
+    const frequency = getFrequencyStat(metrics);
+    const errorTimeseries = getErrorRateTimeseries(metrics);
 
     const statRow = new SceneFlexLayout({
       direction: 'row',
@@ -57,15 +57,15 @@ export function getHTTPScene({ metrics, logs }: DashboardSceneAppConfig) {
       children: [mapPanel, statColumn],
     });
 
-    const latencyByPhase = getLatencyByPhasePanel(variableSet, metrics);
-    const latencyByProbe = getLatencyByProbePanel(variableSet, metrics);
+    const latencyByPhase = getLatencyByPhasePanel(metrics);
+    const latencyByProbe = getLatencyByProbePanel(metrics);
 
     const latencyRow = new SceneFlexLayout({
       direction: 'row',
       children: [latencyByPhase, latencyByProbe],
     });
 
-    const errorLogs = getErrorLogs(variableSet, logs);
+    const errorLogs = getErrorLogs(logs);
 
     const logsRow = new SceneFlexLayout({
       direction: 'row',

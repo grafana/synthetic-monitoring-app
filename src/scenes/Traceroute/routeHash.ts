@@ -1,10 +1,9 @@
-import { SceneQueryRunner, SceneVariableSet, VizPanel } from '@grafana/scenes';
+import { SceneQueryRunner, VizPanel } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
 
-function getQueryRunner(variables: SceneVariableSet, metrics: DataSourceRef) {
+function getQueryRunner(metrics: DataSourceRef) {
   return new SceneQueryRunner({
     datasource: metrics,
-    $variables: variables,
     queries: [
       {
         exemplar: true,
@@ -18,13 +17,13 @@ function getQueryRunner(variables: SceneVariableSet, metrics: DataSourceRef) {
   });
 }
 
-export function getRouteHashPanel(variables: SceneVariableSet, metrics: DataSourceRef) {
+export function getRouteHashPanel(metrics: DataSourceRef) {
   const nodeGraph = new VizPanel({
     description:
       'Shows the hashed value of all the hosts traversed in a single traceroute. Can be used to determine the volatility of the routes over time',
 
     // $variables: variables,
-    $data: getQueryRunner(variables, metrics),
+    $data: getQueryRunner(metrics),
     title: 'Route hash',
     pluginId: 'timeseries',
     fieldConfig: {

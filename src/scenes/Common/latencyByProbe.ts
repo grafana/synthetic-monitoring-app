@@ -1,12 +1,10 @@
-import { SceneQueryRunner, SceneVariableSet, VizPanel } from '@grafana/scenes';
+import { SceneQueryRunner, VizPanel } from '@grafana/scenes';
 import { DataSourceRef, StackingMode, ThresholdsMode } from '@grafana/schema';
 import { DrawStyle } from '@grafana/ui';
 
-function getQueryRunner(variables: SceneVariableSet, metrics: DataSourceRef) {
+function getQueryRunner(metrics: DataSourceRef) {
   return new SceneQueryRunner({
     datasource: metrics,
-    $variables: variables,
-    // maxDataPoints: 100,
     queries: [
       {
         expr: 'avg(probe_duration_seconds{probe=~"$probe", instance="$instance", job="$job"} * on (instance, job,probe,config_version) group_left probe_success{probe=~"$probe",instance="$instance", job="$job"} > 0) by (probe)',
@@ -20,11 +18,10 @@ function getQueryRunner(variables: SceneVariableSet, metrics: DataSourceRef) {
   });
 }
 
-export function getLatencyByProbePanel(variables: SceneVariableSet, metrics: DataSourceRef) {
+export function getLatencyByProbePanel(metrics: DataSourceRef) {
   return new VizPanel({
     pluginId: 'timeseries',
-    $variables: variables,
-    $data: getQueryRunner(variables, metrics),
+    $data: getQueryRunner(metrics),
     title: 'Response latency by probe',
     placement: {
       height: 300,

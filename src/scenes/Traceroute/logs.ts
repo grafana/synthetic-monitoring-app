@@ -1,10 +1,9 @@
-import { SceneQueryRunner, SceneVariableSet, VizPanel } from '@grafana/scenes';
+import { SceneQueryRunner, VizPanel } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
 
-function getQueryRunner(variables: SceneVariableSet, logs: DataSourceRef) {
+function getQueryRunner(logs: DataSourceRef) {
   return new SceneQueryRunner({
     datasource: logs,
-    $variables: variables,
     queries: [
       {
         expr: '{instance="$instance", job="$job", probe=~"$probe", check_name="traceroute"}',
@@ -14,10 +13,10 @@ function getQueryRunner(variables: SceneVariableSet, logs: DataSourceRef) {
   });
 }
 
-export function getLogsPanel(variables: SceneVariableSet, logs: DataSourceRef) {
+export function getLogsPanel(logs: DataSourceRef) {
   return new VizPanel({
     pluginId: 'logs',
-    $data: getQueryRunner(variables, logs),
+    $data: getQueryRunner(logs),
     title: 'Raw Logs',
     options: {
       showTime: true,

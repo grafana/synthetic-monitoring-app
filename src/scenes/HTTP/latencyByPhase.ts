@@ -1,10 +1,9 @@
-import { SceneQueryRunner, SceneVariableSet, VizPanel } from '@grafana/scenes';
+import { SceneQueryRunner, VizPanel } from '@grafana/scenes';
 import { DataSourceRef, ThresholdsMode } from '@grafana/schema';
 
-function getQueryRunner(variables: SceneVariableSet, metrics: DataSourceRef) {
+function getQueryRunner(metrics: DataSourceRef) {
   return new SceneQueryRunner({
     datasource: metrics,
-    $variables: variables,
     maxDataPoints: 100,
     queries: [
       {
@@ -13,17 +12,16 @@ function getQueryRunner(variables: SceneVariableSet, metrics: DataSourceRef) {
         interval: '',
         intervalFactor: 1,
         legendFormat: '{{phase}}',
-        refId: 'A',
+        refId: 'F',
       },
     ],
   });
 }
 
-export function getLatencyByPhasePanel(variables: SceneVariableSet, metrics: DataSourceRef) {
+export function getLatencyByPhasePanel(metrics: DataSourceRef) {
   return new VizPanel({
     pluginId: 'barchart',
-    $variables: variables,
-    $data: getQueryRunner(variables, metrics),
+    $data: getQueryRunner(metrics),
     title: 'Response latency by phase: $probe ⮕ $job / $instance',
     placement: {
       height: 300,

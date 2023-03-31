@@ -1,10 +1,9 @@
-import { SceneQueryRunner, SceneVariableSet, VizPanel } from '@grafana/scenes';
+import { SceneQueryRunner, VizPanel } from '@grafana/scenes';
 import { DataSourceRef, ThresholdsMode } from '@grafana/schema';
 
-function getQueryRunner(variableSet: SceneVariableSet, metrics: DataSourceRef) {
+function getQueryRunner(metrics: DataSourceRef) {
   return new SceneQueryRunner({
     datasource: metrics,
-    $variables: variableSet,
     queries: [
       {
         expr: 'sum(rate(probe_all_duration_seconds_sum{probe=~"$probe", instance="$instance", job="$job"}[$__range])) / sum(rate(probe_all_duration_seconds_count{probe=~"$probe", instance="$instance", job="$job"}[$__range]))',
@@ -18,8 +17,8 @@ function getQueryRunner(variableSet: SceneVariableSet, metrics: DataSourceRef) {
   });
 }
 
-export function getAvgLatencyStat(variableSet: SceneVariableSet, metrics: DataSourceRef) {
-  const queryRunner = getQueryRunner(variableSet, metrics);
+export function getAvgLatencyStat(metrics: DataSourceRef) {
+  const queryRunner = getQueryRunner(metrics);
   return new VizPanel({
     pluginId: 'stat',
     title: 'Average latency',

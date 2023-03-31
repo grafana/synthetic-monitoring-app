@@ -1,10 +1,9 @@
-import { SceneQueryRunner, SceneVariableSet, VizPanel } from '@grafana/scenes';
+import { SceneQueryRunner, VizPanel } from '@grafana/scenes';
 import { DataSourceRef, ThresholdsMode } from '@grafana/schema';
 
-function getQueryRunner(variableSet: SceneVariableSet, metrics: DataSourceRef) {
+function getQueryRunner(metrics: DataSourceRef) {
   return new SceneQueryRunner({
     datasource: metrics,
-    $variables: variableSet,
     queries: [
       {
         exemplar: true,
@@ -19,13 +18,12 @@ function getQueryRunner(variableSet: SceneVariableSet, metrics: DataSourceRef) {
   });
 }
 
-export function getUptimeStat(variableSet: SceneVariableSet, metrics: DataSourceRef) {
+export function getUptimeStat(metrics: DataSourceRef) {
   return new VizPanel({
     pluginId: 'stat',
     title: 'Uptime',
     description: 'The fraction of time the target was up during the whole period.',
-    $data: getQueryRunner(variableSet, metrics),
-    $variables: variableSet,
+    $data: getQueryRunner(metrics),
     placement: {
       // width: 200,
       height: 90,

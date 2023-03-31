@@ -1,10 +1,9 @@
-import { SceneQueryRunner, SceneVariableSet, VizPanel } from '@grafana/scenes';
+import { SceneQueryRunner, VizPanel } from '@grafana/scenes';
 import { DataSourceRef, MappingType, SpecialValueMatch, ThresholdsMode } from '@grafana/schema';
 
-function getQueryRunner(variables: SceneVariableSet, metrics: DataSourceRef) {
+function getQueryRunner(metrics: DataSourceRef) {
   return new SceneQueryRunner({
     datasource: metrics,
-    $variables: variables,
     queries: [
       {
         expr: 'avg(probe_dns_answer_rrs{probe=~"$probe",instance="$instance", job="$job"})',
@@ -18,11 +17,11 @@ function getQueryRunner(variables: SceneVariableSet, metrics: DataSourceRef) {
   });
 }
 
-export function getAnswerRecordsStat(variables: SceneVariableSet, metrics: DataSourceRef) {
+export function getAnswerRecordsStat(metrics: DataSourceRef) {
   const panel = new VizPanel({
     pluginId: 'stat',
     title: 'Answer Records',
-    $data: getQueryRunner(variables, metrics),
+    $data: getQueryRunner(metrics),
     placement: {
       height: 90,
     },

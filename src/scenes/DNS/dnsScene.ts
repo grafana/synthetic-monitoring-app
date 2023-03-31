@@ -30,13 +30,13 @@ export function getDNSScene({ metrics, logs }: DashboardSceneAppConfig) {
     });
 
     const variables = getVariables(CheckType.DNS, metrics);
-    const errorMap = getErrorRateMapPanel(variables, metrics);
+    const errorMap = getErrorRateMapPanel(metrics);
 
-    const uptime = getUptimeStat(variables, metrics);
-    const reachability = getReachabilityStat(variables, metrics);
-    const avgLatency = getAvgLatencyStat(variables, metrics);
-    const answerRecords = getAnswerRecordsStat(variables, metrics);
-    const frequency = getFrequencyStat(variables, metrics);
+    const uptime = getUptimeStat(metrics);
+    const reachability = getReachabilityStat(metrics);
+    const avgLatency = getAvgLatencyStat(metrics);
+    const answerRecords = getAnswerRecordsStat(metrics);
+    const frequency = getFrequencyStat(metrics);
 
     const statRow = new SceneFlexLayout({
       direction: 'row',
@@ -46,7 +46,7 @@ export function getDNSScene({ metrics, logs }: DashboardSceneAppConfig) {
       children: [uptime, reachability, avgLatency, answerRecords, frequency],
     });
 
-    const errorRateTimeseries = getErrorRateTimeseries(variables, metrics);
+    const errorRateTimeseries = getErrorRateTimeseries(metrics);
     const topRight = new SceneFlexLayout({
       direction: 'column',
       children: [statRow, errorRateTimeseries],
@@ -60,8 +60,8 @@ export function getDNSScene({ metrics, logs }: DashboardSceneAppConfig) {
       children: [errorMap, topRight],
     });
 
-    const latencyByProbe = getLatencyByProbePanel(variables, metrics);
-    const resourceRecords = getResourcesRecordsPanel(variables, metrics);
+    const latencyByProbe = getLatencyByProbePanel(metrics);
+    const resourceRecords = getResourcesRecordsPanel(metrics);
 
     const latencyRow = new SceneFlexLayout({
       direction: 'row',
@@ -76,7 +76,7 @@ export function getDNSScene({ metrics, logs }: DashboardSceneAppConfig) {
       placement: {
         height: 500,
       },
-      children: [getErrorLogs(variables, metrics)],
+      children: [getErrorLogs(logs)],
     });
 
     return new EmbeddedScene({
