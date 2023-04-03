@@ -1,6 +1,14 @@
 # Change Log
 
-# [1.9.35](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.43...v1.9.35) (2023-2-16)
+# [1.10.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.36...v1.10.0) (2023-4-3)
+
+- Add and release multi-http functionality behind feature flag
+
+# [1.9.36](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.35...v1.9.36) (2023-3-15)
+
+- Update build tooling from grafana-toolkit to create-plugin
+
+# [1.9.35](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.34...v1.9.35) (2023-2-16)
 
 - Fix a bug with rendering data in the node panel for traceroute checks
 
