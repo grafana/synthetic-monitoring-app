@@ -1,6 +1,6 @@
 # Change Log
 
-# [1.9.40](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.36...v1.9.40) (2023-4-3)
+# [1.10.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.36...v1.10.0) (2023-4-3)
 
 - Add and release multi-http functionality behind feature flag
 
