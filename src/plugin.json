@@ -52,8 +52,8 @@
     },
     {
       "type": "page",
-      "name": "Dashboards",
-      "path": "/a/grafana-synthetic-monitoring-app/scene",
+      "name": "Summary",
+      "path": "/a/grafana-synthetic-monitoring-app/redirect?dashboard=summary",
       "addToNav": true
     },
     {
