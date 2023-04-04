@@ -23,9 +23,6 @@ export function getLatencyByPhasePanel(metrics: DataSourceRef) {
     pluginId: 'barchart',
     $data: getQueryRunner(metrics),
     title: 'Response latency by phase: $probe ⮕ $job / $instance',
-    placement: {
-      height: 300,
-    },
     fieldConfig: {
       defaults: {
         custom: {},

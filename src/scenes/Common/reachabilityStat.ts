@@ -25,9 +25,6 @@ export function getReachabilityStat(metrics: DataSourceRef) {
     title: 'Reachability',
     description: 'The percentage of all the checks that have succeeded during the whole time period.',
     $data: queryRunner,
-    placement: {
-      height: 90,
-    },
     fieldConfig: {
       overrides: [],
       defaults: {

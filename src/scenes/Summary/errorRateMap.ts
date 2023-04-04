@@ -52,11 +52,6 @@ export function getErrorRateMapPanel(checkType: CheckType, metrics: DataSourceRe
   const mapPanel = new VizPanel({
     pluginId: 'geomap',
     title: `${checkType} error rate`,
-    placement: {
-      height: 500,
-      width: 500,
-      // minHeight: '100%',
-    },
     $data: getMapQueryRunner(checkType, metrics),
     options: {
       basemap: {

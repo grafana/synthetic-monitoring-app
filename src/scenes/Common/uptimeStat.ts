@@ -24,10 +24,6 @@ export function getUptimeStat(metrics: DataSourceRef) {
     title: 'Uptime',
     description: 'The fraction of time the target was up during the whole period.',
     $data: getQueryRunner(metrics),
-    placement: {
-      // width: 200,
-      height: 90,
-    },
     fieldConfig: {
       defaults: {
         decimals: 2,

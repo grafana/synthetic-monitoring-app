@@ -100,9 +100,6 @@ export function getResourcesRecordsPanel(metrics: DataSourceRef) {
     pluginId: 'timeseries',
     $data: getQueryRunner(metrics),
     title: 'Resource records',
-    placement: {
-      height: 300,
-    },
     fieldConfig: {
       defaults: {
         custom: {

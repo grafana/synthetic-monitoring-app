@@ -1,5 +1,6 @@
 import { SceneQueryRunner, VizPanel } from '@grafana/scenes';
-import { DataSourceRef, MappingType, SpecialValueMatch, ThresholdsMode } from '@grafana/schema';
+import { DataSourceRef, MappingType, ThresholdsMode } from '@grafana/schema';
+import { SpecialValueMatch } from '@grafana/data';
 
 function getQueryRunner(metrics: DataSourceRef) {
   return new SceneQueryRunner({
@@ -22,9 +23,6 @@ export function getAnswerRecordsStat(metrics: DataSourceRef) {
     pluginId: 'stat',
     title: 'Answer Records',
     $data: getQueryRunner(metrics),
-    placement: {
-      height: 90,
-    },
     fieldConfig: {
       defaults: {
         mappings: [

@@ -52,10 +52,7 @@ export function getErrorRateMapPanel(metrics: DataSourceRef) {
   const mapPanel = new VizPanel({
     pluginId: 'geomap',
     title: 'Error rate by probe',
-    placement: {
-      height: 500,
-      width: 500,
-    },
+
     $data: getMapQueryRunner(metrics),
     options: {
       basemap: {

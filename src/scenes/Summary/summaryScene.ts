@@ -2,6 +2,7 @@ import {
   EmbeddedScene,
   QueryVariable,
   SceneControlsSpacer,
+  SceneFlexItem,
   SceneFlexLayout,
   SceneRefreshPicker,
   SceneTimePicker,
@@ -31,18 +32,6 @@ export function getSummaryScene({ metrics, logs }: DashboardSceneAppConfig) {
       datasource: metrics,
     });
 
-    // const checkType = new QueryVariable({
-    //   datasource: metrics,
-    //   includeAll: true,
-    //   label: 'Check Type',
-    //   name: 'check_type',
-    //   query: {
-    //     query: 'label_values(sm_check_info, check_name)',
-    //     refId: '${DS_SM_METRICS}-check_type-Variable-Query',
-    //   },
-    //   refresh: 1,
-    // });
-
     // Query runner definition
     const checkTypes = [CheckType.DNS, CheckType.HTTP, CheckType.PING, CheckType.TCP, CheckType.Traceroute];
 
@@ -54,27 +43,15 @@ export function getSummaryScene({ metrics, logs }: DashboardSceneAppConfig) {
 
       const flexed = new SceneFlexLayout({
         direction: 'column',
-        placement: {
-          height: 500,
-          width: 500,
-          minHeight: 500,
-        },
-        children: [errorPercentagePanel, latencyPanel],
+        children: [errorPercentagePanel, latencyPanel].map((panel) => new SceneFlexItem({ height: 500, body: panel })),
       });
 
       const flexRow = new SceneFlexLayout({
         direction: 'row',
-        placement: {
-          height: 200,
-          width: '100%',
-          minHeight: 500,
-          x: 0,
-          y: 0,
-        },
-        children: [mapPanel, flexed, tablePanel],
+        children: [mapPanel, flexed, tablePanel].map((panel) => new SceneFlexItem({ height: 350, body: panel })),
       });
 
-      return flexRow;
+      return new SceneFlexItem({ body: flexRow });
     });
 
     return new EmbeddedScene({

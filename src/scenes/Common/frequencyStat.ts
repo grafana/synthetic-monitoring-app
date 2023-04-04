@@ -25,9 +25,6 @@ export function getFrequencyStat(metrics: DataSourceRef) {
     title: 'Frequency',
     description: 'How often is the target checked?',
     $data: queryRunner,
-    placement: {
-      height: 90,
-    },
     fieldConfig: {
       defaults: {
         color: {

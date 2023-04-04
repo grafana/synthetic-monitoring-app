@@ -24,9 +24,6 @@ export function getSSLExpiryStat(metrics: DataSourceRef) {
     title: 'SSL Expiry',
     description: 'The average time to receive an answer across all the checks during the whole time period.',
     $data: queryRunner,
-    placement: {
-      height: 90,
-    },
     fieldConfig: {
       defaults: {
         decimals: 2,

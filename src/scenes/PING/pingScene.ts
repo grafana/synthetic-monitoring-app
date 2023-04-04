@@ -1,6 +1,7 @@
 import {
   EmbeddedScene,
   SceneControlsSpacer,
+  SceneFlexItem,
   SceneFlexLayout,
   SceneRefreshPicker,
   SceneTimePicker,
@@ -38,24 +39,21 @@ export function getPingScene({ metrics, logs }: DashboardSceneAppConfig) {
 
     const statRow = new SceneFlexLayout({
       direction: 'row',
-      placement: {
-        height: 90,
-      },
-      children: [uptime, reachability, avgLatency, frequency],
+      children: [uptime, reachability, avgLatency, frequency].map(
+        (panel) => new SceneFlexItem({ body: panel, height: 90 })
+      ),
     });
 
     const errorRateTimeseries = getErrorRateTimeseries(metrics);
     const topRight = new SceneFlexLayout({
       direction: 'column',
-      children: [statRow, errorRateTimeseries],
+      children: [new SceneFlexItem({ height: 90, body: statRow }), new SceneFlexItem({ body: errorRateTimeseries })],
     });
 
     const topRow = new SceneFlexLayout({
       direction: 'row',
-      placement: {
-        height: 500,
-      },
-      children: [errorMap, topRight],
+
+      children: [new SceneFlexItem({ height: 500, width: 500, body: errorMap }), new SceneFlexItem({ body: topRight })],
     });
 
     const latencyByPhase = getLatencyByPhasePanel(metrics);
@@ -63,18 +61,12 @@ export function getPingScene({ metrics, logs }: DashboardSceneAppConfig) {
 
     const latencyRow = new SceneFlexLayout({
       direction: 'row',
-      placement: {
-        height: 300,
-      },
-      children: [latencyByPhase, latencyByProbe],
+      children: [latencyByPhase, latencyByProbe].map((panel) => new SceneFlexItem({ body: panel, height: 300 })),
     });
 
     const logsRow = new SceneFlexLayout({
       direction: 'row',
-      placement: {
-        height: 500,
-      },
-      children: [getErrorLogs(logs)],
+      children: [new SceneFlexItem({ height: 500, body: getErrorLogs(logs) })],
     });
 
     return new EmbeddedScene({
@@ -91,7 +83,7 @@ export function getPingScene({ metrics, logs }: DashboardSceneAppConfig) {
       ],
       body: new SceneFlexLayout({
         direction: 'column',
-        children: [topRow, latencyRow, logsRow],
+        children: [topRow, latencyRow, logsRow].map((flexItem) => new SceneFlexItem({ body: flexItem })),
       }),
     });
   };

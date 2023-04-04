@@ -8,6 +8,7 @@ export function getVariables(checkType: CheckType, metrics: DataSourceRef) {
     includeAll: true,
     allValue: '.*',
     name: 'probe',
+    isMulti: true,
     query: { query: `label_values(sm_check_info{check_name="${checkType}"},probe)` },
     datasource: metrics,
   });

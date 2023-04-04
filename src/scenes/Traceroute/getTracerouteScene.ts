@@ -1,6 +1,7 @@
 import {
   EmbeddedScene,
   SceneControlsSpacer,
+  SceneFlexItem,
   SceneFlexLayout,
   SceneRefreshPicker,
   SceneTimePicker,
@@ -32,7 +33,7 @@ export function getTracerouteScene({ metrics, logs, sm }: DashboardSceneAppConfi
 
     const hosts = new SceneFlexLayout({
       direction: 'row',
-      children: [routeHash, commonHosts],
+      children: [routeHash, commonHosts].map((panel) => new SceneFlexItem({ body: panel })),
     });
 
     const packetLoss = getPacketLossPanel(metrics);
@@ -40,7 +41,7 @@ export function getTracerouteScene({ metrics, logs, sm }: DashboardSceneAppConfi
     const avgHops = getAverageHopsPanel(metrics);
     const overall = new SceneFlexLayout({
       direction: 'row',
-      children: [packetLoss, traceTime, avgHops],
+      children: [packetLoss, traceTime, avgHops].map((panel) => new SceneFlexItem({ body: panel })),
     });
 
     const logsPanel = getLogsPanel(logs);
@@ -59,7 +60,7 @@ export function getTracerouteScene({ metrics, logs, sm }: DashboardSceneAppConfi
       ],
       body: new SceneFlexLayout({
         direction: 'column',
-        children: [nodeGraph, hosts, overall, logsPanel],
+        children: [nodeGraph, hosts, overall, logsPanel].map((panel) => new SceneFlexItem({ body: panel })),
       }),
     });
   };

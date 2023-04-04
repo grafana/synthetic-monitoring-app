@@ -23,9 +23,6 @@ export function getLatencyByProbePanel(metrics: DataSourceRef) {
     pluginId: 'timeseries',
     $data: getQueryRunner(metrics),
     title: 'Response latency by probe',
-    placement: {
-      height: 300,
-    },
     fieldConfig: {
       defaults: {
         custom: {

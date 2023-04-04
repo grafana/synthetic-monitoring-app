@@ -1,6 +1,7 @@
 import {
   EmbeddedScene,
   SceneControlsSpacer,
+  SceneFlexItem,
   SceneFlexLayout,
   SceneRefreshPicker,
   SceneTimePicker,
@@ -11,13 +12,13 @@ import { CheckType, DashboardSceneAppConfig } from 'types';
 import {
   getAvgLatencyStat,
   getErrorLogs,
-  getUptimeStat,
-  getReachabilityStat,
+  getErrorRateMapPanel,
   getFrequencyStat,
   getLatencyByProbePanel,
-  getErrorRateMapPanel,
-  getVariables,
+  getReachabilityStat,
   getSSLExpiryStat,
+  getUptimeStat,
+  getVariables,
 } from '../Common';
 import { getErrorRateTimeseries } from './errorRateTimeseries';
 import { getLatencyByPhasePanel } from './latencyByPhase';
@@ -41,20 +42,22 @@ export function getHTTPScene({ metrics, logs }: DashboardSceneAppConfig) {
 
     const statRow = new SceneFlexLayout({
       direction: 'row',
-      placement: {
-        height: 90,
-      },
-      children: [uptime, reachability, avgLatency, sslExpiryStat, frequency],
+      children: [uptime, reachability, avgLatency, sslExpiryStat, frequency].map((panel) => {
+        return new SceneFlexItem({ height: 90, body: panel });
+      }),
     });
 
     const statColumn = new SceneFlexLayout({
       direction: 'column',
-      children: [statRow, errorTimeseries],
+      children: [new SceneFlexItem({ height: 90, body: statRow }), new SceneFlexItem({ body: errorTimeseries })],
     });
 
     const topRow = new SceneFlexLayout({
       direction: 'row',
-      children: [mapPanel, statColumn],
+      children: [
+        new SceneFlexItem({ height: 500, width: 500, body: mapPanel }),
+        new SceneFlexItem({ body: statColumn }),
+      ],
     });
 
     const latencyByPhase = getLatencyByPhasePanel(metrics);
@@ -62,14 +65,14 @@ export function getHTTPScene({ metrics, logs }: DashboardSceneAppConfig) {
 
     const latencyRow = new SceneFlexLayout({
       direction: 'row',
-      children: [latencyByPhase, latencyByProbe],
+      children: [latencyByPhase, latencyByProbe].map((panel) => new SceneFlexItem({ body: panel, height: 300 })),
     });
 
     const errorLogs = getErrorLogs(logs);
 
     const logsRow = new SceneFlexLayout({
       direction: 'row',
-      children: [errorLogs],
+      children: [new SceneFlexItem({ height: 500, body: errorLogs })],
     });
 
     return new EmbeddedScene({
@@ -86,7 +89,7 @@ export function getHTTPScene({ metrics, logs }: DashboardSceneAppConfig) {
       ],
       body: new SceneFlexLayout({
         direction: 'column',
-        children: [topRow, latencyRow, logsRow],
+        children: [topRow, latencyRow, logsRow].map((flexItem) => new SceneFlexItem({ body: flexItem })),
       }),
     });
   };

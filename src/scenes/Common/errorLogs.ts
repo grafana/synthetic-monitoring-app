@@ -18,9 +18,6 @@ export function getErrorLogs(logs: DataSourceRef) {
     pluginId: 'logs',
     title: 'Logs for failed checks: $probe ⮕ $job / $instance',
     $data: getQueryRunner(logs),
-    placement: {
-      height: 500,
-    },
     options: {
       showTime: true,
       showLabels: true,
