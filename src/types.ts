@@ -509,6 +509,7 @@ export enum FeatureName {
   AdhocChecks = 'synthetics-adhocchecks',
   UnifiedAlerting = 'ngalert',
   MultiHttp = 'multi-http',
+  Scenes = 'synthetics-scenes',
 }
 
 export interface UsageValues {
@@ -531,11 +532,8 @@ export enum ROUTES {
   NewCheck = 'checks/new',
   EditCheck = 'checks/edit',
   Config = 'config',
-<<<<<<< HEAD
   Scene = 'scene',
-=======
   ChooseCheckType = 'checks/choose-type',
->>>>>>> a4fcbf8ce2d393b8ac11a0c48a987e4b2e417d63
 }
 
 export interface CheckPageParams {
@@ -558,17 +556,16 @@ export interface AdHocCheckResponse {
   target: string;
 }
 
-<<<<<<< HEAD
 export interface DashboardSceneAppConfig {
   metrics: DataSourceRef;
   logs: DataSourceRef;
   sm: DataSourceRef;
-=======
+}
+
 export type MultiHttpFormTabs = 'header' | 'queryParams' | 'body' | 'variables';
 
 export enum MultiHttpVariableType {
   JSON_PATH = 0,
   REGEX = 1,
   CSS_SELECTOR = 2,
->>>>>>> a4fcbf8ce2d393b8ac11a0c48a987e4b2e417d63
 }
