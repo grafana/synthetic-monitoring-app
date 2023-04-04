@@ -12,9 +12,8 @@ export function getDashboardSceneApp(config: DashboardSceneAppConfig) {
   return new SceneApp({
     pages: [
       new SceneAppPage({
-        title: 'Page with tabs',
-        subTitle: 'This scene showcases a basic tabs functionality.',
-        // Important: Mind the page route is ambiguous for the tabs to work properly
+        title: 'Dashboards',
+        subTitle: 'Check results',
         url: `${PLUGIN_URL_PATH}${ROUTES.Scene}`,
         hideFromBreadcrumbs: false,
         getScene: getSummaryScene(config),
