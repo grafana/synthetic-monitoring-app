@@ -215,6 +215,73 @@ export const CUSTOM_ALERT_SENSITIVITY_CHECK = {
   },
 };
 
+export const BASIC_MULTIHTTP_CHECK = {
+  job: 'basicmulti',
+  target: 'https://www.grafana.com',
+  enabled: true,
+  labels: [{ name: 'labelName', value: 'labelValue' }],
+  probes: [42],
+  timeout: 2000,
+  frequency: 110000,
+  alertSensitivity: 'none',
+  basicMetricsOnly: true,
+  settings: {
+    multihttp: {
+      entries: [
+        {
+          request: {
+            url: 'https://www.grafana.com',
+            method: 'GET',
+            headers: [
+              {
+                name: 'aheader',
+                value: 'yarp',
+              },
+              {
+                name: 'carne',
+                value: 'asada',
+              },
+            ],
+            body: '',
+            queryString: [
+              {
+                name: 'tacos',
+                value: 'delicious',
+              },
+            ],
+          },
+          variables: [
+            { type: 0, name: 'enchiladas', expression: 'mole' },
+            { type: 1, name: 'salsa', expression: 'picante' },
+            { type: 2, name: 'chimichanga', expression: 'delicioso', attribute: 'churro' },
+          ],
+        },
+        {
+          request: {
+            url: 'https://www.example.com',
+            method: 'POST',
+            headers: [
+              {
+                name: 'examples',
+                value: 'great',
+              },
+            ],
+            body: '{"averyinteresting":"request body content"}',
+            queryString: [
+              {
+                name: 'query',
+                value: 'param',
+              },
+              { name: 'using variable', value: '${enchiladas}' },
+            ],
+          },
+          variables: [],
+        },
+      ],
+    },
+  },
+};
+
 export const BASIC_CHECK_LIST = [
   {
     job: 'carne asada',
@@ -261,6 +328,7 @@ export const BASIC_CHECK_LIST = [
   { id: 3, ...BASIC_PING_CHECK },
   { id: 4, ...BASIC_TCP_CHECK },
   { id: 5, ...CUSTOM_ALERT_SENSITIVITY_CHECK },
+  { id: 6, ...BASIC_MULTIHTTP_CHECK },
 ] as Check[];
 
 export const EDITED_HTTP_CHECK = {

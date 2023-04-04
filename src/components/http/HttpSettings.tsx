@@ -17,14 +17,16 @@ import {
 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { useFormContext, Controller, useFieldArray } from 'react-hook-form';
-import { HttpMethod, HttpVersion, CheckType, HttpRegexValidationType } from 'types';
+import { HttpVersion, CheckType, HttpRegexValidationType, HttpMethod } from 'types';
 import { Collapse } from 'components/Collapse';
 import {
   HTTP_COMPRESSION_ALGO_OPTIONS,
   HTTP_REGEX_VALIDATION_OPTIONS,
   HTTP_SSL_OPTIONS,
   IP_OPTIONS,
-} from '../constants';
+  METHOD_OPTIONS,
+} from 'components/constants';
+
 import { LabelField } from 'components/LabelField';
 import { TLSConfig } from 'components/TLSConfig';
 import { NameValueInput } from 'components/NameValueInput';
@@ -44,33 +46,6 @@ const httpVersionOptions = [
   {
     label: 'HTTP/2',
     value: HttpVersion.HTTP2_0,
-  },
-];
-
-const methodOptions = [
-  {
-    label: 'GET',
-    value: HttpMethod.GET,
-  },
-  {
-    label: 'HEAD',
-    value: HttpMethod.HEAD,
-  },
-  {
-    label: 'PUT',
-    value: HttpMethod.PUT,
-  },
-  {
-    label: 'POST',
-    value: HttpMethod.POST,
-  },
-  {
-    label: 'DELETE',
-    value: HttpMethod.DELETE,
-  },
-  {
-    label: 'OPTIONS',
-    value: HttpMethod.OPTIONS,
   },
 ];
 
@@ -212,7 +187,7 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
             error={errors?.settings?.http?.method}
           >
             <Controller
-              render={({ field }) => <Select {...field} options={methodOptions} />}
+              render={({ field }) => <Select {...field} options={METHOD_OPTIONS} />}
               rules={{ required: true }}
               name="settings.http.method"
             />

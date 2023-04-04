@@ -1,7 +1,8 @@
 import { DataSourceSettings, OrgRole, SelectableValue } from '@grafana/data';
-import { LinkedDatasourceInfo } from './datasource/types';
-import { SMDataSource } from 'datasource/DataSource';
 import { DataSourceRef } from '@grafana/schema';
+import { MultiHttpEntry, MultiHttpVariable, RequestMethods, RequestProps } from 'components/MultiHttp/MultiHttpTypes';
+import { SMDataSource } from 'datasource/DataSource';
+import { LinkedDatasourceInfo } from './datasource/types';
 
 export interface GlobalSettings {
   apiHost: string;
@@ -229,6 +230,25 @@ export interface HttpSettingsFormValues
   compression: SelectableValue<HTTPCompressionAlgo>;
   proxyURL?: string;
 }
+export interface MultiHttpSettings {
+  entries: MultiHttpEntry[];
+}
+export interface MultiHttpSettingsFormValues {
+  entries: MultiHttpEntryFormValues[];
+}
+
+export interface MultiHttpEntryFormValues extends Omit<MultiHttpEntry, 'request' | 'variables'> {
+  request: MultiHttpRequestFormValues;
+  variables: MultiHttpVariablesFormValues[];
+}
+
+export interface MultiHttpRequestFormValues extends Omit<RequestProps, 'method'> {
+  method: SelectableValue<RequestMethods>;
+}
+
+export interface MultiHttpVariablesFormValues extends Omit<MultiHttpVariable, 'type'> {
+  type: SelectableValue<MultiHttpVariableType>;
+}
 
 export interface TracerouteSettings {
   maxHops: number;
@@ -253,6 +273,7 @@ export interface PingSettingsFormValues extends Omit<PingSettings, 'ipVersion'> 
 
 export interface SettingsFormValues {
   http?: HttpSettingsFormValues;
+  multihttp?: MultiHttpSettingsFormValues;
   ping?: PingSettingsFormValues;
   dns?: DnsSettingsFormValues;
   tcp?: TcpSettingsFormValues;
@@ -269,7 +290,7 @@ export interface AlertFormValues {
 }
 
 export interface CheckFormValues extends Omit<Check, 'settings' | 'labels' | 'alertSensitivity'> {
-  checkType: SelectableValue<CheckType>;
+  checkType?: SelectableValue<CheckType>;
   settings: SettingsFormValues;
   labels?: Label[];
   alertSensitivity: SelectableValue<string>;
@@ -300,6 +321,7 @@ export interface FilteredCheck extends Omit<Check, 'id'> {
 
 export interface Settings {
   http?: HttpSettings;
+  multihttp?: MultiHttpSettings;
   ping?: PingSettings;
   dns?: DnsSettings;
   tcp?: TcpSettings;
@@ -312,6 +334,7 @@ export enum CheckType {
   DNS = 'dns',
   TCP = 'tcp',
   Traceroute = 'traceroute',
+  MULTI_HTTP = 'multihttp',
 }
 
 export interface HostedInstance {
@@ -485,6 +508,7 @@ export enum FeatureName {
   Traceroute = 'traceroute',
   AdhocChecks = 'synthetics-adhocchecks',
   UnifiedAlerting = 'ngalert',
+  MultiHttp = 'multi-http',
 }
 
 export interface UsageValues {
@@ -507,12 +531,17 @@ export enum ROUTES {
   NewCheck = 'checks/new',
   EditCheck = 'checks/edit',
   Config = 'config',
+<<<<<<< HEAD
   Scene = 'scene',
+=======
+  ChooseCheckType = 'checks/choose-type',
+>>>>>>> a4fcbf8ce2d393b8ac11a0c48a987e4b2e417d63
 }
 
 export interface CheckPageParams {
   view: string;
   id: string;
+  checkType?: string;
 }
 
 export interface ProbePageParams {
@@ -529,8 +558,17 @@ export interface AdHocCheckResponse {
   target: string;
 }
 
+<<<<<<< HEAD
 export interface DashboardSceneAppConfig {
   metrics: DataSourceRef;
   logs: DataSourceRef;
   sm: DataSourceRef;
+=======
+export type MultiHttpFormTabs = 'header' | 'queryParams' | 'body' | 'variables';
+
+export enum MultiHttpVariableType {
+  JSON_PATH = 0,
+  REGEX = 1,
+  CSS_SELECTOR = 2,
+>>>>>>> a4fcbf8ce2d393b8ac11a0c48a987e4b2e417d63
 }

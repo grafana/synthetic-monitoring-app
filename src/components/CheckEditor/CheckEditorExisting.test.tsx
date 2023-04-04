@@ -58,7 +58,7 @@ const renderExistingCheckEditor = async (route: string) => {
     </FeatureFlagProvider>
   );
 
-  await waitFor(() => expect(screen.getByText('Check Details')).toBeInTheDocument());
+  await waitFor(() => expect(screen.getByText('Probe options')).toBeInTheDocument());
   return instance;
 };
 
