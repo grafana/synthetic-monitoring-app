@@ -12,7 +12,7 @@ done
 if [ ! $grafanaVersion ]; then
   echo 'No grafana version specified, using latest'
   grafanaVersion='latest'
-  docker pull grafana/grafana-dev:latest
+  docker pull grafana/grafana:latest
 fi
 
 NAME="grafana-$grafanaVersion"
