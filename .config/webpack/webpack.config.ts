@@ -13,8 +13,10 @@ import path from 'path';
 import ReplaceInFileWebpackPlugin from 'replace-in-file-webpack-plugin';
 import { Configuration } from 'webpack';
 
-import { getPackageJson, getPluginId, hasReadme, getEntries } from './utils';
+import { getPackageJson, getPluginJson, hasReadme, getEntries } from './utils';
 import { SOURCE_DIR, DIST_DIR } from './constants';
+
+const pluginJson = getPluginJson();
 
 const config = async (env): Promise<Configuration> => ({
   cache: {
@@ -105,7 +107,7 @@ const config = async (env): Promise<Configuration> => ({
         type: 'asset/resource',
         generator: {
           // Keep publicPath relative for host.com/grafana/ deployments
-          publicPath: `public/plugins/${getPluginId()}/img/`,
+          publicPath: `public/plugins/${pluginJson.id}/img/`,
           outputPath: 'img/',
           filename: Boolean(env.production) ? '[hash][ext]' : '[name][ext]',
         },
@@ -115,7 +117,7 @@ const config = async (env): Promise<Configuration> => ({
         type: 'asset/resource',
         generator: {
           // Keep publicPath relative for host.com/grafana/ deployments
-          publicPath: `public/plugins/${getPluginId()}/fonts`,
+          publicPath: `public/plugins/${pluginJson.id}/fonts`,
           outputPath: 'fonts/',
           filename: Boolean(env.production) ? '[hash][ext]' : '[name][ext]',
         },
@@ -125,7 +127,7 @@ const config = async (env): Promise<Configuration> => ({
 
   output: {
     clean: {
-      keep: /gpx_.*/,
+      keep: new RegExp(`.*?_(amd64|arm(64)?)(.exe)?`),
     },
     filename: '[name].js',
     library: {
@@ -169,7 +171,7 @@ const config = async (env): Promise<Configuration> => ({
           },
           {
             search: /\%PLUGIN_ID\%/g,
-            replace: getPluginId(),
+            replace: pluginJson.id,
           },
         ],
       },
