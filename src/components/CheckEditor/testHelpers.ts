@@ -70,3 +70,13 @@ export const fillDnsValidationFields = async () => {
   const invertedCheckboxes = await screen.findAllByRole('checkbox');
   userEvent.click(invertedCheckboxes[2]);
 };
+
+export const fillTCPQueryResponseFields = async () => {
+  const container = await toggleSection('Query/Response');
+  const addQueryResp = await screen.findByRole('button', { name: 'Add query/response' });
+  userEvent.click(addQueryResp);
+  const responseInput = await within(container).findByPlaceholderText('Response to expect');
+  userEvent.type(responseInput, 'STARTTLS');
+  const queryInput = await within(container).findByPlaceholderText('Data to send');
+  userEvent.paste(queryInput, 'QUIT');
+};

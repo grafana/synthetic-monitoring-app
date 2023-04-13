@@ -132,7 +132,13 @@ export const BASIC_TCP_CHECK = {
   settings: {
     tcp: {
       ipVersion: 'V4',
-      queryResponse: [],
+      queryResponse: [
+        {
+          expect: 'U1RBUlRUTFM=',
+          send: 'UVVJVA==',
+          startTLS: false,
+        },
+      ],
       tls: false,
       tlsConfig: {
         caCert: '',
@@ -387,7 +393,13 @@ export const EDITED_TCP_CHECK = {
   settings: {
     tcp: {
       ipVersion: 'V4',
-      queryResponse: [],
+      queryResponse: [
+        {
+          expect: 'U1RBUlRUTFM=',
+          send: 'UVVJVA==',
+          startTLS: false,
+        },
+      ],
       tls: false,
       tlsConfig: {
         caCert: '',

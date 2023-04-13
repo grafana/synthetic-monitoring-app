@@ -8,7 +8,7 @@ import { PLUGIN_URL_PATH } from 'components/constants';
 import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
 import { Route, Router } from 'react-router-dom';
 import { CheckEditor } from './CheckEditor';
-import { submitForm, fillBasicCheckFields, fillDnsValidationFields } from './testHelpers';
+import { submitForm, fillBasicCheckFields, fillDnsValidationFields, fillTCPQueryResponseFields } from './testHelpers';
 import { BASIC_HTTP_CHECK, BASIC_PING_CHECK, BASIC_TCP_CHECK, BASIC_DNS_CHECK } from './testConstants';
 import { locationService } from '@grafana/runtime';
 
@@ -132,6 +132,7 @@ describe('new checks', () => {
 
     await fillBasicCheckFields('Job name', 'grafana.com:43');
 
+    await fillTCPQueryResponseFields();
     await submitForm(onReturn);
     expect(instance.api.addCheck).toHaveBeenCalledWith(BASIC_TCP_CHECK);
   });
