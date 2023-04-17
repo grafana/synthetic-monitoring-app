@@ -9,6 +9,7 @@ import {
   TextArea,
   IconButton,
   VerticalGroup,
+  Button,
 } from '@grafana/ui';
 import { useFormContext, Controller, useFieldArray } from 'react-hook-form';
 import { CheckType } from 'types';
@@ -53,7 +54,7 @@ export const TcpSettingsForm = ({ isEditor }: Props) => {
         collapsible
       >
         <Field
-          label="Query/Response"
+          label="Query and response"
           description="The query sent in the TCP probe and the expected associated response. StartTLS upgrades TCP connection to TLS."
           disabled={!isEditor}
         >
@@ -85,11 +86,14 @@ export const TcpSettingsForm = ({ isEditor }: Props) => {
               </HorizontalGroup>
             ))}
 
-            <IconButton
-              name="plus-circle"
+            <Button
+              size="sm"
+              variant="secondary"
               onClick={() => append({ expect: '', send: '', startTLS: false })}
               disabled={!isEditor}
-            />
+            >
+              Add query/response
+            </Button>
           </VerticalGroup>
         </Field>
       </Collapse>

@@ -10,10 +10,8 @@ export function getPackageJson() {
   return require(path.resolve(process.cwd(), 'package.json'));
 }
 
-export function getPluginId() {
-  const { id } = require(path.resolve(process.cwd(), `${SOURCE_DIR}/plugin.json`));
-
-  return id;
+export function getPluginJson() {
+  return require(path.resolve(process.cwd(), `${SOURCE_DIR}/plugin.json`));
 }
 
 export function hasReadme() {

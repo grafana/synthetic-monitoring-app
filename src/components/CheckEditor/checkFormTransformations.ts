@@ -46,7 +46,7 @@ import {
 import { checkType as getCheckType, fromBase64, toBase64 } from 'utils';
 import isBase64 from 'is-base64';
 
-const ensureBase64 = (value: string) => (isBase64(value) ? value : toBase64(value));
+export const ensureBase64 = (value: string) => (isBase64(value, { paddingRequired: true }) ? value : toBase64(value));
 
 export function selectableValueFrom<T>(value: T, label?: string): SelectableValue<T> {
   const labelValue = String(value);
@@ -531,8 +531,8 @@ const getTcpQueryResponseFromFormFields = (queryResponses?: TCPQueryResponse[]) 
   return queryResponses.map(({ send, expect, startTLS }) => {
     return {
       startTLS,
-      send: ensureBase64(send),
-      expect: ensureBase64(expect),
+      send: toBase64(send),
+      expect: toBase64(expect),
     };
   });
 };
@@ -548,13 +548,13 @@ const getTcpSettings = (
   };
 
   const tlsConfig = getTlsConfigFromFormValues(mergedSettings.tlsConfig);
-
+  const queryResponse = getTcpQueryResponseFromFormFields(settings?.queryResponse);
   return {
     ...fallbackValues,
     ...mergedSettings,
     ...tlsConfig,
     ipVersion: getValueFromSelectable(settings?.ipVersion ?? defaultSettings?.ipVersion) ?? fallbackValues.ipVersion,
-    queryResponse: getTcpQueryResponseFromFormFields(settings?.queryResponse),
+    queryResponse,
   };
 };
 
