@@ -5,7 +5,7 @@ import {
   MutableDataFrame,
   NodeGraphDataFrameFieldNames,
 } from '@grafana/data';
-import { LogQueryResponse, LogsAggregatedByTrace, TracesByHost, ParsedLogStream } from './types';
+import { LogStream, LogsAggregatedByTrace, ParsedLogStream, TracesByHost } from './types';
 
 const getNodeGraphFields = () => {
   const nodeIdField = {
@@ -128,13 +128,13 @@ const getNodeGraphEdgeFields = () => {
   };
 };
 
-export const parseTracerouteLogs = (queryResponse: LogQueryResponse): MutableDataFrame[] => {
+export const parseTracerouteLogs = (queryResponse: LogStream[]): MutableDataFrame[] => {
   const { edgeIdField, edgeSourceField, edgeTargetField } = getNodeGraphEdgeFields();
 
   let mostRecentTraceId: string;
 
   const destinations = new Set<string>();
-  const groupedByTraceID = queryResponse.data.reduce<LogsAggregatedByTrace>((acc, { stream, values }, index) => {
+  const groupedByTraceID = queryResponse.reduce<LogsAggregatedByTrace>((acc, stream) => {
     const traceId = stream.TracerouteID;
     if (traceId && !mostRecentTraceId) {
       mostRecentTraceId = traceId;

@@ -1,26 +1,55 @@
 import {
+  ArrayDataFrame,
+  DataFrame,
   DataQueryRequest,
   DataQueryResponse,
   DataSourceApi,
   DataSourceInstanceSettings,
   FieldType,
-  ArrayDataFrame,
-  DataFrame,
   MetricFindValue,
-  TypedVariableModel,
+  ScopedVars,
 } from '@grafana/data';
 
-import { SMQuery, SMOptions, QueryType, CheckInfo, DashboardVariable } from './types';
+import { CheckInfo, QueryType, SMOptions, SMQuery } from './types';
 
 import { getBackendSrv, getTemplateSrv } from '@grafana/runtime';
-import { Probe, Check, HostedInstance } from '../types';
-import { findLinkedDatasource, getRandomProbes, queryLogs } from 'utils';
-import { parseTracerouteLogs } from './traceroute-utils';
+import { isArray } from 'lodash';
 import { firstValueFrom } from 'rxjs';
+import { findLinkedDatasource, getRandomProbes, queryLogs } from 'utils';
+import { Check, HostedInstance, Probe } from '../types';
+import { parseTracerouteLogs } from './traceroute-utils';
 
 export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   constructor(public instanceSettings: DataSourceInstanceSettings<SMOptions>) {
     super(instanceSettings);
+  }
+
+  interpolateVariablesInQueries(queries: SMQuery[], scopedVars: {} | ScopedVars): SMQuery[] {
+    const interpolated: SMQuery[] = [];
+    const templateSrv = getTemplateSrv();
+    queries.forEach((query) => {
+      let probe = query.probe ?? '$probe';
+      if (!isArray(probe) && probe?.startsWith('$')) {
+        probe = templateSrv.replace(probe, scopedVars).replace('{', '').replace('}', '').split(',').join('|');
+      }
+      if (isArray(probe)) {
+        probe = probe.join('|');
+      }
+      if (probe === '$probe') {
+        probe = '.+';
+      }
+
+      const job = templateSrv.replace(query.job, scopedVars);
+      const instance = templateSrv.replace(query.instance, scopedVars);
+
+      interpolated.push({
+        ...query,
+        job,
+        instance,
+        probe,
+      });
+    });
+    return interpolated;
   }
 
   getMetricsDS() {
@@ -33,7 +62,8 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
 
   async query(options: DataQueryRequest<SMQuery>): Promise<DataQueryResponse> {
     const data: DataFrame[] = [];
-    for (const query of options.targets) {
+    const interpolated = this.interpolateVariablesInQueries(options.targets, options.scopedVars);
+    for (const query of interpolated) {
       if (query.queryType === QueryType.Probes) {
         const probes = await this.listProbes();
         const frame = new ArrayDataFrame(probes);
@@ -69,11 +99,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
           };
         }
 
-        const dashboardVars = getTemplateSrv().getVariables();
-
-        const queryToExecute = dashboardVars ? this.getQueryFromVars(dashboardVars, query) : query;
-
-        if (!queryToExecute.job || !queryToExecute.instance) {
+        if (!query.job || !query.instance) {
           return {
             data: [],
             error: {
@@ -84,11 +110,11 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
           };
         }
 
-        const finalQuery = `{probe=~"${queryToExecute.probe ?? '.+'}", job="${queryToExecute.job}", instance="${
-          queryToExecute.instance
+        const finalQuery = `{probe=~"${query.probe ?? '.+'}", job="${query.job}", instance="${
+          query.instance
         }", check_name="traceroute"} | logfmt`;
 
-        const response = await queryLogs(logsUrl, finalQuery, options.range.from.unix(), options.range.to.unix());
+        const response = await queryLogs(this.getLogsDS()?.uid ?? '', finalQuery, options.range);
 
         const dataFrames = parseTracerouteLogs(response);
 
@@ -115,25 +141,6 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     }
 
     return allProbes;
-  }
-
-  getQueryFromVars(dashboardVars: TypedVariableModel[], query: SMQuery): SMQuery {
-    const job = dashboardVars.find((variable) => variable.name === 'job') as DashboardVariable | undefined;
-    const instance = dashboardVars.find((variable) => variable.name === 'instance') as DashboardVariable | undefined;
-    const probe = dashboardVars.find((variable) => variable.name === 'probe') as DashboardVariable | undefined;
-
-    // const value = dashboardVar.current?.value ?? '';
-    // const [job, instance] = value.split(':').map((val: string) => val.trim());
-    if (!job || !instance || !probe) {
-      return query;
-    }
-
-    return {
-      ...query,
-      job: job?.current?.value ?? query.job,
-      instance: instance?.current?.value ?? query.instance,
-      probe: this.getProbeValueFromVar(probe.current?.value ?? query.probe),
-    };
   }
 
   async getCheckInfo(): Promise<CheckInfo> {
