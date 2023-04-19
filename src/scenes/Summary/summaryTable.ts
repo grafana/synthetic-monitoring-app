@@ -70,196 +70,205 @@ function getSummaryTableQueryRunner(checkType: string, metrics: DataSourceRef) {
   return transformed;
 }
 
-const fieldOverrides = [
-  {
-    matcher: {
-      id: 'byName',
-      options: 'Value #reachability',
-    },
-    properties: [
-      {
-        id: 'custom.cellOptions',
-        value: {
-          mode: 'gradient',
-          type: 'color-background',
+function getFieldOverrides(checkType: CheckType) {
+  return [
+    {
+      matcher: {
+        id: 'byName',
+        options: 'Value #reachability',
+      },
+      properties: [
+        {
+          id: 'custom.cellOptions',
+          value: {
+            mode: 'gradient',
+            type: 'color-background',
+          },
         },
-      },
-      {
-        id: 'unit',
-        value: 'percentunit',
-      },
-      {
-        id: 'displayName',
-        value: 'reachability',
-      },
-    ],
-  },
-  {
-    matcher: {
-      id: 'byName',
-      options: 'Value #latency',
-    },
-    properties: [
-      {
-        id: 'custom.cellOptions',
-        value: {
-          mode: 'gradient',
-          type: 'color-background',
+        {
+          id: 'unit',
+          value: 'percentunit',
         },
+        {
+          id: 'displayName',
+          value: 'reachability',
+        },
+      ],
+    },
+    {
+      matcher: {
+        id: 'byName',
+        options: 'Value #latency',
       },
-      {
-        id: 'displayName',
-        value: 'latency',
+      properties: [
+        {
+          id: 'custom.cellOptions',
+          value: {
+            mode: 'gradient',
+            type: 'color-background',
+          },
+        },
+        {
+          id: 'displayName',
+          value: 'latency',
+        },
+        {
+          id: 'thresholds',
+          value: {
+            mode: 'absolute',
+            steps: [
+              {
+                color: 'green',
+                value: null,
+              },
+              {
+                color: 'yellow',
+                value: 0.5,
+              },
+              {
+                color: 'red',
+                value: 1,
+              },
+            ],
+          },
+        },
+        {
+          id: 'unit',
+          value: 's',
+        },
+        {
+          id: 'color',
+          value: {
+            mode: 'thresholds',
+          },
+        },
+      ],
+    },
+    {
+      matcher: {
+        id: 'byName',
+        options: 'Value #state',
       },
-      {
-        id: 'thresholds',
-        value: {
-          mode: 'absolute',
-          steps: [
+      properties: [
+        {
+          id: 'displayName',
+          value: 'state',
+        },
+        {
+          id: 'mappings',
+          value: [
             {
-              color: 'green',
-              value: null,
-            },
-            {
-              color: 'yellow',
-              value: 0.5,
-            },
-            {
-              color: 'red',
-              value: 1,
+              options: {
+                '0': {
+                  text: 'down',
+                },
+                '1': {
+                  text: 'up',
+                },
+              },
+              type: 'value',
             },
           ],
         },
-      },
-      {
-        id: 'unit',
-        value: 's',
-      },
-      {
-        id: 'color',
-        value: {
-          mode: 'thresholds',
-        },
-      },
-    ],
-  },
-  {
-    matcher: {
-      id: 'byName',
-      options: 'Value #state',
-    },
-    properties: [
-      {
-        id: 'displayName',
-        value: 'state',
-      },
-      {
-        id: 'mappings',
-        value: [
-          {
-            options: {
-              '0': {
-                text: 'down',
-              },
-              '1': {
-                text: 'up',
-              },
-            },
-            type: 'value',
+        {
+          id: 'custom.cellOptions',
+          value: {
+            mode: 'gradient',
+            type: 'color-background',
           },
-        ],
-      },
-      {
-        id: 'custom.cellOptions',
-        value: {
-          mode: 'gradient',
-          type: 'color-background',
         },
+        {
+          id: 'thresholds',
+          value: {
+            mode: 'absolute',
+            steps: [
+              {
+                color: 'red',
+                value: null,
+              },
+              {
+                color: 'green',
+                value: 1,
+              },
+            ],
+          },
+        },
+        {
+          id: 'color',
+        },
+      ],
+    },
+    {
+      matcher: {
+        id: 'byName',
+        options: 'Value #uptime',
       },
-      {
-        id: 'thresholds',
-        value: {
-          mode: 'absolute',
-          steps: [
+      properties: [
+        {
+          id: 'displayName',
+          value: 'uptime',
+        },
+        {
+          id: 'unit',
+          value: 'percentunit',
+        },
+        {
+          id: 'custom.cellOptions',
+          value: {
+            mode: 'gradient',
+            type: 'color-background',
+          },
+        },
+      ],
+    },
+    {
+      matcher: {
+        id: 'byName',
+        options: 'instance',
+      },
+      properties: [
+        {
+          id: 'links',
+          value: [
             {
-              color: 'red',
-              value: null,
-            },
-            {
-              color: 'green',
-              value: 1,
+              title: 'Show details...',
+              url:
+                '/a/grafana-synthetic-monitoring-app/scene/' +
+                checkType +
+                '?var-probe=All&var-instance=${__data.fields.instance}&var-job=${__data.fields.job}&from=${__from}&to=${__to}',
             },
           ],
         },
-      },
-      {
-        id: 'color',
-      },
-    ],
-  },
-  {
-    matcher: {
-      id: 'byName',
-      options: 'Value #uptime',
+      ],
     },
-    properties: [
-      {
-        id: 'displayName',
-        value: 'uptime',
+    {
+      matcher: {
+        id: 'byName',
+        options: 'job',
       },
-      {
-        id: 'unit',
-        value: 'percentunit',
-      },
-      {
-        id: 'custom.cellOptions',
-        value: {
-          mode: 'gradient',
-          type: 'color-background',
+      properties: [
+        {
+          id: 'links',
+          value: [
+            {
+              title: 'Show details...',
+              url:
+                '/a/grafana-synthetic-monitoring-app/scene/' +
+                checkType +
+                '?var-probe=All&var-instance=${__data.fields.instance}&var-job=${__data.fields.job}&from=${__from}&to=${__to}',
+            },
+          ],
         },
-      },
-    ],
-  },
-  {
-    matcher: {
-      id: 'byName',
-      options: 'instance',
+      ],
     },
-    properties: [
-      {
-        id: 'links',
-        value: [
-          {
-            title: 'Show details...',
-            url: '/a/grafana-synthetic-monitoring-app/redirect?dashboard=$check_type&var-probe=All&var-instance=${__data.fields.instance}&var-job=${__data.fields.job}&from=${__from}&to=${__to}',
-          },
-        ],
-      },
-    ],
-  },
-  {
-    matcher: {
-      id: 'byName',
-      options: 'job',
-    },
-    properties: [
-      {
-        id: 'links',
-        value: [
-          {
-            title: 'Show details...',
-            url: '/a/grafana-synthetic-monitoring-app/redirect?dashboard=${__data.fields[1]}&var-probe=All&var-instance=${__data.fields.instance}&var-job=${__data.fields.job}&from=${__from}&to=${__to}',
-          },
-        ],
-      },
-    ],
-  },
-];
+  ];
+}
 
 export function getSummaryTable(checkType: CheckType, metrics: DataSourceRef) {
   const tablePanel = new VizPanel({
     pluginId: 'table',
     $data: getSummaryTableQueryRunner(checkType, metrics),
+    title: `${checkType} checks`,
     fieldConfig: {
       defaults: {
         color: {
@@ -291,7 +300,7 @@ export function getSummaryTable(checkType: CheckType, metrics: DataSourceRef) {
           ],
         },
       },
-      overrides: fieldOverrides,
+      overrides: getFieldOverrides(checkType),
     },
   });
   return tablePanel;

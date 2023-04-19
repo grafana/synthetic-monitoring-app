@@ -36,19 +36,25 @@ export function getSummaryScene({ metrics, logs }: DashboardSceneAppConfig) {
     const checkTypes = [CheckType.DNS, CheckType.HTTP, CheckType.PING, CheckType.TCP, CheckType.Traceroute];
 
     const children = checkTypes.map((checkType) => {
-      const mapPanel = getErrorRateMapPanel(checkType, metrics);
+      const mapPanel = new SceneFlexItem({ height: 350, body: getErrorRateMapPanel(checkType, metrics) });
       const errorPercentagePanel = getErrorPctgTimeseriesPanel(checkType, metrics);
       const latencyPanel = getLatencyTimeseriesPanel(checkType, metrics);
-      const tablePanel = getSummaryTable(checkType, metrics);
 
-      const flexed = new SceneFlexLayout({
-        direction: 'column',
-        children: [errorPercentagePanel, latencyPanel].map((panel) => new SceneFlexItem({ height: 500, body: panel })),
+      const flexed = new SceneFlexItem({
+        height: 350,
+        width: 500,
+        body: new SceneFlexLayout({
+          direction: 'column',
+          children: [errorPercentagePanel, latencyPanel].map(
+            (panel) => new SceneFlexItem({ height: 500, body: panel })
+          ),
+        }),
       });
+      const tablePanel = new SceneFlexItem({ height: 350, body: getSummaryTable(checkType, metrics) });
 
       const flexRow = new SceneFlexLayout({
         direction: 'row',
-        children: [mapPanel, flexed, tablePanel].map((panel) => new SceneFlexItem({ height: 350, body: panel })),
+        children: [mapPanel, flexed, tablePanel],
       });
 
       return new SceneFlexItem({ body: flexRow });
