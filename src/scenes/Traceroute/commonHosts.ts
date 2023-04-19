@@ -8,7 +8,7 @@ function getQueryRunner(logs: DataSourceRef) {
     queries: [
       {
         expr: 'sum by (Hosts) (count_over_time({check_name="traceroute", job="$job", instance="$instance", probe=~"$probe"} | logfmt | Hosts != "" [$__interval]))',
-        // instant: true,
+        instant: true,
         // legendFormat: '',
         // range: true,
         refId: 'A',

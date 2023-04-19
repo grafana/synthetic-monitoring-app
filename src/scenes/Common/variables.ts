@@ -7,8 +7,9 @@ export function getVariables(checkType: CheckType, metrics: DataSourceRef) {
   const probe = new QueryVariable({
     includeAll: true,
     allValue: '.*',
-    name: 'probe',
+    defaultToAll: true,
     isMulti: true,
+    name: 'probe',
     query: { query: `label_values(sm_check_info{check_name="${checkType}"},probe)` },
     datasource: metrics,
   });

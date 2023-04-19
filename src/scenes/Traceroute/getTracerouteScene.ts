@@ -26,7 +26,7 @@ export function getTracerouteScene({ metrics, logs, sm }: DashboardSceneAppConfi
     });
     const variables = getVariables(CheckType.Traceroute, metrics);
 
-    const nodeGraph = getNodeGraphPanel(sm);
+    const nodeGraph = new SceneFlexItem({ height: 500, body: getNodeGraphPanel(sm) });
 
     const routeHash = getRouteHashPanel(metrics);
     const commonHosts = getCommonHostsPanel(logs);
@@ -36,6 +36,8 @@ export function getTracerouteScene({ metrics, logs, sm }: DashboardSceneAppConfi
       children: [routeHash, commonHosts].map((panel) => new SceneFlexItem({ body: panel })),
     });
 
+    const hostsRow = new SceneFlexItem({ height: 300, body: hosts });
+
     const packetLoss = getPacketLossPanel(metrics);
     const traceTime = getTraceTimePanel(metrics);
     const avgHops = getAverageHopsPanel(metrics);
@@ -43,8 +45,10 @@ export function getTracerouteScene({ metrics, logs, sm }: DashboardSceneAppConfi
       direction: 'row',
       children: [packetLoss, traceTime, avgHops].map((panel) => new SceneFlexItem({ body: panel })),
     });
+    const overallRow = new SceneFlexItem({ height: 300, body: overall });
 
     const logsPanel = getLogsPanel(logs);
+    const logsRow = new SceneFlexItem({ height: 400, body: logsPanel });
 
     return new EmbeddedScene({
       $timeRange: timeRange,
@@ -60,7 +64,7 @@ export function getTracerouteScene({ metrics, logs, sm }: DashboardSceneAppConfi
       ],
       body: new SceneFlexLayout({
         direction: 'column',
-        children: [nodeGraph, hosts, overall, logsPanel].map((panel) => new SceneFlexItem({ body: panel })),
+        children: [nodeGraph, hostsRow, overallRow, logsRow],
       }),
     });
   };

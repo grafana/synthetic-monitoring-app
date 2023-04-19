@@ -24,7 +24,7 @@ export const Routing = ({ onNavChanged, meta, ...rest }: AppRootProps) => {
   const queryParams = useQuery();
   const navigate = useNavigation();
   const location = useLocation();
-  const { isEnabled: scenesEnables } = useFeatureFlag(FeatureName.Scenes);
+  const { isEnabled: scenesEnabled } = useFeatureFlag(FeatureName.Scenes);
   const { instance, provisioned } = useContext(InstanceContext);
   const initialized = meta.enabled && instance.api;
 
@@ -93,7 +93,7 @@ export const Routing = ({ onNavChanged, meta, ...rest }: AppRootProps) => {
       <Route path={`${PLUGIN_URL_PATH}${ROUTES.Checks}`}>
         <CheckRouter />
       </Route>
-      {scenesEnables && (
+      {scenesEnabled && (
         <Route path={`${PLUGIN_URL_PATH}${ROUTES.Scene}`}>
           <DashboardPage />
         </Route>
