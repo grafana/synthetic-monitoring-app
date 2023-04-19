@@ -1,0 +1,1 @@
+export { getDNSScene } from './dnsScene';

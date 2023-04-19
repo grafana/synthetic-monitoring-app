@@ -1,7 +1,8 @@
 import { DataSourceSettings, OrgRole, SelectableValue } from '@grafana/data';
-import { LinkedDatasourceInfo } from './datasource/types';
+import { DataSourceRef } from '@grafana/schema';
+import { MultiHttpEntry, MultiHttpVariable, RequestMethods, RequestProps } from 'components/MultiHttp/MultiHttpTypes';
 import { SMDataSource } from 'datasource/DataSource';
-import { MultiHttpEntry, RequestProps, RequestMethods, MultiHttpVariable } from 'components/MultiHttp/MultiHttpTypes';
+import { LinkedDatasourceInfo } from './datasource/types';
 
 export interface GlobalSettings {
   apiHost: string;
@@ -508,6 +509,7 @@ export enum FeatureName {
   AdhocChecks = 'synthetics-adhocchecks',
   UnifiedAlerting = 'ngalert',
   MultiHttp = 'multi-http',
+  Scenes = 'synthetics-scenes',
 }
 
 export interface UsageValues {
@@ -530,6 +532,7 @@ export enum ROUTES {
   NewCheck = 'checks/new',
   EditCheck = 'checks/edit',
   Config = 'config',
+  Scene = 'scene',
   ChooseCheckType = 'checks/choose-type',
 }
 
@@ -551,6 +554,12 @@ export interface AdHocCheckResponse {
   settings: Settings;
   probes: number[];
   target: string;
+}
+
+export interface DashboardSceneAppConfig {
+  metrics: DataSourceRef;
+  logs: DataSourceRef;
+  sm: DataSourceRef;
 }
 
 export type MultiHttpFormTabs = 'header' | 'queryParams' | 'body' | 'variables';

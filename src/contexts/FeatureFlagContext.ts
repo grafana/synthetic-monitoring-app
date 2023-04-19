@@ -20,6 +20,7 @@ export function isFeatureEnabled(name: FeatureName) {
     const stringParams = featuresParam as string[];
     isEnabledThroughQueryParam = stringParams.includes(name);
   }
+  //@ts-ignore
   return Boolean(config.featureToggles[name]) || isEnabledThroughQueryParam;
 }
 

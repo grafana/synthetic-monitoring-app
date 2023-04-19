@@ -13,15 +13,18 @@ import { UnprovisionedSetup } from './UnprovisionedSetup';
 import { QueryParamMap, useNavigation } from 'hooks/useNavigation';
 import { useQuery } from 'hooks/useQuery';
 import { DashboardRedirecter } from './DashboardRedirecter';
-import { ROUTES } from 'types';
+import { FeatureName, ROUTES } from 'types';
 import { config } from '@grafana/runtime';
 import { PluginPage } from 'components/PluginPage';
 import { ConfigPage } from 'page/ConfigPage';
+import { DashboardPage } from 'page/DashboardPage';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
 
 export const Routing = ({ onNavChanged, meta, ...rest }: AppRootProps) => {
   const queryParams = useQuery();
   const navigate = useNavigation();
   const location = useLocation();
+  const { isEnabled: scenesEnabled } = useFeatureFlag(FeatureName.Scenes);
   const { instance, provisioned } = useContext(InstanceContext);
   const initialized = meta.enabled && instance.api;
 
@@ -90,6 +93,11 @@ export const Routing = ({ onNavChanged, meta, ...rest }: AppRootProps) => {
       <Route path={`${PLUGIN_URL_PATH}${ROUTES.Checks}`}>
         <CheckRouter />
       </Route>
+      {scenesEnabled && (
+        <Route path={`${PLUGIN_URL_PATH}${ROUTES.Scene}`}>
+          <DashboardPage />
+        </Route>
+      )}
       <Route path={`${PLUGIN_URL_PATH}${ROUTES.Config}`}>
         <PluginPage>
           <ConfigPage />
