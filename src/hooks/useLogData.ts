@@ -1,7 +1,7 @@
-import { useContext, useState, useEffect } from 'react';
-import { InstanceContext } from 'contexts/InstanceContext';
-import { queryLogs } from 'utils';
 import { DateTime } from '@grafana/data';
+import { InstanceContext } from 'contexts/InstanceContext';
+import { useContext, useEffect, useState } from 'react';
+import { queryLogsLegacy } from 'utils';
 
 interface UseLogOptions {
   start: DateTime;
@@ -27,7 +27,7 @@ export function useLogData(query: string, options: UseLogOptions) {
         return;
       }
       setIsFetchingData(true);
-      const { error: queryError, data: queryData } = await queryLogs(url, query, start, end);
+      const { error: queryError, data: queryData } = await queryLogsLegacy(url, query, start, end);
 
       setData(queryData);
       setError(queryError);

@@ -1,13 +1,13 @@
-import { DataSourceInstanceSettings, OrgRole } from '@grafana/data';
+import { DataSourceInstanceSettings, OrgRole, TimeRange } from '@grafana/data';
 
-import { SMOptions, DashboardInfo, LinkedDatasourceInfo, LogQueryResponse } from './datasource/types';
+import { DashboardInfo, LinkedDatasourceInfo, LogQueryResponse, LogStream, SMOptions } from './datasource/types';
 
 import { config, getBackendSrv } from '@grafana/runtime';
-import { HostedInstance, CheckType, Settings, SubmissionErrorWrapper } from 'types';
+import { CheckType, HostedInstance, Settings, SubmissionErrorWrapper } from 'types';
 
-import { SMDataSource } from 'datasource/DataSource';
 import { IconName } from '@grafana/ui';
 import { ThresholdSettings } from 'contexts/SuccessRateContext';
+import { SMDataSource } from 'datasource/DataSource';
 
 /**
  * Find all synthetic-monitoring datasources
@@ -209,7 +209,12 @@ export const queryMetric = async (
   }
 };
 
-export const queryLogs = async (url: string, query: string, start: number, end: number): Promise<LogQueryResponse> => {
+export const queryLogsLegacy = async (
+  url: string,
+  query: string,
+  start: number,
+  end: number
+): Promise<LogQueryResponse> => {
   const backendSrv = getBackendSrv();
   const params = {
     direction: 'BACKWARD',
@@ -226,9 +231,6 @@ export const queryLogs = async (url: string, query: string, start: number, end: 
       url: `${url}/loki/api/v1/query`,
       params,
     });
-    if (!response.ok) {
-      return { error: 'Error fetching data', data: [] };
-    }
     return {
       data: response.data?.data?.result ?? [],
     };
@@ -237,6 +239,29 @@ export const queryLogs = async (url: string, query: string, start: number, end: 
     return { error: (err.message || err.data?.message) ?? 'Error fetching data', data: [] };
   }
 };
+
+export async function queryLogs(dsUid: string, expr: string, range: TimeRange) {
+  const resp = await getBackendSrv().post('/api/ds/query', {
+    queries: [
+      {
+        refId: 'A',
+        datasource: { type: 'loki', uid: dsUid },
+        expr,
+        queryType: 'range',
+        maxLines: 1000,
+        legendFormat: '',
+        intervalMs: 2000,
+        maxDataPoints: 1440,
+      },
+    ],
+    range,
+    from: range.from,
+    to: range.to,
+  });
+
+  const logLines = resp.results['A'].frames[0].data.values[0] as LogStream[];
+  return logLines;
+}
 
 export const toBase64 = (value: string) => {
   try {
