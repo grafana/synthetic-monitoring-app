@@ -1,8 +1,10 @@
 # Change Log
 
-# [1.10.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.36...v1.10.0) (2023-4-3)
+# [1.10.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.36...v1.10.0) (2023-4-21)
 
 - Add and release multi-http functionality behind feature flag
+- Add and release scenes based dashboards behind feature flag
+- Fix a bug with base64 encoding in TCP query/response
 
 # [1.9.36](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.35...v1.9.36) (2023-3-15)
 
