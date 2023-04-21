@@ -5,6 +5,7 @@
 - Add and release multi-http functionality behind feature flag
 - Add and release scenes based dashboards behind feature flag
 - Fix a bug with base64 encoding in TCP query/response
+- Update datasource query editor to include probes in traceroute queries
 
 # [1.9.36](https://github.com/grafana/synthetic-monitoring-app/compare/v1.9.35...v1.9.36) (2023-3-15)
 
