@@ -1,8 +1,8 @@
 import React, { PureComponent, ChangeEvent } from 'react';
 import { DataSourcePluginOptionsEditorProps } from '@grafana/data';
 import { SMOptions, SecureJsonData } from './types';
-import { LegacyForms } from '@grafana/ui';
-import { TenantView } from 'components/TenantView';
+import { Container, LegacyForms } from '@grafana/ui';
+import LinkedDatasourceView from 'components/LinkedDatasourceView';
 
 interface Props extends DataSourcePluginOptionsEditorProps<SMOptions, SecureJsonData> {}
 
@@ -41,7 +41,12 @@ export class ConfigEditor extends PureComponent<Props> {
     }
     return (
       <div>
-        {isValid(options.jsonData) && isConfigured() && <TenantView settings={options.jsonData} />}
+        {isValid(options.jsonData) && isConfigured() && (
+          <Container margin="sm">
+            <LinkedDatasourceView info={options.jsonData.metrics} />
+            <LinkedDatasourceView info={options.jsonData.logs} />
+          </Container>
+        )}
         <br />
         <div className="gf-form-group">
           <div className="gf-form-inline">
