@@ -61,6 +61,7 @@ const legacyFetchSMRules = (alertRulerUrl: string): Promise<RuleResponse> =>
     .fetch<any>({
       method: 'GET',
       url: `${alertRulerUrl}/rules/${SM_ALERTING_NAMESPACE}/default`,
+      showErrorAlert: false,
       headers: {
         'Content-Type': 'application/yaml',
       },
@@ -82,6 +83,7 @@ const fetchSMRules = (metricInstanceIdentifier: string | number): Promise<RuleRe
     .fetch<any>({
       method: 'GET',
       url: `/api/ruler/${metricInstanceIdentifier}/api/v1/rules/${SM_ALERTING_NAMESPACE}/default`,
+      showErrorAlert: false,
     })
     .toPromise()
     .then((resp) => {
@@ -207,6 +209,7 @@ export function useAlerts(checkId?: number) {
       legacyFetchSMRules(alertRulerUrl).then(({ rules, error }) => {
         setAlertRules(rules);
         if (error) {
+          console.log('hello', error);
           setAlertError(error);
         }
       });
@@ -215,6 +218,7 @@ export function useAlerts(checkId?: number) {
       fetchSMRules(metricsIdentifier).then(({ rules, error }) => {
         setAlertRules(rules);
         if (error) {
+          console.log('goodbye', error);
           setAlertError(error);
         }
       });
