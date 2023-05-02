@@ -1,11 +1,15 @@
 import { SyntheticsBuilder } from '@grafana/k6-test-builder';
 import { PluginPage } from '@grafana/runtime';
 import { Button, useTheme2 } from '@grafana/ui';
+import { CodeEditor } from 'components/CodeEditor';
 import { NewScriptedCheck } from 'components/NewScriptedCheck';
+import { PLUGIN_URL_PATH } from 'components/constants';
 import { useNavigation } from 'hooks/useNavigation';
 import React from 'react';
 import { Route, Switch, useRouteMatch } from 'react-router-dom';
 import { ROUTES } from 'types';
+
+const newCheckParent = { text: 'New check', url: `${PLUGIN_URL_PATH}${ROUTES.ScriptedChecks}/new` };
 
 export function ScriptedChecksPage() {
   const theme = useTheme2();
@@ -21,10 +25,25 @@ export function ScriptedChecksPage() {
         <NewScriptedCheck />
       </Route>
       <Route path={`${path}/new/builder`}>
-        <SyntheticsBuilder theme={theme} onSubmit={handleSubmit} />
+        <PluginPage
+          pageNav={{
+            text: 'Test builder',
+            parentItem: newCheckParent,
+          }}
+        >
+          <SyntheticsBuilder theme={theme} onSubmit={handleSubmit} />
+        </PluginPage>
       </Route>
-      <Route path={`${path}/new/text-editor`}>
-        <h1>text editor</h1>
+      <Route path={`${path}/new/script-editor`}>
+        <PluginPage
+          pageNav={{
+            text: 'Script editor',
+            parentItem: newCheckParent,
+          }}
+        >
+          {/* <h1>text editor</h1> */}
+          <CodeEditor value="steve" onChange={(stuff: any) => console.log('hi', stuff)} />
+        </PluginPage>
       </Route>
       <Route path={path}>
         <PluginPage pageNav={{ text: 'Scripted checks', description: 'List of checks' }}>

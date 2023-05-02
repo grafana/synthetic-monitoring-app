@@ -28,7 +28,7 @@ export function NewScriptedCheck() {
               <VerticalGroup>
                 <h3>Script Editor</h3>
                 <p>Use our code samples as a foundation for your script or start from a clean slate.</p>
-                <LinkButton href={`${path}/text-editor`}>Start Scripting</LinkButton>
+                <LinkButton href={`${path}/script-editor`}>Start Scripting</LinkButton>
               </VerticalGroup>
               <HorizontalGroup>
                 <ScriptEditorIllustration />
