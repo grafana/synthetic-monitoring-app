@@ -19,12 +19,14 @@ import { PluginPage } from 'components/PluginPage';
 import { ConfigPage } from 'page/ConfigPage';
 import { DashboardPage } from 'page/DashboardPage';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
+import { ScriptedChecksPage } from 'page/ScriptedChecksPage';
 
 export const Routing = ({ onNavChanged, meta, ...rest }: AppRootProps) => {
   const queryParams = useQuery();
   const navigate = useNavigation();
   const location = useLocation();
   const { isEnabled: scenesEnabled } = useFeatureFlag(FeatureName.Scenes);
+  const { isEnabled: scriptedChecksEnabled } = useFeatureFlag(FeatureName.ScriptedChecks);
   const { instance, provisioned } = useContext(InstanceContext);
   const initialized = meta.enabled && instance.api;
 
@@ -96,6 +98,11 @@ export const Routing = ({ onNavChanged, meta, ...rest }: AppRootProps) => {
       {scenesEnabled && (
         <Route path={`${PLUGIN_URL_PATH}${ROUTES.Scene}`}>
           <DashboardPage />
+        </Route>
+      )}
+      {scriptedChecksEnabled && (
+        <Route path={`${PLUGIN_URL_PATH}${ROUTES.ScriptedChecks}`}>
+          <ScriptedChecksPage />
         </Route>
       )}
       <Route path={`${PLUGIN_URL_PATH}${ROUTES.Config}`}>

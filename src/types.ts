@@ -510,6 +510,7 @@ export enum FeatureName {
   UnifiedAlerting = 'ngalert',
   MultiHttp = 'multi-http',
   Scenes = 'synthetics-scenes',
+  ScriptedChecks = 'scripted-checks',
 }
 
 export interface UsageValues {
@@ -534,6 +535,7 @@ export enum ROUTES {
   Config = 'config',
   Scene = 'scene',
   ChooseCheckType = 'checks/choose-type',
+  ScriptedChecks = 'scripted-checks',
 }
 
 export interface CheckPageParams {
