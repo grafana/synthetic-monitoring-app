@@ -15,6 +15,7 @@ export default function main() {
 
 interface Props {
   onSubmit: (values: any, errors: any) => void;
+  saving: boolean;
   script?: string;
 }
 
@@ -33,7 +34,7 @@ function getStyles(theme: GrafanaTheme2) {
   };
 }
 
-export function ScriptedCheckCodeEditor({ onSubmit, script }: Props) {
+export function ScriptedCheckCodeEditor({ onSubmit, script, saving }: Props) {
   const { handleSubmit, register, control } = useForm<ScriptedFormValues>({
     defaultValues: {
       script: script ?? DEFAULT_SCRIPT,
@@ -52,7 +53,9 @@ export function ScriptedCheckCodeEditor({ onSubmit, script }: Props) {
         <Field label="Check name">
           <Input {...register('name')} />
         </Field>
-        <Button type="submit">Save</Button>
+        <Button type="submit" disabled={saving}>
+          Save
+        </Button>
       </div>
       <Controller
         name="script"
