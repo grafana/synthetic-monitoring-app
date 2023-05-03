@@ -154,7 +154,6 @@ export const CodeEditor = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, constrainedRanges]);
 
-  console.log('we getting here or what?');
   return (
     <div>
       {renderHeader && renderHeader({ scriptValue: value })}
@@ -170,12 +169,12 @@ export const CodeEditor = ({
             alwaysConsumeMouseWheel: false,
           },
         }}
+        //@ts-ignore The onChange prop works by the type def doesn't believe it exists
+        onChange={onChange}
         onBeforeEditorMount={handleBeforeEditorMount}
         onEditorDidMount={handleEditorDidMount}
         readOnly={readOnly}
         containerStyles={containerStyles}
-        // onChange={onChange}
-        onSave={onChange}
       />
     </div>
   );

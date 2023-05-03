@@ -1,8 +1,8 @@
 import { SyntheticsBuilder } from '@grafana/k6-test-builder';
 import { PluginPage } from '@grafana/runtime';
 import { Button, useTheme2 } from '@grafana/ui';
-import { CodeEditor } from 'components/CodeEditor';
 import { NewScriptedCheck } from 'components/NewScriptedCheck';
+import { ScriptedCheckCodeEditor } from 'components/ScriptedCheckCodeEditor';
 import { PLUGIN_URL_PATH } from 'components/constants';
 import { useNavigation } from 'hooks/useNavigation';
 import React from 'react';
@@ -41,8 +41,7 @@ export function ScriptedChecksPage() {
             parentItem: newCheckParent,
           }}
         >
-          {/* <h1>text editor</h1> */}
-          <CodeEditor value="steve" onChange={(stuff: any) => console.log('hi', stuff)} />
+          <ScriptedCheckCodeEditor onSubmit={handleSubmit} />
         </PluginPage>
       </Route>
       <Route path={path}>
