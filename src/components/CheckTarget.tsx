@@ -68,6 +68,9 @@ const getTargetHelpText = (typeOfCheck: CheckType | undefined): TargetHelpInfo =
       };
       break;
     }
+    case CheckType.SCRIPTED: {
+      throw new Error('Invalid check type: ' + CheckType.SCRIPTED);
+    }
   }
   return resp;
 };

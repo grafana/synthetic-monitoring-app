@@ -218,6 +218,7 @@ const fallbackType = {
   ping: fallbackSettings(CheckType.PING),
   traceroute: fallbackSettings(CheckType.Traceroute),
   multihttp: fallbackSettings(CheckType.MULTI_HTTP),
+  scripted: fallbackSettings(CheckType.SCRIPTED),
 };
 
 export const colors = {
@@ -397,6 +398,13 @@ export function fallbackSettings(t: CheckType): Settings {
           maxHops: 64,
           maxUnknownHops: 15,
           ptrLookup: true,
+        },
+      };
+    }
+    case CheckType.SCRIPTED: {
+      return {
+        scripted: {
+          script: '',
         },
       };
     }

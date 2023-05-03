@@ -148,6 +148,10 @@ export interface DnsSettingsFormValues
   validations: DnsValidationFormValue[];
 }
 
+export interface ScriptedSettings {
+  script: string;
+}
+
 export interface TcpSettings {
   ipVersion: IpVersion;
   tls: boolean;
@@ -326,6 +330,7 @@ export interface Settings {
   dns?: DnsSettings;
   tcp?: TcpSettings;
   traceroute?: TracerouteSettings;
+  scripted?: ScriptedSettings;
 }
 
 export enum CheckType {
@@ -335,6 +340,7 @@ export enum CheckType {
   TCP = 'tcp',
   Traceroute = 'traceroute',
   MULTI_HTTP = 'multihttp',
+  SCRIPTED = 'scripted',
 }
 
 export interface HostedInstance {

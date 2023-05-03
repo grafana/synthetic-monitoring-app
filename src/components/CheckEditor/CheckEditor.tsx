@@ -230,7 +230,6 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
               checkType={checkType}
               timeout={check?.timeout ?? fallbackCheck(checkType).timeout}
               frequency={check?.frequency ?? fallbackCheck(checkType).frequency}
-              probes={check?.probes ?? fallbackCheck(checkType).probes}
             />
             <HorizontalCheckboxField
               name="publishAdvancedMetrics"
