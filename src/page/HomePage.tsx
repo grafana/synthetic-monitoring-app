@@ -15,13 +15,15 @@ import { css, cx } from '@emotion/css';
 import React, { useState, useEffect, useContext } from 'react';
 import { config } from '@grafana/runtime';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { Check, ROUTES } from 'types';
+import { Check, FeatureName, ROUTES } from 'types';
 import { useUsageCalc } from 'hooks/useUsageCalc';
 import { DashboardInfo } from 'datasource/types';
 import dashScreenshot from 'img/screenshot-dash-traceroute.png';
 import dashScreenshotLight from 'img/screenshot-dash-traceroute-light.png';
 import { useNavigation } from 'hooks/useNavigation';
 import { PluginPage } from 'components/PluginPage';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
+import { PLUGIN_URL_PATH } from 'components/constants';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   flexRow: css`
@@ -112,18 +114,48 @@ const HomePage = () => {
   const styles = useStyles2(getStyles);
   const { instance } = useContext(InstanceContext);
   const [checks, setChecks] = useState<Check[]>([]);
-  const [dashboards, setDashboards] = useState<DashboardInfo[]>([]);
+  const [dashboards, setDashboards] = useState<Array<Partial<DashboardInfo>>>([]);
   const usage = useUsageCalc(checks);
   const navigate = useNavigation();
+  const { isEnabled: scenesEnabled } = useFeatureFlag(FeatureName.Scenes);
 
   useEffect(() => {
     instance.api?.listChecks().then((checks) => {
       setChecks(checks);
     });
     // Sort to make sure the summary dashboard is at the top of the list
-    const sortedDashboards = instance.api?.instanceSettings.jsonData.dashboards.sort(sortSummaryToTop) ?? [];
-    setDashboards(sortedDashboards);
-  }, [instance.api]);
+    if (!scenesEnabled) {
+      const sortedDashboards = instance.api?.instanceSettings.jsonData.dashboards.sort(sortSummaryToTop) ?? [];
+      setDashboards(sortedDashboards);
+    } else {
+      setDashboards([
+        {
+          title: 'Summary dashboard',
+          uid: '',
+        },
+        {
+          title: 'HTTP dashboard',
+          uid: 'http',
+        },
+        {
+          title: 'PING dashboard',
+          uid: 'ping',
+        },
+        {
+          title: 'DNS dashboard',
+          uid: 'dns',
+        },
+        {
+          title: 'TCP dashboard',
+          uid: 'tcp',
+        },
+        {
+          title: 'Traceroute dashboard',
+          uid: 'traceroute',
+        },
+      ]);
+    }
+  }, [instance.api, scenesEnabled]);
 
   return (
     <PluginPage pageNav={{ text: 'Home', description: 'Synthetic Monitoring Home' }}>
@@ -132,7 +164,11 @@ const HomePage = () => {
         <DisplayCard className={cx(styles.card, styles.rowCard, styles.linksContainer)}>
           {dashboards.map((dashboard) => {
             return (
-              <a className={styles.quickLink} href={`d/${dashboard.uid}`} key={dashboard.uid}>
+              <a
+                className={styles.quickLink}
+                href={scenesEnabled ? `${PLUGIN_URL_PATH}scene/${dashboard.uid}` : `d/${dashboard.uid}`}
+                key={dashboard.uid}
+              >
                 <Icon name="apps" size="lg" className={styles.quickLinkIcon} />
                 View the {dashboard.title} dashboard
               </a>

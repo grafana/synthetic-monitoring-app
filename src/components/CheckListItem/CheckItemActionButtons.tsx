@@ -2,11 +2,13 @@ import { GrafanaTheme, AppEvents, OrgRole } from '@grafana/data';
 import { Button, ConfirmModal, IconButton, useStyles } from '@grafana/ui';
 import React, { useContext, useState } from 'react';
 import { css } from '@emotion/css';
-import { Check, ROUTES } from 'types';
+import { Check, FeatureName, ROUTES } from 'types';
 import { dashboardUID, checkType as getCheckType, hasRole } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
 import appEvents from 'grafana/app/core/app_events';
 import { useNavigation } from 'hooks/useNavigation';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
+import { PLUGIN_URL_PATH } from 'components/constants';
 
 const getStyles = (theme: GrafanaTheme) => ({
   actionButtonGroup: css`
@@ -33,8 +35,21 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon, onRemoveChe
   const checkType = getCheckType(check.settings);
   const { instance } = useContext(InstanceContext);
   const navigate = useNavigation();
+  const { isEnabled: scenesEnabled } = useFeatureFlag(FeatureName.Scenes);
 
   const showDashboard = () => {
+    if (scenesEnabled) {
+      const url = `${PLUGIN_URL_PATH}scene/${checkType}`;
+      navigate(
+        url,
+        {
+          'var-instance': check.target,
+          'var-job': check.job,
+        },
+        true
+      );
+      return;
+    }
     const target = dashboardUID(checkType, instance.api);
 
     if (!target) {

@@ -1,15 +1,22 @@
 import { InstanceContext } from 'contexts/InstanceContext';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { QueryParamMap, useNavigation } from 'hooks/useNavigation';
 import { useQuery } from 'hooks/useQuery';
 import { useContext } from 'react';
-import { ROUTES } from 'types';
+import { FeatureName, ROUTES } from 'types';
 
 export function DashboardRedirecter() {
   const { instance } = useContext(InstanceContext);
   const nav = useNavigation();
   const queryParams = useQuery();
+  const { isEnabled: scenesEnabled } = useFeatureFlag(FeatureName.Scenes);
   const dashboard = queryParams.get('dashboard');
   const dashboards = instance.api?.instanceSettings?.jsonData.dashboards;
+  if (scenesEnabled) {
+    nav('/scene');
+    return null;
+  }
+
   if (!dashboard || !dashboards) {
     return null;
   }
