@@ -182,6 +182,7 @@ describe('editing multihttp check', () => {
                     type: 2,
                   },
                 ],
+                checks: [],
               },
             ]),
           },

@@ -261,6 +261,7 @@ export const BASIC_MULTIHTTP_CHECK = {
             { type: 1, name: 'salsa', expression: 'picante' },
             { type: 2, name: 'chimichanga', expression: 'delicioso', attribute: 'churro' },
           ],
+          checks: [],
         },
         {
           request: {
@@ -282,6 +283,7 @@ export const BASIC_MULTIHTTP_CHECK = {
             ],
           },
           variables: [],
+          checks: [],
         },
       ],
     },
