@@ -4,17 +4,32 @@ import { RequestTabs } from 'components/MultiHttp/Tabs/Tabs';
 import { getMultiHttpFormStyles } from './../MultiHttpSettingsForm.styles';
 import { useFormContext } from 'react-hook-form';
 import { MultiHttpFormTabs } from 'types';
+import { SelectableValue } from '@grafana/data';
+import { RequestMethods } from '../MultiHttpTypes';
 
 interface RequestTabsProps {
   label?: string;
   index: number;
 }
 
+function getIsBodyDisabled(method: SelectableValue<RequestMethods>) {
+  switch (method.value) {
+    case 'POST':
+    case 'PUT':
+    case 'PATCH':
+      return false;
+    default:
+      return true;
+  }
+}
+
 export const TabSection = ({ index }: RequestTabsProps) => {
   const [activeTab, setActiveTab] = useState<MultiHttpFormTabs>('header');
   const styles = useStyles2(getMultiHttpFormStyles);
 
-  const { formState } = useFormContext();
+  const { formState, watch } = useFormContext();
+  const requestMethod = watch(`settings.multihttp.entries.${index}.request.method`);
+  const isBodyDisabled = getIsBodyDisabled(requestMethod);
 
   return (
     <div className={styles.tabsContent}>
@@ -32,18 +47,7 @@ export const TabSection = ({ index }: RequestTabsProps) => {
           default={true}
           className={styles.tabs}
         />
-        <Tab
-          className={styles.tabs}
-          label={'Body'}
-          active={activeTab === 'body'}
-          onChangeTab={() => {
-            if (formState.errors?.settings?.multihttp?.entries[index]?.request) {
-              return;
-            } else {
-              setActiveTab('body');
-            }
-          }}
-        />
+
         <Tab
           label={'Query Params'}
           active={activeTab === 'queryParams'}
@@ -52,6 +56,18 @@ export const TabSection = ({ index }: RequestTabsProps) => {
               return;
             } else {
               setActiveTab('queryParams');
+            }
+          }}
+          className={styles.tabs}
+        />
+        <Tab
+          label={'Assertions'}
+          active={activeTab === 'assertions'}
+          onChangeTab={() => {
+            if (formState.errors?.settings?.multihttp?.entries[index]?.request) {
+              return;
+            } else {
+              setActiveTab('assertions');
             }
           }}
           className={styles.tabs}
@@ -67,6 +83,19 @@ export const TabSection = ({ index }: RequestTabsProps) => {
             }
           }}
           className={styles.tabs}
+        />
+        <Tab
+          className={styles.tabs}
+          disabled={isBodyDisabled}
+          label={'Body'}
+          active={activeTab === 'body'}
+          onChangeTab={() => {
+            if (formState.errors?.settings?.multihttp?.entries[index]?.request) {
+              return;
+            } else {
+              setActiveTab('body');
+            }
+          }}
         />
       </TabsBar>
       <TabContent className={styles.tabsContent}>

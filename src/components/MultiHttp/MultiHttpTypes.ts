@@ -1,3 +1,5 @@
+import { Check as k6Assertion } from 'har-to-k6';
+
 export type MultiHttpVariable = {
   type: number;
   name: string;
@@ -33,4 +35,20 @@ export type KeyTypes = 'url' | 'body' | 'method' | 'headers' | 'queryString' | '
 export interface MultiHttpEntry {
   variables?: MultiHttpVariable[];
   request: RequestProps;
+  checks: k6Assertion[];
+}
+
+export enum AssertionSubjectVariant {
+  ResponseBody = 0,
+  ResponseHeaders = 1,
+  HttpStatusCode = 2,
+}
+
+export enum AssertionConditionVariant {
+  Contains = 0,
+  NotContains = 1,
+  Equals = 2,
+  StartsWith = 3,
+  EndsWith = 4,
+  TypeOf = 5,
 }

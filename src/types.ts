@@ -562,10 +562,17 @@ export interface DashboardSceneAppConfig {
   sm: DataSourceRef;
 }
 
-export type MultiHttpFormTabs = 'header' | 'queryParams' | 'body' | 'variables';
+export type MultiHttpFormTabs = 'header' | 'queryParams' | 'assertions' | 'body' | 'variables';
 
 export enum MultiHttpVariableType {
   JSON_PATH = 0,
   REGEX = 1,
   CSS_SELECTOR = 2,
+}
+
+export enum MultiHttpAssertionType {
+  Text = 0,
+  JSONPathValue = 1,
+  JSONPath = 2,
+  Regex = 3,
 }
