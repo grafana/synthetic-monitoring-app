@@ -15,7 +15,7 @@ export function getDashboardSceneApp(config: DashboardSceneAppConfig) {
         title: 'Dashboards',
         subTitle: 'Check results',
         url: `${PLUGIN_URL_PATH}${ROUTES.Scene}`,
-        hideFromBreadcrumbs: false,
+        hideFromBreadcrumbs: true,
         getScene: getSummaryScene(config),
         tabs: [
           new SceneAppPage({

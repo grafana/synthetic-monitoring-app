@@ -1,10 +1,21 @@
 import { Spinner } from '@grafana/ui';
 import { InstanceContext } from 'contexts/InstanceContext';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
+import { useNavigation } from 'hooks/useNavigation';
 import React, { useContext } from 'react';
 import { getDashboardSceneApp } from 'scenes/dashboardSceneApp';
+import { FeatureName } from 'types';
 
 export function DashboardPage() {
   const { instance } = useContext(InstanceContext);
+  const { isEnabled } = useFeatureFlag(FeatureName.Scenes);
+  const navigate = useNavigation();
+
+  if (!isEnabled) {
+    navigate('redirect?dashboard=summary');
+    return null;
+  }
+
   if (!instance.metrics || !instance.logs || !instance.api) {
     return <Spinner />;
   }
