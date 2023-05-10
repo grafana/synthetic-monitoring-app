@@ -1,6 +1,14 @@
 import { DataSourceSettings, OrgRole, SelectableValue } from '@grafana/data';
 import { DataSourceRef } from '@grafana/schema';
-import { MultiHttpEntry, MultiHttpVariable, RequestMethods, RequestProps } from 'components/MultiHttp/MultiHttpTypes';
+import {
+  Assertion,
+  AssertionConditionVariant,
+  AssertionSubjectVariant,
+  MultiHttpEntry,
+  MultiHttpVariable,
+  RequestMethods,
+  RequestProps,
+} from 'components/MultiHttp/MultiHttpTypes';
 import { SMDataSource } from 'datasource/DataSource';
 import { LinkedDatasourceInfo } from './datasource/types';
 
@@ -237,9 +245,10 @@ export interface MultiHttpSettingsFormValues {
   entries: MultiHttpEntryFormValues[];
 }
 
-export interface MultiHttpEntryFormValues extends Omit<MultiHttpEntry, 'request' | 'variables'> {
+export interface MultiHttpEntryFormValues extends Omit<MultiHttpEntry, 'request' | 'variables' | 'checks'> {
   request: MultiHttpRequestFormValues;
   variables: MultiHttpVariablesFormValues[];
+  checks: MultiHttpAssertionFormValues[];
 }
 
 export interface MultiHttpRequestFormValues extends Omit<RequestProps, 'method'> {
@@ -248,6 +257,12 @@ export interface MultiHttpRequestFormValues extends Omit<RequestProps, 'method'>
 
 export interface MultiHttpVariablesFormValues extends Omit<MultiHttpVariable, 'type'> {
   type: SelectableValue<MultiHttpVariableType>;
+}
+
+export interface MultiHttpAssertionFormValues extends Omit<Assertion, 'type' | 'subject' | 'condition'> {
+  type: SelectableValue<MultiHttpAssertionType>;
+  subject?: SelectableValue<AssertionSubjectVariant>;
+  condition?: SelectableValue<AssertionConditionVariant>;
 }
 
 export interface TracerouteSettings {

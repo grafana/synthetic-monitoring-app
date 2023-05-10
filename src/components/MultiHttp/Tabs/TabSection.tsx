@@ -13,7 +13,7 @@ interface RequestTabsProps {
 }
 
 function getIsBodyDisabled(method: SelectableValue<RequestMethods>) {
-  switch (method.value) {
+  switch (method?.value) {
     case 'POST':
     case 'PUT':
     case 'PATCH':

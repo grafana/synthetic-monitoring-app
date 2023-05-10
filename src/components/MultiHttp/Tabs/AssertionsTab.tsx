@@ -1,12 +1,13 @@
 import { useStyles2, HorizontalGroup, Select, Button, Icon, Input, Field, IconButton } from '@grafana/ui';
-import { MULTI_HTTP_ASSERTION_TYPE_OPTIONS } from 'components/constants';
+import {
+  ASSERTION_CONDITION_OPTIONS,
+  ASSERTION_SUBJECT_OPTIONS,
+  MULTI_HTTP_ASSERTION_TYPE_OPTIONS,
+} from 'components/constants';
 import React from 'react';
 import { useFormContext, useFieldArray, Controller } from 'react-hook-form';
 import { MultiHttpAssertionType } from 'types';
 import { MultiHttpTabProps, getMultiHttpTabStyles } from './Tabs';
-import { SelectableValue } from '@grafana/data';
-import { CheckSubjectVariant, CheckConditionVariant } from 'har-to-k6';
-import { AssertionConditionVariant, AssertionSubjectVariant } from '../MultiHttpTypes';
 
 export function AssertionsTab({ index, label }: MultiHttpTabProps) {
   const assertionFieldName = `settings.multihttp.entries[${index}].checks`;
@@ -108,12 +109,6 @@ function AssertionFields({ fieldName }: { fieldName: string }) {
   }
 }
 
-const ASSERTION_SUBJECT_OPTIONS: Array<SelectableValue<CheckSubjectVariant>> = [
-  { label: 'body', value: AssertionSubjectVariant.ResponseBody },
-  { label: 'headers', value: AssertionSubjectVariant.ResponseHeaders },
-  { label: 'HTTP status code', value: AssertionSubjectVariant.HttpStatusCode },
-];
-
 function AssertionSubjectField({ fieldName }: { fieldName: string }) {
   return (
     <Controller
@@ -123,7 +118,6 @@ function AssertionSubjectField({ fieldName }: { fieldName: string }) {
           <Field label="Subject">
             <Select
               id={`${fieldName}-subject}`}
-              // className={styles.minInputWidth}
               {...field}
               options={ASSERTION_SUBJECT_OPTIONS}
               menuPlacement="bottom"
@@ -136,14 +130,6 @@ function AssertionSubjectField({ fieldName }: { fieldName: string }) {
   );
 }
 
-const ASSERTION_CONDITION_OPTIONS: Array<SelectableValue<CheckConditionVariant>> = [
-  { label: 'Contains', value: AssertionConditionVariant.Contains },
-  { label: 'Does not contain', value: AssertionConditionVariant.NotContains },
-  { label: 'Equals', value: AssertionConditionVariant.Equals },
-  { label: 'Starts with', value: AssertionConditionVariant.StartsWith },
-  { label: 'Ends with', value: AssertionConditionVariant.EndsWith },
-];
-
 function AssertionConditionField({ fieldName }: { fieldName: string }) {
   return (
     <Controller
@@ -153,7 +139,6 @@ function AssertionConditionField({ fieldName }: { fieldName: string }) {
           <Field label="Condition">
             <Select
               id={`${fieldName}-condition}`}
-              // className={styles.minInputWidth}
               {...field}
               options={ASSERTION_CONDITION_OPTIONS}
               menuPlacement="bottom"
