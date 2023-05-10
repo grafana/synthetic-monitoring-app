@@ -52,15 +52,9 @@
     },
     {
       "type": "page",
-      "name": "Summary",
-      "path": "/a/grafana-synthetic-monitoring-app/redirect?dashboard=summary",
-      "addToNav": true
-    },
-    {
-      "type": "page",
       "name": "Dashboards",
       "path": "/a/grafana-synthetic-monitoring-app/scene",
-      "addToNav": false
+      "addToNav": true
     },
     {
       "type": "page",
