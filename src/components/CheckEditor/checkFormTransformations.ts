@@ -479,7 +479,7 @@ const getMultiHttpSettings = (
   return {
     entries: settings.entries?.map((entry, index) => {
       const variables = entry.variables ?? defaultSettings?.entries[index]?.variables ?? [];
-
+      const checks = entry.checks ?? defaultSettings?.entries[index]?.checks ?? [];
       return {
         ...defaultSettings?.entries[index],
         ...entry,
@@ -498,7 +498,7 @@ const getMultiHttpSettings = (
           };
         }),
         checks:
-          entry.checks?.map(({ type, subject, condition, value, expression }) => {
+          checks.map(({ type, subject, condition, value, expression }) => {
             switch (type.value) {
               case MultiHttpAssertionType.Text:
                 if (!subject?.value || !condition?.value) {

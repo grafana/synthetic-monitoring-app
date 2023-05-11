@@ -261,7 +261,12 @@ export const BASIC_MULTIHTTP_CHECK = {
             { type: 1, name: 'salsa', expression: 'picante' },
             { type: 2, name: 'chimichanga', expression: 'delicioso', attribute: 'churro' },
           ],
-          checks: [],
+          checks: [
+            { type: 0, subject: 1, condition: 2, value: 'text-value' },
+            { type: 1, condition: 1, expression: '$.jsonpathvalue-expression', value: 'jsonpathvalue-value' },
+            { type: 2, expression: '$.jsonpath-expression' },
+            { type: 3, subject: 2, expression: '/regex/' },
+          ],
         },
         {
           request: {
