@@ -1,3 +1,5 @@
+import { MultiHttpAssertionType } from 'types';
+
 export type MultiHttpVariable = {
   type: number;
   name: string;
@@ -30,7 +32,31 @@ export type RequestProps = {
 
 export type KeyTypes = 'url' | 'body' | 'method' | 'headers' | 'queryString' | 'postData';
 
+export interface Assertion {
+  type: MultiHttpAssertionType;
+  subject?: AssertionSubjectVariant;
+  expression?: string;
+  condition?: AssertionConditionVariant;
+  value?: string;
+}
+
 export interface MultiHttpEntry {
   variables?: MultiHttpVariable[];
   request: RequestProps;
+  checks: Assertion[];
+}
+
+export enum AssertionSubjectVariant {
+  ResponseBody = 0,
+  ResponseHeaders = 1,
+  HttpStatusCode = 2,
+}
+
+export enum AssertionConditionVariant {
+  Contains = 0,
+  NotContains = 1,
+  Equals = 2,
+  StartsWith = 3,
+  EndsWith = 4,
+  TypeOf = 5,
 }

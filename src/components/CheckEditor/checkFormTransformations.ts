@@ -28,6 +28,7 @@ import {
   TLSConfig,
   TracerouteSettings,
   TracerouteSettingsFormValues,
+  MultiHttpAssertionType,
 } from 'types';
 
 import {
@@ -42,6 +43,9 @@ import {
   fallbackSettings,
   METHOD_OPTIONS,
   MULTI_HTTP_VARIABLE_TYPE_OPTIONS,
+  MULTI_HTTP_ASSERTION_TYPE_OPTIONS,
+  ASSERTION_SUBJECT_OPTIONS,
+  ASSERTION_CONDITION_OPTIONS,
 } from 'components/constants';
 import { checkType as getCheckType, fromBase64, toBase64 } from 'utils';
 import isBase64 from 'is-base64';
@@ -475,7 +479,7 @@ const getMultiHttpSettings = (
   return {
     entries: settings.entries?.map((entry, index) => {
       const variables = entry.variables ?? defaultSettings?.entries[index]?.variables ?? [];
-
+      const checks = entry.checks ?? defaultSettings?.entries[index]?.checks ?? [];
       return {
         ...defaultSettings?.entries[index],
         ...entry,
@@ -493,6 +497,47 @@ const getMultiHttpSettings = (
             type: variable.type.value,
           };
         }),
+        checks:
+          checks.map(({ type, subject, condition, value, expression }) => {
+            switch (type.value) {
+              case MultiHttpAssertionType.Text:
+                if (!subject?.value || !condition?.value) {
+                  throw new Error('Cannot have a Text assertion without a subject and condition');
+                }
+                return {
+                  type: type.value,
+                  subject: subject.value,
+                  condition: condition.value,
+                  value,
+                };
+              case MultiHttpAssertionType.JSONPath:
+                return {
+                  type: type.value,
+                  expression,
+                };
+              case MultiHttpAssertionType.JSONPathValue:
+                if (!condition?.value) {
+                  throw new Error('Cannot have a JSON path value assertion without a condition');
+                }
+                return {
+                  type: type.value,
+                  condition: condition.value,
+                  expression,
+                  value,
+                };
+              case MultiHttpAssertionType.Regex:
+                if (!subject?.value) {
+                  throw new Error('Cannot have a Regex assertion without a subject');
+                }
+                return {
+                  type: type.value,
+                  subject: subject.value,
+                  expression,
+                };
+              default:
+                throw new Error('invalid assertion type');
+            }
+          }) ?? [],
       };
     }),
   };
@@ -517,6 +562,18 @@ const getMultiHttpFormValues = (settings: Settings): MultiHttpSettingsFormValues
               name,
               expression,
               attribute,
+            };
+          }) ?? [],
+        checks:
+          entry.checks?.map(({ type, subject, condition, expression, value }) => {
+            return {
+              type:
+                MULTI_HTTP_ASSERTION_TYPE_OPTIONS.find(({ value }) => value === type) ??
+                MULTI_HTTP_ASSERTION_TYPE_OPTIONS[0],
+              subject: ASSERTION_SUBJECT_OPTIONS.find(({ value }) => value === subject),
+              condition: ASSERTION_CONDITION_OPTIONS.find(({ value }) => value === condition),
+              expression,
+              value,
             };
           }) ?? [],
       };
