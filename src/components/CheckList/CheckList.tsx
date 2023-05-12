@@ -12,6 +12,7 @@ import {
   CheckListViewType,
   CheckType,
   ROUTES,
+  FeatureName,
 } from 'types';
 import appEvents from 'grafana/app/core/app_events';
 import {
@@ -68,6 +69,8 @@ import CheckFilterGroup from './CheckFilterGroup';
 import EmptyCheckList from './EmptyCheckList';
 import { PluginPage } from 'components/PluginPage';
 import { config } from '@grafana/runtime';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
+import { CheckListScene } from './CheckListScene';
 
 const getStyles = (theme: GrafanaTheme) => ({
   headerContainer: css`
@@ -117,6 +120,7 @@ const getStyles = (theme: GrafanaTheme) => ({
     width: 100%;
     display: flex;
     justify-content: center;
+    height: calc(100% - 100px);
   `,
   verticalSpace: css`
     margin-top: 10px;
@@ -166,6 +170,7 @@ export const CheckList = ({ instance, checks, onCheckUpdate }: Props) => {
 
   const styles = useStyles(getStyles);
   const successRateContext = useContext(SuccessRateContext);
+  const { isEnabled: scenesEnabled } = useFeatureFlag(FeatureName.Scenes);
 
   const sortChecks = useCallback(
     (checks: FilteredCheck[], sortType: CheckSort) => {
@@ -566,7 +571,11 @@ export const CheckList = ({ instance, checks, onCheckUpdate }: Props) => {
       </div>
       {viewType === CheckListViewType.Viz ? (
         <div className={styles.vizContainer}>
-          <ChecksVisualization checks={filteredChecks} showIcons={showVizIconOverlay} />
+          {scenesEnabled ? (
+            <CheckListScene />
+          ) : (
+            <ChecksVisualization checks={filteredChecks} showIcons={showVizIconOverlay} />
+          )}
         </div>
       ) : (
         <div>
