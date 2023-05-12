@@ -151,6 +151,9 @@ describe('editing multihttp check', () => {
     userEvent.clear(values[0]);
     userEvent.type(values[0], 'yarp');
 
+    const subjects = await screen.findAllByLabelText('Subject');
+    userEvent.selectOptions(subjects[0], '1');
+
     const submitButton = await screen.findByRole('button', { name: 'Save' });
     userEvent.click(submitButton);
 
@@ -199,7 +202,7 @@ describe('editing multihttp check', () => {
                   { condition: 4, expression: 'expresso', type: 1, value: 'yarp' },
                   { condition: 1, expression: '$.jsonpathvalue-expression', type: 1, value: 'jsonpathvalue-value' },
                   { expression: '$.jsonpath-expression', type: 2 },
-                  { expression: '/regex/', subject: 2, type: 3 },
+                  { expression: '/regex/', subject: 1, type: 3 },
                 ],
               },
             ]),
