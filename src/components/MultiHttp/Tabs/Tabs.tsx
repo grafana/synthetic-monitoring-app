@@ -1,7 +1,8 @@
-import React, { Fragment } from 'react';
 import { css } from '@emotion/css';
+import React, { Fragment } from 'react';
 import { Controller, useFieldArray, useFormContext } from 'react-hook-form';
 
+import { GrafanaTheme2 } from '@grafana/data';
 import {
   Button,
   Container,
@@ -10,16 +11,16 @@ import {
   Icon,
   IconButton,
   Input,
+  Select,
   TextArea,
   VerticalGroup,
   useStyles2,
-  Select,
 } from '@grafana/ui';
-import { GrafanaTheme2 } from '@grafana/data';
-import { MultiHttpFormTabs, MultiHttpVariableType } from 'types';
 import { MULTI_HTTP_VARIABLE_TYPE_OPTIONS } from 'components/constants';
+import { MultiHttpFormTabs, MultiHttpVariableType } from 'types';
+import { AssertionsTab } from './AssertionsTab';
 
-interface Props {
+export interface MultiHttpTabProps {
   label?: string;
   index: number;
   activeTab?: MultiHttpFormTabs;
@@ -30,13 +31,13 @@ interface RequestTabsProps {
   activeTab: MultiHttpFormTabs;
 }
 
-export const HeadersTab = ({ label = 'header', index }: Props) => {
+export const HeadersTab = ({ label = 'header', index }: MultiHttpTabProps) => {
   const { control, register, unregister, formState } = useFormContext();
   const { fields, append, remove } = useFieldArray({
     name: `settings.multihttp.entries[${index}].request.headers`,
     control,
   });
-  const styles = useStyles2(getStyles);
+  const styles = useStyles2(getMultiHttpTabStyles);
 
   return (
     <div className={styles.inputsContainer}>
@@ -108,8 +109,8 @@ export const HeadersTab = ({ label = 'header', index }: Props) => {
   );
 };
 
-export const BodyTab = ({ index }: Props) => {
-  const styles = useStyles2(getStyles);
+export const BodyTab = ({ index }: MultiHttpTabProps) => {
+  const styles = useStyles2(getMultiHttpTabStyles);
   const { formState, register } = useFormContext();
 
   return (
@@ -130,13 +131,13 @@ export const BodyTab = ({ index }: Props) => {
   );
 };
 
-const QueryParamsTab = ({ index, label }: Props) => {
+const QueryParamsTab = ({ index, label }: MultiHttpTabProps) => {
   const { control } = useFormContext();
   const { fields, append, remove } = useFieldArray({
     control,
     name: `settings.multihttp.entries[${index}].request.queryString`,
   });
-  const styles = useStyles2(getStyles);
+  const styles = useStyles2(getMultiHttpTabStyles);
   const { register, formState } = useFormContext();
 
   return (
@@ -208,14 +209,14 @@ const QueryParamsTab = ({ index, label }: Props) => {
   );
 };
 
-const VariablesTab = ({ index, label }: Props) => {
+const VariablesTab = ({ index }: MultiHttpTabProps) => {
   const variableFieldName = `settings.multihttp.entries[${index}].variables`;
   const { control, register, watch, formState } = useFormContext();
   const { fields, append, remove } = useFieldArray({
     control,
     name: variableFieldName,
   });
-  const styles = useStyles2(getStyles);
+  const styles = useStyles2(getMultiHttpTabStyles);
 
   return (
     <div className={styles.inputsContainer}>
@@ -297,12 +298,14 @@ export const RequestTabs = ({ activeTab, index }: RequestTabsProps) => {
       return <QueryParamsTab index={index} label="queryParams" />;
     case 'variables':
       return <VariablesTab index={index} label="variables" />;
+    case 'assertions':
+      return <AssertionsTab index={index} label="assertions" />;
     default:
       return <HeadersTab label="header" index={index} />;
   }
 };
 
-const getStyles = (theme: GrafanaTheme2) => ({
+export const getMultiHttpTabStyles = (theme: GrafanaTheme2) => ({
   removeIcon: css`
     margin-top: 6px;
   `,

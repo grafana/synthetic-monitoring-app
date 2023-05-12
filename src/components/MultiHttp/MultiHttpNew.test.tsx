@@ -75,6 +75,21 @@ describe('new checks', () => {
     const secondRequestOptions = await screen.findAllByTestId('request-method');
     await act(async () => await userEvent.selectOptions(secondRequestOptions[1], 'GET'));
 
+    // add assertions
+    const assertionsTabs = await screen.findAllByLabelText('Tab Assertions');
+    userEvent.click(assertionsTabs[0]);
+    const addAssertion = await screen.findByRole('button', { name: 'Add assertions' });
+    userEvent.click(addAssertion);
+    const assertionTypes = await screen.findAllByLabelText('Assertion type');
+    userEvent.selectOptions(assertionTypes[0], '1');
+    const expressions = await screen.findAllByLabelText('Expression');
+    userEvent.type(expressions[0], 'expresso');
+    const conditions = await screen.findAllByLabelText('Condition');
+    userEvent.selectOptions(conditions[0], '4');
+    const values = await screen.findAllByLabelText('Value');
+    userEvent.clear(values[0]);
+    userEvent.type(values[0], 'yarp');
+
     await submitForm(onReturn);
     expect(instance.api.addCheck).toHaveBeenCalledTimes(1);
     expect(instance.api.addCheck).toHaveBeenCalledWith(
@@ -82,8 +97,12 @@ describe('new checks', () => {
         settings: {
           multihttp: {
             entries: [
-              { request: { headers: [], method: 'POST', url: 'http://grafanarr.com' }, variables: [] },
-              { request: { headers: [], method: 'GET', url: 'http://grafanalalala.com' }, variables: [] },
+              {
+                request: { headers: [], method: 'POST', url: 'http://grafanarr.com' },
+                variables: [],
+                checks: [{ condition: 4, expression: '$.expresso', type: 1, value: 'yarp' }],
+              },
+              { request: { headers: [], method: 'GET', url: 'http://grafanalalala.com' }, variables: [], checks: [] },
             ],
           },
         },

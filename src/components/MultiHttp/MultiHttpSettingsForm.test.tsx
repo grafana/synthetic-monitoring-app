@@ -138,6 +138,22 @@ describe('editing multihttp check', () => {
     await act(async () => await userEvent.clear(requestBodies[0]));
     await act(async () => await userEvent.type(requestBodies[0], 'terriblyinteresting'));
 
+    // edit assertions
+    const assertionsTabs = await screen.findAllByLabelText('Tab Assertions');
+    userEvent.click(assertionsTabs[0]);
+    const assertionTypes = await screen.findAllByLabelText('Assertion type');
+    userEvent.selectOptions(assertionTypes[0], '1');
+    const expressions = await screen.findAllByLabelText('Expression');
+    userEvent.type(expressions[0], 'expresso');
+    const conditions = await screen.findAllByLabelText('Condition');
+    userEvent.selectOptions(conditions[0], '4');
+    const values = await screen.findAllByLabelText('Value');
+    userEvent.clear(values[0]);
+    userEvent.type(values[0], 'yarp');
+
+    const subjects = await screen.findAllByLabelText('Subject');
+    userEvent.selectOptions(subjects[0], '1');
+
     const submitButton = await screen.findByRole('button', { name: 'Save' });
     userEvent.click(submitButton);
 
@@ -181,6 +197,12 @@ describe('editing multihttp check', () => {
                     name: 'chimichanga',
                     type: 2,
                   },
+                ],
+                checks: [
+                  { condition: 4, expression: 'expresso', type: 1, value: 'yarp' },
+                  { condition: 1, expression: '$.jsonpathvalue-expression', type: 1, value: 'jsonpathvalue-value' },
+                  { expression: '$.jsonpath-expression', type: 2 },
+                  { expression: '/regex/', subject: 1, type: 3 },
                 ],
               },
             ]),

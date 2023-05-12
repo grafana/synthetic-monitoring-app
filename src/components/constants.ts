@@ -20,7 +20,10 @@ import {
   Settings,
   HttpMethod,
   MultiHttpVariableType,
+  MultiHttpAssertionType,
 } from 'types';
+import { AssertionConditionVariant, AssertionSubjectVariant } from './MultiHttp/MultiHttpTypes';
+import { SelectableValue } from '@grafana/data';
 
 export const DNS_RESPONSE_CODES = enumToStringArray(DnsResponseCodes).map((responseCode) => ({
   label: responseCode,
@@ -358,6 +361,7 @@ export function fallbackSettings(t: CheckType): Settings {
                 method: 'GET',
                 url: '',
               },
+              checks: [],
             },
           ],
         },
@@ -446,4 +450,25 @@ export const MULTI_HTTP_VARIABLE_TYPE_OPTIONS = [
   { label: 'JSON Path', value: MultiHttpVariableType.JSON_PATH },
   { label: 'Regular Expression', value: MultiHttpVariableType.REGEX },
   { label: 'CSS Selector', value: MultiHttpVariableType.CSS_SELECTOR },
+];
+
+export const MULTI_HTTP_ASSERTION_TYPE_OPTIONS = [
+  { label: 'Text', value: MultiHttpAssertionType.Text },
+  { label: 'JSON path value', value: MultiHttpAssertionType.JSONPathValue },
+  { label: 'JSON path', value: MultiHttpAssertionType.JSONPath },
+  { label: 'Regex', value: MultiHttpAssertionType.Regex },
+];
+
+export const ASSERTION_CONDITION_OPTIONS: Array<SelectableValue<AssertionConditionVariant>> = [
+  { label: 'Contains', value: AssertionConditionVariant.Contains },
+  { label: 'Does not contain', value: AssertionConditionVariant.NotContains },
+  { label: 'Equals', value: AssertionConditionVariant.Equals },
+  { label: 'Starts with', value: AssertionConditionVariant.StartsWith },
+  { label: 'Ends with', value: AssertionConditionVariant.EndsWith },
+];
+
+export const ASSERTION_SUBJECT_OPTIONS: Array<SelectableValue<AssertionSubjectVariant>> = [
+  { label: 'body', value: AssertionSubjectVariant.ResponseBody },
+  { label: 'headers', value: AssertionSubjectVariant.ResponseHeaders },
+  { label: 'HTTP status code', value: AssertionSubjectVariant.HttpStatusCode },
 ];
