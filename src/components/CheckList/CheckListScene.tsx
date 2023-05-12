@@ -1,3 +1,4 @@
+import { ThresholdsMode } from '@grafana/data';
 import {
   EmbeddedScene,
   SceneFlexItem,
@@ -8,7 +9,7 @@ import {
 } from '@grafana/scenes';
 import { Spinner } from '@grafana/ui';
 import { InstanceContext } from 'contexts/InstanceContext';
-import React, { useContext } from 'react';
+import React, { useContext, useMemo } from 'react';
 import { DashboardSceneAppConfig } from 'types';
 
 function getCheckListScene(config: DashboardSceneAppConfig) {
@@ -17,7 +18,24 @@ function getCheckListScene(config: DashboardSceneAppConfig) {
     queries: [
       {
         editorMode: 'code',
-        expr: 'sum(rate(probe_all_success_sum[3h])) by (job, instance) / sum(rate(probe_all_success_count[3h])) by (job, instance)',
+        expr: `sum by (instance, job, check_name) (
+              rate(probe_all_success_sum[$__range])
+              * 
+              on (instance, job)
+              group_left(check_name)
+              max by (instance, job, check_name)
+              (sm_check_info)
+        ) 
+        /
+        sum by (instance, job, check_name) (
+              rate(probe_all_success_count[$__range])
+              * 
+              on (instance, job)
+              group_left(check_name)
+              max by (instance, job, check_name)
+              (sm_check_info)
+        ) 
+        `,
         legendFormat: '{{instance}}',
         range: true,
         refId: 'A',
@@ -32,7 +50,6 @@ function getCheckListScene(config: DashboardSceneAppConfig) {
 
   return new EmbeddedScene({
     $timeRange: timeRange,
-    // $variables: new SceneVariableSet({ variables: [region] }),
     $data: queryRunner,
     body: new SceneFlexLayout({
       children: [
@@ -40,82 +57,54 @@ function getCheckListScene(config: DashboardSceneAppConfig) {
           width: '100%',
           height: '100%',
           body: new VizPanel({
-            pluginId: 'grafana-polystat-panel',
+            pluginId: 'stat',
             title: '',
             $data: queryRunner,
             fieldConfig: {
-              defaults: {
-                mappings: [],
-              },
               overrides: [],
+              defaults: {
+                thresholds: {
+                  mode: ThresholdsMode.Percentage,
+                  steps: [
+                    {
+                      color: 'red',
+                      value: 0,
+                    },
+                    {
+                      color: 'red',
+                      value: 95,
+                    },
+                    {
+                      color: '#EAB839',
+                      value: 99,
+                    },
+                    {
+                      color: 'green',
+                      value: 99.75,
+                    },
+                  ],
+                },
+                links: [
+                  {
+                    title: 'dashboard link',
+                    url: '/a/grafana-synthetic-monitoring-app/scene/${__field.labels.check_name}﻿﻿?var-job=${__field.labels.job}&${__field.labels.instance}',
+                  },
+                ],
+
+                unit: 'percentunit',
+              },
             },
             options: {
-              autoSizeColumns: true,
-              autoSizePolygons: true,
-              autoSizeRows: true,
-              compositeConfig: {
-                animationSpeed: '1500',
-                composites: [],
-                enabled: true,
+              reduceOptions: {
+                values: false,
+                calcs: ['lastNotNull'],
+                fields: '',
               },
-              ellipseCharacters: 18,
-              ellipseEnabled: false,
-              globalAutoScaleFonts: true,
-              globalClickthrough: '',
-              globalClickthroughNewTabEnabled: false,
-              globalClickthroughSanitizedEnabled: false,
-              globalDecimals: 2,
-              globalDisplayMode: 'all',
-              globalDisplayTextTriggeredEmpty: 'OK',
-              globalFillColor: 'rgba(10, 85, 161, 1)',
-              globalFontSize: 12,
-              globalGradientsEnabled: false,
-              globalOperator: 'mean',
-              globalPolygonBorderColor: 'rgba(0, 0, 0, 0)',
-              globalPolygonBorderSize: 4,
-              globalPolygonSize: 25,
-              globalRegexPattern: '',
-              globalShape: 'hexagon_pointed_top',
-              globalShowTooltipColumnHeadersEnabled: true,
-              globalShowValueEnabled: true,
-              globalTextFontAutoColorEnabled: true,
-              globalTextFontColor: '#000000',
-              globalTextFontFamily: 'Roboto',
-              globalThresholdsConfig: [
-                {
-                  color: '#C4162A',
-                  state: 2,
-                  value: 0,
-                },
-                {
-                  color: '#FF9830',
-                  state: 1,
-                  value: 0.95,
-                },
-                {
-                  color: '#37872D',
-                  state: 0,
-                  value: 0.99,
-                },
-              ],
-              globalTooltipsEnabled: true,
-              globalTooltipsFontFamily: 'Helvetica',
-              globalTooltipsShowTimestampEnabled: false,
-              globalUnitFormat: 'percentunit',
-              layoutDisplayLimit: 100,
-              layoutNumColumns: 8,
-              layoutNumRows: 8,
-              overrideConfig: {
-                overrides: [],
-              },
-              sortByDirection: 3,
-              sortByField: 'value',
-              tooltipDisplayMode: 'triggered',
-              tooltipDisplayTextTriggeredEmpty: 'OK',
-              tooltipPrimarySortByField: 'thresholdLevel',
-              tooltipPrimarySortDirection: 4,
-              tooltipSecondarySortByField: 'value',
-              tooltipSecondarySortDirection: 1,
+              orientation: 'auto',
+              textMode: 'auto',
+              colorMode: 'background',
+              graphMode: 'none',
+              justifyMode: 'auto',
             },
           }),
         }),
@@ -126,131 +115,27 @@ function getCheckListScene(config: DashboardSceneAppConfig) {
 
 export function CheckListScene() {
   const { instance } = useContext(InstanceContext);
-
-  if (!instance.metrics || !instance.logs || !instance.api) {
+  const { api, logs, metrics } = useMemo(
+    () => ({ api: instance.api, logs: instance.logs, metrics: instance.metrics }),
+    [instance.api, instance.logs, instance.metrics]
+  );
+  if (!metrics || !logs || !api) {
     return <Spinner />;
   }
 
   const metricsDef = {
-    uid: instance.metrics.uid,
-    type: instance.metrics.type,
+    uid: metrics.uid,
+    type: metrics.type,
   };
   const logsDef = {
-    uid: instance.logs.uid,
-    type: instance.logs.type,
+    uid: logs.uid,
+    type: logs.type,
   };
   const smDef = {
-    uid: instance.api.uid,
-    type: instance.api.type,
+    uid: api.uid,
+    type: api.type,
   };
 
   const scene = getCheckListScene({ metrics: metricsDef, logs: logsDef, sm: smDef });
   return <scene.Component model={scene} />;
 }
-
-// "panels": [
-//   {
-//     "datasource": {
-//       "type": "prometheus",
-//       "uid": "PD2497CD8F1EF91F1"
-//     },
-//     "fieldConfig": {
-//       "defaults": {
-//         "mappings": []
-//       },
-//       "overrides": []
-//     },
-//     "gridPos": {
-//       "h": 8,
-//       "w": 12,
-//       "x": 0,
-//       "y": 0
-//     },
-//     "id": 1,
-//     "options": {
-//       "autoSizeColumns": true,
-//       "autoSizePolygons": true,
-//       "autoSizeRows": true,
-//       "compositeConfig": {
-//         "animationSpeed": "1500",
-//         "composites": [],
-//         "enabled": true
-//       },
-//       "ellipseCharacters": 18,
-//       "ellipseEnabled": false,
-//       "globalAutoScaleFonts": true,
-//       "globalClickthrough": "",
-//       "globalClickthroughNewTabEnabled": false,
-//       "globalClickthroughSanitizedEnabled": false,
-//       "globalDecimals": 2,
-//       "globalDisplayMode": "all",
-//       "globalDisplayTextTriggeredEmpty": "OK",
-//       "globalFillColor": "rgba(10, 85, 161, 1)",
-//       "globalFontSize": 12,
-//       "globalGradientsEnabled": false,
-//       "globalOperator": "mean",
-//       "globalPolygonBorderColor": "rgba(0, 0, 0, 0)",
-//       "globalPolygonBorderSize": 4,
-//       "globalPolygonSize": 25,
-//       "globalRegexPattern": "",
-//       "globalShape": "hexagon_pointed_top",
-//       "globalShowTooltipColumnHeadersEnabled": true,
-//       "globalShowValueEnabled": true,
-//       "globalTextFontAutoColorEnabled": true,
-//       "globalTextFontColor": "#000000",
-//       "globalTextFontFamily": "Roboto",
-//       "globalThresholdsConfig": [
-//         {
-//           "color": "#C4162A",
-//           "state": 2,
-//           "value": 0
-//         },
-//         {
-//           "color": "#FF9830",
-//           "state": 1,
-//           "value": 0.95
-//         },
-//         {
-//           "color": "#37872D",
-//           "state": 0,
-//           "value": 0.99
-//         }
-//       ],
-//       "globalTooltipsEnabled": true,
-//       "globalTooltipsFontFamily": "Helvetica",
-//       "globalTooltipsShowTimestampEnabled": false,
-//       "globalUnitFormat": "percentunit",
-//       "layoutDisplayLimit": 100,
-//       "layoutNumColumns": 8,
-//       "layoutNumRows": 8,
-//       "overrideConfig": {
-//         "overrides": []
-//       },
-//       "sortByDirection": 3,
-//       "sortByField": "value",
-//       "tooltipDisplayMode": "triggered",
-//       "tooltipDisplayTextTriggeredEmpty": "OK",
-//       "tooltipPrimarySortByField": "thresholdLevel",
-//       "tooltipPrimarySortDirection": 4,
-//       "tooltipSecondarySortByField": "value",
-//       "tooltipSecondarySortDirection": 1
-//     },
-//     "pluginVersion": "2.0.7",
-//     "targets": [
-//       {
-//         "datasource": {
-//           "type": "prometheus",
-//           "uid": "PD2497CD8F1EF91F1"
-//         },
-//         "editorMode": "code",
-//         "expr": "sum(rate(probe_all_success_sum[3h])) by (job, instance) / sum(rate(probe_all_success_count[3h])) by (job, instance)",
-//         "legendFormat": "{{instance}}",
-//         "range": true,
-//         "refId": "A"
-//       }
-//     ],
-//     "title": "Panel Title",
-//     "transparent": true,
-//     "type": "grafana-polystat-panel"
-//   }
-// ],
