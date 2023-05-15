@@ -11,7 +11,6 @@ import {
   CheckEnabledStatus,
   CheckListViewType,
   CheckType,
-  ROUTES,
   FeatureName,
 } from 'types';
 import appEvents from 'grafana/app/core/app_events';
@@ -60,7 +59,6 @@ import { LabelFilterInput } from '../LabelFilterInput';
 import { SuccessRateContext, SuccessRateTypes } from 'contexts/SuccessRateContext';
 import { ChecksVisualization } from '../ChecksVisualization';
 import ThresholdGlobalSettings from '../Thresholds/ThresholdGlobalSettings';
-import { useNavigation } from 'hooks/useNavigation';
 import { BulkEditModal } from 'components/BulkEditModal';
 import CheckFilterGroup from './CheckFilterGroup';
 import EmptyCheckList from './EmptyCheckList';
@@ -69,6 +67,7 @@ import { config } from '@grafana/runtime';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { CheckListScene } from './CheckListScene';
 import { CheckListViewSwitcher } from './CheckListViewSwitcher';
+import { AddNewCheckButton } from './AddNewCheckButton';
 
 const getStyles = (theme: GrafanaTheme) => ({
   headerContainer: css`
@@ -164,7 +163,6 @@ export const CheckList = ({ instance, checks, onCheckUpdate }: Props) => {
 
   const [showThresholdModal, setShowThresholdModal] = useState(false);
   const [bulkEditAction, setBulkEditAction] = useState<'add' | 'remove' | null>(null);
-  const navigate = useNavigation();
 
   const styles = useStyles(getStyles);
   const successRateContext = useContext(SuccessRateContext);
@@ -334,248 +332,247 @@ export const CheckList = ({ instance, checks, onCheckUpdate }: Props) => {
     );
   }
 
+  const showHeaders = !scenesEnabled || viewType !== CheckListViewType.Viz;
+
   return (
     <PluginPage>
-      {!scenesEnabled ||
-        (viewType !== CheckListViewType.Viz && (
-          <>
-            <div className={styles.headerContainer}>
-              <div>
-                {!config.featureToggles.topnav && <h4 className={styles.header}>All checks</h4>}
-                {!scenesEnabled ||
-                  (viewType !== CheckListViewType.Viz && (
-                    <div className={styles.subheader}>
-                      Currently showing {currentPageChecks.length} of {checks.length} total checks
-                    </div>
-                  ))}
-              </div>
-              <div className={styles.flexRow}>
-                <Input
-                  className={styles.marginRightSmall}
-                  autoFocus
-                  aria-label="Search checks"
-                  prefix={<Icon name="search" />}
-                  width={40}
-                  data-testid="check-search-input"
-                  type="text"
-                  value={checkFilters.search ? unEscapeStringFromRegex(checkFilters.search) : ''}
-                  onChange={(event) => {
-                    const value = event.currentTarget.value;
+      {showHeaders && (
+        <>
+          <div className={styles.headerContainer}>
+            <div>
+              {!config.featureToggles.topnav && <h4 className={styles.header}>All checks</h4>}
+              {!scenesEnabled ||
+                (viewType !== CheckListViewType.Viz && (
+                  <div className={styles.subheader}>
+                    Currently showing {currentPageChecks.length} of {checks.length} total checks
+                  </div>
+                ))}
+            </div>
+            <div className={styles.flexRow}>
+              <Input
+                className={styles.marginRightSmall}
+                autoFocus
+                aria-label="Search checks"
+                prefix={<Icon name="search" />}
+                width={40}
+                data-testid="check-search-input"
+                type="text"
+                value={checkFilters.search ? unEscapeStringFromRegex(checkFilters.search) : ''}
+                onChange={(event) => {
+                  const value = event.currentTarget.value;
+                  setCheckFilters((cf) => {
+                    return {
+                      ...cf,
+                      search: escapeStringForRegex(value),
+                    };
+                  });
+                }}
+                placeholder="Search by job name, endpoint, or label"
+              />
+              <CheckFilterGroup onReset={handleResetFilters} filters={checkFilters}>
+                <div className={styles.flexRow}>
+                  <Select
+                    prefix="Status"
+                    aria-label="Filter by status"
+                    data-testid="check-status-filter"
+                    options={CHECK_LIST_STATUS_OPTIONS}
+                    width={20}
+                    className={styles.verticalSpace}
+                    onChange={(option) => {
+                      setCurrentPage(1);
+                      setCheckFilters((cf) => {
+                        return {
+                          ...cf,
+                          status: option,
+                        };
+                      });
+                    }}
+                    value={checkFilters.status}
+                  />
+                  <Select
+                    aria-label="Filter by type"
+                    prefix="Types"
+                    data-testid="check-type-filter"
+                    options={CHECK_FILTER_OPTIONS}
+                    className={styles.verticalSpace}
+                    width={20}
+                    onChange={(selected: SelectableValue) => {
+                      setCurrentPage(1);
+                      setCheckFilters((cf) => {
+                        return {
+                          ...cf,
+                          type: selected?.value ?? checkFilters.type,
+                        };
+                      });
+                    }}
+                    value={checkFilters.type}
+                  />
+                </div>
+                <LabelFilterInput
+                  checks={checks}
+                  onChange={(labels) => {
+                    setCurrentPage(1);
                     setCheckFilters((cf) => {
                       return {
                         ...cf,
-                        search: escapeStringForRegex(value),
+                        labels,
                       };
                     });
                   }}
-                  placeholder="Search by job name, endpoint, or label"
+                  labelFilters={checkFilters.labels}
+                  className={styles.verticalSpace}
                 />
-                <CheckFilterGroup onReset={handleResetFilters} filters={checkFilters}>
-                  <div className={styles.flexRow}>
-                    <Select
-                      prefix="Status"
-                      aria-label="Filter by status"
-                      data-testid="check-status-filter"
-                      options={CHECK_LIST_STATUS_OPTIONS}
-                      width={20}
-                      className={styles.verticalSpace}
-                      onChange={(option) => {
-                        setCurrentPage(1);
-                        setCheckFilters((cf) => {
-                          return {
-                            ...cf,
-                            status: option,
-                          };
-                        });
-                      }}
-                      value={checkFilters.status}
-                    />
-                    <Select
-                      aria-label="Filter by type"
-                      prefix="Types"
-                      data-testid="check-type-filter"
-                      options={CHECK_FILTER_OPTIONS}
-                      className={styles.verticalSpace}
-                      width={20}
-                      onChange={(selected: SelectableValue) => {
-                        setCurrentPage(1);
-                        setCheckFilters((cf) => {
-                          return {
-                            ...cf,
-                            type: selected?.value ?? checkFilters.type,
-                          };
-                        });
-                      }}
-                      value={checkFilters.type}
-                    />
-                  </div>
-                  <LabelFilterInput
-                    checks={checks}
-                    onChange={(labels) => {
-                      setCurrentPage(1);
-                      setCheckFilters((cf) => {
-                        return {
-                          ...cf,
-                          labels,
-                        };
-                      });
-                    }}
-                    labelFilters={checkFilters.labels}
-                    className={styles.verticalSpace}
-                  />
-                  <AsyncMultiSelect
-                    aria-label="Filter by probe"
-                    data-testid="probe-filter"
-                    prefix="Probes"
-                    onChange={(v) => {
-                      setCurrentPage(1);
-                      setCheckFilters((cf) => {
-                        return {
-                          ...cf,
-                          probes: v,
-                        };
-                      });
-                    }}
-                    defaultOptions
-                    loadOptions={() => fetchProbeOptions(instance)}
-                    value={checkFilters.probes}
-                    placeholder="All probes"
-                    allowCustomValue={false}
-                    isSearchable={true}
-                    isClearable={true}
-                    closeMenuOnSelect={false}
-                    className={styles.verticalSpace}
-                  />
-                </CheckFilterGroup>
-                {hasRole(OrgRole.Editor) && (
-                  <>
-                    <Button
-                      variant="secondary"
-                      fill="outline"
-                      onClick={() => setShowThresholdModal((v) => !v)}
-                      className={styles.marginRightSmall}
-                    >
-                      Set Thresholds
-                    </Button>
-                    <Button variant="primary" onClick={() => navigate(ROUTES.ChooseCheckType)} type="button">
-                      Add new check
-                    </Button>
-                  </>
-                )}
-              </div>
-            </div>
-            <div className={styles.searchSortContainer}>
-              <div className={styles.flexRow}></div>
-            </div>
-            <div className={styles.bulkActionContainer}>
-              <div className={styles.checkboxContainer}>
-                <Checkbox
-                  onChange={toggleVisibleCheckSelection}
-                  value={selectAll}
-                  aria-label="Select all"
-                  data-testid="selectAll"
-                />
-              </div>
-              {selectedChecks.size > 0 ? (
-                <>
-                  <span className={styles.marginRightSmall}>{selectedChecks.size} checks are selected.</span>
-                  <div className={styles.buttonGroup}>
-                    {selectedChecks.size < filteredChecks.length && (
-                      <Button
-                        type="button"
-                        fill="text"
-                        size="sm"
-                        className={styles.marginRightSmall}
-                        onClick={toggleAllCheckSelection}
-                        disabled={!hasRole(OrgRole.Editor)}
-                      >
-                        Select all {filteredChecks.length} checks
-                      </Button>
-                    )}
-                    {selectedChecks.size > 1 && (
-                      <ButtonCascader
-                        options={[
-                          {
-                            label: 'Add probes',
-                            value: 'add',
-                          },
-                          {
-                            label: 'Remove probes',
-                            value: 'remove',
-                          },
-                        ]}
-                        className={styles.marginRightSmall}
-                        disabled={!hasRole(OrgRole.Editor) || bulkActionInProgress}
-                        onChange={(value) => setBulkEditAction(value[0] as any)}
-                      >
-                        Bulk Edit Probes
-                      </ButtonCascader>
-                    )}
-                    <Button
-                      type="button"
-                      variant="primary"
-                      fill="text"
-                      onClick={handleEnableSelectedChecks}
-                      className={styles.marginRightSmall}
-                      disabled={!hasRole(OrgRole.Editor) || bulkActionInProgress}
-                    >
-                      Enable
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      fill="text"
-                      onClick={handleDisableSelectedChecks}
-                      className={styles.marginRightSmall}
-                      disabled={!hasRole(OrgRole.Editor) || bulkActionInProgress}
-                    >
-                      Disable
-                    </Button>
-
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      fill="text"
-                      className={styles.marginRightSmall}
-                      onClick={handleDeleteSelectedChecks}
-                      disabled={!hasRole(OrgRole.Editor) || bulkActionInProgress}
-                    >
-                      Delete
-                    </Button>
-                  </div>
-                </>
-              ) : (
-                <CheckListViewSwitcher setViewType={setViewType} setCurrentPage={setCurrentPage} viewType={viewType} />
-              )}
-              {!scenesEnabled && viewType === CheckListViewType.Viz && (
-                <InlineSwitch
-                  label="Show icons"
-                  showLabel
-                  transparent
-                  value={showVizIconOverlay}
-                  onChange={(e) => {
-                    window.localStorage.setItem(CHECK_LIST_ICON_OVERLAY_LS_KEY, String(e.currentTarget.checked));
-                    setShowVizIconOverlay(e.currentTarget.checked);
+                <AsyncMultiSelect
+                  aria-label="Filter by probe"
+                  data-testid="probe-filter"
+                  prefix="Probes"
+                  onChange={(v) => {
+                    setCurrentPage(1);
+                    setCheckFilters((cf) => {
+                      return {
+                        ...cf,
+                        probes: v,
+                      };
+                    });
                   }}
+                  defaultOptions
+                  loadOptions={() => fetchProbeOptions(instance)}
+                  value={checkFilters.probes}
+                  placeholder="All probes"
+                  allowCustomValue={false}
+                  isSearchable={true}
+                  isClearable={true}
+                  closeMenuOnSelect={false}
+                  className={styles.verticalSpace}
                 />
+              </CheckFilterGroup>
+              {hasRole(OrgRole.Editor) && (
+                <>
+                  <Button
+                    variant="secondary"
+                    fill="outline"
+                    onClick={() => setShowThresholdModal((v) => !v)}
+                    className={styles.marginRightSmall}
+                  >
+                    Set Thresholds
+                  </Button>
+                  <AddNewCheckButton />
+                </>
               )}
-              <div className={styles.flexGrow} />
-              <Select
-                aria-label="Sort"
-                prefix={
-                  <div>
-                    <Icon name="sort-amount-down" /> Sort
-                  </div>
-                }
-                data-testid="check-list-sort"
-                options={CHECK_LIST_SORT_OPTIONS}
-                defaultValue={CHECK_LIST_SORT_OPTIONS[0]}
-                width={20}
-                onChange={updateSortMethod}
+            </div>
+          </div>
+          <div className={styles.searchSortContainer}>
+            <div className={styles.flexRow}></div>
+          </div>
+          <div className={styles.bulkActionContainer}>
+            <div className={styles.checkboxContainer}>
+              <Checkbox
+                onChange={toggleVisibleCheckSelection}
+                value={selectAll}
+                aria-label="Select all"
+                data-testid="selectAll"
               />
             </div>
-          </>
-        ))}
+            {selectedChecks.size > 0 ? (
+              <>
+                <span className={styles.marginRightSmall}>{selectedChecks.size} checks are selected.</span>
+                <div className={styles.buttonGroup}>
+                  {selectedChecks.size < filteredChecks.length && (
+                    <Button
+                      type="button"
+                      fill="text"
+                      size="sm"
+                      className={styles.marginRightSmall}
+                      onClick={toggleAllCheckSelection}
+                      disabled={!hasRole(OrgRole.Editor)}
+                    >
+                      Select all {filteredChecks.length} checks
+                    </Button>
+                  )}
+                  {selectedChecks.size > 1 && (
+                    <ButtonCascader
+                      options={[
+                        {
+                          label: 'Add probes',
+                          value: 'add',
+                        },
+                        {
+                          label: 'Remove probes',
+                          value: 'remove',
+                        },
+                      ]}
+                      className={styles.marginRightSmall}
+                      disabled={!hasRole(OrgRole.Editor) || bulkActionInProgress}
+                      onChange={(value) => setBulkEditAction(value[0] as any)}
+                    >
+                      Bulk Edit Probes
+                    </ButtonCascader>
+                  )}
+                  <Button
+                    type="button"
+                    variant="primary"
+                    fill="text"
+                    onClick={handleEnableSelectedChecks}
+                    className={styles.marginRightSmall}
+                    disabled={!hasRole(OrgRole.Editor) || bulkActionInProgress}
+                  >
+                    Enable
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    fill="text"
+                    onClick={handleDisableSelectedChecks}
+                    className={styles.marginRightSmall}
+                    disabled={!hasRole(OrgRole.Editor) || bulkActionInProgress}
+                  >
+                    Disable
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    fill="text"
+                    className={styles.marginRightSmall}
+                    onClick={handleDeleteSelectedChecks}
+                    disabled={!hasRole(OrgRole.Editor) || bulkActionInProgress}
+                  >
+                    Delete
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <CheckListViewSwitcher setViewType={setViewType} setCurrentPage={setCurrentPage} viewType={viewType} />
+            )}
+            {!scenesEnabled && viewType === CheckListViewType.Viz && (
+              <InlineSwitch
+                label="Show icons"
+                showLabel
+                transparent
+                value={showVizIconOverlay}
+                onChange={(e) => {
+                  window.localStorage.setItem(CHECK_LIST_ICON_OVERLAY_LS_KEY, String(e.currentTarget.checked));
+                  setShowVizIconOverlay(e.currentTarget.checked);
+                }}
+              />
+            )}
+            <div className={styles.flexGrow} />
+            <Select
+              aria-label="Sort"
+              prefix={
+                <div>
+                  <Icon name="sort-amount-down" /> Sort
+                </div>
+              }
+              data-testid="check-list-sort"
+              options={CHECK_LIST_SORT_OPTIONS}
+              defaultValue={CHECK_LIST_SORT_OPTIONS[0]}
+              width={20}
+              onChange={updateSortMethod}
+            />
+          </div>
+        </>
+      )}
       {viewType === CheckListViewType.Viz ? (
         <div className={styles.vizContainer}>
           {scenesEnabled ? (

@@ -18,6 +18,7 @@ import { InstanceContext } from 'contexts/InstanceContext';
 import React, { useContext, useMemo } from 'react';
 import { CheckListViewType, DashboardSceneAppConfig } from 'types';
 import { CheckListViewSwitcher } from './CheckListViewSwitcher';
+import { AddNewCheckButton } from './AddNewCheckButton';
 
 function getCheckListScene(config: DashboardSceneAppConfig & Props) {
   const queryRunner = new SceneQueryRunner({
@@ -95,6 +96,9 @@ function getCheckListScene(config: DashboardSceneAppConfig & Props) {
       new SceneRefreshPicker({
         intervals: ['1m', '5m', '15m', '1h'],
         isOnCanvas: true,
+      }),
+      new SceneReactObject({
+        component: AddNewCheckButton,
       }),
     ],
     body: new SceneFlexLayout({
