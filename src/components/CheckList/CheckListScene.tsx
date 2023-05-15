@@ -1,18 +1,25 @@
 import { ThresholdsMode } from '@grafana/data';
 import {
   EmbeddedScene,
+  SceneControlsSpacer,
+  SceneDataTransformer,
   SceneFlexItem,
   SceneFlexLayout,
   SceneQueryRunner,
+  SceneReactObject,
+  SceneRefreshPicker,
+  SceneTimePicker,
   SceneTimeRange,
+  VariableValueSelectors,
   VizPanel,
 } from '@grafana/scenes';
 import { Spinner } from '@grafana/ui';
 import { InstanceContext } from 'contexts/InstanceContext';
 import React, { useContext, useMemo } from 'react';
-import { DashboardSceneAppConfig } from 'types';
+import { CheckListViewType, DashboardSceneAppConfig } from 'types';
+import { CheckListViewSwitcher } from './CheckListViewSwitcher';
 
-function getCheckListScene(config: DashboardSceneAppConfig) {
+function getCheckListScene(config: DashboardSceneAppConfig & Props) {
   const queryRunner = new SceneQueryRunner({
     datasource: config.metrics,
     queries: [
@@ -36,9 +43,28 @@ function getCheckListScene(config: DashboardSceneAppConfig) {
               (sm_check_info)
         ) 
         `,
-        legendFormat: '{{instance}}',
-        range: true,
+        legendFormat: '{{job}}',
+        format: 'table',
+        range: false,
+        instant: true,
         refId: 'A',
+      },
+    ],
+  });
+
+  const transformed = new SceneDataTransformer({
+    $data: queryRunner,
+    transformations: [
+      {
+        id: 'sortBy',
+        options: {
+          sort: [
+            {
+              desc: false,
+              field: 'Value',
+            },
+          ],
+        },
       },
     ],
   });
@@ -50,7 +76,27 @@ function getCheckListScene(config: DashboardSceneAppConfig) {
 
   return new EmbeddedScene({
     $timeRange: timeRange,
-    $data: queryRunner,
+    controls: [
+      new SceneReactObject({
+        //@ts-ignore not sure what's going on here, but the types are unhappy for some reason
+        component: CheckListViewSwitcher,
+        props: {
+          viewType: CheckListViewType.Viz,
+          setViewType: config.setViewType,
+          setCurrentPage: config.setCurrentPage,
+        },
+      }),
+      new VariableValueSelectors({}),
+      // new CustomOb
+      new SceneControlsSpacer(),
+
+      // customObject,
+      new SceneTimePicker({ isOnCanvas: true }),
+      new SceneRefreshPicker({
+        intervals: ['1m', '5m', '15m', '1h'],
+        isOnCanvas: true,
+      }),
+    ],
     body: new SceneFlexLayout({
       children: [
         new SceneFlexItem({
@@ -59,7 +105,7 @@ function getCheckListScene(config: DashboardSceneAppConfig) {
           body: new VizPanel({
             pluginId: 'stat',
             title: '',
-            $data: queryRunner,
+            $data: transformed,
             fieldConfig: {
               overrides: [],
               defaults: {
@@ -87,7 +133,7 @@ function getCheckListScene(config: DashboardSceneAppConfig) {
                 links: [
                   {
                     title: 'dashboard link',
-                    url: '/a/grafana-synthetic-monitoring-app/scene/${__field.labels.check_name}﻿﻿?var-job=${__field.labels.job}&${__field.labels.instance}',
+                    url: '/a/grafana-synthetic-monitoring-app/scene/${__data.fields.check_name}?var-job=${__data.fields.job}&var-instance=${__data.fields.instance}',
                   },
                 ],
 
@@ -96,8 +142,8 @@ function getCheckListScene(config: DashboardSceneAppConfig) {
             },
             options: {
               reduceOptions: {
-                values: false,
-                calcs: ['lastNotNull'],
+                values: true,
+                calcs: ['uniqueValues'],
                 fields: '',
               },
               orientation: 'auto',
@@ -113,7 +159,12 @@ function getCheckListScene(config: DashboardSceneAppConfig) {
   });
 }
 
-export function CheckListScene() {
+interface Props {
+  setViewType: (viewType: CheckListViewType) => void;
+  setCurrentPage: (pageNumber: number) => void;
+}
+
+export function CheckListScene({ setViewType, setCurrentPage }: Props) {
   const { instance } = useContext(InstanceContext);
   const { api, logs, metrics } = useMemo(
     () => ({ api: instance.api, logs: instance.logs, metrics: instance.metrics }),
@@ -136,6 +187,6 @@ export function CheckListScene() {
     type: api.type,
   };
 
-  const scene = getCheckListScene({ metrics: metricsDef, logs: logsDef, sm: smDef });
+  const scene = getCheckListScene({ metrics: metricsDef, logs: logsDef, sm: smDef, setViewType, setCurrentPage });
   return <scene.Component model={scene} />;
 }

@@ -40,6 +40,8 @@ interface SuccessRateContextValue {
   loading: boolean;
   thresholds: ThresholdSettings;
   updateSuccessRate: (type: SuccessRateTypes, id: number, successRate: number | undefined) => void;
+  pauseUpdates: () => void;
+  resumeUpdates: () => void;
   updateThresholds: () => void;
 }
 
@@ -71,6 +73,8 @@ export const defaultThresholds: ThresholdSettings = {
 };
 
 const updateThresholds = () => {};
+const pauseUpdates = () => {};
+const resumeUpdates = () => {};
 
 const updateSuccessRate = (type: SuccessRateTypes, id: number, successRate: number | undefined) => {
   defaultValues[type][id] = {
@@ -88,4 +92,6 @@ export const SuccessRateContext = createContext<SuccessRateContextValue>({
   updateSuccessRate,
   thresholds: defaultThresholds,
   updateThresholds,
+  pauseUpdates,
+  resumeUpdates,
 });
