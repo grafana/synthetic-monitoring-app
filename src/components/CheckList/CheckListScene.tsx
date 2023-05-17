@@ -79,13 +79,13 @@ function getCheckListScene(config: DashboardSceneAppConfig & Props) {
     $timeRange: timeRange,
     controls: [
       new SceneReactObject({
-        //@ts-ignore not sure what's going on here, but the types are unhappy for some reason
-        component: CheckListViewSwitcher,
-        props: {
-          viewType: CheckListViewType.Viz,
-          setViewType: config.setViewType,
-          setCurrentPage: config.setCurrentPage,
-        },
+        reactNode: (
+          <CheckListViewSwitcher
+            viewType={CheckListViewType.Viz}
+            setViewType={config.setViewType}
+            setCurrentPage={config.setCurrentPage}
+          />
+        ),
       }),
       new VariableValueSelectors({}),
       // new CustomOb
