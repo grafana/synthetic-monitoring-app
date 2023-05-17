@@ -26,21 +26,21 @@ function getCheckListScene(config: DashboardSceneAppConfig & Props) {
     queries: [
       {
         editorMode: 'code',
-        expr: `sum by (instance, job, check_name) (
+        expr: `sum by (check_name, instance, job) (
               rate(probe_all_success_sum[$__range])
               * 
               on (instance, job)
               group_left(check_name)
-              max by (instance, job, check_name)
+              max by (check_name, instance, job)
               (sm_check_info)
         ) 
         /
-        sum by (instance, job, check_name) (
+        sum by (check_name, instance, job) (
               rate(probe_all_success_count[$__range])
               * 
               on (instance, job)
               group_left(check_name)
-              max by (instance, job, check_name)
+              max by (check_name, instance, job)
               (sm_check_info)
         ) 
         `,
@@ -65,6 +65,23 @@ function getCheckListScene(config: DashboardSceneAppConfig & Props) {
               field: 'Value',
             },
           ],
+        },
+      },
+      {
+        id: 'organize',
+        options: {
+          excludeByName: {
+            check_name: false,
+            instance: false,
+          },
+          indexByName: {
+            Time: 4,
+            Value: 3,
+            check_name: 2,
+            instance: 1,
+            job: 0,
+          },
+          renameByName: {},
         },
       },
     ],
@@ -151,10 +168,13 @@ function getCheckListScene(config: DashboardSceneAppConfig & Props) {
                 fields: '',
               },
               orientation: 'auto',
-              textMode: 'auto',
+              textMode: 'name',
               colorMode: 'background',
               graphMode: 'none',
               justifyMode: 'auto',
+              text: {
+                valueSize: 12,
+              },
             },
           }),
         }),

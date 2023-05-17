@@ -1981,7 +1981,7 @@
     systemjs "0.20.19"
     tslib "2.4.0"
 
-"@grafana/scenes@0.8.0--canary.190.4993247436.0":
+"@grafana/scenes@canary":
   version "0.8.0--canary.190.4993247436.0"
   resolved "https://registry.yarnpkg.com/@grafana/scenes/-/scenes-0.8.0--canary.190.4993247436.0.tgz#1920682be88df3cf3ffd805b9016a2f6cdff7cff"
   integrity sha512-OwEND5uiFjDXjWFmfofxtDQSbI7m8Bzg6EnjffOaKvn9cTTZrd4wHU6rAk3KmsG9oqK7UYmrAApsf/vkn5c+Rg==

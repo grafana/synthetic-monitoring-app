@@ -32,22 +32,22 @@ beforeEach(() => {
 });
 
 describe('Target description is check type specific', () => {
-  test('for DNS', () => {
+  test('for DNS', async () => {
     renderCheckTarget();
     const description = screen.getByText('Name of record to query');
     expect(description).toBeInTheDocument();
   });
-  test('for HTTP', () => {
+  test('for HTTP', async () => {
     renderCheckTarget({ typeOfCheck: CheckType.HTTP });
     const description = screen.getByText('Full URL to send requests to');
     expect(description).toBeInTheDocument();
   });
-  test('for PING', () => {
+  test('for PING', async () => {
     renderCheckTarget({ typeOfCheck: CheckType.PING });
     const description = screen.getByText('Hostname to ping');
     expect(description).toBeInTheDocument();
   });
-  test('for TCP', () => {
+  test('for TCP', async () => {
     renderCheckTarget({ typeOfCheck: CheckType.TCP });
     const description = screen.getByText('Host:port to connect to');
     expect(description).toBeInTheDocument();
