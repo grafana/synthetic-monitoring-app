@@ -1,5 +1,5 @@
-import { GrafanaTheme } from '@grafana/data';
-import { Tag, useStyles } from '@grafana/ui';
+import { GrafanaTheme2 } from '@grafana/data';
+import { Tag, useStyles2 } from '@grafana/ui';
 import React from 'react';
 import { Label } from 'types';
 import { css, cx } from '@emotion/css';
@@ -10,7 +10,7 @@ interface Props {
   className?: string;
 }
 
-const getStyles = (theme: GrafanaTheme) => ({
+const getStyles = (theme: GrafanaTheme2) => ({
   container: css`
     background-color: #9933cc;
     border-radius: 1px;
@@ -22,7 +22,7 @@ const getStyles = (theme: GrafanaTheme) => ({
 });
 
 export const CheckCardLabel = ({ label, onLabelSelect, className }: Props) => {
-  const styles = useStyles(getStyles);
+  const styles = useStyles2(getStyles);
   return (
     <Tag
       onClick={() => onLabelSelect(label)}

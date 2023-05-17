@@ -1,5 +1,5 @@
-import { AppEvents, GrafanaTheme, SelectableValue } from '@grafana/data';
-import { Alert, Button, Field, HorizontalGroup, Icon, Input, Label, Select, useStyles } from '@grafana/ui';
+import { AppEvents, GrafanaTheme2, SelectableValue } from '@grafana/data';
+import { Alert, Button, Field, HorizontalGroup, Icon, Input, Label, Select, useStyles2 } from '@grafana/ui';
 import React, { useState, useContext } from 'react';
 import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { AlertRule, AlertSensitivity, Label as LabelType, TimeUnits } from 'types';
@@ -77,11 +77,11 @@ const getAlertFormValues = (rule: AlertRule): AlertFormValues | undefined => {
   };
 };
 
-const getStyles = (theme: GrafanaTheme) => ({
+const getStyles = (theme: GrafanaTheme2) => ({
   container: css`
-    background-color: ${theme.colors.bg2};
-    padding: ${theme.spacing.md};
-    margin-bottom: ${theme.spacing.sm};
+    background-color: ${theme.colors.background.secondary};
+    padding: ${theme.spacing(2)};
+    margin-bottom: ${theme.spacing(1)};
   `,
   inlineText: css`
     white-space: nowrap;
@@ -103,36 +103,36 @@ const getStyles = (theme: GrafanaTheme) => ({
     margin-bottom: 0;
   `,
   expressionContainer: css`
-    margin-bottom: ${theme.spacing.md};
+    margin-bottom: ${theme.spacing(2)};
   `,
   submitFail: css`
-    margin-top: ${theme.spacing.md};
+    margin-top: ${theme.spacing(2)};
   `,
   link: css`
     text-decoration: underline;
   `,
   previewHelpText: css`
-    margin-top: ${theme.spacing.sm};
+    margin-top: ${theme.spacing(2)};
   `,
   preview: css`
-    border: 1px solid ${theme.colors.panelBorder};
-    background-color: ${theme.colors.panelBg};
-    margin-bottom: ${theme.spacing.sm};
-    color: ${theme.colors.textWeak};
+    border: 1px solid ${theme.colors.border.medium};
+    background-color: ${theme.colors.background.secondary};
+    margin-bottom: ${theme.spacing(1)};
+    color: ${theme.colors.text.secondary};
     line-height: 20px;
-    padding: ${theme.spacing.sm};
+    padding: ${theme.spacing(1)};
   `,
   indent: css`
-    margin-left: ${theme.spacing.sm};
+    margin-left: ${theme.spacing(1)};
   `,
   button: css`
-    color: ${theme.colors.textHeading};
-    background-color: ${theme.colors.bg2};
+    color: ${theme.colors.text.primary};
+    background-color: ${theme.colors.background.secondary};
     width: 100%;
     border: none;
     text-align: left;
-    padding: ${theme.spacing.md};
-    margin-bottom: ${theme.spacing.sm};
+    padding: ${theme.spacing(2)};
+    margin-bottom: ${theme.spacing(1)};
   `,
 });
 
@@ -144,7 +144,7 @@ type Props = {
 export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
   const defaultValues = getAlertFormValues(rule);
   const { instance } = useContext(InstanceContext);
-  const styles = useStyles(getStyles);
+  const styles = useStyles2(getStyles);
   const [isOpen, setIsOpen] = useState(false);
   const formMethods = useForm<AlertFormValues>({
     defaultValues,
@@ -269,7 +269,7 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
                   This alert will appear as an alert rule in Grafana Cloud Alerting, where you can use the full power of
                   Prometheus style alerting.{' '}
                   <a
-                    href="https://grafana.com/docs/grafana-cloud/alerts/grafana-cloud-alerting/"
+                    href="https://grafana.com/docs/grafana-cloud/alerting"
                     target="_blank"
                     rel="noopener noreferrer"
                     className={styles.link}
