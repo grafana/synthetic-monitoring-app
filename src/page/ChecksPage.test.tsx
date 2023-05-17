@@ -51,6 +51,7 @@ test('doesnt render check selection page if multi-http feature flag is OFF', asy
   renderChecksPage(false);
   await waitFor(() => screen.getByRole('button', { name: 'Add new check' }));
   act(() => userEvent.click(screen.getByRole('button', { name: 'Add new check' })));
+  expect(await screen.findByText('Add Ping check')).toBeInTheDocument();
   expect(await screen.queryByRole('button', { name: 'HTTP' })).not.toBeInTheDocument();
   expect(await screen.queryByRole('button', { name: 'MULTI-HTTP' })).not.toBeInTheDocument();
   expect(await screen.queryByRole('button', { name: 'Traceroute' })).not.toBeInTheDocument();
