@@ -1,17 +1,17 @@
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { Button, Icon, useStyles } from '@grafana/ui';
+import { Button, Icon, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { GrafanaTheme } from '@grafana/data';
+import { GrafanaTheme2 } from '@grafana/data';
 import { defaultFilters, CheckFilters } from './CheckList';
 
-const groupStyles = (theme: GrafanaTheme) => ({
+const groupStyles = (theme: GrafanaTheme2) => ({
   container: css`
     position: relative;
   `,
   dropdown: css`
     position: absolute;
-    background-color: rgb(24, 27, 31);
+    background-color: ${theme.colors.background.primary};
     border: 1px solid rgba(204, 204, 220, 0.15);
     border-radius: 2px;
     z-index: 100;
@@ -33,7 +33,7 @@ const groupStyles = (theme: GrafanaTheme) => ({
     align-self: flex-end;
   `,
   marginRightSmall: css`
-    margin-right: ${theme.spacing.sm};
+    margin-right: ${theme.spacing(1)};
   `,
 });
 
@@ -46,7 +46,7 @@ interface Props {
 const CheckFilterGroup = ({ children, onReset, filters }: Props) => {
   const [openFilters, setOpenFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState(0);
-  const styles = useStyles(groupStyles);
+  const styles = useStyles2(groupStyles);
 
   const handleFilterOpen = useCallback(() => {
     setOpenFilters(!openFilters);
