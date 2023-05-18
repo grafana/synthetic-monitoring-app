@@ -21,15 +21,15 @@ import {
   Input,
   Pagination,
   Checkbox,
-  useStyles,
   InlineSwitch,
   AsyncMultiSelect,
   ButtonCascader,
+  useStyles2,
 } from '@grafana/ui';
 import {
   unEscapeStringFromRegex,
   escapeStringForRegex,
-  GrafanaTheme,
+  GrafanaTheme2,
   AppEvents,
   SelectableValue,
   OrgRole,
@@ -69,18 +69,18 @@ import { CheckListScene } from './CheckListScene';
 import { CheckListViewSwitcher } from './CheckListViewSwitcher';
 import { AddNewCheckButton } from './AddNewCheckButton';
 
-const getStyles = (theme: GrafanaTheme) => ({
+const getStyles = (theme: GrafanaTheme2) => ({
   headerContainer: css`
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     align-items: flex-end;
-    margin-bottom: ${theme.spacing.md};
+    margin-bottom: ${theme.spacing(2)};
   `,
   header: css`
-    font-size: ${theme.typography.heading.h4};
-    font-weight: ${theme.typography.weight.bold};
-    margin-bottom: ${theme.spacing.xs};
+    font-size: ${theme.typography.h4.fontSize};
+    font-weight: ${theme.typography.fontWeightBold};
+    margin-bottom: ${theme.spacing(0.5)};
   `,
   subheader: css``,
   searchSortContainer: css`
@@ -88,14 +88,14 @@ const getStyles = (theme: GrafanaTheme) => ({
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: ${theme.spacing.sm};
+    margin-bottom: ${theme.spacing(1)};
   `,
   flexRow: css`
     display: flex;
     flex-direction: row;
   `,
   bulkActionContainer: css`
-    padding: 0 0 ${theme.spacing.sm} ${theme.spacing.sm};
+    padding: 0 0 ${theme.spacing(1)} ${theme.spacing(1)};
     display: flex;
     min-height: 48px;
     align-items: center;
@@ -108,10 +108,10 @@ const getStyles = (theme: GrafanaTheme) => ({
     align-items: center;
   `,
   checkboxContainer: css`
-    margin-right: ${theme.spacing.md};
+    margin-right: ${theme.spacing(2)};
   `,
   marginRightSmall: css`
-    margin-right: ${theme.spacing.sm};
+    margin-right: ${theme.spacing(2)};
   `,
   vizContainer: css`
     width: 100%;
@@ -122,7 +122,7 @@ const getStyles = (theme: GrafanaTheme) => ({
   verticalSpace: css`
     margin-top: 10px;
     margin-bottom: 10px;
-    margin-right: ${theme.spacing.sm};
+    margin-right: ${theme.spacing(2)};
   `,
 });
 
@@ -164,7 +164,7 @@ export const CheckList = ({ instance, checks, onCheckUpdate }: Props) => {
   const [showThresholdModal, setShowThresholdModal] = useState(false);
   const [bulkEditAction, setBulkEditAction] = useState<'add' | 'remove' | null>(null);
 
-  const styles = useStyles(getStyles);
+  const styles = useStyles2(getStyles);
   const successRateContext = useContext(SuccessRateContext);
   const { isEnabled: scenesEnabled } = useFeatureFlag(FeatureName.Scenes);
 

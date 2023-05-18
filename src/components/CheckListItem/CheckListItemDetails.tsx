@@ -1,18 +1,18 @@
-import { GrafanaTheme } from '@grafana/data';
-import { Button, HorizontalGroup, Tooltip, useStyles } from '@grafana/ui';
+import { GrafanaTheme2 } from '@grafana/data';
+import { Button, HorizontalGroup, Tooltip, useStyles2 } from '@grafana/ui';
 import React from 'react';
 import { css, cx } from '@emotion/css';
 import { Label } from 'types';
 import { CheckCardLabel } from 'components/CheckCardLabel';
 
-const getStyles = (theme: GrafanaTheme) => ({
+const getStyles = (theme: GrafanaTheme2) => ({
   checkDetails: css`
-    font-size: ${theme.typography.size.sm};
-    line-height: ${theme.typography.lineHeight.sm};
+    font-size: ${theme.typography.bodySmall.fontSize};
+    line-height: ${theme.typography.bodySmall.lineHeight};
     white-space: nowrap;
     display: flex;
     align-items: center;
-    width: 370px;
+    width: 400px;
   `,
   labelWidth: css`
     max-width: 350px;
@@ -37,7 +37,7 @@ export const CheckListItemDetails = ({
   labels,
   onLabelClick,
 }: Props) => {
-  const styles = useStyles(getStyles);
+  const styles = useStyles2(getStyles);
   const activeSeriesMessage = activeSeries !== undefined ? `${activeSeries} active series` : null;
   const probeLocationsMessage = probeLocations === 1 ? `${probeLocations} location` : `${probeLocations} locations`;
   return (
