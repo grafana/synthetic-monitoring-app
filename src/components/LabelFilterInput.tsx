@@ -1,5 +1,5 @@
-import { GrafanaTheme, SelectableValue } from '@grafana/data';
-import { CascaderOption, MultiSelect, ButtonCascader, useStyles } from '@grafana/ui';
+import { GrafanaTheme2, SelectableValue } from '@grafana/data';
+import { CascaderOption, MultiSelect, ButtonCascader, useStyles2 } from '@grafana/ui';
 import React, { useMemo } from 'react';
 import { Check } from 'types';
 import { css } from '@emotion/css';
@@ -15,9 +15,9 @@ interface AggregateLabels {
   [key: string]: string[];
 }
 
-const getStyles = (theme: GrafanaTheme) => ({
+const getStyles = (theme: GrafanaTheme2) => ({
   prefix: css`
-    margin-left: -${theme.spacing.sm};
+    margin-left: -${theme.spacing(1)};
     z-index: 1000;
     height: 100%;
   `,
@@ -28,7 +28,7 @@ const getStyles = (theme: GrafanaTheme) => ({
 });
 
 export const LabelFilterInput = ({ checks, labelFilters, onChange, className }: Props) => {
-  const styles = useStyles(getStyles);
+  const styles = useStyles2(getStyles);
   const aggregatedLabels = useMemo(
     () =>
       checks.reduce<AggregateLabels>((acc, check) => {

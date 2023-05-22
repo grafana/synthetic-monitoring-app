@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
-import { Slider, useStyles } from '@grafana/ui';
+import { Slider, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { GrafanaTheme } from '@grafana/data';
+import { GrafanaTheme2 } from '@grafana/data';
 
 interface Props {
   defaultValue: number;
@@ -17,15 +17,15 @@ interface Props {
   invalid?: boolean;
 }
 
-const getStyles = (theme: GrafanaTheme) => ({
+const getStyles = (theme: GrafanaTheme2) => ({
   container: css`
     display: flex;
     align-items: center;
   `,
   slider: css`
     width: 250px;
-    margin-right: ${theme.spacing.md};
-    margin-left: ${theme.spacing.sm};
+    margin-right: ${theme.spacing(2)};
+    margin-left: ${theme.spacing(1)};
   `,
   inputGroupWrapper: css`
     margin-top: 1rem;
@@ -42,7 +42,7 @@ const getStyles = (theme: GrafanaTheme) => ({
 });
 
 export const SliderInput = ({ min, max, prefixLabel, suffixLabel, name, step = 1, validate, defaultValue }: Props) => {
-  const styles = useStyles(getStyles);
+  const styles = useStyles2(getStyles);
   const { register, setValue, setError, getValues, clearErrors } = useFormContext();
 
   useEffect(() => {

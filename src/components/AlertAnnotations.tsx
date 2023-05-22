@@ -1,30 +1,30 @@
-import React, { Fragment } from 'react';
-import { TextArea, Input, Button, useStyles, Label, Field } from '@grafana/ui';
-import { useFieldArray, useFormContext } from 'react-hook-form';
-import { SubCollapse } from 'components/SubCollapse';
-import { GrafanaTheme } from '@grafana/data';
 import { css } from '@emotion/css';
+import { GrafanaTheme2 } from '@grafana/data';
+import { Button, Field, Input, Label, TextArea, useStyles2 } from '@grafana/ui';
+import { SubCollapse } from 'components/SubCollapse';
+import React, { Fragment } from 'react';
+import { useFieldArray, useFormContext } from 'react-hook-form';
 import { validateAnnotationName } from 'validation';
 
-const getStyles = (theme: GrafanaTheme) => ({
+const getStyles = (theme: GrafanaTheme2) => ({
   grid: css`
     display: grid;
     grid-template-columns: 1fr 1fr auto;
-    grid-column-gap: ${theme.spacing.lg};
-    grid-row-gap: ${theme.spacing.sm};
+    grid-column-gap: ${theme.spacing(2)};
+    grid-row-gap: ${theme.spacing(1)};
   `,
   addButton: css`
-    margin: ${theme.spacing.md} 0;
+    margin: ${theme.spacing(2)} 0;
   `,
   helpText: css`
-    font-size: ${theme.typography.size.sm};
+    font-size: ${theme.typography.bodySmall.fontSize};
   `,
 });
 
 const NAME = 'annotations';
 
 export const AlertAnnotations = () => {
-  const styles = useStyles(getStyles);
+  const styles = useStyles2(getStyles);
   const {
     control,
     register,

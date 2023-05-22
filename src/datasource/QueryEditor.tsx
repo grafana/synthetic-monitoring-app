@@ -1,9 +1,9 @@
 import React, { PureComponent } from 'react';
 import { defaults } from 'lodash';
-import { GrafanaTheme, QueryEditorProps, SelectableValue } from '@grafana/data';
+import { QueryEditorProps, SelectableValue } from '@grafana/data';
 import { SMDataSource } from './DataSource';
 import { SMQuery, SMOptions, QueryType, defaultQuery } from './types';
-import { getTheme, MultiSelect, Select, Spinner } from '@grafana/ui';
+import { MultiSelect, Select, Spinner } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { checkType } from 'utils';
 import { CheckType, FeatureName, Probe } from 'types';
@@ -31,13 +31,14 @@ const types = [
   { label: 'Traceroute', value: QueryType.Traceroute },
 ];
 
-const getStyles = (theme: GrafanaTheme) => ({
+const getStyles = () => ({
   tracerouteFieldWrapper: css`
     display: flex;
     flex-direction: row;
+    margin-bottom: 8px;
   `,
   marginRight: css`
-    margin-right: ${theme.spacing.sm};
+    margin-right: 8px;
   `,
 });
 
@@ -189,7 +190,7 @@ export class QueryEditor extends PureComponent<Props, State> {
   render() {
     const query = defaults(this.props.query, defaultQuery);
     const { tracerouteCheckOptions, tracerouteCheckOptionsLoading, probes } = this.state;
-    const styles = getStyles(getTheme());
+    const styles = getStyles();
 
     if (tracerouteCheckOptionsLoading) {
       return <Spinner />;

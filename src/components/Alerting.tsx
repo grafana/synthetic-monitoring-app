@@ -1,5 +1,5 @@
-import { GrafanaTheme, OrgRole } from '@grafana/data';
-import { Button, HorizontalGroup, Icon, Modal, Spinner, useStyles, Alert } from '@grafana/ui';
+import { GrafanaTheme2, OrgRole } from '@grafana/data';
+import { Button, HorizontalGroup, Icon, Modal, Spinner, useStyles2, Alert } from '@grafana/ui';
 import React, { FC, useState, useContext } from 'react';
 import { css } from '@emotion/css';
 import { useAlerts } from 'hooks/useAlerts';
@@ -16,9 +16,9 @@ type SplitAlertRules = {
   alertingRules: AlertRule[];
 };
 
-const getStyles = (theme: GrafanaTheme) => ({
+const getStyles = (theme: GrafanaTheme2) => ({
   emptyCard: css`
-    background-color: ${theme.colors.bg2};
+    background-color: ${theme.colors.background.secondary};
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -26,19 +26,19 @@ const getStyles = (theme: GrafanaTheme) => ({
     padding: 48px 100px;
   `,
   defaultAlerts: css`
-    margin-bottom: ${theme.spacing.xl};
+    margin-bottom: ${theme.spacing(4)};
     text-align: center;
   `,
   link: css`
     text-decoration: underline;
   `,
   icon: css`
-    margin-right: ${theme.spacing.xs};
+    margin-right: ${theme.spacing(1)};
   `,
 });
 
 export const Alerting: FC = () => {
-  const styles = useStyles(getStyles);
+  const styles = useStyles2(getStyles);
   const { alertRules, setDefaultRules, setRules, alertError } = useAlerts();
   const [updatingDefaultRules, setUpdatingDefaultRules] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);

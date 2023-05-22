@@ -9,11 +9,11 @@ import {
   TextArea,
   Input,
   VerticalGroup,
-  useStyles,
   Label,
   Checkbox,
   IconButton,
   Button,
+  useStyles2,
 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { useFormContext, Controller, useFieldArray } from 'react-hook-form';
@@ -31,7 +31,7 @@ import { LabelField } from 'components/LabelField';
 import { TLSConfig } from 'components/TLSConfig';
 import { NameValueInput } from 'components/NameValueInput';
 import { validateBearerToken, validateHTTPBody, validateHTTPHeaderName, validateHTTPHeaderValue } from 'validation';
-import { GrafanaTheme } from '@grafana/data';
+import { GrafanaTheme2 } from '@grafana/data';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 
 const httpVersionOptions = [
@@ -115,14 +115,14 @@ const generateValidStatusCodes = () => {
 const validStatusCodes = generateValidStatusCodes();
 const REGEX_FIELD_NAME = 'settings.http.regexValidations';
 
-const getStyles = (theme: GrafanaTheme) => ({
+const getStyles = (theme: GrafanaTheme2) => ({
   validationGroup: css`
     max-width: 400px;
   `,
   validationGrid: css`
     display: grid;
     grid-template-columns: 300px auto 70px auto auto;
-    grid-gap: ${theme.spacing.sm};
+    grid-gap: ${theme.spacing(1)};
     align-items: center;
     width: 100%;
   `,
@@ -139,7 +139,7 @@ const getStyles = (theme: GrafanaTheme) => ({
     align-items: center;
   `,
   validationHeaderName: css`
-    margin-right: ${theme.spacing.sm};
+    margin-right: ${theme.spacing(1)};
   `,
   validationAllowMissing: css`
     justify-self: start;
@@ -168,7 +168,7 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
   const [includeBearerToken, setIncludeBearerToken] = useState(Boolean(bearerToken));
   const [includeBasicAuth, setIncludeBasicAuth] = useState(Boolean(basicAuth));
   const { fields, append, remove } = useFieldArray({ control, name: REGEX_FIELD_NAME });
-  const styles = useStyles(getStyles);
+  const styles = useStyles2(getStyles);
 
   return (
     <Container>

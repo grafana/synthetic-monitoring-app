@@ -7,7 +7,7 @@ import {
   Input,
   Legend,
   Alert,
-  useStyles,
+  useStyles2,
   LinkButton,
   HorizontalGroup,
   Select,
@@ -36,7 +36,7 @@ import { CheckSettings } from './CheckSettings';
 import { ProbeOptions } from './ProbeOptions';
 import { CHECK_TYPE_OPTIONS, fallbackCheck } from 'components/constants';
 import { useForm, FormProvider, Controller } from 'react-hook-form';
-import { GrafanaTheme, OrgRole } from '@grafana/data';
+import { GrafanaTheme2, OrgRole } from '@grafana/data';
 import { CheckUsage } from '../CheckUsage';
 import { CheckFormAlert } from 'components/CheckFormAlert';
 import { InstanceContext } from 'contexts/InstanceContext';
@@ -53,27 +53,12 @@ interface Props {
   onReturn: (reload: boolean) => void;
 }
 
-const getStyles = (theme: GrafanaTheme) => ({
-  formBody: css`
-    margin-bottom: ${theme.spacing.sm};
-  `,
-  enabledField: css`
-    display: flex;
-    align-items: flex-start;
-    margin-bottom: ${theme.spacing.md};
-  `,
-  enabledCheckbox: css`
-    margin-right: ${theme.spacing.sm};
-    display: flex;
-  `,
+const getStyles = (theme: GrafanaTheme2) => ({
   breakLine: css`
-    margin-top: ${theme.spacing.lg};
+    margin-top: ${theme.spacing(3)};
   `,
   submissionError: css`
-    margin-top: ${theme.spacing.md};
-  `,
-  buttonGroup: css`
-    gap: ${theme.spacing.sm};
+    margin-top: ${theme.spacing(2)};
   `,
 });
 
@@ -85,7 +70,7 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
   const [isTestModalOpen, setTestModalOpen] = useState(false);
   const [testResponse, setTestResponse] = useState<AdHocCheckResponse>();
   const [testRequestInFlight, setTestRequestInFlight] = useState(false);
-  const styles = useStyles(getStyles);
+  const styles = useStyles2(getStyles);
   const { isEnabled: tracerouteEnabled } = useFeatureFlag(FeatureName.Traceroute);
   // If we're editing, grab the appropriate check from the list
   const { id, checkType: checkTypeParam } = useParams<CheckPageParams>();

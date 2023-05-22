@@ -1,5 +1,5 @@
-import { GrafanaTheme } from '@grafana/data';
-import { Icon, IconName, useStyles } from '@grafana/ui';
+import { GrafanaTheme2 } from '@grafana/data';
+import { Icon, IconName, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import React, { PropsWithChildren } from 'react';
 
@@ -10,14 +10,14 @@ interface Props {
   onClick?: () => void;
 }
 
-const getStyles = (color: string) => (theme: GrafanaTheme) => ({
+const getStyles = (color: string) => (theme: GrafanaTheme2) => ({
   container: css`
-    background-color: ${theme.colors.panelBg};
+    background-color: ${theme.colors.background.primary};
     border-radius: 2px;
-    padding: ${theme.spacing.xs} ${theme.spacing.sm};
-    font-weight: ${theme.typography.weight.bold};
-    font-size: ${theme.typography.size.xs};
-    line-height: ${theme.typography.lineHeight.xs};
+    padding: ${theme.spacing(0.5)} ${theme.spacing(1)};
+    font-weight: ${theme.typography.fontWeightBold};
+    font-size: 0.75rem;
+    line-height: ${theme.typography.bodySmall.lineHeight};
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -28,10 +28,10 @@ const getStyles = (color: string) => (theme: GrafanaTheme) => ({
   `,
 
   enabled: css`
-    color: ${theme.palette.greenBase};
+    color: ${theme.colors.success.main};
   `,
   disabled: css`
-    color: ${theme.palette.red};
+    color: ${theme.colors.error.main};
   `,
   icon: css`
     margin-bottom: 0px;
@@ -39,7 +39,7 @@ const getStyles = (color: string) => (theme: GrafanaTheme) => ({
 });
 
 export const Pill = ({ className, icon, color, onClick, children }: PropsWithChildren<Props>) => {
-  const styles = useStyles(getStyles(color));
+  const styles = useStyles2(getStyles(color));
 
   return (
     <div className={cx(styles.container, { [styles.cursor]: Boolean(onClick) }, className)} onClick={onClick}>

@@ -1,5 +1,5 @@
-import { GrafanaTheme } from '@grafana/data';
-import { Icon, useStyles } from '@grafana/ui';
+import { GrafanaTheme2 } from '@grafana/data';
+import { Icon, useStyles2 } from '@grafana/ui';
 import React, { PropsWithChildren, useState } from 'react';
 import { css, cx } from '@emotion/css';
 
@@ -7,36 +7,36 @@ interface Props {
   title: string;
 }
 
-const getStyles = (theme: GrafanaTheme) => ({
+const getStyles = (theme: GrafanaTheme2) => ({
   header: css`
     border-top: 1px solid ${theme.isDark ? '#343b40' : '#c7d0d9'};
     display: flex;
     align-items: center;
-    padding: ${theme.spacing.sm} 0;
+    padding: ${theme.spacing(2)} 0;
     cursor: pointer;
   `,
   headerOpen: css`
     padding-bottom: 0;
   `,
   headerIcon: css`
-    margin-right: ${theme.spacing.sm};
+    margin-right: ${theme.spacing(1)};
   `,
   title: css`
-    font-size: ${theme.typography.size.sm};
-    font-weight: ${theme.typography.weight.semibold};
-    color: ${theme.colors.formLabel};
+    font-size: ${theme.typography.h6.fontSize};
+    font-weight: ${theme.typography.fontWeightBold};
+    color: ${theme.colors.text.secondary};
   `,
   hidden: css`
     display: none;
   `,
   visible: css`
-    padding-left: ${theme.spacing.lg};
+    padding-left: ${theme.spacing(3)};
   `,
 });
 
 export const SubCollapse = ({ children, title }: PropsWithChildren<Props>) => {
   const [isOpen, setIsOpen] = useState(false);
-  const styles = useStyles(getStyles);
+  const styles = useStyles2(getStyles);
   return (
     <div>
       <div className={cx(styles.header, { [styles.headerOpen]: isOpen })} onClick={() => setIsOpen(!isOpen)}>

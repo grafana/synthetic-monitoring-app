@@ -1,31 +1,31 @@
 import React, { FC } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { css } from '@emotion/css';
-import { GrafanaTheme } from '@grafana/data';
-import { useStyles, Icon } from '@grafana/ui';
+import { GrafanaTheme2 } from '@grafana/data';
+import { useStyles2, Icon } from '@grafana/ui';
 import { Check, CheckType } from 'types';
 import { useUsageCalc } from 'hooks/useUsageCalc';
 
-const getStyles = (theme: GrafanaTheme) => ({
+const getStyles = (theme: GrafanaTheme2) => ({
   container: css`
-    background-color: ${theme.colors.bg2};
-    padding: ${theme.spacing.lg};
-    margin-bottom: ${theme.spacing.md};
+    background-color: ${theme.colors.background.secondary};
+    padding: ${theme.spacing(3)};
+    margin-bottom: ${theme.spacing(2)};
   `,
   header: css`
-    margin-bottom: ${theme.spacing.md};
+    margin-bottom: ${theme.spacing(2)};
   `,
   icon: css`
-    margin-right: ${theme.spacing.sm};
+    margin-right: ${theme.spacing(1)};
   `,
   section: css`
-    margin-bottom: ${theme.spacing.sm};
+    margin-bottom: ${theme.spacing(1)};
   `,
   helpSection: css`
-    margin-top: ${theme.spacing.md};
+    margin-top: ${theme.spacing(2)};
   `,
   value: css`
-    margin-left: ${theme.spacing.xs};
+    margin-left: ${theme.spacing(0.5)};
   `,
   link: css`
     text-decoration: underline;
@@ -52,7 +52,7 @@ const getCheckFromValues = (
 };
 
 export const CheckUsage: FC = () => {
-  const styles = useStyles(getStyles);
+  const styles = useStyles2(getStyles);
   const { watch } = useFormContext();
   const [checkType, frequency, probes, publishAdvancedMetrics] = watch([
     'checkType',
