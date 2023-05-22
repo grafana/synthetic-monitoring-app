@@ -3,6 +3,7 @@ import { DataSourcePluginOptionsEditorProps } from '@grafana/data';
 import { SMOptions, SecureJsonData } from './types';
 import { Container, LegacyForms } from '@grafana/ui';
 import LinkedDatasourceView from 'components/LinkedDatasourceView';
+import { InstanceProvider } from 'components/InstanceProvider';
 
 interface Props extends DataSourcePluginOptionsEditorProps<SMOptions, SecureJsonData> {}
 
@@ -40,11 +41,12 @@ export class ConfigEditor extends PureComponent<Props> {
       return (secureJsonFields && secureJsonFields.accessToken) as boolean;
     }
     return (
-      <div>
+      // @ts-ignore
+      <InstanceProvider meta={options}>
         {isValid(options.jsonData) && isConfigured() && (
           <Container margin="sm">
-            <LinkedDatasourceView info={options.jsonData.metrics} />
-            <LinkedDatasourceView info={options.jsonData.logs} />
+            <LinkedDatasourceView type="prometheus" />
+            <LinkedDatasourceView type="loki" />
           </Container>
         )}
         <br />
@@ -64,7 +66,7 @@ export class ConfigEditor extends PureComponent<Props> {
             </div>
           </div>
         </div>
-      </div>
+      </InstanceProvider>
     );
   }
 }

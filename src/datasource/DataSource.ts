@@ -53,10 +53,20 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   }
 
   getMetricsDS() {
-    return findLinkedDatasource(this.instanceSettings.jsonData.metrics);
+    const info = this.instanceSettings.jsonData.metrics;
+    const ds = findLinkedDatasource({ ...info, uid: 'grafanacloud-metrics' });
+    if (ds) {
+      return ds;
+    }
+    return findLinkedDatasource(info);
   }
 
   getLogsDS() {
+    const info = this.instanceSettings.jsonData.logs;
+    const ds = findLinkedDatasource({ ...info, uid: 'grafanacloud-logs' });
+    if (ds) {
+      return ds;
+    }
     return findLinkedDatasource(this.instanceSettings.jsonData.logs);
   }
 

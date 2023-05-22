@@ -42,6 +42,9 @@ export function ConfigPage() {
   if (loading) {
     return <Spinner />;
   }
+  console.log({ instance: instance.api?.instanceSettings.jsonData.metrics });
+  console.log({ metrics: instance.metrics });
+  console.log({ logs: instance.logs });
   return (
     <div>
       <div>
@@ -79,8 +82,8 @@ export function ConfigPage() {
           <div className={styles.linkedDatasources}>
             <h3>Linked Data Sources</h3>
             <Container margin="sm">
-              <LinkedDatasourceView info={instance.api.instanceSettings.jsonData.metrics} />
-              <LinkedDatasourceView info={instance.api.instanceSettings.jsonData.logs} />
+              <LinkedDatasourceView type="prometheus" />
+              <LinkedDatasourceView type="loki" />
             </Container>
           </div>
           <div className={styles.backendAddress}>

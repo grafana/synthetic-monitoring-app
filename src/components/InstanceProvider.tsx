@@ -32,11 +32,18 @@ async function fetchDatasources(
 ): Promise<GrafanaInstances> {
   const dataSourceSrv = getDataSourceSrv();
   const smApi = (await dataSourceSrv.get('Synthetic Monitoring').catch((e) => undefined)) as SMDataSource | undefined;
-  const metricsName = metricInstanceName ?? smApi?.instanceSettings?.jsonData?.metrics?.grafanaName;
-  const metrics = metricsName ? await dataSourceSrv.get(metricsName).catch((e) => undefined) : undefined;
+  const metrics = await dataSourceSrv.get({ uid: 'grafanacloud-metrics' }).catch((e) => {
+    const metricsName = metricInstanceName ?? smApi?.instanceSettings?.jsonData?.metrics?.grafanaName;
+    return dataSourceSrv.get(metricsName).catch((e) => undefined);
+  });
+  // if (!metrics && metricsName) {
+  //   metrics =
+  // }
 
-  const logsName = logsInstanceName ?? smApi?.instanceSettings?.jsonData?.logs?.grafanaName;
-  const logs = logsName ? await dataSourceSrv.get(logsName).catch((e) => undefined) : undefined;
+  const logs = await dataSourceSrv.get('grafanacloud-logs').catch((e) => {
+    const logsName = logsInstanceName ?? smApi?.instanceSettings?.jsonData?.logs?.grafanaName;
+    return dataSourceSrv.get(logsName).catch((e) => undefined);
+  });
 
   const alertRuler = await getRulerDatasource(metrics?.id);
 
