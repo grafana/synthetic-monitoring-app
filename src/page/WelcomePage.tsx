@@ -90,6 +90,10 @@ const getStyles = (theme: GrafanaTheme2) => {
     marginTop: css`
       margin-top: ${theme.spacing(3)};
     `,
+    datasourceSelectionGrid: css`
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    `,
   };
 };
 
@@ -214,8 +218,6 @@ export const WelcomePage: FC<Props> = () => {
       if (metricsStatus === DatasourceStatus.UidOnly || logsStatus === DatasourceStatus.UidOnly) {
         setDataSouceModalOpen(true);
       }
-
-      console.log('not matching');
     } catch (e: any) {
       setError(e?.message ?? 'Invalid plugin configuration. Could not find logs and metrics datasources');
     }
@@ -232,7 +234,6 @@ export const WelcomePage: FC<Props> = () => {
     logsSettings: DataSourceInstanceSettings<DataSourceJsonData>;
     logsHostedId: number;
   }) => {
-    console.log({ metricsSettings, logsSettings });
     trackEvent('provisionedSetupSubmit');
     if (!meta?.jsonData) {
       setError('Invalid plugin configuration');
@@ -242,8 +243,8 @@ export const WelcomePage: FC<Props> = () => {
     setLoading(true);
     const body = {
       stackId: isNumber(stackId) ? stackId : parseInt(stackId ?? '1', 10),
-      metricsInstanceId: meta.jsonData.metrics?.hostedId,
-      logsInstanceId: meta.jsonData.logs?.hostedId,
+      metricsInstanceId: metricsHostedId,
+      logsInstanceId: logsHostedId,
     };
     try {
       const { accessToken } = await getBackendSrv().request({
@@ -257,8 +258,18 @@ export const WelcomePage: FC<Props> = () => {
       const datasourcePayload = {
         apiHost: meta.jsonData.apiHost,
         accessToken,
-        metrics: meta.jsonData.metrics,
-        logs: meta.jsonData.logs,
+        metrics: {
+          uid: metricsSettings.uid,
+          grafanaName: metricsSettings.name,
+          type: metricsSettings.type,
+          hostedId: meta.jsonData.metrics?.hostedId,
+        },
+        logs: {
+          uid: logsSettings.uid,
+          grafanaName: logsSettings.name,
+          type: logsSettings.type,
+          hostedId: meta.jsonData.logs?.hostedId,
+        },
       };
 
       await initializeDatasource(datasourcePayload, dashboards);
@@ -333,15 +344,16 @@ export const WelcomePage: FC<Props> = () => {
           available datasources. This can happen when a Grafana instance is renamed, or if provisioning is incorrect.
           Proceed with found datasources?
         </p>
-        <dt>Expecting metrics datasource:</dt>
-        <dd>{metricsName}</dd>
-        <dt>Found metrics datasource:</dt>
-        <dd>{metricsByUid?.name}</dd>
-
-        <dt>Expecting logs datasource:</dt>
-        <dd>{logsName}</dd>
-        <dt>Found logs datasource:</dt>
-        <dd>{logsByUid?.name}</dd>
+        <div className={styles.datasourceSelectionGrid}>
+          <dt>Expecting metrics datasource:</dt>
+          <dt>Found metrics datasource:</dt>
+          <dd>{metricsName}</dd>
+          <dd>{metricsByUid?.name}</dd>
+          <dt>Expecting logs datasource:</dt>
+          <dt>Found logs datasource:</dt>
+          <dd>{logsName}</dd>
+          <dd>{logsByUid?.name}</dd>
+        </div>
         <Modal.ButtonRow>
           <Button variant="secondary" fill="outline" onClick={() => setDataSouceModalOpen(false)}>
             Cancel
