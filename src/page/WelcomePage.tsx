@@ -254,7 +254,7 @@ export const WelcomePage: FC<Props> = () => {
       });
       const smDatasources = await findSMDataSources();
       const smDatasourceName = smDatasources.length ? smDatasources[0].name : 'Synthetic Monitoring';
-      const dashboards = await importAllDashboards(metricsName, logsName, smDatasourceName);
+      const dashboards = await importAllDashboards(metricsSettings.uid, logsSettings.uid, smDatasourceName);
       const datasourcePayload = {
         apiHost: meta.jsonData.apiHost,
         accessToken,

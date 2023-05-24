@@ -42,9 +42,6 @@ export function ConfigPage() {
   if (loading) {
     return <Spinner />;
   }
-  console.log({ instance: instance.api?.instanceSettings.jsonData.metrics });
-  console.log({ metrics: instance.metrics });
-  console.log({ logs: instance.logs });
   return (
     <div>
       <div>

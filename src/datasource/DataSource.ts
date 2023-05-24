@@ -393,14 +393,14 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     }
   }
 
-  async onOptionsChange(options: SMOptions) {
+  onOptionsChange = async (options: SMOptions) => {
     const data = {
       ...this.instanceSettings,
       jsonData: options,
       access: 'proxy',
     };
     await getBackendSrv().put(`api/datasources/${this.instanceSettings.id}`, data);
-  }
+  };
 
   async registerSave(apiToken: string, options: SMOptions, accessToken: string): Promise<any> {
     const data = {

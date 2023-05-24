@@ -49,11 +49,13 @@ export class DashboardList extends PureComponent<Props, State> {
     if (!onChange) {
       return;
     }
-    const smDsName = instance?.api?.instanceSettings.name;
+    const smDsName = instance?.api?.instanceSettings?.name;
+    const metricsUid = instance?.api?.instanceSettings.jsonData?.metrics?.uid;
+    const logsUid = instance?.api?.instanceSettings.jsonData?.logs?.uid;
     const updatedDashboard = await importDashboard(
       dashboard.json,
-      options.metrics.grafanaName,
-      options.logs.grafanaName,
+      metricsUid ?? options.metrics.grafanaName,
+      logsUid ?? options.logs.grafanaName,
       smDsName
     );
 
