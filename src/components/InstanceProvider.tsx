@@ -32,18 +32,47 @@ async function fetchDatasources(
 ): Promise<GrafanaInstances> {
   const dataSourceSrv = getDataSourceSrv();
   const smApi = (await dataSourceSrv.get('Synthetic Monitoring').catch((e) => undefined)) as SMDataSource | undefined;
-  const metrics = await dataSourceSrv.get({ uid: 'grafanacloud-metrics' }).catch((e) => {
-    const metricsName = metricInstanceName ?? smApi?.instanceSettings?.jsonData?.metrics?.grafanaName;
-    return dataSourceSrv.get(metricsName).catch((e) => undefined);
-  });
-  // if (!metrics && metricsName) {
-  //   metrics =
-  // }
+  let metrics;
+  const uidInDs = smApi?.instanceSettings?.jsonData?.metrics?.uid;
+  // first try uid stored in datasource
+  if (uidInDs) {
+    metrics = await dataSourceSrv.get({ uid: uidInDs, type: 'prometheus' }).catch((e) => {});
+  }
 
-  const logs = await dataSourceSrv.get('grafanacloud-logs').catch((e) => {
-    const logsName = logsInstanceName ?? smApi?.instanceSettings?.jsonData?.logs?.grafanaName;
-    return dataSourceSrv.get(logsName).catch((e) => undefined);
-  });
+  // next try grafanaName in datasource
+  const metricsName = smApi?.instanceSettings?.jsonData?.metrics?.grafanaName;
+  if (!metrics && metricsName) {
+    metrics = await dataSourceSrv.get(metricsName).catch((e) => {});
+  }
+
+  if (!metrics) {
+    // try the grafanaName in the plugin
+    await dataSourceSrv.get(metricInstanceName).catch((e) => {
+      // last try default cloud uid
+      return dataSourceSrv.get({ uid: 'grafanacloud-metrics' }).catch((e) => undefined);
+    });
+  }
+
+  let logs;
+  const logsUidInDs = smApi?.instanceSettings?.jsonData?.logs?.uid;
+  // first try uid stored in datasource
+  if (logsUidInDs) {
+    logs = await dataSourceSrv.get({ uid: logsUidInDs, type: 'loki' }).catch((e) => {});
+  }
+
+  // next try grafanaName in datasource
+  const logsName = smApi?.instanceSettings?.jsonData?.logs?.grafanaName;
+  if (!logs && logsName) {
+    logs = await dataSourceSrv.get(logsName).catch((e) => {});
+  }
+
+  if (!logs) {
+    // try the grafanaName from the plugin
+    logs = await dataSourceSrv.get(logsInstanceName).catch((e) => {
+      // last try default cloud uid
+      return dataSourceSrv.get('grafanacloud-logs').catch((e) => {});
+    });
+  }
 
   const alertRuler = await getRulerDatasource(metrics?.id);
 
