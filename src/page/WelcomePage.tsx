@@ -1,5 +1,5 @@
 import React, { FC, useState, useContext } from 'react';
-import { Button, Alert, useStyles2, Spinner } from '@grafana/ui';
+import { Button, Alert, useStyles2, Spinner, Modal } from '@grafana/ui';
 import { getBackendSrv, config } from '@grafana/runtime';
 import { findSMDataSources, hasRole, initializeDatasource } from 'utils';
 import { importAllDashboards } from 'dashboards/loader';
@@ -90,6 +90,10 @@ const getStyles = (theme: GrafanaTheme2) => {
     marginTop: css`
       margin-top: ${theme.spacing(3)};
     `,
+    datasourceSelectionGrid: css`
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    `,
   };
 };
 
@@ -107,20 +111,129 @@ function getLogsName(provisionedName?: string) {
   return provisionedName ?? '';
 }
 
+function findDatasourceByNameAndUid(
+  provisionedName: string,
+  type: 'loki' | 'prometheus'
+): {
+  byName: DataSourceInstanceSettings<DataSourceJsonData> | undefined;
+  byUid: DataSourceInstanceSettings<DataSourceJsonData> | undefined;
+} {
+  const byName = config.datasources[provisionedName];
+  const byUid = Object.values(config.datasources).find((ds) => {
+    if (type === 'loki') {
+      return ds.uid === 'grafanacloud-logs';
+    } else {
+      return ds.uid === 'grafanacloud-metrics';
+    }
+  });
+  return {
+    byName,
+    byUid,
+  };
+}
+
+enum DatasourceStatus {
+  NameOnly = 'NameOnly',
+  Match = 'Match',
+  Mismatch = 'Mismatch',
+  UidOnly = 'UidOnly',
+  NotFound = 'NotFound',
+}
+
+function ensureNameAndUidMatch(
+  metricsByName?: DataSourceInstanceSettings<DataSourceJsonData>,
+  metricsByUid?: DataSourceInstanceSettings<DataSourceJsonData>
+): DatasourceStatus {
+  if (!metricsByUid && !metricsByName) {
+    return DatasourceStatus.NotFound;
+  }
+  if (!metricsByUid && metricsByName) {
+    return DatasourceStatus.NameOnly;
+  }
+  if (metricsByUid && !metricsByName) {
+    return DatasourceStatus.UidOnly;
+  }
+  if (metricsByUid && metricsByName) {
+    if (metricsByUid.name === metricsByName.name) {
+      return DatasourceStatus.Match;
+    }
+    return DatasourceStatus.Mismatch;
+  }
+  throw new Error('Invalid provisioning. Could not find datasources');
+}
+
 interface Props {}
 
 export const WelcomePage: FC<Props> = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [datasourceModalOpen, setDataSouceModalOpen] = useState(false);
   const { meta } = useContext(InstanceContext);
   const styles = useStyles2(getStyles);
 
   const metricsName = getMetricsName(meta?.jsonData?.metrics.grafanaName);
-  const metricsDatasource = config.datasources[metricsName] as DataSourceInstanceSettings<DataSourceJsonData>;
+  const { byName: metricsByName, byUid: metricsByUid } = findDatasourceByNameAndUid(metricsName, 'prometheus');
   const logsName = getLogsName(meta?.jsonData?.logs.grafanaName);
-  const logsDatasource = config.datasources[logsName] as DataSourceInstanceSettings<DataSourceJsonData>;
+  const { byName: logsByName, byUid: logsByUid } = findDatasourceByNameAndUid(logsName, 'loki');
   const stackId = meta?.jsonData?.stackId;
-  const onClick = async () => {
+
+  const handleClick = async () => {
+    try {
+      const metricsStatus = ensureNameAndUidMatch(metricsByName, metricsByUid);
+      const logsStatus = ensureNameAndUidMatch(logsByName, logsByUid);
+
+      console.log({ metricsStatus, logsStatus });
+      if (metricsStatus === DatasourceStatus.NotFound) {
+        throw new Error('Invalid plugin configuration. Could not find a metrics datasource');
+      }
+      if (logsStatus === DatasourceStatus.NotFound) {
+        throw new Error('Invalid plugin configuration. Could not find a logs datasource');
+      }
+      // Either the plugin is running on prem and can find a datasource, or the provisioning matches with the default grafana cloud UIDs. Everything is good to go!
+      if (
+        (metricsStatus === DatasourceStatus.Match || metricsStatus === DatasourceStatus.NameOnly) &&
+        metricsByName &&
+        (logsStatus === DatasourceStatus.Match || logsStatus === DatasourceStatus.NameOnly) &&
+        logsByName
+      ) {
+        const metricsHostedId = meta?.jsonData?.metrics.hostedId;
+        if (!metricsHostedId) {
+          throw new Error('Invalid plugin configuration. Could not find metrics datasource hostedId');
+        }
+
+        const logsHostedId = meta?.jsonData?.logs.hostedId;
+        if (!logsHostedId) {
+          throw new Error('Invalid plugin configuration. Could not find logs datasource hostedId');
+        }
+
+        initialize({
+          metricsSettings: metricsByName,
+          metricsHostedId,
+          logsSettings: logsByName,
+          logsHostedId: logsHostedId,
+        });
+        return;
+      }
+
+      if (metricsStatus === DatasourceStatus.UidOnly || logsStatus === DatasourceStatus.UidOnly) {
+        setDataSouceModalOpen(true);
+      }
+    } catch (e: any) {
+      setError(e?.message ?? 'Invalid plugin configuration. Could not find logs and metrics datasources');
+    }
+  };
+
+  const initialize = async ({
+    metricsSettings,
+    metricsHostedId,
+    logsSettings,
+    logsHostedId,
+  }: {
+    metricsSettings: DataSourceInstanceSettings<DataSourceJsonData>;
+    metricsHostedId: number;
+    logsSettings: DataSourceInstanceSettings<DataSourceJsonData>;
+    logsHostedId: number;
+  }) => {
     trackEvent('provisionedSetupSubmit');
     if (!meta?.jsonData) {
       setError('Invalid plugin configuration');
@@ -130,8 +243,8 @@ export const WelcomePage: FC<Props> = () => {
     setLoading(true);
     const body = {
       stackId: isNumber(stackId) ? stackId : parseInt(stackId ?? '1', 10),
-      metricsInstanceId: meta.jsonData.metrics?.hostedId,
-      logsInstanceId: meta.jsonData.logs?.hostedId,
+      metricsInstanceId: metricsHostedId,
+      logsInstanceId: logsHostedId,
     };
     try {
       const { accessToken } = await getBackendSrv().request({
@@ -141,12 +254,22 @@ export const WelcomePage: FC<Props> = () => {
       });
       const smDatasources = await findSMDataSources();
       const smDatasourceName = smDatasources.length ? smDatasources[0].name : 'Synthetic Monitoring';
-      const dashboards = await importAllDashboards(metricsName, logsName, smDatasourceName);
+      const dashboards = await importAllDashboards(metricsSettings.uid, logsSettings.uid, smDatasourceName);
       const datasourcePayload = {
         apiHost: meta.jsonData.apiHost,
         accessToken,
-        metrics: meta.jsonData.metrics,
-        logs: meta.jsonData.logs,
+        metrics: {
+          uid: metricsSettings.uid,
+          grafanaName: metricsSettings.name,
+          type: metricsSettings.type,
+          hostedId: meta.jsonData.metrics?.hostedId,
+        },
+        logs: {
+          uid: logsSettings.uid,
+          grafanaName: logsSettings.name,
+          type: logsSettings.type,
+          hostedId: meta.jsonData.logs?.hostedId,
+        },
       };
 
       await initializeDatasource(datasourcePayload, dashboards);
@@ -203,13 +326,7 @@ export const WelcomePage: FC<Props> = () => {
             </div>
             <DisplayCard className={styles.start}>
               <h3 className={styles.heading}>Ready to start using synthetic monitoring?</h3>
-              <Button
-                onClick={onClick}
-                disabled={
-                  loading || !Boolean(metricsDatasource) || !Boolean(logsDatasource) || !hasRole(OrgRole.Editor)
-                }
-                size="lg"
-              >
+              <Button onClick={handleClick} disabled={loading || !hasRole(OrgRole.Editor)} size="lg">
                 {loading ? <Spinner /> : 'Initialize the plugin'}
               </Button>
             </DisplayCard>
@@ -221,6 +338,45 @@ export const WelcomePage: FC<Props> = () => {
           )}
         </div>
       </div>
+      <Modal isOpen={datasourceModalOpen} title="Datasource selection">
+        <p>
+          It looks like there is a mismatch between the way Synthetic Monitoring was provisioned and the currently
+          available datasources. This can happen when a Grafana instance is renamed, or if provisioning is incorrect.
+          Proceed with found datasources?
+        </p>
+        <div className={styles.datasourceSelectionGrid}>
+          <dt>Expecting metrics datasource:</dt>
+          <dt>Found metrics datasource:</dt>
+          <dd>{metricsName}</dd>
+          <dd>{metricsByUid?.name}</dd>
+          <dt>Expecting logs datasource:</dt>
+          <dt>Found logs datasource:</dt>
+          <dd>{logsName}</dd>
+          <dd>{logsByUid?.name}</dd>
+        </div>
+        <Modal.ButtonRow>
+          <Button variant="secondary" fill="outline" onClick={() => setDataSouceModalOpen(false)}>
+            Cancel
+          </Button>
+          <Button
+            disabled={loading}
+            onClick={() => {
+              if (meta?.jsonData?.metrics?.hostedId && meta?.jsonData?.logs.hostedId) {
+                initialize({
+                  metricsSettings: metricsByUid!, // we have already guaranteed that this exists above
+                  metricsHostedId: meta.jsonData.metrics.hostedId,
+                  logsSettings: logsByUid!, // we have already guaranteed that this exists above
+                  logsHostedId: meta.jsonData.logs.hostedId,
+                });
+              } else {
+                setError('Missing datasource hostedId');
+              }
+            }}
+          >
+            {loading ? <Spinner /> : 'Proceed'}
+          </Button>
+        </Modal.ButtonRow>
+      </Modal>
     </PluginPage>
   );
 };

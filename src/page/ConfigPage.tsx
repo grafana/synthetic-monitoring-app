@@ -79,8 +79,8 @@ export function ConfigPage() {
           <div className={styles.linkedDatasources}>
             <h3>Linked Data Sources</h3>
             <Container margin="sm">
-              <LinkedDatasourceView info={instance.api.instanceSettings.jsonData.metrics} />
-              <LinkedDatasourceView info={instance.api.instanceSettings.jsonData.logs} />
+              <LinkedDatasourceView type="prometheus" />
+              <LinkedDatasourceView type="loki" />
             </Container>
           </div>
           <div className={styles.backendAddress}>

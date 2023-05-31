@@ -53,10 +53,20 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   }
 
   getMetricsDS() {
-    return findLinkedDatasource(this.instanceSettings.jsonData.metrics);
+    const info = this.instanceSettings.jsonData.metrics;
+    const ds = findLinkedDatasource({ ...info, uid: 'grafanacloud-metrics' });
+    if (ds) {
+      return ds;
+    }
+    return findLinkedDatasource(info);
   }
 
   getLogsDS() {
+    const info = this.instanceSettings.jsonData.logs;
+    const ds = findLinkedDatasource({ ...info, uid: 'grafanacloud-logs' });
+    if (ds) {
+      return ds;
+    }
     return findLinkedDatasource(this.instanceSettings.jsonData.logs);
   }
 
@@ -383,14 +393,14 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     }
   }
 
-  async onOptionsChange(options: SMOptions) {
+  onOptionsChange = async (options: SMOptions) => {
     const data = {
       ...this.instanceSettings,
       jsonData: options,
       access: 'proxy',
     };
     await getBackendSrv().put(`api/datasources/${this.instanceSettings.id}`, data);
-  }
+  };
 
   async registerSave(apiToken: string, options: SMOptions, accessToken: string): Promise<any> {
     const data = {
