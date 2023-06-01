@@ -1,6 +1,6 @@
 {
   "name": "synthetic-monitoring-app",
-  "version": "1.10.2",
+  "version": "1.11.0",
   "description": "Grafana Synthetic Monitoring App",
   "scripts": {
     "build": "webpack -c ./.config/webpack/webpack.config.ts --env production",

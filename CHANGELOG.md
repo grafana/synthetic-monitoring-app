@@ -1,5 +1,12 @@
 # Change Log
 
+# [1.11.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.10.1...v1.11.0) (2023-6-1)
+
+- Include some fixes for scenes
+- Fix some issues with identifying datasources when an instance is renamed
+- Replace the visualization list view with a scene
+- Remove legacy theming
+
 # [1.10.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.10.0...v1.10.1) (2023-4-26)
 
 - Suppress an erroneous error toast in the alerting view
