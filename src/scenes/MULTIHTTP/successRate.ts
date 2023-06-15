@@ -9,7 +9,7 @@ function getQueryRunner(metrics: DataSourceRef) {
       {
         refId: 'A',
         editorMode: 'builder',
-        expr: 'probe_success{job="aghaha", instance="http://www.example.com"}',
+        expr: 'probe_success{job="${job}", instance="${instance}"}',
         legendFormat: '__auto',
         range: true,
         datasource: metrics,

@@ -7,7 +7,7 @@ function getQueryRunner(metrics: DataSourceRef) {
     queries: [
       {
         refId: 'A',
-        expr: 'sum by (phase) (probe_http_duration_seconds{job="aghaha", instance="http://www.example.com", url="$stepUrl"})',
+        expr: 'sum by (phase) (probe_http_duration_seconds{job="$job", instance="$instance", url="$stepUrl"})',
         legendFormat: '__auto',
         range: true,
       },

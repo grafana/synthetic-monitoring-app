@@ -57,6 +57,7 @@ export function MultiHttpStepsSceneRenderer({ model }: SceneComponentProps<Multi
       if (check) {
         model.setState({
           check,
+          stepUrl: check.settings.multihttp?.entries[0].request.url,
         });
       }
     }

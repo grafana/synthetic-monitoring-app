@@ -7,7 +7,7 @@ function getQueryRunner(metrics: DataSourceRef) {
       {
         refId: 'A',
         editorMode: 'code',
-        expr: 'sum(probe_http_total_duration_seconds{job="aghaha", instance="http://www.example.com"})',
+        expr: 'sum(probe_http_total_duration_seconds{job="${job}", instance="${instance}"})',
         legendFormat: '__auto',
         range: true,
       },
