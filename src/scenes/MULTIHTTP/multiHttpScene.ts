@@ -10,11 +10,12 @@ import {
   SceneVariableSet,
   VariableValueSelectors,
 } from '@grafana/scenes';
-import { DashboardSceneAppConfig, SceneBuilder } from 'types';
+import { CheckType, DashboardSceneAppConfig, SceneBuilder } from 'types';
 import { MultiHttpStepsScene } from './StepPickerScene';
 import { getLatencyByPhasePanel } from './latencyByPhase';
 import { getProbeDuration } from './probeDuration';
 import { getSuccessRatePanel } from './successRate';
+import { getVariables } from 'scenes/Common';
 
 export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig): SceneBuilder {
   return () => {
@@ -22,26 +23,27 @@ export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig): S
       from: 'now-6h',
       to: 'now',
     });
-    const stepIndex = new CustomVariable({ name: 'stepUrl', value: '0', hide: VariableHide.hideVariable });
+    const basicVariables = getVariables(CheckType.MULTI_HTTP, metrics);
+    const stepUrl = new CustomVariable({ name: 'stepUrl', value: 0, hide: VariableHide.hideVariable });
     const variables = new SceneVariableSet({
-      variables: [stepIndex],
+      variables: [...basicVariables, stepUrl],
     });
 
-    const sidebar = new MultiHttpStepsScene({ checkId: 562 });
+    const sidebar = new MultiHttpStepsScene({ job: '', target: '' });
 
     const latencyByPhase = getLatencyByPhasePanel(metrics);
 
     const body = new EmbeddedScene({
-      $variables: variables,
       body: new SceneFlexLayout({
         direction: 'column',
         children: [latencyByPhase],
       }),
     });
 
-    sidebar.subscribeToState(({ stepUrl }) => {
-      console.log('state subscribe', { stepUrl });
-      stepIndex.changeValueTo(stepUrl ?? '');
+    sidebar.subscribeToState(({ stepUrl: value }) => {
+      if (value !== stepUrl.getValue()) {
+        stepUrl.changeValueTo(value ?? '');
+      }
     });
 
     const successRate = getSuccessRatePanel(metrics);

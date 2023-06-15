@@ -1,35 +1,68 @@
-import React, { useContext, useEffect } from 'react';
 import { css } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
-import { SceneComponentProps, SceneObjectBase, SceneObjectState } from '@grafana/scenes';
+import {
+  SceneComponentProps,
+  SceneObjectBase,
+  SceneObjectState,
+  VariableDependencyConfig,
+  sceneGraph,
+} from '@grafana/scenes';
 import { Button, Spinner, useStyles2 } from '@grafana/ui';
-import { InstanceContext } from 'contexts/InstanceContext';
+import { ChecksContext } from 'contexts/ChecksContext';
+import React, { useContext, useEffect } from 'react';
 import { Check } from 'types';
 
 export interface MultiHttpStepsSceneState extends SceneObjectState {
-  checkId: number;
+  checkId?: number;
   check?: Check;
+  checks?: Check[];
+  target?: string;
+  job?: string;
   stepUrl?: string;
 }
 
 export class MultiHttpStepsScene extends SceneObjectBase<MultiHttpStepsSceneState> {
   static Component = MultiHttpStepsSceneRenderer;
+  protected _variableDependency = new VariableDependencyConfig(this, {
+    variableNames: ['job', 'target', 'stepUrl'],
+    onReferencedVariableValueChanged: () => {
+      const { job, target, stepUrl } = this.state;
+      const interpolatedInst = sceneGraph.interpolate(this, '${instance}');
+      const interpolatedJob = sceneGraph.interpolate(this, '${job}');
+      const interpolatedUrl = sceneGraph.interpolate(this, '${stepUrl}');
+      if (interpolatedInst !== job || interpolatedInst !== target || interpolatedUrl !== stepUrl) {
+        this.setState({ job: interpolatedJob, target: interpolatedInst, stepUrl: interpolatedUrl });
+      }
+    },
+  });
+
+  constructor({ job, target }: { job?: string; target?: string }) {
+    super({ job: job ?? '', target: target ?? '' });
+  }
 }
 
 export function MultiHttpStepsSceneRenderer({ model }: SceneComponentProps<MultiHttpStepsScene>) {
   const styles = useStyles2(getStyles);
-  const { checkId, check } = model.useState();
-  const { instance } = useContext(InstanceContext);
-  useEffect(() => {
-    if (!instance.api || check !== undefined) {
-      return;
-    }
-    instance.api.getCheck(checkId).then((check) => {
-      model.setState({ check, stepUrl: check.settings.multihttp?.entries[0].request.url });
-    });
-  }, [checkId, instance.api, check, model]);
+  const { check } = model.useState();
+  const { checks, loading } = useContext(ChecksContext);
+  const interpolatedInst = sceneGraph.interpolate(model, '${instance}');
+  const interpolatedJob = sceneGraph.interpolate(model, '${job}');
 
-  if (!check || !instance || !instance.metrics || !instance.logs || !instance.api) {
+  useEffect(() => {
+    if (interpolatedInst && interpolatedJob && !loading) {
+      const check = checks.find((check) => {
+        return check.job === interpolatedJob && check.target === interpolatedInst;
+      });
+
+      if (check) {
+        model.setState({
+          check,
+        });
+      }
+    }
+  }, [checks, loading, check, interpolatedJob, interpolatedInst, model]);
+
+  if (!check) {
     return <Spinner />;
   }
 

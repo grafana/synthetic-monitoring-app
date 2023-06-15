@@ -1,4 +1,5 @@
 import { Spinner } from '@grafana/ui';
+import { ChecksContextProvider } from 'components/ChecksContextProvider';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useNavigation } from 'hooks/useNavigation';
@@ -9,6 +10,7 @@ import { FeatureName } from 'types';
 export function DashboardPage() {
   const { instance } = useContext(InstanceContext);
   const { isEnabled } = useFeatureFlag(FeatureName.Scenes);
+
   const navigate = useNavigation();
 
   if (!isEnabled) {
@@ -32,5 +34,9 @@ export function DashboardPage() {
     type: instance.api.type,
   };
   const scene = getDashboardSceneApp({ metrics: metricsDef, logs: logsDef, sm: smDef });
-  return <scene.Component model={scene} />;
+  return (
+    <ChecksContextProvider>
+      <scene.Component model={scene} />
+    </ChecksContextProvider>
+  );
 }

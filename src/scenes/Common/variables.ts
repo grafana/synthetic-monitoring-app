@@ -28,6 +28,7 @@ export function getVariables(checkType: CheckType, metrics: DataSourceRef) {
     datasource: metrics,
   });
 
-  const variableSet = new SceneVariableSet({ variables: [probe, job, instance] });
-  return variableSet;
+  return [probe, job, instance];
+  // const variableSet = new SceneVariableSet({ variables: [probe, job, instance] });
+  // return variableSet;
 }
