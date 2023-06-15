@@ -59,7 +59,11 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
     formState: { errors },
   } = formMethods;
 
-  const { fields, append, remove } = useFieldArray({
+  const {
+    fields: entryFields,
+    append,
+    remove,
+  } = useFieldArray({
     control: formMethods.control,
     name: 'settings.multihttp.entries',
   });
@@ -90,10 +94,12 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
           });
         } else {
           // trackEvent('addNewCheckSubmit');
+          console.log('hi', updatedCheck);
           await api?.addCheck(updatedCheck);
         }
         onReturn && onReturn(true);
       } catch (err: any) {
+        console.log('hello', err);
         setErrorMessages([err?.data?.err || err?.data?.msg]);
       }
     },
@@ -161,9 +167,9 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
                 <></>
               </Field>
               <div className={styles.request}>
-                {fields.map((field, index) => {
-                  const urlForIndex = watch(`settings.multihttp.entries.${index}.request.url`);
-
+                {entryFields.map((field, index) => {
+                  const urlForIndex =
+                    watch(`settings.multihttp.entries.${index}.request.url`) || `Request ${index + 1}`;
                   return (
                     <MultiHttpCollapse label={urlForIndex} key={field.id} className={styles.collapseTarget}>
                       <VerticalGroup height={'100%'}>
@@ -228,7 +234,7 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
                   Add request
                 </Button>
 
-                {errorMessages && errorMessages?.length > 0 && getErrorMessages()}
+                {errorMessages && errorMessages.length > 0 && getErrorMessages()}
                 <HorizontalGroup height="40px">
                   <Button type="submit" disabled={formMethods.formState.isSubmitting}>
                     Save

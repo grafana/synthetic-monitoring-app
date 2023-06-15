@@ -1,0 +1,26 @@
+import { DataSourceRef } from '@grafana/data';
+import { SceneFlexItem, SceneQueryRunner, VizPanel } from '@grafana/scenes';
+
+function getQueryRunner(metrics: DataSourceRef) {
+  return new SceneQueryRunner({
+    datasource: metrics,
+    queries: [
+      {
+        refId: 'A',
+        expr: 'sum by (phase) (probe_http_duration_seconds{job="aghaha", instance="http://www.example.com", url="$stepUrl"})',
+        legendFormat: '__auto',
+        range: true,
+      },
+    ],
+  });
+}
+
+export function getLatencyByPhasePanel(metrics: DataSourceRef) {
+  return new SceneFlexItem({
+    body: new VizPanel({
+      $data: getQueryRunner(metrics),
+      pluginId: 'barchart',
+      title: 'Latency by phase',
+    }),
+  });
+}

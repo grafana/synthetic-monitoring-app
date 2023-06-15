@@ -1981,10 +1981,10 @@
     systemjs "0.20.19"
     tslib "2.4.0"
 
-"@grafana/scenes@canary":
-  version "0.8.0--canary.190.4993247436.0"
-  resolved "https://registry.yarnpkg.com/@grafana/scenes/-/scenes-0.8.0--canary.190.4993247436.0.tgz#1920682be88df3cf3ffd805b9016a2f6cdff7cff"
-  integrity sha512-OwEND5uiFjDXjWFmfofxtDQSbI7m8Bzg6EnjffOaKvn9cTTZrd4wHU6rAk3KmsG9oqK7UYmrAApsf/vkn5c+Rg==
+"@grafana/scenes@0.14.0":
+  version "0.14.0"
+  resolved "https://registry.yarnpkg.com/@grafana/scenes/-/scenes-0.14.0.tgz#4f346e66d2f78817ec007e48f941d3a1f2f37e1b"
+  integrity sha512-a6RN8tLDoGscg6dquMtNgxE1IL2vslnQVuy7u19C8R7nROJyEFe2LsRZFH7ChwGGpea9KLFlILhaLx1hSjogow==
   dependencies:
     "@grafana/e2e-selectors" canary
     "@grafana/experimental" "1.0.1"

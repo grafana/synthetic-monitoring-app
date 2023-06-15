@@ -7,6 +7,7 @@ import { getPingScene } from './PING/pingScene';
 import { getSummaryScene } from './Summary';
 import { getTcpScene } from './TCP/getTcpScene';
 import { getTracerouteScene } from './Traceroute/getTracerouteScene';
+import { getMultiHttpScene } from './MULTIHTTP';
 
 export function getDashboardSceneApp(config: DashboardSceneAppConfig) {
   return new SceneApp({
@@ -27,6 +28,11 @@ export function getDashboardSceneApp(config: DashboardSceneAppConfig) {
             title: 'HTTP',
             url: `${PLUGIN_URL_PATH}${ROUTES.Scene}/http`,
             getScene: getHTTPScene(config),
+          }),
+          new SceneAppPage({
+            title: 'MULTIHTTP',
+            url: `${PLUGIN_URL_PATH}${ROUTES.Scene}/multihttp`,
+            getScene: getMultiHttpScene(config),
           }),
           new SceneAppPage({
             title: 'PING',

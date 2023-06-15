@@ -258,6 +258,10 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       .then((res: any) => (Array.isArray(res.data) ? res.data : []));
   }
 
+  async getCheck(checkId: number): Promise<Check> {
+    return getBackendSrv().get(`${this.instanceSettings.url}/sm/check/${checkId}`);
+  }
+
   async testCheck(check: Check): Promise<any> {
     if (check.timeout > 2500) {
       check.timeout = 2500;
