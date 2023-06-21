@@ -4,6 +4,7 @@ import {
   EmbeddedScene,
   SceneControlsSpacer,
   SceneFlexLayout,
+  SceneQueryRunner,
   SceneRefreshPicker,
   SceneTimePicker,
   SceneTimeRange,
@@ -29,7 +30,27 @@ export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig): S
       variables: [...basicVariables, stepUrl],
     });
 
-    const sidebar = new MultiHttpStepsScene({ job: '', target: '' });
+    const resultsByUrl = new SceneQueryRunner({
+      datasource: metrics,
+      queries: [
+        {
+          refId: 'A',
+          expr: `sum by (url) (
+            probe_http_requests_failed_total{job="$job", instance="$instance"}
+          )
+          /
+          sum by (url) (
+            probe_http_requests_total{job="$job", instance="$instance"}
+          )`,
+          range: false,
+          instant: true,
+          editorMode: 'code',
+          exemplar: false,
+          format: 'table',
+        },
+      ],
+    });
+    const sidebar = new MultiHttpStepsScene({ job: '', target: '', $data: resultsByUrl });
 
     const latencyByPhase = getLatencyByPhasePanel(metrics);
 

@@ -7,10 +7,11 @@ import {
   VariableDependencyConfig,
   sceneGraph,
 } from '@grafana/scenes';
-import { Button, Spinner, useStyles2 } from '@grafana/ui';
+import { Spinner, useStyles2 } from '@grafana/ui';
 import { ChecksContext } from 'contexts/ChecksContext';
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useMemo } from 'react';
 import { Check } from 'types';
+import { StepPickerStepItem } from './StepPickerStepItem';
 
 export interface MultiHttpStepsSceneState extends SceneObjectState {
   checkId?: number;
@@ -36,17 +37,30 @@ export class MultiHttpStepsScene extends SceneObjectBase<MultiHttpStepsSceneStat
     },
   });
 
-  constructor({ job, target }: { job?: string; target?: string }) {
-    super({ job: job ?? '', target: target ?? '' });
+  constructor({ job, target, $data }: MultiHttpStepsSceneState) {
+    super({ job: job ?? '', target: target ?? '', $data });
   }
 }
 
 export function MultiHttpStepsSceneRenderer({ model }: SceneComponentProps<MultiHttpStepsScene>) {
   const styles = useStyles2(getStyles);
   const { check } = model.useState();
+
   const { checks, loading } = useContext(ChecksContext);
   const interpolatedInst = sceneGraph.interpolate(model, '${instance}');
   const interpolatedJob = sceneGraph.interpolate(model, '${job}');
+  const urlErrorRate = sceneGraph.getData(model).useState();
+
+  const errorRateByUrl = useMemo(() => {
+    const urls = urlErrorRate.data?.series[0].fields[1].values.toArray();
+    const errorRates = urlErrorRate.data?.series[0].fields[2].values.toArray();
+
+    const errorRateByUrl = urls?.reduce((acc, url, index) => {
+      acc[url] = errorRates?.[index];
+      return acc;
+    }, {});
+    return errorRateByUrl;
+  }, [urlErrorRate]);
 
   useEffect(() => {
     if (interpolatedInst && interpolatedJob && !loading) {
@@ -72,15 +86,15 @@ export function MultiHttpStepsSceneRenderer({ model }: SceneComponentProps<Multi
       <div className={styles.sidebar}>
         {check.settings.multihttp?.entries.map(({ request }, index) => {
           return (
-            <Button
+            <StepPickerStepItem
               key={index}
-              variant={request.url === model.state.stepUrl ? 'primary' : 'secondary'}
+              value={errorRateByUrl?.[request.url]}
               onClick={() => {
                 model.setState({ stepUrl: request.url });
               }}
             >
               {request.url}
-            </Button>
+            </StepPickerStepItem>
           );
         })}
       </div>
