@@ -17,6 +17,7 @@ import { getLatencyByPhasePanel } from './latencyByPhase';
 import { getProbeDuration } from './probeDuration';
 import { getSuccessRatePanel } from './successRate';
 import { getVariables } from 'scenes/Common';
+import { getDistinctTargets } from './distinctTargets';
 
 export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig): SceneBuilder {
   return () => {
@@ -72,6 +73,7 @@ export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig): S
     });
 
     const successRate = getSuccessRatePanel(metrics);
+    const distinctTargets = getDistinctTargets(metrics);
     const probeDuration = getProbeDuration(metrics);
 
     return new EmbeddedScene({
@@ -92,7 +94,7 @@ export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig): S
           new SceneFlexLayout({
             direction: 'row',
             height: 150,
-            children: [successRate, probeDuration],
+            children: [successRate, distinctTargets, probeDuration],
           }),
           new SceneFlexLayout({
             direction: 'row',

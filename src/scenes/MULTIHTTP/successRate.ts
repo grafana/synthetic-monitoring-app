@@ -1,6 +1,5 @@
-import { DataSourceRef } from '@grafana/data';
 import { SceneFlexItem, SceneQueryRunner, VizPanel } from '@grafana/scenes';
-import { ThresholdsMode } from '@grafana/schema';
+import { DataSourceRef, ThresholdsMode } from '@grafana/schema';
 
 function getQueryRunner(metrics: DataSourceRef) {
   return new SceneQueryRunner({
@@ -8,8 +7,7 @@ function getQueryRunner(metrics: DataSourceRef) {
     queries: [
       {
         refId: 'A',
-        editorMode: 'builder',
-        expr: 'probe_success{job="${job}", instance="${instance}"}',
+        expr: 'probe_success{probe=~"${probe}", job="${job}", instance="${instance}"}',
         legendFormat: '__auto',
         range: true,
         datasource: metrics,
@@ -47,6 +45,17 @@ export function getSuccessRatePanel(metrics: DataSourceRef) {
           unit: 'percentunit',
         },
         overrides: [],
+      },
+      options: {
+        reduceOptions: {
+          values: false,
+          calcs: ['mean'],
+        },
+        orientation: 'auto',
+        textMode: 'auto',
+        colorMode: 'value',
+        graphMode: 'area',
+        justifyMode: 'auto',
       },
     }),
   });

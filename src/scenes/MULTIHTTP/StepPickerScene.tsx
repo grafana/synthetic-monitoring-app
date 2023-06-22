@@ -52,8 +52,8 @@ export function MultiHttpStepsSceneRenderer({ model }: SceneComponentProps<Multi
   const urlErrorRate = sceneGraph.getData(model).useState();
 
   const errorRateByUrl = useMemo(() => {
-    const urls = urlErrorRate.data?.series?.[0].fields?.[1]?.values?.toArray();
-    const errorRates = urlErrorRate.data?.series?.[0].fields?.[2]?.values?.toArray();
+    const urls = urlErrorRate.data?.series?.[0]?.fields?.[1]?.values?.toArray();
+    const errorRates = urlErrorRate.data?.series?.[0]?.fields?.[2]?.values?.toArray();
 
     const errorRateByUrl = urls?.reduce((acc, url, index) => {
       acc[url] = errorRates?.[index];

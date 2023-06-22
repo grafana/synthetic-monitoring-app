@@ -1,5 +1,5 @@
-import { DataSourceRef } from '@grafana/data';
 import { SceneFlexItem, SceneQueryRunner, VizPanel } from '@grafana/scenes';
+import { DataSourceRef } from '@grafana/schema';
 
 function getQueryRunner(metrics: DataSourceRef) {
   return new SceneQueryRunner({
@@ -7,7 +7,7 @@ function getQueryRunner(metrics: DataSourceRef) {
       {
         refId: 'A',
         editorMode: 'code',
-        expr: 'sum(probe_http_total_duration_seconds{job="${job}", instance="${instance}"})',
+        expr: 'sum by (probe) (probe_http_total_duration_seconds{probe=~"${probe}", job="${job}", instance="${instance}"})',
         legendFormat: '__auto',
         range: true,
       },
@@ -21,6 +21,7 @@ export function getProbeDuration(metrics: DataSourceRef) {
     body: new VizPanel({
       $data: getQueryRunner(metrics),
       pluginId: 'timeseries',
+      title: 'Duration by probe',
       fieldConfig: {
         defaults: {
           unit: 's',
