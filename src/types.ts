@@ -93,6 +93,7 @@ export interface BaseObject {
   tenantId?: number;
   created?: number; // seconds
   updated?: number; // seconds
+  modified?: number; // seconds
 }
 
 export interface Label {

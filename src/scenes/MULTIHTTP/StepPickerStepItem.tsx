@@ -1,14 +1,16 @@
 import { css } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
-import { useStyles2, useTheme2 } from '@grafana/ui';
-import React, { PropsWithChildren } from 'react';
+import { MenuItem, useStyles2, useTheme2 } from '@grafana/ui';
+import React from 'react';
 
 interface Props {
   value?: number;
+  label: string;
+  active: boolean;
   onClick?: () => void;
 }
 
-export function StepPickerStepItem({ value, onClick, children }: PropsWithChildren<Props>) {
+export function StepPickerStepItem({ value, onClick, label, active }: Props) {
   const styles = useStyles2(getStyles);
   const theme = useTheme2();
 
@@ -24,9 +26,9 @@ export function StepPickerStepItem({ value, onClick, children }: PropsWithChildr
   }
 
   return (
-    <div className={styles.container} onClick={onClick}>
+    <div className={styles.container}>
       <div className={styles.value} style={{ backgroundColor: color }} />
-      <div>{children}</div>
+      <MenuItem label={label} onClick={onClick} active={active} />
     </div>
   );
 }
@@ -34,10 +36,8 @@ export function StepPickerStepItem({ value, onClick, children }: PropsWithChildr
 const getStyles = (theme: GrafanaTheme2) => {
   return {
     container: css`
-      &hover: background-color ${theme.colors.emphasize(theme.colors.background.primary, 0.05)};
-      cursor: pointer;
       display: flex;
-      gap: ${theme.spacing(2)};
+      gap: ${theme.spacing(1)};
       align-items: center;
       justify-content: flex-start;
     `,

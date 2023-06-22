@@ -12,6 +12,7 @@ export function getVariables(checkType: CheckType, metrics: DataSourceRef) {
     name: 'probe',
     query: { query: `label_values(sm_check_info{check_name="${checkType}"},probe)` },
     datasource: metrics,
+    skipUrlSync: false,
   });
 
   const job = new QueryVariable({
@@ -19,6 +20,7 @@ export function getVariables(checkType: CheckType, metrics: DataSourceRef) {
     $variables: new SceneVariableSet({ variables: [probe] }),
     query: { query: `label_values(sm_check_info{check_name="${checkType}", probe=~"$probe"},job)` },
     datasource: metrics,
+    skipUrlSync: false,
   });
 
   const instance = new QueryVariable({
@@ -26,6 +28,7 @@ export function getVariables(checkType: CheckType, metrics: DataSourceRef) {
     $variables: new SceneVariableSet({ variables: [probe, job] }),
     query: { query: `label_values(sm_check_info{check_name="${checkType}", job="$job", probe=~"$probe"},instance)` },
     datasource: metrics,
+    skipUrlSync: false,
   });
 
   return [probe, job, instance];

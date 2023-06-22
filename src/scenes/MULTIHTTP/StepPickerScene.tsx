@@ -44,7 +44,7 @@ export class MultiHttpStepsScene extends SceneObjectBase<MultiHttpStepsSceneStat
 
 export function MultiHttpStepsSceneRenderer({ model }: SceneComponentProps<MultiHttpStepsScene>) {
   const styles = useStyles2(getStyles);
-  const { check } = model.useState();
+  const { check, stepUrl } = model.useState();
 
   const { checks, loading } = useContext(ChecksContext);
   const interpolatedInst = sceneGraph.interpolate(model, '${instance}');
@@ -52,8 +52,8 @@ export function MultiHttpStepsSceneRenderer({ model }: SceneComponentProps<Multi
   const urlErrorRate = sceneGraph.getData(model).useState();
 
   const errorRateByUrl = useMemo(() => {
-    const urls = urlErrorRate.data?.series[0].fields[1].values.toArray();
-    const errorRates = urlErrorRate.data?.series[0].fields[2].values.toArray();
+    const urls = urlErrorRate.data?.series?.[0].fields?.[1]?.values?.toArray();
+    const errorRates = urlErrorRate.data?.series?.[0].fields?.[2]?.values?.toArray();
 
     const errorRateByUrl = urls?.reduce((acc, url, index) => {
       acc[url] = errorRates?.[index];
@@ -89,12 +89,12 @@ export function MultiHttpStepsSceneRenderer({ model }: SceneComponentProps<Multi
             <StepPickerStepItem
               key={index}
               value={errorRateByUrl?.[request.url]}
+              active={request.url === stepUrl}
               onClick={() => {
                 model.setState({ stepUrl: request.url });
               }}
-            >
-              {request.url}
-            </StepPickerStepItem>
+              label={request.url}
+            />
           );
         })}
       </div>

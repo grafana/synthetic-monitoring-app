@@ -25,7 +25,11 @@ export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig): S
       to: 'now',
     });
     const basicVariables = getVariables(CheckType.MULTI_HTTP, metrics);
-    const stepUrl = new CustomVariable({ name: 'stepUrl', value: '', hide: VariableHide.hideVariable });
+    const stepUrl = new CustomVariable({
+      name: 'stepUrl',
+      hide: VariableHide.hideVariable,
+      $variables: new SceneVariableSet({ variables: basicVariables }),
+    });
     const variables = new SceneVariableSet({
       variables: [...basicVariables, stepUrl],
     });
