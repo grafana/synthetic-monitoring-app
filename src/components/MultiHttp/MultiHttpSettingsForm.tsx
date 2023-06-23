@@ -94,7 +94,6 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
           });
         } else {
           // trackEvent('addNewCheckSubmit');
-          console.log('hi', updatedCheck);
           await api?.addCheck(updatedCheck);
         }
         onReturn && onReturn(true);
