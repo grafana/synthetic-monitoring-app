@@ -21,6 +21,7 @@ import { getDistinctTargets } from './distinctTargets';
 import { getLatencyByUrlPanel } from './latencyByUrl';
 import { getAssertionLogsPanel } from './assertionLogs';
 import { getErrorRateByUrl } from './errorRateByUrl';
+import { getAssertionTable } from './assertionTable';
 
 export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig): SceneBuilder {
   return () => {
@@ -120,8 +121,8 @@ export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig): S
           }),
           new SceneFlexLayout({
             direction: 'row',
-            minHeight: 500,
-            children: [getAssertionLogsPanel(logs)],
+            minHeight: 300,
+            children: [getAssertionTable(logs), getAssertionLogsPanel(logs)],
           }),
         ],
       }),

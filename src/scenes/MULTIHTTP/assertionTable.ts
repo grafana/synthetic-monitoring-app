@@ -1,0 +1,246 @@
+import { SceneDataTransformer, SceneFlexItem, SceneQueryRunner, VizPanel } from '@grafana/scenes';
+import { DataSourceRef, ThresholdsMode } from '@grafana/schema';
+
+function getQueryRunner(logs: DataSourceRef) {
+  const query = new SceneQueryRunner({
+    datasource: logs,
+    queries: [
+      {
+        editorMode: 'code',
+        expr: 'sum (\n    min_over_time (\n        {job="$job", instance="$instance"}\n        | logfmt method, url, check, value, msg\n        | __error__ = ""\n        | msg = "check result"\n        | unwrap value\n        [$__range]\n    )\n) by (method, url, check)\n/\ncount (\n    min_over_time (\n        {job="$job", instance="$instance"}\n        | logfmt method, url, check, value, msg\n        | __error__ = ""\n        | msg = "check result"\n        | unwrap value\n        [$__range]\n    )\n) by (method, url, check)',
+        queryType: 'instant',
+        refId: 'A',
+      },
+    ],
+  });
+
+  return new SceneDataTransformer({
+    $data: query,
+    transformations: [
+      {
+        id: 'organize',
+        options: {
+          excludeByName: {
+            Time: true,
+          },
+          indexByName: {},
+          renameByName: {
+            'Value #A': 'success rate',
+          },
+        },
+      },
+    ],
+  });
+}
+
+export function getAssertionTable(logs: DataSourceRef) {
+  return new SceneFlexItem({
+    body: new VizPanel({
+      $data: getQueryRunner(logs),
+      pluginId: 'table',
+      fieldConfig: {
+        defaults: {
+          custom: {
+            align: 'auto',
+            cellOptions: {
+              type: 'auto',
+            },
+            inspect: false,
+          },
+          mappings: [],
+          thresholds: {
+            mode: ThresholdsMode.Absolute,
+            steps: [
+              {
+                color: 'red',
+                value: 0,
+              },
+              {
+                color: 'green',
+                value: 1,
+              },
+            ],
+          },
+          color: {
+            fixedColor: 'green',
+            mode: 'fixed',
+          },
+        },
+        overrides: [
+          {
+            matcher: {
+              id: 'byName',
+              options: 'success rate',
+            },
+            properties: [
+              {
+                id: 'custom.cellOptions',
+                value: {
+                  mode: 'basic',
+                  type: 'color-background',
+                },
+              },
+              {
+                id: 'unit',
+                value: 'percentunit',
+              },
+              {
+                id: 'thresholds',
+                value: {
+                  mode: 'absolute',
+                  steps: [
+                    {
+                      color: 'red',
+                      value: null,
+                    },
+                    {
+                      color: 'green',
+                      value: 1,
+                    },
+                  ],
+                },
+              },
+              {
+                id: 'color',
+              },
+            ],
+          },
+        ],
+      },
+      options: {
+        showHeader: true,
+        cellHeight: 'sm',
+        footer: {
+          show: false,
+          reducer: ['sum'],
+          countRows: false,
+          fields: '',
+        },
+      },
+    }),
+  });
+}
+
+// {
+//   "datasource": {
+//     "type": "loki",
+//     "uid": "grafanacloud-logs"
+//   },
+//   "fieldConfig": {
+//     "defaults": {
+//       "custom": {
+//         "align": "auto",
+//         "cellOptions": {
+//           "type": "auto"
+//         },
+//         "inspect": false
+//       },
+//       "mappings": [],
+//       "thresholds": {
+//         "mode": "absolute",
+//         "steps": [
+//           {
+//             "color": "red",
+//             "value": null
+//           },
+//           {
+//             "color": "green",
+//             "value": 1
+//           }
+//         ]
+//       },
+//       "color": {
+//         "fixedColor": "green",
+//         "mode": "fixed"
+//       }
+//     },
+//     "overrides": [
+//       {
+//         "matcher": {
+//           "id": "byName",
+//           "options": "success rate"
+//         },
+//         "properties": [
+//           {
+//             "id": "custom.cellOptions",
+//             "value": {
+//               "mode": "basic",
+//               "type": "color-background"
+//             }
+//           },
+//           {
+//             "id": "unit",
+//             "value": "percentunit"
+//           },
+//           {
+//             "id": "thresholds",
+//             "value": {
+//               "mode": "absolute",
+//               "steps": [
+//                 {
+//                   "color": "red",
+//                   "value": null
+//                 },
+//                 {
+//                   "color": "green",
+//                   "value": 1
+//                 }
+//               ]
+//             }
+//           },
+//           {
+//             "id": "color"
+//           }
+//         ]
+//       }
+//     ]
+//   },
+//   "gridPos": {
+//     "h": 8,
+//     "w": 12,
+//     "x": 12,
+//     "y": 24
+//   },
+//   "id": 7,
+//   "options": {
+//     "showHeader": true,
+//     "cellHeight": "sm",
+//     "footer": {
+//       "show": false,
+//       "reducer": [
+//         "sum"
+//       ],
+//       "countRows": false,
+//       "fields": ""
+//     }
+//   },
+//   "pluginVersion": "10.1.0-57302pre",
+//   "targets": [
+//     {
+//       "datasource": {
+//         "type": "loki",
+//         "uid": "grafanacloud-logs"
+//       },
+//       "editorMode": "code",
+//       "expr": "sum (\n    min_over_time (\n        {job=\"homepage\", instance=\"https://grafana.com/\"}\n        | logfmt method, url, check, value, msg\n        | __error__ = \"\"\n        | msg = \"check result\"\n        | unwrap value\n        [$__range]\n    )\n) by (method, url, check)\n/\ncount (\n    min_over_time (\n        {job=\"homepage\", instance=\"https://grafana.com/\"}\n        | logfmt method, url, check, value, msg\n        | __error__ = \"\"\n        | msg = \"check result\"\n        | unwrap value\n        [$__range]\n    )\n) by (method, url, check)",
+//       "queryType": "instant",
+//       "refId": "A"
+//     }
+//   ],
+//   "title": "check results",
+//   "transformations": [
+//     {
+//       "id": "organize",
+//       "options": {
+//         "excludeByName": {
+//           "Time": true
+//         },
+//         "indexByName": {},
+//         "renameByName": {
+//           "Value #A": "success rate"
+//         }
+//       }
+//     }
+//   ],
+//   "type": "table"
+// }
