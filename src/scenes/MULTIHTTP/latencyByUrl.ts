@@ -24,18 +24,6 @@ export function getLatencyByUrlPanel(metrics: DataSourceRef) {
       $data: query,
       pluginId: 'timeseries',
       title: 'Latency => $stepUrl',
-      // options: {
-      //   tooltip: {
-      //     mode: 'single',
-      //     sort: 'none',
-      //   },
-      //   legend: {
-      //     showLegend: true,
-      //     displayMode: 'list',
-      //     placement: 'bottom',
-      //     calcs: [],
-      //   },
-      // },
       fieldConfig: {
         defaults: {
           custom: {

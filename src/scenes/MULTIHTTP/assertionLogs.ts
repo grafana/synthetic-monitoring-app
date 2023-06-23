@@ -6,7 +6,6 @@ function getQueryRunner(logs: DataSourceRef) {
     datasource: logs,
     queries: [
       {
-        // expr: '{job='$job', instance="$instance"}\n          | logfmt\n          | __error__ = ""\n          | msg = "check result"\n          | line_format "{{.method}} {{.url}} ➜ {{ if eq .value \"1\" }}PASS{{else}}FAIL{{end}}: {{.check}}"\n          | label_format level="{{ if eq .value \"1\" }}info{{else}}error{{end}}"',
         expr: '{job="$job", instance="$instance"} |\n logfmt |\n __error__ = "" |\n msg = "check result" |\n line_format "{{.method}} {{.url}} ➜ {{ if eq .value \\"1\\" }}PASS{{else}}FAIL{{end}}: {{.check}}" |\n label_format level="{{ if eq .value \\"1\\" }}info{{else}}error{{end}}"',
         refId: 'A',
       },

@@ -83,7 +83,6 @@ export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig): S
       }
     });
 
-    // const successRate = getUptimePanel(metrics);
     const reachability = getReachabilityStat(metrics);
     const uptime = getUptimeStat(metrics);
     const distinctTargets = getDistinctTargets(metrics);
