@@ -111,7 +111,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
     margin: ${theme.spacing(2)};
     gap: ${theme.spacing(2)};
     max-width: 300px;
-    max-height: 300px;
     overflow-y: scroll;
   `,
 });

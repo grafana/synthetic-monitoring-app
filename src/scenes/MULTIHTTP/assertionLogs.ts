@@ -6,13 +6,8 @@ function getQueryRunner(logs: DataSourceRef) {
     datasource: logs,
     queries: [
       {
-        expr: `{job="$job", instance="$instance"}
-          | logfmt
-          | __error__ = ""
-          | msg = "check result"
-          | line_format "{{.method}} {{.url}} ➜ {{ if eq .value \\"1\\" }}PASS{{else}}FAIL{{end}}: {{.check}}"
-          | label_format level="{{ if eq .value \\"1\\" }}info{{else}}error{{end}}"`,
-        queryType: 'range',
+        // expr: '{job='$job', instance="$instance"}\n          | logfmt\n          | __error__ = ""\n          | msg = "check result"\n          | line_format "{{.method}} {{.url}} ➜ {{ if eq .value \"1\" }}PASS{{else}}FAIL{{end}}: {{.check}}"\n          | label_format level="{{ if eq .value \"1\" }}info{{else}}error{{end}}"',
+        expr: '{job="$job", instance="$instance"} |\n logfmt |\n __error__ = "" |\n msg = "check result" |\n line_format "{{.method}} {{.url}} ➜ {{ if eq .value \\"1\\" }}PASS{{else}}FAIL{{end}}: {{.check}}" |\n label_format level="{{ if eq .value \\"1\\" }}info{{else}}error{{end}}"',
         refId: 'A',
       },
     ],
@@ -34,6 +29,7 @@ export function getAssertionLogsPanel(logs: DataSourceRef) {
         sortOrder: 'Descending',
       },
       title: 'Assertion results',
+      pluginId: 'logs',
     }),
   });
 }
