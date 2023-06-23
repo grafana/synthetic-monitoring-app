@@ -19,6 +19,8 @@ import { getProbeDuration } from './probeDuration';
 import { getReachabilityStat, getUptimeStat, getVariables } from 'scenes/Common';
 import { getDistinctTargets } from './distinctTargets';
 import { getLatencyByUrlPanel } from './latencyByUrl';
+import { getAssertionLogsPanel } from './assertionLogs';
+import { getErrorRateByUrl } from './errorRateByUrl';
 
 export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig): SceneBuilder {
   return () => {
@@ -62,8 +64,15 @@ export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig): S
 
     const body = new EmbeddedScene({
       body: new SceneFlexLayout({
-        direction: 'row',
-        children: [latencyByUrl, latencyByPhase],
+        direction: 'column',
+        children: [
+          new SceneFlexLayout({
+            direction: 'row',
+            minHeight: 200,
+            children: [latencyByUrl, latencyByPhase],
+          }),
+          getErrorRateByUrl(metrics),
+        ],
       }),
     });
 
@@ -106,7 +115,13 @@ export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig): S
           }),
           new SceneFlexLayout({
             direction: 'row',
+            minHeight: 300,
             children: [sidebar, body],
+          }),
+          new SceneFlexLayout({
+            direction: 'row',
+            minHeight: 500,
+            children: [getAssertionLogsPanel(logs)],
           }),
         ],
       }),

@@ -28,23 +28,22 @@ export function getLatencyByPhasePanel(metrics: DataSourceRef) {
         overrides: [],
       },
       options: {
-        xTickLabelRotation: 0,
-        xTickLabelSpacing: 100,
-
-        showValue: 'auto',
+        // xTickLabelRotation: 0,
+        // xTickLabelSpacing: 100,
+        // showValue: 'auto',
         stacking: 'normal',
-        barWidth: 0.97,
-        fullHighlight: false,
-        tooltip: {
-          mode: 'single',
-          sort: 'none',
-        },
-        legend: {
-          showLegend: true,
-          displayMode: 'list',
-          placement: 'bottom',
-          calcs: [],
-        },
+        // barWidth: 0.97,
+        // fullHighlight: false,
+        // tooltip: {
+        //   mode: 'single',
+        //   sort: 'none',
+        // },
+        // legend: {
+        //   showLegend: true,
+        //   displayMode: 'list',
+        //   placement: 'bottom',
+        //   calcs: [],
+        // },
       },
     }),
   });

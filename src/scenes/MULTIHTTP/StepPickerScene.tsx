@@ -82,22 +82,20 @@ export function MultiHttpStepsSceneRenderer({ model }: SceneComponentProps<Multi
   }
 
   return (
-    <div>
-      <div className={styles.sidebar}>
-        {check.settings.multihttp?.entries.map(({ request }, index) => {
-          return (
-            <StepPickerStepItem
-              key={index}
-              value={errorRateByUrl?.[request.url]}
-              active={request.url === stepUrl}
-              onClick={() => {
-                model.setState({ stepUrl: request.url });
-              }}
-              label={request.url}
-            />
-          );
-        })}
-      </div>
+    <div className={styles.sidebar}>
+      {check.settings.multihttp?.entries.map(({ request }, index) => {
+        return (
+          <StepPickerStepItem
+            key={index}
+            value={errorRateByUrl?.[request.url]}
+            active={request.url === stepUrl}
+            onClick={() => {
+              model.setState({ stepUrl: request.url });
+            }}
+            label={request.url}
+          />
+        );
+      })}
     </div>
   );
 }
@@ -113,5 +111,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     margin: ${theme.spacing(2)};
     gap: ${theme.spacing(2)};
     max-width: 300px;
+    max-height: 300px;
+    overflow-y: scroll;
   `,
 });
