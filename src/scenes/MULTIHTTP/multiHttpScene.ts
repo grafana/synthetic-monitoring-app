@@ -3,6 +3,7 @@ import {
   CustomVariable,
   EmbeddedScene,
   SceneControlsSpacer,
+  SceneFlexItem,
   SceneFlexLayout,
   SceneQueryRunner,
   SceneRefreshPicker,
@@ -15,9 +16,9 @@ import { CheckType, DashboardSceneAppConfig, SceneBuilder } from 'types';
 import { MultiHttpStepsScene } from './StepPickerScene';
 import { getLatencyByPhasePanel } from './latencyByPhase';
 import { getProbeDuration } from './probeDuration';
-import { getSuccessRatePanel } from './successRate';
-import { getVariables } from 'scenes/Common';
+import { getReachabilityStat, getUptimeStat, getVariables } from 'scenes/Common';
 import { getDistinctTargets } from './distinctTargets';
+import { getLatencyByUrlPanel } from './latencyByUrl';
 
 export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig): SceneBuilder {
   return () => {
@@ -29,7 +30,6 @@ export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig): S
     const stepUrl = new CustomVariable({
       name: 'stepUrl',
       hide: VariableHide.hideVariable,
-      $variables: new SceneVariableSet({ variables: basicVariables }),
     });
     const variables = new SceneVariableSet({
       variables: [...basicVariables, stepUrl],
@@ -58,11 +58,12 @@ export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig): S
     const sidebar = new MultiHttpStepsScene({ job: '', target: '', $data: resultsByUrl });
 
     const latencyByPhase = getLatencyByPhasePanel(metrics);
+    const latencyByUrl = getLatencyByUrlPanel(metrics);
 
     const body = new EmbeddedScene({
       body: new SceneFlexLayout({
-        direction: 'column',
-        children: [latencyByPhase],
+        direction: 'row',
+        children: [latencyByUrl, latencyByPhase],
       }),
     });
 
@@ -72,7 +73,9 @@ export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig): S
       }
     });
 
-    const successRate = getSuccessRatePanel(metrics);
+    // const successRate = getUptimePanel(metrics);
+    const reachability = getReachabilityStat(metrics);
+    const uptime = getUptimeStat(metrics);
     const distinctTargets = getDistinctTargets(metrics);
     const probeDuration = getProbeDuration(metrics);
 
@@ -94,7 +97,12 @@ export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig): S
           new SceneFlexLayout({
             direction: 'row',
             height: 150,
-            children: [successRate, distinctTargets, probeDuration],
+            children: [
+              new SceneFlexItem({ body: uptime, width: 200 }),
+              new SceneFlexItem({ body: reachability, width: 200 }),
+              distinctTargets,
+              probeDuration,
+            ],
           }),
           new SceneFlexLayout({
             direction: 'row',

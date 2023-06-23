@@ -1,5 +1,5 @@
-import { DataSourceRef } from '@grafana/data';
 import { SceneFlexItem, SceneQueryRunner, VizPanel } from '@grafana/scenes';
+import { DataSourceRef } from '@grafana/schema';
 
 function getQueryRunner(metrics: DataSourceRef) {
   return new SceneQueryRunner({
@@ -21,6 +21,31 @@ export function getLatencyByPhasePanel(metrics: DataSourceRef) {
       $data: getQueryRunner(metrics),
       pluginId: 'barchart',
       title: 'Latency by phase',
+      fieldConfig: {
+        defaults: {
+          unit: 's',
+        },
+        overrides: [],
+      },
+      options: {
+        xTickLabelRotation: 0,
+        xTickLabelSpacing: 100,
+
+        showValue: 'auto',
+        stacking: 'normal',
+        barWidth: 0.97,
+        fullHighlight: false,
+        tooltip: {
+          mode: 'single',
+          sort: 'none',
+        },
+        legend: {
+          showLegend: true,
+          displayMode: 'list',
+          placement: 'bottom',
+          calcs: [],
+        },
+      },
     }),
   });
 }
