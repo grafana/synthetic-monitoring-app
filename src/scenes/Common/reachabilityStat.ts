@@ -12,7 +12,7 @@ function getQueryRunner(metrics: DataSourceRef) {
         instant: true,
         interval: '',
         legendFormat: '',
-        refId: 'B',
+        refId: 'reachabilityStat',
       },
     ],
   });

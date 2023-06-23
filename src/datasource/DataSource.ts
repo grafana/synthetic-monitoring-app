@@ -1,13 +1,12 @@
 import {
-  ArrayDataFrame,
   DataFrame,
   DataQueryRequest,
   DataQueryResponse,
   DataSourceApi,
   DataSourceInstanceSettings,
-  FieldType,
   MetricFindValue,
   ScopedVars,
+  arrayToDataFrame,
 } from '@grafana/data';
 
 import { CheckInfo, QueryType, SMOptions, SMQuery } from './types';
@@ -76,17 +75,35 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     for (const query of interpolated) {
       if (query.queryType === QueryType.Probes) {
         const probes = await this.listProbes();
-        const frame = new ArrayDataFrame(probes);
-        frame.setFieldType('onlineChange', FieldType.time, (s) => (s as number) * 1000); // seconds to ms
-        frame.setFieldType('created', FieldType.time, (s) => (s as number) * 1000); // seconds to ms
-        frame.setFieldType('modified', FieldType.time, (s) => (s as number) * 1000); // seconds to ms
+        const frame = arrayToDataFrame(
+          probes.map((probe) => {
+            return {
+              ...probe,
+              onlineChange: probe.onlineChange * 1000,
+              created: probe.created ?? 0 * 1000,
+              modified: probe.modified ?? 0 * 1000,
+            };
+          })
+        );
         frame.refId = query.refId;
+        // frame.setFieldType('onlineChange', FieldType.time, (s) => (s as number) * 1000); // seconds to ms
+        // frame.setFieldType('created', FieldType.time, (s) => (s as number) * 1000); // seconds to ms
+        // frame.setFieldType('modified', FieldType.time, (s) => (s as number) * 1000); // seconds to ms
+        // frame.refId = query.refId;
         data.push(frame);
       } else if (query.queryType === QueryType.Checks) {
         const checks = await this.listChecks();
-        const frame = new ArrayDataFrame(checks);
-        frame.setFieldType('created', FieldType.time, (s) => (s as number) * 1000); // seconds to ms
-        frame.setFieldType('modified', FieldType.time, (s) => (s as number) * 1000); // seconds to ms
+        const frame = arrayToDataFrame(
+          checks.map((check) => {
+            return {
+              ...check,
+              created: check.created ?? 0 * 1000, // seconds to ms
+              modified: check.modified ?? 0 * 1000, // seconds to ms
+            };
+          })
+        );
+        // frame.setFieldType('created', FieldType.time, (s) => (s as number) * 1000); // seconds to ms
+        // frame.setFieldType('modified', FieldType.time, (s) => (s as number) * 1000); // seconds to ms
         frame.refId = query.refId;
 
         const copy: DataFrame = {
@@ -256,6 +273,10 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       })
       .toPromise()
       .then((res: any) => (Array.isArray(res.data) ? res.data : []));
+  }
+
+  async getCheck(checkId: number): Promise<Check> {
+    return getBackendSrv().get(`${this.instanceSettings.url}/sm/check/${checkId}`);
   }
 
   async testCheck(check: Check): Promise<any> {
@@ -467,12 +488,12 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     if (probes.length) {
       return {
         status: 'OK',
-        mesage: `Found ${probes.length} probes`,
+        message: `Found ${probes.length} probes`,
       };
     }
     return {
       status: 'Error',
-      mesage: 'unable to connect',
+      message: 'unable to connect',
     };
   }
 }

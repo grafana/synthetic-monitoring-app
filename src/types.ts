@@ -11,6 +11,7 @@ import {
 } from 'components/MultiHttp/MultiHttpTypes';
 import { SMDataSource } from 'datasource/DataSource';
 import { LinkedDatasourceInfo } from './datasource/types';
+import { EmbeddedScene, SceneRouteMatch } from '@grafana/scenes';
 
 export interface GlobalSettings {
   apiHost: string;
@@ -92,6 +93,7 @@ export interface BaseObject {
   tenantId?: number;
   created?: number; // seconds
   updated?: number; // seconds
+  modified?: number; // seconds
 }
 
 export interface Label {
@@ -591,3 +593,9 @@ export enum MultiHttpAssertionType {
   JSONPath = 2,
   Regex = 3,
 }
+
+export type SceneBuilder<T extends { [K in keyof T]?: string | undefined } = any> = (
+  routeMatch: RouteMatch<T>
+) => EmbeddedScene;
+
+export type RouteMatch<T extends { [K in keyof T]?: string | undefined } = any> = SceneRouteMatch<T>;

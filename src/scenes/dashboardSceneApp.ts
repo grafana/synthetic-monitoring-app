@@ -7,8 +7,55 @@ import { getPingScene } from './PING/pingScene';
 import { getSummaryScene } from './Summary';
 import { getTcpScene } from './TCP/getTcpScene';
 import { getTracerouteScene } from './Traceroute/getTracerouteScene';
+import { getMultiHttpScene } from './MULTIHTTP';
 
-export function getDashboardSceneApp(config: DashboardSceneAppConfig) {
+export function getDashboardSceneApp(config: DashboardSceneAppConfig, includeMultiHttp = false) {
+  const tabs = [
+    new SceneAppPage({
+      title: 'Summary',
+      url: `${PLUGIN_URL_PATH}${ROUTES.Scene}`,
+      getScene: getSummaryScene(config),
+    }),
+    new SceneAppPage({
+      title: 'HTTP',
+      url: `${PLUGIN_URL_PATH}${ROUTES.Scene}/http`,
+      getScene: getHTTPScene(config),
+    }),
+
+    new SceneAppPage({
+      title: 'PING',
+      url: `${PLUGIN_URL_PATH}${ROUTES.Scene}/ping`,
+      getScene: getPingScene(config),
+    }),
+    new SceneAppPage({
+      title: 'DNS',
+      url: `${PLUGIN_URL_PATH}${ROUTES.Scene}/dns`,
+      getScene: getDNSScene(config),
+    }),
+    new SceneAppPage({
+      title: 'TCP',
+      url: `${PLUGIN_URL_PATH}${ROUTES.Scene}/tcp`,
+      getScene: getTcpScene(config),
+    }),
+    new SceneAppPage({
+      title: 'Traceroute',
+      url: `${PLUGIN_URL_PATH}${ROUTES.Scene}/traceroute`,
+      getScene: getTracerouteScene(config),
+    }),
+  ];
+
+  if (includeMultiHttp) {
+    tabs.splice(
+      2,
+      0,
+      new SceneAppPage({
+        title: 'MULTIHTTP',
+        url: `${PLUGIN_URL_PATH}${ROUTES.Scene}/multihttp`,
+        getScene: getMultiHttpScene(config),
+      })
+    );
+  }
+
   return new SceneApp({
     pages: [
       new SceneAppPage({
@@ -17,38 +64,7 @@ export function getDashboardSceneApp(config: DashboardSceneAppConfig) {
         url: `${PLUGIN_URL_PATH}${ROUTES.Scene}`,
         hideFromBreadcrumbs: true,
         getScene: getSummaryScene(config),
-        tabs: [
-          new SceneAppPage({
-            title: 'Summary',
-            url: `${PLUGIN_URL_PATH}${ROUTES.Scene}`,
-            getScene: getSummaryScene(config),
-          }),
-          new SceneAppPage({
-            title: 'HTTP',
-            url: `${PLUGIN_URL_PATH}${ROUTES.Scene}/http`,
-            getScene: getHTTPScene(config),
-          }),
-          new SceneAppPage({
-            title: 'PING',
-            url: `${PLUGIN_URL_PATH}${ROUTES.Scene}/ping`,
-            getScene: getPingScene(config),
-          }),
-          new SceneAppPage({
-            title: 'DNS',
-            url: `${PLUGIN_URL_PATH}${ROUTES.Scene}/dns`,
-            getScene: getDNSScene(config),
-          }),
-          new SceneAppPage({
-            title: 'TCP',
-            url: `${PLUGIN_URL_PATH}${ROUTES.Scene}/tcp`,
-            getScene: getTcpScene(config),
-          }),
-          new SceneAppPage({
-            title: 'Traceroute',
-            url: `${PLUGIN_URL_PATH}${ROUTES.Scene}/traceroute`,
-            getScene: getTracerouteScene(config),
-          }),
-        ],
+        tabs,
       }),
     ],
   });

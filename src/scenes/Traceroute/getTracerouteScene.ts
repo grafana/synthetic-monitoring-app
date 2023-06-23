@@ -6,6 +6,7 @@ import {
   SceneRefreshPicker,
   SceneTimePicker,
   SceneTimeRange,
+  SceneVariableSet,
   VariableValueSelectors,
 } from '@grafana/scenes';
 import { getVariables } from 'scenes/Common';
@@ -24,7 +25,7 @@ export function getTracerouteScene({ metrics, logs, sm }: DashboardSceneAppConfi
       from: 'now-30m',
       to: 'now',
     });
-    const variables = getVariables(CheckType.Traceroute, metrics);
+    const variables = new SceneVariableSet({ variables: getVariables(CheckType.Traceroute, metrics) });
 
     const nodeGraph = new SceneFlexItem({ height: 500, body: getNodeGraphPanel(sm) });
 

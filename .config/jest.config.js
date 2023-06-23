@@ -14,7 +14,7 @@ module.exports = {
     'react-inlinesvg': path.resolve(__dirname, 'jest', 'mocks', 'react-inlinesvg.tsx'),
   },
   modulePaths: ['<rootDir>/src'],
-  setupFilesAfterEnv: ['<rootDir>/jest-setup.js', '<rootDir>/src/test/setupTests.ts'],
+  setupFilesAfterEnv: ['<rootDir>/jest-setup.js'],
   testEnvironment: 'jest-environment-jsdom',
   testMatch: [
     '<rootDir>/src/**/__tests__/**/*.{js,jsx,ts,tsx}',
@@ -25,7 +25,7 @@ module.exports = {
     '^.+\\.(t|j)sx?$': [
       '@swc/jest',
       {
-        sourceMaps: true,
+        sourceMaps: 'inline',
         jsc: {
           parser: {
             syntax: 'typescript',

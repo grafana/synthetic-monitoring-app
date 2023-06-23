@@ -6,6 +6,7 @@ import {
   SceneRefreshPicker,
   SceneTimePicker,
   SceneTimeRange,
+  SceneVariableSet,
   VariableValueSelectors,
 } from '@grafana/scenes';
 import {
@@ -29,7 +30,7 @@ export function getTcpScene({ metrics, logs }: DashboardSceneAppConfig) {
       to: 'now',
     });
 
-    const variables = getVariables(CheckType.TCP, metrics);
+    const variables = new SceneVariableSet({ variables: getVariables(CheckType.TCP, metrics) });
     const errorMap = getErrorRateMapPanel(metrics);
 
     const uptime = getUptimeStat(metrics);
