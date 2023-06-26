@@ -166,7 +166,7 @@ const HomePage = () => {
             return (
               <a
                 className={styles.quickLink}
-                href={scenesEnabled ? `${PLUGIN_URL_PATH}scene/${dashboard.uid}` : `d/${dashboard.uid}`}
+                href={scenesEnabled ? (dashboard.uid === `` ? `${PLUGIN_URL_PATH}scene` : `${PLUGIN_URL_PATH}scene/${dashboard.uid}`) : `d/${dashboard.uid}`}
                 key={dashboard.uid}
               >
                 <Icon name="apps" size="lg" className={styles.quickLinkIcon} />
