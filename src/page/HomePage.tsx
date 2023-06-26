@@ -170,7 +170,7 @@ const HomePage = () => {
                 key={dashboard.uid}
               >
                 <Icon name="apps" size="lg" className={styles.quickLinkIcon} />
-                View the {dashboard.title} dashboard
+                {scenesEnabled ? `View the ${dashboard.title}` : `View the ${dashboard.title} dashboard`}
               </a>
             );
           })}
