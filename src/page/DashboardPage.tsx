@@ -10,6 +10,7 @@ import { FeatureName } from 'types';
 export function DashboardPage() {
   const { instance } = useContext(InstanceContext);
   const { isEnabled } = useFeatureFlag(FeatureName.Scenes);
+  const { isEnabled: multiHttpEnabled } = useFeatureFlag(FeatureName.MultiHttp);
 
   const navigate = useNavigation();
 
@@ -33,7 +34,7 @@ export function DashboardPage() {
     uid: instance.api.uid,
     type: instance.api.type,
   };
-  const scene = getDashboardSceneApp({ metrics: metricsDef, logs: logsDef, sm: smDef }, true);
+  const scene = getDashboardSceneApp({ metrics: metricsDef, logs: logsDef, sm: smDef }, multiHttpEnabled);
   return (
     <ChecksContextProvider>
       <scene.Component model={scene} />
