@@ -2216,10 +2216,10 @@
     systemjs "0.20.19"
     tslib "2.5.0"
 
-"@grafana/scenes@^0.17.1":
-  version "0.17.1"
-  resolved "https://registry.yarnpkg.com/@grafana/scenes/-/scenes-0.17.1.tgz#1b0277440f9564348c0adaaff76726df8468b63d"
-  integrity sha512-DH/1syv2orwkwHe3ywz/k5jJwu2872LV/sAKw0qmu+2vXsCUd12X7VJir2ipW8LSdxolvfifSU5j4fyn/+qoyA==
+"@grafana/scenes@^0.18.0":
+  version "0.18.0"
+  resolved "https://registry.yarnpkg.com/@grafana/scenes/-/scenes-0.18.0.tgz#0a666078aa027ba636abf178caac7e46270d85e2"
+  integrity sha512-7fI+rkSYA+VE7UyeKcDGPGyjiDWUsOmX9ZlNAu2na4G9zm5h72T1d99N0TCFa+BYnXvCjvrtKpKrkP132t6y9w==
   dependencies:
     "@grafana/e2e-selectors" canary
     "@grafana/experimental" "1.0.1"
@@ -15289,6 +15289,7 @@ string-template@~0.2.1:
   integrity sha512-Yptehjogou2xm4UJbxJ4CxgZx12HBfeystp0y3x7s4Dj32ltVVG1Gg8YhKjHZkHicuKpZX/ffilA8505VbUbpw==
 
 "string-width-cjs@npm:string-width@^4.2.0", string-width@^4.2.3:
+  name string-width-cjs
   version "4.2.3"
   resolved "https://registry.yarnpkg.com/string-width/-/string-width-4.2.3.tgz#269c7117d27b05ad2e536830a8ec895ef9c6d010"
   integrity sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==
