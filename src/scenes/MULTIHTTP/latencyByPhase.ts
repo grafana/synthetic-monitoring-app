@@ -29,6 +29,7 @@ export function getLatencyByPhasePanel(metrics: DataSourceRef) {
       },
       options: {
         stacking: 'normal',
+        xTickLabelSpacing: 75,
       },
     }),
   });

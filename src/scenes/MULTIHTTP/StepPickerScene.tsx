@@ -31,14 +31,17 @@ export class MultiHttpStepsScene extends SceneObjectBase<MultiHttpStepsSceneStat
       const interpolatedInst = sceneGraph.interpolate(this, '${instance}');
       const interpolatedJob = sceneGraph.interpolate(this, '${job}');
       const interpolatedUrl = sceneGraph.interpolate(this, '${stepUrl}');
-      if (interpolatedInst !== job || interpolatedInst !== target || interpolatedUrl !== stepUrl) {
-        this.setState({ job: interpolatedJob, target: interpolatedInst, stepUrl: interpolatedUrl });
+      if (interpolatedInst !== job || interpolatedInst !== target) {
+        this.setState({ job: interpolatedJob, target: interpolatedInst });
+      }
+      if (interpolatedUrl && interpolatedUrl !== stepUrl) {
+        this.setState({ stepUrl: interpolatedUrl });
       }
     },
   });
 
-  constructor({ job, target, $data }: MultiHttpStepsSceneState) {
-    super({ job: job ?? '', target: target ?? '', $data });
+  constructor({ job, target, stepUrl, $data }: MultiHttpStepsSceneState) {
+    super({ job: job ?? '', target: target ?? '', stepUrl, $data });
   }
 }
 
@@ -69,15 +72,18 @@ export function MultiHttpStepsSceneRenderer({ model }: SceneComponentProps<Multi
       });
 
       if (check) {
+        const interpolatedUrl = sceneGraph.interpolate(model, '${stepUrl}');
+        const useDefault =
+          !interpolatedUrl || !check.settings.multihttp?.entries.find((entry) => entry.request.url === interpolatedUrl);
         model.setState({
           check,
-          stepUrl: check.settings.multihttp?.entries[0].request.url,
+          stepUrl: useDefault ? check.settings.multihttp?.entries[0].request.url : interpolatedUrl,
         });
       }
     }
-  }, [checks, loading, check, interpolatedJob, interpolatedInst, model]);
+  }, [checks, loading, check, interpolatedJob, interpolatedInst, model, stepUrl]);
 
-  if (!check) {
+  if (!check || !stepUrl) {
     return <Spinner />;
   }
 
@@ -111,6 +117,8 @@ const getStyles = (theme: GrafanaTheme2) => ({
     margin: ${theme.spacing(2)};
     gap: ${theme.spacing(2)};
     max-width: 300px;
-    overflow-y: scroll;
+    max-height: 400px;
+    overflow-y: auto;
+    overflow-x: hidden;
   `,
 });

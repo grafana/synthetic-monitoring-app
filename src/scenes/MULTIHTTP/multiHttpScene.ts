@@ -29,13 +29,13 @@ export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig): S
       from: 'now-6h',
       to: 'now',
     });
-    const basicVariables = getVariables(CheckType.MULTI_HTTP, metrics);
+    const [probe, job, instance] = getVariables(CheckType.MULTI_HTTP, metrics);
     const stepUrl = new CustomVariable({
       name: 'stepUrl',
       hide: VariableHide.hideVariable,
     });
     const variables = new SceneVariableSet({
-      variables: [...basicVariables, stepUrl],
+      variables: [probe, job, instance, stepUrl],
     });
 
     const resultsByUrl = new SceneQueryRunner({
@@ -58,7 +58,12 @@ export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig): S
         },
       ],
     });
-    const sidebar = new MultiHttpStepsScene({ job: '', target: '', $data: resultsByUrl });
+    const sidebar = new MultiHttpStepsScene({
+      job: '',
+      target: '',
+      stepUrl: '',
+      $data: resultsByUrl,
+    });
 
     const latencyByPhase = getLatencyByPhasePanel(metrics);
     const latencyByUrl = getLatencyByUrlPanel(metrics);
@@ -78,8 +83,8 @@ export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig): S
     });
 
     sidebar.subscribeToState(({ stepUrl: value }) => {
-      if (value !== stepUrl.getValue()) {
-        stepUrl.changeValueTo(value ?? '');
+      if (value && value !== stepUrl.getValue()) {
+        stepUrl.changeValueTo(value);
       }
     });
 
