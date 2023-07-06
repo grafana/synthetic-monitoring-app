@@ -194,23 +194,29 @@ export function CheckListScene({ setViewType, setCurrentPage }: Props) {
     () => ({ api: instance.api, logs: instance.logs, metrics: instance.metrics }),
     [instance.api, instance.logs, instance.metrics]
   );
-  if (!metrics || !logs || !api) {
+
+  const scene = useMemo(() => {
+    if (!metrics || !logs || !api) {
+      return undefined;
+    }
+    const metricsDef = {
+      uid: metrics.uid,
+      type: metrics.type,
+    };
+    const logsDef = {
+      uid: logs.uid,
+      type: logs.type,
+    };
+    const smDef = {
+      uid: api.uid,
+      type: api.type,
+    };
+    return getCheckListScene({ metrics: metricsDef, logs: logsDef, sm: smDef, setViewType, setCurrentPage });
+  }, [setViewType, setCurrentPage, api, logs, metrics]);
+
+  if (!scene) {
     return <Spinner />;
   }
 
-  const metricsDef = {
-    uid: metrics.uid,
-    type: metrics.type,
-  };
-  const logsDef = {
-    uid: logs.uid,
-    type: logs.type,
-  };
-  const smDef = {
-    uid: api.uid,
-    type: api.type,
-  };
-
-  const scene = getCheckListScene({ metrics: metricsDef, logs: logsDef, sm: smDef, setViewType, setCurrentPage });
   return <scene.Component model={scene} />;
 }
