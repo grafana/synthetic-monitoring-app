@@ -32,20 +32,15 @@ export class MultiHttpStepsScene extends SceneObjectBase<MultiHttpStepsSceneStat
       const interpolatedJob = sceneGraph.interpolate(this, '${job}');
       const interpolatedUrl = sceneGraph.interpolate(this, '${stepUrl}');
       if (interpolatedInst !== job || interpolatedInst !== target) {
-        this.setState({ job: interpolatedJob, target: interpolatedInst, stepUrl: '' });
+        this.setState({ job: interpolatedJob, target: interpolatedInst });
       }
-      if (interpolatedUrl !== stepUrl) {
+      if (interpolatedUrl && interpolatedUrl !== stepUrl) {
         this.setState({ stepUrl: interpolatedUrl });
       }
     },
   });
 
   constructor({ job, target, stepUrl, $data }: MultiHttpStepsSceneState) {
-    // console.log('initting', job, target, stepUrl);
-    // const interpolatedInst = sceneGraph.interpolate(this, '${instance}');
-    // const interpolatedJob = sceneGraph.interpolate(this, '${job}');
-    // const interpolatedUrl = sceneGraph.interpolate(this, '${stepUrl}');
-    // console.log('interpolated url', interpolatedUrl);
     super({ job: job ?? '', target: target ?? '', stepUrl, $data });
   }
 }
