@@ -78,7 +78,6 @@ export function MultiHttpStepsSceneRenderer({ model }: SceneComponentProps<Multi
 
       if (check) {
         const interpolatedUrl = sceneGraph.interpolate(model, '${stepUrl}');
-        console.log('in here gonna set url', interpolatedUrl);
         const useDefault =
           !interpolatedUrl || !check.settings.multihttp?.entries.find((entry) => entry.request.url === interpolatedUrl);
         model.setState({
@@ -89,7 +88,7 @@ export function MultiHttpStepsSceneRenderer({ model }: SceneComponentProps<Multi
     }
   }, [checks, loading, check, interpolatedJob, interpolatedInst, model, stepUrl]);
 
-  if (!check) {
+  if (!check || !stepUrl) {
     return <Spinner />;
   }
 
