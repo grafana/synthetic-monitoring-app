@@ -24,11 +24,18 @@ export function getLatencyByPhasePanel(metrics: DataSourceRef) {
       fieldConfig: {
         defaults: {
           unit: 's',
+          custom: {
+            axisPlacement: 'auto',
+            scaleDistribution: {
+              type: 'linear',
+            },
+          },
         },
         overrides: [],
       },
       options: {
         stacking: 'normal',
+        xTickLabelSpacing: 75,
       },
     }),
   });

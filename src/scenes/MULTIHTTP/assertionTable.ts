@@ -38,6 +38,7 @@ export function getAssertionTable(logs: DataSourceRef) {
     body: new VizPanel({
       $data: getQueryRunner(logs),
       pluginId: 'table',
+      title: 'Assertions',
       fieldConfig: {
         defaults: {
           custom: {

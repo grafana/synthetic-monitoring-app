@@ -16,7 +16,7 @@ export function StepPickerStepItem({ value, onClick, label, active }: Props) {
 
   let color;
   if (value === undefined) {
-    color = theme.colors.info.main;
+    color = theme.colors.secondary.main;
   } else if (value < 0.01) {
     color = theme.colors.success.main;
   } else if (value < 0.05) {
@@ -43,6 +43,7 @@ const getStyles = (theme: GrafanaTheme2) => {
     `,
     value: css`
       width: 6px;
+      min-width: 6px;
       height: 40px;
       background-color: ${theme.colors.success.main};
     `,
