@@ -59,9 +59,9 @@ export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig): S
       ],
     });
     const sidebar = new MultiHttpStepsScene({
-      job: job.getValue().toString(),
-      target: instance.getValue().toString(),
-      stepUrl: stepUrl.getValue().toString(),
+      job: '',
+      target: '',
+      stepUrl: '',
       $data: resultsByUrl,
     });
 
@@ -84,7 +84,7 @@ export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig): S
 
     sidebar.subscribeToState(({ stepUrl: value }) => {
       if (value && value !== stepUrl.getValue()) {
-        stepUrl.changeValueTo(value ?? '');
+        stepUrl.changeValueTo(value);
       }
     });
 
