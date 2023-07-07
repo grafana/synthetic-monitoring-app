@@ -5,7 +5,7 @@ import {
   MULTI_HTTP_ASSERTION_TYPE_OPTIONS,
 } from 'components/constants';
 import React from 'react';
-import { useFormContext, useFieldArray, Controller } from 'react-hook-form';
+import { useFormContext, useFieldArray, Controller, FieldError } from 'react-hook-form';
 import { MultiHttpAssertionType } from 'types';
 import { MultiHttpTabProps, getMultiHttpTabStyles } from './Tabs';
 
@@ -23,14 +23,14 @@ export function AssertionsTab({ index, label }: MultiHttpTabProps) {
     <div className={styles.inputsContainer}>
       {fields.map((field, assertionIndex) => {
         const assertionTypeName = `${assertionFieldName}[${assertionIndex}].type` ?? '';
-        const errorPath = formState.errors.settings?.multihttp?.entries[index]?.checks[assertionIndex];
+        const errorPath = formState.errors.settings?.multihttp?.entries?.[index]?.checks?.[assertionIndex];
         return (
           <HorizontalGroup spacing="md" key={field.id}>
             <Controller
               name={assertionTypeName}
               render={({ field: typeField }) => {
                 return (
-                  <Field label="Assertion type" invalid={errorPath?.type}>
+                  <Field label="Assertion type" invalid={errorPath?.type} error={errorPath?.type?.message}>
                     <Select
                       id={`multihttp-assertion-type-${index}-${assertionIndex}`}
                       className={styles.minInputWidth}
@@ -41,9 +41,9 @@ export function AssertionsTab({ index, label }: MultiHttpTabProps) {
                   </Field>
                 );
               }}
-              rules={{ required: true }}
+              rules={{ required: 'Assertion type is required' }}
             />
-            <AssertionFields fieldName={`${assertionFieldName}[${assertionIndex}]`} />
+            <AssertionFields fieldName={`${assertionFieldName}[${assertionIndex}]`} errors={errorPath} />
             <IconButton
               className={styles.removeIcon}
               name="minus-circle"
@@ -71,37 +71,37 @@ export function AssertionsTab({ index, label }: MultiHttpTabProps) {
   );
 }
 
-function AssertionFields({ fieldName }: { fieldName: string }) {
+function AssertionFields({ fieldName, errors }: { fieldName: string; errors: any }) {
   const { watch } = useFormContext();
   const assertionType = watch(`${fieldName}.type`);
   switch (assertionType?.value) {
     case MultiHttpAssertionType.Text:
       return (
         <HorizontalGroup spacing="sm">
-          <AssertionSubjectField fieldName={fieldName} />
-          <AssertionConditionField fieldName={fieldName} />
-          <AssertionValueField fieldName={fieldName} />
+          <AssertionSubjectField fieldName={fieldName} error={errors?.subject} />
+          <AssertionConditionField fieldName={fieldName} error={errors?.condition} />
+          <AssertionValueField fieldName={fieldName} error={errors?.value} />
         </HorizontalGroup>
       );
     case MultiHttpAssertionType.JSONPathValue:
       return (
         <HorizontalGroup spacing="sm">
-          <AssertionExpressionField fieldName={fieldName} />
-          <AssertionConditionField fieldName={fieldName} />
-          <AssertionValueField fieldName={fieldName} />
+          <AssertionExpressionField fieldName={fieldName} error={errors?.expression} />
+          <AssertionConditionField fieldName={fieldName} error={errors?.condition} />
+          <AssertionValueField fieldName={fieldName} error={errors?.value} />
         </HorizontalGroup>
       );
     case MultiHttpAssertionType.JSONPath:
       return (
         <HorizontalGroup spacing="sm">
-          <AssertionExpressionField fieldName={fieldName} />
+          <AssertionExpressionField fieldName={fieldName} error={errors?.expression} />
         </HorizontalGroup>
       );
     case MultiHttpAssertionType.Regex:
       return (
         <HorizontalGroup spacing="sm">
-          <AssertionSubjectField fieldName={fieldName} />
-          <AssertionExpressionField fieldName={fieldName} />
+          <AssertionSubjectField fieldName={fieldName} error={errors?.subject} />
+          <AssertionExpressionField fieldName={fieldName} error={errors?.expression} />
         </HorizontalGroup>
       );
     default:
@@ -109,13 +109,13 @@ function AssertionFields({ fieldName }: { fieldName: string }) {
   }
 }
 
-function AssertionSubjectField({ fieldName }: { fieldName: string }) {
+function AssertionSubjectField({ fieldName, error }: { fieldName: string; error?: FieldError }) {
   return (
     <Controller
       name={`${fieldName}.subject`}
       render={({ field }) => {
         return (
-          <Field label="Subject">
+          <Field label="Subject" invalid={Boolean(error)} error={error?.message}>
             <Select
               id={`${fieldName}-subject}`}
               {...field}
@@ -125,18 +125,18 @@ function AssertionSubjectField({ fieldName }: { fieldName: string }) {
           </Field>
         );
       }}
-      rules={{ required: true }}
+      rules={{ required: 'Subject is required' }}
     />
   );
 }
 
-function AssertionConditionField({ fieldName }: { fieldName: string }) {
+function AssertionConditionField({ fieldName, error }: { fieldName: string; error?: FieldError }) {
   return (
     <Controller
       name={`${fieldName}.condition`}
       render={({ field }) => {
         return (
-          <Field label="Condition">
+          <Field label="Condition" invalid={Boolean(error)} error={error?.message}>
             <Select
               id={`${fieldName}-condition}`}
               {...field}
@@ -146,25 +146,41 @@ function AssertionConditionField({ fieldName }: { fieldName: string }) {
           </Field>
         );
       }}
-      rules={{ required: true }}
+      rules={{ required: 'Condition is required' }}
     />
   );
 }
 
-function AssertionValueField({ fieldName }: { fieldName: string }) {
+function AssertionValueField({ fieldName, error }: { fieldName: string; error?: FieldError }) {
   const { register } = useFormContext();
   return (
-    <Field label="Value">
-      <Input placeholder="Value" id={`${fieldName}-value`} {...register(`${fieldName}.value`)} />
+    <Field label="Value" invalid={Boolean(error)} error={error?.message}>
+      <Input
+        placeholder="Value"
+        id={`${fieldName}-value`}
+        {...register(`${fieldName}.value`, { required: 'Value is required' })}
+      />
     </Field>
   );
 }
 
-function AssertionExpressionField({ fieldName }: { fieldName: string }) {
+function AssertionExpressionField({ fieldName, error }: { fieldName: string; error?: FieldError }) {
   const { register } = useFormContext();
   return (
-    <Field label="Expression">
-      <Input placeholder="$." id={`${fieldName}-expression`} {...register(`${fieldName}.expression`)} />
+    <Field label="Expression" invalid={Boolean(error)} error={error?.message}>
+      <Input
+        placeholder="$."
+        id={`${fieldName}-expression`}
+        {...register(`${fieldName}.expression`, {
+          required: 'Expression is required',
+          validate: (value) => {
+            if (!value || value === '$.') {
+              return 'Expression is required';
+            }
+            return;
+          },
+        })}
+      />
     </Field>
   );
 }

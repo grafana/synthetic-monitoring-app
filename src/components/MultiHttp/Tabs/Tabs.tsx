@@ -52,24 +52,38 @@ export const HeadersTab = ({ label = 'header', index }: MultiHttpTabProps) => {
                   <Fragment key={field.id}>
                     <HorizontalGroup spacing="md" align="center" className={styles.headersQueryInputs}>
                       <HorizontalGroup spacing="md" align="center" className={styles.headersQueryInputs}>
-                        <Input
-                          {...register(`${headersNamePrefix}.name` as const, {
-                            required: true,
-                            minLength: 1,
-                          })}
-                          type="text"
-                          placeholder="name"
-                          data-testid={`header-name-${index}`}
-                        />
-                        <Input
-                          {...register(`${headersNamePrefix}.value` as const, {
-                            required: true,
-                            minLength: 1,
-                          })}
-                          type="text"
-                          data-testid={`header-value-${index}`}
-                          placeholder="value"
-                        />
+                        <Field
+                          invalid={formState.errors?.settings?.multihttp?.entries[index]?.request?.headers?.[i]?.name}
+                          error={
+                            formState.errors?.settings?.multihttp?.entries[index]?.request?.headers?.[i]?.name?.message
+                          }
+                        >
+                          <Input
+                            {...register(`${headersNamePrefix}.name` as const, {
+                              required: 'Header name required',
+                              minLength: 1,
+                            })}
+                            type="text"
+                            placeholder="name"
+                            data-testid={`header-name-${index}`}
+                          />
+                        </Field>
+                        <Field
+                          invalid={formState.errors?.settings?.multihttp?.entries[index]?.request?.headers?.[i]?.value}
+                          error={
+                            formState.errors?.settings?.multihttp?.entries[index]?.request?.headers?.[i]?.value?.message
+                          }
+                        >
+                          <Input
+                            {...register(`${headersNamePrefix}.value` as const, {
+                              required: 'Header value required',
+                              minLength: 1,
+                            })}
+                            type="text"
+                            data-testid={`header-value-${index}`}
+                            placeholder="value"
+                          />
+                        </Field>
                       </HorizontalGroup>
                       <IconButton
                         className={styles.removeIcon}
@@ -81,13 +95,13 @@ export const HeadersTab = ({ label = 'header', index }: MultiHttpTabProps) => {
                         }}
                       />
                     </HorizontalGroup>
-                    {(formState.errors?.settings?.multihttp?.entries[index]?.request?.headers[i]?.name ||
+                    {/* {(formState.errors?.settings?.multihttp?.entries[index]?.request?.headers[i]?.name ||
                       formState.errors?.settings?.multihttp?.entries[index]?.request?.headers[i]?.value) && (
                       <>
                         <div className={styles.errorMsg}>Enter at least one character</div>
                         <br />
                       </>
-                    )}
+                    )} */}
                   </Fragment>
                 );
               })}
@@ -139,6 +153,7 @@ const QueryParamsTab = ({ index, label }: MultiHttpTabProps) => {
   });
   const styles = useStyles2(getMultiHttpTabStyles);
   const { register, formState } = useFormContext();
+  const errors = formState.errors?.settings?.multihttp?.entries?.[index]?.request?.queryString;
 
   return (
     <div className={styles.inputsContainer}>
@@ -153,24 +168,28 @@ const QueryParamsTab = ({ index, label }: MultiHttpTabProps) => {
                   <Fragment key={field.id}>
                     <HorizontalGroup align="flex-start" spacing="md">
                       <HorizontalGroup spacing="md" align="center">
-                        <Input
-                          {...register(`${queryParamsNamePrefix}.name` as const, {
-                            required: true,
-                            minLength: 1,
-                          })}
-                          type="text"
-                          placeholder="Parameter name"
-                          data-testid="query-param-name"
-                        />
-                        <Input
-                          {...register(`${queryParamsNamePrefix}.value` as const, {
-                            required: true,
-                            minLength: 1,
-                          })}
-                          type="text"
-                          placeholder="Parameter value"
-                          data-testid="query-param-value"
-                        />
+                        <Field invalid={errors?.[i]?.name} error={errors?.[i]?.name?.message}>
+                          <Input
+                            {...register(`${queryParamsNamePrefix}.name` as const, {
+                              required: 'Query param name required',
+                              minLength: 1,
+                            })}
+                            type="text"
+                            placeholder="Parameter name"
+                            data-testid="query-param-name"
+                          />
+                        </Field>
+                        <Field invalid={errors?.[i]?.value} error={errors?.[i]?.value?.message}>
+                          <Input
+                            {...register(`${queryParamsNamePrefix}.value` as const, {
+                              required: 'Query param value required',
+                              minLength: 1,
+                            })}
+                            type="text"
+                            placeholder="Parameter value"
+                            data-testid="query-param-value"
+                          />
+                        </Field>
                       </HorizontalGroup>
                       <IconButton
                         className={styles.removeIcon}
@@ -181,13 +200,6 @@ const QueryParamsTab = ({ index, label }: MultiHttpTabProps) => {
                         }}
                       />
                     </HorizontalGroup>
-                    {(formState.errors?.settings?.multihttp?.entries[index]?.request?.queryString[i]?.name ||
-                      formState.errors?.settings?.multihttp?.entries[index]?.request?.queryString[i]?.value) && (
-                      <>
-                        <div className={styles.errorMsg}>Enter at least one character</div>
-                        <br />
-                      </>
-                    )}
                   </Fragment>
                 );
               })}
@@ -223,7 +235,7 @@ const VariablesTab = ({ index }: MultiHttpTabProps) => {
       {fields.map((field, variableIndex) => {
         const variableTypeName = `${variableFieldName}[${variableIndex}].type` ?? '';
         const variableTypeValue = watch(variableTypeName)?.value;
-        const errorPath = formState.errors.settings?.multihttp?.entries[index]?.variables[variableIndex];
+        const errorPath = formState.errors.settings?.multihttp?.entries[index]?.variables?.[variableIndex];
 
         return (
           <HorizontalGroup key={field.id}>
@@ -244,28 +256,32 @@ const VariablesTab = ({ index }: MultiHttpTabProps) => {
               }}
               rules={{ required: true }}
             />
-            <Field label="Variable name" invalid={errorPath?.name}>
+            <Field label="Variable name" invalid={errorPath?.name} error={errorPath?.name?.message}>
               <Input
                 placeholder="Variable name"
                 id={`multihttp-variable-name-${index}-${variableIndex}`}
                 invalid={formState.errors.settings?.multihttp?.entries[index]?.variables[variableIndex]?.type}
-                {...register(`${variableFieldName}[${variableIndex}].name`, { required: true })}
+                {...register(`${variableFieldName}[${variableIndex}].name`, { required: 'Variable name is required' })}
               />
             </Field>
             {variableTypeValue === MultiHttpVariableType.CSS_SELECTOR && (
-              <Field label="Attribute" invalid={errorPath?.attribute}>
+              <Field label="Attribute" invalid={errorPath?.attribute} error={errorPath?.attribute?.message}>
                 <Input
                   placeholder="Attribute"
                   id={`multihttp-variable-attribute-${index}-${variableIndex}`}
-                  {...register(`${variableFieldName}[${variableIndex}].attribute`)}
+                  {...register(`${variableFieldName}[${variableIndex}].attribute`, {
+                    required: 'Attribute is required',
+                  })}
                 />
               </Field>
             )}
-            <Field label="Variable expression" invalid={errorPath?.expression}>
+            <Field label="Variable expression" invalid={errorPath?.expression} error={errorPath?.expression.message}>
               <Input
                 placeholder="Variable expression"
                 id={`multihttp-variable-expression-${index}-${variableIndex}`}
-                {...register(`${variableFieldName}[${variableIndex}].expression`, { required: true })}
+                {...register(`${variableFieldName}[${variableIndex}].expression`, {
+                  required: 'Expression is required',
+                })}
               />
             </Field>
             <IconButton name="trash-alt" onClick={() => remove(variableIndex)} />
