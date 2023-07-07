@@ -260,7 +260,7 @@ const VariablesTab = ({ index }: MultiHttpTabProps) => {
               <Input
                 placeholder="Variable name"
                 id={`multihttp-variable-name-${index}-${variableIndex}`}
-                invalid={formState.errors.settings?.multihttp?.entries[index]?.variables[variableIndex]?.type}
+                invalid={formState.errors.settings?.multihttp?.entries[index]?.variables?.[variableIndex]?.type}
                 {...register(`${variableFieldName}[${variableIndex}].name`, { required: 'Variable name is required' })}
               />
             </Field>

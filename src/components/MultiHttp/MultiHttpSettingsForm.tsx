@@ -139,6 +139,8 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
     onReturn && onReturn(true);
   };
 
+  const requests = watch('settings.multihttp.entries') as any[];
+
   return (
     <>
       <PluginPage pageNav={{ text: check?.job ? check.job : 'Add check', description: 'Check configuration' }}>
@@ -237,6 +239,7 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
                   fill="text"
                   size="md"
                   icon="plus"
+                  disabled={requests?.length > 9}
                   onClick={() => {
                     append({});
                   }}
