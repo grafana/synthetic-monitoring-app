@@ -29,5 +29,5 @@ export function getVariables(checkType: CheckType, metrics: DataSourceRef) {
     skipUrlSync: false,
   });
 
-  return [probe, job, instance];
+  return { probe, job, instance };
 }
