@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { css } from '@emotion/css';
-import { Card, useStyles2, VerticalGroup } from '@grafana/ui';
+import { Card, useStyles2 } from '@grafana/ui';
 import { GrafanaTheme2, PageLayoutType } from '@grafana/data';
 import { CheckType, FeatureName, ROUTES } from 'types';
 import { CHECK_TYPE_OPTIONS } from 'components/constants';
@@ -28,23 +28,21 @@ export function ChooseCheckType() {
 
   return (
     <PluginPage layout={PageLayoutType?.Standard} pageNav={{ text: 'Choose a check type', description: '' }}>
-      {' '}
       <div className={styles.container}>
-        <VerticalGroup>
-          {options?.map((check) => {
-            return (
-              <Card
-                key={check?.label || ''}
-                className={styles.cards}
-                onClick={() => {
-                  navigate(`${ROUTES.NewCheck}/${check.value}`);
-                }}
-              >
-                <Card.Heading className={styles.cardsHeader}>{check.label}</Card.Heading>
-              </Card>
-            );
-          })}
-        </VerticalGroup>
+        {options?.map((check) => {
+          return (
+            <Card
+              key={check?.label || ''}
+              className={styles.cards}
+              onClick={() => {
+                navigate(`${ROUTES.NewCheck}/${check.value}`);
+              }}
+            >
+              <Card.Heading className={styles.cardsHeader}>{check.label}</Card.Heading>
+              <Card.Description>{check.description}</Card.Description>
+            </Card>
+          );
+        })}
       </div>
     </PluginPage>
   );
@@ -52,19 +50,19 @@ export function ChooseCheckType() {
 
 const getStyles = (theme: GrafanaTheme2) => ({
   container: css`
-    justify-content: space-between;
     width: 100%;
     margin: ${theme.spacing(2)} 0;
     padding: ${theme.spacing(2)};
-    place-items: center;
-    align-items: center;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 400px));
+    gap: ${theme.spacing(2)};
   `,
   cards: css`
-    width: 260px;
+    max-width: 400px;
   `,
   cardsHeader: css`
     text-align: center;
     justify-content: center;
+    align-items: flex-start;
   `,
 });

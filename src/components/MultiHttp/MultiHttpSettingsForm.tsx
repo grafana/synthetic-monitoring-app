@@ -56,6 +56,7 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
     register,
     watch,
     handleSubmit,
+    setError,
     formState: { errors },
   } = formMethods;
 
@@ -77,9 +78,15 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
       // This is not the case for multihttp checks, whose targets are called `url`s and are nested under
       // `settings.multihttp?.entries[0].request.url`. Yet, the BE still requires a root-level `target`, even in
       // the case of multihttp, even though it wont be used. So we will pass this safety `target`.values.target = target;
+      console.log('getting here?');
       const target = values.settings.multihttp?.entries?.[0]?.request?.url ?? '';
       if (!target) {
-        throw new Error('At least one request with a URL is required');
+        setError('settings.multihttp.entries.0.request.url', {
+          type: 'custom',
+          message: 'custom message',
+        });
+        return;
+        // throw new Error('At least one request with a URL is required');
       }
 
       const updatedCheck = getCheckFromFormValues(values, defaultValues, CheckType.MULTI_HTTP);
@@ -102,7 +109,7 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
         setErrorMessages([err?.data?.err || err?.data?.msg]);
       }
     },
-    [api, onReturn, check.tenantId, check.id, setErrorMessages, defaultValues]
+    [api, onReturn, check.tenantId, check.id, setErrorMessages, defaultValues, setError]
   );
 
   const clearAlert = () => {
@@ -143,7 +150,7 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
               <Field label="Job name" invalid={Boolean(errors.job)} error={errors.job?.message}>
                 <Input
                   {...register('job', {
-                    required: true,
+                    required: 'Job name is required',
                     minLength: 1,
                   })}
                   type="text"
@@ -170,19 +177,24 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
                   const urlForIndex =
                     watch(`settings.multihttp.entries.${index}.request.url`) || `Request ${index + 1}`;
                   return (
-                    <MultiHttpCollapse label={urlForIndex} key={field.id} className={styles.collapseTarget}>
+                    <MultiHttpCollapse
+                      label={urlForIndex}
+                      key={field.id}
+                      className={styles.collapseTarget}
+                      invalid={Boolean(errors?.settings?.multihttp?.entries?.[index])}
+                    >
                       <VerticalGroup height={'100%'}>
                         <HorizontalGroup spacing="lg" align="center">
                           <Field
                             label="Request target"
                             description="Full URL to send request to"
-                            invalid={Boolean(errors?.settings?.multihttp?.entries?.[index]?.request?.url?.message)}
+                            invalid={Boolean(errors?.settings?.multihttp?.entries?.[index]?.request?.url)}
                             error={errors?.settings?.multihttp?.entries?.[index]?.request?.url?.message}
                           >
                             <Input
                               id={`request-target-url-${index}`}
                               {...register(`settings.multihttp.entries.${index}.request.url` as const, {
-                                required: true,
+                                required: 'Request target is required',
                                 validate: (url) => validateTarget(CheckType.MULTI_HTTP, url),
                               })}
                             />
@@ -191,14 +203,14 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
                             label="Request method"
                             description="The HTTP method used"
                             invalid={Boolean(errors?.settings?.multihttp?.entries?.[index]?.request?.method)}
-                            error={errors?.settings?.multihttp?.entries?.[index]?.request?.method}
+                            error={errors?.settings?.multihttp?.entries?.[index]?.request?.method?.message}
                           >
                             <Controller
                               name={`settings.multihttp.entries.${index}.request.method`}
                               render={({ field }) => (
                                 <Select {...field} options={METHOD_OPTIONS} data-testid="request-method" />
                               )}
-                              rules={{ required: true }}
+                              rules={{ required: 'Request method is required' }}
                             />
                           </Field>
                           <Button
