@@ -5,10 +5,11 @@ import { GrafanaTheme2 } from '@grafana/data';
 
 interface Props {
   label: string;
+  invalid?: boolean;
   className?: string | string[];
 }
 
-export const MultiHttpCollapse = ({ label, children, className }: PropsWithChildren<Props>) => {
+export const MultiHttpCollapse = ({ label, children, invalid, className }: PropsWithChildren<Props>) => {
   const styles = useStyles2(getStyles);
   const [isOpen, setIsOpen] = useState<boolean>(true);
 
@@ -23,6 +24,7 @@ export const MultiHttpCollapse = ({ label, children, className }: PropsWithChild
         <>
           <Icon name={isOpen ? 'angle-down' : 'angle-right'} className={styles.headerIcon} />
           <div className={styles.label}>{label}</div>
+          {!isOpen && invalid && <Icon name="exclamation-triangle" className={styles.errorIcon} />}
         </>
       </div>
       <div className={cx(styles.body, { [styles.hidden]: !isOpen })}>{children}</div>
@@ -59,5 +61,9 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
   hidden: css`
     display: none;
+  `,
+  errorIcon: css`
+    color: ${theme.colors.error.text};
+    margin-left: ${theme.spacing(1)};
   `,
 });

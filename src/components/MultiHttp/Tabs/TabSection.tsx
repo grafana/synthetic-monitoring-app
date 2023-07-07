@@ -53,7 +53,7 @@ export const TabSection = ({ index }: RequestTabsProps) => {
           }}
           default={true}
           className={styles.tabs}
-          counter={headers?.length || undefined}
+          counter={headers?.length ?? 0}
           suffix={errors?.request?.headers?.length ? TabErrorWarning : undefined}
         />
 
@@ -64,7 +64,7 @@ export const TabSection = ({ index }: RequestTabsProps) => {
             setActiveTab('queryParams');
           }}
           className={styles.tabs}
-          counter={queryParams?.length}
+          counter={queryParams?.length ?? 0}
           suffix={errors?.request?.queryString?.length ? TabErrorWarning : undefined}
         />
         <Tab
@@ -74,7 +74,7 @@ export const TabSection = ({ index }: RequestTabsProps) => {
             setActiveTab('assertions');
           }}
           className={styles.tabs}
-          counter={assertions?.length}
+          counter={assertions?.length ?? 0}
           suffix={errors?.checks?.length ? TabErrorWarning : undefined}
         />
         <Tab
@@ -84,7 +84,7 @@ export const TabSection = ({ index }: RequestTabsProps) => {
             setActiveTab('variables');
           }}
           className={styles.tabs}
-          counter={variables?.length}
+          counter={variables?.length ?? 0}
           suffix={errors?.variables?.length ? TabErrorWarning : undefined}
         />
         <Tab

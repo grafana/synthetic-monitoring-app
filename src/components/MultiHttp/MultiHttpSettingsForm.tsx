@@ -177,7 +177,12 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
                   const urlForIndex =
                     watch(`settings.multihttp.entries.${index}.request.url`) || `Request ${index + 1}`;
                   return (
-                    <MultiHttpCollapse label={urlForIndex} key={field.id} className={styles.collapseTarget}>
+                    <MultiHttpCollapse
+                      label={urlForIndex}
+                      key={field.id}
+                      className={styles.collapseTarget}
+                      invalid={Boolean(errors?.settings?.multihttp?.entries?.[index])}
+                    >
                       <VerticalGroup height={'100%'}>
                         <HorizontalGroup spacing="lg" align="center">
                           <Field
