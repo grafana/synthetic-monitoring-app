@@ -23,6 +23,7 @@ import {
 } from '../Common';
 import { getErrorRateTimeseries } from './errorRateTimeseries';
 import { getLatencyByPhasePanel } from './latencyByPhase';
+import { getEditButton } from 'scenes/Common/editButton';
 
 export function getHTTPScene({ metrics, logs }: DashboardSceneAppConfig) {
   return () => {
@@ -30,8 +31,8 @@ export function getHTTPScene({ metrics, logs }: DashboardSceneAppConfig) {
       from: 'now-6h',
       to: 'now',
     });
-
-    const variableSet = new SceneVariableSet({ variables: getVariables(CheckType.HTTP, metrics) });
+    const { probe, job, instance } = getVariables(CheckType.HTTP, metrics);
+    const variableSet = new SceneVariableSet({ variables: [probe, job, instance] });
 
     const mapPanel = getErrorRateMapPanel(metrics);
     const uptime = getUptimeStat(metrics);
@@ -76,12 +77,15 @@ export function getHTTPScene({ metrics, logs }: DashboardSceneAppConfig) {
       children: [new SceneFlexItem({ height: 500, body: errorLogs })],
     });
 
+    const editButton = getEditButton({ job, instance });
+
     return new EmbeddedScene({
       $timeRange: timeRange,
       $variables: variableSet,
       controls: [
         new VariableValueSelectors({}),
         new SceneControlsSpacer(),
+        editButton,
         new SceneTimePicker({ isOnCanvas: true }),
         new SceneRefreshPicker({
           intervals: ['5s', '1m', '1h'],

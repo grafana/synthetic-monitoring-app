@@ -22,6 +22,7 @@ import { getLatencyByUrlPanel } from './latencyByUrl';
 import { getAssertionLogsPanel } from './assertionLogs';
 import { getErrorRateByUrl } from './errorRateByUrl';
 import { getAssertionTable } from './assertionTable';
+import { getEditButton } from 'scenes/Common/editButton';
 
 export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig): SceneBuilder {
   return () => {
@@ -29,7 +30,7 @@ export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig): S
       from: 'now-6h',
       to: 'now',
     });
-    const [probe, job, instance] = getVariables(CheckType.MULTI_HTTP, metrics);
+    const { probe, job, instance } = getVariables(CheckType.MULTI_HTTP, metrics);
     const stepUrl = new CustomVariable({
       name: 'stepUrl',
       hide: VariableHide.hideVariable,
@@ -93,12 +94,27 @@ export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig): S
     const distinctTargets = getDistinctTargets(metrics);
     const probeDuration = getProbeDuration(metrics);
 
+    const editButton = getEditButton({ job, instance });
+
     return new EmbeddedScene({
       $timeRange: timeRange,
       $variables: variables,
       controls: [
         new VariableValueSelectors({}),
         new SceneControlsSpacer(),
+        editButton,
+        // new SceneToolbarButton({
+        //   icon: 'edit',
+        //   onClick: () => {
+        //     const instanceVal = instance.getValue();
+        //     const jobVal = job.getValue();
+        //     const { checks } = sidebar.useState();
+        //     // sidebar.subscribeToState(({ checks }) => {
+        //     //   console.log('checks', checks);
+        //     // });
+        //     console.log('hi', jobVal, instanceVal, checks);
+        //   },
+        // }),
         new SceneTimePicker({ isOnCanvas: true }),
         new SceneRefreshPicker({
           intervals: ['5s', '1m', '1h'],

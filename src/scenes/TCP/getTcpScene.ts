@@ -20,6 +20,7 @@ import {
   getUptimeStat,
   getVariables,
 } from 'scenes/Common';
+import { getEditButton } from 'scenes/Common/editButton';
 import { getErrorRateTimeseries } from 'scenes/HTTP/errorRateTimeseries';
 import { CheckType, DashboardSceneAppConfig } from 'types';
 
@@ -30,7 +31,9 @@ export function getTcpScene({ metrics, logs }: DashboardSceneAppConfig) {
       to: 'now',
     });
 
-    const variables = new SceneVariableSet({ variables: getVariables(CheckType.TCP, metrics) });
+    const { job, instance, probe } = getVariables(CheckType.TCP, metrics);
+
+    const variables = new SceneVariableSet({ variables: [probe, job, instance] });
     const errorMap = getErrorRateMapPanel(metrics);
 
     const uptime = getUptimeStat(metrics);
@@ -69,12 +72,15 @@ export function getTcpScene({ metrics, logs }: DashboardSceneAppConfig) {
       children: [new SceneFlexItem({ height: 500, body: getErrorLogs(logs) })],
     });
 
+    const editButton = getEditButton({ job, instance });
+
     return new EmbeddedScene({
       $timeRange: timeRange,
       $variables: variables,
       controls: [
         new VariableValueSelectors({}),
         new SceneControlsSpacer(),
+        editButton,
         new SceneTimePicker({ isOnCanvas: true }),
         new SceneRefreshPicker({
           intervals: ['5s', '1m', '1h'],

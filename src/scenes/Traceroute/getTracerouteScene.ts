@@ -18,6 +18,7 @@ import { getNodeGraphPanel } from './nodeGraph';
 import { getPacketLossPanel } from './packetLoss';
 import { getRouteHashPanel } from './routeHash';
 import { getTraceTimePanel } from './traceTime';
+import { getEditButton } from 'scenes/Common/editButton';
 
 export function getTracerouteScene({ metrics, logs, sm }: DashboardSceneAppConfig) {
   return () => {
@@ -25,7 +26,9 @@ export function getTracerouteScene({ metrics, logs, sm }: DashboardSceneAppConfi
       from: 'now-30m',
       to: 'now',
     });
-    const variables = new SceneVariableSet({ variables: getVariables(CheckType.Traceroute, metrics) });
+
+    const { probe, job, instance } = getVariables(CheckType.Traceroute, metrics);
+    const variables = new SceneVariableSet({ variables: [probe, job, instance] });
 
     const nodeGraph = new SceneFlexItem({ height: 500, body: getNodeGraphPanel(sm) });
 
@@ -51,12 +54,15 @@ export function getTracerouteScene({ metrics, logs, sm }: DashboardSceneAppConfi
     const logsPanel = getLogsPanel(logs);
     const logsRow = new SceneFlexItem({ height: 400, body: logsPanel });
 
+    const editButton = getEditButton({ job, instance });
+
     return new EmbeddedScene({
       $timeRange: timeRange,
       $variables: variables,
       controls: [
         new VariableValueSelectors({}),
         new SceneControlsSpacer(),
+        editButton,
         new SceneTimePicker({ isOnCanvas: true }),
         new SceneRefreshPicker({
           intervals: ['5s', '1m', '1h'],

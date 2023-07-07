@@ -22,6 +22,7 @@ import {
 import { getErrorRateTimeseries } from 'scenes/HTTP/errorRateTimeseries';
 import { CheckType, DashboardSceneAppConfig } from 'types';
 import { getLatencyByPhasePanel } from './latencyByPhase';
+import { getEditButton } from 'scenes/Common/editButton';
 
 export function getPingScene({ metrics, logs }: DashboardSceneAppConfig) {
   return () => {
@@ -30,7 +31,9 @@ export function getPingScene({ metrics, logs }: DashboardSceneAppConfig) {
       to: 'now',
     });
 
-    const variables = new SceneVariableSet({ variables: getVariables(CheckType.PING, metrics) });
+    const { job, instance, probe } = getVariables(CheckType.PING, metrics);
+
+    const variables = new SceneVariableSet({ variables: [probe, job, instance] });
     const errorMap = getErrorRateMapPanel(metrics);
 
     const uptime = getUptimeStat(metrics);
@@ -70,12 +73,15 @@ export function getPingScene({ metrics, logs }: DashboardSceneAppConfig) {
       children: [new SceneFlexItem({ height: 500, body: getErrorLogs(logs) })],
     });
 
+    const editButton = getEditButton({ job, instance });
+
     return new EmbeddedScene({
       $timeRange: timeRange,
       $variables: variables,
       controls: [
         new VariableValueSelectors({}),
         new SceneControlsSpacer(),
+        editButton,
         new SceneTimePicker({ isOnCanvas: true }),
         new SceneRefreshPicker({
           intervals: ['5s', '1m', '1h'],
