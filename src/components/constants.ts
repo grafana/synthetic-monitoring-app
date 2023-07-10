@@ -474,7 +474,7 @@ export const ASSERTION_CONDITION_OPTIONS: Array<SelectableValue<AssertionConditi
 ];
 
 export const ASSERTION_SUBJECT_OPTIONS: Array<SelectableValue<AssertionSubjectVariant>> = [
-  { label: 'body', value: AssertionSubjectVariant.ResponseBody },
-  { label: 'headers', value: AssertionSubjectVariant.ResponseHeaders },
+  { label: 'Body', value: AssertionSubjectVariant.ResponseBody },
+  { label: 'Headers', value: AssertionSubjectVariant.ResponseHeaders },
   { label: 'HTTP status code', value: AssertionSubjectVariant.HttpStatusCode },
 ];

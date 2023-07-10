@@ -1,4 +1,4 @@
-import React, { useContext, useState, useMemo, useCallback } from 'react';
+import React, { useContext, useState, useMemo } from 'react';
 import { FormProvider, useForm, Controller, useFieldArray } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 
@@ -23,13 +23,14 @@ import { multiHttpFallbackCheck } from './consts';
 import { validateTarget } from 'validation';
 import { TabSection } from './Tabs/TabSection';
 import { getMultiHttpFormStyles } from './MultiHttpSettingsForm.styles';
-import { CheckFormValues, Check, CheckPageParams, CheckType } from 'types';
+import { CheckFormValues, Check, CheckPageParams, CheckType, SubmissionErrorWrapper } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { PluginPage } from 'components/PluginPage';
 import { config } from '@grafana/runtime';
 import { OrgRole } from '@grafana/data';
 import { hasRole } from 'utils';
 import { AvailableVariables } from './AvailableVariables';
+import { useAsyncCallback } from 'react-async-hook';
 
 interface Props {
   checks?: Check[];
@@ -39,7 +40,6 @@ interface Props {
 export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
   const styles = useStyles2(getMultiHttpFormStyles);
   const [urls, setUrls] = useState<any[]>([]);
-  const [errorMessages, setErrorMessages] = useState<any[]>();
   let check: Check = multiHttpFallbackCheck;
   const { id } = useParams<CheckPageParams>();
   if (id) {
@@ -56,7 +56,6 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
     register,
     watch,
     handleSubmit,
-    setError,
     formState: { errors },
   } = formMethods;
 
@@ -72,63 +71,37 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  const onSubmit = useCallback(
-    async (values: CheckFormValues) => {
-      // All other types of SM checks so far require a `target` to execute at the root of the submitted object.
-      // This is not the case for multihttp checks, whose targets are called `url`s and are nested under
-      // `settings.multihttp?.entries[0].request.url`. Yet, the BE still requires a root-level `target`, even in
-      // the case of multihttp, even though it wont be used. So we will pass this safety `target`.values.target = target;
-      console.log('getting here?');
-      const target = values.settings.multihttp?.entries?.[0]?.request?.url ?? '';
-      if (!target) {
-        setError('settings.multihttp.entries.0.request.url', {
-          type: 'custom',
-          message: 'custom message',
-        });
-        return;
-        // throw new Error('At least one request with a URL is required');
-      }
+  const {
+    execute: onSubmit,
+    error,
+    loading: submitting,
+  } = useAsyncCallback(async (values: CheckFormValues) => {
+    // All other types of SM checks so far require a `target` to execute at the root of the submitted object.
+    // This is not the case for multihttp checks, whose targets are called `url`s and are nested under
+    // `settings.multihttp?.entries[0].request.url`. Yet, the BE still requires a root-level `target`, even in
+    // the case of multihttp, even though it wont be used. So we will pass this safety `target`.values.target = target;
+    const target = values.settings.multihttp?.entries?.[0]?.request?.url ?? '';
+    if (!target) {
+      throw new Error('At least one request with a URL is required');
+    }
 
-      const updatedCheck = getCheckFromFormValues(values, defaultValues, CheckType.MULTI_HTTP);
+    const updatedCheck = getCheckFromFormValues(values, defaultValues, CheckType.MULTI_HTTP);
 
-      try {
-        if (check?.id) {
-          // trackEvent('editCheckSubmit');
-          await api?.updateCheck({
-            id: check.id,
-            tenantId: check.tenantId,
-            ...updatedCheck,
-          });
-        } else {
-          // trackEvent('addNewCheckSubmit');
-          await api?.addCheck(updatedCheck);
-        }
-        onReturn && onReturn(true);
-      } catch (err: any) {
-        console.log('hello', err);
-        setErrorMessages([err?.data?.err || err?.data?.msg]);
-      }
-    },
-    [api, onReturn, check.tenantId, check.id, setErrorMessages, defaultValues, setError]
-  );
+    if (check?.id) {
+      // trackEvent('editCheckSubmit');
+      await api?.updateCheck({
+        id: check.id,
+        tenantId: check.tenantId,
+        ...updatedCheck,
+      });
+    } else {
+      // trackEvent('addNewCheckSubmit');
+      await api?.addCheck(updatedCheck);
+    }
+    onReturn && onReturn(true);
+  });
 
-  const clearAlert = () => {
-    setErrorMessages([]);
-  };
-
-  const getErrorMessages = () => {
-    return (
-      errorMessages && (
-        <Alert title="Multi-http request creation failed" severity="error" onRemove={clearAlert}>
-          <>
-            {errorMessages.map((ms, index) => {
-              return <div key={index}>{ms}</div>;
-            })}
-          </>
-        </Alert>
-      )
-    );
-  };
+  const submissionError = error as unknown as SubmissionErrorWrapper;
 
   const onRemoveCheck = async () => {
     const id = check?.id;
@@ -248,9 +221,13 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
                   Add request
                 </Button>
 
-                {errorMessages && errorMessages.length > 0 && getErrorMessages()}
+                {submissionError && (
+                  <Alert title="Multi-http request creation failed" severity="error">
+                    <div>{submissionError?.data?.err || submissionError?.data?.msg || submissionError?.message}</div>
+                  </Alert>
+                )}
                 <HorizontalGroup height="40px">
-                  <Button type="submit" disabled={formMethods.formState.isSubmitting}>
+                  <Button type="submit" disabled={formMethods.formState.isSubmitting || submitting}>
                     Save
                   </Button>
                   {check?.id && (

@@ -501,8 +501,7 @@ const getMultiHttpSettings = (
           checks.map(({ type, subject, condition, value, expression }) => {
             switch (type.value) {
               case MultiHttpAssertionType.Text:
-                // TODO: there is a bug here
-                if (!subject?.value || !condition?.value) {
+                if (subject?.value === undefined || condition?.value === undefined) {
                   throw new Error('Cannot have a Text assertion without a subject and condition');
                 }
                 return {
