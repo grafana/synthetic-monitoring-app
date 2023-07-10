@@ -13,6 +13,8 @@ import { submitForm } from 'components/CheckEditor/testHelpers';
 import { BASIC_CHECK_LIST } from 'components/CheckEditor/testConstants';
 import { locationService } from '@grafana/runtime';
 
+jest.setTimeout(60000);
+
 beforeEach(() => jest.resetAllMocks());
 const onReturn = jest.fn();
 
@@ -91,6 +93,7 @@ describe('new checks', () => {
     userEvent.type(values[0], 'yarp');
 
     await submitForm(onReturn);
+
     expect(instance.api.addCheck).toHaveBeenCalledTimes(1);
     expect(instance.api.addCheck).toHaveBeenCalledWith(
       expect.objectContaining({

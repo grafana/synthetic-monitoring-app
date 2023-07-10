@@ -28,7 +28,6 @@ function getFrequencyBounds(checkType: CheckType) {
     return {
       minFrequency: 60.0,
       maxFrequency: 120.0,
-      defaultFrequency: 90.0,
     };
   }
   return {
@@ -49,7 +48,6 @@ function getTimeoutBounds(checkType: CheckType) {
     return {
       minTimeout: 1.0,
       maxTimeout: 30.0,
-      defaultTimeout: 10.0,
     };
   }
   return {

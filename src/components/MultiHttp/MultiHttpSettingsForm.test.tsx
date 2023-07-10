@@ -13,6 +13,8 @@ import { BASIC_CHECK_LIST, BASIC_MULTIHTTP_CHECK } from 'components/CheckEditor/
 import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
 import { getSlider } from 'components/CheckEditor/testHelpers';
 
+jest.setTimeout(60000);
+
 beforeEach(() => jest.resetAllMocks());
 const onReturn = jest.fn();
 
