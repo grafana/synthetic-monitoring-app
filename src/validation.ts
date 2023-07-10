@@ -80,25 +80,67 @@ export function validateTarget(typeOfCheck: CheckType, target: string): string |
 }
 
 export function validateFrequency(frequency: number, selectedCheckType: CheckType): string | undefined {
-  const min = selectedCheckType === CheckType.Traceroute ? 60 : 10;
-  const max = selectedCheckType === CheckType.Traceroute ? 240 : 120;
-  if (frequency < min) {
-    return `Frequency must be at least ${min} seconds`;
-  }
-  if (frequency > max) {
-    return `Frequency cannot be greater than ${max} seconds`;
+  switch (selectedCheckType) {
+    case CheckType.Traceroute: {
+      if (frequency < 120) {
+        return `Frequency must be at least 120 seconds`;
+      }
+      if (frequency > 120) {
+        return `Frequency cannot be greater than 120 seconds`;
+      }
+      break;
+    }
+    case CheckType.MULTI_HTTP: {
+      if (frequency < 60) {
+        return `Frequency must be at least 60 seconds`;
+      }
+      if (frequency > 120) {
+        return `Frequency cannot be greater than 120 seconds`;
+      }
+      break;
+    }
+    default: {
+      if (frequency < 10) {
+        return `Frequency must be at least 10 seconds`;
+      }
+      if (frequency > 120) {
+        return `Frequency cannot be greater than 120 seconds`;
+      }
+    }
   }
   return undefined;
 }
 
 export function validateTimeout(timeout: number, checkType: CheckType): string | undefined {
-  const maxTimeout = checkType === CheckType.Traceroute ? 30 : 10;
-  if (timeout < 1) {
-    return 'Timeout must be at least 1 second';
+  switch (checkType) {
+    case CheckType.Traceroute: {
+      if (timeout < 30) {
+        return 'Timeout must be at least 30 seconds';
+      }
+      if (timeout < 30) {
+        return 'Timeout cannot be more than 30 seconds';
+      }
+      break;
+    }
+    case CheckType.MULTI_HTTP: {
+      if (timeout < 1) {
+        return 'Timeout must be at least 1 second';
+      }
+      if (timeout > 30) {
+        return 'Timeout cannot be more than 30 seconds';
+      }
+      break;
+    }
+    default: {
+      if (timeout < 1) {
+        return 'Timeout must be at least 1 second';
+      }
+      if (timeout > 10) {
+        return `Timeout cannot be greater than 10 seconds`;
+      }
+    }
   }
-  if (timeout > maxTimeout) {
-    return `Timeout cannot be greater than ${maxTimeout} seconds`;
-  }
+
   return undefined;
 }
 

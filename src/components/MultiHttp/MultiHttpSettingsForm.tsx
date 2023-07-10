@@ -78,7 +78,6 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
       // This is not the case for multihttp checks, whose targets are called `url`s and are nested under
       // `settings.multihttp?.entries[0].request.url`. Yet, the BE still requires a root-level `target`, even in
       // the case of multihttp, even though it wont be used. So we will pass this safety `target`.values.target = target;
-      console.log('getting here?');
       const target = values.settings.multihttp?.entries?.[0]?.request?.url ?? '';
       if (!target) {
         setError('settings.multihttp.entries.0.request.url', {
@@ -89,9 +88,10 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
         // throw new Error('At least one request with a URL is required');
       }
 
-      const updatedCheck = getCheckFromFormValues(values, defaultValues, CheckType.MULTI_HTTP);
-
       try {
+        console.log({ values });
+        const updatedCheck = getCheckFromFormValues(values, defaultValues, CheckType.MULTI_HTTP);
+
         if (check?.id) {
           // trackEvent('editCheckSubmit');
           await api?.updateCheck({
@@ -106,7 +106,7 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
         onReturn && onReturn(true);
       } catch (err: any) {
         console.log('hello', err);
-        setErrorMessages([err?.data?.err || err?.data?.msg]);
+        setErrorMessages([err?.data?.err || err?.data?.msg || err?.message]);
       }
     },
     [api, onReturn, check.tenantId, check.id, setErrorMessages, defaultValues, setError]
