@@ -1,8 +1,8 @@
-import { SceneQueryRunner, VizPanel } from '@grafana/scenes';
+import { SceneDataTransformer, SceneQueryRunner, VizPanel } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
 
 function getQueryRunner(metrics: DataSourceRef) {
-  return new SceneQueryRunner({
+  const queryRunner = new SceneQueryRunner({
     datasource: metrics,
     queries: [
       {
@@ -12,7 +12,21 @@ function getQueryRunner(metrics: DataSourceRef) {
               sm_check_info{instance="$instance", job="$job", probe=~"$probe"}
           )
         )`,
+        instant: true,
         refId: 'D',
+      },
+    ],
+  });
+  return new SceneDataTransformer({
+    $data: queryRunner,
+    transformations: [
+      {
+        id: 'labelsToFields',
+        options: {},
+      },
+      {
+        id: 'merge',
+        options: {},
       },
     ],
   });
@@ -36,6 +50,13 @@ export function getFrequencyStat(metrics: DataSourceRef) {
         unit: 'ms',
       },
       overrides: [],
+    },
+    options: {
+      reduceOptions: {
+        values: false,
+        calcs: ['lastNotNull'],
+        fields: '/^frequency$/',
+      },
     },
   });
 }
