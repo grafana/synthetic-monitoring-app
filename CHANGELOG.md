@@ -1,5 +1,19 @@
 # Change Log
 
+# [1.11.3](https://github.com/grafana/synthetic-monitoring-app/compare/v1.11.2...v1.11.3) (2023-7-10)
+
+- Fix an incorrect frequency value in the HTTP scene
+- Add an "edit check" button to all scenes
+
+# [1.11.2](https://github.com/grafana/synthetic-monitoring-app/compare/v1.11.1...v1.11.2) (2023-26-1)
+
+- Fix broken dashboard link from summary page
+- Fix repeated "dashboard" on summary page
+
+# [1.11.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.11.0...v1.11.1) (2023-26-1)
+
+- Add a multihttp scene behind a feature flag
+
 # [1.11.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.10.1...v1.11.0) (2023-6-1)
 
 - Include some fixes for scenes
