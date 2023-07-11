@@ -20,18 +20,23 @@ import {
   getVariables,
 } from 'scenes/Common';
 import { getErrorRateTimeseries } from 'scenes/HTTP/errorRateTimeseries';
-import { CheckType, DashboardSceneAppConfig } from 'types';
+import { Check, CheckType, DashboardSceneAppConfig } from 'types';
 import { getLatencyByPhasePanel } from './latencyByPhase';
 import { getEditButton } from 'scenes/Common/editButton';
+import { getEmptyScene } from 'scenes/Common/emptyScene';
 
-export function getPingScene({ metrics, logs }: DashboardSceneAppConfig) {
+export function getPingScene({ metrics, logs }: DashboardSceneAppConfig, checks: Check[]) {
   return () => {
+    if (checks.length === 0) {
+      return getEmptyScene(CheckType.PING);
+    }
+
     const timeRange = new SceneTimeRange({
       from: 'now-6h',
       to: 'now',
     });
 
-    const { job, instance, probe } = getVariables(CheckType.PING, metrics);
+    const { job, instance, probe } = getVariables(CheckType.PING, metrics, checks);
 
     const variables = new SceneVariableSet({ variables: [probe, job, instance] });
     const errorMap = getErrorRateMapPanel(metrics);

@@ -12,7 +12,7 @@ import {
   SceneVariableSet,
   VariableValueSelectors,
 } from '@grafana/scenes';
-import { CheckType, DashboardSceneAppConfig, SceneBuilder } from 'types';
+import { Check, CheckType, DashboardSceneAppConfig, SceneBuilder } from 'types';
 import { MultiHttpStepsScene } from './StepPickerScene';
 import { getLatencyByPhasePanel } from './latencyByPhase';
 import { getProbeDuration } from './probeDuration';
@@ -23,14 +23,18 @@ import { getAssertionLogsPanel } from './assertionLogs';
 import { getErrorRateByUrl } from './errorRateByUrl';
 import { getAssertionTable } from './assertionTable';
 import { getEditButton } from 'scenes/Common/editButton';
+import { getEmptyScene } from 'scenes/Common/emptyScene';
 
-export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig): SceneBuilder {
+export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig, checks: Check[]): SceneBuilder {
   return () => {
+    if (checks.length === 0) {
+      return getEmptyScene(CheckType.MULTI_HTTP);
+    }
     const timeRange = new SceneTimeRange({
       from: 'now-6h',
       to: 'now',
     });
-    const { probe, job, instance } = getVariables(CheckType.MULTI_HTTP, metrics);
+    const { probe, job, instance } = getVariables(CheckType.MULTI_HTTP, metrics, checks);
     const stepUrl = new CustomVariable({
       name: 'stepUrl',
       hide: VariableHide.hideVariable,
@@ -59,6 +63,7 @@ export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig): S
         },
       ],
     });
+
     const sidebar = new MultiHttpStepsScene({
       job: '',
       target: '',

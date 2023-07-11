@@ -1,5 +1,5 @@
 import { Spinner } from '@grafana/ui';
-import { ChecksContextProvider } from 'components/ChecksContextProvider';
+import { ChecksContext } from 'contexts/ChecksContext';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useNavigation } from 'hooks/useNavigation';
@@ -11,6 +11,7 @@ export function DashboardPage() {
   const { instance } = useContext(InstanceContext);
   const { isEnabled } = useFeatureFlag(FeatureName.Scenes);
   const { isEnabled: multiHttpEnabled } = useFeatureFlag(FeatureName.MultiHttp);
+  const { checks, loading } = useContext(ChecksContext);
 
   const navigate = useNavigation();
 
@@ -30,20 +31,16 @@ export function DashboardPage() {
       uid: instance.api.uid,
       type: instance.api.type,
     };
-    return getDashboardSceneApp({ metrics: metricsDef, logs: logsDef, sm: smDef }, multiHttpEnabled);
-  }, [instance.api, instance.logs, instance.metrics, multiHttpEnabled]);
+    return getDashboardSceneApp({ metrics: metricsDef, logs: logsDef, sm: smDef }, multiHttpEnabled, checks);
+  }, [instance.api, instance.logs, instance.metrics, multiHttpEnabled, checks]);
 
   if (!isEnabled) {
     navigate('redirect?dashboard=summary');
     return null;
   }
-  if (!scene) {
+  if (!scene || loading) {
     return <Spinner />;
   }
 
-  return (
-    <ChecksContextProvider>
-      <scene.Component model={scene} />
-    </ChecksContextProvider>
-  );
+  return <scene.Component model={scene} />;
 }

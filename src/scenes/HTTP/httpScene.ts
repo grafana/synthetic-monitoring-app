@@ -9,7 +9,7 @@ import {
   SceneVariableSet,
   VariableValueSelectors,
 } from '@grafana/scenes';
-import { CheckType, DashboardSceneAppConfig } from 'types';
+import { Check, CheckType, DashboardSceneAppConfig } from 'types';
 import {
   getAvgLatencyStat,
   getErrorLogs,
@@ -24,14 +24,19 @@ import {
 import { getErrorRateTimeseries } from './errorRateTimeseries';
 import { getLatencyByPhasePanel } from './latencyByPhase';
 import { getEditButton } from 'scenes/Common/editButton';
+import { getEmptyScene } from 'scenes/Common/emptyScene';
 
-export function getHTTPScene({ metrics, logs }: DashboardSceneAppConfig) {
+export function getHTTPScene({ metrics, logs }: DashboardSceneAppConfig, checks: Check[]) {
   return () => {
     const timeRange = new SceneTimeRange({
       from: 'now-6h',
       to: 'now',
     });
-    const { probe, job, instance } = getVariables(CheckType.HTTP, metrics);
+    if (checks.length === 0) {
+      return getEmptyScene(CheckType.HTTP);
+    }
+
+    const { probe, job, instance } = getVariables(CheckType.HTTP, metrics, checks);
     const variableSet = new SceneVariableSet({ variables: [probe, job, instance] });
 
     const mapPanel = getErrorRateMapPanel(metrics);

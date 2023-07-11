@@ -18,6 +18,7 @@ import { config } from '@grafana/runtime';
 import { PluginPage } from 'components/PluginPage';
 import { ConfigPage } from 'page/ConfigPage';
 import { DashboardPage } from 'page/DashboardPage';
+import { ChecksContextProvider } from './ChecksContextProvider';
 
 export const Routing = ({ onNavChanged, meta, ...rest }: AppRootProps) => {
   const queryParams = useQuery();
@@ -92,7 +93,9 @@ export const Routing = ({ onNavChanged, meta, ...rest }: AppRootProps) => {
         <CheckRouter />
       </Route>
       <Route path={`${PLUGIN_URL_PATH}${ROUTES.Scene}`}>
-        <DashboardPage />
+        <ChecksContextProvider>
+          <DashboardPage />
+        </ChecksContextProvider>
       </Route>
       <Route path={`${PLUGIN_URL_PATH}${ROUTES.Config}`}>
         <PluginPage>

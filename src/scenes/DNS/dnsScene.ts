@@ -20,19 +20,24 @@ import {
   getVariables,
 } from 'scenes/Common';
 import { getErrorRateTimeseries } from 'scenes/HTTP/errorRateTimeseries';
-import { CheckType, DashboardSceneAppConfig } from 'types';
+import { Check, CheckType, DashboardSceneAppConfig } from 'types';
 import { getAnswerRecordsStat } from './answerRecords';
 import { getResourcesRecordsPanel } from './resourceRecords';
 import { getEditButton } from 'scenes/Common/editButton';
+import { getEmptyScene } from 'scenes/Common/emptyScene';
 
-export function getDNSScene({ metrics, logs }: DashboardSceneAppConfig) {
+export function getDNSScene({ metrics, logs }: DashboardSceneAppConfig, checks: Check[]) {
   return () => {
+    if (checks.length === 0) {
+      return getEmptyScene(CheckType.DNS);
+    }
+
     const timeRange = new SceneTimeRange({
       from: 'now-6h',
       to: 'now',
     });
 
-    const { probe, job, instance } = getVariables(CheckType.DNS, metrics);
+    const { probe, job, instance } = getVariables(CheckType.DNS, metrics, checks);
 
     const variables = new SceneVariableSet({ variables: [probe, job, instance] });
     const errorMap = getErrorRateMapPanel(metrics);
