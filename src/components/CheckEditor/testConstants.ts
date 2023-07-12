@@ -248,7 +248,6 @@ export const BASIC_MULTIHTTP_CHECK = {
                 value: 'asada',
               },
             ],
-            body: '',
             queryString: [
               {
                 name: 'tacos',
@@ -278,7 +277,11 @@ export const BASIC_MULTIHTTP_CHECK = {
                 value: 'great',
               },
             ],
-            body: '{"averyinteresting":"request body content"}',
+            body: {
+              contentType: 'steve',
+              contentEncoding: 'encoding',
+              payload: '{"averyinteresting":"request body content"}',
+            },
             queryString: [
               {
                 name: 'query',

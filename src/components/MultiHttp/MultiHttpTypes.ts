@@ -21,7 +21,7 @@ export type RequestMethods = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'OPTI
 export type RequestProps = {
   method: RequestMethods;
   url: string;
-  body?: string;
+  body?: MultiHttpRequestBody;
   headers?: HeaderType[];
   queryString?: QueryParams[];
   postData?: {
@@ -38,6 +38,12 @@ export interface Assertion {
   expression?: string;
   condition?: AssertionConditionVariant;
   value?: string;
+}
+
+export interface MultiHttpRequestBody {
+  contentType: string;
+  contentEncoding?: string;
+  payload: string;
 }
 
 export interface MultiHttpEntry {

@@ -111,7 +111,7 @@ export const CHECK_FILTER_OPTIONS = [
     value: CheckType.HTTP,
   },
   {
-    label: 'MULTI-HTTP',
+    label: 'MULTIHTTP',
     value: CheckType.MULTI_HTTP,
   },
   {
@@ -139,7 +139,7 @@ export const CHECK_TYPE_OPTIONS = [
     description: 'Measures a web endpoint for availability, response time, SSL certificate expiration and more.',
   },
   {
-    label: 'MULTI-HTTP',
+    label: 'MULTIHTTP',
     value: CheckType.MULTI_HTTP,
     description: 'Check multiple web endpoints in sequence',
   },

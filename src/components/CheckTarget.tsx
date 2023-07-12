@@ -35,7 +35,7 @@ const getTargetHelpText = (typeOfCheck: CheckType | undefined): TargetHelpInfo =
     }
     case CheckType.MULTI_HTTP: {
       resp = {
-        text: 'Full URL to send requests to, one part of multi-http',
+        text: 'Full URL to send requests to, one part of multihttp',
         example: `https://grafana.com/`,
       };
       break;

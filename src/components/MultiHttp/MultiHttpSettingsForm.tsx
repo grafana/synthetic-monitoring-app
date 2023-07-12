@@ -116,8 +116,10 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
 
   return (
     <>
-      <PluginPage pageNav={{ text: check?.job ? check.job : 'Add check', description: 'Check configuration' }}>
-        {!config.featureToggles.topnav && <Legend>{check?.id ? 'Edit Check' : 'Add Check'}</Legend>}
+      <PluginPage
+        pageNav={{ text: check?.job ? check.job : 'Add MULTIHTTP check', description: 'Check configuration' }}
+      >
+        {!config.featureToggles.topnav && <Legend>{check?.id ? 'Edit Check' : 'Add MULTIHTTP Check'}</Legend>}
         <VerticalGroup>
           <FormProvider {...formMethods}>
             <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
@@ -159,7 +161,7 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
                       invalid={Boolean(errors?.settings?.multihttp?.entries?.[index])}
                     >
                       <VerticalGroup height={'100%'}>
-                        <HorizontalGroup spacing="lg" align="center">
+                        <HorizontalGroup spacing="lg" align="flex-start">
                           <Field
                             label="Request target"
                             description="Full URL to send request to"
@@ -213,6 +215,8 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
                   size="md"
                   icon="plus"
                   disabled={requests?.length > 9}
+                  tooltip={requests?.length > 9 ? 'Maximum of 10 requests per check' : undefined}
+                  tooltipPlacement="bottom-start"
                   onClick={() => {
                     append({});
                   }}
@@ -222,7 +226,7 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
                 </Button>
 
                 {submissionError && (
-                  <Alert title="Multi-http request creation failed" severity="error">
+                  <Alert title="Multihttp request creation failed" severity="error">
                     <div>{submissionError?.data?.err || submissionError?.data?.msg || submissionError?.message}</div>
                   </Alert>
                 )}
