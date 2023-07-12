@@ -182,13 +182,9 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
                           >
                             <Controller
                               name={`settings.multihttp.entries.${index}.request.method`}
+                              defaultValue={METHOD_OPTIONS[0]}
                               render={({ field }) => (
-                                <Select
-                                  {...field}
-                                  options={METHOD_OPTIONS}
-                                  defaultValue={METHOD_OPTIONS[0]}
-                                  data-testid="request-method"
-                                />
+                                <Select {...field} options={METHOD_OPTIONS} data-testid="request-method" />
                               )}
                               rules={{ required: 'Request method is required' }}
                             />
@@ -218,8 +214,10 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
                   size="md"
                   icon="plus"
                   disabled={requests?.length > 9}
+                  tooltip={requests?.length > 9 ? 'Maximum of 10 requests per check' : undefined}
+                  tooltipPlacement="bottom-start"
                   onClick={() => {
-                    append({ method: METHOD_OPTIONS[0] });
+                    append({ method: { ...METHOD_OPTIONS[0] } });
                   }}
                   className={styles.addRequestButton}
                 >
