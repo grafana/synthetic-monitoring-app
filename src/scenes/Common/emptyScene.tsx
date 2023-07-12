@@ -46,7 +46,7 @@ function EmptyScene({ checkType }: { checkType?: CheckType }) {
           <Button
             onClick={() => {
               console.log(`${PLUGIN_URL_PATH}${ROUTES.ChooseCheckType}`);
-              navigate(ROUTES.ChooseCheckType);
+              navigate(ROUTES.NewCheck + '/' + checkType);
             }}
           >
             Create a check

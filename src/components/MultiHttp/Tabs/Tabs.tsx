@@ -21,6 +21,7 @@ import { MULTI_HTTP_VARIABLE_TYPE_OPTIONS } from 'components/constants';
 import { MultiHttpFormTabs, MultiHttpVariableType } from 'types';
 import { AssertionsTab } from './AssertionsTab';
 import { getMultiHttpFormStyles } from '../MultiHttpSettingsForm.styles';
+import { getIsBodyDisabled } from './TabSection';
 
 export interface MultiHttpTabProps {
   label?: string;
@@ -328,10 +329,13 @@ const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
 
 export const RequestTabs = ({ activeTab, index }: RequestTabsProps) => {
   const styles = useStyles2(getMultiHttpFormStyles);
+  const { watch } = useFormContext();
+  const method = watch(`settings.multihttp.entries[${index}].request.method`);
+  const hideBody = getIsBodyDisabled(method);
   return (
     <TabContent className={styles.tabsContent}>
       <HeadersTab label="header" index={index} active={activeTab === 'header'} />
-      <BodyTab index={index} active={activeTab === 'body'} />
+      {!hideBody && <BodyTab index={index} active={activeTab === 'body'} />}
       <QueryParamsTab index={index} label="queryParams" active={activeTab === 'queryParams'} />
       <VariablesTab index={index} label="variables" active={activeTab === 'variables'} />
       <AssertionsTab index={index} label="assertions" active={activeTab === 'assertions'} />

@@ -17,7 +17,7 @@ function TabErrorWarning() {
   return <Icon name="exclamation-triangle" style={{ color: theme.colors.error.text, marginLeft: theme.spacing(1) }} />;
 }
 
-function getIsBodyDisabled(method: SelectableValue<RequestMethods>) {
+export function getIsBodyDisabled(method: SelectableValue<RequestMethods>) {
   switch (method?.value) {
     case 'POST':
     case 'PUT':
@@ -87,16 +87,18 @@ export const TabSection = ({ index }: RequestTabsProps) => {
           counter={variables?.length ?? 0}
           suffix={errors?.variables?.length ? TabErrorWarning : undefined}
         />
-        <Tab
-          className={styles.tabs}
-          disabled={isBodyDisabled}
-          label={'Body'}
-          active={activeTab === 'body'}
-          onChangeTab={() => {
-            setActiveTab('body');
-          }}
-          suffix={errors?.body ? TabErrorWarning : undefined}
-        />
+        {!isBodyDisabled && (
+          <Tab
+            className={styles.tabs}
+            disabled={isBodyDisabled}
+            label={'Body'}
+            active={activeTab === 'body'}
+            onChangeTab={() => {
+              setActiveTab('body');
+            }}
+            suffix={errors?.body ? TabErrorWarning : undefined}
+          />
+        )}
       </TabsBar>
       <RequestTabs index={index} activeTab={activeTab} />
     </div>
