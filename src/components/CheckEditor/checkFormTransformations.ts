@@ -480,12 +480,15 @@ const getMultiHttpSettings = (
     entries: settings.entries?.map((entry, index) => {
       const variables = entry.variables ?? defaultSettings?.entries[index]?.variables ?? [];
       const checks = entry.checks ?? defaultSettings?.entries[index]?.checks ?? [];
+      const includeBody =
+        entry.request.body?.contentEncoding || entry.request.body?.contentType || entry.request.body?.payload;
       return {
         ...defaultSettings?.entries[index],
         ...entry,
         request: {
           ...defaultSettings?.entries[index]?.request,
           ...entry.request,
+          body: includeBody ? entry.request.body : undefined,
           method: getValueFromSelectable(entry.request.method) ?? 'GET',
         },
         variables: variables?.map((variable) => {
@@ -501,6 +504,7 @@ const getMultiHttpSettings = (
           checks.map(({ type, subject, condition, value, expression }) => {
             switch (type.value) {
               case MultiHttpAssertionType.Text:
+                console.log('its a text!', subject?.value, condition?.value);
                 if (subject?.value === undefined || condition?.value === undefined) {
                   throw new Error('Cannot have a Text assertion without a subject and condition');
                 }
@@ -516,7 +520,7 @@ const getMultiHttpSettings = (
                   expression,
                 };
               case MultiHttpAssertionType.JSONPathValue:
-                if (!condition?.value) {
+                if (condition?.value === undefined) {
                   throw new Error('Cannot have a JSON path value assertion without a condition');
                 }
                 return {
@@ -526,7 +530,7 @@ const getMultiHttpSettings = (
                   value,
                 };
               case MultiHttpAssertionType.Regex:
-                if (!subject?.value) {
+                if (subject?.value === undefined) {
                   throw new Error('Cannot have a Regex assertion without a subject');
                 }
                 return {

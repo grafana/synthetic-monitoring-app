@@ -8,8 +8,9 @@ import React from 'react';
 import { useFormContext, useFieldArray, Controller, FieldError } from 'react-hook-form';
 import { MultiHttpAssertionType } from 'types';
 import { MultiHttpTabProps, getMultiHttpTabStyles } from './Tabs';
+import { cx } from '@emotion/css';
 
-export function AssertionsTab({ index, label }: MultiHttpTabProps) {
+export function AssertionsTab({ index, label, active }: MultiHttpTabProps) {
   const assertionFieldName = `settings.multihttp.entries[${index}].checks`;
   const { control } = useFormContext();
   const { fields, append, remove } = useFieldArray({
@@ -20,41 +21,48 @@ export function AssertionsTab({ index, label }: MultiHttpTabProps) {
   const { formState } = useFormContext();
 
   return (
-    <div className={styles.inputsContainer}>
-      {fields.map((field, assertionIndex) => {
-        const assertionTypeName = `${assertionFieldName}[${assertionIndex}].type` ?? '';
-        const errorPath = formState.errors.settings?.multihttp?.entries?.[index]?.checks?.[assertionIndex];
-        return (
-          <HorizontalGroup spacing="md" key={field.id} align="flex-start">
-            <Controller
-              name={assertionTypeName}
-              render={({ field: typeField }) => {
-                return (
-                  <Field label="Assertion type" invalid={errorPath?.type} error={errorPath?.type?.message}>
-                    <Select
-                      id={`multihttp-assertion-type-${index}-${assertionIndex}`}
-                      className={styles.minInputWidth}
-                      {...typeField}
-                      options={MULTI_HTTP_ASSERTION_TYPE_OPTIONS}
-                      menuPlacement="bottom"
-                    />
-                  </Field>
-                );
-              }}
-              rules={{ required: 'Assertion type is required' }}
-            />
-            <AssertionFields fieldName={`${assertionFieldName}[${assertionIndex}]`} errors={errorPath} />
-            <IconButton
-              className={styles.removeIconWithLabel}
-              name="minus-circle"
-              type="button"
-              onClick={() => {
-                remove(assertionIndex);
-              }}
-            />
-          </HorizontalGroup>
-        );
-      })}
+    <div className={cx(styles.inputsContainer, { [styles.inactive]: !active })}>
+      <Field
+        label="Assertions"
+        description="Use assertions to validate that the system is responding with the expected content"
+      >
+        <>
+          {fields.map((field, assertionIndex) => {
+            const assertionTypeName = `${assertionFieldName}[${assertionIndex}].type` ?? '';
+            const errorPath = formState.errors.settings?.multihttp?.entries?.[index]?.checks?.[assertionIndex];
+            return (
+              <HorizontalGroup spacing="md" key={field.id} align="flex-start">
+                <Controller
+                  name={assertionTypeName}
+                  render={({ field: typeField }) => {
+                    return (
+                      <Field label="Assertion type" invalid={errorPath?.type} error={errorPath?.type?.message}>
+                        <Select
+                          id={`multihttp-assertion-type-${index}-${assertionIndex}`}
+                          className={styles.minInputWidth}
+                          {...typeField}
+                          options={MULTI_HTTP_ASSERTION_TYPE_OPTIONS}
+                          menuPlacement="bottom"
+                        />
+                      </Field>
+                    );
+                  }}
+                  rules={{ required: 'Assertion type is required' }}
+                />
+                <AssertionFields fieldName={`${assertionFieldName}[${assertionIndex}]`} errors={errorPath} />
+                <IconButton
+                  className={styles.removeIconWithLabel}
+                  name="minus-circle"
+                  type="button"
+                  onClick={() => {
+                    remove(assertionIndex);
+                  }}
+                />
+              </HorizontalGroup>
+            );
+          })}
+        </>
+      </Field>
       <Button
         onClick={() => {
           append({ type: undefined, expression: '$.' });
@@ -116,12 +124,7 @@ function AssertionSubjectField({ fieldName, error }: { fieldName: string; error?
       render={({ field }) => {
         return (
           <Field label="Subject" invalid={Boolean(error)} error={error?.message}>
-            <Select
-              id={`${fieldName}-subject}`}
-              {...field}
-              options={ASSERTION_SUBJECT_OPTIONS}
-              menuPlacement="bottom"
-            />
+            <Select id={`${fieldName}-subject`} {...field} options={ASSERTION_SUBJECT_OPTIONS} menuPlacement="bottom" />
           </Field>
         );
       }}
@@ -138,7 +141,7 @@ function AssertionConditionField({ fieldName, error }: { fieldName: string; erro
         return (
           <Field label="Condition" invalid={Boolean(error)} error={error?.message}>
             <Select
-              id={`${fieldName}-condition}`}
+              id={`${fieldName}-condition`}
               {...field}
               options={ASSERTION_CONDITION_OPTIONS}
               menuPlacement="bottom"

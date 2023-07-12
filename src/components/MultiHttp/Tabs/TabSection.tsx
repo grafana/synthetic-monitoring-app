@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useStyles2, TabsBar, TabContent, Tab, Icon, useTheme2 } from '@grafana/ui';
+import { useStyles2, TabsBar, Tab, Icon, useTheme2 } from '@grafana/ui';
 import { RequestTabs } from 'components/MultiHttp/Tabs/Tabs';
 import { getMultiHttpFormStyles } from './../MultiHttpSettingsForm.styles';
 import { useFormContext } from 'react-hook-form';
@@ -98,9 +98,7 @@ export const TabSection = ({ index }: RequestTabsProps) => {
           suffix={errors?.body ? TabErrorWarning : undefined}
         />
       </TabsBar>
-      <TabContent className={styles.tabsContent}>
-        <RequestTabs index={index} activeTab={activeTab} />
-      </TabContent>
+      <RequestTabs index={index} activeTab={activeTab} />
     </div>
   );
 };
