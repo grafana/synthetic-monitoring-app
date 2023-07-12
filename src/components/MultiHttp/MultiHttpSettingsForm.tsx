@@ -159,7 +159,7 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
                       invalid={Boolean(errors?.settings?.multihttp?.entries?.[index])}
                     >
                       <VerticalGroup height={'100%'}>
-                        <HorizontalGroup spacing="lg" align="center">
+                        <HorizontalGroup spacing="lg" align="flex-start">
                           <Field
                             label="Request target"
                             description="Full URL to send request to"
@@ -183,7 +183,12 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
                             <Controller
                               name={`settings.multihttp.entries.${index}.request.method`}
                               render={({ field }) => (
-                                <Select {...field} options={METHOD_OPTIONS} data-testid="request-method" />
+                                <Select
+                                  {...field}
+                                  options={METHOD_OPTIONS}
+                                  defaultValue={METHOD_OPTIONS[0]}
+                                  data-testid="request-method"
+                                />
                               )}
                               rules={{ required: 'Request method is required' }}
                             />
@@ -214,7 +219,7 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
                   icon="plus"
                   disabled={requests?.length > 9}
                   onClick={() => {
-                    append({});
+                    append({ method: METHOD_OPTIONS[0] });
                   }}
                   className={styles.addRequestButton}
                 >

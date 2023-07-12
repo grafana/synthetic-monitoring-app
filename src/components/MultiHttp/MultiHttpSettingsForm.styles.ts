@@ -47,8 +47,7 @@ export const getMultiHttpFormStyles = (theme: GrafanaTheme2) => ({
     margin-bottom: 16px;
   `,
   removeRequestButton: css`
-    align-self: auto;
-    margin-top: 20px;
+    margin-top: 35px;
   `,
   form: css`
     position: relative;

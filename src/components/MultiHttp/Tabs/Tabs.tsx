@@ -50,8 +50,8 @@ export const HeadersTab = ({ label = 'header', index }: MultiHttpTabProps) => {
 
                 return (
                   <Fragment key={field.id}>
-                    <HorizontalGroup spacing="md" align="center" className={styles.headersQueryInputs}>
-                      <HorizontalGroup spacing="md" align="center" className={styles.headersQueryInputs}>
+                    <HorizontalGroup spacing="md" align="flex-start" className={styles.headersQueryInputs}>
+                      <HorizontalGroup spacing="md" align="flex-start" className={styles.headersQueryInputs}>
                         <Field
                           invalid={formState.errors?.settings?.multihttp?.entries[index]?.request?.headers?.[i]?.name}
                           error={
@@ -95,13 +95,6 @@ export const HeadersTab = ({ label = 'header', index }: MultiHttpTabProps) => {
                         }}
                       />
                     </HorizontalGroup>
-                    {/* {(formState.errors?.settings?.multihttp?.entries[index]?.request?.headers[i]?.name ||
-                      formState.errors?.settings?.multihttp?.entries[index]?.request?.headers[i]?.value) && (
-                      <>
-                        <div className={styles.errorMsg}>Enter at least one character</div>
-                        <br />
-                      </>
-                    )} */}
                   </Fragment>
                 );
               })}
@@ -167,7 +160,7 @@ const QueryParamsTab = ({ index, label }: MultiHttpTabProps) => {
                 return (
                   <Fragment key={field.id}>
                     <HorizontalGroup align="flex-start" spacing="md">
-                      <HorizontalGroup spacing="md" align="center">
+                      <HorizontalGroup spacing="md" align="flex-start">
                         <Field invalid={errors?.[i]?.name} error={errors?.[i]?.name?.message}>
                           <Input
                             {...register(`${queryParamsNamePrefix}.name` as const, {
@@ -238,7 +231,7 @@ const VariablesTab = ({ index }: MultiHttpTabProps) => {
         const errorPath = formState.errors.settings?.multihttp?.entries[index]?.variables?.[variableIndex];
 
         return (
-          <HorizontalGroup key={field.id}>
+          <HorizontalGroup key={field.id} align="flex-start">
             <Controller
               name={variableTypeName}
               render={({ field: typeField }) => {
@@ -275,7 +268,7 @@ const VariablesTab = ({ index }: MultiHttpTabProps) => {
                 />
               </Field>
             )}
-            <Field label="Variable expression" invalid={errorPath?.expression} error={errorPath?.expression.message}>
+            <Field label="Variable expression" invalid={errorPath?.expression} error={errorPath?.expression?.message}>
               <Input
                 placeholder="Variable expression"
                 id={`multihttp-variable-expression-${index}-${variableIndex}`}
@@ -284,7 +277,7 @@ const VariablesTab = ({ index }: MultiHttpTabProps) => {
                 })}
               />
             </Field>
-            <IconButton name="trash-alt" onClick={() => remove(variableIndex)} />
+            <IconButton name="trash-alt" onClick={() => remove(variableIndex)} className={styles.removeIconWithLabel} />
           </HorizontalGroup>
         );
       })}
@@ -324,6 +317,9 @@ export const RequestTabs = ({ activeTab, index }: RequestTabsProps) => {
 export const getMultiHttpTabStyles = (theme: GrafanaTheme2) => ({
   removeIcon: css`
     margin-top: 6px;
+  `,
+  removeIconWithLabel: css`
+    margin-top: 26px;
   `,
   headersQueryInputs: css`
     margin: 100px 0;

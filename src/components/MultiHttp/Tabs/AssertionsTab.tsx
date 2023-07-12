@@ -25,7 +25,7 @@ export function AssertionsTab({ index, label }: MultiHttpTabProps) {
         const assertionTypeName = `${assertionFieldName}[${assertionIndex}].type` ?? '';
         const errorPath = formState.errors.settings?.multihttp?.entries?.[index]?.checks?.[assertionIndex];
         return (
-          <HorizontalGroup spacing="md" key={field.id}>
+          <HorizontalGroup spacing="md" key={field.id} align="flex-start">
             <Controller
               name={assertionTypeName}
               render={({ field: typeField }) => {
@@ -45,7 +45,7 @@ export function AssertionsTab({ index, label }: MultiHttpTabProps) {
             />
             <AssertionFields fieldName={`${assertionFieldName}[${assertionIndex}]`} errors={errorPath} />
             <IconButton
-              className={styles.removeIcon}
+              className={styles.removeIconWithLabel}
               name="minus-circle"
               type="button"
               onClick={() => {
@@ -77,7 +77,7 @@ function AssertionFields({ fieldName, errors }: { fieldName: string; errors: any
   switch (assertionType?.value) {
     case MultiHttpAssertionType.Text:
       return (
-        <HorizontalGroup spacing="sm">
+        <HorizontalGroup spacing="sm" align="flex-start">
           <AssertionSubjectField fieldName={fieldName} error={errors?.subject} />
           <AssertionConditionField fieldName={fieldName} error={errors?.condition} />
           <AssertionValueField fieldName={fieldName} error={errors?.value} />
@@ -85,7 +85,7 @@ function AssertionFields({ fieldName, errors }: { fieldName: string; errors: any
       );
     case MultiHttpAssertionType.JSONPathValue:
       return (
-        <HorizontalGroup spacing="sm">
+        <HorizontalGroup spacing="sm" align="flex-start">
           <AssertionExpressionField fieldName={fieldName} error={errors?.expression} />
           <AssertionConditionField fieldName={fieldName} error={errors?.condition} />
           <AssertionValueField fieldName={fieldName} error={errors?.value} />
@@ -93,13 +93,13 @@ function AssertionFields({ fieldName, errors }: { fieldName: string; errors: any
       );
     case MultiHttpAssertionType.JSONPath:
       return (
-        <HorizontalGroup spacing="sm">
+        <HorizontalGroup spacing="sm" align="flex-start">
           <AssertionExpressionField fieldName={fieldName} error={errors?.expression} />
         </HorizontalGroup>
       );
     case MultiHttpAssertionType.Regex:
       return (
-        <HorizontalGroup spacing="sm">
+        <HorizontalGroup spacing="sm" align="flex-start">
           <AssertionSubjectField fieldName={fieldName} error={errors?.subject} />
           <AssertionExpressionField fieldName={fieldName} error={errors?.expression} />
         </HorizontalGroup>
