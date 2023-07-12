@@ -82,12 +82,11 @@ describe('editing multihttp check', () => {
     expect(request1HeaderValues[0]).toHaveValue('great');
 
     // body
+    // There is only one body tab because body tabs only show up for certain request methods
     const bodyTabs = await screen.findAllByLabelText('Tab Body');
     userEvent.click(bodyTabs[0]);
-    userEvent.click(bodyTabs[1]);
     const requestBodies = await screen.findAllByLabelText('Request body payload', { exact: false });
-    expect(requestBodies[0]).toHaveValue('');
-    expect(requestBodies[1]).toHaveValue('{"averyinteresting":"request body content"}');
+    expect(requestBodies[0]).toHaveValue('{"averyinteresting":"request body content"}');
 
     // query params
     const queryParamTabs = await screen.findAllByLabelText('Tab Query Params');
@@ -136,7 +135,7 @@ describe('editing multihttp check', () => {
     const bodyTabs = await screen.findAllByLabelText('Tab Body');
     userEvent.click(bodyTabs[0]);
     const requestBodies = await screen.getAllByLabelText('Request body', { exact: false });
-    expect(requestBodies[0]).toHaveValue('');
+    expect(requestBodies[0]).toHaveValue('{"averyinteresting":"request body content"}');
     await act(async () => await userEvent.clear(requestBodies[0]));
     await act(async () => await userEvent.type(requestBodies[0], 'terriblyinteresting'));
 
@@ -170,7 +169,7 @@ describe('editing multihttp check', () => {
       expect.objectContaining({
         settings: {
           multihttp: {
-            entries: expect.arrayContaining([
+            entries: [
               {
                 checks: [
                   {
@@ -189,11 +188,6 @@ describe('editing multihttp check', () => {
                   { expression: '/regex/', subject: 1, type: 3 },
                 ],
                 request: {
-                  body: {
-                    contentEncoding: '',
-                    contentType: '',
-                    payload: 'terriblyinteresting',
-                  },
                   headers: [
                     { name: 'rambling psyche', value: 'yarp' },
                     { name: 'carne', value: 'asada' },
@@ -213,7 +207,25 @@ describe('editing multihttp check', () => {
                   },
                 ],
               },
-            ]),
+              {
+                checks: [],
+                request: {
+                  body: {
+                    contentEncoding: 'encoding',
+                    contentType: 'steve',
+                    payload: 'terriblyinteresting',
+                  },
+                  headers: [{ name: 'examples', value: 'great' }],
+                  method: 'POST',
+                  queryString: [
+                    { name: 'query', value: 'param' },
+                    { name: 'using variable', value: '${enchiladas}' },
+                  ],
+                  url: 'https://www.example.com',
+                },
+                variables: [],
+              },
+            ],
           },
         },
       })
