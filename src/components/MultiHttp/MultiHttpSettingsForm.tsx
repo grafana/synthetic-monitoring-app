@@ -116,8 +116,10 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
 
   return (
     <>
-      <PluginPage pageNav={{ text: check?.job ? check.job : 'Add check', description: 'Check configuration' }}>
-        {!config.featureToggles.topnav && <Legend>{check?.id ? 'Edit Check' : 'Add Check'}</Legend>}
+      <PluginPage
+        pageNav={{ text: check?.job ? check.job : 'Add MULTI HTTP check', description: 'Check configuration' }}
+      >
+        {!config.featureToggles.topnav && <Legend>{check?.id ? 'Edit Check' : 'Add MULTI HTTP Check'}</Legend>}
         <VerticalGroup>
           <FormProvider {...formMethods}>
             <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
