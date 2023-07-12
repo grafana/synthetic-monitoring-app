@@ -65,7 +65,7 @@ describe('new checks', () => {
     expect(screen.getByRole('option', { name: 'HTTP' })).toBeInTheDocument();
     expect(screen.getByRole('option', { name: 'DNS' })).toBeInTheDocument();
     expect(screen.getByRole('option', { name: 'TCP' })).toBeInTheDocument();
-    expect(screen.queryByRole('option', { name: 'MULTI-HTTP' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('option', { name: 'MULTIHTTP' })).not.toBeInTheDocument();
   });
 
   it('renders the new check form with HTTP is checkType is passed in', async () => {

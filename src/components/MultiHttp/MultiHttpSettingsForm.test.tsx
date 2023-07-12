@@ -85,7 +85,7 @@ describe('editing multihttp check', () => {
     const bodyTabs = await screen.findAllByLabelText('Tab Body');
     userEvent.click(bodyTabs[0]);
     userEvent.click(bodyTabs[1]);
-    const requestBodies = await screen.findAllByLabelText('Request body', { exact: false });
+    const requestBodies = await screen.findAllByLabelText('Request body payload', { exact: false });
     expect(requestBodies[0]).toHaveValue('');
     expect(requestBodies[1]).toHaveValue('{"averyinteresting":"request body content"}');
 
@@ -172,39 +172,45 @@ describe('editing multihttp check', () => {
           multihttp: {
             entries: expect.arrayContaining([
               {
+                checks: [
+                  {
+                    condition: 4,
+                    expression: 'expresso',
+                    type: 1,
+                    value: 'yarp',
+                  },
+                  {
+                    condition: 1,
+                    expression: '$.jsonpathvalue-expression',
+                    type: 1,
+                    value: 'jsonpathvalue-value',
+                  },
+                  { expression: '$.jsonpath-expression', type: 2 },
+                  { expression: '/regex/', subject: 1, type: 3 },
+                ],
                 request: {
-                  body: 'terriblyinteresting',
+                  body: {
+                    contentEncoding: '',
+                    contentType: '',
+                    payload: 'terriblyinteresting',
+                  },
                   headers: [
                     { name: 'rambling psyche', value: 'yarp' },
                     { name: 'carne', value: 'asada' },
                   ],
                   method: 'GET',
-                  url: 'http://grafanarr.com',
                   queryString: [{ name: 'tacos', value: 'delicious' }],
+                  url: 'http://grafanarr.com',
                 },
                 variables: [
-                  {
-                    expression: 'mole',
-                    name: 'enchiladas',
-                    type: 0,
-                  },
-                  {
-                    expression: 'picante',
-                    name: 'salsa',
-                    type: 1,
-                  },
+                  { expression: 'mole', name: 'enchiladas', type: 0 },
+                  { expression: 'picante', name: 'salsa', type: 1 },
                   {
                     attribute: 'churro',
                     expression: 'delicioso',
                     name: 'chimichanga',
                     type: 2,
                   },
-                ],
-                checks: [
-                  { condition: 4, expression: 'expresso', type: 1, value: 'yarp' },
-                  { condition: 1, expression: '$.jsonpathvalue-expression', type: 1, value: 'jsonpathvalue-value' },
-                  { expression: '$.jsonpath-expression', type: 2 },
-                  { expression: '/regex/', subject: 1, type: 3 },
                 ],
               },
             ]),

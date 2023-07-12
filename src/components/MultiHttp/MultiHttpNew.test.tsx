@@ -101,11 +101,21 @@ describe('new checks', () => {
           multihttp: {
             entries: [
               {
-                request: { headers: [], method: 'POST', url: 'http://grafanarr.com' },
+                request: { headers: [], queryString: [], method: 'POST', url: 'http://grafanarr.com', body: undefined },
                 variables: [],
                 checks: [{ condition: 4, expression: '$.expresso', type: 1, value: 'yarp' }],
               },
-              { request: { headers: [], method: 'GET', url: 'http://grafanalalala.com' }, variables: [], checks: [] },
+              {
+                request: {
+                  headers: [],
+                  queryString: [],
+                  method: 'GET',
+                  url: 'http://grafanalalala.com',
+                  body: undefined,
+                },
+                variables: [],
+                checks: [],
+              },
             ],
           },
         },

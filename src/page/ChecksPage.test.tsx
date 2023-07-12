@@ -41,7 +41,7 @@ test('renders check selection page if multi-http feature flag is ON', async () =
   await waitFor(() => screen.getByRole('button', { name: 'Add new check' }));
   act(() => userEvent.click(screen.getByRole('button', { name: 'Add new check' })));
   expect(await screen.findByRole('button', { name: 'HTTP' })).toBeInTheDocument();
-  expect(await screen.findByRole('button', { name: 'MULTI-HTTP' })).toBeInTheDocument();
+  expect(await screen.findByRole('button', { name: 'MULTIHTTP' })).toBeInTheDocument();
   expect(await screen.findByRole('button', { name: 'Traceroute' })).toBeInTheDocument();
   expect(await screen.findByRole('button', { name: 'PING' })).toBeInTheDocument();
   expect(await screen.findByRole('button', { name: 'DNS' })).toBeInTheDocument();
@@ -53,7 +53,7 @@ test('doesnt render check selection page if multi-http feature flag is OFF', asy
   act(() => userEvent.click(screen.getByRole('button', { name: 'Add new check' })));
   expect(await screen.findByText('Add Ping check')).toBeInTheDocument();
   expect(await screen.queryByRole('button', { name: 'HTTP' })).not.toBeInTheDocument();
-  expect(await screen.queryByRole('button', { name: 'MULTI-HTTP' })).not.toBeInTheDocument();
+  expect(await screen.queryByRole('button', { name: 'MULTIHTTP' })).not.toBeInTheDocument();
   expect(await screen.queryByRole('button', { name: 'Traceroute' })).not.toBeInTheDocument();
   expect(await screen.queryByRole('button', { name: 'PING' })).not.toBeInTheDocument();
   expect(await screen.queryByRole('button', { name: 'DNS' })).not.toBeInTheDocument();
