@@ -56,7 +56,7 @@ export function getDashboardSceneApp(config: DashboardSceneAppConfig, includeMul
       getScene: getTcpScene(config, tcp),
     }),
     new SceneAppPage({
-      title: 'Traceroute',
+      title: 'TRACEROUTE',
       url: `${PLUGIN_URL_PATH}${ROUTES.Scene}/traceroute`,
       getScene: getTracerouteScene(config, traceroute),
     }),
