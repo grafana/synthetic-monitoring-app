@@ -1,7 +1,6 @@
 import { css, cx } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Badge, Button, Tag, useStyles2, useTheme2 } from '@grafana/ui';
-import { Pill } from 'components/Pill';
 import React from 'react';
 
 interface Props {

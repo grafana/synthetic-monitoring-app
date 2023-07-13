@@ -40,7 +40,6 @@ export class MultiHttpStepsScene extends SceneObjectBase<MultiHttpStepsSceneStat
         this.setState({ stepUrl: interpolatedUrl });
       }
       if (interpolatedMethod && interpolatedMethod !== stepMethod) {
-        console.log('setting step method on value change');
         this.setState({ stepMethod: interpolatedMethod });
       }
     },
