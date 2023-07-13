@@ -1,16 +1,17 @@
-import { css } from '@emotion/css';
+import { css, cx } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
-import { MenuItem, useStyles2, useTheme2 } from '@grafana/ui';
+import { Button, Tag, useStyles2, useTheme2 } from '@grafana/ui';
 import React from 'react';
 
 interface Props {
   value?: number;
   label: string;
   active: boolean;
+  method: string;
   onClick?: () => void;
 }
 
-export function StepPickerStepItem({ value, onClick, label, active }: Props) {
+export function StepPickerStepItem({ value, onClick, label, active, method }: Props) {
   const styles = useStyles2(getStyles);
   const theme = useTheme2();
 
@@ -26,15 +27,27 @@ export function StepPickerStepItem({ value, onClick, label, active }: Props) {
   }
 
   return (
-    <div className={styles.container}>
-      <div className={styles.value} style={{ backgroundColor: color }} />
-      <MenuItem label={label} onClick={onClick} active={active} />
-    </div>
+    <Button
+      variant="secondary"
+      fill="text"
+      onClick={onClick}
+      className={cx(styles.buttonWrapper, { [styles.active]: active })}
+    >
+      <div className={styles.container}>
+        <div className={styles.value} style={{ backgroundColor: color }} />
+        <Tag name={method} />
+        {label}
+      </div>
+    </Button>
   );
 }
 
 const getStyles = (theme: GrafanaTheme2) => {
   return {
+    buttonWrapper: css`
+      height: 100%;
+      padding-left: 0px;
+    `,
     container: css`
       display: flex;
       gap: ${theme.spacing(1)};
@@ -46,6 +59,9 @@ const getStyles = (theme: GrafanaTheme2) => {
       min-width: 6px;
       height: 40px;
       background-color: ${theme.colors.success.main};
+    `,
+    active: css`
+      background-color: ${theme.colors.action.hover};
     `,
   };
 };

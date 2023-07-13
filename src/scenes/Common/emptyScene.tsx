@@ -4,7 +4,6 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { css } from '@emotion/css';
 import { Button, Card, useStyles2 } from '@grafana/ui';
 import { useNavigation } from 'hooks/useNavigation';
-import { PLUGIN_URL_PATH } from 'components/constants';
 import { CheckType, ROUTES } from 'types';
 
 function getStyles(theme: GrafanaTheme2) {
@@ -45,7 +44,6 @@ function EmptyScene({ checkType }: { checkType?: CheckType }) {
         <Card.Actions className={styles.cardButtons}>
           <Button
             onClick={() => {
-              console.log(`${PLUGIN_URL_PATH}${ROUTES.ChooseCheckType}`);
               navigate(ROUTES.NewCheck + '/' + checkType);
             }}
           >

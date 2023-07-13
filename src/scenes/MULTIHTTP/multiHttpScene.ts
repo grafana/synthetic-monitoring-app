@@ -39,6 +39,10 @@ export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig, ch
       name: 'stepUrl',
       hide: VariableHide.hideVariable,
     });
+    const stepMethod = new CustomVariable({
+      name: 'stepMethod',
+      hide: VariableHide.hideVariable,
+    });
     const variables = new SceneVariableSet({
       variables: [probe, job, instance, stepUrl],
     });
@@ -88,9 +92,12 @@ export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig, ch
       }),
     });
 
-    sidebar.subscribeToState(({ stepUrl: value }) => {
-      if (value && value !== stepUrl.getValue()) {
-        stepUrl.changeValueTo(value);
+    sidebar.subscribeToState(({ stepUrl: stepUrlVal, stepMethod: stepMethodVal }) => {
+      if (stepUrlVal && stepUrlVal !== stepUrl.getValue()) {
+        stepUrl.changeValueTo(stepUrlVal);
+      }
+      if (stepMethodVal && stepMethodVal !== stepMethod.getValue()) {
+        stepMethod.changeValueTo(stepMethodVal);
       }
     });
 
