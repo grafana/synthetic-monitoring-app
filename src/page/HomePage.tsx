@@ -134,6 +134,7 @@ const HomePage = () => {
   const usage = useUsageCalc(checks);
   const navigate = useNavigation();
   const { isEnabled: scenesEnabled } = useFeatureFlag(FeatureName.Scenes);
+  const { isEnabled: multiHttpEnabled } = useFeatureFlag(FeatureName.MultiHttp);
 
   useEffect(() => {
     instance.api?.listChecks().then((checks) => {
@@ -144,7 +145,7 @@ const HomePage = () => {
       const sortedDashboards = instance.api?.instanceSettings.jsonData.dashboards.sort(sortSummaryToTop) ?? [];
       setDashboards(sortedDashboards);
     } else {
-      setDashboards([
+      const dashboardList = [
         {
           title: 'Summary dashboard',
           uid: '',
@@ -161,6 +162,7 @@ const HomePage = () => {
           title: 'DNS dashboard',
           uid: 'dns',
         },
+
         {
           title: 'TCP dashboard',
           uid: 'tcp',
@@ -169,9 +171,14 @@ const HomePage = () => {
           title: 'Traceroute dashboard',
           uid: 'traceroute',
         },
-      ]);
+      ];
+      if (multiHttpEnabled) {
+        dashboardList.splice(3, 0, { title: 'MULTIHTTP dashboard', uid: 'multihttp' });
+      }
+
+      setDashboards(dashboardList);
     }
-  }, [instance.api, scenesEnabled]);
+  }, [instance.api, scenesEnabled, multiHttpEnabled]);
 
   return (
     <PluginPage pageNav={{ text: 'Home', description: 'Synthetic Monitoring Home' }}>
