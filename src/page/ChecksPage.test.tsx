@@ -63,5 +63,5 @@ test('renders check editor existing check', async () => {
   renderChecksPage();
   const edit = await screen.findByTestId('edit-check-button');
   userEvent.click(edit);
-  await waitFor(() => expect(screen.getByText('Edit Check')).toBeInTheDocument());
+  await waitFor(() => expect(screen.getByText('Editing a jobname')).toBeInTheDocument());
 });

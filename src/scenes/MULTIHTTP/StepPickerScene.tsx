@@ -20,34 +20,39 @@ export interface MultiHttpStepsSceneState extends SceneObjectState {
   target?: string;
   job?: string;
   stepUrl?: string;
+  stepMethod?: string;
 }
 
 export class MultiHttpStepsScene extends SceneObjectBase<MultiHttpStepsSceneState> {
   static Component = MultiHttpStepsSceneRenderer;
   protected _variableDependency = new VariableDependencyConfig(this, {
-    variableNames: ['job', 'target', 'stepUrl'],
+    variableNames: ['job', 'target', 'stepUrl', 'stepMethod'],
     onReferencedVariableValueChanged: () => {
-      const { job, target, stepUrl } = this.state;
+      const { job, target, stepUrl, stepMethod } = this.state;
       const interpolatedInst = sceneGraph.interpolate(this, '${instance}');
       const interpolatedJob = sceneGraph.interpolate(this, '${job}');
       const interpolatedUrl = sceneGraph.interpolate(this, '${stepUrl}');
+      const interpolatedMethod = sceneGraph.interpolate(this, '${stepMethod}');
       if (interpolatedInst !== job || interpolatedInst !== target) {
         this.setState({ job: interpolatedJob, target: interpolatedInst });
       }
       if (interpolatedUrl && interpolatedUrl !== stepUrl) {
         this.setState({ stepUrl: interpolatedUrl });
       }
+      if (interpolatedMethod && interpolatedMethod !== stepMethod) {
+        this.setState({ stepMethod: interpolatedMethod });
+      }
     },
   });
 
-  constructor({ job, target, stepUrl, $data }: MultiHttpStepsSceneState) {
-    super({ job: job ?? '', target: target ?? '', stepUrl, $data });
+  constructor({ job, target, stepUrl, stepMethod, $data }: MultiHttpStepsSceneState) {
+    super({ job: job ?? '', target: target ?? '', stepUrl, stepMethod, $data });
   }
 }
 
 export function MultiHttpStepsSceneRenderer({ model }: SceneComponentProps<MultiHttpStepsScene>) {
   const styles = useStyles2(getStyles);
-  const { check, stepUrl } = model.useState();
+  const { check, stepUrl, stepMethod } = model.useState();
 
   const { checks, loading } = useContext(ChecksContext);
   const interpolatedInst = sceneGraph.interpolate(model, '${instance}');
@@ -55,8 +60,8 @@ export function MultiHttpStepsSceneRenderer({ model }: SceneComponentProps<Multi
   const urlErrorRate = sceneGraph.getData(model).useState();
 
   const errorRateByUrl = useMemo(() => {
-    const urls = urlErrorRate.data?.series?.[0]?.fields?.[1]?.values?.toArray();
-    const errorRates = urlErrorRate.data?.series?.[0]?.fields?.[2]?.values?.toArray();
+    const urls = urlErrorRate.data?.series?.[0]?.fields?.[1]?.values;
+    const errorRates = urlErrorRate.data?.series?.[0]?.fields?.[2]?.values;
 
     const errorRateByUrl = urls?.reduce((acc, url, index) => {
       acc[url] = errorRates?.[index];
@@ -73,11 +78,13 @@ export function MultiHttpStepsSceneRenderer({ model }: SceneComponentProps<Multi
 
       if (check) {
         const interpolatedUrl = sceneGraph.interpolate(model, '${stepUrl}');
+        const interpolatedMethod = sceneGraph.interpolate(model, '${stepMethod}');
         const useDefault =
           !interpolatedUrl || !check.settings.multihttp?.entries.find((entry) => entry.request.url === interpolatedUrl);
         model.setState({
           check,
           stepUrl: useDefault ? check.settings.multihttp?.entries[0].request.url : interpolatedUrl,
+          stepMethod: useDefault ? check.settings.multihttp?.entries[0].request.method : interpolatedMethod,
         });
       }
     }
@@ -94,10 +101,11 @@ export function MultiHttpStepsSceneRenderer({ model }: SceneComponentProps<Multi
           <StepPickerStepItem
             key={index}
             value={errorRateByUrl?.[request.url]}
-            active={request.url === stepUrl}
+            active={request.url === stepUrl && request.method === stepMethod}
             onClick={() => {
-              model.setState({ stepUrl: request.url });
+              model.setState({ stepUrl: request.url, stepMethod: request.method });
             }}
+            method={request.method}
             label={request.url}
           />
         );
@@ -114,9 +122,9 @@ const getStyles = (theme: GrafanaTheme2) => ({
   sidebar: css`
     display: flex;
     flex-direction: column;
-    margin: ${theme.spacing(2)};
+    margin: ${theme.spacing(2)} ${theme.spacing(2)} ${theme.spacing(2)} 0;
     gap: ${theme.spacing(2)};
-    max-width: 300px;
+    max-width: 400px;
     max-height: 400px;
     overflow-y: auto;
     overflow-x: hidden;

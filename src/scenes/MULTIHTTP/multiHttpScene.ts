@@ -39,8 +39,12 @@ export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig, ch
       name: 'stepUrl',
       hide: VariableHide.hideVariable,
     });
+    const stepMethod = new CustomVariable({
+      name: 'stepMethod',
+      hide: VariableHide.hideVariable,
+    });
     const variables = new SceneVariableSet({
-      variables: [probe, job, instance, stepUrl],
+      variables: [probe, job, instance, stepUrl, stepMethod],
     });
 
     const resultsByUrl = new SceneQueryRunner({
@@ -49,11 +53,11 @@ export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig, ch
         {
           refId: 'A',
           expr: `sum by (url) (
-            probe_http_requests_failed_total{job="$job", instance="$instance"}
+            probe_http_requests_failed_total{job="$job", instance="$instance", method="$stepMethod"}
           )
           /
           sum by (url) (
-            probe_http_requests_total{job="$job", instance="$instance"}
+            probe_http_requests_total{job="$job", instance="$instance", method="$stepMethod"}
           )`,
           range: false,
           instant: true,
@@ -88,9 +92,13 @@ export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig, ch
       }),
     });
 
-    sidebar.subscribeToState(({ stepUrl: value }) => {
-      if (value && value !== stepUrl.getValue()) {
-        stepUrl.changeValueTo(value);
+    sidebar.subscribeToState(({ stepUrl: stepUrlVal, stepMethod: stepMethodVal }) => {
+      console.log('state updating', stepMethodVal, stepUrlVal);
+      if (stepUrlVal && stepUrlVal !== stepUrl.getValue()) {
+        stepUrl.changeValueTo(stepUrlVal);
+      }
+      if (stepMethodVal && stepMethodVal !== stepMethod.getValue()) {
+        stepMethod.changeValueTo(stepMethodVal);
       }
     });
 
@@ -108,18 +116,6 @@ export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig, ch
         new VariableValueSelectors({}),
         new SceneControlsSpacer(),
         editButton,
-        // new SceneToolbarButton({
-        //   icon: 'edit',
-        //   onClick: () => {
-        //     const instanceVal = instance.getValue();
-        //     const jobVal = job.getValue();
-        //     const { checks } = sidebar.useState();
-        //     // sidebar.subscribeToState(({ checks }) => {
-        //     //   console.log('checks', checks);
-        //     // });
-        //     console.log('hi', jobVal, instanceVal, checks);
-        //   },
-        // }),
         new SceneTimePicker({ isOnCanvas: true }),
         new SceneRefreshPicker({
           intervals: ['5s', '1m', '1h'],
