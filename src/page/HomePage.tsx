@@ -18,14 +18,15 @@ import { InstanceContext } from 'contexts/InstanceContext';
 import { Check, FeatureName, ROUTES } from 'types';
 import { useUsageCalc } from 'hooks/useUsageCalc';
 import { DashboardInfo } from 'datasource/types';
-import dashScreenshot from 'img/screenshot-dash-traceroute.png';
-import dashScreenshotLight from 'img/screenshot-dash-traceroute-light.png';
 import { useNavigation } from 'hooks/useNavigation';
 import { PluginPage } from 'components/PluginPage';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { PLUGIN_URL_PATH } from 'components/constants';
 
 const getStyles = (theme: GrafanaTheme2) => ({
+  page: css`
+    max-width: 1200px;
+  `,
   flexRow: css`
     display: flex;
     flex-direction: row;
@@ -42,11 +43,29 @@ const getStyles = (theme: GrafanaTheme2) => ({
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(350px, auto));
     grid-gap: ${theme.spacing(2)};
-    margin-bottom: ${theme.spacing(2)};
+    width: 100%;
+    /* margin-bottom: ${theme.spacing(2)}; */
   `,
   cardFlex: css`
     display: flex;
+    width: 100%;
     margin-bottom: ${theme.spacing(2)};
+  `,
+  getStartedGrid: css`
+    display: flex;
+    flex-direction: row;
+    gap: ${theme.spacing(2)};
+    /* grid-template-columns: repeat(auto-fit, minmax(350px, auto)); */
+    /* grid-gap: ${theme.spacing(1)}; */
+    align-items: center;
+    justify-content: center;
+    margin-bottom: ${theme.spacing(2)};
+    h2 {
+      margin-bottom: 0;
+    }
+  `,
+  separator: css`
+    margin: 0 ${theme.spacing(6)};
   `,
   grow: css`
     flex-grow: 1;
@@ -159,176 +178,164 @@ const HomePage = () => {
 
   return (
     <PluginPage pageNav={{ text: 'Home', description: 'Synthetic Monitoring Home' }}>
-      <FeaturesBanner />
-      <div className={styles.cardFlex}>
-        <DisplayCard className={cx(styles.card, styles.rowCard, styles.linksContainer)}>
-          {dashboards.map((dashboard) => {
-            return (
-              <a
-                className={styles.quickLink}
-                href={scenesEnabled ? (dashboard.uid === `` ? `${PLUGIN_URL_PATH}scene` : `${PLUGIN_URL_PATH}scene/${dashboard.uid}`) : `d/${dashboard.uid}`}
-                key={dashboard.uid}
-              >
-                <Icon name="apps" size="lg" className={styles.quickLinkIcon} />
-                {scenesEnabled ? `View the ${dashboard.title}` : `View the ${dashboard.title} dashboard`}
-              </a>
-            );
-          })}
+      <div className={styles.page}>
+        <FeaturesBanner />
+        <DisplayCard className={cx(styles.card, styles.getStartedGrid)}>
+          <LinkButton variant="primary" size="lg" onClick={() => navigate(ROUTES.ChooseCheckType)}>
+            Create a check
+          </LinkButton>
+          <h2 className={styles.separator}>or</h2>
+          <LinkButton variant="primary" size="lg" onClick={() => navigate(ROUTES.Checks)}>
+            View existing checks
+          </LinkButton>
         </DisplayCard>
-
-        <DisplayCard className={cx(styles.card, styles.grow)}>
-          <h3>What&apos;s new</h3>
-          <p>
-            We have a new type of check: traceroute. Traceroute checks show routes through network to a target. Check
-            out packet loss, hop distance, and timing from any synthetic monitoring probe.
-          </p>
-          <img className={styles.image} src={config.theme2.isDark ? dashScreenshot : dashScreenshotLight} />
+        <div className={styles.cardFlex}>
+          <DisplayCard className={cx(styles.card, styles.rowCard, styles.linksContainer)}>
+            {dashboards.map((dashboard) => {
+              return (
+                <a
+                  className={styles.quickLink}
+                  href={
+                    scenesEnabled
+                      ? dashboard.uid === ``
+                        ? `${PLUGIN_URL_PATH}scene`
+                        : `${PLUGIN_URL_PATH}scene/${dashboard.uid}`
+                      : `d/${dashboard.uid}`
+                  }
+                  key={dashboard.uid}
+                >
+                  <Icon name="apps" size="lg" className={styles.quickLinkIcon} />
+                  {scenesEnabled ? `View the ${dashboard.title}` : `View the ${dashboard.title} dashboard`}
+                </a>
+              );
+            })}
+          </DisplayCard>
+          <DisplayCard className={cx(styles.cardGrid, styles.card)}>
+            <DisplayCard className={cx(styles.nestedCard, styles.rowCard)}>
+              <DisplayCard.Header text="Set up checks programmatically" icon="brackets" />
+              <p>Create, configure, and manage checks programmatically via Grizzly or Terraform.</p>
+              <a
+                className={styles.link}
+                href="https://grafana.com/docs/grafana-cloud/synthetic-monitoring/?manage-checks-with-the-api--config-as-code#manage-checks-with-the-api--config-as-code"
+                target="_blank"
+                rel="noopenner noreferrer"
+              >
+                Learn more about creating checks programmatically {'>'}
+              </a>
+              <div className={styles.actionContainer}>
+                <HorizontalGroup>
+                  <LinkButton
+                    variant="secondary"
+                    target="_blank"
+                    rel="noopenner noreferrer"
+                    href="https://github.com/grafana/grizzly"
+                  >
+                    Grizzly repo
+                  </LinkButton>
+                  <LinkButton
+                    variant="secondary"
+                    href="https://registry.terraform.io/providers/grafana/grafana/latest/docs"
+                    target="_blank"
+                    rel="noopenner noreferrer"
+                  >
+                    Terraform docs
+                  </LinkButton>
+                </HorizontalGroup>
+              </div>
+            </DisplayCard>
+            <DisplayCard className={cx(styles.nestedCard, styles.rowCard)}>
+              <DisplayCard.Header text="Configure alerts for your checks" icon="bell" />
+              <p>Use default alerts for your checks or customize these alerts to meet your needs.</p>
+              <a
+                className={styles.link}
+                href="https://grafana.com/docs/grafana-cloud/synthetic-monitoring/synthetic-monitoring-alerting/"
+                target="_blank"
+                rel="noopenner noreferrer"
+              >
+                Read more about synthetic monitoring alerts {'>'}
+              </a>
+              <div className={styles.actionContainer}>
+                <LinkButton variant="secondary" onClick={() => navigate(ROUTES.Alerts)}>
+                  Configure alerts
+                </LinkButton>
+              </div>
+            </DisplayCard>
+          </DisplayCard>
+        </div>
+        <DisplayCard className={cx(styles.card, styles.usageGrid, styles.marginBottom)}>
+          <h2 className={styles.usageHeader}>Your Grafana Cloud Synthetic Monitoring usage</h2>
+          <BigValue
+            theme={config.theme2}
+            textMode={BigValueTextMode.ValueAndName}
+            colorMode={BigValueColorMode.Value}
+            graphMode={BigValueGraphMode.Area}
+            height={80}
+            width={75}
+            value={{
+              numeric: checks.length,
+              color: config.theme2.colors.text.primary,
+              title: 'Total checks',
+              text: checks.length.toLocaleString(),
+            }}
+          />
+          <BigValue
+            theme={config.theme2}
+            textMode={BigValueTextMode.ValueAndName}
+            colorMode={BigValueColorMode.Value}
+            graphMode={BigValueGraphMode.Area}
+            height={80}
+            width={115}
+            value={{
+              numeric: usage?.activeSeries ?? 0,
+              color: config.theme2.colors.text.primary,
+              title: 'Total active series',
+              text: usage?.activeSeries.toLocaleString() ?? 'N/A',
+            }}
+          />
+          <BigValue
+            theme={config.theme2}
+            textMode={BigValueTextMode.ValueAndName}
+            colorMode={BigValueColorMode.Value}
+            graphMode={BigValueGraphMode.Area}
+            height={80}
+            width={115}
+            value={{
+              numeric: usage?.dpm ?? 0,
+              color: config.theme2.colors.text.primary,
+              title: 'Data points per minute',
+              text: usage?.dpm.toLocaleString() ?? 'N/A',
+            }}
+          />
+          <BigValue
+            theme={config.theme2}
+            textMode={BigValueTextMode.ValueAndName}
+            colorMode={BigValueColorMode.Value}
+            graphMode={BigValueGraphMode.Area}
+            height={80}
+            width={175}
+            value={{
+              numeric: usage?.checksPerMonth ?? 0,
+              color: config.theme2.colors.text.primary,
+              title: 'Checks executions per month',
+              text: usage?.checksPerMonth.toLocaleString() ?? 'N/A',
+            }}
+          />
+          <BigValue
+            theme={config.theme2}
+            textMode={BigValueTextMode.ValueAndName}
+            colorMode={BigValueColorMode.Value}
+            graphMode={BigValueGraphMode.Area}
+            height={80}
+            width={150}
+            value={{
+              numeric: usage?.logsGbPerMonth ?? 0,
+              color: config.theme2.colors.text.primary,
+              title: 'Logs per month',
+              text: `${usage?.logsGbPerMonth.toFixed(2) ?? 0}GB`,
+            }}
+          />
         </DisplayCard>
       </div>
-      <DisplayCard className={cx(styles.card, styles.usageGrid, styles.marginBottom)}>
-        <h2 className={styles.usageHeader}>Your Grafana Cloud Synthetic Monitoring usage</h2>
-        <BigValue
-          theme={config.theme2}
-          textMode={BigValueTextMode.ValueAndName}
-          colorMode={BigValueColorMode.Value}
-          graphMode={BigValueGraphMode.Area}
-          height={80}
-          width={75}
-          value={{
-            numeric: checks.length,
-            color: config.theme2.colors.text.primary,
-            title: 'Total checks',
-            text: checks.length.toLocaleString(),
-          }}
-        />
-        <BigValue
-          theme={config.theme2}
-          textMode={BigValueTextMode.ValueAndName}
-          colorMode={BigValueColorMode.Value}
-          graphMode={BigValueGraphMode.Area}
-          height={80}
-          width={115}
-          value={{
-            numeric: usage?.activeSeries ?? 0,
-            color: config.theme2.colors.text.primary,
-            title: 'Total active series',
-            text: usage?.activeSeries.toLocaleString() ?? 'N/A',
-          }}
-        />
-        <BigValue
-          theme={config.theme2}
-          textMode={BigValueTextMode.ValueAndName}
-          colorMode={BigValueColorMode.Value}
-          graphMode={BigValueGraphMode.Area}
-          height={80}
-          width={115}
-          value={{
-            numeric: usage?.dpm ?? 0,
-            color: config.theme2.colors.text.primary,
-            title: 'Data points per minute',
-            text: usage?.dpm.toLocaleString() ?? 'N/A',
-          }}
-        />
-        <BigValue
-          theme={config.theme2}
-          textMode={BigValueTextMode.ValueAndName}
-          colorMode={BigValueColorMode.Value}
-          graphMode={BigValueGraphMode.Area}
-          height={80}
-          width={175}
-          value={{
-            numeric: usage?.checksPerMonth ?? 0,
-            color: config.theme2.colors.text.primary,
-            title: 'Checks executions per month',
-            text: usage?.checksPerMonth.toLocaleString() ?? 'N/A',
-          }}
-        />
-        <BigValue
-          theme={config.theme2}
-          textMode={BigValueTextMode.ValueAndName}
-          colorMode={BigValueColorMode.Value}
-          graphMode={BigValueGraphMode.Area}
-          height={80}
-          width={150}
-          value={{
-            numeric: usage?.logsGbPerMonth ?? 0,
-            color: config.theme2.colors.text.primary,
-            title: 'Logs per month',
-            text: `${usage?.logsGbPerMonth.toFixed(2) ?? 0}GB`,
-          }}
-        />
-      </DisplayCard>
-      <DisplayCard className={cx(styles.cardGrid, styles.card)}>
-        <DisplayCard className={cx(styles.nestedCard, styles.rowCard)}>
-          <DisplayCard.Header text="Monitor your entire website" icon="check-square" />
-          <p>
-            Set up Ping, HTTP, DNS, and TCP checks across your entire website to ensure that all parts are up and
-            running for your users.
-          </p>
-          <a
-            className={styles.link}
-            target="_blank"
-            rel="noopenner noreferrer"
-            href="https://grafana.com/docs/grafana-cloud/synthetic-monitoring/checks/"
-          >
-            Read more about setting up checks {'>'}
-          </a>
-          <div className={styles.actionContainer}>
-            <LinkButton variant="secondary" onClick={() => navigate(ROUTES.ChooseCheckType)}>
-              Create a check
-            </LinkButton>
-          </div>
-        </DisplayCard>
-        <DisplayCard className={cx(styles.nestedCard, styles.rowCard)}>
-          <DisplayCard.Header text="Set up checks programmatically" icon="brackets" />
-          <p>Create, configure, and manage checks programmatically via Grizzly or Terraform.</p>
-          <a
-            className={styles.link}
-            href="https://grafana.com/docs/grafana-cloud/synthetic-monitoring/?manage-checks-with-the-api--config-as-code#manage-checks-with-the-api--config-as-code"
-            target="_blank"
-            rel="noopenner noreferrer"
-          >
-            Learn more about creating checks programmatically {'>'}
-          </a>
-          <div className={styles.actionContainer}>
-            <HorizontalGroup>
-              <LinkButton
-                variant="secondary"
-                target="_blank"
-                rel="noopenner noreferrer"
-                href="https://github.com/grafana/grizzly"
-              >
-                Grizzly repo
-              </LinkButton>
-              <LinkButton
-                variant="secondary"
-                href="https://registry.terraform.io/providers/grafana/grafana/latest/docs"
-                target="_blank"
-                rel="noopenner noreferrer"
-              >
-                Terraform docs
-              </LinkButton>
-            </HorizontalGroup>
-          </div>
-        </DisplayCard>
-        <DisplayCard className={cx(styles.nestedCard, styles.rowCard)}>
-          <DisplayCard.Header text="Configure alerts for your checks" icon="bell" />
-          <p>Use default alerts for your checks or customize these alerts to meet your needs.</p>
-          <a
-            className={styles.link}
-            href="https://grafana.com/docs/grafana-cloud/synthetic-monitoring/synthetic-monitoring-alerting/"
-            target="_blank"
-            rel="noopenner noreferrer"
-          >
-            Read more about synthetic monitoring alerts {'>'}
-          </a>
-          <div className={styles.actionContainer}>
-            <LinkButton variant="secondary" onClick={() => navigate(ROUTES.Alerts)}>
-              Configure alerts
-            </LinkButton>
-          </div>
-        </DisplayCard>
-      </DisplayCard>
     </PluginPage>
   );
 };
