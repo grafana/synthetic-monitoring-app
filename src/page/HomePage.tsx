@@ -44,7 +44,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
     grid-template-columns: repeat(auto-fit, minmax(350px, auto));
     grid-gap: ${theme.spacing(2)};
     width: 100%;
-    /* margin-bottom: ${theme.spacing(2)}; */
   `,
   cardFlex: css`
     display: flex;
@@ -55,8 +54,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
     display: flex;
     flex-direction: row;
     gap: ${theme.spacing(2)};
-    /* grid-template-columns: repeat(auto-fit, minmax(350px, auto)); */
-    /* grid-gap: ${theme.spacing(1)}; */
     align-items: center;
     justify-content: center;
     margin-bottom: ${theme.spacing(2)};
