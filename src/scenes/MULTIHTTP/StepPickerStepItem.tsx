@@ -1,6 +1,7 @@
 import { css, cx } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Button, Tag, useStyles2, useTheme2 } from '@grafana/ui';
+import { Badge, Button, Tag, useStyles2, useTheme2 } from '@grafana/ui';
+import { Pill } from 'components/Pill';
 import React from 'react';
 
 interface Props {
@@ -35,7 +36,9 @@ export function StepPickerStepItem({ value, onClick, label, active, method }: Pr
     >
       <div className={styles.container}>
         <div className={styles.value} style={{ backgroundColor: color }} />
-        <Tag name={method} />
+        <div className={styles.badgeContainer}>
+          <Badge text={method} color={'blue'} />
+        </div>
         {label}
       </div>
     </Button>
@@ -45,7 +48,7 @@ export function StepPickerStepItem({ value, onClick, label, active, method }: Pr
 const getStyles = (theme: GrafanaTheme2) => {
   return {
     buttonWrapper: css`
-      height: 100%;
+      height: 40px;
       padding-left: 0px;
     `,
     container: css`
@@ -53,6 +56,11 @@ const getStyles = (theme: GrafanaTheme2) => {
       gap: ${theme.spacing(1)};
       align-items: center;
       justify-content: flex-start;
+    `,
+    badgeContainer: css`
+      display: flex;
+      justify-content: flex-start;
+      width: 65px;
     `,
     value: css`
       width: 6px;
