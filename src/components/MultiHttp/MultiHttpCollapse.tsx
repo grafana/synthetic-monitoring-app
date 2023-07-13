@@ -1,4 +1,4 @@
-import React, { useState, PropsWithChildren } from 'react';
+import React, { PropsWithChildren } from 'react';
 import { Icon, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
@@ -20,7 +20,6 @@ export const MultiHttpCollapse = ({
   onToggle,
 }: PropsWithChildren<Props>) => {
   const styles = useStyles2(getStyles);
-  // const [isOpen, setIsOpen] = useState<boolean>(true);
 
   return (
     <div className={cx([!className ? 'panel-container' : className, styles.container])}>
