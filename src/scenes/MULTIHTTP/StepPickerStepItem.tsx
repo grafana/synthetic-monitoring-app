@@ -1,6 +1,6 @@
 import { css, cx } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Badge, Button, useStyles2, useTheme2 } from '@grafana/ui';
+import { Badge, Button, Icon, Tooltip, useStyles2, useTheme2 } from '@grafana/ui';
 import React from 'react';
 
 interface Props {
@@ -8,10 +8,11 @@ interface Props {
   label: string;
   active: boolean;
   method: string;
+  isAggregated: boolean;
   onClick?: () => void;
 }
 
-export function StepPickerStepItem({ value, onClick, label, active, method }: Props) {
+export function StepPickerStepItem({ value, onClick, label, active, method, isAggregated }: Props) {
   const styles = useStyles2(getStyles);
   const theme = useTheme2();
 
@@ -38,6 +39,11 @@ export function StepPickerStepItem({ value, onClick, label, active, method }: Pr
         <div className={styles.badgeContainer}>
           <Badge text={method} color={'blue'} />
         </div>
+        {isAggregated && (
+          <Tooltip content="The data shown for this endpoint is aggregated from multiple requests in the check">
+            <Icon name="info-circle" />
+          </Tooltip>
+        )}
         {label}
       </div>
     </Button>

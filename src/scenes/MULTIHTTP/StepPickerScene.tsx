@@ -12,11 +12,14 @@ import { ChecksContext } from 'contexts/ChecksContext';
 import React, { useContext, useEffect, useMemo } from 'react';
 import { Check } from 'types';
 import { StepPickerStepItem } from './StepPickerStepItem';
+import { MultiHttpEntry } from 'components/MultiHttp/MultiHttpTypes';
 
 export interface MultiHttpStepsSceneState extends SceneObjectState {
   checkId?: number;
   check?: Check;
   checks?: Check[];
+  entries?: MultiHttpEntry[];
+  duplicates?: Set<string>;
   target?: string;
   job?: string;
   stepUrl?: string;
@@ -52,7 +55,7 @@ export class MultiHttpStepsScene extends SceneObjectBase<MultiHttpStepsSceneStat
 
 export function MultiHttpStepsSceneRenderer({ model }: SceneComponentProps<MultiHttpStepsScene>) {
   const styles = useStyles2(getStyles);
-  const { check, stepUrl, stepMethod } = model.useState();
+  const { check, stepUrl, stepMethod, entries, duplicates } = model.useState();
 
   const { checks, loading } = useContext(ChecksContext);
   const interpolatedInst = sceneGraph.interpolate(model, '${instance}');
@@ -81,8 +84,34 @@ export function MultiHttpStepsSceneRenderer({ model }: SceneComponentProps<Multi
         const interpolatedMethod = sceneGraph.interpolate(model, '${stepMethod}');
         const useDefault =
           !interpolatedUrl || !check.settings.multihttp?.entries.find((entry) => entry.request.url === interpolatedUrl);
+        const deduplicatedEntries = check.settings.multihttp?.entries.reduce<{
+          entries: MultiHttpEntry[];
+          seen: Set<string>;
+          duplicates: Set<string>;
+        }>(
+          (acc, entry) => {
+            const requestKey = `${entry.request.method}${entry.request.url}`;
+            if (acc.seen.has(requestKey)) {
+              acc.duplicates.add(requestKey);
+              return acc;
+            }
+            if (!acc.seen.has(requestKey)) {
+              acc.seen.add(requestKey);
+              acc.entries.push(entry);
+            }
+            return acc;
+          },
+          {
+            entries: [],
+            seen: new Set(),
+            duplicates: new Set(),
+          }
+        );
+
         model.setState({
           check,
+          entries: deduplicatedEntries?.entries,
+          duplicates: deduplicatedEntries?.duplicates,
           stepUrl: useDefault ? check.settings.multihttp?.entries[0].request.url : interpolatedUrl,
           stepMethod: useDefault ? check.settings.multihttp?.entries[0].request.method : interpolatedMethod,
         });
@@ -96,7 +125,9 @@ export function MultiHttpStepsSceneRenderer({ model }: SceneComponentProps<Multi
 
   return (
     <div className={styles.sidebar}>
-      {check.settings.multihttp?.entries.map(({ request }, index) => {
+      {entries?.map(({ request }, index) => {
+        const isAggregated = Boolean(duplicates?.has(`${request.method}${request.url}`));
+
         return (
           <StepPickerStepItem
             key={index}
@@ -107,6 +138,7 @@ export function MultiHttpStepsSceneRenderer({ model }: SceneComponentProps<Multi
             }}
             method={request.method}
             label={request.url}
+            isAggregated={isAggregated}
           />
         );
       })}
