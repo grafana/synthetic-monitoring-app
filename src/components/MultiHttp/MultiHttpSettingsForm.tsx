@@ -1,4 +1,4 @@
-import React, { useContext, useState, useMemo } from 'react';
+import React, { useContext, useState, useMemo, useReducer } from 'react';
 import { FormProvider, useForm, Controller, useFieldArray } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 
@@ -37,9 +37,31 @@ interface Props {
   onReturn?: (reload?: boolean) => void;
 }
 
+function reducer(state: boolean[], action: { type: string; index?: number }) {
+  switch (action.type) {
+    case 'addNewRequest':
+      const newState = state.map((isOpen, index) => {
+        return false;
+      });
+      newState.push(true);
+      return newState;
+    case 'removeRequest':
+      return state.filter((_, index) => index !== action.index);
+    case 'toggle': {
+      return state.map((isOpen, index) => {
+        if (action.index === index) {
+          return !isOpen;
+        }
+        return isOpen;
+      });
+    }
+    default:
+      return state;
+  }
+}
+
 export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
   const styles = useStyles2(getMultiHttpFormStyles);
-  const [urls, setUrls] = useState<any[]>([]);
   let check: Check = multiHttpFallbackCheck;
   const { id } = useParams<CheckPageParams>();
   if (id) {
@@ -49,6 +71,10 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
     instance: { api },
   } = useContext(InstanceContext);
   const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
+  const [collapseState, dispatchCollapse] = useReducer(
+    reducer,
+    check.settings.multihttp?.entries?.map((_, index, arr) => index === arr.length - 1) ?? []
+  );
 
   const formMethods = useForm<CheckFormValues>({ defaultValues, reValidateMode: 'onBlur' });
 
@@ -159,6 +185,8 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
                       key={field.id}
                       className={styles.collapseTarget}
                       invalid={Boolean(errors?.settings?.multihttp?.entries?.[index])}
+                      isOpen={collapseState[index]}
+                      onToggle={() => dispatchCollapse({ type: 'toggle', index })}
                     >
                       <VerticalGroup height={'100%'}>
                         <HorizontalGroup spacing="lg" align="flex-start">
@@ -193,8 +221,8 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
                           <Button
                             variant="secondary"
                             onClick={() => {
-                              setUrls(urls.filter((url, i) => i !== index));
                               remove(index);
+                              dispatchCollapse({ type: 'removeRequest', index });
                             }}
                             className={styles.removeRequestButton}
                           >
@@ -219,6 +247,7 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
                   tooltipPlacement="bottom-start"
                   onClick={() => {
                     append({});
+                    dispatchCollapse({ type: 'addNewRequest' });
                   }}
                   className={styles.addRequestButton}
                 >

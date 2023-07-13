@@ -7,18 +7,27 @@ interface Props {
   label: string;
   invalid?: boolean;
   className?: string | string[];
+  isOpen: boolean;
+  onToggle: () => void;
 }
 
-export const MultiHttpCollapse = ({ label, children, invalid, className }: PropsWithChildren<Props>) => {
+export const MultiHttpCollapse = ({
+  label,
+  children,
+  invalid,
+  className,
+  isOpen,
+  onToggle,
+}: PropsWithChildren<Props>) => {
   const styles = useStyles2(getStyles);
-  const [isOpen, setIsOpen] = useState<boolean>(true);
+  // const [isOpen, setIsOpen] = useState<boolean>(true);
 
   return (
     <div className={cx([!className ? 'panel-container' : className, styles.container])}>
       <div
         className={styles.header}
         onClick={() => {
-          setIsOpen(!isOpen);
+          onToggle();
         }}
       >
         <>
