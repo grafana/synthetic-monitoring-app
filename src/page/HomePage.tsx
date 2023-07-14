@@ -25,7 +25,7 @@ import { PLUGIN_URL_PATH } from 'components/constants';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   page: css`
-    max-width: 1200px;
+    width: 100%;
   `,
   flexRow: css`
     display: flex;
