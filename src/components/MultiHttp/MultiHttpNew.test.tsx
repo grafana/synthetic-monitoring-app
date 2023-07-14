@@ -78,6 +78,9 @@ describe('new checks', () => {
     await act(async () => await userEvent.selectOptions(secondRequestOptions[1], 'GET'));
 
     // add assertions
+    // reopens the first request
+    const requestContainer = await screen.findByText('http://grafanarr.com');
+    userEvent.click(requestContainer);
     const assertionsTabs = await screen.findAllByLabelText('Tab Assertions');
     userEvent.click(assertionsTabs[0]);
     const addAssertion = await screen.findByRole('button', { name: 'Add assertions' });
