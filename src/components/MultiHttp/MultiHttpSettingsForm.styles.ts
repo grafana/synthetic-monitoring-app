@@ -13,7 +13,6 @@ export const getMultiHttpFormStyles = (theme: GrafanaTheme2) => ({
     position: relative;
   `,
   collapseTarget: css`
-    width: 90vw;
     background-color: ${theme.colors.background.secondary};
     max-height: 100%;
   `,
@@ -50,9 +49,6 @@ export const getMultiHttpFormStyles = (theme: GrafanaTheme2) => ({
     margin-top: 35px;
   `,
   form: css`
-    position: relative;
-  `,
-  submitMultiHttpButton: css`
-    width: 90vw;
+    width: 100%;
   `,
 });

@@ -73,7 +73,7 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
   const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
   const [collapseState, dispatchCollapse] = useReducer(
     reducer,
-    check.settings.multihttp?.entries?.map((_, index, arr) => index === arr.length - 1) ?? []
+    check.settings.multihttp?.entries?.map((_, index, arr) => index === arr.length - 1) ?? [true]
   );
 
   const formMethods = useForm<CheckFormValues>({ defaultValues, reValidateMode: 'onBlur' });
