@@ -63,11 +63,13 @@ export function MultiHttpStepsSceneRenderer({ model }: SceneComponentProps<Multi
   const urlErrorRate = sceneGraph.getData(model).useState();
 
   const errorRateByUrl = useMemo(() => {
-    const urls = urlErrorRate.data?.series?.[0]?.fields?.[1]?.values;
-    const errorRates = urlErrorRate.data?.series?.[0]?.fields?.[2]?.values;
+    const methods = urlErrorRate.data?.series?.[0]?.fields?.[1]?.values;
+    const urls = urlErrorRate.data?.series?.[0]?.fields?.[2]?.values;
+    const errorRates = urlErrorRate.data?.series?.[0]?.fields?.[3]?.values;
 
     const errorRateByUrl = urls?.reduce((acc, url, index) => {
-      acc[url] = errorRates?.[index];
+      const method = methods?.[index];
+      acc[method + url] = errorRates?.[index];
       return acc;
     }, {});
     return errorRateByUrl;
@@ -131,7 +133,7 @@ export function MultiHttpStepsSceneRenderer({ model }: SceneComponentProps<Multi
         return (
           <StepPickerStepItem
             key={index}
-            value={errorRateByUrl?.[request.url]}
+            value={errorRateByUrl?.[request.method + request.url]}
             active={request.url === stepUrl && request.method === stepMethod}
             onClick={() => {
               model.setState({ stepUrl: request.url, stepMethod: request.method });
