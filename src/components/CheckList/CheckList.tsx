@@ -68,6 +68,7 @@ import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { CheckListScene } from './CheckListScene';
 import { CheckListViewSwitcher } from './CheckListViewSwitcher';
 import { AddNewCheckButton } from './AddNewCheckButton';
+import { ChecksContextProvider } from 'components/ChecksContextProvider';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   headerContainer: css`
@@ -574,13 +575,15 @@ export const CheckList = ({ instance, checks, onCheckUpdate }: Props) => {
         </>
       )}
       {viewType === CheckListViewType.Viz ? (
-        <div className={styles.vizContainer}>
-          {scenesEnabled ? (
-            <CheckListScene setViewType={setViewType} setCurrentPage={setCurrentPage} />
-          ) : (
-            <ChecksVisualization checks={filteredChecks} showIcons={showVizIconOverlay} />
-          )}
-        </div>
+        <ChecksContextProvider>
+          <div className={styles.vizContainer}>
+            {scenesEnabled ? (
+              <CheckListScene setViewType={setViewType} setCurrentPage={setCurrentPage} />
+            ) : (
+              <ChecksVisualization checks={filteredChecks} showIcons={showVizIconOverlay} />
+            )}
+          </div>
+        </ChecksContextProvider>
       ) : (
         <div>
           <section className="card-section card-list-layout-list">

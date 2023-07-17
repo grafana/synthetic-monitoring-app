@@ -5,6 +5,8 @@ import {
   SceneDataTransformer,
   SceneFlexItem,
   SceneFlexLayout,
+  SceneGridItem,
+  SceneGridLayout,
   SceneQueryRunner,
   SceneReactObject,
   SceneRefreshPicker,
@@ -19,8 +21,16 @@ import React, { useContext, useMemo } from 'react';
 import { CheckListViewType, DashboardSceneAppConfig } from 'types';
 import { CheckListViewSwitcher } from './CheckListViewSwitcher';
 import { AddNewCheckButton } from './AddNewCheckButton';
+import { ChecksContext } from 'contexts/ChecksContext';
 
-function getCheckListScene(config: DashboardSceneAppConfig & Props) {
+function getVizDimensions(checkCount: number) {
+  const rowSize = Math.min(Math.ceil(Math.sqrt(checkCount)), 20);
+  const colSize = Math.ceil(checkCount / rowSize);
+  return { width: `${rowSize * 40}px`, height: `${colSize * 60}px` };
+  // return { width: rowSize, height: colSize };
+}
+
+function getCheckListScene(config: DashboardSceneAppConfig & Props, checkCount: number) {
   const queryRunner = new SceneQueryRunner({
     datasource: config.metrics,
     queries: [
@@ -92,6 +102,8 @@ function getCheckListScene(config: DashboardSceneAppConfig & Props) {
     from: 'now - 6h',
   });
 
+  const { width, height } = getVizDimensions(checkCount);
+
   return new EmbeddedScene({
     $timeRange: timeRange,
     controls: [
@@ -118,14 +130,78 @@ function getCheckListScene(config: DashboardSceneAppConfig & Props) {
         component: AddNewCheckButton,
       }),
     ],
+    // body: new SceneGridLayout({
+    //   children: [
+    //     new SceneGridItem({
+    //       x: 0,
+    //       y: 0,
+    //       width: width,
+    //       height: height,
+    //       isResizable: true,
+    //       body: new VizPanel({
+    //         pluginId: 'stat',
+    //         $data: transformed,
+    //         fieldConfig: {
+    //           overrides: [],
+    //           defaults: {
+    //             thresholds: {
+    //               mode: ThresholdsMode.Percentage,
+    //               steps: [
+    //                 {
+    //                   color: 'red',
+    //                   value: 0,
+    //                 },
+    //                 {
+    //                   color: 'red',
+    //                   value: 95,
+    //                 },
+    //                 {
+    //                   color: '#EAB839',
+    //                   value: 99,
+    //                 },
+    //                 {
+    //                   color: 'green',
+    //                   value: 99.75,
+    //                 },
+    //               ],
+    //             },
+    //             links: [
+    //               {
+    //                 title: 'dashboard link',
+    //                 url: '/a/grafana-synthetic-monitoring-app/scene/${__data.fields.check_name}?var-job=${__data.fields.job}&var-instance=${__data.fields.instance}',
+    //               },
+    //             ],
+
+    //             unit: 'percentunit',
+    //           },
+    //         },
+    //         options: {
+    //           reduceOptions: {
+    //             values: true,
+    //             calcs: ['uniqueValues'],
+    //             fields: '',
+    //           },
+    //           orientation: 'auto',
+    //           textMode: 'none',
+    //           colorMode: 'background',
+    //           graphMode: 'none',
+    //           justifyMode: 'auto',
+    //         },
+    //       }),
+    //     }),
+    //   ],
+    // }),
     body: new SceneFlexLayout({
+      direction: 'row',
+      maxWidth: width,
       children: [
+        new SceneFlexItem({ body: new SceneReactObject({}) }),
         new SceneFlexItem({
-          width: '100%',
-          height: '100%',
+          width,
+          height,
           body: new VizPanel({
             pluginId: 'stat',
-            title: '',
+            title: 'Success Rate',
             $data: transformed,
             fieldConfig: {
               overrides: [],
@@ -168,16 +244,14 @@ function getCheckListScene(config: DashboardSceneAppConfig & Props) {
                 fields: '',
               },
               orientation: 'auto',
-              textMode: 'name',
+              textMode: 'none',
               colorMode: 'background',
               graphMode: 'none',
               justifyMode: 'auto',
-              text: {
-                valueSize: 12,
-              },
             },
           }),
         }),
+        new SceneFlexItem({ body: new SceneReactObject({}) }),
       ],
     }),
   });
@@ -190,6 +264,8 @@ interface Props {
 
 export function CheckListScene({ setViewType, setCurrentPage }: Props) {
   const { instance } = useContext(InstanceContext);
+  const { checks, loading } = useContext(ChecksContext);
+
   const { api, logs, metrics } = useMemo(
     () => ({ api: instance.api, logs: instance.logs, metrics: instance.metrics }),
     [instance.api, instance.logs, instance.metrics]
@@ -211,10 +287,13 @@ export function CheckListScene({ setViewType, setCurrentPage }: Props) {
       uid: api.uid,
       type: api.type,
     };
-    return getCheckListScene({ metrics: metricsDef, logs: logsDef, sm: smDef, setViewType, setCurrentPage });
-  }, [setViewType, setCurrentPage, api, logs, metrics]);
+    return getCheckListScene(
+      { metrics: metricsDef, logs: logsDef, sm: smDef, setViewType, setCurrentPage },
+      checks.length
+    );
+  }, [setViewType, setCurrentPage, api, logs, metrics, checks.length]);
 
-  if (!scene) {
+  if (!scene || loading) {
     return <Spinner />;
   }
 
