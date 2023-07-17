@@ -45,7 +45,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
     border-left: none;
     border-right: none;
     border-bottom: none;
-    margin-bottom: 10px;
     padding: ${theme.spacing(2)};
   `,
   header: css`

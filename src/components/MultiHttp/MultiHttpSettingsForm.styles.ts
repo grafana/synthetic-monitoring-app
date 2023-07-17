@@ -7,7 +7,7 @@ export const getMultiHttpFormStyles = (theme: GrafanaTheme2) => ({
     flex-direction: column;
     margin-top: 15px;
     justify-content: space-evenly;
-    gap: 20px;
+    gap: ${theme.spacing(1)};
     align-self: flex-start;
     align-items: content;
     position: relative;
