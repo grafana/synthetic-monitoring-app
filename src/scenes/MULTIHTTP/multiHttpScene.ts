@@ -52,12 +52,12 @@ export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig, ch
       queries: [
         {
           refId: 'A',
-          expr: `sum by (url) (
-            probe_http_requests_failed_total{job="$job", instance="$instance", method="$stepMethod"}
+          expr: `sum by (url, method) (
+            probe_http_requests_failed_total{job="$job", instance="$instance"}
           )
           /
-          sum by (url) (
-            probe_http_requests_total{job="$job", instance="$instance", method="$stepMethod"}
+          sum by (url, method) (
+            probe_http_requests_total{job="$job", instance="$instance"}
           )`,
           range: false,
           instant: true,
@@ -93,7 +93,6 @@ export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig, ch
     });
 
     sidebar.subscribeToState(({ stepUrl: stepUrlVal, stepMethod: stepMethodVal }) => {
-      console.log('state updating', stepMethodVal, stepUrlVal);
       if (stepUrlVal && stepUrlVal !== stepUrl.getValue()) {
         stepUrl.changeValueTo(stepUrlVal);
       }
