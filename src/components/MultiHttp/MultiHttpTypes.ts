@@ -53,13 +53,13 @@ export interface MultiHttpEntry {
 }
 
 export enum AssertionSubjectVariant {
-  ResponseBody = 0,
+  ResponseBody = 3,
   ResponseHeaders = 1,
   HttpStatusCode = 2,
 }
 
 export enum AssertionConditionVariant {
-  Contains = 0,
+  Contains = 6,
   NotContains = 1,
   Equals = 2,
   StartsWith = 3,
