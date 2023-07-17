@@ -5,8 +5,6 @@ import {
   SceneDataTransformer,
   SceneFlexItem,
   SceneFlexLayout,
-  SceneGridItem,
-  SceneGridLayout,
   SceneQueryRunner,
   SceneReactObject,
   SceneRefreshPicker,
@@ -27,7 +25,6 @@ function getVizDimensions(checkCount: number) {
   const rowSize = Math.min(Math.ceil(Math.sqrt(checkCount)), 20);
   const colSize = Math.ceil(checkCount / rowSize);
   return { width: `${rowSize * 40}px`, height: `${colSize * 60}px` };
-  // return { width: rowSize, height: colSize };
 }
 
 function getCheckListScene(config: DashboardSceneAppConfig & Props, checkCount: number) {
@@ -130,67 +127,6 @@ function getCheckListScene(config: DashboardSceneAppConfig & Props, checkCount: 
         component: AddNewCheckButton,
       }),
     ],
-    // body: new SceneGridLayout({
-    //   children: [
-    //     new SceneGridItem({
-    //       x: 0,
-    //       y: 0,
-    //       width: width,
-    //       height: height,
-    //       isResizable: true,
-    //       body: new VizPanel({
-    //         pluginId: 'stat',
-    //         $data: transformed,
-    //         fieldConfig: {
-    //           overrides: [],
-    //           defaults: {
-    //             thresholds: {
-    //               mode: ThresholdsMode.Percentage,
-    //               steps: [
-    //                 {
-    //                   color: 'red',
-    //                   value: 0,
-    //                 },
-    //                 {
-    //                   color: 'red',
-    //                   value: 95,
-    //                 },
-    //                 {
-    //                   color: '#EAB839',
-    //                   value: 99,
-    //                 },
-    //                 {
-    //                   color: 'green',
-    //                   value: 99.75,
-    //                 },
-    //               ],
-    //             },
-    //             links: [
-    //               {
-    //                 title: 'dashboard link',
-    //                 url: '/a/grafana-synthetic-monitoring-app/scene/${__data.fields.check_name}?var-job=${__data.fields.job}&var-instance=${__data.fields.instance}',
-    //               },
-    //             ],
-
-    //             unit: 'percentunit',
-    //           },
-    //         },
-    //         options: {
-    //           reduceOptions: {
-    //             values: true,
-    //             calcs: ['uniqueValues'],
-    //             fields: '',
-    //           },
-    //           orientation: 'auto',
-    //           textMode: 'none',
-    //           colorMode: 'background',
-    //           graphMode: 'none',
-    //           justifyMode: 'auto',
-    //         },
-    //       }),
-    //     }),
-    //   ],
-    // }),
     body: new SceneFlexLayout({
       direction: 'row',
       maxWidth: width,
