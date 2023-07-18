@@ -14,6 +14,8 @@ import { trackEvent, trackException } from 'analytics';
 import { DisplayCard } from 'components/DisplayCard';
 import FeaturesBanner from 'components/FeaturesBanner';
 import { PluginPage } from 'components/PluginPage';
+import { faro } from '@grafana/faro-web-sdk';
+import { FaroEvents } from 'faro';
 
 const getStyles = (theme: GrafanaTheme2) => {
   const textColor = theme.isDark ? colors.darkText : colors.lightText;
@@ -235,6 +237,7 @@ export const WelcomePage: FC<Props> = () => {
     logsHostedId: number;
   }) => {
     trackEvent('provisionedSetupSubmit');
+    faro.api.pushEvent(FaroEvents.INIT);
     if (!meta?.jsonData) {
       setError('Invalid plugin configuration');
       trackException('provisionedSetupSubmitError: Invalid plugin configuration');
@@ -281,6 +284,7 @@ export const WelcomePage: FC<Props> = () => {
       setError(err.data?.msg ?? err.data?.err ?? 'Something went wrong');
       setLoading(false);
       trackException(`provisionedSetupSubmitError: ${err.data?.msg ?? err.data?.err}`);
+      faro.api.pushError(new Error(err.data?.msg ?? err.data?.err ?? String(err)), { type: FaroEvents.INIT });
     }
   };
 

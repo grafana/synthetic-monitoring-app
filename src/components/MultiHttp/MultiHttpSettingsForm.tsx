@@ -31,6 +31,8 @@ import { OrgRole } from '@grafana/data';
 import { hasRole } from 'utils';
 import { AvailableVariables } from './AvailableVariables';
 import { useAsyncCallback } from 'react-async-hook';
+import { faro } from '@grafana/faro-web-sdk';
+import { FaroEvents } from 'faro';
 
 interface Props {
   checks?: Check[];
@@ -115,6 +117,7 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
 
     if (check?.id) {
       // trackEvent('editCheckSubmit');
+      faro.api.pushEvent(FaroEvents.UPDATE_CHECK, { type: CheckType.MULTI_HTTP });
       await api?.updateCheck({
         id: check.id,
         tenantId: check.tenantId,
@@ -122,6 +125,7 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
       });
     } else {
       // trackEvent('addNewCheckSubmit');
+      faro.api.pushEvent(FaroEvents.CREATE_CHECK, { type: CheckType.MULTI_HTTP });
       await api?.addCheck(updatedCheck);
     }
     onReturn && onReturn(true);

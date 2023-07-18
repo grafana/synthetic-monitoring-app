@@ -1,0 +1,57 @@
+import { faro } from '@grafana/faro-web-sdk';
+import { config } from '@grafana/runtime';
+
+export enum FaroEvents {
+  INIT = 'initialize',
+  UPDATE_CHECK = 'update_check',
+  CREATE_CHECK = 'create_check',
+  CREATE_PROBE = 'create_probe',
+}
+
+enum FARO_ENV {
+  DEV = 'development',
+  STAGING = 'staging',
+  PROD = 'production',
+}
+
+export function pushFaroCount(type: string, count: number) {
+  faro.api.pushMeasurement({ type, values: { count } });
+}
+
+function getFaroEnv() {
+  const appUrl = config.appUrl;
+  switch (true) {
+    case appUrl.includes('grafana-dev.net'):
+      return FARO_ENV.DEV;
+    case appUrl.includes('grafana-ops.net'):
+      return FARO_ENV.STAGING;
+    case appUrl.includes('grafana.net'):
+    default:
+      return FARO_ENV.PROD;
+  }
+}
+
+export function getFaroConfig() {
+  const env = getFaroEnv();
+  switch (env) {
+    case FARO_ENV.DEV:
+      return {
+        url: 'https://faro-collector-prod-us-central-0.grafana.net/collect/3de3837f15a92467f2d006f18babc95a',
+        name: 'synthetic-monitoring-app-dev',
+        env: FARO_ENV.DEV,
+      };
+    case FARO_ENV.STAGING:
+      return {
+        url: 'https://faro-collector-prod-us-central-0.grafana.net/collect/d3cccbfcacdb95ae047f2ff40d7fdc30',
+        name: 'synthetic-monitoring-app-staging',
+        env: FARO_ENV.STAGING,
+      };
+    case FARO_ENV.PROD:
+    default:
+      return {
+        url: 'https://faro-collector-prod-us-central-0.grafana.net/collect/10f67a43146dd52c0a039b19cd3d1094',
+        name: 'synthetic-monitoring-app-prod',
+        env: FARO_ENV.PROD,
+      };
+  }
+}

@@ -47,6 +47,8 @@ import { config } from '@grafana/runtime';
 import { CheckTestResultsModal } from 'components/CheckTestResultsModal';
 import { FeatureFlag } from 'components/FeatureFlag';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
+import { faro } from '@grafana/faro-web-sdk';
+import { FaroEvents } from 'faro';
 
 interface Props {
   checks?: Check[];
@@ -100,6 +102,7 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
     const updatedCheck = getCheckFromFormValues(checkValues, defaultValues, checkType);
     if (check?.id) {
       trackEvent('editCheckSubmit');
+      faro.api.pushEvent(FaroEvents.UPDATE_CHECK, { type: checkType });
       await api?.updateCheck({
         id: check.id,
         tenantId: check.tenantId,
@@ -107,12 +110,16 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
       });
     } else {
       trackEvent('addNewCheckSubmit');
+      faro.api.pushEvent(FaroEvents.CREATE_CHECK);
       await api?.addCheck(updatedCheck);
     }
     onReturn(true);
   });
   const submissionError = error as unknown as SubmissionErrorWrapper;
   if (error) {
+    faro.api.pushError(new Error(`addNewCheckSubmitException: ${error}`), {
+      type: check?.id ? FaroEvents.UPDATE_CHECK : FaroEvents.CREATE_CHECK,
+    });
     trackException(`addNewCheckSubmitException: ${error}`);
   }
   const onRemoveCheck = async () => {
