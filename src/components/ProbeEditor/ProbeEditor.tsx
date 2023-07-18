@@ -28,6 +28,8 @@ import { Clipboard } from 'components/Clipboard';
 import { SimpleMap } from '../SimpleMap';
 import { useParams } from 'react-router-dom';
 import { PluginPage } from 'components/PluginPage';
+import { faro } from '@grafana/faro-web-sdk';
+import { FaroEvents } from 'faro';
 
 interface Props {
   probes?: Probe[];
@@ -89,6 +91,7 @@ const ProbeEditor = ({ probes, onReturn }: Props) => {
 
   const { execute: onSave, error } = useAsyncCallback(async (formValues: Probe) => {
     trackEvent('addNewProbeSubmit');
+    faro.api.pushEvent(FaroEvents.CREATE_PROBE);
     // Form values always come back as a string, even for number inputs
     formValues.latitude = Number(formValues.latitude);
     formValues.longitude = Number(formValues.longitude);
@@ -118,6 +121,7 @@ const ProbeEditor = ({ probes, onReturn }: Props) => {
 
   if (error) {
     trackException(`addNewProbeSubmitException: ${error}`);
+    faro.api.pushError(new Error(`addNewProbeSubmitException: ${error}`), { type: FaroEvents.CREATE_PROBE });
   }
 
   if (!probe || !instance) {

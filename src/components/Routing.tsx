@@ -30,7 +30,6 @@ export const Routing = ({ onNavChanged, meta, ...rest }: AppRootProps) => {
   useEffect(() => {
     const navModel = getNavModel(meta.info.logos.large, location.pathname);
     if (!config.featureToggles.topnav) {
-      console.log('on nav changing');
       onNavChanged(navModel);
     }
   }, [meta.info.logos.large, onNavChanged, location.pathname]);

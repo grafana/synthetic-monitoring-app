@@ -25,7 +25,6 @@ export function DashboardRedirecter() {
     dashboards?.find((dashboardJson) => dashboardJson.json.indexOf(dashboard) > -1) ?? dashboards[0];
 
   if (targetDashboard) {
-    console.log(queryParams);
     const queryParamsParsed: QueryParamMap = {};
     queryParams.forEach((value, key) => {
       queryParamsParsed[key] = value;
