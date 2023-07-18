@@ -19,13 +19,13 @@ export function pushFaroCount(type: string, count: number) {
 }
 
 function getFaroEnv() {
-  const appUrl = config.appUrl;
+  const appUrl = new URL(config.appUrl).hostname;
   switch (true) {
-    case appUrl.includes('grafana-dev.net'):
+    case appUrl.endsWith('grafana-dev.net'):
       return FARO_ENV.DEV;
-    case appUrl.includes('grafana-ops.net'):
+    case appUrl.endsWith('grafana-ops.net'):
       return FARO_ENV.STAGING;
-    case appUrl.includes('grafana.net'):
+    case appUrl.endsWith('grafana.net'):
     default:
       return FARO_ENV.PROD;
   }
