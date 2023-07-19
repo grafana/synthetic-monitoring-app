@@ -7,7 +7,6 @@ import ProbeEditor from 'components/ProbeEditor/ProbeEditor';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { ProbeList } from 'components/ProbeList';
 import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
-import { trackEvent } from 'analytics';
 import { Switch, Route, useRouteMatch } from 'react-router-dom';
 import { useNavigation } from 'hooks/useNavigation';
 
@@ -48,7 +47,6 @@ export const ProbeRouter = () => {
           <ProbeList
             probes={probes}
             onAddNew={() => {
-              trackEvent('viewAddProbe');
               navigate(ROUTES.NewProbe);
             }}
             onSelectProbe={onSelectProbe}

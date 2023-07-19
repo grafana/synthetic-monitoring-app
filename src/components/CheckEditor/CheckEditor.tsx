@@ -40,15 +40,13 @@ import { GrafanaTheme2, OrgRole } from '@grafana/data';
 import { CheckUsage } from '../CheckUsage';
 import { CheckFormAlert } from 'components/CheckFormAlert';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { trackEvent, trackException } from 'analytics';
 import { useParams } from 'react-router-dom';
 import { PluginPage } from 'components/PluginPage';
 import { config } from '@grafana/runtime';
 import { CheckTestResultsModal } from 'components/CheckTestResultsModal';
 import { FeatureFlag } from 'components/FeatureFlag';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
-import { faro } from '@grafana/faro-web-sdk';
-import { FaroEvents } from 'faro';
+import { FaroEvent, reportError, reportEvent } from 'faro';
 
 interface Props {
   checks?: Check[];
@@ -101,32 +99,31 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
   } = useAsyncCallback(async (checkValues: CheckFormValues) => {
     const updatedCheck = getCheckFromFormValues(checkValues, defaultValues, checkType);
     if (check?.id) {
-      trackEvent('editCheckSubmit');
-      faro.api.pushEvent(FaroEvents.UPDATE_CHECK, { type: checkType });
+      reportEvent(FaroEvent.UPDATE_CHECK, { type: checkType });
       await api?.updateCheck({
         id: check.id,
         tenantId: check.tenantId,
         ...updatedCheck,
       });
     } else {
-      trackEvent('addNewCheckSubmit');
-      faro.api.pushEvent(FaroEvents.CREATE_CHECK);
+      reportEvent(FaroEvent.CREATE_CHECK);
       await api?.addCheck(updatedCheck);
     }
     onReturn(true);
   });
   const submissionError = error as unknown as SubmissionErrorWrapper;
   if (error) {
-    faro.api.pushError(new Error(`addNewCheckSubmitException: ${error}`), {
-      type: check?.id ? FaroEvents.UPDATE_CHECK : FaroEvents.CREATE_CHECK,
-    });
-    trackException(`addNewCheckSubmitException: ${error}`);
+    reportError(
+      new Error(`addNewCheckSubmitException: ${error}`),
+      check?.id ? FaroEvent.UPDATE_CHECK : FaroEvent.CREATE_CHECK
+    );
   }
   const onRemoveCheck = async () => {
     const id = check?.id;
     if (!id) {
       return;
     }
+    reportEvent(FaroEvent.DELETE_CHECK, { type: checkType });
     await api?.deleteCheck(id);
     onReturn(true);
   };
@@ -256,6 +253,7 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
                       onClick={() => {
                         const values = formMethods.getValues();
                         const check = getCheckFromFormValues(values, defaultValues, checkType);
+                        reportEvent(FaroEvent.TEST_CHECK, { type: checkType });
                         setTestRequestInFlight(true);
                         api
                           ?.testCheck(check)

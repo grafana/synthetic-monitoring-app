@@ -1,11 +1,17 @@
 import { faro } from '@grafana/faro-web-sdk';
 import { config } from '@grafana/runtime';
 
-export enum FaroEvents {
+export enum FaroEvent {
   INIT = 'initialize',
   UPDATE_CHECK = 'update_check',
+  DELETE_CHECK = 'delete_check',
+  TEST_CHECK = 'test_check',
   CREATE_CHECK = 'create_check',
   CREATE_PROBE = 'create_probe',
+  DISABLE_PLUGIN = 'disable_plugin',
+  CREATE_ACCESS_TOKEN = 'create_access_token',
+  SAVE_THRESHOLDS = 'save_thresholds',
+  SHOW_TERRAFORM_CONFIG = 'show_terraform_config',
 }
 
 enum FARO_ENV {
@@ -16,6 +22,15 @@ enum FARO_ENV {
 
 export function pushFaroCount(type: string, count: number) {
   faro.api.pushMeasurement({ type, values: { count } });
+}
+
+export function reportEvent(type: FaroEvent, options: Record<string, any> = {}) {
+  const slug = config.bootData.user.orgName;
+  faro.api.pushEvent(type, { slug });
+}
+
+export function reportError(error: Error, type?: FaroEvent) {
+  faro.api.pushError(error, { type });
 }
 
 function getFaroEnv() {

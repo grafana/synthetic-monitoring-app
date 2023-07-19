@@ -31,8 +31,7 @@ import { OrgRole } from '@grafana/data';
 import { hasRole } from 'utils';
 import { AvailableVariables } from './AvailableVariables';
 import { useAsyncCallback } from 'react-async-hook';
-import { faro } from '@grafana/faro-web-sdk';
-import { FaroEvents } from 'faro';
+import { FaroEvent, reportEvent, reportError } from 'faro';
 
 interface Props {
   checks?: Check[];
@@ -116,16 +115,14 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
     const updatedCheck = getCheckFromFormValues(values, defaultValues, CheckType.MULTI_HTTP);
 
     if (check?.id) {
-      // trackEvent('editCheckSubmit');
-      faro.api.pushEvent(FaroEvents.UPDATE_CHECK, { type: CheckType.MULTI_HTTP });
+      reportEvent(FaroEvent.UPDATE_CHECK, { type: CheckType.MULTI_HTTP });
       await api?.updateCheck({
         id: check.id,
         tenantId: check.tenantId,
         ...updatedCheck,
       });
     } else {
-      // trackEvent('addNewCheckSubmit');
-      faro.api.pushEvent(FaroEvents.CREATE_CHECK, { type: CheckType.MULTI_HTTP });
+      reportEvent(FaroEvent.CREATE_CHECK, { type: CheckType.MULTI_HTTP });
       await api?.addCheck(updatedCheck);
     }
     onReturn && onReturn(true);
@@ -133,11 +130,19 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
 
   const submissionError = error as unknown as SubmissionErrorWrapper;
 
+  if (submissionError) {
+    reportError(
+      new Error(submissionError.message ?? 'Multihttp submission error'),
+      check?.id ? FaroEvent.UPDATE_CHECK : FaroEvent.CREATE_CHECK
+    );
+  }
+
   const onRemoveCheck = async () => {
     const id = check?.id;
     if (!id) {
       return;
     }
+    reportEvent(FaroEvent.DELETE_CHECK, { type: CheckType.MULTI_HTTP });
     await api?.deleteCheck(id);
     onReturn && onReturn(true);
   };
