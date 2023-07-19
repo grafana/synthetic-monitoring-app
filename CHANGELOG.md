@@ -1,5 +1,10 @@
 # Change Log
 
+# [1.11.4](https://github.com/grafana/synthetic-monitoring-app/compare/v1.11.3...v1.11.4) (2023-7-19)
+
+- Fix an unhandled error in the traceroute nodegraph panel
+- Various tweaks to the MultiHTTP scene and form
+
 # [1.11.3](https://github.com/grafana/synthetic-monitoring-app/compare/v1.11.2...v1.11.3) (2023-7-10)
 
 - Fix an incorrect frequency value in the HTTP scene
