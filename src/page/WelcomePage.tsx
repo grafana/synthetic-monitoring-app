@@ -10,12 +10,10 @@ import { colors, LEGACY_LOGS_DS_NAME, LEGACY_METRICS_DS_NAME } from 'components/
 import { dashboardScreenshot, dashboardScreenshotLight } from 'img';
 import { isNumber } from 'lodash';
 import { SubmissionErrorWrapper } from 'types';
-import { trackEvent, trackException } from 'analytics';
 import { DisplayCard } from 'components/DisplayCard';
 import FeaturesBanner from 'components/FeaturesBanner';
 import { PluginPage } from 'components/PluginPage';
-import { faro } from '@grafana/faro-web-sdk';
-import { FaroEvents } from 'faro';
+import { FaroEvent, reportEvent, reportError } from 'faro';
 
 const getStyles = (theme: GrafanaTheme2) => {
   const textColor = theme.isDark ? colors.darkText : colors.lightText;
@@ -236,11 +234,10 @@ export const WelcomePage: FC<Props> = () => {
     logsSettings: DataSourceInstanceSettings<DataSourceJsonData>;
     logsHostedId: number;
   }) => {
-    trackEvent('provisionedSetupSubmit');
-    faro.api.pushEvent(FaroEvents.INIT);
+    reportEvent(FaroEvent.INIT);
     if (!meta?.jsonData) {
+      reportError(new Error('Invalid plugin configuration'), FaroEvent.INIT);
       setError('Invalid plugin configuration');
-      trackException('provisionedSetupSubmitError: Invalid plugin configuration');
       return;
     }
     setLoading(true);
@@ -283,8 +280,7 @@ export const WelcomePage: FC<Props> = () => {
       const err = e as unknown as SubmissionErrorWrapper;
       setError(err.data?.msg ?? err.data?.err ?? 'Something went wrong');
       setLoading(false);
-      trackException(`provisionedSetupSubmitError: ${err.data?.msg ?? err.data?.err}`);
-      faro.api.pushError(new Error(err.data?.msg ?? err.data?.err ?? String(err)), { type: FaroEvents.INIT });
+      reportError(new Error(err.data?.msg ?? err.data?.err ?? String(err)), FaroEvent.INIT);
     }
   };
 

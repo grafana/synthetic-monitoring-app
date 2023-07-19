@@ -2,6 +2,7 @@ import { css } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Button, Modal, useStyles2 } from '@grafana/ui';
 import { Clipboard } from 'components/Clipboard';
+import { FaroEvent, reportEvent } from 'faro';
 import { useTerraformConfig } from 'hooks/useTerraformConfig';
 import React, { useState } from 'react';
 
@@ -29,6 +30,7 @@ export const TerraformConfig = () => {
   const { config, checkCommands, error } = useTerraformConfig();
 
   const showConfigModal = async () => {
+    reportEvent(FaroEvent.SHOW_TERRAFORM_CONFIG);
     setShowModal(true);
   };
 

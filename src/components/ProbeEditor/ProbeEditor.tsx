@@ -22,14 +22,12 @@ import { hasRole } from 'utils';
 import { LabelField } from 'components/LabelField';
 import ProbeStatus from '../ProbeStatus';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { trackEvent, trackException } from 'analytics';
 import { GrafanaTheme2, AppEvents, OrgRole } from '@grafana/data';
 import { Clipboard } from 'components/Clipboard';
 import { SimpleMap } from '../SimpleMap';
 import { useParams } from 'react-router-dom';
 import { PluginPage } from 'components/PluginPage';
-import { faro } from '@grafana/faro-web-sdk';
-import { FaroEvents } from 'faro';
+import { FaroEvent, reportError, reportEvent } from 'faro';
 
 interface Props {
   probes?: Probe[];
@@ -90,8 +88,7 @@ const ProbeEditor = ({ probes, onReturn }: Props) => {
   const styles = useStyles2(getStyles);
 
   const { execute: onSave, error } = useAsyncCallback(async (formValues: Probe) => {
-    trackEvent('addNewProbeSubmit');
-    faro.api.pushEvent(FaroEvents.CREATE_PROBE);
+    reportEvent(FaroEvent.CREATE_PROBE);
     // Form values always come back as a string, even for number inputs
     formValues.latitude = Number(formValues.latitude);
     formValues.longitude = Number(formValues.longitude);
@@ -120,8 +117,7 @@ const ProbeEditor = ({ probes, onReturn }: Props) => {
   const submissionError = error as unknown as SubmissionErrorWrapper;
 
   if (error) {
-    trackException(`addNewProbeSubmitException: ${error}`);
-    faro.api.pushError(new Error(`addNewProbeSubmitException: ${error}`), { type: FaroEvents.CREATE_PROBE });
+    reportError(new Error(`addNewProbeSubmitException: ${error}`), FaroEvent.CREATE_PROBE);
   }
 
   if (!probe || !instance) {

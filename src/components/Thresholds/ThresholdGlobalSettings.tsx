@@ -4,6 +4,7 @@ import { Modal, Button, HorizontalGroup } from '@grafana/ui';
 import { SuccessRateContext, ThresholdValues } from 'contexts/SuccessRateContext';
 import { InstanceContext } from 'contexts/InstanceContext';
 import ThresholdFormSection from './ThresholdFormSection';
+import { FaroEvent, reportError, reportEvent } from 'faro';
 
 interface Props {
   onDismiss: () => void;
@@ -51,16 +52,17 @@ const ThresholdGlobalSettings = ({ onDismiss, onSuccess, onError, isOpen }: Prop
       },
     };
     try {
+      reportEvent(FaroEvent.SAVE_THRESHOLDS);
       // Send new thresholds, then update context values
       await instance.api?.updateTenantSettings(postBody);
       await updateThresholds();
       // Show success
       onDismiss();
       onSuccess();
-    } catch (e) {
+    } catch (e: any) {
       // Show error
       onError();
-      console.log({ e });
+      reportError(new Error(e?.message ?? e), FaroEvent.SAVE_THRESHOLDS);
     }
   }, [
     uptimeThresholds,
