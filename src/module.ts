@@ -17,6 +17,9 @@ export const faro = initializeFaro({
     environment: env,
   },
   isolate: true,
+  user: {
+    id: config.bootData.user.orgName,
+  },
   instrumentations: getWebInstrumentations(),
 });
 
