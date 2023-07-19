@@ -184,7 +184,7 @@ export const parseTracerouteLogs = (queryResponse: LogStream[]): MutableDataFram
     streamArray
       .sort((a, b) => a.TTL - b.TTL)
       .forEach((stream, index, arr) => {
-        stream.Hosts.forEach((host) => {
+        stream.Hosts?.forEach((host) => {
           const nextHosts = destinations.has(host) ? undefined : findNextHosts(stream.TTL, arr);
           const currentHost = acc[host];
 
