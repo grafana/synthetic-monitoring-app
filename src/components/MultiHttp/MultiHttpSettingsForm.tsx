@@ -131,8 +131,9 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
   const submissionError = error as unknown as SubmissionErrorWrapper;
 
   if (submissionError) {
+    console.log(submissionError);
     reportError(
-      new Error(submissionError.message ?? 'Multihttp submission error'),
+      submissionError.data?.err ?? 'Multihttp submission error',
       check?.id ? FaroEvent.UPDATE_CHECK : FaroEvent.CREATE_CHECK
     );
   }

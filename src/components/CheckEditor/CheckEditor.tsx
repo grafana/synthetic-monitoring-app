@@ -113,10 +113,7 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
   });
   const submissionError = error as unknown as SubmissionErrorWrapper;
   if (error) {
-    reportError(
-      new Error(`addNewCheckSubmitException: ${error}`),
-      check?.id ? FaroEvent.UPDATE_CHECK : FaroEvent.CREATE_CHECK
-    );
+    reportError(error.message ?? error, check?.id ? FaroEvent.UPDATE_CHECK : FaroEvent.CREATE_CHECK);
   }
   const onRemoveCheck = async () => {
     const id = check?.id;

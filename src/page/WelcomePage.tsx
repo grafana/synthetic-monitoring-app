@@ -236,7 +236,7 @@ export const WelcomePage: FC<Props> = () => {
   }) => {
     reportEvent(FaroEvent.INIT);
     if (!meta?.jsonData) {
-      reportError(new Error('Invalid plugin configuration'), FaroEvent.INIT);
+      reportError('Invalid plugin configuration', FaroEvent.INIT);
       setError('Invalid plugin configuration');
       return;
     }
@@ -280,7 +280,7 @@ export const WelcomePage: FC<Props> = () => {
       const err = e as unknown as SubmissionErrorWrapper;
       setError(err.data?.msg ?? err.data?.err ?? 'Something went wrong');
       setLoading(false);
-      reportError(new Error(err.data?.msg ?? err.data?.err ?? String(err)), FaroEvent.INIT);
+      reportError(err.data?.msg ?? err.data?.err ?? err, FaroEvent.INIT);
     }
   };
 

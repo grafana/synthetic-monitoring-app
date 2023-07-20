@@ -1,11 +1,10 @@
 import { css, cx } from '@emotion/css';
-import React, { Fragment } from 'react';
+import React from 'react';
 import { Controller, useFieldArray, useFormContext } from 'react-hook-form';
 
 import { GrafanaTheme2 } from '@grafana/data';
 import {
   Button,
-  Container,
   Field,
   HorizontalGroup,
   Icon,
@@ -14,7 +13,6 @@ import {
   Select,
   TabContent,
   TextArea,
-  VerticalGroup,
   useStyles2,
 } from '@grafana/ui';
 import { MULTI_HTTP_VARIABLE_TYPE_OPTIONS } from 'components/constants';
@@ -45,77 +43,73 @@ export const HeadersTab = ({ label = 'header', index, active }: MultiHttpTabProp
 
   return (
     <div className={cx(styles.inputsContainer, { [styles.inactive]: !active })}>
-      <VerticalGroup justify="space-between" className={styles.inputsContainer}>
-        <Container>
-          <Field label="Request headers" description="The HTTP headers set for the probe.">
-            <>
-              {fields.map((field, i) => {
-                const headersNamePrefix = `settings.multihttp.entries[${index}].request.headers[${i}]`;
+      <Field label="Request headers" description="The HTTP headers set for the probe.">
+        <>
+          {fields.map((field, i) => {
+            const headersNamePrefix = `settings.multihttp.entries[${index}].request.headers[${i}]`;
 
-                return (
-                  <Fragment key={field.id}>
-                    <HorizontalGroup spacing="md" align="flex-start" className={styles.headersQueryInputs}>
-                      <HorizontalGroup spacing="md" align="flex-start" className={styles.headersQueryInputs}>
-                        <Field
-                          invalid={formState.errors?.settings?.multihttp?.entries[index]?.request?.headers?.[i]?.name}
-                          error={
-                            formState.errors?.settings?.multihttp?.entries[index]?.request?.headers?.[i]?.name?.message
-                          }
-                        >
-                          <Input
-                            {...register(`${headersNamePrefix}.name` as const, {
-                              required: 'Header name required',
-                              minLength: 1,
-                            })}
-                            type="text"
-                            placeholder="name"
-                            data-testid={`header-name-${index}`}
-                          />
-                        </Field>
-                        <Field
-                          invalid={formState.errors?.settings?.multihttp?.entries[index]?.request?.headers?.[i]?.value}
-                          error={
-                            formState.errors?.settings?.multihttp?.entries[index]?.request?.headers?.[i]?.value?.message
-                          }
-                        >
-                          <Input
-                            {...register(`${headersNamePrefix}.value` as const, {
-                              required: 'Header value required',
-                              minLength: 1,
-                            })}
-                            type="text"
-                            data-testid={`header-value-${index}`}
-                            placeholder="value"
-                          />
-                        </Field>
-                      </HorizontalGroup>
-                      <IconButton
-                        className={styles.removeIcon}
-                        name="minus-circle"
-                        type="button"
-                        onClick={() => {
-                          remove(i);
-                          unregister([`${headersNamePrefix}`]);
-                        }}
+            return (
+              <div className={cx({ [styles.tabInputContainer]: i === 0 })} key={field.id}>
+                <HorizontalGroup spacing="md" align="flex-start" className={styles.headersQueryInputs}>
+                  <HorizontalGroup spacing="md" align="flex-start" className={styles.headersQueryInputs}>
+                    <Field
+                      invalid={formState.errors?.settings?.multihttp?.entries[index]?.request?.headers?.[i]?.name}
+                      error={
+                        formState.errors?.settings?.multihttp?.entries[index]?.request?.headers?.[i]?.name?.message
+                      }
+                    >
+                      <Input
+                        {...register(`${headersNamePrefix}.name` as const, {
+                          required: 'Header name required',
+                          minLength: 1,
+                        })}
+                        type="text"
+                        placeholder="name"
+                        data-testid={`header-name-${index}`}
                       />
-                    </HorizontalGroup>
-                  </Fragment>
-                );
-              })}
-              <Button
-                onClick={() => append({})}
-                variant="secondary"
-                size="sm"
-                type="button"
-                className={styles.addHeaderQueryButton}
-              >
-                <Icon name="plus" />
-                &nbsp; Add {label}
-              </Button>
-            </>
-          </Field>
-        </Container>
-      </VerticalGroup>
+                    </Field>
+                    <Field
+                      invalid={formState.errors?.settings?.multihttp?.entries[index]?.request?.headers?.[i]?.value}
+                      error={
+                        formState.errors?.settings?.multihttp?.entries[index]?.request?.headers?.[i]?.value?.message
+                      }
+                    >
+                      <Input
+                        {...register(`${headersNamePrefix}.value` as const, {
+                          required: 'Header value required',
+                          minLength: 1,
+                        })}
+                        type="text"
+                        data-testid={`header-value-${index}`}
+                        placeholder="value"
+                      />
+                    </Field>
+                  </HorizontalGroup>
+                  <IconButton
+                    className={styles.removeIcon}
+                    name="minus-circle"
+                    type="button"
+                    onClick={() => {
+                      remove(i);
+                      unregister([`${headersNamePrefix}`]);
+                    }}
+                  />
+                </HorizontalGroup>
+              </div>
+            );
+          })}
+        </>
+      </Field>
+      <Button
+        onClick={() => append({})}
+        variant="secondary"
+        size="sm"
+        type="button"
+        className={styles.addHeaderQueryButton}
+      >
+        <Icon name="plus" />
+        &nbsp; Add {label}
+      </Button>
     </div>
   );
 };
@@ -166,66 +160,61 @@ const QueryParamsTab = ({ index, label, active }: MultiHttpTabProps) => {
 
   return (
     <div className={cx(styles.inputsContainer, { [styles.inactive]: !active })}>
-      <VerticalGroup justify="space-between" className={styles.inputsContainer}>
-        <Container>
-          <Field label="Query params" description="Add values to the query string of the request URL">
-            <>
-              {fields.map((field, i) => {
-                const queryParamsNamePrefix = `settings.multihttp.entries[${index}].request.queryString[${i}]`;
-
-                return (
-                  <Fragment key={field.id}>
-                    <HorizontalGroup align="flex-start" spacing="md">
-                      <HorizontalGroup spacing="md" align="flex-start">
-                        <Field invalid={errors?.[i]?.name} error={errors?.[i]?.name?.message}>
-                          <Input
-                            {...register(`${queryParamsNamePrefix}.name` as const, {
-                              required: 'Query param name required',
-                              minLength: 1,
-                            })}
-                            type="text"
-                            placeholder="Parameter name"
-                            data-testid="query-param-name"
-                          />
-                        </Field>
-                        <Field invalid={errors?.[i]?.value} error={errors?.[i]?.value?.message}>
-                          <Input
-                            {...register(`${queryParamsNamePrefix}.value` as const, {
-                              required: 'Query param value required',
-                              minLength: 1,
-                            })}
-                            type="text"
-                            placeholder="Parameter value"
-                            data-testid="query-param-value"
-                          />
-                        </Field>
-                      </HorizontalGroup>
-                      <IconButton
-                        className={styles.removeIcon}
-                        name="minus-circle"
-                        type="button"
-                        onClick={() => {
-                          remove(i);
-                        }}
+      <Field label="Query params" description="Add values to the query string of the request URL">
+        <>
+          {fields.map((field, i) => {
+            const queryParamsNamePrefix = `settings.multihttp.entries[${index}].request.queryString[${i}]`;
+            return (
+              <div className={cx({ [styles.tabInputContainer]: i === 0 })} key={field.id}>
+                <HorizontalGroup align="flex-start" spacing="md">
+                  <HorizontalGroup spacing="md" align="flex-start">
+                    <Field invalid={errors?.[i]?.name} error={errors?.[i]?.name?.message}>
+                      <Input
+                        {...register(`${queryParamsNamePrefix}.name` as const, {
+                          required: 'Query param name required',
+                          minLength: 1,
+                        })}
+                        type="text"
+                        placeholder="Parameter name"
+                        data-testid="query-param-name"
                       />
-                    </HorizontalGroup>
-                  </Fragment>
-                );
-              })}
-              <Button
-                onClick={() => append({})}
-                variant="secondary"
-                size="sm"
-                type="button"
-                className={styles.addHeaderQueryButton}
-              >
-                <Icon name="plus" />
-                &nbsp; Add query param
-              </Button>
-            </>
-          </Field>
-        </Container>
-      </VerticalGroup>
+                    </Field>
+                    <Field invalid={errors?.[i]?.value} error={errors?.[i]?.value?.message}>
+                      <Input
+                        {...register(`${queryParamsNamePrefix}.value` as const, {
+                          required: 'Query param value required',
+                          minLength: 1,
+                        })}
+                        type="text"
+                        placeholder="Parameter value"
+                        data-testid="query-param-value"
+                      />
+                    </Field>
+                  </HorizontalGroup>
+                  <IconButton
+                    className={styles.removeIcon}
+                    name="minus-circle"
+                    type="button"
+                    onClick={() => {
+                      remove(i);
+                    }}
+                  />
+                </HorizontalGroup>
+              </div>
+            );
+          })}
+        </>
+      </Field>
+      <Button
+        onClick={() => append({})}
+        variant="secondary"
+        size="sm"
+        type="button"
+        className={styles.addHeaderQueryButton}
+      >
+        <Icon name="plus" />
+        &nbsp; Add query param
+      </Button>
     </div>
   );
 };
@@ -249,64 +238,66 @@ const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
             const errorPath = formState.errors.settings?.multihttp?.entries[index]?.variables?.[variableIndex];
 
             return (
-              <HorizontalGroup key={field.id} align="flex-start">
-                <Controller
-                  name={variableTypeName}
-                  render={({ field: typeField }) => {
-                    return (
-                      <Field label="Variable type" invalid={errorPath?.type}>
-                        <Select
-                          id={`multihttp-variable-type-${index}-${variableIndex}`}
-                          className={styles.minInputWidth}
-                          {...typeField}
-                          options={MULTI_HTTP_VARIABLE_TYPE_OPTIONS}
-                          menuPlacement="bottom"
-                        />
-                      </Field>
-                    );
-                  }}
-                  rules={{ required: true }}
-                />
-                <Field label="Variable name" invalid={errorPath?.name} error={errorPath?.name?.message}>
-                  <Input
-                    placeholder="Variable name"
-                    id={`multihttp-variable-name-${index}-${variableIndex}`}
-                    invalid={formState.errors.settings?.multihttp?.entries[index]?.variables?.[variableIndex]?.type}
-                    {...register(`${variableFieldName}[${variableIndex}].name`, {
-                      required: 'Variable name is required',
-                    })}
+              <div className={cx({ [styles.tabInputContainer]: variableIndex === 0 })} key={field.id}>
+                <HorizontalGroup key={field.id} align="flex-start">
+                  <Controller
+                    name={variableTypeName}
+                    render={({ field: typeField }) => {
+                      return (
+                        <Field label="Variable type" invalid={errorPath?.type}>
+                          <Select
+                            id={`multihttp-variable-type-${index}-${variableIndex}`}
+                            className={styles.minInputWidth}
+                            {...typeField}
+                            options={MULTI_HTTP_VARIABLE_TYPE_OPTIONS}
+                            menuPlacement="bottom"
+                          />
+                        </Field>
+                      );
+                    }}
+                    rules={{ required: true }}
                   />
-                </Field>
-                {variableTypeValue === MultiHttpVariableType.CSS_SELECTOR && (
-                  <Field label="Attribute" invalid={errorPath?.attribute} error={errorPath?.attribute?.message}>
+                  <Field label="Variable name" invalid={errorPath?.name} error={errorPath?.name?.message}>
                     <Input
-                      placeholder="Attribute"
-                      id={`multihttp-variable-attribute-${index}-${variableIndex}`}
-                      {...register(`${variableFieldName}[${variableIndex}].attribute`, {
-                        required: 'Attribute is required',
+                      placeholder="Variable name"
+                      id={`multihttp-variable-name-${index}-${variableIndex}`}
+                      invalid={formState.errors.settings?.multihttp?.entries[index]?.variables?.[variableIndex]?.type}
+                      {...register(`${variableFieldName}[${variableIndex}].name`, {
+                        required: 'Variable name is required',
                       })}
                     />
                   </Field>
-                )}
-                <Field
-                  label="Variable expression"
-                  invalid={errorPath?.expression}
-                  error={errorPath?.expression?.message}
-                >
-                  <Input
-                    placeholder="Variable expression"
-                    id={`multihttp-variable-expression-${index}-${variableIndex}`}
-                    {...register(`${variableFieldName}[${variableIndex}].expression`, {
-                      required: 'Expression is required',
-                    })}
+                  {variableTypeValue === MultiHttpVariableType.CSS_SELECTOR && (
+                    <Field label="Attribute" invalid={errorPath?.attribute} error={errorPath?.attribute?.message}>
+                      <Input
+                        placeholder="Attribute"
+                        id={`multihttp-variable-attribute-${index}-${variableIndex}`}
+                        {...register(`${variableFieldName}[${variableIndex}].attribute`, {
+                          required: 'Attribute is required',
+                        })}
+                      />
+                    </Field>
+                  )}
+                  <Field
+                    label="Variable expression"
+                    invalid={errorPath?.expression}
+                    error={errorPath?.expression?.message}
+                  >
+                    <Input
+                      placeholder="Variable expression"
+                      id={`multihttp-variable-expression-${index}-${variableIndex}`}
+                      {...register(`${variableFieldName}[${variableIndex}].expression`, {
+                        required: 'Expression is required',
+                      })}
+                    />
+                  </Field>
+                  <IconButton
+                    name="trash-alt"
+                    onClick={() => remove(variableIndex)}
+                    className={styles.removeIconWithLabel}
                   />
-                </Field>
-                <IconButton
-                  name="trash-alt"
-                  onClick={() => remove(variableIndex)}
-                  className={styles.removeIconWithLabel}
-                />
-              </HorizontalGroup>
+                </HorizontalGroup>
+              </div>
             );
           })}
         </>
@@ -318,7 +309,7 @@ const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
         variant="secondary"
         size="sm"
         type="button"
-        className={styles.addHeaderQueryButton}
+        // className={styles.addHeaderQueryButton}
       >
         <Icon name="plus" />
         &nbsp; Add variable
@@ -367,5 +358,8 @@ export const getMultiHttpTabStyles = (theme: GrafanaTheme2) => ({
   `,
   inactive: css`
     display: none;
+  `,
+  tabInputContainer: css`
+    margin-top: ${theme.spacing(2)};
   `,
 });
