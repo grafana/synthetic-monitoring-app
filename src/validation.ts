@@ -56,7 +56,7 @@ export function validateTarget(typeOfCheck: CheckType, target: string): string |
       return validateHttpTarget(target);
     }
     case CheckType.MULTI_HTTP: {
-      return validateHttpTarget(target, true);
+      return validateHttpTarget(target);
     }
     case CheckType.PING: {
       return validateHostname(target);
@@ -322,10 +322,7 @@ export function validateSettingsTCP(settings: TcpSettings): string | undefined {
   return undefined;
 }
 
-function validateHttpTarget(target: string, isMultiHttp?: boolean): string | undefined {
-  if (isMultiHttp) {
-    return undefined;
-  }
+function validateHttpTarget(target: string): string | undefined {
   try {
     // valid url will fail if curly brackets are not URI encoded, but curly brackets are technically allowed and work in the real world.
     // We encode the target before checking to get around that

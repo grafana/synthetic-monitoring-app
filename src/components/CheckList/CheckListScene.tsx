@@ -115,14 +115,12 @@ function getCheckListScene(config: DashboardSceneAppConfig & Props, checkCount: 
         ),
       }),
       new VariableValueSelectors({}),
-      // new CustomOb
       new SceneControlsSpacer(),
-
-      // customObject,
       new SceneTimePicker({ isOnCanvas: true }),
       new SceneRefreshPicker({
         intervals: ['1m', '5m', '15m', '1h'],
         isOnCanvas: true,
+        refresh: '1m',
       }),
       new SceneReactObject({
         component: AddNewCheckButton,
