@@ -117,7 +117,7 @@ const ProbeEditor = ({ probes, onReturn }: Props) => {
   const submissionError = error as unknown as SubmissionErrorWrapper;
 
   if (error) {
-    reportError(new Error(`addNewProbeSubmitException: ${error}`), FaroEvent.CREATE_PROBE);
+    reportError(error.message ?? error, FaroEvent.CREATE_PROBE);
   }
 
   if (!probe || !instance) {

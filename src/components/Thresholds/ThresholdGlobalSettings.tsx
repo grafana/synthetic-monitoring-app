@@ -62,7 +62,7 @@ const ThresholdGlobalSettings = ({ onDismiss, onSuccess, onError, isOpen }: Prop
     } catch (e: any) {
       // Show error
       onError();
-      reportError(new Error(e?.message ?? e), FaroEvent.SAVE_THRESHOLDS);
+      reportError(e, FaroEvent.SAVE_THRESHOLDS);
     }
   }, [
     uptimeThresholds,

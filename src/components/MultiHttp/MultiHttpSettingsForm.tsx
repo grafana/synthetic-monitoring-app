@@ -132,7 +132,7 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
 
   if (submissionError) {
     reportError(
-      new Error(submissionError.message ?? 'Multihttp submission error'),
+      submissionError.data?.err ?? 'Multihttp submission error',
       check?.id ? FaroEvent.UPDATE_CHECK : FaroEvent.CREATE_CHECK
     );
   }
@@ -184,7 +184,7 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
 
               <hr />
               <h3>Requests</h3>
-              <Field label="At least one target HTTP is required; limit 10 requests per check. Let's get started.">
+              <Field label="At least one target HTTP is required; limit 10 requests per check.">
                 <></>
               </Field>
               <div className={styles.request}>

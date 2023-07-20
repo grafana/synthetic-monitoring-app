@@ -92,6 +92,7 @@ export function getDNSScene({ metrics, logs }: DashboardSceneAppConfig, checks: 
         new SceneRefreshPicker({
           intervals: ['5s', '1m', '1h'],
           isOnCanvas: true,
+          refresh: '1m',
         }),
       ],
       body: new SceneFlexLayout({

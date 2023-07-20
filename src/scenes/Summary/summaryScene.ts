@@ -80,6 +80,7 @@ export function getSummaryScene({ metrics, logs }: DashboardSceneAppConfig, chec
         new SceneRefreshPicker({
           intervals: ['5s', '1m', '1h'],
           isOnCanvas: true,
+          refresh: '1m',
         }),
       ],
     });

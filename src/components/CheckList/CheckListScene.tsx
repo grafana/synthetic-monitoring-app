@@ -24,7 +24,8 @@ import { ChecksContext } from 'contexts/ChecksContext';
 function getVizDimensions(checkCount: number) {
   const rowSize = Math.min(Math.ceil(Math.sqrt(checkCount)), 20);
   const colSize = Math.ceil(checkCount / rowSize);
-  return { width: `${rowSize * 40}px`, height: `${colSize * 60}px` };
+  const rowPixels = Math.max(rowSize * 40, 400);
+  return { width: `${rowPixels}px`, height: `${colSize * 60}px` };
 }
 
 function getCheckListScene(config: DashboardSceneAppConfig & Props, checkCount: number) {
@@ -114,14 +115,12 @@ function getCheckListScene(config: DashboardSceneAppConfig & Props, checkCount: 
         ),
       }),
       new VariableValueSelectors({}),
-      // new CustomOb
       new SceneControlsSpacer(),
-
-      // customObject,
       new SceneTimePicker({ isOnCanvas: true }),
       new SceneRefreshPicker({
         intervals: ['1m', '5m', '15m', '1h'],
         isOnCanvas: true,
+        refresh: '1m',
       }),
       new SceneReactObject({
         component: AddNewCheckButton,
