@@ -281,8 +281,8 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
                 </Button>
               )}
 
-              <LinkButton onClick={() => onReturn(true)} fill="text">
-                Back
+              <LinkButton onClick={() => onReturn(true)} fill="text" variant="secondary">
+                Cancel
               </LinkButton>
             </HorizontalGroup>
             {submissionError && (
