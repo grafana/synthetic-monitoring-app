@@ -85,7 +85,6 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
     handleSubmit,
     formState: { errors },
   } = formMethods;
-
   const {
     fields: entryFields,
     append,
