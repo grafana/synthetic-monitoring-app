@@ -6,7 +6,7 @@ function getErrorMapQuery() {
     100 * (
       1 - (
         sum by (probe, geohash) (
-          rate(probe_all_success_sum{instance="$instance", job="$job"}[$__range])
+          rate(probe_all_success_sum{instance="$instance", job="$job", probe=~"$probe"}[$__range])
           *
           on (instance, job, probe, config_version)
           group_left(geohash)
@@ -17,7 +17,7 @@ function getErrorMapQuery() {
         )
       /
         sum by (probe, geohash) (
-          rate(probe_all_success_count{instance="$instance", job="$job"}[$__range])
+          rate(probe_all_success_count{instance="$instance", job="$job", probe=~"$probe"}[$__range])
           *
           on (instance, job, probe, config_version)
           group_left(geohash)
