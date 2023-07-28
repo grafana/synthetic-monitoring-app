@@ -32,6 +32,7 @@ import { hasRole } from 'utils';
 import { AvailableVariables } from './AvailableVariables';
 import { useAsyncCallback } from 'react-async-hook';
 import { FaroEvent, reportEvent, reportError } from 'faro';
+import { CheckFormAlert } from 'components/CheckFormAlert';
 
 interface Props {
   checks?: Check[];
@@ -248,6 +249,7 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
                     </MultiHttpCollapse>
                   );
                 })}
+
                 <Button
                   type="button"
                   fill="text"
@@ -264,7 +266,7 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
                 >
                   Add request
                 </Button>
-
+                <CheckFormAlert />
                 {submissionError && (
                   <Alert title="Multihttp request creation failed" severity="error">
                     <div>{submissionError?.data?.err || submissionError?.data?.msg || submissionError?.message}</div>
