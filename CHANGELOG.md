@@ -1,5 +1,14 @@
 # Change Log
 
+# [1.11.5](https://github.com/grafana/synthetic-monitoring-app/compare/v1.11.4...v1.11.5) (2023-8-14)
+
+- Add alerting levels to MultiHTTP
+- Fix error rate maps no filtering by probes
+- Make the check editor back button less confusing
+- Remove deprecated ArrayVector
+- Fix some URL validation
+- Various layout issues
+
 # [1.11.4](https://github.com/grafana/synthetic-monitoring-app/compare/v1.11.3...v1.11.4) (2023-7-19)
 
 - Fix an unhandled error in the traceroute nodegraph panel
