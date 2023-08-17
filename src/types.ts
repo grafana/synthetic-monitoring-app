@@ -523,7 +523,6 @@ export enum HTTPCompressionAlgo {
 
 export enum FeatureName {
   Traceroute = 'traceroute',
-  AdhocChecks = 'synthetics-adhocchecks',
   UnifiedAlerting = 'ngalert',
   MultiHttp = 'multi-http',
   Scenes = 'synthetics-scenes',

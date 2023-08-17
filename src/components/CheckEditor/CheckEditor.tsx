@@ -11,18 +11,9 @@ import {
   LinkButton,
   HorizontalGroup,
   Select,
-  Spinner,
 } from '@grafana/ui';
 import { useAsyncCallback } from 'react-async-hook';
-import {
-  Check,
-  CheckType,
-  CheckFormValues,
-  SubmissionErrorWrapper,
-  FeatureName,
-  CheckPageParams,
-  AdHocCheckResponse,
-} from 'types';
+import { Check, CheckType, CheckFormValues, SubmissionErrorWrapper, FeatureName, CheckPageParams } from 'types';
 import { hasRole, checkType as getCheckType } from 'utils';
 import {
   getDefaultValuesFromCheck,
@@ -43,10 +34,10 @@ import { InstanceContext } from 'contexts/InstanceContext';
 import { useParams } from 'react-router-dom';
 import { PluginPage } from 'components/PluginPage';
 import { config } from '@grafana/runtime';
-import { CheckTestResultsModal } from 'components/CheckTestResultsModal';
 import { FeatureFlag } from 'components/FeatureFlag';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { FaroEvent, reportError, reportEvent } from 'faro';
+import { CheckTestButton } from 'components/CheckTestButton';
 
 interface Props {
   checks?: Check[];
@@ -67,9 +58,6 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
     instance: { api },
   } = useContext(InstanceContext);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [isTestModalOpen, setTestModalOpen] = useState(false);
-  const [testResponse, setTestResponse] = useState<AdHocCheckResponse>();
-  const [testRequestInFlight, setTestRequestInFlight] = useState(false);
   const styles = useStyles2(getStyles);
   const { isEnabled: tracerouteEnabled } = useFeatureFlag(FeatureName.Traceroute);
   // If we're editing, grab the appropriate check from the list
@@ -238,38 +226,7 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
               <Button type="submit" disabled={formMethods.formState.isSubmitting || submitting}>
                 Save
               </Button>
-              <FeatureFlag name={FeatureName.AdhocChecks}>
-                {({ isEnabled }) => {
-                  return isEnabled ? (
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      disabled={
-                        !formMethods.formState.isValid || checkType === CheckType.Traceroute || testRequestInFlight
-                      }
-                      onClick={() => {
-                        const values = formMethods.getValues();
-                        const check = getCheckFromFormValues(values, defaultValues, checkType);
-                        reportEvent(FaroEvent.TEST_CHECK, { type: checkType });
-                        setTestRequestInFlight(true);
-                        api
-                          ?.testCheck(check)
-                          .then((resp) => {
-                            setTestModalOpen(true);
-                            setTestResponse(resp);
-                          })
-                          .finally(() => {
-                            setTestRequestInFlight(false);
-                          });
-                      }}
-                    >
-                      {testRequestInFlight ? <Spinner /> : 'Test'}
-                    </Button>
-                  ) : (
-                    <div />
-                  );
-                }}
-              </FeatureFlag>
+              <CheckTestButton check={check} />
               {check?.id && (
                 <Button
                   variant="destructive"
@@ -297,14 +254,6 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
           </form>
         </FormProvider>
       </>
-      <CheckTestResultsModal
-        isOpen={isTestModalOpen}
-        onDismiss={() => {
-          setTestModalOpen(false);
-          setTestResponse(undefined);
-        }}
-        testResponse={testResponse}
-      />
       <ConfirmModal
         isOpen={showDeleteModal}
         title="Delete check"
