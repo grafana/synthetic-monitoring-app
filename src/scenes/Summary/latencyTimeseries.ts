@@ -1,5 +1,6 @@
-import { ConstantVariable, SceneQueryRunner, SceneVariableSet, VizPanel } from '@grafana/scenes';
+import { ConstantVariable, SceneQueryRunner, SceneVariableSet } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
+import { ExplorablePanel } from 'scenes/ExplorablePanel';
 import { CheckType } from 'types';
 
 function getLatencyQueryRunner(checkType: CheckType, metrics: DataSourceRef) {
@@ -20,7 +21,7 @@ function getLatencyQueryRunner(checkType: CheckType, metrics: DataSourceRef) {
 }
 
 export function getLatencyTimeseriesPanel(checkType: CheckType, metrics: DataSourceRef) {
-  const latencyPanel = new VizPanel({
+  const latencyPanel = new ExplorablePanel({
     pluginId: 'timeseries',
     title: `${checkType} latency`,
     $data: getLatencyQueryRunner(checkType, metrics),

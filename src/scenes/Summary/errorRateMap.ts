@@ -1,5 +1,6 @@
-import { SceneQueryRunner, VizPanel } from '@grafana/scenes';
+import { SceneQueryRunner } from '@grafana/scenes';
 import { DataSourceRef, ThresholdsMode } from '@grafana/schema';
+import { ExplorablePanel } from 'scenes/ExplorablePanel';
 import { CheckType } from 'types';
 
 function getErrorMapQuery(checkType: CheckType) {
@@ -49,7 +50,7 @@ function getMapQueryRunner(checkType: CheckType, metrics: DataSourceRef) {
 }
 
 export function getErrorRateMapPanel(checkType: CheckType, metrics: DataSourceRef) {
-  const mapPanel = new VizPanel({
+  const mapPanel = new ExplorablePanel({
     pluginId: 'geomap',
     title: `${checkType} error rate`,
     $data: getMapQueryRunner(checkType, metrics),

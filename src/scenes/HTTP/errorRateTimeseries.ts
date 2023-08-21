@@ -1,5 +1,6 @@
-import { SceneQueryRunner, VizPanel } from '@grafana/scenes';
+import { SceneQueryRunner } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
+import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
 const query = `
   100 * (
@@ -33,7 +34,7 @@ function getQueryRunner(metrics: DataSourceRef) {
 }
 
 export function getErrorRateTimeseries(metrics: DataSourceRef) {
-  return new VizPanel({
+  return new ExplorablePanel({
     pluginId: 'timeseries',
     title: 'Error Rate : $probe ⮕ $job / $instance',
     $data: getQueryRunner(metrics),

@@ -1,5 +1,6 @@
-import { SceneDataTransformer, SceneQueryRunner, VizPanel } from '@grafana/scenes';
+import { SceneDataTransformer, SceneQueryRunner } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
+import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
 function getQueryRunner(metrics: DataSourceRef) {
   const queryRunner = new SceneQueryRunner({
@@ -34,7 +35,7 @@ function getQueryRunner(metrics: DataSourceRef) {
 
 export function getFrequencyStat(metrics: DataSourceRef) {
   const queryRunner = getQueryRunner(metrics);
-  return new VizPanel({
+  return new ExplorablePanel({
     pluginId: 'stat',
     title: 'Frequency',
     description: 'How often is the target checked?',
