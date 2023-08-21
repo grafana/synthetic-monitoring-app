@@ -1,7 +1,4 @@
-import React from 'react';
-
 import { sceneGraph, VizPanel, VizPanelMenu, VizPanelState } from '@grafana/scenes';
-import { LinkButton } from '@grafana/ui';
 import { DataQuery } from '@grafana/schema';
 
 interface DataQueryExtended extends DataQuery {
