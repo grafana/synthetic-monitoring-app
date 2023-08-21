@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { sceneGraph, VizPanel, VizPanelState } from '@grafana/scenes';
+import { sceneGraph, VizPanel, VizPanelMenu, VizPanelState } from '@grafana/scenes';
 import { LinkButton } from '@grafana/ui';
 import { DataQuery } from '@grafana/schema';
 
@@ -63,20 +63,16 @@ export class ExplorablePanel extends VizPanel {
           );
 
           this.setState({
-            headerActions: [
-              <LinkButton
-                key="explore"
-                icon="compass"
-                size="sm"
-                variant="secondary"
-                href={`/explore?left=${left}`}
-                // onClick={() => {
-                //   getFaro()?.api.pushEvent(this.trackingAction);
-                // }}
-              >
-                Explore
-              </LinkButton>,
-            ],
+            menu: new VizPanelMenu({
+              items: [
+                {
+                  type: 'submenu',
+                  iconClassName: 'compass',
+                  text: 'Explore',
+                  href: `/explore?left=${left}`,
+                },
+              ],
+            }),
           });
         }
       });
