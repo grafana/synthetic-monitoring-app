@@ -1,5 +1,6 @@
-import { SceneQueryRunner, VizPanel } from '@grafana/scenes';
+import { SceneQueryRunner } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
+import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
 function getQueryRunner(metrics: DataSourceRef) {
   return new SceneQueryRunner({
@@ -18,7 +19,7 @@ function getQueryRunner(metrics: DataSourceRef) {
 }
 
 export function getAverageHopsPanel(metrics: DataSourceRef) {
-  return new VizPanel({
+  return new ExplorablePanel({
     $data: getQueryRunner(metrics),
     title: 'Average Total Hops',
     pluginId: 'bargauge',

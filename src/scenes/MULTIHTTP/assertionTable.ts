@@ -1,5 +1,6 @@
-import { SceneDataTransformer, SceneFlexItem, SceneQueryRunner, VizPanel } from '@grafana/scenes';
+import { SceneDataTransformer, SceneFlexItem, SceneQueryRunner } from '@grafana/scenes';
 import { DataSourceRef, ThresholdsMode } from '@grafana/schema';
+import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
 function getQueryRunner(logs: DataSourceRef) {
   const query = new SceneQueryRunner({
@@ -35,7 +36,7 @@ function getQueryRunner(logs: DataSourceRef) {
 
 export function getAssertionTable(logs: DataSourceRef) {
   return new SceneFlexItem({
-    body: new VizPanel({
+    body: new ExplorablePanel({
       $data: getQueryRunner(logs),
       pluginId: 'table',
       title: 'Assertions',

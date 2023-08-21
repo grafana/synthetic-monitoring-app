@@ -1,5 +1,6 @@
-import { SceneFlexItem, SceneQueryRunner, VizPanel } from '@grafana/scenes';
+import { SceneFlexItem, SceneQueryRunner } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
+import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
 function getQueryRunner(metrics: DataSourceRef) {
   return new SceneQueryRunner({
@@ -23,7 +24,7 @@ function getQueryRunner(metrics: DataSourceRef) {
 export function getDistinctTargets(metrics: DataSourceRef) {
   return new SceneFlexItem({
     width: 200,
-    body: new VizPanel({
+    body: new ExplorablePanel({
       $data: getQueryRunner(metrics),
       pluginId: 'stat',
       title: 'Number of distinct targets',

@@ -1,5 +1,6 @@
-import { SceneQueryRunner, VizPanel } from '@grafana/scenes';
+import { SceneQueryRunner } from '@grafana/scenes';
 import { DataSourceRef, ThresholdsMode } from '@grafana/schema';
+import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
 function getErrorMapQuery() {
   return `
@@ -49,7 +50,7 @@ function getMapQueryRunner(metrics: DataSourceRef) {
 }
 
 export function getErrorRateMapPanel(metrics: DataSourceRef) {
-  const mapPanel = new VizPanel({
+  const mapPanel = new ExplorablePanel({
     pluginId: 'geomap',
     title: 'Error rate by probe',
 

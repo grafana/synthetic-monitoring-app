@@ -1,5 +1,6 @@
-import { SceneDataTransformer, SceneQueryRunner, VizPanel } from '@grafana/scenes';
+import { SceneDataTransformer, SceneQueryRunner } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
+import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
 function getQueryRunner(logs: DataSourceRef) {
   const queryRunner = new SceneQueryRunner({
@@ -36,7 +37,7 @@ function getQueryRunner(logs: DataSourceRef) {
 }
 
 export function getCommonHostsPanel(logs: DataSourceRef) {
-  const nodeGraph = new VizPanel({
+  const nodeGraph = new ExplorablePanel({
     $data: getQueryRunner(logs),
     title: 'Common hosts',
     pluginId: 'table',

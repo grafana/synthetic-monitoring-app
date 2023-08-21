@@ -11,7 +11,6 @@ import {
   SceneTimePicker,
   SceneTimeRange,
   VariableValueSelectors,
-  VizPanel,
 } from '@grafana/scenes';
 import { Spinner } from '@grafana/ui';
 import { InstanceContext } from 'contexts/InstanceContext';
@@ -20,6 +19,7 @@ import { CheckListViewType, DashboardSceneAppConfig } from 'types';
 import { CheckListViewSwitcher } from './CheckListViewSwitcher';
 import { AddNewCheckButton } from './AddNewCheckButton';
 import { ChecksContext } from 'contexts/ChecksContext';
+import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
 function getVizDimensions(checkCount: number) {
   const rowSize = Math.min(Math.ceil(Math.sqrt(checkCount)), 20);
@@ -134,7 +134,7 @@ function getCheckListScene(config: DashboardSceneAppConfig & Props, checkCount: 
         new SceneFlexItem({
           width,
           height,
-          body: new VizPanel({
+          body: new ExplorablePanel({
             pluginId: 'stat',
             title: 'Success Rate',
             $data: transformed,

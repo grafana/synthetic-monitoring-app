@@ -1,5 +1,6 @@
-import { ConstantVariable, SceneQueryRunner, SceneVariableSet, VizPanel } from '@grafana/scenes';
+import { ConstantVariable, SceneQueryRunner, SceneVariableSet } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
+import { ExplorablePanel } from 'scenes/ExplorablePanel';
 import { CheckType } from 'types';
 
 function getErrorPercentageQuery(checkType: CheckType) {
@@ -43,7 +44,7 @@ function getErrorPercentageQueryRunner(checkType: CheckType, metrics: DataSource
 }
 
 export function getErrorPctgTimeseriesPanel(checkType: CheckType, metrics: DataSourceRef) {
-  const errorPercentagePanel = new VizPanel({
+  const errorPercentagePanel = new ExplorablePanel({
     pluginId: 'timeseries',
     title: `${checkType} check error percentage`,
     fieldConfig: {

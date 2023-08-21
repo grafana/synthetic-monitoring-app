@@ -1,5 +1,6 @@
-import { SceneQueryRunner, VizPanel } from '@grafana/scenes';
+import { SceneQueryRunner } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
+import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
 function getQueryRunner(metrics: DataSourceRef) {
   return new SceneQueryRunner({
@@ -18,7 +19,7 @@ function getQueryRunner(metrics: DataSourceRef) {
 }
 
 export function getRouteHashPanel(metrics: DataSourceRef) {
-  const nodeGraph = new VizPanel({
+  const nodeGraph = new ExplorablePanel({
     description:
       'Shows the hashed value of all the hosts traversed in a single traceroute. Can be used to determine the volatility of the routes over time',
 

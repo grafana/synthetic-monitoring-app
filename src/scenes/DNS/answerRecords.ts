@@ -1,6 +1,7 @@
-import { SceneQueryRunner, VizPanel } from '@grafana/scenes';
+import { SceneQueryRunner } from '@grafana/scenes';
 import { DataSourceRef, MappingType, ThresholdsMode } from '@grafana/schema';
 import { SpecialValueMatch } from '@grafana/data';
+import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
 function getQueryRunner(metrics: DataSourceRef) {
   return new SceneQueryRunner({
@@ -19,7 +20,7 @@ function getQueryRunner(metrics: DataSourceRef) {
 }
 
 export function getAnswerRecordsStat(metrics: DataSourceRef) {
-  const panel = new VizPanel({
+  const panel = new ExplorablePanel({
     pluginId: 'stat',
     title: 'Answer Records',
     $data: getQueryRunner(metrics),

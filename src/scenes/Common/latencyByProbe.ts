@@ -1,6 +1,7 @@
-import { SceneQueryRunner, VizPanel } from '@grafana/scenes';
+import { SceneQueryRunner } from '@grafana/scenes';
 import { DataSourceRef, StackingMode, ThresholdsMode } from '@grafana/schema';
 import { DrawStyle } from '@grafana/ui';
+import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
 function getQueryRunner(metrics: DataSourceRef) {
   return new SceneQueryRunner({
@@ -19,7 +20,7 @@ function getQueryRunner(metrics: DataSourceRef) {
 }
 
 export function getLatencyByProbePanel(metrics: DataSourceRef) {
-  return new VizPanel({
+  return new ExplorablePanel({
     pluginId: 'timeseries',
     $data: getQueryRunner(metrics),
     title: 'Response latency by probe',

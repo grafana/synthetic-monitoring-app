@@ -1,5 +1,6 @@
-import { SceneFlexItem, SceneQueryRunner, VizPanel } from '@grafana/scenes';
+import { SceneFlexItem, SceneQueryRunner } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
+import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
 function getQueryRunner(metrics: DataSourceRef) {
   return new SceneQueryRunner({
@@ -18,7 +19,7 @@ function getQueryRunner(metrics: DataSourceRef) {
 
 export function getProbeDuration(metrics: DataSourceRef) {
   return new SceneFlexItem({
-    body: new VizPanel({
+    body: new ExplorablePanel({
       $data: getQueryRunner(metrics),
       pluginId: 'timeseries',
       title: 'Duration by probe',

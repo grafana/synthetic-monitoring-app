@@ -1,5 +1,6 @@
-import { SceneFlexItem, SceneQueryRunner, VizPanel } from '@grafana/scenes';
+import { SceneFlexItem, SceneQueryRunner } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
+import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
 function getQueryRunner(metrics: DataSourceRef) {
   return new SceneQueryRunner({
@@ -20,7 +21,7 @@ function getQueryRunner(metrics: DataSourceRef) {
 export function getLatencyByUrlPanel(metrics: DataSourceRef) {
   const query = getQueryRunner(metrics);
   return new SceneFlexItem({
-    body: new VizPanel({
+    body: new ExplorablePanel({
       $data: query,
       pluginId: 'timeseries',
       title: 'Latency => $stepUrl',

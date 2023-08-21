@@ -1,5 +1,6 @@
-import { SceneDataTransformer, SceneQueryRunner, VizPanel } from '@grafana/scenes';
+import { SceneDataTransformer, SceneQueryRunner } from '@grafana/scenes';
 import { DataSourceRef, ThresholdsMode } from '@grafana/schema';
+import { ExplorablePanel } from 'scenes/ExplorablePanel';
 import { CheckType } from 'types';
 
 function getSummaryTableQueryRunner(checkType: string, metrics: DataSourceRef) {
@@ -265,7 +266,7 @@ function getFieldOverrides(checkType: CheckType) {
 }
 
 export function getSummaryTable(checkType: CheckType, metrics: DataSourceRef) {
-  const tablePanel = new VizPanel({
+  const tablePanel = new ExplorablePanel({
     pluginId: 'table',
     $data: getSummaryTableQueryRunner(checkType, metrics),
     title: `${checkType} checks`,
