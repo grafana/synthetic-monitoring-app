@@ -35,7 +35,7 @@ export const TabSection = ({ index }: RequestTabsProps) => {
   const { formState, watch } = useFormContext();
   const requestMethod = watch(`settings.multihttp.entries.${index}.request.method`);
   const headers = watch(`settings.multihttp.entries.${index}.request.headers`);
-  const queryParams = watch(`settings.multihttp.entries.${index}.request.queryString`);
+  const queryParams = watch(`settings.multihttp.entries.${index}.request.queryFields`);
   const assertions = watch(`settings.multihttp.entries.${index}.checks`);
   const variables = watch(`settings.multihttp.entries.${index}.variables`);
   const errors = formState.errors?.settings?.multihttp?.entries[index];
@@ -65,7 +65,7 @@ export const TabSection = ({ index }: RequestTabsProps) => {
           }}
           className={styles.tabs}
           counter={queryParams?.length ?? 0}
-          suffix={errors?.request?.queryString?.length ? TabErrorWarning : undefined}
+          suffix={errors?.request?.queryFields?.length ? TabErrorWarning : undefined}
         />
         <Tab
           label={'Assertions'}

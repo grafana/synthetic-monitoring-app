@@ -23,14 +23,14 @@ export type RequestProps = {
   url: string;
   body?: MultiHttpRequestBody;
   headers?: HeaderType[];
-  queryString?: QueryParams[];
+  queryFields?: QueryParams[];
   postData?: {
     mimeType: string;
     text: string;
   };
 };
 
-export type KeyTypes = 'url' | 'body' | 'method' | 'headers' | 'queryString' | 'postData';
+export type KeyTypes = 'url' | 'body' | 'method' | 'headers' | 'queryFields' | 'postData';
 
 export interface Assertion {
   type: MultiHttpAssertionType;

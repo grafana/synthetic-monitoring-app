@@ -104,14 +104,14 @@ describe('new checks', () => {
           multihttp: {
             entries: [
               {
-                request: { headers: [], queryString: [], method: 'POST', url: 'http://grafanarr.com', body: undefined },
+                request: { headers: [], queryFields: [], method: 'POST', url: 'http://grafanarr.com', body: undefined },
                 variables: [],
                 checks: [{ condition: 4, expression: '$.expresso', type: 1, value: 'yarp' }],
               },
               {
                 request: {
                   headers: [],
-                  queryString: [],
+                  queryFields: [],
                   method: 'GET',
                   url: 'http://grafanalalala.com',
                   body: undefined,
