@@ -49,6 +49,7 @@ import {
 } from 'components/constants';
 import { checkType as getCheckType, fromBase64, toBase64 } from 'utils';
 import isBase64 from 'is-base64';
+import { MultiHttpRequestBody } from 'components/MultiHttp/MultiHttpTypes';
 
 export const ensureBase64 = (value: string) => (isBase64(value, { paddingRequired: true }) ? value : toBase64(value));
 
@@ -482,13 +483,16 @@ const getMultiHttpSettings = (
       const checks = entry.checks ?? defaultSettings?.entries[index]?.checks ?? [];
       const includeBody =
         entry.request.body?.contentEncoding || entry.request.body?.contentType || entry.request.body?.payload;
+      const body = includeBody
+        ? ({ ...entry.request.body, payload: toBase64(entry.request.body?.payload ?? '') } as MultiHttpRequestBody)
+        : undefined;
       return {
         ...defaultSettings?.entries[index],
         ...entry,
         request: {
           ...defaultSettings?.entries[index]?.request,
           ...entry.request,
-          body: includeBody ? entry.request.body : undefined,
+          body,
           method: getValueFromSelectable(entry.request.method) ?? 'GET',
         },
         variables: variables?.map((variable) => {
@@ -554,6 +558,12 @@ const getMultiHttpFormValues = (settings: Settings): MultiHttpSettingsFormValues
       return {
         request: {
           ...entry.request,
+          body: entry.request.body
+            ? {
+                ...entry.request.body,
+                payload: fromBase64(entry.request.body?.payload ?? ''),
+              }
+            : undefined,
           method: METHOD_OPTIONS.find(({ value }) => value === entry.request.method) ?? METHOD_OPTIONS[0],
         },
         variables:
