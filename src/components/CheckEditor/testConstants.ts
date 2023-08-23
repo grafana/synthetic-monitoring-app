@@ -238,6 +238,7 @@ export const BASIC_MULTIHTTP_CHECK = {
           request: {
             url: 'https://www.grafana.com',
             method: 'GET',
+            body: undefined,
             headers: [
               {
                 name: 'aheader',
@@ -280,7 +281,7 @@ export const BASIC_MULTIHTTP_CHECK = {
             body: {
               contentType: 'steve',
               contentEncoding: 'encoding',
-              payload: '{"averyinteresting":"request body content"}',
+              payload: 'eyJhdmVyeWludGVyZXN0aW5nIjoicmVxdWVzdCBib2R5IGNvbnRlbnQifQ==',
             },
             queryString: [
               {

@@ -213,7 +213,7 @@ describe('editing multihttp check', () => {
                   body: {
                     contentEncoding: 'encoding',
                     contentType: 'steve',
-                    payload: 'terriblyinteresting',
+                    payload: 'dGVycmlibHlpbnRlcmVzdGluZw==',
                   },
                   headers: [{ name: 'examples', value: 'great' }],
                   method: 'POST',
