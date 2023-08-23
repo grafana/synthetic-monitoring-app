@@ -249,7 +249,7 @@ export const BASIC_MULTIHTTP_CHECK = {
                 value: 'asada',
               },
             ],
-            queryString: [
+            queryFields: [
               {
                 name: 'tacos',
                 value: 'delicious',
@@ -283,7 +283,7 @@ export const BASIC_MULTIHTTP_CHECK = {
               contentEncoding: 'encoding',
               payload: 'eyJhdmVyeWludGVyZXN0aW5nIjoicmVxdWVzdCBib2R5IGNvbnRlbnQifQ==',
             },
-            queryString: [
+            queryFields: [
               {
                 name: 'query',
                 value: 'param',

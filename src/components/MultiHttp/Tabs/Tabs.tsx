@@ -152,18 +152,18 @@ const QueryParamsTab = ({ index, label, active }: MultiHttpTabProps) => {
   const { control } = useFormContext();
   const { fields, append, remove } = useFieldArray({
     control,
-    name: `settings.multihttp.entries[${index}].request.queryString`,
+    name: `settings.multihttp.entries[${index}].request.queryFields`,
   });
   const styles = useStyles2(getMultiHttpTabStyles);
   const { register, formState } = useFormContext();
-  const errors = formState.errors?.settings?.multihttp?.entries?.[index]?.request?.queryString;
+  const errors = formState.errors?.settings?.multihttp?.entries?.[index]?.request?.queryFields;
 
   return (
     <div className={cx(styles.inputsContainer, { [styles.inactive]: !active })}>
       <Field label="Query params" description="Add values to the query string of the request URL">
         <>
           {fields.map((field, i) => {
-            const queryParamsNamePrefix = `settings.multihttp.entries[${index}].request.queryString[${i}]`;
+            const queryParamsNamePrefix = `settings.multihttp.entries[${index}].request.queryFields[${i}]`;
             return (
               <div className={cx({ [styles.tabInputContainer]: i === 0 })} key={field.id}>
                 <HorizontalGroup align="flex-start" spacing="md">

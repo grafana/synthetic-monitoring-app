@@ -193,7 +193,7 @@ describe('editing multihttp check', () => {
                     { name: 'carne', value: 'asada' },
                   ],
                   method: 'GET',
-                  queryString: [{ name: 'tacos', value: 'delicious' }],
+                  queryFields: [{ name: 'tacos', value: 'delicious' }],
                   url: 'http://grafanarr.com',
                 },
                 variables: [
@@ -217,7 +217,7 @@ describe('editing multihttp check', () => {
                   },
                   headers: [{ name: 'examples', value: 'great' }],
                   method: 'POST',
-                  queryString: [
+                  queryFields: [
                     { name: 'query', value: 'param' },
                     { name: 'using variable', value: '${enchiladas}' },
                   ],
