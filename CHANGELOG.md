@@ -1,5 +1,10 @@
 # Change Log
 
+# [1.11.6](https://github.com/grafana/synthetic-monitoring-app/compare/v1.11.5...v1.11.6) (2023-8-23)
+
+- Add an explore button to visualization menus
+- Encode/decode MultiHTTP request bodies in base64
+
 # [1.11.5](https://github.com/grafana/synthetic-monitoring-app/compare/v1.11.4...v1.11.5) (2023-8-14)
 
 - Add alerting levels to MultiHTTP
