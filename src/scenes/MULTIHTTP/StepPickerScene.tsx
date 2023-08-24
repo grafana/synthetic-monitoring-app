@@ -119,10 +119,6 @@ export function MultiHttpStepsSceneRenderer({ model }: SceneComponentProps<Multi
           }
         );
 
-        // const queryParams =
-        //   check.settings.multihttp?.entries[0].request.queryFields
-        //     ?.map(({ name, value }) => `${name}=${value}`)
-        //     .join('&') ?? '';
         const defaultUrl = getUrl(
           check.settings.multihttp?.entries[0].request.url ?? '',
           check.settings.multihttp?.entries[0].request.queryFields
