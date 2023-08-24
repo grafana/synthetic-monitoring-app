@@ -287,7 +287,7 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
                     </Button>
                   )}
                   <LinkButton onClick={() => onReturn && onReturn(true)} fill="text">
-                    Back
+                    Cancel
                   </LinkButton>
                 </HorizontalGroup>
               </div>
