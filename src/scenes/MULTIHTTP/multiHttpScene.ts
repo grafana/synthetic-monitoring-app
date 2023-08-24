@@ -24,6 +24,7 @@ import { getErrorRateByUrl } from './errorRateByUrl';
 import { getAssertionTable } from './assertionTable';
 import { getEditButton } from 'scenes/Common/editButton';
 import { getEmptyScene } from 'scenes/Common/emptyScene';
+import { getAllLogs } from 'scenes/Common/allLogs';
 
 export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig, checks: Check[]): SceneBuilder {
   return () => {
@@ -144,6 +145,11 @@ export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig, ch
             direction: 'row',
             minHeight: 300,
             children: [getAssertionTable(logs), getAssertionLogsPanel(logs)],
+          }),
+          new SceneFlexLayout({
+            direction: 'row',
+            minHeight: 300,
+            children: [getAllLogs(logs)],
           }),
         ],
       }),
