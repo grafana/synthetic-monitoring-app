@@ -8,7 +8,12 @@ function getQueryRunner(metrics: DataSourceRef) {
     queries: [
       {
         refId: 'A',
-        expr: 'sum by (phase) (probe_http_duration_seconds{job="$job", instance="$instance", url="$stepUrl", method="$stepMethod"})',
+        // expr: 'sum by (phase) (probe_http_duration_seconds{job="$job", instance="$instance", url="$stepUrl", method="$stepMethod"})',
+        expr: `
+        sum by (phase) (probe_http_duration_seconds{job="$job", instance="$instance", url="$stepUrl", method="$stepMethod", probe=~"$probe"})
+/
+        count by (phase) (probe_http_duration_seconds{job="$job", instance="$instance", url="$stepUrl", method="$stepMethod", probe=~"$probe"})
+        `,
         legendFormat: '__auto',
         range: true,
       },

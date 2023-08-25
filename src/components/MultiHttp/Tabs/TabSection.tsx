@@ -22,6 +22,7 @@ export function getIsBodyDisabled(method: SelectableValue<RequestMethods>) {
     case 'POST':
     case 'PUT':
     case 'PATCH':
+    case 'DELETE':
       return false;
     default:
       return true;
