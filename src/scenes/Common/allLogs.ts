@@ -7,7 +7,7 @@ function getQueryRunner(logs: DataSourceRef) {
     datasource: logs,
     queries: [
       {
-        expr: '{probe=~"$probe", instance="$instance", job="$job"}',
+        expr: '{probe=~"$probe", instance="$instance", job="$job"} | logfmt | __error__ = "" | level != "debug"',
         refId: 'A',
       },
     ],
