@@ -1,8 +1,5 @@
 # apiVersion: 1
 
-# panel:
-#   - type: grafana-worldmap-panel
-#     disabled: false
 # apps:
 #   - type: grafana-synthetic-monitoring-app
 #     name: grafana-synthetic-monitoring-app
