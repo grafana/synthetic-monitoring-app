@@ -4,7 +4,7 @@ Synthetic Monitoring is a blackbox monitoring solution provided as part of [Graf
 Synthetic Monitoring provides users with insights into how their applications and services are behaving from an external point of view.
 Users can define checks to continually test remote targets from 1 or more probe locations around the world to assess the availability, performance and correctness of the services. As each check runs, metrics and logs are collected and published to the user's Grafana Cloud service. Metrics are published to Grafana Cloud Prometheus and logs are published to Grafana Cloud Loki.
 
-Synthetic monitoring is the successor to the original [worldping application](https://grafana.net/plugins/raintank-worldping-app).
+Synthetic monitoring is the successor to the original [worldping application](https://github.com/raintank/worldping-app).
 The refreshed Synthetic Monitoring product focuses on reducing complexity and taking advantage of Grafana Cloud capabilities.
 
 ### Check Types
