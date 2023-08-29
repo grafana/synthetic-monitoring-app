@@ -33,6 +33,7 @@ import { AvailableVariables } from './AvailableVariables';
 import { useAsyncCallback } from 'react-async-hook';
 import { FaroEvent, reportEvent, reportError } from 'faro';
 import { CheckFormAlert } from 'components/CheckFormAlert';
+import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 
 interface Props {
   checks?: Check[];
@@ -162,6 +163,13 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
           <FormProvider {...formMethods}>
             <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
               <hr className={styles.breakLine} />
+              <HorizontalCheckboxField
+                disabled={!isEditor}
+                name="enabled"
+                id="check-form-enabled"
+                label="Enabled"
+                description="If a check is enabled, metrics and logs are published to your Grafana Cloud stack."
+              />
               <Field label="Job name" invalid={Boolean(errors.job)} error={errors.job?.message}>
                 <Input
                   {...register('job', {
