@@ -1,5 +1,4 @@
-import { Check, CheckEnabledStatus } from 'types';
-import { CheckFilters } from './CheckList';
+import { Check, CheckEnabledStatus, CheckFiltersType } from 'types';
 
 import { SelectableValue } from '@grafana/data';
 import { checkType as getCheckType, matchStrings } from 'utils';
@@ -60,7 +59,7 @@ const matchesSelectedProbes = (check: Check, selectedProbes: SelectableValue[]) 
   }
 };
 
-export const matchesAllFilters = (check: Check, checkFilters: CheckFilters) => {
+export const matchesAllFilters = (check: Check, checkFilters: CheckFiltersType) => {
   const { type, search, labels, status, probes } = checkFilters;
   return (
     Boolean(check.id) &&

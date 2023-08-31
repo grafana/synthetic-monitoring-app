@@ -1,5 +1,6 @@
-import { ThresholdsMode } from '@grafana/data';
+import { DataTransformerConfig, ThresholdsMode } from '@grafana/data';
 import {
+  CustomTransformOperator,
   EmbeddedScene,
   SceneControlsSpacer,
   SceneDataTransformer,
@@ -15,11 +16,12 @@ import {
 import { Spinner } from '@grafana/ui';
 import { InstanceContext } from 'contexts/InstanceContext';
 import React, { useContext, useMemo } from 'react';
-import { CheckListViewType, DashboardSceneAppConfig } from 'types';
+import { CheckFiltersType, CheckListViewType, VizViewSceneAppConfig } from 'types';
 import { CheckListViewSwitcher } from './CheckListViewSwitcher';
 import { AddNewCheckButton } from './AddNewCheckButton';
 import { ChecksContext } from 'contexts/ChecksContext';
 import { ExplorablePanel } from 'scenes/ExplorablePanel';
+import { CheckFilters } from 'components/CheckFilters';
 
 function getVizDimensions(checkCount: number) {
   const rowSize = Math.min(Math.ceil(Math.sqrt(checkCount)), 20);
@@ -28,28 +30,42 @@ function getVizDimensions(checkCount: number) {
   return { width: `${rowPixels}px`, height: `${colSize * 60}px` };
 }
 
-function getCheckListScene(config: DashboardSceneAppConfig & Props, checkCount: number) {
+function getCheckListScene(config: VizViewSceneAppConfig & Props, checkCount: number) {
+  const probeQuery = config.checkFilters.probes.map(({ label }) => label).join('|') || '.*';
+  const checkInfo = config.checkFilters.labels.map((labelStr) => {
+    const [labelName, labelVal] = labelStr.split(':').map((val) => val.trim());
+    return {
+      name: `label_${labelName}`,
+      value: labelVal,
+    };
+  });
+  let customLabelFilters = '';
+  let customLabelNames = '';
+  if (checkInfo.length) {
+    customLabelFilters = `{${checkInfo.map(({ name, value }) => `${name}="${value}"`).join(',')}}`;
+    customLabelNames = `,${checkInfo.map(({ name }) => name).join(',')}`;
+  }
   const queryRunner = new SceneQueryRunner({
     datasource: config.metrics,
     queries: [
       {
         editorMode: 'code',
         expr: `sum by (check_name, instance, job) (
-              rate(probe_all_success_sum[$__range])
+              rate(probe_all_success_sum{probe=~"${probeQuery}"}[$__range])
               * 
               on (instance, job)
-              group_left(check_name)
+              group_left(check_name${customLabelNames})
               max by (check_name, instance, job)
-              (sm_check_info)
+              (sm_check_info${customLabelFilters})
         ) 
         /
         sum by (check_name, instance, job) (
-              rate(probe_all_success_count[$__range])
+              rate(probe_all_success_count{probe=~"${probeQuery}"}[$__range])
               * 
               on (instance, job)
-              group_left(check_name)
+              group_left(check_name${customLabelNames})
               max by (check_name, instance, job)
-              (sm_check_info)
+              (sm_check_info${customLabelFilters})
         ) 
         `,
         legendFormat: '{{job}}',
@@ -61,38 +77,88 @@ function getCheckListScene(config: DashboardSceneAppConfig & Props, checkCount: 
     ],
   });
 
+  const transformations: Array<DataTransformerConfig<any> | CustomTransformOperator> = [
+    {
+      id: 'sortBy',
+      options: {
+        sort: [
+          {
+            desc: false,
+            field: 'Value',
+          },
+        ],
+      },
+    },
+    {
+      id: 'organize',
+      options: {
+        excludeByName: {
+          check_name: false,
+          instance: false,
+        },
+        indexByName: {
+          Time: 4,
+          Value: 3,
+          check_name: 2,
+          instance: 1,
+          job: 0,
+        },
+        renameByName: {},
+      },
+    },
+  ];
+
+  const filterByValueTransformation: DataTransformerConfig = {
+    id: 'filterByValue',
+    options: {
+      filters: [],
+      match: 'any',
+      type: 'include',
+    },
+  };
+
+  if (config.checkFilters.search) {
+    filterByValueTransformation.options.filters.push(
+      {
+        config: {
+          id: 'regex',
+          options: {
+            value: config.checkFilters.search,
+          },
+        },
+        fieldName: 'job',
+      },
+      {
+        config: {
+          id: 'regex',
+          options: {
+            value: config.checkFilters.search,
+          },
+        },
+        fieldName: 'instance',
+      }
+    );
+  }
+
+  if (config.checkFilters.type !== 'all') {
+    filterByValueTransformation.options.filters.push({
+      config: {
+        id: 'regex',
+        options: {
+          value: config.checkFilters.type,
+        },
+      },
+      fieldName: 'check_name',
+    });
+  }
+
+  if (filterByValueTransformation.options.filters.length > 0) {
+    transformations.push(filterByValueTransformation);
+  }
+
   const transformed = new SceneDataTransformer({
     $data: queryRunner,
-    transformations: [
-      {
-        id: 'sortBy',
-        options: {
-          sort: [
-            {
-              desc: false,
-              field: 'Value',
-            },
-          ],
-        },
-      },
-      {
-        id: 'organize',
-        options: {
-          excludeByName: {
-            check_name: false,
-            instance: false,
-          },
-          indexByName: {
-            Time: 4,
-            Value: 3,
-            check_name: 2,
-            instance: 1,
-            job: 0,
-          },
-          renameByName: {},
-        },
-      },
-    ],
+    transformations,
   });
 
   const timeRange = new SceneTimeRange({
@@ -116,6 +182,17 @@ function getCheckListScene(config: DashboardSceneAppConfig & Props, checkCount: 
       }),
       new VariableValueSelectors({}),
       new SceneControlsSpacer(),
+      new SceneReactObject({
+        reactNode: (
+          <CheckFilters
+            checkFilters={config.checkFilters}
+            checks={config.checks}
+            handleResetFilters={config.handleResetFilters}
+            onChange={config.onFilterChange}
+            includeStatus={false}
+          />
+        ),
+      }),
       new SceneTimePicker({ isOnCanvas: true }),
       new SceneRefreshPicker({
         intervals: ['1m', '5m', '15m', '1h'],
@@ -195,9 +272,18 @@ function getCheckListScene(config: DashboardSceneAppConfig & Props, checkCount: 
 interface Props {
   setViewType: (viewType: CheckListViewType) => void;
   setCurrentPage: (pageNumber: number) => void;
+  checkFilters: CheckFiltersType;
+  handleResetFilters: () => void;
+  onFilterChange: (filters: CheckFiltersType) => void;
 }
 
-export function CheckListScene({ setViewType, setCurrentPage }: Props) {
+export function CheckListScene({
+  setViewType,
+  setCurrentPage,
+  checkFilters,
+  handleResetFilters,
+  onFilterChange,
+}: Props) {
   const { instance } = useContext(InstanceContext);
   const { checks, loading } = useContext(ChecksContext);
 
@@ -223,10 +309,20 @@ export function CheckListScene({ setViewType, setCurrentPage }: Props) {
       type: api.type,
     };
     return getCheckListScene(
-      { metrics: metricsDef, logs: logsDef, sm: smDef, setViewType, setCurrentPage },
+      {
+        metrics: metricsDef,
+        logs: logsDef,
+        sm: smDef,
+        setViewType,
+        setCurrentPage,
+        checkFilters,
+        checks,
+        handleResetFilters,
+        onFilterChange,
+      },
       checks.length
     );
-  }, [setViewType, setCurrentPage, api, logs, metrics, checks.length]);
+  }, [setViewType, setCurrentPage, api, logs, metrics, checks, checkFilters, handleResetFilters, onFilterChange]);
 
   if (!scene || loading) {
     return <Spinner />;

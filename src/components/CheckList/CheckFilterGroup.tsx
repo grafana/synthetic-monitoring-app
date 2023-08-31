@@ -3,7 +3,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Button, Icon, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
-import { defaultFilters, CheckFilters } from './CheckList';
+import { CheckFiltersType } from 'types';
+import { defaultFilters } from 'components/CheckFilters';
 
 const groupStyles = (theme: GrafanaTheme2) => ({
   container: css`
@@ -40,7 +41,7 @@ const groupStyles = (theme: GrafanaTheme2) => ({
 interface Props {
   children: JSX.Element[] | JSX.Element;
   onReset: () => void;
-  filters: CheckFilters;
+  filters: CheckFiltersType;
 }
 
 const CheckFilterGroup = ({ children, onReset, filters }: Props) => {

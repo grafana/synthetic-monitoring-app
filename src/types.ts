@@ -578,6 +578,13 @@ export interface DashboardSceneAppConfig {
   sm: DataSourceRef;
 }
 
+export interface VizViewSceneAppConfig extends DashboardSceneAppConfig {
+  checkFilters: CheckFiltersType;
+  checks: Check[];
+  handleResetFilters: () => void;
+  onFilterChange: (filters: CheckFiltersType) => void;
+}
+
 export type MultiHttpFormTabs = 'header' | 'queryParams' | 'assertions' | 'body' | 'variables';
 
 export enum MultiHttpVariableType {
@@ -598,3 +605,12 @@ export type SceneBuilder<T extends { [K in keyof T]?: string | undefined } = any
 ) => EmbeddedScene;
 
 export type RouteMatch<T extends { [K in keyof T]?: string | undefined } = any> = SceneRouteMatch<T>;
+
+export interface CheckFiltersType {
+  [key: string]: any;
+  search: string;
+  labels: string[];
+  type: CheckType | 'all';
+  status: SelectableValue<CheckEnabledStatus>;
+  probes: SelectableValue[] | [];
+}
