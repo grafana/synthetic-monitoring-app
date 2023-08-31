@@ -598,3 +598,12 @@ export type SceneBuilder<T extends { [K in keyof T]?: string | undefined } = any
 ) => EmbeddedScene;
 
 export type RouteMatch<T extends { [K in keyof T]?: string | undefined } = any> = SceneRouteMatch<T>;
+
+export interface CheckFiltersType {
+  [key: string]: any;
+  search: string;
+  labels: string[];
+  type: CheckType | 'all';
+  status: SelectableValue<CheckEnabledStatus>;
+  probes: SelectableValue[] | [];
+}

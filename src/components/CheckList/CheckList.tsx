@@ -1,74 +1,54 @@
 // Libraries
-import React, { useState, useContext, useEffect, useCallback } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 
 // Types
+import { css } from '@emotion/css';
+import { AppEvents, GrafanaTheme2, OrgRole, SelectableValue } from '@grafana/data';
+import { config } from '@grafana/runtime';
+import { Button, ButtonCascader, Checkbox, Icon, InlineSwitch, Pagination, Select, useStyles2 } from '@grafana/ui';
+import { BulkEditModal } from 'components/BulkEditModal';
+import { CheckFilters, defaultFilters } from 'components/CheckFilters';
+import { ChecksContextProvider } from 'components/ChecksContextProvider';
+import { PluginPage } from 'components/PluginPage';
+import { SuccessRateContext, SuccessRateTypes } from 'contexts/SuccessRateContext';
+import appEvents from 'grafana/app/core/app_events';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import {
   Check,
-  Label,
-  GrafanaInstances,
-  FilteredCheck,
-  CheckSort,
   CheckEnabledStatus,
+  CheckFiltersType,
   CheckListViewType,
+  CheckSort,
   CheckType,
   FeatureName,
+  FilteredCheck,
+  GrafanaInstances,
+  Label,
 } from 'types';
-import appEvents from 'grafana/app/core/app_events';
-import {
-  Button,
-  Icon,
-  Select,
-  Input,
-  Pagination,
-  Checkbox,
-  InlineSwitch,
-  AsyncMultiSelect,
-  ButtonCascader,
-  useStyles2,
-} from '@grafana/ui';
-import {
-  unEscapeStringFromRegex,
-  escapeStringForRegex,
-  GrafanaTheme2,
-  AppEvents,
-  SelectableValue,
-  OrgRole,
-} from '@grafana/data';
-import { matchesAllFilters } from './checkFilters';
-import {
-  fetchProbeOptions,
-  deleteSelectedChecks,
-  deleteSingleCheck,
-  getIconOverlayToggleFromLS,
-  getViewTypeFromLS,
-  enableSelectedChecks,
-  disableSelectedChecks,
-} from './actions';
 import { hasRole } from 'utils';
-import {
-  CHECK_FILTER_OPTIONS,
-  CHECK_LIST_SORT_OPTIONS,
-  CHECK_LIST_STATUS_OPTIONS,
-  CHECK_LIST_ICON_OVERLAY_LS_KEY,
-  CHECKS_PER_PAGE_CARD,
-  CHECKS_PER_PAGE_LIST,
-} from '../constants';
 import { CheckListItem } from '../CheckListItem';
-import { css } from '@emotion/css';
-import { LabelFilterInput } from '../LabelFilterInput';
-import { SuccessRateContext, SuccessRateTypes } from 'contexts/SuccessRateContext';
 import { ChecksVisualization } from '../ChecksVisualization';
 import ThresholdGlobalSettings from '../Thresholds/ThresholdGlobalSettings';
-import { BulkEditModal } from 'components/BulkEditModal';
-import CheckFilterGroup from './CheckFilterGroup';
-import EmptyCheckList from './EmptyCheckList';
-import { PluginPage } from 'components/PluginPage';
-import { config } from '@grafana/runtime';
-import { useFeatureFlag } from 'hooks/useFeatureFlag';
+import {
+  CHECKS_PER_PAGE_CARD,
+  CHECKS_PER_PAGE_LIST,
+  CHECK_LIST_ICON_OVERLAY_LS_KEY,
+  CHECK_LIST_SORT_OPTIONS,
+  CHECK_LIST_STATUS_OPTIONS,
+} from '../constants';
+import { AddNewCheckButton } from './AddNewCheckButton';
 import { CheckListScene } from './CheckListScene';
 import { CheckListViewSwitcher } from './CheckListViewSwitcher';
-import { AddNewCheckButton } from './AddNewCheckButton';
-import { ChecksContextProvider } from 'components/ChecksContextProvider';
+import EmptyCheckList from './EmptyCheckList';
+import {
+  deleteSelectedChecks,
+  deleteSingleCheck,
+  disableSelectedChecks,
+  enableSelectedChecks,
+  getIconOverlayToggleFromLS,
+  getViewTypeFromLS,
+} from './actions';
+import { matchesAllFilters } from './checkFilters';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   headerContainer: css`
@@ -133,25 +113,8 @@ interface Props {
   onCheckUpdate: (refetch?: boolean) => void;
 }
 
-export interface CheckFilters {
-  [key: string]: any;
-  search: string;
-  labels: string[];
-  type: CheckType | 'all';
-  status: SelectableValue<CheckEnabledStatus>;
-  probes: SelectableValue[] | [];
-}
-
-export const defaultFilters: CheckFilters = {
-  search: '',
-  labels: [],
-  type: 'all',
-  status: CHECK_LIST_STATUS_OPTIONS[0],
-  probes: [],
-};
-
 export const CheckList = ({ instance, checks, onCheckUpdate }: Props) => {
-  const [checkFilters, setCheckFilters] = useState<CheckFilters>(defaultFilters);
+  const [checkFilters, setCheckFilters] = useState<CheckFiltersType>(defaultFilters);
   const [filteredChecks, setFilteredChecks] = useState<FilteredCheck[] | []>([]);
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -350,7 +313,15 @@ export const CheckList = ({ instance, checks, onCheckUpdate }: Props) => {
                 ))}
             </div>
             <div className={styles.flexRow}>
-              <Input
+              <CheckFilters
+                handleResetFilters={handleResetFilters}
+                checks={checks}
+                checkFilters={checkFilters}
+                onChange={(filters: CheckFiltersType) => {
+                  setCheckFilters(filters);
+                }}
+              />
+              {/* <Input
                 className={styles.marginRightSmall}
                 autoFocus
                 aria-label="Search checks"
@@ -446,7 +417,7 @@ export const CheckList = ({ instance, checks, onCheckUpdate }: Props) => {
                   closeMenuOnSelect={false}
                   className={styles.verticalSpace}
                 />
-              </CheckFilterGroup>
+              </CheckFilterGroup> */}
               {hasRole(OrgRole.Editor) && (
                 <>
                   <Button
