@@ -86,14 +86,10 @@ export function CheckFilters({
               width={20}
               className={styles.verticalSpace}
               onChange={(option) => {
-                // setCheckFilters((cf: CheckFiltersType) => {
-                const updated = {
+                onChange({
                   ...checkFilters,
                   status: option,
-                };
-                onChange(updated);
-                // return updated;
-                // });
+                });
               }}
               value={checkFilters.status}
             />
@@ -106,14 +102,10 @@ export function CheckFilters({
             className={styles.verticalSpace}
             width={20}
             onChange={(selected: SelectableValue) => {
-              // setCheckFilters((cf: CheckFiltersType) => {
-              const updated = {
+              onChange({
                 ...checkFilters,
                 type: selected?.value ?? checkFilters.type,
-              };
-              onChange(updated);
-              // return updated;
-              // });
+              });
             }}
             value={checkFilters.type}
           />
@@ -121,14 +113,10 @@ export function CheckFilters({
         <LabelFilterInput
           checks={checks}
           onChange={(labels) => {
-            // setCheckFilters((cf: CheckFiltersType) => {
-            const updated = {
+            onChange({
               ...checkFilters,
               labels,
-            };
-            onChange(updated);
-            // return updated;
-            // });
+            });
           }}
           labelFilters={checkFilters.labels}
           className={styles.verticalSpace}
@@ -138,14 +126,10 @@ export function CheckFilters({
           data-testid="probe-filter"
           prefix="Probes"
           onChange={(v) => {
-            // setCheckFilters((cf: CheckFiltersType) => {
-            const updated = {
+            onChange({
               ...checkFilters,
               probes: v,
-            };
-            onChange(updated);
-            // return updated;
-            // });
+            });
           }}
           defaultOptions
           loadOptions={() => fetchProbeOptions(instance)}

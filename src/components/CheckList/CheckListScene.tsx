@@ -16,7 +16,7 @@ import {
 import { Spinner } from '@grafana/ui';
 import { InstanceContext } from 'contexts/InstanceContext';
 import React, { useContext, useMemo } from 'react';
-import { CheckFiltersType, CheckListViewType, DashboardSceneAppConfig } from 'types';
+import { CheckFiltersType, CheckListViewType, VizViewSceneAppConfig } from 'types';
 import { CheckListViewSwitcher } from './CheckListViewSwitcher';
 import { AddNewCheckButton } from './AddNewCheckButton';
 import { ChecksContext } from 'contexts/ChecksContext';
@@ -30,7 +30,7 @@ function getVizDimensions(checkCount: number) {
   return { width: `${rowPixels}px`, height: `${colSize * 60}px` };
 }
 
-function getCheckListScene(config: DashboardSceneAppConfig & Props, checkCount: number) {
+function getCheckListScene(config: VizViewSceneAppConfig & Props, checkCount: number) {
   const probeQuery = config.checkFilters.probes.map(({ label }) => label).join('|') || '.*';
   const checkInfo = config.checkFilters.labels.map((labelStr) => {
     const [labelName, labelVal] = labelStr.split(':').map((val) => val.trim());

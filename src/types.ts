@@ -576,6 +576,9 @@ export interface DashboardSceneAppConfig {
   metrics: DataSourceRef;
   logs: DataSourceRef;
   sm: DataSourceRef;
+}
+
+export interface VizViewSceneAppConfig extends DashboardSceneAppConfig {
   checkFilters: CheckFiltersType;
   checks: Check[];
   handleResetFilters: () => void;
