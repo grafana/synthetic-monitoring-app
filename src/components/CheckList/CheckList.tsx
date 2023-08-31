@@ -321,103 +321,6 @@ export const CheckList = ({ instance, checks, onCheckUpdate }: Props) => {
                   setCheckFilters(filters);
                 }}
               />
-              {/* <Input
-                className={styles.marginRightSmall}
-                autoFocus
-                aria-label="Search checks"
-                prefix={<Icon name="search" />}
-                width={40}
-                data-testid="check-search-input"
-                type="text"
-                value={checkFilters.search ? unEscapeStringFromRegex(checkFilters.search) : ''}
-                onChange={(event) => {
-                  const value = event.currentTarget.value;
-                  setCheckFilters((cf) => {
-                    return {
-                      ...cf,
-                      search: escapeStringForRegex(value),
-                    };
-                  });
-                }}
-                placeholder="Search by job name, endpoint, or label"
-              />
-              <CheckFilterGroup onReset={handleResetFilters} filters={checkFilters}>
-                <div className={styles.flexRow}>
-                  <Select
-                    prefix="Status"
-                    aria-label="Filter by status"
-                    data-testid="check-status-filter"
-                    options={CHECK_LIST_STATUS_OPTIONS}
-                    width={20}
-                    className={styles.verticalSpace}
-                    onChange={(option) => {
-                      setCurrentPage(1);
-                      setCheckFilters((cf) => {
-                        return {
-                          ...cf,
-                          status: option,
-                        };
-                      });
-                    }}
-                    value={checkFilters.status}
-                  />
-                  <Select
-                    aria-label="Filter by type"
-                    prefix="Types"
-                    data-testid="check-type-filter"
-                    options={CHECK_FILTER_OPTIONS}
-                    className={styles.verticalSpace}
-                    width={20}
-                    onChange={(selected: SelectableValue) => {
-                      setCurrentPage(1);
-                      setCheckFilters((cf) => {
-                        return {
-                          ...cf,
-                          type: selected?.value ?? checkFilters.type,
-                        };
-                      });
-                    }}
-                    value={checkFilters.type}
-                  />
-                </div>
-                <LabelFilterInput
-                  checks={checks}
-                  onChange={(labels) => {
-                    setCurrentPage(1);
-                    setCheckFilters((cf) => {
-                      return {
-                        ...cf,
-                        labels,
-                      };
-                    });
-                  }}
-                  labelFilters={checkFilters.labels}
-                  className={styles.verticalSpace}
-                />
-                <AsyncMultiSelect
-                  aria-label="Filter by probe"
-                  data-testid="probe-filter"
-                  prefix="Probes"
-                  onChange={(v) => {
-                    setCurrentPage(1);
-                    setCheckFilters((cf) => {
-                      return {
-                        ...cf,
-                        probes: v,
-                      };
-                    });
-                  }}
-                  defaultOptions
-                  loadOptions={() => fetchProbeOptions(instance)}
-                  value={checkFilters.probes}
-                  placeholder="All probes"
-                  allowCustomValue={false}
-                  isSearchable={true}
-                  isClearable={true}
-                  closeMenuOnSelect={false}
-                  className={styles.verticalSpace}
-                />
-              </CheckFilterGroup> */}
               {hasRole(OrgRole.Editor) && (
                 <>
                   <Button
@@ -549,7 +452,15 @@ export const CheckList = ({ instance, checks, onCheckUpdate }: Props) => {
         <ChecksContextProvider>
           <div className={styles.vizContainer}>
             {scenesEnabled ? (
-              <CheckListScene setViewType={setViewType} setCurrentPage={setCurrentPage} />
+              <CheckListScene
+                setViewType={setViewType}
+                setCurrentPage={setCurrentPage}
+                checkFilters={checkFilters}
+                onFilterChange={(filters: CheckFiltersType) => {
+                  setCheckFilters(filters);
+                }}
+                handleResetFilters={handleResetFilters}
+              />
             ) : (
               <ChecksVisualization checks={filteredChecks} showIcons={showVizIconOverlay} />
             )}

@@ -1,8 +1,9 @@
 import { css } from '@emotion/css';
-import { GrafanaTheme2, SelectableValue, escapeStringForRegex, unEscapeStringFromRegex } from '@grafana/data';
+import { GrafanaTheme2, SelectableValue, unEscapeStringFromRegex } from '@grafana/data';
 import { AsyncMultiSelect, Icon, Input, Select, useStyles2 } from '@grafana/ui';
 import { InstanceContext } from 'contexts/InstanceContext';
-import React, { useContext } from 'react';
+import { debounce } from 'lodash';
+import React, { useCallback, useContext, useState } from 'react';
 import { Check, CheckFiltersType } from 'types';
 import CheckFilterGroup from './CheckList/CheckFilterGroup';
 import { fetchProbeOptions } from './CheckList/actions';
@@ -29,6 +30,7 @@ interface Props {
   onChange: (filters: CheckFiltersType) => void;
   checks: Check[];
   checkFilters?: CheckFiltersType;
+  includeStatus?: boolean;
 }
 
 export const defaultFilters: CheckFiltersType = {
@@ -39,10 +41,26 @@ export const defaultFilters: CheckFiltersType = {
   probes: [],
 };
 
-export function CheckFilters({ handleResetFilters, onChange, checks, checkFilters = defaultFilters }: Props) {
+export function CheckFilters({
+  handleResetFilters,
+  onChange,
+  checks,
+  checkFilters = defaultFilters,
+  includeStatus = true,
+}: Props) {
   const styles = useStyles2(getStyles);
-  // const [checkFilters, setCheckFilters] = useState<CheckFiltersType>(defaultFilters);
+  const [searchValue, setSearchValue] = useState(checkFilters.search);
   const { instance } = useContext(InstanceContext);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const debouncedOnChange = useCallback(debounce(onChange, 1000), []);
+
+  function handleSearchChange(event: any) {
+    const value = event.currentTarget?.value;
+    setSearchValue(value);
+    debouncedOnChange({ ...checkFilters, search: value });
+  }
+
   return (
     <>
       <Input
@@ -53,41 +71,33 @@ export function CheckFilters({ handleResetFilters, onChange, checks, checkFilter
         width={40}
         data-testid="check-search-input"
         type="text"
-        value={checkFilters.search ? unEscapeStringFromRegex(checkFilters.search) : ''}
-        onChange={(event) => {
-          const value = event.currentTarget.value;
-          // setCheckFilters((cf: CheckFiltersType) => {
-          const updated = {
-            ...checkFilters,
-            search: escapeStringForRegex(value),
-          };
-          onChange(updated);
-          // return updated;
-          // });
-        }}
+        value={searchValue ? unEscapeStringFromRegex(searchValue) : ''}
+        onChange={handleSearchChange}
         placeholder="Search by job name, endpoint, or label"
       />
       <CheckFilterGroup onReset={handleResetFilters} filters={checkFilters}>
         <div className={styles.flexRow}>
-          <Select
-            prefix="Status"
-            aria-label="Filter by status"
-            data-testid="check-status-filter"
-            options={CHECK_LIST_STATUS_OPTIONS}
-            width={20}
-            className={styles.verticalSpace}
-            onChange={(option) => {
-              // setCheckFilters((cf: CheckFiltersType) => {
-              const updated = {
-                ...checkFilters,
-                status: option,
-              };
-              onChange(updated);
-              // return updated;
-              // });
-            }}
-            value={checkFilters.status}
-          />
+          {includeStatus && (
+            <Select
+              prefix="Status"
+              aria-label="Filter by status"
+              data-testid="check-status-filter"
+              options={CHECK_LIST_STATUS_OPTIONS}
+              width={20}
+              className={styles.verticalSpace}
+              onChange={(option) => {
+                // setCheckFilters((cf: CheckFiltersType) => {
+                const updated = {
+                  ...checkFilters,
+                  status: option,
+                };
+                onChange(updated);
+                // return updated;
+                // });
+              }}
+              value={checkFilters.status}
+            />
+          )}
           <Select
             aria-label="Filter by type"
             prefix="Types"

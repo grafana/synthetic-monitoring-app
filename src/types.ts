@@ -576,6 +576,10 @@ export interface DashboardSceneAppConfig {
   metrics: DataSourceRef;
   logs: DataSourceRef;
   sm: DataSourceRef;
+  checkFilters: CheckFiltersType;
+  checks: Check[];
+  handleResetFilters: () => void;
+  onFilterChange: (filters: CheckFiltersType) => void;
 }
 
 export type MultiHttpFormTabs = 'header' | 'queryParams' | 'assertions' | 'body' | 'variables';

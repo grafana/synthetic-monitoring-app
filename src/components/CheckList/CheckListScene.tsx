@@ -15,11 +15,12 @@ import {
 import { Spinner } from '@grafana/ui';
 import { InstanceContext } from 'contexts/InstanceContext';
 import React, { useContext, useMemo } from 'react';
-import { CheckListViewType, DashboardSceneAppConfig } from 'types';
+import { CheckFiltersType, CheckListViewType, DashboardSceneAppConfig } from 'types';
 import { CheckListViewSwitcher } from './CheckListViewSwitcher';
 import { AddNewCheckButton } from './AddNewCheckButton';
 import { ChecksContext } from 'contexts/ChecksContext';
 import { ExplorablePanel } from 'scenes/ExplorablePanel';
+import { CheckFilters } from 'components/CheckFilters';
 
 function getVizDimensions(checkCount: number) {
   const rowSize = Math.min(Math.ceil(Math.sqrt(checkCount)), 20);
@@ -35,21 +36,25 @@ function getCheckListScene(config: DashboardSceneAppConfig & Props, checkCount: 
       {
         editorMode: 'code',
         expr: `sum by (check_name, instance, job) (
-              rate(probe_all_success_sum[$__range])
+              rate(probe_all_success_sum{instance=~".*${config.checkFilters.search + '.*'}", job=~".*${
+          config.checkFilters.search
+        }.*"}[$__range])
               * 
               on (instance, job)
               group_left(check_name)
               max by (check_name, instance, job)
-              (sm_check_info)
+              (sm_check_info{check_name=~"${config.checkFilters.type === 'all' ? '.*' : config.checkFilters.type}"})
         ) 
         /
         sum by (check_name, instance, job) (
-              rate(probe_all_success_count[$__range])
+              rate(probe_all_success_count{instance=~".*${config.checkFilters.search + '.*'}", job=~".*${
+          config.checkFilters.search
+        }.*"}[$__range])
               * 
               on (instance, job)
               group_left(check_name)
               max by (check_name, instance, job)
-              (sm_check_info)
+              (sm_check_info{check_name=~"${config.checkFilters.type === 'all' ? '.*' : config.checkFilters.type}"})
         ) 
         `,
         legendFormat: '{{job}}',
@@ -116,6 +121,17 @@ function getCheckListScene(config: DashboardSceneAppConfig & Props, checkCount: 
       }),
       new VariableValueSelectors({}),
       new SceneControlsSpacer(),
+      new SceneReactObject({
+        reactNode: (
+          <CheckFilters
+            checkFilters={config.checkFilters}
+            checks={config.checks}
+            handleResetFilters={config.handleResetFilters}
+            onChange={config.onFilterChange}
+            includeStatus={false}
+          />
+        ),
+      }),
       new SceneTimePicker({ isOnCanvas: true }),
       new SceneRefreshPicker({
         intervals: ['1m', '5m', '15m', '1h'],
@@ -195,9 +211,18 @@ function getCheckListScene(config: DashboardSceneAppConfig & Props, checkCount: 
 interface Props {
   setViewType: (viewType: CheckListViewType) => void;
   setCurrentPage: (pageNumber: number) => void;
+  checkFilters: CheckFiltersType;
+  handleResetFilters: () => void;
+  onFilterChange: (filters: CheckFiltersType) => void;
 }
 
-export function CheckListScene({ setViewType, setCurrentPage }: Props) {
+export function CheckListScene({
+  setViewType,
+  setCurrentPage,
+  checkFilters,
+  handleResetFilters,
+  onFilterChange,
+}: Props) {
   const { instance } = useContext(InstanceContext);
   const { checks, loading } = useContext(ChecksContext);
 
@@ -223,10 +248,20 @@ export function CheckListScene({ setViewType, setCurrentPage }: Props) {
       type: api.type,
     };
     return getCheckListScene(
-      { metrics: metricsDef, logs: logsDef, sm: smDef, setViewType, setCurrentPage },
+      {
+        metrics: metricsDef,
+        logs: logsDef,
+        sm: smDef,
+        setViewType,
+        setCurrentPage,
+        checkFilters,
+        checks,
+        handleResetFilters,
+        onFilterChange,
+      },
       checks.length
     );
-  }, [setViewType, setCurrentPage, api, logs, metrics, checks.length]);
+  }, [setViewType, setCurrentPage, api, logs, metrics, checks, checkFilters, handleResetFilters, onFilterChange]);
 
   if (!scene || loading) {
     return <Spinner />;
