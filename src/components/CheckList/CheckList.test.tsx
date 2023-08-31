@@ -9,6 +9,7 @@ import { SuccessRateContextProvider } from '../SuccessRateContextProvider';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { AppPluginMeta } from '@grafana/data';
 import { PLUGIN_URL_PATH } from 'components/constants';
+import { wait } from '@testing-library/user-event/dist/utils';
 
 jest.mock('hooks/useNavigation', () => {
   const actual = jest.requireActual('hooks/useNavigation');
@@ -158,6 +159,8 @@ test('search by text', async () => {
   const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
   await act(async () => {
     await userEvent.paste(filterInput, 'example');
+    // Need to wait for input debounce to finish
+    await wait(1000);
   });
   const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(1);
@@ -168,6 +171,8 @@ test('search is case insensitive', async () => {
   const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
   await act(async () => {
     await userEvent.paste(filterInput, 'EXAMPLE');
+    // Need to wait for input debounce to finish
+    await wait(1000);
   });
   const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(1);
@@ -178,6 +183,8 @@ test('search matches job value', async () => {
   const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
   await act(async () => {
     await userEvent.paste(filterInput, 'tacos');
+    // Need to wait for input debounce to finish
+    await wait(1000);
   });
   const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(1);
@@ -188,6 +195,8 @@ test('search matches target value', async () => {
   const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
   await act(async () => {
     await userEvent.paste(filterInput, 'asada');
+    // Need to wait for input debounce to finish
+    await wait(1000);
   });
   const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(1);
@@ -198,6 +207,8 @@ test('search matches label value', async () => {
   const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
   await act(async () => {
     await userEvent.paste(filterInput, 'nachos.com');
+    // Need to wait for input debounce to finish
+    await wait(1000);
   });
   const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(1);
@@ -208,6 +219,8 @@ test('search matches label name', async () => {
   const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
   await act(async () => {
     await userEvent.paste(filterInput, 'carne');
+    // Need to wait for input debounce to finish
+    await wait(1000);
   });
   const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(1);
