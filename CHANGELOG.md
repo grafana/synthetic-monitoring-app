@@ -1,5 +1,11 @@
 # Change Log
 
+# [1.11.7](https://github.com/grafana/synthetic-monitoring-app/compare/v1.11.6...v1.11.7) (2023-9-1)
+
+- Add filtering and search to the check list visualization view
+- Add enable/disable to the MultiHTTP form
+- Fix query param fields in MultiHTTP
+
 # [1.11.6](https://github.com/grafana/synthetic-monitoring-app/compare/v1.11.5...v1.11.6) (2023-8-23)
 
 - Add an explore button to visualization menus
