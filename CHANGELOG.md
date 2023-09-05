@@ -5,6 +5,7 @@
 - Add filtering and search to the check list visualization view
 - Add enable/disable to the MultiHTTP form
 - Fix query param fields in MultiHTTP
+- Remove worldmap panel dependency
 
 # [1.11.6](https://github.com/grafana/synthetic-monitoring-app/compare/v1.11.5...v1.11.6) (2023-8-23)
 
