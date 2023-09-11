@@ -106,7 +106,7 @@ describe('new checks', () => {
               {
                 request: { headers: [], queryFields: [], method: 'POST', url: 'http://grafanarr.com', body: undefined },
                 variables: [],
-                checks: [{ condition: 4, expression: '$.expresso', type: 1, value: 'yarp' }],
+                checks: [{ condition: 4, expression: 'expresso', type: 1, value: 'yarp' }],
               },
               {
                 request: {
