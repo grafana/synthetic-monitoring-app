@@ -35,7 +35,6 @@ import { useParams } from 'react-router-dom';
 import { PluginPage } from 'components/PluginPage';
 import { config } from '@grafana/runtime';
 import { FeatureFlag } from 'components/FeatureFlag';
-import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { FaroEvent, reportError, reportEvent } from 'faro';
 import { CheckTestButton } from 'components/CheckTestButton';
 
@@ -59,7 +58,6 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
   } = useContext(InstanceContext);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const styles = useStyles2(getStyles);
-  const { isEnabled: tracerouteEnabled } = useFeatureFlag(FeatureName.Traceroute);
   // If we're editing, grab the appropriate check from the list
   const { id, checkType: checkTypeParam } = useParams<CheckPageParams>();
   let checkType = checkTypeParamToCheckType(checkTypeParam);
@@ -139,11 +137,7 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
                           <Select
                             {...field}
                             placeholder="Check type"
-                            options={
-                              tracerouteEnabled
-                                ? STANDARD_CHECK_TYPE_OPTIONS
-                                : STANDARD_CHECK_TYPE_OPTIONS.filter(({ value }) => value !== CheckType.Traceroute)
-                            }
+                            options={STANDARD_CHECK_TYPE_OPTIONS}
                             width={30}
                             disabled={check?.id ? true : false}
                           />
