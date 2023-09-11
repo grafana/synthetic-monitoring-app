@@ -3,6 +3,7 @@
   "name": "Synthetic Monitoring",
   "id": "grafana-synthetic-monitoring-app",
   "info": {
+    "description": "Worldwide black box monitoring for services and applications",
     "author": {
       "name": "Grafana Labs",
       "url": "https://grafana.com"
