@@ -27,7 +27,6 @@ import {
 } from 'types';
 import { hasRole } from 'utils';
 import { CheckListItem } from '../CheckListItem';
-import { ChecksVisualization } from '../ChecksVisualization';
 import ThresholdGlobalSettings from '../Thresholds/ThresholdGlobalSettings';
 import {
   CHECKS_PER_PAGE_CARD,
@@ -451,19 +450,15 @@ export const CheckList = ({ instance, checks, onCheckUpdate }: Props) => {
       {viewType === CheckListViewType.Viz ? (
         <ChecksContextProvider>
           <div className={styles.vizContainer}>
-            {scenesEnabled ? (
-              <CheckListScene
-                setViewType={setViewType}
-                setCurrentPage={setCurrentPage}
-                checkFilters={checkFilters}
-                onFilterChange={(filters: CheckFiltersType) => {
-                  setCheckFilters(filters);
-                }}
-                handleResetFilters={handleResetFilters}
-              />
-            ) : (
-              <ChecksVisualization checks={filteredChecks} showIcons={showVizIconOverlay} />
-            )}
+            <CheckListScene
+              setViewType={setViewType}
+              setCurrentPage={setCurrentPage}
+              checkFilters={checkFilters}
+              onFilterChange={(filters: CheckFiltersType) => {
+                setCheckFilters(filters);
+              }}
+              handleResetFilters={handleResetFilters}
+            />
           </div>
         </ChecksContextProvider>
       ) : (
