@@ -244,7 +244,11 @@ const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
                     name={variableTypeName}
                     render={({ field: typeField }) => {
                       return (
-                        <Field label="Variable type" invalid={errorPath?.type}>
+                        <Field
+                          label="Variable type"
+                          description="The method of getting a value"
+                          invalid={errorPath?.type}
+                        >
                           <Select
                             id={`multihttp-variable-type-${index}-${variableIndex}`}
                             className={styles.minInputWidth}
@@ -257,7 +261,12 @@ const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
                     }}
                     rules={{ required: true }}
                   />
-                  <Field label="Variable name" invalid={errorPath?.name} error={errorPath?.name?.message}>
+                  <Field
+                    label="Variable name"
+                    description="The name of the variable"
+                    invalid={errorPath?.name}
+                    error={errorPath?.name?.message}
+                  >
                     <Input
                       placeholder="Variable name"
                       id={`multihttp-variable-name-${index}-${variableIndex}`}
@@ -283,6 +292,7 @@ const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
                   )}
                   <Field
                     label="Variable expression"
+                    description="Expression to extract the value"
                     invalid={errorPath?.expression}
                     error={errorPath?.expression?.message}
                   >
