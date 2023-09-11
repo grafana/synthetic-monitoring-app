@@ -65,7 +65,7 @@ export function AssertionsTab({ index, label, active }: MultiHttpTabProps) {
       </Field>
       <Button
         onClick={() => {
-          append({ type: undefined, expression: '$.' });
+          append({ type: undefined, expression: '' });
         }}
         variant="secondary"
         size="sm"
@@ -177,7 +177,7 @@ function AssertionExpressionField({ fieldName, error }: { fieldName: string; err
         {...register(`${fieldName}.expression`, {
           required: 'Expression is required',
           validate: (value) => {
-            if (!value || value === '$.') {
+            if (!value) {
               return 'Expression is required';
             }
             return;
