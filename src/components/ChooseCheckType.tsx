@@ -11,15 +11,11 @@ import { PluginPage } from 'components/PluginPage';
 
 export function ChooseCheckType() {
   const styles = useStyles2(getStyles);
-  const { isEnabled: tracerouteEnabled } = useFeatureFlag(FeatureName.Traceroute);
   const { isEnabled: multiHttpEnabled } = useFeatureFlag(FeatureName.MultiHttp);
   // If we're editing, grab the appropriate check from the list
   const navigate = useNavigation();
 
   const options = CHECK_TYPE_OPTIONS.filter(({ value }) => {
-    if (!tracerouteEnabled && value === CheckType.Traceroute) {
-      return false;
-    }
     if (!multiHttpEnabled && value === CheckType.MULTI_HTTP) {
       return false;
     }
