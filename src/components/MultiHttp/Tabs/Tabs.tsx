@@ -279,7 +279,7 @@ const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
                   {variableTypeValue === MultiHttpVariableType.CSS_SELECTOR && (
                     <Field
                       label="Attribute"
-                      description="Attribute of the first found element to use"
+                      description="Name of the attribute to extract the value from. Leave blank to get contents of tag"
                       invalid={errorPath?.attribute}
                       error={errorPath?.attribute?.message}
                     >
