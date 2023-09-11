@@ -268,13 +268,16 @@ const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
                     />
                   </Field>
                   {variableTypeValue === MultiHttpVariableType.CSS_SELECTOR && (
-                    <Field label="Attribute" invalid={errorPath?.attribute} error={errorPath?.attribute?.message}>
+                    <Field
+                      label="Attribute"
+                      description="Attribute of the first found element to use"
+                      invalid={errorPath?.attribute}
+                      error={errorPath?.attribute?.message}
+                    >
                       <Input
                         placeholder="Attribute"
                         id={`multihttp-variable-attribute-${index}-${variableIndex}`}
-                        {...register(`${variableFieldName}[${variableIndex}].attribute`, {
-                          required: 'Attribute is required',
-                        })}
+                        {...register(`${variableFieldName}[${variableIndex}].attribute`)}
                       />
                     </Field>
                   )}
