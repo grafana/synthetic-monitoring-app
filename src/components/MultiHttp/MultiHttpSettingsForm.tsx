@@ -220,7 +220,13 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
                               id={`request-target-url-${index}`}
                               {...register(`settings.multihttp.entries.${index}.request.url` as const, {
                                 required: 'Request target is required',
-                                validate: (url) => validateTarget(CheckType.MULTI_HTTP, url),
+                                validate: (url: string) => {
+                                  const hasVariable = url.includes('${');
+                                  if (hasVariable) {
+                                    return undefined;
+                                  }
+                                  return validateTarget(CheckType.MULTI_HTTP, url);
+                                },
                               })}
                             />
                           </Field>
