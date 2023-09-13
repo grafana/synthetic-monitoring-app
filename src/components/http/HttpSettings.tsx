@@ -114,6 +114,8 @@ const generateValidStatusCodes = () => {
 
 const validStatusCodes = generateValidStatusCodes();
 const REGEX_FIELD_NAME = 'settings.http.regexValidations';
+const SCOPES_FIELD_NAME = 'settings.http.oauth2.scopes';
+const ENDPOINT_PARAMS_FIELD_NAME = 'settings.http.oauth2.endpointParams';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   validationGroup: css`
@@ -164,9 +166,21 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
 
   const bearerToken = watch('settings.http.bearerToken');
   const basicAuth = watch('settings.http.basicAuth');
+  const oauth2 = watch('settings.http.oauth2');
 
   const [includeBearerToken, setIncludeBearerToken] = useState(Boolean(bearerToken));
+  const [includeOauth2, setIncludeOauth2] = useState(Boolean(oauth2));
   const [includeBasicAuth, setIncludeBasicAuth] = useState(Boolean(basicAuth));
+  const {
+    fields: scopesFields,
+    append: appendScope,
+    remove: removeScope,
+  } = useFieldArray({ control, name: SCOPES_FIELD_NAME });
+  const {
+    fields: endpointParamFields,
+    append: appendEndpointParam,
+    remove: removeEndpointParam,
+  } = useFieldArray({ control, name: ENDPOINT_PARAMS_FIELD_NAME });
   const { fields, append, remove } = useFieldArray({ control, name: REGEX_FIELD_NAME });
   const styles = useStyles2(getStyles);
 
@@ -316,6 +330,123 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
                 disabled={!isEditor}
               />
             </HorizontalGroup>
+          )}
+        </VerticalGroup>
+        <VerticalGroup spacing="xs">
+          <HorizontalCheckboxField
+            label="Use Oauth2"
+            id="http-settings-oauth2"
+            disabled={!isEditor}
+            className={
+              !includeOauth2
+                ? undefined
+                : css`
+                    margin-bottom: 1px;
+                  `
+            }
+            value={includeOauth2}
+            onChange={() => setIncludeOauth2(!includeOauth2)}
+          />
+          {includeOauth2 && (
+            <VerticalGroup spacing="xs">
+              <Field label="Client ID" description="The public identifier for your app">
+                <Input
+                  {...register('settings.http.oauth2.clientId')}
+                  type="text"
+                  id="http-settings-oauth2-clientId"
+                  placeholder="Client ID"
+                  disabled={!isEditor}
+                />
+              </Field>
+              <Field label="Client secret" description="The secret known only to the server">
+                <Input
+                  {...register('settings.http.oauth2.clientSecret')}
+                  type="text"
+                  id="https-settings-http-oauth2-client-secret"
+                  placeholder="Client secret"
+                  disabled={!isEditor}
+                />
+              </Field>
+              <Field label="Token URL" description="Where to request a token from">
+                <Input
+                  {...register('settings.http.oauth2.tokenUrl')}
+                  type="text"
+                  placeholder="Token url"
+                  disabled={!isEditor}
+                />
+              </Field>
+
+              <Field label="Scopes">
+                <VerticalGroup spacing="sm">
+                  {scopesFields.map((field, index) => {
+                    return (
+                      <HorizontalGroup key={field.id}>
+                        <Input
+                          {...register(`${SCOPES_FIELD_NAME}.${index}`)}
+                          type="text"
+                          placeholder="Scope"
+                          disabled={!isEditor}
+                        />
+                        <IconButton name="minus-circle" onClick={() => removeScope(index)} />
+                      </HorizontalGroup>
+                    );
+                  })}
+
+                  <Button
+                    type="button"
+                    icon="plus"
+                    variant="secondary"
+                    size="sm"
+                    disabled={!isEditor}
+                    onClick={() => {
+                      console.log('appending scope');
+                      appendScope('');
+                    }}
+                  >
+                    Add scope
+                  </Button>
+                </VerticalGroup>
+              </Field>
+              <Field label="Endpoint params">
+                <VerticalGroup spacing="sm">
+                  {endpointParamFields.map((field, index) => {
+                    return (
+                      <HorizontalGroup key={field.id}>
+                        <VerticalGroup spacing="xs">
+                          <Label>Name</Label>
+                          <Input
+                            {...register(`${ENDPOINT_PARAMS_FIELD_NAME}.${index}.name`)}
+                            type="text"
+                            placeholder="Endpoint param name"
+                            disabled={!isEditor}
+                          />
+                        </VerticalGroup>
+                        <VerticalGroup spacing="xs">
+                          <Label>Value</Label>
+                          <Input
+                            {...register(`${ENDPOINT_PARAMS_FIELD_NAME}.${index}.value`)}
+                            type="text"
+                            placeholder="Endpoint param value"
+                            disabled={!isEditor}
+                          />
+                        </VerticalGroup>
+                        <IconButton name="minus-circle" onClick={() => removeEndpointParam(index)} />
+                      </HorizontalGroup>
+                    );
+                  })}
+                  <Button
+                    type="button"
+                    icon="plus"
+                    variant="secondary"
+                    size="sm"
+                    disabled={!isEditor}
+                    onClick={() => appendEndpointParam({ name: '', value: '' })}
+                  >
+                    Add endpoint param
+                  </Button>
+                </VerticalGroup>
+              </Field>
+            </VerticalGroup>
           )}
         </VerticalGroup>
       </Collapse>

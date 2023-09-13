@@ -183,6 +183,7 @@ export interface HttpSettings {
   // Authentication
   bearerToken?: string;
   basicAuth?: BasicAuth;
+  oauth2Config?: Oauth2Config;
 
   // validations
   failIfSSL?: boolean;
@@ -193,8 +194,17 @@ export interface HttpSettings {
   failIfBodyNotMatchesRegexp?: string[];
   failIfHeaderMatchesRegexp?: HeaderMatch[];
   failIfHeaderNotMatchesRegexp?: HeaderMatch[];
-
   cacheBustingQueryParamName?: string;
+}
+
+export interface Oauth2Config {
+  clientId: string;
+  clientSecret: string;
+  tokenURL: string;
+  scopes?: string[];
+  endpointParams?: Label[];
+  // tlsConfig: TLSConfig;
+  // proxyUrl: string;
 }
 
 interface HttpHeaderFormValue {
