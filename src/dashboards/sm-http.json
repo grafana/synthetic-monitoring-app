@@ -59,7 +59,10 @@
     "list": [
       {
         "builtIn": 1,
-        "datasource": "-- Grafana --",
+        "datasource": {
+          "type": "datasource",
+          "uid": "grafana"
+        },
         "enable": true,
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
@@ -69,27 +72,41 @@
     ]
   },
   "editable": false,
-  "gnetId": null,
+  "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
   "id": null,
-  "iteration": 1657562169000,
   "links": [],
+  "liveNow": false,
   "panels": [
     {
-      "id": 34,
-      "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 0,
-        "y": 0
-      },
-      "type": "geomap",
-      "title": "Error rate by probe",
       "datasource": "${DS_SM_METRICS}",
-      "pluginVersion": "8.3.3",
       "description": "What's the error percentage for each probe that is observing the given target.",
       "fieldConfig": {
         "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "decimals": 2,
+          "mappings": [
+            {
+              "options": {
+                "Value": {
+                  "index": 0,
+                  "text": "Error rate"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "max": 100,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -107,24 +124,7 @@
               }
             ]
           },
-          "mappings": [
-            {
-              "type": "value",
-              "options": {
-                "Value": {
-                  "text": "Error rate",
-                  "index": 0
-                }
-              }
-            }
-          ],
-          "color": {
-            "mode": "thresholds"
-          },
-          "decimals": 2,
-          "unit": "percent",
-          "min": 0,
-          "max": 100
+          "unit": "percent"
         },
         "overrides": [
           {
@@ -141,23 +141,26 @@
           }
         ]
       },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 34,
+      "maxDataPoints": "",
       "options": {
-        "view": {
-          "id": "zero",
-          "lat": 0,
-          "lon": 0,
-          "zoom": 1
-        },
-        "controls": {
-          "showZoom": true,
-          "mouseWheelZoom": false,
-          "showAttribution": true,
-          "showScale": false,
-          "showDebug": false
-        },
         "basemap": {
           "name": "Basemap",
           "type": "default"
+        },
+        "controls": {
+          "mouseWheelZoom": false,
+          "showAttribution": true,
+          "showDebug": false,
+          "showMeasure": false,
+          "showScale": false,
+          "showZoom": true
         },
         "layers": [
           {
@@ -165,8 +168,8 @@
               "showLegend": false,
               "style": {
                 "color": {
-                  "fixed": "dark-green",
-                  "field": "Value"
+                  "field": "Value",
+                  "fixed": "dark-green"
                 },
                 "opacity": 0.4,
                 "rotation": {
@@ -185,16 +188,16 @@
                   "fixed": "img/icons/marker/circle.svg",
                   "mode": "fixed"
                 },
+                "text": {
+                  "fixed": "",
+                  "mode": "field"
+                },
                 "textConfig": {
                   "fontSize": 12,
                   "offsetX": 0,
                   "offsetY": 5,
                   "textAlign": "center",
                   "textBaseline": "top"
-                },
-                "text": {
-                  "fixed": "",
-                  "mode": "field"
                 }
               }
             },
@@ -207,24 +210,35 @@
             "name": "Layer 1",
             "type": "markers"
           }
-        ]
+        ],
+        "tooltip": {
+          "mode": "details"
+        },
+        "view": {
+          "allLayers": true,
+          "id": "zero",
+          "lat": 0,
+          "lon": 0,
+          "zoom": 1
+        }
       },
+      "pluginVersion": "10.2.0-60477",
       "targets": [
         {
-          "expr": "100*(\n  1 - (\n    sum by (probe, geohash)\n    (\n      rate(probe_all_success_sum{instance=\"$instance\", job=\"$job\"}[$__range])\n      *\n      on (instance, job, probe, config_version)\n      group_left(geohash)\n      max by (instance, job, probe, config_version, geohash)\n      (\n        sm_check_info{instance=\"$instance\", job=\"$job\"}\n      )\n    )\n    /\n    sum by (probe, geohash)\n    (\n      rate(probe_all_success_count{instance=\"$instance\", job=\"$job\"}[$__range])\n        *\n      on (instance, job, probe, config_version)\n      group_left(geohash)\n      max by (instance, job, probe, config_version, geohash)\n      (\n        sm_check_info{instance=\"$instance\", job=\"$job\"}\n      )\n    )\n  )\n)",
-          "legendFormat": "",
-          "interval": "",
-          "exemplar": false,
           "datasource": "${DS_SM_METRICS}",
+          "exemplar": false,
+          "expr": "100*(\n  1 - (\n    sum by (probe, geohash)\n    (\n      rate(probe_all_success_sum{instance=\"$instance\", job=\"$job\"}[$__range])\n      *\n      on (instance, job, probe, config_version)\n      group_left(geohash)\n      max by (instance, job, probe, config_version, geohash)\n      (\n        sm_check_info{instance=\"$instance\", job=\"$job\"}\n      )\n    )\n    /\n    sum by (probe, geohash)\n    (\n      rate(probe_all_success_count{instance=\"$instance\", job=\"$job\"}[$__range])\n        *\n      on (instance, job, probe, config_version)\n      group_left(geohash)\n      max by (instance, job, probe, config_version, geohash)\n      (\n        sm_check_info{instance=\"$instance\", job=\"$job\"}\n      )\n    )\n  )\n)",
           "format": "table",
           "instant": true,
+          "interval": "",
+          "legendFormat": "",
           "refId": "A"
         }
       ],
-      "maxDataPoints": ""
+      "title": "Error rate by probe",
+      "type": "geomap"
     },
     {
-      "cacheTimeout": null,
       "datasource": "${DS_SM_METRICS}",
       "description": "The fraction of time the target was up during the whole period.",
       "fieldConfig": {
@@ -232,13 +246,17 @@
           "decimals": 2,
           "mappings": [
             {
-              "id": 0,
-              "op": "=",
-              "text": "N/A",
-              "type": 1,
-              "value": "null"
+              "options": {
+                "match": "null",
+                "result": {
+                  "text": "N/A"
+                }
+              },
+              "type": "special"
             }
           ],
+          "max": 1,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -284,9 +302,10 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.5.7",
+      "pluginVersion": "10.2.0-60477",
       "targets": [
         {
+          "datasource": "${DS_SM_METRICS}",
           "exemplar": true,
           "expr": "# find the average uptime over the entire time range evaluating 'up' in 5 minute windows\navg_over_time(\n  (\n    # the inner query is going to produce a non-zero value if there was at least one successful check during the 5 minute window\n    # so make it a 1 if there was at least one success and a 0 otherwise\n    ceil(\n      # the number of successes across all probes\n      sum by (instance, job) (increase(probe_all_success_sum{instance=\"$instance\", job=\"$job\"}[5m]))\n      /\n      # the total number of times we checked across all probes\n      (sum by (instance, job) (increase(probe_all_success_count{instance=\"$instance\", job=\"$job\"}[5m])) + 1) # + 1 because we want to make sure it goes to 1, not 2\n    )\n  )\n  [$__range:5m]\n)",
           "hide": false,
@@ -296,13 +315,10 @@
           "refId": "B"
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
       "title": "Uptime",
       "type": "stat"
     },
     {
-      "cacheTimeout": null,
       "datasource": "${DS_SM_METRICS}",
       "description": "The percentage of all the checks that have succeeded during the whole time period.",
       "fieldConfig": {
@@ -310,13 +326,17 @@
           "decimals": 2,
           "mappings": [
             {
-              "id": 0,
-              "op": "=",
-              "text": "N/A",
-              "type": 1,
-              "value": "null"
+              "options": {
+                "match": "null",
+                "result": {
+                  "text": "N/A"
+                }
+              },
+              "type": "special"
             }
           ],
+          "max": 1,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -362,9 +382,10 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.5.7",
+      "pluginVersion": "10.2.0-60477",
       "targets": [
         {
+          "datasource": "${DS_SM_METRICS}",
           "exemplar": true,
           "expr": "sum(\n  increase(probe_all_success_sum{instance=\"$instance\", job=\"$job\", probe=~\"$probe\"}[$__range])\n   )\n/\nsum(\n  increase(probe_all_success_count{instance=\"$instance\", job=\"$job\", probe=~\"$probe\"}[$__range])\n)",
           "hide": false,
@@ -374,13 +395,10 @@
           "refId": "B"
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
       "title": "Reachability",
       "type": "stat"
     },
     {
-      "cacheTimeout": null,
       "datasource": "${DS_SM_METRICS}",
       "description": "The average time to receive an answer across all the checks during the whole time period.",
       "fieldConfig": {
@@ -432,9 +450,10 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.5.7",
+      "pluginVersion": "10.2.0-60477",
       "targets": [
         {
+          "datasource": "${DS_SM_METRICS}",
           "expr": "sum(rate(probe_all_duration_seconds_sum{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__range])) / sum(rate(probe_all_duration_seconds_count{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__range]))",
           "hide": false,
           "instant": true,
@@ -443,24 +462,23 @@
           "refId": "B"
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
       "title": "Average latency",
       "type": "stat"
     },
     {
-      "cacheTimeout": null,
       "datasource": "${DS_SM_METRICS}",
       "fieldConfig": {
         "defaults": {
           "decimals": 2,
           "mappings": [
             {
-              "id": 0,
-              "op": "=",
-              "text": "N/A",
-              "type": 1,
-              "value": "null"
+              "options": {
+                "match": "null",
+                "result": {
+                  "text": "N/A"
+                }
+              },
+              "type": "special"
             }
           ],
           "thresholds": {
@@ -508,9 +526,10 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.5.7",
+      "pluginVersion": "10.2.0-60477",
       "targets": [
         {
+          "datasource": "${DS_SM_METRICS}",
           "expr": "min(probe_ssl_earliest_cert_expiry{probe=~\"$probe\",instance=\"$instance\", job=\"$job\"}) - time()",
           "hide": false,
           "instant": true,
@@ -519,8 +538,6 @@
           "refId": "B"
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
       "title": "SSL Expiry",
       "type": "stat"
     },
@@ -568,9 +585,10 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.5.7",
+      "pluginVersion": "10.2.0-60477",
       "targets": [
         {
+          "datasource": "${DS_SM_METRICS}",
           "exemplar": true,
           "expr": "sum by (frequency) (\n  topk(\n    1,\n    sm_check_info{instance=\"$instance\", job=\"$job\", probe=~\"$probe\"}\n  )\n)",
           "format": "time_series",
@@ -585,6 +603,10 @@
       "transformations": [
         {
           "id": "labelsToFields",
+          "options": {}
+        },
+        {
+          "id": "merge",
           "options": {}
         }
       ],
@@ -630,7 +652,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.5.7",
+      "pluginVersion": "10.2.0-60477",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -640,6 +662,7 @@
       "steppedLine": true,
       "targets": [
         {
+          "datasource": "${DS_SM_METRICS}",
           "exemplar": true,
           "expr": "100*(\n  1 - (\n    sum(\n      rate(probe_all_success_sum{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__rate_interval])\n        )\n    /\n    sum(\n      rate(probe_all_success_count{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}[$__rate_interval])\n    )\n  )\n)",
           "hide": false,
@@ -650,9 +673,7 @@
         }
       ],
       "thresholds": [],
-      "timeFrom": null,
       "timeRegions": [],
-      "timeShift": null,
       "title": "Error Rate : $probe ⮕ $job / $instance",
       "tooltip": {
         "shared": true,
@@ -661,16 +682,13 @@
       },
       "type": "graph",
       "xaxis": {
-        "buckets": null,
         "mode": "time",
-        "name": null,
         "show": true,
         "values": []
       },
       "yaxes": [
         {
           "$$hashKey": "object:254",
-          "decimals": null,
           "format": "percent",
           "label": "",
           "logBase": 1,
@@ -681,16 +699,12 @@
         {
           "$$hashKey": "object:255",
           "format": "short",
-          "label": null,
           "logBase": 1,
-          "max": null,
-          "min": null,
           "show": true
         }
       ],
       "yaxis": {
-        "align": false,
-        "alignLevel": null
+        "align": false
       }
     },
     {
@@ -734,11 +748,10 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.5.7",
+      "pluginVersion": "10.2.0-60477",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
-      "repeatDirection": null,
       "seriesOverrides": [
         {
           "alias": "transfer",
@@ -766,6 +779,7 @@
       "steppedLine": false,
       "targets": [
         {
+          "datasource": "${DS_SM_METRICS}",
           "expr": "avg(probe_http_duration_seconds{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"}) by (phase)",
           "instant": false,
           "interval": "",
@@ -775,9 +789,7 @@
         }
       ],
       "thresholds": [],
-      "timeFrom": null,
       "timeRegions": [],
-      "timeShift": null,
       "title": "Response latency by phase: $probe ⮕ $job / $instance",
       "tooltip": {
         "shared": true,
@@ -787,35 +799,24 @@
       "transformations": [],
       "type": "graph",
       "xaxis": {
-        "buckets": null,
         "mode": "time",
-        "name": null,
         "show": true,
         "values": []
       },
       "yaxes": [
         {
-          "decimals": null,
           "format": "s",
-          "label": null,
           "logBase": 1,
-          "max": null,
-          "min": null,
           "show": true
         },
         {
-          "decimals": null,
           "format": "short",
-          "label": null,
           "logBase": 1,
-          "max": null,
-          "min": null,
           "show": true
         }
       ],
       "yaxis": {
-        "align": false,
-        "alignLevel": null
+        "align": false
       }
     },
     {
@@ -860,11 +861,10 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.5.7",
+      "pluginVersion": "10.2.0-60477",
       "pointradius": 1,
       "points": true,
       "renderer": "flot",
-      "repeatDirection": null,
       "seriesOverrides": [
         {
           "alias": "transfer",
@@ -892,6 +892,7 @@
       "steppedLine": false,
       "targets": [
         {
+          "datasource": "${DS_SM_METRICS}",
           "expr": "avg(probe_duration_seconds{probe=~\"$probe\", instance=\"$instance\", job=\"$job\"} * on (instance, job,probe,config_version) group_left probe_success{probe=~\"$probe\",instance=\"$instance\", job=\"$job\"} > 0) by (probe)",
           "instant": false,
           "interval": "",
@@ -901,9 +902,7 @@
         }
       ],
       "thresholds": [],
-      "timeFrom": null,
       "timeRegions": [],
-      "timeShift": null,
       "title": "Response latency by probe",
       "tooltip": {
         "shared": true,
@@ -913,43 +912,28 @@
       "transformations": [],
       "type": "graph",
       "xaxis": {
-        "buckets": null,
         "mode": "time",
-        "name": null,
         "show": true,
         "values": []
       },
       "yaxes": [
         {
-          "decimals": null,
           "format": "s",
-          "label": null,
           "logBase": 1,
-          "max": null,
-          "min": null,
           "show": true
         },
         {
-          "decimals": null,
           "format": "short",
-          "label": null,
           "logBase": 1,
-          "max": null,
-          "min": null,
           "show": true
         }
       ],
       "yaxis": {
-        "align": false,
-        "alignLevel": null
+        "align": false
       }
     },
     {
       "datasource": "${DS_SM_LOGS}",
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
       "gridPos": {
         "h": 13,
         "w": 24,
@@ -960,6 +944,8 @@
       "options": {
         "dedupStrategy": "none",
         "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
         "showLabels": true,
         "showTime": true,
         "sortOrder": "Descending",
@@ -967,45 +953,43 @@
       },
       "targets": [
         {
+          "datasource": "${DS_SM_LOGS}",
           "expr": "{probe=~\"$probe\", instance=\"$instance\", job=\"$job\", probe_success=\"0\"}",
           "refId": "A"
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
       "title": "Logs for failed checks: $probe ⮕ $job / $instance",
       "type": "logs"
     }
   ],
   "refresh": "1m",
-  "schemaVersion": 27,
-  "style": "dark",
+  "schemaVersion": 38,
   "tags": ["synthetic-monitoring"],
   "templating": {
     "list": [
       {
         "allValue": ".*",
-        "current": {},
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
         "datasource": "${DS_SM_METRICS}",
         "definition": "label_values(sm_check_info,probe)",
-        "description": null,
-        "error": null,
         "hide": 0,
         "includeAll": true,
-        "label": null,
         "multi": false,
         "name": "probe",
         "options": [],
         "query": {
           "query": "label_values(sm_check_info{check_name=\"http\"},probe)",
-          "refId": "${DS_SM_METRICS}-probe-Variable-Query"
+          "refId": "grafanacloud-rdubrock-prom-probe-Variable-Query"
         },
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
         "sort": 5,
         "tagValuesQuery": "",
-        "tags": [],
         "tagsQuery": "",
         "type": "query",
         "useTags": false
@@ -1015,51 +999,42 @@
         "current": {},
         "datasource": "${DS_SM_METRICS}",
         "definition": "label_values(sm_check_info{check_name=\"http\", probe=~\"$probe\"},job)",
-        "description": null,
-        "error": null,
         "hide": 0,
         "includeAll": false,
-        "label": null,
         "multi": false,
         "name": "job",
         "options": [],
         "query": {
           "query": "label_values(sm_check_info{check_name=\"http\", probe=~\"$probe\"},job)",
-          "refId": "${DS_SM_METRICS}-job-Variable-Query"
+          "refId": "grafanacloud-rdubrock-prom-job-Variable-Query"
         },
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
         "sort": 1,
         "tagValuesQuery": "",
-        "tags": [],
         "tagsQuery": "",
         "type": "query",
         "useTags": false
       },
       {
-        "allValue": null,
         "current": {},
         "datasource": "${DS_SM_METRICS}",
         "definition": "label_values(sm_check_info{check_name=\"http\", job=\"$job\", probe=~\"$probe\"},instance)",
-        "description": null,
-        "error": null,
         "hide": 0,
         "includeAll": false,
-        "label": null,
         "multi": false,
         "name": "instance",
         "options": [],
         "query": {
           "query": "label_values(sm_check_info{check_name=\"http\", job=\"$job\", probe=~\"$probe\"},instance)",
-          "refId": "${DS_SM_METRICS}-instance-Variable-Query"
+          "refId": "grafanacloud-rdubrock-prom-instance-Variable-Query"
         },
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
         "sort": 5,
         "tagValuesQuery": "",
-        "tags": [],
         "tagsQuery": "",
         "type": "query",
         "useTags": false
@@ -1076,5 +1051,6 @@
   "timezone": "",
   "title": "Synthetic Monitoring HTTP",
   "uid": "rq0JrllZz",
-  "version": 46
+  "version": 23,
+  "weekStart": ""
 }
