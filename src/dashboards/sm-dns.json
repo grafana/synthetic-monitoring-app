@@ -996,7 +996,7 @@
         "options": [],
         "query": {
           "query": "label_values(sm_check_info{check_name=\"dns\", probe=~\"$probe\"},job)",
-          "refId": "grafanacloud-russdev2-prom-job-Variable-Query"
+          "refId": "${DS_SM_METRICS}-job-Variable-Query"
         },
         "refresh": 1,
         "regex": "",

@@ -875,7 +875,7 @@
         "options": [],
         "query": {
           "query": "label_values(sm_check_info{check_name=\"tcp\"},probe)",
-          "refId": "grafanacloud-russdev2-prom-probe-Variable-Query"
+          "refId": "${DS_SM_METRICS}-probe-Variable-Query"
         },
         "refresh": 1,
         "regex": "",
@@ -901,7 +901,7 @@
         "options": [],
         "query": {
           "query": "label_values(sm_check_info{check_name=\"tcp\", probe=~\"$probe\"},job)",
-          "refId": "grafanacloud-russdev2-prom-job-Variable-Query"
+          "refId": "${DS_SM_METRICS}-job-Variable-Query"
         },
         "refresh": 1,
         "regex": "",
@@ -927,7 +927,7 @@
         "options": [],
         "query": {
           "query": "label_values(sm_check_info{check_name=\"tcp\", job=\"$job\", probe=~\"$probe\"},instance)",
-          "refId": "grafanacloud-russdev2-prom-instance-Variable-Query"
+          "refId": "${DS_SM_METRICS}-instance-Variable-Query"
         },
         "refresh": 1,
         "regex": "",

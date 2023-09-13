@@ -903,7 +903,7 @@
         "options": [],
         "query": {
           "query": "label_values(sm_check_info{check_name=\"ping\"},probe)",
-          "refId": "grafanacloud-rdubrock-prom-probe-Variable-Query"
+          "refId": "${DS_SM_METRICS}-probe-Variable-Query"
         },
         "refresh": 1,
         "regex": "",
@@ -925,7 +925,7 @@
         "options": [],
         "query": {
           "query": "label_values(sm_check_info{check_name=\"ping\", probe=~\"$probe\"},job)",
-          "refId": "grafanacloud-rdubrock-prom-job-Variable-Query"
+          "refId": "${DS_SM_METRICS}-job-Variable-Query"
         },
         "refresh": 1,
         "regex": "",
@@ -947,7 +947,7 @@
         "options": [],
         "query": {
           "query": "label_values(sm_check_info{check_name=\"ping\", job=\"$job\", probe=~\"$probe\"},instance)",
-          "refId": "grafanacloud-rdubrock-prom-instance-Variable-Query"
+          "refId": "${DS_SM_METRICS}-instance-Variable-Query"
         },
         "refresh": 1,
         "regex": "",
