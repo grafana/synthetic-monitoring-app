@@ -1018,7 +1018,7 @@
         "options": [],
         "query": {
           "query": "label_values(sm_check_info{check_name=\"dns\", job=\"$job\", probe=~\"$probe\"},instance)",
-          "refId": "grafanacloud-russdev2-prom-instance-Variable-Query"
+          "refId": "${DS_SM_METRICS}-instance-Variable-Query"
         },
         "refresh": 1,
         "regex": "",
