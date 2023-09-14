@@ -17,7 +17,7 @@ import {
 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { useFormContext, Controller, useFieldArray } from 'react-hook-form';
-import { HttpVersion, CheckType, HttpRegexValidationType, HttpMethod } from 'types';
+import { HttpVersion, CheckType, HttpRegexValidationType, HttpMethod, FeatureName } from 'types';
 import { Collapse } from 'components/Collapse';
 import {
   HTTP_COMPRESSION_ALGO_OPTIONS,
@@ -33,6 +33,7 @@ import { NameValueInput } from 'components/NameValueInput';
 import { validateBearerToken, validateHTTPBody, validateHTTPHeaderName, validateHTTPHeaderValue } from 'validation';
 import { GrafanaTheme2 } from '@grafana/data';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
 
 const httpVersionOptions = [
   {
@@ -183,6 +184,7 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
   } = useFieldArray({ control, name: ENDPOINT_PARAMS_FIELD_NAME });
   const { fields, append, remove } = useFieldArray({ control, name: REGEX_FIELD_NAME });
   const styles = useStyles2(getStyles);
+  const { isEnabled: oauth2Enabled } = useFeatureFlag(FeatureName.Oauth2);
 
   return (
     <Container>
@@ -332,124 +334,127 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
             </HorizontalGroup>
           )}
         </VerticalGroup>
-        <VerticalGroup spacing="xs">
-          <HorizontalCheckboxField
-            label="Use Oauth2"
-            id="http-settings-oauth2"
-            disabled={!isEditor}
-            className={
-              !includeOauth2
-                ? undefined
-                : css`
-                    margin-bottom: 1px;
-                  `
-            }
-            value={includeOauth2}
-            onChange={() => setIncludeOauth2(!includeOauth2)}
-          />
-          {includeOauth2 && (
-            <VerticalGroup spacing="xs">
-              <Field label="Client ID" description="The public identifier for your app">
-                <Input
-                  {...register('settings.http.oauth2.clientId')}
-                  type="text"
-                  id="http-settings-oauth2-clientId"
-                  placeholder="Client ID"
-                  disabled={!isEditor}
-                />
-              </Field>
-              <Field label="Client secret" description="The secret known only to the server">
-                <Input
-                  {...register('settings.http.oauth2.clientSecret')}
-                  type="text"
-                  id="https-settings-http-oauth2-client-secret"
-                  placeholder="Client secret"
-                  disabled={!isEditor}
-                />
-              </Field>
-              <Field label="Token URL" description="Where to request a token from">
-                <Input
-                  {...register('settings.http.oauth2.tokenUrl')}
-                  type="text"
-                  placeholder="Token url"
-                  disabled={!isEditor}
-                />
-              </Field>
-
-              <Field label="Scopes">
-                <VerticalGroup spacing="sm">
-                  {scopesFields.map((field, index) => {
-                    return (
-                      <HorizontalGroup key={field.id}>
-                        <Input
-                          {...register(`${SCOPES_FIELD_NAME}.${index}`)}
-                          type="text"
-                          placeholder="Scope"
-                          disabled={!isEditor}
-                        />
-                        <IconButton name="minus-circle" onClick={() => removeScope(index)} />
-                      </HorizontalGroup>
-                    );
-                  })}
-
-                  <Button
-                    type="button"
-                    icon="plus"
-                    variant="secondary"
-                    size="sm"
+        {oauth2Enabled && (
+          <VerticalGroup spacing="xs">
+            <HorizontalCheckboxField
+              label="Use Oauth2"
+              id="http-settings-oauth2"
+              disabled={!isEditor}
+              className={
+                !includeOauth2
+                  ? undefined
+                  : css`
+                      margin-bottom: 1px;
+                    `
+              }
+              value={includeOauth2}
+              onChange={() => setIncludeOauth2(!includeOauth2)}
+            />
+            {includeOauth2 && (
+              <VerticalGroup spacing="xs">
+                <Field label="Client ID" description="The public identifier for your app">
+                  <Input
+                    {...register('settings.http.oauth2.clientId')}
+                    type="text"
+                    id="http-settings-oauth2-clientId"
+                    placeholder="Client ID"
                     disabled={!isEditor}
-                    onClick={() => {
-                      console.log('appending scope');
-                      appendScope('');
-                    }}
-                  >
-                    Add scope
-                  </Button>
-                </VerticalGroup>
-              </Field>
-              <Field label="Endpoint params">
-                <VerticalGroup spacing="sm">
-                  {endpointParamFields.map((field, index) => {
-                    return (
-                      <HorizontalGroup key={field.id}>
-                        <VerticalGroup spacing="xs">
-                          <Label>Name</Label>
+                  />
+                </Field>
+                <Field label="Client secret" description="The secret known only to the server">
+                  <Input
+                    {...register('settings.http.oauth2.clientSecret')}
+                    type="text"
+                    id="https-settings-http-oauth2-client-secret"
+                    placeholder="Client secret"
+                    disabled={!isEditor}
+                  />
+                </Field>
+                <Field label="Token URL" description="Where to request a token from">
+                  <Input
+                    {...register('settings.http.oauth2.tokenUrl')}
+                    type="text"
+                    placeholder="Token url"
+                    disabled={!isEditor}
+                  />
+                </Field>
+                <Field label="Endpoint params">
+                  <VerticalGroup spacing="sm">
+                    {endpointParamFields.map((field, index) => {
+                      return (
+                        <HorizontalGroup key={field.id}>
+                          <VerticalGroup spacing="xs">
+                            <Label>Name</Label>
+                            <Input
+                              {...register(`${ENDPOINT_PARAMS_FIELD_NAME}.${index}.name`)}
+                              type="text"
+                              placeholder="Endpoint param name"
+                              disabled={!isEditor}
+                            />
+                          </VerticalGroup>
+                          <VerticalGroup spacing="xs">
+                            <Label>Value</Label>
+                            <Input
+                              {...register(`${ENDPOINT_PARAMS_FIELD_NAME}.${index}.value`)}
+                              type="text"
+                              placeholder="Endpoint param value"
+                              disabled={!isEditor}
+                            />
+                          </VerticalGroup>
+                          <IconButton name="minus-circle" onClick={() => removeEndpointParam(index)} />
+                        </HorizontalGroup>
+                      );
+                    })}
+                    <Button
+                      type="button"
+                      icon="plus"
+                      variant="secondary"
+                      size="sm"
+                      disabled={!isEditor}
+                      onClick={() => appendEndpointParam({ name: '', value: '' })}
+                    >
+                      Add endpoint param
+                    </Button>
+                  </VerticalGroup>
+                </Field>
+
+                <Field label="Scopes">
+                  <VerticalGroup spacing="sm">
+                    {scopesFields.map((field, index) => {
+                      return (
+                        <HorizontalGroup key={field.id}>
                           <Input
-                            {...register(`${ENDPOINT_PARAMS_FIELD_NAME}.${index}.name`)}
+                            {...register(`${SCOPES_FIELD_NAME}.${index}`)}
                             type="text"
-                            placeholder="Endpoint param name"
+                            placeholder="Scope"
                             disabled={!isEditor}
                           />
-                        </VerticalGroup>
-                        <VerticalGroup spacing="xs">
-                          <Label>Value</Label>
-                          <Input
-                            {...register(`${ENDPOINT_PARAMS_FIELD_NAME}.${index}.value`)}
-                            type="text"
-                            placeholder="Endpoint param value"
-                            disabled={!isEditor}
-                          />
-                        </VerticalGroup>
-                        <IconButton name="minus-circle" onClick={() => removeEndpointParam(index)} />
-                      </HorizontalGroup>
-                    );
-                  })}
-                  <Button
-                    type="button"
-                    icon="plus"
-                    variant="secondary"
-                    size="sm"
-                    disabled={!isEditor}
-                    onClick={() => appendEndpointParam({ name: '', value: '' })}
-                  >
-                    Add endpoint param
-                  </Button>
-                </VerticalGroup>
-              </Field>
-            </VerticalGroup>
-          )}
-        </VerticalGroup>
+                          <IconButton name="minus-circle" onClick={() => removeScope(index)} />
+                        </HorizontalGroup>
+                      );
+                    })}
+
+                    <Button
+                      type="button"
+                      icon="plus"
+                      variant="secondary"
+                      size="sm"
+                      disabled={!isEditor}
+                      onClick={() => {
+                        console.log('appending scope');
+                        appendScope('');
+                      }}
+                    >
+                      Add scope
+                    </Button>
+                  </VerticalGroup>
+                </Field>
+              </VerticalGroup>
+            )}
+          </VerticalGroup>
+        )}
       </Collapse>
+
       <Collapse
         label="Validation"
         onToggle={() => setShowValidation(!showValidation)}

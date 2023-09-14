@@ -535,6 +535,7 @@ export enum FeatureName {
   UnifiedAlerting = 'ngalert',
   MultiHttp = 'multi-http',
   Scenes = 'synthetics-scenes',
+  Oauth2 = 'synthetics-oauth2',
 }
 
 export interface UsageValues {
