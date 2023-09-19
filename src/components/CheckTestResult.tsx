@@ -77,6 +77,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    width: 100%;
   `,
   headerBadges: css`
     display: flex;
