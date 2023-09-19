@@ -1,4 +1,4 @@
-import { GrafanaTheme2, OrgRole } from '@grafana/data';
+import { GrafanaTheme2 } from '@grafana/data';
 import { Button, HorizontalGroup, Icon, Modal, Spinner, useStyles2, Alert } from '@grafana/ui';
 import React, { FC, useState, useContext } from 'react';
 import { css } from '@emotion/css';
@@ -7,7 +7,6 @@ import { AlertRuleForm } from './AlertRuleForm';
 import { AlertFormValues, AlertRule } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { transformAlertFormValues } from './alertingTransformations';
-import { hasRole } from 'utils';
 import useUnifiedAlertsEnabled from 'hooks/useUnifiedAlertsEnabled';
 import { config } from '@grafana/runtime';
 
@@ -78,20 +77,6 @@ export const Alerting: FC = () => {
     });
     return await setRules([...recordingRules, ...updatedRules]);
   };
-
-  if (!hasRole(OrgRole.Admin)) {
-    return (
-      <div>
-        {!config.featureToggles.topnav && <h2>Alerts</h2>}
-        <Icon className={styles.icon} name="exclamation-triangle" />
-        Synthetic Monitoring uses &nbsp;
-        <a href="https://grafana.com/docs/grafana-cloud/alerting/" className={styles.link}>
-          Alerting
-        </a>
-        , which is not accessible for users without an admin role.
-      </div>
-    );
-  }
 
   if (!instance.alertRuler && !isUnifiedAlertingEnabled) {
     return (
