@@ -121,6 +121,7 @@ export enum AccountingClassNames {
   tcp_ssl_basic = 'tcp_ssl_basic',
   traceroute = 'traceroute',
   traceroute_basic = 'traceroute_basic',
+  multihttp_basic = 'multihttp_basic',
 }
 
 interface AccountingClass {

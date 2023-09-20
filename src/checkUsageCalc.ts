@@ -1,4 +1,4 @@
-import { UsageValues } from 'types';
+import { Check, UsageValues } from 'types';
 
 interface ActiveSeriesParams {
   probeCount: number;
@@ -39,3 +39,37 @@ export const calculateUsage = ({ probeCount, frequencySeconds, seriesPerCheck }:
     dpm: getDataPointsPerMinute(activeSeries, frequencySeconds),
   };
 };
+
+export function calculateMultiHTTPUsage(check: Partial<Check>): UsageValues {
+  const logGBPerURLPerProbe = 0.000026;
+  const logGBPerAssertionPerCheck = 0.0000015;
+  const seriesPerProbe = 36;
+  const additionalSeriesPerUrl = 14;
+  const frequencySeconds = (check?.frequency ?? 0) / 1000;
+
+  const checksPerMonth = getChecksPerMonth(frequencySeconds);
+
+  // Calculate logs
+  const baseLogsGbPerMonth = checksPerMonth * logGBPerURLPerProbe * (check.settings?.multihttp?.entries?.length ?? 0);
+  const assertionCount =
+    check.settings?.multihttp?.entries.reduce((assertionCount, entry) => {
+      return assertionCount + (entry.checks?.length ?? 0);
+    }, 0) ?? 0;
+  const assertionLogsGBPerMonth = checksPerMonth * assertionCount * logGBPerAssertionPerCheck;
+  const totalLogsPerMonth = (baseLogsGbPerMonth + assertionLogsGBPerMonth) * (check.probes?.length ?? 0);
+
+  // Calculate metrics
+  const baseSeries = seriesPerProbe * (check.probes?.length ?? 0);
+  const additionalUrls = (check.settings?.multihttp?.entries.length ?? 1) - 1;
+  const additionalSeries = additionalSeriesPerUrl * additionalUrls;
+  const activeSeries = baseSeries + additionalSeries;
+
+  const dpm = getDataPointsPerMinute(activeSeries, frequencySeconds);
+
+  return {
+    checksPerMonth,
+    activeSeries,
+    logsGbPerMonth: totalLogsPerMonth,
+    dpm,
+  };
+}

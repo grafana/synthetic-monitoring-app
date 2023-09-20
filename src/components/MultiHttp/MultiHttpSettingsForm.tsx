@@ -34,6 +34,7 @@ import { useAsyncCallback } from 'react-async-hook';
 import { FaroEvent, reportEvent, reportError } from 'faro';
 import { CheckFormAlert } from 'components/CheckFormAlert';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
+import { CheckUsage } from 'components/CheckUsage';
 
 interface Props {
   checks?: Check[];
@@ -280,6 +281,7 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
                 >
                   Add request
                 </Button>
+                <CheckUsage />
                 <CheckFormAlert />
                 {submissionError && (
                   <Alert title="Multihttp request creation failed" severity="error">
