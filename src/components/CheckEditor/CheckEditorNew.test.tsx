@@ -59,15 +59,6 @@ describe('new checks', () => {
     expect(screen.getByText('Add Ping check')).toBeInTheDocument();
   });
 
-  it('renders selectable options if multi-http FF is off AND should not include CheckType.MULTI_HTTP', async () => {
-    await renderNewCheckEditor();
-    await waitFor(() => expect(screen.getByText('Check type')).toBeInTheDocument());
-    expect(screen.getByRole('option', { name: 'HTTP' })).toBeInTheDocument();
-    expect(screen.getByRole('option', { name: 'DNS' })).toBeInTheDocument();
-    expect(screen.getByRole('option', { name: 'TCP' })).toBeInTheDocument();
-    expect(screen.queryByRole('option', { name: 'MULTIHTTP' })).not.toBeInTheDocument();
-  });
-
   it('renders the new check form with HTTP is checkType is passed in', async () => {
     await renderNewCheckEditor(CheckType.HTTP);
     expect(screen.getByText('Add Http check')).toBeInTheDocument();
