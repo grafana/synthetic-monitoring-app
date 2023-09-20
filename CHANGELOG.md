@@ -1,5 +1,14 @@
 # Change Log
 
+# [1.12.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.11.7...v1.12.0) (2023-9-20)
+
+- Allow all users to view alerts, and editors to edit them
+- Fix spacing issues in the test check modal
+- Update template dashboard JSON that was causing Grafana to crash on copy
+- Update MultiHTTP URL validation
+- Remove some old feature flags
+- Remove the deprecated check list visualization view
+
 # [1.11.7](https://github.com/grafana/synthetic-monitoring-app/compare/v1.11.6...v1.11.7) (2023-9-1)
 
 - Add filtering and search to the check list visualization view
