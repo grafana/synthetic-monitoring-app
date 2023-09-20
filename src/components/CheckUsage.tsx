@@ -1,10 +1,10 @@
-import React, { FC } from 'react';
-import { useFormContext } from 'react-hook-form';
 import { css } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
-import { useStyles2, Icon } from '@grafana/ui';
-import { Check, CheckType } from 'types';
+import { Icon, useStyles2 } from '@grafana/ui';
 import { useUsageCalc } from 'hooks/useUsageCalc';
+import React, { FC } from 'react';
+import { useFormContext } from 'react-hook-form';
+import { Check, CheckType, MultiHttpEntryFormValues } from 'types';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   container: css`
@@ -36,17 +36,22 @@ const getCheckFromValues = (
   checkType: CheckType | undefined,
   frequency = 0,
   probes: number[] = [],
-  publishAdvancedMetrics = false
+  publishAdvancedMetrics = false,
+  entries: MultiHttpEntryFormValues[]
 ): Partial<Check> | undefined => {
   if (!checkType) {
     return;
+  }
+  const settings: any = {};
+  if (checkType === CheckType.MULTI_HTTP) {
+    settings.entries = entries;
   }
   return {
     frequency: frequency * 1000,
     probes,
     basicMetricsOnly: !publishAdvancedMetrics,
     settings: {
-      [checkType]: {},
+      [checkType]: settings,
     },
   };
 };
@@ -54,13 +59,14 @@ const getCheckFromValues = (
 export const CheckUsage: FC = () => {
   const styles = useStyles2(getStyles);
   const { watch } = useFormContext();
-  const [checkType, frequency, probes, publishAdvancedMetrics] = watch([
+  const [checkType, frequency, probes, publishAdvancedMetrics, entries] = watch([
     'checkType',
     'frequency',
     'probes',
     'publishAdvancedMetrics',
+    'settings.multihttp.entries',
   ]);
-  const check = getCheckFromValues(checkType?.value, frequency, probes, publishAdvancedMetrics);
+  const check = getCheckFromValues(checkType?.value, frequency, probes, publishAdvancedMetrics, entries);
   const usage = useUsageCalc(check);
 
   if (!usage) {
