@@ -1,42 +1,40 @@
-import React, { useState, useMemo, useContext } from 'react';
 import { css } from '@emotion/css';
+import { GrafanaTheme2, OrgRole } from '@grafana/data';
+import { config } from '@grafana/runtime';
 import {
+  Alert,
   Button,
   ConfirmModal,
   Field,
+  HorizontalGroup,
   Input,
   Legend,
-  Alert,
-  useStyles2,
   LinkButton,
-  HorizontalGroup,
-  Select,
+  useStyles2,
 } from '@grafana/ui';
-import { useAsyncCallback } from 'react-async-hook';
-import { Check, CheckType, CheckFormValues, SubmissionErrorWrapper, FeatureName, CheckPageParams } from 'types';
-import { hasRole, checkType as getCheckType } from 'utils';
-import {
-  getDefaultValuesFromCheck,
-  getCheckFromFormValues,
-  checkTypeParamToCheckType,
-} from './checkFormTransformations';
-import { validateJob, validateTarget } from 'validation';
+import { CheckFormAlert } from 'components/CheckFormAlert';
 import CheckTarget from 'components/CheckTarget';
+import { CheckTestButton } from 'components/CheckTestButton';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
+import { PluginPage } from 'components/PluginPage';
+import { fallbackCheck } from 'components/constants';
+import { InstanceContext } from 'contexts/InstanceContext';
+import { FaroEvent, reportError, reportEvent } from 'faro';
+import React, { useContext, useMemo, useState } from 'react';
+import { useAsyncCallback } from 'react-async-hook';
+import { Controller, FormProvider, useForm } from 'react-hook-form';
+import { useParams } from 'react-router-dom';
+import { Check, CheckFormValues, CheckPageParams, CheckType, SubmissionErrorWrapper } from 'types';
+import { checkType as getCheckType, hasRole } from 'utils';
+import { validateJob, validateTarget } from 'validation';
+import { CheckUsage } from '../CheckUsage';
 import { CheckSettings } from './CheckSettings';
 import { ProbeOptions } from './ProbeOptions';
-import { CHECK_TYPE_OPTIONS, fallbackCheck } from 'components/constants';
-import { useForm, FormProvider, Controller } from 'react-hook-form';
-import { GrafanaTheme2, OrgRole } from '@grafana/data';
-import { CheckUsage } from '../CheckUsage';
-import { CheckFormAlert } from 'components/CheckFormAlert';
-import { InstanceContext } from 'contexts/InstanceContext';
-import { useParams } from 'react-router-dom';
-import { PluginPage } from 'components/PluginPage';
-import { config } from '@grafana/runtime';
-import { FeatureFlag } from 'components/FeatureFlag';
-import { FaroEvent, reportError, reportEvent } from 'faro';
-import { CheckTestButton } from 'components/CheckTestButton';
+import {
+  checkTypeParamToCheckType,
+  getCheckFromFormValues,
+  getDefaultValuesFromCheck,
+} from './checkFormTransformations';
 
 interface Props {
   checks?: Check[];
@@ -121,35 +119,6 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
         {!config.featureToggles.topnav && <Legend>{headerText}</Legend>}
         <FormProvider {...formMethods}>
           <form onSubmit={formMethods.handleSubmit(onSubmit)}>
-            <FeatureFlag name={FeatureName.MultiHttp}>
-              {({ isEnabled }) => {
-                return !isEnabled ? (
-                  <Field label="Check type" disabled={check?.id ? true : false}>
-                    <Controller
-                      name="checkType"
-                      control={formMethods.control}
-                      defaultValue={checkType ?? CheckType.PING}
-                      render={({ field }) => {
-                        const STANDARD_CHECK_TYPE_OPTIONS = CHECK_TYPE_OPTIONS.filter(
-                          ({ value }) => value !== CheckType.MULTI_HTTP
-                        );
-                        return (
-                          <Select
-                            {...field}
-                            placeholder="Check type"
-                            options={STANDARD_CHECK_TYPE_OPTIONS}
-                            width={30}
-                            disabled={check?.id ? true : false}
-                          />
-                        );
-                      }}
-                    />
-                  </Field>
-                ) : (
-                  <></>
-                );
-              }}
-            </FeatureFlag>
             <HorizontalCheckboxField
               disabled={!isEditor}
               name="enabled"
