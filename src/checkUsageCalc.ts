@@ -41,8 +41,8 @@ export const calculateUsage = ({ probeCount, frequencySeconds, seriesPerCheck }:
 };
 
 export function calculateMultiHTTPUsage(check: Partial<Check>): UsageValues {
-  const logGBPerURLPerProbe = 0.000026;
-  const logGBPerAssertionPerCheck = 0.0000015;
+  const logGBPerURLPerProbe = 0.000001151;
+  const logGBPerAssertionPerCheck = 0.0000004;
   const seriesPerProbe = 36;
   const additionalSeriesPerUrl = 14;
   const frequencySeconds = (check?.frequency ?? 0) / 1000;
