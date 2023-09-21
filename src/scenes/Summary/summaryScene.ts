@@ -17,7 +17,7 @@ import { getLatencyTimeseriesPanel } from './latencyTimeseries';
 import { getSummaryTable } from './summaryTable';
 import { getEmptyScene } from 'scenes/Common/emptyScene';
 
-export function getSummaryScene({ metrics, logs }: DashboardSceneAppConfig, checks: Check[]) {
+export function getSummaryScene({ metrics }: DashboardSceneAppConfig, checks: Check[]) {
   return () => {
     if (checks.length === 0) {
       return getEmptyScene();
@@ -32,6 +32,7 @@ export function getSummaryScene({ metrics, logs }: DashboardSceneAppConfig, chec
       includeAll: true,
       allValue: '.*',
       name: 'region',
+      defaultToAll: true,
       query: { query: 'label_values(sm_check_info, region)' },
       datasource: metrics,
     });
