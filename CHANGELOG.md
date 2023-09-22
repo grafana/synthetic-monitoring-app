@@ -1,5 +1,10 @@
 # Change Log
 
+# [1.12.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.12.0...v1.12.1) (2023-9-21)
+
+- Fix some issues with check type selection
+- Add a MultiHTTP usage calculator
+
 # [1.12.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.11.7...v1.12.0) (2023-9-20)
 
 - Allow all users to view alerts, and editors to edit them
