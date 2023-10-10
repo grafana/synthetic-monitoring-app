@@ -209,7 +209,6 @@ export function useAlerts(checkId?: number) {
       legacyFetchSMRules(alertRulerUrl).then(({ rules, error }) => {
         setAlertRules(rules);
         if (error) {
-          console.log('hello', error);
           setAlertError(error);
         }
       });
@@ -218,7 +217,6 @@ export function useAlerts(checkId?: number) {
       fetchSMRules(metricsIdentifier).then(({ rules, error }) => {
         setAlertRules(rules);
         if (error) {
-          console.log('goodbye', error);
           setAlertError(error);
         }
       });

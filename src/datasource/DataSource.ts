@@ -280,10 +280,6 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   }
 
   async testCheck(check: Check): Promise<any> {
-    // if (check.timeout > 2500) {
-    //   check.timeout = 2500;
-    // }
-
     const randomSelection = getRandomProbes(check.probes, 5);
     check.probes = randomSelection;
 
