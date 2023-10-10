@@ -4,7 +4,6 @@ import { Button, Icon, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
 import { CheckFiltersType } from 'types';
-import { defaultFilters } from 'components/CheckFilters';
 
 const groupStyles = (theme: GrafanaTheme2) => ({
   container: css`
@@ -58,8 +57,29 @@ const CheckFilterGroup = ({ children, onReset, filters }: Props) => {
     // Count which filters have been applied
     Object.keys(filters).forEach((key) => {
       // Search filter is handled separately
-      if (key !== 'search' && filters[key] !== defaultFilters[key]) {
-        active += 1;
+      switch (key) {
+        case 'labels':
+          if (filters.labels.length > 0) {
+            active += 1;
+          }
+          break;
+        case 'search':
+          break;
+        case 'status':
+          if (filters.status.value !== 0) {
+            active += 1;
+          }
+          break;
+        case 'probes':
+          if (filters.probes.length > 0) {
+            active += 1;
+          }
+          break;
+        case 'type':
+          if (filters.type !== 'all') {
+            active += 1;
+          }
+          break;
       }
     });
     setActiveFilters(active);
