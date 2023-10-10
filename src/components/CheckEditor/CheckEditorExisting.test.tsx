@@ -1,13 +1,12 @@
 import React from 'react';
-import { act, render, screen, waitFor, within } from '@testing-library/react';
-import { GlobalSettings, ROUTES } from 'types';
-import { getInstanceMock } from '../../datasource/__mocks__/DataSource';
-import { InstanceContext } from 'contexts/InstanceContext';
-import { AppPluginMeta, DataSourceSettings, FeatureToggles } from '@grafana/data';
-import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
-import { Router, Route } from 'react-router-dom';
-import { CheckEditor } from './CheckEditor';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import { locationService } from '@grafana/runtime';
+import { Router, Route } from 'react-router-dom';
+import userEvent from '@testing-library/user-event';
+
+import { render } from 'test/render';
+import { ROUTES } from 'types';
+import { CheckEditor } from './CheckEditor';
 
 import {
   BASIC_CHECK_LIST,
@@ -19,7 +18,6 @@ import {
 } from './testConstants';
 import { DNS_RESPONSE_MATCH_OPTIONS, PLUGIN_URL_PATH } from 'components/constants';
 import { getSlider, submitForm, toggleSection } from './testHelpers';
-import userEvent from '@testing-library/user-event';
 
 jest.setTimeout(60000);
 
@@ -37,25 +35,13 @@ const onReturn = jest.fn();
 
 const renderExistingCheckEditor = async (route: string) => {
   locationService.push(`${PLUGIN_URL_PATH}${ROUTES.Checks}${route}`);
-  const api = getInstanceMock();
-  const instance = {
-    api,
-    alertRuler: {} as DataSourceSettings,
-  };
-  const meta = {} as AppPluginMeta<GlobalSettings>;
-  const featureToggles = { traceroute: true } as unknown as FeatureToggles;
-  const isFeatureEnabled = jest.fn(() => true);
 
-  render(
-    <FeatureFlagProvider overrides={{ featureToggles, isFeatureEnabled }}>
-      <InstanceContext.Provider value={{ instance, loading: false, meta }}>
-        <Router history={locationService.getHistory()}>
-          <Route path={`${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`}>
-            <CheckEditor onReturn={onReturn} checks={BASIC_CHECK_LIST} />
-          </Route>
-        </Router>
-      </InstanceContext.Provider>
-    </FeatureFlagProvider>
+  const { instance } = render(
+    <Router history={locationService.getHistory()}>
+      <Route path={`${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`}>
+        <CheckEditor onReturn={onReturn} checks={BASIC_CHECK_LIST} />
+      </Route>
+    </Router>
   );
 
   await waitFor(() => expect(screen.getByText('Probe options')).toBeInTheDocument());

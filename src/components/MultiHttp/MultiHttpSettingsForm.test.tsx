@@ -1,16 +1,14 @@
 import React from 'react';
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { act, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Route, Router } from 'react-router-dom';
-import { AppPluginMeta, DataSourceSettings, FeatureToggles } from '@grafana/data';
 import { locationService } from '@grafana/runtime';
+
+import { render } from 'test/render';
 import { PLUGIN_URL_PATH } from 'components/constants';
-import { InstanceContext } from 'contexts/InstanceContext';
-import { getInstanceMock } from 'datasource/__mocks__/DataSource';
-import { GlobalSettings, ROUTES } from 'types';
+import { ROUTES } from 'types';
 import { MultiHttpSettingsForm } from './MultiHttpSettingsForm';
 import { BASIC_CHECK_LIST, BASIC_MULTIHTTP_CHECK } from 'components/CheckEditor/testConstants';
-import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
 import { getSlider } from 'components/CheckEditor/testHelpers';
 
 jest.setTimeout(60000);
@@ -20,25 +18,13 @@ const onReturn = jest.fn();
 
 async function renderForm(route: string) {
   locationService.push(`${PLUGIN_URL_PATH}${ROUTES.Checks}${route}`);
-  const api = getInstanceMock();
-  const instance = {
-    api,
-    alertRuler: {} as DataSourceSettings,
-  };
-  const meta = {} as AppPluginMeta<GlobalSettings>;
-  const featureToggles = { 'multi-http': true } as unknown as FeatureToggles;
-  const isFeatureEnabled = jest.fn(() => true);
 
-  render(
-    <FeatureFlagProvider overrides={{ featureToggles, isFeatureEnabled }}>
-      <InstanceContext.Provider value={{ instance, loading: false, meta }}>
-        <Router history={locationService.getHistory()}>
-          <Route path={`${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`}>
-            <MultiHttpSettingsForm checks={BASIC_CHECK_LIST} onReturn={onReturn} />
-          </Route>
-        </Router>
-      </InstanceContext.Provider>
-    </FeatureFlagProvider>
+  const { instance } = render(
+    <Router history={locationService.getHistory()}>
+      <Route path={`${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`}>
+        <MultiHttpSettingsForm checks={BASIC_CHECK_LIST} onReturn={onReturn} />
+      </Route>
+    </Router>
   );
   await waitFor(() => expect(screen.getByText('Probe options')).toBeInTheDocument());
   return instance;

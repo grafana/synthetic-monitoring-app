@@ -1,15 +1,14 @@
 import React from 'react';
-import { act, fireEvent, render, screen, waitFor, waitForElementToBeRemoved } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor, waitForElementToBeRemoved } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
-import { CheckList } from './CheckList';
-import { GrafanaInstances, Check, CheckSort, GlobalSettings, ROUTES } from 'types';
-import { getInstanceMock } from '../../datasource/__mocks__/DataSource';
-import { SuccessRateContextProvider } from '../SuccessRateContextProvider';
-import { InstanceContext } from 'contexts/InstanceContext';
-import { AppPluginMeta } from '@grafana/data';
-import { PLUGIN_URL_PATH } from 'components/constants';
 import { wait } from '@testing-library/user-event/dist/utils';
+
+import { render, createInstance } from 'test/render';
+import { CheckList } from './CheckList';
+import { Check, CheckSort, ROUTES } from 'types';
+import { SuccessRateContextProvider } from '../SuccessRateContextProvider';
+import { PLUGIN_URL_PATH } from 'components/constants';
 
 jest.mock('hooks/useNavigation', () => {
   const actual = jest.requireActual('hooks/useNavigation');
@@ -121,22 +120,19 @@ const defaultChecks = [
 const onCheckUpdate = jest.fn();
 
 const renderCheckList = ({ checks = defaultChecks } = {} as RenderChecklist) => {
-  const instance = {
-    api: getInstanceMock(),
-    metrics: {},
-    logs: {},
-  } as GrafanaInstances;
-  const meta = {} as AppPluginMeta<GlobalSettings>;
+  const instance = createInstance();
 
   render(
     <MemoryRouter initialEntries={[`${PLUGIN_URL_PATH}${ROUTES.Checks}`]}>
-      <InstanceContext.Provider value={{ instance, loading: false, meta }}>
-        <SuccessRateContextProvider checks={checks}>
-          <CheckList instance={instance} checks={checks} onCheckUpdate={onCheckUpdate} />
-        </SuccessRateContextProvider>
-      </InstanceContext.Provider>
-    </MemoryRouter>
+      <SuccessRateContextProvider checks={checks}>
+        <CheckList instance={instance} checks={checks} onCheckUpdate={onCheckUpdate} />
+      </SuccessRateContextProvider>
+    </MemoryRouter>,
+    {
+      instance,
+    }
   );
+
   return instance;
 };
 

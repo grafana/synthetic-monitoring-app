@@ -1,15 +1,16 @@
+import React from 'react';
+import userEvent from '@testing-library/user-event';
+import { DataSourceSettings } from '@grafana/data';
+import { screen, waitFor, within } from '@testing-library/react';
+
+import { render } from 'test/render';
 import { Alerting } from 'components/Alerting';
 import {
   ALERT_PROBE_SUCCESS_RECORDING_EXPR,
   DEFAULT_ALERT_NAMES_BY_FAMILY_AND_SENSITIVITY,
 } from 'components/constants';
-import { render, screen, waitFor, within } from '@testing-library/react';
-import React from 'react';
-import userEvent from '@testing-library/user-event';
-import { InstanceContext } from 'contexts/InstanceContext';
-import { getInstanceMock } from 'datasource/__mocks__/DataSource';
-import { AppPluginMeta, DataSourceSettings } from '@grafana/data';
-import { AlertFamily, AlertRule, AlertSensitivity, GlobalSettings } from 'types';
+import { AlertFamily, AlertRule, AlertSensitivity } from 'types';
+
 jest.mock('hooks/useAlerts', () => {
   const { defaultRules } = jest.requireActual('hooks/useAlerts');
   const useAlertsMock = jest
@@ -37,17 +38,11 @@ const setDefaultRules = jest.fn();
 const setRules = jest.fn().mockImplementation(() => Promise.resolve({ ok: true }));
 
 const renderAlerting = async ({ withAlerting = true } = {}) => {
-  const api = getInstanceMock();
-  const instance = {
-    api,
-    alertRuler: withAlerting ? ({ url: 'alertUrl' } as unknown as DataSourceSettings) : undefined,
-  };
-  const meta = {} as AppPluginMeta<GlobalSettings>;
-  return render(
-    <InstanceContext.Provider value={{ instance, loading: false, meta }}>
-      <Alerting />
-    </InstanceContext.Provider>
-  );
+  return render(<Alerting />, {
+    instance: {
+      alertRuler: withAlerting ? ({ url: 'alertUrl' } as unknown as DataSourceSettings) : undefined,
+    },
+  });
 };
 
 // const mockAlertsHook = () => {};

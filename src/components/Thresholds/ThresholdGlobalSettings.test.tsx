@@ -1,14 +1,12 @@
 import React from 'react';
-
-import { render, screen } from '@testing-library/react';
+import { act } from '@testing-library/react-hooks';
+import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { InstanceContext } from 'contexts/InstanceContext';
+
+import { render } from 'test/render';
 import ThresholdGlobalSettings from './ThresholdGlobalSettings';
-import { GrafanaInstances, GlobalSettings } from 'types';
-import { AppPluginMeta } from '@grafana/data';
 import { getInstanceMock } from 'datasource/__mocks__/DataSource';
 import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
-import { act } from '@testing-library/react-hooks';
 
 const onDismiss = jest.fn();
 const onSuccess = jest.fn();
@@ -17,10 +15,7 @@ const onError = jest.fn();
 const renderThresholdSettingsForm = (defaultValues = false) => {
   const instance = {
     api: getInstanceMock(),
-    metrics: {},
-    logs: {},
-  } as GrafanaInstances;
-  const meta = {} as AppPluginMeta<GlobalSettings>;
+  };
 
   if (defaultValues) {
     instance.api!.getTenantSettings = jest.fn(() =>
@@ -29,11 +24,12 @@ const renderThresholdSettingsForm = (defaultValues = false) => {
   }
 
   render(
-    <InstanceContext.Provider value={{ instance, loading: false, meta }}>
-      <SuccessRateContextProvider checks={[]}>
-        <ThresholdGlobalSettings onDismiss={onDismiss} onSuccess={onSuccess} onError={onError} isOpen={true} />
-      </SuccessRateContextProvider>
-    </InstanceContext.Provider>
+    <SuccessRateContextProvider checks={[]}>
+      <ThresholdGlobalSettings onDismiss={onDismiss} onSuccess={onSuccess} onError={onError} isOpen={true} />
+    </SuccessRateContextProvider>,
+    {
+      instance,
+    }
   );
 
   return instance;

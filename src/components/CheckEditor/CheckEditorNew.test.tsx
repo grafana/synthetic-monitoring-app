@@ -1,16 +1,16 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
-import { CheckType, GlobalSettings, ROUTES } from 'types';
-import { getInstanceMock } from '../../datasource/__mocks__/DataSource';
-import { InstanceContext } from 'contexts/InstanceContext';
-import { AppPluginMeta, DataSourceSettings, FeatureToggles } from '@grafana/data';
+import { screen, waitFor } from '@testing-library/react';
+import { FeatureToggles } from '@grafana/data';
+import { locationService } from '@grafana/runtime';
+import { Route, Router } from 'react-router-dom';
+
+import { render } from 'test/render';
+import { CheckType, ROUTES } from 'types';
 import { PLUGIN_URL_PATH } from 'components/constants';
 import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
-import { Route, Router } from 'react-router-dom';
 import { CheckEditor } from './CheckEditor';
 import { submitForm, fillBasicCheckFields, fillDnsValidationFields, fillTCPQueryResponseFields } from './testHelpers';
 import { BASIC_HTTP_CHECK, BASIC_PING_CHECK, BASIC_TCP_CHECK, BASIC_DNS_CHECK } from './testConstants';
-import { locationService } from '@grafana/runtime';
 
 jest.setTimeout(60000);
 
@@ -28,24 +28,16 @@ const onReturn = jest.fn();
 
 const renderNewCheckEditor = async (checkType?: CheckType) => {
   locationService.push(`${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${checkType}`);
-  const api = getInstanceMock();
-  const instance = {
-    api,
-    alertRuler: {} as DataSourceSettings,
-  };
-  const meta = {} as AppPluginMeta<GlobalSettings>;
   const featureToggles = { traceroute: true, 'multi-http': false } as unknown as FeatureToggles;
   const isFeatureEnabled = jest.fn(() => false);
 
-  render(
+  const { instance } = render(
     <FeatureFlagProvider overrides={{ featureToggles, isFeatureEnabled }}>
-      <InstanceContext.Provider value={{ instance, loading: false, meta }}>
-        <Router history={locationService.getHistory()}>
-          <Route path={`${PLUGIN_URL_PATH}${ROUTES.Checks}/new/:checkType`}>
-            <CheckEditor onReturn={onReturn} />
-          </Route>
-        </Router>
-      </InstanceContext.Provider>
+      <Router history={locationService.getHistory()}>
+        <Route path={`${PLUGIN_URL_PATH}${ROUTES.Checks}/new/:checkType`}>
+          <CheckEditor onReturn={onReturn} />
+        </Route>
+      </Router>
     </FeatureFlagProvider>
   );
 

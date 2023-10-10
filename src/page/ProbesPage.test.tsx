@@ -1,29 +1,20 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+
+import { render } from 'test/render';
 import { ProbeRouter } from './ProbeRouter';
-import { InstanceContext } from 'contexts/InstanceContext';
-import { getInstanceMock, instanceSettings } from '../datasource/__mocks__/DataSource';
-import { AppPluginMeta } from '@grafana/data';
-import { GlobalSettings, ROUTES } from 'types';
+import { ROUTES } from 'types';
 import { MemoryRouter, Route } from 'react-router-dom';
 import { PLUGIN_URL_PATH } from 'components/constants';
 jest.unmock('@grafana/runtime');
 jest.setTimeout(10000);
 
-interface RenderArgs {
-  id?: string;
-  loading?: boolean;
-}
-
-const renderProbesPage = ({ id, loading = false }: RenderArgs = {}) => {
-  const meta = {} as AppPluginMeta<GlobalSettings>;
+const renderProbesPage = () => {
   return render(
     <MemoryRouter initialEntries={[`${PLUGIN_URL_PATH}${ROUTES.Probes}`]}>
       <Route path={`${PLUGIN_URL_PATH}${ROUTES.Probes}`}>
-        <InstanceContext.Provider value={{ instance: { api: getInstanceMock(instanceSettings) }, loading, meta }}>
-          <ProbeRouter />
-        </InstanceContext.Provider>
+        <ProbeRouter />
       </Route>
     </MemoryRouter>
   );

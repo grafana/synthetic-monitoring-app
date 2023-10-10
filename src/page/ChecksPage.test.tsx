@@ -1,20 +1,18 @@
 import React from 'react';
-import { render, screen, waitFor, act } from '@testing-library/react';
+import { screen, waitFor, act } from '@testing-library/react';
 import { MemoryRouter, Route } from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
+import { FeatureToggles } from '@grafana/data';
+
+import { ROUTES } from 'types';
+import { render } from 'test/render';
 import { CheckRouter } from './CheckRouter';
-import { getInstanceMock } from 'datasource/__mocks__/DataSource';
-import { InstanceContext } from 'contexts/InstanceContext';
-import { AppPluginMeta, FeatureToggles } from '@grafana/data';
-import { GlobalSettings, ROUTES } from 'types';
 import { PLUGIN_URL_PATH } from 'components/constants';
 import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
 
 jest.setTimeout(20000);
 
 const renderChecksPage = (multiHttpEnabled = false) => {
-  const instance = getInstanceMock();
-  const meta = {} as AppPluginMeta<GlobalSettings>;
   const featureToggles = { 'multi-http': multiHttpEnabled } as unknown as FeatureToggles;
   const isFeatureEnabled = jest.fn(() => multiHttpEnabled);
 
@@ -22,9 +20,7 @@ const renderChecksPage = (multiHttpEnabled = false) => {
     <FeatureFlagProvider overrides={{ featureToggles, isFeatureEnabled }}>
       <MemoryRouter initialEntries={[`${PLUGIN_URL_PATH}${ROUTES.Checks}`]}>
         <Route path={`${PLUGIN_URL_PATH}${ROUTES.Checks}`}>
-          <InstanceContext.Provider value={{ instance: { api: instance }, loading: false, meta }}>
-            <CheckRouter />
-          </InstanceContext.Provider>
+          <CheckRouter />
         </Route>
       </MemoryRouter>
     </FeatureFlagProvider>

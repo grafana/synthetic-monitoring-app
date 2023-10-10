@@ -1,11 +1,11 @@
 import React from 'react';
-import { render, screen, waitFor, act } from '@testing-library/react';
+import { screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+
+import { render } from 'test/render';
 import ProbeEditor from './ProbeEditor';
-import { InstanceContext } from 'contexts/InstanceContext';
 import { getInstanceMock, instanceSettings } from '../../datasource/__mocks__/DataSource';
-import { AppPluginMeta } from '@grafana/data';
-import { GlobalSettings, Probe, ROUTES } from 'types';
+import { Probe, ROUTES } from 'types';
 import { MemoryRouter, Route } from 'react-router-dom';
 import { PLUGIN_URL_PATH } from '../constants';
 
@@ -59,20 +59,23 @@ const TEST_PROBE = {
 const renderProbeEditor = ({ route = '/', probes = DEFAULT_PROBES, updateProbeMock = updateProbe } = {}) => {
   const mockedInstance = getInstanceMock(instanceSettings);
   mockedInstance.updateProbe = updateProbeMock;
-  const instance = { api: mockedInstance };
-  const meta = {} as AppPluginMeta<GlobalSettings>;
-  render(
+
+  const { instance } = render(
     <MemoryRouter initialEntries={[`${PLUGIN_URL_PATH}${ROUTES.Probes}${route}`]}>
-      <InstanceContext.Provider value={{ instance, loading: false, meta }}>
-        <Route path={`${PLUGIN_URL_PATH}${ROUTES.Probes}/new`}>
-          <ProbeEditor probes={probes} onReturn={onReturn} />
-        </Route>
-        <Route path={`${PLUGIN_URL_PATH}${ROUTES.Probes}/edit/:id`}>
-          <ProbeEditor probes={probes} onReturn={onReturn} />
-        </Route>
-      </InstanceContext.Provider>
-    </MemoryRouter>
+      <Route path={`${PLUGIN_URL_PATH}${ROUTES.Probes}/new`}>
+        <ProbeEditor probes={probes} onReturn={onReturn} />
+      </Route>
+      <Route path={`${PLUGIN_URL_PATH}${ROUTES.Probes}/edit/:id`}>
+        <ProbeEditor probes={probes} onReturn={onReturn} />
+      </Route>
+    </MemoryRouter>,
+    {
+      instance: {
+        api: mockedInstance,
+      },
+    }
   );
+
   return instance;
 };
 

@@ -1,17 +1,15 @@
 import React from 'react';
-import { act, render, screen, waitFor, within } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { CheckType, GlobalSettings, ROUTES } from 'types';
-import { getInstanceMock } from '../../datasource/__mocks__/DataSource';
-import { InstanceContext } from 'contexts/InstanceContext';
-import { AppPluginMeta, DataSourceSettings, FeatureToggles } from '@grafana/data';
-import { PLUGIN_URL_PATH } from 'components/constants';
-import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
+import { locationService } from '@grafana/runtime';
 import { Route, Router } from 'react-router-dom';
+
+import { render } from 'test/render';
+import { CheckType, ROUTES } from 'types';
+import { PLUGIN_URL_PATH } from 'components/constants';
 import { MultiHttpSettingsForm } from './MultiHttpSettingsForm';
 import { submitForm } from 'components/CheckEditor/testHelpers';
 import { BASIC_CHECK_LIST } from 'components/CheckEditor/testConstants';
-import { locationService } from '@grafana/runtime';
 
 jest.setTimeout(60000);
 
@@ -20,25 +18,13 @@ const onReturn = jest.fn();
 
 const renderNewMultiForm = async () => {
   locationService.push(`${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${CheckType.MULTI_HTTP}`);
-  const api = getInstanceMock();
-  const instance = {
-    api,
-    alertRuler: {} as DataSourceSettings,
-  };
-  const meta = {} as AppPluginMeta<GlobalSettings>;
-  const featureToggles = { 'multi-http': true } as unknown as FeatureToggles;
-  const isFeatureEnabled = jest.fn(() => true);
 
-  render(
-    <FeatureFlagProvider overrides={{ featureToggles, isFeatureEnabled }}>
-      <InstanceContext.Provider value={{ instance, loading: false, meta }}>
-        <Router history={locationService.getHistory()}>
-          <Route path={`${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${CheckType.MULTI_HTTP}`}>
-            <MultiHttpSettingsForm checks={BASIC_CHECK_LIST} onReturn={onReturn} />
-          </Route>
-        </Router>
-      </InstanceContext.Provider>
-    </FeatureFlagProvider>
+  const { instance } = render(
+    <Router history={locationService.getHistory()}>
+      <Route path={`${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${CheckType.MULTI_HTTP}`}>
+        <MultiHttpSettingsForm checks={BASIC_CHECK_LIST} onReturn={onReturn} />
+      </Route>
+    </Router>
   );
 
   await waitFor(() => expect(screen.getByText('Probe options')).toBeInTheDocument());
