@@ -25,9 +25,10 @@ export function CheckTestButton({ check }: Props) {
       <Button
         type="button"
         variant="secondary"
-        disabled={testRequestInFlight || checkType === CheckType.Traceroute || !formMethods.formState.isValid}
+        disabled={testRequestInFlight || checkType === CheckType.Traceroute}
         onClick={() => {
           const values = formMethods.getValues() as CheckFormValues;
+          console.log({ values, defaultValues });
           const check = getCheckFromFormValues(values, defaultValues, checkType);
           reportEvent(FaroEvent.TEST_CHECK, { type: checkType });
           setTestRequestInFlight(true);

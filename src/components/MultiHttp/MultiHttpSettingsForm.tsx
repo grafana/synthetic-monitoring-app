@@ -35,6 +35,7 @@ import { FaroEvent, reportEvent, reportError } from 'faro';
 import { CheckFormAlert } from 'components/CheckFormAlert';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 import { CheckUsage } from 'components/CheckUsage';
+import { CheckTestButton } from 'components/CheckTestButton';
 
 interface Props {
   checks?: Check[];
@@ -292,6 +293,7 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
                   <Button type="submit" disabled={formMethods.formState.isSubmitting || submitting}>
                     Save
                   </Button>
+                  <CheckTestButton check={check} />
                   {check?.id && (
                     <Button
                       variant="destructive"
