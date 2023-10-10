@@ -1,5 +1,5 @@
 import React, { useContext, useMemo, useState } from 'react';
-import { Button, Spinner } from '@grafana/ui';
+import { Alert, Button, Modal, Spinner } from '@grafana/ui';
 import { CheckTestResultsModal } from './CheckTestResultsModal';
 import { AdHocCheckResponse, Check, CheckFormValues, CheckType } from 'types';
 import { useFormContext } from 'react-hook-form';
@@ -14,6 +14,8 @@ interface Props {
 
 export function CheckTestButton({ check }: Props) {
   const [isTestModalOpen, setTestModalOpen] = useState(false);
+  const [isErrorModalOpen, setErrorModalOpen] = useState(false);
+  const [error, setError] = useState('');
   const [testResponse, setTestResponse] = useState<AdHocCheckResponse>();
   const [testRequestInFlight, setTestRequestInFlight] = useState(false);
   const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
@@ -37,6 +39,10 @@ export function CheckTestButton({ check }: Props) {
               setTestModalOpen(true);
               setTestResponse(resp);
             })
+            .catch((err) => {
+              setErrorModalOpen(true);
+              setError(err?.data?.err ?? err?.data?.msg);
+            })
             .finally(() => {
               setTestRequestInFlight(false);
             });
@@ -52,6 +58,18 @@ export function CheckTestButton({ check }: Props) {
         }}
         testResponse={testResponse}
       />
+      <Modal
+        isOpen={isErrorModalOpen}
+        title="Error testing check"
+        onDismiss={() => {
+          setErrorModalOpen(false);
+          setError('');
+        }}
+      >
+        <Alert severity="error" title="Something went wrong running the check">
+          {error}
+        </Alert>
+      </Modal>
     </>
   );
 }
