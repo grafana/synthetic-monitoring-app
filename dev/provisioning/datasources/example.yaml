@@ -5,18 +5,19 @@
 #     access: proxy
 #     url: https://logs-prod-us-central1.grafana.net
 #     basicAuth: true
-#     basicAuthUser: <instanceID>
-#     basicAuthPassword: <grafana.com api key>
+#     basicAuthUser: <Grafana Cloud Loki instance ID>
 #     jsonData:
 #       maxLines: 1000
+#     secureJsonData:
+#       basicAuthPassword: <viewer token from grafana.com>
 
 #   - name: grafanacloud-<orgslug>-prom
 #     type: prometheus
 #     access: proxy
 #     url: https://prometheus-us-central1.grafana.net/api/prom
 #     basicAuth: true
-#     basicAuthUser: <instanceID>
+#     basicAuthUser: <Grafana Cloud Prom instance ID>
 #     jsonData:
 #       timeInterval: 1s
 #     secureJsonData:
-#       basicAuthPassword: <grafana.com api key>
+#       basicAuthPassword: <viewer token from grafana.com>
