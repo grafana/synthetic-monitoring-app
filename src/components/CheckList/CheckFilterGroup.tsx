@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { Button, Icon, Modal, useStyles2 } from '@grafana/ui';
+import { Button, Modal, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
 import { CheckFiltersType } from 'types';

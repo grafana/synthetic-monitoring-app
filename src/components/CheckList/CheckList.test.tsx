@@ -225,10 +225,10 @@ test('search matches label name', async () => {
 
 test('clicking label value adds to label filter', async () => {
   const { user } = renderCheckList();
-  const additionalFilters = await screen.findByRole('button', { name: 'Additional Filters' });
-  await user.click(additionalFilters);
   const labelValue = await screen.findAllByText('agreat: label');
-  await user.click(labelValue[1]);
+  await user.click(labelValue[0]);
+  const additionalFilters = await screen.findByRole('button', { name: /Additional filters/i });
+  await user.click(additionalFilters);
   const filterInput = await screen.findByTestId('check-label-filter');
   expect(filterInput).toHaveValue(['agreat: label']);
   const checks = await screen.findAllByTestId('check-card');
@@ -237,7 +237,7 @@ test('clicking label value adds to label filter', async () => {
 
 test('filters by check type', async () => {
   const { user } = renderCheckList();
-  const additionalFilters = await screen.findByRole('button', { name: 'Additional Filters' });
+  const additionalFilters = await screen.findByRole('button', { name: 'Additional filters' });
   await user.click(additionalFilters);
   const typeFilter = await screen.findByTestId('check-type-filter');
   await user.selectOptions(typeFilter, 'http');
@@ -247,7 +247,7 @@ test('filters by check type', async () => {
 
 test('filters by probe', async () => {
   const { user } = renderCheckList();
-  const additionalFilters = await screen.findByRole('button', { name: 'Additional Filters' });
+  const additionalFilters = await screen.findByRole('button', { name: 'Additional filters' });
   await user.click(additionalFilters);
   const probeFilter = await screen.findByTestId('probe-filter');
   await user.selectOptions(probeFilter, 'Chicago');
@@ -286,7 +286,7 @@ test('loads status filter from localStorage', async () => {
     })
   );
   const { user } = renderCheckList();
-  const additionalFilters = await screen.findByRole('button', { name: /Additional Filters \(1 active\)/i });
+  const additionalFilters = await screen.findByRole('button', { name: /Additional filters \(1 active\)/i });
   await user.click(additionalFilters);
   const statusFilter = await screen.findByTestId('check-status-filter');
   expect(statusFilter).toHaveValue('2');
@@ -307,7 +307,7 @@ test('loads type filter from localStorage', async () => {
     })
   );
   const { user } = renderCheckList();
-  const additionalFilters = await screen.findByRole('button', { name: /Additional Filters \(1 active\)/i });
+  const additionalFilters = await screen.findByRole('button', { name: /Additional filters \(1 active\)/i });
   await user.click(additionalFilters);
   const typeFilter = await screen.findByTestId('check-type-filter');
   expect(typeFilter).toHaveValue('http');
@@ -328,7 +328,7 @@ test('loads labels from localStorage', async () => {
     })
   );
   const { user } = renderCheckList();
-  const additionalFilters = await screen.findByRole('button', { name: /Additional Filters \(1 active\)/i });
+  const additionalFilters = await screen.findByRole('button', { name: /Additional filters \(1 active\)/i });
   await user.click(additionalFilters);
   const filterInput = await screen.findByTestId('check-label-filter');
   expect(filterInput).toHaveValue(['agreat: label']);
@@ -339,10 +339,10 @@ test('loads labels from localStorage', async () => {
 
 test('clicking type chiclet adds it to filter', async () => {
   const { user } = renderCheckList();
-  const additionalFilters = await screen.findByRole('button', { name: 'Additional Filters' });
-  await user.click(additionalFilters);
   const httpTypeChiclet = await screen.findAllByText('HTTP');
-  await user.click(httpTypeChiclet[1]);
+  await user.click(httpTypeChiclet[0]);
+  const additionalFilters = await screen.findByRole('button', { name: /Additional filters/i });
+  await user.click(additionalFilters);
   const typeFilter = await screen.findByTestId('check-type-filter');
   const checks = await screen.findAllByTestId('check-card');
   expect(typeFilter).toHaveValue('http');
@@ -351,10 +351,10 @@ test('clicking type chiclet adds it to filter', async () => {
 
 test('clicking status chiclet adds it to filter', async () => {
   const { user } = renderCheckList();
-  const additionalFilters = await screen.findByRole('button', { name: 'Additional Filters' });
-  await user.click(additionalFilters);
   const disabledChiclet = await screen.findAllByText('Disabled');
-  await user.click(disabledChiclet[1]);
+  await user.click(disabledChiclet[0]);
+  const additionalFilters = await screen.findByRole('button', { name: /Additional filters/i });
+  await user.click(additionalFilters);
   const statusFilter = await screen.findByTestId('check-status-filter');
   const checks = await screen.findAllByTestId('check-card');
   expect(statusFilter).toHaveValue('2');
@@ -466,7 +466,7 @@ test('select all performs enable action on all visible checks', async () => {
 
 test('cascader adds labels to label filter', async () => {
   const { user } = renderCheckList();
-  const additionalFilters = await screen.findByRole('button', { name: 'Additional Filters' });
+  const additionalFilters = await screen.findByRole('button', { name: 'Additional filters' });
   await user.click(additionalFilters);
   const cascader = await screen.findByRole('button', { name: 'Labels' });
   await user.click(cascader);

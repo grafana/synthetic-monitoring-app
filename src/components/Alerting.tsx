@@ -93,7 +93,6 @@ export const Alerting: FC = () => {
       </div>
     );
   }
-  console.log(config);
 
   return (
     <div>
