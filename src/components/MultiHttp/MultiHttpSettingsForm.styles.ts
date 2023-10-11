@@ -51,4 +51,7 @@ export const getMultiHttpFormStyles = (theme: GrafanaTheme2) => ({
   form: css`
     width: 100%;
   `,
+  requestTargetInput: css`
+    min-width: ${theme.spacing(40)};
+  `,
 });
