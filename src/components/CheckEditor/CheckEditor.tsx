@@ -175,7 +175,7 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
               name="publishAdvancedMetrics"
               id="publishAdvancedMetrics"
               label="Publish full set of metrics"
-              description={'Metrics are reduced by default'}
+              description="Histogram buckets are removed by default in order to reduce the amount of active series generated per check. If you want to calculate Apdex scores or visualize heatmaps, publish the full set of metrics."
             />
             <CheckUsage />
             <CheckSettings
