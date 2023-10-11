@@ -45,9 +45,6 @@ export function ConfigPage() {
   return (
     <div>
       <div>
-        <div>
-          <h4>Synthetic Monitoring App</h4>
-        </div>
         <p>
           Synthetic Monitoring is a blackbox monitoring solution provided as part of{' '}
           <a

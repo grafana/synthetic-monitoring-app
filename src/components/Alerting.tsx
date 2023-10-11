@@ -93,6 +93,7 @@ export const Alerting: FC = () => {
       </div>
     );
   }
+  console.log(config);
 
   return (
     <div>
@@ -100,7 +101,7 @@ export const Alerting: FC = () => {
       <p>
         View and edit default alerts for Synthetic Monitoring here. To tie one of these alerts to a check, you must
         select the alert sensitivity from the Alerting section of the check form when creating a check.{' '}
-        <a href="https://grafana.com/docs/grafana-cloud/synthetic-monitoring/#alerting">
+        <a href="https://grafana.com/docs/grafana-cloud/synthetic-monitoring/#alerting" className={styles.link}>
           Learn more about alerting for Synthetic Monitoring.
         </a>
       </p>
