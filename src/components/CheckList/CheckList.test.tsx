@@ -132,6 +132,10 @@ const renderCheckList = ({ checks = defaultChecks } = {} as RenderChecklist) => 
   );
 };
 
+beforeEach(() => {
+  localStorage.clear();
+});
+
 test('renders empty state', async () => {
   renderCheckList({ checks: [] });
   const emptyWarning = await screen.findByText('This account does not currently have any checks configured', {
@@ -249,6 +253,88 @@ test('filters by probe', async () => {
   await user.selectOptions(probeFilter, 'Chicago');
   const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(2);
+});
+
+test('loads search from localStorage', async () => {
+  localStorage.setItem(
+    'checkFilters',
+    JSON.stringify({
+      search: 'chimichurri',
+      labels: [],
+      type: 'all',
+      status: { label: 'All', value: 0 },
+      probes: [],
+    })
+  );
+  renderCheckList();
+  const searchInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
+  expect(searchInput).toHaveValue('chimichurri');
+
+  const checks = await screen.findAllByTestId('check-card');
+  expect(checks.length).toBe(1);
+});
+
+test('loads status filter from localStorage', async () => {
+  localStorage.setItem(
+    'checkFilters',
+    JSON.stringify({
+      search: '',
+      labels: [],
+      type: 'all',
+      status: { label: 'Disabled', value: 2 },
+      probes: [],
+    })
+  );
+  const { user } = renderCheckList();
+  const additionalFilters = await screen.findByRole('button', { name: /Additional Filters \(1 active\)/i });
+  await user.click(additionalFilters);
+  const statusFilter = await screen.findByTestId('check-status-filter');
+  expect(statusFilter).toHaveValue('2');
+
+  const checks = await screen.findAllByTestId('check-card');
+  expect(checks.length).toBe(1);
+});
+
+test('loads type filter from localStorage', async () => {
+  localStorage.setItem(
+    'checkFilters',
+    JSON.stringify({
+      search: '',
+      labels: [],
+      type: 'http',
+      status: { label: 'All', value: 0 },
+      probes: [],
+    })
+  );
+  const { user } = renderCheckList();
+  const additionalFilters = await screen.findByRole('button', { name: /Additional Filters \(1 active\)/i });
+  await user.click(additionalFilters);
+  const typeFilter = await screen.findByTestId('check-type-filter');
+  expect(typeFilter).toHaveValue('http');
+
+  const checks = await screen.findAllByTestId('check-card');
+  expect(checks.length).toBe(1);
+});
+
+test('loads labels from localStorage', async () => {
+  localStorage.setItem(
+    'checkFilters',
+    JSON.stringify({
+      search: '',
+      labels: ['agreat: label'],
+      type: 'all',
+      status: { label: 'All', value: 0 },
+      probes: [],
+    })
+  );
+  const { user } = renderCheckList();
+  const additionalFilters = await screen.findByRole('button', { name: /Additional Filters \(1 active\)/i });
+  await user.click(additionalFilters);
+  const filterInput = await screen.findByTestId('check-label-filter');
+  expect(filterInput).toHaveValue(['agreat: label']);
+
+  const checks = await screen.findAllByTestId('check-card');
+  expect(checks.length).toBe(1);
 });
 
 test('clicking type chiclet adds it to filter', async () => {

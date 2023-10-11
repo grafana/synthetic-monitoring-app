@@ -7,7 +7,7 @@ import { AppEvents, GrafanaTheme2, OrgRole, SelectableValue } from '@grafana/dat
 import { config } from '@grafana/runtime';
 import { Button, ButtonCascader, Checkbox, Icon, InlineSwitch, Pagination, Select, useStyles2 } from '@grafana/ui';
 import { BulkEditModal } from 'components/BulkEditModal';
-import { CheckFilters, defaultFilters } from 'components/CheckFilters';
+import { CheckFilters, defaultFilters, getDefaultFilters } from 'components/CheckFilters';
 import { ChecksContextProvider } from 'components/ChecksContextProvider';
 import { PluginPage } from 'components/PluginPage';
 import { SuccessRateContext, SuccessRateTypes } from 'contexts/SuccessRateContext';
@@ -113,7 +113,7 @@ interface Props {
 }
 
 export const CheckList = ({ instance, checks, onCheckUpdate }: Props) => {
-  const [checkFilters, setCheckFilters] = useState<CheckFiltersType>(defaultFilters);
+  const [checkFilters, setCheckFilters] = useState<CheckFiltersType>(getDefaultFilters());
   const [filteredChecks, setFilteredChecks] = useState<FilteredCheck[] | []>([]);
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -177,21 +177,26 @@ export const CheckList = ({ instance, checks, onCheckUpdate }: Props) => {
 
   const handleResetFilters = () => {
     setCheckFilters(defaultFilters);
+    localStorage.removeItem('checkFilters');
   };
 
   const handleLabelSelect = (label: Label) => {
     setCheckFilters((cf) => {
-      return {
+      const updated = {
         ...cf,
         labels: [...cf.labels, `${label.name}: ${label.value}`],
       };
+      localStorage.setItem('checkFilters', JSON.stringify(updated));
+      return updated;
     });
     setCurrentPage(1);
   };
 
   const handleTypeSelect = (checkType: CheckType) => {
     setCheckFilters((cf) => {
-      return { ...cf, type: checkType };
+      const updated = { ...cf, type: checkType };
+      localStorage.setItem('checkFilters', JSON.stringify(updated));
+      return updated;
     });
     setCurrentPage(1);
   };
@@ -201,10 +206,12 @@ export const CheckList = ({ instance, checks, onCheckUpdate }: Props) => {
     const option = CHECK_LIST_STATUS_OPTIONS.find(({ value }) => value === status);
     if (option) {
       setCheckFilters((cf) => {
-        return {
+        const updated = {
           ...cf,
           status: option,
         };
+        localStorage.setItem('checkFilters', JSON.stringify(updated));
+        return updated;
       });
       setCurrentPage(1);
     }
@@ -318,6 +325,7 @@ export const CheckList = ({ instance, checks, onCheckUpdate }: Props) => {
                 checkFilters={checkFilters}
                 onChange={(filters: CheckFiltersType) => {
                   setCheckFilters(filters);
+                  localStorage.setItem('checkFilters', JSON.stringify(filters));
                 }}
               />
               {hasRole(OrgRole.Editor) && (

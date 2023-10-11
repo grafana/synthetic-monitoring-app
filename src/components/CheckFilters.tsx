@@ -41,6 +41,18 @@ export const defaultFilters: CheckFiltersType = {
   probes: [],
 };
 
+export const getDefaultFilters = (): CheckFiltersType => {
+  const storedFilters = localStorage.getItem('checkFilters');
+  if (storedFilters) {
+    try {
+      return JSON.parse(storedFilters) as CheckFiltersType;
+    } catch (e) {
+      return defaultFilters;
+    }
+  }
+  return defaultFilters;
+};
+
 export function CheckFilters({
   handleResetFilters,
   onChange,

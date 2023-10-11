@@ -33,10 +33,16 @@ const matchesSearchFilter = ({ target, job, labels }: Check, searchFilter: strin
 };
 
 const matchesLabelFilter = ({ labels }: Check, labelFilters: string[]) => {
-  if (labelFilters.length === 0) {
+  if (!labelFilters || labelFilters.length === 0) {
     return true;
   }
-  return labels.some(({ name, value }) => labelFilters.some((filter) => filter === `${name}: ${value}`));
+  const result = labels?.some(({ name, value }) => {
+    const filtersResult = labelFilters.some((filter) => {
+      return filter === `${name}: ${value}`;
+    });
+    return filtersResult;
+  });
+  return result;
 };
 
 const matchesStatusFilter = ({ enabled }: Check, { value }: SelectableValue) => {

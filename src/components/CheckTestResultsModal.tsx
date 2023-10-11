@@ -13,7 +13,7 @@ interface Props {
 }
 
 function buildLogsDf(logs: Array<Record<string, any>>) {
-  const tsValues = new Array(logs.length).fill(Date.now());
+  const tsValues = new Array(logs?.length).fill(Date.now());
   const fields: Record<string, any> = {
     // a timestamp is required for the panel to render. we don't care about/have a timestamp so we just fill with the time for right now
     ts: {
@@ -119,7 +119,12 @@ export function CheckTestResultsModal({ testResponse, isOpen, onDismiss }: Props
       const logsStr = item.values?.[0]?.[1];
       try {
         const info = JSON.parse(logsStr);
-        const df = buildLogsDf(info.logs);
+        let df;
+        if (!info.logs) {
+          df = buildLogsDf([{ level: 'error', msg: 'There was an error running the test' }]);
+        } else {
+          df = buildLogsDf(info.logs);
+        }
         info.logs = df;
         if (!resultsByProbe[`${info.probe}${testResponse.id}`] && info.id === testResponse.id) {
           setResultsByProbe({ ...resultsByProbe, [`${info.probe}${testResponse.id}`]: info });
@@ -140,7 +145,7 @@ export function CheckTestResultsModal({ testResponse, isOpen, onDismiss }: Props
       }}
     >
       <p>Tests will run on up to 5 randomly selected probes</p>
-      {testResponse?.probes.map((testProbe) => {
+      {testResponse?.probes?.map((testProbe) => {
         const probe = probes?.find((probe) => probe.id === testProbe);
         const resultKey = `${probe?.name}${testResponse.id}`;
         const result = resultsByProbe[resultKey];

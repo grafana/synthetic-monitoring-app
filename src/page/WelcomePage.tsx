@@ -182,7 +182,6 @@ export const WelcomePage: FC<Props> = () => {
       const metricsStatus = ensureNameAndUidMatch(metricsByName, metricsByUid);
       const logsStatus = ensureNameAndUidMatch(logsByName, logsByUid);
 
-      console.log({ metricsStatus, logsStatus });
       if (metricsStatus === DatasourceStatus.NotFound) {
         throw new Error('Invalid plugin configuration. Could not find a metrics datasource');
       }
