@@ -1,6 +1,5 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 
 import { render } from 'test/render';
 import QueryParams from './QueryParams';
@@ -33,19 +32,22 @@ test('Should handle initial value', async () => {
 
 test('Returns a query string onChange', async () => {
   const target = new URL('http://example.com');
-  render(<QueryParams target={target} onChange={onChange} />);
+  const { user } = render(<QueryParams target={target} onChange={onChange} />);
   const queryNameInput = await screen.findByPlaceholderText('Key');
-  await userEvent.paste(queryNameInput, 'queryName');
+  queryNameInput.focus();
+  await user.paste('queryName');
   const queryValueInput = await screen.findByPlaceholderText('Value');
-  await userEvent.paste(queryValueInput, 'queryValue');
+
+  queryValueInput.focus();
+  await user.paste('queryValue');
   expect(onChange).toHaveBeenLastCalledWith('http://example.com/?queryName=queryValue');
 });
 
 test('Delete button deletes a query param', async () => {
   const target = new URL('https://example.com?robert=bob&stephen=steve&jim=james');
-  render(<QueryParams target={target} onChange={onChange} />);
+  const { user } = render(<QueryParams target={target} onChange={onChange} />);
   const buttons = await screen.findAllByRole('button');
-  userEvent.click(buttons[1]);
+  await user.click(buttons[1]);
   await waitFor(() => expect(onChange).toHaveBeenCalledTimes(1));
   expect(onChange).toHaveBeenCalledWith('https://example.com/?robert=bob&jim=james');
 });

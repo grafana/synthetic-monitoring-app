@@ -1,7 +1,7 @@
 import React from 'react';
-import userEvent from '@testing-library/user-event';
 import { DataSourceSettings } from '@grafana/data';
 import { screen, waitFor, within } from '@testing-library/react';
+import { type UserEvent } from '@testing-library/user-event';
 
 import { render } from 'test/render';
 import { Alerting } from 'components/Alerting';
@@ -37,7 +37,7 @@ jest.setTimeout(30000);
 const setDefaultRules = jest.fn();
 const setRules = jest.fn().mockImplementation(() => Promise.resolve({ ok: true }));
 
-const renderAlerting = async ({ withAlerting = true } = {}) => {
+const renderAlerting = ({ withAlerting = true } = {}) => {
   return render(<Alerting />, {
     instance: {
       alertRuler: withAlerting ? ({ url: 'alertUrl' } as unknown as DataSourceSettings) : undefined,
@@ -47,63 +47,64 @@ const renderAlerting = async ({ withAlerting = true } = {}) => {
 
 // const mockAlertsHook = () => {};
 
-const toggleSection = async (sectionName: string): Promise<HTMLElement> => {
+const toggleSection = async (sectionName: string, user: UserEvent): Promise<HTMLElement> => {
   const sectionHeader = await screen.findByText(sectionName);
-  userEvent.click(sectionHeader);
+  await user.click(sectionHeader);
   return sectionHeader.parentElement?.parentElement ?? new HTMLElement();
 };
 
 it('adds default alerts and edits alerts', async () => {
   // mockAlertsHook();
-  await renderAlerting();
+  const { user } = renderAlerting();
   const defaultAlertButton = await screen.findByRole('button', { name: 'Populate default alerts' });
-  userEvent.click(defaultAlertButton);
+  await user.click(defaultAlertButton);
   await waitFor(() => expect(defaultAlertButton).not.toBeDisabled());
   expect(setDefaultRules).toHaveBeenCalledTimes(1);
 
   const button = await screen.findByRole('button', {
     name: DEFAULT_ALERT_NAMES_BY_FAMILY_AND_SENSITIVITY[AlertFamily.ProbeSuccess][AlertSensitivity.High],
   });
-  userEvent.click(button);
+  await user.click(button);
 
   const alertNameInput = await screen.findByLabelText('Alert name');
   expect(alertNameInput).toHaveValue(
     DEFAULT_ALERT_NAMES_BY_FAMILY_AND_SENSITIVITY[AlertFamily.ProbeSuccess][AlertSensitivity.High]
   );
-  await userEvent.clear(alertNameInput);
-  await userEvent.type(alertNameInput, 'A different name');
+  await user.clear(alertNameInput);
+  await user.type(alertNameInput, 'A different name');
 
   const probePercentage = await screen.findByTestId('probePercentage');
   expect(probePercentage).toHaveValue(95);
-  await userEvent.clear(probePercentage);
-  await userEvent.type(probePercentage, '25');
+  await user.clear(probePercentage);
+  await user.type(probePercentage, '25');
 
   const timeCount = await screen.findByTestId('timeCount');
   expect(timeCount).toHaveValue(5);
-  await userEvent.clear(timeCount);
-  await userEvent.type(timeCount, '2');
+  await user.clear(timeCount);
+  await user.type(timeCount, '2');
 
   const timeUnit = await screen.findAllByTestId('select');
-  userEvent.selectOptions(timeUnit[1], 's');
+  await user.selectOptions(timeUnit[1], 's');
 
-  const labels = await toggleSection('Labels');
+  const labels = await toggleSection('Labels', user);
   const addLabelButton = await within(labels).findByRole('button', { name: 'Add label' });
-  userEvent.click(addLabelButton);
+  await user.click(addLabelButton);
   const labelNameInputs = await within(labels).findAllByPlaceholderText('Name');
-  await userEvent.type(labelNameInputs[labelNameInputs.length - 1], 'a_label_name');
+  await user.type(labelNameInputs[labelNameInputs.length - 1], 'a_label_name');
   const labelValueInputs = await within(labels).findAllByPlaceholderText('Value');
-  await userEvent.type(labelValueInputs[labelValueInputs.length - 1], 'a_label_value');
+  await user.type(labelValueInputs[labelValueInputs.length - 1], 'a_label_value');
 
-  const annotations = await toggleSection('Annotations');
+  const annotations = await toggleSection('Annotations', user);
   const addAnnotationsButton = await within(annotations).findByRole('button', { name: 'Add annotation' });
-  userEvent.click(addAnnotationsButton);
+  await user.click(addAnnotationsButton);
   const annotationNameInputs = await within(annotations).findAllByPlaceholderText('Name');
-  await userEvent.type(annotationNameInputs[annotationNameInputs.length - 1], 'an_annotation_name');
+  await user.type(annotationNameInputs[annotationNameInputs.length - 1], 'an_annotation_name');
   const annotationValueInputs = await within(annotations).findAllByPlaceholderText('Value');
-  userEvent.paste(annotationValueInputs[annotationValueInputs.length - 1], 'an annotation value');
+  annotationValueInputs[annotationValueInputs.length - 1].focus();
+  await user.paste('an annotation value');
 
   const submitButton = await screen.findByRole('button', { name: 'Save alert' });
-  userEvent.click(submitButton);
+  await user.click(submitButton);
   await waitFor(() => {
     expect(setRules).toHaveBeenCalledTimes(1);
   });

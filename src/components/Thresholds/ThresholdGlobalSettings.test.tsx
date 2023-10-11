@@ -1,7 +1,5 @@
 import React from 'react';
-import { act } from '@testing-library/react-hooks';
 import { screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 
 import { render } from 'test/render';
 import ThresholdGlobalSettings from './ThresholdGlobalSettings';
@@ -18,12 +16,12 @@ const renderThresholdSettingsForm = (defaultValues = false) => {
   };
 
   if (defaultValues) {
-    instance.api!.getTenantSettings = jest.fn(() =>
+    instance.api.getTenantSettings = jest.fn(() =>
       Promise.resolve({ thresholds: { uptime: {}, reachability: {}, latency: {} } })
     );
   }
 
-  render(
+  return render(
     <SuccessRateContextProvider checks={[]}>
       <ThresholdGlobalSettings onDismiss={onDismiss} onSuccess={onSuccess} onError={onError} isOpen={true} />
     </SuccessRateContextProvider>,
@@ -31,8 +29,6 @@ const renderThresholdSettingsForm = (defaultValues = false) => {
       instance,
     }
   );
-
-  return instance;
 };
 
 test('shows the form', async () => {
@@ -56,11 +52,10 @@ test('has default values in form', async () => {
 });
 
 test('submits the form', async () => {
-  const instance = renderThresholdSettingsForm();
-  await act(async () => {
-    const saveButton = await screen.findByTestId('threshold-save');
-    userEvent.click(saveButton);
-  });
+  const { instance, user } = renderThresholdSettingsForm();
+  const saveButton = await screen.findByTestId('threshold-save');
+  await user.click(saveButton);
+
   expect(instance.api?.updateTenantSettings).toHaveBeenCalledWith({
     thresholds: {
       uptime: { upperLimit: 94.4, lowerLimit: 75 },

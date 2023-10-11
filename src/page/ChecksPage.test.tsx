@@ -1,7 +1,6 @@
 import React from 'react';
-import { screen, waitFor, act } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route } from 'react-router-dom';
-import userEvent from '@testing-library/user-event';
 import { FeatureToggles } from '@grafana/data';
 
 import { ROUTES } from 'types';
@@ -16,7 +15,7 @@ const renderChecksPage = (multiHttpEnabled = false) => {
   const featureToggles = { 'multi-http': multiHttpEnabled } as unknown as FeatureToggles;
   const isFeatureEnabled = jest.fn(() => multiHttpEnabled);
 
-  render(
+  return render(
     <FeatureFlagProvider overrides={{ featureToggles, isFeatureEnabled }}>
       <MemoryRouter initialEntries={[`${PLUGIN_URL_PATH}${ROUTES.Checks}`]}>
         <Route path={`${PLUGIN_URL_PATH}${ROUTES.Checks}`}>
@@ -33,9 +32,9 @@ test('renders checks', async () => {
 });
 
 test('renders check selection page with multi-http feature flag is ON', async () => {
-  renderChecksPage(true);
+  const { user } = renderChecksPage(true);
   await waitFor(() => screen.getByRole('button', { name: 'Add new check' }));
-  act(() => userEvent.click(screen.getByRole('button', { name: 'Add new check' })));
+  await user.click(screen.getByRole('button', { name: 'Add new check' }));
   expect(await screen.findByRole('button', { name: 'HTTP' })).toBeInTheDocument();
   expect(await screen.findByRole('button', { name: 'MULTIHTTP' })).toBeInTheDocument();
   expect(await screen.findByRole('button', { name: 'Traceroute' })).toBeInTheDocument();
@@ -44,9 +43,9 @@ test('renders check selection page with multi-http feature flag is ON', async ()
 });
 
 test('renders check selection page without multi-http feature flag is OFF', async () => {
-  renderChecksPage(false);
+  const { user } = renderChecksPage(false);
   await waitFor(() => screen.getByRole('button', { name: 'Add new check' }));
-  act(() => userEvent.click(screen.getByRole('button', { name: 'Add new check' })));
+  await user.click(screen.getByRole('button', { name: 'Add new check' }));
   expect(await screen.queryByRole('button', { name: 'HTTP' })).toBeInTheDocument();
   expect(await screen.queryByRole('button', { name: 'Traceroute' })).toBeInTheDocument();
   expect(await screen.queryByRole('button', { name: 'PING' })).toBeInTheDocument();
@@ -55,8 +54,8 @@ test('renders check selection page without multi-http feature flag is OFF', asyn
 });
 
 test('renders check editor existing check', async () => {
-  renderChecksPage();
+  const { user } = renderChecksPage();
   const edit = await screen.findByTestId('edit-check-button');
-  userEvent.click(edit);
+  await user.click(edit);
   await waitFor(() => expect(screen.getByText('Editing a jobname')).toBeInTheDocument());
 });

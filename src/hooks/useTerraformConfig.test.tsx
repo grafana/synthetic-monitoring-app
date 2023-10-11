@@ -1,7 +1,6 @@
 import React, { PropsWithChildren } from 'react';
-import { renderHook } from '@testing-library/react-hooks';
 import { AppPluginMeta } from '@grafana/data';
-import { waitFor } from '@testing-library/react';
+import { renderHook, waitFor } from '@testing-library/react';
 
 import { InstanceContext } from 'contexts/InstanceContext';
 import { getInstanceMock } from 'datasource/__mocks__/DataSource';

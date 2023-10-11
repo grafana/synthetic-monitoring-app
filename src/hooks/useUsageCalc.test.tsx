@@ -1,5 +1,5 @@
 import React, { PropsWithChildren } from 'react';
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act } from '@testing-library/react';
 
 import { createWrapper } from 'test/render';
 import { CheckInfoContextProvider } from 'components/CheckInfoContextProvider';
@@ -17,7 +17,7 @@ const renderUsage = async (check: Partial<Check>) => {
     </Wrapper>
   );
   const hook = renderHook(() => useUsageCalc(check), { wrapper });
-  await act(async () => hook.waitForNextUpdate());
+  await act(async () => hook.result);
   return hook;
 };
 

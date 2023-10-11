@@ -31,7 +31,7 @@ const renderNewCheckEditor = async (checkType?: CheckType) => {
   const featureToggles = { traceroute: true, 'multi-http': false } as unknown as FeatureToggles;
   const isFeatureEnabled = jest.fn(() => false);
 
-  const { instance } = render(
+  const res = render(
     <FeatureFlagProvider overrides={{ featureToggles, isFeatureEnabled }}>
       <Router history={locationService.getHistory()}>
         <Route path={`${PLUGIN_URL_PATH}${ROUTES.Checks}/new/:checkType`}>
@@ -42,7 +42,7 @@ const renderNewCheckEditor = async (checkType?: CheckType) => {
   );
 
   await waitFor(() => expect(screen.getByText('Probe options')).toBeInTheDocument());
-  return instance;
+  return res;
 };
 
 describe('new checks', () => {
@@ -93,40 +93,38 @@ describe('new checks', () => {
   });
 
   it('can create a new HTTP check', async () => {
-    const instance = await renderNewCheckEditor(CheckType.HTTP);
+    const { instance, user } = await renderNewCheckEditor(CheckType.HTTP);
 
-    await fillBasicCheckFields('Job name', 'https://grafana.com');
-
-    await submitForm(onReturn);
+    await fillBasicCheckFields('Job name', 'https://grafana.com', user);
+    await submitForm(onReturn, user);
     expect(instance.api.addCheck).toHaveBeenCalledWith(BASIC_HTTP_CHECK);
   });
 
   it('can create a new PING check', async () => {
-    const instance = await renderNewCheckEditor(CheckType.PING);
+    const { instance, user } = await renderNewCheckEditor(CheckType.PING);
 
-    await fillBasicCheckFields('Job name', 'grafana.com');
-
-    await submitForm(onReturn);
+    await fillBasicCheckFields('Job name', 'grafana.com', user);
+    await submitForm(onReturn, user);
     expect(instance.api.addCheck).toHaveBeenCalledWith(BASIC_PING_CHECK);
   });
 
   it('can create a new TCP check', async () => {
-    const instance = await renderNewCheckEditor(CheckType.TCP);
+    const { instance, user } = await renderNewCheckEditor(CheckType.TCP);
 
-    await fillBasicCheckFields('Job name', 'grafana.com:43');
+    await fillBasicCheckFields('Job name', 'grafana.com:43', user);
 
-    await fillTCPQueryResponseFields();
-    await submitForm(onReturn);
+    await fillTCPQueryResponseFields(user);
+    await submitForm(onReturn, user);
     expect(instance.api.addCheck).toHaveBeenCalledWith(BASIC_TCP_CHECK);
   });
 
   it('can create a new DNS check', async () => {
-    const instance = await renderNewCheckEditor(CheckType.DNS);
+    const { instance, user } = await renderNewCheckEditor(CheckType.DNS);
 
-    await fillBasicCheckFields('Job name', 'grafana.com');
-    await fillDnsValidationFields();
+    await fillBasicCheckFields('Job name', 'grafana.com', user);
+    await fillDnsValidationFields(user);
 
-    await submitForm(onReturn);
+    await submitForm(onReturn, user);
     expect(instance.api.addCheck).toHaveBeenCalledWith(BASIC_DNS_CHECK);
   });
 });

@@ -1,6 +1,5 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 
 import { render } from 'test/render';
 import { ProbeList } from './ProbeList';
@@ -38,7 +37,7 @@ const defaultProbes = [
 ];
 
 const renderProbeList = ({ probes = defaultProbes } = {}) => {
-  render(<ProbeList probes={probes} onAddNew={onAddNew} onSelectProbe={onSelectProbe} />);
+  return render(<ProbeList probes={probes} onAddNew={onAddNew} onSelectProbe={onSelectProbe} />);
 };
 
 it('renders offline probes', async () => {
@@ -65,15 +64,15 @@ it('renders labels', async () => {
 });
 
 it('handles probe click', async () => {
-  renderProbeList();
+  const { user } = renderProbeList();
   const tacosProbe = await screen.findByText('tacos');
-  userEvent.click(tacosProbe);
+  await user.click(tacosProbe);
   expect(onSelectProbe).toHaveBeenCalledWith(35);
 });
 
 it('handles add new', async () => {
-  renderProbeList();
+  const { user } = renderProbeList();
   const addNewButton = await screen.findByRole('button', { name: 'New' });
-  userEvent.click(addNewButton);
+  await user.click(addNewButton);
   expect(onAddNew).toHaveBeenCalledTimes(1);
 });

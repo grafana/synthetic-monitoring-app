@@ -1,5 +1,4 @@
 import React from 'react';
-import userEvent from '@testing-library/user-event';
 import { screen } from '@testing-library/react';
 
 import { render } from 'test/render';
@@ -10,9 +9,9 @@ const renderTerraformConfig = async () => {
 };
 
 const openConfig = async () => {
-  await renderTerraformConfig();
+  const { user } = await renderTerraformConfig();
   const launchButton = await screen.findByRole('button', { name: 'Generate config' });
-  userEvent.click(launchButton);
+  await user.click(launchButton);
   const modalHeader = await screen.findByRole('heading', { name: 'Terraform config' });
   expect(modalHeader).toBeInTheDocument();
 };

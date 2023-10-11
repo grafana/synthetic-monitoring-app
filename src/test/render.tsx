@@ -1,6 +1,7 @@
 import React, { type ReactElement, type ReactNode } from 'react';
 import { render, type RenderOptions } from '@testing-library/react';
 import { AppPluginMeta, DataSourceSettings } from '@grafana/data';
+import userEventLib from '@testing-library/user-event';
 
 import { GlobalSettings, GrafanaInstances } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
@@ -32,8 +33,10 @@ type CustomRenderOptions = Omit<RenderOptions, 'wrapper'> & {
 const customRender = (ui: ReactElement, options: CustomRenderOptions = {}) => {
   const { instance: instanceOptions, ...rest } = options;
   const instance = createInstance(instanceOptions);
+  const user = userEventLib.setup();
 
   return {
+    user,
     instance,
     history,
     ...render(ui, {

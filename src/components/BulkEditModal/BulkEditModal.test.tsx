@@ -1,7 +1,5 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { act } from '@testing-library/react-hooks';
 
 import { render, createInstance } from 'test/render';
 import { IpVersion, FilteredCheck } from 'types';
@@ -90,7 +88,7 @@ const selectedChecksMultiProbe = jest.fn().mockReturnValue([
 const renderBulkEditModal = (action: 'add' | 'remove' | null, selectedChecks: () => FilteredCheck[]) => {
   const instance = createInstance();
 
-  render(
+  return render(
     <SuccessRateContextProvider checks={[]}>
       <BulkEditModal
         onDismiss={onDismiss}
@@ -106,8 +104,6 @@ const renderBulkEditModal = (action: 'add' | 'remove' | null, selectedChecks: ()
       instance,
     }
   );
-
-  return instance;
 };
 
 test('shows the modal', async () => {
@@ -119,15 +115,14 @@ test('shows the modal', async () => {
 });
 
 test('successfully adds probes', async () => {
-  const instance = renderBulkEditModal('add', selectedChecksSingleProbe);
-  await act(async () => {
-    const burritoProbe = await screen.findByText('burritos');
-    const tacoProbe = await screen.findByText('tacos');
-    userEvent.click(burritoProbe);
-    userEvent.click(tacoProbe);
-    const submitButton = await screen.findByText('Submit');
-    userEvent.click(submitButton);
-  });
+  const { instance, user } = renderBulkEditModal('add', selectedChecksSingleProbe);
+  const burritoProbe = await screen.findByText('burritos');
+  const tacoProbe = await screen.findByText('tacos');
+  await user.click(burritoProbe);
+  await user.click(tacoProbe);
+  const submitButton = await screen.findByText('Submit');
+  await user.click(submitButton);
+
   expect(instance.api?.bulkUpdateChecks).toHaveBeenCalledWith([
     {
       job: '',
@@ -167,14 +162,13 @@ test('successfully adds probes', async () => {
 });
 
 test('successfully removes probes', async () => {
-  const instance = renderBulkEditModal('remove', selectedChecksMultiProbe);
+  const { instance, user } = renderBulkEditModal('remove', selectedChecksMultiProbe);
   expect(instance.api?.listProbes).toHaveBeenCalled();
-  await act(async () => {
-    const burritoProbe = await screen.findByText('burritos');
-    userEvent.click(burritoProbe);
-    const submitButton = await screen.findByText('Submit');
-    userEvent.click(submitButton);
-  });
+  const burritoProbe = await screen.findByText('burritos');
+  await user.click(burritoProbe);
+  const submitButton = await screen.findByText('Submit');
+  await user.click(submitButton);
+
   expect(instance.api?.bulkUpdateChecks).toHaveBeenCalledWith([
     {
       job: '',
