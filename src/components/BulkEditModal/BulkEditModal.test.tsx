@@ -1,14 +1,10 @@
 import React from 'react';
+import { screen } from '@testing-library/react';
 
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { InstanceContext } from 'contexts/InstanceContext';
+import { render, createInstance } from 'test/render';
+import { IpVersion, FilteredCheck } from 'types';
 import BulkEditModal from './BulkEditModal';
-import { GrafanaInstances, GlobalSettings, IpVersion, FilteredCheck } from 'types';
-import { AppPluginMeta } from '@grafana/data';
-import { getInstanceMock } from 'datasource/__mocks__/DataSource';
 import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
-import { act } from '@testing-library/react-hooks';
 
 const onDismiss = jest.fn();
 const onSuccess = jest.fn();
@@ -90,30 +86,24 @@ const selectedChecksMultiProbe = jest.fn().mockReturnValue([
 ]);
 
 const renderBulkEditModal = (action: 'add' | 'remove' | null, selectedChecks: () => FilteredCheck[]) => {
-  const instance = {
-    api: getInstanceMock(),
-    metrics: {},
-    logs: {},
-  } as GrafanaInstances;
-  const meta = {} as AppPluginMeta<GlobalSettings>;
+  const instance = createInstance();
 
-  render(
-    <InstanceContext.Provider value={{ instance, loading: false, meta }}>
-      <SuccessRateContextProvider checks={[]}>
-        <BulkEditModal
-          onDismiss={onDismiss}
-          onSuccess={onSuccess}
-          onError={onError}
-          selectedChecks={selectedChecks}
-          instance={instance}
-          action={action}
-          isOpen={true}
-        />
-      </SuccessRateContextProvider>
-    </InstanceContext.Provider>
+  return render(
+    <SuccessRateContextProvider checks={[]}>
+      <BulkEditModal
+        onDismiss={onDismiss}
+        onSuccess={onSuccess}
+        onError={onError}
+        selectedChecks={selectedChecks}
+        instance={instance}
+        action={action}
+        isOpen={true}
+      />
+    </SuccessRateContextProvider>,
+    {
+      instance,
+    }
   );
-
-  return instance;
 };
 
 test('shows the modal', async () => {
@@ -125,15 +115,14 @@ test('shows the modal', async () => {
 });
 
 test('successfully adds probes', async () => {
-  const instance = renderBulkEditModal('add', selectedChecksSingleProbe);
-  await act(async () => {
-    const burritoProbe = await screen.findByText('burritos');
-    const tacoProbe = await screen.findByText('tacos');
-    userEvent.click(burritoProbe);
-    userEvent.click(tacoProbe);
-    const submitButton = await screen.findByText('Submit');
-    userEvent.click(submitButton);
-  });
+  const { instance, user } = renderBulkEditModal('add', selectedChecksSingleProbe);
+  const burritoProbe = await screen.findByText('burritos');
+  const tacoProbe = await screen.findByText('tacos');
+  await user.click(burritoProbe);
+  await user.click(tacoProbe);
+  const submitButton = await screen.findByText('Submit');
+  await user.click(submitButton);
+
   expect(instance.api?.bulkUpdateChecks).toHaveBeenCalledWith([
     {
       job: '',
@@ -173,14 +162,13 @@ test('successfully adds probes', async () => {
 });
 
 test('successfully removes probes', async () => {
-  const instance = renderBulkEditModal('remove', selectedChecksMultiProbe);
+  const { instance, user } = renderBulkEditModal('remove', selectedChecksMultiProbe);
   expect(instance.api?.listProbes).toHaveBeenCalled();
-  await act(async () => {
-    const burritoProbe = await screen.findByText('burritos');
-    userEvent.click(burritoProbe);
-    const submitButton = await screen.findByText('Submit');
-    userEvent.click(submitButton);
-  });
+  const burritoProbe = await screen.findByText('burritos');
+  await user.click(burritoProbe);
+  const submitButton = await screen.findByText('Submit');
+  await user.click(submitButton);
+
   expect(instance.api?.bulkUpdateChecks).toHaveBeenCalledWith([
     {
       job: '',

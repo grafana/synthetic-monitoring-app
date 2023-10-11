@@ -1,12 +1,11 @@
 import React from 'react';
-import { render, screen, waitFor, act } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import ProbeEditor from './ProbeEditor';
-import { InstanceContext } from 'contexts/InstanceContext';
-import { getInstanceMock, instanceSettings } from '../../datasource/__mocks__/DataSource';
-import { AppPluginMeta } from '@grafana/data';
-import { GlobalSettings, Probe, ROUTES } from 'types';
+import { screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route } from 'react-router-dom';
+
+import { render } from 'test/render';
+import ProbeEditor from './ProbeEditor';
+import { getInstanceMock, instanceSettings } from '../../datasource/__mocks__/DataSource';
+import { Probe, ROUTES } from 'types';
 import { PLUGIN_URL_PATH } from '../constants';
 
 jest.setTimeout(10000);
@@ -59,94 +58,92 @@ const TEST_PROBE = {
 const renderProbeEditor = ({ route = '/', probes = DEFAULT_PROBES, updateProbeMock = updateProbe } = {}) => {
   const mockedInstance = getInstanceMock(instanceSettings);
   mockedInstance.updateProbe = updateProbeMock;
-  const instance = { api: mockedInstance };
-  const meta = {} as AppPluginMeta<GlobalSettings>;
-  render(
+
+  return render(
     <MemoryRouter initialEntries={[`${PLUGIN_URL_PATH}${ROUTES.Probes}${route}`]}>
-      <InstanceContext.Provider value={{ instance, loading: false, meta }}>
-        <Route path={`${PLUGIN_URL_PATH}${ROUTES.Probes}/new`}>
-          <ProbeEditor probes={probes} onReturn={onReturn} />
-        </Route>
-        <Route path={`${PLUGIN_URL_PATH}${ROUTES.Probes}/edit/:id`}>
-          <ProbeEditor probes={probes} onReturn={onReturn} />
-        </Route>
-      </InstanceContext.Provider>
-    </MemoryRouter>
+      <Route path={`${PLUGIN_URL_PATH}${ROUTES.Probes}/new`}>
+        <ProbeEditor probes={probes} onReturn={onReturn} />
+      </Route>
+      <Route path={`${PLUGIN_URL_PATH}${ROUTES.Probes}/edit/:id`}>
+        <ProbeEditor probes={probes} onReturn={onReturn} />
+      </Route>
+    </MemoryRouter>,
+    {
+      instance: {
+        api: mockedInstance,
+      },
+    }
   );
-  return instance;
 };
 
 describe('validation', () => {
   it('validates probe name', async () => {
-    renderProbeEditor({ route: '/new' });
+    const { user } = renderProbeEditor({ route: '/new' });
     const nameInput = await screen.findByLabelText('Probe Name', { exact: false });
-    await act(
-      async () =>
-        await userEvent.type(
-          nameInput,
-          'a name that is definitely too long and should definitely not be allowed to get typed'
-        )
-    );
+    await user.type(nameInput, 'a name that is definitely too long and should definitely not be allowed to get typed');
     const maxLengthString = 'a name that is definitely too lo';
     expect(nameInput).toHaveValue(maxLengthString);
   });
+
   it('shows message for invalid latitude', async () => {
-    renderProbeEditor({ route: '/new' });
+    const { user } = renderProbeEditor({ route: '/new' });
     const latitudeInput = await screen.findByLabelText('Latitude', { exact: false });
-    userEvent.type(latitudeInput, '444');
+    await user.type(latitudeInput, '444');
     const errorMessage = await screen.findByText('Must be between -90 and 90');
     expect(errorMessage).toBeInTheDocument();
   });
+
   it('shows message for invalid longitude', async () => {
-    renderProbeEditor({ route: '/new' });
+    const { user } = renderProbeEditor({ route: '/new' });
     const longitudeInput = await screen.findByLabelText('Longitude', { exact: false });
-    userEvent.type(longitudeInput, '444');
+    await user.type(longitudeInput, '444');
     const errorMessage = await screen.findByText('Must be between -180 and 180');
     expect(errorMessage).toBeInTheDocument();
   });
 });
 
 it('returns on back buttun', async () => {
-  renderProbeEditor({ route: '/new' });
+  const { user } = renderProbeEditor({ route: '/new' });
   const backButton = await screen.findByRole('button', { name: 'Back' });
-  userEvent.click(backButton);
+  await user.click(backButton);
   expect(onReturn).toHaveBeenCalledWith(false);
 });
 
 it('disables save button on invalid values', async () => {
-  renderProbeEditor({ route: '/new' });
+  const { user } = renderProbeEditor({ route: '/new' });
   const saveButton = await screen.findByRole('button', { name: 'Save' });
   expect(saveButton).not.toBeDisabled();
   const longitudeInput = await screen.findByLabelText('Longitude', { exact: false });
-  userEvent.type(longitudeInput, '444');
+  await user.type(longitudeInput, '444');
   const errorMessage = await screen.findByText('Must be between -180 and 180');
   expect(errorMessage).toBeInTheDocument();
   expect(saveButton).toBeDisabled();
 });
 
 it('saves new probe', async () => {
-  const instance = renderProbeEditor({ route: '/new' });
+  const { instance, user } = renderProbeEditor({ route: '/new' });
 
   const latitudeInput = await screen.findByLabelText('Latitude', { exact: false });
-  userEvent.type(latitudeInput, '22');
+  await user.type(latitudeInput, '22');
   const longitudeInput = await screen.findByLabelText('Longitude', { exact: false });
-  userEvent.type(longitudeInput, '22');
+  await user.type(longitudeInput, '22');
   const nameInput = await screen.findByLabelText('Probe Name', { exact: false });
-  userEvent.type(nameInput, 'new probe');
+  await user.type(nameInput, 'new probe');
   const regionInput = await screen.findByPlaceholderText('Region', { exact: false });
-  userEvent.paste(regionInput, 'EMEA');
+  regionInput.focus();
+  await user.paste('EMEA');
 
   const saveButton = await screen.findByRole('button', { name: 'Save' });
   expect(saveButton).toBeEnabled();
-  userEvent.click(saveButton);
+  await user.click(saveButton);
   await screen.findByText('Probe Authentication Token');
   expect(instance.api.addProbe).toHaveBeenCalledWith(TEST_PROBE);
 });
 
 it('updates existing probe', async () => {
-  const instance = renderProbeEditor({ route: '/edit/32' });
+  const { instance, user } = renderProbeEditor({ route: '/edit/32' });
   const saveButton = await screen.findByRole('button', { name: 'Save' });
-  userEvent.click(saveButton);
+  await user.click(saveButton);
   await waitFor(() => expect(onReturn).toHaveBeenCalledWith(true));
   expect(instance.api.updateProbe).toHaveBeenCalledWith(DEFAULT_PROBES[0]);
 });

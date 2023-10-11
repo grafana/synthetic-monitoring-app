@@ -1,19 +1,13 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
+
+import { render } from 'test/render';
 import { ConfigActions } from 'components/ConfigActions';
-import { InstanceContext } from 'contexts/InstanceContext';
-import { getInstanceMock } from 'datasource/__mocks__/DataSource';
-import { AppPluginMeta } from '@grafana/data';
-import { GlobalSettings } from 'types';
 
 const renderConfigActions = ({ hasApi = true, enabled = true } = {}) => {
-  const instance = hasApi ? getInstanceMock() : undefined;
-  const meta = {} as AppPluginMeta<GlobalSettings>;
-  return render(
-    <InstanceContext.Provider value={{ instance: { api: instance }, loading: false, meta }}>
-      <ConfigActions enabled={enabled} pluginId="steve" />
-    </InstanceContext.Provider>
-  );
+  const instance = hasApi ? undefined : { api: undefined };
+
+  return render(<ConfigActions enabled={enabled} pluginId="steve" />, { instance });
 };
 
 it('shows disable option when activated', async () => {
