@@ -285,9 +285,9 @@ test('loads status filter from localStorage', async () => {
       probes: [],
     })
   );
-  renderCheckList();
-  const additionalFilters = await screen.findByRole('button', { name: 'Additional Filters (1 active)', exact: false });
-  userEvent.click(additionalFilters);
+  const { user } = renderCheckList();
+  const additionalFilters = await screen.findByRole('button', { name: /Additional Filters \(1 active\)/i });
+  await user.click(additionalFilters);
   const statusFilter = await screen.findByTestId('check-status-filter');
   expect(statusFilter).toHaveValue('2');
 
@@ -306,9 +306,9 @@ test('loads type filter from localStorage', async () => {
       probes: [],
     })
   );
-  renderCheckList();
-  const additionalFilters = await screen.findByRole('button', { name: 'Additional Filters (1 active)', exact: false });
-  userEvent.click(additionalFilters);
+  const { user } = renderCheckList();
+  const additionalFilters = await screen.findByRole('button', { name: /Additional Filters \(1 active\)/i });
+  await user.click(additionalFilters);
   const typeFilter = await screen.findByTestId('check-type-filter');
   expect(typeFilter).toHaveValue('http');
 
@@ -327,9 +327,9 @@ test('loads labels from localStorage', async () => {
       probes: [],
     })
   );
-  renderCheckList();
-  const additionalFilters = await screen.findByRole('button', { name: 'Additional Filters (1 active)', exact: false });
-  userEvent.click(additionalFilters);
+  const { user } = renderCheckList();
+  const additionalFilters = await screen.findByRole('button', { name: /Additional Filters \(1 active\)/i });
+  await user.click(additionalFilters);
   const filterInput = await screen.findByTestId('check-label-filter');
   expect(filterInput).toHaveValue(['agreat: label']);
 
