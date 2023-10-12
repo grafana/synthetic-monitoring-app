@@ -9,6 +9,7 @@ import userEventLib from '@testing-library/user-event';
 import { GlobalSettings, GrafanaInstances } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { getInstanceMock, instanceSettings } from 'datasource/__mocks__/DataSource';
+import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
 
 export const createInstance = (options?: GrafanaInstances) => {
   return {
@@ -21,39 +22,44 @@ export const createInstance = (options?: GrafanaInstances) => {
 };
 
 type WrapperProps = {
+  featureToggles?: Record<string, boolean>;
   instance?: GrafanaInstances;
   path?: string;
   route?: string;
 };
 
-export const createWrapper = ({ instance = createInstance(), path, route }: WrapperProps = {}) => {
+export const createWrapper = ({ featureToggles, instance = createInstance(), path, route }: WrapperProps = {}) => {
   const meta = {} as AppPluginMeta<GlobalSettings>;
   const history = createMemoryHistory({
     initialEntries: path ? [path] : undefined,
   });
+  const isFeatureEnabled = (feature: string) => !!featureToggles?.[feature];
 
   // eslint-disable-next-line react/display-name
   const Wrapper = ({ children }: { children: ReactNode }) => (
-    <InstanceContext.Provider value={{ instance, loading: false, meta }}>
-      <Router history={history}>
-        <Route path={route}>{children}</Route>
-      </Router>
-    </InstanceContext.Provider>
+    <FeatureFlagProvider overrides={{ featureToggles, isFeatureEnabled }}>
+      <InstanceContext.Provider value={{ instance, loading: false, meta }}>
+        <Router history={history}>
+          <Route path={route}>{children}</Route>
+        </Router>
+      </InstanceContext.Provider>
+    </FeatureFlagProvider>
   );
 
   return { Wrapper, instance, history };
 };
 
 type CustomRenderOptions = Omit<RenderOptions, 'wrapper'> & {
+  featureToggles?: Record<string, boolean>;
   instance?: GrafanaInstances;
   path?: string;
   route?: string;
 };
 
 const customRender = (ui: ReactElement, options: CustomRenderOptions = {}) => {
-  const { instance: instanceOptions, path, route, ...rest } = options;
+  const { featureToggles, instance: instanceOptions, path, route, ...rest } = options;
   const user = userEventLib.setup();
-  const { Wrapper, history, instance } = createWrapper({ instance: instanceOptions, path, route });
+  const { Wrapper, history, instance } = createWrapper({ featureToggles, instance: instanceOptions, path, route });
 
   return {
     user,

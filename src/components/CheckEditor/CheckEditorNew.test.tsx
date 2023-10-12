@@ -1,11 +1,9 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
-import { FeatureToggles } from '@grafana/data';
 
 import { render } from 'test/render';
 import { CheckType, ROUTES } from 'types';
 import { PLUGIN_URL_PATH } from 'components/constants';
-import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
 import { CheckEditor } from './CheckEditor';
 import { submitForm, fillBasicCheckFields, fillDnsValidationFields, fillTCPQueryResponseFields } from './testHelpers';
 import { BASIC_HTTP_CHECK, BASIC_PING_CHECK, BASIC_TCP_CHECK, BASIC_DNS_CHECK } from './testConstants';
@@ -25,18 +23,10 @@ beforeEach(() => jest.resetAllMocks());
 const onReturn = jest.fn();
 
 const renderNewCheckEditor = async (checkType?: CheckType) => {
-  const featureToggles = { traceroute: true, 'multi-http': false } as unknown as FeatureToggles;
-  const isFeatureEnabled = jest.fn(() => false);
-
-  const res = render(
-    <FeatureFlagProvider overrides={{ featureToggles, isFeatureEnabled }}>
-      <CheckEditor onReturn={onReturn} />
-    </FeatureFlagProvider>,
-    {
-      route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/:checkType`,
-      path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${checkType}`,
-    }
-  );
+  const res = render(<CheckEditor onReturn={onReturn} />, {
+    route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/:checkType`,
+    path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${checkType}`,
+  });
 
   await waitFor(() => expect(screen.getByText('Probe options')).toBeInTheDocument());
   return res;

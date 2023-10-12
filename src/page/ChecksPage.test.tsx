@@ -1,28 +1,21 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
-import { FeatureToggles } from '@grafana/data';
 
 import { ROUTES } from 'types';
 import { render } from 'test/render';
 import { CheckRouter } from './CheckRouter';
 import { PLUGIN_URL_PATH } from 'components/constants';
-import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
 
 jest.setTimeout(20000);
 
 const renderChecksPage = (multiHttpEnabled = false) => {
-  const featureToggles = { 'multi-http': multiHttpEnabled } as unknown as FeatureToggles;
-  const isFeatureEnabled = jest.fn(() => multiHttpEnabled);
+  const featureToggles = { 'multi-http': multiHttpEnabled };
 
-  return render(
-    <FeatureFlagProvider overrides={{ featureToggles, isFeatureEnabled }}>
-      <CheckRouter />
-    </FeatureFlagProvider>,
-    {
-      path: `${PLUGIN_URL_PATH}${ROUTES.Checks}`,
-      route: `${PLUGIN_URL_PATH}${ROUTES.Checks}`,
-    }
-  );
+  return render(<CheckRouter />, {
+    featureToggles,
+    path: `${PLUGIN_URL_PATH}${ROUTES.Checks}`,
+    route: `${PLUGIN_URL_PATH}${ROUTES.Checks}`,
+  });
 };
 
 test('renders checks', async () => {
