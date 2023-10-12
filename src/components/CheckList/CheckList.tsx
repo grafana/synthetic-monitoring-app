@@ -296,7 +296,7 @@ export const CheckList = ({ instance, checks, onCheckUpdate }: Props) => {
 
   if (checks.length === 0) {
     return (
-      <PluginPage pageNav={{ text: 'Checks', subTitle: 'List of checks' }}>
+      <PluginPage pageNav={{ text: 'Checks' }}>
         <EmptyCheckList />
       </PluginPage>
     );
