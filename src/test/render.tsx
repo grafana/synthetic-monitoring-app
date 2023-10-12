@@ -1,8 +1,7 @@
 import React, { type ReactElement, type ReactNode } from 'react';
 import { render, type RenderOptions } from '@testing-library/react';
 import { createMemoryHistory } from 'history';
-import { Router } from 'react-router';
-import { Route } from 'react-router-dom';
+import { Route, Router } from 'react-router-dom';
 import { AppPluginMeta, DataSourceSettings } from '@grafana/data';
 import userEventLib from '@testing-library/user-event';
 
