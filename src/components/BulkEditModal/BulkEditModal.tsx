@@ -89,7 +89,7 @@ const BulkEditModal = ({ onDismiss, onSuccess, onError, isOpen, selectedChecks, 
   }, [selectedProbes, checks, instance, action, probesToRemove, onDismiss, onError, onSuccess]);
 
   const addOrRemoveProbe = useCallback(
-    (probe) => {
+    (probe: Probe) => {
       if (!selectedProbes.includes(probe)) {
         setSelectedProbes((sp) => [...sp, probe]);
       } else {
@@ -101,7 +101,7 @@ const BulkEditModal = ({ onDismiss, onSuccess, onError, isOpen, selectedChecks, 
   );
 
   const addOrRemoveCommonProbe = useCallback(
-    (probe) => {
+    (probe: number) => {
       if (!probesToRemove.includes(probe)) {
         setProbesToRemove((ptr) => [...ptr, probe]);
       } else {

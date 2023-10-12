@@ -151,7 +151,7 @@ const ProbeEditor = ({ probes, onReturn }: Props) => {
   const { latitude, longitude } = formMethods.watch();
 
   return (
-    <PluginPage pageNav={{ text: probe.id ? probe.name : 'Add probe', description: 'Probe configuration' }}>
+    <PluginPage pageNav={{ text: probe.id ? probe.name : 'Add probe', subTitle: 'Probe configuration' }}>
       <HorizontalGroup align="flex-start">
         <FormProvider {...formMethods}>
           <form onSubmit={formMethods.handleSubmit(onSave)}>

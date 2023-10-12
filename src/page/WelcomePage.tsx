@@ -284,7 +284,7 @@ export const WelcomePage: FC<Props> = () => {
   };
 
   return (
-    <PluginPage pageNav={{ text: 'Welcome', description: 'Welcome to synthetic monitoring' }}>
+    <PluginPage pageNav={{ text: 'Welcome', subTitle: 'Welcome to synthetic monitoring' }}>
       <div className={styles.container}>
         <div className={styles.maxWidth}>
           <div className={styles.headerSection}>

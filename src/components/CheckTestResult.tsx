@@ -1,4 +1,4 @@
-import { DataFrame, dateTime, DateTime, GrafanaTheme2, LoadingState } from '@grafana/data';
+import { dateTime, DateTime, GrafanaTheme2, LoadingState } from '@grafana/data';
 import { Badge, Collapse, Icon, Spinner, useStyles2 } from '@grafana/ui';
 import React, { useState } from 'react';
 import { css } from '@emotion/css';
@@ -53,7 +53,7 @@ export function CheckTestResult({ probeName, success, loading, logs, start, end 
             height={300}
             data={{
               state: LoadingState.Done,
-              series: [logs as unknown as DataFrame],
+              series: [logs as any], // TODO: come back to
               timeRange: {
                 from: dateTime(),
                 to: dateTime(),

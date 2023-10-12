@@ -112,9 +112,7 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
   const capitalizedCheckType = checkType.slice(0, 1).toUpperCase().concat(checkType.split('').slice(1).join(''));
   const headerText = check?.id ? `Editing ${check.job}` : `Add ${capitalizedCheckType} check`;
   return (
-    <PluginPage
-      pageNav={{ text: check?.job ? `Editing ${check.job}` : headerText, description: 'Check configuration' }}
-    >
+    <PluginPage pageNav={{ text: check?.job ? `Editing ${check.job}` : headerText, subTitle: 'Check configuration' }}>
       <>
         {!config.featureToggles.topnav && <Legend>{headerText}</Legend>}
         <FormProvider {...formMethods}>

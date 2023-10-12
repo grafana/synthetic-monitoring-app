@@ -82,7 +82,7 @@ export const TcpSettingsForm = ({ isEditor }: Props) => {
                     disabled={!isEditor}
                   />
                 </Container>
-                <IconButton name="minus-circle" onClick={() => remove(index)} disabled={!isEditor} />
+                <IconButton name="minus-circle" onClick={() => remove(index)} disabled={!isEditor} tooltip="Delete" />
               </HorizontalGroup>
             ))}
 

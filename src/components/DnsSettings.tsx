@@ -140,7 +140,7 @@ const DnsSettingsForm = ({ isEditor }: Props) => {
                     aria-label="dns-validation-inverted"
                   />
                 </div>
-                <IconButton name="minus-circle" onClick={() => remove(index)} />
+                <IconButton name="minus-circle" onClick={() => remove(index)} tooltip="Delete" />
               </Fragment>
             ))}
           </div>

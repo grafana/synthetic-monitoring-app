@@ -157,7 +157,7 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
       <PluginPage
         pageNav={{
           text: check?.job ? `Editing ${check.job}` : 'Add MULTIHTTP check',
-          description: 'Check configuration',
+          subTitle: 'Check configuration',
         }}
       >
         {!config.featureToggles.topnav && <Legend>{check?.id ? 'Edit Check' : 'Add MULTIHTTP Check'}</Legend>}

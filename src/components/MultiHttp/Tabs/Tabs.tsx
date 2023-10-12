@@ -93,6 +93,7 @@ export const HeadersTab = ({ label = 'header', index, active }: MultiHttpTabProp
                       remove(i);
                       unregister([`${headersNamePrefix}`]);
                     }}
+                    tooltip="Delete"
                   />
                 </HorizontalGroup>
               </div>
@@ -106,9 +107,9 @@ export const HeadersTab = ({ label = 'header', index, active }: MultiHttpTabProp
         size="sm"
         type="button"
         className={styles.addHeaderQueryButton}
+        icon="plus"
       >
-        <Icon name="plus" />
-        &nbsp; Add {label}
+        Add {label}
       </Button>
     </div>
   );
@@ -198,6 +199,7 @@ const QueryParamsTab = ({ index, label, active }: MultiHttpTabProps) => {
                     onClick={() => {
                       remove(i);
                     }}
+                    tooltip="Delete"
                   />
                 </HorizontalGroup>
               </div>
@@ -308,6 +310,7 @@ const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
                     name="trash-alt"
                     onClick={() => remove(variableIndex)}
                     className={styles.removeIconWithLabel}
+                    tooltip="Delete"
                   />
                 </HorizontalGroup>
               </div>
