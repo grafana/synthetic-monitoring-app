@@ -184,7 +184,7 @@ export const CheckList = ({ instance, checks, onCheckUpdate }: Props) => {
     setCheckFilters((cf) => {
       const updated = {
         ...cf,
-        labels: [...cf.labels, `${label.name}: ${label.value}`],
+        labels: Array.from(new Set([...cf.labels, `${label.name}: ${label.value}`])),
       };
       localStorage.setItem('checkFilters', JSON.stringify(updated));
       return updated;

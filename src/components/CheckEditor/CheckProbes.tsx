@@ -87,7 +87,7 @@ const CheckProbes = forwardRef(
             >
               <HorizontalGroup spacing="sm">
                 <Button onClick={onAllLocations} disabled={!isEditor} variant="secondary" size="sm" type="button">
-                  All&nbsp;&nbsp;
+                  All
                 </Button>
                 <Button onClick={onClearLocations} disabled={!isEditor} variant="secondary" size="sm" type="button">
                   Clear

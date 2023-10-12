@@ -1,17 +1,14 @@
 import React from 'react';
-import { act, render, screen, waitFor, within } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { CheckType, GlobalSettings, ROUTES } from 'types';
-import { getInstanceMock } from '../../datasource/__mocks__/DataSource';
-import { InstanceContext } from 'contexts/InstanceContext';
-import { AppPluginMeta, DataSourceSettings, FeatureToggles } from '@grafana/data';
-import { PLUGIN_URL_PATH } from 'components/constants';
-import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
+import { screen, waitFor, within } from '@testing-library/react';
+import { locationService } from '@grafana/runtime';
 import { Route, Router } from 'react-router-dom';
+
+import { render } from 'test/render';
+import { CheckType, ROUTES } from 'types';
+import { PLUGIN_URL_PATH } from 'components/constants';
 import { MultiHttpSettingsForm } from './MultiHttpSettingsForm';
 import { submitForm } from 'components/CheckEditor/testHelpers';
 import { BASIC_CHECK_LIST } from 'components/CheckEditor/testConstants';
-import { locationService } from '@grafana/runtime';
 
 jest.setTimeout(60000);
 
@@ -20,43 +17,31 @@ const onReturn = jest.fn();
 
 const renderNewMultiForm = async () => {
   locationService.push(`${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${CheckType.MULTI_HTTP}`);
-  const api = getInstanceMock();
-  const instance = {
-    api,
-    alertRuler: {} as DataSourceSettings,
-  };
-  const meta = {} as AppPluginMeta<GlobalSettings>;
-  const featureToggles = { 'multi-http': true } as unknown as FeatureToggles;
-  const isFeatureEnabled = jest.fn(() => true);
 
-  render(
-    <FeatureFlagProvider overrides={{ featureToggles, isFeatureEnabled }}>
-      <InstanceContext.Provider value={{ instance, loading: false, meta }}>
-        <Router history={locationService.getHistory()}>
-          <Route path={`${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${CheckType.MULTI_HTTP}`}>
-            <MultiHttpSettingsForm checks={BASIC_CHECK_LIST} onReturn={onReturn} />
-          </Route>
-        </Router>
-      </InstanceContext.Provider>
-    </FeatureFlagProvider>
+  const res = render(
+    <Router history={locationService.getHistory()}>
+      <Route path={`${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${CheckType.MULTI_HTTP}`}>
+        <MultiHttpSettingsForm checks={BASIC_CHECK_LIST} onReturn={onReturn} />
+      </Route>
+    </Router>
   );
 
   await waitFor(() => expect(screen.getByText('Probe options')).toBeInTheDocument());
-  return instance;
+  return res;
 };
 
 describe('new checks', () => {
   it('can create a new MULTI-HTTP check', async () => {
-    const instance = await renderNewMultiForm();
+    const { instance, user } = await renderNewMultiForm();
 
     const jobNameInput = await screen.findByLabelText('Job name', { exact: false });
-    userEvent.type(jobNameInput, 'basicmulti');
+    await user.type(jobNameInput, 'basicmulti');
 
     const targetInput = await screen.findByLabelText('Request target', { exact: false });
-    userEvent.type(targetInput, 'http://grafanarr.com');
+    await user.type(targetInput, 'http://grafanarr.com');
 
     const requestOptions = await screen.findByTestId('request-method');
-    await act(async () => await userEvent.selectOptions(requestOptions, within(requestOptions).getByText('POST')));
+    await user.selectOptions(requestOptions, within(requestOptions).getByText('POST'));
 
     // Set probe options
     const probeOptions = screen.getByText('Probe options');
@@ -65,37 +50,35 @@ describe('new checks', () => {
     }
     // // Select burritos probe options
     const probeSelectMenu = await screen.findByTestId('select');
-    await act(
-      async () => await userEvent.selectOptions(probeSelectMenu, within(probeSelectMenu).getByText('burritos'))
-    );
+    await user.selectOptions(probeSelectMenu, within(probeSelectMenu).getByText('burritos'));
 
     const addRequestButton = await screen.findByText('Add request');
-    userEvent.click(addRequestButton);
+    await user.click(addRequestButton);
 
     const secondTargetInput = await screen.findAllByLabelText('Request target', { exact: false });
-    userEvent.type(secondTargetInput[1], 'http://grafanalalala.com');
+    await user.type(secondTargetInput[1], 'http://grafanalalala.com');
     const secondRequestOptions = await screen.findAllByTestId('request-method');
-    await act(async () => await userEvent.selectOptions(secondRequestOptions[1], 'GET'));
+    await user.selectOptions(secondRequestOptions[1], 'GET');
 
     // add assertions
     // reopens the first request
     const requestContainer = await screen.findByText('http://grafanarr.com');
-    userEvent.click(requestContainer);
+    await user.click(requestContainer);
     const assertionsTabs = await screen.findAllByLabelText('Tab Assertions');
-    userEvent.click(assertionsTabs[0]);
+    await user.click(assertionsTabs[0]);
     const addAssertion = await screen.findByRole('button', { name: 'Add assertions' });
-    userEvent.click(addAssertion);
+    await user.click(addAssertion);
     const assertionTypes = await screen.findAllByLabelText('Assertion type');
-    userEvent.selectOptions(assertionTypes[0], '1');
+    await user.selectOptions(assertionTypes[0], '1');
     const expressions = await screen.findAllByLabelText('Expression');
-    userEvent.type(expressions[0], 'expresso');
+    await user.type(expressions[0], 'expresso');
     const conditions = await screen.findAllByLabelText('Condition');
-    userEvent.selectOptions(conditions[0], '4');
+    await user.selectOptions(conditions[0], '4');
     const values = await screen.findAllByLabelText('Value');
-    userEvent.clear(values[0]);
-    userEvent.type(values[0], 'yarp');
+    await user.clear(values[0]);
+    await user.type(values[0], 'yarp');
 
-    await submitForm(onReturn);
+    await submitForm(onReturn, user);
 
     expect(instance.api.addCheck).toHaveBeenCalledTimes(1);
     expect(instance.api.addCheck).toHaveBeenCalledWith(

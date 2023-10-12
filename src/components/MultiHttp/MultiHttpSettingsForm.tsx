@@ -217,6 +217,7 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
                             description="Full URL to send request to"
                             invalid={Boolean(errors?.settings?.multihttp?.entries?.[index]?.request?.url)}
                             error={errors?.settings?.multihttp?.entries?.[index]?.request?.url?.message}
+                            className={styles.requestTargetInput}
                           >
                             <Input
                               id={`request-target-url-${index}`}

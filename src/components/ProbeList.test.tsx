@@ -1,11 +1,8 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { screen } from '@testing-library/react';
+
+import { render } from 'test/render';
 import { ProbeList } from './ProbeList';
-import { InstanceContext } from 'contexts/InstanceContext';
-import { getInstanceMock, instanceSettings } from '../datasource/__mocks__/DataSource';
-import { AppPluginMeta } from '@grafana/data';
-import { GlobalSettings } from 'types';
 
 const onAddNew = jest.fn();
 const onSelectProbe = jest.fn();
@@ -40,12 +37,7 @@ const defaultProbes = [
 ];
 
 const renderProbeList = ({ probes = defaultProbes } = {}) => {
-  const meta = {} as AppPluginMeta<GlobalSettings>;
-  render(
-    <InstanceContext.Provider value={{ instance: { api: getInstanceMock(instanceSettings) }, loading: false, meta }}>
-      <ProbeList probes={probes} onAddNew={onAddNew} onSelectProbe={onSelectProbe} />
-    </InstanceContext.Provider>
-  );
+  return render(<ProbeList probes={probes} onAddNew={onAddNew} onSelectProbe={onSelectProbe} />);
 };
 
 it('renders offline probes', async () => {
@@ -72,15 +64,15 @@ it('renders labels', async () => {
 });
 
 it('handles probe click', async () => {
-  renderProbeList();
+  const { user } = renderProbeList();
   const tacosProbe = await screen.findByText('tacos');
-  userEvent.click(tacosProbe);
+  await user.click(tacosProbe);
   expect(onSelectProbe).toHaveBeenCalledWith(35);
 });
 
 it('handles add new', async () => {
-  renderProbeList();
+  const { user } = renderProbeList();
   const addNewButton = await screen.findByRole('button', { name: 'New' });
-  userEvent.click(addNewButton);
+  await user.click(addNewButton);
   expect(onAddNew).toHaveBeenCalledTimes(1);
 });

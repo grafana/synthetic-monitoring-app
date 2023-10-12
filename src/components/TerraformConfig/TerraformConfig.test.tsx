@@ -1,29 +1,17 @@
-import { TerraformConfig } from './TerraformConfig';
-import { render, screen } from '@testing-library/react';
 import React from 'react';
-import userEvent from '@testing-library/user-event';
-import { InstanceContext } from 'contexts/InstanceContext';
-import { getInstanceMock } from 'datasource/__mocks__/DataSource';
-import { AppPluginMeta } from '@grafana/data';
-import { GlobalSettings } from 'types';
+import { screen } from '@testing-library/react';
+
+import { render } from 'test/render';
+import { TerraformConfig } from './TerraformConfig';
 
 const renderTerraformConfig = async () => {
-  const api = getInstanceMock();
-  const instance = {
-    api,
-  };
-  const meta = {} as AppPluginMeta<GlobalSettings>;
-  return render(
-    <InstanceContext.Provider value={{ instance, loading: false, meta }}>
-      <TerraformConfig />
-    </InstanceContext.Provider>
-  );
+  return render(<TerraformConfig />);
 };
 
 const openConfig = async () => {
-  await renderTerraformConfig();
+  const { user } = await renderTerraformConfig();
   const launchButton = await screen.findByRole('button', { name: 'Generate config' });
-  userEvent.click(launchButton);
+  await user.click(launchButton);
   const modalHeader = await screen.findByRole('heading', { name: 'Terraform config' });
   expect(modalHeader).toBeInTheDocument();
 };
