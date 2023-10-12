@@ -9,7 +9,7 @@ import { useUsageCalc } from './useUsageCalc';
 interface Wrapper {}
 
 const renderUsage = async (check: Partial<Check>) => {
-  const Wrapper = createWrapper();
+  const { Wrapper } = createWrapper();
 
   const wrapper = ({ children }: PropsWithChildren<Wrapper>) => (
     <Wrapper>

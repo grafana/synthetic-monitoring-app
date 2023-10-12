@@ -1,6 +1,5 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
-import { MemoryRouter, Route } from 'react-router-dom';
 import { FeatureToggles } from '@grafana/data';
 
 import { ROUTES } from 'types';
@@ -17,12 +16,12 @@ const renderChecksPage = (multiHttpEnabled = false) => {
 
   return render(
     <FeatureFlagProvider overrides={{ featureToggles, isFeatureEnabled }}>
-      <MemoryRouter initialEntries={[`${PLUGIN_URL_PATH}${ROUTES.Checks}`]}>
-        <Route path={`${PLUGIN_URL_PATH}${ROUTES.Checks}`}>
-          <CheckRouter />
-        </Route>
-      </MemoryRouter>
-    </FeatureFlagProvider>
+      <CheckRouter />
+    </FeatureFlagProvider>,
+    {
+      path: `${PLUGIN_URL_PATH}${ROUTES.Checks}`,
+      route: `${PLUGIN_URL_PATH}${ROUTES.Checks}`,
+    }
   );
 };
 

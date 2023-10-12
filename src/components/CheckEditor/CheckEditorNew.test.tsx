@@ -1,8 +1,6 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
 import { FeatureToggles } from '@grafana/data';
-import { locationService } from '@grafana/runtime';
-import { Route, Router } from 'react-router-dom';
 
 import { render } from 'test/render';
 import { CheckType, ROUTES } from 'types';
@@ -27,18 +25,17 @@ beforeEach(() => jest.resetAllMocks());
 const onReturn = jest.fn();
 
 const renderNewCheckEditor = async (checkType?: CheckType) => {
-  locationService.push(`${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${checkType}`);
   const featureToggles = { traceroute: true, 'multi-http': false } as unknown as FeatureToggles;
   const isFeatureEnabled = jest.fn(() => false);
 
   const res = render(
     <FeatureFlagProvider overrides={{ featureToggles, isFeatureEnabled }}>
-      <Router history={locationService.getHistory()}>
-        <Route path={`${PLUGIN_URL_PATH}${ROUTES.Checks}/new/:checkType`}>
-          <CheckEditor onReturn={onReturn} />
-        </Route>
-      </Router>
-    </FeatureFlagProvider>
+      <CheckEditor onReturn={onReturn} />
+    </FeatureFlagProvider>,
+    {
+      route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/:checkType`,
+      path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${checkType}`,
+    }
   );
 
   await waitFor(() => expect(screen.getByText('Probe options')).toBeInTheDocument());
@@ -97,7 +94,7 @@ describe('new checks', () => {
 
     await fillBasicCheckFields('Job name', 'https://grafana.com', user);
     await submitForm(onReturn, user);
-    expect(instance.api.addCheck).toHaveBeenCalledWith(BASIC_HTTP_CHECK);
+    expect(instance.api?.addCheck).toHaveBeenCalledWith(BASIC_HTTP_CHECK);
   });
 
   it('can create a new PING check', async () => {
@@ -105,7 +102,7 @@ describe('new checks', () => {
 
     await fillBasicCheckFields('Job name', 'grafana.com', user);
     await submitForm(onReturn, user);
-    expect(instance.api.addCheck).toHaveBeenCalledWith(BASIC_PING_CHECK);
+    expect(instance.api?.addCheck).toHaveBeenCalledWith(BASIC_PING_CHECK);
   });
 
   it('can create a new TCP check', async () => {
@@ -115,7 +112,7 @@ describe('new checks', () => {
 
     await fillTCPQueryResponseFields(user);
     await submitForm(onReturn, user);
-    expect(instance.api.addCheck).toHaveBeenCalledWith(BASIC_TCP_CHECK);
+    expect(instance.api?.addCheck).toHaveBeenCalledWith(BASIC_TCP_CHECK);
   });
 
   it('can create a new DNS check', async () => {
@@ -125,6 +122,6 @@ describe('new checks', () => {
     await fillDnsValidationFields(user);
 
     await submitForm(onReturn, user);
-    expect(instance.api.addCheck).toHaveBeenCalledWith(BASIC_DNS_CHECK);
+    expect(instance.api?.addCheck).toHaveBeenCalledWith(BASIC_DNS_CHECK);
   });
 });

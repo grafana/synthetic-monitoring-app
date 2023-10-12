@@ -10,16 +10,10 @@ const onDismiss = jest.fn();
 const onSuccess = jest.fn();
 const onError = jest.fn();
 
-const renderThresholdSettingsForm = (defaultValues = false) => {
+const renderThresholdSettingsForm = () => {
   const instance = {
     api: getInstanceMock(),
   };
-
-  if (defaultValues) {
-    instance.api.getTenantSettings = jest.fn(() =>
-      Promise.resolve({ thresholds: { uptime: {}, reachability: {}, latency: {} } })
-    );
-  }
 
   return render(
     <SuccessRateContextProvider checks={[]}>
@@ -40,11 +34,12 @@ test('shows the form', async () => {
 });
 
 test('has default values in form', async () => {
-  renderThresholdSettingsForm(true);
+  const { user } = renderThresholdSettingsForm();
   const upperLimitInputs = await screen.findAllByTestId('upper-limit');
   const lowerLimitInputs = await screen.findAllByTestId('lower-limit');
+  await user.click(screen.getByText('Reset all to defaults'));
   // Uptime/reachability
-  expect(upperLimitInputs[0]).toHaveValue(90);
+  expect(upperLimitInputs[0]).toHaveValue(99);
   expect(lowerLimitInputs[0]).toHaveValue(75);
   // Latency
   expect(upperLimitInputs[2]).toHaveValue(200);

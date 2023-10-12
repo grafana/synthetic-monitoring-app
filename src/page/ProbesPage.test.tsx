@@ -4,19 +4,14 @@ import { screen, waitFor } from '@testing-library/react';
 import { render } from 'test/render';
 import { ProbeRouter } from './ProbeRouter';
 import { ROUTES } from 'types';
-import { MemoryRouter, Route } from 'react-router-dom';
 import { PLUGIN_URL_PATH } from 'components/constants';
-jest.unmock('@grafana/runtime');
 jest.setTimeout(10000);
 
 const renderProbesPage = () => {
-  return render(
-    <MemoryRouter initialEntries={[`${PLUGIN_URL_PATH}${ROUTES.Probes}`]}>
-      <Route path={`${PLUGIN_URL_PATH}${ROUTES.Probes}`}>
-        <ProbeRouter />
-      </Route>
-    </MemoryRouter>
-  );
+  return render(<ProbeRouter />, {
+    path: `${PLUGIN_URL_PATH}${ROUTES.Probes}`,
+    route: `${PLUGIN_URL_PATH}${ROUTES.Probes}`,
+  });
 };
 
 const getAddNew = async () => {
