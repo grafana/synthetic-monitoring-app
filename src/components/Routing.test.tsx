@@ -28,7 +28,7 @@ describe('Only renders the welcome page regardless of route when app is not init
   });
 });
 
-// Would like to find the h1s but rendering the Grafana pluginpage is tricky
+// Would like to have asserted on the h1s but rendering the Grafana pluginpage is tricky
 describe('Routes to pages correctly', () => {
   test('Home page renders', async () => {
     renderRouting({ path: getRoute(ROUTES.Home) });

@@ -1,4 +1,4 @@
-import React, { useEffect, useContext } from 'react';
+import React, { useLayoutEffect, useEffect, useContext } from 'react';
 import { Redirect, Route, Switch, useLocation } from 'react-router-dom';
 import { AppRootProps } from '@grafana/data';
 import { config } from '@grafana/runtime';
@@ -46,6 +46,12 @@ export const Routing = ({ onNavChanged }: Pick<AppRootProps, 'onNavChanged'>) =>
       navigate(path, translated);
     }
   }, [page, navigate, queryParams]);
+
+  useLayoutEffect(() => {
+    if (!provisioned || (!initialized && location.pathname !== getRoute(ROUTES.Home))) {
+      navigate(ROUTES.Home);
+    }
+  }, [provisioned, initialized, location.pathname, navigate]);
 
   if (!provisioned) {
     return <UnprovisionedSetup />;

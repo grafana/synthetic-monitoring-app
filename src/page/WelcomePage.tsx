@@ -1,19 +1,21 @@
 import React, { FC, useState, useContext } from 'react';
 import { Button, Alert, useStyles2, Spinner, Modal } from '@grafana/ui';
 import { getBackendSrv, config } from '@grafana/runtime';
+import { DataSourceInstanceSettings, GrafanaTheme2, OrgRole, DataSourceJsonData } from '@grafana/data';
+import { FaroEvent, reportEvent, reportError } from 'faro';
+import { css } from '@emotion/css';
+import { isNumber } from 'lodash';
+
+import { ROUTES, SubmissionErrorWrapper } from 'types';
 import { findSMDataSources, hasRole, initializeDatasource } from 'utils';
+import { dashboardScreenshot, dashboardScreenshotLight } from 'img';
 import { importAllDashboards } from 'dashboards/loader';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { DataSourceInstanceSettings, GrafanaTheme2, OrgRole, DataSourceJsonData } from '@grafana/data';
-import { css } from '@emotion/css';
-import { colors, LEGACY_LOGS_DS_NAME, LEGACY_METRICS_DS_NAME, PLUGIN_URL_PATH } from 'components/constants';
-import { dashboardScreenshot, dashboardScreenshotLight } from 'img';
-import { isNumber } from 'lodash';
-import { ROUTES, SubmissionErrorWrapper } from 'types';
+import { getRoute } from 'components/Routing';
+import { colors, LEGACY_LOGS_DS_NAME, LEGACY_METRICS_DS_NAME } from 'components/constants';
 import { DisplayCard } from 'components/DisplayCard';
 import FeaturesBanner from 'components/FeaturesBanner';
 import { PluginPage } from 'components/PluginPage';
-import { FaroEvent, reportEvent, reportError } from 'faro';
 
 const getStyles = (theme: GrafanaTheme2) => {
   const textColor = theme.isDark ? colors.darkText : colors.lightText;
@@ -274,7 +276,7 @@ export const WelcomePage: FC<Props> = () => {
       await initializeDatasource(datasourcePayload, dashboards);
 
       // force reload so that GrafanaBootConfig is updated.
-      window.location.href = `${window.location.origin}${PLUGIN_URL_PATH}${ROUTES.Home}`;
+      window.location.href = `${window.location.origin}${getRoute(ROUTES.Home)}`;
     } catch (e) {
       const err = e as unknown as SubmissionErrorWrapper;
       setError(err.data?.msg ?? err.data?.err ?? 'Something went wrong');
@@ -284,7 +286,7 @@ export const WelcomePage: FC<Props> = () => {
   };
 
   return (
-    <PluginPage>
+    <PluginPage pageNav={{ text: 'Welcome' }}>
       <div className={styles.container}>
         <div className={styles.maxWidth}>
           <div className={styles.headerSection}>
