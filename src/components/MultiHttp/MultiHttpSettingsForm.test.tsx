@@ -1,7 +1,5 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
-import { Route, Router } from 'react-router-dom';
-import { locationService } from '@grafana/runtime';
 
 import { render } from 'test/render';
 import { PLUGIN_URL_PATH } from 'components/constants';
@@ -16,15 +14,10 @@ beforeEach(() => jest.resetAllMocks());
 const onReturn = jest.fn();
 
 async function renderForm(route: string) {
-  locationService.push(`${PLUGIN_URL_PATH}${ROUTES.Checks}${route}`);
-
-  const res = render(
-    <Router history={locationService.getHistory()}>
-      <Route path={`${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`}>
-        <MultiHttpSettingsForm checks={BASIC_CHECK_LIST} onReturn={onReturn} />
-      </Route>
-    </Router>
-  );
+  const res = render(<MultiHttpSettingsForm checks={BASIC_CHECK_LIST} onReturn={onReturn} />, {
+    route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`,
+    path: `${PLUGIN_URL_PATH}${ROUTES.Checks}${route}`,
+  });
   await waitFor(() => expect(screen.getByText('Probe options')).toBeInTheDocument());
   return res;
 }
@@ -92,8 +85,8 @@ describe('editing multihttp check', () => {
     await user.click(submitButton);
 
     await waitFor(() => expect(onReturn).toHaveBeenCalledWith(true));
-    expect(instance.api.updateCheck).toHaveBeenCalledTimes(1);
-    expect(instance.api.updateCheck).toHaveBeenCalledWith({ id: 6, tenantId: undefined, ...BASIC_MULTIHTTP_CHECK });
+    expect(instance.api?.updateCheck).toHaveBeenCalledTimes(1);
+    expect(instance.api?.updateCheck).toHaveBeenCalledWith({ id: 6, tenantId: undefined, ...BASIC_MULTIHTTP_CHECK });
   });
 
   it('allows user to edit and resubmit form', async () => {
@@ -144,13 +137,13 @@ describe('editing multihttp check', () => {
     await user.click(submitButton);
 
     await waitFor(() => expect(onReturn).toHaveBeenCalledWith(true));
-    expect(instance.api.updateCheck).toHaveBeenCalledTimes(1);
-    expect(instance.api.updateCheck).toHaveBeenCalledWith(
+    expect(instance.api?.updateCheck).toHaveBeenCalledTimes(1);
+    expect(instance.api?.updateCheck).toHaveBeenCalledWith(
       expect.objectContaining({
         job: 'basicmultiedited',
       })
     );
-    expect(instance.api.updateCheck).toHaveBeenCalledWith(
+    expect(instance.api?.updateCheck).toHaveBeenCalledWith(
       expect.objectContaining({
         settings: {
           multihttp: {

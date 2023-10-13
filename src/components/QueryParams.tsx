@@ -23,7 +23,7 @@ function init(target: URL) {
     .replace('?', '')
     .split('&')
     .map((queryParam) => {
-      const [name, value] = queryParam.split('=');
+      const [name, value = ''] = queryParam.split('=');
       return { name, value };
     });
   return formatted;

@@ -1,7 +1,5 @@
 import React from 'react';
 import { screen, waitFor, within } from '@testing-library/react';
-import { locationService } from '@grafana/runtime';
-import { Router, Route } from 'react-router-dom';
 
 import { render } from 'test/render';
 import { ROUTES } from 'types';
@@ -33,15 +31,10 @@ beforeEach(() => jest.resetAllMocks());
 const onReturn = jest.fn();
 
 const renderExistingCheckEditor = async (route: string) => {
-  locationService.push(`${PLUGIN_URL_PATH}${ROUTES.Checks}${route}`);
-
-  const res = render(
-    <Router history={locationService.getHistory()}>
-      <Route path={`${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`}>
-        <CheckEditor onReturn={onReturn} checks={BASIC_CHECK_LIST} />
-      </Route>
-    </Router>
-  );
+  const res = render(<CheckEditor onReturn={onReturn} checks={BASIC_CHECK_LIST} />, {
+    route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`,
+    path: `${PLUGIN_URL_PATH}${ROUTES.Checks}${route}`,
+  });
 
   await waitFor(() => expect(screen.getByText('Probe options')).toBeInTheDocument());
   return res;
@@ -189,16 +182,16 @@ describe('editing checks', () => {
     await user.click(invertMatch);
 
     await submitForm(onReturn, user);
-    expect(instance.api.addCheck).toHaveBeenCalledTimes(0);
-    expect(instance.api.updateCheck).toHaveBeenCalledWith(EDITED_HTTP_CHECK);
+    expect(instance.api?.addCheck).toHaveBeenCalledTimes(0);
+    expect(instance.api?.updateCheck).toHaveBeenCalledWith(EDITED_HTTP_CHECK);
   });
 
   it('transforms data correctly for TCP check', async () => {
     const { instance, user } = await renderExistingCheckEditor('/edit/4');
 
     await submitForm(onReturn, user);
-    expect(instance.api.addCheck).toHaveBeenCalledTimes(0);
-    expect(instance.api.updateCheck).toHaveBeenCalledWith(EDITED_TCP_CHECK);
+    expect(instance.api?.addCheck).toHaveBeenCalledTimes(0);
+    expect(instance.api?.updateCheck).toHaveBeenCalledWith(EDITED_TCP_CHECK);
   });
 
   it('transforms data correctly for DNS check', async () => {
@@ -218,8 +211,8 @@ describe('editing checks', () => {
     const invertedCheckboxes = await screen.findAllByRole('checkbox');
     await user.click(invertedCheckboxes[2]);
     await submitForm(onReturn, user);
-    expect(instance.api.addCheck).toHaveBeenCalledTimes(0);
-    expect(instance.api.updateCheck).toHaveBeenCalledWith(EDITED_DNS_CHECK);
+    expect(instance.api?.addCheck).toHaveBeenCalledTimes(0);
+    expect(instance.api?.updateCheck).toHaveBeenCalledWith(EDITED_DNS_CHECK);
   });
 
   it('handles custom alert severities', async () => {

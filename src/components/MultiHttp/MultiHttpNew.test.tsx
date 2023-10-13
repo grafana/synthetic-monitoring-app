@@ -1,7 +1,5 @@
 import React from 'react';
 import { screen, waitFor, within } from '@testing-library/react';
-import { locationService } from '@grafana/runtime';
-import { Route, Router } from 'react-router-dom';
 
 import { render } from 'test/render';
 import { CheckType, ROUTES } from 'types';
@@ -16,15 +14,10 @@ beforeEach(() => jest.resetAllMocks());
 const onReturn = jest.fn();
 
 const renderNewMultiForm = async () => {
-  locationService.push(`${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${CheckType.MULTI_HTTP}`);
-
-  const res = render(
-    <Router history={locationService.getHistory()}>
-      <Route path={`${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${CheckType.MULTI_HTTP}`}>
-        <MultiHttpSettingsForm checks={BASIC_CHECK_LIST} onReturn={onReturn} />
-      </Route>
-    </Router>
-  );
+  const res = render(<MultiHttpSettingsForm checks={BASIC_CHECK_LIST} onReturn={onReturn} />, {
+    route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${CheckType.MULTI_HTTP}`,
+    path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${CheckType.MULTI_HTTP}`,
+  });
 
   await waitFor(() => expect(screen.getByText('Probe options')).toBeInTheDocument());
   return res;
@@ -80,8 +73,8 @@ describe('new checks', () => {
 
     await submitForm(onReturn, user);
 
-    expect(instance.api.addCheck).toHaveBeenCalledTimes(1);
-    expect(instance.api.addCheck).toHaveBeenCalledWith(
+    expect(instance.api?.addCheck).toHaveBeenCalledTimes(1);
+    expect(instance.api?.addCheck).toHaveBeenCalledWith(
       expect.objectContaining({
         settings: {
           multihttp: {

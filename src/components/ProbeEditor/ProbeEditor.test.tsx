@@ -137,7 +137,7 @@ it('saves new probe', async () => {
   expect(saveButton).toBeEnabled();
   await user.click(saveButton);
   await screen.findByText('Probe Authentication Token');
-  expect(instance.api.addProbe).toHaveBeenCalledWith(TEST_PROBE);
+  expect(instance.api?.addProbe).toHaveBeenCalledWith(TEST_PROBE);
 });
 
 it('updates existing probe', async () => {
@@ -145,5 +145,5 @@ it('updates existing probe', async () => {
   const saveButton = await screen.findByRole('button', { name: 'Save' });
   await user.click(saveButton);
   await waitFor(() => expect(onReturn).toHaveBeenCalledWith(true));
-  expect(instance.api.updateProbe).toHaveBeenCalledWith(DEFAULT_PROBES[0]);
+  expect(instance.api?.updateProbe).toHaveBeenCalledWith(DEFAULT_PROBES[0]);
 });

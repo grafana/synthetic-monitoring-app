@@ -1,6 +1,5 @@
 import React from 'react';
 import { screen, waitForElementToBeRemoved } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
 
 import { render, createInstance } from 'test/render';
 import { CheckList } from './CheckList';
@@ -121,13 +120,12 @@ const renderCheckList = ({ checks = defaultChecks } = {} as RenderChecklist) => 
   const instance = createInstance();
 
   return render(
-    <MemoryRouter initialEntries={[`${PLUGIN_URL_PATH}${ROUTES.Checks}`]}>
-      <SuccessRateContextProvider checks={checks}>
-        <CheckList instance={instance} checks={checks} onCheckUpdate={onCheckUpdate} />
-      </SuccessRateContextProvider>
-    </MemoryRouter>,
+    <SuccessRateContextProvider checks={checks}>
+      <CheckList instance={instance} checks={checks} onCheckUpdate={onCheckUpdate} />
+    </SuccessRateContextProvider>,
     {
       instance,
+      path: `${PLUGIN_URL_PATH}${ROUTES.Checks}`,
     }
   );
 };
@@ -380,8 +378,8 @@ test('select all performs disable action on all visible checks', async () => {
   await user.click(disableButton);
 
   // await waitFor(() => expect(selectAll).not.toBeChecked());
-  expect(instance.api.updateCheck).toHaveBeenCalledTimes(3);
-  expect(instance.api.updateCheck).toHaveBeenCalledWith({
+  expect(instance.api?.updateCheck).toHaveBeenCalledTimes(3);
+  expect(instance.api?.updateCheck).toHaveBeenCalledWith({
     created: 1597928913.872104,
     enabled: false,
     frequency: 60000,
@@ -396,7 +394,7 @@ test('select all performs disable action on all visible checks', async () => {
     tenantId: 1,
     timeout: 2500,
   });
-  expect(instance.api.updateCheck).toHaveBeenCalledWith({
+  expect(instance.api?.updateCheck).toHaveBeenCalledWith({
     created: 1597928965.8595479,
     enabled: false,
     frequency: 60000,
@@ -411,7 +409,7 @@ test('select all performs disable action on all visible checks', async () => {
     tenantId: 1,
     timeout: 2500,
   });
-  expect(instance.api.updateCheck).toHaveBeenCalledWith({
+  expect(instance.api?.updateCheck).toHaveBeenCalledWith({
     created: 1597928927.7490728,
     enabled: false,
     frequency: 60000,
