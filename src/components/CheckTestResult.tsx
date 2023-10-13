@@ -10,7 +10,7 @@ interface Props {
   loading: boolean;
   start: DateTime;
   end: DateTime;
-  logs: any[];
+  logs: DataFrame;
 }
 
 export function CheckTestResult({ probeName, success, loading, logs, start, end }: Props) {
@@ -53,7 +53,7 @@ export function CheckTestResult({ probeName, success, loading, logs, start, end 
             height={300}
             data={{
               state: LoadingState.Done,
-              series: [logs as unknown as DataFrame],
+              series: [logs],
               timeRange: {
                 from: dateTime(),
                 to: dateTime(),

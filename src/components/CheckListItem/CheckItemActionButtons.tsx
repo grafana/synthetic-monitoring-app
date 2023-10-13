@@ -65,14 +65,14 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon, onRemoveChe
   return (
     <div className={styles.actionButtonGroup}>
       {viewDashboardAsIcon ? (
-        <IconButton name="apps" onClick={showDashboard} />
+        <IconButton name="apps" onClick={showDashboard} tooltip="Go to dashboard" />
       ) : (
         <Button onClick={showDashboard} size="sm" fill="text">
           View dashboard
         </Button>
       )}
       <IconButton
-        aria-label="Edit check"
+        tooltip="Edit check"
         name="pen"
         data-testid="edit-check-button"
         onClick={() => {
@@ -81,7 +81,7 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon, onRemoveChe
         disabled={!hasRole(OrgRole.Editor)}
       />
       <IconButton
-        aria-label="Delete check"
+        tooltip="Delete check"
         name="trash-alt"
         onClick={() => setShowDeleteModal(true)}
         disabled={!hasRole(OrgRole.Editor)}

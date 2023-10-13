@@ -315,7 +315,7 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
             </HorizontalGroup>
             {error && (
               <div className={styles.submitFail}>
-                <Alert title="There was an error updating the alert rule">{error}</Alert>
+                <Alert title="There was an error updating the alert rule">{error.message}</Alert>
               </div>
             )}
           </form>

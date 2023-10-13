@@ -1,7 +1,7 @@
 import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
-import React, { ReactChildren } from 'react';
+import React, { ReactNode } from 'react';
 import { bell, checkSquare, brackets } from 'img';
 
 const getCardStyles = (theme: GrafanaTheme2) => ({
@@ -20,7 +20,7 @@ const icons = {
 };
 
 interface Props {
-  children: ReactChildren;
+  children: ReactNode;
   className?: string;
 }
 

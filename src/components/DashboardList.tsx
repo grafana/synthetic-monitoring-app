@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import { Icon } from '@grafana/ui';
 import { DashboardInfo, SMOptions } from 'datasource/types';
 import { listAppDashboards, importDashboard, removeDashboard } from 'dashboards/loader';
-import { InstanceContext } from 'contexts/InstanceContext';
+import { InstanceContext, InstanceContextValue } from 'contexts/InstanceContext';
 
 interface Props {
   checkUpdates: boolean;
@@ -45,11 +45,12 @@ export class DashboardList extends PureComponent<Props, State> {
 
   onImport = (dashboard: DashboardInfo) => async () => {
     const { onChange, options } = this.props;
-    const { instance } = this.context;
+    // no idea why I need to cast this as 'static contextType = InstanceContext;' has been added above
+    const { instance } = this.context as InstanceContextValue;
     if (!onChange) {
       return;
     }
-    const smDsName = instance?.api?.instanceSettings?.name;
+    const smDsName = instance?.api?.instanceSettings?.name as string;
     const metricsUid = instance?.api?.instanceSettings.jsonData?.metrics?.uid;
     const logsUid = instance?.api?.instanceSettings.jsonData?.logs?.uid;
     const updatedDashboard = await importDashboard(

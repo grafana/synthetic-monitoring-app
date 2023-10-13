@@ -181,7 +181,7 @@ export const HomePage = () => {
   }, [instance.api, scenesEnabled, multiHttpEnabled]);
 
   return (
-    <PluginPage pageNav={{ text: 'Home', description: 'Synthetic Monitoring Home' }}>
+    <PluginPage pageNav={{ text: 'Home' }}>
       <div className={styles.page}>
         <FeaturesBanner />
         <DisplayCard className={cx(styles.card, styles.getStartedGrid)}>

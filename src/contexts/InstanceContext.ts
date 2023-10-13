@@ -2,7 +2,7 @@ import { AppPluginMeta } from '@grafana/data';
 import { createContext } from 'react';
 import { GlobalSettings, GrafanaInstances } from 'types';
 
-interface InstanceContextValue {
+export interface InstanceContextValue {
   loading: boolean;
   instance: GrafanaInstances;
   meta: AppPluginMeta<GlobalSettings> | undefined;
