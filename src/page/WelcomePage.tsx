@@ -6,10 +6,10 @@ import { importAllDashboards } from 'dashboards/loader';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { DataSourceInstanceSettings, GrafanaTheme2, OrgRole, DataSourceJsonData } from '@grafana/data';
 import { css } from '@emotion/css';
-import { colors, LEGACY_LOGS_DS_NAME, LEGACY_METRICS_DS_NAME } from 'components/constants';
+import { colors, LEGACY_LOGS_DS_NAME, LEGACY_METRICS_DS_NAME, PLUGIN_URL_PATH } from 'components/constants';
 import { dashboardScreenshot, dashboardScreenshotLight } from 'img';
 import { isNumber } from 'lodash';
-import { SubmissionErrorWrapper } from 'types';
+import { ROUTES, SubmissionErrorWrapper } from 'types';
 import { DisplayCard } from 'components/DisplayCard';
 import FeaturesBanner from 'components/FeaturesBanner';
 import { PluginPage } from 'components/PluginPage';
@@ -274,7 +274,7 @@ export const WelcomePage: FC<Props> = () => {
       await initializeDatasource(datasourcePayload, dashboards);
 
       // force reload so that GrafanaBootConfig is updated.
-      window.location.reload();
+      window.location.href = `${window.location.origin}${PLUGIN_URL_PATH}${ROUTES.Home}`;
     } catch (e) {
       const err = e as unknown as SubmissionErrorWrapper;
       setError(err.data?.msg ?? err.data?.err ?? 'Something went wrong');
@@ -284,7 +284,7 @@ export const WelcomePage: FC<Props> = () => {
   };
 
   return (
-    <PluginPage pageNav={{ text: 'Welcome', description: 'Welcome to synthetic monitoring' }}>
+    <PluginPage>
       <div className={styles.container}>
         <div className={styles.maxWidth}>
           <div className={styles.headerSection}>

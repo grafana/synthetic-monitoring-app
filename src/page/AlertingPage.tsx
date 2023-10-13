@@ -1,14 +1,16 @@
-import { GrafanaTheme2 } from '@grafana/data';
-import { Button, HorizontalGroup, Icon, Modal, Spinner, useStyles2, Alert } from '@grafana/ui';
 import React, { FC, useState, useContext } from 'react';
-import { css } from '@emotion/css';
-import { useAlerts } from 'hooks/useAlerts';
-import { AlertRuleForm } from './AlertRuleForm';
-import { AlertFormValues, AlertRule } from 'types';
-import { InstanceContext } from 'contexts/InstanceContext';
-import { transformAlertFormValues } from './alertingTransformations';
-import useUnifiedAlertsEnabled from 'hooks/useUnifiedAlertsEnabled';
+import { GrafanaTheme2 } from '@grafana/data';
 import { config } from '@grafana/runtime';
+import { css } from '@emotion/css';
+import { Button, HorizontalGroup, Icon, Modal, Spinner, useStyles2, Alert } from '@grafana/ui';
+
+import { AlertFormValues, AlertRule } from 'types';
+import { useAlerts } from 'hooks/useAlerts';
+import useUnifiedAlertsEnabled from 'hooks/useUnifiedAlertsEnabled';
+import { AlertRuleForm } from 'components/AlertRuleForm';
+import { InstanceContext } from 'contexts/InstanceContext';
+import { transformAlertFormValues } from 'components/alertingTransformations';
+import { PluginPage } from 'components/PluginPage';
 
 type SplitAlertRules = {
   recordingRules: AlertRule[];
@@ -36,7 +38,15 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
 });
 
-export const Alerting: FC = () => {
+export const AlertingPage = () => {
+  return (
+    <PluginPage>
+      <Alerting />
+    </PluginPage>
+  );
+};
+
+const Alerting: FC = () => {
   const styles = useStyles2(getStyles);
   const { alertRules, setDefaultRules, setRules, alertError } = useAlerts();
   const [updatingDefaultRules, setUpdatingDefaultRules] = useState(false);

@@ -126,7 +126,7 @@ const sortSummaryToTop = (dashboardA: DashboardInfo, dashboardB: DashboardInfo) 
   return 0;
 };
 
-const HomePage = () => {
+export const HomePage = () => {
   const styles = useStyles2(getStyles);
   const { instance } = useContext(InstanceContext);
   const [checks, setChecks] = useState<Check[]>([]);
@@ -343,5 +343,3 @@ const HomePage = () => {
     </PluginPage>
   );
 };
-
-export default HomePage;
