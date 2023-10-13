@@ -7,12 +7,12 @@
 #     disabled: false
 #     jsonData:
 #       apiHost: https://synthetic-monitoring-api.grafana.net
-#       stackId: <grafana stack ID>
+#       stackId: <instance ID of your hosted grafana>
 #       logs:
-#         grafanaName: <name of your provisioned logs datasource>
-#         hostedId: <logs cloud instance ID>
+#         grafanaName: <name of an existing Loki datasource pointing to the Grafana Cloud Loki instance>
+#         hostedId: <Grafana Cloud Loki instance ID>
 #       metrics:
-#         grafanaName: <name of your provisioned metrics datasource>
-#         hostedId: <metrics cloud instance ID>
+#         grafanaName: <name of an existing Prometheus datasource pointing to the Grafana Cloud Prometheus instance>
+#         hostedId: <Grafana Cloud Prometheus instance ID>
 #     secureJsonData:
-#       publisherToken: <grafana.com metrics publisher token>
+#       publisherToken: <access policy token with read:stacks, write:metrics, write:logs, and write:traces scope>
