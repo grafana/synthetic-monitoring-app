@@ -35,7 +35,7 @@ export const NameValueInput = ({ name, disabled, limit, label, validateName, val
             `}
           >
             <Input
-              {...register(`${name}.${index}.name`)}
+              {...register(`${name}.${index}.name`, { required: true, validate: validateName })}
               data-testid={`${label}-name-${index}`}
               type="text"
               placeholder="name"
@@ -50,7 +50,7 @@ export const NameValueInput = ({ name, disabled, limit, label, validateName, val
             `}
           >
             <Input
-              {...register(`${name}.${index}.value`)}
+              {...register(`${name}.${index}.value`, { required: true, validate: validateValue })}
               data-testid={`${label}-value-${index}`}
               type="text"
               placeholder="value"
