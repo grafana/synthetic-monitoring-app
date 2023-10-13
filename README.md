@@ -36,7 +36,7 @@ apps:
         grafanaName: <name of an existing Prometheus datasource pointing to the Grafana Cloud Prometheus instance>
         hostedId: <Grafana Cloud Prometheus instance ID>
     secureJsonData:
-      publisherToken: <metric publisher token from grafana.com>
+      publisherToken: <access policy token with read:stacks, write:metrics, write:logs, and write:traces scope>
 ```
 
 Configuration details:
@@ -47,7 +47,11 @@ Configuration details:
 - The `logs` and `metrics` section are instructing the plugin which datasources it needs to use.
   - The `grafanaName` needs to exactly match the names specified in your datasource provisioning
   - The `hostedId` expects an integer and is the same value as the `basicAuthUser` in your datasource provisioning. The value can also be found from the `details` page of loki or prometheus at `https://grafana.com/orgs/<orgSlug>/stacks`.
-- `publisherToken` needs to be a grafana.com api key with a `MetricsPublisher` role. This is what the probes use to publish metrics to your cloud stack.
+- `publisherToken` is an access policy token used to communicate with your Cloud stack and publish telemetry data from the probes. The access policy needs to have the following scopes:
+  - Read stacks
+  - Write metrics
+  - Write logs
+  - Write traces
 
 Note: you can add a provisioning block per [org](https://grafana.com/docs/grafana/latest/manage-users/server-admin/server-admin-manage-orgs/) to provision the plugin for multiple orgs. You can provide different values for each org block and connect to a different cloud stack per org.
 
