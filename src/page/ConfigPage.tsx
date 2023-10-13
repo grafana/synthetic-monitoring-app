@@ -3,9 +3,9 @@ import { css } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Container, Spinner, useStyles2 } from '@grafana/ui';
 
+import { InstanceContext } from 'contexts/InstanceContext';
 import { ConfigActions } from 'components/ConfigActions';
 import { DashboardList } from 'components/DashboardList';
-import { InstanceContext } from 'contexts/InstanceContext';
 import { PluginPage } from 'components/PluginPage';
 import { ProgrammaticManagement } from 'components/ProgrammaticManagement';
 import LinkedDatasourceView from 'components/LinkedDatasourceView';

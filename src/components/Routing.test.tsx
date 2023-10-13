@@ -2,12 +2,15 @@ import React from 'react';
 import { screen } from '@testing-library/react';
 
 import { type CustomRenderOptions, createInstance, render } from 'test/render';
-import { getRoute, Routing } from './Routing';
 import { ROUTES } from 'types';
+import { PLUGIN_URL_PATH } from './constants';
+import { getRoute, Routing } from './Routing';
 
 function renderRouting(options?: CustomRenderOptions) {
   return render(<Routing onNavChanged={jest.fn} />, options);
 }
+
+const notaRoute = `${PLUGIN_URL_PATH}/404`;
 
 describe('Only renders the unprovisioned setup page regardless of route when app is not provisioned', () => {
   Object.entries(ROUTES).map(([key, route]) => {
@@ -15,6 +18,11 @@ describe('Only renders the unprovisioned setup page regardless of route when app
       renderRouting({ path: getRoute(route), meta: { jsonData: undefined } });
       screen.getByText('Provisioning is required for Synthetic Monitoring.');
     });
+  });
+
+  test('Non-existent route (404)', () => {
+    renderRouting({ path: notaRoute, meta: { jsonData: undefined } });
+    screen.getByText('Provisioning is required for Synthetic Monitoring.');
   });
 });
 
@@ -25,6 +33,12 @@ describe('Only renders the welcome page regardless of route when app is not init
       renderRouting({ instance, path: getRoute(route) });
       screen.getByText('Ready to start using synthetic monitoring?');
     });
+  });
+
+  test('Non-existent route (404)', () => {
+    const instance = createInstance({ api: undefined });
+    renderRouting({ instance, path: notaRoute });
+    screen.getByText('Ready to start using synthetic monitoring?');
   });
 });
 
@@ -60,5 +74,11 @@ describe('Routes to pages correctly', () => {
       /Synthetic Monitoring is a blackbox monitoring solution provided as part of/i
     );
     expect(configText).toBeInTheDocument();
+  });
+
+  test('Non-existent route redirects to homepage', async () => {
+    renderRouting({ path: notaRoute });
+    const homePageText = await screen.findByText('What you can do', { selector: 'h2' });
+    expect(homePageText).toBeInTheDocument();
   });
 });

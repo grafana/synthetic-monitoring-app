@@ -1,8 +1,9 @@
 import React from 'react';
-import { PluginPage } from 'components/PluginPage';
+import { css } from '@emotion/css';
 import { Alert, useStyles2 } from '@grafana/ui';
 import { GrafanaTheme2 } from '@grafana/data';
-import { css } from '@emotion/css';
+
+import { PluginPage } from 'components/PluginPage';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   container: css`
