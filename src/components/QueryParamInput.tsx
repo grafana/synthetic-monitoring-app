@@ -44,7 +44,7 @@ const QueryParamInput = ({ queryParam, onChange, onDelete, onBlur }: Props) => (
         })
       }
     />
-    <IconButton name="minus-circle" onClick={onDelete} type="button" />
+    <IconButton name="minus-circle" onClick={onDelete} type="button" tooltip="Delete" />
   </>
 );
 

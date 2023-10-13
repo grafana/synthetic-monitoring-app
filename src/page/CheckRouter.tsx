@@ -7,7 +7,7 @@ import { SuccessRateContextProvider } from 'components/SuccessRateContextProvide
 import { InstanceContext } from 'contexts/InstanceContext';
 import { useNavigation } from 'hooks/useNavigation';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { Route, RouteChildrenProps, Switch, useRouteMatch } from 'react-router-dom';
+import { Route, Switch, useRouteMatch } from 'react-router-dom';
 import { Check, CheckType, ROUTES } from 'types';
 
 export function CheckRouter() {
@@ -47,7 +47,7 @@ export function CheckRouter() {
           <CheckList instance={instance} checks={checks ?? []} onCheckUpdate={returnToList} />
         </Route>
         <Route path={`${path}/new/:checkType?`}>
-          {({ match }: RouteChildrenProps<{ checkType: string }>) =>
+          {({ match }) =>
             match?.params.checkType !== CheckType.MULTI_HTTP ? (
               <CheckEditor onReturn={returnToList} />
             ) : (

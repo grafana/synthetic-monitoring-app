@@ -23,7 +23,7 @@ export function ChooseCheckType() {
   });
 
   return (
-    <PluginPage layout={PageLayoutType?.Standard} pageNav={{ text: 'Choose a check type', description: '' }}>
+    <PluginPage layout={PageLayoutType?.Standard} pageNav={{ text: 'Choose a check type' }}>
       <div className={styles.container}>
         {options?.map((check) => {
           return (

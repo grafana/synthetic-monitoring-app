@@ -57,6 +57,7 @@ export function AssertionsTab({ index, label, active }: MultiHttpTabProps) {
                   onClick={() => {
                     remove(assertionIndex);
                   }}
+                  tooltip="Delete"
                 />
               </HorizontalGroup>
             );

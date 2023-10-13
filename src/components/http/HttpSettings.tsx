@@ -417,7 +417,7 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
                     ) : (
                       <div />
                     )}
-                    <IconButton name="minus-circle" onClick={() => remove(index)} />
+                    <IconButton name="minus-circle" onClick={() => remove(index)} tooltip="Delete" />
                   </Fragment>
                 );
               })}
