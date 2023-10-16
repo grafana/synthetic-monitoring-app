@@ -1,5 +1,12 @@
 # Change Log
 
+# [1.12.2](https://github.com/grafana/synthetic-monitoring-app/compare/v1.12.1...v1.12.2) (2023-10-16)
+
+- Update docs on publisherToken provisioning
+- Persist check filters after they've been selected and fix some layout issues
+- Fix some layout issues in MultiHTTP checks
+- Add check testing to MultiHTTP checks
+
 # [1.12.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.12.0...v1.12.1) (2023-9-21)
 
 - Fix some issues with check type selection
