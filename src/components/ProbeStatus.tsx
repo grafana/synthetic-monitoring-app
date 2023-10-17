@@ -6,6 +6,7 @@ import { hasRole } from 'utils';
 import { SuccessRateGauge } from './SuccessRateGauge';
 import { GrafanaTheme2, OrgRole } from '@grafana/data';
 import { SuccessRateTypes } from 'contexts/SuccessRateContext';
+import { REACHABILITY_DESCRIPTION } from './constants';
 
 interface Props {
   probe: Probe;
@@ -21,14 +22,14 @@ interface BadgeStatus {
 const getStyles = (theme: GrafanaTheme2) => ({
   legend: css`
     margin: 0 ${theme.spacing(1)} 0 0;
+    font-size: 33px;
     width: auto;
   `,
   container: css`
-    padding-left: ${theme.spacing(1)};
     margin-bottom: ${theme.spacing(2)};
   `,
   badgeContainer: css`
-    margin-bottom: ${theme.spacing(1)};
+    margin-bottom: ${theme.spacing(3)};
     display: flex;
     align-items: center;
   `,
@@ -91,8 +92,7 @@ const ProbeStatus = ({ probe, onResetToken }: Props) => {
         title="Reachability"
         id={probe.id!}
         type={SuccessRateTypes.Probes}
-        labelNames={['probe']}
-        labelValues={[probe.name]}
+        infoText={REACHABILITY_DESCRIPTION}
         height={200}
         width={300}
       />

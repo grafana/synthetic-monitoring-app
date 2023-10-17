@@ -12,6 +12,7 @@ import { CheckListItemDetails } from './CheckListItemDetails';
 import { CheckStatusType } from './CheckStatusType';
 import { SuccessRateTypes } from 'contexts/SuccessRateContext';
 import { useUsageCalc } from 'hooks/useUsageCalc';
+import { REACHABILITY_DESCRIPTION, UPTIME_DESCRIPTION } from 'components/constants';
 
 interface Props {
   check: FilteredCheck;
@@ -238,23 +239,21 @@ export const CheckListItem = ({
                 <>
                   <SuccessRateGauge
                     title="Uptime"
+                    infoText={UPTIME_DESCRIPTION}
                     type={SuccessRateTypes.Checks}
                     id={check.id}
-                    labelNames={['instance', 'job']}
-                    labelValues={[check.target, check.job]}
                     height={75}
-                    width={150}
+                    width={125}
                   />
                   <SuccessRateGauge
                     title="Reachability"
+                    infoText={REACHABILITY_DESCRIPTION}
                     type={SuccessRateTypes.Checks}
                     id={check.id}
-                    labelNames={['instance', 'job']}
-                    labelValues={[check.target, check.job]}
                     height={75}
-                    width={150}
+                    width={125}
                   />
-                  <LatencyGauge target={check.target} job={check.job} height={75} width={175} />
+                  <LatencyGauge target={check.target} job={check.job} height={75} width={125} />
                 </>
               )}
             </div>

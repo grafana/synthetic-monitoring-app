@@ -1,5 +1,6 @@
 import { SceneQueryRunner } from '@grafana/scenes';
 import { DataSourceRef, ThresholdsMode } from '@grafana/schema';
+import { UPTIME_DESCRIPTION } from 'components/constants';
 import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
 function getQueryRunner(metrics: DataSourceRef) {
@@ -23,7 +24,7 @@ export function getUptimeStat(metrics: DataSourceRef) {
   return new ExplorablePanel({
     pluginId: 'stat',
     title: 'Uptime',
-    description: 'The fraction of time the target was up during the whole period.',
+    description: UPTIME_DESCRIPTION,
     $data: getQueryRunner(metrics),
     fieldConfig: {
       defaults: {
