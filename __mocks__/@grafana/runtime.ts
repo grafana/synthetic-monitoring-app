@@ -4,6 +4,7 @@ export const getBackendSrv = () => ({
   fetch: {
     toPromise: () => jest.fn().mockResolvedValue({ ok: true }),
   },
+  request: () => jest.fn().mockResolvedValue({ ok: true }),
 });
 
 export const getLocationSrv = () => ({

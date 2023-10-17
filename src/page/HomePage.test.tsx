@@ -2,7 +2,7 @@ import React from 'react';
 import { screen, within } from '@testing-library/react';
 
 import { render } from 'test/render';
-import HomePage from './HomePage';
+import { HomePage } from './HomePage';
 import { CheckInfoContextProvider } from 'components/CheckInfoContextProvider';
 
 const renderHomePage = () => {

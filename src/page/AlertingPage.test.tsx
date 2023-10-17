@@ -4,7 +4,7 @@ import { screen, waitFor, within } from '@testing-library/react';
 import { type UserEvent } from '@testing-library/user-event';
 
 import { render } from 'test/render';
-import { Alerting } from 'components/Alerting';
+import { AlertingPage } from 'page/AlertingPage';
 import {
   ALERT_PROBE_SUCCESS_RECORDING_EXPR,
   DEFAULT_ALERT_NAMES_BY_FAMILY_AND_SENSITIVITY,
@@ -38,7 +38,7 @@ const setDefaultRules = jest.fn();
 const setRules = jest.fn().mockImplementation(() => Promise.resolve({ ok: true }));
 
 const renderAlerting = ({ withAlerting = true } = {}) => {
-  return render(<Alerting />, {
+  return render(<AlertingPage />, {
     instance: {
       alertRuler: withAlerting ? ({ url: 'alertUrl' } as unknown as DataSourceSettings) : undefined,
     },

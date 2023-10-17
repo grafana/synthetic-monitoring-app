@@ -1,13 +1,15 @@
+import React, { useContext, useMemo } from 'react';
 import { Spinner } from '@grafana/ui';
+
+import { FeatureName } from 'types';
 import { ChecksContext } from 'contexts/ChecksContext';
 import { InstanceContext } from 'contexts/InstanceContext';
+import { ChecksContextProvider } from 'components/ChecksContextProvider';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useNavigation } from 'hooks/useNavigation';
-import React, { useContext, useMemo } from 'react';
 import { getDashboardSceneApp } from 'scenes/dashboardSceneApp';
-import { FeatureName } from 'types';
 
-export function DashboardPage() {
+function DashboardPageContent() {
   const { instance } = useContext(InstanceContext);
   const { isEnabled } = useFeatureFlag(FeatureName.Scenes);
   const { isEnabled: multiHttpEnabled } = useFeatureFlag(FeatureName.MultiHttp);
@@ -43,4 +45,12 @@ export function DashboardPage() {
   }
 
   return <scene.Component model={scene} />;
+}
+
+export function DashboardPage() {
+  return (
+    <ChecksContextProvider>
+      <DashboardPageContent />
+    </ChecksContextProvider>
+  );
 }

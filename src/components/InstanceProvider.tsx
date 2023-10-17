@@ -151,10 +151,8 @@ export const InstanceProvider = ({
     throw new Error('There was an error finding datasources required for Synthetic Monitoring');
   }
 
-  const provisioned = Boolean(meta.jsonData?.metrics?.grafanaName);
-
   return (
-    <InstanceContext.Provider value={{ meta, instance: instances, loading: instancesLoading, provisioned }}>
+    <InstanceContext.Provider value={{ meta, instance: instances, loading: instancesLoading }}>
       {children}
     </InstanceContext.Provider>
   );

@@ -6,12 +6,10 @@ export interface InstanceContextValue {
   loading: boolean;
   instance: GrafanaInstances;
   meta: AppPluginMeta<GlobalSettings> | undefined;
-  provisioned?: boolean;
 }
 
 export const InstanceContext = createContext<InstanceContextValue>({
   instance: {},
   loading: true,
   meta: undefined,
-  provisioned: false,
 });

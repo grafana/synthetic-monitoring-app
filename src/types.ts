@@ -537,8 +537,6 @@ export interface UsageValues {
 export enum ROUTES {
   Redirect = 'redirect',
   Home = 'home',
-  Setup = 'setup',
-  Unprovisioned = 'unprovisioned',
   Probes = 'probes',
   NewProbe = 'probes/new',
   EditProbe = 'probes/edit',
