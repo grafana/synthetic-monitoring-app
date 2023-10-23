@@ -1,5 +1,6 @@
 import { SceneQueryRunner } from '@grafana/scenes';
 import { DataSourceRef, ThresholdsMode } from '@grafana/schema';
+import { REACHABILITY_DESCRIPTION } from 'components/constants';
 import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
 function getQueryRunner(metrics: DataSourceRef) {
@@ -29,7 +30,7 @@ export function getReachabilityStat(metrics: DataSourceRef) {
   return new ExplorablePanel({
     pluginId: 'stat',
     title: 'Reachability',
-    description: 'The percentage of all the checks that have succeeded during the whole time period.',
+    description: REACHABILITY_DESCRIPTION,
     $data: runner,
     fieldConfig: {
       overrides: [],

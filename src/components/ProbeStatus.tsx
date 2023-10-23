@@ -87,15 +87,7 @@ const ProbeStatus = ({ probe, onResetToken }: Props) => {
           </Container>
         )}
       </div>
-      <SuccessRateGauge
-        title="Reachability"
-        id={probe.id!}
-        type={SuccessRateTypes.Probes}
-        labelNames={['probe']}
-        labelValues={[probe.name]}
-        height={200}
-        width={300}
-      />
+      <SuccessRateGauge title="Reachability" id={probe.id!} type={SuccessRateTypes.Probes} height={200} width={300} />
     </Container>
   );
 };
