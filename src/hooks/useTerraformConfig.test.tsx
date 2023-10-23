@@ -278,7 +278,6 @@ describe('terraform config generation', () => {
                       },
                       headers: [],
                       method: 'GET',
-                      queryFields: [{}],
                       query_fields: [{}],
                       url: 'https://www.grafana-dev.com',
                     },
@@ -292,7 +291,6 @@ describe('terraform config generation', () => {
                       },
                       headers: [],
                       method: 'POST',
-                      queryFields: [],
                       query_fields: [],
                       url: 'https://secondrequest.com',
                     },
@@ -312,7 +310,6 @@ describe('terraform config generation', () => {
                       },
                       headers: [],
                       method: 'GET',
-                      queryFields: [],
                       query_fields: [],
                       // We need double dollar signs here because of terraform interpolation
                       url: '$${avariable}',

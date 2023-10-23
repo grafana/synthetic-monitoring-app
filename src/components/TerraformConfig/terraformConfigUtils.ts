@@ -120,11 +120,12 @@ const settingsToTF = (check: Check): TFCheckSettings => {
       return {
         multihttp: {
           entries: escaped.entries.map((entry) => {
+            const { queryFields, ...request } = entry.request;
             const transformed: TFMultiHttpEntry = {
               ...entry,
               request: {
-                ...entry.request,
-                query_fields: entry.request.queryFields,
+                ...request,
+                query_fields: queryFields,
                 body: {
                   content_type: entry.request.body?.contentType,
                 },
