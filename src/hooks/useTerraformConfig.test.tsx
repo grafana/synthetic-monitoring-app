@@ -244,7 +244,6 @@ describe('terraform config generation', () => {
     await waitFor(() => {
       expect(result.current.config).not.toBeUndefined();
     });
-    console.log(result.current.config);
     expect(result.current.config).toEqual({
       provider: {
         grafana: {
