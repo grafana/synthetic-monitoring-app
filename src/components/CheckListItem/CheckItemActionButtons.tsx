@@ -1,5 +1,5 @@
-import { GrafanaTheme, AppEvents, OrgRole } from '@grafana/data';
-import { Button, ConfirmModal, IconButton, useStyles } from '@grafana/ui';
+import { GrafanaTheme2, AppEvents, OrgRole } from '@grafana/data';
+import { Button, ConfirmModal, IconButton, useStyles2 } from '@grafana/ui';
 import React, { useContext, useState } from 'react';
 import { css } from '@emotion/css';
 import { Check, FeatureName, ROUTES } from 'types';
@@ -10,16 +10,11 @@ import { useNavigation } from 'hooks/useNavigation';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { PLUGIN_URL_PATH } from 'components/constants';
 
-const getStyles = (theme: GrafanaTheme) => ({
+const getStyles = (theme: GrafanaTheme2) => ({
   actionButtonGroup: css`
     display: flex;
     align-items: center;
-  `,
-  marginRightSmall: css`
-    margin-right: ${theme.spacing.sm};
-  `,
-  marginRightExtraSmall: css`
-    margin-right: ${theme.spacing.xs};
+    gap: ${theme.spacing(1)};
   `,
 });
 
@@ -30,7 +25,7 @@ interface Props {
 }
 
 export const CheckItemActionButtons = ({ check, viewDashboardAsIcon, onRemoveCheck }: Props) => {
-  const styles = useStyles(getStyles);
+  const styles = useStyles2(getStyles);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const checkType = getCheckType(check.settings);
   const { instance } = useContext(InstanceContext);
@@ -70,24 +65,23 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon, onRemoveChe
   return (
     <div className={styles.actionButtonGroup}>
       {viewDashboardAsIcon ? (
-        <IconButton name="apps" onClick={showDashboard} className={styles.marginRightSmall} />
+        <IconButton name="apps" onClick={showDashboard} tooltip="Go to dashboard" />
       ) : (
-        <Button onClick={showDashboard} size="sm" fill="text" className={styles.marginRightExtraSmall}>
+        <Button onClick={showDashboard} size="sm" fill="text">
           View dashboard
         </Button>
       )}
       <IconButton
-        aria-label="Edit check"
+        tooltip="Edit check"
         name="pen"
         data-testid="edit-check-button"
         onClick={() => {
           navigate(`${ROUTES.EditCheck}/${checkType}/${check.id}`);
         }}
         disabled={!hasRole(OrgRole.Editor)}
-        className={styles.marginRightSmall}
       />
       <IconButton
-        aria-label="Delete check"
+        tooltip="Delete check"
         name="trash-alt"
         onClick={() => setShowDeleteModal(true)}
         disabled={!hasRole(OrgRole.Editor)}

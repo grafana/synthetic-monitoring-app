@@ -20,7 +20,10 @@ import {
   Settings,
   HttpMethod,
   MultiHttpVariableType,
+  MultiHttpAssertionType,
 } from 'types';
+import { AssertionConditionVariant, AssertionSubjectVariant } from './MultiHttp/MultiHttpTypes';
+import { SelectableValue } from '@grafana/data';
 
 export const DNS_RESPONSE_CODES = enumToStringArray(DnsResponseCodes).map((responseCode) => ({
   label: responseCode,
@@ -108,7 +111,7 @@ export const CHECK_FILTER_OPTIONS = [
     value: CheckType.HTTP,
   },
   {
-    label: 'MULTI-HTTP',
+    label: 'MULTIHTTP',
     value: CheckType.MULTI_HTTP,
   },
   {
@@ -133,26 +136,32 @@ export const CHECK_TYPE_OPTIONS = [
   {
     label: 'HTTP',
     value: CheckType.HTTP,
+    description: 'Measures a web endpoint for availability, response time, SSL certificate expiration and more.',
   },
   {
-    label: 'MULTI-HTTP',
+    label: 'MULTIHTTP',
     value: CheckType.MULTI_HTTP,
+    description: 'Check multiple web endpoints in sequence',
   },
   {
     label: 'PING',
     value: CheckType.PING,
+    description: 'Check a host for availability and response time.',
   },
   {
     label: 'DNS',
     value: CheckType.DNS,
+    description: 'Ensures a domain resolves and measures the average time for the resolution to happen',
   },
   {
     label: 'TCP',
     value: CheckType.TCP,
+    description: 'Ensures a hostname and port accept a connection and measures performance',
   },
   {
     label: 'Traceroute',
     value: CheckType.Traceroute,
+    description: 'Trace the path of a request through the internet',
   },
 ];
 
@@ -359,6 +368,7 @@ export function fallbackSettings(t: CheckType): Settings {
                 method: 'GET',
                 url: '',
               },
+              checks: [],
             },
           ],
         },
@@ -454,4 +464,25 @@ export const MULTI_HTTP_VARIABLE_TYPE_OPTIONS = [
   { label: 'JSON Path', value: MultiHttpVariableType.JSON_PATH },
   { label: 'Regular Expression', value: MultiHttpVariableType.REGEX },
   { label: 'CSS Selector', value: MultiHttpVariableType.CSS_SELECTOR },
+];
+
+export const MULTI_HTTP_ASSERTION_TYPE_OPTIONS = [
+  { label: 'Text', value: MultiHttpAssertionType.Text },
+  { label: 'JSON path value', value: MultiHttpAssertionType.JSONPathValue },
+  { label: 'JSON path', value: MultiHttpAssertionType.JSONPath },
+  { label: 'Regex', value: MultiHttpAssertionType.Regex },
+];
+
+export const ASSERTION_CONDITION_OPTIONS: Array<SelectableValue<AssertionConditionVariant>> = [
+  { label: 'Contains', value: AssertionConditionVariant.Contains },
+  { label: 'Does not contain', value: AssertionConditionVariant.NotContains },
+  { label: 'Equals', value: AssertionConditionVariant.Equals },
+  { label: 'Starts with', value: AssertionConditionVariant.StartsWith },
+  { label: 'Ends with', value: AssertionConditionVariant.EndsWith },
+];
+
+export const ASSERTION_SUBJECT_OPTIONS: Array<SelectableValue<AssertionSubjectVariant>> = [
+  { label: 'Body', value: AssertionSubjectVariant.ResponseBody },
+  { label: 'Headers', value: AssertionSubjectVariant.ResponseHeaders },
+  { label: 'HTTP status code', value: AssertionSubjectVariant.HttpStatusCode },
 ];

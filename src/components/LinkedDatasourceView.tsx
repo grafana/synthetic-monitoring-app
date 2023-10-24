@@ -1,17 +1,28 @@
-import React from 'react';
-import { LinkedDatasourceInfo } from 'datasource/types';
+import React, { useContext } from 'react';
 import { Spinner } from '@grafana/ui';
 import { useNavigation } from 'hooks/useNavigation';
 import { ROUTES } from 'types';
 import { findLinkedDatasource } from 'utils';
+import { InstanceContext } from 'contexts/InstanceContext';
 
 interface Props {
-  info: LinkedDatasourceInfo;
+  type: 'loki' | 'prometheus';
 }
 
-const LinkedDatasourceView = ({ info }: Props) => {
+const LinkedDatasourceView = ({ type }: Props) => {
   const navigate = useNavigation();
-  const datasource = findLinkedDatasource(info);
+  const { instance, meta } = useContext(InstanceContext);
+  if (!instance.metrics || !instance.logs) {
+    return <Spinner />;
+  }
+
+  const info = type === 'prometheus' ? instance.metrics : instance.logs;
+  const hostedId = type === 'prometheus' ? meta?.jsonData?.metrics.hostedId : meta?.jsonData?.logs.hostedId;
+  const datasource = findLinkedDatasource({
+    grafanaName: info.name,
+    hostedId: hostedId ?? 0,
+    uid: info.uid,
+  });
 
   const handleClick = () => {
     if (datasource?.type === 'synthetic-monitoring-datasource') {

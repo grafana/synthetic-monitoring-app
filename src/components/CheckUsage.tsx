@@ -1,31 +1,31 @@
+import { css } from '@emotion/css';
+import { GrafanaTheme2 } from '@grafana/data';
+import { Icon, useStyles2 } from '@grafana/ui';
+import { useUsageCalc } from 'hooks/useUsageCalc';
 import React, { FC } from 'react';
 import { useFormContext } from 'react-hook-form';
-import { css } from '@emotion/css';
-import { GrafanaTheme } from '@grafana/data';
-import { useStyles, Icon } from '@grafana/ui';
-import { Check, CheckType } from 'types';
-import { useUsageCalc } from 'hooks/useUsageCalc';
+import { Check, CheckType, MultiHttpEntryFormValues } from 'types';
 
-const getStyles = (theme: GrafanaTheme) => ({
+const getStyles = (theme: GrafanaTheme2) => ({
   container: css`
-    background-color: ${theme.colors.bg2};
-    padding: ${theme.spacing.lg};
-    margin-bottom: ${theme.spacing.md};
+    background-color: ${theme.colors.background.secondary};
+    padding: ${theme.spacing(3)};
+    margin-bottom: ${theme.spacing(2)};
   `,
   header: css`
-    margin-bottom: ${theme.spacing.md};
+    margin-bottom: ${theme.spacing(2)};
   `,
   icon: css`
-    margin-right: ${theme.spacing.sm};
+    margin-right: ${theme.spacing(1)};
   `,
   section: css`
-    margin-bottom: ${theme.spacing.sm};
+    margin-bottom: ${theme.spacing(1)};
   `,
   helpSection: css`
-    margin-top: ${theme.spacing.md};
+    margin-top: ${theme.spacing(2)};
   `,
   value: css`
-    margin-left: ${theme.spacing.xs};
+    margin-left: ${theme.spacing(0.5)};
   `,
   link: css`
     text-decoration: underline;
@@ -36,31 +36,37 @@ const getCheckFromValues = (
   checkType: CheckType | undefined,
   frequency = 0,
   probes: number[] = [],
-  publishAdvancedMetrics = false
+  publishAdvancedMetrics = false,
+  entries: MultiHttpEntryFormValues[]
 ): Partial<Check> | undefined => {
   if (!checkType) {
     return;
+  }
+  const settings: any = {};
+  if (checkType === CheckType.MULTI_HTTP) {
+    settings.entries = entries;
   }
   return {
     frequency: frequency * 1000,
     probes,
     basicMetricsOnly: !publishAdvancedMetrics,
     settings: {
-      [checkType]: {},
+      [checkType]: settings,
     },
   };
 };
 
 export const CheckUsage: FC = () => {
-  const styles = useStyles(getStyles);
+  const styles = useStyles2(getStyles);
   const { watch } = useFormContext();
-  const [checkType, frequency, probes, publishAdvancedMetrics] = watch([
+  const [checkType, frequency, probes, publishAdvancedMetrics, entries] = watch([
     'checkType',
     'frequency',
     'probes',
     'publishAdvancedMetrics',
+    'settings.multihttp.entries',
   ]);
-  const check = getCheckFromValues(checkType?.value, frequency, probes, publishAdvancedMetrics);
+  const check = getCheckFromValues(checkType?.value, frequency, probes, publishAdvancedMetrics, entries);
   const usage = useUsageCalc(check);
 
   if (!usage) {

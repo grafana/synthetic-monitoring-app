@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import ProbesByRegion from './ProbesByRegion';
 
-import { Button, HorizontalGroup, Modal, LoadingPlaceholder, useStyles } from '@grafana/ui';
+import { Button, HorizontalGroup, Modal, LoadingPlaceholder, useStyles2 } from '@grafana/ui';
 import { FilteredCheck, GrafanaInstances, Probe } from 'types';
-import { GrafanaTheme } from '@grafana/data';
+import { GrafanaTheme2 } from '@grafana/data';
 import { css } from '@emotion/css';
 import { intersection } from 'lodash';
 
@@ -21,9 +21,9 @@ interface Props {
   isOpen: boolean;
 }
 
-export const style = (theme: GrafanaTheme) => ({
+const getStyles = (theme: GrafanaTheme2) => ({
   buttonGroup: css`
-    margin: ${theme.spacing.md};
+    margin: ${theme.spacing(2)};
     margin-left: 0;
     display: flex;
     flex-wrap: wrap;
@@ -31,19 +31,8 @@ export const style = (theme: GrafanaTheme) => ({
     width: 90%;
   `,
   verticalSpace: css`
-    margin-top: ${theme.spacing.sm};
-    margin-bottom: ${theme.spacing.sm};
-  `,
-  bottomSpace: css`
-    margin-bottom: ${theme.spacing.md};
-  `,
-  probesWrapper: css`
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-  `,
-  halfWidth: css`
-    width: 50%;
+    margin-top: ${theme.spacing(1)};
+    margin-bottom: ${theme.spacing(1)};
   `,
 });
 
@@ -55,7 +44,7 @@ const BulkEditModal = ({ onDismiss, onSuccess, onError, isOpen, selectedChecks, 
   const [loading, setLoading] = useState<boolean>(false);
   const checks = selectedChecks();
 
-  const styles = useStyles(style);
+  const styles = useStyles2(getStyles);
 
   const submitProbeUpdates = useCallback(async () => {
     let newChecks: FilteredCheck[] = [];
@@ -100,7 +89,7 @@ const BulkEditModal = ({ onDismiss, onSuccess, onError, isOpen, selectedChecks, 
   }, [selectedProbes, checks, instance, action, probesToRemove, onDismiss, onError, onSuccess]);
 
   const addOrRemoveProbe = useCallback(
-    (probe) => {
+    (probe: Probe) => {
       if (!selectedProbes.includes(probe)) {
         setSelectedProbes((sp) => [...sp, probe]);
       } else {
@@ -112,7 +101,7 @@ const BulkEditModal = ({ onDismiss, onSuccess, onError, isOpen, selectedChecks, 
   );
 
   const addOrRemoveCommonProbe = useCallback(
-    (probe) => {
+    (probe: number) => {
       if (!probesToRemove.includes(probe)) {
         setProbesToRemove((ptr) => [...ptr, probe]);
       } else {

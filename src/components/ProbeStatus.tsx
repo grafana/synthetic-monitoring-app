@@ -1,20 +1,10 @@
 import React, { useState } from 'react';
 import { css } from '@emotion/css';
-import {
-  Badge,
-  BadgeColor,
-  Button,
-  Container,
-  ConfirmModal,
-  Legend,
-  IconName,
-  stylesFactory,
-  useTheme,
-} from '@grafana/ui';
+import { Badge, BadgeColor, Button, Container, ConfirmModal, Legend, IconName, useStyles2 } from '@grafana/ui';
 import { Probe } from 'types';
 import { hasRole } from 'utils';
 import { SuccessRateGauge } from './SuccessRateGauge';
-import { GrafanaTheme, OrgRole } from '@grafana/data';
+import { GrafanaTheme2, OrgRole } from '@grafana/data';
 import { SuccessRateTypes } from 'contexts/SuccessRateContext';
 
 interface Props {
@@ -28,21 +18,21 @@ interface BadgeStatus {
   icon: IconName;
 }
 
-const getStyles = stylesFactory((theme: GrafanaTheme) => ({
+const getStyles = (theme: GrafanaTheme2) => ({
   legend: css`
-    margin: 0 ${theme.spacing.sm} 0 0;
+    margin: 0 ${theme.spacing(1)} 0 0;
     width: auto;
   `,
   container: css`
-    padding-left: ${theme.spacing.sm};
-    margin-bottom: ${theme.spacing.md};
+    padding-left: ${theme.spacing(1)};
+    margin-bottom: ${theme.spacing(2)};
   `,
   badgeContainer: css`
-    margin-bottom: ${theme.spacing.sm};
+    margin-bottom: ${theme.spacing(1)};
     display: flex;
     align-items: center;
   `,
-}));
+});
 
 const getBadgeStatus = (online: boolean): BadgeStatus => {
   if (online) {
@@ -61,15 +51,13 @@ const getBadgeStatus = (online: boolean): BadgeStatus => {
 
 const ProbeStatus = ({ probe, onResetToken }: Props) => {
   const [showResetModal, setShowResetModal] = useState(false);
-  const theme = useTheme();
+  const styles = useStyles2(getStyles);
 
   if (!probe) {
     return null;
   }
   const isEditor = !probe.public && hasRole(OrgRole.Editor);
   const badgeStatus = getBadgeStatus(probe.online);
-
-  const styles = getStyles(theme);
 
   const handleResetToken = () => {
     onResetToken();

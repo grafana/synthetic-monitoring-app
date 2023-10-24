@@ -16,5 +16,5 @@ module.exports = {
   },
   // testTimeout: 30000,
   // Inform jest to only transform specific node_module packages.
-  transformIgnorePatterns: [nodeModulesToTransform([...grafanaESModules, 'yaml'])],
+  transformIgnorePatterns: [nodeModulesToTransform([...grafanaESModules, 'yaml', '@grafana/schema'])],
 };

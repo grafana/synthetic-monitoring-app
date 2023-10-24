@@ -133,6 +133,10 @@ export function SuccessRateContextProvider({ checks, probes, children }: PropsWi
   const [successRateValues, setSuccessRate] = useState<SuccessRates>(defaultValues);
   const [loading, setLoading] = useState(true);
   const [thresholds, setThresholds] = useState<ThresholdSettings>(defaultThresholds);
+  const [shouldUpdate, setShouldUpdate] = useState(true);
+
+  const pauseUpdates = () => setShouldUpdate(false);
+  const resumeUpdates = () => setShouldUpdate(true);
 
   const updateSuccessRate = (type: SuccessRateTypes, id: number | undefined, successRate: number | undefined) => {
     if (!id) {
@@ -150,7 +154,7 @@ export function SuccessRateContextProvider({ checks, probes, children }: PropsWi
 
   useEffect(() => {
     const getSuccessRates = async () => {
-      setLoading(true);
+      // setLoading(true);
       const checkReachabilityQuery =
         'sum(rate(probe_all_success_sum[3h])) by (job, instance) / sum(rate(probe_all_success_count[3h])) by (job, instance)';
       const probeReachabilityQuery =
@@ -202,14 +206,18 @@ export function SuccessRateContextProvider({ checks, probes, children }: PropsWi
     };
 
     // Fetch on initial load
-    getSuccessRates();
+    if (shouldUpdate) {
+      getSuccessRates();
+    }
     // Refresh data every 60 seconds
     const interval = setInterval(() => {
-      getSuccessRates();
+      if (shouldUpdate) {
+        getSuccessRates();
+      }
     }, 60 * 1000);
 
     return () => clearInterval(interval);
-  }, [checks, instance.api, probes]);
+  }, [checks, instance.api, probes, shouldUpdate]);
 
   const updateThresholds = async () => {
     const { thresholds } = await instance.api?.getTenantSettings();
@@ -224,7 +232,15 @@ export function SuccessRateContextProvider({ checks, probes, children }: PropsWi
 
   return (
     <SuccessRateContext.Provider
-      value={{ values: successRateValues, loading, updateSuccessRate, thresholds, updateThresholds }}
+      value={{
+        values: successRateValues,
+        loading,
+        updateSuccessRate,
+        thresholds,
+        updateThresholds,
+        pauseUpdates,
+        resumeUpdates,
+      }}
     >
       {children}
     </SuccessRateContext.Provider>

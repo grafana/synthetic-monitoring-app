@@ -1,5 +1,73 @@
 # Change Log
 
+# [1.12.2](https://github.com/grafana/synthetic-monitoring-app/compare/v1.12.1...v1.12.2) (2023-10-16)
+
+- Update docs on publisherToken provisioning
+- Persist check filters after they've been selected and fix some layout issues
+- Fix some layout issues in MultiHTTP checks
+- Add check testing to MultiHTTP checks
+
+# [1.12.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.12.0...v1.12.1) (2023-9-21)
+
+- Fix some issues with check type selection
+- Add a MultiHTTP usage calculator
+
+# [1.12.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.11.7...v1.12.0) (2023-9-20)
+
+- Allow all users to view alerts, and editors to edit them
+- Fix spacing issues in the test check modal
+- Update template dashboard JSON that was causing Grafana to crash on copy
+- Update MultiHTTP URL validation
+- Remove some old feature flags
+- Remove the deprecated check list visualization view
+
+# [1.11.7](https://github.com/grafana/synthetic-monitoring-app/compare/v1.11.6...v1.11.7) (2023-9-1)
+
+- Add filtering and search to the check list visualization view
+- Add enable/disable to the MultiHTTP form
+- Fix query param fields in MultiHTTP
+- Remove worldmap panel dependency
+
+# [1.11.6](https://github.com/grafana/synthetic-monitoring-app/compare/v1.11.5...v1.11.6) (2023-8-23)
+
+- Add an explore button to visualization menus
+- Encode/decode MultiHTTP request bodies in base64
+
+# [1.11.5](https://github.com/grafana/synthetic-monitoring-app/compare/v1.11.4...v1.11.5) (2023-8-14)
+
+- Add alerting levels to MultiHTTP
+- Fix error rate maps no filtering by probes
+- Make the check editor back button less confusing
+- Remove deprecated ArrayVector
+- Fix some URL validation
+- Various layout issues
+
+# [1.11.4](https://github.com/grafana/synthetic-monitoring-app/compare/v1.11.3...v1.11.4) (2023-7-19)
+
+- Fix an unhandled error in the traceroute nodegraph panel
+- Various tweaks to the MultiHTTP scene and form
+
+# [1.11.3](https://github.com/grafana/synthetic-monitoring-app/compare/v1.11.2...v1.11.3) (2023-7-10)
+
+- Fix an incorrect frequency value in the HTTP scene
+- Add an "edit check" button to all scenes
+
+# [1.11.2](https://github.com/grafana/synthetic-monitoring-app/compare/v1.11.1...v1.11.2) (2023-26-1)
+
+- Fix broken dashboard link from summary page
+- Fix repeated "dashboard" on summary page
+
+# [1.11.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.11.0...v1.11.1) (2023-26-1)
+
+- Add a multihttp scene behind a feature flag
+
+# [1.11.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.10.1...v1.11.0) (2023-6-1)
+
+- Include some fixes for scenes
+- Fix some issues with identifying datasources when an instance is renamed
+- Replace the visualization list view with a scene
+- Remove legacy theming
+
 # [1.10.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.10.0...v1.10.1) (2023-4-26)
 
 - Suppress an erroneous error toast in the alerting view

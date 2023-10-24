@@ -1,8 +1,9 @@
-import { SceneQueryRunner, VizPanel } from '@grafana/scenes';
+import { SceneDataTransformer, SceneQueryRunner } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
+import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
 function getQueryRunner(metrics: DataSourceRef) {
-  return new SceneQueryRunner({
+  const queryRunner = new SceneQueryRunner({
     datasource: metrics,
     queries: [
       {
@@ -12,7 +13,21 @@ function getQueryRunner(metrics: DataSourceRef) {
               sm_check_info{instance="$instance", job="$job", probe=~"$probe"}
           )
         )`,
+        instant: true,
         refId: 'D',
+      },
+    ],
+  });
+  return new SceneDataTransformer({
+    $data: queryRunner,
+    transformations: [
+      {
+        id: 'labelsToFields',
+        options: {},
+      },
+      {
+        id: 'merge',
+        options: {},
       },
     ],
   });
@@ -20,7 +35,7 @@ function getQueryRunner(metrics: DataSourceRef) {
 
 export function getFrequencyStat(metrics: DataSourceRef) {
   const queryRunner = getQueryRunner(metrics);
-  return new VizPanel({
+  return new ExplorablePanel({
     pluginId: 'stat',
     title: 'Frequency',
     description: 'How often is the target checked?',
@@ -36,6 +51,13 @@ export function getFrequencyStat(metrics: DataSourceRef) {
         unit: 'ms',
       },
       overrides: [],
+    },
+    options: {
+      reduceOptions: {
+        values: false,
+        calcs: ['lastNotNull'],
+        fields: '/^frequency$/',
+      },
     },
   });
 }

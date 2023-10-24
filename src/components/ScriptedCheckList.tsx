@@ -10,7 +10,7 @@ export function ScriptedCheckList() {
 
   if (checks.length === 0) {
     return (
-      <PluginPage pageNav={{ text: 'Scripted checks', description: 'List of checks' }}>
+      <PluginPage pageNav={{ text: 'Scripted checks' }}>
         <Alert
           severity="info"
           title="Grafana Cloud Synthetic Monitoring"
@@ -28,7 +28,7 @@ export function ScriptedCheckList() {
   }
 
   return (
-    <PluginPage pageNav={{ text: 'Scripted checks', description: 'List of checks' }}>
+    <PluginPage pageNav={{ text: 'Scripted checks' }}>
       <Button onClick={() => navigate(`${ROUTES.ScriptedChecks}/new`)}>Add new</Button>
       <ul>
         {checks.map((check, index) => {

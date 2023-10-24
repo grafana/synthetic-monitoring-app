@@ -1,29 +1,29 @@
-import { useStyles, Input, Button, Label, Field } from '@grafana/ui';
+import { Input, Button, Label, Field, useStyles2 } from '@grafana/ui';
 import React, { FC, Fragment } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { SubCollapse } from './SubCollapse';
 import { css } from '@emotion/css';
-import { GrafanaTheme } from '@grafana/data';
+import { GrafanaTheme2 } from '@grafana/data';
 import { validateLabelName, validateLabelValue } from 'validation';
 
-const getStyles = (theme: GrafanaTheme) => ({
+const getStyles = (theme: GrafanaTheme2) => ({
   grid: css`
     display: grid;
     grid-template-columns: 1fr 1fr auto;
-    grid-column-gap: ${theme.spacing.lg};
-    grid-row-gap: ${theme.spacing.sm};
+    grid-column-gap: ${theme.spacing(2)};
+    grid-row-gap: ${theme.spacing(1)};
   `,
   addButton: css`
-    margin-bottom: ${theme.spacing.md};
+    margin-bottom: ${theme.spacing(2)};
   `,
   helpText: css`
-    font-size: ${theme.typography.size.sm};
+    font-size: ${theme.typography.bodySmall.fontSize};
   `,
 });
 const NAME = 'labels';
 
 export const AlertLabels: FC = () => {
-  const styles = useStyles(getStyles);
+  const styles = useStyles2(getStyles);
   const {
     control,
     register,

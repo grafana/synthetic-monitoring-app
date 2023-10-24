@@ -2,6 +2,7 @@ import { getBackendSrv } from '@grafana/runtime';
 import { Alert, Button, HorizontalGroup, Modal, Spinner } from '@grafana/ui';
 import React, { useContext, useState } from 'react';
 import { InstanceContext } from 'contexts/InstanceContext';
+import { FaroEvent, reportEvent } from 'faro';
 
 type Props = {
   isOpen: boolean;
@@ -15,6 +16,7 @@ export const DisablePluginModal = ({ isOpen, onDismiss, pluginId }: Props) => {
 
   const disableTenant = async () => {
     try {
+      reportEvent(FaroEvent.DISABLE_PLUGIN);
       await instance.api?.disableTenant();
       await getBackendSrv()
         .fetch({
@@ -29,6 +31,7 @@ export const DisablePluginModal = ({ isOpen, onDismiss, pluginId }: Props) => {
       window.location.reload();
     } catch (e) {
       const err = e as Error;
+      reportError(e);
       setError(err.message ?? 'Something went wrong trying to disable the plugin. Please contact support.');
     }
   };

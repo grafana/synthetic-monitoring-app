@@ -1,4 +1,4 @@
-import { calculateUsage } from 'checkUsageCalc';
+import { calculateMultiHTTPUsage, calculateUsage } from 'checkUsageCalc';
 import { CheckInfoContext } from 'contexts/CheckInfoContext';
 import { AccountingClassNames } from 'datasource/types';
 import { useContext } from 'react';
@@ -77,6 +77,9 @@ export function useUsageCalc(checks?: Partial<Check> | Check[]) {
   }
 
   const seriesPerCheck = checkInfo.AccountingClasses[accountingClass]?.Series;
+  if (accountingClass === AccountingClassNames.multihttp_basic) {
+    return calculateMultiHTTPUsage(checks);
+  }
   if (seriesPerCheck === undefined) {
     return;
   }

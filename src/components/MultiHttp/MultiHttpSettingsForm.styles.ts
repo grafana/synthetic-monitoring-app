@@ -7,13 +7,12 @@ export const getMultiHttpFormStyles = (theme: GrafanaTheme2) => ({
     flex-direction: column;
     margin-top: 15px;
     justify-content: space-evenly;
-    gap: 20px;
+    gap: ${theme.spacing(1)};
     align-self: flex-start;
     align-items: content;
     position: relative;
   `,
   collapseTarget: css`
-    width: 90vw;
     background-color: ${theme.colors.background.secondary};
     max-height: 100%;
   `,
@@ -47,13 +46,12 @@ export const getMultiHttpFormStyles = (theme: GrafanaTheme2) => ({
     margin-bottom: 16px;
   `,
   removeRequestButton: css`
-    align-self: auto;
-    margin-top: 20px;
+    margin-top: 35px;
   `,
   form: css`
-    position: relative;
+    width: 100%;
   `,
-  submitMultiHttpButton: css`
-    width: 90vw;
+  requestTargetInput: css`
+    min-width: ${theme.spacing(40)};
   `,
 });

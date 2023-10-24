@@ -1,7 +1,8 @@
 import React from 'react';
-import { Button, useStyles } from '@grafana/ui';
+import { Button, useStyles2 } from '@grafana/ui';
 import { Probe } from 'types';
-import { style } from './BulkEditModal';
+import { GrafanaTheme2 } from '@grafana/data';
+import { css } from '@emotion/css';
 
 interface Props {
   probes: Probe[];
@@ -21,6 +22,22 @@ interface ProbeButtonProps {
   addOrRemoveProbe: (probe: Probe) => void;
 }
 
+const getStyles = (theme: GrafanaTheme2) => ({
+  buttonGroup: css`
+    margin: ${theme.spacing(2)};
+    margin-left: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    width: 90%;
+  `,
+  probesWrapper: css`
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+  `,
+});
+
 const ProbeButton = ({ probe, selectedProbes, commonProbes, addOrRemoveProbe }: ProbeButtonProps) => {
   const isCommonProbe = probe.id && commonProbes.includes(probe.id);
 
@@ -38,7 +55,7 @@ const ProbeButton = ({ probe, selectedProbes, commonProbes, addOrRemoveProbe }: 
 };
 
 const ProbesByRegion = ({ probes, selectedProbes, commonProbes, addOrRemoveProbe }: Props) => {
-  const styles = useStyles(style);
+  const styles = useStyles2(getStyles);
 
   // Group probes by region
   const probesByRegion = probes.reduce<RegionMapping>((acc, probe) => {

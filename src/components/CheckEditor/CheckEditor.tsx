@@ -1,79 +1,52 @@
-import React, { useState, useMemo, useContext } from 'react';
 import { css } from '@emotion/css';
+import { GrafanaTheme2, OrgRole } from '@grafana/data';
+import { config } from '@grafana/runtime';
 import {
+  Alert,
   Button,
   ConfirmModal,
   Field,
+  HorizontalGroup,
   Input,
   Legend,
-  Alert,
-  useStyles,
   LinkButton,
-  HorizontalGroup,
-  Select,
-  Spinner,
+  useStyles2,
 } from '@grafana/ui';
-import { useAsyncCallback } from 'react-async-hook';
-import {
-  Check,
-  CheckType,
-  CheckFormValues,
-  SubmissionErrorWrapper,
-  FeatureName,
-  CheckPageParams,
-  AdHocCheckResponse,
-} from 'types';
-import { hasRole, checkType as getCheckType } from 'utils';
-import {
-  getDefaultValuesFromCheck,
-  getCheckFromFormValues,
-  checkTypeParamToCheckType,
-} from './checkFormTransformations';
-import { validateJob, validateTarget } from 'validation';
+import { CheckFormAlert } from 'components/CheckFormAlert';
 import CheckTarget from 'components/CheckTarget';
+import { CheckTestButton } from 'components/CheckTestButton';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
+import { PluginPage } from 'components/PluginPage';
+import { fallbackCheck } from 'components/constants';
+import { InstanceContext } from 'contexts/InstanceContext';
+import { FaroEvent, reportError, reportEvent } from 'faro';
+import React, { useContext, useMemo, useState } from 'react';
+import { useAsyncCallback } from 'react-async-hook';
+import { Controller, FormProvider, useForm } from 'react-hook-form';
+import { useParams } from 'react-router-dom';
+import { Check, CheckFormValues, CheckPageParams, CheckType, SubmissionErrorWrapper } from 'types';
+import { checkType as getCheckType, hasRole } from 'utils';
+import { validateJob, validateTarget } from 'validation';
+import { CheckUsage } from '../CheckUsage';
 import { CheckSettings } from './CheckSettings';
 import { ProbeOptions } from './ProbeOptions';
-import { CHECK_TYPE_OPTIONS, fallbackCheck } from 'components/constants';
-import { useForm, FormProvider, Controller } from 'react-hook-form';
-import { GrafanaTheme, OrgRole } from '@grafana/data';
-import { CheckUsage } from '../CheckUsage';
-import { CheckFormAlert } from 'components/CheckFormAlert';
-import { InstanceContext } from 'contexts/InstanceContext';
-import { trackEvent, trackException } from 'analytics';
-import { useParams } from 'react-router-dom';
-import { PluginPage } from 'components/PluginPage';
-import { config } from '@grafana/runtime';
-import { CheckTestResultsModal } from 'components/CheckTestResultsModal';
-import { FeatureFlag } from 'components/FeatureFlag';
-import { useFeatureFlag } from 'hooks/useFeatureFlag';
+import {
+  checkTypeParamToCheckType,
+  getCheckFromFormValues,
+  getDefaultValuesFromCheck,
+} from './checkFormTransformations';
 
 interface Props {
   checks?: Check[];
   onReturn: (reload: boolean) => void;
 }
 
-const getStyles = (theme: GrafanaTheme) => ({
-  formBody: css`
-    margin-bottom: ${theme.spacing.sm};
-  `,
-  enabledField: css`
-    display: flex;
-    align-items: flex-start;
-    margin-bottom: ${theme.spacing.md};
-  `,
-  enabledCheckbox: css`
-    margin-right: ${theme.spacing.sm};
-    display: flex;
-  `,
+const getStyles = (theme: GrafanaTheme2) => ({
   breakLine: css`
-    margin-top: ${theme.spacing.lg};
+    margin-top: ${theme.spacing(3)};
   `,
   submissionError: css`
-    margin-top: ${theme.spacing.md};
-  `,
-  buttonGroup: css`
-    gap: ${theme.spacing.sm};
+    margin-top: ${theme.spacing(2)};
   `,
 });
 
@@ -82,11 +55,7 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
     instance: { api },
   } = useContext(InstanceContext);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [isTestModalOpen, setTestModalOpen] = useState(false);
-  const [testResponse, setTestResponse] = useState<AdHocCheckResponse>();
-  const [testRequestInFlight, setTestRequestInFlight] = useState(false);
-  const styles = useStyles(getStyles);
-  const { isEnabled: tracerouteEnabled } = useFeatureFlag(FeatureName.Traceroute);
+  const styles = useStyles2(getStyles);
   // If we're editing, grab the appropriate check from the list
   const { id, checkType: checkTypeParam } = useParams<CheckPageParams>();
   let checkType = checkTypeParamToCheckType(checkTypeParam);
@@ -114,72 +83,40 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
   } = useAsyncCallback(async (checkValues: CheckFormValues) => {
     const updatedCheck = getCheckFromFormValues(checkValues, defaultValues, checkType);
     if (check?.id) {
-      trackEvent('editCheckSubmit');
+      reportEvent(FaroEvent.UPDATE_CHECK, { type: checkType });
       await api?.updateCheck({
         id: check.id,
         tenantId: check.tenantId,
         ...updatedCheck,
       });
     } else {
-      trackEvent('addNewCheckSubmit');
+      reportEvent(FaroEvent.CREATE_CHECK);
       await api?.addCheck(updatedCheck);
     }
     onReturn(true);
   });
   const submissionError = error as unknown as SubmissionErrorWrapper;
   if (error) {
-    trackException(`addNewCheckSubmitException: ${error}`);
+    reportError(error.message ?? error, check?.id ? FaroEvent.UPDATE_CHECK : FaroEvent.CREATE_CHECK);
   }
   const onRemoveCheck = async () => {
     const id = check?.id;
     if (!id) {
       return;
     }
+    reportEvent(FaroEvent.DELETE_CHECK, { type: checkType });
     await api?.deleteCheck(id);
     onReturn(true);
   };
 
   const capitalizedCheckType = checkType.slice(0, 1).toUpperCase().concat(checkType.split('').slice(1).join(''));
-  const headerText = check?.id ? 'Edit Check' : `Add ${capitalizedCheckType} check`;
+  const headerText = check?.id ? `Editing ${check.job}` : `Add ${capitalizedCheckType} check`;
   return (
-    <PluginPage pageNav={{ text: check?.job ? check.job : headerText, description: 'Check configuration' }}>
+    <PluginPage pageNav={{ text: check?.job ? `Editing ${check.job}` : headerText }}>
       <>
         {!config.featureToggles.topnav && <Legend>{headerText}</Legend>}
         <FormProvider {...formMethods}>
           <form onSubmit={formMethods.handleSubmit(onSubmit)}>
-            <FeatureFlag name={FeatureName.MultiHttp}>
-              {({ isEnabled }) => {
-                return !isEnabled ? (
-                  <Field label="Check type" disabled={check?.id ? true : false}>
-                    <Controller
-                      name="checkType"
-                      control={formMethods.control}
-                      defaultValue={checkType ?? CheckType.PING}
-                      render={({ field }) => {
-                        const STANDARD_CHECK_TYPE_OPTIONS = CHECK_TYPE_OPTIONS.filter(
-                          ({ value }) => value !== CheckType.MULTI_HTTP
-                        );
-                        return (
-                          <Select
-                            {...field}
-                            placeholder="Check type"
-                            options={
-                              tracerouteEnabled
-                                ? STANDARD_CHECK_TYPE_OPTIONS
-                                : STANDARD_CHECK_TYPE_OPTIONS.filter(({ value }) => value !== CheckType.Traceroute)
-                            }
-                            width={30}
-                            disabled={check?.id ? true : false}
-                          />
-                        );
-                      }}
-                    />
-                  </Field>
-                ) : (
-                  <></>
-                );
-              }}
-            </FeatureFlag>
             <HorizontalCheckboxField
               disabled={!isEditor}
               name="enabled"
@@ -235,7 +172,7 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
               name="publishAdvancedMetrics"
               id="publishAdvancedMetrics"
               label="Publish full set of metrics"
-              description={'Metrics are reduced by default'}
+              description="Histogram buckets are removed by default in order to reduce the amount of active series generated per check. If you want to calculate Apdex scores or visualize heatmaps, publish the full set of metrics."
             />
             <CheckUsage />
             <CheckSettings
@@ -249,37 +186,7 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
               <Button type="submit" disabled={formMethods.formState.isSubmitting || submitting}>
                 Save
               </Button>
-              <FeatureFlag name={FeatureName.AdhocChecks}>
-                {({ isEnabled }) => {
-                  return isEnabled ? (
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      disabled={
-                        !formMethods.formState.isValid || checkType === CheckType.Traceroute || testRequestInFlight
-                      }
-                      onClick={() => {
-                        const values = formMethods.getValues();
-                        const check = getCheckFromFormValues(values, defaultValues, checkType);
-                        setTestRequestInFlight(true);
-                        api
-                          ?.testCheck(check)
-                          .then((resp) => {
-                            setTestModalOpen(true);
-                            setTestResponse(resp);
-                          })
-                          .finally(() => {
-                            setTestRequestInFlight(false);
-                          });
-                      }}
-                    >
-                      {testRequestInFlight ? <Spinner /> : 'Test'}
-                    </Button>
-                  ) : (
-                    <div />
-                  );
-                }}
-              </FeatureFlag>
+              <CheckTestButton check={check} />
               {check?.id && (
                 <Button
                   variant="destructive"
@@ -291,8 +198,8 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
                 </Button>
               )}
 
-              <LinkButton onClick={() => onReturn(true)} fill="text">
-                Back
+              <LinkButton onClick={() => onReturn(true)} fill="text" variant="secondary">
+                Cancel
               </LinkButton>
             </HorizontalGroup>
             {submissionError && (
@@ -307,14 +214,6 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
           </form>
         </FormProvider>
       </>
-      <CheckTestResultsModal
-        isOpen={isTestModalOpen}
-        onDismiss={() => {
-          setTestModalOpen(false);
-          setTestResponse(undefined);
-        }}
-        testResponse={testResponse}
-      />
       <ConfirmModal
         isOpen={showDeleteModal}
         title="Delete check"

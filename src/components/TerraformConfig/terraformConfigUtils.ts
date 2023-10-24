@@ -1,6 +1,6 @@
-import { Check, CheckType, Label, Probe, TLSConfig } from 'types';
+import { Check, CheckType, Label, MultiHttpSettings, Probe, TLSConfig } from 'types';
 import { checkType } from 'utils';
-import { TFCheck, TFCheckSettings, TFLabels, TFProbe, TFTlsConfig } from './terraformTypes';
+import { TFCheck, TFCheckSettings, TFLabels, TFProbe, TFTlsConfig, TFMultiHttpEntry } from './terraformTypes';
 
 const labelsToTFLabels = (labels: Label[]): TFLabels =>
   labels.reduce<TFLabels>((acc, label) => {
@@ -108,6 +108,37 @@ const settingsToTF = (check: Check): TFCheckSettings => {
           max_hops: check.settings.traceroute.maxHops,
           max_unknown_hops: check.settings.traceroute.maxUnknownHops,
           ptr_lookup: check.settings.traceroute.ptrLookup,
+        },
+      };
+    case CheckType.MULTI_HTTP:
+      if (!check.settings.multihttp) {
+        throw new Error(`could not translate settings to terraform config for check ${check.job}`);
+      }
+      const escapeString = JSON.stringify(check.settings.multihttp);
+      const replaced = escapeString.replace(/\$\{/g, '$$${');
+      const escaped = JSON.parse(replaced) as MultiHttpSettings;
+      return {
+        multihttp: {
+          entries: escaped.entries.map((entry) => {
+            const { queryFields, ...request } = entry.request;
+            const transformed: TFMultiHttpEntry = {
+              ...entry,
+              request: {
+                ...request,
+                query_fields: queryFields,
+                body: {
+                  content_type: entry.request.body?.contentType,
+                },
+              },
+            };
+            if (entry.request.postData) {
+              transformed.request.post_data = {
+                mime_type: entry.request.postData.mimeType,
+                text: entry.request.postData.text,
+              };
+            }
+            return transformed;
+          }),
         },
       };
     default:

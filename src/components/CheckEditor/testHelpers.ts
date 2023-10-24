@@ -1,26 +1,26 @@
-import { screen, waitFor, act, within } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { screen, waitFor, within } from '@testing-library/react';
+import { UserEvent } from '@testing-library/user-event';
 import { DNS_RESPONSE_MATCH_OPTIONS } from 'components/constants';
 import { CheckType } from 'types';
 
-export const selectCheckType = async (checkType: CheckType) => {
+export const selectCheckType = async (checkType: CheckType, user: UserEvent) => {
   const checkTypeInput = await screen.findByText('PING');
-  userEvent.click(checkTypeInput);
+  await user.click(checkTypeInput);
   const selectMenus = await screen.findAllByTestId('select');
-  userEvent.selectOptions(selectMenus[0], checkType);
+  await user.selectOptions(selectMenus[0], checkType);
   await screen.findByText(checkType.toUpperCase());
 };
 
-export const toggleSection = async (sectionName: string): Promise<HTMLElement> => {
+export const toggleSection = async (sectionName: string, user: UserEvent): Promise<HTMLElement> => {
   const sectionHeader = await screen.findByText(sectionName);
-  userEvent.click(sectionHeader);
+  await user.click(sectionHeader);
   return sectionHeader.parentElement?.parentElement ?? new HTMLElement();
 };
 
-export const submitForm = async (onReturn: (arg0: Boolean) => void) => {
+export const submitForm = async (onReturn: (arg0: Boolean) => void, user: UserEvent) => {
   const saveButton = await screen.findByRole('button', { name: 'Save' });
   expect(saveButton).not.toBeDisabled();
-  await act(async () => await userEvent.click(saveButton));
+  await user.click(saveButton);
   await waitFor(() => expect(onReturn).toHaveBeenCalledWith(true));
 };
 
@@ -30,11 +30,11 @@ export const getSlider = async (formName: string) => {
   return input;
 };
 
-export const fillBasicCheckFields = async (jobName: string, target: string) => {
+export const fillBasicCheckFields = async (jobName: string, target: string, user: UserEvent) => {
   const jobNameInput = await screen.findByLabelText('Job Name', { exact: false });
-  userEvent.type(jobNameInput, jobName);
+  await user.type(jobNameInput, jobName);
   const targetInput = await screen.findByTestId('check-editor-target');
-  userEvent.type(targetInput, target);
+  await user.type(targetInput, target);
 
   // Set probe options
   const probeOptions = screen.getByText('Probe options').parentElement;
@@ -44,39 +44,40 @@ export const fillBasicCheckFields = async (jobName: string, target: string) => {
 
   // Select burritos probe options
   const probeSelectMenu = await within(probeOptions).findByTestId('select');
-  await act(async () => await userEvent.selectOptions(probeSelectMenu, within(probeSelectMenu).getByText('burritos')));
+  await user.selectOptions(probeSelectMenu, within(probeSelectMenu).getByText('burritos'));
 
-  await toggleSection('Advanced options');
+  await toggleSection('Advanced options', user);
   const addLabel = await screen.findByRole('button', { name: 'Add label' });
-  userEvent.click(addLabel);
+  await user.click(addLabel);
   const labelNameInput = await screen.findByPlaceholderText('name');
-  userEvent.type(labelNameInput, 'labelName');
+  await user.type(labelNameInput, 'labelName');
   const labelValueInput = await screen.findByPlaceholderText('value');
-  userEvent.type(labelValueInput, 'labelValue');
+  await user.type(labelValueInput, 'labelValue');
 };
 
-export const fillDnsValidationFields = async () => {
-  await toggleSection('Validation');
+export const fillDnsValidationFields = async (user: UserEvent) => {
+  await toggleSection('Validation', user);
   const addRegex = await screen.findByRole('button', { name: 'Add RegEx Validation' });
-  userEvent.click(addRegex);
-  userEvent.click(addRegex);
+  await user.click(addRegex);
+  await user.click(addRegex);
   const responseMatch1 = await screen.findByTestId('dnsValidationResponseMatch0');
-  userEvent.selectOptions(responseMatch1, DNS_RESPONSE_MATCH_OPTIONS[0].value);
+  await user.selectOptions(responseMatch1, DNS_RESPONSE_MATCH_OPTIONS[0].value);
   const responseMatch2 = await screen.findByTestId('dnsValidationResponseMatch1');
-  userEvent.selectOptions(responseMatch2, DNS_RESPONSE_MATCH_OPTIONS[0].value);
+  await user.selectOptions(responseMatch2, DNS_RESPONSE_MATCH_OPTIONS[0].value);
   const expressionInputs = await screen.findAllByPlaceholderText('Type expression');
-  userEvent.type(expressionInputs[0], 'not inverted validation');
-  userEvent.type(expressionInputs[1], 'inverted validation');
+  await user.type(expressionInputs[0], 'not inverted validation');
+  await user.type(expressionInputs[1], 'inverted validation');
   const invertedCheckboxes = await screen.findAllByRole('checkbox');
-  userEvent.click(invertedCheckboxes[2]);
+  await user.click(invertedCheckboxes[2]);
 };
 
-export const fillTCPQueryResponseFields = async () => {
-  const container = await toggleSection('Query/Response');
+export const fillTCPQueryResponseFields = async (user: UserEvent) => {
+  const container = await toggleSection('Query/Response', user);
   const addQueryResp = await screen.findByRole('button', { name: 'Add query/response' });
-  userEvent.click(addQueryResp);
+  await user.click(addQueryResp);
   const responseInput = await within(container).findByPlaceholderText('Response to expect');
-  userEvent.type(responseInput, 'STARTTLS');
+  await user.type(responseInput, 'STARTTLS');
   const queryInput = await within(container).findByPlaceholderText('Data to send');
-  userEvent.paste(queryInput, 'QUIT');
+  queryInput.focus();
+  await user.paste('QUIT');
 };

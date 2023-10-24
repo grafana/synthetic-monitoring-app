@@ -1,24 +1,23 @@
 import React, { PropsWithChildren } from 'react';
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act } from '@testing-library/react';
+
+import { createWrapper } from 'test/render';
 import { CheckInfoContextProvider } from 'components/CheckInfoContextProvider';
-import { Check, DnsSettings, GlobalSettings, HttpSettings, PingSettings, TcpSettings } from 'types';
+import { Check, DnsSettings, HttpSettings, PingSettings, TcpSettings } from 'types';
 import { useUsageCalc } from './useUsageCalc';
-import { InstanceContext } from 'contexts/InstanceContext';
-import { getInstanceMock } from 'datasource/__mocks__/DataSource';
-import { AppPluginMeta } from '@grafana/data';
 
 interface Wrapper {}
 
 const renderUsage = async (check: Partial<Check>) => {
-  const api = getInstanceMock();
-  const meta = {} as AppPluginMeta<GlobalSettings>;
+  const { Wrapper } = createWrapper();
+
   const wrapper = ({ children }: PropsWithChildren<Wrapper>) => (
-    <InstanceContext.Provider value={{ instance: { api }, loading: false, meta }}>
+    <Wrapper>
       <CheckInfoContextProvider>{children}</CheckInfoContextProvider>
-    </InstanceContext.Provider>
+    </Wrapper>
   );
   const hook = renderHook(() => useUsageCalc(check), { wrapper });
-  await act(async () => hook.waitForNextUpdate());
+  await act(async () => hook.result);
   return hook;
 };
 

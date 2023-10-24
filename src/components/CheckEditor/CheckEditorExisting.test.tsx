@@ -1,13 +1,9 @@
 import React from 'react';
-import { act, render, screen, waitFor, within } from '@testing-library/react';
-import { GlobalSettings, ROUTES } from 'types';
-import { getInstanceMock } from '../../datasource/__mocks__/DataSource';
-import { InstanceContext } from 'contexts/InstanceContext';
-import { AppPluginMeta, DataSourceSettings, FeatureToggles } from '@grafana/data';
-import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
-import { Router, Route } from 'react-router-dom';
+import { screen, waitFor, within } from '@testing-library/react';
+
+import { render } from 'test/render';
+import { ROUTES } from 'types';
 import { CheckEditor } from './CheckEditor';
-import { locationService } from '@grafana/runtime';
 
 import {
   BASIC_CHECK_LIST,
@@ -19,7 +15,6 @@ import {
 } from './testConstants';
 import { DNS_RESPONSE_MATCH_OPTIONS, PLUGIN_URL_PATH } from 'components/constants';
 import { getSlider, submitForm, toggleSection } from './testHelpers';
-import userEvent from '@testing-library/user-event';
 
 jest.setTimeout(60000);
 
@@ -36,35 +31,18 @@ beforeEach(() => jest.resetAllMocks());
 const onReturn = jest.fn();
 
 const renderExistingCheckEditor = async (route: string) => {
-  locationService.push(`${PLUGIN_URL_PATH}${ROUTES.Checks}${route}`);
-  const api = getInstanceMock();
-  const instance = {
-    api,
-    alertRuler: {} as DataSourceSettings,
-  };
-  const meta = {} as AppPluginMeta<GlobalSettings>;
-  const featureToggles = { traceroute: true } as unknown as FeatureToggles;
-  const isFeatureEnabled = jest.fn(() => true);
-
-  render(
-    <FeatureFlagProvider overrides={{ featureToggles, isFeatureEnabled }}>
-      <InstanceContext.Provider value={{ instance, loading: false, meta }}>
-        <Router history={locationService.getHistory()}>
-          <Route path={`${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`}>
-            <CheckEditor onReturn={onReturn} checks={BASIC_CHECK_LIST} />
-          </Route>
-        </Router>
-      </InstanceContext.Provider>
-    </FeatureFlagProvider>
-  );
+  const res = render(<CheckEditor onReturn={onReturn} checks={BASIC_CHECK_LIST} />, {
+    route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`,
+    path: `${PLUGIN_URL_PATH}${ROUTES.Checks}${route}`,
+  });
 
   await waitFor(() => expect(screen.getByText('Probe options')).toBeInTheDocument());
-  return instance;
+  return res;
 };
 
 describe('editing checks', () => {
   it('renders the correct values on edit', async () => {
-    await renderExistingCheckEditor('/edit/1');
+    const { user } = await renderExistingCheckEditor('/edit/1');
     expect(await screen.findByLabelText('Job name', { exact: false })).toHaveValue('carne asada');
     expect(await screen.findByLabelText('Enabled', { exact: false })).toBeChecked();
     expect(await screen.findByLabelText('Full URL to send requests to', { exact: false })).toHaveValue(
@@ -74,7 +52,7 @@ describe('editing checks', () => {
     expect(await getSlider('frequency')).toHaveValue('120');
     expect(await getSlider('timeout')).toHaveValue('2');
 
-    const httpSection = await toggleSection('HTTP settings');
+    const httpSection = await toggleSection('HTTP settings', user);
     expect(await screen.findByText('GET')).toBeInTheDocument();
     expect(await screen.findByLabelText('Request body', { exact: false })).toHaveValue('requestbody');
     expect(await within(httpSection).findByPlaceholderText('name')).toHaveValue('headerName');
@@ -82,19 +60,19 @@ describe('editing checks', () => {
     expect(within(httpSection).getByTestId('http-compression')).toHaveValue('gzip');
     expect(await screen.findByLabelText('Proxy URL', { exact: false })).toHaveValue('https://grafana.com');
 
-    await toggleSection('TLS config');
+    await toggleSection('TLS config', user);
     expect(await screen.findByLabelText('Disable target certificate validation')).toBeChecked();
     expect(await screen.findByLabelText('Server name', { exact: false })).toHaveValue('serverName');
     expect(await screen.findByLabelText('CA certificate', { exact: false })).toHaveValue(validCert);
     expect(await screen.findByLabelText('Client certificate', { exact: false })).toHaveValue(validCert);
     expect(await screen.findByLabelText('Client key', { exact: false })).toHaveValue(validKey);
 
-    await toggleSection('Authentication');
+    await toggleSection('Authentication', user);
     expect(await screen.findByPlaceholderText('Bearer token')).toHaveValue('a bear');
     expect(await screen.findByPlaceholderText('Username')).toHaveValue('steve');
     expect(await screen.findByPlaceholderText('Password')).toHaveValue('stevessecurepassword');
 
-    const validation = await toggleSection('Validation');
+    const validation = await toggleSection('Validation', user);
 
     expect(await within(validation).findByText('100')).toBeInTheDocument();
     expect(await within(validation).findByText('HTTP/1.0')).toBeInTheDocument();
@@ -103,7 +81,7 @@ describe('editing checks', () => {
     expect(header1).toHaveValue('a header');
     expect(header2).toHaveValue('a different header');
 
-    const advancedOptions = await toggleSection('Advanced options');
+    const advancedOptions = await toggleSection('Advanced options', user);
     expect(await within(advancedOptions).findByPlaceholderText('name')).toHaveValue('agreatlabel');
     expect(await within(advancedOptions).findByPlaceholderText('value')).toHaveValue('totally awesome label');
     expect(await within(advancedOptions).findByText('V6')).toBeInTheDocument();
@@ -112,16 +90,16 @@ describe('editing checks', () => {
       await within(advancedOptions).findByLabelText('Cache busting query parameter name', { exact: false })
     ).toHaveValue('busted');
 
-    const alerting = await toggleSection('Alerting');
+    const alerting = await toggleSection('Alerting', user);
     const alertingValue = await within(alerting).findByText('Medium');
     expect(alertingValue).toBeInTheDocument();
   });
 
   it('transforms data from existing HTTP check', async () => {
-    const instance = await renderExistingCheckEditor('/edit/1');
+    const { instance, user } = await renderExistingCheckEditor('/edit/1');
 
     const jobInput = await screen.findByLabelText('Job Name', { exact: false });
-    userEvent.type(jobInput, 'tacos');
+    await user.type(jobInput, 'tacos');
 
     // Set probe options
     const probeOptions = screen.getByText('Probe options').parentElement;
@@ -131,119 +109,116 @@ describe('editing checks', () => {
 
     // Select burritos probe options
     const probeSelectMenu = await within(probeOptions).findByTestId('select');
-    userEvent.selectOptions(probeSelectMenu, within(probeSelectMenu).getByText('burritos'));
+    await user.selectOptions(probeSelectMenu, within(probeSelectMenu).getByText('burritos'));
 
     // HTTP Settings
-    await toggleSection('HTTP settings');
+    await toggleSection('HTTP settings', user);
     const requestBodyInput = await screen.findByLabelText('Request Body', { exact: false });
-    await userEvent.paste(requestBodyInput, 'requestbody');
-    userEvent.click(await screen.findByRole('button', { name: 'Add header' }));
+    requestBodyInput.focus();
+    await user.paste('requestbody');
+    await user.click(await screen.findByRole('button', { name: 'Add header' }));
 
-    await act(async () => await userEvent.type(await screen.findByTestId('header-name-1'), 'headerName'));
-    await act(async () => await userEvent.type(await screen.findByTestId('header-value-1'), 'headerValue'));
+    await user.type(await screen.findByTestId('header-name-1'), 'headerName');
+    await user.type(await screen.findByTestId('header-value-1'), 'headerValue');
 
     const compression = await screen.findByTestId('http-compression');
-    userEvent.selectOptions(compression, 'deflate');
+    await user.selectOptions(compression, 'deflate');
 
     const proxyUrlInput = await screen.findByLabelText('Proxy URL', { exact: false });
-    await userEvent.paste(proxyUrlInput, 'https://grafana.com');
+    proxyUrlInput.focus();
+    await user.paste('https://grafana.com');
 
-    await toggleSection('HTTP settings');
+    await toggleSection('HTTP settings', user);
 
     // TLS Config
-    await toggleSection('TLS config');
-    await act(async () => await userEvent.type(screen.getByLabelText('Server Name', { exact: false }), 'serverName'));
+    await toggleSection('TLS config', user);
+    await user.type(screen.getByLabelText('Server Name', { exact: false }), 'serverName');
     // TextArea components misbehave when using userEvent.type, using paste for now as a workaround
-    await act(async () => await userEvent.clear(screen.getByLabelText('CA Certificate', { exact: false })));
-    await act(async () => await userEvent.paste(screen.getByLabelText('CA Certificate', { exact: false }), validCert));
+    await user.clear(screen.getByLabelText('CA Certificate', { exact: false }));
+    screen.getByLabelText('CA Certificate', { exact: false }).focus();
+    await user.paste(validCert);
 
-    await act(async () => await userEvent.clear(screen.getByLabelText('Client Certificate', { exact: false })));
-    await act(
-      async () => await userEvent.paste(screen.getByLabelText('Client Certificate', { exact: false }), validCert)
-    );
+    await user.clear(screen.getByLabelText('Client Certificate', { exact: false }));
+    screen.getByLabelText('Client Certificate', { exact: false }).focus();
+    await user.paste(validCert);
 
-    await act(async () => await userEvent.clear(screen.getByLabelText('Client Key', { exact: false })));
-    await act(async () => await userEvent.paste(screen.getByLabelText('Client Key', { exact: false }), validKey));
-    await toggleSection('TLS config');
+    await user.clear(screen.getByLabelText('Client Key', { exact: false }));
+    screen.getByLabelText('Client Key', { exact: false }).focus();
+    await user.paste(validKey);
+    await toggleSection('TLS config', user);
 
     // Authentication
-    const authentication = await toggleSection('Authentication');
+    const authentication = await toggleSection('Authentication', user);
 
     const bearerTokenInput = await screen.findByPlaceholderText('Bearer token');
-    await act(async () => await userEvent.type(bearerTokenInput, 'a bearer token'));
+    await user.type(bearerTokenInput, 'a bearer token');
 
     // No need to check this checkbox because is already opened on load
     const usernameInput = await within(authentication).findByPlaceholderText('Username');
     const passwordInput = await within(authentication).findByPlaceholderText('Password');
-    await act(async () => await userEvent.type(usernameInput, 'a username'));
-    await act(async () => await userEvent.type(passwordInput, 'a password'));
+    await user.type(usernameInput, 'a username');
+    await user.type(passwordInput, 'a password');
 
     // Validation
-    const validationSection = await toggleSection('Validation');
+    const validationSection = await toggleSection('Validation', user);
     const [statusCodeInput, httpVersionInput] = await within(validationSection).findAllByTestId('select');
-    await userEvent.selectOptions(statusCodeInput, [within(validationSection).getByText('100')]);
-    await userEvent.selectOptions(httpVersionInput, [within(validationSection).getByText('HTTP/1.0')]);
+    await user.selectOptions(statusCodeInput, [within(validationSection).getByText('100')]);
+    await user.selectOptions(httpVersionInput, [within(validationSection).getByText('HTTP/1.0')]);
     const selectMenus = await within(validationSection).findAllByTestId('select');
     const [matchSelect1, matchSelect2] = selectMenus.slice(-2);
-    userEvent.selectOptions(matchSelect1, ['Header']);
+    await user.selectOptions(matchSelect1, ['Header']);
 
-    await act(
-      async () =>
-        await userEvent.type(await within(validationSection).getAllByPlaceholderText('Header name')[0], 'Content-Type')
-    );
+    await user.type(await within(validationSection).getAllByPlaceholderText('Header name')[0], 'Content-Type');
 
-    await act(
-      async () =>
-        await userEvent.type(await within(validationSection).getAllByPlaceholderText('Regex')[0], 'a header regex')
-    );
+    await user.type(await within(validationSection).getAllByPlaceholderText('Regex')[0], 'a header regex');
 
     // const option = within(validationSection).getAllByText('Check fails if response body matches')[1];
-    userEvent.selectOptions(matchSelect2, ['Body']);
+    user.selectOptions(matchSelect2, ['Body']);
     const regexFields = await within(validationSection).getAllByPlaceholderText('Regex');
-    await act(async () => await userEvent.type(regexFields[1], 'a body regex'));
+    await user.type(regexFields[1], 'a body regex');
 
     const [allowMissing, invertMatch] = await within(validationSection).findAllByRole('checkbox');
-    userEvent.click(allowMissing);
-    userEvent.click(invertMatch);
+    await user.click(allowMissing);
+    await user.click(invertMatch);
 
-    await submitForm(onReturn);
-    expect(instance.api.addCheck).toHaveBeenCalledTimes(0);
-    expect(instance.api.updateCheck).toHaveBeenCalledWith(EDITED_HTTP_CHECK);
+    await submitForm(onReturn, user);
+    expect(instance.api?.addCheck).toHaveBeenCalledTimes(0);
+    expect(instance.api?.updateCheck).toHaveBeenCalledWith(EDITED_HTTP_CHECK);
   });
 
   it('transforms data correctly for TCP check', async () => {
-    const instance = await renderExistingCheckEditor('/edit/4');
+    const { instance, user } = await renderExistingCheckEditor('/edit/4');
 
-    await submitForm(onReturn);
-    expect(instance.api.addCheck).toHaveBeenCalledTimes(0);
-    expect(instance.api.updateCheck).toHaveBeenCalledWith(EDITED_TCP_CHECK);
+    await submitForm(onReturn, user);
+    expect(instance.api?.addCheck).toHaveBeenCalledTimes(0);
+    expect(instance.api?.updateCheck).toHaveBeenCalledWith(EDITED_TCP_CHECK);
   });
 
   it('transforms data correctly for DNS check', async () => {
-    const instance = await renderExistingCheckEditor('/edit/2');
-    await toggleSection('Validation');
+    const { instance, user } = await renderExistingCheckEditor('/edit/2');
+    await toggleSection('Validation', user);
 
     const responseMatch1 = await screen.findByTestId('dnsValidationResponseMatch0');
-    userEvent.selectOptions(responseMatch1, DNS_RESPONSE_MATCH_OPTIONS[1].value);
+    await user.selectOptions(responseMatch1, DNS_RESPONSE_MATCH_OPTIONS[1].value);
     const responseMatch2 = await screen.findByTestId('dnsValidationResponseMatch1');
-    userEvent.selectOptions(responseMatch2, DNS_RESPONSE_MATCH_OPTIONS[1].value);
+    await user.selectOptions(responseMatch2, DNS_RESPONSE_MATCH_OPTIONS[1].value);
 
     const expressionInputs = await screen.findAllByPlaceholderText('Type expression');
-    await act(async () => await userEvent.clear(expressionInputs[0]));
-    await act(async () => await userEvent.clear(expressionInputs[1]));
-    await act(async () => await userEvent.type(expressionInputs[0], 'not inverted validation'));
-    await userEvent.type(expressionInputs[1], 'inverted validation');
+    await user.clear(expressionInputs[0]);
+    await user.clear(expressionInputs[1]);
+    await user.type(expressionInputs[0], 'not inverted validation');
+    await user.type(expressionInputs[1], 'inverted validation');
     const invertedCheckboxes = await screen.findAllByRole('checkbox');
-    userEvent.click(invertedCheckboxes[2]);
-    await submitForm(onReturn);
-    expect(instance.api.addCheck).toHaveBeenCalledTimes(0);
-    expect(instance.api.updateCheck).toHaveBeenCalledWith(EDITED_DNS_CHECK);
+    await user.click(invertedCheckboxes[2]);
+    await submitForm(onReturn, user);
+    expect(instance.api?.addCheck).toHaveBeenCalledTimes(0);
+    expect(instance.api?.updateCheck).toHaveBeenCalledWith(EDITED_DNS_CHECK);
   });
 
   it('handles custom alert severities', async () => {
-    await renderExistingCheckEditor('/edit/5');
+    const { user } = await renderExistingCheckEditor('/edit/5');
     expect(true).toBeTruthy();
-    await toggleSection('Alerting');
+    await toggleSection('Alerting', user);
 
     const alertSensitivityInput = await screen.findByTestId('alertSensitivityInput');
     expect(alertSensitivityInput).toHaveValue('slightly sensitive');

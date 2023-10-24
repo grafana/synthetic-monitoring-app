@@ -1,8 +1,9 @@
 import React from 'react';
-import { PluginPage } from 'components/PluginPage';
+import { css } from '@emotion/css';
 import { Alert, useStyles2 } from '@grafana/ui';
 import { GrafanaTheme2 } from '@grafana/data';
-import { css } from '@emotion/css';
+
+import { PluginPage } from 'components/PluginPage';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   container: css`
@@ -17,7 +18,7 @@ export const UnprovisionedSetup = () => {
   const styles = useStyles2(getStyles);
 
   return (
-    <PluginPage pageNav={{ text: 'Invalid provisioning', description: 'Provisioning missing or invalid' }}>
+    <PluginPage pageNav={{ text: 'Invalid provisioning' }}>
       <div className={styles.container}>
         <Alert title="Provisioning missing or invalid" severity="error">
           Provisioning is required for Synthetic Monitoring.

@@ -22,12 +22,12 @@ import { hasRole } from 'utils';
 import { LabelField } from 'components/LabelField';
 import ProbeStatus from '../ProbeStatus';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { trackEvent, trackException } from 'analytics';
 import { GrafanaTheme2, AppEvents, OrgRole } from '@grafana/data';
 import { Clipboard } from 'components/Clipboard';
 import { SimpleMap } from '../SimpleMap';
 import { useParams } from 'react-router-dom';
 import { PluginPage } from 'components/PluginPage';
+import { FaroEvent, reportError, reportEvent } from 'faro';
 
 interface Props {
   probes?: Probe[];
@@ -88,7 +88,7 @@ const ProbeEditor = ({ probes, onReturn }: Props) => {
   const styles = useStyles2(getStyles);
 
   const { execute: onSave, error } = useAsyncCallback(async (formValues: Probe) => {
-    trackEvent('addNewProbeSubmit');
+    reportEvent(FaroEvent.CREATE_PROBE);
     // Form values always come back as a string, even for number inputs
     formValues.latitude = Number(formValues.latitude);
     formValues.longitude = Number(formValues.longitude);
@@ -117,7 +117,7 @@ const ProbeEditor = ({ probes, onReturn }: Props) => {
   const submissionError = error as unknown as SubmissionErrorWrapper;
 
   if (error) {
-    trackException(`addNewProbeSubmitException: ${error}`);
+    reportError(error.message ?? error, FaroEvent.CREATE_PROBE);
   }
 
   if (!probe || !instance) {
@@ -151,7 +151,7 @@ const ProbeEditor = ({ probes, onReturn }: Props) => {
   const { latitude, longitude } = formMethods.watch();
 
   return (
-    <PluginPage pageNav={{ text: probe.id ? probe.name : 'Add probe', description: 'Probe configuration' }}>
+    <PluginPage pageNav={{ text: probe.id ? probe.name : 'Add probe' }}>
       <HorizontalGroup align="flex-start">
         <FormProvider {...formMethods}>
           <form onSubmit={formMethods.handleSubmit(onSave)}>

@@ -1,23 +1,17 @@
-import {
-  ArrayVector,
-  FieldColorModeId,
-  FieldType,
-  MutableDataFrame,
-  NodeGraphDataFrameFieldNames,
-} from '@grafana/data';
+import { FieldColorModeId, FieldType, MutableDataFrame, NodeGraphDataFrameFieldNames } from '@grafana/data';
 import { LogStream, LogsAggregatedByTrace, ParsedLogStream, TracesByHost } from './types';
 
 const getNodeGraphFields = () => {
   const nodeIdField = {
     name: NodeGraphDataFrameFieldNames.id,
     type: FieldType.string,
-    values: new ArrayVector(),
+    values: [] as string[],
   };
 
   const nodeTitleField = {
     name: NodeGraphDataFrameFieldNames.title,
     type: FieldType.string,
-    values: new ArrayVector(),
+    values: [] as string[],
     config: { displayName: 'Host' },
   };
 
@@ -31,42 +25,42 @@ const getNodeGraphFields = () => {
   const nodeMainStatField = {
     name: NodeGraphDataFrameFieldNames.mainStat,
     type: FieldType.number,
-    values: new ArrayVector(),
+    values: [] as number[],
     config: { unit: 'ms', displayName: 'Average Ms' },
   };
 
   const nodeStartField = {
     name: NodeGraphDataFrameFieldNames.arc + 'start',
     type: FieldType.number,
-    values: new ArrayVector(),
+    values: [] as number[],
     config: { color: { fixedColor: 'blue', mode: FieldColorModeId.Fixed }, displayName: 'Start nodes' },
   };
 
   const nodeSuccessField = {
     name: NodeGraphDataFrameFieldNames.arc + 'success',
     type: FieldType.number,
-    values: new ArrayVector(),
+    values: [] as number[],
     config: { color: { fixedColor: 'green', mode: FieldColorModeId.Fixed }, displayName: 'Successful packets' },
   };
 
   const nodeErrorField = {
     name: NodeGraphDataFrameFieldNames.arc + 'error',
     type: FieldType.number,
-    values: new ArrayVector(),
+    values: [] as number[],
     config: { color: { fixedColor: 'red', mode: FieldColorModeId.Fixed }, displayName: 'Packet loss' },
   };
 
   const nodeDestinationField = {
     name: NodeGraphDataFrameFieldNames.arc + 'destination',
     type: FieldType.number,
-    values: new ArrayVector(),
+    values: [] as number[],
     config: { color: { fixedColor: 'purple', mode: FieldColorModeId.Fixed }, displayName: 'Destination node' },
   };
 
   const nodeMostRecentDestinationField = {
     name: NodeGraphDataFrameFieldNames.arc + 'most_recent_destination',
     type: FieldType.number,
-    values: new ArrayVector(),
+    values: [] as number[],
     config: {
       color: { fixedColor: 'yellow', mode: FieldColorModeId.Fixed },
       displayName: 'Most recent destination node',
@@ -89,17 +83,17 @@ const getNodeGraphEdgeFields = () => {
   const edgeIdField = {
     name: NodeGraphDataFrameFieldNames.id,
     type: FieldType.string,
-    values: new ArrayVector(),
+    values: [] as string[],
   };
   const edgeSourceField = {
     name: NodeGraphDataFrameFieldNames.source,
     type: FieldType.string,
-    values: new ArrayVector(),
+    values: [] as string[],
   };
   const edgeTargetField = {
     name: NodeGraphDataFrameFieldNames.target,
     type: FieldType.string,
-    values: new ArrayVector(),
+    values: [] as string[],
   };
 
   // These are needed for links to work
@@ -184,7 +178,7 @@ export const parseTracerouteLogs = (queryResponse: LogStream[]): MutableDataFram
     streamArray
       .sort((a, b) => a.TTL - b.TTL)
       .forEach((stream, index, arr) => {
-        stream.Hosts.forEach((host) => {
+        stream.Hosts?.forEach((host) => {
           const nextHosts = destinations.has(host) ? undefined : findNextHosts(stream.TTL, arr);
           const currentHost = acc[host];
 
@@ -249,34 +243,34 @@ export const parseTracerouteLogs = (queryResponse: LogStream[]): MutableDataFram
       nodeMainStatField.values.add(Math.round(averageElapsedTime));
 
       Array.from(hostData.nextHosts ?? new Set([])).forEach((nextHost) => {
-        edgeIdField.values.add(`${host}_${nextHost}`);
-        edgeSourceField.values.add(host);
-        edgeTargetField.values.add(nextHost);
+        edgeIdField.values.push(`${host}_${nextHost}`);
+        edgeSourceField.values.push(host);
+        edgeTargetField.values.push(nextHost);
       });
 
       if (hostData.isStart) {
         nodeMostRecentDestinationField.values.add(0);
-        nodeDestinationField.values.add(0);
-        nodeStartField.values.add(1);
-        nodeSuccessField.values.add(0);
-        nodeErrorField.values.add(0);
+        nodeDestinationField.values.push(0);
+        nodeStartField.values.push(1);
+        nodeSuccessField.values.push(0);
+        nodeErrorField.values.push(0);
       } else if (destinations.has(host)) {
         if (hostData.isMostRecent) {
-          nodeMostRecentDestinationField.values.add(1);
-          nodeDestinationField.values.add(0);
+          nodeMostRecentDestinationField.values.push(1);
+          nodeDestinationField.values.push(0);
         } else {
-          nodeMostRecentDestinationField.values.add(0);
-          nodeDestinationField.values.add(1);
+          nodeMostRecentDestinationField.values.push(0);
+          nodeDestinationField.values.push(1);
         }
-        nodeStartField.values.add(0);
-        nodeSuccessField.values.add(0);
-        nodeErrorField.values.add(0);
+        nodeStartField.values.push(0);
+        nodeSuccessField.values.push(0);
+        nodeErrorField.values.push(0);
       } else {
-        nodeDestinationField.values.add(0);
-        nodeMostRecentDestinationField.values.add(0);
-        nodeStartField.values.add(0);
-        nodeSuccessField.values.add(packetSuccessStat);
-        nodeErrorField.values.add(packetLossStat);
+        nodeDestinationField.values.push(0);
+        nodeMostRecentDestinationField.values.push(0);
+        nodeStartField.values.push(0);
+        nodeSuccessField.values.push(packetSuccessStat);
+        nodeErrorField.values.push(packetLossStat);
       }
     });
 

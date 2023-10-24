@@ -1,10 +1,9 @@
 import React from 'react';
-import { render, waitFor } from '@testing-library/react';
+import { waitFor } from '@testing-library/react';
+
+import { render } from 'test/render';
 import { CheckHealth } from './CheckHealth';
-import { InstanceContext } from 'contexts/InstanceContext';
-import { AlertSensitivity, Check, GlobalSettings } from 'types';
-import { getInstanceMock, instanceSettings } from '../datasource/__mocks__/DataSource';
-import { AppPluginMeta } from '@grafana/data';
+import { AlertSensitivity, Check } from 'types';
 
 const defaultCheck = {
   basicMetricsOnly: true,
@@ -30,15 +29,7 @@ const defaultCheck = {
 } as Check;
 
 const renderCheckHealth = (check: Check = defaultCheck) => {
-  const instance = {
-    api: getInstanceMock(instanceSettings),
-  };
-  const meta = {} as AppPluginMeta<GlobalSettings>;
-  return render(
-    <InstanceContext.Provider value={{ instance, loading: false, meta }}>
-      <CheckHealth check={check} />
-    </InstanceContext.Provider>
-  );
+  return render(<CheckHealth check={check} />);
 };
 
 test('renders without crashing', async () => {

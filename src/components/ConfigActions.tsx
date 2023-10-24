@@ -31,7 +31,7 @@ export const ConfigActions = ({ enabled, pluginId }: Props) => {
   };
 
   const handleSetup = () => {
-    navigate(ROUTES.Setup);
+    navigate(ROUTES.Home);
   };
 
   const getAction = () => {

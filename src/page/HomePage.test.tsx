@@ -1,20 +1,15 @@
 import React from 'react';
-import { screen, render, within } from '@testing-library/react';
-import HomePage from './HomePage';
-import { InstanceContext } from 'contexts/InstanceContext';
+import { screen, within } from '@testing-library/react';
+
+import { render } from 'test/render';
+import { HomePage } from './HomePage';
 import { CheckInfoContextProvider } from 'components/CheckInfoContextProvider';
-import { getInstanceMock, instanceSettings } from 'datasource/__mocks__/DataSource';
-import { GlobalSettings } from 'types';
-import { AppPluginMeta } from '@grafana/data';
 
 const renderHomePage = () => {
-  const meta = {} as AppPluginMeta<GlobalSettings>;
   return render(
-    <InstanceContext.Provider value={{ instance: { api: getInstanceMock(instanceSettings) }, loading: false, meta }}>
-      <CheckInfoContextProvider>
-        <HomePage />
-      </CheckInfoContextProvider>
-    </InstanceContext.Provider>
+    <CheckInfoContextProvider>
+      <HomePage />
+    </CheckInfoContextProvider>
   );
 };
 
@@ -28,10 +23,12 @@ const assertBigValue = async (label: string, value: string) => {
   expect(valueEl).toBeInTheDocument();
 };
 
-test('shows usage', async () => {
-  renderHomePage();
-  await assertBigValue('Total checks', '1');
-  await assertBigValue('Total active series', '81');
-  await assertBigValue('Checks executions per month', '43,800');
-  await assertBigValue('Logs per month', '0.04GB');
+describe('Information is present', () => {
+  test('shows usage', async () => {
+    renderHomePage();
+    await assertBigValue('Total checks', '1');
+    await assertBigValue('Total active series', '81');
+    await assertBigValue('Checks executions per month', '43,800');
+    await assertBigValue('Logs per month', '0.04GB');
+  });
 });

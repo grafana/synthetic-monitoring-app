@@ -4,7 +4,7 @@ Synthetic Monitoring is a blackbox monitoring solution provided as part of [Graf
 Synthetic Monitoring provides users with insights into how their applications and services are behaving from an external point of view.
 Users can define checks to continually test remote targets from 1 or more probe locations around the world to assess the availability, performance and correctness of the services. As each check runs, metrics and logs are collected and published to the user's Grafana Cloud service. Metrics are published to Grafana Cloud Prometheus and logs are published to Grafana Cloud Loki.
 
-Synthetic monitoring is the successor to the original [worldping application](https://grafana.net/plugins/raintank-worldping-app).
+Synthetic monitoring is the successor to the original [worldping application](https://github.com/raintank/worldping-app).
 The refreshed Synthetic Monitoring product focuses on reducing complexity and taking advantage of Grafana Cloud capabilities.
 
 ### Check Types
@@ -36,7 +36,7 @@ apps:
         grafanaName: <name of an existing Prometheus datasource pointing to the Grafana Cloud Prometheus instance>
         hostedId: <Grafana Cloud Prometheus instance ID>
     secureJsonData:
-      publisherToken: <metric publisher token from grafana.com>
+      publisherToken: <access policy token with read:stacks, write:metrics, write:logs, and write:traces scope>
 ```
 
 Configuration details:
@@ -46,11 +46,15 @@ Configuration details:
 - `stackId` expects an integer and can be found using `gcom /instances/<orgSlug>`, or by visiting `https://grafana.com/orgs/<orgSlug>/stacks` and clicking the `details` button on stack you are connecting to. The id will be in the URL.
 - The `logs` and `metrics` section are instructing the plugin which datasources it needs to use.
   - The `grafanaName` needs to exactly match the names specified in your datasource provisioning
-  - The `hostedId` expects an integer and is the same value as the `basicAuthUser` in your datasource provisioning. The value can also be found from the `details` page of loki or prometheus at `https://grafana.com/orgs/<orgSlug>/stacks`. 
-- `publisherToken` needs to be a grafana.com api key with a `MetricsPublisher` role. This is what the probes use to publish metrics to your cloud stack.
+  - The `hostedId` expects an integer and is the same value as the `basicAuthUser` in your datasource provisioning. The value can also be found from the `details` page of loki or prometheus at `https://grafana.com/orgs/<orgSlug>/stacks`.
+- `publisherToken` is an access policy token used to communicate with your Cloud stack and publish telemetry data from the probes. The access policy needs to have the following scopes:
+  - Read stacks
+  - Write metrics
+  - Write logs
+  - Write traces
 
 Note: you can add a provisioning block per [org](https://grafana.com/docs/grafana/latest/manage-users/server-admin/server-admin-manage-orgs/) to provision the plugin for multiple orgs. You can provide different values for each org block and connect to a different cloud stack per org.
-    
+
 Prerequisites:
 
 1. A datasource pointed at a Prometheus instance hosted in Grafana Cloud
@@ -88,6 +92,12 @@ datasources:
       basicAuthPassword: <viewer token from grafana.com>
     version: 1
 ```
+
+To run the local environment:
+
+1. Start the frontend build: `yarn dev`
+2. Start Grafana: `yarn server`
+3. Grafana will be available at `localhost:3000`
 
 To start the using app:
 

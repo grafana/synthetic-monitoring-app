@@ -3,6 +3,7 @@
   "name": "Synthetic Monitoring",
   "id": "grafana-synthetic-monitoring-app",
   "info": {
+    "description": "Worldwide black box monitoring for services and applications",
     "author": {
       "name": "Grafana Labs",
       "url": "https://grafana.com"
@@ -52,15 +53,9 @@
     },
     {
       "type": "page",
-      "name": "Summary",
-      "path": "/a/grafana-synthetic-monitoring-app/redirect?dashboard=summary",
-      "addToNav": true
-    },
-    {
-      "type": "page",
       "name": "Dashboards",
       "path": "/a/grafana-synthetic-monitoring-app/scene",
-      "addToNav": false
+      "addToNav": true
     },
     {
       "type": "page",
@@ -88,15 +83,7 @@
     }
   ],
   "dependencies": {
-    "grafanaDependency": ">=8.3.3",
-    "grafanaVersion": "8.3",
-    "plugins": [
-      {
-        "type": "panel",
-        "name": "Worldmap Panel",
-        "id": "grafana-worldmap-panel",
-        "version": "^1.0.3"
-      }
-    ]
+    "grafanaDependency": ">=10.0.0",
+    "grafanaVersion": "10.0"
   }
 }

@@ -1,13 +1,10 @@
 import React from 'react';
-import { act, fireEvent, render, screen, waitFor, waitForElementToBeRemoved } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router-dom';
+import { screen, waitForElementToBeRemoved } from '@testing-library/react';
+
+import { render, createInstance } from 'test/render';
 import { CheckList } from './CheckList';
-import { GrafanaInstances, Check, CheckSort, GlobalSettings, ROUTES } from 'types';
-import { getInstanceMock } from '../../datasource/__mocks__/DataSource';
+import { Check, CheckSort, ROUTES } from 'types';
 import { SuccessRateContextProvider } from '../SuccessRateContextProvider';
-import { InstanceContext } from 'contexts/InstanceContext';
-import { AppPluginMeta } from '@grafana/data';
 import { PLUGIN_URL_PATH } from 'components/constants';
 
 jest.mock('hooks/useNavigation', () => {
@@ -120,24 +117,22 @@ const defaultChecks = [
 const onCheckUpdate = jest.fn();
 
 const renderCheckList = ({ checks = defaultChecks } = {} as RenderChecklist) => {
-  const instance = {
-    api: getInstanceMock(),
-    metrics: {},
-    logs: {},
-  } as GrafanaInstances;
-  const meta = {} as AppPluginMeta<GlobalSettings>;
+  const instance = createInstance();
 
-  render(
-    <MemoryRouter initialEntries={[`${PLUGIN_URL_PATH}${ROUTES.Checks}`]}>
-      <InstanceContext.Provider value={{ instance, loading: false, meta }}>
-        <SuccessRateContextProvider checks={checks}>
-          <CheckList instance={instance} checks={checks} onCheckUpdate={onCheckUpdate} />
-        </SuccessRateContextProvider>
-      </InstanceContext.Provider>
-    </MemoryRouter>
+  return render(
+    <SuccessRateContextProvider checks={checks}>
+      <CheckList instance={instance} checks={checks} onCheckUpdate={onCheckUpdate} />
+    </SuccessRateContextProvider>,
+    {
+      instance,
+      path: `${PLUGIN_URL_PATH}${ROUTES.Checks}`,
+    }
   );
-  return instance;
 };
+
+beforeEach(() => {
+  localStorage.clear();
+});
 
 test('renders empty state', async () => {
   renderCheckList({ checks: [] });
@@ -154,73 +149,84 @@ test('renders list of checks', async () => {
 });
 
 test('search by text', async () => {
-  renderCheckList();
+  const { user } = renderCheckList();
   const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
-  await act(async () => {
-    await userEvent.paste(filterInput, 'example');
-  });
+  filterInput.focus();
+  const willBeRemoved = screen.getByText('chimichurri');
+
+  await user.paste('example');
+  await waitForElementToBeRemoved(willBeRemoved, { timeout: 1500 });
   const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(1);
 });
 
 test('search is case insensitive', async () => {
-  renderCheckList();
+  const { user } = renderCheckList();
+  const willBeRemoved = screen.getByText('chimichurri');
   const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
-  await act(async () => {
-    await userEvent.paste(filterInput, 'EXAMPLE');
-  });
+  filterInput.focus();
+
+  await user.paste('EXAMPLE');
+  await waitForElementToBeRemoved(willBeRemoved, { timeout: 1500 });
   const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(1);
 });
 
 test('search matches job value', async () => {
-  renderCheckList();
+  const { user } = renderCheckList();
   const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
-  await act(async () => {
-    await userEvent.paste(filterInput, 'tacos');
-  });
+  const willBeRemoved = screen.getByText('chimichurri');
+  filterInput.focus();
+  await user.paste('tacos');
+
+  await waitForElementToBeRemoved(willBeRemoved, { timeout: 1500 });
   const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(1);
 });
 
 test('search matches target value', async () => {
-  renderCheckList();
+  const { user } = renderCheckList();
   const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
-  await act(async () => {
-    await userEvent.paste(filterInput, 'asada');
-  });
+  const willBeRemoved = screen.getByText('chimichurri');
+
+  filterInput.focus();
+
+  await user.paste('asada');
+  await waitForElementToBeRemoved(willBeRemoved, { timeout: 1500 });
   const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(1);
 });
 
 test('search matches label value', async () => {
-  renderCheckList();
+  const { user } = renderCheckList();
   const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
-  await act(async () => {
-    await userEvent.paste(filterInput, 'nachos.com');
-  });
+  const willBeRemoved = screen.getByText('chimichurri');
+  filterInput.focus();
+
+  await user.paste('nachos.com');
+  await waitForElementToBeRemoved(willBeRemoved, { timeout: 1500 });
   const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(1);
 });
 
 test('search matches label name', async () => {
-  renderCheckList();
+  const { user } = renderCheckList();
   const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
-  await act(async () => {
-    await userEvent.paste(filterInput, 'carne');
-  });
+  const willBeRemoved = screen.getByText('tacos');
+  filterInput.focus();
+  await user.paste('carne');
+
+  await waitForElementToBeRemoved(willBeRemoved, { timeout: 1500 });
   const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(1);
 });
 
 test('clicking label value adds to label filter', async () => {
-  renderCheckList();
-  const additionalFilters = await screen.findByRole('button', { name: 'Additional Filters', exact: false });
-  userEvent.click(additionalFilters);
+  const { user } = renderCheckList();
   const labelValue = await screen.findAllByText('agreat: label');
-  act(() => {
-    userEvent.click(labelValue[1]);
-  });
+  await user.click(labelValue[0]);
+  const additionalFilters = await screen.findByRole('button', { name: /Additional filters/i });
+  await user.click(additionalFilters);
   const filterInput = await screen.findByTestId('check-label-filter');
   expect(filterInput).toHaveValue(['agreat: label']);
   const checks = await screen.findAllByTestId('check-card');
@@ -228,31 +234,113 @@ test('clicking label value adds to label filter', async () => {
 });
 
 test('filters by check type', async () => {
-  renderCheckList();
-  const additionalFilters = await screen.findByRole('button', { name: 'Additional Filters', exact: false });
-  userEvent.click(additionalFilters);
+  const { user } = renderCheckList();
+  const additionalFilters = await screen.findByRole('button', { name: 'Additional filters' });
+  await user.click(additionalFilters);
   const typeFilter = await screen.findByTestId('check-type-filter');
-  userEvent.selectOptions(typeFilter, 'http');
+  await user.selectOptions(typeFilter, 'http');
   const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(1);
 });
 
 test('filters by probe', async () => {
-  renderCheckList();
-  const additionalFilters = await screen.findByRole('button', { name: 'Additional Filters', exact: false });
-  userEvent.click(additionalFilters);
+  const { user } = renderCheckList();
+  const additionalFilters = await screen.findByRole('button', { name: 'Additional filters' });
+  await user.click(additionalFilters);
   const probeFilter = await screen.findByTestId('probe-filter');
-  userEvent.selectOptions(probeFilter, 'Chicago');
+  await user.selectOptions(probeFilter, 'Chicago');
   const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(2);
 });
 
-test('clicking type chiclet adds it to filter', async () => {
+test('loads search from localStorage', async () => {
+  localStorage.setItem(
+    'checkFilters',
+    JSON.stringify({
+      search: 'chimichurri',
+      labels: [],
+      type: 'all',
+      status: { label: 'All', value: 0 },
+      probes: [],
+    })
+  );
   renderCheckList();
-  const additionalFilters = await screen.findByRole('button', { name: 'Additional Filters', exact: false });
-  userEvent.click(additionalFilters);
+  const searchInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
+  expect(searchInput).toHaveValue('chimichurri');
+
+  const checks = await screen.findAllByTestId('check-card');
+  expect(checks.length).toBe(1);
+});
+
+test('loads status filter from localStorage', async () => {
+  localStorage.setItem(
+    'checkFilters',
+    JSON.stringify({
+      search: '',
+      labels: [],
+      type: 'all',
+      status: { label: 'Disabled', value: 2 },
+      probes: [],
+    })
+  );
+  const { user } = renderCheckList();
+  const additionalFilters = await screen.findByRole('button', { name: /Additional filters \(1 active\)/i });
+  await user.click(additionalFilters);
+  const statusFilter = await screen.findByTestId('check-status-filter');
+  expect(statusFilter).toHaveValue('2');
+
+  const checks = await screen.findAllByTestId('check-card');
+  expect(checks.length).toBe(1);
+});
+
+test('loads type filter from localStorage', async () => {
+  localStorage.setItem(
+    'checkFilters',
+    JSON.stringify({
+      search: '',
+      labels: [],
+      type: 'http',
+      status: { label: 'All', value: 0 },
+      probes: [],
+    })
+  );
+  const { user } = renderCheckList();
+  const additionalFilters = await screen.findByRole('button', { name: /Additional filters \(1 active\)/i });
+  await user.click(additionalFilters);
+  const typeFilter = await screen.findByTestId('check-type-filter');
+  expect(typeFilter).toHaveValue('http');
+
+  const checks = await screen.findAllByTestId('check-card');
+  expect(checks.length).toBe(1);
+});
+
+test('loads labels from localStorage', async () => {
+  localStorage.setItem(
+    'checkFilters',
+    JSON.stringify({
+      search: '',
+      labels: ['agreat: label'],
+      type: 'all',
+      status: { label: 'All', value: 0 },
+      probes: [],
+    })
+  );
+  const { user } = renderCheckList();
+  const additionalFilters = await screen.findByRole('button', { name: /Additional filters \(1 active\)/i });
+  await user.click(additionalFilters);
+  const filterInput = await screen.findByTestId('check-label-filter');
+  expect(filterInput).toHaveValue(['agreat: label']);
+
+  const checks = await screen.findAllByTestId('check-card');
+  expect(checks.length).toBe(1);
+});
+
+test('clicking type chiclet adds it to filter', async () => {
+  const { user } = renderCheckList();
   const httpTypeChiclet = await screen.findAllByText('HTTP');
-  userEvent.click(httpTypeChiclet[1]);
+  await user.click(httpTypeChiclet[0]);
+  const additionalFilters = await screen.findByRole('button', { name: /Additional filters/i });
+  await user.click(additionalFilters);
   const typeFilter = await screen.findByTestId('check-type-filter');
   const checks = await screen.findAllByTestId('check-card');
   expect(typeFilter).toHaveValue('http');
@@ -260,11 +348,11 @@ test('clicking type chiclet adds it to filter', async () => {
 });
 
 test('clicking status chiclet adds it to filter', async () => {
-  renderCheckList();
-  const additionalFilters = await screen.findByRole('button', { name: 'Additional Filters', exact: false });
-  userEvent.click(additionalFilters);
+  const { user } = renderCheckList();
   const disabledChiclet = await screen.findAllByText('Disabled');
-  userEvent.click(disabledChiclet[1]);
+  await user.click(disabledChiclet[0]);
+  const additionalFilters = await screen.findByRole('button', { name: /Additional filters/i });
+  await user.click(additionalFilters);
   const statusFilter = await screen.findByTestId('check-status-filter');
   const checks = await screen.findAllByTestId('check-card');
   expect(statusFilter).toHaveValue('2');
@@ -273,22 +361,22 @@ test('clicking status chiclet adds it to filter', async () => {
 
 test('clicking add new is handled', async () => {
   const navigate = jest.fn();
-  useNavigationHook.useNavigation = jest.fn(() => navigate);
-  renderCheckList();
+  useNavigationHook.useNavigation = jest.fn(() => navigate); // TODO: COME BACK TO
+  const { user } = renderCheckList();
   const addNewButton = await screen.findByRole('button', { name: 'Add new check' });
-  userEvent.click(addNewButton);
+  await user.click(addNewButton);
   expect(navigate).toHaveBeenCalledWith(ROUTES.ChooseCheckType);
 });
 
 test('select all performs disable action on all visible checks', async () => {
-  const instance = renderCheckList();
+  const { instance, user } = renderCheckList();
   const selectAll = await screen.findByTestId('selectAll');
-  userEvent.click(selectAll);
+  await user.click(selectAll);
   const selectedText = await screen.findByText('4 checks are selected.');
   expect(selectedText).toBeInTheDocument();
   const disableButton = await screen.findByRole('button', { name: 'Disable' });
-  userEvent.click(disableButton);
-  await waitForElementToBeRemoved(() => screen.queryByText('4 checks are selected.'));
+  await user.click(disableButton);
+
   // await waitFor(() => expect(selectAll).not.toBeChecked());
   expect(instance.api?.updateCheck).toHaveBeenCalledTimes(3);
   expect(instance.api?.updateCheck).toHaveBeenCalledWith({
@@ -339,15 +427,14 @@ test('select all performs disable action on all visible checks', async () => {
 });
 
 test('select all performs enable action on all visible checks', async () => {
-  const instance = renderCheckList();
+  const { instance, user } = renderCheckList();
   const selectAll = await screen.findByTestId('selectAll');
-  userEvent.click(selectAll);
+  await user.click(selectAll);
   const selectedText = await screen.findByText('4 checks are selected.');
   expect(selectedText).toBeInTheDocument();
   const disableButton = await screen.findByRole('button', { name: 'Enable' });
-  userEvent.click(disableButton);
-  await waitForElementToBeRemoved(() => screen.queryByText('4 checks are selected.'));
-  // await waitFor(() => expect(selectAll).not.toBeChecked());
+  await user.click(disableButton);
+
   expect(instance.api?.updateCheck).toHaveBeenCalledTimes(1);
   expect(instance.api?.updateCheck).toHaveBeenCalledWith({
     id: 4,
@@ -376,27 +463,27 @@ test('select all performs enable action on all visible checks', async () => {
 });
 
 test('cascader adds labels to label filter', async () => {
-  renderCheckList();
-  const additionalFilters = await screen.findByRole('button', { name: 'Additional Filters', exact: false });
-  userEvent.click(additionalFilters);
+  const { user } = renderCheckList();
+  const additionalFilters = await screen.findByRole('button', { name: 'Additional filters' });
+  await user.click(additionalFilters);
   const cascader = await screen.findByRole('button', { name: 'Labels' });
-  userEvent.click(cascader);
+  await user.click(cascader);
   const labelMenuItems = await screen.findAllByRole('menuitemcheckbox');
   expect(labelMenuItems.length).toBe(2);
   const labelName = await screen.findByRole('menuitemcheckbox', { name: 'carne' });
-  await waitFor(() => fireEvent.click(labelName));
+  await user.click(labelName);
   const labelValue = await screen.findByRole('menuitemcheckbox', { name: 'asada' });
-  await waitFor(() => fireEvent.click(labelValue));
+  await user.click(labelValue);
 
   const labelFilterInput = await screen.findByTestId('check-label-filter');
   expect(labelFilterInput).toHaveValue(['carne: asada']);
 });
 
 test('Sorting by success rate should not crash', async () => {
-  renderCheckList();
+  const { user } = renderCheckList();
   const sortPicker = await screen.findByTestId('check-list-sort');
 
-  userEvent.selectOptions(sortPicker, CheckSort.SuccessRate.toString());
+  await user.selectOptions(sortPicker, CheckSort.SuccessRate.toString());
   const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(4);
 });

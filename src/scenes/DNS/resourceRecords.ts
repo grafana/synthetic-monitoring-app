@@ -1,5 +1,6 @@
-import { SceneQueryRunner, VizPanel } from '@grafana/scenes';
+import { SceneQueryRunner } from '@grafana/scenes';
 import { DataSourceRef, ThresholdsMode } from '@grafana/schema';
+import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
 // {
 //   "datasource": {
@@ -96,7 +97,7 @@ function getQueryRunner(metrics: DataSourceRef) {
 }
 
 export function getResourcesRecordsPanel(metrics: DataSourceRef) {
-  return new VizPanel({
+  return new ExplorablePanel({
     pluginId: 'timeseries',
     $data: getQueryRunner(metrics),
     title: 'Resource records',

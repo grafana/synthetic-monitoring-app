@@ -1,42 +1,28 @@
 import React from 'react';
+import { screen } from '@testing-library/react';
 
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { InstanceContext } from 'contexts/InstanceContext';
+import { render } from 'test/render';
 import ThresholdGlobalSettings from './ThresholdGlobalSettings';
-import { GrafanaInstances, GlobalSettings } from 'types';
-import { AppPluginMeta } from '@grafana/data';
 import { getInstanceMock } from 'datasource/__mocks__/DataSource';
 import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
-import { act } from '@testing-library/react-hooks';
 
 const onDismiss = jest.fn();
 const onSuccess = jest.fn();
 const onError = jest.fn();
 
-const renderThresholdSettingsForm = (defaultValues = false) => {
+const renderThresholdSettingsForm = () => {
   const instance = {
     api: getInstanceMock(),
-    metrics: {},
-    logs: {},
-  } as GrafanaInstances;
-  const meta = {} as AppPluginMeta<GlobalSettings>;
+  };
 
-  if (defaultValues) {
-    instance.api!.getTenantSettings = jest.fn(() =>
-      Promise.resolve({ thresholds: { uptime: {}, reachability: {}, latency: {} } })
-    );
-  }
-
-  render(
-    <InstanceContext.Provider value={{ instance, loading: false, meta }}>
-      <SuccessRateContextProvider checks={[]}>
-        <ThresholdGlobalSettings onDismiss={onDismiss} onSuccess={onSuccess} onError={onError} isOpen={true} />
-      </SuccessRateContextProvider>
-    </InstanceContext.Provider>
+  return render(
+    <SuccessRateContextProvider checks={[]}>
+      <ThresholdGlobalSettings onDismiss={onDismiss} onSuccess={onSuccess} onError={onError} isOpen={true} />
+    </SuccessRateContextProvider>,
+    {
+      instance,
+    }
   );
-
-  return instance;
 };
 
 test('shows the form', async () => {
@@ -48,11 +34,12 @@ test('shows the form', async () => {
 });
 
 test('has default values in form', async () => {
-  renderThresholdSettingsForm(true);
+  const { user } = renderThresholdSettingsForm();
   const upperLimitInputs = await screen.findAllByTestId('upper-limit');
   const lowerLimitInputs = await screen.findAllByTestId('lower-limit');
+  await user.click(screen.getByText('Reset all to defaults'));
   // Uptime/reachability
-  expect(upperLimitInputs[0]).toHaveValue(90);
+  expect(upperLimitInputs[0]).toHaveValue(99);
   expect(lowerLimitInputs[0]).toHaveValue(75);
   // Latency
   expect(upperLimitInputs[2]).toHaveValue(200);
@@ -60,11 +47,10 @@ test('has default values in form', async () => {
 });
 
 test('submits the form', async () => {
-  const instance = renderThresholdSettingsForm();
-  await act(async () => {
-    const saveButton = await screen.findByTestId('threshold-save');
-    userEvent.click(saveButton);
-  });
+  const { instance, user } = renderThresholdSettingsForm();
+  const saveButton = await screen.findByTestId('threshold-save');
+  await user.click(saveButton);
+
   expect(instance.api?.updateTenantSettings).toHaveBeenCalledWith({
     thresholds: {
       uptime: { upperLimit: 94.4, lowerLimit: 75 },

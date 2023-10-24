@@ -1,24 +1,25 @@
-import { GrafanaTheme, OrgRole } from '@grafana/data';
-import { Button, HorizontalGroup, Icon, Modal, Spinner, useStyles, Alert } from '@grafana/ui';
 import React, { FC, useState, useContext } from 'react';
 import { css } from '@emotion/css';
-import { useAlerts } from 'hooks/useAlerts';
-import { AlertRuleForm } from './AlertRuleForm';
-import { AlertFormValues, AlertRule } from 'types';
-import { InstanceContext } from 'contexts/InstanceContext';
-import { transformAlertFormValues } from './alertingTransformations';
-import { hasRole } from 'utils';
-import useUnifiedAlertsEnabled from 'hooks/useUnifiedAlertsEnabled';
+import { GrafanaTheme2 } from '@grafana/data';
 import { config } from '@grafana/runtime';
+import { Button, HorizontalGroup, Icon, Modal, Spinner, useStyles2, Alert } from '@grafana/ui';
+
+import { AlertFormValues, AlertRule } from 'types';
+import { useAlerts } from 'hooks/useAlerts';
+import useUnifiedAlertsEnabled from 'hooks/useUnifiedAlertsEnabled';
+import { AlertRuleForm } from 'components/AlertRuleForm';
+import { InstanceContext } from 'contexts/InstanceContext';
+import { transformAlertFormValues } from 'components/alertingTransformations';
+import { PluginPage } from 'components/PluginPage';
 
 type SplitAlertRules = {
   recordingRules: AlertRule[];
   alertingRules: AlertRule[];
 };
 
-const getStyles = (theme: GrafanaTheme) => ({
+const getStyles = (theme: GrafanaTheme2) => ({
   emptyCard: css`
-    background-color: ${theme.colors.bg2};
+    background-color: ${theme.colors.background.secondary};
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -26,19 +27,27 @@ const getStyles = (theme: GrafanaTheme) => ({
     padding: 48px 100px;
   `,
   defaultAlerts: css`
-    margin-bottom: ${theme.spacing.xl};
+    margin-bottom: ${theme.spacing(4)};
     text-align: center;
   `,
   link: css`
     text-decoration: underline;
   `,
   icon: css`
-    margin-right: ${theme.spacing.xs};
+    margin-right: ${theme.spacing(1)};
   `,
 });
 
-export const Alerting: FC = () => {
-  const styles = useStyles(getStyles);
+export const AlertingPage = () => {
+  return (
+    <PluginPage>
+      <Alerting />
+    </PluginPage>
+  );
+};
+
+const Alerting: FC = () => {
+  const styles = useStyles2(getStyles);
   const { alertRules, setDefaultRules, setRules, alertError } = useAlerts();
   const [updatingDefaultRules, setUpdatingDefaultRules] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
@@ -79,20 +88,6 @@ export const Alerting: FC = () => {
     return await setRules([...recordingRules, ...updatedRules]);
   };
 
-  if (!hasRole(OrgRole.Admin)) {
-    return (
-      <div>
-        {!config.featureToggles.topnav && <h2>Alerts</h2>}
-        <Icon className={styles.icon} name="exclamation-triangle" />
-        Synthetic Monitoring uses &nbsp;
-        <a href="https://grafana.com/docs/grafana-cloud/alerting/" className={styles.link}>
-          Alerting
-        </a>
-        , which is not accessible for users without an admin role.
-      </div>
-    );
-  }
-
   if (!instance.alertRuler && !isUnifiedAlertingEnabled) {
     return (
       <div>
@@ -115,7 +110,7 @@ export const Alerting: FC = () => {
       <p>
         View and edit default alerts for Synthetic Monitoring here. To tie one of these alerts to a check, you must
         select the alert sensitivity from the Alerting section of the check form when creating a check.{' '}
-        <a href="https://grafana.com/docs/grafana-cloud/synthetic-monitoring/#alerting">
+        <a href="https://grafana.com/docs/grafana-cloud/synthetic-monitoring/#alerting" className={styles.link}>
           Learn more about alerting for Synthetic Monitoring.
         </a>
       </p>

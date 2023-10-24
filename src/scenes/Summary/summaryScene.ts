@@ -10,14 +10,18 @@ import {
   SceneVariableSet,
   VariableValueSelectors,
 } from '@grafana/scenes';
-import { CheckType, DashboardSceneAppConfig } from 'types';
+import { Check, CheckType, DashboardSceneAppConfig } from 'types';
 import { getErrorPctgTimeseriesPanel } from './errorPctTimeseries';
 import { getErrorRateMapPanel } from './errorRateMap';
 import { getLatencyTimeseriesPanel } from './latencyTimeseries';
 import { getSummaryTable } from './summaryTable';
+import { getEmptyScene } from 'scenes/Common/emptyScene';
 
-export function getSummaryScene({ metrics, logs }: DashboardSceneAppConfig) {
+export function getSummaryScene({ metrics }: DashboardSceneAppConfig, checks: Check[]) {
   return () => {
+    if (checks.length === 0) {
+      return getEmptyScene();
+    }
     const timeRange = new SceneTimeRange({
       from: 'now-6h',
       to: 'now',
@@ -28,6 +32,7 @@ export function getSummaryScene({ metrics, logs }: DashboardSceneAppConfig) {
       includeAll: true,
       allValue: '.*',
       name: 'region',
+      defaultToAll: true,
       query: { query: 'label_values(sm_check_info, region)' },
       datasource: metrics,
     });
@@ -76,6 +81,7 @@ export function getSummaryScene({ metrics, logs }: DashboardSceneAppConfig) {
         new SceneRefreshPicker({
           intervals: ['5s', '1m', '1h'],
           isOnCanvas: true,
+          refresh: '1m',
         }),
       ],
     });

@@ -238,6 +238,7 @@ export const BASIC_MULTIHTTP_CHECK = {
           request: {
             url: 'https://www.grafana.com',
             method: 'GET',
+            body: undefined,
             headers: [
               {
                 name: 'aheader',
@@ -248,8 +249,7 @@ export const BASIC_MULTIHTTP_CHECK = {
                 value: 'asada',
               },
             ],
-            body: '',
-            queryString: [
+            queryFields: [
               {
                 name: 'tacos',
                 value: 'delicious',
@@ -260,6 +260,12 @@ export const BASIC_MULTIHTTP_CHECK = {
             { type: 0, name: 'enchiladas', expression: 'mole' },
             { type: 1, name: 'salsa', expression: 'picante' },
             { type: 2, name: 'chimichanga', expression: 'delicioso', attribute: 'churro' },
+          ],
+          checks: [
+            { type: 0, subject: 1, condition: 2, value: 'text-value' },
+            { type: 1, condition: 1, expression: '$.jsonpathvalue-expression', value: 'jsonpathvalue-value' },
+            { type: 2, expression: '$.jsonpath-expression' },
+            { type: 3, subject: 2, expression: '/regex/' },
           ],
         },
         {
@@ -272,8 +278,12 @@ export const BASIC_MULTIHTTP_CHECK = {
                 value: 'great',
               },
             ],
-            body: '{"averyinteresting":"request body content"}',
-            queryString: [
+            body: {
+              contentType: 'steve',
+              contentEncoding: 'encoding',
+              payload: 'eyJhdmVyeWludGVyZXN0aW5nIjoicmVxdWVzdCBib2R5IGNvbnRlbnQifQ==',
+            },
+            queryFields: [
               {
                 name: 'query',
                 value: 'param',
@@ -282,6 +292,7 @@ export const BASIC_MULTIHTTP_CHECK = {
             ],
           },
           variables: [],
+          checks: [],
         },
       ],
     },

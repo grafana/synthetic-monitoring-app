@@ -1,30 +1,36 @@
-import { SceneQueryRunner, VizPanel } from '@grafana/scenes';
+import { SceneQueryRunner } from '@grafana/scenes';
 import { DataSourceRef, ThresholdsMode } from '@grafana/schema';
+import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
 function getQueryRunner(metrics: DataSourceRef) {
-  return new SceneQueryRunner({
+  const queries = [
+    {
+      exemplar: true,
+      expr: 'sum(\n  increase(probe_all_success_sum{instance="$instance", job="$job", probe=~"$probe"}[$__range])\n   )\n/\nsum(\n  increase(probe_all_success_count{instance="$instance", job="$job", probe=~"$probe"}[$__range])\n)',
+      hide: false,
+      instant: true,
+      interval: '',
+      legendFormat: '',
+      refId: 'reachabilityStat',
+    },
+  ];
+  const runner = new SceneQueryRunner({
     datasource: metrics,
-    queries: [
-      {
-        exemplar: true,
-        expr: 'sum(\n  increase(probe_all_success_sum{instance="$instance", job="$job", probe=~"$probe"}[$__range])\n   )\n/\nsum(\n  increase(probe_all_success_count{instance="$instance", job="$job", probe=~"$probe"}[$__range])\n)',
-        hide: false,
-        instant: true,
-        interval: '',
-        legendFormat: '',
-        refId: 'B',
-      },
-    ],
+    queries,
   });
+  return {
+    queries,
+    runner,
+  };
 }
 
 export function getReachabilityStat(metrics: DataSourceRef) {
-  const queryRunner = getQueryRunner(metrics);
-  return new VizPanel({
+  const { runner } = getQueryRunner(metrics);
+  return new ExplorablePanel({
     pluginId: 'stat',
     title: 'Reachability',
     description: 'The percentage of all the checks that have succeeded during the whole time period.',
-    $data: queryRunner,
+    $data: runner,
     fieldConfig: {
       overrides: [],
       defaults: {

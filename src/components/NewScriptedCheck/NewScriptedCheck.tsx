@@ -8,7 +8,7 @@ import { useRouteMatch } from 'react-router-dom';
 export function NewScriptedCheck() {
   const { path } = useRouteMatch();
   return (
-    <PluginPage pageNav={{ text: 'New check', description: 'Choose creation method' }}>
+    <PluginPage pageNav={{ text: 'New check' }}>
       <HorizontalGroup justify="center" wrap={true}>
         <HorizontalGroup>
           <Card>

@@ -1,3 +1,4 @@
+import { MultiHttpEntry, QueryParams, RequestProps } from 'components/MultiHttp/MultiHttpTypes';
 import { DnsSettings, HttpSettings, BasicAuth, HeaderMatch, TcpSettings, TCPQueryResponse, Probe } from 'types';
 
 export interface TFOutput {
@@ -29,7 +30,13 @@ export interface TFCheck {
 }
 
 export type TFLabels = { [key: string]: string };
-type TFSettings = TFHttpSettings | TFPingSettings | TFTcpSettings | TFDnsSettings | TFTracerouteSettings;
+type TFSettings =
+  | TFHttpSettings
+  | TFPingSettings
+  | TFTcpSettings
+  | TFDnsSettings
+  | TFTracerouteSettings
+  | TFMultiHTTPSettings;
 export type TFCheckSettings = {
   [key: string]: TFSettings;
 };
@@ -107,6 +114,27 @@ interface TFTracerouteSettings {
   max_hops: number;
   max_unknown_hops: number;
   ptr_lookup: boolean;
+}
+
+interface TFMultiHTTPSettings {
+  entries: TFMultiHttpEntry[];
+}
+
+export interface TFMultiHttpEntry extends Omit<MultiHttpEntry, 'request'> {
+  request: TFMultiHttpRequest;
+}
+
+interface TFMultiHttpRequest extends Omit<RequestProps, 'queryFields' | 'postData' | 'body'> {
+  query_fields?: QueryParams[];
+  post_data?: {
+    mime_type: string;
+    text: string;
+  };
+  body: {
+    content_type?: string;
+    content_encoding?: string;
+    payload?: string;
+  };
 }
 
 interface TFHeaderMatch extends Omit<HeaderMatch, 'allowMissing'> {

@@ -1,62 +1,42 @@
-import { CheckRouter } from 'page/CheckRouter';
-import HomePage from 'page/HomePage';
-import { ProbeRouter } from 'page/ProbeRouter';
-import React, { useEffect, useContext } from 'react';
+import React, { useLayoutEffect, useEffect, useContext } from 'react';
 import { Redirect, Route, Switch, useLocation } from 'react-router-dom';
-import { Alerting } from 'components/Alerting';
 import { AppRootProps } from '@grafana/data';
-import { getNavModel } from 'page/pageDefinitions';
+import { config } from '@grafana/runtime';
+
 import { PLUGIN_URL_PATH } from './constants';
-import { InstanceContext } from 'contexts/InstanceContext';
-import { WelcomePage } from 'page/WelcomePage';
-import { UnprovisionedSetup } from './UnprovisionedSetup';
+import { FeatureName, ROUTES } from 'types';
 import { QueryParamMap, useNavigation } from 'hooks/useNavigation';
 import { useQuery } from 'hooks/useQuery';
-import { DashboardRedirecter } from './DashboardRedirecter';
-import { FeatureName, ROUTES } from 'types';
-import { config } from '@grafana/runtime';
-import { PluginPage } from 'components/PluginPage';
+import { AlertingPage } from 'page/AlertingPage';
+import { CheckRouter } from 'page/CheckRouter';
 import { ConfigPage } from 'page/ConfigPage';
 import { DashboardPage } from 'page/DashboardPage';
+import { getNavModel } from 'page/pageDefinitions';
+import { InstanceContext } from 'contexts/InstanceContext';
+import { ProbeRouter } from 'page/ProbeRouter';
+import { UnprovisionedSetup } from 'page/UnprovisionedSetup';
+import { WelcomePage } from 'page/WelcomePage';
+import { HomePage } from 'page/HomePage';
+import { DashboardRedirecter } from './DashboardRedirecter';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { ScriptedChecksPage } from 'page/ScriptedChecksPage';
 
-export const Routing = ({ onNavChanged, meta, ...rest }: AppRootProps) => {
+export const Routing = ({ onNavChanged }: Pick<AppRootProps, 'onNavChanged'>) => {
   const queryParams = useQuery();
   const navigate = useNavigation();
   const location = useLocation();
-  const { isEnabled: scenesEnabled } = useFeatureFlag(FeatureName.Scenes);
+  const { instance, meta } = useContext(InstanceContext);
   const { isEnabled: scriptedChecksEnabled } = useFeatureFlag(FeatureName.ScriptedChecks);
-  const { instance, provisioned } = useContext(InstanceContext);
-  const initialized = meta.enabled && instance.api;
+  const provisioned = Boolean(meta?.jsonData?.metrics?.grafanaName);
+  const initialized = meta?.enabled && instance.api;
+  const logo = meta?.info.logos.large || ``;
 
   useEffect(() => {
-    const navModel = getNavModel(meta.info.logos.large, location.pathname);
+    const navModel = getNavModel(logo, location.pathname);
     if (!config.featureToggles.topnav) {
-      console.log('on nav changing');
       onNavChanged(navModel);
     }
-  }, [meta.info.logos.large, onNavChanged, location.pathname]);
-
-  useEffect(() => {
-    // not provisioned and not initialized
-    if (
-      meta.enabled &&
-      (!instance.metrics || !instance.logs) &&
-      !provisioned &&
-      !location.pathname.includes('unprovisioned')
-    ) {
-      navigate(ROUTES.Unprovisioned);
-    }
-    // not provisioned and just initialized
-    if (meta.enabled && instance.metrics && instance.logs && location.pathname.includes('unprovisioned')) {
-      navigate(ROUTES.Home);
-    }
-    // Provisioned but not initialized
-    if (meta.enabled && !instance.api && provisioned && !location.pathname.includes('setup')) {
-      navigate(ROUTES.Setup);
-    }
-  }, [meta.enabled, instance.metrics, instance.logs, location.pathname, navigate, instance.api, provisioned]);
+  }, [logo, onNavChanged, location.pathname]);
 
   const page = queryParams.get('page');
   useEffect(() => {
@@ -70,51 +50,57 @@ export const Routing = ({ onNavChanged, meta, ...rest }: AppRootProps) => {
     }
   }, [page, navigate, queryParams]);
 
+  useLayoutEffect(() => {
+    if (!provisioned || (!initialized && location.pathname !== getRoute(ROUTES.Home))) {
+      navigate(ROUTES.Home);
+    }
+  }, [provisioned, initialized, location.pathname, navigate]);
+
+  if (!provisioned) {
+    return <UnprovisionedSetup />;
+  }
+
+  if (!initialized) {
+    return <WelcomePage />;
+  }
+
   return (
     <Switch>
-      <Route exact path={`${PLUGIN_URL_PATH}${ROUTES.Redirect}`}>
+      <Route exact path={getRoute(ROUTES.Redirect)}>
         <DashboardRedirecter />
       </Route>
-      <Route path={`${PLUGIN_URL_PATH}${ROUTES.Setup}`}>
-        {initialized ? <Redirect to={`${PLUGIN_URL_PATH}${ROUTES.Home}`} /> : <WelcomePage />}
-      </Route>
-      <Route path={`${PLUGIN_URL_PATH}${ROUTES.Unprovisioned}`}>
-        <UnprovisionedSetup />
-      </Route>
-      <Route exact path={`${PLUGIN_URL_PATH}${ROUTES.Home}`}>
+      <Route exact path={getRoute(ROUTES.Home)}>
         <HomePage />
       </Route>
-      <Route path={`${PLUGIN_URL_PATH}${ROUTES.Probes}`}>
-        <ProbeRouter />
+      <Route path={getRoute(ROUTES.Scene)}>
+        <DashboardPage />
       </Route>
-      <Route exact path={`${PLUGIN_URL_PATH}${ROUTES.Alerts}`}>
-        <PluginPage>
-          <Alerting />
-        </PluginPage>
-      </Route>
-      <Route path={`${PLUGIN_URL_PATH}${ROUTES.Checks}`}>
+      <Route path={getRoute(ROUTES.Checks)}>
         <CheckRouter />
       </Route>
-      {scenesEnabled && (
-        <Route path={`${PLUGIN_URL_PATH}${ROUTES.Scene}`}>
-          <DashboardPage />
-        </Route>
-      )}
+      <Route path={getRoute(ROUTES.Probes)}>
+        <ProbeRouter />
+      </Route>
       {scriptedChecksEnabled && (
         <Route path={`${PLUGIN_URL_PATH}${ROUTES.ScriptedChecks}`}>
           <ScriptedChecksPage />
         </Route>
       )}
-      <Route path={`${PLUGIN_URL_PATH}${ROUTES.Config}`}>
-        <PluginPage>
-          <ConfigPage />
-        </PluginPage>
+      <Route exact path={getRoute(ROUTES.Alerts)}>
+        <AlertingPage />
+      </Route>
+      <Route path={getRoute(ROUTES.Config)}>
+        <ConfigPage />
       </Route>
 
       {/* Default route (only redirect if the path matches the plugin's URL) */}
       <Route path={PLUGIN_URL_PATH}>
-        <Redirect to={`${PLUGIN_URL_PATH}${ROUTES.Home}`} />
+        <Redirect to={getRoute(ROUTES.Home)} />
       </Route>
     </Switch>
   );
 };
+
+export function getRoute(route: ROUTES) {
+  return `${PLUGIN_URL_PATH}${route}`;
+}

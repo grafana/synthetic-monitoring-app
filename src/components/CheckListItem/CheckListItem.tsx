@@ -2,9 +2,9 @@ import React, { ChangeEvent } from 'react';
 import { SuccessRateGauge } from 'components/SuccessRateGauge';
 import { checkType as getCheckType } from 'utils';
 import { Check, CheckListViewType, CheckType, FilteredCheck, Label } from 'types';
-import { useStyles, Checkbox, HorizontalGroup } from '@grafana/ui';
+import { useStyles2, Checkbox, HorizontalGroup } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
-import { GrafanaTheme } from '@grafana/data';
+import { GrafanaTheme2 } from '@grafana/data';
 import { CheckCardLabel } from '../CheckCardLabel';
 import { LatencyGauge } from '../LatencyGauge';
 import { CheckItemActionButtons } from './CheckItemActionButtons';
@@ -24,35 +24,35 @@ interface Props {
   viewType: CheckListViewType;
 }
 
-const getStyles = (theme: GrafanaTheme) => ({
+const getStyles = (theme: GrafanaTheme2) => ({
   container: css`
-    background-color: ${theme.colors.bg2};
-    border: 1px solid ${theme.isDark ? theme.colors.border2 : theme.colors.border1};
+    background-color: ${theme.colors.background.secondary};
+    border: 1px solid ${theme.colors.border.medium};
     border-radius: 2px;
     width: 100%;
-    margin-bottom: ${theme.spacing.sm};
+    margin-bottom: ${theme.spacing(1)};
   `,
   cardWrapper: css`
     display: flex;
     flex-direction: row;
-    padding: ${theme.spacing.md};
-    padding-bottom: ${theme.spacing.sm};
+    padding: ${theme.spacing(2)};
+    padding-bottom: ${theme.spacing(1)};
     overflow: none;
   `,
   listCardWrapper: css`
     display: grid;
-    grid-template-columns: auto 145px minmax(1px, 1fr) auto auto auto;
+    grid-template-columns: auto 175px minmax(1px, 1fr) auto auto auto;
     align-content: center;
-    grid-column-gap: ${theme.spacing.md};
-    padding: 12px ${theme.spacing.md};
+    grid-column-gap: ${theme.spacing(2)};
+    padding: 12px ${theme.spacing(2)};
   `,
   disabledCard: css`
-    background-color: ${theme.colors.bg3};
-    border-color: ${theme.isDark ? theme.colors.border3 : theme.colors.border2};
+    background-color: ${theme.colors.secondary.transparent};
+    border-color: ${theme.colors.border.medium};
   `,
   checkbox: css`
-    padding-top: ${theme.spacing.xxs};
-    margin-right: ${theme.spacing.sm};
+    padding-top: ${theme.spacing(0.5)};
+    margin-right: ${theme.spacing(1)};
     display: flex;
     align-items: flex-start;
   `,
@@ -60,12 +60,12 @@ const getStyles = (theme: GrafanaTheme) => ({
     display: flex;
     flex-direction: row;
     flex-grow: 1;
-    padding-right: ${theme.spacing.md};
+    padding-right: ${theme.spacing(2)};
     overflow: hidden;
-    border-bottom: 1px solid ${theme.isDark ? theme.colors.border2 : theme.colors.border1};
+    border-bottom: 1px solid ${theme.colors.border.medium};
   `,
   bodyDisabled: css`
-    border-color: ${theme.isDark ? theme.colors.border3 : theme.colors.border2};
+    border-color: ${theme.colors.border.medium};
   `,
   checkInfoContainer: css`
     flex-grow: 1;
@@ -75,16 +75,16 @@ const getStyles = (theme: GrafanaTheme) => ({
     display: flex;
     flex-direction: row;
     align-items: center;
-    margin-bottom: ${theme.spacing.sm};
+    margin-bottom: ${theme.spacing(1)};
   `,
   statusTypeCardView: css`
-    margin-right: ${theme.spacing.sm};
+    margin-right: ${theme.spacing(1)};
   `,
   checkTarget: css`
-    font-size: ${theme.typography.size.sm};
-    line-height: ${theme.typography.lineHeight.sm};
-    font-weight: ${theme.typography.weight.bold};
-    margin-bottom: ${theme.spacing.sm};
+    font-size: ${theme.typography.bodySmall.fontSize};
+    line-height: ${theme.typography.bodySmall.lineHeight};
+    font-weight: ${theme.typography.fontWeightBold};
+    margin-bottom: ${theme.spacing(1)};
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -93,8 +93,8 @@ const getStyles = (theme: GrafanaTheme) => ({
   checkTargetListView: css`
     margin-bottom: 0px;
     justify-self: left;
-    font-weight: ${theme.typography.weight.regular};
-    line-height: ${theme.typography.lineHeight.md};
+    font-weight: ${theme.typography.fontWeightRegular};
+    line-height: ${theme.typography.body.lineHeight};
     display: flex;
     align-items: center;
     width: 100%;
@@ -125,7 +125,7 @@ const getStyles = (theme: GrafanaTheme) => ({
     flex-direction: row;
     align-items: flex-start;
     width: 100%;
-    padding-top: ${theme.spacing.sm};
+    padding-top: ${theme.spacing(1)};
   `,
   verticalGroup: css`
     display: flex;
@@ -151,7 +151,7 @@ export const CheckListItem = ({
   onToggleCheckbox,
   viewType = CheckListViewType.Card,
 }: Props) => {
-  const styles = useStyles(getStyles);
+  const styles = useStyles2(getStyles);
   const checkType = getCheckType(check.settings);
   const usage = useUsageCalc(check);
 

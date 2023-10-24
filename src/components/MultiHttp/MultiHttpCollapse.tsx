@@ -1,28 +1,38 @@
-import React, { useState, PropsWithChildren } from 'react';
+import React, { PropsWithChildren } from 'react';
 import { Icon, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
 
 interface Props {
   label: string;
+  invalid?: boolean;
   className?: string | string[];
+  isOpen: boolean;
+  onToggle: () => void;
 }
 
-export const MultiHttpCollapse = ({ label, children, className }: PropsWithChildren<Props>) => {
+export const MultiHttpCollapse = ({
+  label,
+  children,
+  invalid,
+  className,
+  isOpen,
+  onToggle,
+}: PropsWithChildren<Props>) => {
   const styles = useStyles2(getStyles);
-  const [isOpen, setIsOpen] = useState<boolean>(true);
 
   return (
     <div className={cx([!className ? 'panel-container' : className, styles.container])}>
       <div
         className={styles.header}
         onClick={() => {
-          setIsOpen(!isOpen);
+          onToggle();
         }}
       >
         <>
           <Icon name={isOpen ? 'angle-down' : 'angle-right'} className={styles.headerIcon} />
           <div className={styles.label}>{label}</div>
+          {!isOpen && invalid && <Icon name="exclamation-triangle" className={styles.errorIcon} />}
         </>
       </div>
       <div className={cx(styles.body, { [styles.hidden]: !isOpen })}>{children}</div>
@@ -35,7 +45,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
     border-left: none;
     border-right: none;
     border-bottom: none;
-    margin-bottom: 10px;
     padding: ${theme.spacing(2)};
   `,
   header: css`
@@ -59,5 +68,9 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
   hidden: css`
     display: none;
+  `,
+  errorIcon: css`
+    color: ${theme.colors.error.text};
+    margin-left: ${theme.spacing(1)};
   `,
 });

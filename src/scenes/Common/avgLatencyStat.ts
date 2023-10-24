@@ -1,5 +1,6 @@
-import { SceneQueryRunner, VizPanel } from '@grafana/scenes';
+import { SceneQueryRunner } from '@grafana/scenes';
 import { DataSourceRef, ThresholdsMode } from '@grafana/schema';
+import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
 function getQueryRunner(metrics: DataSourceRef) {
   return new SceneQueryRunner({
@@ -19,7 +20,7 @@ function getQueryRunner(metrics: DataSourceRef) {
 
 export function getAvgLatencyStat(metrics: DataSourceRef) {
   const queryRunner = getQueryRunner(metrics);
-  return new VizPanel({
+  return new ExplorablePanel({
     pluginId: 'stat',
     title: 'Average latency',
     description: 'The average time to receive an answer across all the checks during the whole time period.',

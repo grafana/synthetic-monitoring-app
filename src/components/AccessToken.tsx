@@ -4,6 +4,7 @@ import { InstanceContext } from 'contexts/InstanceContext';
 import React, { useContext, useState } from 'react';
 import { Clipboard } from 'components/Clipboard';
 import { GrafanaTheme2 } from '@grafana/data';
+import { FaroEvent, reportEvent, reportError } from 'faro';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   vericalSpace: css`
@@ -20,11 +21,13 @@ export const AccessToken = () => {
 
   const showTokenModal = async () => {
     try {
+      reportEvent(FaroEvent.CREATE_ACCESS_TOKEN);
       const token = await instance.api?.createApiToken();
       setToken(token);
       setShowModal(true);
     } catch (e) {
       const cast = e as Error;
+      reportError(cast, FaroEvent.CREATE_ACCESS_TOKEN);
       setError(cast.message ?? 'There was an error creating a new access token');
     }
   };

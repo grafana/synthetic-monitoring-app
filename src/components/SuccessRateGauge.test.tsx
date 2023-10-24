@@ -1,34 +1,27 @@
 import React from 'react';
-import { render, screen, waitForElementToBeRemoved } from '@testing-library/react';
-import { InstanceContext } from 'contexts/InstanceContext';
-import { getInstanceMock, instanceSettings } from '../datasource/__mocks__/DataSource';
+import { screen, waitForElementToBeRemoved } from '@testing-library/react';
+
+import { render } from 'test/render';
 import { SuccessRateGauge } from './SuccessRateGauge';
 import * as utils from 'utils';
-import { AppPluginMeta } from '@grafana/data';
-import { Check, GlobalSettings } from 'types';
+import { Check } from 'types';
 import { SuccessRateTypes } from 'contexts/SuccessRateContext';
 import { SuccessRateContextProvider } from './SuccessRateContextProvider';
 
-const renderSuccessRateGauge = (sparkline = false) => {
-  const instance = {
-    api: getInstanceMock(instanceSettings),
-  };
-  const meta = {} as AppPluginMeta<GlobalSettings>;
+const renderSuccessRateGauge = () => {
   render(
-    <InstanceContext.Provider value={{ instance, loading: true, meta }}>
-      <SuccessRateContextProvider checks={[{ id: 4, job: 'burritos', target: 'tacos' } as Check]}>
-        <SuccessRateGauge
-          title="Reachability"
-          id={4}
-          type={SuccessRateTypes.Checks}
-          labelNames={['tacos']}
-          labelValues={['burritos']}
-          height={200}
-          width={200}
-          onClick={jest.fn()}
-        />
-      </SuccessRateContextProvider>
-    </InstanceContext.Provider>
+    <SuccessRateContextProvider checks={[{ id: 4, job: 'burritos', target: 'tacos' } as Check]}>
+      <SuccessRateGauge
+        title="Reachability"
+        id={4}
+        type={SuccessRateTypes.Checks}
+        labelNames={['tacos']}
+        labelValues={['burritos']}
+        height={200}
+        width={200}
+        onClick={jest.fn()}
+      />
+    </SuccessRateContextProvider>
   );
 };
 
