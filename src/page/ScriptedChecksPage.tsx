@@ -2,10 +2,11 @@ import { SyntheticsBuilder } from '@grafana/k6-test-builder';
 import { PluginPage } from '@grafana/runtime';
 import { useTheme2 } from '@grafana/ui';
 import { NewScriptedCheck } from 'components/NewScriptedCheck';
-import { ScriptedCheckCodeEditor } from 'components/ScriptedCheckCodeEditor';
+import { ScriptedCheckCodeEditor, ScriptedFormValues } from 'components/ScriptedCheckCodeEditor';
 import { ScriptedCheckList } from 'components/ScriptedCheckList';
 import { PLUGIN_URL_PATH } from 'components/constants';
-import React, { useState } from 'react';
+import { InstanceContext } from 'contexts/InstanceContext';
+import React, { useContext, useState } from 'react';
 import { Route, Switch, useRouteMatch } from 'react-router-dom';
 import { ROUTES } from 'types';
 
@@ -14,10 +15,40 @@ const newCheckParent = { text: 'New check', url: `${PLUGIN_URL_PATH}${ROUTES.Scr
 export function ScriptedChecksPage() {
   const theme = useTheme2();
   const [saving, setSaving] = useState(false);
-  const handleSubmit = (values: any, errors: any) => {
+  const { instance } = useContext(InstanceContext);
+  const handleSubmit = async (
+    { name, target, script, frequency, timeout, ...rest }: ScriptedFormValues,
+    errors: any
+  ) => {
     setSaving(true);
-    console.log({ values, errors });
-    setSaving(false);
+    if (errors) {
+      console.error(errors);
+      return;
+    }
+    try {
+      const check = {
+        ...rest,
+        job: name,
+        target,
+        frequency: frequency * 1000,
+        timeout: timeout * 1000,
+        enabled: false,
+        labels: [],
+        basicMetricsOnly: true,
+        alertSensitivity: '',
+        settings: {
+          k6: {
+            script: btoa(script),
+          },
+        },
+      };
+      const resp = await instance.api?.addCheck(check);
+      console.log({ resp });
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const { path } = useRouteMatch();

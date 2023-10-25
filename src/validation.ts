@@ -273,7 +273,7 @@ export function validateSettings(settings: Settings): string | undefined {
     case CheckType.Traceroute: {
       return validateSettingsTraceroute(settings.traceroute);
     }
-    case CheckType.SCRIPTED: {
+    case CheckType.K6: {
       return;
     }
   }

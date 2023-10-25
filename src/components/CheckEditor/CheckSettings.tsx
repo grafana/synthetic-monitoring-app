@@ -30,7 +30,7 @@ export const CheckSettings: FC<Props> = ({ isEditor, typeOfCheck }) => {
     case CheckType.MULTI_HTTP: {
       throw new Error('Invalid check type for this location');
     }
-    case CheckType.SCRIPTED: {
+    case CheckType.K6: {
       throw new Error('Invalid check type for this location');
     }
   }

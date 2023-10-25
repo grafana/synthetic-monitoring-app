@@ -347,7 +347,7 @@ export interface Settings {
   dns?: DnsSettings;
   tcp?: TcpSettings;
   traceroute?: TracerouteSettings;
-  scripted?: ScriptedSettings;
+  k6?: ScriptedSettings;
 }
 
 export enum CheckType {
@@ -357,7 +357,7 @@ export enum CheckType {
   TCP = 'tcp',
   Traceroute = 'traceroute',
   MULTI_HTTP = 'multihttp',
-  SCRIPTED = 'scripted',
+  K6 = 'k6',
 }
 
 export interface HostedInstance {
