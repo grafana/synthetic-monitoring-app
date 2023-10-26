@@ -478,3 +478,9 @@ export const ASSERTION_SUBJECT_OPTIONS: Array<SelectableValue<AssertionSubjectVa
   { label: 'Headers', value: AssertionSubjectVariant.ResponseHeaders },
   { label: 'HTTP status code', value: AssertionSubjectVariant.HttpStatusCode },
 ];
+
+export const UPTIME_DESCRIPTION = 'The fraction of time the target was up during the whole period.';
+export const REACHABILITY_DESCRIPTION =
+  'The percentage of all the checks that have succeeded during the whole time period.';
+export const LATENCY_DESCRIPTION =
+  'The average time to receive an answer across all the checks during the whole time period.';

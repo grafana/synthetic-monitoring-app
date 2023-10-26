@@ -240,8 +240,6 @@ export const CheckListItem = ({
                     title="Uptime"
                     type={SuccessRateTypes.Checks}
                     id={check.id}
-                    labelNames={['instance', 'job']}
-                    labelValues={[check.target, check.job]}
                     height={75}
                     width={150}
                   />
@@ -249,8 +247,6 @@ export const CheckListItem = ({
                     title="Reachability"
                     type={SuccessRateTypes.Checks}
                     id={check.id}
-                    labelNames={['instance', 'job']}
-                    labelValues={[check.target, check.job]}
                     height={75}
                     width={150}
                   />

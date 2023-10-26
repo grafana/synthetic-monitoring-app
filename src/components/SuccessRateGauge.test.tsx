@@ -15,8 +15,6 @@ const renderSuccessRateGauge = () => {
         title="Reachability"
         id={4}
         type={SuccessRateTypes.Checks}
-        labelNames={['tacos']}
-        labelValues={['burritos']}
         height={200}
         width={200}
         onClick={jest.fn()}
