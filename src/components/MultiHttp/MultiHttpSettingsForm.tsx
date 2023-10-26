@@ -36,6 +36,7 @@ import { CheckFormAlert } from 'components/CheckFormAlert';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 import { CheckUsage } from 'components/CheckUsage';
 import { CheckTestButton } from 'components/CheckTestButton';
+import { LabelField } from 'components/LabelField';
 
 interface Props {
   checks?: Check[];
@@ -190,6 +191,8 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
                 probes={check?.probes ?? multiHttpFallbackCheck.probes}
                 checkType={CheckType.MULTI_HTTP}
               />
+
+              <LabelField isEditor={isEditor} />
 
               <hr />
               <h3>Requests</h3>
