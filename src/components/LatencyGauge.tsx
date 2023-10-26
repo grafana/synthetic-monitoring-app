@@ -5,6 +5,8 @@ import { config } from '@grafana/runtime';
 import { useMetricData } from 'hooks/useMetricData';
 import { SuccessRateContext, ThresholdSettings } from 'contexts/SuccessRateContext';
 import { getLatencySuccessRateThresholdColor } from 'utils';
+import { BigValueTitle } from './BigValueTitle';
+import { LATENCY_DESCRIPTION } from './constants';
 
 interface Props {
   target: string;
@@ -18,7 +20,8 @@ const getDisplayValue = (data: any[], loading: boolean, thresholds: ThresholdSet
   if (loading) {
     return {
       numeric: 0,
-      title: 'Latency',
+      // @ts-ignore
+      title: <BigValueTitle title="Latency" infoText={LATENCY_DESCRIPTION} />,
       text: 'loading...',
     };
   }
@@ -26,7 +29,8 @@ const getDisplayValue = (data: any[], loading: boolean, thresholds: ThresholdSet
     return {
       numeric: 0,
       text: 'N/A',
-      title: 'Latency',
+      // @ts-ignore
+      title: <BigValueTitle title="Latency" infoText={LATENCY_DESCRIPTION} />,
     };
   }
 
@@ -34,7 +38,8 @@ const getDisplayValue = (data: any[], loading: boolean, thresholds: ThresholdSet
   const color = getLatencySuccessRateThresholdColor(thresholds, 'latency', latency);
 
   return {
-    title: 'Latency',
+    // @ts-ignore
+    title: <BigValueTitle title="Latency" infoText={LATENCY_DESCRIPTION} />,
     color: color,
     numeric: latency,
     text: latency.toFixed(0) + 'ms',
