@@ -27,11 +27,12 @@ export function AssertionsTab({ index, active }: MultiHttpTabProps) {
         description="Use assertions to validate that the system is responding with the expected content"
       >
         <>
+          <br />
           {fields.map((field, assertionIndex) => {
             const assertionTypeName = `${assertionFieldName}[${assertionIndex}].type` ?? '';
             const errorPath = formState.errors.settings?.multihttp?.entries?.[index]?.checks?.[assertionIndex];
             return (
-              <HorizontalGroup spacing="md" key={field.id} align="flex-start">
+              <HorizontalGroup spacing="md" key={field.id} align="flex-end">
                 <Controller
                   name={assertionTypeName}
                   render={({ field: typeField }) => {
@@ -58,6 +59,7 @@ export function AssertionsTab({ index, active }: MultiHttpTabProps) {
                 <IconButton
                   className={styles.removeIconWithLabel}
                   name="minus-circle"
+                  size="md"
                   type="button"
                   onClick={() => {
                     remove(assertionIndex);

@@ -241,7 +241,7 @@ const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
 
             return (
               <div className={cx({ [styles.tabInputContainer]: variableIndex === 0 })} key={field.id}>
-                <HorizontalGroup key={field.id} align="flex-start">
+                <HorizontalGroup key={field.id} align="flex-end">
                   <Controller
                     name={variableTypeName}
                     render={({ field: typeField }) => {
@@ -355,7 +355,8 @@ export const getMultiHttpTabStyles = (theme: GrafanaTheme2) => ({
     margin-top: 6px;
   `,
   removeIconWithLabel: css`
-    margin-top: 26px;
+    margin-bottom: ${theme.spacing(3)};
+    margin-left: ${theme.spacing(2)};
   `,
   headersQueryInputs: css`
     margin: 100px 0;
