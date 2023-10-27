@@ -45,6 +45,7 @@ export function AssertionsTab({ index, active }: MultiHttpTabProps) {
                       >
                         <Select
                           id={`multihttp-assertion-type-${index}-${assertionIndex}`}
+                          data-testid={`multihttp-assertion-type-${index}-${assertionIndex}`}
                           className={styles.minInputWidth}
                           {...typeField}
                           options={MULTI_HTTP_ASSERTION_TYPE_OPTIONS}
@@ -227,6 +228,7 @@ function AssertionExpressionField({ fieldName, error }: { fieldName: string; err
     <Field label="Expression" invalid={Boolean(error)} error={error?.message} description={description}>
       <Input
         placeholder={placeholder}
+        data-testid={`${fieldName}-expression`}
         id={`${fieldName}-expression`}
         {...register(`${fieldName}.expression`, {
           required: 'Expression is required',

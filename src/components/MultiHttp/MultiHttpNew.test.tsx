@@ -61,13 +61,13 @@ describe('new checks', () => {
     await user.click(assertionsTabs[0]);
     const addAssertion = await screen.findByRole('button', { name: 'Add assertions' });
     await user.click(addAssertion);
-    const assertionTypes = await screen.findAllByLabelText('Assertion type');
+    const assertionTypes = await screen.findAllByLabelText('Assertion type', { exact: false });
     await user.selectOptions(assertionTypes[0], '1');
-    const expressions = await screen.findAllByLabelText('Expression');
+    const expressions = await screen.findAllByLabelText('Expression', { exact: false });
     await user.type(expressions[0], 'expresso');
-    const conditions = await screen.findAllByLabelText('Condition');
+    const conditions = await screen.findAllByLabelText('Condition', { exact: false });
     await user.selectOptions(conditions[0], '4');
-    const values = await screen.findAllByLabelText('Value');
+    const values = await screen.findAllByLabelText('Value to compare with result of expression', { exact: false });
     await user.clear(values[0]);
     await user.type(values[0], 'yarp');
 
