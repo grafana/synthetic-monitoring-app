@@ -10,7 +10,7 @@ import { MultiHttpAssertionType } from 'types';
 import { MultiHttpTabProps, getMultiHttpTabStyles } from './Tabs';
 import { cx } from '@emotion/css';
 
-export function AssertionsTab({ index, label, active }: MultiHttpTabProps) {
+export function AssertionsTab({ index, active }: MultiHttpTabProps) {
   const assertionFieldName = `settings.multihttp.entries[${index}].checks`;
   const { control } = useFormContext();
   const { fields, append, remove } = useFieldArray({
@@ -36,7 +36,12 @@ export function AssertionsTab({ index, label, active }: MultiHttpTabProps) {
                   name={assertionTypeName}
                   render={({ field: typeField }) => {
                     return (
-                      <Field label="Assertion type" invalid={errorPath?.type} error={errorPath?.type?.message}>
+                      <Field
+                        label="Assertion type"
+                        description="Method for finding assertion value"
+                        invalid={errorPath?.type}
+                        error={errorPath?.type?.message}
+                      >
                         <Select
                           id={`multihttp-assertion-type-${index}-${assertionIndex}`}
                           className={styles.minInputWidth}
@@ -124,7 +129,12 @@ function AssertionSubjectField({ fieldName, error }: { fieldName: string; error?
       name={`${fieldName}.subject`}
       render={({ field }) => {
         return (
-          <Field label="Subject" invalid={Boolean(error)} error={error?.message}>
+          <Field
+            label="Subject"
+            description="Target value to assert against"
+            invalid={Boolean(error)}
+            error={error?.message}
+          >
             <Select id={`${fieldName}-subject`} {...field} options={ASSERTION_SUBJECT_OPTIONS} menuPlacement="bottom" />
           </Field>
         );
@@ -140,7 +150,7 @@ function AssertionConditionField({ fieldName, error }: { fieldName: string; erro
       name={`${fieldName}.condition`}
       render={({ field }) => {
         return (
-          <Field label="Condition" invalid={Boolean(error)} error={error?.message}>
+          <Field label="Condition" description="Comparator" invalid={Boolean(error)} error={error?.message}>
             <Select
               id={`${fieldName}-condition`}
               {...field}
@@ -156,9 +166,14 @@ function AssertionConditionField({ fieldName, error }: { fieldName: string; erro
 }
 
 function AssertionValueField({ fieldName, error }: { fieldName: string; error?: FieldError }) {
-  const { register } = useFormContext();
+  const { register, watch } = useFormContext();
+  const assertionType = watch(`${fieldName}.type`);
+  const description =
+    assertionType.value === MultiHttpAssertionType.Text
+      ? 'Value to compare with Subject'
+      : 'Value to compare with result of expression';
   return (
-    <Field label="Value" invalid={Boolean(error)} error={error?.message}>
+    <Field label="Value" description={description} invalid={Boolean(error)} error={error?.message}>
       <Input
         placeholder="Value"
         id={`${fieldName}-value`}
@@ -168,12 +183,48 @@ function AssertionValueField({ fieldName, error }: { fieldName: string; error?: 
   );
 }
 
+function getExpressionPlaceholderInfo(assertionType: MultiHttpAssertionType) {
+  switch (assertionType) {
+    case MultiHttpAssertionType.JSONPathValue:
+    case MultiHttpAssertionType.JSONPath: {
+      return {
+        placeholder: 'Path lookup using GJSON syntax',
+        description: (
+          <a
+            href="https://github.com/tidwall/gjson#path-syntax"
+            style={{ textDecoration: 'underline' }}
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            See here for selector syntax
+          </a>
+        ),
+      };
+    }
+    case MultiHttpAssertionType.Regex:
+      return {
+        placeholder: '.*',
+        description: 'Regex string without leading or trailing slashes',
+      };
+    case MultiHttpAssertionType.Text:
+    default: {
+      return {
+        placeholder: '',
+        description: <span />,
+      };
+    }
+  }
+}
+
 function AssertionExpressionField({ fieldName, error }: { fieldName: string; error?: FieldError }) {
-  const { register } = useFormContext();
+  const { register, watch } = useFormContext();
+  const assertionType = watch(`${fieldName}.type`);
+  const { description, placeholder } = getExpressionPlaceholderInfo(assertionType.value);
+
   return (
-    <Field label="Expression" invalid={Boolean(error)} error={error?.message}>
+    <Field label="Expression" invalid={Boolean(error)} error={error?.message} description={description}>
       <Input
-        placeholder="$."
+        placeholder={placeholder}
         id={`${fieldName}-expression`}
         {...register(`${fieldName}.expression`, {
           required: 'Expression is required',
