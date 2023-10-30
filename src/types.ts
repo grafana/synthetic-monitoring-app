@@ -251,6 +251,7 @@ export interface MultiHttpEntryFormValues extends Omit<MultiHttpEntry, 'request'
   request: MultiHttpRequestFormValues;
   variables: MultiHttpVariablesFormValues[];
   checks: MultiHttpAssertionFormValues[];
+  logResponse: boolean;
 }
 
 export interface MultiHttpRequestFormValues extends Omit<RequestProps, 'method'> {

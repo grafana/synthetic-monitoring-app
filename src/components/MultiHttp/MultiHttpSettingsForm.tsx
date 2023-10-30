@@ -14,6 +14,7 @@ import {
   useStyles2,
   Legend,
   HorizontalGroup,
+  Checkbox,
 } from '@grafana/ui';
 import { getDefaultValuesFromCheck, getCheckFromFormValues } from 'components/CheckEditor/checkFormTransformations';
 import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
@@ -260,6 +261,14 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
 
                         <AvailableVariables index={index} />
 
+                        <Field
+                          label="Log response body"
+                          description="Will add a log line that gets sent to Loki containing the response body. Be mindful of large response bodies or whether the response contains sensitive information."
+                          invalid={Boolean(errors?.settings?.multihttp?.entries?.[index]?.logResponse)}
+                          error={errors?.settings?.multihttp?.entries?.[index]?.logResponse?.message}
+                        >
+                          <Checkbox {...register(`settings.multihttp.entries.${index}.logResponse`)} />
+                        </Field>
                         <TabSection index={index} />
                       </VerticalGroup>
                     </MultiHttpCollapse>

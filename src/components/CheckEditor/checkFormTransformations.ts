@@ -589,6 +589,7 @@ const getMultiHttpFormValues = (settings: Settings): MultiHttpSettingsFormValues
               value,
             };
           }) ?? [],
+        logResponse: entry.logResponse ?? false,
       };
     }),
   };
