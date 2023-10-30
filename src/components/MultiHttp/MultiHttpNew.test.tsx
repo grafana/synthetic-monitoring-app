@@ -78,6 +78,7 @@ describe('new checks', () => {
       expect.objectContaining({
         settings: {
           multihttp: {
+            logResponseBodies: false,
             entries: [
               {
                 request: { headers: [], queryFields: [], method: 'POST', url: 'http://grafanarr.com', body: undefined },

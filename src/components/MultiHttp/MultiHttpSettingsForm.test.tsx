@@ -31,6 +31,10 @@ describe('editing multihttp check', () => {
     expect(await getSlider('frequency')).toHaveValue('110');
     expect(await getSlider('timeout')).toHaveValue('2');
 
+    // edit log response bodies
+    const logResponseBodies = await screen.findByLabelText('Log response bodies', { exact: false });
+    expect(logResponseBodies).not.toBeChecked();
+
     //targets
     const targets = await screen.findAllByLabelText('Request target', { exact: false });
     expect(targets[0]).toHaveValue('https://www.grafana.com');
@@ -96,6 +100,10 @@ describe('editing multihttp check', () => {
     await user.clear(jobNameInput);
     await user.type(jobNameInput, 'basicmultiedited');
 
+    // edit log response bodies
+    const logResponseBodies = await screen.findByLabelText('Log response bodies', { exact: false });
+    await user.click(logResponseBodies);
+
     // edit target
     const targetInput = await screen.findAllByLabelText('Request target', { exact: false });
     await user.clear(targetInput[0]);
@@ -149,6 +157,7 @@ describe('editing multihttp check', () => {
       expect.objectContaining({
         settings: {
           multihttp: {
+            logResponseBodies: true,
             entries: [
               {
                 checks: [

@@ -203,7 +203,10 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
                 invalid={Boolean(errors?.settings?.multihttp?.logResponseBodies)}
                 error={errors?.settings?.multihttp?.logResponseBodies?.message}
               >
-                <Checkbox {...register(`settings.multihttp.logResponseBodies`)} />
+                <Checkbox
+                  id="settings-multihttp-logResponseBodies"
+                  {...register(`settings.multihttp.logResponseBodies`)}
+                />
               </Field>
               <div className={styles.request}>
                 {entryFields.map((field, index) => {
