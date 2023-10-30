@@ -478,6 +478,7 @@ const getMultiHttpSettings = (
   }
 
   return {
+    logResponseBodies: settings.logResponseBodies,
     entries: settings.entries?.map((entry, index) => {
       const variables = entry.variables ?? defaultSettings?.entries[index]?.variables ?? [];
       const checks = entry.checks ?? defaultSettings?.entries[index]?.checks ?? [];
@@ -554,6 +555,7 @@ const getMultiHttpFormValues = (settings: Settings): MultiHttpSettingsFormValues
   const multiHttpSettings = settings.multihttp ?? (fallbackSettings(CheckType.MULTI_HTTP) as MultiHttpSettings);
 
   return {
+    logResponseBodies: settings.multihttp?.logResponseBodies,
     entries: multiHttpSettings.entries?.map((entry) => {
       return {
         request: {
@@ -589,7 +591,6 @@ const getMultiHttpFormValues = (settings: Settings): MultiHttpSettingsFormValues
               value,
             };
           }) ?? [],
-        logResponse: entry.logResponse ?? false,
       };
     }),
   };

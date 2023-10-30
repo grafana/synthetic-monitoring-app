@@ -197,6 +197,14 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
               <Field label="At least one target HTTP is required; limit 10 requests per check.">
                 <></>
               </Field>
+              <Field
+                label="Log response bodies"
+                description="Will add a log line that gets sent to Loki containing the response body of each request. Be mindful of large response bodies or whether the response contains sensitive information."
+                invalid={Boolean(errors?.settings?.multihttp?.logResponseBodies)}
+                error={errors?.settings?.multihttp?.logResponseBodies?.message}
+              >
+                <Checkbox {...register(`settings.multihttp.logResponseBodies`)} />
+              </Field>
               <div className={styles.request}>
                 {entryFields.map((field, index) => {
                   const urlForIndex =
@@ -261,14 +269,6 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
 
                         <AvailableVariables index={index} />
 
-                        <Field
-                          label="Log response body"
-                          description="Will add a log line that gets sent to Loki containing the response body. Be mindful of large response bodies or whether the response contains sensitive information."
-                          invalid={Boolean(errors?.settings?.multihttp?.entries?.[index]?.logResponse)}
-                          error={errors?.settings?.multihttp?.entries?.[index]?.logResponse?.message}
-                        >
-                          <Checkbox {...register(`settings.multihttp.entries.${index}.logResponse`)} />
-                        </Field>
                         <TabSection index={index} />
                       </VerticalGroup>
                     </MultiHttpCollapse>
