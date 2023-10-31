@@ -22,10 +22,11 @@ export const MultiHttpCollapse = ({
   const styles = useStyles2(getStyles);
 
   return (
-    <div className={cx([!className ? 'panel-container' : className, styles.container])}>
-      <div
+    <div className={cx([!className ? 'panel-container' : className])}>
+      <button
         className={styles.header}
-        onClick={() => {
+        onClick={(e) => {
+          e.preventDefault();
           onToggle();
         }}
       >
@@ -34,24 +35,21 @@ export const MultiHttpCollapse = ({
           <div className={styles.label}>{label}</div>
           {!isOpen && invalid && <Icon name="exclamation-triangle" className={styles.errorIcon} />}
         </>
-      </div>
+      </button>
       <div className={cx(styles.body, { [styles.hidden]: !isOpen })}>{children}</div>
     </div>
   );
 };
 
 const getStyles = (theme: GrafanaTheme2) => ({
-  container: css`
-    border-left: none;
-    border-right: none;
-    border-bottom: none;
-    padding: ${theme.spacing(2)};
-  `,
   header: css`
     display: flex;
     align-items: center;
     transition: all 0.1s linear;
-    cursor: pointer;
+    border: none;
+    background: none;
+    padding: ${theme.spacing(2)};
+    width: 100%;
   `,
   headerExpanded: css`
     padding-bottom: ${theme.spacing(1)};
@@ -64,7 +62,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     font-size: ${theme.typography.h4.fontSize};
   `,
   body: css`
-    padding-top: ${theme.spacing(1)};
+    padding: ${theme.spacing(2)};
   `,
   hidden: css`
     display: none;

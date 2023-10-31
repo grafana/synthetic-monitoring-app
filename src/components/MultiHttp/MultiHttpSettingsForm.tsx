@@ -81,7 +81,7 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
     check.settings.multihttp?.entries?.map((_, index, arr) => index === arr.length - 1) ?? [true]
   );
 
-  const formMethods = useForm<CheckFormValues>({ defaultValues, reValidateMode: 'onBlur' });
+  const formMethods = useForm<CheckFormValues>({ defaultValues, reValidateMode: 'onBlur', shouldFocusError: false });
 
   const {
     register,
@@ -132,8 +132,9 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
   });
 
   const submissionError = error as unknown as SubmissionErrorWrapper;
-
+  console.log(error);
   if (submissionError) {
+    console.log(`called?`);
     reportError(
       submissionError.data?.err ?? 'Multihttp submission error',
       check?.id ? FaroEvent.UPDATE_CHECK : FaroEvent.CREATE_CHECK

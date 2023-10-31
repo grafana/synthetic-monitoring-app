@@ -1,4 +1,4 @@
-import { useStyles2, HorizontalGroup, Select, Button, Icon, Input, Field, IconButton } from '@grafana/ui';
+import { useStyles2, Select, Button, Icon, Input, Field, IconButton } from '@grafana/ui';
 import {
   ASSERTION_CONDITION_OPTIONS,
   ASSERTION_SUBJECT_OPTIONS,
@@ -27,12 +27,12 @@ export function AssertionsTab({ index, active }: MultiHttpTabProps) {
         description="Use assertions to validate that the system is responding with the expected content"
       >
         <>
-          <br />
           {fields.map((field, assertionIndex) => {
             const assertionTypeName = `${assertionFieldName}[${assertionIndex}].type` ?? '';
             const errorPath = formState.errors.settings?.multihttp?.entries?.[index]?.checks?.[assertionIndex];
+
             return (
-              <HorizontalGroup spacing="md" key={field.id} align="flex-end">
+              <div className={styles.fieldsContainer} key={field.id} id="chris">
                 <Controller
                   name={assertionTypeName}
                   render={({ field: typeField }) => {
@@ -57,17 +57,17 @@ export function AssertionsTab({ index, active }: MultiHttpTabProps) {
                   rules={{ required: 'Assertion type is required' }}
                 />
                 <AssertionFields fieldName={`${assertionFieldName}[${assertionIndex}]`} errors={errorPath} />
-                <IconButton
-                  className={styles.removeIconWithLabel}
-                  name="minus-circle"
-                  size="md"
-                  type="button"
-                  onClick={() => {
-                    remove(assertionIndex);
-                  }}
-                  tooltip="Delete"
-                />
-              </HorizontalGroup>
+
+                <div className={styles.iconContainer}>
+                  <IconButton
+                    name="minus-circle"
+                    onClick={() => {
+                      remove(assertionIndex);
+                    }}
+                    tooltip="Delete"
+                  />
+                </div>
+              </div>
             );
           })}
         </>
@@ -94,32 +94,32 @@ function AssertionFields({ fieldName, errors }: { fieldName: string; errors: any
   switch (assertionType?.value) {
     case MultiHttpAssertionType.Text:
       return (
-        <HorizontalGroup spacing="sm" align="flex-start">
+        <>
           <AssertionSubjectField fieldName={fieldName} error={errors?.subject} />
           <AssertionConditionField fieldName={fieldName} error={errors?.condition} />
           <AssertionValueField fieldName={fieldName} error={errors?.value} />
-        </HorizontalGroup>
+        </>
       );
     case MultiHttpAssertionType.JSONPathValue:
       return (
-        <HorizontalGroup spacing="sm" align="flex-start">
+        <>
           <AssertionExpressionField fieldName={fieldName} error={errors?.expression} />
           <AssertionConditionField fieldName={fieldName} error={errors?.condition} />
           <AssertionValueField fieldName={fieldName} error={errors?.value} />
-        </HorizontalGroup>
+        </>
       );
     case MultiHttpAssertionType.JSONPath:
       return (
-        <HorizontalGroup spacing="sm" align="flex-start">
+        <>
           <AssertionExpressionField fieldName={fieldName} error={errors?.expression} />
-        </HorizontalGroup>
+        </>
       );
     case MultiHttpAssertionType.Regex:
       return (
-        <HorizontalGroup spacing="sm" align="flex-start">
+        <>
           <AssertionSubjectField fieldName={fieldName} error={errors?.subject} />
           <AssertionExpressionField fieldName={fieldName} error={errors?.expression} />
-        </HorizontalGroup>
+        </>
       );
     default:
       return null;
