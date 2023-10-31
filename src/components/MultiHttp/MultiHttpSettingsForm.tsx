@@ -1,5 +1,5 @@
 import React, { useContext, useState, useMemo, useReducer, useEffect } from 'react';
-import { FormProvider, useForm, Controller, useFieldArray } from 'react-hook-form';
+import { FormProvider, useForm, Controller, useFieldArray, DeepMap, FieldError } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 
 import {
@@ -81,7 +81,7 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
     check.settings.multihttp?.entries?.map((_, index, arr) => index === arr.length - 1) ?? [true]
   );
 
-  const formMethods = useForm<CheckFormValues>({ defaultValues, reValidateMode: 'onBlur', shouldFocusError: false });
+  const formMethods = useForm<CheckFormValues>({ defaultValues, reValidateMode: 'onBlur', shouldFocusError: true });
 
   const {
     register,
@@ -154,6 +154,21 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
 
   const requests = watch('settings.multihttp.entries') as any[];
 
+  const onError = (errs: DeepMap<CheckFormValues, FieldError>) => {
+    console.log(errs);
+    const errKeys = Object.keys(errs);
+    const entries = errs.settings?.multihttp?.entries;
+    const isMultiHttpError = errKeys.length === 1 && entries;
+
+    if (isMultiHttpError) {
+      const firstCollapsibleError = entries.findIndex(Boolean);
+
+      if (!collapseState[firstCollapsibleError]) {
+        dispatchCollapse({ type: 'toggle', index: firstCollapsibleError });
+      }
+    }
+  };
+
   return (
     <>
       <PluginPage
@@ -164,7 +179,7 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
         {!config.featureToggles.topnav && <Legend>{check?.id ? 'Edit Check' : 'Add MULTIHTTP Check'}</Legend>}
         <VerticalGroup>
           <FormProvider {...formMethods}>
-            <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
+            <form onSubmit={handleSubmit(onSubmit, onError)} className={styles.form}>
               <hr className={styles.breakLine} />
               <HorizontalCheckboxField
                 disabled={!isEditor}
