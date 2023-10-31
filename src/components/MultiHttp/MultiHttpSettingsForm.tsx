@@ -1,4 +1,4 @@
-import React, { useContext, useState, useMemo, useReducer } from 'react';
+import React, { useContext, useState, useMemo, useReducer, useEffect } from 'react';
 import { FormProvider, useForm, Controller, useFieldArray } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 
@@ -132,14 +132,15 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
   });
 
   const submissionError = error as unknown as SubmissionErrorWrapper;
-  console.log(error);
-  if (submissionError) {
-    console.log(`called?`);
-    reportError(
-      submissionError.data?.err ?? 'Multihttp submission error',
-      check?.id ? FaroEvent.UPDATE_CHECK : FaroEvent.CREATE_CHECK
-    );
-  }
+
+  useEffect(() => {
+    if (submissionError) {
+      reportError(
+        submissionError.data?.err ?? 'Multihttp submission error',
+        check.id ? FaroEvent.UPDATE_CHECK : FaroEvent.CREATE_CHECK
+      );
+    }
+  }, [check.id, submissionError]);
 
   const onRemoveCheck = async () => {
     const id = check?.id;
