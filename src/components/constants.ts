@@ -361,6 +361,7 @@ export function fallbackSettings(t: CheckType): Settings {
     case CheckType.MULTI_HTTP: {
       return {
         multihttp: {
+          logResponseBodies: false,
           entries: [
             {
               request: {

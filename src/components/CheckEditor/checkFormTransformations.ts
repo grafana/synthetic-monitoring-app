@@ -555,44 +555,45 @@ const getMultiHttpFormValues = (settings: Settings): MultiHttpSettingsFormValues
   const multiHttpSettings = settings.multihttp ?? (fallbackSettings(CheckType.MULTI_HTTP) as MultiHttpSettings);
 
   return {
-    logResponseBodies: settings.multihttp?.logResponseBodies,
-    entries: multiHttpSettings.entries?.map((entry) => {
-      return {
-        request: {
-          ...entry.request,
-          body: entry.request.body
-            ? {
-                ...entry.request.body,
-                payload: fromBase64(entry.request.body?.payload ?? ''),
-              }
-            : undefined,
-          method: METHOD_OPTIONS.find(({ value }) => value === entry.request.method) ?? METHOD_OPTIONS[0],
-        },
-        variables:
-          entry.variables?.map(({ type, name, expression, attribute }) => {
-            return {
-              type:
-                MULTI_HTTP_VARIABLE_TYPE_OPTIONS.find(({ value }) => value === type) ??
-                MULTI_HTTP_VARIABLE_TYPE_OPTIONS[0],
-              name,
-              expression,
-              attribute,
-            };
-          }) ?? [],
-        checks:
-          entry.checks?.map(({ type, subject, condition, expression, value }) => {
-            return {
-              type:
-                MULTI_HTTP_ASSERTION_TYPE_OPTIONS.find(({ value }) => value === type) ??
-                MULTI_HTTP_ASSERTION_TYPE_OPTIONS[0],
-              subject: ASSERTION_SUBJECT_OPTIONS.find(({ value }) => value === subject),
-              condition: ASSERTION_CONDITION_OPTIONS.find(({ value }) => value === condition),
-              expression,
-              value,
-            };
-          }) ?? [],
-      };
-    }),
+    entries:
+      multiHttpSettings.entries?.map((entry) => {
+        return {
+          request: {
+            ...entry.request,
+            body: entry.request.body
+              ? {
+                  ...entry.request.body,
+                  payload: fromBase64(entry.request.body?.payload ?? ''),
+                }
+              : undefined,
+            method: METHOD_OPTIONS.find(({ value }) => value === entry.request.method) ?? METHOD_OPTIONS[0],
+          },
+          variables:
+            entry.variables?.map(({ type, name, expression, attribute }) => {
+              return {
+                type:
+                  MULTI_HTTP_VARIABLE_TYPE_OPTIONS.find(({ value }) => value === type) ??
+                  MULTI_HTTP_VARIABLE_TYPE_OPTIONS[0],
+                name,
+                expression,
+                attribute,
+              };
+            }) ?? [],
+          checks:
+            entry.checks?.map(({ type, subject, condition, expression, value }) => {
+              return {
+                type:
+                  MULTI_HTTP_ASSERTION_TYPE_OPTIONS.find(({ value }) => value === type) ??
+                  MULTI_HTTP_ASSERTION_TYPE_OPTIONS[0],
+                subject: ASSERTION_SUBJECT_OPTIONS.find(({ value }) => value === subject),
+                condition: ASSERTION_CONDITION_OPTIONS.find(({ value }) => value === condition),
+                expression,
+                value,
+              };
+            }) ?? [],
+        };
+      }) ?? [],
+    logResponseBodies: multiHttpSettings.logResponseBodies ?? false,
   };
 };
 

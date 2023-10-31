@@ -232,8 +232,8 @@ export const BASIC_MULTIHTTP_CHECK = {
   alertSensitivity: 'none',
   basicMetricsOnly: true,
   settings: {
-    logResponseBodies: false,
     multihttp: {
+      logResponseBodies: true,
       entries: [
         {
           request: {

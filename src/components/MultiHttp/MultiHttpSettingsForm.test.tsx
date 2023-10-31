@@ -32,8 +32,8 @@ describe('editing multihttp check', () => {
     expect(await getSlider('timeout')).toHaveValue('2');
 
     // edit log response bodies
-    const logResponseBodies = await screen.findByLabelText('Log response bodies', { exact: false });
-    expect(logResponseBodies).not.toBeChecked();
+    const logResponseBodies = await screen.findByTestId('logResponseBodies');
+    expect(logResponseBodies).toBeChecked();
 
     //targets
     const targets = await screen.findAllByLabelText('Request target', { exact: false });
@@ -157,7 +157,7 @@ describe('editing multihttp check', () => {
       expect.objectContaining({
         settings: {
           multihttp: {
-            logResponseBodies: true,
+            logResponseBodies: false,
             entries: [
               {
                 checks: [

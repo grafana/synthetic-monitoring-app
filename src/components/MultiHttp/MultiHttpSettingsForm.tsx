@@ -205,7 +205,8 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
               >
                 <Checkbox
                   id="settings-multihttp-logResponseBodies"
-                  {...register(`settings.multihttp.logResponseBodies`)}
+                  data-testid="logResponseBodies"
+                  {...register('settings.multihttp.logResponseBodies')}
                 />
               </Field>
               <div className={styles.request}>
@@ -232,6 +233,7 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
                           >
                             <Input
                               id={`request-target-url-${index}`}
+                              data-testid={`request-target-url-${index}`}
                               {...register(`settings.multihttp.entries.${index}.request.url` as const, {
                                 required: 'Request target is required',
                                 validate: (url: string) => {

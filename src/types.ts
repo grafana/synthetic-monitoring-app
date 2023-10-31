@@ -246,7 +246,7 @@ export interface MultiHttpSettings {
 }
 export interface MultiHttpSettingsFormValues {
   entries: MultiHttpEntryFormValues[];
-  logResponseBodies?: boolean;
+  logResponseBodies: boolean;
 }
 
 export interface MultiHttpEntryFormValues extends Omit<MultiHttpEntry, 'request' | 'variables' | 'checks'> {
