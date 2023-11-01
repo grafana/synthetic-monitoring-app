@@ -1,5 +1,13 @@
 import { MultiHttpAssertionType } from 'types';
 
+export enum MultiHttpFormTabs {
+  Headers = 'headers',
+  QueryParams = 'query',
+  Assertions = 'checks',
+  Body = 'body',
+  Variables = 'variables',
+}
+
 export type MultiHttpVariable = {
   type: number;
   name: string;

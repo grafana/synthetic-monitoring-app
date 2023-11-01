@@ -1,7 +1,6 @@
-import { css, cx } from '@emotion/css';
 import React from 'react';
 import { Controller, useFieldArray, useFormContext } from 'react-hook-form';
-
+import { css, cx } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
 import {
   Button,
@@ -15,11 +14,13 @@ import {
   TextArea,
   useStyles2,
 } from '@grafana/ui';
+
+import { MultiHttpVariableType } from 'types';
 import { MULTI_HTTP_VARIABLE_TYPE_OPTIONS } from 'components/constants';
-import { MultiHttpFormTabs, MultiHttpVariableType } from 'types';
+import { MultiHttpFormTabs } from 'components/MultiHttp/MultiHttpTypes';
 import { AssertionsTab } from './AssertionsTab';
-import { getMultiHttpFormStyles } from '../MultiHttpSettingsForm.styles';
 import { getIsBodyDisabled } from './TabSection';
+import { getMultiHttpFormStyles } from '../MultiHttpSettingsForm.styles';
 
 export interface MultiHttpTabProps {
   label?: string;
@@ -336,11 +337,11 @@ export const RequestTabs = ({ activeTab, index }: RequestTabsProps) => {
   const hideBody = getIsBodyDisabled(method);
   return (
     <TabContent className={styles.tabsContent}>
-      <HeadersTab label="header" index={index} active={activeTab === 'header'} />
-      {!hideBody && <BodyTab index={index} active={activeTab === 'body'} />}
-      <QueryParamsTab index={index} label="queryParams" active={activeTab === 'queryParams'} />
-      <VariablesTab index={index} label="variables" active={activeTab === 'variables'} />
-      <AssertionsTab index={index} label="assertions" active={activeTab === 'assertions'} />
+      <HeadersTab label="header" index={index} active={activeTab === MultiHttpFormTabs.Headers} />
+      {!hideBody && <BodyTab index={index} active={activeTab === MultiHttpFormTabs.Body} />}
+      <QueryParamsTab index={index} label="queryParams" active={activeTab === MultiHttpFormTabs.QueryParams} />
+      <VariablesTab index={index} label="variables" active={activeTab === MultiHttpFormTabs.Variables} />
+      <AssertionsTab index={index} label="assertions" active={activeTab === MultiHttpFormTabs.Assertions} />
     </TabContent>
   );
 };

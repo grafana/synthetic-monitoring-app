@@ -30,11 +30,9 @@ export const MultiHttpCollapse = ({
           onToggle();
         }}
       >
-        <>
-          <Icon name={isOpen ? 'angle-down' : 'angle-right'} className={styles.headerIcon} />
-          <div className={styles.label}>{label}</div>
-          {!isOpen && invalid && <Icon name="exclamation-triangle" className={styles.errorIcon} />}
-        </>
+        <Icon name={isOpen ? 'angle-down' : 'angle-right'} className={styles.headerIcon} />
+        <div className={styles.label}>{label}</div>
+        {!isOpen && invalid && <Icon name="exclamation-triangle" className={styles.errorIcon} />}
       </button>
       <div className={cx(styles.body, { [styles.hidden]: !isOpen })}>{children}</div>
     </div>
@@ -50,9 +48,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
     background: none;
     padding: ${theme.spacing(2)};
     width: 100%;
-  `,
-  headerExpanded: css`
-    padding-bottom: ${theme.spacing(1)};
   `,
   headerIcon: css`
     margin-right: ${theme.spacing(1)};

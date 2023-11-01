@@ -582,8 +582,6 @@ export interface VizViewSceneAppConfig extends DashboardSceneAppConfig {
   onFilterChange: (filters: CheckFiltersType) => void;
 }
 
-export type MultiHttpFormTabs = 'header' | 'queryParams' | 'assertions' | 'body' | 'variables';
-
 export enum MultiHttpVariableType {
   JSON_PATH = 0,
   REGEX = 1,
