@@ -31,6 +31,12 @@ describe('editing multihttp check', () => {
     expect(await getSlider('frequency')).toHaveValue('110');
     expect(await getSlider('timeout')).toHaveValue('2');
 
+    // labels
+    const labelNameInput = await screen.findByTestId('label-name-0');
+    expect(labelNameInput).toHaveValue('labelName');
+    const labelValueInput = await screen.findByTestId('label-value-0');
+    expect(labelValueInput).toHaveValue('labelValue');
+
     //targets
     const targets = await screen.findAllByLabelText('Request target', { exact: false });
     expect(targets[0]).toHaveValue('https://www.grafana.com');
@@ -96,6 +102,14 @@ describe('editing multihttp check', () => {
     await user.clear(jobNameInput);
     await user.type(jobNameInput, 'basicmultiedited');
 
+    // Add a custom label
+    const labelNameInput = await screen.findByTestId('label-name-0');
+    await user.clear(labelNameInput);
+    await user.type(labelNameInput, 'editedlabelname');
+    const labelValueInput = await screen.findByTestId('label-value-0');
+    await user.clear(labelValueInput);
+    await user.type(labelValueInput, 'editedlabelvalue');
+
     // edit target
     const targetInput = await screen.findAllByLabelText('Request target', { exact: false });
     await user.clear(targetInput[0]);
@@ -145,70 +159,83 @@ describe('editing multihttp check', () => {
         job: 'basicmultiedited',
       })
     );
-    expect(instance.api?.updateCheck).toHaveBeenCalledWith(
-      expect.objectContaining({
-        settings: {
-          multihttp: {
-            entries: [
-              {
-                checks: [
-                  {
-                    condition: 4,
-                    expression: 'expresso',
-                    type: 1,
-                    value: 'yarp',
-                  },
-                  {
-                    condition: 1,
-                    expression: '$.jsonpathvalue-expression',
-                    type: 1,
-                    value: 'jsonpathvalue-value',
-                  },
-                  { expression: '$.jsonpath-expression', type: 2 },
-                  { expression: '/regex/', subject: 1, type: 3 },
-                ],
-                request: {
-                  headers: [
-                    { name: 'rambling psyche', value: 'yarp' },
-                    { name: 'carne', value: 'asada' },
-                  ],
-                  method: 'GET',
-                  queryFields: [{ name: 'tacos', value: 'delicious' }],
-                  url: 'http://grafanarr.com',
-                },
-                variables: [
-                  { expression: 'mole', name: 'enchiladas', type: 0 },
-                  { expression: 'picante', name: 'salsa', type: 1 },
-                  {
-                    attribute: 'churro',
-                    expression: 'delicioso',
-                    name: 'chimichanga',
-                    type: 2,
-                  },
-                ],
-              },
-              {
-                checks: [],
-                request: {
-                  body: {
-                    contentEncoding: 'encoding',
-                    contentType: 'steve',
-                    payload: 'dGVycmlibHlpbnRlcmVzdGluZw==',
-                  },
-                  headers: [{ name: 'examples', value: 'great' }],
-                  method: 'POST',
-                  queryFields: [
-                    { name: 'query', value: 'param' },
-                    { name: 'using variable', value: '${enchiladas}' },
-                  ],
-                  url: 'https://www.example.com',
-                },
-                variables: [],
-              },
-            ],
-          },
+    expect(instance.api?.updateCheck).toHaveBeenCalledWith({
+      target: 'http://grafanarr.com',
+      timeout: 2000,
+      alertSensitivity: 'none',
+      basicMetricsOnly: true,
+      enabled: true,
+      frequency: 110000,
+      id: 6,
+      job: 'basicmultiedited',
+      labels: [
+        {
+          name: 'editedlabelname',
+          value: 'editedlabelvalue',
         },
-      })
-    );
+      ],
+      probes: [42],
+      settings: {
+        multihttp: {
+          entries: [
+            {
+              checks: [
+                {
+                  condition: 4,
+                  expression: 'expresso',
+                  type: 1,
+                  value: 'yarp',
+                },
+                {
+                  condition: 1,
+                  expression: '$.jsonpathvalue-expression',
+                  type: 1,
+                  value: 'jsonpathvalue-value',
+                },
+                { expression: '$.jsonpath-expression', type: 2 },
+                { expression: '/regex/', subject: 1, type: 3 },
+              ],
+              request: {
+                headers: [
+                  { name: 'rambling psyche', value: 'yarp' },
+                  { name: 'carne', value: 'asada' },
+                ],
+                method: 'GET',
+                queryFields: [{ name: 'tacos', value: 'delicious' }],
+                url: 'http://grafanarr.com',
+              },
+              variables: [
+                { expression: 'mole', name: 'enchiladas', type: 0 },
+                { expression: 'picante', name: 'salsa', type: 1 },
+                {
+                  attribute: 'churro',
+                  expression: 'delicioso',
+                  name: 'chimichanga',
+                  type: 2,
+                },
+              ],
+            },
+            {
+              checks: [],
+              request: {
+                body: {
+                  contentEncoding: 'encoding',
+                  contentType: 'steve',
+                  payload: 'dGVycmlibHlpbnRlcmVzdGluZw==',
+                },
+                headers: [{ name: 'examples', value: 'great' }],
+                method: 'POST',
+                queryFields: [
+                  { name: 'query', value: 'param' },
+                  { name: 'using variable', value: '${enchiladas}' },
+                ],
+                url: 'https://www.example.com',
+              },
+              variables: [],
+            },
+          ],
+        },
+      },
+    });
   });
 });

@@ -45,6 +45,14 @@ describe('new checks', () => {
     const probeSelectMenu = await screen.findByTestId('select');
     await user.selectOptions(probeSelectMenu, within(probeSelectMenu).getByText('burritos'));
 
+    // Add a custom label
+    const addCustomLabelButton = await screen.findByRole('button', { name: /Add label/ });
+    await user.click(addCustomLabelButton);
+    const labelNameInput = await screen.findByTestId('label-name-0');
+    await user.type(labelNameInput, 'customlabelname');
+    const labelValueInput = await screen.findByTestId('label-value-0');
+    await user.type(labelValueInput, 'customlabelvalue');
+
     const addRequestButton = await screen.findByText('Add request');
     await user.click(addRequestButton);
 
@@ -74,31 +82,43 @@ describe('new checks', () => {
     await submitForm(onReturn, user);
 
     expect(instance.api?.addCheck).toHaveBeenCalledTimes(1);
-    expect(instance.api?.addCheck).toHaveBeenCalledWith(
-      expect.objectContaining({
-        settings: {
-          multihttp: {
-            entries: [
-              {
-                request: { headers: [], queryFields: [], method: 'POST', url: 'http://grafanarr.com', body: undefined },
-                variables: [],
-                checks: [{ condition: 4, expression: 'expresso', type: 1, value: 'yarp' }],
-              },
-              {
-                request: {
-                  headers: [],
-                  queryFields: [],
-                  method: 'GET',
-                  url: 'http://grafanalalala.com',
-                  body: undefined,
-                },
-                variables: [],
-                checks: [],
-              },
-            ],
-          },
+    expect(instance.api?.addCheck).toHaveBeenCalledWith({
+      target: 'http://grafanarr.com',
+      timeout: 3000,
+      alertSensitivity: 'none',
+      basicMetricsOnly: true,
+      enabled: true,
+      frequency: 120000,
+      job: 'basicmulti',
+      labels: [
+        {
+          name: 'customlabelname',
+          value: 'customlabelvalue',
         },
-      })
-    );
+      ],
+      probes: [42],
+      settings: {
+        multihttp: {
+          entries: [
+            {
+              request: { headers: [], queryFields: [], method: 'POST', url: 'http://grafanarr.com', body: undefined },
+              variables: [],
+              checks: [{ condition: 4, expression: 'expresso', type: 1, value: 'yarp' }],
+            },
+            {
+              request: {
+                headers: [],
+                queryFields: [],
+                method: 'GET',
+                url: 'http://grafanalalala.com',
+                body: undefined,
+              },
+              variables: [],
+              checks: [],
+            },
+          ],
+        },
+      },
+    });
   });
 });
