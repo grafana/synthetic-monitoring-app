@@ -23,6 +23,7 @@ export interface MultiHttpStepsSceneState extends SceneObjectState {
   target?: string;
   job?: string;
   stepUrl?: string;
+  activeStepIndex?: string;
   stepMethod?: string;
 }
 
@@ -63,7 +64,7 @@ function getUrl(url: string, queryParams?: QueryParams[]) {
 
 export function MultiHttpStepsSceneRenderer({ model }: SceneComponentProps<MultiHttpStepsScene>) {
   const styles = useStyles2(getStyles);
-  const { check, stepUrl, stepMethod, entries, duplicates } = model.useState();
+  const { check, activeStepIndex, stepUrl, stepMethod, entries, duplicates } = model.useState();
 
   const { checks, loading } = useContext(ChecksContext);
   const interpolatedInst = sceneGraph.interpolate(model, '${instance}');
@@ -71,13 +72,11 @@ export function MultiHttpStepsSceneRenderer({ model }: SceneComponentProps<Multi
   const urlErrorRate = sceneGraph.getData(model).useState();
 
   const errorRateByUrl = useMemo(() => {
-    const methods = urlErrorRate.data?.series?.[0]?.fields?.[1]?.values;
     const urls = urlErrorRate.data?.series?.[0]?.fields?.[2]?.values;
     const errorRates = urlErrorRate.data?.series?.[0]?.fields?.[3]?.values;
 
     const errorRateByUrl = urls?.reduce((acc, url, index) => {
-      const method = methods?.[index];
-      acc[method + url] = errorRates?.[index];
+      acc[url] = errorRates?.[index];
       return acc;
     }, {});
     return errorRateByUrl;
@@ -91,9 +90,10 @@ export function MultiHttpStepsSceneRenderer({ model }: SceneComponentProps<Multi
 
       if (check) {
         const interpolatedUrl = sceneGraph.interpolate(model, '${stepUrl}');
+        const interpolatedStepIndex = sceneGraph.interpolate(model, '${activeStepIndex}');
         const interpolatedMethod = sceneGraph.interpolate(model, '${stepMethod}');
         const useDefault =
-          !interpolatedUrl || !check.settings.multihttp?.entries.find((entry) => entry.request.url === interpolatedUrl);
+          !interpolatedStepIndex || check.job !== model.state.check?.job || check.target !== model.state.check?.target;
         const deduplicatedEntries = check.settings.multihttp?.entries.reduce<{
           entries: MultiHttpEntry[];
           seen: Set<string>;
@@ -119,22 +119,21 @@ export function MultiHttpStepsSceneRenderer({ model }: SceneComponentProps<Multi
           }
         );
 
-        const defaultUrl = getUrl(
-          check.settings.multihttp?.entries[0].request.url ?? '',
-          check.settings.multihttp?.entries[0].request.queryFields
-        );
+        const stepIndex = useDefault ? '0' : interpolatedStepIndex;
+        const defaultUrl = check.settings.multihttp?.entries?.[parseInt(stepIndex, 10)]?.request.url;
         model.setState({
           check,
           entries: deduplicatedEntries?.entries,
           duplicates: deduplicatedEntries?.duplicates,
           stepUrl: useDefault ? defaultUrl : interpolatedUrl,
-          stepMethod: useDefault ? check.settings.multihttp?.entries[0].request.method : interpolatedMethod,
+          activeStepIndex: stepIndex,
+          stepMethod: !interpolatedUrl ? check.settings.multihttp?.entries[0].request.method : interpolatedMethod,
         });
       }
     }
   }, [checks, loading, check, interpolatedJob, interpolatedInst, model, stepUrl]);
 
-  if (!check || !stepUrl) {
+  if (!check || !stepUrl || !activeStepIndex) {
     return <Spinner />;
   }
 
@@ -147,10 +146,10 @@ export function MultiHttpStepsSceneRenderer({ model }: SceneComponentProps<Multi
         return (
           <StepPickerStepItem
             key={index}
-            value={errorRateByUrl?.[request.method + url]}
-            active={url === stepUrl && request.method === stepMethod}
+            value={errorRateByUrl?.[String(index)]}
+            active={String(index) === activeStepIndex && request.method === stepMethod}
             onClick={() => {
-              model.setState({ stepUrl: url, stepMethod: request.method });
+              model.setState({ stepUrl: url, activeStepIndex: String(index), stepMethod: request.method });
             }}
             method={request.method}
             label={url}

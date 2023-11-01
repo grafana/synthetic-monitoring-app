@@ -10,9 +10,9 @@ function getQueryRunner(metrics: DataSourceRef) {
         refId: 'A',
         // expr: 'sum by (phase) (probe_http_duration_seconds{job="$job", instance="$instance", url="$stepUrl", method="$stepMethod"})',
         expr: `
-        sum by (phase) (probe_http_duration_seconds{job="$job", instance="$instance", url="$stepUrl", method="$stepMethod", probe=~"$probe"})
+        sum by (phase) (probe_http_duration_seconds{job="$job", instance="$instance", url="$activeStepIndex", method="$stepMethod", probe=~"$probe"})
 /
-        count by (phase) (probe_http_duration_seconds{job="$job", instance="$instance", url="$stepUrl", method="$stepMethod", probe=~"$probe"})
+        count by (phase) (probe_http_duration_seconds{job="$job", instance="$instance", url="$activeStepIndex", method="$stepMethod", probe=~"$probe"})
         `,
         legendFormat: '__auto',
         range: true,
@@ -26,7 +26,7 @@ export function getLatencyByPhasePanel(metrics: DataSourceRef) {
     body: new ExplorablePanel({
       $data: getQueryRunner(metrics),
       pluginId: 'barchart',
-      title: 'Latency by phase',
+      title: 'Latency by phase for $stepUrl',
       fieldConfig: {
         defaults: {
           unit: 's',

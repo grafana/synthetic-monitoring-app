@@ -9,11 +9,11 @@ function getQueryRunner(metrics: DataSourceRef) {
       {
         exemplar: true,
         expr: `sum by (probe) (
-            probe_http_requests_failed_total{probe=~"$probe", instance="$instance", job="$job", url="$stepUrl", method="$stepMethod"}
+            probe_http_requests_failed_total{probe=~"$probe", instance="$instance", job="$job", url="$activeStepIndex", method="$stepMethod"}
           )
           /
           sum by (probe) (
-            probe_http_requests_total{probe=~"$probe", instance="$instance", job="$job", url="$stepUrl", method="$stepMethod"}
+            probe_http_requests_total{probe=~"$probe", instance="$instance", job="$job", url="$activeStepIndex", method="$stepMethod"}
           )
         `,
         hide: false,
