@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useStyles2, TabsBar, Tab, Icon, useTheme2 } from '@grafana/ui';
-import { RequestTabs } from 'components/MultiHttp/Tabs/Tabs';
-import { getMultiHttpFormStyles } from './../MultiHttpSettingsForm.styles';
-import { useFormContext } from 'react-hook-form';
-import { MultiHttpFormTabs } from 'types';
 import { SelectableValue } from '@grafana/data';
-import { RequestMethods } from '../MultiHttpTypes';
+import { useFormContext } from 'react-hook-form';
+
+import { RequestTabs } from 'components/MultiHttp/Tabs/Tabs';
+import { MultiHttpFormTabs, RequestMethods } from 'components/MultiHttp/MultiHttpTypes';
+import { tabErrorMap } from 'components/MultiHttp/MultiHttpSettingsForm.utils';
+import { getMultiHttpFormStyles } from './../MultiHttpSettingsForm.styles';
 
 interface RequestTabsProps {
-  label?: string;
+  activeTab: MultiHttpFormTabs;
   index: number;
+  onTabClick: (tab: MultiHttpFormTabs) => void;
 }
 
 function TabErrorWarning() {
@@ -29,10 +31,8 @@ export function getIsBodyDisabled(method: SelectableValue<RequestMethods>) {
   }
 }
 
-export const TabSection = ({ index }: RequestTabsProps) => {
-  const [activeTab, setActiveTab] = useState<MultiHttpFormTabs>('header');
+export const TabSection = ({ activeTab, index, onTabClick }: RequestTabsProps) => {
   const styles = useStyles2(getMultiHttpFormStyles);
-
   const { formState, watch } = useFormContext();
   const requestMethod = watch(`settings.multihttp.entries.${index}.request.method`);
   const headers = watch(`settings.multihttp.entries.${index}.request.headers`);
@@ -40,7 +40,6 @@ export const TabSection = ({ index }: RequestTabsProps) => {
   const assertions = watch(`settings.multihttp.entries.${index}.checks`);
   const variables = watch(`settings.multihttp.entries.${index}.variables`);
   const errors = formState.errors?.settings?.multihttp?.entries[index];
-
   const isBodyDisabled = getIsBodyDisabled(requestMethod);
 
   return (
@@ -48,56 +47,56 @@ export const TabSection = ({ index }: RequestTabsProps) => {
       <TabsBar className={styles.tabsBar}>
         <Tab
           label={'Headers'}
-          active={activeTab === 'header'}
+          active={activeTab === MultiHttpFormTabs.Headers}
           onChangeTab={() => {
-            setActiveTab('header');
+            onTabClick(MultiHttpFormTabs.Headers);
           }}
           default={true}
           className={styles.tabs}
           counter={headers?.length ?? 0}
-          suffix={errors?.request?.headers?.length ? TabErrorWarning : undefined}
+          suffix={tabErrorMap(errors, index, MultiHttpFormTabs.Headers) ? TabErrorWarning : undefined}
         />
 
         <Tab
           label={'Query Params'}
-          active={activeTab === 'queryParams'}
+          active={activeTab === MultiHttpFormTabs.QueryParams}
           onChangeTab={() => {
-            setActiveTab('queryParams');
+            onTabClick(MultiHttpFormTabs.QueryParams);
           }}
           className={styles.tabs}
           counter={queryParams?.length ?? 0}
-          suffix={errors?.request?.queryFields?.length ? TabErrorWarning : undefined}
+          suffix={tabErrorMap(errors, index, MultiHttpFormTabs.QueryParams) ? TabErrorWarning : undefined}
         />
         <Tab
           label={'Assertions'}
-          active={activeTab === 'assertions'}
+          active={activeTab === MultiHttpFormTabs.Assertions}
           onChangeTab={() => {
-            setActiveTab('assertions');
+            onTabClick(MultiHttpFormTabs.Assertions);
           }}
           className={styles.tabs}
           counter={assertions?.length ?? 0}
-          suffix={errors?.checks?.length ? TabErrorWarning : undefined}
+          suffix={tabErrorMap(errors, index, MultiHttpFormTabs.Assertions) ? TabErrorWarning : undefined}
         />
         <Tab
           label="Variables"
-          active={activeTab === 'variables'}
+          active={activeTab === MultiHttpFormTabs.Variables}
           onChangeTab={() => {
-            setActiveTab('variables');
+            onTabClick(MultiHttpFormTabs.Variables);
           }}
           className={styles.tabs}
           counter={variables?.length ?? 0}
-          suffix={errors?.variables?.length ? TabErrorWarning : undefined}
+          suffix={tabErrorMap(errors, index, MultiHttpFormTabs.Variables) ? TabErrorWarning : undefined}
         />
         {!isBodyDisabled && (
           <Tab
             className={styles.tabs}
             disabled={isBodyDisabled}
             label={'Body'}
-            active={activeTab === 'body'}
+            active={activeTab === MultiHttpFormTabs.Body}
             onChangeTab={() => {
-              setActiveTab('body');
+              onTabClick(MultiHttpFormTabs.Body);
             }}
-            suffix={errors?.body ? TabErrorWarning : undefined}
+            suffix={tabErrorMap(errors, index, MultiHttpFormTabs.Body) ? TabErrorWarning : undefined}
           />
         )}
       </TabsBar>

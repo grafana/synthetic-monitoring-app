@@ -1,6 +1,7 @@
-import React, { useContext, useState, useMemo, useReducer } from 'react';
-import { FormProvider, useForm, Controller, useFieldArray } from 'react-hook-form';
+import React, { useContext, useState, useMemo, useEffect } from 'react';
+import { FormProvider, useForm, Controller, useFieldArray, DeepMap, FieldError } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
+import { useAsyncCallback } from 'react-async-hook';
 
 import {
   Alert,
@@ -15,55 +16,34 @@ import {
   Legend,
   HorizontalGroup,
 } from '@grafana/ui';
-import { getDefaultValuesFromCheck, getCheckFromFormValues } from 'components/CheckEditor/checkFormTransformations';
-import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
-import { METHOD_OPTIONS } from 'components/constants';
-import { MultiHttpCollapse } from 'components/MultiHttp/MultiHttpCollapse';
-import { multiHttpFallbackCheck } from './consts';
-import { validateTarget } from 'validation';
-import { TabSection } from './Tabs/TabSection';
-import { getMultiHttpFormStyles } from './MultiHttpSettingsForm.styles';
-import { CheckFormValues, Check, CheckPageParams, CheckType, SubmissionErrorWrapper } from 'types';
-import { InstanceContext } from 'contexts/InstanceContext';
-import { PluginPage } from 'components/PluginPage';
 import { config } from '@grafana/runtime';
 import { OrgRole } from '@grafana/data';
+
+import { CheckFormValues, Check, CheckPageParams, CheckType, SubmissionErrorWrapper } from 'types';
 import { hasRole } from 'utils';
-import { AvailableVariables } from './AvailableVariables';
-import { useAsyncCallback } from 'react-async-hook';
 import { FaroEvent, reportEvent, reportError } from 'faro';
+import { validateTarget } from 'validation';
+import { METHOD_OPTIONS } from 'components/constants';
+import { InstanceContext } from 'contexts/InstanceContext';
+import { getDefaultValuesFromCheck, getCheckFromFormValues } from 'components/CheckEditor/checkFormTransformations';
+import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
+import { PluginPage } from 'components/PluginPage';
 import { CheckFormAlert } from 'components/CheckFormAlert';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 import { CheckUsage } from 'components/CheckUsage';
 import { CheckTestButton } from 'components/CheckTestButton';
 import { LabelField } from 'components/LabelField';
 
+import { TabSection } from './Tabs/TabSection';
+import { multiHttpFallbackCheck } from './consts';
+import { AvailableVariables } from './AvailableVariables';
+import { MultiHttpCollapse } from './MultiHttpCollapse';
+import { getMultiHttpFormErrors, useMultiHttpCollapseState } from './MultiHttpSettingsForm.utils';
+import { getMultiHttpFormStyles } from './MultiHttpSettingsForm.styles';
+
 interface Props {
   checks?: Check[];
   onReturn?: (reload?: boolean) => void;
-}
-
-function reducer(state: boolean[], action: { type: string; index?: number }) {
-  switch (action.type) {
-    case 'addNewRequest':
-      const newState = state.map((isOpen, index) => {
-        return false;
-      });
-      newState.push(true);
-      return newState;
-    case 'removeRequest':
-      return state.filter((_, index) => index !== action.index);
-    case 'toggle': {
-      return state.map((isOpen, index) => {
-        if (action.index === index) {
-          return !isOpen;
-        }
-        return isOpen;
-      });
-    }
-    default:
-      return state;
-  }
 }
 
 export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
@@ -77,12 +57,8 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
     instance: { api },
   } = useContext(InstanceContext);
   const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
-  const [collapseState, dispatchCollapse] = useReducer(
-    reducer,
-    check.settings.multihttp?.entries?.map((_, index, arr) => index === arr.length - 1) ?? [true]
-  );
-
-  const formMethods = useForm<CheckFormValues>({ defaultValues, reValidateMode: 'onBlur' });
+  const [collapseState, dispatchCollapse] = useMultiHttpCollapseState(check);
+  const formMethods = useForm<CheckFormValues>({ defaultValues, reValidateMode: 'onBlur', shouldFocusError: true });
 
   const {
     register,
@@ -99,7 +75,6 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
     name: 'settings.multihttp.entries',
   });
   const isEditor = hasRole(OrgRole.Editor);
-
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const {
@@ -134,12 +109,14 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
 
   const submissionError = error as unknown as SubmissionErrorWrapper;
 
-  if (submissionError) {
-    reportError(
-      submissionError.data?.err ?? 'Multihttp submission error',
-      check?.id ? FaroEvent.UPDATE_CHECK : FaroEvent.CREATE_CHECK
-    );
-  }
+  useEffect(() => {
+    if (submissionError) {
+      reportError(
+        submissionError.data?.err ?? 'Multihttp submission error',
+        check.id ? FaroEvent.UPDATE_CHECK : FaroEvent.CREATE_CHECK
+      );
+    }
+  }, [check.id, submissionError]);
 
   const onRemoveCheck = async () => {
     const id = check?.id;
@@ -153,6 +130,19 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
 
   const requests = watch('settings.multihttp.entries') as any[];
 
+  const onError = (errs: DeepMap<CheckFormValues, FieldError>) => {
+    const res = getMultiHttpFormErrors(errs);
+
+    if (res) {
+      dispatchCollapse({
+        type: 'updateRequestPanel',
+        open: true,
+        index: res.index,
+        tab: res.tab,
+      });
+    }
+  };
+
   return (
     <>
       <PluginPage
@@ -163,7 +153,7 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
         {!config.featureToggles.topnav && <Legend>{check?.id ? 'Edit Check' : 'Add MULTIHTTP Check'}</Legend>}
         <VerticalGroup>
           <FormProvider {...formMethods}>
-            <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
+            <form onSubmit={handleSubmit(onSubmit, onError)} className={styles.form}>
               <hr className={styles.breakLine} />
               <HorizontalCheckboxField
                 disabled={!isEditor}
@@ -209,10 +199,10 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
                       key={field.id}
                       className={styles.collapseTarget}
                       invalid={Boolean(errors?.settings?.multihttp?.entries?.[index])}
-                      isOpen={collapseState[index]}
+                      isOpen={collapseState[index].open}
                       onToggle={() => dispatchCollapse({ type: 'toggle', index })}
                     >
-                      <VerticalGroup height={'100%'}>
+                      <VerticalGroup>
                         <HorizontalGroup spacing="lg" align="flex-start">
                           <Field
                             label="Request target"
@@ -263,7 +253,13 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
 
                         <AvailableVariables index={index} />
 
-                        <TabSection index={index} />
+                        <TabSection
+                          index={index}
+                          activeTab={collapseState[index].activeTab}
+                          onTabClick={(tab) => {
+                            dispatchCollapse({ type: 'updateRequestPanel', index, tab });
+                          }}
+                        />
                       </VerticalGroup>
                     </MultiHttpCollapse>
                   );
