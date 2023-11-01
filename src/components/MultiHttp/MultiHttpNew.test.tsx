@@ -84,7 +84,7 @@ describe('new checks', () => {
     expect(instance.api?.addCheck).toHaveBeenCalledTimes(1);
     expect(instance.api?.addCheck).toHaveBeenCalledWith({
       target: 'http://grafanarr.com',
-      timeout: 3000,
+      timeout: 15000,
       alertSensitivity: 'none',
       basicMetricsOnly: true,
       enabled: true,
