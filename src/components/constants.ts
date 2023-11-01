@@ -479,8 +479,9 @@ export const ASSERTION_SUBJECT_OPTIONS: Array<SelectableValue<AssertionSubjectVa
   { label: 'HTTP status code', value: AssertionSubjectVariant.HttpStatusCode },
 ];
 
-export const UPTIME_DESCRIPTION = 'The fraction of time the target was up during the whole period.';
+export const UPTIME_DESCRIPTION =
+  'Whether any of the probes could reach the target. Reachability decreases when all the probes fail simultaneously.';
 export const REACHABILITY_DESCRIPTION =
-  'The percentage of all the checks that have succeeded during the whole time period.';
+  'The success rate of all the probes. Success rate decreases when any probe fails.';
 export const LATENCY_DESCRIPTION =
   'The average time to receive an answer across all the checks during the whole time period.';
