@@ -480,8 +480,8 @@ export const ASSERTION_SUBJECT_OPTIONS: Array<SelectableValue<AssertionSubjectVa
 ];
 
 export const UPTIME_DESCRIPTION =
-  'Whether any of the probes could reach the target. Reachability decreases when all the probes fail simultaneously.';
+  'Whether any of the probes could reach the target. Uptime decreases when all the probes fail simultaneously.';
 export const REACHABILITY_DESCRIPTION =
-  'The success rate of all the probes. Success rate decreases when any probe fails.';
+  'The success rate of all the probes. Reachability decreases when any probe fails.';
 export const LATENCY_DESCRIPTION =
   'The average time to receive an answer across all the checks during the whole time period.';
