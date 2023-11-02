@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useAsyncCallback } from 'react-async-hook';
 import { Controller, DeepMap, FieldError, FormProvider, useFieldArray, useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
@@ -38,7 +38,7 @@ import { AvailableVariables } from './AvailableVariables';
 import { multiHttpFallbackCheck } from './consts';
 import { MultiHttpCollapse } from './MultiHttpCollapse';
 import { getMultiHttpFormStyles } from './MultiHttpSettingsForm.styles';
-import { getMultiHttpFormErrors, useMultiHttpCollapseState } from './MultiHttpSettingsForm.utils';
+import { focusField, getMultiHttpFormErrors, useMultiHttpCollapseState } from './MultiHttpSettingsForm.utils';
 
 interface Props {
   checks?: Check[];
@@ -47,6 +47,7 @@ interface Props {
 
 export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
   const styles = useStyles2(getMultiHttpFormStyles);
+  const panelRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   let check: Check = multiHttpFallbackCheck;
   const { id } = useParams<CheckPageParams>();
   if (id) {
@@ -57,7 +58,11 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
   } = useContext(InstanceContext);
   const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
   const [collapseState, dispatchCollapse] = useMultiHttpCollapseState(check);
-  const formMethods = useForm<CheckFormValues>({ defaultValues, reValidateMode: 'onBlur', shouldFocusError: true });
+  const formMethods = useForm<CheckFormValues>({
+    defaultValues,
+    reValidateMode: 'onBlur',
+    shouldFocusError: false /* handle this manually */,
+  });
 
   const {
     register,
@@ -139,6 +144,10 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
         index: res.index,
         tab: res.tab,
       });
+
+      if (panelRefs.current[res.index]) {
+        focusField(panelRefs.current[res.index], res.id);
+      }
     }
   };
 
@@ -200,6 +209,7 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
                       invalid={Boolean(errors?.settings?.multihttp?.entries?.[index])}
                       isOpen={collapseState[index].open}
                       onToggle={() => dispatchCollapse({ type: 'toggle', index })}
+                      ref={(el) => (panelRefs.current[index] = el)}
                     >
                       <VerticalGroup>
                         <HorizontalGroup spacing="lg" align="flex-start">

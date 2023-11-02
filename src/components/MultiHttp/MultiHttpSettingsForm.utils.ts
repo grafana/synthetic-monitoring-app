@@ -114,10 +114,59 @@ export function getMultiHttpFormErrors(errs: FormErrors) {
       .filter(Boolean);
 
     return {
+      id: `settings.multihttp.entries${findPath(entries, 'message')}`,
       index: firstCollapsibleError,
       tab: firstTabWithErrors[0] || MultiHttpFormTabs.Headers,
     };
   }
 
   return false;
+}
+
+// rudimentary tree traversal to find the first object with asked for key
+function findPath(target: any, key: string, existingPath = ``): string | null {
+  if (Array.isArray(target)) {
+    for (let i = 0; i < target.length; i++) {
+      let path = findPath(target[i], key, `${existingPath}[${i}]`);
+
+      if (path) {
+        return path;
+      }
+    }
+  }
+
+  if (target !== null && typeof target === 'object') {
+    if (target.hasOwnProperty(key)) {
+      return existingPath;
+    }
+
+    for (let k in target) {
+      let path = findPath(target[k], key, existingPath ? `${existingPath}.${k}` : k);
+
+      if (path) {
+        return path;
+      }
+    }
+  }
+
+  return null;
+}
+
+export function focusField(buttonRef: HTMLButtonElement | null, id: string) {
+  requestAnimationFrame(() => {
+    buttonRef?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    requestAnimationFrame(() => {
+      const inputEl = document.querySelector(`[name="${id}"]`);
+
+      if (inputEl instanceof HTMLInputElement) {
+        if (inputEl.type === 'hidden') {
+          const focussableInput = inputEl?.parentElement?.querySelector(`input`);
+          return focussableInput?.focus({ preventScroll: true });
+        }
+
+        inputEl.focus({ preventScroll: true });
+      }
+    });
+  });
 }
