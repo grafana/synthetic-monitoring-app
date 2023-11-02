@@ -1,23 +1,26 @@
-import React, { useState, Fragment } from 'react';
+import React, { Fragment, useState } from 'react';
+import { Controller, useFieldArray, useFormContext } from 'react-hook-form';
+import { GrafanaTheme2 } from '@grafana/data';
 import {
+  Button,
+  Checkbox,
   Container,
-  HorizontalGroup,
   Field,
+  HorizontalGroup,
+  IconButton,
+  Input,
+  Label,
+  MultiSelect,
   Select,
   Switch,
-  MultiSelect,
   TextArea,
-  Input,
-  VerticalGroup,
-  Label,
-  Checkbox,
-  IconButton,
-  Button,
   useStyles2,
+  VerticalGroup,
 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { useFormContext, Controller, useFieldArray } from 'react-hook-form';
-import { HttpVersion, CheckType, HttpRegexValidationType, HttpMethod } from 'types';
+
+import { CheckType, HttpMethod, HttpRegexValidationType, HttpVersion } from 'types';
+import { validateBearerToken, validateHTTPBody, validateHTTPHeaderName, validateHTTPHeaderValue } from 'validation';
 import { Collapse } from 'components/Collapse';
 import {
   HTTP_COMPRESSION_ALGO_OPTIONS,
@@ -26,13 +29,10 @@ import {
   IP_OPTIONS,
   METHOD_OPTIONS,
 } from 'components/constants';
-
-import { LabelField } from 'components/LabelField';
-import { TLSConfig } from 'components/TLSConfig';
-import { NameValueInput } from 'components/NameValueInput';
-import { validateBearerToken, validateHTTPBody, validateHTTPHeaderName, validateHTTPHeaderValue } from 'validation';
-import { GrafanaTheme2 } from '@grafana/data';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
+import { LabelField } from 'components/LabelField';
+import { NameValueInput } from 'components/NameValueInput';
+import { TLSConfig } from 'components/TLSConfig';
 
 const httpVersionOptions = [
   {

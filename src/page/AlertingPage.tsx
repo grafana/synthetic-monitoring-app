@@ -1,15 +1,15 @@
-import React, { FC, useState, useContext } from 'react';
-import { css } from '@emotion/css';
+import React, { FC, useContext,useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { config } from '@grafana/runtime';
-import { Button, HorizontalGroup, Icon, Modal, Spinner, useStyles2, Alert } from '@grafana/ui';
+import { Alert,Button, HorizontalGroup, Icon, Modal, Spinner, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 
 import { AlertFormValues, AlertRule } from 'types';
+import { InstanceContext } from 'contexts/InstanceContext';
 import { useAlerts } from 'hooks/useAlerts';
 import useUnifiedAlertsEnabled from 'hooks/useUnifiedAlertsEnabled';
-import { AlertRuleForm } from 'components/AlertRuleForm';
-import { InstanceContext } from 'contexts/InstanceContext';
 import { transformAlertFormValues } from 'components/alertingTransformations';
+import { AlertRuleForm } from 'components/AlertRuleForm';
 import { PluginPage } from 'components/PluginPage';
 
 type SplitAlertRules = {

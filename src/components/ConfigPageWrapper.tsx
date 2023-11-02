@@ -1,8 +1,9 @@
-import { PluginConfigPageProps, AppPluginMeta } from '@grafana/data';
+import React, { PureComponent } from 'react';
+import { AppPluginMeta,PluginConfigPageProps } from '@grafana/data';
+
+import { GlobalSettings } from 'types';
 import { InstanceProvider } from 'components/InstanceProvider';
 import { ConfigPage } from 'page/ConfigPage';
-import React, { PureComponent } from 'react';
-import { GlobalSettings } from 'types';
 
 interface Props extends PluginConfigPageProps<AppPluginMeta<GlobalSettings>> {}
 

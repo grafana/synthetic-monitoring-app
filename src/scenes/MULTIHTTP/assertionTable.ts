@@ -1,5 +1,6 @@
 import { SceneDataTransformer, SceneFlexItem, SceneQueryRunner } from '@grafana/scenes';
 import { DataSourceRef, ThresholdsMode } from '@grafana/schema';
+
 import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
 function getQueryRunner(logs: DataSourceRef) {

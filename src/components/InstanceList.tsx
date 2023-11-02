@@ -1,7 +1,8 @@
 import React, { PureComponent } from 'react';
 import { Button, LinkButton } from '@grafana/ui';
-import { HostedInstance } from 'types';
 import { css } from '@emotion/css';
+
+import { HostedInstance } from 'types';
 
 interface Props {
   selected?: number;

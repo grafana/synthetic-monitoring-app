@@ -1,10 +1,12 @@
-import { useStyles2 } from '@grafana/ui';
-import { CheckStatusPill } from 'components/CheckStatusPill';
-import { CheckTypePill } from './CheckTypePill';
 import React from 'react';
-import { CheckType } from 'types';
 import { GrafanaTheme2 } from '@grafana/data';
+import { useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
+
+import { CheckType } from 'types';
+import { CheckStatusPill } from 'components/CheckStatusPill';
+
+import { CheckTypePill } from './CheckTypePill';
 
 interface Props {
   checkType: CheckType;

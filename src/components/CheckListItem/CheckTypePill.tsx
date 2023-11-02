@@ -1,7 +1,8 @@
-import { useTheme2 } from '@grafana/ui';
-import { Pill } from 'components/Pill';
 import React from 'react';
+import { useTheme2 } from '@grafana/ui';
+
 import { CheckType } from 'types';
+import { Pill } from 'components/Pill';
 
 interface Props {
   checkType: CheckType;

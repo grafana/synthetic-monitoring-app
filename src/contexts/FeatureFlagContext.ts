@@ -1,8 +1,9 @@
 import { createContext } from 'react';
 import { FeatureToggles, urlUtil } from '@grafana/data';
 import { config } from '@grafana/runtime';
-import { FeatureName } from 'types';
 import { isArray } from 'lodash';
+
+import { FeatureName } from 'types';
 
 export interface FeatureFlagContextValue {
   featureToggles: FeatureToggles;

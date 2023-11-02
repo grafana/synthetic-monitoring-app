@@ -9,6 +9,8 @@ import {
   SceneVariableSet,
   VariableValueSelectors,
 } from '@grafana/scenes';
+
+import { Check, CheckType, DashboardSceneAppConfig } from 'types';
 import {
   getAvgLatencyStat,
   getErrorLogs,
@@ -19,12 +21,12 @@ import {
   getUptimeStat,
   getVariables,
 } from 'scenes/Common';
-import { getErrorRateTimeseries } from 'scenes/HTTP/errorRateTimeseries';
-import { Check, CheckType, DashboardSceneAppConfig } from 'types';
-import { getAnswerRecordsStat } from './answerRecords';
-import { getResourcesRecordsPanel } from './resourceRecords';
 import { getEditButton } from 'scenes/Common/editButton';
 import { getEmptyScene } from 'scenes/Common/emptyScene';
+import { getErrorRateTimeseries } from 'scenes/HTTP/errorRateTimeseries';
+
+import { getAnswerRecordsStat } from './answerRecords';
+import { getResourcesRecordsPanel } from './resourceRecords';
 
 export function getDNSScene({ metrics, logs }: DashboardSceneAppConfig, checks: Check[]) {
   return () => {

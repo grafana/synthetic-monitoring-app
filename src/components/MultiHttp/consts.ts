@@ -1,4 +1,4 @@
-import { CheckType, AlertSensitivity, MultiHttpSettings } from 'types';
+import { AlertSensitivity, CheckType, MultiHttpSettings } from 'types';
 import { fallbackSettings } from 'components/constants';
 
 export const multiHttpFallbackCheck = {

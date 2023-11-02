@@ -1,5 +1,5 @@
-import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { FeatureName } from 'types';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
 
 interface FlagProps {
   isEnabled: boolean;

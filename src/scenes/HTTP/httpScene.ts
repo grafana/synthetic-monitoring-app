@@ -9,7 +9,11 @@ import {
   SceneVariableSet,
   VariableValueSelectors,
 } from '@grafana/scenes';
+
 import { Check, CheckType, DashboardSceneAppConfig } from 'types';
+import { getEditButton } from 'scenes/Common/editButton';
+import { getEmptyScene } from 'scenes/Common/emptyScene';
+
 import {
   getAvgLatencyStat,
   getErrorLogs,
@@ -23,8 +27,6 @@ import {
 } from '../Common';
 import { getErrorRateTimeseries } from './errorRateTimeseries';
 import { getLatencyByPhasePanel } from './latencyByPhase';
-import { getEditButton } from 'scenes/Common/editButton';
-import { getEmptyScene } from 'scenes/Common/emptyScene';
 
 export function getHTTPScene({ metrics, logs }: DashboardSceneAppConfig, checks: Check[]) {
   return () => {

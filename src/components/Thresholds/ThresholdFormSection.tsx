@@ -1,10 +1,9 @@
 import React, { useCallback } from 'react';
-
-import { InlineFieldRow, InlineField, Input, useStyles2 } from '@grafana/ui';
-
-import { config } from '@grafana/runtime';
 import { GrafanaTheme2 } from '@grafana/data';
+import { config } from '@grafana/runtime';
+import { InlineField, InlineFieldRow, Input, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+
 import { ThresholdValues } from 'contexts/SuccessRateContext';
 
 interface LabelProps {

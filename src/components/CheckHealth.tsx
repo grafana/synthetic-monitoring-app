@@ -1,5 +1,6 @@
 import React from 'react';
-import { IconName, Icon } from '@grafana/ui';
+import { Icon,IconName } from '@grafana/ui';
+
 import { Check } from 'types';
 import { useMetricData } from 'hooks/useMetricData';
 

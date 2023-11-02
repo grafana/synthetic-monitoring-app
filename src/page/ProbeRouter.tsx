@@ -1,14 +1,14 @@
 // Libraries
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useEffect,useState } from 'react';
+import { Route, Switch, useRouteMatch } from 'react-router-dom';
 
 // Types
 import { Probe, ROUTES } from 'types';
-import ProbeEditor from 'components/ProbeEditor/ProbeEditor';
 import { InstanceContext } from 'contexts/InstanceContext';
+import { useNavigation } from 'hooks/useNavigation';
+import ProbeEditor from 'components/ProbeEditor/ProbeEditor';
 import { ProbeList } from 'components/ProbeList';
 import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
-import { Switch, Route, useRouteMatch } from 'react-router-dom';
-import { useNavigation } from 'hooks/useNavigation';
 
 export const ProbeRouter = () => {
   const [probesLoading, setProbesLoading] = useState(true);

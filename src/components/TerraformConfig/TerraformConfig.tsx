@@ -1,10 +1,11 @@
-import { css } from '@emotion/css';
+import React, { useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Button, Modal, useStyles2 } from '@grafana/ui';
-import { Clipboard } from 'components/Clipboard';
+import { css } from '@emotion/css';
+
 import { FaroEvent, reportEvent } from 'faro';
 import { useTerraformConfig } from 'hooks/useTerraformConfig';
-import React, { useState } from 'react';
+import { Clipboard } from 'components/Clipboard';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   modal: css`

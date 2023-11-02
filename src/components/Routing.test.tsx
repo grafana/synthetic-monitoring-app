@@ -1,8 +1,9 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
+import { createInstance, type CustomRenderOptions, render } from 'test/render';
 
-import { type CustomRenderOptions, createInstance, render } from 'test/render';
 import { ROUTES } from 'types';
+
 import { PLUGIN_URL_PATH } from './constants';
 import { getRoute, Routing } from './Routing';
 

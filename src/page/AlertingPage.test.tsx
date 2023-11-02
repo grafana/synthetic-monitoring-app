@@ -2,14 +2,14 @@ import React from 'react';
 import { DataSourceSettings } from '@grafana/data';
 import { screen, waitFor, within } from '@testing-library/react';
 import { type UserEvent } from '@testing-library/user-event';
-
 import { render } from 'test/render';
-import { AlertingPage } from 'page/AlertingPage';
+
+import { AlertFamily, AlertRule, AlertSensitivity } from 'types';
 import {
   ALERT_PROBE_SUCCESS_RECORDING_EXPR,
   DEFAULT_ALERT_NAMES_BY_FAMILY_AND_SENSITIVITY,
 } from 'components/constants';
-import { AlertFamily, AlertRule, AlertSensitivity } from 'types';
+import { AlertingPage } from 'page/AlertingPage';
 
 jest.mock('hooks/useAlerts', () => {
   const { defaultRules } = jest.requireActual('hooks/useAlerts');

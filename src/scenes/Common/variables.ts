@@ -1,5 +1,6 @@
 import { QueryVariable } from '@grafana/scenes';
 import { DataSourceRef, VariableRefresh } from '@grafana/schema';
+
 import { Check, CheckType } from 'types';
 
 export function getVariables(checkType: CheckType, metrics: DataSourceRef, checks: Check[]) {

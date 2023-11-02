@@ -1,6 +1,7 @@
+import { SpecialValueMatch } from '@grafana/data';
 import { SceneQueryRunner } from '@grafana/scenes';
 import { DataSourceRef, MappingType, ThresholdsMode } from '@grafana/schema';
-import { SpecialValueMatch } from '@grafana/data';
+
 import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
 function getQueryRunner(metrics: DataSourceRef) {

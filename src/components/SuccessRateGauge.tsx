@@ -1,10 +1,12 @@
 import React, { useContext } from 'react';
-import { BigValueColorMode, BigValueGraphMode, BigValue, Container } from '@grafana/ui';
 import { DisplayValue } from '@grafana/data';
 import { config } from '@grafana/runtime';
-import { SuccessRateContext, SuccessRateTypes, SuccessRateValue, ThresholdSettings } from 'contexts/SuccessRateContext';
+import { BigValue, BigValueColorMode, BigValueGraphMode, Container } from '@grafana/ui';
+
 import { getSuccessRateThresholdColor } from 'utils';
+import { SuccessRateContext, SuccessRateTypes, SuccessRateValue, ThresholdSettings } from 'contexts/SuccessRateContext';
 import { BigValueTitle } from 'components/BigValueTitle';
+
 import { REACHABILITY_DESCRIPTION, UPTIME_DESCRIPTION } from './constants';
 
 interface Props {

@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
-import { Field, Input, Container, TextArea } from '@grafana/ui';
-import { Collapse } from 'components/Collapse';
-import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
+import { Container, Field, Input, TextArea } from '@grafana/ui';
+
 import { CheckType } from 'types';
 import { validateTLSCACert, validateTLSClientCert, validateTLSClientKey, validateTLSServerName } from 'validation';
+import { Collapse } from 'components/Collapse';
+import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 
 interface Props {
   isEditor: boolean;

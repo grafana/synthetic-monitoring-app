@@ -1,9 +1,10 @@
 import React from 'react';
 import { screen, within } from '@testing-library/react';
-
 import { render } from 'test/render';
-import { HomePage } from './HomePage';
+
 import { CheckInfoContextProvider } from 'components/CheckInfoContextProvider';
+
+import { HomePage } from './HomePage';
 
 const renderHomePage = () => {
   return render(

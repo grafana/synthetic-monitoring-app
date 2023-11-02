@@ -1,11 +1,13 @@
 import React, { PureComponent } from 'react';
-import { InstanceProvider } from 'components/InstanceProvider';
-import { DashboardUpdateModal } from 'components/DashboardUpdateModal';
 import { AppRootProps } from '@grafana/data';
+
 import { GlobalSettings } from 'types';
-import { FeatureFlagProvider } from './FeatureFlagProvider';
-import { CheckInfoContextProvider } from './CheckInfoContextProvider';
+import { DashboardUpdateModal } from 'components/DashboardUpdateModal';
+import { InstanceProvider } from 'components/InstanceProvider';
 import { Routing } from 'components/Routing';
+
+import { CheckInfoContextProvider } from './CheckInfoContextProvider';
+import { FeatureFlagProvider } from './FeatureFlagProvider';
 
 export class App extends PureComponent<AppRootProps<GlobalSettings>> {
   render() {

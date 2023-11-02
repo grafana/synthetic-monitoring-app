@@ -2,9 +2,10 @@ import React, { PropsWithChildren } from 'react';
 import { AppPluginMeta } from '@grafana/data';
 import { renderHook, waitFor } from '@testing-library/react';
 
-import { InstanceContext } from 'contexts/InstanceContext';
-import { getInstanceMock } from 'datasource/__mocks__/DataSource';
 import { GlobalSettings } from 'types';
+import { getInstanceMock } from 'datasource/__mocks__/DataSource';
+import { InstanceContext } from 'contexts/InstanceContext';
+
 import { useTerraformConfig } from './useTerraformConfig';
 
 describe('terraform config generation', () => {

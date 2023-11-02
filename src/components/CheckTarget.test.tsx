@@ -1,8 +1,9 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
-
 import { render } from 'test/render';
-import { CheckType, HttpMethod, IpVersion, DnsRecordType, DnsProtocol } from 'types';
+
+import { CheckType, DnsProtocol,DnsRecordType, HttpMethod, IpVersion } from 'types';
+
 import CheckTarget from './CheckTarget';
 jest.unmock('utils');
 

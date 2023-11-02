@@ -1,5 +1,5 @@
+import { BasicAuth, DnsSettings, HeaderMatch, HttpSettings, Probe, TCPQueryResponse, TcpSettings } from 'types';
 import { MultiHttpEntry, QueryParams, RequestProps } from 'components/MultiHttp/MultiHttpTypes';
-import { DnsSettings, HttpSettings, BasicAuth, HeaderMatch, TcpSettings, TCPQueryResponse, Probe } from 'types';
 
 export interface TFOutput {
   config: TFConfig;

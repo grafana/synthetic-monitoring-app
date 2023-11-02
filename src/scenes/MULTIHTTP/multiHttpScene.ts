@@ -12,19 +12,21 @@ import {
   SceneVariableSet,
   VariableValueSelectors,
 } from '@grafana/scenes';
+
 import { Check, CheckType, DashboardSceneAppConfig, SceneBuilder } from 'types';
-import { MultiHttpStepsScene } from './StepPickerScene';
-import { getLatencyByPhasePanel } from './latencyByPhase';
-import { getProbeDuration } from './probeDuration';
 import { getReachabilityStat, getUptimeStat, getVariables } from 'scenes/Common';
-import { getDistinctTargets } from './distinctTargets';
-import { getLatencyByUrlPanel } from './latencyByUrl';
-import { getAssertionLogsPanel } from './assertionLogs';
-import { getErrorRateByUrl } from './errorRateByUrl';
-import { getAssertionTable } from './assertionTable';
+import { getAllLogs } from 'scenes/Common/allLogs';
 import { getEditButton } from 'scenes/Common/editButton';
 import { getEmptyScene } from 'scenes/Common/emptyScene';
-import { getAllLogs } from 'scenes/Common/allLogs';
+
+import { getAssertionLogsPanel } from './assertionLogs';
+import { getAssertionTable } from './assertionTable';
+import { getDistinctTargets } from './distinctTargets';
+import { getErrorRateByUrl } from './errorRateByUrl';
+import { getLatencyByPhasePanel } from './latencyByPhase';
+import { getLatencyByUrlPanel } from './latencyByUrl';
+import { getProbeDuration } from './probeDuration';
+import { MultiHttpStepsScene } from './StepPickerScene';
 
 export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig, checks: Check[]): SceneBuilder {
   return () => {

@@ -1,8 +1,9 @@
+import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Tag, useStyles2 } from '@grafana/ui';
-import React from 'react';
-import { Label } from 'types';
 import { css, cx } from '@emotion/css';
+
+import { Label } from 'types';
 
 interface Props {
   label: Label;

@@ -1,29 +1,31 @@
-import { enumToStringArray } from '../utils';
+import { SelectableValue } from '@grafana/data';
+
 import {
-  DnsResponseCodes,
-  DnsRecordType,
-  DnsProtocol,
-  IpVersion,
-  CheckType,
-  HttpSslOption,
-  HttpRegexValidationType,
-  Check,
-  TimeUnits,
   AlertFamily,
-  AlertSeverity,
   AlertSensitivity,
-  CheckSort,
+  AlertSeverity,
+  Check,
   CheckEnabledStatus,
   CheckListViewType,
+  CheckSort,
+  CheckType,
+  DnsProtocol,
+  DnsRecordType,
+  DnsResponseCodes,
   HTTPCompressionAlgo,
+  HttpMethod,
+  HttpRegexValidationType,
+  HttpSslOption,
+  IpVersion,
+  MultiHttpAssertionType,
+  MultiHttpVariableType,
   ResponseMatchType,
   Settings,
-  HttpMethod,
-  MultiHttpVariableType,
-  MultiHttpAssertionType,
+  TimeUnits,
 } from 'types';
+
+import { enumToStringArray } from '../utils';
 import { AssertionConditionVariant, AssertionSubjectVariant } from './MultiHttp/MultiHttpTypes';
-import { SelectableValue } from '@grafana/data';
 
 export const DNS_RESPONSE_CODES = enumToStringArray(DnsResponseCodes).map((responseCode) => ({
   label: responseCode,
