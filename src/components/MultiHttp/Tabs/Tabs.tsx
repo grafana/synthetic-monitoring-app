@@ -1,6 +1,5 @@
 import React from 'react';
 import { Controller, useFieldArray, useFormContext } from 'react-hook-form';
-import { css, cx } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
 import {
   Button,
@@ -14,13 +13,15 @@ import {
   TextArea,
   useStyles2,
 } from '@grafana/ui';
+import { css, cx } from '@emotion/css';
 
 import { MultiHttpVariableType } from 'types';
 import { MULTI_HTTP_VARIABLE_TYPE_OPTIONS } from 'components/constants';
 import { MultiHttpFormTabs } from 'components/MultiHttp/MultiHttpTypes';
+
+import { getMultiHttpFormStyles } from '../MultiHttpSettingsForm.styles';
 import { AssertionsTab } from './AssertionsTab';
 import { getIsBodyDisabled } from './TabSection';
-import { getMultiHttpFormStyles } from '../MultiHttpSettingsForm.styles';
 
 export interface MultiHttpTabProps {
   label?: string;

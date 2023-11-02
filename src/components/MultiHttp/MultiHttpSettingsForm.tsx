@@ -1,45 +1,44 @@
-import React, { useContext, useState, useMemo, useEffect } from 'react';
-import { FormProvider, useForm, Controller, useFieldArray, DeepMap, FieldError } from 'react-hook-form';
-import { useParams } from 'react-router-dom';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useAsyncCallback } from 'react-async-hook';
-
+import { Controller, DeepMap, FieldError, FormProvider, useFieldArray, useForm } from 'react-hook-form';
+import { useParams } from 'react-router-dom';
+import { OrgRole } from '@grafana/data';
+import { config } from '@grafana/runtime';
 import {
   Alert,
   Button,
   ConfirmModal,
   Field,
-  LinkButton,
-  VerticalGroup,
+  HorizontalGroup,
   Input,
+  Legend,
+  LinkButton,
   Select,
   useStyles2,
-  Legend,
-  HorizontalGroup,
+  VerticalGroup,
 } from '@grafana/ui';
-import { config } from '@grafana/runtime';
-import { OrgRole } from '@grafana/data';
 
-import { CheckFormValues, Check, CheckPageParams, CheckType, SubmissionErrorWrapper } from 'types';
+import { Check, CheckFormValues, CheckPageParams, CheckType, SubmissionErrorWrapper } from 'types';
+import { FaroEvent, reportError, reportEvent } from 'faro';
 import { hasRole } from 'utils';
-import { FaroEvent, reportEvent, reportError } from 'faro';
 import { validateTarget } from 'validation';
-import { METHOD_OPTIONS } from 'components/constants';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { getDefaultValuesFromCheck, getCheckFromFormValues } from 'components/CheckEditor/checkFormTransformations';
+import { getCheckFromFormValues, getDefaultValuesFromCheck } from 'components/CheckEditor/checkFormTransformations';
 import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
-import { PluginPage } from 'components/PluginPage';
 import { CheckFormAlert } from 'components/CheckFormAlert';
-import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
-import { CheckUsage } from 'components/CheckUsage';
 import { CheckTestButton } from 'components/CheckTestButton';
+import { CheckUsage } from 'components/CheckUsage';
+import { METHOD_OPTIONS } from 'components/constants';
+import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 import { LabelField } from 'components/LabelField';
+import { PluginPage } from 'components/PluginPage';
 
 import { TabSection } from './Tabs/TabSection';
-import { multiHttpFallbackCheck } from './consts';
 import { AvailableVariables } from './AvailableVariables';
+import { multiHttpFallbackCheck } from './consts';
 import { MultiHttpCollapse } from './MultiHttpCollapse';
-import { getMultiHttpFormErrors, useMultiHttpCollapseState } from './MultiHttpSettingsForm.utils';
 import { getMultiHttpFormStyles } from './MultiHttpSettingsForm.styles';
+import { getMultiHttpFormErrors, useMultiHttpCollapseState } from './MultiHttpSettingsForm.utils';
 
 interface Props {
   checks?: Check[];

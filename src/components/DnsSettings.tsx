@@ -1,28 +1,30 @@
-import React, { useState, Fragment } from 'react';
-import { css } from '@emotion/css';
+import React, { Fragment,useState } from 'react';
+import { Controller, useFieldArray,useFormContext } from 'react-hook-form';
 import {
-  Container,
-  HorizontalGroup,
-  Field,
-  Select,
-  MultiSelect,
-  Input,
-  Checkbox,
   Button,
+  Checkbox,
+  Container,
+  Field,
+  HorizontalGroup,
   IconButton,
+  Input,
   Label,
+  MultiSelect,
+  Select,
   useTheme2,
 } from '@grafana/ui';
-import { useFormContext, Controller, useFieldArray } from 'react-hook-form';
+import { css } from '@emotion/css';
+
 import { Collapse } from 'components/Collapse';
-import { LabelField } from './LabelField';
+
 import {
+  DNS_PROTOCOLS,
+  DNS_RECORD_TYPES,
   DNS_RESPONSE_CODES,
   DNS_RESPONSE_MATCH_OPTIONS,
-  DNS_RECORD_TYPES,
-  DNS_PROTOCOLS,
   IP_OPTIONS,
 } from './constants';
+import { LabelField } from './LabelField';
 
 interface Props {
   isEditor: boolean;

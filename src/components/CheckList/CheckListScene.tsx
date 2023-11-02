@@ -1,3 +1,4 @@
+import React, { useContext, useMemo } from 'react';
 import { DataTransformerConfig, ThresholdsMode } from '@grafana/data';
 import {
   CustomTransformOperator,
@@ -14,14 +15,15 @@ import {
   VariableValueSelectors,
 } from '@grafana/scenes';
 import { Spinner } from '@grafana/ui';
-import { InstanceContext } from 'contexts/InstanceContext';
-import React, { useContext, useMemo } from 'react';
+
 import { CheckFiltersType, CheckListViewType, VizViewSceneAppConfig } from 'types';
-import { CheckListViewSwitcher } from './CheckListViewSwitcher';
-import { AddNewCheckButton } from './AddNewCheckButton';
 import { ChecksContext } from 'contexts/ChecksContext';
-import { ExplorablePanel } from 'scenes/ExplorablePanel';
+import { InstanceContext } from 'contexts/InstanceContext';
 import { CheckFilters } from 'components/CheckFilters';
+import { ExplorablePanel } from 'scenes/ExplorablePanel';
+
+import { AddNewCheckButton } from './AddNewCheckButton';
+import { CheckListViewSwitcher } from './CheckListViewSwitcher';
 
 function getVizDimensions(checkCount: number) {
   const rowSize = Math.min(Math.ceil(Math.sqrt(checkCount)), 20);

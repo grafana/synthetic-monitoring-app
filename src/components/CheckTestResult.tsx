@@ -1,8 +1,8 @@
-import { DataFrame, dateTime, DateTime, GrafanaTheme2, LoadingState } from '@grafana/data';
-import { Badge, Collapse, Icon, Spinner, useStyles2 } from '@grafana/ui';
 import React, { useState } from 'react';
-import { css } from '@emotion/css';
+import { DataFrame, DateTime, dateTime, GrafanaTheme2, LoadingState } from '@grafana/data';
 import { PanelRenderer } from '@grafana/runtime';
+import { Badge, Collapse, Icon, Spinner, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 
 interface Props {
   probeName: string;

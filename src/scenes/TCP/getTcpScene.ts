@@ -9,6 +9,8 @@ import {
   SceneVariableSet,
   VariableValueSelectors,
 } from '@grafana/scenes';
+
+import { Check, CheckType, DashboardSceneAppConfig } from 'types';
 import {
   getAvgLatencyStat,
   getErrorLogs,
@@ -23,7 +25,6 @@ import {
 import { getEditButton } from 'scenes/Common/editButton';
 import { getEmptyScene } from 'scenes/Common/emptyScene';
 import { getErrorRateTimeseries } from 'scenes/HTTP/errorRateTimeseries';
-import { Check, CheckType, DashboardSceneAppConfig } from 'types';
 
 export function getTcpScene({ metrics, logs }: DashboardSceneAppConfig, checks: Check[]) {
   return () => {

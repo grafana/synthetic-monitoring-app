@@ -1,9 +1,10 @@
-import { checkToTF, sanitizeName, probeToTF } from 'components/TerraformConfig/terraformConfigUtils';
-import { TFCheckConfig, TFProbeConfig, TFConfig, TFOutput } from 'components/TerraformConfig/terraformTypes';
-import { config as runtimeConfig } from '@grafana/runtime';
-import { InstanceContext } from 'contexts/InstanceContext';
 import { useContext, useEffect, useState } from 'react';
+import { config as runtimeConfig } from '@grafana/runtime';
+
 import { GrafanaInstances } from 'types';
+import { InstanceContext } from 'contexts/InstanceContext';
+import { checkToTF, probeToTF,sanitizeName } from 'components/TerraformConfig/terraformConfigUtils';
+import { TFCheckConfig, TFConfig, TFOutput,TFProbeConfig } from 'components/TerraformConfig/terraformTypes';
 
 async function generateTerraformConfig(instance: GrafanaInstances): Promise<TFOutput> {
   const checks = await instance.api?.listChecks();

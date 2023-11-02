@@ -1,12 +1,13 @@
 import React from 'react';
 import { screen, waitForElementToBeRemoved } from '@testing-library/react';
-
 import { render } from 'test/render';
-import { SuccessRateGauge } from './SuccessRateGauge';
-import * as utils from 'utils';
+
 import { Check } from 'types';
+import * as utils from 'utils';
 import { SuccessRateTypes } from 'contexts/SuccessRateContext';
+
 import { SuccessRateContextProvider } from './SuccessRateContextProvider';
+import { SuccessRateGauge } from './SuccessRateGauge';
 
 const renderSuccessRateGauge = () => {
   render(

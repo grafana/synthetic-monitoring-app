@@ -1,10 +1,11 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
+import { render } from 'test/render';
 
 import { ROUTES } from 'types';
-import { render } from 'test/render';
-import { CheckRouter } from './CheckRouter';
 import { PLUGIN_URL_PATH } from 'components/constants';
+
+import { CheckRouter } from './CheckRouter';
 
 jest.setTimeout(20000);
 

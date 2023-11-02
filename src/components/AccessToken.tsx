@@ -1,10 +1,11 @@
+import React, { useContext, useState } from 'react';
+import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Button, Modal, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+
+import { FaroEvent, reportError,reportEvent } from 'faro';
 import { InstanceContext } from 'contexts/InstanceContext';
-import React, { useContext, useState } from 'react';
 import { Clipboard } from 'components/Clipboard';
-import { GrafanaTheme2 } from '@grafana/data';
-import { FaroEvent, reportEvent, reportError } from 'faro';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   vericalSpace: css`

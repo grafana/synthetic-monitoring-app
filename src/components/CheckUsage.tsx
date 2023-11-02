@@ -1,10 +1,11 @@
-import { css } from '@emotion/css';
-import { GrafanaTheme2 } from '@grafana/data';
-import { Icon, useStyles2 } from '@grafana/ui';
-import { useUsageCalc } from 'hooks/useUsageCalc';
 import React, { FC } from 'react';
 import { useFormContext } from 'react-hook-form';
+import { GrafanaTheme2 } from '@grafana/data';
+import { Icon, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
+
 import { Check, CheckType, MultiHttpEntryFormValues } from 'types';
+import { useUsageCalc } from 'hooks/useUsageCalc';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   container: css`

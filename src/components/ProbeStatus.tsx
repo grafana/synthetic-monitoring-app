@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
+import { GrafanaTheme2, OrgRole } from '@grafana/data';
+import { Badge, BadgeColor, Button, ConfirmModal, Container, IconName, Legend, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { Badge, BadgeColor, Button, Container, ConfirmModal, Legend, IconName, useStyles2 } from '@grafana/ui';
+
 import { Probe } from 'types';
 import { hasRole } from 'utils';
-import { SuccessRateGauge } from './SuccessRateGauge';
-import { GrafanaTheme2, OrgRole } from '@grafana/data';
 import { SuccessRateTypes } from 'contexts/SuccessRateContext';
+
+import { SuccessRateGauge } from './SuccessRateGauge';
 
 interface Props {
   probe: Probe;

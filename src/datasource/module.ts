@@ -1,8 +1,10 @@
 import { DataSourcePlugin } from '@grafana/data';
-import { SMDataSource } from './DataSource';
+
+import { SMOptions,SMQuery } from './types';
+
 import { ConfigEditor } from './ConfigEditor';
+import { SMDataSource } from './DataSource';
 import { QueryEditor } from './QueryEditor';
-import { SMQuery, SMOptions } from './types';
 
 export const plugin = new DataSourcePlugin<SMDataSource, SMQuery, SMOptions>(SMDataSource)
   .setConfigEditor(ConfigEditor)

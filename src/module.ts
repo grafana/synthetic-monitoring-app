@@ -1,11 +1,11 @@
 import { AppPlugin } from '@grafana/data';
-import { GlobalSettings } from './types';
-import { App } from 'components/App';
-import { ConfigPageWrapper } from 'components/ConfigPageWrapper';
-
 import { getWebInstrumentations, initializeFaro } from '@grafana/faro-web-sdk';
 import { config } from '@grafana/runtime';
+
+import { GlobalSettings } from './types';
 import { getFaroConfig } from 'faro';
+import { App } from 'components/App';
+import { ConfigPageWrapper } from 'components/ConfigPageWrapper';
 
 const { env, url, name } = getFaroConfig();
 

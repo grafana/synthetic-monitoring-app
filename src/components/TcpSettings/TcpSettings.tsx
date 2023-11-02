@@ -1,22 +1,24 @@
 import React, { useState } from 'react';
+import { Controller, useFieldArray, useFormContext } from 'react-hook-form';
 import {
+  Button,
   Container,
-  HorizontalGroup,
   Field,
+  HorizontalGroup,
+  IconButton,
+  Input,
   Select,
   Switch,
-  Input,
   TextArea,
-  IconButton,
   VerticalGroup,
-  Button,
 } from '@grafana/ui';
-import { useFormContext, Controller, useFieldArray } from 'react-hook-form';
+
 import { CheckType } from 'types';
-import { IP_OPTIONS } from '../constants';
-import { LabelField } from 'components/LabelField';
 import { Collapse } from 'components/Collapse';
+import { LabelField } from 'components/LabelField';
 import { TLSConfig } from 'components/TLSConfig';
+
+import { IP_OPTIONS } from '../constants';
 
 interface Props {
   isEditor: boolean;

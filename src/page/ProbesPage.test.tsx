@@ -1,10 +1,11 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
-
 import { render } from 'test/render';
-import { ProbeRouter } from './ProbeRouter';
+
 import { ROUTES } from 'types';
 import { PLUGIN_URL_PATH } from 'components/constants';
+
+import { ProbeRouter } from './ProbeRouter';
 jest.setTimeout(10000);
 
 const renderProbesPage = () => {

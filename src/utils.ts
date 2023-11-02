@@ -1,13 +1,11 @@
 import { DataSourceInstanceSettings, OrgRole, TimeRange } from '@grafana/data';
+import { config, getBackendSrv } from '@grafana/runtime';
+import { IconName } from '@grafana/ui';
 
 import { DashboardInfo, LinkedDatasourceInfo, LogQueryResponse, LogStream, SMOptions } from './datasource/types';
-
-import { config, getBackendSrv } from '@grafana/runtime';
 import { CheckType, HostedInstance, Settings, SubmissionErrorWrapper } from 'types';
-
-import { IconName } from '@grafana/ui';
-import { ThresholdSettings } from 'contexts/SuccessRateContext';
 import { SMDataSource } from 'datasource/DataSource';
+import { ThresholdSettings } from 'contexts/SuccessRateContext';
 
 /**
  * Find all synthetic-monitoring datasources

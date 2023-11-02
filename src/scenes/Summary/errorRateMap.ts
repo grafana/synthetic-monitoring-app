@@ -1,7 +1,8 @@
 import { SceneQueryRunner } from '@grafana/scenes';
 import { DataSourceRef, ThresholdsMode } from '@grafana/schema';
-import { ExplorablePanel } from 'scenes/ExplorablePanel';
+
 import { CheckType } from 'types';
+import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
 function getErrorMapQuery(checkType: CheckType) {
   return `

@@ -1,9 +1,10 @@
-import { GrafanaTheme2 } from '@grafana/data';
-import { ClipboardButton, Field, useStyles2 } from '@grafana/ui';
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
-import { MultiHttpVariablesFormValues, SettingsFormValues } from 'types';
+import { GrafanaTheme2 } from '@grafana/data';
+import { ClipboardButton, Field, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+
+import { MultiHttpVariablesFormValues, SettingsFormValues } from 'types';
 
 interface Props {
   index: number;

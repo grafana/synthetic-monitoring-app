@@ -1,5 +1,6 @@
-import { CheckInfo } from 'datasource/types';
 import { createContext } from 'react';
+
+import { CheckInfo } from 'datasource/types';
 
 interface UsageContextValue {
   loading: boolean;

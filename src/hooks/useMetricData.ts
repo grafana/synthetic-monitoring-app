@@ -1,6 +1,7 @@
-import { useContext, useState, useEffect } from 'react';
+import { useContext, useEffect,useState } from 'react';
+
+import { MetricQueryOptions,queryMetric } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { queryMetric, MetricQueryOptions } from 'utils';
 
 interface UseMetricOptions {
   skip?: boolean;

@@ -1,8 +1,9 @@
 import React from 'react';
-import { Button, useStyles2 } from '@grafana/ui';
-import { Probe } from 'types';
 import { GrafanaTheme2 } from '@grafana/data';
+import { Button, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+
+import { Probe } from 'types';
 
 interface Props {
   probes: Probe[];

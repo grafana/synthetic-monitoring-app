@@ -1,6 +1,7 @@
-import { useTheme } from '@grafana/ui';
-import { Pill } from 'components/Pill';
 import React from 'react';
+import { useTheme } from '@grafana/ui';
+
+import { Pill } from 'components/Pill';
 
 interface Props {
   enabled: boolean;

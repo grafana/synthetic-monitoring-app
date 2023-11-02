@@ -1,10 +1,12 @@
 import React, { useContext } from 'react';
-import { BigValueColorMode, BigValueGraphMode, BigValue } from '@grafana/ui';
 import { DisplayValue } from '@grafana/data';
 import { config } from '@grafana/runtime';
-import { useMetricData } from 'hooks/useMetricData';
-import { SuccessRateContext, ThresholdSettings } from 'contexts/SuccessRateContext';
+import { BigValue,BigValueColorMode, BigValueGraphMode } from '@grafana/ui';
+
 import { getLatencySuccessRateThresholdColor } from 'utils';
+import { SuccessRateContext, ThresholdSettings } from 'contexts/SuccessRateContext';
+import { useMetricData } from 'hooks/useMetricData';
+
 import { BigValueTitle } from './BigValueTitle';
 import { LATENCY_DESCRIPTION } from './constants';
 

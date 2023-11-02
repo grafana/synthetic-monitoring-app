@@ -1,8 +1,10 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
-import { useFeatureFlag } from './useFeatureFlag';
+
 import { FeatureName } from 'types';
+import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
+
+import { useFeatureFlag } from './useFeatureFlag';
 
 const CONFIG_FLAG = 'configFlag';
 const URL_FLAG = 'urlFlag';

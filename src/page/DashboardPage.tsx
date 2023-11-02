@@ -4,9 +4,9 @@ import { Spinner } from '@grafana/ui';
 import { FeatureName } from 'types';
 import { ChecksContext } from 'contexts/ChecksContext';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { ChecksContextProvider } from 'components/ChecksContextProvider';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useNavigation } from 'hooks/useNavigation';
+import { ChecksContextProvider } from 'components/ChecksContextProvider';
 import { getDashboardSceneApp } from 'scenes/dashboardSceneApp';
 
 function DashboardPageContent() {
