@@ -8,7 +8,7 @@ function getQueryRunner(metrics: DataSourceRef) {
     queries: [
       {
         refId: 'A',
-        expr: 'sum by (probe) (probe_http_total_duration_seconds{probe=~"$probe", job="$job", instance="$instance", url="$activeStepIndex", method="$stepMethod"})',
+        expr: 'sum by (probe) (probe_http_total_duration_seconds{probe=~"$probe", job="$job", instance="$instance", name="$activeStepIndex", method="$stepMethod"})',
         range: true,
         instant: false,
         legendFormat: '__auto',
