@@ -57,11 +57,11 @@ export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig, ch
       queries: [
         {
           refId: 'A',
-          expr: `sum by (url, method) (
+          expr: `sum by (name) (
             probe_http_requests_failed_total{job="$job", instance="$instance"}
           )
           /
-          sum by (url, method) (
+          sum by (name) (
             probe_http_requests_total{job="$job", instance="$instance"}
           )`,
           range: false,
