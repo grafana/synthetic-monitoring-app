@@ -29,7 +29,7 @@ test('renders check selection page with multi-http feature flag is ON', async ()
   await waitFor(() => screen.getByRole('button', { name: 'Add new check' }));
   await user.click(screen.getByRole('button', { name: 'Add new check' }));
   expect(await screen.findByRole('button', { name: 'HTTP' })).toBeInTheDocument();
-  expect(await screen.findByRole('button', { name: 'MULTIHTTP' })).toBeInTheDocument();
+  expect(await screen.findByRole('button', { name: /MULTIHTTP/ })).toBeInTheDocument();
   expect(await screen.findByRole('button', { name: 'Traceroute' })).toBeInTheDocument();
   expect(await screen.findByRole('button', { name: 'PING' })).toBeInTheDocument();
   expect(await screen.findByRole('button', { name: 'DNS' })).toBeInTheDocument();
@@ -43,7 +43,7 @@ test('renders check selection page without multi-http feature flag is OFF', asyn
   expect(await screen.queryByRole('button', { name: 'Traceroute' })).toBeInTheDocument();
   expect(await screen.queryByRole('button', { name: 'PING' })).toBeInTheDocument();
   expect(await screen.queryByRole('button', { name: 'DNS' })).toBeInTheDocument();
-  expect(await screen.queryByRole('button', { name: 'MULTIHTTP' })).not.toBeInTheDocument();
+  expect(await screen.queryByRole('button', { name: /MULTIHTTP/ })).not.toBeInTheDocument();
 });
 
 test('renders check editor existing check', async () => {
