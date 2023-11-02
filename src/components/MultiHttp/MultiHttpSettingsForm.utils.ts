@@ -153,18 +153,20 @@ function findPath(target: any, key: string, existingPath = ``): string | null {
 }
 
 export function focusField(buttonRef: HTMLButtonElement | null, id: string) {
-  buttonRef?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
   requestAnimationFrame(() => {
-    const inputEl = document.querySelector(`[name="${id}"]`);
+    buttonRef?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-    if (inputEl instanceof HTMLInputElement) {
-      if (inputEl.type === 'hidden') {
-        const focussableInput = inputEl?.parentElement?.querySelector(`input`);
-        return focussableInput?.focus({ preventScroll: true });
+    requestAnimationFrame(() => {
+      const inputEl = document.querySelector(`[name="${id}"]`);
+
+      if (inputEl instanceof HTMLInputElement) {
+        if (inputEl.type === 'hidden') {
+          const focussableInput = inputEl?.parentElement?.querySelector(`input`);
+          return focussableInput?.focus({ preventScroll: true });
+        }
+
+        inputEl.focus({ preventScroll: true });
       }
-
-      inputEl.focus({ preventScroll: true });
-    }
+    });
   });
 }
