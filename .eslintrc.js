@@ -47,7 +47,6 @@ module.exports = {
             '^.styles$',
             '^\\u0000',
           ],
-          [],
         ],
       },
     ],
