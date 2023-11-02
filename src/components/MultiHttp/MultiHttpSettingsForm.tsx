@@ -150,6 +150,9 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
         }}
       >
         {!config.featureToggles.topnav && <Legend>{check?.id ? 'Edit Check' : 'Add MULTIHTTP Check'}</Legend>}
+        <Alert severity="info" title="MultiHTTP checks are experimental">
+          If you experience any issues, please contact support.
+        </Alert>
         <VerticalGroup>
           <FormProvider {...formMethods}>
             <form onSubmit={handleSubmit(onSubmit, onError)} className={styles.form}>
