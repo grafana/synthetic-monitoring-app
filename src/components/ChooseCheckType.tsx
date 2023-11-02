@@ -37,7 +37,7 @@ export function ChooseCheckType() {
               <Card.Heading className={styles.cardsHeader}>
                 {check.label}
                 {check.value === CheckType.MULTI_HTTP ? (
-                  <Badge text="Experimental" color="orange" className={styles.experimentalBadge} />
+                  <Badge text="Public preview" color="blue" className={styles.experimentalBadge} />
                 ) : null}
               </Card.Heading>
               <Card.Description>{check.description}</Card.Description>
