@@ -99,6 +99,7 @@
     "@grafana/schema": "10.1.4",
     "@grafana/ui": "10.1.4",
     "@popperjs/core": "^2.9.2",
+    "eslint-plugin-simple-import-sort": "^10.0.0",
     "ip-address": "^7.1.0",
     "is-base64": "^1.1.0",
     "punycode": "^2.1.1",

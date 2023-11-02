@@ -1,7 +1,8 @@
 import React, { PureComponent } from 'react';
 import { Icon } from '@grafana/ui';
+import { importDashboard, listAppDashboards, removeDashboard } from 'dashboards/loader';
+
 import { DashboardInfo, SMOptions } from 'datasource/types';
-import { listAppDashboards, importDashboard, removeDashboard } from 'dashboards/loader';
 import { InstanceContext, InstanceContextValue } from 'contexts/InstanceContext';
 
 interface Props {

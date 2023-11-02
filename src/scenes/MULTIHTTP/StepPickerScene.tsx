@@ -1,18 +1,20 @@
-import { css } from '@emotion/css';
+import React, { useContext, useEffect, useMemo } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import {
   SceneComponentProps,
+  sceneGraph,
   SceneObjectBase,
   SceneObjectState,
   VariableDependencyConfig,
-  sceneGraph,
 } from '@grafana/scenes';
 import { Spinner, useStyles2 } from '@grafana/ui';
-import { ChecksContext } from 'contexts/ChecksContext';
-import React, { useContext, useEffect, useMemo } from 'react';
+import { css } from '@emotion/css';
+
 import { Check } from 'types';
-import { StepPickerStepItem } from './StepPickerStepItem';
+import { ChecksContext } from 'contexts/ChecksContext';
 import { MultiHttpEntry, QueryParams } from 'components/MultiHttp/MultiHttpTypes';
+
+import { StepPickerStepItem } from './StepPickerStepItem';
 
 export interface MultiHttpStepsSceneState extends SceneObjectState {
   checkId?: number;

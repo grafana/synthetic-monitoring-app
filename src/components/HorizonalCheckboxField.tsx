@@ -1,8 +1,8 @@
 import React from 'react';
-import { css, cx } from '@emotion/css';
-import { Checkbox, Label, useStyles2 } from '@grafana/ui';
-import { GrafanaTheme2 } from '@grafana/data';
 import { useFormContext } from 'react-hook-form';
+import { GrafanaTheme2 } from '@grafana/data';
+import { Checkbox, Label, useStyles2 } from '@grafana/ui';
+import { css, cx } from '@emotion/css';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   container: css`

@@ -1,6 +1,7 @@
 import { SceneQueryRunner } from '@grafana/scenes';
 import { DataSourceRef, StackingMode, ThresholdsMode } from '@grafana/schema';
 import { DrawStyle } from '@grafana/ui';
+
 import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
 function getQueryRunner(metrics: DataSourceRef) {

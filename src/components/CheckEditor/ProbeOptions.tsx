@@ -1,12 +1,14 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
+import { Controller, useFormContext } from 'react-hook-form';
 import { Field, Input } from '@grafana/ui';
-import CheckProbes from './CheckProbes';
+
+import { CheckType, Probe } from 'types';
+import { validateFrequency, validateProbes, validateTimeout } from 'validation';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { Probe, CheckType } from 'types';
 import { SliderInput } from 'components/SliderInput';
 import { Subheader } from 'components/Subheader';
-import { useFormContext, Controller } from 'react-hook-form';
-import { validateFrequency, validateProbes, validateTimeout } from 'validation';
+
+import CheckProbes from './CheckProbes';
 
 interface Props {
   isEditor: boolean;

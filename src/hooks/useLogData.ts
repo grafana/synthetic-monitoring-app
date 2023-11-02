@@ -1,7 +1,8 @@
-import { DateTime } from '@grafana/data';
-import { InstanceContext } from 'contexts/InstanceContext';
 import { useContext, useEffect, useState } from 'react';
+import { DateTime } from '@grafana/data';
+
 import { queryLogsLegacy } from 'utils';
+import { InstanceContext } from 'contexts/InstanceContext';
 
 interface UseLogOptions {
   start: DateTime;

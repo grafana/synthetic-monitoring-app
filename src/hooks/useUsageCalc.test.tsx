@@ -1,9 +1,10 @@
 import React, { PropsWithChildren } from 'react';
-import { renderHook, act } from '@testing-library/react';
-
+import { act,renderHook } from '@testing-library/react';
 import { createWrapper } from 'test/render';
-import { CheckInfoContextProvider } from 'components/CheckInfoContextProvider';
+
 import { Check, DnsSettings, HttpSettings, PingSettings, TcpSettings } from 'types';
+import { CheckInfoContextProvider } from 'components/CheckInfoContextProvider';
+
 import { useUsageCalc } from './useUsageCalc';
 
 interface Wrapper {}

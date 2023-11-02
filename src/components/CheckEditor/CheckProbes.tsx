@@ -1,8 +1,9 @@
-import React, { useState, useCallback, forwardRef } from 'react';
-import { css } from '@emotion/css';
-import { Button, HorizontalGroup, MultiSelect, ThemeContext, Field } from '@grafana/ui';
-import { SelectableValue, AppEvents } from '@grafana/data';
+import React, { forwardRef, useCallback, useState } from 'react';
+import { AppEvents, SelectableValue } from '@grafana/data';
+import { Button, Field, HorizontalGroup, MultiSelect, ThemeContext } from '@grafana/ui';
 import appEvents from 'grafana/app/core/app_events';
+import { css } from '@emotion/css';
+
 import { Probe } from 'types';
 
 interface Props {

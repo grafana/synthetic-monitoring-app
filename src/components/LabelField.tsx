@@ -1,8 +1,10 @@
 import React from 'react';
-import { Field } from '@grafana/ui';
-import { NameValueInput } from './NameValueInput';
-import { validateLabelName, validateLabelValue } from 'validation';
 import { useFormContext } from 'react-hook-form';
+import { Field } from '@grafana/ui';
+
+import { validateLabelName, validateLabelValue } from 'validation';
+
+import { NameValueInput } from './NameValueInput';
 
 interface Props {
   isEditor: boolean;

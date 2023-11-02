@@ -1,12 +1,13 @@
 import React from 'react';
-import { screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route } from 'react-router-dom';
-
+import { screen, waitFor } from '@testing-library/react';
 import { render } from 'test/render';
-import ProbeEditor from './ProbeEditor';
-import { getInstanceMock, instanceSettings } from '../../datasource/__mocks__/DataSource';
+
 import { Probe, ROUTES } from 'types';
+
+import { getInstanceMock, instanceSettings } from '../../datasource/__mocks__/DataSource';
 import { PLUGIN_URL_PATH } from '../constants';
+import ProbeEditor from './ProbeEditor';
 
 jest.setTimeout(10000);
 

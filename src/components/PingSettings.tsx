@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { css } from '@emotion/css';
+import { Controller,useFormContext } from 'react-hook-form';
 import { Field, Select, Switch } from '@grafana/ui';
+import { css } from '@emotion/css';
+
 import { Collapse } from 'components/Collapse';
-import { IP_OPTIONS } from './constants';
 import { LabelField } from 'components/LabelField';
-import { useFormContext, Controller } from 'react-hook-form';
+
+import { IP_OPTIONS } from './constants';
 
 interface Props {
   isEditor: boolean;

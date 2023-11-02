@@ -10,12 +10,14 @@ import {
   SceneVariableSet,
   VariableValueSelectors,
 } from '@grafana/scenes';
+
 import { Check, CheckType, DashboardSceneAppConfig } from 'types';
+import { getEmptyScene } from 'scenes/Common/emptyScene';
+
 import { getErrorPctgTimeseriesPanel } from './errorPctTimeseries';
 import { getErrorRateMapPanel } from './errorRateMap';
 import { getLatencyTimeseriesPanel } from './latencyTimeseries';
 import { getSummaryTable } from './summaryTable';
-import { getEmptyScene } from 'scenes/Common/emptyScene';
 
 export function getSummaryScene({ metrics }: DashboardSceneAppConfig, checks: Check[]) {
   return () => {

@@ -1,5 +1,5 @@
 import React, { ChangeEvent } from 'react';
-import { Input, IconButton } from '@grafana/ui';
+import { IconButton,Input } from '@grafana/ui';
 
 export interface QueryParam {
   name: string;

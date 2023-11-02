@@ -1,5 +1,6 @@
 import React from 'react';
 import { AppRootProps, NavModelItem } from '@grafana/data';
+
 import { Settings } from 'types';
 import { PLUGIN_URL_PATH } from 'components/constants';
 

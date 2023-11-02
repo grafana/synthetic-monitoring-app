@@ -1,5 +1,6 @@
 import { FieldColorModeId, FieldType, MutableDataFrame, NodeGraphDataFrameFieldNames } from '@grafana/data';
-import { LogStream, LogsAggregatedByTrace, ParsedLogStream, TracesByHost } from './types';
+
+import { LogsAggregatedByTrace, LogStream, ParsedLogStream, TracesByHost } from './types';
 
 const getNodeGraphFields = () => {
   const nodeIdField = {

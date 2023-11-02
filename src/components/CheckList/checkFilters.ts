@@ -1,6 +1,6 @@
-import { Check, CheckEnabledStatus, CheckFiltersType } from 'types';
-
 import { SelectableValue } from '@grafana/data';
+
+import { Check, CheckEnabledStatus, CheckFiltersType } from 'types';
 import { checkType as getCheckType, matchStrings } from 'utils';
 
 const matchesFilterType = (check: Check, typeFilter: string) => {

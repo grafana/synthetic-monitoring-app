@@ -9,8 +9,12 @@ import {
   SceneVariableSet,
   VariableValueSelectors,
 } from '@grafana/scenes';
-import { getVariables } from 'scenes/Common';
+
 import { Check, CheckType, DashboardSceneAppConfig } from 'types';
+import { getVariables } from 'scenes/Common';
+import { getEditButton } from 'scenes/Common/editButton';
+import { getEmptyScene } from 'scenes/Common/emptyScene';
+
 import { getAverageHopsPanel } from './averageHops';
 import { getCommonHostsPanel } from './commonHosts';
 import { getLogsPanel } from './logs';
@@ -18,8 +22,6 @@ import { getNodeGraphPanel } from './nodeGraph';
 import { getPacketLossPanel } from './packetLoss';
 import { getRouteHashPanel } from './routeHash';
 import { getTraceTimePanel } from './traceTime';
-import { getEditButton } from 'scenes/Common/editButton';
-import { getEmptyScene } from 'scenes/Common/emptyScene';
 
 export function getTracerouteScene({ metrics, logs, sm }: DashboardSceneAppConfig, checks: Check[]) {
   return () => {

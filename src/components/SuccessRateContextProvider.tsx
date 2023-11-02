@@ -1,15 +1,16 @@
 import React, { PropsWithChildren, useContext, useEffect, useState } from 'react';
+
 import { Check, Probe } from 'types';
 import { queryMetric } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
 import {
-  SuccessRates,
-  SuccessRateContext,
-  SuccessRateTypes,
-  SuccessRate,
-  defaultValues,
-  ThresholdSettings,
   defaultThresholds,
+  defaultValues,
+  SuccessRate,
+  SuccessRateContext,
+  SuccessRates,
+  SuccessRateTypes,
+  ThresholdSettings,
 } from 'contexts/SuccessRateContext';
 
 interface Props {

@@ -1,6 +1,7 @@
-import React, { useReducer, useEffect, useState } from 'react';
+import React, { useEffect, useReducer, useState } from 'react';
+import { Button,Field, Label } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { Field, Label, Button } from '@grafana/ui';
+
 import QueryParamInput, { QueryParam } from './QueryParamInput';
 
 interface Props {

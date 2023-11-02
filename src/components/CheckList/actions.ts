@@ -1,6 +1,7 @@
-import { GrafanaInstances, Check, FilteredCheck, SubmissionErrorWrapper } from 'types';
-import appEvents from 'grafana/app/core/app_events';
 import { AppEvents } from '@grafana/data';
+import appEvents from 'grafana/app/core/app_events';
+
+import { Check, FilteredCheck, GrafanaInstances, SubmissionErrorWrapper } from 'types';
 import { CHECK_LIST_ICON_OVERLAY_LS_KEY, CHECK_LIST_VIEW_TYPE_LS_KEY } from 'components/constants';
 
 export const fetchProbeOptions = async (instance: GrafanaInstances) => {

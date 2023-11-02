@@ -1,12 +1,13 @@
 import React from 'react';
 import { screen, waitFor, within } from '@testing-library/react';
-
 import { render } from 'test/render';
+
 import { CheckType, ROUTES } from 'types';
-import { PLUGIN_URL_PATH } from 'components/constants';
-import { MultiHttpSettingsForm } from './MultiHttpSettingsForm';
-import { submitForm } from 'components/CheckEditor/testHelpers';
 import { BASIC_CHECK_LIST } from 'components/CheckEditor/testConstants';
+import { submitForm } from 'components/CheckEditor/testHelpers';
+import { PLUGIN_URL_PATH } from 'components/constants';
+
+import { MultiHttpSettingsForm } from './MultiHttpSettingsForm';
 
 jest.setTimeout(60000);
 

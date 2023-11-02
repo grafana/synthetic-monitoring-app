@@ -1,10 +1,11 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
-
 import { render } from 'test/render';
-import ThresholdGlobalSettings from './ThresholdGlobalSettings';
+
 import { getInstanceMock } from 'datasource/__mocks__/DataSource';
 import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
+
+import ThresholdGlobalSettings from './ThresholdGlobalSettings';
 
 const onDismiss = jest.fn();
 const onSuccess = jest.fn();

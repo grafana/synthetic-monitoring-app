@@ -1,7 +1,8 @@
 import { ConstantVariable, SceneQueryRunner, SceneVariableSet } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
-import { ExplorablePanel } from 'scenes/ExplorablePanel';
+
 import { CheckType } from 'types';
+import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
 function getLatencyQueryRunner(checkType: CheckType, metrics: DataSourceRef) {
   const queryRunner = new SceneQueryRunner({

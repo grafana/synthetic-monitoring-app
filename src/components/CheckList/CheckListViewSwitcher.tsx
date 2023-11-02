@@ -1,7 +1,8 @@
-import { RadioButtonGroup } from '@grafana/ui';
-import { CHECK_LIST_VIEW_TYPE_LS_KEY, CHECK_LIST_VIEW_TYPE_OPTIONS } from 'components/constants';
 import React from 'react';
+import { RadioButtonGroup } from '@grafana/ui';
+
 import { CheckListViewType } from 'types';
+import { CHECK_LIST_VIEW_TYPE_LS_KEY, CHECK_LIST_VIEW_TYPE_OPTIONS } from 'components/constants';
 
 interface Props {
   viewType: CheckListViewType;

@@ -1,4 +1,5 @@
 import { OrgRole } from '@grafana/data';
+
 import * as utils from 'utils';
 
 function hasRole(requiredRole: OrgRole): boolean {

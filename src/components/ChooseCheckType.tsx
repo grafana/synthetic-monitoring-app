@@ -1,12 +1,12 @@
 import React from 'react';
-
-import { css } from '@emotion/css';
-import { Card, useStyles2 } from '@grafana/ui';
 import { GrafanaTheme2, PageLayoutType } from '@grafana/data';
+import { Card, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
+
 import { CheckType, FeatureName, ROUTES } from 'types';
-import { CHECK_TYPE_OPTIONS } from 'components/constants';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useNavigation } from 'hooks/useNavigation';
+import { CHECK_TYPE_OPTIONS } from 'components/constants';
 import { PluginPage } from 'components/PluginPage';
 
 export function ChooseCheckType() {

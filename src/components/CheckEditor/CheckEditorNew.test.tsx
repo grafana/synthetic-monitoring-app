@@ -1,12 +1,13 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
-
 import { render } from 'test/render';
+
 import { CheckType, ROUTES } from 'types';
 import { PLUGIN_URL_PATH } from 'components/constants';
+
 import { CheckEditor } from './CheckEditor';
-import { submitForm, fillBasicCheckFields, fillDnsValidationFields, fillTCPQueryResponseFields } from './testHelpers';
-import { BASIC_HTTP_CHECK, BASIC_PING_CHECK, BASIC_TCP_CHECK, BASIC_DNS_CHECK } from './testConstants';
+import { BASIC_DNS_CHECK, BASIC_HTTP_CHECK, BASIC_PING_CHECK, BASIC_TCP_CHECK } from './testConstants';
+import { fillBasicCheckFields, fillDnsValidationFields, fillTCPQueryResponseFields, submitForm } from './testHelpers';
 
 jest.setTimeout(60000);
 

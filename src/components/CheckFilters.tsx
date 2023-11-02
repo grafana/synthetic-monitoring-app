@@ -1,14 +1,16 @@
-import { css } from '@emotion/css';
+import React, { useCallback, useContext, useState } from 'react';
 import { GrafanaTheme2, SelectableValue, unEscapeStringFromRegex } from '@grafana/data';
 import { AsyncMultiSelect, Icon, Input, Select, useStyles2 } from '@grafana/ui';
-import { InstanceContext } from 'contexts/InstanceContext';
+import { css } from '@emotion/css';
 import { debounce } from 'lodash';
-import React, { useCallback, useContext, useState } from 'react';
+
 import { Check, CheckFiltersType } from 'types';
-import CheckFilterGroup from './CheckList/CheckFilterGroup';
+import { InstanceContext } from 'contexts/InstanceContext';
+
 import { fetchProbeOptions } from './CheckList/actions';
-import { LabelFilterInput } from './LabelFilterInput';
+import CheckFilterGroup from './CheckList/CheckFilterGroup';
 import { CHECK_FILTER_OPTIONS, CHECK_LIST_STATUS_OPTIONS } from './constants';
+import { LabelFilterInput } from './LabelFilterInput';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   flexRow: css`

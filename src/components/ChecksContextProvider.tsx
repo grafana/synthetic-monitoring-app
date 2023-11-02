@@ -1,7 +1,8 @@
+import React, { PropsWithChildren, useContext, useEffect, useState } from 'react';
+
+import { Check } from 'types';
 import { ChecksContext } from 'contexts/ChecksContext';
 import { InstanceContext } from 'contexts/InstanceContext';
-import React, { PropsWithChildren, useContext, useEffect, useState } from 'react';
-import { Check } from 'types';
 
 interface Props {}
 

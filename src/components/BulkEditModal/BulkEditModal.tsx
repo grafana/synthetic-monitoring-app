@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import ProbesByRegion from './ProbesByRegion';
-
-import { Button, HorizontalGroup, Modal, LoadingPlaceholder, useStyles2 } from '@grafana/ui';
-import { FilteredCheck, GrafanaInstances, Probe } from 'types';
 import { GrafanaTheme2 } from '@grafana/data';
+import { Button, HorizontalGroup, LoadingPlaceholder, Modal, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { intersection } from 'lodash';
+
+import { FilteredCheck, GrafanaInstances, Probe } from 'types';
+
+import ProbesByRegion from './ProbesByRegion';
 
 interface ProbeById {
   [key: number]: Probe;

@@ -1,11 +1,12 @@
 import React from 'react';
-import { useStyles2, TabsBar, Tab, Icon, useTheme2 } from '@grafana/ui';
-import { SelectableValue } from '@grafana/data';
 import { useFormContext } from 'react-hook-form';
+import { SelectableValue } from '@grafana/data';
+import { Icon, Tab, TabsBar, useStyles2, useTheme2 } from '@grafana/ui';
 
-import { RequestTabs } from 'components/MultiHttp/Tabs/Tabs';
-import { MultiHttpFormTabs, RequestMethods } from 'components/MultiHttp/MultiHttpTypes';
 import { tabErrorMap } from 'components/MultiHttp/MultiHttpSettingsForm.utils';
+import { MultiHttpFormTabs, RequestMethods } from 'components/MultiHttp/MultiHttpTypes';
+import { RequestTabs } from 'components/MultiHttp/Tabs/Tabs';
+
 import { getMultiHttpFormStyles } from './../MultiHttpSettingsForm.styles';
 
 interface RequestTabsProps {

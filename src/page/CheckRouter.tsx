@@ -1,14 +1,15 @@
+import React, { useCallback, useContext, useEffect, useState } from 'react';
+import { Route, Switch, useRouteMatch } from 'react-router-dom';
+
+import { Check, CheckType, ROUTES } from 'types';
+import { InstanceContext } from 'contexts/InstanceContext';
+import { useNavigation } from 'hooks/useNavigation';
 import { CheckEditor } from 'components/CheckEditor';
 import { CheckList } from 'components/CheckList';
 import { ChooseCheckType } from 'components/ChooseCheckType';
 import { MultiHttpSettingsForm } from 'components/MultiHttp/MultiHttpSettingsForm';
 import { PluginPage } from 'components/PluginPage';
 import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
-import { InstanceContext } from 'contexts/InstanceContext';
-import { useNavigation } from 'hooks/useNavigation';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { Route, Switch, useRouteMatch } from 'react-router-dom';
-import { Check, CheckType, ROUTES } from 'types';
 
 export function CheckRouter() {
   const { instance } = useContext(InstanceContext);

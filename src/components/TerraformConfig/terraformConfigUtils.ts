@@ -1,6 +1,7 @@
 import { Check, CheckType, Label, MultiHttpSettings, Probe, TLSConfig } from 'types';
 import { checkType } from 'utils';
-import { TFCheck, TFCheckSettings, TFLabels, TFProbe, TFTlsConfig, TFMultiHttpEntry } from './terraformTypes';
+
+import { TFCheck, TFCheckSettings, TFLabels, TFMultiHttpEntry, TFProbe, TFTlsConfig } from './terraformTypes';
 
 const labelsToTFLabels = (labels: Label[]): TFLabels =>
   labels.reduce<TFLabels>((acc, label) => {

@@ -1,10 +1,11 @@
 import React from 'react';
-import { EmbeddedScene, SceneReactObject } from '@grafana/scenes';
 import { GrafanaTheme2 } from '@grafana/data';
-import { css } from '@emotion/css';
+import { EmbeddedScene, SceneReactObject } from '@grafana/scenes';
 import { Button, Card, useStyles2 } from '@grafana/ui';
-import { useNavigation } from 'hooks/useNavigation';
+import { css } from '@emotion/css';
+
 import { CheckType, ROUTES } from 'types';
+import { useNavigation } from 'hooks/useNavigation';
 
 function getStyles(theme: GrafanaTheme2) {
   return {

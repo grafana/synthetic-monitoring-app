@@ -1,12 +1,14 @@
-import React, { useState, useEffect, PropsWithChildren } from 'react';
-import { InstanceContext } from 'contexts/InstanceContext';
-import { GlobalSettings, GrafanaInstances } from 'types';
-import { config, getDataSourceSrv, getBackendSrv } from '@grafana/runtime';
-import { SMDataSource } from 'datasource/DataSource';
-import { Spinner } from '@grafana/ui';
+import React, { PropsWithChildren,useEffect, useState } from 'react';
 import { AppPluginMeta, OrgRole } from '@grafana/data';
-import { hasRole } from 'utils';
+import { config, getBackendSrv,getDataSourceSrv } from '@grafana/runtime';
+import { Spinner } from '@grafana/ui';
 import appEvents from 'grafana/app/core/app_events';
+
+import { GlobalSettings, GrafanaInstances } from 'types';
+import { hasRole } from 'utils';
+import { SMDataSource } from 'datasource/DataSource';
+import { InstanceContext } from 'contexts/InstanceContext';
+
 import { PluginPage } from './PluginPage';
 
 async function getRulerDatasource(metricDatasourceId?: number) {
