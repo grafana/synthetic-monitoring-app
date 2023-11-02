@@ -1,4 +1,4 @@
-import React, { PropsWithChildren } from 'react';
+import React, { forwardRef, PropsWithChildren } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Icon, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
@@ -11,14 +11,10 @@ interface Props {
   onToggle: () => void;
 }
 
-export const MultiHttpCollapse = ({
-  label,
-  children,
-  invalid,
-  className,
-  isOpen,
-  onToggle,
-}: PropsWithChildren<Props>) => {
+export const MultiHttpCollapse = forwardRef<HTMLButtonElement, PropsWithChildren<Props>>(function MultiHttpCollapse(
+  { label, children, invalid, className, isOpen, onToggle },
+  ref
+) {
   const styles = useStyles2(getStyles);
 
   return (
@@ -29,6 +25,7 @@ export const MultiHttpCollapse = ({
           e.preventDefault();
           onToggle();
         }}
+        ref={ref}
       >
         <Icon name={isOpen ? 'angle-down' : 'angle-right'} className={styles.headerIcon} />
         <div className={styles.label}>{label}</div>
@@ -37,7 +34,7 @@ export const MultiHttpCollapse = ({
       <div className={cx(styles.body, { [styles.hidden]: !isOpen })}>{children}</div>
     </div>
   );
-};
+});
 
 const getStyles = (theme: GrafanaTheme2) => ({
   header: css`
