@@ -1,8 +1,9 @@
 import React, { useContext } from 'react';
 import { DisplayValue } from '@grafana/data';
 import { config } from '@grafana/runtime';
-import { BigValue,BigValueColorMode, BigValueGraphMode } from '@grafana/ui';
+import { BigValue, BigValueColorMode, BigValueGraphMode } from '@grafana/ui';
 
+import { CheckType } from 'types';
 import { getLatencySuccessRateThresholdColor } from 'utils';
 import { SuccessRateContext, ThresholdSettings } from 'contexts/SuccessRateContext';
 import { useMetricData } from 'hooks/useMetricData';
@@ -15,6 +16,7 @@ interface Props {
   job: string;
   height: number;
   width: number;
+  checkType: CheckType;
   onClick?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
 }
 
@@ -48,9 +50,18 @@ const getDisplayValue = (data: any[], loading: boolean, thresholds: ThresholdSet
   };
 };
 
-export const LatencyGauge = ({ target, job, height, width }: Props) => {
+function getLatencyQuery(checkType: CheckType, target: string, job: string) {
+  switch (checkType) {
+    case CheckType.MULTI_HTTP:
+      return `sum by (job, instance) (sum_over_time(probe_http_total_duration_seconds{job="${job}", instance="${target}"}[6h])) / sum by (job, instance) (count_over_time(probe_http_total_duration_seconds{job="${job}", instance="${target}"}[6h])) `;
+    default:
+      return `sum((rate(probe_all_duration_seconds_sum{probe=~".*", instance="${target}", job="${job}"}[6h]) OR rate(probe_duration_seconds_sum{probe=~".*", instance="${target}", job="${job}"}[6h]))) / sum((rate(probe_all_duration_seconds_count{probe=~".*", instance="${target}", job="${job}"}[6h]) OR rate(probe_duration_seconds_count{probe=~".*", instance="${target}", job="${job}"}[6h])))`;
+  }
+}
+
+export const LatencyGauge = ({ target, job, height, checkType, width }: Props) => {
   const { thresholds } = useContext(SuccessRateContext);
-  const query = `sum((rate(probe_all_duration_seconds_sum{probe=~".*", instance="${target}", job="${job}"}[6h]) OR rate(probe_duration_seconds_sum{probe=~".*", instance="${target}", job="${job}"}[6h]))) / sum((rate(probe_all_duration_seconds_count{probe=~".*", instance="${target}", job="${job}"}[6h]) OR rate(probe_duration_seconds_count{probe=~".*", instance="${target}", job="${job}"}[6h])))`;
+  const query = getLatencyQuery(checkType, target, job);
 
   const { data, loading } = useMetricData(query);
   const value = getDisplayValue(data, loading, thresholds);
