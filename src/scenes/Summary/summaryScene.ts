@@ -25,6 +25,13 @@ export function getSummaryScene({ metrics }: DashboardSceneAppConfig, checks: Ch
     if (checks.length === 0) {
       return getEmptyScene();
     }
+    const labelKeys = checks.reduce<Set<string>>((acc, check) => {
+      check.labels.forEach(({ name }) => {
+        acc.add(name);
+      });
+      return acc;
+    }, new Set<string>());
+
     const timeRange = new SceneTimeRange({
       from: 'now-6h',
       to: 'now',
@@ -49,10 +56,14 @@ export function getSummaryScene({ metrics }: DashboardSceneAppConfig, checks: Ch
       datasource: metrics,
     });
     const filters = AdHocFiltersVariable.create({
-      // name: 'Filters',
       datasource: metrics,
       filters: [],
-      // applyMode: 'manual',
+      getTagKeysProvider: () => {
+        return Promise.resolve({
+          replace: true,
+          values: Array.from(labelKeys).map((key) => ({ text: key, value: `label_${key}` })),
+        });
+      },
     });
 
     const tablePanel = new SceneFlexItem({ height: 400, body: getSummaryTable(metrics) });
