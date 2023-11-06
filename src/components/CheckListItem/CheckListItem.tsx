@@ -252,7 +252,7 @@ export const CheckListItem = ({
                     height={75}
                     width={150}
                   />
-                  <LatencyGauge target={check.target} job={check.job} height={75} width={175} />
+                  <LatencyGauge target={check.target} job={check.job} checkType={checkType} height={75} width={175} />
                 </>
               )}
             </div>

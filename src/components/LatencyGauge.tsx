@@ -1,8 +1,9 @@
 import React, { useContext } from 'react';
 import { DisplayValue } from '@grafana/data';
 import { config } from '@grafana/runtime';
-import { BigValue,BigValueColorMode, BigValueGraphMode } from '@grafana/ui';
+import { BigValue, BigValueColorMode, BigValueGraphMode } from '@grafana/ui';
 
+import { CheckType } from 'types';
 import { getLatencySuccessRateThresholdColor } from 'utils';
 import { SuccessRateContext, ThresholdSettings } from 'contexts/SuccessRateContext';
 import { useMetricData } from 'hooks/useMetricData';
@@ -15,6 +16,7 @@ interface Props {
   job: string;
   height: number;
   width: number;
+  checkType: CheckType;
   onClick?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
 }
 
@@ -48,9 +50,19 @@ const getDisplayValue = (data: any[], loading: boolean, thresholds: ThresholdSet
   };
 };
 
-export const LatencyGauge = ({ target, job, height, width }: Props) => {
+function getLatencyMetric(checkType: CheckType) {
+  switch (checkType) {
+    case CheckType.MULTI_HTTP:
+      return 'probe_http_total_duration_seconds';
+    default:
+      return 'probe_all_duration_seconds_sum';
+  }
+}
+
+export const LatencyGauge = ({ target, job, height, checkType, width }: Props) => {
   const { thresholds } = useContext(SuccessRateContext);
-  const query = `sum((rate(probe_all_duration_seconds_sum{probe=~".*", instance="${target}", job="${job}"}[6h]) OR rate(probe_duration_seconds_sum{probe=~".*", instance="${target}", job="${job}"}[6h]))) / sum((rate(probe_all_duration_seconds_count{probe=~".*", instance="${target}", job="${job}"}[6h]) OR rate(probe_duration_seconds_count{probe=~".*", instance="${target}", job="${job}"}[6h])))`;
+  const metricName = getLatencyMetric(checkType);
+  const query = `sum((rate(${metricName}{probe=~".*", instance="${target}", job="${job}"}[6h]) OR rate(probe_duration_seconds_sum{probe=~".*", instance="${target}", job="${job}"}[6h]))) / sum((rate(probe_all_duration_seconds_count{probe=~".*", instance="${target}", job="${job}"}[6h]) OR rate(probe_duration_seconds_count{probe=~".*", instance="${target}", job="${job}"}[6h])))`;
 
   const { data, loading } = useMetricData(query);
   const value = getDisplayValue(data, loading, thresholds);
