@@ -1,4 +1,5 @@
 import {
+  AdHocFiltersVariable,
   EmbeddedScene,
   QueryVariable,
   SceneControlsSpacer,
@@ -35,7 +36,7 @@ export function getSummaryScene({ metrics }: DashboardSceneAppConfig, checks: Ch
       allValue: '.*',
       name: 'region',
       defaultToAll: true,
-      query: { query: 'label_values(sm_check_info, region)' },
+      query: 'label_values(sm_check_info, region)',
       datasource: metrics,
     });
     const checkTypeVar = new QueryVariable({
@@ -44,25 +45,16 @@ export function getSummaryScene({ metrics }: DashboardSceneAppConfig, checks: Ch
       name: 'check_type',
       label: 'check type',
       defaultToAll: true,
-      query: { query: 'label_values(sm_check_info, check_name)' },
+      query: 'label_values(sm_check_info, check_name)',
       datasource: metrics,
     });
+    const filters = AdHocFiltersVariable.create({
+      // name: 'Filters',
+      datasource: metrics,
+      filters: [],
+      // applyMode: 'manual',
+    });
 
-    // Query runner definition
-    // const checkTypes = [CheckType.DNS, CheckType.HTTP, CheckType.PING, CheckType.TCP, CheckType.Traceroute];
-
-    // const children = checkTypes.map((checkType) => {
-    // const mapPanel = new SceneFlexItem({ height: 350, body: getErrorRateMapPanel(checkType, metrics) });
-    // const latencyPanel = getLatencyTimeseriesPanel(checkType, metrics);
-
-    // const flexed = new SceneFlexItem({
-    //   height: 350,
-    //   width: 500,
-    //   body: new SceneFlexLayout({
-    //     direction: 'column',
-    //     children: [errorPercentagePanel, latencyPanel].map((panel) => new SceneFlexItem({ height: 500, body: panel })),
-    //   }),
-    // });
     const tablePanel = new SceneFlexItem({ height: 400, body: getSummaryTable(metrics) });
 
     const tableRow = new SceneFlexLayout({
@@ -87,7 +79,7 @@ export function getSummaryScene({ metrics }: DashboardSceneAppConfig, checks: Ch
 
     return new EmbeddedScene({
       $timeRange: timeRange,
-      $variables: new SceneVariableSet({ variables: [region, checkTypeVar] }),
+      $variables: new SceneVariableSet({ variables: [region, checkTypeVar, filters] }),
       // $data: queryRunner,
       body: new SceneFlexLayout({
         direction: 'column',
@@ -95,6 +87,7 @@ export function getSummaryScene({ metrics }: DashboardSceneAppConfig, checks: Ch
       }),
       controls: [
         new VariableValueSelectors({}),
+        // filters,
         new SceneControlsSpacer(),
         // customObject,
         new SceneTimePicker({ isOnCanvas: true }),

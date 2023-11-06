@@ -10,7 +10,20 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef) {
       {
         editorMode: 'code',
         exemplar: false,
-        expr: 'sum by (instance, job, check_name)\n(\n  rate(probe_all_success_sum[$__range])\n  *\n  on (instance, job, probe, config_version)\n  group_left(check_name)\n  max\n  by (instance, job, probe, config_version, check_name)\n  (sm_check_info{check_name=~"$check_type", region=~"$region"})\n)\n/\nsum by (instance, check_name, job)\n(\n  rate(probe_all_success_count[$__range])\n  *\n  on (instance, job, probe, config_version)\n  group_left(check_name)\n  max\n  by (instance, job, probe, config_version, check_name)\n  (sm_check_info{check_name=~"$check_type", region=~"$region"})\n)',
+        expr: `
+          sum by (instance, job, check_name)
+          (
+            rate(probe_all_success_sum[$__range])
+            *
+            on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters })
+          )
+          /
+          sum by (instance, check_name, job)
+          (
+            rate(probe_all_success_count[$__range])
+            *
+            on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters })
+          )`,
         format: 'table',
         instant: true,
         interval: '',
@@ -20,7 +33,20 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef) {
       {
         editorMode: 'code',
         exemplar: false,
-        expr: 'sum by (instance, job, check_name)\n(\n  rate(probe_all_duration_seconds_sum[$__range])\n  * \n  on (instance, job, probe, config_version)\n  group_left(check_name)\n  max by (instance, job, probe, config_version, check_name)\n  (sm_check_info{check_name=~"$check_type", region=~"$region"})\n)\n/\nsum by (instance, job, check_name)\n(\n  rate(probe_all_duration_seconds_count[$__range])\n  *\n  on (instance, job, probe, config_version)\n  group_left(check_name)\n  max by (instance, job, probe, config_version, check_name)\n  (sm_check_info{check_name=~"$check_type", region=~"$region"})\n)',
+        expr: `
+          sum by (instance, job, check_name)
+          (
+            rate(probe_all_duration_seconds_sum[$__range])
+            *
+            on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters})
+          )
+          /
+          sum by (instance, job, check_name)
+          (
+            rate(probe_all_duration_seconds_count[$__range])
+            *
+            on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters})
+          )`,
         format: 'table',
         instant: true,
         interval: '',
@@ -30,7 +56,23 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef) {
       {
         editorMode: 'code',
         exemplar: false,
-        expr: 'ceil(\n  sum by (instance, job, check_name)\n  (\n  rate(probe_all_success_sum[5m])\n  *\n  on (instance, job, probe, config_version)\n    group_left(check_name)\n    max\n    by (instance, job, probe, config_version, check_name)\n    (sm_check_info{check_name=~"$check_type", region=~"$region"})\n  )\n  /\n  sum by (instance, check_name, job)\n  (\n    rate(probe_all_success_count[5m])\n  *\n    on (instance, job, probe, config_version)\n    group_left(check_name)\n    max\n    by (instance, job, probe, config_version, check_name)\n    (sm_check_info{check_name=~"$check_type", region=~"$region"})\n  )\n)',
+        expr: `
+          ceil(
+            sum by (instance, job, check_name)
+            (
+              rate(probe_all_success_sum[5m])
+              *
+              on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters})
+            )
+            /
+            sum by (instance, check_name, job)
+            (
+              rate(probe_all_success_count[5m])
+              *
+              on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters})
+            )
+          )
+        `,
         format: 'table',
         hide: false,
         instant: true,
@@ -41,7 +83,23 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef) {
       {
         editorMode: 'code',
         exemplar: false,
-        expr: '# find the average uptime over the entire time range evaluating \'up\' in 5 minute windows\navg_over_time(\n  (\n    # the inner query is going to produce a non-zero value if there was at least one successful check during the 5 minute window\n    # so make it a 1 if there was at least one success and a 0 otherwise\n    ceil(\n      # the number of successes across all probes\n      sum by (instance, job) (increase(probe_all_success_sum{}[5m]) * on (instance, job, probe, config_version) sm_check_info{check_name=~"$check_type"})\n      /\n      # the total number of times we checked across all probes\n      (sum by (instance, job) (increase(probe_all_success_count[5m])) + 1) # + 1 because we want to make sure it goes to 1, not 2\n    )\n  )\n  [$__range:5m]\n)',
+        expr: `
+          # find the average uptime over the entire time range evaluating 'up' in 5 minute windows
+          avg_over_time(
+            (
+              # the inner query is going to produce a non-zero value if there was at least one successful check during the 5 minute window
+              # so make it a 1 if there was at least one success and a 0 otherwise
+              ceil(
+                # the number of successes across all probes
+                sum by (instance, job) (increase(probe_all_success_sum{}[5m]) * on (instance, job, probe, config_version) sm_check_info{check_name=~"$check_type", $Filters})
+                /
+                # the total number of times we checked across all probes
+                (sum by (instance, job) (increase(probe_all_success_count[5m])) + 1) # + 1 because we want to make sure it goes to 1, not 2
+              )
+            )
+            [$__range:5m]
+          )
+        `,
         format: 'table',
         hide: false,
         instant: true,
@@ -248,7 +306,7 @@ function getFieldOverrides() {
           value: [
             {
               title: 'Show details...',
-              url: '/a/grafana-synthetic-monitoring-app/scene/${__data.fields.check_type}?var-probe=All&var-instance=${__data.fields.instance}&var-job=${__data.fields.job}&from=${__from}&to=${__to}',
+              url: '/a/grafana-synthetic-monitoring-app/scene/${__data.fields.check_name}?var-probe=All&var-instance=${__data.fields.instance}&var-job=${__data.fields.job}&from=${__from}&to=${__to}',
             },
           ],
         },
@@ -265,7 +323,7 @@ function getFieldOverrides() {
           value: [
             {
               title: 'Show details...',
-              url: '/a/grafana-synthetic-monitoring-app/scene/?var-probe=All&var-instance=${__data.fields.instance}&var-job=${__data.fields.job}&from=${__from}&to=${__to}',
+              url: '/a/grafana-synthetic-monitoring-app/scene/${__data.fields.check_name}?var-probe=All&var-instance=${__data.fields.instance}&var-job=${__data.fields.job}&from=${__from}&to=${__to}',
             },
           ],
         },

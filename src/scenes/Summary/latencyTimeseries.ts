@@ -12,7 +12,7 @@ function getLatencyQueryRunner(metrics: DataSourceRef) {
         (
           sum(
             rate(probe_all_duration_seconds_sum[$__range])
-            * on (instance, job, probe, config_version) group_left max(sm_check_info{check_name=~\"$check_type\", region=~\"$region\"})
+            * on (instance, job, probe, config_version) group_left max(sm_check_info{check_name=~"$check_type", region=~"$region", $Filters})
             by (instance, job, probe, config_version)
           )
           by (job, instance)
@@ -21,7 +21,7 @@ function getLatencyQueryRunner(metrics: DataSourceRef) {
         (
           sum(
             rate(probe_all_duration_seconds_count[$__range])
-            * on (instance, job, probe, config_version) group_left max(sm_check_info{check_name=~\"$check_type\", region=~\"$region\"})
+            * on (instance, job, probe, config_version) group_left max(sm_check_info{check_name=~"$check_type", region=~"$region", $Filters})
             by (instance, job, probe, config_version)
           )
           by (job, instance)

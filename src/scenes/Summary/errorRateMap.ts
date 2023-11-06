@@ -14,7 +14,7 @@ function getErrorMapQuery() {
         group_left(geohash)
         max
         by (instance, job, probe, config_version, check_name, geohash)
-        (sm_check_info{check_name=~"$check_type", region=~"$region"})
+        (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters})
       ) 
       / 
       sum by (probe, geohash)
@@ -25,7 +25,7 @@ function getErrorMapQuery() {
         group_left(geohash)
         max
         by (instance, job, probe, config_version, check_name, geohash)
-        (sm_check_info{check_name=~"$check_type", region=~"$region"})
+        (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters})
       )
     )
   )`;
@@ -52,7 +52,7 @@ function getMapQueryRunner(metrics: DataSourceRef) {
 export function getErrorRateMapPanel(metrics: DataSourceRef) {
   const mapPanel = new ExplorablePanel({
     pluginId: 'geomap',
-    title: `$check_type error rate`,
+    title: `$check_type error rate by location`,
     $data: getMapQueryRunner(metrics),
     options: {
       basemap: {

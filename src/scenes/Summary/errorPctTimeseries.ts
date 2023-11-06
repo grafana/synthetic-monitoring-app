@@ -4,7 +4,7 @@ import { DataSourceRef, ThresholdsMode } from '@grafana/schema';
 import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
 function getErrorPercentageQuery() {
-  return `sum(
+  return `1 - sum(
     rate(
       probe_all_success_sum[$__range]) 
       * 
@@ -13,7 +13,7 @@ function getErrorPercentageQuery() {
       ) 
       group_left
       max(
-        sm_check_info{check_name=~\"$check_type\", region=~\"$region\"}
+        sm_check_info{check_name=~"$check_type", region=~"$region", $Filters}
       ) 
       by (instance, job, probe, config_version)
     ) 
@@ -28,7 +28,7 @@ function getErrorPercentageQuery() {
         ) 
         group_left 
         max(
-          sm_check_info{check_name=~\"$check_type\", region=~\"$region\"}
+          sm_check_info{check_name=~"$check_type", region=~"$region", $Filters}
         ) 
         by (
           instance, job, probe, config_version
@@ -115,6 +115,7 @@ export function getErrorPctgTimeseriesPanel(metrics: DataSourceRef) {
         },
         links: [],
         min: 0,
+        max: 1,
         unit: 'percentunit',
       },
       overrides: [
