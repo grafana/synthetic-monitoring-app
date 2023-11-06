@@ -1,16 +1,16 @@
 import { SceneDataTransformer, SceneQueryRunner } from '@grafana/scenes';
 import { DataSourceRef, ThresholdsMode } from '@grafana/schema';
 
-import { CheckType } from 'types';
 import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
-function getSummaryTableQueryRunner(checkType: string, metrics: DataSourceRef) {
+function getSummaryTableQueryRunner(metrics: DataSourceRef) {
   const queryRunner = new SceneQueryRunner({
     datasource: metrics,
     queries: [
       {
+        editorMode: 'code',
         exemplar: false,
-        expr: `sum by (instance, job, check_name)\n(\n  rate(probe_all_success_sum[$__range])\n  *\n  on (instance, job, probe, config_version)\n  group_left(check_name)\n  max\n  by (instance, job, probe, config_version, check_name)\n  (sm_check_info{check_name="${checkType}", region=~"$region"})\n)\n/\nsum by (instance, check_name, job)\n(\n  rate(probe_all_success_count[$__range])\n  *\n  on (instance, job, probe, config_version)\n  group_left(check_name)\n  max\n  by (instance, job, probe, config_version, check_name)\n  (sm_check_info{check_name="${checkType}", region=~"$region"})\n)`,
+        expr: 'sum by (instance, job, check_name)\n(\n  rate(probe_all_success_sum[$__range])\n  *\n  on (instance, job, probe, config_version)\n  group_left(check_name)\n  max\n  by (instance, job, probe, config_version, check_name)\n  (sm_check_info{check_name=~"$check_type", region=~"$region"})\n)\n/\nsum by (instance, check_name, job)\n(\n  rate(probe_all_success_count[$__range])\n  *\n  on (instance, job, probe, config_version)\n  group_left(check_name)\n  max\n  by (instance, job, probe, config_version, check_name)\n  (sm_check_info{check_name=~"$check_type", region=~"$region"})\n)',
         format: 'table',
         instant: true,
         interval: '',
@@ -18,8 +18,9 @@ function getSummaryTableQueryRunner(checkType: string, metrics: DataSourceRef) {
         refId: 'reachability',
       },
       {
+        editorMode: 'code',
         exemplar: false,
-        expr: `sum by (instance, job, check_name)\n(\n  rate(probe_all_duration_seconds_sum[$__range])\n  * \n  on (instance, job, probe, config_version)\n  group_left(check_name)\n  max by (instance, job, probe, config_version, check_name)\n  (sm_check_info{check_name="${checkType}", region=~"$region"})\n)\n/\nsum by (instance, job, check_name)\n(\n  rate(probe_all_duration_seconds_count[$__range])\n  *\n  on (instance, job, probe, config_version)\n  group_left(check_name)\n  max by (instance, job, probe, config_version, check_name)\n  (sm_check_info{check_name="${checkType}", region=~"$region"})\n)`,
+        expr: 'sum by (instance, job, check_name)\n(\n  rate(probe_all_duration_seconds_sum[$__range])\n  * \n  on (instance, job, probe, config_version)\n  group_left(check_name)\n  max by (instance, job, probe, config_version, check_name)\n  (sm_check_info{check_name=~"$check_type", region=~"$region"})\n)\n/\nsum by (instance, job, check_name)\n(\n  rate(probe_all_duration_seconds_count[$__range])\n  *\n  on (instance, job, probe, config_version)\n  group_left(check_name)\n  max by (instance, job, probe, config_version, check_name)\n  (sm_check_info{check_name=~"$check_type", region=~"$region"})\n)',
         format: 'table',
         instant: true,
         interval: '',
@@ -27,8 +28,9 @@ function getSummaryTableQueryRunner(checkType: string, metrics: DataSourceRef) {
         refId: 'latency',
       },
       {
+        editorMode: 'code',
         exemplar: false,
-        expr: `ceil(\n  sum by (instance, job, check_name)\n  (\n  rate(probe_all_success_sum[5m])\n  *\n  on (instance, job, probe, config_version)\n    group_left(check_name)\n    max\n    by (instance, job, probe, config_version, check_name)\n    (sm_check_info{check_name="${checkType}", region=~"$region"})\n  )\n  /\n  sum by (instance, check_name, job)\n  (\n    rate(probe_all_success_count[5m])\n  *\n    on (instance, job, probe, config_version)\n    group_left(check_name)\n    max\n    by (instance, job, probe, config_version, check_name)\n    (sm_check_info{check_name="${checkType}", region=~"$region"})\n  )\n)`,
+        expr: 'ceil(\n  sum by (instance, job, check_name)\n  (\n  rate(probe_all_success_sum[5m])\n  *\n  on (instance, job, probe, config_version)\n    group_left(check_name)\n    max\n    by (instance, job, probe, config_version, check_name)\n    (sm_check_info{check_name=~"$check_type", region=~"$region"})\n  )\n  /\n  sum by (instance, check_name, job)\n  (\n    rate(probe_all_success_count[5m])\n  *\n    on (instance, job, probe, config_version)\n    group_left(check_name)\n    max\n    by (instance, job, probe, config_version, check_name)\n    (sm_check_info{check_name=~"$check_type", region=~"$region"})\n  )\n)',
         format: 'table',
         hide: false,
         instant: true,
@@ -37,8 +39,9 @@ function getSummaryTableQueryRunner(checkType: string, metrics: DataSourceRef) {
         refId: 'state',
       },
       {
+        editorMode: 'code',
         exemplar: false,
-        expr: `# find the average uptime over the entire time range evaluating \'up\' in 5 minute windows\navg_over_time(\n  (\n    # the inner query is going to produce a non-zero value if there was at least one successful check during the 5 minute window\n    # so make it a 1 if there was at least one success and a 0 otherwise\n    ceil(\n      # the number of successes across all probes\n      sum by (instance, job) (increase(probe_all_success_sum{}[5m]) * on (instance, job, probe, config_version) sm_check_info{check_name="${checkType}"})\n      /\n      # the total number of times we checked across all probes\n      (sum by (instance, job) (increase(probe_all_success_count[5m])) + 1) # + 1 because we want to make sure it goes to 1, not 2\n    )\n  )\n  [$__range:5m]\n)`,
+        expr: '# find the average uptime over the entire time range evaluating \'up\' in 5 minute windows\navg_over_time(\n  (\n    # the inner query is going to produce a non-zero value if there was at least one successful check during the 5 minute window\n    # so make it a 1 if there was at least one success and a 0 otherwise\n    ceil(\n      # the number of successes across all probes\n      sum by (instance, job) (increase(probe_all_success_sum{}[5m]) * on (instance, job, probe, config_version) sm_check_info{check_name=~"$check_type"})\n      /\n      # the total number of times we checked across all probes\n      (sum by (instance, job) (increase(probe_all_success_count[5m])) + 1) # + 1 because we want to make sure it goes to 1, not 2\n    )\n  )\n  [$__range:5m]\n)',
         format: 'table',
         hide: false,
         instant: true,
@@ -61,10 +64,21 @@ function getSummaryTableQueryRunner(checkType: string, metrics: DataSourceRef) {
         options: {
           excludeByName: {
             Time: true,
-            check_name: true,
+            check_name: false,
           },
-          indexByName: {},
-          renameByName: {},
+          indexByName: {
+            Time: 0,
+            'Value #latency': 7,
+            'Value #reachability': 6,
+            'Value #state': 4,
+            'Value #uptime': 5,
+            check_name: 3,
+            instance: 1,
+            job: 2,
+          },
+          renameByName: {
+            check_name: 'check type',
+          },
         },
       },
     ],
@@ -72,7 +86,7 @@ function getSummaryTableQueryRunner(checkType: string, metrics: DataSourceRef) {
   return transformed;
 }
 
-function getFieldOverrides(checkType: CheckType) {
+function getFieldOverrides() {
   return [
     {
       matcher: {
@@ -234,10 +248,7 @@ function getFieldOverrides(checkType: CheckType) {
           value: [
             {
               title: 'Show details...',
-              url:
-                '/a/grafana-synthetic-monitoring-app/scene/' +
-                checkType +
-                '?var-probe=All&var-instance=${__data.fields.instance}&var-job=${__data.fields.job}&from=${__from}&to=${__to}',
+              url: '/a/grafana-synthetic-monitoring-app/scene/${__data.fields.check_type}?var-probe=All&var-instance=${__data.fields.instance}&var-job=${__data.fields.job}&from=${__from}&to=${__to}',
             },
           ],
         },
@@ -254,10 +265,7 @@ function getFieldOverrides(checkType: CheckType) {
           value: [
             {
               title: 'Show details...',
-              url:
-                '/a/grafana-synthetic-monitoring-app/scene/' +
-                checkType +
-                '?var-probe=All&var-instance=${__data.fields.instance}&var-job=${__data.fields.job}&from=${__from}&to=${__to}',
+              url: '/a/grafana-synthetic-monitoring-app/scene/?var-probe=All&var-instance=${__data.fields.instance}&var-job=${__data.fields.job}&from=${__from}&to=${__to}',
             },
           ],
         },
@@ -266,11 +274,13 @@ function getFieldOverrides(checkType: CheckType) {
   ];
 }
 
-export function getSummaryTable(checkType: CheckType, metrics: DataSourceRef) {
+export function getSummaryTable(metrics: DataSourceRef) {
   const tablePanel = new ExplorablePanel({
     pluginId: 'table',
-    $data: getSummaryTableQueryRunner(checkType, metrics),
-    title: `${checkType} checks`,
+    $data: getSummaryTableQueryRunner(metrics),
+    title: `$check_type checks`,
+    description:
+      '* instance: the instance that corresponds to this check.\n* **job**: the job that corresponds to this check.\n* **reachability**: the percentage of all the checks that have succeeded during the whole time period.\n* **latency**: the average time to receive an answer across all the checks during the whole time period.\n* **state**: whether the target was up or down the last time it was checked.\n* **uptime**: the fraction of time the target was up  during the whole period.',
     fieldConfig: {
       defaults: {
         color: {
@@ -302,7 +312,7 @@ export function getSummaryTable(checkType: CheckType, metrics: DataSourceRef) {
           ],
         },
       },
-      overrides: getFieldOverrides(checkType),
+      overrides: getFieldOverrides(),
     },
   });
   return tablePanel;

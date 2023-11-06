@@ -11,7 +11,7 @@ import {
   VariableValueSelectors,
 } from '@grafana/scenes';
 
-import { Check, CheckType, DashboardSceneAppConfig } from 'types';
+import { Check, DashboardSceneAppConfig } from 'types';
 import { getEmptyScene } from 'scenes/Common/emptyScene';
 
 import { getErrorPctgTimeseriesPanel } from './errorPctTimeseries';
@@ -38,42 +38,60 @@ export function getSummaryScene({ metrics }: DashboardSceneAppConfig, checks: Ch
       query: { query: 'label_values(sm_check_info, region)' },
       datasource: metrics,
     });
+    const checkTypeVar = new QueryVariable({
+      includeAll: true,
+      allValue: '.*',
+      name: 'check_type',
+      label: 'check type',
+      defaultToAll: true,
+      query: { query: 'label_values(sm_check_info, check_name)' },
+      datasource: metrics,
+    });
 
     // Query runner definition
-    const checkTypes = [CheckType.DNS, CheckType.HTTP, CheckType.PING, CheckType.TCP, CheckType.Traceroute];
+    // const checkTypes = [CheckType.DNS, CheckType.HTTP, CheckType.PING, CheckType.TCP, CheckType.Traceroute];
 
-    const children = checkTypes.map((checkType) => {
-      const mapPanel = new SceneFlexItem({ height: 350, body: getErrorRateMapPanel(checkType, metrics) });
-      const errorPercentagePanel = getErrorPctgTimeseriesPanel(checkType, metrics);
-      const latencyPanel = getLatencyTimeseriesPanel(checkType, metrics);
+    // const children = checkTypes.map((checkType) => {
+    // const mapPanel = new SceneFlexItem({ height: 350, body: getErrorRateMapPanel(checkType, metrics) });
+    // const latencyPanel = getLatencyTimeseriesPanel(checkType, metrics);
 
-      const flexed = new SceneFlexItem({
-        height: 350,
-        width: 500,
-        body: new SceneFlexLayout({
-          direction: 'column',
-          children: [errorPercentagePanel, latencyPanel].map(
-            (panel) => new SceneFlexItem({ height: 500, body: panel })
-          ),
-        }),
-      });
-      const tablePanel = new SceneFlexItem({ height: 350, body: getSummaryTable(checkType, metrics) });
+    // const flexed = new SceneFlexItem({
+    //   height: 350,
+    //   width: 500,
+    //   body: new SceneFlexLayout({
+    //     direction: 'column',
+    //     children: [errorPercentagePanel, latencyPanel].map((panel) => new SceneFlexItem({ height: 500, body: panel })),
+    //   }),
+    // });
+    const tablePanel = new SceneFlexItem({ height: 400, body: getSummaryTable(metrics) });
 
-      const flexRow = new SceneFlexLayout({
-        direction: 'row',
-        children: [mapPanel, flexed, tablePanel],
-      });
+    const tableRow = new SceneFlexLayout({
+      direction: 'row',
+      // children: [mapPanel, flexed, tablePanel],
+      children: [tablePanel],
+    });
 
-      return new SceneFlexItem({ body: flexRow });
+    const mapPanel = new SceneFlexItem({ height: 350, body: getErrorRateMapPanel(metrics) });
+    const errorPercentagePanel = new SceneFlexItem({ height: 350, body: getErrorPctgTimeseriesPanel(metrics) });
+    const mapRow = new SceneFlexLayout({
+      direction: 'row',
+      children: [mapPanel, errorPercentagePanel],
+    });
+
+    const latencyPanel = new SceneFlexItem({ height: 350, body: getLatencyTimeseriesPanel(metrics) });
+
+    const latencyRow = new SceneFlexLayout({
+      direction: 'row',
+      children: [latencyPanel],
     });
 
     return new EmbeddedScene({
       $timeRange: timeRange,
-      $variables: new SceneVariableSet({ variables: [region] }),
+      $variables: new SceneVariableSet({ variables: [region, checkTypeVar] }),
       // $data: queryRunner,
       body: new SceneFlexLayout({
         direction: 'column',
-        children,
+        children: [tableRow, mapRow, latencyRow],
       }),
       controls: [
         new VariableValueSelectors({}),
