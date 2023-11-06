@@ -9,7 +9,7 @@ function getQueryRunner(metrics: DataSourceRef) {
     queries: [
       {
         refId: 'A',
-        expr: 'sum by (probe) (probe_http_total_duration_seconds{probe=~"$probe", job="$job", instance="$instance", url="$stepUrl", method="$stepMethod"})',
+        expr: 'sum by (probe) (probe_http_total_duration_seconds{probe=~"$probe", job="$job", instance="$instance", name="$activeStepIndex", method="$stepMethod"})',
         range: true,
         instant: false,
         legendFormat: '__auto',
@@ -25,7 +25,7 @@ export function getLatencyByUrlPanel(metrics: DataSourceRef) {
     body: new ExplorablePanel({
       $data: query,
       pluginId: 'timeseries',
-      title: 'Latency => $stepUrl',
+      title: 'Latency for $stepUrl',
       fieldConfig: {
         defaults: {
           custom: {

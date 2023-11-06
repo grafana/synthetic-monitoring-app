@@ -46,8 +46,12 @@ export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig, ch
       name: 'stepMethod',
       hide: VariableHide.hideVariable,
     });
+    const activeStepIndex = new CustomVariable({
+      name: 'activeStepIndex',
+      hide: VariableHide.hideVariable,
+    });
     const variables = new SceneVariableSet({
-      variables: [probe, job, instance, stepUrl, stepMethod],
+      variables: [probe, job, instance, stepUrl, stepMethod, activeStepIndex],
     });
 
     const resultsByUrl = new SceneQueryRunner({
@@ -55,11 +59,11 @@ export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig, ch
       queries: [
         {
           refId: 'A',
-          expr: `sum by (url, method) (
+          expr: `sum by (name) (
             probe_http_requests_failed_total{job="$job", instance="$instance"}
           )
           /
-          sum by (url, method) (
+          sum by (name) (
             probe_http_requests_total{job="$job", instance="$instance"}
           )`,
           range: false,
@@ -95,14 +99,19 @@ export function getMultiHttpScene({ metrics, logs }: DashboardSceneAppConfig, ch
       }),
     });
 
-    sidebar.subscribeToState(({ stepUrl: stepUrlVal, stepMethod: stepMethodVal }) => {
-      if (stepUrlVal && stepUrlVal !== stepUrl.getValue()) {
-        stepUrl.changeValueTo(stepUrlVal);
+    sidebar.subscribeToState(
+      ({ stepUrl: stepUrlVal, stepMethod: stepMethodVal, activeStepIndex: activeStepIndexVal }) => {
+        if (stepUrlVal && stepUrlVal !== stepUrl.getValue()) {
+          stepUrl.changeValueTo(stepUrlVal);
+        }
+        if (stepMethodVal && stepMethodVal !== stepMethod.getValue()) {
+          stepMethod.changeValueTo(stepMethodVal);
+        }
+        if (activeStepIndexVal && activeStepIndexVal !== activeStepIndex.getValue()) {
+          activeStepIndex.changeValueTo(activeStepIndexVal);
+        }
       }
-      if (stepMethodVal && stepMethodVal !== stepMethod.getValue()) {
-        stepMethod.changeValueTo(stepMethodVal);
-      }
-    });
+    );
 
     const reachability = getReachabilityStat(metrics);
     const uptime = getUptimeStat(metrics);
