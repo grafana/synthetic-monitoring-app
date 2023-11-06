@@ -50,19 +50,18 @@ const getDisplayValue = (data: any[], loading: boolean, thresholds: ThresholdSet
   };
 };
 
-function getLatencyMetric(checkType: CheckType) {
+function getLatencyQuery(checkType: CheckType, target: string, job: string) {
   switch (checkType) {
     case CheckType.MULTI_HTTP:
-      return 'probe_http_total_duration_seconds';
+      return `sum by (job, instance) (sum_over_time(probe_http_total_duration_seconds{job="${job}", instance="${target}"}[6h])) / sum by (job, instance) (count_over_time(probe_http_total_duration_seconds{job="${job}", instance="${target}"}[6h])) `;
     default:
-      return 'probe_all_duration_seconds_sum';
+      return `sum((rate(probe_all_duration_seconds_sum{probe=~".*", instance="${target}", job="${job}"}[6h]) OR rate(probe_duration_seconds_sum{probe=~".*", instance="${target}", job="${job}"}[6h]))) / sum((rate(probe_all_duration_seconds_count{probe=~".*", instance="${target}", job="${job}"}[6h]) OR rate(probe_duration_seconds_count{probe=~".*", instance="${target}", job="${job}"}[6h])))`;
   }
 }
 
 export const LatencyGauge = ({ target, job, height, checkType, width }: Props) => {
   const { thresholds } = useContext(SuccessRateContext);
-  const metricName = getLatencyMetric(checkType);
-  const query = `sum((rate(${metricName}{probe=~".*", instance="${target}", job="${job}"}[6h]) OR rate(probe_duration_seconds_sum{probe=~".*", instance="${target}", job="${job}"}[6h]))) / sum((rate(probe_all_duration_seconds_count{probe=~".*", instance="${target}", job="${job}"}[6h]) OR rate(probe_duration_seconds_count{probe=~".*", instance="${target}", job="${job}"}[6h])))`;
+  const query = getLatencyQuery(checkType, target, job);
 
   const { data, loading } = useMetricData(query);
   const value = getDisplayValue(data, loading, thresholds);
