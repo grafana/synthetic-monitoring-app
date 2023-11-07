@@ -70,7 +70,6 @@ export function getSummaryScene({ metrics }: DashboardSceneAppConfig, checks: Ch
 
     const tableRow = new SceneFlexLayout({
       direction: 'row',
-      // children: [mapPanel, flexed, tablePanel],
       children: [tablePanel],
     });
 
@@ -91,16 +90,13 @@ export function getSummaryScene({ metrics }: DashboardSceneAppConfig, checks: Ch
     return new EmbeddedScene({
       $timeRange: timeRange,
       $variables: new SceneVariableSet({ variables: [region, checkTypeVar, filters] }),
-      // $data: queryRunner,
       body: new SceneFlexLayout({
         direction: 'column',
         children: [tableRow, mapRow, latencyRow],
       }),
       controls: [
         new VariableValueSelectors({}),
-        // filters,
         new SceneControlsSpacer(),
-        // customObject,
         new SceneTimePicker({ isOnCanvas: true }),
         new SceneRefreshPicker({
           intervals: ['5s', '1m', '1h'],

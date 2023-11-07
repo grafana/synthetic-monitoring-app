@@ -118,23 +118,7 @@ export function getErrorPctgTimeseriesPanel(metrics: DataSourceRef) {
         max: 1,
         unit: 'percentunit',
       },
-      overrides: [
-        // {
-        //   matcher: {
-        //     id: 'byName',
-        //     options: '% Errors',
-        //   },
-        //   properties: [
-        //     {
-        //       id: 'color',
-        //       value: {
-        //         fixedColor: '#C4162A',
-        //         mode: 'fixed',
-        //       },
-        //     },
-        //   ],
-        // },
-      ],
+      overrides: [],
     },
     options: {
       tooltip: {
