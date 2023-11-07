@@ -94,7 +94,7 @@
     "@grafana/data": "10.1.4",
     "@grafana/faro-web-sdk": "1.2.1",
     "@grafana/runtime": "10.1.4",
-    "@grafana/scenes": "1.5.1",
+    "@grafana/scenes": "1.21.0",
     "@grafana/schema": "10.1.4",
     "@grafana/ui": "10.1.4",
     "@popperjs/core": "^2.9.2",
