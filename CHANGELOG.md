@@ -1,5 +1,10 @@
 # Change Log
 
+# [1.12.4](https://github.com/grafana/synthetic-monitoring-app/compare/v1.12.3...v1.12.4) (2023-11-09)
+
+- Bump up the max data points in the checks visualization view
+- Fix a bug when instances have no alert ruler datasource
+
 # [1.12.3](https://github.com/grafana/synthetic-monitoring-app/compare/v1.12.2...v1.12.3) (2023-11-07)
 
 - Rework the summary dashboard to provide a more useful overview of checks
