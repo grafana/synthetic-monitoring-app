@@ -4,6 +4,7 @@ import { render } from 'test/render';
 
 import { ROUTES } from 'types';
 import { PLUGIN_URL_PATH } from 'components/constants';
+import { getRoute } from 'components/Routing';
 
 import { ProbeRouter } from './ProbeRouter';
 jest.setTimeout(10000);
@@ -16,7 +17,7 @@ const renderProbesPage = () => {
 };
 
 const getAddNew = async () => {
-  return await screen.findByRole('button', { name: 'New' });
+  return await screen.findByRole('link', { name: 'Add Private Probe' });
 };
 
 it('shows probe editor when adding new', async () => {
@@ -25,7 +26,7 @@ it('shows probe editor when adding new', async () => {
   await user.click(addNew);
   const addProbeHeader = await screen.findByText('Add Probe');
   expect(addProbeHeader).toBeInTheDocument();
-  const goBack = await screen.findByRole('button', { name: 'Back' });
+  const goBack = await screen.findByRole('link', { name: 'Back' });
   expect(addNew).not.toBeInTheDocument();
   await user.click(goBack);
   // Requery to determine if we are back on the probe page
@@ -34,17 +35,15 @@ it('shows probe editor when adding new', async () => {
 });
 
 it('shows a probe when clicked', async () => {
-  const { user } = renderProbesPage();
-  const probe = await screen.findByText('tacos');
+  const { history, user } = renderProbesPage();
+  const probe = await screen.findByLabelText('Select tacos');
   await user.click(probe);
   const probeEditorHeader = await screen.findByText('Configuration');
   const probeNameInput = await screen.findByLabelText('Probe Name', { exact: false });
   expect(probe).not.toBeInTheDocument();
   expect(probeEditorHeader).toBeInTheDocument();
   expect(probeNameInput).toHaveValue('tacos');
-  const goBack = await screen.findByRole('button', { name: 'Back' });
+  const goBack = await screen.findByRole('link', { name: 'Back' });
   await user.click(goBack);
-  // Requery to determine if we are back on the probe page
-  const secondProbe = await screen.findByText('tacos');
-  await waitFor(() => expect(secondProbe).toBeInTheDocument());
+  expect(history.location.pathname).toBe(getRoute(ROUTES.Probes));
 });

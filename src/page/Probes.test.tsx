@@ -2,10 +2,10 @@ import React from 'react';
 import { screen } from '@testing-library/react';
 import { render } from 'test/render';
 
-import { ProbeList } from './ProbeList';
+import { ROUTES } from 'types';
+import { getRoute } from 'components/Routing';
 
-const onAddNew = jest.fn();
-const onSelectProbe = jest.fn();
+import { Probes } from './Probes';
 
 const defaultProbes = [
   {
@@ -37,7 +37,7 @@ const defaultProbes = [
 ];
 
 const renderProbeList = ({ probes = defaultProbes } = {}) => {
-  return render(<ProbeList probes={probes} onAddNew={onAddNew} onSelectProbe={onSelectProbe} />);
+  return render(<Probes probes={probes} />);
 };
 
 it('renders offline probes', async () => {
@@ -64,15 +64,16 @@ it('renders labels', async () => {
 });
 
 it('handles probe click', async () => {
-  const { user } = renderProbeList();
-  const tacosProbe = await screen.findByText('tacos');
+  const { history, user } = renderProbeList();
+  const tacosProbe = await screen.findByLabelText('Select tacos');
   await user.click(tacosProbe);
-  expect(onSelectProbe).toHaveBeenCalledWith(35);
+  expect(history.location.pathname).toBe(`${getRoute(ROUTES.EditProbe)}/35`);
 });
 
 it('handles add new', async () => {
-  const { user } = renderProbeList();
-  const addNewButton = await screen.findByRole('button', { name: 'New' });
+  const { history, user } = renderProbeList();
+  const addNewButton = await screen.findByRole('link', { name: 'Add Private Probe' });
   await user.click(addNewButton);
-  expect(onAddNew).toHaveBeenCalledTimes(1);
+
+  expect(history.location.pathname).toBe(getRoute(ROUTES.NewProbe));
 });

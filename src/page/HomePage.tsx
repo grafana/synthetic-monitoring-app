@@ -1,4 +1,4 @@
-import React, { useContext,useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import {
@@ -17,12 +17,12 @@ import { Check, FeatureName, ROUTES } from 'types';
 import { DashboardInfo } from 'datasource/types';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
-import { useNavigation } from 'hooks/useNavigation';
 import { useUsageCalc } from 'hooks/useUsageCalc';
 import { PLUGIN_URL_PATH } from 'components/constants';
 import { DisplayCard } from 'components/DisplayCard';
 import FeaturesBanner from 'components/FeaturesBanner';
 import { PluginPage } from 'components/PluginPage';
+import { getRoute } from 'components/Routing';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   page: css`
@@ -133,7 +133,6 @@ export const HomePage = () => {
   const [checks, setChecks] = useState<Check[]>([]);
   const [dashboards, setDashboards] = useState<Array<Partial<DashboardInfo>>>([]);
   const usage = useUsageCalc(checks);
-  const navigate = useNavigation();
   const { isEnabled: scenesEnabled } = useFeatureFlag(FeatureName.Scenes);
   const { isEnabled: multiHttpEnabled } = useFeatureFlag(FeatureName.MultiHttp);
 
@@ -186,11 +185,11 @@ export const HomePage = () => {
       <div className={styles.page}>
         <FeaturesBanner />
         <DisplayCard className={cx(styles.card, styles.getStartedGrid)}>
-          <LinkButton variant="primary" size="lg" onClick={() => navigate(ROUTES.ChooseCheckType)}>
+          <LinkButton variant="primary" size="lg" href={getRoute(ROUTES.NewCheck)}>
             Create a check
           </LinkButton>
           <h2 className={styles.separator}>or</h2>
-          <LinkButton variant="primary" size="lg" onClick={() => navigate(ROUTES.Checks)}>
+          <LinkButton variant="primary" size="lg" href={getRoute(ROUTES.Checks)}>
             View existing checks
           </LinkButton>
         </DisplayCard>
@@ -260,7 +259,7 @@ export const HomePage = () => {
                 Read more about synthetic monitoring alerts {'>'}
               </a>
               <div className={styles.actionContainer}>
-                <LinkButton variant="secondary" onClick={() => navigate(ROUTES.Alerts)}>
+                <LinkButton variant="secondary" href={getRoute(ROUTES.Alerts)}>
                   Configure alerts
                 </LinkButton>
               </div>

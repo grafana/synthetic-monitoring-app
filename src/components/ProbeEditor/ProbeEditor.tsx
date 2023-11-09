@@ -14,26 +14,28 @@ import {
   Input,
   Label,
   Legend,
+  LinkButton,
   Modal,
   useStyles2,
 } from '@grafana/ui';
 import appEvents from 'grafana/app/core/app_events';
 import { css } from '@emotion/css';
 
-import { Probe, ProbePageParams, SubmissionErrorWrapper } from 'types';
+import { Probe, ProbePageParams, ROUTES, SubmissionErrorWrapper } from 'types';
 import { FaroEvent, reportError, reportEvent } from 'faro';
 import { hasRole } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
+import { useNavigation } from 'hooks/useNavigation';
 import { Clipboard } from 'components/Clipboard';
 import { LabelField } from 'components/LabelField';
 import { PluginPage } from 'components/PluginPage';
+import { getRoute } from 'components/Routing';
 
 import ProbeStatus from '../ProbeStatus';
 import { SimpleMap } from '../SimpleMap';
 
 interface Props {
   probes?: Probe[];
-  onReturn: (reload: boolean) => void;
 }
 
 const TEMPLATE_PROBE = {
@@ -72,11 +74,12 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
 });
 
-const ProbeEditor = ({ probes, onReturn }: Props) => {
+const ProbeEditor = ({ probes }: Props) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [probeToken, setProbeToken] = useState('');
   const { instance } = useContext(InstanceContext);
+  const navigate = useNavigation();
 
   // If editing, find probe by id
   const { id } = useParams<ProbePageParams>();
@@ -104,7 +107,7 @@ const ProbeEditor = ({ probes, onReturn }: Props) => {
         ...probe,
         ...formValues,
       });
-      onReturn(true);
+      navigate(ROUTES.Probes);
     } else {
       const info = await instance.api.addProbe({
         ...probe,
@@ -133,7 +136,7 @@ const ProbeEditor = ({ probes, onReturn }: Props) => {
     }
     try {
       await instance.api.deleteProbe(probe.id);
-      onReturn(true);
+      navigate(ROUTES.Probes);
     } catch (e) {
       const err = e as SubmissionErrorWrapper;
       const message = `${err.data?.msg} Make sure there are no checks assigned to this probe and try again.`;
@@ -299,9 +302,9 @@ const ProbeEditor = ({ probes, onReturn }: Props) => {
                     onConfirm={onRemoveProbe}
                     onDismiss={() => setShowDeleteModal(false)}
                   />
-                  <Button variant="secondary" onClick={() => onReturn(false)} type="button">
+                  <LinkButton variant="secondary" href={getRoute(ROUTES.Probes)}>
                     Back
-                  </Button>
+                  </LinkButton>
                 </HorizontalGroup>
               </Container>
               {submissionError && (
@@ -317,7 +320,7 @@ const ProbeEditor = ({ probes, onReturn }: Props) => {
                 isOpen={showTokenModal}
                 title="Probe Authentication Token"
                 icon={'lock'}
-                onDismiss={() => (probe.id ? setShowTokenModal(false) : onReturn(false))}
+                onDismiss={() => (probe.id ? setShowTokenModal(false) : navigate(ROUTES.Probes))}
               >
                 <Clipboard content={probeToken} />
                 <div className={styles.externalLink}>
