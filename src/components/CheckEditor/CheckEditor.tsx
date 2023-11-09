@@ -17,7 +17,7 @@ import {
 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { Check, CheckFormValues, CheckPageParams, CheckType, SubmissionErrorWrapper } from 'types';
+import { Check, CheckFormValues, CheckPageParams, CheckType, ROUTES, SubmissionErrorWrapper } from 'types';
 import { FaroEvent, reportError, reportEvent } from 'faro';
 import { checkType as getCheckType, hasRole } from 'utils';
 import { validateJob, validateTarget } from 'validation';
@@ -28,6 +28,7 @@ import { CheckTestButton } from 'components/CheckTestButton';
 import { fallbackCheck } from 'components/constants';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 import { PluginPage } from 'components/PluginPage';
+import { getRoute } from 'components/Routing';
 
 import { CheckUsage } from '../CheckUsage';
 import {
@@ -201,7 +202,7 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
                 </Button>
               )}
 
-              <LinkButton onClick={() => onReturn(true)} fill="text" variant="secondary">
+              <LinkButton href={getRoute(ROUTES.Checks)} fill="text" variant="secondary">
                 Cancel
               </LinkButton>
             </HorizontalGroup>
