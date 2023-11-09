@@ -1,6 +1,6 @@
-import React, { PropsWithChildren,useEffect, useState } from 'react';
+import React, { PropsWithChildren, useEffect, useState } from 'react';
 import { AppPluginMeta, OrgRole } from '@grafana/data';
-import { config, getBackendSrv,getDataSourceSrv } from '@grafana/runtime';
+import { config, getBackendSrv, getDataSourceSrv } from '@grafana/runtime';
 import { Spinner } from '@grafana/ui';
 import appEvents from 'grafana/app/core/app_events';
 
@@ -25,7 +25,7 @@ async function getRulerDatasource(metricDatasourceId?: number) {
     })
   );
   const matchedRuler = rulerSettings.find((ruler) => ruler.basicAuthUser === basicAuthUserId);
-  return rulers.find((ruler) => ruler.id === matchedRuler.id);
+  return rulers.find((ruler) => ruler.id === matchedRuler?.id);
 }
 
 async function fetchDatasources(
