@@ -221,7 +221,7 @@ export const HomePage = () => {
               <p>Create, configure, and manage checks programmatically via Grizzly or Terraform.</p>
               <a
                 className={styles.link}
-                href="https://grafana.com/docs/grafana-cloud/synthetic-monitoring/?manage-checks-with-the-api--config-as-code#manage-checks-with-the-api--config-as-code"
+                href="https://grafana.com/docs/grafana-cloud/synthetic-monitoring/?manage-checks-with-the-api--config-as-code#config-as-code"
                 target="_blank"
                 rel="noopenner noreferrer"
               >
