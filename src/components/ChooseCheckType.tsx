@@ -1,12 +1,12 @@
 import React from 'react';
-
-import { css } from '@emotion/css';
-import { Card, useStyles2 } from '@grafana/ui';
 import { GrafanaTheme2, PageLayoutType } from '@grafana/data';
+import { Badge, Card, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
+
 import { CheckType, FeatureName, ROUTES } from 'types';
-import { CHECK_TYPE_OPTIONS } from 'components/constants';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useNavigation } from 'hooks/useNavigation';
+import { CHECK_TYPE_OPTIONS } from 'components/constants';
 import { PluginPage } from 'components/PluginPage';
 
 export function ChooseCheckType() {
@@ -34,7 +34,12 @@ export function ChooseCheckType() {
                 navigate(`${ROUTES.NewCheck}/${check.value}`);
               }}
             >
-              <Card.Heading className={styles.cardsHeader}>{check.label}</Card.Heading>
+              <Card.Heading className={styles.cardsHeader}>
+                {check.label}
+                {check.value === CheckType.MULTI_HTTP ? (
+                  <Badge text="Public preview" color="blue" className={styles.experimentalBadge} />
+                ) : null}
+              </Card.Heading>
               <Card.Description>{check.description}</Card.Description>
             </Card>
           );
@@ -60,5 +65,8 @@ const getStyles = (theme: GrafanaTheme2) => ({
     text-align: center;
     justify-content: center;
     align-items: flex-start;
+  `,
+  experimentalBadge: css`
+    margin-left: ${theme.spacing(1)};
   `,
 });

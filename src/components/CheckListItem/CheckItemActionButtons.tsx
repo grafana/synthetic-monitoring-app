@@ -1,13 +1,14 @@
-import { GrafanaTheme2, AppEvents, OrgRole } from '@grafana/data';
-import { Button, ConfirmModal, IconButton, useStyles2 } from '@grafana/ui';
 import React, { useContext, useState } from 'react';
-import { css } from '@emotion/css';
-import { Check, FeatureName, ROUTES } from 'types';
-import { dashboardUID, checkType as getCheckType, hasRole } from 'utils';
-import { InstanceContext } from 'contexts/InstanceContext';
+import { AppEvents, GrafanaTheme2, OrgRole } from '@grafana/data';
+import { Button, ConfirmModal, IconButton, useStyles2 } from '@grafana/ui';
 import appEvents from 'grafana/app/core/app_events';
-import { useNavigation } from 'hooks/useNavigation';
+import { css } from '@emotion/css';
+
+import { Check, FeatureName, ROUTES } from 'types';
+import { checkType as getCheckType, dashboardUID, hasRole } from 'utils';
+import { InstanceContext } from 'contexts/InstanceContext';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
+import { useNavigation } from 'hooks/useNavigation';
 import { PLUGIN_URL_PATH } from 'components/constants';
 
 const getStyles = (theme: GrafanaTheme2) => ({

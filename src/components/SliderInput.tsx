@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
+import { GrafanaTheme2 } from '@grafana/data';
 import { Slider, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { GrafanaTheme2 } from '@grafana/data';
 
 interface Props {
   defaultValue: number;

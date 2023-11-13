@@ -1,8 +1,9 @@
 import React, { FC } from 'react';
+
 import { CheckType } from 'types';
-import { PingSettingsForm } from 'components/PingSettings';
-import { HttpSettingsForm } from 'components/http/HttpSettings';
 import DnsSettingsForm from 'components/DnsSettings';
+import { HttpSettingsForm } from 'components/http/HttpSettings';
+import { PingSettingsForm } from 'components/PingSettings';
 import { TcpSettingsForm } from 'components/TcpSettings';
 import { TracerouteSettingsForm } from 'components/TracerouteSettingsForm';
 interface Props {

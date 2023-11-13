@@ -1,9 +1,10 @@
 import React, { useContext } from 'react';
 import { Spinner } from '@grafana/ui';
-import { useNavigation } from 'hooks/useNavigation';
+
 import { ROUTES } from 'types';
 import { findLinkedDatasource } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
+import { useNavigation } from 'hooks/useNavigation';
 
 interface Props {
   type: 'loki' | 'prometheus';

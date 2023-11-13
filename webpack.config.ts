@@ -1,10 +1,10 @@
 // webpack.config.ts
+import path from 'path';
 import type { Configuration } from 'webpack';
 import { CustomizeRule, mergeWithRules } from 'webpack-merge';
-import path from 'path';
 
-import grafanaConfig from './.config/webpack/webpack.config';
 import { SOURCE_DIR } from './.config/webpack/constants';
+import grafanaConfig from './.config/webpack/webpack.config';
 const config = async (env): Promise<Configuration> => {
   const baseConfig = await grafanaConfig(env);
 

@@ -1,4 +1,6 @@
+import React, { useContext,useEffect, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
+import { config } from '@grafana/runtime';
 import {
   BigValue,
   BigValueColorMode,
@@ -9,19 +11,18 @@ import {
   LinkButton,
   useStyles2,
 } from '@grafana/ui';
+import { css, cx } from '@emotion/css';
+
+import { Check, FeatureName, ROUTES } from 'types';
+import { DashboardInfo } from 'datasource/types';
+import { InstanceContext } from 'contexts/InstanceContext';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
+import { useNavigation } from 'hooks/useNavigation';
+import { useUsageCalc } from 'hooks/useUsageCalc';
+import { PLUGIN_URL_PATH } from 'components/constants';
 import { DisplayCard } from 'components/DisplayCard';
 import FeaturesBanner from 'components/FeaturesBanner';
-import { css, cx } from '@emotion/css';
-import React, { useState, useEffect, useContext } from 'react';
-import { config } from '@grafana/runtime';
-import { InstanceContext } from 'contexts/InstanceContext';
-import { Check, FeatureName, ROUTES } from 'types';
-import { useUsageCalc } from 'hooks/useUsageCalc';
-import { DashboardInfo } from 'datasource/types';
-import { useNavigation } from 'hooks/useNavigation';
 import { PluginPage } from 'components/PluginPage';
-import { useFeatureFlag } from 'hooks/useFeatureFlag';
-import { PLUGIN_URL_PATH } from 'components/constants';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   page: css`
@@ -220,7 +221,7 @@ export const HomePage = () => {
               <p>Create, configure, and manage checks programmatically via Grizzly or Terraform.</p>
               <a
                 className={styles.link}
-                href="https://grafana.com/docs/grafana-cloud/synthetic-monitoring/?manage-checks-with-the-api--config-as-code#manage-checks-with-the-api--config-as-code"
+                href="https://grafana.com/docs/grafana-cloud/synthetic-monitoring/?manage-checks-with-the-api--config-as-code#config-as-code"
                 target="_blank"
                 rel="noopenner noreferrer"
               >

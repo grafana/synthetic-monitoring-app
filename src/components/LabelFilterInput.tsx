@@ -1,8 +1,9 @@
-import { GrafanaTheme2, SelectableValue } from '@grafana/data';
-import { CascaderOption, MultiSelect, ButtonCascader, useStyles2 } from '@grafana/ui';
 import React, { useMemo } from 'react';
-import { Check } from 'types';
+import { GrafanaTheme2, SelectableValue } from '@grafana/data';
+import { ButtonCascader, CascaderOption, MultiSelect, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+
+import { Check } from 'types';
 
 interface Props {
   checks: Check[];

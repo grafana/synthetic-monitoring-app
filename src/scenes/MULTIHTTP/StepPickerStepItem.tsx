@@ -1,7 +1,7 @@
-import { css, cx } from '@emotion/css';
+import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Badge, Button, Icon, Tooltip, useStyles2, useTheme2 } from '@grafana/ui';
-import React from 'react';
+import { css, cx } from '@emotion/css';
 
 interface Props {
   value?: number;

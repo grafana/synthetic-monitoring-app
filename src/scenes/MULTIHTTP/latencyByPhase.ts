@@ -1,5 +1,6 @@
 import { SceneFlexItem, SceneQueryRunner } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
+
 import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
 function getQueryRunner(metrics: DataSourceRef) {
@@ -8,11 +9,10 @@ function getQueryRunner(metrics: DataSourceRef) {
     queries: [
       {
         refId: 'A',
-        // expr: 'sum by (phase) (probe_http_duration_seconds{job="$job", instance="$instance", url="$stepUrl", method="$stepMethod"})',
         expr: `
-        sum by (phase) (probe_http_duration_seconds{job="$job", instance="$instance", url="$stepUrl", method="$stepMethod", probe=~"$probe"})
+        sum by (phase) (probe_http_duration_seconds{job="$job", instance="$instance", name="$activeStepIndex", method="$stepMethod", probe=~"$probe"})
 /
-        count by (phase) (probe_http_duration_seconds{job="$job", instance="$instance", url="$stepUrl", method="$stepMethod", probe=~"$probe"})
+        count by (phase) (probe_http_duration_seconds{job="$job", instance="$instance", name="$activeStepIndex", method="$stepMethod", probe=~"$probe"})
         `,
         legendFormat: '__auto',
         range: true,
@@ -26,7 +26,7 @@ export function getLatencyByPhasePanel(metrics: DataSourceRef) {
     body: new ExplorablePanel({
       $data: getQueryRunner(metrics),
       pluginId: 'barchart',
-      title: 'Latency by phase',
+      title: 'Latency by phase for $stepUrl',
       fieldConfig: {
         defaults: {
           unit: 's',

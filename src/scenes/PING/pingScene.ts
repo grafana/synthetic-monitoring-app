@@ -9,6 +9,8 @@ import {
   SceneVariableSet,
   VariableValueSelectors,
 } from '@grafana/scenes';
+
+import { Check, CheckType, DashboardSceneAppConfig } from 'types';
 import {
   getAvgLatencyStat,
   getErrorLogs,
@@ -19,11 +21,11 @@ import {
   getUptimeStat,
   getVariables,
 } from 'scenes/Common';
-import { getErrorRateTimeseries } from 'scenes/HTTP/errorRateTimeseries';
-import { Check, CheckType, DashboardSceneAppConfig } from 'types';
-import { getLatencyByPhasePanel } from './latencyByPhase';
 import { getEditButton } from 'scenes/Common/editButton';
 import { getEmptyScene } from 'scenes/Common/emptyScene';
+import { getErrorRateTimeseries } from 'scenes/HTTP/errorRateTimeseries';
+
+import { getLatencyByPhasePanel } from './latencyByPhase';
 
 export function getPingScene({ metrics, logs }: DashboardSceneAppConfig, checks: Check[]) {
   return () => {

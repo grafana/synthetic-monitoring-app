@@ -1,5 +1,9 @@
 import { DataSourceSettings, OrgRole, SelectableValue } from '@grafana/data';
+import { EmbeddedScene, SceneRouteMatch } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
+
+import { LinkedDatasourceInfo } from './datasource/types';
+import { SMDataSource } from 'datasource/DataSource';
 import {
   Assertion,
   AssertionConditionVariant,
@@ -9,9 +13,6 @@ import {
   RequestMethods,
   RequestProps,
 } from 'components/MultiHttp/MultiHttpTypes';
-import { SMDataSource } from 'datasource/DataSource';
-import { LinkedDatasourceInfo } from './datasource/types';
-import { EmbeddedScene, SceneRouteMatch } from '@grafana/scenes';
 
 export interface GlobalSettings {
   apiHost: string;
@@ -589,8 +590,6 @@ export interface VizViewSceneAppConfig extends DashboardSceneAppConfig {
   handleResetFilters: () => void;
   onFilterChange: (filters: CheckFiltersType) => void;
 }
-
-export type MultiHttpFormTabs = 'header' | 'queryParams' | 'assertions' | 'body' | 'variables';
 
 export enum MultiHttpVariableType {
   JSON_PATH = 0,

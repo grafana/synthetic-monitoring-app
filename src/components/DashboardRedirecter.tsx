@@ -1,9 +1,10 @@
+import { useContext } from 'react';
+
+import { FeatureName, ROUTES } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { QueryParamMap, useNavigation } from 'hooks/useNavigation';
 import { useQuery } from 'hooks/useQuery';
-import { useContext } from 'react';
-import { FeatureName, ROUTES } from 'types';
 
 export function DashboardRedirecter() {
   const { instance } = useContext(InstanceContext);

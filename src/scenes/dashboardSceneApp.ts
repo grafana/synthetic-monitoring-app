@@ -1,14 +1,16 @@
 import { SceneApp, SceneAppPage } from '@grafana/scenes';
-import { PLUGIN_URL_PATH } from 'components/constants';
+
 import { Check, CheckType, DashboardSceneAppConfig, ROUTES } from 'types';
-import { getDNSScene } from './DNS';
-import { getHTTPScene } from './HTTP';
+import { checkType } from 'utils';
+import { PLUGIN_URL_PATH } from 'components/constants';
+
 import { getPingScene } from './PING/pingScene';
-import { getSummaryScene } from './Summary';
 import { getTcpScene } from './TCP/getTcpScene';
 import { getTracerouteScene } from './Traceroute/getTracerouteScene';
+import { getDNSScene } from './DNS';
+import { getHTTPScene } from './HTTP';
 import { getMultiHttpScene } from './MULTIHTTP';
-import { checkType } from 'utils';
+import { getSummaryScene } from './Summary';
 
 export function getDashboardSceneApp(config: DashboardSceneAppConfig, includeMultiHttp = false, checks: Check[]) {
   const { http, ping, dns, tcp, traceroute, multihttp } = checks.reduce<Record<CheckType, Check[]>>(

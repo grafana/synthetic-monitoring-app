@@ -1,25 +1,26 @@
-import React, { useLayoutEffect, useEffect, useContext } from 'react';
+import React, { useContext, useEffect, useLayoutEffect } from 'react';
 import { Redirect, Route, Switch, useLocation } from 'react-router-dom';
 import { AppRootProps } from '@grafana/data';
 import { config } from '@grafana/runtime';
 
-import { PLUGIN_URL_PATH } from './constants';
 import { FeatureName, ROUTES } from 'types';
+import { InstanceContext } from 'contexts/InstanceContext';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { QueryParamMap, useNavigation } from 'hooks/useNavigation';
 import { useQuery } from 'hooks/useQuery';
 import { AlertingPage } from 'page/AlertingPage';
 import { CheckRouter } from 'page/CheckRouter';
 import { ConfigPage } from 'page/ConfigPage';
 import { DashboardPage } from 'page/DashboardPage';
+import { HomePage } from 'page/HomePage';
 import { getNavModel } from 'page/pageDefinitions';
-import { InstanceContext } from 'contexts/InstanceContext';
 import { ProbeRouter } from 'page/ProbeRouter';
+import { ScriptedChecksPage } from 'page/ScriptedChecksPage';
 import { UnprovisionedSetup } from 'page/UnprovisionedSetup';
 import { WelcomePage } from 'page/WelcomePage';
-import { HomePage } from 'page/HomePage';
+
+import { PLUGIN_URL_PATH } from './constants';
 import { DashboardRedirecter } from './DashboardRedirecter';
-import { useFeatureFlag } from 'hooks/useFeatureFlag';
-import { ScriptedChecksPage } from 'page/ScriptedChecksPage';
 
 export const Routing = ({ onNavChanged }: Pick<AppRootProps, 'onNavChanged'>) => {
   const queryParams = useQuery();

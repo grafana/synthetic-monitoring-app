@@ -1,29 +1,31 @@
-import { enumToStringArray } from '../utils';
+import { SelectableValue } from '@grafana/data';
+
 import {
-  DnsResponseCodes,
-  DnsRecordType,
-  DnsProtocol,
-  IpVersion,
-  CheckType,
-  HttpSslOption,
-  HttpRegexValidationType,
-  Check,
-  TimeUnits,
   AlertFamily,
-  AlertSeverity,
   AlertSensitivity,
-  CheckSort,
+  AlertSeverity,
+  Check,
   CheckEnabledStatus,
   CheckListViewType,
+  CheckSort,
+  CheckType,
+  DnsProtocol,
+  DnsRecordType,
+  DnsResponseCodes,
   HTTPCompressionAlgo,
+  HttpMethod,
+  HttpRegexValidationType,
+  HttpSslOption,
+  IpVersion,
+  MultiHttpAssertionType,
+  MultiHttpVariableType,
   ResponseMatchType,
   Settings,
-  HttpMethod,
-  MultiHttpVariableType,
-  MultiHttpAssertionType,
+  TimeUnits,
 } from 'types';
+
+import { enumToStringArray } from '../utils';
 import { AssertionConditionVariant, AssertionSubjectVariant } from './MultiHttp/MultiHttpTypes';
-import { SelectableValue } from '@grafana/data';
 
 export const DNS_RESPONSE_CODES = enumToStringArray(DnsResponseCodes).map((responseCode) => ({
   label: responseCode,
@@ -486,3 +488,10 @@ export const ASSERTION_SUBJECT_OPTIONS: Array<SelectableValue<AssertionSubjectVa
   { label: 'Headers', value: AssertionSubjectVariant.ResponseHeaders },
   { label: 'HTTP status code', value: AssertionSubjectVariant.HttpStatusCode },
 ];
+
+export const UPTIME_DESCRIPTION =
+  'Whether any of the probes could reach the target. Uptime decreases when all the probes fail simultaneously.';
+export const REACHABILITY_DESCRIPTION =
+  'The success rate of all the probes. Reachability decreases when any probe fails.';
+export const LATENCY_DESCRIPTION =
+  'The average time to receive an answer across all the checks during the whole time period.';

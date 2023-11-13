@@ -1,9 +1,10 @@
-import { css } from '@emotion/css';
+import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Button, useStyles2 } from '@grafana/ui';
-import { useNavigation } from 'hooks/useNavigation';
-import React from 'react';
+import { css } from '@emotion/css';
+
 import { ROUTES } from 'types';
+import { useNavigation } from 'hooks/useNavigation';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   emptyCard: css`

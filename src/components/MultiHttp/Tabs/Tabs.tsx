@@ -1,7 +1,5 @@
-import { css, cx } from '@emotion/css';
 import React from 'react';
 import { Controller, useFieldArray, useFormContext } from 'react-hook-form';
-
 import { GrafanaTheme2 } from '@grafana/data';
 import {
   Button,
@@ -15,10 +13,14 @@ import {
   TextArea,
   useStyles2,
 } from '@grafana/ui';
+import { css, cx } from '@emotion/css';
+
+import { MultiHttpVariableType } from 'types';
 import { MULTI_HTTP_VARIABLE_TYPE_OPTIONS } from 'components/constants';
-import { MultiHttpFormTabs, MultiHttpVariableType } from 'types';
-import { AssertionsTab } from './AssertionsTab';
+import { MultiHttpFormTabs } from 'components/MultiHttp/MultiHttpTypes';
+
 import { getMultiHttpFormStyles } from '../MultiHttpSettingsForm.styles';
+import { AssertionsTab } from './AssertionsTab';
 import { getIsBodyDisabled } from './TabSection';
 
 export interface MultiHttpTabProps {
@@ -49,7 +51,7 @@ export const HeadersTab = ({ label = 'header', index, active }: MultiHttpTabProp
             const headersNamePrefix = `settings.multihttp.entries[${index}].request.headers[${i}]`;
 
             return (
-              <div className={cx({ [styles.tabInputContainer]: i === 0 })} key={field.id}>
+              <div key={field.id}>
                 <HorizontalGroup spacing="md" align="flex-start" className={styles.headersQueryInputs}>
                   <HorizontalGroup spacing="md" align="flex-start" className={styles.headersQueryInputs}>
                     <Field
@@ -166,7 +168,7 @@ const QueryParamsTab = ({ index, label, active }: MultiHttpTabProps) => {
           {fields.map((field, i) => {
             const queryParamsNamePrefix = `settings.multihttp.entries[${index}].request.queryFields[${i}]`;
             return (
-              <div className={cx({ [styles.tabInputContainer]: i === 0 })} key={field.id}>
+              <div key={field.id}>
                 <HorizontalGroup align="flex-start" spacing="md">
                   <HorizontalGroup spacing="md" align="flex-start">
                     <Field invalid={errors?.[i]?.name} error={errors?.[i]?.name?.message}>
@@ -240,79 +242,74 @@ const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
             const errorPath = formState.errors.settings?.multihttp?.entries[index]?.variables?.[variableIndex];
 
             return (
-              <div className={cx({ [styles.tabInputContainer]: variableIndex === 0 })} key={field.id}>
-                <HorizontalGroup key={field.id} align="flex-start">
-                  <Controller
-                    name={variableTypeName}
-                    render={({ field: typeField }) => {
-                      return (
-                        <Field
-                          label="Variable type"
-                          description="The method of getting a value"
-                          invalid={errorPath?.type}
-                        >
-                          <Select
-                            id={`multihttp-variable-type-${index}-${variableIndex}`}
-                            className={styles.minInputWidth}
-                            {...typeField}
-                            options={MULTI_HTTP_VARIABLE_TYPE_OPTIONS}
-                            menuPlacement="bottom"
-                          />
-                        </Field>
-                      );
-                    }}
-                    rules={{ required: true }}
+              <div className={styles.fieldsContainer} key={field.id}>
+                <Controller
+                  name={variableTypeName}
+                  render={({ field: typeField }) => {
+                    return (
+                      <Field
+                        label="Variable type"
+                        description="The method of getting a value"
+                        invalid={errorPath?.type}
+                      >
+                        <Select
+                          id={`multihttp-variable-type-${index}-${variableIndex}`}
+                          className={styles.minInputWidth}
+                          {...typeField}
+                          options={MULTI_HTTP_VARIABLE_TYPE_OPTIONS}
+                          menuPlacement="bottom"
+                        />
+                      </Field>
+                    );
+                  }}
+                  rules={{ required: true }}
+                />
+                <Field
+                  label="Variable name"
+                  description="The name of the variable"
+                  invalid={errorPath?.name}
+                  error={errorPath?.name?.message}
+                >
+                  <Input
+                    placeholder="Variable name"
+                    id={`multihttp-variable-name-${index}-${variableIndex}`}
+                    invalid={formState.errors.settings?.multihttp?.entries[index]?.variables?.[variableIndex]?.type}
+                    {...register(`${variableFieldName}[${variableIndex}].name`, {
+                      required: 'Variable name is required',
+                    })}
                   />
+                </Field>
+                {variableTypeValue === MultiHttpVariableType.CSS_SELECTOR && (
                   <Field
-                    label="Variable name"
-                    description="The name of the variable"
-                    invalid={errorPath?.name}
-                    error={errorPath?.name?.message}
+                    label="Attribute"
+                    description="Name of the attribute to extract the value from. Leave blank to get contents of tag"
+                    invalid={errorPath?.attribute}
+                    error={errorPath?.attribute?.message}
                   >
                     <Input
-                      placeholder="Variable name"
-                      id={`multihttp-variable-name-${index}-${variableIndex}`}
-                      invalid={formState.errors.settings?.multihttp?.entries[index]?.variables?.[variableIndex]?.type}
-                      {...register(`${variableFieldName}[${variableIndex}].name`, {
-                        required: 'Variable name is required',
-                      })}
+                      placeholder="Attribute"
+                      id={`multihttp-variable-attribute-${index}-${variableIndex}`}
+                      {...register(`${variableFieldName}[${variableIndex}].attribute`)}
                     />
                   </Field>
-                  {variableTypeValue === MultiHttpVariableType.CSS_SELECTOR && (
-                    <Field
-                      label="Attribute"
-                      description="Name of the attribute to extract the value from. Leave blank to get contents of tag"
-                      invalid={errorPath?.attribute}
-                      error={errorPath?.attribute?.message}
-                    >
-                      <Input
-                        placeholder="Attribute"
-                        id={`multihttp-variable-attribute-${index}-${variableIndex}`}
-                        {...register(`${variableFieldName}[${variableIndex}].attribute`)}
-                      />
-                    </Field>
-                  )}
-                  <Field
-                    label="Variable expression"
-                    description="Expression to extract the value"
-                    invalid={errorPath?.expression}
-                    error={errorPath?.expression?.message}
-                  >
-                    <Input
-                      placeholder="Variable expression"
-                      id={`multihttp-variable-expression-${index}-${variableIndex}`}
-                      {...register(`${variableFieldName}[${variableIndex}].expression`, {
-                        required: 'Expression is required',
-                      })}
-                    />
-                  </Field>
-                  <IconButton
-                    name="trash-alt"
-                    onClick={() => remove(variableIndex)}
-                    className={styles.removeIconWithLabel}
-                    tooltip="Delete"
+                )}
+                <Field
+                  label="Variable expression"
+                  description="Expression to extract the value"
+                  invalid={errorPath?.expression}
+                  error={errorPath?.expression?.message}
+                >
+                  <Input
+                    placeholder="Variable expression"
+                    id={`multihttp-variable-expression-${index}-${variableIndex}`}
+                    {...register(`${variableFieldName}[${variableIndex}].expression`, {
+                      required: 'Expression is required',
+                    })}
                   />
-                </HorizontalGroup>
+                </Field>
+                <div className={styles.iconContainer}>
+                  <IconButton name="minus-circle" onClick={() => remove(variableIndex)} tooltip="Delete" />
+                </div>
               </div>
             );
           })}
@@ -341,11 +338,11 @@ export const RequestTabs = ({ activeTab, index }: RequestTabsProps) => {
   const hideBody = getIsBodyDisabled(method);
   return (
     <TabContent className={styles.tabsContent}>
-      <HeadersTab label="header" index={index} active={activeTab === 'header'} />
-      {!hideBody && <BodyTab index={index} active={activeTab === 'body'} />}
-      <QueryParamsTab index={index} label="queryParams" active={activeTab === 'queryParams'} />
-      <VariablesTab index={index} label="variables" active={activeTab === 'variables'} />
-      <AssertionsTab index={index} label="assertions" active={activeTab === 'assertions'} />
+      <HeadersTab label="header" index={index} active={activeTab === MultiHttpFormTabs.Headers} />
+      {!hideBody && <BodyTab index={index} active={activeTab === MultiHttpFormTabs.Body} />}
+      <QueryParamsTab index={index} label="queryParams" active={activeTab === MultiHttpFormTabs.QueryParams} />
+      <VariablesTab index={index} label="variables" active={activeTab === MultiHttpFormTabs.Variables} />
+      <AssertionsTab index={index} label="assertions" active={activeTab === MultiHttpFormTabs.Assertions} />
     </TabContent>
   );
 };
@@ -354,8 +351,16 @@ export const getMultiHttpTabStyles = (theme: GrafanaTheme2) => ({
   removeIcon: css`
     margin-top: 6px;
   `,
-  removeIconWithLabel: css`
-    margin-top: 26px;
+  fieldsContainer: css({
+    alignItems: 'baseline',
+    display: 'flex',
+    gap: theme.spacing(2),
+    marginTop: theme.spacing(2),
+  }),
+  iconContainer: css`
+    margin-left: ${theme.spacing(2)};
+    position: relative;
+    top: ${theme.spacing(4)};
   `,
   headersQueryInputs: css`
     margin: 100px 0;
@@ -374,8 +379,5 @@ export const getMultiHttpTabStyles = (theme: GrafanaTheme2) => ({
   `,
   inactive: css`
     display: none;
-  `,
-  tabInputContainer: css`
-    margin-top: ${theme.spacing(2)};
   `,
 });

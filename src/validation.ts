@@ -1,20 +1,21 @@
-import {
-  Check,
-  CheckType,
-  Settings,
-  HttpSettings,
-  PingSettings,
-  DnsSettings,
-  TcpSettings,
-  Label,
-  TracerouteSettings,
-  MultiHttpSettings,
-} from 'types';
-import { checkType } from 'utils';
 import * as punycode from 'punycode';
 import { Address4, Address6 } from 'ip-address';
 import validUrl from 'valid-url';
-import { PEM_HEADER, PEM_FOOTER, INVALID_WEB_URL_MESSAGE } from 'components/constants';
+
+import {
+  Check,
+  CheckType,
+  DnsSettings,
+  HttpSettings,
+  Label,
+  MultiHttpSettings,
+  PingSettings,
+  Settings,
+  TcpSettings,
+  TracerouteSettings,
+} from 'types';
+import { checkType } from 'utils';
+import { INVALID_WEB_URL_MESSAGE, PEM_FOOTER, PEM_HEADER } from 'components/constants';
 
 export const CheckValidation = {
   job: validateJob,

@@ -1,20 +1,21 @@
 import React from 'react';
+import { GrafanaTheme2 } from '@grafana/data';
+import { config } from '@grafana/runtime';
+import { HorizontalGroup, useStyles2 } from '@grafana/ui';
+import { css, cx } from '@emotion/css';
+
 import {
   bell,
   bellLight,
-  welcomeGraph,
-  welcomeGraphLight,
-  loki,
-  dividingLine,
-  whatYouCanDoBG,
-  whatYouCanDoBGLight,
   checkSquare,
   checkSquareLight,
+  dividingLine,
+  loki,
+  welcomeGraph,
+  welcomeGraphLight,
+  whatYouCanDoBG,
+  whatYouCanDoBGLight,
 } from 'img';
-import { GrafanaTheme2 } from '@grafana/data';
-import { HorizontalGroup, useStyles2 } from '@grafana/ui';
-import { css, cx } from '@emotion/css';
-import { config } from '@grafana/runtime';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   heading: css`

@@ -1,5 +1,6 @@
 import { QueryVariable } from '@grafana/scenes';
 import { DataSourceRef, VariableRefresh } from '@grafana/schema';
+
 import { Check, CheckType } from 'types';
 
 export function getVariables(checkType: CheckType, metrics: DataSourceRef, checks: Check[]) {
@@ -9,7 +10,7 @@ export function getVariables(checkType: CheckType, metrics: DataSourceRef, check
     defaultToAll: true,
     isMulti: true,
     name: 'probe',
-    query: { query: `label_values(sm_check_info{check_name="${checkType}"},probe)` },
+    query: `label_values(sm_check_info{check_name="${checkType}"},probe)`,
     refresh: VariableRefresh.onDashboardLoad,
     datasource: metrics,
   });
@@ -18,7 +19,7 @@ export function getVariables(checkType: CheckType, metrics: DataSourceRef, check
     name: 'job',
     label: 'Job',
     refresh: VariableRefresh.onDashboardLoad,
-    query: { query: `label_values(sm_check_info{check_name="${checkType}", probe=~"$probe"},job)` },
+    query: `label_values(sm_check_info{check_name="${checkType}", probe=~"$probe"},job)`,
 
     datasource: metrics,
   });
@@ -51,9 +52,7 @@ export function getVariables(checkType: CheckType, metrics: DataSourceRef, check
     name: 'instance',
     label: 'Instance',
     refresh: VariableRefresh.onDashboardLoad,
-    query: {
-      query: `label_values(sm_check_info{check_name="${checkType}", job="$job", probe=~"$probe"},instance)`,
-    },
+    query: `label_values(sm_check_info{check_name="${checkType}", job="$job", probe=~"$probe"},instance)`,
     datasource: metrics,
   });
 

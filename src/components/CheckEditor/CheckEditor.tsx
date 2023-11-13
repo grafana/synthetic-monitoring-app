@@ -1,4 +1,7 @@
-import { css } from '@emotion/css';
+import React, { useContext, useMemo, useState } from 'react';
+import { useAsyncCallback } from 'react-async-hook';
+import { Controller, FormProvider, useForm } from 'react-hook-form';
+import { useParams } from 'react-router-dom';
 import { GrafanaTheme2, OrgRole } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import {
@@ -12,29 +15,28 @@ import {
   LinkButton,
   useStyles2,
 } from '@grafana/ui';
+import { css } from '@emotion/css';
+
+import { Check, CheckFormValues, CheckPageParams, CheckType, SubmissionErrorWrapper } from 'types';
+import { FaroEvent, reportError, reportEvent } from 'faro';
+import { checkType as getCheckType, hasRole } from 'utils';
+import { validateJob, validateTarget } from 'validation';
+import { InstanceContext } from 'contexts/InstanceContext';
 import { CheckFormAlert } from 'components/CheckFormAlert';
 import CheckTarget from 'components/CheckTarget';
 import { CheckTestButton } from 'components/CheckTestButton';
+import { fallbackCheck } from 'components/constants';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 import { PluginPage } from 'components/PluginPage';
-import { fallbackCheck } from 'components/constants';
-import { InstanceContext } from 'contexts/InstanceContext';
-import { FaroEvent, reportError, reportEvent } from 'faro';
-import React, { useContext, useMemo, useState } from 'react';
-import { useAsyncCallback } from 'react-async-hook';
-import { Controller, FormProvider, useForm } from 'react-hook-form';
-import { useParams } from 'react-router-dom';
-import { Check, CheckFormValues, CheckPageParams, CheckType, SubmissionErrorWrapper } from 'types';
-import { checkType as getCheckType, hasRole } from 'utils';
-import { validateJob, validateTarget } from 'validation';
+
 import { CheckUsage } from '../CheckUsage';
-import { CheckSettings } from './CheckSettings';
-import { ProbeOptions } from './ProbeOptions';
 import {
   checkTypeParamToCheckType,
   getCheckFromFormValues,
   getDefaultValuesFromCheck,
 } from './checkFormTransformations';
+import { CheckSettings } from './CheckSettings';
+import { ProbeOptions } from './ProbeOptions';
 
 interface Props {
   checks?: Check[];

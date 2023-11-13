@@ -1,10 +1,12 @@
-import { Input, Button, Label, Field, useStyles2 } from '@grafana/ui';
 import React, { FC, Fragment } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
-import { SubCollapse } from './SubCollapse';
-import { css } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
+import { Button, Field, Input, Label, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
+
 import { validateLabelName, validateLabelValue } from 'validation';
+
+import { SubCollapse } from './SubCollapse';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   grid: css`

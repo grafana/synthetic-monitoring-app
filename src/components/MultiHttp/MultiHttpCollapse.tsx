@@ -1,7 +1,7 @@
-import React, { PropsWithChildren } from 'react';
+import React, { forwardRef, PropsWithChildren } from 'react';
+import { GrafanaTheme2 } from '@grafana/data';
 import { Icon, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
-import { GrafanaTheme2 } from '@grafana/data';
 
 interface Props {
   label: string;
@@ -11,50 +11,41 @@ interface Props {
   onToggle: () => void;
 }
 
-export const MultiHttpCollapse = ({
-  label,
-  children,
-  invalid,
-  className,
-  isOpen,
-  onToggle,
-}: PropsWithChildren<Props>) => {
+export const MultiHttpCollapse = forwardRef<HTMLButtonElement, PropsWithChildren<Props>>(function MultiHttpCollapse(
+  { label, children, invalid, className, isOpen, onToggle },
+  ref
+) {
   const styles = useStyles2(getStyles);
 
   return (
-    <div className={cx([!className ? 'panel-container' : className, styles.container])}>
-      <div
+    <div className={cx([!className ? 'panel-container' : className])}>
+      <button
         className={styles.header}
-        onClick={() => {
+        onClick={(e) => {
+          e.preventDefault();
           onToggle();
         }}
+        ref={ref}
+        type="button"
       >
-        <>
-          <Icon name={isOpen ? 'angle-down' : 'angle-right'} className={styles.headerIcon} />
-          <div className={styles.label}>{label}</div>
-          {!isOpen && invalid && <Icon name="exclamation-triangle" className={styles.errorIcon} />}
-        </>
-      </div>
+        <Icon name={isOpen ? 'angle-down' : 'angle-right'} className={styles.headerIcon} />
+        <div className={styles.label}>{label}</div>
+        {!isOpen && invalid && <Icon name="exclamation-triangle" className={styles.errorIcon} />}
+      </button>
       <div className={cx(styles.body, { [styles.hidden]: !isOpen })}>{children}</div>
     </div>
   );
-};
+});
 
 const getStyles = (theme: GrafanaTheme2) => ({
-  container: css`
-    border-left: none;
-    border-right: none;
-    border-bottom: none;
-    padding: ${theme.spacing(2)};
-  `,
   header: css`
     display: flex;
     align-items: center;
     transition: all 0.1s linear;
-    cursor: pointer;
-  `,
-  headerExpanded: css`
-    padding-bottom: ${theme.spacing(1)};
+    border: none;
+    background: none;
+    padding: ${theme.spacing(2)};
+    width: 100%;
   `,
   headerIcon: css`
     margin-right: ${theme.spacing(1)};
@@ -64,7 +55,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     font-size: ${theme.typography.h4.fontSize};
   `,
   body: css`
-    padding-top: ${theme.spacing(1)};
+    padding: ${theme.spacing(2)};
   `,
   hidden: css`
     display: none;

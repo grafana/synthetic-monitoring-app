@@ -1,12 +1,14 @@
 import React, { useContext, useMemo, useState } from 'react';
-import { Alert, Button, Modal, Spinner } from '@grafana/ui';
-import { CheckTestResultsModal } from './CheckTestResultsModal';
-import { AdHocCheckResponse, Check, CheckFormValues, CheckType } from 'types';
 import { useFormContext } from 'react-hook-form';
-import { getCheckFromFormValues, getDefaultValuesFromCheck } from './CheckEditor/checkFormTransformations';
+import { Alert, Button, Modal, Spinner } from '@grafana/ui';
+
+import { AdHocCheckResponse, Check, CheckFormValues, CheckType } from 'types';
 import { FaroEvent, reportEvent } from 'faro';
 import { checkType as getCheckType } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
+
+import { getCheckFromFormValues, getDefaultValuesFromCheck } from './CheckEditor/checkFormTransformations';
+import { CheckTestResultsModal } from './CheckTestResultsModal';
 
 interface Props {
   check: Check;

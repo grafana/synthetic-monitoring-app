@@ -1,18 +1,20 @@
-import { useState, useEffect, useContext } from 'react';
+import { useContext,useEffect, useState } from 'react';
 import { getBackendSrv } from '@grafana/runtime';
 import { parse, stringify } from 'yaml';
+
+import { AlertFamily, AlertRule, AlertSensitivity } from 'types';
+import { InstanceContext } from 'contexts/InstanceContext';
 import {
   ALERT_PROBE_SUCCESS_RECORDING_EXPR,
   ALERT_PROBE_SUCCESS_RECORDING_METRIC,
   DEFAULT_ALERT_LABELS,
   DEFAULT_ALERT_NAMES_BY_FAMILY_AND_SENSITIVITY,
-  SM_ALERTING_NAMESPACE,
   getDefaultAlertAnnotations,
+  SM_ALERTING_NAMESPACE,
 } from 'components/constants';
-import { AlertFamily, AlertRule, AlertSensitivity } from 'types';
-import { InstanceContext } from 'contexts/InstanceContext';
-import useUnifiedAlertsEnabled from './useUnifiedAlertsEnabled';
+
 import useGrafanaVersion from './useGrafanaVersion';
+import useUnifiedAlertsEnabled from './useUnifiedAlertsEnabled';
 
 enum AlertThresholds {
   High = 95,

@@ -1,13 +1,15 @@
 import React, { PureComponent } from 'react';
-import { defaults } from 'lodash';
 import { QueryEditorProps, SelectableValue } from '@grafana/data';
-import { SMDataSource } from './DataSource';
-import { SMQuery, SMOptions, QueryType, defaultQuery } from './types';
+import { getTemplateSrv } from '@grafana/runtime';
 import { MultiSelect, Select, Spinner } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { checkType } from 'utils';
+import { defaults } from 'lodash';
+
+import { defaultQuery,QueryType, SMOptions, SMQuery } from './types';
 import { CheckType, Probe } from 'types';
-import { getTemplateSrv } from '@grafana/runtime';
+import { checkType } from 'utils';
+
+import { SMDataSource } from './DataSource';
 
 type Props = QueryEditorProps<SMDataSource, SMQuery, SMOptions>;
 

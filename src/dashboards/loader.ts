@@ -1,4 +1,5 @@
 import { getBackendSrv } from '@grafana/runtime';
+
 import { DashboardInfo, FolderInfo } from 'datasource/types';
 
 export const dashboardPaths = [

@@ -1,4 +1,5 @@
 import {
+  AdHocFiltersVariable,
   EmbeddedScene,
   QueryVariable,
   SceneControlsSpacer,
@@ -10,18 +11,27 @@ import {
   SceneVariableSet,
   VariableValueSelectors,
 } from '@grafana/scenes';
-import { Check, CheckType, DashboardSceneAppConfig } from 'types';
+
+import { Check, DashboardSceneAppConfig } from 'types';
+import { getEmptyScene } from 'scenes/Common/emptyScene';
+
 import { getErrorPctgTimeseriesPanel } from './errorPctTimeseries';
 import { getErrorRateMapPanel } from './errorRateMap';
 import { getLatencyTimeseriesPanel } from './latencyTimeseries';
 import { getSummaryTable } from './summaryTable';
-import { getEmptyScene } from 'scenes/Common/emptyScene';
 
 export function getSummaryScene({ metrics }: DashboardSceneAppConfig, checks: Check[]) {
   return () => {
     if (checks.length === 0) {
       return getEmptyScene();
     }
+    const labelKeys = checks.reduce<Set<string>>((acc, check) => {
+      check.labels.forEach(({ name }) => {
+        acc.add(name);
+      });
+      return acc;
+    }, new Set<string>());
+
     const timeRange = new SceneTimeRange({
       from: 'now-6h',
       to: 'now',
@@ -33,50 +43,60 @@ export function getSummaryScene({ metrics }: DashboardSceneAppConfig, checks: Ch
       allValue: '.*',
       name: 'region',
       defaultToAll: true,
-      query: { query: 'label_values(sm_check_info, region)' },
+      query: 'label_values(sm_check_info, region)',
       datasource: metrics,
     });
+    const checkTypeVar = new QueryVariable({
+      includeAll: true,
+      allValue: '.*',
+      name: 'check_type',
+      label: 'check type',
+      defaultToAll: true,
+      query: 'label_values(sm_check_info, check_name)',
+      datasource: metrics,
+    });
+    const filters = AdHocFiltersVariable.create({
+      datasource: metrics,
+      filters: [],
+      getTagKeysProvider: () => {
+        return Promise.resolve({
+          replace: true,
+          values: Array.from(labelKeys).map((key) => ({ text: key, value: `label_${key}` })),
+        });
+      },
+    });
 
-    // Query runner definition
-    const checkTypes = [CheckType.DNS, CheckType.HTTP, CheckType.PING, CheckType.TCP, CheckType.Traceroute];
+    const tablePanel = new SceneFlexItem({ height: 400, body: getSummaryTable(metrics) });
 
-    const children = checkTypes.map((checkType) => {
-      const mapPanel = new SceneFlexItem({ height: 350, body: getErrorRateMapPanel(checkType, metrics) });
-      const errorPercentagePanel = getErrorPctgTimeseriesPanel(checkType, metrics);
-      const latencyPanel = getLatencyTimeseriesPanel(checkType, metrics);
+    const tableRow = new SceneFlexLayout({
+      direction: 'row',
+      children: [tablePanel],
+    });
 
-      const flexed = new SceneFlexItem({
-        height: 350,
-        width: 500,
-        body: new SceneFlexLayout({
-          direction: 'column',
-          children: [errorPercentagePanel, latencyPanel].map(
-            (panel) => new SceneFlexItem({ height: 500, body: panel })
-          ),
-        }),
-      });
-      const tablePanel = new SceneFlexItem({ height: 350, body: getSummaryTable(checkType, metrics) });
+    const mapPanel = new SceneFlexItem({ height: 350, body: getErrorRateMapPanel(metrics) });
+    const errorPercentagePanel = new SceneFlexItem({ height: 350, body: getErrorPctgTimeseriesPanel(metrics) });
+    const mapRow = new SceneFlexLayout({
+      direction: 'row',
+      children: [mapPanel, errorPercentagePanel],
+    });
 
-      const flexRow = new SceneFlexLayout({
-        direction: 'row',
-        children: [mapPanel, flexed, tablePanel],
-      });
+    const latencyPanel = new SceneFlexItem({ height: 350, body: getLatencyTimeseriesPanel(metrics) });
 
-      return new SceneFlexItem({ body: flexRow });
+    const latencyRow = new SceneFlexLayout({
+      direction: 'row',
+      children: [latencyPanel],
     });
 
     return new EmbeddedScene({
       $timeRange: timeRange,
-      $variables: new SceneVariableSet({ variables: [region] }),
-      // $data: queryRunner,
+      $variables: new SceneVariableSet({ variables: [region, checkTypeVar, filters] }),
       body: new SceneFlexLayout({
         direction: 'column',
-        children,
+        children: [tableRow, mapRow, latencyRow],
       }),
       controls: [
         new VariableValueSelectors({}),
         new SceneControlsSpacer(),
-        // customObject,
         new SceneTimePicker({ isOnCanvas: true }),
         new SceneRefreshPicker({
           intervals: ['5s', '1m', '1h'],

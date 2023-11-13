@@ -1,11 +1,12 @@
 import React from 'react';
 import { screen, waitForElementToBeRemoved } from '@testing-library/react';
+import { createInstance, render } from 'test/render';
 
-import { render, createInstance } from 'test/render';
-import { CheckList } from './CheckList';
 import { Check, CheckSort, ROUTES } from 'types';
-import { SuccessRateContextProvider } from '../SuccessRateContextProvider';
 import { PLUGIN_URL_PATH } from 'components/constants';
+
+import { SuccessRateContextProvider } from '../SuccessRateContextProvider';
+import { CheckList } from './CheckList';
 
 jest.mock('hooks/useNavigation', () => {
   const actual = jest.requireActual('hooks/useNavigation');

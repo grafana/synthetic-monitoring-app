@@ -1,10 +1,11 @@
-import React, { useState, useCallback, useContext, useEffect } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
+import { Button, HorizontalGroup, Modal } from '@grafana/ui';
 
-import { Modal, Button, HorizontalGroup } from '@grafana/ui';
-import { SuccessRateContext, ThresholdValues } from 'contexts/SuccessRateContext';
-import { InstanceContext } from 'contexts/InstanceContext';
-import ThresholdFormSection from './ThresholdFormSection';
 import { FaroEvent, reportError, reportEvent } from 'faro';
+import { InstanceContext } from 'contexts/InstanceContext';
+import { SuccessRateContext, ThresholdValues } from 'contexts/SuccessRateContext';
+
+import ThresholdFormSection from './ThresholdFormSection';
 
 interface Props {
   onDismiss: () => void;

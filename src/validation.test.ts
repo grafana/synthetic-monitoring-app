@@ -1,22 +1,22 @@
 import {
-  validateCheck,
+  AlertSensitivity,
+  Check,
+  CheckType,
+  DnsProtocol,
+  DnsRecordType,
+  HTTPCompressionAlgo,
+  HttpMethod,
+  IpVersion,
+} from 'types';
+import {
   CheckValidation,
+  validateCheck,
+  validateLabelName,
+  validateLabelValue,
   validateTLSCACert,
   validateTLSClientCert,
   validateTLSClientKey,
-  validateLabelName,
-  validateLabelValue,
 } from 'validation';
-import {
-  Check,
-  CheckType,
-  HttpMethod,
-  IpVersion,
-  DnsRecordType,
-  DnsProtocol,
-  AlertSensitivity,
-  HTTPCompressionAlgo,
-} from 'types';
 jest.unmock('utils');
 
 describe('trivial cases', () => {

@@ -1,33 +1,35 @@
-import React, { useState, useContext } from 'react';
-import { css } from '@emotion/css';
-import {
-  Modal,
-  Button,
-  Container,
-  ConfirmModal,
-  Field,
-  Input,
-  HorizontalGroup,
-  Legend,
-  Alert,
-  useStyles2,
-  Label,
-  Icon,
-} from '@grafana/ui';
-import { useForm, FormProvider } from 'react-hook-form';
+import React, { useContext, useState } from 'react';
 import { useAsyncCallback } from 'react-async-hook';
-import appEvents from 'grafana/app/core/app_events';
-import { Probe, SubmissionErrorWrapper, ProbePageParams } from 'types';
-import { hasRole } from 'utils';
-import { LabelField } from 'components/LabelField';
-import ProbeStatus from '../ProbeStatus';
-import { InstanceContext } from 'contexts/InstanceContext';
-import { GrafanaTheme2, AppEvents, OrgRole } from '@grafana/data';
-import { Clipboard } from 'components/Clipboard';
-import { SimpleMap } from '../SimpleMap';
+import { FormProvider, useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
-import { PluginPage } from 'components/PluginPage';
+import { AppEvents, GrafanaTheme2, OrgRole } from '@grafana/data';
+import {
+  Alert,
+  Button,
+  ConfirmModal,
+  Container,
+  Field,
+  HorizontalGroup,
+  Icon,
+  Input,
+  Label,
+  Legend,
+  Modal,
+  useStyles2,
+} from '@grafana/ui';
+import appEvents from 'grafana/app/core/app_events';
+import { css } from '@emotion/css';
+
+import { Probe, ProbePageParams, SubmissionErrorWrapper } from 'types';
 import { FaroEvent, reportError, reportEvent } from 'faro';
+import { hasRole } from 'utils';
+import { InstanceContext } from 'contexts/InstanceContext';
+import { Clipboard } from 'components/Clipboard';
+import { LabelField } from 'components/LabelField';
+import { PluginPage } from 'components/PluginPage';
+
+import ProbeStatus from '../ProbeStatus';
+import { SimpleMap } from '../SimpleMap';
 
 interface Props {
   probes?: Probe[];

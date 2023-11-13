@@ -1,72 +1,53 @@
-import React, { useContext, useState, useMemo, useReducer } from 'react';
-import { FormProvider, useForm, Controller, useFieldArray } from 'react-hook-form';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useAsyncCallback } from 'react-async-hook';
+import { Controller, DeepMap, FieldError, FormProvider, useFieldArray, useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
-
+import { OrgRole } from '@grafana/data';
+import { config } from '@grafana/runtime';
 import {
   Alert,
   Button,
   ConfirmModal,
   Field,
-  LinkButton,
-  VerticalGroup,
+  HorizontalGroup,
   Input,
+  Legend,
+  LinkButton,
   Select,
   useStyles2,
-  Legend,
-  HorizontalGroup,
+  VerticalGroup,
 } from '@grafana/ui';
-import { getDefaultValuesFromCheck, getCheckFromFormValues } from 'components/CheckEditor/checkFormTransformations';
-import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
-import { METHOD_OPTIONS } from 'components/constants';
-import { MultiHttpCollapse } from 'components/MultiHttp/MultiHttpCollapse';
-import { multiHttpFallbackCheck } from './consts';
-import { validateTarget } from 'validation';
-import { TabSection } from './Tabs/TabSection';
-import { getMultiHttpFormStyles } from './MultiHttpSettingsForm.styles';
-import { CheckFormValues, Check, CheckPageParams, CheckType, SubmissionErrorWrapper } from 'types';
-import { InstanceContext } from 'contexts/InstanceContext';
-import { PluginPage } from 'components/PluginPage';
-import { config } from '@grafana/runtime';
-import { OrgRole } from '@grafana/data';
+
+import { Check, CheckFormValues, CheckPageParams, CheckType, SubmissionErrorWrapper } from 'types';
+import { FaroEvent, reportError, reportEvent } from 'faro';
 import { hasRole } from 'utils';
-import { AvailableVariables } from './AvailableVariables';
-import { useAsyncCallback } from 'react-async-hook';
-import { FaroEvent, reportEvent, reportError } from 'faro';
+import { validateTarget } from 'validation';
+import { InstanceContext } from 'contexts/InstanceContext';
+import { getCheckFromFormValues, getDefaultValuesFromCheck } from 'components/CheckEditor/checkFormTransformations';
+import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
 import { CheckFormAlert } from 'components/CheckFormAlert';
-import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
-import { CheckUsage } from 'components/CheckUsage';
 import { CheckTestButton } from 'components/CheckTestButton';
+import { CheckUsage } from 'components/CheckUsage';
+import { METHOD_OPTIONS } from 'components/constants';
+import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
+import { LabelField } from 'components/LabelField';
+import { PluginPage } from 'components/PluginPage';
+
+import { TabSection } from './Tabs/TabSection';
+import { AvailableVariables } from './AvailableVariables';
+import { multiHttpFallbackCheck } from './consts';
+import { MultiHttpCollapse } from './MultiHttpCollapse';
+import { getMultiHttpFormStyles } from './MultiHttpSettingsForm.styles';
+import { focusField, getMultiHttpFormErrors, useMultiHttpCollapseState } from './MultiHttpSettingsForm.utils';
 
 interface Props {
   checks?: Check[];
   onReturn?: (reload?: boolean) => void;
 }
 
-function reducer(state: boolean[], action: { type: string; index?: number }) {
-  switch (action.type) {
-    case 'addNewRequest':
-      const newState = state.map((isOpen, index) => {
-        return false;
-      });
-      newState.push(true);
-      return newState;
-    case 'removeRequest':
-      return state.filter((_, index) => index !== action.index);
-    case 'toggle': {
-      return state.map((isOpen, index) => {
-        if (action.index === index) {
-          return !isOpen;
-        }
-        return isOpen;
-      });
-    }
-    default:
-      return state;
-  }
-}
-
 export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
   const styles = useStyles2(getMultiHttpFormStyles);
+  const panelRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   let check: Check = multiHttpFallbackCheck;
   const { id } = useParams<CheckPageParams>();
   if (id) {
@@ -76,12 +57,12 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
     instance: { api },
   } = useContext(InstanceContext);
   const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
-  const [collapseState, dispatchCollapse] = useReducer(
-    reducer,
-    check.settings.multihttp?.entries?.map((_, index, arr) => index === arr.length - 1) ?? [true]
-  );
-
-  const formMethods = useForm<CheckFormValues>({ defaultValues, reValidateMode: 'onBlur' });
+  const [collapseState, dispatchCollapse] = useMultiHttpCollapseState(check);
+  const formMethods = useForm<CheckFormValues>({
+    defaultValues,
+    reValidateMode: 'onBlur',
+    shouldFocusError: false /* handle this manually */,
+  });
 
   const {
     register,
@@ -98,7 +79,6 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
     name: 'settings.multihttp.entries',
   });
   const isEditor = hasRole(OrgRole.Editor);
-
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const {
@@ -133,12 +113,14 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
 
   const submissionError = error as unknown as SubmissionErrorWrapper;
 
-  if (submissionError) {
-    reportError(
-      submissionError.data?.err ?? 'Multihttp submission error',
-      check?.id ? FaroEvent.UPDATE_CHECK : FaroEvent.CREATE_CHECK
-    );
-  }
+  useEffect(() => {
+    if (submissionError) {
+      reportError(
+        submissionError.data?.err ?? 'Multihttp submission error',
+        check.id ? FaroEvent.UPDATE_CHECK : FaroEvent.CREATE_CHECK
+      );
+    }
+  }, [check.id, submissionError]);
 
   const onRemoveCheck = async () => {
     const id = check?.id;
@@ -152,6 +134,23 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
 
   const requests = watch('settings.multihttp.entries') as any[];
 
+  const onError = (errs: DeepMap<CheckFormValues, FieldError>) => {
+    const res = getMultiHttpFormErrors(errs);
+
+    if (res) {
+      dispatchCollapse({
+        type: 'updateRequestPanel',
+        open: true,
+        index: res.index,
+        tab: res.tab,
+      });
+
+      if (panelRefs.current[res.index]) {
+        focusField(panelRefs.current[res.index], res.id);
+      }
+    }
+  };
+
   return (
     <>
       <PluginPage
@@ -160,9 +159,30 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
         }}
       >
         {!config.featureToggles.topnav && <Legend>{check?.id ? 'Edit Check' : 'Add MULTIHTTP Check'}</Legend>}
+        <Alert severity="info" title="MultiHTTP checks are in public preview">
+          We are actively seeking feedback! Please share your thoughts in&nbsp;
+          <a
+            href="https://github.com/grafana/synthetic-monitoring-app/issues"
+            target="_blank"
+            rel="noopenner noreferrer"
+            className={styles.link}
+          >
+            GitHub
+          </a>
+          &nbsp;or in our&nbsp;
+          <a
+            href="https://community.grafana.com/c/grafanacloud/34"
+            rel="noopenner noreferrer"
+            target="_blank"
+            className={styles.link}
+          >
+            community forum
+          </a>
+          .
+        </Alert>
         <VerticalGroup>
           <FormProvider {...formMethods}>
-            <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
+            <form onSubmit={handleSubmit(onSubmit, onError)} className={styles.form}>
               <hr className={styles.breakLine} />
               <HorizontalCheckboxField
                 disabled={!isEditor}
@@ -190,6 +210,8 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
                 checkType={CheckType.MULTI_HTTP}
               />
 
+              <LabelField isEditor={isEditor} />
+
               <hr />
               <h3>Requests</h3>
               <Field label="At least one target HTTP is required; limit 10 requests per check.">
@@ -205,10 +227,11 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
                       key={field.id}
                       className={styles.collapseTarget}
                       invalid={Boolean(errors?.settings?.multihttp?.entries?.[index])}
-                      isOpen={collapseState[index]}
+                      isOpen={collapseState[index].open}
                       onToggle={() => dispatchCollapse({ type: 'toggle', index })}
+                      ref={(el) => (panelRefs.current[index] = el)}
                     >
-                      <VerticalGroup height={'100%'}>
+                      <VerticalGroup>
                         <HorizontalGroup spacing="lg" align="flex-start">
                           <Field
                             label="Request target"
@@ -259,7 +282,13 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
 
                         <AvailableVariables index={index} />
 
-                        <TabSection index={index} />
+                        <TabSection
+                          index={index}
+                          activeTab={collapseState[index].activeTab}
+                          onTabClick={(tab) => {
+                            dispatchCollapse({ type: 'updateRequestPanel', index, tab });
+                          }}
+                        />
                       </VerticalGroup>
                     </MultiHttpCollapse>
                   );

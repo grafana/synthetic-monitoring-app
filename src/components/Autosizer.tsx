@@ -1,6 +1,6 @@
+import React, { useEffect, useRef, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
-import React, { useRef, useEffect, useState } from 'react';
 import { css } from '@emotion/css';
 
 interface ChildrenArgs {
