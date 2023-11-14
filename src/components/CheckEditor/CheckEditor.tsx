@@ -21,6 +21,7 @@ import { Check, CheckFormValues, CheckPageParams, CheckType, SubmissionErrorWrap
 import { FaroEvent, reportError, reportEvent } from 'faro';
 import { checkType as getCheckType, hasRole } from 'utils';
 import { validateJob, validateTarget } from 'validation';
+import { ChecksContext } from 'contexts/ChecksContext';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { CheckFormAlert } from 'components/CheckFormAlert';
 import CheckTarget from 'components/CheckTarget';
@@ -39,7 +40,6 @@ import { CheckSettings } from './CheckSettings';
 import { ProbeOptions } from './ProbeOptions';
 
 interface Props {
-  checks?: Check[];
   onReturn: (reload: boolean) => void;
 }
 
@@ -52,7 +52,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
 });
 
-export const CheckEditor = ({ checks, onReturn }: Props) => {
+export const CheckEditor = ({ onReturn }: Props) => {
   const {
     instance: { api },
   } = useContext(InstanceContext);
@@ -60,6 +60,7 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
   const styles = useStyles2(getStyles);
   // If we're editing, grab the appropriate check from the list
   const { id, checkType: checkTypeParam } = useParams<CheckPageParams>();
+  const { checks } = useContext(ChecksContext);
   let checkType = checkTypeParamToCheckType(checkTypeParam);
   let check: Check = fallbackCheck(checkType);
 

@@ -18,11 +18,11 @@ import {
   Label,
 } from 'types';
 import { hasRole } from 'utils';
+import { ChecksContext } from 'contexts/ChecksContext';
 import { SuccessRateContext, SuccessRateTypes } from 'contexts/SuccessRateContext';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { BulkEditModal } from 'components/BulkEditModal';
 import { CheckFilters, defaultFilters, getDefaultFilters } from 'components/CheckFilters';
-import { ChecksContextProvider } from 'components/ChecksContextProvider';
 import { PluginPage } from 'components/PluginPage';
 
 import { CheckListItem } from '../CheckListItem';
@@ -107,11 +107,10 @@ const getStyles = (theme: GrafanaTheme2) => ({
 
 interface Props {
   instance: GrafanaInstances;
-  checks: Check[];
   onCheckUpdate: (refetch?: boolean) => void;
 }
 
-export const CheckList = ({ instance, checks, onCheckUpdate }: Props) => {
+export const CheckList = ({ instance, onCheckUpdate }: Props) => {
   const [checkFilters, setCheckFilters] = useState<CheckFiltersType>(getDefaultFilters());
   const [filteredChecks, setFilteredChecks] = useState<FilteredCheck[] | []>([]);
 
@@ -125,6 +124,7 @@ export const CheckList = ({ instance, checks, onCheckUpdate }: Props) => {
 
   const [showThresholdModal, setShowThresholdModal] = useState(false);
   const [bulkEditAction, setBulkEditAction] = useState<'add' | 'remove' | null>(null);
+  const { checks } = useContext(ChecksContext);
 
   const styles = useStyles2(getStyles);
   const successRateContext = useContext(SuccessRateContext);
@@ -455,19 +455,17 @@ export const CheckList = ({ instance, checks, onCheckUpdate }: Props) => {
         </>
       )}
       {viewType === CheckListViewType.Viz ? (
-        <ChecksContextProvider>
-          <div className={styles.vizContainer}>
-            <CheckListScene
-              setViewType={setViewType}
-              setCurrentPage={setCurrentPage}
-              checkFilters={checkFilters}
-              onFilterChange={(filters: CheckFiltersType) => {
-                setCheckFilters(filters);
-              }}
-              handleResetFilters={handleResetFilters}
-            />
-          </div>
-        </ChecksContextProvider>
+        <div className={styles.vizContainer}>
+          <CheckListScene
+            setViewType={setViewType}
+            setCurrentPage={setCurrentPage}
+            checkFilters={checkFilters}
+            onFilterChange={(filters: CheckFiltersType) => {
+              setCheckFilters(filters);
+            }}
+            handleResetFilters={handleResetFilters}
+          />
+        </div>
       ) : (
         <div>
           <section className="card-section card-list-layout-list">

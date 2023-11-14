@@ -1,13 +1,14 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { PluginPage } from '@grafana/runtime';
 import { Alert, Button } from '@grafana/ui';
 
-import { Check, ROUTES } from 'types';
+import { ROUTES } from 'types';
+import { ChecksContext } from 'contexts/ChecksContext';
 import { useNavigation } from 'hooks/useNavigation';
 
 export function ScriptedCheckList() {
   const navigate = useNavigation();
-  const checks: Check[] = [];
+  const { scriptedChecks: checks } = useContext(ChecksContext);
 
   if (checks.length === 0) {
     return (
