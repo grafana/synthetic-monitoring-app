@@ -22,7 +22,6 @@ import { Check, CheckFormValues, CheckPageParams, CheckType, SubmissionErrorWrap
 import { FaroEvent, reportError, reportEvent } from 'faro';
 import { hasRole } from 'utils';
 import { validateTarget } from 'validation';
-import { ChecksContext } from 'contexts/ChecksContext';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { getCheckFromFormValues, getDefaultValuesFromCheck } from 'components/CheckEditor/checkFormTransformations';
 import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
@@ -42,14 +41,14 @@ import { getMultiHttpFormStyles } from './MultiHttpSettingsForm.styles';
 import { focusField, getMultiHttpFormErrors, useMultiHttpCollapseState } from './MultiHttpSettingsForm.utils';
 
 interface Props {
+  checks?: Check[];
   onReturn?: (reload?: boolean) => void;
 }
 
-export const MultiHttpSettingsForm = ({ onReturn }: Props) => {
+export const MultiHttpSettingsForm = ({ onReturn, checks }: Props) => {
   const styles = useStyles2(getMultiHttpFormStyles);
   const panelRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const { id } = useParams<CheckPageParams>();
-  const { checks } = useContext(ChecksContext);
 
   let check: Check = multiHttpFallbackCheck;
 

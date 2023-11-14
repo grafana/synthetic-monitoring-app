@@ -1,8 +1,8 @@
 import React from 'react';
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import { render } from 'test/render';
 
-import { CheckType, DnsProtocol,DnsRecordType, HttpMethod, IpVersion } from 'types';
+import { CheckType, DnsProtocol, DnsRecordType, HttpMethod, IpVersion } from 'types';
 
 import CheckTarget from './CheckTarget';
 jest.unmock('utils');
@@ -28,7 +28,10 @@ const renderCheckTarget = ({
   disabled = false,
   checkSettings = checkSettingsMock,
   onChange = onChangeMock,
-} = {}) => render(<CheckTarget value={target} typeOfCheck={typeOfCheck} disabled={disabled} onChange={onChange} />);
+} = {}) =>
+  waitFor(() =>
+    render(<CheckTarget value={target} typeOfCheck={typeOfCheck} disabled={disabled} onChange={onChange} />)
+  );
 
 beforeEach(() => {
   onChangeMock.mockReset();
@@ -36,22 +39,22 @@ beforeEach(() => {
 
 describe('Target description is check type specific', () => {
   test('for DNS', async () => {
-    renderCheckTarget();
+    await renderCheckTarget();
     const description = screen.getByText('Name of record to query');
     expect(description).toBeInTheDocument();
   });
   test('for HTTP', async () => {
-    renderCheckTarget({ typeOfCheck: CheckType.HTTP });
+    await renderCheckTarget({ typeOfCheck: CheckType.HTTP });
     const description = screen.getByText('Full URL to send requests to');
     expect(description).toBeInTheDocument();
   });
   test('for PING', async () => {
-    renderCheckTarget({ typeOfCheck: CheckType.PING });
+    await renderCheckTarget({ typeOfCheck: CheckType.PING });
     const description = screen.getByText('Hostname to ping');
     expect(description).toBeInTheDocument();
   });
   test('for TCP', async () => {
-    renderCheckTarget({ typeOfCheck: CheckType.TCP });
+    await renderCheckTarget({ typeOfCheck: CheckType.TCP });
     const description = screen.getByText('Host:port to connect to');
     expect(description).toBeInTheDocument();
   });
@@ -59,7 +62,7 @@ describe('Target description is check type specific', () => {
 
 describe('HTTP targets', () => {
   test('have query params in separate inputs', async () => {
-    renderCheckTarget({ typeOfCheck: CheckType.HTTP, target: 'https://example.com?foo=bar' });
+    await renderCheckTarget({ typeOfCheck: CheckType.HTTP, target: 'https://example.com?foo=bar' });
     const paramNameInput = screen.getByPlaceholderText('Key') as HTMLInputElement;
     const paramValueInput = screen.getByPlaceholderText('Value') as HTMLInputElement;
     expect(paramNameInput.value).toBe('foo');
@@ -67,7 +70,7 @@ describe('HTTP targets', () => {
   });
 
   test('handles multiple query params', async () => {
-    renderCheckTarget({ typeOfCheck: CheckType.HTTP, target: 'https://example.com?foo=bar&tacos=delicious' });
+    await renderCheckTarget({ typeOfCheck: CheckType.HTTP, target: 'https://example.com?foo=bar&tacos=delicious' });
     const paramNameInputs = screen.getAllByPlaceholderText('Key') as HTMLInputElement[];
     const paramValueInputs = screen.getAllByPlaceholderText('Value') as HTMLInputElement[];
     const expectedNameValues = ['foo', 'tacos'];

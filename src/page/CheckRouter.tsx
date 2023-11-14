@@ -31,7 +31,7 @@ export function CheckRouter() {
   }
 
   return (
-    <SuccessRateContextProvider checks={checks}>
+    <SuccessRateContextProvider>
       <Switch>
         <Route path={path} exact>
           <CheckList instance={instance} onCheckUpdate={returnToList} />
@@ -39,17 +39,17 @@ export function CheckRouter() {
         <Route path={`${path}/new/:checkType?`}>
           {({ match }) =>
             match?.params.checkType !== CheckType.MULTI_HTTP ? (
-              <CheckEditor onReturn={returnToList} />
+              <CheckEditor onReturn={returnToList} checks={checks} />
             ) : (
               <MultiHttpSettingsForm onReturn={returnToList} />
             )
           }
         </Route>
         <Route path={`${path}/edit/multihttp/:id`} exact>
-          <MultiHttpSettingsForm onReturn={returnToList} />
+          <MultiHttpSettingsForm onReturn={returnToList} checks={checks} />
         </Route>
         <Route path={`${path}/edit/:checkType/:id`} exact>
-          <CheckEditor onReturn={returnToList} />
+          <CheckEditor onReturn={returnToList} checks={checks} />
         </Route>
         <Route path={`${path}/choose-type`} exact>
           <ChooseCheckType />

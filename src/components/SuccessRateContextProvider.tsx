@@ -2,6 +2,7 @@ import React, { PropsWithChildren, useContext, useEffect, useState } from 'react
 
 import { Check, Probe } from 'types';
 import { queryMetric } from 'utils';
+import { ChecksContext } from 'contexts/ChecksContext';
 import { InstanceContext } from 'contexts/InstanceContext';
 import {
   defaultThresholds,
@@ -14,7 +15,6 @@ import {
 } from 'contexts/SuccessRateContext';
 
 interface Props {
-  checks?: Check[];
   probes?: Probe[];
 }
 
@@ -129,8 +129,9 @@ const parseProbeResults = (probes: Probe[] | undefined, data: any) => {
   return resultsPerProbe;
 };
 
-export function SuccessRateContextProvider({ checks, probes, children }: PropsWithChildren<Props>) {
+export function SuccessRateContextProvider({ probes, children }: PropsWithChildren<Props>) {
   const { instance } = useContext(InstanceContext);
+  const { checks } = useContext(ChecksContext);
   const [successRateValues, setSuccessRate] = useState<SuccessRates>(defaultValues);
   const [loading, setLoading] = useState(true);
   const [thresholds, setThresholds] = useState<ThresholdSettings>(defaultThresholds);
