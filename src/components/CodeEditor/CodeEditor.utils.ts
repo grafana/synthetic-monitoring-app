@@ -1,6 +1,6 @@
 import constrainedEditor, {
-  ConstrainedModel,
   ConstrainedEditorInstance,
+  ConstrainedModel,
   RestrictionObject,
 } from 'constrained-editor-plugin';
 import * as monacoType from 'monaco-editor';

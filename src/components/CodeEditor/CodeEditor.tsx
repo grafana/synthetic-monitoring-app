@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { CodeEditor as GrafanaCodeEditor } from '@grafana/ui';
-import type * as monacoType from 'monaco-editor/esm/vs/editor/editor.api';
-import { ConstrainedEditorInstance } from 'constrained-editor-plugin';
 import { css } from '@emotion/css';
+import { ConstrainedEditorInstance } from 'constrained-editor-plugin';
+import type * as monacoType from 'monaco-editor/esm/vs/editor/editor.api';
 
-// import { Overlay } from 'components/Overlay';
-
-import k6Types from './k6.types';
 import { CodeEditorProps, ConstrainedEditorProps } from './CodeEditor.types';
+// import { Overlay } from 'components/Overlay';
+import k6Types from './k6.types';
+
 import { initializeConstrainedInstance, updateConstrainedEditorRanges } from './CodeEditor.utils';
 
 const addK6Types = (monaco: typeof monacoType) => {

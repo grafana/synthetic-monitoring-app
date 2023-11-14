@@ -1,14 +1,15 @@
+import React, { useContext, useState } from 'react';
+import { Route, Switch, useRouteMatch } from 'react-router-dom';
 import { SyntheticsBuilder } from '@grafana/k6-test-builder';
 import { PluginPage } from '@grafana/runtime';
 import { useTheme2 } from '@grafana/ui';
+
+import { ROUTES } from 'types';
+import { InstanceContext } from 'contexts/InstanceContext';
+import { PLUGIN_URL_PATH } from 'components/constants';
 import { NewScriptedCheck } from 'components/NewScriptedCheck';
 import { ScriptedCheckCodeEditor, ScriptedFormValues } from 'components/ScriptedCheckCodeEditor';
 import { ScriptedCheckList } from 'components/ScriptedCheckList';
-import { PLUGIN_URL_PATH } from 'components/constants';
-import { InstanceContext } from 'contexts/InstanceContext';
-import React, { useContext, useState } from 'react';
-import { Route, Switch, useRouteMatch } from 'react-router-dom';
-import { ROUTES } from 'types';
 
 const newCheckParent = { text: 'New check', url: `${PLUGIN_URL_PATH}${ROUTES.ScriptedChecks}/new` };
 

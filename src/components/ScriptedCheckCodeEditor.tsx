@@ -1,11 +1,13 @@
-import { Button, Field, Input, VerticalGroup, useStyles2 } from '@grafana/ui';
 import React from 'react';
-import { CodeEditor } from './CodeEditor';
 import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
+import { Button, Field, Input, useStyles2, VerticalGroup } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { ProbeOptions } from './CheckEditor/ProbeOptions';
+
 import { CheckType } from 'types';
+
+import { ProbeOptions } from './CheckEditor/ProbeOptions';
+import { CodeEditor } from './CodeEditor';
 
 const DEFAULT_SCRIPT = `import { sleep } from 'k6'
 import http from 'k6/http'

@@ -1,9 +1,10 @@
-import { PluginPage } from '@grafana/runtime';
-import { HorizontalGroup, Card, VerticalGroup, LinkButton } from '@grafana/ui';
 import React from 'react';
+import { useRouteMatch } from 'react-router-dom';
+import { PluginPage } from '@grafana/runtime';
+import { Card, HorizontalGroup, LinkButton, VerticalGroup } from '@grafana/ui';
+
 import { ScriptEditorIllustration } from './ScriptEditorIllustration';
 import { TestBuilderIllustration } from './TestBuilderIllustration';
-import { useRouteMatch } from 'react-router-dom';
 
 export function NewScriptedCheck() {
   const { path } = useRouteMatch();

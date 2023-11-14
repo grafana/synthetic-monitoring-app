@@ -1,5 +1,5 @@
-import { useTheme2 } from '@grafana/ui';
 import React from 'react';
+import { useTheme2 } from '@grafana/ui';
 
 export function ScriptEditorIllustration() {
   const theme = useTheme2();

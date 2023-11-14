@@ -1,8 +1,9 @@
+import React from 'react';
 import { PluginPage } from '@grafana/runtime';
 import { Alert, Button } from '@grafana/ui';
-import { useNavigation } from 'hooks/useNavigation';
-import React from 'react';
+
 import { Check, ROUTES } from 'types';
+import { useNavigation } from 'hooks/useNavigation';
 
 export function ScriptedCheckList() {
   const navigate = useNavigation();

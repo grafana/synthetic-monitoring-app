@@ -10,11 +10,14 @@ module.exports = {
   setupFilesAfterEnv: ['@testing-library/jest-dom/extend-expect', ...(config.setupFilesAfterEnv || [])],
   moduleNameMapper: {
     ...config.moduleNameMapper,
+    '^lodash-es$': 'lodash',
     '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga|md)$':
       '<rootDir>/src/test/fileMock.js',
     '^!raw-loader!*': '<rootDir>/src/test/mocks/raw-loader.js',
   },
   // testTimeout: 30000,
   // Inform jest to only transform specific node_module packages.
-  transformIgnorePatterns: [nodeModulesToTransform([...grafanaESModules, 'yaml', '@grafana/schema'])],
+  transformIgnorePatterns: [
+    nodeModulesToTransform([...grafanaESModules, 'yaml', '@grafana/schema', 'har-to-k6', 'nanoid', 'prettier/esm']),
+  ],
 };
