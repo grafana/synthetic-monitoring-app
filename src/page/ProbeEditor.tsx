@@ -31,11 +31,14 @@ import { LabelField } from 'components/LabelField';
 import { PluginPage } from 'components/PluginPage';
 import { getRoute } from 'components/Routing';
 
-import ProbeStatus from '../ProbeStatus';
-import { SimpleMap } from '../SimpleMap';
+import ProbeStatus from '../components/ProbeStatus';
+import { SimpleMap } from '../components/SimpleMap';
 
-interface Props {
-  probes?: Probe[];
+interface ProbeEditorProps {
+  probes: Probe[];
+  refetchProbes: () => void;
+  error: string | null;
+  loading: boolean;
 }
 
 const TEMPLATE_PROBE = {
@@ -49,7 +52,7 @@ const TEMPLATE_PROBE = {
   onlineChange: 0,
   version: 'unknown',
   deprecated: false,
-} as Probe;
+};
 
 const getStyles = (theme: GrafanaTheme2) => ({
   minInputWidth: css`
@@ -74,7 +77,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
 });
 
-const ProbeEditor = ({ probes }: Props) => {
+export const ProbeEditor = ({ probes, refetchProbes }: ProbeEditorProps) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [probeToken, setProbeToken] = useState('');
@@ -84,7 +87,7 @@ const ProbeEditor = ({ probes }: Props) => {
   // If editing, find probe by id
   const { id } = useParams<ProbePageParams>();
   let probe: Probe = TEMPLATE_PROBE;
-  if (id && probes) {
+  if (id) {
     const idInt = parseInt(id, 10);
     probe = probes.find((probe) => probe.id === idInt) ?? TEMPLATE_PROBE;
   }
@@ -117,6 +120,8 @@ const ProbeEditor = ({ probes }: Props) => {
       setShowTokenModal(true);
       setProbeToken(info.token);
     }
+
+    refetchProbes();
   });
 
   const submissionError = error as unknown as SubmissionErrorWrapper;
@@ -137,6 +142,7 @@ const ProbeEditor = ({ probes }: Props) => {
     try {
       await instance.api.deleteProbe(probe.id);
       navigate(ROUTES.Probes);
+      refetchProbes();
     } catch (e) {
       const err = e as SubmissionErrorWrapper;
       const message = `${err.data?.msg} Make sure there are no checks assigned to this probe and try again.`;
@@ -343,5 +349,3 @@ const ProbeEditor = ({ probes }: Props) => {
     </PluginPage>
   );
 };
-
-export default ProbeEditor;

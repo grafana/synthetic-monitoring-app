@@ -1,4 +1,4 @@
-import React, { useContext,useEffect, useLayoutEffect } from 'react';
+import React, { useContext, useEffect, useLayoutEffect } from 'react';
 import { Redirect, Route, Switch, useLocation } from 'react-router-dom';
 import { AppRootProps } from '@grafana/data';
 import { config } from '@grafana/runtime';

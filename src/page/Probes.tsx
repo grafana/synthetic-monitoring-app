@@ -4,11 +4,31 @@ import { HorizontalGroup, LinkButton } from '@grafana/ui';
 
 import { type Probe, ROUTES } from 'types';
 import { hasRole } from 'utils';
+import { CenteredSpinner } from 'components/CenteredSpinner';
+import { DocsLink } from 'components/DocsLink';
+import { ErrorAlert } from 'components/ErrorAlert';
 import { PluginPage } from 'components/PluginPage';
 import { ProbeList } from 'components/ProbeList';
 import { getRoute } from 'components/Routing';
 
-export const Probes = ({ probes }: { probes: Probe[] }) => {
+type ProbesProps = { loading: boolean; probes: Probe[]; error: string | null };
+
+export const Probes = (props: ProbesProps) => {
+  return (
+    <PluginPage>
+      <ProbesContent {...props} />
+    </PluginPage>
+  );
+};
+
+const ProbesContent = ({ error, loading, probes }: ProbesProps) => {
+  if (error) {
+    return <ErrorAlert buttonText={`Reload`} onClick={() => window.location.reload()} />;
+  }
+
+  if (loading) {
+    return <CenteredSpinner />;
+  }
   const initial: {
     publicProbes: Probe[];
     privateProbes: Probe[];
@@ -39,14 +59,23 @@ export const Probes = ({ probes }: { probes: Probe[] }) => {
     }, initial);
 
   return (
-    <PluginPage>
+    <>
       <ProbeList probes={publicProbes} title="Public Probes" />
-      <ProbeList probes={privateProbes} title="Private Probes" />
+      <ProbeList probes={privateProbes} title="Private Probes" emptyText={<PrivateProbesEmptyText />} />
       {hasRole(OrgRole.Editor) && (
-        <HorizontalGroup justify="flex-end" height="auto">
+        <HorizontalGroup justify="center" height="auto">
           <LinkButton href={getRoute(ROUTES.NewProbe)}>Add Private Probe</LinkButton>
         </HorizontalGroup>
       )}
-    </PluginPage>
+    </>
+  );
+};
+
+const PrivateProbesEmptyText = () => {
+  return (
+    <>
+      No private probes have been added yet. Read more about{' '}
+      <DocsLink article="privateProbes">private probes in our documentation.</DocsLink>
+    </>
   );
 };

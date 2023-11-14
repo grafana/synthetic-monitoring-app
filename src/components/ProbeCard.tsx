@@ -1,7 +1,7 @@
 import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Badge, Card, LinkButton, useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { Badge, Button, Card, useStyles2 } from '@grafana/ui';
+import { css, cx } from '@emotion/css';
 
 import { type Label, type Probe, ROUTES } from 'types';
 import { SuccessRateTypes } from 'contexts/SuccessRateContext';
@@ -38,9 +38,9 @@ export const ProbeCard = ({ probe }: { probe: Probe }) => {
             height={60}
             width={150}
           />
-          <LinkButton aria-label={`Select ${probe.name}`} className={styles.select} href={href}>
+          <Button className={cx(styles.select)} tabIndex={-1}>
             Select
-          </LinkButton>
+          </Button>
         </div>
       </Card.Tags>
     </Card>
@@ -49,7 +49,7 @@ export const ProbeCard = ({ probe }: { probe: Probe }) => {
 
 const getStyles = (theme: GrafanaTheme2) => ({
   card: css({
-    '&:hover a': {
+    '&:hover button': {
       opacity: 1,
     },
   }),
@@ -63,8 +63,8 @@ const getStyles = (theme: GrafanaTheme2) => ({
     },
   }),
   heading: css({
-    fontSize: theme.typography.h2.fontSize,
-    fontWeight: theme.typography.h2.fontWeight,
+    // fontSize: theme.typography.h2.fontSize,
+    // fontWeight: theme.typography.h2.fontWeight,
     marginBottom: theme.spacing(1),
   }),
   tagsWrapper: css({

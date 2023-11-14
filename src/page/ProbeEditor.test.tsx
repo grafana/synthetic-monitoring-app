@@ -6,8 +6,8 @@ import { render } from 'test/render';
 import { Probe, ROUTES } from 'types';
 import { getRoute } from 'components/Routing';
 
-import { getInstanceMock, instanceSettings } from '../../datasource/__mocks__/DataSource';
-import ProbeEditor from './ProbeEditor';
+import { getInstanceMock, instanceSettings } from '../datasource/__mocks__/DataSource';
+import { ProbeEditor } from './ProbeEditor';
 
 jest.setTimeout(10000);
 
@@ -59,13 +59,20 @@ const renderProbeEditor = ({
   const mockedInstance = getInstanceMock(instanceSettings);
   mockedInstance.updateProbe = updateProbeMock;
 
+  const props = {
+    probes,
+    loading: false,
+    error: null,
+    refetchProbes: jest.fn(),
+  };
+
   return render(
     <Switch>
       <Route path={getRoute(ROUTES.NewProbe)}>
-        <ProbeEditor probes={probes} />
+        <ProbeEditor {...props} />
       </Route>
       <Route path={`${getRoute(ROUTES.EditProbe)}/:id`}>
-        <ProbeEditor probes={probes} />
+        <ProbeEditor {...props} />
       </Route>
     </Switch>,
     {

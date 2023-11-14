@@ -1,44 +1,35 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 import { Route, Switch, useRouteMatch } from 'react-router-dom';
+import { useProbes } from 'data/useProbes';
 
-import { Probe } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
-import ProbeEditor from 'components/ProbeEditor/ProbeEditor';
 import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
+import { ProbeEditor } from 'page/ProbeEditor';
 import { Probes } from 'page/Probes';
 
 export const ProbeRouter = () => {
-  const [probesLoading, setProbesLoading] = useState(true);
-  const [probes, setProbes] = useState<Probe[]>([]);
-  const { instance, loading: instanceLoading } = useContext(InstanceContext);
+  const { loading: instanceLoading } = useContext(InstanceContext);
   const { path } = useRouteMatch();
+  const { error, loading, probes, refetchProbes } = useProbes();
 
-  useEffect(() => {
-    const fetchProbes = async () => {
-      const probes = await instance.api?.listProbes();
-      if (probes) {
-        setProbes(probes);
-        setProbesLoading(false);
-      }
-    };
-    fetchProbes();
-  }, [instanceLoading, instance.api]);
-
-  if (probesLoading || instanceLoading) {
-    return <div>Loading...</div>;
-  }
+  const props = {
+    probes,
+    loading: loading || instanceLoading,
+    error,
+    refetchProbes,
+  };
 
   return (
     <SuccessRateContextProvider probes={probes}>
       <Switch>
         <Route path={path} exact>
-          <Probes probes={probes} />
+          <Probes {...props} />
         </Route>
         <Route path={`${path}/new`}>
-          <ProbeEditor probes={probes} />
+          <ProbeEditor {...props} />
         </Route>
         <Route path={`${path}/edit/:id`}>
-          <ProbeEditor probes={probes} />
+          <ProbeEditor {...props} />
         </Route>
       </Switch>
     </SuccessRateContextProvider>

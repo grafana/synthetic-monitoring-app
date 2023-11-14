@@ -37,7 +37,7 @@ const defaultProbes = [
 ];
 
 const renderProbeList = ({ probes = defaultProbes } = {}) => {
-  return render(<Probes probes={probes} />);
+  return render(<Probes probes={probes} loading={false} error={null} />);
 };
 
 it('renders offline probes', async () => {

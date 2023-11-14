@@ -186,15 +186,16 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   // PROBES
   //--------------------------------------------------------------------------------
 
-  async listProbes(): Promise<Probe[]> {
-    return getBackendSrv()
-      .fetch({
+  async listProbes() {
+    return firstValueFrom(
+      getBackendSrv().fetch<Probe[]>({
         method: 'GET',
         url: `${this.instanceSettings.url}/sm/probe/list`,
       })
-      .toPromise()
-      .then((res: any) => {
-        return res.data;
+    )
+      .then((res) => res.data)
+      .catch((e) => {
+        throw new Error(e);
       });
   }
 
