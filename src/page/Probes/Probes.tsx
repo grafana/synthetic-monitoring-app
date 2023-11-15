@@ -1,6 +1,6 @@
 import React from 'react';
 import { OrgRole } from '@grafana/data';
-import { HorizontalGroup, LinkButton } from '@grafana/ui';
+import { LinkButton } from '@grafana/ui';
 
 import { type Probe, ROUTES } from 'types';
 import { hasRole } from 'utils';
@@ -15,10 +15,18 @@ type ProbesProps = { loading: boolean; probes: Probe[]; error: string | null };
 
 export const Probes = (props: ProbesProps) => {
   return (
-    <PluginPage>
+    <PluginPage actions={<Actions />}>
       <ProbesContent {...props} />
     </PluginPage>
   );
+};
+
+const Actions = () => {
+  if (!hasRole(OrgRole.Editor)) {
+    return null;
+  }
+
+  return <LinkButton href={getRoute(ROUTES.NewProbe)}>Add Private Probe</LinkButton>;
 };
 
 const ProbesContent = ({ error, loading, probes }: ProbesProps) => {
@@ -60,13 +68,8 @@ const ProbesContent = ({ error, loading, probes }: ProbesProps) => {
 
   return (
     <>
-      <ProbeList probes={publicProbes} title="Public Probes" />
       <ProbeList probes={privateProbes} title="Private Probes" emptyText={<PrivateProbesEmptyText />} />
-      {hasRole(OrgRole.Editor) && (
-        <HorizontalGroup justify="center" height="auto">
-          <LinkButton href={getRoute(ROUTES.NewProbe)}>Add Private Probe</LinkButton>
-        </HorizontalGroup>
-      )}
+      <ProbeList probes={publicProbes} title="Public Probes" />
     </>
   );
 };

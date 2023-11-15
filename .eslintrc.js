@@ -27,6 +27,7 @@ module.exports = {
             '^validation',
             '^datasource',
             '^contexts',
+            '^data',
             '^hooks',
             '^components',
             '^page',

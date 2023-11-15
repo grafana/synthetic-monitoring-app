@@ -1,10 +1,11 @@
 import React, { useContext } from 'react';
 import { Route, Switch, useRouteMatch } from 'react-router-dom';
-import { useProbes } from 'data/useProbes';
 
 import { InstanceContext } from 'contexts/InstanceContext';
+import { useProbes } from 'data/useProbes';
 import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
-import { ProbeEditor } from 'page/ProbeEditor';
+import { EditProbe } from 'page/EditProbe';
+import { NewProbe } from 'page/NewProbe';
 import { Probes } from 'page/Probes';
 
 export const ProbeRouter = () => {
@@ -26,10 +27,10 @@ export const ProbeRouter = () => {
           <Probes {...props} />
         </Route>
         <Route path={`${path}/new`}>
-          <ProbeEditor {...props} isNew />
+          <NewProbe {...props} />
         </Route>
         <Route path={`${path}/edit/:id`}>
-          <ProbeEditor {...props} />
+          <EditProbe {...props} />
         </Route>
       </Switch>
     </SuccessRateContextProvider>

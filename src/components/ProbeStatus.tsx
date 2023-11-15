@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
-import { GrafanaTheme2, OrgRole } from '@grafana/data';
-import { Badge, BadgeColor, Button, ConfirmModal, Container, IconName, Legend, useStyles2 } from '@grafana/ui';
+import { GrafanaTheme2 } from '@grafana/data';
+import { Badge, BadgeColor, Button, ConfirmModal, Container, IconName, Legend, Modal, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { Probe } from 'types';
-import { hasRole } from 'utils';
+import { type Probe } from 'types';
 import { SuccessRateTypes } from 'contexts/SuccessRateContext';
+import { useResetProbeToken } from 'data/useProbes';
 
 import { SuccessRateGauge } from './SuccessRateGauge';
 
 interface Props {
+  canEdit: boolean;
   probe: Probe;
-  onResetToken: () => void;
+  onReset: (token: string) => void;
 }
 
 interface BadgeStatus {
@@ -51,20 +52,19 @@ const getBadgeStatus = (online: boolean): BadgeStatus => {
   };
 };
 
-export const ProbeStatus = ({ probe, onResetToken }: Props) => {
+export const ProbeStatus = ({ canEdit, probe, onReset }: Props) => {
   const [showResetModal, setShowResetModal] = useState(false);
   const styles = useStyles2(getStyles);
+  const { onResetToken } = useResetProbeToken(probe, (token) => {
+    setShowResetModal(false);
+    onReset(token);
+  });
 
   if (!probe) {
     return null;
   }
-  const isEditor = !probe.public && hasRole(OrgRole.Editor);
-  const badgeStatus = getBadgeStatus(probe.online);
 
-  const handleResetToken = async () => {
-    await onResetToken();
-    setShowResetModal(false);
-  };
+  const badgeStatus = getBadgeStatus(probe.online);
 
   return (
     <Container margin="md">
@@ -75,7 +75,7 @@ export const ProbeStatus = ({ probe, onResetToken }: Props) => {
         </div>
         {!probe.public && (
           <Container>
-            <Button variant="destructive" onClick={() => setShowResetModal(true)} disabled={!isEditor}>
+            <Button variant="destructive" onClick={() => setShowResetModal(true)} disabled={!canEdit}>
               Reset Access Token
             </Button>
             <ConfirmModal
@@ -83,7 +83,7 @@ export const ProbeStatus = ({ probe, onResetToken }: Props) => {
               title="Reset Probe Access Token"
               body="Are you sure you want to reset the access token for this Probe?"
               confirmText="Reset Token"
-              onConfirm={handleResetToken}
+              onConfirm={onResetToken}
               onDismiss={() => setShowResetModal(false)}
             />
           </Container>
