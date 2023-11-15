@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Badge, BadgeColor, Button, ConfirmModal, Container, IconName, Legend, Modal, useStyles2 } from '@grafana/ui';
+import { Badge, BadgeColor, Button, ConfirmModal, Container, IconName, Legend, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { type Probe } from 'types';
