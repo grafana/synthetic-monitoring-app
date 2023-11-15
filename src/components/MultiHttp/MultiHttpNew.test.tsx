@@ -1,6 +1,6 @@
 import React from 'react';
 import { screen, waitFor, within } from '@testing-library/react';
-import { render } from 'test/render';
+import { createInstance, render } from 'test/render';
 
 import { CheckType, ROUTES } from 'types';
 import { BASIC_CHECK_LIST } from 'components/CheckEditor/testConstants';
@@ -15,7 +15,9 @@ beforeEach(() => jest.resetAllMocks());
 const onReturn = jest.fn();
 
 const renderNewMultiForm = async () => {
-  const res = render(<MultiHttpSettingsForm checks={BASIC_CHECK_LIST} onReturn={onReturn} />, {
+  const instance = createInstance();
+  instance.api.listChecks = jest.fn().mockResolvedValue(BASIC_CHECK_LIST);
+  const res = render(<MultiHttpSettingsForm onReturn={onReturn} />, {
     route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${CheckType.MULTI_HTTP}`,
     path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${CheckType.MULTI_HTTP}`,
   });

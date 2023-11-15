@@ -1,4 +1,4 @@
-import React, { useContext,useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import {
@@ -13,8 +13,9 @@ import {
 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
-import { Check, FeatureName, ROUTES } from 'types';
+import { FeatureName, ROUTES } from 'types';
 import { DashboardInfo } from 'datasource/types';
+import { ChecksContext } from 'contexts/ChecksContext';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useNavigation } from 'hooks/useNavigation';
@@ -130,17 +131,14 @@ const sortSummaryToTop = (dashboardA: DashboardInfo, dashboardB: DashboardInfo) 
 export const HomePage = () => {
   const styles = useStyles2(getStyles);
   const { instance } = useContext(InstanceContext);
-  const [checks, setChecks] = useState<Check[]>([]);
   const [dashboards, setDashboards] = useState<Array<Partial<DashboardInfo>>>([]);
+  const { checks } = useContext(ChecksContext);
   const usage = useUsageCalc(checks);
   const navigate = useNavigation();
   const { isEnabled: scenesEnabled } = useFeatureFlag(FeatureName.Scenes);
   const { isEnabled: multiHttpEnabled } = useFeatureFlag(FeatureName.MultiHttp);
 
   useEffect(() => {
-    instance.api?.listChecks().then((checks) => {
-      setChecks(checks);
-    });
     // Sort to make sure the summary dashboard is at the top of the list
     if (!scenesEnabled) {
       const sortedDashboards = instance.api?.instanceSettings.jsonData.dashboards.sort(sortSummaryToTop) ?? [];

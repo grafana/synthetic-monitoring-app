@@ -15,10 +15,12 @@ beforeEach(() => jest.resetAllMocks());
 const onReturn = jest.fn();
 
 async function renderForm(route: string) {
-  const res = render(<MultiHttpSettingsForm checks={BASIC_CHECK_LIST} onReturn={onReturn} />, {
-    route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`,
-    path: `${PLUGIN_URL_PATH}${ROUTES.Checks}${route}`,
-  });
+  const res = waitFor(() =>
+    render(<MultiHttpSettingsForm onReturn={onReturn} checks={BASIC_CHECK_LIST} />, {
+      route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`,
+      path: `${PLUGIN_URL_PATH}${ROUTES.Checks}${route}`,
+    })
+  );
   await waitFor(() => expect(screen.getByText('Probe options')).toBeInTheDocument());
   return res;
 }

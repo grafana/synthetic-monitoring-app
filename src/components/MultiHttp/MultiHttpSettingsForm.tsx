@@ -45,11 +45,13 @@ interface Props {
   onReturn?: (reload?: boolean) => void;
 }
 
-export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
+export const MultiHttpSettingsForm = ({ onReturn, checks }: Props) => {
   const styles = useStyles2(getMultiHttpFormStyles);
   const panelRefs = useRef<Record<string, HTMLButtonElement | null>>({});
-  let check: Check = multiHttpFallbackCheck;
   const { id } = useParams<CheckPageParams>();
+
+  let check: Check = multiHttpFallbackCheck;
+
   if (id) {
     check = checks?.find((c) => c.id === Number(id)) ?? multiHttpFallbackCheck;
   }
@@ -207,7 +209,6 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
                 isEditor={isEditor}
                 timeout={check?.timeout ?? multiHttpFallbackCheck.timeout}
                 frequency={check?.frequency ?? multiHttpFallbackCheck.frequency}
-                probes={check?.probes ?? multiHttpFallbackCheck.probes}
                 checkType={CheckType.MULTI_HTTP}
               />
 

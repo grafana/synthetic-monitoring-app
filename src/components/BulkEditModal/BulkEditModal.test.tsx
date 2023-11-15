@@ -90,7 +90,7 @@ const renderBulkEditModal = (action: 'add' | 'remove' | null, selectedChecks: ()
   const instance = createInstance();
 
   return render(
-    <SuccessRateContextProvider checks={[]}>
+    <SuccessRateContextProvider>
       <BulkEditModal
         onDismiss={onDismiss}
         onSuccess={onSuccess}

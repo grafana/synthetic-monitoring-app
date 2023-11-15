@@ -31,12 +31,13 @@ beforeEach(() => jest.resetAllMocks());
 const onReturn = jest.fn();
 
 const renderExistingCheckEditor = async (route: string) => {
-  const res = render(<CheckEditor onReturn={onReturn} checks={BASIC_CHECK_LIST} />, {
-    route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`,
-    path: `${PLUGIN_URL_PATH}${ROUTES.Checks}${route}`,
-  });
+  const res = waitFor(() =>
+    render(<CheckEditor onReturn={onReturn} checks={BASIC_CHECK_LIST} />, {
+      route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`,
+      path: `${PLUGIN_URL_PATH}${ROUTES.Checks}${route}`,
+    })
+  );
 
-  await waitFor(() => expect(screen.getByText('Probe options')).toBeInTheDocument());
   return res;
 };
 

@@ -1,10 +1,11 @@
-import React, { useContext,useEffect, useLayoutEffect } from 'react';
+import React, { useContext, useEffect, useLayoutEffect } from 'react';
 import { Redirect, Route, Switch, useLocation } from 'react-router-dom';
 import { AppRootProps } from '@grafana/data';
 import { config } from '@grafana/runtime';
 
-import { ROUTES } from 'types';
+import { FeatureName, ROUTES } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { QueryParamMap, useNavigation } from 'hooks/useNavigation';
 import { useQuery } from 'hooks/useQuery';
 import { AlertingPage } from 'page/AlertingPage';
@@ -14,6 +15,7 @@ import { DashboardPage } from 'page/DashboardPage';
 import { HomePage } from 'page/HomePage';
 import { getNavModel } from 'page/pageDefinitions';
 import { ProbeRouter } from 'page/ProbeRouter';
+import { ScriptedChecksPage } from 'page/ScriptedChecksPage';
 import { UnprovisionedSetup } from 'page/UnprovisionedSetup';
 import { WelcomePage } from 'page/WelcomePage';
 
@@ -25,6 +27,7 @@ export const Routing = ({ onNavChanged }: Pick<AppRootProps, 'onNavChanged'>) =>
   const navigate = useNavigation();
   const location = useLocation();
   const { instance, meta } = useContext(InstanceContext);
+  const { isEnabled: scriptedChecksEnabled } = useFeatureFlag(FeatureName.ScriptedChecks);
   const provisioned = Boolean(meta?.jsonData?.metrics?.grafanaName);
   const initialized = meta?.enabled && instance.api;
   const logo = meta?.info.logos.large || ``;
@@ -79,6 +82,11 @@ export const Routing = ({ onNavChanged }: Pick<AppRootProps, 'onNavChanged'>) =>
       <Route path={getRoute(ROUTES.Probes)}>
         <ProbeRouter />
       </Route>
+      {scriptedChecksEnabled && (
+        <Route path={`${PLUGIN_URL_PATH}${ROUTES.ScriptedChecks}`}>
+          <ScriptedChecksPage />
+        </Route>
+      )}
       <Route exact path={getRoute(ROUTES.Alerts)}>
         <AlertingPage />
       </Route>
