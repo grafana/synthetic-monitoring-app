@@ -6,6 +6,7 @@ import { css } from '@emotion/css';
 const docs = {
   publicProbes: `https://grafana.com/docs/grafana-cloud/monitor-public-endpoints/probes/`,
   privateProbes: `https://grafana.com/docs/grafana-cloud/monitor-public-endpoints/private-probes/`,
+  addPrivateProbe: `https://grafana.com/docs/grafana-cloud/monitor-public-endpoints/private-probes/#add-a-new-probe-in-your-grafana-instance`,
 };
 
 type DocsLinkProps = {

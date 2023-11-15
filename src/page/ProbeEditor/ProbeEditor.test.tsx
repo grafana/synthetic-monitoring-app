@@ -4,9 +4,9 @@ import { screen, waitFor } from '@testing-library/react';
 import { render } from 'test/render';
 
 import { Probe, ROUTES } from 'types';
+import { getInstanceMock, instanceSettings } from 'datasource/__mocks__/DataSource';
 import { getRoute } from 'components/Routing';
 
-import { getInstanceMock, instanceSettings } from '../datasource/__mocks__/DataSource';
 import { ProbeEditor } from './ProbeEditor';
 
 jest.setTimeout(10000);

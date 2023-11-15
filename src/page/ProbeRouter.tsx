@@ -26,7 +26,7 @@ export const ProbeRouter = () => {
           <Probes {...props} />
         </Route>
         <Route path={`${path}/new`}>
-          <ProbeEditor {...props} />
+          <ProbeEditor {...props} isNew />
         </Route>
         <Route path={`${path}/edit/:id`}>
           <ProbeEditor {...props} />

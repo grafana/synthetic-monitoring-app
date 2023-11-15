@@ -51,7 +51,7 @@ const getBadgeStatus = (online: boolean): BadgeStatus => {
   };
 };
 
-const ProbeStatus = ({ probe, onResetToken }: Props) => {
+export const ProbeStatus = ({ probe, onResetToken }: Props) => {
   const [showResetModal, setShowResetModal] = useState(false);
   const styles = useStyles2(getStyles);
 
@@ -61,8 +61,8 @@ const ProbeStatus = ({ probe, onResetToken }: Props) => {
   const isEditor = !probe.public && hasRole(OrgRole.Editor);
   const badgeStatus = getBadgeStatus(probe.online);
 
-  const handleResetToken = () => {
-    onResetToken();
+  const handleResetToken = async () => {
+    await onResetToken();
     setShowResetModal(false);
   };
 
@@ -93,5 +93,3 @@ const ProbeStatus = ({ probe, onResetToken }: Props) => {
     </Container>
   );
 };
-
-export default ProbeStatus;

@@ -39,7 +39,7 @@ export const ProbeCard = ({ probe }: { probe: Probe }) => {
             width={150}
           />
           <Button className={cx(styles.select)} tabIndex={-1}>
-            Select
+            {probe.public ? 'View' : 'Edit'}
           </Button>
         </div>
       </Card.Tags>
