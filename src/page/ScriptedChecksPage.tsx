@@ -2,9 +2,10 @@ import React, { useContext, useState } from 'react';
 import { Route, Switch, useRouteMatch } from 'react-router-dom';
 import { SyntheticsBuilder } from '@grafana/k6-test-builder';
 import { PluginPage } from '@grafana/runtime';
-import { useTheme2 } from '@grafana/ui';
+import { LoadingPlaceholder, useTheme2 } from '@grafana/ui';
 
 import { ROUTES } from 'types';
+import { ChecksContext } from 'contexts/ChecksContext';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { PLUGIN_URL_PATH } from 'components/constants';
 import { NewScriptedCheck } from 'components/NewScriptedCheck';
@@ -17,42 +18,40 @@ export function ScriptedChecksPage() {
   const theme = useTheme2();
   const [saving, setSaving] = useState(false);
   const { instance } = useContext(InstanceContext);
+  const { loading } = useContext(ChecksContext);
   const handleSubmit = async (
     { name, target, script, frequency, timeout, ...rest }: ScriptedFormValues,
     errors: any
   ) => {
     setSaving(true);
-    if (errors) {
-      console.error(errors);
-      return;
-    }
-    try {
-      const check = {
-        ...rest,
-        job: name,
-        target,
-        frequency: frequency * 1000,
-        timeout: timeout * 1000,
-        enabled: false,
-        labels: [],
-        basicMetricsOnly: true,
-        alertSensitivity: '',
-        settings: {
-          k6: {
-            script: btoa(script),
-          },
+    // if (errors) {
+    //   console.error(errors);
+    //   return;
+    // }
+    // try {
+    const check = {
+      ...rest,
+      job: name,
+      target,
+      frequency: frequency * 1000,
+      timeout: timeout * 1000,
+      enabled: false,
+      labels: [],
+      basicMetricsOnly: true,
+      alertSensitivity: '',
+      settings: {
+        k6: {
+          script: btoa(script),
         },
-      };
-      const resp = await instance.api?.addCheck(check);
-      console.log({ resp });
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setSaving(false);
-    }
+      },
+    };
+    return instance.api?.addCheck(check).finally(() => setSaving(false));
   };
 
   const { path } = useRouteMatch();
+  if (loading) {
+    return <LoadingPlaceholder text={undefined} />;
+  }
 
   return (
     <Switch>

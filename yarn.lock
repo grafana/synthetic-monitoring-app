@@ -1590,10 +1590,10 @@
     systemjs "0.20.19"
     tslib "2.6.0"
 
-"@grafana/scenes@1.21.0":
-  version "1.21.0"
-  resolved "https://registry.yarnpkg.com/@grafana/scenes/-/scenes-1.21.0.tgz#151142c896f39577b188404c4987663a84d121ab"
-  integrity sha512-pDmWznJ49ILlQB/Dct84oWy9fTP6HThxHfnRfSfW6Jq6ZaDJcRAXZI9SioOEib1K/9ebNSwuRS4RQsZ3YcNQ1Q==
+"@grafana/scenes@1.22.1":
+  version "1.22.1"
+  resolved "https://registry.yarnpkg.com/@grafana/scenes/-/scenes-1.22.1.tgz#c8d92dd6cea4e64b95a3d1ea4a656bd11e85aab6"
+  integrity sha512-ZBO3Lx3iLls47NmtUZGBD6qceaioobC7EKoWCt27Q7k26guOmByxDlfkXU9OPO//R1HiX4a0xyCJH/ZFltFqzQ==
   dependencies:
     "@grafana/e2e-selectors" "10.0.2"
     react-grid-layout "1.3.4"

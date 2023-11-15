@@ -98,7 +98,7 @@
     "@grafana/faro-web-sdk": "1.2.1",
     "@grafana/k6-test-builder": "^0.8.6",
     "@grafana/runtime": "10.1.4",
-    "@grafana/scenes": "1.21.0",
+    "@grafana/scenes": "1.22.1",
     "@grafana/schema": "10.1.4",
     "@grafana/ui": "10.1.4",
     "@popperjs/core": "^2.9.2",

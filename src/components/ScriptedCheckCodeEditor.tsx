@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Button, Field, Input, useStyles2, VerticalGroup } from '@grafana/ui';
+import { Alert, Button, Field, Input, Spinner, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { CheckType } from 'types';
+import { CheckType, ROUTES } from 'types';
+import { useNavigation } from 'hooks/useNavigation';
 
 import { ProbeOptions } from './CheckEditor/ProbeOptions';
 import { CodeEditor } from './CodeEditor';
+import { HorizontalCheckboxField } from './HorizonalCheckboxField';
 
 const DEFAULT_SCRIPT = `import { sleep } from 'k6'
 import http from 'k6/http'
@@ -18,7 +20,7 @@ export default function main() {
 }`;
 
 interface Props {
-  onSubmit: (values: any, errors: any) => void;
+  onSubmit: (values: any, errors: any) => Promise<any>;
   saving: boolean;
   script?: string;
 }
@@ -39,6 +41,11 @@ function getStyles(theme: GrafanaTheme2) {
       align-items: center;
       justify-content: space-between;
     `,
+    flexCol: css`
+      display: flex;
+      flex-direction: column;
+      gap: ${theme.spacing(1)};
+    `,
     saveButton: css`
       align-self: flex-start;
     `,
@@ -49,41 +56,61 @@ function getStyles(theme: GrafanaTheme2) {
 }
 
 export function ScriptedCheckCodeEditor({ onSubmit, script, saving }: Props) {
+  const navigate = useNavigation();
   const formMethods = useForm<ScriptedFormValues>({
     defaultValues: {
       script: script ?? DEFAULT_SCRIPT,
       probes: [],
-      timeout: 120,
+      timeout: 30,
       frequency: 120,
     },
   });
   const { handleSubmit, register, control } = formMethods;
   const styles = useStyles2(getStyles);
+  const [submissionError, setSubmissionError] = useState<string | undefined>();
 
   const submit = (values: any) => {
-    console.log(values);
-    onSubmit(values, null);
+    setSubmissionError(undefined);
+    return onSubmit(values, null)
+      .then(() => {
+        navigate(ROUTES.ScriptedChecks);
+      })
+      .catch((e) => {
+        console.log(e);
+        setSubmissionError(e.data?.err ?? e.message);
+      });
   };
 
   return (
     <FormProvider {...formMethods}>
+      {submissionError && (
+        <Alert severity="error" title="Submission error">
+          {submissionError}
+        </Alert>
+      )}
       <form onSubmit={handleSubmit(submit)}>
         <div className={styles.headerContainer}>
-          <VerticalGroup spacing="sm">
+          <div className={styles.flexCol}>
             <Field label="Job name">
               <Input {...register('name')} />
             </Field>
             <Field label="Target">
               <Input {...register('target')} />
             </Field>
-          </VerticalGroup>
+            <HorizontalCheckboxField
+              name="enabled"
+              id="check-form-enabled"
+              label="Enabled"
+              description="If a check is enabled, metrics and logs are published to your Grafana Cloud stack."
+            />
+          </div>
 
           <Button type="submit" disabled={saving} className={styles.saveButton}>
-            Save
+            {saving ? <Spinner /> : 'Save'}
           </Button>
         </div>
         <div className={styles.probeOptionsContainer}>
-          <ProbeOptions isEditor frequency={120} timeout={120000} checkType={CheckType.K6} />
+          <ProbeOptions isEditor frequency={120} timeout={30000} checkType={CheckType.K6} />
         </div>
         <Controller
           name="script"
