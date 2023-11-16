@@ -1,3 +1,4 @@
+import React from 'react';
 import * as runtime from '@grafana/runtime';
 
 export const getBackendSrv = () => ({
@@ -11,12 +12,25 @@ export const getLocationSrv = () => ({
   update: (args) => args,
 });
 
-export const config = {
-  theme: {},
-};
+function PluginPage({ actions, children }: any) {
+  return (
+    <div>
+      <div>{actions}</div>
+      {children}
+    </div>
+  );
+}
 
 module.exports = {
   ...runtime,
+  config: {
+    ...runtime.config,
+    featureToggles: {
+      ...runtime.config.featureToggles,
+      topnav: true,
+    },
+  },
   getBackendSrv,
   getLocationSrv,
+  PluginPage,
 };

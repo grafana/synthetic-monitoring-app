@@ -1,1 +1,1 @@
-export { NewProbe } from './NewProbe';
+export * from './NewProbe';

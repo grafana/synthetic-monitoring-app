@@ -41,7 +41,7 @@ const EditProbeContent = ({ probe, refetchProbes }: { probe: Probe; refetchProbe
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const navigate = useNavigation();
   const { onUpdate, error } = useUpdateProbe();
-  const { onDelete, error: deleteError } = useDeleteProbe();
+  const { onDelete } = useDeleteProbe();
 
   const onReset = (token: string) => {
     setShowTokenModal(true);

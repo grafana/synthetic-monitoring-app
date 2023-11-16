@@ -7,7 +7,7 @@ import { PluginPage } from 'components/PluginPage';
 import { ProbeEditor } from 'components/ProbeEditor';
 import { ProbeTokenModal } from 'components/ProbeTokenModal';
 
-const TEMPLATE_PROBE: Probe = {
+export const TEMPLATE_PROBE: Probe = {
   name: '',
   public: false,
   latitude: 0.0,

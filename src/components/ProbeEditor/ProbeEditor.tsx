@@ -21,13 +21,14 @@ type ProbeEditorProps = {
 export const ProbeEditor = ({ actions, errorInfo, onSubmit, probe, submitText }: ProbeEditorProps) => {
   const styles = useStyles2(getStyles);
   const canEdit = !probe.public && hasRole(OrgRole.Editor);
-  const formMethods = useForm<Probe>({ defaultValues: probe, mode: 'onChange' });
-  const { latitude, longitude } = formMethods.watch();
-  const handleSubmit = formMethods.handleSubmit((formValues: Probe) => onSubmit(normalizeProbeValues(formValues)));
+  const form = useForm<Probe>({ defaultValues: probe, mode: 'onChange' });
+  const { latitude, longitude } = form.watch();
+  const handleSubmit = form.handleSubmit((formValues: Probe) => onSubmit(formValues));
+  const { errors, isSubmitting } = form.formState;
 
   return (
     <>
-      <FormProvider {...formMethods}>
+      <FormProvider {...form}>
         <form onSubmit={handleSubmit}>
           <div>
             {probe.public ? (
@@ -47,7 +48,7 @@ export const ProbeEditor = ({ actions, errorInfo, onSubmit, probe, submitText }:
             )}
             <Field
               error="Name is required"
-              invalid={Boolean(formMethods.formState.errors.name)}
+              invalid={Boolean(errors.name)}
               label="Probe Name"
               description="Unique name of probe"
               disabled={!canEdit}
@@ -56,7 +57,7 @@ export const ProbeEditor = ({ actions, errorInfo, onSubmit, probe, submitText }:
               <Input
                 type="text"
                 maxLength={32}
-                {...formMethods.register('name', {
+                {...form.register('name', {
                   required: true,
                   maxLength: 32,
                 })}
@@ -68,17 +69,18 @@ export const ProbeEditor = ({ actions, errorInfo, onSubmit, probe, submitText }:
               <Legend>Location information</Legend>
               <Field
                 error="Must be between -90 and 90"
-                invalid={Boolean(formMethods.formState.errors.latitude)}
+                invalid={Boolean(errors.latitude)}
                 required
                 label="Latitude"
                 description="Latitude coordinates of this probe"
                 disabled={!canEdit}
               >
                 <Input
-                  {...formMethods.register('latitude', {
+                  {...form.register('latitude', {
                     required: true,
                     max: 90,
                     min: -90,
+                    valueAsNumber: true,
                   })}
                   label="Latitude"
                   max={90}
@@ -91,17 +93,18 @@ export const ProbeEditor = ({ actions, errorInfo, onSubmit, probe, submitText }:
               </Field>
               <Field
                 error="Must be between -180 and 180"
-                invalid={Boolean(formMethods.formState.errors.longitude)}
+                invalid={Boolean(errors.longitude)}
                 required
                 label="Longitude"
                 description="Longitude coordinates of this probe"
                 disabled={!canEdit}
               >
                 <Input
-                  {...formMethods.register('longitude', {
+                  {...form.register('longitude', {
                     required: true,
                     max: 180,
                     min: -180,
+                    valueAsNumber: true,
                   })}
                   label="Longitude"
                   max={180}
@@ -117,7 +120,7 @@ export const ProbeEditor = ({ actions, errorInfo, onSubmit, probe, submitText }:
             <div>
               <Field
                 error="Region is required"
-                invalid={Boolean(formMethods.formState.errors.region)}
+                invalid={Boolean(errors.region)}
                 required
                 label="Region"
                 description="Region of this probe"
@@ -125,7 +128,7 @@ export const ProbeEditor = ({ actions, errorInfo, onSubmit, probe, submitText }:
                 aria-label="Region"
               >
                 <Input
-                  {...formMethods.register('region', { required: true })}
+                  {...form.register('region', { required: true })}
                   label="Region"
                   type="text"
                   placeholder="Region"
@@ -136,12 +139,7 @@ export const ProbeEditor = ({ actions, errorInfo, onSubmit, probe, submitText }:
             <div className={styles.buttonWrapper}>
               {canEdit && (
                 <>
-                  <Button
-                    type="submit"
-                    disabled={
-                      formMethods.formState.isSubmitting || Object.keys(formMethods.formState.errors ?? {}).length > 0
-                    }
-                  >
+                  <Button type="submit" disabled={isSubmitting || Object.keys(errors ?? {}).length > 0}>
                     {submitText}
                   </Button>
                 </>
@@ -164,15 +162,6 @@ export const ProbeEditor = ({ actions, errorInfo, onSubmit, probe, submitText }:
     </>
   );
 };
-
-// Form values always come back as a string, even for number inputs
-export function normalizeProbeValues(probe: Probe) {
-  return {
-    ...probe,
-    latitude: Number(probe.latitude),
-    longitude: Number(probe.longitude),
-  };
-}
 
 const getStyles = (theme: GrafanaTheme2) => ({
   buttonWrapper: css({

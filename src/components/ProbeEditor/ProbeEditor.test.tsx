@@ -1,44 +1,14 @@
 import React from 'react';
-import { Route, Switch } from 'react-router-dom';
 import { screen, waitFor } from '@testing-library/react';
 import { render } from 'test/render';
 
 import { Probe, ROUTES } from 'types';
-import { getInstanceMock, instanceSettings } from 'datasource/__mocks__/DataSource';
 import { getRoute } from 'components/Routing';
+import { TEMPLATE_PROBE } from 'page/NewProbe';
 
 import { ProbeEditor } from './ProbeEditor';
 
-jest.setTimeout(10000);
-
-const updateProbe = jest.fn().mockImplementation(() => Promise.resolve());
-
-const DEFAULT_PROBES = [
-  {
-    name: 'tacos',
-    id: 32,
-    public: false,
-    latitude: 0.0,
-    longitude: 0.0,
-    region: 'EMEA',
-    labels: [{ name: 'Mr', value: 'Orange' }],
-    online: true,
-    onlineChange: 0,
-  },
-  {
-    name: 'burritos',
-    id: 42,
-    public: true,
-    latitude: 0.0,
-    longitude: 0.0,
-    region: 'AMER',
-    labels: [{ name: 'Mr', value: 'Pink' }],
-    online: false,
-    onlineChange: 0,
-  },
-] as Probe[];
-
-const TEST_PROBE = {
+const TEST_PROBE: Probe = {
   deprecated: false,
   labels: [],
   name: 'new probe',
@@ -51,42 +21,22 @@ const TEST_PROBE = {
   version: 'unknown',
 };
 
-const renderProbeEditor = ({
-  route = getRoute(ROUTES.NewProbe),
-  probes = DEFAULT_PROBES,
-  updateProbeMock = updateProbe,
-} = {}) => {
-  const mockedInstance = getInstanceMock(instanceSettings);
-  mockedInstance.updateProbe = updateProbeMock;
+const onSubmit = jest.fn();
+const submitText = 'Save';
 
+const renderProbeEditor = ({ probe = TEST_PROBE } = {}) => {
   const props = {
-    probes,
-    loading: false,
-    error: null,
-    refetchProbes: jest.fn(),
+    onSubmit,
+    probe,
+    submitText,
   };
 
-  return render(
-    <Switch>
-      <Route path={getRoute(ROUTES.NewProbe)}>
-        <ProbeEditor {...props} />
-      </Route>
-      <Route path={`${getRoute(ROUTES.EditProbe)}/:id`}>
-        <ProbeEditor {...props} />
-      </Route>
-    </Switch>,
-    {
-      path: route,
-      instance: {
-        api: mockedInstance,
-      },
-    }
-  );
+  return render(<ProbeEditor {...props} />);
 };
 
 describe('validation', () => {
   it('validates probe name', async () => {
-    const { user } = renderProbeEditor();
+    const { user } = renderProbeEditor({ probe: TEMPLATE_PROBE });
     const nameInput = await screen.findByLabelText('Probe Name', { exact: false });
     await user.type(nameInput, 'a name that is definitely too long and should definitely not be allowed to get typed');
     const maxLengthString = 'a name that is definitely too lo';
@@ -130,31 +80,37 @@ it('disables save button on invalid values', async () => {
 });
 
 it('saves new probe', async () => {
-  const { instance, user } = renderProbeEditor();
+  const { user } = renderProbeEditor();
+  const updatedLatitude = 23;
+  const updatedLongitude = 23;
+  const updatedName = 'new probe';
+  const updatedRegion = 'APAC';
 
   const latitudeInput = await screen.findByLabelText('Latitude', { exact: false });
-  await user.type(latitudeInput, '22');
+  await user.clear(latitudeInput);
+  await user.type(latitudeInput, updatedLatitude.toString());
+
   const longitudeInput = await screen.findByLabelText('Longitude', { exact: false });
-  await user.type(longitudeInput, '22');
+  await user.clear(longitudeInput);
+  await user.type(longitudeInput, updatedLongitude.toString());
+
   const nameInput = await screen.findByLabelText('Probe Name', { exact: false });
-  await user.type(nameInput, 'new probe');
+  await user.clear(nameInput);
+  await user.type(nameInput, updatedName);
+
   const regionInput = await screen.findByPlaceholderText('Region', { exact: false });
   regionInput.focus();
-  await user.paste('EMEA');
+  await user.clear(regionInput);
+  await user.paste(updatedRegion);
 
-  const saveButton = await screen.findByRole('button', { name: 'Save' });
+  const saveButton = await screen.findByRole('button', { name: submitText });
   expect(saveButton).toBeEnabled();
   await user.click(saveButton);
-  await screen.findByText('Probe Authentication Token');
-  expect(instance.api?.addProbe).toHaveBeenCalledWith(TEST_PROBE);
-});
-
-it('updates existing probe', async () => {
-  const { instance, history, user } = renderProbeEditor({ route: `${getRoute(ROUTES.EditProbe)}/32` });
-  const saveButton = await screen.findByRole('button', { name: 'Save' });
-  await user.click(saveButton);
-  await waitFor(() => {}, { timeout: 1000 });
-
-  await waitFor(() => expect(history.location.pathname).toBe(getRoute(ROUTES.Probes)));
-  expect(instance.api?.updateProbe).toHaveBeenCalledWith(DEFAULT_PROBES[0]);
+  expect(onSubmit).toHaveBeenCalledWith({
+    ...TEST_PROBE,
+    region: updatedRegion,
+    latitude: updatedLatitude,
+    longitude: updatedLongitude,
+    name: updatedName,
+  });
 });

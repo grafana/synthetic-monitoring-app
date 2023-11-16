@@ -131,7 +131,7 @@ export function useDeleteProbe() {
     onSuccess();
   });
 
-  useOnError({ event, error });
+  useOnError({ event, error, alert: `Failed to delete probe` });
 
   return {
     result,
