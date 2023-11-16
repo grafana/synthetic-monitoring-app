@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { css } from '@emotion/css';
 
 import { type Probe, ROUTES } from 'types';
 import { type CreateProbeResult, useCreateProbe } from 'data/useProbes';
@@ -56,7 +57,9 @@ export const NewProbe = ({ refetchProbes }: NewProbeProps) => {
 
   return (
     <PluginPage pageNav={{ text: `New private probe` }}>
-      <ProbeEditor errorInfo={errorInfo} onSubmit={handleSubmit} probe={probe} submitText="Update probe" />
+      <div className={css({ display: `flex` })}>
+        <ProbeEditor errorInfo={errorInfo} onSubmit={handleSubmit} probe={probe} submitText="Add new probe" />
+      </div>
       <ProbeTokenModal
         isOpen={showTokenModal}
         onDismiss={() => {

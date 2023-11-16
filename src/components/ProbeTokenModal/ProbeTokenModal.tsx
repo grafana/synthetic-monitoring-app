@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal } from '@grafana/ui';
+import { Alert, Modal, VerticalGroup } from '@grafana/ui';
 
 import { Clipboard } from 'components/Clipboard';
 import { DocsLink } from 'components/DocsLink';
@@ -13,8 +13,14 @@ type TokenModalProps = {
 export const ProbeTokenModal = ({ isOpen, onDismiss, token }: TokenModalProps) => {
   return (
     <Modal isOpen={isOpen} title="Probe Authentication Token" onDismiss={onDismiss}>
-      <Clipboard content={token} />
-      <DocsLink article="addPrivateProbe">Learn how to run a private probe</DocsLink>
+      <VerticalGroup spacing="md">
+        <Clipboard content={token} />
+        <DocsLink article="addPrivateProbe">Learn how to run a private probe</DocsLink>
+
+        <Alert severity="warning" title="Note">
+          This is the only time you will see this token. If you need to see it again, you will need to reset the token.
+        </Alert>
+      </VerticalGroup>
     </Modal>
   );
 };

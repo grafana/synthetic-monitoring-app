@@ -12,9 +12,10 @@ export const getLocationSrv = () => ({
   update: (args) => args,
 });
 
-function PluginPage({ actions, children }: any) {
+function PluginPage({ actions, children, pageNav }: any) {
   return (
     <div>
+      <h2>{pageNav?.text}</h2>
       <div>{actions}</div>
       {children}
     </div>

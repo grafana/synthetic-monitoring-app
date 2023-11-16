@@ -66,9 +66,9 @@ export function useCreateProbe() {
         ...probe,
         public: false,
       });
-
+      console.log(info);
       reportEvent(event);
-      appEvents.emit(AppEvents.alertSuccess, [`Created probe ${info.name}`]);
+      appEvents.emit(AppEvents.alertSuccess, [`Created probe ${info.probe.name}`]);
       onSuccess(info);
     }
   );
