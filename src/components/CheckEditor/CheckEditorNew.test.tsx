@@ -24,7 +24,7 @@ beforeEach(() => jest.resetAllMocks());
 const onReturn = jest.fn();
 
 const renderNewCheckEditor = async (checkType?: CheckType) => {
-  const res = render(<CheckEditor onReturn={onReturn} />, {
+  const res = render(<CheckEditor onReturn={onReturn} checks={[]} />, {
     route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/:checkType`,
     path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${checkType}`,
   });

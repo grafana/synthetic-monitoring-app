@@ -49,6 +49,7 @@ function getCheckListScene(config: VizViewSceneAppConfig & Props, checkCount: nu
   }
   const queryRunner = new SceneQueryRunner({
     datasource: config.metrics,
+    maxDataPoints: 2000,
     queries: [
       {
         editorMode: 'code',

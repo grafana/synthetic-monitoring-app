@@ -40,7 +40,7 @@ import { CheckSettings } from './CheckSettings';
 import { ProbeOptions } from './ProbeOptions';
 
 interface Props {
-  checks?: Check[];
+  checks: Check[];
   onReturn: (reload: boolean) => void;
 }
 
@@ -53,7 +53,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
 });
 
-export const CheckEditor = ({ checks, onReturn }: Props) => {
+export const CheckEditor = ({ onReturn, checks }: Props) => {
   const {
     instance: { api },
   } = useContext(InstanceContext);
@@ -170,7 +170,6 @@ export const CheckEditor = ({ checks, onReturn }: Props) => {
               checkType={checkType}
               timeout={check?.timeout ?? fallbackCheck(checkType).timeout}
               frequency={check?.frequency ?? fallbackCheck(checkType).frequency}
-              probes={check?.probes ?? fallbackCheck(checkType).probes}
             />
             <HorizontalCheckboxField
               name="publishAdvancedMetrics"

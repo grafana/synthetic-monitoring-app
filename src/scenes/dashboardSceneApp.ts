@@ -28,6 +28,7 @@ export function getDashboardSceneApp(config: DashboardSceneAppConfig, includeMul
       [CheckType.TCP]: [],
       [CheckType.Traceroute]: [],
       [CheckType.MULTI_HTTP]: [],
+      [CheckType.K6]: [],
     }
   );
   const tabs = [

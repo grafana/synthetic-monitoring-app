@@ -150,7 +150,7 @@ export class DashboardList extends PureComponent<Props, State> {
           <tbody>
             {dashboards.map((d) => {
               return (
-                <tr key={d.uid}>
+                <tr key={d.uid ?? d.json}>
                   <td className="width-1">
                     <Icon name="apps" />
                   </td>

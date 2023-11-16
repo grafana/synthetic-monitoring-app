@@ -14,7 +14,6 @@ interface Props {
   isEditor: boolean;
   timeout: number;
   frequency: number;
-  probes: number[];
   checkType: CheckType;
 }
 
@@ -58,7 +57,7 @@ function getTimeoutBounds(checkType: CheckType) {
   };
 }
 
-export const ProbeOptions = ({ frequency, timeout, isEditor, probes, checkType }: Props) => {
+export const ProbeOptions = ({ frequency, timeout, isEditor, checkType }: Props) => {
   const [availableProbes, setAvailableProbes] = useState<Probe[]>([]);
   const {
     control,
@@ -94,7 +93,7 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, probes, checkType }
         render={({ field }) => (
           <CheckProbes
             {...field}
-            probes={probes}
+            probes={field.value}
             availableProbes={availableProbes}
             isEditor={isEditor}
             invalid={errors.probes}
@@ -109,7 +108,7 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, probes, checkType }
         invalid={Boolean(errors.frequency)}
         error={errors.frequency?.message}
       >
-        {checkType === CheckType.Traceroute ? (
+        {checkType === CheckType.Traceroute || checkType === CheckType.K6 ? (
           // This is just a placeholder for now, the frequency for traceroute checks is hardcoded in the submit
           <Input value={120} prefix="Every" suffix="seconds" width={20} />
         ) : (

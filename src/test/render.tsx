@@ -9,6 +9,7 @@ import pluginInfo from 'plugin.json';
 import { GlobalSettings, GrafanaInstances } from 'types';
 import { getInstanceMock, instanceSettings } from 'datasource/__mocks__/DataSource';
 import { InstanceContext } from 'contexts/InstanceContext';
+import { ChecksContextProvider } from 'components/ChecksContextProvider';
 import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
 
 export const createInstance = (options?: GrafanaInstances) => {
@@ -76,9 +77,11 @@ export const createWrapper = ({
           },
         }}
       >
-        <Router history={history}>
-          <Route path={route}>{children}</Route>
-        </Router>
+        <ChecksContextProvider>
+          <Router history={history}>
+            <Route path={route}>{children}</Route>
+          </Router>
+        </ChecksContextProvider>
       </InstanceContext.Provider>
     </FeatureFlagProvider>
   );

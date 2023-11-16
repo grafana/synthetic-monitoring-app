@@ -159,6 +159,10 @@ export interface DnsSettingsFormValues
   validations: DnsValidationFormValue[];
 }
 
+export interface ScriptedSettings {
+  script: string;
+}
+
 export interface TcpSettings {
   ipVersion: IpVersion;
   tls: boolean;
@@ -344,6 +348,7 @@ export interface Settings {
   dns?: DnsSettings;
   tcp?: TcpSettings;
   traceroute?: TracerouteSettings;
+  k6?: ScriptedSettings;
 }
 
 export enum CheckType {
@@ -353,6 +358,7 @@ export enum CheckType {
   TCP = 'tcp',
   Traceroute = 'traceroute',
   MULTI_HTTP = 'multihttp',
+  K6 = 'k6',
 }
 
 export interface HostedInstance {
@@ -526,6 +532,7 @@ export enum FeatureName {
   UnifiedAlerting = 'ngalert',
   MultiHttp = 'multi-http',
   Scenes = 'synthetics-scenes',
+  ScriptedChecks = 'scripted-checks',
 }
 
 export interface UsageValues {
@@ -548,6 +555,7 @@ export enum ROUTES {
   Config = 'config',
   Scene = 'scene',
   ChooseCheckType = 'checks/choose-type',
+  ScriptedChecks = 'scripted-checks',
 }
 
 export interface CheckPageParams {
