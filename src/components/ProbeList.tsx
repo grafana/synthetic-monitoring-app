@@ -19,7 +19,7 @@ export const ProbeList = ({ probes, title, emptyText = defaultEmptyText }: Props
 
   return (
     <div className={styles.list}>
-      <h2 className={styles.heading}>{title}</h2>
+      <h2 className="h4">{title}</h2>
       {probes.length ? (
         probes.map((probe) => {
           return <ProbeCard key={probe.id} probe={probe} />;
@@ -36,12 +36,6 @@ export const ProbeList = ({ probes, title, emptyText = defaultEmptyText }: Props
 const getStyles = (theme: GrafanaTheme2) => ({
   list: css({
     marginBottom: theme.spacing(4),
-  }),
-  heading: css({
-    fontWeight: theme.typography.h4.fontWeight,
-    fontSize: theme.typography.h4.fontSize,
-    lineHeight: theme.typography.h4.lineHeight,
-    fontFamily: theme.typography.h4.fontFamily,
   }),
   emptyState: css({
     backgroundColor: theme.colors.background.secondary,

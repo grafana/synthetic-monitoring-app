@@ -21,7 +21,7 @@ export const ProbeRouter = () => {
   };
 
   return (
-    <SuccessRateContextProvider probes={probes}>
+    <SuccessRateContextProvider onlyProbes probes={probes}>
       <Switch>
         <Route path={path} exact>
           <Probes {...props} />

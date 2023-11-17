@@ -1,6 +1,7 @@
 import React from 'react';
 import { OrgRole } from '@grafana/data';
-import { LinkButton } from '@grafana/ui';
+import { LinkButton, useTheme2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 
 import { type Probe, ROUTES } from 'types';
 import { hasRole } from 'utils';
@@ -14,8 +15,17 @@ import { getRoute } from 'components/Routing';
 type ProbesProps = { loading: boolean; probes: Probe[]; error: string | null };
 
 export const Probes = (props: ProbesProps) => {
+  const theme = useTheme2();
+
   return (
     <PluginPage actions={<Actions />}>
+      <div className={css({ maxWidth: `560px`, marginBottom: theme.spacing(4) })}>
+        <p>
+          Probes are the agents responsible for emulating user interactions and collecting data from your specified
+          targets across different global locations.
+        </p>
+        <DocsLink article="probes">Learn more about probes</DocsLink>
+      </div>
       <ProbesContent {...props} />
     </PluginPage>
   );

@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { GrafanaTheme2, OrgRole } from '@grafana/data';
-import { Button, ConfirmModal, useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { OrgRole } from '@grafana/data';
+import { Button, ConfirmModal } from '@grafana/ui';
 
 import { type Probe, type ProbePageParams, ROUTES } from 'types';
 import { hasRole } from 'utils';
@@ -45,7 +44,6 @@ const EditProbeContent = ({ probe, refetchProbes }: { probe: Probe; refetchProbe
   const navigate = useNavigation();
   const { onUpdate, error: updateError } = useUpdateProbe();
   const { onDelete, error: deleteError } = useDeleteProbe();
-  const styles = useStyles2(getStyles);
 
   const onReset = (token: string) => {
     setShowTokenModal(true);
@@ -90,19 +88,20 @@ const EditProbeContent = ({ probe, refetchProbes }: { probe: Probe; refetchProbe
 
   return (
     <>
-      <div className={styles.wrapper}>
-        <ProbeEditor
-          actions={actions}
-          errorInfo={getErrorInfo(updateError, deleteError)}
-          onSubmit={handleSubmit}
-          probe={probe}
-          submitText="Update probe"
-        />
-        <div className={styles.statusWrapper}>
-          <ProbeStatus canEdit={canEdit} probe={probe} onReset={onReset} />
-        </div>
-      </div>
-      <ProbeTokenModal isOpen={showTokenModal} onDismiss={() => setShowTokenModal(false)} token={probeToken} />
+      <ProbeEditor
+        actions={actions}
+        errorInfo={getErrorInfo(updateError, deleteError)}
+        onSubmit={handleSubmit}
+        probe={probe}
+        submitText="Update probe"
+        supportingContent={<ProbeStatus canEdit={canEdit} probe={probe} onReset={onReset} />}
+      />
+      <ProbeTokenModal
+        actionText="Close"
+        isOpen={showTokenModal}
+        onDismiss={() => setShowTokenModal(false)}
+        token={probeToken}
+      />
       <ConfirmModal
         isOpen={showDeleteModal}
         title="Delete Probe"
@@ -114,28 +113,3 @@ const EditProbeContent = ({ probe, refetchProbes }: { probe: Probe; refetchProbe
     </>
   );
 };
-
-const mediaQuery = (theme: GrafanaTheme2) => `@media (max-width: ${theme.breakpoints.values.md}px)`;
-
-const getStyles = (theme: GrafanaTheme2) => ({
-  wrapper: css({
-    display: 'flex',
-    alignItems: 'flex-start',
-    flexDirection: 'row',
-    gap: theme.spacing(4),
-
-    [mediaQuery(theme)]: {
-      flexDirection: 'column',
-
-      [' > *']: {
-        width: `100%`,
-      },
-    },
-  }),
-  statusWrapper: css({
-    [mediaQuery(theme)]: {
-      padding: theme.spacing(2),
-      border: `1px solid ${theme.colors.border.medium}`,
-    },
-  }),
-});

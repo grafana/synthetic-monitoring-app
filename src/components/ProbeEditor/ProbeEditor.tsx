@@ -16,9 +16,19 @@ type ProbeEditorProps = {
   onSubmit: (formValues: Probe) => void;
   probe: Probe;
   submitText: string;
+  supportingContent?: ReactNode;
 };
 
-export const ProbeEditor = ({ actions, errorInfo, onSubmit, probe, submitText }: ProbeEditorProps) => {
+const containerName = `probeEditor`;
+
+export const ProbeEditor = ({
+  actions,
+  errorInfo,
+  onSubmit,
+  probe,
+  submitText,
+  supportingContent,
+}: ProbeEditorProps) => {
   const styles = useStyles2(getStyles);
   const canEdit = !probe.public && hasRole(OrgRole.Editor);
   const form = useForm<Probe>({ defaultValues: probe, mode: 'onChange' });
@@ -32,6 +42,7 @@ export const ProbeEditor = ({ actions, errorInfo, onSubmit, probe, submitText }:
     ([long, lat]: number[]) => {
       form.setValue('longitude', +long.toFixed(5));
       form.setValue('latitude', +lat.toFixed(5));
+      form.clearErrors(['longitude', 'latitude']);
     },
     [form]
   );
@@ -47,147 +58,182 @@ export const ProbeEditor = ({ actions, errorInfo, onSubmit, probe, submitText }:
   }, [alertRef, errorInfo]);
 
   return (
-    <div className={styles.container}>
-      <FormProvider {...form}>
-        <form onSubmit={handleSubmit}>
-          <div>
-            <Label description={description} className={styles.marginBottom}>
-              {`This probe is ${probe.public ? 'public' : 'private'}.`}
-            </Label>
-            <Field
-              error="Name is required"
-              invalid={Boolean(errors.name)}
-              label="Probe Name"
-              description="Unique name of probe"
-              disabled={!canEdit}
-              required
-            >
-              <Input
-                type="text"
-                maxLength={32}
-                {...form.register('name', {
-                  required: true,
-                  maxLength: 32,
-                })}
-                placeholder="Probe name"
-              />
-            </Field>
-            <div>
-              <Legend>Location information</Legend>
-              <Field
-                error="Must be between -90 and 90"
-                invalid={Boolean(errors.latitude)}
-                required
-                label="Latitude"
-                description="Latitude coordinates of this probe"
-                disabled={!canEdit}
-              >
-                <Input
-                  {...form.register('latitude', {
-                    required: true,
-                    max: 90,
-                    min: -90,
-                    valueAsNumber: true,
-                  })}
-                  label="Latitude"
-                  max={90}
-                  min={-90}
-                  step={0.00001}
-                  type="number"
-                  placeholder="0.0"
-                />
-              </Field>
-              <Field
-                error="Must be between -180 and 180"
-                invalid={Boolean(errors.longitude)}
-                required
-                label="Longitude"
-                description="Longitude coordinates of this probe"
-                disabled={!canEdit}
-              >
-                <Input
-                  {...form.register('longitude', {
-                    required: true,
-                    max: 180,
-                    min: -180,
-                    valueAsNumber: true,
-                  })}
-                  label="Longitude"
-                  max={180}
-                  min={-180}
-                  step={0.00001}
-                  type="number"
-                  placeholder="0.0"
-                />
-              </Field>
-              <div className={styles.marginBottom}>
-                <SimpleMap canEdit={canEdit} latitude={latitude} longitude={longitude} onClick={getCoordsFromMap} />
-                {canEdit && <div className={styles.caption}>Click on the map to place the probe.</div>}
-              </div>
-              <Field
-                error="Region is required"
-                invalid={Boolean(errors.region)}
-                required
-                label="Region"
-                description="Region of this probe"
-                disabled={!canEdit}
-              >
-                <Input
-                  {...form.register('region', { required: true })}
-                  label="Region"
-                  type="text"
-                  placeholder="Region"
-                />
-              </Field>
-            </div>
-            {canEdit && <LabelField isEditor={canEdit} limit={3} />}
-            <div className={styles.buttonWrapper}>
-              {canEdit && (
-                <>
-                  <Button
-                    icon={loading ? 'fa fa-spinner' : undefined}
-                    type="submit"
-                    disabled={isSubmitting || Object.keys(errors ?? {}).length > 0}
+    <div className={styles.name}>
+      <div className={styles.container}>
+        <div>
+          <FormProvider {...form}>
+            <form onSubmit={handleSubmit}>
+              <div>
+                <Label description={description} className={styles.marginBottom}>
+                  {`This probe is ${probe.public ? 'public' : 'private'}.`}
+                </Label>
+                <Field
+                  error="Name is required"
+                  invalid={Boolean(errors.name)}
+                  label="Probe Name"
+                  description="Unique name for this probe."
+                  disabled={!canEdit}
+                  required
+                >
+                  <Input
+                    type="text"
+                    maxLength={32}
+                    {...form.register('name', {
+                      required: true,
+                      maxLength: 32,
+                    })}
+                    placeholder="Probe name"
+                  />
+                </Field>
+                <div>
+                  <Legend>Location information</Legend>
+                  <Field
+                    error="Must be between -90 and 90"
+                    invalid={Boolean(errors.latitude)}
+                    required
+                    label="Latitude"
+                    description="Latitude coordinates for this probe."
+                    disabled={!canEdit}
                   >
-                    {submitText}
-                  </Button>
-                </>
-              )}
-              {actions}
-              <LinkButton variant="secondary" href={getRoute(ROUTES.Probes)}>
-                Back
-              </LinkButton>
+                    <Input
+                      {...form.register('latitude', {
+                        required: true,
+                        max: 90,
+                        min: -90,
+                        valueAsNumber: true,
+                      })}
+                      label="Latitude"
+                      max={90}
+                      min={-90}
+                      step={0.00001}
+                      type="number"
+                      placeholder="0.0"
+                    />
+                  </Field>
+                  <Field
+                    error="Must be between -180 and 180"
+                    invalid={Boolean(errors.longitude)}
+                    required
+                    label="Longitude"
+                    description="Longitude coordinates for this probe."
+                    disabled={!canEdit}
+                  >
+                    <Input
+                      {...form.register('longitude', {
+                        required: true,
+                        max: 180,
+                        min: -180,
+                        valueAsNumber: true,
+                      })}
+                      label="Longitude"
+                      max={180}
+                      min={-180}
+                      step={0.00001}
+                      type="number"
+                      placeholder="0.0"
+                    />
+                  </Field>
+                  <div className={styles.marginBottom}>
+                    <SimpleMap canEdit={canEdit} latitude={latitude} longitude={longitude} onClick={getCoordsFromMap} />
+                    {canEdit && <div className={styles.caption}>Click on the map to place the probe.</div>}
+                  </div>
+                  <Field
+                    error="Region is required"
+                    invalid={Boolean(errors.region)}
+                    required
+                    label="Region"
+                    description="Region of this probe."
+                    disabled={!canEdit}
+                  >
+                    <Input
+                      {...form.register('region', { required: true })}
+                      label="Region"
+                      type="text"
+                      placeholder="Region"
+                    />
+                  </Field>
+                </div>
+                {canEdit && <LabelField isEditor={canEdit} limit={3} />}
+                <div className={styles.buttonWrapper}>
+                  {canEdit && (
+                    <>
+                      <Button
+                        icon={loading ? 'fa fa-spinner' : undefined}
+                        type="submit"
+                        disabled={isSubmitting || Object.keys(errors ?? {}).length > 0}
+                      >
+                        {submitText}
+                      </Button>
+                    </>
+                  )}
+                  {actions}
+                  <LinkButton variant="secondary" href={getRoute(ROUTES.Probes)}>
+                    Back
+                  </LinkButton>
+                </div>
+              </div>
+            </form>
+          </FormProvider>
+          {errorInfo && (
+            <div className={styles.marginTop} ref={alertRef}>
+              <Alert title={errorInfo.title} severity="error">
+                {errorInfo.message}
+              </Alert>
             </div>
-          </div>
-        </form>
-      </FormProvider>
-      {errorInfo && (
-        <div className={styles.marginTop} ref={alertRef}>
-          <Alert title={errorInfo.title} severity="error">
-            {errorInfo.message}
-          </Alert>
+          )}
         </div>
-      )}
+        {supportingContent && <div className={styles.supportingWrapper}>{supportingContent}</div>}
+      </div>
     </div>
   );
 };
 
-const getStyles = (theme: GrafanaTheme2) => ({
-  container: css({
-    maxWidth: `425px`,
-  }),
-  buttonWrapper: css({
-    display: `flex`,
-    gap: theme.spacing(1),
-    marginTop: theme.spacing(4),
-  }),
-  marginTop: css({
-    marginTop: theme.spacing(2),
-  }),
-  marginBottom: css({
-    marginBottom: theme.spacing(2),
-  }),
-  caption: css({
-    fontStyle: `italic`,
-  }),
-});
+const getStyles = (theme: GrafanaTheme2) => {
+  const containerQuery = `@container ${containerName} (max-width: ${theme.breakpoints.values.md}px)`;
+  const mediaQuery = `@supports not (container-type: inline-size) @media (max-width: ${theme.breakpoints.values.md}px)`;
+
+  return {
+    name: css({
+      containerName,
+      containerType: `inline-size`,
+    }),
+    container: css({
+      display: 'grid',
+      gridTemplateColumns: `repeat(2, 1fr)`,
+      gap: theme.spacing(4),
+      width: `850px`,
+      maxWidth: `100%`,
+
+      [containerQuery]: {
+        gridTemplateColumns: '1fr',
+      },
+      [mediaQuery]: {
+        gridTemplateColumns: '1fr',
+      },
+    }),
+    buttonWrapper: css({
+      display: `flex`,
+      gap: theme.spacing(1),
+      marginTop: theme.spacing(4),
+    }),
+    marginTop: css({
+      marginTop: theme.spacing(2),
+    }),
+    marginBottom: css({
+      marginBottom: theme.spacing(2),
+    }),
+    caption: css({
+      fontStyle: `italic`,
+    }),
+    supportingWrapper: css({
+      [containerQuery]: {
+        borderTop: `1px solid ${theme.colors.border.medium}`,
+        paddingTop: theme.spacing(4),
+      },
+      [mediaQuery]: {
+        borderTop: `1px solid ${theme.colors.border.medium}`,
+        paddingTop: theme.spacing(4),
+      },
+    }),
+  };
+};

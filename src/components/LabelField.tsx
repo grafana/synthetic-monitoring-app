@@ -17,7 +17,7 @@ export const LabelField = ({ isEditor, limit }: Props) => {
   return (
     <Field
       label="Labels"
-      description="Custom labels to be included with collected metrics and logs."
+      description="Custom labels to be included with collected metrics and logs. You can add up to three."
       disabled={!isEditor}
     >
       <NameValueInput

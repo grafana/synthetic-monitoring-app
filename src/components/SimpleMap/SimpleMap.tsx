@@ -1,7 +1,11 @@
-import React, { useEffect, useRef } from 'react';
-import { css } from '@emotion/css';
+import React, { useEffect, useRef, useState } from 'react';
+import { GrafanaTheme2 } from '@grafana/data';
+import { useStyles2 } from '@grafana/ui';
+import { css, cx } from '@emotion/css';
+import { platformModifierKeyOnly } from 'ol/events/condition';
 import Feature from 'ol/Feature.js';
 import Point from 'ol/geom/Point.js';
+import { defaults, MouseWheelZoom } from 'ol/interaction';
 import TileLayer from 'ol/layer/Tile';
 import VectorLayer from 'ol/layer/Vector';
 import Map from 'ol/Map';
@@ -23,10 +27,18 @@ interface Props {
 export const SimpleMap = ({ canEdit, latitude, longitude, onClick }: Props) => {
   const mapDivRef = useRef<HTMLDivElement>(null);
   const markerRef = useRef<Feature<Point> | null>(null);
+  const styles = useStyles2(getStyles);
+  const mousePointerOver = useRef<boolean>(false);
+  const [showWheelHelper, setShowWheelHelperText] = useState(false);
 
   useEffect(() => {
     if (mapDivRef.current) {
       const map = new Map({
+        interactions: defaults({ mouseWheelZoom: false }).extend([
+          new MouseWheelZoom({
+            condition: platformModifierKeyOnly,
+          }),
+        ]),
         layers: [new TileLayer({ source: new OSM() })],
         target: mapDivRef.current,
         view: new View({
@@ -86,5 +98,79 @@ export const SimpleMap = ({ canEdit, latitude, longitude, onClick }: Props) => {
     }
   }, [longitude, latitude]);
 
-  return <div ref={mapDivRef} className={css({ width: `100%`, height: `400px` })} />;
+  useEffect(() => {
+    const key = isMac() ? `metaKey` : `ctrlKey`;
+
+    const handleWheel = (event: WheelEvent) => {
+      if (mousePointerOver.current) {
+        setShowWheelHelperText(event[key] ? false : true);
+      }
+    };
+
+    const handleMousedown = (event: MouseEvent) => {
+      if (mousePointerOver.current) {
+        setShowWheelHelperText(false);
+      }
+    };
+
+    document.addEventListener('wheel', handleWheel);
+    document.addEventListener('mousedown', handleMousedown);
+
+    return () => {
+      document.removeEventListener('wheel', handleWheel);
+      document.removeEventListener('mousedown', handleMousedown);
+    };
+  }, []);
+
+  return (
+    <div className={styles.container}>
+      <div
+        ref={mapDivRef}
+        className={styles.map}
+        onMouseEnter={() => (mousePointerOver.current = true)}
+        onMouseLeave={() => {
+          mousePointerOver.current = false;
+          setShowWheelHelperText(false);
+        }}
+      />
+      <div className={cx(styles.overlay, { [styles.active]: showWheelHelper })}>
+        <div>
+          Hold <kbd>{isMac() ? `command` : `ctrl`}</kbd> to enable zooming with your mousewheel.
+        </div>
+      </div>
+    </div>
+  );
 };
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  container: css({
+    position: `relative`,
+  }),
+  map: css({
+    height: `400px`,
+    width: `100%`,
+  }),
+  overlay: css({
+    alignItems: `center`,
+    backgroundColor: `rgba(0,0,0,0.5)`,
+    display: `flex`,
+    height: `100%`,
+    justifyContent: `center`,
+    left: 0,
+    opacity: 0,
+    padding: theme.spacing(3),
+    pointerEvents: `none`,
+    position: `absolute`,
+    textAlign: `center`,
+    top: 0,
+    transition: `opacity 0.3s ease-in-out`,
+    width: `100%`,
+  }),
+  active: css({
+    opacity: 1,
+  }),
+});
+
+function isMac() {
+  return navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+}

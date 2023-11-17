@@ -63,13 +63,12 @@ it('renders labels', async () => {
   expect(label).toBeInTheDocument();
 });
 
-// Card.Heading HAS A SUPER FRUSTRATING IMPLEMENTATION IN GRAFANA SO TEMPOARILY DISABLED
-// it('handles probe click', async () => {
-//   const { history, user } = renderProbeList();
-//   const tacosProbe = await screen.findByText('tacos');
-//   await user.click(tacosProbe);
-//   expect(history.location.pathname).toBe(`${getRoute(ROUTES.EditProbe)}/35`);
-// });
+it('handles probe click', async () => {
+  const { history, user } = renderProbeList();
+  const tacosProbe = await screen.findByText('tacos');
+  await user.click(tacosProbe);
+  expect(history.location.pathname).toBe(`${getRoute(ROUTES.EditProbe)}/35`);
+});
 
 it('handles add new', async () => {
   const { history, user } = renderProbeList();

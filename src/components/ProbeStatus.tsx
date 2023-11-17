@@ -21,22 +21,6 @@ interface BadgeStatus {
   icon: IconName;
 }
 
-const getStyles = (theme: GrafanaTheme2) => ({
-  legend: css`
-    margin: 0 ${theme.spacing(1)} 0 0;
-    width: auto;
-  `,
-  container: css`
-    padding-left: ${theme.spacing(1)};
-    margin-bottom: ${theme.spacing(2)};
-  `,
-  badgeContainer: css`
-    margin-bottom: ${theme.spacing(1)};
-    display: flex;
-    align-items: center;
-  `,
-});
-
 const getBadgeStatus = (online: boolean): BadgeStatus => {
   if (online) {
     return {
@@ -65,6 +49,8 @@ export const ProbeStatus = ({ canEdit, probe, onReset }: Props) => {
   }
 
   const badgeStatus = getBadgeStatus(probe.online);
+  const neverModified = probe.created === probe.modified;
+  const neverOnline = probe.onlineChange === probe.created && !probe.online;
 
   return (
     <div>
@@ -90,6 +76,61 @@ export const ProbeStatus = ({ canEdit, probe, onReset }: Props) => {
         )}
       </div>
       <SuccessRateGauge title="Reachability" id={probe.id!} type={SuccessRateTypes.Probes} height={200} width={300} />
+      <div className={styles.metaWrapper}>
+        <Meta title="Version:" value={probe.version} />
+        <Meta
+          title={`Last ${probe.online ? `offline` : `online`}:`}
+          value={neverOnline ? `Never` : formatDate(probe.onlineChange * 1000)}
+        />
+        {probe.modified && (
+          <Meta title="Last modified:" value={neverModified ? `Never` : formatDate(probe.modified * 1000)} />
+        )}
+      </div>
     </div>
   );
 };
+
+const Meta = ({ title, value }: { title: string; value: string }) => {
+  const styles = useStyles2(getStyles);
+
+  return (
+    <div className={styles.metaItem}>
+      <div className={css({ fontWeight: 700 })}>{title}</div>
+      <div>{value}</div>
+    </div>
+  );
+};
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  legend: css({
+    margin: theme.spacing(0, 1, 0, 0),
+    width: `auto`,
+  }),
+  container: css({
+    paddingLeft: theme.spacing(1),
+    marginBottom: theme.spacing(2),
+  }),
+  badgeContainer: css({
+    marginBottom: theme.spacing(1),
+    display: `flex`,
+    alignItems: `center`,
+  }),
+  metaWrapper: css({
+    display: `flex`,
+    gap: theme.spacing(1),
+    flexDirection: `column`,
+    marginTop: theme.spacing(2),
+    paddingLeft: theme.spacing(1),
+  }),
+  metaItem: css({ display: `flex`, gap: theme.spacing(0.5) }),
+});
+
+function formatDate(number: number) {
+  return new Date(number).toLocaleString('en-US', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}

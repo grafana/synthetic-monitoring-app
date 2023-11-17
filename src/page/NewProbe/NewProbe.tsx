@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
+import { Alert, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { type Probe, ROUTES } from 'types';
 import { type CreateProbeResult, useCreateProbe } from 'data/useProbes';
 import { useNavigation } from 'hooks/useNavigation';
+import { BackendAddress } from 'components/BackendAddress';
+import { DocsLink } from 'components/DocsLink';
 import { PluginPage } from 'components/PluginPage';
 import { ProbeEditor } from 'components/ProbeEditor';
 import { ProbeTokenModal } from 'components/ProbeTokenModal';
@@ -57,11 +60,16 @@ export const NewProbe = ({ refetchProbes }: NewProbeProps) => {
 
   return (
     <PluginPage pageNav={{ text: `New private probe` }}>
-      <div className={css({ display: `flex` })}>
-        <ProbeEditor errorInfo={errorInfo} onSubmit={handleSubmit} probe={probe} submitText="Add new probe" />
-      </div>
+      <ProbeEditor
+        errorInfo={errorInfo}
+        onSubmit={handleSubmit}
+        probe={probe}
+        submitText="Add new probe"
+        supportingContent={<SettingUpAProbe />}
+      />
       <ProbeTokenModal
         isOpen={showTokenModal}
+        actionText="Go back to probes list"
         onDismiss={() => {
           navigate(ROUTES.Probes);
           setShowTokenModal(false);
@@ -69,5 +77,22 @@ export const NewProbe = ({ refetchProbes }: NewProbeProps) => {
         token={probeToken}
       />
     </PluginPage>
+  );
+};
+
+const SettingUpAProbe = () => {
+  const theme = useTheme2();
+
+  return (
+    <div>
+      <BackendAddress omitHttp />
+      <DocsLink article="addPrivateProbe" className={css({ marginBottom: theme.spacing(2) })}>
+        Learn how to run a private probe
+      </DocsLink>
+      <Alert severity="info" title="Note">
+        You must reconfigure any existing checks to use your new probe even if you selected all probes when initially
+        creating the check.
+      </Alert>
+    </div>
   );
 };
