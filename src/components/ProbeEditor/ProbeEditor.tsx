@@ -19,8 +19,6 @@ type ProbeEditorProps = {
   supportingContent?: ReactNode;
 };
 
-const containerName = `probeEditor`;
-
 export const ProbeEditor = ({
   actions,
   errorInfo,
@@ -58,7 +56,7 @@ export const ProbeEditor = ({
   }, [alertRef, errorInfo]);
 
   return (
-    <div className={styles.name}>
+    <div className={styles.containerWrapper}>
       <div className={styles.container}>
         <div>
           <FormProvider {...form}>
@@ -76,6 +74,7 @@ export const ProbeEditor = ({
                   required
                 >
                   <Input
+                    aria-label="Probe name"
                     type="text"
                     maxLength={32}
                     {...form.register('name', {
@@ -102,12 +101,12 @@ export const ProbeEditor = ({
                         min: -90,
                         valueAsNumber: true,
                       })}
-                      label="Latitude"
+                      aria-label="Latitude"
                       max={90}
                       min={-90}
+                      placeholder="0.0"
                       step={0.00001}
                       type="number"
-                      placeholder="0.0"
                     />
                   </Field>
                   <Field
@@ -125,7 +124,7 @@ export const ProbeEditor = ({
                         min: -180,
                         valueAsNumber: true,
                       })}
-                      label="Longitude"
+                      aria-label="Longitude"
                       max={180}
                       min={-180}
                       step={0.00001}
@@ -138,12 +137,12 @@ export const ProbeEditor = ({
                     {canEdit && <div className={styles.caption}>Click on the map to place the probe.</div>}
                   </div>
                   <Field
-                    error="Region is required"
-                    invalid={Boolean(errors.region)}
-                    required
                     label="Region"
                     description="Region of this probe."
                     disabled={!canEdit}
+                    error="Region is required"
+                    invalid={Boolean(errors.region)}
+                    required
                   >
                     <Input
                       {...form.register('region', { required: true })}
@@ -189,11 +188,13 @@ export const ProbeEditor = ({
 };
 
 const getStyles = (theme: GrafanaTheme2) => {
-  const containerQuery = `@container ${containerName} (max-width: ${theme.breakpoints.values.md}px)`;
-  const mediaQuery = `@supports not (container-type: inline-size) @media (max-width: ${theme.breakpoints.values.md}px)`;
+  const containerName = `probeEditor`;
+  const breakpoint = theme.breakpoints.values.md;
+  const containerQuery = `@container ${containerName} (max-width: ${breakpoint}px)`;
+  const mediaQuery = `@supports not (container-type: inline-size) @media (max-width: ${breakpoint}px)`;
 
   return {
-    name: css({
+    containerWrapper: css({
       containerName,
       containerType: `inline-size`,
     }),
