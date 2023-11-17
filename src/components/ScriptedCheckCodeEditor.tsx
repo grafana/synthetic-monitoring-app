@@ -28,6 +28,7 @@ interface Props {
 export interface ScriptedFormValues {
   name: string;
   target: string;
+  enabled: boolean;
   script: string;
   probes: number[];
   timeout: number;
@@ -61,6 +62,7 @@ export function ScriptedCheckCodeEditor({ onSubmit, script, saving }: Props) {
     defaultValues: {
       script: script ?? DEFAULT_SCRIPT,
       probes: [],
+      enabled: true,
       timeout: 30,
       frequency: 120,
     },

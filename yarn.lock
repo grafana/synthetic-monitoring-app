@@ -1427,6 +1427,17 @@
   dependencies:
     tslib "^2.4.0"
 
+"@grafana/cloud-features@https://storage.googleapis.com/cloud-features/cloud-features-v1.14.0.tgz":
+  version "1.14.0"
+  resolved "https://storage.googleapis.com/cloud-features/cloud-features-v1.14.0.tgz#d39b6c6afa911adc0f8447a4de788f2f060dbf20"
+  dependencies:
+    "@reduxjs/toolkit" "~1.9.5"
+    cidr-regex "^4.0.3"
+    lodash "~4.17.21"
+    p-queue "~7.4.1"
+    react-redux "~8.1.3"
+    uuid "~9.0.1"
+
 "@grafana/data@10.1.4":
   version "10.1.4"
   resolved "https://registry.yarnpkg.com/@grafana/data/-/data-10.1.4.tgz#9d18681fce8570bca65cb3a2db6b40026b2a2b1f"
@@ -3108,7 +3119,7 @@
   resolved "https://registry.yarnpkg.com/@react-types/shared/-/shared-3.21.0.tgz#1af41fdf7dfbdbd33bbc1210617c43ed0d4ef20c"
   integrity sha512-wJA2cUF8dP4LkuNUt9Vh2kkfiQb2NLnV2pPXxVnKJZ7d4x2/7VPccN+LYPnH8m0X3+rt50cxWuPKQmjxSsCFOg==
 
-"@reduxjs/toolkit@^1.8.3":
+"@reduxjs/toolkit@^1.8.3", "@reduxjs/toolkit@~1.9.5":
   version "1.9.7"
   resolved "https://registry.yarnpkg.com/@reduxjs/toolkit/-/toolkit-1.9.7.tgz#7fc07c0b0ebec52043f8cb43510cf346405f78a6"
   integrity sha512-t7v8ZPxhhKgOKtU+uyJT13lu4vL7az5aFi4IdoDs/eS548edn2M8Ik9h8fxgvMjGoAUVFSt6ZC1P5cWmQ014QQ==
@@ -3586,6 +3597,14 @@
     "@types/react" "*"
     hoist-non-react-statics "^3.3.0"
 
+"@types/hoist-non-react-statics@^3.3.1":
+  version "3.3.5"
+  resolved "https://registry.yarnpkg.com/@types/hoist-non-react-statics/-/hoist-non-react-statics-3.3.5.tgz#dab7867ef789d87e2b4b0003c9d65c49cc44a494"
+  integrity sha512-SbcrWzkKBw2cdwRTwQAswfpB9g9LJWfjtUeW/jvNwbhC8cpmmNYVePa+ncbUe0rGTQ7G3Ff6mYUN2VMfLVr+Sg==
+  dependencies:
+    "@types/react" "*"
+    hoist-non-react-statics "^3.3.0"
+
 "@types/ip-address@^7.0.0":
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/@types/ip-address/-/ip-address-7.0.0.tgz#3cd1512a4b9ed62234cc1b47dd374911963e7023"
@@ -3829,6 +3848,11 @@
   version "4.0.3"
   resolved "https://registry.yarnpkg.com/@types/tough-cookie/-/tough-cookie-4.0.3.tgz#3d06b6769518450871fbc40770b7586334bdfd90"
   integrity sha512-THo502dA5PzG/sfQH+42Lw3fvmYkceefOspdCwpHRul8ik2Jv1K8I5OZz1AT3/rs46kwgMCe9bSBmDLYkkOMGg==
+
+"@types/use-sync-external-store@^0.0.3":
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/@types/use-sync-external-store/-/use-sync-external-store-0.0.3.tgz#b6725d5f4af24ace33b36fafd295136e75509f43"
+  integrity sha512-EwmlvuaxPNej9+T4v5AuBPJa2x2UOJVdjCtDHgcDqitUeOtjnJKJ+apYjVcAoBEMjKW1VVFGZLUb5+qqa09XFA==
 
 "@types/valid-url@^1.0.3":
   version "1.0.5"
@@ -5376,6 +5400,13 @@ ci-info@^3.2.0:
   version "3.9.0"
   resolved "https://registry.yarnpkg.com/ci-info/-/ci-info-3.9.0.tgz#4279a62028a7b1f262f3473fc9605f5e218c59b4"
   integrity sha512-NIxF55hv4nSqQswkAeiOi1r83xy8JldOFDTWiug55KBu9Jnblncd2U6ViHmYgHf01TPZS77NJBhBMKdWj9HQMQ==
+
+cidr-regex@^4.0.3:
+  version "4.0.3"
+  resolved "https://registry.yarnpkg.com/cidr-regex/-/cidr-regex-4.0.3.tgz#07b52c9762d1ff546a50740e92fc2b5b13a6d871"
+  integrity sha512-HOwDIy/rhKeMf6uOzxtv7FAbrz8zPjmVKfSpM+U7/bNBXC5rtOyr758jxcptiSx6ZZn5LOhPJT5WWxPAGDV8dw==
+  dependencies:
+    ip-regex "^5.0.0"
 
 cjs-module-lexer@^1.0.0:
   version "1.2.3"
@@ -7548,6 +7579,11 @@ eventemitter3@5.0.0:
   resolved "https://registry.yarnpkg.com/eventemitter3/-/eventemitter3-5.0.0.tgz#084eb7f5b5388df1451e63f4c2aafd71b217ccb3"
   integrity sha512-riuVbElZZNXLeLEoprfNYoDSwTBRR44X3mnhdI1YcnENpWTCsTTVZ2zFuqQcpoyqPQIUXdiPEU0ECAq0KQRaHg==
 
+eventemitter3@^5.0.1:
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/eventemitter3/-/eventemitter3-5.0.1.tgz#53f5ffd0a492ac800721bb42c66b841de96423c4"
+  integrity sha512-GWkBvjiSZK87ELrYOSESUYeVIc9mvLLf/nXalMOS5dYrgZq9o5OVkbZAVM06CVxYsCwH9BDZFPlQTlPA1j4ahA==
+
 events@^3.2.0:
   version "3.3.0"
   resolved "https://registry.yarnpkg.com/events/-/events-3.3.0.tgz#31a95ad0a924e2d2c419a813aeb2c4e878ea7400"
@@ -9046,6 +9082,11 @@ ip-regex@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/ip-regex/-/ip-regex-2.1.0.tgz#fa78bf5d2e6913c911ce9f819ee5146bb6d844e9"
   integrity sha512-58yWmlHpp7VYfcdTwMTvwMmqx/Elfxjd9RXTDyMsbL7lLWmhMylLEqiYVLKuLzOZqVgiWXD9MfR62Vv89VRxkw==
+
+ip-regex@^5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/ip-regex/-/ip-regex-5.0.0.tgz#cd313b2ae9c80c07bd3851e12bf4fa4dc5480632"
+  integrity sha512-fOCG6lhoKKakwv+C6KdsOnGvgXnmgfmp0myi3bcNwj3qfwPAxRKWEuFhvEFF7ceYIz6+1jRZ+yguLFAmUNPEfw==
 
 ip@^1.1.5:
   version "1.1.8"
@@ -10708,7 +10749,7 @@ lodash.uniq@^4.5.0:
   resolved "https://registry.yarnpkg.com/lodash.uniq/-/lodash.uniq-4.5.0.tgz#d0225373aeb652adc1bc82e4945339a842754773"
   integrity sha512-xfBaXQd9ryd9dlSDvnvI0lvxfLJlYAZzXomUYzLKtUeOQvOP5piqAWuGtrhWeqaXK9hhoM/iyJc5AV+XfsX3HQ==
 
-lodash@4.17.21, lodash@^4.1.1, lodash@^4.17.14, lodash@^4.17.15, lodash@^4.17.19, lodash@^4.17.20, lodash@^4.17.21, lodash@^4.17.4, lodash@^4.3.0:
+lodash@4.17.21, lodash@^4.1.1, lodash@^4.17.14, lodash@^4.17.15, lodash@^4.17.19, lodash@^4.17.20, lodash@^4.17.21, lodash@^4.17.4, lodash@^4.3.0, lodash@~4.17.21:
   version "4.17.21"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.21.tgz#679591c564c3bffaae8454cf0b3df370c3d6911c"
   integrity sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==
@@ -11675,6 +11716,19 @@ p-map@^4.0.0:
   integrity sha512-/bjOqmgETBYB5BoEeGVea8dmvHb2m9GLy1E9W43yeyfP6QQCZGFNa+XRceJEuDB6zqr+gKpIAmlLebMpykw/MQ==
   dependencies:
     aggregate-error "^3.0.0"
+
+p-queue@~7.4.1:
+  version "7.4.1"
+  resolved "https://registry.yarnpkg.com/p-queue/-/p-queue-7.4.1.tgz#7f86f853048beca8272abdbb7cec1ed2afc0f265"
+  integrity sha512-vRpMXmIkYF2/1hLBKisKeVYJZ8S2tZ0zEAmIJgdVKP2nq0nh4qCdf8bgw+ZgKrkh71AOCaqzwbJJk1WtdcF3VA==
+  dependencies:
+    eventemitter3 "^5.0.1"
+    p-timeout "^5.0.2"
+
+p-timeout@^5.0.2:
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/p-timeout/-/p-timeout-5.1.0.tgz#b3c691cf4415138ce2d9cfe071dba11f0fee085b"
+  integrity sha512-auFDyzzzGZZZdHz3BtET9VEz0SE/uMEAx7uWfGPucfzEwwe/xH0iVeZibQmANYE/hp9T2+UUZT5m+BKyrDp3Ew==
 
 p-timeout@~4.1.0:
   version "4.1.0"
@@ -12790,6 +12844,18 @@ react-redux@^7.2.0, react-redux@^7.2.2:
     loose-envify "^1.4.0"
     prop-types "^15.7.2"
     react-is "^17.0.2"
+
+react-redux@~8.1.3:
+  version "8.1.3"
+  resolved "https://registry.yarnpkg.com/react-redux/-/react-redux-8.1.3.tgz#4fdc0462d0acb59af29a13c27ffef6f49ab4df46"
+  integrity sha512-n0ZrutD7DaX/j9VscF+uTALI3oUPa/pO4Z3soOBIjuRn/FzVu6aehhysxZCLi6y7duMf52WNZGMl7CtuK5EnRw==
+  dependencies:
+    "@babel/runtime" "^7.12.1"
+    "@types/hoist-non-react-statics" "^3.3.1"
+    "@types/use-sync-external-store" "^0.0.3"
+    hoist-non-react-statics "^3.3.2"
+    react-is "^18.0.0"
+    use-sync-external-store "^1.0.0"
 
 react-resizable@^3.0.4:
   version "3.0.5"
@@ -15262,6 +15328,11 @@ use-memo-one@^1.1.1:
   resolved "https://registry.yarnpkg.com/use-memo-one/-/use-memo-one-1.1.3.tgz#2fd2e43a2169eabc7496960ace8c79efef975e99"
   integrity sha512-g66/K7ZQGYrI6dy8GLpVcMsBp4s17xNkYJVSMvTEevGy3nDxHOfE6z8BVE22+5G5x7t3+bhzrlTDB7ObrEE0cQ==
 
+use-sync-external-store@^1.0.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/use-sync-external-store/-/use-sync-external-store-1.2.0.tgz#7dbefd6ef3fe4e767a0cf5d7287aacfb5846928a"
+  integrity sha512-eEgnFxGQ1Ife9bzYs6VLi8/4X6CObHMw9Qr9tPY43iKwsPw8xE8+EFsf/2cFZ5S3esXgpWgtSCtLNS41F+sKPA==
+
 use@^3.1.0:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/use/-/use-3.1.1.tgz#d50c8cac79a19fbc20f2911f56eb973f4e10070f"
@@ -15305,7 +15376,7 @@ uuid@^3.3.2:
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.4.0.tgz#b23e4358afa8a202fe7a100af1f5f883f02007ee"
   integrity sha512-HjSDRw6gZE5JMggctHBcjVak08+KEVhSIiDzFnT9S9aegmp85S/bReBVTb4QTFaRNptJ9kuYaNhnbNEOkbKb/A==
 
-uuid@^9.0.0:
+uuid@^9.0.0, uuid@~9.0.1:
   version "9.0.1"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-9.0.1.tgz#e188d4c8853cc722220392c424cd637f32293f30"
   integrity sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==

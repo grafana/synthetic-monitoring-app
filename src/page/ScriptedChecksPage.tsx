@@ -11,6 +11,7 @@ import { PLUGIN_URL_PATH } from 'components/constants';
 import { NewScriptedCheck } from 'components/NewScriptedCheck';
 import { ScriptedCheckCodeEditor, ScriptedFormValues } from 'components/ScriptedCheckCodeEditor';
 import { ScriptedCheckList } from 'components/ScriptedCheckList';
+import { ScriptedCheckScene } from 'scenes/Scripted/ScriptedCheckScene';
 
 const newCheckParent = { text: 'New check', url: `${PLUGIN_URL_PATH}${ROUTES.ScriptedChecks}/new` };
 
@@ -18,7 +19,7 @@ export function ScriptedChecksPage() {
   const theme = useTheme2();
   const [saving, setSaving] = useState(false);
   const { instance } = useContext(InstanceContext);
-  const { loading } = useContext(ChecksContext);
+  const { loading, scriptedChecks } = useContext(ChecksContext);
   const handleSubmit = async (
     { name, target, script, frequency, timeout, ...rest }: ScriptedFormValues,
     errors: any
@@ -35,7 +36,6 @@ export function ScriptedChecksPage() {
       target,
       frequency: frequency * 1000,
       timeout: timeout * 1000,
-      enabled: false,
       labels: [],
       basicMetricsOnly: true,
       alertSensitivity: '',
@@ -49,6 +49,7 @@ export function ScriptedChecksPage() {
   };
 
   const { path } = useRouteMatch();
+
   if (loading) {
     return <LoadingPlaceholder text={undefined} />;
   }
@@ -79,7 +80,7 @@ export function ScriptedChecksPage() {
         </PluginPage>
       </Route>
       <Route path={path}>
-        <ScriptedCheckList />
+        <ScriptedCheckScene />
       </Route>
     </Switch>
   );

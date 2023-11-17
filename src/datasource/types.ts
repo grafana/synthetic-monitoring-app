@@ -1,9 +1,12 @@
 import { DataQuery, DataSourceJsonData, VariableModel } from '@grafana/data';
 
+import { Check } from 'types';
+
 export enum QueryType {
   Probes = 'probes',
   Checks = 'checks',
   Traceroute = 'traceroute',
+  ScriptedChecks = 'scriptedChecks',
 }
 
 export interface SMQuery extends DataQuery {
@@ -11,6 +14,7 @@ export interface SMQuery extends DataQuery {
   instance?: string;
   job?: string;
   probe?: string;
+  checks?: Check[];
   query: string;
 }
 

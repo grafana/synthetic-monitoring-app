@@ -495,3 +495,5 @@ export const REACHABILITY_DESCRIPTION =
   'The success rate of all the probes. Reachability decreases when any probe fails.';
 export const LATENCY_DESCRIPTION =
   'The average time to receive an answer across all the checks during the whole time period.';
+
+export const SCRIPTED_RUNTIME_DS_UID = 'sm-scripted-checks-ds';

@@ -5,6 +5,9 @@ import {
   DataQueryResponse,
   DataSourceApi,
   DataSourceInstanceSettings,
+  Field,
+  FieldType,
+  LoadingState,
   MetricFindValue,
   ScopedVars,
 } from '@grafana/data';
@@ -146,6 +149,9 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
         const dataFrames = parseTracerouteLogs(response);
 
         return { data: dataFrames };
+      } else if (query.queryType === QueryType.ScriptedChecks) {
+        const result = this.scriptedChecksQuery(query.checks);
+        return result;
       }
     }
     return { data };
@@ -259,6 +265,42 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       .then((res: any) => {
         return res.data;
       });
+  }
+
+  scriptedChecksQuery(checks: Check[] = []) {
+    return {
+      state: LoadingState.Done,
+      data: [
+        {
+          length: checks.length,
+          fields: checks.reduce<Field[]>(
+            (df, check) => {
+              df.forEach((field) => {
+                if (field.name === 'job') {
+                  field.values.push(check.job);
+                }
+                if (field.name === 'instance') {
+                  field.values.push(check.target);
+                }
+                if (field.name === 'probes') {
+                  field.values.push(check.probes);
+                }
+                if (field.name === 'id') {
+                  field.values.push(check.id);
+                }
+              });
+              return df;
+            },
+            [
+              { name: 'job', type: FieldType.string, values: [] as string[], config: {} },
+              { name: 'id', type: FieldType.number, values: [] as number[], config: {} },
+              { name: 'instance', type: FieldType.string, values: [] as string[], config: {} },
+              { name: 'probes', type: FieldType.other, values: [] as any[], config: {} },
+            ]
+          ),
+        },
+      ],
+    };
   }
 
   //--------------------------------------------------------------------------------

@@ -1,36 +1,112 @@
 import React, { useContext } from 'react';
-import { PluginPage } from '@grafana/runtime';
-import { useSceneApp } from '@grafana/scenes';
-import { Alert } from '@grafana/ui';
+import { Table } from '@grafana/cloud-features';
+import { config, PluginPage } from '@grafana/runtime';
+import { SceneComponentProps, sceneGraph, SceneObjectBase } from '@grafana/scenes';
+import { LoadingState } from '@grafana/schema';
+import { Alert, Drawer, IconButton, LoadingPlaceholder } from '@grafana/ui';
 
-import { ROUTES } from 'types';
+import { Check, ROUTES } from 'types';
 import { ChecksContext } from 'contexts/ChecksContext';
-import { InstanceContext } from 'contexts/InstanceContext';
 import { useNavigation } from 'hooks/useNavigation';
-import { getScriptedChecksScene } from 'scenes/Scripted/scriptedCheckScene';
 
-export function ScriptedCheckList() {
+import { ScriptedCheckCodeEditor } from './ScriptedCheckCodeEditor';
+
+interface DataTableScriptedCheck extends Check {
+  up?: number;
+  uptime?: number;
+  reachability?: number;
+  notFound?: boolean;
+}
+
+export class ScriptedChecksListSceneObject extends SceneObjectBase {
+  static Component = ScriptedCheckList;
+}
+
+export function ScriptedCheckList({ model }: SceneComponentProps<any>) {
   const navigate = useNavigation();
-  const { scriptedChecks: checks } = useContext(ChecksContext);
-  const { instance } = useContext(InstanceContext);
+  const { scriptedChecks: checks, refetchChecks } = useContext(ChecksContext);
+  const [editCheck, setEditCheck] = React.useState<Check | undefined>(undefined);
 
-  const metricsDef = {
-    uid: instance.metrics?.uid,
-    type: instance.metrics?.type,
-  };
-  const logsDef = {
-    uid: instance.logs?.uid,
-    type: instance.logs?.type,
-  };
-  const smDef = {
-    uid: instance.api?.uid,
-    type: instance.api?.type,
-  };
+  const data = sceneGraph.getData(model).useState();
+  const fields = data.data?.series?.[0]?.fields;
+  const tableData = checks.map((check) => {
+    const dataIndex = data.data?.series?.[0]?.fields?.[0]?.values.findIndex((v) => v === check.job);
+    if (dataIndex === undefined || dataIndex < 0) {
+      return {
+        ...check,
+        notFound: true,
+      };
+    }
+    return {
+      ...check,
+      up: fields?.[3]?.values?.[dataIndex],
+      uptime: fields?.[4]?.values?.[dataIndex],
+      reachability: fields?.[5]?.values?.[dataIndex],
+      notFound: false,
+    };
+  });
 
-  const scene = useSceneApp(getScriptedChecksScene({ metrics: metricsDef, logs: logsDef, sm: smDef }, checks));
-  if (!instance.api || !instance.metrics || !instance.logs) {
-    return null;
-  }
+  const columns = [
+    {
+      sortable: true,
+      selector: (row: DataTableScriptedCheck) => row.up,
+      cell: (row: DataTableScriptedCheck) => {
+        if (row.up === undefined) {
+          return <div></div>;
+        }
+        if (row.up === 1) {
+          return <div>Up</div>;
+        }
+        return <div>Down</div>;
+      },
+    },
+    {
+      name: 'job',
+      sortable: true,
+      selector: (row: DataTableScriptedCheck) => row.job,
+    },
+    {
+      name: 'interface',
+      sortable: true,
+      selector: (row: DataTableScriptedCheck) => row.target,
+    },
+    {
+      name: 'uptime',
+      sortable: true,
+      selector: (row: DataTableScriptedCheck) => row.uptime,
+      cell: (row: DataTableScriptedCheck) => {
+        if (!row.uptime) {
+          return <div></div>;
+        }
+        const percent = row.uptime * 100;
+        if (percent === 100) {
+          return <div>{percent}%</div>;
+        }
+        return <div>{percent.toFixed(2)}%</div>;
+      },
+    },
+
+    {
+      name: 'probes',
+      sortable: true,
+      selector: (row: DataTableScriptedCheck) => row.probes,
+    },
+    {
+      cell: (row: DataTableScriptedCheck) => {
+        return (
+          <IconButton
+            name="edit"
+            aria-label="Edit check"
+            onClick={() => {
+              console.log('edit', row.id);
+              setEditCheck(row);
+            }}
+          />
+        );
+      },
+    },
+  ];
+
   if (checks.length === 0) {
     return (
       <PluginPage pageNav={{ text: 'Scripted checks' }}>
@@ -50,15 +126,38 @@ export function ScriptedCheckList() {
     );
   }
 
+  if (data.data?.state === LoadingState.Loading) {
+    return <LoadingPlaceholder text={undefined} />;
+  }
   return (
-    // <PluginPage pageNav={{ text: 'Scripted checks' }}>
-    // <Button onClick={() => navigate(`${ROUTES.ScriptedChecks}/new`)}>Add new</Button>
-    <scene.Component model={scene} />
-    //   <ul>
-    //     {checks.map((check, index) => {
-    //       return <li key={index}>{check.job}</li>;
-    //     })}
-    //   </ul>
-    // </PluginPage>
+    <div>
+      <Table<DataTableScriptedCheck>
+        id="scripted-checks-table"
+        name="scripted-checks-table"
+        noDataText="No scripted checks found"
+        columns={columns}
+        config={config}
+        data={tableData}
+        pagination
+      />
+      {editCheck && (
+        <Drawer
+          title={`Editing ${editCheck.job}`}
+          size="md"
+          onClose={() => {
+            setEditCheck(undefined);
+          }}
+        >
+          <ScriptedCheckCodeEditor
+            onSubmit={(values: any, errors: any) => {
+              console.log(values);
+              refetchChecks();
+              return Promise.resolve();
+            }}
+            saving={false}
+          />
+        </Drawer>
+      )}
+    </div>
   );
 }
