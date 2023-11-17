@@ -1,5 +1,5 @@
 // Libraries
-import React, { useContext, useEffect,useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Route, Switch, useRouteMatch } from 'react-router-dom';
 
 // Types
@@ -41,7 +41,7 @@ export const ProbeRouter = () => {
   }
 
   return (
-    <SuccessRateContextProvider probes={probes}>
+    <SuccessRateContextProvider onlyProbes probes={probes}>
       <Switch>
         <Route path={path} exact>
           <ProbeList
