@@ -1,6 +1,6 @@
 import React from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
-import { Button, Field, HorizontalGroup, Icon, IconButton, Input, useTheme,VerticalGroup } from '@grafana/ui';
+import { Button, Field, HorizontalGroup, Icon, IconButton, Input, useTheme, VerticalGroup } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 interface Props {
@@ -28,11 +28,13 @@ export const NameValueInput = ({ name, disabled, limit, label, validateName, val
       {fields.map((field, index) => (
         <HorizontalGroup key={field.id} align="flex-start">
           <Field
+            aria-label={`Label ${index + 1} Name `}
             invalid={Boolean(fieldError?.[index]?.name?.type)}
             error={fieldError?.[index]?.name?.message}
             className={css`
               margin-bottom: 0;
             `}
+            required
           >
             <Input
               {...register(`${name}.${index}.name`, { required: true, validate: validateName })}
@@ -43,11 +45,13 @@ export const NameValueInput = ({ name, disabled, limit, label, validateName, val
             />
           </Field>
           <Field
+            aria-label={`Label ${index + 1} value `}
             invalid={Boolean(fieldError?.[index]?.value)}
             error={fieldError?.[index]?.value?.message}
             className={css`
               margin-bottom: 0;
             `}
+            required
           >
             <Input
               {...register(`${name}.${index}.value`, { required: true, validate: validateValue })}

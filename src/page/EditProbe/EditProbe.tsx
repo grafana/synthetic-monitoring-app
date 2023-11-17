@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { OrgRole } from '@grafana/data';
-import { Button, ConfirmModal, HorizontalGroup } from '@grafana/ui';
+import { GrafanaTheme2, OrgRole } from '@grafana/data';
+import { Button, ConfirmModal, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 
 import { type Probe, type ProbePageParams, ROUTES } from 'types';
 import { hasRole } from 'utils';
@@ -11,6 +12,8 @@ import { PluginPage } from 'components/PluginPage';
 import { ProbeEditor } from 'components/ProbeEditor';
 import { ProbeStatus } from 'components/ProbeStatus';
 import { ProbeTokenModal } from 'components/ProbeTokenModal';
+
+import { getErrorInfo, getTitle } from './EditProbe.utils';
 
 type EditProbeProps = {
   probes: Probe[];
@@ -29,7 +32,7 @@ export const EditProbe = ({ probes, refetchProbes }: EditProbeProps) => {
   }, [navigate, probe, probes]);
 
   return (
-    <PluginPage pageNav={{ text: `Editing ${probe ? probe.name : ``}` }}>
+    <PluginPage pageNav={{ text: getTitle(probe) }}>
       {probe && <EditProbeContent probe={probe} refetchProbes={refetchProbes} />}
     </PluginPage>
   );
@@ -40,8 +43,9 @@ const EditProbeContent = ({ probe, refetchProbes }: { probe: Probe; refetchProbe
   const [probeToken, setProbeToken] = useState(``);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const navigate = useNavigation();
-  const { onUpdate, error } = useUpdateProbe();
-  const { onDelete } = useDeleteProbe();
+  const { onUpdate, error: updateError } = useUpdateProbe();
+  const { onDelete, error: deleteError } = useDeleteProbe();
+  const styles = useStyles2(getStyles);
 
   const onReset = (token: string) => {
     setShowTokenModal(true);
@@ -49,11 +53,12 @@ const EditProbeContent = ({ probe, refetchProbes }: { probe: Probe; refetchProbe
   };
 
   const onUpdateSuccess = (res: UpdateProbeResult) => {
+    refetchProbes();
     navigate(ROUTES.Probes);
   };
 
   const handleSubmit = (formValues: Probe) => {
-    onUpdate(
+    return onUpdate(
       {
         ...probe,
         ...formValues,
@@ -63,12 +68,18 @@ const EditProbeContent = ({ probe, refetchProbes }: { probe: Probe; refetchProbe
   };
 
   const handleDelete = () => {
-    onDelete(probe, () => {
+    return onDelete(probe, () => {
       setShowDeleteModal(false);
       refetchProbes();
       navigate(ROUTES.Probes);
     });
   };
+
+  useEffect(() => {
+    if (deleteError) {
+      setShowDeleteModal(false);
+    }
+  }, [deleteError]);
 
   const canEdit = !probe.public && hasRole(OrgRole.Editor);
   const actions = canEdit ? (
@@ -77,25 +88,20 @@ const EditProbeContent = ({ probe, refetchProbes }: { probe: Probe; refetchProbe
     </Button>
   ) : null;
 
-  const errorInfo = error
-    ? {
-        title: 'Failed to update probe',
-        message: error.message,
-      }
-    : undefined;
-
   return (
     <>
-      <HorizontalGroup align="flex-start">
+      <div className={styles.wrapper}>
         <ProbeEditor
           actions={actions}
-          errorInfo={errorInfo}
+          errorInfo={getErrorInfo(updateError, deleteError)}
           onSubmit={handleSubmit}
           probe={probe}
           submitText="Update probe"
         />
-        <ProbeStatus canEdit={canEdit} probe={probe} onReset={onReset} />
-      </HorizontalGroup>
+        <div className={styles.statusWrapper}>
+          <ProbeStatus canEdit={canEdit} probe={probe} onReset={onReset} />
+        </div>
+      </div>
       <ProbeTokenModal isOpen={showTokenModal} onDismiss={() => setShowTokenModal(false)} token={probeToken} />
       <ConfirmModal
         isOpen={showDeleteModal}
@@ -108,3 +114,28 @@ const EditProbeContent = ({ probe, refetchProbes }: { probe: Probe; refetchProbe
     </>
   );
 };
+
+const mediaQuery = (theme: GrafanaTheme2) => `@media (max-width: ${theme.breakpoints.values.md}px)`;
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  wrapper: css({
+    display: 'flex',
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    gap: theme.spacing(4),
+
+    [mediaQuery(theme)]: {
+      flexDirection: 'column',
+
+      [' > *']: {
+        width: `100%`,
+      },
+    },
+  }),
+  statusWrapper: css({
+    [mediaQuery(theme)]: {
+      padding: theme.spacing(2),
+      border: `1px solid ${theme.colors.border.medium}`,
+    },
+  }),
+});

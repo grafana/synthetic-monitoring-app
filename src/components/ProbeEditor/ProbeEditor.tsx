@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useCallback, useEffect, useRef } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { GrafanaTheme2, OrgRole } from '@grafana/data';
 import { Alert, Button, Field, Input, Label, Legend, LinkButton, useStyles2 } from '@grafana/ui';
@@ -25,27 +25,35 @@ export const ProbeEditor = ({ actions, errorInfo, onSubmit, probe, submitText }:
   const { latitude, longitude } = form.watch();
   const handleSubmit = form.handleSubmit((formValues: Probe) => onSubmit(formValues));
   const { errors, isSubmitting } = form.formState;
+  const alertRef = useRef<HTMLDivElement>(null);
+  const loading = form.formState.isSubmitting;
+
+  const getCoordsFromMap = useCallback(
+    ([long, lat]: number[]) => {
+      form.setValue('longitude', +long.toFixed(5));
+      form.setValue('latitude', +lat.toFixed(5));
+    },
+    [form]
+  );
+
+  const description = probe.public
+    ? 'Public probes are run by Grafana Labs and can be used by all users. They cannot be edited.'
+    : 'Private probes are operated by your organization and can only run your checks.';
+
+  useEffect(() => {
+    if (alertRef.current && errorInfo) {
+      alertRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [alertRef, errorInfo]);
 
   return (
-    <>
+    <div>
       <FormProvider {...form}>
         <form onSubmit={handleSubmit}>
           <div>
-            {probe.public ? (
-              <Label
-                description="Public probes are run by Grafana Labs and can be used by all users."
-                className={styles.marginBottom}
-              >
-                This probe is public
-              </Label>
-            ) : (
-              <Label
-                description="Private probes are operated by your organization and can only run your checks."
-                className={styles.marginBottom}
-              >
-                This probe is private
-              </Label>
-            )}
+            <Label description={description} className={styles.marginBottom}>
+              {`This probe is ${probe.public ? 'public' : 'private'}.`}
+            </Label>
             <Field
               error="Name is required"
               invalid={Boolean(errors.name)}
@@ -61,7 +69,6 @@ export const ProbeEditor = ({ actions, errorInfo, onSubmit, probe, submitText }:
                   required: true,
                   maxLength: 32,
                 })}
-                id="probe-name-input"
                 placeholder="Probe name"
               />
             </Field>
@@ -86,7 +93,6 @@ export const ProbeEditor = ({ actions, errorInfo, onSubmit, probe, submitText }:
                   max={90}
                   min={-90}
                   step={0.00001}
-                  id="probe-editor-latitude"
                   type="number"
                   placeholder="0.0"
                 />
@@ -110,14 +116,14 @@ export const ProbeEditor = ({ actions, errorInfo, onSubmit, probe, submitText }:
                   max={180}
                   min={-180}
                   step={0.00001}
-                  id="probe-editor-longitude"
                   type="number"
                   placeholder="0.0"
                 />
               </Field>
-              <SimpleMap latitude={latitude} longitude={longitude} />
-            </div>
-            <div>
+              <div className={styles.marginBottom}>
+                <SimpleMap canEdit={canEdit} latitude={latitude} longitude={longitude} onClick={getCoordsFromMap} />
+                {canEdit && <div className={styles.caption}>Click on the map to place the probe.</div>}
+              </div>
               <Field
                 error="Region is required"
                 invalid={Boolean(errors.region)}
@@ -125,7 +131,6 @@ export const ProbeEditor = ({ actions, errorInfo, onSubmit, probe, submitText }:
                 label="Region"
                 description="Region of this probe"
                 disabled={!canEdit}
-                aria-label="Region"
               >
                 <Input
                   {...form.register('region', { required: true })}
@@ -139,7 +144,11 @@ export const ProbeEditor = ({ actions, errorInfo, onSubmit, probe, submitText }:
             <div className={styles.buttonWrapper}>
               {canEdit && (
                 <>
-                  <Button type="submit" disabled={isSubmitting || Object.keys(errors ?? {}).length > 0}>
+                  <Button
+                    icon={loading ? 'fa fa-spinner' : undefined}
+                    type="submit"
+                    disabled={isSubmitting || Object.keys(errors ?? {}).length > 0}
+                  >
                     {submitText}
                   </Button>
                 </>
@@ -153,13 +162,13 @@ export const ProbeEditor = ({ actions, errorInfo, onSubmit, probe, submitText }:
         </form>
       </FormProvider>
       {errorInfo && (
-        <div className={styles.marginTop}>
+        <div className={styles.marginTop} ref={alertRef}>
           <Alert title={errorInfo.title} severity="error">
             {errorInfo.message}
           </Alert>
         </div>
       )}
-    </>
+    </div>
   );
 };
 
@@ -167,11 +176,15 @@ const getStyles = (theme: GrafanaTheme2) => ({
   buttonWrapper: css({
     display: `flex`,
     gap: theme.spacing(1),
+    marginTop: theme.spacing(4),
   }),
   marginTop: css({
     marginTop: theme.spacing(2),
   }),
   marginBottom: css({
     marginBottom: theme.spacing(2),
+  }),
+  caption: css({
+    fontStyle: `italic`,
   }),
 });

@@ -1,6 +1,7 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import { useAsyncCallback } from 'react-async-hook';
 import { AppEvents } from '@grafana/data';
+import { type FetchError, isFetchError } from '@grafana/runtime';
 import appEvents from 'grafana/app/core/app_events';
 
 import { type Probe } from 'types';
@@ -66,20 +67,20 @@ export function useCreateProbe() {
         ...probe,
         public: false,
       });
-      console.log(info);
+
       reportEvent(event);
       appEvents.emit(AppEvents.alertSuccess, [`Created probe ${info.probe.name}`]);
       onSuccess(info);
     }
   );
 
-  useOnError({ event, error, alert: `` });
+  const err = useOnError({ event, error, alert: `` });
 
   return {
-    result,
-    onCreate: execute,
-    error,
+    error: err,
     loading,
+    onCreate: execute,
+    result,
   };
 }
 
@@ -105,12 +106,12 @@ export function useUpdateProbe() {
     }
   );
 
-  useOnError({ event, error });
+  const err = useOnError({ event, error });
 
   return {
     result,
     onUpdate: execute,
-    error,
+    error: err,
     loading,
   };
 }
@@ -131,13 +132,13 @@ export function useDeleteProbe() {
     onSuccess();
   });
 
-  useOnError({ event, error, alert: `Failed to delete probe` });
+  const err = useOnError({ event, error, alert: `Failed to delete probe` });
 
   return {
-    result,
-    onDelete: execute,
-    error,
+    error: err,
     loading,
+    onDelete: execute,
+    result,
   };
 }
 
@@ -156,27 +157,37 @@ export function useResetProbeToken(probe: Probe, onSuccess: (token: string) => v
     onSuccess(token);
   });
 
-  useOnError({ event, error, alert: `Failed to reset probe token` });
+  const err = useOnError({ event, error, alert: `Failed to reset probe token` });
 
   return {
-    result,
-    onResetToken: execute,
-    error,
+    error: err,
     loading,
+    onResetToken: execute,
+    result,
   };
 }
 
 type useOnErrorProps = {
   event: FaroEvent;
-  error?: Error;
+  error?: Error | FetchError;
   alert?: string;
 };
 
 function useOnError({ event, error, alert }: useOnErrorProps) {
+  const formattedError = useMemo(() => {
+    if (!error) {
+      return undefined;
+    }
+
+    return isFetchError(error) ? new Error(`${error.data.err} (${error.status})`) : error;
+  }, [error]);
+
   useEffect(() => {
-    if (error) {
-      reportError(error.message, event);
+    if (formattedError) {
+      reportError(formattedError.message, event);
       alert && appEvents.emit(AppEvents.alertError, [alert]);
     }
-  }, [error, event, alert]);
+  }, [formattedError, event, alert]);
+
+  return formattedError;
 }

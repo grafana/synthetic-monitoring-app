@@ -18,7 +18,7 @@ export const ProbeTokenModal = ({ isOpen, onDismiss, token }: TokenModalProps) =
         <DocsLink article="addPrivateProbe">Learn how to run a private probe</DocsLink>
 
         <Alert severity="warning" title="Note">
-          This is the only time you will see this token. If you need to see it again, you will need to reset the token.
+          This is the only time you will see this token. If you need to view it again, you will need to reset the token.
         </Alert>
       </VerticalGroup>
     </Modal>

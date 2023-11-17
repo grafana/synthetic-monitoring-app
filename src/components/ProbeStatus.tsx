@@ -67,7 +67,7 @@ export const ProbeStatus = ({ canEdit, probe, onReset }: Props) => {
   const badgeStatus = getBadgeStatus(probe.online);
 
   return (
-    <Container margin="md">
+    <div>
       <div className={styles.container}>
         <div className={styles.badgeContainer}>
           <Legend className={styles.legend}>Status:</Legend>
@@ -90,6 +90,6 @@ export const ProbeStatus = ({ canEdit, probe, onReset }: Props) => {
         )}
       </div>
       <SuccessRateGauge title="Reachability" id={probe.id!} type={SuccessRateTypes.Probes} height={200} width={300} />
-    </Container>
+    </div>
   );
 };
