@@ -77,8 +77,8 @@ const ProbesContent = ({ error, loading, probes }: ProbesProps) => {
 const PrivateProbesEmptyText = () => {
   return (
     <>
-      No private probes have been added yet. Read more about{' '}
-      <DocsLink article="privateProbes">private probes in our documentation.</DocsLink>
+      <div>No private probes have been added yet.</div>
+      Read more about <DocsLink article="privateProbes">private probes in our documentation.</DocsLink>
     </>
   );
 };

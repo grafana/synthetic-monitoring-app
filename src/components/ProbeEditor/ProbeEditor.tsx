@@ -47,7 +47,7 @@ export const ProbeEditor = ({ actions, errorInfo, onSubmit, probe, submitText }:
   }, [alertRef, errorInfo]);
 
   return (
-    <div>
+    <div className={styles.container}>
       <FormProvider {...form}>
         <form onSubmit={handleSubmit}>
           <div>
@@ -173,6 +173,9 @@ export const ProbeEditor = ({ actions, errorInfo, onSubmit, probe, submitText }:
 };
 
 const getStyles = (theme: GrafanaTheme2) => ({
+  container: css({
+    maxWidth: `425px`,
+  }),
   buttonWrapper: css({
     display: `flex`,
     gap: theme.spacing(1),
