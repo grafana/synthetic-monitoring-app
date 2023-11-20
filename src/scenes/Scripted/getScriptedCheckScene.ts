@@ -230,12 +230,9 @@ function getCheckDrilldownPage(config: DashboardSceneAppConfig, checks: Check[])
       datasource: config.metrics,
     });
 
-    // const probes = getProb
     return new SceneAppPage({
       $variables: new SceneVariableSet({ variables: [probes, job, instance] }),
-      // Setup particular handler drilldown URL
       url: `${PLUGIN_URL_PATH}${ROUTES.ScriptedChecks}/${encodeURIComponent(checkId)}`,
-      // Important: setup this for breadcrumbs to be built
       getParentPage: () => parent,
       title: `${check?.job} overview`,
       getScene: () => getCheckDrilldownScene(config, check),

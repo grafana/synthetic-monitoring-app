@@ -125,7 +125,6 @@ export function ScriptedCheckCodeEditor({ onSubmit, script, saving, checkId }: P
       onSubmit(updatedCheck, null);
     }
     if (checkId) {
-      console.log('hiiiii', checkId, rest);
       return instance.api
         ?.updateCheck(updatedCheck)
         .then(() => {
@@ -143,7 +142,22 @@ export function ScriptedCheckCodeEditor({ onSubmit, script, saving, checkId }: P
           });
         });
     } else {
-      return instance.api?.addCheck(updatedCheck).finally(() => console.log('done'));
+      return instance.api
+        ?.addCheck(updatedCheck)
+        .then(() => {
+          appEvents.publish({
+            type: AppEvents.alertSuccess.name,
+            payload: [
+              'Check updated successfully. It will take a minute or two for changes to be reflected in the results.',
+            ],
+          });
+        })
+        .catch((e) => {
+          appEvents.publish({
+            type: AppEvents.alertError.name,
+            payload: ['Check update failed', e.message ?? ''],
+          });
+        });
     }
   };
 

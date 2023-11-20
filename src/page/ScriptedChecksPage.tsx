@@ -24,11 +24,6 @@ export function ScriptedChecksPage() {
     errors: any
   ) => {
     setSaving(true);
-    // if (errors) {
-    //   console.error(errors);
-    //   return;
-    // }
-    // try {
     const check = {
       ...rest,
       job,
