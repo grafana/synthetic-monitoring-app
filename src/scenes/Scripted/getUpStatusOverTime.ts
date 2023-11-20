@@ -1,42 +1,51 @@
 import { SceneQueryRunner } from '@grafana/scenes';
 import { DataSourceRef, ThresholdsMode } from '@grafana/schema';
 
-import { Check } from 'types';
-import { REACHABILITY_DESCRIPTION } from 'components/constants';
 import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
-function getQueryRunner(metrics: DataSourceRef, check?: Check) {
+function getQueryRunner(metrics: DataSourceRef) {
   return new SceneQueryRunner({
     datasource: metrics,
     queries: [
       {
-        exemplar: true,
-        expr: `sum(
-          increase(probe_all_success_sum{instance="${check?.target}", job="${check?.job}"}[$__range])
-        )
-        /
-        sum(
-          increase(probe_all_success_count{instance="${check?.target}", job="${check?.job}"}[$__range])
-        )`,
+        expr: `
+          ceil(
+            sum by (probe)
+            (
+              rate(probe_all_success_sum{instance="$instance", job="$job", probe=~".*"}[5m])
+              *
+              on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"k6" })
+            )
+            /
+            sum by (probe)
+            (
+              rate(probe_all_success_count{instance="$instance", job="$job", probe=~".*"}[5m])
+              *
+              on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"k6" })
+            )
+          )
+        `,
+        format: 'table',
         hide: false,
-        instant: true,
+        instant: false,
         interval: '',
-        legendFormat: '',
-        refId: 'reachabilityStat',
+        legendFormat: '{{check_name}}-{{instance}}-uptime',
+        refId: 'stateOverTime',
       },
     ],
   });
 }
 
-export function getReachabilityStatByCheckId(metrics: DataSourceRef, check?: Check) {
+export function getUpStatusOverTime(metrics: DataSourceRef) {
   return new ExplorablePanel({
-    pluginId: 'stat',
-    title: 'Reachability',
-    description: REACHABILITY_DESCRIPTION,
-    $data: getQueryRunner(metrics, check),
+    pluginId: 'timeseries',
+    title: 'State over time',
+    description: 'Whether check was up or down over time',
+    $data: getQueryRunner(metrics),
     fieldConfig: {
       defaults: {
         decimals: 2,
+        max: 1,
         thresholds: {
           mode: ThresholdsMode.Absolute,
           steps: [

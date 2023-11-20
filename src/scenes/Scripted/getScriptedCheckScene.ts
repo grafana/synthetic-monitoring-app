@@ -1,28 +1,34 @@
 import {
   CustomVariable,
   EmbeddedScene,
+  QueryVariable,
   SceneApp,
   SceneAppPage,
   SceneAppPageLike,
+  SceneControlsSpacer,
   SceneDataTransformer,
   SceneFlexItem,
   SceneFlexLayout,
   SceneQueryRunner,
   SceneReactObject,
+  SceneRefreshPicker,
   SceneRouteMatch,
   SceneTimeRange,
   SceneVariableSet,
+  VariableValueSelectors,
 } from '@grafana/scenes';
+import { VariableHide, VariableRefresh } from '@grafana/schema';
 
 import { Check, DashboardSceneAppConfig, ROUTES } from 'types';
+import { checkType } from 'utils';
 import { QueryType } from 'datasource/types';
 import { PLUGIN_URL_PATH } from 'components/constants';
 import { ScriptedCheckCodeEditor } from 'components/ScriptedCheckCodeEditor';
 import { ScriptedChecksListSceneObject } from 'components/ScriptedCheckList';
+import { getLatencyByProbePanel, getReachabilityStat, getUptimeStat } from 'scenes/Common';
 
-import { getReachabilityStatByCheckId } from './getReachabilityStatByCheckId';
 import { getScriptedLatencyByUrl } from './getScriptedLatencyByUrl';
-import { getUptimeStatByCheckId } from './getUptimeStatByCheckId';
+import { getUpStatusOverTime } from './getUpStatusOverTime';
 
 export function getScriptedChecksScene({ metrics, logs, sm }: DashboardSceneAppConfig, checks: Check[]) {
   const timeRange = new SceneTimeRange({
@@ -203,7 +209,30 @@ function getCheckDrilldownPage(config: DashboardSceneAppConfig, checks: Check[])
     // Retrieve handler from the URL params.
     const checkId = decodeURIComponent(routeMatch.params.checkId);
     const check = checks.find((c) => String(c.id) === checkId);
+    const job = new CustomVariable({
+      name: 'job',
+      value: check?.job,
+      hide: VariableHide.hideVariable,
+    });
+    const instance = new CustomVariable({
+      name: 'instance',
+      value: check?.target,
+      hide: VariableHide.hideVariable,
+    });
+    const probes = new QueryVariable({
+      includeAll: true,
+      allValue: '.*',
+      defaultToAll: true,
+      isMulti: true,
+      name: 'probe',
+      query: `label_values(sm_check_info{check_name="${checkType(check?.settings ?? {})}"},probe)`,
+      refresh: VariableRefresh.onDashboardLoad,
+      datasource: config.metrics,
+    });
+
+    // const probes = getProb
     return new SceneAppPage({
+      $variables: new SceneVariableSet({ variables: [probes, job, instance] }),
       // Setup particular handler drilldown URL
       url: `${PLUGIN_URL_PATH}${ROUTES.ScriptedChecks}/${encodeURIComponent(checkId)}`,
       // Important: setup this for breadcrumbs to be built
@@ -214,11 +243,24 @@ function getCheckDrilldownPage(config: DashboardSceneAppConfig, checks: Check[])
   };
 
   function getCheckDrilldownScene({ metrics }: DashboardSceneAppConfig, check?: Check) {
-    const uptime = getUptimeStatByCheckId(metrics, check);
-    const reachability = getReachabilityStatByCheckId(metrics, check);
-    const latencyByUrl = getScriptedLatencyByUrl(metrics, check);
+    const upStatusOverTime = getUpStatusOverTime(metrics);
+    const uptime = getUptimeStat(metrics);
+    const reachability = getReachabilityStat(metrics);
+
+    const latencyByProbe = getLatencyByProbePanel(metrics);
+
+    const latencyByUrl = getScriptedLatencyByUrl(metrics);
 
     return new EmbeddedScene({
+      controls: [
+        new VariableValueSelectors({}),
+        new SceneControlsSpacer(),
+        new SceneRefreshPicker({
+          intervals: ['5s', '1m', '1h'],
+          isOnCanvas: true,
+          refresh: '1m',
+        }),
+      ],
       body: new SceneFlexLayout({
         direction: 'row',
         children: [
@@ -234,8 +276,13 @@ function getCheckDrilldownPage(config: DashboardSceneAppConfig, checks: Check[])
                 }),
                 new SceneFlexLayout({
                   direction: 'row',
+                  height: 150,
+                  children: [new SceneFlexItem({ body: upStatusOverTime })],
+                }),
+                new SceneFlexLayout({
+                  direction: 'row',
                   height: 400,
-                  children: [new SceneFlexItem({ body: latencyByUrl })],
+                  children: [new SceneFlexItem({ body: latencyByUrl }), new SceneFlexItem({ body: latencyByProbe })],
                 }),
               ],
             }),

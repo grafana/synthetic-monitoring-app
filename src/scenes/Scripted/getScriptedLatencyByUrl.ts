@@ -10,7 +10,7 @@ function getQueryRunner(metrics: DataSourceRef, check?: Check) {
     queries: [
       {
         refId: 'A',
-        expr: `sum by (url) (probe_http_total_duration_seconds{job="${check?.job}", instance="${check?.target}"})`,
+        expr: `sum by (url) (probe_http_total_duration_seconds{job="$job", instance="$instance"})`,
         range: true,
         instant: false,
         legendFormat: '__auto',
@@ -20,8 +20,8 @@ function getQueryRunner(metrics: DataSourceRef, check?: Check) {
   });
 }
 
-export function getScriptedLatencyByUrl(metrics: DataSourceRef, check?: Check) {
-  const query = getQueryRunner(metrics, check);
+export function getScriptedLatencyByUrl(metrics: DataSourceRef) {
+  const query = getQueryRunner(metrics);
   return new ExplorablePanel({
     $data: query,
     pluginId: 'timeseries',

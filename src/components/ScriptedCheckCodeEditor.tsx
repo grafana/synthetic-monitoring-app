@@ -1,6 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { Controller, FormProvider, useForm } from 'react-hook-form';
-import { GrafanaTheme2 } from '@grafana/data';
+import { AppEvents, GrafanaTheme2 } from '@grafana/data';
+import { getAppEvents } from '@grafana/runtime';
 import { Alert, Button, Field, Input, Spinner, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
@@ -66,6 +67,8 @@ function getStyles(theme: GrafanaTheme2) {
   };
 }
 
+const appEvents = getAppEvents();
+
 export function ScriptedCheckCodeEditor({ onSubmit, script, saving, checkId }: Props) {
   const { instance } = useContext(InstanceContext);
   const { scriptedChecks: checks } = useContext(ChecksContext);
@@ -73,7 +76,7 @@ export function ScriptedCheckCodeEditor({ onSubmit, script, saving, checkId }: P
     script: script ?? DEFAULT_SCRIPT,
     probes: [] as number[],
     enabled: true,
-    timeout: 30,
+    timeout: 10,
     frequency: 120,
     job: '',
     target: '',
@@ -86,7 +89,7 @@ export function ScriptedCheckCodeEditor({ onSubmit, script, saving, checkId }: P
         script: atob(check.settings.k6?.script ?? ''),
         probes: check.probes,
         enabled: check.enabled,
-        timeout: check.timeout,
+        timeout: check.timeout / 1000,
         frequency: check.frequency / 1000,
         job: check.job,
         target: check.target,
@@ -118,8 +121,27 @@ export function ScriptedCheckCodeEditor({ onSubmit, script, saving, checkId }: P
         },
       },
     };
+    if (onSubmit) {
+      onSubmit(updatedCheck, null);
+    }
     if (checkId) {
-      return instance.api?.updateCheck(updatedCheck).finally(() => console.log('done'));
+      console.log('hiiiii', checkId, rest);
+      return instance.api
+        ?.updateCheck(updatedCheck)
+        .then(() => {
+          appEvents.publish({
+            type: AppEvents.alertSuccess.name,
+            payload: [
+              'Check updated successfully. It will take a minute or two for changes to be reflected in the results.',
+            ],
+          });
+        })
+        .catch((e) => {
+          appEvents.publish({
+            type: AppEvents.alertError.name,
+            payload: ['Check update failed', e.message ?? ''],
+          });
+        });
     } else {
       return instance.api?.addCheck(updatedCheck).finally(() => console.log('done'));
     }
@@ -132,10 +154,10 @@ export function ScriptedCheckCodeEditor({ onSubmit, script, saving, checkId }: P
           {submissionError}
         </Alert>
       )}
-      <Button type="submit" disabled={saving} className={styles.saveButton}>
-        {saving ? <Spinner /> : 'Save'}
+      <Button form="scripted-check-code-editor" type="submit" disabled={saving} className={styles.saveButton}>
+        {formMethods.formState.isSubmitting ? <Spinner /> : 'Save'}
       </Button>
-      <form onSubmit={handleSubmit(submit)} className={styles.form}>
+      <form id="scripted-check-code-editor" onSubmit={handleSubmit(submit)} className={styles.form}>
         <div className={styles.headerContainer}>
           <div className={styles.flexCol}>
             <Field label="Job name">
