@@ -1,18 +1,28 @@
 import {
+  CustomVariable,
   EmbeddedScene,
   SceneApp,
   SceneAppPage,
+  SceneAppPageLike,
   SceneDataTransformer,
   SceneFlexItem,
   SceneFlexLayout,
   SceneQueryRunner,
+  SceneReactObject,
+  SceneRouteMatch,
   SceneTimeRange,
+  SceneVariableSet,
 } from '@grafana/scenes';
 
 import { Check, DashboardSceneAppConfig, ROUTES } from 'types';
 import { QueryType } from 'datasource/types';
 import { PLUGIN_URL_PATH } from 'components/constants';
+import { ScriptedCheckCodeEditor } from 'components/ScriptedCheckCodeEditor';
 import { ScriptedChecksListSceneObject } from 'components/ScriptedCheckList';
+
+import { getReachabilityStatByCheckId } from './getReachabilityStatByCheckId';
+import { getScriptedLatencyByUrl } from './getScriptedLatencyByUrl';
+import { getUptimeStatByCheckId } from './getUptimeStatByCheckId';
 
 export function getScriptedChecksScene({ metrics, logs, sm }: DashboardSceneAppConfig, checks: Check[]) {
   const timeRange = new SceneTimeRange({
@@ -144,12 +154,31 @@ export function getScriptedChecksScene({ metrics, logs, sm }: DashboardSceneAppC
     ],
   });
 
+  const variables = new SceneVariableSet({
+    variables: [
+      new CustomVariable({
+        name: 'job',
+        value: 'hi',
+      }),
+      new CustomVariable({
+        name: 'instance',
+        value: '',
+      }),
+    ],
+  });
+
   return new SceneApp({
     pages: [
       new SceneAppPage({
         title: 'Scripted checks',
-        // hideFromBreadcrumbs: true,
+        $variables: variables,
         url: `${PLUGIN_URL_PATH}${ROUTES.ScriptedChecks}`,
+        drilldowns: [
+          {
+            routePath: `${PLUGIN_URL_PATH}${ROUTES.ScriptedChecks}/:checkId`,
+            getPage: getCheckDrilldownPage({ metrics, logs, sm }, checks),
+          },
+        ],
         getScene: () => {
           return new EmbeddedScene({
             $timeRange: timeRange,
@@ -167,4 +196,62 @@ export function getScriptedChecksScene({ metrics, logs, sm }: DashboardSceneAppC
       }),
     ],
   });
+}
+
+function getCheckDrilldownPage(config: DashboardSceneAppConfig, checks: Check[]) {
+  return function (routeMatch: SceneRouteMatch<{ checkId: string }>, parent: SceneAppPageLike) {
+    // Retrieve handler from the URL params.
+    const checkId = decodeURIComponent(routeMatch.params.checkId);
+    const check = checks.find((c) => String(c.id) === checkId);
+    return new SceneAppPage({
+      // Setup particular handler drilldown URL
+      url: `${PLUGIN_URL_PATH}${ROUTES.ScriptedChecks}/${encodeURIComponent(checkId)}`,
+      // Important: setup this for breadcrumbs to be built
+      getParentPage: () => parent,
+      title: `${check?.job} overview`,
+      getScene: () => getCheckDrilldownScene(config, check),
+    });
+  };
+
+  function getCheckDrilldownScene({ metrics }: DashboardSceneAppConfig, check?: Check) {
+    const uptime = getUptimeStatByCheckId(metrics, check);
+    const reachability = getReachabilityStatByCheckId(metrics, check);
+    const latencyByUrl = getScriptedLatencyByUrl(metrics, check);
+
+    return new EmbeddedScene({
+      body: new SceneFlexLayout({
+        direction: 'row',
+        children: [
+          new SceneFlexItem({
+            minHeight: 300,
+            body: new SceneFlexLayout({
+              direction: 'column',
+              children: [
+                new SceneFlexLayout({
+                  direction: 'row',
+                  height: 150,
+                  children: [new SceneFlexItem({ body: uptime }), new SceneFlexItem({ body: reachability })],
+                }),
+                new SceneFlexLayout({
+                  direction: 'row',
+                  height: 400,
+                  children: [new SceneFlexItem({ body: latencyByUrl })],
+                }),
+              ],
+            }),
+          }),
+          new SceneFlexItem({
+            minHeight: 300,
+            maxWidth: 700,
+            body: new SceneReactObject({
+              component: ScriptedCheckCodeEditor,
+              props: {
+                checkId: String(check?.id) ?? '',
+              },
+            }),
+          }),
+        ],
+      }),
+    });
+  }
 }

@@ -1,15 +1,57 @@
 import React, { useContext } from 'react';
 import { Table } from '@grafana/cloud-features';
+import { GrafanaTheme2 } from '@grafana/data';
 import { config, PluginPage } from '@grafana/runtime';
 import { SceneComponentProps, sceneGraph, SceneObjectBase } from '@grafana/scenes';
 import { LoadingState } from '@grafana/schema';
-import { Alert, Drawer, IconButton, LoadingPlaceholder } from '@grafana/ui';
+import { Alert, Icon, LoadingPlaceholder, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 
 import { Check, ROUTES } from 'types';
 import { ChecksContext } from 'contexts/ChecksContext';
 import { useNavigation } from 'hooks/useNavigation';
 
-import { ScriptedCheckCodeEditor } from './ScriptedCheckCodeEditor';
+function getStyles(theme: GrafanaTheme2) {
+  return {
+    error: css`
+      color: ${theme.colors.error.text};
+      text-align: center;
+    `,
+    warning: css`
+      color: ${theme.colors.warning.text};
+      text-align: center;
+    `,
+    green: css`
+      color: ${theme.colors.success.text};
+      text-align: center;
+    `,
+  };
+}
+
+function SuccessStateValue({ value }: { value?: number }) {
+  const styles = useStyles2(getStyles);
+  if (value === undefined) {
+    return <div> - </div>;
+  }
+  const percent = value * 100;
+  if (percent === 100) {
+    return <div className={styles.green}>{percent}%</div>;
+  }
+  let style;
+  switch (true) {
+    case percent > 99.5:
+      style = styles.green;
+      break;
+    case percent > 99:
+      style = styles.warning;
+      break;
+    case percent < 99:
+    default:
+      style = styles.error;
+      break;
+  }
+  return <div className={style}>{percent.toFixed(2)}%</div>;
+}
 
 interface DataTableScriptedCheck extends Check {
   up?: number;
@@ -24,8 +66,8 @@ export class ScriptedChecksListSceneObject extends SceneObjectBase {
 
 export function ScriptedCheckList({ model }: SceneComponentProps<any>) {
   const navigate = useNavigation();
-  const { scriptedChecks: checks, refetchChecks } = useContext(ChecksContext);
-  const [editCheck, setEditCheck] = React.useState<Check | undefined>(undefined);
+  const styles = useStyles2(getStyles);
+  const { scriptedChecks: checks } = useContext(ChecksContext);
 
   const data = sceneGraph.getData(model).useState();
   const fields = data.data?.series?.[0]?.fields;
@@ -50,14 +92,25 @@ export function ScriptedCheckList({ model }: SceneComponentProps<any>) {
     {
       sortable: true,
       selector: (row: DataTableScriptedCheck) => row.up,
+      width: '75px',
       cell: (row: DataTableScriptedCheck) => {
         if (row.up === undefined) {
           return <div></div>;
         }
         if (row.up === 1) {
-          return <div>Up</div>;
+          return (
+            <div className={styles.green}>
+              Up &nbsp;
+              <Icon name="arrow-up" />
+            </div>
+          );
         }
-        return <div>Down</div>;
+        return (
+          <div className={styles.error}>
+            Down &nbsp;
+            <Icon name="arrow-up" />
+          </div>
+        );
       },
     },
     {
@@ -66,7 +119,7 @@ export function ScriptedCheckList({ model }: SceneComponentProps<any>) {
       selector: (row: DataTableScriptedCheck) => row.job,
     },
     {
-      name: 'interface',
+      name: 'instance',
       sortable: true,
       selector: (row: DataTableScriptedCheck) => row.target,
     },
@@ -75,14 +128,7 @@ export function ScriptedCheckList({ model }: SceneComponentProps<any>) {
       sortable: true,
       selector: (row: DataTableScriptedCheck) => row.uptime,
       cell: (row: DataTableScriptedCheck) => {
-        if (!row.uptime) {
-          return <div></div>;
-        }
-        const percent = row.uptime * 100;
-        if (percent === 100) {
-          return <div>{percent}%</div>;
-        }
-        return <div>{percent.toFixed(2)}%</div>;
+        return <SuccessStateValue value={row.uptime} />;
       },
     },
 
@@ -90,20 +136,6 @@ export function ScriptedCheckList({ model }: SceneComponentProps<any>) {
       name: 'probes',
       sortable: true,
       selector: (row: DataTableScriptedCheck) => row.probes,
-    },
-    {
-      cell: (row: DataTableScriptedCheck) => {
-        return (
-          <IconButton
-            name="edit"
-            aria-label="Edit check"
-            onClick={() => {
-              console.log('edit', row.id);
-              setEditCheck(row);
-            }}
-          />
-        );
-      },
     },
   ];
 
@@ -136,28 +168,15 @@ export function ScriptedCheckList({ model }: SceneComponentProps<any>) {
         name="scripted-checks-table"
         noDataText="No scripted checks found"
         columns={columns}
+        onRowClicked={(row) => {
+          if (row.id) {
+            navigate(`${ROUTES.ScriptedChecks}/${row.id}`);
+          }
+        }}
         config={config}
         data={tableData}
         pagination
       />
-      {editCheck && (
-        <Drawer
-          title={`Editing ${editCheck.job}`}
-          size="md"
-          onClose={() => {
-            setEditCheck(undefined);
-          }}
-        >
-          <ScriptedCheckCodeEditor
-            onSubmit={(values: any, errors: any) => {
-              console.log(values);
-              refetchChecks();
-              return Promise.resolve();
-            }}
-            saving={false}
-          />
-        </Drawer>
-      )}
     </div>
   );
 }

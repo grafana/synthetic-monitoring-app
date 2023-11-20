@@ -53,6 +53,7 @@ export const Routing = ({ onNavChanged }: Pick<AppRootProps, 'onNavChanged'>) =>
 
   useLayoutEffect(() => {
     if (!provisioned || (!initialized && location.pathname !== getRoute(ROUTES.Home))) {
+      console.log('helllllo');
       navigate(ROUTES.Home);
     }
   }, [provisioned, initialized, location.pathname, navigate]);
@@ -83,7 +84,7 @@ export const Routing = ({ onNavChanged }: Pick<AppRootProps, 'onNavChanged'>) =>
         <ProbeRouter />
       </Route>
       {scriptedChecksEnabled && (
-        <Route path={`${PLUGIN_URL_PATH}${ROUTES.ScriptedChecks}`}>
+        <Route path={getRoute(ROUTES.ScriptedChecks)}>
           <ScriptedChecksPage />
         </Route>
       )}

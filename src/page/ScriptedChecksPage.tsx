@@ -10,7 +10,6 @@ import { InstanceContext } from 'contexts/InstanceContext';
 import { PLUGIN_URL_PATH } from 'components/constants';
 import { NewScriptedCheck } from 'components/NewScriptedCheck';
 import { ScriptedCheckCodeEditor, ScriptedFormValues } from 'components/ScriptedCheckCodeEditor';
-import { ScriptedCheckList } from 'components/ScriptedCheckList';
 import { ScriptedCheckScene } from 'scenes/Scripted/ScriptedCheckScene';
 
 const newCheckParent = { text: 'New check', url: `${PLUGIN_URL_PATH}${ROUTES.ScriptedChecks}/new` };
@@ -19,9 +18,9 @@ export function ScriptedChecksPage() {
   const theme = useTheme2();
   const [saving, setSaving] = useState(false);
   const { instance } = useContext(InstanceContext);
-  const { loading, scriptedChecks } = useContext(ChecksContext);
+  const { loading } = useContext(ChecksContext);
   const handleSubmit = async (
-    { name, target, script, frequency, timeout, ...rest }: ScriptedFormValues,
+    { job, target, script, frequency, timeout, ...rest }: ScriptedFormValues,
     errors: any
   ) => {
     setSaving(true);
@@ -32,7 +31,7 @@ export function ScriptedChecksPage() {
     // try {
     const check = {
       ...rest,
-      job: name,
+      job,
       target,
       frequency: frequency * 1000,
       timeout: timeout * 1000,
@@ -79,7 +78,7 @@ export function ScriptedChecksPage() {
           <ScriptedCheckCodeEditor onSubmit={handleSubmit} saving={saving} />
         </PluginPage>
       </Route>
-      <Route path={path}>
+      <Route path={`${path}`}>
         <ScriptedCheckScene />
       </Route>
     </Switch>
