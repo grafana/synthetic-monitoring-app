@@ -22,7 +22,7 @@ export default function main() {
 }`;
 
 interface Props {
-  onSubmit?: (values: any, errors: any) => Promise<any>;
+  onSubmit?: (values: any, errors: any) => void;
   saving?: boolean;
   script?: string;
   checkId?: string;
@@ -71,7 +71,7 @@ const appEvents = getAppEvents();
 
 export function ScriptedCheckCodeEditor({ onSubmit, script, saving, checkId }: Props) {
   const { instance } = useContext(InstanceContext);
-  const { scriptedChecks: checks } = useContext(ChecksContext);
+  const { checks } = useContext(ChecksContext);
   let defaultValues = {
     script: script ?? DEFAULT_SCRIPT,
     probes: [] as number[],
@@ -125,22 +125,12 @@ export function ScriptedCheckCodeEditor({ onSubmit, script, saving, checkId }: P
       onSubmit(updatedCheck, null);
     }
     if (checkId) {
-      return instance.api
-        ?.updateCheck(updatedCheck)
-        .then(() => {
-          appEvents.publish({
-            type: AppEvents.alertSuccess.name,
-            payload: [
-              'Check updated successfully. It will take a minute or two for changes to be reflected in the results.',
-            ],
-          });
-        })
-        .catch((e) => {
-          appEvents.publish({
-            type: AppEvents.alertError.name,
-            payload: ['Check update failed', e.message ?? ''],
-          });
+      return instance.api?.updateCheck(updatedCheck).catch((e) => {
+        appEvents.publish({
+          type: AppEvents.alertError.name,
+          payload: ['Check update failed', e.message ?? ''],
         });
+      });
     } else {
       return instance.api
         ?.addCheck(updatedCheck)

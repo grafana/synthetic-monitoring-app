@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { screen, waitFor, within } from '@testing-library/react';
-import { render } from 'test/render';
+import { createInstance, render } from 'test/render';
 
 import { ROUTES } from 'types';
+import { ChecksContext } from 'contexts/ChecksContext';
 import { DNS_RESPONSE_MATCH_OPTIONS, PLUGIN_URL_PATH } from 'components/constants';
 
 import { CheckEditor } from './CheckEditor';
@@ -30,12 +31,29 @@ jest.mock('hooks/useAlerts', () => ({
 beforeEach(() => jest.resetAllMocks());
 const onReturn = jest.fn();
 
+function LoadingWrapper({ children }: { children: JSX.Element }) {
+  const { loading } = useContext(ChecksContext);
+  if (loading) {
+    return null;
+  }
+  return children;
+}
+
 const renderExistingCheckEditor = async (route: string) => {
+  const instance = createInstance();
+  instance.api.listChecks = jest.fn().mockResolvedValue(BASIC_CHECK_LIST);
   const res = waitFor(() =>
-    render(<CheckEditor onReturn={onReturn} checks={BASIC_CHECK_LIST} />, {
-      route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`,
-      path: `${PLUGIN_URL_PATH}${ROUTES.Checks}${route}`,
-    })
+    render(
+      // We need this loading wrapper to handle the loading state of the ChecksContextProvider
+      <LoadingWrapper>
+        <CheckEditor onReturn={onReturn} />
+      </LoadingWrapper>,
+      {
+        route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`,
+        path: `${PLUGIN_URL_PATH}${ROUTES.Checks}${route}`,
+        instance,
+      }
+    )
   );
 
   return res;

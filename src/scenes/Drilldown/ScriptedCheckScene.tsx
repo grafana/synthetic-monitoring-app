@@ -4,11 +4,11 @@ import { useSceneApp } from '@grafana/scenes';
 import { ChecksContext } from 'contexts/ChecksContext';
 import { InstanceContext } from 'contexts/InstanceContext';
 
-import { getScriptedChecksScene } from './getScriptedCheckScene';
+import { getChecksDrilldownScene } from './getScriptedCheckScene';
 
 export function ScriptedCheckScene() {
   const { instance } = useContext(InstanceContext);
-  const { scriptedChecks: checks } = useContext(ChecksContext);
+  const { checks } = useContext(ChecksContext);
   const metricsDef = {
     uid: instance.metrics?.uid,
     type: instance.metrics?.type,
@@ -22,7 +22,7 @@ export function ScriptedCheckScene() {
     type: instance.api?.type,
   };
 
-  const scene = useSceneApp(() => getScriptedChecksScene({ metrics: metricsDef, logs: logsDef, sm: smDef }, checks));
+  const scene = useSceneApp(() => getChecksDrilldownScene({ metrics: metricsDef, logs: logsDef, sm: smDef }, checks));
 
   return <scene.Component model={scene} />;
 }

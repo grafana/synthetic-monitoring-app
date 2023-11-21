@@ -23,14 +23,14 @@ import { Check, DashboardSceneAppConfig, ROUTES } from 'types';
 import { checkType } from 'utils';
 import { QueryType } from 'datasource/types';
 import { PLUGIN_URL_PATH } from 'components/constants';
-import { ScriptedCheckCodeEditor } from 'components/ScriptedCheckCodeEditor';
+import { EditCheckDrawer } from 'components/EditCheckDrawer';
 import { ScriptedChecksListSceneObject } from 'components/ScriptedCheckList';
 import { getLatencyByProbePanel, getReachabilityStat, getUptimeStat } from 'scenes/Common';
 
-import { getScriptedLatencyByUrl } from './getScriptedLatencyByUrl';
-import { getUpStatusOverTime } from './getUpStatusOverTime';
+import { getScriptedLatencyByUrl } from '../Scripted/getScriptedLatencyByUrl';
+import { getUpStatusOverTime } from '../Scripted/getUpStatusOverTime';
 
-export function getScriptedChecksScene({ metrics, logs, sm }: DashboardSceneAppConfig, checks: Check[]) {
+export function getChecksDrilldownScene({ metrics, logs, sm }: DashboardSceneAppConfig, checks: Check[]) {
   const timeRange = new SceneTimeRange({
     from: 'now-6h',
     to: 'now',
@@ -57,7 +57,7 @@ export function getScriptedChecksScene({ metrics, logs, sm }: DashboardSceneAppC
               # so make it a 1 if there was at least one success and a 0 otherwise
               ceil(
                 # the number of successes across all probes
-                sum by (instance, job) (increase(probe_all_success_sum{}[5m]) * on (instance, job, probe, config_version) sm_check_info{check_name=~"k6" })
+                sum by (instance, job) (increase(probe_all_success_sum{}[5m]) * on (instance, job, probe, config_version) sm_check_info{check_name=~".*" })
                 /
                 # the total number of times we checked across all probes
                 (sum by (instance, job) (increase(probe_all_success_count[5m])) + 1) # + 1 because we want to make sure it goes to 1, not 2
@@ -80,14 +80,14 @@ export function getScriptedChecksScene({ metrics, logs, sm }: DashboardSceneAppC
             (
               rate(probe_all_success_sum[$__range])
               *
-              on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"k6" })
+              on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~".*" })
             )
             /
             sum by (instance, job)
             (
               rate(probe_all_success_count[$__range])
               *
-              on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"k6"})
+              on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~".*"})
             )`,
         format: 'table',
         instant: true,
@@ -105,14 +105,14 @@ export function getScriptedChecksScene({ metrics, logs, sm }: DashboardSceneAppC
             (
               rate(probe_all_success_sum[5m])
               *
-              on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"k6" })
+              on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~".*" })
             )
             /
             sum by (instance, job)
             (
               rate(probe_all_success_count[5m])
               *
-              on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"k6" })
+              on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~".*" })
             )
           )
         `,
@@ -176,12 +176,12 @@ export function getScriptedChecksScene({ metrics, logs, sm }: DashboardSceneAppC
   return new SceneApp({
     pages: [
       new SceneAppPage({
-        title: 'Scripted checks',
+        title: 'Checks',
         $variables: variables,
-        url: `${PLUGIN_URL_PATH}${ROUTES.ScriptedChecks}`,
+        url: `${PLUGIN_URL_PATH}${ROUTES.Checks}`,
         drilldowns: [
           {
-            routePath: `${PLUGIN_URL_PATH}${ROUTES.ScriptedChecks}/:checkId`,
+            routePath: `${PLUGIN_URL_PATH}${ROUTES.Checks}/:id`,
             getPage: getCheckDrilldownPage({ metrics, logs, sm }, checks),
           },
         ],
@@ -205,9 +205,9 @@ export function getScriptedChecksScene({ metrics, logs, sm }: DashboardSceneAppC
 }
 
 function getCheckDrilldownPage(config: DashboardSceneAppConfig, checks: Check[]) {
-  return function (routeMatch: SceneRouteMatch<{ checkId: string }>, parent: SceneAppPageLike) {
+  return function (routeMatch: SceneRouteMatch<{ id: string }>, parent: SceneAppPageLike) {
     // Retrieve handler from the URL params.
-    const checkId = decodeURIComponent(routeMatch.params.checkId);
+    const checkId = decodeURIComponent(routeMatch.params.id);
     const check = checks.find((c) => String(c.id) === checkId);
     const job = new CustomVariable({
       name: 'job',
@@ -232,7 +232,7 @@ function getCheckDrilldownPage(config: DashboardSceneAppConfig, checks: Check[])
 
     return new SceneAppPage({
       $variables: new SceneVariableSet({ variables: [probes, job, instance] }),
-      url: `${PLUGIN_URL_PATH}${ROUTES.ScriptedChecks}/${encodeURIComponent(checkId)}`,
+      url: `${PLUGIN_URL_PATH}${ROUTES.Checks}/${encodeURIComponent(checkId)}`,
       getParentPage: () => parent,
       title: `${check?.job} overview`,
       getScene: () => getCheckDrilldownScene(config, check),
@@ -256,6 +256,12 @@ function getCheckDrilldownPage(config: DashboardSceneAppConfig, checks: Check[])
           intervals: ['5s', '1m', '1h'],
           isOnCanvas: true,
           refresh: '1m',
+        }),
+        new SceneReactObject({
+          component: EditCheckDrawer,
+          props: {
+            checkId: String(check?.id) ?? '',
+          },
         }),
       ],
       body: new SceneFlexLayout({
@@ -282,16 +288,6 @@ function getCheckDrilldownPage(config: DashboardSceneAppConfig, checks: Check[])
                   children: [new SceneFlexItem({ body: latencyByUrl }), new SceneFlexItem({ body: latencyByProbe })],
                 }),
               ],
-            }),
-          }),
-          new SceneFlexItem({
-            minHeight: 300,
-            maxWidth: 700,
-            body: new SceneReactObject({
-              component: ScriptedCheckCodeEditor,
-              props: {
-                checkId: String(check?.id) ?? '',
-              },
             }),
           }),
         ],

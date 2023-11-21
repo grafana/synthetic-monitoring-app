@@ -10,12 +10,12 @@ import { QueryParamMap, useNavigation } from 'hooks/useNavigation';
 import { useQuery } from 'hooks/useQuery';
 import { AlertingPage } from 'page/AlertingPage';
 import { CheckRouter } from 'page/CheckRouter';
+import { ChecksPage } from 'page/ChecksPage';
 import { ConfigPage } from 'page/ConfigPage';
 import { DashboardPage } from 'page/DashboardPage';
 import { HomePage } from 'page/HomePage';
 import { getNavModel } from 'page/pageDefinitions';
 import { ProbeRouter } from 'page/ProbeRouter';
-import { ScriptedChecksPage } from 'page/ScriptedChecksPage';
 import { UnprovisionedSetup } from 'page/UnprovisionedSetup';
 import { WelcomePage } from 'page/WelcomePage';
 
@@ -53,7 +53,6 @@ export const Routing = ({ onNavChanged }: Pick<AppRootProps, 'onNavChanged'>) =>
 
   useLayoutEffect(() => {
     if (!provisioned || (!initialized && location.pathname !== getRoute(ROUTES.Home))) {
-      console.log('helllllo');
       navigate(ROUTES.Home);
     }
   }, [provisioned, initialized, location.pathname, navigate]);
@@ -77,17 +76,10 @@ export const Routing = ({ onNavChanged }: Pick<AppRootProps, 'onNavChanged'>) =>
       <Route path={getRoute(ROUTES.Scene)}>
         <DashboardPage />
       </Route>
-      <Route path={getRoute(ROUTES.Checks)}>
-        <CheckRouter />
-      </Route>
+      <Route path={getRoute(ROUTES.Checks)}>{scriptedChecksEnabled ? <ChecksPage /> : <CheckRouter />}</Route>
       <Route path={getRoute(ROUTES.Probes)}>
         <ProbeRouter />
       </Route>
-      {scriptedChecksEnabled && (
-        <Route path={getRoute(ROUTES.ScriptedChecks)}>
-          <ScriptedChecksPage />
-        </Route>
-      )}
       <Route exact path={getRoute(ROUTES.Alerts)}>
         <AlertingPage />
       </Route>

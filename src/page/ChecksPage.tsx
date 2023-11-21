@@ -4,21 +4,25 @@ import { SyntheticsBuilder } from '@grafana/k6-test-builder';
 import { PluginPage } from '@grafana/runtime';
 import { LoadingPlaceholder, useTheme2 } from '@grafana/ui';
 
-import { ROUTES } from 'types';
+import { CheckType, ROUTES } from 'types';
 import { ChecksContext } from 'contexts/ChecksContext';
 import { InstanceContext } from 'contexts/InstanceContext';
+import { useNavigation } from 'hooks/useNavigation';
+import { CheckEditor } from 'components/CheckEditor';
 import { PLUGIN_URL_PATH } from 'components/constants';
+import { MultiHttpSettingsForm } from 'components/MultiHttp/MultiHttpSettingsForm';
 import { NewScriptedCheck } from 'components/NewScriptedCheck';
 import { ScriptedCheckCodeEditor, ScriptedFormValues } from 'components/ScriptedCheckCodeEditor';
-import { ScriptedCheckScene } from 'scenes/Scripted/ScriptedCheckScene';
+import { ScriptedCheckScene } from 'scenes/Drilldown/ScriptedCheckScene';
 
-const newCheckParent = { text: 'New check', url: `${PLUGIN_URL_PATH}${ROUTES.ScriptedChecks}/new` };
+const newCheckParent = { text: 'New check', url: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new` };
 
-export function ScriptedChecksPage() {
+export function ChecksPage() {
   const theme = useTheme2();
   const [saving, setSaving] = useState(false);
   const { instance } = useContext(InstanceContext);
-  const { loading } = useContext(ChecksContext);
+  const { loading, refetchChecks } = useContext(ChecksContext);
+  const navigate = useNavigation();
   const handleSubmit = async (
     { job, target, script, frequency, timeout, ...rest }: ScriptedFormValues,
     errors: any
@@ -43,17 +47,31 @@ export function ScriptedChecksPage() {
   };
 
   const { path } = useRouteMatch();
-
+  const returnToList = (refetch?: boolean) => {
+    navigate(ROUTES.Checks);
+    if (refetch) {
+      refetchChecks();
+    }
+  };
   if (loading) {
     return <LoadingPlaceholder text={undefined} />;
   }
 
   return (
     <Switch>
-      <Route path={`${path}/new`} exact>
-        <NewScriptedCheck />
+      <Route path={`${path}/new:checkType?`} exact>
+        {({ match }) => {
+          switch (match?.params.checkType) {
+            case CheckType.K6:
+              return <NewScriptedCheck />;
+            case CheckType.MULTI_HTTP:
+              return <MultiHttpSettingsForm onReturn={returnToList} />;
+            default:
+              return <CheckEditor onReturn={returnToList} />;
+          }
+        }}
       </Route>
-      <Route path={`${path}/new/builder`}>
+      <Route path={`${path}/new/k6/builder`}>
         <PluginPage
           pageNav={{
             text: 'Test builder',
@@ -63,7 +81,7 @@ export function ScriptedChecksPage() {
           <SyntheticsBuilder theme={theme} onSubmit={handleSubmit} saving={saving} />
         </PluginPage>
       </Route>
-      <Route path={`${path}/new/script-editor`}>
+      <Route path={`${path}/new/k6/script-editor`}>
         <PluginPage
           pageNav={{
             text: 'Script editor',

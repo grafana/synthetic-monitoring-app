@@ -67,7 +67,7 @@ export class ScriptedChecksListSceneObject extends SceneObjectBase {
 export function ScriptedCheckList({ model }: SceneComponentProps<any>) {
   const navigate = useNavigation();
   const styles = useStyles2(getStyles);
-  const { scriptedChecks: checks } = useContext(ChecksContext);
+  const { checks } = useContext(ChecksContext);
 
   const data = sceneGraph.getData(model).useState();
   const fields = data.data?.series?.[0]?.fields;
@@ -92,7 +92,7 @@ export function ScriptedCheckList({ model }: SceneComponentProps<any>) {
     {
       sortable: true,
       selector: (row: DataTableScriptedCheck) => row.up,
-      width: '75px',
+      width: '95px',
       cell: (row: DataTableScriptedCheck) => {
         if (row.up === undefined) {
           return <div></div>;
@@ -108,7 +108,7 @@ export function ScriptedCheckList({ model }: SceneComponentProps<any>) {
         return (
           <div className={styles.error}>
             Down &nbsp;
-            <Icon name="arrow-up" />
+            <Icon name="arrow-down" />
           </div>
         );
       },
@@ -146,7 +146,7 @@ export function ScriptedCheckList({ model }: SceneComponentProps<any>) {
           severity="info"
           title="Grafana Cloud Synthetic Monitoring"
           buttonContent={<span>New Check</span>}
-          onRemove={() => navigate(`${ROUTES.ScriptedChecks}/new`)}
+          onRemove={() => navigate(`${ROUTES.Checks}/new`)}
         >
           This account does not currently have any scripted checks configured. Click the New Check button to start
           monitoring your services with Grafana Cloud, or{' '}
@@ -162,21 +162,19 @@ export function ScriptedCheckList({ model }: SceneComponentProps<any>) {
     return <LoadingPlaceholder text={undefined} />;
   }
   return (
-    <div>
-      <Table<DataTableScriptedCheck>
-        id="scripted-checks-table"
-        name="scripted-checks-table"
-        noDataText="No scripted checks found"
-        columns={columns}
-        onRowClicked={(row) => {
-          if (row.id) {
-            navigate(`${ROUTES.ScriptedChecks}/${row.id}`);
-          }
-        }}
-        config={config}
-        data={tableData}
-        pagination
-      />
-    </div>
+    <Table<DataTableScriptedCheck>
+      id="scripted-checks-table"
+      name="scripted-checks-table"
+      noDataText="No scripted checks found"
+      columns={columns}
+      onRowClicked={(row) => {
+        if (row.id) {
+          navigate(`${ROUTES.Checks}/${row.id}`);
+        }
+      }}
+      config={config}
+      data={tableData}
+      pagination
+    />
   );
 }

@@ -6,7 +6,6 @@ import { ChecksContext } from 'contexts/ChecksContext';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useNavigation } from 'hooks/useNavigation';
-import { ChecksContextProvider } from 'components/ChecksContextProvider';
 import { getDashboardSceneApp } from 'scenes/dashboardSceneApp';
 
 function DashboardPageContent() {
@@ -48,9 +47,5 @@ function DashboardPageContent() {
 }
 
 export function DashboardPage() {
-  return (
-    <ChecksContextProvider>
-      <DashboardPageContent />
-    </ChecksContextProvider>
-  );
+  return <DashboardPageContent />;
 }

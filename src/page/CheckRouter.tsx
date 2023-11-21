@@ -39,7 +39,7 @@ export function CheckRouter() {
         <Route path={`${path}/new/:checkType?`}>
           {({ match }) =>
             match?.params.checkType !== CheckType.MULTI_HTTP ? (
-              <CheckEditor onReturn={returnToList} checks={checks} />
+              <CheckEditor onReturn={returnToList} />
             ) : (
               <MultiHttpSettingsForm onReturn={returnToList} />
             )
@@ -49,7 +49,7 @@ export function CheckRouter() {
           <MultiHttpSettingsForm onReturn={returnToList} checks={checks} />
         </Route>
         <Route path={`${path}/edit/:checkType/:id`} exact>
-          <CheckEditor onReturn={returnToList} checks={checks} />
+          <CheckEditor onReturn={returnToList} />
         </Route>
         <Route path={`${path}/choose-type`} exact>
           <ChooseCheckType />

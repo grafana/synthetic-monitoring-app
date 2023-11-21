@@ -555,7 +555,6 @@ export enum ROUTES {
   Config = 'config',
   Scene = 'scene',
   ChooseCheckType = 'checks/choose-type',
-  ScriptedChecks = 'scripted-checks',
 }
 
 export interface CheckPageParams {
