@@ -1,11 +1,11 @@
 import React, { ReactNode, useCallback, useEffect, useRef } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import { GrafanaTheme2, OrgRole } from '@grafana/data';
+import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Button, Field, Input, Label, Legend, LinkButton, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Probe, ROUTES } from 'types';
-import { hasRole } from 'utils';
+import { canEditProbes } from 'utils';
 import { LabelField } from 'components/LabelField';
 import { getRoute } from 'components/Routing';
 import { SimpleMap } from 'components/SimpleMap';
@@ -28,7 +28,7 @@ export const ProbeEditor = ({
   supportingContent,
 }: ProbeEditorProps) => {
   const styles = useStyles2(getStyles);
-  const canEdit = !probe.public && hasRole(OrgRole.Editor);
+  const canEdit = canEditProbes(probe);
   const form = useForm<Probe>({ defaultValues: probe, mode: 'onChange' });
   const { latitude, longitude } = form.watch();
   const handleSubmit = form.handleSubmit((formValues: Probe) => onSubmit(formValues));
@@ -38,8 +38,9 @@ export const ProbeEditor = ({
 
   const getCoordsFromMap = useCallback(
     ([long, lat]: number[]) => {
-      form.setValue('longitude', +long.toFixed(5));
-      form.setValue('latitude', +lat.toFixed(5));
+      const significantDigits = 5;
+      form.setValue('longitude', +long.toFixed(significantDigits));
+      form.setValue('latitude', +lat.toFixed(significantDigits));
       form.clearErrors(['longitude', 'latitude']);
     },
     [form]
@@ -51,10 +52,13 @@ export const ProbeEditor = ({
 
   useEffect(() => {
     if (alertRef.current && errorInfo) {
-      alertRef.current.scrollIntoView({ behavior: 'smooth' });
+      alertRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   }, [alertRef, errorInfo]);
 
+  if (errors.labels) {
+    console.log(errors.labels);
+  }
   return (
     <div className={styles.containerWrapper}>
       <div className={styles.container}>
@@ -146,7 +150,7 @@ export const ProbeEditor = ({
                   >
                     <Input
                       {...form.register('region', { required: true })}
-                      label="Region"
+                      aria-label="Region"
                       type="text"
                       placeholder="Region"
                     />

@@ -2,6 +2,7 @@ import React from 'react';
 import { OrgRole } from '@grafana/data';
 import { LinkButton, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { DataTestIds } from 'test/dataTestIds';
 
 import { type Probe, ROUTES } from 'types';
 import { hasRole } from 'utils';
@@ -47,6 +48,7 @@ const ProbesContent = ({ error, loading, probes }: ProbesProps) => {
   if (loading) {
     return <CenteredSpinner />;
   }
+
   const initial: {
     publicProbes: Probe[];
     privateProbes: Probe[];
@@ -78,8 +80,13 @@ const ProbesContent = ({ error, loading, probes }: ProbesProps) => {
 
   return (
     <>
-      <ProbeList probes={privateProbes} title="Private Probes" emptyText={<PrivateProbesEmptyText />} />
-      <ProbeList probes={publicProbes} title="Public Probes" />
+      <ProbeList
+        data-testid={DataTestIds.PRIVATE_PROBES_LIST}
+        probes={privateProbes}
+        title="Private Probes"
+        emptyText={<PrivateProbesEmptyText />}
+      />
+      <ProbeList data-testid={DataTestIds.PUBLIC_PROBES_LIST} probes={publicProbes} title="Public Probes" />
     </>
   );
 };

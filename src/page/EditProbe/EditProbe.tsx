@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { OrgRole } from '@grafana/data';
 import { Button, ConfirmModal } from '@grafana/ui';
 
 import { type Probe, type ProbePageParams, ROUTES } from 'types';
-import { hasRole } from 'utils';
+import { canEditProbes } from 'utils';
 import { type UpdateProbeResult, useDeleteProbe, useUpdateProbe } from 'data/useProbes';
 import { useNavigation } from 'hooks/useNavigation';
 import { PluginPage } from 'components/PluginPage';
@@ -45,33 +44,39 @@ const EditProbeContent = ({ probe, refetchProbes }: { probe: Probe; refetchProbe
   const { onUpdate, error: updateError } = useUpdateProbe();
   const { onDelete, error: deleteError } = useDeleteProbe();
 
-  const onReset = (token: string) => {
+  const onReset = useCallback((token: string) => {
     setShowTokenModal(true);
     setProbeToken(token);
-  };
+  }, []);
 
-  const onUpdateSuccess = (res: UpdateProbeResult) => {
-    refetchProbes();
-    navigate(ROUTES.Probes);
-  };
+  const onUpdateSuccess = useCallback(
+    (res: UpdateProbeResult) => {
+      refetchProbes();
+      navigate(ROUTES.Probes);
+    },
+    [navigate, refetchProbes]
+  );
 
-  const handleSubmit = (formValues: Probe) => {
-    return onUpdate(
-      {
-        ...probe,
-        ...formValues,
-      },
-      onUpdateSuccess
-    );
-  };
+  const handleSubmit = useCallback(
+    (formValues: Probe) => {
+      return onUpdate(
+        {
+          ...probe,
+          ...formValues,
+        },
+        onUpdateSuccess
+      );
+    },
+    [onUpdate, onUpdateSuccess, probe]
+  );
 
-  const handleDelete = () => {
+  const handleDelete = useCallback(() => {
     return onDelete(probe, () => {
       setShowDeleteModal(false);
       refetchProbes();
       navigate(ROUTES.Probes);
     });
-  };
+  }, [navigate, onDelete, probe, refetchProbes]);
 
   useEffect(() => {
     if (deleteError) {
@@ -79,8 +84,7 @@ const EditProbeContent = ({ probe, refetchProbes }: { probe: Probe; refetchProbe
     }
   }, [deleteError]);
 
-  const canEdit = !probe.public && hasRole(OrgRole.Editor);
-  const actions = canEdit ? (
+  const actions = canEditProbes(probe) ? (
     <Button type="button" variant="destructive" onClick={() => setShowDeleteModal(true)}>
       Delete Probe
     </Button>
@@ -94,7 +98,7 @@ const EditProbeContent = ({ probe, refetchProbes }: { probe: Probe; refetchProbe
         onSubmit={handleSubmit}
         probe={probe}
         submitText="Update probe"
-        supportingContent={<ProbeStatus canEdit={canEdit} probe={probe} onReset={onReset} />}
+        supportingContent={<ProbeStatus probe={probe} onReset={onReset} />}
       />
       <ProbeTokenModal
         actionText="Close"

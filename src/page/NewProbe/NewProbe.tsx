@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Alert, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
@@ -35,11 +35,14 @@ export const NewProbe = ({ refetchProbes }: NewProbeProps) => {
   const probe = { ...TEMPLATE_PROBE };
   const navigate = useNavigation();
 
-  const onCreateSuccess = (res: CreateProbeResult) => {
-    setShowTokenModal(true);
-    setProbeToken(res.token);
-    refetchProbes();
-  };
+  const onCreateSuccess = useCallback(
+    (res: CreateProbeResult) => {
+      setShowTokenModal(true);
+      setProbeToken(res.token);
+      refetchProbes();
+    },
+    [refetchProbes]
+  );
 
   const handleSubmit = (formValues: Probe) => {
     onCreate(

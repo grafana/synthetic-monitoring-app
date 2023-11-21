@@ -74,7 +74,7 @@ export function useCreateProbe() {
     }
   );
 
-  const err = useOnError({ event, error, alert: `` });
+  const err = useOnError({ event, error, alert: `Failed to create probe` });
 
   return {
     error: err,

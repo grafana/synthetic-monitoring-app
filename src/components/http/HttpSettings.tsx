@@ -172,12 +172,7 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
 
   return (
     <Container>
-      <Collapse
-        label="HTTP settings"
-        onToggle={() => setShowHttpSettings(!showHttpSettings)}
-        isOpen={showHttpSettings}
-        collapsible
-      >
+      <Collapse label="HTTP settings" onToggle={() => setShowHttpSettings(!showHttpSettings)} isOpen={showHttpSettings}>
         <HorizontalGroup>
           <Field
             label="Request method"
@@ -256,7 +251,6 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
         label="Authentication"
         onToggle={() => setShowAuthentication(!showAuthentication)}
         isOpen={showAuthentication}
-        collapsible
       >
         <VerticalGroup spacing="xs">
           <HorizontalCheckboxField
@@ -319,12 +313,7 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
           )}
         </VerticalGroup>
       </Collapse>
-      <Collapse
-        label="Validation"
-        onToggle={() => setShowValidation(!showValidation)}
-        isOpen={showValidation}
-        collapsible
-      >
+      <Collapse label="Validation" onToggle={() => setShowValidation(!showValidation)} isOpen={showValidation}>
         <div className={styles.validationGroup}>
           <Field
             label="Valid status codes"
@@ -439,7 +428,6 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
         label="Advanced options"
         onToggle={() => setShowAdvanced(!showAdvanced)}
         isOpen={showAdvanced}
-        collapsible
       >
         <div className={styles.maxWidth}>
           <LabelField isEditor={isEditor} />

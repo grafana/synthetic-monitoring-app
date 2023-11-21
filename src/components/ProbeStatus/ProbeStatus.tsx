@@ -4,13 +4,12 @@ import { Badge, BadgeColor, Button, ConfirmModal, Container, IconName, Legend, u
 import { css } from '@emotion/css';
 
 import { type Probe } from 'types';
+import { canEditProbes, formatDate } from 'utils';
 import { SuccessRateTypes } from 'contexts/SuccessRateContext';
 import { useResetProbeToken } from 'data/useProbes';
-
-import { SuccessRateGauge } from './SuccessRateGauge';
+import { SuccessRateGauge } from 'components/SuccessRateGauge';
 
 interface Props {
-  canEdit: boolean;
   probe: Probe;
   onReset: (token: string) => void;
 }
@@ -21,22 +20,7 @@ interface BadgeStatus {
   icon: IconName;
 }
 
-const getBadgeStatus = (online: boolean): BadgeStatus => {
-  if (online) {
-    return {
-      text: 'Online',
-      color: 'green',
-      icon: 'heart',
-    };
-  }
-  return {
-    text: 'Offline',
-    color: 'red',
-    icon: 'heart-break',
-  };
-};
-
-export const ProbeStatus = ({ canEdit, probe, onReset }: Props) => {
+export const ProbeStatus = ({ probe, onReset }: Props) => {
   const [showResetModal, setShowResetModal] = useState(false);
   const styles = useStyles2(getStyles);
   const { onResetToken } = useResetProbeToken(probe, (token) => {
@@ -51,6 +35,7 @@ export const ProbeStatus = ({ canEdit, probe, onReset }: Props) => {
   const badgeStatus = getBadgeStatus(probe.online);
   const neverModified = probe.created === probe.modified;
   const neverOnline = probe.onlineChange === probe.created && !probe.online;
+  const canEdit = canEditProbes(probe);
 
   return (
     <div>
@@ -59,9 +44,9 @@ export const ProbeStatus = ({ canEdit, probe, onReset }: Props) => {
           <Legend className={styles.legend}>Status:</Legend>
           <Badge color={badgeStatus.color} icon={badgeStatus.icon} text={badgeStatus.text} />
         </div>
-        {!probe.public && (
+        {canEdit && (
           <Container>
-            <Button variant="destructive" onClick={() => setShowResetModal(true)} disabled={!canEdit}>
+            <Button variant="destructive" onClick={() => setShowResetModal(true)}>
               Reset Access Token
             </Button>
             <ConfirmModal
@@ -101,6 +86,21 @@ const Meta = ({ title, value }: { title: string; value: string }) => {
   );
 };
 
+const getBadgeStatus = (online: boolean): BadgeStatus => {
+  if (online) {
+    return {
+      text: 'Online',
+      color: 'green',
+      icon: 'heart',
+    };
+  }
+  return {
+    text: 'Offline',
+    color: 'red',
+    icon: 'heart-break',
+  };
+};
+
 const getStyles = (theme: GrafanaTheme2) => ({
   legend: css({
     margin: theme.spacing(0, 1, 0, 0),
@@ -124,13 +124,3 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
   metaItem: css({ display: `flex`, gap: theme.spacing(0.5) }),
 });
-
-function formatDate(number: number) {
-  return new Date(number).toLocaleString('en-US', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}

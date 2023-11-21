@@ -17,6 +17,8 @@ module.exports = {
             '^grafana',
             '^@?\\w',
             '^test',
+            '^__mocks__',
+            '^datasource/__mocks__',
           ],
           // Internal packages.
           [

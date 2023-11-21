@@ -1,4 +1,5 @@
 import React from 'react';
+import { OrgRole } from '@grafana/data';
 import * as runtime from '@grafana/runtime';
 
 export const getBackendSrv = () => ({
@@ -9,7 +10,7 @@ export const getBackendSrv = () => ({
 });
 
 export const getLocationSrv = () => ({
-  update: (args) => args,
+  update: (args: any) => args,
 });
 
 function PluginPage({ actions, children, pageNav }: any) {
@@ -26,6 +27,13 @@ module.exports = {
   ...runtime,
   config: {
     ...runtime.config,
+    bootData: {
+      ...runtime.config.bootData,
+      user: {
+        ...runtime.config.bootData.user,
+        orgRole: OrgRole.Editor,
+      },
+    },
     featureToggles: {
       ...runtime.config.featureToggles,
       topnav: true,

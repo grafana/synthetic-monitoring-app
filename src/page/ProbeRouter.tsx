@@ -1,6 +1,8 @@
 import React, { useContext } from 'react';
 import { Route, Switch, useRouteMatch } from 'react-router-dom';
+import { OrgRole } from '@grafana/data';
 
+import { hasRole } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { useProbes } from 'data/useProbes';
 import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
@@ -12,6 +14,7 @@ export const ProbeRouter = () => {
   const { loading: instanceLoading } = useContext(InstanceContext);
   const { path } = useRouteMatch();
   const { error, loading, probes, refetchProbes } = useProbes();
+  const isEditor = hasRole(OrgRole.Editor);
 
   const props = {
     probes,
@@ -26,9 +29,11 @@ export const ProbeRouter = () => {
         <Route path={path} exact>
           <Probes {...props} />
         </Route>
-        <Route path={`${path}/new`}>
-          <NewProbe {...props} />
-        </Route>
+        {isEditor && (
+          <Route path={`${path}/new`}>
+            <NewProbe {...props} />
+          </Route>
+        )}
         <Route path={`${path}/edit/:id`}>
           <EditProbe {...props} />
         </Route>

@@ -5,6 +5,7 @@ import { Badge, Button, styleMixins, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 import { type Label, type Probe, ROUTES } from 'types';
+import { canEditProbes } from 'utils';
 import { SuccessRateTypes } from 'contexts/SuccessRateContext';
 import { getRoute } from 'components/Routing';
 import { SuccessRateGauge } from 'components/SuccessRateGauge';
@@ -19,6 +20,7 @@ export const ProbeCard = ({ probe }: { probe: Probe }) => {
   const styles = useStyles2(getStyles);
   const href = `${getRoute(ROUTES.EditProbe)}/${probe.id}`;
   const labelsString = labelsToString(probe.labels);
+  const canEdit = canEditProbes(probe);
 
   return (
     <div className={styles.cardWrapper}>
@@ -28,7 +30,7 @@ export const ProbeCard = ({ probe }: { probe: Probe }) => {
             <h3 className="h5">{probe.name}</h3>
           </Link>
           <div className={styles.info}>
-            <div>
+            <div className={styles.badges}>
               <Badge color={color} icon={onlineIcon} text={onlineTxt} />
               <Badge color="blue" icon="compass" text={probe.region} />
               <Badge color="blue" icon={probeTypeIcon} text={probeTypeText} />
@@ -50,7 +52,7 @@ export const ProbeCard = ({ probe }: { probe: Probe }) => {
         </div>
         <div className={styles.buttonWrapper}>
           <Button aria-hidden className={cx(styles.button, { [styles.focussed]: isFocused })} tabIndex={-1}>
-            {probe.public ? 'View' : 'Edit'}
+            {canEdit ? `Edit` : `View`}
           </Button>
         </div>
       </div>
@@ -111,6 +113,10 @@ const getStyles = (theme: GrafanaTheme2) => {
       flexDirection: `column`,
       gridArea: `info`,
     }),
+    badges: css({
+      display: `flex`,
+      gap: theme.spacing(0.5),
+    }),
     meta: css({
       color: theme.colors.text.secondary,
     }),
@@ -159,9 +165,9 @@ const getStyles = (theme: GrafanaTheme2) => {
       },
     }),
     buttonWrapper: css({
+      alignItems: 'center',
       display: 'flex',
       gap: theme.spacing(2),
-      alignItems: 'center',
       gridArea: `action`,
     }),
     button: css({

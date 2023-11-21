@@ -1,30 +1,20 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
+import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures';
 import { render } from 'test/render';
+import { fillProbeForm, runTestAsViewer, UPDATED_VALUES } from 'test/utils';
 
-import { Probe, ROUTES } from 'types';
+import { ROUTES } from 'types';
 import { getRoute } from 'components/Routing';
 import { TEMPLATE_PROBE } from 'page/NewProbe';
 
 import { ProbeEditor } from './ProbeEditor';
-
-const TEST_PROBE: Probe = {
-  deprecated: false,
-  labels: [],
-  name: 'new probe',
-  public: false,
-  latitude: 22,
-  longitude: 22,
-  region: 'EMEA',
-  online: false,
-  onlineChange: 0,
-  version: 'unknown',
-};
+import 'test/silenceErrors';
 
 const onSubmit = jest.fn();
 const submitText = 'Save';
 
-const renderProbeEditor = ({ probe = TEST_PROBE } = {}) => {
+const renderProbeEditor = ({ probe = TEMPLATE_PROBE } = {}) => {
   const props = {
     onSubmit,
     probe,
@@ -36,7 +26,7 @@ const renderProbeEditor = ({ probe = TEST_PROBE } = {}) => {
 
 describe('validation', () => {
   it('validates probe name', async () => {
-    const { user } = renderProbeEditor({ probe: TEMPLATE_PROBE });
+    const { user } = renderProbeEditor();
     const nameInput = await screen.findByLabelText('Probe Name', { exact: false });
     await user.type(nameInput, 'a name that is definitely too long and should definitely not be allowed to get typed');
     const maxLengthString = 'a name that is definitely too lo';
@@ -70,7 +60,7 @@ it('returns on back button', async () => {
 
 it('disables save button on invalid values', async () => {
   const { user } = renderProbeEditor();
-  const saveButton = await screen.findByRole('button', { name: 'Save' });
+  const saveButton = await getSaveButton();
   expect(saveButton).not.toBeDisabled();
   const longitudeInput = await screen.findByLabelText('Longitude', { exact: false });
   await user.type(longitudeInput, '444');
@@ -80,37 +70,65 @@ it('disables save button on invalid values', async () => {
 });
 
 it('saves new probe', async () => {
-  const { user } = renderProbeEditor();
-  const updatedLatitude = 23;
-  const updatedLongitude = 23;
-  const updatedName = 'new probe';
-  const updatedRegion = 'APAC';
+  const probe = PRIVATE_PROBE;
+  const { user } = renderProbeEditor({ probe });
+  await fillProbeForm(user);
 
-  const latitudeInput = await screen.findByLabelText('Latitude', { exact: false });
-  await user.clear(latitudeInput);
-  await user.type(latitudeInput, updatedLatitude.toString());
-
-  const longitudeInput = await screen.findByLabelText('Longitude', { exact: false });
-  await user.clear(longitudeInput);
-  await user.type(longitudeInput, updatedLongitude.toString());
-
-  const nameInput = await screen.findByLabelText('Probe Name', { exact: false });
-  await user.clear(nameInput);
-  await user.type(nameInput, updatedName);
-
-  const regionInput = await screen.findByPlaceholderText('Region', { exact: false });
-  regionInput.focus();
-  await user.clear(regionInput);
-  await user.paste(updatedRegion);
-
-  const saveButton = await screen.findByRole('button', { name: submitText });
+  const saveButton = await getSaveButton();
   expect(saveButton).toBeEnabled();
-  await user.click(saveButton);
+  await user.click(saveButton!);
   expect(onSubmit).toHaveBeenCalledWith({
-    ...TEST_PROBE,
-    region: updatedRegion,
-    latitude: updatedLatitude,
-    longitude: updatedLongitude,
-    name: updatedName,
+    ...probe,
+    ...UPDATED_VALUES,
+    labels: [...probe.labels, ...UPDATED_VALUES.labels],
   });
 });
+
+it('the form is uneditable when viewing a public probe', async () => {
+  renderProbeEditor({ probe: PUBLIC_PROBE });
+  assertUneditable();
+});
+
+it('the form is uneditable when logged in as a viewer', async () => {
+  runTestAsViewer();
+  renderProbeEditor();
+  assertUneditable();
+});
+
+it('the form actions are unavailable when viewing a public probe', async () => {
+  renderProbeEditor({ probe: PUBLIC_PROBE });
+  assertNoActions();
+});
+
+it('the form actions are unavailable as a viewer', async () => {
+  runTestAsViewer();
+  renderProbeEditor();
+  assertNoActions();
+});
+
+async function assertUneditable() {
+  const nameInput = await screen.findByLabelText('Probe Name', { exact: false });
+  expect(nameInput).toBeDisabled();
+
+  const latitudeInput = await screen.findByLabelText('Latitude', { exact: false });
+  expect(latitudeInput).toBeDisabled();
+
+  const longitudeInput = await screen.findByLabelText('Longitude', { exact: false });
+  expect(longitudeInput).toBeDisabled();
+
+  const regionInput = await screen.findByLabelText('Region', { exact: false });
+  expect(regionInput).toBeDisabled();
+}
+
+async function assertNoActions() {
+  const addLabelButton = await screen.findByRole('button', { name: /Add label/ });
+  expect(addLabelButton).not.toBeInTheDocument();
+
+  const saveButton = await getSaveButton();
+  expect(saveButton).not.toBeInTheDocument();
+}
+
+// extract this so we can be sure our assertions for them not being there are correct
+function getSaveButton() {
+  return screen.queryByRole('button', { name: submitText });
+}
