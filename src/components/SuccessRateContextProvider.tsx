@@ -225,8 +225,10 @@ export function SuccessRateContextProvider({ onlyProbes, probes, children }: Pro
   }, [checks, instance.api, probes, shouldUpdate]);
 
   const updateThresholds = async () => {
-    const { thresholds } = await instance.api?.getTenantSettings();
-    setThresholds(thresholds);
+    const tenantSettings = await instance.api?.getTenantSettings();
+    if (tenantSettings) {
+      setThresholds(tenantSettings.thresholds);
+    }
   };
 
   // Call this once on first render

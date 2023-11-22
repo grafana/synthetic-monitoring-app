@@ -18,6 +18,7 @@ import { firstValueFrom } from 'rxjs';
 import { Check, HostedInstance, Probe } from '../types';
 import { CheckInfo, QueryType, SMOptions, SMQuery } from './types';
 import { findLinkedDatasource, getRandomProbes, queryLogs } from 'utils';
+import { ThresholdSettings } from 'contexts/SuccessRateContext';
 
 import { parseTracerouteLogs } from './traceroute-utils';
 
@@ -397,7 +398,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       });
   }
 
-  async getTenantSettings(): Promise<any> {
+  async getTenantSettings(): Promise<{ thresholds: ThresholdSettings }> {
     return getBackendSrv()
       .fetch({ method: 'GET', url: `${this.instanceSettings.url}/sm/tenant/settings` })
       .toPromise()

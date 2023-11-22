@@ -67,7 +67,7 @@ export function CheckFilters({
   const { instance } = useContext(InstanceContext);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const debouncedOnChange = useCallback(debounce(onChange, 1000), []);
+  const debouncedOnChange = useCallback(debounce(onChange, 500), []);
 
   function handleSearchChange(event: any) {
     const value = event.currentTarget?.value;

@@ -1,34 +1,44 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Table } from '@grafana/cloud-features';
-import { GrafanaTheme2 } from '@grafana/data';
-import { config, PluginPage } from '@grafana/runtime';
+import { AppEvents, GrafanaTheme2, OrgRole } from '@grafana/data';
+import { config, getAppEvents, PluginPage } from '@grafana/runtime';
 import { SceneComponentProps, sceneGraph, SceneObjectBase } from '@grafana/scenes';
 import { LoadingState } from '@grafana/schema';
-import { Alert, Icon, LoadingPlaceholder, useStyles2 } from '@grafana/ui';
+import { Alert, Button, ButtonCascader, Icon, LoadingPlaceholder, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { Check, CheckFiltersType, FilteredCheck, ROUTES } from 'types';
+import { Check, CheckFiltersType, FilteredCheck, GrafanaInstances, ROUTES } from 'types';
+import { hasRole } from 'utils';
 import { ChecksContext } from 'contexts/ChecksContext';
+import { InstanceContext } from 'contexts/InstanceContext';
+import { ThresholdSettings, ThresholdValues } from 'contexts/SuccessRateContext';
 import { useNavigation } from 'hooks/useNavigation';
+import { BulkEditModal } from 'components/BulkEditModal';
 import { CheckFilters, defaultFilters, getDefaultFilters } from 'components/CheckFilters';
 import { AddNewCheckButton } from 'components/CheckList/AddNewCheckButton';
 import { matchesAllFilters } from 'components/CheckList/checkFilters';
 import ThresholdGlobalSettings from 'components/Thresholds/ThresholdGlobalSettings';
 
+import { deleteSelectedChecks, disableSelectedChecks, enableSelectedChecks } from './actions';
+
 function getStyles(theme: GrafanaTheme2) {
   return {
-    error: css`
-      color: ${theme.colors.error.text};
-      text-align: center;
-    `,
-    warning: css`
-      color: ${theme.colors.warning.text};
-      text-align: center;
-    `,
-    green: css`
-      color: ${theme.colors.success.text};
-      text-align: center;
-    `,
+    error: css({
+      color: theme.colors.error.text,
+      textAlign: 'center',
+    }),
+    warning: css({
+      color: theme.colors.warning.text,
+      textAlign: 'center',
+    }),
+    green: css({
+      color: theme.colors.success.text,
+      textAlign: 'center',
+    }),
+    grey: css({
+      color: theme.colors.info.text,
+      textAlign: 'center',
+    }),
     flex: css({
       display: 'flex',
     }),
@@ -36,38 +46,71 @@ function getStyles(theme: GrafanaTheme2) {
       display: 'flex',
       justifyContent: 'space-between',
     }),
+    marginRightSmall: css({
+      marginRight: theme.spacing(1),
+    }),
+    buttonGroup: css({
+      display: 'flex',
+      gap: theme.spacing(1),
+    }),
+    bulkActionContainer: css({
+      padding: theme.spacing(1),
+      height: '40px',
+    }),
   };
 }
 
-function SuccessStateValue({ value }: { value?: number }) {
+enum ListUnit {
+  Percent = '%',
+  Milliseconds = 'ms',
+}
+
+function SuccessStateValue({
+  value,
+  thresholds,
+  unit,
+}: {
+  value?: number;
+  thresholds?: ThresholdValues;
+  unit: ListUnit;
+}) {
   const styles = useStyles2(getStyles);
   if (value === undefined) {
     return <div> - </div>;
   }
-  const percent = value * 100;
-  if (percent === 100) {
-    return <div className={styles.green}>{percent}%</div>;
-  }
+  const normalized = unit === ListUnit.Percent ? value * 100 : value * 1000;
   let style;
+  const upperLimit = thresholds?.upperLimit ?? 0;
+  const lowerLimit = thresholds?.lowerLimit ?? 0;
   switch (true) {
-    case percent > 99.5:
+    case thresholds === undefined:
+      style = styles.grey;
+      break;
+    case normalized > upperLimit:
       style = styles.green;
       break;
-    case percent > 99:
+    case normalized < upperLimit && normalized > lowerLimit:
       style = styles.warning;
       break;
-    case percent < 99:
+    case normalized < lowerLimit:
     default:
       style = styles.error;
       break;
   }
-  return <div className={style}>{percent.toFixed(2)}%</div>;
+  const formatted = unit === ListUnit.Percent ? normalized.toFixed(2) : normalized.toFixed(0);
+  return (
+    <div className={style}>
+      {formatted}
+      {unit}
+    </div>
+  );
 }
 
 interface DataTableScriptedCheck extends Check {
   up?: number;
   uptime?: number;
   reachability?: number;
+  latency?: number;
   notFound?: boolean;
 }
 
@@ -75,13 +118,31 @@ export class ScriptedChecksListSceneObject extends SceneObjectBase {
   static Component = ScriptedCheckList;
 }
 
+const appEvents = getAppEvents();
+
 export function ScriptedCheckList({ model }: SceneComponentProps<any>) {
   const navigate = useNavigation();
   const styles = useStyles2(getStyles);
+  const { instance } = useContext(InstanceContext);
   const { checks } = useContext(ChecksContext);
   const [filteredChecks, setFilteredChecks] = useState<FilteredCheck[] | []>([]);
   const [checkFilters, setCheckFilters] = useState<CheckFiltersType>(getDefaultFilters());
+  const [thresholds, setThresholds] = useState<ThresholdSettings>();
+  const [selectedChecks, setSelectedChecks] = useState<{
+    allSelected: false;
+    selectedCount: number;
+    selectedRows: Check[];
+  }>({ allSelected: false, selectedCount: 0, selectedRows: [] });
+  const [bulkActionInProgress, setBulkActionInProgress] = useState(false);
+  const [bulkEditAction, setBulkEditAction] = useState<'add' | 'remove' | null>(null);
+  const [toggledClearRows, setToggleClearRows] = React.useState(false);
   const data = sceneGraph.getData(model).useState();
+
+  useEffect(() => {
+    instance.api?.getTenantSettings().then(({ thresholds }) => {
+      setThresholds(thresholds);
+    });
+  }, [instance]);
 
   useEffect(() => {
     const filtered = checks.filter((check) => matchesAllFilters(check, checkFilters)) as FilteredCheck[];
@@ -102,6 +163,7 @@ export function ScriptedCheckList({ model }: SceneComponentProps<any>) {
       up: fields?.[3]?.values?.[dataIndex],
       uptime: fields?.[4]?.values?.[dataIndex],
       reachability: fields?.[5]?.values?.[dataIndex],
+      latency: fields?.[6]?.values?.[dataIndex],
       notFound: false,
     };
   });
@@ -149,10 +211,35 @@ export function ScriptedCheckList({ model }: SceneComponentProps<any>) {
       },
       selector: (row: DataTableScriptedCheck) => row.uptime,
       cell: (row: DataTableScriptedCheck) => {
-        return <SuccessStateValue value={row.uptime} />;
+        return <SuccessStateValue value={row.uptime} thresholds={thresholds?.uptime} unit={ListUnit.Percent} />;
       },
     },
+    {
+      name: 'reachability',
+      sortable: true,
 
+      sortFunction: (a: DataTableScriptedCheck, b: DataTableScriptedCheck) => {
+        return (b?.reachability ?? -1) - (a?.reachability ?? -1);
+      },
+      selector: (row: DataTableScriptedCheck) => row.reachability,
+      cell: (row: DataTableScriptedCheck) => {
+        return (
+          <SuccessStateValue value={row.reachability} thresholds={thresholds?.reachability} unit={ListUnit.Percent} />
+        );
+      },
+    },
+    {
+      name: 'latency',
+      sortable: true,
+
+      sortFunction: (a: DataTableScriptedCheck, b: DataTableScriptedCheck) => {
+        return (b?.latency ?? -1) - (a?.latency ?? -1);
+      },
+      selector: (row: DataTableScriptedCheck) => row.latency,
+      cell: (row: DataTableScriptedCheck) => {
+        return <SuccessStateValue value={row.latency} thresholds={thresholds?.latency} unit={ListUnit.Milliseconds} />;
+      },
+    },
     {
       name: 'probes',
       sortable: true,
@@ -188,6 +275,17 @@ export function ScriptedCheckList({ model }: SceneComponentProps<any>) {
     localStorage.removeItem('checkFilters');
   };
 
+  const clearSelectedChecks = () => {
+    setToggleClearRows(!toggledClearRows);
+  };
+
+  const handleBulkAction = async (action: (instance: GrafanaInstances, selectedChecks: Check[]) => Promise<void>) => {
+    setBulkActionInProgress(true);
+    await action(instance, selectedChecks.selectedRows);
+    clearSelectedChecks();
+    setBulkActionInProgress(false);
+  };
+
   return (
     <div>
       <div className={styles.spaceBetween}>
@@ -205,10 +303,87 @@ export function ScriptedCheckList({ model }: SceneComponentProps<any>) {
         </div>
         <AddNewCheckButton />
       </div>
+
+      <div className={styles.bulkActionContainer}>
+        {selectedChecks.selectedCount > 0 && (
+          <>
+            <div className={styles.buttonGroup}>
+              {!selectedChecks.allSelected && (
+                <Button
+                  type="button"
+                  fill="text"
+                  size="sm"
+                  className={styles.marginRightSmall}
+                  onClick={() => {}}
+                  disabled={!hasRole(OrgRole.Editor)}
+                >
+                  Select all {filteredChecks.length} checks
+                </Button>
+              )}
+              <ButtonCascader
+                options={[
+                  {
+                    label: 'Add probes',
+                    value: 'add',
+                  },
+                  {
+                    label: 'Remove probes',
+                    value: 'remove',
+                  },
+                ]}
+                className={styles.marginRightSmall}
+                disabled={!hasRole(OrgRole.Editor) || bulkActionInProgress}
+                onChange={(value) => setBulkEditAction(value[0] as any)}
+              >
+                Bulk Edit Probes
+              </ButtonCascader>
+              <Button
+                type="button"
+                variant="primary"
+                fill="text"
+                onClick={() => handleBulkAction(enableSelectedChecks)}
+                className={styles.marginRightSmall}
+                disabled={!hasRole(OrgRole.Editor) || bulkActionInProgress}
+              >
+                Enable
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                fill="text"
+                onClick={() => handleBulkAction(disableSelectedChecks)}
+                className={styles.marginRightSmall}
+                disabled={!hasRole(OrgRole.Editor) || bulkActionInProgress}
+              >
+                Disable
+              </Button>
+
+              <Button
+                type="button"
+                variant="destructive"
+                fill="text"
+                className={styles.marginRightSmall}
+                onClick={() => handleBulkAction(deleteSelectedChecks)}
+                disabled={!hasRole(OrgRole.Editor) || bulkActionInProgress}
+              >
+                Delete
+              </Button>
+            </div>
+          </>
+        )}
+      </div>
       <Table<DataTableScriptedCheck>
         id="scripted-checks-table"
         name="scripted-checks-table"
         noDataText="No scripted checks found"
+        dataTableProps={{
+          selectableRows: true,
+          onSelectedRowsChange: (state: any) => {
+            console.log(state);
+            setSelectedChecks(state);
+          },
+          clearSelectedRows: toggledClearRows,
+        }}
         columns={columns}
         onRowClicked={(row) => {
           if (row.id) {
@@ -218,6 +393,27 @@ export function ScriptedCheckList({ model }: SceneComponentProps<any>) {
         config={config}
         data={tableData}
         pagination
+      />
+      <BulkEditModal
+        instance={instance}
+        selectedChecks={() => selectedChecks.selectedRows as FilteredCheck[]}
+        onDismiss={() => setBulkEditAction(null)}
+        action={bulkEditAction}
+        isOpen={bulkEditAction !== null}
+        onSuccess={() => {
+          // onCheckUpdate(true);
+          appEvents.publish({
+            type: AppEvents.alertSuccess.name,
+            payload: ['All selected checks successfully updated'],
+          });
+          clearSelectedChecks();
+        }}
+        onError={(err) => {
+          appEvents.publish({
+            type: AppEvents.alertError.name,
+            payload: [`There was an error updating checks: ${err}`],
+          });
+        }}
       />
     </div>
   );
