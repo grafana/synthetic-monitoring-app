@@ -7,8 +7,8 @@ import { LoadingState } from '@grafana/schema';
 import { Alert, Button, ButtonCascader, Icon, LoadingPlaceholder, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { Check, CheckFiltersType, FilteredCheck, GrafanaInstances, ROUTES } from 'types';
-import { hasRole } from 'utils';
+import { Check, CheckFiltersType, CheckType, FilteredCheck, GrafanaInstances, ROUTES } from 'types';
+import { checkType as getCheckType, hasRole } from 'utils';
 import { ChecksContext } from 'contexts/ChecksContext';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { ThresholdSettings, ThresholdValues } from 'contexts/SuccessRateContext';
@@ -110,7 +110,8 @@ interface DataTableScriptedCheck extends Check {
   up?: number;
   uptime?: number;
   reachability?: number;
-  latency?: number;
+  latencyProtocol?: number;
+  latencyk6?: number;
   notFound?: boolean;
 }
 
@@ -163,7 +164,8 @@ export function ScriptedCheckList({ model }: SceneComponentProps<any>) {
       up: fields?.[3]?.values?.[dataIndex],
       uptime: fields?.[4]?.values?.[dataIndex],
       reachability: fields?.[5]?.values?.[dataIndex],
-      latency: fields?.[6]?.values?.[dataIndex],
+      latencyProtocol: fields?.[6]?.values?.[dataIndex],
+      latencyk6: fields?.[7]?.values?.[dataIndex],
       notFound: false,
     };
   });
@@ -233,11 +235,25 @@ export function ScriptedCheckList({ model }: SceneComponentProps<any>) {
       sortable: true,
 
       sortFunction: (a: DataTableScriptedCheck, b: DataTableScriptedCheck) => {
-        return (b?.latency ?? -1) - (a?.latency ?? -1);
+        return (b?.latencyProtocol ?? b?.latencyk6 ?? -1) - (a?.latencyProtocol ?? a?.latencyk6 ?? -1);
       },
-      selector: (row: DataTableScriptedCheck) => row.latency,
+      selector: (row: DataTableScriptedCheck) => {
+        const checkType = getCheckType(row.settings);
+        if (checkType === CheckType.K6 || checkType === CheckType.MULTI_HTTP) {
+          return row.latencyk6;
+        } else {
+          return row.latencyProtocol;
+        }
+      },
       cell: (row: DataTableScriptedCheck) => {
-        return <SuccessStateValue value={row.latency} thresholds={thresholds?.latency} unit={ListUnit.Milliseconds} />;
+        const checkType = getCheckType(row.settings);
+        let latency;
+        if (checkType === CheckType.K6 || checkType === CheckType.MULTI_HTTP) {
+          latency = row.latencyk6;
+        } else {
+          latency = row.latencyProtocol;
+        }
+        return <SuccessStateValue value={latency} thresholds={thresholds?.latency} unit={ListUnit.Milliseconds} />;
       },
     },
     {

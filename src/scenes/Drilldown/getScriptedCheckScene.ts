@@ -143,12 +143,24 @@ export function getChecksDrilldownScene({ metrics, logs, sm }: DashboardSceneApp
         interval: '',
         refId: 'latency-protocol',
       },
-
-      //   case CheckType.MULTI_HTTP:
-      //     return `sum by (job, instance) (sum_over_time(probe_http_total_duration_seconds{job="${job}", instance="${target}"}[6h])) / sum by (job, instance) (count_over_time(probe_http_total_duration_seconds{job="${job}", instance="${target}"}[6h])) `;
-      //   default:
-      //     return ``;
-      // }
+      {
+        datasource: metrics,
+        expr: `
+          sum by (job, instance) (
+            sum_over_time(
+              probe_http_total_duration_seconds{probe=~".*"}[$__range])
+            ) 
+          / 
+          sum by (job, instance) (
+            count_over_time(probe_http_total_duration_seconds{probe=~".*"}[$__range])
+          )
+        `,
+        format: 'table',
+        hide: false,
+        instant: true,
+        interval: '',
+        refId: 'latency-k6',
+      },
     ],
   });
 
@@ -174,9 +186,9 @@ export function getChecksDrilldownScene({ metrics, logs, sm }: DashboardSceneApp
             probes: 4,
             'Value #state': 5,
             'Value #latency-protocol': 8,
-            // 'Value #state': 4,
             'Value #uptime': 6,
             'Value #reachability': 7,
+            'Value #latency-k6': 9,
           },
           // renameByName: {
           //   'Value #': 'check type',
