@@ -1,5 +1,5 @@
-import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
+import React from 'react';
 import { DEFAULT_PROBES, PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures';
 import { render } from 'test/render';
 import { getInstanceMock, instanceSettings } from 'datasource/__mocks__/DataSource';
@@ -15,14 +15,13 @@ const TOKEN_VALUE = `a very tasty token`;
 
 const updateProbe = jest.fn().mockImplementation(() => Promise.resolve({ probe: PRIVATE_PROBE }));
 const resetProbeToken = jest.fn().mockImplementation(() => Promise.resolve({ token: TOKEN_VALUE }));
-const refetchProbes = jest.fn();
 
 const renderEditProbe = (probe: Probe) => {
   const mockedInstance = getInstanceMock(instanceSettings);
   mockedInstance.updateProbe = updateProbe;
   mockedInstance.resetProbeToken = resetProbeToken;
 
-  return render(<EditProbe probes={DEFAULT_PROBES} refetchProbes={refetchProbes} />, {
+  return render(<EditProbe />, {
     route: `${getRoute(ROUTES.EditProbe)}/:id`,
     path: `${getRoute(ROUTES.EditProbe)}/${probe.id}`,
     instance: {

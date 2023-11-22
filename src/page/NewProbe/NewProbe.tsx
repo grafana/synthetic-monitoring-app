@@ -3,7 +3,8 @@ import { Alert, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { type Probe, ROUTES } from 'types';
-import { type CreateProbeResult, useCreateProbe } from 'data/useProbes';
+import { type AddProbeResult } from 'datasource/responses.types';
+import { useCreateProbe } from 'data/useProbes';
 import { useNavigation } from 'hooks/useNavigation';
 import { BackendAddress } from 'components/BackendAddress';
 import { DocsLink } from 'components/DocsLink';
@@ -24,34 +25,24 @@ export const TEMPLATE_PROBE: Probe = {
   deprecated: false,
 };
 
-type NewProbeProps = {
-  refetchProbes: () => void;
-};
-
-export const NewProbe = ({ refetchProbes }: NewProbeProps) => {
+export const NewProbe = () => {
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [probeToken, setProbeToken] = useState(``);
-  const { onCreate, error } = useCreateProbe();
   const probe = { ...TEMPLATE_PROBE };
   const navigate = useNavigation();
 
-  const onCreateSuccess = useCallback(
-    (res: CreateProbeResult) => {
-      setShowTokenModal(true);
-      setProbeToken(res.token);
-      refetchProbes();
-    },
-    [refetchProbes]
-  );
+  const onCreateSuccess = useCallback((res: AddProbeResult) => {
+    setShowTokenModal(true);
+    setProbeToken(res.token);
+  }, []);
+
+  const { mutate: createProbe, error } = useCreateProbe({ onSuccess: onCreateSuccess });
 
   const handleSubmit = (formValues: Probe) => {
-    onCreate(
-      {
-        ...probe,
-        ...formValues,
-      },
-      onCreateSuccess
-    );
+    createProbe({
+      ...probe,
+      ...formValues,
+    });
   };
 
   const errorInfo = error

@@ -23,9 +23,11 @@ interface BadgeStatus {
 export const ProbeStatus = ({ probe, onReset }: Props) => {
   const [showResetModal, setShowResetModal] = useState(false);
   const styles = useStyles2(getStyles);
-  const { onResetToken } = useResetProbeToken(probe, (token) => {
-    setShowResetModal(false);
-    onReset(token);
+  const { mutate: onResetToken } = useResetProbeToken({
+    onSuccess: ({ token }) => {
+      setShowResetModal(false);
+      onReset(token);
+    },
   });
 
   if (!probe) {
@@ -54,7 +56,7 @@ export const ProbeStatus = ({ probe, onReset }: Props) => {
               title="Reset Probe Access Token"
               body="Are you sure you want to reset the access token for this Probe?"
               confirmText="Reset Token"
-              onConfirm={onResetToken}
+              onConfirm={() => onResetToken(probe)}
               onDismiss={() => setShowResetModal(false)}
             />
           </Container>

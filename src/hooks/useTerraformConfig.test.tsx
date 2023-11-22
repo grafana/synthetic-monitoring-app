@@ -1,9 +1,9 @@
 import React, { PropsWithChildren } from 'react';
 import { AppPluginMeta } from '@grafana/data';
 import { renderHook, waitFor } from '@testing-library/react';
+import { getInstanceMock } from 'datasource/__mocks__/DataSource';
 
 import { GlobalSettings } from 'types';
-import { getInstanceMock } from 'datasource/__mocks__/DataSource';
 import { InstanceContext } from 'contexts/InstanceContext';
 
 import { useTerraformConfig } from './useTerraformConfig';
@@ -17,7 +17,7 @@ describe('terraform config generation', () => {
       };
       const meta = {} as AppPluginMeta<GlobalSettings>;
 
-      return <InstanceContext.Provider value={{ instance, loading: false, meta }}>{children}</InstanceContext.Provider>;
+      return <InstanceContext.Provider value={{ instance, meta }}>{children}</InstanceContext.Provider>;
     };
     const { result } = renderHook(() => useTerraformConfig(), { wrapper });
 
@@ -123,7 +123,7 @@ describe('terraform config generation', () => {
       };
       const meta = {} as AppPluginMeta<GlobalSettings>;
 
-      return <InstanceContext.Provider value={{ instance, loading: false, meta }}>{children}</InstanceContext.Provider>;
+      return <InstanceContext.Provider value={{ instance, meta }}>{children}</InstanceContext.Provider>;
     };
     const { result } = renderHook(() => useTerraformConfig(), { wrapper });
 
@@ -239,7 +239,7 @@ describe('terraform config generation', () => {
       };
       const meta = {} as AppPluginMeta<GlobalSettings>;
 
-      return <InstanceContext.Provider value={{ instance, loading: false, meta }}>{children}</InstanceContext.Provider>;
+      return <InstanceContext.Provider value={{ instance, meta }}>{children}</InstanceContext.Provider>;
     };
     const { result } = renderHook(() => useTerraformConfig(), { wrapper });
     await waitFor(() => {

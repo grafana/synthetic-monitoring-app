@@ -8,11 +8,18 @@ import {
   MetricFindValue,
   ScopedVars,
 } from '@grafana/data';
-import { getBackendSrv, getTemplateSrv } from '@grafana/runtime';
+import { FetchResponse, getBackendSrv, getTemplateSrv } from '@grafana/runtime';
 import { isArray } from 'lodash';
 import { firstValueFrom } from 'rxjs';
 
 import { Check, HostedInstance, Probe } from '../types';
+import {
+  AddProbeResult,
+  DeleteProbeResult,
+  ListProbeResult,
+  ResetProbeTokenResult,
+  UpdateProbeResult,
+} from './responses.types';
 import { CheckInfo, QueryType, SMOptions, SMQuery } from './types';
 import { findLinkedDatasource, getRandomProbes, queryLogs } from 'utils';
 
@@ -188,15 +195,58 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
 
   async listProbes() {
     return firstValueFrom(
-      getBackendSrv().fetch<Probe[]>({
+      getBackendSrv().fetch<ListProbeResult>({
         method: 'GET',
         url: `${this.instanceSettings.url}/sm/probe/list`,
       })
-    )
-      .then((res) => res.data)
-      .catch((e) => {
-        throw new Error(e);
-      });
+    ).then((res: FetchResponse<ListProbeResult>) => res.data);
+  }
+
+  async addProbe(probe: Probe) {
+    return firstValueFrom(
+      getBackendSrv().fetch<AddProbeResult>({
+        method: 'POST',
+        url: `${this.instanceSettings.url}/sm/probe/add`,
+        data: probe,
+      })
+    ).then((res: FetchResponse<AddProbeResult>) => {
+      return res.data;
+    });
+  }
+
+  async updateProbe(probe: Probe) {
+    return firstValueFrom(
+      getBackendSrv().fetch<UpdateProbeResult>({
+        method: 'POST',
+        url: `${this.instanceSettings.url}/sm/probe/update`,
+        data: probe,
+      })
+    ).then((res: FetchResponse<UpdateProbeResult>) => {
+      return res.data;
+    });
+  }
+
+  async deleteProbe(id: number) {
+    return firstValueFrom(
+      getBackendSrv().fetch<DeleteProbeResult>({
+        method: 'DELETE',
+        url: `${this.instanceSettings.url}/sm/probe/delete/${id}`,
+      })
+    ).then((res: FetchResponse<DeleteProbeResult>) => {
+      return res.data;
+    });
+  }
+
+  async resetProbeToken(probe: Probe) {
+    return firstValueFrom(
+      getBackendSrv().fetch<ResetProbeTokenResult>({
+        method: 'POST',
+        url: `${this.instanceSettings.url}/sm/probe/update?reset-token=true`,
+        data: probe,
+      })
+    ).then((res: FetchResponse<ResetProbeTokenResult>) => {
+      return res.data;
+    });
   }
 
   async metricFindQuery(query: string, options?: any): Promise<MetricFindValue[]> {
@@ -209,57 +259,6 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       };
     });
     return metricFindValues;
-  }
-
-  async addProbe(probe: Probe): Promise<any> {
-    return getBackendSrv()
-      .fetch({
-        method: 'POST',
-        url: `${this.instanceSettings.url}/sm/probe/add`,
-        data: probe,
-      })
-      .toPromise()
-      .then((res: any) => {
-        return res.data;
-      });
-  }
-
-  async deleteProbe(id: number): Promise<any> {
-    return getBackendSrv()
-      .fetch({
-        method: 'DELETE',
-        url: `${this.instanceSettings.url}/sm/probe/delete/${id}`,
-      })
-      .toPromise()
-      .then((res: any) => {
-        return res.data;
-      });
-  }
-
-  async updateProbe(probe: Probe): Promise<any> {
-    return getBackendSrv()
-      .fetch({
-        method: 'POST',
-        url: `${this.instanceSettings.url}/sm/probe/update`,
-        data: probe,
-      })
-      .toPromise()
-      .then((res: any) => {
-        return res.data;
-      });
-  }
-
-  async resetProbeToken(probe: Probe): Promise<any> {
-    return getBackendSrv()
-      .fetch({
-        method: 'POST',
-        url: `${this.instanceSettings.url}/sm/probe/update?reset-token=true`,
-        data: probe,
-      })
-      .toPromise()
-      .then((res: any) => {
-        return res.data;
-      });
   }
 
   //--------------------------------------------------------------------------------

@@ -1,8 +1,11 @@
-import React, { PureComponent } from 'react';
-import { AppRootProps } from '@grafana/data';
 import { css, Global } from '@emotion/react';
+import React, { PureComponent } from 'react';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { AppRootProps } from '@grafana/data';
 
 import { GlobalSettings } from 'types';
+import { queryClient } from 'data/queryClient';
 import { DashboardUpdateModal } from 'components/DashboardUpdateModal';
 import { InstanceProvider } from 'components/InstanceProvider';
 import { Routing } from 'components/Routing';
@@ -22,12 +25,15 @@ export class App extends PureComponent<AppRootProps<GlobalSettings>> {
           logsInstanceName={meta.jsonData?.logs?.grafanaName}
           meta={meta}
         >
-          <ChecksContextProvider>
-            <CheckInfoContextProvider>
-              <Routing {...this.props} />
-              <DashboardUpdateModal />
-            </CheckInfoContextProvider>
-          </ChecksContextProvider>
+          <QueryClientProvider client={queryClient}>
+            <ChecksContextProvider>
+              <CheckInfoContextProvider>
+                <Routing {...this.props} />
+                <DashboardUpdateModal />
+              </CheckInfoContextProvider>
+            </ChecksContextProvider>
+            <ReactQueryDevtools />
+          </QueryClientProvider>
         </InstanceProvider>
       </FeatureFlagProvider>
     );

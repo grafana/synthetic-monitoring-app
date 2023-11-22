@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react';
 import { getBackendSrv } from '@grafana/runtime';
-import { Button, Spinner } from '@grafana/ui';
+import { Button } from '@grafana/ui';
 
 import { ROUTES } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
@@ -14,7 +14,7 @@ interface Props {
 }
 
 export const ConfigActions = ({ enabled, pluginId }: Props) => {
-  const { instance, loading } = useContext(InstanceContext);
+  const { instance } = useContext(InstanceContext);
   const [showDisableModal, setShowDisableModal] = useState(false);
   const navigate = useNavigation();
 
@@ -37,9 +37,6 @@ export const ConfigActions = ({ enabled, pluginId }: Props) => {
   };
 
   const getAction = () => {
-    if (loading) {
-      return <Spinner />;
-    }
     if (instance?.api) {
       return (
         <Button variant="destructive" onClick={() => setShowDisableModal(true)}>

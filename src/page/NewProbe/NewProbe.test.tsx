@@ -13,13 +13,12 @@ import 'test/silenceErrors';
 const TOKEN_VALUE = `a very tasty token`;
 
 const addProbe = jest.fn().mockImplementation(() => Promise.resolve({ probe: UPDATED_VALUES, token: TOKEN_VALUE }));
-const refetchProbes = jest.fn();
 
 const renderNewProbe = () => {
   const mockedInstance = getInstanceMock(instanceSettings);
   mockedInstance.addProbe = addProbe;
 
-  return render(<NewProbe refetchProbes={refetchProbes} />, {
+  return render(<NewProbe />, {
     route: getRoute(ROUTES.NewProbe),
     path: getRoute(ROUTES.NewProbe),
     instance: {

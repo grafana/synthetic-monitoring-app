@@ -1,193 +1,155 @@
-import { useContext, useEffect, useMemo, useState } from 'react';
-import { useAsyncCallback } from 'react-async-hook';
-import { AppEvents } from '@grafana/data';
-import { type FetchError, isFetchError } from '@grafana/runtime';
-import appEvents from 'grafana/app/core/app_events';
+import { useContext } from 'react';
+import { type QueryKey, useMutation, UseMutationResult, useSuspenseQuery } from '@tanstack/react-query';
+import { isFetchError } from '@grafana/runtime';
 
+import { type MutationProps } from './types';
 import { type Probe } from 'types';
-import { FaroEvent, reportError, reportEvent } from 'faro';
+import { FaroEvent } from 'faro';
+import { SMDataSource } from 'datasource/DataSource';
+import type {
+  AddProbeResult,
+  DeleteProbeResult,
+  ResetProbeTokenResult,
+  UpdateProbeResult,
+} from 'datasource/responses.types';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { useTrigger } from 'hooks/useTrigger';
+
+import { queryClient } from './queryClient';
+
+const queryKeys: Record<string, () => QueryKey> = {
+  list: () => ['probes'],
+  create: () => [...queryKeys.list(), 'create-probe'],
+  update: () => [...queryKeys.list(), 'update-probe'],
+  delete: () => [...queryKeys.list(), 'delete-probe'],
+};
 
 export function useProbes() {
-  const [probesLoading, setProbesLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [probes, setProbes] = useState<Probe[]>([]);
-  const { instance, loading } = useContext(InstanceContext);
-  const [trigger, refetchProbes] = useTrigger();
+  const { instance } = useContext(InstanceContext);
 
-  useEffect(() => {
-    const fetchProbes = async () => {
-      if (instance.api) {
-        try {
-          setProbesLoading(true);
-          const probes = await instance.api?.listProbes();
-          setProbes(probes);
-          setProbesLoading(false);
-          setError(null);
-        } catch (e) {
-          if (e instanceof Error) {
-            return setError(e.message);
-          }
+  return useSuspenseQuery({
+    queryKey: queryKeys.list(),
+    queryFn: () => instance.api?.listProbes(),
+  });
+}
 
-          if (typeof e === 'string') {
-            setError(e);
-          }
-        }
-      }
-    };
-
-    fetchProbes();
-  }, [loading, instance.api, trigger]);
+export function useProbe(id: number) {
+  const props = useProbes();
+  const probe = props.data?.find((probe) => probe.id === id);
 
   return {
-    error,
-    loading: probesLoading || loading,
-    probes,
-    refetchProbes,
+    ...props,
+    data: probe,
   };
 }
 
-export type CreateProbeResult = {
-  probe: Probe;
-  token: string;
-};
-
-export function useCreateProbe() {
+export function useCreateProbe({ onError, onSuccess }: MutationProps<AddProbeResult> = {}) {
   const { instance } = useContext(InstanceContext);
+  const api = instance.api as SMDataSource;
   const event = FaroEvent.CREATE_PROBE;
 
-  const { execute, error, loading, result } = useAsyncCallback(
-    async (probe: Probe, onSuccess: (res: CreateProbeResult) => void) => {
-      if (!instance.api) {
-        throw new Error('Not connected to the Synthetic Montoring datasource');
+  return useMutation<AddProbeResult, Error, Probe, UseMutationResult>({
+    mutationFn: async (probe: Probe) => {
+      try {
+        const res = await api.addProbe({
+          ...probe,
+          public: false,
+        });
+
+        return res;
+      } catch (error) {
+        throw handleAddProbeError(error);
       }
-
-      const info = await instance.api.addProbe({
-        ...probe,
-        public: false,
-      });
-
-      reportEvent(event);
-      appEvents.emit(AppEvents.alertSuccess, [`Created probe ${info.probe.name}`]);
-      onSuccess(info);
-    }
-  );
-
-  const err = useOnError({ event, error, alert: `Failed to create probe` });
-
-  return {
-    error: err,
-    loading,
-    onCreate: execute,
-    result,
-  };
+    },
+    onError: (error) => {
+      onError?.(error);
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.list() });
+      onSuccess?.(data);
+    },
+    meta: {
+      event,
+      successAlert: (res: AddProbeResult) => `Created probe ${res.probe.name}`,
+      errorAlert: (error: Error) => `Failed to create probe`,
+    },
+  });
 }
 
-export type UpdateProbeResult = {
-  probe: Probe;
-};
+function handleAddProbeError(error: unknown) {
+  if (isFetchError(error)) {
+    return new Error(error.data.err);
+  }
 
-export function useUpdateProbe() {
+  return error;
+}
+
+export function useUpdateProbe({ onError, onSuccess }: MutationProps<UpdateProbeResult> = {}) {
   const { instance } = useContext(InstanceContext);
+  const api = instance.api as SMDataSource;
   const event = FaroEvent.UPDATE_PROBE;
 
-  const { execute, error, loading, result } = useAsyncCallback(
-    async (probe: Probe, onSuccess: (res: UpdateProbeResult) => void) => {
-      if (!instance.api) {
-        throw new Error('Not connected to the Synthetic Montoring datasource');
-      }
-
-      const info = await instance.api.updateProbe(probe);
-
-      reportEvent(event);
-      appEvents.emit(AppEvents.alertSuccess, [`Updated probe ${info.probe.name}`]);
-      onSuccess(info);
-    }
-  );
-
-  const err = useOnError({ event, error });
-
-  return {
-    result,
-    onUpdate: execute,
-    error: err,
-    loading,
-  };
-}
-
-export function useDeleteProbe() {
-  const { instance } = useContext(InstanceContext);
-  const event = FaroEvent.DELETE_PROBE;
-
-  const { execute, error, loading, result } = useAsyncCallback(async (probe: Probe, onSuccess: () => void) => {
-    if (!instance.api) {
-      throw new Error('Not connected to the Synthetic Montoring datasource');
-    }
-
-    await instance.api.deleteProbe(probe.id!);
-
-    reportEvent(event);
-    appEvents.emit(AppEvents.alertSuccess, [`Deleted probe ${probe.name}`]);
-    onSuccess();
+  return useMutation<UpdateProbeResult, Error, Probe, UseMutationResult>({
+    mutationFn: (probe: Probe) => api.updateProbe(probe),
+    onError: (error: unknown) => {
+      onError?.(error);
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.list() });
+      onSuccess?.(data);
+    },
+    meta: {
+      event,
+      successAlert: (res: UpdateProbeResult) => `Updated probe ${res.probe.name}`,
+      errorAlert: () => `Failed to update probe`,
+    },
   });
-
-  const err = useOnError({ event, error, alert: `Failed to delete probe` });
-
-  return {
-    error: err,
-    loading,
-    onDelete: execute,
-    result,
-  };
 }
 
-export function useResetProbeToken(probe: Probe, onSuccess: (token: string) => void) {
-  const { instance } = useContext(InstanceContext);
-  const event = FaroEvent.RESET_PROBE_TOKEN;
-
-  const { execute, error, loading, result } = useAsyncCallback(async () => {
-    if (!instance.api) {
-      throw new Error('Not connected to the Synthetic Montoring datasource');
-    }
-
-    const { token } = await instance.api.resetProbeToken(probe);
-
-    reportEvent(event);
-    onSuccess(token);
-  });
-
-  const err = useOnError({ event, error, alert: `Failed to reset probe token` });
-
-  return {
-    error: err,
-    loading,
-    onResetToken: execute,
-    result,
-  };
-}
-
-type useOnErrorProps = {
-  event: FaroEvent;
-  error?: Error | FetchError;
-  alert?: string;
+type ExtendedDeleteProbeResult = DeleteProbeResult & {
+  probeName: Probe['name'];
 };
 
-function useOnError({ event, error, alert }: useOnErrorProps) {
-  const formattedError = useMemo(() => {
-    if (!error) {
-      return undefined;
-    }
+export function useDeleteProbe({ onError, onSuccess }: MutationProps<DeleteProbeResult> = {}) {
+  const { instance } = useContext(InstanceContext);
+  const api = instance.api as SMDataSource;
+  const event = FaroEvent.DELETE_PROBE;
 
-    return isFetchError(error) ? new Error(`${error.data.err} (${error.status})`) : error;
-  }, [error]);
+  return useMutation<ExtendedDeleteProbeResult, Error, Probe, UseMutationResult>({
+    mutationFn: (probe: Probe) =>
+      api.deleteProbe(probe.id!).then((res) => ({
+        ...res,
+        probeName: probe.name,
+      })),
+    onError: (error) => {
+      onError?.(error);
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.list() });
+      onSuccess?.(data);
+    },
+    meta: {
+      event,
+      successAlert: (res: ExtendedDeleteProbeResult) => `Deleted probe ${res.probeName}`,
+    },
+  });
+}
 
-  useEffect(() => {
-    if (formattedError) {
-      reportError(formattedError.message, event);
-      alert && appEvents.emit(AppEvents.alertError, [alert]);
-    }
-  }, [formattedError, event, alert]);
+export function useResetProbeToken({ onError, onSuccess }: MutationProps<ResetProbeTokenResult> = {}) {
+  const { instance } = useContext(InstanceContext);
+  const api = instance.api as SMDataSource;
+  const event = FaroEvent.RESET_PROBE_TOKEN;
 
-  return formattedError;
+  return useMutation<ResetProbeTokenResult, Error, Probe, UseMutationResult>({
+    mutationFn: (probe: Probe) => api.resetProbeToken(probe),
+    onError: (error) => {
+      onError?.(error);
+    },
+    onSuccess: (data) => {
+      onSuccess?.(data);
+    },
+    meta: {
+      event,
+      errorAlert: () => `Failed to reset probe token`,
+    },
+  });
 }

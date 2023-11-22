@@ -1,7 +1,7 @@
+import { render, type RenderOptions } from '@testing-library/react';
 import React, { type ReactElement, type ReactNode } from 'react';
 import { Route, Router } from 'react-router-dom';
 import { AppPluginMeta, DataSourceSettings, PluginType } from '@grafana/data';
-import { render, type RenderOptions } from '@testing-library/react';
 import userEventLib from '@testing-library/user-event';
 import { createMemoryHistory } from 'history';
 import pluginInfo from 'plugin.json';
@@ -70,7 +70,6 @@ export const createWrapper = ({
       <InstanceContext.Provider
         value={{
           instance,
-          loading: false,
           meta: {
             ...defaultMeta,
             ...meta,

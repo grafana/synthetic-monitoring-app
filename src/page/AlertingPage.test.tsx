@@ -2,7 +2,7 @@ import React from 'react';
 import { DataSourceSettings } from '@grafana/data';
 import { screen, waitFor, within } from '@testing-library/react';
 import { type UserEvent } from '@testing-library/user-event';
-import { render } from 'test/render';
+import { createInstance, render } from 'test/render';
 
 import { AlertFamily, AlertRule, AlertSensitivity } from 'types';
 import {
@@ -40,6 +40,7 @@ const setRules = jest.fn().mockImplementation(() => Promise.resolve({ ok: true }
 const renderAlerting = ({ withAlerting = true } = {}) => {
   return render(<AlertingPage />, {
     instance: {
+      ...createInstance(),
       alertRuler: withAlerting ? ({ url: 'alertUrl' } as unknown as DataSourceSettings) : undefined,
     },
   });

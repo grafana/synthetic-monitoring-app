@@ -331,8 +331,12 @@ export function getRandomProbes(probes: number[], quantity: number): number[] {
   return Array.from(randomProbes).sort((a, b) => a - b);
 }
 
-export function canEditProbes(probe: Probe) {
-  return !probe.public && hasRole(OrgRole.Editor);
+export function canEditProbes(probe?: Probe) {
+  if (!probe || probe.public) {
+    return false;
+  }
+
+  return hasRole(OrgRole.Editor);
 }
 
 export function formatDate(number: number) {

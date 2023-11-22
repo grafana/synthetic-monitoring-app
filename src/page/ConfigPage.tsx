@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Container, Spinner, useStyles2 } from '@grafana/ui';
+import { Container, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { InstanceContext } from 'contexts/InstanceContext';
@@ -38,64 +38,60 @@ function getStyles(theme: GrafanaTheme2) {
 }
 
 export function ConfigPage() {
-  const { meta, loading, instance } = useContext(InstanceContext);
+  const { meta, instance } = useContext(InstanceContext);
   const styles = useStyles2(getStyles);
 
   return (
     <PluginPage>
-      {loading ? (
-        <Spinner />
-      ) : (
+      <div>
         <div>
-          <div>
-            <p>
-              Synthetic Monitoring is a blackbox monitoring solution provided as part of{' '}
-              <a
-                className="highlight-word"
-                href="https://grafana.com/products/cloud/"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Grafana Cloud
-              </a>
-              . If you don&apos;t already have a Grafana Cloud service,{' '}
-              <a
-                className="highlight-word"
-                href="https://grafana.com/signup/cloud"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                sign up now{' '}
-              </a>
-            </p>
-          </div>
-          {instance.api && (
-            <div className={styles.tenantConfig}>
-              <DashboardList
-                options={instance.api.instanceSettings.jsonData}
-                checkUpdates={true}
-                onChange={instance.api.onOptionsChange}
-              />
-              <div className={styles.linkedDatasources}>
-                <h3>Linked Data Sources</h3>
-                <Container margin="sm">
-                  <LinkedDatasourceView type="prometheus" />
-                  <LinkedDatasourceView type="loki" />
-                </Container>
-              </div>
-              <div className={styles.backendAddress}>
-                <BackendAddress omitHttp />
-              </div>
-            </div>
-          )}
-          <div className={styles.programmaticManagement}>{meta?.enabled && <ProgrammaticManagement />}</div>
-          <div className={styles.configActions}>
-            <hr></hr>
-            <ConfigActions enabled={meta?.enabled} pluginId={meta?.id ?? 'grafana-synthetic-monitoring-app'} />
-          </div>
-          <div>Plugin version: {meta?.info.version}</div>
+          <p>
+            Synthetic Monitoring is a blackbox monitoring solution provided as part of{' '}
+            <a
+              className="highlight-word"
+              href="https://grafana.com/products/cloud/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Grafana Cloud
+            </a>
+            . If you don&apos;t already have a Grafana Cloud service,{' '}
+            <a
+              className="highlight-word"
+              href="https://grafana.com/signup/cloud"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              sign up now{' '}
+            </a>
+          </p>
         </div>
-      )}
+        {instance.api && (
+          <div className={styles.tenantConfig}>
+            <DashboardList
+              options={instance.api.instanceSettings.jsonData}
+              checkUpdates={true}
+              onChange={instance.api.onOptionsChange}
+            />
+            <div className={styles.linkedDatasources}>
+              <h3>Linked Data Sources</h3>
+              <Container margin="sm">
+                <LinkedDatasourceView type="prometheus" />
+                <LinkedDatasourceView type="loki" />
+              </Container>
+            </div>
+            <div className={styles.backendAddress}>
+              <BackendAddress omitHttp />
+            </div>
+          </div>
+        )}
+        <div className={styles.programmaticManagement}>{meta?.enabled && <ProgrammaticManagement />}</div>
+        <div className={styles.configActions}>
+          <hr></hr>
+          <ConfigActions enabled={meta?.enabled} pluginId={meta?.id ?? 'grafana-synthetic-monitoring-app'} />
+        </div>
+        <div>Plugin version: {meta?.info.version}</div>
+      </div>
     </PluginPage>
   );
 }
