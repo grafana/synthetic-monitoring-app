@@ -1,5 +1,6 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { render } from 'test/render';
 
 import { getInstanceMock } from 'datasource/__mocks__/DataSource';
@@ -19,7 +20,7 @@ const renderThresholdSettingsForm = () => {
   return waitFor(() =>
     render(
       <SuccessRateContextProvider>
-        <ThresholdGlobalSettings onDismiss={onDismiss} onSuccess={onSuccess} onError={onError} isOpen={true} />
+        <ThresholdGlobalSettings onDismiss={onDismiss} onSuccess={onSuccess} onError={onError} />
       </SuccessRateContextProvider>,
       {
         instance,
@@ -30,6 +31,8 @@ const renderThresholdSettingsForm = () => {
 
 test('shows the form', async () => {
   await renderThresholdSettingsForm();
+  const openButton = await screen.findByRole('button', { name: 'Set Thresholds' });
+  await userEvent.click(openButton);
   const saveButton = await screen.findByTestId('threshold-save');
   const inputs = await screen.findAllByPlaceholderText('value');
   expect(saveButton).toBeInTheDocument();
@@ -38,6 +41,8 @@ test('shows the form', async () => {
 
 test('has default values in form', async () => {
   const { user } = await renderThresholdSettingsForm();
+  const openButton = await screen.findByRole('button', { name: 'Set Thresholds' });
+  await userEvent.click(openButton);
   const upperLimitInputs = await screen.findAllByTestId('upper-limit');
   const lowerLimitInputs = await screen.findAllByTestId('lower-limit');
   await user.click(screen.getByText('Reset all to defaults'));
@@ -51,6 +56,8 @@ test('has default values in form', async () => {
 
 test('submits the form', async () => {
   const { instance, user } = await renderThresholdSettingsForm();
+  const openButton = await screen.findByRole('button', { name: 'Set Thresholds' });
+  await userEvent.click(openButton);
   const saveButton = await screen.findByTestId('threshold-save');
   await user.click(saveButton);
 

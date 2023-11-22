@@ -24,7 +24,7 @@ import { checkType } from 'utils';
 import { QueryType } from 'datasource/types';
 import { PLUGIN_URL_PATH } from 'components/constants';
 import { EditCheckDrawer } from 'components/EditCheckDrawer';
-import { ScriptedChecksListSceneObject } from 'components/ScriptedCheckList';
+import { ScriptedChecksListSceneObject } from 'components/ScriptedCheckList/ScriptedCheckList';
 import { getLatencyByProbePanel, getReachabilityStat, getUptimeStat } from 'scenes/Common';
 
 import { getScriptedLatencyByUrl } from '../Scripted/getScriptedLatencyByUrl';

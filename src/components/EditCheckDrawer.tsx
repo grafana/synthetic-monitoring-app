@@ -1,6 +1,4 @@
 import React, { useContext, useState } from 'react';
-import { AppEvents } from '@grafana/data';
-import { getAppEvents } from '@grafana/runtime';
 import { Button, Drawer } from '@grafana/ui';
 
 import { CheckType } from 'types';
@@ -22,10 +20,9 @@ function getCheckEditor(type: CheckType, checkId: string, callback: () => void) 
   }
 }
 
-const appEvents = getAppEvents();
 export function EditCheckDrawer({ checkId }: { checkId: string }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const { checks, refetchChecks } = useContext(ChecksContext);
+  const { checks } = useContext(ChecksContext);
   const check = checks.find((c) => String(c.id) === checkId);
   if (!check) {
     return null;
@@ -33,11 +30,6 @@ export function EditCheckDrawer({ checkId }: { checkId: string }) {
   const type = checkType(check.settings);
   function handleSuccess() {
     setDrawerOpen(false);
-    refetchChecks();
-    appEvents.publish({
-      type: AppEvents.alertSuccess.name,
-      payload: ['Check updated successfully. It will take a minute or two for changes to be reflected in the results.'],
-    });
   }
   return (
     <>

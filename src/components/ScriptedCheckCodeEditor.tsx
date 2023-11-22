@@ -52,7 +52,6 @@ function getStyles(theme: GrafanaTheme2) {
       width: 100%;
     `,
     saveButton: css`
-      /* align-self: flex-start; */
       position: fixed;
       bottom: ${theme.spacing(2)};
       right: ${theme.spacing(2)};
@@ -71,7 +70,7 @@ const appEvents = getAppEvents();
 
 export function ScriptedCheckCodeEditor({ onSubmit, script, saving, checkId }: Props) {
   const { instance } = useContext(InstanceContext);
-  const { checks } = useContext(ChecksContext);
+  const { checks, refetchChecks } = useContext(ChecksContext);
   let defaultValues = {
     script: script ?? DEFAULT_SCRIPT,
     probes: [] as number[],
@@ -121,20 +120,30 @@ export function ScriptedCheckCodeEditor({ onSubmit, script, saving, checkId }: P
         },
       },
     };
-    if (onSubmit) {
-      onSubmit(updatedCheck, null);
-    }
+
     if (checkId) {
-      return instance.api?.updateCheck(updatedCheck).catch((e) => {
-        appEvents.publish({
-          type: AppEvents.alertError.name,
-          payload: ['Check update failed', e.message ?? ''],
+      return instance.api
+        ?.updateCheck(updatedCheck)
+        .then((resp) => {
+          refetchChecks();
+          if (onSubmit) {
+            onSubmit(resp, null);
+          }
+        })
+        .catch((e) => {
+          appEvents.publish({
+            type: AppEvents.alertError.name,
+            payload: ['Check update failed', e.message ?? ''],
+          });
         });
-      });
     } else {
       return instance.api
         ?.addCheck(updatedCheck)
-        .then(() => {
+        .then((resp) => {
+          refetchChecks();
+          if (onSubmit) {
+            onSubmit(resp, null);
+          }
           appEvents.publish({
             type: AppEvents.alertSuccess.name,
             payload: [

@@ -165,6 +165,11 @@ export const CHECK_TYPE_OPTIONS = [
     value: CheckType.Traceroute,
     description: 'Trace the path of a request through the internet',
   },
+  {
+    label: 'Scripted',
+    value: CheckType.K6,
+    description: 'Fully scriptable check based on the k6 testing tool',
+  },
 ];
 
 export const HTTP_SSL_OPTIONS = [

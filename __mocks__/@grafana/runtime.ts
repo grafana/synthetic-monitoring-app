@@ -15,8 +15,13 @@ export const config = {
   theme: {},
 };
 
+const getAppEvents = () => ({
+  publish: jest.fn(),
+});
+
 module.exports = {
   ...runtime,
   getBackendSrv,
   getLocationSrv,
+  getAppEvents,
 };

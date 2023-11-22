@@ -122,7 +122,6 @@ export const CheckList = ({ instance, onCheckUpdate }: Props) => {
   const [showVizIconOverlay, setShowVizIconOverlay] = useState(getIconOverlayToggleFromLS());
   const [bulkActionInProgress, setBulkActionInProgress] = useState(false);
 
-  const [showThresholdModal, setShowThresholdModal] = useState(false);
   const [bulkEditAction, setBulkEditAction] = useState<'add' | 'remove' | null>(null);
   const { checks } = useContext(ChecksContext);
 
@@ -327,19 +326,9 @@ export const CheckList = ({ instance, onCheckUpdate }: Props) => {
                   localStorage.setItem('checkFilters', JSON.stringify(filters));
                 }}
               />
-              {hasRole(OrgRole.Editor) && (
-                <>
-                  <Button
-                    variant="secondary"
-                    fill="outline"
-                    onClick={() => setShowThresholdModal((v) => !v)}
-                    className={styles.marginRightSmall}
-                  >
-                    Set Thresholds
-                  </Button>
-                  <AddNewCheckButton />
-                </>
-              )}
+              <ThresholdGlobalSettings />
+
+              <AddNewCheckButton />
             </div>
           </div>
           <div className={styles.searchSortContainer}>
@@ -494,14 +483,6 @@ export const CheckList = ({ instance, onCheckUpdate }: Props) => {
           )}
         </div>
       )}
-      <ThresholdGlobalSettings
-        onDismiss={() => setShowThresholdModal(false)}
-        isOpen={showThresholdModal}
-        onSuccess={() => appEvents.emit(AppEvents.alertSuccess, ['Thresholds updated'])}
-        onError={() =>
-          appEvents.emit(AppEvents.alertError, [`Error updating thresholds. make sure your values don't overlap`])
-        }
-      />
       <BulkEditModal
         instance={instance}
         selectedChecks={getChecksFromSelected}

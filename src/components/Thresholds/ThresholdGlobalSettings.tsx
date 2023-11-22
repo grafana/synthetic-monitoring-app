@@ -1,17 +1,20 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
+import { AppEvents, OrgRole } from '@grafana/data';
+import { getAppEvents } from '@grafana/runtime';
 import { Button, HorizontalGroup, Modal } from '@grafana/ui';
 
 import { FaroEvent, reportError, reportEvent } from 'faro';
+import { hasRole } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { SuccessRateContext, ThresholdValues } from 'contexts/SuccessRateContext';
 
 import ThresholdFormSection from './ThresholdFormSection';
 
 interface Props {
-  onDismiss: () => void;
-  onSuccess: () => void;
-  onError: () => void;
-  isOpen: boolean;
+  onDismiss?: () => void;
+  onSuccess?: () => void;
+  onError?: () => void;
+  // isOpen: boolean;
 }
 
 const thresholdPercentDefaults: ThresholdValues = {
@@ -24,10 +27,13 @@ const thresholdMsDefaults: ThresholdValues = {
   lowerLimit: 200,
 };
 
-const ThresholdGlobalSettings = ({ onDismiss, onSuccess, onError, isOpen }: Props) => {
+const appEvents = getAppEvents();
+
+const ThresholdGlobalSettings = ({ onDismiss, onSuccess, onError }: Props) => {
   const { instance } = useContext(InstanceContext);
   const { thresholds, updateThresholds } = useContext(SuccessRateContext);
 
+  const [showThresholdModal, setShowThresholdModal] = useState(false);
   const [uptimeThresholds, setUptimeThresholds] = useState<ThresholdValues>(thresholds.uptime);
   const [reachabilityThresholds, setReachabilityThresholds] = useState<ThresholdValues>(thresholds.reachability);
   const [latencyThresholds, setLatencyThresholds] = useState<ThresholdValues>(thresholds.latency);
@@ -57,12 +63,23 @@ const ThresholdGlobalSettings = ({ onDismiss, onSuccess, onError, isOpen }: Prop
       // Send new thresholds, then update context values
       await instance.api?.updateTenantSettings(postBody);
       await updateThresholds();
+      appEvents.publish({ type: AppEvents.alertSuccess.name, payload: ['Thresholds updated'] });
       // Show success
-      onDismiss();
-      onSuccess();
+      if (onDismiss) {
+        onDismiss();
+      }
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (e: any) {
       // Show error
-      onError();
+      appEvents.publish({
+        type: AppEvents.alertError.name,
+        payload: [`Error updating thresholds. make sure your values don't overlap`],
+      });
+      if (onError) {
+        onError();
+      }
       reportError(e, FaroEvent.SAVE_THRESHOLDS);
     }
   }, [
@@ -84,42 +101,65 @@ const ThresholdGlobalSettings = ({ onDismiss, onSuccess, onError, isOpen }: Prop
   }, [thresholds]);
 
   return (
-    <Modal title="Threshold Settings" isOpen={isOpen} onDismiss={onDismiss}>
-      <HorizontalGroup spacing="sm" height={35}>
-        <Button data-testid="threshold-save" onClick={handleSaveThresholds}>
-          Save changes
-        </Button>
-        <Button data-testid="threshold-defaults" variant="secondary" onClick={handleSetDefaults}>
-          Reset all to defaults
-        </Button>
-      </HorizontalGroup>
-      <p style={{ marginTop: '20px', marginBottom: '20px', fontStyle: 'italic', fontSize: '.9rem' }}>
-        Note: these settings apply only to the check list view.
-      </p>
-      <div style={{ marginTop: '20px', marginBottom: '20px' }}>
-        <ThresholdFormSection
-          thresholds={uptimeThresholds}
-          setThresholds={setUptimeThresholds}
-          label="Uptime"
-          unit="%"
-          description="How often any single probe is able to reach an endpoint."
-        />
-        <ThresholdFormSection
-          thresholds={reachabilityThresholds}
-          setThresholds={setReachabilityThresholds}
-          label="Reachability"
-          unit="%"
-          description="The aggregate success rate of all probes."
-        />
-        <ThresholdFormSection
-          thresholds={latencyThresholds}
-          setThresholds={setLatencyThresholds}
-          label="Request latency"
-          unit="ms"
-          description="The amount of time it takes to reach an endpoint."
-        />
-      </div>
-    </Modal>
+    <>
+      {hasRole(OrgRole.Editor) && (
+        <>
+          <Button
+            variant="secondary"
+            fill="outline"
+            onClick={() => setShowThresholdModal((v) => !v)}
+            // styles={css({ marginRight: theme.spacing(2) })}
+          >
+            Set Thresholds
+          </Button>
+        </>
+      )}
+      <Modal
+        title="Threshold Settings"
+        isOpen={showThresholdModal}
+        onDismiss={() => {
+          if (onDismiss) {
+            onDismiss();
+          }
+          setShowThresholdModal(false);
+        }}
+      >
+        <HorizontalGroup spacing="sm" height={35}>
+          <Button data-testid="threshold-save" onClick={handleSaveThresholds}>
+            Save changes
+          </Button>
+          <Button data-testid="threshold-defaults" variant="secondary" onClick={handleSetDefaults}>
+            Reset all to defaults
+          </Button>
+        </HorizontalGroup>
+        <p style={{ marginTop: '20px', marginBottom: '20px', fontStyle: 'italic', fontSize: '.9rem' }}>
+          Note: these settings apply only to the check list view.
+        </p>
+        <div style={{ marginTop: '20px', marginBottom: '20px' }}>
+          <ThresholdFormSection
+            thresholds={uptimeThresholds}
+            setThresholds={setUptimeThresholds}
+            label="Uptime"
+            unit="%"
+            description="How often any single probe is able to reach an endpoint."
+          />
+          <ThresholdFormSection
+            thresholds={reachabilityThresholds}
+            setThresholds={setReachabilityThresholds}
+            label="Reachability"
+            unit="%"
+            description="The aggregate success rate of all probes."
+          />
+          <ThresholdFormSection
+            thresholds={latencyThresholds}
+            setThresholds={setLatencyThresholds}
+            label="Request latency"
+            unit="ms"
+            description="The amount of time it takes to reach an endpoint."
+          />
+        </div>
+      </Modal>
+    </>
   );
 };
 

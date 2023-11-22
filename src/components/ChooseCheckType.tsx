@@ -12,11 +12,16 @@ import { PluginPage } from 'components/PluginPage';
 export function ChooseCheckType() {
   const styles = useStyles2(getStyles);
   const { isEnabled: multiHttpEnabled } = useFeatureFlag(FeatureName.MultiHttp);
+  const { isEnabled: scriptedEnabled } = useFeatureFlag(FeatureName.ScriptedChecks);
   // If we're editing, grab the appropriate check from the list
   const navigate = useNavigation();
+  console.log({ scriptedEnabled });
 
   const options = CHECK_TYPE_OPTIONS.filter(({ value }) => {
     if (!multiHttpEnabled && value === CheckType.MULTI_HTTP) {
+      return false;
+    }
+    if (!scriptedEnabled && value === CheckType.K6) {
       return false;
     }
     return true;

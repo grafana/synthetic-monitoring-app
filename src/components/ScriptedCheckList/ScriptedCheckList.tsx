@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Table } from '@grafana/cloud-features';
 import { GrafanaTheme2 } from '@grafana/data';
 import { config, PluginPage } from '@grafana/runtime';
@@ -7,9 +7,13 @@ import { LoadingState } from '@grafana/schema';
 import { Alert, Icon, LoadingPlaceholder, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { Check, ROUTES } from 'types';
+import { Check, CheckFiltersType, FilteredCheck, ROUTES } from 'types';
 import { ChecksContext } from 'contexts/ChecksContext';
 import { useNavigation } from 'hooks/useNavigation';
+import { CheckFilters, defaultFilters, getDefaultFilters } from 'components/CheckFilters';
+import { AddNewCheckButton } from 'components/CheckList/AddNewCheckButton';
+import { matchesAllFilters } from 'components/CheckList/checkFilters';
+import ThresholdGlobalSettings from 'components/Thresholds/ThresholdGlobalSettings';
 
 function getStyles(theme: GrafanaTheme2) {
   return {
@@ -25,6 +29,13 @@ function getStyles(theme: GrafanaTheme2) {
       color: ${theme.colors.success.text};
       text-align: center;
     `,
+    flex: css({
+      display: 'flex',
+    }),
+    spaceBetween: css({
+      display: 'flex',
+      justifyContent: 'space-between',
+    }),
   };
 }
 
@@ -68,10 +79,17 @@ export function ScriptedCheckList({ model }: SceneComponentProps<any>) {
   const navigate = useNavigation();
   const styles = useStyles2(getStyles);
   const { checks } = useContext(ChecksContext);
-
+  const [filteredChecks, setFilteredChecks] = useState<FilteredCheck[] | []>([]);
+  const [checkFilters, setCheckFilters] = useState<CheckFiltersType>(getDefaultFilters());
   const data = sceneGraph.getData(model).useState();
+
+  useEffect(() => {
+    const filtered = checks.filter((check) => matchesAllFilters(check, checkFilters)) as FilteredCheck[];
+    setFilteredChecks(filtered);
+  }, [checkFilters, checks, data]);
+
   const fields = data.data?.series?.[0]?.fields;
-  const tableData = checks.map((check) => {
+  const tableData = filteredChecks.map((check) => {
     const dataIndex = data.data?.series?.[0]?.fields?.[0]?.values.findIndex((v) => v === check.job);
     if (dataIndex === undefined || dataIndex < 0) {
       return {
@@ -126,6 +144,9 @@ export function ScriptedCheckList({ model }: SceneComponentProps<any>) {
     {
       name: 'uptime',
       sortable: true,
+      sortFunction: (a: DataTableScriptedCheck, b: DataTableScriptedCheck) => {
+        return (b?.uptime ?? -1) - (a?.uptime ?? -1);
+      },
       selector: (row: DataTableScriptedCheck) => row.uptime,
       cell: (row: DataTableScriptedCheck) => {
         return <SuccessStateValue value={row.uptime} />;
@@ -161,20 +182,43 @@ export function ScriptedCheckList({ model }: SceneComponentProps<any>) {
   if (data.data?.state === LoadingState.Loading) {
     return <LoadingPlaceholder text={undefined} />;
   }
+
+  const handleResetFilters = () => {
+    setCheckFilters(defaultFilters);
+    localStorage.removeItem('checkFilters');
+  };
+
   return (
-    <Table<DataTableScriptedCheck>
-      id="scripted-checks-table"
-      name="scripted-checks-table"
-      noDataText="No scripted checks found"
-      columns={columns}
-      onRowClicked={(row) => {
-        if (row.id) {
-          navigate(`${ROUTES.Checks}/${row.id}`);
-        }
-      }}
-      config={config}
-      data={tableData}
-      pagination
-    />
+    <div>
+      <div className={styles.spaceBetween}>
+        <div className={styles.flex}>
+          <CheckFilters
+            handleResetFilters={handleResetFilters}
+            checks={checks}
+            checkFilters={checkFilters}
+            onChange={(filters: CheckFiltersType) => {
+              setCheckFilters(filters);
+              localStorage.setItem('checkFilters', JSON.stringify(filters));
+            }}
+          />
+          <ThresholdGlobalSettings />
+        </div>
+        <AddNewCheckButton />
+      </div>
+      <Table<DataTableScriptedCheck>
+        id="scripted-checks-table"
+        name="scripted-checks-table"
+        noDataText="No scripted checks found"
+        columns={columns}
+        onRowClicked={(row) => {
+          if (row.id) {
+            navigate(`${ROUTES.Checks}/${row.id}`);
+          }
+        }}
+        config={config}
+        data={tableData}
+        pagination
+      />
+    </div>
   );
 }
