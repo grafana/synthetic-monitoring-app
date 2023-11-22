@@ -16,8 +16,8 @@ export const BackendAddress = ({ omitHttp }: BackendAddressProps) => {
     <>
       <div className="h3">Backend address</div>
       <p>
-        Based on the region of your stack, you need to use a different API server URL when setting up a private probe.
-        This is the backend address for your stack:
+        The agent will need to connect to the instance of the Synthetics API that corresponds with the region of your
+        stack. This is the backend address for your stack:
       </p>
       <pre>{display}</pre>
     </>

@@ -16,6 +16,7 @@ import {
 import { css } from '@emotion/css';
 
 import { Collapse } from 'components/Collapse';
+import { LabelField } from 'components/LabelField';
 
 import {
   DNS_PROTOCOLS,
@@ -24,7 +25,6 @@ import {
   DNS_RESPONSE_MATCH_OPTIONS,
   IP_OPTIONS,
 } from './constants';
-import { LabelField } from './LabelField';
 
 interface Props {
   isEditor: boolean;

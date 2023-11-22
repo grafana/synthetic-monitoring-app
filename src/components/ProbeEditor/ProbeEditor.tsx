@@ -56,9 +56,6 @@ export const ProbeEditor = ({
     }
   }, [alertRef, errorInfo]);
 
-  if (errors.labels) {
-    console.log(errors.labels);
-  }
   return (
     <div className={styles.containerWrapper}>
       <div className={styles.container}>
