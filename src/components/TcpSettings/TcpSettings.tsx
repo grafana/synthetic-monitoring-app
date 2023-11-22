@@ -33,12 +33,7 @@ export const TcpSettingsForm = ({ isEditor }: Props) => {
   const { fields, append, remove } = useFieldArray({ control, name: 'settings.tcp.queryResponse' });
   return (
     <Container>
-      <Collapse
-        label="TCP settings"
-        onToggle={() => setShowTCPSettings(!showTCPSettings)}
-        isOpen={showTCPSettings}
-        collapsible
-      >
+      <Collapse label="TCP settings" onToggle={() => setShowTCPSettings(!showTCPSettings)} isOpen={showTCPSettings}>
         <Field
           label="Use TLS"
           description="Whether or not TLS is used when the connection is initiated."
@@ -53,7 +48,6 @@ export const TcpSettingsForm = ({ isEditor }: Props) => {
         label="Query/Response"
         onToggle={() => setShowQueryResponse(!showQueryResponse)}
         isOpen={showQueryResponse}
-        collapsible
       >
         <Field
           label="Query and response"
@@ -100,12 +94,7 @@ export const TcpSettingsForm = ({ isEditor }: Props) => {
         </Field>
       </Collapse>
       <TLSConfig isEditor={isEditor} checkType={CheckType.TCP} />
-      <Collapse
-        label="Advanced options"
-        onToggle={() => setShowAdvanced(!showAdvanced)}
-        isOpen={showAdvanced}
-        collapsible
-      >
+      <Collapse label="Advanced options" onToggle={() => setShowAdvanced(!showAdvanced)} isOpen={showAdvanced}>
         <LabelField isEditor={isEditor} />
         <HorizontalGroup>
           <div>

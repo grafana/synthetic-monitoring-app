@@ -4,6 +4,7 @@ import { Container, Spinner, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { InstanceContext } from 'contexts/InstanceContext';
+import { BackendAddress } from 'components/BackendAddress';
 import { ConfigActions } from 'components/ConfigActions';
 import { DashboardList } from 'components/DashboardList';
 import LinkedDatasourceView from 'components/LinkedDatasourceView';
@@ -83,8 +84,7 @@ export function ConfigPage() {
                 </Container>
               </div>
               <div className={styles.backendAddress}>
-                <h3>Backend address</h3>
-                <pre>{instance.api.instanceSettings.jsonData.apiHost}</pre>
+                <BackendAddress omitHttp />
               </div>
             </div>
           )}

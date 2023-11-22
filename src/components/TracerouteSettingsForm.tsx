@@ -18,7 +18,6 @@ export const TracerouteSettingsForm = ({ isEditor }: Props) => {
   return (
     <Collapse
       label="Advanced options"
-      collapsible={true}
       onToggle={() => setShowAdvanced(!showAdvanced)}
       isOpen={showAdvanced}
     >

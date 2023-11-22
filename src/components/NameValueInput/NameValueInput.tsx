@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
-import { Button, Field, HorizontalGroup, Icon, IconButton, Input, useTheme,VerticalGroup } from '@grafana/ui';
+import { Button, Field, HorizontalGroup, Icon, IconButton, Input, useTheme, VerticalGroup } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 interface Props {
@@ -18,11 +18,13 @@ export const NameValueInput = ({ name, disabled, limit, label, validateName, val
     control,
     formState: { errors },
   } = useFormContext();
+  const addRef = useRef<HTMLButtonElement>(null);
   const { fields, append, remove } = useFieldArray({ control, name });
   const theme = useTheme();
   const fieldError = name
     .split('.')
     .reduce((nestedError, errorPathFragment) => nestedError?.[errorPathFragment], errors);
+
   return (
     <VerticalGroup justify="space-between">
       {fields.map((field, index) => (
@@ -33,9 +35,11 @@ export const NameValueInput = ({ name, disabled, limit, label, validateName, val
             className={css`
               margin-bottom: 0;
             `}
+            required
           >
             <Input
               {...register(`${name}.${index}.name`, { required: true, validate: validateName })}
+              aria-label={`Label ${index + 1} name `}
               data-testid={`${label}-name-${index}`}
               type="text"
               placeholder="name"
@@ -48,9 +52,11 @@ export const NameValueInput = ({ name, disabled, limit, label, validateName, val
             className={css`
               margin-bottom: 0;
             `}
+            required
           >
             <Input
               {...register(`${name}.${index}.value`, { required: true, validate: validateValue })}
+              aria-label={`Label ${index + 1} value `}
               data-testid={`${label}-value-${index}`}
               type="text"
               placeholder="value"
@@ -63,7 +69,12 @@ export const NameValueInput = ({ name, disabled, limit, label, validateName, val
             `}
             name="minus-circle"
             type="button"
-            onClick={() => remove(index)}
+            onClick={() => {
+              remove(index);
+              requestAnimationFrame(() => {
+                addRef.current?.focus();
+              });
+            }}
             disabled={disabled}
             tooltip="Delete"
           />
@@ -76,6 +87,7 @@ export const NameValueInput = ({ name, disabled, limit, label, validateName, val
           variant="secondary"
           size="sm"
           type="button"
+          ref={addRef}
         >
           <Icon name="plus" />
           &nbsp; Add {label}
