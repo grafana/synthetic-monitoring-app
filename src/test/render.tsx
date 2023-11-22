@@ -5,9 +5,9 @@ import { render, type RenderOptions } from '@testing-library/react';
 import userEventLib from '@testing-library/user-event';
 import { createMemoryHistory } from 'history';
 import pluginInfo from 'plugin.json';
+import { getInstanceMock, instanceSettings } from 'datasource/__mocks__/DataSource';
 
 import { GlobalSettings, GrafanaInstances } from 'types';
-import { getInstanceMock, instanceSettings } from 'datasource/__mocks__/DataSource';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { ChecksContextProvider } from 'components/ChecksContextProvider';
 import { FeatureFlagProvider } from 'components/FeatureFlagProvider';

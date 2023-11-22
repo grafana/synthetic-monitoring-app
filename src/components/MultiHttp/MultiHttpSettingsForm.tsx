@@ -12,7 +12,6 @@ import {
   HorizontalGroup,
   Input,
   Legend,
-  LinkButton,
   Select,
   useStyles2,
   VerticalGroup,
@@ -334,9 +333,9 @@ export const MultiHttpSettingsForm = ({ onReturn, checks }: Props) => {
                       Delete Check
                     </Button>
                   )}
-                  <LinkButton onClick={() => onReturn && onReturn(true)} fill="text">
+                  <Button onClick={() => onReturn && onReturn(true)} fill="text">
                     Cancel
-                  </LinkButton>
+                  </Button>
                 </HorizontalGroup>
               </div>
             </form>

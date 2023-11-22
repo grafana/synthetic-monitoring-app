@@ -3,6 +3,7 @@ window.__react_router_build__ = undefined;
 
 const ui = jest.requireActual('@grafana/ui');
 import React, { forwardRef } from 'react';
+import { Link } from 'react-router-dom';
 
 const Select = forwardRef(
   ({ options, value, onChange, multiple = false, prefix, id, disabled, ...rest }: any, ref: any) => {
@@ -73,6 +74,14 @@ export function BigValue({ value }: BigValueProps) {
   );
 }
 
+function LinkButton({ children, href, ...props }: any) {
+  return (
+    <Link to={href} {...props}>
+      {children}
+    </Link>
+  );
+}
+
 module.exports = {
   ...ui,
   MultiSelect,
@@ -80,4 +89,5 @@ module.exports = {
   Icon,
   AsyncMultiSelect,
   BigValue,
+  LinkButton,
 };

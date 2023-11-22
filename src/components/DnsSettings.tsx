@@ -1,5 +1,5 @@
-import React, { Fragment,useState } from 'react';
-import { Controller, useFieldArray,useFormContext } from 'react-hook-form';
+import React, { Fragment, useState } from 'react';
+import { Controller, useFieldArray, useFormContext } from 'react-hook-form';
 import {
   Button,
   Checkbox,
@@ -16,6 +16,7 @@ import {
 import { css } from '@emotion/css';
 
 import { Collapse } from 'components/Collapse';
+import { LabelField } from 'components/LabelField';
 
 import {
   DNS_PROTOCOLS,
@@ -24,7 +25,6 @@ import {
   DNS_RESPONSE_MATCH_OPTIONS,
   IP_OPTIONS,
 } from './constants';
-import { LabelField } from './LabelField';
 
 interface Props {
   isEditor: boolean;
@@ -44,12 +44,7 @@ const DnsSettingsForm = ({ isEditor }: Props) => {
   const [showDNSSettings, setShowDNSSettings] = useState(false);
   return (
     <Container>
-      <Collapse
-        label="DNS settings"
-        onToggle={() => setShowDNSSettings(!showDNSSettings)}
-        isOpen={showDNSSettings}
-        collapsible
-      >
+      <Collapse label="DNS settings" onToggle={() => setShowDNSSettings(!showDNSSettings)} isOpen={showDNSSettings}>
         <div
           className={css`
             max-width: 240px;
@@ -80,12 +75,7 @@ const DnsSettingsForm = ({ isEditor }: Props) => {
           </Field>
         </div>
       </Collapse>
-      <Collapse
-        label="Validation"
-        onToggle={() => setShowValidation(!showValidation)}
-        isOpen={showValidation}
-        collapsible
-      >
+      <Collapse label="Validation" onToggle={() => setShowValidation(!showValidation)} isOpen={showValidation}>
         <HorizontalGroup>
           <Field label="Valid response codes" description="List of valid response codes" disabled={!isEditor}>
             <Controller
@@ -160,12 +150,7 @@ const DnsSettingsForm = ({ isEditor }: Props) => {
           Add RegEx Validation
         </Button>
       </Collapse>
-      <Collapse
-        label="Advanced options"
-        collapsible={true}
-        onToggle={() => setShowAdvanced(!showAdvanced)}
-        isOpen={showAdvanced}
-      >
+      <Collapse label="Advanced options" onToggle={() => setShowAdvanced(!showAdvanced)} isOpen={showAdvanced}>
         <LabelField isEditor={isEditor} />
         <HorizontalGroup>
           <Field label="IP version" description="The IP protocol of the ICMP request" disabled={!isEditor}>
