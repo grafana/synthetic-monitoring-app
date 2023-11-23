@@ -1,8 +1,8 @@
-import { css, Global } from '@emotion/react';
 import React, { PureComponent } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { AppRootProps } from '@grafana/data';
+import { css, Global } from '@emotion/react';
 
 import { GlobalSettings } from 'types';
 import { queryClient } from 'data/queryClient';

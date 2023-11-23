@@ -1,5 +1,5 @@
-import { screen, within } from '@testing-library/react';
 import React from 'react';
+import { screen, within } from '@testing-library/react';
 import { DataTestIds } from 'test/dataTestIds';
 import { DEFAULT_PROBES, OFFLINE_PROBE, ONLINE_PROBE, PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures';
 import { render } from 'test/render';

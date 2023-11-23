@@ -1,6 +1,6 @@
 import { ReactNode } from 'react'
-import type * as monacoType from 'monaco-editor/esm/vs/editor/editor.api'
 import { RestrictionObject } from 'constrained-editor-plugin'
+import type * as monacoType from 'monaco-editor/esm/vs/editor/editor.api'
 
 export interface CodeEditorProps {
   checkJs?: boolean

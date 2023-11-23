@@ -1,5 +1,5 @@
-import { screen, waitFor } from '@testing-library/react';
 import React from 'react';
+import { screen, waitFor } from '@testing-library/react';
 import { DEFAULT_PROBES, PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures';
 import { render } from 'test/render';
 import { getInstanceMock, instanceSettings } from 'datasource/__mocks__/DataSource';
