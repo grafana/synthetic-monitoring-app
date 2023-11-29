@@ -103,6 +103,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
               ...check,
               created: check.created ?? 0 * 1000, // seconds to ms
               modified: check.modified ?? 0 * 1000, // seconds to ms
+              checkId: check.id ?? 0,
             };
           })
         );

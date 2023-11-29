@@ -42,6 +42,7 @@ import { ProbeOptions } from './ProbeOptions';
 
 interface Props {
   onReturn: (reload: boolean) => void;
+  checkId?: string;
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({
@@ -53,17 +54,19 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
 });
 
-export const CheckEditor = ({ onReturn }: Props) => {
+export const CheckEditor = ({ onReturn, checkId }: Props) => {
   const {
     instance: { api },
   } = useContext(InstanceContext);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const styles = useStyles2(getStyles);
   // If we're editing, grab the appropriate check from the list
-  const { id, checkType: checkTypeParam } = useParams<CheckPageParams>();
+  const { id: paramId, checkType: checkTypeParam } = useParams<CheckPageParams>();
   let checkType = checkTypeParamToCheckType(checkTypeParam);
   let check: Check = fallbackCheck(checkType);
   const { checks } = useContext(ChecksContext);
+
+  const id = checkId ?? paramId;
 
   if (id) {
     check = checks?.find((c) => c.id === Number(id)) ?? fallbackCheck(checkType);

@@ -9,6 +9,7 @@ import {
   SceneDataTransformer,
   SceneFlexItem,
   SceneFlexLayout,
+  sceneGraph,
   SceneQueryRunner,
   SceneReactObject,
   SceneRefreshPicker,
@@ -18,12 +19,12 @@ import {
   VariableValueSelectors,
 } from '@grafana/scenes';
 import { VariableHide, VariableRefresh } from '@grafana/schema';
+import { LinkButton } from '@grafana/ui';
 
 import { Check, DashboardSceneAppConfig, ROUTES } from 'types';
-import { checkType } from 'utils';
 import { QueryType } from 'datasource/types';
+import { CheckEditor } from 'components/CheckEditor';
 import { PLUGIN_URL_PATH } from 'components/constants';
-import { EditCheckDrawer } from 'components/EditCheckDrawer';
 import { ScriptedChecksListSceneObject } from 'components/ScriptedCheckList/ScriptedCheckList';
 import { getLatencyByProbePanel, getReachabilityStat, getUptimeStat } from 'scenes/Common';
 
@@ -41,8 +42,8 @@ export function getChecksDrilldownScene({ metrics, logs, sm }: DashboardSceneApp
     queries: [
       {
         datasource: { uid: sm.uid },
-        refId: 'scriptedChecks',
-        queryType: QueryType.ScriptedChecks,
+        refId: 'checks',
+        queryType: QueryType.Checks,
         checks,
       },
       {
@@ -198,29 +199,21 @@ export function getChecksDrilldownScene({ metrics, logs, sm }: DashboardSceneApp
     ],
   });
 
-  const variables = new SceneVariableSet({
-    variables: [
-      new CustomVariable({
-        name: 'job',
-        value: 'hi',
-      }),
-      new CustomVariable({
-        name: 'instance',
-        value: '',
-      }),
-    ],
-  });
-
   return new SceneApp({
+    $data: transformed,
     pages: [
       new SceneAppPage({
         title: 'Checks',
-        $variables: variables,
+        // $variables: variables,
         url: `${PLUGIN_URL_PATH}${ROUTES.Checks}`,
         drilldowns: [
           {
+            routePath: `${PLUGIN_URL_PATH}${ROUTES.Checks}/:id/edit`,
+            getPage: getEditCheckPage(),
+          },
+          {
             routePath: `${PLUGIN_URL_PATH}${ROUTES.Checks}/:id`,
-            getPage: getCheckDrilldownPage({ metrics, logs, sm }, checks),
+            getPage: getCheckDrilldownPage({ metrics, logs, sm }),
           },
         ],
         getScene: () => {
@@ -230,7 +223,6 @@ export function getChecksDrilldownScene({ metrics, logs, sm }: DashboardSceneApp
               direction: 'column',
               children: [
                 new SceneFlexItem({
-                  $data: transformed,
                   body: new ScriptedChecksListSceneObject({}),
                 }),
               ],
@@ -242,20 +234,86 @@ export function getChecksDrilldownScene({ metrics, logs, sm }: DashboardSceneApp
   });
 }
 
-function getCheckDrilldownPage(config: DashboardSceneAppConfig, checks: Check[]) {
+function getEditCheckPage() {
+  return function (routeMatch: SceneRouteMatch<{ id: string }>, parent: SceneAppPageLike) {
+    const checkId = decodeURIComponent(routeMatch.params.id);
+    const page = new SceneAppPage({
+      // $variables: new SceneVariableSet({ variables: [probes, job, instance] }),
+      url: routeMatch.url,
+      getParentPage: () => parent,
+      // title: `${job.getValue()} overview`,
+      title: 'Edit check',
+      getScene: () => getEditCheckScene(checkId),
+    });
+
+    page.addActivationHandler(() => {
+      console.log('activating');
+      const sub = sceneGraph.getData(page).subscribeToState((state) => {
+        const fields = state.data?.series?.[0]?.fields;
+        const checkIdFieldIndex = fields?.findIndex((field) => field.name === 'checkId');
+        if (checkIdFieldIndex === -1 || checkIdFieldIndex === undefined) {
+          return;
+        }
+        const checkIndex = fields?.[checkIdFieldIndex]?.values?.findIndex((id: number) => String(id) === checkId);
+        if (checkIndex === -1 || checkIndex === undefined) {
+          return;
+        }
+        const jobIndex = fields?.findIndex((field) => field.name === 'job');
+        if (jobIndex === -1 || jobIndex === undefined) {
+          return;
+        }
+        const jobVal = fields?.[jobIndex]?.values?.[checkIndex];
+        const instanceIndex = fields?.findIndex((field) => field.name === 'instance');
+        if (instanceIndex === -1 || instanceIndex === undefined) {
+          return;
+        }
+        const instanceVal = fields?.[instanceIndex]?.values?.[checkIndex];
+        if (!jobVal || !instanceVal) {
+          return;
+        }
+        console.log('updting job, instance', {
+          jobVal,
+          instanceVal,
+        });
+        page.setState({ title: `Edit ${jobVal} check` });
+      });
+      return () => sub.unsubscribe();
+    });
+    return page;
+  };
+}
+
+function getEditCheckScene(checkId: string) {
+  const scene = new EmbeddedScene({
+    body: new SceneReactObject({
+      component: CheckEditor,
+      props: {
+        checkId,
+        onReturn: () => {
+          console.log('oh to return');
+        },
+      },
+    }),
+  });
+
+  return scene;
+}
+
+function getCheckDrilldownPage(config: DashboardSceneAppConfig) {
   return function (routeMatch: SceneRouteMatch<{ id: string }>, parent: SceneAppPageLike) {
     // Retrieve handler from the URL params.
     const checkId = decodeURIComponent(routeMatch.params.id);
-    const check = checks.find((c) => String(c.id) === checkId);
     const job = new CustomVariable({
       name: 'job',
-      value: check?.job,
+      skipUrlSync: true,
+      loading: true,
       hide: VariableHide.hideVariable,
     });
     const instance = new CustomVariable({
       name: 'instance',
-      value: check?.target,
       hide: VariableHide.hideVariable,
+      loading: true,
+      skipUrlSync: true,
     });
     const probes = new QueryVariable({
       includeAll: true,
@@ -263,21 +321,64 @@ function getCheckDrilldownPage(config: DashboardSceneAppConfig, checks: Check[])
       defaultToAll: true,
       isMulti: true,
       name: 'probe',
-      query: `label_values(sm_check_info{check_name="${checkType(check?.settings ?? {})}"},probe)`,
+      query: `label_values(sm_check_info{},probe)`,
       refresh: VariableRefresh.onDashboardLoad,
       datasource: config.metrics,
     });
 
-    return new SceneAppPage({
+    const page = new SceneAppPage({
       $variables: new SceneVariableSet({ variables: [probes, job, instance] }),
       url: `${PLUGIN_URL_PATH}${ROUTES.Checks}/${encodeURIComponent(checkId)}`,
       getParentPage: () => parent,
-      title: `${check?.job} overview`,
-      getScene: () => getCheckDrilldownScene(config, check),
+      title: `${job.getValue()} overview`,
+      getScene: () => getCheckDrilldownScene(config, checkId),
     });
+
+    page.addActivationHandler(() => {
+      console.log('activating');
+      const sub = sceneGraph.getData(parent).subscribeToState((state) => {
+        const fields = state.data?.series?.[0]?.fields;
+        const checkIdFieldIndex = fields?.findIndex((field) => field.name === 'checkId');
+        if (checkIdFieldIndex === -1 || checkIdFieldIndex === undefined) {
+          return;
+        }
+        const checkIndex = fields?.[checkIdFieldIndex]?.values?.findIndex((id: number) => String(id) === checkId);
+        if (checkIndex === -1 || checkIndex === undefined) {
+          return;
+        }
+        const jobIndex = fields?.findIndex((field) => field.name === 'job');
+        if (jobIndex === -1 || jobIndex === undefined) {
+          return;
+        }
+        const jobVal = fields?.[jobIndex]?.values?.[checkIndex];
+        const instanceIndex = fields?.findIndex((field) => field.name === 'instance');
+        if (instanceIndex === -1 || instanceIndex === undefined) {
+          return;
+        }
+        const instanceVal = fields?.[instanceIndex]?.values?.[checkIndex];
+        if (!jobVal || !instanceVal) {
+          return;
+        }
+        if (job.getValue() !== jobVal || instance.getValue() !== instanceVal) {
+          console.log('updting job, instance', {
+            jobVal,
+            instanceVal,
+            job: job.getValue(),
+            instance: instance.getValue(),
+          });
+          instance.changeValueTo(instanceVal);
+          job.changeValueTo(jobVal);
+          page.setState({ title: `${jobVal} overview` });
+          job.setState({ loading: false });
+          instance.setState({ loading: false });
+        }
+      });
+      return () => sub.unsubscribe();
+    });
+    return page;
   };
 
-  function getCheckDrilldownScene({ metrics }: DashboardSceneAppConfig, check?: Check) {
+  function getCheckDrilldownScene({ metrics }: DashboardSceneAppConfig, checkId: string) {
     const upStatusOverTime = getUpStatusOverTime(metrics);
     const uptime = getUptimeStat(metrics);
     const reachability = getReachabilityStat(metrics);
@@ -286,7 +387,7 @@ function getCheckDrilldownPage(config: DashboardSceneAppConfig, checks: Check[])
 
     const latencyByUrl = getScriptedLatencyByUrl(metrics);
 
-    return new EmbeddedScene({
+    const a = new EmbeddedScene({
       controls: [
         new VariableValueSelectors({}),
         new SceneControlsSpacer(),
@@ -296,9 +397,15 @@ function getCheckDrilldownPage(config: DashboardSceneAppConfig, checks: Check[])
           refresh: '1m',
         }),
         new SceneReactObject({
-          component: EditCheckDrawer,
+          // component: EditCheckDrawer,
+          // props: {
+          //   checkId: checkId,
+          //   onClose: () => sceneGraph.getTimeRange(latencyByProbe).onRefresh(),
+          // },
+          component: LinkButton,
           props: {
-            checkId: String(check?.id) ?? '',
+            children: 'Edit check',
+            href: `${PLUGIN_URL_PATH}${ROUTES.Checks}/${encodeURIComponent(checkId)}/edit`,
           },
         }),
       ],
@@ -331,5 +438,15 @@ function getCheckDrilldownPage(config: DashboardSceneAppConfig, checks: Check[])
         ],
       }),
     });
+
+    a.addActivationHandler(() => {
+      console.log('yaaargh');
+      const sub = a.subscribeToState((state) => {
+        console.log('subscribing', state);
+      });
+      return () => sub.unsubscribe();
+    });
+
+    return a;
   }
 }
