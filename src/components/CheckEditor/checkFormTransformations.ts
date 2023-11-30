@@ -23,7 +23,6 @@ import {
   PingSettings,
   PingSettingsFormValues,
   ResponseMatchType,
-  ScriptedSettings,
   Settings,
   SettingsFormValues,
   TCPQueryResponse,
@@ -295,7 +294,7 @@ const getAllFormSettingsForCheck = (): SettingsFormValues => {
     ping: getPingSettingsFormValues(fallbackSettings(CheckType.PING)),
     traceroute: getTracerouteSettingsFormValues(fallbackSettings(CheckType.Traceroute)),
     multihttp: getMultiHttpFormValues(fallbackSettings(CheckType.MULTI_HTTP)),
-    k6: fallbackSettings(CheckType.K6) as ScriptedSettings,
+    k6: fallbackSettings(CheckType.K6).k6,
   };
 };
 
@@ -803,6 +802,10 @@ export function checkTypeParamToCheckType(checkType?: string): CheckType {
       return CheckType.Traceroute;
     case CheckType.TCP:
       return CheckType.TCP;
+    case CheckType.MULTI_HTTP:
+      return CheckType.MULTI_HTTP;
+    case CheckType.K6:
+      return CheckType.K6;
     default:
       return CheckType.PING;
   }

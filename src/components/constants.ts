@@ -422,12 +422,12 @@ export function fallbackSettings(t: CheckType): Settings {
       return {
         k6: {
           script: `import { sleep } from 'k6'
-          import http from 'k6/http'
-          
-          export default function main() {
-            let response = http.get('https://www.grafana.com')
-            sleep(1)
-          }`,
+import http from 'k6/http'
+
+export default function main() {
+  let response = http.get('https://www.grafana.com')
+  sleep(1)
+}`,
         },
       };
     }

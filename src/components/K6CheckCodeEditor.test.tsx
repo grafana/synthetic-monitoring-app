@@ -61,6 +61,7 @@ describe('new scripted check', () => {
 
     const codeEditor = await findByTestId('code-editor');
     codeEditor.focus();
+    await user.clear(codeEditor);
     await user.type(codeEditor, 'console.log("hello world")');
     await submitForm(onReturn, user);
     expect(instance.api?.addCheck).toHaveBeenCalledWith(BASIC_K6_CHECK);
