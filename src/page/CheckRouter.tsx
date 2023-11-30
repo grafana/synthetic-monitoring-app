@@ -8,9 +8,9 @@ import { useNavigation } from 'hooks/useNavigation';
 import { CheckEditor } from 'components/CheckEditor';
 import { CheckList } from 'components/CheckList';
 import { ChooseCheckType } from 'components/ChooseCheckType';
+import { K6CheckCodeEditor } from 'components/K6CheckCodeEditor';
 import { MultiHttpSettingsForm } from 'components/MultiHttp/MultiHttpSettingsForm';
 import { PluginPage } from 'components/PluginPage';
-import { ScriptedCheckCodeEditor } from 'components/ScriptedCheckCodeEditor';
 import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
 
 export function CheckRouter() {
@@ -43,7 +43,7 @@ export function CheckRouter() {
               case CheckType.MULTI_HTTP:
                 return <MultiHttpSettingsForm onReturn={returnToList} />;
               case CheckType.K6:
-                return <ScriptedCheckCodeEditor checks={checks} onSubmitSuccess={returnToList} />;
+                return <K6CheckCodeEditor checks={checks} onSubmitSuccess={returnToList} />;
               default:
                 return <CheckEditor onReturn={returnToList} checks={checks} />;
             }
@@ -55,7 +55,7 @@ export function CheckRouter() {
               case CheckType.MULTI_HTTP:
                 return <MultiHttpSettingsForm onReturn={returnToList} />;
               case CheckType.K6:
-                return <ScriptedCheckCodeEditor checks={checks} onSubmitSuccess={returnToList} />;
+                return <K6CheckCodeEditor checks={checks} onSubmitSuccess={returnToList} />;
               default:
                 return <CheckEditor onReturn={returnToList} checks={checks} />;
             }

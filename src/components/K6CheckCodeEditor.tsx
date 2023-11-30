@@ -2,13 +2,14 @@ import React, { useContext } from 'react';
 import { useAsyncCallback } from 'react-async-hook';
 import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
-import { GrafanaTheme2 } from '@grafana/data';
+import { GrafanaTheme2, OrgRole } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
 import { Alert, Button, Field, Input, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Check, CheckFormValues, CheckPageParams, CheckType, SubmissionErrorWrapper } from 'types';
 import { FaroEvent, reportError } from 'faro';
+import { hasRole } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
 
 import {
@@ -17,12 +18,14 @@ import {
   getDefaultValuesFromCheck,
 } from './CheckEditor/checkFormTransformations';
 import { ProbeOptions } from './CheckEditor/ProbeOptions';
+import { CheckFormAlert } from './CheckFormAlert';
 import { CodeEditor } from './CodeEditor';
 import { fallbackCheck } from './constants';
+import { LabelField } from './LabelField';
 
 interface Props {
   checks: Check[];
-  onSubmitSuccess?: () => void;
+  onSubmitSuccess?: (refresh: boolean) => void;
 }
 
 function getStyles(theme: GrafanaTheme2) {
@@ -45,7 +48,7 @@ function getStyles(theme: GrafanaTheme2) {
   };
 }
 
-export function ScriptedCheckCodeEditor({ checks, onSubmitSuccess }: Props) {
+export function K6CheckCodeEditor({ checks, onSubmitSuccess }: Props) {
   const { id, checkType: checkTypeParam } = useParams<CheckPageParams>();
   let checkType = checkTypeParamToCheckType(checkTypeParam);
   let check: Check = fallbackCheck(checkType);
@@ -87,7 +90,7 @@ export function ScriptedCheckCodeEditor({ checks, onSubmitSuccess }: Props) {
     }
 
     if (onSubmitSuccess) {
-      onSubmitSuccess();
+      onSubmitSuccess(true);
     }
   });
 
@@ -96,16 +99,17 @@ export function ScriptedCheckCodeEditor({ checks, onSubmitSuccess }: Props) {
     reportError(error.message ?? error, check?.id ? FaroEvent.UPDATE_CHECK : FaroEvent.CREATE_CHECK);
   }
   const headerText = check?.id ? `Editing ${check.job}` : `Add a scripted check`;
+  const isEditor = hasRole(OrgRole.Editor);
   return (
     <PluginPage pageNav={{ text: check?.job ? `Editing ${check.job}` : headerText }}>
       <FormProvider {...formMethods}>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className={styles.jobTargetContainer}>
             <Field label="Job name">
-              <Input {...register('job')} />
+              <Input id="job" {...register('job')} />
             </Field>
             <Field label="Target">
-              <Input {...register('target')} />
+              <Input id="target" {...register('target')} />
             </Field>
             {submissionError && (
               <Alert title="Save failed" severity="error">
@@ -114,7 +118,14 @@ export function ScriptedCheckCodeEditor({ checks, onSubmitSuccess }: Props) {
                 }`}
               </Alert>
             )}
-            <ProbeOptions isEditor frequency={120} timeout={120000} checkType={CheckType.K6} />
+            <ProbeOptions
+              isEditor={isEditor}
+              frequency={check.frequency}
+              timeout={check.timeout}
+              checkType={CheckType.K6}
+            />
+            <LabelField isEditor={isEditor} />
+            <CheckFormAlert />
           </div>
           <Controller
             name="settings.k6.script"
