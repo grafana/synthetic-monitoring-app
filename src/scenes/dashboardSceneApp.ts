@@ -19,7 +19,7 @@ export function getDashboardSceneApp(
   includek6 = false,
   checks: Check[]
 ) {
-  const { http, ping, dns, tcp, traceroute, multihttp } = checks.reduce<Record<CheckType, Check[]>>(
+  const { http, ping, dns, tcp, traceroute, multihttp, k6 } = checks.reduce<Record<CheckType, Check[]>>(
     (acc, check) => {
       const type = checkType(check.settings);
       if (check.enabled) {
@@ -84,7 +84,7 @@ export function getDashboardSceneApp(
     const appPage = new SceneAppPage({
       title: 'SCRIPTED',
       url: `${PLUGIN_URL_PATH}${ROUTES.Scene}/k6`,
-      getScene: getScriptedScene,
+      getScene: getScriptedScene(config, k6),
     });
     tabs.push(appPage);
   }
