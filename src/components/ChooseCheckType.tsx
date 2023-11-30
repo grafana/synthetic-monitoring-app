@@ -12,11 +12,15 @@ import { PluginPage } from 'components/PluginPage';
 export function ChooseCheckType() {
   const styles = useStyles2(getStyles);
   const { isEnabled: multiHttpEnabled } = useFeatureFlag(FeatureName.MultiHttp);
+  const { isEnabled: scriptedEnabled } = useFeatureFlag(FeatureName.ScriptedChecks);
   // If we're editing, grab the appropriate check from the list
   const navigate = useNavigation();
 
   const options = CHECK_TYPE_OPTIONS.filter(({ value }) => {
     if (!multiHttpEnabled && value === CheckType.MULTI_HTTP) {
+      return false;
+    }
+    if (!scriptedEnabled && value === CheckType.K6) {
       return false;
     }
     return true;
@@ -36,9 +40,12 @@ export function ChooseCheckType() {
             >
               <Card.Heading className={styles.cardsHeader}>
                 {check.label}
-                {check.value === CheckType.MULTI_HTTP ? (
+                {check.value === CheckType.MULTI_HTTP && (
                   <Badge text="Public preview" color="blue" className={styles.experimentalBadge} />
-                ) : null}
+                )}
+                {check.value === CheckType.K6 && (
+                  <Badge text="Experimental" color="orange" className={styles.experimentalBadge} />
+                )}
               </Card.Heading>
               <Card.Description>{check.description}</Card.Description>
             </Card>

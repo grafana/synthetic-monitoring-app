@@ -165,6 +165,11 @@ export const CHECK_TYPE_OPTIONS = [
     value: CheckType.Traceroute,
     description: 'Trace the path of a request through the internet',
   },
+  {
+    label: 'Scripted',
+    value: CheckType.K6,
+    description: 'Write a K6 script to run custom checks',
+  },
 ];
 
 export const HTTP_SSL_OPTIONS = [
@@ -416,7 +421,13 @@ export function fallbackSettings(t: CheckType): Settings {
     case CheckType.K6: {
       return {
         k6: {
-          script: '',
+          script: `import { sleep } from 'k6'
+          import http from 'k6/http'
+          
+          export default function main() {
+            let response = http.get('https://www.grafana.com')
+            sleep(1)
+          }`,
         },
       };
     }

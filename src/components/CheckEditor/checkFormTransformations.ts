@@ -23,6 +23,7 @@ import {
   PingSettings,
   PingSettingsFormValues,
   ResponseMatchType,
+  ScriptedSettings,
   Settings,
   SettingsFormValues,
   TCPQueryResponse,
@@ -278,6 +279,8 @@ const getFormSettingsForCheck = (settings: Settings): SettingsFormValues => {
       return { traceroute: getTracerouteSettingsFormValues(settings) };
     case CheckType.MULTI_HTTP:
       return { multihttp: getMultiHttpFormValues(settings) };
+    case CheckType.K6:
+      return { k6: { script: atob(settings.k6?.script ?? '') } };
     case CheckType.PING:
     default:
       return { ping: getPingSettingsFormValues(settings) };
@@ -292,6 +295,7 @@ const getAllFormSettingsForCheck = (): SettingsFormValues => {
     ping: getPingSettingsFormValues(fallbackSettings(CheckType.PING)),
     traceroute: getTracerouteSettingsFormValues(fallbackSettings(CheckType.Traceroute)),
     multihttp: getMultiHttpFormValues(fallbackSettings(CheckType.MULTI_HTTP)),
+    k6: fallbackSettings(CheckType.K6) as ScriptedSettings,
   };
 };
 
@@ -733,6 +737,12 @@ const getSettingsFromFormValues = (
       return {
         traceroute: {
           ...getTracerouteSettings(formValues.settings?.traceroute, defaultValues.settings.traceroute),
+        },
+      };
+    case CheckType.K6:
+      return {
+        k6: {
+          script: btoa(formValues.settings?.k6?.script ?? ''),
         },
       };
     default:

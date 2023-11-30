@@ -8,6 +8,7 @@ import pluginInfo from 'plugin.json';
 import { getInstanceMock, instanceSettings } from 'datasource/__mocks__/DataSource';
 
 import { GlobalSettings, GrafanaInstances } from 'types';
+import { ChecksContext } from 'contexts/ChecksContext';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { ChecksContextProvider } from 'components/ChecksContextProvider';
 import { FeatureFlagProvider } from 'components/FeatureFlagProvider';

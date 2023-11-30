@@ -10,6 +10,7 @@ import { CheckList } from 'components/CheckList';
 import { ChooseCheckType } from 'components/ChooseCheckType';
 import { MultiHttpSettingsForm } from 'components/MultiHttp/MultiHttpSettingsForm';
 import { PluginPage } from 'components/PluginPage';
+import { ScriptedCheckCodeEditor } from 'components/ScriptedCheckCodeEditor';
 import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
 
 export function CheckRouter() {
@@ -37,19 +38,28 @@ export function CheckRouter() {
           <CheckList instance={instance} onCheckUpdate={returnToList} />
         </Route>
         <Route path={`${path}/new/:checkType?`}>
-          {({ match }) =>
-            match?.params.checkType !== CheckType.MULTI_HTTP ? (
-              <CheckEditor onReturn={returnToList} checks={checks} />
-            ) : (
-              <MultiHttpSettingsForm onReturn={returnToList} />
-            )
-          }
-        </Route>
-        <Route path={`${path}/edit/multihttp/:id`} exact>
-          <MultiHttpSettingsForm onReturn={returnToList} checks={checks} />
+          {({ match }) => {
+            switch (match?.params.checkType) {
+              case CheckType.MULTI_HTTP:
+                return <MultiHttpSettingsForm onReturn={returnToList} />;
+              case CheckType.K6:
+                return <ScriptedCheckCodeEditor checks={checks} onSubmitSuccess={returnToList} />;
+              default:
+                return <CheckEditor onReturn={returnToList} checks={checks} />;
+            }
+          }}
         </Route>
         <Route path={`${path}/edit/:checkType/:id`} exact>
-          <CheckEditor onReturn={returnToList} checks={checks} />
+          {({ match }) => {
+            switch (match?.params.checkType) {
+              case CheckType.MULTI_HTTP:
+                return <MultiHttpSettingsForm onReturn={returnToList} />;
+              case CheckType.K6:
+                return <ScriptedCheckCodeEditor checks={checks} onSubmitSuccess={returnToList} />;
+              default:
+                return <CheckEditor onReturn={returnToList} checks={checks} />;
+            }
+          }}
         </Route>
         <Route path={`${path}/choose-type`} exact>
           <ChooseCheckType />

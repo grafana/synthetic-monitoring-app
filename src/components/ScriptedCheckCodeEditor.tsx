@@ -1,98 +1,133 @@
-import React from 'react';
+import React, { useContext } from 'react';
+import { useAsyncCallback } from 'react-async-hook';
 import { Controller, FormProvider, useForm } from 'react-hook-form';
+import { useParams } from 'react-router-dom';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Button, Field, Input, useStyles2, VerticalGroup } from '@grafana/ui';
+import { PluginPage } from '@grafana/runtime';
+import { Alert, Button, Field, Input, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { CheckType } from 'types';
+import { Check, CheckFormValues, CheckPageParams, CheckType, SubmissionErrorWrapper } from 'types';
+import { FaroEvent, reportError } from 'faro';
+import { InstanceContext } from 'contexts/InstanceContext';
 
+import {
+  checkTypeParamToCheckType,
+  getCheckFromFormValues,
+  getDefaultValuesFromCheck,
+} from './CheckEditor/checkFormTransformations';
 import { ProbeOptions } from './CheckEditor/ProbeOptions';
 import { CodeEditor } from './CodeEditor';
-
-const DEFAULT_SCRIPT = `import { sleep } from 'k6'
-import http from 'k6/http'
-
-export default function main() {
-  let response = http.get('https://www.grafana.com')
-  sleep(1)
-}`;
+import { fallbackCheck } from './constants';
 
 interface Props {
-  onSubmit: (values: any, errors: any) => void;
-  saving: boolean;
-  script?: string;
-}
-
-export interface ScriptedFormValues {
-  name: string;
-  target: string;
-  script: string;
-  probes: number[];
-  timeout: number;
-  frequency: number;
+  checks: Check[];
+  onSubmitSuccess?: () => void;
 }
 
 function getStyles(theme: GrafanaTheme2) {
   return {
-    headerContainer: css`
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    `,
-    saveButton: css`
-      align-self: flex-start;
-    `,
-    probeOptionsContainer: css`
-      margin-bottom: ${theme.spacing(4)};
-    `,
+    headerContainer: css({
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: theme.spacing(2),
+    }),
+    jobTargetContainer: css({
+      display: 'flex',
+      flexDirection: 'column',
+      maxWidth: theme.breakpoints.values.md,
+    }),
+    saveButton: css({
+      alignSelf: 'flex-start',
+      marginTop: theme.spacing(2),
+    }),
   };
 }
 
-export function ScriptedCheckCodeEditor({ onSubmit, script, saving }: Props) {
-  const formMethods = useForm<ScriptedFormValues>({
-    defaultValues: {
-      script: script ?? DEFAULT_SCRIPT,
-      probes: [],
-      timeout: 120,
-      frequency: 120,
-    },
+export function ScriptedCheckCodeEditor({ checks, onSubmitSuccess }: Props) {
+  const { id, checkType: checkTypeParam } = useParams<CheckPageParams>();
+  let checkType = checkTypeParamToCheckType(checkTypeParam);
+  let check: Check = fallbackCheck(checkType);
+
+  if (id) {
+    check = checks?.find((c) => c.id === Number(id)) ?? fallbackCheck(checkType);
+  }
+
+  const { instance } = useContext(InstanceContext);
+  const defaultValues = getDefaultValuesFromCheck(check);
+
+  const formMethods = useForm<CheckFormValues>({
+    defaultValues,
   });
   const { handleSubmit, register, control } = formMethods;
   const styles = useStyles2(getStyles);
 
-  const submit = (values: any) => {
-    console.log(values);
-    onSubmit(values, null);
-  };
+  const {
+    execute: onSubmit,
+    error,
+    loading: submitting,
+  } = useAsyncCallback(async (checkValues: CheckFormValues) => {
+    if (error) {
+      console.error(error);
+      return;
+    }
+    if (!checkValues.settings.k6) {
+      throw new Error('No k6 settings');
+    }
+    const toSubmit = getCheckFromFormValues(checkValues, defaultValues, CheckType.K6);
+    if (check.id) {
+      await instance.api?.updateCheck({
+        id: check.id,
+        tenantId: check.tenantId,
+        ...toSubmit,
+      });
+    } else {
+      await instance.api?.addCheck(toSubmit);
+    }
 
+    if (onSubmitSuccess) {
+      onSubmitSuccess();
+    }
+  });
+
+  const submissionError = error as unknown as SubmissionErrorWrapper;
+  if (error) {
+    reportError(error.message ?? error, check?.id ? FaroEvent.UPDATE_CHECK : FaroEvent.CREATE_CHECK);
+  }
+  const headerText = check?.id ? `Editing ${check.job}` : `Add a scripted check`;
   return (
-    <FormProvider {...formMethods}>
-      <form onSubmit={handleSubmit(submit)}>
-        <div className={styles.headerContainer}>
-          <VerticalGroup spacing="sm">
+    <PluginPage pageNav={{ text: check?.job ? `Editing ${check.job}` : headerText }}>
+      <FormProvider {...formMethods}>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <div className={styles.jobTargetContainer}>
             <Field label="Job name">
-              <Input {...register('name')} />
+              <Input {...register('job')} />
             </Field>
             <Field label="Target">
               <Input {...register('target')} />
             </Field>
-          </VerticalGroup>
-
-          <Button type="submit" disabled={saving} className={styles.saveButton}>
+            {submissionError && (
+              <Alert title="Save failed" severity="error">
+                {`${submissionError.status}: ${
+                  submissionError.data?.msg?.concat(', ', submissionError.data?.err ?? '') ?? 'Something went wrong'
+                }`}
+              </Alert>
+            )}
+            <ProbeOptions isEditor frequency={120} timeout={120000} checkType={CheckType.K6} />
+          </div>
+          <Controller
+            name="settings.k6.script"
+            control={control}
+            render={({ field: { ...field } }) => {
+              return <CodeEditor {...field} />;
+            }}
+          />
+          <Button type="submit" disabled={submitting} className={styles.saveButton}>
             Save
           </Button>
-        </div>
-        <div className={styles.probeOptionsContainer}>
-          <ProbeOptions isEditor frequency={120} timeout={120000} checkType={CheckType.K6} />
-        </div>
-        <Controller
-          name="script"
-          control={control}
-          render={({ field: { ...field } }) => {
-            return <CodeEditor {...field} />;
-          }}
-        />
-      </form>
-    </FormProvider>
+        </form>
+      </FormProvider>
+    </PluginPage>
   );
 }
