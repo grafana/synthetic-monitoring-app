@@ -300,6 +300,7 @@ export interface SettingsFormValues {
   dns?: DnsSettingsFormValues;
   tcp?: TcpSettingsFormValues;
   traceroute?: TracerouteSettingsFormValues;
+  k6?: ScriptedSettings;
 }
 export interface AlertFormValues {
   name: string;

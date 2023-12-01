@@ -183,7 +183,7 @@ export const HomePage = () => {
       <div className={styles.page}>
         <FeaturesBanner />
         <DisplayCard className={cx(styles.card, styles.getStartedGrid)}>
-          <LinkButton variant="primary" size="lg" href={getRoute(ROUTES.NewCheck)}>
+          <LinkButton variant="primary" size="lg" href={getRoute(ROUTES.ChooseCheckType)}>
             Create a check
           </LinkButton>
           <h2 className={styles.separator}>or</h2>

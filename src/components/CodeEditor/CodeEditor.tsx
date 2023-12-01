@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { forwardRef, useEffect, useState } from 'react';
 import { CodeEditor as GrafanaCodeEditor } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { ConstrainedEditorInstance } from 'constrained-editor-plugin';
@@ -19,19 +19,6 @@ const addK6Types = (monaco: typeof monacoType) => {
   // Remove TS errors for remote libs imports
   monaco.languages.typescript.javascriptDefaults.addExtraLib("declare module 'https://*'");
 };
-
-// const Wrapper = styled.div`
-//   position: relative;
-//   height: 100%;
-
-//   // Override TestBuilder's font smoothing
-//   -webkit-font-smoothing: initial;
-//   -moz-osx-font-smoothing: auto;
-
-//   // Override TestBuilder's width: 0, causes flickering in editor
-//   width: 100% !important;
-// `;
-
 const containerStyles = css`
   height: 100%;
   min-height: 600px;
@@ -54,19 +41,22 @@ const containerStyles = css`
   }
 `;
 
-export const CodeEditor = ({
-  checkJs = true,
-  constrainedRanges,
-  language = 'javascript',
-  overlayMessage,
-  readOnly,
-  renderHeader,
-  value,
-  onBeforeEditorMount,
-  onChange,
-  onDidChangeContentInEditableRange,
-  onValidation,
-}: CodeEditorProps & ConstrainedEditorProps) => {
+export const CodeEditor = forwardRef(function CodeEditor(
+  {
+    checkJs = true,
+    constrainedRanges,
+    language = 'javascript',
+    overlayMessage,
+    readOnly,
+    renderHeader,
+    value,
+    onBeforeEditorMount,
+    onChange,
+    onDidChangeContentInEditableRange,
+    onValidation,
+  }: CodeEditorProps & ConstrainedEditorProps,
+  ref
+) {
   const [editorRef, setEditorRef] = useState<null | monacoType.editor.IStandaloneCodeEditor>(null);
   const [constrainedInstance, setConstrainedInstance] = useState<null | ConstrainedEditorInstance>(null);
   const [prevValue, setPrevValue] = useState(value);
@@ -178,4 +168,4 @@ export const CodeEditor = ({
       />
     </div>
   );
-};
+});

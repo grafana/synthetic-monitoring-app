@@ -1,7 +1,6 @@
 import React, { PropsWithChildren, useContext, useEffect, useState } from 'react';
 
-import { Check, CheckType } from 'types';
-import { checkType as getCheckType } from 'utils';
+import { Check } from 'types';
 import { ChecksContext } from 'contexts/ChecksContext';
 import { InstanceContext } from 'contexts/InstanceContext';
 
@@ -9,7 +8,6 @@ interface Props {}
 
 export function ChecksContextProvider({ children }: PropsWithChildren<Props>) {
   const [checks, setChecks] = useState<Check[]>([]);
-  const [scriptedChecks, setScriptedChecks] = useState<Check[]>([]);
   const [loading, setLoading] = useState(true);
   const [fetchChecks, setFetchChecks] = useState(true);
   const { instance } = useContext(InstanceContext);
@@ -20,23 +18,7 @@ export function ChecksContextProvider({ children }: PropsWithChildren<Props>) {
     }
     setLoading(true);
     instance.api?.listChecks().then((checks) => {
-      const filteredChecks = checks.reduce<{ checks: Check[]; scriptedChecks: Check[] }>(
-        (acc, check) => {
-          const checkType = getCheckType(check.settings);
-          switch (checkType) {
-            case CheckType.K6:
-              acc.scriptedChecks.push(check);
-              break;
-            default:
-              acc.checks.push(check);
-              break;
-          }
-          return acc;
-        },
-        { checks: [], scriptedChecks: [] }
-      );
-      setChecks(filteredChecks.checks);
-      setScriptedChecks(filteredChecks.scriptedChecks);
+      setChecks(checks);
       setLoading(false);
       setFetchChecks(false);
     });
@@ -44,9 +26,5 @@ export function ChecksContextProvider({ children }: PropsWithChildren<Props>) {
 
   const refetchChecks = () => setFetchChecks(true);
 
-  return (
-    <ChecksContext.Provider value={{ checks, scriptedChecks, loading, refetchChecks }}>
-      {children}
-    </ChecksContext.Provider>
-  );
+  return <ChecksContext.Provider value={{ checks, loading, refetchChecks }}>{children}</ChecksContext.Provider>;
 }

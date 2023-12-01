@@ -10,9 +10,15 @@ import { getTracerouteScene } from './Traceroute/getTracerouteScene';
 import { getDNSScene } from './DNS';
 import { getHTTPScene } from './HTTP';
 import { getMultiHttpScene } from './MULTIHTTP';
+import { getScriptedScene } from './SCRIPTED';
 import { getSummaryScene } from './Summary';
 
-export function getDashboardSceneApp(config: DashboardSceneAppConfig, includeMultiHttp = false, checks: Check[]) {
+export function getDashboardSceneApp(
+  config: DashboardSceneAppConfig,
+  includeMultiHttp = false,
+  includek6 = false,
+  checks: Check[]
+) {
   const { http, ping, dns, tcp, traceroute, multihttp } = checks.reduce<Record<CheckType, Check[]>>(
     (acc, check) => {
       const type = checkType(check.settings);
@@ -72,6 +78,15 @@ export function getDashboardSceneApp(config: DashboardSceneAppConfig, includeMul
       getScene: getMultiHttpScene(config, multihttp),
     });
     tabs.splice(2, 0, appPage);
+  }
+
+  if (includek6) {
+    const appPage = new SceneAppPage({
+      title: 'SCRIPTED',
+      url: `${PLUGIN_URL_PATH}${ROUTES.Scene}/k6`,
+      getScene: getScriptedScene,
+    });
+    tabs.push(appPage);
   }
 
   return new SceneApp({
