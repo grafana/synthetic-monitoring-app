@@ -20,6 +20,11 @@ import { getAssertionTable } from 'scenes/MULTIHTTP/assertionTable';
 import { getDistinctTargets } from 'scenes/MULTIHTTP/distinctTargets';
 import { getProbeDuration } from 'scenes/MULTIHTTP/probeDuration';
 
+import { getDataTransferred } from './dataTransferred';
+import { getExpectedResponse } from './expectedResponse';
+import { getSuccessRateByUrl } from './successRateByUrl';
+import { getTimingByTarget } from './timingByTarget';
+
 export function getScriptedScene({ metrics, logs }: DashboardSceneAppConfig, checks: Check[] = []) {
   return () => {
     if (checks.length === 0) {
@@ -66,6 +71,22 @@ export function getScriptedScene({ metrics, logs }: DashboardSceneAppConfig, che
             direction: 'row',
             height: 200,
             children: [probeDuration],
+          }),
+          getDataTransferred(metrics),
+          new SceneFlexLayout({
+            direction: 'row',
+            height: 200,
+            children: [getTimingByTarget(metrics)],
+          }),
+          new SceneFlexLayout({
+            direction: 'row',
+            height: 400,
+            children: [getExpectedResponse(metrics)],
+          }),
+          new SceneFlexLayout({
+            direction: 'row',
+            height: 200,
+            children: [getSuccessRateByUrl(metrics)],
           }),
           new SceneFlexLayout({
             direction: 'row',

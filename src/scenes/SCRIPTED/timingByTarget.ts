@@ -8,27 +8,27 @@ function getQueryRunner(metrics: DataSourceRef) {
     datasource: metrics,
     queries: [
       {
-        expr: `count by (job, target) (
-          count by (url, method) (
-            probe_http_info{probe=~"\${probe}", job="\${job}", instance="\${instance}"}
-          )
-        )`,
-        instant: false,
-        legendFormat: '__auto',
-        range: true,
         refId: 'A',
+        expr: 'sum by(name)(rate(probe_http_duration_seconds{job="$job", instance="$instance"}[5m]))',
+        range: true,
+        legendFormat: '{{ name }}',
+        format: 'time_series',
       },
     ],
   });
 }
-
-export function getDistinctTargets(metrics: DataSourceRef) {
+export function getTimingByTarget(metrics: DataSourceRef) {
   return new SceneFlexItem({
-    width: 200,
     body: new ExplorablePanel({
       $data: getQueryRunner(metrics),
-      pluginId: 'stat',
-      title: 'Distinct targets',
+      pluginId: 'timeseries',
+      title: 'Timing by target',
+      fieldConfig: {
+        defaults: {
+          unit: 's',
+        },
+        overrides: [],
+      },
     }),
   });
 }
