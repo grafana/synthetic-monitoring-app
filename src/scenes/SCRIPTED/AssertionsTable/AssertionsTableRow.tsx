@@ -56,17 +56,6 @@ function getAssertionLogs(logs: DataSourceRef, name: string) {
           },
           title: 'Logs for ' + name,
           pluginId: 'logs',
-
-          // options: {
-          //   showHeader: true,
-          //   cellHeight: 'sm',
-          //   footer: {
-          //     show: false,
-          //     reducer: ['sum'],
-          //     countRows: false,
-          //     fields: '',
-          //   },
-          // },
         }),
       }),
     ],

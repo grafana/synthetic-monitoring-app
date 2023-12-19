@@ -19,7 +19,8 @@ import { getAssertionLogsPanel } from 'scenes/MULTIHTTP/assertionLogs';
 import { getDistinctTargets } from 'scenes/MULTIHTTP/distinctTargets';
 import { getProbeDuration } from 'scenes/MULTIHTTP/probeDuration';
 
-import { getAssertionTable } from './AssertionsTable/AssertionsTable';
+import { getResultsByTargetTable } from './ResultsByTargetTable/ResultByTargetTable';
+import { getAssertionTable } from './AssertionsTable';
 import { getDataTransferred } from './dataTransferred';
 import { getExpectedResponse } from './expectedResponse';
 import { getSuccessRateByUrl } from './successRateByUrl';
@@ -79,24 +80,23 @@ export function getScriptedScene({ metrics, logs }: DashboardSceneAppConfig, che
           getDataTransferred(metrics),
           new SceneFlexLayout({
             direction: 'row',
-            height: 200,
-            children: [getTimingByTarget(metrics)],
+            children: [getResultsByTargetTable(metrics)],
           }),
-          new SceneFlexLayout({
-            direction: 'row',
-            height: 400,
-            children: [getExpectedResponse(metrics)],
-          }),
-          new SceneFlexLayout({
-            direction: 'row',
-            height: 200,
-            children: [getSuccessRateByUrl(metrics)],
-          }),
-          new SceneFlexLayout({
-            direction: 'row',
-            minHeight: 300,
-            children: [getAssertionLogsPanel(logs)],
-          }),
+          // new SceneFlexLayout({
+          //   direction: 'row',
+          //   height: 400,
+          //   children: [getExpectedResponse(metrics)],
+          // }),
+          // new SceneFlexLayout({
+          //   direction: 'row',
+          //   height: 200,
+          //   children: [getSuccessRateByUrl(metrics)],
+          // }),
+          // new SceneFlexLayout({
+          //   direction: 'row',
+          //   minHeight: 300,
+          //   children: [getAssertionLogsPanel(logs)],
+          // }),
           new SceneFlexLayout({
             direction: 'row',
             minHeight: 300,

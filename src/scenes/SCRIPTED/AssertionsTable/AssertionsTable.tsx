@@ -10,16 +10,14 @@ import {
   SceneObjectBase,
   SceneObjectState,
   SceneQueryRunner,
-  VariableDependencyConfig,
 } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
-import { Column, InteractiveTable, useStyles2 } from '@grafana/ui';
+import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { Data } from 'ol/DataTile';
 
 import { Table, TableColumn } from 'components/Table';
 
-import { AssertionsTableRowSceneObject, AssertionTableRow } from './AssertionsTableRow';
+import { AssertionTableRow } from './AssertionsTableRow';
 
 function getQueryRunner(logs: DataSourceRef) {
   const query = new SceneQueryRunner({
