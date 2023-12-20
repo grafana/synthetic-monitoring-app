@@ -11,9 +11,11 @@ import {
   SceneQueryRunner,
 } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
+import { useStyles2 } from '@grafana/ui';
 
 import { Table, TableColumn } from 'components/Table';
 
+import { getTablePanelStyles } from '../getTablePanelStyles';
 import { AssertionTableRow } from './AssertionsTableRow';
 
 function getQueryRunner(logs: DataSourceRef) {
@@ -74,18 +76,6 @@ function getQueryRunner(logs: DataSourceRef) {
     ],
   });
 
-  // count query
-
-  //   sum_over_time (
-  //     {job="test", instance="https://www.example.com"}
-  //     | logfmt check, value, msg
-  //     | __error__ = ""
-  //     | msg = "check result"
-  //     | keep check, value
-  //     | unwrap value
-  //     [$__range]
-  // )
-
   return new SceneDataTransformer({
     $data: query,
     transformations: [
@@ -127,6 +117,7 @@ export interface DataRow {
 function AssertionsTable({ model }: SceneComponentProps<AssertionsTableSceneObject>) {
   const { data } = sceneGraph.getData(model).useState();
   const { logs } = model.useState();
+  const styles = useStyles2(getTablePanelStyles);
 
   const columns = useMemo<Array<TableColumn<DataRow>>>(() => {
     return [
@@ -165,20 +156,27 @@ function AssertionsTable({ model }: SceneComponentProps<AssertionsTableSceneObje
   }, [data, logs]);
 
   return (
-    <Table<DataRow>
-      columns={columns}
-      data={tableData}
-      expandableRows
-      dataTableProps={{
-        expandableRowsComponentProps: { tableViz: model, logs },
-      }}
-      expandableComponent={AssertionTableRow}
-      noDataText={'No assertions found'}
-      pagination={false}
-      id="assertion-table"
-      name="Assertions"
-      config={config}
-    />
+    <div className={styles.container}>
+      <div className={styles.headerContainer}>
+        <h6 title="Assertions" className={styles.title}>
+          Assertions
+        </h6>
+      </div>
+      <Table<DataRow>
+        columns={columns}
+        data={tableData}
+        expandableRows
+        dataTableProps={{
+          expandableRowsComponentProps: { tableViz: model, logs },
+        }}
+        expandableComponent={AssertionTableRow}
+        noDataText={'No assertions found'}
+        pagination={false}
+        id="assertion-table"
+        name="Assertions"
+        config={config}
+      />
+    </div>
   );
 }
 

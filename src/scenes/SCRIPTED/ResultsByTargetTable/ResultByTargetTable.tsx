@@ -11,9 +11,11 @@ import {
   SceneQueryRunner,
 } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
+import { useStyles2 } from '@grafana/ui';
 
 import { Table } from 'components/Table';
 
+import { getTablePanelStyles } from '../getTablePanelStyles';
 import { ResultsByTargetTableRow } from './ResultsByTargetTableRow';
 
 interface ResultsByTargetTableState extends SceneObjectState {
@@ -33,6 +35,7 @@ export class ResultsByTargetTableSceneObject extends SceneObjectBase<ResultsByTa
   static Component = ({ model }: SceneComponentProps<ResultsByTargetTableSceneObject>) => {
     const { data } = sceneGraph.getData(model).useState();
     const { metrics } = model.useState();
+    const styles = useStyles2(getTablePanelStyles);
 
     const columns = useMemo<Array<TableColumn<DataRow>>>(() => {
       return [
@@ -88,20 +91,27 @@ export class ResultsByTargetTableSceneObject extends SceneObjectBase<ResultsByTa
     }, [data, metrics]);
 
     return (
-      <Table<DataRow>
-        columns={columns}
-        data={tableData}
-        expandableRows
-        dataTableProps={{
-          expandableRowsComponentProps: { tableViz: model, metrics },
-        }}
-        expandableComponent={ResultsByTargetTableRow}
-        noDataText={'No requests found'}
-        pagination={false}
-        id="assertion-table"
-        name="Assertions"
-        config={config}
-      />
+      <div className={styles.container}>
+        <div className={styles.headerContainer}>
+          <h6 title="Results by URL" className={styles.title}>
+            Results by URL
+          </h6>
+        </div>
+        <Table<DataRow>
+          columns={columns}
+          data={tableData}
+          expandableRows
+          dataTableProps={{
+            expandableRowsComponentProps: { tableViz: model, metrics },
+          }}
+          expandableComponent={ResultsByTargetTableRow}
+          noDataText={'No requests found'}
+          pagination={false}
+          id="assertion-table"
+          name="Assertions"
+          config={config}
+        />
+      </div>
     );
   };
 
