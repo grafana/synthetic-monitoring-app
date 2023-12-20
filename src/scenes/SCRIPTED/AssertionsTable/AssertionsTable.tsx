@@ -1,5 +1,4 @@
 import React, { useMemo } from 'react';
-import { GrafanaTheme2 } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import {
   SceneComponentProps,
@@ -12,8 +11,6 @@ import {
   SceneQueryRunner,
 } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
-import { useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
 
 import { Table, TableColumn } from 'components/Table';
 
@@ -24,47 +21,94 @@ function getQueryRunner(logs: DataSourceRef) {
     datasource: logs,
     queries: [
       {
-        editorMode: 'code',
-        expr: `
-          sum (
-              min_over_time (
-                  {job="$job", instance="$instance"}
-                  | logfmt method, url, check, value, msg
-                  | __error__ = ""
-                  | msg = "check result"
-                  | unwrap value
-                  [$__range]
-              )
-          ) by (method, url, check)
-          /
-          count (
-              min_over_time (
-                  {job="$job", instance="$instance"}
-                  | logfmt method, url, check, value, msg
-                  | __error__ = ""
-                  | msg = "check result"
-                  | unwrap value
-                  [$__range]
-              )
-          ) by (method, url, check)`,
-        queryType: 'instant',
         refId: 'A',
+        expr: `sum_over_time (
+          {job="$job", instance="$instance"}
+          | logfmt check, value, msg
+          | __error__ = ""
+          | msg = "check result"
+          | keep check, value
+          | unwrap value
+          [$__range]
+        )
+        / 
+        count_over_time  (
+            {job="$job", instance="$instance"}
+            | logfmt check, value, msg
+            | __error__ = ""
+            | msg = "check result"
+            | keep check
+            [$__range]
+          )
+        `,
+        queryType: 'instant',
+      },
+      {
+        refId: 'B',
+        expr: `sum_over_time (
+            {job="$job", instance="$instance"}
+            | logfmt check, value, msg
+            | __error__ = ""
+            | msg = "check result"
+            | keep check, value
+            | unwrap value
+            [$__range]
+          )
+        `,
+        queryType: 'instant',
+      },
+      {
+        refId: 'C',
+        expr: `count_over_time (
+          {job="$job", instance="$instance"}
+          | logfmt check, value, msg
+          | __error__ = ""
+          | msg = "check result"
+          | value = 0
+          | keep check
+          [$__range]
+        )
+      `,
+        queryType: 'instant',
       },
     ],
   });
+
+  // count query
+
+  //   sum_over_time (
+  //     {job="test", instance="https://www.example.com"}
+  //     | logfmt check, value, msg
+  //     | __error__ = ""
+  //     | msg = "check result"
+  //     | keep check, value
+  //     | unwrap value
+  //     [$__range]
+  // )
 
   return new SceneDataTransformer({
     $data: query,
     transformations: [
       {
+        id: 'joinByField',
+        options: {
+          byField: 'check',
+          mode: 'outer',
+        },
+      },
+      {
         id: 'organize',
         options: {
           excludeByName: {
-            Time: true,
+            'Time 1': true,
+            'Time 2': true,
+            'Time 3': true,
           },
           indexByName: {},
           renameByName: {
-            'Value #A': 'success rate',
+            'Value #A': 'Success rate',
+            'Value #B': 'Success count',
+            'Value #C': 'Failure count',
           },
         },
       },
@@ -72,33 +116,35 @@ function getQueryRunner(logs: DataSourceRef) {
   });
 }
 
-function getStyles(theme: GrafanaTheme2) {
-  return {
-    tableContainer: css({
-      width: '100%',
-      overflowY: 'scroll',
-    }),
-    expandedRow: css({
-      height: '300px',
-    }),
-  };
-}
-
 export interface DataRow {
   name: string;
-  successRate: string;
+  successRate: number;
   logs: DataSourceRef;
+  successCount: number;
+  failureCount: number;
 }
 
 function AssertionsTable({ model }: SceneComponentProps<AssertionsTableSceneObject>) {
-  const styles = useStyles2(getStyles);
   const { data } = sceneGraph.getData(model).useState();
   const { logs } = model.useState();
 
   const columns = useMemo<Array<TableColumn<DataRow>>>(() => {
     return [
       { name: 'Assertion', selector: (row) => row.name },
-      { name: 'Success', selector: (row) => row.successRate },
+      {
+        name: 'Success',
+        selector: (row) => {
+          let successRate;
+          if (isNaN(row.successRate)) {
+            successRate = 'N/A';
+          } else {
+            successRate = row.successRate.toFixed(2) + '%';
+          }
+          return successRate;
+        },
+      },
+      { name: 'Success count', selector: (row) => row.successCount },
+      { name: 'Failure count', selector: (row) => row.failureCount },
     ];
   }, []);
 
@@ -109,37 +155,30 @@ function AssertionsTable({ model }: SceneComponentProps<AssertionsTableSceneObje
     const fields = data.series[0]?.fields;
     return (
       fields?.[0].values.reduce<DataRow[]>((acc, name, index) => {
-        let successRate;
-        const percent = fields[1].values[index] * 100;
-        if (isNaN(percent)) {
-          successRate = 'N/A';
-        } else {
-          successRate = percent.toFixed(2) + '%';
-        }
-
-        acc.push({ name, successRate, logs });
+        const successRate = fields[1].values[index] * 100;
+        const successCount = fields[2].values[index];
+        const failureCount = fields[3].values[index];
+        acc.push({ name, successRate, logs, successCount, failureCount });
         return acc;
       }, []) ?? []
     );
   }, [data, logs]);
 
   return (
-    <div className={styles.tableContainer}>
-      <Table<DataRow>
-        columns={columns}
-        data={tableData}
-        expandableRows
-        dataTableProps={{
-          expandableRowsComponentProps: { tableViz: model, logs },
-        }}
-        expandableComponent={AssertionTableRow}
-        noDataText={'No assertions found'}
-        pagination={false}
-        id="assertion-table"
-        name="Assertions"
-        config={config}
-      />
-    </div>
+    <Table<DataRow>
+      columns={columns}
+      data={tableData}
+      expandableRows
+      dataTableProps={{
+        expandableRowsComponentProps: { tableViz: model, logs },
+      }}
+      expandableComponent={AssertionTableRow}
+      noDataText={'No assertions found'}
+      pagination={false}
+      id="assertion-table"
+      name="Assertions"
+      config={config}
+    />
   );
 }
 

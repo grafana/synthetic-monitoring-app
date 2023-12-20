@@ -1,4 +1,5 @@
 import {
+  behaviors,
   EmbeddedScene,
   SceneControlsSpacer,
   SceneFlexItem,
@@ -9,22 +10,19 @@ import {
   SceneVariableSet,
   VariableValueSelectors,
 } from '@grafana/scenes';
+import { DashboardCursorSync } from '@grafana/schema';
 
 import { Check, CheckType, DashboardSceneAppConfig } from 'types';
 import { getReachabilityStat, getUptimeStat, getVariables } from 'scenes/Common';
 import { getAllLogs } from 'scenes/Common/allLogs';
 import { getEditButton } from 'scenes/Common/editButton';
 import { getEmptyScene } from 'scenes/Common/emptyScene';
-import { getAssertionLogsPanel } from 'scenes/MULTIHTTP/assertionLogs';
 import { getDistinctTargets } from 'scenes/MULTIHTTP/distinctTargets';
 import { getProbeDuration } from 'scenes/MULTIHTTP/probeDuration';
 
 import { getResultsByTargetTable } from './ResultsByTargetTable/ResultByTargetTable';
 import { getAssertionTable } from './AssertionsTable';
 import { getDataTransferred } from './dataTransferred';
-import { getExpectedResponse } from './expectedResponse';
-import { getSuccessRateByUrl } from './successRateByUrl';
-import { getTimingByTarget } from './timingByTarget';
 
 export function getScriptedScene({ metrics, logs }: DashboardSceneAppConfig, checks: Check[] = []) {
   return () => {
@@ -49,6 +47,7 @@ export function getScriptedScene({ metrics, logs }: DashboardSceneAppConfig, che
     return new EmbeddedScene({
       $timeRange: timeRange,
       $variables: variables,
+      $behaviors: [new behaviors.CursorSync({ key: 'sync', sync: DashboardCursorSync.Crosshair })],
       controls: [
         new VariableValueSelectors({}),
         new SceneControlsSpacer(),

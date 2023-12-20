@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import { TableColumn } from 'react-data-table-component';
-import { GrafanaTheme2 } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import {
   SceneComponentProps,
@@ -12,8 +11,6 @@ import {
   SceneQueryRunner,
 } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
-import { useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
 
 import { Table } from 'components/Table';
 
@@ -32,18 +29,8 @@ export interface DataRow {
   metrics: DataSourceRef;
 }
 
-function getStyles(theme: GrafanaTheme2) {
-  return {
-    tableContainer: css({
-      width: '100%',
-      overflowY: 'scroll',
-    }),
-  };
-}
-
 export class ResultsByTargetTableSceneObject extends SceneObjectBase<ResultsByTargetTableState> {
   static Component = ({ model }: SceneComponentProps<ResultsByTargetTableSceneObject>) => {
-    const styles = useStyles2(getStyles);
     const { data } = sceneGraph.getData(model).useState();
     const { metrics } = model.useState();
 
@@ -101,22 +88,20 @@ export class ResultsByTargetTableSceneObject extends SceneObjectBase<ResultsByTa
     }, [data, metrics]);
 
     return (
-      <div className={styles.tableContainer}>
-        <Table<DataRow>
-          columns={columns}
-          data={tableData}
-          expandableRows
-          dataTableProps={{
-            expandableRowsComponentProps: { tableViz: model, metrics },
-          }}
-          expandableComponent={ResultsByTargetTableRow}
-          noDataText={'No requests found'}
-          pagination={false}
-          id="assertion-table"
-          name="Assertions"
-          config={config}
-        />
-      </div>
+      <Table<DataRow>
+        columns={columns}
+        data={tableData}
+        expandableRows
+        dataTableProps={{
+          expandableRowsComponentProps: { tableViz: model, metrics },
+        }}
+        expandableComponent={ResultsByTargetTableRow}
+        noDataText={'No requests found'}
+        pagination={false}
+        id="assertion-table"
+        name="Assertions"
+        config={config}
+      />
     );
   };
 

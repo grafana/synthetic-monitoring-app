@@ -1,44 +1,27 @@
 import React, { useEffect } from 'react';
 import { ExpanderComponentProps } from 'react-data-table-component';
-import { SceneFlexItem, SceneFlexLayout, SceneQueryRunner } from '@grafana/scenes';
+import { SceneFlexLayout } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
 
-import { ExplorablePanel } from 'scenes/ExplorablePanel';
-
+import { getExpectedResponse } from '../expectedResponse';
+import { getDurationByTargetProbe } from './durationByTargetProbe';
+import { getLatencyByPhaseTarget } from './latencyByPhaseTarget';
 import { DataRow, ResultsByTargetTableSceneObject } from './ResultByTargetTable';
-
-function resultsByTargetRowQueryRunner(metrics: DataSourceRef, name: string) {
-  return new SceneQueryRunner({
-    datasource: metrics,
-    queries: [
-      {
-        expr: `sum by (probe) (probe_http_total_duration_seconds{probe=~".*", job="$job", instance="$instance", name="${name}"})`,
-        refId: 'A',
-      },
-    ],
-  });
-}
+import { getSuccessRateByTargetProbe } from './successRateByTargetProbe';
 
 function getResultsByTargetRowScene(metrics: DataSourceRef, name: string) {
   const flexItem = new SceneFlexLayout({
-    width: '100%',
-    height: 400,
+    direction: 'column',
     children: [
-      new SceneFlexItem({
-        body: new ExplorablePanel({
-          $data: resultsByTargetRowQueryRunner(metrics, name),
-          options: {
-            instant: false,
-          },
-          fieldConfig: {
-            defaults: {
-              unit: 's',
-            },
-            overrides: [],
-          },
-          title: 'Duration by probe for ' + name,
-          pluginId: 'timeseries',
-        }),
+      new SceneFlexLayout({
+        width: '100%',
+        height: 250,
+        children: [getSuccessRateByTargetProbe(metrics, name), getExpectedResponse(metrics, name)],
+      }),
+      new SceneFlexLayout({
+        width: '100%',
+        height: 250,
+        children: [getDurationByTargetProbe(metrics, name), getLatencyByPhaseTarget(metrics, name)],
       }),
     ],
   });
