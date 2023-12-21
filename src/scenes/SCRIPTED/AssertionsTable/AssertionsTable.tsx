@@ -146,9 +146,9 @@ function AssertionsTable({ model }: SceneComponentProps<AssertionsTableSceneObje
     const fields = data.series[0]?.fields;
     return (
       fields?.[0].values.reduce<DataRow[]>((acc, name, index) => {
-        const successRate = fields[1].values[index] * 100;
-        const successCount = fields[2].values[index];
-        const failureCount = fields[3].values[index];
+        const successRate = fields?.[1]?.values[index] * 100;
+        const successCount = fields?.[2]?.values[index];
+        const failureCount = fields?.[3]?.values[index];
         acc.push({ name, successRate, logs, successCount, failureCount });
         return acc;
       }, []) ?? []
