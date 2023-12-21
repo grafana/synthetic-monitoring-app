@@ -82,7 +82,7 @@ export class ResultsByTargetTableSceneObject extends SceneObjectBase<ResultsByTa
         fields?.[1].values.reduce<DataRow[]>((acc, name, index) => {
           const successRate = fields[2].values[index] * 100;
           const expectedResponse = data.series[1].fields[2].values[index] * 100;
-          const latency = data.series[2].fields[2].values[index];
+          const latency = data.series[2].fields[2].values[index] * 100;
 
           acc.push({ name, successRate, latency, expectedResponse, metrics });
           return acc;
@@ -155,7 +155,8 @@ function getQueryRunner(metrics: DataSourceRef) {
         datasource: metrics,
         editorMode: 'code',
         exemplar: false,
-        expr: `sum by(name)(rate(probe_http_duration_seconds{job="$job", instance="$instance"}[5m]))`,
+        // TODO: Does this make sense at all? I want get the total latency for each URL and then average the different probes, not just sum all the probes together
+        expr: `avg by (name) (sum by(name, probe)(rate(probe_http_duration_seconds{job="$job", instance="$instance"}[5m])))`,
         format: 'table',
         hide: false,
         instant: true,

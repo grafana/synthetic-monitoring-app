@@ -24,5 +24,11 @@ export function getTablePanelStyles(theme: GrafanaTheme2) {
       display: 'flex',
       alignItems: 'center',
     }),
+    noDataContainer: css({
+      padding: theme.spacing(4),
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+    }),
   };
 }

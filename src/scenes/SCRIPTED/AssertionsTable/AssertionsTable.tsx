@@ -11,7 +11,7 @@ import {
   SceneQueryRunner,
 } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
-import { useStyles2 } from '@grafana/ui';
+import { LinkButton, useStyles2 } from '@grafana/ui';
 
 import { Table, TableColumn } from 'components/Table';
 
@@ -170,7 +170,20 @@ function AssertionsTable({ model }: SceneComponentProps<AssertionsTableSceneObje
           expandableRowsComponentProps: { tableViz: model, logs },
         }}
         expandableComponent={AssertionTableRow}
-        noDataText={'No assertions found'}
+        //@ts-ignore - noDataText expects a string, but we want to render a component and it works
+        noDataText={
+          <div className={styles.noDataContainer}>
+            <p>There are no assertions in this script. You can use k6 Checks to validate conditions in your script.</p>
+            <LinkButton
+              variant="primary"
+              href="https://k6.io/docs/using-k6/checks/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Learn more about Checks
+            </LinkButton>
+          </div>
+        }
         pagination={false}
         id="assertion-table"
         name="Assertions"
