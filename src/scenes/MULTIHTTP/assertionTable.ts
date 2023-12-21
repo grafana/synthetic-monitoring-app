@@ -9,7 +9,27 @@ function getQueryRunner(logs: DataSourceRef) {
     queries: [
       {
         editorMode: 'code',
-        expr: 'sum (\n    min_over_time (\n        {job="$job", instance="$instance"}\n        | logfmt method, url, check, value, msg\n        | __error__ = ""\n        | msg = "check result"\n        | unwrap value\n        [$__range]\n    )\n) by (method, url, check)\n/\ncount (\n    min_over_time (\n        {job="$job", instance="$instance"}\n        | logfmt method, url, check, value, msg\n        | __error__ = ""\n        | msg = "check result"\n        | unwrap value\n        [$__range]\n    )\n) by (method, url, check)',
+        expr: `sum (
+            min_over_time (
+                {job="$job", instance="$instance"}
+                | logfmt method, url, check, value, msg
+                | __error__ = ""
+                | msg = "check result"
+                | unwrap value
+                [$__range]
+            )
+        ) by (method, url, check)
+        /
+        count (
+            min_over_time (
+                {job="$job", instance="$instance"}
+                | logfmt method, url, check, value, msg
+                | __error__ = ""
+                | msg = "check result"
+                | unwrap value
+                [$__range]
+            )
+        ) by (method, url, check)`,
         queryType: 'instant',
         refId: 'A',
       },

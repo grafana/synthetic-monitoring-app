@@ -8,31 +8,29 @@ function getQueryRunner(metrics: DataSourceRef, name: string) {
     datasource: metrics,
     queries: [
       {
-        expr: `
-          sum by (probe) (probe_http_got_expected_response{job="$job", instance="$instance", name="${name}", probe=~"$probe"})
-          / 
-          count by (probe) (probe_http_got_expected_response{job="$job", instance="$instance", name="${name}", probe=~"$probe"})`,
-        legendFormat: '{{ probe }}',
-        range: false,
+        expr: `sum by (probe) (probe_http_total_duration_seconds{probe=~".*", job="$job", instance="$instance", name="${name}"})`,
         refId: 'A',
+        legendFormat: '{{probe}}',
       },
     ],
   });
 }
 
-export function getExpectedResponse(metrics: DataSourceRef, name: string) {
+export function getDurationByTargetProbe(metrics: DataSourceRef, name: string) {
   return new SceneFlexItem({
     body: new ExplorablePanel({
       $data: getQueryRunner(metrics, name),
-      pluginId: 'timeseries',
-      title: 'Expected response by probe for ' + name,
+      options: {
+        instant: false,
+      },
       fieldConfig: {
         defaults: {
-          unit: 'percentunit',
-          max: 1,
+          unit: 's',
         },
         overrides: [],
       },
+      title: 'Duration by probe for ' + name,
+      pluginId: 'timeseries',
     }),
   });
 }

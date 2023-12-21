@@ -1,4 +1,5 @@
 import {
+  behaviors,
   EmbeddedScene,
   SceneControlsSpacer,
   SceneFlexItem,
@@ -9,21 +10,19 @@ import {
   SceneVariableSet,
   VariableValueSelectors,
 } from '@grafana/scenes';
+import { DashboardCursorSync } from '@grafana/schema';
 
 import { Check, CheckType, DashboardSceneAppConfig } from 'types';
 import { getReachabilityStat, getUptimeStat, getVariables } from 'scenes/Common';
 import { getAllLogs } from 'scenes/Common/allLogs';
 import { getEditButton } from 'scenes/Common/editButton';
 import { getEmptyScene } from 'scenes/Common/emptyScene';
-import { getAssertionLogsPanel } from 'scenes/MULTIHTTP/assertionLogs';
-import { getAssertionTable } from 'scenes/MULTIHTTP/assertionTable';
 import { getDistinctTargets } from 'scenes/MULTIHTTP/distinctTargets';
 import { getProbeDuration } from 'scenes/MULTIHTTP/probeDuration';
 
+import { getResultsByTargetTable } from './ResultsByTargetTable/ResultByTargetTable';
+import { getAssertionTable } from './AssertionsTable';
 import { getDataTransferred } from './dataTransferred';
-import { getExpectedResponse } from './expectedResponse';
-import { getSuccessRateByUrl } from './successRateByUrl';
-import { getTimingByTarget } from './timingByTarget';
 
 export function getScriptedScene({ metrics, logs }: DashboardSceneAppConfig, checks: Check[] = []) {
   return () => {
@@ -48,6 +47,7 @@ export function getScriptedScene({ metrics, logs }: DashboardSceneAppConfig, che
     return new EmbeddedScene({
       $timeRange: timeRange,
       $variables: variables,
+      $behaviors: [new behaviors.CursorSync({ key: 'sync', sync: DashboardCursorSync.Crosshair })],
       controls: [
         new VariableValueSelectors({}),
         new SceneControlsSpacer(),
@@ -65,34 +65,37 @@ export function getScriptedScene({ metrics, logs }: DashboardSceneAppConfig, che
           new SceneFlexLayout({
             direction: 'row',
             height: 150,
-            children: [new SceneFlexItem({ body: uptime }), new SceneFlexItem({ body: reachability }), distinctTargets],
+            children: [new SceneFlexItem({ body: uptime }), new SceneFlexItem({ body: reachability })],
+          }),
+          new SceneFlexLayout({
+            direction: 'row',
+            children: [getAssertionTable(logs)],
           }),
           new SceneFlexLayout({
             direction: 'row',
             height: 200,
-            children: [probeDuration],
+            children: [distinctTargets, probeDuration],
           }),
           getDataTransferred(metrics),
           new SceneFlexLayout({
             direction: 'row',
-            height: 200,
-            children: [getTimingByTarget(metrics)],
+            children: [getResultsByTargetTable(metrics)],
           }),
-          new SceneFlexLayout({
-            direction: 'row',
-            height: 400,
-            children: [getExpectedResponse(metrics)],
-          }),
-          new SceneFlexLayout({
-            direction: 'row',
-            height: 200,
-            children: [getSuccessRateByUrl(metrics)],
-          }),
-          new SceneFlexLayout({
-            direction: 'row',
-            minHeight: 300,
-            children: [getAssertionTable(logs), getAssertionLogsPanel(logs)],
-          }),
+          // new SceneFlexLayout({
+          //   direction: 'row',
+          //   height: 400,
+          //   children: [getExpectedResponse(metrics)],
+          // }),
+          // new SceneFlexLayout({
+          //   direction: 'row',
+          //   height: 200,
+          //   children: [getSuccessRateByUrl(metrics)],
+          // }),
+          // new SceneFlexLayout({
+          //   direction: 'row',
+          //   minHeight: 300,
+          //   children: [getAssertionLogsPanel(logs)],
+          // }),
           new SceneFlexLayout({
             direction: 'row',
             minHeight: 300,

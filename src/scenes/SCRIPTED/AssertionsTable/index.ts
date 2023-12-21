@@ -1,0 +1,1 @@
+export { getAssertionTable } from './AssertionsTable';
