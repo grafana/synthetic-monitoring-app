@@ -4,7 +4,7 @@ import { SceneObjectBase, SceneObjectState } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
 
 import { AssertionsTableSceneObject, DataRow } from './AssertionsTable';
-import { getErrorLogs } from './errorLogs';
+import { getSuccessOverTimeByProbe } from './successOverTimeByProbe';
 
 export class AssertionsTableRowSceneObject extends SceneObjectBase<AssertionsTableRowState> {
   static Component = AssertionTableRow;
@@ -33,7 +33,8 @@ export function AssertionTableRow({ data, tableViz, logs }: Props) {
 
   useEffect(() => {
     if (!rowScene && logs && tableViz) {
-      const newRowScene = getErrorLogs(logs, data.name);
+      // const newRowScene = getErrorLogs(logs, data.name);
+      const newRowScene = getSuccessOverTimeByProbe(logs, data.name);
       setRowKey(newRowScene.state.key);
       tableViz.setState({ expandedRows: [...(tableViz.state.expandedRows ?? []), newRowScene] });
     }

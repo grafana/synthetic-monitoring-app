@@ -24,19 +24,19 @@ function getQueryRunner(logs: DataSourceRef) {
     queries: [
       {
         refId: 'A',
-        expr: `sum_over_time (
+        expr: `count_over_time (
           {job="$job", instance="$instance"}
           | logfmt check, value, msg
           | __error__ = ""
           | msg = "check result"
-          | keep check, value
-          | unwrap value
+          | value = "1"
+          | keep check
           [$__range]
         )
         / 
         count_over_time  (
             {job="$job", instance="$instance"}
-            | logfmt check, value, msg
+            | logfmt check, msg
             | __error__ = ""
             | msg = "check result"
             | keep check
@@ -47,15 +47,15 @@ function getQueryRunner(logs: DataSourceRef) {
       },
       {
         refId: 'B',
-        expr: `sum_over_time (
-            {job="$job", instance="$instance"}
-            | logfmt check, value, msg
-            | __error__ = ""
-            | msg = "check result"
-            | keep check, value
-            | unwrap value
-            [$__range]
-          )
+        expr: `count_over_time (
+          {job="$job", instance="$instance"}
+          | logfmt check, value, msg
+          | __error__ = ""
+          | msg = "check result"
+          | value = "1"
+          | keep check
+          [$__range]
+        )
         `,
         queryType: 'instant',
       },
@@ -66,8 +66,8 @@ function getQueryRunner(logs: DataSourceRef) {
           | logfmt check, value, msg
           | __error__ = ""
           | msg = "check result"
-          | value = 0
-          | keep check
+          | value = "0"
+          | keep check 
           [$__range]
         )
       `,
