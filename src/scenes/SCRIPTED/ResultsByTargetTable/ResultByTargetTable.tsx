@@ -80,9 +80,9 @@ export class ResultsByTargetTableSceneObject extends SceneObjectBase<ResultsByTa
       const fields = data.series[0]?.fields;
       return (
         fields?.[1].values.reduce<DataRow[]>((acc, name, index) => {
-          const successRate = fields[2].values[index] * 100;
-          const expectedResponse = data.series[1].fields[2].values[index] * 100;
-          const latency = data.series[2].fields[2].values[index] * 100;
+          const successRate = fields?.[2]?.values?.[index] * 100;
+          const expectedResponse = data.series?.[1]?.fields?.[2]?.values?.[index] * 100;
+          const latency = data.series?.[2]?.fields?.[2]?.values?.[index] * 100;
 
           acc.push({ name, successRate, latency, expectedResponse, metrics });
           return acc;
