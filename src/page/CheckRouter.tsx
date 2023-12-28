@@ -41,7 +41,7 @@ export function CheckRouter() {
           {({ match }) => {
             switch (match?.params.checkType) {
               case CheckType.MULTI_HTTP:
-                return <MultiHttpSettingsForm onReturn={returnToList} />;
+                return <MultiHttpSettingsForm onReturn={returnToList} checks={checks} />;
               case CheckType.K6:
                 return <K6CheckCodeEditor checks={checks} onSubmitSuccess={returnToList} />;
               default:
@@ -53,7 +53,7 @@ export function CheckRouter() {
           {({ match }) => {
             switch (match?.params.checkType) {
               case CheckType.MULTI_HTTP:
-                return <MultiHttpSettingsForm onReturn={returnToList} />;
+                return <MultiHttpSettingsForm onReturn={returnToList} checks={checks} />;
               case CheckType.K6:
                 return <K6CheckCodeEditor checks={checks} onSubmitSuccess={returnToList} />;
               default:

@@ -14,6 +14,7 @@ import {
 import { DataSourceRef, LoadingState } from '@grafana/schema';
 import { Alert, LinkButton, LoadingPlaceholder, useStyles2 } from '@grafana/ui';
 
+import { CheckType } from 'types';
 import { Table } from 'components/Table';
 
 import { getTablePanelStyles } from '../getTablePanelStyles';
@@ -22,6 +23,7 @@ import { ResultsByTargetTableRow } from './ResultsByTargetTableRow';
 interface ResultsByTargetTableState extends SceneObjectState {
   metrics: DataSourceRef;
   expandedRows?: SceneObject[];
+  checkType: CheckType;
 }
 
 export interface DataRow {
@@ -35,7 +37,7 @@ export interface DataRow {
 export class ResultsByTargetTableSceneObject extends SceneObjectBase<ResultsByTargetTableState> {
   static Component = ({ model }: SceneComponentProps<ResultsByTargetTableSceneObject>) => {
     const { data } = sceneGraph.getData(model).useState();
-    const { metrics } = model.useState();
+    const { metrics, checkType } = model.useState();
     const styles = useStyles2(getTablePanelStyles);
 
     const columns = useMemo<Array<TableColumn<DataRow>>>(() => {
@@ -93,12 +95,12 @@ export class ResultsByTargetTableSceneObject extends SceneObjectBase<ResultsByTa
 
     const getPlaceholder = (state: LoadingState | undefined, errors?: DataQueryError[]) => {
       if (!state || state === LoadingState.NotStarted || state === LoadingState.Loading) {
-        return <LoadingPlaceholder text="Loading assertions..." />;
+        return <LoadingPlaceholder text="Loading results by URL..." />;
       }
       if (state === LoadingState.Error) {
         return (
           <div className={styles.noDataContainer}>
-            <Alert severity="error" title="Error loading assertions">
+            <Alert severity="error" title="Error loading URL results">
               {errors?.map((error) => error.message + '\n') ?? 'Unknown error'}
             </Alert>
           </div>
@@ -131,7 +133,7 @@ export class ResultsByTargetTableSceneObject extends SceneObjectBase<ResultsByTa
           data={tableData}
           expandableRows
           dataTableProps={{
-            expandableRowsComponentProps: { tableViz: model, metrics },
+            expandableRowsComponentProps: { tableViz: model, metrics, checkType },
           }}
           expandableComponent={ResultsByTargetTableRow}
           //@ts-ignore - noDataText expects a string, but we want to render a component and it works
@@ -150,7 +152,8 @@ export class ResultsByTargetTableSceneObject extends SceneObjectBase<ResultsByTa
   }
 }
 
-function getQueryRunner(metrics: DataSourceRef) {
+function getQueryRunner(metrics: DataSourceRef, checkType: CheckType) {
+  const label = checkType === CheckType.K6 ? 'name' : 'url';
   return new SceneQueryRunner({
     queries: [
       {
@@ -158,9 +161,9 @@ function getQueryRunner(metrics: DataSourceRef) {
         editorMode: 'code',
         exemplar: false,
         expr: `
-          sum by (name) (probe_http_requests_total{job="$job", instance="$instance"})
+          sum by (${label}) (probe_http_requests_total{job="$job", instance="$instance"})
           /
-          count by (name) (probe_http_requests_total{job="$job", instance="$instance"})`,
+          count by (${label}) (probe_http_requests_total{job="$job", instance="$instance"})`,
         format: 'table',
         instant: true,
         legendFormat: '__auto',
@@ -172,9 +175,9 @@ function getQueryRunner(metrics: DataSourceRef) {
         editorMode: 'code',
         exemplar: false,
         expr: `
-          sum by (name) (probe_http_got_expected_response{job="$job", instance="$instance"})
+          sum by (${label}) (probe_http_got_expected_response{job="$job", instance="$instance"})
           /
-          count by (name)(probe_http_got_expected_response{job="$job", instance="$instance"})`,
+          count by (${label})(probe_http_got_expected_response{job="$job", instance="$instance"})`,
         format: 'table',
         instant: true,
         legendFormat: '__auto',
@@ -186,7 +189,7 @@ function getQueryRunner(metrics: DataSourceRef) {
         editorMode: 'code',
         exemplar: false,
         // TODO: Does this make sense at all? I want get the total latency for each URL and then average the different probes, not just sum all the probes together
-        expr: `avg by (name) (sum by(name, probe)(rate(probe_http_duration_seconds{job="$job", instance="$instance"}[5m])))`,
+        expr: `avg by (${label}) (sum by(${label}, probe)(rate(probe_http_duration_seconds{job="$job", instance="$instance"}[5m])))`,
         format: 'table',
         hide: false,
         instant: true,
@@ -197,12 +200,13 @@ function getQueryRunner(metrics: DataSourceRef) {
   });
 }
 
-export function getResultsByTargetTable(metrics: DataSourceRef) {
+export function getResultsByTargetTable(metrics: DataSourceRef, checkType: CheckType) {
   return new SceneFlexItem({
     body: new ResultsByTargetTableSceneObject({
-      $data: getQueryRunner(metrics),
+      $data: getQueryRunner(metrics, checkType),
       metrics,
       expandedRows: [],
+      checkType,
     }),
   });
 }

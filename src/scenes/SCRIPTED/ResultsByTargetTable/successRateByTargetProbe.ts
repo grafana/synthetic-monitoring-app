@@ -3,16 +3,16 @@ import { DataSourceRef } from '@grafana/schema';
 
 import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
-function getQueryRunner(metrics: DataSourceRef, name: string) {
+function getQueryRunner(metrics: DataSourceRef, labelName: string, labelValue: string) {
   const queries = [
     {
       exemplar: true,
       expr: `sum by (probe) (
-        probe_http_requests_total{instance="$instance", job="$job", probe=~".*", name="${name}"}
+        probe_http_requests_total{instance="$instance", job="$job", probe=~".*", ${labelName}="${labelValue}"}
       )
       /
       sum by (probe) (
-        probe_http_requests_total{instance="$instance", job="$job", probe=~".*", name="${name}"}
+        probe_http_requests_total{instance="$instance", job="$job", probe=~".*", ${labelName}="${labelValue}"}
       )`,
       hide: false,
       range: true,
@@ -27,12 +27,12 @@ function getQueryRunner(metrics: DataSourceRef, name: string) {
   });
 }
 
-export function getSuccessRateByTargetProbe(metrics: DataSourceRef, name: string) {
+export function getSuccessRateByTargetProbe(metrics: DataSourceRef, labelName: string, labelValue: string) {
   return new SceneFlexItem({
     body: new ExplorablePanel({
       pluginId: 'timeseries',
       title: `Success rate by probe for ${name}`,
-      $data: getQueryRunner(metrics, name),
+      $data: getQueryRunner(metrics, labelName, labelValue),
       fieldConfig: {
         overrides: [],
         defaults: {

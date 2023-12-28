@@ -24,16 +24,20 @@ import { getResultsByTargetTable } from './ResultsByTargetTable/ResultByTargetTa
 import { getAssertionTable } from './AssertionsTable';
 import { getDataTransferred } from './dataTransferred';
 
-export function getScriptedScene({ metrics, logs }: DashboardSceneAppConfig, checks: Check[] = []) {
+export function getScriptedScene(
+  { metrics, logs }: DashboardSceneAppConfig,
+  checks: Check[] = [],
+  checkType: CheckType
+) {
   return () => {
     if (checks.length === 0) {
-      return getEmptyScene(CheckType.K6);
+      return getEmptyScene(checkType);
     }
     const timeRange = new SceneTimeRange({
       from: 'now-6h',
       to: 'now',
     });
-    const { probe, job, instance } = getVariables(CheckType.K6, metrics, checks);
+    const { probe, job, instance } = getVariables(checkType, metrics, checks);
     const variables = new SceneVariableSet({
       variables: [probe, job, instance],
     });
@@ -79,7 +83,7 @@ export function getScriptedScene({ metrics, logs }: DashboardSceneAppConfig, che
           getDataTransferred(metrics),
           new SceneFlexLayout({
             direction: 'row',
-            children: [getResultsByTargetTable(metrics)],
+            children: [getResultsByTargetTable(metrics, checkType)],
           }),
           // new SceneFlexLayout({
           //   direction: 'row',
