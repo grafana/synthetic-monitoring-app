@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { TableColumn } from 'react-data-table-component';
+import { DataQueryError } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import {
   SceneComponentProps,
@@ -10,8 +11,8 @@ import {
   SceneObjectState,
   SceneQueryRunner,
 } from '@grafana/scenes';
-import { DataSourceRef } from '@grafana/schema';
-import { useStyles2 } from '@grafana/ui';
+import { DataSourceRef, LoadingState } from '@grafana/schema';
+import { Alert, LinkButton, LoadingPlaceholder, useStyles2 } from '@grafana/ui';
 
 import { Table } from 'components/Table';
 
@@ -74,7 +75,7 @@ export class ResultsByTargetTableSceneObject extends SceneObjectBase<ResultsByTa
     }, []);
 
     const tableData = useMemo(() => {
-      if (!data) {
+      if (!data || (data.errors && data.errors.length > 0)) {
         return [];
       }
       const fields = data.series[0]?.fields;
@@ -89,6 +90,34 @@ export class ResultsByTargetTableSceneObject extends SceneObjectBase<ResultsByTa
         }, []) ?? []
       );
     }, [data, metrics]);
+
+    const getPlaceholder = (state: LoadingState | undefined, errors?: DataQueryError[]) => {
+      if (!state || state === LoadingState.NotStarted || state === LoadingState.Loading) {
+        return <LoadingPlaceholder text="Loading assertions..." />;
+      }
+      if (state === LoadingState.Error) {
+        return (
+          <div className={styles.noDataContainer}>
+            <Alert severity="error" title="Error loading assertions">
+              {errors?.map((error) => error.message + '\n') ?? 'Unknown error'}
+            </Alert>
+          </div>
+        );
+      }
+      return (
+        <div className={styles.noDataContainer}>
+          <p>There were no requests made in this script.</p>
+          <LinkButton
+            variant="primary"
+            href="https://k6.io/docs/using-k6/http-requests/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Learn more about making requests
+          </LinkButton>
+        </div>
+      );
+    };
 
     return (
       <div className={styles.container}>
@@ -105,7 +134,8 @@ export class ResultsByTargetTableSceneObject extends SceneObjectBase<ResultsByTa
             expandableRowsComponentProps: { tableViz: model, metrics },
           }}
           expandableComponent={ResultsByTargetTableRow}
-          noDataText={'No requests found'}
+          //@ts-ignore - noDataText expects a string, but we want to render a component and it works
+          noDataText={getPlaceholder(data?.state, data?.errors)}
           pagination={false}
           id="assertion-table"
           name="Assertions"

@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { DataQueryError } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import {
   SceneComponentProps,
@@ -10,8 +11,8 @@ import {
   SceneObjectState,
   SceneQueryRunner,
 } from '@grafana/scenes';
-import { DataSourceRef } from '@grafana/schema';
-import { LinkButton, useStyles2 } from '@grafana/ui';
+import { DataSourceRef, LoadingState } from '@grafana/schema';
+import { Alert, LinkButton, LoadingPlaceholder, useStyles2 } from '@grafana/ui';
 
 import { Table, TableColumn } from 'components/Table';
 
@@ -34,7 +35,7 @@ function getQueryRunner(logs: DataSourceRef) {
           [$__range]
         )
         / 
-        count_over_time  (
+        count_over_time (
             {job="$job", instance="$instance"}
             | logfmt check, msg
             | __error__ = ""
@@ -67,7 +68,7 @@ function getQueryRunner(logs: DataSourceRef) {
           | __error__ = ""
           | msg = "check result"
           | value = "0"
-          | keep check 
+          | keep check
           [$__range]
         )
       `,
@@ -118,7 +119,6 @@ function AssertionsTable({ model }: SceneComponentProps<AssertionsTableSceneObje
   const { data } = sceneGraph.getData(model).useState();
   const { logs } = model.useState();
   const styles = useStyles2(getTablePanelStyles);
-
   const columns = useMemo<Array<TableColumn<DataRow>>>(() => {
     return [
       { name: 'Assertion', selector: (row) => row.name },
@@ -140,20 +140,48 @@ function AssertionsTable({ model }: SceneComponentProps<AssertionsTableSceneObje
   }, []);
 
   const tableData = useMemo(() => {
-    if (!data) {
+    if (!data || (data.errors && data.errors.length > 0)) {
       return [];
     }
     const fields = data.series[0]?.fields;
     return (
       fields?.[0].values.reduce<DataRow[]>((acc, name, index) => {
-        const successRate = fields?.[1]?.values[index] * 100;
-        const successCount = fields?.[2]?.values[index];
-        const failureCount = fields?.[3]?.values[index];
+        const successRate = fields?.[1]?.values?.[index] * 100;
+        const successCount = fields?.[2]?.values?.[index] ?? 0;
+        const failureCount = fields?.[3]?.values?.[index] ?? 0;
         acc.push({ name, successRate, logs, successCount, failureCount });
         return acc;
       }, []) ?? []
     );
   }, [data, logs]);
+
+  const getPlaceholder = (state: LoadingState | undefined, errors?: DataQueryError[]) => {
+    if (!state || state === LoadingState.NotStarted || state === LoadingState.Loading) {
+      return <LoadingPlaceholder text="Loading assertions..." />;
+    }
+    if (state === LoadingState.Error) {
+      return (
+        <div className={styles.noDataContainer}>
+          <Alert severity="error" title="Error loading assertions">
+            {errors?.map((error) => error.message + '\n') ?? 'Unknown error'}
+          </Alert>
+        </div>
+      );
+    }
+    return (
+      <div className={styles.noDataContainer}>
+        <p>There are no assertions in this script. You can use k6 Checks to validate conditions in your script.</p>
+        <LinkButton
+          variant="primary"
+          href="https://k6.io/docs/using-k6/checks/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Learn more about Checks
+        </LinkButton>
+      </div>
+    );
+  };
 
   return (
     <div className={styles.container}>
@@ -171,19 +199,7 @@ function AssertionsTable({ model }: SceneComponentProps<AssertionsTableSceneObje
         }}
         expandableComponent={AssertionTableRow}
         //@ts-ignore - noDataText expects a string, but we want to render a component and it works
-        noDataText={
-          <div className={styles.noDataContainer}>
-            <p>There are no assertions in this script. You can use k6 Checks to validate conditions in your script.</p>
-            <LinkButton
-              variant="primary"
-              href="https://k6.io/docs/using-k6/checks/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learn more about Checks
-            </LinkButton>
-          </div>
-        }
+        noDataText={getPlaceholder(data?.state, data?.errors)}
         pagination={false}
         id="assertion-table"
         name="Assertions"
