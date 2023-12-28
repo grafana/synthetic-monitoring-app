@@ -17,12 +17,12 @@ import { getReachabilityStat, getUptimeStat, getVariables } from 'scenes/Common'
 import { getAllLogs } from 'scenes/Common/allLogs';
 import { getEditButton } from 'scenes/Common/editButton';
 import { getEmptyScene } from 'scenes/Common/emptyScene';
-import { getDistinctTargets } from 'scenes/MULTIHTTP/distinctTargets';
-import { getProbeDuration } from 'scenes/MULTIHTTP/probeDuration';
 
 import { getResultsByTargetTable } from './ResultsByTargetTable/ResultByTargetTable';
 import { getAssertionTable } from './AssertionsTable';
 import { getDataTransferred } from './dataTransferred';
+import { getDistinctTargets } from './distinctTargets';
+import { getProbeDuration } from './probeDuration';
 
 export function getScriptedScene(
   { metrics, logs }: DashboardSceneAppConfig,
