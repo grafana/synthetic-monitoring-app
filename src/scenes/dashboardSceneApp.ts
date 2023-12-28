@@ -9,7 +9,6 @@ import { getTcpScene } from './TCP/getTcpScene';
 import { getTracerouteScene } from './Traceroute/getTracerouteScene';
 import { getDNSScene } from './DNS';
 import { getHTTPScene } from './HTTP';
-import { getMultiHttpScene } from './MULTIHTTP';
 import { getScriptedScene } from './SCRIPTED';
 import { getSummaryScene } from './Summary';
 

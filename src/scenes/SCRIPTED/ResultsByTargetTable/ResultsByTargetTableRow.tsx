@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { ExpanderComponentProps } from 'react-data-table-component';
-import { useParams } from 'react-router-dom';
 import { SceneFlexLayout } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
 
