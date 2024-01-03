@@ -9,6 +9,7 @@ import { ConfigPageWrapper } from 'components/ConfigPageWrapper';
 
 const { env, url, name } = getFaroConfig();
 
+// faro was filling up the console with error logs and it annoyed me so I disabled it for localhost
 if (window.location.hostname !== 'localhost') {
   initializeFaro({
     url,
