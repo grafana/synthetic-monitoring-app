@@ -9,19 +9,21 @@ import { ConfigPageWrapper } from 'components/ConfigPageWrapper';
 
 const { env, url, name } = getFaroConfig();
 
-export const faro = initializeFaro({
-  url,
-  app: {
-    name,
-    version: config.apps['grafana-synthetic-monitoring-app'].version,
-    environment: env,
-  },
-  isolate: true,
-  user: {
-    id: config.bootData.user.orgName,
-  },
-  instrumentations: getWebInstrumentations(),
-});
+if (window.location.hostname !== 'localhost') {
+  initializeFaro({
+    url,
+    app: {
+      name,
+      version: config.apps['grafana-synthetic-monitoring-app'].version,
+      environment: env,
+    },
+    isolate: true,
+    user: {
+      id: config.bootData.user.orgName,
+    },
+    instrumentations: getWebInstrumentations(),
+  });
+}
 
 export const plugin = new AppPlugin<GlobalSettings>().setRootPage(App).addConfigPage({
   title: 'Config',
