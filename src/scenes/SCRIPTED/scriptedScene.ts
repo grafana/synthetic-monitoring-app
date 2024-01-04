@@ -85,21 +85,6 @@ export function getScriptedScene(
             direction: 'row',
             children: [getResultsByTargetTable(metrics, checkType)],
           }),
-          // new SceneFlexLayout({
-          //   direction: 'row',
-          //   height: 400,
-          //   children: [getExpectedResponse(metrics)],
-          // }),
-          // new SceneFlexLayout({
-          //   direction: 'row',
-          //   height: 200,
-          //   children: [getSuccessRateByUrl(metrics)],
-          // }),
-          // new SceneFlexLayout({
-          //   direction: 'row',
-          //   minHeight: 300,
-          //   children: [getAssertionLogsPanel(logs)],
-          // }),
           new SceneFlexLayout({
             direction: 'row',
             minHeight: 300,
