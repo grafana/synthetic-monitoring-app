@@ -32,7 +32,7 @@ interface Props extends ExpanderComponentProps<DataRow> {
 function getStyles(theme: GrafanaTheme2) {
   return {
     container: css({
-      padding: theme.spacing(2),
+      padding: theme.spacing(1),
       background: theme.colors.background.canvas,
     }),
   };
