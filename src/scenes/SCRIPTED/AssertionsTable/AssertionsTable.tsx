@@ -14,6 +14,7 @@ import {
 import { DataSourceRef, LoadingState } from '@grafana/schema';
 import { Alert, LinkButton, LoadingPlaceholder, useStyles2 } from '@grafana/ui';
 
+import { CheckType } from 'types';
 import { Table, TableColumn } from 'components/Table';
 
 import { getTablePanelStyles } from '../getTablePanelStyles';
@@ -117,7 +118,7 @@ export interface DataRow {
 
 function AssertionsTable({ model }: SceneComponentProps<AssertionsTableSceneObject>) {
   const { data } = sceneGraph.getData(model).useState();
-  const { logs } = model.useState();
+  const { logs, checkType } = model.useState();
   const styles = useStyles2(getTablePanelStyles);
   const columns = useMemo<Array<TableColumn<DataRow>>>(() => {
     return [
@@ -170,10 +171,19 @@ function AssertionsTable({ model }: SceneComponentProps<AssertionsTableSceneObje
     }
     return (
       <div className={styles.noDataContainer}>
-        <p>There are no assertions in this script. You can use k6 Checks to validate conditions in your script.</p>
+        {checkType === CheckType.K6 ? (
+          <p>There are no assertions in this script. You can use k6 Checks to validate conditions in your script.</p>
+        ) : (
+          <p>There are no assertions in the check. You can use assertions to validate conditions in your check</p>
+        )}
+
         <LinkButton
           variant="primary"
-          href="https://k6.io/docs/using-k6/checks/"
+          href={
+            checkType === CheckType.K6
+              ? 'https://k6.io/docs/using-k6/checks/'
+              : 'https://grafana.com/docs/grafana-cloud/monitor-public-endpoints/checks/multihttp/#assertions'
+          }
           target="_blank"
           rel="noopener noreferrer"
         >
@@ -211,6 +221,7 @@ function AssertionsTable({ model }: SceneComponentProps<AssertionsTableSceneObje
 
 interface AssertionsTableState extends SceneObjectState {
   logs: DataSourceRef;
+  checkType: CheckType;
   expandedRows?: SceneObject[];
 }
 
@@ -221,10 +232,11 @@ export class AssertionsTableSceneObject extends SceneObjectBase<AssertionsTableS
   }
 }
 
-export function getAssertionTable(logs: DataSourceRef) {
+export function getAssertionTable(logs: DataSourceRef, checkType: CheckType) {
   return new SceneFlexItem({
     body: new AssertionsTableSceneObject({
       $data: getQueryRunner(logs),
+      checkType,
       logs,
       expandedRows: [],
     }),
