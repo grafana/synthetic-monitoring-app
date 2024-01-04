@@ -4,6 +4,7 @@ import { DataSourceRef } from '@grafana/schema';
 import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
 function getQueryRunner(metrics: DataSourceRef, name: string) {
+  const escaped = name.replace(/"/g, '\\"');
   return new SceneQueryRunner({
     datasource: metrics,
     queries: [
@@ -15,7 +16,7 @@ function getQueryRunner(metrics: DataSourceRef, name: string) {
             | __error__ = ""
             | msg = "check result"
             | value = "1"
-            | check = "${name}"
+            | check = "${escaped}"
             | keep probe
             [5m]
           )
@@ -25,7 +26,7 @@ function getQueryRunner(metrics: DataSourceRef, name: string) {
               | logfmt check, msg, probe
               | __error__ = ""
               | msg = "check result"
-              | check = "${name}"
+              | check = "${escaped}"
               | keep probe
               [5m]
             )
