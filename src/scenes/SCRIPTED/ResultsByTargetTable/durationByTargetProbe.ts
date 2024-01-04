@@ -3,12 +3,12 @@ import { DataSourceRef } from '@grafana/schema';
 
 import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
-function getQueryRunner(metrics: DataSourceRef, name: string) {
+function getQueryRunner(metrics: DataSourceRef, labelName: string, labelValue: string) {
   return new SceneQueryRunner({
     datasource: metrics,
     queries: [
       {
-        expr: `sum by (probe) (probe_http_total_duration_seconds{probe=~".*", job="$job", instance="$instance", name="${name}"})`,
+        expr: `sum by (probe) (probe_http_total_duration_seconds{probe=~".*", job="$job", instance="$instance", ${labelName}="${labelValue}"})`,
         refId: 'A',
         legendFormat: '{{probe}}',
       },
@@ -16,10 +16,10 @@ function getQueryRunner(metrics: DataSourceRef, name: string) {
   });
 }
 
-export function getDurationByTargetProbe(metrics: DataSourceRef, name: string) {
+export function getDurationByTargetProbe(metrics: DataSourceRef, labelName: string, labelValue: string) {
   return new SceneFlexItem({
     body: new ExplorablePanel({
-      $data: getQueryRunner(metrics, name),
+      $data: getQueryRunner(metrics, labelName, labelValue),
       options: {
         instant: false,
       },

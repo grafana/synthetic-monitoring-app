@@ -17,23 +17,27 @@ import { getReachabilityStat, getUptimeStat, getVariables } from 'scenes/Common'
 import { getAllLogs } from 'scenes/Common/allLogs';
 import { getEditButton } from 'scenes/Common/editButton';
 import { getEmptyScene } from 'scenes/Common/emptyScene';
-import { getDistinctTargets } from 'scenes/MULTIHTTP/distinctTargets';
-import { getProbeDuration } from 'scenes/MULTIHTTP/probeDuration';
 
 import { getResultsByTargetTable } from './ResultsByTargetTable/ResultByTargetTable';
 import { getAssertionTable } from './AssertionsTable';
 import { getDataTransferred } from './dataTransferred';
+import { getDistinctTargets } from './distinctTargets';
+import { getProbeDuration } from './probeDuration';
 
-export function getScriptedScene({ metrics, logs }: DashboardSceneAppConfig, checks: Check[] = []) {
+export function getScriptedScene(
+  { metrics, logs }: DashboardSceneAppConfig,
+  checks: Check[] = [],
+  checkType: CheckType
+) {
   return () => {
     if (checks.length === 0) {
-      return getEmptyScene(CheckType.K6);
+      return getEmptyScene(checkType);
     }
     const timeRange = new SceneTimeRange({
       from: 'now-6h',
       to: 'now',
     });
-    const { probe, job, instance } = getVariables(CheckType.K6, metrics, checks);
+    const { probe, job, instance } = getVariables(checkType, metrics, checks);
     const variables = new SceneVariableSet({
       variables: [probe, job, instance],
     });
@@ -69,7 +73,7 @@ export function getScriptedScene({ metrics, logs }: DashboardSceneAppConfig, che
           }),
           new SceneFlexLayout({
             direction: 'row',
-            children: [getAssertionTable(logs)],
+            children: [getAssertionTable(logs, checkType)],
           }),
           new SceneFlexLayout({
             direction: 'row',
@@ -79,7 +83,7 @@ export function getScriptedScene({ metrics, logs }: DashboardSceneAppConfig, che
           getDataTransferred(metrics),
           new SceneFlexLayout({
             direction: 'row',
-            children: [getResultsByTargetTable(metrics)],
+            children: [getResultsByTargetTable(metrics, checkType)],
           }),
           new SceneFlexLayout({
             direction: 'row',

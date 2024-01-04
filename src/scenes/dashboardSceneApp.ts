@@ -9,7 +9,6 @@ import { getTcpScene } from './TCP/getTcpScene';
 import { getTracerouteScene } from './Traceroute/getTracerouteScene';
 import { getDNSScene } from './DNS';
 import { getHTTPScene } from './HTTP';
-import { getMultiHttpScene } from './MULTIHTTP';
 import { getScriptedScene } from './SCRIPTED';
 import { getSummaryScene } from './Summary';
 
@@ -75,7 +74,7 @@ export function getDashboardSceneApp(
     const appPage = new SceneAppPage({
       title: 'MULTIHTTP',
       url: `${PLUGIN_URL_PATH}${ROUTES.Scene}/multihttp`,
-      getScene: getMultiHttpScene(config, multihttp),
+      getScene: getScriptedScene(config, multihttp, CheckType.MULTI_HTTP),
     });
     tabs.splice(2, 0, appPage);
   }
@@ -84,7 +83,7 @@ export function getDashboardSceneApp(
     const appPage = new SceneAppPage({
       title: 'SCRIPTED',
       url: `${PLUGIN_URL_PATH}${ROUTES.Scene}/k6`,
-      getScene: getScriptedScene(config, k6),
+      getScene: getScriptedScene(config, k6, CheckType.K6),
     });
     tabs.push(appPage);
   }
