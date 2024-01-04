@@ -141,15 +141,22 @@ function AssertionsTable({ model }: SceneComponentProps<AssertionsTableSceneObje
   }, []);
 
   const tableData = useMemo(() => {
-    if (!data || (data.errors && data.errors.length > 0)) {
+    if (!data || (data.errors && data.errors.length > 0) || data.state !== LoadingState.Done) {
       return [];
     }
     const fields = data.series[0]?.fields;
+    const name = fields.find((field) => field.name === 'check');
+    const successRateField = fields.find((field) => field.config.displayName === 'Success rate');
+    const successCountField = fields.find((field) => field.config.displayName === 'Success count');
+    const failureCountField = fields.find((field) => field.config.displayName === 'Failure count');
+    if (!name) {
+      return [];
+    }
     return (
-      fields?.[0].values.reduce<DataRow[]>((acc, name, index) => {
-        const successRate = fields?.[1]?.values?.[index] * 100;
-        const successCount = fields?.[2]?.values?.[index] ?? 0;
-        const failureCount = fields?.[3]?.values?.[index] ?? 0;
+      name.values.reduce<DataRow[]>((acc, name, index) => {
+        const successRate = successRateField?.values?.[index] * 100;
+        const successCount = successCountField?.values?.[index] ?? 0;
+        const failureCount = failureCountField?.values?.[index] ?? 0;
         acc.push({ name, successRate, logs, successCount, failureCount });
         return acc;
       }, []) ?? []
