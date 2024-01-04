@@ -17,7 +17,7 @@ export class ExplorablePanel extends VizPanel {
       ...state,
     });
 
-    this.initHeaderActionsSync();
+    this.initMenu();
   }
 
   private getBasicJsonDefinition(): Partial<PanelModel> {
@@ -29,7 +29,7 @@ export class ExplorablePanel extends VizPanel {
     };
   }
 
-  private initHeaderActionsSync() {
+  private initMenu() {
     this.addActivationHandler(() => {
       const data = sceneGraph.getData(this);
 
