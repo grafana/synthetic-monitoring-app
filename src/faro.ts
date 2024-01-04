@@ -24,12 +24,16 @@ enum FARO_ENV {
 }
 
 export function pushFaroCount(type: string, count: number) {
-  faro.api.pushMeasurement({ type, values: { count } });
+  try {
+    faro.api.pushMeasurement({ type, values: { count } });
+  } catch (e) {}
 }
 
 export function reportEvent(type: FaroEvent, options: Record<string, any> = {}) {
   const slug = config.bootData.user.orgName;
-  faro.api.pushEvent(type, { slug });
+  try {
+    faro.api.pushEvent(type, { slug });
+  } catch (e) {}
 }
 
 function sanitizeError(error: Error | Object | string) {
@@ -44,7 +48,9 @@ function sanitizeError(error: Error | Object | string) {
 
 export function reportError(error: Error | Object | string, type?: FaroEvent) {
   const valToSend = sanitizeError(error);
-  faro.api.pushError(valToSend, { type });
+  try {
+    faro.api.pushError(valToSend, { type });
+  } catch (e) {}
 }
 
 function getFaroEnv() {
