@@ -46,7 +46,6 @@ export function AssertionTableRow({ data, tableViz, logs }: Props) {
 
   useEffect(() => {
     if (!rowScene && logs && tableViz) {
-      // const newRowScene = getErrorLogs(logs, data.name);
       const newRowScene = getSuccessOverTimeByProbe(logs, data.name);
       setRowKey(newRowScene.state.key);
       tableViz.setState({ expandedRows: [...(tableViz.state.expandedRows ?? []), newRowScene] });
