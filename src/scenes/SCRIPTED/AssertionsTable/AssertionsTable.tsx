@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { DataQueryError } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import {
@@ -119,7 +119,15 @@ export interface DataRow {
 function AssertionsTable({ model }: SceneComponentProps<AssertionsTableSceneObject>) {
   const { data } = sceneGraph.getData(model).useState();
   const { logs, checkType } = model.useState();
+  const [hasLoaded, setHasLoaded] = React.useState(false);
   const styles = useStyles2(getTablePanelStyles);
+
+  useEffect(() => {
+    if (data?.state === LoadingState.Done && !hasLoaded) {
+      setHasLoaded(true);
+    }
+  }, [data, hasLoaded]);
+
   const columns = useMemo<Array<TableColumn<DataRow>>>(() => {
     return [
       { name: 'Assertion', selector: (row) => row.name },
@@ -141,14 +149,14 @@ function AssertionsTable({ model }: SceneComponentProps<AssertionsTableSceneObje
   }, []);
 
   const tableData = useMemo(() => {
-    if (!data || (data.errors && data.errors.length > 0) || data.state !== LoadingState.Done) {
+    if (!data || (data.errors && data.errors.length > 0)) {
       return [];
     }
     const fields = data.series[0]?.fields;
-    const name = fields.find((field) => field.name === 'check');
-    const successRateField = fields.find((field) => field.config.displayName === 'Success rate');
-    const successCountField = fields.find((field) => field.config.displayName === 'Success count');
-    const failureCountField = fields.find((field) => field.config.displayName === 'Failure count');
+    const name = fields?.find((field) => field.name === 'check');
+    const successRateField = fields?.find((field) => field.config.displayName === 'Success rate');
+    const successCountField = fields?.find((field) => field.config.displayName === 'Success count');
+    const failureCountField = fields?.find((field) => field.config.displayName === 'Failure count');
     if (!name) {
       return [];
     }
@@ -164,7 +172,7 @@ function AssertionsTable({ model }: SceneComponentProps<AssertionsTableSceneObje
   }, [data, logs]);
 
   const getPlaceholder = (state: LoadingState | undefined, errors?: DataQueryError[]) => {
-    if (!state || state === LoadingState.NotStarted || state === LoadingState.Loading) {
+    if (!hasLoaded) {
       return <LoadingPlaceholder text="Loading assertions..." />;
     }
     if (state === LoadingState.Error) {

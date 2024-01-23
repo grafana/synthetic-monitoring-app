@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { TableColumn } from 'react-data-table-component';
 import { DataQueryError } from '@grafana/data';
 import { config } from '@grafana/runtime';
@@ -37,8 +37,15 @@ export interface DataRow {
 export class ResultsByTargetTableSceneObject extends SceneObjectBase<ResultsByTargetTableState> {
   static Component = ({ model }: SceneComponentProps<ResultsByTargetTableSceneObject>) => {
     const { data } = sceneGraph.getData(model).useState();
+    const [hasLoaded, setHasLoaded] = React.useState(false);
     const { metrics, checkType } = model.useState();
     const styles = useStyles2(getTablePanelStyles);
+
+    useEffect(() => {
+      if (data?.state === LoadingState.Done && !hasLoaded) {
+        setHasLoaded(true);
+      }
+    }, [data, hasLoaded]);
 
     const columns = useMemo<Array<TableColumn<DataRow>>>(() => {
       return [
@@ -94,7 +101,7 @@ export class ResultsByTargetTableSceneObject extends SceneObjectBase<ResultsByTa
     }, [data, metrics]);
 
     const getPlaceholder = (state: LoadingState | undefined, errors?: DataQueryError[]) => {
-      if (!state || state === LoadingState.NotStarted || state === LoadingState.Loading) {
+      if (!hasLoaded) {
         return <LoadingPlaceholder text="Loading results by URL..." />;
       }
       if (state === LoadingState.Error) {
