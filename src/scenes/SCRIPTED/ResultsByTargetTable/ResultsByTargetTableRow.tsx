@@ -14,7 +14,7 @@ import { getLatencyByPhaseTarget } from './latencyByPhaseTarget';
 import { DataRow, ResultsByTargetTableSceneObject } from './ResultByTargetTable';
 import { getSuccessRateByTargetProbe } from './successRateByTargetProbe';
 
-function getResultsByTargetRowScene(metrics: DataSourceRef, labelValue: string, checkType: CheckType) {
+function getResultsByTargetRowScene(metrics: DataSourceRef, labelValue: string, method: string, checkType: CheckType) {
   const labelName = checkType === CheckType.MULTI_HTTP ? 'url' : 'name';
   const flexItem = new SceneFlexLayout({
     direction: 'column',
@@ -23,16 +23,16 @@ function getResultsByTargetRowScene(metrics: DataSourceRef, labelValue: string, 
         width: '100%',
         height: 250,
         children: [
-          getSuccessRateByTargetProbe(metrics, labelName, labelValue),
-          getExpectedResponse(metrics, labelName, labelValue),
+          getSuccessRateByTargetProbe(metrics, labelName, labelValue, method),
+          getExpectedResponse(metrics, labelName, labelValue, method),
         ],
       }),
       new SceneFlexLayout({
         width: '100%',
         height: 250,
         children: [
-          getDurationByTargetProbe(metrics, labelName, labelValue),
-          getLatencyByPhaseTarget(metrics, labelName, labelValue),
+          getDurationByTargetProbe(metrics, labelName, labelValue, method),
+          getLatencyByPhaseTarget(metrics, labelName, labelValue, method),
         ],
       }),
     ],
@@ -63,11 +63,11 @@ export function ResultsByTargetTableRow({ data, tableViz, metrics, checkType }: 
 
   useEffect(() => {
     if (!rowScene && metrics && tableViz && checkType) {
-      const newRowScene = getResultsByTargetRowScene(metrics, data.name, checkType);
+      const newRowScene = getResultsByTargetRowScene(metrics, data.name, data.method, checkType);
       setRowKey(newRowScene.state.key);
       tableViz.setState({ expandedRows: [...(tableViz.state.expandedRows ?? []), newRowScene] });
     }
-  }, [data.name, tableViz, rowScene, metrics, checkType]);
+  }, [data.name, data.method, tableViz, rowScene, metrics, checkType]);
 
   return <div className={styles.container}>{rowScene ? <rowScene.Component model={rowScene} /> : null}</div>;
 }

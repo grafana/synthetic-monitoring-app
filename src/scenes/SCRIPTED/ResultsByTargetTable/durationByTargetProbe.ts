@@ -3,12 +3,12 @@ import { DataSourceRef } from '@grafana/schema';
 
 import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
-function getQueryRunner(metrics: DataSourceRef, labelName: string, labelValue: string) {
+function getQueryRunner(metrics: DataSourceRef, labelName: string, labelValue: string, method: string) {
   return new SceneQueryRunner({
     datasource: metrics,
     queries: [
       {
-        expr: `sum by (probe) (probe_http_total_duration_seconds{probe=~".*", job="$job", instance="$instance", ${labelName}="${labelValue}"})`,
+        expr: `sum by (probe) (probe_http_total_duration_seconds{probe=~".*", job="$job", instance="$instance", ${labelName}="${labelValue}", method="${method}"})`,
         refId: 'A',
         legendFormat: '{{probe}}',
       },
@@ -16,10 +16,15 @@ function getQueryRunner(metrics: DataSourceRef, labelName: string, labelValue: s
   });
 }
 
-export function getDurationByTargetProbe(metrics: DataSourceRef, labelName: string, labelValue: string) {
+export function getDurationByTargetProbe(
+  metrics: DataSourceRef,
+  labelName: string,
+  labelValue: string,
+  method: string
+) {
   return new SceneFlexItem({
     body: new ExplorablePanel({
-      $data: getQueryRunner(metrics, labelName, labelValue),
+      $data: getQueryRunner(metrics, labelName, labelValue, method),
       options: {
         instant: false,
       },
@@ -29,7 +34,7 @@ export function getDurationByTargetProbe(metrics: DataSourceRef, labelName: stri
         },
         overrides: [],
       },
-      title: 'Duration by probe for ' + name,
+      title: 'Duration by probe for ' + labelValue + ' ' + method,
       pluginId: 'timeseries',
     }),
   });

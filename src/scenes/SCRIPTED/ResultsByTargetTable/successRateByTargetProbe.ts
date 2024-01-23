@@ -3,16 +3,16 @@ import { DataSourceRef } from '@grafana/schema';
 
 import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
-function getQueryRunner(metrics: DataSourceRef, labelName: string, labelValue: string) {
+function getQueryRunner(metrics: DataSourceRef, labelName: string, labelValue: string, method: string) {
   const queries = [
     {
       exemplar: true,
       expr: `sum by (probe) (
-        probe_http_requests_total{instance="$instance", job="$job", probe=~".*", ${labelName}="${labelValue}"}
+        probe_http_requests_total{instance="$instance", job="$job", probe=~".*", ${labelName}="${labelValue}", method="${method}"}
       )
       /
       sum by (probe) (
-        probe_http_requests_total{instance="$instance", job="$job", probe=~".*", ${labelName}="${labelValue}"}
+        probe_http_requests_total{instance="$instance", job="$job", probe=~".*", ${labelName}="${labelValue}", method="${method}"}
       )`,
       hide: false,
       range: true,
@@ -27,12 +27,17 @@ function getQueryRunner(metrics: DataSourceRef, labelName: string, labelValue: s
   });
 }
 
-export function getSuccessRateByTargetProbe(metrics: DataSourceRef, labelName: string, labelValue: string) {
+export function getSuccessRateByTargetProbe(
+  metrics: DataSourceRef,
+  labelName: string,
+  labelValue: string,
+  method: string
+) {
   return new SceneFlexItem({
     body: new ExplorablePanel({
       pluginId: 'timeseries',
-      title: `Success rate by probe for ${name}`,
-      $data: getQueryRunner(metrics, labelName, labelValue),
+      title: `Success rate by probe for ${labelValue} ${method}`,
+      $data: getQueryRunner(metrics, labelName, labelValue, method),
       fieldConfig: {
         overrides: [],
         defaults: {
