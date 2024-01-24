@@ -3,15 +3,15 @@ import { DataSourceRef } from '@grafana/schema';
 
 import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
-function getQueryRunner(metrics: DataSourceRef, labelName: string, labelValue: string) {
+function getQueryRunner(metrics: DataSourceRef, labelName: string, labelValue: string, method: string) {
   return new SceneQueryRunner({
     datasource: metrics,
     queries: [
       {
         expr: `
-          sum by (probe) (probe_http_got_expected_response{job="$job", instance="$instance", ${labelName}="${labelValue}", probe=~"$probe"})
+          sum by (probe) (probe_http_got_expected_response{job="$job", instance="$instance", ${labelName}="${labelValue}", probe=~"$probe", method="${method}"})
           / 
-          count by (probe) (probe_http_got_expected_response{job="$job", instance="$instance", ${labelName}="${labelValue}", probe=~"$probe"})`,
+          count by (probe) (probe_http_got_expected_response{job="$job", instance="$instance", ${labelName}="${labelValue}", probe=~"$probe", method="${method}"})`,
         legendFormat: '{{ probe }}',
         range: false,
         refId: 'A',
@@ -20,12 +20,12 @@ function getQueryRunner(metrics: DataSourceRef, labelName: string, labelValue: s
   });
 }
 
-export function getExpectedResponse(metrics: DataSourceRef, labelName: string, labelValue: string) {
+export function getExpectedResponse(metrics: DataSourceRef, labelName: string, labelValue: string, method: string) {
   return new SceneFlexItem({
     body: new ExplorablePanel({
-      $data: getQueryRunner(metrics, labelName, labelValue),
+      $data: getQueryRunner(metrics, labelName, labelValue, method),
       pluginId: 'timeseries',
-      title: 'Expected response by probe for ' + name,
+      title: 'Expected response by probe for ' + labelValue + ' ' + method,
       fieldConfig: {
         defaults: {
           unit: 'percentunit',

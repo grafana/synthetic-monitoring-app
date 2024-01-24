@@ -28,6 +28,7 @@ interface ResultsByTargetTableState extends SceneObjectState {
 
 export interface DataRow {
   name: string;
+  method: string;
   expectedResponse: number;
   successRate: number;
   latency: number;
@@ -50,6 +51,7 @@ export class ResultsByTargetTableSceneObject extends SceneObjectBase<ResultsByTa
     const columns = useMemo<Array<TableColumn<DataRow>>>(() => {
       return [
         { name: 'URL', selector: (row) => row.name },
+        { name: 'Method', selector: (row) => row.method },
         {
           name: 'Success',
           selector: (row) => {
@@ -77,6 +79,9 @@ export class ResultsByTargetTableSceneObject extends SceneObjectBase<ResultsByTa
         {
           name: 'Latency',
           selector: (row) => {
+            if (isNaN(row.latency)) {
+              return 'N/A';
+            }
             return (row.latency * 1000).toFixed(2) + 'ms';
           },
         },
@@ -84,17 +89,18 @@ export class ResultsByTargetTableSceneObject extends SceneObjectBase<ResultsByTa
     }, []);
 
     const tableData = useMemo(() => {
-      if (!data || (data.errors && data.errors.length > 0)) {
+      if (!data || (data.errors && data.errors.length > 0) || !data.series?.[0]) {
         return [];
       }
       const fields = data.series[0]?.fields;
       return (
-        fields?.[1].values.reduce<DataRow[]>((acc, name, index) => {
-          const successRate = fields?.[2]?.values?.[index] * 100;
+        fields?.[2]?.values.reduce<DataRow[]>((acc, name, index) => {
+          const method = fields?.[1]?.values?.[index];
+          const successRate = fields?.[3]?.values?.[index] * 100;
           const expectedResponse = data.series?.[1]?.fields?.[2]?.values?.[index] * 100;
           const latency = data.series?.[2]?.fields?.[2]?.values?.[index] * 100;
 
-          acc.push({ name, successRate, latency, expectedResponse, metrics });
+          acc.push({ name, method, successRate, latency, expectedResponse, metrics });
           return acc;
         }, []) ?? []
       );
@@ -168,9 +174,9 @@ function getQueryRunner(metrics: DataSourceRef, checkType: CheckType) {
         editorMode: 'code',
         exemplar: false,
         expr: `
-          sum by (${label}) (probe_http_requests_total{job="$job", instance="$instance"})
+          sum by (${label}, method) (probe_http_requests_total{job="$job", instance="$instance"})
           /
-          count by (${label}) (probe_http_requests_total{job="$job", instance="$instance"})`,
+          count by (${label}, method) (probe_http_requests_total{job="$job", instance="$instance"})`,
         format: 'table',
         instant: true,
         legendFormat: '__auto',
@@ -182,9 +188,9 @@ function getQueryRunner(metrics: DataSourceRef, checkType: CheckType) {
         editorMode: 'code',
         exemplar: false,
         expr: `
-          sum by (${label}) (probe_http_got_expected_response{job="$job", instance="$instance"})
+          sum by (${label}, method) (probe_http_got_expected_response{job="$job", instance="$instance"})
           /
-          count by (${label})(probe_http_got_expected_response{job="$job", instance="$instance"})`,
+          count by (${label}, method)(probe_http_got_expected_response{job="$job", instance="$instance"})`,
         format: 'table',
         instant: true,
         legendFormat: '__auto',
@@ -196,7 +202,7 @@ function getQueryRunner(metrics: DataSourceRef, checkType: CheckType) {
         editorMode: 'code',
         exemplar: false,
         // TODO: Does this make sense at all? I want get the total latency for each URL and then average the different probes, not just sum all the probes together
-        expr: `avg by (${label}) (sum by(${label}, probe)(rate(probe_http_duration_seconds{job="$job", instance="$instance"}[5m])))`,
+        expr: `avg by (${label}, method) (sum by(${label}, probe)(rate(probe_http_duration_seconds{job="$job", instance="$instance"}[5m])))`,
         format: 'table',
         hide: false,
         instant: true,

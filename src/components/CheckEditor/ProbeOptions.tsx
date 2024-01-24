@@ -51,6 +51,13 @@ function getTimeoutBounds(checkType: CheckType) {
       maxTimeout: 30.0,
     };
   }
+  if (checkType === CheckType.K6) {
+    return {
+      minTimeout: 5.0,
+      maxTimeout: 30.0,
+      defaultTimeout: 10.0,
+    };
+  }
   return {
     minTimeout: 1.0,
     maxTimeout: 10.0,
