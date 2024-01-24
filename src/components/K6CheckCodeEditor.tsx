@@ -113,7 +113,7 @@ export function K6CheckCodeEditor({ checks, onSubmitSuccess }: Props) {
             </Field>
             <Field
               label={
-                <Label>
+                <Label htmlFor="target">
                   Instance&nbsp;
                   <Tooltip
                     content={

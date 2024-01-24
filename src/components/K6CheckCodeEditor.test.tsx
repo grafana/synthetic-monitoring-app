@@ -39,7 +39,7 @@ describe('new scripted check', () => {
 
     const jobNameInput = await findByLabelText('Job name', { exact: false });
     await user.type(jobNameInput, 'Job name');
-    const targetInput = await findByLabelText('Target');
+    const targetInput = await findByLabelText('Instance', { exact: false });
     await user.type(targetInput, 'https://www.grafana.com');
 
     // Set probe options
@@ -80,7 +80,7 @@ describe('edit scripted check', () => {
 
     const jobNameInput = await findByLabelText('Job name', { exact: false });
     expect(jobNameInput).toHaveValue('Job name');
-    const targetInput = await findByLabelText('Target');
+    const targetInput = await findByLabelText('Instance', { exact: false });
     expect(targetInput).toHaveValue('https://www.grafana.com');
 
     // probes
@@ -109,7 +109,7 @@ describe('edit scripted check', () => {
     const jobNameInput = await findByLabelText('Job name', { exact: false });
     await user.clear(jobNameInput);
     await user.type(jobNameInput, 'different job name');
-    const targetInput = await findByLabelText('Target');
+    const targetInput = await findByLabelText('Instance', { exact: false });
     await user.clear(targetInput);
     await user.type(targetInput, 'https://www.example.com');
 
