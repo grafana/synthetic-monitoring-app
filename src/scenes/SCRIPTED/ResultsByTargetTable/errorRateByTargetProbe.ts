@@ -7,11 +7,11 @@ function getQueryRunner(metrics: DataSourceRef, labelName: string, labelValue: s
   const queries = [
     {
       exemplar: true,
-      expr: `sum by (probe) (
-        probe_http_requests_total{instance="$instance", job="$job", probe=~".*", ${labelName}="${labelValue}", method="${method}"}
+      expr: `sum by (probe, method) (
+        probe_http_requests_failed_total{instance="$instance", job="$job", probe=~".*", ${labelName}="${labelValue}", method="${method}"}
       )
       /
-      sum by (probe) (
+      sum by (probe, method) (
         probe_http_requests_total{instance="$instance", job="$job", probe=~".*", ${labelName}="${labelValue}", method="${method}"}
       )`,
       hide: false,
@@ -27,7 +27,7 @@ function getQueryRunner(metrics: DataSourceRef, labelName: string, labelValue: s
   });
 }
 
-export function getSuccessRateByTargetProbe(
+export function getErrorRateByTargetProbe(
   metrics: DataSourceRef,
   labelName: string,
   labelValue: string,
@@ -36,7 +36,7 @@ export function getSuccessRateByTargetProbe(
   return new SceneFlexItem({
     body: new ExplorablePanel({
       pluginId: 'timeseries',
-      title: `Success rate by probe for ${labelValue} ${method}`,
+      title: `Error rate by probe for ${labelValue} ${method}`,
       $data: getQueryRunner(metrics, labelName, labelValue, method),
       fieldConfig: {
         overrides: [],

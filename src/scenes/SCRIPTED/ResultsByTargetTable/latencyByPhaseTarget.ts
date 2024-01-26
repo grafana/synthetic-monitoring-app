@@ -9,11 +9,7 @@ function getQueryRunner(metrics: DataSourceRef, labelName: string, labelValue: s
     queries: [
       {
         refId: 'A',
-        expr: `
-        sum by (phase) (probe_http_duration_seconds{job="$job", instance="$instance", ${labelName}="${labelValue}", probe=~"$probe", method="${method}"})
-        /
-        count by (phase) (probe_http_duration_seconds{job="$job", instance="$instance", ${labelName}="${labelValue}", probe=~"$probe", method="${method}"})
-        `,
+        expr: `sum by (phase) (probe_http_duration_seconds{job="$job", instance="$instance", ${labelName}="${labelValue}", probe=~"$probe", method="${method}"})`,
         legendFormat: '__auto',
         range: true,
       },

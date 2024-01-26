@@ -56,8 +56,10 @@ export class ResultsByTargetTableSceneObject extends SceneObjectBase<ResultsByTa
           name: 'Success',
           selector: (row) => {
             let successRate;
-            if (isNaN(row.successRate)) {
-              successRate = 'N/A';
+            if (isNaN(row.successRate) || row.successRate === 0) {
+              successRate = '0%';
+            } else if (row.successRate === 1) {
+              successRate = '100%';
             } else {
               successRate = row.successRate.toFixed(2) + '%';
             }
@@ -82,7 +84,7 @@ export class ResultsByTargetTableSceneObject extends SceneObjectBase<ResultsByTa
             if (isNaN(row.latency)) {
               return 'N/A';
             }
-            return (row.latency * 1000).toFixed(2) + 'ms';
+            return (row.latency * 1000).toFixed(0) + 'ms';
           },
         },
       ];
@@ -96,9 +98,9 @@ export class ResultsByTargetTableSceneObject extends SceneObjectBase<ResultsByTa
       return (
         fields?.[2]?.values.reduce<DataRow[]>((acc, name, index) => {
           const method = fields?.[1]?.values?.[index];
-          const successRate = fields?.[3]?.values?.[index] * 100;
-          const expectedResponse = data.series?.[1]?.fields?.[2]?.values?.[index] * 100;
-          const latency = data.series?.[2]?.fields?.[2]?.values?.[index] * 100;
+          const successRate = (1 - fields?.[3]?.values?.[index]) * 100;
+          const expectedResponse = data.series?.[1]?.fields?.[3]?.values?.[index] * 100;
+          const latency = data.series?.[2]?.fields?.[3]?.values?.[index];
 
           acc.push({ name, method, successRate, latency, expectedResponse, metrics });
           return acc;
@@ -174,14 +176,19 @@ function getQueryRunner(metrics: DataSourceRef, checkType: CheckType) {
         editorMode: 'code',
         exemplar: false,
         expr: `
-          sum by (${label}, method) (probe_http_requests_total{job="$job", instance="$instance"})
-          /
-          count by (${label}, method) (probe_http_requests_total{job="$job", instance="$instance"})`,
+          avg_over_time(
+            (
+              sum by (${label}, method) (probe_http_requests_failed_total{job="$job", instance="$instance"})
+              /
+              sum by (${label}, method) (probe_http_requests_total{job="$job", instance="$instance"})
+            )[$__range:]
+          )
+          `,
         format: 'table',
         instant: true,
         legendFormat: '__auto',
         range: false,
-        refId: 'A',
+        refId: 'successRate',
       },
       {
         datasource: metrics,
@@ -195,19 +202,21 @@ function getQueryRunner(metrics: DataSourceRef, checkType: CheckType) {
         instant: true,
         legendFormat: '__auto',
         range: false,
-        refId: 'B',
+        refId: 'expectedResponse',
       },
       {
         datasource: metrics,
         editorMode: 'code',
         exemplar: false,
-        // TODO: Does this make sense at all? I want get the total latency for each URL and then average the different probes, not just sum all the probes together
-        expr: `avg by (${label}, method) (sum by(${label}, probe)(rate(probe_http_duration_seconds{job="$job", instance="$instance"}[5m])))`,
+        expr: `
+          avg_over_time(
+            (
+              sum by (${label}, method)(probe_http_duration_seconds{job="$job", instance="$instance"})
+            )[$__range:]
+          )`,
         format: 'table',
-        hide: false,
         instant: true,
-        range: false,
-        refId: 'C',
+        refId: 'latency',
       },
     ],
   });

@@ -10,9 +10,9 @@ import { CheckType } from 'types';
 
 import { getExpectedResponse } from '../expectedResponse';
 import { getDurationByTargetProbe } from './durationByTargetProbe';
+import { getErrorRateByTargetProbe } from './errorRateByTargetProbe';
 import { getLatencyByPhaseTarget } from './latencyByPhaseTarget';
 import { DataRow, ResultsByTargetTableSceneObject } from './ResultByTargetTable';
-import { getSuccessRateByTargetProbe } from './successRateByTargetProbe';
 
 function getResultsByTargetRowScene(metrics: DataSourceRef, labelValue: string, method: string, checkType: CheckType) {
   const labelName = checkType === CheckType.MULTI_HTTP ? 'url' : 'name';
@@ -23,7 +23,7 @@ function getResultsByTargetRowScene(metrics: DataSourceRef, labelValue: string, 
         width: '100%',
         height: 250,
         children: [
-          getSuccessRateByTargetProbe(metrics, labelName, labelValue, method),
+          getErrorRateByTargetProbe(metrics, labelName, labelValue, method),
           getExpectedResponse(metrics, labelName, labelValue, method),
         ],
       }),
