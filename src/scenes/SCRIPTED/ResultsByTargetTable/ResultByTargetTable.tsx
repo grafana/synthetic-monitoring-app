@@ -9,7 +9,6 @@ import {
   SceneObject,
   SceneObjectBase,
   SceneObjectState,
-  SceneQueryRunner,
 } from '@grafana/scenes';
 import { DataSourceRef, LoadingState } from '@grafana/schema';
 import { Alert, LinkButton, LoadingPlaceholder, useStyles2 } from '@grafana/ui';
@@ -18,7 +17,9 @@ import { CheckType } from 'types';
 import { Table } from 'components/Table';
 
 import { getTablePanelStyles } from '../getTablePanelStyles';
+import { getQueryRunner } from './resultsByTargetTableQueries';
 import { ResultsByTargetTableRow } from './ResultsByTargetTableRow';
+import { findValueByName, getValueFieldName, RESULTS_BY_TARGET_TABLE_REF_ID } from './utils';
 
 interface ResultsByTargetTableState extends SceneObjectState {
   metrics: DataSourceRef;
@@ -58,7 +59,7 @@ export class ResultsByTargetTableSceneObject extends SceneObjectBase<ResultsByTa
             let successRate;
             if (isNaN(row.successRate) || row.successRate === 0) {
               successRate = '0%';
-            } else if (row.successRate === 1) {
+            } else if (row.successRate === 100) {
               successRate = '100%';
             } else {
               successRate = row.successRate.toFixed(2) + '%';
@@ -72,6 +73,10 @@ export class ResultsByTargetTableSceneObject extends SceneObjectBase<ResultsByTa
             let expectedResponse;
             if (isNaN(row.expectedResponse)) {
               expectedResponse = 'N/A';
+            } else if (row.expectedResponse === 0) {
+              expectedResponse = '0%';
+            } else if (row.expectedResponse === 100) {
+              expectedResponse = '100%';
             } else {
               expectedResponse = row.expectedResponse.toFixed(2) + '%';
             }
@@ -94,13 +99,48 @@ export class ResultsByTargetTableSceneObject extends SceneObjectBase<ResultsByTa
       if (!data || (data.errors && data.errors.length > 0) || !data.series?.[0]) {
         return [];
       }
-      const fields = data.series[0]?.fields;
+      const expectedResponseSeries = data.series.find(
+        (series) => series.refId === RESULTS_BY_TARGET_TABLE_REF_ID.EXPECTED_RESPONSE
+      );
+      const latencySeries = data.series.find((series) => series.refId === RESULTS_BY_TARGET_TABLE_REF_ID.LATENCY);
+      const successRateSeries = data.series.find(
+        (series) => series.refId === RESULTS_BY_TARGET_TABLE_REF_ID.SUCCESS_RATE
+      );
+      if (!successRateSeries || !expectedResponseSeries || !latencySeries) {
+        return [];
+      }
+      const namesIndex = successRateSeries.fields?.findIndex((field) => field.name === 'name');
+      const successRateNamesField = successRateSeries?.fields?.[namesIndex];
+      const methodIndex = successRateSeries.fields?.findIndex((field) => field.name === 'method');
+      const successRateMethodField = successRateSeries.fields?.[methodIndex];
+      if (!successRateNamesField || !successRateMethodField) {
+        return [];
+      }
       return (
-        fields?.[2]?.values.reduce<DataRow[]>((acc, name, index) => {
-          const method = fields?.[1]?.values?.[index];
-          const successRate = (1 - fields?.[3]?.values?.[index]) * 100;
-          const expectedResponse = data.series?.[1]?.fields?.[3]?.values?.[index] * 100;
-          const latency = data.series?.[2]?.fields?.[3]?.values?.[index];
+        successRateNamesField.values.reduce<DataRow[]>((acc, name, index) => {
+          const method = successRateMethodField.values?.[index] ?? '';
+          const successRate =
+            (1 -
+              findValueByName(
+                name,
+                method,
+                getValueFieldName(RESULTS_BY_TARGET_TABLE_REF_ID.SUCCESS_RATE),
+                successRateSeries?.fields ?? []
+              )) *
+            100;
+          const expectedResponse =
+            findValueByName(
+              name,
+              method,
+              getValueFieldName(RESULTS_BY_TARGET_TABLE_REF_ID.EXPECTED_RESPONSE),
+              expectedResponseSeries?.fields ?? []
+            ) * 100;
+          const latency = findValueByName(
+            name,
+            method,
+            getValueFieldName(RESULTS_BY_TARGET_TABLE_REF_ID.LATENCY),
+            latencySeries?.fields ?? []
+          );
 
           acc.push({ name, method, successRate, latency, expectedResponse, metrics });
           return acc;
@@ -165,61 +205,6 @@ export class ResultsByTargetTableSceneObject extends SceneObjectBase<ResultsByTa
   public constructor(state: ResultsByTargetTableState) {
     super(state);
   }
-}
-
-function getQueryRunner(metrics: DataSourceRef, checkType: CheckType) {
-  const label = checkType === CheckType.K6 ? 'name' : 'url';
-  return new SceneQueryRunner({
-    queries: [
-      {
-        datasource: metrics,
-        editorMode: 'code',
-        exemplar: false,
-        expr: `
-          avg_over_time(
-            (
-              sum by (${label}, method) (probe_http_requests_failed_total{job="$job", instance="$instance"})
-              /
-              sum by (${label}, method) (probe_http_requests_total{job="$job", instance="$instance"})
-            )[$__range:]
-          )
-          `,
-        format: 'table',
-        instant: true,
-        legendFormat: '__auto',
-        range: false,
-        refId: 'successRate',
-      },
-      {
-        datasource: metrics,
-        editorMode: 'code',
-        exemplar: false,
-        expr: `
-          sum by (${label}, method) (probe_http_got_expected_response{job="$job", instance="$instance"})
-          /
-          count by (${label}, method)(probe_http_got_expected_response{job="$job", instance="$instance"})`,
-        format: 'table',
-        instant: true,
-        legendFormat: '__auto',
-        range: false,
-        refId: 'expectedResponse',
-      },
-      {
-        datasource: metrics,
-        editorMode: 'code',
-        exemplar: false,
-        expr: `
-          avg_over_time(
-            (
-              sum by (${label}, method)(probe_http_duration_seconds{job="$job", instance="$instance"})
-            )[$__range:]
-          )`,
-        format: 'table',
-        instant: true,
-        refId: 'latency',
-      },
-    ],
-  });
 }
 
 export function getResultsByTargetTable(metrics: DataSourceRef, checkType: CheckType) {

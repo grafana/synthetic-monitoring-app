@@ -137,6 +137,8 @@ function AssertionsTable({ model }: SceneComponentProps<AssertionsTableSceneObje
           let successRate;
           if (isNaN(row.successRate) || row.successRate === 0) {
             successRate = '0%';
+          } else if (row.successRate === 100) {
+            successRate = '100%';
           } else {
             successRate = row.successRate.toFixed(2) + '%';
           }
