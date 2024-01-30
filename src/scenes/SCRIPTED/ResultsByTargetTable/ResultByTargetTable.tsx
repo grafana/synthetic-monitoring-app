@@ -109,7 +109,7 @@ export class ResultsByTargetTableSceneObject extends SceneObjectBase<ResultsByTa
       if (!successRateSeries || !expectedResponseSeries || !latencySeries) {
         return [];
       }
-      const namesIndex = successRateSeries.fields?.findIndex((field) => field.name === 'name');
+      const namesIndex = successRateSeries.fields?.findIndex((field) => field.name === 'name' || field.name === 'url');
       const successRateNamesField = successRateSeries?.fields?.[namesIndex];
       const methodIndex = successRateSeries.fields?.findIndex((field) => field.name === 'method');
       const successRateMethodField = successRateSeries.fields?.[methodIndex];
