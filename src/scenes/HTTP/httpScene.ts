@@ -28,7 +28,7 @@ import {
 import { getErrorRateTimeseries } from './errorRateTimeseries';
 import { getLatencyByPhasePanel } from './latencyByPhase';
 
-export function getHTTPScene({ metrics, logs }: DashboardSceneAppConfig, checks: Check[]) {
+export function getHTTPScene({ metrics, logs, singleCheckMode }: DashboardSceneAppConfig, checks: Check[]) {
   return () => {
     const timeRange = new SceneTimeRange({
       from: 'now-6h',
@@ -38,7 +38,7 @@ export function getHTTPScene({ metrics, logs }: DashboardSceneAppConfig, checks:
       return getEmptyScene(CheckType.HTTP);
     }
 
-    const { probe, job, instance } = getVariables(CheckType.HTTP, metrics, checks);
+    const { probe, job, instance } = getVariables(CheckType.HTTP, metrics, checks, singleCheckMode);
     const variableSet = new SceneVariableSet({ variables: [probe, job, instance] });
 
     const mapPanel = getErrorRateMapPanel(metrics);

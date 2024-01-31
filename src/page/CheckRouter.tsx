@@ -13,6 +13,8 @@ import { MultiHttpSettingsForm } from 'components/MultiHttp/MultiHttpSettingsFor
 import { PluginPage } from 'components/PluginPage';
 import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
 
+import { DashboardPage } from './DashboardPage';
+
 export function CheckRouter() {
   const { instance } = useContext(InstanceContext);
   const { refetchChecks, checks, loading } = useContext(ChecksContext);
@@ -36,6 +38,9 @@ export function CheckRouter() {
       <Switch>
         <Route path={path} exact>
           <CheckList instance={instance} onCheckUpdate={returnToList} />
+        </Route>
+        <Route path={`${path}/:id/dashboard`} exact>
+          <DashboardPage />
         </Route>
         <Route path={`${path}/new/:checkType?`}>
           {({ match }) => {

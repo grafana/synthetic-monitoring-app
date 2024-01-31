@@ -26,7 +26,7 @@ import { getEditButton } from 'scenes/Common/editButton';
 import { getEmptyScene } from 'scenes/Common/emptyScene';
 import { getErrorRateTimeseries } from 'scenes/HTTP/errorRateTimeseries';
 
-export function getTcpScene({ metrics, logs }: DashboardSceneAppConfig, checks: Check[]) {
+export function getTcpScene({ metrics, logs, singleCheckMode }: DashboardSceneAppConfig, checks: Check[]) {
   return () => {
     if (checks.length === 0) {
       return getEmptyScene(CheckType.TCP);
@@ -37,7 +37,7 @@ export function getTcpScene({ metrics, logs }: DashboardSceneAppConfig, checks: 
       to: 'now',
     });
 
-    const { job, instance, probe } = getVariables(CheckType.TCP, metrics, checks);
+    const { job, instance, probe } = getVariables(CheckType.TCP, metrics, checks, singleCheckMode);
 
     const variables = new SceneVariableSet({ variables: [probe, job, instance] });
     const errorMap = getErrorRateMapPanel(metrics);
