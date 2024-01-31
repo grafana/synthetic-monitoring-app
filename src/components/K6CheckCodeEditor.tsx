@@ -4,7 +4,7 @@ import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 import { GrafanaTheme2, OrgRole } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
-import { Alert, Button, Field, Input, useStyles2 } from '@grafana/ui';
+import { Alert, Button, Field, Icon, Input, Label, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Check, CheckFormValues, CheckPageParams, CheckType, SubmissionErrorWrapper } from 'types';
@@ -44,6 +44,9 @@ function getStyles(theme: GrafanaTheme2) {
     saveButton: css({
       alignSelf: 'flex-start',
       marginTop: theme.spacing(2),
+    }),
+    infoIcon: css({
+      fontWeight: theme.typography.fontWeightLight,
     }),
   };
 }
@@ -108,7 +111,25 @@ export function K6CheckCodeEditor({ checks, onSubmitSuccess }: Props) {
             <Field label="Job name">
               <Input id="job" {...register('job')} />
             </Field>
-            <Field label="Target">
+            <Field
+              label={
+                <Label htmlFor="target">
+                  Instance&nbsp;
+                  <Tooltip
+                    content={
+                      <span>
+                        Metrics and logs produced as a result of this check will follow the Prometheus convention of
+                        being identified by a job and instance. The job/instance pair is guaranteed unique and the
+                        method by which results are queried. Read more about the job/instance convention at
+                        prometheus.io
+                      </span>
+                    }
+                  >
+                    <Icon name="info-circle" className={styles.infoIcon} />
+                  </Tooltip>
+                </Label>
+              }
+            >
               <Input id="target" {...register('target')} />
             </Field>
             {submissionError && (
