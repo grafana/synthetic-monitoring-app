@@ -41,7 +41,7 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon, onRemoveChe
       return;
     }
     if (scenesEnabled) {
-      const url = `${PLUGIN_URL_PATH}/${checkType}`;
+      const url = `${PLUGIN_URL_PATH}${ROUTES.Scene}/${checkType}`;
       navigate(
         url,
         {
