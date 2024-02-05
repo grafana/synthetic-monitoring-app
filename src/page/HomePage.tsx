@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { config } from '@grafana/runtime';
+import { SceneApp, SceneAppPage } from '@grafana/scenes';
 import {
   BigValue,
   BigValueColorMode,
@@ -13,7 +14,7 @@ import {
 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
-import { FeatureName, ROUTES } from 'types';
+import { DashboardSceneAppConfig, FeatureName, ROUTES } from 'types';
 import { DashboardInfo } from 'datasource/types';
 import { ChecksContext } from 'contexts/ChecksContext';
 import { InstanceContext } from 'contexts/InstanceContext';
@@ -24,6 +25,7 @@ import { DisplayCard } from 'components/DisplayCard';
 import FeaturesBanner from 'components/FeaturesBanner';
 import { PluginPage } from 'components/PluginPage';
 import { getRoute } from 'components/Routing';
+import { getSummaryScene } from 'scenes/Summary';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   page: css`
@@ -137,6 +139,7 @@ export const HomePage = () => {
   const { isEnabled: scenesEnabled } = useFeatureFlag(FeatureName.Scenes);
   const { isEnabled: multiHttpEnabled } = useFeatureFlag(FeatureName.MultiHttp);
   const { isEnabled: scriptedEnabled } = useFeatureFlag(FeatureName.ScriptedChecks);
+  const { isEnabled: perCheckDashboardsEnabled } = useFeatureFlag(FeatureName.PerCheckDashboards);
 
   useEffect(() => {
     // Sort to make sure the summary dashboard is at the top of the list
@@ -182,6 +185,29 @@ export const HomePage = () => {
       setDashboards(dashboardList);
     }
   }, [instance.api, scenesEnabled, multiHttpEnabled, scriptedEnabled]);
+
+  if (perCheckDashboardsEnabled) {
+    const config: DashboardSceneAppConfig = {
+      metrics: {
+        uid: instance.metrics?.uid,
+      },
+      logs: { uid: instance.logs?.uid },
+      sm: { uid: instance.api?.uid },
+      singleCheckMode: true,
+    };
+    const scene = new SceneApp({
+      pages: [
+        new SceneAppPage({
+          title: 'Home',
+          url: `${PLUGIN_URL_PATH}${ROUTES.Home}`,
+          hideFromBreadcrumbs: true,
+          getScene: getSummaryScene(config, checks),
+        }),
+      ],
+    });
+
+    return <scene.Component model={scene} />;
+  }
 
   return (
     <PluginPage pageNav={{ text: 'Home' }}>
