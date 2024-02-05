@@ -40,8 +40,12 @@ export function CheckTestButton({ check }: Props) {
             .then((resp) => {
               setTestModalOpen(true);
               setTestResponse(resp);
+              if (!resp) {
+                throw new Error('');
+              }
             })
             .catch((err) => {
+              setTestModalOpen(false);
               setErrorModalOpen(true);
               setError(err?.data?.err ?? err?.data?.msg);
             })

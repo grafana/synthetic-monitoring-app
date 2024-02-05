@@ -53,6 +53,7 @@ export function getSuccessOverTimeByProbe(metrics: DataSourceRef, name: string) 
           fieldConfig: {
             defaults: {
               unit: 'percentunit',
+              max: 1,
             },
             overrides: [],
           },
