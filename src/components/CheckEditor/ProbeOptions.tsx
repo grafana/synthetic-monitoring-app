@@ -51,6 +51,13 @@ function getTimeoutBounds(checkType: CheckType) {
       maxTimeout: 30.0,
     };
   }
+  if (checkType === CheckType.K6) {
+    return {
+      minTimeout: 5.0,
+      maxTimeout: 30.0,
+      defaultTimeout: 10.0,
+    };
+  }
   return {
     minTimeout: 1.0,
     maxTimeout: 10.0,
@@ -110,7 +117,7 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, checkType }: Props)
       >
         {checkType === CheckType.Traceroute || checkType === CheckType.K6 ? (
           // This is just a placeholder for now, the frequency for traceroute checks is hardcoded in the submit
-          <Input value={120} prefix="Every" suffix="seconds" width={20} />
+          <Input value={120} prefix="Every" suffix="seconds" width={20} readOnly />
         ) : (
           <SliderInput
             validate={(value) => validateFrequency(value, checkType)}

@@ -9,11 +9,16 @@ import { getTcpScene } from './TCP/getTcpScene';
 import { getTracerouteScene } from './Traceroute/getTracerouteScene';
 import { getDNSScene } from './DNS';
 import { getHTTPScene } from './HTTP';
-import { getMultiHttpScene } from './MULTIHTTP';
+import { getScriptedScene } from './SCRIPTED';
 import { getSummaryScene } from './Summary';
 
-export function getDashboardSceneApp(config: DashboardSceneAppConfig, includeMultiHttp = false, checks: Check[]) {
-  const { http, ping, dns, tcp, traceroute, multihttp } = checks.reduce<Record<CheckType, Check[]>>(
+export function getDashboardSceneApp(
+  config: DashboardSceneAppConfig,
+  includeMultiHttp = false,
+  includek6 = false,
+  checks: Check[]
+) {
+  const { http, ping, dns, tcp, traceroute, multihttp, k6 } = checks.reduce<Record<CheckType, Check[]>>(
     (acc, check) => {
       const type = checkType(check.settings);
       if (check.enabled) {
@@ -69,9 +74,18 @@ export function getDashboardSceneApp(config: DashboardSceneAppConfig, includeMul
     const appPage = new SceneAppPage({
       title: 'MULTIHTTP',
       url: `${PLUGIN_URL_PATH}${ROUTES.Scene}/multihttp`,
-      getScene: getMultiHttpScene(config, multihttp),
+      getScene: getScriptedScene(config, multihttp, CheckType.MULTI_HTTP),
     });
     tabs.splice(2, 0, appPage);
+  }
+
+  if (includek6) {
+    const appPage = new SceneAppPage({
+      title: 'SCRIPTED',
+      url: `${PLUGIN_URL_PATH}${ROUTES.Scene}/k6`,
+      getScene: getScriptedScene(config, k6, CheckType.K6),
+    });
+    tabs.push(appPage);
   }
 
   return new SceneApp({

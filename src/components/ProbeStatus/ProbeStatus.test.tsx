@@ -1,5 +1,5 @@
 import React from 'react';
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import { OFFLINE_PROBE, ONLINE_PROBE, PRIVATE_PROBE } from 'test/fixtures';
 import { render } from 'test/render';
 import { runTestAsViewer } from 'test/utils';
@@ -16,56 +16,61 @@ it(`shows the reset probe access token when the user is an editor`, async () => 
 
 it(`shows the reset probe access token when the user is an editor`, async () => {
   runTestAsViewer();
-  await render(<ProbeStatus probe={PRIVATE_PROBE} onReset={jest.fn()} />);
-  const resetButton = await getResetButton();
+  // We need to wait for contexts to finish loading to avoid issue with act
+  await waitFor(() => render(<ProbeStatus probe={PRIVATE_PROBE} onReset={jest.fn()} />));
+  const resetButton = await getResetButton(true);
   expect(resetButton).not.toBeInTheDocument();
 });
 
 describe(`Last on/offline display`, () => {
-  it(`displays last online: 'never' correctly`, () => {
+  it(`displays last online: 'never' correctly`, async () => {
     const neverOnline = {
       ...OFFLINE_PROBE,
       onlineChange: OFFLINE_PROBE.created!,
     };
 
     render(<ProbeStatus probe={neverOnline} onReset={jest.fn()} />);
-    expect(screen.getByText('Last online:')).toBeInTheDocument();
-    expect(screen.getByText('Never')).toBeInTheDocument();
+    expect(await screen.findByText('Last online:')).toBeInTheDocument();
+    expect(await screen.findByText('Never')).toBeInTheDocument();
   });
 
-  it(`displays last online correctly`, () => {
+  it(`displays last online correctly`, async () => {
     render(<ProbeStatus probe={OFFLINE_PROBE} onReset={jest.fn()} />);
-    expect(screen.getByText('Last online:')).toBeInTheDocument();
-    expect(screen.getByText(formatDate(OFFLINE_PROBE.onlineChange * 1000))).toBeInTheDocument();
+    expect(await screen.findByText('Last online:')).toBeInTheDocument();
+    expect(await screen.findByText(formatDate(OFFLINE_PROBE.onlineChange * 1000))).toBeInTheDocument();
   });
 
-  it(`displays last offline correctly`, () => {
+  it(`displays last offline correctly`, async () => {
     render(<ProbeStatus probe={ONLINE_PROBE} onReset={jest.fn()} />);
-    expect(screen.getByText('Last offline:')).toBeInTheDocument();
-    expect(screen.getByText(formatDate(ONLINE_PROBE.onlineChange * 1000))).toBeInTheDocument();
+    expect(await screen.findByText('Last offline:')).toBeInTheDocument();
+    expect(await screen.findByText(formatDate(ONLINE_PROBE.onlineChange * 1000))).toBeInTheDocument();
   });
 });
 
 describe(`Last modified display`, () => {
-  it(`displays last modified: 'never' correctly`, () => {
+  it(`displays last modified: 'never' correctly`, async () => {
     const neverModified = {
       ...OFFLINE_PROBE,
       modified: OFFLINE_PROBE.created,
     };
 
     render(<ProbeStatus probe={neverModified} onReset={jest.fn()} />);
-    expect(screen.getByText('Last modified:')).toBeInTheDocument();
-    expect(screen.getByText('Never')).toBeInTheDocument();
+    expect(await screen.findByText('Last modified:')).toBeInTheDocument();
+    expect(await screen.findByText('Never')).toBeInTheDocument();
   });
 
-  it(`displays last modified correctly`, () => {
+  it(`displays last modified correctly`, async () => {
     render(<ProbeStatus probe={ONLINE_PROBE} onReset={jest.fn()} />);
-    expect(screen.getByText('Last modified:')).toBeInTheDocument();
-    expect(screen.getByText(formatDate(ONLINE_PROBE.modified! * 1000))).toBeInTheDocument();
+    expect(await screen.findByText('Last modified:')).toBeInTheDocument();
+    expect(await screen.findByText(formatDate(ONLINE_PROBE.modified! * 1000))).toBeInTheDocument();
   });
 });
 
 // extract this so we can be sure our assertion for it not being there is correct
-function getResetButton() {
-  return screen.queryByText('Reset Access Token');
+function getResetButton(expectFailure = false) {
+  const text = 'Reset Access Token';
+  if (expectFailure) {
+    return screen.queryByText(text);
+  }
+  return screen.findByText(text);
 }

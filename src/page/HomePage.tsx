@@ -136,6 +136,7 @@ export const HomePage = () => {
   const usage = useUsageCalc(checks);
   const { isEnabled: scenesEnabled } = useFeatureFlag(FeatureName.Scenes);
   const { isEnabled: multiHttpEnabled } = useFeatureFlag(FeatureName.MultiHttp);
+  const { isEnabled: scriptedEnabled } = useFeatureFlag(FeatureName.ScriptedChecks);
 
   useEffect(() => {
     // Sort to make sure the summary dashboard is at the top of the list
@@ -174,16 +175,20 @@ export const HomePage = () => {
         dashboardList.splice(3, 0, { title: 'MULTIHTTP dashboard', uid: 'multihttp' });
       }
 
+      if (scriptedEnabled) {
+        dashboardList.push({ title: 'Scripted dashboard', uid: 'k6' });
+      }
+
       setDashboards(dashboardList);
     }
-  }, [instance.api, scenesEnabled, multiHttpEnabled]);
+  }, [instance.api, scenesEnabled, multiHttpEnabled, scriptedEnabled]);
 
   return (
     <PluginPage pageNav={{ text: 'Home' }}>
       <div className={styles.page}>
         <FeaturesBanner />
         <DisplayCard className={cx(styles.card, styles.getStartedGrid)}>
-          <LinkButton variant="primary" size="lg" href={getRoute(ROUTES.NewCheck)}>
+          <LinkButton variant="primary" size="lg" href={getRoute(ROUTES.ChooseCheckType)}>
             Create a check
           </LinkButton>
           <h2 className={styles.separator}>or</h2>

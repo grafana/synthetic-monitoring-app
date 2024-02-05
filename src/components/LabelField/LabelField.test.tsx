@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import { render } from 'test/render';
 
 import { LabelField, type LabelFieldProps } from './LabelField';
@@ -12,10 +12,12 @@ function renderLabelField(props: LabelFieldProps) {
     return <FormProvider {...form}>{children}</FormProvider>;
   };
 
-  return render(
-    <FormWrapper>
-      <LabelField {...props} />
-    </FormWrapper>
+  return waitFor(() =>
+    render(
+      <FormWrapper>
+        <LabelField {...props} />
+      </FormWrapper>
+    )
   );
 }
 

@@ -28,7 +28,7 @@ export function getDistinctTargets(metrics: DataSourceRef) {
     body: new ExplorablePanel({
       $data: getQueryRunner(metrics),
       pluginId: 'stat',
-      title: 'Number of distinct targets',
+      title: 'Distinct targets',
     }),
   });
 }

@@ -1,5 +1,10 @@
 # Change Log
 
+# [1.12.5](https://github.com/grafana/synthetic-monitoring-app/compare/v1.12.3...v1.12.4) (2024-1-25)
+
+- Revamp the MultiHTTP dashboard
+- Add a "Copy JSON" button to the dashboard menus so people can add charts to their own dashboards
+
 # [1.12.4](https://github.com/grafana/synthetic-monitoring-app/compare/v1.12.3...v1.12.4) (2023-11-09)
 
 - Bump up the max data points in the checks visualization view
