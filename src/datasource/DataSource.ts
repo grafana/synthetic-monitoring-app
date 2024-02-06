@@ -12,13 +12,15 @@ import { FetchResponse, getBackendSrv, getTemplateSrv } from '@grafana/runtime';
 import { isArray } from 'lodash';
 import { firstValueFrom } from 'rxjs';
 
-import { Check, HostedInstance, Probe } from '../types';
+import { Check, HostedInstance, Probe, ThresholdSettings } from '../types';
 import {
   AddProbeResult,
   DeleteProbeResult,
   ListProbeResult,
+  ListTenantSettingsResult,
   ResetProbeTokenResult,
   UpdateProbeResult,
+  UpdateTenantSettingsResult,
 } from './responses.types';
 import { CheckInfo, QueryType, SMOptions, SMQuery } from './types';
 import { findLinkedDatasource, getRandomProbes, queryLogs } from 'utils';
@@ -354,29 +356,27 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       });
   }
 
-  async getTenantSettings(): Promise<any> {
-    return getBackendSrv()
-      .fetch({ method: 'GET', url: `${this.instanceSettings.url}/sm/tenant/settings` })
-      .toPromise()
-      .then((res: any) => {
-        return res.data;
-      });
+  async getTenantSettings() {
+    return firstValueFrom(
+      getBackendSrv().fetch<ListTenantSettingsResult>({
+        method: 'GET',
+        url: `${this.instanceSettings.url}/sm/tenant/settings`,
+      })
+    ).then((res: FetchResponse<ListTenantSettingsResult>) => res.data);
   }
 
-  // do type
-  async updateTenantSettings(settings: any): Promise<any> {
-    return getBackendSrv()
-      .fetch({
+  async updateTenantSettings(settings: { thresholds: ThresholdSettings }) {
+    return firstValueFrom(
+      getBackendSrv().fetch<UpdateTenantSettingsResult>({
         method: 'POST',
         url: `${this.instanceSettings.url}/sm/tenant/settings/update`,
         data: {
           ...settings,
         },
       })
-      .toPromise()
-      .then((res: any) => {
-        return res.data;
-      });
+    ).then((res: FetchResponse<UpdateTenantSettingsResult>) => {
+      return res.data;
+    });
   }
 
   async disableTenant(): Promise<any> {

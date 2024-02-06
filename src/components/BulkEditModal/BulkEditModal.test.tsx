@@ -3,7 +3,6 @@ import { screen } from '@testing-library/react';
 import { createInstance, render } from 'test/render';
 
 import { FilteredCheck, IpVersion } from 'types';
-import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
 
 import BulkEditModal from './BulkEditModal';
 
@@ -90,17 +89,15 @@ const renderBulkEditModal = (action: 'add' | 'remove' | null, selectedChecks: ()
   const instance = createInstance();
 
   return render(
-    <SuccessRateContextProvider>
-      <BulkEditModal
-        onDismiss={onDismiss}
-        onSuccess={onSuccess}
-        onError={onError}
-        selectedChecks={selectedChecks}
-        instance={instance}
-        action={action}
-        isOpen={true}
-      />
-    </SuccessRateContextProvider>,
+    <BulkEditModal
+      onDismiss={onDismiss}
+      onSuccess={onSuccess}
+      onError={onError}
+      selectedChecks={selectedChecks}
+      instance={instance}
+      action={action}
+      isOpen={true}
+    />,
     {
       instance,
     }

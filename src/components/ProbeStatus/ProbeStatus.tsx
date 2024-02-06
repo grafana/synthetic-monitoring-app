@@ -5,9 +5,8 @@ import { css } from '@emotion/css';
 
 import { type Probe } from 'types';
 import { canEditProbes, formatDate } from 'utils';
-import { SuccessRateTypes } from 'contexts/SuccessRateContext';
 import { useResetProbeToken } from 'data/useProbes';
-import { SuccessRateGauge } from 'components/SuccessRateGauge';
+import { SuccessRateGaugeProbe } from 'components/Gauges';
 
 interface Props {
   probe: Probe;
@@ -62,7 +61,7 @@ export const ProbeStatus = ({ probe, onReset }: Props) => {
           </Container>
         )}
       </div>
-      <SuccessRateGauge title="Reachability" id={probe.id!} type={SuccessRateTypes.Probes} height={200} width={300} />
+      <SuccessRateGaugeProbe probeName={probe.name} height={200} width={300} />
       <div className={styles.metaWrapper}>
         <Meta title="Version:" value={probe.version} />
         <Meta

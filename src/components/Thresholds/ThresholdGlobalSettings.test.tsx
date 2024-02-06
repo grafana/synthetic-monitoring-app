@@ -3,13 +3,9 @@ import { screen, waitFor } from '@testing-library/react';
 import { render } from 'test/render';
 import { getInstanceMock } from 'datasource/__mocks__/DataSource';
 
-import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
-
 import ThresholdGlobalSettings from './ThresholdGlobalSettings';
 
 const onDismiss = jest.fn();
-const onSuccess = jest.fn();
-const onError = jest.fn();
 
 const renderThresholdSettingsForm = () => {
   const instance = {
@@ -17,14 +13,9 @@ const renderThresholdSettingsForm = () => {
   };
 
   return waitFor(() =>
-    render(
-      <SuccessRateContextProvider>
-        <ThresholdGlobalSettings onDismiss={onDismiss} onSuccess={onSuccess} onError={onError} isOpen={true} />
-      </SuccessRateContextProvider>,
-      {
-        instance,
-      }
-    )
+    render(<ThresholdGlobalSettings onDismiss={onDismiss} isOpen={true} />, {
+      instance,
+    })
   );
 };
 

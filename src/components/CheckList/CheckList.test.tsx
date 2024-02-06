@@ -5,7 +5,6 @@ import { createInstance, render } from 'test/render';
 import { Check, CheckSort, ROUTES } from 'types';
 import { PLUGIN_URL_PATH } from 'components/constants';
 
-import { SuccessRateContextProvider } from '../SuccessRateContextProvider';
 import { CheckList } from './CheckList';
 
 jest.mock('hooks/useNavigation', () => {
@@ -122,15 +121,10 @@ const renderCheckList = ({ checks = defaultChecks } = {} as RenderChecklist) => 
   instance.api.listChecks = jest.fn(() => Promise.resolve(checks));
 
   return waitFor(() =>
-    render(
-      <SuccessRateContextProvider>
-        <CheckList instance={instance} onCheckUpdate={onCheckUpdate} />
-      </SuccessRateContextProvider>,
-      {
-        instance,
-        path: `${PLUGIN_URL_PATH}${ROUTES.Checks}`,
-      }
-    )
+    render(<CheckList instance={instance} onCheckUpdate={onCheckUpdate} />, {
+      instance,
+      path: `${PLUGIN_URL_PATH}${ROUTES.Checks}`,
+    })
   );
 };
 

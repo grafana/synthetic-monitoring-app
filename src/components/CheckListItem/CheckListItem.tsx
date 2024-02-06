@@ -5,12 +5,10 @@ import { css, cx } from '@emotion/css';
 
 import { Check, CheckListViewType, CheckType, FilteredCheck, Label } from 'types';
 import { checkType as getCheckType } from 'utils';
-import { SuccessRateTypes } from 'contexts/SuccessRateContext';
 import { useUsageCalc } from 'hooks/useUsageCalc';
-import { SuccessRateGauge } from 'components/SuccessRateGauge';
+import { LatencyGauge, SuccessRateGaugeCheckReachability, SuccessRateGaugeCheckUptime } from 'components/Gauges';
 
 import { CheckCardLabel } from '../CheckCardLabel';
-import { LatencyGauge } from '../LatencyGauge';
 import { CheckItemActionButtons } from './CheckItemActionButtons';
 import { CheckListItemDetails } from './CheckListItemDetails';
 import { CheckStatusType } from './CheckStatusType';
@@ -238,21 +236,9 @@ export const CheckListItem = ({
             <div className={styles.stats}>
               {check.enabled && (
                 <>
-                  <SuccessRateGauge
-                    title="Uptime"
-                    type={SuccessRateTypes.Checks}
-                    id={check.id}
-                    height={75}
-                    width={150}
-                  />
-                  <SuccessRateGauge
-                    title="Reachability"
-                    type={SuccessRateTypes.Checks}
-                    id={check.id}
-                    height={75}
-                    width={150}
-                  />
-                  <LatencyGauge target={check.target} job={check.job} checkType={checkType} height={75} width={175} />
+                  <SuccessRateGaugeCheckUptime check={check} height={75} width={150} />
+                  <SuccessRateGaugeCheckReachability check={check} height={75} width={150} />
+                  <LatencyGauge check={check} height={75} width={175} />
                 </>
               )}
             </div>

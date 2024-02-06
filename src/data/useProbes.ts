@@ -2,7 +2,7 @@ import { useContext } from 'react';
 import { type QueryKey, useMutation, UseMutationResult, useSuspenseQuery } from '@tanstack/react-query';
 import { isFetchError } from '@grafana/runtime';
 
-import { type MutationProps } from './types';
+import { type MutationProps } from 'data/types';
 import { type Probe } from 'types';
 import { FaroEvent } from 'faro';
 import { SMDataSource } from 'datasource/DataSource';
@@ -13,8 +13,7 @@ import type {
   UpdateProbeResult,
 } from 'datasource/responses.types';
 import { InstanceContext } from 'contexts/InstanceContext';
-
-import { queryClient } from './queryClient';
+import { queryClient } from 'data/queryClient';
 
 const queryKeys: Record<string, () => QueryKey> = {
   list: () => ['probes'],

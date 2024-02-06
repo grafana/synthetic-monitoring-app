@@ -19,7 +19,7 @@ import {
 } from 'types';
 import { hasRole } from 'utils';
 import { ChecksContext } from 'contexts/ChecksContext';
-import { SuccessRateContext, SuccessRateTypes } from 'contexts/SuccessRateContext';
+import { useThresholds } from 'data/useThresholds';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { BulkEditModal } from 'components/BulkEditModal';
 import { CheckFilters, defaultFilters, getDefaultFilters } from 'components/CheckFilters';
@@ -111,6 +111,8 @@ interface Props {
 }
 
 export const CheckList = ({ instance, onCheckUpdate }: Props) => {
+  const { data: thresholds } = useThresholds();
+
   const [checkFilters, setCheckFilters] = useState<CheckFiltersType>(getDefaultFilters());
   const [filteredChecks, setFilteredChecks] = useState<FilteredCheck[] | []>([]);
 
@@ -127,7 +129,6 @@ export const CheckList = ({ instance, onCheckUpdate }: Props) => {
   const { checks } = useContext(ChecksContext);
 
   const styles = useStyles2(getStyles);
-  const successRateContext = useContext(SuccessRateContext);
   const { isEnabled: scenesEnabled } = useFeatureFlag(FeatureName.Scenes);
 
   const sortChecks = useCallback(
@@ -139,17 +140,16 @@ export const CheckList = ({ instance, onCheckUpdate }: Props) => {
           return checks.sort((a, b) => b.job.localeCompare(a.job));
         case CheckSort.SuccessRate:
           return checks.sort((a, b) => {
-            const checkA =
-              successRateContext.values[SuccessRateTypes.Checks][a.id] ?? successRateContext.values.defaults;
-            const checkB =
-              successRateContext.values[SuccessRateTypes.Checks][b.id] ?? successRateContext.values.defaults;
-            const sortA = checkA.noData ? 101 : checkA.reachabilityValue;
-            const sortB = checkB.noData ? 101 : checkB.reachabilityValue;
-            return sortA - sortB;
+            console.log(thresholds);
+            const checkA = 1;
+            const checkB = 2;
+            // const sortA = checkA.noData ? 101 : checkA.reachabilityValue;
+            // const sortB = checkB.noData ? 101 : checkB.reachabilityValue;
+            return checkA - checkB;
           });
       }
     },
-    [successRateContext.values]
+    [thresholds]
   );
 
   useEffect(() => {
@@ -161,15 +161,6 @@ export const CheckList = ({ instance, onCheckUpdate }: Props) => {
       setFilteredChecks(filtered);
     }
   }, [checkFilters, sortType, checks, sortChecks, viewType, scenesEnabled]);
-
-  // This is so we aren't needlessly fetching data in the viz view, which doesn't use the successRateContext
-  useEffect(() => {
-    if (scenesEnabled && viewType === CheckListViewType.Viz) {
-      successRateContext.pauseUpdates();
-    } else {
-      successRateContext.resumeUpdates();
-    }
-  }, [viewType, scenesEnabled, successRateContext]);
 
   const checksPerPage = viewType === CheckListViewType.Card ? CHECKS_PER_PAGE_CARD : CHECKS_PER_PAGE_LIST;
   const totalPages = Math.ceil(filteredChecks.length / checksPerPage);
@@ -494,14 +485,7 @@ export const CheckList = ({ instance, onCheckUpdate }: Props) => {
           )}
         </div>
       )}
-      <ThresholdGlobalSettings
-        onDismiss={() => setShowThresholdModal(false)}
-        isOpen={showThresholdModal}
-        onSuccess={() => appEvents.emit(AppEvents.alertSuccess, ['Thresholds updated'])}
-        onError={() =>
-          appEvents.emit(AppEvents.alertError, [`Error updating thresholds. make sure your values don't overlap`])
-        }
-      />
+      <ThresholdGlobalSettings onDismiss={() => setShowThresholdModal(false)} isOpen={showThresholdModal} />
       <BulkEditModal
         instance={instance}
         selectedChecks={getChecksFromSelected}

@@ -1,10 +1,10 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { Field, Input } from '@grafana/ui';
 
-import { CheckType, Probe } from 'types';
+import { CheckType } from 'types';
 import { validateFrequency, validateProbes, validateTimeout } from 'validation';
-import { InstanceContext } from 'contexts/InstanceContext';
+import { useProbes } from 'data/useProbes';
 import { SliderInput } from 'components/SliderInput';
 import { Subheader } from 'components/Subheader';
 
@@ -65,29 +65,14 @@ function getTimeoutBounds(checkType: CheckType) {
 }
 
 export const ProbeOptions = ({ frequency, timeout, isEditor, checkType }: Props) => {
-  const [availableProbes, setAvailableProbes] = useState<Probe[]>([]);
+  const { data: probes = [] } = useProbes();
   const {
     control,
     formState: { errors },
   } = useFormContext();
-  const { instance } = useContext(InstanceContext);
   const isTraceroute = checkType === CheckType.Traceroute;
-
   const { minFrequency, maxFrequency, defaultFrequency } = getFrequencyBounds(checkType);
   const { minTimeout, maxTimeout, defaultTimeout } = getTimeoutBounds(checkType);
-
-  useEffect(() => {
-    const abortController = new AbortController();
-    const fetchProbes = async () => {
-      const probes = await instance.api?.listProbes();
-      if (!abortController.signal.aborted) {
-        setAvailableProbes(probes ?? []);
-      }
-    };
-
-    fetchProbes();
-    return () => abortController.abort();
-  }, [instance]);
 
   return (
     <div>
@@ -101,7 +86,7 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, checkType }: Props)
           <CheckProbes
             {...field}
             probes={field.value}
-            availableProbes={availableProbes}
+            availableProbes={probes}
             isEditor={isEditor}
             invalid={errors.probes}
             error={errors.probes?.message}
