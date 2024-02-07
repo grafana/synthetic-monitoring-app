@@ -13,14 +13,14 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef) {
         expr: `
           sum by (instance, job, check_name)
           (
-            rate(probe_all_success_sum[$__range])
+            rate(probe_all_success_sum{probe=~"$probe"}[$__range])
             *
             on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters })
           )
           /
           sum by (instance, check_name, job)
           (
-            rate(probe_all_success_count[$__range])
+            rate(probe_all_success_count{probe=~"$probe"}[$__range])
             *
             on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters })
           )`,
@@ -36,14 +36,14 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef) {
         expr: `
           sum by (instance, job, check_name)
           (
-            rate(probe_all_duration_seconds_sum[$__range])
+            rate(probe_all_duration_seconds_sum{probe=~"$probe"}[$__range])
             *
             on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters})
           )
           /
           sum by (instance, job, check_name)
           (
-            rate(probe_all_duration_seconds_count[$__range])
+            rate(probe_all_duration_seconds_count{probe=~"$probe"}[$__range])
             *
             on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters})
           )`,
@@ -60,14 +60,14 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef) {
           ceil(
             sum by (instance, job, check_name)
             (
-              rate(probe_all_success_sum[5m])
+              rate(probe_all_success_sum{probe=~"$probe"}[5m])
               *
               on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters})
             )
             /
             sum by (instance, check_name, job)
             (
-              rate(probe_all_success_count[5m])
+              rate(probe_all_success_count{probe=~"$probe"}[5m])
               *
               on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters})
             )
@@ -91,10 +91,10 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef) {
               # so make it a 1 if there was at least one success and a 0 otherwise
               ceil(
                 # the number of successes across all probes
-                sum by (instance, job) (increase(probe_all_success_sum{}[5m]) * on (instance, job, probe, config_version) sm_check_info{check_name=~"$check_type", $Filters})
+                sum by (instance, job) (increase(probe_all_success_sum{probe=~"$probe"}[5m]) * on (instance, job, probe, config_version) sm_check_info{check_name=~"$check_type", $Filters})
                 /
                 # the total number of times we checked across all probes
-                (sum by (instance, job) (increase(probe_all_success_count[5m])) + 1) # + 1 because we want to make sure it goes to 1, not 2
+                (sum by (instance, job) (increase(probe_all_success_count{probe=~"$probe"}[5m])) + 1) # + 1 because we want to make sure it goes to 1, not 2
               )
             )
             [$__range:5m]
