@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { AppEvents, GrafanaTheme2, OrgRole, SelectableValue } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import { Button, ButtonCascader, Checkbox, Icon, InlineSwitch, Pagination, Select, useStyles2 } from '@grafana/ui';
@@ -18,7 +18,7 @@ import {
   Label,
 } from 'types';
 import { hasRole } from 'utils';
-import { ChecksContext } from 'contexts/ChecksContext';
+import { useChecks } from 'data/useChecks';
 import { useThresholds } from 'data/useThresholds';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { BulkEditModal } from 'components/BulkEditModal';
@@ -112,6 +112,7 @@ interface Props {
 
 export const CheckList = ({ instance, onCheckUpdate }: Props) => {
   const { data: thresholds } = useThresholds();
+  const { data: checks } = useChecks();
 
   const [checkFilters, setCheckFilters] = useState<CheckFiltersType>(getDefaultFilters());
   const [filteredChecks, setFilteredChecks] = useState<FilteredCheck[] | []>([]);
@@ -126,7 +127,6 @@ export const CheckList = ({ instance, onCheckUpdate }: Props) => {
 
   const [showThresholdModal, setShowThresholdModal] = useState(false);
   const [bulkEditAction, setBulkEditAction] = useState<'add' | 'remove' | null>(null);
-  const { checks } = useContext(ChecksContext);
 
   const styles = useStyles2(getStyles);
   const { isEnabled: scenesEnabled } = useFeatureFlag(FeatureName.Scenes);

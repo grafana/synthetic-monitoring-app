@@ -779,6 +779,7 @@ export const getCheckFromFormValues = (
   checkType: CheckType
 ): Check => {
   return {
+    id: formValues.id,
     job: formValues.job,
     target: getTargetFromFormValue(formValues.target, formValues, checkType) ?? '',
     enabled: formValues.enabled,

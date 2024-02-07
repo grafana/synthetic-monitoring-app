@@ -15,7 +15,7 @@ import type {
 import { InstanceContext } from 'contexts/InstanceContext';
 import { queryClient } from 'data/queryClient';
 
-const queryKeys: Record<string, () => QueryKey> = {
+const queryKeys: Record<'list' | 'create' | 'update' | 'delete', () => QueryKey> = {
   list: () => ['probes'],
   create: () => [...queryKeys.list(), 'create-probe'],
   update: () => [...queryKeys.list(), 'update-probe'],
@@ -24,10 +24,11 @@ const queryKeys: Record<string, () => QueryKey> = {
 
 export function useProbes() {
   const { instance } = useContext(InstanceContext);
+  const api = instance.api as SMDataSource;
 
   return useSuspenseQuery({
     queryKey: queryKeys.list(),
-    queryFn: () => instance.api?.listProbes(),
+    queryFn: () => api.listProbes(),
   });
 }
 

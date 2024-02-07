@@ -2,11 +2,10 @@ import React, { useContext, useMemo } from 'react';
 import { Spinner } from '@grafana/ui';
 
 import { FeatureName } from 'types';
-import { ChecksContext } from 'contexts/ChecksContext';
 import { InstanceContext } from 'contexts/InstanceContext';
+import { useChecks } from 'data/useChecks';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useNavigation } from 'hooks/useNavigation';
-import { ChecksContextProvider } from 'components/ChecksContextProvider';
 import { getDashboardSceneApp } from 'scenes/dashboardSceneApp';
 
 function DashboardPageContent() {
@@ -14,7 +13,7 @@ function DashboardPageContent() {
   const { isEnabled } = useFeatureFlag(FeatureName.Scenes);
   const { isEnabled: multiHttpEnabled } = useFeatureFlag(FeatureName.MultiHttp);
   const { isEnabled: scriptedEnabled } = useFeatureFlag(FeatureName.ScriptedChecks);
-  const { checks, loading } = useContext(ChecksContext);
+  const { data: checks, isLoading } = useChecks();
 
   const navigate = useNavigation();
 
@@ -46,7 +45,7 @@ function DashboardPageContent() {
     navigate('redirect?dashboard=summary');
     return null;
   }
-  if (!scene || loading) {
+  if (!scene || isLoading) {
     return <Spinner />;
   }
 
@@ -54,9 +53,5 @@ function DashboardPageContent() {
 }
 
 export function DashboardPage() {
-  return (
-    <ChecksContextProvider>
-      <DashboardPageContent />
-    </ChecksContextProvider>
-  );
+  return <DashboardPageContent />;
 }

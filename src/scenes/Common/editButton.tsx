@@ -1,10 +1,10 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { SceneReactObject, SceneVariable } from '@grafana/scenes';
 import { Button, Spinner } from '@grafana/ui';
 
 import { ROUTES } from 'types';
 import { checkType } from 'utils';
-import { ChecksContext } from 'contexts/ChecksContext';
+import { useChecks } from 'data/useChecks';
 import { useNavigation } from 'hooks/useNavigation';
 
 interface Props {
@@ -13,7 +13,7 @@ interface Props {
 }
 
 function EditCheckButton({ job, instance }: Props) {
-  const { checks, loading } = useContext(ChecksContext);
+  const { data: checks, isLoading } = useChecks();
   const navigate = useNavigation();
   return (
     <Button
@@ -26,9 +26,9 @@ function EditCheckButton({ job, instance }: Props) {
         const type = checkType(check.settings);
         navigate(`${ROUTES.EditCheck}/${type}/${check.id}`);
       }}
-      disabled={loading || !checks}
+      disabled={isLoading || !checks}
     >
-      {loading ? <Spinner /> : 'Edit check'}
+      {isLoading ? <Spinner /> : 'Edit check'}
     </Button>
   );
 }

@@ -1,5 +1,4 @@
-import React, { useContext } from 'react';
-import { useAsyncCallback } from 'react-async-hook';
+import React from 'react';
 import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 import { GrafanaTheme2, OrgRole } from '@grafana/data';
@@ -7,10 +6,9 @@ import { PluginPage } from '@grafana/runtime';
 import { Alert, Button, Field, Icon, Input, Label, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { Check, CheckFormValues, CheckPageParams, CheckType, SubmissionErrorWrapper } from 'types';
-import { FaroEvent, reportError } from 'faro';
+import { Check, CheckFormValues, CheckPageParams, CheckType } from 'types';
 import { hasRole } from 'utils';
-import { InstanceContext } from 'contexts/InstanceContext';
+import { useCreateCheck, useUpdateCheck } from 'data/useChecks';
 
 import {
   checkTypeParamToCheckType,
@@ -53,6 +51,8 @@ function getStyles(theme: GrafanaTheme2) {
 
 export function K6CheckCodeEditor({ checks, onSubmitSuccess }: Props) {
   const { id, checkType: checkTypeParam } = useParams<CheckPageParams>();
+  const { mutate: updateCheck, error: updateError, isPending: updatePending } = useUpdateCheck();
+  const { mutate: addCheck, error: createError, isPending: createPending } = useCreateCheck();
   let checkType = checkTypeParamToCheckType(checkTypeParam);
   let check: Check = fallbackCheck(checkType);
 
@@ -60,7 +60,6 @@ export function K6CheckCodeEditor({ checks, onSubmitSuccess }: Props) {
     check = checks?.find((c) => c.id === Number(id)) ?? fallbackCheck(checkType);
   }
 
-  const { instance } = useContext(InstanceContext);
   const defaultValues = getDefaultValuesFromCheck(check);
 
   const formMethods = useForm<CheckFormValues>({
@@ -68,41 +67,30 @@ export function K6CheckCodeEditor({ checks, onSubmitSuccess }: Props) {
   });
   const { handleSubmit, register, control } = formMethods;
   const styles = useStyles2(getStyles);
+  const onSuccess = () => onSubmitSuccess?.(true);
 
-  const {
-    execute: onSubmit,
-    error,
-    loading: submitting,
-  } = useAsyncCallback(async (checkValues: CheckFormValues) => {
-    if (error) {
-      console.error(error);
-      return;
-    }
-    if (!checkValues.settings.k6) {
-      throw new Error('No k6 settings');
-    }
+  const onSubmit = (checkValues: CheckFormValues) => {
     const toSubmit = getCheckFromFormValues(checkValues, defaultValues, CheckType.K6);
+
     if (check.id) {
-      await instance.api?.updateCheck({
-        id: check.id,
-        tenantId: check.tenantId,
-        ...toSubmit,
-      });
-    } else {
-      await instance.api?.addCheck(toSubmit);
+      return updateCheck(
+        {
+          id: check.id,
+          tenantId: check.tenantId,
+          ...toSubmit,
+        },
+        { onSuccess }
+      );
     }
 
-    if (onSubmitSuccess) {
-      onSubmitSuccess(true);
-    }
-  });
+    return addCheck(toSubmit, { onSuccess });
+  };
 
-  const submissionError = error as unknown as SubmissionErrorWrapper;
-  if (error) {
-    reportError(error.message ?? error, check?.id ? FaroEvent.UPDATE_CHECK : FaroEvent.CREATE_CHECK);
-  }
   const headerText = check?.id ? `Editing ${check.job}` : `Add a scripted check`;
   const isEditor = hasRole(OrgRole.Editor);
+  const error = updateError ?? createError;
+  const submitting = updatePending || createPending;
+
   return (
     <PluginPage pageNav={{ text: check?.job ? `Editing ${check.job}` : headerText }}>
       <FormProvider {...formMethods}>
@@ -132,13 +120,6 @@ export function K6CheckCodeEditor({ checks, onSubmitSuccess }: Props) {
             >
               <Input id="target" {...register('target')} />
             </Field>
-            {submissionError && (
-              <Alert title="Save failed" severity="error">
-                {`${submissionError.status}: ${
-                  submissionError.data?.msg?.concat(', ', submissionError.data?.err ?? '') ?? 'Something went wrong'
-                }`}
-              </Alert>
-            )}
             <ProbeOptions
               isEditor={isEditor}
               frequency={check.frequency}
@@ -159,6 +140,11 @@ export function K6CheckCodeEditor({ checks, onSubmitSuccess }: Props) {
             Save
           </Button>
         </form>
+        {error && (
+          <Alert title="Save failed" severity="error">
+            {error.message ?? 'Something went wrong'}
+          </Alert>
+        )}
       </FormProvider>
     </PluginPage>
   );

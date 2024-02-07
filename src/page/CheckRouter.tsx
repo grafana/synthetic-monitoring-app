@@ -2,8 +2,8 @@ import React, { useContext } from 'react';
 import { Route, Switch, useRouteMatch } from 'react-router-dom';
 
 import { CheckType, ROUTES } from 'types';
-import { ChecksContext } from 'contexts/ChecksContext';
 import { InstanceContext } from 'contexts/InstanceContext';
+import { useChecks } from 'data/useChecks';
 import { useNavigation } from 'hooks/useNavigation';
 import { CheckEditor } from 'components/CheckEditor';
 import { CheckList } from 'components/CheckList';
@@ -14,19 +14,17 @@ import { PluginPage } from 'components/PluginPage';
 
 export function CheckRouter() {
   const { instance } = useContext(InstanceContext);
-  const { refetchChecks, checks, loading } = useContext(ChecksContext);
+  const { data: checks, isLoading } = useChecks();
 
   const navigate = useNavigation();
   const { path } = useRouteMatch();
 
-  const returnToList = (refetch?: boolean) => {
+  // todo: kill this
+  const returnToList = () => {
     navigate(ROUTES.Checks);
-    if (refetch) {
-      refetchChecks();
-    }
   };
 
-  if (loading || !instance.api || !checks) {
+  if (isLoading || !instance.api || !checks) {
     return <PluginPage>Loading...</PluginPage>;
   }
 

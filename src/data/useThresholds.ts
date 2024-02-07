@@ -9,7 +9,7 @@ import type { UpdateTenantSettingsResult } from 'datasource/responses.types';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { queryClient } from 'data/queryClient';
 
-const queryKeys: Record<string, () => QueryKey> = {
+const queryKeys: Record<'list', () => QueryKey> = {
   list: () => ['thresholds'],
 };
 

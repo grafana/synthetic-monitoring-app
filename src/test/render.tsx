@@ -9,7 +9,6 @@ import { getInstanceMock, instanceSettings } from 'datasource/__mocks__/DataSour
 
 import { GlobalSettings, GrafanaInstances } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { ChecksContextProvider } from 'components/ChecksContextProvider';
 import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
 
 export const createInstance = (options?: GrafanaInstances) => {
@@ -76,11 +75,9 @@ export const createWrapper = ({
           },
         }}
       >
-        <ChecksContextProvider>
-          <Router history={history}>
-            <Route path={route}>{children}</Route>
-          </Router>
-        </ChecksContextProvider>
+        <Router history={history}>
+          <Route path={route}>{children}</Route>
+        </Router>
       </InstanceContext.Provider>
     </FeatureFlagProvider>
   );

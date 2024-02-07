@@ -15,8 +15,8 @@ import { css, cx } from '@emotion/css';
 
 import { FeatureName, ROUTES } from 'types';
 import { DashboardInfo } from 'datasource/types';
-import { ChecksContext } from 'contexts/ChecksContext';
 import { InstanceContext } from 'contexts/InstanceContext';
+import { useChecks } from 'data/useChecks';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useUsageCalc } from 'hooks/useUsageCalc';
 import { PLUGIN_URL_PATH } from 'components/constants';
@@ -132,7 +132,7 @@ export const HomePage = () => {
   const styles = useStyles2(getStyles);
   const { instance } = useContext(InstanceContext);
   const [dashboards, setDashboards] = useState<Array<Partial<DashboardInfo>>>([]);
-  const { checks } = useContext(ChecksContext);
+  const { data: checks } = useChecks();
   const usage = useUsageCalc(checks);
   const { isEnabled: scenesEnabled } = useFeatureFlag(FeatureName.Scenes);
   const { isEnabled: multiHttpEnabled } = useFeatureFlag(FeatureName.MultiHttp);

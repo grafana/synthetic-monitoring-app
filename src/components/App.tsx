@@ -11,7 +11,6 @@ import { InstanceProvider } from 'components/InstanceProvider';
 import { Routing } from 'components/Routing';
 
 import { CheckInfoContextProvider } from './CheckInfoContextProvider';
-import { ChecksContextProvider } from './ChecksContextProvider';
 import { FeatureFlagProvider } from './FeatureFlagProvider';
 
 export class App extends PureComponent<AppRootProps<GlobalSettings>> {
@@ -26,12 +25,10 @@ export class App extends PureComponent<AppRootProps<GlobalSettings>> {
           meta={meta}
         >
           <QueryClientProvider client={queryClient}>
-            <ChecksContextProvider>
-              <CheckInfoContextProvider>
-                <Routing {...this.props} />
-                <DashboardUpdateModal />
-              </CheckInfoContextProvider>
-            </ChecksContextProvider>
+            <CheckInfoContextProvider>
+              <Routing {...this.props} />
+              <DashboardUpdateModal />
+            </CheckInfoContextProvider>
             <ReactQueryDevtools />
           </QueryClientProvider>
         </InstanceProvider>

@@ -1,4 +1,4 @@
-import { Probe, ThresholdSettings } from 'types';
+import { Check, Probe, ThresholdSettings } from 'types';
 
 export type ListProbeResult = Probe[];
 
@@ -15,6 +15,17 @@ export type DeleteProbeResult = {
 export type UpdateProbeResult = {
   probe: Probe;
 };
+
+export type ListCheckResult = Check[];
+
+export type AddCheckResult = Check;
+
+export type DeleteCheckResult = {
+  msg: string;
+  checkId: Check['id'];
+};
+
+export type UpdateCheckResult = Check;
 
 export type ResetProbeTokenResult = {
   probe: Probe;

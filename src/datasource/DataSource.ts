@@ -8,17 +8,21 @@ import {
   MetricFindValue,
   ScopedVars,
 } from '@grafana/data';
-import { FetchResponse, getBackendSrv, getTemplateSrv } from '@grafana/runtime';
+import { getBackendSrv, getTemplateSrv } from '@grafana/runtime';
 import { isArray } from 'lodash';
 import { firstValueFrom } from 'rxjs';
 
-import { Check, HostedInstance, Probe, ThresholdSettings } from '../types';
+import { AdHocCheckResponse, Check, HostedInstance, Probe, ThresholdSettings } from '../types';
 import {
+  AddCheckResult,
   AddProbeResult,
+  DeleteCheckResult,
   DeleteProbeResult,
+  ListCheckResult,
   ListProbeResult,
   ListTenantSettingsResult,
   ResetProbeTokenResult,
+  UpdateCheckResult,
   UpdateProbeResult,
   UpdateTenantSettingsResult,
 } from './responses.types';
@@ -201,7 +205,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
         method: 'GET',
         url: `${this.instanceSettings.url}/sm/probe/list`,
       })
-    ).then((res: FetchResponse<ListProbeResult>) => res.data);
+    ).then((res) => res.data);
   }
 
   async addProbe(probe: Probe) {
@@ -211,7 +215,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
         url: `${this.instanceSettings.url}/sm/probe/add`,
         data: probe,
       })
-    ).then((res: FetchResponse<AddProbeResult>) => {
+    ).then((res) => {
       return res.data;
     });
   }
@@ -223,7 +227,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
         url: `${this.instanceSettings.url}/sm/probe/update`,
         data: probe,
       })
-    ).then((res: FetchResponse<UpdateProbeResult>) => {
+    ).then((res) => {
       return res.data;
     });
   }
@@ -234,7 +238,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
         method: 'DELETE',
         url: `${this.instanceSettings.url}/sm/probe/delete/${id}`,
       })
-    ).then((res: FetchResponse<DeleteProbeResult>) => {
+    ).then((res) => {
       return res.data;
     });
   }
@@ -246,7 +250,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
         url: `${this.instanceSettings.url}/sm/probe/update?reset-token=true`,
         data: probe,
       })
-    ).then((res: FetchResponse<ResetProbeTokenResult>) => {
+    ).then((res) => {
       return res.data;
     });
   }
@@ -267,84 +271,86 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   // CHECKS
   //--------------------------------------------------------------------------------
 
-  async listChecks(): Promise<Check[]> {
-    return getBackendSrv()
-      .fetch({
+  async listChecks() {
+    return firstValueFrom(
+      getBackendSrv().fetch<ListCheckResult>({
         method: 'GET',
         url: `${this.instanceSettings.url}/sm/check/list`,
       })
-      .toPromise()
-      .then((res: any) => (Array.isArray(res.data) ? res.data : []));
-  }
-
-  async getCheck(checkId: number): Promise<Check> {
-    return getBackendSrv().get(`${this.instanceSettings.url}/sm/check/${checkId}`);
-  }
-
-  async testCheck(check: Check): Promise<any> {
-    const randomSelection = getRandomProbes(check.probes, 5);
-    check.probes = randomSelection;
-
-    return firstValueFrom(
-      getBackendSrv().fetch({
-        method: 'POST',
-        url: `${this.instanceSettings.url}/sm/check/adhoc`,
-        data: check,
-      })
-    ).then((res: any) => {
+    ).then((res) => {
       return res.data;
     });
   }
 
-  async addCheck(check: Check): Promise<any> {
-    return getBackendSrv()
-      .fetch({
+  async getCheck(checkId: number) {
+    return firstValueFrom(
+      getBackendSrv().fetch<Check>({
+        method: `GET`,
+        url: `${this.instanceSettings.url}/sm/check/${checkId}`,
+      })
+    ).then((res) => res.data);
+  }
+
+  async testCheck(check: Check) {
+    const randomSelection = getRandomProbes(check.probes, 5);
+    check.probes = randomSelection;
+
+    return firstValueFrom(
+      getBackendSrv().fetch<AdHocCheckResponse>({
+        method: 'POST',
+        url: `${this.instanceSettings.url}/sm/check/adhoc`,
+        data: check,
+      })
+    ).then((res) => {
+      return res.data;
+    });
+  }
+
+  async addCheck(check: Check) {
+    return firstValueFrom(
+      getBackendSrv().fetch<AddCheckResult>({
         method: 'POST',
         url: `${this.instanceSettings.url}/sm/check/add`,
         data: check,
       })
-      .toPromise()
-      .then((res: any) => {
-        return res.data;
-      });
+    ).then((res) => {
+      return res.data;
+    });
   }
 
-  async deleteCheck(id: number): Promise<any> {
-    return getBackendSrv()
-      .fetch({
+  async deleteCheck(id: number) {
+    return firstValueFrom(
+      getBackendSrv().fetch<DeleteCheckResult>({
         method: 'DELETE',
         url: `${this.instanceSettings.url}/sm/check/delete/${id}`,
       })
-      .toPromise()
-      .then((res: any) => {
-        return res.data;
-      });
+    ).then((res) => {
+      return res.data;
+    });
   }
 
-  async updateCheck(check: Check): Promise<any> {
-    return getBackendSrv()
-      .fetch({
+  async updateCheck(check: Check) {
+    return firstValueFrom(
+      getBackendSrv().fetch<UpdateCheckResult>({
         method: 'POST',
         url: `${this.instanceSettings.url}/sm/check/update`,
         data: check,
       })
-      .toPromise()
-      .then((res: any) => {
-        return res.data;
-      });
+    ).then((res) => {
+      return res.data;
+    });
   }
 
   async bulkUpdateChecks(checks: Check[]): Promise<boolean> {
-    return getBackendSrv()
-      .fetch({
+    return firstValueFrom(
+      getBackendSrv().fetch({
         method: 'POST',
         url: `${this.instanceSettings.url}/sm/check/update/bulk`,
         data: checks,
       })
-      .toPromise()
-      .then((res: any) => {
-        return res.data;
-      });
+    ).then((res: any) => {
+      return res.data;
+    });
   }
 
   async getTenant(): Promise<any> {
@@ -362,7 +368,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
         method: 'GET',
         url: `${this.instanceSettings.url}/sm/tenant/settings`,
       })
-    ).then((res: FetchResponse<ListTenantSettingsResult>) => res.data);
+    ).then((res) => res.data);
   }
 
   async updateTenantSettings(settings: { thresholds: ThresholdSettings }) {
@@ -374,7 +380,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
           ...settings,
         },
       })
-    ).then((res: FetchResponse<UpdateTenantSettingsResult>) => {
+    ).then((res) => {
       return res.data;
     });
   }

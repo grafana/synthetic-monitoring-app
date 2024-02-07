@@ -7,13 +7,10 @@ import { MetricCheckSuccess, MetricProbeSuccessRate } from 'datasource/responses
 import { InstanceContext } from 'contexts/InstanceContext';
 import { STANDARD_REFRESH_INTERVAL } from 'components/constants';
 
-// check if this makes sense?
-const queryKeys: Record<string, () => QueryKey> = {
-  checks: () => ['prom_checks'],
-  probes: () => ['probes'],
-  checkReachability: () => [...queryKeys.checks(), 'reachability'],
-  checkUptime: () => [...queryKeys.checks(), 'uptime'],
-  probeReachability: () => [...queryKeys.probes(), 'probe_reachability'],
+const queryKeys: Record<'checkReachability' | 'checkUptime' | 'probeReachability', () => QueryKey> = {
+  checkReachability: () => ['check_reachability'],
+  checkUptime: () => ['check_uptime'],
+  probeReachability: () => ['probe_reachability'],
 };
 
 export function useChecksReachabilitySuccessRate() {
@@ -46,7 +43,7 @@ export function useChecksUptimeSuccessRate() {
 
   return useSuspenseQuery({
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
-    queryKey: [...queryKeys.checkReachability(), query, url],
+    queryKey: [...queryKeys.checkUptime(), query, url],
     queryFn: () => queryMetric<MetricCheckSuccess>(url, query, options),
     refetchInterval: (query) => STANDARD_REFRESH_INTERVAL,
   });

@@ -1,5 +1,4 @@
-import React, { useContext, useMemo, useState } from 'react';
-import { useAsyncCallback } from 'react-async-hook';
+import React, { useMemo, useState } from 'react';
 import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 import { GrafanaTheme2, OrgRole } from '@grafana/data';
@@ -17,11 +16,10 @@ import {
 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { Check, CheckFormValues, CheckPageParams, CheckType, ROUTES, SubmissionErrorWrapper } from 'types';
-import { FaroEvent, reportError, reportEvent } from 'faro';
+import { Check, CheckFormValues, CheckPageParams, CheckType, ROUTES } from 'types';
 import { checkType as getCheckType, hasRole } from 'utils';
 import { validateJob, validateTarget } from 'validation';
-import { InstanceContext } from 'contexts/InstanceContext';
+import { useCreateCheck, useDeleteCheck, useUpdateCheck } from 'data/useChecks';
 import { CheckFormAlert } from 'components/CheckFormAlert';
 import CheckTarget from 'components/CheckTarget';
 import { CheckTestButton } from 'components/CheckTestButton';
@@ -54,9 +52,10 @@ const getStyles = (theme: GrafanaTheme2) => ({
 });
 
 export const CheckEditor = ({ onReturn, checks }: Props) => {
-  const {
-    instance: { api },
-  } = useContext(InstanceContext);
+  const { mutate: updateCheck, error: updateError, isPending: updatePending } = useUpdateCheck();
+  const { mutate: addCheck, error: createError, isPending: createPending } = useCreateCheck();
+  const { mutate: removeCheck, error: deleteError, isPending: deletePending } = useDeleteCheck();
+
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const styles = useStyles2(getStyles);
   // If we're editing, grab the appropriate check from the list
@@ -78,42 +77,34 @@ export const CheckEditor = ({ onReturn, checks }: Props) => {
   }
 
   const isEditor = hasRole(OrgRole.Editor);
+  const onSuccess = () => onReturn(true);
 
-  const {
-    execute: onSubmit,
-    error,
-    loading: submitting,
-  } = useAsyncCallback(async (checkValues: CheckFormValues) => {
-    const updatedCheck = getCheckFromFormValues(checkValues, defaultValues, checkType);
-    if (check?.id) {
-      reportEvent(FaroEvent.UPDATE_CHECK, { type: checkType });
-      await api?.updateCheck({
-        id: check.id,
-        tenantId: check.tenantId,
-        ...updatedCheck,
-      });
-    } else {
-      reportEvent(FaroEvent.CREATE_CHECK);
-      await api?.addCheck(updatedCheck);
+  const onSubmit = (checkValues: CheckFormValues) => {
+    const toSubmit = getCheckFromFormValues(checkValues, defaultValues, checkType);
+
+    if (check.id) {
+      return updateCheck(
+        {
+          id: check.id,
+          tenantId: check.tenantId,
+          ...toSubmit,
+        },
+        { onSuccess }
+      );
     }
-    onReturn(true);
-  });
-  const submissionError = error as unknown as SubmissionErrorWrapper;
-  if (error) {
-    reportError(error.message ?? error, check?.id ? FaroEvent.UPDATE_CHECK : FaroEvent.CREATE_CHECK);
-  }
-  const onRemoveCheck = async () => {
-    const id = check?.id;
-    if (!id) {
-      return;
-    }
-    reportEvent(FaroEvent.DELETE_CHECK, { type: checkType });
-    await api?.deleteCheck(id);
-    onReturn(true);
+
+    return addCheck(toSubmit, { onSuccess });
+  };
+
+  const onDelete = () => {
+    removeCheck(check, { onSuccess });
   };
 
   const capitalizedCheckType = checkType.slice(0, 1).toUpperCase().concat(checkType.split('').slice(1).join(''));
   const headerText = check?.id ? `Editing ${check.job}` : `Add ${capitalizedCheckType} check`;
+  const error = updateError || createError || deleteError;
+  const submitting = updatePending || createPending || deletePending;
+
   return (
     <PluginPage pageNav={{ text: check?.job ? `Editing ${check.job}` : headerText }}>
       <>
@@ -205,24 +196,22 @@ export const CheckEditor = ({ onReturn, checks }: Props) => {
                 Cancel
               </LinkButton>
             </HorizontalGroup>
-            {submissionError && (
-              <div className={styles.submissionError}>
-                <Alert title="Save failed" severity="error">
-                  {`${submissionError.status}: ${
-                    submissionError.data?.msg?.concat(', ', submissionError.data?.err ?? '') ?? 'Something went wrong'
-                  }`}
-                </Alert>
-              </div>
-            )}
           </form>
         </FormProvider>
       </>
+      {error && (
+        <div className={styles.submissionError}>
+          <Alert title="Save failed" severity="error">
+            {error.message ?? 'Something went wrong'}
+          </Alert>
+        </div>
+      )}
       <ConfirmModal
         isOpen={showDeleteModal}
         title="Delete check"
         body="Are you sure you want to delete this check?"
         confirmText="Delete check"
-        onConfirm={onRemoveCheck}
+        onConfirm={onDelete}
         onDismiss={() => setShowDeleteModal(false)}
       />
     </PluginPage>

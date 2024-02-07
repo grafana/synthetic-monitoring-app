@@ -17,8 +17,8 @@ import {
 import { Spinner } from '@grafana/ui';
 
 import { CheckFiltersType, CheckListViewType, VizViewSceneAppConfig } from 'types';
-import { ChecksContext } from 'contexts/ChecksContext';
 import { InstanceContext } from 'contexts/InstanceContext';
+import { useChecks } from 'data/useChecks';
 import { CheckFilters } from 'components/CheckFilters';
 import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
@@ -288,7 +288,7 @@ export function CheckListScene({
   onFilterChange,
 }: Props) {
   const { instance } = useContext(InstanceContext);
-  const { checks, loading } = useContext(ChecksContext);
+  const { data: checks, isLoading } = useChecks();
 
   const { api, logs, metrics } = useMemo(
     () => ({ api: instance.api, logs: instance.logs, metrics: instance.metrics }),
@@ -327,7 +327,7 @@ export function CheckListScene({
     );
   }, [setViewType, setCurrentPage, api, logs, metrics, checks, checkFilters, handleResetFilters, onFilterChange]);
 
-  if (!scene || loading) {
+  if (!scene || isLoading) {
     return <Spinner />;
   }
 

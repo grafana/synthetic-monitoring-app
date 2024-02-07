@@ -3,17 +3,19 @@ import { type QueryKey, useSuspenseQuery } from '@tanstack/react-query';
 
 import { Check, CheckType } from 'types';
 import { checkType, queryMetric } from 'utils';
+import { SMDataSource } from 'datasource/DataSource';
 import { MetricLatency } from 'datasource/responses.types';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { STANDARD_REFRESH_INTERVAL } from 'components/constants';
 
-const queryKeys: Record<string, () => QueryKey> = {
+const queryKeys: Record<'latencies', () => QueryKey> = {
   latencies: () => ['latencies'],
 };
 
 export function useLatency(check: Check) {
   const { instance } = useContext(InstanceContext);
-  const url = instance.api?.getMetricsDS()?.url || ``;
+  const api = instance.api as SMDataSource;
+  const url = api.getMetricsDS()?.url || ``;
   const query = getQuery(check);
 
   return useSuspenseQuery({
