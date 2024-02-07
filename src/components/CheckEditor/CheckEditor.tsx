@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 import { GrafanaTheme2, OrgRole } from '@grafana/data';
-import { config } from '@grafana/runtime';
+import { config, locationService } from '@grafana/runtime';
 import {
   Alert,
   Button,
@@ -19,7 +19,7 @@ import { css } from '@emotion/css';
 import { Check, CheckFormValues, CheckPageParams, CheckType, ROUTES } from 'types';
 import { checkType as getCheckType, hasRole } from 'utils';
 import { validateJob, validateTarget } from 'validation';
-import { useCreateCheck, useDeleteCheck, useUpdateCheck } from 'data/useChecks';
+import { useChecks, useCUDChecks } from 'data/useChecks';
 import { CheckFormAlert } from 'components/CheckFormAlert';
 import CheckTarget from 'components/CheckTarget';
 import { CheckTestButton } from 'components/CheckTestButton';
@@ -37,29 +37,22 @@ import {
 import { CheckSettings } from './CheckSettings';
 import { ProbeOptions } from './ProbeOptions';
 
-interface Props {
-  checks: Check[];
-  onReturn: (reload: boolean) => void;
-}
-
 const getStyles = (theme: GrafanaTheme2) => ({
-  breakLine: css`
-    margin-top: ${theme.spacing(3)};
-  `,
-  submissionError: css`
-    margin-top: ${theme.spacing(2)};
-  `,
+  breakLine: css({
+    marginTop: theme.spacing(3),
+  }),
+  submissionError: css({
+    marginTop: theme.spacing(2),
+  }),
 });
 
-export const CheckEditor = ({ onReturn, checks }: Props) => {
-  const { mutate: updateCheck, error: updateError, isPending: updatePending } = useUpdateCheck();
-  const { mutate: addCheck, error: createError, isPending: createPending } = useCreateCheck();
-  const { mutate: removeCheck, error: deleteError, isPending: deletePending } = useDeleteCheck();
+export const CheckEditor = () => {
+  const { data: checks } = useChecks();
+  const { id, checkType: checkTypeParam } = useParams<CheckPageParams>();
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const styles = useStyles2(getStyles);
   // If we're editing, grab the appropriate check from the list
-  const { id, checkType: checkTypeParam } = useParams<CheckPageParams>();
   let checkType = checkTypeParamToCheckType(checkTypeParam);
   let check: Check = fallbackCheck(checkType);
 
@@ -76,8 +69,10 @@ export const CheckEditor = ({ onReturn, checks }: Props) => {
     checkType = selectedCheckType;
   }
 
+  const { updateCheck, createCheck, deleteCheck, error, submitting } = useCUDChecks({ eventInfo: { checkType } });
+
   const isEditor = hasRole(OrgRole.Editor);
-  const onSuccess = () => onReturn(true);
+  const onSuccess = () => locationService.getHistory().goBack();
 
   const onSubmit = (checkValues: CheckFormValues) => {
     const toSubmit = getCheckFromFormValues(checkValues, defaultValues, checkType);
@@ -93,17 +88,15 @@ export const CheckEditor = ({ onReturn, checks }: Props) => {
       );
     }
 
-    return addCheck(toSubmit, { onSuccess });
+    return createCheck(toSubmit, { onSuccess });
   };
 
   const onDelete = () => {
-    removeCheck(check, { onSuccess });
+    deleteCheck(check, { onSuccess });
   };
 
   const capitalizedCheckType = checkType.slice(0, 1).toUpperCase().concat(checkType.split('').slice(1).join(''));
   const headerText = check?.id ? `Editing ${check.job}` : `Add ${capitalizedCheckType} check`;
-  const error = updateError || createError || deleteError;
-  const submitting = updatePending || createPending || deletePending;
 
   return (
     <PluginPage pageNav={{ text: check?.job ? `Editing ${check.job}` : headerText }}>

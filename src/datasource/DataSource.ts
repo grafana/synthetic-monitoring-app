@@ -12,10 +12,11 @@ import { getBackendSrv, getTemplateSrv } from '@grafana/runtime';
 import { isArray } from 'lodash';
 import { firstValueFrom } from 'rxjs';
 
-import { AdHocCheckResponse, Check, HostedInstance, Probe, ThresholdSettings } from '../types';
+import { Check, HostedInstance, Probe, ThresholdSettings } from '../types';
 import {
   AddCheckResult,
   AddProbeResult,
+  AdHocCheckResponse,
   DeleteCheckResult,
   DeleteProbeResult,
   ListCheckResult,
@@ -294,12 +295,13 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   async testCheck(check: Check) {
     const randomSelection = getRandomProbes(check.probes, 5);
     check.probes = randomSelection;
+    const { id, ...rest } = check;
 
     return firstValueFrom(
       getBackendSrv().fetch<AdHocCheckResponse>({
         method: 'POST',
         url: `${this.instanceSettings.url}/sm/check/adhoc`,
-        data: check,
+        data: rest,
       })
     ).then((res) => {
       return res.data;

@@ -5,6 +5,7 @@ import { Check, FilteredCheck, GrafanaInstances, SubmissionErrorWrapper } from '
 import { CHECK_LIST_ICON_OVERLAY_LS_KEY, CHECK_LIST_VIEW_TYPE_LS_KEY } from 'components/constants';
 
 export const fetchProbeOptions = async (instance: GrafanaInstances) => {
+  // TODO: come back to this one
   const probes = await instance.api?.listProbes();
   if (probes) {
     return probes.map((p) => {
@@ -141,7 +142,7 @@ export const deleteSelectedChecks = async (instance: GrafanaInstances, selectedC
   }
 };
 
-export const deleteSingleCheck = async (instance: GrafanaInstances, check: Check, onUpdate: () => void) => {
+export const deleteSingleCheck = async (instance: GrafanaInstances, check: Check) => {
   try {
     if (!check.id) {
       appEvents.emit(AppEvents.alertError, ['There was an error deleting the check']);
@@ -149,7 +150,6 @@ export const deleteSingleCheck = async (instance: GrafanaInstances, check: Check
     }
     await instance.api?.deleteCheck(check.id);
     appEvents.emit(AppEvents.alertSuccess, ['Check deleted successfully']);
-    onUpdate();
   } catch (e) {
     const err = e as SubmissionErrorWrapper;
     const errorMessage = err?.data?.err ?? '';

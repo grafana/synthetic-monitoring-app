@@ -1,11 +1,12 @@
-import React, { useContext, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { Alert, Button, Modal, Spinner } from '@grafana/ui';
 
-import { AdHocCheckResponse, Check, CheckFormValues, CheckType } from 'types';
+import { Check, CheckFormValues, CheckType } from 'types';
 import { FaroEvent, reportEvent } from 'faro';
 import { checkType as getCheckType } from 'utils';
-import { InstanceContext } from 'contexts/InstanceContext';
+import { AdHocCheckResponse } from 'datasource/responses.types';
+import { useTestCheck } from 'data/useChecks';
 
 import { getCheckFromFormValues, getDefaultValuesFromCheck } from './CheckEditor/checkFormTransformations';
 import { CheckTestResultsModal } from './CheckTestResultsModal';
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export function CheckTestButton({ check }: Props) {
+  const { mutate: testCheck } = useTestCheck();
   const [isTestModalOpen, setTestModalOpen] = useState(false);
   const [isErrorModalOpen, setErrorModalOpen] = useState(false);
   const [error, setError] = useState('');
@@ -23,7 +25,7 @@ export function CheckTestButton({ check }: Props) {
   const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
   const formMethods = useFormContext();
   const checkType = getCheckType(check.settings);
-  const { instance } = useContext(InstanceContext);
+
   return (
     <>
       <Button
@@ -35,19 +37,18 @@ export function CheckTestButton({ check }: Props) {
           const check = getCheckFromFormValues(values, defaultValues, checkType);
           reportEvent(FaroEvent.TEST_CHECK, { type: checkType });
           setTestRequestInFlight(true);
-          instance?.api
-            ?.testCheck(check)
-            .then((resp) => {
+          testCheck(check, {
+            onSuccess: (resp) => {
               setTestModalOpen(true);
               setTestResponse(resp);
-            })
-            .catch((err) => {
-              setErrorModalOpen(true);
-              setError(err?.data?.err ?? err?.data?.msg);
-            })
-            .finally(() => {
               setTestRequestInFlight(false);
-            });
+            },
+            onError: (e) => {
+              setErrorModalOpen(true);
+              setError(e.message);
+              setTestRequestInFlight(false);
+            },
+          });
         }}
       >
         {testRequestInFlight ? <Spinner /> : 'Test'}

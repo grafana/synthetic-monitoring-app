@@ -15,11 +15,8 @@ import type {
 import { InstanceContext } from 'contexts/InstanceContext';
 import { queryClient } from 'data/queryClient';
 
-const queryKeys: Record<'list' | 'create' | 'update' | 'delete', () => QueryKey> = {
+export const queryKeys: Record<'list', () => QueryKey> = {
   list: () => ['probes'],
-  create: () => [...queryKeys.list(), 'create-probe'],
-  update: () => [...queryKeys.list(), 'update-probe'],
-  delete: () => [...queryKeys.list(), 'delete-probe'],
 };
 
 export function useProbes() {
@@ -42,10 +39,10 @@ export function useProbe(id: number) {
   };
 }
 
-export function useCreateProbe({ onError, onSuccess }: MutationProps<AddProbeResult> = {}) {
+export function useCreateProbe({ eventInfo, onError, onSuccess }: MutationProps<AddProbeResult> = {}) {
   const { instance } = useContext(InstanceContext);
   const api = instance.api as SMDataSource;
-  const event = FaroEvent.CREATE_PROBE;
+  const eventType = FaroEvent.CREATE_PROBE;
 
   return useMutation<AddProbeResult, Error, Probe, UseMutationResult>({
     mutationFn: async (probe: Probe) => {
@@ -68,7 +65,10 @@ export function useCreateProbe({ onError, onSuccess }: MutationProps<AddProbeRes
       onSuccess?.(data);
     },
     meta: {
-      event,
+      event: {
+        info: eventInfo,
+        type: eventType,
+      },
       successAlert: (res: AddProbeResult) => `Created probe ${res.probe.name}`,
       errorAlert: (error: Error) => `Failed to create probe`,
     },
@@ -83,10 +83,10 @@ function handleAddProbeError(error: unknown) {
   return error;
 }
 
-export function useUpdateProbe({ onError, onSuccess }: MutationProps<UpdateProbeResult> = {}) {
+export function useUpdateProbe({ eventInfo, onError, onSuccess }: MutationProps<UpdateProbeResult> = {}) {
   const { instance } = useContext(InstanceContext);
   const api = instance.api as SMDataSource;
-  const event = FaroEvent.UPDATE_PROBE;
+  const eventType = FaroEvent.UPDATE_PROBE;
 
   return useMutation<UpdateProbeResult, Error, Probe, UseMutationResult>({
     mutationFn: (probe: Probe) => api.updateProbe(probe),
@@ -98,7 +98,10 @@ export function useUpdateProbe({ onError, onSuccess }: MutationProps<UpdateProbe
       onSuccess?.(data);
     },
     meta: {
-      event,
+      event: {
+        info: eventInfo,
+        type: eventType,
+      },
       successAlert: (res: UpdateProbeResult) => `Updated probe ${res.probe.name}`,
       errorAlert: () => `Failed to update probe`,
     },
@@ -109,10 +112,10 @@ type ExtendedDeleteProbeResult = DeleteProbeResult & {
   probeName: Probe['name'];
 };
 
-export function useDeleteProbe({ onError, onSuccess }: MutationProps<DeleteProbeResult> = {}) {
+export function useDeleteProbe({ eventInfo, onError, onSuccess }: MutationProps<DeleteProbeResult> = {}) {
   const { instance } = useContext(InstanceContext);
   const api = instance.api as SMDataSource;
-  const event = FaroEvent.DELETE_PROBE;
+  const eventType = FaroEvent.DELETE_PROBE;
 
   return useMutation<ExtendedDeleteProbeResult, Error, Probe, UseMutationResult>({
     mutationFn: (probe: Probe) =>
@@ -128,16 +131,19 @@ export function useDeleteProbe({ onError, onSuccess }: MutationProps<DeleteProbe
       onSuccess?.(data);
     },
     meta: {
-      event,
+      event: {
+        info: eventInfo,
+        type: eventType,
+      },
       successAlert: (res: ExtendedDeleteProbeResult) => `Deleted probe ${res.probeName}`,
     },
   });
 }
 
-export function useResetProbeToken({ onError, onSuccess }: MutationProps<ResetProbeTokenResult> = {}) {
+export function useResetProbeToken({ eventInfo, onError, onSuccess }: MutationProps<ResetProbeTokenResult> = {}) {
   const { instance } = useContext(InstanceContext);
   const api = instance.api as SMDataSource;
-  const event = FaroEvent.RESET_PROBE_TOKEN;
+  const eventType = FaroEvent.RESET_PROBE_TOKEN;
 
   return useMutation<ResetProbeTokenResult, Error, Probe, UseMutationResult>({
     mutationFn: (probe: Probe) => api.resetProbeToken(probe),
@@ -148,7 +154,10 @@ export function useResetProbeToken({ onError, onSuccess }: MutationProps<ResetPr
       onSuccess?.(data);
     },
     meta: {
-      event,
+      event: {
+        info: eventInfo,
+        type: eventType,
+      },
       errorAlert: () => `Failed to reset probe token`,
     },
   });

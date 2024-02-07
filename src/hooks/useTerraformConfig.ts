@@ -1,32 +1,33 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext } from 'react';
 import { config as runtimeConfig } from '@grafana/runtime';
 
-import { GrafanaInstances } from 'types';
+import { Check, Probe } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { checkToTF, probeToTF,sanitizeName } from 'components/TerraformConfig/terraformConfigUtils';
-import { TFCheckConfig, TFConfig, TFOutput,TFProbeConfig } from 'components/TerraformConfig/terraformTypes';
+import { useChecks } from 'data/useChecks';
+import { useProbes } from 'data/useProbes';
+import { checkToTF, probeToTF, sanitizeName } from 'components/TerraformConfig/terraformConfigUtils';
+import { TFCheckConfig, TFConfig, TFOutput, TFProbeConfig } from 'components/TerraformConfig/terraformTypes';
 
-async function generateTerraformConfig(instance: GrafanaInstances): Promise<TFOutput> {
-  const checks = await instance.api?.listChecks();
-  const probes = await instance.api?.listProbes();
-  if (!checks || !probes) {
-    throw new Error("Couldn't generate TF config");
-  }
-  const checksConfig = checks?.reduce<TFCheckConfig>((acc, check) => {
-    const checkConfig = checkToTF(check);
-    const resourceName = sanitizeName(`${check.job}_${check.target}`);
-    if (!acc[resourceName]) {
-      acc[resourceName] = checkConfig;
-    } else {
-      throw new Error(`Cannot generate TF config for checks with duplicate resource names: ${resourceName}`);
+function generateTerraformConfig(probes: Probe[], checks: Check[], apiHost?: string): TFOutput {
+  const checksConfig = checks.reduce<TFCheckConfig>((acc, check) => {
+    if (check) {
+      const checkConfig = checkToTF(check);
+      const resourceName = sanitizeName(`${check.job}_${check.target}`);
+      if (!acc[resourceName]) {
+        acc[resourceName] = checkConfig;
+      } else {
+        throw new Error(`Cannot generate TF config for checks with duplicate resource names: ${resourceName}`);
+      }
     }
+
     return acc;
   }, {});
 
-  const probesConfig = probes?.reduce<TFProbeConfig>((acc, probe) => {
-    if (probe.public) {
+  const probesConfig = probes.reduce<TFProbeConfig>((acc, probe) => {
+    if (!probe || probe.public) {
       return acc;
     }
+
     const probeConfig = probeToTF(probe);
     const sanitizedName = sanitizeName(probe.name);
     if (!acc[sanitizedName]) {
@@ -49,7 +50,7 @@ async function generateTerraformConfig(instance: GrafanaInstances): Promise<TFOu
       grafana: {
         url: runtimeConfig.appUrl,
         auth: '<add an api key from grafana.com>',
-        sm_url: instance.api?.instanceSettings.jsonData.apiHost ?? '<ADD SM API URL>',
+        sm_url: apiHost ?? '<ADD SM API URL>',
         sm_access_token: '<add an sm access token>',
       },
     },
@@ -74,16 +75,11 @@ async function generateTerraformConfig(instance: GrafanaInstances): Promise<TFOu
 
 export function useTerraformConfig() {
   const { instance } = useContext(InstanceContext);
-  const [generated, setGenerated] = useState<TFOutput>();
-  const [error, setError] = useState('');
-  useEffect(() => {
-    generateTerraformConfig(instance)
-      .then((generated) => {
-        setGenerated(generated);
-      })
-      .catch((e) => {
-        setError(e?.message ?? e);
-      });
-  }, [instance]);
+  const { data: probes = [], error: probesError } = useProbes();
+  const { data: checks = [], error: checksError } = useChecks();
+  const apiHost = instance.api?.instanceSettings.jsonData?.apiHost;
+  const generated = generateTerraformConfig(probes, checks, apiHost);
+  const error = probesError || checksError;
+
   return { ...(generated ?? {}), error };
 }

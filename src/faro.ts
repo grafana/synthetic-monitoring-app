@@ -23,17 +23,37 @@ enum FARO_ENV {
   PROD = 'production',
 }
 
+export type FaroEventMeta = {
+  type: FaroEvent;
+  info?: Record<string, string>;
+};
+
+export function isFaroEventMeta(event?: unknown): event is FaroEventMeta {
+  if (!event) {
+    return false;
+  }
+
+  return typeof event === 'object' && 'type' in event;
+}
+
 export function pushFaroCount(type: string, count: number) {
   try {
     faro.api.pushMeasurement({ type, values: { count } });
   } catch (e) {}
 }
 
-export function reportEvent(type: FaroEvent, options: Record<string, any> = {}) {
-  const slug = config.bootData.user.orgName;
+export function reportEvent(type: FaroEvent, info: Record<string, string> = {}) {
+  const attributes = {
+    ...info,
+    slug: config.bootData.user.orgName,
+  };
+
   try {
-    faro.api.pushEvent(type, { slug });
-  } catch (e) {}
+    console.log(`Reporting event: ${type}`, attributes);
+    faro.api.pushEvent(type, attributes);
+  } catch (e) {
+    console.error(`Failed to report event: ${type}`, e);
+  }
 }
 
 function sanitizeError(error: Error | Object | string) {

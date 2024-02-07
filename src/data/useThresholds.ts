@@ -9,16 +9,17 @@ import type { UpdateTenantSettingsResult } from 'datasource/responses.types';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { queryClient } from 'data/queryClient';
 
-const queryKeys: Record<'list', () => QueryKey> = {
+export const queryKeys: Record<'list', () => QueryKey> = {
   list: () => ['thresholds'],
 };
 
 export function useThresholds() {
   const { instance } = useContext(InstanceContext);
+  const api = instance.api as SMDataSource;
 
   return useSuspenseQuery({
     queryKey: queryKeys.list(),
-    queryFn: () => instance.api?.getTenantSettings(),
+    queryFn: () => api.getTenantSettings(),
   });
 }
 
@@ -35,7 +36,7 @@ export function useThreshold(type: keyof ThresholdSettings) {
 export function useUpdateThresholds({ onError, onSuccess }: MutationProps<UpdateTenantSettingsResult> = {}) {
   const { instance } = useContext(InstanceContext);
   const api = instance.api as SMDataSource;
-  const event = FaroEvent.SAVE_THRESHOLDS;
+  const eventType = FaroEvent.SAVE_THRESHOLDS;
 
   return useMutation<UpdateTenantSettingsResult, Error, ThresholdSettings, UseMutationResult>({
     mutationFn: (thresholds: ThresholdSettings) => api.updateTenantSettings({ thresholds }),
@@ -47,7 +48,9 @@ export function useUpdateThresholds({ onError, onSuccess }: MutationProps<Update
       onSuccess?.(data);
     },
     meta: {
-      event,
+      event: {
+        type: eventType,
+      },
       successAlert: () => `Threshold settings updated.`,
       errorAlert: () => `Failed to update threshold settings.`,
     },

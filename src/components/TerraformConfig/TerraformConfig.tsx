@@ -48,7 +48,7 @@ export const TerraformConfig = () => {
         onDismiss={() => setShowModal(false)}
         contentClassName={styles.modal}
       >
-        {error && <Alert title={error} />}
+        {error && <Alert title={error.message} />}
         {config && checkCommands && (
           <>
             <Alert title="Terraform and JSON" severity="info">

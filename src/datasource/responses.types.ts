@@ -1,4 +1,4 @@
-import { Check, Probe, ThresholdSettings } from 'types';
+import { Check, Probe, Settings, ThresholdSettings } from 'types';
 
 export type ListProbeResult = Probe[];
 
@@ -26,6 +26,15 @@ export type DeleteCheckResult = {
 };
 
 export type UpdateCheckResult = Check;
+
+export type AdHocCheckResponse = {
+  id: string;
+  tenantId: number;
+  timeout: number;
+  settings: Settings;
+  probes: number[];
+  target: string;
+};
 
 export type ResetProbeTokenResult = {
   probe: Probe;

@@ -1,10 +1,11 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Button, HorizontalGroup, LoadingPlaceholder, Modal, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { intersection } from 'lodash';
 
 import { FilteredCheck, GrafanaInstances, Probe } from 'types';
+import { useProbes } from 'data/useProbes';
 
 import ProbesByRegion from './ProbesByRegion';
 
@@ -38,8 +39,14 @@ const getStyles = (theme: GrafanaTheme2) => ({
 });
 
 const BulkEditModal = ({ onDismiss, onSuccess, onError, isOpen, selectedChecks, action, instance }: Props) => {
-  const [probes, setProbes] = useState<Probe[]>();
-  const [probesById, setProbesById] = useState<ProbeById | undefined>(undefined);
+  const { data: probes = [] } = useProbes();
+  const probesById = probes.reduce<ProbeById>((acc, probe) => {
+    return {
+      ...acc,
+      [Number(probe.id)]: probe,
+    };
+  }, {});
+
   const [selectedProbes, setSelectedProbes] = useState<Probe[]>([]);
   const [probesToRemove, setProbesToRemove] = useState<number[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -118,27 +125,6 @@ const BulkEditModal = ({ onDismiss, onSuccess, onError, isOpen, selectedChecks, 
     setProbesToRemove([]);
   };
 
-  const getProbes = useCallback(async () => {
-    const p = await instance.api?.listProbes();
-    if (p !== undefined) {
-      const byId = p.reduce((acc, probe) => {
-        return {
-          ...acc,
-          [Number(probe.id)]: probe,
-        };
-      }, {});
-      setProbes(p.sort((a: Probe, b: Probe) => (a.name < b.name ? -1 : 1)));
-      setProbesById(byId);
-    } else {
-      onError('Failed to get probes');
-      onDismiss();
-    }
-  }, [instance, onDismiss, onError]);
-
-  useEffect(() => {
-    getProbes();
-  }, [getProbes]);
-
   const commonProbes: number[] = intersection(...checks.map((check) => check.probes));
 
   return (
@@ -165,7 +151,7 @@ const BulkEditModal = ({ onDismiss, onSuccess, onError, isOpen, selectedChecks, 
           <div>
             {probes && (
               <ProbesByRegion
-                probes={probes}
+                probes={probes.sort((a: Probe, b: Probe) => (a.name < b.name ? -1 : 1))}
                 selectedProbes={selectedProbes}
                 commonProbes={commonProbes}
                 addOrRemoveProbe={addOrRemoveProbe}

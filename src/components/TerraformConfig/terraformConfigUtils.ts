@@ -142,7 +142,15 @@ const settingsToTF = (check: Check): TFCheckSettings => {
           }),
         },
       };
+    case CheckType.K6: {
+      if (!check.settings.k6) {
+        throw new Error(`could not translate settings to terraform config for check ${check.job}`);
+      }
+
+      return {};
+    }
     default:
+      console.log(check);
       throw new Error(`could not translate settings for check to terraform config: ${check.job}`);
   }
 };

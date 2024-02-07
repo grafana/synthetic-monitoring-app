@@ -570,15 +570,6 @@ export interface ProbePageParams {
   id?: string;
 }
 
-export interface AdHocCheckResponse {
-  id: string;
-  tenantId: number;
-  timeout: number;
-  settings: Settings;
-  probes: number[];
-  target: string;
-}
-
 export interface DashboardSceneAppConfig {
   metrics: DataSourceRef;
   logs: DataSourceRef;

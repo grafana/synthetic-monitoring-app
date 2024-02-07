@@ -1,27 +1,29 @@
 import { useContext } from 'react';
-import { type QueryKey, useMutation, UseMutationResult, useSuspenseQuery } from '@tanstack/react-query';
+import { type QueryKey, useMutation, UseMutationResult, useQuery, useSuspenseQuery } from '@tanstack/react-query';
 import { isFetchError } from '@grafana/runtime';
 
 import { type MutationProps } from 'data/types';
 import { type Check } from 'types';
-import { FaroEvent } from 'faro';
+import { FaroEvent, FaroEventMeta } from 'faro';
 import { SMDataSource } from 'datasource/DataSource';
-import type { AddCheckResult, DeleteCheckResult, UpdateCheckResult } from 'datasource/responses.types';
+import type {
+  AddCheckResult,
+  AdHocCheckResponse,
+  DeleteCheckResult,
+  UpdateCheckResult,
+} from 'datasource/responses.types';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { queryClient } from 'data/queryClient';
 
-const queryKeys: Record<'list' | 'create' | 'update' | 'delete', () => QueryKey> = {
+export const queryKeys: Record<'list', () => QueryKey> = {
   list: () => ['checks'],
-  create: () => [...queryKeys.list(), 'create-check'],
-  update: () => [...queryKeys.list(), 'update-check'],
-  delete: () => [...queryKeys.list(), 'delete-check'],
 };
 
 export function useChecks() {
   const { instance } = useContext(InstanceContext);
   const api = instance.api as SMDataSource;
 
-  return useSuspenseQuery({
+  return useQuery({
     queryKey: queryKeys.list(),
     queryFn: () => api.listChecks(),
   });
@@ -37,10 +39,10 @@ export function useCheck(id: number) {
   };
 }
 
-export function useCreateCheck({ onError, onSuccess }: MutationProps<AddCheckResult> = {}) {
+export function useCreateCheck({ eventInfo, onError, onSuccess }: MutationProps<AddCheckResult> = {}) {
   const { instance } = useContext(InstanceContext);
   const api = instance.api as SMDataSource;
-  const event = FaroEvent.CREATE_CHECK;
+  const eventType = FaroEvent.CREATE_CHECK;
 
   return useMutation<AddCheckResult, Error, Check, UseMutationResult>({
     mutationFn: async (check: Check) => {
@@ -60,17 +62,20 @@ export function useCreateCheck({ onError, onSuccess }: MutationProps<AddCheckRes
       onSuccess?.(data);
     },
     meta: {
-      event,
+      event: {
+        info: eventInfo,
+        type: eventType,
+      },
       successAlert: (res: AddCheckResult) => `Created check ${res.job}`,
       errorAlert: (error: Error) => `Failed to create check`,
     },
   });
 }
 
-export function useUpdateCheck({ onError, onSuccess }: MutationProps<UpdateCheckResult> = {}) {
+export function useUpdateCheck({ eventInfo, onError, onSuccess }: MutationProps<UpdateCheckResult> = {}) {
   const { instance } = useContext(InstanceContext);
   const api = instance.api as SMDataSource;
-  const event = FaroEvent.UPDATE_CHECK;
+  const eventType = FaroEvent.UPDATE_CHECK;
 
   return useMutation<UpdateCheckResult, Error, Check, UseMutationResult>({
     mutationFn: async (check: Check) => {
@@ -93,7 +98,10 @@ export function useUpdateCheck({ onError, onSuccess }: MutationProps<UpdateCheck
       onSuccess?.(data);
     },
     meta: {
-      event,
+      event: {
+        info: eventInfo,
+        type: eventType,
+      },
       successAlert: (res: UpdateCheckResult) => `Updated check ${res.job}`,
       errorAlert: () => `Failed to update check`,
     },
@@ -104,10 +112,10 @@ type ExtendedDeleteCheckResult = DeleteCheckResult & {
   job: Check['job'];
 };
 
-export function useDeleteCheck({ onError, onSuccess }: MutationProps<DeleteCheckResult> = {}) {
+export function useDeleteCheck({ eventInfo, onError, onSuccess }: MutationProps<DeleteCheckResult> = {}) {
   const { instance } = useContext(InstanceContext);
   const api = instance.api as SMDataSource;
-  const event = FaroEvent.DELETE_CHECK;
+  const eventType = FaroEvent.DELETE_CHECK;
 
   return useMutation<ExtendedDeleteCheckResult, Error, Check, UseMutationResult>({
     mutationFn: async (check: Check) => {
@@ -130,10 +138,65 @@ export function useDeleteCheck({ onError, onSuccess }: MutationProps<DeleteCheck
       onSuccess?.(data);
     },
     meta: {
-      event,
+      event: {
+        info: eventInfo,
+        type: eventType,
+      },
       successAlert: (res: ExtendedDeleteCheckResult) => `Deleted check ${res.job}`,
     },
   });
+}
+
+export function useTestCheck({ eventInfo, onSuccess, onError }: MutationProps<AdHocCheckResponse> = {}) {
+  const { instance } = useContext(InstanceContext);
+  const api = instance.api as SMDataSource;
+  const eventType = FaroEvent.TEST_CHECK;
+
+  return useMutation<AdHocCheckResponse, Error, Check, UseMutationResult>({
+    mutationFn: async (check: Check) => {
+      try {
+        const res = await api.testCheck(check).then((res) => ({
+          ...res,
+          job: check.job,
+        }));
+
+        return res;
+      } catch (error) {
+        throw handleError(error);
+      }
+    },
+    onError: (error: unknown) => {
+      onError?.(error);
+    },
+    onSuccess: (data) => {
+      onSuccess?.(data);
+    },
+    meta: {
+      event: {
+        info: eventInfo,
+        type: eventType,
+      },
+      successAlert: (res: AdHocCheckResponse) => `Testing check ${res.id}`,
+      errorAlert: () => `Failed to test check`,
+    },
+  });
+}
+
+export function useCUDChecks({ eventInfo }: { eventInfo?: FaroEventMeta['info'] } = {}) {
+  const { mutate: updateCheck, error: updateError, isPending: updatePending } = useUpdateCheck({ eventInfo });
+  const { mutate: createCheck, error: createError, isPending: createPending } = useCreateCheck({ eventInfo });
+  const { mutate: deleteCheck, error: deleteError, isPending: deletePending } = useDeleteCheck({ eventInfo });
+
+  const error = updateError || createError || deleteError;
+  const submitting = updatePending || createPending || deletePending;
+
+  return {
+    updateCheck,
+    createCheck,
+    deleteCheck,
+    error,
+    submitting,
+  };
 }
 
 function handleError(error: unknown) {

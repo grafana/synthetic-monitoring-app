@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { AppEvents, GrafanaTheme2, OrgRole, SelectableValue } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import { Button, ButtonCascader, Checkbox, Icon, InlineSwitch, Pagination, Select, useStyles2 } from '@grafana/ui';
@@ -14,10 +14,10 @@ import {
   CheckType,
   FeatureName,
   FilteredCheck,
-  GrafanaInstances,
   Label,
 } from 'types';
 import { hasRole } from 'utils';
+import { InstanceContext } from 'contexts/InstanceContext';
 import { useChecks } from 'data/useChecks';
 import { useThresholds } from 'data/useThresholds';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
@@ -105,14 +105,279 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
 });
 
-interface Props {
-  instance: GrafanaInstances;
-  onCheckUpdate: (refetch?: boolean) => void;
-}
+const checks: Check[] = [
+  {
+    id: 1840,
+    tenantId: 76,
+    frequency: 60000,
+    offset: 0,
+    timeout: 3000,
+    enabled: true,
+    labels: [],
+    settings: {
+      dns: {
+        ipVersion: 'V4',
+        server: 'dns.google',
+        port: 53,
+        recordType: 'A',
+        protocol: 'UDP',
+        validRCodes: ['NOERROR'],
+        validateAnswerRRS: {},
+        validateAuthorityRRS: {},
+      },
+    },
+    probes: [57, 161],
+    target: 'grafana.com',
+    job: 'DNS check',
+    basicMetricsOnly: true,
+    alertSensitivity: 'low',
+    created: 1697037816.2432737,
+    modified: 1704195088.1403291,
+  },
+  {
+    id: 1841,
+    tenantId: 76,
+    frequency: 120000,
+    offset: 0,
+    timeout: 3000,
+    enabled: true,
+    labels: [],
+    settings: {
+      multihttp: {
+        entries: [
+          {
+            request: {
+              method: 'GET',
+              url: 'https://grafana.com',
+            },
+          },
+          {
+            request: {
+              method: 'GET',
+              url: 'https://test.k6.io/',
+            },
+          },
+        ],
+      },
+    },
+    probes: [57, 65, 161],
+    target: 'https://grafana.com',
+    job: 'Multihttp',
+    basicMetricsOnly: true,
+    alertSensitivity: 'none',
+    created: 1697038562.4949615,
+    modified: 1707307943.047411,
+  },
+  {
+    id: 1862,
+    tenantId: 76,
+    frequency: 120000,
+    offset: 0,
+    timeout: 4000,
+    enabled: true,
+    labels: [],
+    settings: {
+      multihttp: {
+        entries: [
+          {
+            request: {
+              method: 'GET',
+              url: 'https://swapi.dev/api/people/1',
+            },
+            variables: [
+              {
+                type: 0,
+                name: 'film0',
+                expression: 'films.0',
+              },
+            ],
+          },
+          {
+            request: {
+              method: 'GET',
+              url: '${film0}',
+            },
+            checks: [
+              {
+                type: 1,
+                condition: 2,
+                expression: 'title',
+                value: 'A New Hope',
+              },
+            ],
+          },
+        ],
+      },
+    },
+    probes: [57, 65, 161],
+    target: 'https://swapi.dev/api/people/1',
+    job: 'Swapi',
+    basicMetricsOnly: true,
+    alertSensitivity: 'none',
+    created: 1698769847.639588,
+    modified: 1707304344.9085186,
+  },
+  {
+    id: 1898,
+    tenantId: 76,
+    frequency: 60000,
+    offset: 0,
+    timeout: 3000,
+    enabled: true,
+    labels: [],
+    settings: {
+      ping: {
+        ipVersion: 'V4',
+        dontFragment: false,
+        packetCount: 0,
+      },
+    },
+    probes: [57, 65, 70, 161],
+    target: 'grafana.com',
+    job: 'Ping job name',
+    basicMetricsOnly: true,
+    alertSensitivity: 'none',
+    created: 1700759206.9702597,
+    modified: 1707308067.0322437,
+  },
+  {
+    id: 1907,
+    tenantId: 76,
+    frequency: 10000,
+    offset: 0,
+    timeout: 1000,
+    enabled: true,
+    labels: [],
+    settings: {
+      http: {
+        ipVersion: 'V4',
+        method: 'GET',
+        noFollowRedirects: false,
+        tlsConfig: {},
+        failIfSSL: false,
+        failIfNotSSL: false,
+      },
+    },
+    probes: [65],
+    target: 'https://www.githubstatus.com/',
+    job: 'gitubStatus',
+    basicMetricsOnly: true,
+    alertSensitivity: 'low',
+    created: 1704808484.2077816,
+    modified: 1704808484.2077816,
+  },
+  {
+    id: 1915,
+    tenantId: 76,
+    frequency: 60000,
+    offset: 0,
+    timeout: 10000,
+    enabled: true,
+    labels: [
+      {
+        name: 'labelname',
+        value: 'labelvalue',
+      },
+      {
+        name: 'grafana',
+        value: 'website',
+      },
+    ],
+    settings: {
+      k6: {
+        script:
+          'aW1wb3J0IHsgc2xlZXAgfSBmcm9tICdrNicKaW1wb3J0IGh0dHAgZnJvbSAnazYvaHR0cCcKCmV4cG9ydCBkZWZhdWx0IGZ1bmN0aW9uIG1haW4oKSB7CiAgbGV0IHJlc3BvbnNlID0gaHR0cC5nZXQoJ2h0dHBzOi8vd3d3LmdyYWZhbmEuY29tJykKICBzbGVlcCgxKQp9',
+      },
+    },
+    probes: [57, 65, 70, 161],
+    target: 'https://www.grafana.com',
+    job: 'A lovely scripted check',
+    basicMetricsOnly: true,
+    alertSensitivity: 'medium',
+    created: 1706025187.2305074,
+    modified: 1707307922.51613,
+  },
+  {
+    id: 1916,
+    tenantId: 76,
+    frequency: 60000,
+    offset: 0,
+    timeout: 10000,
+    enabled: true,
+    labels: [],
+    settings: {
+      k6: {
+        script:
+          'aW1wb3J0IHsgc2xlZXAgfSBmcm9tICdrNicKaW1wb3J0IGh0dHAgZnJvbSAnazYvaHR0cCcKCmV4cG9ydCBkZWZhdWx0IGZ1bmN0aW9uIG1haW4oKSB7CiAgbGV0IHJlc3BvbnNlID0gaHR0cC5nZXQoJ2h0dHBzOi8vd3d3LmdyYWZhbmEuY29tJykKICBzbGVlcCgxKQp9',
+      },
+    },
+    probes: [57, 65, 70, 161],
+    target: 'http://grafana.com',
+    job: 'A lovely scripted check 2',
+    basicMetricsOnly: true,
+    alertSensitivity: 'none',
+    created: 1706026602.2593782,
+    modified: 1707310921.9938803,
+  },
+  {
+    id: 1934,
+    tenantId: 76,
+    frequency: 100000,
+    offset: 0,
+    timeout: 1000,
+    enabled: true,
+    labels: [],
+    settings: {
+      http: {
+        ipVersion: 'V4',
+        method: 'GET',
+        noFollowRedirects: false,
+        tlsConfig: {},
+        failIfSSL: false,
+        failIfNotSSL: false,
+      },
+    },
+    probes: [57, 65, 70, 161],
+    target: 'https://grafana.com',
+    job: 'A new check',
+    basicMetricsOnly: true,
+    alertSensitivity: 'medium',
+    created: 1707233843.011894,
+    modified: 1707302040.4978206,
+  },
+  {
+    id: 1935,
+    tenantId: 76,
+    frequency: 60000,
+    offset: 0,
+    timeout: 3000,
+    enabled: true,
+    labels: [],
+    settings: {
+      http: {
+        ipVersion: 'V4',
+        method: 'GET',
+        noFollowRedirects: false,
+        tlsConfig: {},
+        failIfSSL: false,
+        failIfNotSSL: false,
+      },
+    },
+    probes: [57],
+    target: 'https://grafana.com',
+    job: 'c',
+    basicMetricsOnly: true,
+    alertSensitivity: 'none',
+    created: 1707307541.5671232,
+    modified: 1707307541.5671232,
+  },
+];
+const isLoading = false;
 
-export const CheckList = ({ instance, onCheckUpdate }: Props) => {
+export const CheckList = () => {
+  const { instance } = useContext(InstanceContext);
   const { data: thresholds } = useThresholds();
-  const { data: checks } = useChecks();
+  // const { data: checks = [], isLoading } = useChecks();
 
   const [checkFilters, setCheckFilters] = useState<CheckFiltersType>(getDefaultFilters());
   const [filteredChecks, setFilteredChecks] = useState<FilteredCheck[] | []>([]);
@@ -248,7 +513,6 @@ export const CheckList = ({ instance, onCheckUpdate }: Props) => {
     clearSelectedChecks();
     setSelectAll(false);
     setBulkActionInProgress(false);
-    onCheckUpdate(true);
   };
 
   const handleEnableSelectedChecks = async () => {
@@ -257,12 +521,10 @@ export const CheckList = ({ instance, onCheckUpdate }: Props) => {
     clearSelectedChecks();
     setSelectAll(false);
     setBulkActionInProgress(false);
-    onCheckUpdate(true);
   };
 
   const handleDeleteSingleCheck = async (check: Check) => {
-    await deleteSingleCheck(instance, check, onCheckUpdate);
-    onCheckUpdate(true);
+    await deleteSingleCheck(instance, check);
   };
 
   const handleDeleteSelectedChecks = async () => {
@@ -270,7 +532,6 @@ export const CheckList = ({ instance, onCheckUpdate }: Props) => {
     await deleteSelectedChecks(instance, selectedChecks);
     clearSelectedChecks();
     setSelectAll(false);
-    onCheckUpdate(true);
     setBulkActionInProgress(false);
   };
 
@@ -280,22 +541,23 @@ export const CheckList = ({ instance, onCheckUpdate }: Props) => {
     }
   };
 
-  if (!checks) {
-    return null;
-  }
+  // if (isLoading) {
+  //   return null;
+  // }
 
-  if (checks.length === 0) {
-    return (
-      <PluginPage pageNav={{ text: 'Checks' }}>
-        <EmptyCheckList />
-      </PluginPage>
-    );
-  }
+  // if (checks.length === 0) {
+  //   console.log({ isLoading });
+  //   return (
+  //     <PluginPage pageNav={{ text: 'Checks' }}>
+  //       <EmptyCheckList />
+  //     </PluginPage>
+  //   );
+  // }
 
   const showHeaders = !scenesEnabled || viewType !== CheckListViewType.Viz;
 
   return (
-    <PluginPage>
+    <PluginPage pageNav={{ text: 'Checks' }}>
       {showHeaders && (
         <>
           <div className={styles.headerContainer}>
@@ -493,7 +755,6 @@ export const CheckList = ({ instance, onCheckUpdate }: Props) => {
         action={bulkEditAction}
         isOpen={bulkEditAction !== null}
         onSuccess={() => {
-          onCheckUpdate(true);
           appEvents.emit(AppEvents.alertSuccess, ['All selected checks successfully updated']);
         }}
         onError={(err) => {

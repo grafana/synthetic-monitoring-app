@@ -1,6 +1,6 @@
 import { MutationCache, MutationOptions, QueryCache, QueryClient, QueryOptions } from '@tanstack/react-query';
 
-import { FaroEvent, reportError, reportEvent } from 'faro';
+import { FaroEvent, isFaroEventMeta, reportError, reportEvent } from 'faro';
 
 import { showAlert } from './utils';
 
@@ -29,9 +29,11 @@ export const queryClient = new QueryClient({
 });
 
 function handleSuccess(data: unknown, options: MutationOptions | QueryOptions) {
-  if (options.meta?.event) {
-    const event = options.meta.event as FaroEvent;
-    reportEvent(event);
+  const { meta } = options;
+
+  if (isFaroEventMeta(meta?.event)) {
+    const event = meta.event;
+    reportEvent(event.type, event.info);
   }
 
   if (typeof options.meta?.successAlert === 'function') {

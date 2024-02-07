@@ -57,4 +57,7 @@ export const getMultiHttpFormStyles = (theme: GrafanaTheme2) => ({
   link: css`
     text-decoration: underline;
   `,
+  submissionError: css({
+    marginTop: theme.spacing(2),
+  }),
 });
