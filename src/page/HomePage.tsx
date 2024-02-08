@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import { SceneApp, SceneAppPage } from '@grafana/scenes';
@@ -10,6 +10,7 @@ import {
   HorizontalGroup,
   Icon,
   LinkButton,
+  LoadingPlaceholder,
   useStyles2,
 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
@@ -134,12 +135,35 @@ export const HomePage = () => {
   const styles = useStyles2(getStyles);
   const { instance } = useContext(InstanceContext);
   const [dashboards, setDashboards] = useState<Array<Partial<DashboardInfo>>>([]);
-  const { checks } = useContext(ChecksContext);
+  const { checks, loading } = useContext(ChecksContext);
   const usage = useUsageCalc(checks);
   const { isEnabled: scenesEnabled } = useFeatureFlag(FeatureName.Scenes);
   const { isEnabled: multiHttpEnabled } = useFeatureFlag(FeatureName.MultiHttp);
   const { isEnabled: scriptedEnabled } = useFeatureFlag(FeatureName.ScriptedChecks);
   const { isEnabled: perCheckDashboardsEnabled } = useFeatureFlag(FeatureName.PerCheckDashboards);
+  const scene = useMemo(() => {
+    if (perCheckDashboardsEnabled) {
+      const config: DashboardSceneAppConfig = {
+        metrics: {
+          uid: instance.metrics?.uid,
+        },
+        logs: { uid: instance.logs?.uid },
+        sm: { uid: instance.api?.uid },
+        singleCheckMode: true,
+      };
+      return new SceneApp({
+        pages: [
+          new SceneAppPage({
+            title: 'Home',
+            url: `${PLUGIN_URL_PATH}${ROUTES.Home}`,
+            hideFromBreadcrumbs: true,
+            getScene: getSummaryScene(config, checks, perCheckDashboardsEnabled),
+          }),
+        ],
+      });
+    }
+    return null;
+  }, [perCheckDashboardsEnabled, instance.metrics?.uid, instance.logs?.uid, instance.api?.uid, checks]);
 
   useEffect(() => {
     // Sort to make sure the summary dashboard is at the top of the list
@@ -187,25 +211,9 @@ export const HomePage = () => {
   }, [instance.api, scenesEnabled, multiHttpEnabled, scriptedEnabled]);
 
   if (perCheckDashboardsEnabled) {
-    const config: DashboardSceneAppConfig = {
-      metrics: {
-        uid: instance.metrics?.uid,
-      },
-      logs: { uid: instance.logs?.uid },
-      sm: { uid: instance.api?.uid },
-      singleCheckMode: true,
-    };
-    const scene = new SceneApp({
-      pages: [
-        new SceneAppPage({
-          title: 'Home',
-          url: `${PLUGIN_URL_PATH}${ROUTES.Home}`,
-          hideFromBreadcrumbs: true,
-          getScene: getSummaryScene(config, checks, perCheckDashboardsEnabled),
-        }),
-      ],
-    });
-
+    if (!scene || loading) {
+      return <LoadingPlaceholder text="Loading..." />;
+    }
     return <scene.Component model={scene} />;
   }
 
