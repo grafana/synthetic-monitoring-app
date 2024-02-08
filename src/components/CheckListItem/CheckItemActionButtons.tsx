@@ -32,10 +32,16 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon, onRemoveChe
   const { instance } = useContext(InstanceContext);
   const navigate = useNavigation();
   const { isEnabled: scenesEnabled } = useFeatureFlag(FeatureName.Scenes);
+  const { isEnabled: perCheckDashboardsEnabled } = useFeatureFlag(FeatureName.PerCheckDashboards);
 
   const showDashboard = () => {
+    if (perCheckDashboardsEnabled) {
+      const url = `${PLUGIN_URL_PATH}${ROUTES.Checks}/${check.id}/dashboard`;
+      navigate(url, {}, true);
+      return;
+    }
     if (scenesEnabled) {
-      const url = `${PLUGIN_URL_PATH}scene/${checkType}`;
+      const url = `${PLUGIN_URL_PATH}${ROUTES.Scene}/${checkType}`;
       navigate(
         url,
         {

@@ -1,9 +1,10 @@
 import React, { useContext } from 'react';
 import { Route, Switch, useRouteMatch } from 'react-router-dom';
 
-import { CheckType, ROUTES } from 'types';
+import { CheckType, FeatureName, ROUTES } from 'types';
 import { ChecksContext } from 'contexts/ChecksContext';
 import { InstanceContext } from 'contexts/InstanceContext';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useNavigation } from 'hooks/useNavigation';
 import { CheckEditor } from 'components/CheckEditor';
 import { CheckList } from 'components/CheckList';
@@ -13,9 +14,12 @@ import { MultiHttpSettingsForm } from 'components/MultiHttp/MultiHttpSettingsFor
 import { PluginPage } from 'components/PluginPage';
 import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
 
+import { DashboardPage } from './DashboardPage';
+
 export function CheckRouter() {
   const { instance } = useContext(InstanceContext);
   const { refetchChecks, checks, loading } = useContext(ChecksContext);
+  const { isEnabled: perCheckDashboardsEnabled } = useFeatureFlag(FeatureName.PerCheckDashboards);
 
   const navigate = useNavigation();
   const { path } = useRouteMatch();
@@ -37,6 +41,11 @@ export function CheckRouter() {
         <Route path={path} exact>
           <CheckList instance={instance} onCheckUpdate={returnToList} />
         </Route>
+        {perCheckDashboardsEnabled && (
+          <Route path={`${path}/:id/dashboard`} exact>
+            <DashboardPage />
+          </Route>
+        )}
         <Route path={`${path}/new/:checkType?`}>
           {({ match }) => {
             switch (match?.params.checkType) {

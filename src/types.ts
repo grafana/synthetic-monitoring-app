@@ -534,6 +534,7 @@ export enum FeatureName {
   MultiHttp = 'multi-http',
   Scenes = 'synthetics-scenes',
   ScriptedChecks = 'scripted-checks',
+  PerCheckDashboards = 'synthetics-per-check-dashboards',
 }
 
 export interface UsageValues {
@@ -583,6 +584,7 @@ export interface DashboardSceneAppConfig {
   metrics: DataSourceRef;
   logs: DataSourceRef;
   sm: DataSourceRef;
+  singleCheckMode?: boolean;
 }
 
 export interface VizViewSceneAppConfig extends DashboardSceneAppConfig {

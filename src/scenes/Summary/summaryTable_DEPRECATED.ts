@@ -3,25 +3,24 @@ import { DataSourceRef, ThresholdsMode } from '@grafana/schema';
 
 import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
-function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
+function getSummaryTableQueryRunner(metrics: DataSourceRef) {
   const queryRunner = new SceneQueryRunner({
-    datasource: { type: 'datasource', uid: '-- Mixed --' },
+    datasource: metrics,
     queries: [
       {
-        datasource: metrics,
         editorMode: 'code',
         exemplar: false,
         expr: `
           sum by (instance, job, check_name)
           (
-            rate(probe_all_success_sum{probe=~"$probe"}[$__range])
+            rate(probe_all_success_sum[$__range])
             *
             on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters })
           )
           /
           sum by (instance, check_name, job)
           (
-            rate(probe_all_success_count{probe=~"$probe"}[$__range])
+            rate(probe_all_success_count[$__range])
             *
             on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters })
           )`,
@@ -32,20 +31,19 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
         refId: 'reachability',
       },
       {
-        datasource: metrics,
         editorMode: 'code',
         exemplar: false,
         expr: `
           sum by (instance, job, check_name)
           (
-            rate(probe_all_duration_seconds_sum{probe=~"$probe"}[$__range])
+            rate(probe_all_duration_seconds_sum[$__range])
             *
             on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters})
           )
           /
           sum by (instance, job, check_name)
           (
-            rate(probe_all_duration_seconds_count{probe=~"$probe"}[$__range])
+            rate(probe_all_duration_seconds_count[$__range])
             *
             on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters})
           )`,
@@ -56,21 +54,20 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
         refId: 'latency',
       },
       {
-        datasource: metrics,
         editorMode: 'code',
         exemplar: false,
         expr: `
           ceil(
             sum by (instance, job, check_name)
             (
-              rate(probe_all_success_sum{probe=~"$probe"}[5m])
+              rate(probe_all_success_sum[5m])
               *
               on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters})
             )
             /
             sum by (instance, check_name, job)
             (
-              rate(probe_all_success_count{probe=~"$probe"}[5m])
+              rate(probe_all_success_count[5m])
               *
               on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters})
             )
@@ -84,7 +81,6 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
         refId: 'state',
       },
       {
-        datasource: metrics,
         editorMode: 'code',
         exemplar: false,
         expr: `
@@ -95,10 +91,10 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
               # so make it a 1 if there was at least one success and a 0 otherwise
               ceil(
                 # the number of successes across all probes
-                sum by (instance, job) (increase(probe_all_success_sum{probe=~"$probe"}[5m]) * on (instance, job, probe, config_version) sm_check_info{check_name=~"$check_type", $Filters})
+                sum by (instance, job) (increase(probe_all_success_sum{}[5m]) * on (instance, job, probe, config_version) sm_check_info{check_name=~"$check_type", $Filters})
                 /
                 # the total number of times we checked across all probes
-                (sum by (instance, job) (increase(probe_all_success_count{probe=~"$probe"}[5m])) + 1) # + 1 because we want to make sure it goes to 1, not 2
+                (sum by (instance, job) (increase(probe_all_success_count[5m])) + 1) # + 1 because we want to make sure it goes to 1, not 2
               )
             )
             [$__range:5m]
@@ -111,15 +107,6 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
         legendFormat: '',
         refId: 'uptime',
       },
-      {
-        datasource: sm,
-        hide: false,
-        instance: '',
-        job: '',
-        probe: '',
-        queryType: 'checks',
-        refId: 'checks',
-      },
     ],
   });
 
@@ -127,51 +114,15 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
     $data: queryRunner,
     transformations: [
       {
-        id: 'joinByField',
-        options: {
-          byField: 'job',
-          mode: 'inner',
-        },
-      },
-
-      {
-        id: 'organize',
-        options: {
-          renameByName: {
-            check_name: 'check type',
-          },
-        },
-      },
-      {
-        id: 'joinByField',
-        options: {
-          byField: 'instance',
-          mode: 'inner',
-        },
+        id: 'merge',
+        options: {},
       },
       {
         id: 'organize',
         options: {
           excludeByName: {
             Time: true,
-            Value: false,
-            alertSensitivity: true,
-            basicMetricsOnly: true,
             check_name: false,
-            'check_name 2': true,
-            'check_name 3': true,
-            created: true,
-            enabled: true,
-            frequency: true,
-            id: false,
-            instance: true,
-            labels: true,
-            modified: true,
-            offset: true,
-            probes: true,
-            settings: true,
-            tenantId: true,
-            timeout: true,
           },
           indexByName: {
             Time: 0,
@@ -179,12 +130,12 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
             'Value #reachability': 6,
             'Value #state': 4,
             'Value #uptime': 5,
-            'check type': 3,
-            target: 1,
+            check_name: 3,
+            instance: 1,
             job: 2,
           },
           renameByName: {
-            target: 'instance',
+            check_name: 'check type',
           },
         },
       },
@@ -355,7 +306,7 @@ function getFieldOverrides() {
           value: [
             {
               title: 'Show details...',
-              url: '/a/grafana-synthetic-monitoring-app/checks/${__data.fields.id}/dashboard',
+              url: '/a/grafana-synthetic-monitoring-app/scene/${__data.fields.check_name}?var-probe=All&var-instance=${__data.fields.instance}&var-job=${__data.fields.job}&from=${__from}&to=${__to}',
             },
           ],
         },
@@ -372,31 +323,19 @@ function getFieldOverrides() {
           value: [
             {
               title: 'Show details...',
-              url: '/a/grafana-synthetic-monitoring-app/checks/${__data.fields.id}/dashboard',
+              url: '/a/grafana-synthetic-monitoring-app/scene/${__data.fields.check_name}?var-probe=All&var-instance=${__data.fields.instance}&var-job=${__data.fields.job}&from=${__from}&to=${__to}',
             },
           ],
-        },
-      ],
-    },
-    {
-      matcher: {
-        id: 'byName',
-        options: 'id',
-      },
-      properties: [
-        {
-          id: 'custom.hidden',
-          value: true,
         },
       ],
     },
   ];
 }
 
-export function getSummaryTable(metrics: DataSourceRef, sm: DataSourceRef) {
+export function getSummaryTable(metrics: DataSourceRef) {
   const tablePanel = new ExplorablePanel({
     pluginId: 'table',
-    $data: getSummaryTableQueryRunner(metrics, sm),
+    $data: getSummaryTableQueryRunner(metrics),
     title: `$check_type checks`,
     description:
       '* instance: the instance that corresponds to this check.\n* **job**: the job that corresponds to this check.\n* **reachability**: the percentage of all the checks that have succeeded during the whole time period.\n* **latency**: the average time to receive an answer across all the checks during the whole time period.\n* **state**: whether the target was up or down the last time it was checked.\n* **uptime**: the fraction of time the target was up  during the whole period.',
