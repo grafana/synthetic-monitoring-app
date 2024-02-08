@@ -11,6 +11,7 @@ import {
   SceneVariableSet,
   VariableValueSelectors,
 } from '@grafana/scenes';
+import { VariableRefresh } from '@grafana/schema';
 
 import { Check, DashboardSceneAppConfig } from 'types';
 import { getEmptyScene } from 'scenes/Common/emptyScene';
@@ -38,6 +39,17 @@ export function getSummaryScene({ metrics }: DashboardSceneAppConfig, checks: Ch
     });
 
     // Variable definition
+    const probe = new QueryVariable({
+      includeAll: true,
+      allValue: '.*',
+      defaultToAll: true,
+      isMulti: true,
+      name: 'probe',
+      query: `label_values(sm_check_info{},probe)`,
+      refresh: VariableRefresh.onDashboardLoad,
+      datasource: metrics,
+    });
+
     const region = new QueryVariable({
       includeAll: true,
       allValue: '.*',
@@ -89,7 +101,7 @@ export function getSummaryScene({ metrics }: DashboardSceneAppConfig, checks: Ch
 
     return new EmbeddedScene({
       $timeRange: timeRange,
-      $variables: new SceneVariableSet({ variables: [region, checkTypeVar, filters] }),
+      $variables: new SceneVariableSet({ variables: [region, probe, checkTypeVar, filters] }),
       body: new SceneFlexLayout({
         direction: 'column',
         children: [tableRow, mapRow, latencyRow],
