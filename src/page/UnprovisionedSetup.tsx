@@ -1,7 +1,7 @@
 import React from 'react';
-import { css } from '@emotion/css';
-import { Alert, useStyles2 } from '@grafana/ui';
 import { GrafanaTheme2 } from '@grafana/data';
+import { Alert, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 
 import { PluginPage } from 'components/PluginPage';
 

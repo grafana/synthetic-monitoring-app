@@ -1,54 +1,54 @@
 import { SelectableValue } from '@grafana/data';
+import isBase64 from 'is-base64';
+
 import {
-  CheckType,
+  AlertSensitivity,
+  Check,
   CheckFormValues,
-  Settings,
-  SettingsFormValues,
-  PingSettingsFormValues,
-  PingSettings,
+  CheckType,
+  DNSRRValidator,
+  DnsSettings,
+  DnsSettingsFormValues,
+  DnsValidationFormValue,
+  HeaderMatch,
+  HttpRegexValidationFormValue,
+  HttpRegexValidationType,
   HttpSettings,
   HttpSettingsFormValues,
-  HttpRegexValidationFormValue,
+  HttpSslOption,
+  Label,
+  MultiHttpAssertionType,
   MultiHttpSettings,
   MultiHttpSettingsFormValues,
-  Label,
-  TcpSettingsFormValues,
-  TcpSettings,
-  DnsSettingsFormValues,
-  DnsSettings,
-  DNSRRValidator,
-  DnsValidationFormValue,
+  PingSettings,
+  PingSettingsFormValues,
   ResponseMatchType,
-  Check,
-  HttpSslOption,
-  HttpRegexValidationType,
-  HeaderMatch,
-  AlertSensitivity,
+  Settings,
+  SettingsFormValues,
   TCPQueryResponse,
+  TcpSettings,
+  TcpSettingsFormValues,
   TLSConfig,
   TracerouteSettings,
   TracerouteSettingsFormValues,
-  MultiHttpAssertionType,
 } from 'types';
-
+import { checkType as getCheckType, fromBase64, toBase64 } from 'utils';
 import {
-  CHECK_TYPE_OPTIONS,
-  IP_OPTIONS,
-  DNS_RESPONSE_CODES,
-  HTTP_SSL_OPTIONS,
-  HTTP_REGEX_VALIDATION_OPTIONS,
   ALERT_SENSITIVITY_OPTIONS,
-  HTTP_COMPRESSION_ALGO_OPTIONS,
+  ASSERTION_CONDITION_OPTIONS,
+  ASSERTION_SUBJECT_OPTIONS,
+  CHECK_TYPE_OPTIONS,
+  DNS_RESPONSE_CODES,
   DNS_RESPONSE_MATCH_OPTIONS,
   fallbackSettings,
+  HTTP_COMPRESSION_ALGO_OPTIONS,
+  HTTP_REGEX_VALIDATION_OPTIONS,
+  HTTP_SSL_OPTIONS,
+  IP_OPTIONS,
   METHOD_OPTIONS,
-  MULTI_HTTP_VARIABLE_TYPE_OPTIONS,
   MULTI_HTTP_ASSERTION_TYPE_OPTIONS,
-  ASSERTION_SUBJECT_OPTIONS,
-  ASSERTION_CONDITION_OPTIONS,
+  MULTI_HTTP_VARIABLE_TYPE_OPTIONS,
 } from 'components/constants';
-import { checkType as getCheckType, fromBase64, toBase64 } from 'utils';
-import isBase64 from 'is-base64';
 import { MultiHttpRequestBody } from 'components/MultiHttp/MultiHttpTypes';
 
 export const ensureBase64 = (value: string) => (isBase64(value, { paddingRequired: true }) ? value : toBase64(value));
@@ -278,6 +278,8 @@ const getFormSettingsForCheck = (settings: Settings): SettingsFormValues => {
       return { traceroute: getTracerouteSettingsFormValues(settings) };
     case CheckType.MULTI_HTTP:
       return { multihttp: getMultiHttpFormValues(settings) };
+    case CheckType.K6:
+      return { k6: { script: atob(settings.k6?.script ?? '') } };
     case CheckType.PING:
     default:
       return { ping: getPingSettingsFormValues(settings) };
@@ -292,6 +294,7 @@ const getAllFormSettingsForCheck = (): SettingsFormValues => {
     ping: getPingSettingsFormValues(fallbackSettings(CheckType.PING)),
     traceroute: getTracerouteSettingsFormValues(fallbackSettings(CheckType.Traceroute)),
     multihttp: getMultiHttpFormValues(fallbackSettings(CheckType.MULTI_HTTP)),
+    k6: fallbackSettings(CheckType.K6).k6,
   };
 };
 
@@ -738,6 +741,12 @@ const getSettingsFromFormValues = (
           ...getTracerouteSettings(formValues.settings?.traceroute, defaultValues.settings.traceroute),
         },
       };
+    case CheckType.K6:
+      return {
+        k6: {
+          script: btoa(formValues.settings?.k6?.script ?? ''),
+        },
+      };
     default:
       throw new Error(`Check type of ${checkType} is invalid`);
   }
@@ -796,6 +805,10 @@ export function checkTypeParamToCheckType(checkType?: string): CheckType {
       return CheckType.Traceroute;
     case CheckType.TCP:
       return CheckType.TCP;
+    case CheckType.MULTI_HTTP:
+      return CheckType.MULTI_HTTP;
+    case CheckType.K6:
+      return CheckType.K6;
     default:
       return CheckType.PING;
   }

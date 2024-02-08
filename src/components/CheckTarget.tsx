@@ -1,8 +1,10 @@
 import React, { ChangeEvent, forwardRef } from 'react';
 import { Field, Input } from '@grafana/ui';
 import { css } from '@emotion/css';
+
 import { CheckType } from 'types';
 import { parseUrl } from 'utils';
+
 import QueryParams from './QueryParams';
 
 interface Props {
@@ -67,6 +69,12 @@ const getTargetHelpText = (typeOfCheck: CheckType | undefined): TargetHelpInfo =
         example: 'grafana.com',
       };
       break;
+    }
+    case CheckType.K6: {
+      resp = {
+        text: 'The URL that best describes the target of the check',
+        example: `https://grafana.com/`,
+      };
     }
   }
   return resp;

@@ -1,7 +1,8 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import { UserEvent } from '@testing-library/user-event';
-import { DNS_RESPONSE_MATCH_OPTIONS } from 'components/constants';
+
 import { CheckType } from 'types';
+import { DNS_RESPONSE_MATCH_OPTIONS } from 'components/constants';
 
 export const selectCheckType = async (checkType: CheckType, user: UserEvent) => {
   const checkTypeInput = await screen.findByText('PING');

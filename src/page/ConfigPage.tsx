@@ -1,14 +1,15 @@
 import React, { useContext } from 'react';
-import { css } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Container, Spinner, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 
 import { InstanceContext } from 'contexts/InstanceContext';
+import { BackendAddress } from 'components/BackendAddress';
 import { ConfigActions } from 'components/ConfigActions';
 import { DashboardList } from 'components/DashboardList';
+import LinkedDatasourceView from 'components/LinkedDatasourceView';
 import { PluginPage } from 'components/PluginPage';
 import { ProgrammaticManagement } from 'components/ProgrammaticManagement';
-import LinkedDatasourceView from 'components/LinkedDatasourceView';
 
 function getStyles(theme: GrafanaTheme2) {
   return {
@@ -83,8 +84,7 @@ export function ConfigPage() {
                 </Container>
               </div>
               <div className={styles.backendAddress}>
-                <h3>Backend address</h3>
-                <pre>{instance.api.instanceSettings.jsonData.apiHost}</pre>
+                <BackendAddress omitHttp />
               </div>
             </div>
           )}

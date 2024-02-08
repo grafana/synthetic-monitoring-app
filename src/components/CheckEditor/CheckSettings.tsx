@@ -1,8 +1,9 @@
 import React, { FC } from 'react';
+
 import { CheckType } from 'types';
-import { PingSettingsForm } from 'components/PingSettings';
-import { HttpSettingsForm } from 'components/http/HttpSettings';
 import DnsSettingsForm from 'components/DnsSettings';
+import { HttpSettingsForm } from 'components/http/HttpSettings';
+import { PingSettingsForm } from 'components/PingSettings';
 import { TcpSettingsForm } from 'components/TcpSettings';
 import { TracerouteSettingsForm } from 'components/TracerouteSettingsForm';
 interface Props {
@@ -28,6 +29,9 @@ export const CheckSettings: FC<Props> = ({ isEditor, typeOfCheck }) => {
       return <TracerouteSettingsForm isEditor={isEditor} />;
     }
     case CheckType.MULTI_HTTP: {
+      throw new Error('Invalid check type for this location');
+    }
+    case CheckType.K6: {
       throw new Error('Invalid check type for this location');
     }
   }

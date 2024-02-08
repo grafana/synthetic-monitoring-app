@@ -1,5 +1,26 @@
 # Change Log
 
+# [1.12.5](https://github.com/grafana/synthetic-monitoring-app/compare/v1.12.3...v1.12.4) (2024-1-25)
+
+- Revamp the MultiHTTP dashboard
+- Add a "Copy JSON" button to the dashboard menus so people can add charts to their own dashboards
+
+# [1.12.4](https://github.com/grafana/synthetic-monitoring-app/compare/v1.12.3...v1.12.4) (2023-11-09)
+
+- Bump up the max data points in the checks visualization view
+- Fix a bug when instances have no alert ruler datasource
+
+# [1.12.3](https://github.com/grafana/synthetic-monitoring-app/compare/v1.12.2...v1.12.3) (2023-11-07)
+
+- Rework the summary dashboard to provide a more useful overview of checks
+- Fix a bug with selecting individual URLs in the MultiHTTP scene
+- Add improved description tooltips for reachability and uptime
+- Improve error handling in the MultiHTTP form by scrolling to the first error and focusing inputs
+- Change default MultiHTTP timeout
+- Add additional context for assertion inputs
+- Include MultiHTTP in generated terraform config
+- Fix a bug with routing that caused flickers when the plugin had not yet been initialized
+
 # [1.12.2](https://github.com/grafana/synthetic-monitoring-app/compare/v1.12.1...v1.12.2) (2023-10-16)
 
 - Update docs on publisherToken provisioning

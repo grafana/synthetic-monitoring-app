@@ -1,9 +1,10 @@
 import React from 'react';
 import { waitFor } from '@testing-library/react';
-
 import { render } from 'test/render';
-import { CheckHealth } from './CheckHealth';
+
 import { AlertSensitivity, Check } from 'types';
+
+import { CheckHealth } from './CheckHealth';
 
 const defaultCheck = {
   basicMetricsOnly: true,

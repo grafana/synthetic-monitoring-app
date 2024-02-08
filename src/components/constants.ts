@@ -1,29 +1,31 @@
-import { enumToStringArray } from '../utils';
+import { SelectableValue } from '@grafana/data';
+
 import {
-  DnsResponseCodes,
-  DnsRecordType,
-  DnsProtocol,
-  IpVersion,
-  CheckType,
-  HttpSslOption,
-  HttpRegexValidationType,
-  Check,
-  TimeUnits,
   AlertFamily,
-  AlertSeverity,
   AlertSensitivity,
-  CheckSort,
+  AlertSeverity,
+  Check,
   CheckEnabledStatus,
   CheckListViewType,
+  CheckSort,
+  CheckType,
+  DnsProtocol,
+  DnsRecordType,
+  DnsResponseCodes,
   HTTPCompressionAlgo,
+  HttpMethod,
+  HttpRegexValidationType,
+  HttpSslOption,
+  IpVersion,
+  MultiHttpAssertionType,
+  MultiHttpVariableType,
   ResponseMatchType,
   Settings,
-  HttpMethod,
-  MultiHttpVariableType,
-  MultiHttpAssertionType,
+  TimeUnits,
 } from 'types';
+
+import { enumToStringArray } from '../utils';
 import { AssertionConditionVariant, AssertionSubjectVariant } from './MultiHttp/MultiHttpTypes';
-import { SelectableValue } from '@grafana/data';
 
 export const DNS_RESPONSE_CODES = enumToStringArray(DnsResponseCodes).map((responseCode) => ({
   label: responseCode,
@@ -163,6 +165,11 @@ export const CHECK_TYPE_OPTIONS = [
     value: CheckType.Traceroute,
     description: 'Trace the path of a request through the internet',
   },
+  {
+    label: 'Scripted',
+    value: CheckType.K6,
+    description: 'Write a K6 script to run custom checks',
+  },
 ];
 
 export const HTTP_SSL_OPTIONS = [
@@ -227,6 +234,7 @@ const fallbackType = {
   ping: fallbackSettings(CheckType.PING),
   traceroute: fallbackSettings(CheckType.Traceroute),
   multihttp: fallbackSettings(CheckType.MULTI_HTTP),
+  k6: fallbackSettings(CheckType.K6),
 };
 
 export const colors = {
@@ -408,6 +416,23 @@ export function fallbackSettings(t: CheckType): Settings {
           maxHops: 64,
           maxUnknownHops: 15,
           ptrLookup: true,
+        },
+      };
+    }
+    case CheckType.K6: {
+      return {
+        k6: {
+          script: `import { check } from 'k6'
+import http from 'k6/http'
+
+export default function main() {
+  const res = http.get('http://test.k6.io/');
+  // console.log will be represented as logs in Loki
+  console.log('got a reponse')
+  check(res, {
+    'is status 200': (r) => r.status === 200,
+  });
+}`,
         },
       };
     }

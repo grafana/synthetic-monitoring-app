@@ -1,4 +1,6 @@
+import React, { useContext, useEffect, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
+import { config } from '@grafana/runtime';
 import {
   BigValue,
   BigValueColorMode,
@@ -9,19 +11,19 @@ import {
   LinkButton,
   useStyles2,
 } from '@grafana/ui';
+import { css, cx } from '@emotion/css';
+
+import { FeatureName, ROUTES } from 'types';
+import { DashboardInfo } from 'datasource/types';
+import { ChecksContext } from 'contexts/ChecksContext';
+import { InstanceContext } from 'contexts/InstanceContext';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
+import { useUsageCalc } from 'hooks/useUsageCalc';
+import { PLUGIN_URL_PATH } from 'components/constants';
 import { DisplayCard } from 'components/DisplayCard';
 import FeaturesBanner from 'components/FeaturesBanner';
-import { css, cx } from '@emotion/css';
-import React, { useState, useEffect, useContext } from 'react';
-import { config } from '@grafana/runtime';
-import { InstanceContext } from 'contexts/InstanceContext';
-import { Check, FeatureName, ROUTES } from 'types';
-import { useUsageCalc } from 'hooks/useUsageCalc';
-import { DashboardInfo } from 'datasource/types';
-import { useNavigation } from 'hooks/useNavigation';
 import { PluginPage } from 'components/PluginPage';
-import { useFeatureFlag } from 'hooks/useFeatureFlag';
-import { PLUGIN_URL_PATH } from 'components/constants';
+import { getRoute } from 'components/Routing';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   page: css`
@@ -129,17 +131,14 @@ const sortSummaryToTop = (dashboardA: DashboardInfo, dashboardB: DashboardInfo) 
 export const HomePage = () => {
   const styles = useStyles2(getStyles);
   const { instance } = useContext(InstanceContext);
-  const [checks, setChecks] = useState<Check[]>([]);
   const [dashboards, setDashboards] = useState<Array<Partial<DashboardInfo>>>([]);
+  const { checks } = useContext(ChecksContext);
   const usage = useUsageCalc(checks);
-  const navigate = useNavigation();
   const { isEnabled: scenesEnabled } = useFeatureFlag(FeatureName.Scenes);
   const { isEnabled: multiHttpEnabled } = useFeatureFlag(FeatureName.MultiHttp);
+  const { isEnabled: scriptedEnabled } = useFeatureFlag(FeatureName.ScriptedChecks);
 
   useEffect(() => {
-    instance.api?.listChecks().then((checks) => {
-      setChecks(checks);
-    });
     // Sort to make sure the summary dashboard is at the top of the list
     if (!scenesEnabled) {
       const sortedDashboards = instance.api?.instanceSettings.jsonData.dashboards.sort(sortSummaryToTop) ?? [];
@@ -176,20 +175,24 @@ export const HomePage = () => {
         dashboardList.splice(3, 0, { title: 'MULTIHTTP dashboard', uid: 'multihttp' });
       }
 
+      if (scriptedEnabled) {
+        dashboardList.push({ title: 'Scripted dashboard', uid: 'k6' });
+      }
+
       setDashboards(dashboardList);
     }
-  }, [instance.api, scenesEnabled, multiHttpEnabled]);
+  }, [instance.api, scenesEnabled, multiHttpEnabled, scriptedEnabled]);
 
   return (
     <PluginPage pageNav={{ text: 'Home' }}>
       <div className={styles.page}>
         <FeaturesBanner />
         <DisplayCard className={cx(styles.card, styles.getStartedGrid)}>
-          <LinkButton variant="primary" size="lg" onClick={() => navigate(ROUTES.ChooseCheckType)}>
+          <LinkButton variant="primary" size="lg" href={getRoute(ROUTES.ChooseCheckType)}>
             Create a check
           </LinkButton>
           <h2 className={styles.separator}>or</h2>
-          <LinkButton variant="primary" size="lg" onClick={() => navigate(ROUTES.Checks)}>
+          <LinkButton variant="primary" size="lg" href={getRoute(ROUTES.Checks)}>
             View existing checks
           </LinkButton>
         </DisplayCard>
@@ -220,7 +223,7 @@ export const HomePage = () => {
               <p>Create, configure, and manage checks programmatically via Grizzly or Terraform.</p>
               <a
                 className={styles.link}
-                href="https://grafana.com/docs/grafana-cloud/synthetic-monitoring/?manage-checks-with-the-api--config-as-code#manage-checks-with-the-api--config-as-code"
+                href="https://grafana.com/docs/grafana-cloud/synthetic-monitoring/?manage-checks-with-the-api--config-as-code#config-as-code"
                 target="_blank"
                 rel="noopenner noreferrer"
               >
@@ -259,7 +262,7 @@ export const HomePage = () => {
                 Read more about synthetic monitoring alerts {'>'}
               </a>
               <div className={styles.actionContainer}>
-                <LinkButton variant="secondary" onClick={() => navigate(ROUTES.Alerts)}>
+                <LinkButton variant="secondary" href={getRoute(ROUTES.Alerts)}>
                   Configure alerts
                 </LinkButton>
               </div>

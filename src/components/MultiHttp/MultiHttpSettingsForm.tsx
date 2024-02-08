@@ -1,56 +1,57 @@
-import React, { useContext, useState, useMemo, useEffect } from 'react';
-import { FormProvider, useForm, Controller, useFieldArray, DeepMap, FieldError } from 'react-hook-form';
-import { useParams } from 'react-router-dom';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useAsyncCallback } from 'react-async-hook';
-
+import { Controller, DeepMap, FieldError, FormProvider, useFieldArray, useForm } from 'react-hook-form';
+import { useParams } from 'react-router-dom';
+import { OrgRole } from '@grafana/data';
+import { config } from '@grafana/runtime';
 import {
   Alert,
   Button,
+  Checkbox,
   ConfirmModal,
   Field,
-  LinkButton,
-  VerticalGroup,
+  HorizontalGroup,
   Input,
+  Legend,
   Select,
   useStyles2,
-  Legend,
-  HorizontalGroup,
-  Checkbox,
+  VerticalGroup,
 } from '@grafana/ui';
-import { config } from '@grafana/runtime';
-import { OrgRole } from '@grafana/data';
 
-import { CheckFormValues, Check, CheckPageParams, CheckType, SubmissionErrorWrapper } from 'types';
+import { Check, CheckFormValues, CheckPageParams, CheckType, SubmissionErrorWrapper } from 'types';
+import { FaroEvent, reportError, reportEvent } from 'faro';
 import { hasRole } from 'utils';
-import { FaroEvent, reportEvent, reportError } from 'faro';
 import { validateTarget } from 'validation';
-import { METHOD_OPTIONS } from 'components/constants';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { getDefaultValuesFromCheck, getCheckFromFormValues } from 'components/CheckEditor/checkFormTransformations';
+import { getCheckFromFormValues, getDefaultValuesFromCheck } from 'components/CheckEditor/checkFormTransformations';
 import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
-import { PluginPage } from 'components/PluginPage';
 import { CheckFormAlert } from 'components/CheckFormAlert';
-import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
-import { CheckUsage } from 'components/CheckUsage';
 import { CheckTestButton } from 'components/CheckTestButton';
+import { CheckUsage } from 'components/CheckUsage';
+import { METHOD_OPTIONS } from 'components/constants';
+import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 import { LabelField } from 'components/LabelField';
+import { PluginPage } from 'components/PluginPage';
 
 import { TabSection } from './Tabs/TabSection';
-import { multiHttpFallbackCheck } from './consts';
 import { AvailableVariables } from './AvailableVariables';
+import { multiHttpFallbackCheck } from './consts';
 import { MultiHttpCollapse } from './MultiHttpCollapse';
-import { getMultiHttpFormErrors, useMultiHttpCollapseState } from './MultiHttpSettingsForm.utils';
 import { getMultiHttpFormStyles } from './MultiHttpSettingsForm.styles';
+import { focusField, getMultiHttpFormErrors, useMultiHttpCollapseState } from './MultiHttpSettingsForm.utils';
 
 interface Props {
   checks?: Check[];
   onReturn?: (reload?: boolean) => void;
 }
 
-export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
+export const MultiHttpSettingsForm = ({ onReturn, checks }: Props) => {
   const styles = useStyles2(getMultiHttpFormStyles);
-  let check: Check = multiHttpFallbackCheck;
+  const panelRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const { id } = useParams<CheckPageParams>();
+
+  let check: Check = multiHttpFallbackCheck;
+
   if (id) {
     check = checks?.find((c) => c.id === Number(id)) ?? multiHttpFallbackCheck;
   }
@@ -59,7 +60,11 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
   } = useContext(InstanceContext);
   const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
   const [collapseState, dispatchCollapse] = useMultiHttpCollapseState(check);
-  const formMethods = useForm<CheckFormValues>({ defaultValues, reValidateMode: 'onBlur', shouldFocusError: true });
+  const formMethods = useForm<CheckFormValues>({
+    defaultValues,
+    reValidateMode: 'onBlur',
+    shouldFocusError: false /* handle this manually */,
+  });
 
   const {
     register,
@@ -141,6 +146,10 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
         index: res.index,
         tab: res.tab,
       });
+
+      if (panelRefs.current[res.index]) {
+        focusField(panelRefs.current[res.index], res.id);
+      }
     }
   };
 
@@ -152,6 +161,27 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
         }}
       >
         {!config.featureToggles.topnav && <Legend>{check?.id ? 'Edit Check' : 'Add MULTIHTTP Check'}</Legend>}
+        <Alert severity="info" title="MultiHTTP checks are in public preview">
+          We are actively seeking feedback! Please share your thoughts in&nbsp;
+          <a
+            href="https://github.com/grafana/synthetic-monitoring-app/issues"
+            target="_blank"
+            rel="noopenner noreferrer"
+            className={styles.link}
+          >
+            GitHub
+          </a>
+          &nbsp;or in our&nbsp;
+          <a
+            href="https://community.grafana.com/c/grafanacloud/34"
+            rel="noopenner noreferrer"
+            target="_blank"
+            className={styles.link}
+          >
+            community forum
+          </a>
+          .
+        </Alert>
         <VerticalGroup>
           <FormProvider {...formMethods}>
             <form onSubmit={handleSubmit(onSubmit, onError)} className={styles.form}>
@@ -179,7 +209,6 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
                 isEditor={isEditor}
                 timeout={check?.timeout ?? multiHttpFallbackCheck.timeout}
                 frequency={check?.frequency ?? multiHttpFallbackCheck.frequency}
-                probes={check?.probes ?? multiHttpFallbackCheck.probes}
                 checkType={CheckType.MULTI_HTTP}
               />
 
@@ -214,6 +243,7 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
                       invalid={Boolean(errors?.settings?.multihttp?.entries?.[index])}
                       isOpen={collapseState[index].open}
                       onToggle={() => dispatchCollapse({ type: 'toggle', index })}
+                      ref={(el) => (panelRefs.current[index] = el)}
                     >
                       <VerticalGroup>
                         <HorizontalGroup spacing="lg" align="flex-start">
@@ -317,9 +347,9 @@ export const MultiHttpSettingsForm = ({ checks, onReturn }: Props) => {
                       Delete Check
                     </Button>
                   )}
-                  <LinkButton onClick={() => onReturn && onReturn(true)} fill="text">
+                  <Button onClick={() => onReturn && onReturn(true)} fill="text">
                     Cancel
-                  </LinkButton>
+                  </Button>
                 </HorizontalGroup>
               </div>
             </form>

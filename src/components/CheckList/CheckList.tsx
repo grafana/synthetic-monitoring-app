@@ -1,18 +1,10 @@
-// Libraries
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-
-// Types
-import { css } from '@emotion/css';
 import { AppEvents, GrafanaTheme2, OrgRole, SelectableValue } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import { Button, ButtonCascader, Checkbox, Icon, InlineSwitch, Pagination, Select, useStyles2 } from '@grafana/ui';
-import { BulkEditModal } from 'components/BulkEditModal';
-import { CheckFilters, defaultFilters, getDefaultFilters } from 'components/CheckFilters';
-import { ChecksContextProvider } from 'components/ChecksContextProvider';
-import { PluginPage } from 'components/PluginPage';
-import { SuccessRateContext, SuccessRateTypes } from 'contexts/SuccessRateContext';
 import appEvents from 'grafana/app/core/app_events';
-import { useFeatureFlag } from 'hooks/useFeatureFlag';
+import { css } from '@emotion/css';
+
 import {
   Check,
   CheckEnabledStatus,
@@ -26,19 +18,22 @@ import {
   Label,
 } from 'types';
 import { hasRole } from 'utils';
+import { ChecksContext } from 'contexts/ChecksContext';
+import { SuccessRateContext, SuccessRateTypes } from 'contexts/SuccessRateContext';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
+import { BulkEditModal } from 'components/BulkEditModal';
+import { CheckFilters, defaultFilters, getDefaultFilters } from 'components/CheckFilters';
+import { PluginPage } from 'components/PluginPage';
+
 import { CheckListItem } from '../CheckListItem';
-import ThresholdGlobalSettings from '../Thresholds/ThresholdGlobalSettings';
 import {
-  CHECKS_PER_PAGE_CARD,
-  CHECKS_PER_PAGE_LIST,
   CHECK_LIST_ICON_OVERLAY_LS_KEY,
   CHECK_LIST_SORT_OPTIONS,
   CHECK_LIST_STATUS_OPTIONS,
+  CHECKS_PER_PAGE_CARD,
+  CHECKS_PER_PAGE_LIST,
 } from '../constants';
-import { AddNewCheckButton } from './AddNewCheckButton';
-import { CheckListScene } from './CheckListScene';
-import { CheckListViewSwitcher } from './CheckListViewSwitcher';
-import EmptyCheckList from './EmptyCheckList';
+import ThresholdGlobalSettings from '../Thresholds/ThresholdGlobalSettings';
 import {
   deleteSelectedChecks,
   deleteSingleCheck,
@@ -47,7 +42,11 @@ import {
   getIconOverlayToggleFromLS,
   getViewTypeFromLS,
 } from './actions';
+import { AddNewCheckButton } from './AddNewCheckButton';
 import { matchesAllFilters } from './checkFilters';
+import { CheckListScene } from './CheckListScene';
+import { CheckListViewSwitcher } from './CheckListViewSwitcher';
+import EmptyCheckList from './EmptyCheckList';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   headerContainer: css`
@@ -108,11 +107,10 @@ const getStyles = (theme: GrafanaTheme2) => ({
 
 interface Props {
   instance: GrafanaInstances;
-  checks: Check[];
   onCheckUpdate: (refetch?: boolean) => void;
 }
 
-export const CheckList = ({ instance, checks, onCheckUpdate }: Props) => {
+export const CheckList = ({ instance, onCheckUpdate }: Props) => {
   const [checkFilters, setCheckFilters] = useState<CheckFiltersType>(getDefaultFilters());
   const [filteredChecks, setFilteredChecks] = useState<FilteredCheck[] | []>([]);
 
@@ -126,6 +124,7 @@ export const CheckList = ({ instance, checks, onCheckUpdate }: Props) => {
 
   const [showThresholdModal, setShowThresholdModal] = useState(false);
   const [bulkEditAction, setBulkEditAction] = useState<'add' | 'remove' | null>(null);
+  const { checks } = useContext(ChecksContext);
 
   const styles = useStyles2(getStyles);
   const successRateContext = useContext(SuccessRateContext);
@@ -456,19 +455,17 @@ export const CheckList = ({ instance, checks, onCheckUpdate }: Props) => {
         </>
       )}
       {viewType === CheckListViewType.Viz ? (
-        <ChecksContextProvider>
-          <div className={styles.vizContainer}>
-            <CheckListScene
-              setViewType={setViewType}
-              setCurrentPage={setCurrentPage}
-              checkFilters={checkFilters}
-              onFilterChange={(filters: CheckFiltersType) => {
-                setCheckFilters(filters);
-              }}
-              handleResetFilters={handleResetFilters}
-            />
-          </div>
-        </ChecksContextProvider>
+        <div className={styles.vizContainer}>
+          <CheckListScene
+            setViewType={setViewType}
+            setCurrentPage={setCurrentPage}
+            checkFilters={checkFilters}
+            onFilterChange={(filters: CheckFiltersType) => {
+              setCheckFilters(filters);
+            }}
+            handleResetFilters={handleResetFilters}
+          />
+        </div>
       ) : (
         <div>
           <section className="card-section card-list-layout-list">

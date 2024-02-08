@@ -1,12 +1,13 @@
 import React from 'react';
 import { screen, waitFor, within } from '@testing-library/react';
+import { createInstance, render } from 'test/render';
 
-import { render } from 'test/render';
 import { CheckType, ROUTES } from 'types';
-import { PLUGIN_URL_PATH } from 'components/constants';
-import { MultiHttpSettingsForm } from './MultiHttpSettingsForm';
-import { submitForm } from 'components/CheckEditor/testHelpers';
 import { BASIC_CHECK_LIST } from 'components/CheckEditor/testConstants';
+import { submitForm } from 'components/CheckEditor/testHelpers';
+import { PLUGIN_URL_PATH } from 'components/constants';
+
+import { MultiHttpSettingsForm } from './MultiHttpSettingsForm';
 
 jest.setTimeout(60000);
 
@@ -14,7 +15,9 @@ beforeEach(() => jest.resetAllMocks());
 const onReturn = jest.fn();
 
 const renderNewMultiForm = async () => {
-  const res = render(<MultiHttpSettingsForm checks={BASIC_CHECK_LIST} onReturn={onReturn} />, {
+  const instance = createInstance();
+  instance.api.listChecks = jest.fn().mockResolvedValue(BASIC_CHECK_LIST);
+  const res = render(<MultiHttpSettingsForm onReturn={onReturn} />, {
     route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${CheckType.MULTI_HTTP}`,
     path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${CheckType.MULTI_HTTP}`,
   });
@@ -85,7 +88,7 @@ describe('new checks', () => {
 
     expect(instance.api?.addCheck).toHaveBeenCalledWith({
       target: 'http://grafanarr.com',
-      timeout: 3000,
+      timeout: 15000,
       alertSensitivity: 'none',
       basicMetricsOnly: true,
       enabled: true,

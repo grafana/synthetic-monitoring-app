@@ -1,21 +1,22 @@
-import React, { FC, useState, useContext } from 'react';
-import { Button, Alert, useStyles2, Spinner, Modal } from '@grafana/ui';
-import { getBackendSrv, config } from '@grafana/runtime';
-import { DataSourceInstanceSettings, GrafanaTheme2, OrgRole, DataSourceJsonData } from '@grafana/data';
-import { FaroEvent, reportEvent, reportError } from 'faro';
+import React, { FC, useContext,useState } from 'react';
+import { DataSourceInstanceSettings, DataSourceJsonData,GrafanaTheme2, OrgRole } from '@grafana/data';
+import { config,getBackendSrv } from '@grafana/runtime';
+import { Alert, Button, Modal,Spinner, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { importAllDashboards } from 'dashboards/loader';
 import { isNumber } from 'lodash';
 
 import { ROUTES, SubmissionErrorWrapper } from 'types';
+import { FaroEvent, reportError,reportEvent } from 'faro';
 import { findSMDataSources, hasRole, initializeDatasource } from 'utils';
-import { dashboardScreenshot, dashboardScreenshotLight } from 'img';
-import { importAllDashboards } from 'dashboards/loader';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { getRoute } from 'components/Routing';
 import { colors, LEGACY_LOGS_DS_NAME, LEGACY_METRICS_DS_NAME } from 'components/constants';
 import { DisplayCard } from 'components/DisplayCard';
 import FeaturesBanner from 'components/FeaturesBanner';
 import { PluginPage } from 'components/PluginPage';
+import { getRoute } from 'components/Routing';
+
+import { dashboardScreenshot, dashboardScreenshotLight } from 'img';
 
 const getStyles = (theme: GrafanaTheme2) => {
   const textColor = theme.isDark ? colors.darkText : colors.lightText;

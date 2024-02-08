@@ -1,13 +1,13 @@
 import React from 'react';
-import { screen } from '@testing-library/react';
-
+import { screen, waitFor } from '@testing-library/react';
 import { render } from 'test/render';
+
 import { ConfigActions } from 'components/ConfigActions';
 
 const renderConfigActions = ({ hasApi = true, enabled = true } = {}) => {
   const instance = hasApi ? undefined : { api: undefined };
 
-  return render(<ConfigActions enabled={enabled} pluginId="steve" />, { instance });
+  return waitFor(() => render(<ConfigActions enabled={enabled} pluginId="steve" />, { instance }));
 };
 
 it('shows disable option when activated', async () => {

@@ -1,10 +1,11 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
+import { createInstance, render } from 'test/render';
 
-import { render, createInstance } from 'test/render';
-import { IpVersion, FilteredCheck } from 'types';
-import BulkEditModal from './BulkEditModal';
+import { FilteredCheck, IpVersion } from 'types';
 import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
+
+import BulkEditModal from './BulkEditModal';
 
 const onDismiss = jest.fn();
 const onSuccess = jest.fn();
@@ -89,7 +90,7 @@ const renderBulkEditModal = (action: 'add' | 'remove' | null, selectedChecks: ()
   const instance = createInstance();
 
   return render(
-    <SuccessRateContextProvider checks={[]}>
+    <SuccessRateContextProvider>
       <BulkEditModal
         onDismiss={onDismiss}
         onSuccess={onSuccess}

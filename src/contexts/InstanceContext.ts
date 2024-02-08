@@ -1,6 +1,7 @@
-import { AppPluginMeta } from '@grafana/data';
 import { createContext } from 'react';
-import { GlobalSettings, GrafanaInstances } from 'types';
+import { AppPluginMeta } from '@grafana/data';
+
+import type { GlobalSettings, GrafanaInstances } from 'types';
 
 export interface InstanceContextValue {
   loading: boolean;

@@ -1,5 +1,7 @@
+import { AppEvents, PanelModel } from '@grafana/data';
 import { sceneGraph, VizPanel, VizPanelMenu, VizPanelState } from '@grafana/scenes';
 import { DataQuery } from '@grafana/schema';
+import appEvents from 'grafana/app/core/app_events';
 
 interface DataQueryExtended extends DataQuery {
   expr: string;
@@ -15,24 +17,19 @@ export class ExplorablePanel extends VizPanel {
       ...state,
     });
 
-    this.initHeaderActionsSync();
+    this.initMenu();
   }
 
-  // // use upgraded encoding function that custom escapes "/"
-  // interpolate: InterpolateFunction = (value, scopedVars, format) => {
-  //   if (value.includes(':path')) {
-  //     return sceneGraph.interpolate(
-  //       this,
-  //       value.replace(':path', ''),
-  //       scopedVars,
-  //       encodeParameter as VariableCustomFormatterFn
-  //     );
-  //   }
+  private getBasicJsonDefinition(): Partial<PanelModel> {
+    return {
+      fieldConfig: this.state.fieldConfig,
+      description: this.state.description,
+      options: this.state.options,
+      type: this.state.pluginId,
+    };
+  }
 
-  //   return sceneGraph.interpolate(this, value, scopedVars, format as VariableCustomFormatterFn);
-  // };
-
-  private initHeaderActionsSync() {
+  private initMenu() {
     this.addActivationHandler(() => {
       const data = sceneGraph.getData(this);
 
@@ -59,6 +56,9 @@ export class ExplorablePanel extends VizPanel {
             })
           );
 
+          const panelJson = this.getBasicJsonDefinition();
+          panelJson.datasource = { uid: datasource };
+          panelJson.targets = queries;
           this.setState({
             menu: new VizPanelMenu({
               items: [
@@ -67,6 +67,20 @@ export class ExplorablePanel extends VizPanel {
                   iconClassName: 'compass',
                   text: 'Explore',
                   href: `/explore?left=${left}`,
+                },
+                {
+                  type: 'submenu',
+                  iconClassName: 'copy',
+                  text: 'Copy JSON',
+                  onClick: () => {
+                    try {
+                      navigator.clipboard.writeText(JSON.stringify(panelJson));
+                      appEvents.emit(AppEvents.alertSuccess, ['Panel JSON copied to clipboard']);
+                    } catch (e: any) {
+                      reportError(e);
+                      appEvents.emit(AppEvents.alertError, ['Failed to copy JSON: ' + e?.message]);
+                    }
+                  },
                 },
               ],
             }),

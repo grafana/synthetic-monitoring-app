@@ -1,9 +1,11 @@
+import React, { useContext,useEffect, useState } from 'react';
 import { ArrayVector, dateTime, FieldType } from '@grafana/data';
 import { Modal, Spinner } from '@grafana/ui';
+
+import { AdHocCheckResponse, Probe } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { useLogData } from 'hooks/useLogData';
-import React, { useState, useEffect, useContext } from 'react';
-import { AdHocCheckResponse, Probe } from 'types';
+
 import { CheckTestResult } from './CheckTestResult';
 
 interface Props {

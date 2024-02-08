@@ -1,20 +1,21 @@
-import {
-  Check,
-  CheckType,
-  Settings,
-  HttpSettings,
-  PingSettings,
-  DnsSettings,
-  TcpSettings,
-  Label,
-  TracerouteSettings,
-  MultiHttpSettings,
-} from 'types';
-import { checkType } from 'utils';
 import * as punycode from 'punycode';
 import { Address4, Address6 } from 'ip-address';
 import validUrl from 'valid-url';
-import { PEM_HEADER, PEM_FOOTER, INVALID_WEB_URL_MESSAGE } from 'components/constants';
+
+import {
+  Check,
+  CheckType,
+  DnsSettings,
+  HttpSettings,
+  Label,
+  MultiHttpSettings,
+  PingSettings,
+  Settings,
+  TcpSettings,
+  TracerouteSettings,
+} from 'types';
+import { checkType } from 'utils';
+import { INVALID_WEB_URL_MESSAGE, PEM_FOOTER, PEM_HEADER } from 'components/constants';
 
 export const CheckValidation = {
   job: validateJob,
@@ -70,6 +71,12 @@ export function validateTarget(typeOfCheck: CheckType, target: string): string |
     case CheckType.Traceroute: {
       return validateHostname(target);
     }
+    case CheckType.K6: {
+      if (target.length < 3) {
+        return 'Instance must be at least 3 characters long';
+      }
+      return undefined;
+    }
     default: {
       // we want to make sure that we are validating the target for all
       // check types; if someone adds a check type but forgets to update
@@ -122,6 +129,7 @@ export function validateTimeout(timeout: number, checkType: CheckType): string |
       }
       break;
     }
+    case CheckType.K6:
     case CheckType.MULTI_HTTP: {
       if (timeout < 1) {
         return 'Timeout must be at least 1 second';
@@ -272,6 +280,9 @@ export function validateSettings(settings: Settings): string | undefined {
     }
     case CheckType.Traceroute: {
       return validateSettingsTraceroute(settings.traceroute);
+    }
+    case CheckType.K6: {
+      return;
     }
   }
 }

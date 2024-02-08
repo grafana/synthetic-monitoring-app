@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { css } from '@emotion/css';
+import { useFormContext } from 'react-hook-form';
 import { Field, Input } from '@grafana/ui';
+import { css } from '@emotion/css';
+
 import { Collapse } from 'components/Collapse';
 import { LabelField } from 'components/LabelField';
-import { useFormContext } from 'react-hook-form';
+
 import { HorizontalCheckboxField } from './HorizonalCheckboxField';
 
 interface Props {
@@ -16,7 +18,6 @@ export const TracerouteSettingsForm = ({ isEditor }: Props) => {
   return (
     <Collapse
       label="Advanced options"
-      collapsible={true}
       onToggle={() => setShowAdvanced(!showAdvanced)}
       isOpen={showAdvanced}
     >

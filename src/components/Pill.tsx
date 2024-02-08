@@ -1,7 +1,7 @@
+import React, { PropsWithChildren } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Icon, IconName, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
-import React, { PropsWithChildren } from 'react';
 
 interface Props {
   className?: string;

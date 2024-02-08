@@ -1,10 +1,11 @@
 import React from 'react';
-import { screen } from '@testing-library/react';
-
+import { screen, waitFor } from '@testing-library/react';
 import { render } from 'test/render';
-import ThresholdGlobalSettings from './ThresholdGlobalSettings';
+
 import { getInstanceMock } from 'datasource/__mocks__/DataSource';
 import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
+
+import ThresholdGlobalSettings from './ThresholdGlobalSettings';
 
 const onDismiss = jest.fn();
 const onSuccess = jest.fn();
@@ -15,18 +16,20 @@ const renderThresholdSettingsForm = () => {
     api: getInstanceMock(),
   };
 
-  return render(
-    <SuccessRateContextProvider checks={[]}>
-      <ThresholdGlobalSettings onDismiss={onDismiss} onSuccess={onSuccess} onError={onError} isOpen={true} />
-    </SuccessRateContextProvider>,
-    {
-      instance,
-    }
+  return waitFor(() =>
+    render(
+      <SuccessRateContextProvider>
+        <ThresholdGlobalSettings onDismiss={onDismiss} onSuccess={onSuccess} onError={onError} isOpen={true} />
+      </SuccessRateContextProvider>,
+      {
+        instance,
+      }
+    )
   );
 };
 
 test('shows the form', async () => {
-  renderThresholdSettingsForm();
+  await renderThresholdSettingsForm();
   const saveButton = await screen.findByTestId('threshold-save');
   const inputs = await screen.findAllByPlaceholderText('value');
   expect(saveButton).toBeInTheDocument();
@@ -34,7 +37,7 @@ test('shows the form', async () => {
 });
 
 test('has default values in form', async () => {
-  const { user } = renderThresholdSettingsForm();
+  const { user } = await renderThresholdSettingsForm();
   const upperLimitInputs = await screen.findAllByTestId('upper-limit');
   const lowerLimitInputs = await screen.findAllByTestId('lower-limit');
   await user.click(screen.getByText('Reset all to defaults'));
@@ -47,7 +50,7 @@ test('has default values in form', async () => {
 });
 
 test('submits the form', async () => {
-  const { instance, user } = renderThresholdSettingsForm();
+  const { instance, user } = await renderThresholdSettingsForm();
   const saveButton = await screen.findByTestId('threshold-save');
   await user.click(saveButton);
 

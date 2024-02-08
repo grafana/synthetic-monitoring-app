@@ -1,6 +1,7 @@
 import React from 'react';
-import { TerraformConfig } from 'components/TerraformConfig';
+
 import { AccessToken } from 'components/AccessToken';
+import { TerraformConfig } from 'components/TerraformConfig';
 
 export const ProgrammaticManagement = () => {
   return (

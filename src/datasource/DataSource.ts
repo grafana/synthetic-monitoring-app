@@ -1,4 +1,5 @@
 import {
+  arrayToDataFrame,
   DataFrame,
   DataQueryRequest,
   DataQueryResponse,
@@ -6,16 +7,15 @@ import {
   DataSourceInstanceSettings,
   MetricFindValue,
   ScopedVars,
-  arrayToDataFrame,
 } from '@grafana/data';
-
-import { CheckInfo, QueryType, SMOptions, SMQuery } from './types';
-
 import { getBackendSrv, getTemplateSrv } from '@grafana/runtime';
 import { isArray } from 'lodash';
 import { firstValueFrom } from 'rxjs';
-import { findLinkedDatasource, getRandomProbes, queryLogs } from 'utils';
+
 import { Check, HostedInstance, Probe } from '../types';
+import { CheckInfo, QueryType, SMOptions, SMQuery } from './types';
+import { findLinkedDatasource, getRandomProbes, queryLogs } from 'utils';
+
 import { parseTracerouteLogs } from './traceroute-utils';
 
 export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
@@ -186,15 +186,16 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   // PROBES
   //--------------------------------------------------------------------------------
 
-  async listProbes(): Promise<Probe[]> {
-    return getBackendSrv()
-      .fetch({
+  async listProbes() {
+    return firstValueFrom(
+      getBackendSrv().fetch<Probe[]>({
         method: 'GET',
         url: `${this.instanceSettings.url}/sm/probe/list`,
       })
-      .toPromise()
-      .then((res: any) => {
-        return res.data;
+    )
+      .then((res) => res.data)
+      .catch((e) => {
+        throw new Error(e);
       });
   }
 

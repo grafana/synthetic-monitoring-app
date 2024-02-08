@@ -1,10 +1,11 @@
+import React, { useContext } from 'react';
 import { SceneReactObject, SceneVariable } from '@grafana/scenes';
 import { Button, Spinner } from '@grafana/ui';
-import { ChecksContext } from 'contexts/ChecksContext';
-import { useNavigation } from 'hooks/useNavigation';
-import React, { useContext } from 'react';
+
 import { ROUTES } from 'types';
 import { checkType } from 'utils';
+import { ChecksContext } from 'contexts/ChecksContext';
+import { useNavigation } from 'hooks/useNavigation';
 
 interface Props {
   job: SceneVariable;

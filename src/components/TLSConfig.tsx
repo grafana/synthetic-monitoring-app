@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
-import { Field, Input, Container, TextArea } from '@grafana/ui';
-import { Collapse } from 'components/Collapse';
-import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
+import { Container, Field, Input, TextArea } from '@grafana/ui';
+
 import { CheckType } from 'types';
 import { validateTLSCACert, validateTLSClientCert, validateTLSClientKey, validateTLSServerName } from 'validation';
+import { Collapse } from 'components/Collapse';
+import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 
 interface Props {
   isEditor: boolean;
@@ -19,7 +20,7 @@ export const TLSConfig = ({ isEditor, checkType }: Props) => {
   } = useFormContext();
 
   return (
-    <Collapse label="TLS config" onToggle={() => setShowTLS(!showTLS)} isOpen={showTLS} collapsible>
+    <Collapse label="TLS config" onToggle={() => setShowTLS(!showTLS)} isOpen={showTLS}>
       <HorizontalCheckboxField
         id="tls-config-skip-validation"
         name={`settings.${checkType}.tlsConfig.insecureSkipVerify`}

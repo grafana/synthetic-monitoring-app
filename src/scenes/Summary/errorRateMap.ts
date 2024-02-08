@@ -1,42 +1,42 @@
 import { SceneQueryRunner } from '@grafana/scenes';
 import { DataSourceRef, ThresholdsMode } from '@grafana/schema';
-import { ExplorablePanel } from 'scenes/ExplorablePanel';
-import { CheckType } from 'types';
 
-function getErrorMapQuery(checkType: CheckType) {
+import { ExplorablePanel } from 'scenes/ExplorablePanel';
+
+function getErrorMapQuery() {
   return `
   100 * (1 - (
     sum by (probe, geohash)
       (
-        rate(probe_all_success_sum[$__range])
+        rate(probe_all_success_sum{probe=~"$probe"}[$__range])
         *
         on (instance, job, probe, config_version)
         group_left(geohash)
         max
         by (instance, job, probe, config_version, check_name, geohash)
-        (sm_check_info{check_name=\"${checkType}\", region=~\"$region\"})
+        (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters})
       ) 
       / 
       sum by (probe, geohash)
       (
-        rate(probe_all_success_count[$__range])
+        rate(probe_all_success_count{probe=~"$probe"}[$__range])
         *
         on (instance, job, probe, config_version)
         group_left(geohash)
         max
         by (instance, job, probe, config_version, check_name, geohash)
-        (sm_check_info{check_name=\"${checkType}\", region=~\"$region\"})
+        (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters})
       )
     )
   )`;
 }
 
-function getMapQueryRunner(checkType: CheckType, metrics: DataSourceRef) {
+function getMapQueryRunner(metrics: DataSourceRef) {
   const queryRunner = new SceneQueryRunner({
     datasource: metrics,
     queries: [
       {
-        expr: getErrorMapQuery(checkType),
+        expr: getErrorMapQuery(),
         format: 'table',
         hide: false,
         instant: true,
@@ -49,11 +49,11 @@ function getMapQueryRunner(checkType: CheckType, metrics: DataSourceRef) {
   return queryRunner;
 }
 
-export function getErrorRateMapPanel(checkType: CheckType, metrics: DataSourceRef) {
+export function getErrorRateMapPanel(metrics: DataSourceRef) {
   const mapPanel = new ExplorablePanel({
     pluginId: 'geomap',
-    title: `${checkType} error rate`,
-    $data: getMapQueryRunner(checkType, metrics),
+    title: `$check_type error rate by location`,
+    $data: getMapQueryRunner(metrics),
     options: {
       basemap: {
         name: 'Basemap',

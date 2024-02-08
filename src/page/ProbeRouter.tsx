@@ -1,62 +1,41 @@
-// Libraries
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext } from 'react';
+import { Route, Switch, useRouteMatch } from 'react-router-dom';
+import { OrgRole } from '@grafana/data';
 
-// Types
-import { Probe, ROUTES } from 'types';
-import ProbeEditor from 'components/ProbeEditor/ProbeEditor';
+import { hasRole } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { ProbeList } from 'components/ProbeList';
+import { useProbes } from 'data/useProbes';
 import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
-import { Switch, Route, useRouteMatch } from 'react-router-dom';
-import { useNavigation } from 'hooks/useNavigation';
+import { EditProbe } from 'page/EditProbe';
+import { NewProbe } from 'page/NewProbe';
+import { Probes } from 'page/Probes';
 
 export const ProbeRouter = () => {
-  const [probesLoading, setProbesLoading] = useState(true);
-  const [probes, setProbes] = useState<Probe[]>([]);
-  const { instance, loading: instanceLoading } = useContext(InstanceContext);
-  const navigate = useNavigation();
+  const { loading: instanceLoading } = useContext(InstanceContext);
   const { path } = useRouteMatch();
+  const { error, loading, probes, refetchProbes } = useProbes();
+  const isEditor = hasRole(OrgRole.Editor);
 
-  useEffect(() => {
-    const fetchProbes = async () => {
-      const probes = await instance.api?.listProbes();
-      if (probes) {
-        setProbes(probes);
-        setProbesLoading(false);
-      }
-    };
-    fetchProbes();
-  }, [instanceLoading, instance.api]);
-
-  const onGoBack = () => {
-    navigate(ROUTES.Probes);
+  const props = {
+    probes,
+    loading: loading || instanceLoading,
+    error,
+    refetchProbes,
   };
-
-  const onSelectProbe = (id: number) => {
-    navigate(`${ROUTES.EditProbe}/${id}`);
-  };
-
-  if (probesLoading || instanceLoading) {
-    return <div>Loading...</div>;
-  }
 
   return (
-    <SuccessRateContextProvider probes={probes}>
+    <SuccessRateContextProvider onlyProbes probes={probes}>
       <Switch>
         <Route path={path} exact>
-          <ProbeList
-            probes={probes}
-            onAddNew={() => {
-              navigate(ROUTES.NewProbe);
-            }}
-            onSelectProbe={onSelectProbe}
-          />
+          <Probes {...props} />
         </Route>
-        <Route path={`${path}/new`}>
-          <ProbeEditor probes={probes} onReturn={onGoBack} />
-        </Route>
+        {isEditor && (
+          <Route path={`${path}/new`}>
+            <NewProbe {...props} />
+          </Route>
+        )}
         <Route path={`${path}/edit/:id`}>
-          <ProbeEditor probes={probes} onReturn={onGoBack} />
+          <EditProbe {...props} />
         </Route>
       </Switch>
     </SuccessRateContextProvider>

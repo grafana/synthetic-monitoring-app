@@ -1,15 +1,16 @@
 import React, { type ReactElement, type ReactNode } from 'react';
-import { render, type RenderOptions } from '@testing-library/react';
-import { createMemoryHistory } from 'history';
 import { Route, Router } from 'react-router-dom';
 import { AppPluginMeta, DataSourceSettings, PluginType } from '@grafana/data';
+import { render, type RenderOptions } from '@testing-library/react';
 import userEventLib from '@testing-library/user-event';
+import { createMemoryHistory } from 'history';
+import pluginInfo from 'plugin.json';
+import { getInstanceMock, instanceSettings } from 'datasource/__mocks__/DataSource';
 
 import { GlobalSettings, GrafanaInstances } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { getInstanceMock, instanceSettings } from 'datasource/__mocks__/DataSource';
+import { ChecksContextProvider } from 'components/ChecksContextProvider';
 import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
-import pluginInfo from 'plugin.json';
 
 export const createInstance = (options?: GrafanaInstances) => {
   return {
@@ -76,9 +77,11 @@ export const createWrapper = ({
           },
         }}
       >
-        <Router history={history}>
-          <Route path={route}>{children}</Route>
-        </Router>
+        <ChecksContextProvider>
+          <Router history={history}>
+            <Route path={route}>{children}</Route>
+          </Router>
+        </ChecksContextProvider>
       </InstanceContext.Provider>
     </FeatureFlagProvider>
   );

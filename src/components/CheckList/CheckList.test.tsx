@@ -1,11 +1,12 @@
 import React from 'react';
-import { screen, waitForElementToBeRemoved } from '@testing-library/react';
+import { screen, waitFor, waitForElementToBeRemoved } from '@testing-library/react';
+import { createInstance, render } from 'test/render';
 
-import { render, createInstance } from 'test/render';
-import { CheckList } from './CheckList';
 import { Check, CheckSort, ROUTES } from 'types';
-import { SuccessRateContextProvider } from '../SuccessRateContextProvider';
 import { PLUGIN_URL_PATH } from 'components/constants';
+
+import { SuccessRateContextProvider } from '../SuccessRateContextProvider';
+import { CheckList } from './CheckList';
 
 jest.mock('hooks/useNavigation', () => {
   const actual = jest.requireActual('hooks/useNavigation');
@@ -118,15 +119,18 @@ const onCheckUpdate = jest.fn();
 
 const renderCheckList = ({ checks = defaultChecks } = {} as RenderChecklist) => {
   const instance = createInstance();
+  instance.api.listChecks = jest.fn(() => Promise.resolve(checks));
 
-  return render(
-    <SuccessRateContextProvider checks={checks}>
-      <CheckList instance={instance} checks={checks} onCheckUpdate={onCheckUpdate} />
-    </SuccessRateContextProvider>,
-    {
-      instance,
-      path: `${PLUGIN_URL_PATH}${ROUTES.Checks}`,
-    }
+  return waitFor(() =>
+    render(
+      <SuccessRateContextProvider>
+        <CheckList instance={instance} onCheckUpdate={onCheckUpdate} />
+      </SuccessRateContextProvider>,
+      {
+        instance,
+        path: `${PLUGIN_URL_PATH}${ROUTES.Checks}`,
+      }
+    )
   );
 };
 
@@ -135,7 +139,7 @@ beforeEach(() => {
 });
 
 test('renders empty state', async () => {
-  renderCheckList({ checks: [] });
+  await renderCheckList({ checks: [] });
   const emptyWarning = await screen.findByText('This account does not currently have any checks configured', {
     exact: false,
   });
@@ -143,13 +147,13 @@ test('renders empty state', async () => {
 });
 
 test('renders list of checks', async () => {
-  renderCheckList();
+  await renderCheckList();
   const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(4);
 });
 
 test('search by text', async () => {
-  const { user } = renderCheckList();
+  const { user } = await renderCheckList();
   const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
   filterInput.focus();
   const willBeRemoved = screen.getByText('chimichurri');
@@ -161,8 +165,8 @@ test('search by text', async () => {
 });
 
 test('search is case insensitive', async () => {
-  const { user } = renderCheckList();
-  const willBeRemoved = screen.getByText('chimichurri');
+  const { user } = await renderCheckList();
+  const willBeRemoved = await screen.findByText('chimichurri');
   const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
   filterInput.focus();
 
@@ -173,7 +177,7 @@ test('search is case insensitive', async () => {
 });
 
 test('search matches job value', async () => {
-  const { user } = renderCheckList();
+  const { user } = await renderCheckList();
   const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
   const willBeRemoved = screen.getByText('chimichurri');
   filterInput.focus();
@@ -185,7 +189,7 @@ test('search matches job value', async () => {
 });
 
 test('search matches target value', async () => {
-  const { user } = renderCheckList();
+  const { user } = await renderCheckList();
   const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
   const willBeRemoved = screen.getByText('chimichurri');
 
@@ -198,9 +202,9 @@ test('search matches target value', async () => {
 });
 
 test('search matches label value', async () => {
-  const { user } = renderCheckList();
+  const { user } = await renderCheckList();
   const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
-  const willBeRemoved = screen.getByText('chimichurri');
+  const willBeRemoved = await screen.findByText('chimichurri');
   filterInput.focus();
 
   await user.paste('nachos.com');
@@ -210,7 +214,7 @@ test('search matches label value', async () => {
 });
 
 test('search matches label name', async () => {
-  const { user } = renderCheckList();
+  const { user } = await renderCheckList();
   const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
   const willBeRemoved = screen.getByText('tacos');
   filterInput.focus();
@@ -222,7 +226,7 @@ test('search matches label name', async () => {
 });
 
 test('clicking label value adds to label filter', async () => {
-  const { user } = renderCheckList();
+  const { user } = await renderCheckList();
   const labelValue = await screen.findAllByText('agreat: label');
   await user.click(labelValue[0]);
   const additionalFilters = await screen.findByRole('button', { name: /Additional filters/i });
@@ -234,7 +238,7 @@ test('clicking label value adds to label filter', async () => {
 });
 
 test('filters by check type', async () => {
-  const { user } = renderCheckList();
+  const { user } = await renderCheckList();
   const additionalFilters = await screen.findByRole('button', { name: 'Additional filters' });
   await user.click(additionalFilters);
   const typeFilter = await screen.findByTestId('check-type-filter');
@@ -244,7 +248,7 @@ test('filters by check type', async () => {
 });
 
 test('filters by probe', async () => {
-  const { user } = renderCheckList();
+  const { user } = await renderCheckList();
   const additionalFilters = await screen.findByRole('button', { name: 'Additional filters' });
   await user.click(additionalFilters);
   const probeFilter = await screen.findByTestId('probe-filter');
@@ -264,7 +268,7 @@ test('loads search from localStorage', async () => {
       probes: [],
     })
   );
-  renderCheckList();
+  await renderCheckList();
   const searchInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
   expect(searchInput).toHaveValue('chimichurri');
 
@@ -283,7 +287,7 @@ test('loads status filter from localStorage', async () => {
       probes: [],
     })
   );
-  const { user } = renderCheckList();
+  const { user } = await renderCheckList();
   const additionalFilters = await screen.findByRole('button', { name: /Additional filters \(1 active\)/i });
   await user.click(additionalFilters);
   const statusFilter = await screen.findByTestId('check-status-filter');
@@ -304,7 +308,7 @@ test('loads type filter from localStorage', async () => {
       probes: [],
     })
   );
-  const { user } = renderCheckList();
+  const { user } = await renderCheckList();
   const additionalFilters = await screen.findByRole('button', { name: /Additional filters \(1 active\)/i });
   await user.click(additionalFilters);
   const typeFilter = await screen.findByTestId('check-type-filter');
@@ -325,7 +329,7 @@ test('loads labels from localStorage', async () => {
       probes: [],
     })
   );
-  const { user } = renderCheckList();
+  const { user } = await renderCheckList();
   const additionalFilters = await screen.findByRole('button', { name: /Additional filters \(1 active\)/i });
   await user.click(additionalFilters);
   const filterInput = await screen.findByTestId('check-label-filter');
@@ -336,7 +340,7 @@ test('loads labels from localStorage', async () => {
 });
 
 test('clicking type chiclet adds it to filter', async () => {
-  const { user } = renderCheckList();
+  const { user } = await renderCheckList();
   const httpTypeChiclet = await screen.findAllByText('HTTP');
   await user.click(httpTypeChiclet[0]);
   const additionalFilters = await screen.findByRole('button', { name: /Additional filters/i });
@@ -348,7 +352,7 @@ test('clicking type chiclet adds it to filter', async () => {
 });
 
 test('clicking status chiclet adds it to filter', async () => {
-  const { user } = renderCheckList();
+  const { user } = await renderCheckList();
   const disabledChiclet = await screen.findAllByText('Disabled');
   await user.click(disabledChiclet[0]);
   const additionalFilters = await screen.findByRole('button', { name: /Additional filters/i });
@@ -362,14 +366,14 @@ test('clicking status chiclet adds it to filter', async () => {
 test('clicking add new is handled', async () => {
   const navigate = jest.fn();
   useNavigationHook.useNavigation = jest.fn(() => navigate); // TODO: COME BACK TO
-  const { user } = renderCheckList();
+  const { user } = await renderCheckList();
   const addNewButton = await screen.findByRole('button', { name: 'Add new check' });
   await user.click(addNewButton);
   expect(navigate).toHaveBeenCalledWith(ROUTES.ChooseCheckType);
 });
 
 test('select all performs disable action on all visible checks', async () => {
-  const { instance, user } = renderCheckList();
+  const { instance, user } = await renderCheckList();
   const selectAll = await screen.findByTestId('selectAll');
   await user.click(selectAll);
   const selectedText = await screen.findByText('4 checks are selected.');
@@ -427,7 +431,7 @@ test('select all performs disable action on all visible checks', async () => {
 });
 
 test('select all performs enable action on all visible checks', async () => {
-  const { instance, user } = renderCheckList();
+  const { instance, user } = await renderCheckList();
   const selectAll = await screen.findByTestId('selectAll');
   await user.click(selectAll);
   const selectedText = await screen.findByText('4 checks are selected.');
@@ -463,7 +467,7 @@ test('select all performs enable action on all visible checks', async () => {
 });
 
 test('cascader adds labels to label filter', async () => {
-  const { user } = renderCheckList();
+  const { user } = await renderCheckList();
   const additionalFilters = await screen.findByRole('button', { name: 'Additional filters' });
   await user.click(additionalFilters);
   const cascader = await screen.findByRole('button', { name: 'Labels' });
@@ -480,7 +484,7 @@ test('cascader adds labels to label filter', async () => {
 });
 
 test('Sorting by success rate should not crash', async () => {
-  const { user } = renderCheckList();
+  const { user } = await renderCheckList();
   const sortPicker = await screen.findByTestId('check-list-sort');
 
   await user.selectOptions(sortPicker, CheckSort.SuccessRate.toString());

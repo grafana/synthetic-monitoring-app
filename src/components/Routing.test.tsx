@@ -1,20 +1,22 @@
 import React from 'react';
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
+import { createInstance, type CustomRenderOptions, render } from 'test/render';
 
-import { type CustomRenderOptions, createInstance, render } from 'test/render';
 import { ROUTES } from 'types';
+
 import { PLUGIN_URL_PATH } from './constants';
 import { getRoute, Routing } from './Routing';
+import 'test/silenceErrors';
 
 function renderRouting(options?: CustomRenderOptions) {
-  return render(<Routing onNavChanged={jest.fn} />, options);
+  return waitFor(() => render(<Routing onNavChanged={jest.fn} />, options));
 }
 
 const notaRoute = `${PLUGIN_URL_PATH}/404`;
 
 describe('Only renders the unprovisioned setup page regardless of route when app is not provisioned', () => {
   Object.entries(ROUTES).map(([key, route]) => {
-    test(`Route ${key}`, () => {
+    test(`Route ${key}`, async () => {
       renderRouting({ path: getRoute(route), meta: { jsonData: undefined } });
       screen.getByText('Provisioning is required for Synthetic Monitoring.');
     });

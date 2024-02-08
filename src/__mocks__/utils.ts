@@ -1,9 +1,4 @@
-import { OrgRole } from '@grafana/data';
 import * as utils from 'utils';
-
-function hasRole(requiredRole: OrgRole): boolean {
-  return true;
-}
 
 const queryMetric = jest.fn().mockImplementation(() => {
   return Promise.resolve({
@@ -21,6 +16,5 @@ const queryMetric = jest.fn().mockImplementation(() => {
 
 module.exports = {
   ...utils,
-  hasRole,
   queryMetric,
 };

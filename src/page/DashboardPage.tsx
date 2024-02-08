@@ -4,15 +4,16 @@ import { Spinner } from '@grafana/ui';
 import { FeatureName } from 'types';
 import { ChecksContext } from 'contexts/ChecksContext';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { ChecksContextProvider } from 'components/ChecksContextProvider';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useNavigation } from 'hooks/useNavigation';
+import { ChecksContextProvider } from 'components/ChecksContextProvider';
 import { getDashboardSceneApp } from 'scenes/dashboardSceneApp';
 
 function DashboardPageContent() {
   const { instance } = useContext(InstanceContext);
   const { isEnabled } = useFeatureFlag(FeatureName.Scenes);
   const { isEnabled: multiHttpEnabled } = useFeatureFlag(FeatureName.MultiHttp);
+  const { isEnabled: scriptedEnabled } = useFeatureFlag(FeatureName.ScriptedChecks);
   const { checks, loading } = useContext(ChecksContext);
 
   const navigate = useNavigation();
@@ -33,8 +34,13 @@ function DashboardPageContent() {
       uid: instance.api.uid,
       type: instance.api.type,
     };
-    return getDashboardSceneApp({ metrics: metricsDef, logs: logsDef, sm: smDef }, multiHttpEnabled, checks);
-  }, [instance.api, instance.logs, instance.metrics, multiHttpEnabled, checks]);
+    return getDashboardSceneApp(
+      { metrics: metricsDef, logs: logsDef, sm: smDef },
+      multiHttpEnabled,
+      scriptedEnabled,
+      checks
+    );
+  }, [instance.api, instance.logs, instance.metrics, multiHttpEnabled, scriptedEnabled, checks]);
 
   if (!isEnabled) {
     navigate('redirect?dashboard=summary');

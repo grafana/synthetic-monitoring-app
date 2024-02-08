@@ -1,9 +1,10 @@
-import { calculateMultiHTTPUsage, calculateUsage } from 'checkUsageCalc';
-import { CheckInfoContext } from 'contexts/CheckInfoContext';
-import { AccountingClassNames } from 'datasource/types';
 import { useContext } from 'react';
+import { calculateMultiHTTPUsage, calculateUsage } from 'checkUsageCalc';
+
 import { Check, CheckType, UsageValues } from 'types';
 import { checkType as getCheckType } from 'utils';
+import { AccountingClassNames } from 'datasource/types';
+import { CheckInfoContext } from 'contexts/CheckInfoContext';
 
 const addSSL = (check: Partial<Check>, baseClass: CheckType) => {
   if (baseClass === CheckType.HTTP) {

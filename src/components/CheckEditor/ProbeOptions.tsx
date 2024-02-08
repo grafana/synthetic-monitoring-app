@@ -1,18 +1,19 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
+import { Controller, useFormContext } from 'react-hook-form';
 import { Field, Input } from '@grafana/ui';
-import CheckProbes from './CheckProbes';
+
+import { CheckType, Probe } from 'types';
+import { validateFrequency, validateProbes, validateTimeout } from 'validation';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { Probe, CheckType } from 'types';
 import { SliderInput } from 'components/SliderInput';
 import { Subheader } from 'components/Subheader';
-import { useFormContext, Controller } from 'react-hook-form';
-import { validateFrequency, validateProbes, validateTimeout } from 'validation';
+
+import CheckProbes from './CheckProbes';
 
 interface Props {
   isEditor: boolean;
   timeout: number;
   frequency: number;
-  probes: number[];
   checkType: CheckType;
 }
 
@@ -50,13 +51,20 @@ function getTimeoutBounds(checkType: CheckType) {
       maxTimeout: 30.0,
     };
   }
+  if (checkType === CheckType.K6) {
+    return {
+      minTimeout: 5.0,
+      maxTimeout: 30.0,
+      defaultTimeout: 10.0,
+    };
+  }
   return {
     minTimeout: 1.0,
     maxTimeout: 10.0,
   };
 }
 
-export const ProbeOptions = ({ frequency, timeout, isEditor, probes, checkType }: Props) => {
+export const ProbeOptions = ({ frequency, timeout, isEditor, checkType }: Props) => {
   const [availableProbes, setAvailableProbes] = useState<Probe[]>([]);
   const {
     control,
@@ -92,7 +100,7 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, probes, checkType }
         render={({ field }) => (
           <CheckProbes
             {...field}
-            probes={probes}
+            probes={field.value}
             availableProbes={availableProbes}
             isEditor={isEditor}
             invalid={errors.probes}
@@ -107,9 +115,9 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, probes, checkType }
         invalid={Boolean(errors.frequency)}
         error={errors.frequency?.message}
       >
-        {checkType === CheckType.Traceroute ? (
+        {checkType === CheckType.Traceroute || checkType === CheckType.K6 ? (
           // This is just a placeholder for now, the frequency for traceroute checks is hardcoded in the submit
-          <Input value={120} prefix="Every" suffix="seconds" width={20} />
+          <Input value={120} prefix="Every" suffix="seconds" width={20} readOnly />
         ) : (
           <SliderInput
             validate={(value) => validateFrequency(value, checkType)}

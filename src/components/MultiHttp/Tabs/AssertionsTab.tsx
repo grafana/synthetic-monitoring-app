@@ -1,14 +1,16 @@
-import { useStyles2, Select, Button, Icon, Input, Field, IconButton } from '@grafana/ui';
+import React from 'react';
+import { Controller, FieldError, useFieldArray, useFormContext } from 'react-hook-form';
+import { Button, Field, Icon, IconButton, Input, Select, useStyles2 } from '@grafana/ui';
+import { cx } from '@emotion/css';
+
+import { MultiHttpAssertionType } from 'types';
 import {
   ASSERTION_CONDITION_OPTIONS,
   ASSERTION_SUBJECT_OPTIONS,
   MULTI_HTTP_ASSERTION_TYPE_OPTIONS,
 } from 'components/constants';
-import React from 'react';
-import { useFormContext, useFieldArray, Controller, FieldError } from 'react-hook-form';
-import { MultiHttpAssertionType } from 'types';
-import { MultiHttpTabProps, getMultiHttpTabStyles } from './Tabs';
-import { cx } from '@emotion/css';
+
+import { getMultiHttpTabStyles, MultiHttpTabProps } from './Tabs';
 
 export function AssertionsTab({ index, active }: MultiHttpTabProps) {
   const assertionFieldName = `settings.multihttp.entries[${index}].checks`;

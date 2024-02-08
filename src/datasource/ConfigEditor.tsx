@@ -1,9 +1,10 @@
-import React, { PureComponent, ChangeEvent } from 'react';
+import React, { ChangeEvent,PureComponent } from 'react';
 import { DataSourcePluginOptionsEditorProps } from '@grafana/data';
-import { SMOptions, SecureJsonData } from './types';
 import { Container, LegacyForms } from '@grafana/ui';
-import LinkedDatasourceView from 'components/LinkedDatasourceView';
+
+import { SecureJsonData,SMOptions } from './types';
 import { InstanceProvider } from 'components/InstanceProvider';
+import LinkedDatasourceView from 'components/LinkedDatasourceView';
 
 interface Props extends DataSourcePluginOptionsEditorProps<SMOptions, SecureJsonData> {}
 

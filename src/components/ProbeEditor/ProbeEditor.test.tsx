@@ -1,84 +1,32 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
-import { MemoryRouter, Route } from 'react-router-dom';
-
+import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures';
 import { render } from 'test/render';
-import ProbeEditor from './ProbeEditor';
-import { getInstanceMock, instanceSettings } from '../../datasource/__mocks__/DataSource';
-import { Probe, ROUTES } from 'types';
-import { PLUGIN_URL_PATH } from '../constants';
+import { fillProbeForm, runTestAsViewer, UPDATED_VALUES } from 'test/utils';
 
-jest.setTimeout(10000);
+import { ROUTES } from 'types';
+import { getRoute } from 'components/Routing';
+import { TEMPLATE_PROBE } from 'page/NewProbe';
 
-const onReturn = jest.fn().mockImplementation(() => true);
-const updateProbe = jest.fn().mockImplementation(() => Promise.resolve());
+import { ProbeEditor } from './ProbeEditor';
+import 'test/silenceErrors';
 
-beforeEach(() => {
-  onReturn.mockReset();
-});
+const onSubmit = jest.fn();
+const submitText = 'Save';
 
-const DEFAULT_PROBES = [
-  {
-    name: 'tacos',
-    id: 32,
-    public: false,
-    latitude: 0.0,
-    longitude: 0.0,
-    region: 'EMEA',
-    labels: [{ name: 'Mr', value: 'Orange' }],
-    online: true,
-    onlineChange: 0,
-  },
-  {
-    name: 'burritos',
-    id: 42,
-    public: true,
-    latitude: 0.0,
-    longitude: 0.0,
-    region: 'AMER',
-    labels: [{ name: 'Mr', value: 'Pink' }],
-    online: false,
-    onlineChange: 0,
-  },
-] as Probe[];
+const renderProbeEditor = ({ probe = TEMPLATE_PROBE } = {}) => {
+  const props = {
+    onSubmit,
+    probe,
+    submitText,
+  };
 
-const TEST_PROBE = {
-  deprecated: false,
-  labels: [],
-  name: 'new probe',
-  public: false,
-  latitude: 22,
-  longitude: 22,
-  region: 'EMEA',
-  online: false,
-  onlineChange: 0,
-  version: 'unknown',
-};
-
-const renderProbeEditor = ({ route = '/', probes = DEFAULT_PROBES, updateProbeMock = updateProbe } = {}) => {
-  const mockedInstance = getInstanceMock(instanceSettings);
-  mockedInstance.updateProbe = updateProbeMock;
-
-  return render(
-    <MemoryRouter initialEntries={[`${PLUGIN_URL_PATH}${ROUTES.Probes}${route}`]}>
-      <Route path={`${PLUGIN_URL_PATH}${ROUTES.Probes}/new`}>
-        <ProbeEditor probes={probes} onReturn={onReturn} />
-      </Route>
-      <Route path={`${PLUGIN_URL_PATH}${ROUTES.Probes}/edit/:id`}>
-        <ProbeEditor probes={probes} onReturn={onReturn} />
-      </Route>
-    </MemoryRouter>,
-    {
-      instance: {
-        api: mockedInstance,
-      },
-    }
-  );
+  return render(<ProbeEditor {...props} />);
 };
 
 describe('validation', () => {
   it('validates probe name', async () => {
-    const { user } = renderProbeEditor({ route: '/new' });
+    const { user } = renderProbeEditor();
     const nameInput = await screen.findByLabelText('Probe Name', { exact: false });
     await user.type(nameInput, 'a name that is definitely too long and should definitely not be allowed to get typed');
     const maxLengthString = 'a name that is definitely too lo';
@@ -86,7 +34,7 @@ describe('validation', () => {
   });
 
   it('shows message for invalid latitude', async () => {
-    const { user } = renderProbeEditor({ route: '/new' });
+    const { user } = renderProbeEditor();
     const latitudeInput = await screen.findByLabelText('Latitude', { exact: false });
     await user.type(latitudeInput, '444');
     const errorMessage = await screen.findByText('Must be between -90 and 90');
@@ -94,7 +42,7 @@ describe('validation', () => {
   });
 
   it('shows message for invalid longitude', async () => {
-    const { user } = renderProbeEditor({ route: '/new' });
+    const { user } = renderProbeEditor();
     const longitudeInput = await screen.findByLabelText('Longitude', { exact: false });
     await user.type(longitudeInput, '444');
     const errorMessage = await screen.findByText('Must be between -180 and 180');
@@ -102,16 +50,17 @@ describe('validation', () => {
   });
 });
 
-it('returns on back buttun', async () => {
-  const { user } = renderProbeEditor({ route: '/new' });
-  const backButton = await screen.findByRole('button', { name: 'Back' });
+it('returns on back button', async () => {
+  const { history, user } = renderProbeEditor();
+  const backButton = await screen.findByRole('link', { name: 'Back' });
   await user.click(backButton);
-  expect(onReturn).toHaveBeenCalledWith(false);
+  await waitFor(() => {}, { timeout: 1000 });
+  expect(history.location.pathname).toBe(getRoute(ROUTES.Probes));
 });
 
 it('disables save button on invalid values', async () => {
-  const { user } = renderProbeEditor({ route: '/new' });
-  const saveButton = await screen.findByRole('button', { name: 'Save' });
+  const { user } = renderProbeEditor();
+  const saveButton = await getSaveButton();
   expect(saveButton).not.toBeDisabled();
   const longitudeInput = await screen.findByLabelText('Longitude', { exact: false });
   await user.type(longitudeInput, '444');
@@ -121,29 +70,65 @@ it('disables save button on invalid values', async () => {
 });
 
 it('saves new probe', async () => {
-  const { instance, user } = renderProbeEditor({ route: '/new' });
+  const probe = PRIVATE_PROBE;
+  const { user } = renderProbeEditor({ probe });
+  await fillProbeForm(user);
+
+  const saveButton = await getSaveButton();
+  expect(saveButton).toBeEnabled();
+  await user.click(saveButton!);
+  expect(onSubmit).toHaveBeenCalledWith({
+    ...probe,
+    ...UPDATED_VALUES,
+    labels: [...probe.labels, ...UPDATED_VALUES.labels],
+  });
+});
+
+it('the form is uneditable when viewing a public probe', async () => {
+  renderProbeEditor({ probe: PUBLIC_PROBE });
+  assertUneditable();
+});
+
+it('the form is uneditable when logged in as a viewer', async () => {
+  runTestAsViewer();
+  renderProbeEditor();
+  assertUneditable();
+});
+
+it('the form actions are unavailable when viewing a public probe', async () => {
+  renderProbeEditor({ probe: PUBLIC_PROBE });
+  assertNoActions();
+});
+
+it('the form actions are unavailable as a viewer', async () => {
+  runTestAsViewer();
+  renderProbeEditor();
+  assertNoActions();
+});
+
+async function assertUneditable() {
+  const nameInput = await screen.findByLabelText('Probe Name', { exact: false });
+  expect(nameInput).toBeDisabled();
 
   const latitudeInput = await screen.findByLabelText('Latitude', { exact: false });
-  await user.type(latitudeInput, '22');
+  expect(latitudeInput).toBeDisabled();
+
   const longitudeInput = await screen.findByLabelText('Longitude', { exact: false });
-  await user.type(longitudeInput, '22');
-  const nameInput = await screen.findByLabelText('Probe Name', { exact: false });
-  await user.type(nameInput, 'new probe');
-  const regionInput = await screen.findByPlaceholderText('Region', { exact: false });
-  regionInput.focus();
-  await user.paste('EMEA');
+  expect(longitudeInput).toBeDisabled();
 
-  const saveButton = await screen.findByRole('button', { name: 'Save' });
-  expect(saveButton).toBeEnabled();
-  await user.click(saveButton);
-  await screen.findByText('Probe Authentication Token');
-  expect(instance.api?.addProbe).toHaveBeenCalledWith(TEST_PROBE);
-});
+  const regionInput = await screen.findByLabelText('Region', { exact: false });
+  expect(regionInput).toBeDisabled();
+}
 
-it('updates existing probe', async () => {
-  const { instance, user } = renderProbeEditor({ route: '/edit/32' });
-  const saveButton = await screen.findByRole('button', { name: 'Save' });
-  await user.click(saveButton);
-  await waitFor(() => expect(onReturn).toHaveBeenCalledWith(true));
-  expect(instance.api?.updateProbe).toHaveBeenCalledWith(DEFAULT_PROBES[0]);
-});
+async function assertNoActions() {
+  const addLabelButton = await screen.findByRole('button', { name: /Add label/ });
+  expect(addLabelButton).not.toBeInTheDocument();
+
+  const saveButton = await getSaveButton();
+  expect(saveButton).not.toBeInTheDocument();
+}
+
+// extract this so we can be sure our assertions for them not being there are correct
+function getSaveButton() {
+  return screen.queryByRole('button', { name: submitText });
+}

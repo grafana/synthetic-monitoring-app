@@ -1,9 +1,10 @@
 import React, { FC, useState } from 'react';
-import { css } from '@emotion/css';
+import { Controller, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Field, Select, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
+
 import { Collapse } from './Collapse';
-import { Controller, useFormContext } from 'react-hook-form';
 import { ALERT_SENSITIVITY_OPTIONS } from './constants';
 
 interface Props {
@@ -30,7 +31,7 @@ export const CheckFormAlert: FC<Props> = () => {
   );
 
   return (
-    <Collapse label="Alerting" onToggle={() => setShowAlerting(!showAlerting)} isOpen={showAlerting} collapsible>
+    <Collapse label="Alerting" onToggle={() => setShowAlerting(!showAlerting)} isOpen={showAlerting}>
       <div className={styles.marginBottom}>
         <p>
           Synthetic Monitoring provides some default alert rules via Cloud Alerting. By selecting an alert sensitivity,

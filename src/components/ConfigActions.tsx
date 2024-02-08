@@ -1,10 +1,12 @@
+import React, { useContext, useState } from 'react';
 import { getBackendSrv } from '@grafana/runtime';
 import { Button, Spinner } from '@grafana/ui';
-import React, { useContext, useState } from 'react';
-import { DisablePluginModal } from './DisablePluginModal';
+
+import { ROUTES } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { useNavigation } from 'hooks/useNavigation';
-import { ROUTES } from 'types';
+
+import { DisablePluginModal } from './DisablePluginModal';
 
 interface Props {
   enabled?: boolean;

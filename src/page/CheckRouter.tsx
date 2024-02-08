@@ -1,38 +1,29 @@
+import React, { useContext } from 'react';
+import { Route, Switch, useRouteMatch } from 'react-router-dom';
+
+import { CheckType, ROUTES } from 'types';
+import { ChecksContext } from 'contexts/ChecksContext';
+import { InstanceContext } from 'contexts/InstanceContext';
+import { useNavigation } from 'hooks/useNavigation';
 import { CheckEditor } from 'components/CheckEditor';
 import { CheckList } from 'components/CheckList';
 import { ChooseCheckType } from 'components/ChooseCheckType';
+import { K6CheckCodeEditor } from 'components/K6CheckCodeEditor';
 import { MultiHttpSettingsForm } from 'components/MultiHttp/MultiHttpSettingsForm';
 import { PluginPage } from 'components/PluginPage';
 import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
-import { InstanceContext } from 'contexts/InstanceContext';
-import { useNavigation } from 'hooks/useNavigation';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { Route, Switch, useRouteMatch } from 'react-router-dom';
-import { Check, CheckType, ROUTES } from 'types';
 
 export function CheckRouter() {
   const { instance } = useContext(InstanceContext);
-  const [checks, setChecks] = useState<Check[]>();
-  const [loading, setLoading] = useState(true);
+  const { refetchChecks, checks, loading } = useContext(ChecksContext);
 
   const navigate = useNavigation();
   const { path } = useRouteMatch();
 
-  const fetchChecks = useCallback(() => {
-    instance.api?.listChecks().then((resp) => {
-      setChecks(resp);
-      setLoading(false);
-    });
-  }, [instance.api]);
-
-  useEffect(() => {
-    fetchChecks();
-  }, [fetchChecks]);
-
   const returnToList = (refetch?: boolean) => {
     navigate(ROUTES.Checks);
     if (refetch) {
-      fetchChecks();
+      refetchChecks();
     }
   };
 
@@ -41,25 +32,34 @@ export function CheckRouter() {
   }
 
   return (
-    <SuccessRateContextProvider checks={checks}>
+    <SuccessRateContextProvider>
       <Switch>
         <Route path={path} exact>
-          <CheckList instance={instance} checks={checks ?? []} onCheckUpdate={returnToList} />
+          <CheckList instance={instance} onCheckUpdate={returnToList} />
         </Route>
         <Route path={`${path}/new/:checkType?`}>
-          {({ match }) =>
-            match?.params.checkType !== CheckType.MULTI_HTTP ? (
-              <CheckEditor onReturn={returnToList} />
-            ) : (
-              <MultiHttpSettingsForm onReturn={returnToList} checks={checks} />
-            )
-          }
-        </Route>
-        <Route path={`${path}/edit/multihttp/:id`} exact>
-          <MultiHttpSettingsForm onReturn={returnToList} checks={checks} />
+          {({ match }) => {
+            switch (match?.params.checkType) {
+              case CheckType.MULTI_HTTP:
+                return <MultiHttpSettingsForm onReturn={returnToList} checks={checks} />;
+              case CheckType.K6:
+                return <K6CheckCodeEditor checks={checks} onSubmitSuccess={returnToList} />;
+              default:
+                return <CheckEditor onReturn={returnToList} checks={checks} />;
+            }
+          }}
         </Route>
         <Route path={`${path}/edit/:checkType/:id`} exact>
-          <CheckEditor onReturn={returnToList} checks={checks} />
+          {({ match }) => {
+            switch (match?.params.checkType) {
+              case CheckType.MULTI_HTTP:
+                return <MultiHttpSettingsForm onReturn={returnToList} checks={checks} />;
+              case CheckType.K6:
+                return <K6CheckCodeEditor checks={checks} onSubmitSuccess={returnToList} />;
+              default:
+                return <CheckEditor onReturn={returnToList} checks={checks} />;
+            }
+          }}
         </Route>
         <Route path={`${path}/choose-type`} exact>
           <ChooseCheckType />

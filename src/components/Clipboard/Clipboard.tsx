@@ -1,8 +1,9 @@
 import React from 'react';
-import { useStyles } from '@grafana/ui';
-import { css, cx } from '@emotion/css';
 import { AppEvents } from '@grafana/data';
+import { useStyles } from '@grafana/ui';
 import appEvents from 'grafana/app/core/app_events';
+import { css, cx } from '@emotion/css';
+
 import { CopyToClipboard } from './CopyToClipboard';
 
 const getStyles = () => ({

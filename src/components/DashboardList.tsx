@@ -1,7 +1,8 @@
 import React, { PureComponent } from 'react';
 import { Icon } from '@grafana/ui';
+import { importDashboard, listAppDashboards, removeDashboard } from 'dashboards/loader';
+
 import { DashboardInfo, SMOptions } from 'datasource/types';
-import { listAppDashboards, importDashboard, removeDashboard } from 'dashboards/loader';
 import { InstanceContext, InstanceContextValue } from 'contexts/InstanceContext';
 
 interface Props {
@@ -149,7 +150,7 @@ export class DashboardList extends PureComponent<Props, State> {
           <tbody>
             {dashboards.map((d) => {
               return (
-                <tr key={d.uid}>
+                <tr key={d.uid ?? d.json}>
                   <td className="width-1">
                     <Icon name="apps" />
                   </td>

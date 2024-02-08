@@ -1,11 +1,12 @@
-import React, { useEffect, useState, useContext } from 'react';
-import { DashboardMeta } from 'types';
-import { InstanceContext } from 'contexts/InstanceContext';
-import { importAllDashboards, listAppDashboards } from 'dashboards/loader';
+import React, { useContext,useEffect, useState } from 'react';
+import { OrgRole } from '@grafana/data';
 import { Button, HorizontalGroup, Modal } from '@grafana/ui';
+import { importAllDashboards, listAppDashboards } from 'dashboards/loader';
+
+import { DashboardMeta } from 'types';
 import { hasDismissedDashboardUpdateModal, persistDashboardModalDismiss } from 'sessionStorage';
 import { hasRole } from 'utils';
-import { OrgRole } from '@grafana/data';
+import { InstanceContext } from 'contexts/InstanceContext';
 
 export const DashboardUpdateModal = () => {
   const { instance } = useContext(InstanceContext);

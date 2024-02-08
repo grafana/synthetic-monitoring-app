@@ -1,13 +1,11 @@
 import { DataSourceInstanceSettings, OrgRole, TimeRange } from '@grafana/data';
+import { config, getBackendSrv } from '@grafana/runtime';
+import { IconName } from '@grafana/ui';
 
 import { DashboardInfo, LinkedDatasourceInfo, LogQueryResponse, LogStream, SMOptions } from './datasource/types';
-
-import { config, getBackendSrv } from '@grafana/runtime';
-import { CheckType, HostedInstance, Settings, SubmissionErrorWrapper } from 'types';
-
-import { IconName } from '@grafana/ui';
-import { ThresholdSettings } from 'contexts/SuccessRateContext';
+import { CheckType, HostedInstance, Probe, Settings, SubmissionErrorWrapper } from 'types';
 import { SMDataSource } from 'datasource/DataSource';
+import { ThresholdSettings } from 'contexts/SuccessRateContext';
 
 /**
  * Find all synthetic-monitoring datasources
@@ -331,4 +329,18 @@ export function getRandomProbes(probes: number[], quantity: number): number[] {
     randomProbes.add(probes[index]);
   }
   return Array.from(randomProbes).sort((a, b) => a - b);
+}
+
+export function canEditProbes(probe: Probe) {
+  return !probe.public && hasRole(OrgRole.Editor);
+}
+
+export function formatDate(number: number) {
+  return new Date(number).toLocaleString('en-US', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 }

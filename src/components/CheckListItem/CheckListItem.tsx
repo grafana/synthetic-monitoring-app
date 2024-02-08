@@ -1,17 +1,19 @@
 import React, { ChangeEvent } from 'react';
-import { SuccessRateGauge } from 'components/SuccessRateGauge';
-import { checkType as getCheckType } from 'utils';
-import { Check, CheckListViewType, CheckType, FilteredCheck, Label } from 'types';
-import { useStyles2, Checkbox, HorizontalGroup } from '@grafana/ui';
-import { css, cx } from '@emotion/css';
 import { GrafanaTheme2 } from '@grafana/data';
+import { Checkbox, HorizontalGroup, useStyles2 } from '@grafana/ui';
+import { css, cx } from '@emotion/css';
+
+import { Check, CheckListViewType, CheckType, FilteredCheck, Label } from 'types';
+import { checkType as getCheckType } from 'utils';
+import { SuccessRateTypes } from 'contexts/SuccessRateContext';
+import { useUsageCalc } from 'hooks/useUsageCalc';
+import { SuccessRateGauge } from 'components/SuccessRateGauge';
+
 import { CheckCardLabel } from '../CheckCardLabel';
 import { LatencyGauge } from '../LatencyGauge';
 import { CheckItemActionButtons } from './CheckItemActionButtons';
 import { CheckListItemDetails } from './CheckListItemDetails';
 import { CheckStatusType } from './CheckStatusType';
-import { SuccessRateTypes } from 'contexts/SuccessRateContext';
-import { useUsageCalc } from 'hooks/useUsageCalc';
 
 interface Props {
   check: FilteredCheck;
@@ -250,7 +252,7 @@ export const CheckListItem = ({
                     height={75}
                     width={150}
                   />
-                  <LatencyGauge target={check.target} job={check.job} height={75} width={175} />
+                  <LatencyGauge target={check.target} job={check.job} checkType={checkType} height={75} width={175} />
                 </>
               )}
             </div>

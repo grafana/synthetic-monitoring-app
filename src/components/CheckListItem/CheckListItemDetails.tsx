@@ -1,7 +1,8 @@
+import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Button, HorizontalGroup, Tooltip, useStyles2 } from '@grafana/ui';
-import React from 'react';
 import { css, cx } from '@emotion/css';
+
 import { Label } from 'types';
 import { CheckCardLabel } from 'components/CheckCardLabel';
 
