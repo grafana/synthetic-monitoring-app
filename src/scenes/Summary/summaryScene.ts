@@ -19,8 +19,10 @@ import { getErrorPctgTimeseriesPanel } from './errorPctTimeseries';
 import { getErrorRateMapPanel } from './errorRateMap';
 import { getLatencyTimeseriesPanel } from './latencyTimeseries';
 import { getSummaryTable } from './summaryTable';
+import { getSummaryTable as getSummaryTable_DEPRECATED } from './summaryTable_DEPRECATED';
 
-export function getSummaryScene({ metrics }: DashboardSceneAppConfig, checks: Check[]) {
+export function getSummaryScene({ metrics, sm }: DashboardSceneAppConfig, checks: Check[], singleCheckNav: boolean) {
+  const summaryTable = singleCheckNav ? getSummaryTable(metrics, sm) : getSummaryTable_DEPRECATED(metrics);
   return () => {
     if (checks.length === 0) {
       return getEmptyScene();
@@ -66,7 +68,7 @@ export function getSummaryScene({ metrics }: DashboardSceneAppConfig, checks: Ch
       },
     });
 
-    const tablePanel = new SceneFlexItem({ height: 400, body: getSummaryTable(metrics) });
+    const tablePanel = new SceneFlexItem({ height: 400, body: summaryTable });
 
     const tableRow = new SceneFlexLayout({
       direction: 'row',

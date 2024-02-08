@@ -3,21 +3,11 @@ import { DataSourceRef, ThresholdsMode } from '@grafana/schema';
 
 import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
-function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
+function getSummaryTableQueryRunner(metrics: DataSourceRef) {
   const queryRunner = new SceneQueryRunner({
-    datasource: { type: 'datasource', uid: '-- Mixed --' },
+    datasource: metrics,
     queries: [
       {
-        datasource: sm,
-        hide: false,
-        instance: '',
-        job: '',
-        probe: '',
-        queryType: 'checks',
-        refId: 'checks',
-      },
-      {
-        datasource: metrics,
         editorMode: 'code',
         exemplar: false,
         expr: `
@@ -41,7 +31,6 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
         refId: 'reachability',
       },
       {
-        datasource: metrics,
         editorMode: 'code',
         exemplar: false,
         expr: `
@@ -65,7 +54,6 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
         refId: 'latency',
       },
       {
-        datasource: metrics,
         editorMode: 'code',
         exemplar: false,
         expr: `
@@ -93,7 +81,6 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
         refId: 'state',
       },
       {
-        datasource: metrics,
         editorMode: 'code',
         exemplar: false,
         expr: `
@@ -136,21 +123,6 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
           excludeByName: {
             Time: true,
             check_name: false,
-            Value: false,
-            alertSensitivity: true,
-            basicMetricsOnly: true,
-            created: true,
-            enabled: true,
-            frequency: true,
-            id: false,
-            labels: true,
-            modified: true,
-            offset: true,
-            probes: true,
-            settings: true,
-            tenantId: true,
-            timeout: true,
-            target: true,
           },
           indexByName: {
             Time: 0,
@@ -334,7 +306,7 @@ function getFieldOverrides() {
           value: [
             {
               title: 'Show details...',
-              url: '/a/grafana-synthetic-monitoring-app/checks/${__data.fields.id}/dashboard',
+              url: '/a/grafana-synthetic-monitoring-app/scene/${__data.fields.check_name}?var-probe=All&var-instance=${__data.fields.instance}&var-job=${__data.fields.job}&from=${__from}&to=${__to}',
             },
           ],
         },
@@ -351,31 +323,19 @@ function getFieldOverrides() {
           value: [
             {
               title: 'Show details...',
-              url: '/a/grafana-synthetic-monitoring-app/checks/${__data.fields.id}/dashboard',
+              url: '/a/grafana-synthetic-monitoring-app/scene/${__data.fields.check_name}?var-probe=All&var-instance=${__data.fields.instance}&var-job=${__data.fields.job}&from=${__from}&to=${__to}',
             },
           ],
-        },
-      ],
-    },
-    {
-      matcher: {
-        id: 'byName',
-        options: 'id',
-      },
-      properties: [
-        {
-          id: 'custom.hidden',
-          value: true,
         },
       ],
     },
   ];
 }
 
-export function getSummaryTable(metrics: DataSourceRef, sm: DataSourceRef) {
+export function getSummaryTable(metrics: DataSourceRef) {
   const tablePanel = new ExplorablePanel({
     pluginId: 'table',
-    $data: getSummaryTableQueryRunner(metrics, sm),
+    $data: getSummaryTableQueryRunner(metrics),
     title: `$check_type checks`,
     description:
       '* instance: the instance that corresponds to this check.\n* **job**: the job that corresponds to this check.\n* **reachability**: the percentage of all the checks that have succeeded during the whole time period.\n* **latency**: the average time to receive an answer across all the checks during the whole time period.\n* **state**: whether the target was up or down the last time it was checked.\n* **uptime**: the fraction of time the target was up  during the whole period.',

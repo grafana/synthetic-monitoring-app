@@ -201,7 +201,7 @@ export const HomePage = () => {
           title: 'Home',
           url: `${PLUGIN_URL_PATH}${ROUTES.Home}`,
           hideFromBreadcrumbs: true,
-          getScene: getSummaryScene(config, checks),
+          getScene: getSummaryScene(config, checks, perCheckDashboardsEnabled),
         }),
       ],
     });
