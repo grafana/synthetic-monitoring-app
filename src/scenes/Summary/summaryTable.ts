@@ -8,15 +8,6 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
     datasource: { type: 'datasource', uid: '-- Mixed --' },
     queries: [
       {
-        datasource: sm,
-        hide: false,
-        instance: '',
-        job: '',
-        probe: '',
-        queryType: 'checks',
-        refId: 'checks',
-      },
-      {
         datasource: metrics,
         editorMode: 'code',
         exemplar: false,
@@ -120,6 +111,15 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
         legendFormat: '',
         refId: 'uptime',
       },
+      {
+        datasource: sm,
+        hide: false,
+        instance: '',
+        job: '',
+        probe: '',
+        queryType: 'checks',
+        refId: 'checks',
+      },
     ],
   });
 
@@ -127,22 +127,44 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
     $data: queryRunner,
     transformations: [
       {
-        id: 'merge',
-        options: {},
+        id: 'joinByField',
+        options: {
+          byField: 'job',
+          mode: 'inner',
+        },
+      },
+
+      {
+        id: 'organize',
+        options: {
+          renameByName: {
+            check_name: 'check type',
+          },
+        },
+      },
+      {
+        id: 'joinByField',
+        options: {
+          byField: 'instance',
+          mode: 'inner',
+        },
       },
       {
         id: 'organize',
         options: {
           excludeByName: {
             Time: true,
-            check_name: false,
             Value: false,
             alertSensitivity: true,
             basicMetricsOnly: true,
+            check_name: false,
+            'check_name 2': true,
+            'check_name 3': true,
             created: true,
             enabled: true,
             frequency: true,
             id: false,
+            instance: true,
             labels: true,
             modified: true,
             offset: true,
@@ -150,7 +172,6 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
             settings: true,
             tenantId: true,
             timeout: true,
-            target: true,
           },
           indexByName: {
             Time: 0,
@@ -158,12 +179,12 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
             'Value #reachability': 6,
             'Value #state': 4,
             'Value #uptime': 5,
-            check_name: 3,
-            instance: 1,
+            'check type': 3,
+            target: 1,
             job: 2,
           },
           renameByName: {
-            check_name: 'check type',
+            target: 'instance',
           },
         },
       },
