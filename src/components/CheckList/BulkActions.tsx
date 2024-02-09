@@ -33,7 +33,7 @@ export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
     bulkUpdateChecks(checks.filter((check) => !check.enabled).map((check) => ({ ...check, enabled: true })));
   };
 
-  const handleDeleteSelectedChecks = async () => {
+  const handleDeleteSelectedChecks = () => {
     bulkDeleteChecks(checks.map((check) => check.id!));
   };
 

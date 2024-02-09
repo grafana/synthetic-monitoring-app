@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { GrafanaTheme2, SelectableValue } from '@grafana/data';
+import { PluginPage } from '@grafana/runtime';
 import { Pagination, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
@@ -13,7 +14,10 @@ import {
   FeatureName,
   Label,
 } from 'types';
+import { MetricCheckSuccess, Time } from 'datasource/responses.types';
 import { useSuspenseChecks } from 'data/useChecks';
+import { useChecksReachabilitySuccessRate, useChecksUptimeSuccessRate } from 'data/useSuccessRates';
+import { findCheckinMetrics } from 'data/utils';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { defaultFilters, getDefaultFilters } from 'components/CheckFilters';
 import {
@@ -30,10 +34,6 @@ import { matchesAllFilters } from './checkFilters';
 import { CheckListHeader } from './CheckListHeader';
 import { CheckListScene } from './CheckListScene';
 import EmptyCheckList from './EmptyCheckList';
-import { useChecksUptimeSuccessRate, useChecksReachabilitySuccessRate } from 'data/useSuccessRates';
-import { MetricCheckSuccess, Time } from 'datasource/responses.types';
-import { findCheckinMetrics } from 'data/utils';
-import { PluginPage } from '@grafana/runtime';
 
 export const CheckList = () => {
   const [viewType, setViewType] = useState(getViewTypeFromLS() ?? CheckListViewType.Card);

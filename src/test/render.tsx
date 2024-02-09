@@ -1,5 +1,6 @@
 import React, { type ReactElement, type ReactNode } from 'react';
 import { Route, Router } from 'react-router-dom';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { AppPluginMeta, DataSourceSettings, PluginType } from '@grafana/data';
 import { render, type RenderOptions } from '@testing-library/react';
 import userEventLib from '@testing-library/user-event';
@@ -9,6 +10,7 @@ import { getInstanceMock, instanceSettings } from 'datasource/__mocks__/DataSour
 
 import { GlobalSettings, GrafanaInstances } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
+import { queryClient } from 'data/queryClient';
 import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
 
 export const createInstance = (options?: GrafanaInstances) => {
@@ -75,9 +77,11 @@ export const createWrapper = ({
           },
         }}
       >
-        <Router history={history}>
-          <Route path={route}>{children}</Route>
-        </Router>
+        <QueryClientProvider client={queryClient}>
+          <Router history={history}>
+            <Route path={route}>{children}</Route>
+          </Router>
+        </QueryClientProvider>
       </InstanceContext.Provider>
     </FeatureFlagProvider>
   );
