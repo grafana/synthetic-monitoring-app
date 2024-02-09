@@ -27,7 +27,7 @@ import { getErrorRateTimeseries } from 'scenes/HTTP/errorRateTimeseries';
 
 import { getLatencyByPhasePanel } from './latencyByPhase';
 
-export function getPingScene({ metrics, logs }: DashboardSceneAppConfig, checks: Check[]) {
+export function getPingScene({ metrics, logs, singleCheckMode }: DashboardSceneAppConfig, checks: Check[]) {
   return () => {
     if (checks.length === 0) {
       return getEmptyScene(CheckType.PING);
@@ -38,7 +38,7 @@ export function getPingScene({ metrics, logs }: DashboardSceneAppConfig, checks:
       to: 'now',
     });
 
-    const { job, instance, probe } = getVariables(CheckType.PING, metrics, checks);
+    const { job, instance, probe } = getVariables(CheckType.PING, metrics, checks, singleCheckMode);
 
     const variables = new SceneVariableSet({ variables: [probe, job, instance] });
     const errorMap = getErrorRateMapPanel(metrics);

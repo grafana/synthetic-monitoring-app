@@ -8,6 +8,7 @@ import { css } from '@emotion/css';
 
 import { Check, CheckFormValues, CheckPageParams, CheckType } from 'types';
 import { hasRole } from 'utils';
+import { validateJob, validateTarget } from 'validation';
 import { useChecks, useCUDChecks } from 'data/useChecks';
 
 import {
@@ -17,6 +18,7 @@ import {
 } from './CheckEditor/checkFormTransformations';
 import { ProbeOptions } from './CheckEditor/ProbeOptions';
 import { CheckFormAlert } from './CheckFormAlert';
+import { CheckTestButton } from './CheckTestButton';
 import { CodeEditor } from './CodeEditor';
 import { fallbackCheck } from './constants';
 import { LabelField } from './LabelField';
@@ -34,8 +36,9 @@ function getStyles(theme: GrafanaTheme2) {
       flexDirection: 'column',
       maxWidth: theme.breakpoints.values.md,
     }),
-    saveButton: css({
-      alignSelf: 'flex-start',
+    buttonGroup: css({
+      display: 'flex',
+      gap: theme.spacing(1),
       marginTop: theme.spacing(2),
     }),
     infoIcon: css({
@@ -93,8 +96,19 @@ export function K6CheckCodeEditor() {
       <FormProvider {...formMethods}>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className={styles.jobTargetContainer}>
-            <Field label="Job name">
-              <Input id="job" {...register('job')} />
+            <Field
+              label="Job name"
+              invalid={Boolean(formMethods.formState.errors.job)}
+              error={formMethods.formState.errors.job?.message}
+              required
+            >
+              <Input
+                id="job"
+                {...register('job', {
+                  required: true,
+                  validate: validateJob,
+                })}
+              />
             </Field>
             <Field
               label={
@@ -114,9 +128,19 @@ export function K6CheckCodeEditor() {
                   </Tooltip>
                 </Label>
               }
+              invalid={Boolean(formMethods.formState.errors.target)}
+              error={formMethods.formState.errors.target?.message}
+              required
             >
-              <Input id="target" {...register('target')} />
+              <Input
+                id="target"
+                {...register('target', {
+                  required: true,
+                  validate: (value) => validateTarget(CheckType.K6, value),
+                })}
+              />
             </Field>
+
             <ProbeOptions
               isEditor={isEditor}
               frequency={check.frequency}
@@ -133,9 +157,12 @@ export function K6CheckCodeEditor() {
               return <CodeEditor {...field} />;
             }}
           />
-          <Button type="submit" disabled={submitting} className={styles.saveButton}>
-            Save
-          </Button>
+          <div className={styles.buttonGroup}>
+            <CheckTestButton check={check} />
+            <Button type="submit" disabled={submitting}>
+              Save
+            </Button>
+          </div>
         </form>
         {error && (
           <div className={styles.submissionError}>

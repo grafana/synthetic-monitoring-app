@@ -33,10 +33,17 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon }: Props) =>
   const navigate = useNavigation();
   const { isEnabled: scenesEnabled } = useFeatureFlag(FeatureName.Scenes);
   const { mutate: deleteCheck } = useDeleteCheck();
+  const { isEnabled: perCheckDashboardsEnabled } = useFeatureFlag(FeatureName.PerCheckDashboards);
 
   const showDashboard = () => {
+    if (perCheckDashboardsEnabled) {
+      const url = `${PLUGIN_URL_PATH}${ROUTES.Checks}/${check.id}/dashboard`;
+      navigate(url, {}, true);
+      return;
+    }
+
     if (scenesEnabled) {
-      const url = `${PLUGIN_URL_PATH}scene/${checkType}`;
+      const url = `${PLUGIN_URL_PATH}${ROUTES.Scene}/${checkType}`;
       navigate(
         url,
         {

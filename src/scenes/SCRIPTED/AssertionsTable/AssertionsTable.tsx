@@ -198,7 +198,7 @@ function AssertionsTable({ model }: SceneComponentProps<AssertionsTableSceneObje
           variant="primary"
           href={
             checkType === CheckType.K6
-              ? 'https://k6.io/docs/using-k6/checks/'
+              ? 'https://grafana.com/docs/k6/latest/using-k6/checks/'
               : 'https://grafana.com/docs/grafana-cloud/monitor-public-endpoints/checks/multihttp/#assertions'
           }
           target="_blank"

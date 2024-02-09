@@ -246,10 +246,19 @@ export function useTestCheck({ eventInfo, onSuccess, onError }: MutationProps<Ad
   return useMutation<AdHocCheckResponse, Error, Check, UseMutationResult>({
     mutationFn: async (check: Check) => {
       try {
-        const res = await api.testCheck(check).then((res) => ({
-          ...res,
-          job: check.job,
-        }));
+        const res = await api
+          .testCheck(check)
+          .then((res) => {
+            if (!res) {
+              throw new Error(`No response`);
+            }
+
+            return res;
+          })
+          .then((res) => ({
+            ...res,
+            job: check.job,
+          }));
 
         return res;
       } catch (error) {

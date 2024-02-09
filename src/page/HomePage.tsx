@@ -14,6 +14,8 @@ import { PluginPage } from 'components/PluginPage';
 import { getRoute } from 'components/Routing';
 import { UsageStats } from 'components/UsageStats';
 
+import { SceneHomepage } from './SceneHomepage';
+
 const sortSummaryToTop = (dashboardA: DashboardInfo, dashboardB: DashboardInfo) => {
   if (dashboardA.title === 'Synthetic Monitoring Summary') {
     return -1;
@@ -31,6 +33,7 @@ export const HomePage = () => {
   const { isEnabled: scenesEnabled } = useFeatureFlag(FeatureName.Scenes);
   const { isEnabled: multiHttpEnabled } = useFeatureFlag(FeatureName.MultiHttp);
   const { isEnabled: scriptedEnabled } = useFeatureFlag(FeatureName.ScriptedChecks);
+  const { isEnabled: perCheckDashboardsEnabled } = useFeatureFlag(FeatureName.PerCheckDashboards);
 
   useEffect(() => {
     // Sort to make sure the summary dashboard is at the top of the list
@@ -76,6 +79,10 @@ export const HomePage = () => {
       setDashboards(dashboardList);
     }
   }, [instance.api, scenesEnabled, multiHttpEnabled, scriptedEnabled]);
+
+  if (perCheckDashboardsEnabled) {
+    return <SceneHomepage />;
+  }
 
   return (
     <PluginPage pageNav={{ text: 'Home' }}>

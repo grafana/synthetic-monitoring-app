@@ -11,6 +11,7 @@ import {
   SceneVariableSet,
   VariableValueSelectors,
 } from '@grafana/scenes';
+import { VariableRefresh } from '@grafana/schema';
 
 import { Check, DashboardSceneAppConfig } from 'types';
 import { getEmptyScene } from 'scenes/Common/emptyScene';
@@ -19,8 +20,10 @@ import { getErrorPctgTimeseriesPanel } from './errorPctTimeseries';
 import { getErrorRateMapPanel } from './errorRateMap';
 import { getLatencyTimeseriesPanel } from './latencyTimeseries';
 import { getSummaryTable } from './summaryTable';
+import { getSummaryTable as getSummaryTable_DEPRECATED } from './summaryTable_DEPRECATED';
 
-export function getSummaryScene({ metrics }: DashboardSceneAppConfig, checks: Check[]) {
+export function getSummaryScene({ metrics, sm }: DashboardSceneAppConfig, checks: Check[], singleCheckNav: boolean) {
+  const summaryTable = singleCheckNav ? getSummaryTable(metrics, sm) : getSummaryTable_DEPRECATED(metrics);
   return () => {
     if (checks.length === 0) {
       return getEmptyScene();
@@ -38,6 +41,17 @@ export function getSummaryScene({ metrics }: DashboardSceneAppConfig, checks: Ch
     });
 
     // Variable definition
+    const probe = new QueryVariable({
+      includeAll: true,
+      allValue: '.*',
+      defaultToAll: true,
+      isMulti: true,
+      name: 'probe',
+      query: `label_values(sm_check_info{},probe)`,
+      refresh: VariableRefresh.onDashboardLoad,
+      datasource: metrics,
+    });
+
     const region = new QueryVariable({
       includeAll: true,
       allValue: '.*',
@@ -66,7 +80,7 @@ export function getSummaryScene({ metrics }: DashboardSceneAppConfig, checks: Ch
       },
     });
 
-    const tablePanel = new SceneFlexItem({ height: 400, body: getSummaryTable(metrics) });
+    const tablePanel = new SceneFlexItem({ height: 400, body: summaryTable });
 
     const tableRow = new SceneFlexLayout({
       direction: 'row',
@@ -89,7 +103,7 @@ export function getSummaryScene({ metrics }: DashboardSceneAppConfig, checks: Ch
 
     return new EmbeddedScene({
       $timeRange: timeRange,
-      $variables: new SceneVariableSet({ variables: [region, checkTypeVar, filters] }),
+      $variables: new SceneVariableSet({ variables: [region, probe, checkTypeVar, filters] }),
       body: new SceneFlexLayout({
         direction: 'column',
         children: [tableRow, mapRow, latencyRow],

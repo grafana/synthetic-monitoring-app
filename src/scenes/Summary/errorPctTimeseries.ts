@@ -6,7 +6,7 @@ import { ExplorablePanel } from 'scenes/ExplorablePanel';
 function getErrorPercentageQuery() {
   return `1 - sum(
     rate(
-      probe_all_success_sum[$__range]) 
+      probe_all_success_sum{probe=~"$probe"}[$__range]) 
       * 
       on (
         instance, job, probe, config_version
@@ -21,7 +21,7 @@ function getErrorPercentageQuery() {
     / 
     sum(
       rate(
-        probe_all_success_count[$__range]) 
+        probe_all_success_count{probe=~"$probe"}[$__range]) 
         * 
         on (
           instance, job, probe, config_version

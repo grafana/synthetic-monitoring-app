@@ -1,12 +1,22 @@
 import React, { useContext, useMemo } from 'react';
+import { useParams } from 'react-router-dom';
+import { SceneApp, SceneAppPage } from '@grafana/scenes';
 import { Spinner } from '@grafana/ui';
 
-import { FeatureName } from 'types';
+import { CheckPageParams, CheckType, DashboardSceneAppConfig, FeatureName } from 'types';
+import { checkType as getCheckType } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { useChecks } from 'data/useChecks';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useNavigation } from 'hooks/useNavigation';
+import { PLUGIN_URL_PATH } from 'components/constants';
 import { getDashboardSceneApp } from 'scenes/dashboardSceneApp';
+import { getDNSScene } from 'scenes/DNS';
+import { getHTTPScene } from 'scenes/HTTP';
+import { getPingScene } from 'scenes/PING/pingScene';
+import { getScriptedScene } from 'scenes/SCRIPTED';
+import { getTcpScene } from 'scenes/TCP/getTcpScene';
+import { getTracerouteScene } from 'scenes/Traceroute/getTracerouteScene';
 
 function DashboardPageContent() {
   const { instance } = useContext(InstanceContext);
@@ -14,6 +24,8 @@ function DashboardPageContent() {
   const { isEnabled: multiHttpEnabled } = useFeatureFlag(FeatureName.MultiHttp);
   const { isEnabled: scriptedEnabled } = useFeatureFlag(FeatureName.ScriptedChecks);
   const { data: checks = [], isLoading } = useChecks();
+  const { isEnabled: perCheckDashboardsEnabled } = useFeatureFlag(FeatureName.PerCheckDashboards);
+  const { id } = useParams<CheckPageParams>();
 
   const navigate = useNavigation();
 
@@ -33,13 +45,96 @@ function DashboardPageContent() {
       uid: instance.api.uid,
       type: instance.api.type,
     };
-    return getDashboardSceneApp(
-      { metrics: metricsDef, logs: logsDef, sm: smDef },
-      multiHttpEnabled,
-      scriptedEnabled,
-      checks
-    );
-  }, [instance.api, instance.logs, instance.metrics, multiHttpEnabled, scriptedEnabled, checks]);
+    const config: DashboardSceneAppConfig = { metrics: metricsDef, logs: logsDef, sm: smDef, singleCheckMode: false };
+    if (!perCheckDashboardsEnabled) {
+      return getDashboardSceneApp(config, multiHttpEnabled, scriptedEnabled, checks);
+    }
+    config.singleCheckMode = true;
+    const checkToView = checks.find((check) => String(check.id) === id);
+    if (!checkToView) {
+      return null;
+    }
+    const checkType = getCheckType(checkToView.settings);
+    const url = `${PLUGIN_URL_PATH}checks/${checkToView.id}/dashboard`;
+    switch (checkType) {
+      case CheckType.DNS: {
+        return new SceneApp({
+          pages: [
+            new SceneAppPage({
+              title: checkToView.job,
+              url,
+              getScene: getDNSScene(config, [checkToView]),
+            }),
+          ],
+        });
+      }
+      case CheckType.HTTP: {
+        return new SceneApp({
+          pages: [
+            new SceneAppPage({
+              title: checkToView.job,
+              url,
+              getScene: getHTTPScene(config, [checkToView]),
+            }),
+          ],
+        });
+      }
+      case CheckType.K6:
+      case CheckType.MULTI_HTTP: {
+        return new SceneApp({
+          pages: [
+            new SceneAppPage({
+              title: checkToView.job,
+              url,
+              getScene: getScriptedScene(config, [checkToView], checkType),
+            }),
+          ],
+        });
+      }
+      case CheckType.PING: {
+        return new SceneApp({
+          pages: [
+            new SceneAppPage({
+              title: checkToView.job,
+              url,
+              getScene: getPingScene(config, [checkToView]),
+            }),
+          ],
+        });
+      }
+      case CheckType.TCP: {
+        return new SceneApp({
+          pages: [
+            new SceneAppPage({
+              title: checkToView.job,
+              url,
+              getScene: getTcpScene(config, [checkToView]),
+            }),
+          ],
+        });
+      }
+      case CheckType.Traceroute: {
+        return new SceneApp({
+          pages: [
+            new SceneAppPage({
+              title: checkToView.job,
+              url,
+              getScene: getTracerouteScene(config, [checkToView]),
+            }),
+          ],
+        });
+      }
+    }
+  }, [
+    instance.api,
+    instance.logs,
+    instance.metrics,
+    multiHttpEnabled,
+    scriptedEnabled,
+    checks,
+    perCheckDashboardsEnabled,
+    id,
+  ]);
 
   if (!isEnabled) {
     navigate('redirect?dashboard=summary');

@@ -40,7 +40,7 @@ export function getDashboardSceneApp(
     new SceneAppPage({
       title: 'Summary',
       url: `${PLUGIN_URL_PATH}${ROUTES.Scene}`,
-      getScene: getSummaryScene(config, checks),
+      getScene: getSummaryScene(config, checks, false),
     }),
     new SceneAppPage({
       title: 'HTTP',
@@ -94,7 +94,7 @@ export function getDashboardSceneApp(
         title: 'Dashboards',
         url: `${PLUGIN_URL_PATH}${ROUTES.Scene}`,
         hideFromBreadcrumbs: true,
-        getScene: getSummaryScene(config, checks),
+        getScene: getSummaryScene(config, checks, false),
         tabs,
       }),
     ],
