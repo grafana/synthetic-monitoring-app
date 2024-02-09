@@ -17,6 +17,7 @@ import {
   AddCheckResult,
   AddProbeResult,
   AdHocCheckResponse,
+  BulkUpdateCheckResult,
   DeleteCheckResult,
   DeleteProbeResult,
   ListCheckResult,
@@ -273,13 +274,19 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   //--------------------------------------------------------------------------------
 
   async listChecks() {
-    return firstValueFrom(
-      getBackendSrv().fetch<ListCheckResult>({
-        method: 'GET',
-        url: `${this.instanceSettings.url}/sm/check/list`,
-      })
-    ).then((res) => {
-      return res.data;
+    return new Promise<Check[]>((resolve) => {
+      const val = firstValueFrom(
+        getBackendSrv().fetch<ListCheckResult>({
+          method: 'GET',
+          url: `${this.instanceSettings.url}/sm/check/list`,
+        })
+      ).then((res) => {
+        return res.data;
+      });
+
+      setTimeout(() => {
+        resolve(val);
+      }, 5000);
     });
   }
 
@@ -343,14 +350,14 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     });
   }
 
-  async bulkUpdateChecks(checks: Check[]): Promise<boolean> {
+  async bulkUpdateChecks(checks: Check[]) {
     return firstValueFrom(
-      getBackendSrv().fetch({
+      getBackendSrv().fetch<BulkUpdateCheckResult>({
         method: 'POST',
         url: `${this.instanceSettings.url}/sm/check/update/bulk`,
         data: checks,
       })
-    ).then((res: any) => {
+    ).then((res) => {
       return res.data;
     });
   }

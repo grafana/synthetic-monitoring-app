@@ -2,16 +2,12 @@ import React from 'react';
 import { screen } from '@testing-library/react';
 import { createInstance, render } from 'test/render';
 
-import { FilteredCheck, IpVersion } from 'types';
+import { Check, IpVersion } from 'types';
 
-import BulkEditModal from './BulkEditModal';
+import { BulkEditModal } from './BulkEditModal';
 
 const onDismiss = jest.fn();
-const onSuccess = jest.fn();
-const onError = jest.fn().mockImplementation((error: string) => {
-  return error;
-});
-const selectedChecksSingleProbe = jest.fn().mockReturnValue([
+const selectedChecksSingleProbe = [
   {
     job: '',
     alertSensitivity: 'none',
@@ -46,9 +42,9 @@ const selectedChecksSingleProbe = jest.fn().mockReturnValue([
     },
     basicMetricsOnly: false,
   },
-]);
+];
 
-const selectedChecksMultiProbe = jest.fn().mockReturnValue([
+const selectedChecksMultiProbe = [
   {
     job: '',
     alertSensitivity: 'none',
@@ -83,25 +79,14 @@ const selectedChecksMultiProbe = jest.fn().mockReturnValue([
     },
     basicMetricsOnly: false,
   },
-]);
+];
 
-const renderBulkEditModal = (action: 'add' | 'remove' | null, selectedChecks: () => FilteredCheck[]) => {
+const renderBulkEditModal = (action: 'add' | 'remove', selectedChecks: Check[]) => {
   const instance = createInstance();
 
-  return render(
-    <BulkEditModal
-      onDismiss={onDismiss}
-      onSuccess={onSuccess}
-      onError={onError}
-      selectedChecks={selectedChecks}
-      instance={instance}
-      action={action}
-      isOpen={true}
-    />,
-    {
-      instance,
-    }
-  );
+  return render(<BulkEditModal onDismiss={onDismiss} checks={selectedChecks} action={action} isOpen={true} />, {
+    instance,
+  });
 };
 
 test('shows the modal', async () => {

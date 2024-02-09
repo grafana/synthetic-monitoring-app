@@ -132,7 +132,7 @@ export const HomePage = () => {
   const styles = useStyles2(getStyles);
   const { instance } = useContext(InstanceContext);
   const [dashboards, setDashboards] = useState<Array<Partial<DashboardInfo>>>([]);
-  const { data: checks } = useChecks();
+  const { data: checks = [] } = useChecks();
   const usage = useUsageCalc(checks);
   const { isEnabled: scenesEnabled } = useFeatureFlag(FeatureName.Scenes);
   const { isEnabled: multiHttpEnabled } = useFeatureFlag(FeatureName.MultiHttp);

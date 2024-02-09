@@ -114,14 +114,12 @@ const defaultChecks = [
   },
 ] as Check[];
 
-const onCheckUpdate = jest.fn();
-
 const renderCheckList = ({ checks = defaultChecks } = {} as RenderChecklist) => {
   const instance = createInstance();
   instance.api.listChecks = jest.fn(() => Promise.resolve(checks));
 
   return waitFor(() =>
-    render(<CheckList instance={instance} onCheckUpdate={onCheckUpdate} />, {
+    render(<CheckList />, {
       instance,
       path: `${PLUGIN_URL_PATH}${ROUTES.Checks}`,
     })

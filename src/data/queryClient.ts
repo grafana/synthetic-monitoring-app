@@ -32,6 +32,7 @@ function handleSuccess(data: unknown, options: MutationOptions | QueryOptions) {
   const { meta } = options;
 
   if (isFaroEventMeta(meta?.event)) {
+    // @ts-expect-error -- doesn't error in later version of typescript
     const event = meta.event;
     reportEvent(event.type, event.info);
   }

@@ -6,14 +6,7 @@ import { ROUTES } from 'types';
 import { DNS_RESPONSE_MATCH_OPTIONS, PLUGIN_URL_PATH } from 'components/constants';
 
 import { CheckEditor } from './CheckEditor';
-import {
-  BASIC_CHECK_LIST,
-  EDITED_DNS_CHECK,
-  EDITED_HTTP_CHECK,
-  EDITED_TCP_CHECK,
-  validCert,
-  validKey,
-} from './testConstants';
+import { EDITED_DNS_CHECK, EDITED_HTTP_CHECK, EDITED_TCP_CHECK, validCert, validKey } from './testConstants';
 import { getSlider, submitForm, toggleSection } from './testHelpers';
 
 jest.setTimeout(60000);
@@ -28,11 +21,10 @@ jest.mock('hooks/useAlerts', () => ({
 }));
 
 beforeEach(() => jest.resetAllMocks());
-const onReturn = jest.fn();
 
 const renderExistingCheckEditor = async (route: string) => {
   const res = waitFor(() =>
-    render(<CheckEditor onReturn={onReturn} checks={BASIC_CHECK_LIST} />, {
+    render(<CheckEditor />, {
       route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`,
       path: `${PLUGIN_URL_PATH}${ROUTES.Checks}${route}`,
     })
@@ -182,7 +174,7 @@ describe('editing checks', () => {
     await user.click(allowMissing);
     await user.click(invertMatch);
 
-    await submitForm(onReturn, user);
+    await submitForm(user);
     expect(instance.api?.addCheck).toHaveBeenCalledTimes(0);
     expect(instance.api?.updateCheck).toHaveBeenCalledWith(EDITED_HTTP_CHECK);
   });
@@ -190,7 +182,7 @@ describe('editing checks', () => {
   it('transforms data correctly for TCP check', async () => {
     const { instance, user } = await renderExistingCheckEditor('/edit/4');
 
-    await submitForm(onReturn, user);
+    await submitForm(user);
     expect(instance.api?.addCheck).toHaveBeenCalledTimes(0);
     expect(instance.api?.updateCheck).toHaveBeenCalledWith(EDITED_TCP_CHECK);
   });
@@ -211,7 +203,7 @@ describe('editing checks', () => {
     await user.type(expressionInputs[1], 'inverted validation');
     const invertedCheckboxes = await screen.findAllByRole('checkbox');
     await user.click(invertedCheckboxes[2]);
-    await submitForm(onReturn, user);
+    await submitForm(user);
     expect(instance.api?.addCheck).toHaveBeenCalledTimes(0);
     expect(instance.api?.updateCheck).toHaveBeenCalledWith(EDITED_DNS_CHECK);
   });

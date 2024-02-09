@@ -12,12 +12,11 @@ import { MultiHttpSettingsForm } from './MultiHttpSettingsForm';
 jest.setTimeout(60000);
 
 beforeEach(() => jest.resetAllMocks());
-const onReturn = jest.fn();
 
 const renderNewMultiForm = async () => {
   const instance = createInstance();
   instance.api.listChecks = jest.fn().mockResolvedValue(BASIC_CHECK_LIST);
-  const res = render(<MultiHttpSettingsForm onReturn={onReturn} />, {
+  const res = render(<MultiHttpSettingsForm />, {
     route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${CheckType.MULTI_HTTP}`,
     path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${CheckType.MULTI_HTTP}`,
   });
@@ -82,7 +81,7 @@ describe('new checks', () => {
     await user.clear(values[0]);
     await user.type(values[0], 'yarp');
 
-    await submitForm(onReturn, user);
+    await submitForm(user);
 
     expect(instance.api?.addCheck).toHaveBeenCalledTimes(1);
     expect(instance.api?.addCheck).toHaveBeenCalledWith({

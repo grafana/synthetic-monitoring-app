@@ -3,7 +3,7 @@ import { screen, waitFor } from '@testing-library/react';
 import { render } from 'test/render';
 
 import { ROUTES } from 'types';
-import { BASIC_CHECK_LIST, BASIC_MULTIHTTP_CHECK } from 'components/CheckEditor/testConstants';
+import { BASIC_MULTIHTTP_CHECK } from 'components/CheckEditor/testConstants';
 import { getSlider } from 'components/CheckEditor/testHelpers';
 import { PLUGIN_URL_PATH } from 'components/constants';
 
@@ -16,7 +16,7 @@ const onReturn = jest.fn();
 
 async function renderForm(route: string) {
   const res = waitFor(() =>
-    render(<MultiHttpSettingsForm onReturn={onReturn} checks={BASIC_CHECK_LIST} />, {
+    render(<MultiHttpSettingsForm />, {
       route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`,
       path: `${PLUGIN_URL_PATH}${ROUTES.Checks}${route}`,
     })

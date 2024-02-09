@@ -7,11 +7,17 @@ import { ErrorAlert } from 'components/ErrorAlert';
 
 interface QueryErrorBoundaryProps {
   children: ReactNode;
+  fallback?: ReactNode;
   title?: string;
   content?: ReactNode;
 }
 
-export function QueryErrorBoundary({ children, title, content }: QueryErrorBoundaryProps) {
+export function QueryErrorBoundary({
+  children,
+  fallback = <CenteredSpinner />,
+  title,
+  content,
+}: QueryErrorBoundaryProps) {
   return (
     <QueryErrorResetBoundary>
       {({ reset }) => (
@@ -21,7 +27,7 @@ export function QueryErrorBoundary({ children, title, content }: QueryErrorBound
             <ErrorAlert buttonText="Retry Request" content={content} onClick={resetErrorBoundary} title={title} />
           )}
         >
-          <Suspense fallback={<CenteredSpinner />}>{children}</Suspense>
+          <Suspense fallback={fallback}>{children}</Suspense>
         </ErrorBoundary>
       )}
     </QueryErrorResetBoundary>

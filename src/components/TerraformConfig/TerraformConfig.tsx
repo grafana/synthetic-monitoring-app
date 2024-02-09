@@ -6,6 +6,7 @@ import { css } from '@emotion/css';
 import { FaroEvent, reportEvent } from 'faro';
 import { useTerraformConfig } from 'hooks/useTerraformConfig';
 import { Clipboard } from 'components/Clipboard';
+import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   modal: css`
@@ -26,20 +27,39 @@ const getStyles = (theme: GrafanaTheme2) => ({
 });
 
 export const TerraformConfig = () => {
-  const [showModal, setShowModal] = useState(false);
   const styles = useStyles2(getStyles);
-  const { config, checkCommands, error } = useTerraformConfig();
-
-  const showConfigModal = async () => {
-    reportEvent(FaroEvent.SHOW_TERRAFORM_CONFIG);
-    setShowModal(true);
-  };
 
   return (
     <div>
       <h5>Terraform</h5>
       <div>You can manage synthetic monitoring checks via Terraform. Export your current checks as config</div>
-      <Button className={styles.vericalSpace} onClick={() => showConfigModal()}>
+      <QueryErrorBoundary
+        fallback={
+          <Button className={styles.vericalSpace} disabled icon="fa fa-spinner">
+            Generate config
+          </Button>
+        }
+      >
+        <GenerateButton />
+      </QueryErrorBoundary>
+    </div>
+  );
+};
+
+const GenerateButton = () => {
+  const { config, checkCommands, error } = useTerraformConfig();
+  const [showModal, setShowModal] = useState(false);
+  const styles = useStyles2(getStyles);
+
+  return (
+    <>
+      <Button
+        className={styles.vericalSpace}
+        onClick={() => {
+          reportEvent(FaroEvent.SHOW_TERRAFORM_CONFIG);
+          setShowModal(true);
+        }}
+      >
         Generate config
       </Button>
       <Modal
@@ -70,6 +90,6 @@ export const TerraformConfig = () => {
           </>
         )}
       </Modal>
-    </div>
+    </>
   );
 };

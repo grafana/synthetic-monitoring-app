@@ -333,7 +333,7 @@ export const CHECK_LIST_VIEW_TYPE_OPTIONS = [
   { description: 'Visualization view', value: CheckListViewType.Viz, icon: 'gf-grid' },
 ];
 
-export const CHECKS_PER_PAGE_CARD = 15;
+export const CHECKS_PER_PAGE_CARD = 2;
 export const CHECKS_PER_PAGE_LIST = 50;
 
 export const PEM_HEADER = '-----BEGIN CERTIFICATE-----';

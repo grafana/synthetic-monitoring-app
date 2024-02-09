@@ -27,6 +27,10 @@ export type DeleteCheckResult = {
 
 export type UpdateCheckResult = Check;
 
+export type BulkUpdateCheckResult = {
+  msg: string;
+};
+
 export type AdHocCheckResponse = {
   id: string;
   tenantId: number;

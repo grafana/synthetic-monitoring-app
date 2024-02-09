@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { type QueryKey, useMutation, UseMutationResult, useQuery, useSuspenseQuery } from '@tanstack/react-query';
+import { type QueryKey, useMutation, UseMutationResult, useSuspenseQuery } from '@tanstack/react-query';
 import { isFetchError } from '@grafana/runtime';
 
 import { type MutationProps } from 'data/types';
@@ -9,6 +9,7 @@ import { SMDataSource } from 'datasource/DataSource';
 import type {
   AddCheckResult,
   AdHocCheckResponse,
+  BulkUpdateCheckResult,
   DeleteCheckResult,
   UpdateCheckResult,
 } from 'datasource/responses.types';
@@ -23,7 +24,7 @@ export function useChecks() {
   const { instance } = useContext(InstanceContext);
   const api = instance.api as SMDataSource;
 
-  return useQuery({
+  return useSuspenseQuery({
     queryKey: queryKeys.list(),
     queryFn: () => api.listChecks(),
   });
@@ -143,6 +144,85 @@ export function useDeleteCheck({ eventInfo, onError, onSuccess }: MutationProps<
         type: eventType,
       },
       successAlert: (res: ExtendedDeleteCheckResult) => `Deleted check ${res.job}`,
+    },
+  });
+}
+
+type ExtendedBulkUpdateCheckResult = BulkUpdateCheckResult & {
+  checks: Check[];
+};
+
+export function useBulkUpdateChecks({
+  eventInfo,
+  onError,
+  onSuccess,
+}: MutationProps<ExtendedBulkUpdateCheckResult> = {}) {
+  const { instance } = useContext(InstanceContext);
+  const api = instance.api as SMDataSource;
+  const eventType = FaroEvent.BULK_UPDATE_CHECK;
+
+  return useMutation<ExtendedBulkUpdateCheckResult, Error, Check[], UseMutationResult>({
+    mutationFn: async (checks: Check[]) => {
+      try {
+        const res = await api.bulkUpdateChecks(checks).then((result) => ({
+          ...result,
+          checks,
+        }));
+        return res;
+      } catch (error) {
+        throw handleError(error);
+      }
+    },
+    onError: (error: unknown) => {
+      onError?.(error);
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.list() });
+      onSuccess?.(data);
+    },
+    meta: {
+      event: {
+        info: eventInfo,
+        type: eventType,
+      },
+      successAlert: (res: ExtendedBulkUpdateCheckResult) => `Updated ${res.checks.length} checks.`,
+      errorAlert: () => `Failed to update check`,
+    },
+  });
+}
+
+export function useBulkDeleteChecks({ eventInfo, onSuccess, onError }: MutationProps<number[]> = {}) {
+  const { instance } = useContext(InstanceContext);
+  const api = instance.api as SMDataSource;
+  const eventType = FaroEvent.BULK_DELETE_CHECK;
+
+  return useMutation<number[], Error, number[], UseMutationResult>({
+    mutationFn: async (checkIds: number[]) => {
+      const attempts = checkIds.map((id) => api.deleteCheck(id));
+      const results = await Promise.allSettled(attempts);
+      const errorCount = results.filter((r) => r.status === `rejected`).length;
+
+      if (errorCount > 0) {
+        throw new Error(String(errorCount));
+      }
+
+      return checkIds;
+    },
+    onError: (error: unknown) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.list() });
+      onError?.(error);
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.list() });
+      onSuccess?.(data);
+    },
+    meta: {
+      event: {
+        info: eventInfo,
+        type: eventType,
+      },
+      successAlert: (res: number[]) => `Deleted ${res.length} checks.`,
+      errorAlert: (errorCount: unknown) => `Failed to delete ${errorCount} check${errorCount === 1 ? `` : `s`}.`,
     },
   });
 }

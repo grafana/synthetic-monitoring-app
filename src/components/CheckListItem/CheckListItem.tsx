@@ -3,7 +3,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Checkbox, HorizontalGroup, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
-import { Check, CheckListViewType, CheckType, FilteredCheck, Label } from 'types';
+import { Check, CheckListViewType, CheckType, Label } from 'types';
 import { checkType as getCheckType } from 'utils';
 import { useUsageCalc } from 'hooks/useUsageCalc';
 import { LatencyGauge, SuccessRateGaugeCheckReachability, SuccessRateGaugeCheckUptime } from 'components/Gauges';
@@ -14,7 +14,7 @@ import { CheckListItemDetails } from './CheckListItemDetails';
 import { CheckStatusType } from './CheckStatusType';
 
 interface Props {
-  check: FilteredCheck;
+  check: Check;
   selected: boolean;
   onLabelSelect: (label: Label) => void;
   onToggleCheckbox: (checkId: number) => void;
@@ -164,7 +164,7 @@ export const CheckListItem = ({
               aria-label="Select check"
               onChange={(e: ChangeEvent<HTMLInputElement>) => {
                 e.stopPropagation();
-                onToggleCheckbox(check.id);
+                onToggleCheckbox(check.id!);
               }}
               checked={selected}
             />
@@ -208,7 +208,7 @@ export const CheckListItem = ({
             aria-label="Select check"
             onChange={(e: ChangeEvent<HTMLInputElement>) => {
               e.stopPropagation();
-              onToggleCheckbox(check.id);
+              onToggleCheckbox(check.id!);
             }}
             checked={selected}
           />

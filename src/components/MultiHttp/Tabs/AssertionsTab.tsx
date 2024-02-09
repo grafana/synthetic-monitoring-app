@@ -34,7 +34,7 @@ export function AssertionsTab({ index, active }: MultiHttpTabProps) {
             const errorPath = formState.errors.settings?.multihttp?.entries?.[index]?.checks?.[assertionIndex];
 
             return (
-              <div className={styles.fieldsContainer} key={field.id} id="chris">
+              <div className={styles.fieldsContainer} key={field.id}>
                 <Controller
                   name={assertionTypeName}
                   render={({ field: typeField }) => {

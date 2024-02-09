@@ -175,13 +175,7 @@ function getCheckListScene(config: VizViewSceneAppConfig & Props, checkCount: nu
     $timeRange: timeRange,
     controls: [
       new SceneReactObject({
-        reactNode: (
-          <CheckListViewSwitcher
-            viewType={CheckListViewType.Viz}
-            setViewType={config.setViewType}
-            setCurrentPage={config.setCurrentPage}
-          />
-        ),
+        reactNode: <CheckListViewSwitcher viewType={CheckListViewType.Viz} onChange={config.onChangeViewType} />,
       }),
       new VariableValueSelectors({}),
       new SceneControlsSpacer(),
@@ -273,20 +267,13 @@ function getCheckListScene(config: VizViewSceneAppConfig & Props, checkCount: nu
 }
 
 interface Props {
-  setViewType: (viewType: CheckListViewType) => void;
-  setCurrentPage: (pageNumber: number) => void;
+  onChangeViewType: (viewType: CheckListViewType) => void;
   checkFilters: CheckFiltersType;
   handleResetFilters: () => void;
   onFilterChange: (filters: CheckFiltersType) => void;
 }
 
-export function CheckListScene({
-  setViewType,
-  setCurrentPage,
-  checkFilters,
-  handleResetFilters,
-  onFilterChange,
-}: Props) {
+export function CheckListScene({ onChangeViewType, checkFilters, handleResetFilters, onFilterChange }: Props) {
   const { instance } = useContext(InstanceContext);
   const { data: checks, isLoading } = useChecks();
 
@@ -316,8 +303,7 @@ export function CheckListScene({
         metrics: metricsDef,
         logs: logsDef,
         sm: smDef,
-        setViewType,
-        setCurrentPage,
+        onChangeViewType,
         checkFilters,
         checks,
         handleResetFilters,
@@ -325,7 +311,7 @@ export function CheckListScene({
       },
       checks.length
     );
-  }, [setViewType, setCurrentPage, api, logs, metrics, checks, checkFilters, handleResetFilters, onFilterChange]);
+  }, [onChangeViewType, api, logs, metrics, checks, checkFilters, handleResetFilters, onFilterChange]);
 
   if (!scene || isLoading) {
     return <Spinner />;

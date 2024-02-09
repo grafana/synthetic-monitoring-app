@@ -4,6 +4,8 @@ import { config } from '@grafana/runtime';
 export enum FaroEvent {
   INIT = 'initialize',
   UPDATE_CHECK = 'update_check',
+  BULK_UPDATE_CHECK = 'bulk_update_check',
+  BULK_DELETE_CHECK = 'bulk_delete_check',
   DELETE_CHECK = 'delete_check',
   TEST_CHECK = 'test_check',
   CREATE_CHECK = 'create_check',

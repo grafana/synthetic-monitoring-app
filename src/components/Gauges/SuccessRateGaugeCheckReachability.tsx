@@ -21,5 +21,5 @@ export const SuccessRateGaugeCheckReachability = ({
   const { data } = useCheckReachabilitySuccessRate(check);
   const value = data ? data.value[1] : null;
 
-  return <Gauge height={height} width={width} onClick={onClick} type={`reachability`} value={value} unit="%" />;
+  return <Gauge height={height} width={width} onClick={onClick} type={`uptime`} value={value} unit="%" />;
 };

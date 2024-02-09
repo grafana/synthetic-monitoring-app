@@ -21,10 +21,9 @@ jest.mock('hooks/useAlerts', () => ({
 }));
 
 beforeEach(() => jest.resetAllMocks());
-const onReturn = jest.fn();
 
 const renderNewCheckEditor = async (checkType?: CheckType) => {
-  const res = render(<CheckEditor onReturn={onReturn} checks={[]} />, {
+  const res = render(<CheckEditor />, {
     route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/:checkType`,
     path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${checkType}`,
   });
@@ -84,7 +83,7 @@ describe('new checks', () => {
     const { instance, user } = await renderNewCheckEditor(CheckType.HTTP);
 
     await fillBasicCheckFields('Job name', 'https://grafana.com', user);
-    await submitForm(onReturn, user);
+    await submitForm(user);
     expect(instance.api?.addCheck).toHaveBeenCalledWith(BASIC_HTTP_CHECK);
   });
 
@@ -92,7 +91,7 @@ describe('new checks', () => {
     const { instance, user } = await renderNewCheckEditor(CheckType.PING);
 
     await fillBasicCheckFields('Job name', 'grafana.com', user);
-    await submitForm(onReturn, user);
+    await submitForm(user);
     expect(instance.api?.addCheck).toHaveBeenCalledWith(BASIC_PING_CHECK);
   });
 
@@ -102,7 +101,7 @@ describe('new checks', () => {
     await fillBasicCheckFields('Job name', 'grafana.com:43', user);
 
     await fillTCPQueryResponseFields(user);
-    await submitForm(onReturn, user);
+    await submitForm(user);
     expect(instance.api?.addCheck).toHaveBeenCalledWith(BASIC_TCP_CHECK);
   });
 
@@ -112,7 +111,7 @@ describe('new checks', () => {
     await fillBasicCheckFields('Job name', 'grafana.com', user);
     await fillDnsValidationFields(user);
 
-    await submitForm(onReturn, user);
+    await submitForm(user);
     expect(instance.api?.addCheck).toHaveBeenCalledWith(BASIC_DNS_CHECK);
   });
 });
