@@ -13,7 +13,7 @@ function DashboardPageContent() {
   const { isEnabled } = useFeatureFlag(FeatureName.Scenes);
   const { isEnabled: multiHttpEnabled } = useFeatureFlag(FeatureName.MultiHttp);
   const { isEnabled: scriptedEnabled } = useFeatureFlag(FeatureName.ScriptedChecks);
-  const { data: checks, isLoading } = useChecks();
+  const { data: checks = [], isLoading } = useChecks();
 
   const navigate = useNavigation();
 

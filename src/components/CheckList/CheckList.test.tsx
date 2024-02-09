@@ -479,7 +479,7 @@ test('Sorting by success rate should not crash', async () => {
   const { user } = await renderCheckList();
   const sortPicker = await screen.findByTestId('check-list-sort');
 
-  await user.selectOptions(sortPicker, CheckSort.SuccessRate.toString());
+  await user.selectOptions(sortPicker, CheckSort.ReachabilityAsc.toString());
   const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(4);
 });

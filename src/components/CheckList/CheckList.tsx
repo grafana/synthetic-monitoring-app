@@ -12,10 +12,8 @@ import {
   CheckType,
   FeatureName,
   Label,
-  ThresholdSettings,
 } from 'types';
-import { useChecks } from 'data/useChecks';
-import { useThresholds } from 'data/useThresholds';
+import { useSuspenseChecks } from 'data/useChecks';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { defaultFilters, getDefaultFilters } from 'components/CheckFilters';
 import {
@@ -32,6 +30,10 @@ import { matchesAllFilters } from './checkFilters';
 import { CheckListHeader } from './CheckListHeader';
 import { CheckListScene } from './CheckListScene';
 import EmptyCheckList from './EmptyCheckList';
+import { useChecksUptimeSuccessRate, useChecksReachabilitySuccessRate } from 'data/useSuccessRates';
+import { MetricCheckSuccess, Time } from 'datasource/responses.types';
+import { findCheckinMetrics } from 'data/utils';
+import { PluginPage } from '@grafana/runtime';
 
 export const CheckList = () => {
   const [viewType, setViewType] = useState(getViewTypeFromLS() ?? CheckListViewType.Card);
@@ -42,9 +44,11 @@ export const CheckList = () => {
   };
 
   return (
-    <QueryErrorBoundary>
-      <CheckListContent onChangeViewType={handleChangeViewType} viewType={viewType} />
-    </QueryErrorBoundary>
+    <PluginPage>
+      <QueryErrorBoundary>
+        <CheckListContent onChangeViewType={handleChangeViewType} viewType={viewType} />
+      </QueryErrorBoundary>
+    </PluginPage>
   );
 };
 
@@ -54,24 +58,23 @@ type CheckListContentProps = {
 };
 
 const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps) => {
-  const { data: checks } = useChecks();
-  const {
-    data: { thresholds },
-  } = useThresholds();
+  const { data: checks } = useSuspenseChecks();
+  const { data: uptimeSuccessRates = [] } = useChecksUptimeSuccessRate();
+  const { data: reachabilitySuccessRates = [] } = useChecksReachabilitySuccessRate();
   const [checkFilters, setCheckFilters] = useState<CheckFiltersType>(getDefaultFilters());
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCheckIds, setSelectedChecksIds] = useState<Set<number>>(new Set());
   const [sortType, setSortType] = useState<CheckSort>(CheckSort.AToZ);
   const styles = useStyles2(getStyles);
   const { isEnabled: scenesEnabled } = useFeatureFlag(FeatureName.Scenes);
-  const checksPerPage = viewType === CheckListViewType.Card ? CHECKS_PER_PAGE_CARD : CHECKS_PER_PAGE_LIST;
+  const CHECKS_PER_PAGE = viewType === CheckListViewType.Card ? CHECKS_PER_PAGE_CARD : CHECKS_PER_PAGE_LIST;
 
   const filteredChecks = filterChecks(checks, checkFilters);
-  const sortedChecks = sortChecks(filteredChecks, sortType, thresholds);
-  const currentPageChecks = filteredChecks.slice((currentPage - 1) * checksPerPage, currentPage * checksPerPage);
+  const sortedChecks = sortChecks(filteredChecks, sortType, uptimeSuccessRates, reachabilitySuccessRates);
+  const currentPageChecks = filteredChecks.slice((currentPage - 1) * CHECKS_PER_PAGE, currentPage * CHECKS_PER_PAGE);
 
   const isAllSelected = selectedCheckIds.size === filteredChecks.length;
-  const totalPages = Math.ceil(filteredChecks.length / checksPerPage);
+  const totalPages = Math.ceil(filteredChecks.length / CHECKS_PER_PAGE);
 
   const handleResetFilters = () => {
     setCheckFilters(defaultFilters);
@@ -164,6 +167,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
           onSort={updateSortMethod}
           onReset={handleResetFilters}
           selectedCheckIds={selectedCheckIds}
+          sortType={sortType}
         />
       )}
       {viewType === CheckListViewType.Viz ? (
@@ -174,7 +178,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
             onFilterChange={(filters: CheckFiltersType) => {
               setCheckFilters(filters);
             }}
-            handleResetFilters={handleResetFilters}
+            onReset={handleResetFilters}
           />
         </div>
       ) : (
@@ -191,7 +195,6 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
                   onToggleCheckbox={handleCheckSelect}
                   selected={selectedCheckIds.has(check.id!)}
                   viewType={viewType}
-                  onDeleteCheck={() => console.log(check.id)}
                 />
               ))}
             </div>
@@ -213,7 +216,16 @@ function filterChecks(checks: Check[], filters: CheckFiltersType) {
   return checks.filter((check) => matchesAllFilters(check, filters));
 }
 
-function sortChecks(checks: Check[], sortType: CheckSort, thresholds: ThresholdSettings) {
+type MetricCheckSuccessParsed = MetricCheckSuccess & {
+  value: [Time, number];
+};
+
+function sortChecks(
+  checks: Check[],
+  sortType: CheckSort,
+  uptimeSuccessRates: MetricCheckSuccessParsed[],
+  reachabilitySuccessRates: MetricCheckSuccessParsed[]
+) {
   if (sortType === CheckSort.AToZ) {
     return checks.sort((a, b) => a.job.localeCompare(b.job));
   }
@@ -222,15 +234,47 @@ function sortChecks(checks: Check[], sortType: CheckSort, thresholds: ThresholdS
     return checks.sort((a, b) => b.job.localeCompare(a.job));
   }
 
-  if (sortType === CheckSort.SuccessRate) {
-    // return checks.sort((a, b) => {
-    //   const sortA = a.noData ? 101 : a.reachabilityValue;
-    //   const sortB = b.noData ? 101 : b.reachabilityValue;
-    //   return sortA - sortB;
-    // });
+  if (sortType === CheckSort.ReachabilityAsc) {
+    return checks.sort((a, b) => {
+      const [sortA, sortB] = getMetricValues(a, b, reachabilitySuccessRates);
+      return sortB - sortA;
+    });
+  }
+
+  if (sortType === CheckSort.ReachabilityDesc) {
+    return checks.sort((a, b) => {
+      const [sortA, sortB] = getMetricValues(a, b, reachabilitySuccessRates);
+
+      return sortA - sortB;
+    });
+  }
+
+  if (sortType === CheckSort.UptimeAsc) {
+    return checks.sort((a, b) => {
+      const [sortA, sortB] = getMetricValues(a, b, uptimeSuccessRates);
+      return sortB - sortA;
+    });
+  }
+
+  if (sortType === CheckSort.UptimeDesc) {
+    return checks.sort((a, b) => {
+      const [sortA, sortB] = getMetricValues(a, b, uptimeSuccessRates);
+
+      return sortA - sortB;
+    });
   }
 
   return checks;
+}
+
+function getMetricValues(checkA: Check, checkB: Check, metrics: MetricCheckSuccessParsed[]) {
+  const metricA = findCheckinMetrics(metrics, checkA);
+  const metricB = findCheckinMetrics(metrics, checkB);
+
+  const sortA = metricA?.value[1] || 101;
+  const sortB = metricB?.value[1] || 101;
+
+  return [sortA, sortB];
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({

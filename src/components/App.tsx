@@ -10,7 +10,6 @@ import { DashboardUpdateModal } from 'components/DashboardUpdateModal';
 import { InstanceProvider } from 'components/InstanceProvider';
 import { Routing } from 'components/Routing';
 
-import { CheckInfoContextProvider } from './CheckInfoContextProvider';
 import { FeatureFlagProvider } from './FeatureFlagProvider';
 
 export class App extends PureComponent<AppRootProps<GlobalSettings>> {
@@ -25,10 +24,8 @@ export class App extends PureComponent<AppRootProps<GlobalSettings>> {
           meta={meta}
         >
           <QueryClientProvider client={queryClient}>
-            <CheckInfoContextProvider>
-              <Routing {...this.props} />
-              <DashboardUpdateModal />
-            </CheckInfoContextProvider>
+            <Routing {...this.props} />
+            <DashboardUpdateModal />
             <ReactQueryDevtools />
           </QueryClientProvider>
         </InstanceProvider>

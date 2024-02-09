@@ -150,7 +150,6 @@ const settingsToTF = (check: Check): TFCheckSettings => {
       return {};
     }
     default:
-      console.log(check);
       throw new Error(`could not translate settings for check to terraform config: ${check.job}`);
   }
 };

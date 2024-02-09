@@ -12,8 +12,19 @@ type SuccessRateGaugeProbeProps = {
 };
 
 export const SuccessRateGaugeProbe = ({ probeName, height, width, onClick }: SuccessRateGaugeProbeProps) => {
-  const { data: probeSuccessRate } = useProbeReachabilitySuccessRate(probeName);
-  const value = probeSuccessRate?.value[1] ?? null;
+  const { data, isLoading, isFetching } = useProbeReachabilitySuccessRate(probeName);
+  const value = data?.value[1] ?? null;
 
-  return <Gauge height={height} width={width} onClick={onClick} type={`reachability`} value={value} unit="%" />;
+  return (
+    <Gauge
+      fetching={isFetching}
+      height={height}
+      loading={isLoading}
+      width={width}
+      onClick={onClick}
+      type={`reachability`}
+      value={value}
+      unit="%"
+    />
+  );
 };

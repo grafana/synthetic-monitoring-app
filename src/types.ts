@@ -500,9 +500,12 @@ export type AlertDescription = {
 };
 
 export enum CheckSort {
-  AToZ,
-  ZToA,
-  SuccessRate,
+  AToZ = 'atoz',
+  ZToA = 'ztoa',
+  UptimeDesc = 'uptimeDesc',
+  UptimeAsc = 'uptimeAsc',
+  ReachabilityDesc = 'reachabilityDesc',
+  ReachabilityAsc = 'reachabilityAsc',
 }
 
 export enum CheckEnabledStatus {
@@ -575,7 +578,7 @@ export interface DashboardSceneAppConfig {
 export interface VizViewSceneAppConfig extends DashboardSceneAppConfig {
   checkFilters: CheckFiltersType;
   checks: Check[];
-  handleResetFilters: () => void;
+  onReset: () => void;
   onFilterChange: (filters: CheckFiltersType) => void;
 }
 

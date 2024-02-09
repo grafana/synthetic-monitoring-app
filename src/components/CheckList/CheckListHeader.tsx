@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { GrafanaTheme2, OrgRole, SelectableValue } from '@grafana/data';
-import { Button, Checkbox, Icon, InlineSwitch, Select, useStyles2 } from '@grafana/ui';
+import { Button, Checkbox, Icon, InlineSwitch, Select, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Check, CheckFiltersType, CheckListViewType, CheckSort, FeatureName } from 'types';
@@ -25,6 +25,7 @@ type CheckListHeaderProps = {
   onReset: () => void;
   onSelectAll: (e: React.ChangeEvent<HTMLInputElement>) => void;
   selectedCheckIds: Set<number>;
+  sortType: CheckSort;
 };
 
 export const CheckListHeader = ({
@@ -37,6 +38,7 @@ export const CheckListHeader = ({
   onReset,
   onSelectAll,
   selectedCheckIds,
+  sortType,
 }: CheckListHeaderProps) => {
   const styles = useStyles2(getStyles);
   const { isEnabled: scenesEnabled } = useFeatureFlag(FeatureName.Scenes);
@@ -45,8 +47,9 @@ export const CheckListHeader = ({
   const [showVizIconOverlay, setShowVizIconOverlay] = useState(getIconOverlayToggleFromLS());
   const isAllSelected = selectedCheckIds.size === checks.length;
   const isSomeSelected = !isAllSelected && selectedCheckIds.size > 0;
+  const selectedChecks = checks.filter((check) => selectedCheckIds.has(check.id!));
 
-  const selectedChecks2 = checks.filter((check) => selectedCheckIds.has(check.id!));
+  const tooltip = isAllSelected ? 'Deselect all' : 'Select all';
 
   return (
     <>
@@ -60,12 +63,7 @@ export const CheckListHeader = ({
             ))}
         </div>
         <div className={styles.stack}>
-          <CheckFilters
-            handleResetFilters={onReset}
-            checks={checks}
-            checkFilters={checkFilters}
-            onChange={onFilterChange}
-          />
+          <CheckFilters onReset={onReset} checks={checks} checkFilters={checkFilters} onChange={onFilterChange} />
           {hasRole(OrgRole.Editor) && (
             <>
               <Button variant="secondary" fill="outline" onClick={() => setShowThresholdModal((v) => !v)}>
@@ -78,15 +76,17 @@ export const CheckListHeader = ({
       </div>
       <div className={styles.row}>
         <div className={styles.stack}>
-          <Checkbox
-            onChange={onSelectAll}
-            indeterminate={isSomeSelected}
-            value={isAllSelected}
-            aria-label="Select all"
-            data-testid="selectAll"
-          />
+          <Tooltip content={tooltip}>
+            <Checkbox
+              onChange={onSelectAll}
+              indeterminate={isSomeSelected}
+              value={isAllSelected}
+              aria-label="Select all"
+              data-testid="selectAll"
+            />
+          </Tooltip>
           {selectedCheckIds.size > 0 ? (
-            <BulkActions checks={selectedChecks2} onResolved={onReset} />
+            <BulkActions checks={selectedChecks} onResolved={onReset} />
           ) : (
             <CheckListViewSwitcher onChange={onChangeView} viewType={viewType} />
           )}
@@ -113,8 +113,9 @@ export const CheckListHeader = ({
           data-testid="check-list-sort"
           options={CHECK_LIST_SORT_OPTIONS}
           defaultValue={CHECK_LIST_SORT_OPTIONS[0]}
-          width={20}
+          width={25}
           onChange={onSort}
+          value={sortType}
         />
       </div>
       <ThresholdGlobalSettings onDismiss={() => setShowThresholdModal(false)} isOpen={showThresholdModal} />

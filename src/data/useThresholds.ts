@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { type QueryKey, useMutation, UseMutationResult, useSuspenseQuery } from '@tanstack/react-query';
+import { type QueryKey, useMutation, UseMutationResult, useQuery } from '@tanstack/react-query';
 
 import { type MutationProps } from 'data/types';
 import type { ThresholdSettings } from 'types';
@@ -17,7 +17,7 @@ export function useThresholds() {
   const { instance } = useContext(InstanceContext);
   const api = instance.api as SMDataSource;
 
-  return useSuspenseQuery({
+  return useQuery({
     queryKey: queryKeys.list(),
     queryFn: () => api.getTenantSettings(),
   });

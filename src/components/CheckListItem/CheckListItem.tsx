@@ -20,7 +20,6 @@ interface Props {
   onToggleCheckbox: (checkId: number) => void;
   onTypeSelect: (checkType: CheckType) => void;
   onStatusSelect: (checkStatus: boolean) => void;
-  onDeleteCheck: (check: Check) => void;
   viewType: CheckListViewType;
 }
 
@@ -146,7 +145,6 @@ export const CheckListItem = ({
   onLabelSelect,
   onTypeSelect,
   onStatusSelect,
-  onDeleteCheck,
   selected,
   onToggleCheckbox,
   viewType = CheckListViewType.Card,
@@ -194,7 +192,7 @@ export const CheckListItem = ({
             labels={check.labels}
             onLabelClick={onLabelSelect}
           />
-          <CheckItemActionButtons check={check} onRemoveCheck={onDeleteCheck} viewDashboardAsIcon />
+          <CheckItemActionButtons check={check} viewDashboardAsIcon />
         </div>
       </div>
     );
@@ -250,7 +248,7 @@ export const CheckListItem = ({
               ))}
             </HorizontalGroup>
             <div className={styles.actionContainer}>
-              <CheckItemActionButtons check={check} onRemoveCheck={onDeleteCheck} />
+              <CheckItemActionButtons check={check} />
             </div>
           </div>
         </div>

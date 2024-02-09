@@ -184,7 +184,7 @@ function getCheckListScene(config: VizViewSceneAppConfig & Props, checkCount: nu
           <CheckFilters
             checkFilters={config.checkFilters}
             checks={config.checks}
-            handleResetFilters={config.handleResetFilters}
+            onReset={config.onReset}
             onChange={config.onFilterChange}
             includeStatus={false}
           />
@@ -269,13 +269,13 @@ function getCheckListScene(config: VizViewSceneAppConfig & Props, checkCount: nu
 interface Props {
   onChangeViewType: (viewType: CheckListViewType) => void;
   checkFilters: CheckFiltersType;
-  handleResetFilters: () => void;
+  onReset: () => void;
   onFilterChange: (filters: CheckFiltersType) => void;
 }
 
-export function CheckListScene({ onChangeViewType, checkFilters, handleResetFilters, onFilterChange }: Props) {
+export function CheckListScene({ onChangeViewType, checkFilters, onReset, onFilterChange }: Props) {
   const { instance } = useContext(InstanceContext);
-  const { data: checks, isLoading } = useChecks();
+  const { data: checks = [], isLoading } = useChecks();
 
   const { api, logs, metrics } = useMemo(
     () => ({ api: instance.api, logs: instance.logs, metrics: instance.metrics }),
@@ -306,12 +306,12 @@ export function CheckListScene({ onChangeViewType, checkFilters, handleResetFilt
         onChangeViewType,
         checkFilters,
         checks,
-        handleResetFilters,
+        onReset,
         onFilterChange,
       },
       checks.length
     );
-  }, [onChangeViewType, api, logs, metrics, checks, checkFilters, handleResetFilters, onFilterChange]);
+  }, [onChangeViewType, api, logs, metrics, checks, checkFilters, onReset, onFilterChange]);
 
   if (!scene || isLoading) {
     return <Spinner />;

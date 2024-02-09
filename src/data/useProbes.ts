@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { type QueryKey, useMutation, UseMutationResult, useSuspenseQuery } from '@tanstack/react-query';
+import { type QueryKey, useMutation, UseMutationResult, useQuery, useSuspenseQuery } from '@tanstack/react-query';
 import { isFetchError } from '@grafana/runtime';
 
 import { type MutationProps } from 'data/types';
@@ -15,22 +15,33 @@ import type {
 import { InstanceContext } from 'contexts/InstanceContext';
 import { queryClient } from 'data/queryClient';
 
-export const queryKeys: Record<'list', () => QueryKey> = {
-  list: () => ['probes'],
+export const queryKeys: Record<'list', QueryKey> = {
+  list: ['probes'],
 };
+
+function probesQuery(api: SMDataSource) {
+  return {
+    queryKey: queryKeys.list,
+    queryFn: () => api.listProbes(),
+  };
+}
 
 export function useProbes() {
   const { instance } = useContext(InstanceContext);
   const api = instance.api as SMDataSource;
 
-  return useSuspenseQuery({
-    queryKey: queryKeys.list(),
-    queryFn: () => api.listProbes(),
-  });
+  return useQuery(probesQuery(api));
 }
 
-export function useProbe(id: number) {
-  const props = useProbes();
+export function useSuspenseProbes() {
+  const { instance } = useContext(InstanceContext);
+  const api = instance.api as SMDataSource;
+
+  return useSuspenseQuery(probesQuery(api));
+}
+
+export function useSuspenseProbe(id: number) {
+  const props = useSuspenseProbes();
   const probe = props.data?.find((probe) => probe.id === id);
 
   return {
@@ -61,7 +72,7 @@ export function useCreateProbe({ eventInfo, onError, onSuccess }: MutationProps<
       onError?.(error);
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.list });
       onSuccess?.(data);
     },
     meta: {
@@ -94,7 +105,7 @@ export function useUpdateProbe({ eventInfo, onError, onSuccess }: MutationProps<
       onError?.(error);
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.list });
       onSuccess?.(data);
     },
     meta: {
@@ -127,7 +138,7 @@ export function useDeleteProbe({ eventInfo, onError, onSuccess }: MutationProps<
       onError?.(error);
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.list });
       onSuccess?.(data);
     },
     meta: {
@@ -151,6 +162,7 @@ export function useResetProbeToken({ eventInfo, onError, onSuccess }: MutationPr
       onError?.(error);
     },
     onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.list });
       onSuccess?.(data);
     },
     meta: {

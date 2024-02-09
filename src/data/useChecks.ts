@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { type QueryKey, useMutation, UseMutationResult, useSuspenseQuery } from '@tanstack/react-query';
+import { type QueryKey, useMutation, UseMutationResult, useQuery, useSuspenseQuery } from '@tanstack/react-query';
 import { isFetchError } from '@grafana/runtime';
 
 import { type MutationProps } from 'data/types';
@@ -16,18 +16,29 @@ import type {
 import { InstanceContext } from 'contexts/InstanceContext';
 import { queryClient } from 'data/queryClient';
 
-export const queryKeys: Record<'list', () => QueryKey> = {
-  list: () => ['checks'],
+export const queryKeys: Record<'list', QueryKey> = {
+  list: ['checks'],
+};
+
+const checksQuery = (api: SMDataSource) => {
+  return {
+    queryKey: queryKeys.list,
+    queryFn: () => api.listChecks(),
+  };
 };
 
 export function useChecks() {
   const { instance } = useContext(InstanceContext);
   const api = instance.api as SMDataSource;
 
-  return useSuspenseQuery({
-    queryKey: queryKeys.list(),
-    queryFn: () => api.listChecks(),
-  });
+  return useQuery(checksQuery(api));
+}
+
+export function useSuspenseChecks() {
+  const { instance } = useContext(InstanceContext);
+  const api = instance.api as SMDataSource;
+
+  return useSuspenseQuery(checksQuery(api));
 }
 
 export function useCheck(id: number) {
@@ -59,7 +70,7 @@ export function useCreateCheck({ eventInfo, onError, onSuccess }: MutationProps<
       onError?.(error);
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.list });
       onSuccess?.(data);
     },
     meta: {
@@ -95,7 +106,7 @@ export function useUpdateCheck({ eventInfo, onError, onSuccess }: MutationProps<
       onError?.(error);
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.list });
       onSuccess?.(data);
     },
     meta: {
@@ -135,7 +146,7 @@ export function useDeleteCheck({ eventInfo, onError, onSuccess }: MutationProps<
       onError?.(error);
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.list });
       onSuccess?.(data);
     },
     meta: {
@@ -177,7 +188,7 @@ export function useBulkUpdateChecks({
       onError?.(error);
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.list });
       onSuccess?.(data);
     },
     meta: {
@@ -209,11 +220,11 @@ export function useBulkDeleteChecks({ eventInfo, onSuccess, onError }: MutationP
       return checkIds;
     },
     onError: (error: unknown) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.list });
       onError?.(error);
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.list });
       onSuccess?.(data);
     },
     meta: {

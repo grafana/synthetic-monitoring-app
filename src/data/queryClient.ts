@@ -1,8 +1,7 @@
 import { MutationCache, MutationOptions, QueryCache, QueryClient, QueryOptions } from '@tanstack/react-query';
 
 import { FaroEvent, isFaroEventMeta, reportError, reportEvent } from 'faro';
-
-import { showAlert } from './utils';
+import { showAlert } from 'data/utils';
 
 export const queryClient = new QueryClient({
   queryCache: new QueryCache({
@@ -23,6 +22,7 @@ export const queryClient = new QueryClient({
   }),
   defaultOptions: {
     queries: {
+      staleTime: Infinity,
       retry: false,
     },
   },

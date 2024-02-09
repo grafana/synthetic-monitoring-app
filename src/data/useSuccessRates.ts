@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { type QueryKey, useSuspenseQuery } from '@tanstack/react-query';
+import { type QueryKey, useQuery } from '@tanstack/react-query';
 
 import { Check } from 'types';
 import { queryMetric } from 'utils';
@@ -7,10 +7,12 @@ import { MetricCheckSuccess, MetricProbeSuccessRate } from 'datasource/responses
 import { InstanceContext } from 'contexts/InstanceContext';
 import { STANDARD_REFRESH_INTERVAL } from 'components/constants';
 
-const queryKeys: Record<'checkReachability' | 'checkUptime' | 'probeReachability', () => QueryKey> = {
-  checkReachability: () => ['check_reachability'],
-  checkUptime: () => ['check_uptime'],
-  probeReachability: () => ['probe_reachability'],
+import { findCheckinMetrics } from './utils';
+
+const queryKeys: Record<'checkReachability' | 'checkUptime' | 'probeReachability', QueryKey> = {
+  checkReachability: ['check_reachability'],
+  checkUptime: ['check_uptime'],
+  probeReachability: ['probe_reachability'],
 };
 
 export function useChecksReachabilitySuccessRate() {
@@ -18,9 +20,11 @@ export function useChecksReachabilitySuccessRate() {
   const query =
     'sum(rate(probe_all_success_sum[3h])) by (job, instance) / sum(rate(probe_all_success_count[3h])) by (job, instance)';
 
-  return useSuspenseQuery({
+  return useQuery({
+    // we add 'now' as an option so can't add it to the query key
+    // otherwise it would continuously refetch
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
-    queryKey: [...queryKeys.checkReachability(), query, url],
+    queryKey: [...queryKeys.checkReachability, query, url],
     queryFn: () => queryMetric<MetricCheckSuccess>(url, query, options),
     refetchInterval: (query) => STANDARD_REFRESH_INTERVAL,
   });
@@ -28,7 +32,7 @@ export function useChecksReachabilitySuccessRate() {
 
 export function useCheckReachabilitySuccessRate(check: Check) {
   const props = useChecksReachabilitySuccessRate();
-  const checkSuccessRate = props.data?.find((d) => d.metric.instance === check.target && d.metric.job === check.job);
+  const checkSuccessRate = findCheckinMetrics(props.data || [], check);
 
   return {
     ...props,
@@ -41,9 +45,11 @@ export function useChecksUptimeSuccessRate() {
   const query = `sum_over_time((ceil(sum by (instance, job) (increase(probe_all_success_sum[5m])) / sum by (instance, job) (increase(probe_all_success_count[5m]))))[3h:])
   / count_over_time((sum by (instance, job) (increase(probe_all_success_count[5m])))[3h:])`;
 
-  return useSuspenseQuery({
+  return useQuery({
+    // we add 'now' as an option so can't add it to the query key
+    // otherwise it would continuously refetch
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
-    queryKey: [...queryKeys.checkUptime(), query, url],
+    queryKey: [...queryKeys.checkUptime, query, url],
     queryFn: () => queryMetric<MetricCheckSuccess>(url, query, options),
     refetchInterval: (query) => STANDARD_REFRESH_INTERVAL,
   });
@@ -63,9 +69,11 @@ export function useProbesReachabilitySuccessRate() {
   const { url, options } = useQueryMetric();
   const query = 'sum(rate(probe_all_success_sum[3h])) by (probe) / sum(rate(probe_all_success_count[3h])) by (probe)';
 
-  return useSuspenseQuery({
+  return useQuery({
+    // we add 'now' as an option so can't add it to the query key
+    // otherwise it would continuously refetch
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
-    queryKey: [...queryKeys.probeReachability(), query, url],
+    queryKey: [...queryKeys.probeReachability, query, url],
     queryFn: () => queryMetric<MetricProbeSuccessRate>(url, query, options),
     refetchInterval: (query) => STANDARD_REFRESH_INTERVAL,
   });

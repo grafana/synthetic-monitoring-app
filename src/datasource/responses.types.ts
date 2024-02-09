@@ -55,7 +55,7 @@ export type UpdateTenantSettingsResult = {
   msg: string;
 };
 
-type Time = number;
+export type Time = number;
 
 export interface Metric {
   metric: {};

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { GrafanaTheme2, OrgRole } from '@grafana/data';
-import { Button, ButtonCascader, useStyles2 } from '@grafana/ui';
+import { Button, ButtonCascader, ConfirmModal, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Check } from 'types';
@@ -21,6 +21,7 @@ export enum BulkAction {
 export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
   const styles = useStyles2(getStyles);
   const [bulkEditAction, setBulkEditAction] = useState<BulkAction | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const { mutate: bulkUpdateChecks } = useBulkUpdateChecks({ onSuccess: onResolved });
   const { mutate: bulkDeleteChecks } = useBulkDeleteChecks({ onSuccess: onResolved });
 
@@ -84,7 +85,7 @@ export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
           type="button"
           variant="destructive"
           fill="text"
-          onClick={handleDeleteSelectedChecks}
+          onClick={() => setShowDeleteModal(true)}
           disabled={!hasRole(OrgRole.Editor)}
         >
           Delete
@@ -96,6 +97,16 @@ export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
           onDismiss={() => setBulkEditAction(null)}
           action={bulkEditAction}
           isOpen={bulkEditAction !== null}
+        />
+      )}
+      {showDeleteModal && (
+        <ConfirmModal
+          isOpen={showDeleteModal}
+          title={`Delete ${checks.length} checks`}
+          body="Are you sure you want to delete these checks?"
+          confirmText="Delete checks"
+          onConfirm={handleDeleteSelectedChecks}
+          onDismiss={() => setShowDeleteModal(false)}
         />
       )}
     </>

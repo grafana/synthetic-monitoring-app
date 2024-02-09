@@ -1,6 +1,5 @@
 import React from 'react';
 import { Route, Switch, useRouteMatch } from 'react-router-dom';
-import { PluginPage } from '@grafana/runtime';
 
 import { CheckType } from 'types';
 import { CheckEditor } from 'components/CheckEditor';
@@ -13,7 +12,6 @@ export function CheckRouter() {
   const { path } = useRouteMatch();
 
   return (
-    <PluginPage>
       <Switch>
         <Route path={path} exact>
           <CheckList />
@@ -46,6 +44,5 @@ export function CheckRouter() {
           <ChooseCheckType />
         </Route>
       </Switch>
-    </PluginPage>
   );
 }

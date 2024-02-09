@@ -5,7 +5,6 @@ import {
   DataQueryResponse,
   DataSourceApi,
   DataSourceInstanceSettings,
-  MetricFindValue,
   ScopedVars,
 } from '@grafana/data';
 import { getBackendSrv, getTemplateSrv } from '@grafana/runtime';
@@ -185,16 +184,15 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     return allProbes;
   }
 
-  async getCheckInfo(): Promise<CheckInfo> {
-    return getBackendSrv()
-      .fetch({
+  async getCheckInfo() {
+    return firstValueFrom(
+      getBackendSrv().fetch<CheckInfo>({
         method: 'GET',
         url: `${this.instanceSettings.url}/sm/checks/info`,
       })
-      .toPromise()
-      .then((res: any) => {
-        return res.data as CheckInfo;
-      });
+    ).then((res) => {
+      return res.data;
+    });
   }
 
   //--------------------------------------------------------------------------------
@@ -257,18 +255,6 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     });
   }
 
-  async metricFindQuery(query: string, options?: any): Promise<MetricFindValue[]> {
-    const checks = await this.listChecks();
-    const metricFindValues = checks.map<MetricFindValue>((check) => {
-      const value = `${check.job}: ${check.target}`;
-      return {
-        value,
-        text: value,
-      };
-    });
-    return metricFindValues;
-  }
-
   //--------------------------------------------------------------------------------
   // CHECKS
   //--------------------------------------------------------------------------------
@@ -286,7 +272,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
 
       setTimeout(() => {
         resolve(val);
-      }, 5000);
+      }, 0);
     });
   }
 

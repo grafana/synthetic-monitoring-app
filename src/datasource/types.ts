@@ -125,6 +125,7 @@ export enum AccountingClassNames {
 }
 
 interface AccountingClass {
+  CheckClass: number;
   CheckType: number;
   Series: number;
 }

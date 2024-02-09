@@ -2,16 +2,10 @@ import React from 'react';
 import { screen, within } from '@testing-library/react';
 import { render } from 'test/render';
 
-import { CheckInfoContextProvider } from 'components/CheckInfoContextProvider';
-
 import { HomePage } from './HomePage';
 
 const renderHomePage = () => {
-  return render(
-    <CheckInfoContextProvider>
-      <HomePage />
-    </CheckInfoContextProvider>
-  );
+  return render(<HomePage />);
 };
 
 const assertBigValue = async (label: string, value: string) => {

@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { type QueryKey, useSuspenseQuery } from '@tanstack/react-query';
+import { type QueryKey, useQuery } from '@tanstack/react-query';
 
 import { Check, CheckType } from 'types';
 import { checkType, queryMetric } from 'utils';
@@ -8,19 +8,19 @@ import { MetricLatency } from 'datasource/responses.types';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { STANDARD_REFRESH_INTERVAL } from 'components/constants';
 
-const queryKeys: Record<'latencies', () => QueryKey> = {
-  latencies: () => ['latencies'],
+const queryKeys: Record<'latencies', QueryKey> = {
+  latencies: ['latencies'],
 };
 
-export function useLatency(check: Check) {
+export function useLatency({ job, target, settings }: Check) {
   const { instance } = useContext(InstanceContext);
   const api = instance.api as SMDataSource;
   const url = api.getMetricsDS()?.url || ``;
-  const query = getQuery(check);
+  const type = checkType(settings);
 
-  return useSuspenseQuery({
-    queryKey: [queryKeys.latencies(), url, query],
-    queryFn: () => queryMetric<MetricLatency>(url, query),
+  return useQuery({
+    queryKey: [...queryKeys.latencies, url, job, target, type],
+    queryFn: () => queryMetric<MetricLatency>(url, getQuery(job, target, type)),
     refetchInterval: (query) => STANDARD_REFRESH_INTERVAL,
     select: (data) => {
       if (data) {
@@ -32,10 +32,7 @@ export function useLatency(check: Check) {
   });
 }
 
-function getQuery(check: Check) {
-  const { job, target } = check;
-  const type = checkType(check.settings);
-
+function getQuery(job: Check['job'], target: Check['target'], type: CheckType) {
   if (type === CheckType.MULTI_HTTP) {
     return `sum by (job, instance) (sum_over_time(probe_http_total_duration_seconds{job="${job}", instance="${target}"}[6h])) / sum by (job, instance) (count_over_time(probe_http_total_duration_seconds{job="${job}", instance="${target}"}[6h])) `;
   }

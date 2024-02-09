@@ -4,7 +4,7 @@ import { Button, ConfirmModal } from '@grafana/ui';
 
 import { type Probe, type ProbePageParams, ROUTES } from 'types';
 import { canEditProbes } from 'utils';
-import { useDeleteProbe, useProbe, useUpdateProbe } from 'data/useProbes';
+import { useDeleteProbe, useSuspenseProbe, useUpdateProbe } from 'data/useProbes';
 import { useNavigation } from 'hooks/useNavigation';
 import { PluginPage } from 'components/PluginPage';
 import { ProbeEditor } from 'components/ProbeEditor';
@@ -28,7 +28,7 @@ export const EditProbe = () => {
 
 const EditProbeFetch = ({ onProbeFetch }: { onProbeFetch: (probe: Probe) => void }) => {
   const { id } = useParams<ProbePageParams>();
-  const { data: probe, isLoading } = useProbe(Number(id));
+  const { data: probe, isLoading } = useSuspenseProbe(Number(id));
   const navigate = useNavigation();
 
   useEffect(() => {

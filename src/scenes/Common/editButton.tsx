@@ -13,7 +13,7 @@ interface Props {
 }
 
 function EditCheckButton({ job, instance }: Props) {
-  const { data: checks, isLoading } = useChecks();
+  const { data: checks = [], isLoading } = useChecks();
   const navigate = useNavigation();
   return (
     <Button

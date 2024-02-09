@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { GrafanaTheme2, SelectableValue, unEscapeStringFromRegex } from '@grafana/data';
-import { Icon, Input, Select, useStyles2 } from '@grafana/ui';
+import { Icon, Input, MultiSelect, Select, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { debounce } from 'lodash';
 
@@ -23,7 +23,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
 });
 
 interface Props {
-  handleResetFilters: () => void;
+  onReset: () => void;
   onChange: (filters: CheckFiltersType) => void;
   checks: Check[];
   checkFilters?: CheckFiltersType;
@@ -51,7 +51,7 @@ export const getDefaultFilters = (): CheckFiltersType => {
 };
 
 export function CheckFilters({
-  handleResetFilters,
+  onReset,
   onChange,
   checks,
   checkFilters = defaultFilters,
@@ -59,7 +59,7 @@ export function CheckFilters({
 }: Props) {
   const styles = useStyles2(getStyles);
   const [searchValue, setSearchValue] = useState(checkFilters.search);
-  const { data: probes } = useProbes();
+  const { data: probes = [] } = useProbes();
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedOnChange = useCallback(debounce(onChange, 1000), []);
@@ -83,7 +83,7 @@ export function CheckFilters({
         onChange={handleSearchChange}
         placeholder="Search by job name, endpoint, or label"
       />
-      <CheckFilterGroup onReset={handleResetFilters} filters={checkFilters}>
+      <CheckFilterGroup onReset={onReset} filters={checkFilters}>
         <div className={styles.flexRow}>
           {includeStatus && (
             <Select
@@ -129,18 +129,17 @@ export function CheckFilters({
           labelFilters={checkFilters.labels}
           className={styles.verticalSpace}
         />
-        <Select
+        <MultiSelect
           aria-label="Filter by probe"
           data-testid="probe-filter"
           prefix="Probes"
-          isMulti
           onChange={(v) => {
             onChange({
               ...checkFilters,
-              probes: [v],
+              probes: v,
             });
           }}
-          options={probes.map((p) => ({ label: p.name, value: p.name }))}
+          options={probes.map((p) => ({ label: p.name, value: p.id }))}
           value={checkFilters.probes}
           placeholder="All probes"
           allowCustomValue={false}
