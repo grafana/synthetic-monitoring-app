@@ -19,11 +19,13 @@ export function getVariables(checkType: CheckType, metrics: DataSourceRef, check
     const job = new CustomVariable({
       name: 'job',
       value: checks[0].job,
+      text: checks[0].job,
       hide: VariableHide.hideVariable,
     });
     const instance = new CustomVariable({
       name: 'instance',
       value: checks[0].target,
+      text: checks[0].job,
       hide: VariableHide.hideVariable,
     });
     return { probe, job, instance };
