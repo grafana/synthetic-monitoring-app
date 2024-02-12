@@ -3,8 +3,9 @@ import { Redirect, Route, Switch, useLocation } from 'react-router-dom';
 import { AppRootProps } from '@grafana/data';
 import { config } from '@grafana/runtime';
 
-import { ROUTES } from 'types';
+import { FeatureName, ROUTES } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { QueryParamMap, useNavigation } from 'hooks/useNavigation';
 import { useQuery } from 'hooks/useQuery';
 import { AlertingPage } from 'page/AlertingPage';
@@ -25,6 +26,7 @@ export const Routing = ({ onNavChanged }: Pick<AppRootProps, 'onNavChanged'>) =>
   const navigate = useNavigation();
   const location = useLocation();
   const { instance, meta } = useContext(InstanceContext);
+  const { isEnabled: perCheckDashboardsEnabled } = useFeatureFlag(FeatureName.PerCheckDashboards);
   const provisioned = Boolean(meta?.jsonData?.metrics?.grafanaName);
   const initialized = meta?.enabled && instance.api;
   const logo = meta?.info.logos.large || ``;
@@ -70,9 +72,11 @@ export const Routing = ({ onNavChanged }: Pick<AppRootProps, 'onNavChanged'>) =>
       <Route exact path={getRoute(ROUTES.Home)}>
         <HomePage />
       </Route>
-      <Route path={getRoute(ROUTES.Scene)}>
-        <DashboardPage />
-      </Route>
+      {!perCheckDashboardsEnabled && (
+        <Route path={getRoute(ROUTES.Scene)}>
+          <DashboardPage />
+        </Route>
+      )}
       <Route path={getRoute(ROUTES.Checks)}>
         <CheckRouter />
       </Route>

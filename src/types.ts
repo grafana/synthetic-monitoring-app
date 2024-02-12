@@ -534,7 +534,7 @@ export enum FeatureName {
   MultiHttp = 'multi-http',
   Scenes = 'synthetics-scenes',
   ScriptedChecks = 'scripted-checks',
-  PerCheckDashboards = 'synthetics-per-check-dashboards',
+  PerCheckDashboards = 'syntheticsPerCheckDashboards',
 }
 
 export interface UsageValues {
