@@ -6,6 +6,7 @@ import {
   SceneDataLayerControls,
   SceneFlexItem,
   SceneFlexLayout,
+  SceneReactObject,
   SceneRefreshPicker,
   SceneTimePicker,
   SceneTimeRange,
@@ -15,6 +16,7 @@ import {
 import { VariableRefresh } from '@grafana/schema';
 
 import { Check, DashboardSceneAppConfig } from 'types';
+import { AddNewCheckButton } from 'components/CheckList/AddNewCheckButton';
 import { getSummaryAlertAnnotations } from 'scenes/Common/alertAnnotations';
 import { getEmptyScene } from 'scenes/Common/emptyScene';
 
@@ -117,6 +119,9 @@ export function getSummaryScene({ metrics, sm }: DashboardSceneAppConfig, checks
         new VariableValueSelectors({}),
         new SceneDataLayerControls(),
         new SceneControlsSpacer(),
+        new SceneReactObject({
+          component: AddNewCheckButton,
+        }),
         new SceneTimePicker({ isOnCanvas: true }),
         new SceneRefreshPicker({
           intervals: ['5s', '1m', '1h'],
