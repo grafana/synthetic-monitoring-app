@@ -1,6 +1,7 @@
 import {
   EmbeddedScene,
   SceneControlsSpacer,
+  SceneDataLayerControls,
   SceneFlexItem,
   SceneFlexLayout,
   SceneRefreshPicker,
@@ -12,6 +13,7 @@ import {
 
 import { Check, CheckType, DashboardSceneAppConfig } from 'types';
 import { getVariables } from 'scenes/Common';
+import { getAlertAnnotations } from 'scenes/Common/alertAnnotations';
 import { getEditButton } from 'scenes/Common/editButton';
 import { getEmptyScene } from 'scenes/Common/emptyScene';
 
@@ -62,11 +64,15 @@ export function getTracerouteScene({ metrics, logs, sm, singleCheckMode }: Dashb
 
     const editButton = getEditButton({ job, instance });
 
+    const annotations = getAlertAnnotations(metrics);
+
     return new EmbeddedScene({
       $timeRange: timeRange,
       $variables: variables,
+      $data: annotations,
       controls: [
         new VariableValueSelectors({}),
+        new SceneDataLayerControls(),
         new SceneControlsSpacer(),
         editButton,
         new SceneTimePicker({ isOnCanvas: true }),

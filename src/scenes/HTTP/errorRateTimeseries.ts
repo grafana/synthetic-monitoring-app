@@ -4,7 +4,6 @@ import { DataSourceRef } from '@grafana/schema';
 import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
 const query = `
-  100 * (
     1 - (
       sum(
         rate(probe_all_success_sum{probe=~"$probe", instance="$instance", job="$job"}[$__rate_interval])
@@ -14,7 +13,6 @@ const query = `
         rate(probe_all_success_count{probe=~"$probe", instance="$instance", job="$job"}[$__rate_interval])
       )
     )
-  )
 `;
 
 function getQueryRunner(metrics: DataSourceRef) {
@@ -28,7 +26,7 @@ function getQueryRunner(metrics: DataSourceRef) {
         interval: '1m',
         intervalFactor: 1,
         legendFormat: 'errors',
-        refId: 'A',
+        refId: 'errorRate',
       },
     ],
   });
@@ -45,6 +43,13 @@ export function getErrorRateTimeseries(metrics: DataSourceRef) {
           format: 'percent',
         },
       ],
+    },
+    fieldConfig: {
+      defaults: {
+        max: 1,
+        unit: 'percentunit',
+      },
+      overrides: [],
     },
   });
 }

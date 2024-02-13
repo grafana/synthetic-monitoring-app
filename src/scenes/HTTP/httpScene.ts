@@ -1,6 +1,7 @@
 import {
   EmbeddedScene,
   SceneControlsSpacer,
+  SceneDataLayerControls,
   SceneFlexItem,
   SceneFlexLayout,
   SceneRefreshPicker,
@@ -11,6 +12,7 @@ import {
 } from '@grafana/scenes';
 
 import { Check, CheckType, DashboardSceneAppConfig } from 'types';
+import { getAlertAnnotations } from 'scenes/Common/alertAnnotations';
 import { getEditButton } from 'scenes/Common/editButton';
 import { getEmptyScene } from 'scenes/Common/emptyScene';
 
@@ -31,7 +33,7 @@ import { getLatencyByPhasePanel } from './latencyByPhase';
 export function getHTTPScene({ metrics, logs, singleCheckMode }: DashboardSceneAppConfig, checks: Check[]) {
   return () => {
     const timeRange = new SceneTimeRange({
-      from: 'now-6h',
+      from: 'now-1h',
       to: 'now',
     });
     if (checks.length === 0) {
@@ -86,11 +88,15 @@ export function getHTTPScene({ metrics, logs, singleCheckMode }: DashboardSceneA
 
     const editButton = getEditButton({ job, instance });
 
+    const annotations = getAlertAnnotations(metrics);
+
     return new EmbeddedScene({
       $timeRange: timeRange,
       $variables: variableSet,
+      $data: annotations,
       controls: [
         new VariableValueSelectors({}),
+        new SceneDataLayerControls(),
         new SceneControlsSpacer(),
         editButton,
         new SceneTimePicker({ isOnCanvas: true }),

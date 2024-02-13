@@ -1,6 +1,7 @@
 import {
   EmbeddedScene,
   SceneControlsSpacer,
+  SceneDataLayerControls,
   SceneFlexItem,
   SceneFlexLayout,
   SceneRefreshPicker,
@@ -22,6 +23,7 @@ import {
   getUptimeStat,
   getVariables,
 } from 'scenes/Common';
+import { getAlertAnnotations } from 'scenes/Common/alertAnnotations';
 import { getEditButton } from 'scenes/Common/editButton';
 import { getEmptyScene } from 'scenes/Common/emptyScene';
 import { getErrorRateTimeseries } from 'scenes/HTTP/errorRateTimeseries';
@@ -80,11 +82,14 @@ export function getTcpScene({ metrics, logs, singleCheckMode }: DashboardSceneAp
 
     const editButton = getEditButton({ job, instance });
 
+    const annotations = getAlertAnnotations(metrics);
     return new EmbeddedScene({
       $timeRange: timeRange,
       $variables: variables,
+      $data: annotations,
       controls: [
         new VariableValueSelectors({}),
+        new SceneDataLayerControls(),
         new SceneControlsSpacer(),
         editButton,
         new SceneTimePicker({ isOnCanvas: true }),

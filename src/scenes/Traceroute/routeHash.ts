@@ -46,7 +46,20 @@ export function getRouteHashPanel(metrics: DataSourceRef) {
           },
         },
       },
-      overrides: [],
+      overrides: [
+        {
+          matcher: {
+            id: 'byName',
+            options: 'probe_traceroute_route_hash',
+          },
+          properties: [
+            {
+              id: 'custom.axisPlacement',
+              value: 'hidden',
+            },
+          ],
+        },
+      ],
     },
     options: {
       tooltip: {
