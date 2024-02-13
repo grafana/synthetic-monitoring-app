@@ -7,6 +7,7 @@ import { config } from '@grafana/runtime';
 import {
   Alert,
   Button,
+  Checkbox,
   ConfirmModal,
   Field,
   HorizontalGroup,
@@ -218,6 +219,18 @@ export const MultiHttpSettingsForm = ({ onReturn, checks }: Props) => {
               <Field label="At least one target HTTP is required; limit 10 requests per check.">
                 <></>
               </Field>
+              <Field
+                label="Log response bodies"
+                description="Will add a log line that gets sent to Loki containing the response body of each request. Be mindful of large response bodies or whether the response contains sensitive information."
+                invalid={Boolean(errors?.settings?.multihttp?.logResponseBodies)}
+                error={errors?.settings?.multihttp?.logResponseBodies?.message}
+              >
+                <Checkbox
+                  id="settings-multihttp-logResponseBodies"
+                  data-testid="logResponseBodies"
+                  {...register('settings.multihttp.logResponseBodies')}
+                />
+              </Field>
               <div className={styles.request}>
                 {entryFields.map((field, index) => {
                   const urlForIndex =
@@ -243,6 +256,7 @@ export const MultiHttpSettingsForm = ({ onReturn, checks }: Props) => {
                           >
                             <Input
                               id={`request-target-url-${index}`}
+                              data-testid={`request-target-url-${index}`}
                               {...register(`settings.multihttp.entries.${index}.request.url` as const, {
                                 required: 'Request target is required',
                                 validate: (url: string) => {

@@ -34,6 +34,10 @@ describe('editing multihttp check', () => {
     expect(await getSlider('frequency')).toHaveValue('110');
     expect(await getSlider('timeout')).toHaveValue('2');
 
+    // edit log response bodies
+    const logResponseBodies = await screen.findByTestId('logResponseBodies');
+    expect(logResponseBodies).toBeChecked();
+
     // labels
     const labelNameInput = await screen.findByTestId('label-name-0');
     expect(labelNameInput).toHaveValue('labelName');
@@ -105,6 +109,9 @@ describe('editing multihttp check', () => {
     await user.clear(jobNameInput);
     await user.type(jobNameInput, 'basicmultiedited');
 
+    // edit log response bodies
+    const logResponseBodies = await screen.findByLabelText('Log response bodies', { exact: false });
+    await user.click(logResponseBodies);
     // Add a custom label
     const labelNameInput = await screen.findByTestId('label-name-0');
     await user.clear(labelNameInput);
@@ -162,6 +169,7 @@ describe('editing multihttp check', () => {
         job: 'basicmultiedited',
       })
     );
+
     expect(instance.api?.updateCheck).toHaveBeenCalledWith({
       target: 'http://grafanarr.com',
       timeout: 2000,
@@ -171,15 +179,16 @@ describe('editing multihttp check', () => {
       frequency: 110000,
       id: 6,
       job: 'basicmultiedited',
+      probes: [42],
       labels: [
         {
           name: 'editedlabelname',
           value: 'editedlabelvalue',
         },
       ],
-      probes: [42],
       settings: {
         multihttp: {
+          logResponseBodies: false,
           entries: [
             {
               checks: [

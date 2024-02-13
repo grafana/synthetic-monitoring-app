@@ -85,6 +85,7 @@ describe('new checks', () => {
     await submitForm(onReturn, user);
 
     expect(instance.api?.addCheck).toHaveBeenCalledTimes(1);
+
     expect(instance.api?.addCheck).toHaveBeenCalledWith({
       target: 'http://grafanarr.com',
       timeout: 15000,
@@ -102,6 +103,7 @@ describe('new checks', () => {
       probes: [42],
       settings: {
         multihttp: {
+          logResponseBodies: false,
           entries: [
             {
               request: { headers: [], queryFields: [], method: 'POST', url: 'http://grafanarr.com', body: undefined },

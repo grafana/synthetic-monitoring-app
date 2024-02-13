@@ -250,6 +250,7 @@ export const BASIC_MULTIHTTP_CHECK = {
   basicMetricsOnly: true,
   settings: {
     multihttp: {
+      logResponseBodies: true,
       entries: [
         {
           request: {

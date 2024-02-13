@@ -246,10 +246,12 @@ export interface HttpSettingsFormValues
   proxyURL?: string;
 }
 export interface MultiHttpSettings {
+  logResponseBodies?: boolean;
   entries: MultiHttpEntry[];
 }
 export interface MultiHttpSettingsFormValues {
   entries: MultiHttpEntryFormValues[];
+  logResponseBodies: boolean;
 }
 
 export interface MultiHttpEntryFormValues extends Omit<MultiHttpEntry, 'request' | 'variables' | 'checks'> {
