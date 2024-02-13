@@ -3,6 +3,7 @@ import {
   EmbeddedScene,
   QueryVariable,
   SceneControlsSpacer,
+  SceneDataLayerControls,
   SceneFlexItem,
   SceneFlexLayout,
   SceneRefreshPicker,
@@ -14,6 +15,7 @@ import {
 import { VariableRefresh } from '@grafana/schema';
 
 import { Check, DashboardSceneAppConfig } from 'types';
+import { getSummaryAlertAnnotations } from 'scenes/Common/alertAnnotations';
 import { getEmptyScene } from 'scenes/Common/emptyScene';
 
 import { getErrorPctgTimeseriesPanel } from './errorPctTimeseries';
@@ -36,7 +38,7 @@ export function getSummaryScene({ metrics, sm }: DashboardSceneAppConfig, checks
     }, new Set<string>());
 
     const timeRange = new SceneTimeRange({
-      from: 'now-6h',
+      from: 'now-1h',
       to: 'now',
     });
 
@@ -101,15 +103,19 @@ export function getSummaryScene({ metrics, sm }: DashboardSceneAppConfig, checks
       children: [latencyPanel],
     });
 
+    const annotations = getSummaryAlertAnnotations(metrics);
+
     return new EmbeddedScene({
       $timeRange: timeRange,
       $variables: new SceneVariableSet({ variables: [region, probe, checkTypeVar, filters] }),
+      $data: annotations,
       body: new SceneFlexLayout({
         direction: 'column',
         children: [tableRow, mapRow, latencyRow],
       }),
       controls: [
         new VariableValueSelectors({}),
+        new SceneDataLayerControls(),
         new SceneControlsSpacer(),
         new SceneTimePicker({ isOnCanvas: true }),
         new SceneRefreshPicker({

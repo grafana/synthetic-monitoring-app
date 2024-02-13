@@ -2,6 +2,7 @@ import {
   behaviors,
   EmbeddedScene,
   SceneControlsSpacer,
+  SceneDataLayerControls,
   SceneFlexItem,
   SceneFlexLayout,
   SceneRefreshPicker,
@@ -14,6 +15,7 @@ import { DashboardCursorSync } from '@grafana/schema';
 
 import { Check, CheckType, DashboardSceneAppConfig } from 'types';
 import { getReachabilityStat, getUptimeStat, getVariables } from 'scenes/Common';
+import { getAlertAnnotations } from 'scenes/Common/alertAnnotations';
 import { getAllLogs } from 'scenes/Common/allLogs';
 import { getEditButton } from 'scenes/Common/editButton';
 import { getEmptyScene } from 'scenes/Common/emptyScene';
@@ -34,7 +36,7 @@ export function getScriptedScene(
       return getEmptyScene(checkType);
     }
     const timeRange = new SceneTimeRange({
-      from: 'now-6h',
+      from: 'now-1h',
       to: 'now',
     });
     const { probe, job, instance } = getVariables(checkType, metrics, checks, singleCheckMode);
@@ -48,12 +50,16 @@ export function getScriptedScene(
     const distinctTargets = getDistinctTargets(metrics);
     const probeDuration = getProbeDuration(metrics);
     const editButton = getEditButton({ job, instance });
+
+    const annotations = getAlertAnnotations(metrics);
     return new EmbeddedScene({
       $timeRange: timeRange,
       $variables: variables,
       $behaviors: [new behaviors.CursorSync({ key: 'sync', sync: DashboardCursorSync.Crosshair })],
+      $data: annotations,
       controls: [
         new VariableValueSelectors({}),
+        new SceneDataLayerControls(),
         new SceneControlsSpacer(),
         editButton,
         new SceneTimePicker({ isOnCanvas: true }),

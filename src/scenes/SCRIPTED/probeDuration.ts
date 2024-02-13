@@ -13,6 +13,14 @@ function getQueryRunner(metrics: DataSourceRef) {
         legendFormat: '__auto',
         range: true,
       },
+      // {
+      //   expr: 'max(ALERTS{probe=~"$probe", job="$job", instance="$instance"})',
+      //   hide: false,
+      //   instant: false,
+      //   legendFormat: 'alert firing',
+      //   range: true,
+      //   refId: 'alerts',
+      // },
     ],
     datasource: metrics,
   });
@@ -29,6 +37,34 @@ export function getProbeDuration(metrics: DataSourceRef) {
           unit: 's',
         },
         overrides: [],
+        // overrides: [
+        //   {
+        //     matcher: {
+        //       id: 'byName',
+        //       options: 'alert firing',
+        //     },
+        //     properties: [
+        //       {
+        //         id: 'custom.lineStyle',
+        //         value: {
+        //           dash: [10, 10],
+        //           fill: 'dash',
+        //         },
+        //       },
+        //       {
+        //         id: 'custom.fillOpacity',
+        //         value: 25,
+        //       },
+        //       {
+        //         id: 'color',
+        //         value: {
+        //           mode: 'fixed',
+        //           fixedColor: 'dark-red',
+        //         },
+        //       },
+        //     ],
+        //   },
+        // ],
       },
     }),
   });
