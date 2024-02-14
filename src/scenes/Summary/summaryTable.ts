@@ -208,22 +208,6 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
       {
         id: 'organize',
         options: {
-          excludeByName: {
-            hidden: true, // A bunch of fields that get duplicated by the multiple queries have been renamed to hidden via regex above, so we can exclude them all at once
-            alertSensitivity: true,
-            basicMetricsOnly: true,
-            created: true,
-            enabled: true,
-            frequency: true,
-            labels: true,
-            modified: true,
-            offset: true,
-            probes: true,
-            settings: true,
-            tenantId: true,
-            timeout: true,
-            id: false,
-          },
           includeByName: {
             job: true,
             // instance: true,
@@ -237,7 +221,6 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
           },
           indexByName: {
             job: 0,
-            // instance: 8,
             'check type': 3,
             target: 2,
             'Value #state (mean)': 4,
@@ -348,6 +331,28 @@ function getFieldOverrides() {
     {
       matcher: {
         id: 'byName',
+        options: 'check type',
+      },
+      properties: [
+        {
+          id: 'mappings',
+          value: [
+            {
+              type: 'value',
+              options: {
+                k6: {
+                  text: 'scripted',
+                  index: 0,
+                },
+              },
+            },
+          ],
+        },
+      ],
+    },
+    {
+      matcher: {
+        id: 'byName',
         options: 'state',
       },
       properties: [
@@ -448,18 +453,18 @@ function getFieldOverrides() {
         },
       ],
     },
-    // {
-    //   matcher: {
-    //     id: 'byName',
-    //     options: 'id',
-    //   },
-    //   properties: [
-    //     {
-    //       id: 'custom.hidden',
-    //       value: true,
-    //     },
-    //   ],
-    // },
+    {
+      matcher: {
+        id: 'byName',
+        options: 'id',
+      },
+      properties: [
+        {
+          id: 'custom.hidden',
+          value: true,
+        },
+      ],
+    },
   ];
 }
 

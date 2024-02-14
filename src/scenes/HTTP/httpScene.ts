@@ -89,7 +89,6 @@ export function getHTTPScene({ metrics, logs, singleCheckMode }: DashboardSceneA
     const editButton = getEditButton({ job, instance });
 
     const annotations = getAlertAnnotations(metrics);
-    console.log('job value', job.getValue());
 
     return new EmbeddedScene({
       $timeRange: timeRange,
