@@ -222,17 +222,29 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
             settings: true,
             tenantId: true,
             timeout: true,
+            id: false,
           },
-          includeByName: {},
+          includeByName: {
+            job: true,
+            // instance: true,
+            'check type': true,
+            target: true,
+            'Value #state (mean)': true,
+            'Value #uptime (mean)': true,
+            'Value #reachability (mean)': true,
+            'Value #latency (mean)': true,
+            id: 9,
+          },
           indexByName: {
             job: 0,
-            instance: 8,
+            // instance: 8,
             'check type': 3,
             target: 2,
             'Value #state (mean)': 4,
             'Value #uptime (mean)': 5,
             'Value #reachability (mean)': 6,
             'Value #latency (mean)': 7,
+            id: 8,
           },
           renameByName: {
             'Value #latency': 'latency',
@@ -436,18 +448,18 @@ function getFieldOverrides() {
         },
       ],
     },
-    {
-      matcher: {
-        id: 'byName',
-        options: 'id',
-      },
-      properties: [
-        {
-          id: 'custom.hidden',
-          value: true,
-        },
-      ],
-    },
+    // {
+    //   matcher: {
+    //     id: 'byName',
+    //     options: 'id',
+    //   },
+    //   properties: [
+    //     {
+    //       id: 'custom.hidden',
+    //       value: true,
+    //     },
+    //   ],
+    // },
   ];
 }
 

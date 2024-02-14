@@ -16,15 +16,16 @@ export function getVariables(checkType: CheckType, metrics: DataSourceRef, check
   });
 
   if (singleCheckMode) {
+    console.log('getting variables', checks[0].job, checks[0].target);
     const job = new CustomVariable({
       name: 'job',
-      value: checks[0].job,
+      query: checks[0].job,
       text: checks[0].job,
       hide: VariableHide.hideVariable,
     });
     const instance = new CustomVariable({
       name: 'instance',
-      value: checks[0].target,
+      query: checks[0].target,
       text: checks[0].target,
       hide: VariableHide.hideVariable,
     });
