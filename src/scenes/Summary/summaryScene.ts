@@ -73,7 +73,7 @@ export function getSummaryScene({ metrics, sm }: DashboardSceneAppConfig, checks
       query: 'label_values(sm_check_info, check_name)',
       datasource: metrics,
     });
-    const filters = AdHocFiltersVariable.create({
+    const filters = new AdHocFiltersVariable({
       datasource: metrics,
       filters: [],
       getTagKeysProvider: () => {

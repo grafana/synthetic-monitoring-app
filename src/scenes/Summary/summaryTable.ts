@@ -179,17 +179,25 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
       {
         id: 'renameByRegex',
         options: {
-          regex: 'instance(.*)',
+          regex: 'check_name 1',
+          renamePattern: 'check type',
+        },
+      },
+      {
+        id: 'renameByRegex',
+        options: {
+          regex: 'check_name .*',
           renamePattern: 'hidden',
         },
       },
       {
         id: 'renameByRegex',
         options: {
-          regex: 'check_name (.*)',
+          regex: 'instance(.*)',
           renamePattern: 'hidden',
         },
       },
+
       {
         id: 'renameByRegex',
         options: {
@@ -219,7 +227,7 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
           indexByName: {
             job: 0,
             instance: 8,
-            check_name: 3,
+            'check type': 3,
             target: 2,
             'Value #state (mean)': 4,
             'Value #uptime (mean)': 5,
@@ -234,7 +242,6 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
             'Value #state (mean)': 'state',
             'Value #uptime': 'uptime',
             'Value #uptime (mean)': 'uptime',
-            check_name: 'check type',
             target: 'instance',
           },
         },
