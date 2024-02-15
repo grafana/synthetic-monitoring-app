@@ -8,6 +8,15 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
     datasource: { type: 'datasource', uid: '-- Mixed --' },
     queries: [
       {
+        datasource: sm,
+        hide: false,
+        instance: '',
+        job: '',
+        probe: '',
+        queryType: 'checks',
+        refId: 'checks',
+      },
+      {
         datasource: metrics,
         editorMode: 'code',
         exemplar: false,
@@ -111,15 +120,6 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
         legendFormat: '',
         refId: 'uptime',
       },
-      {
-        datasource: sm,
-        hide: false,
-        instance: '',
-        job: '',
-        probe: '',
-        queryType: 'checks',
-        refId: 'checks',
-      },
     ],
   });
 
@@ -127,65 +127,134 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
     $data: queryRunner,
     transformations: [
       {
+        id: 'groupBy',
+        options: {
+          fields: {
+            'Value #latency': {
+              aggregations: ['mean'],
+              operation: 'aggregate',
+            },
+            'Value #reachability': {
+              aggregations: ['mean'],
+              operation: 'aggregate',
+            },
+            'Value #state': {
+              aggregations: ['mean'],
+              operation: 'aggregate',
+            },
+            'Value #uptime': {
+              aggregations: ['mean'],
+              operation: 'aggregate',
+            },
+            id: {
+              aggregations: [],
+              operation: 'groupby',
+            },
+            check_name: {
+              aggregations: [],
+              operation: 'groupby',
+            },
+            instance: {
+              aggregations: [],
+              operation: 'groupby',
+            },
+            job: {
+              aggregations: [],
+              operation: 'groupby',
+            },
+            target: {
+              aggregations: [],
+              operation: 'groupby',
+            },
+          },
+        },
+      },
+      {
         id: 'joinByField',
         options: {
           byField: 'job',
-          mode: 'inner',
+          mode: 'outer',
+        },
+      },
+      {
+        id: 'renameByRegex',
+        options: {
+          regex: 'check_name 1',
+          renamePattern: 'check type',
+        },
+      },
+      {
+        id: 'renameByRegex',
+        options: {
+          regex: 'check_name .*',
+          renamePattern: 'hidden',
+        },
+      },
+      {
+        id: 'renameByRegex',
+        options: {
+          regex: 'instance(.*)',
+          renamePattern: 'hidden',
         },
       },
 
       {
-        id: 'organize',
+        id: 'renameByRegex',
         options: {
-          renameByName: {
-            check_name: 'check type',
-          },
-        },
-      },
-      {
-        id: 'joinByField',
-        options: {
-          byField: 'instance',
-          mode: 'inner',
+          regex: 'Time (.*)',
+          renamePattern: 'hidden',
         },
       },
       {
         id: 'organize',
         options: {
-          excludeByName: {
-            Time: true,
-            Value: false,
-            alertSensitivity: true,
-            basicMetricsOnly: true,
-            check_name: false,
-            'check_name 2': true,
-            'check_name 3': true,
-            created: true,
-            enabled: true,
-            frequency: true,
-            id: false,
-            instance: true,
-            labels: true,
-            modified: true,
-            offset: true,
-            probes: true,
-            settings: true,
-            tenantId: true,
-            timeout: true,
+          includeByName: {
+            job: true,
+            // instance: true,
+            'check type': true,
+            target: true,
+            'Value #state (mean)': true,
+            'Value #uptime (mean)': true,
+            'Value #reachability (mean)': true,
+            'Value #latency (mean)': true,
+            id: 9,
           },
           indexByName: {
-            Time: 0,
-            'Value #latency': 7,
-            'Value #reachability': 6,
-            'Value #state': 4,
-            'Value #uptime': 5,
+            job: 0,
             'check type': 3,
-            target: 1,
-            job: 2,
+            target: 2,
+            'Value #state (mean)': 4,
+            'Value #uptime (mean)': 5,
+            'Value #reachability (mean)': 6,
+            'Value #latency (mean)': 7,
+            id: 8,
           },
           renameByName: {
+            'Value #latency': 'latency',
+            'Value #latency (mean)': 'latency',
+            'Value #reachability (mean)': 'reachability',
+            'Value #state': 'up',
+            'Value #state (mean)': 'state',
+            'Value #uptime': 'uptime',
+            'Value #uptime (mean)': 'uptime',
             target: 'instance',
           },
+        },
+      },
+      {
+        id: 'filterByValue',
+        options: {
+          filters: [
+            {
+              fieldName: 'check type',
+              config: {
+                id: 'isNull',
+                options: {},
+              },
+            },
+          ],
+          type: 'exclude',
+          match: 'any',
         },
       },
     ],
@@ -198,7 +267,7 @@ function getFieldOverrides() {
     {
       matcher: {
         id: 'byName',
-        options: 'Value #reachability',
+        options: 'reachability',
       },
       properties: [
         {
@@ -212,16 +281,12 @@ function getFieldOverrides() {
           id: 'unit',
           value: 'percentunit',
         },
-        {
-          id: 'displayName',
-          value: 'reachability',
-        },
       ],
     },
     {
       matcher: {
         id: 'byName',
-        options: 'Value #latency',
+        options: 'latency',
       },
       properties: [
         {
@@ -230,10 +295,6 @@ function getFieldOverrides() {
             mode: 'gradient',
             type: 'color-background',
           },
-        },
-        {
-          id: 'displayName',
-          value: 'latency',
         },
         {
           id: 'thresholds',
@@ -270,13 +331,31 @@ function getFieldOverrides() {
     {
       matcher: {
         id: 'byName',
-        options: 'Value #state',
+        options: 'check type',
       },
       properties: [
         {
-          id: 'displayName',
-          value: 'state',
+          id: 'mappings',
+          value: [
+            {
+              type: 'value',
+              options: {
+                k6: {
+                  text: 'scripted',
+                  index: 0,
+                },
+              },
+            },
+          ],
         },
+      ],
+    },
+    {
+      matcher: {
+        id: 'byName',
+        options: 'state',
+      },
+      properties: [
         {
           id: 'mappings',
           value: [
@@ -324,13 +403,9 @@ function getFieldOverrides() {
     {
       matcher: {
         id: 'byName',
-        options: 'Value #uptime',
+        options: 'uptime',
       },
       properties: [
-        {
-          id: 'displayName',
-          value: 'uptime',
-        },
         {
           id: 'unit',
           value: 'percentunit',

@@ -28,6 +28,7 @@ function DashboardPageContent() {
   const { id } = useParams<CheckPageParams>();
 
   const navigate = useNavigation();
+  const checkToView = checks.find((check) => String(check.id) === id);
 
   const scene = useMemo(() => {
     if (!instance.api || !instance.metrics || !instance.logs) {
@@ -50,7 +51,6 @@ function DashboardPageContent() {
       return getDashboardSceneApp(config, multiHttpEnabled, scriptedEnabled, checks);
     }
     config.singleCheckMode = true;
-    const checkToView = checks.find((check) => String(check.id) === id);
     if (!checkToView) {
       return null;
     }
@@ -133,7 +133,7 @@ function DashboardPageContent() {
     scriptedEnabled,
     checks,
     perCheckDashboardsEnabled,
-    id,
+    checkToView,
   ]);
 
   if (!isEnabled) {
