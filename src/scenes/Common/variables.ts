@@ -16,7 +16,6 @@ export function getVariables(checkType: CheckType, metrics: DataSourceRef, check
   });
 
   if (singleCheckMode) {
-    console.log('getting variables', checks[0].job, checks[0].target);
     const job = new CustomVariable({
       name: 'job',
       query: checks[0].job,
