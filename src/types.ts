@@ -623,3 +623,14 @@ export interface CheckFiltersType {
   status: SelectableValue<CheckEnabledStatus>;
   probes: SelectableValue[] | [];
 }
+
+export interface ThresholdValues {
+  upperLimit: number;
+  lowerLimit: number;
+}
+export interface ThresholdSettings {
+  [key: string]: ThresholdValues;
+  uptime: ThresholdValues;
+  reachability: ThresholdValues;
+  latency: ThresholdValues;
+}

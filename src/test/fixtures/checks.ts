@@ -11,6 +11,7 @@ import {
   IpVersion,
   Label,
 } from 'types';
+import { AdHocCheckResponse } from 'datasource/responses.types';
 
 import { PRIVATE_PROBE, PUBLIC_PROBE } from './probes';
 
@@ -492,4 +493,13 @@ export const CheckInfo = {
       Series: 22,
     },
   },
+};
+
+export const ADHOC_CHECK_RESULT: AdHocCheckResponse = {
+  id: '123',
+  tenantId: 1,
+  timeout: 1,
+  settings: {},
+  probes: [1],
+  target: 'target',
 };
