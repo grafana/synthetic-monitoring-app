@@ -187,7 +187,7 @@ export const BASIC_DNS_CHECK = {
   },
 };
 
-export const BASIC_K6_CHECK = {
+export const BASIC_SCRIPTED_CHECK = {
   job: 'Job name',
   target: 'https://www.grafana.com',
   enabled: true,
@@ -198,7 +198,7 @@ export const BASIC_K6_CHECK = {
   alertSensitivity: 'none',
   basicMetricsOnly: true,
   settings: {
-    k6: {
+    scripted: {
       script: btoa('console.log("hello world")'),
     },
   },
@@ -363,7 +363,7 @@ export const BASIC_CHECK_LIST = [
   { id: 4, ...BASIC_TCP_CHECK },
   { id: 5, ...CUSTOM_ALERT_SENSITIVITY_CHECK },
   { id: 6, ...BASIC_MULTIHTTP_CHECK },
-  { id: 7, ...BASIC_K6_CHECK },
+  { id: 7, ...BASIC_SCRIPTED_CHECK },
 ] as Check[];
 
 export const EDITED_HTTP_CHECK = {
@@ -480,7 +480,7 @@ export const EDITED_DNS_CHECK = {
   },
 };
 
-export const EDITED_K6_CHECK = {
+export const EDITED_SCRIPTED_CHECK = {
   job: 'different job name',
   target: 'https://www.example.com',
   enabled: true,
@@ -491,7 +491,7 @@ export const EDITED_K6_CHECK = {
   alertSensitivity: 'none',
   basicMetricsOnly: true,
   settings: {
-    k6: {
+    scripted: {
       script: btoa('console.log("goodnight moon")'),
     },
   },

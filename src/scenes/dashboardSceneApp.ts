@@ -15,10 +15,10 @@ import { getSummaryScene } from './Summary';
 export function getDashboardSceneApp(
   config: DashboardSceneAppConfig,
   includeMultiHttp = false,
-  includek6 = false,
+  includeScripted = false,
   checks: Check[]
 ) {
-  const { http, ping, dns, tcp, traceroute, multihttp, k6 } = checks.reduce<Record<CheckType, Check[]>>(
+  const { http, ping, dns, tcp, traceroute, multihttp, scripted } = checks.reduce<Record<CheckType, Check[]>>(
     (acc, check) => {
       const type = checkType(check.settings);
       if (check.enabled) {
@@ -33,7 +33,7 @@ export function getDashboardSceneApp(
       [CheckType.TCP]: [],
       [CheckType.Traceroute]: [],
       [CheckType.MULTI_HTTP]: [],
-      [CheckType.K6]: [],
+      [CheckType.Scripted]: [],
     }
   );
   const tabs = [
@@ -79,11 +79,11 @@ export function getDashboardSceneApp(
     tabs.splice(2, 0, appPage);
   }
 
-  if (includek6) {
+  if (includeScripted) {
     const appPage = new SceneAppPage({
       title: 'SCRIPTED',
       url: `${PLUGIN_URL_PATH}${ROUTES.Scene}/k6`,
-      getScene: getScriptedScene(config, k6, CheckType.K6),
+      getScene: getScriptedScene(config, scripted, CheckType.Scripted),
     });
     tabs.push(appPage);
   }

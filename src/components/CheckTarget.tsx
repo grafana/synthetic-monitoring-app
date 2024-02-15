@@ -70,7 +70,7 @@ const getTargetHelpText = (typeOfCheck: CheckType | undefined): TargetHelpInfo =
       };
       break;
     }
-    case CheckType.K6: {
+    case CheckType.Scripted: {
       resp = {
         text: 'The URL that best describes the target of the check',
         example: `https://grafana.com/`,

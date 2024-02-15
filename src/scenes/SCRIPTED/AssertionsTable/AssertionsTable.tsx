@@ -188,7 +188,7 @@ function AssertionsTable({ model }: SceneComponentProps<AssertionsTableSceneObje
     }
     return (
       <div className={styles.noDataContainer}>
-        {checkType === CheckType.K6 ? (
+        {checkType === CheckType.Scripted ? (
           <p>There are no assertions in this script. You can use k6 Checks to validate conditions in your script.</p>
         ) : (
           <p>There are no assertions in the check. You can use assertions to validate conditions in your check</p>
@@ -197,7 +197,7 @@ function AssertionsTable({ model }: SceneComponentProps<AssertionsTableSceneObje
         <LinkButton
           variant="primary"
           href={
-            checkType === CheckType.K6
+            checkType === CheckType.Scripted
               ? 'https://grafana.com/docs/k6/latest/using-k6/checks/'
               : 'https://grafana.com/docs/grafana-cloud/monitor-public-endpoints/checks/multihttp/#assertions'
           }

@@ -20,7 +20,7 @@ export function ChooseCheckType() {
     if (!multiHttpEnabled && value === CheckType.MULTI_HTTP) {
       return false;
     }
-    if (!scriptedEnabled && value === CheckType.K6) {
+    if (!scriptedEnabled && value === CheckType.Scripted) {
       return false;
     }
     return true;
@@ -43,7 +43,7 @@ export function ChooseCheckType() {
                 {check.value === CheckType.MULTI_HTTP && (
                   <Badge text="Public preview" color="blue" className={styles.experimentalBadge} />
                 )}
-                {check.value === CheckType.K6 && (
+                {check.value === CheckType.Scripted && (
                   <Badge text="Experimental" color="orange" className={styles.experimentalBadge} />
                 )}
               </Card.Heading>

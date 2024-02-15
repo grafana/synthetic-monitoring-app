@@ -80,7 +80,7 @@ function DashboardPageContent() {
           ],
         });
       }
-      case CheckType.K6:
+      case CheckType.Scripted:
       case CheckType.MULTI_HTTP: {
         return new SceneApp({
           pages: [

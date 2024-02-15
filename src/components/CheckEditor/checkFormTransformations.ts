@@ -278,8 +278,8 @@ const getFormSettingsForCheck = (settings: Settings): SettingsFormValues => {
       return { traceroute: getTracerouteSettingsFormValues(settings) };
     case CheckType.MULTI_HTTP:
       return { multihttp: getMultiHttpFormValues(settings) };
-    case CheckType.K6:
-      return { k6: { script: atob(settings.k6?.script ?? '') } };
+    case CheckType.Scripted:
+      return { k6: { script: atob(settings.scripted?.script ?? '') } };
     case CheckType.PING:
     default:
       return { ping: getPingSettingsFormValues(settings) };
@@ -294,7 +294,7 @@ const getAllFormSettingsForCheck = (): SettingsFormValues => {
     ping: getPingSettingsFormValues(fallbackSettings(CheckType.PING)),
     traceroute: getTracerouteSettingsFormValues(fallbackSettings(CheckType.Traceroute)),
     multihttp: getMultiHttpFormValues(fallbackSettings(CheckType.MULTI_HTTP)),
-    k6: fallbackSettings(CheckType.K6).k6,
+    k6: fallbackSettings(CheckType.Scripted).scripted,
   };
 };
 
@@ -738,9 +738,9 @@ const getSettingsFromFormValues = (
           ...getTracerouteSettings(formValues.settings?.traceroute, defaultValues.settings.traceroute),
         },
       };
-    case CheckType.K6:
+    case CheckType.Scripted:
       return {
-        k6: {
+        scripted: {
           script: btoa(formValues.settings?.k6?.script ?? ''),
         },
       };
@@ -804,8 +804,8 @@ export function checkTypeParamToCheckType(checkType?: string): CheckType {
       return CheckType.TCP;
     case CheckType.MULTI_HTTP:
       return CheckType.MULTI_HTTP;
-    case CheckType.K6:
-      return CheckType.K6;
+    case CheckType.Scripted:
+      return CheckType.Scripted;
     default:
       return CheckType.PING;
   }

@@ -51,7 +51,7 @@ function getTimeoutBounds(checkType: CheckType) {
       maxTimeout: 30.0,
     };
   }
-  if (checkType === CheckType.K6) {
+  if (checkType === CheckType.Scripted) {
     return {
       minTimeout: 5.0,
       maxTimeout: 30.0,
@@ -115,7 +115,7 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, checkType }: Props)
         invalid={Boolean(errors.frequency)}
         error={errors.frequency?.message}
       >
-        {checkType === CheckType.Traceroute || checkType === CheckType.K6 ? (
+        {checkType === CheckType.Traceroute || checkType === CheckType.Scripted ? (
           // This is just a placeholder for now, the frequency for traceroute checks is hardcoded in the submit
           <Input value={120} prefix="Every" suffix="seconds" width={20} readOnly />
         ) : (

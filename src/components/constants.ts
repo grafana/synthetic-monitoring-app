@@ -167,7 +167,7 @@ export const CHECK_TYPE_OPTIONS = [
   },
   {
     label: 'Scripted',
-    value: CheckType.K6,
+    value: CheckType.Scripted,
     description: 'Write a K6 script to run custom checks',
   },
 ];
@@ -234,7 +234,7 @@ const fallbackType = {
   ping: fallbackSettings(CheckType.PING),
   traceroute: fallbackSettings(CheckType.Traceroute),
   multihttp: fallbackSettings(CheckType.MULTI_HTTP),
-  k6: fallbackSettings(CheckType.K6),
+  scripted: fallbackSettings(CheckType.Scripted),
 };
 
 export const colors = {
@@ -418,9 +418,9 @@ export function fallbackSettings(t: CheckType): Settings {
         },
       };
     }
-    case CheckType.K6: {
+    case CheckType.Scripted: {
       return {
-        k6: {
+        scripted: {
           script: `import { check } from 'k6'
 import http from 'k6/http'
 

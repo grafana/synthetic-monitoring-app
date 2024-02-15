@@ -54,7 +54,7 @@ function getStyles(theme: GrafanaTheme2) {
   };
 }
 
-export function K6CheckCodeEditor({ checks, onSubmitSuccess }: Props) {
+export function ScriptedCheckCodeEditor({ checks, onSubmitSuccess }: Props) {
   const { id, checkType: checkTypeParam } = useParams<CheckPageParams>();
   let checkType = checkTypeParamToCheckType(checkTypeParam);
   let check: Check = fallbackCheck(checkType);
@@ -84,7 +84,7 @@ export function K6CheckCodeEditor({ checks, onSubmitSuccess }: Props) {
     if (!checkValues.settings.k6) {
       throw new Error('No k6 settings');
     }
-    const toSubmit = getCheckFromFormValues(checkValues, defaultValues, CheckType.K6);
+    const toSubmit = getCheckFromFormValues(checkValues, defaultValues, CheckType.Scripted);
     if (check.id) {
       await instance.api?.updateCheck({
         id: check.id,
@@ -151,7 +151,7 @@ export function K6CheckCodeEditor({ checks, onSubmitSuccess }: Props) {
                 id="target"
                 {...register('target', {
                   required: true,
-                  validate: (value) => validateTarget(CheckType.K6, value),
+                  validate: (value) => validateTarget(CheckType.Scripted, value),
                 })}
               />
             </Field>
@@ -160,7 +160,7 @@ export function K6CheckCodeEditor({ checks, onSubmitSuccess }: Props) {
               isEditor={isEditor}
               frequency={check.frequency}
               timeout={check.timeout}
-              checkType={CheckType.K6}
+              checkType={CheckType.Scripted}
             />
             <LabelField isEditor={isEditor} />
             <CheckFormAlert />

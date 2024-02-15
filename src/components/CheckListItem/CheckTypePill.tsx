@@ -23,7 +23,7 @@ export const CheckTypePill = ({ checkType, onClick, className }: Props) => {
         }
       }}
     >
-      {checkType === CheckType.K6 ? 'SCRIPTED' : checkType.toUpperCase()}
+      {checkType === CheckType.Scripted ? 'SCRIPTED' : checkType.toUpperCase()}
     </Pill>
   );
 };
