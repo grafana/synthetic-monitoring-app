@@ -415,6 +415,7 @@ export function fallbackSettings(t: CheckType): Settings {
           maxHops: 64,
           maxUnknownHops: 15,
           ptrLookup: true,
+          hopTimeout: 0,
         },
       };
     }

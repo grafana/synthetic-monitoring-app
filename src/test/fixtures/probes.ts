@@ -1,8 +1,8 @@
 import { Label, Probe } from 'types';
 
-export const PRIVATE_PROBE: Probe = {
+export const PRIVATE_PROBE = {
   name: 'tacos',
-  id: 32,
+  id: 1,
   public: false,
   latitude: 51.49375,
   longitude: -0.12679,
@@ -17,11 +17,11 @@ export const PRIVATE_PROBE: Probe = {
   deprecated: false,
   modified: 1700000000.0,
   created: 1694212496.731247,
-} as const;
+} as const satisfies Probe;
 
-export const PUBLIC_PROBE: Probe = {
+export const PUBLIC_PROBE = {
   name: 'burritos',
-  id: 42,
+  id: 2,
   public: true,
   latitude: 19.70519,
   longitude: -101.18815,
@@ -33,16 +33,32 @@ export const PUBLIC_PROBE: Probe = {
   deprecated: false,
   modified: 1700000000.0,
   created: 1694212496.731247,
-} as const;
+} as const satisfies Probe;
 
-export const ONLINE_PROBE: Probe = {
+export const ONLINE_PROBE = {
   ...PRIVATE_PROBE,
   online: true,
-} as const;
+} as const satisfies Probe;
 
-export const OFFLINE_PROBE: Probe = {
+export const OFFLINE_PROBE = {
   ...PRIVATE_PROBE,
   online: false,
-} as const;
+} as const satisfies Probe;
 
-export const DEFAULT_PROBES = [PRIVATE_PROBE, PUBLIC_PROBE];
+export const UNSELECTED_PRIVATE_PROBE = {
+  name: 'enchiladas',
+  id: 3,
+  public: false,
+  latitude: 19.70519,
+  longitude: -101.18815,
+  region: 'APAC',
+  labels: [{ name: 'Mr', value: 'Yellow' }] as Label[],
+  online: false,
+  onlineChange: 1700005000.0,
+  version: 'v1',
+  deprecated: false,
+  modified: 1700000000.0,
+  created: 1694212496.731247,
+} as const satisfies Probe;
+
+export const DEFAULT_PROBES = [PRIVATE_PROBE, PUBLIC_PROBE, UNSELECTED_PRIVATE_PROBE];

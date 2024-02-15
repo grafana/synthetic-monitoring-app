@@ -1,8 +1,8 @@
 import React from 'react';
 import { screen, waitFor, waitForElementToBeRemoved } from '@testing-library/react';
+import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { createInstance, render } from 'test/render';
 
-import { Check } from 'types';
 import * as utils from 'utils';
 import { SuccessRateTypes } from 'contexts/SuccessRateContext';
 
@@ -11,15 +11,13 @@ import { SuccessRateGauge } from './SuccessRateGauge';
 
 const renderSuccessRateGauge = () => {
   const instance = createInstance();
-  instance.api.listChecks = jest
-    .fn()
-    .mockResolvedValue([{ id: 4, job: 'burritos', target: 'tacos', settings: { http: {} } } as Check]);
+
   return waitFor(() =>
     render(
       <SuccessRateContextProvider>
         <SuccessRateGauge
           title="Reachability"
-          id={4}
+          id={BASIC_HTTP_CHECK.id!}
           type={SuccessRateTypes.Checks}
           height={200}
           width={200}
@@ -38,6 +36,7 @@ test('shows a value if data', async () => {
 });
 
 test('shows N/A if no data', async () => {
+  // TODO: MSW THIS
   jest.spyOn(utils, 'queryMetric').mockImplementation(() =>
     Promise.resolve({
       data: [

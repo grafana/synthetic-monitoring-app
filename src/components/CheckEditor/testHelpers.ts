@@ -1,7 +1,8 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import { UserEvent } from '@testing-library/user-event';
+import { PRIVATE_PROBE } from 'test/fixtures/probes';
 
-import { CheckType } from 'types';
+import { CheckType, Label } from 'types';
 import { DNS_RESPONSE_MATCH_OPTIONS } from 'components/constants';
 
 export const selectCheckType = async (checkType: CheckType, user: UserEvent) => {
@@ -31,7 +32,7 @@ export const getSlider = async (formName: string) => {
   return input;
 };
 
-export const fillBasicCheckFields = async (jobName: string, target: string, user: UserEvent) => {
+export const fillBasicCheckFields = async (jobName: string, target: string, user: UserEvent, labels: Label[]) => {
   const jobNameInput = await screen.findByLabelText('Job Name', { exact: false });
   await user.type(jobNameInput, jobName);
   const targetInput = await screen.findByTestId('check-editor-target');
@@ -43,17 +44,20 @@ export const fillBasicCheckFields = async (jobName: string, target: string, user
     throw new Error('Couldnt find Probe Options');
   }
 
-  // Select burritos probe options
+  // Select probe options
   const probeSelectMenu = await within(probeOptions).findByTestId('select');
-  await user.selectOptions(probeSelectMenu, within(probeSelectMenu).getByText('burritos'));
+  await user.selectOptions(probeSelectMenu, within(probeSelectMenu).getByText(PRIVATE_PROBE.name));
 
   await toggleSection('Advanced options', user);
-  const addLabel = await screen.findByRole('button', { name: 'Add label' });
-  await user.click(addLabel);
-  const labelNameInput = await screen.findByPlaceholderText('name');
-  await user.type(labelNameInput, 'labelName');
-  const labelValueInput = await screen.findByPlaceholderText('value');
-  await user.type(labelValueInput, 'labelValue');
+
+  for (const label of labels) {
+    const addLabel = await screen.findByRole('button', { name: 'Add label' });
+    await user.click(addLabel);
+    const labelNameInput = await screen.findByPlaceholderText('name');
+    await user.type(labelNameInput, label.name);
+    const labelValueInput = await screen.findByPlaceholderText('value');
+    await user.type(labelValueInput, label.value);
+  }
 };
 
 export const fillDnsValidationFields = async (user: UserEvent) => {
