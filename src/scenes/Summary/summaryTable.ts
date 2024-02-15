@@ -208,31 +208,26 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
       {
         id: 'organize',
         options: {
-          excludeByName: {
-            hidden: true, // A bunch of fields that get duplicated by the multiple queries have been renamed to hidden via regex above, so we can exclude them all at once
-            alertSensitivity: true,
-            basicMetricsOnly: true,
-            created: true,
-            enabled: true,
-            frequency: true,
-            labels: true,
-            modified: true,
-            offset: true,
-            probes: true,
-            settings: true,
-            tenantId: true,
-            timeout: true,
+          includeByName: {
+            job: true,
+            // instance: true,
+            'check type': true,
+            target: true,
+            'Value #state (mean)': true,
+            'Value #uptime (mean)': true,
+            'Value #reachability (mean)': true,
+            'Value #latency (mean)': true,
+            id: 9,
           },
-          includeByName: {},
           indexByName: {
             job: 0,
-            instance: 8,
             'check type': 3,
             target: 2,
             'Value #state (mean)': 4,
             'Value #uptime (mean)': 5,
             'Value #reachability (mean)': 6,
             'Value #latency (mean)': 7,
+            id: 8,
           },
           renameByName: {
             'Value #latency': 'latency',
@@ -330,6 +325,28 @@ function getFieldOverrides() {
           value: {
             mode: 'thresholds',
           },
+        },
+      ],
+    },
+    {
+      matcher: {
+        id: 'byName',
+        options: 'check type',
+      },
+      properties: [
+        {
+          id: 'mappings',
+          value: [
+            {
+              type: 'value',
+              options: {
+                k6: {
+                  text: 'scripted',
+                  index: 0,
+                },
+              },
+            },
+          ],
         },
       ],
     },
