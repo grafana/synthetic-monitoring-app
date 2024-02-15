@@ -1,12 +1,12 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
+import { PRIVATE_PROBE } from 'test/fixtures/probes';
 import { render } from 'test/render';
 
-import { CheckType, ROUTES } from 'types';
+import { AlertSensitivity, CheckType, HttpMethod, IpVersion, ROUTES } from 'types';
 import { PLUGIN_URL_PATH } from 'components/constants';
 
 import { CheckEditor } from './CheckEditor';
-import { BASIC_DNS_CHECK, BASIC_HTTP_CHECK, BASIC_PING_CHECK, BASIC_TCP_CHECK } from './testConstants';
 import { fillBasicCheckFields, fillDnsValidationFields, fillTCPQueryResponseFields, submitForm } from './testHelpers';
 
 jest.setTimeout(60000);
@@ -80,39 +80,162 @@ describe('new checks', () => {
     expect(advancedOptions).toBeInTheDocument();
   });
 
+  const name = 'Job name';
+  const labels = [{ name: 'foo', value: 'bar' }];
+
   it('can create a new HTTP check', async () => {
     const { instance, user } = await renderNewCheckEditor(CheckType.HTTP);
+    const url = 'https://grafana.com';
 
-    await fillBasicCheckFields('Job name', 'https://grafana.com', user);
+    await fillBasicCheckFields(name, url, user, labels);
     await submitForm(onReturn, user);
-    expect(instance.api?.addCheck).toHaveBeenCalledWith(BASIC_HTTP_CHECK);
+    expect(instance.api?.addCheck).toHaveBeenCalledWith({
+      probes: [PRIVATE_PROBE.id],
+      job: name,
+      target: url,
+      labels,
+      alertSensitivity: AlertSensitivity.None,
+      enabled: true,
+      frequency: 60000,
+      timeout: 3000,
+      basicMetricsOnly: true,
+      settings: {
+        http: {
+          method: HttpMethod.GET,
+          ipVersion: IpVersion.V4,
+          noFollowRedirects: false,
+          validStatusCodes: [],
+          validHTTPVersions: [],
+          headers: [],
+          proxyConnectHeaders: [],
+          body: '',
+          proxyURL: '',
+          cacheBustingQueryParamName: '',
+          compression: undefined,
+          failIfNotSSL: false,
+          failIfSSL: false,
+          failIfBodyMatchesRegexp: [],
+          failIfBodyNotMatchesRegexp: [],
+          failIfHeaderMatchesRegexp: [],
+          failIfHeaderNotMatchesRegexp: [],
+          tlsConfig: {
+            clientCert: '',
+            caCert: '',
+            clientKey: '',
+            insecureSkipVerify: false,
+            serverName: '',
+          },
+        },
+      },
+    });
   });
 
   it('can create a new PING check', async () => {
     const { instance, user } = await renderNewCheckEditor(CheckType.PING);
+    const url = 'grafana.com';
 
-    await fillBasicCheckFields('Job name', 'grafana.com', user);
+    await fillBasicCheckFields(name, url, user, labels);
     await submitForm(onReturn, user);
-    expect(instance.api?.addCheck).toHaveBeenCalledWith(BASIC_PING_CHECK);
+    expect(instance.api?.addCheck).toHaveBeenCalledWith({
+      probes: [PRIVATE_PROBE.id],
+      job: name,
+      target: url,
+      labels,
+      alertSensitivity: AlertSensitivity.None,
+      enabled: true,
+      frequency: 60000,
+      timeout: 3000,
+      basicMetricsOnly: true,
+      settings: {
+        ping: {
+          dontFragment: false,
+          ipVersion: IpVersion.V4,
+        },
+      },
+    });
   });
 
   it('can create a new TCP check', async () => {
     const { instance, user } = await renderNewCheckEditor(CheckType.TCP);
+    const url = 'grafana.com:43';
 
-    await fillBasicCheckFields('Job name', 'grafana.com:43', user);
-
+    await fillBasicCheckFields(name, url, user, labels);
     await fillTCPQueryResponseFields(user);
     await submitForm(onReturn, user);
-    expect(instance.api?.addCheck).toHaveBeenCalledWith(BASIC_TCP_CHECK);
+
+    expect(instance.api?.addCheck).toHaveBeenCalledWith({
+      probes: [PRIVATE_PROBE.id],
+      job: name,
+      target: url,
+      labels,
+      alertSensitivity: AlertSensitivity.None,
+      enabled: true,
+      frequency: 60000,
+      timeout: 3000,
+      basicMetricsOnly: true,
+      settings: {
+        tcp: {
+          queryResponse: [
+            {
+              expect: `U1RBUlRUTFM=`,
+              send: 'UVVJVA==',
+              startTLS: false,
+            },
+          ],
+          ipVersion: IpVersion.V4,
+          tls: false,
+          tlsConfig: {
+            caCert: '',
+            clientCert: '',
+            clientKey: '',
+            insecureSkipVerify: false,
+            serverName: '',
+          },
+        },
+      },
+    });
   });
 
   it('can create a new DNS check', async () => {
     const { instance, user } = await renderNewCheckEditor(CheckType.DNS);
+    const url = 'grafana.com';
 
-    await fillBasicCheckFields('Job name', 'grafana.com', user);
+    await fillBasicCheckFields(name, url, user, labels);
     await fillDnsValidationFields(user);
 
     await submitForm(onReturn, user);
-    expect(instance.api?.addCheck).toHaveBeenCalledWith(BASIC_DNS_CHECK);
+    expect(instance.api?.addCheck).toHaveBeenCalledWith({
+      probes: [PRIVATE_PROBE.id],
+      job: name,
+      target: url,
+      labels,
+      alertSensitivity: AlertSensitivity.None,
+      enabled: true,
+      frequency: 60000,
+      timeout: 3000,
+      basicMetricsOnly: true,
+      settings: {
+        dns: {
+          ipVersion: 'V4',
+          port: 53,
+          protocol: 'UDP',
+          recordType: 'A',
+          server: 'dns.google',
+          validRCodes: ['NOERROR'],
+          validateAditionalRRS: {
+            failIfMatchesRegexp: [],
+            failIfNotMatchesRegexp: [],
+          },
+          validateAnswerRRS: {
+            failIfMatchesRegexp: [],
+            failIfNotMatchesRegexp: [],
+          },
+          validateAuthorityRRS: {
+            failIfMatchesRegexp: ['inverted validation'],
+            failIfNotMatchesRegexp: ['not inverted validation'],
+          },
+        },
+      },
+    });
   });
 });

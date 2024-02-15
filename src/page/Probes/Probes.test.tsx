@@ -1,29 +1,29 @@
 import React from 'react';
 import { screen, within } from '@testing-library/react';
 import { DataTestIds } from 'test/dataTestIds';
-import { DEFAULT_PROBES, OFFLINE_PROBE, ONLINE_PROBE, PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures';
+import { DEFAULT_PROBES, OFFLINE_PROBE, ONLINE_PROBE, PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import { render } from 'test/render';
 
-import { ROUTES } from 'types';
+import { Probe, ROUTES } from 'types';
 import { getRoute } from 'components/Routing';
 
 import { Probes } from './Probes';
 import 'test/silenceErrors';
 
-const renderProbeList = ({ probes = DEFAULT_PROBES } = {}) => {
+const renderProbeList = (probes: Probe[] = DEFAULT_PROBES) => {
   return render(<Probes probes={probes} loading={false} error={null} />);
 };
 
 it('renders offline probes', async () => {
   const probes = [OFFLINE_PROBE];
-  renderProbeList({ probes });
+  renderProbeList(probes);
   const onlineStatus = await screen.findAllByText('Offline');
   expect(onlineStatus.length).toBe(probes.length);
 });
 
 it('renders online probes', async () => {
   const probes = [ONLINE_PROBE];
-  renderProbeList({ probes });
+  renderProbeList(probes);
   const onlineStatus = await screen.findAllByText('Online');
   expect(onlineStatus.length).toBe(probes.length);
 });

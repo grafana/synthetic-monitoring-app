@@ -1,35 +1,11 @@
 import React from 'react';
 import { waitFor } from '@testing-library/react';
+import { BASIC_PING_CHECK } from 'test/fixtures/checks';
 import { render } from 'test/render';
-
-import { AlertSensitivity, Check } from 'types';
 
 import { CheckHealth } from './CheckHealth';
 
-const defaultCheck = {
-  basicMetricsOnly: true,
-  id: 2,
-  alertSensitivity: AlertSensitivity.None,
-  tenantId: 1,
-  frequency: 60000,
-  offset: 0,
-  timeout: 2500,
-  enabled: true,
-  labels: [],
-  settings: {
-    ping: {
-      ipVersion: 'V4',
-      dontFragment: false,
-    },
-  },
-  probes: [1],
-  target: 'grafana.com',
-  job: 'tacos',
-  created: 1597928927.7490728,
-  modified: 1597928927.7490728,
-} as Check;
-
-const renderCheckHealth = (check: Check = defaultCheck) => {
+const renderCheckHealth = (check = BASIC_PING_CHECK) => {
   return render(<CheckHealth check={check} />);
 };
 

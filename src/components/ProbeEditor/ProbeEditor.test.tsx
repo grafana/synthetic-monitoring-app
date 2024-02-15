@@ -1,6 +1,6 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
-import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures';
+import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import { render } from 'test/render';
 import { fillProbeForm, runTestAsViewer, UPDATED_VALUES } from 'test/utils';
 

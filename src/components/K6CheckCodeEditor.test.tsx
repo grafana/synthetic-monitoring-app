@@ -1,10 +1,11 @@
 import React from 'react';
 import { within } from '@testing-library/react';
+import { BASIC_CHECK_LIST, BASIC_K6_CHECK } from 'test/fixtures/checks';
+import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import { render } from 'test/render';
 
-import { ROUTES } from 'types';
+import { AlertSensitivity, ROUTES } from 'types';
 
-import { BASIC_CHECK_LIST, BASIC_K6_CHECK, EDITED_K6_CHECK } from './CheckEditor/testConstants';
 import { submitForm } from './CheckEditor/testHelpers';
 import { PLUGIN_URL_PATH } from './constants';
 import { K6CheckCodeEditor } from './K6CheckCodeEditor';
@@ -32,15 +33,21 @@ describe('new scripted check', () => {
     const { findByText } = render(<K6CheckCodeEditor checks={[]} onSubmitSuccess={onReturn} />);
     expect(await findByText('Add a scripted check')).toBeInTheDocument();
   });
+
   it('creates a new k6 check', async () => {
     const { instance, user, findByLabelText, getByText, findByTestId, findByRole, findByPlaceholderText } = render(
       <K6CheckCodeEditor checks={[]} onSubmitSuccess={onReturn} />
     );
 
+    const JOB_NAME = 'New k6 check';
+    const TARGET = 'https://www.k6.com';
+    const LABEL = { name: 'k6labelname', value: 'k6labelvalue' };
+    const SCRIPT = 'console.log("hello world")';
+
     const jobNameInput = await findByLabelText('Job name', { exact: false });
-    await user.type(jobNameInput, 'Job name');
+    await user.type(jobNameInput, JOB_NAME);
     const targetInput = await findByLabelText('Instance', { exact: false });
-    await user.type(targetInput, 'https://www.grafana.com');
+    await user.type(targetInput, TARGET);
 
     // Set probe options
     const probeOptions = getByText('Probe options').parentElement;
@@ -48,23 +55,38 @@ describe('new scripted check', () => {
       throw new Error('Couldnt find Probe Options');
     }
 
-    // Select burritos probe options
     const probeSelectMenu = await within(probeOptions).findByTestId('select');
-    await user.selectOptions(probeSelectMenu, within(probeSelectMenu).getByText('burritos'));
+    await user.selectOptions(probeSelectMenu, within(probeSelectMenu).getByText(PRIVATE_PROBE.name));
 
     const addLabel = await findByRole('button', { name: 'Add label' });
     await user.click(addLabel);
     const labelNameInput = await findByPlaceholderText('name');
-    await user.type(labelNameInput, 'labelName');
+    await user.type(labelNameInput, LABEL.name);
     const labelValueInput = await findByPlaceholderText('value');
-    await user.type(labelValueInput, 'labelValue');
+    await user.type(labelValueInput, LABEL.value);
 
     const codeEditor = await findByTestId('code-editor');
     codeEditor.focus();
     await user.clear(codeEditor);
-    await user.type(codeEditor, 'console.log("hello world")');
+    await user.type(codeEditor, SCRIPT);
     await submitForm(onReturn, user);
-    expect(instance.api?.addCheck).toHaveBeenCalledWith(BASIC_K6_CHECK);
+
+    expect(instance.api?.addCheck).toHaveBeenCalledWith({
+      job: JOB_NAME,
+      target: TARGET,
+      probes: [PRIVATE_PROBE.id],
+      labels: [LABEL],
+      settings: {
+        k6: {
+          script: btoa(SCRIPT),
+        },
+      },
+      alertSensitivity: AlertSensitivity.None,
+      basicMetricsOnly: true,
+      enabled: true,
+      frequency: 60000,
+      timeout: 10000,
+    });
   });
 });
 
@@ -74,45 +96,44 @@ describe('edit scripted check', () => {
       <K6CheckCodeEditor checks={BASIC_CHECK_LIST} onSubmitSuccess={onReturn} />,
       {
         route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`,
-        path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/7`,
+        path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/${BASIC_K6_CHECK.id}`,
       }
     );
-
     const jobNameInput = await findByLabelText('Job name', { exact: false });
-    expect(jobNameInput).toHaveValue('Job name');
+    expect(jobNameInput).toHaveValue(BASIC_K6_CHECK.job);
     const targetInput = await findByLabelText('Instance', { exact: false });
-    expect(targetInput).toHaveValue('https://www.grafana.com');
+    expect(targetInput).toHaveValue(BASIC_K6_CHECK.target);
 
-    // probes
-    expect(await findByText('burritos')).toBeInTheDocument();
-
+    expect(await findByText(PRIVATE_PROBE.name)).toBeInTheDocument();
     const labelNameInput = await findByPlaceholderText('name');
-    expect(labelNameInput).toHaveValue('labelName');
+    expect(labelNameInput).toHaveValue(BASIC_K6_CHECK.labels[0].name);
     const labelValueInput = await findByPlaceholderText('value');
-    expect(labelValueInput).toHaveValue('labelValue');
-
+    expect(labelValueInput).toHaveValue(BASIC_K6_CHECK.labels[0].value);
     const codeEditor = await findByTestId('code-editor');
-    expect(codeEditor).toHaveValue('console.log("hello world")');
+    expect(codeEditor).toHaveValue(atob(BASIC_K6_CHECK.settings.k6?.script!));
     await submitForm(onReturn, user);
-    expect(instance.api?.updateCheck).toHaveBeenCalledWith({ ...BASIC_K6_CHECK, tenantId: undefined, id: 7 });
+
+    expect(instance.api?.updateCheck).toHaveBeenCalledWith(BASIC_K6_CHECK);
   });
 
   it('handles editing correctly', async () => {
+    const NEW_JOB_NAME = 'different job name';
+    const NEW_TARGET_URL = 'https://www.example.com';
+    const NEW_LABEL = { name: 'adifferentlabelname', value: 'adifferentlabelValue' };
+    const NEW_SCRIPT = 'console.log("goodnight moon")';
     const { instance, user, findByLabelText, findByTestId, findByPlaceholderText, getByText } = render(
       <K6CheckCodeEditor checks={BASIC_CHECK_LIST} onSubmitSuccess={onReturn} />,
       {
         route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`,
-        path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/7`,
+        path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/${BASIC_K6_CHECK.id}`,
       }
     );
-
     const jobNameInput = await findByLabelText('Job name', { exact: false });
     await user.clear(jobNameInput);
-    await user.type(jobNameInput, 'different job name');
+    await user.type(jobNameInput, NEW_JOB_NAME);
     const targetInput = await findByLabelText('Instance', { exact: false });
     await user.clear(targetInput);
-    await user.type(targetInput, 'https://www.example.com');
-
+    await user.type(targetInput, NEW_TARGET_URL);
     // probes
     // Set probe options
     const probeOptions = getByText('Probe options').parentElement;
@@ -120,21 +141,31 @@ describe('edit scripted check', () => {
       throw new Error('Couldnt find Probe Options');
     }
 
-    // Select burritos probe options
     const probeSelectMenu = await within(probeOptions).findByTestId('select');
-    await user.selectOptions(probeSelectMenu, within(probeSelectMenu).getByText('tacos'));
-
+    await user.selectOptions(probeSelectMenu, within(probeSelectMenu).getByText(PUBLIC_PROBE.name));
     const labelNameInput = await findByPlaceholderText('name');
     await user.clear(labelNameInput);
-    await user.type(labelNameInput, 'adifferentlabelname');
+    await user.type(labelNameInput, NEW_LABEL.name);
     const labelValueInput = await findByPlaceholderText('value');
     await user.clear(labelValueInput);
-    await user.type(labelValueInput, 'adifferentlabelValue');
-
+    await user.type(labelValueInput, NEW_LABEL.value);
     const codeEditor = await findByTestId('code-editor');
     await user.clear(codeEditor);
-    await user.type(codeEditor, 'console.log("goodnight moon")');
+    await user.type(codeEditor, NEW_SCRIPT);
     await submitForm(onReturn, user);
-    expect(instance.api?.updateCheck).toHaveBeenCalledWith({ ...EDITED_K6_CHECK, tenantId: undefined, id: 7 });
+
+    expect(instance.api?.updateCheck).toHaveBeenCalledWith({
+      ...BASIC_K6_CHECK,
+      job: NEW_JOB_NAME,
+      target: NEW_TARGET_URL,
+      probes: [PUBLIC_PROBE.id],
+      labels: [NEW_LABEL],
+      tenantId: undefined,
+      settings: {
+        k6: {
+          script: btoa(NEW_SCRIPT),
+        },
+      },
+    });
   });
 });
