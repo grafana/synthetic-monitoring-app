@@ -109,10 +109,18 @@ export interface TracesByHost {
 export enum AccountingClassNames {
   dns = 'dns',
   dns_basic = 'dns_basic',
+  grpc = 'grpc',
+  grpc_basic = 'grpc_basic',
+  grpc_ssl = 'grpc_ssl',
+  grpc_ssl_basic = 'grpc_ssl_basic',
   http = 'http',
   http_basic = 'http_basic',
   http_ssl = 'http_ssl',
   http_ssl_basic = 'http_ssl_basic',
+  k6 = 'k6',
+  k6_basic = 'k6_basic',
+  multihttp = 'multihttp',
+  multihttp_basic = 'multihttp_basic',
   ping = 'ping',
   ping_basic = 'ping_basic',
   tcp = 'tcp',
@@ -121,7 +129,6 @@ export enum AccountingClassNames {
   tcp_ssl_basic = 'tcp_ssl_basic',
   traceroute = 'traceroute',
   traceroute_basic = 'traceroute_basic',
-  multihttp_basic = 'multihttp_basic',
 }
 
 interface AccountingClass {

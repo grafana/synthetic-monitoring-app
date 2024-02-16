@@ -17,6 +17,7 @@ import {
   AddProbeResult,
   AdHocCheckResponse,
   BulkUpdateCheckResult,
+  CheckInfoResult,
   DeleteCheckResult,
   DeleteProbeResult,
   ListCheckResult,
@@ -27,7 +28,7 @@ import {
   UpdateProbeResult,
   UpdateTenantSettingsResult,
 } from './responses.types';
-import { CheckInfo, QueryType, SMOptions, SMQuery } from './types';
+import { QueryType, SMOptions, SMQuery } from './types';
 import { findLinkedDatasource, getRandomProbes, queryLogs } from 'utils';
 
 import { parseTracerouteLogs } from './traceroute-utils';
@@ -186,7 +187,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
 
   async getCheckInfo() {
     return firstValueFrom(
-      getBackendSrv().fetch<CheckInfo>({
+      getBackendSrv().fetch<CheckInfoResult>({
         method: 'GET',
         url: `${this.instanceSettings.url}/sm/checks/info`,
       })
@@ -205,7 +206,10 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
         method: 'GET',
         url: `${this.instanceSettings.url}/sm/probe/list`,
       })
-    ).then((res) => res.data);
+    ).then((res) => {
+      console.log(res.data);
+      return res.data;
+    });
   }
 
   async addProbe(probe: Probe) {
@@ -286,15 +290,13 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   }
 
   async testCheck(check: Check) {
-    const randomSelection = getRandomProbes(check.probes, 5);
-    check.probes = randomSelection;
-    const { id, ...rest } = check;
+    const payload = getTestPayload(check);
 
     return firstValueFrom(
       getBackendSrv().fetch<AdHocCheckResponse>({
         method: 'POST',
         url: `${this.instanceSettings.url}/sm/check/adhoc`,
-        data: rest,
+        data: payload,
       })
     ).then((res) => {
       return res.data;
@@ -493,4 +495,21 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       message: 'unable to connect',
     };
   }
+}
+
+function getTestPayload(check: Check) {
+  const randomSelection = getRandomProbes(check.probes, 5);
+
+  if (check.id) {
+    const { id, ...rest } = check;
+    return {
+      ...rest,
+      probes: randomSelection,
+    };
+  }
+
+  return {
+    ...check,
+    probes: randomSelection,
+  };
 }

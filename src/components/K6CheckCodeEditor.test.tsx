@@ -2,7 +2,9 @@ import React from 'react';
 import { within } from '@testing-library/react';
 import { BASIC_K6_CHECK } from 'test/fixtures/checks';
 import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
+import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
+import { server } from 'test/server';
 
 import { AlertSensitivity, ROUTES } from 'types';
 
@@ -34,7 +36,9 @@ describe('new scripted check', () => {
   });
 
   it('creates a new k6 check', async () => {
-    const { instance, user, findByLabelText, getByText, findByTestId, findByRole, findByPlaceholderText } = render(
+    const { record, read } = getServerRequests();
+    server.use(apiRoute(`addCheck`, {}, record));
+    const { user, findByLabelText, getByText, findByTestId, findByRole, findByPlaceholderText } = render(
       <K6CheckCodeEditor />
     );
 
@@ -70,7 +74,9 @@ describe('new scripted check', () => {
     await user.type(codeEditor, SCRIPT);
     await submitForm(user);
 
-    expect(instance.api?.addCheck).toHaveBeenCalledWith({
+    const { body } = await read();
+
+    expect(body).toEqual({
       job: JOB_NAME,
       target: TARGET,
       probes: [PRIVATE_PROBE.id],
@@ -91,13 +97,13 @@ describe('new scripted check', () => {
 
 describe('edit scripted check', () => {
   it('populates correct values in form', async () => {
-    const { instance, user, findByLabelText, findByTestId, findByPlaceholderText, findByText } = render(
-      <K6CheckCodeEditor />,
-      {
-        route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`,
-        path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/${BASIC_K6_CHECK.id}`,
-      }
-    );
+    const { record, read } = getServerRequests();
+    server.use(apiRoute(`updateCheck`, {}, record));
+
+    const { user, findByLabelText, findByTestId, findByPlaceholderText, findByText } = render(<K6CheckCodeEditor />, {
+      route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`,
+      path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/${BASIC_K6_CHECK.id}`,
+    });
     const jobNameInput = await findByLabelText('Job name', { exact: false });
     expect(jobNameInput).toHaveValue(BASIC_K6_CHECK.job);
     const targetInput = await findByLabelText('Instance', { exact: false });
@@ -112,7 +118,9 @@ describe('edit scripted check', () => {
     expect(codeEditor).toHaveValue(atob(BASIC_K6_CHECK.settings.k6?.script!));
     await submitForm(user);
 
-    expect(instance.api?.updateCheck).toHaveBeenCalledWith(BASIC_K6_CHECK);
+    const { body } = await read();
+
+    expect(body).toEqual(BASIC_K6_CHECK);
   });
 
   it('handles editing correctly', async () => {
@@ -120,13 +128,13 @@ describe('edit scripted check', () => {
     const NEW_TARGET_URL = 'https://www.example.com';
     const NEW_LABEL = { name: 'adifferentlabelname', value: 'adifferentlabelValue' };
     const NEW_SCRIPT = 'console.log("goodnight moon")';
-    const { instance, user, findByLabelText, findByTestId, findByPlaceholderText, getByText } = render(
-      <K6CheckCodeEditor />,
-      {
-        route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`,
-        path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/${BASIC_K6_CHECK.id}`,
-      }
-    );
+
+    const { record, read } = getServerRequests();
+    server.use(apiRoute(`updateCheck`, {}, record));
+    const { user, findByLabelText, findByTestId, findByPlaceholderText, getByText } = render(<K6CheckCodeEditor />, {
+      route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`,
+      path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/${BASIC_K6_CHECK.id}`,
+    });
     const jobNameInput = await findByLabelText('Job name', { exact: false });
     await user.clear(jobNameInput);
     await user.type(jobNameInput, NEW_JOB_NAME);
@@ -153,7 +161,9 @@ describe('edit scripted check', () => {
     await user.type(codeEditor, NEW_SCRIPT);
     await submitForm(user);
 
-    expect(instance.api?.updateCheck).toHaveBeenCalledWith({
+    const { body } = await read();
+
+    expect(body).toEqual({
       ...BASIC_K6_CHECK,
       job: NEW_JOB_NAME,
       target: NEW_TARGET_URL,

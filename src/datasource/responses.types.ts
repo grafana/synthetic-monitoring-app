@@ -1,4 +1,5 @@
-import { Check, Probe, Settings, ThresholdSettings } from 'types';
+import { AlertRule, Check, Probe, Settings, ThresholdSettings } from 'types';
+import { AccountingClassNames, DashboardInfo } from 'datasource/types';
 
 export type ListProbeResult = Probe[];
 
@@ -14,6 +15,10 @@ export type DeleteProbeResult = {
 
 export type UpdateProbeResult = {
   probe: Probe;
+};
+
+export type ResetProbeTokenResult = UpdateProbeResult & {
+  token: string;
 };
 
 export type ListCheckResult = Check[];
@@ -40,9 +45,38 @@ export type AdHocCheckResponse = {
   target: string;
 };
 
-export type ResetProbeTokenResult = {
-  probe: Probe;
-  token: string;
+interface AccountingClass {
+  CheckClass: number;
+  CheckType: number;
+  Series: number;
+}
+
+type CheckAccountingClasses = {
+  [key in AccountingClassNames]: AccountingClass;
+};
+
+export type CheckInfoResult = {
+  AccountingClasses: CheckAccountingClasses;
+};
+
+type Remote = {
+  name: string;
+  password: string;
+  url: string;
+  username: string;
+};
+
+export type TenantResponse = {
+  created: Time;
+  eventsRemote: Remote;
+  id: number;
+  limits: null;
+  metricsRemote: Remote;
+  modified: Time;
+  orgId: number;
+  reason: string;
+  stackId: number;
+  status: number;
 };
 
 export type ListTenantSettingsResult = {
@@ -62,6 +96,14 @@ export interface Metric {
   value: [Time, string];
 }
 
+export interface MetricDatasourceResponse<T> {
+  status: string;
+  data: {
+    result: T[];
+    resultType: string;
+  };
+}
+
 export interface MetricProbeSuccessRate extends Metric {
   metric: {
     probe: string;
@@ -78,3 +120,10 @@ export interface MetricCheckSuccess extends Metric {
 export interface MetricLatency extends Metric {
   metric: {};
 }
+
+export type DashboardResponse = DashboardInfo;
+
+export type ListAlertsResponse = {
+  name: string;
+  rules: AlertRule[];
+};

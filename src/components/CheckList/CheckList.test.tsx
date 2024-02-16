@@ -1,11 +1,16 @@
 import React from 'react';
 import { screen, waitFor, waitForElementToBeRemoved } from '@testing-library/react';
-import { createInstance, render } from 'test/render';
+import { BASIC_CHECK_LIST, BASIC_DNS_CHECK, BASIC_HTTP_CHECK } from 'test/fixtures/checks';
+import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
+import { apiRoute, getServerRequests } from 'test/handlers';
+import { render } from 'test/render';
+import { server } from 'test/server';
 
-import { Check, CheckSort, ROUTES } from 'types';
+import { CheckSort, ROUTES } from 'types';
 import { PLUGIN_URL_PATH } from 'components/constants';
 
 import { CheckList } from './CheckList';
+import { Check } from 'types';
 
 jest.mock('hooks/useNavigation', () => {
   const actual = jest.requireActual('hooks/useNavigation');
@@ -18,109 +23,19 @@ const useNavigationHook = require('hooks/useNavigation');
 
 jest.setTimeout(20000);
 
-interface RenderChecklist {
-  checks?: Check[];
-}
-
-const defaultChecks = [
-  {
-    id: 2,
-    tenantId: 1,
-    frequency: 60000,
-    offset: 0,
-    timeout: 2500,
-    enabled: true,
-    labels: [],
-    settings: {
-      ping: {
-        ipVersion: 'V4',
-        dontFragment: false,
+const renderCheckList = (checks = BASIC_CHECK_LIST) => {
+  server.use(
+    apiRoute(`listChecks`, {
+      result: () => {
+        return {
+          json: checks,
+        };
       },
-    },
-    probes: [1],
-    target: 'grafana.com',
-    job: 'tacos',
-    created: 1597928927.7490728,
-    modified: 1597928927.7490728,
-  },
-  {
-    id: 1,
-    tenantId: 1,
-    frequency: 60000,
-    offset: 0,
-    timeout: 2500,
-    enabled: true,
-    labels: [],
-    settings: {
-      ping: {
-        ipVersion: 'V4',
-        dontFragment: false,
-      },
-    },
-    probes: [1],
-    target: 'nachos.com',
-    job: 'burritos',
-    created: 1597928913.872104,
-    modified: 1597928913.872104,
-  },
-  {
-    id: 3,
-    tenantId: 1,
-    frequency: 60000,
-    offset: 0,
-    timeout: 2500,
-    enabled: true,
-    labels: [
-      {
-        name: 'carne',
-        value: 'asada',
-      },
-    ],
-    settings: {
-      http: {
-        ipVersion: 'V4',
-        dontFragment: false,
-      },
-    },
-    probes: [22],
-    target: 'example.com',
-    job: 'chimichurri',
-    created: 1597928965.8595479,
-    modified: 1597928965.8595479,
-  },
-  {
-    id: 4,
-    tenantId: 1,
-    frequency: 60000,
-    offset: 0,
-    timeout: 2500,
-    enabled: false,
-    labels: [
-      {
-        name: 'agreat',
-        value: 'label',
-      },
-    ],
-    settings: {
-      ping: {
-        ipVersion: 'V4',
-        dontFragment: false,
-      },
-    },
-    probes: [1, 22],
-    target: 'grafana.com',
-    job: 'test3',
-    created: 1597934254.494585,
-  },
-] as Check[];
-
-const renderCheckList = ({ checks = defaultChecks } = {} as RenderChecklist) => {
-  const instance = createInstance();
-  instance.api.listChecks = jest.fn(() => Promise.resolve(checks));
+    })
+  );
 
   return waitFor(() =>
     render(<CheckList />, {
-      instance,
       path: `${PLUGIN_URL_PATH}${ROUTES.Checks}`,
     })
   );
@@ -131,7 +46,7 @@ beforeEach(() => {
 });
 
 test('renders empty state', async () => {
-  await renderCheckList({ checks: [] });
+  await renderCheckList([]);
   const emptyWarning = await screen.findByText('This account does not currently have any checks configured', {
     exact: false,
   });
@@ -141,96 +56,85 @@ test('renders empty state', async () => {
 test('renders list of checks', async () => {
   await renderCheckList();
   const checks = await screen.findAllByTestId('check-card');
-  expect(checks.length).toBe(4);
+  expect(checks.length).toBe(BASIC_CHECK_LIST.length);
 });
 
 test('search by text', async () => {
-  const { user } = await renderCheckList();
+  const { user } = await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK]);
   const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
   filterInput.focus();
-  const willBeRemoved = screen.getByText('chimichurri');
 
-  await user.paste('example');
+  await user.paste(BASIC_DNS_CHECK.job);
+  const willBeRemoved = screen.getByText(BASIC_HTTP_CHECK.job);
   await waitForElementToBeRemoved(willBeRemoved, { timeout: 1500 });
   const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(1);
 });
 
 test('search is case insensitive', async () => {
-  const { user } = await renderCheckList();
-  const willBeRemoved = await screen.findByText('chimichurri');
+  const { user } = await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK]);
   const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
+  const willBeRemoved = screen.getByText(BASIC_HTTP_CHECK.job);
   filterInput.focus();
 
-  await user.paste('EXAMPLE');
-  await waitForElementToBeRemoved(willBeRemoved, { timeout: 1500 });
-  const checks = await screen.findAllByTestId('check-card');
-  expect(checks.length).toBe(1);
-});
-
-test('search matches job value', async () => {
-  const { user } = await renderCheckList();
-  const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
-  const willBeRemoved = screen.getByText('chimichurri');
-  filterInput.focus();
-  await user.paste('tacos');
-
+  await user.paste(BASIC_DNS_CHECK.job.toUpperCase());
   await waitForElementToBeRemoved(willBeRemoved, { timeout: 1500 });
   const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(1);
 });
 
 test('search matches target value', async () => {
-  const { user } = await renderCheckList();
+  const { user } = await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK]);
   const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
-  const willBeRemoved = screen.getByText('chimichurri');
-
+  const willBeRemoved = screen.getByText(BASIC_HTTP_CHECK.job);
   filterInput.focus();
 
-  await user.paste('asada');
+  await user.paste(BASIC_DNS_CHECK.target);
   await waitForElementToBeRemoved(willBeRemoved, { timeout: 1500 });
   const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(1);
 });
 
 test('search matches label value', async () => {
-  const { user } = await renderCheckList();
+  const { user } = await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK]);
   const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
-  const willBeRemoved = await screen.findByText('chimichurri');
+  const willBeRemoved = screen.getByText(BASIC_HTTP_CHECK.job);
   filterInput.focus();
 
-  await user.paste('nachos.com');
+  await user.paste(BASIC_DNS_CHECK.labels[0].name);
   await waitForElementToBeRemoved(willBeRemoved, { timeout: 1500 });
   const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(1);
 });
 
-test('search matches label name', async () => {
-  const { user } = await renderCheckList();
+test('search matches label value', async () => {
+  const { user } = await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK]);
   const filterInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
-  const willBeRemoved = screen.getByText('tacos');
+  const willBeRemoved = screen.getByText(BASIC_HTTP_CHECK.job);
   filterInput.focus();
-  await user.paste('carne');
 
+  await user.paste(BASIC_DNS_CHECK.labels[0].value);
   await waitForElementToBeRemoved(willBeRemoved, { timeout: 1500 });
   const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(1);
 });
 
 test('clicking label value adds to label filter', async () => {
-  const { user } = await renderCheckList();
-  const labelValue = await screen.findAllByText('agreat: label');
+  const { user } = await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK]);
+  const label = BASIC_DNS_CHECK.labels[0];
+  const constructedLabel = `${label.name}: ${label.value}`;
+  const labelValue = await screen.findAllByText(constructedLabel);
   await user.click(labelValue[0]);
   const additionalFilters = await screen.findByRole('button', { name: /Additional filters/i });
   await user.click(additionalFilters);
   const filterInput = await screen.findByTestId('check-label-filter');
-  expect(filterInput).toHaveValue(['agreat: label']);
+  expect(filterInput).toHaveValue([constructedLabel]);
   const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(1);
 });
 
 test('filters by check type', async () => {
-  const { user } = await renderCheckList();
+  const { user } = await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK]);
   const additionalFilters = await screen.findByRole('button', { name: 'Additional filters' });
   await user.click(additionalFilters);
   const typeFilter = await screen.findByTestId('check-type-filter');
@@ -240,29 +144,34 @@ test('filters by check type', async () => {
 });
 
 test('filters by probe', async () => {
-  const { user } = await renderCheckList();
+  const DNS_CHECK_WITH_REMOVED_PROBE: Check = {
+    ...BASIC_DNS_CHECK,
+    probes: [PUBLIC_PROBE.id] as number[],
+  };
+
+  const { user } = await renderCheckList([DNS_CHECK_WITH_REMOVED_PROBE, BASIC_HTTP_CHECK]);
   const additionalFilters = await screen.findByRole('button', { name: 'Additional filters' });
   await user.click(additionalFilters);
   const probeFilter = await screen.findByTestId('probe-filter');
-  await user.selectOptions(probeFilter, 'Chicago');
+  await user.selectOptions(probeFilter, PRIVATE_PROBE.name);
   const checks = await screen.findAllByTestId('check-card');
-  expect(checks.length).toBe(2);
+  expect(checks.length).toBe(1);
 });
 
 test('loads search from localStorage', async () => {
   localStorage.setItem(
     'checkFilters',
     JSON.stringify({
-      search: 'chimichurri',
+      search: BASIC_DNS_CHECK.job,
       labels: [],
       type: 'all',
       status: { label: 'All', value: 0 },
       probes: [],
     })
   );
-  await renderCheckList();
+  await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK]);
   const searchInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
-  expect(searchInput).toHaveValue('chimichurri');
+  expect(searchInput).toHaveValue(BASIC_DNS_CHECK.job);
 
   const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(1);
@@ -279,7 +188,13 @@ test('loads status filter from localStorage', async () => {
       probes: [],
     })
   );
-  const { user } = await renderCheckList();
+
+  const DNS_CHECK_DISABLED = {
+    ...BASIC_DNS_CHECK,
+    enabled: false,
+  };
+
+  const { user } = await renderCheckList([DNS_CHECK_DISABLED, BASIC_HTTP_CHECK]);
   const additionalFilters = await screen.findByRole('button', { name: /Additional filters \(1 active\)/i });
   await user.click(additionalFilters);
   const statusFilter = await screen.findByTestId('check-status-filter');
@@ -300,7 +215,7 @@ test('loads type filter from localStorage', async () => {
       probes: [],
     })
   );
-  const { user } = await renderCheckList();
+  const { user } = await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK]);
   const additionalFilters = await screen.findByRole('button', { name: /Additional filters \(1 active\)/i });
   await user.click(additionalFilters);
   const typeFilter = await screen.findByTestId('check-type-filter');
@@ -311,28 +226,31 @@ test('loads type filter from localStorage', async () => {
 });
 
 test('loads labels from localStorage', async () => {
+  const label = BASIC_DNS_CHECK.labels[0];
+  const constructedLabel = `${label.name}: ${label.value}`;
+
   localStorage.setItem(
     'checkFilters',
     JSON.stringify({
       search: '',
-      labels: ['agreat: label'],
+      labels: [constructedLabel],
       type: 'all',
       status: { label: 'All', value: 0 },
       probes: [],
     })
   );
-  const { user } = await renderCheckList();
+  const { user } = await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK]);
   const additionalFilters = await screen.findByRole('button', { name: /Additional filters \(1 active\)/i });
   await user.click(additionalFilters);
   const filterInput = await screen.findByTestId('check-label-filter');
-  expect(filterInput).toHaveValue(['agreat: label']);
+  expect(filterInput).toHaveValue([constructedLabel]);
 
   const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(1);
 });
 
 test('clicking type chiclet adds it to filter', async () => {
-  const { user } = await renderCheckList();
+  const { user } = await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK]);
   const httpTypeChiclet = await screen.findAllByText('HTTP');
   await user.click(httpTypeChiclet[0]);
   const additionalFilters = await screen.findByRole('button', { name: /Additional filters/i });
@@ -344,7 +262,12 @@ test('clicking type chiclet adds it to filter', async () => {
 });
 
 test('clicking status chiclet adds it to filter', async () => {
-  const { user } = await renderCheckList();
+  const DNS_CHECK_DISABLED = {
+    ...BASIC_DNS_CHECK,
+    enabled: false,
+  };
+
+  const { user } = await renderCheckList([DNS_CHECK_DISABLED, BASIC_HTTP_CHECK]);
   const disabledChiclet = await screen.findAllByText('Disabled');
   await user.click(disabledChiclet[0]);
   const additionalFilters = await screen.findByRole('button', { name: /Additional filters/i });
@@ -365,114 +288,72 @@ test('clicking add new is handled', async () => {
 });
 
 test('select all performs disable action on all visible checks', async () => {
-  const { instance, user } = await renderCheckList();
+  const { read, record } = getServerRequests();
+  server.use(apiRoute(`updateCheck`, {}, record));
+
+  const checkList = [BASIC_DNS_CHECK, BASIC_HTTP_CHECK];
+  const { user } = await renderCheckList(checkList);
   const selectAll = await screen.findByTestId('selectAll');
   await user.click(selectAll);
-  const selectedText = await screen.findByText('4 checks are selected.');
+  const selectedText = await screen.findByText(`${checkList.length} checks are selected.`);
   expect(selectedText).toBeInTheDocument();
   const disableButton = await screen.findByRole('button', { name: 'Disable' });
+
   await user.click(disableButton);
 
-  // await waitFor(() => expect(selectAll).not.toBeChecked());
-  expect(instance.api?.updateCheck).toHaveBeenCalledTimes(3);
-  expect(instance.api?.updateCheck).toHaveBeenCalledWith({
-    created: 1597928913.872104,
+  const DNSrequest = await read(0);
+  const HTTPRequst = await read(1);
+
+  expect(DNSrequest.body).toEqual({
+    ...BASIC_DNS_CHECK,
     enabled: false,
-    frequency: 60000,
-    id: 1,
-    job: 'burritos',
-    labels: [],
-    modified: 1597928913.872104,
-    offset: 0,
-    probes: [1],
-    settings: { ping: { dontFragment: false, ipVersion: 'V4' } },
-    target: 'nachos.com',
-    tenantId: 1,
-    timeout: 2500,
   });
-  expect(instance.api?.updateCheck).toHaveBeenCalledWith({
-    created: 1597928965.8595479,
+
+  expect(HTTPRequst.body).toEqual({
+    ...BASIC_HTTP_CHECK,
     enabled: false,
-    frequency: 60000,
-    id: 3,
-    job: 'chimichurri',
-    labels: [{ name: 'carne', value: 'asada' }],
-    modified: 1597928965.8595479,
-    offset: 0,
-    probes: [22],
-    settings: { http: { dontFragment: false, ipVersion: 'V4' } },
-    target: 'example.com',
-    tenantId: 1,
-    timeout: 2500,
-  });
-  expect(instance.api?.updateCheck).toHaveBeenCalledWith({
-    created: 1597928927.7490728,
-    enabled: false,
-    frequency: 60000,
-    id: 2,
-    job: 'tacos',
-    labels: [],
-    modified: 1597928927.7490728,
-    offset: 0,
-    probes: [1],
-    settings: { ping: { dontFragment: false, ipVersion: 'V4' } },
-    target: 'grafana.com',
-    tenantId: 1,
-    timeout: 2500,
   });
 });
 
 test('select all performs enable action on all visible checks', async () => {
-  const { instance, user } = await renderCheckList();
+  const { read, record } = getServerRequests();
+  server.use(apiRoute(`updateCheck`, {}, record));
+
+  const checkList = [BASIC_DNS_CHECK, BASIC_HTTP_CHECK].map((check) => ({
+    ...check,
+    enabled: false,
+  }));
+  const { user } = await renderCheckList(checkList);
   const selectAll = await screen.findByTestId('selectAll');
   await user.click(selectAll);
-  const selectedText = await screen.findByText('4 checks are selected.');
+  const selectedText = await screen.findByText(`${checkList.length} checks are selected.`);
   expect(selectedText).toBeInTheDocument();
   const disableButton = await screen.findByRole('button', { name: 'Enable' });
   await user.click(disableButton);
 
-  expect(instance.api?.updateCheck).toHaveBeenCalledTimes(1);
-  expect(instance.api?.updateCheck).toHaveBeenCalledWith({
-    id: 4,
-    tenantId: 1,
-    frequency: 60000,
-    offset: 0,
-    timeout: 2500,
-    enabled: true,
-    labels: [
-      {
-        name: 'agreat',
-        value: 'label',
-      },
-    ],
-    settings: {
-      ping: {
-        ipVersion: 'V4',
-        dontFragment: false,
-      },
-    },
-    probes: [1, 22],
-    target: 'grafana.com',
-    job: 'test3',
-    created: 1597934254.494585,
-  });
+  const DNSrequest = await read(0);
+  const HTTPRequst = await read(1);
+
+  expect(DNSrequest.body).toEqual(BASIC_DNS_CHECK);
+  expect(HTTPRequst.body).toEqual(BASIC_HTTP_CHECK);
 });
 
 test('cascader adds labels to label filter', async () => {
-  const { user } = await renderCheckList();
+  const { user } = await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK]);
   const additionalFilters = await screen.findByRole('button', { name: 'Additional filters' });
   await user.click(additionalFilters);
   const cascader = await screen.findByRole('button', { name: 'Labels' });
   await user.click(cascader);
   const labelMenuItems = await screen.findAllByRole('menuitemcheckbox');
   expect(labelMenuItems.length).toBe(2);
-  const labelName = await screen.findByRole('menuitemcheckbox', { name: 'carne' });
+  const labelName = await screen.findByRole('menuitemcheckbox', { name: BASIC_DNS_CHECK.labels[0].name });
   await user.click(labelName);
-  const labelValue = await screen.findByRole('menuitemcheckbox', { name: 'asada' });
+  const labelValue = await screen.findByRole('menuitemcheckbox', { name: BASIC_DNS_CHECK.labels[0].value });
   await user.click(labelValue);
 
   const labelFilterInput = await screen.findByTestId('check-label-filter');
-  expect(labelFilterInput).toHaveValue(['carne: asada']);
+  const constructedLabel = `${BASIC_DNS_CHECK.labels[0].name}: ${BASIC_DNS_CHECK.labels[0].value}`;
+  expect(labelFilterInput).toHaveValue([constructedLabel]);
 });
 
 test('Sorting by success rate should not crash', async () => {
@@ -481,5 +362,5 @@ test('Sorting by success rate should not crash', async () => {
 
   await user.selectOptions(sortPicker, CheckSort.ReachabilityAsc.toString());
   const checks = await screen.findAllByTestId('check-card');
-  expect(checks.length).toBe(4);
+  expect(checks.length).toBe(BASIC_CHECK_LIST.length);
 });
