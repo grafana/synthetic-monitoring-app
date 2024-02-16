@@ -4,11 +4,11 @@ import { DashboardResponse } from 'datasource/responses.types';
 export const getDashboard: ApiEntry<DashboardResponse> = {
   route: `/public/plugins/grafana-synthetic-monitoring-app/dashboards/*`,
   method: `get`,
-  result: () => {
+  result: (req) => {
     return {
       json: {
         title: `A nice dashboard`,
-        uid: Math.random().toString(),
+        uid: req.url.toString().split('/').pop(),
         json: ``,
         version: 1,
       },

@@ -101,10 +101,7 @@ describe('editing multihttp check', () => {
     await waitFor(() => expect(onReturn).toHaveBeenCalledWith(true));
 
     const { body } = await read();
-    expect(body).toEqual({
-      ...targetCheck,
-      target: targetCheck.settings.multihttp?.entries[0].request.url,
-    });
+    expect(body).toEqual(targetCheck);
   });
 
   it('allows user to edit and resubmit form', async () => {

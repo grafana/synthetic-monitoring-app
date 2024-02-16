@@ -3,8 +3,10 @@ import {
   EmbeddedScene,
   QueryVariable,
   SceneControlsSpacer,
+  SceneDataLayerControls,
   SceneFlexItem,
   SceneFlexLayout,
+  SceneReactObject,
   SceneRefreshPicker,
   SceneTimePicker,
   SceneTimeRange,
@@ -14,6 +16,8 @@ import {
 import { VariableRefresh } from '@grafana/schema';
 
 import { Check, DashboardSceneAppConfig } from 'types';
+import { AddNewCheckButton } from 'components/CheckList/AddNewCheckButton';
+import { getSummaryAlertAnnotations } from 'scenes/Common/alertAnnotations';
 import { getEmptyScene } from 'scenes/Common/emptyScene';
 
 import { getErrorPctgTimeseriesPanel } from './errorPctTimeseries';
@@ -36,7 +40,7 @@ export function getSummaryScene({ metrics, sm }: DashboardSceneAppConfig, checks
     }, new Set<string>());
 
     const timeRange = new SceneTimeRange({
-      from: 'now-6h',
+      from: 'now-1h',
       to: 'now',
     });
 
@@ -69,7 +73,7 @@ export function getSummaryScene({ metrics, sm }: DashboardSceneAppConfig, checks
       query: 'label_values(sm_check_info, check_name)',
       datasource: metrics,
     });
-    const filters = AdHocFiltersVariable.create({
+    const filters = new AdHocFiltersVariable({
       datasource: metrics,
       filters: [],
       getTagKeysProvider: () => {
@@ -101,16 +105,23 @@ export function getSummaryScene({ metrics, sm }: DashboardSceneAppConfig, checks
       children: [latencyPanel],
     });
 
+    const annotations = getSummaryAlertAnnotations(metrics);
+
     return new EmbeddedScene({
       $timeRange: timeRange,
       $variables: new SceneVariableSet({ variables: [region, probe, checkTypeVar, filters] }),
+      $data: annotations,
       body: new SceneFlexLayout({
         direction: 'column',
         children: [tableRow, mapRow, latencyRow],
       }),
       controls: [
         new VariableValueSelectors({}),
+        new SceneDataLayerControls(),
         new SceneControlsSpacer(),
+        new SceneReactObject({
+          component: AddNewCheckButton,
+        }),
         new SceneTimePicker({ isOnCanvas: true }),
         new SceneRefreshPicker({
           intervals: ['5s', '1m', '1h'],

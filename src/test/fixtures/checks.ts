@@ -167,7 +167,7 @@ export const BASIC_K6_CHECK: Check = {
 export const BASIC_MULTIHTTP_CHECK: Check = {
   id: 4,
   job: 'Job name for multihttp',
-  target: 'https://www.multihttp.com',
+  target: 'https://www.multi1.com',
   enabled: true,
   labels: [{ name: 'labelName', value: 'labelValue' }],
   probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
