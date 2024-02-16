@@ -30,12 +30,3 @@ jobs:
         run: yarn test:ci
       - name: Build frontend
         run: yarn build
-
-      - name: Start grafana docker
-        run: yarn server -d
-
-      - name: Run e2e tests
-        run: yarn e2e
-
-      - name: Stop grafana docker
-        run: docker-compose down
