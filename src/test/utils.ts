@@ -1,4 +1,5 @@
 import { OrgRole } from '@grafana/data';
+import { config } from '@grafana/runtime';
 import { screen } from '@testing-library/react';
 import { UserEvent } from '@testing-library/user-event';
 
@@ -49,8 +50,8 @@ export async function fillProbeForm(user: UserEvent) {
 
 export function runTestAsViewer() {
   // this gets reset to editor in afterEach in jest-setup.js
-  const { config } = require('@grafana/runtime');
-  jest.spyOn(config, 'mockImplementationOnce', {
+  const runtime = require('@grafana/runtime');
+  jest.replaceProperty(runtime, `config`, {
     ...config,
     bootData: {
       ...config.bootData,

@@ -14,19 +14,21 @@ import 'test/silenceErrors';
 const onSubmit = jest.fn();
 const submitText = 'Save';
 
-const renderProbeEditor = ({ probe = TEMPLATE_PROBE } = {}) => {
+const renderProbeEditor = async ({ probe = TEMPLATE_PROBE } = {}) => {
   const props = {
     onSubmit,
     probe,
     submitText,
   };
 
-  return render(<ProbeEditor {...props} />);
+  const res = render(<ProbeEditor {...props} />);
+  await screen.findByText(/This probe is private./);
+  return res;
 };
 
 describe('validation', () => {
   it('validates probe name', async () => {
-    const { user } = renderProbeEditor();
+    const { user } = await renderProbeEditor();
     const nameInput = await screen.findByLabelText('Probe Name', { exact: false });
     await user.type(nameInput, 'a name that is definitely too long and should definitely not be allowed to get typed');
     const maxLengthString = 'a name that is definitely too lo';
@@ -34,7 +36,7 @@ describe('validation', () => {
   });
 
   it('shows message for invalid latitude', async () => {
-    const { user } = renderProbeEditor();
+    const { user } = await renderProbeEditor();
     const latitudeInput = await screen.findByLabelText('Latitude', { exact: false });
     await user.type(latitudeInput, '444');
     const errorMessage = await screen.findByText('Must be between -90 and 90');
@@ -42,7 +44,7 @@ describe('validation', () => {
   });
 
   it('shows message for invalid longitude', async () => {
-    const { user } = renderProbeEditor();
+    const { user } = await renderProbeEditor();
     const longitudeInput = await screen.findByLabelText('Longitude', { exact: false });
     await user.type(longitudeInput, '444');
     const errorMessage = await screen.findByText('Must be between -180 and 180');
@@ -51,7 +53,7 @@ describe('validation', () => {
 });
 
 it('returns on back button', async () => {
-  const { history, user } = renderProbeEditor();
+  const { history, user } = await renderProbeEditor();
   const backButton = await screen.findByRole('link', { name: 'Back' });
   await user.click(backButton);
   await waitFor(() => {}, { timeout: 1000 });
@@ -59,7 +61,7 @@ it('returns on back button', async () => {
 });
 
 it('disables save button on invalid values', async () => {
-  const { user } = renderProbeEditor();
+  const { user } = await renderProbeEditor();
   const saveButton = await getSaveButton();
   expect(saveButton).not.toBeDisabled();
   const longitudeInput = await screen.findByLabelText('Longitude', { exact: false });
@@ -71,7 +73,7 @@ it('disables save button on invalid values', async () => {
 
 it('saves new probe', async () => {
   const probe = PRIVATE_PROBE;
-  const { user } = renderProbeEditor({ probe });
+  const { user } = await renderProbeEditor({ probe });
   await fillProbeForm(user);
 
   const saveButton = await getSaveButton();

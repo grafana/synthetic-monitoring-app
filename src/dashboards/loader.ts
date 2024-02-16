@@ -1,4 +1,5 @@
 import { getBackendSrv } from '@grafana/runtime';
+import { firstValueFrom } from 'rxjs';
 
 import { DashboardInfo, FolderInfo } from 'datasource/types';
 
@@ -72,15 +73,17 @@ export async function importDashboard(
   };
 }
 
-export async function listAppDashboards(): Promise<DashboardInfo[]> {
-  const backendSrv = getBackendSrv();
+export async function listAppDashboards() {
   let dashboards: DashboardInfo[] = [];
+
   for (const p of dashboardPaths) {
-    const json = await backendSrv.request({
-      url: `public/plugins/grafana-synthetic-monitoring-app/dashboards/${p}`,
-      method: 'GET',
-      headers: { 'Cache-Control': 'no-store' },
-    });
+    const json = await firstValueFrom(
+      getBackendSrv().fetch<DashboardInfo>({
+        url: `public/plugins/grafana-synthetic-monitoring-app/dashboards/${p}`,
+        method: 'GET',
+        headers: { 'Cache-Control': 'no-store' },
+      })
+    ).then((res) => res.data);
 
     const dInfo = {
       title: json.title,
@@ -91,6 +94,7 @@ export async function listAppDashboards(): Promise<DashboardInfo[]> {
     };
     dashboards.push(dInfo);
   }
+
   return dashboards;
 }
 

@@ -14,11 +14,11 @@ import {
   CheckType,
   FeatureName,
   FilteredCheck,
-  GrafanaInstances,
   Label,
 } from 'types';
 import { hasRole } from 'utils';
 import { ChecksContext } from 'contexts/ChecksContext';
+import { InstanceContext } from 'contexts/InstanceContext';
 import { SuccessRateContext, SuccessRateTypes } from 'contexts/SuccessRateContext';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { BulkEditModal } from 'components/BulkEditModal';
@@ -106,11 +106,11 @@ const getStyles = (theme: GrafanaTheme2) => ({
 });
 
 interface Props {
-  instance: GrafanaInstances;
   onCheckUpdate: (refetch?: boolean) => void;
 }
 
-export const CheckList = ({ instance, onCheckUpdate }: Props) => {
+export const CheckList = ({ onCheckUpdate }: Props) => {
+  const { instance } = useContext(InstanceContext);
   const [checkFilters, setCheckFilters] = useState<CheckFiltersType>(getDefaultFilters());
   const [filteredChecks, setFilteredChecks] = useState<FilteredCheck[] | []>([]);
 
@@ -503,7 +503,6 @@ export const CheckList = ({ instance, onCheckUpdate }: Props) => {
         }
       />
       <BulkEditModal
-        instance={instance}
         selectedChecks={getChecksFromSelected}
         onDismiss={() => setBulkEditAction(null)}
         action={bulkEditAction}

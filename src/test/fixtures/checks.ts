@@ -68,9 +68,9 @@ const transformedValidKey = btoa(validKey);
 export const BASIC_DNS_CHECK = {
   id: 1,
   job: 'Job name for dns',
-  target: 'grafana.com',
+  target: 'dns.com',
   enabled: true,
-  labels: [{ name: 'labelName', value: 'labelValue' }] as Label[],
+  labels: [{ name: 'dnsLabelName', value: 'dnsLabelValue' }] as Label[],
   probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
   timeout: 3000,
   frequency: 60000,
@@ -103,12 +103,12 @@ export const BASIC_DNS_CHECK = {
 export const BASIC_HTTP_CHECK: Check = {
   id: 2,
   job: 'Job name for http',
-  target: 'https://grafana.com',
+  target: 'https://http.com',
   enabled: true,
   labels: [
     {
-      name: 'labelName',
-      value: 'labelValue',
+      name: 'httpLabelName',
+      value: 'httpLabelValue',
     },
   ],
   probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
@@ -149,9 +149,9 @@ export const BASIC_HTTP_CHECK: Check = {
 export const BASIC_K6_CHECK: Check = {
   id: 3,
   job: 'Job name for k6',
-  target: 'https://www.grafana.com',
+  target: 'https://www.k6.com',
   enabled: true,
-  labels: [{ name: 'labelName', value: 'labelValue' }],
+  labels: [{ name: 'scriptedLabelName', value: 'scriptedLabelValue' }],
   probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
   timeout: 10000,
   frequency: 60000,
@@ -167,7 +167,7 @@ export const BASIC_K6_CHECK: Check = {
 export const BASIC_MULTIHTTP_CHECK: Check = {
   id: 4,
   job: 'Job name for multihttp',
-  target: 'https://www.grafana.com',
+  target: 'https://www.multihttp.com',
   enabled: true,
   labels: [{ name: 'labelName', value: 'labelValue' }],
   probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
@@ -180,7 +180,7 @@ export const BASIC_MULTIHTTP_CHECK: Check = {
       entries: [
         {
           request: {
-            url: 'https://www.grafana.com',
+            url: 'https://www.multi1.com',
             method: 'GET',
             body: undefined,
             headers: [
@@ -214,7 +214,7 @@ export const BASIC_MULTIHTTP_CHECK: Check = {
         },
         {
           request: {
-            url: 'https://www.example.com',
+            url: 'https://www.multi2.com',
             method: 'POST',
             headers: [
               {

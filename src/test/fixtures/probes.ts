@@ -62,3 +62,6 @@ export const UNSELECTED_PRIVATE_PROBE = {
 } as const satisfies Probe;
 
 export const DEFAULT_PROBES = [PRIVATE_PROBE, PUBLIC_PROBE, UNSELECTED_PRIVATE_PROBE];
+
+export const ADD_PROBE_TOKEN_RESPONSE = `A very tasty added token`;
+export const UPDATED_PROBE_TOKEN_RESPONSE = `A very tasty updated token`;

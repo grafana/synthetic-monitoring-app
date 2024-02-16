@@ -43,6 +43,7 @@ async function fetchDatasources(
 
   // next try grafanaName in datasource
   const metricsName = smApi?.instanceSettings?.jsonData?.metrics?.grafanaName;
+
   if (!metrics && metricsName) {
     metrics = await dataSourceSrv.get(metricsName).catch((e) => {});
   }

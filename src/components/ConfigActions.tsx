@@ -40,6 +40,7 @@ export const ConfigActions = ({ enabled, pluginId }: Props) => {
     if (loading) {
       return <Spinner />;
     }
+
     if (instance?.api) {
       return (
         <Button variant="destructive" onClick={() => setShowDisableModal(true)}>

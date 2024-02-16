@@ -1,4 +1,9 @@
-import { DEFAULT_PROBES, PRIVATE_PROBE } from 'test/fixtures/probes';
+import {
+  ADD_PROBE_TOKEN_RESPONSE,
+  DEFAULT_PROBES,
+  PRIVATE_PROBE,
+  UPDATED_PROBE_TOKEN_RESPONSE,
+} from 'test/fixtures/probes';
 
 import { ApiEntry } from 'test/handlers/types';
 import { AddProbeResult, ListProbeResult, UpdateProbeResult } from 'datasource/responses.types';
@@ -18,7 +23,7 @@ export const addProbe: ApiEntry<AddProbeResult> = {
   method: `post`,
   result: () => {
     return {
-      json: { probe: PRIVATE_PROBE, token: 'a token' },
+      json: { probe: PRIVATE_PROBE, token: ADD_PROBE_TOKEN_RESPONSE },
     };
   },
 };
@@ -31,7 +36,7 @@ export const updateProbe: ApiEntry<UpdateProbeResult> = {
 
     if (updateVal === `true`) {
       return {
-        json: { probe: PRIVATE_PROBE, token: 'a token' },
+        json: { probe: PRIVATE_PROBE, token: UPDATED_PROBE_TOKEN_RESPONSE },
       };
     }
 

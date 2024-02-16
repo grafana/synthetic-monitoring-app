@@ -1,5 +1,6 @@
 import { rest } from 'msw';
-import { addCheck, checkInfo, listChecks, updateCheck } from 'test/handlers/checks';
+import { addCheck, bulkUpdateChecks, checkInfo, listChecks, updateCheck } from 'test/handlers/checks';
+import { getDashboard } from 'test/handlers/dashboards';
 import { addProbe, listProbes, updateProbe } from 'test/handlers/probes';
 import { getTenant, getTenantSettings, updateTenantSettings } from 'test/handlers/tenants';
 
@@ -10,9 +11,11 @@ const apiRoutes = {
   listProbes,
   updateProbe,
   addCheck,
+  bulkUpdateChecks,
   checkInfo,
   listChecks,
   updateCheck,
+  getDashboard,
   getTenant,
   getTenantSettings,
   updateTenantSettings,
@@ -35,16 +38,16 @@ export function apiRoute<K extends keyof ApiRoutes>(
     ...res,
   };
 
-  let res2 = result;
+  let resultFunc = result;
 
   if (callback) {
-    res2 = (req: RequestRes) => {
+    resultFunc = (req: RequestRes) => {
       callback(req);
       return result(req);
     };
   }
 
-  return toRestMethod({ route, method, result: res2 });
+  return toRestMethod({ route, method, result: resultFunc });
 }
 
 function toRestMethod({ route, method, result }: ApiEntry) {
@@ -57,12 +60,14 @@ function toRestMethod({ route, method, result }: ApiEntry) {
   });
 }
 
-export function getServerRequest() {
-  let request: RequestRes | undefined;
+export function getServerRequests() {
+  let requests: RequestRes[] = [];
 
-  const record = (req: RequestRes) => (request = req);
-  const read = async () => {
+  const record = (request: RequestRes) => requests.push(request);
+  const read = async (index = 0) => {
     let body;
+    const request = requests[index];
+
     try {
       const json = await request?.json();
       body = json;

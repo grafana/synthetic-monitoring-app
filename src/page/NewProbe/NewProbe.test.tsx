@@ -1,8 +1,8 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
+import { ADD_PROBE_TOKEN_RESPONSE } from 'test/fixtures/probes';
 import { render } from 'test/render';
-import { fillProbeForm, UPDATED_VALUES } from 'test/utils';
-import { getInstanceMock, instanceSettings } from 'datasource/__mocks__/DataSource';
+import { fillProbeForm } from 'test/utils';
 
 import { ROUTES } from 'types';
 import { getRoute } from 'components/Routing';
@@ -10,21 +10,12 @@ import { getRoute } from 'components/Routing';
 import { NewProbe } from './NewProbe';
 import 'test/silenceErrors';
 
-const TOKEN_VALUE = `a very tasty token`;
-
-const addProbe = jest.fn().mockImplementation(() => Promise.resolve({ probe: UPDATED_VALUES, token: TOKEN_VALUE }));
 const refetchProbes = jest.fn();
 
 const renderNewProbe = () => {
-  const mockedInstance = getInstanceMock(instanceSettings);
-  mockedInstance.addProbe = addProbe;
-
   return render(<NewProbe refetchProbes={refetchProbes} />, {
     route: getRoute(ROUTES.NewProbe),
     path: getRoute(ROUTES.NewProbe),
-    instance: {
-      api: mockedInstance,
-    },
   });
 };
 
@@ -34,7 +25,7 @@ it(`creates a new probe, displays the modal and redirects on close`, async () =>
 
   const saveButton = await screen.findByRole('button', { name: 'Add new probe' });
   await user.click(saveButton);
-  await waitFor(() => expect(screen.queryByText(TOKEN_VALUE)).toBeInTheDocument());
+  await waitFor(() => expect(screen.queryByText(ADD_PROBE_TOKEN_RESPONSE)).toBeInTheDocument());
   const dismiss = screen.getByRole('button', { name: 'Go back to probes list' });
   await user.click(dismiss);
   await waitFor(() => expect(history.location.pathname).toBe(getRoute(ROUTES.Probes)));

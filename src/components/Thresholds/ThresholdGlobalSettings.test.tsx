@@ -1,7 +1,7 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
 import { TENANT_SETTINGS } from 'test/fixtures/tenants';
-import { apiRoute, getServerRequest } from 'test/handlers';
+import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
 
@@ -45,7 +45,7 @@ test('has default values in form', async () => {
 });
 
 test('submits the form', async () => {
-  const { record, read } = getServerRequest();
+  const { record, read } = getServerRequests();
   server.use(apiRoute('updateTenantSettings', {}, record));
 
   const { user } = await renderThresholdSettingsForm();

@@ -1,5 +1,5 @@
 import { Check, Probe, Settings, ThresholdSettings } from 'types';
-import { AccountingClassNames } from 'datasource/types';
+import { AccountingClassNames, DashboardInfo } from 'datasource/types';
 
 export type ListProbeResult = Probe[];
 
@@ -120,3 +120,5 @@ export interface MetricCheckSuccess extends Metric {
 export interface MetricLatency extends Metric {
   metric: {};
 }
+
+export type DashboardResponse = DashboardInfo;

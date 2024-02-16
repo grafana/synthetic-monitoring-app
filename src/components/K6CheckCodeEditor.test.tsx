@@ -2,7 +2,7 @@ import React from 'react';
 import { within } from '@testing-library/react';
 import { BASIC_CHECK_LIST, BASIC_K6_CHECK } from 'test/fixtures/checks';
 import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
-import { apiRoute, getServerRequest } from 'test/handlers';
+import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
 
@@ -37,7 +37,7 @@ describe('new scripted check', () => {
   // });
 
   it('creates a new k6 check', async () => {
-    const { record, read } = getServerRequest();
+    const { record, read } = getServerRequests();
     server.use(apiRoute(`addCheck`, {}, record));
     const { user, findByLabelText, getByText, findByTestId, findByRole, findByPlaceholderText } = render(
       <K6CheckCodeEditor checks={[]} onSubmitSuccess={onReturn} />
@@ -98,7 +98,7 @@ describe('new scripted check', () => {
 
 // describe('edit scripted check', () => {
 //   it('populates correct values in form', async () => {
-//     const { record, read } = getServerRequest();
+//     const { record, read } = getServerRequests();
 //     server.use(apiRoute(`addCheck`, {}, record));
 
 //     const { user, findByLabelText, findByTestId, findByPlaceholderText, findByText } = render(
@@ -133,7 +133,7 @@ describe('new scripted check', () => {
 //     const NEW_LABEL = { name: 'adifferentlabelname', value: 'adifferentlabelValue' };
 //     const NEW_SCRIPT = 'console.log("goodnight moon")';
 
-//     const { record, read } = getServerRequest();
+//     const { record, read } = getServerRequests();
 //     server.use(apiRoute(`addCheck`, {}, record));
 //     const { user, findByLabelText, findByTestId, findByPlaceholderText, getByText } = render(
 //       <K6CheckCodeEditor checks={BASIC_CHECK_LIST} onSubmitSuccess={onReturn} />,

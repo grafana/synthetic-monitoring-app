@@ -7,17 +7,17 @@ import { createMemoryHistory } from 'history';
 import pluginInfo from 'plugin.json';
 
 import { GlobalSettings } from 'types';
+import { ChecksContextProvider } from 'components/ChecksContextProvider';
 import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
 import { InstanceProvider } from 'components/InstanceProvider';
 
 type WrapperProps = {
-  featureToggles?: Record<string, boolean>;
   path?: string;
   route?: string;
   meta?: Partial<AppPluginMeta<GlobalSettings>>;
 };
 
-export const createWrapper = ({ featureToggles, path, route, meta }: WrapperProps = {}) => {
+export const createWrapper = ({ path, route, meta }: WrapperProps = {}) => {
   const defaultMeta = {
     id: pluginInfo.id,
     name: pluginInfo.name,
@@ -43,20 +43,21 @@ export const createWrapper = ({ featureToggles, path, route, meta }: WrapperProp
   const history = createMemoryHistory({
     initialEntries: path ? [path] : undefined,
   });
-  const isFeatureEnabled = (feature: string) => !!featureToggles?.[feature];
 
   // eslint-disable-next-line react/display-name
   const Wrapper = ({ children }: { children: ReactNode }) => (
-    <FeatureFlagProvider overrides={{ featureToggles, isFeatureEnabled }}>
+    <FeatureFlagProvider>
       <InstanceProvider
         meta={{
           ...defaultMeta,
           ...meta,
         }}
       >
-        <Router history={history}>
-          <Route path={route}>{children}</Route>
-        </Router>
+        <ChecksContextProvider>
+          <Router history={history}>
+            <Route path={route}>{children}</Route>
+          </Router>
+        </ChecksContextProvider>
       </InstanceProvider>
     </FeatureFlagProvider>
   );
@@ -67,10 +68,9 @@ export const createWrapper = ({ featureToggles, path, route, meta }: WrapperProp
 export type CustomRenderOptions = Omit<RenderOptions, 'wrapper'> & WrapperProps;
 
 const customRender = (ui: ReactElement, options: CustomRenderOptions = {}) => {
-  const { featureToggles, path, route, meta, ...rest } = options;
+  const { path, route, meta, ...rest } = options;
   const user = userEventLib.setup();
   const { Wrapper, history } = createWrapper({
-    featureToggles,
     path,
     route,
     meta,

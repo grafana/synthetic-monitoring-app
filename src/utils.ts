@@ -3,9 +3,9 @@ import { config, getBackendSrv } from '@grafana/runtime';
 import { IconName } from '@grafana/ui';
 
 import { DashboardInfo, LinkedDatasourceInfo, LogQueryResponse, LogStream, SMOptions } from './datasource/types';
-import { CheckType, HostedInstance, Probe, Settings, SubmissionErrorWrapper } from 'types';
+import { CheckType, HostedInstance, Probe, Settings, SubmissionErrorWrapper, ThresholdSettings } from 'types';
 import { SMDataSource } from 'datasource/DataSource';
-import { ThresholdSettings } from 'contexts/SuccessRateContext';
+import {} from 'contexts/SuccessRateContext';
 
 /**
  * Find all synthetic-monitoring datasources

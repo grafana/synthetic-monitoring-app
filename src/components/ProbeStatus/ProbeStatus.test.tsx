@@ -8,18 +8,18 @@ import { formatDate } from 'utils';
 
 import { ProbeStatus } from './ProbeStatus';
 
-it(`shows the reset probe access token when the user is an editor`, async () => {
-  render(<ProbeStatus probe={PRIVATE_PROBE} onReset={jest.fn()} />);
-  const resetButton = await getResetButton();
-  expect(resetButton).toBeInTheDocument();
-});
-
-it(`shows the reset probe access token when the user is an editor`, async () => {
+it(`hides the reset button when the user is a viewer`, async () => {
   runTestAsViewer();
   // We need to wait for contexts to finish loading to avoid issue with act
   await waitFor(() => render(<ProbeStatus probe={PRIVATE_PROBE} onReset={jest.fn()} />));
   const resetButton = await getResetButton(true);
   expect(resetButton).not.toBeInTheDocument();
+});
+
+it(`shows the reset probe access token when the user is an editor`, async () => {
+  render(<ProbeStatus probe={PRIVATE_PROBE} onReset={jest.fn()} />);
+  const resetButton = await getResetButton();
+  expect(resetButton).toBeInTheDocument();
 });
 
 describe(`Last on/offline display`, () => {
