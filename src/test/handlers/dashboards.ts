@@ -8,7 +8,7 @@ export const getDashboard: ApiEntry<DashboardResponse> = {
     return {
       json: {
         title: `A nice dashboard`,
-        uid: req.url.toString().split('/').pop(),
+        uid: `a-nice-dashboard`,
         json: ``,
         version: 1,
       },
