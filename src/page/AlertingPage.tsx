@@ -1,7 +1,7 @@
-import React, { FC, useContext,useState } from 'react';
+import React, { FC, useContext, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { config } from '@grafana/runtime';
-import { Alert,Button, HorizontalGroup, Icon, Modal, Spinner, useStyles2 } from '@grafana/ui';
+import { Alert, Button, HorizontalGroup, Icon, Modal, Spinner, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { AlertFormValues, AlertRule } from 'types';

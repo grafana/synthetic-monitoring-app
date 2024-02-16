@@ -50,5 +50,19 @@ export async function fillProbeForm(user: UserEvent) {
 
 export function runTestAsViewer() {
   // this gets reset to editor in afterEach in jest-setup.js
-  config.bootData.user.orgRole = OrgRole.Viewer;
+  const runtime = require('@grafana/runtime');
+  jest.replaceProperty(runtime, `config`, {
+    ...config,
+    bootData: {
+      ...config.bootData,
+      user: {
+        ...config.bootData.user,
+        orgRole: OrgRole.Viewer,
+      },
+    },
+    featureToggles: {
+      ...config.featureToggles,
+      topnav: true,
+    },
+  });
 }

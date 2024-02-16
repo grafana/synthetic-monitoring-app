@@ -1,11 +1,10 @@
 import React from 'react';
-import { screen, waitFor } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { render } from 'test/render';
 
 import { CheckType } from 'types';
 
 import CheckTarget from './CheckTarget';
-jest.unmock('utils');
 
 const onChangeMock = jest.fn();
 
@@ -14,42 +13,35 @@ const renderCheckTarget = ({
   typeOfCheck = CheckType.DNS,
   disabled = false,
   onChange = onChangeMock,
-} = {}) =>
-  waitFor(() =>
-    render(<CheckTarget value={target} typeOfCheck={typeOfCheck} disabled={disabled} onChange={onChange} />)
-  );
-
-beforeEach(() => {
-  onChangeMock.mockReset();
-});
+} = {}) => render(<CheckTarget value={target} typeOfCheck={typeOfCheck} disabled={disabled} onChange={onChange} />);
 
 describe('Target description is check type specific', () => {
   test('for DNS', async () => {
-    await renderCheckTarget();
-    const description = screen.getByText('Name of record to query');
+    renderCheckTarget();
+    const description = await screen.findByText('Name of record to query');
     expect(description).toBeInTheDocument();
   });
   test('for HTTP', async () => {
-    await renderCheckTarget({ typeOfCheck: CheckType.HTTP });
-    const description = screen.getByText('Full URL to send requests to');
+    renderCheckTarget({ typeOfCheck: CheckType.HTTP });
+    const description = await screen.findByText('Full URL to send requests to');
     expect(description).toBeInTheDocument();
   });
   test('for PING', async () => {
-    await renderCheckTarget({ typeOfCheck: CheckType.PING });
-    const description = screen.getByText('Hostname to ping');
+    renderCheckTarget({ typeOfCheck: CheckType.PING });
+    const description = await screen.findByText('Hostname to ping');
     expect(description).toBeInTheDocument();
   });
   test('for TCP', async () => {
-    await renderCheckTarget({ typeOfCheck: CheckType.TCP });
-    const description = screen.getByText('Host:port to connect to');
+    renderCheckTarget({ typeOfCheck: CheckType.TCP });
+    const description = await screen.findByText('Host:port to connect to');
     expect(description).toBeInTheDocument();
   });
 });
 
 describe('HTTP targets', () => {
   test('have query params in separate inputs', async () => {
-    await renderCheckTarget({ typeOfCheck: CheckType.HTTP, target: 'https://example.com?foo=bar' });
-    const paramNameInput = screen.getByPlaceholderText('Key') as HTMLInputElement;
+    renderCheckTarget({ typeOfCheck: CheckType.HTTP, target: 'https://example.com?foo=bar' });
+    const paramNameInput = (await screen.findByPlaceholderText('Key')) as HTMLInputElement;
     const paramValueInput = screen.getByPlaceholderText('Value') as HTMLInputElement;
     expect(paramNameInput.value).toBe('foo');
     expect(paramValueInput.value).toBe('bar');
@@ -57,7 +49,7 @@ describe('HTTP targets', () => {
 
   test('handles multiple query params', async () => {
     await renderCheckTarget({ typeOfCheck: CheckType.HTTP, target: 'https://example.com?foo=bar&tacos=delicious' });
-    const paramNameInputs = screen.getAllByPlaceholderText('Key') as HTMLInputElement[];
+    const paramNameInputs = (await screen.findAllByPlaceholderText('Key')) as HTMLInputElement[];
     const paramValueInputs = screen.getAllByPlaceholderText('Value') as HTMLInputElement[];
     const expectedNameValues = ['foo', 'tacos'];
     const expectedValueValues = ['bar', 'delicious'];

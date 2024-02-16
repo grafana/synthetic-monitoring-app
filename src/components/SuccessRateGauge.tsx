@@ -3,8 +3,9 @@ import { DisplayValue } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import { BigValue, BigValueColorMode, BigValueGraphMode, Container } from '@grafana/ui';
 
+import { ThresholdSettings } from 'types';
 import { getSuccessRateThresholdColor } from 'utils';
-import { SuccessRateContext, SuccessRateTypes, SuccessRateValue, ThresholdSettings } from 'contexts/SuccessRateContext';
+import { SuccessRateContext, SuccessRateTypes, SuccessRateValue } from 'contexts/SuccessRateContext';
 import { BigValueTitle } from 'components/BigValueTitle';
 
 import { REACHABILITY_DESCRIPTION, UPTIME_DESCRIPTION } from './constants';

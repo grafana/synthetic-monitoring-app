@@ -4,7 +4,7 @@ import { config } from '@grafana/runtime';
 import { InlineField, InlineFieldRow, Input, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { ThresholdValues } from 'contexts/SuccessRateContext';
+import { ThresholdValues } from 'types';
 
 interface LabelProps {
   color: string;

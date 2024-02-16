@@ -85,6 +85,7 @@ export function K6CheckCodeEditor({ checks, onSubmitSuccess }: Props) {
       throw new Error('No k6 settings');
     }
     const toSubmit = getCheckFromFormValues(checkValues, defaultValues, CheckType.K6);
+
     if (check.id) {
       await instance.api?.updateCheck({
         id: check.id,

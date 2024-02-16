@@ -1,10 +1,11 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Button, HorizontalGroup, LoadingPlaceholder, Modal, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { intersection } from 'lodash';
 
-import { FilteredCheck, GrafanaInstances, Probe } from 'types';
+import { FilteredCheck, Probe } from 'types';
+import { InstanceContext } from 'contexts/InstanceContext';
 
 import ProbesByRegion from './ProbesByRegion';
 
@@ -17,7 +18,6 @@ interface Props {
   onSuccess: () => void;
   onError: (err: string) => void;
   selectedChecks: () => FilteredCheck[];
-  instance: GrafanaInstances;
   action: 'add' | 'remove' | null;
   isOpen: boolean;
 }
@@ -37,7 +37,8 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
 });
 
-const BulkEditModal = ({ onDismiss, onSuccess, onError, isOpen, selectedChecks, action, instance }: Props) => {
+const BulkEditModal = ({ onDismiss, onSuccess, onError, isOpen, selectedChecks, action }: Props) => {
+  const { instance } = useContext(InstanceContext);
   const [probes, setProbes] = useState<Probe[]>();
   const [probesById, setProbesById] = useState<ProbeById | undefined>(undefined);
   const [selectedProbes, setSelectedProbes] = useState<Probe[]>([]);

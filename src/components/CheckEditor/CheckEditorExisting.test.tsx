@@ -10,7 +10,9 @@ import {
   validKey,
 } from 'test/fixtures/checks';
 import { PRIVATE_PROBE, UNSELECTED_PRIVATE_PROBE } from 'test/fixtures/probes';
+import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
+import { server } from 'test/server';
 
 import { ROUTES } from 'types';
 import { DNS_RESPONSE_MATCH_OPTIONS, PLUGIN_URL_PATH } from 'components/constants';
@@ -120,8 +122,10 @@ describe('editing checks', () => {
   });
 
   it('transforms data from existing HTTP check', async () => {
+    const { read, record } = getServerRequests();
+    server.use(apiRoute(`updateCheck`, {}, record));
     const targetCheck = FULL_HTTP_CHECK;
-    const { instance, user } = await renderExistingCheckEditor(`/edit/${targetCheck.id}`);
+    const { user } = await renderExistingCheckEditor(`/edit/${targetCheck.id}`);
     const JOB_SUFFIX = 'tacos';
     const NEW_HEADER = {
       name: 'new headerName',
@@ -233,8 +237,10 @@ describe('editing checks', () => {
     await user.click(invertMatch);
 
     await submitForm(onReturn, user);
-    expect(instance.api?.addCheck).toHaveBeenCalledTimes(0);
-    expect(instance.api?.updateCheck).toHaveBeenCalledWith({
+
+    const { body } = await read();
+
+    expect(body).toEqual({
       ...targetCheck,
       job: `${targetCheck.job}${JOB_SUFFIX}`,
       probes: [UNSELECTED_PRIVATE_PROBE.id],
@@ -275,17 +281,22 @@ describe('editing checks', () => {
   });
 
   it('transforms data correctly for TCP check', async () => {
-    const { instance, user } = await renderExistingCheckEditor(`/edit/${BASIC_TCP_CHECK.id}`);
+    const { read, record } = getServerRequests();
+    server.use(apiRoute(`updateCheck`, {}, record));
+    const { user } = await renderExistingCheckEditor(`/edit/${BASIC_TCP_CHECK.id}`);
 
     await submitForm(onReturn, user);
-    expect(instance.api?.updateCheck).toHaveBeenCalledWith(BASIC_TCP_CHECK);
+    const { body } = await read();
+    expect(body).toEqual(BASIC_TCP_CHECK);
   });
 
   it('transforms data correctly for DNS check', async () => {
+    const { read, record } = getServerRequests();
+    server.use(apiRoute(`updateCheck`, {}, record));
     const NOT_INVERTED_VALIDATION = 'not inverted validation';
     const INVERTED_VALIDATION = 'inverted validation';
 
-    const { instance, user } = await renderExistingCheckEditor(`/edit/${BASIC_DNS_CHECK.id}`);
+    const { user } = await renderExistingCheckEditor(`/edit/${BASIC_DNS_CHECK.id}`);
     await toggleSection('Validation', user);
 
     const responseMatch1 = await screen.findByTestId('dnsValidationResponseMatch0');
@@ -301,8 +312,10 @@ describe('editing checks', () => {
     const invertedCheckboxes = await screen.findAllByRole('checkbox');
     await user.click(invertedCheckboxes[2]);
     await submitForm(onReturn, user);
-    expect(instance.api?.addCheck).toHaveBeenCalledTimes(0);
-    expect(instance.api?.updateCheck).toHaveBeenCalledWith({
+
+    const { body } = await read();
+
+    expect(body).toEqual({
       ...BASIC_DNS_CHECK,
       tenantId: undefined,
       settings: {

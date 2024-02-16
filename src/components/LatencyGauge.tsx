@@ -3,9 +3,9 @@ import { DisplayValue } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import { BigValue, BigValueColorMode, BigValueGraphMode } from '@grafana/ui';
 
-import { CheckType } from 'types';
+import { CheckType, ThresholdSettings } from 'types';
 import { getLatencySuccessRateThresholdColor } from 'utils';
-import { SuccessRateContext, ThresholdSettings } from 'contexts/SuccessRateContext';
+import { SuccessRateContext } from 'contexts/SuccessRateContext';
 import { useMetricData } from 'hooks/useMetricData';
 
 import { BigValueTitle } from './BigValueTitle';

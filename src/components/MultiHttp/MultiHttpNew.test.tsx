@@ -1,8 +1,9 @@
 import React from 'react';
 import { screen, waitFor, within } from '@testing-library/react';
-import { BASIC_CHECK_LIST } from 'test/fixtures/checks';
 import { PUBLIC_PROBE } from 'test/fixtures/probes';
-import { createInstance, render } from 'test/render';
+import { apiRoute, getServerRequests } from 'test/handlers';
+import { render } from 'test/render';
+import { server } from 'test/server';
 
 import { AlertSensitivity, CheckType, ROUTES } from 'types';
 import { submitForm } from 'components/CheckEditor/testHelpers';
@@ -11,13 +12,9 @@ import { PLUGIN_URL_PATH } from 'components/constants';
 import { MultiHttpSettingsForm } from './MultiHttpSettingsForm';
 
 jest.setTimeout(60000);
-
-beforeEach(() => jest.resetAllMocks());
 const onReturn = jest.fn();
 
 const renderNewMultiForm = async () => {
-  const instance = createInstance();
-  instance.api.listChecks = jest.fn().mockResolvedValue(BASIC_CHECK_LIST);
   const res = render(<MultiHttpSettingsForm onReturn={onReturn} />, {
     route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${CheckType.MULTI_HTTP}`,
     path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${CheckType.MULTI_HTTP}`,
@@ -29,6 +26,9 @@ const renderNewMultiForm = async () => {
 
 describe('new checks', () => {
   it('can create a new MULTI-HTTP check', async () => {
+    const { record, read } = getServerRequests();
+    server.use(apiRoute(`addCheck`, {}, record));
+
     const JOB = 'basicmulti';
     const TARGET = 'http://grafanarr.com';
     const LABELS = [{ name: 'customlabelname', value: 'customlabelvalue' }];
@@ -50,7 +50,7 @@ describe('new checks', () => {
       checks: [],
     };
 
-    const { instance, user } = await renderNewMultiForm();
+    const { user } = await renderNewMultiForm();
 
     const jobNameInput = await screen.findByLabelText('Job name', { exact: false });
     await user.type(jobNameInput, 'basicmulti');
@@ -106,8 +106,9 @@ describe('new checks', () => {
 
     await submitForm(onReturn, user);
 
-    expect(instance.api?.addCheck).toHaveBeenCalledTimes(1);
-    expect(instance.api?.addCheck).toHaveBeenCalledWith({
+    const { body } = await read();
+
+    expect(body).toEqual({
       target: TARGET,
       timeout: 15000,
       alertSensitivity: AlertSensitivity.None,
