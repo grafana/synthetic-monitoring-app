@@ -306,18 +306,8 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
         method: 'POST',
         url: `${this.instanceSettings.url}/sm/check/add`,
         data: check,
-        headers: {
-          'Content-Type': 'application/json',
-        },
       })
-    )
-      .then((res) => {
-        console.log(res.data);
-        return res.data;
-      })
-      .catch((e) => {
-        console.log(e);
-      });
+    );
   }
 
   async deleteCheck(id: number) {

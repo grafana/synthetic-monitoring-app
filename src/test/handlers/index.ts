@@ -35,14 +35,16 @@ export function apiRoute<K extends keyof ApiRoutes>(
     ...res,
   };
 
+  let res2 = result;
+
   if (callback) {
-    result = (req: RequestRes) => {
+    res2 = (req: RequestRes) => {
       callback(req);
       return result(req);
     };
   }
 
-  return toRestMethod({ route, method, result });
+  return toRestMethod({ route, method, result: res2 });
 }
 
 function toRestMethod({ route, method, result }: ApiEntry) {

@@ -5,11 +5,11 @@ import React from 'react';
 import { BackendSrvRequest } from '@grafana/runtime';
 import { OrgRole } from '@grafana/data';
 import { server } from './server';
-import axios from 'axios';
+import axios, { Method } from 'axios';
 import { from } from 'rxjs';
 
-import { instanceSettings } from '../datasource/__mocks__/DataSource';
-import { SMDataSource } from '../datasource/DataSource';
+import { instanceSettings } from '../../src/datasource/__mocks__/DataSource';
+import { SMDataSource } from '../../src/datasource/DataSource';
 
 beforeAll(() => {
   server.listen({
@@ -54,25 +54,24 @@ jest.mock('@grafana/runtime', () => {
     getBackendSrv: () => ({
       datasourceRequest: axios.request,
       fetch: (request: BackendSrvRequest) => {
-        if (request.method?.toUpperCase() === 'POST') {
-          return from(
-            axios.post(request.url, request.data)
-          )
-        }
-
         return from(
-          axios.request(request).catch((e) => {
-            console.log(e);
-            const error = new Error(e.message);
-            // // @ts-expect-error Match error format with backendsrv
-            // error.data = e.response.data;
-            // // @ts-expect-error Match error format with backendsrv
-            // error.status = e.response.status;
+          axios
+            .request({
+              ...request,
+              method: request.method as Method,
+            })
+            .catch((e) => {
+              const error = new Error(e.message);
+              // @ts-expect-error Match error format with backendsrv
+              error.data = e.response.data;
+              // @ts-expect-error Match error format with backendsrv
+              error.status = e.response.status;
 
-            throw error;
-          })
+              throw error;
+            })
         );
       },
+      get: axios.get,
     }),
     getDataSourceSrv: () => ({
       get: () => {
