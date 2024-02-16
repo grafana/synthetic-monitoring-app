@@ -1,191 +1,76 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
-import { createInstance, render } from 'test/render';
+import { BASIC_HTTP_CHECK, BASIC_PING_CHECK } from 'test/fixtures/checks';
+import { DEFAULT_PROBES, PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
+import { render } from 'test/render';
 
-import { Check, IpVersion } from 'types';
+import { Check } from 'types';
 
 import { BulkEditModal } from './BulkEditModal';
 
 const onDismiss = jest.fn();
-const selectedChecksSingleProbe = [
-  {
-    job: '',
-    alertSensitivity: 'none',
-    target: '',
-    frequency: 60000,
-    timeout: 3000,
-    enabled: true,
-    labels: [],
-    probes: [32],
-    settings: {
-      ping: {
-        ipVersion: IpVersion.V4,
-        dontFragment: false,
-      },
-    },
-    basicMetricsOnly: false,
-  },
-  {
-    job: '',
-    alertSensitivity: 'none',
-    target: '',
-    frequency: 60000,
-    timeout: 3000,
-    enabled: true,
-    labels: [],
-    probes: [42],
-    settings: {
-      ping: {
-        ipVersion: IpVersion.V4,
-        dontFragment: false,
-      },
-    },
-    basicMetricsOnly: false,
-  },
-];
 
-const selectedChecksMultiProbe = [
-  {
-    job: '',
-    alertSensitivity: 'none',
-    target: '',
-    frequency: 60000,
-    timeout: 3000,
-    enabled: true,
-    labels: [],
-    probes: [32, 42],
-    settings: {
-      ping: {
-        ipVersion: IpVersion.V4,
-        dontFragment: false,
-      },
-    },
-    basicMetricsOnly: false,
-  },
-  {
-    job: '',
-    alertSensitivity: 'none',
-    target: '',
-    frequency: 60000,
-    timeout: 3000,
-    enabled: true,
-    labels: [],
-    probes: [32, 42],
-    settings: {
-      ping: {
-        ipVersion: IpVersion.V4,
-        dontFragment: false,
-      },
-    },
-    basicMetricsOnly: false,
-  },
-];
-
-const renderBulkEditModal = (action: 'add' | 'remove', selectedChecks: Check[]) => {
-  const instance = createInstance();
-
-  return render(<BulkEditModal onDismiss={onDismiss} checks={selectedChecks} action={action} isOpen={true} />, {
-    instance,
-  });
+const renderBulkEditModal = (action: 'add' | 'remove', checks: Check[]) => {
+  return render(<BulkEditModal onDismiss={onDismiss} checks={checks} action={action} isOpen={true} />);
 };
 
 test('shows the modal', async () => {
-  renderBulkEditModal('add', selectedChecksSingleProbe);
-  const title = await screen.findByText('Add probes to 2 selected checks');
+  const checks = [BASIC_HTTP_CHECK, BASIC_PING_CHECK];
+  renderBulkEditModal('add', checks);
+  const title = await screen.findByText(`Add probes to ${checks.length} selected checks`);
   const probes = await screen.findAllByTestId('probe-button');
   expect(title).toBeInTheDocument();
-  expect(probes).toHaveLength(2);
+  expect(probes).toHaveLength(DEFAULT_PROBES.length);
 });
 
 test('successfully adds probes', async () => {
-  const { instance, user } = renderBulkEditModal('add', selectedChecksSingleProbe);
-  const burritoProbe = await screen.findByText('burritos');
-  const tacoProbe = await screen.findByText('tacos');
-  await user.click(burritoProbe);
-  await user.click(tacoProbe);
+  const checksWithASingleProbe = [
+    {
+      ...BASIC_HTTP_CHECK,
+      probes: [PUBLIC_PROBE.id],
+    },
+    {
+      ...BASIC_PING_CHECK,
+      probes: [PUBLIC_PROBE.id],
+    },
+  ];
+
+  const { instance, user } = renderBulkEditModal('add', checksWithASingleProbe);
+  const probe1 = await screen.findByText(PUBLIC_PROBE.name);
+  const probe2 = await screen.findByText(PRIVATE_PROBE.name);
+  await user.click(probe1);
+  await user.click(probe2);
   const submitButton = await screen.findByText('Submit');
   await user.click(submitButton);
 
   expect(instance.api?.bulkUpdateChecks).toHaveBeenCalledWith([
     {
-      job: '',
-      alertSensitivity: 'none',
-      target: '',
-      frequency: 60000,
-      timeout: 3000,
-      enabled: true,
-      labels: [],
-      probes: [32, 42],
-      settings: {
-        ping: {
-          ipVersion: IpVersion.V4,
-          dontFragment: false,
-        },
-      },
-      basicMetricsOnly: false,
+      ...BASIC_HTTP_CHECK,
+      probes: [PUBLIC_PROBE.id, PRIVATE_PROBE.id],
     },
     {
-      job: '',
-      alertSensitivity: 'none',
-      target: '',
-      frequency: 60000,
-      timeout: 3000,
-      enabled: true,
-      labels: [],
-      probes: [42, 32],
-      settings: {
-        ping: {
-          ipVersion: IpVersion.V4,
-          dontFragment: false,
-        },
-      },
-      basicMetricsOnly: false,
+      ...BASIC_PING_CHECK,
+      probes: [PUBLIC_PROBE.id, PRIVATE_PROBE.id],
     },
   ]);
 });
 
 test('successfully removes probes', async () => {
-  const { instance, user } = renderBulkEditModal('remove', selectedChecksMultiProbe);
+  const { instance, user } = renderBulkEditModal('remove', [BASIC_HTTP_CHECK, BASIC_PING_CHECK]);
   expect(instance.api?.listProbes).toHaveBeenCalled();
-  const burritoProbe = await screen.findByText('burritos');
-  await user.click(burritoProbe);
+  const probe1 = await screen.findByText(PUBLIC_PROBE.name);
+  await user.click(probe1);
   const submitButton = await screen.findByText('Submit');
   await user.click(submitButton);
 
   expect(instance.api?.bulkUpdateChecks).toHaveBeenCalledWith([
     {
-      job: '',
-      alertSensitivity: 'none',
-      target: '',
-      frequency: 60000,
-      timeout: 3000,
-      enabled: true,
-      labels: [],
-      probes: [32],
-      settings: {
-        ping: {
-          ipVersion: IpVersion.V4,
-          dontFragment: false,
-        },
-      },
-      basicMetricsOnly: false,
+      ...BASIC_HTTP_CHECK,
+      probes: [PRIVATE_PROBE.id],
     },
     {
-      job: '',
-      alertSensitivity: 'none',
-      target: '',
-      frequency: 60000,
-      timeout: 3000,
-      enabled: true,
-      labels: [],
-      probes: [32],
-      settings: {
-        ping: {
-          ipVersion: IpVersion.V4,
-          dontFragment: false,
-        },
-      },
-      basicMetricsOnly: false,
+      ...BASIC_PING_CHECK,
+      probes: [PRIVATE_PROBE.id],
     },
   ]);
 });

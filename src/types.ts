@@ -276,12 +276,14 @@ export interface TracerouteSettings {
   maxHops: number;
   maxUnknownHops: number;
   ptrLookup: boolean;
+  hopTimeout: number;
 }
 
 export interface TracerouteSettingsFormValues {
   maxHops: string;
   maxUnknownHops: string;
   ptrLookup: boolean;
+  hopTimeout: number;
 }
 
 export interface PingSettings {
@@ -339,13 +341,13 @@ export interface Check extends BaseObject {
 }
 
 export interface Settings {
+  dns?: DnsSettings;
   http?: HttpSettings;
+  k6?: ScriptedSettings;
   multihttp?: MultiHttpSettings;
   ping?: PingSettings;
-  dns?: DnsSettings;
   tcp?: TcpSettings;
   traceroute?: TracerouteSettings;
-  k6?: ScriptedSettings;
 }
 
 export enum CheckType {

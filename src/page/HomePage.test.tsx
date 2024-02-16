@@ -1,5 +1,6 @@
 import React from 'react';
 import { screen, within } from '@testing-library/react';
+import { BASIC_CHECK_LIST } from 'test/fixtures/checks';
 import { render } from 'test/render';
 
 import { HomePage } from './HomePage';
@@ -21,9 +22,9 @@ const assertBigValue = async (label: string, value: string) => {
 describe('Information is present', () => {
   test('shows usage', async () => {
     renderHomePage();
-    await assertBigValue('Total checks', '1');
-    await assertBigValue('Total active series', '81');
-    await assertBigValue('Checks executions per month', '43,800');
-    await assertBigValue('Logs per month', '0.04GB');
+    await assertBigValue('Total checks', String(BASIC_CHECK_LIST.length));
+    await assertBigValue('Total active series', `494`);
+    await assertBigValue('Checks executions per month', '573,382');
+    await assertBigValue('Logs per month', '0.47GB');
   });
 });

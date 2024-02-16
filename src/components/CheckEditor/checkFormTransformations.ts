@@ -262,6 +262,7 @@ const getTracerouteSettingsFormValues = (settings: Settings): TracerouteSettings
     maxHops: String(tracerouteSettings.maxHops),
     ptrLookup: tracerouteSettings.ptrLookup,
     maxUnknownHops: String(tracerouteSettings.maxUnknownHops),
+    hopTimeout: tracerouteSettings.hopTimeout,
   };
 };
 
@@ -713,6 +714,7 @@ const getTracerouteSettings = (
     maxHops: parseInt(String(updatedSettings.maxHops), 10),
     ptrLookup: updatedSettings.ptrLookup,
     maxUnknownHops: parseInt(String(updatedSettings.maxUnknownHops), 10),
+    hopTimeout: updatedSettings.hopTimeout,
   };
 };
 
