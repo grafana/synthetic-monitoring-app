@@ -1,4 +1,5 @@
 import React from 'react';
+import runtime from '@grafana/runtime';
 import { render, screen } from '@testing-library/react';
 
 import { FeatureName } from 'types';
@@ -9,14 +10,13 @@ import { useFeatureFlag } from './useFeatureFlag';
 const CONFIG_FLAG = 'configFlag';
 const URL_FLAG = 'urlFlag';
 
-jest.mock('@grafana/runtime', () => ({
-  config: {
-    featureToggles: {
-      // changing this key to use the declared const variable results in undefined
-      configFlag: { live: true },
-    },
+jest.replaceProperty(runtime, `config`, {
+  featureToggles: {
+    // changing this key to use the declared const variable results in undefined
+    // @ts-expect-error
+    configFlag: { live: true },
   },
-}));
+});
 
 jest.mock('@grafana/data', () => ({
   urlUtil: {
@@ -39,7 +39,7 @@ const Wrapped = ({ name }: WrappedProps) => {
 };
 
 const renderFeatureFlags = (name: string) => {
-  const cast = (name as unknown) as FeatureName;
+  const cast = name as unknown as FeatureName;
   render(
     <FeatureFlagProvider>
       <Wrapped name={cast} />

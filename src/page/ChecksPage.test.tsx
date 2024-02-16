@@ -1,4 +1,5 @@
 import React from 'react';
+import runtime from '@grafana/runtime';
 import { screen, waitFor } from '@testing-library/react';
 import { BASIC_CHECK_LIST, BASIC_PING_CHECK } from 'test/fixtures/checks';
 import { render } from 'test/render';
@@ -10,12 +11,9 @@ import { CheckRouter } from './CheckRouter';
 
 jest.setTimeout(20000);
 
-const renderChecksPage = (multiHttpEnabled = false) => {
-  const featureToggles = { 'multi-http': multiHttpEnabled };
-
+const renderChecksPage = () => {
   return waitFor(() =>
     render(<CheckRouter />, {
-      featureToggles,
       path: `${PLUGIN_URL_PATH}${ROUTES.Checks}`,
       route: `${PLUGIN_URL_PATH}${ROUTES.Checks}`,
     })
@@ -28,7 +26,7 @@ test('renders checks', async () => {
 });
 
 test('renders check selection page with multi-http feature flag is ON', async () => {
-  const { user } = await renderChecksPage(true);
+  const { user } = await renderChecksPage();
   await waitFor(() => screen.getByRole('button', { name: 'Add new check' }));
   await user.click(screen.getByRole('button', { name: 'Add new check' }));
   expect(await screen.findByRole('button', { name: 'HTTP' })).toBeInTheDocument();
@@ -39,7 +37,15 @@ test('renders check selection page with multi-http feature flag is ON', async ()
 });
 
 test('renders check selection page without multi-http feature flag is OFF', async () => {
-  const { user } = await renderChecksPage(false);
+  jest.replaceProperty(runtime, `config`, {
+    ...runtime.config,
+    featureToggles: {
+      // @ts-expect-error
+      configFlag: { 'multi-http': false },
+    },
+  });
+
+  const { user } = await renderChecksPage();
   await waitFor(() => screen.getByRole('button', { name: 'Add new check' }));
   await user.click(screen.getByRole('button', { name: 'Add new check' }));
   expect(await screen.queryByRole('button', { name: 'HTTP' })).toBeInTheDocument();

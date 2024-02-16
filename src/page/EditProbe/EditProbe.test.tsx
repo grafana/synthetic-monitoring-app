@@ -1,8 +1,9 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
-import { DEFAULT_PROBES, PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
+import { DEFAULT_PROBES, PRIVATE_PROBE, PUBLIC_PROBE, UPDATED_PROBE_TOKEN_RESPONSE } from 'test/fixtures/probes';
+import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
-import { getInstanceMock, instanceSettings } from 'datasource/__mocks__/DataSource';
+import { server } from 'test/server';
 
 import { Probe, ROUTES } from 'types';
 import { formatDate } from 'utils';
@@ -11,30 +12,20 @@ import { getRoute } from 'components/Routing';
 import { EditProbe } from './EditProbe';
 import 'test/silenceErrors';
 
-const TOKEN_VALUE = `a very tasty token`;
-
-const updateProbe = jest.fn().mockImplementation(() => Promise.resolve({ probe: PRIVATE_PROBE }));
-const resetProbeToken = jest.fn().mockImplementation(() => Promise.resolve({ token: TOKEN_VALUE }));
 const refetchProbes = jest.fn();
 
 const renderEditProbe = (probe: Probe) => {
-  const mockedInstance = getInstanceMock(instanceSettings);
-  mockedInstance.updateProbe = updateProbe;
-  mockedInstance.resetProbeToken = resetProbeToken;
-
   return render(<EditProbe probes={DEFAULT_PROBES} refetchProbes={refetchProbes} />, {
     route: `${getRoute(ROUTES.EditProbe)}/:id`,
     path: `${getRoute(ROUTES.EditProbe)}/${probe.id}`,
-    instance: {
-      api: mockedInstance,
-    },
   });
 };
 
 describe(`Public probes`, () => {
-  it(`displays the correct information`, () => {
+  it(`displays the correct information`, async () => {
     renderEditProbe(PUBLIC_PROBE);
-    expect(screen.getByText(/They cannot be edited/)).toBeInTheDocument();
+    const text = await screen.findByText(/They cannot be edited/);
+    expect(text).toBeInTheDocument();
     checkInformation(PUBLIC_PROBE);
   });
 
@@ -42,15 +33,16 @@ describe(`Public probes`, () => {
     renderEditProbe(PUBLIC_PROBE);
 
     await screen.findByText('Back');
-    expect(await getSaveButton()).not.toBeInTheDocument();
-    expect(await getResetTokenButton()).not.toBeInTheDocument();
+    expect(getSaveButton()).not.toBeInTheDocument();
+    expect(getResetTokenButton()).not.toBeInTheDocument();
   });
 });
 
 describe(`Private probes`, () => {
-  it(`displays the correct information`, () => {
+  it(`displays the correct information`, async () => {
     renderEditProbe(PRIVATE_PROBE);
-    expect(screen.getByText(/This probe is private/)).toBeInTheDocument();
+    const text = await screen.findByText(/This probe is private/);
+    expect(text).toBeInTheDocument();
     expect(screen.getByDisplayValue(PRIVATE_PROBE.labels[0].name)).toBeInTheDocument();
     expect(screen.getByDisplayValue(PRIVATE_PROBE.labels[0].value)).toBeInTheDocument();
 
@@ -58,25 +50,31 @@ describe(`Private probes`, () => {
   });
 
   it('updates existing probe and redirects to the probes list', async () => {
-    const { instance, history, user } = renderEditProbe(PRIVATE_PROBE);
+    const { record, read } = getServerRequests();
+    server.use(apiRoute(`updateProbe`, {}, record));
+    const { history, user } = renderEditProbe(PRIVATE_PROBE);
+    await screen.findByText(/This probe is private/);
 
     const saveButton = getSaveButton();
     await user.click(saveButton!);
 
     await waitFor(() => expect(history.location.pathname).toBe(getRoute(ROUTES.Probes)));
-    expect(instance.api?.updateProbe).toHaveBeenCalledWith(PRIVATE_PROBE);
+
+    const { body } = await read();
+
+    expect(body).toEqual(PRIVATE_PROBE);
   });
 
   it(`shows the token modal on update`, async () => {
     const { user } = renderEditProbe(PRIVATE_PROBE);
-
-    const resetButton = await getResetTokenButton();
+    await screen.findByText(/This probe is private/);
+    const resetButton = getResetTokenButton();
     await user.click(resetButton!);
 
     const confirmButton = await screen.findByRole('button', { name: 'Reset Token' });
     await user.click(confirmButton);
 
-    const tokenValue = await screen.findByText(TOKEN_VALUE);
+    const tokenValue = await screen.findByText(UPDATED_PROBE_TOKEN_RESPONSE);
     expect(tokenValue).toBeInTheDocument();
   });
 });

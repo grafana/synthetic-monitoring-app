@@ -1,8 +1,9 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { BASIC_PING_CHECK } from 'test/fixtures/checks';
 import { TERRAFORM_BASIC_PING_CHECK, TERRAFORM_PRIVATE_PROBES } from 'test/fixtures/terraform';
-import { createInstance, createWrapper } from 'test/render';
-import { getInstanceMock } from 'datasource/__mocks__/DataSource';
+import { apiRoute } from 'test/handlers';
+import { createWrapper } from 'test/render';
+import { server } from 'test/server';
 
 import { Check } from 'types';
 import { sanitizeName } from 'components/TerraformConfig/terraformConfigUtils';
@@ -10,14 +11,17 @@ import { sanitizeName } from 'components/TerraformConfig/terraformConfigUtils';
 import { useTerraformConfig } from './useTerraformConfig';
 
 async function renderTerraformHook(checks: Check[]) {
-  const api = getInstanceMock();
-  api.listChecks = jest.fn().mockImplementation(() => Promise.resolve(checks));
+  server.use(
+    apiRoute('listChecks', {
+      result: () => {
+        return {
+          json: checks,
+        };
+      },
+    })
+  );
 
-  const { Wrapper } = createWrapper({
-    instance: createInstance({
-      api,
-    }),
-  });
+  const { Wrapper } = createWrapper();
   const { result } = renderHook(() => useTerraformConfig(), { wrapper: Wrapper });
 
   await waitFor(() => {

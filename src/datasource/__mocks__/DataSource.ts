@@ -13,6 +13,7 @@ export const instanceSettings: DataSourceInstanceSettings<SMOptions> = {
   name: 'Synthetic Monitoring',
   access: 'proxy',
   readOnly: false,
+  url: ``,
   meta: {
     type: PluginType.datasource,
     name: 'Synthetic Monitoring API',

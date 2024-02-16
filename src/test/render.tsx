@@ -1,42 +1,23 @@
 import React, { type ReactElement, type ReactNode } from 'react';
 import { Route, Router } from 'react-router-dom';
-import { AppPluginMeta, DataSourceSettings, PluginType } from '@grafana/data';
+import { AppPluginMeta, PluginType } from '@grafana/data';
 import { render, type RenderOptions } from '@testing-library/react';
 import userEventLib from '@testing-library/user-event';
 import { createMemoryHistory } from 'history';
 import pluginInfo from 'plugin.json';
-import { getInstanceMock, instanceSettings } from 'datasource/__mocks__/DataSource';
 
-import { GlobalSettings, GrafanaInstances } from 'types';
-import { InstanceContext } from 'contexts/InstanceContext';
+import { GlobalSettings } from 'types';
 import { ChecksContextProvider } from 'components/ChecksContextProvider';
 import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
-
-export const createInstance = (options?: GrafanaInstances) => {
-  return {
-    api: getInstanceMock(instanceSettings),
-    alertRuler: {} as DataSourceSettings,
-    metrics: {} as DataSourceSettings,
-    logs: {} as DataSourceSettings,
-    ...options,
-  };
-};
+import { InstanceProvider } from 'components/InstanceProvider';
 
 type WrapperProps = {
-  featureToggles?: Record<string, boolean>;
-  instance?: GrafanaInstances;
   path?: string;
   route?: string;
   meta?: Partial<AppPluginMeta<GlobalSettings>>;
 };
 
-export const createWrapper = ({
-  featureToggles,
-  instance = createInstance(),
-  path,
-  route,
-  meta,
-}: WrapperProps = {}) => {
+export const createWrapper = ({ path, route, meta }: WrapperProps = {}) => {
   const defaultMeta = {
     id: pluginInfo.id,
     name: pluginInfo.name,
@@ -62,19 +43,14 @@ export const createWrapper = ({
   const history = createMemoryHistory({
     initialEntries: path ? [path] : undefined,
   });
-  const isFeatureEnabled = (feature: string) => !!featureToggles?.[feature];
 
   // eslint-disable-next-line react/display-name
   const Wrapper = ({ children }: { children: ReactNode }) => (
-    <FeatureFlagProvider overrides={{ featureToggles, isFeatureEnabled }}>
-      <InstanceContext.Provider
-        value={{
-          instance,
-          loading: false,
-          meta: {
-            ...defaultMeta,
-            ...meta,
-          },
+    <FeatureFlagProvider>
+      <InstanceProvider
+        meta={{
+          ...defaultMeta,
+          ...meta,
         }}
       >
         <ChecksContextProvider>
@@ -82,21 +58,19 @@ export const createWrapper = ({
             <Route path={route}>{children}</Route>
           </Router>
         </ChecksContextProvider>
-      </InstanceContext.Provider>
+      </InstanceProvider>
     </FeatureFlagProvider>
   );
 
-  return { Wrapper, instance, history };
+  return { Wrapper, history };
 };
 
 export type CustomRenderOptions = Omit<RenderOptions, 'wrapper'> & WrapperProps;
 
 const customRender = (ui: ReactElement, options: CustomRenderOptions = {}) => {
-  const { featureToggles, instance: instanceOptions, path, route, meta, ...rest } = options;
+  const { path, route, meta, ...rest } = options;
   const user = userEventLib.setup();
-  const { Wrapper, history, instance } = createWrapper({
-    featureToggles,
-    instance: instanceOptions,
+  const { Wrapper, history } = createWrapper({
     path,
     route,
     meta,
@@ -104,7 +78,6 @@ const customRender = (ui: ReactElement, options: CustomRenderOptions = {}) => {
 
   return {
     user,
-    instance,
     history,
     ...render(ui, {
       wrapper: Wrapper,

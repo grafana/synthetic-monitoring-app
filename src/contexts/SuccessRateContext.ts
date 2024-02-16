@@ -1,5 +1,7 @@
 import { createContext } from 'react';
 
+import { ThresholdSettings } from 'types';
+
 export enum SuccessRateTypes {
   Checks = 'checks',
   Probes = 'probes',
@@ -13,16 +15,6 @@ export interface SuccessRateValue {
   uptimeDisplayValue?: string;
 }
 
-export interface ThresholdValues {
-  upperLimit: number;
-  lowerLimit: number;
-}
-export interface ThresholdSettings {
-  [key: string]: ThresholdValues;
-  uptime: ThresholdValues;
-  reachability: ThresholdValues;
-  latency: ThresholdValues;
-}
 export interface SuccessRate {
   [key: number]: SuccessRateValue;
 }

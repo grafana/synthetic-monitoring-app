@@ -10,9 +10,10 @@ import { getRoute } from 'components/Routing';
 import { ProbeCard } from './ProbeCard';
 import 'test/silenceErrors';
 
-it(`Displays the correct information`, () => {
+it(`Displays the correct information`, async () => {
   const probe = ONLINE_PROBE;
   render(<ProbeCard probe={probe} />);
+  await screen.findByText(probe.name);
   expect(screen.getByText(probe.name)).toBeInTheDocument();
   expect(screen.getByText(/Version:/)).toBeInTheDocument();
   expect(screen.getByText(probe.version, { exact: false })).toBeInTheDocument();
@@ -25,37 +26,43 @@ it(`Displays the correct information`, () => {
   }
 });
 
-it(`Displays the correct information for an online probe`, () => {
+it(`Displays the correct information for an online probe`, async () => {
   render(<ProbeCard probe={ONLINE_PROBE} />);
-  expect(screen.getByText(`Online`)).toBeInTheDocument();
+  const text = await screen.findByText(`Online`);
+  expect(text).toBeInTheDocument();
 });
 
-it(`Displays the correct information for an offline probe`, () => {
+it(`Displays the correct information for an offline probe`, async () => {
   render(<ProbeCard probe={OFFLINE_PROBE} />);
-  expect(screen.getByText(`Offline`)).toBeInTheDocument();
+  const text = await screen.findByText(`Offline`);
+  expect(text).toBeInTheDocument();
 });
 
-it(`Displays the correct information for a private probe`, () => {
+it(`Displays the correct information for a private probe`, async () => {
   render(<ProbeCard probe={PRIVATE_PROBE} />);
-  expect(screen.getByText(`Private`, { exact: false })).toBeInTheDocument();
+  const text = await screen.findByText(`Private`, { exact: false });
+  expect(text).toBeInTheDocument();
   expect(screen.getByText(`Edit`)).toBeInTheDocument();
 });
 
-it(`Displays the correct information for a private probe as a viewer`, () => {
+it(`Displays the correct information for a private probe as a viewer`, async () => {
   runTestAsViewer();
   render(<ProbeCard probe={PRIVATE_PROBE} />);
-  expect(screen.getByText(`View`)).toBeInTheDocument();
+  const text = await screen.findByText(`View`);
+  expect(text).toBeInTheDocument();
 });
 
-it(`Displays the correct information for a public probe`, () => {
+it(`Displays the correct information for a public probe`, async () => {
   render(<ProbeCard probe={PUBLIC_PROBE} />);
-  expect(screen.getByText(`Public`)).toBeInTheDocument();
+  const text = await screen.findByText(`Public`);
+  expect(text).toBeInTheDocument();
   expect(screen.getByText(`View`)).toBeInTheDocument();
 });
 
 it('handles probe click', async () => {
   const probe = PRIVATE_PROBE;
   const { history, user } = render(<ProbeCard probe={probe} />);
+  await screen.findByText(probe.name);
   await user.click(screen.getByText(probe.name));
   expect(history.location.pathname).toBe(`${getRoute(ROUTES.EditProbe)}/${probe.id}`);
 });

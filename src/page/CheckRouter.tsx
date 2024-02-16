@@ -39,7 +39,7 @@ export function CheckRouter() {
     <SuccessRateContextProvider>
       <Switch>
         <Route path={path} exact>
-          <CheckList instance={instance} onCheckUpdate={returnToList} />
+          <CheckList onCheckUpdate={returnToList} />
         </Route>
         {perCheckDashboardsEnabled && (
           <Route path={`${path}/:id/dashboard`} exact>

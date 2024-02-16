@@ -10,7 +10,7 @@ const TITLE = `Default Probes`;
 
 it(`Toggles visibility of the probe cards`, async () => {
   const { user } = render(<ProbeList probes={DEFAULT_PROBES} title={TITLE} />);
-  const cards = screen.getAllByText(`Reachability`);
+  const cards = await screen.findAllByText(`Reachability`);
   const title = screen.getByText(TITLE);
 
   // shows cards by default

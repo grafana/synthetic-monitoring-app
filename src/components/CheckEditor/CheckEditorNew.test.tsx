@@ -1,7 +1,9 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
 import { PRIVATE_PROBE } from 'test/fixtures/probes';
+import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
+import { server } from 'test/server';
 
 import { AlertSensitivity, CheckType, HttpMethod, IpVersion, ROUTES } from 'types';
 import { PLUGIN_URL_PATH } from 'components/constants';
@@ -84,12 +86,17 @@ describe('new checks', () => {
   const labels = [{ name: 'foo', value: 'bar' }];
 
   it('can create a new HTTP check', async () => {
-    const { instance, user } = await renderNewCheckEditor(CheckType.HTTP);
+    const { record, read } = getServerRequests();
+    server.use(apiRoute(`addCheck`, {}, record));
+    const { user } = await renderNewCheckEditor(CheckType.HTTP);
     const url = 'https://grafana.com';
 
     await fillBasicCheckFields(name, url, user, labels);
     await submitForm(onReturn, user);
-    expect(instance.api?.addCheck).toHaveBeenCalledWith({
+
+    const { body } = await read();
+
+    expect(body).toEqual({
       probes: [PRIVATE_PROBE.id],
       job: name,
       target: url,
@@ -131,12 +138,17 @@ describe('new checks', () => {
   });
 
   it('can create a new PING check', async () => {
-    const { instance, user } = await renderNewCheckEditor(CheckType.PING);
+    const { record, read } = getServerRequests();
+    server.use(apiRoute(`addCheck`, {}, record));
+    const { user } = await renderNewCheckEditor(CheckType.PING);
     const url = 'grafana.com';
 
     await fillBasicCheckFields(name, url, user, labels);
     await submitForm(onReturn, user);
-    expect(instance.api?.addCheck).toHaveBeenCalledWith({
+
+    const { body } = await read();
+
+    expect(body).toEqual({
       probes: [PRIVATE_PROBE.id],
       job: name,
       target: url,
@@ -156,14 +168,19 @@ describe('new checks', () => {
   });
 
   it('can create a new TCP check', async () => {
-    const { instance, user } = await renderNewCheckEditor(CheckType.TCP);
+    const { record, read } = getServerRequests();
+    server.use(apiRoute(`addCheck`, {}, record));
+
+    const { user } = await renderNewCheckEditor(CheckType.TCP);
     const url = 'grafana.com:43';
 
     await fillBasicCheckFields(name, url, user, labels);
     await fillTCPQueryResponseFields(user);
     await submitForm(onReturn, user);
 
-    expect(instance.api?.addCheck).toHaveBeenCalledWith({
+    const { body } = await read();
+
+    expect(body).toEqual({
       probes: [PRIVATE_PROBE.id],
       job: name,
       target: url,
@@ -197,14 +214,20 @@ describe('new checks', () => {
   });
 
   it('can create a new DNS check', async () => {
-    const { instance, user } = await renderNewCheckEditor(CheckType.DNS);
+    const { record, read } = getServerRequests();
+    server.use(apiRoute(`addCheck`, {}, record));
+
+    const { user } = await renderNewCheckEditor(CheckType.DNS);
     const url = 'grafana.com';
 
     await fillBasicCheckFields(name, url, user, labels);
     await fillDnsValidationFields(user);
 
     await submitForm(onReturn, user);
-    expect(instance.api?.addCheck).toHaveBeenCalledWith({
+
+    const { body } = await read();
+
+    expect(body).toEqual({
       probes: [PRIVATE_PROBE.id],
       job: name,
       target: url,
