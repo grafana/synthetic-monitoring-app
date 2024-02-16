@@ -77,7 +77,7 @@ describe('new scripted check', () => {
       probes: [PRIVATE_PROBE.id],
       labels: [LABEL],
       settings: {
-        k6: {
+        scripted: {
           script: btoa(SCRIPT),
         },
       },
@@ -162,7 +162,7 @@ describe('edit scripted check', () => {
       labels: [NEW_LABEL],
       tenantId: undefined,
       settings: {
-        k6: {
+        scripted: {
           script: btoa(NEW_SCRIPT),
         },
       },
