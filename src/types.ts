@@ -276,12 +276,14 @@ export interface TracerouteSettings {
   maxHops: number;
   maxUnknownHops: number;
   ptrLookup: boolean;
+  hopTimeout: number;
 }
 
 export interface TracerouteSettingsFormValues {
   maxHops: string;
   maxUnknownHops: string;
   ptrLookup: boolean;
+  hopTimeout: number;
 }
 
 export interface PingSettings {
@@ -343,10 +345,10 @@ export interface FilteredCheck extends Omit<Check, 'id'> {
 }
 
 export interface Settings {
+  dns?: DnsSettings;
   http?: HttpSettings;
   multihttp?: MultiHttpSettings;
   ping?: PingSettings;
-  dns?: DnsSettings;
   tcp?: TcpSettings;
   traceroute?: TracerouteSettings;
   scripted?: ScriptedSettings;

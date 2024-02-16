@@ -1,5 +1,6 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
+import { BASIC_CHECK_LIST, BASIC_PING_CHECK } from 'test/fixtures/checks';
 import { render } from 'test/render';
 
 import { ROUTES } from 'types';
@@ -23,7 +24,7 @@ const renderChecksPage = (multiHttpEnabled = false) => {
 
 test('renders checks', async () => {
   await renderChecksPage();
-  await waitFor(() => expect(screen.getByText('a jobname')).toBeInTheDocument());
+  await waitFor(() => expect(screen.getByText(BASIC_PING_CHECK.job)).toBeInTheDocument());
 });
 
 test('renders check selection page with multi-http feature flag is ON', async () => {
@@ -50,7 +51,10 @@ test('renders check selection page without multi-http feature flag is OFF', asyn
 
 test('renders check editor existing check', async () => {
   const { user } = await renderChecksPage();
-  const edit = await screen.findByTestId('edit-check-button');
-  await user.click(edit);
-  await waitFor(() => expect(screen.getByText('Editing a jobname')).toBeInTheDocument());
+  const editButtons = await screen.findAllByTestId('edit-check-button');
+  const sortedBasicCheckList = BASIC_CHECK_LIST.sort((a, b) => a.job.localeCompare(b.job));
+  const checkToEdit = 3;
+
+  await user.click(editButtons[checkToEdit]);
+  await waitFor(() => expect(screen.getByText(`Editing ${sortedBasicCheckList[checkToEdit].job}`)).toBeInTheDocument());
 });

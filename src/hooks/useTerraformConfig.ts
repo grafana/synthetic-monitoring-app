@@ -3,16 +3,18 @@ import { config as runtimeConfig } from '@grafana/runtime';
 
 import { GrafanaInstances } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { checkToTF, probeToTF,sanitizeName } from 'components/TerraformConfig/terraformConfigUtils';
-import { TFCheckConfig, TFConfig, TFOutput,TFProbeConfig } from 'components/TerraformConfig/terraformTypes';
+import { checkToTF, probeToTF, sanitizeName } from 'components/TerraformConfig/terraformConfigUtils';
+import { TFCheckConfig, TFConfig, TFOutput, TFProbeConfig } from 'components/TerraformConfig/terraformTypes';
 
 async function generateTerraformConfig(instance: GrafanaInstances): Promise<TFOutput> {
   const checks = await instance.api?.listChecks();
   const probes = await instance.api?.listProbes();
+
   if (!checks || !probes) {
     throw new Error("Couldn't generate TF config");
   }
-  const checksConfig = checks?.reduce<TFCheckConfig>((acc, check) => {
+
+  const checksConfig = checks.reduce<TFCheckConfig>((acc, check) => {
     const checkConfig = checkToTF(check);
     const resourceName = sanitizeName(`${check.job}_${check.target}`);
     if (!acc[resourceName]) {
@@ -76,6 +78,7 @@ export function useTerraformConfig() {
   const { instance } = useContext(InstanceContext);
   const [generated, setGenerated] = useState<TFOutput>();
   const [error, setError] = useState('');
+
   useEffect(() => {
     generateTerraformConfig(instance)
       .then((generated) => {

@@ -2,31 +2,17 @@ import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
 import { render } from 'test/render';
 
-import { CheckType, DnsProtocol, DnsRecordType, HttpMethod, IpVersion } from 'types';
+import { CheckType } from 'types';
 
 import CheckTarget from './CheckTarget';
 jest.unmock('utils');
 
 const onChangeMock = jest.fn();
 
-const checkSettingsMock = {
-  http: { method: HttpMethod.GET, ipVersion: IpVersion.V4, noFollowRedirects: false },
-  ping: { ipVersion: IpVersion.V4, dontFragment: false },
-  dns: {
-    ipVersion: IpVersion.V4,
-    port: 53,
-    protocol: DnsProtocol.TCP,
-    recordType: DnsRecordType.A,
-    server: 'dns.google',
-  },
-  tcp: { ipVersion: IpVersion.V4, tls: false },
-};
-
 const renderCheckTarget = ({
   target = '',
   typeOfCheck = CheckType.DNS,
   disabled = false,
-  checkSettings = checkSettingsMock,
   onChange = onChangeMock,
 } = {}) =>
   waitFor(() =>

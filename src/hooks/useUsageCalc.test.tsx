@@ -1,5 +1,5 @@
 import React, { PropsWithChildren } from 'react';
-import { act,renderHook } from '@testing-library/react';
+import { act, renderHook } from '@testing-library/react';
 import { createWrapper } from 'test/render';
 
 import { Check, DnsSettings, HttpSettings, PingSettings, TcpSettings } from 'types';
@@ -160,9 +160,9 @@ describe('ping usage', () => {
     });
     expect(basic.current).toStrictEqual({
       checksPerMonth: 43800,
-      activeSeries: 81,
+      activeSeries: 87,
       logsGbPerMonth: 0.04,
-      dpm: 81,
+      dpm: 87,
     });
   });
 
@@ -178,9 +178,9 @@ describe('ping usage', () => {
 
     expect(basic.current).toStrictEqual({
       checksPerMonth: 43800,
-      activeSeries: 25,
+      activeSeries: 31,
       logsGbPerMonth: 0.04,
-      dpm: 25,
+      dpm: 31,
     });
   });
 });
@@ -264,9 +264,9 @@ describe('dns usage', () => {
     });
     expect(basic.current).toStrictEqual({
       checksPerMonth: 43800,
-      activeSeries: 84,
+      activeSeries: 85,
       logsGbPerMonth: 0.04,
-      dpm: 84,
+      dpm: 85,
     });
   });
 
@@ -282,9 +282,9 @@ describe('dns usage', () => {
 
     expect(basic.current).toStrictEqual({
       checksPerMonth: 43800,
-      activeSeries: 28,
+      activeSeries: 29,
       logsGbPerMonth: 0.04,
-      dpm: 28,
+      dpm: 29,
     });
   });
 });

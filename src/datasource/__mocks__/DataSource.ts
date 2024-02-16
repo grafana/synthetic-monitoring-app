@@ -1,4 +1,6 @@
-import { DataSourceInstanceSettings,PluginSignatureStatus, PluginType } from '@grafana/data';
+import { DataSourceInstanceSettings, PluginSignatureStatus, PluginType } from '@grafana/data';
+import { BASIC_CHECK_LIST, CheckInfo } from 'test/fixtures/checks';
+import { DEFAULT_PROBES } from 'test/fixtures/probes';
 
 import { SMOptions } from '../types';
 
@@ -101,72 +103,13 @@ export const getInstanceMock = (settings: DataSourceInstanceSettings<SMOptions> 
   const instance = new SMDataSource(settings);
   instance.getMetricsDS = jest.fn().mockImplementation(() => ({ url: 'a url' }));
   instance.addCheck = jest.fn().mockImplementation(() => Promise.resolve({ id: 3 }));
-  instance.listProbes = jest.fn().mockImplementation(() =>
-    Promise.resolve([
-      {
-        name: 'tacos',
-        id: 32,
-        public: false,
-        latitude: 0.0,
-        longitude: 0.0,
-        region: 'EMEA',
-        labels: [{ name: 'Mr', value: 'Orange' }],
-        online: true,
-        onlineChange: 0,
-      },
-      {
-        name: 'burritos',
-        id: 42,
-        public: true,
-        latitude: 0.0,
-        longitude: 0.0,
-        region: 'AMER',
-        labels: [{ name: 'Mr', value: 'Pink' }],
-        online: false,
-        onlineChange: 0,
-      },
-    ])
-  );
+  instance.listProbes = jest.fn().mockImplementation(() => Promise.resolve(DEFAULT_PROBES));
   instance.addProbe = jest.fn().mockImplementation(() => Promise.resolve({ token: 'a token' }));
   instance.deleteProbe = jest.fn();
   instance.updateProbe = jest.fn();
   instance.resetProbeToken = jest.fn();
-  instance.listChecks = jest.fn().mockImplementation(() =>
-    Promise.resolve([
-      {
-        job: 'a jobname',
-        id: 1,
-        target: 'example.com',
-        frequency: 60000,
-        timeout: 3000,
-        enabled: true,
-        labels: [],
-        probes: [1],
-        settings: {
-          ping: {
-            ipVersion: 'V4',
-            dontFragment: false,
-          },
-        },
-      },
-    ])
-  );
-  instance.getCheckInfo = jest.fn().mockResolvedValue({
-    AccountingClasses: {
-      dns: { Series: 84 },
-      dns_basic: { Series: 28 },
-      http: { Series: 118 },
-      http_basic: { Series: 34 },
-      http_ssl: { Series: 122 },
-      http_ssl_basic: { Series: 38 },
-      ping: { Series: 81 },
-      ping_basic: { Series: 25 },
-      tcp: { Series: 37 },
-      tcp_basic: { Series: 23 },
-      tcp_ssl: { Series: 41 },
-      tcp_ssl_basic: { Series: 27 },
-    },
-  });
+  instance.listChecks = jest.fn().mockImplementation(() => Promise.resolve(BASIC_CHECK_LIST));
+  instance.getCheckInfo = jest.fn().mockResolvedValue(CheckInfo);
   instance.deleteCheck = jest.fn();
   instance.updateCheck = jest.fn().mockImplementation(() => Promise.resolve({ data: {} }));
   instance.getTenantSettings = jest.fn().mockImplementation(() =>

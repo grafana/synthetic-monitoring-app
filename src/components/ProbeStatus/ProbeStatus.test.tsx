@@ -1,6 +1,6 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
-import { OFFLINE_PROBE, ONLINE_PROBE, PRIVATE_PROBE } from 'test/fixtures';
+import { OFFLINE_PROBE, ONLINE_PROBE, PRIVATE_PROBE } from 'test/fixtures/probes';
 import { render } from 'test/render';
 import { runTestAsViewer } from 'test/utils';
 

@@ -142,6 +142,8 @@ const settingsToTF = (check: Check): TFCheckSettings => {
           }),
         },
       };
+    case CheckType.Scripted:
+      return {}; // TODO FIX
     default:
       throw new Error(`could not translate settings for check to terraform config: ${check.job}`);
   }

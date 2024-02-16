@@ -16,7 +16,7 @@ export type MultiHttpVariable = {
 };
 
 export type HeaderType = {
-  name: 'Accept' | 'Accept-Charset' | 'Authorization' | 'Cache-Control' | 'Content-Type';
+  name: 'Accept' | 'Accept-Charset' | 'Authorization' | 'Cache-Control' | 'Content-Type' | string;
   value: string;
 };
 

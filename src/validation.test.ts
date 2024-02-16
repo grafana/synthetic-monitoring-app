@@ -1,13 +1,6 @@
-import {
-  AlertSensitivity,
-  Check,
-  CheckType,
-  DnsProtocol,
-  DnsRecordType,
-  HTTPCompressionAlgo,
-  HttpMethod,
-  IpVersion,
-} from 'types';
+import { BASIC_CHECK_LIST } from 'test/fixtures/checks';
+
+import { CheckType } from 'types';
 import {
   CheckValidation,
   validateCheck,
@@ -17,100 +10,14 @@ import {
   validateTLSClientCert,
   validateTLSClientKey,
 } from 'validation';
+
 jest.unmock('utils');
 
 describe('trivial cases', () => {
-  it('should be a valid http check', async () => {
-    const check: Check = {
-      job: 'job-1',
-      alertSensitivity: AlertSensitivity.None,
-      target: 'https://grafana.com/',
-      frequency: 10000,
-      timeout: 1000,
-      labels: [],
-      probes: [1],
-      enabled: true,
-      basicMetricsOnly: true,
-      settings: {
-        http: {
-          compression: HTTPCompressionAlgo.none,
-          method: HttpMethod.GET,
-          ipVersion: IpVersion.V4,
-          noFollowRedirects: false,
-        },
-      },
-    };
-
-    expect(validateCheck(check)).toBe(false);
-  });
-
-  it('should be a valid ping check', async () => {
-    const check: Check = {
-      job: 'job-1',
-      alertSensitivity: AlertSensitivity.None,
-      target: 'grafana.com',
-      frequency: 10000,
-      timeout: 1000,
-      labels: [],
-      probes: [1],
-      enabled: true,
-      basicMetricsOnly: true,
-      settings: {
-        ping: {
-          ipVersion: IpVersion.V4,
-          dontFragment: true,
-        },
-      },
-    };
-
-    expect(validateCheck(check)).toBe(false);
-  });
-
-  it('should be a valid dns check', async () => {
-    const check: Check = {
-      job: 'job-1',
-      alertSensitivity: AlertSensitivity.None,
-      target: 'grafana.com',
-      frequency: 10000,
-      timeout: 1000,
-      labels: [],
-      probes: [1],
-      enabled: true,
-      basicMetricsOnly: true,
-      settings: {
-        dns: {
-          recordType: DnsRecordType.A,
-          server: 'dns.google',
-          ipVersion: IpVersion.V4,
-          protocol: DnsProtocol.TCP,
-          port: 53,
-        },
-      },
-    };
-
-    expect(validateCheck(check)).toBe(false);
-  });
-
-  it('should be a valid tcp check', () => {
-    const check: Check = {
-      job: 'job-1',
-      alertSensitivity: AlertSensitivity.None,
-      target: 'grafana.com:80',
-      frequency: 10000,
-      timeout: 1000,
-      labels: [],
-      probes: [1],
-      enabled: true,
-      basicMetricsOnly: true,
-      settings: {
-        tcp: {
-          ipVersion: IpVersion.V4,
-          tls: false,
-        },
-      },
-    };
-
-    expect(validateCheck(check)).toBe(false);
+  BASIC_CHECK_LIST.forEach((check) => {
+    test(`should validate ${Object.keys(check.settings)[0]} check`, () => {
+      expect(validateCheck(check)).toBe(false);
+    });
   });
 });
 
