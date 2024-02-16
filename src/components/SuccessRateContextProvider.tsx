@@ -164,8 +164,7 @@ export function SuccessRateContextProvider({ onlyProbes, probes, children }: Pro
       const probeReachabilityQuery =
         'sum(rate(probe_all_success_sum[3h])) by (probe) / sum(rate(probe_all_success_count[3h])) by (probe)';
 
-      const checkUptimeQuery = `sum_over_time((ceil(sum by (instance, job) (increase(probe_all_success_sum[5m])) / sum by (instance, job) (increase(probe_all_success_count[5m]))))[3h:])
-            / count_over_time((sum by (instance, job) (increase(probe_all_success_count[5m])))[3h:])`;
+      const checkUptimeQuery = `sum_over_time((ceil(sum by (instance, job) (increase(probe_all_success_sum[5m])) / sum by (instance, job) (increase(probe_all_success_count[5m]))))[3h:]) / count_over_time((sum by (instance, job) (increase(probe_all_success_count[5m])))[3h:])`;
 
       const successRateType = checks ? SuccessRateTypes.Checks : SuccessRateTypes.Probes;
 

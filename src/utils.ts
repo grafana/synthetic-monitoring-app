@@ -1,11 +1,11 @@
 import { DataSourceInstanceSettings, OrgRole, TimeRange } from '@grafana/data';
 import { config, getBackendSrv } from '@grafana/runtime';
 import { IconName } from '@grafana/ui';
+import { firstValueFrom } from 'rxjs';
 
 import { DashboardInfo, LinkedDatasourceInfo, LogQueryResponse, LogStream, SMOptions } from './datasource/types';
 import { CheckType, HostedInstance, Probe, Settings, SubmissionErrorWrapper, ThresholdSettings } from 'types';
 import { SMDataSource } from 'datasource/DataSource';
-import {} from 'contexts/SuccessRateContext';
 
 /**
  * Find all synthetic-monitoring datasources
@@ -178,7 +178,6 @@ export const queryMetric = async (
   query: string,
   options?: MetricQueryOptions
 ): Promise<MetricQueryResponse> => {
-  const backendSrv = getBackendSrv();
   const lastUpdate = Math.floor(Date.now() / 1000);
   const params = {
     query,
@@ -189,19 +188,15 @@ export const queryMetric = async (
   const path = options?.step ? '/api/v1/query_range' : '/api/v1/query';
 
   try {
-    const response = await backendSrv
-      .fetch<MetricDatasourceResponseWrapper>({
+    const response = await firstValueFrom(
+      getBackendSrv().fetch<MetricDatasourceResponseWrapper>({
         method: 'GET',
         url: `${url}${path}`,
         params,
       })
-      .toPromise();
-    if (!response?.ok) {
-      return { error: 'Error fetching data', data: [] };
-    }
-    return {
-      data: response.data?.data?.result ?? [],
-    };
+    ).then((res) => res.data.data.result);
+
+    return { data: response };
   } catch (e: any) {
     return { error: (e.message || e.data?.message) ?? 'Error fetching data', data: [] };
   }
