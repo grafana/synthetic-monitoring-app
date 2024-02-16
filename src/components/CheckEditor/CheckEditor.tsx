@@ -49,25 +49,25 @@ const getStyles = (theme: GrafanaTheme2) => ({
 export const CheckEditor = () => {
   const { data: checks } = useChecks();
   const { id, checkType: checkTypeParam } = useParams<CheckPageParams>();
+  const checkType = checkTypeParamToCheckType(checkTypeParam);
 
+  if (id && !checks) {
+    return null;
+  }
+
+  const check = checks?.find((c) => c.id === Number(id)) ?? fallbackCheck(checkType);
+
+  return <CheckEditorContent check={check} />;
+};
+
+const CheckEditorContent = ({ check }: { check: Check }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const styles = useStyles2(getStyles);
-  // If we're editing, grab the appropriate check from the list
-  let checkType = checkTypeParamToCheckType(checkTypeParam);
-  let check: Check = fallbackCheck(checkType);
 
-  if (id) {
-    check = checks?.find((c) => c.id === Number(id)) ?? fallbackCheck(checkType);
-  }
   const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
   const formMethods = useForm<CheckFormValues>({ defaultValues, mode: 'onChange' });
   const selectedCheckType = formMethods.watch('checkType')?.value ?? null;
-
-  if (id) {
-    checkType = getCheckType(check.settings);
-  } else if (selectedCheckType && !id) {
-    checkType = selectedCheckType;
-  }
+  const checkType = getCheckType(check.settings);
 
   const { updateCheck, createCheck, deleteCheck, error, submitting } = useCUDChecks({ eventInfo: { checkType } });
 

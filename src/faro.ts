@@ -51,7 +51,6 @@ export function reportEvent(type: FaroEvent, info: Record<string, string> = {}) 
   };
 
   try {
-    console.log(`Reporting event: ${type}`, attributes);
     faro.api.pushEvent(type, attributes);
   } catch (e) {
     console.error(`Failed to report event: ${type}`, e);

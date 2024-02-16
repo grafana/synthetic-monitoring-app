@@ -11,11 +11,7 @@ import { hasRole } from 'utils';
 import { validateJob, validateTarget } from 'validation';
 import { useChecks, useCUDChecks } from 'data/useChecks';
 
-import {
-  checkTypeParamToCheckType,
-  getCheckFromFormValues,
-  getDefaultValuesFromCheck,
-} from './CheckEditor/checkFormTransformations';
+import { getCheckFromFormValues, getDefaultValuesFromCheck } from './CheckEditor/checkFormTransformations';
 import { ProbeOptions } from './CheckEditor/ProbeOptions';
 import { CheckFormAlert } from './CheckFormAlert';
 import { CheckTestButton } from './CheckTestButton';
@@ -50,18 +46,21 @@ function getStyles(theme: GrafanaTheme2) {
   };
 }
 
-export function K6CheckCodeEditor() {
+export const K6CheckCodeEditor = () => {
   const { data: checks } = useChecks();
-  const { id, checkType: checkTypeParam } = useParams<CheckPageParams>();
-  const { updateCheck, createCheck, error, submitting } = useCUDChecks({ eventInfo: { checkType: CheckType.K6 } });
+  const { id } = useParams<CheckPageParams>();
 
-  let checkType = checkTypeParamToCheckType(checkTypeParam);
-  let check: Check = fallbackCheck(checkType);
-
-  if (id) {
-    check = checks?.find((c) => c.id === Number(id)) ?? fallbackCheck(checkType);
+  if (id && !checks) {
+    return null;
   }
 
+  const check = checks?.find((c) => c.id === Number(id)) ?? fallbackCheck(CheckType.K6);
+
+  return <K6CheckCodeEditorContent check={check} />;
+};
+
+function K6CheckCodeEditorContent({ check }: { check: Check }) {
+  const { updateCheck, createCheck, error, submitting } = useCUDChecks({ eventInfo: { checkType: CheckType.K6 } });
   const defaultValues = getDefaultValuesFromCheck(check);
 
   const formMethods = useForm<CheckFormValues>({

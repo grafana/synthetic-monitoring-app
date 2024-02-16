@@ -207,7 +207,6 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
         url: `${this.instanceSettings.url}/sm/probe/list`,
       })
     ).then((res) => {
-      console.log(res.data);
       return res.data;
     });
   }

@@ -3,30 +3,33 @@ import { MutationCache, MutationOptions, QueryCache, QueryClient, QueryOptions }
 import { FaroEvent, isFaroEventMeta, reportError, reportEvent } from 'faro';
 import { showAlert } from 'data/utils';
 
-export const queryClient = new QueryClient({
-  queryCache: new QueryCache({
-    onSuccess: (data, query) => {
-      handleSuccess(data, query.options);
+export const getQueryClient = () =>
+  new QueryClient({
+    queryCache: new QueryCache({
+      onSuccess: (data, query) => {
+        handleSuccess(data, query.options);
+      },
+      onError: (error, query) => {
+        handleError(error, query.options);
+      },
+    }),
+    mutationCache: new MutationCache({
+      onSuccess: (data, payload, context, mutation) => {
+        handleSuccess(data, mutation.options);
+      },
+      onError: (error, payload, context, mutation) => {
+        handleError(error, mutation.options);
+      },
+    }),
+    defaultOptions: {
+      queries: {
+        staleTime: Infinity,
+        retry: false,
+      },
     },
-    onError: (error, query) => {
-      handleError(error, query.options);
-    },
-  }),
-  mutationCache: new MutationCache({
-    onSuccess: (data, payload, context, mutation) => {
-      handleSuccess(data, mutation.options);
-    },
-    onError: (error, payload, context, mutation) => {
-      handleError(error, mutation.options);
-    },
-  }),
-  defaultOptions: {
-    queries: {
-      staleTime: Infinity,
-      retry: false,
-    },
-  },
-});
+  });
+
+export const queryClient = getQueryClient();
 
 function handleSuccess(data: unknown, options: MutationOptions | QueryOptions) {
   const { meta } = options;

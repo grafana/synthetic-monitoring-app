@@ -45,7 +45,7 @@ test('successfully adds probes', async () => {
   const probe2 = await screen.findByText(PRIVATE_PROBE.name);
   await user.click(probe1);
   await user.click(probe2);
-  const submitButton = await screen.findByText('Submit');
+  const submitButton = await screen.findByText('Add probes');
   await user.click(submitButton);
 
   const { body } = await read();
@@ -69,7 +69,7 @@ test('successfully removes probes', async () => {
   const { user } = renderBulkEditModal('remove', [BASIC_HTTP_CHECK, BASIC_PING_CHECK]);
   const probe1 = await screen.findByText(PUBLIC_PROBE.name);
   await user.click(probe1);
-  const submitButton = await screen.findByText('Submit');
+  const submitButton = await screen.findByText('Remove probes');
   await user.click(submitButton);
 
   const { body } = await read();

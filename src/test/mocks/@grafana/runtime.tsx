@@ -33,7 +33,7 @@ jest.mock('@grafana/runtime', () => {
         {
           uid: `grafanacloud-metrics`,
           grafanaName: `Synthetic Monitoring Metrics`,
-          url: `/metrics/`,
+          url: `/metrics`,
         },
       ],
       featureToggles: {
@@ -63,7 +63,6 @@ jest.mock('@grafana/runtime', () => {
             })
         );
       },
-      get: axios.get,
     }),
     getDataSourceSrv: () => ({
       get: (name: string) => {
@@ -75,7 +74,7 @@ jest.mock('@grafana/runtime', () => {
           return Promise.resolve(
             new FakeMetricsDS({
               name: `grafanacloud-fake-prom`,
-              url: `/metrics/`,
+              url: `/metrics`,
               id: 1,
               type: `prometheus`,
             })

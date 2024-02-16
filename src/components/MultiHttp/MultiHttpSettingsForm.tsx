@@ -39,18 +39,23 @@ import { focusField, getMultiHttpFormErrors, useMultiHttpCollapseState } from '.
 
 export const MultiHttpSettingsForm = () => {
   const { data: checks } = useChecks();
+  const { id } = useParams<CheckPageParams>();
+
+  if (id && !checks) {
+    return null;
+  }
+
+  const check = checks?.find((c) => c.id === Number(id)) ?? multiHttpFallbackCheck;
+
+  return <MultiHttpSettingsFormContent check={check} />;
+};
+
+const MultiHttpSettingsFormContent = ({ check }: { check: Check }) => {
   const styles = useStyles2(getMultiHttpFormStyles);
   const panelRefs = useRef<Record<string, HTMLButtonElement | null>>({});
-  const { id } = useParams<CheckPageParams>();
   const { deleteCheck, updateCheck, createCheck, error, submitting } = useCUDChecks({
     eventInfo: { checkType: CheckType.MULTI_HTTP },
   });
-
-  let check: Check = multiHttpFallbackCheck;
-
-  if (id) {
-    check = checks?.find((c) => c.id === Number(id)) ?? multiHttpFallbackCheck;
-  }
 
   const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
   const [collapseState, dispatchCollapse] = useMultiHttpCollapseState(check);

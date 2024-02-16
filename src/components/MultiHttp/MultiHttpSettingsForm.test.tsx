@@ -15,7 +15,6 @@ import { MultiHttpSettingsForm } from './MultiHttpSettingsForm';
 jest.setTimeout(60000);
 
 beforeEach(() => jest.resetAllMocks());
-const onReturn = jest.fn();
 
 async function renderForm(route: string) {
   const res = waitFor(() =>
@@ -98,8 +97,6 @@ describe('editing multihttp check', () => {
     const submitButton = await screen.findByRole('button', { name: 'Save' });
     await user.click(submitButton);
 
-    await waitFor(() => expect(onReturn).toHaveBeenCalledWith(true));
-
     const { body } = await read();
     expect(body).toEqual(targetCheck);
   });
@@ -174,8 +171,6 @@ describe('editing multihttp check', () => {
 
     const submitButton = await screen.findByRole('button', { name: 'Save' });
     await user.click(submitButton);
-
-    await waitFor(() => expect(onReturn).toHaveBeenCalledWith(true));
 
     const { body } = await read();
     expect(body).toEqual({

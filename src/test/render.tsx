@@ -8,7 +8,7 @@ import { createMemoryHistory } from 'history';
 import pluginInfo from 'plugin.json';
 
 import { GlobalSettings } from 'types';
-import { queryClient } from 'data/queryClient';
+import { getQueryClient } from 'data/queryClient';
 import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
 import { InstanceProvider } from 'components/InstanceProvider';
 
@@ -54,7 +54,7 @@ export const createWrapper = ({ path, route, meta }: WrapperProps = {}) => {
           ...meta,
         }}
       >
-        <QueryClientProvider client={queryClient}>
+        <QueryClientProvider client={getQueryClient()}>
           <Router history={history}>
             <Route path={route}>{children}</Route>
           </Router>

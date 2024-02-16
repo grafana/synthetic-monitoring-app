@@ -81,7 +81,6 @@ export function useProbesReachabilitySuccessRate() {
 
 export function useProbeReachabilitySuccessRate(probeName?: string) {
   const props = useProbesReachabilitySuccessRate();
-  console.log(props.data);
   const probe = props.data?.find((d) => d.metric.probe === probeName);
 
   return {

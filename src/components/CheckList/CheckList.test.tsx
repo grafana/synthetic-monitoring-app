@@ -6,11 +6,10 @@ import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
 
-import { CheckSort, ROUTES } from 'types';
+import { Check, CheckSort, ROUTES } from 'types';
 import { PLUGIN_URL_PATH } from 'components/constants';
 
 import { CheckList } from './CheckList';
-import { Check } from 'types';
 
 jest.mock('hooks/useNavigation', () => {
   const actual = jest.requireActual('hooks/useNavigation');
@@ -289,7 +288,7 @@ test('clicking add new is handled', async () => {
 
 test('select all performs disable action on all visible checks', async () => {
   const { read, record } = getServerRequests();
-  server.use(apiRoute(`updateCheck`, {}, record));
+  server.use(apiRoute(`bulkUpdateChecks`, {}, record));
 
   const checkList = [BASIC_DNS_CHECK, BASIC_HTTP_CHECK];
   const { user } = await renderCheckList(checkList);
@@ -301,23 +300,19 @@ test('select all performs disable action on all visible checks', async () => {
 
   await user.click(disableButton);
 
-  const DNSrequest = await read(0);
-  const HTTPRequst = await read(1);
+  const { body } = await read();
 
-  expect(DNSrequest.body).toEqual({
-    ...BASIC_DNS_CHECK,
-    enabled: false,
-  });
-
-  expect(HTTPRequst.body).toEqual({
-    ...BASIC_HTTP_CHECK,
-    enabled: false,
-  });
+  expect(body).toEqual(
+    [BASIC_DNS_CHECK, BASIC_HTTP_CHECK].map((check) => ({
+      ...check,
+      enabled: false,
+    }))
+  );
 });
 
 test('select all performs enable action on all visible checks', async () => {
   const { read, record } = getServerRequests();
-  server.use(apiRoute(`updateCheck`, {}, record));
+  server.use(apiRoute(`bulkUpdateChecks`, {}, record));
 
   const checkList = [BASIC_DNS_CHECK, BASIC_HTTP_CHECK].map((check) => ({
     ...check,
@@ -328,14 +323,12 @@ test('select all performs enable action on all visible checks', async () => {
   await user.click(selectAll);
   const selectedText = await screen.findByText(`${checkList.length} checks are selected.`);
   expect(selectedText).toBeInTheDocument();
-  const disableButton = await screen.findByRole('button', { name: 'Enable' });
-  await user.click(disableButton);
+  const enableButton = await screen.findByRole('button', { name: 'Enable' });
+  await user.click(enableButton);
 
-  const DNSrequest = await read(0);
-  const HTTPRequst = await read(1);
+  const { body } = await read();
 
-  expect(DNSrequest.body).toEqual(BASIC_DNS_CHECK);
-  expect(HTTPRequst.body).toEqual(BASIC_HTTP_CHECK);
+  expect(body).toEqual([BASIC_DNS_CHECK, BASIC_HTTP_CHECK]);
 });
 
 test('cascader adds labels to label filter', async () => {
