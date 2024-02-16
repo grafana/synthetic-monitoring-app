@@ -1,6 +1,6 @@
 import React, { PropsWithChildren, useContext, useEffect, useState } from 'react';
 
-import { Check, Probe } from 'types';
+import { Check, Probe, ThresholdSettings } from 'types';
 import { queryMetric } from 'utils';
 import { ChecksContext } from 'contexts/ChecksContext';
 import { InstanceContext } from 'contexts/InstanceContext';
@@ -11,7 +11,6 @@ import {
   SuccessRateContext,
   SuccessRates,
   SuccessRateTypes,
-  ThresholdSettings,
 } from 'contexts/SuccessRateContext';
 
 interface Props {

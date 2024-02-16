@@ -1,4 +1,5 @@
 import { rest } from 'msw';
+import { getAlertRules } from 'test/handlers/alerting';
 import { addCheck, bulkUpdateChecks, checkInfo, listChecks, updateCheck } from 'test/handlers/checks';
 import { getDashboard } from 'test/handlers/dashboards';
 import { addProbe, listProbes, updateProbe } from 'test/handlers/probes';
@@ -7,6 +8,7 @@ import { getTenant, getTenantSettings, updateTenantSettings } from 'test/handler
 import { ApiEntry, RequestRes } from 'test/handlers/types';
 
 const apiRoutes = {
+  getAlertRules,
   addProbe,
   listProbes,
   updateProbe,

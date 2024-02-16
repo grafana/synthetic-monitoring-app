@@ -1,9 +1,10 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { Button, HorizontalGroup, Modal } from '@grafana/ui';
 
+import { ThresholdValues } from 'types';
 import { FaroEvent, reportError, reportEvent } from 'faro';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { SuccessRateContext, ThresholdValues } from 'contexts/SuccessRateContext';
+import { SuccessRateContext } from 'contexts/SuccessRateContext';
 
 import ThresholdFormSection from './ThresholdFormSection';
 

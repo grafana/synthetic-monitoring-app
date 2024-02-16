@@ -182,7 +182,6 @@ export const BASIC_MULTIHTTP_CHECK: Check = {
           request: {
             url: 'https://www.multi1.com',
             method: 'GET',
-            body: undefined,
             headers: [
               {
                 name: 'aheader',

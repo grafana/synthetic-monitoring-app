@@ -1,5 +1,5 @@
 import React from 'react';
-import { screen, waitFor, waitForElementToBeRemoved } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { DEFAULT_PROBES } from 'test/fixtures/probes';
 import { render } from 'test/render';
@@ -33,23 +33,23 @@ test('shows a value if data', async () => {
   expect(value).toBeInTheDocument();
 });
 
-// test('shows N/A if no data', async () => {
-//   // TODO: MSW THIS
-//   jest.spyOn(utils, 'queryMetric').mockImplementation(() =>
-//     Promise.resolve({
-//       data: [
-//         {
-//           metric: {
-//             job: 'burritos',
-//             instance: 'tacos',
-//           },
-//           value: [],
-//         },
-//       ],
-//     })
-//   );
-//   await renderSuccessRateGauge();
-//   await waitForElementToBeRemoved(() => screen.queryByText('loading...'));
-//   const value = await screen.findByText('N/A');
-//   expect(value).toBeInTheDocument();
-// });
+test('shows N/A if no data', async () => {
+  // TODO: MSW THIS
+  jest.spyOn(utils, 'queryMetric').mockImplementation(() =>
+    Promise.resolve({
+      data: [
+        {
+          metric: {
+            job: 'burritos',
+            instance: 'tacos',
+          },
+          value: [],
+        },
+      ],
+    })
+  );
+
+  await renderSuccessRateGauge();
+  const value = await screen.findByText('N/A');
+  expect(value).toBeInTheDocument();
+});

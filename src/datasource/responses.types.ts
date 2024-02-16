@@ -1,4 +1,4 @@
-import { Check, Probe, Settings, ThresholdSettings } from 'types';
+import { AlertRule, Check, Probe, Settings, ThresholdSettings } from 'types';
 import { AccountingClassNames, DashboardInfo } from 'datasource/types';
 
 export type ListProbeResult = Probe[];
@@ -122,3 +122,8 @@ export interface MetricLatency extends Metric {
 }
 
 export type DashboardResponse = DashboardInfo;
+
+export type ListAlertsResponse = {
+  name: string;
+  rules: AlertRule[];
+};
