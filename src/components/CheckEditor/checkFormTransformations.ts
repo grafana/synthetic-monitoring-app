@@ -42,6 +42,7 @@ import {
   DNS_RESPONSE_MATCH_OPTIONS,
   FALLBACK_CHECK_DNS,
   FALLBACK_CHECK_HTTP,
+  FALLBACK_CHECK_MULTIHTTP,
   FALLBACK_CHECK_PING,
   FALLBACK_CHECK_TCP,
   FALLBACK_CHECK_TRACEROUTE,
@@ -437,7 +438,7 @@ const getHttpSettings = (
   settings: Partial<HttpSettingsFormValues> | undefined = {},
   defaultSettings: HttpSettingsFormValues | undefined
 ): HttpSettings => {
-  const fallbackValues = fallbackSettings(CheckType.HTTP).http as HttpSettings;
+  const fallbackValues = FALLBACK_CHECK_HTTP.settings.http;
   const headers = settings.headers ?? defaultSettings?.headers;
   const formattedHeaders = headers?.map((header) => `${header.name}:${header.value}`) ?? [];
   const proxyHeaders = settings.proxyConnectHeaders ?? defaultSettings?.proxyConnectHeaders;
@@ -484,7 +485,7 @@ const getMultiHttpSettings = (
   defaultSettings: MultiHttpSettingsFormValues | undefined
 ): MultiHttpSettings => {
   if (!settings) {
-    return fallbackSettings(CheckType.MULTI_HTTP) as MultiHttpSettings;
+    return FALLBACK_CHECK_MULTIHTTP.settings.multihttp;
   }
 
   return {
@@ -561,7 +562,7 @@ const getMultiHttpSettings = (
 };
 
 const getMultiHttpFormValues = (settings: Settings): MultiHttpSettingsFormValues => {
-  const multiHttpSettings = settings.multihttp ?? (fallbackSettings(CheckType.MULTI_HTTP) as MultiHttpSettings);
+  const multiHttpSettings = settings.multihttp ?? FALLBACK_CHECK_MULTIHTTP.settings.multihttp;
 
   return {
     entries: multiHttpSettings.entries?.map((entry) => {
@@ -621,7 +622,7 @@ const getTcpSettings = (
   settings: Partial<TcpSettingsFormValues> | undefined,
   defaultSettings: TcpSettingsFormValues | undefined
 ): TcpSettings => {
-  const fallbackValues = fallbackSettings(CheckType.TCP).tcp as TcpSettings;
+  const fallbackValues = FALLBACK_CHECK_TCP.settings.tcp;
   const mergedSettings = {
     ...(defaultSettings ?? {}),
     ...settings,
@@ -642,7 +643,7 @@ const getPingSettings = (
   settings: Partial<PingSettingsFormValues> | undefined = {},
   defaultSettings: PingSettingsFormValues | undefined
 ): PingSettings => {
-  const fallbackValues = fallbackSettings(CheckType.PING).ping as PingSettings;
+  const fallbackValues = FALLBACK_CHECK_PING.settings.ping;
   const mergedSettings = {
     ...(defaultSettings || {}),
     ...settings,
@@ -694,7 +695,7 @@ const getDnsSettings = (
   settings: Partial<DnsSettingsFormValues> | undefined,
   defaultSettings: DnsSettingsFormValues | undefined
 ): DnsSettings => {
-  const fallbackValues = fallbackSettings(CheckType.DNS).dns as DnsSettings;
+  const fallbackValues = FALLBACK_CHECK_DNS.settings.dns;
   const validations = getDnsValidationsFromFormValues(settings?.validations ?? defaultSettings?.validations ?? []);
   return {
     recordType:
@@ -714,7 +715,7 @@ const getTracerouteSettings = (
   settings: TracerouteSettingsFormValues | undefined,
   defaultSettings: TracerouteSettingsFormValues | undefined
 ): TracerouteSettings => {
-  const fallbackValues = fallbackSettings(CheckType.Traceroute).traceroute as TracerouteSettings;
+  const fallbackValues = FALLBACK_CHECK_TRACEROUTE.settings.traceroute;
   const updatedSettings = settings ?? defaultSettings ?? fallbackValues;
   return {
     maxHops: parseInt(String(updatedSettings.maxHops), 10),

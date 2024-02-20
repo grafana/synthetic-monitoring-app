@@ -23,7 +23,7 @@ import { useChecks, useCUDChecks } from 'data/useChecks';
 import { CheckFormAlert } from 'components/CheckFormAlert';
 import CheckTarget from 'components/CheckTarget';
 import { CheckTestButton } from 'components/CheckTestButton';
-import { fallbackCheck } from 'components/constants';
+import { fallbackCheckMap } from 'components/constants';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 import { PluginPage } from 'components/PluginPage';
 import { getRoute } from 'components/Routing';
@@ -49,13 +49,13 @@ const getStyles = (theme: GrafanaTheme2) => ({
 export const CheckEditor = () => {
   const { data: checks } = useChecks();
   const { id, checkType: checkTypeParam } = useParams<CheckPageParams>();
-  const checkType = checkTypeParamToCheckType(checkTypeParam);
+  const checkType = checkTypeParam || CheckType.PING;
 
   if (id && !checks) {
     return null;
   }
 
-  const check = checks?.find((c) => c.id === Number(id)) ?? fallbackCheck(checkType);
+  const check = checks?.find((c) => c.id === Number(id)) ?? fallbackCheckMap[checkType];
 
   return <CheckEditorContent check={check} />;
 };
@@ -152,8 +152,8 @@ const CheckEditorContent = ({ check }: { check: Check }) => {
             <ProbeOptions
               isEditor={isEditor}
               checkType={checkType}
-              timeout={check?.timeout ?? fallbackCheck(checkType).timeout}
-              frequency={check?.frequency ?? fallbackCheck(checkType).frequency}
+              timeout={check.timeout}
+              frequency={check.frequency}
             />
             <HorizontalCheckboxField
               name="publishAdvancedMetrics"

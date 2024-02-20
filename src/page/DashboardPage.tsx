@@ -124,6 +124,9 @@ function DashboardPageContent() {
           ],
         });
       }
+      case CheckType.GRPC: {
+        return null;
+      }
     }
   }, [
     instance.api,

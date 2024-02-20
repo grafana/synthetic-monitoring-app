@@ -1,4 +1,14 @@
-import { Check, DNSCheck, HTTPCheck, MultiHTTPCheck, PingCheck, ScriptedCheck, TCPCheck, TracerouteCheck } from 'types';
+import {
+  Check,
+  DNSCheck,
+  GRPCCheck,
+  HTTPCheck,
+  MultiHTTPCheck,
+  PingCheck,
+  ScriptedCheck,
+  TCPCheck,
+  TracerouteCheck,
+} from 'types';
 
 export function isDNSCheck(check: Partial<Check>): check is DNSCheck {
   if (Object.hasOwnProperty.call(check.settings, 'dns')) {
@@ -50,6 +60,38 @@ export function isTCPCheck(check: Partial<Check>): check is TCPCheck {
 
 export function isTracerouteCheck(check: Partial<Check>): check is TracerouteCheck {
   if (Object.hasOwnProperty.call(check.settings, 'traceroute')) {
+    return true;
+  }
+
+  return false;
+}
+
+export function isHttpSettings(settings: Check['settings']): settings is HTTPCheck['settings'] {
+  if (Object.hasOwnProperty.call(settings, 'http')) {
+    return true;
+  }
+
+  return false;
+}
+
+export function isTCPSettings(settings: Check['settings']): settings is TCPCheck['settings'] {
+  if (Object.hasOwnProperty.call(settings, 'tcp')) {
+    return true;
+  }
+
+  return false;
+}
+
+export function isGRPCSettings(settings: Check['settings']): settings is GRPCCheck['settings'] {
+  if (Object.hasOwnProperty.call(settings, 'grpc')) {
+    return true;
+  }
+
+  return false;
+}
+
+export function isMultiHttpSettings(settings: Check['settings']): settings is MultiHTTPCheck['settings'] {
+  if (Object.hasOwnProperty.call(settings, 'multihttp')) {
     return true;
   }
 

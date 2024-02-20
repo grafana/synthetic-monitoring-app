@@ -8,7 +8,6 @@ import {
   isTCPCheck,
   isTracerouteCheck,
 } from 'utils.types';
-import { checkType } from 'utils';
 
 import { TFCheck, TFCheckSettings, TFLabels, TFMultiHttpEntry, TFProbe, TFTlsConfig } from './terraformTypes';
 
@@ -149,7 +148,8 @@ const settingsToTF = (check: Check): TFCheckSettings => {
     };
   }
 
-  throw new Error(`Unknown check type: ${checkType(check)}`);
+  const settingsKey = Object.keys(check.settings)[0];
+  throw new Error(`Unknown check type: ${settingsKey}`);
 };
 
 export const checkToTF = (check: Check): TFCheck => {

@@ -13,6 +13,7 @@ import {
   DnsProtocol,
   DnsRecordType,
   DnsResponseCodes,
+  GRPCCheck,
   HTTPCheck,
   HTTPCompressionAlgo,
   HttpMethod,
@@ -241,6 +242,13 @@ export const FALLBACK_CHECK_DNS: DNSCheck = {
   },
 };
 
+export const FALLBACK_CHECK_GRPC: GRPCCheck = {
+  ...FALLBACK_CHECK_BASE,
+  settings: {
+    grpc: undefined,
+  },
+};
+
 export const FALLBACK_CHECK_HTTP: HTTPCheck = {
   ...FALLBACK_CHECK_BASE,
   settings: {
@@ -319,6 +327,17 @@ export const FALLBACK_CHECK_TRACEROUTE: TracerouteCheck = {
       hopTimeout: 0,
     },
   },
+};
+
+export const fallbackCheckMap = {
+  [CheckType.DNS]: FALLBACK_CHECK_DNS,
+  [CheckType.GRPC]: FALLBACK_CHECK_BASE,
+  [CheckType.HTTP]: FALLBACK_CHECK_HTTP,
+  [CheckType.MULTI_HTTP]: FALLBACK_CHECK_MULTIHTTP,
+  [CheckType.PING]: FALLBACK_CHECK_PING,
+  [CheckType.K6]: FALLBACK_CHECK_SCRIPTED,
+  [CheckType.TCP]: FALLBACK_CHECK_TCP,
+  [CheckType.Traceroute]: FALLBACK_CHECK_TRACEROUTE,
 };
 
 export const colors = {

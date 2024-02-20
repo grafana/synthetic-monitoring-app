@@ -34,6 +34,7 @@ export function getDashboardSceneApp(
       [CheckType.Traceroute]: [],
       [CheckType.MULTI_HTTP]: [],
       [CheckType.K6]: [],
+      [CheckType.GRPC]: [],
     }
   );
   const tabs = [

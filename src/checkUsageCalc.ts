@@ -1,9 +1,10 @@
-import { MultiHTTPCheck, UsageValues } from 'types';
+import { UsageValues } from 'types';
 
 interface ActiveSeriesParams {
+  assertionCount: number;
   probeCount: number;
   frequencySeconds: number;
-  seriesPerCheck: number;
+  seriesPerProbe: number;
 }
 
 const getChecksPerMonth = (frequencySeconds: number) => {
@@ -30,8 +31,14 @@ const getDataPointsPerMinute = (activeSeries: number, frequencySeconds: number) 
   return Math.ceil(dpm);
 };
 
-export const calculateUsage = ({ probeCount, frequencySeconds, seriesPerCheck }: ActiveSeriesParams): UsageValues => {
-  const activeSeries = seriesPerCheck * probeCount;
+export const calculateUsage = ({
+  assertionCount,
+  probeCount,
+  frequencySeconds,
+  seriesPerProbe,
+}: ActiveSeriesParams): UsageValues => {
+  const activeSeries = seriesPerProbe * probeCount;
+
   return {
     checksPerMonth: getTotalChecksPerMonth(probeCount, frequencySeconds),
     activeSeries,
@@ -40,27 +47,26 @@ export const calculateUsage = ({ probeCount, frequencySeconds, seriesPerCheck }:
   };
 };
 
-export function calculateMultiHTTPUsage(check: Partial<MultiHTTPCheck>): UsageValues {
+export function calculateMultiHTTPUsage({
+  assertionCount,
+  probeCount,
+  frequencySeconds,
+  seriesPerProbe,
+}: ActiveSeriesParams): UsageValues {
   const logGBPerProbe = 0.000001151;
   const logGBPerAssertionPerCheck = 0.0000004;
-  const seriesPerProbe = 36;
   const additionalSeriesPerUrl = 14;
-  const frequencySeconds = (check?.frequency ?? 0) / 1000;
 
   const checksPerMonth = getChecksPerMonth(frequencySeconds);
 
   // Calculate logs
   const baseLogsGbPerMonth = checksPerMonth * logGBPerProbe;
-  const assertionCount =
-    check.settings?.multihttp.entries.reduce((assertionCount, entry) => {
-      return assertionCount + (entry.checks?.length ?? 0);
-    }, 0) ?? 0;
   const assertionLogsGBPerMonth = checksPerMonth * assertionCount * logGBPerAssertionPerCheck;
-  const totalLogsPerMonth = (baseLogsGbPerMonth + assertionLogsGBPerMonth) * (check.probes?.length ?? 0);
+  const totalLogsPerMonth = (baseLogsGbPerMonth + assertionLogsGBPerMonth) * probeCount;
 
   // Calculate metrics
-  const baseSeries = seriesPerProbe * (check.probes?.length ?? 0);
-  const additionalUrls = (check.settings?.multihttp.entries.length ?? 1) - 1;
+  const baseSeries = seriesPerProbe * probeCount;
+  const additionalUrls = assertionCount - 1;
   const additionalSeries = additionalSeriesPerUrl * additionalUrls;
   const activeSeries = baseSeries + additionalSeries;
 

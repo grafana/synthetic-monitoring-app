@@ -335,7 +335,15 @@ export interface CheckBase extends BaseObject {
   probes: number[];
 }
 
-export type Check = HTTPCheck | DNSCheck | ScriptedCheck | MultiHTTPCheck | PingCheck | TCPCheck | TracerouteCheck;
+export type Check =
+  | HTTPCheck
+  | DNSCheck
+  | GRPCCheck
+  | ScriptedCheck
+  | MultiHTTPCheck
+  | PingCheck
+  | TCPCheck
+  | TracerouteCheck;
 
 export interface FilteredCheck extends Omit<Check, 'id'> {
   id: number;
@@ -345,6 +353,7 @@ export interface Settings {
   dns?: DnsSettings;
   http?: HttpSettings;
   k6?: ScriptedSettings;
+  grpc?: undefined;
   multihttp?: MultiHttpSettings;
   ping?: PingSettings;
   tcp?: TcpSettings;
@@ -354,6 +363,12 @@ export interface Settings {
 export type DNSCheck = CheckBase & {
   settings: {
     dns: DnsSettings;
+  };
+};
+
+export type GRPCCheck = CheckBase & {
+  settings: {
+    grpc: undefined;
   };
 };
 
@@ -397,6 +412,7 @@ export enum CheckType {
   HTTP = 'http',
   PING = 'ping',
   DNS = 'dns',
+  GRPC = 'grpc',
   TCP = 'tcp',
   Traceroute = 'traceroute',
   MULTI_HTTP = 'multihttp',
@@ -607,7 +623,7 @@ export enum ROUTES {
 export interface CheckPageParams {
   view: string;
   id: string;
-  checkType?: string;
+  checkType?: CheckType;
 }
 
 export interface ProbePageParams {
@@ -668,12 +684,11 @@ export interface ThresholdSettings {
   uptime: ThresholdValues;
 }
 
-export type RequiredToUsageCalcValues = {
-  type: CheckType;
-  frequency: number;
-  probes: number[];
+export interface CalculateUsageValues {
+  assertionCount: number;
   basicMetricsOnly: boolean;
-  settings?: {
-    entries: MultiHttpEntryFormValues[];
-  };
-};
+  checkType: CheckType;
+  frequencySeconds: number;
+  isSSL: boolean;
+  probeCount: number;
+}

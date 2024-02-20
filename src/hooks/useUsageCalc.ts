@@ -1,93 +1,56 @@
 import { calculateMultiHTTPUsage, calculateUsage } from 'checkUsageCalc';
 
-import { Check, CheckType, RequiredToUsageCalcValues, UsageValues } from 'types';
-import { isHttpCheck, isMultiHttpCheck, isTCPCheck } from 'utils.types';
-import { checkType as getCheckType } from 'utils';
+import { CalculateUsageValues, CheckType, UsageValues } from 'types';
 import { AccountingClassNames } from 'datasource/types';
 import { useCheckInfo } from 'data/useCheckInfo';
 
-const addSSL = (check: Partial<Check>, baseClass: CheckType) => {
-  if (isHttpCheck(check)) {
-    if (check.settings.http.tlsConfig && Object.keys(check.settings.http.tlsConfig).length > 0) {
-      return `http_ssl`;
-    }
+export const getAccountingClass = (calcUsageValue: CalculateUsageValues): AccountingClassNames => {
+  const { basicMetricsOnly, checkType, isSSL } = calcUsageValue;
+  let accountClass: keyof typeof AccountingClassNames = checkType;
+
+  if ((checkType === CheckType.HTTP || checkType === CheckType.TCP || checkType === CheckType.GRPC) && isSSL) {
+    accountClass = `${checkType}_ssl`;
   }
 
-  if (isTCPCheck(check)) {
-    if (check.settings.tcp.tlsConfig && Object.keys(check.settings.tcp.tlsConfig).length > 0) {
-      return `tcp_ssl`;
-    }
+  if (basicMetricsOnly) {
+    accountClass = `${accountClass}_basic`;
   }
 
-  return baseClass;
+  return AccountingClassNames[accountClass];
 };
 
-export const getAccountingClass = (checkType: CheckType): AccountingClassNames | undefined => {
-  if (!check.settings) {
-    return;
-  }
-
-  const withSSL = addSSL(check, checkType);
-
-  const withBasic = check.basicMetricsOnly ? `${withSSL}_basic` : withSSL;
-
-  return AccountingClassNames[withBasic as keyof typeof AccountingClassNames];
+const calcFunctionMap = {
+  multi: calculateMultiHTTPUsage,
+  other: calculateUsage,
 };
 
-export function useUsageCalc(checks?: RequiredToUsageCalcValues | RequiredToUsageCalcValues[]) {
+export function useUsageCalc(calcUsageValues: CalculateUsageValues[]) {
   const { data, isLoading } = useCheckInfo();
 
-  if (isLoading || !data || !checks) {
+  if (isLoading || !data || !calcUsageValues.length) {
     return;
   }
 
-  // Calculating usage for multiple checks at once
-  if (Array.isArray(checks)) {
-    return checks.reduce<UsageValues>(
-      (total, check) => {
-        const accountingClass = getAccountingClass(check);
-        if (!accountingClass) {
-          return total;
-        }
-        const usage = calculateUsage({
-          probeCount: check.probes.length,
-          frequencySeconds: check.frequency / 1000,
-          seriesPerCheck: data.AccountingClasses[accountingClass].Series,
-        });
-        return {
-          activeSeries: total.activeSeries + usage.activeSeries,
-          logsGbPerMonth: total.logsGbPerMonth + usage.logsGbPerMonth,
-          checksPerMonth: total.checksPerMonth + usage.checksPerMonth,
-          dpm: total.dpm + usage.dpm,
-        };
-      },
-      { logsGbPerMonth: 0, activeSeries: 0, checksPerMonth: 0, dpm: 0 }
-    );
-  }
+  return calcUsageValues.reduce<UsageValues>(
+    (total, calcUsageValue) => {
+      const accountingClass = getAccountingClass(calcUsageValue);
+      const { assertionCount, probeCount, frequencySeconds } = calcUsageValue;
+      const calculateFunc = calcFunctionMap[calcUsageValue.checkType === CheckType.MULTI_HTTP ? `multi` : `other`];
 
-  // In this case, we're just calculating for an individual check
-  if (!checks.settings) {
-    return;
-  }
+      const usage = calculateFunc({
+        assertionCount,
+        probeCount,
+        frequencySeconds,
+        seriesPerProbe: data.AccountingClasses[accountingClass].Series,
+      });
 
-  const accountingClass = getAccountingClass(checks);
-
-  if (!accountingClass) {
-    return;
-  }
-
-  const seriesPerCheck = data.AccountingClasses[accountingClass]?.Series;
-  if (isMultiHttpCheck(checks)) {
-    return calculateMultiHTTPUsage(checks);
-  }
-
-  if (seriesPerCheck === undefined) {
-    return;
-  }
-
-  return calculateUsage({
-    probeCount: checks.probes?.length ?? 0,
-    frequencySeconds: (checks.frequency ?? 0) / 1000,
-    seriesPerCheck: data.AccountingClasses[accountingClass].Series,
-  });
+      return {
+        activeSeries: total.activeSeries + usage.activeSeries,
+        logsGbPerMonth: total.logsGbPerMonth + usage.logsGbPerMonth,
+        checksPerMonth: total.checksPerMonth + usage.checksPerMonth,
+        dpm: total.dpm + usage.dpm,
+      };
+    },
+    { logsGbPerMonth: 0, activeSeries: 0, checksPerMonth: 0, dpm: 0 }
+  );
 }

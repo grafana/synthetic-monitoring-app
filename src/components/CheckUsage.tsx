@@ -4,7 +4,8 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Icon, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { CheckType, MultiHttpEntryFormValues, RequiredToUsageCalcValues } from 'types';
+import { CalculateUsageValues, CheckType } from 'types';
+import { getEntriesCount, getSSL } from 'utils';
 import { useUsageCalc } from 'hooks/useUsageCalc';
 
 const getStyles = (theme: GrafanaTheme2) => ({
@@ -33,47 +34,27 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
 });
 
-const getCheckFromValues = (
-  checkType: CheckType | undefined,
-  frequency = 0,
-  probes: number[] = [],
-  publishAdvancedMetrics = false,
-  entries: MultiHttpEntryFormValues[]
-): RequiredToUsageCalcValues | undefined => {
-  if (!checkType) {
-    return;
-  }
-
-  const base = {
-    frequency: frequency * 1000,
-    probes,
-    basicMetricsOnly: !publishAdvancedMetrics,
-  };
-
-  if (checkType === CheckType.MULTI_HTTP) {
-    return {
-      ...base,
-      settings: {
-        entries,
-      },
-    };
-  }
-
-  return base;
-};
-
 export const CheckUsage = () => {
   const styles = useStyles2(getStyles);
   const { watch } = useFormContext();
-  const [checkType, frequency, probes, publishAdvancedMetrics, entries] = watch([
+  const [checkType, frequency, probes, publishAdvancedMetrics, settings] = watch([
     'checkType',
     'frequency',
     'probes',
     'publishAdvancedMetrics',
-    'settings.multihttp.entries',
+    'settings',
   ]);
-  const check = getCheckFromValues(checkType?.value, frequency, probes, publishAdvancedMetrics, entries);
-  const usage = useUsageCalc(check);
+
+  const calcValues: CalculateUsageValues = {
+    assertionCount: getEntriesCount(settings),
+    basicMetricsOnly: !publishAdvancedMetrics,
+    checkType: checkType.value || CheckType.HTTP,
+    frequencySeconds: frequency || 0,
+    isSSL: getSSL(settings),
+    probeCount: probes?.length || 0,
+  };
+
+  const usage = useUsageCalc([calcValues]);
 
   if (!usage) {
     return null;
