@@ -29,11 +29,7 @@ import { PluginPage } from 'components/PluginPage';
 import { getRoute } from 'components/Routing';
 
 import { CheckUsage } from '../CheckUsage';
-import {
-  checkTypeParamToCheckType,
-  getCheckFromFormValues,
-  getDefaultValuesFromCheck,
-} from './checkFormTransformations';
+import { getCheckFromFormValues, getDefaultValuesFromCheck } from './checkFormTransformations';
 import { CheckSettings } from './CheckSettings';
 import { ProbeOptions } from './ProbeOptions';
 

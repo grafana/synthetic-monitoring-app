@@ -331,7 +331,7 @@ export const FALLBACK_CHECK_TRACEROUTE: TracerouteCheck = {
 
 export const fallbackCheckMap = {
   [CheckType.DNS]: FALLBACK_CHECK_DNS,
-  [CheckType.GRPC]: FALLBACK_CHECK_BASE,
+  [CheckType.GRPC]: FALLBACK_CHECK_GRPC,
   [CheckType.HTTP]: FALLBACK_CHECK_HTTP,
   [CheckType.MULTI_HTTP]: FALLBACK_CHECK_MULTIHTTP,
   [CheckType.PING]: FALLBACK_CHECK_PING,
