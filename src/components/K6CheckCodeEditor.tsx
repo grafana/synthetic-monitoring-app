@@ -1,15 +1,15 @@
-import React from 'react';
-import { Controller, FormProvider, useForm } from 'react-hook-form';
-import { useParams } from 'react-router-dom';
+import { css } from '@emotion/css';
 import { GrafanaTheme2, OrgRole } from '@grafana/data';
 import { locationService, PluginPage } from '@grafana/runtime';
 import { Alert, Button, Field, Icon, Input, Label, Tooltip, useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import React from 'react';
+import { Controller, FormProvider, useForm } from 'react-hook-form';
+import { useParams } from 'react-router-dom';
 
+import { useChecks, useCUDChecks } from 'data/useChecks';
 import { Check, CheckFormValues, CheckPageParams, CheckType } from 'types';
 import { hasRole } from 'utils';
 import { validateJob, validateTarget } from 'validation';
-import { useChecks, useCUDChecks } from 'data/useChecks';
 
 import { getCheckFromFormValues, getDefaultValuesFromCheck } from './CheckEditor/checkFormTransformations';
 import { ProbeOptions } from './CheckEditor/ProbeOptions';
@@ -18,6 +18,7 @@ import { CheckTestButton } from './CheckTestButton';
 import { CodeEditor } from './CodeEditor';
 import { fallbackCheck } from './constants';
 import { LabelField } from './LabelField';
+import { ScriptExamplesMenu } from './ScriptExamplesMenu/ScriptExamplesMenu';
 
 function getStyles(theme: GrafanaTheme2) {
   return {
@@ -149,6 +150,12 @@ function K6CheckCodeEditorContent({ check }: { check: Check }) {
             <LabelField isEditor={isEditor} />
             <CheckFormAlert />
           </div>
+          {!check.id && (
+            // TODO: I think there is a bug in react-hook-form, it insists that the value type is never, although it should be string
+            <ScriptExamplesMenu
+              onSelectExample={(script) => formMethods.setValue('settings.k6.script', script as never)}
+            />
+          )}
           <Controller
             name="settings.k6.script"
             control={control}
