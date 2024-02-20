@@ -1,4 +1,5 @@
 import { DataSourceInstanceSettings, PluginSignatureStatus, PluginType } from '@grafana/data';
+
 import { SMOptions } from '../types';
 
 export const instanceSettings: DataSourceInstanceSettings<SMOptions> = {
