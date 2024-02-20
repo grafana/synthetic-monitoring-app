@@ -1,25 +1,137 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Button, HorizontalGroup, LoadingPlaceholder, Modal, useStyles2 } from '@grafana/ui';
+import { Button, HorizontalGroup, Modal, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { intersection } from 'lodash';
 
-import { FilteredCheck, Probe } from 'types';
-import { InstanceContext } from 'contexts/InstanceContext';
+import { Check, Probe } from 'types';
+import { useBulkUpdateChecks } from 'data/useChecks';
+import { useProbes } from 'data/useProbes';
+import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
 
-import ProbesByRegion from './ProbesByRegion';
+import { ProbesByRegion } from './ProbesByRegion';
 
-interface ProbeById {
-  [key: number]: Probe;
+const actionTypeMap = {
+  add: {
+    getTitle: (checks: Check[]) => `Add probes to ${checks.length} selected checks`,
+    description:
+      'Disabled probes are already included in all selected checks. Any checks in which the configuration would not change will be unaffected on submission.',
+  },
+  remove: {
+    getTitle: (checks: Check[]) => `Remove probes included in all ${checks.length} selected checks:`,
+    description:
+      'Select probes to remove from all selected checks. Any checks using only a single probe or any that would result in using zero probes will be excluded from the operation.',
+  },
+};
+
+interface BulkEditModalProps {
+  onDismiss: () => void;
+  checks: Check[];
+  action: 'add' | 'remove';
+  isOpen: boolean;
 }
 
-interface Props {
-  onDismiss: () => void;
-  onSuccess: () => void;
-  onError: (err: string) => void;
-  selectedChecks: () => FilteredCheck[];
-  action: 'add' | 'remove' | null;
-  isOpen: boolean;
+export const BulkEditModal = (props: BulkEditModalProps) => {
+  if (!props.action) {
+    return null;
+  }
+
+  return (
+    <QueryErrorBoundary>
+      <BulkEditModalContent {...props} />
+    </QueryErrorBoundary>
+  );
+};
+
+const BulkEditModalContent = ({ onDismiss, isOpen, checks, action }: BulkEditModalProps) => {
+  const { data: probes = [] } = useProbes();
+  const { mutate: bulkUpdateChecks, isPending } = useBulkUpdateChecks({ onSuccess: onDismiss });
+  const [probeIds, setProbeIds] = useState<number[]>([]);
+  const commonProbes = intersection(...checks.map((check) => check.probes));
+  const styles = useStyles2(getStyles);
+  const { getTitle, description } = actionTypeMap[action];
+  const isAdding = action === 'add';
+
+  const selectableProbes = probes.map((probe) => {
+    const disabled = isAdding && commonProbes.includes(probe.id!);
+    const tooltip = disabled ? 'Probe is already included in all selected checks' : undefined;
+
+    return {
+      name: probe.name,
+      id: probe.id,
+      region: probe.region,
+      selected: probeIds.includes(probe.id!),
+      disabled,
+      tooltip,
+    };
+  });
+
+  const handleChange = useCallback(
+    (id: Probe['id']) => {
+      if (probeIds.includes(id!)) {
+        setProbeIds(probeIds.filter((i) => i !== id));
+      } else {
+        setProbeIds([...probeIds, id!]);
+      }
+    },
+    [probeIds]
+  );
+
+  const handleSubmit = () => {
+    const updatedChecks = checks.map((check) => {
+      const probes = getUpdatedProbes(check, action, probeIds);
+
+      return {
+        ...check,
+        probes,
+      };
+    });
+
+    bulkUpdateChecks(updatedChecks);
+  };
+
+  return (
+    <Modal
+      title={getTitle(checks)}
+      isOpen={isOpen}
+      onDismiss={() => {
+        onDismiss();
+      }}
+    >
+      <div>
+        <div className={styles.verticalSpace}>
+          <i>{description}</i>
+        </div>
+        <div>
+          {probes && <ProbesByRegion probes={selectableProbes} onChange={handleChange} isRemoving={!isAdding} />}
+        </div>
+      </div>
+
+      <div className={styles.verticalSpace}>
+        <HorizontalGroup>
+          <Button
+            onClick={handleSubmit}
+            disabled={!probeIds.length || isPending}
+            icon={isPending ? 'fa fa-spinner' : undefined}
+            variant={isAdding ? 'primary' : 'destructive'}
+          >
+            {isAdding ? 'Add probes' : 'Remove probes'}
+          </Button>
+          <Button disabled={!probeIds.length || isPending} variant="secondary" onClick={() => setProbeIds([])}>
+            Clear selection
+          </Button>
+        </HorizontalGroup>
+      </div>
+    </Modal>
+  );
+};
+
+function getUpdatedProbes(check: Check, action: 'add' | 'remove', probeIds: number[]) {
+  if (action === 'add') {
+    return [...check.probes, ...probeIds];
+  }
+
+  return check.probes.filter((id) => !probeIds.includes(id));
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({
@@ -36,193 +148,3 @@ const getStyles = (theme: GrafanaTheme2) => ({
     margin-bottom: ${theme.spacing(1)};
   `,
 });
-
-const BulkEditModal = ({ onDismiss, onSuccess, onError, isOpen, selectedChecks, action }: Props) => {
-  const { instance } = useContext(InstanceContext);
-  const [probes, setProbes] = useState<Probe[]>();
-  const [probesById, setProbesById] = useState<ProbeById | undefined>(undefined);
-  const [selectedProbes, setSelectedProbes] = useState<Probe[]>([]);
-  const [probesToRemove, setProbesToRemove] = useState<number[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-  const checks = selectedChecks();
-
-  const styles = useStyles2(getStyles);
-
-  const submitProbeUpdates = useCallback(async () => {
-    let newChecks: FilteredCheck[] = [];
-    // Short circuit remove action if all checks only have one probe
-    const checksHaveOneProbe = checks.every((check) => check.probes.length === 1);
-    if (action === 'remove' && checksHaveOneProbe) {
-      onDismiss();
-      onError('Operation canceled - all checks only have one probe');
-      return;
-    }
-    // Add or remove based on action
-    if (action === 'add') {
-      newChecks = checks.map((check) => {
-        // Using a Set to avoid duplicates
-        const newProbes = new Set([...check.probes, ...selectedProbes.map((p) => p.id!)]);
-        return { ...check, probes: [...newProbes] };
-      });
-    } else if (action === 'remove') {
-      // Filter out checks with only one probe
-      const checksWithMultipleProbes = checks.filter((check) => check.probes.length > 1);
-      // Update probes for each check and the remove any checks that would end up with zero probes
-      newChecks = checksWithMultipleProbes
-        .map((check) => {
-          const newProbes = check.probes.filter((p) => !probesToRemove.includes(p));
-          return { ...check, probes: newProbes };
-        })
-        .filter((check) => check.probes.length > 0);
-    }
-    try {
-      setLoading(true);
-      await instance.api?.bulkUpdateChecks(newChecks);
-      setLoading(false);
-      onDismiss();
-      clearSelections();
-      onSuccess();
-    } catch (error: any) {
-      setLoading(false);
-      onDismiss();
-      clearSelections();
-      onError(error.data.err);
-    }
-  }, [selectedProbes, checks, instance, action, probesToRemove, onDismiss, onError, onSuccess]);
-
-  const addOrRemoveProbe = useCallback(
-    (probe: Probe) => {
-      if (!selectedProbes.includes(probe)) {
-        setSelectedProbes((sp) => [...sp, probe]);
-      } else {
-        const newSelectedProbes = selectedProbes.filter((p) => p !== probe);
-        setSelectedProbes(newSelectedProbes);
-      }
-    },
-    [selectedProbes]
-  );
-
-  const addOrRemoveCommonProbe = useCallback(
-    (probe: number) => {
-      if (!probesToRemove.includes(probe)) {
-        setProbesToRemove((ptr) => [...ptr, probe]);
-      } else {
-        const newProbesToRemove = probesToRemove.filter((p) => p !== probe);
-        setProbesToRemove(newProbesToRemove);
-      }
-    },
-    [probesToRemove]
-  );
-
-  const clearSelections = () => {
-    setSelectedProbes([]);
-    setProbesToRemove([]);
-  };
-
-  const getProbes = useCallback(async () => {
-    const p = await instance.api?.listProbes();
-    if (p !== undefined) {
-      const byId = p.reduce((acc, probe) => {
-        return {
-          ...acc,
-          [Number(probe.id)]: probe,
-        };
-      }, {});
-      setProbes(p.sort((a: Probe, b: Probe) => (a.name < b.name ? -1 : 1)));
-      setProbesById(byId);
-    } else {
-      onError('Failed to get probes');
-      onDismiss();
-    }
-  }, [instance, onDismiss, onError]);
-
-  useEffect(() => {
-    getProbes();
-  }, [getProbes]);
-
-  const commonProbes: number[] = intersection(...checks.map((check) => check.probes));
-
-  return (
-    <Modal
-      title={
-        action && action === 'add'
-          ? `Add probes to ${checks.length} selected checks`
-          : `Remove probes included in all ${checks.length} selected checks:`
-      }
-      isOpen={isOpen}
-      onDismiss={() => {
-        clearSelections();
-        onDismiss();
-      }}
-    >
-      {action && action === 'add' ? (
-        <div>
-          <div className={styles.verticalSpace}>
-            <i>
-              Disabled probes are already included in all selected checks. Any checks in which the configuration would
-              not change will be unaffected on submission.
-            </i>
-          </div>
-          <div>
-            {probes && (
-              <ProbesByRegion
-                probes={probes}
-                selectedProbes={selectedProbes}
-                commonProbes={commonProbes}
-                addOrRemoveProbe={addOrRemoveProbe}
-              />
-            )}
-          </div>
-        </div>
-      ) : (
-        <div>
-          <div className={styles.verticalSpace}>
-            <i>
-              Select probes to remove from all selected checks. Any checks using only a single probe or any that would
-              result in using zero probes will be excluded from the operation.
-            </i>
-          </div>
-          <div className={styles.buttonGroup}>
-            {probesById && commonProbes.length ? (
-              commonProbes.map((p) => {
-                return (
-                  <Button
-                    key={p}
-                    variant={probesToRemove.includes(p) ? 'destructive' : 'secondary'}
-                    fill="outline"
-                    size="sm"
-                    onClick={() => addOrRemoveCommonProbe(p)}
-                  >
-                    {probesToRemove.includes(p) ? <del>{probesById[p].name}</del> : probesById[p].name}
-                  </Button>
-                );
-              })
-            ) : (
-              <div>None</div>
-            )}
-          </div>
-        </div>
-      )}
-
-      <div className={styles.verticalSpace}>
-        {loading ? (
-          <LoadingPlaceholder text="Submitting..." />
-        ) : (
-          <HorizontalGroup>
-            <Button
-              onClick={submitProbeUpdates}
-              disabled={checks.length === 0 || (selectedProbes.length === 0 && probesToRemove.length === 0)}
-            >
-              Submit
-            </Button>
-            <Button variant="secondary" onClick={() => clearSelections()}>
-              Clear
-            </Button>
-          </HorizontalGroup>
-        )}
-      </div>
-    </Modal>
-  );
-};
-
-export default BulkEditModal;

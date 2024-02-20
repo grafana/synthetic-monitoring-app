@@ -1,7 +1,6 @@
 import React, { PropsWithChildren, useEffect, useState } from 'react';
 import { AppPluginMeta, OrgRole } from '@grafana/data';
 import { config, getBackendSrv, getDataSourceSrv } from '@grafana/runtime';
-import { Spinner } from '@grafana/ui';
 import appEvents from 'grafana/app/core/app_events';
 
 import { GlobalSettings, GrafanaInstances } from 'types';
@@ -9,6 +8,7 @@ import { hasRole } from 'utils';
 import { SMDataSource } from 'datasource/DataSource';
 import { InstanceContext } from 'contexts/InstanceContext';
 
+import { CenteredSpinner } from './CenteredSpinner';
 import { PluginPage } from './PluginPage';
 
 async function getRulerDatasource(metricDatasourceId?: number) {
@@ -144,7 +144,7 @@ export const InstanceProvider = ({
   if (instancesLoading) {
     return (
       <PluginPage>
-        <Spinner />
+        <CenteredSpinner />
       </PluginPage>
     );
   }
@@ -154,9 +154,5 @@ export const InstanceProvider = ({
     throw new Error('There was an error finding datasources required for Synthetic Monitoring');
   }
 
-  return (
-    <InstanceContext.Provider value={{ meta, instance: instances, loading: instancesLoading }}>
-      {children}
-    </InstanceContext.Provider>
-  );
+  return <InstanceContext.Provider value={{ meta, instance: instances }}>{children}</InstanceContext.Provider>;
 };

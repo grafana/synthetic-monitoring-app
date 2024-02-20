@@ -1,18 +1,16 @@
-import React, { useContext } from 'react';
-import { useAsyncCallback } from 'react-async-hook';
+import React from 'react';
 import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 import { GrafanaTheme2, OrgRole } from '@grafana/data';
-import { PluginPage } from '@grafana/runtime';
+import { locationService, PluginPage } from '@grafana/runtime';
 import { Alert, Button, Field, Icon, Input, Label, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { Check, CheckFormValues, CheckPageParams, CheckType, ScriptedCheck, SubmissionErrorWrapper } from 'types';
+import { CheckFormValues, CheckPageParams, CheckType, ScriptedCheck } from 'types';
 import { isScriptedCheck } from 'utils.types';
-import { FaroEvent, reportError } from 'faro';
 import { hasRole } from 'utils';
 import { validateJob, validateTarget } from 'validation';
-import { InstanceContext } from 'contexts/InstanceContext';
+import { useChecks, useCUDChecks } from 'data/useChecks';
 
 import { getCheckFromFormValues, getDefaultValuesFromCheck } from './CheckEditor/checkFormTransformations';
 import { ProbeOptions } from './CheckEditor/ProbeOptions';
@@ -21,10 +19,6 @@ import { CheckTestButton } from './CheckTestButton';
 import { CodeEditor } from './CodeEditor';
 import { FALLBACK_CHECK_SCRIPTED } from './constants';
 import { LabelField } from './LabelField';
-interface Props {
-  checks: Check[];
-  onSubmitSuccess?: (refresh: boolean) => void;
-}
 
 function getStyles(theme: GrafanaTheme2) {
   return {
@@ -47,22 +41,28 @@ function getStyles(theme: GrafanaTheme2) {
     infoIcon: css({
       fontWeight: theme.typography.fontWeightLight,
     }),
+    submissionError: css({
+      marginTop: theme.spacing(2),
+    }),
   };
 }
 
-export function K6CheckCodeEditor({ checks, onSubmitSuccess }: Props) {
+export const K6CheckCodeEditor = () => {
+  const { data: checks } = useChecks();
   const { id } = useParams<CheckPageParams>();
-  let check: ScriptedCheck = FALLBACK_CHECK_SCRIPTED;
 
-  if (id) {
-    const found = checks?.find((c) => c.id === Number(id)) ?? FALLBACK_CHECK_SCRIPTED;
-
-    if (isScriptedCheck(found)) {
-      check = found;
-    }
+  if (id && !checks) {
+    return null;
   }
 
-  const { instance } = useContext(InstanceContext);
+  const found = checks?.find((c) => c.id === Number(id));
+  const check = found && isScriptedCheck(found) ? found : FALLBACK_CHECK_SCRIPTED;
+
+  return <K6CheckCodeEditorContent check={check} />;
+};
+
+function K6CheckCodeEditorContent({ check }: { check: ScriptedCheck }) {
+  const { updateCheck, createCheck, error, submitting } = useCUDChecks({ eventInfo: { checkType: CheckType.K6 } });
   const defaultValues = getDefaultValuesFromCheck(check);
 
   const formMethods = useForm<CheckFormValues>({
@@ -70,42 +70,28 @@ export function K6CheckCodeEditor({ checks, onSubmitSuccess }: Props) {
   });
   const { handleSubmit, register, control } = formMethods;
   const styles = useStyles2(getStyles);
+  const onSuccess = () => locationService.getHistory().goBack();
 
-  const {
-    execute: onSubmit,
-    error,
-    loading: submitting,
-  } = useAsyncCallback(async (checkValues: CheckFormValues) => {
-    if (error) {
-      console.error(error);
-      return;
-    }
-    if (!checkValues.settings.k6) {
-      throw new Error('No k6 settings');
-    }
+  const onSubmit = (checkValues: CheckFormValues) => {
     const toSubmit = getCheckFromFormValues(checkValues, defaultValues, CheckType.K6);
 
     if (check.id) {
-      await instance.api?.updateCheck({
-        id: check.id,
-        tenantId: check.tenantId,
-        ...toSubmit,
-      });
-    } else {
-      await instance.api?.addCheck(toSubmit);
+      return updateCheck(
+        {
+          id: check.id,
+          tenantId: check.tenantId,
+          ...toSubmit,
+        },
+        { onSuccess }
+      );
     }
 
-    if (onSubmitSuccess) {
-      onSubmitSuccess(true);
-    }
-  });
+    return createCheck(toSubmit, { onSuccess });
+  };
 
-  const submissionError = error as unknown as SubmissionErrorWrapper;
-  if (error) {
-    reportError(error.message ?? error, check?.id ? FaroEvent.UPDATE_CHECK : FaroEvent.CREATE_CHECK);
-  }
   const headerText = check?.id ? `Editing ${check.job}` : `Add a scripted check`;
   const isEditor = hasRole(OrgRole.Editor);
+
   return (
     <PluginPage pageNav={{ text: check?.job ? `Editing ${check.job}` : headerText }}>
       <FormProvider {...formMethods}>
@@ -172,13 +158,6 @@ export function K6CheckCodeEditor({ checks, onSubmitSuccess }: Props) {
               return <CodeEditor {...field} />;
             }}
           />
-          {submissionError && (
-            <Alert title="Save failed" severity="error">
-              {`${submissionError.status}: ${
-                submissionError.data?.msg?.concat(', ', submissionError.data?.err ?? '') ?? 'Something went wrong'
-              }`}
-            </Alert>
-          )}
           <div className={styles.buttonGroup}>
             <CheckTestButton check={check} />
             <Button type="submit" disabled={submitting}>
@@ -186,6 +165,13 @@ export function K6CheckCodeEditor({ checks, onSubmitSuccess }: Props) {
             </Button>
           </div>
         </form>
+        {error && (
+          <div className={styles.submissionError}>
+            <Alert title="Save failed" severity="error">
+              {error.message ?? 'Something went wrong'}
+            </Alert>
+          </div>
+        )}
       </FormProvider>
     </PluginPage>
   );

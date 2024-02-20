@@ -545,9 +545,12 @@ export type AlertDescription = {
 };
 
 export enum CheckSort {
-  AToZ,
-  ZToA,
-  SuccessRate,
+  AToZ = 'atoz',
+  ZToA = 'ztoa',
+  UptimeDesc = 'uptimeDesc',
+  UptimeAsc = 'uptimeAsc',
+  ReachabilityDesc = 'reachabilityDesc',
+  ReachabilityAsc = 'reachabilityAsc',
 }
 
 export enum CheckEnabledStatus {
@@ -612,15 +615,6 @@ export interface ProbePageParams {
   id?: string;
 }
 
-export interface AdHocCheckResponse {
-  id: string;
-  tenantId: number;
-  timeout: number;
-  settings: Settings;
-  probes: number[];
-  target: string;
-}
-
 export interface DashboardSceneAppConfig {
   metrics: DataSourceRef;
   logs: DataSourceRef;
@@ -631,7 +625,7 @@ export interface DashboardSceneAppConfig {
 export interface VizViewSceneAppConfig extends DashboardSceneAppConfig {
   checkFilters: CheckFiltersType;
   checks: Check[];
-  handleResetFilters: () => void;
+  onReset: () => void;
   onFilterChange: (filters: CheckFiltersType) => void;
 }
 
@@ -667,9 +661,9 @@ export interface ThresholdValues {
   upperLimit: number;
   lowerLimit: number;
 }
+
 export interface ThresholdSettings {
-  [key: string]: ThresholdValues;
-  uptime: ThresholdValues;
-  reachability: ThresholdValues;
   latency: ThresholdValues;
+  reachability: ThresholdValues;
+  uptime: ThresholdValues;
 }

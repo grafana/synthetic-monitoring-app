@@ -1,6 +1,6 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
-import { DEFAULT_PROBES, PRIVATE_PROBE, PUBLIC_PROBE, UPDATED_PROBE_TOKEN_RESPONSE } from 'test/fixtures/probes';
+import { PRIVATE_PROBE, PUBLIC_PROBE, UPDATED_PROBE_TOKEN_RESPONSE } from 'test/fixtures/probes';
 import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
@@ -12,10 +12,8 @@ import { getRoute } from 'components/Routing';
 import { EditProbe } from './EditProbe';
 import 'test/silenceErrors';
 
-const refetchProbes = jest.fn();
-
 const renderEditProbe = (probe: Probe) => {
-  return render(<EditProbe probes={DEFAULT_PROBES} refetchProbes={refetchProbes} />, {
+  return render(<EditProbe />, {
     route: `${getRoute(ROUTES.EditProbe)}/:id`,
     path: `${getRoute(ROUTES.EditProbe)}/${probe.id}`,
   });

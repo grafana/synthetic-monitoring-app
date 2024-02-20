@@ -6,10 +6,9 @@ import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
 
-import { CheckSort, ROUTES } from 'types';
+import { Check, CheckSort, ROUTES } from 'types';
 import { PLUGIN_URL_PATH } from 'components/constants';
 
-import { SuccessRateContextProvider } from '../SuccessRateContextProvider';
 import { CheckList } from './CheckList';
 
 jest.mock('hooks/useNavigation', () => {
@@ -23,8 +22,6 @@ const useNavigationHook = require('hooks/useNavigation');
 
 jest.setTimeout(20000);
 
-const onCheckUpdate = jest.fn();
-
 const renderCheckList = (checks = BASIC_CHECK_LIST) => {
   server.use(
     apiRoute(`listChecks`, {
@@ -37,14 +34,9 @@ const renderCheckList = (checks = BASIC_CHECK_LIST) => {
   );
 
   return waitFor(() =>
-    render(
-      <SuccessRateContextProvider>
-        <CheckList onCheckUpdate={onCheckUpdate} />
-      </SuccessRateContextProvider>,
-      {
-        path: `${PLUGIN_URL_PATH}${ROUTES.Checks}`,
-      }
-    )
+    render(<CheckList />, {
+      path: `${PLUGIN_URL_PATH}${ROUTES.Checks}`,
+    })
   );
 };
 
@@ -151,9 +143,9 @@ test('filters by check type', async () => {
 });
 
 test('filters by probe', async () => {
-  const DNS_CHECK_WITH_REMOVED_PROBE = {
+  const DNS_CHECK_WITH_REMOVED_PROBE: Check = {
     ...BASIC_DNS_CHECK,
-    probes: [PUBLIC_PROBE.id],
+    probes: [PUBLIC_PROBE.id] as number[],
   };
 
   const { user } = await renderCheckList([DNS_CHECK_WITH_REMOVED_PROBE, BASIC_HTTP_CHECK]);
@@ -296,7 +288,7 @@ test('clicking add new is handled', async () => {
 
 test('select all performs disable action on all visible checks', async () => {
   const { read, record } = getServerRequests();
-  server.use(apiRoute(`updateCheck`, {}, record));
+  server.use(apiRoute(`bulkUpdateChecks`, {}, record));
 
   const checkList = [BASIC_DNS_CHECK, BASIC_HTTP_CHECK];
   const { user } = await renderCheckList(checkList);
@@ -308,23 +300,19 @@ test('select all performs disable action on all visible checks', async () => {
 
   await user.click(disableButton);
 
-  const DNSrequest = await read(0);
-  const HTTPRequst = await read(1);
+  const { body } = await read();
 
-  expect(DNSrequest.body).toEqual({
-    ...BASIC_DNS_CHECK,
-    enabled: false,
-  });
-
-  expect(HTTPRequst.body).toEqual({
-    ...BASIC_HTTP_CHECK,
-    enabled: false,
-  });
+  expect(body).toEqual(
+    [BASIC_DNS_CHECK, BASIC_HTTP_CHECK].map((check) => ({
+      ...check,
+      enabled: false,
+    }))
+  );
 });
 
 test('select all performs enable action on all visible checks', async () => {
   const { read, record } = getServerRequests();
-  server.use(apiRoute(`updateCheck`, {}, record));
+  server.use(apiRoute(`bulkUpdateChecks`, {}, record));
 
   const checkList = [BASIC_DNS_CHECK, BASIC_HTTP_CHECK].map((check) => ({
     ...check,
@@ -335,14 +323,12 @@ test('select all performs enable action on all visible checks', async () => {
   await user.click(selectAll);
   const selectedText = await screen.findByText(`${checkList.length} checks are selected.`);
   expect(selectedText).toBeInTheDocument();
-  const disableButton = await screen.findByRole('button', { name: 'Enable' });
-  await user.click(disableButton);
+  const enableButton = await screen.findByRole('button', { name: 'Enable' });
+  await user.click(enableButton);
 
-  const DNSrequest = await read(0);
-  const HTTPRequst = await read(1);
+  const { body } = await read();
 
-  expect(DNSrequest.body).toEqual(BASIC_DNS_CHECK);
-  expect(HTTPRequst.body).toEqual(BASIC_HTTP_CHECK);
+  expect(body).toEqual([BASIC_DNS_CHECK, BASIC_HTTP_CHECK]);
 });
 
 test('cascader adds labels to label filter', async () => {
@@ -367,7 +353,7 @@ test('Sorting by success rate should not crash', async () => {
   const { user } = await renderCheckList();
   const sortPicker = await screen.findByTestId('check-list-sort');
 
-  await user.selectOptions(sortPicker, CheckSort.SuccessRate.toString());
+  await user.selectOptions(sortPicker, CheckSort.ReachabilityAsc.toString());
   const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(BASIC_CHECK_LIST.length);
 });

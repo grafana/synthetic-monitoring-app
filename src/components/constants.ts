@@ -400,8 +400,20 @@ export const CHECK_LIST_SORT_OPTIONS = [
     value: CheckSort.ZToA,
   },
   {
-    label: 'Success',
-    value: CheckSort.SuccessRate,
+    label: 'Asc. Reachability ',
+    value: CheckSort.ReachabilityAsc,
+  },
+  {
+    label: 'Desc. Reachability ',
+    value: CheckSort.ReachabilityDesc,
+  },
+  {
+    label: 'Asc. Uptime ',
+    value: CheckSort.UptimeAsc,
+  },
+  {
+    label: 'Desc. Uptime ',
+    value: CheckSort.UptimeDesc,
   },
 ];
 
@@ -508,3 +520,5 @@ export const REACHABILITY_DESCRIPTION =
   'The success rate of all the probes. Reachability decreases when any probe fails.';
 export const LATENCY_DESCRIPTION =
   'The average time to receive an answer across all the checks during the whole time period.';
+
+export const STANDARD_REFRESH_INTERVAL = 1000 * 60;

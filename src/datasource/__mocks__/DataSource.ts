@@ -1,10 +1,5 @@
 import { DataSourceInstanceSettings, PluginSignatureStatus, PluginType } from '@grafana/data';
-import { BASIC_CHECK_LIST, CheckInfo } from 'test/fixtures/checks';
-import { DEFAULT_PROBES } from 'test/fixtures/probes';
-
 import { SMOptions } from '../types';
-
-import { SMDataSource } from '../DataSource';
 
 export const instanceSettings: DataSourceInstanceSettings<SMOptions> = {
   id: 32,
@@ -98,31 +93,4 @@ export const instanceSettings: DataSourceInstanceSettings<SMOptions> = {
       hostedId: 12910,
     },
   },
-};
-
-export const getInstanceMock = (settings: DataSourceInstanceSettings<SMOptions> | undefined = instanceSettings) => {
-  const instance = new SMDataSource(settings);
-  instance.getMetricsDS = jest.fn().mockImplementation(() => ({ url: 'a url' }));
-  instance.addCheck = jest.fn().mockImplementation(() => Promise.resolve({ id: 3 }));
-  instance.listProbes = jest.fn().mockImplementation(() => Promise.resolve(DEFAULT_PROBES));
-  instance.addProbe = jest.fn().mockImplementation(() => Promise.resolve({ token: 'a token' }));
-  instance.deleteProbe = jest.fn();
-  instance.updateProbe = jest.fn();
-  instance.resetProbeToken = jest.fn();
-  instance.listChecks = jest.fn().mockImplementation(() => Promise.resolve(BASIC_CHECK_LIST));
-  instance.getCheckInfo = jest.fn().mockResolvedValue(CheckInfo);
-  instance.deleteCheck = jest.fn();
-  instance.updateCheck = jest.fn().mockImplementation(() => Promise.resolve({ data: {} }));
-  instance.getTenantSettings = jest.fn().mockImplementation(() =>
-    Promise.resolve({
-      thresholds: {
-        uptime: { upperLimit: 94.4, lowerLimit: 75 },
-        reachability: { upperLimit: 71.7, lowerLimit: 70 },
-        latency: { upperLimit: 249, lowerLimit: 182 },
-      },
-    })
-  );
-  instance.updateTenantSettings = jest.fn();
-  instance.bulkUpdateChecks = jest.fn();
-  return instance;
 };

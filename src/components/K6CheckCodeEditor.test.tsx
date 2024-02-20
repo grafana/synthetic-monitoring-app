@@ -1,6 +1,6 @@
 import React from 'react';
 import { within } from '@testing-library/react';
-import { BASIC_CHECK_LIST, BASIC_K6_CHECK } from 'test/fixtures/checks';
+import { BASIC_K6_CHECK } from 'test/fixtures/checks';
 import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
@@ -28,11 +28,10 @@ jest.mock('components/CodeEditor', () => {
 });
 
 beforeEach(() => jest.resetAllMocks());
-const onReturn = jest.fn();
 
 describe('new scripted check', () => {
   it('renders the new scripted check form', async () => {
-    const { findByText } = render(<K6CheckCodeEditor checks={[]} onSubmitSuccess={onReturn} />);
+    const { findByText } = render(<K6CheckCodeEditor />);
     expect(await findByText('Add a scripted check')).toBeInTheDocument();
   });
 
@@ -40,7 +39,7 @@ describe('new scripted check', () => {
     const { record, read } = getServerRequests();
     server.use(apiRoute(`addCheck`, {}, record));
     const { user, findByLabelText, getByText, findByTestId, findByRole, findByPlaceholderText } = render(
-      <K6CheckCodeEditor checks={[]} onSubmitSuccess={onReturn} />
+      <K6CheckCodeEditor />
     );
 
     const JOB_NAME = 'New k6 check';
@@ -73,7 +72,7 @@ describe('new scripted check', () => {
     codeEditor.focus();
     await user.clear(codeEditor);
     await user.type(codeEditor, SCRIPT);
-    await submitForm(onReturn, user);
+    await submitForm(user);
 
     const { body } = await read();
 
@@ -101,13 +100,10 @@ describe('edit scripted check', () => {
     const { record, read } = getServerRequests();
     server.use(apiRoute(`updateCheck`, {}, record));
 
-    const { user, findByLabelText, findByTestId, findByPlaceholderText, findByText } = render(
-      <K6CheckCodeEditor checks={BASIC_CHECK_LIST} onSubmitSuccess={onReturn} />,
-      {
-        route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`,
-        path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/${BASIC_K6_CHECK.id}`,
-      }
-    );
+    const { user, findByLabelText, findByTestId, findByPlaceholderText, findByText } = render(<K6CheckCodeEditor />, {
+      route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`,
+      path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/${BASIC_K6_CHECK.id}`,
+    });
     const jobNameInput = await findByLabelText('Job name', { exact: false });
     expect(jobNameInput).toHaveValue(BASIC_K6_CHECK.job);
     const targetInput = await findByLabelText('Instance', { exact: false });
@@ -120,7 +116,7 @@ describe('edit scripted check', () => {
     expect(labelValueInput).toHaveValue(BASIC_K6_CHECK.labels[0].value);
     const codeEditor = await findByTestId('code-editor');
     expect(codeEditor).toHaveValue(atob(BASIC_K6_CHECK.settings.k6?.script!));
-    await submitForm(onReturn, user);
+    await submitForm(user);
 
     const { body } = await read();
 
@@ -135,13 +131,10 @@ describe('edit scripted check', () => {
 
     const { record, read } = getServerRequests();
     server.use(apiRoute(`updateCheck`, {}, record));
-    const { user, findByLabelText, findByTestId, findByPlaceholderText, getByText } = render(
-      <K6CheckCodeEditor checks={BASIC_CHECK_LIST} onSubmitSuccess={onReturn} />,
-      {
-        route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`,
-        path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/${BASIC_K6_CHECK.id}`,
-      }
-    );
+    const { user, findByLabelText, findByTestId, findByPlaceholderText, getByText } = render(<K6CheckCodeEditor />, {
+      route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`,
+      path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/${BASIC_K6_CHECK.id}`,
+    });
     const jobNameInput = await findByLabelText('Job name', { exact: false });
     await user.clear(jobNameInput);
     await user.type(jobNameInput, NEW_JOB_NAME);
@@ -166,7 +159,7 @@ describe('edit scripted check', () => {
     const codeEditor = await findByTestId('code-editor');
     await user.clear(codeEditor);
     await user.type(codeEditor, NEW_SCRIPT);
-    await submitForm(onReturn, user);
+    await submitForm(user);
 
     const { body } = await read();
 

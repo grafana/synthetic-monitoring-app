@@ -6,30 +6,14 @@ import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
 
-import { Check, FilteredCheck } from 'types';
-import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
+import { Check } from 'types';
 
-import BulkEditModal from './BulkEditModal';
+import { BulkEditModal } from './BulkEditModal';
 
 const onDismiss = jest.fn();
-const onSuccess = jest.fn();
-const onError = jest.fn().mockImplementation((error: string) => {
-  return error;
-});
 
-const renderBulkEditModal = (action: 'add' | 'remove' | null, checks: Check[]) => {
-  return render(
-    <SuccessRateContextProvider>
-      <BulkEditModal
-        onDismiss={onDismiss}
-        onSuccess={onSuccess}
-        onError={onError}
-        selectedChecks={() => checks as FilteredCheck[]}
-        action={action}
-        isOpen={true}
-      />
-    </SuccessRateContextProvider>
-  );
+const renderBulkEditModal = (action: 'add' | 'remove', checks: Check[]) => {
+  return render(<BulkEditModal onDismiss={onDismiss} checks={checks} action={action} isOpen={true} />);
 };
 
 test('shows the modal', async () => {
@@ -42,14 +26,14 @@ test('shows the modal', async () => {
 });
 
 test('successfully adds probes', async () => {
-  const checksWithASingleProbe = [
+  const checksWithASingleProbe: Check[] = [
     {
       ...BASIC_HTTP_CHECK,
-      probes: [PUBLIC_PROBE.id],
+      probes: [PUBLIC_PROBE.id] as number[],
     },
     {
       ...BASIC_PING_CHECK,
-      probes: [PUBLIC_PROBE.id],
+      probes: [PUBLIC_PROBE.id] as number[],
     },
   ];
 
@@ -61,7 +45,7 @@ test('successfully adds probes', async () => {
   const probe2 = await screen.findByText(PRIVATE_PROBE.name);
   await user.click(probe1);
   await user.click(probe2);
-  const submitButton = await screen.findByText('Submit');
+  const submitButton = await screen.findByText('Add probes');
   await user.click(submitButton);
 
   const { body } = await read();
@@ -85,7 +69,7 @@ test('successfully removes probes', async () => {
   const { user } = renderBulkEditModal('remove', [BASIC_HTTP_CHECK, BASIC_PING_CHECK]);
   const probe1 = await screen.findByText(PUBLIC_PROBE.name);
   await user.click(probe1);
-  const submitButton = await screen.findByText('Submit');
+  const submitButton = await screen.findByText('Remove probes');
   await user.click(submitButton);
 
   const { body } = await read();

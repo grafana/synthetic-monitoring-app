@@ -1,10 +1,9 @@
 import React, { PropsWithChildren } from 'react';
-import { act, renderHook } from '@testing-library/react';
+import { renderHook, waitFor } from '@testing-library/react';
 import { BASIC_DNS_CHECK, BASIC_HTTP_CHECK, BASIC_PING_CHECK, BASIC_TCP_CHECK } from 'test/fixtures/checks';
 import { createWrapper } from 'test/render';
 
 import { Check, DnsSettings, HttpSettings, PingSettings, TcpSettings } from 'types';
-import { CheckInfoContextProvider } from 'components/CheckInfoContextProvider';
 
 import { useUsageCalc } from './useUsageCalc';
 
@@ -13,13 +12,11 @@ interface Wrapper {}
 const renderUsage = async (check: Check) => {
   const { Wrapper } = createWrapper();
 
-  const wrapper = ({ children }: PropsWithChildren<Wrapper>) => (
-    <Wrapper>
-      <CheckInfoContextProvider>{children}</CheckInfoContextProvider>
-    </Wrapper>
-  );
+  const wrapper = ({ children }: PropsWithChildren<Wrapper>) => <Wrapper>{children}</Wrapper>;
   const hook = renderHook(() => useUsageCalc(check), { wrapper });
-  await act(async () => hook.result);
+
+  await waitFor(() => expect(hook.result.current).toBeTruthy());
+
   return hook;
 };
 

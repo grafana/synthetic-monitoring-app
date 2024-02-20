@@ -5,11 +5,10 @@ import { Spinner } from '@grafana/ui';
 
 import { CheckPageParams, CheckType, DashboardSceneAppConfig, FeatureName } from 'types';
 import { checkType as getCheckType } from 'utils';
-import { ChecksContext } from 'contexts/ChecksContext';
 import { InstanceContext } from 'contexts/InstanceContext';
+import { useChecks } from 'data/useChecks';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useNavigation } from 'hooks/useNavigation';
-import { ChecksContextProvider } from 'components/ChecksContextProvider';
 import { PLUGIN_URL_PATH } from 'components/constants';
 import { getDashboardSceneApp } from 'scenes/dashboardSceneApp';
 import { getDNSScene } from 'scenes/DNS';
@@ -24,8 +23,8 @@ function DashboardPageContent() {
   const { isEnabled } = useFeatureFlag(FeatureName.Scenes);
   const { isEnabled: multiHttpEnabled } = useFeatureFlag(FeatureName.MultiHttp);
   const { isEnabled: scriptedEnabled } = useFeatureFlag(FeatureName.ScriptedChecks);
+  const { data: checks = [], isLoading } = useChecks();
   const { isEnabled: perCheckDashboardsEnabled } = useFeatureFlag(FeatureName.PerCheckDashboards);
-  const { checks, loading } = useContext(ChecksContext);
   const { id } = useParams<CheckPageParams>();
 
   const navigate = useNavigation();
@@ -141,7 +140,7 @@ function DashboardPageContent() {
     navigate('redirect?dashboard=summary');
     return null;
   }
-  if (!scene || loading) {
+  if (!scene || isLoading) {
     return <Spinner />;
   }
 
@@ -149,9 +148,5 @@ function DashboardPageContent() {
 }
 
 export function DashboardPage() {
-  return (
-    <ChecksContextProvider>
-      <DashboardPageContent />
-    </ChecksContextProvider>
-  );
+  return <DashboardPageContent />;
 }

@@ -1,6 +1,6 @@
 import { Label, Probe } from 'types';
 
-export const PRIVATE_PROBE = {
+export const PRIVATE_PROBE: Probe = {
   name: 'tacos',
   id: 1,
   public: false,
@@ -19,7 +19,7 @@ export const PRIVATE_PROBE = {
   created: 1694212496.731247,
 } as const satisfies Probe;
 
-export const PUBLIC_PROBE = {
+export const PUBLIC_PROBE: Probe = {
   name: 'burritos',
   id: 2,
   public: true,
@@ -35,17 +35,17 @@ export const PUBLIC_PROBE = {
   created: 1694212496.731247,
 } as const satisfies Probe;
 
-export const ONLINE_PROBE = {
+export const ONLINE_PROBE: Probe = {
   ...PRIVATE_PROBE,
   online: true,
 } as const satisfies Probe;
 
-export const OFFLINE_PROBE = {
+export const OFFLINE_PROBE: Probe = {
   ...PRIVATE_PROBE,
   online: false,
 } as const satisfies Probe;
 
-export const UNSELECTED_PRIVATE_PROBE = {
+export const UNSELECTED_PRIVATE_PROBE: Probe = {
   name: 'enchiladas',
   id: 3,
   public: false,

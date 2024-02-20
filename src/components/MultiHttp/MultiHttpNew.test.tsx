@@ -12,10 +12,9 @@ import { PLUGIN_URL_PATH } from 'components/constants';
 import { MultiHttpSettingsForm } from './MultiHttpSettingsForm';
 
 jest.setTimeout(60000);
-const onReturn = jest.fn();
 
 const renderNewMultiForm = async () => {
-  const res = render(<MultiHttpSettingsForm onReturn={onReturn} />, {
+  const res = render(<MultiHttpSettingsForm />, {
     route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${CheckType.MULTI_HTTP}`,
     path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${CheckType.MULTI_HTTP}`,
   });
@@ -104,7 +103,7 @@ describe('new checks', () => {
     await user.clear(values[0]);
     await user.type(values[0], REQUEST_1.checks[0].value);
 
-    await submitForm(onReturn, user);
+    await submitForm(user);
 
     const { body } = await read();
 

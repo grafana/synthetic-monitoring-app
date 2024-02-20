@@ -206,7 +206,9 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
         method: 'GET',
         url: `${this.instanceSettings.url}/sm/probe/list`,
       })
-    ).then((res) => res.data);
+    ).then((res) => {
+      return res.data;
+    });
   }
 
   async addProbe(probe: Probe) {
@@ -307,7 +309,9 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
         url: `${this.instanceSettings.url}/sm/check/add`,
         data: check,
       })
-    );
+    ).then((res) => {
+      return res.data;
+    });
   }
 
   async deleteCheck(id: number) {
