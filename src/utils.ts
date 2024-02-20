@@ -3,7 +3,17 @@ import { config, FetchResponse, getBackendSrv } from '@grafana/runtime';
 import { firstValueFrom } from 'rxjs';
 
 import { DashboardInfo, LinkedDatasourceInfo, LogQueryResponse, LogStream, SMOptions } from './datasource/types';
-import { CheckType, HostedInstance, Probe, Settings, SubmissionErrorWrapper, ThresholdValues } from 'types';
+import {
+  CalculateUsageValues,
+  Check,
+  CheckType,
+  HostedInstance,
+  Probe,
+  Settings,
+  SubmissionErrorWrapper,
+  ThresholdValues,
+  TLSConfig,
+} from 'types';
 import { SMDataSource } from 'datasource/DataSource';
 import { Metric } from 'datasource/responses.types';
 
@@ -321,4 +331,50 @@ export function formatDate(number: number) {
     hour: '2-digit',
     minute: '2-digit',
   });
+}
+
+export function checkToUsageCalcValues(check: Check): CalculateUsageValues {
+  const { basicMetricsOnly, settings, frequency, probes } = check;
+  const cType = checkType(check.settings);
+
+  return {
+    assertionCount: getEntriesCount(settings),
+    basicMetricsOnly: basicMetricsOnly,
+    checkType: cType,
+    frequencySeconds: frequency / 1000,
+    isSSL: getSSL(settings),
+    probeCount: probes?.length ?? 0,
+  };
+}
+
+export function getEntriesCount(settings: Check['settings']) {
+  if (settings?.multihttp?.entries) {
+    return settings.multihttp.entries.length;
+  }
+
+  return 1;
+}
+
+export function getSSL(settings: Check['settings']) {
+  if (settings?.http?.tlsConfig && doesTLSConfigHaveValues(settings.http.tlsConfig)) {
+    return true;
+  }
+
+  if (settings?.tcp?.tlsConfig && doesTLSConfigHaveValues(settings.tcp.tlsConfig)) {
+    return true;
+  }
+
+  // if (settings?.grpc?.tlsConfig && Object.keys(settings.grpc.tlsConfig).length > 0) {
+  //   return true;
+  // }
+
+  return false;
+}
+
+function doesTLSConfigHaveValues(tlsConfig: TLSConfig) {
+  if (!tlsConfig) {
+    return false;
+  }
+
+  return Object.values(tlsConfig).some((value) => value);
 }

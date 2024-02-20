@@ -344,6 +344,7 @@ export interface Settings {
   dns?: DnsSettings;
   http?: HttpSettings;
   k6?: ScriptedSettings;
+  grpc?: undefined;
   multihttp?: MultiHttpSettings;
   ping?: PingSettings;
   tcp?: TcpSettings;
@@ -354,6 +355,7 @@ export enum CheckType {
   HTTP = 'http',
   PING = 'ping',
   DNS = 'dns',
+  GRPC = 'grpc',
   TCP = 'tcp',
   Traceroute = 'traceroute',
   MULTI_HTTP = 'multihttp',
@@ -623,4 +625,13 @@ export interface ThresholdSettings {
   latency: ThresholdValues;
   reachability: ThresholdValues;
   uptime: ThresholdValues;
+}
+
+export interface CalculateUsageValues {
+  assertionCount: number;
+  basicMetricsOnly: boolean;
+  checkType: CheckType;
+  frequencySeconds: number;
+  isSSL: boolean;
+  probeCount: number;
 }
