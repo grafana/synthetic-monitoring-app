@@ -1,4 +1,4 @@
-import { Check, UsageValues } from 'types';
+import { MultiHTTPCheck, UsageValues } from 'types';
 
 interface ActiveSeriesParams {
   probeCount: number;
@@ -40,7 +40,7 @@ export const calculateUsage = ({ probeCount, frequencySeconds, seriesPerCheck }:
   };
 };
 
-export function calculateMultiHTTPUsage(check: Partial<Check>): UsageValues {
+export function calculateMultiHTTPUsage(check: Partial<MultiHTTPCheck>): UsageValues {
   const logGBPerProbe = 0.000001151;
   const logGBPerAssertionPerCheck = 0.0000004;
   const seriesPerProbe = 36;
@@ -52,7 +52,7 @@ export function calculateMultiHTTPUsage(check: Partial<Check>): UsageValues {
   // Calculate logs
   const baseLogsGbPerMonth = checksPerMonth * logGBPerProbe;
   const assertionCount =
-    check.settings?.multihttp?.entries.reduce((assertionCount, entry) => {
+    check.settings?.multihttp.entries.reduce((assertionCount, entry) => {
       return assertionCount + (entry.checks?.length ?? 0);
     }, 0) ?? 0;
   const assertionLogsGBPerMonth = checksPerMonth * assertionCount * logGBPerAssertionPerCheck;
@@ -60,7 +60,7 @@ export function calculateMultiHTTPUsage(check: Partial<Check>): UsageValues {
 
   // Calculate metrics
   const baseSeries = seriesPerProbe * (check.probes?.length ?? 0);
-  const additionalUrls = (check.settings?.multihttp?.entries.length ?? 1) - 1;
+  const additionalUrls = (check.settings?.multihttp.entries.length ?? 1) - 1;
   const additionalSeries = additionalSeriesPerUrl * additionalUrls;
   const activeSeries = baseSeries + additionalSeries;
 

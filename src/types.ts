@@ -322,7 +322,7 @@ export interface CheckFormValues extends Omit<Check, 'settings' | 'labels' | 'al
   publishAdvancedMetrics: boolean;
 }
 
-export interface Check extends BaseObject {
+export interface CheckBase extends BaseObject {
   job: string;
   target: string;
   frequency: number;
@@ -332,13 +332,10 @@ export interface Check extends BaseObject {
   alertSensitivity: AlertSensitivity | string;
   basicMetricsOnly: boolean;
   labels: Label[]; // Currently list of [name:value]... can it be Labels?
-  settings: Settings; //
-
-  // Link to probes
   probes: number[];
-  id?: number;
-  tenantId?: number;
 }
+
+export type Check = HTTPCheck | DNSCheck | ScriptedCheck | MultiHTTPCheck | PingCheck | TCPCheck | TracerouteCheck;
 
 export interface FilteredCheck extends Omit<Check, 'id'> {
   id: number;
@@ -353,6 +350,48 @@ export interface Settings {
   tcp?: TcpSettings;
   traceroute?: TracerouteSettings;
 }
+
+export type DNSCheck = CheckBase & {
+  settings: {
+    dns: DnsSettings;
+  };
+};
+
+export type HTTPCheck = CheckBase & {
+  settings: {
+    http: HttpSettings;
+  };
+};
+
+export type ScriptedCheck = CheckBase & {
+  settings: {
+    k6: ScriptedSettings;
+  };
+};
+
+export type MultiHTTPCheck = CheckBase & {
+  settings: {
+    multihttp: MultiHttpSettings;
+  };
+};
+
+export type PingCheck = CheckBase & {
+  settings: {
+    ping: PingSettings;
+  };
+};
+
+export type TCPCheck = CheckBase & {
+  settings: {
+    tcp: TcpSettings;
+  };
+};
+
+export type TracerouteCheck = CheckBase & {
+  settings: {
+    traceroute: TracerouteSettings;
+  };
+};
 
 export enum CheckType {
   HTTP = 'http',

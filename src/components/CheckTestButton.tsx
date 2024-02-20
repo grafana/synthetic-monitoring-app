@@ -24,6 +24,7 @@ export function CheckTestButton({ check }: Props) {
   const formMethods = useFormContext();
   const checkType = getCheckType(check.settings);
   const { instance } = useContext(InstanceContext);
+
   return (
     <>
       <Button

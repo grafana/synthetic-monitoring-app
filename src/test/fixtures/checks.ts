@@ -1,15 +1,22 @@
 import {
   AlertSensitivity,
   Check,
+  DNSCheck,
   DnsProtocol,
   DnsRecordType,
   DnsResponseCodes,
   DNSRRValidator,
+  HTTPCheck,
   HTTPCompressionAlgo,
   HttpMethod,
   HttpVersion,
   IpVersion,
   Label,
+  MultiHTTPCheck,
+  PingCheck,
+  ScriptedCheck,
+  TCPCheck,
+  TracerouteCheck,
 } from 'types';
 import { AdHocCheckResponse } from 'datasource/responses.types';
 
@@ -65,7 +72,7 @@ SBefoVnBNp449CSHW+brvPEyKD3D5CVpTIDfu2y8+nHszfBL22wuO4T+oem5h55A
 const transformedValidCert = btoa(validCert);
 const transformedValidKey = btoa(validKey);
 
-export const BASIC_DNS_CHECK = {
+export const BASIC_DNS_CHECK: DNSCheck = {
   id: 1,
   job: 'Job name for dns',
   target: 'dns.com',
@@ -98,9 +105,9 @@ export const BASIC_DNS_CHECK = {
       } as DNSRRValidator,
     },
   },
-} as const satisfies Check;
+} as const satisfies DNSCheck;
 
-export const BASIC_HTTP_CHECK: Check = {
+export const BASIC_HTTP_CHECK: HTTPCheck = {
   id: 2,
   job: 'Job name for http',
   target: 'https://http.com',
@@ -146,7 +153,7 @@ export const BASIC_HTTP_CHECK: Check = {
   basicMetricsOnly: true,
 };
 
-export const BASIC_K6_CHECK: Check = {
+export const BASIC_K6_CHECK: ScriptedCheck = {
   id: 3,
   job: 'Job name for k6',
   target: 'https://www.k6.com',
@@ -164,7 +171,7 @@ export const BASIC_K6_CHECK: Check = {
   },
 };
 
-export const BASIC_MULTIHTTP_CHECK: Check = {
+export const BASIC_MULTIHTTP_CHECK: MultiHTTPCheck = {
   id: 4,
   job: 'Job name for multihttp',
   target: 'https://www.multi1.com',
@@ -242,7 +249,7 @@ export const BASIC_MULTIHTTP_CHECK: Check = {
   },
 };
 
-export const BASIC_PING_CHECK: Check = {
+export const BASIC_PING_CHECK: PingCheck = {
   id: 5,
   job: 'Job name for ping',
   target: 'grafana.com',
@@ -261,7 +268,7 @@ export const BASIC_PING_CHECK: Check = {
   },
 };
 
-export const BASIC_TCP_CHECK: Check = {
+export const BASIC_TCP_CHECK: TCPCheck = {
   id: 6,
   enabled: true,
   frequency: 60000,
@@ -294,7 +301,7 @@ export const BASIC_TCP_CHECK: Check = {
   timeout: 3000,
 };
 
-export const BASIC_TRACEROUTE_CHECK: Check = {
+export const BASIC_TRACEROUTE_CHECK: TracerouteCheck = {
   id: 7,
   frequency: 120000,
   offset: 0,
@@ -318,7 +325,7 @@ export const BASIC_TRACEROUTE_CHECK: Check = {
   modified: 1707912548.258483,
 };
 
-export const FULL_HTTP_CHECK: Check = {
+export const FULL_HTTP_CHECK: HTTPCheck = {
   id: 8,
   job: 'carne asada',
   alertSensitivity: AlertSensitivity.Medium,
@@ -361,7 +368,7 @@ export const FULL_HTTP_CHECK: Check = {
   },
 };
 
-export const CUSTOM_ALERT_SENSITIVITY_CHECK: Check = {
+export const CUSTOM_ALERT_SENSITIVITY_CHECK: DNSCheck = {
   ...BASIC_DNS_CHECK,
   id: 9,
   alertSensitivity: 'slightly sensitive',

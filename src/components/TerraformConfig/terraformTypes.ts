@@ -30,16 +30,43 @@ export interface TFCheck {
 }
 
 export type TFLabels = { [key: string]: string };
-type TFSettings =
-  | TFHttpSettings
-  | TFPingSettings
-  | TFTcpSettings
-  | TFDnsSettings
-  | TFTracerouteSettings
-  | TFMultiHTTPSettings;
-export type TFCheckSettings = {
-  [key: string]: TFSettings;
+
+type KeyedTFHttpSettings = {
+  http: TFHttpSettings;
 };
+
+type KeyedTFPingSettings = {
+  ping: TFPingSettings;
+};
+
+type KeyedTFTcpSettings = {
+  tcp: TFTcpSettings;
+};
+
+type KeyedTFDnsSettings = {
+  dns: TFDnsSettings;
+};
+
+type KeyedTFTracerouteSettings = {
+  traceroute: TFTracerouteSettings;
+};
+
+type KeyedTFMultiHTTPSettings = {
+  multihttp: TFMultiHTTPSettings;
+};
+
+type KeyedTFScriptedSettings = {
+  scripted: {};
+};
+
+export type TFCheckSettings =
+  | KeyedTFHttpSettings
+  | KeyedTFPingSettings
+  | KeyedTFTcpSettings
+  | KeyedTFDnsSettings
+  | KeyedTFTracerouteSettings
+  | KeyedTFMultiHTTPSettings
+  | KeyedTFScriptedSettings;
 
 interface TFFailIfMatchesNotMatches {
   fail_if_matches_regexp?: string[];

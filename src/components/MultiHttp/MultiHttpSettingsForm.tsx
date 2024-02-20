@@ -17,7 +17,8 @@ import {
   VerticalGroup,
 } from '@grafana/ui';
 
-import { Check, CheckFormValues, CheckPageParams, CheckType, SubmissionErrorWrapper } from 'types';
+import { Check, CheckFormValues, CheckPageParams, CheckType, MultiHTTPCheck, SubmissionErrorWrapper } from 'types';
+import { isMultiHttpCheck } from 'utils.types';
 import { FaroEvent, reportError, reportEvent } from 'faro';
 import { hasRole } from 'utils';
 import { validateTarget } from 'validation';
@@ -27,14 +28,13 @@ import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
 import { CheckFormAlert } from 'components/CheckFormAlert';
 import { CheckTestButton } from 'components/CheckTestButton';
 import { CheckUsage } from 'components/CheckUsage';
-import { METHOD_OPTIONS } from 'components/constants';
+import { FALLBACK_CHECK_MULTIHTTP, METHOD_OPTIONS } from 'components/constants';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 import { LabelField } from 'components/LabelField';
 import { PluginPage } from 'components/PluginPage';
 
 import { TabSection } from './Tabs/TabSection';
 import { AvailableVariables } from './AvailableVariables';
-import { multiHttpFallbackCheck } from './consts';
 import { MultiHttpCollapse } from './MultiHttpCollapse';
 import { getMultiHttpFormStyles } from './MultiHttpSettingsForm.styles';
 import { focusField, getMultiHttpFormErrors, useMultiHttpCollapseState } from './MultiHttpSettingsForm.utils';
@@ -49,11 +49,16 @@ export const MultiHttpSettingsForm = ({ onReturn, checks }: Props) => {
   const panelRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const { id } = useParams<CheckPageParams>();
 
-  let check: Check = multiHttpFallbackCheck;
+  let check: MultiHTTPCheck = FALLBACK_CHECK_MULTIHTTP;
 
   if (id) {
-    check = checks?.find((c) => c.id === Number(id)) ?? multiHttpFallbackCheck;
+    const found = checks?.find((c) => c.id === Number(id)) ?? FALLBACK_CHECK_MULTIHTTP;
+
+    if (isMultiHttpCheck(found)) {
+      check = found;
+    }
   }
+
   const {
     instance: { api },
   } = useContext(InstanceContext);
@@ -206,8 +211,8 @@ export const MultiHttpSettingsForm = ({ onReturn, checks }: Props) => {
               </Field>
               <ProbeOptions
                 isEditor={isEditor}
-                timeout={check?.timeout ?? multiHttpFallbackCheck.timeout}
-                frequency={check?.frequency ?? multiHttpFallbackCheck.frequency}
+                timeout={check.timeout}
+                frequency={check.frequency}
                 checkType={CheckType.MULTI_HTTP}
               />
 

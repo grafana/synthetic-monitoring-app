@@ -40,7 +40,11 @@ import {
   CHECK_TYPE_OPTIONS,
   DNS_RESPONSE_CODES,
   DNS_RESPONSE_MATCH_OPTIONS,
-  fallbackSettings,
+  FALLBACK_CHECK_DNS,
+  FALLBACK_CHECK_HTTP,
+  FALLBACK_CHECK_PING,
+  FALLBACK_CHECK_TCP,
+  FALLBACK_CHECK_TRACEROUTE,
   HTTP_COMPRESSION_ALGO_OPTIONS,
   HTTP_REGEX_VALIDATION_OPTIONS,
   HTTP_SSL_OPTIONS,
@@ -58,7 +62,8 @@ export function selectableValueFrom<T>(value: T, label?: string): SelectableValu
   return { label: label ?? labelValue, value };
 }
 const getPingSettingsFormValues = (settings: Settings): PingSettingsFormValues => {
-  const pingSettings = settings.ping ?? (fallbackSettings(CheckType.PING) as PingSettings);
+  const pingSettings = settings.ping ?? FALLBACK_CHECK_PING.settings.ping;
+
   return {
     ...pingSettings,
     ipVersion: IP_OPTIONS.find(({ value }) => value === settings?.ping?.ipVersion) ?? IP_OPTIONS[1],
@@ -151,7 +156,7 @@ const getHttpRegexValidationFormValues = (
 };
 
 const getHttpSettingsFormValues = (settings: Settings): HttpSettingsFormValues => {
-  const httpSettings = settings.http ?? (fallbackSettings(CheckType.HTTP) as HttpSettings);
+  const httpSettings = settings.http ?? FALLBACK_CHECK_HTTP.settings.http;
   const {
     failIfBodyMatchesRegexp,
     failIfBodyNotMatchesRegexp,
@@ -200,7 +205,7 @@ const getTcpQueryResponseFormValues = (queryResponses?: TCPQueryResponse[]) => {
 };
 
 const getTcpSettingsFormValues = (settings: Settings): TcpSettingsFormValues => {
-  const tcpSettings = settings.tcp ?? (fallbackSettings(CheckType.TCP) as TcpSettings);
+  const tcpSettings = settings.tcp ?? FALLBACK_CHECK_TCP.settings.tcp;
   const formattedQueryResponse = getTcpQueryResponseFormValues(tcpSettings.queryResponse);
   const tlsConfig = getTlsConfigFormValues(tcpSettings.tlsConfig);
   return {
@@ -237,7 +242,8 @@ const getDnsValidations = (validations: GetDnsValidationArgs): DnsValidationForm
   }, []);
 
 const getDnsSettingsFormValues = (settings: Settings): DnsSettingsFormValues => {
-  const dnsSettings = settings.dns ?? (fallbackSettings(CheckType.DNS) as DnsSettings);
+  const dnsSettings = settings.dns ?? FALLBACK_CHECK_DNS.settings.dns;
+
   return {
     ...dnsSettings,
     ipVersion: selectableValueFrom(dnsSettings.ipVersion),
@@ -256,7 +262,7 @@ const getDnsSettingsFormValues = (settings: Settings): DnsSettingsFormValues => 
 };
 
 const getTracerouteSettingsFormValues = (settings: Settings): TracerouteSettingsFormValues => {
-  const tracerouteSettings = settings.traceroute ?? (fallbackSettings(CheckType.Traceroute) as TracerouteSettings);
+  const tracerouteSettings = settings.traceroute ?? FALLBACK_CHECK_TRACEROUTE.settings.traceroute;
 
   return {
     maxHops: String(tracerouteSettings.maxHops),
@@ -289,13 +295,13 @@ const getFormSettingsForCheck = (settings: Settings): SettingsFormValues => {
 
 const getAllFormSettingsForCheck = (): SettingsFormValues => {
   return {
-    http: getHttpSettingsFormValues(fallbackSettings(CheckType.HTTP)),
-    tcp: getTcpSettingsFormValues(fallbackSettings(CheckType.TCP)),
-    dns: getDnsSettingsFormValues(fallbackSettings(CheckType.DNS)),
-    ping: getPingSettingsFormValues(fallbackSettings(CheckType.PING)),
-    traceroute: getTracerouteSettingsFormValues(fallbackSettings(CheckType.Traceroute)),
-    multihttp: getMultiHttpFormValues(fallbackSettings(CheckType.MULTI_HTTP)),
-    k6: fallbackSettings(CheckType.K6).k6,
+    http: FALLBACK_CHECK_HTTP.settings.http,
+    // tcp: getTcpSettingsFormValues(fallbackSettings(CheckType.TCP)),
+    // dns: getDnsSettingsFormValues(fallbackSettings(CheckType.DNS)),
+    // ping: getPingSettingsFormValues(fallbackSettings(CheckType.PING)),
+    // traceroute: getTracerouteSettingsFormValues(fallbackSettings(CheckType.Traceroute)),
+    // multihttp: fallbackMultiHTTPSettings,
+    // k6: fallbackSettings(CheckType.K6).k6,
   };
 };
 

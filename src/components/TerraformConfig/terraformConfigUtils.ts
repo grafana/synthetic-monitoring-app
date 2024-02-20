@@ -1,4 +1,13 @@
-import { Check, CheckType, Label, MultiHttpSettings, Probe, TLSConfig } from 'types';
+import { Check, Label, MultiHttpSettings, Probe, TLSConfig } from 'types';
+import {
+  isDNSCheck,
+  isHttpCheck,
+  isMultiHttpCheck,
+  isPingCheck,
+  isScriptedCheck,
+  isTCPCheck,
+  isTracerouteCheck,
+} from 'utils.types';
 import { checkType } from 'utils';
 
 import { TFCheck, TFCheckSettings, TFLabels, TFMultiHttpEntry, TFProbe, TFTlsConfig } from './terraformTypes';
@@ -24,129 +33,123 @@ const tlsConfigToTF = (tlsConfig?: TLSConfig): TFTlsConfig | undefined => {
 };
 
 const settingsToTF = (check: Check): TFCheckSettings => {
-  const type = checkType(check.settings);
-  switch (type) {
-    case CheckType.TCP:
-      if (!check.settings.tcp) {
-        throw new Error(`could not translate settings to terraform config for check ${check.job}`);
-      }
-      return {
-        tcp: {
-          ip_version: check.settings.tcp.ipVersion,
-          tls_config: tlsConfigToTF(check.settings.tcp.tlsConfig),
-          tls: check.settings.tcp.tls,
-          query_response: check.settings.tcp.queryResponse,
-        },
-      };
-    case CheckType.PING:
-      if (!check.settings.ping) {
-        throw new Error(`could not translate settings to terraform config for check ${check.job}`);
-      }
-      return {
-        ping: {
-          ip_version: check.settings.ping.ipVersion,
-          dont_fragment: check.settings.ping.dontFragment,
-        },
-      };
-    case CheckType.HTTP:
-      if (!check.settings.http) {
-        throw new Error(`could not translate settings to terraform config for check ${check.job}`);
-      }
-      return {
-        http: {
-          method: check.settings.http.method,
-          compression: check.settings.http.compression,
-          basic_auth: check.settings.http.basicAuth,
-          bearer_token: check.settings.http.bearerToken,
-          cache_busting_query_param_name: check.settings.http.cacheBustingQueryParamName,
-          fail_if_body_matches_regexp: check.settings.http.failIfBodyMatchesRegexp,
-          fail_if_body_not_matches_regexp: check.settings.http.failIfBodyNotMatchesRegexp,
-          fail_if_header_matches_regexp: check.settings.http.failIfHeaderMatchesRegexp,
-          fail_if_header_not_matches_regexp: check.settings.http.failIfHeaderNotMatchesRegexp,
-          fail_if_not_ssl: check.settings.http.failIfNotSSL,
-          fail_if_ssl: check.settings.http.failIfSSL,
-          ip_version: check.settings.http.ipVersion,
-          no_follow_redirects: check.settings.http.noFollowRedirects,
-          proxy_url: check.settings.http.proxyURL,
-          proxy_connect_headers: check.settings.http.proxyConnectHeaders,
-          tls_config: tlsConfigToTF(check.settings.http.tlsConfig),
-          valid_http_versions: check.settings.http.validHTTPVersions,
-          valid_status_codes: check.settings.http.validStatusCodes,
-        },
-      };
-    case CheckType.DNS:
-      if (!check.settings.dns) {
-        throw new Error(`could not translate settings to terraform config for check ${check.job}`);
-      }
-      return {
-        dns: {
-          ip_version: check.settings.dns.ipVersion,
-          server: check.settings.dns.server,
-          port: check.settings.dns.port,
-          record_type: check.settings.dns.recordType,
-          protocol: check.settings.dns.protocol,
-          valid_r_codes: check.settings.dns.validRCodes,
-          validate_answer_rrs: {
-            fail_if_matches_regexp: check.settings.dns.validateAnswerRRS?.failIfMatchesRegexp,
-            fail_if_not_matches_regexp: check.settings.dns.validateAnswerRRS?.failIfNotMatchesRegexp,
-          },
-          validate_authority_rrs: {
-            fail_if_matches_regexp: check.settings.dns.validateAuthorityRRS?.failIfMatchesRegexp,
-            fail_if_not_matches_regexp: check.settings.dns.validateAuthorityRRS?.failIfNotMatchesRegexp,
-          },
-          validate_additional_rrs: {
-            fail_if_matches_regexp: check.settings.dns.validateAditionalRRS?.failIfMatchesRegexp,
-            fail_if_not_matches_regexp: check.settings.dns.validateAditionalRRS?.failIfNotMatchesRegexp,
-          },
-        },
-      };
-    case CheckType.Traceroute:
-      if (!check.settings.traceroute) {
-        throw new Error(`could not translate settings to terraform config for check ${check.job}`);
-      }
-      return {
-        traceroute: {
-          max_hops: check.settings.traceroute.maxHops,
-          max_unknown_hops: check.settings.traceroute.maxUnknownHops,
-          ptr_lookup: check.settings.traceroute.ptrLookup,
-        },
-      };
-    case CheckType.MULTI_HTTP:
-      if (!check.settings.multihttp) {
-        throw new Error(`could not translate settings to terraform config for check ${check.job}`);
-      }
-      const escapeString = JSON.stringify(check.settings.multihttp);
-      const replaced = escapeString.replace(/\$\{/g, '$$${');
-      const escaped = JSON.parse(replaced) as MultiHttpSettings;
-      return {
-        multihttp: {
-          entries: escaped.entries.map((entry) => {
-            const { queryFields, ...request } = entry.request;
-            const transformed: TFMultiHttpEntry = {
-              ...entry,
-              request: {
-                ...request,
-                query_fields: queryFields,
-                body: {
-                  content_type: entry.request.body?.contentType,
-                },
-              },
-            };
-            if (entry.request.postData) {
-              transformed.request.post_data = {
-                mime_type: entry.request.postData.mimeType,
-                text: entry.request.postData.text,
-              };
-            }
-            return transformed;
-          }),
-        },
-      };
-    case CheckType.K6:
-      return {}; // TODO FIX
-    default:
-      throw new Error(`could not translate settings for check to terraform config: ${check.job}`);
+  if (isTCPCheck(check)) {
+    return {
+      tcp: {
+        ip_version: check.settings.tcp.ipVersion,
+        tls_config: tlsConfigToTF(check.settings.tcp.tlsConfig),
+        tls: check.settings.tcp.tls,
+        query_response: check.settings.tcp.queryResponse,
+      },
+    };
   }
+
+  if (isPingCheck(check)) {
+    return {
+      ping: {
+        ip_version: check.settings.ping.ipVersion,
+        dont_fragment: check.settings.ping.dontFragment,
+      },
+    };
+  }
+
+  if (isHttpCheck(check)) {
+    return {
+      http: {
+        method: check.settings.http.method,
+        compression: check.settings.http.compression,
+        basic_auth: check.settings.http.basicAuth,
+        bearer_token: check.settings.http.bearerToken,
+        cache_busting_query_param_name: check.settings.http.cacheBustingQueryParamName,
+        fail_if_body_matches_regexp: check.settings.http.failIfBodyMatchesRegexp,
+        fail_if_body_not_matches_regexp: check.settings.http.failIfBodyNotMatchesRegexp,
+        fail_if_header_matches_regexp: check.settings.http.failIfHeaderMatchesRegexp,
+        fail_if_header_not_matches_regexp: check.settings.http.failIfHeaderNotMatchesRegexp,
+        fail_if_not_ssl: check.settings.http.failIfNotSSL,
+        fail_if_ssl: check.settings.http.failIfSSL,
+        ip_version: check.settings.http.ipVersion,
+        no_follow_redirects: check.settings.http.noFollowRedirects,
+        proxy_url: check.settings.http.proxyURL,
+        proxy_connect_headers: check.settings.http.proxyConnectHeaders,
+        tls_config: tlsConfigToTF(check.settings.http.tlsConfig),
+        valid_http_versions: check.settings.http.validHTTPVersions,
+        valid_status_codes: check.settings.http.validStatusCodes,
+      },
+    };
+  }
+
+  if (isDNSCheck(check)) {
+    return {
+      dns: {
+        ip_version: check.settings.dns.ipVersion,
+        server: check.settings.dns.server,
+        port: check.settings.dns.port,
+        record_type: check.settings.dns.recordType,
+        protocol: check.settings.dns.protocol,
+        valid_r_codes: check.settings.dns.validRCodes,
+        validate_answer_rrs: {
+          fail_if_matches_regexp: check.settings.dns.validateAnswerRRS?.failIfMatchesRegexp,
+          fail_if_not_matches_regexp: check.settings.dns.validateAnswerRRS?.failIfNotMatchesRegexp,
+        },
+        validate_authority_rrs: {
+          fail_if_matches_regexp: check.settings.dns.validateAuthorityRRS?.failIfMatchesRegexp,
+          fail_if_not_matches_regexp: check.settings.dns.validateAuthorityRRS?.failIfNotMatchesRegexp,
+        },
+        validate_additional_rrs: {
+          fail_if_matches_regexp: check.settings.dns.validateAditionalRRS?.failIfMatchesRegexp,
+          fail_if_not_matches_regexp: check.settings.dns.validateAditionalRRS?.failIfNotMatchesRegexp,
+        },
+      },
+    };
+  }
+
+  if (isTracerouteCheck(check)) {
+    return {
+      traceroute: {
+        max_hops: check.settings.traceroute.maxHops,
+        max_unknown_hops: check.settings.traceroute.maxUnknownHops,
+        ptr_lookup: check.settings.traceroute.ptrLookup,
+      },
+    };
+  }
+
+  if (isMultiHttpCheck(check)) {
+    const escapeString = JSON.stringify(check.settings.multihttp);
+    const replaced = escapeString.replace(/\$\{/g, '$$${');
+    const escaped = JSON.parse(replaced) as MultiHttpSettings;
+    return {
+      multihttp: {
+        entries: escaped.entries.map((entry) => {
+          const { queryFields, ...request } = entry.request;
+          const transformed: TFMultiHttpEntry = {
+            ...entry,
+            request: {
+              ...request,
+              query_fields: queryFields,
+              body: {
+                content_type: entry.request.body?.contentType,
+              },
+            },
+          };
+          if (entry.request.postData) {
+            transformed.request.post_data = {
+              mime_type: entry.request.postData.mimeType,
+              text: entry.request.postData.text,
+            };
+          }
+          return transformed;
+        }),
+      },
+    };
+  }
+
+  if (isScriptedCheck(check)) {
+    return {
+      scripted: {},
+    };
+  }
+
+  throw new Error(`Unknown check type: ${checkType(check)}`);
 };
 
 export const checkToTF = (check: Check): TFCheck => {

@@ -7,24 +7,20 @@ import { PluginPage } from '@grafana/runtime';
 import { Alert, Button, Field, Icon, Input, Label, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { Check, CheckFormValues, CheckPageParams, CheckType, SubmissionErrorWrapper } from 'types';
+import { Check, CheckFormValues, CheckPageParams, CheckType, ScriptedCheck, SubmissionErrorWrapper } from 'types';
+import { isScriptedCheck } from 'utils.types';
 import { FaroEvent, reportError } from 'faro';
 import { hasRole } from 'utils';
 import { validateJob, validateTarget } from 'validation';
 import { InstanceContext } from 'contexts/InstanceContext';
 
-import {
-  checkTypeParamToCheckType,
-  getCheckFromFormValues,
-  getDefaultValuesFromCheck,
-} from './CheckEditor/checkFormTransformations';
+import { getCheckFromFormValues, getDefaultValuesFromCheck } from './CheckEditor/checkFormTransformations';
 import { ProbeOptions } from './CheckEditor/ProbeOptions';
 import { CheckFormAlert } from './CheckFormAlert';
 import { CheckTestButton } from './CheckTestButton';
 import { CodeEditor } from './CodeEditor';
-import { fallbackCheck } from './constants';
+import { FALLBACK_CHECK_SCRIPTED } from './constants';
 import { LabelField } from './LabelField';
-
 interface Props {
   checks: Check[];
   onSubmitSuccess?: (refresh: boolean) => void;
@@ -55,12 +51,15 @@ function getStyles(theme: GrafanaTheme2) {
 }
 
 export function K6CheckCodeEditor({ checks, onSubmitSuccess }: Props) {
-  const { id, checkType: checkTypeParam } = useParams<CheckPageParams>();
-  let checkType = checkTypeParamToCheckType(checkTypeParam);
-  let check: Check = fallbackCheck(checkType);
+  const { id } = useParams<CheckPageParams>();
+  let check: ScriptedCheck = FALLBACK_CHECK_SCRIPTED;
 
   if (id) {
-    check = checks?.find((c) => c.id === Number(id)) ?? fallbackCheck(checkType);
+    const found = checks?.find((c) => c.id === Number(id)) ?? FALLBACK_CHECK_SCRIPTED;
+
+    if (isScriptedCheck(found)) {
+      check = found;
+    }
   }
 
   const { instance } = useContext(InstanceContext);

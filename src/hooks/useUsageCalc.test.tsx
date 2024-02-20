@@ -1,5 +1,6 @@
 import React, { PropsWithChildren } from 'react';
 import { act, renderHook } from '@testing-library/react';
+import { BASIC_DNS_CHECK, BASIC_HTTP_CHECK, BASIC_PING_CHECK, BASIC_TCP_CHECK } from 'test/fixtures/checks';
 import { createWrapper } from 'test/render';
 
 import { Check, DnsSettings, HttpSettings, PingSettings, TcpSettings } from 'types';
@@ -9,7 +10,7 @@ import { useUsageCalc } from './useUsageCalc';
 
 interface Wrapper {}
 
-const renderUsage = async (check: Partial<Check>) => {
+const renderUsage = async (check: Check) => {
   const { Wrapper } = createWrapper();
 
   const wrapper = ({ children }: PropsWithChildren<Wrapper>) => (
@@ -25,11 +26,13 @@ const renderUsage = async (check: Partial<Check>) => {
 describe('http usage', () => {
   test('calculates with full metrics', async () => {
     const { result: basic } = await renderUsage({
+      ...BASIC_HTTP_CHECK,
       probes: [1],
       settings: {
         http: {} as HttpSettings,
       },
       frequency: 60000,
+      basicMetricsOnly: false,
     });
     expect(basic.current).toStrictEqual({
       checksPerMonth: 43800,
@@ -39,11 +42,13 @@ describe('http usage', () => {
     });
 
     const { result: multipleProbes } = await renderUsage({
+      ...BASIC_HTTP_CHECK,
       probes: [1, 2, 3, 4],
       settings: {
         http: {} as HttpSettings,
       },
       frequency: 60000,
+      basicMetricsOnly: false,
     });
     expect(multipleProbes.current).toStrictEqual({
       checksPerMonth: 175200,
@@ -53,11 +58,13 @@ describe('http usage', () => {
     });
 
     const { result: differentFrequency } = await renderUsage({
+      ...BASIC_HTTP_CHECK,
       probes: [1],
       settings: {
         http: {} as HttpSettings,
       },
       frequency: 10000,
+      basicMetricsOnly: false,
     });
     expect(differentFrequency.current).toStrictEqual({
       checksPerMonth: 262800,
@@ -67,6 +74,7 @@ describe('http usage', () => {
     });
 
     const { result: withSSL } = await renderUsage({
+      ...BASIC_HTTP_CHECK,
       probes: [1],
       settings: {
         http: {
@@ -74,6 +82,7 @@ describe('http usage', () => {
         } as HttpSettings,
       },
       frequency: 10000,
+      basicMetricsOnly: false,
     });
     expect(withSSL.current).toStrictEqual({
       checksPerMonth: 262800,
@@ -85,6 +94,7 @@ describe('http usage', () => {
 
   test('calculates with basic metrics', async () => {
     const { result: basic } = await renderUsage({
+      ...BASIC_HTTP_CHECK,
       probes: [1],
       settings: {
         http: {} as HttpSettings,
@@ -101,6 +111,7 @@ describe('http usage', () => {
     });
 
     const { result: multipleProbes } = await renderUsage({
+      ...BASIC_HTTP_CHECK,
       probes: [1, 2, 3, 4],
       settings: {
         http: {} as HttpSettings,
@@ -116,6 +127,7 @@ describe('http usage', () => {
     });
 
     const { result: differentFrequency } = await renderUsage({
+      ...BASIC_HTTP_CHECK,
       probes: [1],
       settings: {
         http: {} as HttpSettings,
@@ -131,6 +143,7 @@ describe('http usage', () => {
     });
 
     const { result: withSSL } = await renderUsage({
+      ...BASIC_HTTP_CHECK,
       probes: [1],
       settings: {
         http: {
@@ -152,11 +165,13 @@ describe('http usage', () => {
 describe('ping usage', () => {
   test('calculates with full metrics', async () => {
     const { result: basic } = await renderUsage({
+      ...BASIC_PING_CHECK,
       probes: [1],
       settings: {
         ping: {} as PingSettings,
       },
       frequency: 60000,
+      basicMetricsOnly: false,
     });
     expect(basic.current).toStrictEqual({
       checksPerMonth: 43800,
@@ -168,6 +183,7 @@ describe('ping usage', () => {
 
   test('calculates with basic metrics', async () => {
     const { result: basic } = await renderUsage({
+      ...BASIC_PING_CHECK,
       probes: [1],
       settings: {
         ping: {} as PingSettings,
@@ -188,11 +204,13 @@ describe('ping usage', () => {
 describe('tcp usage', () => {
   test('calculates with full metrics', async () => {
     const { result: basic } = await renderUsage({
+      ...BASIC_TCP_CHECK,
       probes: [1],
       settings: {
         tcp: {} as TcpSettings,
       },
       frequency: 60000,
+      basicMetricsOnly: false,
     });
     expect(basic.current).toStrictEqual({
       checksPerMonth: 43800,
@@ -202,6 +220,7 @@ describe('tcp usage', () => {
     });
 
     const { result: withSSL } = await renderUsage({
+      ...BASIC_TCP_CHECK,
       probes: [1],
       settings: {
         tcp: {
@@ -209,6 +228,7 @@ describe('tcp usage', () => {
         } as TcpSettings,
       },
       frequency: 10000,
+      basicMetricsOnly: false,
     });
     expect(withSSL.current).toStrictEqual({
       checksPerMonth: 262800,
@@ -220,6 +240,7 @@ describe('tcp usage', () => {
 
   test('calculates with basic metrics', async () => {
     const { result: basic } = await renderUsage({
+      ...BASIC_TCP_CHECK,
       probes: [1],
       settings: {
         tcp: {} as TcpSettings,
@@ -235,6 +256,7 @@ describe('tcp usage', () => {
     });
 
     const { result: withSSL } = await renderUsage({
+      ...BASIC_TCP_CHECK,
       probes: [1],
       settings: {
         tcp: {
@@ -256,11 +278,13 @@ describe('tcp usage', () => {
 describe('dns usage', () => {
   test('calculates with full metrics', async () => {
     const { result: basic } = await renderUsage({
+      ...BASIC_DNS_CHECK,
       probes: [1],
       settings: {
         dns: {} as DnsSettings,
       },
       frequency: 60000,
+      basicMetricsOnly: false,
     });
     expect(basic.current).toStrictEqual({
       checksPerMonth: 43800,
@@ -272,6 +296,7 @@ describe('dns usage', () => {
 
   test('calculates with basic metrics', async () => {
     const { result: basic } = await renderUsage({
+      ...BASIC_DNS_CHECK,
       probes: [1],
       settings: {
         dns: {} as DnsSettings,

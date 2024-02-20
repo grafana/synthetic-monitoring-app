@@ -2,20 +2,21 @@ import { useContext } from 'react';
 import { calculateMultiHTTPUsage, calculateUsage } from 'checkUsageCalc';
 
 import { Check, CheckType, UsageValues } from 'types';
+import { isHttpCheck, isMultiHttpCheck, isTCPCheck } from 'utils.types';
 import { checkType as getCheckType } from 'utils';
 import { AccountingClassNames } from 'datasource/types';
 import { CheckInfoContext } from 'contexts/CheckInfoContext';
 
 const addSSL = (check: Partial<Check>, baseClass: CheckType) => {
-  if (baseClass === CheckType.HTTP) {
-    if (check.settings?.http?.tlsConfig && Object.keys(check.settings.http.tlsConfig).length > 0) {
-      return `${baseClass}_ssl`;
+  if (isHttpCheck(check)) {
+    if (check.settings.http.tlsConfig && Object.keys(check.settings.http.tlsConfig).length > 0) {
+      return `http_ssl`;
     }
   }
 
-  if (baseClass === CheckType.TCP) {
-    if (check.settings?.tcp?.tlsConfig && Object.keys(check.settings.tcp.tlsConfig).length > 0) {
-      return `${baseClass}_ssl`;
+  if (isTCPCheck(check)) {
+    if (check.settings.tcp.tlsConfig && Object.keys(check.settings.tcp.tlsConfig).length > 0) {
+      return `tcp_ssl`;
     }
   }
 
@@ -78,9 +79,11 @@ export function useUsageCalc(checks?: Partial<Check> | Check[]) {
   }
 
   const seriesPerCheck = checkInfo.AccountingClasses[accountingClass]?.Series;
-  if (accountingClass === AccountingClassNames.multihttp_basic) {
+
+  if (isMultiHttpCheck(checks)) {
     return calculateMultiHTTPUsage(checks);
   }
+
   if (seriesPerCheck === undefined) {
     return;
   }
