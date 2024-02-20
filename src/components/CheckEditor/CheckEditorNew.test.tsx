@@ -23,10 +23,9 @@ jest.mock('hooks/useAlerts', () => ({
 }));
 
 beforeEach(() => jest.resetAllMocks());
-const onReturn = jest.fn();
 
 const renderNewCheckEditor = async (checkType?: CheckType) => {
-  const res = render(<CheckEditor onReturn={onReturn} checks={[]} />, {
+  const res = render(<CheckEditor />, {
     route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/:checkType`,
     path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${checkType}`,
   });
@@ -92,7 +91,7 @@ describe('new checks', () => {
     const url = 'https://grafana.com';
 
     await fillBasicCheckFields(name, url, user, labels);
-    await submitForm(onReturn, user);
+    await submitForm(user);
 
     const { body } = await read();
 
@@ -144,7 +143,7 @@ describe('new checks', () => {
     const url = 'grafana.com';
 
     await fillBasicCheckFields(name, url, user, labels);
-    await submitForm(onReturn, user);
+    await submitForm(user);
 
     const { body } = await read();
 
@@ -176,7 +175,7 @@ describe('new checks', () => {
 
     await fillBasicCheckFields(name, url, user, labels);
     await fillTCPQueryResponseFields(user);
-    await submitForm(onReturn, user);
+    await submitForm(user);
 
     const { body } = await read();
 
@@ -223,7 +222,7 @@ describe('new checks', () => {
     await fillBasicCheckFields(name, url, user, labels);
     await fillDnsValidationFields(user);
 
-    await submitForm(onReturn, user);
+    await submitForm(user);
 
     const { body } = await read();
 

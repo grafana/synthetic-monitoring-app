@@ -3,26 +3,23 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Checkbox, HorizontalGroup, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
-import { Check, CheckListViewType, CheckType, FilteredCheck, Label } from 'types';
+import { Check, CheckListViewType, CheckType, Label } from 'types';
 import { checkType as getCheckType } from 'utils';
-import { SuccessRateTypes } from 'contexts/SuccessRateContext';
 import { useUsageCalc } from 'hooks/useUsageCalc';
-import { SuccessRateGauge } from 'components/SuccessRateGauge';
+import { LatencyGauge, SuccessRateGaugeCheckReachability, SuccessRateGaugeCheckUptime } from 'components/Gauges';
 
 import { CheckCardLabel } from '../CheckCardLabel';
-import { LatencyGauge } from '../LatencyGauge';
 import { CheckItemActionButtons } from './CheckItemActionButtons';
 import { CheckListItemDetails } from './CheckListItemDetails';
 import { CheckStatusType } from './CheckStatusType';
 
 interface Props {
-  check: FilteredCheck;
+  check: Check;
   selected: boolean;
   onLabelSelect: (label: Label) => void;
   onToggleCheckbox: (checkId: number) => void;
   onTypeSelect: (checkType: CheckType) => void;
   onStatusSelect: (checkStatus: boolean) => void;
-  onDeleteCheck: (check: Check) => void;
   viewType: CheckListViewType;
 }
 
@@ -148,7 +145,6 @@ export const CheckListItem = ({
   onLabelSelect,
   onTypeSelect,
   onStatusSelect,
-  onDeleteCheck,
   selected,
   onToggleCheckbox,
   viewType = CheckListViewType.Card,
@@ -166,7 +162,7 @@ export const CheckListItem = ({
               aria-label="Select check"
               onChange={(e: ChangeEvent<HTMLInputElement>) => {
                 e.stopPropagation();
-                onToggleCheckbox(check.id);
+                onToggleCheckbox(check.id!);
               }}
               checked={selected}
             />
@@ -196,7 +192,7 @@ export const CheckListItem = ({
             labels={check.labels}
             onLabelClick={onLabelSelect}
           />
-          <CheckItemActionButtons check={check} onRemoveCheck={onDeleteCheck} viewDashboardAsIcon />
+          <CheckItemActionButtons check={check} viewDashboardAsIcon />
         </div>
       </div>
     );
@@ -210,7 +206,7 @@ export const CheckListItem = ({
             aria-label="Select check"
             onChange={(e: ChangeEvent<HTMLInputElement>) => {
               e.stopPropagation();
-              onToggleCheckbox(check.id);
+              onToggleCheckbox(check.id!);
             }}
             checked={selected}
           />
@@ -238,21 +234,9 @@ export const CheckListItem = ({
             <div className={styles.stats}>
               {check.enabled && (
                 <>
-                  <SuccessRateGauge
-                    title="Uptime"
-                    type={SuccessRateTypes.Checks}
-                    id={check.id}
-                    height={75}
-                    width={150}
-                  />
-                  <SuccessRateGauge
-                    title="Reachability"
-                    type={SuccessRateTypes.Checks}
-                    id={check.id}
-                    height={75}
-                    width={150}
-                  />
-                  <LatencyGauge target={check.target} job={check.job} checkType={checkType} height={75} width={175} />
+                  <SuccessRateGaugeCheckUptime check={check} height={75} width={150} />
+                  <SuccessRateGaugeCheckReachability check={check} height={75} width={150} />
+                  <LatencyGauge check={check} height={75} width={175} />
                 </>
               )}
             </div>
@@ -264,7 +248,7 @@ export const CheckListItem = ({
               ))}
             </HorizontalGroup>
             <div className={styles.actionContainer}>
-              <CheckItemActionButtons check={check} onRemoveCheck={onDeleteCheck} />
+              <CheckItemActionButtons check={check} />
             </div>
           </div>
         </div>

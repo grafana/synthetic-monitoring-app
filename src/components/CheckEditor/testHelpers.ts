@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import { UserEvent } from '@testing-library/user-event';
 import { PRIVATE_PROBE } from 'test/fixtures/probes';
 
@@ -19,11 +19,10 @@ export const toggleSection = async (sectionName: string, user: UserEvent): Promi
   return sectionHeader.parentElement?.parentElement ?? new HTMLElement();
 };
 
-export const submitForm = async (onReturn: (arg0: Boolean) => void, user: UserEvent) => {
+export const submitForm = async (user: UserEvent) => {
   const saveButton = await screen.findByRole('button', { name: 'Save' });
   expect(saveButton).not.toBeDisabled();
   await user.click(saveButton);
-  await waitFor(() => expect(onReturn).toHaveBeenCalledWith(true));
 };
 
 export const getSlider = async (formName: string) => {

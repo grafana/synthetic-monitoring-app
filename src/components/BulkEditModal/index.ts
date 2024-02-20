@@ -1,1 +1,1 @@
-export { default as BulkEditModal } from './BulkEditModal';
+export { BulkEditModal } from './BulkEditModal';

@@ -28,6 +28,10 @@ async function renderTerraformHook(checks: Check[]) {
     expect(result.current.config).not.toBeUndefined();
   });
 
+  await waitFor(() => {
+    expect(result.current.checkCommands.length).toBeGreaterThan(0);
+  });
+
   expect(result.current.error).toBeFalsy();
 
   return result;

@@ -1,6 +1,6 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
-import { BASIC_CHECK_LIST, BASIC_MULTIHTTP_CHECK } from 'test/fixtures/checks';
+import { BASIC_MULTIHTTP_CHECK } from 'test/fixtures/checks';
 import { PRIVATE_PROBE } from 'test/fixtures/probes';
 import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
@@ -15,11 +15,10 @@ import { MultiHttpSettingsForm } from './MultiHttpSettingsForm';
 jest.setTimeout(60000);
 
 beforeEach(() => jest.resetAllMocks());
-const onReturn = jest.fn();
 
 async function renderForm(route: string) {
   const res = waitFor(() =>
-    render(<MultiHttpSettingsForm onReturn={onReturn} checks={BASIC_CHECK_LIST} />, {
+    render(<MultiHttpSettingsForm />, {
       route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`,
       path: `${PLUGIN_URL_PATH}${ROUTES.Checks}${route}`,
     })
@@ -98,8 +97,6 @@ describe('editing multihttp check', () => {
     const submitButton = await screen.findByRole('button', { name: 'Save' });
     await user.click(submitButton);
 
-    await waitFor(() => expect(onReturn).toHaveBeenCalledWith(true));
-
     const { body } = await read();
     expect(body).toEqual(targetCheck);
   });
@@ -174,8 +171,6 @@ describe('editing multihttp check', () => {
 
     const submitButton = await screen.findByRole('button', { name: 'Save' });
     await user.click(submitButton);
-
-    await waitFor(() => expect(onReturn).toHaveBeenCalledWith(true));
 
     const { body } = await read();
     expect(body).toEqual({

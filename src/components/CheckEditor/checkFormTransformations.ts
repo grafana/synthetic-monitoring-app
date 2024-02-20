@@ -760,7 +760,7 @@ const getTimeoutFromFormValue = (timeout: number, checkType?: CheckType): number
 
 const getTargetFromFormValue = (target: string, formValues: Partial<CheckFormValues>, checkType?: CheckType) => {
   if (checkType === CheckType.MULTI_HTTP) {
-    const pluckedTarget = formValues?.settings?.multihttp?.entries[0].request.url;
+    const pluckedTarget = formValues?.settings?.multihttp?.entries[0]?.request.url;
     if (target === '' || target !== pluckedTarget) {
       return pluckedTarget;
     }
@@ -781,6 +781,7 @@ export const getCheckFromFormValues = (
   checkType: CheckType
 ): Check => {
   return {
+    id: formValues.id,
     job: formValues.job,
     target: getTargetFromFormValue(formValues.target, formValues, checkType) ?? '',
     enabled: formValues.enabled,

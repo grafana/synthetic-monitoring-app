@@ -7,6 +7,7 @@ import { css } from '@emotion/css';
 import { Check, FeatureName, ROUTES } from 'types';
 import { checkType as getCheckType, dashboardUID, hasRole } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
+import { useDeleteCheck } from 'data/useChecks';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useNavigation } from 'hooks/useNavigation';
 import { PLUGIN_URL_PATH } from 'components/constants';
@@ -22,16 +23,16 @@ const getStyles = (theme: GrafanaTheme2) => ({
 interface Props {
   check: Check;
   viewDashboardAsIcon?: boolean;
-  onRemoveCheck: (check: Check) => void;
 }
 
-export const CheckItemActionButtons = ({ check, viewDashboardAsIcon, onRemoveCheck }: Props) => {
+export const CheckItemActionButtons = ({ check, viewDashboardAsIcon }: Props) => {
   const styles = useStyles2(getStyles);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const checkType = getCheckType(check.settings);
   const { instance } = useContext(InstanceContext);
   const navigate = useNavigation();
   const { isEnabled: scenesEnabled } = useFeatureFlag(FeatureName.Scenes);
+  const { mutate: deleteCheck } = useDeleteCheck();
   const { isEnabled: perCheckDashboardsEnabled } = useFeatureFlag(FeatureName.PerCheckDashboards);
 
   const showDashboard = () => {
@@ -40,6 +41,7 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon, onRemoveChe
       navigate(url, {}, true);
       return;
     }
+
     if (scenesEnabled) {
       const url = `${PLUGIN_URL_PATH}${ROUTES.Scene}/${checkType}`;
       navigate(
@@ -99,7 +101,7 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon, onRemoveChe
         body="Are you sure you want to delete this check?"
         confirmText="Delete check"
         onConfirm={() => {
-          onRemoveCheck(check);
+          deleteCheck(check);
           setShowDeleteModal(false);
         }}
         onDismiss={() => setShowDeleteModal(false)}

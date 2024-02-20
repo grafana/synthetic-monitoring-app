@@ -1,10 +1,9 @@
-import { useContext } from 'react';
 import { calculateMultiHTTPUsage, calculateUsage } from 'checkUsageCalc';
 
 import { Check, CheckType, UsageValues } from 'types';
 import { checkType as getCheckType } from 'utils';
 import { AccountingClassNames } from 'datasource/types';
-import { CheckInfoContext } from 'contexts/CheckInfoContext';
+import { useCheckInfo } from 'data/useCheckInfo';
 
 const addSSL = (check: Partial<Check>, baseClass: CheckType) => {
   if (baseClass === CheckType.HTTP) {
@@ -36,9 +35,9 @@ export const getAccountingClass = (check: Partial<Check>): AccountingClassNames 
 };
 
 export function useUsageCalc(checks?: Partial<Check> | Check[]) {
-  const { loading, checkInfo } = useContext(CheckInfoContext);
+  const { data, isLoading } = useCheckInfo();
 
-  if (loading || !checkInfo || !checks) {
+  if (isLoading || !data || !checks) {
     return;
   }
 
@@ -53,7 +52,7 @@ export function useUsageCalc(checks?: Partial<Check> | Check[]) {
         const usage = calculateUsage({
           probeCount: check.probes.length,
           frequencySeconds: check.frequency / 1000,
-          seriesPerCheck: checkInfo.AccountingClasses[accountingClass].Series,
+          seriesPerCheck: data.AccountingClasses[accountingClass].Series,
         });
         return {
           activeSeries: total.activeSeries + usage.activeSeries,
@@ -77,7 +76,7 @@ export function useUsageCalc(checks?: Partial<Check> | Check[]) {
     return;
   }
 
-  const seriesPerCheck = checkInfo.AccountingClasses[accountingClass]?.Series;
+  const seriesPerCheck = data.AccountingClasses[accountingClass]?.Series;
   if (accountingClass === AccountingClassNames.multihttp_basic) {
     return calculateMultiHTTPUsage(checks);
   }
@@ -88,6 +87,6 @@ export function useUsageCalc(checks?: Partial<Check> | Check[]) {
   return calculateUsage({
     probeCount: checks.probes?.length ?? 0,
     frequencySeconds: (checks.frequency ?? 0) / 1000,
-    seriesPerCheck: checkInfo.AccountingClasses[accountingClass].Series,
+    seriesPerCheck: data.AccountingClasses[accountingClass].Series,
   });
 }

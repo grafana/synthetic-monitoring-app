@@ -5,22 +5,12 @@ import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
 
-import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
-
 import ThresholdGlobalSettings from './ThresholdGlobalSettings';
 
 const onDismiss = jest.fn();
-const onSuccess = jest.fn();
-const onError = jest.fn();
 
 const renderThresholdSettingsForm = () => {
-  return waitFor(() =>
-    render(
-      <SuccessRateContextProvider>
-        <ThresholdGlobalSettings onDismiss={onDismiss} onSuccess={onSuccess} onError={onError} isOpen={true} />
-      </SuccessRateContextProvider>
-    )
-  );
+  return waitFor(() => render(<ThresholdGlobalSettings onDismiss={onDismiss} isOpen={true} />));
 };
 
 test('shows the form', async () => {

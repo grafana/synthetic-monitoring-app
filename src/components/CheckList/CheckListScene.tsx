@@ -17,8 +17,8 @@ import {
 import { Spinner } from '@grafana/ui';
 
 import { CheckFiltersType, CheckListViewType, VizViewSceneAppConfig } from 'types';
-import { ChecksContext } from 'contexts/ChecksContext';
 import { InstanceContext } from 'contexts/InstanceContext';
+import { useChecks } from 'data/useChecks';
 import { CheckFilters } from 'components/CheckFilters';
 import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
@@ -175,13 +175,7 @@ function getCheckListScene(config: VizViewSceneAppConfig & Props, checkCount: nu
     $timeRange: timeRange,
     controls: [
       new SceneReactObject({
-        reactNode: (
-          <CheckListViewSwitcher
-            viewType={CheckListViewType.Viz}
-            setViewType={config.setViewType}
-            setCurrentPage={config.setCurrentPage}
-          />
-        ),
+        reactNode: <CheckListViewSwitcher viewType={CheckListViewType.Viz} onChange={config.onChangeViewType} />,
       }),
       new VariableValueSelectors({}),
       new SceneControlsSpacer(),
@@ -190,7 +184,7 @@ function getCheckListScene(config: VizViewSceneAppConfig & Props, checkCount: nu
           <CheckFilters
             checkFilters={config.checkFilters}
             checks={config.checks}
-            handleResetFilters={config.handleResetFilters}
+            onReset={config.onReset}
             onChange={config.onFilterChange}
             includeStatus={false}
           />
@@ -273,22 +267,15 @@ function getCheckListScene(config: VizViewSceneAppConfig & Props, checkCount: nu
 }
 
 interface Props {
-  setViewType: (viewType: CheckListViewType) => void;
-  setCurrentPage: (pageNumber: number) => void;
+  onChangeViewType: (viewType: CheckListViewType) => void;
   checkFilters: CheckFiltersType;
-  handleResetFilters: () => void;
+  onReset: () => void;
   onFilterChange: (filters: CheckFiltersType) => void;
 }
 
-export function CheckListScene({
-  setViewType,
-  setCurrentPage,
-  checkFilters,
-  handleResetFilters,
-  onFilterChange,
-}: Props) {
+export function CheckListScene({ onChangeViewType, checkFilters, onReset, onFilterChange }: Props) {
   const { instance } = useContext(InstanceContext);
-  const { checks, loading } = useContext(ChecksContext);
+  const { data: checks = [], isLoading } = useChecks();
 
   const { api, logs, metrics } = useMemo(
     () => ({ api: instance.api, logs: instance.logs, metrics: instance.metrics }),
@@ -316,18 +303,17 @@ export function CheckListScene({
         metrics: metricsDef,
         logs: logsDef,
         sm: smDef,
-        setViewType,
-        setCurrentPage,
+        onChangeViewType,
         checkFilters,
         checks,
-        handleResetFilters,
+        onReset,
         onFilterChange,
       },
       checks.length
     );
-  }, [setViewType, setCurrentPage, api, logs, metrics, checks, checkFilters, handleResetFilters, onFilterChange]);
+  }, [onChangeViewType, api, logs, metrics, checks, checkFilters, onReset, onFilterChange]);
 
-  if (!scene || loading) {
+  if (!scene || isLoading) {
     return <Spinner />;
   }
 

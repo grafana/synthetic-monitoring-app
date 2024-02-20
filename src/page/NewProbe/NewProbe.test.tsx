@@ -10,10 +10,8 @@ import { getRoute } from 'components/Routing';
 import { NewProbe } from './NewProbe';
 import 'test/silenceErrors';
 
-const refetchProbes = jest.fn();
-
 const renderNewProbe = () => {
-  return render(<NewProbe refetchProbes={refetchProbes} />, {
+  return render(<NewProbe />, {
     route: getRoute(ROUTES.NewProbe),
     path: getRoute(ROUTES.NewProbe),
   });

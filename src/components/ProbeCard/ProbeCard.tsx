@@ -6,9 +6,8 @@ import { css, cx } from '@emotion/css';
 
 import { type Label, type Probe, ROUTES } from 'types';
 import { canEditProbes } from 'utils';
-import { SuccessRateTypes } from 'contexts/SuccessRateContext';
+import { SuccessRateGaugeProbe } from 'components/Gauges';
 import { getRoute } from 'components/Routing';
-import { SuccessRateGauge } from 'components/SuccessRateGauge';
 
 export const ProbeCard = ({ probe }: { probe: Probe }) => {
   const [isFocused, setIsFocused] = useState(false);
@@ -42,13 +41,7 @@ export const ProbeCard = ({ probe }: { probe: Probe }) => {
           </div>
         </div>
         <div className={styles.gaugeContainer}>
-          <SuccessRateGauge
-            title="Reachability"
-            type={SuccessRateTypes.Probes}
-            id={probe.id!}
-            height={60}
-            width={150}
-          />
+          <SuccessRateGaugeProbe probeName={probe.name} height={60} width={150} />
         </div>
         <div className={styles.buttonWrapper}>
           <Button aria-hidden className={cx(styles.button, { [styles.focussed]: isFocused })} tabIndex={-1}>

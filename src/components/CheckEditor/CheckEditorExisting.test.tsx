@@ -1,7 +1,6 @@
 import React from 'react';
 import { screen, waitFor, within } from '@testing-library/react';
 import {
-  BASIC_CHECK_LIST,
   BASIC_DNS_CHECK,
   BASIC_TCP_CHECK,
   CUSTOM_ALERT_SENSITIVITY_CHECK,
@@ -32,11 +31,10 @@ jest.mock('hooks/useAlerts', () => ({
 }));
 
 beforeEach(() => jest.resetAllMocks());
-const onReturn = jest.fn();
 
 const renderExistingCheckEditor = async (route: string) => {
   const res = waitFor(() =>
-    render(<CheckEditor onReturn={onReturn} checks={BASIC_CHECK_LIST} />, {
+    render(<CheckEditor />, {
       route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`,
       path: `${PLUGIN_URL_PATH}${ROUTES.Checks}${route}`,
     })
@@ -236,7 +234,7 @@ describe('editing checks', () => {
     await user.click(allowMissing);
     await user.click(invertMatch);
 
-    await submitForm(onReturn, user);
+    await submitForm(user);
 
     const { body } = await read();
 
@@ -285,7 +283,7 @@ describe('editing checks', () => {
     server.use(apiRoute(`updateCheck`, {}, record));
     const { user } = await renderExistingCheckEditor(`/edit/${BASIC_TCP_CHECK.id}`);
 
-    await submitForm(onReturn, user);
+    await submitForm(user);
     const { body } = await read();
     expect(body).toEqual(BASIC_TCP_CHECK);
   });
@@ -311,7 +309,7 @@ describe('editing checks', () => {
     await user.type(expressionInputs[1], INVERTED_VALIDATION);
     const invertedCheckboxes = await screen.findAllByRole('checkbox');
     await user.click(invertedCheckboxes[2]);
-    await submitForm(onReturn, user);
+    await submitForm(user);
 
     const { body } = await read();
 

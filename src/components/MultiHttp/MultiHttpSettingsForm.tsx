@@ -1,9 +1,8 @@
-import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { useAsyncCallback } from 'react-async-hook';
+import React, { useMemo, useRef, useState } from 'react';
 import { Controller, DeepMap, FieldError, FormProvider, useFieldArray, useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 import { OrgRole } from '@grafana/data';
-import { config } from '@grafana/runtime';
+import { config, locationService } from '@grafana/runtime';
 import {
   Alert,
   Button,
@@ -17,11 +16,10 @@ import {
   VerticalGroup,
 } from '@grafana/ui';
 
-import { Check, CheckFormValues, CheckPageParams, CheckType, SubmissionErrorWrapper } from 'types';
-import { FaroEvent, reportError, reportEvent } from 'faro';
+import { Check, CheckFormValues, CheckPageParams, CheckType } from 'types';
 import { hasRole } from 'utils';
 import { validateTarget } from 'validation';
-import { InstanceContext } from 'contexts/InstanceContext';
+import { useChecks, useCUDChecks } from 'data/useChecks';
 import { getCheckFromFormValues, getDefaultValuesFromCheck } from 'components/CheckEditor/checkFormTransformations';
 import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
 import { CheckFormAlert } from 'components/CheckFormAlert';
@@ -39,24 +37,26 @@ import { MultiHttpCollapse } from './MultiHttpCollapse';
 import { getMultiHttpFormStyles } from './MultiHttpSettingsForm.styles';
 import { focusField, getMultiHttpFormErrors, useMultiHttpCollapseState } from './MultiHttpSettingsForm.utils';
 
-interface Props {
-  checks?: Check[];
-  onReturn?: (reload?: boolean) => void;
-}
-
-export const MultiHttpSettingsForm = ({ onReturn, checks }: Props) => {
-  const styles = useStyles2(getMultiHttpFormStyles);
-  const panelRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+export const MultiHttpSettingsForm = () => {
+  const { data: checks } = useChecks();
   const { id } = useParams<CheckPageParams>();
 
-  let check: Check = multiHttpFallbackCheck;
-
-  if (id) {
-    check = checks?.find((c) => c.id === Number(id)) ?? multiHttpFallbackCheck;
+  if (id && !checks) {
+    return null;
   }
-  const {
-    instance: { api },
-  } = useContext(InstanceContext);
+
+  const check = checks?.find((c) => c.id === Number(id)) ?? multiHttpFallbackCheck;
+
+  return <MultiHttpSettingsFormContent check={check} />;
+};
+
+const MultiHttpSettingsFormContent = ({ check }: { check: Check }) => {
+  const styles = useStyles2(getMultiHttpFormStyles);
+  const panelRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const { deleteCheck, updateCheck, createCheck, error, submitting } = useCUDChecks({
+    eventInfo: { checkType: CheckType.MULTI_HTTP },
+  });
+
   const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
   const [collapseState, dispatchCollapse] = useMultiHttpCollapseState(check);
   const formMethods = useForm<CheckFormValues>({
@@ -81,56 +81,27 @@ export const MultiHttpSettingsForm = ({ onReturn, checks }: Props) => {
   });
   const isEditor = hasRole(OrgRole.Editor);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const onSuccess = () => locationService.getHistory().goBack();
 
-  const {
-    execute: onSubmit,
-    error,
-    loading: submitting,
-  } = useAsyncCallback(async (values: CheckFormValues) => {
-    // All other types of SM checks so far require a `target` to execute at the root of the submitted object.
-    // This is not the case for multihttp checks, whose targets are called `url`s and are nested under
-    // `settings.multihttp?.entries[0].request.url`. Yet, the BE still requires a root-level `target`, even in
-    // the case of multihttp, even though it wont be used. So we will pass this safety `target`.values.target = target;
-    const target = values.settings.multihttp?.entries?.[0]?.request?.url ?? '';
-    if (!target) {
-      throw new Error('At least one request with a URL is required');
-    }
+  const onSubmit = (checkValues: CheckFormValues) => {
+    const toSubmit = getCheckFromFormValues(checkValues, defaultValues, CheckType.MULTI_HTTP);
 
-    const updatedCheck = getCheckFromFormValues(values, defaultValues, CheckType.MULTI_HTTP);
-
-    if (check?.id) {
-      reportEvent(FaroEvent.UPDATE_CHECK, { type: CheckType.MULTI_HTTP });
-      await api?.updateCheck({
-        id: check.id,
-        tenantId: check.tenantId,
-        ...updatedCheck,
-      });
-    } else {
-      reportEvent(FaroEvent.CREATE_CHECK, { type: CheckType.MULTI_HTTP });
-      await api?.addCheck(updatedCheck);
-    }
-    onReturn && onReturn(true);
-  });
-
-  const submissionError = error as unknown as SubmissionErrorWrapper;
-
-  useEffect(() => {
-    if (submissionError) {
-      reportError(
-        submissionError.data?.err ?? 'Multihttp submission error',
-        check.id ? FaroEvent.UPDATE_CHECK : FaroEvent.CREATE_CHECK
+    if (check.id) {
+      return updateCheck(
+        {
+          id: check.id,
+          tenantId: check.tenantId,
+          ...toSubmit,
+        },
+        { onSuccess }
       );
     }
-  }, [check.id, submissionError]);
 
-  const onRemoveCheck = async () => {
-    const id = check?.id;
-    if (!id) {
-      return;
-    }
-    reportEvent(FaroEvent.DELETE_CHECK, { type: CheckType.MULTI_HTTP });
-    await api?.deleteCheck(id);
-    onReturn && onReturn(true);
+    return createCheck(toSubmit, { onSuccess });
+  };
+
+  const onDelete = () => {
+    deleteCheck(check, { onSuccess });
   };
 
   const requests = watch('settings.multihttp.entries') as any[];
@@ -269,16 +240,18 @@ export const MultiHttpSettingsForm = ({ onReturn, checks }: Props) => {
                               rules={{ required: 'Request method is required' }}
                             />
                           </Field>
-                          <Button
-                            variant="secondary"
-                            onClick={() => {
-                              remove(index);
-                              dispatchCollapse({ type: 'removeRequest', index });
-                            }}
-                            className={styles.removeRequestButton}
-                          >
-                            Remove
-                          </Button>
+                          {index !== 0 && (
+                            <Button
+                              variant="secondary"
+                              onClick={() => {
+                                remove(index);
+                                dispatchCollapse({ type: 'removeRequest', index });
+                              }}
+                              className={styles.removeRequestButton}
+                            >
+                              Remove
+                            </Button>
+                          )}
                         </HorizontalGroup>
 
                         <AvailableVariables index={index} />
@@ -313,11 +286,6 @@ export const MultiHttpSettingsForm = ({ onReturn, checks }: Props) => {
                 </Button>
                 <CheckUsage />
                 <CheckFormAlert />
-                {submissionError && (
-                  <Alert title="Multihttp request creation failed" severity="error">
-                    <div>{submissionError?.data?.err || submissionError?.data?.msg || submissionError?.message}</div>
-                  </Alert>
-                )}
                 <HorizontalGroup height="40px">
                   <Button type="submit" disabled={formMethods.formState.isSubmitting || submitting}>
                     Save
@@ -333,7 +301,7 @@ export const MultiHttpSettingsForm = ({ onReturn, checks }: Props) => {
                       Delete Check
                     </Button>
                   )}
-                  <Button onClick={() => onReturn && onReturn(true)} fill="text">
+                  <Button onClick={() => locationService.getHistory().goBack()} fill="text">
                     Cancel
                   </Button>
                 </HorizontalGroup>
@@ -341,12 +309,19 @@ export const MultiHttpSettingsForm = ({ onReturn, checks }: Props) => {
             </form>
           </FormProvider>
         </VerticalGroup>
+        {error && (
+          <div className={styles.submissionError}>
+            <Alert title="Save failed" severity="error">
+              {error.message ?? 'Something went wrong'}
+            </Alert>
+          </div>
+        )}
         <ConfirmModal
           isOpen={showDeleteModal}
           title="Delete check"
           body="Are you sure you want to delete this check?"
           confirmText="Delete check"
-          onConfirm={onRemoveCheck}
+          onConfirm={onDelete}
           onDismiss={() => setShowDeleteModal(false)}
         />
       </PluginPage>

@@ -1,5 +1,6 @@
 import React, { type ReactElement, type ReactNode } from 'react';
 import { Route, Router } from 'react-router-dom';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { AppPluginMeta, PluginType } from '@grafana/data';
 import { render, type RenderOptions } from '@testing-library/react';
 import userEventLib from '@testing-library/user-event';
@@ -7,7 +8,7 @@ import { createMemoryHistory } from 'history';
 import pluginInfo from 'plugin.json';
 
 import { GlobalSettings } from 'types';
-import { ChecksContextProvider } from 'components/ChecksContextProvider';
+import { getQueryClient } from 'data/queryClient';
 import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
 import { InstanceProvider } from 'components/InstanceProvider';
 
@@ -53,11 +54,11 @@ export const createWrapper = ({ path, route, meta }: WrapperProps = {}) => {
           ...meta,
         }}
       >
-        <ChecksContextProvider>
+        <QueryClientProvider client={getQueryClient()}>
           <Router history={history}>
             <Route path={route}>{children}</Route>
           </Router>
-        </ChecksContextProvider>
+        </QueryClientProvider>
       </InstanceProvider>
     </FeatureFlagProvider>
   );

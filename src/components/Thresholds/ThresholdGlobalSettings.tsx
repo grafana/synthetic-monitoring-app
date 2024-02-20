@@ -1,17 +1,13 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Button, HorizontalGroup, Modal } from '@grafana/ui';
 
-import { ThresholdValues } from 'types';
-import { FaroEvent, reportError, reportEvent } from 'faro';
-import { InstanceContext } from 'contexts/InstanceContext';
-import { SuccessRateContext } from 'contexts/SuccessRateContext';
+import { ThresholdSettings, ThresholdValues } from 'types';
+import { useThresholds, useUpdateThresholds } from 'data/useThresholds';
 
 import ThresholdFormSection from './ThresholdFormSection';
 
 interface Props {
   onDismiss: () => void;
-  onSuccess: () => void;
-  onError: () => void;
   isOpen: boolean;
 }
 
@@ -25,11 +21,29 @@ const thresholdMsDefaults: ThresholdValues = {
   lowerLimit: 200,
 };
 
-const ThresholdGlobalSettings = ({ onDismiss, onSuccess, onError, isOpen }: Props) => {
-  const { instance } = useContext(InstanceContext);
-  const { thresholds, updateThresholds } = useContext(SuccessRateContext);
+const ThresholdGlobalSettings = ({ onDismiss, isOpen }: Props) => {
+  const { data } = useThresholds();
 
-  const [uptimeThresholds, setUptimeThresholds] = useState<ThresholdValues>(thresholds.uptime);
+  if (!data) {
+    return null;
+  }
+
+  return (
+    <Modal title="Threshold Settings" isOpen={isOpen} onDismiss={onDismiss}>
+      <ThresholdGlobalSettingsContent onSuccess={onDismiss} thresholds={data.thresholds} />
+    </Modal>
+  );
+};
+
+type ThresholdGlobalSettingsConentProps = {
+  onSuccess: () => void;
+  thresholds: ThresholdSettings;
+};
+
+const ThresholdGlobalSettingsContent = ({ onSuccess, thresholds }: ThresholdGlobalSettingsConentProps) => {
+  const { mutate: onUpdate } = useUpdateThresholds({ onSuccess });
+
+  const [uptimeThresholds, setUptimeThresholds] = useState<ThresholdValues>(thresholds?.uptime);
   const [reachabilityThresholds, setReachabilityThresholds] = useState<ThresholdValues>(thresholds.reachability);
   const [latencyThresholds, setLatencyThresholds] = useState<ThresholdValues>(thresholds.latency);
 
@@ -39,53 +53,16 @@ const ThresholdGlobalSettings = ({ onDismiss, onSuccess, onError, isOpen }: Prop
     setLatencyThresholds(thresholdMsDefaults);
   };
 
-  const handleSaveThresholds = useCallback(async () => {
-    const postBody = {
-      thresholds: {
-        uptime: {
-          ...uptimeThresholds,
-        },
-        reachability: {
-          ...reachabilityThresholds,
-        },
-        latency: {
-          ...latencyThresholds,
-        },
-      },
-    };
-    try {
-      reportEvent(FaroEvent.SAVE_THRESHOLDS);
-      // Send new thresholds, then update context values
-      await instance.api?.updateTenantSettings(postBody);
-      await updateThresholds();
-      // Show success
-      onDismiss();
-      onSuccess();
-    } catch (e: any) {
-      // Show error
-      onError();
-      reportError(e, FaroEvent.SAVE_THRESHOLDS);
-    }
-  }, [
-    uptimeThresholds,
-    reachabilityThresholds,
-    latencyThresholds,
-    instance.api,
-    updateThresholds,
-    onDismiss,
-    onError,
-    onSuccess,
-  ]);
-
-  // Set thresholds in form when they are updated in context
-  useEffect(() => {
-    setUptimeThresholds(thresholds.uptime);
-    setReachabilityThresholds(thresholds.reachability);
-    setLatencyThresholds(thresholds.latency);
-  }, [thresholds]);
+  const handleSaveThresholds = () => {
+    onUpdate({
+      uptime: uptimeThresholds,
+      reachability: reachabilityThresholds,
+      latency: latencyThresholds,
+    });
+  };
 
   return (
-    <Modal title="Threshold Settings" isOpen={isOpen} onDismiss={onDismiss}>
+    <>
       <HorizontalGroup spacing="sm" height={35}>
         <Button data-testid="threshold-save" onClick={handleSaveThresholds}>
           Save changes
@@ -120,7 +97,7 @@ const ThresholdGlobalSettings = ({ onDismiss, onSuccess, onError, isOpen }: Prop
           description="The amount of time it takes to reach an endpoint."
         />
       </div>
-    </Modal>
+    </>
   );
 };
 
