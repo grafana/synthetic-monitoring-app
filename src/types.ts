@@ -667,3 +667,13 @@ export interface ThresholdSettings {
   reachability: ThresholdValues;
   uptime: ThresholdValues;
 }
+
+export type RequiredToUsageCalcValues = {
+  type: CheckType;
+  frequency: number;
+  probes: number[];
+  basicMetricsOnly: boolean;
+  settings?: {
+    entries: MultiHttpEntryFormValues[];
+  };
+};

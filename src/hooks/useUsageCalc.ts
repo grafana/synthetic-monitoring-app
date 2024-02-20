@@ -1,6 +1,6 @@
 import { calculateMultiHTTPUsage, calculateUsage } from 'checkUsageCalc';
 
-import { Check, CheckType, UsageValues } from 'types';
+import { Check, CheckType, RequiredToUsageCalcValues, UsageValues } from 'types';
 import { isHttpCheck, isMultiHttpCheck, isTCPCheck } from 'utils.types';
 import { checkType as getCheckType } from 'utils';
 import { AccountingClassNames } from 'datasource/types';
@@ -22,20 +22,19 @@ const addSSL = (check: Partial<Check>, baseClass: CheckType) => {
   return baseClass;
 };
 
-export const getAccountingClass = (check: Partial<Check>): AccountingClassNames | undefined => {
+export const getAccountingClass = (checkType: CheckType): AccountingClassNames | undefined => {
   if (!check.settings) {
     return;
   }
 
-  const baseClass = getCheckType(check.settings);
-  const withSSL = addSSL(check, baseClass);
+  const withSSL = addSSL(check, checkType);
 
   const withBasic = check.basicMetricsOnly ? `${withSSL}_basic` : withSSL;
 
   return AccountingClassNames[withBasic as keyof typeof AccountingClassNames];
 };
 
-export function useUsageCalc(checks?: Partial<Check> | Check[]) {
+export function useUsageCalc(checks?: RequiredToUsageCalcValues | RequiredToUsageCalcValues[]) {
   const { data, isLoading } = useCheckInfo();
 
   if (isLoading || !data || !checks) {

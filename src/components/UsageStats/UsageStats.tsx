@@ -4,6 +4,7 @@ import { config } from '@grafana/runtime';
 import { BigValue, BigValueColorMode, BigValueGraphMode, BigValueTextMode, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
+import { RequiredToUsageCalcValues } from 'types';
 import { useChecks } from 'data/useChecks';
 import { useUsageCalc } from 'hooks/useUsageCalc';
 import { DisplayCard } from 'components/DisplayCard';
@@ -11,6 +12,7 @@ import { DisplayCard } from 'components/DisplayCard';
 export const UsageStats = () => {
   const { data: checks = [], isLoading } = useChecks();
   const styles = useStyles2(getStyles);
+  const valuesForCalc = checks.map<RequiredToUsageCalcValues>((check) => {});
   const usage = useUsageCalc(checks);
 
   return (
