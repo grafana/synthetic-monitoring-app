@@ -1,6 +1,7 @@
 module.exports = {
   extends: ['./.config/.eslintrc', 'plugin:@tanstack/eslint-plugin-query/recommended'],
   plugins: ['simple-import-sort'],
+  ignorePatterns: ['**/snippets/*.js'],
   rules: {
     ['simple-import-sort/imports']: [
       'error',
