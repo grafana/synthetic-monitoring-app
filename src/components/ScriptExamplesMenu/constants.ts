@@ -1,44 +1,34 @@
 import { SelectableOptGroup } from '@grafana/ui';
 
+// Cookies
+import ACCESS_COOKIE_SCRIPT from './snippets/access_cookie.js?raw';
+// Data uploads
+import ADVANCED_MULTIPART_REQUEST_SCRIPT from './snippets/advanced_multipart_request.js?raw';
 // API CRUD operations
 import CORE_K6_APIS_CRUD_SCRIPT from './snippets/api_crud_operations_k6_core_apis.js?raw';
 import HTTPX_AND_K6CHAIJS_CRUD_SCRIPT from './snippets/api_crud_operations_k6_new_apis.js?raw';
-
 // Authentication/Authorization
 import AWS_AUTH_SCRIPT from './snippets/aws_auth.js?raw';
 import BASIC_AUTH_SCRIPT from './snippets/basic_auth.js?raw';
-import DIGEST_AUTH_SCRIPT from './snippets/digest_auth.js?raw';
-import NTLM_AUTH_SCRIPT from './snippets/ntlm_auth.js?raw';
-
-// Cookies
-import ACCESS_COOKIE_SCRIPT from './snippets/access_cookie.js?raw';
-import LOG_COOKIE_SCRIPT from './snippets/log_cookie.js?raw';
-import VU_COOKIE_JAR_SCRIPT from './snippets/vu_cookie_jar.js?raw';
-
-// Correlation
-import EXTRACT_TOKEN_JSON_SCRIPT from './snippets/extract_token_json.js?raw';
-
-// Data uploads
-import ADVANCED_MULTIPART_REQUEST_SCRIPT from './snippets/advanced_multipart_request.js?raw';
-import FILE_UPLOAD_SCRIPT from './snippets/upload_file.js?raw';
-
-// Extracting values/tokens from form fields
-import EXTRACT_TOKEN_SCRIPT from './snippets/extract_token_csrf.js?raw';
-
-// HTML
-import FORM_SUBMISSION_SCRIPT from './snippets/form_submission.js?raw';
-
-// HTTP/2
-import HTTP2_REQUEST_SCRIPT from './snippets/http2_request.js?raw';
-
-// SOAP
-import SOAP_REQUEST_SCRIPT from './snippets/soap_request.js?raw';
-
-// WebSocket
-import WEBSOCKET_API_SCRIPT from './snippets/websocket_api.js?raw';
-
 // Browser
 import BROWSER_FILL_FORM_SCRIPT from './snippets/browser_fill_form.js?raw';
+import DIGEST_AUTH_SCRIPT from './snippets/digest_auth.js?raw';
+// Extracting values/tokens from form fields
+import EXTRACT_TOKEN_SCRIPT from './snippets/extract_token_csrf.js?raw';
+// Correlation
+import EXTRACT_TOKEN_JSON_SCRIPT from './snippets/extract_token_json.js?raw';
+// HTML
+import FORM_SUBMISSION_SCRIPT from './snippets/form_submission.js?raw';
+// HTTP/2
+import HTTP2_REQUEST_SCRIPT from './snippets/http2_request.js?raw';
+import LOG_COOKIE_SCRIPT from './snippets/log_cookie.js?raw';
+import NTLM_AUTH_SCRIPT from './snippets/ntlm_auth.js?raw';
+// SOAP
+import SOAP_REQUEST_SCRIPT from './snippets/soap_request.js?raw';
+import FILE_UPLOAD_SCRIPT from './snippets/upload_file.js?raw';
+import VU_COOKIE_JAR_SCRIPT from './snippets/vu_cookie_jar.js?raw';
+// WebSocket
+import WEBSOCKET_API_SCRIPT from './snippets/websocket_api.js?raw';
 
 export type ExampleScript = {
   label: string;

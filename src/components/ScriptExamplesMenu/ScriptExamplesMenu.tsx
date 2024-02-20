@@ -1,5 +1,6 @@
-import { Button, Dropdown, Menu } from '@grafana/ui';
 import React from 'react';
+import { Button, Dropdown, Menu } from '@grafana/ui';
+
 import { SCRIPT_EXAMPLE_CHOICES } from './constants';
 
 interface ScriptExamplesMenuProps {
