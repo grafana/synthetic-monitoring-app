@@ -11,7 +11,7 @@ import HTTPX_AND_K6CHAIJS_CRUD_SCRIPT from './snippets/api_crud_operations_k6_ne
 import AWS_AUTH_SCRIPT from './snippets/aws_auth.js?raw';
 import BASIC_AUTH_SCRIPT from './snippets/basic_auth.js?raw';
 // Browser
-import BROWSER_FILL_FORM_SCRIPT from './snippets/browser_fill_form.js?raw';
+// import BROWSER_FILL_FORM_SCRIPT from './snippets/browser_fill_form.js?raw';
 import DIGEST_AUTH_SCRIPT from './snippets/digest_auth.js?raw';
 // Extracting values/tokens from form fields
 import EXTRACT_TOKEN_SCRIPT from './snippets/extract_token_csrf.js?raw';
@@ -151,13 +151,13 @@ const API_CHOICES = [
   },
 ];
 
-const BROWSER_CHOICES = [
-  {
-    label: 'Fill and submit form',
-    script: BROWSER_FILL_FORM_SCRIPT,
-    value: 'browser_fill_form.js',
-  },
-];
+// const BROWSER_CHOICES = [
+//   {
+//     label: 'Fill and submit form',
+//     script: BROWSER_FILL_FORM_SCRIPT,
+//     value: 'browser_fill_form.js',
+//   },
+// ];
 
 export const SCRIPT_EXAMPLE_CHOICES: SelectableOptGroup[] = [
   { label: 'Authentication/Authorization', options: AUTH_CHOICES },
@@ -173,7 +173,7 @@ export const SCRIPT_EXAMPLE_CHOICES: SelectableOptGroup[] = [
   { label: 'HTTP/2', options: HTTP2_CHOICES },
   { label: 'SOAP', options: SOAP_CHOICES },
   { label: 'WebSocket', options: API_CHOICES },
-  { label: 'Browser', options: BROWSER_CHOICES },
+  // { label: 'Browser', options: BROWSER_CHOICES },
 ];
 
 // export { default as DEFAULT_SCRIPT } from './snippets/snippets/default_script.js?raw';
