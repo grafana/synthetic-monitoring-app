@@ -1,23 +1,40 @@
 import React, { PropsWithChildren } from 'react';
 import { renderHook, waitFor } from '@testing-library/react';
+import { CheckInfo } from 'test/fixtures/checks';
 import { createWrapper } from 'test/render';
 
 import { Check, DnsSettings, HttpSettings, PingSettings, TcpSettings } from 'types';
+import { checkToUsageCalcValues } from 'utils';
 
 import { useUsageCalc } from './useUsageCalc';
 
 interface Wrapper {}
 
-const renderUsage = async (check: Partial<Check>) => {
+const renderUsage = async (check: Check) => {
   const { Wrapper } = createWrapper();
 
   const wrapper = ({ children }: PropsWithChildren<Wrapper>) => <Wrapper>{children}</Wrapper>;
-  const hook = renderHook(() => useUsageCalc(check), { wrapper });
+  const hook = renderHook(() => useUsageCalc([checkToUsageCalcValues(check)]), { wrapper });
 
   await waitFor(() => expect(hook.result.current).toBeTruthy());
 
   return hook;
 };
+
+const {
+  dns,
+  dns_basic,
+  http,
+  http_ssl,
+  http_ssl_basic,
+  http_basic,
+  ping,
+  ping_basic,
+  tcp,
+  tcp_basic,
+  tcp_ssl,
+  tcp_ssl_basic,
+} = CheckInfo.AccountingClasses;
 
 describe('http usage', () => {
   test('calculates with full metrics', async () => {
@@ -27,10 +44,10 @@ describe('http usage', () => {
         http: {} as HttpSettings,
       },
       frequency: 60000,
-    });
+    } as Check);
     expect(basic.current).toStrictEqual({
       checksPerMonth: 43800,
-      activeSeries: 118,
+      activeSeries: http.Series,
       logsGbPerMonth: 0.04,
       dpm: 118,
     });
@@ -41,7 +58,7 @@ describe('http usage', () => {
         http: {} as HttpSettings,
       },
       frequency: 60000,
-    });
+    } as Check);
     expect(multipleProbes.current).toStrictEqual({
       checksPerMonth: 175200,
       activeSeries: 472,
@@ -55,10 +72,10 @@ describe('http usage', () => {
         http: {} as HttpSettings,
       },
       frequency: 10000,
-    });
+    } as Check);
     expect(differentFrequency.current).toStrictEqual({
       checksPerMonth: 262800,
-      activeSeries: 118,
+      activeSeries: http.Series,
       logsGbPerMonth: 0.21,
       dpm: 708,
     });
@@ -67,16 +84,18 @@ describe('http usage', () => {
       probes: [1],
       settings: {
         http: {
-          tlsConfig: {},
+          tlsConfig: {
+            serverName: `trigger SSL`,
+          },
         } as HttpSettings,
       },
       frequency: 10000,
-    });
+    } as Check);
     expect(withSSL.current).toStrictEqual({
       checksPerMonth: 262800,
-      activeSeries: 118,
+      activeSeries: http_ssl.Series,
       logsGbPerMonth: 0.21,
-      dpm: 708,
+      dpm: 732,
     });
   });
 
@@ -88,7 +107,7 @@ describe('http usage', () => {
       },
       frequency: 60000,
       basicMetricsOnly: true,
-    });
+    } as Check);
 
     expect(basic.current).toStrictEqual({
       checksPerMonth: 43800,
@@ -104,7 +123,7 @@ describe('http usage', () => {
       },
       frequency: 60000,
       basicMetricsOnly: true,
-    });
+    } as Check);
     expect(multipleProbes.current).toStrictEqual({
       checksPerMonth: 175200,
       activeSeries: 136,
@@ -119,10 +138,10 @@ describe('http usage', () => {
       },
       frequency: 10000,
       basicMetricsOnly: true,
-    });
+    } as Check);
     expect(differentFrequency.current).toStrictEqual({
       checksPerMonth: 262800,
-      activeSeries: 34,
+      activeSeries: http_basic.Series,
       logsGbPerMonth: 0.21,
       dpm: 204,
     });
@@ -131,17 +150,19 @@ describe('http usage', () => {
       probes: [1],
       settings: {
         http: {
-          tlsConfig: {},
+          tlsConfig: {
+            serverName: `trigger SSL`,
+          },
         } as HttpSettings,
       },
       frequency: 10000,
       basicMetricsOnly: true,
-    });
+    } as Check);
     expect(withSSL.current).toStrictEqual({
       checksPerMonth: 262800,
-      activeSeries: 34,
+      activeSeries: http_ssl_basic.Series,
       logsGbPerMonth: 0.21,
-      dpm: 204,
+      dpm: 228,
     });
   });
 });
@@ -154,10 +175,10 @@ describe('ping usage', () => {
         ping: {} as PingSettings,
       },
       frequency: 60000,
-    });
+    } as Check);
     expect(basic.current).toStrictEqual({
       checksPerMonth: 43800,
-      activeSeries: 87,
+      activeSeries: ping.Series,
       logsGbPerMonth: 0.04,
       dpm: 87,
     });
@@ -171,11 +192,11 @@ describe('ping usage', () => {
       },
       frequency: 60000,
       basicMetricsOnly: true,
-    });
+    } as Check);
 
     expect(basic.current).toStrictEqual({
       checksPerMonth: 43800,
-      activeSeries: 31,
+      activeSeries: ping_basic.Series,
       logsGbPerMonth: 0.04,
       dpm: 31,
     });
@@ -187,13 +208,13 @@ describe('tcp usage', () => {
     const { result: basic } = await renderUsage({
       probes: [1],
       settings: {
-        tcp: {} as TcpSettings,
+        tcp: {},
       },
       frequency: 60000,
-    });
+    } as Check);
     expect(basic.current).toStrictEqual({
       checksPerMonth: 43800,
-      activeSeries: 37,
+      activeSeries: tcp.Series,
       logsGbPerMonth: 0.04,
       dpm: 37,
     });
@@ -202,16 +223,18 @@ describe('tcp usage', () => {
       probes: [1],
       settings: {
         tcp: {
-          tlsConfig: {},
-        } as TcpSettings,
+          tlsConfig: {
+            serverName: `trigger SSL`,
+          },
+        },
       },
       frequency: 10000,
-    });
+    } as Check);
     expect(withSSL.current).toStrictEqual({
       checksPerMonth: 262800,
-      activeSeries: 37,
+      activeSeries: tcp_ssl.Series,
       logsGbPerMonth: 0.21,
-      dpm: 222,
+      dpm: 246,
     });
   });
 
@@ -219,14 +242,14 @@ describe('tcp usage', () => {
     const { result: basic } = await renderUsage({
       probes: [1],
       settings: {
-        tcp: {} as TcpSettings,
+        tcp: {},
       },
       frequency: 60000,
       basicMetricsOnly: true,
-    });
+    } as Check);
     expect(basic.current).toStrictEqual({
       checksPerMonth: 43800,
-      activeSeries: 23,
+      activeSeries: tcp_basic.Series,
       logsGbPerMonth: 0.04,
       dpm: 23,
     });
@@ -235,17 +258,19 @@ describe('tcp usage', () => {
       probes: [1],
       settings: {
         tcp: {
-          tlsConfig: {},
+          tlsConfig: {
+            serverName: `trigger SSL`,
+          },
         } as TcpSettings,
       },
       frequency: 10000,
       basicMetricsOnly: true,
-    });
+    } as Check);
     expect(withSSL.current).toStrictEqual({
       checksPerMonth: 262800,
-      activeSeries: 23,
+      activeSeries: tcp_ssl_basic.Series,
       logsGbPerMonth: 0.21,
-      dpm: 138,
+      dpm: 162,
     });
   });
 });
@@ -258,10 +283,10 @@ describe('dns usage', () => {
         dns: {} as DnsSettings,
       },
       frequency: 60000,
-    });
+    } as Check);
     expect(basic.current).toStrictEqual({
       checksPerMonth: 43800,
-      activeSeries: 85,
+      activeSeries: dns.Series,
       logsGbPerMonth: 0.04,
       dpm: 85,
     });
@@ -275,11 +300,11 @@ describe('dns usage', () => {
       },
       frequency: 60000,
       basicMetricsOnly: true,
-    });
+    } as Check);
 
     expect(basic.current).toStrictEqual({
       checksPerMonth: 43800,
-      activeSeries: 29,
+      activeSeries: dns_basic.Series,
       logsGbPerMonth: 0.04,
       dpm: 29,
     });

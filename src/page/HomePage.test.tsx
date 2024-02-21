@@ -23,8 +23,8 @@ describe('Information is present', () => {
   test('shows usage', async () => {
     renderHomePage();
     await assertBigValue('Total checks', String(BASIC_CHECK_LIST.length));
-    await assertBigValue('Total active series', `538`);
-    await assertBigValue('Checks executions per month', '660,982');
-    await assertBigValue('Logs per month', '0.54GB');
+    await assertBigValue('Total active series', `536`);
+    await assertBigValue('Checks executions per month', '637,091');
+    await assertBigValue('Logs per month', '0.59GB');
   });
 });

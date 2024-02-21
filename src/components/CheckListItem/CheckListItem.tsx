@@ -4,7 +4,7 @@ import { Checkbox, HorizontalGroup, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 import { Check, CheckListViewType, CheckType, Label } from 'types';
-import { checkType as getCheckType } from 'utils';
+import { checkToUsageCalcValues, checkType as getCheckType } from 'utils';
 import { useUsageCalc } from 'hooks/useUsageCalc';
 import { LatencyGauge, SuccessRateGaugeCheckReachability, SuccessRateGaugeCheckUptime } from 'components/Gauges';
 
@@ -151,7 +151,7 @@ export const CheckListItem = ({
 }: Props) => {
   const styles = useStyles2(getStyles);
   const checkType = getCheckType(check.settings);
-  const usage = useUsageCalc(check);
+  const usage = useUsageCalc([checkToUsageCalcValues(check)]);
 
   if (viewType === CheckListViewType.List) {
     return (

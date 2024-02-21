@@ -281,6 +281,9 @@ export function validateSettings(settings: Settings): string | undefined {
     case CheckType.Traceroute: {
       return validateSettingsTraceroute(settings.traceroute);
     }
+    case CheckType.GRPC: {
+      return;
+    }
     case CheckType.K6: {
       return;
     }

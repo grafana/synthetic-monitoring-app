@@ -235,6 +235,7 @@ const fallbackType = {
   traceroute: fallbackSettings(CheckType.Traceroute),
   multihttp: fallbackSettings(CheckType.MULTI_HTTP),
   k6: fallbackSettings(CheckType.K6),
+  grpc: undefined,
 };
 
 export const colors = {
