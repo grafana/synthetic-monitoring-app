@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import { useFormContext } from 'react-hook-form';
+import { DeepMap, FieldError, useFormContext } from 'react-hook-form';
 import { Container, Field, Input, TextArea } from '@grafana/ui';
 
-import { CheckType } from 'types';
+import { CheckFormValuesHttp, CheckFormValuesTcp, CheckType } from 'types';
 import { validateTLSCACert, validateTLSClientCert, validateTLSClientKey, validateTLSServerName } from 'validation';
 import { Collapse } from 'components/Collapse';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 
 interface Props {
   isEditor: boolean;
-  checkType: CheckType;
+  checkType: CheckType.HTTP | CheckType.TCP;
 }
 
 export const TLSConfig = ({ isEditor, checkType }: Props) => {
@@ -17,22 +17,24 @@ export const TLSConfig = ({ isEditor, checkType }: Props) => {
   const {
     register,
     formState: { errors },
-  } = useFormContext();
+  } = useFormContext<CheckFormValuesHttp | CheckFormValuesTcp>();
+
+  const errs = isErrorsHttp(errors) ? errors.settings?.http : errors.settings?.tcp;
 
   return (
     <Collapse label="TLS config" onToggle={() => setShowTLS(!showTLS)} isOpen={showTLS}>
       <HorizontalCheckboxField
         id="tls-config-skip-validation"
-        name={`settings.${checkType}.tlsConfig.insecureSkipVerify`}
         disabled={!isEditor}
         label="Disable target certificate validation"
+        {...register(`settings.${checkType}.tlsConfig.insecureSkipVerify`)}
       />
       <Field
         label="Server name"
         description="Used to verify the hostname for the targets"
         disabled={!isEditor}
-        invalid={Boolean(errors.settings?.[checkType]?.tlsConfig?.serverName)}
-        error={errors.settings?.[checkType]?.tlsConfig?.serverName}
+        invalid={Boolean(errs?.tlsConfig?.serverName)}
+        error={errs?.tlsConfig?.serverName?.message}
       >
         <Input
           id="tls-config-server-name"
@@ -50,8 +52,8 @@ export const TLSConfig = ({ isEditor, checkType }: Props) => {
           label="CA certificate"
           description="Certificate must be in PEM format."
           disabled={!isEditor}
-          invalid={Boolean(errors.settings?.[checkType]?.tlsConfig?.caCert)}
-          error={errors.settings?.[checkType]?.tlsConfig?.caCert?.message}
+          invalid={Boolean(errs?.tlsConfig?.caCert)}
+          error={errs?.tlsConfig?.caCert?.message}
         >
           <TextArea
             id="tls-config-ca-certificate"
@@ -70,8 +72,8 @@ export const TLSConfig = ({ isEditor, checkType }: Props) => {
           label="Client certificate"
           description="The client cert file for the targets. The certificate must be in PEM format."
           disabled={!isEditor}
-          invalid={Boolean(errors?.settings?.[checkType]?.tlsConfig?.clientCert)}
-          error={errors?.settings?.[checkType]?.tlsConfig?.clientCert?.message}
+          invalid={Boolean(errs?.tlsConfig?.clientCert)}
+          error={errs?.tlsConfig?.clientCert?.message}
         >
           <TextArea
             id="tls-config-client-cert"
@@ -90,8 +92,8 @@ export const TLSConfig = ({ isEditor, checkType }: Props) => {
           label="Client key"
           description="The client key file for the targets. The key must be in PEM format."
           disabled={!isEditor}
-          invalid={Boolean(errors?.settings?.[checkType]?.tlsConfig?.clientKey)}
-          error={errors?.settings?.[checkType]?.tlsConfig?.clientKey?.message}
+          invalid={Boolean(errs?.tlsConfig?.clientKey)}
+          error={errs?.tlsConfig?.clientKey?.message}
         >
           <TextArea
             id="tls-config-client-key"
@@ -109,3 +111,11 @@ export const TLSConfig = ({ isEditor, checkType }: Props) => {
     </Collapse>
   );
 };
+
+function isErrorsHttp(errors: any): errors is DeepMap<CheckFormValuesHttp, FieldError> {
+  if (Object.hasOwnProperty.call(errors?.settings || {}, 'http')) {
+    return true;
+  }
+
+  return false;
+}

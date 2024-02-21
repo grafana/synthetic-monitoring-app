@@ -263,6 +263,8 @@ export const FALLBACK_CHECK_HTTP: HTTPCheck = {
 
 export const FALLBACK_CHECK_MULTIHTTP: MultiHTTPCheck = {
   ...FALLBACK_CHECK_BASE,
+  frequency: 120000,
+  timeout: 15000,
   settings: {
     multihttp: {
       entries: [
@@ -270,6 +272,8 @@ export const FALLBACK_CHECK_MULTIHTTP: MultiHTTPCheck = {
           request: {
             method: HttpMethod.GET,
             url: '',
+            queryFields: [],
+            headers: [],
           },
           checks: [],
         },
@@ -292,7 +296,7 @@ export const FALLBACK_CHECK_SCRIPTED: ScriptedCheck = {
   ...FALLBACK_CHECK_BASE,
   settings: {
     k6: {
-      script: `import { check } from 'k6'
+      script: btoa(`import { check } from 'k6'
 import http from 'k6/http'
 
 export default function main() {
@@ -302,7 +306,7 @@ export default function main() {
   check(res, {
     'is status 200': (r) => r.status === 200,
   });
-}`,
+}`),
     },
   },
 };
@@ -313,6 +317,7 @@ export const FALLBACK_CHECK_TCP: TCPCheck = {
     tcp: {
       ipVersion: IpVersion.V4,
       tls: false,
+      queryResponse: [],
     },
   },
 };

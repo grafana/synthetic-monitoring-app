@@ -15,6 +15,7 @@ import {
 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
+import { CheckFormValuesDns } from 'types';
 import { Collapse } from 'components/Collapse';
 import { LabelField } from 'components/LabelField';
 
@@ -33,7 +34,7 @@ interface Props {
 const DnsSettingsForm = ({ isEditor }: Props) => {
   const { spacing } = useTheme2();
 
-  const { register, control, formState } = useFormContext();
+  const { register, control, formState } = useFormContext<CheckFormValuesDns>();
   const { fields, append, remove } = useFieldArray({
     control,
     name: 'settings.dns.validations',
@@ -112,7 +113,7 @@ const DnsSettingsForm = ({ isEditor }: Props) => {
                         value={field.value}
                         data-testid={`dnsValidationResponseMatch${index}`}
                         options={DNS_RESPONSE_MATCH_OPTIONS}
-                        invalid={formState.errors.settings?.dns?.validations?.[index]?.responseMatch}
+                        invalid={Boolean(formState.errors.settings?.dns?.validations?.[index]?.responseMatch)}
                       />
                     );
                   }}
@@ -151,7 +152,7 @@ const DnsSettingsForm = ({ isEditor }: Props) => {
         </Button>
       </Collapse>
       <Collapse label="Advanced options" onToggle={() => setShowAdvanced(!showAdvanced)} isOpen={showAdvanced}>
-        <LabelField isEditor={isEditor} />
+        <LabelField<CheckFormValuesDns> isEditor={isEditor} />
         <HorizontalGroup>
           <Field label="IP version" description="The IP protocol of the ICMP request" disabled={!isEditor}>
             <Controller

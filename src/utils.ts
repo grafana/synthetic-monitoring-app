@@ -6,6 +6,7 @@ import { DashboardInfo, LinkedDatasourceInfo, LogQueryResponse, LogStream, SMOpt
 import {
   CalculateUsageValues,
   Check,
+  CheckFormValues,
   CheckType,
   HostedInstance,
   Probe,
@@ -14,7 +15,14 @@ import {
   ThresholdValues,
   TLSConfig,
 } from 'types';
-import { isHttpSettings, isMultiHttpSettings, isTCPSettings } from 'utils.types';
+import {
+  isHttpFormValuesSettings,
+  isHttpSettings,
+  isMultiHttpFormValuesSettings,
+  isMultiHttpSettings,
+  isTCPFormValuesSettings,
+  isTCPSettings,
+} from 'utils.types';
 import { SMDataSource } from 'datasource/DataSource';
 import { Metric } from 'datasource/responses.types';
 
@@ -340,7 +348,7 @@ export function checkToUsageCalcValues(check: Check): CalculateUsageValues {
 
   return {
     assertionCount: getEntriesCount(settings),
-    basicMetricsOnly: basicMetricsOnly,
+    basicMetricsOnly,
     checkType: cType,
     frequencySeconds: frequency / 1000,
     isSSL: getSSL(settings),
@@ -348,8 +356,29 @@ export function checkToUsageCalcValues(check: Check): CalculateUsageValues {
   };
 }
 
+export function checkFormValuesToUsageCalcValues(checkFormValues: CheckFormValues): CalculateUsageValues {
+  const { checkType, publishAdvancedMetrics, settings, frequency, probes } = checkFormValues;
+
+  return {
+    assertionCount: getEntriesCountCheckFormValues(settings),
+    basicMetricsOnly: !publishAdvancedMetrics,
+    checkType,
+    frequencySeconds: frequency,
+    isSSL: getSSLCheckFormValues(settings),
+    probeCount: probes?.length ?? 0,
+  };
+}
+
 export function getEntriesCount(settings: Check['settings']) {
   if (isMultiHttpSettings(settings)) {
+    return settings.multihttp.entries.length;
+  }
+
+  return 1;
+}
+
+export function getEntriesCountCheckFormValues(settings: CheckFormValues['settings']) {
+  if (isMultiHttpFormValuesSettings(settings)) {
     return settings.multihttp.entries.length;
   }
 
@@ -366,6 +395,22 @@ export function getSSL(settings: Check['settings']) {
   }
 
   // if (isGRPCSettings(settings) && doesTLSConfigHaveValues(settings.tcp.tlsConfig)) {
+  //   return true;
+  // }
+
+  return false;
+}
+
+export function getSSLCheckFormValues(settings: CheckFormValues['settings']) {
+  if (isHttpFormValuesSettings(settings) && doesTLSConfigHaveValues(settings.http?.tlsConfig)) {
+    return true;
+  }
+
+  if (isTCPFormValuesSettings(settings) && doesTLSConfigHaveValues(settings.tcp.tlsConfig)) {
+    return true;
+  }
+
+  // if (isGRPCFormValuesSettings(settings) && doesTLSConfigHaveValues(settings.tcp.tlsConfig)) {
   //   return true;
   // }
 

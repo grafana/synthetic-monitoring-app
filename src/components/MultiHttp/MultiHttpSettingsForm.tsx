@@ -16,12 +16,15 @@ import {
   VerticalGroup,
 } from '@grafana/ui';
 
-import { CheckFormValues, CheckPageParams, CheckType, MultiHTTPCheck } from 'types';
+import { CheckFormValuesMultiHttp, CheckPageParams, CheckType, MultiHTTPCheck } from 'types';
 import { isMultiHttpCheck } from 'utils.types';
 import { hasRole } from 'utils';
 import { validateTarget } from 'validation';
 import { useChecks, useCUDChecks } from 'data/useChecks';
-import { getCheckFromFormValues, getDefaultValuesFromCheck } from 'components/CheckEditor/checkFormTransformations';
+import {
+  getCheckFromFormValues,
+  getMultiHttpFormValuesFromCheck,
+} from 'components/CheckEditor/checkFormTransformations';
 import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
 import { CheckFormAlert } from 'components/CheckFormAlert';
 import { CheckTestButton } from 'components/CheckTestButton';
@@ -58,10 +61,10 @@ const MultiHttpSettingsFormContent = ({ check }: { check: MultiHTTPCheck }) => {
     eventInfo: { checkType: CheckType.MULTI_HTTP },
   });
 
-  const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
+  const initialValues = useMemo(() => getMultiHttpFormValuesFromCheck(check), [check]);
   const [collapseState, dispatchCollapse] = useMultiHttpCollapseState(check);
-  const formMethods = useForm<CheckFormValues>({
-    defaultValues,
+  const formMethods = useForm<CheckFormValuesMultiHttp>({
+    defaultValues: initialValues,
     reValidateMode: 'onBlur',
     shouldFocusError: false /* handle this manually */,
   });
@@ -83,9 +86,8 @@ const MultiHttpSettingsFormContent = ({ check }: { check: MultiHTTPCheck }) => {
   const isEditor = hasRole(OrgRole.Editor);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const onSuccess = () => locationService.getHistory().goBack();
-
-  const onSubmit = (checkValues: CheckFormValues) => {
-    const toSubmit = getCheckFromFormValues(checkValues, defaultValues, CheckType.MULTI_HTTP);
+  const onSubmit = (checkValues: CheckFormValuesMultiHttp) => {
+    const toSubmit = getCheckFromFormValues(checkValues);
 
     if (check.id) {
       return updateCheck(
@@ -107,7 +109,7 @@ const MultiHttpSettingsFormContent = ({ check }: { check: MultiHTTPCheck }) => {
 
   const requests = watch('settings.multihttp.entries') as any[];
 
-  const onError = (errs: DeepMap<CheckFormValues, FieldError>) => {
+  const onError = (errs: DeepMap<CheckFormValuesMultiHttp, FieldError>) => {
     const res = getMultiHttpFormErrors(errs);
 
     if (res) {
@@ -159,10 +161,10 @@ const MultiHttpSettingsFormContent = ({ check }: { check: MultiHTTPCheck }) => {
               <hr className={styles.breakLine} />
               <HorizontalCheckboxField
                 disabled={!isEditor}
-                name="enabled"
                 id="check-form-enabled"
                 label="Enabled"
                 description="If a check is enabled, metrics and logs are published to your Grafana Cloud stack."
+                {...register('enabled')}
               />
               <Field label="Job name" invalid={Boolean(errors.job)} error={errors.job?.message}>
                 <Input
@@ -183,7 +185,7 @@ const MultiHttpSettingsFormContent = ({ check }: { check: MultiHTTPCheck }) => {
                 checkType={CheckType.MULTI_HTTP}
               />
 
-              <LabelField isEditor={isEditor} />
+              <LabelField<CheckFormValuesMultiHttp> isEditor={isEditor} />
 
               <hr />
               <h3>Requests</h3>

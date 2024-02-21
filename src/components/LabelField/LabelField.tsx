@@ -2,6 +2,7 @@ import React from 'react';
 import { useFormContext } from 'react-hook-form';
 import { Field } from '@grafana/ui';
 
+import { Label } from 'types';
 import { validateLabelName, validateLabelValue } from 'validation';
 import { NameValueInput } from 'components/NameValueInput';
 
@@ -10,8 +11,12 @@ export interface LabelFieldProps {
   limit?: number;
 }
 
-export const LabelField = ({ isEditor, limit }: LabelFieldProps) => {
-  const { watch } = useFormContext();
+type FormWithLabels = {
+  labels: Label[];
+};
+
+export const LabelField = <T extends FormWithLabels>({ isEditor, limit }: LabelFieldProps) => {
+  const { watch } = useFormContext<FormWithLabels>();
   const labels = watch('labels');
 
   let description = `Custom labels to be included with collected metrics and logs.`;

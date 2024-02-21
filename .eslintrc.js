@@ -2,6 +2,8 @@ module.exports = {
   extends: ['./.config/.eslintrc', 'plugin:@tanstack/eslint-plugin-query/recommended'],
   plugins: ['simple-import-sort'],
   rules: {
+    'no-redeclare': 'off', // we use typescript's 'no-redeclare' rule instead
+    '@typescript-eslint/no-redeclare': ['error'],
     ['simple-import-sort/imports']: [
       'error',
       {

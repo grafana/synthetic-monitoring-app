@@ -188,7 +188,7 @@ export const BASIC_MULTIHTTP_CHECK: MultiHTTPCheck = {
         {
           request: {
             url: 'https://www.multi1.com',
-            method: 'GET',
+            method: HttpMethod.GET,
             headers: [
               {
                 name: 'aheader',
@@ -221,7 +221,7 @@ export const BASIC_MULTIHTTP_CHECK: MultiHTTPCheck = {
         {
           request: {
             url: 'https://www.multi2.com',
-            method: 'POST',
+            method: HttpMethod.POST,
             headers: [
               {
                 name: 'examples',
@@ -505,7 +505,16 @@ export const ADHOC_CHECK_RESULT: AdHocCheckResponse = {
   id: '123',
   tenantId: 1,
   timeout: 1,
-  settings: {},
-  probes: [1],
+  settings: {
+    http: {
+      ipVersion: IpVersion.V4,
+      method: HttpMethod.GET,
+      noFollowRedirects: true,
+      tlsConfig: {},
+      failIfSSL: false,
+      failIfNotSSL: false,
+    },
+  },
+  probes: [PRIVATE_PROBE.id] as number[],
   target: 'target',
 };

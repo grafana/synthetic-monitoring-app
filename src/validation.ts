@@ -10,7 +10,6 @@ import {
   Label,
   MultiHttpSettings,
   PingSettings,
-  Settings,
   TcpSettings,
   TracerouteSettings,
 } from 'types';
@@ -23,7 +22,6 @@ export const CheckValidation = {
   frequency: validateFrequency,
   timeout: validateTimeout,
   labels: validateLabels,
-  settings: validateSettings,
   probes: validateProbes,
 };
 
@@ -35,7 +33,6 @@ export function validateCheck(check: Check): boolean {
       CheckValidation.frequency(check.frequency, type) &&
       CheckValidation.timeout(check.timeout, type) &&
       CheckValidation.labels(check.labels) &&
-      CheckValidation.settings(check.settings) &&
       CheckValidation.probes(check.probes)
   );
 }
@@ -255,40 +252,6 @@ export const validateTLSClientKey = (clientKey?: string) => {
   }
   return undefined;
 };
-
-export function validateSettings(settings: Settings): string | undefined {
-  let checkT = checkType(settings);
-  if (!settings[checkT]) {
-    return 'Settings values required';
-  }
-  // WHAT IS THIS FUNCTION FOR??
-  switch (checkT) {
-    case CheckType.HTTP: {
-      return validateSettingsHTTP(settings.http!);
-    }
-    case CheckType.MULTI_HTTP: {
-      return validateSettingsMultiHTTP(settings.multihttp!);
-    }
-    case CheckType.PING: {
-      return validateSettingsPING(settings.ping!);
-    }
-    case CheckType.DNS: {
-      return validateSettingsDNS(settings.dns!);
-    }
-    case CheckType.TCP: {
-      return validateSettingsTCP(settings.tcp!);
-    }
-    case CheckType.Traceroute: {
-      return validateSettingsTraceroute(settings.traceroute);
-    }
-    case CheckType.GRPC: {
-      return;
-    }
-    case CheckType.K6: {
-      return;
-    }
-  }
-}
 
 export function validateProbes(probes: number[]): string | undefined {
   if (probes.length === 0) {

@@ -17,7 +17,7 @@ export const NameValueInput = ({ name, disabled, limit, label, validateName, val
     register,
     control,
     formState: { errors },
-  } = useFormContext();
+  } = useFormContext(); // todo: type correctly
   const addRef = useRef<HTMLButtonElement>(null);
   const { fields, append, remove } = useFieldArray({ control, name });
   const theme = useTheme();

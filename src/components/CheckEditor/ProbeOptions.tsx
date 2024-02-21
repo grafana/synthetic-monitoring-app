@@ -2,7 +2,7 @@ import React from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { Field, Input } from '@grafana/ui';
 
-import { CheckType } from 'types';
+import { CheckFormValues, CheckType } from 'types';
 import { validateFrequency, validateProbes, validateTimeout } from 'validation';
 import { useProbes } from 'data/useProbes';
 import { SliderInput } from 'components/SliderInput';
@@ -69,7 +69,7 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, checkType }: Props)
   const {
     control,
     formState: { errors },
-  } = useFormContext();
+  } = useFormContext<CheckFormValues>();
   const isTraceroute = checkType === CheckType.Traceroute;
   const { minFrequency, maxFrequency, defaultFrequency } = getFrequencyBounds(checkType);
   const { minTimeout, maxTimeout, defaultTimeout } = getTimeoutBounds(checkType);
@@ -88,7 +88,8 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, checkType }: Props)
             probes={field.value}
             availableProbes={probes}
             isEditor={isEditor}
-            invalid={errors.probes}
+            invalid={Boolean(errors.probes)}
+            // @ts-expect-error -- need to look into why it thinks this shape is wrong
             error={errors.probes?.message}
           />
         )}

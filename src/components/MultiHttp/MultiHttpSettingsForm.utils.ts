@@ -1,7 +1,7 @@
 import { useReducer } from 'react';
 import { DeepMap, FieldError } from 'react-hook-form';
 
-import { CheckFormValues, MultiHTTPCheck } from 'types';
+import { CheckFormValuesMultiHttp, MultiHTTPCheck } from 'types';
 
 import { MultiHttpFormTabs } from './MultiHttpTypes';
 
@@ -13,7 +13,7 @@ const tabOrder = [
   MultiHttpFormTabs.Body,
 ];
 
-type FormErrors = DeepMap<CheckFormValues, FieldError>;
+type FormErrors = DeepMap<CheckFormValuesMultiHttp, FieldError>;
 
 export const tabErrorMap = (errors: FormErrors, index: number, tab: MultiHttpFormTabs) => {
   const entry = errors?.settings?.multihttp?.entries?.[index];

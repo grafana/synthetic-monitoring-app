@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { Alert, Button, Modal } from '@grafana/ui';
 
@@ -7,14 +7,14 @@ import { checkType as getCheckType } from 'utils';
 import { AdHocCheckResponse } from 'datasource/responses.types';
 import { useTestCheck } from 'data/useChecks';
 
-import { getCheckFromFormValues, getDefaultValuesFromCheck } from './CheckEditor/checkFormTransformations';
+import { getCheckFromFormValues } from './CheckEditor/checkFormTransformations';
 import { CheckTestResultsModal } from './CheckTestResultsModal';
 
 interface Props {
   check: Check;
 }
 
-export function CheckTestButton({ check }: Props) {
+export function CheckTestButton<T extends CheckType>({ check }: Props) {
   const checkType = getCheckType(check.settings);
   const { mutate: testCheck } = useTestCheck({ eventInfo: { type: checkType } });
   const [isTestModalOpen, setTestModalOpen] = useState(false);
@@ -22,8 +22,7 @@ export function CheckTestButton({ check }: Props) {
   const [error, setError] = useState('');
   const [testResponse, setTestResponse] = useState<AdHocCheckResponse>();
   const [testRequestInFlight, setTestRequestInFlight] = useState(false);
-  const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
-  const formMethods = useFormContext();
+  const formMethods = useFormContext<CheckFormValues>();
 
   return (
     <>
@@ -33,8 +32,8 @@ export function CheckTestButton({ check }: Props) {
         icon={testRequestInFlight ? `fa fa-spinner` : undefined}
         disabled={testRequestInFlight || checkType === CheckType.Traceroute}
         onClick={() => {
-          const values = formMethods.getValues() as CheckFormValues;
-          const check = getCheckFromFormValues(values, defaultValues, checkType);
+          const values = formMethods.getValues();
+          const check = getCheckFromFormValues(values);
           setTestRequestInFlight(true);
           testCheck(check, {
             onSuccess: (resp) => {

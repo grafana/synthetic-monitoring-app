@@ -169,11 +169,11 @@ interface TFHeaderMatch extends Omit<HeaderMatch, 'allowMissing'> {
 }
 
 export interface TFTlsConfig {
-  ca_cert: string;
-  client_cert: string;
-  client_key: string;
-  insecure_skip_verify: boolean;
-  server_name: string;
+  ca_cert?: string;
+  client_cert?: string;
+  client_key?: string;
+  insecure_skip_verify?: boolean;
+  server_name?: string;
 }
 
 export interface TFProbeConfig {

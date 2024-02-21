@@ -3,6 +3,7 @@ import { useFormContext } from 'react-hook-form';
 import { Field, Input } from '@grafana/ui';
 import { css } from '@emotion/css';
 
+import { CheckFormValuesTraceroute } from 'types';
 import { Collapse } from 'components/Collapse';
 import { LabelField } from 'components/LabelField';
 
@@ -14,19 +15,15 @@ interface Props {
 
 export const TracerouteSettingsForm = ({ isEditor }: Props) => {
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const { register } = useFormContext();
+  const { register } = useFormContext<CheckFormValuesTraceroute>();
   return (
-    <Collapse
-      label="Advanced options"
-      onToggle={() => setShowAdvanced(!showAdvanced)}
-      isOpen={showAdvanced}
-    >
+    <Collapse label="Advanced options" onToggle={() => setShowAdvanced(!showAdvanced)} isOpen={showAdvanced}>
       <div
         className={css`
           max-width: 500px;
         `}
       >
-        <LabelField isEditor={isEditor} />
+        <LabelField<CheckFormValuesTraceroute> isEditor={isEditor} />
         <Field label="Max hops" description="Maximum TTL for the trace" disabled={!isEditor}>
           <Input
             id="traceroute-settings-max-hops"
@@ -50,9 +47,9 @@ export const TracerouteSettingsForm = ({ isEditor }: Props) => {
         <HorizontalCheckboxField
           id="traceroute-settings-ptr-lookup"
           label="PTR lookup"
-          name="settings.traceroute.ptrLookup"
           description="Reverse lookup hostnames from IP addresses"
           disabled={!isEditor}
+          {...register('settings.traceroute.ptrLookup')}
         />
       </div>
     </Collapse>

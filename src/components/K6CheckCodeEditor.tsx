@@ -6,13 +6,13 @@ import { locationService, PluginPage } from '@grafana/runtime';
 import { Alert, Button, Field, Icon, Input, Label, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { CheckFormValues, CheckPageParams, CheckType, ScriptedCheck } from 'types';
+import { CheckFormValues, CheckFormValuesScripted, CheckPageParams, CheckType, ScriptedCheck } from 'types';
 import { isScriptedCheck } from 'utils.types';
 import { hasRole } from 'utils';
 import { validateJob, validateTarget } from 'validation';
 import { useChecks, useCUDChecks } from 'data/useChecks';
 
-import { getCheckFromFormValues, getDefaultValuesFromCheck } from './CheckEditor/checkFormTransformations';
+import { getCheckFromFormValues, getScriptedFormValuesFromCheck } from './CheckEditor/checkFormTransformations';
 import { ProbeOptions } from './CheckEditor/ProbeOptions';
 import { CheckFormAlert } from './CheckFormAlert';
 import { CheckTestButton } from './CheckTestButton';
@@ -63,17 +63,17 @@ export const K6CheckCodeEditor = () => {
 
 function K6CheckCodeEditorContent({ check }: { check: ScriptedCheck }) {
   const { updateCheck, createCheck, error, submitting } = useCUDChecks({ eventInfo: { checkType: CheckType.K6 } });
-  const defaultValues = getDefaultValuesFromCheck(check);
+  const initialValues = getScriptedFormValuesFromCheck(check);
 
   const formMethods = useForm<CheckFormValues>({
-    defaultValues,
+    defaultValues: initialValues,
   });
   const { handleSubmit, register, control } = formMethods;
   const styles = useStyles2(getStyles);
   const onSuccess = () => locationService.getHistory().goBack();
 
-  const onSubmit = (checkValues: CheckFormValues) => {
-    const toSubmit = getCheckFromFormValues(checkValues, defaultValues, CheckType.K6);
+  const onSubmit = (checkValues: CheckFormValuesScripted) => {
+    const toSubmit = getCheckFromFormValues(checkValues);
 
     if (check.id) {
       return updateCheck(
@@ -148,7 +148,7 @@ function K6CheckCodeEditorContent({ check }: { check: ScriptedCheck }) {
               timeout={check.timeout}
               checkType={CheckType.K6}
             />
-            <LabelField isEditor={isEditor} />
+            <LabelField<CheckFormValuesScripted> isEditor={isEditor} />
             <CheckFormAlert />
           </div>
           <Controller

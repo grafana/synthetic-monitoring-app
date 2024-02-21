@@ -1,15 +1,13 @@
-import React, { FC, useState } from 'react';
+import React, { useState } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Field, Select, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
+import { CheckFormValues } from 'types';
+
 import { Collapse } from './Collapse';
 import { ALERT_SENSITIVITY_OPTIONS } from './constants';
-
-interface Props {
-  checkId?: number;
-}
 
 const getStyles = (theme: GrafanaTheme2) => ({
   marginBottom: css`
@@ -20,15 +18,13 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
 });
 
-export const CheckFormAlert: FC<Props> = () => {
+export const CheckFormAlert = () => {
   const [showAlerting, setShowAlerting] = useState(false);
   const styles = useStyles2(getStyles);
-  const { watch } = useFormContext();
+  const { watch } = useFormContext<CheckFormValues>();
   const alertSensitivity = watch('alertSensitivity');
 
-  const isCustomSensitivity = !Boolean(
-    ALERT_SENSITIVITY_OPTIONS.find((option) => option.value === alertSensitivity.value)
-  );
+  const isCustomSensitivity = !Boolean(ALERT_SENSITIVITY_OPTIONS.find((option) => option.value === alertSensitivity));
 
   return (
     <Collapse label="Alerting" onToggle={() => setShowAlerting(!showAlerting)} isOpen={showAlerting}>
@@ -57,7 +53,7 @@ export const CheckFormAlert: FC<Props> = () => {
               width={40}
               disabled={isCustomSensitivity}
               data-testid="alertSensitivityInput"
-              options={isCustomSensitivity ? [alertSensitivity] : ALERT_SENSITIVITY_OPTIONS}
+              options={isCustomSensitivity ? [{ value: alertSensitivity }] : ALERT_SENSITIVITY_OPTIONS}
             />
           )}
         />

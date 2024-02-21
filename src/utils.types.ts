@@ -1,5 +1,10 @@
 import {
   Check,
+  CheckFormValues,
+  CheckFormValuesGRPC,
+  CheckFormValuesHttp,
+  CheckFormValuesMultiHttp,
+  CheckFormValuesTcp,
   DNSCheck,
   GRPCCheck,
   HTTPCheck,
@@ -18,16 +23,16 @@ export function isDNSCheck(check: Partial<Check>): check is DNSCheck {
   return false;
 }
 
-export function isHttpCheck(check: Partial<Check>): check is HTTPCheck {
-  if (Object.hasOwnProperty.call(check.settings, 'http')) {
+export function isGRPCCheck(check: Partial<Check>): check is GRPCCheck {
+  if (Object.hasOwnProperty.call(check.settings, 'grpc')) {
     return true;
   }
 
   return false;
 }
 
-export function isScriptedCheck(check: Partial<Check>): check is ScriptedCheck {
-  if (Object.hasOwnProperty.call(check.settings, 'k6')) {
+export function isHttpCheck(check: Partial<Check>): check is HTTPCheck {
+  if (Object.hasOwnProperty.call(check.settings, 'http')) {
     return true;
   }
 
@@ -50,6 +55,14 @@ export function isPingCheck(check: Partial<Check>): check is PingCheck {
   return false;
 }
 
+export function isScriptedCheck(check: Partial<Check>): check is ScriptedCheck {
+  if (Object.hasOwnProperty.call(check.settings, 'k6')) {
+    return true;
+  }
+
+  return false;
+}
+
 export function isTCPCheck(check: Partial<Check>): check is TCPCheck {
   if (Object.hasOwnProperty.call(check.settings, 'tcp')) {
     return true;
@@ -66,16 +79,16 @@ export function isTracerouteCheck(check: Partial<Check>): check is TracerouteChe
   return false;
 }
 
-export function isHttpSettings(settings: Check['settings']): settings is HTTPCheck['settings'] {
-  if (Object.hasOwnProperty.call(settings, 'http')) {
+export function isDNSSettings(settings: Check['settings']): settings is DNSCheck['settings'] {
+  if (Object.hasOwnProperty.call(settings, 'dns')) {
     return true;
   }
 
   return false;
 }
 
-export function isTCPSettings(settings: Check['settings']): settings is TCPCheck['settings'] {
-  if (Object.hasOwnProperty.call(settings, 'tcp')) {
+export function isHttpSettings(settings: Check['settings']): settings is HTTPCheck['settings'] {
+  if (Object.hasOwnProperty.call(settings, 'http')) {
     return true;
   }
 
@@ -92,6 +105,78 @@ export function isGRPCSettings(settings: Check['settings']): settings is GRPCChe
 
 export function isMultiHttpSettings(settings: Check['settings']): settings is MultiHTTPCheck['settings'] {
   if (Object.hasOwnProperty.call(settings, 'multihttp')) {
+    return true;
+  }
+
+  return false;
+}
+
+export function isPingSettings(settings: Check['settings']): settings is PingCheck['settings'] {
+  if (Object.hasOwnProperty.call(settings, 'ping')) {
+    return true;
+  }
+
+  return false;
+}
+
+export function isScriptedSettings(settings: Check['settings']): settings is ScriptedCheck['settings'] {
+  if (Object.hasOwnProperty.call(settings, 'k6')) {
+    return true;
+  }
+
+  return false;
+}
+
+export function isTCPSettings(settings: Check['settings']): settings is TCPCheck['settings'] {
+  if (Object.hasOwnProperty.call(settings, 'tcp')) {
+    return true;
+  }
+
+  return false;
+}
+
+export function isTracerouteSettings(settings: Check['settings']): settings is TracerouteCheck['settings'] {
+  if (Object.hasOwnProperty.call(settings, 'traceroute')) {
+    return true;
+  }
+
+  return false;
+}
+
+export function isGRPCFormValuesSettings(
+  settings: CheckFormValues['settings']
+): settings is CheckFormValuesGRPC['settings'] {
+  if (Object.hasOwnProperty.call(settings, 'grpc')) {
+    return true;
+  }
+
+  return false;
+}
+
+export function isHttpFormValuesSettings(
+  settings: CheckFormValues['settings']
+): settings is CheckFormValuesHttp['settings'] {
+  if (Object.hasOwnProperty.call(settings, 'http')) {
+    return true;
+  }
+
+  return false;
+}
+
+export function isMultiHttpFormValuesSettings(
+  settings: CheckFormValues['settings']
+): settings is CheckFormValuesMultiHttp['settings'] {
+  if (Object.hasOwnProperty.call(settings, 'multihttp')) {
+    return true;
+  }
+
+  return false;
+}
+
+export function isTCPFormValuesSettings(
+  settings: CheckFormValues['settings']
+): settings is CheckFormValuesTcp['settings'] {
+  if (Object.hasOwnProperty.call(settings, 'tcp')) {
     return true;
   }
 

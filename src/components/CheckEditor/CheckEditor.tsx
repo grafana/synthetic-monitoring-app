@@ -29,7 +29,7 @@ import { PluginPage } from 'components/PluginPage';
 import { getRoute } from 'components/Routing';
 
 import { CheckUsage } from '../CheckUsage';
-import { getCheckFromFormValues, getDefaultValuesFromCheck } from './checkFormTransformations';
+import { getCheckFromFormValues, getFormValuesFromCheck } from './checkFormTransformations';
 import { CheckSettings } from './CheckSettings';
 import { ProbeOptions } from './ProbeOptions';
 
@@ -45,7 +45,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
 export const CheckEditor = () => {
   const { data: checks } = useChecks();
   const { id, checkType: checkTypeParam } = useParams<CheckPageParams>();
-  const checkType = checkTypeParam || CheckType.PING;
+  const checkType = isValidCheckType(checkTypeParam) ? checkTypeParam : CheckType.PING;
 
   if (id && !checks) {
     return null;
@@ -60,9 +60,12 @@ const CheckEditorContent = ({ check }: { check: Check }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const styles = useStyles2(getStyles);
 
-  const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
-  const formMethods = useForm<CheckFormValues>({ defaultValues, mode: 'onChange' });
-  const selectedCheckType = formMethods.watch('checkType')?.value ?? null;
+  const initialValues = useMemo(() => getFormValuesFromCheck(check), [check]);
+  const formMethods = useForm<CheckFormValues>({
+    defaultValues: initialValues,
+    mode: 'onChange',
+  });
+  const selectedCheckType = formMethods.watch('checkType') ?? null;
   const checkType = getCheckType(check.settings);
 
   const { updateCheck, createCheck, deleteCheck, error, submitting } = useCUDChecks({ eventInfo: { checkType } });
@@ -71,7 +74,7 @@ const CheckEditorContent = ({ check }: { check: Check }) => {
   const onSuccess = () => locationService.getHistory().goBack();
 
   const onSubmit = (checkValues: CheckFormValues) => {
-    const toSubmit = getCheckFromFormValues(checkValues, defaultValues, checkType);
+    const toSubmit = getCheckFromFormValues(checkValues);
 
     if (check.id) {
       return updateCheck(
@@ -102,10 +105,10 @@ const CheckEditorContent = ({ check }: { check: Check }) => {
           <form onSubmit={formMethods.handleSubmit(onSubmit)}>
             <HorizontalCheckboxField
               disabled={!isEditor}
-              name="enabled"
               id="check-form-enabled"
               label="Enabled"
               description="If a check is enabled, metrics and logs are published to your Grafana Cloud stack."
+              {...formMethods.register('enabled')}
             />
             <Field
               label="Job name"
@@ -152,10 +155,10 @@ const CheckEditorContent = ({ check }: { check: Check }) => {
               frequency={check.frequency}
             />
             <HorizontalCheckboxField
-              name="publishAdvancedMetrics"
               id="publishAdvancedMetrics"
               label="Publish full set of metrics"
               description="Histogram buckets are removed by default in order to reduce the amount of active series generated per check. If you want to calculate Apdex scores or visualize heatmaps, publish the full set of metrics."
+              {...formMethods.register('publishAdvancedMetrics')}
             />
             <CheckUsage />
             <CheckSettings
@@ -206,3 +209,15 @@ const CheckEditorContent = ({ check }: { check: Check }) => {
     </PluginPage>
   );
 };
+
+function isValidCheckType(checkType?: CheckType): checkType is CheckType {
+  if (!checkType) {
+    return false;
+  }
+
+  if (Object.values(CheckType).includes(checkType)) {
+    return true;
+  }
+
+  return false;
+}
