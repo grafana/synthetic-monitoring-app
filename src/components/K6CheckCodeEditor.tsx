@@ -6,7 +6,7 @@ import { locationService, PluginPage } from '@grafana/runtime';
 import { Alert, Button, Field, Icon, Input, Label, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { CheckFormValues, CheckFormValuesScripted, CheckPageParams, CheckType, ScriptedCheck } from 'types';
+import { CheckFormValuesScripted, CheckPageParams, CheckType, ScriptedCheck } from 'types';
 import { isScriptedCheck } from 'utils.types';
 import { hasRole } from 'utils';
 import { validateJob, validateTarget } from 'validation';
@@ -65,7 +65,7 @@ function K6CheckCodeEditorContent({ check }: { check: ScriptedCheck }) {
   const { updateCheck, createCheck, error, submitting } = useCUDChecks({ eventInfo: { checkType: CheckType.K6 } });
   const initialValues = getScriptedFormValuesFromCheck(check);
 
-  const formMethods = useForm<CheckFormValues>({
+  const formMethods = useForm<CheckFormValuesScripted>({
     defaultValues: initialValues,
   });
   const { handleSubmit, register, control } = formMethods;
@@ -94,7 +94,7 @@ function K6CheckCodeEditorContent({ check }: { check: ScriptedCheck }) {
 
   return (
     <PluginPage pageNav={{ text: check?.job ? `Editing ${check.job}` : headerText }}>
-      <FormProvider {...formMethods}>
+      <FormProvider<CheckFormValuesScripted> {...formMethods}>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className={styles.jobTargetContainer}>
             <Field
@@ -151,10 +151,11 @@ function K6CheckCodeEditorContent({ check }: { check: ScriptedCheck }) {
             <LabelField<CheckFormValuesScripted> isEditor={isEditor} />
             <CheckFormAlert />
           </div>
-          <Controller
+          <Controller<CheckFormValuesScripted>
             name="settings.k6.script"
             control={control}
             render={({ field: { ...field } }) => {
+              // @ts-ignore we know the value is a string
               return <CodeEditor {...field} />;
             }}
           />

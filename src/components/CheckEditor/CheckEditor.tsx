@@ -127,7 +127,7 @@ const CheckEditorContent = ({ check }: { check: Check }) => {
                 placeholder="jobName"
               />
             </Field>
-            <Controller
+            <Controller<CheckFormValues>
               name="target"
               control={formMethods.control}
               rules={{
@@ -137,6 +137,7 @@ const CheckEditorContent = ({ check }: { check: Check }) => {
                 },
               }}
               render={({ field }) => (
+                // @ts-ignore
                 <CheckTarget
                   {...field}
                   typeOfCheck={checkType}

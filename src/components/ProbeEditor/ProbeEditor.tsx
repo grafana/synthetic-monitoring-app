@@ -60,7 +60,7 @@ export const ProbeEditor = ({
     <div className={styles.containerWrapper}>
       <div className={styles.container}>
         <div>
-          <FormProvider {...form}>
+          <FormProvider<Probe> {...form}>
             <form onSubmit={handleSubmit}>
               <div>
                 <Label description={description} className={styles.marginBottom}>

@@ -95,15 +95,15 @@ const getPingSettingsFormValues = (settings: PingCheck['settings']): PingSetting
   };
 };
 
-const headersToLabels = (headers: string[] | undefined): Label[] =>
-  headers?.map((header) => {
+const headersToLabels = (headers: string[]): Label[] =>
+  headers.map((header) => {
     const parts = header.split(':');
     const value = parts.slice(1).join(':');
     return {
       name: parts[0],
       value: value,
     };
-  }) ?? [];
+  });
 
 const getHttpSettingsSslValue = (failIfSSL: boolean, failIfNotSSL: boolean): SelectableValue<HttpSslOption> => {
   if (failIfSSL && !failIfNotSSL) {
@@ -211,8 +211,8 @@ const getHttpSettingsFormValues = (settings: HTTPCheck['settings']): HttpSetting
     validHTTPVersions: httpSettings.validHTTPVersions?.map((httpVersion) => selectableValueFrom(httpVersion)) ?? [],
     method: selectableValueFrom(httpSettings.method),
     ipVersion: selectableValueFrom(httpSettings.ipVersion),
-    headers: headersToLabels(httpSettings.headers),
-    proxyConnectHeaders: headersToLabels(httpSettings.proxyConnectHeaders),
+    headers: headersToLabels(httpSettings.headers || []),
+    proxyConnectHeaders: headersToLabels(httpSettings.proxyConnectHeaders || []),
     regexValidations,
     compression: compression ? selectableValueFrom(compression) : HTTP_COMPRESSION_ALGO_OPTIONS[0],
   };
@@ -573,8 +573,6 @@ const getMultiHttpSettings = (settings: MultiHttpSettingsFormValues | undefined)
 
   return {
     entries: settings.entries?.map((entry, index) => {
-      const variables = entry.variables ?? [];
-      const checks = entry.checks ?? [];
       const includeBody =
         entry.request.body?.contentEncoding || entry.request.body?.contentType || entry.request.body?.payload;
       const body = includeBody
@@ -588,7 +586,7 @@ const getMultiHttpSettings = (settings: MultiHttpSettingsFormValues | undefined)
           body,
           method: getValueFromSelectable(entry.request.method) ?? HttpMethod.GET,
         },
-        variables: variables?.map((variable) => {
+        variables: entry.variables.map((variable) => {
           if (variable.type.value === undefined) {
             throw new Error('Selecting a variable type is required');
           }
@@ -597,47 +595,46 @@ const getMultiHttpSettings = (settings: MultiHttpSettingsFormValues | undefined)
             type: variable.type.value,
           };
         }),
-        checks:
-          checks.map(({ type, subject, condition, value, expression }) => {
-            switch (type.value) {
-              case MultiHttpAssertionType.Text:
-                if (subject?.value === undefined || condition?.value === undefined) {
-                  throw new Error('Cannot have a Text assertion without a subject and condition');
-                }
-                return {
-                  type: type.value,
-                  subject: subject.value,
-                  condition: condition.value,
-                  value,
-                };
-              case MultiHttpAssertionType.JSONPath:
-                return {
-                  type: type.value,
-                  expression,
-                };
-              case MultiHttpAssertionType.JSONPathValue:
-                if (condition?.value === undefined) {
-                  throw new Error('Cannot have a JSON path value assertion without a condition');
-                }
-                return {
-                  type: type.value,
-                  condition: condition.value,
-                  expression,
-                  value,
-                };
-              case MultiHttpAssertionType.Regex:
-                if (subject?.value === undefined) {
-                  throw new Error('Cannot have a Regex assertion without a subject');
-                }
-                return {
-                  type: type.value,
-                  subject: subject.value,
-                  expression,
-                };
-              default:
-                throw new Error('invalid assertion type');
-            }
-          }) ?? [],
+        checks: entry.checks.map(({ type, subject, condition, value, expression }) => {
+          switch (type.value) {
+            case MultiHttpAssertionType.Text:
+              if (subject?.value === undefined || condition?.value === undefined) {
+                throw new Error('Cannot have a Text assertion without a subject and condition');
+              }
+              return {
+                type: type.value,
+                subject: subject.value,
+                condition: condition.value,
+                value,
+              };
+            case MultiHttpAssertionType.JSONPath:
+              return {
+                type: type.value,
+                expression,
+              };
+            case MultiHttpAssertionType.JSONPathValue:
+              if (condition?.value === undefined) {
+                throw new Error('Cannot have a JSON path value assertion without a condition');
+              }
+              return {
+                type: type.value,
+                condition: condition.value,
+                expression,
+                value,
+              };
+            case MultiHttpAssertionType.Regex:
+              if (subject?.value === undefined) {
+                throw new Error('Cannot have a Regex assertion without a subject');
+              }
+              return {
+                type: type.value,
+                subject: subject.value,
+                expression,
+              };
+            default:
+              throw new Error('invalid assertion type');
+          }
+        }),
       };
     }),
   };
@@ -670,18 +667,17 @@ const getMultiHttpFormValues = (settings: MultiHTTPCheck['settings']): MultiHttp
               attribute,
             };
           }) ?? [],
-        checks:
-          entry.checks?.map(({ type, subject, condition, expression, value }) => {
-            return {
-              type:
-                MULTI_HTTP_ASSERTION_TYPE_OPTIONS.find(({ value }) => value === type) ??
-                MULTI_HTTP_ASSERTION_TYPE_OPTIONS[0],
-              subject: ASSERTION_SUBJECT_OPTIONS.find(({ value }) => value === subject),
-              condition: ASSERTION_CONDITION_OPTIONS.find(({ value }) => value === condition),
-              expression,
-              value,
-            };
-          }) ?? [],
+        checks: entry.checks.map(({ type, subject, condition, expression, value }) => {
+          return {
+            type:
+              MULTI_HTTP_ASSERTION_TYPE_OPTIONS.find(({ value }) => value === type) ??
+              MULTI_HTTP_ASSERTION_TYPE_OPTIONS[0],
+            subject: ASSERTION_SUBJECT_OPTIONS.find(({ value }) => value === subject),
+            condition: ASSERTION_CONDITION_OPTIONS.find(({ value }) => value === condition),
+            expression,
+            value,
+          };
+        }),
       };
     }),
   };
@@ -797,7 +793,7 @@ export const getCheckFromFormValues = (formValues: UnpackNestedValue<CheckFormVa
     frequency: formValues.frequency * 1000,
     id: formValues.id,
     job: formValues.job,
-    labels: formValues.labels ?? [],
+    labels: formValues.labels,
     probes: formValues.probes,
     target: formValues.target,
     timeout: formValues.timeout * 1000,

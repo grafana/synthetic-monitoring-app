@@ -30,7 +30,7 @@ export const TcpSettingsForm = ({ isEditor }: Props) => {
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const { register, control } = useFormContext<CheckFormValuesTcp>();
-  const { fields, append, remove } = useFieldArray({ control, name: 'settings.tcp.queryResponse' });
+  const { fields, append, remove } = useFieldArray<CheckFormValuesTcp>({ control, name: 'settings.tcp.queryResponse' });
 
   return (
     <Container>
@@ -100,7 +100,7 @@ export const TcpSettingsForm = ({ isEditor }: Props) => {
         <HorizontalGroup>
           <div>
             <Field label="IP version" description="The IP protocol of the ICMP request" disabled={!isEditor}>
-              <Controller
+              <Controller<CheckFormValuesTcp>
                 name="settings.tcp.ipVersion"
                 render={({ field }) => <Select {...field} options={IP_OPTIONS} defaultValue={IP_OPTIONS[1]} />}
               />

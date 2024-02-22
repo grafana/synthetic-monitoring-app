@@ -37,7 +37,7 @@ interface RequestTabsProps {
 
 export const HeadersTab = ({ label = 'header', index, active }: MultiHttpTabProps) => {
   const { control, register, unregister, formState } = useFormContext<CheckFormValuesMultiHttp>();
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove } = useFieldArray<CheckFormValuesMultiHttp>({
     name: `settings.multihttp.entries.${index}.request.headers`,
     control,
   });
@@ -243,7 +243,7 @@ const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
 
             return (
               <div className={styles.fieldsContainer} key={field.id}>
-                <Controller
+                <Controller<CheckFormValuesMultiHttp>
                   name={variableTypeName}
                   render={({ field: typeField }) => {
                     return (

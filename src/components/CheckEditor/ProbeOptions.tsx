@@ -78,13 +78,14 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, checkType }: Props)
     <div>
       <Subheader>Probe options</Subheader>
 
-      <Controller
+      <Controller<CheckFormValues>
         control={control}
         name="probes"
         rules={{ validate: validateProbes }}
         render={({ field }) => (
           <CheckProbes
             {...field}
+            // @ts-expect-error -- we know the shape of the value
             probes={field.value}
             availableProbes={probes}
             isEditor={isEditor}

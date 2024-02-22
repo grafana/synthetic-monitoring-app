@@ -14,7 +14,7 @@ interface Props {
   check: Check;
 }
 
-export function CheckTestButton<T extends CheckType>({ check }: Props) {
+export function CheckTestButton({ check }: Props) {
   const checkType = getCheckType(check.settings);
   const { mutate: testCheck } = useTestCheck({ eventInfo: { type: checkType } });
   const [isTestModalOpen, setTestModalOpen] = useState(false);

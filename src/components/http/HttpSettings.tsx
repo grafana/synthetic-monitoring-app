@@ -167,7 +167,7 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
 
   const [includeBearerToken, setIncludeBearerToken] = useState(Boolean(bearerToken));
   const [includeBasicAuth, setIncludeBasicAuth] = useState(Boolean(basicAuth));
-  const { fields, append, remove } = useFieldArray({ control, name: REGEX_FIELD_NAME });
+  const { fields, append, remove } = useFieldArray<CheckFormValuesHttp>({ control, name: REGEX_FIELD_NAME });
   const styles = useStyles2(getStyles);
 
   return (
@@ -181,7 +181,7 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
             invalid={Boolean(errors?.settings?.http?.method)}
             error={errors?.settings?.http?.method?.value?.message}
           >
-            <Controller
+            <Controller<CheckFormValuesHttp>
               render={({ field }) => <Select {...field} options={METHOD_OPTIONS} />}
               rules={{ required: true }}
               name="settings.http.method"
@@ -222,7 +222,7 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
             description="The compression algorithm to expect in the response body"
             disabled={!isEditor}
           >
-            <Controller
+            <Controller<CheckFormValuesHttp>
               name="settings.http.compression"
               render={({ field }) => (
                 <Select {...field} data-testid="http-compression" options={HTTP_COMPRESSION_ALGO_OPTIONS} />
@@ -321,14 +321,14 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
             description="Accepted status codes for this probe. Defaults to 2xx."
             disabled={!isEditor}
           >
-            <Controller
+            <Controller<CheckFormValuesHttp>
               control={control}
               name="settings.http.validStatusCodes"
               render={({ field }) => <MultiSelect {...field} options={validStatusCodes} disabled={!isEditor} />}
             />
           </Field>
           <Field label="Valid HTTP versions" description="Accepted HTTP versions for this probe" disabled={!isEditor}>
-            <Controller
+            <Controller<CheckFormValuesHttp>
               control={control}
               name="settings.http.validHTTPVersions"
               render={({ field }) => <MultiSelect {...field} options={httpVersionOptions} disabled={!isEditor} />}
@@ -339,7 +339,7 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
             description="Choose whether probe fails if SSL is present or not present"
             disabled={!isEditor}
           >
-            <Controller
+            <Controller<CheckFormValuesHttp>
               name="settings.http.sslOptions"
               control={control}
               render={({ field }) => <Select {...field} options={HTTP_SSL_OPTIONS} disabled={!isEditor} />}
@@ -361,7 +361,7 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
                 const disallowBodyMatching = watch('settings.http.method').value === HttpMethod.HEAD;
                 return (
                   <Fragment key={field.id}>
-                    <Controller
+                    <Controller<CheckFormValuesHttp>
                       render={({ field }) => (
                         <Select
                           {...field}
@@ -429,7 +429,7 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
         <div className={styles.maxWidth}>
           <LabelField<CheckFormValuesHttp> isEditor={isEditor} />
           <Field label="IP version" description="The IP protocol of the HTTP request" disabled={!isEditor}>
-            <Controller
+            <Controller<CheckFormValuesHttp>
               render={({ field }) => <Select {...field} options={IP_OPTIONS} />}
               name="settings.http.ipVersion"
             />

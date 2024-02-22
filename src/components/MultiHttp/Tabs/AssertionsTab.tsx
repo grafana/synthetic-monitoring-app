@@ -15,7 +15,7 @@ import { getMultiHttpTabStyles, MultiHttpTabProps } from './Tabs';
 export function AssertionsTab({ index, active }: MultiHttpTabProps) {
   const assertionFieldName = `settings.multihttp.entries.${index}.checks` as const;
   const { control, formState } = useFormContext<CheckFormValuesMultiHttp>();
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove } = useFieldArray<CheckFormValuesMultiHttp>({
     control,
     name: assertionFieldName,
   });
@@ -34,7 +34,7 @@ export function AssertionsTab({ index, active }: MultiHttpTabProps) {
 
             return (
               <div className={styles.fieldsContainer} key={field.id}>
-                <Controller
+                <Controller<CheckFormValuesMultiHttp>
                   name={assertionTypeName}
                   render={({ field: typeField }) => {
                     return (
@@ -140,7 +140,7 @@ function AssertionSubjectField({ entryIndex, assertionIndex }: AssertionProps) {
   const error = formState.errors.settings?.multihttp?.entries?.[entryIndex]?.checks?.[assertionIndex]?.subject;
 
   return (
-    <Controller
+    <Controller<CheckFormValuesMultiHttp>
       name={`settings.multihttp.entries.${entryIndex}.checks.${assertionIndex}.subject`}
       render={({ field }) => {
         return (
@@ -169,7 +169,7 @@ function AssertionConditionField({ entryIndex, assertionIndex }: AssertionProps)
   const error = formState.errors.settings?.multihttp?.entries?.[entryIndex]?.checks?.[assertionIndex]?.subject;
 
   return (
-    <Controller
+    <Controller<CheckFormValuesMultiHttp>
       name={`settings.multihttp.entries.${entryIndex}.checks.${assertionIndex}.condition`}
       render={({ field }) => {
         return (

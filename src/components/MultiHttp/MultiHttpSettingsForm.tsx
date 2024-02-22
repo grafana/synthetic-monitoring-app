@@ -79,7 +79,7 @@ const MultiHttpSettingsFormContent = ({ check }: { check: MultiHTTPCheck }) => {
     fields: entryFields,
     append,
     remove,
-  } = useFieldArray({
+  } = useFieldArray<CheckFormValuesMultiHttp>({
     control: formMethods.control,
     name: 'settings.multihttp.entries',
   });
@@ -156,7 +156,7 @@ const MultiHttpSettingsFormContent = ({ check }: { check: MultiHTTPCheck }) => {
           .
         </Alert>
         <VerticalGroup>
-          <FormProvider {...formMethods}>
+          <FormProvider<CheckFormValuesMultiHttp> {...formMethods}>
             <form onSubmit={handleSubmit(onSubmit, onError)} className={styles.form}>
               <hr className={styles.breakLine} />
               <HorizontalCheckboxField
@@ -235,7 +235,7 @@ const MultiHttpSettingsFormContent = ({ check }: { check: MultiHTTPCheck }) => {
                             invalid={Boolean(errors?.settings?.multihttp?.entries?.[index]?.request?.method)}
                             error={errors?.settings?.multihttp?.entries?.[index]?.request?.method?.message}
                           >
-                            <Controller
+                            <Controller<CheckFormValuesMultiHttp>
                               name={`settings.multihttp.entries.${index}.request.method`}
                               render={({ field }) => (
                                 <Select {...field} options={METHOD_OPTIONS} data-testid="request-method" />
