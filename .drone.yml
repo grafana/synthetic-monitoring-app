@@ -212,3 +212,8 @@ get:
     path: infra/data/ci/drone-plugins
 kind: secret
 name: gcp_key
+---
+kind: signature
+hmac: d64d5de43b5ee906d9e9a8ef36a6776457506d62bee0764b04c374c4a82a10a7
+
+...
