@@ -153,8 +153,8 @@ image_pull_secrets:
 #   - ./scripts/install-ci-deps-apt.sh
 #   - make release-notes
 
-image_pull_secrets:
-  - dockerconfigjson
+# image_pull_secrets:
+#   - dockerconfigjson
 # Import secrets from Vault
 ---
 kind: secret
@@ -214,6 +214,6 @@ kind: secret
 name: gcp_key
 ---
 kind: signature
-hmac: d64d5de43b5ee906d9e9a8ef36a6776457506d62bee0764b04c374c4a82a10a7
+hmac: e9d74ba10cab74c33080e594e1630da076e7e926d9bfa494dc545745aa6a65bc
 
 ...
