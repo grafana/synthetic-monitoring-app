@@ -1,10 +1,14 @@
 import React, { useRef } from 'react';
-import { useFieldArray, useFormContext } from 'react-hook-form';
+import { FieldErrorsImpl, useFieldArray, useFormContext } from 'react-hook-form';
 import { Button, Field, HorizontalGroup, Icon, IconButton, Input, useTheme2, VerticalGroup } from '@grafana/ui';
 import { css } from '@emotion/css';
 
+import { CheckFormValues, CheckFormValuesHttp } from 'types';
+
+type NameValueName = 'settings.http.headers' | 'settings.http.proxyConnectHeaders' | 'labels';
+
 interface Props {
-  name: string;
+  name: NameValueName;
   limit?: number;
   disabled?: boolean;
   label: string;
@@ -12,28 +16,39 @@ interface Props {
   validateValue?: (value: string) => string | undefined;
 }
 
+function getErrors(errors: FieldErrorsImpl<CheckFormValues>, name: NameValueName) {
+  switch (name) {
+    case 'settings.http.headers': {
+      const cast = errors as FieldErrorsImpl<CheckFormValuesHttp>;
+      return cast?.settings?.http?.headers;
+    }
+    case 'settings.http.proxyConnectHeaders': {
+      const cast = errors as FieldErrorsImpl<CheckFormValuesHttp>;
+      return cast?.settings?.http?.proxyConnectHeaders;
+    }
+    case 'labels':
+      return errors?.labels;
+  }
+}
+
 export const NameValueInput = ({ name, disabled, limit, label, validateName, validateValue }: Props) => {
   const {
     register,
     control,
     formState: { errors },
-  } = useFormContext(); // todo: type correctly
+  } = useFormContext<CheckFormValues>();
   const addRef = useRef<HTMLButtonElement>(null);
   const { fields, append, remove } = useFieldArray({ control, name });
   const theme = useTheme2();
-  const fieldError = name
-    .split('.')
-    // @ts-expect-error
-    .reduce((nestedError, errorPathFragment) => nestedError?.[errorPathFragment], errors);
+
+  const fieldError = getErrors(errors, name);
 
   return (
     <VerticalGroup justify="space-between">
       {fields.map((field, index) => (
         <HorizontalGroup key={field.id} align="flex-start">
           <Field
-            // @ts-expect-error
             invalid={Boolean(fieldError?.[index]?.name?.type)}
-            // @ts-expect-error
             error={fieldError?.[index]?.name?.message}
             className={css`
               margin-bottom: 0;
@@ -50,9 +65,7 @@ export const NameValueInput = ({ name, disabled, limit, label, validateName, val
             />
           </Field>
           <Field
-            // @ts-expect-error
             invalid={Boolean(fieldError?.[index]?.value)}
-            // @ts-expect-error
             error={fieldError?.[index]?.value?.message}
             className={css`
               margin-bottom: 0;
