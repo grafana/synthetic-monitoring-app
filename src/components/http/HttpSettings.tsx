@@ -239,7 +239,6 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
               name="settings.http.proxyConnectHeaders"
               disabled={!isEditor}
               label="proxy connect header"
-              limit={10}
               validateName={validateHTTPHeaderName}
               validateValue={validateHTTPHeaderValue}
             />
