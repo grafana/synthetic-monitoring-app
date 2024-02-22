@@ -211,7 +211,6 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
               name="settings.http.headers"
               disabled={!isEditor}
               label="header"
-              limit={10}
               validateName={validateHTTPHeaderName}
               validateValue={validateHTTPHeaderValue}
             />

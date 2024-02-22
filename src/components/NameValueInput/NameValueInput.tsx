@@ -1,11 +1,11 @@
 import React, { useRef } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
-import { Button, Field, HorizontalGroup, Icon, IconButton, Input, useTheme, VerticalGroup } from '@grafana/ui';
+import { Button, Field, HorizontalGroup, Icon, IconButton, Input, useTheme2, VerticalGroup } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 interface Props {
   name: string;
-  limit: number;
+  limit?: number;
   disabled?: boolean;
   label: string;
   validateName?: (name: string) => string | undefined;
@@ -20,7 +20,7 @@ export const NameValueInput = ({ name, disabled, limit, label, validateName, val
   } = useFormContext(); // todo: type correctly
   const addRef = useRef<HTMLButtonElement>(null);
   const { fields, append, remove } = useFieldArray({ control, name });
-  const theme = useTheme();
+  const theme = useTheme2();
   const fieldError = name
     .split('.')
     // @ts-expect-error
@@ -70,7 +70,7 @@ export const NameValueInput = ({ name, disabled, limit, label, validateName, val
           </Field>
           <IconButton
             className={css`
-              margin-top: ${theme.spacing.sm};
+              margin-top: ${theme.spacing(2)};
             `}
             name="minus-circle"
             type="button"
@@ -85,7 +85,7 @@ export const NameValueInput = ({ name, disabled, limit, label, validateName, val
           />
         </HorizontalGroup>
       ))}
-      {fields.length < limit && (
+      {(limit === undefined || fields.length < limit) && (
         <Button
           onClick={() => append({ name: '', value: '' })}
           disabled={disabled}
