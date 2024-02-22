@@ -81,7 +81,7 @@ package-latest:
 	mkdir -p $(ARTIFACTS_DIR)
 	ln -s dist grafana-synthetic-monitoring-app
 	zip -r $(ARTIFACTS_DIR)/$(PACKAGE_NAME_LATEST) grafana-synthetic-monitoring-app
-	rm grafana-k8s-app
+	rm grafana-synthetic-monitoring-app
 
 # .PHONY: restart-dev
 # restart-dev:
