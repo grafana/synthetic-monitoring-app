@@ -1,11 +1,11 @@
-import React, { FC } from 'react';
+import React from 'react';
 import { useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Icon, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { CalculateUsageValues, CheckType } from 'types';
-import { getEntriesCount, getSSL } from 'utils';
+import { CheckFormValues } from 'types';
+import { checkFormValuesToUsageCalcValues } from 'utils';
 import { useUsageCalc } from 'hooks/useUsageCalc';
 
 const getStyles = (theme: GrafanaTheme2) => ({
@@ -34,27 +34,11 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
 });
 
-export const CheckUsage: FC = () => {
+export const CheckUsage = () => {
   const styles = useStyles2(getStyles);
-  const { watch } = useFormContext();
-  const [checkType, frequency, probes, publishAdvancedMetrics, settings] = watch([
-    'checkType',
-    'frequency',
-    'probes',
-    'publishAdvancedMetrics',
-    'settings',
-  ]);
-
-  const calcValues: CalculateUsageValues = {
-    assertionCount: getEntriesCount(settings),
-    basicMetricsOnly: !publishAdvancedMetrics,
-    checkType: checkType.value || CheckType.HTTP,
-    frequencySeconds: frequency || 0,
-    isSSL: getSSL(settings),
-    probeCount: probes?.length || 0,
-  };
-
-  const usage = useUsageCalc([calcValues]);
+  const { watch } = useFormContext<CheckFormValues>();
+  const checkFormValues = watch();
+  const usage = useUsageCalc([checkFormValuesToUsageCalcValues(checkFormValues)]);
 
   if (!usage) {
     return null;

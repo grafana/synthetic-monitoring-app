@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { Controller, DeepMap, FieldError, FormProvider, useFieldArray, useForm } from 'react-hook-form';
+import { Controller, FieldErrors, FormProvider, useFieldArray, useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 import { OrgRole } from '@grafana/data';
 import { config, locationService } from '@grafana/runtime';
@@ -16,23 +16,26 @@ import {
   VerticalGroup,
 } from '@grafana/ui';
 
-import { Check, CheckFormValues, CheckPageParams, CheckType } from 'types';
+import { CheckFormValuesMultiHttp, CheckPageParams, CheckType, MultiHTTPCheck } from 'types';
+import { isMultiHttpCheck } from 'utils.types';
 import { hasRole } from 'utils';
 import { validateTarget } from 'validation';
 import { useChecks, useCUDChecks } from 'data/useChecks';
-import { getCheckFromFormValues, getDefaultValuesFromCheck } from 'components/CheckEditor/checkFormTransformations';
+import {
+  getCheckFromFormValues,
+  getMultiHttpFormValuesFromCheck,
+} from 'components/CheckEditor/checkFormTransformations';
 import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
 import { CheckFormAlert } from 'components/CheckFormAlert';
 import { CheckTestButton } from 'components/CheckTestButton';
 import { CheckUsage } from 'components/CheckUsage';
-import { METHOD_OPTIONS } from 'components/constants';
+import { FALLBACK_CHECK_MULTIHTTP, METHOD_OPTIONS } from 'components/constants';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 import { LabelField } from 'components/LabelField';
 import { PluginPage } from 'components/PluginPage';
 
 import { TabSection } from './Tabs/TabSection';
 import { AvailableVariables } from './AvailableVariables';
-import { multiHttpFallbackCheck } from './consts';
 import { MultiHttpCollapse } from './MultiHttpCollapse';
 import { getMultiHttpFormStyles } from './MultiHttpSettingsForm.styles';
 import { focusField, getMultiHttpFormErrors, useMultiHttpCollapseState } from './MultiHttpSettingsForm.utils';
@@ -45,22 +48,23 @@ export const MultiHttpSettingsForm = () => {
     return null;
   }
 
-  const check = checks?.find((c) => c.id === Number(id)) ?? multiHttpFallbackCheck;
+  const found = checks?.find((c) => c.id === Number(id));
+  const check = found && isMultiHttpCheck(found) ? found : FALLBACK_CHECK_MULTIHTTP;
 
   return <MultiHttpSettingsFormContent check={check} />;
 };
 
-const MultiHttpSettingsFormContent = ({ check }: { check: Check }) => {
+const MultiHttpSettingsFormContent = ({ check }: { check: MultiHTTPCheck }) => {
   const styles = useStyles2(getMultiHttpFormStyles);
   const panelRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const { deleteCheck, updateCheck, createCheck, error, submitting } = useCUDChecks({
     eventInfo: { checkType: CheckType.MULTI_HTTP },
   });
 
-  const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
+  const initialValues = useMemo(() => getMultiHttpFormValuesFromCheck(check), [check]);
   const [collapseState, dispatchCollapse] = useMultiHttpCollapseState(check);
-  const formMethods = useForm<CheckFormValues>({
-    defaultValues,
+  const formMethods = useForm<CheckFormValuesMultiHttp>({
+    defaultValues: initialValues,
     reValidateMode: 'onBlur',
     shouldFocusError: false /* handle this manually */,
   });
@@ -75,16 +79,15 @@ const MultiHttpSettingsFormContent = ({ check }: { check: Check }) => {
     fields: entryFields,
     append,
     remove,
-  } = useFieldArray({
+  } = useFieldArray<CheckFormValuesMultiHttp>({
     control: formMethods.control,
     name: 'settings.multihttp.entries',
   });
   const isEditor = hasRole(OrgRole.Editor);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const onSuccess = () => locationService.getHistory().goBack();
-
-  const onSubmit = (checkValues: CheckFormValues) => {
-    const toSubmit = getCheckFromFormValues(checkValues, defaultValues, CheckType.MULTI_HTTP);
+  const onSubmit = (checkValues: CheckFormValuesMultiHttp) => {
+    const toSubmit = getCheckFromFormValues(checkValues);
 
     if (check.id) {
       return updateCheck(
@@ -106,7 +109,7 @@ const MultiHttpSettingsFormContent = ({ check }: { check: Check }) => {
 
   const requests = watch('settings.multihttp.entries') as any[];
 
-  const onError = (errs: DeepMap<CheckFormValues, FieldError>) => {
+  const onError = (errs: FieldErrors<CheckFormValuesMultiHttp>) => {
     const res = getMultiHttpFormErrors(errs);
 
     if (res) {
@@ -153,15 +156,15 @@ const MultiHttpSettingsFormContent = ({ check }: { check: Check }) => {
           .
         </Alert>
         <VerticalGroup>
-          <FormProvider {...formMethods}>
+          <FormProvider<CheckFormValuesMultiHttp> {...formMethods}>
             <form onSubmit={handleSubmit(onSubmit, onError)} className={styles.form}>
               <hr className={styles.breakLine} />
               <HorizontalCheckboxField
                 disabled={!isEditor}
-                name="enabled"
                 id="check-form-enabled"
                 label="Enabled"
                 description="If a check is enabled, metrics and logs are published to your Grafana Cloud stack."
+                {...register('enabled')}
               />
               <Field label="Job name" invalid={Boolean(errors.job)} error={errors.job?.message}>
                 <Input
@@ -177,12 +180,12 @@ const MultiHttpSettingsFormContent = ({ check }: { check: Check }) => {
               </Field>
               <ProbeOptions
                 isEditor={isEditor}
-                timeout={check?.timeout ?? multiHttpFallbackCheck.timeout}
-                frequency={check?.frequency ?? multiHttpFallbackCheck.frequency}
+                timeout={check.timeout}
+                frequency={check.frequency}
                 checkType={CheckType.MULTI_HTTP}
               />
 
-              <LabelField isEditor={isEditor} />
+              <LabelField<CheckFormValuesMultiHttp> isEditor={isEditor} />
 
               <hr />
               <h3>Requests</h3>
@@ -230,9 +233,13 @@ const MultiHttpSettingsFormContent = ({ check }: { check: Check }) => {
                             label="Request method"
                             description="The HTTP method used"
                             invalid={Boolean(errors?.settings?.multihttp?.entries?.[index]?.request?.method)}
-                            error={errors?.settings?.multihttp?.entries?.[index]?.request?.method?.message}
+                            // this is a string
+                            error={
+                              errors?.settings?.multihttp?.entries?.[index]?.request?.method
+                                ?.message as unknown as string
+                            }
                           >
-                            <Controller
+                            <Controller<CheckFormValuesMultiHttp>
                               name={`settings.multihttp.entries.${index}.request.method`}
                               render={({ field }) => (
                                 <Select {...field} options={METHOD_OPTIONS} data-testid="request-method" />

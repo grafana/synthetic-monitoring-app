@@ -6,17 +6,18 @@ import { locationService, PluginPage } from '@grafana/runtime';
 import { Alert, Button, Field, Icon, Input, Label, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { Check, CheckFormValues, CheckPageParams, CheckType } from 'types';
+import { CheckFormValuesScripted, CheckPageParams, CheckType, ScriptedCheck } from 'types';
+import { isScriptedCheck } from 'utils.types';
 import { hasRole } from 'utils';
 import { validateJob, validateTarget } from 'validation';
 import { useChecks, useCUDChecks } from 'data/useChecks';
 
-import { getCheckFromFormValues, getDefaultValuesFromCheck } from './CheckEditor/checkFormTransformations';
+import { getCheckFromFormValues, getScriptedFormValuesFromCheck } from './CheckEditor/checkFormTransformations';
 import { ProbeOptions } from './CheckEditor/ProbeOptions';
 import { CheckFormAlert } from './CheckFormAlert';
 import { CheckTestButton } from './CheckTestButton';
 import { CodeEditor } from './CodeEditor';
-import { fallbackCheck } from './constants';
+import { FALLBACK_CHECK_SCRIPTED } from './constants';
 import { LabelField } from './LabelField';
 
 function getStyles(theme: GrafanaTheme2) {
@@ -54,24 +55,25 @@ export const K6CheckCodeEditor = () => {
     return null;
   }
 
-  const check = checks?.find((c) => c.id === Number(id)) ?? fallbackCheck(CheckType.K6);
+  const found = checks?.find((c) => c.id === Number(id));
+  const check = found && isScriptedCheck(found) ? found : FALLBACK_CHECK_SCRIPTED;
 
   return <K6CheckCodeEditorContent check={check} />;
 };
 
-function K6CheckCodeEditorContent({ check }: { check: Check }) {
+function K6CheckCodeEditorContent({ check }: { check: ScriptedCheck }) {
   const { updateCheck, createCheck, error, submitting } = useCUDChecks({ eventInfo: { checkType: CheckType.K6 } });
-  const defaultValues = getDefaultValuesFromCheck(check);
+  const initialValues = getScriptedFormValuesFromCheck(check);
 
-  const formMethods = useForm<CheckFormValues>({
-    defaultValues,
+  const formMethods = useForm<CheckFormValuesScripted>({
+    defaultValues: initialValues,
   });
   const { handleSubmit, register, control } = formMethods;
   const styles = useStyles2(getStyles);
   const onSuccess = () => locationService.getHistory().goBack();
 
-  const onSubmit = (checkValues: CheckFormValues) => {
-    const toSubmit = getCheckFromFormValues(checkValues, defaultValues, CheckType.K6);
+  const onSubmit = (checkValues: CheckFormValuesScripted) => {
+    const toSubmit = getCheckFromFormValues(checkValues);
 
     if (check.id) {
       return updateCheck(
@@ -92,7 +94,7 @@ function K6CheckCodeEditorContent({ check }: { check: Check }) {
 
   return (
     <PluginPage pageNav={{ text: check?.job ? `Editing ${check.job}` : headerText }}>
-      <FormProvider {...formMethods}>
+      <FormProvider<CheckFormValuesScripted> {...formMethods}>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className={styles.jobTargetContainer}>
             <Field
@@ -146,13 +148,14 @@ function K6CheckCodeEditorContent({ check }: { check: Check }) {
               timeout={check.timeout}
               checkType={CheckType.K6}
             />
-            <LabelField isEditor={isEditor} />
+            <LabelField<CheckFormValuesScripted> isEditor={isEditor} />
             <CheckFormAlert />
           </div>
-          <Controller
+          <Controller<CheckFormValuesScripted>
             name="settings.k6.script"
             control={control}
             render={({ field: { ...field } }) => {
+              // @ts-ignore we know the value is a string
               return <CodeEditor {...field} />;
             }}
           />

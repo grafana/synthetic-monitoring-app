@@ -159,7 +159,7 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
     watch,
     reset,
   } = formMethods;
-  const currentValues = watch() as AlertFormValues;
+  const currentValues = watch();
   const currentLabels = watch('labels');
   const currentAnnotations = watch('annotations');
 

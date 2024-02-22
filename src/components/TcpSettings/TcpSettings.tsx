@@ -13,7 +13,7 @@ import {
   VerticalGroup,
 } from '@grafana/ui';
 
-import { CheckType } from 'types';
+import { CheckFormValuesTcp, CheckType } from 'types';
 import { Collapse } from 'components/Collapse';
 import { LabelField } from 'components/LabelField';
 import { TLSConfig } from 'components/TLSConfig';
@@ -29,8 +29,9 @@ export const TcpSettingsForm = ({ isEditor }: Props) => {
   const [showQueryResponse, setShowQueryResponse] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
-  const { register, control } = useFormContext();
-  const { fields, append, remove } = useFieldArray({ control, name: 'settings.tcp.queryResponse' });
+  const { register, control } = useFormContext<CheckFormValuesTcp>();
+  const { fields, append, remove } = useFieldArray<CheckFormValuesTcp>({ control, name: 'settings.tcp.queryResponse' });
+
   return (
     <Container>
       <Collapse label="TCP settings" onToggle={() => setShowTCPSettings(!showTCPSettings)} isOpen={showTCPSettings}>
@@ -95,11 +96,11 @@ export const TcpSettingsForm = ({ isEditor }: Props) => {
       </Collapse>
       <TLSConfig isEditor={isEditor} checkType={CheckType.TCP} />
       <Collapse label="Advanced options" onToggle={() => setShowAdvanced(!showAdvanced)} isOpen={showAdvanced}>
-        <LabelField isEditor={isEditor} />
+        <LabelField<CheckFormValuesTcp> isEditor={isEditor} />
         <HorizontalGroup>
           <div>
             <Field label="IP version" description="The IP protocol of the ICMP request" disabled={!isEditor}>
-              <Controller
+              <Controller<CheckFormValuesTcp>
                 name="settings.tcp.ipVersion"
                 render={({ field }) => <Select {...field} options={IP_OPTIONS} defaultValue={IP_OPTIONS[1]} />}
               />
