@@ -334,7 +334,6 @@ describe('editing checks', () => {
 
   it('handles custom alert severities', async () => {
     const { user } = await renderExistingCheckEditor(`/edit/${CUSTOM_ALERT_SENSITIVITY_CHECK.id}`);
-    expect(true).toBeTruthy();
     await toggleSection('Alerting', user);
 
     const alertSensitivityInput = await screen.findByTestId('alertSensitivityInput');

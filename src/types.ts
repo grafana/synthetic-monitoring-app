@@ -257,8 +257,8 @@ export interface MultiHttpSettingsFormValues {
 
 export interface MultiHttpEntryFormValues extends Omit<MultiHttpEntry, 'request' | 'variables' | 'checks'> {
   request: MultiHttpRequestFormValues;
-  variables: MultiHttpVariablesFormValues[];
-  checks: MultiHttpAssertionFormValues[];
+  variables?: MultiHttpVariablesFormValues[];
+  checks?: MultiHttpAssertionFormValues[];
 }
 
 export interface MultiHttpRequestFormValues extends Omit<RequestProps, 'method'> {

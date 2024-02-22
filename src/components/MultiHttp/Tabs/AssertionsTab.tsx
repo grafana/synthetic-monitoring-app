@@ -30,7 +30,9 @@ export function AssertionsTab({ index, active }: MultiHttpTabProps) {
         <>
           {fields.map((field, assertionIndex) => {
             const assertionTypeName = `${assertionFieldName}.${assertionIndex}.type` as const;
-            const errorPath = formState.errors.settings?.multihttp?.entries?.[index]?.checks?.[assertionIndex];
+            const error = formState.errors.settings?.multihttp?.entries?.[index]?.checks?.[assertionIndex]?.type;
+            // @ts-expect-error - I think 'type' is a reservered keyword in react-hook-form so it can't read this properly
+            const errMessage = error?.message;
 
             return (
               <div className={styles.fieldsContainer} key={field.id}>
@@ -41,8 +43,8 @@ export function AssertionsTab({ index, active }: MultiHttpTabProps) {
                       <Field
                         label="Assertion type"
                         description="Method for finding assertion value"
-                        invalid={Boolean(errorPath?.type)}
-                        error={errorPath?.type?.message}
+                        invalid={Boolean(error)}
+                        error={typeof errMessage === 'string' && errMessage}
                       >
                         <Select
                           id={`multihttp-assertion-type-${index}-${assertionIndex}`}
@@ -138,6 +140,7 @@ function AssertionFields(props: AssertionProps) {
 function AssertionSubjectField({ entryIndex, assertionIndex }: AssertionProps) {
   const { formState } = useFormContext<CheckFormValuesMultiHttp>();
   const error = formState.errors.settings?.multihttp?.entries?.[entryIndex]?.checks?.[assertionIndex]?.subject;
+  const errMessage = error?.message;
 
   return (
     <Controller<CheckFormValuesMultiHttp>
@@ -148,7 +151,7 @@ function AssertionSubjectField({ entryIndex, assertionIndex }: AssertionProps) {
             label="Subject"
             description="Target value to assert against"
             invalid={Boolean(error)}
-            error={error?.message}
+            error={typeof errMessage === 'string' && errMessage}
           >
             <Select
               id={`${entryIndex}-${assertionIndex}-subject`}
@@ -166,14 +169,20 @@ function AssertionSubjectField({ entryIndex, assertionIndex }: AssertionProps) {
 
 function AssertionConditionField({ entryIndex, assertionIndex }: AssertionProps) {
   const { formState } = useFormContext<CheckFormValuesMultiHttp>();
-  const error = formState.errors.settings?.multihttp?.entries?.[entryIndex]?.checks?.[assertionIndex]?.subject;
+  const error = formState.errors.settings?.multihttp?.entries?.[entryIndex]?.checks?.[assertionIndex]?.condition;
+  const errMessage = error?.message;
 
   return (
     <Controller<CheckFormValuesMultiHttp>
       name={`settings.multihttp.entries.${entryIndex}.checks.${assertionIndex}.condition`}
       render={({ field }) => {
         return (
-          <Field label="Condition" description="Comparator" invalid={Boolean(error)} error={error?.message}>
+          <Field
+            label="Condition"
+            description="Comparator"
+            invalid={Boolean(error)}
+            error={typeof errMessage === 'string' && errMessage}
+          >
             <Select
               id={`${entryIndex}-${assertionIndex}-condition`}
               {...field}
@@ -190,7 +199,7 @@ function AssertionConditionField({ entryIndex, assertionIndex }: AssertionProps)
 
 function AssertionValueField({ entryIndex, assertionIndex }: AssertionProps) {
   const { formState, register, watch } = useFormContext<CheckFormValuesMultiHttp>();
-  const error = formState.errors.settings?.multihttp?.entries?.[entryIndex]?.checks?.[assertionIndex]?.subject;
+  const error = formState.errors.settings?.multihttp?.entries?.[entryIndex]?.checks?.[assertionIndex]?.value;
   const assertionType = watch(`settings.multihttp.entries.${entryIndex}.checks.${assertionIndex}.type`);
   const description =
     assertionType.value === MultiHttpAssertionType.Text
@@ -198,7 +207,7 @@ function AssertionValueField({ entryIndex, assertionIndex }: AssertionProps) {
       : 'Value to compare with result of expression';
 
   return (
-    <Field label="Value" description={description} invalid={Boolean(error)} error={error?.message}>
+    <Field label="Value" description={description} invalid={Boolean(error)} error={error?.message as unknown as string}>
       <Input
         placeholder="Value"
         id={`${entryIndex}-${assertionIndex}-value`}

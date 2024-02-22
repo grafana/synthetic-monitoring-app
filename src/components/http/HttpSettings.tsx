@@ -169,6 +169,7 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
   const [includeBasicAuth, setIncludeBasicAuth] = useState(Boolean(basicAuth));
   const { fields, append, remove } = useFieldArray<CheckFormValuesHttp>({ control, name: REGEX_FIELD_NAME });
   const styles = useStyles2(getStyles);
+  const errMessage = errors?.settings?.http?.method?.value?.message;
 
   return (
     <Container>
@@ -179,7 +180,7 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
             description="The HTTP method the probe will use"
             disabled={!isEditor}
             invalid={Boolean(errors?.settings?.http?.method)}
-            error={errors?.settings?.http?.method?.value?.message}
+            error={typeof errMessage === `string` && errMessage}
           >
             <Controller<CheckFormValuesHttp>
               render={({ field }) => <Select {...field} options={METHOD_OPTIONS} />}
@@ -359,6 +360,7 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
                 const isHeaderMatch =
                   watch(`${REGEX_FIELD_NAME}.${index}.matchType`)?.value === HttpRegexValidationType.Header;
                 const disallowBodyMatching = watch('settings.http.method').value === HttpMethod.HEAD;
+
                 return (
                   <Fragment key={field.id}>
                     <Controller<CheckFormValuesHttp>
@@ -369,7 +371,7 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
                           options={HTTP_REGEX_VALIDATION_OPTIONS}
                           invalid={
                             disallowBodyMatching &&
-                            errors?.settings?.http?.regexValidations?.[index]?.matchType?.message
+                            Boolean(errors?.settings?.http?.regexValidations?.[index]?.matchType)
                           }
                         />
                       )}

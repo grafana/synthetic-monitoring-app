@@ -23,6 +23,7 @@ export const NameValueInput = ({ name, disabled, limit, label, validateName, val
   const theme = useTheme();
   const fieldError = name
     .split('.')
+    // @ts-expect-error
     .reduce((nestedError, errorPathFragment) => nestedError?.[errorPathFragment], errors);
 
   return (
@@ -30,7 +31,9 @@ export const NameValueInput = ({ name, disabled, limit, label, validateName, val
       {fields.map((field, index) => (
         <HorizontalGroup key={field.id} align="flex-start">
           <Field
+            // @ts-expect-error
             invalid={Boolean(fieldError?.[index]?.name?.type)}
+            // @ts-expect-error
             error={fieldError?.[index]?.name?.message}
             className={css`
               margin-bottom: 0;
@@ -47,7 +50,9 @@ export const NameValueInput = ({ name, disabled, limit, label, validateName, val
             />
           </Field>
           <Field
+            // @ts-expect-error
             invalid={Boolean(fieldError?.[index]?.value)}
+            // @ts-expect-error
             error={fieldError?.[index]?.value?.message}
             className={css`
               margin-bottom: 0;

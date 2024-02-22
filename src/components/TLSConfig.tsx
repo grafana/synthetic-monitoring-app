@@ -19,7 +19,7 @@ export const TLSConfig = ({ isEditor, checkType }: Props) => {
     formState: { errors },
   } = useFormContext<CheckFormValuesHttp | CheckFormValuesTcp>();
 
-  const errs = isErrorsHttp(errors) ? errors.settings?.http : errors.settings?.tcp;
+  const errs = isErrorsHttp(errors) ? errors.settings?.http : isErrorsTcp(errors) ? errors.settings?.tcp : undefined;
 
   return (
     <Collapse label="TLS config" onToggle={() => setShowTLS(!showTLS)} isOpen={showTLS}>
@@ -39,7 +39,7 @@ export const TLSConfig = ({ isEditor, checkType }: Props) => {
         <Input
           id="tls-config-server-name"
           {...register(`settings.${checkType}.tlsConfig.serverName`, {
-            validate: validateTLSServerName,
+            validate: (value) => validateTLSServerName(value),
             required: false,
           })}
           type="text"
@@ -114,6 +114,14 @@ export const TLSConfig = ({ isEditor, checkType }: Props) => {
 
 function isErrorsHttp(errors: any): errors is DeepMap<CheckFormValuesHttp, FieldError> {
   if (Object.hasOwnProperty.call(errors?.settings || {}, 'http')) {
+    return true;
+  }
+
+  return false;
+}
+
+function isErrorsTcp(errors: any): errors is DeepMap<CheckFormValuesTcp, FieldError> {
+  if (Object.hasOwnProperty.call(errors?.settings || {}, 'tcp')) {
     return true;
   }
 

@@ -137,7 +137,6 @@ const CheckEditorContent = ({ check }: { check: Check }) => {
                 },
               }}
               render={({ field }) => (
-                // @ts-ignore
                 <CheckTarget
                   {...field}
                   typeOfCheck={checkType}

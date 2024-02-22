@@ -44,7 +44,7 @@ export const CheckFormAlert = () => {
         </p>
         <p>Tip: adding multiple probes can help to prevent alert flapping for less frequent checks</p>
       </div>
-      <Field label="Select alert sensitivity" disabled={isCustomSensitivity}>
+      <Field label="Select alert sensitivity">
         <Controller<CheckFormValues>
           name="alertSensitivity"
           render={({ field }) => (
@@ -53,7 +53,9 @@ export const CheckFormAlert = () => {
               width={40}
               disabled={isCustomSensitivity}
               data-testid="alertSensitivityInput"
-              options={isCustomSensitivity ? [{ value: alertSensitivity }] : ALERT_SENSITIVITY_OPTIONS}
+              options={
+                isCustomSensitivity ? [{ label: alertSensitivity, value: alertSensitivity }] : ALERT_SENSITIVITY_OPTIONS
+              }
               onChange={(e) => {
                 field.onChange(e.value);
               }}

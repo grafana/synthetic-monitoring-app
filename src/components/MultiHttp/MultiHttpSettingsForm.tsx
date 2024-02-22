@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { Controller, DeepMap, FieldError, FormProvider, useFieldArray, useForm } from 'react-hook-form';
+import { Controller, FieldErrors, FormProvider, useFieldArray, useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 import { OrgRole } from '@grafana/data';
 import { config, locationService } from '@grafana/runtime';
@@ -109,7 +109,7 @@ const MultiHttpSettingsFormContent = ({ check }: { check: MultiHTTPCheck }) => {
 
   const requests = watch('settings.multihttp.entries') as any[];
 
-  const onError = (errs: DeepMap<CheckFormValuesMultiHttp, FieldError>) => {
+  const onError = (errs: FieldErrors<CheckFormValuesMultiHttp>) => {
     const res = getMultiHttpFormErrors(errs);
 
     if (res) {
@@ -233,7 +233,11 @@ const MultiHttpSettingsFormContent = ({ check }: { check: MultiHTTPCheck }) => {
                             label="Request method"
                             description="The HTTP method used"
                             invalid={Boolean(errors?.settings?.multihttp?.entries?.[index]?.request?.method)}
-                            error={errors?.settings?.multihttp?.entries?.[index]?.request?.method?.message}
+                            // this is a string
+                            error={
+                              errors?.settings?.multihttp?.entries?.[index]?.request?.method
+                                ?.message as unknown as string
+                            }
                           >
                             <Controller<CheckFormValuesMultiHttp>
                               name={`settings.multihttp.entries.${index}.request.method`}

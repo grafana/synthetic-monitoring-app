@@ -85,12 +85,10 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, checkType }: Props)
         render={({ field }) => (
           <CheckProbes
             {...field}
-            // @ts-expect-error -- we know the shape of the value
             probes={field.value}
             availableProbes={probes}
             isEditor={isEditor}
             invalid={Boolean(errors.probes)}
-            // @ts-expect-error -- need to look into why it thinks this shape is wrong
             error={errors.probes?.message}
           />
         )}

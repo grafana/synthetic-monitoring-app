@@ -57,7 +57,7 @@ export interface MultiHttpRequestBody {
 export interface MultiHttpEntry {
   variables?: MultiHttpVariable[];
   request: RequestProps;
-  checks: Assertion[];
+  checks?: Assertion[];
 }
 
 export enum AssertionSubjectVariant {

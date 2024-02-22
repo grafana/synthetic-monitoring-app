@@ -184,7 +184,7 @@ describe('editing multihttp check', () => {
             {
               checks: [
                 MODIFIED_CHECK1,
-                ...targetCheck.settings.multihttp?.entries[0].checks.slice(1, 3)!,
+                ...targetCheck.settings.multihttp?.entries[0].checks?.slice(1, 3)!,
                 MODIFIED_CHECK2,
                 ,
               ],

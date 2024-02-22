@@ -219,8 +219,8 @@ export const validateBearerToken = (token: string) => {
   return undefined;
 };
 
-export const validateTLSServerName = (serverName: string) => {
-  return undefined;
+export const validateTLSServerName = (serverName?: string) => {
+  return true;
 };
 
 export const validateTLSCACert = (caCert?: string) => {

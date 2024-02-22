@@ -15,7 +15,14 @@ interface Props {
 
 export const TracerouteSettingsForm = ({ isEditor }: Props) => {
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const { register } = useFormContext<CheckFormValuesTraceroute>();
+  const { register, formState } = useFormContext<CheckFormValuesTraceroute>();
+  const { errors } = formState;
+  const errorPath = errors?.settings?.traceroute;
+  const maxHopsError = errorPath?.maxHops;
+  const maxHopesErrorMessage = maxHopsError?.message;
+  const maxUnknownHopsError = errorPath?.maxUnknownHops;
+  const maxUnknownHopesErrorMessage = maxUnknownHopsError?.message;
+
   return (
     <Collapse label="Advanced options" onToggle={() => setShowAdvanced(!showAdvanced)} isOpen={showAdvanced}>
       <div
@@ -24,10 +31,20 @@ export const TracerouteSettingsForm = ({ isEditor }: Props) => {
         `}
       >
         <LabelField<CheckFormValuesTraceroute> isEditor={isEditor} />
-        <Field label="Max hops" description="Maximum TTL for the trace" disabled={!isEditor}>
+        <Field
+          label="Max hops"
+          description="Maximum TTL for the trace"
+          disabled={!isEditor}
+          invalid={Boolean(maxHopsError)}
+          error={typeof maxHopesErrorMessage === 'string' && maxHopesErrorMessage}
+        >
           <Input
             id="traceroute-settings-max-hops"
-            {...register('settings.traceroute.maxHops', { min: 1, max: 64 })}
+            {...register('settings.traceroute.maxHops', {
+              min: { value: 0, message: `Must be greater than 0` },
+              max: { value: 64, message: `Can be no more than 64` },
+            })}
+            min={0}
             type="number"
             disabled={!isEditor}
           />
@@ -36,10 +53,16 @@ export const TracerouteSettingsForm = ({ isEditor }: Props) => {
           label="Max unknown hops"
           description="Maximimum number of hosts to traverse that give no response"
           disabled={!isEditor}
+          invalid={Boolean(maxUnknownHopsError)}
+          error={typeof maxUnknownHopesErrorMessage === 'string' && maxUnknownHopesErrorMessage}
         >
           <Input
             id="traceroute-settings-unknown-hops"
-            {...register('settings.traceroute.maxUnknownHops', { min: 0, max: 20 })}
+            {...register('settings.traceroute.maxUnknownHops', {
+              min: { value: 0, message: `Must be greater than 0` },
+              max: { value: 20, message: `Can be no more than 20` },
+            })}
+            min={0}
             type="number"
             disabled={!isEditor}
           />

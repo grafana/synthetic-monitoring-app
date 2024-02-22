@@ -155,7 +155,7 @@ export const BodyTab = ({ index, active }: MultiHttpTabProps) => {
 
 const QueryParamsTab = ({ index, active }: MultiHttpTabProps) => {
   const { control, register, formState } = useFormContext<CheckFormValuesMultiHttp>();
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove } = useFieldArray<CheckFormValuesMultiHttp>({
     control,
     name: `settings.multihttp.entries.${index}.request.queryFields`,
   });
@@ -210,7 +210,7 @@ const QueryParamsTab = ({ index, active }: MultiHttpTabProps) => {
         </>
       </Field>
       <Button
-        onClick={() => append({})}
+        onClick={() => append({ name: ``, value: `` })}
         variant="secondary"
         size="sm"
         type="button"
@@ -226,7 +226,7 @@ const QueryParamsTab = ({ index, active }: MultiHttpTabProps) => {
 const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
   const variableFieldName = `settings.multihttp.entries.${index}.variables` as const;
   const { control, register, watch, formState } = useFormContext<CheckFormValuesMultiHttp>();
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove } = useFieldArray<CheckFormValuesMultiHttp>({
     control,
     name: variableFieldName,
   });
@@ -240,6 +240,8 @@ const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
             const variableTypeName = `${variableFieldName}.${variableIndex}.type` as const;
             const variableTypeValue = watch(variableTypeName)?.value;
             const errorPath = formState.errors.settings?.multihttp?.entries?.[index]?.variables?.[variableIndex];
+            // @ts-expect-error -- I think type is a reserved keyword in react-hook-form so it can't read this properly
+            const errMessage = errorPath?.type?.message;
 
             return (
               <div className={styles.fieldsContainer} key={field.id}>
@@ -250,7 +252,8 @@ const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
                       <Field
                         label="Variable type"
                         description="The method of getting a value"
-                        invalid={Boolean(errorPath?.type?.value)}
+                        invalid={Boolean(errorPath?.type)}
+                        error={typeof errMessage === `string` && errMessage}
                       >
                         <Select
                           id={`multihttp-variable-type-${index}-${variableIndex}`}
@@ -262,7 +265,7 @@ const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
                       </Field>
                     );
                   }}
-                  rules={{ required: true }}
+                  rules={{ required: `Variable type is required` }}
                 />
                 <Field
                   label="Variable name"

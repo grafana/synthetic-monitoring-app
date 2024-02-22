@@ -1,4 +1,3 @@
-import { UnpackNestedValue } from 'react-hook-form';
 import { SelectableValue } from '@grafana/data';
 import isBase64 from 'is-base64';
 
@@ -586,55 +585,57 @@ const getMultiHttpSettings = (settings: MultiHttpSettingsFormValues | undefined)
           body,
           method: getValueFromSelectable(entry.request.method) ?? HttpMethod.GET,
         },
-        variables: entry.variables.map((variable) => {
-          if (variable.type.value === undefined) {
-            throw new Error('Selecting a variable type is required');
-          }
-          return {
-            ...variable,
-            type: variable.type.value,
-          };
-        }),
-        checks: entry.checks.map(({ type, subject, condition, value, expression }) => {
-          switch (type.value) {
-            case MultiHttpAssertionType.Text:
-              if (subject?.value === undefined || condition?.value === undefined) {
-                throw new Error('Cannot have a Text assertion without a subject and condition');
-              }
-              return {
-                type: type.value,
-                subject: subject.value,
-                condition: condition.value,
-                value,
-              };
-            case MultiHttpAssertionType.JSONPath:
-              return {
-                type: type.value,
-                expression,
-              };
-            case MultiHttpAssertionType.JSONPathValue:
-              if (condition?.value === undefined) {
-                throw new Error('Cannot have a JSON path value assertion without a condition');
-              }
-              return {
-                type: type.value,
-                condition: condition.value,
-                expression,
-                value,
-              };
-            case MultiHttpAssertionType.Regex:
-              if (subject?.value === undefined) {
-                throw new Error('Cannot have a Regex assertion without a subject');
-              }
-              return {
-                type: type.value,
-                subject: subject.value,
-                expression,
-              };
-            default:
-              throw new Error('invalid assertion type');
-          }
-        }),
+        variables:
+          entry.variables?.map((variable) => {
+            if (variable.type.value === undefined) {
+              throw new Error('Selecting a variable type is required');
+            }
+            return {
+              ...variable,
+              type: variable.type.value,
+            };
+          }) ?? [],
+        checks:
+          entry.checks?.map(({ type, subject, condition, value, expression }) => {
+            switch (type.value) {
+              case MultiHttpAssertionType.Text:
+                if (subject?.value === undefined || condition?.value === undefined) {
+                  throw new Error('Cannot have a Text assertion without a subject and condition');
+                }
+                return {
+                  type: type.value,
+                  subject: subject.value,
+                  condition: condition.value,
+                  value,
+                };
+              case MultiHttpAssertionType.JSONPath:
+                return {
+                  type: type.value,
+                  expression,
+                };
+              case MultiHttpAssertionType.JSONPathValue:
+                if (condition?.value === undefined) {
+                  throw new Error('Cannot have a JSON path value assertion without a condition');
+                }
+                return {
+                  type: type.value,
+                  condition: condition.value,
+                  expression,
+                  value,
+                };
+              case MultiHttpAssertionType.Regex:
+                if (subject?.value === undefined) {
+                  throw new Error('Cannot have a Regex assertion without a subject');
+                }
+                return {
+                  type: type.value,
+                  subject: subject.value,
+                  expression,
+                };
+              default:
+                throw new Error('invalid assertion type');
+            }
+          }) ?? [],
       };
     }),
   };
@@ -667,17 +668,18 @@ const getMultiHttpFormValues = (settings: MultiHTTPCheck['settings']): MultiHttp
               attribute,
             };
           }) ?? [],
-        checks: entry.checks.map(({ type, subject, condition, expression, value }) => {
-          return {
-            type:
-              MULTI_HTTP_ASSERTION_TYPE_OPTIONS.find(({ value }) => value === type) ??
-              MULTI_HTTP_ASSERTION_TYPE_OPTIONS[0],
-            subject: ASSERTION_SUBJECT_OPTIONS.find(({ value }) => value === subject),
-            condition: ASSERTION_CONDITION_OPTIONS.find(({ value }) => value === condition),
-            expression,
-            value,
-          };
-        }),
+        checks:
+          entry.checks?.map(({ type, subject, condition, expression, value }) => {
+            return {
+              type:
+                MULTI_HTTP_ASSERTION_TYPE_OPTIONS.find(({ value }) => value === type) ??
+                MULTI_HTTP_ASSERTION_TYPE_OPTIONS[0],
+              subject: ASSERTION_SUBJECT_OPTIONS.find(({ value }) => value === subject),
+              condition: ASSERTION_CONDITION_OPTIONS.find(({ value }) => value === condition),
+              expression,
+              value,
+            };
+          }) ?? [],
       };
     }),
   };
@@ -708,6 +710,7 @@ const getTcpSettings = (settings: TcpSettingsFormValues): TcpSettings => {
   return {
     ...fallbackValues,
     ...tlsConfig,
+    tls: settings.tls,
     ipVersion: getValueFromSelectable(settings?.ipVersion) ?? fallbackValues.ipVersion,
     queryResponse,
   };
@@ -785,7 +788,7 @@ const getTracerouteSettings = (settings: TracerouteSettingsFormValues | undefine
   };
 };
 
-export const getCheckFromFormValues = (formValues: UnpackNestedValue<CheckFormValues>): Check => {
+export const getCheckFromFormValues = (formValues: CheckFormValues): Check => {
   const base = {
     alertSensitivity: formValues.alertSensitivity ?? AlertSensitivity.None,
     basicMetricsOnly: !formValues.publishAdvancedMetrics,
