@@ -43,43 +43,43 @@ steps:
     GRAFANA_API_KEY:
       from_secret: gcom_api_key
 
-- name: publish to dev
-  image: plugins/gcs
-  settings:
-    acl: allUsers:READER
-    cache_control: no-store
-    source: ./artifacts
-    target: synthetic-monitoring-plugin/
-    token:
-      from_secret: gcs_sa_grafanalabsdev
+# - name: publish to dev
+#   image: plugins/gcs
+#   settings:
+#     acl: allUsers:READER
+#     cache_control: no-store
+#     source: ./artifacts
+#     target: synthetic-monitoring-plugin/
+#     token:
+#       from_secret: gcs_sa_grafanalabsdev
 
-- name: Open PR to update plugin version for all dev stacks
-  image: us.gcr.io/synthetic-monitoring-plugin/drone/plugins/updater
-  settings:
-    config_json: |-
-      {
-        "repo_owner": "grafana",
-        "repo_name": "deployment_tools",
-        "destination_branch": "master",
-        "pull_request_branch_prefix": "auto-merge/synthetic-monitoring-plugin-release",
-        "pull_request_enabled": true,
-        "pull_request_existing_strategy": "ignore",
-        "pull_request_message": "Triggered by ${DRONE_COMMIT_LINK}. NOTE: dev does not refer directly to an environment it refers to stacks associated with the dev 'wave'. See [here](https://github.com/grafana/deployment_tools/blob/master/ksonnet/environments/hosted-grafana/waves/provisioned-plugins/README.md#waves) for more info.",
-        "pull_request_reviewers": ["rdubrock"],
-        "update_jsonnet_attribute_configs": [
-          {
-            "file_path": "ksonnet/environments/hosted-grafana/waves/provisioned-plugins/grafana-synthetic-monitoring-app/dev.libsonnet",
-            "jsonnet_key": "version",
-            "jsonnet_value_file": "plugin_version.txt"
-          }
-        ]
-      }
-    github_app_id:
-      from_secret: updater-app-id
-    github_app_installation_id:
-      from_secret: updater-app-installation-id
-    github_app_private_key:
-      from_secret: updater-app-private-key
+# - name: Open PR to update plugin version for all dev stacks
+#   image: us.gcr.io/synthetic-monitoring-plugin/drone/plugins/updater
+#   settings:
+#     config_json: |-
+#       {
+#         "repo_owner": "grafana",
+#         "repo_name": "deployment_tools",
+#         "destination_branch": "master",
+#         "pull_request_branch_prefix": "auto-merge/synthetic-monitoring-plugin-release",
+#         "pull_request_enabled": true,
+#         "pull_request_existing_strategy": "ignore",
+#         "pull_request_message": "Triggered by ${DRONE_COMMIT_LINK}. NOTE: dev does not refer directly to an environment it refers to stacks associated with the dev 'wave'. See [here](https://github.com/grafana/deployment_tools/blob/master/ksonnet/environments/hosted-grafana/waves/provisioned-plugins/README.md#waves) for more info.",
+#         "pull_request_reviewers": ["rdubrock"],
+#         "update_jsonnet_attribute_configs": [
+#           {
+#             "file_path": "ksonnet/environments/hosted-grafana/waves/provisioned-plugins/grafana-synthetic-monitoring-app/dev.libsonnet",
+#             "jsonnet_key": "version",
+#             "jsonnet_value_file": "plugin_version.txt"
+#           }
+#         ]
+#       }
+#     github_app_id:
+#       from_secret: updater-app-id
+#     github_app_installation_id:
+#       from_secret: updater-app-installation-id
+#     github_app_private_key:
+#       from_secret: updater-app-private-key
   
 image_pull_secrets:
   - dockerconfigjson
