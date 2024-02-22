@@ -22,8 +22,7 @@ build:
 # endif
 
 .PHONY: install
-
-install: authenticate-npm
+install:
 	yarn install
 
 .PHONY: lint
@@ -36,7 +35,7 @@ sign:
 	yarn sign
 
 .PHONY: test
-test: install-promql-deps test-promql
+test:  # install-promql-deps test-promql
 	yarn test
 
 # yarn tsc prints a lot of errors even if queries.js is generated successfully,
