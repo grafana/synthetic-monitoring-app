@@ -1,0 +1,214 @@
+---
+kind: pipeline
+type: docker
+name: build
+
+trigger:
+  event:
+    include:
+    - pull_request
+
+steps:
+- name: build
+  image: node:18
+  commands:
+  - ./scripts/install-ci-deps-apt.sh
+  - make install lint test build
+  environment:
+    GCP_KEY:
+      from_secret: gcp_key
+
+---
+kind: pipeline
+type: docker
+name: publish-dev
+
+trigger:
+  branch:
+    include:
+    - main
+  event:
+    include:
+    - push
+
+steps:
+- name: build
+  image: node:18
+  commands:
+  - ./scripts/install-ci-deps-apt.sh
+  - make install lint test build sign package-latest generate-version
+  environment:
+    GCP_KEY:
+      from_secret: gcp_key
+    GRAFANA_API_KEY:
+      from_secret: gcom_api_key
+
+- name: publish to dev
+  image: plugins/gcs
+  settings:
+    acl: allUsers:READER
+    cache_control: no-store
+    source: ./artifacts
+    target: synthetic-monitoring-plugin/
+    token:
+      from_secret: gcs_sa_grafanalabsdev
+
+- name: Open PR to update plugin version for all dev stacks
+  image: us.gcr.io/synthetic-monitoring-plugin/drone/plugins/updater
+  settings:
+    config_json: |-
+      {
+        "repo_owner": "grafana",
+        "repo_name": "deployment_tools",
+        "destination_branch": "master",
+        "pull_request_branch_prefix": "auto-merge/synthetic-monitoring-plugin-release",
+        "pull_request_enabled": true,
+        "pull_request_existing_strategy": "ignore",
+        "pull_request_message": "Triggered by ${DRONE_COMMIT_LINK}. NOTE: dev does not refer directly to an environment it refers to stacks associated with the dev 'wave'. See [here](https://github.com/grafana/deployment_tools/blob/master/ksonnet/environments/hosted-grafana/waves/provisioned-plugins/README.md#waves) for more info.",
+        "pull_request_reviewers": ["rdubrock"],
+        "update_jsonnet_attribute_configs": [
+          {
+            "file_path": "ksonnet/environments/hosted-grafana/waves/provisioned-plugins/grafana-synthetic-monitoring-app/dev.libsonnet",
+            "jsonnet_key": "version",
+            "jsonnet_value_file": "plugin_version.txt"
+          }
+        ]
+      }
+    github_app_id:
+      from_secret: updater-app-id
+    github_app_installation_id:
+      from_secret: updater-app-installation-id
+    github_app_private_key:
+      from_secret: updater-app-private-key
+  
+image_pull_secrets:
+  - dockerconfigjson
+
+# ---
+# kind: pipeline
+# type: docker
+# name: publish-prod
+
+# trigger:
+#   event:
+#   - promote
+#   target:
+#   - production
+
+# steps:
+# - name: build
+#   image: node:18
+#   commands:
+#   - ./scripts/install-ci-deps-apt.sh
+#   - make install lint test build sign package
+#   environment:
+#     GCP_KEY:
+#       from_secret: gcp_key
+#     GRAFANA_API_KEY:
+#       from_secret: gcom_api_key
+
+# - name: publish to prod
+#   image: plugins/gcs
+#   settings:
+#     acl: allUsers:READER
+#     source: ./artifacts
+#     target: synthetic-monitoring-plugin/
+#     token:
+#       from_secret: gcs_sa_grafanalabsglobal
+
+# - name: Open PR to update plugin version for all production stacks
+#   image: us.gcr.io/kubernetes-dev/drone/plugins/updater
+#   settings:
+#     config_json: |-
+#       {
+#         "repo_owner": "grafana",
+#         "repo_name": "deployment_tools",
+#         "destination_branch": "master",
+#         "pull_request_branch_prefix": "auto-merge/synthetic-monitoring-plugin",
+#         "pull_request_enabled": true,
+#         "pull_request_existing_strategy": "ignore",
+#         "pull_request_message": "Triggered by ${DRONE_COMMIT_LINK}. NOTE: prod does not refer directly to an environment it refers to stacks associated with the prod 'wave'. See [here](https://github.com/grafana/deployment_tools/blob/master/ksonnet/environments/hosted-grafana/waves/provisioned-plugins/README.md#waves) for more info.",
+#         "pull_request_reviewers": ["skl", "jewbetcha", "petewall", "nevermind89x"],
+#         "update_jsonnet_attribute_configs": [
+#           {
+#             "file_path": "ksonnet/environments/hosted-grafana/waves/provisioned-plugins/grafana-synthetic-monitoring-app/prod.libsonnet",
+#             "jsonnet_key": "version",
+#             "jsonnet_value_file": "plugin_version.txt"
+#           }
+#         ]
+#       }
+#     github_app_id:
+#       from_secret: updater-app-id
+#     github_app_installation_id:
+#       from_secret: updater-app-installation-id
+#     github_app_private_key:
+#       from_secret: updater-app-private-key
+
+# - name: Run release notes workflow
+#   image: ubuntu:latest
+#   environment:
+#     GITHUB_TOKEN:
+#       from_secret: gh_token
+#   commands:
+#   - ./scripts/install-ci-deps-apt.sh
+#   - make release-notes
+
+image_pull_secrets:
+  - dockerconfigjson
+# Import secrets from Vault
+---
+kind: secret
+name: gcs_sa_grafanalabsdev
+
+get:
+  path: infra/data/ci/synthetic-monitoring-app/gcs-service-account-dev
+  name: credentials.json
+---
+# kind: secret
+# name: gcs_sa_grafanalabsglobal
+
+# get:
+#   path: infra/data/ci/k8s-app/gcs-service-account-global
+#   name: credentials.json
+# ---
+kind: secret
+name: gh_token
+
+get:
+  path: infra/data/ci/github/grafanabot
+  name: pat
+---
+kind: secret
+name: dockerconfigjson
+
+get:
+  path: secret/data/common/gcr
+  name: .dockerconfigjson
+---
+kind: secret
+name: updater-app-id
+
+get:
+  name: app-id
+  path: infra/data/ci/github/updater-app
+---
+kind: secret
+name: updater-app-installation-id
+
+get:
+  name: app-installation-id
+  path: infra/data/ci/github/updater-app
+---
+kind: secret
+name: updater-app-private-key
+
+get:
+  name: private-key
+  path: infra/data/ci/github/updater-app
+
+---
+get:
+    name: gcp_key
+    path: infra/data/ci/drone-plugins
+kind: secret
+name: gcp_key
