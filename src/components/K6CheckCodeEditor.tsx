@@ -2,15 +2,16 @@ import React from 'react';
 import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 import { GrafanaTheme2, OrgRole } from '@grafana/data';
-import { locationService, PluginPage } from '@grafana/runtime';
+import { PluginPage } from '@grafana/runtime';
 import { Alert, Button, Field, Icon, Input, Label, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { CheckFormValuesScripted, CheckPageParams, CheckType, ScriptedCheck } from 'types';
+import { CheckFormValuesScripted, CheckPageParams, CheckType, ROUTES, ScriptedCheck } from 'types';
 import { isScriptedCheck } from 'utils.types';
 import { hasRole } from 'utils';
 import { validateJob, validateTarget } from 'validation';
 import { useChecks, useCUDChecks } from 'data/useChecks';
+import { useNavigation } from 'hooks/useNavigation';
 
 import { getCheckFromFormValues, getScriptedFormValuesFromCheck } from './CheckEditor/checkFormTransformations';
 import { ProbeOptions } from './CheckEditor/ProbeOptions';
@@ -70,7 +71,9 @@ function K6CheckCodeEditorContent({ check }: { check: ScriptedCheck }) {
   });
   const { handleSubmit, register, control } = formMethods;
   const styles = useStyles2(getStyles);
-  const onSuccess = () => locationService.getHistory().goBack();
+  const navigate = useNavigation();
+  const navigateBack = () => navigate(ROUTES.Checks);
+  const onSuccess = () => navigateBack();
 
   const onSubmit = (checkValues: CheckFormValuesScripted) => {
     const toSubmit = getCheckFromFormValues(checkValues);

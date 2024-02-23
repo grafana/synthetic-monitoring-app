@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 import { GrafanaTheme2, OrgRole } from '@grafana/data';
-import { config, locationService } from '@grafana/runtime';
+import { config } from '@grafana/runtime';
 import {
   Alert,
   Button,
@@ -20,6 +20,7 @@ import { Check, CheckFormValues, CheckPageParams, CheckType, ROUTES } from 'type
 import { checkType as getCheckType, hasRole } from 'utils';
 import { validateJob, validateTarget } from 'validation';
 import { useChecks, useCUDChecks } from 'data/useChecks';
+import { useNavigation } from 'hooks/useNavigation';
 import { CheckFormAlert } from 'components/CheckFormAlert';
 import CheckTarget from 'components/CheckTarget';
 import { CheckTestButton } from 'components/CheckTestButton';
@@ -71,7 +72,9 @@ const CheckEditorContent = ({ check }: { check: Check }) => {
   const { updateCheck, createCheck, deleteCheck, error, submitting } = useCUDChecks({ eventInfo: { checkType } });
 
   const isEditor = hasRole(OrgRole.Editor);
-  const onSuccess = () => locationService.getHistory().goBack();
+  const navigate = useNavigation();
+  const navigateBack = () => navigate(ROUTES.Checks);
+  const onSuccess = () => navigateBack();
 
   const onSubmit = (checkValues: CheckFormValues) => {
     const toSubmit = getCheckFromFormValues(checkValues);
