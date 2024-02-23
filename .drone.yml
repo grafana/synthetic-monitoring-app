@@ -286,13 +286,13 @@ get:
   path: infra/data/ci/synthetic-monitoring-app/gcs-service-account-dev
   name: credentials.json
 ---
-# kind: secret
-# name: gcs_sa_grafanalabsglobal
+kind: secret
+name: gcs_sa_grafanalabsglobal
 
-# get:
-#   path: infra/data/ci/k8s-app/gcs-service-account-global
-#   name: credentials.json
-# ---
+get:
+  path: infra/data/ci/synthetic-monitoring-app/gcs-service-account-global
+  name: credentials.json
+---
 kind: secret
 name: gh_token
 
