@@ -428,7 +428,7 @@ export function getScriptedFormValuesFromCheck(check: ScriptedCheck): CheckFormV
     ...base,
     checkType: CheckType.Scripted,
     settings: {
-      k6: getScriptedCheckFormValues(check.settings),
+      scripted: getScriptedCheckFormValues(check.settings),
     },
   };
 }
@@ -845,7 +845,7 @@ export const getCheckFromFormValues = (formValues: CheckFormValues): Check => {
       ...base,
       settings: {
         scripted: {
-          script: btoa(formValues.settings.k6.script),
+          script: btoa(formValues.settings.scripted.script),
         },
       },
     };

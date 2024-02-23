@@ -364,7 +364,7 @@ export type CheckFormValuesTraceroute = CheckFormValuesBase & {
 export type CheckFormValuesScripted = CheckFormValuesBase & {
   checkType: CheckType.Scripted;
   settings: {
-    k6: ScriptedSettings;
+    scripted: ScriptedSettings;
   };
 };
 

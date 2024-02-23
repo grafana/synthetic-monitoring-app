@@ -154,7 +154,7 @@ function ScriptedCheckCodeEditorContent({ check }: { check: ScriptedCheck }) {
             <CheckFormAlert />
           </div>
           <Controller<CheckFormValuesScripted>
-            name="settings.k6.script"
+            name="settings.scripted.script"
             control={control}
             render={({ field: { ...field } }) => {
               // @ts-ignore we know the value is a string
