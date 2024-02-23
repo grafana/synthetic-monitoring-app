@@ -36,7 +36,7 @@ steps:
   image: node:18
   commands:
   - ./scripts/install-ci-deps-apt.sh
-  - make install lint test build sign package-latest generate-version
+  - make install lint test build package-latest generate-version
   environment:
     GCP_KEY:
       from_secret: gcp_key
@@ -215,6 +215,6 @@ kind: secret
 name: gcp_key
 ---
 kind: signature
-hmac: e9d74ba10cab74c33080e594e1630da076e7e926d9bfa494dc545745aa6a65bc
+hmac: feb8195035c4b7471f1f24aa9973730fc418c6e62db319c22bb689e7900d6fa5
 
 ...
