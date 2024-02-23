@@ -3,7 +3,8 @@ import { FieldErrorsImpl, useFieldArray, useFormContext } from 'react-hook-form'
 import { Button, Field, HorizontalGroup, Icon, IconButton, Input, useTheme2, VerticalGroup } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { CheckFormValues, CheckFormValuesHttp } from 'types';
+import { CheckFormValues, Probe } from 'types';
+import { isHttpErrors } from 'utils.types';
 
 type NameValueName = 'settings.http.headers' | 'settings.http.proxyConnectHeaders' | 'labels';
 
@@ -16,19 +17,19 @@ interface Props {
   validateValue?: (value: string) => string | undefined;
 }
 
-function getErrors(errors: FieldErrorsImpl<CheckFormValues>, name: NameValueName) {
-  switch (name) {
-    case 'settings.http.headers': {
-      const cast = errors as FieldErrorsImpl<CheckFormValuesHttp>;
-      return cast?.settings?.http?.headers;
-    }
-    case 'settings.http.proxyConnectHeaders': {
-      const cast = errors as FieldErrorsImpl<CheckFormValuesHttp>;
-      return cast?.settings?.http?.proxyConnectHeaders;
-    }
-    case 'labels':
-      return errors?.labels;
+function getErrors(errors: FieldErrorsImpl<CheckFormValues | Probe>, name: NameValueName) {
+  if (name === 'labels') {
+    return errors?.labels;
   }
+  if (isHttpErrors(errors)) {
+    if (name === 'settings.http.headers') {
+      return errors?.settings?.http?.headers;
+    }
+    if (name === 'settings.http.proxyConnectHeaders') {
+      return errors?.settings?.http?.proxyConnectHeaders;
+    }
+  }
+  return undefined;
 }
 
 export const NameValueInput = ({ name, disabled, limit, label, validateName, validateValue }: Props) => {
@@ -36,7 +37,7 @@ export const NameValueInput = ({ name, disabled, limit, label, validateName, val
     register,
     control,
     formState: { errors },
-  } = useFormContext<CheckFormValues>();
+  } = useFormContext<CheckFormValues | Probe>();
   const addRef = useRef<HTMLButtonElement>(null);
   const { fields, append, remove } = useFieldArray({ control, name });
   const theme = useTheme2();
