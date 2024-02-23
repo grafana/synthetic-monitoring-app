@@ -54,14 +54,14 @@ steps:
       from_secret: gcs_sa_grafanalabsdev
 
 - name: Open PR to update plugin version for all dev stacks
-  image: us.gcr.io/synthetic-monitoring-plugin/drone/plugins/updater
+  image: us.gcr.io/kubernetes-dev/drone/plugins/updater
   settings:
     config_json: |-
       {
         "repo_owner": "grafana",
         "repo_name": "deployment_tools",
         "destination_branch": "master",
-        "pull_request_branch_prefix": "auto-merge/synthetic-monitoring-plugin-release",
+        "pull_request_branch_prefix": "ci-testing/synthetic-monitoring-plugin-release",
         "pull_request_enabled": true,
         "pull_request_existing_strategy": "ignore",
         "pull_request_message": "Triggered by ${DRONE_COMMIT_LINK}. NOTE: dev does not refer directly to an environment it refers to stacks associated with the dev 'wave'. See [here](https://github.com/grafana/deployment_tools/blob/master/ksonnet/environments/hosted-grafana/waves/provisioned-plugins/README.md#waves) for more info.",
@@ -214,6 +214,6 @@ kind: secret
 name: gcp_key
 ---
 kind: signature
-hmac: c3b6ca28e883e86fb65741647fd09a8a5b0c0c45b7dc08c849e9d9809fb48809
+hmac: aecb47abf81adf2049e62ec597b8475aee3ca0e55aa62f89d2567bc1ed241105
 
 ...
