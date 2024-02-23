@@ -228,7 +228,7 @@ steps:
   settings:
     acl: allUsers:READER
     source: ./artifacts
-    target: synthetic-monitoring-app/
+    target: synthetic-monitoring-app-prod/
     token:
       from_secret: gcs_sa_grafanalabsglobal
 
