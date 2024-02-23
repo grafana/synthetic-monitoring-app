@@ -1,125 +1,20 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { config } from '@grafana/runtime';
-import { SceneApp, SceneAppPage } from '@grafana/scenes';
-import {
-  BigValue,
-  BigValueColorMode,
-  BigValueGraphMode,
-  BigValueTextMode,
-  HorizontalGroup,
-  Icon,
-  LinkButton,
-  LoadingPlaceholder,
-  useStyles2,
-} from '@grafana/ui';
+import { HorizontalGroup, Icon, LinkButton, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
-import { DashboardSceneAppConfig, FeatureName, ROUTES } from 'types';
+import { FeatureName, ROUTES } from 'types';
 import { DashboardInfo } from 'datasource/types';
-import { ChecksContext } from 'contexts/ChecksContext';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
-import { useUsageCalc } from 'hooks/useUsageCalc';
 import { PLUGIN_URL_PATH } from 'components/constants';
 import { DisplayCard } from 'components/DisplayCard';
 import FeaturesBanner from 'components/FeaturesBanner';
 import { PluginPage } from 'components/PluginPage';
 import { getRoute } from 'components/Routing';
-import { getSummaryScene } from 'scenes/Summary';
+import { UsageStats } from 'components/UsageStats';
 
-const getStyles = (theme: GrafanaTheme2) => ({
-  page: css`
-    width: 100%;
-  `,
-  flexRow: css`
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-  `,
-  card: css`
-    background-color: ${theme.colors.background.secondary};
-  `,
-  rowCard: css`
-    display: flex;
-    flex-direction: column;
-  `,
-  cardGrid: css`
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, auto));
-    grid-gap: ${theme.spacing(2)};
-    width: 100%;
-  `,
-  cardFlex: css`
-    display: flex;
-    width: 100%;
-    margin-bottom: ${theme.spacing(2)};
-  `,
-  getStartedGrid: css`
-    display: flex;
-    flex-direction: row;
-    gap: ${theme.spacing(2)};
-    align-items: center;
-    justify-content: center;
-    margin-bottom: ${theme.spacing(2)};
-    h2 {
-      margin-bottom: 0;
-    }
-  `,
-  separator: css`
-    margin: 0 ${theme.spacing(6)};
-  `,
-  grow: css`
-    flex-grow: 1;
-    overflow-y: auto;
-    max-height: 500px;
-  `,
-  nestedCard: css`
-    background-color: ${theme.colors.background.primary};
-    box-shadow: none;
-  `,
-  quickLink: css`
-    background-color: ${theme.colors.background.primary};
-    padding: ${theme.spacing(2)};
-    display: flex;
-    cursor: pointer;
-    width: 100%;
-    white-space: nowrap;
-    margin-bottom: ${theme.spacing(1)};
-  `,
-  quickLinkIcon: css`
-    color: ${theme.colors.text.link};
-    margin-right: ${theme.spacing(2)};
-  `,
-  usageGrid: css`
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, auto));
-    grid-gap: ${theme.spacing(1)};
-  `,
-  usageHeader: css`
-    max-width: 220px;
-  `,
-  link: css`
-    color: ${theme.colors.text.link};
-    margin-bottom: ${theme.spacing(2)};
-  `,
-  linksContainer: css`
-    margin-right: ${theme.spacing(2)};
-    min-width: 475px;
-  `,
-  marginBottom: css`
-    margin-bottom: ${theme.spacing(2)};
-  `,
-  actionContainer: css`
-    margin-top: auto;
-  `,
-  image: css`
-    max-width: 100%;
-    max-height: 75%;
-    display: block;
-    margin: auto;
-  `,
-});
+import { SceneHomepage } from './SceneHomepage';
 
 const sortSummaryToTop = (dashboardA: DashboardInfo, dashboardB: DashboardInfo) => {
   if (dashboardA.title === 'Synthetic Monitoring Summary') {
@@ -135,35 +30,10 @@ export const HomePage = () => {
   const styles = useStyles2(getStyles);
   const { instance } = useContext(InstanceContext);
   const [dashboards, setDashboards] = useState<Array<Partial<DashboardInfo>>>([]);
-  const { checks, loading } = useContext(ChecksContext);
-  const usage = useUsageCalc(checks);
   const { isEnabled: scenesEnabled } = useFeatureFlag(FeatureName.Scenes);
   const { isEnabled: multiHttpEnabled } = useFeatureFlag(FeatureName.MultiHttp);
   const { isEnabled: scriptedEnabled } = useFeatureFlag(FeatureName.ScriptedChecks);
   const { isEnabled: perCheckDashboardsEnabled } = useFeatureFlag(FeatureName.PerCheckDashboards);
-  const scene = useMemo(() => {
-    if (perCheckDashboardsEnabled) {
-      const config: DashboardSceneAppConfig = {
-        metrics: {
-          uid: instance.metrics?.uid,
-        },
-        logs: { uid: instance.logs?.uid },
-        sm: { uid: instance.api?.uid },
-        singleCheckMode: true,
-      };
-      return new SceneApp({
-        pages: [
-          new SceneAppPage({
-            title: 'Home',
-            url: `${PLUGIN_URL_PATH}${ROUTES.Home}`,
-            hideFromBreadcrumbs: true,
-            getScene: getSummaryScene(config, checks, perCheckDashboardsEnabled),
-          }),
-        ],
-      });
-    }
-    return null;
-  }, [perCheckDashboardsEnabled, instance.metrics?.uid, instance.logs?.uid, instance.api?.uid, checks]);
 
   useEffect(() => {
     // Sort to make sure the summary dashboard is at the top of the list
@@ -211,10 +81,7 @@ export const HomePage = () => {
   }, [instance.api, scenesEnabled, multiHttpEnabled, scriptedEnabled]);
 
   if (perCheckDashboardsEnabled) {
-    if (!scene || loading) {
-      return <LoadingPlaceholder text="Loading..." />;
-    }
-    return <scene.Component model={scene} />;
+    return <SceneHomepage />;
   }
 
   return (
@@ -303,80 +170,90 @@ export const HomePage = () => {
             </DisplayCard>
           </DisplayCard>
         </div>
-        <DisplayCard className={cx(styles.card, styles.usageGrid, styles.marginBottom)}>
-          <h2 className={styles.usageHeader}>Your Grafana Cloud Synthetic Monitoring usage</h2>
-          <BigValue
-            theme={config.theme2}
-            textMode={BigValueTextMode.ValueAndName}
-            colorMode={BigValueColorMode.Value}
-            graphMode={BigValueGraphMode.Area}
-            height={80}
-            width={75}
-            value={{
-              numeric: checks.length,
-              color: config.theme2.colors.text.primary,
-              title: 'Total checks',
-              text: checks.length.toLocaleString(),
-            }}
-          />
-          <BigValue
-            theme={config.theme2}
-            textMode={BigValueTextMode.ValueAndName}
-            colorMode={BigValueColorMode.Value}
-            graphMode={BigValueGraphMode.Area}
-            height={80}
-            width={115}
-            value={{
-              numeric: usage?.activeSeries ?? 0,
-              color: config.theme2.colors.text.primary,
-              title: 'Total active series',
-              text: usage?.activeSeries.toLocaleString() ?? 'N/A',
-            }}
-          />
-          <BigValue
-            theme={config.theme2}
-            textMode={BigValueTextMode.ValueAndName}
-            colorMode={BigValueColorMode.Value}
-            graphMode={BigValueGraphMode.Area}
-            height={80}
-            width={115}
-            value={{
-              numeric: usage?.dpm ?? 0,
-              color: config.theme2.colors.text.primary,
-              title: 'Data points per minute',
-              text: usage?.dpm.toLocaleString() ?? 'N/A',
-            }}
-          />
-          <BigValue
-            theme={config.theme2}
-            textMode={BigValueTextMode.ValueAndName}
-            colorMode={BigValueColorMode.Value}
-            graphMode={BigValueGraphMode.Area}
-            height={80}
-            width={175}
-            value={{
-              numeric: usage?.checksPerMonth ?? 0,
-              color: config.theme2.colors.text.primary,
-              title: 'Checks executions per month',
-              text: usage?.checksPerMonth.toLocaleString() ?? 'N/A',
-            }}
-          />
-          <BigValue
-            theme={config.theme2}
-            textMode={BigValueTextMode.ValueAndName}
-            colorMode={BigValueColorMode.Value}
-            graphMode={BigValueGraphMode.Area}
-            height={80}
-            width={150}
-            value={{
-              numeric: usage?.logsGbPerMonth ?? 0,
-              color: config.theme2.colors.text.primary,
-              title: 'Logs per month',
-              text: `${usage?.logsGbPerMonth.toFixed(2) ?? 0}GB`,
-            }}
-          />
-        </DisplayCard>
+        <UsageStats />
       </div>
     </PluginPage>
   );
 };
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  page: css`
+    width: 100%;
+  `,
+  flexRow: css`
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+  `,
+  card: css`
+    background-color: ${theme.colors.background.secondary};
+  `,
+  rowCard: css`
+    display: flex;
+    flex-direction: column;
+  `,
+  cardGrid: css`
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, auto));
+    grid-gap: ${theme.spacing(2)};
+    width: 100%;
+  `,
+  cardFlex: css`
+    display: flex;
+    width: 100%;
+    margin-bottom: ${theme.spacing(2)};
+  `,
+  getStartedGrid: css`
+    display: flex;
+    flex-direction: row;
+    gap: ${theme.spacing(2)};
+    align-items: center;
+    justify-content: center;
+    margin-bottom: ${theme.spacing(2)};
+    h2 {
+      margin-bottom: 0;
+    }
+  `,
+  separator: css`
+    margin: 0 ${theme.spacing(6)};
+  `,
+  grow: css`
+    flex-grow: 1;
+    overflow-y: auto;
+    max-height: 500px;
+  `,
+  nestedCard: css`
+    background-color: ${theme.colors.background.primary};
+    box-shadow: none;
+  `,
+  quickLink: css`
+    background-color: ${theme.colors.background.primary};
+    padding: ${theme.spacing(2)};
+    display: flex;
+    cursor: pointer;
+    width: 100%;
+    white-space: nowrap;
+    margin-bottom: ${theme.spacing(1)};
+  `,
+  quickLinkIcon: css`
+    color: ${theme.colors.text.link};
+    margin-right: ${theme.spacing(2)};
+  `,
+  link: css`
+    color: ${theme.colors.text.link};
+    margin-bottom: ${theme.spacing(2)};
+  `,
+  linksContainer: css`
+    margin-right: ${theme.spacing(2)};
+    min-width: 475px;
+  `,
+  actionContainer: css`
+    margin-top: auto;
+  `,
+  image: css`
+    max-width: 100%;
+    max-height: 75%;
+    display: block;
+    margin: auto;
+  `,
+});

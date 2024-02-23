@@ -1,7 +1,9 @@
 module.exports = {
-  extends: ['./.config/.eslintrc'],
+  extends: ['./.config/.eslintrc', 'plugin:@tanstack/eslint-plugin-query/recommended'],
   plugins: ['simple-import-sort'],
   rules: {
+    'no-redeclare': 'off', // we use typescript's 'no-redeclare' rule instead
+    '@typescript-eslint/no-redeclare': ['error'],
     ['simple-import-sort/imports']: [
       'error',
       {
@@ -13,6 +15,7 @@ module.exports = {
           [
             '^(assert|buffer|child_process|cluster|console|constants|crypto|dgram|dns|domain|events|fs|http|https|module|net|os|path|punycode|querystring|readline|repl|stream|string_decoder|sys|timers|tls|tty|url|util|vm|zlib|freelist|v8|process|async_hooks|http2|perf_hooks)(/.*|$)',
             '^react',
+            '^@tanstack',
             '^@grafana',
             '^grafana',
             '^@?\\w',

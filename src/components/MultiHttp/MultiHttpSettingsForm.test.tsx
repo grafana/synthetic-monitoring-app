@@ -1,8 +1,10 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
-import { BASIC_CHECK_LIST, BASIC_MULTIHTTP_CHECK } from 'test/fixtures/checks';
+import { BASIC_MULTIHTTP_CHECK } from 'test/fixtures/checks';
 import { PRIVATE_PROBE } from 'test/fixtures/probes';
+import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
+import { server } from 'test/server';
 
 import { ROUTES } from 'types';
 import { getSlider } from 'components/CheckEditor/testHelpers';
@@ -13,11 +15,10 @@ import { MultiHttpSettingsForm } from './MultiHttpSettingsForm';
 jest.setTimeout(60000);
 
 beforeEach(() => jest.resetAllMocks());
-const onReturn = jest.fn();
 
 async function renderForm(route: string) {
   const res = waitFor(() =>
-    render(<MultiHttpSettingsForm onReturn={onReturn} checks={BASIC_CHECK_LIST} />, {
+    render(<MultiHttpSettingsForm />, {
       route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`,
       path: `${PLUGIN_URL_PATH}${ROUTES.Checks}${route}`,
     })
@@ -28,8 +29,10 @@ async function renderForm(route: string) {
 
 describe('editing multihttp check', () => {
   it('renders correct values', async () => {
+    const { record, read } = getServerRequests();
+    server.use(apiRoute(`updateCheck`, {}, record));
     const targetCheck = BASIC_MULTIHTTP_CHECK;
-    const { instance, user } = await renderForm(`/edit/${targetCheck.id}`);
+    const { user } = await renderForm(`/edit/${targetCheck.id}`);
     expect(await screen.findByLabelText('Job name', { exact: false })).toHaveValue(targetCheck.job);
     // this is checking for the name of the probe
     expect(await screen.findByText(PRIVATE_PROBE.name)).toBeInTheDocument();
@@ -94,9 +97,8 @@ describe('editing multihttp check', () => {
     const submitButton = await screen.findByRole('button', { name: 'Save' });
     await user.click(submitButton);
 
-    await waitFor(() => expect(onReturn).toHaveBeenCalledWith(true));
-    expect(instance.api?.updateCheck).toHaveBeenCalledTimes(1);
-    expect(instance.api?.updateCheck).toHaveBeenCalledWith({ tenantId: undefined, ...BASIC_MULTIHTTP_CHECK });
+    const { body } = await read();
+    expect(body).toEqual(targetCheck);
   });
 
   it('allows user to edit and resubmit form', async () => {
@@ -115,7 +117,9 @@ describe('editing multihttp check', () => {
 
     const MODIFIED_CHECK2 = { expression: '/regex/', subject: 1, type: 3 };
 
-    const { instance, user } = await renderForm(`/edit/${targetCheck.id}`);
+    const { record, read } = getServerRequests();
+    server.use(apiRoute(`updateCheck`, {}, record));
+    const { user } = await renderForm(`/edit/${targetCheck.id}`);
     // edit job name
     const jobNameInput = await screen.findByLabelText('Job name');
     await user.clear(jobNameInput);
@@ -168,22 +172,19 @@ describe('editing multihttp check', () => {
     const submitButton = await screen.findByRole('button', { name: 'Save' });
     await user.click(submitButton);
 
-    await waitFor(() => expect(onReturn).toHaveBeenCalledWith(true));
-    expect(instance.api?.updateCheck).toHaveBeenCalledTimes(1);
-
-    expect(instance.api?.updateCheck).toHaveBeenCalledWith({
+    const { body } = await read();
+    expect(body).toEqual({
       ...targetCheck,
       target: NEW_TARGET,
       job: NEW_JOB_NAME,
       labels: [NEW_LABEL],
-      tenantId: undefined,
       settings: {
         multihttp: {
           entries: [
             {
               checks: [
                 MODIFIED_CHECK1,
-                ...targetCheck.settings.multihttp?.entries[0].checks.slice(1, 3)!,
+                ...targetCheck.settings.multihttp?.entries[0].checks?.slice(1, 3)!,
                 MODIFIED_CHECK2,
                 ,
               ],

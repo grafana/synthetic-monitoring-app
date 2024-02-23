@@ -1,7 +1,7 @@
 import { useReducer } from 'react';
-import { DeepMap, FieldError } from 'react-hook-form';
+import { FieldErrors } from 'react-hook-form';
 
-import { Check, CheckFormValues } from 'types';
+import { CheckFormValuesMultiHttp, MultiHTTPCheck } from 'types';
 
 import { MultiHttpFormTabs } from './MultiHttpTypes';
 
@@ -13,7 +13,7 @@ const tabOrder = [
   MultiHttpFormTabs.Body,
 ];
 
-type FormErrors = DeepMap<CheckFormValues, FieldError>;
+type FormErrors = FieldErrors<CheckFormValuesMultiHttp>;
 
 export const tabErrorMap = (errors: FormErrors, index: number, tab: MultiHttpFormTabs) => {
   const entry = errors?.settings?.multihttp?.entries?.[index];
@@ -87,8 +87,8 @@ function reducer(state: RequestPanelState[], action: Action) {
   }
 }
 
-export function useMultiHttpCollapseState(check: Check) {
-  const initialState = check.settings.multihttp?.entries?.map((_, index, arr) => ({
+export function useMultiHttpCollapseState(check: MultiHTTPCheck) {
+  const initialState = check.settings.multihttp.entries?.map((_, index, arr) => ({
     open: index === arr.length - 1,
     activeTab: MultiHttpFormTabs.Headers,
   })) ?? [{ open: true, activeTab: MultiHttpFormTabs.Headers }];
@@ -100,9 +100,9 @@ export function getMultiHttpFormErrors(errs: FormErrors) {
   const errKeys = Object.keys(errs);
   const entries = errs.settings?.multihttp?.entries;
   const isMultiHttpError = errKeys.length === 1 && entries;
+  const firstCollapsibleError = entries?.findIndex?.(Boolean);
 
-  if (isMultiHttpError) {
-    const firstCollapsibleError = entries.findIndex(Boolean);
+  if (isMultiHttpError && typeof firstCollapsibleError === 'number') {
     const firstTabWithErrors = tabOrder
       .map((tab) => {
         if (tabErrorMap(errs, firstCollapsibleError, tab)) {

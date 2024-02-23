@@ -30,16 +30,43 @@ export interface TFCheck {
 }
 
 export type TFLabels = { [key: string]: string };
-type TFSettings =
-  | TFHttpSettings
-  | TFPingSettings
-  | TFTcpSettings
-  | TFDnsSettings
-  | TFTracerouteSettings
-  | TFMultiHTTPSettings;
-export type TFCheckSettings = {
-  [key: string]: TFSettings;
+
+type KeyedTFHttpSettings = {
+  http: TFHttpSettings;
 };
+
+type KeyedTFPingSettings = {
+  ping: TFPingSettings;
+};
+
+type KeyedTFTcpSettings = {
+  tcp: TFTcpSettings;
+};
+
+type KeyedTFDnsSettings = {
+  dns: TFDnsSettings;
+};
+
+type KeyedTFTracerouteSettings = {
+  traceroute: TFTracerouteSettings;
+};
+
+type KeyedTFMultiHTTPSettings = {
+  multihttp: TFMultiHTTPSettings;
+};
+
+type KeyedTFScriptedSettings = {
+  scripted: {};
+};
+
+export type TFCheckSettings =
+  | KeyedTFHttpSettings
+  | KeyedTFPingSettings
+  | KeyedTFTcpSettings
+  | KeyedTFDnsSettings
+  | KeyedTFTracerouteSettings
+  | KeyedTFMultiHTTPSettings
+  | KeyedTFScriptedSettings;
 
 interface TFFailIfMatchesNotMatches {
   fail_if_matches_regexp?: string[];
@@ -142,11 +169,11 @@ interface TFHeaderMatch extends Omit<HeaderMatch, 'allowMissing'> {
 }
 
 export interface TFTlsConfig {
-  ca_cert: string;
-  client_cert: string;
-  client_key: string;
-  insecure_skip_verify: boolean;
-  server_name: string;
+  ca_cert?: string;
+  client_cert?: string;
+  client_key?: string;
+  insecure_skip_verify?: boolean;
+  server_name?: string;
 }
 
 export interface TFProbeConfig {

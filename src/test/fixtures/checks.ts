@@ -1,16 +1,24 @@
 import {
   AlertSensitivity,
   Check,
+  DNSCheck,
   DnsProtocol,
   DnsRecordType,
   DnsResponseCodes,
   DNSRRValidator,
+  HTTPCheck,
   HTTPCompressionAlgo,
   HttpMethod,
   HttpVersion,
   IpVersion,
   Label,
+  MultiHTTPCheck,
+  PingCheck,
+  ScriptedCheck,
+  TCPCheck,
+  TracerouteCheck,
 } from 'types';
+import { AdHocCheckResponse } from 'datasource/responses.types';
 
 import { PRIVATE_PROBE, PUBLIC_PROBE } from './probes';
 
@@ -64,12 +72,12 @@ SBefoVnBNp449CSHW+brvPEyKD3D5CVpTIDfu2y8+nHszfBL22wuO4T+oem5h55A
 const transformedValidCert = btoa(validCert);
 const transformedValidKey = btoa(validKey);
 
-export const BASIC_DNS_CHECK = {
+export const BASIC_DNS_CHECK: DNSCheck = {
   id: 1,
   job: 'Job name for dns',
-  target: 'grafana.com',
+  target: 'dns.com',
   enabled: true,
-  labels: [{ name: 'labelName', value: 'labelValue' }] as Label[],
+  labels: [{ name: 'dnsLabelName', value: 'dnsLabelValue' }] as Label[],
   probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
   timeout: 3000,
   frequency: 60000,
@@ -97,17 +105,17 @@ export const BASIC_DNS_CHECK = {
       } as DNSRRValidator,
     },
   },
-} as const satisfies Check;
+} as const satisfies DNSCheck;
 
-export const BASIC_HTTP_CHECK: Check = {
+export const BASIC_HTTP_CHECK: HTTPCheck = {
   id: 2,
   job: 'Job name for http',
-  target: 'https://grafana.com',
+  target: 'https://http.com',
   enabled: true,
   labels: [
     {
-      name: 'labelName',
-      value: 'labelValue',
+      name: 'httpLabelName',
+      value: 'httpLabelValue',
     },
   ],
   probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
@@ -145,12 +153,12 @@ export const BASIC_HTTP_CHECK: Check = {
   basicMetricsOnly: true,
 };
 
-export const BASIC_SCRIPTED_CHECK: Check = {
+export const BASIC_SCRIPTED_CHECK: ScriptedCheck = {
   id: 3,
   job: 'Job name for k6',
-  target: 'https://www.grafana.com',
+  target: 'https://www.k6.com',
   enabled: true,
-  labels: [{ name: 'labelName', value: 'labelValue' }],
+  labels: [{ name: 'scriptedLabelName', value: 'scriptedLabelValue' }],
   probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
   timeout: 10000,
   frequency: 60000,
@@ -163,10 +171,10 @@ export const BASIC_SCRIPTED_CHECK: Check = {
   },
 };
 
-export const BASIC_MULTIHTTP_CHECK: Check = {
+export const BASIC_MULTIHTTP_CHECK: MultiHTTPCheck = {
   id: 4,
   job: 'Job name for multihttp',
-  target: 'https://www.grafana.com',
+  target: 'https://www.multi1.com',
   enabled: true,
   labels: [{ name: 'labelName', value: 'labelValue' }],
   probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
@@ -179,9 +187,8 @@ export const BASIC_MULTIHTTP_CHECK: Check = {
       entries: [
         {
           request: {
-            url: 'https://www.grafana.com',
-            method: 'GET',
-            body: undefined,
+            url: 'https://www.multi1.com',
+            method: HttpMethod.GET,
             headers: [
               {
                 name: 'aheader',
@@ -213,8 +220,8 @@ export const BASIC_MULTIHTTP_CHECK: Check = {
         },
         {
           request: {
-            url: 'https://www.example.com',
-            method: 'POST',
+            url: 'https://www.multi2.com',
+            method: HttpMethod.POST,
             headers: [
               {
                 name: 'examples',
@@ -242,7 +249,7 @@ export const BASIC_MULTIHTTP_CHECK: Check = {
   },
 };
 
-export const BASIC_PING_CHECK: Check = {
+export const BASIC_PING_CHECK: PingCheck = {
   id: 5,
   job: 'Job name for ping',
   target: 'grafana.com',
@@ -261,7 +268,7 @@ export const BASIC_PING_CHECK: Check = {
   },
 };
 
-export const BASIC_TCP_CHECK: Check = {
+export const BASIC_TCP_CHECK: TCPCheck = {
   id: 6,
   enabled: true,
   frequency: 60000,
@@ -294,7 +301,7 @@ export const BASIC_TCP_CHECK: Check = {
   timeout: 3000,
 };
 
-export const BASIC_TRACEROUTE_CHECK: Check = {
+export const BASIC_TRACEROUTE_CHECK: TracerouteCheck = {
   id: 7,
   frequency: 120000,
   offset: 0,
@@ -318,7 +325,7 @@ export const BASIC_TRACEROUTE_CHECK: Check = {
   modified: 1707912548.258483,
 };
 
-export const FULL_HTTP_CHECK: Check = {
+export const FULL_HTTP_CHECK: HTTPCheck = {
   id: 8,
   job: 'carne asada',
   alertSensitivity: AlertSensitivity.Medium,
@@ -361,7 +368,7 @@ export const FULL_HTTP_CHECK: Check = {
   },
 };
 
-export const CUSTOM_ALERT_SENSITIVITY_CHECK: Check = {
+export const CUSTOM_ALERT_SENSITIVITY_CHECK: DNSCheck = {
   ...BASIC_DNS_CHECK,
   id: 9,
   alertSensitivity: 'slightly sensitive',
@@ -492,4 +499,22 @@ export const CheckInfo = {
       Series: 22,
     },
   },
+};
+
+export const ADHOC_CHECK_RESULT: AdHocCheckResponse = {
+  id: '123',
+  tenantId: 1,
+  timeout: 1,
+  settings: {
+    http: {
+      ipVersion: IpVersion.V4,
+      method: HttpMethod.GET,
+      noFollowRedirects: true,
+      tlsConfig: {},
+      failIfSSL: false,
+      failIfNotSSL: false,
+    },
+  },
+  probes: [PRIVATE_PROBE.id] as number[],
+  target: 'target',
 };

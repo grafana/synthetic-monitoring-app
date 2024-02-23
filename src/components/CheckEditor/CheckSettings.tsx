@@ -34,5 +34,8 @@ export const CheckSettings: FC<Props> = ({ isEditor, typeOfCheck }) => {
     case CheckType.Scripted: {
       throw new Error('Invalid check type for this location');
     }
+    case CheckType.GRPC: {
+      throw new Error('Invalid check type for this location');
+    }
   }
 };

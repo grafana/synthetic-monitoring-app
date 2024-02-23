@@ -4,6 +4,8 @@ import { config } from '@grafana/runtime';
 export enum FaroEvent {
   INIT = 'initialize',
   UPDATE_CHECK = 'update_check',
+  BULK_UPDATE_CHECK = 'bulk_update_check',
+  BULK_DELETE_CHECK = 'bulk_delete_check',
   DELETE_CHECK = 'delete_check',
   TEST_CHECK = 'test_check',
   CREATE_CHECK = 'create_check',
@@ -23,17 +25,36 @@ enum FARO_ENV {
   PROD = 'production',
 }
 
+export type FaroEventMeta = {
+  type: FaroEvent;
+  info?: Record<string, string>;
+};
+
+export function isFaroEventMeta(event?: unknown): event is FaroEventMeta {
+  if (!event) {
+    return false;
+  }
+
+  return typeof event === 'object' && 'type' in event;
+}
+
 export function pushFaroCount(type: string, count: number) {
   try {
     faro.api.pushMeasurement({ type, values: { count } });
   } catch (e) {}
 }
 
-export function reportEvent(type: FaroEvent, options: Record<string, any> = {}) {
-  const slug = config.bootData.user.orgName;
+export function reportEvent(type: FaroEvent, info: Record<string, string> = {}) {
+  const attributes = {
+    ...info,
+    slug: config.bootData.user.orgName,
+  };
+
   try {
-    faro.api.pushEvent(type, { slug });
-  } catch (e) {}
+    faro.api.pushEvent(type, attributes);
+  } catch (e) {
+    console.error(`Failed to report event: ${type}`, e);
+  }
 }
 
 function sanitizeError(error: Error | Object | string) {

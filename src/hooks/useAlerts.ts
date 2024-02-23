@@ -1,4 +1,4 @@
-import { useContext,useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { getBackendSrv } from '@grafana/runtime';
 import { parse, stringify } from 'yaml';
 

@@ -1,79 +1,57 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { Route, Switch, useRouteMatch } from 'react-router-dom';
 
-import { CheckType, FeatureName, ROUTES } from 'types';
-import { ChecksContext } from 'contexts/ChecksContext';
-import { InstanceContext } from 'contexts/InstanceContext';
+import { CheckType, FeatureName } from 'types';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
-import { useNavigation } from 'hooks/useNavigation';
 import { CheckEditor } from 'components/CheckEditor';
 import { CheckList } from 'components/CheckList';
 import { ChooseCheckType } from 'components/ChooseCheckType';
 import { MultiHttpSettingsForm } from 'components/MultiHttp/MultiHttpSettingsForm';
-import { PluginPage } from 'components/PluginPage';
 import { ScriptedCheckCodeEditor } from 'components/ScriptedCheckCodeEditor';
-import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
 
 import { DashboardPage } from './DashboardPage';
 
 export function CheckRouter() {
-  const { instance } = useContext(InstanceContext);
-  const { refetchChecks, checks, loading } = useContext(ChecksContext);
   const { isEnabled: perCheckDashboardsEnabled } = useFeatureFlag(FeatureName.PerCheckDashboards);
-
-  const navigate = useNavigation();
   const { path } = useRouteMatch();
 
-  const returnToList = (refetch?: boolean) => {
-    navigate(ROUTES.Checks);
-    if (refetch) {
-      refetchChecks();
-    }
-  };
-
-  if (loading || !instance.api || !checks) {
-    return <PluginPage>Loading...</PluginPage>;
-  }
-
   return (
-    <SuccessRateContextProvider>
-      <Switch>
-        <Route path={path} exact>
-          <CheckList instance={instance} onCheckUpdate={returnToList} />
+    <Switch>
+      <Route path={path} exact>
+        <CheckList />
+      </Route>
+      {perCheckDashboardsEnabled && (
+        <Route path={`${path}/:id/dashboard`} exact>
+          <DashboardPage />
         </Route>
-        {perCheckDashboardsEnabled && (
-          <Route path={`${path}/:id/dashboard`} exact>
-            <DashboardPage />
-          </Route>
-        )}
-        <Route path={`${path}/new/:checkType?`}>
-          {({ match }) => {
-            switch (match?.params.checkType) {
-              case CheckType.MULTI_HTTP:
-                return <MultiHttpSettingsForm onReturn={returnToList} checks={checks} />;
-              case CheckType.Scripted:
-                return <ScriptedCheckCodeEditor checks={checks} onSubmitSuccess={returnToList} />;
-              default:
-                return <CheckEditor onReturn={returnToList} checks={checks} />;
-            }
-          }}
-        </Route>
-        <Route path={`${path}/edit/:checkType/:id`} exact>
-          {({ match }) => {
-            switch (match?.params.checkType) {
-              case CheckType.MULTI_HTTP:
-                return <MultiHttpSettingsForm onReturn={returnToList} checks={checks} />;
-              case CheckType.Scripted:
-                return <ScriptedCheckCodeEditor checks={checks} onSubmitSuccess={returnToList} />;
-              default:
-                return <CheckEditor onReturn={returnToList} checks={checks} />;
-            }
-          }}
-        </Route>
-        <Route path={`${path}/choose-type`} exact>
-          <ChooseCheckType />
-        </Route>
-      </Switch>
-    </SuccessRateContextProvider>
+      )}
+      <Route path={`${path}/new/:checkType?`}>
+        {({ match }) => {
+          switch (match?.params.checkType) {
+            case CheckType.MULTI_HTTP:
+              return <MultiHttpSettingsForm />;
+            case CheckType.Scripted:
+              return <ScriptedCheckCodeEditor />;
+            default:
+              return <CheckEditor />;
+          }
+        }}
+      </Route>
+      <Route path={`${path}/edit/:checkType/:id`} exact>
+        {({ match }) => {
+          switch (match?.params.checkType) {
+            case CheckType.MULTI_HTTP:
+              return <MultiHttpSettingsForm />;
+            case CheckType.Scripted:
+              return <ScriptedCheckCodeEditor />;
+            default:
+              return <CheckEditor />;
+          }
+        }}
+      </Route>
+      <Route path={`${path}/choose-type`} exact>
+        <ChooseCheckType />
+      </Route>
+    </Switch>
   );
 }

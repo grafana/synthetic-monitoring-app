@@ -60,7 +60,7 @@ export const ProbeEditor = ({
     <div className={styles.containerWrapper}>
       <div className={styles.container}>
         <div>
-          <FormProvider {...form}>
+          <FormProvider<Probe> {...form}>
             <form onSubmit={handleSubmit}>
               <div>
                 <Label description={description} className={styles.marginBottom}>
@@ -153,7 +153,7 @@ export const ProbeEditor = ({
                     />
                   </Field>
                 </div>
-                {canEdit && <LabelField isEditor={canEdit} limit={3} />}
+                {canEdit && <LabelField<Probe> isEditor={canEdit} limit={3} />}
                 <div className={styles.buttonWrapper}>
                   {canEdit && (
                     <>

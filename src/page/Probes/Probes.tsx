@@ -6,16 +6,15 @@ import { DataTestIds } from 'test/dataTestIds';
 
 import { type Probe, ROUTES } from 'types';
 import { hasRole } from 'utils';
+import { useProbes } from 'data/useProbes';
 import { CenteredSpinner } from 'components/CenteredSpinner';
 import { DocsLink } from 'components/DocsLink';
-import { ErrorAlert } from 'components/ErrorAlert';
 import { PluginPage } from 'components/PluginPage';
 import { ProbeList } from 'components/ProbeList';
+import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
 import { getRoute } from 'components/Routing';
 
-type ProbesProps = { loading: boolean; probes: Probe[]; error: string | null };
-
-export const Probes = (props: ProbesProps) => {
+export const Probes = () => {
   const theme = useTheme2();
 
   return (
@@ -27,7 +26,9 @@ export const Probes = (props: ProbesProps) => {
         </p>
         <DocsLink article="probes">Learn more about probes</DocsLink>
       </div>
-      <ProbesContent {...props} />
+      <QueryErrorBoundary>
+        <ProbesContent />
+      </QueryErrorBoundary>
     </PluginPage>
   );
 };
@@ -40,12 +41,10 @@ const Actions = () => {
   return <LinkButton href={getRoute(ROUTES.NewProbe)}>Add Private Probe</LinkButton>;
 };
 
-const ProbesContent = ({ error, loading, probes }: ProbesProps) => {
-  if (error) {
-    return <ErrorAlert buttonText={`Reload`} onClick={() => window.location.reload()} />;
-  }
+const ProbesContent = () => {
+  const { data: probes = [], isLoading } = useProbes();
 
-  if (loading) {
+  if (isLoading) {
     return <CenteredSpinner />;
   }
 

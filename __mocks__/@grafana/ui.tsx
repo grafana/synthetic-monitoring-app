@@ -47,7 +47,7 @@ const MultiSelect = forwardRef((props, ref) => <Select {...props} ref={ref} mult
 MultiSelect.displayName = 'MultiSelect';
 
 // Using this specifically for Probe filter at the moment
-const mockProbeOptions = [{ label: 'Chicago', value: 22 }];
+const mockProbeOptions = [{ label: `tacos`, value: 1 }];
 const AsyncMultiSelect = forwardRef((props, ref) => (
   <Select {...props} options={mockProbeOptions} ref={ref} multiple={true} />
 ));

@@ -1,13 +1,13 @@
-import React, { useContext, useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
-import { Alert, Button, Modal, Spinner } from '@grafana/ui';
+import { Alert, Button, Modal } from '@grafana/ui';
 
-import { AdHocCheckResponse, Check, CheckFormValues, CheckType } from 'types';
-import { FaroEvent, reportEvent } from 'faro';
+import { Check, CheckFormValues, CheckType } from 'types';
 import { checkType as getCheckType } from 'utils';
-import { InstanceContext } from 'contexts/InstanceContext';
+import { AdHocCheckResponse } from 'datasource/responses.types';
+import { useTestCheck } from 'data/useChecks';
 
-import { getCheckFromFormValues, getDefaultValuesFromCheck } from './CheckEditor/checkFormTransformations';
+import { getCheckFromFormValues } from './CheckEditor/checkFormTransformations';
 import { CheckTestResultsModal } from './CheckTestResultsModal';
 
 interface Props {
@@ -15,46 +15,41 @@ interface Props {
 }
 
 export function CheckTestButton({ check }: Props) {
+  const checkType = getCheckType(check.settings);
+  const { mutate: testCheck } = useTestCheck({ eventInfo: { type: checkType } });
   const [isTestModalOpen, setTestModalOpen] = useState(false);
   const [isErrorModalOpen, setErrorModalOpen] = useState(false);
   const [error, setError] = useState('');
   const [testResponse, setTestResponse] = useState<AdHocCheckResponse>();
   const [testRequestInFlight, setTestRequestInFlight] = useState(false);
-  const defaultValues = useMemo(() => getDefaultValuesFromCheck(check), [check]);
-  const formMethods = useFormContext();
-  const checkType = getCheckType(check.settings);
-  const { instance } = useContext(InstanceContext);
+  const formMethods = useFormContext<CheckFormValues>();
+
   return (
     <>
       <Button
         type="button"
         variant="secondary"
+        icon={testRequestInFlight ? `fa fa-spinner` : undefined}
         disabled={testRequestInFlight || checkType === CheckType.Traceroute}
         onClick={() => {
-          const values = formMethods.getValues() as CheckFormValues;
-          const check = getCheckFromFormValues(values, defaultValues, checkType);
-          reportEvent(FaroEvent.TEST_CHECK, { type: checkType });
+          const values = formMethods.getValues();
+          const check = getCheckFromFormValues(values);
           setTestRequestInFlight(true);
-          instance?.api
-            ?.testCheck(check)
-            .then((resp) => {
+          testCheck(check, {
+            onSuccess: (resp) => {
               setTestModalOpen(true);
               setTestResponse(resp);
-              if (!resp) {
-                throw new Error('');
-              }
-            })
-            .catch((err) => {
-              setTestModalOpen(false);
-              setErrorModalOpen(true);
-              setError(err?.data?.err ?? err?.data?.msg);
-            })
-            .finally(() => {
               setTestRequestInFlight(false);
-            });
+            },
+            onError: (e) => {
+              setErrorModalOpen(true);
+              setError(e.message);
+              setTestRequestInFlight(false);
+            },
+          });
         }}
       >
-        {testRequestInFlight ? <Spinner /> : 'Test'}
+        Test
       </Button>
       <CheckTestResultsModal
         isOpen={isTestModalOpen}

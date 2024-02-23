@@ -4,6 +4,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Button, Field, Input, Label, TextArea, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
+import { AlertFormValues } from 'types';
 import { validateAnnotationName } from 'validation';
 import { SubCollapse } from 'components/SubCollapse';
 
@@ -30,8 +31,8 @@ export const AlertAnnotations = () => {
     control,
     register,
     formState: { errors },
-  } = useFormContext();
-  const { fields, append, remove } = useFieldArray({
+  } = useFormContext<AlertFormValues>();
+  const { fields, append, remove } = useFieldArray<AlertFormValues>({
     control,
     name: NAME,
   });
@@ -52,7 +53,7 @@ export const AlertAnnotations = () => {
         {fields.map((field, annotationIndex) => (
           <Fragment key={field.id}>
             <Field
-              invalid={errors?.annotations?.[annotationIndex]?.name}
+              invalid={Boolean(errors?.annotations?.[annotationIndex]?.name)}
               error={errors?.annotations?.[annotationIndex]?.name?.message}
             >
               <Input

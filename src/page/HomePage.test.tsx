@@ -3,16 +3,10 @@ import { screen, within } from '@testing-library/react';
 import { BASIC_CHECK_LIST } from 'test/fixtures/checks';
 import { render } from 'test/render';
 
-import { CheckInfoContextProvider } from 'components/CheckInfoContextProvider';
-
 import { HomePage } from './HomePage';
 
 const renderHomePage = () => {
-  return render(
-    <CheckInfoContextProvider>
-      <HomePage />
-    </CheckInfoContextProvider>
-  );
+  return render(<HomePage />);
 };
 
 const assertBigValue = async (label: string, value: string) => {
@@ -29,8 +23,8 @@ describe('Information is present', () => {
   test('shows usage', async () => {
     renderHomePage();
     await assertBigValue('Total checks', String(BASIC_CHECK_LIST.length));
-    await assertBigValue('Total active series', `494`);
-    await assertBigValue('Checks executions per month', '573,382');
-    await assertBigValue('Logs per month', '0.47GB');
+    await assertBigValue('Total active series', `536`);
+    await assertBigValue('Checks executions per month', '637,091');
+    await assertBigValue('Logs per month', '0.59GB');
   });
 });

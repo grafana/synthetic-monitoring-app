@@ -1,5 +1,4 @@
 import React from 'react';
-import { DataSourceSettings } from '@grafana/data';
 import { screen, waitFor, within } from '@testing-library/react';
 import { type UserEvent } from '@testing-library/user-event';
 import { render } from 'test/render';
@@ -30,22 +29,14 @@ jest.mock('hooks/useAlerts', () => {
   return { useAlerts: useAlertsMock, defaultRules };
 });
 
-// import * as useAlerts from 'hooks/useAlerts';
-
 jest.setTimeout(30000);
 
 const setDefaultRules = jest.fn();
 const setRules = jest.fn().mockImplementation(() => Promise.resolve({ ok: true }));
 
-const renderAlerting = ({ withAlerting = true } = {}) => {
-  return render(<AlertingPage />, {
-    instance: {
-      alertRuler: withAlerting ? ({ url: 'alertUrl' } as unknown as DataSourceSettings) : undefined,
-    },
-  });
+const renderAlerting = () => {
+  return render(<AlertingPage />);
 };
-
-// const mockAlertsHook = () => {};
 
 const toggleSection = async (sectionName: string, user: UserEvent): Promise<HTMLElement> => {
   const sectionHeader = await screen.findByText(sectionName);
@@ -54,7 +45,6 @@ const toggleSection = async (sectionName: string, user: UserEvent): Promise<HTML
 };
 
 it('adds default alerts and edits alerts', async () => {
-  // mockAlertsHook();
   const { user } = renderAlerting();
   const defaultAlertButton = await screen.findByRole('button', { name: 'Populate default alerts' });
   await user.click(defaultAlertButton);

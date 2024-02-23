@@ -1,12 +1,19 @@
 /* eslint-disable simple-import-sort/imports */
 // Jest setup provided by Grafana scaffolding
-import './.config/jest-setup';
-import { OrgRole } from '@grafana/data';
-import { config } from '@grafana/runtime';
+import '../../.config/jest-setup';
+import { server } from './server';
 
-afterEach(() => {
-  config.bootData.user.orgRole = OrgRole.Editor;
+beforeAll(() => {
+  server.listen({
+    onUnhandledRequest: 'warn',
+  });
 });
+afterEach(() => {
+  server.resetHandlers();
+  jest.clearAllMocks();
+  jest.restoreAllMocks();
+});
+afterAll(() => server.close());
 
 global.IntersectionObserver = jest.fn(() => ({
   observe: jest.fn(),
@@ -17,3 +24,5 @@ global.IntersectionObserver = jest.fn(() => ({
   rootMargin: '',
   thresholds: [],
 }));
+
+import 'test/mocks/@grafana/runtime';

@@ -1,31 +1,16 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
+import { TENANT_SETTINGS } from 'test/fixtures/tenants';
+import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
-import { getInstanceMock } from 'datasource/__mocks__/DataSource';
-
-import { SuccessRateContextProvider } from 'components/SuccessRateContextProvider';
+import { server } from 'test/server';
 
 import ThresholdGlobalSettings from './ThresholdGlobalSettings';
 
 const onDismiss = jest.fn();
-const onSuccess = jest.fn();
-const onError = jest.fn();
 
 const renderThresholdSettingsForm = () => {
-  const instance = {
-    api: getInstanceMock(),
-  };
-
-  return waitFor(() =>
-    render(
-      <SuccessRateContextProvider>
-        <ThresholdGlobalSettings onDismiss={onDismiss} onSuccess={onSuccess} onError={onError} isOpen={true} />
-      </SuccessRateContextProvider>,
-      {
-        instance,
-      }
-    )
-  );
+  return waitFor(() => render(<ThresholdGlobalSettings onDismiss={onDismiss} isOpen={true} />));
 };
 
 test('shows the form', async () => {
@@ -50,15 +35,13 @@ test('has default values in form', async () => {
 });
 
 test('submits the form', async () => {
-  const { instance, user } = await renderThresholdSettingsForm();
+  const { record, read } = getServerRequests();
+  server.use(apiRoute('updateTenantSettings', {}, record));
+
+  const { user } = await renderThresholdSettingsForm();
   const saveButton = await screen.findByTestId('threshold-save');
   await user.click(saveButton);
 
-  expect(instance.api?.updateTenantSettings).toHaveBeenCalledWith({
-    thresholds: {
-      uptime: { upperLimit: 94.4, lowerLimit: 75 },
-      reachability: { upperLimit: 71.7, lowerLimit: 70 },
-      latency: { upperLimit: 249, lowerLimit: 182 },
-    },
-  });
+  const { body } = await read();
+  expect(body).toEqual({ thresholds: TENANT_SETTINGS.thresholds });
 });

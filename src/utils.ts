@@ -1,11 +1,30 @@
 import { DataSourceInstanceSettings, OrgRole, TimeRange } from '@grafana/data';
-import { config, getBackendSrv } from '@grafana/runtime';
-import { IconName } from '@grafana/ui';
+import { config, FetchResponse, getBackendSrv } from '@grafana/runtime';
+import { firstValueFrom } from 'rxjs';
 
 import { DashboardInfo, LinkedDatasourceInfo, LogQueryResponse, LogStream, SMOptions } from './datasource/types';
-import { CheckType, HostedInstance, Probe, Settings, SubmissionErrorWrapper } from 'types';
+import {
+  CalculateUsageValues,
+  Check,
+  CheckFormValues,
+  CheckType,
+  HostedInstance,
+  Probe,
+  Settings,
+  SubmissionErrorWrapper,
+  ThresholdValues,
+  TLSConfig,
+} from 'types';
+import {
+  isHttpFormValuesSettings,
+  isHttpSettings,
+  isMultiHttpFormValuesSettings,
+  isMultiHttpSettings,
+  isTCPFormValuesSettings,
+  isTCPSettings,
+} from 'utils.types';
 import { SMDataSource } from 'datasource/DataSource';
-import { ThresholdSettings } from 'contexts/SuccessRateContext';
+import { Metric } from 'datasource/responses.types';
 
 /**
  * Find all synthetic-monitoring datasources
@@ -154,17 +173,11 @@ export function checkType(settings: Settings): CheckType {
   return types[0] as CheckType;
 }
 
-interface MetricQueryResponse {
-  error?: string;
-  data: any[];
-}
-
-interface MetricDatasourceResponseWrapper {
-  data: MetricDatasourceResponse;
-}
-
-interface MetricDatasourceResponse {
-  result: any[];
+interface MetricDatasourceResponse<T> {
+  data: {
+    result: T[];
+    resultType: string;
+  };
 }
 
 export interface MetricQueryOptions {
@@ -173,12 +186,7 @@ export interface MetricQueryOptions {
   step: number;
 }
 
-export const queryMetric = async (
-  url: string,
-  query: string,
-  options?: MetricQueryOptions
-): Promise<MetricQueryResponse> => {
-  const backendSrv = getBackendSrv();
+export const queryMetric = async <T extends Metric>(url: string, query: string, options?: MetricQueryOptions) => {
   const lastUpdate = Math.floor(Date.now() / 1000);
   const params = {
     query,
@@ -188,23 +196,20 @@ export const queryMetric = async (
 
   const path = options?.step ? '/api/v1/query_range' : '/api/v1/query';
 
-  try {
-    const response = await backendSrv
-      .fetch<MetricDatasourceResponseWrapper>({
-        method: 'GET',
-        url: `${url}${path}`,
-        params,
-      })
-      .toPromise();
-    if (!response?.ok) {
-      return { error: 'Error fetching data', data: [] };
-    }
-    return {
-      data: response.data?.data?.result ?? [],
-    };
-  } catch (e: any) {
-    return { error: (e.message || e.data?.message) ?? 'Error fetching data', data: [] };
-  }
+  return firstValueFrom(
+    getBackendSrv().fetch<MetricDatasourceResponse<T>>({
+      method: 'GET',
+      url: `${url}${path}`,
+      params,
+    })
+  ).then((res: FetchResponse<MetricDatasourceResponse<T>>) => {
+    return res.data.data.result.map((metric) => {
+      return {
+        ...metric,
+        value: [metric.value[0], Number(metric.value[1])] as [number, number],
+      };
+    });
+  });
 };
 
 export const queryLogsLegacy = async (
@@ -277,46 +282,34 @@ export const fromBase64 = (value: string) => {
   }
 };
 
-export const getSuccessRateThresholdColor = (
-  thresholds: ThresholdSettings,
-  key: 'reachability' | 'uptime' | 'latency',
-  compareValue: number
-) => {
-  if (compareValue > thresholds[key].upperLimit) {
-    return config.theme2.colors.success.main;
-  } else if (compareValue > thresholds[key].lowerLimit && compareValue < thresholds[key].upperLimit) {
-    return config.theme2.colors.warning.main;
-  } else {
-    return config.theme2.colors.error.shade;
+export const getSuccessRateThresholdColor = (thresholds: ThresholdValues, value: number) => {
+  const { upperLimit, lowerLimit } = thresholds;
+  const { success, error, warning } = config.theme2.colors;
+
+  if (value > upperLimit) {
+    return success.main;
   }
+
+  if (value > lowerLimit && value < upperLimit) {
+    return warning.main;
+  }
+
+  return error.shade;
 };
 
-export const getLatencySuccessRateThresholdColor = (
-  thresholds: ThresholdSettings,
-  key: 'latency',
-  compareValue: number
-) => {
-  if (compareValue < thresholds[key].lowerLimit) {
-    return config.theme2.colors.success.main;
-  } else if (compareValue > thresholds[key].lowerLimit && compareValue < thresholds[key].upperLimit) {
-    return config.theme2.colors.warning.main;
-  } else {
-    return config.theme2.colors.error.shade;
-  }
-};
+export const getLatencySuccessRateThresholdColor = (thresholds: ThresholdValues, value: number) => {
+  const { lowerLimit, upperLimit } = thresholds;
+  const { success, error, warning } = config.theme2.colors;
 
-export const getSuccessRateIcon = (
-  thresholds: ThresholdSettings,
-  key: 'reachability' | 'uptime' | 'latency',
-  compareValue: number
-): IconName => {
-  if (compareValue > thresholds[key].upperLimit) {
-    return 'check';
-  } else if (compareValue > thresholds[key].lowerLimit && compareValue < thresholds[key].upperLimit) {
-    return 'exclamation-triangle';
-  } else {
-    return 'times-square' as IconName;
+  if (value < lowerLimit) {
+    return success.main;
   }
+
+  if (value > lowerLimit && value < upperLimit) {
+    return warning.main;
+  }
+
+  return error.shade;
 };
 
 export function getRandomProbes(probes: number[], quantity: number): number[] {
@@ -331,8 +324,12 @@ export function getRandomProbes(probes: number[], quantity: number): number[] {
   return Array.from(randomProbes).sort((a, b) => a - b);
 }
 
-export function canEditProbes(probe: Probe) {
-  return !probe.public && hasRole(OrgRole.Editor);
+export function canEditProbes(probe?: Probe) {
+  if (!probe || probe.public) {
+    return false;
+  }
+
+  return hasRole(OrgRole.Editor);
 }
 
 export function formatDate(number: number) {
@@ -343,4 +340,87 @@ export function formatDate(number: number) {
     hour: '2-digit',
     minute: '2-digit',
   });
+}
+
+export function checkToUsageCalcValues(check: Check): CalculateUsageValues {
+  const { basicMetricsOnly, settings, frequency, probes } = check;
+  const cType = checkType(check.settings);
+
+  return {
+    assertionCount: getEntriesCount(settings),
+    basicMetricsOnly,
+    checkType: cType,
+    frequencySeconds: frequency / 1000,
+    isSSL: getSSL(settings),
+    probeCount: probes?.length ?? 0,
+  };
+}
+
+export function checkFormValuesToUsageCalcValues(checkFormValues: CheckFormValues): CalculateUsageValues {
+  const { checkType, publishAdvancedMetrics, settings, frequency, probes } = checkFormValues;
+
+  return {
+    assertionCount: getEntriesCountCheckFormValues(settings),
+    basicMetricsOnly: !publishAdvancedMetrics,
+    checkType,
+    frequencySeconds: frequency,
+    isSSL: getSSLCheckFormValues(settings),
+    probeCount: probes?.length ?? 0,
+  };
+}
+
+export function getEntriesCount(settings: Check['settings']) {
+  if (isMultiHttpSettings(settings)) {
+    return settings.multihttp.entries.length;
+  }
+
+  return 1;
+}
+
+export function getEntriesCountCheckFormValues(settings: CheckFormValues['settings']) {
+  if (isMultiHttpFormValuesSettings(settings)) {
+    return settings.multihttp.entries.length;
+  }
+
+  return 1;
+}
+
+export function getSSL(settings: Check['settings']) {
+  if (isHttpSettings(settings) && doesTLSConfigHaveValues(settings.http?.tlsConfig)) {
+    return true;
+  }
+
+  if (isTCPSettings(settings) && doesTLSConfigHaveValues(settings.tcp.tlsConfig)) {
+    return true;
+  }
+
+  // if (isGRPCSettings(settings) && doesTLSConfigHaveValues(settings.tcp.tlsConfig)) {
+  //   return true;
+  // }
+
+  return false;
+}
+
+export function getSSLCheckFormValues(settings: CheckFormValues['settings']) {
+  if (isHttpFormValuesSettings(settings) && doesTLSConfigHaveValues(settings.http?.tlsConfig)) {
+    return true;
+  }
+
+  if (isTCPFormValuesSettings(settings) && doesTLSConfigHaveValues(settings.tcp.tlsConfig)) {
+    return true;
+  }
+
+  // if (isGRPCFormValuesSettings(settings) && doesTLSConfigHaveValues(settings.tcp.tlsConfig)) {
+  //   return true;
+  // }
+
+  return false;
+}
+
+function doesTLSConfigHaveValues(tlsConfig?: TLSConfig) {
+  if (!tlsConfig) {
+    return false;
+  }
+
+  return Object.values(tlsConfig).some((value) => value);
 }

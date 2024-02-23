@@ -6,4 +6,6 @@ module.exports = {
       pushError: jest.fn(),
     },
   },
+  isError: jest.fn(),
+  isObject: jest.fn(),
 };

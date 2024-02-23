@@ -1,27 +1,35 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { BASIC_PING_CHECK } from 'test/fixtures/checks';
 import { TERRAFORM_BASIC_PING_CHECK, TERRAFORM_PRIVATE_PROBES } from 'test/fixtures/terraform';
-import { createInstance, createWrapper } from 'test/render';
-import { getInstanceMock } from 'datasource/__mocks__/DataSource';
+import { apiRoute } from 'test/handlers';
+import { createWrapper } from 'test/render';
+import { server } from 'test/server';
 
-import { Check } from 'types';
+import { Check, HttpMethod } from 'types';
 import { sanitizeName } from 'components/TerraformConfig/terraformConfigUtils';
 
 import { useTerraformConfig } from './useTerraformConfig';
 
 async function renderTerraformHook(checks: Check[]) {
-  const api = getInstanceMock();
-  api.listChecks = jest.fn().mockImplementation(() => Promise.resolve(checks));
+  server.use(
+    apiRoute('listChecks', {
+      result: () => {
+        return {
+          json: checks,
+        };
+      },
+    })
+  );
 
-  const { Wrapper } = createWrapper({
-    instance: createInstance({
-      api,
-    }),
-  });
+  const { Wrapper } = createWrapper();
   const { result } = renderHook(() => useTerraformConfig(), { wrapper: Wrapper });
 
   await waitFor(() => {
     expect(result.current.config).not.toBeUndefined();
+  });
+
+  await waitFor(() => {
+    expect(result.current.checkCommands.length).toBeGreaterThan(0);
   });
 
   expect(result.current.error).toBeFalsy();
@@ -135,12 +143,12 @@ describe('terraform config generation', () => {
                 checks: [{ type: 0, subject: 2, condition: 2, value: '200' }],
               },
               {
-                request: { url: 'https://secondrequest.com', method: 'POST', headers: [], queryFields: [] },
+                request: { url: 'https://secondrequest.com', method: HttpMethod.POST, headers: [], queryFields: [] },
                 variables: [{ type: 0, name: 'avariable', expression: 'great.variable.path' }],
                 checks: [],
               },
               {
-                request: { url: '${avariable}', method: 'GET', headers: [], queryFields: [] },
+                request: { url: '${avariable}', method: HttpMethod.GET, headers: [], queryFields: [] },
                 variables: [],
                 checks: [],
               },

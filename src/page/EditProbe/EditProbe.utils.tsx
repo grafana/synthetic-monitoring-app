@@ -2,17 +2,13 @@ import { type Probe } from 'types';
 import { canEditProbes } from 'utils';
 
 export function getTitle(probe?: Probe) {
-  if (!probe) {
-    return ``;
-  }
-
   const verb = canEditProbes(probe) ? 'Editing' : 'Viewing';
-  const type = probe.public ? 'public' : 'private';
+  const type = !probe ? `` : probe.public ? 'public' : 'private';
 
-  return `${verb} ${type} probe ${probe.name}`;
+  return `${verb} ${type} probe ${probe ? probe.name : ``}`;
 }
 
-type ErrorInfo = Error | undefined;
+type ErrorInfo = Error | null;
 
 export function getErrorInfo(updateError: ErrorInfo, deleteError: ErrorInfo) {
   if (updateError) {

@@ -1,34 +1,24 @@
-import React, { useContext } from 'react';
-import { useAsyncCallback } from 'react-async-hook';
+import React from 'react';
 import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 import { GrafanaTheme2, OrgRole } from '@grafana/data';
-import { PluginPage } from '@grafana/runtime';
+import { locationService, PluginPage } from '@grafana/runtime';
 import { Alert, Button, Field, Icon, Input, Label, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { Check, CheckFormValues, CheckPageParams, CheckType, SubmissionErrorWrapper } from 'types';
-import { FaroEvent, reportError } from 'faro';
+import { CheckFormValuesScripted, CheckPageParams, CheckType, ScriptedCheck } from 'types';
+import { isScriptedCheck } from 'utils.types';
 import { hasRole } from 'utils';
 import { validateJob, validateTarget } from 'validation';
-import { InstanceContext } from 'contexts/InstanceContext';
+import { useChecks, useCUDChecks } from 'data/useChecks';
 
-import {
-  checkTypeParamToCheckType,
-  getCheckFromFormValues,
-  getDefaultValuesFromCheck,
-} from './CheckEditor/checkFormTransformations';
+import { getCheckFromFormValues, getScriptedFormValuesFromCheck } from './CheckEditor/checkFormTransformations';
 import { ProbeOptions } from './CheckEditor/ProbeOptions';
 import { CheckFormAlert } from './CheckFormAlert';
 import { CheckTestButton } from './CheckTestButton';
 import { CodeEditor } from './CodeEditor';
-import { fallbackCheck } from './constants';
+import { FALLBACK_CHECK_SCRIPTED } from './constants';
 import { LabelField } from './LabelField';
-
-interface Props {
-  checks: Check[];
-  onSubmitSuccess?: (refresh: boolean) => void;
-}
 
 function getStyles(theme: GrafanaTheme2) {
   return {
@@ -51,64 +41,62 @@ function getStyles(theme: GrafanaTheme2) {
     infoIcon: css({
       fontWeight: theme.typography.fontWeightLight,
     }),
+    submissionError: css({
+      marginTop: theme.spacing(2),
+    }),
   };
 }
 
-export function ScriptedCheckCodeEditor({ checks, onSubmitSuccess }: Props) {
-  const { id, checkType: checkTypeParam } = useParams<CheckPageParams>();
-  let checkType = checkTypeParamToCheckType(checkTypeParam);
-  let check: Check = fallbackCheck(checkType);
+export const ScriptedCheckCodeEditor = () => {
+  const { data: checks } = useChecks();
+  const { id } = useParams<CheckPageParams>();
 
-  if (id) {
-    check = checks?.find((c) => c.id === Number(id)) ?? fallbackCheck(checkType);
+  if (id && !checks) {
+    return null;
   }
 
-  const { instance } = useContext(InstanceContext);
-  const defaultValues = getDefaultValuesFromCheck(check);
+  const found = checks?.find((c) => c.id === Number(id));
+  const check = found && isScriptedCheck(found) ? found : FALLBACK_CHECK_SCRIPTED;
 
-  const formMethods = useForm<CheckFormValues>({
-    defaultValues,
+  return <ScriptedCheckCodeEditorContent check={check} />;
+};
+
+function ScriptedCheckCodeEditorContent({ check }: { check: ScriptedCheck }) {
+  const { updateCheck, createCheck, error, submitting } = useCUDChecks({
+    eventInfo: { checkType: CheckType.Scripted },
+  });
+  const initialValues = getScriptedFormValuesFromCheck(check);
+
+  const formMethods = useForm<CheckFormValuesScripted>({
+    defaultValues: initialValues,
   });
   const { handleSubmit, register, control } = formMethods;
   const styles = useStyles2(getStyles);
+  const onSuccess = () => locationService.getHistory().goBack();
 
-  const {
-    execute: onSubmit,
-    error,
-    loading: submitting,
-  } = useAsyncCallback(async (checkValues: CheckFormValues) => {
-    if (error) {
-      console.error(error);
-      return;
-    }
-    if (!checkValues.settings.k6) {
-      throw new Error('No k6 settings');
-    }
-    const toSubmit = getCheckFromFormValues(checkValues, defaultValues, CheckType.Scripted);
+  const onSubmit = (checkValues: CheckFormValuesScripted) => {
+    const toSubmit = getCheckFromFormValues(checkValues);
+
     if (check.id) {
-      await instance.api?.updateCheck({
-        id: check.id,
-        tenantId: check.tenantId,
-        ...toSubmit,
-      });
-    } else {
-      await instance.api?.addCheck(toSubmit);
+      return updateCheck(
+        {
+          id: check.id,
+          tenantId: check.tenantId,
+          ...toSubmit,
+        },
+        { onSuccess }
+      );
     }
 
-    if (onSubmitSuccess) {
-      onSubmitSuccess(true);
-    }
-  });
+    return createCheck(toSubmit, { onSuccess });
+  };
 
-  const submissionError = error as unknown as SubmissionErrorWrapper;
-  if (error) {
-    reportError(error.message ?? error, check?.id ? FaroEvent.UPDATE_CHECK : FaroEvent.CREATE_CHECK);
-  }
   const headerText = check?.id ? `Editing ${check.job}` : `Add a scripted check`;
   const isEditor = hasRole(OrgRole.Editor);
+
   return (
     <PluginPage pageNav={{ text: check?.job ? `Editing ${check.job}` : headerText }}>
-      <FormProvider {...formMethods}>
+      <FormProvider<CheckFormValuesScripted> {...formMethods}>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className={styles.jobTargetContainer}>
             <Field
@@ -162,23 +150,17 @@ export function ScriptedCheckCodeEditor({ checks, onSubmitSuccess }: Props) {
               timeout={check.timeout}
               checkType={CheckType.Scripted}
             />
-            <LabelField isEditor={isEditor} />
+            <LabelField<CheckFormValuesScripted> isEditor={isEditor} />
             <CheckFormAlert />
           </div>
-          <Controller
+          <Controller<CheckFormValuesScripted>
             name="settings.k6.script"
             control={control}
             render={({ field: { ...field } }) => {
+              // @ts-ignore we know the value is a string
               return <CodeEditor {...field} />;
             }}
           />
-          {submissionError && (
-            <Alert title="Save failed" severity="error">
-              {`${submissionError.status}: ${
-                submissionError.data?.msg?.concat(', ', submissionError.data?.err ?? '') ?? 'Something went wrong'
-              }`}
-            </Alert>
-          )}
           <div className={styles.buttonGroup}>
             <CheckTestButton check={check} />
             <Button type="submit" disabled={submitting}>
@@ -186,6 +168,13 @@ export function ScriptedCheckCodeEditor({ checks, onSubmitSuccess }: Props) {
             </Button>
           </div>
         </form>
+        {error && (
+          <div className={styles.submissionError}>
+            <Alert title="Save failed" severity="error">
+              {error.message ?? 'Something went wrong'}
+            </Alert>
+          </div>
+        )}
       </FormProvider>
     </PluginPage>
   );

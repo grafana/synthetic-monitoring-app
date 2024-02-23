@@ -5,9 +5,8 @@ import { css } from '@emotion/css';
 
 import { type Probe } from 'types';
 import { canEditProbes, formatDate } from 'utils';
-import { SuccessRateTypes } from 'contexts/SuccessRateContext';
 import { useResetProbeToken } from 'data/useProbes';
-import { SuccessRateGauge } from 'components/SuccessRateGauge';
+import { SuccessRateGaugeProbe } from 'components/Gauges';
 
 interface Props {
   probe: Probe;
@@ -23,9 +22,11 @@ interface BadgeStatus {
 export const ProbeStatus = ({ probe, onReset }: Props) => {
   const [showResetModal, setShowResetModal] = useState(false);
   const styles = useStyles2(getStyles);
-  const { onResetToken } = useResetProbeToken(probe, (token) => {
-    setShowResetModal(false);
-    onReset(token);
+  const { mutate: onResetToken } = useResetProbeToken({
+    onSuccess: ({ token }) => {
+      setShowResetModal(false);
+      onReset(token);
+    },
   });
 
   if (!probe) {
@@ -54,13 +55,13 @@ export const ProbeStatus = ({ probe, onReset }: Props) => {
               title="Reset Probe Access Token"
               body="Are you sure you want to reset the access token for this Probe?"
               confirmText="Reset Token"
-              onConfirm={onResetToken}
+              onConfirm={() => onResetToken(probe)}
               onDismiss={() => setShowResetModal(false)}
             />
           </Container>
         )}
       </div>
-      <SuccessRateGauge title="Reachability" id={probe.id!} type={SuccessRateTypes.Probes} height={200} width={300} />
+      <SuccessRateGaugeProbe probeName={probe.name} height={200} width={300} />
       <div className={styles.metaWrapper}>
         <Meta title="Version:" value={probe.version} />
         <Meta

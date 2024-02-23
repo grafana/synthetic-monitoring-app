@@ -1,8 +1,10 @@
 import React from 'react';
 import { within } from '@testing-library/react';
-import { BASIC_CHECK_LIST, BASIC_SCRIPTED_CHECK } from 'test/fixtures/checks';
+import { BASIC_SCRIPTED_CHECK } from 'test/fixtures/checks';
 import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
+import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
+import { server } from 'test/server';
 
 import { AlertSensitivity, ROUTES } from 'types';
 
@@ -26,17 +28,18 @@ jest.mock('components/CodeEditor', () => {
 });
 
 beforeEach(() => jest.resetAllMocks());
-const onReturn = jest.fn();
 
 describe('new scripted check', () => {
   it('renders the new scripted check form', async () => {
-    const { findByText } = render(<ScriptedCheckCodeEditor checks={[]} onSubmitSuccess={onReturn} />);
+    const { findByText } = render(<ScriptedCheckCodeEditor />);
     expect(await findByText('Add a scripted check')).toBeInTheDocument();
   });
 
   it('creates a new k6 check', async () => {
-    const { instance, user, findByLabelText, getByText, findByTestId, findByRole, findByPlaceholderText } = render(
-      <ScriptedCheckCodeEditor checks={[]} onSubmitSuccess={onReturn} />
+    const { record, read } = getServerRequests();
+    server.use(apiRoute(`addCheck`, {}, record));
+    const { user, findByLabelText, getByText, findByTestId, findByRole, findByPlaceholderText } = render(
+      <ScriptedCheckCodeEditor />
     );
 
     const JOB_NAME = 'New k6 check';
@@ -69,9 +72,11 @@ describe('new scripted check', () => {
     codeEditor.focus();
     await user.clear(codeEditor);
     await user.type(codeEditor, SCRIPT);
-    await submitForm(onReturn, user);
+    await submitForm(user);
 
-    expect(instance.api?.addCheck).toHaveBeenCalledWith({
+    const { body } = await read();
+
+    expect(body).toEqual({
       job: JOB_NAME,
       target: TARGET,
       probes: [PRIVATE_PROBE.id],
@@ -92,8 +97,11 @@ describe('new scripted check', () => {
 
 describe('edit scripted check', () => {
   it('populates correct values in form', async () => {
-    const { instance, user, findByLabelText, findByTestId, findByPlaceholderText, findByText } = render(
-      <ScriptedCheckCodeEditor checks={BASIC_CHECK_LIST} onSubmitSuccess={onReturn} />,
+    const { record, read } = getServerRequests();
+    server.use(apiRoute(`updateCheck`, {}, record));
+
+    const { user, findByLabelText, findByTestId, findByPlaceholderText, findByText } = render(
+      <ScriptedCheckCodeEditor />,
       {
         route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`,
         path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/${BASIC_SCRIPTED_CHECK.id}`,
@@ -111,9 +119,11 @@ describe('edit scripted check', () => {
     expect(labelValueInput).toHaveValue(BASIC_SCRIPTED_CHECK.labels[0].value);
     const codeEditor = await findByTestId('code-editor');
     expect(codeEditor).toHaveValue(atob(BASIC_SCRIPTED_CHECK.settings.scripted?.script!));
-    await submitForm(onReturn, user);
+    await submitForm(user);
 
-    expect(instance.api?.updateCheck).toHaveBeenCalledWith(BASIC_SCRIPTED_CHECK);
+    const { body } = await read();
+
+    expect(body).toEqual(BASIC_SCRIPTED_CHECK);
   });
 
   it('handles editing correctly', async () => {
@@ -121,8 +131,11 @@ describe('edit scripted check', () => {
     const NEW_TARGET_URL = 'https://www.example.com';
     const NEW_LABEL = { name: 'adifferentlabelname', value: 'adifferentlabelValue' };
     const NEW_SCRIPT = 'console.log("goodnight moon")';
-    const { instance, user, findByLabelText, findByTestId, findByPlaceholderText, getByText } = render(
-      <ScriptedCheckCodeEditor checks={BASIC_CHECK_LIST} onSubmitSuccess={onReturn} />,
+
+    const { record, read } = getServerRequests();
+    server.use(apiRoute(`updateCheck`, {}, record));
+    const { user, findByLabelText, findByTestId, findByPlaceholderText, getByText } = render(
+      <ScriptedCheckCodeEditor />,
       {
         route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`,
         path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/${BASIC_SCRIPTED_CHECK.id}`,
@@ -152,9 +165,11 @@ describe('edit scripted check', () => {
     const codeEditor = await findByTestId('code-editor');
     await user.clear(codeEditor);
     await user.type(codeEditor, NEW_SCRIPT);
-    await submitForm(onReturn, user);
+    await submitForm(user);
 
-    expect(instance.api?.updateCheck).toHaveBeenCalledWith({
+    const { body } = await read();
+
+    expect(body).toEqual({
       ...BASIC_SCRIPTED_CHECK,
       job: NEW_JOB_NAME,
       target: NEW_TARGET_URL,

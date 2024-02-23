@@ -1,13 +1,12 @@
-import React, { useCallback, useContext, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { GrafanaTheme2, SelectableValue, unEscapeStringFromRegex } from '@grafana/data';
-import { AsyncMultiSelect, Icon, Input, Select, useStyles2 } from '@grafana/ui';
+import { Icon, Input, MultiSelect, Select, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { debounce } from 'lodash';
 
 import { Check, CheckFiltersType } from 'types';
-import { InstanceContext } from 'contexts/InstanceContext';
+import { useProbes } from 'data/useProbes';
 
-import { fetchProbeOptions } from './CheckList/actions';
 import CheckFilterGroup from './CheckList/CheckFilterGroup';
 import { CHECK_FILTER_OPTIONS, CHECK_LIST_STATUS_OPTIONS } from './constants';
 import { LabelFilterInput } from './LabelFilterInput';
@@ -17,18 +16,14 @@ const getStyles = (theme: GrafanaTheme2) => ({
     display: flex;
     flex-direction: row;
   `,
-  marginRightSmall: css`
-    margin-right: ${theme.spacing(2)};
-  `,
   verticalSpace: css`
     margin-top: 10px;
     margin-bottom: 10px;
-    margin-right: ${theme.spacing(2)};
   `,
 });
 
 interface Props {
-  handleResetFilters: () => void;
+  onReset: () => void;
   onChange: (filters: CheckFiltersType) => void;
   checks: Check[];
   checkFilters?: CheckFiltersType;
@@ -56,7 +51,7 @@ export const getDefaultFilters = (): CheckFiltersType => {
 };
 
 export function CheckFilters({
-  handleResetFilters,
+  onReset,
   onChange,
   checks,
   checkFilters = defaultFilters,
@@ -64,7 +59,7 @@ export function CheckFilters({
 }: Props) {
   const styles = useStyles2(getStyles);
   const [searchValue, setSearchValue] = useState(checkFilters.search);
-  const { instance } = useContext(InstanceContext);
+  const { data: probes = [] } = useProbes();
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedOnChange = useCallback(debounce(onChange, 1000), []);
@@ -78,7 +73,6 @@ export function CheckFilters({
   return (
     <>
       <Input
-        className={styles.marginRightSmall}
         autoFocus
         aria-label="Search checks"
         prefix={<Icon name="search" />}
@@ -89,7 +83,7 @@ export function CheckFilters({
         onChange={handleSearchChange}
         placeholder="Search by job name, endpoint, or label"
       />
-      <CheckFilterGroup onReset={handleResetFilters} filters={checkFilters}>
+      <CheckFilterGroup onReset={onReset} filters={checkFilters}>
         <div className={styles.flexRow}>
           {includeStatus && (
             <Select
@@ -135,7 +129,7 @@ export function CheckFilters({
           labelFilters={checkFilters.labels}
           className={styles.verticalSpace}
         />
-        <AsyncMultiSelect
+        <MultiSelect
           aria-label="Filter by probe"
           data-testid="probe-filter"
           prefix="Probes"
@@ -145,8 +139,7 @@ export function CheckFilters({
               probes: v,
             });
           }}
-          defaultOptions
-          loadOptions={() => fetchProbeOptions(instance)}
+          options={probes.map((p) => ({ label: p.name, value: p.id }))}
           value={checkFilters.probes}
           placeholder="All probes"
           allowCustomValue={false}

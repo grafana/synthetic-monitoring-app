@@ -9,19 +9,26 @@ import {
   CheckListViewType,
   CheckSort,
   CheckType,
+  DNSCheck,
   DnsProtocol,
   DnsRecordType,
   DnsResponseCodes,
+  GRPCCheck,
+  HTTPCheck,
   HTTPCompressionAlgo,
   HttpMethod,
   HttpRegexValidationType,
   HttpSslOption,
   IpVersion,
   MultiHttpAssertionType,
+  MultiHTTPCheck,
   MultiHttpVariableType,
+  PingCheck,
   ResponseMatchType,
-  Settings,
+  ScriptedCheck,
+  TCPCheck,
   TimeUnits,
+  TracerouteCheck,
 } from 'types';
 
 import { enumToStringArray } from '../utils';
@@ -209,32 +216,133 @@ export const TIME_UNIT_OPTIONS = [
   },
 ];
 
-export const fallbackCheck = (checkType: CheckType) => {
-  const fallbackTypeBasedOnCheck = checkType ? fallbackType[checkType] : CheckType.HTTP;
-  return {
-    job: '',
-    target: '',
-    frequency: 60000,
-    timeout: 3000,
-    enabled: true,
-    labels: [],
-    probes: [],
-    alertSensitivity: AlertSensitivity.None,
-    settings: {
-      [checkType]: fallbackTypeBasedOnCheck,
-    },
-    basicMetricsOnly: true,
-  } as Check;
+export const FALLBACK_CHECK_BASE: Omit<Check, 'settings'> = {
+  job: '',
+  target: '',
+  frequency: 60000,
+  timeout: 3000,
+  enabled: true,
+  labels: [],
+  probes: [],
+  alertSensitivity: AlertSensitivity.None,
+  basicMetricsOnly: true,
 };
 
-const fallbackType = {
-  http: fallbackSettings(CheckType.HTTP),
-  tcp: fallbackSettings(CheckType.TCP),
-  dns: fallbackSettings(CheckType.DNS),
-  ping: fallbackSettings(CheckType.PING),
-  traceroute: fallbackSettings(CheckType.Traceroute),
-  multihttp: fallbackSettings(CheckType.MULTI_HTTP),
-  scripted: fallbackSettings(CheckType.Scripted),
+export const FALLBACK_CHECK_DNS: DNSCheck = {
+  ...FALLBACK_CHECK_BASE,
+  settings: {
+    dns: {
+      recordType: DnsRecordType.A,
+      server: 'dns.google',
+      ipVersion: IpVersion.V4,
+      protocol: DnsProtocol.UDP,
+      port: 53,
+      validRCodes: [DnsResponseCodes.NOERROR],
+    },
+  },
+};
+
+export const FALLBACK_CHECK_GRPC: GRPCCheck = {
+  ...FALLBACK_CHECK_BASE,
+  settings: {
+    grpc: undefined,
+  },
+};
+
+export const FALLBACK_CHECK_HTTP: HTTPCheck = {
+  ...FALLBACK_CHECK_BASE,
+  settings: {
+    http: {
+      method: HttpMethod.GET,
+      ipVersion: IpVersion.V4,
+      noFollowRedirects: false,
+      compression: HTTPCompressionAlgo.none,
+    },
+  },
+};
+
+export const FALLBACK_CHECK_MULTIHTTP: MultiHTTPCheck = {
+  ...FALLBACK_CHECK_BASE,
+  frequency: 120000,
+  timeout: 15000,
+  settings: {
+    multihttp: {
+      entries: [
+        {
+          request: {
+            method: HttpMethod.GET,
+            url: '',
+            queryFields: [],
+            headers: [],
+          },
+          checks: [],
+        },
+      ],
+    },
+  },
+};
+
+export const FALLBACK_CHECK_PING: PingCheck = {
+  ...FALLBACK_CHECK_BASE,
+  settings: {
+    ping: {
+      ipVersion: IpVersion.V4,
+      dontFragment: false,
+    },
+  },
+};
+
+export const FALLBACK_CHECK_SCRIPTED: ScriptedCheck = {
+  ...FALLBACK_CHECK_BASE,
+  settings: {
+    scripted: {
+      script: btoa(`import { check } from 'k6'
+import http from 'k6/http'
+
+export default function main() {
+  const res = http.get('http://test.k6.io/');
+  // console.log will be represented as logs in Loki
+  console.log('got a reponse')
+  check(res, {
+    'is status 200': (r) => r.status === 200,
+  });
+}`),
+    },
+  },
+};
+
+export const FALLBACK_CHECK_TCP: TCPCheck = {
+  ...FALLBACK_CHECK_BASE,
+  settings: {
+    tcp: {
+      ipVersion: IpVersion.V4,
+      tls: false,
+      queryResponse: [],
+    },
+  },
+};
+
+export const FALLBACK_CHECK_TRACEROUTE: TracerouteCheck = {
+  ...FALLBACK_CHECK_BASE,
+  settings: {
+    traceroute: {
+      maxHops: 64,
+      maxUnknownHops: 15,
+      ptrLookup: true,
+      hopTimeout: 0,
+    },
+  },
+};
+
+export const fallbackCheckMap = {
+  [CheckType.DNS]: FALLBACK_CHECK_DNS,
+  [CheckType.GRPC]: FALLBACK_CHECK_GRPC,
+  [CheckType.HTTP]: FALLBACK_CHECK_HTTP,
+  [CheckType.MULTI_HTTP]: FALLBACK_CHECK_MULTIHTTP,
+  [CheckType.PING]: FALLBACK_CHECK_PING,
+  [CheckType.Scripted]: FALLBACK_CHECK_SCRIPTED,
+  [CheckType.TCP]: FALLBACK_CHECK_TCP,
+  [CheckType.Traceroute]: FALLBACK_CHECK_TRACEROUTE,
 };
 
 export const colors = {
@@ -316,8 +424,20 @@ export const CHECK_LIST_SORT_OPTIONS = [
     value: CheckSort.ZToA,
   },
   {
-    label: 'Success',
-    value: CheckSort.SuccessRate,
+    label: 'Asc. Reachability ',
+    value: CheckSort.ReachabilityAsc,
+  },
+  {
+    label: 'Desc. Reachability ',
+    value: CheckSort.ReachabilityDesc,
+  },
+  {
+    label: 'Asc. Uptime ',
+    value: CheckSort.UptimeAsc,
+  },
+  {
+    label: 'Desc. Uptime ',
+    value: CheckSort.UptimeDesc,
   },
 ];
 
@@ -353,93 +473,6 @@ export const HTTP_COMPRESSION_ALGO_OPTIONS = [
   { label: 'gzip', value: HTTPCompressionAlgo.gzip },
   { label: 'deflate', value: HTTPCompressionAlgo.deflate },
 ];
-
-export function fallbackSettings(t: CheckType): Settings {
-  switch (t) {
-    case CheckType.HTTP: {
-      return {
-        http: {
-          method: HttpMethod.GET,
-          ipVersion: IpVersion.V4,
-          noFollowRedirects: false,
-          compression: HTTPCompressionAlgo.none,
-        },
-      };
-    }
-    case CheckType.MULTI_HTTP: {
-      return {
-        multihttp: {
-          entries: [
-            {
-              request: {
-                method: 'GET',
-                url: '',
-              },
-              checks: [],
-            },
-          ],
-        },
-      };
-    }
-    case CheckType.PING: {
-      return {
-        ping: {
-          ipVersion: IpVersion.V4,
-          dontFragment: false,
-        },
-      };
-    }
-    case CheckType.DNS: {
-      return {
-        dns: {
-          recordType: DnsRecordType.A,
-          server: 'dns.google',
-          ipVersion: IpVersion.V4,
-          protocol: DnsProtocol.UDP,
-          port: 53,
-          validRCodes: [DnsResponseCodes.NOERROR],
-        },
-      };
-    }
-    case CheckType.TCP: {
-      return {
-        tcp: {
-          ipVersion: IpVersion.V4,
-          tls: false,
-        },
-      };
-    }
-    case CheckType.Traceroute: {
-      return {
-        traceroute: {
-          maxHops: 64,
-          maxUnknownHops: 15,
-          ptrLookup: true,
-          hopTimeout: 0,
-        },
-      };
-    }
-    case CheckType.Scripted: {
-      return {
-        scripted: {
-          script: `import { check } from 'k6'
-import http from 'k6/http'
-
-export default function main() {
-  const res = http.get('http://test.k6.io/');
-  // console.log will be represented as logs in Loki
-  console.log('got a reponse')
-  check(res, {
-    'is status 200': (r) => r.status === 200,
-  });
-}`,
-        },
-      };
-    }
-    default:
-      throw new Error(`Cannot find values for invalid check type ${t}`);
-  }
-}
 
 export const PLUGIN_URL_PATH = '/a/grafana-synthetic-monitoring-app/';
 
@@ -511,3 +544,5 @@ export const REACHABILITY_DESCRIPTION =
   'The success rate of all the probes. Reachability decreases when any probe fails.';
 export const LATENCY_DESCRIPTION =
   'The average time to receive an answer across all the checks during the whole time period.';
+
+export const STANDARD_REFRESH_INTERVAL = 1000 * 60;

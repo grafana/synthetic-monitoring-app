@@ -2,22 +2,24 @@ import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
 import { BASIC_PING_CHECK } from 'test/fixtures/checks';
 import { TERRAFORM_BASIC_PING_CHECK } from 'test/fixtures/terraform';
+import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
-import { getInstanceMock } from 'datasource/__mocks__/DataSource';
+import { server } from 'test/server';
 
 import { TerraformConfig } from './TerraformConfig';
 
 const renderTerraformConfig = async () => {
-  const api = getInstanceMock();
-  api.listChecks = jest.fn().mockResolvedValue([BASIC_PING_CHECK]);
-
-  return waitFor(() =>
-    render(<TerraformConfig />, {
-      instance: {
-        api,
+  server.use(
+    apiRoute('listChecks', {
+      result: () => {
+        return {
+          json: [BASIC_PING_CHECK],
+        };
       },
     })
   );
+
+  return waitFor(() => render(<TerraformConfig />));
 };
 
 const openConfig = async () => {

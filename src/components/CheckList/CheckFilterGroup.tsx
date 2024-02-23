@@ -13,9 +13,6 @@ const groupStyles = (theme: GrafanaTheme2) => ({
     justify-content: flex-end;
     align-self: flex-end;
   `,
-  marginRightSmall: css`
-    margin-right: ${theme.spacing(1)};
-  `,
 });
 
 interface Props {
@@ -70,12 +67,7 @@ const CheckFilterGroup = ({ children, onReset, filters }: Props) => {
 
   return (
     <>
-      <Button
-        className={styles.marginRightSmall}
-        variant={activeFilters > 0 ? 'primary' : 'secondary'}
-        fill="outline"
-        onClick={handleFilterOpen}
-      >
+      <Button variant={activeFilters > 0 ? 'primary' : 'secondary'} fill="outline" onClick={handleFilterOpen}>
         {filterTitle}
       </Button>
       <Modal title={filterTitle} isOpen={openFilters} onDismiss={handleFilterOpen}>
