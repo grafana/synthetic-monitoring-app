@@ -2,8 +2,7 @@
 kind: pipeline
 type: docker
 name: build
-image_pull_secrets:
-  - dockerconfigjson
+
 trigger:
   event:
     include:
@@ -81,7 +80,8 @@ steps:
       from_secret: updater-app-installation-id
     github_app_private_key:
       from_secret: updater-app-private-key
-
+image_pull_secrets:
+  - dockerconfigjson
 ---
 kind: pipeline
 type: docker
@@ -132,6 +132,8 @@ steps:
       from_secret: updater-app-installation-id
     github_app_private_key:
       from_secret: updater-app-private-key
+image_pull_secrets:
+  - dockerconfigjson
 ---
 kind: pipeline
 type: docker
@@ -196,6 +198,8 @@ steps:
       from_secret: updater-app-installation-id
     github_app_private_key:
       from_secret: updater-app-private-key
+image_pull_secrets:
+  - dockerconfigjson
 ---
 kind: pipeline
 type: docker
@@ -260,7 +264,8 @@ steps:
       from_secret: updater-app-installation-id
     github_app_private_key:
       from_secret: updater-app-private-key
-
+image_pull_secrets:
+  - dockerconfigjson
 # - name: Run release notes workflow
 #   image: ubuntu:latest
 #   environment:
