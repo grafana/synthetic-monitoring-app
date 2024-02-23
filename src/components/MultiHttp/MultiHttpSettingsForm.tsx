@@ -16,11 +16,12 @@ import {
   VerticalGroup,
 } from '@grafana/ui';
 
-import { CheckFormValuesMultiHttp, CheckPageParams, CheckType, MultiHTTPCheck } from 'types';
+import { CheckFormValuesMultiHttp, CheckPageParams, CheckType, MultiHTTPCheck, ROUTES } from 'types';
 import { isMultiHttpCheck } from 'utils.types';
 import { hasRole } from 'utils';
 import { validateTarget } from 'validation';
 import { useChecks, useCUDChecks } from 'data/useChecks';
+import { useNavigation } from 'hooks/useNavigation';
 import {
   getCheckFromFormValues,
   getMultiHttpFormValuesFromCheck,
@@ -85,7 +86,9 @@ const MultiHttpSettingsFormContent = ({ check }: { check: MultiHTTPCheck }) => {
   });
   const isEditor = hasRole(OrgRole.Editor);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const onSuccess = () => locationService.getHistory().goBack();
+  const navigate = useNavigation();
+  const navigateBack = () => navigate(ROUTES.Checks);
+  const onSuccess = () => navigateBack();
   const onSubmit = (checkValues: CheckFormValuesMultiHttp) => {
     const toSubmit = getCheckFromFormValues(checkValues);
 
