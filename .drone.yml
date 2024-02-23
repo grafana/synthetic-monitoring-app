@@ -13,7 +13,7 @@ steps:
   image: node:18
   commands:
   - ./scripts/install-ci-deps-apt.sh
-  - make install lint test build
+  - make install lint test build 
   environment:
     GCP_KEY:
       from_secret: gcp_key
@@ -36,12 +36,12 @@ steps:
   image: node:18
   commands:
   - ./scripts/install-ci-deps-apt.sh
-  - make install lint test build package-latest generate-version
+  - make install lint test build sign package-latest generate-version
   environment:
     GCP_KEY:
       from_secret: gcp_key
     GRAFANA_API_KEY:
-      from_secret: gcom_api_key
+      from_secret: signing_token
 
 - name: publish to dev
   image: plugins/gcs
@@ -98,12 +98,12 @@ steps:
   image: node:18
   commands:
   - ./scripts/install-ci-deps-apt.sh
-  - make install lint test build package
+  - make install lint test build sign package
   environment:
     GCP_KEY:
       from_secret: gcp_key
     GRAFANA_API_KEY:
-      from_secret: gcom_api_key
+      from_secret: signing_token
 
 - name: Open PR to update plugin version for all staging stacks
   image: us.gcr.io/kubernetes-dev/drone/plugins/updater
@@ -150,12 +150,12 @@ steps:
   image: node:18
   commands:
   - ./scripts/install-ci-deps-apt.sh
-  - make install lint test build package
+  - make install lint test build sign package
   environment:
     GCP_KEY:
       from_secret: gcp_key
     GRAFANA_API_KEY:
-      from_secret: gcom_api_key
+      from_secret: signing_token
 
 - name: publish to prod
   image: plugins/gcs
@@ -216,12 +216,12 @@ steps:
   image: node:18
   commands:
   - ./scripts/install-ci-deps-apt.sh
-  - make install lint test build package
+  - make install lint test build sign package
   environment:
     GCP_KEY:
       from_secret: gcp_key
     GRAFANA_API_KEY:
-      from_secret: gcom_api_key
+      from_secret: signing_token
 
 - name: publish to prod
   image: plugins/gcs
@@ -336,6 +336,6 @@ kind: secret
 name: gcp_key
 ---
 kind: signature
-hmac: 5ffa85e4ac8d5d5c90fcabc41757c31f46898b45f25250f7d8235347062593f1
+hmac: b41785f368c16dee2bf13d34533524252d2b97e519c37a46b04e34e873061677
 
 ...
