@@ -135,8 +135,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
 
   const handleSelectAll = () => {
     if (isAllSelected) {
-      setSelectedChecksIds(new Set());
-      return;
+      handleUnselectAll();
     }
 
     const allCheckIds = sortedChecks.map((check) => check.id!);
@@ -146,6 +145,10 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   const handleChangeViewType = (value: CheckListViewType) => {
     onChangeViewType(value);
     setCurrentPage(1);
+  };
+
+  const handleUnselectAll = () => {
+    setSelectedChecksIds(new Set());
   };
 
   if (checks.length === 0) {
@@ -165,7 +168,8 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
           onFilterChange={setCheckFilters}
           onSelectAll={handleSelectAll}
           onSort={updateSortMethod}
-          onReset={handleResetFilters}
+          onResetFilters={handleResetFilters}
+          onDelete={handleUnselectAll}
           selectedCheckIds={selectedCheckIds}
           sortType={sortType}
         />
