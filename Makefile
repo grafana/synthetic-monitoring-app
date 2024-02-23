@@ -9,18 +9,6 @@ PROM_VERSION := 2.48.1
 build:
 	yarn build
 
-# requires GCP_KEY
-# we need to authenticate to private NPM registry before running yarn install
-# .PHONY: authenticate-npm
-# authenticate-npm:
-# ifdef GCP_KEY
-# 	printenv GCP_KEY > /tmp/gcpkey.json
-# 	export GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcpkey.json && yarn authenticate-npm
-# 	rm /tmp/gcpkey.json
-# else 
-# 	yarn authenticate-npm
-# endif
-
 .PHONY: install
 install:
 	yarn install
@@ -83,14 +71,6 @@ package-latest:
 	zip -r $(ARTIFACTS_DIR)/$(PACKAGE_NAME_LATEST) grafana-synthetic-monitoring-app
 	rm grafana-synthetic-monitoring-app
 
-# .PHONY: restart-dev
-# restart-dev:
-# 	${ROOT_DIR}/scripts/restart-dev.sh
-
 .PHONY: generate-version
 generate-version:
 	$(ROOT_DIR)/scripts/plugin-version-hash.sh
-
-# .PHONY: release-notes
-# release-notes:
-# 	${ROOT_DIR}/scripts/retry.sh gh workflow run .github/workflows/release-notes.yml
