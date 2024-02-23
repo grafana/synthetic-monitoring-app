@@ -1,4 +1,4 @@
-import React, { FC, useContext, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import { Alert, Button, HorizontalGroup, Icon, Modal, Spinner, useStyles2 } from '@grafana/ui';
@@ -17,27 +17,6 @@ type SplitAlertRules = {
   alertingRules: AlertRule[];
 };
 
-const getStyles = (theme: GrafanaTheme2) => ({
-  emptyCard: css`
-    background-color: ${theme.colors.background.secondary};
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 48px 100px;
-  `,
-  defaultAlerts: css`
-    margin-bottom: ${theme.spacing(4)};
-    text-align: center;
-  `,
-  link: css`
-    text-decoration: underline;
-  `,
-  icon: css`
-    margin-right: ${theme.spacing(1)};
-  `,
-});
-
 export const AlertingPage = () => {
   return (
     <PluginPage>
@@ -46,7 +25,7 @@ export const AlertingPage = () => {
   );
 };
 
-const Alerting: FC = () => {
+const Alerting = () => {
   const styles = useStyles2(getStyles);
   const { alertRules, setDefaultRules, setRules, alertError } = useAlerts();
   const [updatingDefaultRules, setUpdatingDefaultRules] = useState(false);
@@ -178,3 +157,24 @@ const Alerting: FC = () => {
     </div>
   );
 };
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  emptyCard: css({
+    backgroundColor: theme.colors.background.secondary,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '48px 100px',
+  }),
+  defaultAlerts: css({
+    marginBottom: theme.spacing(4),
+    textAlign: 'center',
+  }),
+  link: css({
+    textDecoration: 'underline',
+  }),
+  icon: css({
+    marginRight: theme.spacing(1),
+  }),
+});

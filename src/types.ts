@@ -595,6 +595,13 @@ export enum AlertSensitivity {
   High = 'high',
 }
 
+export type AlertRecord = AlertRecordingRule | AlertRule;
+
+export type AlertRecordingRule = {
+  record: string;
+  expr: string;
+};
+
 export type AlertRule = {
   alert: string;
   expr: string;

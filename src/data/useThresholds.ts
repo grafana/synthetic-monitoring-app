@@ -9,8 +9,8 @@ import type { UpdateTenantSettingsResult } from 'datasource/responses.types';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { queryClient } from 'data/queryClient';
 
-export const queryKeys: Record<'list', () => QueryKey> = {
-  list: () => ['thresholds'],
+export const queryKeys: Record<'list', QueryKey> = {
+  list: ['thresholds'],
 };
 
 export function useThresholds() {
@@ -18,7 +18,7 @@ export function useThresholds() {
   const api = instance.api as SMDataSource;
 
   return useQuery({
-    queryKey: queryKeys.list(),
+    queryKey: queryKeys.list,
     queryFn: () => api.getTenantSettings(),
   });
 }
@@ -44,7 +44,7 @@ export function useUpdateThresholds({ onError, onSuccess }: MutationProps<Update
       onError?.(error);
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.list });
       onSuccess?.(data);
     },
     meta: {

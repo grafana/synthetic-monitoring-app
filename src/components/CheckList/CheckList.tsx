@@ -184,7 +184,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
       ) : (
         <div>
           <section className="card-section card-list-layout-list">
-            <div className="card-list">
+            <div className={styles.list}>
               {currentPageChecks.map((check, index) => (
                 <CheckListItem
                   check={check}
@@ -278,6 +278,12 @@ function getMetricValues(checkA: Check, checkB: Check, metrics: MetricCheckSucce
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({
+  list: css({
+    display: 'flex',
+    flexDirection: 'column',
+    width: '100%',
+    gap: theme.spacing(1),
+  }),
   vizContainer: css({
     width: '100%',
     display: 'flex',

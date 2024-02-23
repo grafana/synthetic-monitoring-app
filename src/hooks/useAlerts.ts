@@ -98,7 +98,7 @@ const fetchSMRules = (metricInstanceIdentifier: string | number): Promise<RuleRe
       return { rules: [], error: e.data?.message ?? 'We ran into a problem and could not fetch the alert rules' };
     });
 
-export function useAlerts(checkId?: number) {
+export function useAlerts() {
   const [alertRules, setAlertRules] = useState<AlertRule[]>();
   const [defaultRulesSetCount, setDefaultRulesSetCount] = useState(0);
   const [alertError, setAlertError] = useState('');
