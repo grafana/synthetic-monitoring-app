@@ -153,7 +153,7 @@ export const BASIC_HTTP_CHECK: HTTPCheck = {
   basicMetricsOnly: true,
 };
 
-export const BASIC_K6_CHECK: ScriptedCheck = {
+export const BASIC_SCRIPTED_CHECK: ScriptedCheck = {
   id: 3,
   job: 'Job name for k6',
   target: 'https://www.k6.com',
@@ -165,7 +165,7 @@ export const BASIC_K6_CHECK: ScriptedCheck = {
   alertSensitivity: 'none',
   basicMetricsOnly: true,
   settings: {
-    k6: {
+    scripted: {
       script: btoa('console.log("hello world")'),
     },
   },
@@ -377,7 +377,7 @@ export const CUSTOM_ALERT_SENSITIVITY_CHECK: DNSCheck = {
 export const BASIC_CHECK_LIST: Check[] = [
   BASIC_DNS_CHECK,
   BASIC_HTTP_CHECK,
-  BASIC_K6_CHECK,
+  BASIC_SCRIPTED_CHECK,
   BASIC_MULTIHTTP_CHECK,
   BASIC_PING_CHECK,
   BASIC_TCP_CHECK,

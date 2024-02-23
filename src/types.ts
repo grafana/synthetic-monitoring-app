@@ -362,9 +362,9 @@ export type CheckFormValuesTraceroute = CheckFormValuesBase & {
 };
 
 export type CheckFormValuesScripted = CheckFormValuesBase & {
-  checkType: CheckType.K6;
+  checkType: CheckType.Scripted;
   settings: {
-    k6: ScriptedSettings;
+    scripted: ScriptedSettings;
   };
 };
 
@@ -435,7 +435,7 @@ export type HTTPCheck = CheckBase & {
 
 export type ScriptedCheck = CheckBase & {
   settings: {
-    k6: ScriptedSettings;
+    scripted: ScriptedSettings;
   };
 };
 
@@ -471,7 +471,7 @@ export enum CheckType {
   TCP = 'tcp',
   Traceroute = 'traceroute',
   MULTI_HTTP = 'multihttp',
-  K6 = 'k6',
+  Scripted = 'scripted',
 }
 
 export interface HostedInstance {

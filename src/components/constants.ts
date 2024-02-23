@@ -174,7 +174,7 @@ export const CHECK_TYPE_OPTIONS = [
   },
   {
     label: 'Scripted',
-    value: CheckType.K6,
+    value: CheckType.Scripted,
     description: 'Write a K6 script to run custom checks',
   },
 ];
@@ -295,7 +295,7 @@ export const FALLBACK_CHECK_PING: PingCheck = {
 export const FALLBACK_CHECK_SCRIPTED: ScriptedCheck = {
   ...FALLBACK_CHECK_BASE,
   settings: {
-    k6: {
+    scripted: {
       script: btoa(`import { check } from 'k6'
 import http from 'k6/http'
 
@@ -340,7 +340,7 @@ export const fallbackCheckMap = {
   [CheckType.HTTP]: FALLBACK_CHECK_HTTP,
   [CheckType.MULTI_HTTP]: FALLBACK_CHECK_MULTIHTTP,
   [CheckType.PING]: FALLBACK_CHECK_PING,
-  [CheckType.K6]: FALLBACK_CHECK_SCRIPTED,
+  [CheckType.Scripted]: FALLBACK_CHECK_SCRIPTED,
   [CheckType.TCP]: FALLBACK_CHECK_TCP,
   [CheckType.Traceroute]: FALLBACK_CHECK_TRACEROUTE,
 };

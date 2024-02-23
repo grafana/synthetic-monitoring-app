@@ -48,7 +48,7 @@ function getStyles(theme: GrafanaTheme2) {
   };
 }
 
-export const K6CheckCodeEditor = () => {
+export const ScriptedCheckCodeEditor = () => {
   const { data: checks } = useChecks();
   const { id } = useParams<CheckPageParams>();
 
@@ -59,11 +59,13 @@ export const K6CheckCodeEditor = () => {
   const found = checks?.find((c) => c.id === Number(id));
   const check = found && isScriptedCheck(found) ? found : FALLBACK_CHECK_SCRIPTED;
 
-  return <K6CheckCodeEditorContent check={check} />;
+  return <ScriptedCheckCodeEditorContent check={check} />;
 };
 
-function K6CheckCodeEditorContent({ check }: { check: ScriptedCheck }) {
-  const { updateCheck, createCheck, error, submitting } = useCUDChecks({ eventInfo: { checkType: CheckType.K6 } });
+function ScriptedCheckCodeEditorContent({ check }: { check: ScriptedCheck }) {
+  const { updateCheck, createCheck, error, submitting } = useCUDChecks({
+    eventInfo: { checkType: CheckType.Scripted },
+  });
   const initialValues = getScriptedFormValuesFromCheck(check);
 
   const formMethods = useForm<CheckFormValuesScripted>({
@@ -140,7 +142,7 @@ function K6CheckCodeEditorContent({ check }: { check: ScriptedCheck }) {
                 id="target"
                 {...register('target', {
                   required: true,
-                  validate: (value) => validateTarget(CheckType.K6, value),
+                  validate: (value) => validateTarget(CheckType.Scripted, value),
                 })}
               />
             </Field>
@@ -149,13 +151,13 @@ function K6CheckCodeEditorContent({ check }: { check: ScriptedCheck }) {
               isEditor={isEditor}
               frequency={check.frequency}
               timeout={check.timeout}
-              checkType={CheckType.K6}
+              checkType={CheckType.Scripted}
             />
             <LabelField<CheckFormValuesScripted> isEditor={isEditor} />
             <CheckFormAlert />
           </div>
           <Controller<CheckFormValuesScripted>
-            name="settings.k6.script"
+            name="settings.scripted.script"
             control={control}
             render={({ field: { ...field } }) => {
               // @ts-ignore we know the value is a string

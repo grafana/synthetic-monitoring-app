@@ -1,6 +1,6 @@
 import React from 'react';
 import { within } from '@testing-library/react';
-import { BASIC_K6_CHECK } from 'test/fixtures/checks';
+import { BASIC_SCRIPTED_CHECK } from 'test/fixtures/checks';
 import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
@@ -10,7 +10,7 @@ import { AlertSensitivity, ROUTES } from 'types';
 
 import { submitForm } from './CheckEditor/testHelpers';
 import { PLUGIN_URL_PATH } from './constants';
-import { K6CheckCodeEditor } from './K6CheckCodeEditor';
+import { ScriptedCheckCodeEditor } from './ScriptedCheckCodeEditor';
 
 // Monaco does not render with jest and is stuck at "Loading..."
 // There doesn't seem to be a solution to this at this point,
@@ -31,7 +31,7 @@ beforeEach(() => jest.resetAllMocks());
 
 describe('new scripted check', () => {
   it('renders the new scripted check form', async () => {
-    const { findByText } = render(<K6CheckCodeEditor />);
+    const { findByText } = render(<ScriptedCheckCodeEditor />);
     expect(await findByText('Add a scripted check')).toBeInTheDocument();
   });
 
@@ -39,7 +39,7 @@ describe('new scripted check', () => {
     const { record, read } = getServerRequests();
     server.use(apiRoute(`addCheck`, {}, record));
     const { user, findByLabelText, getByText, findByTestId, findByRole, findByPlaceholderText } = render(
-      <K6CheckCodeEditor />
+      <ScriptedCheckCodeEditor />
     );
 
     const JOB_NAME = 'New k6 check';
@@ -82,7 +82,7 @@ describe('new scripted check', () => {
       probes: [PRIVATE_PROBE.id],
       labels: [LABEL],
       settings: {
-        k6: {
+        scripted: {
           script: btoa(SCRIPT),
         },
       },
@@ -100,27 +100,30 @@ describe('edit scripted check', () => {
     const { record, read } = getServerRequests();
     server.use(apiRoute(`updateCheck`, {}, record));
 
-    const { user, findByLabelText, findByTestId, findByPlaceholderText, findByText } = render(<K6CheckCodeEditor />, {
-      route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`,
-      path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/${BASIC_K6_CHECK.id}`,
-    });
+    const { user, findByLabelText, findByTestId, findByPlaceholderText, findByText } = render(
+      <ScriptedCheckCodeEditor />,
+      {
+        route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`,
+        path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/${BASIC_SCRIPTED_CHECK.id}`,
+      }
+    );
     const jobNameInput = await findByLabelText('Job name', { exact: false });
-    expect(jobNameInput).toHaveValue(BASIC_K6_CHECK.job);
+    expect(jobNameInput).toHaveValue(BASIC_SCRIPTED_CHECK.job);
     const targetInput = await findByLabelText('Instance', { exact: false });
-    expect(targetInput).toHaveValue(BASIC_K6_CHECK.target);
+    expect(targetInput).toHaveValue(BASIC_SCRIPTED_CHECK.target);
 
     expect(await findByText(PRIVATE_PROBE.name)).toBeInTheDocument();
     const labelNameInput = await findByPlaceholderText('name');
-    expect(labelNameInput).toHaveValue(BASIC_K6_CHECK.labels[0].name);
+    expect(labelNameInput).toHaveValue(BASIC_SCRIPTED_CHECK.labels[0].name);
     const labelValueInput = await findByPlaceholderText('value');
-    expect(labelValueInput).toHaveValue(BASIC_K6_CHECK.labels[0].value);
+    expect(labelValueInput).toHaveValue(BASIC_SCRIPTED_CHECK.labels[0].value);
     const codeEditor = await findByTestId('code-editor');
-    expect(codeEditor).toHaveValue(atob(BASIC_K6_CHECK.settings.k6?.script!));
+    expect(codeEditor).toHaveValue(atob(BASIC_SCRIPTED_CHECK.settings.scripted?.script!));
     await submitForm(user);
 
     const { body } = await read();
 
-    expect(body).toEqual(BASIC_K6_CHECK);
+    expect(body).toEqual(BASIC_SCRIPTED_CHECK);
   });
 
   it('handles editing correctly', async () => {
@@ -131,10 +134,13 @@ describe('edit scripted check', () => {
 
     const { record, read } = getServerRequests();
     server.use(apiRoute(`updateCheck`, {}, record));
-    const { user, findByLabelText, findByTestId, findByPlaceholderText, getByText } = render(<K6CheckCodeEditor />, {
-      route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`,
-      path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/${BASIC_K6_CHECK.id}`,
-    });
+    const { user, findByLabelText, findByTestId, findByPlaceholderText, getByText } = render(
+      <ScriptedCheckCodeEditor />,
+      {
+        route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`,
+        path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/${BASIC_SCRIPTED_CHECK.id}`,
+      }
+    );
     const jobNameInput = await findByLabelText('Job name', { exact: false });
     await user.clear(jobNameInput);
     await user.type(jobNameInput, NEW_JOB_NAME);
@@ -164,14 +170,14 @@ describe('edit scripted check', () => {
     const { body } = await read();
 
     expect(body).toEqual({
-      ...BASIC_K6_CHECK,
+      ...BASIC_SCRIPTED_CHECK,
       job: NEW_JOB_NAME,
       target: NEW_TARGET_URL,
       probes: [PUBLIC_PROBE.id],
       labels: [NEW_LABEL],
       tenantId: undefined,
       settings: {
-        k6: {
+        scripted: {
           script: btoa(NEW_SCRIPT),
         },
       },
