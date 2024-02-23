@@ -49,7 +49,7 @@ steps:
     acl: allUsers:READER
     cache_control: no-store
     source: ./artifacts
-    target: synthetic-monitoring-plugin/
+    target: synthetic-monitoring-app/
     token:
       from_secret: gcs_sa_grafanalabsdev
 
@@ -214,6 +214,6 @@ kind: secret
 name: gcp_key
 ---
 kind: signature
-hmac: 13afd56cc27c9b1b7f8b29b3a1c4fb45ffa3e24b8716f64c354fce36468dcdb6
+hmac: 9edd8f4309c6a52fb55ae8e02af8dd2b0f9d0bca6f77c9836d29264b4a3a5f50
 
 ...
