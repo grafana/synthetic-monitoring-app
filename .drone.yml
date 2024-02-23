@@ -43,17 +43,15 @@ steps:
     GRAFANA_API_KEY:
       from_secret: gcom_api_key
 
-image_pull_secrets:
-  - dockerconfigjson
-# - name: publish to dev
-#   image: plugins/gcs
-#   settings:
-#     acl: allUsers:READER
-#     cache_control: no-store
-#     source: ./artifacts
-#     target: synthetic-monitoring-plugin/
-#     token:
-#       from_secret: gcs_sa_grafanalabsdev
+- name: publish to dev
+  image: plugins/gcs
+  settings:
+    acl: allUsers:READER
+    cache_control: no-store
+    source: ./artifacts
+    target: synthetic-monitoring-plugin/
+    token:
+      from_secret: gcs_sa_grafanalabsdev
 
 # - name: Open PR to update plugin version for all dev stacks
 #   image: us.gcr.io/synthetic-monitoring-plugin/drone/plugins/updater
@@ -82,9 +80,10 @@ image_pull_secrets:
 #       from_secret: updater-app-installation-id
 #     github_app_private_key:
 #       from_secret: updater-app-private-key
-  
 
 
+image_pull_secrets:
+  - dockerconfigjson
 # ---
 # kind: pipeline
 # type: docker
@@ -215,6 +214,6 @@ kind: secret
 name: gcp_key
 ---
 kind: signature
-hmac: feb8195035c4b7471f1f24aa9973730fc418c6e62db319c22bb689e7900d6fa5
+hmac: 13afd56cc27c9b1b7f8b29b3a1c4fb45ffa3e24b8716f64c354fce36468dcdb6
 
 ...
