@@ -167,7 +167,7 @@ steps:
       GRAFANA_ACCESS_POLICY_TOKEN:
         from_secret: signing_token
 
-  - name: Open PR to update plugin version for all production stacks
+  - name: Open PR to update plugin version for all canary stacks
     image: us.gcr.io/kubernetes-dev/drone/plugins/updater
     settings:
       config_json: |-
@@ -178,14 +178,9 @@ steps:
           "pull_request_branch_prefix": "ci-testing/synthetic-monitoring-plugin",
           "pull_request_enabled": true,
           "pull_request_existing_strategy": "ignore",
-          "pull_request_message": "Triggered by ${DRONE_COMMIT_LINK}. NOTE: prod does not refer directly to an environment it refers to stacks associated with the prod 'wave'. See [here](https://github.com/grafana/deployment_tools/blob/master/ksonnet/environments/hosted-grafana/waves/provisioned-plugins/README.md#waves) for more info.",
+          "pull_request_message": "Triggered by ${DRONE_COMMIT_LINK}. NOTE: canary does not refer directly to an environment it refers to stacks associated with the canary 'wave'. See [here](https://github.com/grafana/deployment_tools/blob/master/ksonnet/environments/hosted-grafana/waves/provisioned-plugins/README.md#waves) for more info.",
           "pull_request_reviewers": ["rdubrock", "ckbedwell"],
           "update_jsonnet_attribute_configs": [
-            {
-              "file_path": "ksonnet/environments/hosted-grafana/waves/provisioned-plugins/grafana-synthetic-monitoring-app/prod.libsonnet",
-              "jsonnet_key": "version",
-              "jsonnet_value_file": "plugin_version.txt"
-            },
             {
               "file_path": "ksonnet/environments/hosted-grafana/waves/provisioned-plugins/grafana-synthetic-monitoring-app/prod-canary.libsonnet",
               "jsonnet_key": "version",
@@ -268,8 +263,6 @@ steps:
       - PLUGIN_NAME=`jq -r .id ci/meta/plugin.json`
       - VERSION=`jq -r .info.version ci/meta/plugin.json`
       - /root/app/bin/grafana-publisher.js --auto publishremote $PLUGIN_NAME $VERSION $DRONE_REPO_NAME
-    depends_on:
-      - publish to prod
     environment:
       GCLOUD_SERVICE_KEY:
         from_secret: gcp_key
@@ -340,5 +333,3 @@ name: gcp_key
 ---
 kind: signature
 hmac: c90d70b9553a32e86f4f08ae811d86165f1b31d3a8529a006bae46c262a3d997
-
-...
