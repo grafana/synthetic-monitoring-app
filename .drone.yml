@@ -105,6 +105,16 @@ steps:
       GRAFANA_ACCESS_POLICY_TOKEN:
         from_secret: signing_token
 
+  # Staging reads from the production GCS bucket, so we need to publish prod assets
+  - name: publish to prod
+    image: plugins/gcs
+    settings:
+      acl: allUsers:READER
+      source: ./artifacts
+      target: synthetic-monitoring-app/
+      token:
+        from_secret: gcs_sa_grafanalabsglobal
+
   - name: Open PR to update plugin version for all staging stacks
     image: us.gcr.io/kubernetes-dev/drone/plugins/updater
     settings:
@@ -156,15 +166,6 @@ steps:
         from_secret: gcp_key
       GRAFANA_ACCESS_POLICY_TOKEN:
         from_secret: signing_token
-
-  - name: publish to prod
-    image: plugins/gcs
-    settings:
-      acl: allUsers:READER
-      source: ./artifacts
-      target: synthetic-monitoring-app/
-      token:
-        from_secret: gcs_sa_grafanalabsglobal
 
   - name: Open PR to update plugin version for all production stacks
     image: us.gcr.io/kubernetes-dev/drone/plugins/updater
@@ -222,15 +223,6 @@ steps:
         from_secret: gcp_key
       GRAFANA_ACCESS_POLICY_TOKEN:
         from_secret: signing_token
-
-  - name: publish to prod
-    image: plugins/gcs
-    settings:
-      acl: allUsers:READER
-      source: ./artifacts
-      target: synthetic-monitoring-app-prod/
-      token:
-        from_secret: gcs_sa_grafanalabsglobal
 
   - name: Open PR to update plugin version for all production stacks
     image: us.gcr.io/kubernetes-dev/drone/plugins/updater
