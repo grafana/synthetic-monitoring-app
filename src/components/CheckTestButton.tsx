@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { forwardRef, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { Alert, Button, Modal } from '@grafana/ui';
 
@@ -14,7 +14,7 @@ interface Props {
   check: Check;
 }
 
-export function CheckTestButton({ check }: Props) {
+export const CheckTestButton = forwardRef<HTMLButtonElement, Props>(function CheckTestButton({ check }, ref) {
   const checkType = getCheckType(check.settings);
   const { mutate: testCheck } = useTestCheck({ eventInfo: { type: checkType } });
   const [isTestModalOpen, setTestModalOpen] = useState(false);
@@ -27,7 +27,7 @@ export function CheckTestButton({ check }: Props) {
   return (
     <>
       <Button
-        type="button"
+        type="submit"
         variant="secondary"
         icon={testRequestInFlight ? `fa fa-spinner` : undefined}
         disabled={testRequestInFlight || checkType === CheckType.Traceroute}
@@ -48,6 +48,7 @@ export function CheckTestButton({ check }: Props) {
             },
           });
         }}
+        ref={ref}
       >
         Test
       </Button>
@@ -73,4 +74,4 @@ export function CheckTestButton({ check }: Props) {
       </Modal>
     </>
   );
-}
+});

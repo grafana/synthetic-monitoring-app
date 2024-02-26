@@ -269,7 +269,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
         url: `${this.instanceSettings.url}/sm/check/list`,
       })
     ).then((res) => {
-      return res.data;
+      return res.data.map(convertk6toScripted);
     });
   }
 
@@ -505,4 +505,20 @@ function getTestPayload(check: Check) {
     ...check,
     probes: randomSelection,
   };
+}
+
+function convertk6toScripted(check: Check) {
+  if (`k6` in check.settings) {
+    return {
+      ...check,
+      settings: {
+        scripted: {
+          // @ts-ignore
+          script: check.settings.k6.script,
+        },
+      },
+    };
+  }
+
+  return check;
 }

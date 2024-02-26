@@ -1,38 +1,27 @@
-import React, { useMemo, useState } from 'react';
-import { Controller, FormProvider, useForm } from 'react-hook-form';
+import React, { BaseSyntheticEvent, useMemo, useRef, useState } from 'react';
+import { FieldErrors, FormProvider, useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 import { GrafanaTheme2, OrgRole } from '@grafana/data';
-import { config } from '@grafana/runtime';
-import {
-  Alert,
-  Button,
-  ConfirmModal,
-  Field,
-  HorizontalGroup,
-  Input,
-  Legend,
-  LinkButton,
-  useStyles2,
-} from '@grafana/ui';
+import { Alert, Button, ConfirmModal, Field, HorizontalGroup, Input, LinkButton, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Check, CheckFormValues, CheckPageParams, CheckType, ROUTES } from 'types';
+import { isMultiHttpCheck, isScriptedCheck } from 'utils.types';
 import { hasRole } from 'utils';
-import { validateJob, validateTarget } from 'validation';
+import { validateJob } from 'validation';
 import { useChecks, useCUDChecks } from 'data/useChecks';
 import { useNavigation } from 'hooks/useNavigation';
+import { getCheckFromFormValues, getFormValuesFromCheck } from 'components/CheckEditor/checkFormTransformations';
 import { CheckFormAlert } from 'components/CheckFormAlert';
-import CheckTarget from 'components/CheckTarget';
 import { CheckTestButton } from 'components/CheckTestButton';
 import { fallbackCheckMap } from 'components/constants';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 import { PluginPage } from 'components/PluginPage';
 import { getRoute } from 'components/Routing';
 
-import { CheckUsage } from '../CheckUsage';
-import { getCheckFromFormValues, getFormValuesFromCheck } from './checkFormTransformations';
-import { CheckSettings } from './CheckSettings';
-import { ProbeOptions } from './ProbeOptions';
+import { MultiHttpSettingsForm } from './MultiHttpCheckForm';
+import { ScriptedCheckForm } from './ScriptedCheckForm';
+import { SimpleCheckForm } from './SimpleCheckForm';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   breakLine: css({
@@ -43,7 +32,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
 });
 
-export const CheckEditor = () => {
+export const CheckForm = () => {
   const { data: checks } = useChecks();
   const { id, checkType: checkTypeParam } = useParams<CheckPageParams>();
   const checkType = isValidCheckType(checkTypeParam) ? checkTypeParam : CheckType.PING;
@@ -57,7 +46,12 @@ export const CheckEditor = () => {
   return <CheckEditorContent check={check} checkType={checkType} />;
 };
 
-const CheckEditorContent = ({ check, checkType }: { check: Check; checkType: CheckType }) => {
+type CheckEditorContentProps = {
+  check: Check;
+  checkType: CheckType;
+};
+
+const CheckEditorContent = ({ check, checkType }: CheckEditorContentProps) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const styles = useStyles2(getStyles);
 
@@ -65,8 +59,9 @@ const CheckEditorContent = ({ check, checkType }: { check: Check; checkType: Che
   const formMethods = useForm<CheckFormValues>({
     defaultValues: initialValues,
     mode: 'onChange',
+    reValidateMode: 'onBlur',
+    shouldFocusError: false /* handle this manually */,
   });
-  const selectedCheckType = formMethods.watch('checkType') ?? null;
 
   const { updateCheck, createCheck, deleteCheck, error, submitting } = useCUDChecks({ eventInfo: { checkType } });
 
@@ -74,8 +69,21 @@ const CheckEditorContent = ({ check, checkType }: { check: Check; checkType: Che
   const navigate = useNavigation();
   const navigateBack = () => navigate(ROUTES.Checks);
   const onSuccess = () => navigateBack();
+  const testRef = useRef<HTMLButtonElement>(null);
 
-  const onSubmit = (checkValues: CheckFormValues) => {
+  const handleSubmit = (checkValues: CheckFormValues, event: BaseSyntheticEvent | undefined) => {
+    // @ts-expect-error
+    const submitter = event?.nativeEvent.submitter;
+
+    if (submitter === testRef.current) {
+      console.log(`let's test the check`);
+      return;
+    }
+
+    mutateCheck(checkValues);
+  };
+
+  const mutateCheck = (checkValues: CheckFormValues) => {
     const toSubmit = getCheckFromFormValues(checkValues);
 
     if (check.id) {
@@ -92,7 +100,11 @@ const CheckEditorContent = ({ check, checkType }: { check: Check; checkType: Che
     return createCheck(toSubmit, { onSuccess });
   };
 
-  const onDelete = () => {
+  const handleError = (errs: FieldErrors<CheckFormValues>) => {
+    document.dispatchEvent(new CustomEvent('sm-form-error', { detail: errs }));
+  };
+
+  const handleDelete = () => {
     deleteCheck(check, { onSuccess });
   };
 
@@ -102,9 +114,8 @@ const CheckEditorContent = ({ check, checkType }: { check: Check; checkType: Che
   return (
     <PluginPage pageNav={{ text: check?.job ? `Editing ${check.job}` : headerText }}>
       <>
-        {!config.featureToggles.topnav && <Legend>{headerText}</Legend>}
         <FormProvider {...formMethods}>
-          <form onSubmit={formMethods.handleSubmit(onSubmit)}>
+          <form onSubmit={formMethods.handleSubmit(handleSubmit, handleError)}>
             <HorizontalCheckboxField
               disabled={!isEditor}
               id="check-form-enabled"
@@ -129,52 +140,13 @@ const CheckEditorContent = ({ check, checkType }: { check: Check; checkType: Che
                 placeholder="jobName"
               />
             </Field>
-            <Controller<CheckFormValues>
-              name="target"
-              control={formMethods.control}
-              rules={{
-                required: true,
-                validate: (target) => {
-                  return validateTarget(checkType, target);
-                },
-              }}
-              render={({ field }) => (
-                <CheckTarget
-                  {...field}
-                  typeOfCheck={checkType}
-                  invalid={Boolean(formMethods.formState.errors.target)}
-                  error={formMethods.formState.errors.target?.message}
-                  disabled={!isEditor}
-                />
-              )}
-            />
-
-            <hr className={styles.breakLine} />
-            <ProbeOptions
-              isEditor={isEditor}
-              checkType={checkType}
-              timeout={check.timeout}
-              frequency={check.frequency}
-            />
-            <HorizontalCheckboxField
-              id="publishAdvancedMetrics"
-              label="Publish full set of metrics"
-              description="Histogram buckets are removed by default in order to reduce the amount of active series generated per check. If you want to calculate Apdex scores or visualize heatmaps, publish the full set of metrics."
-              {...formMethods.register('publishAdvancedMetrics')}
-            />
-            <CheckUsage />
-            <CheckSettings
-              typeOfCheck={
-                (selectedCheckType as CheckType) ?? (String(Object.keys(check.settings)) as CheckType) ?? CheckType.PING
-              }
-              isEditor={isEditor}
-            />
+            <FormFields check={check} checkType={checkType} />
             <CheckFormAlert />
             <HorizontalGroup>
               <Button type="submit" disabled={formMethods.formState.isSubmitting || submitting}>
                 Save
               </Button>
-              <CheckTestButton check={check} />
+              {checkType !== CheckType.Scripted && <CheckTestButton check={check} ref={testRef} />}
               {check?.id && (
                 <Button
                   variant="destructive"
@@ -205,11 +177,23 @@ const CheckEditorContent = ({ check, checkType }: { check: Check; checkType: Che
         title="Delete check"
         body="Are you sure you want to delete this check?"
         confirmText="Delete check"
-        onConfirm={onDelete}
+        onConfirm={handleDelete}
         onDismiss={() => setShowDeleteModal(false)}
       />
     </PluginPage>
   );
+};
+
+const FormFields = ({ check, checkType }: { check: Check; checkType: CheckType }) => {
+  if (isMultiHttpCheck(check)) {
+    return <MultiHttpSettingsForm check={check} />;
+  }
+
+  if (isScriptedCheck(check)) {
+    return <ScriptedCheckForm check={check} />;
+  }
+
+  return <SimpleCheckForm check={check} checkType={checkType} />;
 };
 
 function isValidCheckType(checkType?: CheckType): checkType is CheckType {
