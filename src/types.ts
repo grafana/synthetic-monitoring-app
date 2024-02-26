@@ -170,7 +170,7 @@ export interface TcpSettings {
   ipVersion: IpVersion;
   tls: boolean;
   tlsConfig?: TLSConfig;
-  queryResponse: TCPQueryResponse[];
+  queryResponse?: TCPQueryResponse[];
 }
 
 export interface TcpSettingsFormValues extends Omit<TcpSettings, 'ipVersion'> {
