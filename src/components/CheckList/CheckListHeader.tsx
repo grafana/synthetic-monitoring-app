@@ -20,9 +20,10 @@ type CheckListHeaderProps = {
   checkFilters: CheckFiltersType;
   currentPageChecks: Check[];
   onChangeView: (viewType: CheckListViewType) => void;
+  onDelete: () => void;
   onFilterChange: (filters: CheckFiltersType) => void;
   onSort: (sort: SelectableValue<CheckSort>) => void;
-  onReset: () => void;
+  onResetFilters: () => void;
   onSelectAll: (e: React.ChangeEvent<HTMLInputElement>) => void;
   selectedCheckIds: Set<number>;
   sortType: CheckSort;
@@ -33,9 +34,10 @@ export const CheckListHeader = ({
   checks,
   currentPageChecks,
   onChangeView,
+  onDelete,
   onFilterChange,
   onSort,
-  onReset,
+  onResetFilters,
   onSelectAll,
   selectedCheckIds,
   sortType,
@@ -63,7 +65,12 @@ export const CheckListHeader = ({
             ))}
         </div>
         <div className={styles.stack}>
-          <CheckFilters onReset={onReset} checks={checks} checkFilters={checkFilters} onChange={onFilterChange} />
+          <CheckFilters
+            onReset={onResetFilters}
+            checks={checks}
+            checkFilters={checkFilters}
+            onChange={onFilterChange}
+          />
           {hasRole(OrgRole.Editor) && (
             <>
               <Button variant="secondary" fill="outline" onClick={() => setShowThresholdModal((v) => !v)}>
@@ -86,7 +93,7 @@ export const CheckListHeader = ({
             />
           </Tooltip>
           {selectedCheckIds.size > 0 ? (
-            <BulkActions checks={selectedChecks} onResolved={onReset} />
+            <BulkActions checks={selectedChecks} onResolved={onDelete} />
           ) : (
             <CheckListViewSwitcher onChange={onChangeView} viewType={viewType} />
           )}

@@ -6,7 +6,7 @@ import { CheckType } from 'types';
 import { RESULTS_BY_TARGET_TABLE_REF_ID } from './utils';
 
 export function getQueryRunner(metrics: DataSourceRef, checkType: CheckType) {
-  const label = checkType === CheckType.K6 ? 'name' : 'url';
+  const label = checkType === CheckType.Scripted ? 'name' : 'url';
   return new SceneQueryRunner({
     queries: [
       {

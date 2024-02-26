@@ -68,7 +68,7 @@ export function validateTarget(typeOfCheck: CheckType, target: string): string |
     case CheckType.Traceroute: {
       return validateHostname(target);
     }
-    case CheckType.K6: {
+    case CheckType.Scripted: {
       if (target.length < 3) {
         return 'Instance must be at least 3 characters long';
       }
@@ -126,7 +126,7 @@ export function validateTimeout(timeout: number, checkType: CheckType): string |
       }
       break;
     }
-    case CheckType.K6:
+    case CheckType.Scripted:
     case CheckType.MULTI_HTTP: {
       if (timeout < 1) {
         return 'Timeout must be at least 1 second';

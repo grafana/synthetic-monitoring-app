@@ -56,7 +56,7 @@ export function isPingCheck(check: Partial<Check>): check is PingCheck {
 }
 
 export function isScriptedCheck(check: Partial<Check>): check is ScriptedCheck {
-  if (Object.hasOwnProperty.call(check.settings, 'k6')) {
+  if (Object.hasOwnProperty.call(check.settings, 'scripted')) {
     return true;
   }
 
@@ -120,7 +120,7 @@ export function isPingSettings(settings: Check['settings']): settings is PingChe
 }
 
 export function isScriptedSettings(settings: Check['settings']): settings is ScriptedCheck['settings'] {
-  if (Object.hasOwnProperty.call(settings, 'k6')) {
+  if (Object.hasOwnProperty.call(settings, 'scripted')) {
     return true;
   }
 

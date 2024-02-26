@@ -170,6 +170,11 @@ export function checkType(settings: Settings): CheckType {
   if (types.length < 1) {
     return CheckType.HTTP;
   }
+
+  if (types[0] === `k6`) {
+    return CheckType.Scripted;
+  }
+
   return types[0] as CheckType;
 }
 

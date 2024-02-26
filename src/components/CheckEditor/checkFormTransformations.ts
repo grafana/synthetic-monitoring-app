@@ -426,9 +426,9 @@ export function getScriptedFormValuesFromCheck(check: ScriptedCheck): CheckFormV
 
   return {
     ...base,
-    checkType: CheckType.K6,
+    checkType: CheckType.Scripted,
     settings: {
-      k6: getScriptedCheckFormValues(check.settings),
+      scripted: getScriptedCheckFormValues(check.settings),
     },
   };
 }
@@ -687,7 +687,7 @@ const getMultiHttpFormValues = (settings: MultiHTTPCheck['settings']): MultiHttp
 
 function getScriptedCheckFormValues(settings: ScriptedCheck['settings']) {
   return {
-    script: atob(settings.k6?.script),
+    script: atob(settings.scripted?.script),
   };
 }
 
@@ -840,12 +840,12 @@ export const getCheckFromFormValues = (formValues: CheckFormValues): Check => {
     };
   }
 
-  if (formValues.checkType === CheckType.K6) {
+  if (formValues.checkType === CheckType.Scripted) {
     return {
       ...base,
       settings: {
-        k6: {
-          script: btoa(formValues.settings.k6.script),
+        scripted: {
+          script: btoa(formValues.settings.scripted.script),
         },
       },
     };
