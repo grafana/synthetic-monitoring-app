@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Controller, FieldErrors, useFieldArray, useFormContext } from 'react-hook-form';
 import { OrgRole } from '@grafana/data';
-import { Alert, Button, Field, HorizontalGroup, Input, Select, useStyles2, VerticalGroup } from '@grafana/ui';
+import { Button, Field, HorizontalGroup, Input, Select, useStyles2, VerticalGroup } from '@grafana/ui';
 
 import { CheckFormValuesMultiHttp, CheckType, MultiHTTPCheck } from 'types';
 import { hasRole } from 'utils';
@@ -181,33 +181,5 @@ export const MultiHttpSettingsForm = ({ check }: { check: MultiHTTPCheck }) => {
         </Button>
       </div>
     </>
-  );
-};
-
-const Feedback = () => {
-  const styles = useStyles2(getMultiHttpFormStyles);
-
-  return (
-    <Alert severity="info" title="MultiHTTP checks are in public preview">
-      We are actively seeking feedback! Please share your thoughts in&nbsp;
-      <a
-        href="https://github.com/grafana/synthetic-monitoring-app/issues"
-        target="_blank"
-        rel="noopenner noreferrer"
-        className={styles.link}
-      >
-        GitHub
-      </a>
-      &nbsp;or in our&nbsp;
-      <a
-        href="https://community.grafana.com/c/grafanacloud/34"
-        rel="noopenner noreferrer"
-        target="_blank"
-        className={styles.link}
-      >
-        community forum
-      </a>
-      .
-    </Alert>
   );
 };

@@ -16,6 +16,7 @@ import { CheckFormAlert } from 'components/CheckFormAlert';
 import { CheckTestButton } from 'components/CheckTestButton';
 import { fallbackCheckMap } from 'components/constants';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
+import { MultiHttpFeedbackAlert } from 'components/MultiHttp/MultiHttpFeedbackAlert';
 import { PluginPage } from 'components/PluginPage';
 import { getRoute } from 'components/Routing';
 
@@ -113,6 +114,7 @@ const CheckEditorContent = ({ check, checkType }: CheckEditorContentProps) => {
 
   return (
     <PluginPage pageNav={{ text: check?.job ? `Editing ${check.job}` : headerText }}>
+      {checkType === CheckType.MULTI_HTTP && <MultiHttpFeedbackAlert />}
       <>
         <FormProvider {...formMethods}>
           <form onSubmit={formMethods.handleSubmit(handleSubmit, handleError)}>

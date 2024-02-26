@@ -10,7 +10,7 @@ import { ROUTES } from 'types';
 import { getSlider } from 'components/CheckEditor/testHelpers';
 import { PLUGIN_URL_PATH } from 'components/constants';
 
-import { MultiHttpSettingsForm } from './MultiHttpSettingsForm';
+import { CheckForm } from './CheckForm';
 
 jest.setTimeout(60000);
 
@@ -18,7 +18,7 @@ beforeEach(() => jest.resetAllMocks());
 
 async function renderForm(route: string) {
   const res = waitFor(() =>
-    render(<MultiHttpSettingsForm />, {
+    render(<CheckForm />, {
       route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`,
       path: `${PLUGIN_URL_PATH}${ROUTES.Checks}${route}`,
     })

@@ -9,12 +9,12 @@ import { AlertSensitivity, CheckType, ROUTES } from 'types';
 import { submitForm } from 'components/CheckEditor/testHelpers';
 import { PLUGIN_URL_PATH } from 'components/constants';
 
-import { MultiHttpSettingsForm } from './MultiHttpSettingsForm';
+import { CheckForm } from './CheckForm';
 
 jest.setTimeout(60000);
 
 const renderNewMultiForm = async () => {
-  const res = render(<MultiHttpSettingsForm />, {
+  const res = render(<CheckForm />, {
     route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${CheckType.MULTI_HTTP}`,
     path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${CheckType.MULTI_HTTP}`,
   });
