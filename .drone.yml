@@ -264,27 +264,27 @@ steps:
       from_secret: updater-app-installation-id
     github_app_private_key:
       from_secret: updater-app-private-key
-  # - name: publish-to-gcom
-  #   image: grafana/integration-grafana-publisher:v9
-  #   commands:
-  #       - echo "start publish to GCOM"
-  #       - if [ -z "$GCOM_PUBLISH_TOKEN" ]; then echo "Missing GCOM Publish Key"; exit -1; fi
-  #       - if [ -z "$GITHUB_TOKEN" ]; then echo "Missing GITHUB_TOKEN"; exit -1; fi
-  #       - if [ -z "$GCLOUD_SERVICE_KEY" ]; then echo "Missing GCLOUD_SERVICE_KEY"; exit -1; fi
-  #       - printenv GCLOUD_SERVICE_KEY > /tmp/gcpkey.json
-  #       - gcloud auth activate-service-account --key-file=/tmp/gcpkey.json
-  #       - PLUGIN_NAME=`jq -r .id ci/meta/plugin.json`
-  #       - VERSION=`jq -r .info.version ci/meta/plugin.json`
-  #       - /root/app/bin/grafana-publisher.js --auto publishremote $PLUGIN_NAME $VERSION $DRONE_REPO_NAME
-  #     depends_on:
-  #       - publish-github-release
-  #     environment:
-  #       GCLOUD_SERVICE_KEY:
-  #           from_secret: gcp_key
-  #       GCOM_PUBLISH_TOKEN:
-  #           from_secret: signing_token
-  #       GITHUB_TOKEN:
-  #           from_secret: updater-app-private-key
+  - name: publish-to-gcom
+    image: grafana/integration-grafana-publisher:v9
+    commands:
+        - echo "start publish to GCOM"
+        - if [ -z "$GCOM_PUBLISH_TOKEN" ]; then echo "Missing GCOM Publish Key"; exit -1; fi
+        - if [ -z "$GITHUB_TOKEN" ]; then echo "Missing GITHUB_TOKEN"; exit -1; fi
+        - if [ -z "$GCLOUD_SERVICE_KEY" ]; then echo "Missing GCLOUD_SERVICE_KEY"; exit -1; fi
+        - printenv GCLOUD_SERVICE_KEY > /tmp/gcpkey.json
+        - gcloud auth activate-service-account --key-file=/tmp/gcpkey.json
+        - PLUGIN_NAME=`jq -r .id ci/meta/plugin.json`
+        - VERSION=`jq -r .info.version ci/meta/plugin.json`
+        - /root/app/bin/grafana-publisher.js --auto publishremote $PLUGIN_NAME $VERSION $DRONE_REPO_NAME
+      depends_on:
+        - publish-github-release
+      environment:
+        GCLOUD_SERVICE_KEY:
+            from_secret: gcp_key
+        GCOM_PUBLISH_TOKEN:
+            from_secret: signing_token
+        GITHUB_TOKEN:
+            from_secret: updater-app-private-key
 image_pull_secrets:
   - dockerconfigjson
 # Import secrets from Vault
