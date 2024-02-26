@@ -276,15 +276,15 @@ steps:
         - PLUGIN_NAME=`jq -r .id ci/meta/plugin.json`
         - VERSION=`jq -r .info.version ci/meta/plugin.json`
         - /root/app/bin/grafana-publisher.js --auto publishremote $PLUGIN_NAME $VERSION $DRONE_REPO_NAME
-      depends_on:
-        - publish-github-release
-      environment:
-        GCLOUD_SERVICE_KEY:
-            from_secret: gcp_key
-        GCOM_PUBLISH_TOKEN:
-            from_secret: signing_token
-        GITHUB_TOKEN:
-            from_secret: updater-app-private-key
+    depends_on:
+      - publish-github-release
+    environment:
+      GCLOUD_SERVICE_KEY:
+          from_secret: gcp_key
+      GCOM_PUBLISH_TOKEN:
+          from_secret: signing_token
+      GITHUB_TOKEN:
+          from_secret: updater-app-private-key
 image_pull_secrets:
   - dockerconfigjson
 # Import secrets from Vault
