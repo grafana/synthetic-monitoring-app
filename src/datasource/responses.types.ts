@@ -1,4 +1,4 @@
-import { AlertRecord, Check, Probe, Settings, ThresholdSettings } from 'types';
+import { AlertRecord, Check, Probe, PrometheusAlertsGroup, Settings, ThresholdSettings } from 'types';
 import { AccountingClassNames, DashboardInfo } from 'datasource/types';
 
 export type ListProbeResult = Probe[];
@@ -130,4 +130,11 @@ export type AlertGroupResponse = {
 
 export type ListDatasourceAlertsResponse = {
   [key: string]: AlertGroupResponse[];
+};
+
+export type ListPrometheusAlertsResponse = {
+  data: {
+    groups: PrometheusAlertsGroup[];
+  };
+  status: `success`;
 };

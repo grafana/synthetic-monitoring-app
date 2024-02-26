@@ -5,6 +5,7 @@ import { css, cx } from '@emotion/css';
 
 import { checkToUsageCalcValues, checkType as getCheckType } from 'utils';
 import { useUsageCalc } from 'hooks/useUsageCalc';
+import { AlertStatus } from 'components/AlertStatus/AlertStatus';
 
 import { CheckItemActionButtons } from './CheckItemActionButtons';
 import { CheckListItemProps } from './CheckListItem';
@@ -38,6 +39,7 @@ export const CheckListItemRow = ({
           <span className={styles.truncatedText} title={check.job}>
             {check.job}
           </span>
+          <AlertStatus check={check} />
         </div>
         <div className={styles.checkTarget}>
           <span className={styles.truncatedText}>{check.target}</span>
@@ -88,6 +90,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     alignItems: 'center',
     justifySelf: 'left',
     width: '100%',
+    gap: theme.spacing(1),
   }),
   truncatedText: css({
     textOverflow: 'ellipsis',

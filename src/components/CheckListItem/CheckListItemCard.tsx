@@ -5,8 +5,8 @@ import { css, cx } from '@emotion/css';
 
 import { Label } from 'types';
 import { checkToUsageCalcValues, checkType as getCheckType } from 'utils';
-import { useAlertRules } from 'hooks/useAlertRules';
 import { useUsageCalc } from 'hooks/useUsageCalc';
+import { AlertStatus } from 'components/AlertStatus/AlertStatus';
 import { LatencyGauge, SuccessRateGaugeCheckReachability, SuccessRateGaugeCheckUptime } from 'components/Gauges';
 
 import { CheckCardLabel } from '../CheckCardLabel';
@@ -23,8 +23,6 @@ export const CheckListItemCard = ({
   selected,
   onToggleCheckbox,
 }: CheckListItemProps) => {
-  const res = useAlertRules(check.alertSensitivity);
-  console.log(res);
   const styles = useStyles2(getStyles);
   const checkType = getCheckType(check.settings);
   const usage = useUsageCalc([checkToUsageCalcValues(check)]);
@@ -45,9 +43,12 @@ export const CheckListItemCard = ({
         <div className={styles.wrapper}>
           <div className={cx(styles.body, { [styles.bodyDisabled]: !check.enabled })}>
             <div className={styles.checkInfoContainer}>
-              <h3 className={styles.heading}>{check.job}</h3>
+              <div className={styles.stackCenter}>
+                <h3 className={styles.heading}>{check.job}</h3>
+                <AlertStatus check={check} />
+              </div>
               <div className={styles.checkTarget}>{check.target}</div>
-              <div className={styles.statusDetailsCardView}>
+              <div className={styles.stackCenter}>
                 <CheckStatusType
                   enabled={check.enabled}
                   checkType={checkType}
@@ -124,10 +125,10 @@ const getStyles = (theme: GrafanaTheme2) => ({
     gap: theme.spacing(1),
     overflow: 'hidden',
   }),
-  statusDetailsCardView: css({
+  stackCenter: css({
     display: 'flex',
-    flexDirection: 'row',
     alignItems: 'center',
+    gap: theme.spacing(1),
   }),
   checkTarget: css({
     fontSize: theme.typography.bodySmall.fontSize,

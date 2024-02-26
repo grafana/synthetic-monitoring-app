@@ -1,24 +1,25 @@
 import { useCallback, useMemo } from 'react';
 
-import { AlertRecord, Check } from 'types';
-import { findRelevantAlerts, useAlerts } from 'data/useAlerts';
+import { Check, PrometheusAlertRecord } from 'types';
+import { findRelevantAlertGroups, useAlerts } from 'data/useAlerts';
 
 export function useAlertRules(alertSensitivity: Check['alertSensitivity']) {
   const alertFilter = useCallback(
-    (alert: AlertRecord) => {
-      return alert.expr.includes(`alert_sensitivity=\"${alertSensitivity}\"`);
+    (alert: PrometheusAlertRecord) => {
+      return alert.query.includes(`alert_sensitivity=\"${alertSensitivity}\"`);
     },
     [alertSensitivity]
   );
 
-  const { data } = useAlerts();
+  const { data, isLoading } = useAlerts();
 
   return useMemo(() => {
-    if (data) {
-      const relevant = findRelevantAlerts(data, alertFilter);
-      return relevant;
-    }
+    const groups = data ? findRelevantAlertGroups(data, alertFilter) : [];
 
-    return [];
-  }, [data, alertFilter]);
+    return {
+      groups,
+      isLoading,
+      enabled: groups.length > 0,
+    };
+  }, [data, isLoading, alertFilter]);
 }

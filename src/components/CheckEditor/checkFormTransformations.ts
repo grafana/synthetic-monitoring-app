@@ -227,7 +227,7 @@ const getTcpQueryResponseFormValues = (queryResponses: TCPQueryResponse[]) => {
 
 const getTcpSettingsFormValues = (settings: TCPCheck['settings']): TcpSettingsFormValues => {
   const tcpSettings = settings.tcp ?? FALLBACK_CHECK_TCP.settings.tcp;
-  const formattedQueryResponse = getTcpQueryResponseFormValues(tcpSettings.queryResponse);
+  const formattedQueryResponse = getTcpQueryResponseFormValues(tcpSettings.queryResponse || []);
   const tlsConfig = getTlsConfigFormValues(tcpSettings.tlsConfig);
 
   return {
@@ -705,7 +705,7 @@ const getTcpSettings = (settings: TcpSettingsFormValues): TcpSettings => {
   const fallbackValues = FALLBACK_CHECK_TCP.settings.tcp;
 
   const tlsConfig = getTlsConfigFromFormValues(settings.tlsConfig);
-  const queryResponse = getTcpQueryResponseFromFormFields(settings.queryResponse);
+  const queryResponse = getTcpQueryResponseFromFormFields(settings.queryResponse || []);
 
   return {
     ...fallbackValues,

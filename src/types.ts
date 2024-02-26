@@ -170,7 +170,7 @@ export interface TcpSettings {
   ipVersion: IpVersion;
   tls: boolean;
   tlsConfig?: TLSConfig;
-  queryResponse: TCPQueryResponse[];
+  queryResponse?: TCPQueryResponse[];
 }
 
 export interface TcpSettingsFormValues extends Omit<TcpSettings, 'ipVersion'> {
@@ -622,6 +622,8 @@ export type AlertDescription = {
   threshold: number;
 };
 
+export type AlertFilter = (record: PrometheusAlertRecord) => boolean;
+
 export enum CheckSort {
   AToZ = 'atoz',
   ZToA = 'ztoa',
@@ -754,3 +756,42 @@ export interface CalculateUsageValues {
   isSSL: boolean;
   probeCount: number;
 }
+
+export type PrometheusAlertsGroup = {
+  evaulationTime: number;
+  file: string;
+  interval: number;
+  lastEvaluation: number;
+  name: string;
+  rules: PrometheusAlertRecord[];
+  totals: null;
+};
+
+export type PrometheusAlertRecord = PrometheusAlertRecordingRule | PrometheusAlertingRule;
+
+export type PrometheusAlertRecordingRule = {
+  evaluationTime: number;
+  health: `ok`; // fill in others
+  lastEvaluation: number;
+  name: string;
+  query: string;
+  type: `recording`;
+};
+
+export type PrometheusAlertingRule = {
+  annotations: {
+    description: string;
+    summary: string;
+  };
+  duration: number;
+  evaluationTime: number;
+  health: `ok`; // fill in others
+  labels: {
+    [key: string]: string;
+  };
+  lastEvaluation: number;
+  name: string;
+  query: string;
+  state: 'inactive'; // fill in others
+  type: `alerting`;
+};

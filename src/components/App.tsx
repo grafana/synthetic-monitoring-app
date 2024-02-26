@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import React, { useEffect } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { AppRootProps } from '@grafana/data';
@@ -6,33 +6,45 @@ import { css, Global } from '@emotion/react';
 
 import { GlobalSettings } from 'types';
 import { queryClient } from 'data/queryClient';
+import { queryKeys as alertingQueryKeys } from 'data/useAlerts';
 import { DashboardUpdateModal } from 'components/DashboardUpdateModal';
 import { InstanceProvider } from 'components/InstanceProvider';
 import { Routing } from 'components/Routing';
 
 import { FeatureFlagProvider } from './FeatureFlagProvider';
 
-export class App extends PureComponent<AppRootProps<GlobalSettings>> {
-  render() {
-    const { meta } = this.props;
-    return (
-      <FeatureFlagProvider>
-        <GlobalStyles />
-        <InstanceProvider
-          metricInstanceName={meta.jsonData?.metrics?.grafanaName}
-          logsInstanceName={meta.jsonData?.logs?.grafanaName}
-          meta={meta}
-        >
-          <QueryClientProvider client={queryClient}>
-            <Routing {...this.props} />
-            <DashboardUpdateModal />
-            <ReactQueryDevtools />
-          </QueryClientProvider>
-        </InstanceProvider>
-      </FeatureFlagProvider>
-    );
-  }
-}
+type AppProps = AppRootProps<GlobalSettings>;
+
+export const App = (props: AppProps) => {
+  const { meta } = props;
+
+  useEffect(() => {
+    return () => {
+      // we have a dependency on alerts to display our alerting correctly
+      // so we are invalidating the alerts list on the assumption the user might change their alerting options when they leave SM
+      // going to leave this despite it being a little bit buggy as the idea is correct (well, it should be invalidatQueries...)
+      // alerting have some aggressive caching going on so I'm finding testing this hard
+      queryClient.removeQueries({ queryKey: alertingQueryKeys.list });
+    };
+  }, [meta.jsonData?.metrics.uid]);
+
+  return (
+    <FeatureFlagProvider>
+      <GlobalStyles />
+      <InstanceProvider
+        metricInstanceName={meta.jsonData?.metrics?.grafanaName}
+        logsInstanceName={meta.jsonData?.logs?.grafanaName}
+        meta={meta}
+      >
+        <QueryClientProvider client={queryClient}>
+          <Routing {...props} />
+          <DashboardUpdateModal />
+          <ReactQueryDevtools />
+        </QueryClientProvider>
+      </InstanceProvider>
+    </FeatureFlagProvider>
+  );
+};
 
 const GlobalStyles = () => {
   return (
