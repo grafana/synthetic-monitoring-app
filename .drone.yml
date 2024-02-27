@@ -297,6 +297,14 @@ steps:
       GRAFANA_ACCESS_POLICY_TOKEN:
         from_secret: signing_token
 
+  - name: Publish release to Github
+    image: plugins/github-release
+    settings:
+      api_key:
+        from_secret: updater-app-private-key
+      files: ./artifacts/builds/*
+      title: 'Release ${cat plugin_version.txt}'
+
   - name: publish-to-gcom
     image: grafana/integration-grafana-publisher:latest
     commands:
@@ -378,6 +386,6 @@ kind: secret
 name: gcp_key
 ---
 kind: signature
-hmac: 131831f39b5bf4a222fd5cf6457d40c44910f5a9f7e23743244fc43422ce1d2f
+hmac: 0b790f6c9f355c3efc26a7c4090374dba8be29851f140d3c1448b14009c8c2e8
 
 ...
