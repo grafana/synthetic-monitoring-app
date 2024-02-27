@@ -302,7 +302,7 @@ steps:
     settings:
       api_key:
         from_secret: updater-app-private-key
-      files: ./artifacts/builds/*
+      files: ./artifacts/builds
       title: 'Release ${cat plugin_version.txt}'
 
   - name: publish-to-gcom
@@ -387,5 +387,3 @@ name: gcp_key
 ---
 kind: signature
 hmac: 0b790f6c9f355c3efc26a7c4090374dba8be29851f140d3c1448b14009c8c2e8
-
-...
