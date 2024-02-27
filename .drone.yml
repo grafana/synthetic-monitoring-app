@@ -286,19 +286,16 @@ trigger:
     - publish-gcom
 
 steps:
-  - name: tag-release
+  - name: publish-to-github
     image: node:18
     commands:
       - ./scripts/install-ci-deps-apt.sh
-      - make install lint test build sign package
-      - make publish-release
+      - make install lint test build sign package gh-release
     environment:
-      GCP_KEY:
-        from_secret: gcp_key
       GRAFANA_ACCESS_POLICY_TOKEN:
         from_secret: signing_token
       GITHUB_TOKEN:
-        from_secret: updater-app-private-key
+        from_secret: github_token
   - name: publish-to-gcom
     image: grafana/integration-grafana-publisher:latest
     commands:
@@ -315,9 +312,9 @@ steps:
       GCLOUD_SERVICE_KEY:
         from_secret: gcp_key
       GCOM_PUBLISH_TOKEN:
-        from_secret: signing_token
+        from_secret: gcom_token
       GITHUB_TOKEN:
-        from_secret: updater-app-private-key
+        from_secret: github_token
 
 image_pull_secrets:
   - dockerconfigjson
@@ -380,6 +377,6 @@ kind: secret
 name: gcp_key
 ---
 kind: signature
-hmac: 6312a70b2bc40ae6e2f626847af8fb2e3ceeef87f879adba1932c1843847bf06
+hmac: 85b7a6304271ea1e00cbecbf62a767f4bb2d3528ffa2e5c21704ae5b05059c8b
 
 ...

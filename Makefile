@@ -61,12 +61,13 @@ package:
 	mkdir -p $(ARTIFACTS_DIR)/$(VERSION)
 	ln -s dist grafana-synthetic-monitoring-app
 	zip -r $(ARTIFACTS_DIR)/$(VERSION)/$(PACKAGE_NAME) grafana-synthetic-monitoring-app
-	rm grafana-synthetic-monitoring-app
 	echo $(VERSION) > $(ROOT_DIR)/plugin_version.txt
+	rm grafana-synthetic-monitoring-app
 
-.PHONY: tag-release
-publish-release:
-	gh release create $(VERSION) --title $(VERSION) --target add-publish-gcom-promotion --latest $(ARTIFACTS_DIR)/$(VERSION)/$(PACKAGE_NAME)
+.PHONY: gh-release
+gh-release:
+	echo $(ARTIFACTS_DIR)/$(VERSION)/$(PACKAGE_NAME)
+	gh release create $(VERSION) --title $(VERSION) -F ./CHANGELOG.md --draft --latest $(ARTIFACTS_DIR)/$(VERSION)/$(PACKAGE_NAME)
 
 .PHONY: package-latest
 package-latest:
