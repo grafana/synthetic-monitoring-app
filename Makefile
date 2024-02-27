@@ -66,6 +66,10 @@ package:
 
 .PHONY: tag-release
 tag-release:
+	git fetch --all
+	git checkout add-publish-gcom-promotion
+	git config user.email "syntheticmonitoring@grafana.com"
+	git config user.name "DroneCI Automation - grafanabot"
 	git tag -a $(VERSION) -m "Release $(VERSION)"
 	git push origin $(VERSION)
 
