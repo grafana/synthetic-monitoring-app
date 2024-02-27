@@ -464,14 +464,14 @@ export type TracerouteCheck = CheckBase & {
 };
 
 export enum CheckType {
-  HTTP = 'http',
-  PING = 'ping',
   DNS = 'dns',
   GRPC = 'grpc',
+  HTTP = 'http',
+  MULTI_HTTP = 'multihttp',
+  PING = 'ping',
+  Scripted = 'scripted',
   TCP = 'tcp',
   Traceroute = 'traceroute',
-  MULTI_HTTP = 'multihttp',
-  Scripted = 'scripted',
 }
 
 export interface HostedInstance {

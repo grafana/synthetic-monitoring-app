@@ -10,7 +10,7 @@ import { ROUTES } from 'types';
 import { getSlider } from 'components/CheckEditor/testHelpers';
 import { PLUGIN_URL_PATH } from 'components/constants';
 
-import { MultiHttpSettingsForm } from './MultiHttpSettingsForm';
+import { CheckForm } from './CheckForm';
 
 jest.setTimeout(60000);
 
@@ -18,8 +18,8 @@ beforeEach(() => jest.resetAllMocks());
 
 async function renderForm(route: string) {
   const res = waitFor(() =>
-    render(<MultiHttpSettingsForm />, {
-      route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`,
+    render(<CheckForm />, {
+      route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:checkType/:id`,
       path: `${PLUGIN_URL_PATH}${ROUTES.Checks}${route}`,
     })
   );
@@ -32,7 +32,7 @@ describe('editing multihttp check', () => {
     const { record, read } = getServerRequests();
     server.use(apiRoute(`updateCheck`, {}, record));
     const targetCheck = BASIC_MULTIHTTP_CHECK;
-    const { user } = await renderForm(`/edit/${targetCheck.id}`);
+    const { user } = await renderForm(`/edit/multihttp/${targetCheck.id}`);
     expect(await screen.findByLabelText('Job name', { exact: false })).toHaveValue(targetCheck.job);
     // this is checking for the name of the probe
     expect(await screen.findByText(PRIVATE_PROBE.name)).toBeInTheDocument();
@@ -119,9 +119,9 @@ describe('editing multihttp check', () => {
 
     const { record, read } = getServerRequests();
     server.use(apiRoute(`updateCheck`, {}, record));
-    const { user } = await renderForm(`/edit/${targetCheck.id}`);
+    const { user } = await renderForm(`/edit/multihttp/${targetCheck.id}`);
     // edit job name
-    const jobNameInput = await screen.findByLabelText('Job name');
+    const jobNameInput = await screen.findByLabelText('Job name', { exact: false });
     await user.clear(jobNameInput);
     await user.type(jobNameInput, NEW_JOB_NAME);
 

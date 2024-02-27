@@ -16,6 +16,8 @@ interface Props {
   error?: string;
 }
 
+export const PROBES_SELECT_ID = 'check-probes-select';
+
 const CheckProbes = forwardRef(
   ({ probes, availableProbes, isEditor, onChange, onBlur, invalid, error }: Props, ref) => {
     const [currentProbes, setCurrentProbes] = useState<number[]>(probes);
@@ -66,6 +68,7 @@ const CheckProbes = forwardRef(
         {(theme) => (
           <>
             <Field
+              id={PROBES_SELECT_ID}
               label="Probe locations"
               description="Select one, multiple, or all probes where this target will be checked from. Deprecated probes can be removed, but they cannot be added."
               disabled={!isEditor}

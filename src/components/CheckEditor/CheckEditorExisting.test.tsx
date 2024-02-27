@@ -15,9 +15,9 @@ import { render } from 'test/render';
 import { server } from 'test/server';
 
 import { ROUTES } from 'types';
+import { CheckForm } from 'components/CheckForm/CheckForm';
 import { DNS_RESPONSE_MATCH_OPTIONS, PLUGIN_URL_PATH } from 'components/constants';
 
-import { CheckEditor } from './CheckEditor';
 import { getSlider, submitForm, toggleSection } from './testHelpers';
 
 jest.setTimeout(60000);
@@ -35,8 +35,8 @@ beforeEach(() => jest.resetAllMocks());
 
 const renderExistingCheckEditor = async (route: string) => {
   const res = waitFor(() =>
-    render(<CheckEditor />, {
-      route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`,
+    render(<CheckForm />, {
+      route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:checkType/:id`,
       path: `${PLUGIN_URL_PATH}${ROUTES.Checks}${route}`,
     })
   );
@@ -63,10 +63,10 @@ describe('editing checks', () => {
       tlsConfig,
       validHTTPVersions,
       validStatusCodes,
-    } = settings.http!;
+    } = settings.http;
     const [headerName, headerValue] = headers![0].split(`:`);
 
-    const { user } = await renderExistingCheckEditor(`/edit/${targetCheck.id}`);
+    const { user } = await renderExistingCheckEditor(`/edit/http/${targetCheck.id}`);
     expect(await screen.findByLabelText('Job name', { exact: false })).toHaveValue(targetCheck.job);
     expect(await screen.findByLabelText('Enabled', { exact: false })).toBeChecked();
     expect(await screen.findByLabelText('Full URL to send requests to', { exact: false })).toHaveValue(
@@ -124,7 +124,7 @@ describe('editing checks', () => {
     const { read, record } = getServerRequests();
     server.use(apiRoute(`updateCheck`, {}, record));
     const targetCheck = FULL_HTTP_CHECK;
-    const { user } = await renderExistingCheckEditor(`/edit/${targetCheck.id}`);
+    const { user } = await renderExistingCheckEditor(`/edit/http/${targetCheck.id}`);
     const JOB_SUFFIX = 'tacos';
     const NEW_HEADER = {
       name: 'new headerName',
@@ -290,65 +290,65 @@ describe('editing checks', () => {
     });
   });
 
-  // it('transforms data correctly for TCP check', async () => {
-  //   const { read, record } = getServerRequests();
-  //   server.use(apiRoute(`updateCheck`, {}, record));
-  //   const { user } = await renderExistingCheckEditor(`/edit/${BASIC_TCP_CHECK.id}`);
+  it('transforms data correctly for TCP check', async () => {
+    const { read, record } = getServerRequests();
+    server.use(apiRoute(`updateCheck`, {}, record));
+    const { user } = await renderExistingCheckEditor(`/edit/tcp/${BASIC_TCP_CHECK.id}`);
 
-  //   await submitForm(user);
-  //   const { body } = await read();
-  //   expect(body).toEqual(BASIC_TCP_CHECK);
-  // });
+    await submitForm(user);
+    const { body } = await read();
+    expect(body).toEqual(BASIC_TCP_CHECK);
+  });
 
-  // it('transforms data correctly for DNS check', async () => {
-  //   const { read, record } = getServerRequests();
-  //   server.use(apiRoute(`updateCheck`, {}, record));
-  //   const NOT_INVERTED_VALIDATION = 'not inverted validation';
-  //   const INVERTED_VALIDATION = 'inverted validation';
+  it('transforms data correctly for DNS check', async () => {
+    const { read, record } = getServerRequests();
+    server.use(apiRoute(`updateCheck`, {}, record));
+    const NOT_INVERTED_VALIDATION = 'not inverted validation';
+    const INVERTED_VALIDATION = 'inverted validation';
 
-  //   const { user } = await renderExistingCheckEditor(`/edit/${BASIC_DNS_CHECK.id}`);
-  //   await toggleSection('Validation', user);
+    const { user } = await renderExistingCheckEditor(`/edit/dns/${BASIC_DNS_CHECK.id}`);
+    await toggleSection('Validation', user);
 
-  //   const responseMatch1 = await screen.findByTestId('dnsValidationResponseMatch0');
-  //   await user.selectOptions(responseMatch1, DNS_RESPONSE_MATCH_OPTIONS[1].value);
-  //   const responseMatch2 = await screen.findByTestId('dnsValidationResponseMatch1');
-  //   await user.selectOptions(responseMatch2, DNS_RESPONSE_MATCH_OPTIONS[1].value);
+    const responseMatch1 = await screen.findByTestId('dnsValidationResponseMatch0');
+    await user.selectOptions(responseMatch1, DNS_RESPONSE_MATCH_OPTIONS[1].value);
+    const responseMatch2 = await screen.findByTestId('dnsValidationResponseMatch1');
+    await user.selectOptions(responseMatch2, DNS_RESPONSE_MATCH_OPTIONS[1].value);
 
-  //   const expressionInputs = await screen.findAllByPlaceholderText('Type expression');
-  //   await user.clear(expressionInputs[0]);
-  //   await user.clear(expressionInputs[1]);
-  //   await user.type(expressionInputs[0], NOT_INVERTED_VALIDATION);
-  //   await user.type(expressionInputs[1], INVERTED_VALIDATION);
-  //   const invertedCheckboxes = await screen.findAllByRole('checkbox');
-  //   await user.click(invertedCheckboxes[2]);
-  //   await submitForm(user);
+    const expressionInputs = await screen.findAllByPlaceholderText('Type expression');
+    await user.clear(expressionInputs[0]);
+    await user.clear(expressionInputs[1]);
+    await user.type(expressionInputs[0], NOT_INVERTED_VALIDATION);
+    await user.type(expressionInputs[1], INVERTED_VALIDATION);
+    const invertedCheckboxes = await screen.findAllByRole('checkbox');
+    await user.click(invertedCheckboxes[2]);
+    await submitForm(user);
 
-  //   const { body } = await read();
+    const { body } = await read();
 
-  //   expect(body).toEqual({
-  //     ...BASIC_DNS_CHECK,
-  //     tenantId: undefined,
-  //     settings: {
-  //       dns: {
-  //         ...BASIC_DNS_CHECK.settings.dns,
-  //         validateAnswerRRS: {
-  //           ...BASIC_DNS_CHECK.settings.dns.validateAnswerRRS,
-  //           failIfNotMatchesRegexp: [NOT_INVERTED_VALIDATION, INVERTED_VALIDATION],
-  //         },
-  //         validateAuthorityRRS: {
-  //           failIfMatchesRegexp: [],
-  //           failIfNotMatchesRegexp: [],
-  //         },
-  //       },
-  //     },
-  //   });
-  // });
+    expect(body).toEqual({
+      ...BASIC_DNS_CHECK,
+      tenantId: undefined,
+      settings: {
+        dns: {
+          ...BASIC_DNS_CHECK.settings.dns,
+          validateAnswerRRS: {
+            ...BASIC_DNS_CHECK.settings.dns.validateAnswerRRS,
+            failIfNotMatchesRegexp: [NOT_INVERTED_VALIDATION, INVERTED_VALIDATION],
+          },
+          validateAuthorityRRS: {
+            failIfMatchesRegexp: [],
+            failIfNotMatchesRegexp: [],
+          },
+        },
+      },
+    });
+  });
 
-  // it('handles custom alert severities', async () => {
-  //   const { user } = await renderExistingCheckEditor(`/edit/${CUSTOM_ALERT_SENSITIVITY_CHECK.id}`);
-  //   await toggleSection('Alerting', user);
+  it('handles custom alert severities', async () => {
+    const { user } = await renderExistingCheckEditor(`/edit/dns/${CUSTOM_ALERT_SENSITIVITY_CHECK.id}`);
+    await toggleSection('Alerting', user);
 
-  //   const alertSensitivityInput = await screen.findByTestId('alertSensitivityInput');
-  //   expect(alertSensitivityInput).toHaveValue(CUSTOM_ALERT_SENSITIVITY_CHECK.alertSensitivity);
-  // });
+    const alertSensitivityInput = await screen.findByTestId('alertSensitivityInput');
+    expect(alertSensitivityInput).toHaveValue(CUSTOM_ALERT_SENSITIVITY_CHECK.alertSensitivity);
+  });
 });
