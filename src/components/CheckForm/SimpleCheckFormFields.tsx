@@ -11,7 +11,7 @@ import CheckTarget from 'components/CheckTarget';
 import { CheckUsage } from 'components/CheckUsage';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 
-export const SimpleCheckForm = ({ check, checkType }: { check: Check; checkType: CheckType }) => {
+export const SimpleCheckFormFields = ({ check, checkType }: { check: Check; checkType: CheckType }) => {
   const isEditor = hasRole(OrgRole.Editor);
   const { control, formState, register } = useFormContext<CheckFormValues>();
 
@@ -21,7 +21,7 @@ export const SimpleCheckForm = ({ check, checkType }: { check: Check; checkType:
         name="target"
         control={control}
         rules={{
-          required: true,
+          required: { value: true, message: 'Target is required' },
           validate: (target) => {
             return validateTarget(checkType, target);
           },

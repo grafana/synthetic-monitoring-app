@@ -3,11 +3,11 @@ import { Controller, FieldErrors, useFieldArray, useFormContext } from 'react-ho
 import { OrgRole } from '@grafana/data';
 import { Button, Field, HorizontalGroup, Input, Select, useStyles2, VerticalGroup } from '@grafana/ui';
 
-import { CheckFormValuesMultiHttp, CheckType, MultiHTTPCheck } from 'types';
+import { CheckFormValues, CheckFormValuesMultiHttp, CheckType, MultiHTTPCheck } from 'types';
 import { hasRole } from 'utils';
 import { validateTarget } from 'validation';
 import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
-import { METHOD_OPTIONS } from 'components/constants';
+import { CHECK_FORM_ERROR_EVENT, METHOD_OPTIONS } from 'components/constants';
 import { LabelField } from 'components/LabelField';
 import { AvailableVariables } from 'components/MultiHttp/AvailableVariables';
 import { MultiHttpCollapse } from 'components/MultiHttp/MultiHttpCollapse';
@@ -19,7 +19,7 @@ import {
 } from 'components/MultiHttp/MultiHttpSettingsForm.utils';
 import { TabSection } from 'components/MultiHttp/Tabs/TabSection';
 
-export const MultiHttpSettingsForm = ({ check }: { check: MultiHTTPCheck }) => {
+export const MultiHttpCheckFormFields = ({ check }: { check: MultiHTTPCheck }) => {
   const styles = useStyles2(getMultiHttpFormStyles);
   const panelRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const [collapseState, dispatchCollapse] = useMultiHttpCollapseState(check);
@@ -43,8 +43,8 @@ export const MultiHttpSettingsForm = ({ check }: { check: MultiHTTPCheck }) => {
   const requests = watch('settings.multihttp.entries') as any[];
 
   useEffect(() => {
-    const stable = (e: Event) => {
-      const errs = (e as CustomEvent).detail as FieldErrors<CheckFormValuesMultiHttp>;
+    const onErrorEvent = (e: CustomEvent<FieldErrors<CheckFormValues>>) => {
+      const errs = e.detail;
       const res = getMultiHttpFormErrors(errs);
 
       if (res) {
@@ -61,10 +61,10 @@ export const MultiHttpSettingsForm = ({ check }: { check: MultiHTTPCheck }) => {
       }
     };
 
-    document.addEventListener(`sm-form-error`, stable);
+    document.addEventListener(CHECK_FORM_ERROR_EVENT, onErrorEvent);
 
     return () => {
-      document.removeEventListener(`sm-form-error`, stable);
+      document.removeEventListener(CHECK_FORM_ERROR_EVENT, onErrorEvent);
     };
   }, [dispatchCollapse]);
 

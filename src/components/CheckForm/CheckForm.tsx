@@ -12,17 +12,18 @@ import { validateJob } from 'validation';
 import { useChecks, useCUDChecks } from 'data/useChecks';
 import { useNavigation } from 'hooks/useNavigation';
 import { getCheckFromFormValues, getFormValuesFromCheck } from 'components/CheckEditor/checkFormTransformations';
+import { PROBES_SELECT_ID } from 'components/CheckEditor/CheckProbes';
 import { CheckFormAlert } from 'components/CheckFormAlert';
 import { CheckTestResultsModal } from 'components/CheckTestResultsModal';
-import { fallbackCheckMap } from 'components/constants';
+import { CHECK_FORM_ERROR_EVENT, fallbackCheckMap } from 'components/constants';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 import { MultiHttpFeedbackAlert } from 'components/MultiHttp/MultiHttpFeedbackAlert';
 import { PluginPage } from 'components/PluginPage';
 import { getRoute } from 'components/Routing';
 
-import { MultiHttpSettingsForm } from './MultiHttpCheckForm';
-import { ScriptedCheckForm } from './ScriptedCheckForm';
-import { SimpleCheckForm } from './SimpleCheckForm';
+import { MultiHttpCheckFormFields } from './MultiHttpCheckFormFields';
+import { ScriptedCheckFormFields } from './ScriptedCheckFormFields';
+import { SimpleCheckFormFields } from './SimpleCheckFormFields';
 import { useAdhocTest } from './useTestCheck';
 
 export const CheckForm = () => {
@@ -53,8 +54,7 @@ const CheckFormContent = ({ check, checkType }: CheckFormContentProps) => {
   const initialValues = useMemo(() => getFormValuesFromCheck(check), [check]);
   const formMethods = useForm<CheckFormValues>({
     defaultValues: initialValues,
-    reValidateMode: 'onBlur',
-    shouldFocusError: true /* handle this manually */,
+    shouldFocusError: false, // we manage focus manually
   });
 
   const { updateCheck, createCheck, deleteCheck, error, submitting } = useCUDChecks({ eventInfo: { checkType } });
@@ -66,8 +66,8 @@ const CheckFormContent = ({ check, checkType }: CheckFormContentProps) => {
   const testRef = useRef<HTMLButtonElement>(null);
 
   const handleSubmit = (checkValues: CheckFormValues, event: BaseSyntheticEvent | undefined) => {
-    // @ts-expect-error
-    const submitter = event?.nativeEvent.submitter;
+    // react-hook-form doesn't let us provide SubmitEvent to BaseSyntheticEvent
+    const submitter = (event?.nativeEvent as SubmitEvent).submitter;
     const toSubmit = getCheckFromFormValues(checkValues);
 
     if (submitter === testRef.current) {
@@ -93,7 +93,15 @@ const CheckFormContent = ({ check, checkType }: CheckFormContentProps) => {
   };
 
   const handleError = (errs: FieldErrors<CheckFormValues>) => {
-    document.dispatchEvent(new CustomEvent('sm-form-error', { detail: errs }));
+    const shouldFocus = findFieldToFocus(errs);
+
+    // can't pass refs to all fields so have to manage it automatically
+    if (shouldFocus) {
+      shouldFocus.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      shouldFocus.focus({ preventScroll: true });
+    }
+
+    document.dispatchEvent(new CustomEvent(CHECK_FORM_ERROR_EVENT, { detail: errs }));
   };
 
   const handleDelete = () => {
@@ -123,11 +131,12 @@ const CheckFormContent = ({ check, checkType }: CheckFormContentProps) => {
               disabled={!isEditor}
               invalid={Boolean(formMethods.formState.errors.job)}
               error={formMethods.formState.errors.job?.message}
+              required
             >
               <Input
                 id="check-editor-job-input"
                 {...formMethods.register('job', {
-                  required: true,
+                  required: { value: true, message: 'Job name is required' },
                   validate: validateJob,
                 })}
                 type="text"
@@ -191,14 +200,14 @@ const CheckFormContent = ({ check, checkType }: CheckFormContentProps) => {
 
 const FormFields = ({ check, checkType }: { check: Check; checkType: CheckType }) => {
   if (isMultiHttpCheck(check)) {
-    return <MultiHttpSettingsForm check={check} />;
+    return <MultiHttpCheckFormFields check={check} />;
   }
 
   if (isScriptedCheck(check)) {
-    return <ScriptedCheckForm check={check} />;
+    return <ScriptedCheckFormFields check={check} />;
   }
 
-  return <SimpleCheckForm check={check} checkType={checkType} />;
+  return <SimpleCheckFormFields check={check} checkType={checkType} />;
 };
 
 function isValidCheckType(checkType?: CheckType): checkType is CheckType {
@@ -211,6 +220,50 @@ function isValidCheckType(checkType?: CheckType): checkType is CheckType {
   }
 
   return false;
+}
+
+function findFieldToFocus(errs: FieldErrors<CheckFormValues>): HTMLElement | undefined {
+  if (shouldFocusProbes(errs)) {
+    return document.querySelector<HTMLInputElement>(`#${PROBES_SELECT_ID} input`) || undefined;
+  }
+
+  const ref = findRef(errs);
+  const isVisible = ref?.offsetParent !== null;
+  return isVisible ? ref : undefined;
+}
+
+function findRef(target: any): HTMLElement | undefined {
+  if (Array.isArray(target)) {
+    let ref;
+    for (let i = 0; i < target.length; i++) {
+      const found = findRef(target[i]);
+
+      if (found) {
+        ref = found;
+        break;
+      }
+    }
+
+    return ref;
+  }
+
+  if (target !== null && typeof target === `object`) {
+    if (target.ref) {
+      return target.ref;
+    }
+
+    return findRef(Object.values(target));
+  }
+
+  return undefined;
+}
+
+function shouldFocusProbes(errs: FieldErrors<CheckFormValues>) {
+  if (errs?.job || errs?.target) {
+    return false;
+  }
+
+  return `probes` in errs;
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({

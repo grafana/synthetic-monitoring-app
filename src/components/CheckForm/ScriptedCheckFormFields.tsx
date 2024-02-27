@@ -11,7 +11,7 @@ import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
 import { CodeEditor } from 'components/CodeEditor';
 import { LabelField } from 'components/LabelField';
 
-export const ScriptedCheckForm = ({ check }: { check: Check }) => {
+export const ScriptedCheckFormFields = ({ check }: { check: Check }) => {
   const { control, formState, register } = useFormContext<CheckFormValuesScripted>();
   const isEditor = hasRole(OrgRole.Editor);
   const styles = useStyles2(getStyles);
