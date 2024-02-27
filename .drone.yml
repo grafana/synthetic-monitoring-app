@@ -301,6 +301,7 @@ steps:
     image: plugins/github-release
     commands:
       - export VERSION=`cat plugin_version.txt`
+      - ls -al .
     settings:
       api_key:
         from_secret: updater-app-private-key
@@ -388,6 +389,6 @@ kind: secret
 name: gcp_key
 ---
 kind: signature
-hmac: b5a659fa2e209dafdac24a6c7360c2b23d0a42f886f1b59ae1d2d1dc6c23b028
+hmac: d7b402f8759b547f315bab2faa7ed65014708323f0aca76153f458e299ccace6
 
 ...
