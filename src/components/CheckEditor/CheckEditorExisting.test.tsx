@@ -14,9 +14,9 @@ import { render } from 'test/render';
 import { server } from 'test/server';
 
 import { ROUTES } from 'types';
+import { CheckForm } from 'components/CheckForm/CheckForm';
 import { DNS_RESPONSE_MATCH_OPTIONS, PLUGIN_URL_PATH } from 'components/constants';
 
-import { CheckEditor } from './CheckEditor';
 import { getSlider, submitForm, toggleSection } from './testHelpers';
 
 jest.setTimeout(60000);
@@ -34,8 +34,8 @@ beforeEach(() => jest.resetAllMocks());
 
 const renderExistingCheckEditor = async (route: string) => {
   const res = waitFor(() =>
-    render(<CheckEditor />, {
-      route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`,
+    render(<CheckForm />, {
+      route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:checkType/:id`,
       path: `${PLUGIN_URL_PATH}${ROUTES.Checks}${route}`,
     })
   );
@@ -62,10 +62,10 @@ describe('editing checks', () => {
       tlsConfig,
       validHTTPVersions,
       validStatusCodes,
-    } = settings.http!;
+    } = settings.http;
     const [headerName, headerValue] = headers![0].split(`:`);
 
-    const { user } = await renderExistingCheckEditor(`/edit/${targetCheck.id}`);
+    const { user } = await renderExistingCheckEditor(`/edit/http/${targetCheck.id}`);
     expect(await screen.findByLabelText('Job name', { exact: false })).toHaveValue(targetCheck.job);
     expect(await screen.findByLabelText('Enabled', { exact: false })).toBeChecked();
     expect(await screen.findByLabelText('Full URL to send requests to', { exact: false })).toHaveValue(
@@ -123,7 +123,7 @@ describe('editing checks', () => {
     const { read, record } = getServerRequests();
     server.use(apiRoute(`updateCheck`, {}, record));
     const targetCheck = FULL_HTTP_CHECK;
-    const { user } = await renderExistingCheckEditor(`/edit/${targetCheck.id}`);
+    const { user } = await renderExistingCheckEditor(`/edit/http/${targetCheck.id}`);
     const JOB_SUFFIX = 'tacos';
     const NEW_HEADER = {
       name: 'new headerName',
@@ -281,7 +281,7 @@ describe('editing checks', () => {
   it('transforms data correctly for TCP check', async () => {
     const { read, record } = getServerRequests();
     server.use(apiRoute(`updateCheck`, {}, record));
-    const { user } = await renderExistingCheckEditor(`/edit/${BASIC_TCP_CHECK.id}`);
+    const { user } = await renderExistingCheckEditor(`/edit/tcp/${BASIC_TCP_CHECK.id}`);
 
     await submitForm(user);
     const { body } = await read();
@@ -294,7 +294,7 @@ describe('editing checks', () => {
     const NOT_INVERTED_VALIDATION = 'not inverted validation';
     const INVERTED_VALIDATION = 'inverted validation';
 
-    const { user } = await renderExistingCheckEditor(`/edit/${BASIC_DNS_CHECK.id}`);
+    const { user } = await renderExistingCheckEditor(`/edit/dns/${BASIC_DNS_CHECK.id}`);
     await toggleSection('Validation', user);
 
     const responseMatch1 = await screen.findByTestId('dnsValidationResponseMatch0');
@@ -333,7 +333,7 @@ describe('editing checks', () => {
   });
 
   it('handles custom alert severities', async () => {
-    const { user } = await renderExistingCheckEditor(`/edit/${CUSTOM_ALERT_SENSITIVITY_CHECK.id}`);
+    const { user } = await renderExistingCheckEditor(`/edit/dns/${CUSTOM_ALERT_SENSITIVITY_CHECK.id}`);
     await toggleSection('Alerting', user);
 
     const alertSensitivityInput = await screen.findByTestId('alertSensitivityInput');

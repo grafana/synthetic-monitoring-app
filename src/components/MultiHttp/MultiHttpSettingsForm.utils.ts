@@ -98,6 +98,11 @@ export function useMultiHttpCollapseState(check: MultiHTTPCheck) {
 
 export function getMultiHttpFormErrors(errs: FormErrors) {
   const errKeys = Object.keys(errs);
+
+  if (errKeys.some((key) => key !== 'settings')) {
+    return false;
+  }
+
   const entries = errs.settings?.multihttp?.entries;
   const isMultiHttpError = errKeys.length === 1 && entries;
   const firstCollapsibleError = entries?.findIndex?.(Boolean);
@@ -127,7 +132,7 @@ export function getMultiHttpFormErrors(errs: FormErrors) {
 function findPath(target: any, key: string, existingPath = ``): string | null {
   if (Array.isArray(target)) {
     for (let i = 0; i < target.length; i++) {
-      let path = findPath(target[i], key, `${existingPath}[${i}]`);
+      let path = findPath(target[i], key, `${existingPath}.${i}.`);
 
       if (path) {
         return path;
