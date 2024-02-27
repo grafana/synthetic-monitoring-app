@@ -306,7 +306,7 @@ steps:
       - if [ -z "$GCLOUD_SERVICE_KEY" ]; then echo "Missing GCLOUD_SERVICE_KEY"; exit -1; fi
       - printenv GCLOUD_SERVICE_KEY > /tmp/gcpkey.json
       - gcloud auth activate-service-account --key-file=/tmp/gcpkey.json
-      - PLUGIN_NAME=`grafana-synthetic-monitoring-app`
+      - PLUGIN_NAME="grafana-synthetic-monitoring-app"
       - VERSION=`cat plugin_version.txt`
       - /root/app/bin/grafana-publisher.js --auto publishremote $PLUGIN_NAME $VERSION $DRONE_REPO_NAME
     environment:
@@ -378,6 +378,6 @@ kind: secret
 name: gcp_key
 ---
 kind: signature
-hmac: 6a75ba1079d799c8e3469593e854db8247f45bc772e6fdfdf90f3e6d9494a6d3
+hmac: 131831f39b5bf4a222fd5cf6457d40c44910f5a9f7e23743244fc43422ce1d2f
 
 ...
