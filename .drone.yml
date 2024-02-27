@@ -290,7 +290,7 @@ steps:
     image: node:18
     commands:
       - ./scripts/install-ci-deps-apt.sh
-      - make install lint test build sign package
+      - make install lint test build sign package-github
     environment:
       GCP_KEY:
         from_secret: gcp_key
@@ -299,14 +299,11 @@ steps:
 
   - name: Publish release to Github
     image: plugins/github-release
-    commands:
-      - export VERSION=`cat plugin_version.txt`
-      - ls -al .
     settings:
       api_key:
         from_secret: updater-app-private-key
-      files: ./artifacts/builds
-      title: 'Release ${VERSION}'
+      files: github-release/*
+      title: 'Release ${DRONE_TAG}'
 
   - name: publish-to-gcom
     image: grafana/integration-grafana-publisher:latest
@@ -389,6 +386,6 @@ kind: secret
 name: gcp_key
 ---
 kind: signature
-hmac: d7b402f8759b547f315bab2faa7ed65014708323f0aca76153f458e299ccace6
+hmac: 7c528b51fdc9a112763db8c1c1eb8c442be6e0d1f3b35c5fe0ec74692bc25ae9
 
 ...

@@ -64,6 +64,12 @@ package:
 	rm grafana-synthetic-monitoring-app
 	echo $(VERSION) > $(ROOT_DIR)/plugin_version.txt
 
+.PHONY: package-github
+package-github:
+	mkdir -p github-release
+	zip -r github-release dist
+	mv github-release.zip grafana-synthetic-monitoring-app.zip
+	
 .PHONY: package-latest
 package-latest:
 	mkdir -p $(ARTIFACTS_DIR)
