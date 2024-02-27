@@ -252,7 +252,53 @@ steps:
       github_app_private_key:
         from_secret: updater-app-private-key
   - name: publish-to-gcom
-    image: grafana/integration-grafana-publisher:v9
+    image: grafana/integration-grafana-publisher:latest
+    commands:
+      - echo "start publish to GCOM"
+      - if [ -z "$GCOM_PUBLISH_TOKEN" ]; then echo "Missing GCOM Publish Key"; exit -1; fi
+      - if [ -z "$GITHUB_TOKEN" ]; then echo "Missing GITHUB_TOKEN"; exit -1; fi
+      - if [ -z "$GCLOUD_SERVICE_KEY" ]; then echo "Missing GCLOUD_SERVICE_KEY"; exit -1; fi
+      - printenv GCLOUD_SERVICE_KEY > /tmp/gcpkey.json
+      - gcloud auth activate-service-account --key-file=/tmp/gcpkey.json
+      - PLUGIN_NAME=`grafana-synthetic-monitoring-app`
+      - VERSION=`cat plugin_version.txt`
+      - /root/app/bin/grafana-publisher.js --auto publishremote $PLUGIN_NAME $VERSION $DRONE_REPO_NAME
+    environment:
+      GCLOUD_SERVICE_KEY:
+        from_secret: gcp_key
+      GCOM_PUBLISH_TOKEN:
+        from_secret: signing_token
+      GITHUB_TOKEN:
+        from_secret: updater-app-private-key
+
+image_pull_secrets:
+  - dockerconfigjson
+# Import secrets from Vault
+---
+kind: pipeline
+type: docker
+name: publish-gcom
+
+trigger:
+  event:
+    - promote
+  target:
+    - publish-gcom
+
+steps:
+  - name: build
+    image: node:18
+    commands:
+      - ./scripts/install-ci-deps-apt.sh
+      - make install lint test build sign package
+    environment:
+      GCP_KEY:
+        from_secret: gcp_key
+      GRAFANA_ACCESS_POLICY_TOKEN:
+        from_secret: signing_token
+
+  - name: publish-to-gcom
+    image: grafana/integration-grafana-publisher:latest
     commands:
       - echo "start publish to GCOM"
       - if [ -z "$GCOM_PUBLISH_TOKEN" ]; then echo "Missing GCOM Publish Key"; exit -1; fi
@@ -332,6 +378,4 @@ kind: secret
 name: gcp_key
 ---
 kind: signature
-hmac: cdf992f09e35236f057ea294dfdb57ad60c7f9e290f8109ac9c54eff7b8337a0
-
-...
+hmac: daa0533574d5ceec1dfd140d9c0e7fd5ac8db41dd9152018837ea669b03860ec
