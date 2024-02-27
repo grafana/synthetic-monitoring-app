@@ -64,6 +64,11 @@ package:
 	rm grafana-synthetic-monitoring-app
 	echo $(VERSION) > $(ROOT_DIR)/plugin_version.txt
 
+.PHONY: tag-release
+tag-release:
+	git tag -a $(VERSION) -m "Release $(VERSION)"
+	git push origin $(VERSION)
+
 .PHONY: package-github
 package-github:
 	mkdir -p github-release
