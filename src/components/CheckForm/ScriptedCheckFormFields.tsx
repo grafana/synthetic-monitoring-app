@@ -42,7 +42,7 @@ export const ScriptedCheckFormFields = ({ check }: { check: Check }) => {
         <Input
           id="target"
           {...register('target', {
-            required: true,
+            required: { value: true, message: 'Instance is required' },
             validate: (value) => validateTarget(CheckType.Scripted, value),
           })}
         />
