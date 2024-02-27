@@ -15,7 +15,7 @@ jest.setTimeout(60000);
 
 const renderNewMultiForm = async () => {
   const res = render(<CheckForm />, {
-    route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${CheckType.MULTI_HTTP}`,
+    route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/:checkType`,
     path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${CheckType.MULTI_HTTP}`,
   });
 

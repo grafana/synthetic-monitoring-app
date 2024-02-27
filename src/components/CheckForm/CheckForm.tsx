@@ -13,7 +13,7 @@ import { useChecks, useCUDChecks } from 'data/useChecks';
 import { useNavigation } from 'hooks/useNavigation';
 import { getCheckFromFormValues, getFormValuesFromCheck } from 'components/CheckEditor/checkFormTransformations';
 import { CheckFormAlert } from 'components/CheckFormAlert';
-import { CheckTestButton } from 'components/CheckTestButton';
+import { CheckTestResultsModal } from 'components/CheckTestResultsModal';
 import { fallbackCheckMap } from 'components/constants';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 import { MultiHttpFeedbackAlert } from 'components/MultiHttp/MultiHttpFeedbackAlert';
@@ -23,15 +23,7 @@ import { getRoute } from 'components/Routing';
 import { MultiHttpSettingsForm } from './MultiHttpCheckForm';
 import { ScriptedCheckForm } from './ScriptedCheckForm';
 import { SimpleCheckForm } from './SimpleCheckForm';
-
-const getStyles = (theme: GrafanaTheme2) => ({
-  breakLine: css({
-    marginTop: theme.spacing(3),
-  }),
-  submissionError: css({
-    marginTop: theme.spacing(2),
-  }),
-});
+import { useAdhocTest } from './useTestCheck';
 
 export const CheckForm = () => {
   const { data: checks } = useChecks();
@@ -44,24 +36,25 @@ export const CheckForm = () => {
 
   const check = checks?.find((c) => c.id === Number(id)) ?? fallbackCheckMap[checkType];
 
-  return <CheckEditorContent check={check} checkType={checkType} />;
+  return <CheckFormContent check={check} checkType={checkType} />;
 };
 
-type CheckEditorContentProps = {
+type CheckFormContentProps = {
   check: Check;
   checkType: CheckType;
 };
 
-const CheckEditorContent = ({ check, checkType }: CheckEditorContentProps) => {
+const CheckFormContent = ({ check, checkType }: CheckFormContentProps) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const styles = useStyles2(getStyles);
+  const { adhocTestData, closeModal, isPending, openTestCheckModal, testCheck, testCheckError } =
+    useAdhocTest(checkType);
 
   const initialValues = useMemo(() => getFormValuesFromCheck(check), [check]);
   const formMethods = useForm<CheckFormValues>({
     defaultValues: initialValues,
-    mode: 'onChange',
     reValidateMode: 'onBlur',
-    shouldFocusError: false /* handle this manually */,
+    shouldFocusError: true /* handle this manually */,
   });
 
   const { updateCheck, createCheck, deleteCheck, error, submitting } = useCUDChecks({ eventInfo: { checkType } });
@@ -75,30 +68,28 @@ const CheckEditorContent = ({ check, checkType }: CheckEditorContentProps) => {
   const handleSubmit = (checkValues: CheckFormValues, event: BaseSyntheticEvent | undefined) => {
     // @ts-expect-error
     const submitter = event?.nativeEvent.submitter;
-
-    if (submitter === testRef.current) {
-      console.log(`let's test the check`);
-      return;
-    }
-
-    mutateCheck(checkValues);
-  };
-
-  const mutateCheck = (checkValues: CheckFormValues) => {
     const toSubmit = getCheckFromFormValues(checkValues);
 
+    if (submitter === testRef.current) {
+      return testCheck(toSubmit);
+    }
+
+    mutateCheck(toSubmit);
+  };
+
+  const mutateCheck = (newCheck: Check) => {
     if (check.id) {
       return updateCheck(
         {
           id: check.id,
           tenantId: check.tenantId,
-          ...toSubmit,
+          ...newCheck,
         },
         { onSuccess }
       );
     }
 
-    return createCheck(toSubmit, { onSuccess });
+    return createCheck(newCheck, { onSuccess });
   };
 
   const handleError = (errs: FieldErrors<CheckFormValues>) => {
@@ -111,6 +102,7 @@ const CheckEditorContent = ({ check, checkType }: CheckEditorContentProps) => {
 
   const capitalizedCheckType = checkType.slice(0, 1).toUpperCase().concat(checkType.split('').slice(1).join(''));
   const headerText = check?.id ? `Editing ${check.job}` : `Add ${capitalizedCheckType} check`;
+  const submissionError = error || testCheckError;
 
   return (
     <PluginPage pageNav={{ text: check?.job ? `Editing ${check.job}` : headerText }}>
@@ -148,7 +140,17 @@ const CheckEditorContent = ({ check, checkType }: CheckEditorContentProps) => {
               <Button type="submit" disabled={formMethods.formState.isSubmitting || submitting}>
                 Save
               </Button>
-              {checkType !== CheckType.Scripted && <CheckTestButton check={check} ref={testRef} />}
+              {![CheckType.Scripted, CheckType.Traceroute].includes(checkType) && (
+                <Button
+                  disabled={isPending}
+                  type="submit"
+                  variant="secondary"
+                  icon={isPending ? `fa fa-spinner` : undefined}
+                  ref={testRef}
+                >
+                  Test
+                </Button>
+              )}
               {check?.id && (
                 <Button
                   variant="destructive"
@@ -167,13 +169,14 @@ const CheckEditorContent = ({ check, checkType }: CheckEditorContentProps) => {
           </form>
         </FormProvider>
       </>
-      {error && (
+      {submissionError && (
         <div className={styles.submissionError}>
           <Alert title="Save failed" severity="error">
-            {error.message ?? 'Something went wrong'}
+            {submissionError.message ?? 'Something went wrong'}
           </Alert>
         </div>
       )}
+      <CheckTestResultsModal isOpen={openTestCheckModal} onDismiss={closeModal} testResponse={adhocTestData} />
       <ConfirmModal
         isOpen={showDeleteModal}
         title="Delete check"
@@ -209,3 +212,12 @@ function isValidCheckType(checkType?: CheckType): checkType is CheckType {
 
   return false;
 }
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  breakLine: css({
+    marginTop: theme.spacing(3),
+  }),
+  submissionError: css({
+    marginTop: theme.spacing(2),
+  }),
+});

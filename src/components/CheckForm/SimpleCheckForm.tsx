@@ -1,20 +1,41 @@
 import React from 'react';
-import { useFormContext } from 'react-hook-form';
+import { Controller, useFormContext } from 'react-hook-form';
 import { OrgRole } from '@grafana/data';
 
 import { Check, CheckFormValues, CheckType } from 'types';
 import { hasRole } from 'utils';
+import { validateTarget } from 'validation';
 import { CheckSettings } from 'components/CheckEditor/CheckSettings';
 import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
+import CheckTarget from 'components/CheckTarget';
 import { CheckUsage } from 'components/CheckUsage';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 
 export const SimpleCheckForm = ({ check, checkType }: { check: Check; checkType: CheckType }) => {
   const isEditor = hasRole(OrgRole.Editor);
-  const { register } = useFormContext<CheckFormValues>();
+  const { control, formState, register } = useFormContext<CheckFormValues>();
 
   return (
     <>
+      <Controller<CheckFormValues>
+        name="target"
+        control={control}
+        rules={{
+          required: true,
+          validate: (target) => {
+            return validateTarget(checkType, target);
+          },
+        }}
+        render={({ field }) => (
+          <CheckTarget
+            {...field}
+            typeOfCheck={checkType}
+            invalid={Boolean(formState.errors.target)}
+            error={formState.errors.target?.message}
+            disabled={!isEditor}
+          />
+        )}
+      />
       <ProbeOptions isEditor={isEditor} checkType={checkType} timeout={check.timeout} frequency={check.frequency} />
       <HorizontalCheckboxField
         id="publishAdvancedMetrics"
