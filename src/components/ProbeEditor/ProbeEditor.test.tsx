@@ -39,6 +39,8 @@ describe('validation', () => {
     const { user } = await renderProbeEditor();
     const latitudeInput = await screen.findByLabelText('Latitude', { exact: false });
     await user.type(latitudeInput, '444');
+    const saveButton = await getSaveButton();
+    await user.click(saveButton!);
     const errorMessage = await screen.findByText('Must be between -90 and 90');
     expect(errorMessage).toBeInTheDocument();
   });
@@ -47,6 +49,8 @@ describe('validation', () => {
     const { user } = await renderProbeEditor();
     const longitudeInput = await screen.findByLabelText('Longitude', { exact: false });
     await user.type(longitudeInput, '444');
+    const saveButton = await getSaveButton();
+    await user.click(saveButton!);
     const errorMessage = await screen.findByText('Must be between -180 and 180');
     expect(errorMessage).toBeInTheDocument();
   });
@@ -66,6 +70,7 @@ it('disables save button on invalid values', async () => {
   expect(saveButton).not.toBeDisabled();
   const longitudeInput = await screen.findByLabelText('Longitude', { exact: false });
   await user.type(longitudeInput, '444');
+  await user.click(saveButton!);
   const errorMessage = await screen.findByText('Must be between -180 and 180');
   expect(errorMessage).toBeInTheDocument();
   expect(saveButton).toBeDisabled();
@@ -84,13 +89,6 @@ it('saves new probe', async () => {
     ...UPDATED_VALUES,
     labels: [...probe.labels, ...UPDATED_VALUES.labels],
   });
-});
-
-it(`shows all existing regions in region select`, async () => {
-  const { user } = await renderProbeEditor();
-  const regionInput = await screen.findByLabelText('Region', { exact: false });
-  await user.click(regionInput);
-  screen.debug();
 });
 
 it('the form is uneditable when viewing a public probe', async () => {

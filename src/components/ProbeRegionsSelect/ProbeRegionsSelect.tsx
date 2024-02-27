@@ -9,7 +9,7 @@ type ProbeRegionsSelectProps = {
   id: string;
   onChange: (value: string | undefined | null) => void;
   invalid?: boolean;
-  value: string | undefined | null;
+  value?: string | null;
 };
 
 export const ProbeRegionsSelect = ({ id, invalid, onChange, value }: ProbeRegionsSelectProps) => {
@@ -21,7 +21,7 @@ export const ProbeRegionsSelect = ({ id, invalid, onChange, value }: ProbeRegion
     <Select
       inputId={id}
       options={options}
-      value={value}
+      value={value || null}
       allowCustomValue
       onChange={(value) => {
         if (value === null) {
@@ -34,7 +34,7 @@ export const ProbeRegionsSelect = ({ id, invalid, onChange, value }: ProbeRegion
       }}
       isLoading={isLoading}
       disabled={isLoading}
-      placeholder="Region"
+      placeholder="Add or select a region"
       isClearable
       invalid={invalid}
     />

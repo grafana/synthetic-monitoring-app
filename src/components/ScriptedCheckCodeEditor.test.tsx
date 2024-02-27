@@ -1,5 +1,5 @@
 import React from 'react';
-import { within } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import { BASIC_SCRIPTED_CHECK } from 'test/fixtures/checks';
 import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute, getServerRequests } from 'test/handlers';
@@ -58,8 +58,9 @@ describe('new scripted check', () => {
       throw new Error('Couldnt find Probe Options');
     }
 
-    const probeSelectMenu = await within(probeOptions).findByTestId('select');
-    await user.selectOptions(probeSelectMenu, within(probeSelectMenu).getByText(PRIVATE_PROBE.name));
+    const probeSelectMenu = await within(probeOptions).getByLabelText('Probe locations', { exact: false });
+    await user.click(probeSelectMenu);
+    await user.click(screen.getByText(PRIVATE_PROBE.name));
 
     const addLabel = await findByRole('button', { name: 'Add label' });
     await user.click(addLabel);
@@ -154,8 +155,11 @@ describe('edit scripted check', () => {
       throw new Error('Couldnt find Probe Options');
     }
 
-    const probeSelectMenu = await within(probeOptions).findByTestId('select');
-    await user.selectOptions(probeSelectMenu, within(probeSelectMenu).getByText(PUBLIC_PROBE.name));
+    await user.click(screen.getByText(`Clear`));
+    const probeSelectMenu = await within(probeOptions).getByLabelText('Probe locations', { exact: false });
+    await user.click(probeSelectMenu);
+    await user.click(screen.getByText(PUBLIC_PROBE.name, { exact: false }));
+
     const labelNameInput = await findByPlaceholderText('name');
     await user.clear(labelNameInput);
     await user.type(labelNameInput, NEW_LABEL.name);

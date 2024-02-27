@@ -104,8 +104,6 @@ export const ProbeEditor = ({
                         valueAsNumber: true,
                       })}
                       aria-label="Latitude"
-                      max={90}
-                      min={-90}
                       placeholder="0.0"
                       step={0.00001}
                       type="number"
@@ -127,8 +125,6 @@ export const ProbeEditor = ({
                         valueAsNumber: true,
                       })}
                       aria-label="Longitude"
-                      max={180}
-                      min={-180}
                       step={0.00001}
                       type="number"
                       placeholder="0.0"

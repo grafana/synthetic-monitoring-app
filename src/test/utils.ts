@@ -30,6 +30,7 @@ export async function fillProbeForm(user: UserEvent) {
   regionInput.focus();
   await user.clear(regionInput);
   await user.paste(UPDATED_VALUES.region);
+  await user.type(regionInput, '{enter}');
 
   const addLabelButton = await screen.findByRole('button', { name: /Add label/ });
   const existingLabels = await screen.queryAllByTestId(/label-name-/);
