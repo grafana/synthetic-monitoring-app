@@ -6,11 +6,11 @@ import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
 
-import { AlertSensitivity, ROUTES } from 'types';
+import { AlertSensitivity, CheckType, ROUTES } from 'types';
+import { CheckForm } from 'components/CheckForm/CheckForm';
 
 import { submitForm } from './CheckEditor/testHelpers';
 import { PLUGIN_URL_PATH } from './constants';
-import { ScriptedCheckCodeEditor } from './ScriptedCheckCodeEditor';
 
 // Monaco does not render with jest and is stuck at "Loading..."
 // There doesn't seem to be a solution to this at this point,
@@ -27,19 +27,24 @@ jest.mock('components/CodeEditor', () => {
   };
 });
 
-beforeEach(() => jest.resetAllMocks());
-
 describe('new scripted check', () => {
   it('renders the new scripted check form', async () => {
-    const { findByText } = render(<ScriptedCheckCodeEditor />);
-    expect(await findByText('Add a scripted check')).toBeInTheDocument();
+    const { findByText } = render(<CheckForm />, {
+      route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/:checkType`,
+      path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${CheckType.Scripted}`,
+    });
+    expect(await findByText('Add Scripted check')).toBeInTheDocument();
   });
 
   it('creates a new k6 check', async () => {
     const { record, read } = getServerRequests();
     server.use(apiRoute(`addCheck`, {}, record));
     const { user, findByLabelText, getByText, findByTestId, findByRole, findByPlaceholderText } = render(
-      <ScriptedCheckCodeEditor />
+      <CheckForm />,
+      {
+        route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/:checkType`,
+        path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${CheckType.Scripted}`,
+      }
     );
 
     const JOB_NAME = 'New k6 check';
@@ -100,13 +105,10 @@ describe('edit scripted check', () => {
     const { record, read } = getServerRequests();
     server.use(apiRoute(`updateCheck`, {}, record));
 
-    const { user, findByLabelText, findByTestId, findByPlaceholderText, findByText } = render(
-      <ScriptedCheckCodeEditor />,
-      {
-        route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`,
-        path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/${BASIC_SCRIPTED_CHECK.id}`,
-      }
-    );
+    const { user, findByLabelText, findByTestId, findByPlaceholderText, findByText } = render(<CheckForm />, {
+      route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:checkType/:id`,
+      path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/scripted/${BASIC_SCRIPTED_CHECK.id}`,
+    });
     const jobNameInput = await findByLabelText('Job name', { exact: false });
     expect(jobNameInput).toHaveValue(BASIC_SCRIPTED_CHECK.job);
     const targetInput = await findByLabelText('Instance', { exact: false });
@@ -134,13 +136,10 @@ describe('edit scripted check', () => {
 
     const { record, read } = getServerRequests();
     server.use(apiRoute(`updateCheck`, {}, record));
-    const { user, findByLabelText, findByTestId, findByPlaceholderText, getByText } = render(
-      <ScriptedCheckCodeEditor />,
-      {
-        route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`,
-        path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/${BASIC_SCRIPTED_CHECK.id}`,
-      }
-    );
+    const { user, findByLabelText, findByTestId, findByPlaceholderText, getByText } = render(<CheckForm />, {
+      route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:checkType/:id`,
+      path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/scripted/${BASIC_SCRIPTED_CHECK.id}`,
+    });
     const jobNameInput = await findByLabelText('Job name', { exact: false });
     await user.clear(jobNameInput);
     await user.type(jobNameInput, NEW_JOB_NAME);

@@ -546,3 +546,5 @@ export const LATENCY_DESCRIPTION =
   'The average time to receive an answer across all the checks during the whole time period.';
 
 export const STANDARD_REFRESH_INTERVAL = 1000 * 60;
+
+export const CHECK_FORM_ERROR_EVENT = `sm-form-error`;
