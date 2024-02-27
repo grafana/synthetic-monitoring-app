@@ -299,11 +299,13 @@ steps:
 
   - name: Publish release to Github
     image: plugins/github-release
+    commands:
+      - export VERSION=`cat plugin_version.txt`
     settings:
       api_key:
         from_secret: updater-app-private-key
       files: ./artifacts/builds
-      title: 'Release ${cat plugin_version.txt}'
+      title: 'Release ${VERSION}'
 
   - name: publish-to-gcom
     image: grafana/integration-grafana-publisher:latest
@@ -386,4 +388,6 @@ kind: secret
 name: gcp_key
 ---
 kind: signature
-hmac: 0b790f6c9f355c3efc26a7c4090374dba8be29851f140d3c1448b14009c8c2e8
+hmac: b5a659fa2e209dafdac24a6c7360c2b23d0a42f886f1b59ae1d2d1dc6c23b028
+
+...
