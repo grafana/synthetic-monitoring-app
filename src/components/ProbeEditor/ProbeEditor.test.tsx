@@ -86,6 +86,13 @@ it('saves new probe', async () => {
   });
 });
 
+it(`shows all existing regions in region select`, async () => {
+  const { user } = await renderProbeEditor();
+  const regionInput = await screen.findByLabelText('Region', { exact: false });
+  await user.click(regionInput);
+  screen.debug();
+});
+
 it('the form is uneditable when viewing a public probe', async () => {
   renderProbeEditor({ probe: PUBLIC_PROBE });
   assertUneditable();

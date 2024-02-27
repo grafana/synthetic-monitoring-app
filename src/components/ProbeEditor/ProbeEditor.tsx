@@ -1,5 +1,5 @@
 import React, { ReactNode, useCallback, useEffect, useRef } from 'react';
-import { FormProvider, useForm } from 'react-hook-form';
+import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Button, Field, Input, Label, Legend, LinkButton, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
@@ -7,6 +7,7 @@ import { css } from '@emotion/css';
 import { Probe, ROUTES } from 'types';
 import { canEditProbes } from 'utils';
 import { LabelField } from 'components/LabelField';
+import { ProbeRegionsSelect } from 'components/ProbeRegionsSelect';
 import { getRoute } from 'components/Routing';
 import { SimpleMap } from 'components/SimpleMap';
 
@@ -29,7 +30,7 @@ export const ProbeEditor = ({
 }: ProbeEditorProps) => {
   const styles = useStyles2(getStyles);
   const canEdit = canEditProbes(probe);
-  const form = useForm<Probe>({ defaultValues: probe, mode: 'onChange' });
+  const form = useForm<Probe>({ defaultValues: probe });
   const { latitude, longitude } = form.watch();
   const handleSubmit = form.handleSubmit((formValues: Probe) => onSubmit(formValues));
   const { errors, isSubmitting } = form.formState;
@@ -141,15 +142,25 @@ export const ProbeEditor = ({
                     label="Region"
                     description="Region of this probe."
                     disabled={!canEdit}
-                    error="Region is required"
+                    error={errors.region?.message}
                     invalid={Boolean(errors.region)}
                     required
+                    htmlFor="region"
                   >
-                    <Input
-                      {...form.register('region', { required: true })}
-                      aria-label="Region"
-                      type="text"
-                      placeholder="Region"
+                    <Controller
+                      control={form.control}
+                      name="region"
+                      rules={{ required: 'Region is required' }}
+                      render={({ field }) => (
+                        <ProbeRegionsSelect
+                          id="region"
+                          invalid={Boolean(errors.region)}
+                          onChange={(value) => {
+                            field.onChange(value);
+                          }}
+                          value={field.value}
+                        />
+                      )}
                     />
                   </Field>
                 </div>
