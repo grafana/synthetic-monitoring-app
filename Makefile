@@ -65,20 +65,9 @@ package:
 	echo $(VERSION) > $(ROOT_DIR)/plugin_version.txt
 
 .PHONY: tag-release
-tag-release:
-	git fetch --all
-	git checkout add-publish-gcom-promotion
-	git config user.email "syntheticmonitoring@grafana.com"
-	git config user.name "DroneCI Automation - grafanabot"
-	git tag -a $(VERSION) -m "Release $(VERSION)"
-	git push origin $(VERSION)
+publish-release:
+	gh release create $(VERSION) --title $(VERSION) --target add-publish-gcom-promotion --latest $(ARTIFACTS_DIR)/$(VERSION)/$(PACKAGE_NAME)
 
-.PHONY: package-github
-package-github:
-	mkdir -p github-release
-	zip -r github-release dist
-	mv github-release.zip grafana-synthetic-monitoring-app.zip
-	
 .PHONY: package-latest
 package-latest:
 	mkdir -p $(ARTIFACTS_DIR)

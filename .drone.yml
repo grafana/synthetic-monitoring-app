@@ -290,7 +290,8 @@ steps:
     image: node:18
     commands:
       - ./scripts/install-ci-deps-apt.sh
-      - make tag-release
+      - make install lint test build sign package
+      - make publish-release
     environment:
       GCP_KEY:
         from_secret: gcp_key
@@ -298,37 +299,6 @@ steps:
         from_secret: signing_token
       GITHUB_TOKEN:
         from_secret: updater-app-private-key
-
----
-kind: pipeline
-type: docker
-name: publish-gcom
-
-trigger:
-  event:
-    - tag
-
-steps:
-  - name: build
-    image: node:18
-    commands:
-      - ./scripts/install-ci-deps-apt.sh
-      - make install lint test build sign
-    environment:
-      GCP_KEY:
-        from_secret: gcp_key
-      GRAFANA_ACCESS_POLICY_TOKEN:
-        from_secret: signing_token
-      GITHUB_TOKEN:
-        from_secret: updater-app-private-key
-  - name: Publish release to Github
-    image: plugins/github-release
-    settings:
-      api_key:
-        from_secret: updater-app-private-key
-      files: github-release/*
-      title: 'Release ${DRONE_TAG}'
-
   - name: publish-to-gcom
     image: grafana/integration-grafana-publisher:latest
     commands:
@@ -410,6 +380,6 @@ kind: secret
 name: gcp_key
 ---
 kind: signature
-hmac: d753198e587ae3f9cdcdf5a7c0c7a0173ad7e2b84bfbcb261ddfdbbf3c175754
+hmac: 6312a70b2bc40ae6e2f626847af8fb2e3ceeef87f879adba1932c1843847bf06
 
 ...
