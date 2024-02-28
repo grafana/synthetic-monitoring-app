@@ -17,12 +17,11 @@ jest.setTimeout(60000);
 beforeEach(() => jest.resetAllMocks());
 
 async function renderForm(route: string) {
-  const res = waitFor(() =>
-    render(<CheckForm />, {
-      route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:checkType/:id`,
-      path: `${PLUGIN_URL_PATH}${ROUTES.Checks}${route}`,
-    })
-  );
+  const res = render(<CheckForm />, {
+    route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:checkType/:id`,
+    path: `${PLUGIN_URL_PATH}${ROUTES.Checks}${route}`,
+  });
+
   await waitFor(() => expect(screen.getByText('Probe options')).toBeInTheDocument());
   return res;
 }
