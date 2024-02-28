@@ -1,6 +1,6 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
-import { DEFAULT_PROBES, PRIVATE_PROBE } from 'test/fixtures/probes';
+import { DEFAULT_PROBES } from 'test/fixtures/probes';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';

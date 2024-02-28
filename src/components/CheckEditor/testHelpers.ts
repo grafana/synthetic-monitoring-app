@@ -36,10 +36,7 @@ export const fillBasicCheckFields = async (jobName: string, target: string, user
   }
 
   // Select probe options
-  const probeSelectMenu = await within(probeOptions).findByLabelText('Probe locations');
-  await user.click(probeSelectMenu);
-  await user.click(screen.getByText(PRIVATE_PROBE.name, { selector: `span` }));
-
+  await selectOption(user, { label: 'Probe locations', option: PRIVATE_PROBE.name });
   await toggleSection('Advanced options', user);
 
   for (const label of labels) {
@@ -95,7 +92,7 @@ export const getSelect = async (options: GetSelectProps) => {
   let selector;
 
   if ('label' in options) {
-    selector = await screen.findByLabelText(options.label);
+    selector = await screen.findByLabelText(options.label, { exact: false });
   }
 
   if ('text' in options) {
@@ -114,6 +111,9 @@ type SelectOptions = GetSelectProps & {
 
 export const selectOption = async (user: UserEvent, options: SelectOptions) => {
   const [, input] = await getSelect(options);
+
   await user.click(input);
-  await user.click(within(screen.getByLabelText(`Select options menu`)).getByText(options.option));
+  const option = within(screen.getByLabelText(`Select options menu`)).getByText(options.option);
+
+  await user.click(option);
 };

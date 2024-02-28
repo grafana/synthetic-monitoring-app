@@ -97,8 +97,8 @@ const CheckFormContent = ({ check, checkType }: CheckFormContentProps) => {
 
     // can't pass refs to all fields so have to manage it automatically
     if (shouldFocus) {
-      shouldFocus.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      shouldFocus.focus({ preventScroll: true });
+      shouldFocus.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+      shouldFocus.focus?.({ preventScroll: true });
     }
 
     document.dispatchEvent(new CustomEvent(CHECK_FORM_ERROR_EVENT, { detail: errs }));

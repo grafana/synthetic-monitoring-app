@@ -251,7 +251,7 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
                 >
                   <Input
                     {...register('timeCount', { required: true, min: 1, max: 999 })}
-                    data-testid="timeCount"
+                    aria-label="Time count"
                     type="number"
                     className={styles.numberInput}
                     id="alertTimeCount"
@@ -261,7 +261,7 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
                   <Controller
                     render={({ field }) => {
                       const { ref, ...rest } = field;
-                      return <Select {...rest} options={TIME_UNIT_OPTIONS} />;
+                      return <Select {...rest} options={TIME_UNIT_OPTIONS} aria-label="Time unit" />;
                     }}
                     control={control}
                     name="timeUnit"

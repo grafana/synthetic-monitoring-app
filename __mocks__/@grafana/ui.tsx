@@ -5,7 +5,8 @@ const ui = jest.requireActual('@grafana/ui');
 import React, { forwardRef } from 'react';
 import { Link } from 'react-router-dom';
 
-const Icon = (props) => <svg {...props} />;
+const Icon = forwardRef((props, ref) => <svg {...props} />);
+Icon.displayName = 'Icon';
 
 interface BigValueProps {
   value: {

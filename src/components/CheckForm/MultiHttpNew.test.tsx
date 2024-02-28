@@ -1,12 +1,12 @@
 import React from 'react';
-import { screen, waitFor, within } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import { PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
 
 import { AlertSensitivity, CheckType, ROUTES } from 'types';
-import { submitForm } from 'components/CheckEditor/testHelpers';
+import { selectOption, submitForm } from 'components/CheckEditor/testHelpers';
 import { PLUGIN_URL_PATH } from 'components/constants';
 
 import { CheckForm } from './CheckForm';
@@ -57,17 +57,10 @@ describe('new checks', () => {
     const targetInput = await screen.findByLabelText('Request target', { exact: false });
     await user.type(targetInput, 'http://grafanarr.com');
 
-    const requestOptions = await screen.findByTestId('request-method');
-    await user.selectOptions(requestOptions, within(requestOptions).getByText('POST'));
+    await selectOption(user, { label: 'Request method for request 1', option: `POST` });
 
     // Set probe options
-    const probeOptions = screen.getByText('Probe options');
-    if (!probeOptions) {
-      throw new Error('Couldnt find Probe Options');
-    }
-    // // Select burritos probe options
-    const probeSelectMenu = await screen.findByTestId('select');
-    await user.selectOptions(probeSelectMenu, within(probeSelectMenu).getByText(PUBLIC_PROBE.name));
+    await selectOption(user, { label: 'Probe locations', option: PUBLIC_PROBE.name });
 
     // Add a custom label
     const addCustomLabelButton = await screen.findByRole('button', { name: /Add label/ });
@@ -82,8 +75,7 @@ describe('new checks', () => {
 
     const secondTargetInput = await screen.findAllByLabelText('Request target', { exact: false });
     await user.type(secondTargetInput[1], REQUEST_2.request.url);
-    const secondRequestOptions = await screen.findAllByTestId('request-method');
-    await user.selectOptions(secondRequestOptions[1], REQUEST_2.request.method);
+    await selectOption(user, { label: 'Request method for request 2', option: REQUEST_2.request.method });
 
     // add assertions
     // reopens the first request
@@ -93,12 +85,13 @@ describe('new checks', () => {
     await user.click(assertionsTabs[0]);
     const addAssertion = await screen.findByRole('button', { name: 'Add assertions' });
     await user.click(addAssertion);
-    const assertionTypes = await screen.findAllByLabelText('Assertion type', { exact: false });
-    await user.selectOptions(assertionTypes[0], REQUEST_1.checks[0].type.toString());
+
+    await selectOption(user, { label: 'Assertion type', option: `JSON path value` });
+
     const expressions = await screen.findAllByLabelText('Expression', { exact: false });
     await user.type(expressions[0], REQUEST_1.checks[0].expression);
-    const conditions = await screen.findAllByLabelText('Condition', { exact: false });
-    await user.selectOptions(conditions[0], REQUEST_1.checks[0].condition.toString());
+
+    await selectOption(user, { label: 'Condition', option: `Ends with` });
     const values = await screen.findAllByLabelText('Value to compare with result of expression', { exact: false });
     await user.clear(values[0]);
     await user.type(values[0], REQUEST_1.checks[0].value);

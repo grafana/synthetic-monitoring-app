@@ -227,7 +227,7 @@ describe('editing checks', () => {
     await user.click(screen.getByLabelText(`Valid status codes`, { exact: false }));
     await user.click(screen.getByText(STATUS_CODE, { exact: false }));
 
-    const [selectContainer, select] = await getSelect({ label: `Valid HTTP versions` });
+    const [selectContainer, select] = await getSelect({ text: `Valid HTTP versions` });
     await user.click(within(selectContainer).getByLabelText(`Remove`));
     await user.click(select);
     await user.click(screen.getByText(HTTP_VERSION, { selector: `span` }));

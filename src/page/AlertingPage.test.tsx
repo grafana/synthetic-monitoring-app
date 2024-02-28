@@ -4,6 +4,7 @@ import { type UserEvent } from '@testing-library/user-event';
 import { render } from 'test/render';
 
 import { AlertFamily, AlertRule, AlertSensitivity } from 'types';
+import { selectOption } from 'components/CheckEditor/testHelpers';
 import {
   ALERT_PROBE_SUCCESS_RECORDING_EXPR,
   DEFAULT_ALERT_NAMES_BY_FAMILY_AND_SENSITIVITY,
@@ -68,13 +69,12 @@ it('adds default alerts and edits alerts', async () => {
   await user.clear(probePercentage);
   await user.type(probePercentage, '25');
 
-  const timeCount = await screen.findByTestId('timeCount');
+  const timeCount = await screen.findByLabelText('Time count');
   expect(timeCount).toHaveValue(5);
   await user.clear(timeCount);
   await user.type(timeCount, '2');
 
-  const timeUnit = await screen.findAllByTestId('select');
-  await user.selectOptions(timeUnit[1], 's');
+  await selectOption(user, { label: 'Time unit', option: 'seconds' });
 
   const labels = await toggleSection('Labels', user);
   const addLabelButton = await within(labels).findByRole('button', { name: 'Add label' });
