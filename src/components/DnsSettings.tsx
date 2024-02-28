@@ -54,7 +54,10 @@ const DnsSettingsForm = ({ isEditor }: Props) => {
           <Field label="Record type" disabled={!isEditor}>
             <Controller<CheckFormValuesDns>
               name="settings.dns.recordType"
-              render={({ field }) => <Select {...field} options={DNS_RECORD_TYPES} />}
+              render={({ field }) => {
+                const { ref, ...rest } = field;
+                return <Select {...rest} options={DNS_RECORD_TYPES} />;
+              }}
             />
           </Field>
           <Field label="Server" disabled={!isEditor}>
@@ -67,7 +70,10 @@ const DnsSettingsForm = ({ isEditor }: Props) => {
           </Field>
           <Field label="Protocol" disabled={!isEditor}>
             <Controller<CheckFormValuesDns>
-              render={({ field }) => <Select {...field} options={DNS_PROTOCOLS} />}
+              render={({ field }) => {
+                const { ref, ...rest } = field;
+                return <Select {...rest} options={DNS_PROTOCOLS} />;
+              }}
               name="settings.dns.protocol"
             />
           </Field>
@@ -81,9 +87,10 @@ const DnsSettingsForm = ({ isEditor }: Props) => {
           <Field label="Valid response codes" description="List of valid response codes" disabled={!isEditor}>
             <Controller<CheckFormValuesDns>
               name="settings.dns.validRCodes"
-              render={({ field }) => (
-                <MultiSelect {...field} options={DNS_RESPONSE_CODES} defaultValue={[DNS_RESPONSE_CODES[0]]} />
-              )}
+              render={({ field }) => {
+                const { ref, ...rest } = field;
+                return <MultiSelect {...rest} options={DNS_RESPONSE_CODES} defaultValue={[DNS_RESPONSE_CODES[0]]} />;
+              }}
             />
           </Field>
         </HorizontalGroup>
@@ -107,11 +114,12 @@ const DnsSettingsForm = ({ isEditor }: Props) => {
                   name={`settings.dns.validations.${index}.responseMatch` as const}
                   rules={{ required: true }}
                   render={({ field }) => {
+                    const { ref, ...rest } = field;
                     return (
                       <Select
-                        {...field}
+                        {...rest}
                         value={field.value}
-                        data-testid={`dnsValidationResponseMatch${index}`}
+                        aria-label={`DNS Response Match ${index + 1}`}
                         options={DNS_RESPONSE_MATCH_OPTIONS}
                         invalid={Boolean(formState.errors.settings?.dns?.validations?.[index]?.responseMatch)}
                       />
@@ -157,7 +165,10 @@ const DnsSettingsForm = ({ isEditor }: Props) => {
           <Field label="IP version" description="The IP protocol of the ICMP request" disabled={!isEditor}>
             <Controller<CheckFormValuesDns>
               name="settings.dns.ipVersion"
-              render={({ field }) => <Select {...field} options={IP_OPTIONS} />}
+              render={({ field }) => {
+                const { ref, ...rest } = field;
+                return <Select {...rest} options={IP_OPTIONS} />;
+              }}
             />
           </Field>
         </HorizontalGroup>

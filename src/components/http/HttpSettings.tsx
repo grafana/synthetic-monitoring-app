@@ -374,9 +374,10 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
             <Controller<CheckFormValuesHttp>
               name="settings.http.sslOptions"
               control={control}
-              render={({ field }) => (
-                <Select {...field} inputId={sslOptionsId} options={HTTP_SSL_OPTIONS} disabled={!isEditor} />
-              )}
+              render={({ field }) => {
+                const { ref, ...rest } = field;
+                return <Select {...rest} inputId={sslOptionsId} options={HTTP_SSL_OPTIONS} disabled={!isEditor} />;
+              }}
             />
           </Field>
         </div>
@@ -402,7 +403,7 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
                         return (
                           <Select
                             {...rest}
-                            data-testid={`http-validation-match-type-${index}`}
+                            aria-label={`Validation Field Name ${index + 1}`}
                             placeholder="Field name"
                             options={HTTP_REGEX_VALIDATION_OPTIONS}
                             invalid={

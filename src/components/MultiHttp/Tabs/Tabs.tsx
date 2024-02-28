@@ -248,6 +248,7 @@ const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
                 <Controller<CheckFormValuesMultiHttp>
                   name={variableTypeName}
                   render={({ field: typeField }) => {
+                    const { ref, ...rest } = typeField;
                     return (
                       <Field
                         label="Variable type"
@@ -258,7 +259,7 @@ const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
                         <Select
                           id={`multihttp-variable-type-${index}-${variableIndex}`}
                           className={styles.minInputWidth}
-                          {...typeField}
+                          {...rest}
                           options={MULTI_HTTP_VARIABLE_TYPE_OPTIONS}
                           menuPlacement="bottom"
                         />

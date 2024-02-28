@@ -129,9 +129,10 @@ export const MultiHttpCheckFormFields = ({ check }: { check: MultiHTTPCheck }) =
                   >
                     <Controller<CheckFormValuesMultiHttp>
                       name={`settings.multihttp.entries.${index}.request.method`}
-                      render={({ field }) => (
-                        <Select {...field} options={METHOD_OPTIONS} data-testid="request-method" />
-                      )}
+                      render={({ field }) => {
+                        const { ref, ...rest } = field;
+                        return <Select {...rest} options={METHOD_OPTIONS} data-testid="request-method" />;
+                      }}
                       rules={{ required: 'Request method is required' }}
                     />
                   </Field>

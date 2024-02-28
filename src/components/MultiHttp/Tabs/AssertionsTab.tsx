@@ -40,6 +40,8 @@ export function AssertionsTab({ index, active }: MultiHttpTabProps) {
                   name={assertionTypeName}
                   render={({ field: typeField }) => {
                     const id = `multihttp-assertion-type-${index}-${assertionIndex}`;
+                    const { ref, ...rest } = typeField;
+
                     return (
                       <Field
                         label="Assertion type"
@@ -51,7 +53,7 @@ export function AssertionsTab({ index, active }: MultiHttpTabProps) {
                         <Select
                           inputId={id}
                           className={styles.minInputWidth}
-                          {...typeField}
+                          {...rest}
                           options={MULTI_HTTP_ASSERTION_TYPE_OPTIONS}
                           menuPlacement="bottom"
                         />
@@ -148,6 +150,7 @@ function AssertionSubjectField({ entryIndex, assertionIndex }: AssertionProps) {
       name={`settings.multihttp.entries.${entryIndex}.checks.${assertionIndex}.subject`}
       render={({ field }) => {
         const id = `${entryIndex}-${assertionIndex}-subject`;
+        const { ref, ...rest } = field;
 
         return (
           <Field
@@ -157,7 +160,7 @@ function AssertionSubjectField({ entryIndex, assertionIndex }: AssertionProps) {
             error={typeof errMessage === 'string' && errMessage}
             htmlFor={id}
           >
-            <Select inputId={id} {...field} options={ASSERTION_SUBJECT_OPTIONS} menuPlacement="bottom" />
+            <Select inputId={id} {...rest} options={ASSERTION_SUBJECT_OPTIONS} menuPlacement="bottom" />
           </Field>
         );
       }}
@@ -176,6 +179,7 @@ function AssertionConditionField({ entryIndex, assertionIndex }: AssertionProps)
       name={`settings.multihttp.entries.${entryIndex}.checks.${assertionIndex}.condition`}
       render={({ field }) => {
         const id = `multihttp-assertion-condition-${entryIndex}-${assertionIndex}`;
+        const { ref, ...rest } = field;
 
         return (
           <Field
@@ -185,7 +189,7 @@ function AssertionConditionField({ entryIndex, assertionIndex }: AssertionProps)
             error={typeof errMessage === 'string' && errMessage}
             htmlFor={id}
           >
-            <Select inputId={id} {...field} options={ASSERTION_CONDITION_OPTIONS} menuPlacement="bottom" />
+            <Select inputId={id} {...rest} options={ASSERTION_CONDITION_OPTIONS} menuPlacement="bottom" />
           </Field>
         );
       }}

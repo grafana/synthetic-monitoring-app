@@ -82,7 +82,6 @@ export const LabelFilterInput = ({ checks, labelFilters, onChange, className }: 
         </div>
       }
       aria-label="Filter by label"
-      data-testid="check-label-filter"
       className={className}
       options={labelFilterOptions}
       onChange={(filters) => onChange(filters.map(({ value }) => value ?? ''))}
