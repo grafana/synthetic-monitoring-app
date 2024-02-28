@@ -61,8 +61,12 @@ package:
 	mkdir -p $(ARTIFACTS_DIR)/$(VERSION)
 	ln -s dist grafana-synthetic-monitoring-app
 	zip -r $(ARTIFACTS_DIR)/$(VERSION)/$(PACKAGE_NAME) grafana-synthetic-monitoring-app
-	rm grafana-synthetic-monitoring-app
 	echo $(VERSION) > $(ROOT_DIR)/plugin_version.txt
+	rm grafana-synthetic-monitoring-app
+
+.PHONY: gh-release
+gh-release:
+	node ./scripts/github-release.js
 
 .PHONY: package-latest
 package-latest:
