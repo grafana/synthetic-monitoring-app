@@ -66,8 +66,7 @@ package:
 
 .PHONY: gh-release
 gh-release:
-	echo $(ARTIFACTS_DIR)/$(VERSION)/$(PACKAGE_NAME)
-	gh release create $(VERSION) --title $(VERSION) -F ./CHANGELOG.md --draft --latest $(ARTIFACTS_DIR)/$(VERSION)/$(PACKAGE_NAME)
+	node ./scripts/github-release.js
 
 .PHONY: package-latest
 package-latest:
