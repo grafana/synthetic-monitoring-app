@@ -155,19 +155,24 @@ describe('editing multihttp check', () => {
     const assertionsTabs = await screen.findAllByLabelText('Tab Assertions');
     await user.click(assertionsTabs[0]);
     const assertionTypes = await screen.findAllByLabelText('Method for finding assertion value', { exact: false });
-    await user.selectOptions(assertionTypes[0], '1');
+
+    await user.click(assertionTypes[0]);
+    await user.click(screen.getByText('JSON path value', { selector: `span` }));
 
     const expressions = await screen.findAllByLabelText('See here for selector syntax', { exact: false });
     await user.clear(expressions[0]);
     await user.type(expressions[0], MODIFIED_CHECK1.expression);
     const conditions = await screen.findAllByLabelText('Condition', { exact: false });
-    await user.selectOptions(conditions[0], MODIFIED_CHECK1.condition.toString());
+    await user.click(conditions[0]);
+    await user.click(screen.getByText('Ends with', { selector: `span` }));
+
     const values = await screen.findAllByLabelText('Value to compare with result of expression', { exact: false });
     await user.clear(values[0]);
     await user.type(values[0], MODIFIED_CHECK1.value);
 
     const subjects = await screen.findAllByLabelText('Subject', { exact: false });
-    await user.selectOptions(subjects[0], MODIFIED_CHECK2.subject.toString());
+    await user.click(subjects[0]);
+    await user.click(screen.getByText('Headers', { selector: `span` }));
 
     const submitButton = await screen.findByRole('button', { name: 'Save' });
     await user.click(submitButton);

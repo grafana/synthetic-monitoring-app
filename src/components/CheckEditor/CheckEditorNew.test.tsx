@@ -59,7 +59,6 @@ describe('new checks', () => {
 
   it('has correct sections for DNS', async () => {
     await renderNewCheckEditor(CheckType.DNS);
-    // await selectCheckType(CheckType.DNS);
     const dnsSettings = await screen.findByText('DNS settings');
     expect(dnsSettings).toBeInTheDocument();
     const validation = await screen.findByText('Validation');
@@ -70,7 +69,6 @@ describe('new checks', () => {
 
   it('has correct sections for TCP', async () => {
     await renderNewCheckEditor(CheckType.TCP);
-    // await selectCheckType(CheckType.TCP);
     const dnsSettings = await screen.findByText('TCP settings');
     expect(dnsSettings).toBeInTheDocument();
     const query = await screen.findAllByText('Query/Response');

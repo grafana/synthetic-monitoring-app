@@ -2,16 +2,8 @@ import { screen, within } from '@testing-library/react';
 import { UserEvent } from '@testing-library/user-event';
 import { PRIVATE_PROBE } from 'test/fixtures/probes';
 
-import { CheckType, Label } from 'types';
+import { Label } from 'types';
 import { DNS_RESPONSE_MATCH_OPTIONS } from 'components/constants';
-
-export const selectCheckType = async (checkType: CheckType, user: UserEvent) => {
-  const checkTypeInput = await screen.findByText('PING');
-  await user.click(checkTypeInput);
-  const selectMenus = await screen.findAllByTestId('select');
-  await user.selectOptions(selectMenus[0], checkType);
-  await screen.findByText(checkType.toUpperCase());
-};
 
 export const toggleSection = async (sectionName: string, user: UserEvent): Promise<HTMLElement> => {
   const sectionHeader = await screen.findByText(sectionName);
@@ -44,9 +36,7 @@ export const fillBasicCheckFields = async (jobName: string, target: string, user
   }
 
   // Select probe options
-  const probeSelectMenu = await within(probeOptions).findByTestId('select');
-  await user.selectOptions(probeSelectMenu, within(probeSelectMenu).getByText(PRIVATE_PROBE.name));
-
+  await selectOption(user, { label: 'Probe locations', option: PRIVATE_PROBE.name });
   await toggleSection('Advanced options', user);
 
   for (const label of labels) {
@@ -64,10 +54,14 @@ export const fillDnsValidationFields = async (user: UserEvent) => {
   const addRegex = await screen.findByRole('button', { name: 'Add RegEx Validation' });
   await user.click(addRegex);
   await user.click(addRegex);
-  const responseMatch1 = await screen.findByTestId('dnsValidationResponseMatch0');
-  await user.selectOptions(responseMatch1, DNS_RESPONSE_MATCH_OPTIONS[0].value);
-  const responseMatch2 = await screen.findByTestId('dnsValidationResponseMatch1');
-  await user.selectOptions(responseMatch2, DNS_RESPONSE_MATCH_OPTIONS[0].value);
+  const responseMatch1 = await screen.findByLabelText('DNS Response Match 1');
+  await user.click(responseMatch1);
+  await user.click(screen.getByText(DNS_RESPONSE_MATCH_OPTIONS[0].label, { selector: `span` }));
+
+  const responseMatch2 = await screen.findByLabelText('DNS Response Match 2');
+  await user.click(responseMatch2);
+  await user.click(screen.getByText(DNS_RESPONSE_MATCH_OPTIONS[0].label, { selector: `span` }));
+
   const expressionInputs = await screen.findAllByPlaceholderText('Type expression');
   await user.type(expressionInputs[0], 'not inverted validation');
   await user.type(expressionInputs[1], 'inverted validation');
@@ -84,4 +78,42 @@ export const fillTCPQueryResponseFields = async (user: UserEvent) => {
   const queryInput = await within(container).findByPlaceholderText('Data to send');
   queryInput.focus();
   await user.paste('QUIT');
+};
+
+type GetSelectProps =
+  | {
+      label: string;
+    }
+  | {
+      text: string;
+    };
+
+export const getSelect = async (options: GetSelectProps) => {
+  let selector;
+
+  if ('label' in options) {
+    selector = await screen.findByLabelText(options.label, { exact: false });
+  }
+
+  if ('text' in options) {
+    selector = await screen.findByText(options.text);
+  }
+
+  const parent = selector!.parentElement?.parentElement?.parentElement as HTMLElement;
+  const input = parent.querySelector(`input`) as HTMLInputElement;
+
+  return [parent, input];
+};
+
+type SelectOptions = GetSelectProps & {
+  option: string;
+};
+
+export const selectOption = async (user: UserEvent, options: SelectOptions) => {
+  const [, input] = await getSelect(options);
+
+  await user.click(input);
+  const option = within(screen.getByLabelText(`Select options menu`)).getByText(options.option);
+
+  await user.click(option);
 };

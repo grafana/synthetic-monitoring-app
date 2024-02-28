@@ -89,7 +89,7 @@ function getResetTokenButton() {
 
 function checkInformation(probe: Probe) {
   expect(screen.getByDisplayValue(probe.name)).toBeInTheDocument();
-  expect(screen.getByDisplayValue(probe.region)).toBeInTheDocument();
+  expect(screen.getByText(probe.region)).toBeInTheDocument();
   expect(screen.getByDisplayValue(probe.latitude)).toBeInTheDocument();
   expect(screen.getByDisplayValue(probe.longitude)).toBeInTheDocument();
   expect(screen.getByText(probe.version)).toBeInTheDocument();

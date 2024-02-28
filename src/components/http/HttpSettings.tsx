@@ -18,6 +18,7 @@ import {
   VerticalGroup,
 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { DataTestIds } from 'test/dataTestIds';
 
 import { CheckFormValuesHttp, CheckType, HttpMethod, HttpRegexValidationType, HttpVersion } from 'types';
 import { validateHTTPHeaderName, validateHTTPHeaderValue } from 'validation';
@@ -170,6 +171,10 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
   const { fields, append, remove } = useFieldArray<CheckFormValuesHttp>({ control, name: REGEX_FIELD_NAME });
   const styles = useStyles2(getStyles);
   const errMessage = errors?.settings?.http?.method?.value?.message;
+  const compressionId = 'http-settings-compression';
+  const validStatusCodesId = 'http-settings-valid-status-codes';
+  const validHttpVersionsId = 'http-settings-valid-http-versions';
+  const sslOptionsId = 'http-settings-ssl-options';
 
   return (
     <Container>
@@ -183,7 +188,10 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
             error={typeof errMessage === `string` && errMessage}
           >
             <Controller<CheckFormValuesHttp>
-              render={({ field }) => <Select {...field} options={METHOD_OPTIONS} />}
+              render={({ field }) => {
+                const { ref, ...rest } = field;
+                return <Select {...rest} options={METHOD_OPTIONS} />;
+              }}
               rules={{ required: true }}
               name="settings.http.method"
             />
@@ -221,12 +229,14 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
             label="Compression option"
             description="The compression algorithm to expect in the response body"
             disabled={!isEditor}
+            htmlFor={compressionId}
           >
             <Controller<CheckFormValuesHttp>
               name="settings.http.compression"
-              render={({ field }) => (
-                <Select {...field} data-testid="http-compression" options={HTTP_COMPRESSION_ALGO_OPTIONS} />
-              )}
+              render={({ field }) => {
+                const { ref, ...rest } = field;
+                return <Select {...rest} inputId={compressionId} options={HTTP_COMPRESSION_ALGO_OPTIONS} />;
+              }}
             />
           </Field>
         </HorizontalGroup>
@@ -319,36 +329,62 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
             label="Valid status codes"
             description="Accepted status codes for this probe. Defaults to 2xx."
             disabled={!isEditor}
+            htmlFor={validStatusCodesId}
           >
             <Controller<CheckFormValuesHttp>
               control={control}
               name="settings.http.validStatusCodes"
-              render={({ field }) => <MultiSelect {...field} options={validStatusCodes} disabled={!isEditor} />}
+              render={({ field }) => {
+                const { ref, ...rest } = field;
+                return (
+                  <MultiSelect {...rest} options={validStatusCodes} disabled={!isEditor} inputId={validStatusCodesId} />
+                );
+              }}
             />
           </Field>
-          <Field label="Valid HTTP versions" description="Accepted HTTP versions for this probe" disabled={!isEditor}>
+          <Field
+            label="Valid HTTP versions"
+            description="Accepted HTTP versions for this probe"
+            disabled={!isEditor}
+            htmlFor={validHttpVersionsId}
+          >
             <Controller<CheckFormValuesHttp>
               control={control}
               name="settings.http.validHTTPVersions"
-              render={({ field }) => <MultiSelect {...field} options={httpVersionOptions} disabled={!isEditor} />}
+              render={({ field }) => {
+                const { ref, ...rest } = field;
+
+                return (
+                  <MultiSelect
+                    {...rest}
+                    options={httpVersionOptions}
+                    disabled={!isEditor}
+                    inputId={validHttpVersionsId}
+                  />
+                );
+              }}
             />
           </Field>
           <Field
             label="SSL options"
             description="Choose whether probe fails if SSL is present or not present"
             disabled={!isEditor}
+            htmlFor={sslOptionsId}
           >
             <Controller<CheckFormValuesHttp>
               name="settings.http.sslOptions"
               control={control}
-              render={({ field }) => <Select {...field} options={HTTP_SSL_OPTIONS} disabled={!isEditor} />}
+              render={({ field }) => {
+                const { ref, ...rest } = field;
+                return <Select {...rest} inputId={sslOptionsId} options={HTTP_SSL_OPTIONS} disabled={!isEditor} />;
+              }}
             />
           </Field>
         </div>
         <VerticalGroup width="100%">
           <Label>Regex Validation</Label>
           {Boolean(fields.length) && (
-            <div className={styles.validationGrid}>
+            <div className={styles.validationGrid} data-testid={DataTestIds.CHECK_FORM_HTTP_VALIDATION_REGEX}>
               <Label>Field Name</Label>
               <Label>Match condition</Label>
               <Label>Invert Match</Label>
@@ -362,17 +398,21 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
                 return (
                   <Fragment key={field.id}>
                     <Controller<CheckFormValuesHttp>
-                      render={({ field }) => (
-                        <Select
-                          {...field}
-                          placeholder="Field name"
-                          options={HTTP_REGEX_VALIDATION_OPTIONS}
-                          invalid={
-                            disallowBodyMatching &&
-                            Boolean(errors?.settings?.http?.regexValidations?.[index]?.matchType)
-                          }
-                        />
-                      )}
+                      render={({ field }) => {
+                        const { ref, ...rest } = field;
+                        return (
+                          <Select
+                            {...rest}
+                            aria-label={`Validation Field Name ${index + 1}`}
+                            placeholder="Field name"
+                            options={HTTP_REGEX_VALIDATION_OPTIONS}
+                            invalid={
+                              disallowBodyMatching &&
+                              Boolean(errors?.settings?.http?.regexValidations?.[index]?.matchType)
+                            }
+                          />
+                        );
+                      }}
                       rules={{
                         validate: (value) => {
                           if (disallowBodyMatching) {
@@ -430,7 +470,10 @@ export const HttpSettingsForm = ({ isEditor }: Props) => {
           <LabelField<CheckFormValuesHttp> isEditor={isEditor} />
           <Field label="IP version" description="The IP protocol of the HTTP request" disabled={!isEditor}>
             <Controller<CheckFormValuesHttp>
-              render={({ field }) => <Select {...field} options={IP_OPTIONS} />}
+              render={({ field }) => {
+                const { ref, ...rest } = field;
+                return <Select {...rest} options={IP_OPTIONS} />;
+              }}
               name="settings.http.ipVersion"
             />
           </Field>

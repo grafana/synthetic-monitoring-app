@@ -55,11 +55,10 @@ export const ScriptedCheckFormFields = ({ check }: { check: Check }) => {
         checkType={CheckType.Scripted}
       />
       <LabelField<CheckFormValuesScripted> isEditor={isEditor} />
-      <Controller<CheckFormValuesScripted>
+      <Controller
         name="settings.scripted.script"
         control={control}
-        render={({ field: { ...field } }) => {
-          // @ts-ignore we know the value is a string
+        render={({ field }) => {
           return <CodeEditor {...field} />;
         }}
       />

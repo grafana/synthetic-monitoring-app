@@ -124,14 +124,21 @@ export const MultiHttpCheckFormFields = ({ check }: { check: MultiHTTPCheck }) =
                     label="Request method"
                     description="The HTTP method used"
                     invalid={Boolean(errors?.settings?.multihttp?.entries?.[index]?.request?.method)}
-                    // this is a string
-                    error={errors?.settings?.multihttp?.entries?.[index]?.request?.method?.message as unknown as string}
+                    // @ts-expect-error -- this is a string
+                    error={errors?.settings?.multihttp?.entries?.[index]?.request?.method?.message}
                   >
                     <Controller<CheckFormValuesMultiHttp>
                       name={`settings.multihttp.entries.${index}.request.method`}
-                      render={({ field }) => (
-                        <Select {...field} options={METHOD_OPTIONS} data-testid="request-method" />
-                      )}
+                      render={({ field }) => {
+                        const { ref, ...rest } = field;
+                        return (
+                          <Select
+                            {...rest}
+                            options={METHOD_OPTIONS}
+                            aria-label={`Request method for request ${index + 1}`}
+                          />
+                        );
+                      }}
                       rules={{ required: 'Request method is required' }}
                     />
                   </Field>

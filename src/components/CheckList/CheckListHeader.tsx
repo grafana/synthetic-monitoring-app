@@ -111,13 +111,12 @@ export const CheckListHeader = ({
           )}
         </div>
         <Select
-          aria-label="Sort"
+          aria-label="Sort checks by"
           prefix={
             <div>
               <Icon name="sort-amount-down" /> Sort
             </div>
           }
-          data-testid="check-list-sort"
           options={CHECK_LIST_SORT_OPTIONS}
           defaultValue={CHECK_LIST_SORT_OPTIONS[0]}
           width={25}

@@ -1,12 +1,13 @@
 import React from 'react';
-import { screen, waitFor, waitForElementToBeRemoved } from '@testing-library/react';
+import { screen, waitFor, waitForElementToBeRemoved, within } from '@testing-library/react';
 import { BASIC_CHECK_LIST, BASIC_DNS_CHECK, BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
 
-import { Check, CheckSort, ROUTES } from 'types';
+import { Check, ROUTES } from 'types';
+import { selectOption } from 'components/CheckEditor/testHelpers';
 import { PLUGIN_URL_PATH } from 'components/constants';
 
 import { CheckList } from './CheckList';
@@ -22,7 +23,7 @@ const useNavigationHook = require('hooks/useNavigation');
 
 jest.setTimeout(20000);
 
-const renderCheckList = (checks = BASIC_CHECK_LIST) => {
+const renderCheckList = async (checks = BASIC_CHECK_LIST) => {
   server.use(
     apiRoute(`listChecks`, {
       result: () => {
@@ -33,11 +34,12 @@ const renderCheckList = (checks = BASIC_CHECK_LIST) => {
     })
   );
 
-  return waitFor(() =>
-    render(<CheckList />, {
-      path: `${PLUGIN_URL_PATH}${ROUTES.Checks}`,
-    })
-  );
+  const res = render(<CheckList />, {
+    path: `${PLUGIN_URL_PATH}${ROUTES.Checks}`,
+  });
+
+  await waitFor(() => expect(screen.getByText('Add new check')).toBeInTheDocument());
+  return res;
 };
 
 beforeEach(() => {
@@ -45,7 +47,19 @@ beforeEach(() => {
 });
 
 test('renders empty state', async () => {
-  await renderCheckList([]);
+  server.use(
+    apiRoute(`listChecks`, {
+      result: () => {
+        return {
+          json: [],
+        };
+      },
+    })
+  );
+
+  await render(<CheckList />, {
+    path: `${PLUGIN_URL_PATH}${ROUTES.Checks}`,
+  });
   const emptyWarning = await screen.findByText('This account does not currently have any checks configured', {
     exact: false,
   });
@@ -126,8 +140,8 @@ test('clicking label value adds to label filter', async () => {
   await user.click(labelValue[0]);
   const additionalFilters = await screen.findByRole('button', { name: /Additional filters/i });
   await user.click(additionalFilters);
-  const filterInput = await screen.findByTestId('check-label-filter');
-  expect(filterInput).toHaveValue([constructedLabel]);
+
+  expect(within(screen.getByRole(`dialog`)).getByText(constructedLabel)).toBeInTheDocument();
   const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(1);
 });
@@ -136,8 +150,8 @@ test('filters by check type', async () => {
   const { user } = await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK]);
   const additionalFilters = await screen.findByRole('button', { name: 'Additional filters' });
   await user.click(additionalFilters);
-  const typeFilter = await screen.findByTestId('check-type-filter');
-  await user.selectOptions(typeFilter, 'http');
+
+  await selectOption(user, { label: 'Filter by type', option: 'HTTP' });
   const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(1);
 });
@@ -151,8 +165,10 @@ test('filters by probe', async () => {
   const { user } = await renderCheckList([DNS_CHECK_WITH_REMOVED_PROBE, BASIC_HTTP_CHECK]);
   const additionalFilters = await screen.findByRole('button', { name: 'Additional filters' });
   await user.click(additionalFilters);
-  const probeFilter = await screen.findByTestId('probe-filter');
-  await user.selectOptions(probeFilter, PRIVATE_PROBE.name);
+  const probeFilter = await screen.findByLabelText('Filter by probe');
+  await user.click(probeFilter);
+  await user.click(screen.getByText(PRIVATE_PROBE.name, { selector: 'span' }));
+
   const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(1);
 });
@@ -177,16 +193,15 @@ test('loads search from localStorage', async () => {
 });
 
 test('loads status filter from localStorage', async () => {
-  localStorage.setItem(
-    'checkFilters',
-    JSON.stringify({
-      search: '',
-      labels: [],
-      type: 'all',
-      status: { label: 'Disabled', value: 2 },
-      probes: [],
-    })
-  );
+  const filters = {
+    search: '',
+    labels: [],
+    type: 'all',
+    status: { label: 'Disabled', value: 2 },
+    probes: [],
+  };
+
+  localStorage.setItem('checkFilters', JSON.stringify(filters));
 
   const DNS_CHECK_DISABLED = {
     ...BASIC_DNS_CHECK,
@@ -196,29 +211,29 @@ test('loads status filter from localStorage', async () => {
   const { user } = await renderCheckList([DNS_CHECK_DISABLED, BASIC_HTTP_CHECK]);
   const additionalFilters = await screen.findByRole('button', { name: /Additional filters \(1 active\)/i });
   await user.click(additionalFilters);
-  const statusFilter = await screen.findByTestId('check-status-filter');
-  expect(statusFilter).toHaveValue('2');
 
+  const statusFilter = await within(screen.getByRole('dialog')).findByText(filters.status.label);
+  expect(statusFilter).toBeInTheDocument();
   const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(1);
 });
 
 test('loads type filter from localStorage', async () => {
-  localStorage.setItem(
-    'checkFilters',
-    JSON.stringify({
-      search: '',
-      labels: [],
-      type: 'http',
-      status: { label: 'All', value: 0 },
-      probes: [],
-    })
-  );
+  const filters = {
+    search: '',
+    labels: [],
+    type: 'http',
+    status: { label: 'All', value: 0 },
+    probes: [],
+  };
+
+  localStorage.setItem('checkFilters', JSON.stringify(filters));
   const { user } = await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK]);
   const additionalFilters = await screen.findByRole('button', { name: /Additional filters \(1 active\)/i });
   await user.click(additionalFilters);
-  const typeFilter = await screen.findByTestId('check-type-filter');
-  expect(typeFilter).toHaveValue('http');
+
+  const typeFilter = await within(screen.getByRole('dialog')).findByText(filters.type, { exact: false });
+  expect(typeFilter).toBeInTheDocument();
 
   const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(1);
@@ -228,21 +243,21 @@ test('loads labels from localStorage', async () => {
   const label = BASIC_DNS_CHECK.labels[0];
   const constructedLabel = `${label.name}: ${label.value}`;
 
-  localStorage.setItem(
-    'checkFilters',
-    JSON.stringify({
-      search: '',
-      labels: [constructedLabel],
-      type: 'all',
-      status: { label: 'All', value: 0 },
-      probes: [],
-    })
-  );
+  const filters = {
+    search: '',
+    labels: [constructedLabel],
+    type: 'all',
+    status: { label: 'All', value: 0 },
+    probes: [],
+  };
+
+  localStorage.setItem('checkFilters', JSON.stringify(filters));
   const { user } = await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK]);
   const additionalFilters = await screen.findByRole('button', { name: /Additional filters \(1 active\)/i });
   await user.click(additionalFilters);
-  const filterInput = await screen.findByTestId('check-label-filter');
-  expect(filterInput).toHaveValue([constructedLabel]);
+
+  const typeFilter = await within(screen.getByRole('dialog')).findByText(constructedLabel, { exact: false });
+  expect(typeFilter).toBeInTheDocument();
 
   const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(1);
@@ -254,9 +269,11 @@ test('clicking type chiclet adds it to filter', async () => {
   await user.click(httpTypeChiclet[0]);
   const additionalFilters = await screen.findByRole('button', { name: /Additional filters/i });
   await user.click(additionalFilters);
-  const typeFilter = await screen.findByTestId('check-type-filter');
   const checks = await screen.findAllByTestId('check-card');
-  expect(typeFilter).toHaveValue('http');
+
+  const typeFilter = await within(screen.getByRole('dialog')).findByText(`HTTP`);
+  expect(typeFilter).toBeInTheDocument();
+
   expect(checks.length).toBe(1);
 });
 
@@ -271,9 +288,11 @@ test('clicking status chiclet adds it to filter', async () => {
   await user.click(disabledChiclet[0]);
   const additionalFilters = await screen.findByRole('button', { name: /Additional filters/i });
   await user.click(additionalFilters);
-  const statusFilter = await screen.findByTestId('check-status-filter');
+
+  const statusFilter = await within(screen.getByRole('dialog')).findByText(`Disabled`);
+  expect(statusFilter).toBeInTheDocument();
+
   const checks = await screen.findAllByTestId('check-card');
-  expect(statusFilter).toHaveValue('2');
   expect(checks.length).toBe(1);
 });
 
@@ -344,16 +363,18 @@ test('cascader adds labels to label filter', async () => {
   const labelValue = await screen.findByRole('menuitemcheckbox', { name: BASIC_DNS_CHECK.labels[0].value });
   await user.click(labelValue);
 
-  const labelFilterInput = await screen.findByTestId('check-label-filter');
   const constructedLabel = `${BASIC_DNS_CHECK.labels[0].name}: ${BASIC_DNS_CHECK.labels[0].value}`;
-  expect(labelFilterInput).toHaveValue([constructedLabel]);
+  const labelFilterInput = await within(screen.getByRole('dialog')).findByText(constructedLabel);
+
+  expect(labelFilterInput).toBeInTheDocument();
 });
 
 test('Sorting by success rate should not crash', async () => {
   const { user } = await renderCheckList();
-  const sortPicker = await screen.findByTestId('check-list-sort');
+  const sortPicker = await screen.getByLabelText('Sort checks by');
+  await user.click(sortPicker);
+  await user.click(screen.getByText(`Asc. Reachability`, { selector: 'span' }));
 
-  await user.selectOptions(sortPicker, CheckSort.ReachabilityAsc.toString());
   const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(BASIC_CHECK_LIST.length);
 });

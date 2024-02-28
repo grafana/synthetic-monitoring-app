@@ -61,6 +61,7 @@ const CheckProbes = forwardRef(
     });
 
     const selectedProbes = options.filter((p) => currentProbes.includes(p.value as number));
+    const id = 'check-probes';
 
     return (
       <ThemeContext.Consumer>
@@ -73,6 +74,7 @@ const CheckProbes = forwardRef(
               disabled={!isEditor}
               error={error}
               invalid={invalid}
+              htmlFor={id}
             >
               <MultiSelect
                 options={options}
@@ -81,6 +83,7 @@ const CheckProbes = forwardRef(
                 disabled={!isEditor}
                 closeMenuOnSelect={false}
                 onBlur={onBlur}
+                inputId={id}
               />
             </Field>
             <div
