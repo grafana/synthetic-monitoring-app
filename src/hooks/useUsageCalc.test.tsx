@@ -3,7 +3,7 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { CheckInfo } from 'test/fixtures/checks';
 import { createWrapper } from 'test/render';
 
-import { Check, DnsSettings, HttpSettings, PingSettings, TcpSettings } from 'types';
+import { Check, DnsSettings, HttpSettings, PingSettings, ScriptedSettings, TcpSettings } from 'types';
 import { checkToUsageCalcValues } from 'utils';
 
 import { useUsageCalc } from './useUsageCalc';
@@ -30,6 +30,7 @@ const {
   http_basic,
   ping,
   ping_basic,
+  scripted,
   tcp,
   tcp_basic,
   tcp_ssl,
@@ -307,6 +308,24 @@ describe('dns usage', () => {
       activeSeries: dns_basic.Series,
       logsGbPerMonth: 0.04,
       dpm: 29,
+    });
+  });
+});
+
+describe('scripted usage', () => {
+  test('calculates with full metrics', async () => {
+    const { result: basic } = await renderUsage({
+      probes: [1],
+      settings: {
+        scripted: {} as ScriptedSettings,
+      },
+      frequency: 60000,
+    } as Check);
+    expect(basic.current).toStrictEqual({
+      checksPerMonth: 43800,
+      activeSeries: scripted.Series,
+      logsGbPerMonth: 0.04,
+      dpm: scripted.Series,
     });
   });
 });
