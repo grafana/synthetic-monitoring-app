@@ -29,7 +29,10 @@ export const PingSettingsForm = ({ isEditor }: Props) => {
           <Controller<CheckFormValuesPing>
             name="settings.ping.ipVersion"
             control={control}
-            render={({ field }) => <Select {...field} options={IP_OPTIONS} />}
+            render={({ field }) => {
+              const { ref, ...rest } = field;
+              return <Select {...rest} options={IP_OPTIONS} />;
+            }}
             rules={{ required: true }}
           />
         </Field>

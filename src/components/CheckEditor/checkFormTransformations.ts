@@ -54,6 +54,7 @@ import {
   isHttpCheck,
   isMultiHttpCheck,
   isPingCheck,
+  isScriptedCheck,
   isTCPCheck,
   isTracerouteCheck,
 } from 'utils.types';
@@ -376,6 +377,18 @@ export function getFormValuesFromCheck(check: Check): CheckFormValues {
       checkType: CheckType.PING,
       settings: {
         ping: getPingSettingsFormValues(check.settings),
+      },
+    };
+
+    return formValues;
+  }
+
+  if (isScriptedCheck(check)) {
+    const formValues: CheckFormValuesScripted = {
+      ...base,
+      checkType: CheckType.Scripted,
+      settings: {
+        scripted: getScriptedCheckFormValues(check.settings),
       },
     };
 

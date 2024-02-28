@@ -112,7 +112,6 @@ const CheckTarget = forwardRef(
             onChange={(e: ChangeEvent<HTMLInputElement>) => {
               onChange(e.target.value);
             }}
-            required={true}
           />
         </Field>
         {typeOfCheck === CheckType.HTTP && parsedURL && (

@@ -6,9 +6,9 @@ import { render } from 'test/render';
 import { server } from 'test/server';
 
 import { AlertSensitivity, CheckType, HttpMethod, IpVersion, ROUTES } from 'types';
+import { CheckForm } from 'components/CheckForm/CheckForm';
 import { PLUGIN_URL_PATH } from 'components/constants';
 
-import { CheckEditor } from './CheckEditor';
 import { fillBasicCheckFields, fillDnsValidationFields, fillTCPQueryResponseFields, submitForm } from './testHelpers';
 
 jest.setTimeout(60000);
@@ -22,10 +22,8 @@ jest.mock('hooks/useAlerts', () => ({
   }),
 }));
 
-beforeEach(() => jest.resetAllMocks());
-
 const renderNewCheckEditor = async (checkType?: CheckType) => {
-  const res = render(<CheckEditor />, {
+  const res = render(<CheckForm />, {
     route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/:checkType`,
     path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${checkType}`,
   });
@@ -61,7 +59,6 @@ describe('new checks', () => {
 
   it('has correct sections for DNS', async () => {
     await renderNewCheckEditor(CheckType.DNS);
-    // await selectCheckType(CheckType.DNS);
     const dnsSettings = await screen.findByText('DNS settings');
     expect(dnsSettings).toBeInTheDocument();
     const validation = await screen.findByText('Validation');
@@ -72,7 +69,6 @@ describe('new checks', () => {
 
   it('has correct sections for TCP', async () => {
     await renderNewCheckEditor(CheckType.TCP);
-    // await selectCheckType(CheckType.TCP);
     const dnsSettings = await screen.findByText('TCP settings');
     expect(dnsSettings).toBeInTheDocument();
     const query = await screen.findAllByText('Query/Response');

@@ -102,7 +102,10 @@ export const TcpSettingsForm = ({ isEditor }: Props) => {
             <Field label="IP version" description="The IP protocol of the ICMP request" disabled={!isEditor}>
               <Controller<CheckFormValuesTcp>
                 name="settings.tcp.ipVersion"
-                render={({ field }) => <Select {...field} options={IP_OPTIONS} defaultValue={IP_OPTIONS[1]} />}
+                render={({ field }) => {
+                  const { ref, ...rest } = field;
+                  return <Select {...rest} options={IP_OPTIONS} defaultValue={IP_OPTIONS[1]} />;
+                }}
               />
             </Field>
           </div>

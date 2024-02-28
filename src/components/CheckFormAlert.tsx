@@ -47,20 +47,25 @@ export const CheckFormAlert = () => {
       <Field label="Select alert sensitivity">
         <Controller<CheckFormValues>
           name="alertSensitivity"
-          render={({ field }) => (
-            <Select
-              {...field}
-              width={40}
-              disabled={isCustomSensitivity}
-              data-testid="alertSensitivityInput"
-              options={
-                isCustomSensitivity ? [{ label: alertSensitivity, value: alertSensitivity }] : ALERT_SENSITIVITY_OPTIONS
-              }
-              onChange={(e) => {
-                field.onChange(e.value);
-              }}
-            />
-          )}
+          render={({ field }) => {
+            const { ref, ...rest } = field;
+            return (
+              <Select
+                {...rest}
+                width={40}
+                disabled={isCustomSensitivity}
+                data-testid="alertSensitivityInput"
+                options={
+                  isCustomSensitivity
+                    ? [{ label: alertSensitivity, value: alertSensitivity }]
+                    : ALERT_SENSITIVITY_OPTIONS
+                }
+                onChange={(e) => {
+                  field.onChange(e.value);
+                }}
+              />
+            );
+          }}
         />
       </Field>
     </Collapse>

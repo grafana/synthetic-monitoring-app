@@ -105,7 +105,6 @@ export function CheckFilters({
           <Select
             aria-label="Filter by type"
             prefix="Types"
-            data-testid="check-type-filter"
             options={CHECK_FILTER_OPTIONS}
             className={styles.verticalSpace}
             width={20}
@@ -131,7 +130,6 @@ export function CheckFilters({
         />
         <MultiSelect
           aria-label="Filter by probe"
-          data-testid="probe-filter"
           prefix="Probes"
           onChange={(v) => {
             onChange({

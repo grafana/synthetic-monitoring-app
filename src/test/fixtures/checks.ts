@@ -438,12 +438,12 @@ export const CheckInfo = {
       CheckClass: 0,
       Series: 38,
     },
-    k6: {
+    scripted: {
       CheckType: 5,
       CheckClass: 1,
       Series: 36,
     },
-    k6_basic: {
+    scripted_basic: {
       CheckType: 5,
       CheckClass: 1,
       Series: 22,

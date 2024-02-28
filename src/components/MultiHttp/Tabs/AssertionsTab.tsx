@@ -39,18 +39,21 @@ export function AssertionsTab({ index, active }: MultiHttpTabProps) {
                 <Controller<CheckFormValuesMultiHttp>
                   name={assertionTypeName}
                   render={({ field: typeField }) => {
+                    const id = `multihttp-assertion-type-${index}-${assertionIndex}`;
+                    const { ref, ...rest } = typeField;
+
                     return (
                       <Field
                         label="Assertion type"
                         description="Method for finding assertion value"
                         invalid={Boolean(error)}
                         error={typeof errMessage === 'string' && errMessage}
+                        htmlFor={id}
                       >
                         <Select
-                          id={`multihttp-assertion-type-${index}-${assertionIndex}`}
-                          data-testid={`multihttp-assertion-type-${index}-${assertionIndex}`}
+                          inputId={id}
                           className={styles.minInputWidth}
-                          {...typeField}
+                          {...rest}
                           options={MULTI_HTTP_ASSERTION_TYPE_OPTIONS}
                           menuPlacement="bottom"
                         />
@@ -146,19 +149,18 @@ function AssertionSubjectField({ entryIndex, assertionIndex }: AssertionProps) {
     <Controller<CheckFormValuesMultiHttp>
       name={`settings.multihttp.entries.${entryIndex}.checks.${assertionIndex}.subject`}
       render={({ field }) => {
+        const id = `${entryIndex}-${assertionIndex}-subject`;
+        const { ref, ...rest } = field;
+
         return (
           <Field
             label="Subject"
             description="Target value to assert against"
             invalid={Boolean(error)}
             error={typeof errMessage === 'string' && errMessage}
+            htmlFor={id}
           >
-            <Select
-              id={`${entryIndex}-${assertionIndex}-subject`}
-              {...field}
-              options={ASSERTION_SUBJECT_OPTIONS}
-              menuPlacement="bottom"
-            />
+            <Select inputId={id} {...rest} options={ASSERTION_SUBJECT_OPTIONS} menuPlacement="bottom" />
           </Field>
         );
       }}
@@ -176,19 +178,18 @@ function AssertionConditionField({ entryIndex, assertionIndex }: AssertionProps)
     <Controller<CheckFormValuesMultiHttp>
       name={`settings.multihttp.entries.${entryIndex}.checks.${assertionIndex}.condition`}
       render={({ field }) => {
+        const id = `multihttp-assertion-condition-${entryIndex}-${assertionIndex}`;
+        const { ref, ...rest } = field;
+
         return (
           <Field
             label="Condition"
             description="Comparator"
             invalid={Boolean(error)}
             error={typeof errMessage === 'string' && errMessage}
+            htmlFor={id}
           >
-            <Select
-              id={`${entryIndex}-${assertionIndex}-condition`}
-              {...field}
-              options={ASSERTION_CONDITION_OPTIONS}
-              menuPlacement="bottom"
-            />
+            <Select inputId={id} {...rest} options={ASSERTION_CONDITION_OPTIONS} menuPlacement="bottom" />
           </Field>
         );
       }}

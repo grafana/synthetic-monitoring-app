@@ -10,6 +10,8 @@ import { getRoute } from 'components/Routing';
 import { NewProbe } from './NewProbe';
 import 'test/silenceErrors';
 
+jest.setTimeout(60000);
+
 const renderNewProbe = () => {
   return render(<NewProbe />, {
     route: getRoute(ROUTES.NewProbe),

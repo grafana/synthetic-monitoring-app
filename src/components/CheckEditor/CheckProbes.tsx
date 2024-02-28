@@ -16,6 +16,8 @@ interface Props {
   error?: string;
 }
 
+export const PROBES_SELECT_ID = 'check-probes-select';
+
 const CheckProbes = forwardRef(
   ({ probes, availableProbes, isEditor, onChange, onBlur, invalid, error }: Props, ref) => {
     const [currentProbes, setCurrentProbes] = useState<number[]>(probes);
@@ -59,17 +61,20 @@ const CheckProbes = forwardRef(
     });
 
     const selectedProbes = options.filter((p) => currentProbes.includes(p.value as number));
+    const id = 'check-probes';
 
     return (
       <ThemeContext.Consumer>
         {(theme) => (
           <>
             <Field
+              id={PROBES_SELECT_ID}
               label="Probe locations"
               description="Select one, multiple, or all probes where this target will be checked from. Deprecated probes can be removed, but they cannot be added."
               disabled={!isEditor}
               error={error}
               invalid={invalid}
+              htmlFor={id}
             >
               <MultiSelect
                 options={options}
@@ -78,6 +83,7 @@ const CheckProbes = forwardRef(
                 disabled={!isEditor}
                 closeMenuOnSelect={false}
                 onBlur={onBlur}
+                inputId={id}
               />
             </Field>
             <div

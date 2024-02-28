@@ -1,6 +1,6 @@
 {
   "name": "synthetic-monitoring-app",
-  "version": "1.12.6-dev-5",
+  "version": "1.12.7",
   "description": "Grafana Synthetic Monitoring App",
   "scripts": {
     "build": "webpack -c webpack.config.ts --env production",
@@ -18,7 +18,7 @@
     "server-dev": "GRAFANA_IMAGE='grafana-dev' GRAFANA_VERSION='10.2.0-131258-ubuntu' yarn server",
     "sign": "npx --yes @grafana/sign-plugin@latest",
     "spellcheck": "cspell -c cspell.config.json \"**/*.{ts,tsx,js,go,md,mdx,yml,yaml,json,scss,css}\"",
-    "test": "jest --watch",
+    "test": "jest --all",
     "test:accessibility": "pa11y --runner axe --reporter json http://localhost:3000/a/grafana-synthetic-monitoring-app/?page=checks > pa11y-report.json",
     "test:ci": "jest --passWithNoTests --maxWorkers 4",
     "test:changed": "jest --watch --onlyChanged",

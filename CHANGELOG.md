@@ -1,6 +1,13 @@
 # Change Log
 
-# [1.12.5](https://github.com/grafana/synthetic-monitoring-app/compare/v1.12.3...v1.12.4) (2024-1-25)
+# [1.12.6](https://github.com/grafana/synthetic-monitoring-app/compare/v1.12.5...v1.12.6) (2024-2-26)
+
+- Add alert annotations to the dashboards
+- Allow unlimited headres in HTTP checks
+- Improve navigation after check creation
+- Change the navigation model to use individual checks instead of dashboard dropdowns
+
+# [1.12.5](https://github.com/grafana/synthetic-monitoring-app/compare/v1.12.4...v1.12.5) (2024-1-25)
 
 - Revamp the MultiHTTP dashboard
 - Add a "Copy JSON" button to the dashboard menus so people can add charts to their own dashboards
