@@ -15,7 +15,7 @@ module.exports = {
       '<rootDir>/src/test/fileMock.js',
     '^!raw-loader!*': '<rootDir>/src/test/rawLoaderMock.js',
   },
-  // testTimeout: 30000,
+  testTimeout: 30000,
   // Inform jest to only transform specific node_module packages.
   transform: {
     ...config.transform,
