@@ -2,6 +2,7 @@
 
 # [1.12.7](https://github.com/grafana/synthetic-monitoring-app/compare/v1.12.6...v1.12.7) (2024-3-11)
 
+- Update dashboards to use timeseries instead of the deprecated graph panel
 - Fix a non-functional "Add check" button being visible for viewers.
 - Remove deprecated arrayVector
 - Add a probe region select
