@@ -61,7 +61,7 @@ steps:
           "repo_owner": "grafana",
           "repo_name": "deployment_tools",
           "destination_branch": "master",
-          "pull_request_branch_prefix": "ci-testing/synthetic-monitoring-plugin-release",
+          "pull_request_branch_prefix": "auto-merge/synthetic-monitoring-plugin-release",
           "pull_request_enabled": true,
           "pull_request_existing_strategy": "ignore",
           "pull_request_message": "Triggered by ${DRONE_COMMIT_LINK}. NOTE: dev does not refer directly to an environment it refers to stacks associated with the dev 'wave'. See [here](https://github.com/grafana/deployment_tools/blob/master/ksonnet/environments/hosted-grafana/waves/provisioned-plugins/README.md#waves) for more info.",
@@ -106,7 +106,7 @@ steps:
         from_secret: signing_token
 
   # Staging reads from the production GCS bucket, so we need to publish prod assets
-  - name: publish to prod
+  - name: publish assets to GCS
     image: plugins/gcs
     settings:
       acl: allUsers:READER
@@ -115,7 +115,7 @@ steps:
       token:
         from_secret: gcs_sa_grafanalabsglobal
 
-  - name: Open PR to update plugin version for all staging stacks
+  - name: Update staging stacks
     image: us.gcr.io/kubernetes-dev/drone/plugins/updater
     settings:
       config_json: |-
@@ -123,7 +123,7 @@ steps:
           "repo_owner": "grafana",
           "repo_name": "deployment_tools",
           "destination_branch": "master",
-          "pull_request_branch_prefix": "ci-testing/synthetic-monitoring-plugin",
+          "pull_request_branch_prefix": "auto-merge/synthetic-monitoring-plugin",
           "pull_request_enabled": true,
           "pull_request_existing_strategy": "ignore",
           "pull_request_message": "Triggered by ${DRONE_COMMIT_LINK}. NOTE: staging does not refer directly to an environment it refers to stacks associated with the staging 'wave'. See [here](https://github.com/grafana/deployment_tools/blob/master/ksonnet/environments/hosted-grafana/waves/provisioned-plugins/README.md#waves) for more info.",
@@ -175,7 +175,7 @@ steps:
           "repo_owner": "grafana",
           "repo_name": "deployment_tools",
           "destination_branch": "master",
-          "pull_request_branch_prefix": "ci-testing/synthetic-monitoring-plugin",
+          "pull_request_branch_prefix": "ci/synthetic-monitoring-plugin",
           "pull_request_enabled": true,
           "pull_request_existing_strategy": "ignore",
           "pull_request_message": "Triggered by ${DRONE_COMMIT_LINK}. NOTE: canary does not refer directly to an environment it refers to stacks associated with the canary 'wave'. See [here](https://github.com/grafana/deployment_tools/blob/master/ksonnet/environments/hosted-grafana/waves/provisioned-plugins/README.md#waves) for more info.",
@@ -212,12 +212,14 @@ steps:
     image: node:18
     commands:
       - ./scripts/install-ci-deps-apt.sh
-      - make install lint test build sign package
+      - make install lint test build sign package gh-release
     environment:
       GCP_KEY:
         from_secret: gcp_key
       GRAFANA_ACCESS_POLICY_TOKEN:
         from_secret: signing_token
+      GITHUB_TOKEN:
+        from_secret: github_token
 
   - name: Open PR to update plugin version for all production stacks
     image: us.gcr.io/kubernetes-dev/drone/plugins/updater
@@ -252,7 +254,7 @@ steps:
       github_app_private_key:
         from_secret: updater-app-private-key
   - name: publish-to-gcom
-    image: grafana/integration-grafana-publisher:v9
+    image: grafana/integration-grafana-publisher:latest
     commands:
       - echo "start publish to GCOM"
       - if [ -z "$GCOM_PUBLISH_TOKEN" ]; then echo "Missing GCOM Publish Key"; exit -1; fi
@@ -270,6 +272,49 @@ steps:
         from_secret: signing_token
       GITHUB_TOKEN:
         from_secret: updater-app-private-key
+
+image_pull_secrets:
+  - dockerconfigjson
+# Import secrets from Vault
+---
+kind: pipeline
+type: docker
+name: publish-gcom
+
+trigger:
+  event:
+    - tag
+
+steps:
+  - name: publish-to-github
+    image: node:18
+    commands:
+      - ./scripts/install-ci-deps-apt.sh
+      - make install lint test build sign package gh-release
+    environment:
+      GRAFANA_ACCESS_POLICY_TOKEN:
+        from_secret: signing_token
+      GITHUB_TOKEN:
+        from_secret: github_token
+  - name: publish-to-gcom
+    image: grafana/integration-grafana-publisher:latest
+    commands:
+      - echo "start publish to GCOM"
+      - if [ -z "$GCOM_PUBLISH_TOKEN" ]; then echo "Missing GCOM Publish Key"; exit -1; fi
+      - if [ -z "$GITHUB_TOKEN" ]; then echo "Missing GITHUB_TOKEN"; exit -1; fi
+      - if [ -z "$GCLOUD_SERVICE_KEY" ]; then echo "Missing GCLOUD_SERVICE_KEY"; exit -1; fi
+      - printenv GCLOUD_SERVICE_KEY > /tmp/gcpkey.json
+      - gcloud auth activate-service-account --key-file=/tmp/gcpkey.json
+      - PLUGIN_NAME="grafana-synthetic-monitoring-app"
+      - VERSION=${DRONE_TAG}
+      - /root/app/bin/grafana-publisher.js --auto publishremote $PLUGIN_NAME $VERSION $DRONE_REPO_NAME
+    environment:
+      GCLOUD_SERVICE_KEY:
+        from_secret: gcp_key
+      GCOM_PUBLISH_TOKEN:
+        from_secret: gcom_token
+      GITHUB_TOKEN:
+        from_secret: github_token
 
 image_pull_secrets:
   - dockerconfigjson
@@ -332,6 +377,6 @@ kind: secret
 name: gcp_key
 ---
 kind: signature
-hmac: cdf992f09e35236f057ea294dfdb57ad60c7f9e290f8109ac9c54eff7b8337a0
+hmac: 00201d3e328981801c963698b02add0e3d0e6365cdd88ab2d457ced9e141f494
 
 ...

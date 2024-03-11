@@ -16,13 +16,6 @@ const getNodeGraphFields = () => {
     config: { displayName: 'Host' },
   };
 
-  // const typeField = {
-  //   name: NodeGraphDataFrameFieldNames.subTitle,
-  //   type: FieldType.string,
-  //   values: new ArrayVector(),
-  //   config: { displayName: 'Type' },
-  // };
-
   const nodeMainStatField = {
     name: NodeGraphDataFrameFieldNames.mainStat,
     type: FieldType.number,
@@ -96,25 +89,6 @@ const getNodeGraphEdgeFields = () => {
     type: FieldType.string,
     values: [] as string[],
   };
-
-  // These are needed for links to work
-  // const edgeSourceNameField = {
-  //   name: 'sourceName',
-  //   type: FieldType.string,
-  //   values: new ArrayVector(),
-  // };
-  // const edgeTargetNameField = {
-  //   name: 'targetName',
-  //   type: FieldType.string,
-  //   values: new ArrayVector(),
-  // };
-
-  // const edgeMainStatField = {
-  //   name: NodeGraphDataFrameFieldNames.mainStat,
-  //   type: FieldType.string,
-  //   values: new ArrayVector(),
-  //   config: { displayName: 'Response percentage' },
-  // };
 
   return {
     edgeIdField,

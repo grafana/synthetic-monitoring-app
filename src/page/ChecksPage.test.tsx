@@ -12,12 +12,10 @@ import { CheckRouter } from './CheckRouter';
 jest.setTimeout(20000);
 
 const renderChecksPage = () => {
-  return waitFor(() =>
-    render(<CheckRouter />, {
-      path: `${PLUGIN_URL_PATH}${ROUTES.Checks}`,
-      route: `${PLUGIN_URL_PATH}${ROUTES.Checks}`,
-    })
-  );
+  return render(<CheckRouter />, {
+    path: `${PLUGIN_URL_PATH}${ROUTES.Checks}`,
+    route: `${PLUGIN_URL_PATH}${ROUTES.Checks}`,
+  });
 };
 
 test('renders checks', async () => {
