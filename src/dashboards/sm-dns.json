@@ -649,7 +649,7 @@
         "sort": 0,
         "value_type": "individual"
       },
-      "type": "graph",
+      "type": "timeseries",
       "xaxis": {
         "mode": "time",
         "show": true,
@@ -767,7 +767,7 @@
         "value_type": "individual"
       },
       "transformations": [],
-      "type": "graph",
+      "type": "timeseries",
       "xaxis": {
         "mode": "time",
         "show": true,
@@ -900,7 +900,7 @@
         "value_type": "individual"
       },
       "transformations": [],
-      "type": "graph",
+      "type": "timeseries",
       "xaxis": {
         "mode": "time",
         "show": true,
@@ -1041,6 +1041,6 @@
   "timezone": "",
   "title": "Synthetic Monitoring DNS",
   "uid": "lgL6odgGz",
-  "version": 47,
+  "version": 48,
   "weekStart": ""
 }

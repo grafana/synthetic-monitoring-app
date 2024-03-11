@@ -521,7 +521,7 @@
         "sort": 0,
         "value_type": "individual"
       },
-      "type": "graph",
+      "type": "timeseries",
       "xaxis": {
         "buckets": null,
         "mode": "time",
@@ -815,5 +815,5 @@
   "timezone": "",
   "title": "Synthetic Monitoring Traceroute",
   "uid": "hk8gHB4nk",
-  "version": 8
+  "version": 48
 }
