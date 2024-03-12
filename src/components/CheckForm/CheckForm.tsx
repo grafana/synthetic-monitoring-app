@@ -149,7 +149,7 @@ const CheckFormContent = ({ check, checkType }: CheckFormContentProps) => {
               <Button type="submit" disabled={formMethods.formState.isSubmitting || submitting}>
                 Save
               </Button>
-              {![CheckType.Scripted, CheckType.Traceroute].includes(checkType) && (
+              {![CheckType.Traceroute].includes(checkType) && (
                 <Button
                   disabled={isPending}
                   type="submit"
