@@ -6,7 +6,6 @@ import { css } from '@emotion/css';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { BackendAddress } from 'components/BackendAddress';
 import { ConfigActions } from 'components/ConfigActions';
-import { DashboardList } from 'components/DashboardList';
 import LinkedDatasourceView from 'components/LinkedDatasourceView';
 import { PluginPage } from 'components/PluginPage';
 import { ProgrammaticManagement } from 'components/ProgrammaticManagement';
@@ -14,7 +13,6 @@ import { ProgrammaticManagement } from 'components/ProgrammaticManagement';
 function getStyles(theme: GrafanaTheme2) {
   return {
     tenantConfig: css`
-      padding-top: ${theme.spacing(4)};
       margin-top: ${theme.spacing(4)};
       background: ${theme.colors.background.primary};
     `,
@@ -68,11 +66,6 @@ export function ConfigPage() {
         </div>
         {instance.api && (
           <div className={styles.tenantConfig}>
-            <DashboardList
-              options={instance.api.instanceSettings.jsonData}
-              checkUpdates={true}
-              onChange={instance.api.onOptionsChange}
-            />
             <div className={styles.linkedDatasources}>
               <h3>Linked Data Sources</h3>
               <Container margin="sm">
