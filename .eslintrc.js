@@ -3,6 +3,8 @@ module.exports = {
   plugins: ['simple-import-sort'],
   ignorePatterns: ['**/snippets/*.js'],
   rules: {
+    'no-redeclare': 'off', // we use typescript's 'no-redeclare' rule instead
+    '@typescript-eslint/no-redeclare': ['error'],
     ['simple-import-sort/imports']: [
       'error',
       {

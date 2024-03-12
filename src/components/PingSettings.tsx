@@ -3,6 +3,7 @@ import { Controller, useFormContext } from 'react-hook-form';
 import { Field, Select, Switch } from '@grafana/ui';
 import { css } from '@emotion/css';
 
+import { CheckFormValuesPing } from 'types';
 import { Collapse } from 'components/Collapse';
 import { LabelField } from 'components/LabelField';
 
@@ -14,7 +15,8 @@ interface Props {
 
 export const PingSettingsForm = ({ isEditor }: Props) => {
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const { control, register } = useFormContext();
+  const { control, register } = useFormContext<CheckFormValuesPing>();
+
   return (
     <Collapse label="Advanced options" onToggle={() => setShowAdvanced(!showAdvanced)} isOpen={showAdvanced}>
       <div
@@ -22,12 +24,15 @@ export const PingSettingsForm = ({ isEditor }: Props) => {
           max-width: 500px;
         `}
       >
-        <LabelField isEditor={isEditor} />
+        <LabelField<CheckFormValuesPing> isEditor={isEditor} />
         <Field label="IP version" description="The IP protocol of the ICMP request" disabled={!isEditor}>
-          <Controller
+          <Controller<CheckFormValuesPing>
             name="settings.ping.ipVersion"
             control={control}
-            render={({ field }) => <Select {...field} options={IP_OPTIONS} />}
+            render={({ field }) => {
+              const { ref, ...rest } = field;
+              return <Select {...rest} options={IP_OPTIONS} />;
+            }}
             rules={{ required: true }}
           />
         </Field>

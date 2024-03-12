@@ -263,19 +263,13 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   //--------------------------------------------------------------------------------
 
   async listChecks() {
-    return new Promise<Check[]>((resolve) => {
-      const val = firstValueFrom(
-        getBackendSrv().fetch<ListCheckResult>({
-          method: 'GET',
-          url: `${this.instanceSettings.url}/sm/check/list`,
-        })
-      ).then((res) => {
-        return res.data;
-      });
-
-      setTimeout(() => {
-        resolve(val);
-      }, 0);
+    return firstValueFrom(
+      getBackendSrv().fetch<ListCheckResult>({
+        method: 'GET',
+        url: `${this.instanceSettings.url}/sm/check/list`,
+      })
+    ).then((res) => {
+      return res.data;
     });
   }
 

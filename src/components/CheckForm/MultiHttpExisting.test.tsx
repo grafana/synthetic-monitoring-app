@@ -10,19 +10,18 @@ import { ROUTES } from 'types';
 import { getSlider } from 'components/CheckEditor/testHelpers';
 import { PLUGIN_URL_PATH } from 'components/constants';
 
-import { MultiHttpSettingsForm } from './MultiHttpSettingsForm';
+import { CheckForm } from './CheckForm';
 
 jest.setTimeout(60000);
 
 beforeEach(() => jest.resetAllMocks());
 
 async function renderForm(route: string) {
-  const res = waitFor(() =>
-    render(<MultiHttpSettingsForm />, {
-      route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`,
-      path: `${PLUGIN_URL_PATH}${ROUTES.Checks}${route}`,
-    })
-  );
+  const res = render(<CheckForm />, {
+    route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:checkType/:id`,
+    path: `${PLUGIN_URL_PATH}${ROUTES.Checks}${route}`,
+  });
+
   await waitFor(() => expect(screen.getByText('Probe options')).toBeInTheDocument());
   return res;
 }
@@ -32,7 +31,7 @@ describe('editing multihttp check', () => {
     const { record, read } = getServerRequests();
     server.use(apiRoute(`updateCheck`, {}, record));
     const targetCheck = BASIC_MULTIHTTP_CHECK;
-    const { user } = await renderForm(`/edit/${targetCheck.id}`);
+    const { user } = await renderForm(`/edit/multihttp/${targetCheck.id}`);
     expect(await screen.findByLabelText('Job name', { exact: false })).toHaveValue(targetCheck.job);
     // this is checking for the name of the probe
     expect(await screen.findByText(PRIVATE_PROBE.name)).toBeInTheDocument();
@@ -119,9 +118,9 @@ describe('editing multihttp check', () => {
 
     const { record, read } = getServerRequests();
     server.use(apiRoute(`updateCheck`, {}, record));
-    const { user } = await renderForm(`/edit/${targetCheck.id}`);
+    const { user } = await renderForm(`/edit/multihttp/${targetCheck.id}`);
     // edit job name
-    const jobNameInput = await screen.findByLabelText('Job name');
+    const jobNameInput = await screen.findByLabelText('Job name', { exact: false });
     await user.clear(jobNameInput);
     await user.type(jobNameInput, NEW_JOB_NAME);
 
@@ -155,19 +154,24 @@ describe('editing multihttp check', () => {
     const assertionsTabs = await screen.findAllByLabelText('Tab Assertions');
     await user.click(assertionsTabs[0]);
     const assertionTypes = await screen.findAllByLabelText('Method for finding assertion value', { exact: false });
-    await user.selectOptions(assertionTypes[0], '1');
+
+    await user.click(assertionTypes[0]);
+    await user.click(screen.getByText('JSON path value', { selector: `span` }));
 
     const expressions = await screen.findAllByLabelText('See here for selector syntax', { exact: false });
     await user.clear(expressions[0]);
     await user.type(expressions[0], MODIFIED_CHECK1.expression);
     const conditions = await screen.findAllByLabelText('Condition', { exact: false });
-    await user.selectOptions(conditions[0], MODIFIED_CHECK1.condition.toString());
+    await user.click(conditions[0]);
+    await user.click(screen.getByText('Ends with', { selector: `span` }));
+
     const values = await screen.findAllByLabelText('Value to compare with result of expression', { exact: false });
     await user.clear(values[0]);
     await user.type(values[0], MODIFIED_CHECK1.value);
 
     const subjects = await screen.findAllByLabelText('Subject', { exact: false });
-    await user.selectOptions(subjects[0], MODIFIED_CHECK2.subject.toString());
+    await user.click(subjects[0]);
+    await user.click(screen.getByText('Headers', { selector: `span` }));
 
     const submitButton = await screen.findByRole('button', { name: 'Save' });
     await user.click(submitButton);
@@ -184,7 +188,7 @@ describe('editing multihttp check', () => {
             {
               checks: [
                 MODIFIED_CHECK1,
-                ...targetCheck.settings.multihttp?.entries[0].checks.slice(1, 3)!,
+                ...targetCheck.settings.multihttp?.entries[0].checks?.slice(1, 3)!,
                 MODIFIED_CHECK2,
                 ,
               ],

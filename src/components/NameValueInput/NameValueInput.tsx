@@ -1,15 +1,35 @@
 import React, { useRef } from 'react';
-import { useFieldArray, useFormContext } from 'react-hook-form';
-import { Button, Field, HorizontalGroup, Icon, IconButton, Input, useTheme, VerticalGroup } from '@grafana/ui';
+import { FieldErrorsImpl, useFieldArray, useFormContext } from 'react-hook-form';
+import { Button, Field, HorizontalGroup, Icon, IconButton, Input, useTheme2, VerticalGroup } from '@grafana/ui';
 import { css } from '@emotion/css';
 
+import { CheckFormValues, Probe } from 'types';
+import { isHttpErrors } from 'utils.types';
+
+type NameValueName = 'settings.http.headers' | 'settings.http.proxyConnectHeaders' | 'labels';
+
 interface Props {
-  name: string;
-  limit: number;
+  name: NameValueName;
+  limit?: number;
   disabled?: boolean;
   label: string;
   validateName?: (name: string) => string | undefined;
   validateValue?: (value: string) => string | undefined;
+}
+
+function getErrors(errors: FieldErrorsImpl<CheckFormValues | Probe>, name: NameValueName) {
+  if (name === 'labels') {
+    return errors?.labels;
+  }
+  if (isHttpErrors(errors)) {
+    if (name === 'settings.http.headers') {
+      return errors?.settings?.http?.headers;
+    }
+    if (name === 'settings.http.proxyConnectHeaders') {
+      return errors?.settings?.http?.proxyConnectHeaders;
+    }
+  }
+  return undefined;
 }
 
 export const NameValueInput = ({ name, disabled, limit, label, validateName, validateValue }: Props) => {
@@ -17,13 +37,12 @@ export const NameValueInput = ({ name, disabled, limit, label, validateName, val
     register,
     control,
     formState: { errors },
-  } = useFormContext();
+  } = useFormContext<CheckFormValues | Probe>();
   const addRef = useRef<HTMLButtonElement>(null);
   const { fields, append, remove } = useFieldArray({ control, name });
-  const theme = useTheme();
-  const fieldError = name
-    .split('.')
-    .reduce((nestedError, errorPathFragment) => nestedError?.[errorPathFragment], errors);
+  const theme = useTheme2();
+
+  const fieldError = getErrors(errors, name);
 
   return (
     <VerticalGroup justify="space-between">
@@ -65,7 +84,7 @@ export const NameValueInput = ({ name, disabled, limit, label, validateName, val
           </Field>
           <IconButton
             className={css`
-              margin-top: ${theme.spacing.sm};
+              margin-top: ${theme.spacing(2)};
             `}
             name="minus-circle"
             type="button"
@@ -80,7 +99,7 @@ export const NameValueInput = ({ name, disabled, limit, label, validateName, val
           />
         </HorizontalGroup>
       ))}
-      {fields.length < limit && (
+      {(limit === undefined || fields.length < limit) && (
         <Button
           onClick={() => append({ name: '', value: '' })}
           disabled={disabled}

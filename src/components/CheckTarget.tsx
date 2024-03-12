@@ -70,10 +70,16 @@ const getTargetHelpText = (typeOfCheck: CheckType | undefined): TargetHelpInfo =
       };
       break;
     }
-    case CheckType.K6: {
+    case CheckType.Scripted: {
       resp = {
         text: 'The URL that best describes the target of the check',
         example: `https://grafana.com/`,
+      };
+    }
+    case CheckType.GRPC: {
+      resp = {
+        text: '',
+        example: '',
       };
     }
   }
@@ -106,7 +112,6 @@ const CheckTarget = forwardRef(
             onChange={(e: ChangeEvent<HTMLInputElement>) => {
               onChange(e.target.value);
             }}
-            required={true}
           />
         </Field>
         {typeOfCheck === CheckType.HTTP && parsedURL && (

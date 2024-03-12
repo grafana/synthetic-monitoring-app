@@ -2,7 +2,7 @@ import React from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { Field, Input } from '@grafana/ui';
 
-import { CheckType } from 'types';
+import { CheckFormValues, CheckType } from 'types';
 import { validateFrequency, validateProbes, validateTimeout } from 'validation';
 import { useProbes } from 'data/useProbes';
 import { SliderInput } from 'components/SliderInput';
@@ -51,7 +51,7 @@ function getTimeoutBounds(checkType: CheckType) {
       maxTimeout: 30.0,
     };
   }
-  if (checkType === CheckType.K6) {
+  if (checkType === CheckType.Scripted) {
     return {
       minTimeout: 5.0,
       maxTimeout: 30.0,
@@ -69,7 +69,7 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, checkType }: Props)
   const {
     control,
     formState: { errors },
-  } = useFormContext();
+  } = useFormContext<CheckFormValues>();
   const isTraceroute = checkType === CheckType.Traceroute;
   const { minFrequency, maxFrequency, defaultFrequency } = getFrequencyBounds(checkType);
   const { minTimeout, maxTimeout, defaultTimeout } = getTimeoutBounds(checkType);
@@ -78,7 +78,7 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, checkType }: Props)
     <div>
       <Subheader>Probe options</Subheader>
 
-      <Controller
+      <Controller<CheckFormValues>
         control={control}
         name="probes"
         rules={{ validate: validateProbes }}
@@ -88,7 +88,7 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, checkType }: Props)
             probes={field.value}
             availableProbes={probes}
             isEditor={isEditor}
-            invalid={errors.probes}
+            invalid={Boolean(errors.probes)}
             error={errors.probes?.message}
           />
         )}
@@ -100,7 +100,7 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, checkType }: Props)
         invalid={Boolean(errors.frequency)}
         error={errors.frequency?.message}
       >
-        {checkType === CheckType.Traceroute || checkType === CheckType.K6 ? (
+        {checkType === CheckType.Traceroute || checkType === CheckType.Scripted ? (
           // This is just a placeholder for now, the frequency for traceroute checks is hardcoded in the submit
           <Input value={120} prefix="Every" suffix="seconds" width={20} readOnly />
         ) : (

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ArrayVector, dateTime, FieldType } from '@grafana/data';
+import { dateTime, FieldType } from '@grafana/data';
 import { Modal, Spinner } from '@grafana/ui';
 
 import { AdHocCheckResponse } from 'datasource/responses.types';
@@ -22,7 +22,7 @@ function buildLogsDf(logs: Array<Record<string, any>>) {
       name: 'ts',
       type: FieldType.time,
       config: { displayName: 'Time' },
-      values: new ArrayVector(tsValues),
+      values: tsValues,
     },
   };
   // We need to loop through all the logs and build up a complete list of fields.
@@ -34,7 +34,7 @@ function buildLogsDf(logs: Array<Record<string, any>>) {
         fields[fieldName] = {
           name: fieldName,
           type: FieldType.string,
-          values: new ArrayVector(values),
+          values,
           config: {},
         };
       } else {

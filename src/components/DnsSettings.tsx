@@ -15,6 +15,7 @@ import {
 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
+import { CheckFormValuesDns } from 'types';
 import { Collapse } from 'components/Collapse';
 import { LabelField } from 'components/LabelField';
 
@@ -33,8 +34,8 @@ interface Props {
 const DnsSettingsForm = ({ isEditor }: Props) => {
   const { spacing } = useTheme2();
 
-  const { register, control, formState } = useFormContext();
-  const { fields, append, remove } = useFieldArray({
+  const { register, control, formState } = useFormContext<CheckFormValuesDns>();
+  const { fields, append, remove } = useFieldArray<CheckFormValuesDns>({
     control,
     name: 'settings.dns.validations',
   });
@@ -51,9 +52,12 @@ const DnsSettingsForm = ({ isEditor }: Props) => {
           `}
         >
           <Field label="Record type" disabled={!isEditor}>
-            <Controller
+            <Controller<CheckFormValuesDns>
               name="settings.dns.recordType"
-              render={({ field }) => <Select {...field} options={DNS_RECORD_TYPES} />}
+              render={({ field }) => {
+                const { ref, ...rest } = field;
+                return <Select {...rest} options={DNS_RECORD_TYPES} />;
+              }}
             />
           </Field>
           <Field label="Server" disabled={!isEditor}>
@@ -65,8 +69,11 @@ const DnsSettingsForm = ({ isEditor }: Props) => {
             />
           </Field>
           <Field label="Protocol" disabled={!isEditor}>
-            <Controller
-              render={({ field }) => <Select {...field} options={DNS_PROTOCOLS} />}
+            <Controller<CheckFormValuesDns>
+              render={({ field }) => {
+                const { ref, ...rest } = field;
+                return <Select {...rest} options={DNS_PROTOCOLS} />;
+              }}
               name="settings.dns.protocol"
             />
           </Field>
@@ -78,11 +85,12 @@ const DnsSettingsForm = ({ isEditor }: Props) => {
       <Collapse label="Validation" onToggle={() => setShowValidation(!showValidation)} isOpen={showValidation}>
         <HorizontalGroup>
           <Field label="Valid response codes" description="List of valid response codes" disabled={!isEditor}>
-            <Controller
+            <Controller<CheckFormValuesDns>
               name="settings.dns.validRCodes"
-              render={({ field }) => (
-                <MultiSelect {...field} options={DNS_RESPONSE_CODES} defaultValue={[DNS_RESPONSE_CODES[0]]} />
-              )}
+              render={({ field }) => {
+                const { ref, ...rest } = field;
+                return <MultiSelect {...rest} options={DNS_RESPONSE_CODES} defaultValue={[DNS_RESPONSE_CODES[0]]} />;
+              }}
             />
           </Field>
         </HorizontalGroup>
@@ -102,17 +110,18 @@ const DnsSettingsForm = ({ isEditor }: Props) => {
             <div />
             {fields.map((field, index) => (
               <Fragment key={field.id}>
-                <Controller
+                <Controller<CheckFormValuesDns>
                   name={`settings.dns.validations.${index}.responseMatch` as const}
                   rules={{ required: true }}
                   render={({ field }) => {
+                    const { ref, ...rest } = field;
                     return (
                       <Select
-                        {...field}
+                        {...rest}
                         value={field.value}
-                        data-testid={`dnsValidationResponseMatch${index}`}
+                        aria-label={`DNS Response Match ${index + 1}`}
                         options={DNS_RESPONSE_MATCH_OPTIONS}
-                        invalid={formState.errors.settings?.dns?.validations?.[index]?.responseMatch}
+                        invalid={Boolean(formState.errors.settings?.dns?.validations?.[index]?.responseMatch)}
                       />
                     );
                   }}
@@ -151,12 +160,15 @@ const DnsSettingsForm = ({ isEditor }: Props) => {
         </Button>
       </Collapse>
       <Collapse label="Advanced options" onToggle={() => setShowAdvanced(!showAdvanced)} isOpen={showAdvanced}>
-        <LabelField isEditor={isEditor} />
+        <LabelField<CheckFormValuesDns> isEditor={isEditor} />
         <HorizontalGroup>
           <Field label="IP version" description="The IP protocol of the ICMP request" disabled={!isEditor}>
-            <Controller
+            <Controller<CheckFormValuesDns>
               name="settings.dns.ipVersion"
-              render={({ field }) => <Select {...field} options={IP_OPTIONS} />}
+              render={({ field }) => {
+                const { ref, ...rest } = field;
+                return <Select {...rest} options={IP_OPTIONS} />;
+              }}
             />
           </Field>
         </HorizontalGroup>

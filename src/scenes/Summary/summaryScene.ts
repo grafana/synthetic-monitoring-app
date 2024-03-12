@@ -1,3 +1,4 @@
+import { OrgRole } from '@grafana/data';
 import {
   AdHocFiltersVariable,
   EmbeddedScene,
@@ -16,6 +17,7 @@ import {
 import { VariableRefresh } from '@grafana/schema';
 
 import { Check, DashboardSceneAppConfig } from 'types';
+import { hasRole } from 'utils';
 import { AddNewCheckButton } from 'components/CheckList/AddNewCheckButton';
 import { getSummaryAlertAnnotations } from 'scenes/Common/alertAnnotations';
 import { getEmptyScene } from 'scenes/Common/emptyScene';
@@ -120,7 +122,8 @@ export function getSummaryScene({ metrics, sm }: DashboardSceneAppConfig, checks
         new SceneDataLayerControls(),
         new SceneControlsSpacer(),
         new SceneReactObject({
-          component: AddNewCheckButton,
+          //@ts-ignore null is a valid value for a React component
+          component: hasRole(OrgRole.Editor) ? AddNewCheckButton : null,
         }),
         new SceneTimePicker({ isOnCanvas: true }),
         new SceneRefreshPicker({

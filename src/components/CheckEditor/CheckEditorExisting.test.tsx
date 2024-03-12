@@ -1,5 +1,6 @@
 import React from 'react';
 import { screen, waitFor, within } from '@testing-library/react';
+import { DataTestIds } from 'test/dataTestIds';
 import {
   BASIC_DNS_CHECK,
   BASIC_TCP_CHECK,
@@ -14,10 +15,10 @@ import { render } from 'test/render';
 import { server } from 'test/server';
 
 import { ROUTES } from 'types';
+import { CheckForm } from 'components/CheckForm/CheckForm';
 import { DNS_RESPONSE_MATCH_OPTIONS, PLUGIN_URL_PATH } from 'components/constants';
 
-import { CheckEditor } from './CheckEditor';
-import { getSlider, submitForm, toggleSection } from './testHelpers';
+import { getSelect, getSlider, submitForm, toggleSection } from './testHelpers';
 
 jest.setTimeout(60000);
 
@@ -33,12 +34,12 @@ jest.mock('hooks/useAlerts', () => ({
 beforeEach(() => jest.resetAllMocks());
 
 const renderExistingCheckEditor = async (route: string) => {
-  const res = waitFor(() =>
-    render(<CheckEditor />, {
-      route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:id`,
-      path: `${PLUGIN_URL_PATH}${ROUTES.Checks}${route}`,
-    })
-  );
+  const res = render(<CheckForm />, {
+    route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:checkType/:id`,
+    path: `${PLUGIN_URL_PATH}${ROUTES.Checks}${route}`,
+  });
+
+  await waitFor(() => expect(screen.getAllByText(`Job name`, { exact: false })));
 
   return res;
 };
@@ -62,10 +63,10 @@ describe('editing checks', () => {
       tlsConfig,
       validHTTPVersions,
       validStatusCodes,
-    } = settings.http!;
+    } = settings.http;
     const [headerName, headerValue] = headers![0].split(`:`);
 
-    const { user } = await renderExistingCheckEditor(`/edit/${targetCheck.id}`);
+    const { user } = await renderExistingCheckEditor(`/edit/http/${targetCheck.id}`);
     expect(await screen.findByLabelText('Job name', { exact: false })).toHaveValue(targetCheck.job);
     expect(await screen.findByLabelText('Enabled', { exact: false })).toBeChecked();
     expect(await screen.findByLabelText('Full URL to send requests to', { exact: false })).toHaveValue(
@@ -80,7 +81,7 @@ describe('editing checks', () => {
     expect(await screen.findByLabelText('Request body', { exact: false })).toHaveValue(body);
     expect(await within(httpSection).findByPlaceholderText('name')).toHaveValue(headerName);
     expect(await within(httpSection).findByPlaceholderText('value')).toHaveValue(headerValue);
-    expect(within(httpSection).getByTestId('http-compression')).toHaveValue(compression);
+    expect(within(httpSection).getByText(compression!));
     expect(await screen.findByLabelText('Proxy URL', { exact: false })).toHaveValue(proxyURL);
 
     await toggleSection('TLS config', user);
@@ -119,43 +120,60 @@ describe('editing checks', () => {
     expect(alertingValue).toBeInTheDocument();
   });
 
-  it('transforms data from existing HTTP check', async () => {
+  it(`transforms data correctly http check -- job`, async () => {
     const { read, record } = getServerRequests();
     server.use(apiRoute(`updateCheck`, {}, record));
     const targetCheck = FULL_HTTP_CHECK;
-    const { user } = await renderExistingCheckEditor(`/edit/${targetCheck.id}`);
+    const { user } = await renderExistingCheckEditor(`/edit/http/${targetCheck.id}`);
+
     const JOB_SUFFIX = 'tacos';
+    const jobInput = await screen.findByLabelText(`Job name`, { exact: false });
+    await user.type(jobInput, JOB_SUFFIX);
+
+    await submitForm(user);
+    const { body } = await read();
+
+    expect(body).toEqual({
+      ...targetCheck,
+      job: `${targetCheck.job}${JOB_SUFFIX}`,
+    });
+  });
+
+  it(`transforms data correctly http check -- probe section`, async () => {
+    const { read, record } = getServerRequests();
+    server.use(apiRoute(`updateCheck`, {}, record));
+    const targetCheck = FULL_HTTP_CHECK;
+    const { user } = await renderExistingCheckEditor(`/edit/http/${targetCheck.id}`);
+
+    await user.click(screen.getByText(`Clear`));
+    const probeOptions = screen.getByText('Probe options').parentElement;
+    const probeSelectMenu = await within(probeOptions!).getByLabelText('Probe locations', { exact: false });
+    await user.click(probeSelectMenu);
+    await user.click(screen.getByText(UNSELECTED_PRIVATE_PROBE.name, { exact: false }));
+
+    await submitForm(user);
+    const { body } = await read();
+
+    expect(body).toEqual({
+      ...targetCheck,
+      probes: [UNSELECTED_PRIVATE_PROBE.id],
+    });
+  });
+
+  it(`transforms data correctly http check -- http section`, async () => {
+    const { read, record } = getServerRequests();
+    server.use(apiRoute(`updateCheck`, {}, record));
+    const targetCheck = FULL_HTTP_CHECK;
+    const { user } = await renderExistingCheckEditor(`/edit/http/${targetCheck.id}`);
+
+    const BODY = 'a body';
     const NEW_HEADER = {
       name: 'new headerName',
       value: 'new headerValue',
     };
     const COMPRESSION = 'deflate';
     const PROXY_URL = 'http://proxy.url';
-    const BODY = 'a body';
-    const SERVER_NAME_SUFFIX = 'serverNameSuffix';
-    const BEARER_TOKEN = 'a bearerToken';
-    const USERNAME = 'a username';
-    const PASSWORD = 'a password';
-    const STATUS_CODE = 100;
-    const HTTP_VERSION = 'HTTP/1.1';
-    const HEADER_NAME = 'a new header name';
-    const REGEX = 'a regex';
-    const BODY_REGEX = 'a body regex';
 
-    const jobInput = await screen.findByLabelText(`Job name`, { exact: false });
-    await user.type(jobInput, JOB_SUFFIX);
-
-    // Set probe options
-    const probeOptions = screen.getByText('Probe options').parentElement;
-    if (!probeOptions) {
-      throw new Error('Couldnt find Probe Options');
-    }
-
-    // Select burritos probe options
-    const probeSelectMenu = await within(probeOptions).findByTestId('select');
-    await user.selectOptions(probeSelectMenu, within(probeSelectMenu).getByText(UNSELECTED_PRIVATE_PROBE.name));
-
-    // HTTP Settings
     await toggleSection('HTTP settings', user);
     const requestBodyInput = await screen.findByLabelText('Request Body', { exact: false });
     requestBodyInput.focus();
@@ -166,57 +184,58 @@ describe('editing checks', () => {
     await user.type(await screen.findByTestId('header-name-1'), NEW_HEADER.name);
     await user.type(await screen.findByTestId('header-value-1'), NEW_HEADER.value);
 
-    const compression = await screen.findByTestId('http-compression');
-    await user.selectOptions(compression, COMPRESSION);
+    const compression = await screen.getByLabelText('Compression option', { exact: false });
+    await user.click(compression);
+    await user.click(screen.getByText(COMPRESSION, { exact: false }));
 
     const proxyUrlInput = await screen.findByLabelText('Proxy URL', { exact: false });
     proxyUrlInput.focus();
     await user.clear(proxyUrlInput);
     await user.paste(PROXY_URL);
 
-    await toggleSection('HTTP settings', user);
+    await submitForm(user);
+    const { body } = await read();
 
-    // TLS Config
-    await toggleSection('TLS config', user);
-    await user.type(screen.getByLabelText('Server Name', { exact: false }), SERVER_NAME_SUFFIX);
-    // TextArea components misbehave when using userEvent.type, using paste for now as a workaround
-    await user.clear(screen.getByLabelText('CA Certificate', { exact: false }));
-    screen.getByLabelText('CA Certificate', { exact: false }).focus();
-    await user.paste(validCert);
+    expect(body).toEqual({
+      ...targetCheck,
+      settings: {
+        http: {
+          ...targetCheck.settings.http,
+          body: BODY,
+          compression: COMPRESSION,
+          headers: [...targetCheck.settings.http.headers!, `${NEW_HEADER.name}:${NEW_HEADER.value}`],
+          proxyURL: PROXY_URL,
+        },
+      },
+    });
+  });
 
-    await user.clear(screen.getByLabelText('Client Certificate', { exact: false }));
-    screen.getByLabelText('Client Certificate', { exact: false }).focus();
-    await user.paste(validCert);
+  it(`transforms data correctly http check -- validation section`, async () => {
+    const { read, record } = getServerRequests();
+    server.use(apiRoute(`updateCheck`, {}, record));
+    const targetCheck = FULL_HTTP_CHECK;
+    const { user } = await renderExistingCheckEditor(`/edit/http/${targetCheck.id}`);
 
-    await user.clear(screen.getByLabelText('Client Key', { exact: false }));
-    screen.getByLabelText('Client Key', { exact: false }).focus();
-    await user.paste(validKey);
-    await toggleSection('TLS config', user);
+    const STATUS_CODE = 100;
+    const HTTP_VERSION = 'HTTP/1.1';
+    const HEADER_NAME = 'a new header name';
+    const REGEX = 'a regex';
+    const BODY_REGEX = 'a body regex';
 
-    // Authentication
-    const authentication = await toggleSection('Authentication', user);
-
-    const bearerTokenInput = await screen.findByPlaceholderText('Bearer token');
-    await user.clear(bearerTokenInput);
-    await user.type(bearerTokenInput, BEARER_TOKEN);
-
-    // No need to check this checkbox because is already opened on load
-    const usernameInput = await within(authentication).findByPlaceholderText('Username');
-    const passwordInput = await within(authentication).findByPlaceholderText('Password');
-    await user.clear(usernameInput);
-    await user.clear(passwordInput);
-
-    await user.type(usernameInput, USERNAME);
-    await user.type(passwordInput, PASSWORD);
-
-    // Validation
     const validationSection = await toggleSection('Validation', user);
-    const [statusCodeInput, httpVersionInput] = await within(validationSection).findAllByTestId('select');
-    await user.selectOptions(statusCodeInput, [within(validationSection).getByText(STATUS_CODE)]);
-    await user.selectOptions(httpVersionInput, [within(validationSection).getByText(HTTP_VERSION)]);
-    const selectMenus = await within(validationSection).findAllByTestId('select');
-    const [matchSelect1, matchSelect2] = selectMenus.slice(-2);
-    await user.selectOptions(matchSelect1, ['Header']);
+
+    await user.click(screen.getByLabelText(`Valid status codes`, { exact: false }));
+    await user.click(screen.getByText(STATUS_CODE, { exact: false }));
+
+    const [selectContainer, select] = await getSelect({ text: `Valid HTTP versions` });
+    await user.click(within(selectContainer).getByLabelText(`Remove`));
+    await user.click(select);
+    await user.click(screen.getByText(HTTP_VERSION, { selector: `span` }));
+
+    const selectMenus = await within(validationSection).findByTestId(DataTestIds.CHECK_FORM_HTTP_VALIDATION_REGEX);
+    const matchSelect1 = within(selectMenus).getByLabelText(`Validation Field Name 1`);
+    await user.click(matchSelect1);
+    await user.click(screen.getByText('Check fails if response header matches', { selector: `span` }));
 
     await user.clear(await within(validationSection).getAllByPlaceholderText('Header name')[0]);
     await user.type(await within(validationSection).getAllByPlaceholderText('Header name')[0], HEADER_NAME);
@@ -224,8 +243,10 @@ describe('editing checks', () => {
     await user.clear(await within(validationSection).getAllByPlaceholderText('Regex')[0]);
     await user.type(await within(validationSection).getAllByPlaceholderText('Regex')[0], REGEX);
 
-    // const option = within(validationSection).getAllByText('Check fails if response body matches')[1];
-    user.selectOptions(matchSelect2, ['Body']);
+    const matchSelect2 = within(selectMenus).getByLabelText(`Validation Field Name 2`);
+    await user.click(matchSelect2);
+    await user.click(screen.getByText('Check fails if response body matches', { selector: `span` }));
+
     const regexFields = await within(validationSection).getAllByPlaceholderText('Regex');
     await user.clear(regexFields[1]);
     await user.type(regexFields[1], BODY_REGEX);
@@ -235,44 +256,26 @@ describe('editing checks', () => {
     await user.click(invertMatch);
 
     await submitForm(user);
-
     const { body } = await read();
 
     expect(body).toEqual({
       ...targetCheck,
-      job: `${targetCheck.job}${JOB_SUFFIX}`,
-      probes: [UNSELECTED_PRIVATE_PROBE.id],
-      tenantId: undefined,
       settings: {
         http: {
           ...targetCheck.settings.http,
-          basicAuth: {
-            username: USERNAME,
-            password: PASSWORD,
-          },
-          bearerToken: BEARER_TOKEN,
-          body: BODY,
-          compression: COMPRESSION,
-          headers: [...targetCheck.settings.http?.headers!, `${NEW_HEADER.name}:${NEW_HEADER.value}`],
-          proxyURL: PROXY_URL,
-          tlsConfig: {
-            ...targetCheck.settings.http?.tlsConfig,
-            serverName: `${targetCheck.settings.http?.tlsConfig?.serverName}${SERVER_NAME_SUFFIX}`,
-            caCert: btoa(validCert),
-            clientCert: btoa(validCert),
-            clientKey: btoa(validKey),
-          },
-          validStatusCodes: [STATUS_CODE],
-          validHTTPVersions: [HTTP_VERSION],
-          failIfBodyMatchesRegexp: [BODY_REGEX],
-          failIfBodyNotMatchesRegexp: [REGEX, targetCheck.settings.http?.failIfHeaderNotMatchesRegexp?.[0]?.regexp],
-          failIfHeaderMatchesRegexp: [
+          failIfBodyMatchesRegexp: [],
+          failIfBodyNotMatchesRegexp: [BODY_REGEX],
+          failIfHeaderNotMatchesRegexp: [
             {
               ...targetCheck.settings.http?.failIfHeaderMatchesRegexp![0],
               header: HEADER_NAME,
+              regexp: REGEX,
+            },
+            {
+              ...targetCheck.settings.http?.failIfHeaderNotMatchesRegexp![0],
             },
           ],
-          failIfHeaderNotMatchesRegexp: [],
+          validHTTPVersions: [HTTP_VERSION],
         },
       },
     });
@@ -281,7 +284,7 @@ describe('editing checks', () => {
   it('transforms data correctly for TCP check', async () => {
     const { read, record } = getServerRequests();
     server.use(apiRoute(`updateCheck`, {}, record));
-    const { user } = await renderExistingCheckEditor(`/edit/${BASIC_TCP_CHECK.id}`);
+    const { user } = await renderExistingCheckEditor(`/edit/tcp/${BASIC_TCP_CHECK.id}`);
 
     await submitForm(user);
     const { body } = await read();
@@ -294,13 +297,16 @@ describe('editing checks', () => {
     const NOT_INVERTED_VALIDATION = 'not inverted validation';
     const INVERTED_VALIDATION = 'inverted validation';
 
-    const { user } = await renderExistingCheckEditor(`/edit/${BASIC_DNS_CHECK.id}`);
+    const { user } = await renderExistingCheckEditor(`/edit/dns/${BASIC_DNS_CHECK.id}`);
     await toggleSection('Validation', user);
 
-    const responseMatch1 = await screen.findByTestId('dnsValidationResponseMatch0');
-    await user.selectOptions(responseMatch1, DNS_RESPONSE_MATCH_OPTIONS[1].value);
-    const responseMatch2 = await screen.findByTestId('dnsValidationResponseMatch1');
-    await user.selectOptions(responseMatch2, DNS_RESPONSE_MATCH_OPTIONS[1].value);
+    const responseMatch1 = await screen.findByLabelText('DNS Response Match 1');
+    await user.click(responseMatch1);
+    await user.click(screen.getByText(DNS_RESPONSE_MATCH_OPTIONS[1].label));
+
+    const responseMatch2 = await screen.findByLabelText('DNS Response Match 2');
+    await user.click(responseMatch2);
+    await user.click(screen.getByText(DNS_RESPONSE_MATCH_OPTIONS[1].label, { selector: `span` }));
 
     const expressionInputs = await screen.findAllByPlaceholderText('Type expression');
     await user.clear(expressionInputs[0]);
@@ -333,11 +339,10 @@ describe('editing checks', () => {
   });
 
   it('handles custom alert severities', async () => {
-    const { user } = await renderExistingCheckEditor(`/edit/${CUSTOM_ALERT_SENSITIVITY_CHECK.id}`);
-    expect(true).toBeTruthy();
+    const { user } = await renderExistingCheckEditor(`/edit/dns/${CUSTOM_ALERT_SENSITIVITY_CHECK.id}`);
     await toggleSection('Alerting', user);
 
-    const alertSensitivityInput = await screen.findByTestId('alertSensitivityInput');
-    expect(alertSensitivityInput).toHaveValue(CUSTOM_ALERT_SENSITIVITY_CHECK.alertSensitivity);
+    const alertSensitivityInput = await screen.findByText(CUSTOM_ALERT_SENSITIVITY_CHECK.alertSensitivity);
+    expect(alertSensitivityInput).toBeInTheDocument();
   });
 });

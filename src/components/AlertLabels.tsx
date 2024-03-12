@@ -4,6 +4,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Button, Field, Input, Label, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
+import { AlertFormValues } from 'types';
 import { validateLabelName, validateLabelValue } from 'validation';
 
 import { SubCollapse } from './SubCollapse';
@@ -31,8 +32,8 @@ export const AlertLabels: FC = () => {
     register,
     formState: { errors },
     watch,
-  } = useFormContext();
-  const { fields, append, remove } = useFieldArray({
+  } = useFormContext<AlertFormValues>();
+  const { fields, append, remove } = useFieldArray<AlertFormValues>({
     control,
     name: NAME,
   });
@@ -55,7 +56,10 @@ export const AlertLabels: FC = () => {
         ) : null}
         {fields.map((field, labelIndex) => (
           <Fragment key={field.id}>
-            <Field error={errors?.labels?.[labelIndex]?.name?.message} invalid={errors?.labels?.[labelIndex]?.name}>
+            <Field
+              error={errors?.labels?.[labelIndex]?.name?.message}
+              invalid={Boolean(errors?.labels?.[labelIndex]?.name)}
+            >
               <Input
                 {...register(`${NAME}.${labelIndex}.name` as const, {
                   validate: (value) => validateLabelName(value, labels),
@@ -64,7 +68,10 @@ export const AlertLabels: FC = () => {
                 data-testid={`alert-labelName-${labelIndex}`}
               />
             </Field>
-            <Field error={errors?.labels?.[labelIndex]?.value?.message} invalid={errors?.labels?.[labelIndex]?.value}>
+            <Field
+              error={errors?.labels?.[labelIndex]?.value?.message}
+              invalid={Boolean(errors?.labels?.[labelIndex]?.value)}
+            >
               <Input
                 {...register(`${NAME}.${labelIndex}.value` as const, {
                   validate: (value) => validateLabelValue(value),

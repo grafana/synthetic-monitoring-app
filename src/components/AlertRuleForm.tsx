@@ -1,4 +1,4 @@
-import React, { useContext,useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { useAsyncCallback } from 'react-async-hook';
 import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { AppEvents, GrafanaTheme2, SelectableValue } from '@grafana/data';
@@ -11,7 +11,7 @@ import { AlertRule, AlertSensitivity, Label as LabelType, TimeUnits } from 'type
 import { InstanceContext } from 'contexts/InstanceContext';
 
 import { AlertAnnotations } from './AlertAnnotations';
-import { alertDescriptionFromRule,transformAlertFormValues } from './alertingTransformations';
+import { alertDescriptionFromRule, transformAlertFormValues } from './alertingTransformations';
 import { AlertLabels } from './AlertLabels';
 import { ALERT_SENSITIVITY_OPTIONS, TIME_UNIT_OPTIONS } from './constants';
 import { SubCollapse } from './SubCollapse';
@@ -159,7 +159,7 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
     watch,
     reset,
   } = formMethods;
-  const currentValues = watch() as AlertFormValues;
+  const currentValues = watch();
   const currentLabels = watch('labels');
   const currentAnnotations = watch('annotations');
 
@@ -221,7 +221,10 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
                 <span className={styles.inlineText}>Checks with a sensitivity level of</span>
                 <div className={styles.selectInput}>
                   <Controller
-                    render={({ field }) => <Select {...field} options={ALERT_SENSITIVITY_OPTIONS} />}
+                    render={({ field }) => {
+                      const { ref, ...rest } = field;
+                      return <Select {...rest} options={ALERT_SENSITIVITY_OPTIONS} />;
+                    }}
                     control={control}
                     name="sensitivity"
                   />
@@ -248,7 +251,7 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
                 >
                   <Input
                     {...register('timeCount', { required: true, min: 1, max: 999 })}
-                    data-testid="timeCount"
+                    aria-label="Time count"
                     type="number"
                     className={styles.numberInput}
                     id="alertTimeCount"
@@ -256,7 +259,10 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
                 </Field>
                 <div className={styles.selectInput}>
                   <Controller
-                    render={({ field }) => <Select {...field} options={TIME_UNIT_OPTIONS} />}
+                    render={({ field }) => {
+                      const { ref, ...rest } = field;
+                      return <Select {...rest} options={TIME_UNIT_OPTIONS} aria-label="Time unit" />;
+                    }}
                     control={control}
                     name="timeUnit"
                   />

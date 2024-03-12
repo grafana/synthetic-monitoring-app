@@ -23,7 +23,13 @@ export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
   const [bulkEditAction, setBulkEditAction] = useState<BulkAction | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const { mutate: bulkUpdateChecks } = useBulkUpdateChecks({ onSuccess: onResolved });
-  const { mutate: bulkDeleteChecks } = useBulkDeleteChecks({ onSuccess: onResolved });
+
+  const handleDeleteResolved = () => {
+    setShowDeleteModal(false);
+    onResolved();
+  };
+
+  const { mutate: bulkDeleteChecks } = useBulkDeleteChecks({ onSuccess: handleDeleteResolved });
 
   const handleDisableSelectedChecks = () => {
     bulkUpdateChecks(checks.filter((check) => check.enabled).map((check) => ({ ...check, enabled: false })));

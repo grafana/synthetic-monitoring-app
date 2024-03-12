@@ -15,7 +15,7 @@ import {
 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
-import { MultiHttpVariableType } from 'types';
+import { CheckFormValuesMultiHttp, MultiHttpVariableType } from 'types';
 import { MULTI_HTTP_VARIABLE_TYPE_OPTIONS } from 'components/constants';
 import { MultiHttpFormTabs } from 'components/MultiHttp/MultiHttpTypes';
 
@@ -36,9 +36,9 @@ interface RequestTabsProps {
 }
 
 export const HeadersTab = ({ label = 'header', index, active }: MultiHttpTabProps) => {
-  const { control, register, unregister, formState } = useFormContext();
-  const { fields, append, remove } = useFieldArray({
-    name: `settings.multihttp.entries[${index}].request.headers`,
+  const { control, register, unregister, formState } = useFormContext<CheckFormValuesMultiHttp>();
+  const { fields, append, remove } = useFieldArray<CheckFormValuesMultiHttp>({
+    name: `settings.multihttp.entries.${index}.request.headers`,
     control,
   });
   const styles = useStyles2(getMultiHttpTabStyles);
@@ -48,20 +48,20 @@ export const HeadersTab = ({ label = 'header', index, active }: MultiHttpTabProp
       <Field label="Request headers" description="The HTTP headers set for the probe.">
         <>
           {fields.map((field, i) => {
-            const headersNamePrefix = `settings.multihttp.entries[${index}].request.headers[${i}]`;
-
             return (
               <div key={field.id}>
                 <HorizontalGroup spacing="md" align="flex-start" className={styles.headersQueryInputs}>
                   <HorizontalGroup spacing="md" align="flex-start" className={styles.headersQueryInputs}>
                     <Field
-                      invalid={formState.errors?.settings?.multihttp?.entries[index]?.request?.headers?.[i]?.name}
+                      invalid={Boolean(
+                        formState.errors?.settings?.multihttp?.entries?.[index]?.request?.headers?.[i]?.name
+                      )}
                       error={
-                        formState.errors?.settings?.multihttp?.entries[index]?.request?.headers?.[i]?.name?.message
+                        formState.errors?.settings?.multihttp?.entries?.[index]?.request?.headers?.[i]?.name?.message
                       }
                     >
                       <Input
-                        {...register(`${headersNamePrefix}.name` as const, {
+                        {...register(`settings.multihttp.entries.${index}.request.headers.${i}.name`, {
                           required: 'Header name required',
                           minLength: 1,
                         })}
@@ -71,13 +71,15 @@ export const HeadersTab = ({ label = 'header', index, active }: MultiHttpTabProp
                       />
                     </Field>
                     <Field
-                      invalid={formState.errors?.settings?.multihttp?.entries[index]?.request?.headers?.[i]?.value}
+                      invalid={Boolean(
+                        formState.errors?.settings?.multihttp?.entries?.[index]?.request?.headers?.[i]?.value
+                      )}
                       error={
-                        formState.errors?.settings?.multihttp?.entries[index]?.request?.headers?.[i]?.value?.message
+                        formState.errors?.settings?.multihttp?.entries?.[index]?.request?.headers?.[i]?.value?.message
                       }
                     >
                       <Input
-                        {...register(`${headersNamePrefix}.value` as const, {
+                        {...register(`settings.multihttp.entries.${index}.request.headers.${i}.value`, {
                           required: 'Header value required',
                           minLength: 1,
                         })}
@@ -93,7 +95,7 @@ export const HeadersTab = ({ label = 'header', index, active }: MultiHttpTabProp
                     type="button"
                     onClick={() => {
                       remove(i);
-                      unregister([`${headersNamePrefix}`]);
+                      unregister([`settings.multihttp.entries.${index}.request.headers.${i}`]);
                     }}
                     tooltip="Delete"
                   />
@@ -119,30 +121,30 @@ export const HeadersTab = ({ label = 'header', index, active }: MultiHttpTabProp
 
 export const BodyTab = ({ index, active }: MultiHttpTabProps) => {
   const styles = useStyles2(getMultiHttpTabStyles);
-  const { formState, register } = useFormContext();
+  const { formState, register } = useFormContext<CheckFormValuesMultiHttp>();
 
   return (
     <div className={cx(styles.inputsContainer, { [styles.inactive]: !active })} data-testid="body-tab">
       <Field label="Content type" description="Indicates the media type of the body">
         <Input
-          {...register(`settings.multihttp.entries[${index}].request.body.contentType` as const)}
+          {...register(`settings.multihttp.entries.${index}.request.body.contentType`)}
           id={`request-body-${index}-contentType`}
         />
       </Field>
       <Field label="Content encoding" description="Indicates the content encoding of the body">
         <Input
-          {...register(`settings.multihttp.entries[${index}].request.body.contentEncoding` as const)}
+          {...register(`settings.multihttp.entries.${index}.request.body.contentEncoding`)}
           id={`request-body-${index}-contentEncoding`}
         />
       </Field>
       <Field
         label="Request body payload"
         description="The body of the HTTP request used in probe."
-        invalid={Boolean(formState?.errors?.settings?.http?.body?.payload)}
-        error={formState.errors?.settings?.http?.body?.payload?.message}
+        invalid={Boolean(formState?.errors?.settings?.multihttp?.entries?.[index]?.request?.body?.payload)}
+        error={formState?.errors?.settings?.multihttp?.entries?.[index]?.request?.body?.payload?.message}
       >
         <TextArea
-          {...register(`settings.multihttp.entries[${index}].request.body.payload` as const)}
+          {...register(`settings.multihttp.entries.${index}.request.body.payload`)}
           rows={2}
           id={`request-body-${index}-payload`}
         />
@@ -151,14 +153,13 @@ export const BodyTab = ({ index, active }: MultiHttpTabProps) => {
   );
 };
 
-const QueryParamsTab = ({ index, label, active }: MultiHttpTabProps) => {
-  const { control } = useFormContext();
-  const { fields, append, remove } = useFieldArray({
+const QueryParamsTab = ({ index, active }: MultiHttpTabProps) => {
+  const { control, register, formState } = useFormContext<CheckFormValuesMultiHttp>();
+  const { fields, append, remove } = useFieldArray<CheckFormValuesMultiHttp>({
     control,
-    name: `settings.multihttp.entries[${index}].request.queryFields`,
+    name: `settings.multihttp.entries.${index}.request.queryFields`,
   });
   const styles = useStyles2(getMultiHttpTabStyles);
-  const { register, formState } = useFormContext();
   const errors = formState.errors?.settings?.multihttp?.entries?.[index]?.request?.queryFields;
 
   return (
@@ -166,14 +167,13 @@ const QueryParamsTab = ({ index, label, active }: MultiHttpTabProps) => {
       <Field label="Query params" description="Add values to the query string of the request URL">
         <>
           {fields.map((field, i) => {
-            const queryParamsNamePrefix = `settings.multihttp.entries[${index}].request.queryFields[${i}]`;
             return (
               <div key={field.id}>
                 <HorizontalGroup align="flex-start" spacing="md">
                   <HorizontalGroup spacing="md" align="flex-start">
-                    <Field invalid={errors?.[i]?.name} error={errors?.[i]?.name?.message}>
+                    <Field invalid={Boolean(errors?.[i]?.name)} error={errors?.[i]?.name?.message}>
                       <Input
-                        {...register(`${queryParamsNamePrefix}.name` as const, {
+                        {...register(`settings.multihttp.entries.${index}.request.queryFields.${i}.name`, {
                           required: 'Query param name required',
                           minLength: 1,
                         })}
@@ -182,9 +182,9 @@ const QueryParamsTab = ({ index, label, active }: MultiHttpTabProps) => {
                         data-testid="query-param-name"
                       />
                     </Field>
-                    <Field invalid={errors?.[i]?.value} error={errors?.[i]?.value?.message}>
+                    <Field invalid={Boolean(errors?.[i]?.value)} error={errors?.[i]?.value?.message}>
                       <Input
-                        {...register(`${queryParamsNamePrefix}.value` as const, {
+                        {...register(`settings.multihttp.entries.${index}.request.queryFields.${i}.value`, {
                           required: 'Query param value required',
                           minLength: 1,
                         })}
@@ -210,7 +210,7 @@ const QueryParamsTab = ({ index, label, active }: MultiHttpTabProps) => {
         </>
       </Field>
       <Button
-        onClick={() => append({})}
+        onClick={() => append({ name: ``, value: `` })}
         variant="secondary"
         size="sm"
         type="button"
@@ -224,9 +224,9 @@ const QueryParamsTab = ({ index, label, active }: MultiHttpTabProps) => {
 };
 
 const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
-  const variableFieldName = `settings.multihttp.entries[${index}].variables`;
-  const { control, register, watch, formState } = useFormContext();
-  const { fields, append, remove } = useFieldArray({
+  const variableFieldName = `settings.multihttp.entries.${index}.variables` as const;
+  const { control, register, watch, formState } = useFormContext<CheckFormValuesMultiHttp>();
+  const { fields, append, remove } = useFieldArray<CheckFormValuesMultiHttp>({
     control,
     name: variableFieldName,
   });
@@ -237,44 +237,50 @@ const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
       <Field label="Variables" description="Select a value from the response and use it in a subsequent request">
         <>
           {fields.map((field, variableIndex) => {
-            const variableTypeName = `${variableFieldName}[${variableIndex}].type` ?? '';
+            const variableTypeName = `${variableFieldName}.${variableIndex}.type` as const;
             const variableTypeValue = watch(variableTypeName)?.value;
-            const errorPath = formState.errors.settings?.multihttp?.entries[index]?.variables?.[variableIndex];
+            const errorPath = formState.errors.settings?.multihttp?.entries?.[index]?.variables?.[variableIndex];
+            // @ts-expect-error -- I think type is a reserved keyword in react-hook-form so it can't read this properly
+            const errMessage = errorPath?.type?.message;
 
             return (
               <div className={styles.fieldsContainer} key={field.id}>
-                <Controller
+                <Controller<CheckFormValuesMultiHttp>
                   name={variableTypeName}
                   render={({ field: typeField }) => {
+                    const { ref, ...rest } = typeField;
                     return (
                       <Field
                         label="Variable type"
                         description="The method of getting a value"
-                        invalid={errorPath?.type}
+                        invalid={Boolean(errorPath?.type)}
+                        error={typeof errMessage === `string` && errMessage}
                       >
                         <Select
                           id={`multihttp-variable-type-${index}-${variableIndex}`}
                           className={styles.minInputWidth}
-                          {...typeField}
+                          {...rest}
                           options={MULTI_HTTP_VARIABLE_TYPE_OPTIONS}
                           menuPlacement="bottom"
                         />
                       </Field>
                     );
                   }}
-                  rules={{ required: true }}
+                  rules={{ required: `Variable type is required` }}
                 />
                 <Field
                   label="Variable name"
                   description="The name of the variable"
-                  invalid={errorPath?.name}
+                  invalid={Boolean(errorPath?.name)}
                   error={errorPath?.name?.message}
                 >
                   <Input
                     placeholder="Variable name"
                     id={`multihttp-variable-name-${index}-${variableIndex}`}
-                    invalid={formState.errors.settings?.multihttp?.entries[index]?.variables?.[variableIndex]?.type}
-                    {...register(`${variableFieldName}[${variableIndex}].name`, {
+                    invalid={Boolean(
+                      formState.errors.settings?.multihttp?.entries?.[index]?.variables?.[variableIndex]?.type
+                    )}
+                    {...register(`${variableFieldName}.${variableIndex}.name`, {
                       required: 'Variable name is required',
                     })}
                   />
@@ -283,26 +289,26 @@ const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
                   <Field
                     label="Attribute"
                     description="Name of the attribute to extract the value from. Leave blank to get contents of tag"
-                    invalid={errorPath?.attribute}
+                    invalid={Boolean(errorPath?.attribute)}
                     error={errorPath?.attribute?.message}
                   >
                     <Input
                       placeholder="Attribute"
                       id={`multihttp-variable-attribute-${index}-${variableIndex}`}
-                      {...register(`${variableFieldName}[${variableIndex}].attribute`)}
+                      {...register(`${variableFieldName}.${variableIndex}.attribute`)}
                     />
                   </Field>
                 )}
                 <Field
                   label="Variable expression"
                   description="Expression to extract the value"
-                  invalid={errorPath?.expression}
+                  invalid={Boolean(errorPath?.expression)}
                   error={errorPath?.expression?.message}
                 >
                   <Input
                     placeholder="Variable expression"
                     id={`multihttp-variable-expression-${index}-${variableIndex}`}
-                    {...register(`${variableFieldName}[${variableIndex}].expression`, {
+                    {...register(`${variableFieldName}.${variableIndex}.expression`, {
                       required: 'Expression is required',
                     })}
                   />
@@ -322,7 +328,6 @@ const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
         variant="secondary"
         size="sm"
         type="button"
-        // className={styles.addHeaderQueryButton}
       >
         <Icon name="plus" />
         &nbsp; Add variable
@@ -333,9 +338,10 @@ const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
 
 export const RequestTabs = ({ activeTab, index }: RequestTabsProps) => {
   const styles = useStyles2(getMultiHttpFormStyles);
-  const { watch } = useFormContext();
-  const method = watch(`settings.multihttp.entries[${index}].request.method`);
+  const { watch } = useFormContext<CheckFormValuesMultiHttp>();
+  const method = watch(`settings.multihttp.entries.${index}.request.method`);
   const hideBody = getIsBodyDisabled(method);
+
   return (
     <TabContent className={styles.tabsContent}>
       <HeadersTab label="header" index={index} active={activeTab === MultiHttpFormTabs.Headers} />

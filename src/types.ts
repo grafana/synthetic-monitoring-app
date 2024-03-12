@@ -32,6 +32,7 @@ export enum HttpMethod {
   HEAD = 'HEAD',
   POST = 'POST',
   PUT = 'PUT',
+  PATCH = 'PATCH',
   OPTIONS = 'OPTIONS',
   DELETE = 'DELETE',
 }
@@ -66,11 +67,11 @@ export interface HeaderMatch {
 }
 
 export interface TLSConfig {
-  insecureSkipVerify: boolean;
-  caCert: string;
-  clientCert: string;
-  clientKey: string;
-  serverName: string;
+  insecureSkipVerify?: boolean;
+  caCert?: string;
+  clientCert?: string;
+  clientKey?: string;
+  serverName?: string;
 }
 
 export interface BasicAuth {
@@ -159,6 +160,8 @@ export interface DnsSettingsFormValues
   validations: DnsValidationFormValue[];
 }
 
+export interface GRPCSettingsFormValues {}
+
 export interface ScriptedSettings {
   script: string;
 }
@@ -181,7 +184,7 @@ export interface HttpSettings {
   ipVersion: IpVersion;
   noFollowRedirects: boolean;
   tlsConfig?: TLSConfig;
-  compression: HTTPCompressionAlgo | undefined;
+  compression?: HTTPCompressionAlgo | undefined;
   proxyURL?: string;
   proxyConnectHeaders?: string[];
 
@@ -254,8 +257,8 @@ export interface MultiHttpSettingsFormValues {
 
 export interface MultiHttpEntryFormValues extends Omit<MultiHttpEntry, 'request' | 'variables' | 'checks'> {
   request: MultiHttpRequestFormValues;
-  variables: MultiHttpVariablesFormValues[];
-  checks: MultiHttpAssertionFormValues[];
+  variables?: MultiHttpVariablesFormValues[];
+  checks?: MultiHttpAssertionFormValues[];
 }
 
 export interface MultiHttpRequestFormValues extends Omit<RequestProps, 'method'> {
@@ -295,15 +298,6 @@ export interface PingSettingsFormValues extends Omit<PingSettings, 'ipVersion'> 
   ipVersion: SelectableValue<IpVersion>;
 }
 
-export interface SettingsFormValues {
-  http?: HttpSettingsFormValues;
-  multihttp?: MultiHttpSettingsFormValues;
-  ping?: PingSettingsFormValues;
-  dns?: DnsSettingsFormValues;
-  tcp?: TcpSettingsFormValues;
-  traceroute?: TracerouteSettingsFormValues;
-  k6?: ScriptedSettings;
-}
 export interface AlertFormValues {
   name: string;
   probePercentage: number;
@@ -314,15 +308,67 @@ export interface AlertFormValues {
   sensitivity: SelectableValue<AlertSensitivity>;
 }
 
-export interface CheckFormValues extends Omit<Check, 'settings' | 'labels' | 'alertSensitivity'> {
-  checkType?: SelectableValue<CheckType>;
-  settings: SettingsFormValues;
-  labels?: Label[];
-  alertSensitivity: SelectableValue<string>;
+export type CheckFormValuesBase = Omit<Check, 'settings' | 'basicMetricsOnly'> & {
   publishAdvancedMetrics: boolean;
-}
+};
 
-export interface Check extends BaseObject {
+export type CheckFormValuesHttp = CheckFormValuesBase & {
+  checkType: CheckType.HTTP;
+  settings: {
+    http: HttpSettingsFormValues;
+  };
+};
+
+export type CheckFormValuesMultiHttp = CheckFormValuesBase & {
+  checkType: CheckType.MULTI_HTTP;
+  settings: {
+    multihttp: MultiHttpSettingsFormValues;
+  };
+};
+
+export type CheckFormValuesPing = CheckFormValuesBase & {
+  checkType: CheckType.PING;
+  settings: {
+    ping: PingSettingsFormValues;
+  };
+};
+
+export type CheckFormValuesDns = CheckFormValuesBase & {
+  checkType: CheckType.DNS;
+  settings: {
+    dns: DnsSettingsFormValues;
+  };
+};
+
+export type CheckFormValuesGRPC = CheckFormValuesBase & {
+  checkType: CheckType.GRPC;
+  settings: {
+    grpc: GRPCSettingsFormValues;
+  };
+};
+
+export type CheckFormValuesTcp = CheckFormValuesBase & {
+  checkType: CheckType.TCP;
+  settings: {
+    tcp: TcpSettingsFormValues;
+  };
+};
+
+export type CheckFormValuesTraceroute = CheckFormValuesBase & {
+  checkType: CheckType.Traceroute;
+  settings: {
+    traceroute: TracerouteSettingsFormValues;
+  };
+};
+
+export type CheckFormValuesScripted = CheckFormValuesBase & {
+  checkType: CheckType.Scripted;
+  settings: {
+    scripted: ScriptedSettings;
+  };
+};
+
+export interface CheckBase extends BaseObject {
   job: string;
   target: string;
   frequency: number;
@@ -332,32 +378,100 @@ export interface Check extends BaseObject {
   alertSensitivity: AlertSensitivity | string;
   basicMetricsOnly: boolean;
   labels: Label[]; // Currently list of [name:value]... can it be Labels?
-  settings: Settings; //
-
-  // Link to probes
   probes: number[];
-  id?: number;
-  tenantId?: number;
 }
 
-export interface Settings {
-  dns?: DnsSettings;
-  http?: HttpSettings;
-  k6?: ScriptedSettings;
-  multihttp?: MultiHttpSettings;
-  ping?: PingSettings;
-  tcp?: TcpSettings;
-  traceroute?: TracerouteSettings;
+export type Check =
+  | DNSCheck
+  | GRPCCheck
+  | HTTPCheck
+  | MultiHTTPCheck
+  | PingCheck
+  | ScriptedCheck
+  | TCPCheck
+  | TracerouteCheck;
+
+export type CheckFormValues =
+  | CheckFormValuesDns
+  | CheckFormValuesGRPC
+  | CheckFormValuesHttp
+  | CheckFormValuesMultiHttp
+  | CheckFormValuesPing
+  | CheckFormValuesScripted
+  | CheckFormValuesTcp
+  | CheckFormValuesTraceroute;
+
+export interface FilteredCheck extends Omit<Check, 'id'> {
+  id: number;
 }
+
+export type Settings =
+  | DNSCheck['settings']
+  | GRPCCheck['settings']
+  | HTTPCheck['settings']
+  | ScriptedCheck['settings']
+  | MultiHTTPCheck['settings']
+  | PingCheck['settings']
+  | TCPCheck['settings']
+  | TracerouteCheck['settings'];
+
+export type DNSCheck = CheckBase & {
+  settings: {
+    dns: DnsSettings;
+  };
+};
+
+export type GRPCCheck = CheckBase & {
+  settings: {
+    grpc: undefined;
+  };
+};
+
+export type HTTPCheck = CheckBase & {
+  settings: {
+    http: HttpSettings;
+  };
+};
+
+export type ScriptedCheck = CheckBase & {
+  settings: {
+    scripted: ScriptedSettings;
+  };
+};
+
+export type MultiHTTPCheck = CheckBase & {
+  settings: {
+    multihttp: MultiHttpSettings;
+  };
+};
+
+export type PingCheck = CheckBase & {
+  settings: {
+    ping: PingSettings;
+  };
+};
+
+export type TCPCheck = CheckBase & {
+  settings: {
+    tcp: TcpSettings;
+  };
+};
+
+export type TracerouteCheck = CheckBase & {
+  settings: {
+    traceroute: TracerouteSettings;
+  };
+};
 
 export enum CheckType {
-  HTTP = 'http',
-  PING = 'ping',
   DNS = 'dns',
+  GRPC = 'grpc',
+  HTTP = 'http',
+  MULTI_HTTP = 'multihttp',
+  PING = 'ping',
+  Scripted = 'scripted',
   TCP = 'tcp',
   Traceroute = 'traceroute',
-  MULTI_HTTP = 'multihttp',
-  K6 = 'k6',
 }
 
 export interface HostedInstance {
@@ -564,7 +678,7 @@ export enum ROUTES {
 export interface CheckPageParams {
   view: string;
   id: string;
-  checkType?: string;
+  checkType?: CheckType;
 }
 
 export interface ProbePageParams {
@@ -623,4 +737,13 @@ export interface ThresholdSettings {
   latency: ThresholdValues;
   reachability: ThresholdValues;
   uptime: ThresholdValues;
+}
+
+export interface CalculateUsageValues {
+  assertionCount: number;
+  basicMetricsOnly: boolean;
+  checkType: CheckType;
+  frequencySeconds: number;
+  isSSL: boolean;
+  probeCount: number;
 }

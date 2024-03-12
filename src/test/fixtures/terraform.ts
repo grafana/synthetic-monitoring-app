@@ -49,8 +49,8 @@ export const TERRAFORM_BASIC_PING_CHECK = {
         probes: BASIC_PING_CHECK.probes,
         settings: {
           ping: {
-            dont_fragment: BASIC_PING_CHECK.settings.ping?.dontFragment,
-            ip_version: BASIC_PING_CHECK.settings.ping?.ipVersion,
+            dont_fragment: BASIC_PING_CHECK.settings.ping.dontFragment,
+            ip_version: BASIC_PING_CHECK.settings.ping.ipVersion,
           },
         },
         target: BASIC_PING_CHECK.target,

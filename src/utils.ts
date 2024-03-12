@@ -3,7 +3,26 @@ import { config, FetchResponse, getBackendSrv } from '@grafana/runtime';
 import { firstValueFrom } from 'rxjs';
 
 import { DashboardInfo, LinkedDatasourceInfo, LogQueryResponse, LogStream, SMOptions } from './datasource/types';
-import { CheckType, HostedInstance, Probe, Settings, SubmissionErrorWrapper, ThresholdValues } from 'types';
+import {
+  CalculateUsageValues,
+  Check,
+  CheckFormValues,
+  CheckType,
+  HostedInstance,
+  Probe,
+  Settings,
+  SubmissionErrorWrapper,
+  ThresholdValues,
+  TLSConfig,
+} from 'types';
+import {
+  isHttpFormValuesSettings,
+  isHttpSettings,
+  isMultiHttpFormValuesSettings,
+  isMultiHttpSettings,
+  isTCPFormValuesSettings,
+  isTCPSettings,
+} from 'utils.types';
 import { SMDataSource } from 'datasource/DataSource';
 import { Metric } from 'datasource/responses.types';
 
@@ -151,6 +170,11 @@ export function checkType(settings: Settings): CheckType {
   if (types.length < 1) {
     return CheckType.HTTP;
   }
+
+  if (types[0] === `k6`) {
+    return CheckType.Scripted;
+  }
+
   return types[0] as CheckType;
 }
 
@@ -321,4 +345,87 @@ export function formatDate(number: number) {
     hour: '2-digit',
     minute: '2-digit',
   });
+}
+
+export function checkToUsageCalcValues(check: Check): CalculateUsageValues {
+  const { basicMetricsOnly, settings, frequency, probes } = check;
+  const cType = checkType(check.settings);
+
+  return {
+    assertionCount: getEntriesCount(settings),
+    basicMetricsOnly,
+    checkType: cType,
+    frequencySeconds: frequency / 1000,
+    isSSL: getSSL(settings),
+    probeCount: probes?.length ?? 0,
+  };
+}
+
+export function checkFormValuesToUsageCalcValues(checkFormValues: CheckFormValues): CalculateUsageValues {
+  const { checkType, publishAdvancedMetrics, settings, frequency, probes } = checkFormValues;
+
+  return {
+    assertionCount: getEntriesCountCheckFormValues(settings),
+    basicMetricsOnly: !publishAdvancedMetrics,
+    checkType,
+    frequencySeconds: frequency,
+    isSSL: getSSLCheckFormValues(settings),
+    probeCount: probes?.length ?? 0,
+  };
+}
+
+export function getEntriesCount(settings: Check['settings']) {
+  if (isMultiHttpSettings(settings)) {
+    return settings.multihttp.entries.length;
+  }
+
+  return 1;
+}
+
+export function getEntriesCountCheckFormValues(settings: CheckFormValues['settings']) {
+  if (isMultiHttpFormValuesSettings(settings)) {
+    return settings.multihttp.entries.length;
+  }
+
+  return 1;
+}
+
+export function getSSL(settings: Check['settings']) {
+  if (isHttpSettings(settings) && doesTLSConfigHaveValues(settings.http?.tlsConfig)) {
+    return true;
+  }
+
+  if (isTCPSettings(settings) && doesTLSConfigHaveValues(settings.tcp.tlsConfig)) {
+    return true;
+  }
+
+  // if (isGRPCSettings(settings) && doesTLSConfigHaveValues(settings.tcp.tlsConfig)) {
+  //   return true;
+  // }
+
+  return false;
+}
+
+export function getSSLCheckFormValues(settings: CheckFormValues['settings']) {
+  if (isHttpFormValuesSettings(settings) && doesTLSConfigHaveValues(settings.http?.tlsConfig)) {
+    return true;
+  }
+
+  if (isTCPFormValuesSettings(settings) && doesTLSConfigHaveValues(settings.tcp.tlsConfig)) {
+    return true;
+  }
+
+  // if (isGRPCFormValuesSettings(settings) && doesTLSConfigHaveValues(settings.tcp.tlsConfig)) {
+  //   return true;
+  // }
+
+  return false;
+}
+
+function doesTLSConfigHaveValues(tlsConfig?: TLSConfig) {
+  if (!tlsConfig) {
+    return false;
+  }
+
+  return Object.values(tlsConfig).some((value) => value);
 }
