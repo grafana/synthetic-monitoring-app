@@ -10,9 +10,10 @@ import { validateTarget } from 'validation';
 import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
 import { CodeEditor } from 'components/CodeEditor';
 import { LabelField } from 'components/LabelField';
+import { ScriptExamplesMenu } from 'components/ScriptExamplesMenu/ScriptExamplesMenu';
 
 export const ScriptedCheckFormFields = ({ check }: { check: Check }) => {
-  const { control, formState, register } = useFormContext<CheckFormValuesScripted>();
+  const { control, formState, register, setValue } = useFormContext<CheckFormValuesScripted>();
   const isEditor = hasRole(OrgRole.Editor);
   const styles = useStyles2(getStyles);
 
@@ -55,6 +56,7 @@ export const ScriptedCheckFormFields = ({ check }: { check: Check }) => {
         checkType={CheckType.Scripted}
       />
       <LabelField<CheckFormValuesScripted> isEditor={isEditor} />
+      {!check.id && <ScriptExamplesMenu onSelectExample={(script) => setValue('settings.scripted.script', script)} />}
       <Controller
         name="settings.scripted.script"
         control={control}
