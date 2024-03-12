@@ -79,6 +79,31 @@
   "liveNow": false,
   "panels": [
     {
+      "datasource": {
+        "type": "datasource",
+        "uid": "grafana"
+      },
+      "description": "",
+      "gridPos": {
+        "h": 3,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 45,
+      "options": {
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "# This dashboard has been deprecated\n\nThe Synthetic Monitoring dashboards have moved into the Synthetic Monitoring plugin. You can see them [here](/a/grafana-synthetic-monitoring-app/home).",
+        "mode": "markdown"
+      },
+      "pluginVersion": "11.0.0-68036",
+      "type": "text"
+    },
+    {
       "datasource": "${DS_SM_METRICS}",
       "description": "What's the error percentage for each probe that is observing the given target.",
       "fieldConfig": {
@@ -970,6 +995,6 @@
   "timezone": "",
   "title": "Synthetic Monitoring Ping",
   "uid": "EHyn7ueZk",
-  "version": 48,
+  "version": 49,
   "weekStart": ""
 }

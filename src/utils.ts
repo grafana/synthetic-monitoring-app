@@ -54,10 +54,7 @@ interface DatasourcePayload {
 
 // Used for stubbing out the datasource when plugin is not provisioned
 
-export async function createNewApiInstance(
-  payload: DatasourcePayload,
-  dashboards: DashboardInfo[]
-): Promise<SMOptions> {
+export async function createNewApiInstance(payload: DatasourcePayload): Promise<SMOptions> {
   return getBackendSrv().post('api/datasources', {
     name: 'Synthetic Monitoring',
     type: 'synthetic-monitoring-datasource',
@@ -65,7 +62,6 @@ export async function createNewApiInstance(
     isDefault: false,
     jsonData: {
       apiHost: payload.apiHost,
-      dashboards,
       initialized: true,
       metrics: payload.metrics,
       logs: payload.logs,
@@ -76,10 +72,7 @@ export async function createNewApiInstance(
   });
 }
 
-export async function initializeDatasource(
-  datasourcePayload: DatasourcePayload,
-  dashboards: DashboardInfo[]
-): Promise<SMOptions> {
+export async function initializeDatasource(datasourcePayload: DatasourcePayload): Promise<SMOptions> {
   const existingDatasource = findSMDataSources()?.[0];
   if (existingDatasource) {
     return getBackendSrv().put(`api/datasources/${existingDatasource.id}`, {
@@ -92,13 +85,12 @@ export async function initializeDatasource(
       jsonData: {
         apiHost: datasourcePayload.apiHost,
         initialized: true,
-        dashboards,
         metrics: datasourcePayload.metrics,
         logs: datasourcePayload.logs,
       },
     });
   }
-  return createNewApiInstance(datasourcePayload, dashboards);
+  return createNewApiInstance(datasourcePayload);
 }
 
 export async function createHostedInstance(info: HostedInstance, key: string): Promise<DataSourceInstanceSettings> {
