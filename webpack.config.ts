@@ -17,6 +17,7 @@ const config = async (env): Promise<Configuration> => {
         {
           exclude: /(node_modules)/,
           test: /\.[tj]sx?$/,
+          resourceQuery: { not: [/raw/] },
           use: {
             loader: 'swc-loader',
             options: {
@@ -33,6 +34,10 @@ const config = async (env): Promise<Configuration> => {
               },
             },
           },
+        },
+        {
+          resourceQuery: /raw/,
+          type: 'asset/source',
         },
       ],
     },

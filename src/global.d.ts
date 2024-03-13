@@ -39,3 +39,8 @@ declare module 'constrained-editor-plugin' {
   export declare function constrainedEditor(monaco: typeof monacoTypes): ConstrainedEditorInstance;
   export default constrainedEditor;
 }
+
+declare module '*?raw' {
+  const content: string;
+  export default content;
+}

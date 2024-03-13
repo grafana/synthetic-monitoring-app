@@ -1,14 +1,13 @@
-import React, { FC, useContext,useState } from 'react';
-import { DataSourceInstanceSettings, DataSourceJsonData,GrafanaTheme2, OrgRole } from '@grafana/data';
-import { config,getBackendSrv } from '@grafana/runtime';
-import { Alert, Button, Modal,Spinner, useStyles2 } from '@grafana/ui';
+import React, { FC, useContext, useState } from 'react';
+import { DataSourceInstanceSettings, DataSourceJsonData, GrafanaTheme2, OrgRole } from '@grafana/data';
+import { config, getBackendSrv } from '@grafana/runtime';
+import { Alert, Button, Modal, Spinner, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { importAllDashboards } from 'dashboards/loader';
 import { isNumber } from 'lodash';
 
 import { ROUTES, SubmissionErrorWrapper } from 'types';
-import { FaroEvent, reportError,reportEvent } from 'faro';
-import { findSMDataSources, hasRole, initializeDatasource } from 'utils';
+import { FaroEvent, reportError, reportEvent } from 'faro';
+import { hasRole, initializeDatasource } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { colors, LEGACY_LOGS_DS_NAME, LEGACY_METRICS_DS_NAME } from 'components/constants';
 import { DisplayCard } from 'components/DisplayCard';
@@ -254,9 +253,6 @@ export const WelcomePage: FC<Props> = () => {
         method: 'POST',
         data: body,
       });
-      const smDatasources = await findSMDataSources();
-      const smDatasourceName = smDatasources.length ? smDatasources[0].name : 'Synthetic Monitoring';
-      const dashboards = await importAllDashboards(metricsSettings.uid, logsSettings.uid, smDatasourceName);
       const datasourcePayload = {
         apiHost: meta.jsonData.apiHost,
         accessToken,
@@ -274,7 +270,7 @@ export const WelcomePage: FC<Props> = () => {
         },
       };
 
-      await initializeDatasource(datasourcePayload, dashboards);
+      await initializeDatasource(datasourcePayload);
 
       // force reload so that GrafanaBootConfig is updated.
       window.location.href = `${window.location.origin}${getRoute(ROUTES.Home)}`;
