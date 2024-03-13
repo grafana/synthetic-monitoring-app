@@ -42,7 +42,11 @@ export const AlertStatusContent = ({ check }: AlertStatusProps) => {
   }
 
   if (isLoading) {
-    return <Icon name="fa fa-spinner" />;
+    return (
+      <Tooltip content={`Loading alert rules`}>
+        <Icon name="fa fa-spinner" />
+      </Tooltip>
+    );
   }
 
   if (setUpWarning) {
@@ -173,6 +177,8 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
   badgeWrapper: css({
     margin: theme.spacing(0, 0.5),
+    position: `relative`,
+    top: `2px`,
   }),
   button: css({
     background: `transparent`,
