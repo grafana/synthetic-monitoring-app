@@ -1,5 +1,11 @@
 # Change Log
 
+# [1.12.8](https://github.com/grafana/synthetic-monitoring-app/compare/v1.12.6...v1.12.7) (2024-3-13)
+
+- Update dashboards to indicate they are deprecated. Newer versions are available inside the app itself.
+- Fix a broken link to check creation when a user has no checks
+- Add script examples to scripted check UI
+
 # [1.12.7](https://github.com/grafana/synthetic-monitoring-app/compare/v1.12.6...v1.12.7) (2024-3-11)
 
 - Update dashboards to use timeseries instead of the deprecated graph panel
