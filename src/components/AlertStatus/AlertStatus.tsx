@@ -40,7 +40,7 @@ export const AlertStatusContent = ({ check }: AlertStatusProps) => {
       <Toggletip content={<AlertGroups groups={groups} check={check} />}>
         <button className={styles.button}>
           <Icon className={styles.warningIcon} name="exclamation-triangle" />
-          Alert configuration
+          <span>Alert configuration</span>
         </button>
       </Toggletip>
     );
@@ -148,7 +148,7 @@ export const ZeroStateAlerts = ({ alertSensitivity }: ZeroStateAlertsProps) => {
       </div>
       <div>
         <LinkButton href={getRoute(ROUTES.Alerts)} size="sm">
-          Go to alerting
+          Go to Alerts
         </LinkButton>
       </div>
     </div>

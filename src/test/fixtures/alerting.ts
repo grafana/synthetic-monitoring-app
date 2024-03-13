@@ -1,11 +1,12 @@
 import { ListPrometheusAlertsResponse } from 'datasource/responses.types';
+
 import {
   ALERT_PROBE_SUCCESS_RECORDING_EXPR,
   ALERT_PROBE_SUCCESS_RECORDING_METRIC,
   DEFAULT_ALERT_LABELS,
   getDefaultAlertAnnotations,
   SM_ALERTING_NAMESPACE,
-} from 'components/constants';
+} from './CONSTANTS_TEMP';
 
 export const ALERTING_RULES: ListPrometheusAlertsResponse = {
   data: {

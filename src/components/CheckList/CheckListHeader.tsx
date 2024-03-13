@@ -52,7 +52,6 @@ export const CheckListHeader = ({
   const selectedChecks = checks.filter((check) => selectedCheckIds.has(check.id!));
 
   const tooltip = isAllSelected ? 'Deselect all' : 'Select all';
-  console.log(hasRole(OrgRole.Editor));
 
   return (
     <>
