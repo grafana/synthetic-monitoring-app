@@ -39,7 +39,7 @@ export const CheckListItemRow = ({
           <span className={styles.truncatedText} title={check.job}>
             {check.job}
           </span>
-          <AlertStatus check={check} />
+          <AlertStatus check={check} compact />
         </div>
         <div className={styles.checkTarget}>
           <span className={styles.truncatedText}>{check.target}</span>

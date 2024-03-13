@@ -12,19 +12,20 @@ import { Toggletip } from 'components/Toggletip';
 
 type AlertStatusProps = {
   check: Check;
+  compact?: boolean;
 };
 
-export const AlertStatus = ({ check }: AlertStatusProps) => {
+export const AlertStatus = ({ check, compact }: AlertStatusProps) => {
   const hasAlertSensitivity = check.alertSensitivity !== undefined && check.alertSensitivity !== AlertSensitivity.None;
 
   if (!hasAlertSensitivity) {
     return null;
   }
 
-  return <AlertStatusContent check={check} />;
+  return <AlertStatusContent check={check} compact={compact} />;
 };
 
-export const AlertStatusContent = ({ check }: AlertStatusProps) => {
+export const AlertStatusContent = ({ check, compact }: AlertStatusProps) => {
   const { alertSensitivity } = check;
   const { groups, isLoading, enabled, isError, refetch } = useAlertRules(alertSensitivity);
   const styles = useStyles2(getStyles);
@@ -50,12 +51,18 @@ export const AlertStatusContent = ({ check }: AlertStatusProps) => {
   }
 
   if (setUpWarning) {
+    const ariaLabel = `Alert configuration warning`;
+
     return (
       <Toggletip content={<AlertGroups groups={groups} check={check} />}>
-        <button className={styles.button}>
-          <Icon className={styles.warningIcon} name="exclamation-triangle" />
-          <span>Alert configuration</span>
-        </button>
+        {compact ? (
+          <IconButton aria-label={ariaLabel} className={styles.warningIcon} name="exclamation-triangle" />
+        ) : (
+          <button aria-label={ariaLabel} className={styles.button}>
+            <Icon className={styles.warningIcon} name="exclamation-triangle" />
+            <span>Alert configuration</span>
+          </button>
+        )}
       </Toggletip>
     );
   }
