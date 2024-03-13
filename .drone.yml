@@ -262,9 +262,9 @@ steps:
       - if [ -z "$GCLOUD_SERVICE_KEY" ]; then echo "Missing GCLOUD_SERVICE_KEY"; exit -1; fi
       - printenv GCLOUD_SERVICE_KEY > /tmp/gcpkey.json
       - gcloud auth activate-service-account --key-file=/tmp/gcpkey.json
-      - PLUGIN_NAME=`synthetic-monitoring-app`
+      - PLUGIN_NAME=`grafana-synthetic-monitoring-app`
       - VERSION=`cat plugin_version.txt`
-      - /root/app/bin/grafana-publisher.js --auto publishremote $PLUGIN_NAME $VERSION $DRONE_REPO_NAME
+      - /root/app/bin/grafana-publisher.js --auto publishremote $PLUGIN_NAME $VERSION synthetic-monitoring-app
     environment:
       GCLOUD_SERVICE_KEY:
         from_secret: gcp_key
@@ -283,19 +283,10 @@ name: publish-gcom
 
 trigger:
   event:
-    - tag
-
+    - promote
+  target:
+    - dryrun
 steps:
-  - name: publish-to-github
-    image: node:18
-    commands:
-      - ./scripts/install-ci-deps-apt.sh
-      - make install lint test build sign package gh-release
-    environment:
-      GRAFANA_ACCESS_POLICY_TOKEN:
-        from_secret: signing_token
-      GITHUB_TOKEN:
-        from_secret: github_token
   - name: publish-to-gcom
     image: grafana/integration-grafana-publisher:latest
     commands:
@@ -307,7 +298,7 @@ steps:
       - gcloud auth activate-service-account --key-file=/tmp/gcpkey.json
       - PLUGIN_NAME="grafana-synthetic-monitoring-app"
       - VERSION=${DRONE_TAG}
-      - /root/app/bin/grafana-publisher.js --auto publishremote $PLUGIN_NAME $VERSION $DRONE_REPO_NAME
+      - /root/app/bin/grafana-publisher.js -d --auto publishremote $PLUGIN_NAME $VERSION $DRONE_REPO_NAME
     environment:
       GCLOUD_SERVICE_KEY:
         from_secret: gcp_key
@@ -377,6 +368,6 @@ kind: secret
 name: gcp_key
 ---
 kind: signature
-hmac: 81808c799da73e941aeacf95b1d1b7077f1f65cb7be196f7b109ba8b19c825d8
+hmac: 67d5e02215a86edc874175f111029a19bb8652ad4dd1f4490f56510acbcb9361
 
 ...
