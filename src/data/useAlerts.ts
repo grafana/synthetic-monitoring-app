@@ -8,6 +8,8 @@ import { AlertFilter, PrometheusAlertRecord, PrometheusAlertsGroup } from 'types
 import { ListPrometheusAlertsResponse } from 'datasource/responses.types';
 import { InstanceContext } from 'contexts/InstanceContext';
 
+import { constructError, showAlert } from './utils';
+
 export const queryKeys: Record<'list', QueryKey> = {
   list: ['alerts'],
 };
@@ -35,11 +37,18 @@ function queryAlertApi(metricsUid: string) {
   return firstValueFrom(
     getBackendSrv().fetch<ListPrometheusAlertsResponse>({
       method: `GET`,
-      url: `/api/prometheus/${metricsUid}/api/v1/rules?${new Date().getTime()}`,
+      url: `/api/prometheus/${metricsUid}/api/v1/rules`,
+      showErrorAlert: false,
     })
-  ).then((res) => {
-    return res.data.data;
-  });
+  )
+    .then((res) => {
+      return res.data.data;
+    })
+    .catch((error) => {
+      const err = constructError(`Unable to fetch alert rules`, error);
+      showAlert('error', err);
+      throw error;
+    });
 }
 
 export function findRelevantAlertGroups(groups: PrometheusAlertsGroup[], alertFilter: AlertFilter) {

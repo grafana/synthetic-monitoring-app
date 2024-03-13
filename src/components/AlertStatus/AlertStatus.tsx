@@ -26,10 +26,20 @@ export const AlertStatus = ({ check }: AlertStatusProps) => {
 
 export const AlertStatusContent = ({ check }: AlertStatusProps) => {
   const { alertSensitivity } = check;
-  const { groups, isLoading, enabled } = useAlertRules(alertSensitivity);
+  const { groups, isLoading, enabled, isError, refetch } = useAlertRules(alertSensitivity);
   const styles = useStyles2(getStyles);
   const theme = useTheme2();
   const setUpWarning = !isLoading && !enabled;
+
+  if (isError) {
+    return (
+      <IconButton
+        tooltip="Unable to fetch alerting rules. Retry?"
+        name="exclamation-triangle"
+        onClick={() => refetch()}
+      />
+    );
+  }
 
   if (isLoading) {
     return <Icon name="fa fa-spinner" />;

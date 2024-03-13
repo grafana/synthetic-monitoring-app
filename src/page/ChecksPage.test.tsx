@@ -1,6 +1,7 @@
 import React from 'react';
 import runtime from '@grafana/runtime';
 import { screen, waitFor, within } from '@testing-library/react';
+import { ALERTING_RULES } from 'test/fixtures/alerting';
 import { BASIC_CHECK_LIST, BASIC_HTTP_CHECK, BASIC_PING_CHECK } from 'test/fixtures/checks';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
@@ -132,4 +133,51 @@ test(`renders alert configuration error when it doesn't detect a relevant alert`
   const alertSensitivity = await within(toggletip).findByText(`high`);
   expect(alertRule).toBeInTheDocument();
   expect(alertSensitivity).toBeInTheDocument();
+});
+
+test(`renders retry button when unable to fetch alerts`, async () => {
+  const HIGH_SENSITIVITY_CHECK: Check = {
+    ...BASIC_HTTP_CHECK,
+    alertSensitivity: AlertSensitivity.High,
+  };
+
+  server.use(
+    apiRoute(`listChecks`, {
+      result: () => {
+        return {
+          json: [HIGH_SENSITIVITY_CHECK],
+        };
+      },
+    })
+  );
+
+  server.use(
+    apiRoute(`getPromAlertRules`, {
+      result: () => {
+        return {
+          status: 500,
+          json: {},
+        };
+      },
+    })
+  );
+
+  const { user } = await renderChecksPage();
+  await waitFor(() => {}, { timeout: 10000 });
+  const refetchButton = await screen.findByLabelText('Unable to fetch alerting rules. Retry?');
+
+  server.use(
+    apiRoute(`getPromAlertRules`, {
+      result: () => {
+        return {
+          status: 200,
+          json: ALERTING_RULES,
+        };
+      },
+    })
+  );
+
+  await user.click(refetchButton);
+  const alertToggle = await screen.findByLabelText('Alert rules');
+  expect(alertToggle).toBeInTheDocument();
 });

@@ -11,15 +11,17 @@ export function useAlertRules(alertSensitivity: Check['alertSensitivity']) {
     [alertSensitivity]
   );
 
-  const { data, isLoading } = useAlerts();
+  const { data, isLoading, isError, refetch } = useAlerts();
 
   return useMemo(() => {
     const groups = data ? findRelevantAlertGroups(data, alertFilter) : [];
 
     return {
-      groups,
-      isLoading,
       enabled: groups.length > 0,
+      groups,
+      isError,
+      isLoading,
+      refetch,
     };
-  }, [data, isLoading, alertFilter]);
+  }, [data, isError, isLoading, alertFilter, refetch]);
 }
