@@ -122,6 +122,7 @@ export async function createHostedInstance(info: HostedInstance, key: string): P
 
 export function hasRole(requiredRole: OrgRole): boolean {
   const user = config.bootData.user;
+  console.log(user);
   switch (requiredRole) {
     case OrgRole.Admin: {
       return user.orgRole === OrgRole.Admin;

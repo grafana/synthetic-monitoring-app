@@ -23,7 +23,6 @@ export function useAlerts() {
   return useQuery({
     queryKey: [...queryKeys.list, metrics.uid],
     queryFn: () => {
-      console.log(`invoked`);
       return queryAlertApi(metrics.uid);
     },
     select: (data) => {

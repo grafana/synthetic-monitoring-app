@@ -1,12 +1,13 @@
 import React, { useContext } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Icon, LinkButton, Tooltip, useStyles2 } from '@grafana/ui';
+import { Icon, IconButton, LinkButton, Tooltip, useStyles2, useTheme2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
-import { AlertSensitivity, Check, PrometheusAlertsGroup } from 'types';
+import { AlertSensitivity, Check, PrometheusAlertsGroup, ROUTES } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { useAlertRules } from 'hooks/useAlertRules';
 import { AlertSensitivityBadge } from 'components/AlertSensitivityBadge';
+import { getRoute } from 'components/Routing';
 import { Toggletip } from 'components/Toggletip';
 
 type AlertStatusProps = {
@@ -27,15 +28,28 @@ export const AlertStatusContent = ({ check }: AlertStatusProps) => {
   const { alertSensitivity } = check;
   const { groups, isLoading, enabled } = useAlertRules(alertSensitivity);
   const styles = useStyles2(getStyles);
-  const iconClassName = !isLoading && !enabled ? styles.disabled : undefined;
+  const theme = useTheme2();
+  const setUpWarning = !isLoading && !enabled;
+
+  if (isLoading) {
+    return <Icon name="fa fa-spinner" />;
+  }
+
+  if (setUpWarning) {
+    return (
+      <Toggletip content={<AlertGroups groups={groups} check={check} />}>
+        <button className={styles.button}>
+          <Icon className={styles.warningIcon} name="exclamation-triangle" />
+          Alert configuration
+        </button>
+      </Toggletip>
+    );
+  }
 
   return (
-    <Toggletip
-      content={<AlertGroups groups={groups} check={check} />}
-      icon={isLoading ? `fa fa-spinner` : `bell`}
-      iconClassName={iconClassName}
-      tooltip={`Alert rules`}
-    />
+    <Toggletip content={<AlertGroups groups={groups} check={check} />}>
+      <IconButton aria-label="Alert rules" name={`bell`} color={theme.colors.warning.border} />
+    </Toggletip>
   );
 };
 
@@ -133,7 +147,7 @@ export const ZeroStateAlerts = ({ alertSensitivity }: ZeroStateAlertsProps) => {
         but we could not detect any associated alerting rules.
       </div>
       <div>
-        <LinkButton href={`/alerting/list`} size="sm">
+        <LinkButton href={getRoute(ROUTES.Alerts)} size="sm">
           Go to alerting
         </LinkButton>
       </div>
@@ -145,10 +159,25 @@ const headingDisplay = `h5`;
 
 const getStyles = (theme: GrafanaTheme2) => ({
   disabled: css({
-    color: theme.colors.error.main,
+    color: theme.colors.warning.main,
   }),
   badgeWrapper: css({
     margin: theme.spacing(0, 0.5),
+  }),
+  button: css({
+    background: `transparent`,
+    border: `1px solid ${theme.colors.warning.border}`,
+    borderRadius: theme.shape.radius.pill,
+    padding: theme.spacing(0.5, 1),
+    display: `flex`,
+    alignItems: `center`,
+    gap: theme.spacing(1),
+    fontSize: theme.typography.bodySmall.fontSize,
+    transition: `background-color 0.2s ease`,
+
+    '&:hover': {
+      background: theme.colors.secondary.transparent,
+    },
   }),
   image: css({
     height: theme.spacing(2),
@@ -178,5 +207,8 @@ const getStyles = (theme: GrafanaTheme2) => ({
     fontWeight: theme.typography[headingDisplay].fontWeight,
     lineHeight: theme.typography[headingDisplay].lineHeight,
     margin: `0`,
+  }),
+  warningIcon: css({
+    color: theme.colors.warning.text,
   }),
 });

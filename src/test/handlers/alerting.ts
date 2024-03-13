@@ -1,5 +1,8 @@
+import { ALERTING_RULES } from 'test/fixtures/alerting';
+
 import { ApiEntry } from 'test/handlers/types';
-import { AlertGroupResponse } from 'datasource/responses.types';
+import { AlertGroupResponse, ListPrometheusAlertsResponse } from 'datasource/responses.types';
+import { ALERT_PROBE_SUCCESS_RECORDING_EXPR } from 'components/constants';
 
 export const getAlertRules: ApiEntry<AlertGroupResponse> = {
   route: `/api/ruler/1/api/v1/rules/synthetic_monitoring/default`,
@@ -11,7 +14,7 @@ export const getAlertRules: ApiEntry<AlertGroupResponse> = {
         rules: [
           {
             record: 'instance_job_severity:probe_success:mean5m',
-            expr: '(sum without(probe, config_version) (rate(probe_all_success_sum[5m]) *\non(instance, job, probe) group_left(alert_sensitivity) max by(instance, job,\nprobe, alert_sensitivity) (sm_check_info{alert_sensitivity!=""})) / sum\nwithout(probe, config_version) (rate(probe_all_success_count[5m]) *\non(instance, job, probe) group_left(alert_sensitivity) max by(instance, job,\nprobe, alert_sensitivity) (sm_check_info{alert_sensitivity!=""}))) * 100',
+            expr: ALERT_PROBE_SUCCESS_RECORDING_EXPR,
           },
           {
             alert: 'SyntheticMonitoringCheckFailureAtHighSensitivity',
@@ -54,6 +57,16 @@ export const getAlertRules: ApiEntry<AlertGroupResponse> = {
           },
         ],
       },
+    };
+  },
+};
+
+export const getPromAlertRules: ApiEntry<ListPrometheusAlertsResponse> = {
+  route: `/api/prometheus/uid-1/api/v1/rules`,
+  method: `get`,
+  result: () => {
+    return {
+      json: ALERTING_RULES,
     };
   },
 };

@@ -761,7 +761,7 @@ export type PrometheusAlertsGroup = {
   evaulationTime: number;
   file: string;
   interval: number;
-  lastEvaluation: number;
+  lastEvaluation: string;
   name: string;
   rules: PrometheusAlertRecord[];
   totals: null;
@@ -772,7 +772,7 @@ export type PrometheusAlertRecord = PrometheusAlertRecordingRule | PrometheusAle
 export type PrometheusAlertRecordingRule = {
   evaluationTime: number;
   health: `ok`; // fill in others
-  lastEvaluation: number;
+  lastEvaluation: string;
   name: string;
   query: string;
   type: `recording`;
@@ -789,7 +789,7 @@ export type PrometheusAlertingRule = {
   labels: {
     [key: string]: string;
   };
-  lastEvaluation: number;
+  lastEvaluation: string;
   name: string;
   query: string;
   state: 'inactive'; // fill in others

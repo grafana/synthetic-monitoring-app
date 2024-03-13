@@ -1,42 +1,23 @@
-import React, { useEffect, useState } from 'react';
-import { GrafanaTheme2, IconName } from '@grafana/data';
-import { IconButton, PopoverContent, Toggletip as GrafanaToggletip, useStyles2 } from '@grafana/ui';
+import React, { ReactElement, ReactNode } from 'react';
+import { GrafanaTheme2 } from '@grafana/data';
+import { Toggletip as GrafanaToggletip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 type ToggletipProps = {
-  iconClassName?: string;
-  content: React.ReactNode;
-  icon: IconName;
-  tooltip: PopoverContent;
+  content: ReactNode;
+  children: ReactElement;
 };
 
-export const Toggletip = ({ iconClassName, content, icon, tooltip }: ToggletipProps) => {
-  const [toggleTipOpen, setIsToggleTipOpen] = useState(false);
-
-  const handleVisible = (visible: boolean) => {
-    setIsToggleTipOpen(visible);
-  };
-
-  return (
-    <GrafanaToggletip content={<ContentWrapper onVisible={handleVisible}>{content}</ContentWrapper>}>
-      <IconButton aria-expanded={toggleTipOpen} name={icon} tooltip={tooltip} className={iconClassName} />
-    </GrafanaToggletip>
-  );
+export const Toggletip = ({ children, content }: ToggletipProps) => {
+  return <GrafanaToggletip content={<ContentWrapper>{content}</ContentWrapper>}>{children}</GrafanaToggletip>;
 };
 
 type ContentWrapperProps = {
-  children: React.ReactNode;
-  onVisible: (visible: boolean) => void;
+  children: ReactNode;
 };
 
-const ContentWrapper = ({ children, onVisible }: ContentWrapperProps) => {
+const ContentWrapper = ({ children }: ContentWrapperProps) => {
   const styles = useStyles2(getStyles);
-
-  useEffect(() => {
-    onVisible(true);
-
-    return () => onVisible(false);
-  }, [onVisible]);
 
   return <div className={styles.toggletipCard}>{children}</div>;
 };
