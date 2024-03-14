@@ -305,51 +305,6 @@ test('clicking add new is handled', async () => {
   expect(navigate).toHaveBeenCalledWith(ROUTES.ChooseCheckType);
 });
 
-test('select all performs disable action on all visible checks', async () => {
-  const { read, record } = getServerRequests();
-  server.use(apiRoute(`bulkUpdateChecks`, {}, record));
-
-  const checkList = [BASIC_DNS_CHECK, BASIC_HTTP_CHECK];
-  const { user } = await renderCheckList(checkList);
-  const selectAll = await screen.findByTestId('selectAll');
-  await user.click(selectAll);
-  const selectedText = await screen.findByText(`${checkList.length} checks are selected.`);
-  expect(selectedText).toBeInTheDocument();
-  const disableButton = await screen.findByRole('button', { name: 'Disable' });
-
-  await user.click(disableButton);
-
-  const { body } = await read();
-
-  expect(body).toEqual(
-    [BASIC_DNS_CHECK, BASIC_HTTP_CHECK].map((check) => ({
-      ...check,
-      enabled: false,
-    }))
-  );
-});
-
-test('select all performs enable action on all visible checks', async () => {
-  const { read, record } = getServerRequests();
-  server.use(apiRoute(`bulkUpdateChecks`, {}, record));
-
-  const checkList = [BASIC_DNS_CHECK, BASIC_HTTP_CHECK].map((check) => ({
-    ...check,
-    enabled: false,
-  }));
-  const { user } = await renderCheckList(checkList);
-  const selectAll = await screen.findByTestId('selectAll');
-  await user.click(selectAll);
-  const selectedText = await screen.findByText(`${checkList.length} checks are selected.`);
-  expect(selectedText).toBeInTheDocument();
-  const enableButton = await screen.findByRole('button', { name: 'Enable' });
-  await user.click(enableButton);
-
-  const { body } = await read();
-
-  expect(body).toEqual([BASIC_DNS_CHECK, BASIC_HTTP_CHECK]);
-});
-
 test('cascader adds labels to label filter', async () => {
   const { user } = await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK]);
   const additionalFilters = await screen.findByRole('button', { name: 'Additional filters' });
@@ -377,4 +332,91 @@ test('Sorting by success rate should not crash', async () => {
 
   const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(BASIC_CHECK_LIST.length);
+});
+
+describe(`bulk select behaviour`, () => {
+  test('select all performs disable action on all visible checks', async () => {
+    const { read, record } = getServerRequests();
+    server.use(apiRoute(`bulkUpdateChecks`, {}, record));
+
+    const checkList = [BASIC_DNS_CHECK, BASIC_HTTP_CHECK];
+    const { user } = await renderCheckList(checkList);
+    const selectAll = await screen.findByTestId('selectAll');
+    await user.click(selectAll);
+    const selectedText = await screen.findByText(`${checkList.length} checks are selected.`);
+    expect(selectedText).toBeInTheDocument();
+    const disableButton = await screen.findByRole('button', { name: 'Disable' });
+
+    await user.click(disableButton);
+
+    const { body } = await read();
+
+    expect(body).toEqual(
+      [BASIC_DNS_CHECK, BASIC_HTTP_CHECK].map((check) => ({
+        ...check,
+        enabled: false,
+      }))
+    );
+  });
+
+  test('select all performs enable action on all visible checks', async () => {
+    const { read, record } = getServerRequests();
+    server.use(apiRoute(`bulkUpdateChecks`, {}, record));
+
+    const checkList = [BASIC_DNS_CHECK, BASIC_HTTP_CHECK].map((check) => ({
+      ...check,
+      enabled: false,
+    }));
+    const { user } = await renderCheckList(checkList);
+    const selectAll = await screen.findByTestId('selectAll');
+    await user.click(selectAll);
+    const selectedText = await screen.findByText(`${checkList.length} checks are selected.`);
+    expect(selectedText).toBeInTheDocument();
+    const enableButton = await screen.findByRole('button', { name: 'Enable' });
+    await user.click(enableButton);
+
+    const { body } = await read();
+
+    expect(body).toEqual([BASIC_DNS_CHECK, BASIC_HTTP_CHECK]);
+  });
+
+  test('deselect all works correctly', async () => {
+    const { user } = await renderCheckList();
+    const selectAll = await screen.findByLabelText('Select all');
+    await user.click(selectAll);
+
+    const checkedCheckBoxes = await screen.findAllByRole('checkbox', { name: 'Select check' });
+    checkedCheckBoxes.forEach((checkbox) => {
+      expect(checkbox).toBeChecked();
+    });
+
+    const selectedText = await screen.findByText(`${BASIC_CHECK_LIST.length} checks are selected.`);
+    expect(selectedText).toBeInTheDocument();
+
+    const deselectAll = await screen.findByLabelText('Select all');
+    await user.click(deselectAll);
+    const unCheckedCheckBoxes = await screen.queryAllByRole('checkbox', { name: 'Select check' });
+
+    unCheckedCheckBoxes.forEach((checkbox) => {
+      expect(checkbox).not.toBeChecked();
+    });
+  });
+
+  test('indeterminate state works correctly', async () => {
+    const { user } = await renderCheckList();
+    const selectAll = await screen.findByLabelText('Select all');
+    await user.click(selectAll);
+
+    const checkedCheckBoxes = await screen.findAllByRole('checkbox', { name: 'Select check' });
+    await user.click(checkedCheckBoxes[0]);
+
+    const indeterminateState = await screen.findByLabelText('Select all');
+    expect(indeterminateState).toBePartiallyChecked();
+
+    await user.click(selectAll);
+
+    checkedCheckBoxes.forEach((checkbox) => {
+      expect(checkbox).toBeChecked();
+    });
+  });
 });
