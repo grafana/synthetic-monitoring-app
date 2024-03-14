@@ -4,7 +4,6 @@ import { DEFAULT_PROBES } from 'test/fixtures/probes';
 import { render } from 'test/render';
 
 import { ProbeList } from './ProbeList';
-import 'test/silenceErrors';
 
 const TITLE = `Default Probes`;
 

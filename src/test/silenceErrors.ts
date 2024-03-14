@@ -1,8 +1,14 @@
 // silence container query errors
-const originalConsoleError = Object.assign({}, console.error);
+const originalConsoleError = console.error;
 
 beforeAll(() => {
-  console.error = () => {};
+  console.error = (error) => {
+    if (error.message === `Could not parse CSS stylesheet`) {
+      return;
+    }
+
+    originalConsoleError(error);
+  };
 });
 
 afterAll(() => {

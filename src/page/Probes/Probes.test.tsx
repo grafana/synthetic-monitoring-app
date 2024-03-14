@@ -8,7 +8,6 @@ import { ROUTES } from 'types';
 import { getRoute } from 'components/Routing';
 
 import { Probes } from './Probes';
-import 'test/silenceErrors';
 
 const renderProbeList = () => {
   return render(<Probes />);

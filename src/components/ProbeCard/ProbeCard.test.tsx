@@ -8,7 +8,6 @@ import { ROUTES } from 'types';
 import { getRoute } from 'components/Routing';
 
 import { ProbeCard } from './ProbeCard';
-import 'test/silenceErrors';
 
 it(`Displays the correct information`, async () => {
   const probe = ONLINE_PROBE;

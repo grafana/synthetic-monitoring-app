@@ -8,7 +8,6 @@ import { ROUTES } from 'types';
 import { getRoute } from 'components/Routing';
 
 import { NewProbe } from './NewProbe';
-import 'test/silenceErrors';
 
 jest.setTimeout(60000);
 

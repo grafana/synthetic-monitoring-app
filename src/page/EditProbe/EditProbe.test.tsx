@@ -10,7 +10,6 @@ import { formatDate } from 'utils';
 import { getRoute } from 'components/Routing';
 
 import { EditProbe } from './EditProbe';
-import 'test/silenceErrors';
 
 const renderEditProbe = (probe: Probe) => {
   return render(<EditProbe />, {
