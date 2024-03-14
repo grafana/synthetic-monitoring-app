@@ -1,4 +1,4 @@
-import { AlertRule, Check, Probe, Settings, ThresholdSettings } from 'types';
+import { AlertRecord, Check, Probe, PrometheusAlertsGroup, Settings, ThresholdSettings } from 'types';
 import { AccountingClassNames, DashboardInfo } from 'datasource/types';
 
 export type ListProbeResult = Probe[];
@@ -123,7 +123,18 @@ export interface MetricLatency extends Metric {
 
 export type DashboardResponse = DashboardInfo;
 
-export type ListAlertsResponse = {
+export type AlertGroupResponse = {
   name: string;
-  rules: AlertRule[];
+  rules: AlertRecord[];
+};
+
+export type ListDatasourceAlertsResponse = {
+  [key: string]: AlertGroupResponse[];
+};
+
+export type ListPrometheusAlertsResponse = {
+  data: {
+    groups: PrometheusAlertsGroup[];
+  };
+  status: `success`;
 };

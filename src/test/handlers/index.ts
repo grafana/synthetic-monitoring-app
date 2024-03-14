@@ -1,5 +1,5 @@
 import { rest } from 'msw';
-import { getAlertRules } from 'test/handlers/alerting';
+import { getAlertRules, getPromAlertRules } from 'test/handlers/alerting';
 import { addCheck, bulkUpdateChecks, checkInfo, listChecks, updateCheck } from 'test/handlers/checks';
 import { getDashboard } from 'test/handlers/dashboards';
 import { getMetrics } from 'test/handlers/metrics';
@@ -14,6 +14,7 @@ const apiRoutes = {
   bulkUpdateChecks,
   checkInfo,
   getAlertRules,
+  getPromAlertRules,
   getDashboard,
   getMetrics,
   getTenant,

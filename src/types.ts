@@ -595,6 +595,13 @@ export enum AlertSensitivity {
   High = 'high',
 }
 
+export type AlertRecord = AlertRecordingRule | AlertRule;
+
+export type AlertRecordingRule = {
+  record: string;
+  expr: string;
+};
+
 export type AlertRule = {
   alert: string;
   expr: string;
@@ -614,6 +621,8 @@ export type AlertDescription = {
   operator: string;
   threshold: number;
 };
+
+export type AlertFilter = (record: PrometheusAlertRecord) => boolean;
 
 export enum CheckSort {
   AToZ = 'atoz',
@@ -747,3 +756,42 @@ export interface CalculateUsageValues {
   isSSL: boolean;
   probeCount: number;
 }
+
+export type PrometheusAlertsGroup = {
+  evaulationTime: number;
+  file: string;
+  interval: number;
+  lastEvaluation: string;
+  name: string;
+  rules: PrometheusAlertRecord[];
+  totals: null;
+};
+
+export type PrometheusAlertRecord = PrometheusAlertRecordingRule | PrometheusAlertingRule;
+
+export type PrometheusAlertRecordingRule = {
+  evaluationTime: number;
+  health: `ok`; // fill in others
+  lastEvaluation: string;
+  name: string;
+  query: string;
+  type: `recording`;
+};
+
+export type PrometheusAlertingRule = {
+  annotations: {
+    description: string;
+    summary: string;
+  };
+  duration: number;
+  evaluationTime: number;
+  health: `ok`; // fill in others
+  labels: {
+    [key: string]: string;
+  };
+  lastEvaluation: string;
+  name: string;
+  query: string;
+  state: 'inactive'; // fill in others
+  type: `alerting`;
+};

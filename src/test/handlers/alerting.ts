@@ -1,7 +1,9 @@
-import { ApiEntry } from 'test/handlers/types';
-import { ListAlertsResponse } from 'datasource/responses.types';
+import { ALERTING_RULES } from 'test/fixtures/alerting';
 
-export const getAlertRules: ApiEntry<ListAlertsResponse> = {
+import { ApiEntry } from 'test/handlers/types';
+import { AlertGroupResponse, ListPrometheusAlertsResponse } from 'datasource/responses.types';
+
+export const getAlertRules: ApiEntry<AlertGroupResponse> = {
   route: `/api/ruler/1/api/v1/rules/synthetic_monitoring/default`,
   method: `get`,
   result: () => {
@@ -9,10 +11,10 @@ export const getAlertRules: ApiEntry<ListAlertsResponse> = {
       json: {
         name: `default`,
         rules: [
-          // {
-          //   record: 'instance_job_severity:probe_success:mean5m',
-          //   expr: '(sum without(probe, config_version) (rate(probe_all_success_sum[5m]) *\non(instance, job, probe) group_left(alert_sensitivity) max by(instance, job,\nprobe, alert_sensitivity) (sm_check_info{alert_sensitivity!=""})) / sum\nwithout(probe, config_version) (rate(probe_all_success_count[5m]) *\non(instance, job, probe) group_left(alert_sensitivity) max by(instance, job,\nprobe, alert_sensitivity) (sm_check_info{alert_sensitivity!=""}))) * 100',
-          // },
+          {
+            record: 'instance_job_severity:probe_success:mean5m',
+            expr: '(sum without(probe, config_version) (rate(probe_all_success_sum[5m]) *\non(instance, job, probe) group_left(alert_sensitivity) max by(instance, job,\nprobe, alert_sensitivity) (sm_check_info{alert_sensitivity!=""})) / sum\nwithout(probe, config_version) (rate(probe_all_success_count[5m]) *\non(instance, job, probe) group_left(alert_sensitivity) max by(instance, job,\nprobe, alert_sensitivity) (sm_check_info{alert_sensitivity!=""}))) * 100',
+          },
           {
             alert: 'SyntheticMonitoringCheckFailureAtHighSensitivity',
             expr: 'instance_job_severity:probe_success:mean5m{alert_sensitivity="high"} < 95',
@@ -54,6 +56,16 @@ export const getAlertRules: ApiEntry<ListAlertsResponse> = {
           },
         ],
       },
+    };
+  },
+};
+
+export const getPromAlertRules: ApiEntry<ListPrometheusAlertsResponse> = {
+  route: `/api/prometheus/uid-1/api/v1/rules`,
+  method: `get`,
+  result: () => {
+    return {
+      json: ALERTING_RULES,
     };
   },
 };
