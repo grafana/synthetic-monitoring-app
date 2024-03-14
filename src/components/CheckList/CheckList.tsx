@@ -135,7 +135,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
 
   const handleSelectAll = () => {
     if (isAllSelected) {
-      handleUnselectAll();
+      return handleUnselectAll();
     }
 
     const allCheckIds = sortedChecks.map((check) => check.id!);
