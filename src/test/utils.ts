@@ -1,6 +1,6 @@
 import { OrgRole } from '@grafana/data';
 import { config } from '@grafana/runtime';
-import { screen } from '@testing-library/react';
+import { act, screen } from '@testing-library/react';
 import { UserEvent } from '@testing-library/user-event';
 
 import { type Probe } from 'types';
@@ -27,7 +27,7 @@ export async function fillProbeForm(user: UserEvent) {
   await user.type(longitudeInput, UPDATED_VALUES.longitude.toString());
 
   const regionInput = await screen.findByLabelText('Region', { exact: false });
-  regionInput.focus();
+  await act(() => regionInput.focus());
   await user.clear(regionInput);
   await user.paste(UPDATED_VALUES.region);
   await user.type(regionInput, '{enter}');

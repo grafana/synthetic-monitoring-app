@@ -7,7 +7,6 @@ import { ROUTES } from 'types';
 
 import { PLUGIN_URL_PATH } from './constants';
 import { getRoute, Routing } from './Routing';
-import 'test/silenceErrors';
 
 function renderRouting(options?: CustomRenderOptions) {
   return render(<Routing onNavChanged={jest.fn} />, options);

@@ -9,7 +9,6 @@ import { getRoute } from 'components/Routing';
 import { TEMPLATE_PROBE } from 'page/NewProbe';
 
 import { ProbeEditor } from './ProbeEditor';
-import 'test/silenceErrors';
 
 const onSubmit = jest.fn();
 const submitText = 'Save';
