@@ -1,28 +1,40 @@
+import { SpecialValueMatch } from '@grafana/data';
 import { SceneQueryRunner } from '@grafana/scenes';
-import { DataSourceRef, ThresholdsMode } from '@grafana/schema';
+import { DataSourceRef, MappingType, ThresholdsMode } from '@grafana/schema';
 
 import { REACHABILITY_DESCRIPTION } from 'components/constants';
 import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
+import { divideSumByCountTransformation } from './divideSumByCountTransformation';
+
 function getQueryRunner(metrics: DataSourceRef) {
   const queries = [
     {
-      exemplar: true,
-      expr: 'sum(\n  increase(probe_all_success_sum{instance="$instance", job="$job", probe=~"$probe"}[$__range])\n   )\n/\nsum(\n  increase(probe_all_success_count{instance="$instance", job="$job", probe=~"$probe"}[$__range])\n)',
+      expr: 'sum(rate(probe_all_success_sum{instance="$instance", job="$job", probe=~"$probe"}[$__rate_interval]))',
       hide: false,
-      instant: true,
-      interval: '',
-      legendFormat: '',
-      refId: 'reachabilityStat',
+      instant: false,
+      legendFormat: 'sum',
+      range: true,
+      refId: 'A',
+    },
+    {
+      exemplar: true,
+      expr: 'sum(rate(probe_all_success_count{instance="$instance", job="$job", probe=~"$probe"}[$__rate_interval]))',
+      hide: false,
+      instant: false,
+      legendFormat: 'count',
+      range: true,
+      refId: 'B',
     },
   ];
   const runner = new SceneQueryRunner({
     datasource: metrics,
     queries,
+    minInterval: '2m',
   });
+
   return {
-    queries,
-    runner,
+    runner: divideSumByCountTransformation(runner),
   };
 }
 
@@ -34,18 +46,18 @@ export function getReachabilityStat(metrics: DataSourceRef) {
     description: REACHABILITY_DESCRIPTION,
     $data: runner,
     fieldConfig: {
-      overrides: [],
       defaults: {
-        decimals: 2,
-        // mappings: [
-        //   {
-        //     id: 0,
-        //     op: '=',
-        //     text: 'N/A',
-        //     type: 1,
-        //     value: 'null',
-        //   },
-        // ],
+        mappings: [
+          {
+            options: {
+              match: SpecialValueMatch.Null,
+              result: {
+                text: 'N/A',
+              },
+            },
+            type: MappingType.SpecialValue,
+          },
+        ],
         thresholds: {
           mode: ThresholdsMode.Absolute,
           steps: [
@@ -63,8 +75,12 @@ export function getReachabilityStat(metrics: DataSourceRef) {
             },
           ],
         },
+        decimals: 2,
+        max: 1,
+        min: 0,
         unit: 'percentunit',
       },
+      overrides: [],
     },
   });
 }
