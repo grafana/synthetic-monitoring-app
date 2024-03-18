@@ -6,10 +6,9 @@ import { ExplorablePanel } from 'scenes/ExplorablePanel';
 function getErrorMapQueries() {
   return [
     {
-      expr: `
-      sum by (probe, geohash)
+      expr: `sum by (probe, geohash)
       (
-        rate(probe_all_success_sum{instance="$instance", job="$job"}[$__rate_interval])
+        rate(probe_all_success_sum{instance="$instance", job="$job", probe=~"$probe"}[$__rate_interval])
         *
         on (instance, job, probe, config_version)
         group_left(geohash)
@@ -19,6 +18,7 @@ function getErrorMapQueries() {
         )
       )`,
       format: 'table',
+      interval: '1m',
       instant: false,
       legendFormat: 'numerator',
       refId: 'A',
@@ -28,7 +28,7 @@ function getErrorMapQueries() {
       refId: 'B',
       expr: `sum by (probe, geohash)
       (
-        rate(probe_all_success_count{instance="$instance", job="$job"}[$__rate_interval])
+        rate(probe_all_success_count{instance="$instance", job="$job", probe=~"$probe"}[$__rate_interval])
           *
         on (instance, job, probe, config_version)
         group_left(geohash)
@@ -38,6 +38,7 @@ function getErrorMapQueries() {
         )
       )`,
       range: true,
+      interval: '1m',
       instant: false,
       hide: false,
       legendFormat: 'denominator',
@@ -49,8 +50,6 @@ function getErrorMapQueries() {
 function getMapQueryRunner(metrics: DataSourceRef) {
   const queryRunner = new SceneQueryRunner({
     datasource: metrics,
-    minInterval: '1m',
-    maxDataPoints: 10,
     queries: getErrorMapQueries(),
   });
 
@@ -58,16 +57,21 @@ function getMapQueryRunner(metrics: DataSourceRef) {
     $data: queryRunner,
     transformations: [
       {
-        id: 'joinByField',
-        options: {
-          byField: 'geohash',
-          mode: 'outer',
-        },
-      },
-      {
         id: 'groupBy',
         options: {
           fields: {
+            Value: {
+              aggregations: ['sum'],
+              operation: 'aggregate',
+            },
+            'Value #A': {
+              aggregations: ['sum'],
+              operation: 'aggregate',
+            },
+            'Value #B': {
+              aggregations: ['sum'],
+              operation: 'aggregate',
+            },
             geohash: {
               aggregations: [],
               operation: 'groupby',
@@ -78,61 +82,69 @@ function getMapQueryRunner(metrics: DataSourceRef) {
             },
             'probe 1': {
               aggregations: [],
-              operation: 'groupby',
+              operation: null,
             },
-            'Value #A': {
-              aggregations: ['sum'],
-              operation: 'aggregate',
-            },
-            'Value #B': {
-              aggregations: ['sum'],
-              operation: 'aggregate',
+            'probe 2': {
+              aggregations: [],
+              operation: null,
             },
           },
         },
       },
       {
+        id: 'joinByField',
+        options: {
+          byField: 'probe',
+          mode: 'outerTabular',
+        },
+      },
+      {
         id: 'calculateField',
         options: {
-          mode: 'binary',
-          reduce: {
-            reducer: 'sum',
-          },
+          alias: 'success rate',
           binary: {
             left: 'Value #A (sum)',
             operator: '/',
             right: 'Value #B (sum)',
           },
-          alias: 'success rate',
+          mode: 'binary',
+          reduce: {
+            reducer: 'sum',
+          },
         },
       },
       {
         id: 'calculateField',
         options: {
-          mode: 'binary',
+          alias: 'Error rate',
           binary: {
             left: '1.00',
             operator: '-',
             right: 'success rate',
           },
-          alias: 'Error rate',
+          mode: 'binary',
+          reduce: {
+            reducer: 'sum',
+          },
         },
       },
       {
         id: 'organize',
         options: {
           excludeByName: {
-            geohash: false,
-            'probe 2': true,
             'Value #A (sum)': true,
             'Value #B (sum)': true,
+            geohash: false,
+            'probe 2': true,
             'success rate': true,
+            'geohash 2': true,
           },
           indexByName: {},
           renameByName: {
+            'error rate': '',
             geohash: '',
             'probe 1': 'Probe',
-            'error rate': '',
+            'geohash 1': 'geohash',
           },
           includeByName: {},
         },

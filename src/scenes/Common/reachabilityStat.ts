@@ -14,6 +14,7 @@ function getQueryRunner(metrics: DataSourceRef) {
       hide: false,
       instant: false,
       legendFormat: 'sum',
+      interval: '1m',
       range: true,
       refId: 'A',
     },
@@ -22,6 +23,7 @@ function getQueryRunner(metrics: DataSourceRef) {
       expr: 'sum(rate(probe_all_success_count{instance="$instance", job="$job", probe=~"$probe"}[$__rate_interval]))',
       hide: false,
       instant: false,
+      interval: '1m',
       legendFormat: 'count',
       range: true,
       refId: 'B',
@@ -30,7 +32,6 @@ function getQueryRunner(metrics: DataSourceRef) {
   const runner = new SceneQueryRunner({
     datasource: metrics,
     queries,
-    minInterval: '2m',
   });
 
   return {
