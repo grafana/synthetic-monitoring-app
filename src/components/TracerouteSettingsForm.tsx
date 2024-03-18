@@ -30,7 +30,7 @@ export const TracerouteSettingsForm = ({ isEditor }: Props) => {
           max-width: 500px;
         `}
       >
-        <LabelField<CheckFormValuesTraceroute> isEditor={isEditor} />
+        <LabelField<CheckFormValuesTraceroute> />
         <Field
           label="Max hops"
           description="Maximum TTL for the trace"

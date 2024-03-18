@@ -300,17 +300,20 @@ const getTracerouteSettingsFormValues = (settings: TracerouteCheck['settings']):
 };
 
 function getBaseFormValuesFromCheck(check: Check): Omit<CheckFormValues, 'checkType' | 'settings'> {
+  const frequency = check.frequency / 1000 || 60;
+  const timeout = check.timeout / 1000 || 30;
+
   return {
     alertSensitivity: check.alertSensitivity,
     publishAdvancedMetrics: !check.basicMetricsOnly,
     enabled: check.enabled,
-    frequency: check.frequency / 1000,
+    frequency,
     id: check.id,
     job: check.job,
     labels: check.labels,
     probes: check.probes,
     target: check.target,
-    timeout: check.timeout / 1000,
+    timeout,
   };
 }
 
@@ -363,6 +366,8 @@ export function getFormValuesFromCheck(check: Check): CheckFormValues {
     const formValues: CheckFormValuesMultiHttp = {
       ...base,
       checkType: CheckType.MULTI_HTTP,
+      frequency: 120,
+      timeout: 15,
       settings: {
         multihttp: getMultiHttpFormValues(check.settings),
       },
@@ -387,6 +392,7 @@ export function getFormValuesFromCheck(check: Check): CheckFormValues {
     const formValues: CheckFormValuesScripted = {
       ...base,
       checkType: CheckType.Scripted,
+      frequency: 120,
       settings: {
         scripted: getScriptedCheckFormValues(check.settings),
       },
@@ -411,6 +417,8 @@ export function getFormValuesFromCheck(check: Check): CheckFormValues {
     const formValues: CheckFormValuesTraceroute = {
       ...base,
       checkType: CheckType.Traceroute,
+      frequency: 120,
+      timeout: 30,
       settings: {
         traceroute: getTracerouteSettingsFormValues(check.settings),
       },

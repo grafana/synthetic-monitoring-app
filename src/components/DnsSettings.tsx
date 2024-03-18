@@ -15,17 +15,12 @@ import {
 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { CheckFormValuesDns } from 'types';
+import { CheckFormValuesDns, CheckType } from 'types';
 import { Collapse } from 'components/Collapse';
 import { LabelField } from 'components/LabelField';
 
-import {
-  DNS_PROTOCOLS,
-  DNS_RECORD_TYPES,
-  DNS_RESPONSE_CODES,
-  DNS_RESPONSE_MATCH_OPTIONS,
-  IP_OPTIONS,
-} from './constants';
+import { CheckIpVersion } from './CheckEditor/FormComponents/CheckIpVersion';
+import { DNS_PROTOCOLS, DNS_RECORD_TYPES, DNS_RESPONSE_CODES, DNS_RESPONSE_MATCH_OPTIONS } from './constants';
 
 interface Props {
   isEditor: boolean;
@@ -160,18 +155,8 @@ const DnsSettingsForm = ({ isEditor }: Props) => {
         </Button>
       </Collapse>
       <Collapse label="Advanced options" onToggle={() => setShowAdvanced(!showAdvanced)} isOpen={showAdvanced}>
-        <LabelField<CheckFormValuesDns> isEditor={isEditor} />
-        <HorizontalGroup>
-          <Field label="IP version" description="The IP protocol of the ICMP request" disabled={!isEditor}>
-            <Controller<CheckFormValuesDns>
-              name="settings.dns.ipVersion"
-              render={({ field }) => {
-                const { ref, ...rest } = field;
-                return <Select {...rest} options={IP_OPTIONS} />;
-              }}
-            />
-          </Field>
-        </HorizontalGroup>
+        <LabelField<CheckFormValuesDns> />
+        <CheckIpVersion checkType={CheckType.DNS} name="settings.dns.ipVersion" />
       </Collapse>
     </Container>
   );

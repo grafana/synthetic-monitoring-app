@@ -4,7 +4,7 @@ import { render } from 'test/render';
 
 import { CheckType } from 'types';
 
-import CheckTarget from './CheckTarget';
+import { CheckTarget } from './CheckTarget';
 
 const onChangeMock = jest.fn();
 

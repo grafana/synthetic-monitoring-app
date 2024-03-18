@@ -4,7 +4,11 @@ import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckFormValuesHttp, CheckType } from 'types';
+import { CheckEnabled } from 'components/CheckEditor/FormComponents/CheckEnabled';
 import { CheckIpVersion } from 'components/CheckEditor/FormComponents/CheckIpVersion';
+import { CheckJobName } from 'components/CheckEditor/FormComponents/CheckJobName';
+import { CheckPublishedAdvanceMetrics } from 'components/CheckEditor/FormComponents/CheckPublishedAdvanceMetrics';
+import { CheckTarget } from 'components/CheckEditor/FormComponents/CheckTarget';
 import { HttpCheckBasicAuthorization } from 'components/CheckEditor/FormComponents/HttpCheckBasicAuthorization';
 import { HttpCheckBearerToken } from 'components/CheckEditor/FormComponents/HttpCheckBearerToken';
 import { HttpCheckCacheBuster } from 'components/CheckEditor/FormComponents/HttpCheckCacheBuster';
@@ -18,29 +22,34 @@ import { HttpCheckValidStatusCodes } from 'components/CheckEditor/FormComponents
 import { RequestBodyTextArea } from 'components/CheckEditor/FormComponents/RequestBodyTextArea';
 import { RequestHeaders } from 'components/CheckEditor/FormComponents/RequestHeaders';
 import { RequestMethodSelect } from 'components/CheckEditor/FormComponents/RequestMethodSelect';
+import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
+import { CheckUsage } from 'components/CheckUsage';
 import { Collapse } from 'components/Collapse';
 import { LabelField } from 'components/LabelField';
 import { TLSConfig } from 'components/TLSConfig';
 
-const getStyles = (theme: GrafanaTheme2) => ({
-  validationGroup: css`
-    max-width: 400px;
-  `,
-  maxWidth: css`
-    max-width: 500px;
-  `,
-});
-
-export const HttpSettingsForm = () => {
+export const CheckHTTPLayout = () => {
+  const [showGeneralSettings, setShowGeneralSettings] = useState(true);
   const [showHttpSettings, setShowHttpSettings] = useState(false);
   const [showAuthentication, setShowAuthentication] = useState(false);
   const [showValidation, setShowValidation] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
-
   const styles = useStyles2(getStyles);
 
   return (
-    <div>
+    <>
+      <Collapse
+        label="General settings"
+        onToggle={() => setShowGeneralSettings(!showGeneralSettings)}
+        isOpen={showGeneralSettings}
+      >
+        <CheckEnabled />
+        <CheckJobName />
+        <CheckTarget checkType={CheckType.HTTP} />
+        <ProbeOptions checkType={CheckType.HTTP} />
+        <CheckPublishedAdvanceMetrics />
+        <CheckUsage />
+      </Collapse>
       <Collapse label="HTTP settings" onToggle={() => setShowHttpSettings(!showHttpSettings)} isOpen={showHttpSettings}>
         <RequestMethodSelect name="settings.http.method" />
         <RequestBodyTextArea name="settings.http.body" />
@@ -67,7 +76,7 @@ export const HttpSettingsForm = () => {
         <HttpCheckBasicAuthorization />
       </Collapse>
       <Collapse label="Validation" onToggle={() => setShowValidation(!showValidation)} isOpen={showValidation}>
-        <div className={styles.validationGroup}>
+        <div className={styles.maxWidth}>
           <HttpCheckValidStatusCodes />
           <HttpCheckValidHttpVersions />
           <HttpCheckSSLOptions />
@@ -82,6 +91,12 @@ export const HttpSettingsForm = () => {
           <HttpCheckCacheBuster />
         </div>
       </Collapse>
-    </div>
+    </>
   );
 };
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  maxWidth: css({
+    maxWidth: `500px`,
+  }),
+});

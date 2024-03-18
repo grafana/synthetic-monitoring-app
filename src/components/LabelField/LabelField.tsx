@@ -1,13 +1,14 @@
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
+import { OrgRole } from '@grafana/data';
 import { Field } from '@grafana/ui';
 
 import { Label } from 'types';
+import { hasRole } from 'utils';
 import { validateLabelName, validateLabelValue } from 'validation';
 import { NameValueInput } from 'components/NameValueInput';
 
 export interface LabelFieldProps {
-  isEditor: boolean;
   limit?: number;
 }
 
@@ -15,9 +16,10 @@ type FormWithLabels = {
   labels: Label[];
 };
 
-export const LabelField = <T extends FormWithLabels>({ isEditor, limit }: LabelFieldProps) => {
+export const LabelField = <T extends FormWithLabels>({ limit }: LabelFieldProps) => {
   const { watch } = useFormContext<FormWithLabels>();
   const labels = watch('labels');
+  const isEditor = hasRole(OrgRole.Editor);
 
   let description = `Custom labels to be included with collected metrics and logs.`;
 

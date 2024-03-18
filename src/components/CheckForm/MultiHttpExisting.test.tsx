@@ -10,14 +10,14 @@ import { ROUTES } from 'types';
 import { getSlider } from 'components/CheckEditor/testHelpers';
 import { PLUGIN_URL_PATH } from 'components/constants';
 
-import { CheckForm } from './CheckForm';
+import { CheckEditor } from './CheckEditor';
 
 jest.setTimeout(60000);
 
 beforeEach(() => jest.resetAllMocks());
 
 async function renderForm(route: string) {
-  const res = render(<CheckForm />, {
+  const res = render(<CheckEditor />, {
     route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:checkType/:id`,
     path: `${PLUGIN_URL_PATH}${ROUTES.Checks}${route}`,
   });

@@ -109,7 +109,7 @@ export const NameValueInput = ({ name, disabled, limit, label, validateName, val
           ref={addRef}
         >
           <Icon name="plus" />
-          &nbsp; Add {label}
+          &nbsp; Add {label.toLocaleLowerCase()}
         </Button>
       )}
     </VerticalGroup>

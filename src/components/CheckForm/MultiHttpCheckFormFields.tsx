@@ -1,13 +1,12 @@
 import React, { useEffect, useRef } from 'react';
-import { Controller, FieldErrors, useFieldArray, useFormContext } from 'react-hook-form';
-import { OrgRole } from '@grafana/data';
-import { Button, Field, HorizontalGroup, Input, Select, useStyles2, VerticalGroup } from '@grafana/ui';
+import { FieldErrors, useFieldArray, useFormContext } from 'react-hook-form';
+import { Button, Field, HorizontalGroup, useStyles2, VerticalGroup } from '@grafana/ui';
 
-import { CheckFormValues, CheckFormValuesMultiHttp, CheckType, MultiHTTPCheck } from 'types';
-import { hasRole } from 'utils';
-import { validateTarget } from 'validation';
+import { CheckFormValues, CheckFormValuesMultiHttp, CheckType } from 'types';
+import { RequestMethodSelect } from 'components/CheckEditor/FormComponents/RequestMethodSelect';
+import { RequestTargetInput } from 'components/CheckEditor/FormComponents/RequestTargetInput';
 import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
-import { CHECK_FORM_ERROR_EVENT, METHOD_OPTIONS } from 'components/constants';
+import { CHECK_FORM_ERROR_EVENT } from 'components/constants';
 import { LabelField } from 'components/LabelField';
 import { AvailableVariables } from 'components/MultiHttp/AvailableVariables';
 import { MultiHttpCollapse } from 'components/MultiHttp/MultiHttpCollapse';
@@ -19,17 +18,18 @@ import {
 } from 'components/MultiHttp/MultiHttpSettingsForm.utils';
 import { TabSection } from 'components/MultiHttp/Tabs/TabSection';
 
-export const MultiHttpCheckFormFields = ({ check }: { check: MultiHTTPCheck }) => {
-  const styles = useStyles2(getMultiHttpFormStyles);
-  const panelRefs = useRef<Record<string, HTMLButtonElement | null>>({});
-  const [collapseState, dispatchCollapse] = useMultiHttpCollapseState(check);
-
+export const MultiHttpCheckFormFields = () => {
   const {
     control,
-    register,
     watch,
     formState: { errors },
+    getValues,
   } = useFormContext<CheckFormValuesMultiHttp>();
+
+  const styles = useStyles2(getMultiHttpFormStyles);
+  const panelRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const [collapseState, dispatchCollapse] = useMultiHttpCollapseState(getValues());
+
   const {
     fields: entryFields,
     append,
@@ -38,8 +38,6 @@ export const MultiHttpCheckFormFields = ({ check }: { check: MultiHTTPCheck }) =
     control,
     name: 'settings.multihttp.entries',
   });
-  const isEditor = hasRole(OrgRole.Editor);
-
   const requests = watch('settings.multihttp.entries') as any[];
 
   useEffect(() => {
@@ -70,14 +68,9 @@ export const MultiHttpCheckFormFields = ({ check }: { check: MultiHTTPCheck }) =
 
   return (
     <>
-      <ProbeOptions
-        isEditor={isEditor}
-        timeout={check.timeout}
-        frequency={check.frequency}
-        checkType={CheckType.MULTI_HTTP}
-      />
+      <ProbeOptions checkType={CheckType.MULTI_HTTP} />
 
-      <LabelField<CheckFormValuesMultiHttp> isEditor={isEditor} />
+      <LabelField<CheckFormValuesMultiHttp> />
 
       <hr />
       <h3>Requests</h3>
@@ -99,49 +92,16 @@ export const MultiHttpCheckFormFields = ({ check }: { check: MultiHTTPCheck }) =
             >
               <VerticalGroup>
                 <HorizontalGroup spacing="lg" align="flex-start">
-                  <Field
-                    label="Request target"
-                    description="Full URL to send request to"
-                    invalid={Boolean(errors?.settings?.multihttp?.entries?.[index]?.request?.url)}
-                    error={errors?.settings?.multihttp?.entries?.[index]?.request?.url?.message}
-                    className={styles.requestTargetInput}
-                  >
-                    <Input
-                      id={`request-target-url-${index}`}
-                      {...register(`settings.multihttp.entries.${index}.request.url` as const, {
-                        required: 'Request target is required',
-                        validate: (url: string) => {
-                          const hasVariable = url.includes('${');
-                          if (hasVariable) {
-                            return undefined;
-                          }
-                          return validateTarget(CheckType.MULTI_HTTP, url);
-                        },
-                      })}
-                    />
-                  </Field>
-                  <Field
-                    label="Request method"
-                    description="The HTTP method used"
-                    invalid={Boolean(errors?.settings?.multihttp?.entries?.[index]?.request?.method)}
-                    // @ts-expect-error -- this is a string
-                    error={errors?.settings?.multihttp?.entries?.[index]?.request?.method?.message}
-                  >
-                    <Controller<CheckFormValuesMultiHttp>
-                      name={`settings.multihttp.entries.${index}.request.method`}
-                      render={({ field }) => {
-                        const { ref, ...rest } = field;
-                        return (
-                          <Select
-                            {...rest}
-                            options={METHOD_OPTIONS}
-                            aria-label={`Request method for request ${index + 1}`}
-                          />
-                        );
-                      }}
-                      rules={{ required: 'Request method is required' }}
-                    />
-                  </Field>
+                  <RequestTargetInput
+                    aria-label={`Request target for request ${index + 1}`}
+                    checkType={CheckType.MULTI_HTTP}
+                    name={`settings.multihttp.entries.${index}.request.url`}
+                    id={`request-target-url-${index}`}
+                  />
+                  <RequestMethodSelect
+                    aria-label={`Request method for request ${index + 1}`}
+                    name={`settings.multihttp.entries.${index}.request.method`}
+                  />
                   {index !== 0 && (
                     <Button
                       variant="secondary"

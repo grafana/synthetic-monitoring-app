@@ -1,21 +1,20 @@
 import React from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
-import { GrafanaTheme2, OrgRole } from '@grafana/data';
+import { GrafanaTheme2 } from '@grafana/data';
 import { Field, Icon, Input, Label, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { Check, CheckFormValuesScripted, CheckType } from 'types';
-import { hasRole } from 'utils';
+import { CheckFormValuesScripted, CheckType } from 'types';
 import { validateTarget } from 'validation';
 import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
 import { CodeEditor } from 'components/CodeEditor';
 import { LabelField } from 'components/LabelField';
 import { ScriptExamplesMenu } from 'components/ScriptExamplesMenu/ScriptExamplesMenu';
 
-export const ScriptedCheckFormFields = ({ check }: { check: Check }) => {
-  const { control, formState, register, setValue } = useFormContext<CheckFormValuesScripted>();
-  const isEditor = hasRole(OrgRole.Editor);
+export const ScriptedCheckFormFields = () => {
+  const { control, formState, register, setValue, getValues } = useFormContext<CheckFormValuesScripted>();
   const styles = useStyles2(getStyles);
+  const id = getValues('id');
 
   return (
     <>
@@ -49,14 +48,9 @@ export const ScriptedCheckFormFields = ({ check }: { check: Check }) => {
         />
       </Field>
 
-      <ProbeOptions
-        isEditor={isEditor}
-        frequency={check.frequency}
-        timeout={check.timeout}
-        checkType={CheckType.Scripted}
-      />
-      <LabelField<CheckFormValuesScripted> isEditor={isEditor} />
-      {!check.id && <ScriptExamplesMenu onSelectExample={(script) => setValue('settings.scripted.script', script)} />}
+      <ProbeOptions checkType={CheckType.Scripted} />
+      <LabelField<CheckFormValuesScripted> />
+      {!id && <ScriptExamplesMenu onSelectExample={(script) => setValue('settings.scripted.script', script)} />}
       <Controller
         name="settings.scripted.script"
         control={control}

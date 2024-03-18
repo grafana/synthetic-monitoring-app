@@ -3,7 +3,7 @@ import { Route, Switch, useRouteMatch } from 'react-router-dom';
 
 import { FeatureName } from 'types';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
-import { CheckForm } from 'components/CheckForm/CheckForm';
+import { CheckEditor } from 'components/CheckForm/CheckEditor';
 import { CheckList } from 'components/CheckList';
 import { ChooseCheckType } from 'components/ChooseCheckType';
 
@@ -24,10 +24,10 @@ export function CheckRouter() {
         </Route>
       )}
       <Route path={`${path}/new/:checkType?`}>
-        <CheckForm />
+        <CheckEditor />
       </Route>
       <Route path={`${path}/edit/:checkType/:id`} exact>
-        <CheckForm />
+        <CheckEditor />
       </Route>
       <Route path={`${path}/choose-type`} exact>
         <ChooseCheckType />

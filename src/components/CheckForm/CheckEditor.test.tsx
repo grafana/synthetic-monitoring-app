@@ -15,7 +15,7 @@ import { ROUTES } from 'types';
 import { checkType } from 'utils';
 import { PLUGIN_URL_PATH } from 'components/constants';
 
-import { CheckForm } from './CheckForm';
+import { CheckEditor } from './CheckEditor';
 
 describe(`<CheckForm />`, () => {
   describe(`saving a check`, () => {
@@ -23,7 +23,7 @@ describe(`<CheckForm />`, () => {
       const type = checkType(check.settings);
 
       it(`triggers form validation when trying to save a ${type} check`, async () => {
-        const { user } = render(<CheckForm />, {
+        const { user } = render(<CheckEditor />, {
           route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/:checkType`,
           path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${type}`,
         });
@@ -41,7 +41,7 @@ describe(`<CheckForm />`, () => {
       const type = checkType(check.settings);
 
       it(`triggers form validation when trying to test a ${type} check`, async () => {
-        const { user } = render(<CheckForm />, {
+        const { user } = render(<CheckEditor />, {
           route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/:checkType`,
           path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${type}`,
         });
@@ -57,7 +57,7 @@ describe(`<CheckForm />`, () => {
       const type = checkType(check.settings);
 
       it(`doesn't show the test button for a ${type} check`, async () => {
-        render(<CheckForm />, {
+        render(<CheckEditor />, {
           route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/:checkType`,
           path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${type}`,
         });

@@ -7,7 +7,7 @@ import { render } from 'test/render';
 import { server } from 'test/server';
 
 import { AlertSensitivity, CheckType, ROUTES } from 'types';
-import { CheckForm } from 'components/CheckForm/CheckForm';
+import { CheckEditor } from 'components/CheckForm/CheckEditor';
 
 import { submitForm } from './CheckEditor/testHelpers';
 import { PLUGIN_URL_PATH } from './constants';
@@ -29,7 +29,7 @@ jest.mock('components/CodeEditor', () => {
 
 describe('new scripted check', () => {
   it('renders the new scripted check form', async () => {
-    const { findByText } = render(<CheckForm />, {
+    const { findByText } = render(<CheckEditor />, {
       route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/:checkType`,
       path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${CheckType.Scripted}`,
     });
@@ -40,7 +40,7 @@ describe('new scripted check', () => {
     const { record, read } = getServerRequests();
     server.use(apiRoute(`addCheck`, {}, record));
     const { user, findByLabelText, getByText, findByTestId, findByRole, findByPlaceholderText } = render(
-      <CheckForm />,
+      <CheckEditor />,
       {
         route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/:checkType`,
         path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${CheckType.Scripted}`,
@@ -106,7 +106,7 @@ describe('edit scripted check', () => {
     const { record, read } = getServerRequests();
     server.use(apiRoute(`updateCheck`, {}, record));
 
-    const { user, findByLabelText, findByTestId, findByPlaceholderText, findByText } = render(<CheckForm />, {
+    const { user, findByLabelText, findByTestId, findByPlaceholderText, findByText } = render(<CheckEditor />, {
       route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:checkType/:id`,
       path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/scripted/${BASIC_SCRIPTED_CHECK.id}`,
     });
@@ -137,7 +137,7 @@ describe('edit scripted check', () => {
 
     const { record, read } = getServerRequests();
     server.use(apiRoute(`updateCheck`, {}, record));
-    const { user, findByLabelText, findByTestId, findByPlaceholderText, getByText } = render(<CheckForm />, {
+    const { user, findByLabelText, findByTestId, findByPlaceholderText, getByText } = render(<CheckEditor />, {
       route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:checkType/:id`,
       path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/scripted/${BASIC_SCRIPTED_CHECK.id}`,
     });

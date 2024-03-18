@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Controller, useFieldArray, useFormContext } from 'react-hook-form';
+import { useFieldArray, useFormContext } from 'react-hook-form';
 import {
   Button,
   Container,
@@ -7,18 +7,16 @@ import {
   HorizontalGroup,
   IconButton,
   Input,
-  Select,
   Switch,
   TextArea,
   VerticalGroup,
 } from '@grafana/ui';
 
 import { CheckFormValuesTcp, CheckType } from 'types';
+import { CheckIpVersion } from 'components/CheckEditor/FormComponents/CheckIpVersion';
 import { Collapse } from 'components/Collapse';
 import { LabelField } from 'components/LabelField';
 import { TLSConfig } from 'components/TLSConfig';
-
-import { IP_OPTIONS } from '../constants';
 
 interface Props {
   isEditor: boolean;
@@ -94,22 +92,10 @@ export const TcpSettingsForm = ({ isEditor }: Props) => {
           </VerticalGroup>
         </Field>
       </Collapse>
-      <TLSConfig isEditor={isEditor} checkType={CheckType.TCP} />
+      <TLSConfig checkType={CheckType.TCP} />
       <Collapse label="Advanced options" onToggle={() => setShowAdvanced(!showAdvanced)} isOpen={showAdvanced}>
-        <LabelField<CheckFormValuesTcp> isEditor={isEditor} />
-        <HorizontalGroup>
-          <div>
-            <Field label="IP version" description="The IP protocol of the ICMP request" disabled={!isEditor}>
-              <Controller<CheckFormValuesTcp>
-                name="settings.tcp.ipVersion"
-                render={({ field }) => {
-                  const { ref, ...rest } = field;
-                  return <Select {...rest} options={IP_OPTIONS} defaultValue={IP_OPTIONS[1]} />;
-                }}
-              />
-            </Field>
-          </div>
-        </HorizontalGroup>
+        <LabelField<CheckFormValuesTcp> />
+        <CheckIpVersion checkType={CheckType.TCP} name="settings.tcp.ipVersion" />
       </Collapse>
     </Container>
   );

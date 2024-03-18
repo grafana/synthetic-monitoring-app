@@ -15,7 +15,7 @@ import { render } from 'test/render';
 import { server } from 'test/server';
 
 import { ROUTES } from 'types';
-import { CheckForm } from 'components/CheckForm/CheckForm';
+import { CheckEditor } from 'components/CheckForm/CheckEditor';
 import { DNS_RESPONSE_MATCH_OPTIONS, PLUGIN_URL_PATH } from 'components/constants';
 
 import { getSelect, getSlider, submitForm, toggleSection } from './testHelpers';
@@ -34,7 +34,7 @@ jest.mock('hooks/useAlerts', () => ({
 beforeEach(() => jest.resetAllMocks());
 
 const renderExistingCheckEditor = async (route: string) => {
-  const res = render(<CheckForm />, {
+  const res = render(<CheckEditor />, {
     route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/edit/:checkType/:id`,
     path: `${PLUGIN_URL_PATH}${ROUTES.Checks}${route}`,
   });

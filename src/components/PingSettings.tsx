@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { Controller, useFormContext } from 'react-hook-form';
-import { Field, Select, Switch } from '@grafana/ui';
+import { useFormContext } from 'react-hook-form';
+import { Field, Switch } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { CheckFormValuesPing } from 'types';
+import { CheckFormValuesPing, CheckType } from 'types';
 import { Collapse } from 'components/Collapse';
 import { LabelField } from 'components/LabelField';
 
-import { IP_OPTIONS } from './constants';
+import { CheckIpVersion } from './CheckEditor/FormComponents/CheckIpVersion';
 
 interface Props {
   isEditor: boolean;
@@ -15,7 +15,7 @@ interface Props {
 
 export const PingSettingsForm = ({ isEditor }: Props) => {
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const { control, register } = useFormContext<CheckFormValuesPing>();
+  const { register } = useFormContext<CheckFormValuesPing>();
 
   return (
     <Collapse label="Advanced options" onToggle={() => setShowAdvanced(!showAdvanced)} isOpen={showAdvanced}>
@@ -24,18 +24,8 @@ export const PingSettingsForm = ({ isEditor }: Props) => {
           max-width: 500px;
         `}
       >
-        <LabelField<CheckFormValuesPing> isEditor={isEditor} />
-        <Field label="IP version" description="The IP protocol of the ICMP request" disabled={!isEditor}>
-          <Controller<CheckFormValuesPing>
-            name="settings.ping.ipVersion"
-            control={control}
-            render={({ field }) => {
-              const { ref, ...rest } = field;
-              return <Select {...rest} options={IP_OPTIONS} />;
-            }}
-            rules={{ required: true }}
-          />
-        </Field>
+        <LabelField<CheckFormValuesPing> />
+        <CheckIpVersion checkType={CheckType.PING} name="settings.ping.ipVersion" />
         <Field
           label="Don't fragment"
           description="Set the DF-bit in the IP-header. Only works with ipV4"
