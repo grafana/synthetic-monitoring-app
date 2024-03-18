@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
 import { TableColumn } from 'react-data-table-component';
-import { DataQueryError } from '@grafana/data';
+import { DataQueryError, dateTimeParse } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import {
   SceneComponentProps,
@@ -39,15 +39,32 @@ export interface DataRow {
 export class ResultsByTargetTableSceneObject extends SceneObjectBase<ResultsByTargetTableState> {
   static Component = ({ model }: SceneComponentProps<ResultsByTargetTableSceneObject>) => {
     const { data } = sceneGraph.getData(model).useState();
+    const { value: timeRange } = sceneGraph.getTimeRange(model).useState();
     const [hasLoaded, setHasLoaded] = React.useState(false);
+    const [hasStartedLoading, setHasStartedLoading] = React.useState(false);
+    const [logTimeLimitExceeded, setLogTimeLimitExceeded] = React.useState(false);
     const { metrics, checkType } = model.useState();
     const styles = useStyles2(getTablePanelStyles);
 
     useEffect(() => {
-      if (data?.state === LoadingState.Done && !hasLoaded) {
+      const logQueryLimit = new Date().setDate(new Date().getDate() - 31);
+      const from = dateTimeParse(timeRange.from);
+      if (from.valueOf() < logQueryLimit) {
+        setLogTimeLimitExceeded(true);
+      } else if (logTimeLimitExceeded) {
+        setLogTimeLimitExceeded(false);
+      }
+    }, [timeRange.from, logTimeLimitExceeded]);
+
+    useEffect(() => {
+      // This is a hack because the data Loading state initializes as "Done", then goes to "Loading", and then goes back to "Done"
+      if (data?.state === LoadingState.Loading) {
+        setHasStartedLoading(true);
+      }
+      if (data?.state === LoadingState.Done && hasStartedLoading && !hasLoaded) {
         setHasLoaded(true);
       }
-    }, [data, hasLoaded]);
+    }, [data, hasLoaded, hasStartedLoading]);
 
     const columns = useMemo<Array<TableColumn<DataRow>>>(() => {
       return [
@@ -183,21 +200,30 @@ export class ResultsByTargetTableSceneObject extends SceneObjectBase<ResultsByTa
             Results by URL
           </h6>
         </div>
-        <Table<DataRow>
-          columns={columns}
-          data={tableData}
-          expandableRows
-          dataTableProps={{
-            expandableRowsComponentProps: { tableViz: model, metrics, checkType },
-          }}
-          expandableComponent={ResultsByTargetTableRow}
-          //@ts-ignore - noDataText expects a string, but we want to render a component and it works
-          noDataText={getPlaceholder(data?.state, data?.errors)}
-          pagination={false}
-          id="assertion-table"
-          name="Assertions"
-          config={config}
-        />
+        {logTimeLimitExceeded ? (
+          <div className={styles.noDataContainer}>
+            <Alert severity="warning" title="Time range beyond retention">
+              The query that powers this panel is based on logs and the time range selected is beyond the retention
+              period of logs. In order to see data, select a time range less than 31 days.
+            </Alert>
+          </div>
+        ) : (
+          <Table<DataRow>
+            columns={columns}
+            data={tableData}
+            expandableRows
+            dataTableProps={{
+              expandableRowsComponentProps: { tableViz: model, metrics, checkType },
+            }}
+            expandableComponent={ResultsByTargetTableRow}
+            //@ts-ignore - noDataText expects a string, but we want to render a component and it works
+            noDataText={getPlaceholder(data?.state, data?.errors)}
+            pagination={false}
+            id="assertion-table"
+            name="Assertions"
+            config={config}
+          />
+        )}
       </div>
     );
   };
