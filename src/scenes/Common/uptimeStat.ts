@@ -9,23 +9,27 @@ function getQueryRunner(metrics: DataSourceRef) {
     datasource: metrics,
     queries: [
       {
+        editorMode: 'code',
         exemplar: false,
-        expr: `# find the average uptime over the entire time range evaluating \'up\' in 5 minute windows
-          # this query is going to produce a non-zero value if there was at least one successful check during the 5 minute window
-          # so make it a 1 if there was at least one success and a 0 otherwise
-        ceil(
-          # the number of successes across all probes
-          sum by (instance, job) (increase(probe_all_success_sum{instance="$instance", job="$job"}[5m]))
-          /
-          # the total number of times we checked across all probes
-          (sum by (instance, job) (increase(probe_all_success_count{instance="$instance", job="$job"}[5m])) + 1) # + 1 because we want to make sure it goes to 1, not 2
-        )`,
+        expr: 'sum by (instance, job) (increase(probe_all_success_sum{instance="$instance", job="$job"}[5m]))\n',
         hide: false,
-        range: true,
         instant: false,
         interval: '',
-        legendFormat: '',
-        refId: 'uptimeStat',
+        legendFormat: 'numerator',
+        range: true,
+        refId: 'B',
+        format: 'table',
+      },
+      {
+        refId: 'A',
+        expr: '(sum by (instance, job) (increase(probe_all_success_count{instance="$instance", job="$job"}[5m])) + 1) # + 1 because we want to make sure it goes to 1, not 2',
+        range: true,
+        instant: false,
+        hide: false,
+        editorMode: 'code',
+        legendFormat: 'denominator',
+        interval: '',
+        format: 'table',
       },
     ],
   });
@@ -34,9 +38,74 @@ function getQueryRunner(metrics: DataSourceRef) {
     $data: runner,
     transformations: [
       {
-        id: 'reduce',
+        id: 'joinByField',
         options: {
-          reducers: ['mean'],
+          reduceOptions: {
+            values: false,
+            calcs: ['mean'],
+            fields: '/^uptime$/',
+            limit: 1,
+          },
+          orientation: 'horizontal',
+          textMode: 'auto',
+          wideLayout: true,
+          colorMode: 'value',
+          graphMode: 'none',
+          justifyMode: 'auto',
+          showPercentChange: false,
+          fieldOptions: {
+            calcs: ['lastNotNull'],
+          },
+          text: {},
+        },
+      },
+      {
+        id: 'groupBy',
+        options: {
+          fields: {
+            'Value #B': {
+              aggregations: ['sum'],
+              operation: 'aggregate',
+            },
+            'Value #A': {
+              aggregations: ['sum'],
+              operation: 'aggregate',
+            },
+            Time: {
+              aggregations: [],
+              operation: 'groupby',
+            },
+          },
+        },
+      },
+      {
+        id: 'calculateField',
+        options: {
+          mode: 'binary',
+          reduce: {
+            reducer: 'sum',
+          },
+          binary: {
+            left: 'Value #B (sum)',
+            operator: '/',
+            right: 'Value #A (sum)',
+          },
+          replaceFields: true,
+        },
+      },
+      {
+        id: 'calculateField',
+        options: {
+          mode: 'unary',
+          reduce: {
+            reducer: 'sum',
+          },
+          unary: {
+            operator: 'ceil',
+            fieldName: 'Value #B (sum) / Value #A (sum)',
+          },
+          replaceFields: true,
+          alias: 'uptime',
         },
       },
     ],
