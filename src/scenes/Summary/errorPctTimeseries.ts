@@ -1,12 +1,11 @@
 import { SceneQueryRunner } from '@grafana/scenes';
-import { DataSourceRef, ThresholdsMode } from '@grafana/schema';
+import { DataSourceRef } from '@grafana/schema';
 
 import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
 function getErrorPercentageQuery() {
   return `1 - sum(
-    rate(
-      probe_all_success_sum{probe=~"$probe"}[$__range]) 
+      rate(probe_all_success_sum{probe=~"$probe"}[$__rate_interval])
       * 
       on (
         instance, job, probe, config_version
@@ -21,7 +20,7 @@ function getErrorPercentageQuery() {
     / 
     sum(
       rate(
-        probe_all_success_count{probe=~"$probe"}[$__range]) 
+        probe_all_success_count{probe=~"$probe"}[$__rate_interval])
         * 
         on (
           instance, job, probe, config_version
@@ -45,6 +44,7 @@ function getErrorPercentageQueryRunner(metrics: DataSourceRef) {
         exemplar: true,
         expr: getErrorPercentageQuery(),
         hide: false,
+        interval: '1m',
         legendFormat: '{{job}}/{{ instance }}',
         refId: 'A',
       },
@@ -61,59 +61,60 @@ export function getErrorPctgTimeseriesPanel(metrics: DataSourceRef) {
     fieldConfig: {
       defaults: {
         custom: {
-          drawStyle: 'line',
+          //   drawStyle: 'line',
           lineInterpolation: 'linear',
-          barAlignment: 0,
-          lineWidth: 1,
-          fillOpacity: 0,
-          gradientMode: 'none',
-          spanNulls: true,
-          insertNulls: false,
-          showPoints: 'never',
-          pointSize: 5,
-          stacking: {
-            mode: 'none',
-            group: 'A',
-          },
-          axisPlacement: 'auto',
-          axisLabel: '',
-          axisColorMode: 'text',
-          axisBorderShow: false,
-          scaleDistribution: {
-            type: 'linear',
-          },
-          axisCenteredZero: false,
-          hideFrom: {
-            tooltip: false,
-            viz: false,
-            legend: false,
-          },
-          thresholdsStyle: {
-            mode: 'off',
-          },
         },
-        color: {
-          mode: 'palette-classic',
-        },
-        mappings: [],
-        thresholds: {
-          mode: ThresholdsMode.Absolute,
-          steps: [
-            {
-              color: 'green',
-              value: 0,
-            },
-            {
-              color: '#EAB839',
-              value: 0.5,
-            },
-            {
-              color: 'red',
-              value: 1,
-            },
-          ],
-        },
-        links: [],
+        //   barAlignment: 0,
+        //   lineWidth: 1,
+        //   fillOpacity: 0,
+        //   gradientMode: 'none',
+        //   spanNulls: true,
+        //   insertNulls: false,
+        //   showPoints: 'never',
+        //   pointSize: 5,
+        //   stacking: {
+        //     mode: 'none',
+        //     group: 'A',
+        //   },
+        //   axisPlacement: 'auto',
+        //   axisLabel: '',
+        //   axisColorMode: 'text',
+        //   axisBorderShow: false,
+        //   scaleDistribution: {
+        //     type: 'linear',
+        //   },
+        //   axisCenteredZero: false,
+        //   hideFrom: {
+        //     tooltip: false,
+        //     viz: false,
+        //     legend: false,
+        //   },
+        //   thresholdsStyle: {
+        //     mode: 'off',
+        //   },
+        // },
+        // color: {
+        //   mode: 'palette-classic',
+        // },
+        // mappings: [],
+        // thresholds: {
+        //   mode: ThresholdsMode.Absolute,
+        //   steps: [
+        //     {
+        //       color: 'green',
+        //       value: 0,
+        //     },
+        //     {
+        //       color: '#EAB839',
+        //       value: 0.5,
+        //     },
+        //     {
+        //       color: 'red',
+        //       value: 1,
+        //     },
+        //   ],
+        // },
+        // links: [],
         min: 0,
         max: 1,
         unit: 'percentunit',
