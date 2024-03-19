@@ -3,7 +3,6 @@ import { OrgRole } from '@grafana/data';
 
 import { CheckType } from 'types';
 import { hasRole } from 'utils';
-import DnsSettingsForm from 'components/DnsSettings';
 import { TcpSettingsForm } from 'components/TcpSettings';
 import { TracerouteSettingsForm } from 'components/TracerouteSettingsForm';
 interface Props {
@@ -21,7 +20,7 @@ export const CheckSettings: FC<Props> = ({ typeOfCheck }) => {
       throw new Error('Invalid check type for this location');
     }
     case CheckType.DNS: {
-      return <DnsSettingsForm isEditor={isEditor} />;
+      throw new Error('Invalid check type for this location');
     }
     case CheckType.TCP: {
       return <TcpSettingsForm isEditor={isEditor} />;

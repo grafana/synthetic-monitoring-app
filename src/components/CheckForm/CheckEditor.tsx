@@ -20,6 +20,7 @@ import { MultiHttpFeedbackAlert } from 'components/MultiHttp/MultiHttpFeedbackAl
 import { PluginPage } from 'components/PluginPage';
 import { getRoute } from 'components/Routing';
 
+import { CheckDNSLayout } from './FormLayouts/CheckDNSLayout';
 import { CheckHTTPLayout } from './FormLayouts/CheckHttpLayout';
 import { CheckMultiHTTPLayout } from './FormLayouts/CheckMultiHttpLayout';
 import { CheckPingLayout } from './FormLayouts/CheckPingLayout';
@@ -189,6 +190,10 @@ const CheckSelector = ({ checkType }: { checkType: CheckType }) => {
 
   if (checkType === CheckType.PING) {
     return <CheckPingLayout />;
+  }
+
+  if (checkType === CheckType.DNS) {
+    return <CheckDNSLayout />;
   }
 
   return (
