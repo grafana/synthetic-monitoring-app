@@ -51,7 +51,7 @@ const CheckEditorContent = ({ check, checkType }: CheckEditorContentProps) => {
   const { adhocTestData, closeModal, isPending, openTestCheckModal, testCheck, testCheckError } =
     useAdhocTest(checkType);
 
-  const initialValues = useMemo(() => getFormValuesFromCheck(check), [check]);
+  const initialValues = useMemo(() => getFormValuesFromCheck(check, checkType), [check, checkType]);
   const formMethods = useForm<CheckFormValues>({
     defaultValues: initialValues,
     shouldFocusError: false, // we manage focus manually

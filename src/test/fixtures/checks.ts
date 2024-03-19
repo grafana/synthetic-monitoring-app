@@ -161,7 +161,7 @@ export const BASIC_SCRIPTED_CHECK: ScriptedCheck = {
   labels: [{ name: 'scriptedLabelName', value: 'scriptedLabelValue' }],
   probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
   timeout: 10000,
-  frequency: 60000,
+  frequency: 120000,
   alertSensitivity: 'none',
   basicMetricsOnly: true,
   settings: {

@@ -25,7 +25,6 @@ import { AssertionsTab } from './AssertionsTab';
 import { getIsBodyDisabled } from './TabSection';
 
 export interface MultiHttpTabProps {
-  label?: string;
   index: number;
   activeTab?: MultiHttpFormTabs;
   active: boolean;
@@ -36,12 +35,13 @@ interface RequestTabsProps {
   activeTab: MultiHttpFormTabs;
 }
 
-export const HeadersTab = ({ label = 'header', index, active }: MultiHttpTabProps) => {
+export const HeadersTab = ({ index, active }: MultiHttpTabProps) => {
   const styles = useStyles2(getMultiHttpTabStyles);
 
   return (
     <div className={cx(styles.inputsContainer, { [styles.inactive]: !active })}>
       <RequestHeaders
+        ariaLabelSuffix={`for request ${index + 1}`}
         description="The HTTP headers set for the probe."
         label="Request header"
         name={`settings.multihttp.entries.${index}.request.headers`}
@@ -275,11 +275,11 @@ export const RequestTabs = ({ activeTab, index }: RequestTabsProps) => {
 
   return (
     <TabContent className={styles.tabsContent}>
-      <HeadersTab label="header" index={index} active={activeTab === MultiHttpFormTabs.Headers} />
+      <HeadersTab index={index} active={activeTab === MultiHttpFormTabs.Headers} />
       {!hideBody && <BodyTab index={index} active={activeTab === MultiHttpFormTabs.Body} />}
-      <QueryParamsTab index={index} label="queryParams" active={activeTab === MultiHttpFormTabs.QueryParams} />
-      <VariablesTab index={index} label="variables" active={activeTab === MultiHttpFormTabs.Variables} />
-      <AssertionsTab index={index} label="assertions" active={activeTab === MultiHttpFormTabs.Assertions} />
+      <QueryParamsTab index={index} active={activeTab === MultiHttpFormTabs.QueryParams} />
+      <VariablesTab index={index} active={activeTab === MultiHttpFormTabs.Variables} />
+      <AssertionsTab index={index} active={activeTab === MultiHttpFormTabs.Assertions} />
     </TabContent>
   );
 };

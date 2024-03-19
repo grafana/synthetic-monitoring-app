@@ -245,7 +245,7 @@ export interface HttpSettingsFormValues
   proxyConnectHeaders: HttpHeaderFormValue[];
   regexValidations: HttpRegexValidationFormValue[];
   followRedirects: boolean;
-  compression: SelectableValue<HTTPCompressionAlgo>;
+  compression: HTTPCompressionAlgo;
   proxyURL?: string;
 }
 export interface MultiHttpSettings {

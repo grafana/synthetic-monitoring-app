@@ -50,23 +50,21 @@ describe('editing multihttp check', () => {
     expect(targets[1]).toHaveValue(targetCheck.settings.multihttp?.entries[1].request.url);
 
     // headers
-    const request0HeaderNames = await screen.findAllByTestId('header-name-0');
-    expect(request0HeaderNames).toHaveLength(2);
-    expect(request0HeaderNames[0]).toHaveValue(targetCheck.settings.multihttp?.entries[0].request.headers?.[0].name);
-    expect(request0HeaderNames[1]).toHaveValue(targetCheck.settings.multihttp?.entries[0].request.headers?.[1].name);
+    const request1HeaderName1 = await screen.findByLabelText('Request header 1 name for request 1');
+    const request1HeaderName2 = await screen.findByLabelText('Request header 2 name for request 1');
+    expect(request1HeaderName1).toHaveValue(targetCheck.settings.multihttp?.entries[0].request.headers?.[0].name);
+    expect(request1HeaderName2).toHaveValue(targetCheck.settings.multihttp?.entries[0].request.headers?.[1].name);
 
-    const request1HeaderNames = await screen.findAllByTestId('header-name-1');
-    expect(request1HeaderNames).toHaveLength(1);
-    expect(request1HeaderNames[0]).toHaveValue(targetCheck.settings.multihttp?.entries[1].request.headers?.[0].name);
+    const request2HeaderName1 = await screen.findByLabelText('Request header 1 name for request 2');
+    expect(request2HeaderName1).toHaveValue(targetCheck.settings.multihttp?.entries[1].request.headers?.[0].name);
 
-    const request0HeaderValues = await screen.findAllByTestId('header-value-0');
-    expect(request0HeaderValues).toHaveLength(2);
-    expect(request0HeaderValues[0]).toHaveValue(targetCheck.settings.multihttp?.entries[0].request.headers?.[0].value);
-    expect(request0HeaderValues[1]).toHaveValue(targetCheck.settings.multihttp?.entries[0].request.headers?.[1].value);
+    const request1HeaderValue1 = await screen.findByLabelText('Request header 1 value for request 1');
+    const request1HeaderValue2 = await screen.findByLabelText('Request header 2 value for request 1');
+    expect(request1HeaderValue1).toHaveValue(targetCheck.settings.multihttp?.entries[0].request.headers?.[0].value);
+    expect(request1HeaderValue2).toHaveValue(targetCheck.settings.multihttp?.entries[0].request.headers?.[1].value);
 
-    const request1HeaderValues = await screen.findAllByTestId('header-value-1');
-    expect(request1HeaderValues).toHaveLength(1);
-    expect(request1HeaderValues[0]).toHaveValue(targetCheck.settings.multihttp?.entries[1].request.headers?.[0].value);
+    const request2HeaderValue1 = await screen.findByLabelText('Request header 1 value for request 2');
+    expect(request2HeaderValue1).toHaveValue(targetCheck.settings.multihttp?.entries[1].request.headers?.[0].value);
 
     // body
     // There is only one body tab because body tabs only show up for certain request methods
@@ -133,15 +131,14 @@ describe('editing multihttp check', () => {
     await user.type(labelValueInput, NEW_LABEL.value);
 
     // edit target
-    const targetInput = await screen.findAllByLabelText('Request target', { exact: false });
-    await user.clear(targetInput[0]);
-    await user.type(targetInput[0], NEW_TARGET);
+    const targetInput = await screen.findByLabelText('Request target for request 1');
+    await user.clear(targetInput);
+    await user.type(targetInput, NEW_TARGET);
 
     // edit headers
-    const request0HeaderNames = await screen.findAllByTestId('header-name-0');
-    expect(request0HeaderNames).toHaveLength(2);
-    await user.clear(request0HeaderNames[0]);
-    await user.type(request0HeaderNames[0], NEW_HEADER.name);
+    const request1HeaderName = await screen.findByLabelText('Request header 1 name for request 1');
+    await user.clear(request1HeaderName);
+    await user.type(request1HeaderName, NEW_HEADER.name);
 
     // edit body
     const bodyTabs = await screen.findAllByLabelText('Tab Body');

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Controller } from 'react-hook-form';
-import { OrgRole } from '@grafana/data';
+import { OrgRole, SelectableValue } from '@grafana/data';
 import { Field, Select } from '@grafana/ui';
 
 import { hasRole } from 'utils';
@@ -21,7 +21,13 @@ export const HttpCheckCompressionOption = () => {
         name="settings.http.compression"
         render={({ field }) => {
           const { ref, ...rest } = field;
-          return <Select {...rest} inputId={compressionId} options={HTTP_COMPRESSION_ALGO_OPTIONS} />;
+          const handleChange = (value: SelectableValue<string>) => {
+            field.onChange(value.value);
+          };
+
+          return (
+            <Select {...rest} inputId={compressionId} options={HTTP_COMPRESSION_ALGO_OPTIONS} onChange={handleChange} />
+          );
         }}
       />
     </Field>

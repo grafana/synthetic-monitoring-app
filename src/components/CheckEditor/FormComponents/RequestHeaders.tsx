@@ -7,17 +7,19 @@ import { validateHTTPHeaderName, validateHTTPHeaderValue } from 'validation';
 import { NameValueInput } from 'components/NameValueInput';
 
 type RequestHeadersProps = {
+  ariaLabelSuffix?: string;
   description: string;
   label: string;
   name: any;
 };
 
-export const RequestHeaders = ({ description, label, name }: RequestHeadersProps) => {
+export const RequestHeaders = ({ ariaLabelSuffix, description, label, name }: RequestHeadersProps) => {
   const isEditor = hasRole(OrgRole.Editor);
 
   return (
     <Field label={`${label}s`} description={description} disabled={!isEditor}>
       <NameValueInput
+        ariaLabelSuffix={ariaLabelSuffix}
         name={name}
         disabled={!isEditor}
         label={label}

@@ -74,8 +74,8 @@ export const ProbeOptions = ({ checkType }: Props) => {
   const { minFrequency, maxFrequency } = getFrequencyBounds(checkType);
   const { minTimeout, maxTimeout } = getTimeoutBounds(checkType);
   const isEditor = hasRole(OrgRole.Editor);
-  const fieldFrequency = register('frequency', { valueAsNumber: true });
-  const fieldTimeout = register('timeout', { valueAsNumber: true });
+  const { ref: refFreq, ...fieldFrequency } = register('frequency', { valueAsNumber: true });
+  const { ref: refTimeout, ...fieldTimeout } = register('timeout', { valueAsNumber: true });
 
   return (
     <div>

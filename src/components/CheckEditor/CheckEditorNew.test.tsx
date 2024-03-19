@@ -103,6 +103,7 @@ describe('new checks', () => {
       basicMetricsOnly: true,
       settings: {
         http: {
+          basicAuth: {},
           method: HttpMethod.GET,
           ipVersion: IpVersion.V4,
           noFollowRedirects: false,
@@ -113,7 +114,7 @@ describe('new checks', () => {
           body: '',
           proxyURL: '',
           cacheBustingQueryParamName: '',
-          compression: undefined,
+          compression: ``,
           failIfNotSSL: false,
           failIfSSL: false,
           failIfBodyMatchesRegexp: [],

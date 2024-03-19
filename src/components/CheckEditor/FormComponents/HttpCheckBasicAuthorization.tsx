@@ -10,13 +10,18 @@ import { OptionalInput } from 'components/OptionalInput/OptionalInput';
 
 export const HttpCheckBasicAuthorization = () => {
   const isEditor = hasRole(OrgRole.Editor);
-  const { formState, register } = useFormContext<CheckFormValuesHttp>();
+  const { formState, register, getValues } = useFormContext<CheckFormValuesHttp>();
   const userNameId = 'basicAuthUsername';
   const passwordId = 'basicAuthPassword';
   const styles = useStyles2(getStyles);
 
   return (
-    <OptionalInput label="Include basic authorization header in request">
+    <OptionalInput
+      label="Include basic authorization header in request"
+      isOpen={Boolean(
+        getValues(`settings.http.basicAuth.username`) || Boolean(getValues(`settings.http.basicAuth.password`))
+      )}
+    >
       <div className={styles.stack}>
         <Field
           htmlFor={userNameId}

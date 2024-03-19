@@ -35,7 +35,7 @@ export const RequestTargetInput = ({
 
   return (
     <Controller
-      name="target"
+      name={name}
       control={control}
       rules={{
         required: { value: true, message: 'Target is required' },
@@ -47,7 +47,7 @@ export const RequestTargetInput = ({
         <>
           <Field
             label="Request target"
-            description="Full URL to send request to"
+            description={targetHelp?.text}
             invalid={Boolean(error)}
             error={error?.message}
             className={styles.requestTargetInput}

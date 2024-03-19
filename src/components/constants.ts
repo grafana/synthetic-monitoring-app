@@ -294,6 +294,8 @@ export const FALLBACK_CHECK_PING: PingCheck = {
 
 export const FALLBACK_CHECK_SCRIPTED: ScriptedCheck = {
   ...FALLBACK_CHECK_BASE,
+  timeout: 5000,
+  frequency: 120000,
   settings: {
     scripted: {
       script: btoa(`import { check } from 'k6'

@@ -9,11 +9,14 @@ import { OptionalInput } from 'components/OptionalInput/OptionalInput';
 
 export const HttpCheckBearerToken = () => {
   const isEditor = hasRole(OrgRole.Editor);
-  const { formState, register } = useFormContext<CheckFormValuesHttp>();
+  const { getValues, formState, register } = useFormContext<CheckFormValuesHttp>();
   const id = 'bearerToken';
 
   return (
-    <OptionalInput label="Include bearer authorization header in request">
+    <OptionalInput
+      label="Include bearer authorization header in request"
+      isOpen={Boolean(getValues(`settings.http.bearerToken`))}
+    >
       <Field
         htmlFor={id}
         disabled={!isEditor}
