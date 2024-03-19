@@ -22,8 +22,7 @@ import { getRoute } from 'components/Routing';
 
 import { CheckHTTPLayout } from './FormLayouts/CheckHttpLayout';
 import { CheckMultiHTTPLayout } from './FormLayouts/CheckMultiHttpLayout';
-import { MultiHttpCheckFormFields } from './MultiHttpCheckFormFields';
-import { ScriptedCheckFormFields } from './ScriptedCheckFormFields';
+import { CheckScriptedLayout } from './FormLayouts/CheckScriptedLayout';
 import { SimpleCheckFormFields } from './SimpleCheckFormFields';
 import { useAdhocTest } from './useTestCheck';
 
@@ -183,25 +182,17 @@ const CheckSelector = ({ checkType }: { checkType: CheckType }) => {
     return <CheckMultiHTTPLayout />;
   }
 
+  if (checkType === CheckType.Scripted) {
+    return <CheckScriptedLayout />;
+  }
+
   return (
     <>
       <CheckEnabled />
       <CheckJobName />
-      <FormFields checkType={checkType} />
+      <SimpleCheckFormFields checkType={checkType} />
     </>
   );
-};
-
-const FormFields = ({ checkType }: { checkType: CheckType }) => {
-  if (checkType === CheckType.MULTI_HTTP) {
-    return <MultiHttpCheckFormFields />;
-  }
-
-  if (checkType === CheckType.Scripted) {
-    return <ScriptedCheckFormFields />;
-  }
-
-  return <SimpleCheckFormFields checkType={checkType} />;
 };
 
 function isValidCheckType(checkType?: CheckType): checkType is CheckType {
