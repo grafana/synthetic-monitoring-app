@@ -23,7 +23,7 @@ export const CheckScriptedLayout = () => {
         <CheckEnabled />
         <CheckJobName />
         <ScriptedCheckInstance />
-        <ProbeOptions checkType={CheckType.MULTI_HTTP} />
+        <ProbeOptions checkType={CheckType.Scripted} />
         <LabelField<CheckFormValuesScripted> />
       </Collapse>
       <Collapse label="Script" onToggle={() => setShowScript(!showScript)} isOpen={showScript}>

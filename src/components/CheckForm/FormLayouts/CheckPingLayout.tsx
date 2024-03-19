@@ -29,8 +29,8 @@ export const CheckPingLayout = () => {
       >
         <CheckEnabled />
         <CheckJobName />
-        <CheckTarget checkType={CheckType.HTTP} />
-        <ProbeOptions checkType={CheckType.HTTP} />
+        <CheckTarget checkType={CheckType.PING} />
+        <ProbeOptions checkType={CheckType.PING} />
         <CheckPublishedAdvanceMetrics />
         <CheckUsage />
       </Collapse>
