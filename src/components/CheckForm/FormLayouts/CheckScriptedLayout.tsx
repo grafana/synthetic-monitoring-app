@@ -6,6 +6,7 @@ import { CheckJobName } from 'components/CheckEditor/FormComponents/CheckJobName
 import { ScriptedCheckInstance } from 'components/CheckEditor/FormComponents/ScriptedCheckInstance';
 import { ScriptedCheckScript } from 'components/CheckEditor/FormComponents/ScriptedCheckScript';
 import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
+import { CheckFormAlert } from 'components/CheckFormAlert';
 import { Collapse } from 'components/Collapse';
 import { LabelField } from 'components/LabelField';
 
@@ -21,6 +22,9 @@ export const CheckScriptedLayout = () => {
       </Collapse>
       <Collapse label="Script">
         <ScriptedCheckScript />
+      </Collapse>
+      <Collapse label="Alerting">
+        <CheckFormAlert />
       </Collapse>
     </>
   );

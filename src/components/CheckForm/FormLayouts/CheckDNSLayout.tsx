@@ -16,6 +16,7 @@ import { DNSCheckRecordType } from 'components/CheckEditor/FormComponents/DNSChe
 import { DNSCheckResponseMatches } from 'components/CheckEditor/FormComponents/DNSCheckResponseMatches';
 import { DNSCheckValidResponseCodes } from 'components/CheckEditor/FormComponents/DNSCheckValidResponseCodes';
 import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
+import { CheckFormAlert } from 'components/CheckFormAlert';
 import { CheckUsage } from 'components/CheckUsage';
 import { Collapse } from 'components/Collapse';
 import { LabelField } from 'components/LabelField';
@@ -50,6 +51,9 @@ export const CheckDNSLayout = () => {
           <LabelField<CheckFormValuesPing> />
           <CheckIpVersion checkType={CheckType.DNS} name="settings.dns.ipVersion" />
         </div>
+      </Collapse>
+      <Collapse label="Alerting">
+        <CheckFormAlert />
       </Collapse>
     </>
   );

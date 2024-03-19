@@ -23,6 +23,7 @@ import { RequestBodyTextArea } from 'components/CheckEditor/FormComponents/Reque
 import { RequestHeaders } from 'components/CheckEditor/FormComponents/RequestHeaders';
 import { RequestMethodSelect } from 'components/CheckEditor/FormComponents/RequestMethodSelect';
 import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
+import { CheckFormAlert } from 'components/CheckFormAlert';
 import { CheckUsage } from 'components/CheckUsage';
 import { Collapse } from 'components/Collapse';
 import { LabelField } from 'components/LabelField';
@@ -79,6 +80,9 @@ export const CheckHTTPLayout = () => {
           <HttpCheckFollowRedirects />
           <HttpCheckCacheBuster />
         </div>
+      </Collapse>
+      <Collapse label="Alerting">
+        <CheckFormAlert />
       </Collapse>
     </>
   );

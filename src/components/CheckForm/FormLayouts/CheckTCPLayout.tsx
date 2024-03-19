@@ -12,6 +12,7 @@ import { CheckTarget } from 'components/CheckEditor/FormComponents/CheckTarget';
 import { TCPCheckQueryAndResponse } from 'components/CheckEditor/FormComponents/TCPCheckQueryAndResponse';
 import { TCPCheckUseTLS } from 'components/CheckEditor/FormComponents/TCPCheckUseTLS';
 import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
+import { CheckFormAlert } from 'components/CheckFormAlert';
 import { CheckUsage } from 'components/CheckUsage';
 import { Collapse } from 'components/Collapse';
 import { LabelField } from 'components/LabelField';
@@ -48,6 +49,9 @@ export const CheckTCPLayout = () => {
           <LabelField<CheckFormValuesPing> />
           <CheckIpVersion checkType={CheckType.DNS} name="settings.dns.ipVersion" />
         </div>
+      </Collapse>
+      <Collapse label="Alerting">
+        <CheckFormAlert />
       </Collapse>
     </>
   );

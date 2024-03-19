@@ -11,6 +11,7 @@ import { CheckPublishedAdvanceMetrics } from 'components/CheckEditor/FormCompone
 import { CheckTarget } from 'components/CheckEditor/FormComponents/CheckTarget';
 import { PingCheckFragment } from 'components/CheckEditor/FormComponents/PingCheckFragment';
 import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
+import { CheckFormAlert } from 'components/CheckFormAlert';
 import { CheckUsage } from 'components/CheckUsage';
 import { Collapse } from 'components/Collapse';
 import { LabelField } from 'components/LabelField';
@@ -34,6 +35,9 @@ export const CheckPingLayout = () => {
           <CheckIpVersion checkType={CheckType.PING} name="settings.ping.ipVersion" />
           <PingCheckFragment />
         </div>
+      </Collapse>
+      <Collapse label="Alerting">
+        <CheckFormAlert />
       </Collapse>
     </>
   );

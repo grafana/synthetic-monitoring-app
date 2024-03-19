@@ -6,17 +6,7 @@ import { css } from '@emotion/css';
 
 import { CheckFormValues } from 'types';
 
-import { Collapse } from './Collapse';
 import { ALERT_SENSITIVITY_OPTIONS } from './constants';
-
-const getStyles = (theme: GrafanaTheme2) => ({
-  marginBottom: css`
-    margin-bottom: ${theme.spacing(2)};
-  `,
-  link: css`
-    text-decoration: underline;
-  `,
-});
 
 export const CheckFormAlert = () => {
   const styles = useStyles2(getStyles);
@@ -26,7 +16,7 @@ export const CheckFormAlert = () => {
   const isCustomSensitivity = !Boolean(ALERT_SENSITIVITY_OPTIONS.find((option) => option.value === alertSensitivity));
 
   return (
-    <Collapse label="Alerting">
+    <>
       <div className={styles.marginBottom}>
         <p>
           Synthetic Monitoring provides some default alert rules via Cloud Alerting. By selecting an alert sensitivity,
@@ -67,6 +57,15 @@ export const CheckFormAlert = () => {
           }}
         />
       </Field>
-    </Collapse>
+    </>
   );
 };
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  marginBottom: css({
+    marginBottom: theme.spacing(2),
+  }),
+  link: css({
+    textDecoration: `underline`,
+  }),
+});
