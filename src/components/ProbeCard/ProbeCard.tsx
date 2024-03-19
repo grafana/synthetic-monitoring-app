@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Badge, Button, styleMixins, useStyles2 } from '@grafana/ui';
+import { Badge, Button, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 import { type Label, type Probe, ROUTES } from 'types';
 import { canEditProbes } from 'utils';
+import { Card } from 'components/Card';
 import { SuccessRateGaugeProbe } from 'components/Gauges';
 import { getRoute } from 'components/Routing';
 
@@ -22,12 +22,12 @@ export const ProbeCard = ({ probe }: { probe: Probe }) => {
   const canEdit = canEditProbes(probe);
 
   return (
-    <div className={styles.cardWrapper}>
-      <div className={styles.card}>
+    <Card className={styles.card} href={href}>
+      <div className={styles.cardContent}>
         <div>
-          <Link className={styles.link} to={href} onFocus={() => setIsFocused(true)} onBlur={() => setIsFocused(false)}>
-            <h3 className="h5">{probe.name}</h3>
-          </Link>
+          <Card.Heading as="h3" variant="h5" onFocus={() => setIsFocused(true)} onBlur={() => setIsFocused(false)}>
+            {probe.name}
+          </Card.Heading>
           <div className={styles.info}>
             <div className={styles.badges}>
               <Badge color={color} icon={onlineIcon} text={onlineTxt} />
@@ -49,7 +49,7 @@ export const ProbeCard = ({ probe }: { probe: Probe }) => {
           </Button>
         </div>
       </div>
-    </div>
+    </Card>
   );
 };
 
@@ -60,19 +60,19 @@ const getStyles = (theme: GrafanaTheme2) => {
   const mediaQuery = `@supports not (container-type: inline-size) @media (max-width: ${breakpoint}px)`;
 
   return {
-    cardWrapper: css({
+    card: css({
       containerName,
       containerType: `inline-size`,
+      marginBottom: theme.spacing(1),
+
+      '&:hover button': {
+        opacity: 1,
+      },
     }),
-    card: css({
+    cardContent: css({
       display: `grid`,
       gridTemplateColumns: `auto 1fr auto`,
       gridTemplateAreas: `"info gauge action"`,
-      padding: theme.spacing(2),
-      background: theme.colors.background.secondary,
-      borderRadius: theme.shape.radius.default,
-      position: `relative`,
-      marginBottom: theme.spacing(1),
 
       [containerQuery]: {
         gridTemplateAreas: `
@@ -88,16 +88,6 @@ const getStyles = (theme: GrafanaTheme2) => {
         "gauge action"
         `,
         gridTemplateColumns: `1fr auto`,
-      },
-
-      '&:hover button': {
-        opacity: 1,
-      },
-
-      '&:hover': {
-        background: theme.colors.emphasize(theme.colors.background.secondary, 0.03),
-        cursor: 'pointer',
-        zIndex: 1,
       },
     }),
     info: css({
@@ -133,29 +123,6 @@ const getStyles = (theme: GrafanaTheme2) => {
     }),
     link: css({
       marginBottom: theme.spacing(1),
-      display: `block`,
-
-      all: 'unset',
-      '&::after': {
-        position: 'absolute',
-        content: '""',
-        top: 0,
-        bottom: 0,
-        left: 0,
-        right: 0,
-        borderRadius: theme.shape.radius.default,
-      },
-
-      '&:focus-visible': {
-        outline: 'none',
-        outlineOffset: 0,
-        boxShadow: 'none',
-
-        '&::after': {
-          ...styleMixins.getFocusStyles(theme),
-          zIndex: 1,
-        },
-      },
     }),
     buttonWrapper: css({
       alignItems: 'center',
