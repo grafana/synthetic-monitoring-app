@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Field, Select, useStyles2 } from '@grafana/ui';
@@ -19,7 +19,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
 });
 
 export const CheckFormAlert = () => {
-  const [showAlerting, setShowAlerting] = useState(false);
   const styles = useStyles2(getStyles);
   const { watch } = useFormContext<CheckFormValues>();
   const alertSensitivity = watch('alertSensitivity');
@@ -27,7 +26,7 @@ export const CheckFormAlert = () => {
   const isCustomSensitivity = !Boolean(ALERT_SENSITIVITY_OPTIONS.find((option) => option.value === alertSensitivity));
 
   return (
-    <Collapse label="Alerting" onToggle={() => setShowAlerting(!showAlerting)} isOpen={showAlerting}>
+    <Collapse label="Alerting">
       <div className={styles.marginBottom}>
         <p>
           Synthetic Monitoring provides some default alert rules via Cloud Alerting. By selecting an alert sensitivity,

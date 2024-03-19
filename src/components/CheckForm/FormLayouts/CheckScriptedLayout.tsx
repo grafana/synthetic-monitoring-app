@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 import { CheckFormValuesScripted, CheckType } from 'types';
 import { CheckEnabled } from 'components/CheckEditor/FormComponents/CheckEnabled';
@@ -10,23 +10,16 @@ import { Collapse } from 'components/Collapse';
 import { LabelField } from 'components/LabelField';
 
 export const CheckScriptedLayout = () => {
-  const [showGeneralSettings, setShowGeneralSettings] = useState(true);
-  const [showScript, setShowScript] = useState(false);
-
   return (
     <>
-      <Collapse
-        label="General settings"
-        onToggle={() => setShowGeneralSettings(!showGeneralSettings)}
-        isOpen={showGeneralSettings}
-      >
+      <Collapse label="General settings" isOpen>
         <CheckEnabled />
         <CheckJobName />
         <ScriptedCheckInstance />
         <ProbeOptions checkType={CheckType.Scripted} />
         <LabelField<CheckFormValuesScripted> />
       </Collapse>
-      <Collapse label="Script" onToggle={() => setShowScript(!showScript)} isOpen={showScript}>
+      <Collapse label="Script">
         <ScriptedCheckScript />
       </Collapse>
     </>

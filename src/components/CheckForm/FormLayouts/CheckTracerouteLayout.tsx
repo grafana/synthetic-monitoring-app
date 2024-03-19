@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
@@ -17,17 +17,11 @@ import { Collapse } from 'components/Collapse';
 import { LabelField } from 'components/LabelField';
 
 export const CheckTracerouteLayout = () => {
-  const [showGeneralSettings, setShowGeneralSettings] = useState(true);
-  const [showAdvanced, setShowAdvanced] = useState(false);
   const styles = useStyles2(getStyles);
 
   return (
     <>
-      <Collapse
-        label="General settings"
-        onToggle={() => setShowGeneralSettings(!showGeneralSettings)}
-        isOpen={showGeneralSettings}
-      >
+      <Collapse label="General settings" isOpen>
         <CheckEnabled />
         <CheckJobName />
         <CheckTarget checkType={CheckType.Traceroute} />
@@ -35,7 +29,7 @@ export const CheckTracerouteLayout = () => {
         <CheckPublishedAdvanceMetrics />
         <CheckUsage />
       </Collapse>
-      <Collapse label="Advanced options" onToggle={() => setShowAdvanced(!showAdvanced)} isOpen={showAdvanced}>
+      <Collapse label="Advanced options">
         <div className={styles.maxWidth}>
           <LabelField<CheckFormValuesTraceroute> />
           <TracerouteMaxHops />
