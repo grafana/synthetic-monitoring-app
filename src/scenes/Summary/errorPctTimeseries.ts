@@ -49,7 +49,6 @@ function getErrorPercentageQueryRunner(metrics: DataSourceRef) {
         refId: 'A',
       },
     ],
-    // maxDataPoints: 100,
   });
   return queryRunner;
 }
@@ -60,61 +59,6 @@ export function getErrorPctgTimeseriesPanel(metrics: DataSourceRef) {
     title: `$check_type check error percentage`,
     fieldConfig: {
       defaults: {
-        custom: {
-          //   drawStyle: 'line',
-          lineInterpolation: 'linear',
-        },
-        //   barAlignment: 0,
-        //   lineWidth: 1,
-        //   fillOpacity: 0,
-        //   gradientMode: 'none',
-        //   spanNulls: true,
-        //   insertNulls: false,
-        //   showPoints: 'never',
-        //   pointSize: 5,
-        //   stacking: {
-        //     mode: 'none',
-        //     group: 'A',
-        //   },
-        //   axisPlacement: 'auto',
-        //   axisLabel: '',
-        //   axisColorMode: 'text',
-        //   axisBorderShow: false,
-        //   scaleDistribution: {
-        //     type: 'linear',
-        //   },
-        //   axisCenteredZero: false,
-        //   hideFrom: {
-        //     tooltip: false,
-        //     viz: false,
-        //     legend: false,
-        //   },
-        //   thresholdsStyle: {
-        //     mode: 'off',
-        //   },
-        // },
-        // color: {
-        //   mode: 'palette-classic',
-        // },
-        // mappings: [],
-        // thresholds: {
-        //   mode: ThresholdsMode.Absolute,
-        //   steps: [
-        //     {
-        //       color: 'green',
-        //       value: 0,
-        //     },
-        //     {
-        //       color: '#EAB839',
-        //       value: 0.5,
-        //     },
-        //     {
-        //       color: 'red',
-        //       value: 1,
-        //     },
-        //   ],
-        // },
-        // links: [],
         min: 0,
         max: 1,
         unit: 'percentunit',
