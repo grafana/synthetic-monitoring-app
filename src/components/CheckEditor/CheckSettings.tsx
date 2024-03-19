@@ -4,7 +4,6 @@ import { OrgRole } from '@grafana/data';
 import { CheckType } from 'types';
 import { hasRole } from 'utils';
 import DnsSettingsForm from 'components/DnsSettings';
-import { HttpSettingsForm } from 'components/http/HttpSettings';
 import { PingSettingsForm } from 'components/PingSettings';
 import { TcpSettingsForm } from 'components/TcpSettings';
 import { TracerouteSettingsForm } from 'components/TracerouteSettingsForm';
@@ -19,9 +18,6 @@ export const CheckSettings: FC<Props> = ({ typeOfCheck }) => {
     case CheckType.PING: {
       return <PingSettingsForm isEditor={isEditor} />;
     }
-    case CheckType.HTTP: {
-      return <HttpSettingsForm />;
-    }
     case CheckType.DNS: {
       return <DnsSettingsForm isEditor={isEditor} />;
     }
@@ -30,6 +26,9 @@ export const CheckSettings: FC<Props> = ({ typeOfCheck }) => {
     }
     case CheckType.Traceroute: {
       return <TracerouteSettingsForm isEditor={isEditor} />;
+    }
+    case CheckType.HTTP: {
+      throw new Error('Invalid check type for this location');
     }
     case CheckType.MULTI_HTTP: {
       throw new Error('Invalid check type for this location');

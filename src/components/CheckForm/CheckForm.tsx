@@ -26,7 +26,7 @@ import { ScriptedCheckFormFields } from './ScriptedCheckFormFields';
 import { SimpleCheckFormFields } from './SimpleCheckFormFields';
 import { useAdhocTest } from './useTestCheck';
 
-export const CheckEditor = () => {
+export const CheckForm = () => {
   const { data: checks } = useChecks();
   const { id, checkType: checkTypeParam } = useParams<CheckPageParams>();
   const checkType = isValidCheckType(checkTypeParam) ? checkTypeParam : CheckType.PING;
@@ -37,15 +37,15 @@ export const CheckEditor = () => {
 
   const check = checks?.find((c) => c.id === Number(id)) ?? fallbackCheckMap[checkType];
 
-  return <CheckEditorContent check={check} checkType={checkType} />;
+  return <CheckFormContent check={check} checkType={checkType} />;
 };
 
-type CheckEditorContentProps = {
+type CheckFormContentProps = {
   check: Check;
   checkType: CheckType;
 };
 
-const CheckEditorContent = ({ check, checkType }: CheckEditorContentProps) => {
+const CheckFormContent = ({ check, checkType }: CheckFormContentProps) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const styles = useStyles2(getStyles);
   const { adhocTestData, closeModal, isPending, openTestCheckModal, testCheck, testCheckError } =

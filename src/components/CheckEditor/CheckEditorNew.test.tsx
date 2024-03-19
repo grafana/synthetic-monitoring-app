@@ -6,7 +6,7 @@ import { render } from 'test/render';
 import { server } from 'test/server';
 
 import { AlertSensitivity, CheckType, HttpMethod, IpVersion, ROUTES } from 'types';
-import { CheckEditor } from 'components/CheckForm/CheckEditor';
+import { CheckForm } from 'components/CheckForm/CheckForm';
 import { PLUGIN_URL_PATH } from 'components/constants';
 
 import { fillBasicCheckFields, fillDnsValidationFields, fillTCPQueryResponseFields, submitForm } from './testHelpers';
@@ -23,7 +23,7 @@ jest.mock('hooks/useAlerts', () => ({
 }));
 
 const renderNewCheckEditor = async (checkType?: CheckType) => {
-  const res = render(<CheckEditor />, {
+  const res = render(<CheckForm />, {
     route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/:checkType`,
     path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${checkType}`,
   });
