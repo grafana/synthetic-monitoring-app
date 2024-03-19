@@ -293,6 +293,10 @@ function getFieldOverrides() {
       },
       properties: [
         {
+          id: 'unit',
+          value: 'percentunit',
+        },
+        {
           id: 'custom.cellOptions',
           value: {
             mode: 'gradient',
@@ -300,8 +304,24 @@ function getFieldOverrides() {
           },
         },
         {
-          id: 'unit',
-          value: 'percentunit',
+          id: 'thresholds',
+          value: {
+            mode: 'absolute',
+            steps: [
+              {
+                color: 'red',
+                value: null,
+              },
+              {
+                color: 'yellow',
+                value: 0.9,
+              },
+              {
+                color: 'green',
+                value: 0.99,
+              },
+            ],
+          },
         },
       ],
     },
