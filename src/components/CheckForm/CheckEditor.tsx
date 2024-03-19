@@ -11,8 +11,6 @@ import { useChecks, useCUDChecks } from 'data/useChecks';
 import { useNavigation } from 'hooks/useNavigation';
 import { getCheckFromFormValues, getFormValuesFromCheck } from 'components/CheckEditor/checkFormTransformations';
 import { PROBES_SELECT_ID } from 'components/CheckEditor/CheckProbes';
-import { CheckEnabled } from 'components/CheckEditor/FormComponents/CheckEnabled';
-import { CheckJobName } from 'components/CheckEditor/FormComponents/CheckJobName';
 import { CheckFormAlert } from 'components/CheckFormAlert';
 import { CheckTestResultsModal } from 'components/CheckTestResultsModal';
 import { CHECK_FORM_ERROR_EVENT, fallbackCheckMap } from 'components/constants';
@@ -25,7 +23,8 @@ import { CheckHTTPLayout } from './FormLayouts/CheckHttpLayout';
 import { CheckMultiHTTPLayout } from './FormLayouts/CheckMultiHttpLayout';
 import { CheckPingLayout } from './FormLayouts/CheckPingLayout';
 import { CheckScriptedLayout } from './FormLayouts/CheckScriptedLayout';
-import { SimpleCheckFormFields } from './SimpleCheckFormFields';
+import { CheckTCPLayout } from './FormLayouts/CheckTCPLayout';
+import { CheckTracerouteLayout } from './FormLayouts/CheckTracerouteLayout';
 import { useAdhocTest } from './useTestCheck';
 
 export const CheckEditor = () => {
@@ -196,13 +195,15 @@ const CheckSelector = ({ checkType }: { checkType: CheckType }) => {
     return <CheckDNSLayout />;
   }
 
-  return (
-    <>
-      <CheckEnabled />
-      <CheckJobName />
-      <SimpleCheckFormFields checkType={checkType} />
-    </>
-  );
+  if (checkType === CheckType.TCP) {
+    return <CheckTCPLayout />;
+  }
+
+  if (checkType === CheckType.Traceroute) {
+    return <CheckTracerouteLayout />;
+  }
+
+  throw new Error(`Invalid check type: ${checkType}`);
 };
 
 function isValidCheckType(checkType?: CheckType): checkType is CheckType {

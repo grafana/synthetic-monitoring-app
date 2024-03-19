@@ -51,7 +51,7 @@ export const fillBasicCheckFields = async (jobName: string, target: string, user
 
 export const fillDnsValidationFields = async (user: UserEvent) => {
   await toggleSection('Validation', user);
-  const addRegex = await screen.findByRole('button', { name: '&nbsp; Add RegEx Validation/' });
+  const addRegex = await screen.findByText(`Add Regex Validation`);
   await user.click(addRegex);
   await user.click(addRegex);
   const responseMatch1 = await screen.findByLabelText('DNS Response Match 1');

@@ -31,6 +31,7 @@ import { TLSConfig } from 'components/TLSConfig';
 export const CheckHTTPLayout = () => {
   const [showGeneralSettings, setShowGeneralSettings] = useState(true);
   const [showHttpSettings, setShowHttpSettings] = useState(false);
+  const [showTLS, setShowTLS] = useState(false);
   const [showAuthentication, setShowAuthentication] = useState(false);
   const [showValidation, setShowValidation] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -66,7 +67,9 @@ export const CheckHTTPLayout = () => {
           name="settings.http.proxyConnectHeaders"
         />
       </Collapse>
-      <TLSConfig checkType={CheckType.HTTP} />
+      <Collapse label="TLS config" onToggle={() => setShowTLS(!showTLS)} isOpen={showTLS}>
+        <TLSConfig checkType={CheckType.HTTP} />
+      </Collapse>{' '}
       <Collapse
         label="Authentication"
         onToggle={() => setShowAuthentication(!showAuthentication)}

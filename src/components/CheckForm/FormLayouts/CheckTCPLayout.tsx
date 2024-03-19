@@ -9,21 +9,19 @@ import { CheckIpVersion } from 'components/CheckEditor/FormComponents/CheckIpVer
 import { CheckJobName } from 'components/CheckEditor/FormComponents/CheckJobName';
 import { CheckPublishedAdvanceMetrics } from 'components/CheckEditor/FormComponents/CheckPublishedAdvanceMetrics';
 import { CheckTarget } from 'components/CheckEditor/FormComponents/CheckTarget';
-import { DNSCheckRecordPort } from 'components/CheckEditor/FormComponents/DNSCheckRecordPort';
-import { DNSCheckRecordProtocol } from 'components/CheckEditor/FormComponents/DNSCheckRecordProtocol';
-import { DNSCheckRecordServer } from 'components/CheckEditor/FormComponents/DNSCheckRecordServer';
-import { DNSCheckRecordType } from 'components/CheckEditor/FormComponents/DNSCheckRecordType';
-import { DNSCheckResponseMatches } from 'components/CheckEditor/FormComponents/DNSCheckResponseMatches';
-import { DNSCheckValidResponseCodes } from 'components/CheckEditor/FormComponents/DNSCheckValidResponseCodes';
+import { TCPCheckQueryAndResponse } from 'components/CheckEditor/FormComponents/TCPCheckQueryAndResponse';
+import { TCPCheckUseTLS } from 'components/CheckEditor/FormComponents/TCPCheckUseTLS';
 import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
 import { CheckUsage } from 'components/CheckUsage';
 import { Collapse } from 'components/Collapse';
 import { LabelField } from 'components/LabelField';
+import { TLSConfig } from 'components/TLSConfig';
 
-export const CheckDNSLayout = () => {
+export const CheckTCPLayout = () => {
   const [showGeneralSettings, setShowGeneralSettings] = useState(true);
-  const [showDNSSettings, setShowDNSSettings] = useState(false);
-  const [showValidation, setShowValidation] = useState(false);
+  const [showTCPSettings, setShowTCPSettings] = useState(false);
+  const [showQueryResponse, setShowQueryResponse] = useState(false);
+  const [showTLS, setShowTLS] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const styles = useStyles2(getStyles);
 
@@ -36,22 +34,27 @@ export const CheckDNSLayout = () => {
       >
         <CheckEnabled />
         <CheckJobName />
-        <CheckTarget checkType={CheckType.DNS} />
-        <ProbeOptions checkType={CheckType.DNS} />
+        <CheckTarget checkType={CheckType.TCP} />
+        <ProbeOptions checkType={CheckType.TCP} />
         <CheckPublishedAdvanceMetrics />
         <CheckUsage />
       </Collapse>
-      <Collapse label="DNS settings" onToggle={() => setShowDNSSettings(!showDNSSettings)} isOpen={showDNSSettings}>
+      <Collapse label="TCP settings" onToggle={() => setShowTCPSettings(!showTCPSettings)} isOpen={showTCPSettings}>
         <div className={styles.maxWidth}>
-          <DNSCheckRecordType />
-          <DNSCheckRecordServer />
-          <DNSCheckRecordProtocol />
-          <DNSCheckRecordPort />
+          <TCPCheckUseTLS />
         </div>
       </Collapse>
-      <Collapse label="Validation" onToggle={() => setShowValidation(!showValidation)} isOpen={showValidation}>
-        <DNSCheckValidResponseCodes />
-        <DNSCheckResponseMatches />
+      <Collapse
+        label="Query/Response"
+        onToggle={() => setShowQueryResponse(!showQueryResponse)}
+        isOpen={showQueryResponse}
+      >
+        <div className={styles.maxWidth}>
+          <TCPCheckQueryAndResponse />
+        </div>
+      </Collapse>
+      <Collapse label="TLS config" onToggle={() => setShowTLS(!showTLS)} isOpen={showTLS}>
+        <TLSConfig checkType={CheckType.TCP} />
       </Collapse>
       <Collapse label="Advanced options" onToggle={() => setShowAdvanced(!showAdvanced)} isOpen={showAdvanced}>
         <div className={styles.maxWidth}>
