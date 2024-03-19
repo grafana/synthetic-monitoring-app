@@ -21,6 +21,7 @@ import { PluginPage } from 'components/PluginPage';
 import { getRoute } from 'components/Routing';
 
 import { CheckHTTPLayout } from './FormLayouts/CheckHttpLayout';
+import { CheckMultiHTTPLayout } from './FormLayouts/CheckMultiHttpLayout';
 import { MultiHttpCheckFormFields } from './MultiHttpCheckFormFields';
 import { ScriptedCheckFormFields } from './ScriptedCheckFormFields';
 import { SimpleCheckFormFields } from './SimpleCheckFormFields';
@@ -176,6 +177,10 @@ const CheckEditorContent = ({ check, checkType }: CheckEditorContentProps) => {
 const CheckSelector = ({ checkType }: { checkType: CheckType }) => {
   if (checkType === CheckType.HTTP) {
     return <CheckHTTPLayout />;
+  }
+
+  if (checkType === CheckType.MULTI_HTTP) {
+    return <CheckMultiHTTPLayout />;
   }
 
   return (
