@@ -89,6 +89,7 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
         range: true,
         instant: false,
         hide: false,
+        interval: '5m',
         editorMode: 'code',
         legendFormat: '__auto',
         format: 'table',
