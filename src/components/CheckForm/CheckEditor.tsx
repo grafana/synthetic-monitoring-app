@@ -22,6 +22,7 @@ import { getRoute } from 'components/Routing';
 
 import { CheckHTTPLayout } from './FormLayouts/CheckHttpLayout';
 import { CheckMultiHTTPLayout } from './FormLayouts/CheckMultiHttpLayout';
+import { CheckPingLayout } from './FormLayouts/CheckPingLayout';
 import { CheckScriptedLayout } from './FormLayouts/CheckScriptedLayout';
 import { SimpleCheckFormFields } from './SimpleCheckFormFields';
 import { useAdhocTest } from './useTestCheck';
@@ -184,6 +185,10 @@ const CheckSelector = ({ checkType }: { checkType: CheckType }) => {
 
   if (checkType === CheckType.Scripted) {
     return <CheckScriptedLayout />;
+  }
+
+  if (checkType === CheckType.PING) {
+    return <CheckPingLayout />;
   }
 
   return (
