@@ -38,7 +38,7 @@ export const MultiHttpCheckFormFields = () => {
     control,
     name: 'settings.multihttp.entries',
   });
-  const requests = watch('settings.multihttp.entries') as any[];
+  const requests = watch('settings.multihttp.entries');
 
   useEffect(() => {
     const onErrorEvent = (e: CustomEvent<FieldErrors<CheckFormValues>>) => {
