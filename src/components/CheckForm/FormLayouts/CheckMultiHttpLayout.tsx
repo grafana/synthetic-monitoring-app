@@ -5,26 +5,26 @@ import { CheckEnabled } from 'components/CheckEditor/FormComponents/CheckEnabled
 import { CheckJobName } from 'components/CheckEditor/FormComponents/CheckJobName';
 import { MultiHttpCheckRequests } from 'components/CheckEditor/FormComponents/MultiHttpCheckRequests';
 import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
+import { FormLayout } from 'components/CheckForm/FormLayout/FormLayout';
 import { CheckFormAlert } from 'components/CheckFormAlert';
-import { Collapse } from 'components/Collapse';
 import { LabelField } from 'components/LabelField';
 
 export const CheckMultiHTTPLayout = () => {
   return (
-    <>
-      <Collapse label="General settings" isOpen>
+    <FormLayout>
+      <FormLayout.Section label="General settings" fields={[`enabled`, `job`, `probes`, `labels`]}>
         <CheckEnabled />
         <CheckJobName />
         <ProbeOptions checkType={CheckType.MULTI_HTTP} />
         <LabelField<CheckFormValuesMultiHttp> />
-      </Collapse>
-      <Collapse label="Requests">
+      </FormLayout.Section>
+      <FormLayout.Section label="Requests" fields={[`settings.multihttp.entries`]}>
         <div>At least one target HTTP is required; limit 10 requests per check.</div>
         <MultiHttpCheckRequests />
-      </Collapse>
-      <Collapse label="Alerting">
+      </FormLayout.Section>
+      <FormLayout.Section label="Alerting" fields={[`alertSensitivity`]}>
         <CheckFormAlert />
-      </Collapse>
-    </>
+      </FormLayout.Section>
+    </FormLayout>
   );
 };

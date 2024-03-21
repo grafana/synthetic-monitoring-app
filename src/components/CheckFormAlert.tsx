@@ -10,7 +10,7 @@ import { ALERT_SENSITIVITY_OPTIONS } from './constants';
 
 export const CheckFormAlert = () => {
   const styles = useStyles2(getStyles);
-  const { watch } = useFormContext<CheckFormValues>();
+  const { control, watch } = useFormContext<CheckFormValues>();
   const alertSensitivity = watch('alertSensitivity');
 
   const isCustomSensitivity = !Boolean(ALERT_SENSITIVITY_OPTIONS.find((option) => option.value === alertSensitivity));
@@ -34,7 +34,8 @@ export const CheckFormAlert = () => {
         <p>Tip: adding multiple probes can help to prevent alert flapping for less frequent checks</p>
       </div>
       <Field label="Select alert sensitivity">
-        <Controller<CheckFormValues>
+        <Controller
+          control={control}
           name="alertSensitivity"
           render={({ field }) => {
             const { ref, ...rest } = field;

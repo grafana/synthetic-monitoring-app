@@ -70,14 +70,29 @@ export const CheckHTTPLayout = () => {
           name="settings.http.proxyConnectHeaders"
         />
       </FormLayout.Section>
-      <FormLayout.Section label="TLS config">
+      <FormLayout.Section
+        label="TLS config"
+        fields={[
+          `settings.http.tlsConfig.caCert`,
+          `settings.http.tlsConfig.clientCert`,
+          `settings.http.tlsConfig.clientKey`,
+          `settings.http.tlsConfig.insecureSkipVerify`,
+          `settings.http.tlsConfig.serverName`,
+        ]}
+      >
         <TLSConfig checkType={CheckType.HTTP} />
       </FormLayout.Section>
-      <FormLayout.Section label="Authentication">
+      <FormLayout.Section
+        label="Authentication"
+        fields={[`settings.http.bearerToken`, `settings.http.basicAuth.password`, `settings.http.basicAuth.username`]}
+      >
         <HttpCheckBearerToken />
         <HttpCheckBasicAuthorization />
       </FormLayout.Section>
-      <FormLayout.Section label="Validation">
+      <FormLayout.Section
+        label="Validation"
+        fields={[`settings.http.validStatusCodes`, `settings.http.validHTTPVersions`, `settings.http.sslOptions`]}
+      >
         <div className={styles.maxWidth}>
           <HttpCheckValidStatusCodes />
           <HttpCheckValidHttpVersions />
@@ -85,7 +100,15 @@ export const CheckHTTPLayout = () => {
         </div>
         <HttpCheckRegExValidation />
       </FormLayout.Section>
-      <FormLayout.Section label="Advanced options">
+      <FormLayout.Section
+        label="Advanced options"
+        fields={[
+          `labels`,
+          `settings.http.ipVersion`,
+          `settings.http.followRedirects`,
+          `settings.http.cacheBustingQueryParamName`,
+        ]}
+      >
         <div className={styles.maxWidth}>
           <LabelField<CheckFormValuesHttp> />
           <CheckIpVersion checkType={CheckType.HTTP} name="settings.http.ipVersion" />
@@ -93,7 +116,7 @@ export const CheckHTTPLayout = () => {
           <HttpCheckCacheBuster />
         </div>
       </FormLayout.Section>
-      <FormLayout.Section label="Alerting">
+      <FormLayout.Section label="Alerting" fields={[`alertSensitivity`]}>
         <CheckFormAlert />
       </FormLayout.Section>
     </FormLayout>

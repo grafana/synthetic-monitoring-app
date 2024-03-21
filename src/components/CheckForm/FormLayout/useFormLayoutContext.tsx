@@ -6,8 +6,6 @@ export type SectionState = {
 
 type ContextProps = null | {
   state: [SectionState[], React.Dispatch<{ index: number; state: SectionState }>];
-  // sectionState: SectionState[];
-  // updateSectionState: React.Dispatch<{ index: number; state: SectionState }>;
 };
 
 const FormLayoutContext = createContext<ContextProps>(null);
