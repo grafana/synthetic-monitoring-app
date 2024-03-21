@@ -26,10 +26,11 @@ function getFrequencyBounds(checkType: CheckType) {
       defaultFrequency: 120.0,
     };
   }
-  if (checkType === CheckType.MULTI_HTTP) {
+  if (checkType === CheckType.MULTI_HTTP || checkType === CheckType.Scripted) {
     return {
       minFrequency: 60.0,
       maxFrequency: oneHour,
+      defaultFrequency: 60.0 * 5,
     };
   }
   return {
@@ -50,7 +51,7 @@ function getTimeoutBounds(checkType: CheckType) {
     return {
       minTimeout: 5.0,
       maxTimeout: 60.0,
-      defaultTimeout: 20.0,
+      defaultTimeout: 15.0,
     };
   }
   return {

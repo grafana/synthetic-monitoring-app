@@ -19,8 +19,8 @@ export const submitForm = async (user: UserEvent) => {
 
 export const getSlider = async (formName: string) => {
   const container = await screen.findByTestId(formName);
-  const input = (await within(container).findByRole('textbox')) as HTMLInputElement;
-  return input;
+  const inputs = await within(container).findAllByRole('textbox');
+  return inputs;
 };
 
 export const fillBasicCheckFields = async (jobName: string, target: string, user: UserEvent, labels: Label[]) => {

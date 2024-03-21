@@ -35,8 +35,14 @@ describe('editing multihttp check', () => {
     expect(await screen.findByLabelText('Job name', { exact: false })).toHaveValue(targetCheck.job);
     // this is checking for the name of the probe
     expect(await screen.findByText(PRIVATE_PROBE.name)).toBeInTheDocument();
-    expect(await getSlider('frequency')).toHaveValue((targetCheck.frequency / 1000).toString());
-    expect(await getSlider('timeout')).toHaveValue((targetCheck.timeout / 1000).toString());
+
+    const [frequencyMinutes, frequencySeconds] = await getSlider('frequency');
+    expect(frequencyMinutes).toHaveValue((targetCheck.frequency / 1000 / 60).toString());
+    expect(frequencySeconds).toHaveValue((targetCheck.frequency / 1000).toString());
+
+    const [timeoutMinutes, timeoutSeconds] = await getSlider('timeout');
+    expect(timeoutMinutes).toHaveValue((targetCheck.timeout / 1000 / 60).toString());
+    expect(timeoutSeconds).toHaveValue(((targetCheck.timeout / 1000) % 60).toString());
 
     // labels
     const labelNameInput = await screen.findByTestId('label-name-0');

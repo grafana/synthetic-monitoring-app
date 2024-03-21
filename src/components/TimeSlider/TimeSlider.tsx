@@ -1,4 +1,4 @@
-import React, { ChangeEvent, FocusEvent, useCallback, useState } from 'react';
+import React, { ChangeEvent, FocusEvent, useCallback, useEffect, useState } from 'react';
 import { Input, useStyles2 } from '@grafana/ui';
 import { cx } from '@emotion/css';
 import { Global } from '@emotion/react';
@@ -37,6 +37,14 @@ export function TimeSlider({
   const [sliderValue, setSliderValue] = useState<number>(value ?? min);
   const [seconds, setSeconds] = useState<number>(initialSeconds);
   const [minutes, setMinutes] = useState<number>(initialMinutes);
+
+  useEffect(() => {
+    if (value !== undefined && value !== sliderValue) {
+      setSliderValue(value);
+      setMinutes(Math.floor(value / 60));
+      setSeconds(value % 60);
+    }
+  }, [value, sliderValue]);
 
   const onSliderChange = useCallback(
     (v: number | number[]) => {
@@ -78,14 +86,14 @@ export function TimeSlider({
     (e: FocusEvent<HTMLInputElement>) => {
       const v = +e.target.value;
 
-      const value = v * 60 + seconds;
+      const totalSeconds = v * 60 + seconds;
 
-      if (value > max) {
+      if (totalSeconds > max) {
         onSliderChange(max);
-      } else if (v < min) {
+      } else if (totalSeconds < min) {
         onSliderChange(min);
       } else {
-        onSliderChange(value);
+        onSliderChange(totalSeconds);
       }
     },
     [max, min, onSliderChange, seconds]
@@ -95,14 +103,14 @@ export function TimeSlider({
     (e: FocusEvent<HTMLInputElement>) => {
       const v = +e.target.value;
 
-      const value = minutes * 60 + v;
+      const totalSeconds = minutes * 60 + v;
 
-      if (value > max) {
+      if (totalSeconds > max) {
         onSliderChange(max);
       } else if (v < min) {
         onSliderChange(min);
       } else {
-        onSliderChange(value);
+        onSliderChange(totalSeconds);
       }
     },
     [max, min, minutes, onSliderChange]
