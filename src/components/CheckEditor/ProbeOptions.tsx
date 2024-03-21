@@ -18,22 +18,23 @@ interface Props {
 }
 
 function getFrequencyBounds(checkType: CheckType) {
+  const oneHour = 60 * 60;
   if (checkType === CheckType.Traceroute) {
     return {
       minFrequency: 60.0,
-      maxFrequency: 240.0,
+      maxFrequency: oneHour,
       defaultFrequency: 120.0,
     };
   }
   if (checkType === CheckType.MULTI_HTTP) {
     return {
       minFrequency: 60.0,
-      maxFrequency: 120.0,
+      maxFrequency: oneHour,
     };
   }
   return {
     minFrequency: 10.0,
-    maxFrequency: 120.0,
+    maxFrequency: oneHour,
   };
 }
 
@@ -45,22 +46,16 @@ function getTimeoutBounds(checkType: CheckType) {
       defaultTimeout: 30.0,
     };
   }
-  if (checkType === CheckType.MULTI_HTTP) {
-    return {
-      minTimeout: 1.0,
-      maxTimeout: 30.0,
-    };
-  }
-  if (checkType === CheckType.Scripted) {
+  if (checkType === CheckType.Scripted || checkType === CheckType.MULTI_HTTP) {
     return {
       minTimeout: 5.0,
-      maxTimeout: 30.0,
-      defaultTimeout: 10.0,
+      maxTimeout: 60.0,
+      defaultTimeout: 20.0,
     };
   }
   return {
     minTimeout: 1.0,
-    maxTimeout: 10.0,
+    maxTimeout: 60.0,
   };
 }
 
@@ -105,10 +100,8 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, checkType }: Props)
           <Input value={120} prefix="Every" suffix="seconds" width={20} readOnly />
         ) : (
           <SliderInput
-            validate={(value) => validateFrequency(value, checkType)}
+            validate={(value) => validateFrequency(value, maxFrequency)}
             name="frequency"
-            prefixLabel={'Every'}
-            suffixLabel={'seconds'}
             min={minFrequency}
             max={maxFrequency}
             defaultValue={defaultFrequency ?? frequency / 1000}
@@ -128,13 +121,11 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, checkType }: Props)
         ) : (
           <SliderInput
             name="timeout"
-            validate={(value) => validateTimeout(value, checkType)}
+            validate={(value) => validateTimeout(value, maxTimeout, minTimeout)}
             defaultValue={defaultTimeout ?? timeout / 1000}
             max={maxTimeout}
             min={minTimeout}
-            step={0.5}
-            suffixLabel="seconds"
-            prefixLabel="After"
+            step={1}
           />
         )}
       </Field>

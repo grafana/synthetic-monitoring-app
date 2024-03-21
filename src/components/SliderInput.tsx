@@ -1,8 +1,10 @@
 import React, { useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Slider, useStyles2 } from '@grafana/ui';
+import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+
+import { TimeSlider } from './TimeSlider/TimeSlider';
 
 interface Props {
   defaultValue: number;
@@ -11,9 +13,7 @@ interface Props {
   name: string;
   id?: string;
   validate?: (value: number) => string | undefined;
-  prefixLabel?: string;
   step?: number;
-  suffixLabel?: string;
   invalid?: boolean;
 }
 
@@ -23,7 +23,8 @@ const getStyles = (theme: GrafanaTheme2) => ({
     align-items: center;
   `,
   slider: css`
-    width: 250px;
+    width: 100%;
+    max-width: 750px;
     margin-right: ${theme.spacing(2)};
     margin-left: ${theme.spacing(1)};
   `,
@@ -35,13 +36,9 @@ const getStyles = (theme: GrafanaTheme2) => ({
   rightMargin: css`
     margin-right: 0.5rem;
   `,
-  sliderInput: css`
-    width: 40px;
-    margin-right: 0.5rem;
-  `,
 });
 
-export const SliderInput = ({ min, max, prefixLabel, suffixLabel, name, step = 1, validate, defaultValue }: Props) => {
+export const SliderInput = ({ min, max, name, step = 1, validate, defaultValue }: Props) => {
   const styles = useStyles2(getStyles);
   const { register, setValue, setError, getValues, clearErrors } = useFormContext(); // TODO: type correctly
 
@@ -52,10 +49,8 @@ export const SliderInput = ({ min, max, prefixLabel, suffixLabel, name, step = 1
 
   return (
     <div className={styles.container} data-testid={name}>
-      {prefixLabel}
       <div className={styles.slider}>
-        <Slider
-          tooltipAlwaysVisible={false}
+        <TimeSlider
           min={min ?? 0}
           max={max}
           step={step}
@@ -71,7 +66,6 @@ export const SliderInput = ({ min, max, prefixLabel, suffixLabel, name, step = 1
           }}
         />
       </div>
-      {suffixLabel}
     </div>
   );
 };
