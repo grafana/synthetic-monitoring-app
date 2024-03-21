@@ -1,13 +1,12 @@
-import React, { useEffect } from 'react';
-import { useFormContext } from 'react-hook-form';
+import React from 'react';
+import { Controller, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { TimeSlider } from './TimeSlider/TimeSlider';
 
-interface Props {
-  defaultValue: number;
+export interface SliderInputProps {
   min: number;
   max: number;
   name: string;
@@ -38,31 +37,20 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
 });
 
-export const SliderInput = ({ min, max, name, step = 1, validate, defaultValue }: Props) => {
+export const SliderInput = ({ min, max, name, step = 1, validate }: SliderInputProps) => {
   const styles = useStyles2(getStyles);
-  const { register, setValue, setError, getValues, clearErrors } = useFormContext(); // TODO: type correctly
-
-  useEffect(() => {
-    register(name);
-    setValue(name, defaultValue);
-  }, [name, register, defaultValue, setValue]);
+  const { control } = useFormContext(); // TODO: type correctly
 
   return (
     <div className={styles.container} data-testid={name}>
       <div className={styles.slider}>
-        <TimeSlider
-          min={min ?? 0}
-          max={max}
-          step={step}
-          value={getValues(name)}
-          onChange={(value) => {
-            const error = validate && validate(value);
-            if (error) {
-              setError(name, { message: error });
-            } else {
-              clearErrors(name);
-              setValue(name, value);
-            }
+        <Controller
+          name={name}
+          control={control}
+          rules={{ validate: (v) => validate?.(v) }}
+          render={({ field }) => {
+            const { ref, ...rest } = field;
+            return <TimeSlider {...rest} min={min ?? 0} max={max} step={step} />;
           }}
         />
       </div>

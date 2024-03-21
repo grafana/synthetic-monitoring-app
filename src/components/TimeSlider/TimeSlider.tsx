@@ -1,4 +1,4 @@
-import React, { ChangeEvent, FocusEvent, useCallback, useEffect, useState } from 'react';
+import React, { ChangeEvent, FocusEvent, useCallback, useState } from 'react';
 import { Input, useStyles2 } from '@grafana/ui';
 import { cx } from '@emotion/css';
 import { Global } from '@emotion/react';
@@ -14,6 +14,7 @@ export interface SliderProps {
   /** If the value is true, it means a continuous value interval, otherwise, it is a independent value. */
   included?: boolean;
   value?: number;
+  // defaultValue: number;
   onChange?: (value: number) => void;
   onAfterChange?: (value?: number) => void;
   formatTooltipResult?: (value: number) => number;
@@ -25,6 +26,7 @@ export function TimeSlider({
   max,
   onChange,
   onAfterChange,
+  // defaultValue,
   step,
   value,
   ariaLabelForHandle,
@@ -37,14 +39,6 @@ export function TimeSlider({
   const [sliderValue, setSliderValue] = useState<number>(value ?? min);
   const [seconds, setSeconds] = useState<number>(initialSeconds);
   const [minutes, setMinutes] = useState<number>(initialMinutes);
-
-  useEffect(() => {
-    if (value !== undefined && value !== sliderValue) {
-      setSliderValue(value);
-      setMinutes(Math.floor(value / 60));
-      setSeconds(value % 60);
-    }
-  }, [value, sliderValue]);
 
   const onSliderChange = useCallback(
     (v: number | number[]) => {
@@ -133,7 +127,7 @@ export function TimeSlider({
           min={min}
           max={max}
           step={step}
-          defaultValue={value}
+          // defaultValue={defaultValue}
           value={sliderValue}
           onChange={onSliderChange}
           onChangeComplete={handleChangeComplete}

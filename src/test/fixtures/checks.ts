@@ -161,7 +161,7 @@ export const BASIC_SCRIPTED_CHECK: ScriptedCheck = {
   labels: [{ name: 'scriptedLabelName', value: 'scriptedLabelValue' }],
   probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
   timeout: 10000,
-  frequency: 60000,
+  frequency: 60 * 1000 * 10,
   alertSensitivity: 'none',
   basicMetricsOnly: true,
   settings: {
@@ -178,7 +178,7 @@ export const BASIC_MULTIHTTP_CHECK: MultiHTTPCheck = {
   enabled: true,
   labels: [{ name: 'labelName', value: 'labelValue' }],
   probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
-  timeout: 2000,
+  timeout: 5000,
   frequency: 110000,
   alertSensitivity: 'none',
   basicMetricsOnly: true,

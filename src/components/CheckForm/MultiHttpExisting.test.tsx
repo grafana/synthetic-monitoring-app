@@ -37,11 +37,11 @@ describe('editing multihttp check', () => {
     expect(await screen.findByText(PRIVATE_PROBE.name)).toBeInTheDocument();
 
     const [frequencyMinutes, frequencySeconds] = await getSlider('frequency');
-    expect(frequencyMinutes).toHaveValue((targetCheck.frequency / 1000 / 60).toString());
-    expect(frequencySeconds).toHaveValue((targetCheck.frequency / 1000).toString());
+    expect(frequencyMinutes).toHaveValue(Math.floor(targetCheck.frequency / 1000 / 60).toString());
+    expect(frequencySeconds).toHaveValue(((targetCheck.frequency / 1000) % 60).toString());
 
     const [timeoutMinutes, timeoutSeconds] = await getSlider('timeout');
-    expect(timeoutMinutes).toHaveValue((targetCheck.timeout / 1000 / 60).toString());
+    expect(timeoutMinutes).toHaveValue(Math.floor(targetCheck.timeout / 1000 / 60).toString());
     expect(timeoutSeconds).toHaveValue(((targetCheck.timeout / 1000) % 60).toString());
 
     // labels

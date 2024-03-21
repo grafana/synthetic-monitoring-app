@@ -106,7 +106,7 @@ describe('new checks', () => {
       alertSensitivity: AlertSensitivity.None,
       basicMetricsOnly: true,
       enabled: true,
-      frequency: 120000,
+      frequency: 60 * 1000 * 5, // 5 minutes
       job: JOB,
       labels: LABELS,
       probes: [PUBLIC_PROBE.id],

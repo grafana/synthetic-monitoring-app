@@ -23,14 +23,12 @@ function getFrequencyBounds(checkType: CheckType) {
     return {
       minFrequency: 60.0,
       maxFrequency: oneHour,
-      defaultFrequency: 120.0,
     };
   }
   if (checkType === CheckType.MULTI_HTTP || checkType === CheckType.Scripted) {
     return {
       minFrequency: 60.0,
       maxFrequency: oneHour,
-      defaultFrequency: 60.0 * 5,
     };
   }
   return {
@@ -44,14 +42,12 @@ function getTimeoutBounds(checkType: CheckType) {
     return {
       minTimeout: 30.0,
       maxTimeout: 30.0,
-      defaultTimeout: 30.0,
     };
   }
   if (checkType === CheckType.Scripted || checkType === CheckType.MULTI_HTTP) {
     return {
       minTimeout: 5.0,
       maxTimeout: 60.0,
-      defaultTimeout: 15.0,
     };
   }
   return {
@@ -67,8 +63,8 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, checkType }: Props)
     formState: { errors },
   } = useFormContext<CheckFormValues>();
   const isTraceroute = checkType === CheckType.Traceroute;
-  const { minFrequency, maxFrequency, defaultFrequency } = getFrequencyBounds(checkType);
-  const { minTimeout, maxTimeout, defaultTimeout } = getTimeoutBounds(checkType);
+  const { minFrequency, maxFrequency } = getFrequencyBounds(checkType);
+  const { minTimeout, maxTimeout } = getTimeoutBounds(checkType);
 
   return (
     <div>
@@ -105,7 +101,6 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, checkType }: Props)
             name="frequency"
             min={minFrequency}
             max={maxFrequency}
-            defaultValue={defaultFrequency ?? frequency / 1000}
           />
         )}
       </Field>
@@ -123,7 +118,6 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, checkType }: Props)
           <SliderInput
             name="timeout"
             validate={(value) => validateTimeout(value, maxTimeout, minTimeout)}
-            defaultValue={defaultTimeout ?? timeout / 1000}
             max={maxTimeout}
             min={minTimeout}
             step={1}
