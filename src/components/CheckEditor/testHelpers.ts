@@ -8,7 +8,7 @@ import { DNS_RESPONSE_MATCH_OPTIONS } from 'components/constants';
 export const toggleSection = async (sectionName: string, user: UserEvent): Promise<HTMLElement> => {
   const sectionHeader = await screen.findByText(sectionName);
   await user.click(sectionHeader);
-  return sectionHeader.parentElement?.parentElement ?? new HTMLElement();
+  return sectionHeader.parentElement?.parentElement?.parentElement?.parentElement ?? new HTMLElement();
 };
 
 export const submitForm = async (user: UserEvent) => {
