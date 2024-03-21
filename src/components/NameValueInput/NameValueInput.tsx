@@ -6,7 +6,7 @@ import { css } from '@emotion/css';
 import { CheckFormValues, Probe } from 'types';
 import { isHttpErrors } from 'utils.types';
 
-type NameValueName = 'settings.http.headers' | 'settings.http.proxyConnectHeaders' | 'labels';
+export type NameValueName = 'settings.http.headers' | 'settings.http.proxyConnectHeaders' | 'labels';
 
 interface Props {
   ariaLabelSuffix?: string;

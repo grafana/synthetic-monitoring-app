@@ -1,5 +1,5 @@
 import React from 'react';
-import { Controller, useFormContext } from 'react-hook-form';
+import { Controller, FieldPath, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Field, Input, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
@@ -15,7 +15,7 @@ type RequestMethodInputProps = {
   'data-testid'?: string;
   checkType: CheckType;
   id: string;
-  name: any;
+  name: FieldPath<CheckFormValues>;
   showQueryParams?: boolean;
 };
 
