@@ -15,10 +15,10 @@ function getQueryRunner(metrics: DataSourceRef, minStep: string) {
         # so make it a 1 if there was at least one success and a 0 otherwise
         ceil(
           # the number of successes across all probes
-          sum by (instance, job) (increase(probe_all_success_sum{instance="$instance", job="$job"}[$rate_interval]))
+          sum by (instance, job) (increase(probe_all_success_sum{instance="$instance", job="$job"}[$__rate_interval]))
           /
           # the total number of times we checked across all probes
-          (sum by (instance, job) (increase(probe_all_success_count{instance="$instance", job="$job"}[$rate_interval])) + 1) # + 1 because we want to make sure it goes to 1, not 2
+          (sum by (instance, job) (increase(probe_all_success_count{instance="$instance", job="$job"}[$__rate_interval])) + 1) # + 1 because we want to make sure it goes to 1, not 2
         )`,
         hide: false,
         instant: false,
