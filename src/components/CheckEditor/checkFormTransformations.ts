@@ -877,7 +877,6 @@ export const getCheckFromFormValues = (formValues: CheckFormValues): Check => {
     return {
       ...base,
       timeout: 30000,
-      frequency: 120000,
       settings: {
         traceroute: getTracerouteSettings(formValues.settings.traceroute),
       },

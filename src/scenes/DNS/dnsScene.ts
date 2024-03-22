@@ -47,7 +47,6 @@ export function getDNSScene({ metrics, logs, singleCheckMode }: DashboardSceneAp
     const variables = new SceneVariableSet({ variables: [probe, job, instance] });
 
     const minStep = getMinStepFromFrequency(checks?.[0]?.frequency);
-    console.log({ minStep });
     const errorMap = getErrorRateMapPanel(metrics, minStep);
     const uptime = getUptimeStat(metrics, minStep);
     const reachability = getReachabilityStat(metrics, minStep);

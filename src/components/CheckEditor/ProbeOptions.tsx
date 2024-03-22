@@ -21,7 +21,7 @@ function getFrequencyBounds(checkType: CheckType) {
   const oneHour = 60 * 60;
   if (checkType === CheckType.Traceroute) {
     return {
-      minFrequency: 60.0,
+      minFrequency: 120.0,
       maxFrequency: oneHour,
     };
   }
@@ -92,17 +92,12 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, checkType }: Props)
         invalid={Boolean(errors.frequency)}
         error={errors.frequency?.message}
       >
-        {checkType === CheckType.Traceroute || checkType === CheckType.Scripted ? (
-          // This is just a placeholder for now, the frequency for traceroute checks is hardcoded in the submit
-          <Input value={120} prefix="Every" suffix="seconds" width={20} readOnly />
-        ) : (
-          <SliderInput
-            validate={(value) => validateFrequency(value, maxFrequency)}
-            name="frequency"
-            min={minFrequency}
-            max={maxFrequency}
-          />
-        )}
+        <SliderInput
+          validate={(value) => validateFrequency(value, maxFrequency)}
+          name="frequency"
+          min={minFrequency}
+          max={maxFrequency}
+        />
       </Field>
       <Field
         label="Timeout"
