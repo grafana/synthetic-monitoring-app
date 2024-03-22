@@ -7,14 +7,14 @@ import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
 import { divideSumByCountTransformation } from './divideSumByCountTransformation';
 
-function getQueryRunner(metrics: DataSourceRef) {
+function getQueryRunner(metrics: DataSourceRef, minStep: string) {
   const queries = [
     {
       expr: 'sum(rate(probe_all_success_sum{instance="$instance", job="$job", probe=~"$probe"}[$__rate_interval]))',
       hide: false,
       instant: false,
       legendFormat: 'sum',
-      interval: '1m',
+      interval: minStep,
       range: true,
       refId: 'A',
     },
@@ -23,7 +23,7 @@ function getQueryRunner(metrics: DataSourceRef) {
       expr: 'sum(rate(probe_all_success_count{instance="$instance", job="$job", probe=~"$probe"}[$__rate_interval]))',
       hide: false,
       instant: false,
-      interval: '1m',
+      interval: minStep,
       legendFormat: 'count',
       range: true,
       refId: 'B',
@@ -39,8 +39,8 @@ function getQueryRunner(metrics: DataSourceRef) {
   };
 }
 
-export function getReachabilityStat(metrics: DataSourceRef) {
-  const { runner } = getQueryRunner(metrics);
+export function getReachabilityStat(metrics: DataSourceRef, minStep: string) {
+  const { runner } = getQueryRunner(metrics, minStep);
   return new ExplorablePanel({
     pluginId: 'stat',
     title: 'Reachability',

@@ -63,3 +63,13 @@ test('default to max when value too high in seconds', async () => {
   expect(minutesInput).toHaveValue('5');
   expect(secondsInput).toHaveValue('0');
 });
+
+test('handles 0 seconds when blurred', async () => {
+  const { user } = await renderSliderInput({ name: 'timeout', min: 1, max: 300, defaultValue: 130 });
+  const [minutesInput, secondsInput] = await getSlider('timeout');
+  await user.clear(secondsInput);
+  await user.type(secondsInput, '0');
+  await user.click(document.body);
+  expect(minutesInput).toHaveValue('2');
+  expect(secondsInput).toHaveValue('0');
+});

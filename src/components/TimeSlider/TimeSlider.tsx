@@ -26,7 +26,6 @@ export function TimeSlider({
   max,
   onChange,
   onAfterChange,
-  // defaultValue,
   step,
   value,
   ariaLabelForHandle,
@@ -101,7 +100,7 @@ export function TimeSlider({
 
       if (totalSeconds > max) {
         onSliderChange(max);
-      } else if (v < min) {
+      } else if (totalSeconds < min) {
         onSliderChange(min);
       } else {
         onSliderChange(totalSeconds);
@@ -127,7 +126,6 @@ export function TimeSlider({
           min={min}
           max={max}
           step={step}
-          // defaultValue={defaultValue}
           value={sliderValue}
           onChange={onSliderChange}
           onChangeComplete={handleChangeComplete}

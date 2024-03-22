@@ -15,6 +15,7 @@ import { Check, CheckType, DashboardSceneAppConfig } from 'types';
 import { getAlertAnnotations } from 'scenes/Common/alertAnnotations';
 import { getEditButton } from 'scenes/Common/editButton';
 import { getEmptyScene } from 'scenes/Common/emptyScene';
+import { getMinStepFromFrequency } from 'scenes/utils';
 
 import {
   getAvgLatencyStat,
@@ -40,16 +41,18 @@ export function getHTTPScene({ metrics, logs, singleCheckMode }: DashboardSceneA
       return getEmptyScene(CheckType.HTTP);
     }
 
+    const minStep = getMinStepFromFrequency(checks?.[0]?.frequency);
+
     const { probe, job, instance } = getVariables(CheckType.HTTP, metrics, checks, singleCheckMode);
     const variableSet = new SceneVariableSet({ variables: [probe, job, instance] });
 
-    const mapPanel = getErrorRateMapPanel(metrics);
-    const uptime = getUptimeStat(metrics);
-    const reachability = getReachabilityStat(metrics);
-    const avgLatency = getAvgLatencyStat(metrics);
+    const mapPanel = getErrorRateMapPanel(metrics, minStep);
+    const uptime = getUptimeStat(metrics, minStep);
+    const reachability = getReachabilityStat(metrics, minStep);
+    const avgLatency = getAvgLatencyStat(metrics, minStep);
     const sslExpiryStat = getSSLExpiryStat(metrics);
     const frequency = getFrequencyStat(metrics);
-    const errorTimeseries = getErrorRateTimeseries(metrics);
+    const errorTimeseries = getErrorRateTimeseries(metrics, minStep);
 
     const statRow = new SceneFlexLayout({
       direction: 'row',
