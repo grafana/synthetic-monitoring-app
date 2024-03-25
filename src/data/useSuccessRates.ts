@@ -6,6 +6,7 @@ import { queryMetric } from 'utils';
 import { MetricCheckSuccess, MetricProbeSuccessRate } from 'datasource/responses.types';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { STANDARD_REFRESH_INTERVAL } from 'components/constants';
+import { getMinStepFromFrequency } from 'scenes/utils';
 
 import { findCheckinMetrics } from './utils';
 
@@ -40,10 +41,15 @@ export function useCheckReachabilitySuccessRate(check: Check) {
   };
 }
 
-export function useChecksUptimeSuccessRate() {
-  const { url, options } = useQueryMetric();
-  const query = `sum_over_time((ceil(sum by (instance, job) (increase(probe_all_success_sum[5m])) / sum by (instance, job) (increase(probe_all_success_count[5m]))))[3h:])
-  / count_over_time((sum by (instance, job) (increase(probe_all_success_count[5m])))[3h:])`;
+export function useCheckUptimeSuccessRate(check: Check) {
+  const { url, options } = useQueryMetric(getMinStepFromFrequency(check.frequency));
+
+  const query = `
+  ceil(
+    sum by (instance, job) (increase(probe_all_success_sum{instance="${check.target}", job="${check.job}"}[3h]))
+    /
+    (sum by (instance, job) (increase(probe_all_success_count{instance="${check.target}", job="${check.job}"}[3h])) + 1)
+  )`;
 
   return useQuery({
     // we add 'now' as an option so can't add it to the query key
@@ -53,16 +59,6 @@ export function useChecksUptimeSuccessRate() {
     queryFn: () => queryMetric<MetricCheckSuccess>(url, query, options),
     refetchInterval: (query) => STANDARD_REFRESH_INTERVAL,
   });
-}
-
-export function useCheckUptimeSuccessRate(check: Check) {
-  const props = useChecksUptimeSuccessRate();
-  const checkSuccessRate = props.data?.find((d) => d.metric.instance === check.target && d.metric.job === check.job);
-
-  return {
-    ...props,
-    data: checkSuccessRate,
-  };
 }
 
 export function useProbesReachabilitySuccessRate() {
@@ -89,7 +85,7 @@ export function useProbeReachabilitySuccessRate(probeName?: string) {
   };
 }
 
-function useQueryMetric() {
+function useQueryMetric(interval?: string) {
   const { instance } = useContext(InstanceContext);
   const url = instance.api?.getMetricsDS()?.url || ``;
   const now = Math.floor(Date.now() / 1000);
@@ -99,6 +95,7 @@ function useQueryMetric() {
     start: threeHoursAgo,
     end: now,
     step: 0,
+    interval,
   };
 
   return { url, options };

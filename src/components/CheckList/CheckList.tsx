@@ -16,7 +16,7 @@ import {
 } from 'types';
 import { MetricCheckSuccess, Time } from 'datasource/responses.types';
 import { useSuspenseChecks } from 'data/useChecks';
-import { useChecksReachabilitySuccessRate, useChecksUptimeSuccessRate } from 'data/useSuccessRates';
+import { useChecksReachabilitySuccessRate } from 'data/useSuccessRates';
 import { findCheckinMetrics } from 'data/utils';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { defaultFilters, getDefaultFilters } from 'components/CheckFilters';
@@ -59,7 +59,6 @@ type CheckListContentProps = {
 
 const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps) => {
   const { data: checks } = useSuspenseChecks();
-  const { data: uptimeSuccessRates = [] } = useChecksUptimeSuccessRate();
   const { data: reachabilitySuccessRates = [] } = useChecksReachabilitySuccessRate();
   const [checkFilters, setCheckFilters] = useState<CheckFiltersType>(getDefaultFilters());
   const [currentPage, setCurrentPage] = useState(1);
@@ -70,7 +69,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   const CHECKS_PER_PAGE = viewType === CheckListViewType.Card ? CHECKS_PER_PAGE_CARD : CHECKS_PER_PAGE_LIST;
 
   const filteredChecks = filterChecks(checks, checkFilters);
-  const sortedChecks = sortChecks(filteredChecks, sortType, uptimeSuccessRates, reachabilitySuccessRates);
+  const sortedChecks = sortChecks(filteredChecks, sortType, reachabilitySuccessRates);
   const currentPageChecks = filteredChecks.slice((currentPage - 1) * CHECKS_PER_PAGE, currentPage * CHECKS_PER_PAGE);
 
   const isAllSelected = selectedCheckIds.size === filteredChecks.length;
@@ -224,12 +223,7 @@ type MetricCheckSuccessParsed = MetricCheckSuccess & {
   value: [Time, number];
 };
 
-function sortChecks(
-  checks: Check[],
-  sortType: CheckSort,
-  uptimeSuccessRates: MetricCheckSuccessParsed[],
-  reachabilitySuccessRates: MetricCheckSuccessParsed[]
-) {
+function sortChecks(checks: Check[], sortType: CheckSort, reachabilitySuccessRates: MetricCheckSuccessParsed[]) {
   if (sortType === CheckSort.AToZ) {
     return checks.sort((a, b) => a.job.localeCompare(b.job));
   }
@@ -248,21 +242,6 @@ function sortChecks(
   if (sortType === CheckSort.ReachabilityDesc) {
     return checks.sort((a, b) => {
       const [sortA, sortB] = getMetricValues(a, b, reachabilitySuccessRates);
-
-      return sortA - sortB;
-    });
-  }
-
-  if (sortType === CheckSort.UptimeAsc) {
-    return checks.sort((a, b) => {
-      const [sortA, sortB] = getMetricValues(a, b, uptimeSuccessRates);
-      return sortB - sortA;
-    });
-  }
-
-  if (sortType === CheckSort.UptimeDesc) {
-    return checks.sort((a, b) => {
-      const [sortA, sortB] = getMetricValues(a, b, uptimeSuccessRates);
 
       return sortA - sortB;
     });

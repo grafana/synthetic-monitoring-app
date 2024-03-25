@@ -433,14 +433,6 @@ export const CHECK_LIST_SORT_OPTIONS = [
     label: 'Desc. Reachability ',
     value: CheckSort.ReachabilityDesc,
   },
-  {
-    label: 'Asc. Uptime ',
-    value: CheckSort.UptimeAsc,
-  },
-  {
-    label: 'Desc. Uptime ',
-    value: CheckSort.UptimeDesc,
-  },
 ];
 
 export const CHECK_LIST_STATUS_OPTIONS = [

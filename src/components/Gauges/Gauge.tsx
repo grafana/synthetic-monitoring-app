@@ -92,7 +92,7 @@ function formatValue(value: number | null, unit: `%` | `ms`, loading?: boolean) 
     return <Spinner />;
   }
 
-  if (!value) {
+  if (!value && value !== 0) {
     return `N/A`;
   }
 

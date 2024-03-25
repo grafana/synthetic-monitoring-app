@@ -19,7 +19,7 @@ export const SuccessRateGaugeCheckReachability = ({
   onClick,
 }: SuccessRateGaugeCheckReachabilityProps) => {
   const { data, isLoading, isFetching } = useCheckReachabilitySuccessRate(check);
-  const value = data ? data.value[1] : null;
+  const value = data ? data.value?.[1] : null;
 
   return (
     <Gauge
@@ -28,7 +28,7 @@ export const SuccessRateGaugeCheckReachability = ({
       loading={isLoading}
       width={width}
       onClick={onClick}
-      type={`uptime`}
+      type={`reachability`}
       value={value}
       unit="%"
     />

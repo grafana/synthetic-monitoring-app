@@ -14,7 +14,8 @@ type SuccessRateGaugeCheckUptimeProps = {
 
 export const SuccessRateGaugeCheckUptime = ({ check, height, width, onClick }: SuccessRateGaugeCheckUptimeProps) => {
   const { data, isLoading, isFetching } = useCheckUptimeSuccessRate(check);
-  const value = data ? data.value[1] : null;
+
+  const value = data ? data[0]?.value?.[1] : null;
 
   return (
     <Gauge
@@ -23,7 +24,7 @@ export const SuccessRateGaugeCheckUptime = ({ check, height, width, onClick }: S
       loading={isLoading}
       width={width}
       onClick={onClick}
-      type={`reachability`}
+      type={`uptime`}
       value={value}
       unit="%"
     />

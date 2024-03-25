@@ -627,8 +627,6 @@ export type AlertFilter = (record: PrometheusAlertRecord) => boolean;
 export enum CheckSort {
   AToZ = 'atoz',
   ZToA = 'ztoa',
-  UptimeDesc = 'uptimeDesc',
-  UptimeAsc = 'uptimeAsc',
   ReachabilityDesc = 'reachabilityDesc',
   ReachabilityAsc = 'reachabilityAsc',
 }
