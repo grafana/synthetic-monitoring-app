@@ -62,6 +62,9 @@ export function getErrorPctgTimeseriesPanel(metrics: DataSourceRef) {
         min: 0,
         max: 1,
         unit: 'percentunit',
+        custom: {
+          spanNulls: true,
+        },
       },
       overrides: [],
     },

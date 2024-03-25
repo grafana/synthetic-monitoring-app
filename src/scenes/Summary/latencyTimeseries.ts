@@ -33,7 +33,6 @@ function getLatencyQueryRunner(metrics: DataSourceRef) {
         refId: 'A',
       },
     ],
-    // maxDataPoints: 100,
   });
   return queryRunner;
 }
@@ -52,7 +51,7 @@ export function getLatencyTimeseriesPanel(metrics: DataSourceRef) {
           lineWidth: 2,
           fillOpacity: 0,
           gradientMode: 'none',
-          spanNulls: false,
+          spanNulls: true,
           insertNulls: false,
           showPoints: 'never',
           pointSize: 5,
