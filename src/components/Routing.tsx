@@ -3,15 +3,13 @@ import { Redirect, Route, Switch, useLocation } from 'react-router-dom';
 import { AppRootProps } from '@grafana/data';
 import { config } from '@grafana/runtime';
 
-import { FeatureName, ROUTES } from 'types';
+import { ROUTES } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { QueryParamMap, useNavigation } from 'hooks/useNavigation';
 import { useQuery } from 'hooks/useQuery';
 import { AlertingPage } from 'page/AlertingPage';
 import { CheckRouter } from 'page/CheckRouter';
 import { ConfigPage } from 'page/ConfigPage';
-import { DashboardPage } from 'page/DashboardPage';
 import { HomePage } from 'page/HomePage';
 import { getNavModel } from 'page/pageDefinitions';
 import { ProbeRouter } from 'page/ProbeRouter';
@@ -20,13 +18,13 @@ import { WelcomePage } from 'page/WelcomePage';
 
 import { PLUGIN_URL_PATH } from './constants';
 import { DashboardRedirecter } from './DashboardRedirecter';
+import { SceneRedirecter } from './SceneRedirecter';
 
 export const Routing = ({ onNavChanged }: Pick<AppRootProps, 'onNavChanged'>) => {
   const queryParams = useQuery();
   const navigate = useNavigation();
   const location = useLocation();
   const { instance, meta } = useContext(InstanceContext);
-  const { isEnabled: perCheckDashboardsEnabled } = useFeatureFlag(FeatureName.PerCheckDashboards);
   const provisioned = Boolean(meta?.jsonData?.metrics?.grafanaName);
   const initialized = meta?.enabled && instance.api;
   const logo = meta?.info.logos.large || ``;
@@ -72,11 +70,9 @@ export const Routing = ({ onNavChanged }: Pick<AppRootProps, 'onNavChanged'>) =>
       <Route exact path={getRoute(ROUTES.Home)}>
         <HomePage />
       </Route>
-      {!perCheckDashboardsEnabled && (
-        <Route path={getRoute(ROUTES.Scene)}>
-          <DashboardPage />
-        </Route>
-      )}
+      <Route path={getRoute(ROUTES.Scene)}>
+        <SceneRedirecter />
+      </Route>
       <Route path={getRoute(ROUTES.Checks)}>
         <CheckRouter />
       </Route>
