@@ -24,7 +24,7 @@ export const SuccessRateGaugeCheckUptime = ({ check, height, width, onClick }: S
       loading={isLoading}
       width={width}
       onClick={onClick}
-      type={`uptime`}
+      type={'uptime'}
       value={value}
       unit="%"
     />

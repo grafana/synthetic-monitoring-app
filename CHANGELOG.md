@@ -1,6 +1,11 @@
 # Change Log
 
-# [1.12.8](https://github.com/grafana/synthetic-monitoring-app/compare/v1.12.6...v1.12.7) (2024-3-13)
+# [1.12.9](https://github.com/grafana/synthetic-monitoring-app/compare/v1.12.8...v1.12.9) (2024-3-21)
+
+- Fix a bug with bulk unselecting checks
+- Fix a bug that prevented querying for long time periods
+
+# [1.12.8](https://github.com/grafana/synthetic-monitoring-app/compare/v1.12.7...v1.12.8) (2024-3-13)
 
 - Update dashboards to indicate they are deprecated. Newer versions are available inside the app itself.
 - Fix a broken link to check creation when a user has no checks
