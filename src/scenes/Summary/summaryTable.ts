@@ -78,24 +78,6 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
       },
       {
         datasource: metrics,
-        refId: 'uptime',
-        expr: `    ceil(
-                # the number of successes across all probes
-                sum by (instance, job) (increase(probe_all_success_sum{probe=~"$probe"}[5m]) * on (instance, job, probe, config_version) sm_check_info{check_name=~"$check_type", region=~"$region", $Filters })
-                /
-                # the total number of times we checked across all probes
-                (sum by (instance, job) (increase(probe_all_success_count{probe=~"$probe"}[5m])) + 1) # + 1 because we want to make sure it goes to 1, not 2
-              )`,
-        range: true,
-        instant: false,
-        hide: false,
-        interval: '5m',
-        editorMode: 'code',
-        legendFormat: '__auto',
-        format: 'table',
-      },
-      {
-        datasource: metrics,
         refId: 'state',
         expr: `ceil(
             sum by (instance, job, check_name)
@@ -159,13 +141,13 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
               operation: 'aggregate',
             },
             'Value #state': {
-              aggregations: ['last'],
+              aggregations: ['lastNotNull'],
               operation: 'aggregate',
             },
-            'Value #uptime': {
-              aggregations: ['mean'],
-              operation: 'aggregate',
-            },
+            // 'Value #uptime': {
+            //   aggregations: ['mean'],
+            //   operation: 'aggregate',
+            // },
             check_name: {
               aggregations: ['lastNotNull'],
               operation: 'aggregate',
@@ -247,7 +229,7 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
             'Value #latency numer (sum)': 13,
             'Value #reach denom (sum)': 10,
             'Value #reach numer (sum)': 7,
-            'Value #state (last)': 3,
+            'Value #state (lastNotNull)': 3,
             'Value #uptime (mean)': 4,
             'check_name (lastNotNull)': 2,
             'check_name (lastNotNull) 1': 2,
@@ -269,7 +251,7 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
             'Value #latency numer (sum) / Value #latency denom (sum)': 6,
           },
           renameByName: {
-            'Value #state (last)': 'state',
+            'Value #state (lastNotNull)': 'state',
             'Value #uptime (mean)': 'uptime',
             'check_name (lastNotNull)': 'check type',
             'check_name (lastNotNull) 1': 'check type',
