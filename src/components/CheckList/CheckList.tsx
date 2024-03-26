@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { GrafanaTheme2, SelectableValue } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
 import { Pagination, useStyles2 } from '@grafana/ui';
@@ -124,6 +124,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
       return;
     }
     selectedCheckIds.delete(checkId);
+
     setSelectedChecksIds(new Set(selectedCheckIds));
   };
 
@@ -151,6 +152,17 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
     setSelectedChecksIds(new Set());
   };
 
+  const handleFilterChange = (filters: CheckFiltersType) => {
+    setCheckFilters(filters);
+    setCurrentPage(1);
+    const filteredChecks = filterChecks(checks, filters);
+    const alreadySelectedChecks = filteredChecks
+      .filter((check) => selectedCheckIds.has(check.id!))
+      .map((check) => check.id!);
+
+    setSelectedChecksIds(new Set(alreadySelectedChecks));
+  };
+
   if (checks.length === 0) {
     return <EmptyCheckList />;
   }
@@ -165,7 +177,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
           checkFilters={checkFilters}
           currentPageChecks={currentPageChecks}
           onChangeView={handleChangeViewType}
-          onFilterChange={setCheckFilters}
+          onFilterChange={handleFilterChange}
           onSelectAll={handleSelectAll}
           onSort={updateSortMethod}
           onResetFilters={handleResetFilters}
