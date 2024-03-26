@@ -11,20 +11,19 @@ import { useChecks, useCUDChecks } from 'data/useChecks';
 import { useNavigation } from 'hooks/useNavigation';
 import { getCheckFromFormValues, getFormValuesFromCheck } from 'components/CheckEditor/checkFormTransformations';
 import { PROBES_SELECT_ID } from 'components/CheckEditor/CheckProbes';
-import { CheckEnabled } from 'components/CheckEditor/FormComponents/CheckEnabled';
-import { CheckJobName } from 'components/CheckEditor/FormComponents/CheckJobName';
-import { CheckFormAlert } from 'components/CheckFormAlert';
 import { CheckTestResultsModal } from 'components/CheckTestResultsModal';
 import { CHECK_FORM_ERROR_EVENT, fallbackCheckMap } from 'components/constants';
 import { MultiHttpFeedbackAlert } from 'components/MultiHttp/MultiHttpFeedbackAlert';
 import { PluginPage } from 'components/PluginPage';
 import { getRoute } from 'components/Routing';
 
+import { CheckDNSLayout } from './FormLayouts/CheckDNSLayout';
 import { CheckHTTPLayout } from './FormLayouts/CheckHttpLayout';
 import { CheckMultiHTTPLayout } from './FormLayouts/CheckMultiHttpLayout';
-import { MultiHttpCheckFormFields } from './MultiHttpCheckFormFields';
-import { ScriptedCheckFormFields } from './ScriptedCheckFormFields';
-import { SimpleCheckFormFields } from './SimpleCheckFormFields';
+import { CheckPingLayout } from './FormLayouts/CheckPingLayout';
+import { CheckScriptedLayout } from './FormLayouts/CheckScriptedLayout';
+import { CheckTCPLayout } from './FormLayouts/CheckTCPLayout';
+import { CheckTracerouteLayout } from './FormLayouts/CheckTracerouteLayout';
 import { useAdhocTest } from './useTestCheck';
 
 export const CheckForm = () => {
@@ -120,7 +119,6 @@ const CheckFormContent = ({ check, checkType }: CheckFormContentProps) => {
         <FormProvider {...formMethods}>
           <form onSubmit={formMethods.handleSubmit(handleSubmit, handleError)}>
             <CheckSelector checkType={checkType} />
-            <CheckFormAlert />
             <HorizontalGroup>
               <Button type="submit" disabled={formMethods.formState.isSubmitting || submitting}>
                 Save
@@ -183,25 +181,27 @@ const CheckSelector = ({ checkType }: { checkType: CheckType }) => {
     return <CheckMultiHTTPLayout />;
   }
 
-  return (
-    <>
-      <CheckEnabled />
-      <CheckJobName />
-      <FormFields checkType={checkType} />
-    </>
-  );
-};
-
-const FormFields = ({ checkType }: { checkType: CheckType }) => {
-  if (checkType === CheckType.MULTI_HTTP) {
-    return <MultiHttpCheckFormFields />;
-  }
-
   if (checkType === CheckType.Scripted) {
-    return <ScriptedCheckFormFields />;
+    return <CheckScriptedLayout />;
   }
 
-  return <SimpleCheckFormFields checkType={checkType} />;
+  if (checkType === CheckType.PING) {
+    return <CheckPingLayout />;
+  }
+
+  if (checkType === CheckType.DNS) {
+    return <CheckDNSLayout />;
+  }
+
+  if (checkType === CheckType.TCP) {
+    return <CheckTCPLayout />;
+  }
+
+  if (checkType === CheckType.Traceroute) {
+    return <CheckTracerouteLayout />;
+  }
+
+  throw new Error(`Invalid check type: ${checkType}`);
 };
 
 function isValidCheckType(checkType?: CheckType): checkType is CheckType {

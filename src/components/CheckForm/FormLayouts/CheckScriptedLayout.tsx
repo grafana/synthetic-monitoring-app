@@ -1,26 +1,27 @@
 import React from 'react';
 
-import { CheckFormValuesMultiHttp, CheckType } from 'types';
+import { CheckFormValuesScripted, CheckType } from 'types';
 import { CheckEnabled } from 'components/CheckEditor/FormComponents/CheckEnabled';
 import { CheckJobName } from 'components/CheckEditor/FormComponents/CheckJobName';
-import { MultiHttpCheckRequests } from 'components/CheckEditor/FormComponents/MultiHttpCheckRequests';
+import { ScriptedCheckInstance } from 'components/CheckEditor/FormComponents/ScriptedCheckInstance';
+import { ScriptedCheckScript } from 'components/CheckEditor/FormComponents/ScriptedCheckScript';
 import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
 import { CheckFormAlert } from 'components/CheckFormAlert';
 import { Collapse } from 'components/Collapse';
 import { LabelField } from 'components/LabelField';
 
-export const CheckMultiHTTPLayout = () => {
+export const CheckScriptedLayout = () => {
   return (
     <>
       <Collapse label="General settings" isOpen>
         <CheckEnabled />
         <CheckJobName />
-        <ProbeOptions checkType={CheckType.MULTI_HTTP} />
-        <LabelField<CheckFormValuesMultiHttp> />
+        <ScriptedCheckInstance />
+        <ProbeOptions checkType={CheckType.Scripted} />
+        <LabelField<CheckFormValuesScripted> />
       </Collapse>
-      <Collapse label="Requests">
-        <div>At least one target HTTP is required; limit 10 requests per check.</div>
-        <MultiHttpCheckRequests />
+      <Collapse label="Script">
+        <ScriptedCheckScript />
       </Collapse>
       <Collapse label="Alerting">
         <CheckFormAlert />
