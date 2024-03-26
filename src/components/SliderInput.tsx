@@ -1,5 +1,4 @@
-import React, { useEffect } from 'react';
-import { useFormContext } from 'react-hook-form';
+import React, { useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Slider, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
@@ -15,6 +14,7 @@ interface Props {
   step?: number;
   suffixLabel?: string;
   invalid?: boolean;
+  onChange: (value: number) => void;
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({
@@ -41,14 +41,18 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
 });
 
-export const SliderInput = ({ min, max, prefixLabel, suffixLabel, name, step = 1, validate, defaultValue }: Props) => {
+export const SliderInput = ({
+  min = 0,
+  max,
+  prefixLabel,
+  suffixLabel,
+  name,
+  step = 1,
+  defaultValue,
+  onChange,
+}: Props) => {
   const styles = useStyles2(getStyles);
-  const { register, setValue, setError, getValues, clearErrors } = useFormContext(); // TODO: type correctly
-
-  useEffect(() => {
-    register(name);
-    setValue(name, defaultValue);
-  }, [name, register, defaultValue, setValue]);
+  const [internalValue, setInternalValue] = useState(defaultValue);
 
   return (
     <div className={styles.container} data-testid={name}>
@@ -56,18 +60,13 @@ export const SliderInput = ({ min, max, prefixLabel, suffixLabel, name, step = 1
       <div className={styles.slider}>
         <Slider
           tooltipAlwaysVisible={false}
-          min={min ?? 0}
+          min={min}
           max={max}
           step={step}
-          value={getValues(name)}
+          value={internalValue}
           onChange={(value) => {
-            const error = validate && validate(value);
-            if (error) {
-              setError(name, { message: error });
-            } else {
-              clearErrors(name);
-              setValue(name, value);
-            }
+            setInternalValue(value);
+            onChange(value);
           }}
         />
       </div>

@@ -1,4 +1,4 @@
-import React, { ReactNode, useState } from 'react';
+import React, { ReactNode } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
@@ -18,15 +18,13 @@ const defaultEmptyText = 'No probes found';
 
 export const ProbeList = ({ 'data-testid': dataTestId, probes, title, emptyText = defaultEmptyText }: Props) => {
   const styles = useStyles2(getStyles);
-  const [open, setOpen] = useState(true);
 
   return (
     <Collapse
       className={styles.list}
       data-testid={dataTestId}
-      isOpen={open}
+      isOpen
       label={<h2 className={styles.heading}>{title}</h2>}
-      onToggle={() => setOpen(!open)}
     >
       {probes.length ? (
         probes.map((probe) => {

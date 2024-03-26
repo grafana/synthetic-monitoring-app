@@ -95,8 +95,8 @@ describe('new scripted check', () => {
       alertSensitivity: AlertSensitivity.None,
       basicMetricsOnly: true,
       enabled: true,
-      frequency: 60000,
-      timeout: 10000,
+      frequency: 120000,
+      timeout: 5000,
     });
   });
 });

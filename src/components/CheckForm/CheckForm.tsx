@@ -2,28 +2,28 @@ import React, { BaseSyntheticEvent, useMemo, useRef, useState } from 'react';
 import { FieldErrors, FormProvider, useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 import { GrafanaTheme2, OrgRole } from '@grafana/data';
-import { Alert, Button, ConfirmModal, Field, HorizontalGroup, Input, LinkButton, useStyles2 } from '@grafana/ui';
+import { Alert, Button, ConfirmModal, HorizontalGroup, LinkButton, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Check, CheckFormValues, CheckPageParams, CheckType, ROUTES } from 'types';
-import { isMultiHttpCheck, isScriptedCheck } from 'utils.types';
 import { hasRole } from 'utils';
-import { validateJob } from 'validation';
 import { useChecks, useCUDChecks } from 'data/useChecks';
 import { useNavigation } from 'hooks/useNavigation';
 import { getCheckFromFormValues, getFormValuesFromCheck } from 'components/CheckEditor/checkFormTransformations';
 import { PROBES_SELECT_ID } from 'components/CheckEditor/CheckProbes';
-import { CheckFormAlert } from 'components/CheckFormAlert';
 import { CheckTestResultsModal } from 'components/CheckTestResultsModal';
 import { CHECK_FORM_ERROR_EVENT, fallbackCheckMap } from 'components/constants';
-import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 import { MultiHttpFeedbackAlert } from 'components/MultiHttp/MultiHttpFeedbackAlert';
 import { PluginPage } from 'components/PluginPage';
 import { getRoute } from 'components/Routing';
 
-import { MultiHttpCheckFormFields } from './MultiHttpCheckFormFields';
-import { ScriptedCheckFormFields } from './ScriptedCheckFormFields';
-import { SimpleCheckFormFields } from './SimpleCheckFormFields';
+import { CheckDNSLayout } from './FormLayouts/CheckDNSLayout';
+import { CheckHTTPLayout } from './FormLayouts/CheckHttpLayout';
+import { CheckMultiHTTPLayout } from './FormLayouts/CheckMultiHttpLayout';
+import { CheckPingLayout } from './FormLayouts/CheckPingLayout';
+import { CheckScriptedLayout } from './FormLayouts/CheckScriptedLayout';
+import { CheckTCPLayout } from './FormLayouts/CheckTCPLayout';
+import { CheckTracerouteLayout } from './FormLayouts/CheckTracerouteLayout';
 import { useAdhocTest } from './useTestCheck';
 
 export const CheckForm = () => {
@@ -51,7 +51,7 @@ const CheckFormContent = ({ check, checkType }: CheckFormContentProps) => {
   const { adhocTestData, closeModal, isPending, openTestCheckModal, testCheck, testCheckError } =
     useAdhocTest(checkType);
 
-  const initialValues = useMemo(() => getFormValuesFromCheck(check), [check]);
+  const initialValues = useMemo(() => getFormValuesFromCheck(check, checkType), [check, checkType]);
   const formMethods = useForm<CheckFormValues>({
     defaultValues: initialValues,
     shouldFocusError: false, // we manage focus manually
@@ -118,33 +118,7 @@ const CheckFormContent = ({ check, checkType }: CheckFormContentProps) => {
       <>
         <FormProvider {...formMethods}>
           <form onSubmit={formMethods.handleSubmit(handleSubmit, handleError)}>
-            <HorizontalCheckboxField
-              disabled={!isEditor}
-              id="check-form-enabled"
-              label="Enabled"
-              description="If a check is enabled, metrics and logs are published to your Grafana Cloud stack."
-              {...formMethods.register('enabled')}
-            />
-            <Field
-              label="Job name"
-              description={'Name used for job label (in metrics it will appear as `jobName=X`)'}
-              disabled={!isEditor}
-              invalid={Boolean(formMethods.formState.errors.job)}
-              error={formMethods.formState.errors.job?.message}
-              required
-            >
-              <Input
-                id="check-editor-job-input"
-                {...formMethods.register('job', {
-                  required: { value: true, message: 'Job name is required' },
-                  validate: validateJob,
-                })}
-                type="text"
-                placeholder="jobName"
-              />
-            </Field>
-            <FormFields check={check} checkType={checkType} />
-            <CheckFormAlert />
+            <CheckSelector checkType={checkType} />
             <HorizontalGroup>
               <Button type="submit" disabled={formMethods.formState.isSubmitting || submitting}>
                 Save
@@ -198,16 +172,36 @@ const CheckFormContent = ({ check, checkType }: CheckFormContentProps) => {
   );
 };
 
-const FormFields = ({ check, checkType }: { check: Check; checkType: CheckType }) => {
-  if (isMultiHttpCheck(check)) {
-    return <MultiHttpCheckFormFields check={check} />;
+const CheckSelector = ({ checkType }: { checkType: CheckType }) => {
+  if (checkType === CheckType.HTTP) {
+    return <CheckHTTPLayout />;
   }
 
-  if (isScriptedCheck(check)) {
-    return <ScriptedCheckFormFields check={check} />;
+  if (checkType === CheckType.MULTI_HTTP) {
+    return <CheckMultiHTTPLayout />;
   }
 
-  return <SimpleCheckFormFields check={check} checkType={checkType} />;
+  if (checkType === CheckType.Scripted) {
+    return <CheckScriptedLayout />;
+  }
+
+  if (checkType === CheckType.PING) {
+    return <CheckPingLayout />;
+  }
+
+  if (checkType === CheckType.DNS) {
+    return <CheckDNSLayout />;
+  }
+
+  if (checkType === CheckType.TCP) {
+    return <CheckTCPLayout />;
+  }
+
+  if (checkType === CheckType.Traceroute) {
+    return <CheckTracerouteLayout />;
+  }
+
+  throw new Error(`Invalid check type: ${checkType}`);
 };
 
 function isValidCheckType(checkType?: CheckType): checkType is CheckType {

@@ -1,8 +1,10 @@
 import React from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
+import { OrgRole } from '@grafana/data';
 import { Field, Input } from '@grafana/ui';
 
 import { CheckFormValues, CheckType } from 'types';
+import { hasRole } from 'utils';
 import { validateFrequency, validateProbes, validateTimeout } from 'validation';
 import { useProbes } from 'data/useProbes';
 import { SliderInput } from 'components/SliderInput';
@@ -11,9 +13,6 @@ import { Subheader } from 'components/Subheader';
 import CheckProbes from './CheckProbes';
 
 interface Props {
-  isEditor: boolean;
-  timeout: number;
-  frequency: number;
   checkType: CheckType;
 }
 
@@ -42,7 +41,6 @@ function getTimeoutBounds(checkType: CheckType) {
     return {
       minTimeout: 30.0,
       maxTimeout: 30.0,
-      defaultTimeout: 30.0,
     };
   }
   if (checkType === CheckType.MULTI_HTTP) {
@@ -55,7 +53,6 @@ function getTimeoutBounds(checkType: CheckType) {
     return {
       minTimeout: 5.0,
       maxTimeout: 30.0,
-      defaultTimeout: 10.0,
     };
   }
   return {
@@ -64,15 +61,21 @@ function getTimeoutBounds(checkType: CheckType) {
   };
 }
 
-export const ProbeOptions = ({ frequency, timeout, isEditor, checkType }: Props) => {
+export const ProbeOptions = ({ checkType }: Props) => {
   const { data: probes = [] } = useProbes();
   const {
     control,
     formState: { errors },
+    register,
+    getValues,
+    setValue,
   } = useFormContext<CheckFormValues>();
   const isTraceroute = checkType === CheckType.Traceroute;
-  const { minFrequency, maxFrequency, defaultFrequency } = getFrequencyBounds(checkType);
-  const { minTimeout, maxTimeout, defaultTimeout } = getTimeoutBounds(checkType);
+  const { minFrequency, maxFrequency } = getFrequencyBounds(checkType);
+  const { minTimeout, maxTimeout } = getTimeoutBounds(checkType);
+  const isEditor = hasRole(OrgRole.Editor);
+  const { ref: refFreq, ...fieldFrequency } = register('frequency', { valueAsNumber: true });
+  const { ref: refTimeout, ...fieldTimeout } = register('timeout', { valueAsNumber: true });
 
   return (
     <div>
@@ -106,12 +109,16 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, checkType }: Props)
         ) : (
           <SliderInput
             validate={(value) => validateFrequency(value, checkType)}
-            name="frequency"
             prefixLabel={'Every'}
             suffixLabel={'seconds'}
+            {...fieldFrequency}
+            defaultValue={getValues('frequency')}
+            onChange={(number) => {
+              validateFrequency(number, checkType);
+              setValue(`frequency`, number);
+            }}
             min={minFrequency}
             max={maxFrequency}
-            defaultValue={defaultFrequency ?? frequency / 1000}
           />
         )}
       </Field>
@@ -127,14 +134,18 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, checkType }: Props)
           <Input value={30} prefix="Every" suffix="seconds" width={20} />
         ) : (
           <SliderInput
-            name="timeout"
             validate={(value) => validateTimeout(value, checkType)}
-            defaultValue={defaultTimeout ?? timeout / 1000}
-            max={maxTimeout}
-            min={minTimeout}
             step={0.5}
             suffixLabel="seconds"
             prefixLabel="After"
+            {...fieldTimeout}
+            defaultValue={getValues('timeout')}
+            onChange={(number) => {
+              validateTimeout(number, checkType);
+              setValue(`frequency`, number);
+            }}
+            max={maxTimeout}
+            min={minTimeout}
           />
         )}
       </Field>
