@@ -6,7 +6,7 @@ import { Field } from '@grafana/ui';
 import { CheckFormValues } from 'types';
 import { hasRole } from 'utils';
 import { validateHTTPHeaderName, validateHTTPHeaderValue } from 'validation';
-import { NameValueInput, NameValueName } from 'components/NameValueInput';
+import { NameValueInput, NameValueName } from 'components/NameValueInput/NameValueInput';
 
 type RequestHeadersProps = {
   ariaLabelSuffix?: string;

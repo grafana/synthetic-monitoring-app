@@ -22,13 +22,6 @@ export const CheckValidation = {
   probes: validateProbes,
 };
 
-export function validateJob(job: string): string | undefined {
-  if (job.length > 128) {
-    return 'Job name must be 128 characters or less';
-  }
-  return undefined;
-}
-
 export function validateTarget(typeOfCheck: CheckType, target: string): string | undefined {
   if (target.length > 2040) {
     return 'Target length must be less than 2040 characters';

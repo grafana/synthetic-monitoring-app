@@ -19,7 +19,6 @@ import {
   TracerouteCheck,
 } from 'types';
 import { AdHocCheckResponse } from 'datasource/responses.types';
-import { TEN_MINUTES_IN_MS } from 'components/constants';
 
 import { PRIVATE_PROBE, PUBLIC_PROBE } from './probes';
 
@@ -153,6 +152,8 @@ export const BASIC_HTTP_CHECK: HTTPCheck = {
   },
   basicMetricsOnly: true,
 };
+
+const TEN_MINUTES_IN_MS = 1000 * 60 * 10;
 
 export const BASIC_SCRIPTED_CHECK: ScriptedCheck = {
   id: 3,
