@@ -34,7 +34,7 @@ describe(`FormLayout`, () => {
     expect(text).toBeVisible();
   });
 
-  it(`only indexes formSection children`, async () => {
+  it(`only indexes children that are formSection`, async () => {
     const firstSectionText = `First section content`;
 
     renderTestForm(
@@ -50,7 +50,7 @@ describe(`FormLayout`, () => {
     expect(text).toBeVisible();
   });
 
-  it(`shows an error icon if any of the fields have errors`, async () => {
+  it(`shows an error icon if any of the fields in that section have errors`, async () => {
     const { container, user } = renderTestForm(
       <FormLayout>
         <FormLayout.Section label="First section" fields={[`job`]}>
