@@ -144,10 +144,6 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
               aggregations: ['lastNotNull'],
               operation: 'aggregate',
             },
-            // 'Value #uptime': {
-            //   aggregations: ['mean'],
-            //   operation: 'aggregate',
-            // },
             check_name: {
               aggregations: ['lastNotNull'],
               operation: 'aggregate',

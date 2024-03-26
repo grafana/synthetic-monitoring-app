@@ -1,7 +1,6 @@
 import React, { ChangeEvent, FocusEvent, useCallback, useState } from 'react';
 import { Input, useStyles2 } from '@grafana/ui';
 import { cx } from '@emotion/css';
-import { Global } from '@emotion/react';
 import SliderComponent from 'rc-slider';
 
 import { getStyles } from './styles';
@@ -119,8 +118,6 @@ export function TimeSlider({
 
   return (
     <div className={cx(styles.container, styles.slider)}>
-      {/** Slider tooltip's parent component is body and therefore we need Global component to do css overrides for it. */}
-      <Global styles={styles.tooltip} />
       <div className={cx(styles.sliderInput)}>
         <SliderWithTooltip
           min={min}

@@ -19,6 +19,7 @@ import {
   TracerouteCheck,
 } from 'types';
 import { AdHocCheckResponse } from 'datasource/responses.types';
+import { TEN_MINUTES_IN_MS } from 'components/constants';
 
 import { PRIVATE_PROBE, PUBLIC_PROBE } from './probes';
 
@@ -161,7 +162,7 @@ export const BASIC_SCRIPTED_CHECK: ScriptedCheck = {
   labels: [{ name: 'scriptedLabelName', value: 'scriptedLabelValue' }],
   probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
   timeout: 10000,
-  frequency: 60 * 1000 * 10,
+  frequency: TEN_MINUTES_IN_MS,
   alertSensitivity: 'none',
   basicMetricsOnly: true,
   settings: {

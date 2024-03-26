@@ -12174,7 +12174,7 @@ rc-slider@10.2.1:
     classnames "^2.2.5"
     rc-util "^5.27.0"
 
-rc-slider@^10.5.0:
+rc-slider@10.5.0:
   version "10.5.0"
   resolved "https://registry.yarnpkg.com/rc-slider/-/rc-slider-10.5.0.tgz#1bd4853d114cb3403b67c485125887adb6a2a117"
   integrity sha512-xiYght50cvoODZYI43v3Ylsqiw14+D7ELsgzR40boDZaya1HFa1Etnv9MDkQE8X/UrXAffwv2AcNAhslgYuDTw==
