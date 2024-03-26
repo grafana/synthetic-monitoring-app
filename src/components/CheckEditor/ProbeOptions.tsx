@@ -1,8 +1,10 @@
 import React from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
+import { OrgRole } from '@grafana/data';
 import { Field, Input } from '@grafana/ui';
 
 import { CheckFormValues, CheckType } from 'types';
+import { hasRole } from 'utils';
 import { validateFrequency, validateProbes, validateTimeout } from 'validation';
 import { useProbes } from 'data/useProbes';
 import { SliderInput } from 'components/SliderInput';
@@ -11,9 +13,6 @@ import { Subheader } from 'components/Subheader';
 import CheckProbes from './CheckProbes';
 
 interface Props {
-  isEditor: boolean;
-  timeout: number;
-  frequency: number;
   checkType: CheckType;
 }
 
@@ -56,7 +55,7 @@ function getTimeoutBounds(checkType: CheckType) {
   };
 }
 
-export const ProbeOptions = ({ frequency, timeout, isEditor, checkType }: Props) => {
+export const ProbeOptions = ({ checkType }: Props) => {
   const { data: probes = [] } = useProbes();
   const {
     control,
@@ -65,6 +64,7 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, checkType }: Props)
   const isTraceroute = checkType === CheckType.Traceroute;
   const { minFrequency, maxFrequency } = getFrequencyBounds(checkType);
   const { minTimeout, maxTimeout } = getTimeoutBounds(checkType);
+  const isEditor = hasRole(OrgRole.Editor);
 
   return (
     <div>

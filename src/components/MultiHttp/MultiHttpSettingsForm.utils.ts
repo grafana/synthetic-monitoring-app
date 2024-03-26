@@ -1,7 +1,7 @@
 import { useReducer } from 'react';
 import { FieldErrors } from 'react-hook-form';
 
-import { CheckFormValuesMultiHttp, MultiHTTPCheck } from 'types';
+import { CheckFormValuesMultiHttp } from 'types';
 
 import { MultiHttpFormTabs } from './MultiHttpTypes';
 
@@ -87,7 +87,7 @@ function reducer(state: RequestPanelState[], action: Action) {
   }
 }
 
-export function useMultiHttpCollapseState(check: MultiHTTPCheck) {
+export function useMultiHttpCollapseState(check: CheckFormValuesMultiHttp) {
   const initialState = check.settings.multihttp.entries?.map((_, index, arr) => ({
     open: index === arr.length - 1,
     activeTab: MultiHttpFormTabs.Headers,

@@ -39,7 +39,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
 
 export const SliderInput = ({ min, max, name, step = 1, validate }: SliderInputProps) => {
   const styles = useStyles2(getStyles);
-  const { control } = useFormContext(); // TODO: type correctly
+  const { control } = useFormContext();
 
   return (
     <div className={styles.container} data-testid={name}>

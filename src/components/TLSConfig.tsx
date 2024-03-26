@@ -1,28 +1,27 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { DeepMap, FieldError, useFormContext } from 'react-hook-form';
+import { OrgRole } from '@grafana/data';
 import { Container, Field, Input, TextArea } from '@grafana/ui';
 
 import { CheckFormValuesHttp, CheckFormValuesTcp, CheckType } from 'types';
+import { hasRole } from 'utils';
 import { validateTLSCACert, validateTLSClientCert, validateTLSClientKey, validateTLSServerName } from 'validation';
-import { Collapse } from 'components/Collapse';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 
 interface Props {
-  isEditor: boolean;
   checkType: CheckType.HTTP | CheckType.TCP;
 }
 
-export const TLSConfig = ({ isEditor, checkType }: Props) => {
-  const [showTLS, setShowTLS] = useState(false);
+export const TLSConfig = ({ checkType }: Props) => {
   const {
     register,
     formState: { errors },
   } = useFormContext<CheckFormValuesHttp | CheckFormValuesTcp>();
-
+  const isEditor = hasRole(OrgRole.Editor);
   const errs = isErrorsHttp(errors) ? errors.settings?.http : isErrorsTcp(errors) ? errors.settings?.tcp : undefined;
 
   return (
-    <Collapse label="TLS config" onToggle={() => setShowTLS(!showTLS)} isOpen={showTLS}>
+    <>
       <HorizontalCheckboxField
         id="tls-config-skip-validation"
         disabled={!isEditor}
@@ -108,7 +107,7 @@ export const TLSConfig = ({ isEditor, checkType }: Props) => {
           />
         </Field>
       </Container>
-    </Collapse>
+    </>
   );
 };
 

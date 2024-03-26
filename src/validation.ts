@@ -15,7 +15,6 @@ import {
 import { INVALID_WEB_URL_MESSAGE, PEM_FOOTER, PEM_HEADER } from 'components/constants';
 
 export const CheckValidation = {
-  job: validateJob,
   target: validateTarget,
   frequency: validateFrequency,
   timeout: validateTimeout,

@@ -6,9 +6,10 @@ import { css } from '@emotion/css';
 import { CheckFormValues, Probe } from 'types';
 import { isHttpErrors } from 'utils.types';
 
-type NameValueName = 'settings.http.headers' | 'settings.http.proxyConnectHeaders' | 'labels';
+export type NameValueName = 'settings.http.headers' | 'settings.http.proxyConnectHeaders' | 'labels';
 
 interface Props {
+  ariaLabelSuffix?: string;
   name: NameValueName;
   limit?: number;
   disabled?: boolean;
@@ -32,7 +33,15 @@ function getErrors(errors: FieldErrorsImpl<CheckFormValues | Probe>, name: NameV
   return undefined;
 }
 
-export const NameValueInput = ({ name, disabled, limit, label, validateName, validateValue }: Props) => {
+export const NameValueInput = ({
+  ariaLabelSuffix = ``,
+  name,
+  disabled,
+  limit,
+  label,
+  validateName,
+  validateValue,
+}: Props) => {
   const {
     register,
     control,
@@ -58,7 +67,7 @@ export const NameValueInput = ({ name, disabled, limit, label, validateName, val
           >
             <Input
               {...register(`${name}.${index}.name`, { required: true, validate: validateName })}
-              aria-label={`Label ${index + 1} name `}
+              aria-label={`${label} ${index + 1} name ${ariaLabelSuffix}`}
               data-testid={`${label}-name-${index}`}
               type="text"
               placeholder="name"
@@ -75,7 +84,7 @@ export const NameValueInput = ({ name, disabled, limit, label, validateName, val
           >
             <Input
               {...register(`${name}.${index}.value`, { required: true, validate: validateValue })}
-              aria-label={`Label ${index + 1} value `}
+              aria-label={`${label} ${index + 1} value ${ariaLabelSuffix}`}
               data-testid={`${label}-value-${index}`}
               type="text"
               placeholder="value"
@@ -109,7 +118,7 @@ export const NameValueInput = ({ name, disabled, limit, label, validateName, val
           ref={addRef}
         >
           <Icon name="plus" />
-          &nbsp; Add {label}
+          &nbsp; Add {label.toLocaleLowerCase()}
         </Button>
       )}
     </VerticalGroup>
