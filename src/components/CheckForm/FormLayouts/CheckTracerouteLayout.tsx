@@ -17,7 +17,10 @@ import { LabelField } from 'components/LabelField';
 export const CheckTracerouteLayout = () => {
   return (
     <FormLayout>
-      <FormLayout.Section label="General settings">
+      <FormLayout.Section
+        label="General settings"
+        fields={[`enabled`, `job`, `target`, `probes`, `frequency`, `timeout`]}
+      >
         <CheckEnabled />
         <CheckJobName />
         <CheckTarget checkType={CheckType.Traceroute} />
@@ -25,13 +28,21 @@ export const CheckTracerouteLayout = () => {
         <CheckPublishedAdvanceMetrics />
         <CheckUsage />
       </FormLayout.Section>
-      <FormLayout.Section label="Advanced options">
+      <FormLayout.Section
+        label="Advanced options"
+        fields={[
+          `labels`,
+          `settings.traceroute.maxHops`,
+          `settings.traceroute.maxUnknownHops`,
+          `settings.traceroute.ptrLookup`,
+        ]}
+      >
         <LabelField<CheckFormValuesTraceroute> />
         <TracerouteMaxHops />
         <TracerouteMaxUnknownHops />
         <TraceroutePTRLookup />
       </FormLayout.Section>
-      <FormLayout.Section label="Alerting">
+      <FormLayout.Section label="Alerting" fields={[`alertSensitivity`]}>
         <CheckFormAlert />
       </FormLayout.Section>
     </FormLayout>
