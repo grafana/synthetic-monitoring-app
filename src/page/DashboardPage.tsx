@@ -19,7 +19,6 @@ import { getTcpScene } from 'scenes/TCP/getTcpScene';
 import { getTracerouteScene } from 'scenes/Traceroute/getTracerouteScene';
 
 function DashboardPageContent() {
-  console.log('what about here?');
   const { instance } = useContext(InstanceContext);
   const { isEnabled } = useFeatureFlag(FeatureName.Scenes);
   const { isEnabled: multiHttpEnabled } = useFeatureFlag(FeatureName.MultiHttp);
