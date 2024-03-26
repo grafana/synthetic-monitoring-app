@@ -6,15 +6,16 @@ import { css } from '@emotion/css';
 type CollapseLabelProps = {
   label: string;
   icon?: IconName;
+  iconColor?: string;
 };
 
-export const CollapseLabel = ({ label, icon }: CollapseLabelProps) => {
+export const CollapseLabel = ({ label, icon, iconColor }: CollapseLabelProps) => {
   const styles = useStyles2(getStyles);
 
   return (
     <div className={styles.stack}>
       <div>{label}</div>
-      {icon && <Icon name={icon} size="lg" />}
+      {icon && <Icon name={icon} size="lg" color={iconColor} />}
     </div>
   );
 };

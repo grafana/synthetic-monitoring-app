@@ -1,4 +1,7 @@
 import React from 'react';
+import { GrafanaTheme2 } from '@grafana/data';
+import { useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 
 import { CheckFormValuesScripted, CheckType } from 'types';
 import { CheckEnabled } from 'components/CheckEditor/FormComponents/CheckEnabled';
@@ -11,6 +14,7 @@ import { CheckFormAlert } from 'components/CheckFormAlert';
 import { LabelField } from 'components/LabelField';
 
 export const CheckScriptedLayout = () => {
+  const styles = useStyles2(getStyles);
   return (
     <FormLayout>
       <FormLayout.Section
@@ -23,7 +27,12 @@ export const CheckScriptedLayout = () => {
         <ProbeOptions checkType={CheckType.Scripted} />
         <LabelField<CheckFormValuesScripted> />
       </FormLayout.Section>
-      <FormLayout.Section label="Script" fields={[`settings.scripted.script`]}>
+      <FormLayout.Section
+        contentClassName={styles.scriptContainer}
+        label="Script"
+        fields={[`settings.scripted.script`]}
+        isOpen
+      >
         <ScriptedCheckScript />
       </FormLayout.Section>
       <FormLayout.Section label="Alerting" fields={[`alertSensitivity`]}>
@@ -32,3 +41,9 @@ export const CheckScriptedLayout = () => {
     </FormLayout>
   );
 };
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  scriptContainer: css({
+    maxWidth: `1200px`,
+  }),
+});
