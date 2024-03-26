@@ -1,7 +1,4 @@
 import React from 'react';
-import { GrafanaTheme2 } from '@grafana/data';
-import { useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
 
 import { CheckFormValuesPing, CheckType } from 'types';
 import { CheckEnabled } from 'components/CheckEditor/FormComponents/CheckEnabled';
@@ -22,8 +19,6 @@ import { CheckUsage } from 'components/CheckUsage';
 import { LabelField } from 'components/LabelField';
 
 export const CheckDNSLayout = () => {
-  const styles = useStyles2(getStyles);
-
   return (
     <FormLayout>
       <FormLayout.Section
@@ -41,22 +36,18 @@ export const CheckDNSLayout = () => {
         label="DNS settings"
         fields={[`settings.dns.recordType`, `settings.dns.server`, `settings.dns.protocol`, `settings.dns.port`]}
       >
-        <div className={styles.maxWidth}>
-          <DNSCheckRecordType />
-          <DNSCheckRecordServer />
-          <DNSCheckRecordProtocol />
-          <DNSCheckRecordPort />
-        </div>
+        <DNSCheckRecordType />
+        <DNSCheckRecordServer />
+        <DNSCheckRecordProtocol />
+        <DNSCheckRecordPort />
       </FormLayout.Section>
       <FormLayout.Section label="Validation" fields={[`settings.dns.validRCodes`, `settings.dns.validations`]}>
         <DNSCheckValidResponseCodes />
         <DNSCheckResponseMatches />
       </FormLayout.Section>
       <FormLayout.Section label="Advanced options" fields={[`labels`, `settings.dns.ipVersion`]}>
-        <div className={styles.maxWidth}>
-          <LabelField<CheckFormValuesPing> />
-          <CheckIpVersion checkType={CheckType.DNS} name="settings.dns.ipVersion" />
-        </div>
+        <LabelField<CheckFormValuesPing> />
+        <CheckIpVersion checkType={CheckType.DNS} name="settings.dns.ipVersion" />
       </FormLayout.Section>
       <FormLayout.Section label="Alerting" fields={[`alertSensitivity`]}>
         <CheckFormAlert />
@@ -64,9 +55,3 @@ export const CheckDNSLayout = () => {
     </FormLayout>
   );
 };
-
-const getStyles = (theme: GrafanaTheme2) => ({
-  maxWidth: css({
-    maxWidth: `500px`,
-  }),
-});

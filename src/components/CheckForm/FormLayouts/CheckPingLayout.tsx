@@ -1,7 +1,4 @@
 import React from 'react';
-import { GrafanaTheme2 } from '@grafana/data';
-import { useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
 
 import { CheckFormValuesPing, CheckType } from 'types';
 import { CheckEnabled } from 'components/CheckEditor/FormComponents/CheckEnabled';
@@ -17,8 +14,6 @@ import { CheckUsage } from 'components/CheckUsage';
 import { LabelField } from 'components/LabelField';
 
 export const CheckPingLayout = () => {
-  const styles = useStyles2(getStyles);
-
   return (
     <FormLayout>
       <FormLayout.Section
@@ -36,11 +31,9 @@ export const CheckPingLayout = () => {
         label="Advanced options"
         fields={[`labels`, `settings.ping.ipVersion`, `settings.ping.dontFragment`]}
       >
-        <div className={styles.maxWidth}>
-          <LabelField<CheckFormValuesPing> />
-          <CheckIpVersion checkType={CheckType.PING} name="settings.ping.ipVersion" />
-          <PingCheckFragment />
-        </div>
+        <LabelField<CheckFormValuesPing> />
+        <CheckIpVersion checkType={CheckType.PING} name="settings.ping.ipVersion" />
+        <PingCheckFragment />
       </FormLayout.Section>
       <FormLayout.Section label="Alerting" fields={[`alertSensitivity`]}>
         <CheckFormAlert />
@@ -48,9 +41,3 @@ export const CheckPingLayout = () => {
     </FormLayout>
   );
 };
-
-const getStyles = (theme: GrafanaTheme2) => ({
-  maxWidth: css({
-    maxWidth: `500px`,
-  }),
-});

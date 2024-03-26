@@ -1,7 +1,4 @@
 import React from 'react';
-import { GrafanaTheme2 } from '@grafana/data';
-import { useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
 
 import { CheckFormValuesTraceroute, CheckType } from 'types';
 import { CheckEnabled } from 'components/CheckEditor/FormComponents/CheckEnabled';
@@ -18,8 +15,6 @@ import { CheckUsage } from 'components/CheckUsage';
 import { LabelField } from 'components/LabelField';
 
 export const CheckTracerouteLayout = () => {
-  const styles = useStyles2(getStyles);
-
   return (
     <FormLayout>
       <FormLayout.Section label="General settings">
@@ -31,12 +26,10 @@ export const CheckTracerouteLayout = () => {
         <CheckUsage />
       </FormLayout.Section>
       <FormLayout.Section label="Advanced options">
-        <div className={styles.maxWidth}>
-          <LabelField<CheckFormValuesTraceroute> />
-          <TracerouteMaxHops />
-          <TracerouteMaxUnknownHops />
-          <TraceroutePTRLookup />
-        </div>
+        <LabelField<CheckFormValuesTraceroute> />
+        <TracerouteMaxHops />
+        <TracerouteMaxUnknownHops />
+        <TraceroutePTRLookup />
       </FormLayout.Section>
       <FormLayout.Section label="Alerting">
         <CheckFormAlert />
@@ -44,9 +37,3 @@ export const CheckTracerouteLayout = () => {
     </FormLayout>
   );
 };
-
-const getStyles = (theme: GrafanaTheme2) => ({
-  maxWidth: css({
-    maxWidth: `500px`,
-  }),
-});

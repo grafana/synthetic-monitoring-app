@@ -1,7 +1,4 @@
 import React from 'react';
-import { GrafanaTheme2 } from '@grafana/data';
-import { useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
 
 import { CheckFormValuesHttp, CheckType } from 'types';
 import { CheckEnabled } from 'components/CheckEditor/FormComponents/CheckEnabled';
@@ -30,8 +27,6 @@ import { LabelField } from 'components/LabelField';
 import { TLSConfig } from 'components/TLSConfig';
 
 export const CheckHTTPLayout = () => {
-  const styles = useStyles2(getStyles);
-
   return (
     <FormLayout>
       <FormLayout.Section
@@ -93,11 +88,9 @@ export const CheckHTTPLayout = () => {
         label="Validation"
         fields={[`settings.http.validStatusCodes`, `settings.http.validHTTPVersions`, `settings.http.sslOptions`]}
       >
-        <div className={styles.maxWidth}>
-          <HttpCheckValidStatusCodes />
-          <HttpCheckValidHttpVersions />
-          <HttpCheckSSLOptions />
-        </div>
+        <HttpCheckValidStatusCodes />
+        <HttpCheckValidHttpVersions />
+        <HttpCheckSSLOptions />
         <HttpCheckRegExValidation />
       </FormLayout.Section>
       <FormLayout.Section
@@ -109,12 +102,10 @@ export const CheckHTTPLayout = () => {
           `settings.http.cacheBustingQueryParamName`,
         ]}
       >
-        <div className={styles.maxWidth}>
-          <LabelField<CheckFormValuesHttp> />
-          <CheckIpVersion checkType={CheckType.HTTP} name="settings.http.ipVersion" />
-          <HttpCheckFollowRedirects />
-          <HttpCheckCacheBuster />
-        </div>
+        <LabelField<CheckFormValuesHttp> />
+        <CheckIpVersion checkType={CheckType.HTTP} name="settings.http.ipVersion" />
+        <HttpCheckFollowRedirects />
+        <HttpCheckCacheBuster />
       </FormLayout.Section>
       <FormLayout.Section label="Alerting" fields={[`alertSensitivity`]}>
         <CheckFormAlert />
@@ -122,9 +113,3 @@ export const CheckHTTPLayout = () => {
     </FormLayout>
   );
 };
-
-const getStyles = (theme: GrafanaTheme2) => ({
-  maxWidth: css({
-    maxWidth: `500px`,
-  }),
-});
