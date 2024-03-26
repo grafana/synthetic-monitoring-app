@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
@@ -12,26 +12,18 @@ import { CheckTarget } from 'components/CheckEditor/FormComponents/CheckTarget';
 import { TCPCheckQueryAndResponse } from 'components/CheckEditor/FormComponents/TCPCheckQueryAndResponse';
 import { TCPCheckUseTLS } from 'components/CheckEditor/FormComponents/TCPCheckUseTLS';
 import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
+import { CheckFormAlert } from 'components/CheckFormAlert';
 import { CheckUsage } from 'components/CheckUsage';
 import { Collapse } from 'components/Collapse';
 import { LabelField } from 'components/LabelField';
 import { TLSConfig } from 'components/TLSConfig';
 
 export const CheckTCPLayout = () => {
-  const [showGeneralSettings, setShowGeneralSettings] = useState(true);
-  const [showTCPSettings, setShowTCPSettings] = useState(false);
-  const [showQueryResponse, setShowQueryResponse] = useState(false);
-  const [showTLS, setShowTLS] = useState(false);
-  const [showAdvanced, setShowAdvanced] = useState(false);
   const styles = useStyles2(getStyles);
 
   return (
     <>
-      <Collapse
-        label="General settings"
-        onToggle={() => setShowGeneralSettings(!showGeneralSettings)}
-        isOpen={showGeneralSettings}
-      >
+      <Collapse label="General settings" isOpen>
         <CheckEnabled />
         <CheckJobName />
         <CheckTarget checkType={CheckType.TCP} />
@@ -39,28 +31,27 @@ export const CheckTCPLayout = () => {
         <CheckPublishedAdvanceMetrics />
         <CheckUsage />
       </Collapse>
-      <Collapse label="TCP settings" onToggle={() => setShowTCPSettings(!showTCPSettings)} isOpen={showTCPSettings}>
+      <Collapse label="TCP settings">
         <div className={styles.maxWidth}>
           <TCPCheckUseTLS />
         </div>
       </Collapse>
-      <Collapse
-        label="Query/Response"
-        onToggle={() => setShowQueryResponse(!showQueryResponse)}
-        isOpen={showQueryResponse}
-      >
+      <Collapse label="Query/Response">
         <div className={styles.maxWidth}>
           <TCPCheckQueryAndResponse />
         </div>
       </Collapse>
-      <Collapse label="TLS config" onToggle={() => setShowTLS(!showTLS)} isOpen={showTLS}>
+      <Collapse label="TLS config">
         <TLSConfig checkType={CheckType.TCP} />
       </Collapse>
-      <Collapse label="Advanced options" onToggle={() => setShowAdvanced(!showAdvanced)} isOpen={showAdvanced}>
+      <Collapse label="Advanced options">
         <div className={styles.maxWidth}>
           <LabelField<CheckFormValuesPing> />
           <CheckIpVersion checkType={CheckType.DNS} name="settings.dns.ipVersion" />
         </div>
+      </Collapse>
+      <Collapse label="Alerting">
+        <CheckFormAlert />
       </Collapse>
     </>
   );

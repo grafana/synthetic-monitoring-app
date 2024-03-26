@@ -7,24 +7,24 @@ interface Props {
   className?: string;
   isOpen?: boolean;
   label: ReactNode;
-  onToggle?: (isOpen: boolean) => void;
 }
 
-export const Collapse = ({ className, isOpen, label, children, onToggle, ...props }: PropsWithChildren<Props>) => {
+export const Collapse = ({ className, isOpen, label, children, ...props }: PropsWithChildren<Props>) => {
+  const [isOpenState, setIsOpenState] = React.useState(isOpen);
   const styles = useStyles2(getStyles);
 
   return (
     <div className={cx(styles.container, className)} {...props}>
       <button
-        aria-expanded={isOpen}
+        aria-expanded={isOpenState}
         className={styles.header}
-        onClick={() => onToggle && onToggle(Boolean(isOpen))}
+        onClick={() => setIsOpenState(!isOpenState)}
         type="button"
       >
         <div className={styles.label}>{label}</div>
-        <Icon name={isOpen ? 'angle-down' : 'angle-right'} className={styles.headerIcon} />
+        <Icon name={isOpenState ? 'angle-down' : 'angle-right'} className={styles.headerIcon} />
       </button>
-      <div className={cx(styles.body, { [styles.hidden]: !isOpen })}>{children}</div>
+      <div className={cx(styles.body, { [styles.hidden]: !isOpenState })}>{children}</div>
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
@@ -23,27 +23,18 @@ import { RequestBodyTextArea } from 'components/CheckEditor/FormComponents/Reque
 import { RequestHeaders } from 'components/CheckEditor/FormComponents/RequestHeaders';
 import { RequestMethodSelect } from 'components/CheckEditor/FormComponents/RequestMethodSelect';
 import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
+import { CheckFormAlert } from 'components/CheckFormAlert';
 import { CheckUsage } from 'components/CheckUsage';
 import { Collapse } from 'components/Collapse';
 import { LabelField } from 'components/LabelField';
 import { TLSConfig } from 'components/TLSConfig';
 
 export const CheckHTTPLayout = () => {
-  const [showGeneralSettings, setShowGeneralSettings] = useState(true);
-  const [showHttpSettings, setShowHttpSettings] = useState(false);
-  const [showTLS, setShowTLS] = useState(false);
-  const [showAuthentication, setShowAuthentication] = useState(false);
-  const [showValidation, setShowValidation] = useState(false);
-  const [showAdvanced, setShowAdvanced] = useState(false);
   const styles = useStyles2(getStyles);
 
   return (
     <>
-      <Collapse
-        label="General settings"
-        onToggle={() => setShowGeneralSettings(!showGeneralSettings)}
-        isOpen={showGeneralSettings}
-      >
+      <Collapse label="General settings" isOpen>
         <CheckEnabled />
         <CheckJobName />
         <CheckTarget checkType={CheckType.HTTP} />
@@ -51,7 +42,7 @@ export const CheckHTTPLayout = () => {
         <CheckPublishedAdvanceMetrics />
         <CheckUsage />
       </Collapse>
-      <Collapse label="HTTP settings" onToggle={() => setShowHttpSettings(!showHttpSettings)} isOpen={showHttpSettings}>
+      <Collapse label="HTTP settings">
         <RequestMethodSelect name="settings.http.method" />
         <RequestBodyTextArea name="settings.http.body" />
         <RequestHeaders
@@ -67,18 +58,14 @@ export const CheckHTTPLayout = () => {
           name="settings.http.proxyConnectHeaders"
         />
       </Collapse>
-      <Collapse label="TLS config" onToggle={() => setShowTLS(!showTLS)} isOpen={showTLS}>
+      <Collapse label="TLS config">
         <TLSConfig checkType={CheckType.HTTP} />
-      </Collapse>{' '}
-      <Collapse
-        label="Authentication"
-        onToggle={() => setShowAuthentication(!showAuthentication)}
-        isOpen={showAuthentication}
-      >
+      </Collapse>
+      <Collapse label="Authentication">
         <HttpCheckBearerToken />
         <HttpCheckBasicAuthorization />
       </Collapse>
-      <Collapse label="Validation" onToggle={() => setShowValidation(!showValidation)} isOpen={showValidation}>
+      <Collapse label="Validation">
         <div className={styles.maxWidth}>
           <HttpCheckValidStatusCodes />
           <HttpCheckValidHttpVersions />
@@ -86,13 +73,16 @@ export const CheckHTTPLayout = () => {
         </div>
         <HttpCheckRegExValidation />
       </Collapse>
-      <Collapse label="Advanced options" onToggle={() => setShowAdvanced(!showAdvanced)} isOpen={showAdvanced}>
+      <Collapse label="Advanced options">
         <div className={styles.maxWidth}>
           <LabelField<CheckFormValuesHttp> />
           <CheckIpVersion checkType={CheckType.HTTP} name="settings.http.ipVersion" />
           <HttpCheckFollowRedirects />
           <HttpCheckCacheBuster />
         </div>
+      </Collapse>
+      <Collapse label="Alerting">
+        <CheckFormAlert />
       </Collapse>
     </>
   );

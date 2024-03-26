@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
@@ -11,22 +11,17 @@ import { CheckPublishedAdvanceMetrics } from 'components/CheckEditor/FormCompone
 import { CheckTarget } from 'components/CheckEditor/FormComponents/CheckTarget';
 import { PingCheckFragment } from 'components/CheckEditor/FormComponents/PingCheckFragment';
 import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
+import { CheckFormAlert } from 'components/CheckFormAlert';
 import { CheckUsage } from 'components/CheckUsage';
 import { Collapse } from 'components/Collapse';
 import { LabelField } from 'components/LabelField';
 
 export const CheckPingLayout = () => {
-  const [showGeneralSettings, setShowGeneralSettings] = useState(true);
-  const [showAdvanced, setShowAdvanced] = useState(false);
   const styles = useStyles2(getStyles);
 
   return (
     <>
-      <Collapse
-        label="General settings"
-        onToggle={() => setShowGeneralSettings(!showGeneralSettings)}
-        isOpen={showGeneralSettings}
-      >
+      <Collapse label="General settings" isOpen>
         <CheckEnabled />
         <CheckJobName />
         <CheckTarget checkType={CheckType.PING} />
@@ -34,12 +29,15 @@ export const CheckPingLayout = () => {
         <CheckPublishedAdvanceMetrics />
         <CheckUsage />
       </Collapse>
-      <Collapse label="Advanced options" onToggle={() => setShowAdvanced(!showAdvanced)} isOpen={showAdvanced}>
+      <Collapse label="Advanced options">
         <div className={styles.maxWidth}>
           <LabelField<CheckFormValuesPing> />
           <CheckIpVersion checkType={CheckType.PING} name="settings.ping.ipVersion" />
           <PingCheckFragment />
         </div>
+      </Collapse>
+      <Collapse label="Alerting">
+        <CheckFormAlert />
       </Collapse>
     </>
   );
