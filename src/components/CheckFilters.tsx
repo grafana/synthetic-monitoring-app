@@ -59,19 +59,19 @@ export function CheckFilters({
   const styles = useStyles2(getStyles);
   const [searchValue, setSearchValue] = useState(checkFilters.search);
   const { data: probes = [] } = useProbes();
-  const cancelRef = useRef<NodeJS.Timeout>();
+  const debounceRef = useRef<NodeJS.Timeout>();
 
   function handleSearchChange(event: ChangeEvent<HTMLInputElement>) {
     const value = event.currentTarget.value;
     setSearchValue(value);
 
-    if (cancelRef.current) {
-      clearTimeout(cancelRef.current);
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
     }
 
-    cancelRef.current = setTimeout(() => {
-      if (cancelRef.current) {
-        clearTimeout(cancelRef.current);
+    debounceRef.current = setTimeout(() => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
         onChange({ ...checkFilters, search: value });
       }
     }, 300);

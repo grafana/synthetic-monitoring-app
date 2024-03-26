@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useState } from 'react';
 import { GrafanaTheme2, SelectableValue } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
 import { Pagination, useStyles2 } from '@grafana/ui';
@@ -76,45 +76,51 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   const isAllSelected = selectedCheckIds.size === filteredChecks.length;
   const totalPages = Math.ceil(filteredChecks.length / CHECKS_PER_PAGE);
 
+  const handleFilterChange = (filters: CheckFiltersType) => {
+    setCheckFilters((cf) => ({
+      ...cf,
+      ...filters,
+    }));
+    setCurrentPage(1);
+    localStorage.setItem('checkFilters', JSON.stringify(filters));
+
+    setSelectedChecksIds((current) => {
+      const filteredChecks = filterChecks(checks, filters);
+      const alreadySelectedChecks = filteredChecks.filter((check) => current.has(check.id!)).map((check) => check.id!);
+      return new Set(alreadySelectedChecks);
+    });
+  };
+
   const handleResetFilters = () => {
-    setCheckFilters(defaultFilters);
+    handleFilterChange(defaultFilters);
     localStorage.removeItem('checkFilters');
   };
 
   const handleLabelSelect = (label: Label) => {
-    setCheckFilters((cf) => {
-      const updated = {
-        ...cf,
-        labels: Array.from(new Set([...cf.labels, `${label.name}: ${label.value}`])),
-      };
-      localStorage.setItem('checkFilters', JSON.stringify(updated));
-      return updated;
-    });
-    setCurrentPage(1);
+    const updated = {
+      ...checkFilters,
+      labels: Array.from(new Set([...checkFilters.labels, `${label.name}: ${label.value}`])),
+    };
+
+    handleFilterChange(updated);
   };
 
   const handleTypeSelect = (checkType: CheckType) => {
-    setCheckFilters((cf) => {
-      const updated = { ...cf, type: checkType };
-      localStorage.setItem('checkFilters', JSON.stringify(updated));
-      return updated;
-    });
-    setCurrentPage(1);
+    const updated = { ...checkFilters, type: checkType };
+
+    handleFilterChange(updated);
   };
 
   const handleStatusSelect = (enabled: boolean) => {
     const status = enabled ? CheckEnabledStatus.Enabled : CheckEnabledStatus.Disabled;
     const option = CHECK_LIST_STATUS_OPTIONS.find(({ value }) => value === status);
+
     if (option) {
-      setCheckFilters((cf) => {
-        const updated = {
-          ...cf,
-          status: option,
-        };
-        localStorage.setItem('checkFilters', JSON.stringify(updated));
-        return updated;
-      });
-      setCurrentPage(1);
+      const updated = {
+        ...checkFilters,
+        status: option,
+      };
+      handleFilterChange(updated);
     }
   };
 
@@ -150,17 +156,6 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
 
   const handleUnselectAll = () => {
     setSelectedChecksIds(new Set());
-  };
-
-  const handleFilterChange = (filters: CheckFiltersType) => {
-    setCheckFilters(filters);
-    setCurrentPage(1);
-    const filteredChecks = filterChecks(checks, filters);
-    const alreadySelectedChecks = filteredChecks
-      .filter((check) => selectedCheckIds.has(check.id!))
-      .map((check) => check.id!);
-
-    setSelectedChecksIds(new Set(alreadySelectedChecks));
   };
 
   if (checks.length === 0) {
