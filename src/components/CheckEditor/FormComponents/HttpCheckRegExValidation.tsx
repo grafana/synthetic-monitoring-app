@@ -118,7 +118,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
     gridTemplateColumns: `300px auto 70px auto auto`,
     gridGap: theme.spacing(1),
     alignItems: `center`,
-    width: `100%`,
   }),
   validationExpressions: css({
     display: `flex`,
