@@ -15,6 +15,7 @@ import { LabelField } from 'components/LabelField';
 
 export const CheckScriptedLayout = () => {
   const styles = useStyles2(getStyles);
+
   return (
     <FormLayout>
       <FormLayout.Section

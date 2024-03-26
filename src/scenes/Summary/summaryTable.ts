@@ -5,120 +5,128 @@ import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
 function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
   const queryRunner = new SceneQueryRunner({
-    datasource: { type: 'datasource', uid: '-- Mixed --' },
+    datasource: {
+      uid: '-- Mixed --',
+      type: 'datasource',
+    },
     queries: [
       {
-        datasource: sm,
+        datasource: metrics,
+        editorMode: 'code',
+        expr: ` sum by (instance, job, check_name)
+          (
+            rate(probe_all_success_sum{probe=~"$probe"}[$__rate_interval])
+            *
+            on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters })
+          )`,
+        legendFormat: '__auto',
+        interval: '1m',
+        range: true,
+        refId: 'reach numer',
+        format: 'table',
+      },
+      {
+        datasource: metrics,
+        refId: 'reach denom',
+        expr: `sum by (instance, check_name, job)
+          (
+            rate(probe_all_success_count{probe=~"$probe"}[$__rate_interval])
+            *
+            on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters })
+          )`,
+        range: true,
+        instant: false,
         hide: false,
-        instance: '',
-        job: '',
-        probe: '',
-        queryType: 'checks',
-        refId: 'checks',
+        interval: '1m',
+        editorMode: 'code',
+        legendFormat: '__auto',
+        format: 'table',
       },
       {
         datasource: metrics,
-        editorMode: 'code',
-        exemplar: false,
-        expr: `
-          sum by (instance, job, check_name)
+        refId: 'latency numer',
+        expr: `   sum by (instance, job, check_name)
           (
-            rate(probe_all_success_sum{probe=~"$probe"}[$__range])
-            *
-            on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters })
-          )
-          /
-          sum by (instance, check_name, job)
-          (
-            rate(probe_all_success_count{probe=~"$probe"}[$__range])
+            rate(probe_all_duration_seconds_sum{probe=~"$probe"}[$__rate_interval])
             *
             on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters })
           )`,
+        range: true,
+        instant: false,
+        hide: false,
+        interval: '1m',
+        editorMode: 'code',
+        legendFormat: '__auto',
         format: 'table',
-        instant: true,
-        interval: '',
-        legendFormat: '{{check_name}}-{{instance}}-uptime',
-        refId: 'reachability',
       },
       {
         datasource: metrics,
-        editorMode: 'code',
-        exemplar: false,
-        expr: `
-          sum by (instance, job, check_name)
+        refId: 'latency denom',
+        expr: ` sum by (instance, job, check_name)
           (
-            rate(probe_all_duration_seconds_sum{probe=~"$probe"}[$__range])
+            rate(probe_all_duration_seconds_count{probe=~"$probe"}[$__rate_interval])
             *
-            on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters})
-          )
-          /
-          sum by (instance, job, check_name)
-          (
-            rate(probe_all_duration_seconds_count{probe=~"$probe"}[$__range])
-            *
-            on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters})
+            on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters })
           )`,
+        range: true,
+        instant: false,
+        hide: false,
+        interval: '1m',
+        editorMode: 'code',
+        legendFormat: '__auto',
         format: 'table',
-        instant: true,
-        interval: '',
-        legendFormat: '{{check_name}}-{{instance}}-latency',
-        refId: 'latency',
       },
       {
         datasource: metrics,
+        refId: 'uptime',
+        expr: `    ceil(
+                # the number of successes across all probes
+                sum by (instance, job) (increase(probe_all_success_sum{probe=~"$probe"}[5m]) * on (instance, job, probe, config_version) sm_check_info{check_name=~"$check_type", region=~"$region", $Filters })
+                /
+                # the total number of times we checked across all probes
+                (sum by (instance, job) (increase(probe_all_success_count{probe=~"$probe"}[5m])) + 1) # + 1 because we want to make sure it goes to 1, not 2
+              )`,
+        range: true,
+        instant: false,
+        hide: false,
+        interval: '5m',
         editorMode: 'code',
-        exemplar: false,
-        expr: `
-          ceil(
+        legendFormat: '__auto',
+        format: 'table',
+      },
+      {
+        datasource: metrics,
+        refId: 'state',
+        expr: `ceil(
             sum by (instance, job, check_name)
             (
               rate(probe_all_success_sum{probe=~"$probe"}[5m])
               *
-              on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters})
+              on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters })
             )
             /
             sum by (instance, check_name, job)
             (
               rate(probe_all_success_count{probe=~"$probe"}[5m])
               *
-              on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters})
+              on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters })
             )
-          )
-        `,
-        format: 'table',
+          )`,
+        range: true,
+        instant: false,
         hide: false,
-        instant: true,
-        interval: '',
-        legendFormat: '{{check_name}}-{{instance}}-uptime',
-        refId: 'state',
+        editorMode: 'code',
+        legendFormat: '__auto',
+        format: 'table',
       },
       {
-        datasource: metrics,
-        editorMode: 'code',
-        exemplar: false,
-        expr: `
-          # find the average uptime over the entire time range evaluating 'up' in 5 minute windows
-          avg_over_time(
-            (
-              # the inner query is going to produce a non-zero value if there was at least one successful check during the 5 minute window
-              # so make it a 1 if there was at least one success and a 0 otherwise
-              ceil(
-                # the number of successes across all probes
-                sum by (instance, job) (increase(probe_all_success_sum{probe=~"$probe"}[5m]) * on (instance, job, probe, config_version) sm_check_info{check_name=~"$check_type", $Filters})
-                /
-                # the total number of times we checked across all probes
-                (sum by (instance, job) (increase(probe_all_success_count{probe=~"$probe"}[5m])) + 1) # + 1 because we want to make sure it goes to 1, not 2
-              )
-            )
-            [$__range:5m]
-          )
-        `,
-        format: 'table',
+        refId: 'A',
         hide: false,
-        instant: true,
-        interval: '',
-        legendFormat: '',
-        refId: 'uptime',
+        datasource: sm,
+        queryType: 'checks',
+        instance: '',
+        job: '',
+        probe: '',
       },
     ],
   });
@@ -130,39 +138,47 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
         id: 'groupBy',
         options: {
           fields: {
-            'Value #latency': {
-              aggregations: ['mean'],
+            'Value #A': {
+              aggregations: ['sum'],
               operation: 'aggregate',
             },
-            'Value #reachability': {
-              aggregations: ['mean'],
+            'Value #latency denom': {
+              aggregations: ['sum'],
+              operation: 'aggregate',
+            },
+            'Value #latency numer': {
+              aggregations: ['sum'],
+              operation: 'aggregate',
+            },
+            'Value #reach denom': {
+              aggregations: ['sum'],
+              operation: 'aggregate',
+            },
+            'Value #reach numer': {
+              aggregations: ['sum'],
               operation: 'aggregate',
             },
             'Value #state': {
-              aggregations: ['mean'],
+              aggregations: ['last'],
               operation: 'aggregate',
             },
             'Value #uptime': {
               aggregations: ['mean'],
               operation: 'aggregate',
             },
-            id: {
-              aggregations: [],
-              operation: 'groupby',
-            },
             check_name: {
-              aggregations: [],
-              operation: 'groupby',
+              aggregations: ['lastNotNull'],
+              operation: 'aggregate',
+            },
+            id: {
+              aggregations: ['lastNotNull'],
+              operation: 'aggregate',
             },
             instance: {
               aggregations: [],
               operation: 'groupby',
             },
             job: {
-              aggregations: [],
-              operation: 'groupby',
-            },
-            target: {
               aggregations: [],
               operation: 'groupby',
             },
@@ -173,88 +189,95 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
         id: 'joinByField',
         options: {
           byField: 'job',
-          mode: 'outer',
+          mode: 'inner',
         },
       },
       {
-        id: 'renameByRegex',
+        id: 'calculateField',
         options: {
-          regex: 'check_name 1',
-          renamePattern: 'check type',
+          mode: 'binary',
+          reduce: {
+            reducer: 'sum',
+          },
+          alias: '',
+          binary: {
+            left: 'Value #reach numer (sum)',
+            operator: '/',
+            right: 'Value #reach denom (sum)',
+          },
         },
       },
       {
-        id: 'renameByRegex',
+        id: 'calculateField',
         options: {
-          regex: 'check_name .*',
-          renamePattern: 'hidden',
-        },
-      },
-      {
-        id: 'renameByRegex',
-        options: {
-          regex: 'instance(.*)',
-          renamePattern: 'hidden',
-        },
-      },
-
-      {
-        id: 'renameByRegex',
-        options: {
-          regex: 'Time (.*)',
-          renamePattern: 'hidden',
+          mode: 'binary',
+          reduce: {
+            reducer: 'sum',
+          },
+          alias: '',
+          binary: {
+            left: 'Value #latency numer (sum)',
+            operator: '/',
+            right: 'Value #latency denom (sum)',
+          },
         },
       },
       {
         id: 'organize',
         options: {
-          includeByName: {
-            job: true,
-            // instance: true,
-            'check type': true,
-            target: true,
-            'Value #state (mean)': true,
-            'Value #uptime (mean)': true,
-            'Value #reachability (mean)': true,
-            'Value #latency (mean)': true,
-            id: 9,
+          excludeByName: {
+            'Value #A (sum)': true,
+            'Value #latency denom (sum)': true,
+            'Value #latency numer (sum)': true,
+            'Value #reach denom (sum)': true,
+            'Value #reach numer (sum)': true,
+            'check_name (lastNotNull) 2': true,
+            'check_name (lastNotNull) 3': true,
+            'check_name (lastNotNull) 4': true,
+            'check_name (lastNotNull) 5': true,
+            'id (lastNotNull)': false,
+            'instance 2': true,
+            'instance 3': true,
+            'instance 4': true,
+            'instance 5': true,
+            'instance 6': true,
           },
           indexByName: {
+            'Value #latency denom (sum)': 16,
+            'Value #latency numer (sum)': 13,
+            'Value #reach denom (sum)': 10,
+            'Value #reach numer (sum)': 7,
+            'Value #state (last)': 3,
+            'Value #uptime (mean)': 4,
+            'check_name (lastNotNull)': 2,
+            'check_name (lastNotNull) 1': 2,
+            'check_name (lastNotNull) 2': 9,
+            'check_name (lastNotNull) 3': 12,
+            'check_name (lastNotNull) 4': 15,
+            'check_name (lastNotNull) 5': 19,
+            'id (lastNotNull)': 20,
+            'instance 1': 1,
+            'instance 2': 8,
+            'instance 3': 11,
+            'instance 4': 14,
+            'instance 5': 17,
+            'instance 6': 18,
             job: 0,
-            'check type': 3,
-            target: 2,
-            'Value #state (mean)': 4,
-            'Value #uptime (mean)': 5,
-            'Value #reachability (mean)': 6,
-            'Value #latency (mean)': 7,
-            id: 8,
+            latency: 6,
+            reachability: 5,
+            'Value #reach numer (sum) / Value #reach denom (sum)': 5,
+            'Value #latency numer (sum) / Value #latency denom (sum)': 6,
           },
           renameByName: {
-            'Value #latency': 'latency',
-            'Value #latency (mean)': 'latency',
-            'Value #reachability (mean)': 'reachability',
-            'Value #state': 'up',
-            'Value #state (mean)': 'state',
-            'Value #uptime': 'uptime',
+            'Value #state (last)': 'state',
             'Value #uptime (mean)': 'uptime',
-            target: 'instance',
+            'check_name (lastNotNull)': 'check type',
+            'check_name (lastNotNull) 1': 'check type',
+            'id (lastNotNull)': 'id',
+            'Value #reach numer (sum) / Value #reach denom (sum)': 'reachability',
+            'Value #latency numer (sum) / Value #latency denom (sum)': 'latency',
           },
-        },
-      },
-      {
-        id: 'filterByValue',
-        options: {
-          filters: [
-            {
-              fieldName: 'check type',
-              config: {
-                id: 'isNull',
-                options: {},
-              },
-            },
-          ],
-          type: 'exclude',
-          match: 'any',
+          includeByName: {},
         },
       },
     ],
@@ -271,6 +294,10 @@ function getFieldOverrides() {
       },
       properties: [
         {
+          id: 'unit',
+          value: 'percentunit',
+        },
+        {
           id: 'custom.cellOptions',
           value: {
             mode: 'gradient',
@@ -278,8 +305,24 @@ function getFieldOverrides() {
           },
         },
         {
-          id: 'unit',
-          value: 'percentunit',
+          id: 'thresholds',
+          value: {
+            mode: 'absolute',
+            steps: [
+              {
+                color: 'red',
+                value: null,
+              },
+              {
+                color: 'yellow',
+                value: 0.9,
+              },
+              {
+                color: 'green',
+                value: 0.99,
+              },
+            ],
+          },
         },
       ],
     },
@@ -338,13 +381,13 @@ function getFieldOverrides() {
           id: 'mappings',
           value: [
             {
-              type: 'value',
               options: {
                 k6: {
-                  text: 'scripted',
                   index: 0,
+                  text: 'scripted',
                 },
               },
+              type: 'value',
             },
           ],
         },
@@ -473,19 +516,22 @@ export function getSummaryTable(metrics: DataSourceRef, sm: DataSourceRef) {
     pluginId: 'table',
     $data: getSummaryTableQueryRunner(metrics, sm),
     title: `$check_type checks`,
-    description:
-      '* instance: the instance that corresponds to this check.\n* **job**: the job that corresponds to this check.\n* **reachability**: the percentage of all the checks that have succeeded during the whole time period.\n* **latency**: the average time to receive an answer across all the checks during the whole time period.\n* **state**: whether the target was up or down the last time it was checked.\n* **uptime**: the fraction of time the target was up  during the whole period.',
+    description: `* instance: the instance that corresponds to this check.
+    * **job**: the job that corresponds to this check.
+    * **reachability**: the percentage of all the checks that have succeeded during the whole time period.
+    * **latency**: the average time to receive an answer across all the checks during the whole time period.
+    * **state**: whether the target was up or down the last time it was checked.
+    * **uptime**: the fraction of time the target was up  during the whole period.`,
+
     fieldConfig: {
       defaults: {
-        color: {
-          mode: 'thresholds',
-        },
         custom: {
+          align: 'auto',
           cellOptions: {
             type: 'auto',
           },
-          filterable: false,
           inspect: false,
+          filterable: false,
         },
         mappings: [],
         thresholds: {
@@ -504,6 +550,9 @@ export function getSummaryTable(metrics: DataSourceRef, sm: DataSourceRef) {
               value: 1,
             },
           ],
+        },
+        color: {
+          mode: 'thresholds',
         },
       },
       overrides: getFieldOverrides(),

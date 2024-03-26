@@ -28,7 +28,7 @@ export const SuccessRateGaugeCheckReachability = ({
       loading={isLoading}
       width={width}
       onClick={onClick}
-      type={`uptime`}
+      type={'reachability'}
       value={value}
       unit="%"
     />

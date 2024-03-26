@@ -1,5 +1,5 @@
 import React from 'react';
-import { Controller, useFormContext } from 'react-hook-form';
+import { Controller, FieldPath, useFormContext } from 'react-hook-form';
 import { OrgRole } from '@grafana/data';
 import { Field, Select } from '@grafana/ui';
 import { get } from 'lodash';
@@ -10,7 +10,7 @@ import { METHOD_OPTIONS } from 'components/constants';
 
 type RequestMethodInputProps = {
   'aria-label'?: string;
-  name: string;
+  name: FieldPath<CheckFormValues>;
 };
 
 export const RequestMethodSelect = ({ 'aria-label': ariaLabel = `Request method`, name }: RequestMethodInputProps) => {

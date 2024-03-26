@@ -1,5 +1,5 @@
 import React from 'react';
-import { useFormContext } from 'react-hook-form';
+import { FieldPath, useFormContext } from 'react-hook-form';
 import { OrgRole } from '@grafana/data';
 import { Field, TextArea } from '@grafana/ui';
 import { get } from 'lodash';
@@ -8,7 +8,7 @@ import { CheckFormValues } from 'types';
 import { hasRole } from 'utils';
 
 type RequestBodyTextAreaProps = {
-  name: any;
+  name: FieldPath<CheckFormValues>;
 };
 
 export const RequestBodyTextArea = ({ name }: RequestBodyTextAreaProps) => {

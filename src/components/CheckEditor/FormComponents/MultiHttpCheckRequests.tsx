@@ -15,6 +15,7 @@ import {
   useMultiHttpCollapseState,
 } from 'components/MultiHttp/MultiHttpSettingsForm.utils';
 import { TabSection } from 'components/MultiHttp/Tabs/TabSection';
+
 export const MultiHttpCheckRequests = () => {
   const {
     control,
@@ -35,7 +36,7 @@ export const MultiHttpCheckRequests = () => {
     control,
     name: 'settings.multihttp.entries',
   });
-  const requests = watch('settings.multihttp.entries') as any[];
+  const requests = watch('settings.multihttp.entries');
 
   useEffect(() => {
     const onErrorEvent = (e: CustomEvent<FieldErrors<CheckFormValues>>) => {
