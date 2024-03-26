@@ -94,4 +94,11 @@ describe('Routes to pages correctly', () => {
     const homePageText = await screen.findByText('What you can do', { selector: 'h2' });
     expect(homePageText).toBeInTheDocument();
   });
+  test.only('Redirect old scenes URLS to new scenes URL', async () => {
+    renderRouting({
+      path: `${PLUGIN_URL_PATH}${ROUTES.Scene}?var-job=Job name for http&var-instance=https://http.com`,
+    });
+    const sceneText = await screen.findByText('Dashboard page');
+    expect(sceneText).toBeInTheDocument();
+  });
 });
