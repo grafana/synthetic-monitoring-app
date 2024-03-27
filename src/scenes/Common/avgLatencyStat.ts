@@ -5,10 +5,10 @@ import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
 import { divideSumByCountTransformation } from './divideSumByCountTransformation';
 
-function getQueryRunner(metrics: DataSourceRef) {
+function getQueryRunner(metrics: DataSourceRef, minStep: string) {
   const runner = new SceneQueryRunner({
     datasource: metrics,
-    minInterval: '1m',
+    minInterval: minStep,
     maxDataPoints: 10,
     queries: [
       {
@@ -33,8 +33,8 @@ function getQueryRunner(metrics: DataSourceRef) {
   return divideSumByCountTransformation(runner);
 }
 
-export function getAvgLatencyStat(metrics: DataSourceRef) {
-  const queryRunner = getQueryRunner(metrics);
+export function getAvgLatencyStat(metrics: DataSourceRef, minStep: string) {
+  const queryRunner = getQueryRunner(metrics, minStep);
   return new ExplorablePanel({
     pluginId: 'stat',
     title: 'Average latency',

@@ -299,12 +299,9 @@ const getTracerouteSettingsFormValues = (settings: TracerouteCheck['settings']):
   };
 };
 
-function getBaseFormValuesFromCheck(
-  check: Check,
-  checkType: CheckType
-): Omit<CheckFormValues, 'checkType' | 'settings'> {
-  const frequency = check.frequency / 1000 || getDefaultFrequency(checkType);
-  const timeout = check.timeout / 1000 || getDefaultTimeout(checkType);
+function getBaseFormValuesFromCheck(check: Check): Omit<CheckFormValues, 'checkType' | 'settings'> {
+  const frequency = check.frequency / 1000;
+  const timeout = check.timeout / 1000;
 
   return {
     alertSensitivity: check.alertSensitivity,
@@ -320,26 +317,6 @@ function getBaseFormValuesFromCheck(
   };
 }
 
-function getDefaultFrequency(checkType: CheckType) {
-  if (checkType === CheckType.MULTI_HTTP || checkType === CheckType.Scripted || checkType === CheckType.Traceroute) {
-    return 120;
-  }
-
-  return 60;
-}
-
-function getDefaultTimeout(checkType: CheckType) {
-  if (checkType === CheckType.Traceroute) {
-    return 30;
-  }
-
-  if (checkType === CheckType.MULTI_HTTP) {
-    return 15;
-  }
-
-  return 3;
-}
-
 // export function getFormValuesFromCheck(check: DNSCheck): CheckFormValuesDns;
 // export function getFormValuesFromCheck(check: GRPCCheck): CheckFormValuesGRPC;
 // export function getFormValuesFromCheck(check: HTTPCheck): CheckFormValuesHttp;
@@ -347,7 +324,7 @@ function getDefaultTimeout(checkType: CheckType) {
 // export function getFormValuesFromCheck(check: TCPCheck): CheckFormValuesTcp;
 // export function getFormValuesFromCheck(check: TracerouteCheck): CheckFormValuesTraceroute;
 export function getFormValuesFromCheck(check: Check, checkType: CheckType): CheckFormValues {
-  const base = getBaseFormValuesFromCheck(check, checkType);
+  const base = getBaseFormValuesFromCheck(check);
 
   if (isDNSCheck(check)) {
     const formValues: CheckFormValuesDns = {
@@ -879,7 +856,6 @@ export const getCheckFromFormValues = (formValues: CheckFormValues): Check => {
     return {
       ...base,
       timeout: 30000,
-      frequency: 120000,
       settings: {
         traceroute: getTracerouteSettings(formValues.settings.traceroute),
       },

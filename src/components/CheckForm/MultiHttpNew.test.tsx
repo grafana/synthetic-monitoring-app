@@ -7,7 +7,7 @@ import { server } from 'test/server';
 
 import { AlertSensitivity, CheckType, ROUTES } from 'types';
 import { selectOption, submitForm } from 'components/CheckEditor/testHelpers';
-import { PLUGIN_URL_PATH } from 'components/constants';
+import { FIVE_MINUTES_IN_MS, PLUGIN_URL_PATH } from 'components/constants';
 
 import { CheckForm } from './CheckForm';
 
@@ -109,7 +109,7 @@ describe('new checks', () => {
       alertSensitivity: AlertSensitivity.None,
       basicMetricsOnly: true,
       enabled: true,
-      frequency: 120000,
+      frequency: FIVE_MINUTES_IN_MS,
       job: JOB,
       labels: LABELS,
       probes: [PUBLIC_PROBE.id],

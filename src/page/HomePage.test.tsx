@@ -25,7 +25,7 @@ describe.skip('Information is present', () => {
     renderHomePage();
     await assertBigValue('Total checks', String(BASIC_CHECK_LIST.length));
     await assertBigValue('Total active series', `536`);
-    await assertBigValue('Checks executions per month', '593,291');
-    await assertBigValue('Logs per month', '0.56GB');
+    await assertBigValue('Checks executions per month', '558,251');
+    await assertBigValue('Logs per month', '0.53GB');
   });
 });

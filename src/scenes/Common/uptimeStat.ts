@@ -4,7 +4,7 @@ import { DataSourceRef, ThresholdsMode } from '@grafana/schema';
 import { UPTIME_DESCRIPTION } from 'components/constants';
 import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
-function getQueryRunner(metrics: DataSourceRef) {
+function getQueryRunner(metrics: DataSourceRef, minStep: string) {
   const runner = new SceneQueryRunner({
     datasource: metrics,
     queries: [
@@ -15,14 +15,14 @@ function getQueryRunner(metrics: DataSourceRef) {
         # so make it a 1 if there was at least one success and a 0 otherwise
         ceil(
           # the number of successes across all probes
-          sum by (instance, job) (increase(probe_all_success_sum{instance="$instance", job="$job"}[5m]))
+          sum by (instance, job) (increase(probe_all_success_sum{instance="$instance", job="$job"}[$__rate_interval]))
           /
           # the total number of times we checked across all probes
-          (sum by (instance, job) (increase(probe_all_success_count{instance="$instance", job="$job"}[5m])) + 1) # + 1 because we want to make sure it goes to 1, not 2
+          (sum by (instance, job) (increase(probe_all_success_count{instance="$instance", job="$job"}[$__rate_interval])) + 1) # + 1 because we want to make sure it goes to 1, not 2
         )`,
         hide: false,
         instant: false,
-        interval: '5m',
+        interval: minStep,
         legendFormat: '',
         range: true,
         refId: 'B',
@@ -43,12 +43,12 @@ function getQueryRunner(metrics: DataSourceRef) {
   });
 }
 
-export function getUptimeStat(metrics: DataSourceRef) {
+export function getUptimeStat(metrics: DataSourceRef, minStep: string) {
   return new ExplorablePanel({
     pluginId: 'stat',
     title: 'Uptime',
     description: UPTIME_DESCRIPTION,
-    $data: getQueryRunner(metrics),
+    $data: getQueryRunner(metrics, minStep),
     fieldConfig: {
       defaults: {
         decimals: 2,

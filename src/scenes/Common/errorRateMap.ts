@@ -3,7 +3,7 @@ import { DataSourceRef, ThresholdsMode } from '@grafana/schema';
 
 import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
-function getErrorMapQueries() {
+function getErrorMapQueries(minStep: string) {
   return [
     {
       expr: `sum by (probe, geohash)
@@ -18,7 +18,7 @@ function getErrorMapQueries() {
         )
       )`,
       format: 'table',
-      interval: '1m',
+      interval: minStep,
       instant: false,
       legendFormat: 'numerator',
       refId: 'A',
@@ -38,7 +38,7 @@ function getErrorMapQueries() {
         )
       )`,
       range: true,
-      interval: '1m',
+      interval: minStep,
       instant: false,
       hide: false,
       legendFormat: 'denominator',
@@ -47,10 +47,10 @@ function getErrorMapQueries() {
   ];
 }
 
-function getMapQueryRunner(metrics: DataSourceRef) {
+function getMapQueryRunner(metrics: DataSourceRef, minStep: string) {
   const queryRunner = new SceneQueryRunner({
     datasource: metrics,
-    queries: getErrorMapQueries(),
+    queries: getErrorMapQueries(minStep),
   });
 
   return new SceneDataTransformer({
@@ -153,12 +153,12 @@ function getMapQueryRunner(metrics: DataSourceRef) {
   });
 }
 
-export function getErrorRateMapPanel(metrics: DataSourceRef) {
+export function getErrorRateMapPanel(metrics: DataSourceRef, minStep: string) {
   const mapPanel = new ExplorablePanel({
     pluginId: 'geomap',
     title: 'Error rate by probe',
 
-    $data: getMapQueryRunner(metrics),
+    $data: getMapQueryRunner(metrics, minStep),
     options: {
       basemap: {
         name: 'Basemap',
