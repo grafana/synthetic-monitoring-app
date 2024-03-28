@@ -184,7 +184,7 @@ describe('editing checks', () => {
     requestBodyInput.focus();
     await user.clear(requestBodyInput);
     await user.paste(BODY);
-    await user.click(await screen.findByRole('button', { name: 'Add request header' }));
+    await user.click(await screen.findByText('Add request header'));
 
     await user.type(await screen.findByLabelText('Request header 2 name'), NEW_HEADER.name);
     await user.type(await screen.findByLabelText('Request header 2 value'), NEW_HEADER.value);
@@ -256,7 +256,9 @@ describe('editing checks', () => {
     await user.clear(regexFields[1]);
     await user.type(regexFields[1], BODY_REGEX);
 
-    const [allowMissing, invertMatch] = await within(validationSection).findAllByRole('checkbox');
+    const invertMatch = await within(validationSection).findByLabelText(/Invert match for regex 1/);
+    const allowMissing = await within(validationSection).findByLabelText(/Allow missing header for regex 1/);
+
     await user.click(allowMissing);
     await user.click(invertMatch);
 
@@ -318,8 +320,8 @@ describe('editing checks', () => {
     await user.clear(expressionInputs[1]);
     await user.type(expressionInputs[0], NOT_INVERTED_VALIDATION);
     await user.type(expressionInputs[1], INVERTED_VALIDATION);
-    const invertedCheckboxes = await screen.findAllByRole('checkbox');
-    await user.click(invertedCheckboxes[2]);
+    const invert = await screen.findByLabelText('Invert match for regex 1');
+    await user.click(invert);
     await submitForm(user);
 
     const { body } = await read();

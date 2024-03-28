@@ -57,7 +57,7 @@ describe('validation', () => {
 
 it('returns on back button', async () => {
   const { history, user } = await renderProbeEditor();
-  const backButton = await screen.findByRole('link', { name: 'Back' });
+  const backButton = await screen.findByText('Back');
   await user.click(backButton);
   await waitFor(() => {}, { timeout: 1000 });
   expect(history.location.pathname).toBe(getRoute(ROUTES.Probes));
@@ -127,7 +127,7 @@ async function assertUneditable() {
 }
 
 async function assertNoActions() {
-  const addLabelButton = await screen.findByRole('button', { name: /Add label/ });
+  const addLabelButton = await screen.findByText(/Add label/);
   expect(addLabelButton).not.toBeInTheDocument();
 
   const saveButton = await getSaveButton();
@@ -136,5 +136,5 @@ async function assertNoActions() {
 
 // extract this so we can be sure our assertions for them not being there are correct
 function getSaveButton() {
-  return screen.queryByRole('button', { name: submitText });
+  return screen.queryByText(submitText)?.parentNode as HTMLButtonElement | null;
 }

@@ -36,6 +36,7 @@ export const HttpCheckRegExValidation = () => {
             const isHeaderMatch =
               watch(`${REGEX_FIELD_NAME}.${index}.matchType`)?.value === HttpRegexValidationType.Header;
             const disallowBodyMatching = watch('settings.http.method').value === HttpMethod.HEAD;
+            const userIndex = index + 1;
 
             return (
               <Fragment key={field.id}>
@@ -45,7 +46,7 @@ export const HttpCheckRegExValidation = () => {
                     return (
                       <Select
                         {...rest}
-                        aria-label={`Validation Field Name ${index + 1}`}
+                        aria-label={`Validation Field Name ${userIndex}`}
                         placeholder="Field name"
                         options={HTTP_REGEX_VALIDATION_OPTIONS}
                         invalid={
@@ -65,22 +66,28 @@ export const HttpCheckRegExValidation = () => {
                       return;
                     },
                   }}
-                  name={`${REGEX_FIELD_NAME}.${index}.matchType` as const}
+                  name={`${REGEX_FIELD_NAME}.${index}.matchType`}
                 />
                 <div className={styles.validationExpressions}>
                   {isHeaderMatch && (
                     <div className={styles.validationHeaderName}>
-                      <Input {...register(`${REGEX_FIELD_NAME}.${index}.header` as const)} placeholder="Header name" />
+                      <Input {...register(`${REGEX_FIELD_NAME}.${index}.header`)} placeholder="Header name" />
                     </div>
                   )}
-                  <Input {...register(`${REGEX_FIELD_NAME}.${index}.expression` as const)} placeholder="Regex" />
+                  <Input {...register(`${REGEX_FIELD_NAME}.${index}.expression`)} placeholder="Regex" />
                 </div>
                 <div className={styles.validationInverted}>
-                  <Checkbox {...register(`${REGEX_FIELD_NAME}.${index}.inverted` as const)} />
+                  <Checkbox
+                    {...register(`${REGEX_FIELD_NAME}.${index}.inverted`)}
+                    aria-label={`Invert match for regex ${userIndex}`}
+                  />
                 </div>
                 {isHeaderMatch ? (
                   <div className={styles.validationAllowMissing}>
-                    <Switch {...register(`${REGEX_FIELD_NAME}.${index}.allowMissing` as const)} />
+                    <Switch
+                      {...register(`${REGEX_FIELD_NAME}.${index}.allowMissing`)}
+                      aria-label={`Allow missing header for regex ${userIndex}`}
+                    />
                   </div>
                 ) : (
                   <div />

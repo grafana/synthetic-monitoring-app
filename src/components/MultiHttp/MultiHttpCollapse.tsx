@@ -4,6 +4,7 @@ import { Icon, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 interface Props {
+  'data-testid'?: string;
   label: string;
   invalid?: boolean;
   className?: string | string[];
@@ -12,7 +13,7 @@ interface Props {
 }
 
 export const MultiHttpCollapse = forwardRef<HTMLButtonElement, PropsWithChildren<Props>>(function MultiHttpCollapse(
-  { label, children, invalid, className, isOpen, onToggle },
+  { 'data-testid': dataTestId, label, children, invalid, className, isOpen, onToggle },
   ref
 ) {
   const styles = useStyles2(getStyles);
@@ -32,7 +33,9 @@ export const MultiHttpCollapse = forwardRef<HTMLButtonElement, PropsWithChildren
         <div className={styles.label}>{label}</div>
         {!isOpen && invalid && <Icon name="exclamation-triangle" className={styles.errorIcon} />}
       </button>
-      <div className={cx(styles.body, { [styles.hidden]: !isOpen })}>{children}</div>
+      <div className={cx(styles.body, { [styles.hidden]: !isOpen })} data-testid={dataTestId}>
+        {children}
+      </div>
     </div>
   );
 });

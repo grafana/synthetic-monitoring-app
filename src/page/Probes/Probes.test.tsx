@@ -41,7 +41,7 @@ it(`renders public probes in the correct list`, async () => {
 
 it('handles add new', async () => {
   const { history, user } = renderProbeList();
-  const addNewButton = await screen.findByRole('link', { name: 'Add Private Probe' });
+  const addNewButton = await screen.findByText('Add Private Probe');
   await user.click(addNewButton);
 
   expect(history.location.pathname).toBe(getRoute(ROUTES.NewProbe));

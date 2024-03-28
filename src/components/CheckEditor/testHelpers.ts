@@ -12,15 +12,16 @@ export const toggleSection = async (sectionName: string, user: UserEvent): Promi
 };
 
 export const submitForm = async (user: UserEvent) => {
-  const saveButton = await screen.findByRole('button', { name: 'Save' });
+  const saveButton = await screen.findByText('Save');
   expect(saveButton).not.toBeDisabled();
   await user.click(saveButton);
 };
 
 export const getSlider = async (formName: string) => {
   const container = await screen.findByTestId(formName);
-  const inputs = await within(container).findAllByRole('textbox');
-  return inputs;
+  const minutes = await within(container).findByLabelText('minutes');
+  const seconds = await within(container).findByLabelText('seconds');
+  return [minutes, seconds];
 };
 
 export const fillBasicCheckFields = async (jobName: string, target: string, user: UserEvent, labels: Label[]) => {
@@ -40,7 +41,7 @@ export const fillBasicCheckFields = async (jobName: string, target: string, user
   await toggleSection('Advanced options', user);
 
   for (const label of labels) {
-    const addLabel = await screen.findByRole('button', { name: 'Add label' });
+    const addLabel = await screen.findByText('Add label');
     await user.click(addLabel);
     const labelNameInput = await screen.findByPlaceholderText('name');
     await user.type(labelNameInput, label.name);
@@ -65,13 +66,13 @@ export const fillDnsValidationFields = async (user: UserEvent) => {
   const expressionInputs = await screen.findAllByPlaceholderText('Type expression');
   await user.type(expressionInputs[0], 'not inverted validation');
   await user.type(expressionInputs[1], 'inverted validation');
-  const invertedCheckboxes = await screen.findAllByRole('checkbox');
-  await user.click(invertedCheckboxes[2]);
+  const invertedCheckbox = await screen.findByLabelText('Invert match for regex 1');
+  await user.click(invertedCheckbox);
 };
 
 export const fillTCPQueryResponseFields = async (user: UserEvent) => {
   const container = await toggleSection('Query/Response', user);
-  const addQueryResp = await screen.findByRole('button', { name: 'Add query/response' });
+  const addQueryResp = await screen.findByText('Add query/response');
   await user.click(addQueryResp);
   const responseInput = await within(container).findByPlaceholderText('Response to expect');
   await user.type(responseInput, 'STARTTLS');

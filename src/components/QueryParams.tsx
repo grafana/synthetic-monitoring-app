@@ -1,5 +1,5 @@
 import React, { useEffect, useReducer, useState } from 'react';
-import { Button,Field, Label } from '@grafana/ui';
+import { Button, Field, Label } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import QueryParamInput, { QueryParam } from './QueryParamInput';
@@ -102,6 +102,7 @@ const QueryParams = ({ target, onChange, className, onBlur }: Props) => {
           <div />
           {formattedParams.map((queryParam, index) => (
             <QueryParamInput
+              index={index}
               queryParam={queryParam}
               onBlur={onBlur}
               key={index}

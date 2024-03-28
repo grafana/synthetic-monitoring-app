@@ -1,5 +1,5 @@
 import React, { ChangeEvent } from 'react';
-import { IconButton,Input } from '@grafana/ui';
+import { IconButton, Input } from '@grafana/ui';
 
 export interface QueryParam {
   name: string;
@@ -7,6 +7,7 @@ export interface QueryParam {
 }
 
 interface Props {
+  index: number;
   queryParam: {
     name: string;
     value: string;
@@ -16,9 +17,10 @@ interface Props {
   onBlur?: () => void;
 }
 
-const QueryParamInput = ({ queryParam, onChange, onDelete, onBlur }: Props) => (
+const QueryParamInput = ({ index, queryParam, onChange, onDelete, onBlur }: Props) => (
   <>
     <Input
+      aria-label={`Query param key ${index + 1}`}
       label="Key"
       onBlur={onBlur}
       type="text"
@@ -32,6 +34,7 @@ const QueryParamInput = ({ queryParam, onChange, onDelete, onBlur }: Props) => (
       }
     />
     <Input
+      aria-label={`Query param value ${index + 1}`}
       label="Value"
       onBlur={onBlur}
       type="text"
@@ -44,7 +47,13 @@ const QueryParamInput = ({ queryParam, onChange, onDelete, onBlur }: Props) => (
         })
       }
     />
-    <IconButton name="minus-circle" onClick={onDelete} type="button" tooltip="Delete" />
+    <IconButton
+      aria-label={`Delete param ${index + 1}`}
+      name="minus-circle"
+      onClick={onDelete}
+      type="button"
+      tooltip="Delete"
+    />
   </>
 );
 

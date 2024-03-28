@@ -24,9 +24,9 @@ const renderTerraformConfig = async () => {
 
 const openConfig = async () => {
   const { user } = await renderTerraformConfig();
-  const launchButton = await screen.findByRole('button', { name: 'Generate config' });
+  const launchButton = await screen.findByText('Generate config');
   await user.click(launchButton);
-  const modalHeader = await screen.findByRole('heading', { name: 'Terraform config' });
+  const modalHeader = await screen.findByText('Terraform config');
   expect(modalHeader).toBeInTheDocument();
 };
 
