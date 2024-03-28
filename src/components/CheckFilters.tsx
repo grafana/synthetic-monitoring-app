@@ -1,8 +1,7 @@
-import React, { useCallback, useState } from 'react';
+import React, { ChangeEvent, useRef, useState } from 'react';
 import { GrafanaTheme2, SelectableValue, unEscapeStringFromRegex } from '@grafana/data';
 import { Icon, Input, MultiSelect, Select, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { debounce } from 'lodash';
 
 import { Check, CheckFiltersType } from 'types';
 import { useProbes } from 'data/useProbes';
@@ -60,14 +59,22 @@ export function CheckFilters({
   const styles = useStyles2(getStyles);
   const [searchValue, setSearchValue] = useState(checkFilters.search);
   const { data: probes = [] } = useProbes();
+  const debounceRef = useRef<NodeJS.Timeout>();
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const debouncedOnChange = useCallback(debounce(onChange, 1000), []);
-
-  function handleSearchChange(event: any) {
-    const value = event.currentTarget?.value;
+  function handleSearchChange(event: ChangeEvent<HTMLInputElement>) {
+    const value = event.currentTarget.value;
     setSearchValue(value);
-    debouncedOnChange({ ...checkFilters, search: value });
+
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+
+    debounceRef.current = setTimeout(() => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+        onChange({ ...checkFilters, search: value });
+      }
+    }, 300);
   }
 
   return (
