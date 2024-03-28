@@ -426,6 +426,45 @@ describe(`bulk select behaviour`, () => {
       expect(checkbox).toBeChecked();
     });
   });
+
+  test(`bulk select is disabled when no checks are rendered because of an empty search`, async () => {
+    const { user } = await renderCheckList();
+    const searchInput = await screen.findByLabelText('Search checks');
+    const selectAll = await screen.findByLabelText('Select all');
+    await user.click(selectAll);
+    expect(selectAll).toBeChecked();
+
+    await searchInput.focus();
+    await user.paste('non-existent-check');
+
+    await waitFor(() => expect(selectAll).toBeDisabled());
+    expect(selectAll).not.toBeChecked();
+  });
+
+  test(`bulk selected items are reduced when a filter is added`, async () => {
+    const { read, record } = getServerRequests();
+    server.use(apiRoute(`bulkUpdateChecks`, {}, record));
+    const { user } = await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK]);
+
+    const selectAll = await screen.findByLabelText('Select all');
+    await user.click(selectAll);
+    expect(selectAll).toBeChecked();
+
+    await user.click(screen.getByText('HTTP'));
+    expect(selectAll).toBeChecked();
+
+    const enableButton = await screen.getByText('Disable');
+    await user.click(enableButton);
+
+    const { body } = await read();
+
+    expect(body).toEqual(
+      [BASIC_HTTP_CHECK].map((check) => ({
+        ...check,
+        enabled: false,
+      }))
+    );
+  });
 });
 
 function getModalContainer() {

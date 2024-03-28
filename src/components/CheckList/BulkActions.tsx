@@ -45,9 +45,11 @@ export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
 
   return (
     <>
-      <div>{checks.length} checks are selected.</div>
+      <div>
+        {checks.length} check{checks.length !== 1 ? `s are` : ` is`} selected.
+      </div>
       <div className={styles.buttonGroup}>
-        {checks.length && (
+        {checks.length > 0 && (
           <ButtonCascader
             options={[
               {
