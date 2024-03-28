@@ -47,8 +47,9 @@ export const CheckListHeader = ({
   const viewType = getViewTypeFromLS() ?? CheckListViewType.Card;
   const [showThresholdModal, setShowThresholdModal] = useState(false);
   const [showVizIconOverlay, setShowVizIconOverlay] = useState(getIconOverlayToggleFromLS());
-  const isAllSelected = selectedCheckIds.size === checks.length;
-  const isSomeSelected = !isAllSelected && selectedCheckIds.size > 0;
+  const hasChecks = checks.length > 0;
+  const isAllSelected = !hasChecks ? false : selectedCheckIds.size === checks.length;
+  const isSomeSelected = hasChecks && !isAllSelected && selectedCheckIds.size > 0;
   const selectedChecks = checks.filter((check) => selectedCheckIds.has(check.id!));
 
   const tooltip = isAllSelected ? 'Deselect all' : 'Select all';
@@ -88,6 +89,7 @@ export const CheckListHeader = ({
               onChange={onSelectAll}
               indeterminate={isSomeSelected}
               value={isAllSelected}
+              disabled={checks.length === 0}
               aria-label="Select all"
               data-testid="selectAll"
             />

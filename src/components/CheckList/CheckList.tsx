@@ -75,45 +75,51 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   const isAllSelected = selectedCheckIds.size === filteredChecks.length;
   const totalPages = Math.ceil(filteredChecks.length / CHECKS_PER_PAGE);
 
+  const handleFilterChange = (filters: CheckFiltersType) => {
+    setCheckFilters((cf) => ({
+      ...cf,
+      ...filters,
+    }));
+    setCurrentPage(1);
+    localStorage.setItem('checkFilters', JSON.stringify(filters));
+
+    setSelectedChecksIds((current) => {
+      const filteredChecks = filterChecks(checks, filters);
+      const alreadySelectedChecks = filteredChecks.filter((check) => current.has(check.id!)).map((check) => check.id!);
+      return new Set(alreadySelectedChecks);
+    });
+  };
+
   const handleResetFilters = () => {
-    setCheckFilters(defaultFilters);
+    handleFilterChange(defaultFilters);
     localStorage.removeItem('checkFilters');
   };
 
   const handleLabelSelect = (label: Label) => {
-    setCheckFilters((cf) => {
-      const updated = {
-        ...cf,
-        labels: Array.from(new Set([...cf.labels, `${label.name}: ${label.value}`])),
-      };
-      localStorage.setItem('checkFilters', JSON.stringify(updated));
-      return updated;
-    });
-    setCurrentPage(1);
+    const updated = {
+      ...checkFilters,
+      labels: Array.from(new Set([...checkFilters.labels, `${label.name}: ${label.value}`])),
+    };
+
+    handleFilterChange(updated);
   };
 
   const handleTypeSelect = (checkType: CheckType) => {
-    setCheckFilters((cf) => {
-      const updated = { ...cf, type: checkType };
-      localStorage.setItem('checkFilters', JSON.stringify(updated));
-      return updated;
-    });
-    setCurrentPage(1);
+    const updated = { ...checkFilters, type: checkType };
+
+    handleFilterChange(updated);
   };
 
   const handleStatusSelect = (enabled: boolean) => {
     const status = enabled ? CheckEnabledStatus.Enabled : CheckEnabledStatus.Disabled;
     const option = CHECK_LIST_STATUS_OPTIONS.find(({ value }) => value === status);
+
     if (option) {
-      setCheckFilters((cf) => {
-        const updated = {
-          ...cf,
-          status: option,
-        };
-        localStorage.setItem('checkFilters', JSON.stringify(updated));
-        return updated;
-      });
-      setCurrentPage(1);
+      const updated = {
+        ...checkFilters,
+        status: option,
+      };
+      handleFilterChange(updated);
     }
   };
 
@@ -123,6 +129,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
       return;
     }
     selectedCheckIds.delete(checkId);
+
     setSelectedChecksIds(new Set(selectedCheckIds));
   };
 
@@ -164,7 +171,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
           checkFilters={checkFilters}
           currentPageChecks={currentPageChecks}
           onChangeView={handleChangeViewType}
-          onFilterChange={setCheckFilters}
+          onFilterChange={handleFilterChange}
           onSelectAll={handleSelectAll}
           onSort={updateSortMethod}
           onResetFilters={handleResetFilters}

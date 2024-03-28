@@ -20,7 +20,7 @@ const renderChecksPage = async () => {
     route: `${PLUGIN_URL_PATH}${ROUTES.Checks}`,
   });
 
-  await waitFor(() => expect(screen.getByRole('button', { name: 'Add new check' })).toBeInTheDocument());
+  await waitFor(() => expect(screen.getByText('Add new check')).toBeInTheDocument());
   return res;
 };
 
