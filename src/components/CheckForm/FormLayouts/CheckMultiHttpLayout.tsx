@@ -29,6 +29,7 @@ export const CheckMultiHTTPLayout = () => {
         contentClassName={styles.requestsContainer}
         label="Requests"
         fields={[`settings.multihttp.entries`]}
+        isOpen
       >
         <div>At least one target HTTP is required; limit 10 requests per check.</div>
         <MultiHttpCheckRequests />

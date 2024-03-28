@@ -62,9 +62,6 @@ describe('new checks', () => {
     // Set probe options
     await selectOption(user, { label: 'Probe locations', option: PUBLIC_PROBE.name });
 
-    // Open requests section
-    await user.click(screen.getByRole('button', { name: /Requests/ }));
-
     // Add a custom label
     const addCustomLabelButton = await screen.findByRole('button', { name: /Add label/ });
     await user.click(addCustomLabelButton);
