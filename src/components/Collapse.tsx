@@ -7,9 +7,10 @@ interface Props {
   className?: string;
   isOpen?: boolean;
   label: ReactNode;
+  onClick?: (open: boolean) => void;
 }
 
-export const Collapse = ({ className, isOpen, label, children, ...props }: PropsWithChildren<Props>) => {
+export const Collapse = ({ className, isOpen, label, children, onClick, ...props }: PropsWithChildren<Props>) => {
   const [isOpenState, setIsOpenState] = React.useState(isOpen);
   const styles = useStyles2(getStyles);
 
@@ -18,7 +19,10 @@ export const Collapse = ({ className, isOpen, label, children, ...props }: Props
       <button
         aria-expanded={isOpenState}
         className={styles.header}
-        onClick={() => setIsOpenState(!isOpenState)}
+        onClick={() => {
+          setIsOpenState(!isOpenState);
+          onClick?.(!isOpenState);
+        }}
         type="button"
       >
         <div className={styles.label}>{label}</div>
