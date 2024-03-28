@@ -319,9 +319,9 @@ test('cascader adds labels to label filter', async () => {
   await user.click(cascader);
   const labelMenuItems = await screen.findAllByLabelText('Select check');
   expect(labelMenuItems.length).toBe(2);
-  const labelName = await screen.findByRole('menuitemcheckbox', { name: BASIC_DNS_CHECK.labels[0].name });
+  const labelName = await screen.findByText(BASIC_DNS_CHECK.labels[0].name);
   await user.click(labelName);
-  const labelValue = await screen.findByRole('menuitemcheckbox', { name: BASIC_DNS_CHECK.labels[0].value });
+  const labelValue = await screen.findByText(BASIC_DNS_CHECK.labels[0].value);
   await user.click(labelValue);
 
   const constructedLabel = `${BASIC_DNS_CHECK.labels[0].name}: ${BASIC_DNS_CHECK.labels[0].value}`;

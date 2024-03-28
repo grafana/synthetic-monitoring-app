@@ -1,15 +1,17 @@
 import React from 'react';
-import { Controller, useFormContext } from 'react-hook-form';
+import { Controller, FieldPath, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+
+import { CheckFormValues } from 'types';
 
 import { TimeSlider } from './TimeSlider/TimeSlider';
 
 export interface SliderInputProps {
   min: number;
   max: number;
-  name: string;
+  name: FieldPath<CheckFormValues>;
   id?: string;
   validate?: (value: number) => string | undefined;
   step?: number;

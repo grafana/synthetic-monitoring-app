@@ -31,12 +31,12 @@ test('renders checks', async () => {
 
 test('renders check selection page with multi-http feature flag is ON', async () => {
   const { user } = await renderChecksPage();
-  await user.click(screen.getByRole('button', { name: 'Add new check' }));
-  expect(await screen.findByRole('link', { name: 'HTTP' })).toBeInTheDocument();
-  expect(await screen.findByRole('link', { name: /MULTIHTTP/ })).toBeInTheDocument();
-  expect(await screen.findByRole('link', { name: 'Traceroute' })).toBeInTheDocument();
-  expect(await screen.findByRole('link', { name: 'PING' })).toBeInTheDocument();
-  expect(await screen.findByRole('link', { name: 'DNS' })).toBeInTheDocument();
+  await user.click(screen.getByText('Add new check'));
+  expect(screen.queryByText('HTTP', { selector: `h2` })).toBeInTheDocument();
+  expect(screen.queryByText('MULTIHTTP', { selector: `h2` })).toBeInTheDocument();
+  expect(screen.queryByText('Traceroute', { selector: `h2` })).toBeInTheDocument();
+  expect(screen.queryByText('PING', { selector: `h2` })).toBeInTheDocument();
+  expect(screen.queryByText('DNS', { selector: `h2` })).toBeInTheDocument();
 });
 
 test('renders check selection page without multi-http feature flag is OFF', async () => {
@@ -49,13 +49,12 @@ test('renders check selection page without multi-http feature flag is OFF', asyn
   });
 
   const { user } = await renderChecksPage();
-  await waitFor(() => screen.getByRole('button', { name: 'Add new check' }));
-  await user.click(screen.getByRole('button', { name: 'Add new check' }));
-  expect(await screen.queryByRole('link', { name: 'HTTP' })).toBeInTheDocument();
-  expect(await screen.queryByRole('link', { name: 'Traceroute' })).toBeInTheDocument();
-  expect(await screen.queryByRole('link', { name: 'PING' })).toBeInTheDocument();
-  expect(await screen.queryByRole('link', { name: 'DNS' })).toBeInTheDocument();
-  expect(await screen.queryByRole('link', { name: /MULTIHTTP/ })).not.toBeInTheDocument();
+  await user.click(screen.getByText('Add new check'));
+  expect(screen.queryByText('HTTP', { selector: `h2` })).toBeInTheDocument();
+  expect(screen.queryByText('MULTIHTTP', { selector: `h2` })).not.toBeInTheDocument();
+  expect(screen.queryByText('Traceroute', { selector: `h2` })).toBeInTheDocument();
+  expect(screen.queryByText('PING', { selector: `h2` })).toBeInTheDocument();
+  expect(screen.queryByText('DNS', { selector: `h2` })).toBeInTheDocument();
 });
 
 test('renders check editor existing check', async () => {

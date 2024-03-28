@@ -23,42 +23,43 @@ export const DNSCheckResponseMatches = () => {
           <Label>Expression</Label>
           <Label>Invert Match</Label>
           <div />
-          {fields.map((field, index) => (
-            <Fragment key={field.id}>
-              <Controller
-                name={`settings.dns.validations.${index}.responseMatch` as const}
-                rules={{ required: true }}
-                render={({ field }) => {
-                  const { ref, ...rest } = field;
-                  return (
-                    <Select
-                      {...rest}
-                      value={field.value}
-                      aria-label={`DNS Response Match ${index + 1}`}
-                      options={DNS_RESPONSE_MATCH_OPTIONS}
-                      invalid={Boolean(formState.errors.settings?.dns?.validations?.[index]?.responseMatch)}
-                    />
-                  );
-                }}
-              />
-              <Input
-                {...register(`settings.dns.validations.${index}.expression` as const)}
-                placeholder="Type expression"
-              />
-              <div
-                className={css`
-                  position: relative;
-                  justify-self: center;
-                `}
-              >
-                <Checkbox
-                  {...register(`settings.dns.validations.${index}.inverted` as const)}
-                  aria-label="dns-validation-inverted"
+          {fields.map((field, index) => {
+            const userIndex = index + 1;
+
+            return (
+              <Fragment key={field.id}>
+                <Controller
+                  name={`settings.dns.validations.${index}.responseMatch`}
+                  rules={{ required: true }}
+                  render={({ field }) => {
+                    const { ref, ...rest } = field;
+                    return (
+                      <Select
+                        {...rest}
+                        value={field.value}
+                        aria-label={`DNS Response Match ${userIndex}`}
+                        options={DNS_RESPONSE_MATCH_OPTIONS}
+                        invalid={Boolean(formState.errors.settings?.dns?.validations?.[index]?.responseMatch)}
+                      />
+                    );
+                  }}
                 />
-              </div>
-              <IconButton name="minus-circle" onClick={() => remove(index)} tooltip="Delete" />
-            </Fragment>
-          ))}
+                <Input {...register(`settings.dns.validations.${index}.expression`)} placeholder="Type expression" />
+                <div
+                  className={css`
+                    position: relative;
+                    justify-self: center;
+                  `}
+                >
+                  <Checkbox
+                    {...register(`settings.dns.validations.${index}.inverted`)}
+                    aria-label={`Invert match for regex ${userIndex}`}
+                  />
+                </div>
+                <IconButton name="minus-circle" onClick={() => remove(index)} tooltip="Delete" />
+              </Fragment>
+            );
+          })}
         </div>
       )}
       <div>

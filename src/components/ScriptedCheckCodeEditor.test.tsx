@@ -27,6 +27,8 @@ jest.mock('components/CodeEditor', () => {
   };
 });
 
+const { findByLabelText, findByPlaceholderText, findByTestId, findByText, getByText } = screen;
+
 describe('new scripted check', () => {
   it('renders the new scripted check form', async () => {
     const { findByText } = render(<CheckForm />, {
@@ -39,13 +41,10 @@ describe('new scripted check', () => {
   it('creates a new k6 check', async () => {
     const { record, read } = getServerRequests();
     server.use(apiRoute(`addCheck`, {}, record));
-    const { user, findByLabelText, getByText, findByTestId, findByRole, findByPlaceholderText } = render(
-      <CheckForm />,
-      {
-        route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/:checkType`,
-        path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${CheckType.Scripted}`,
-      }
-    );
+    const { user } = render(<CheckForm />, {
+      route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/:checkType`,
+      path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${CheckType.Scripted}`,
+    });
 
     const JOB_NAME = 'New k6 check';
     const TARGET = 'https://www.k6.com';
@@ -67,7 +66,7 @@ describe('new scripted check', () => {
     await user.click(probeSelectMenu);
     await user.click(screen.getByText(PRIVATE_PROBE.name));
 
-    const addLabel = await findByRole('button', { name: 'Add label' });
+    const addLabel = await findByText('Add label');
     await user.click(addLabel);
     const labelNameInput = await findByPlaceholderText('name');
     await user.type(labelNameInput, LABEL.name);

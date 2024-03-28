@@ -68,7 +68,7 @@ describe(`Private probes`, () => {
     const resetButton = getResetTokenButton();
     await user.click(resetButton!);
 
-    const confirmButton = await screen.findByRole('button', { name: 'Reset Token' });
+    const confirmButton = await screen.findByText('Reset Token');
     await user.click(confirmButton);
 
     const tokenValue = await screen.findByText(UPDATED_PROBE_TOKEN_RESPONSE);
@@ -79,11 +79,11 @@ describe(`Private probes`, () => {
 // extract these so we can be sure the assertion for them NOT existing is accurate
 // as they work when we are confirming their existence
 function getSaveButton() {
-  return screen.queryByRole('button', { name: 'Update probe' });
+  return screen.queryByText('Update probe');
 }
 
 function getResetTokenButton() {
-  return screen.queryByRole('button', { name: 'Reset Access Token' });
+  return screen.queryByText('Reset Access Token');
 }
 
 function checkInformation(probe: Probe) {

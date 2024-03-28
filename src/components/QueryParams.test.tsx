@@ -22,7 +22,7 @@ test('Shows empty inputs if no query params', async () => {
 test('Should handle initial value', async () => {
   const target = new URL('http://example.com?test=1&another=tacos');
   render(<QueryParams target={target} onChange={onChange} />);
-  const inputs = (await screen.findAllByRole('textbox')) as HTMLInputElement[];
+  const inputs = (await screen.findAllByLabelText(/Query param/)) as HTMLInputElement[];
   expect(inputs.length).toBe(4);
   const expectedValues = ['test', '1', 'another', 'tacos'];
   inputs.forEach((input) => {
@@ -46,7 +46,7 @@ test('Returns a query string onChange', async () => {
 test('Delete button deletes a query param', async () => {
   const target = new URL('https://example.com?robert=bob&stephen=steve&jim=james');
   const { user } = render(<QueryParams target={target} onChange={onChange} />);
-  const buttons = await screen.findAllByRole('button');
+  const buttons = await screen.findAllByLabelText('Delete');
   await user.click(buttons[1]);
   await waitFor(() => expect(onChange).toHaveBeenCalledTimes(1));
   expect(onChange).toHaveBeenCalledWith('https://example.com/?robert=bob&jim=james');

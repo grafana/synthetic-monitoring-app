@@ -97,7 +97,7 @@ describe('editing multihttp check', () => {
     await user.click(variablesTabs[0]);
     await user.click(variablesTabs[1]);
 
-    const submitButton = await screen.findByRole('button', { name: 'Save' });
+    const submitButton = await screen.findByText('Save');
     await user.click(submitButton);
 
     const { body } = await read();
@@ -176,7 +176,7 @@ describe('editing multihttp check', () => {
     await user.click(subjects[0]);
     await user.click(screen.getByText('Headers', { selector: `span` }));
 
-    const submitButton = await screen.findByRole('button', { name: 'Save' });
+    const submitButton = await screen.findByText('Save');
     await user.click(submitButton);
 
     const { body } = await read();

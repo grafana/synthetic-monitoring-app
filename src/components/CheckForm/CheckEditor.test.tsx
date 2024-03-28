@@ -28,7 +28,7 @@ describe(`<CheckForm />`, () => {
           path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${type}`,
         });
 
-        const testButton = await screen.findByRole('button', { name: 'Save' });
+        const testButton = await screen.findByText('Save');
         await waitFor(() => expect(testButton).toBeInTheDocument());
         await user.click(testButton);
         expect(screen.getByText(`Job name is required`)).toBeInTheDocument();
@@ -46,7 +46,7 @@ describe(`<CheckForm />`, () => {
           path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${type}`,
         });
 
-        const testButton = await screen.findByRole('button', { name: 'Test' });
+        const testButton = await screen.findByText('Test');
         await waitFor(() => expect(testButton).toBeInTheDocument());
         await user.click(testButton);
         expect(screen.getByText(`Job name is required`)).toBeInTheDocument();
@@ -62,7 +62,7 @@ describe(`<CheckForm />`, () => {
           path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${type}`,
         });
 
-        const testButton = screen.queryByRole('button', { name: 'Test' });
+        const testButton = screen.queryByText('Test');
         expect(testButton).not.toBeInTheDocument();
       });
     });
