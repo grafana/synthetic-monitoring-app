@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { FieldErrors, useFieldArray, useFormContext } from 'react-hook-form';
 import { Button, HorizontalGroup, useStyles2, VerticalGroup } from '@grafana/ui';
 
-import { CheckFormValues, CheckFormValuesMultiHttp, CheckType } from 'types';
+import { CheckFormValues, CheckFormValuesMultiHttp, CheckType, HttpMethod } from 'types';
 import { RequestMethodSelect } from 'components/CheckEditor/FormComponents/RequestMethodSelect';
 import { RequestTargetInput } from 'components/CheckEditor/FormComponents/RequestTargetInput';
 import { CHECK_FORM_ERROR_EVENT } from 'components/constants';
@@ -73,6 +73,7 @@ export const MultiHttpCheckRequests = () => {
             label={urlForIndex}
             key={field.id}
             className={styles.collapseTarget}
+            data-testid={`multihttp-request-${index}`}
             invalid={Boolean(errors?.settings?.multihttp?.entries?.[index])}
             isOpen={collapseState[index].open}
             onToggle={() => dispatchCollapse({ type: 'toggle', index })}
@@ -127,7 +128,9 @@ export const MultiHttpCheckRequests = () => {
         tooltip={requests?.length > 9 ? 'Maximum of 10 requests per check' : undefined}
         tooltipPlacement="bottom-start"
         onClick={() => {
-          append({});
+          append({
+            request: { url: ``, method: HttpMethod.GET },
+          });
           dispatchCollapse({ type: 'addNewRequest' });
         }}
         className={styles.addRequestButton}

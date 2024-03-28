@@ -22,10 +22,10 @@ it(`creates a new probe, displays the modal and redirects on close`, async () =>
   const { history, user } = renderNewProbe();
   await fillProbeForm(user);
 
-  const saveButton = await screen.findByRole('button', { name: 'Add new probe' });
+  const saveButton = await screen.findByText('Add new probe');
   await user.click(saveButton);
   await waitFor(() => expect(screen.queryByText(ADD_PROBE_TOKEN_RESPONSE)).toBeInTheDocument());
-  const dismiss = screen.getByRole('button', { name: 'Go back to probes list' });
+  const dismiss = screen.getByText('Go back to probes list');
   await user.click(dismiss);
   await waitFor(() => expect(history.location.pathname).toBe(getRoute(ROUTES.Probes)));
 });

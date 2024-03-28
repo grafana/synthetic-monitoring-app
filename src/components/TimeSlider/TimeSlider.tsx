@@ -1,4 +1,4 @@
-import React, { ChangeEvent, FocusEvent, useCallback, useState } from 'react';
+import React, { ChangeEvent, FocusEvent, useCallback, useId, useState } from 'react';
 import { Input, useStyles2 } from '@grafana/ui';
 import { cx } from '@emotion/css';
 import SliderComponent from 'rc-slider';
@@ -30,6 +30,8 @@ export function TimeSlider({
   ariaLabelForHandle,
   included,
 }: SliderProps) {
+  const minutesId = useId();
+  const secondsId = useId();
   const initialSeconds = (value ?? min) % 60;
   const initialMinutes = Math.floor((value ?? min) / 60);
   const styles = useStyles2(getStyles);
@@ -136,8 +138,9 @@ export function TimeSlider({
           value={minutes}
           onChange={onMinutesInputChange}
           onBlur={onMinutesInputBlur}
+          id={minutesId}
         />
-        <span>minutes</span>
+        <label htmlFor={minutesId}>minutes</label>
 
         <Input
           type="text"
@@ -145,9 +148,9 @@ export function TimeSlider({
           value={seconds}
           onChange={onSecondsInputChange}
           onBlur={onSecondsInputBlur}
+          id={secondsId}
         />
-
-        <span>seconds</span>
+        <label htmlFor={secondsId}>seconds</label>
       </div>
     </div>
   );

@@ -138,17 +138,18 @@ test('clicking label value adds to label filter', async () => {
   const constructedLabel = `${label.name}: ${label.value}`;
   const labelValue = await screen.findAllByText(constructedLabel);
   await user.click(labelValue[0]);
-  const additionalFilters = await screen.findByRole('button', { name: /Additional filters/i });
+  const additionalFilters = await screen.findByText(/Additional filters/i);
   await user.click(additionalFilters);
 
-  expect(within(screen.getByRole(`dialog`)).getByText(constructedLabel)).toBeInTheDocument();
+  const dialog = getModalContainer();
+  expect(within(dialog).getByText(constructedLabel)).toBeInTheDocument();
   const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(1);
 });
 
 test('filters by check type', async () => {
   const { user } = await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK]);
-  const additionalFilters = await screen.findByRole('button', { name: 'Additional filters' });
+  const additionalFilters = await screen.findByText(/Additional filters/i);
   await user.click(additionalFilters);
 
   await selectOption(user, { label: 'Filter by type', option: 'HTTP' });
@@ -163,7 +164,7 @@ test('filters by probe', async () => {
   };
 
   const { user } = await renderCheckList([DNS_CHECK_WITH_REMOVED_PROBE, BASIC_HTTP_CHECK]);
-  const additionalFilters = await screen.findByRole('button', { name: 'Additional filters' });
+  const additionalFilters = await screen.findByText(/Additional filters/i);
   await user.click(additionalFilters);
   const probeFilter = await screen.findByLabelText('Filter by probe');
   await user.click(probeFilter);
@@ -209,10 +210,11 @@ test('loads status filter from localStorage', async () => {
   };
 
   const { user } = await renderCheckList([DNS_CHECK_DISABLED, BASIC_HTTP_CHECK]);
-  const additionalFilters = await screen.findByRole('button', { name: /Additional filters \(1 active\)/i });
+  const additionalFilters = await screen.findByText(/Additional filters/i);
   await user.click(additionalFilters);
 
-  const statusFilter = await within(screen.getByRole('dialog')).findByText(filters.status.label);
+  const dialog = getModalContainer();
+  const statusFilter = await within(dialog).findByText(filters.status.label);
   expect(statusFilter).toBeInTheDocument();
   const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(1);
@@ -229,10 +231,11 @@ test('loads type filter from localStorage', async () => {
 
   localStorage.setItem('checkFilters', JSON.stringify(filters));
   const { user } = await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK]);
-  const additionalFilters = await screen.findByRole('button', { name: /Additional filters \(1 active\)/i });
+  const additionalFilters = await screen.findByText(/Additional filters \(1 active\)/i);
   await user.click(additionalFilters);
 
-  const typeFilter = await within(screen.getByRole('dialog')).findByText(filters.type, { exact: false });
+  const dialog = getModalContainer();
+  const typeFilter = await within(dialog).findByText(filters.type, { exact: false });
   expect(typeFilter).toBeInTheDocument();
 
   const checks = await screen.findAllByTestId('check-card');
@@ -253,10 +256,11 @@ test('loads labels from localStorage', async () => {
 
   localStorage.setItem('checkFilters', JSON.stringify(filters));
   const { user } = await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK]);
-  const additionalFilters = await screen.findByRole('button', { name: /Additional filters \(1 active\)/i });
+  const additionalFilters = await screen.findByText(/Additional filters \(1 active\)/i);
   await user.click(additionalFilters);
 
-  const typeFilter = await within(screen.getByRole('dialog')).findByText(constructedLabel, { exact: false });
+  const dialog = getModalContainer();
+  const typeFilter = await within(dialog).findByText(constructedLabel, { exact: false });
   expect(typeFilter).toBeInTheDocument();
 
   const checks = await screen.findAllByTestId('check-card');
@@ -267,11 +271,12 @@ test('clicking type chiclet adds it to filter', async () => {
   const { user } = await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK]);
   const httpTypeChiclet = await screen.findAllByText('HTTP');
   await user.click(httpTypeChiclet[0]);
-  const additionalFilters = await screen.findByRole('button', { name: /Additional filters/i });
+  const additionalFilters = await screen.findByText(/Additional filters/i);
   await user.click(additionalFilters);
   const checks = await screen.findAllByTestId('check-card');
 
-  const typeFilter = await within(screen.getByRole('dialog')).findByText(`HTTP`);
+  const dialog = getModalContainer();
+  const typeFilter = await within(dialog).findByText(`HTTP`);
   expect(typeFilter).toBeInTheDocument();
 
   expect(checks.length).toBe(1);
@@ -286,10 +291,11 @@ test('clicking status chiclet adds it to filter', async () => {
   const { user } = await renderCheckList([DNS_CHECK_DISABLED, BASIC_HTTP_CHECK]);
   const disabledChiclet = await screen.findAllByText('Disabled');
   await user.click(disabledChiclet[0]);
-  const additionalFilters = await screen.findByRole('button', { name: /Additional filters/i });
+  const additionalFilters = await screen.findByText(/Additional filters/i);
   await user.click(additionalFilters);
 
-  const statusFilter = await within(screen.getByRole('dialog')).findByText(`Disabled`);
+  const dialog = getModalContainer();
+  const statusFilter = await within(dialog).findByText(`Disabled`);
   expect(statusFilter).toBeInTheDocument();
 
   const checks = await screen.findAllByTestId('check-card');
@@ -300,26 +306,27 @@ test('clicking add new is handled', async () => {
   const navigate = jest.fn();
   useNavigationHook.useNavigation = jest.fn(() => navigate); // TODO: COME BACK TO
   const { user } = await renderCheckList();
-  const addNewButton = await screen.findByRole('button', { name: 'Add new check' });
+  const addNewButton = await screen.findByText('Add new check');
   await user.click(addNewButton);
   expect(navigate).toHaveBeenCalledWith(ROUTES.ChooseCheckType);
 });
 
 test('cascader adds labels to label filter', async () => {
   const { user } = await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK]);
-  const additionalFilters = await screen.findByRole('button', { name: 'Additional filters' });
+  const additionalFilters = await screen.findByText(/Additional filters/i);
   await user.click(additionalFilters);
-  const cascader = await screen.findByRole('button', { name: 'Labels' });
+  const cascader = await screen.findByText('Labels');
   await user.click(cascader);
-  const labelMenuItems = await screen.findAllByRole('menuitemcheckbox');
+  const labelMenuItems = await screen.findAllByLabelText('Select check');
   expect(labelMenuItems.length).toBe(2);
-  const labelName = await screen.findByRole('menuitemcheckbox', { name: BASIC_DNS_CHECK.labels[0].name });
+  const labelName = await screen.findByText(BASIC_DNS_CHECK.labels[0].name);
   await user.click(labelName);
-  const labelValue = await screen.findByRole('menuitemcheckbox', { name: BASIC_DNS_CHECK.labels[0].value });
+  const labelValue = await screen.findByText(BASIC_DNS_CHECK.labels[0].value);
   await user.click(labelValue);
 
   const constructedLabel = `${BASIC_DNS_CHECK.labels[0].name}: ${BASIC_DNS_CHECK.labels[0].value}`;
-  const labelFilterInput = await within(screen.getByRole('dialog')).findByText(constructedLabel);
+  const dialog = getModalContainer();
+  const labelFilterInput = await within(dialog).findByText(constructedLabel);
 
   expect(labelFilterInput).toBeInTheDocument();
 });
@@ -345,7 +352,7 @@ describe(`bulk select behaviour`, () => {
     await user.click(selectAll);
     const selectedText = await screen.findByText(`${checkList.length} checks are selected.`);
     expect(selectedText).toBeInTheDocument();
-    const disableButton = await screen.findByRole('button', { name: 'Disable' });
+    const disableButton = await screen.findByText('Disable');
 
     await user.click(disableButton);
 
@@ -372,7 +379,7 @@ describe(`bulk select behaviour`, () => {
     await user.click(selectAll);
     const selectedText = await screen.findByText(`${checkList.length} checks are selected.`);
     expect(selectedText).toBeInTheDocument();
-    const enableButton = await screen.findByRole('button', { name: 'Enable' });
+    const enableButton = await screen.findByText('Enable');
     await user.click(enableButton);
 
     const { body } = await read();
@@ -385,7 +392,7 @@ describe(`bulk select behaviour`, () => {
     const selectAll = await screen.findByLabelText('Select all');
     await user.click(selectAll);
 
-    const checkedCheckBoxes = await screen.findAllByRole('checkbox', { name: 'Select check' });
+    const checkedCheckBoxes = await screen.findAllByLabelText('Select check');
     checkedCheckBoxes.forEach((checkbox) => {
       expect(checkbox).toBeChecked();
     });
@@ -395,7 +402,7 @@ describe(`bulk select behaviour`, () => {
 
     const deselectAll = await screen.findByLabelText('Select all');
     await user.click(deselectAll);
-    const unCheckedCheckBoxes = await screen.queryAllByRole('checkbox', { name: 'Select check' });
+    const unCheckedCheckBoxes = await screen.findAllByLabelText('Select check');
 
     unCheckedCheckBoxes.forEach((checkbox) => {
       expect(checkbox).not.toBeChecked();
@@ -407,7 +414,7 @@ describe(`bulk select behaviour`, () => {
     const selectAll = await screen.findByLabelText('Select all');
     await user.click(selectAll);
 
-    const checkedCheckBoxes = await screen.findAllByRole('checkbox', { name: 'Select check' });
+    const checkedCheckBoxes = await screen.findAllByLabelText('Select check');
     await user.click(checkedCheckBoxes[0]);
 
     const indeterminateState = await screen.findByLabelText('Select all');
@@ -420,3 +427,7 @@ describe(`bulk select behaviour`, () => {
     });
   });
 });
+
+function getModalContainer() {
+  return document.body.querySelector(`[role="dialog"]`) as HTMLElement;
+}

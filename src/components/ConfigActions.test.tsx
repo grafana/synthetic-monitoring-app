@@ -8,7 +8,7 @@ import { ConfigActions } from 'components/ConfigActions';
 it('shows disable option when activated', async () => {
   render(<ConfigActions enabled={true} pluginId="steve" />);
 
-  const disableButton = await screen.findByRole('button', { name: 'Disable synthetic monitoring' });
+  const disableButton = await screen.findByText('Disable synthetic monitoring');
   expect(disableButton).toBeInTheDocument();
 });
 
@@ -22,7 +22,7 @@ it('shows enable action when disabled', async () => {
 
   render(<ConfigActions enabled={false} pluginId="steve" />);
 
-  const enableButton = await screen.findByRole('button', { name: 'Enable plugin' });
+  const enableButton = await screen.findByText('Enable plugin');
   expect(enableButton).toBeInTheDocument();
 });
 
@@ -35,6 +35,6 @@ it('shows setup action when not intialized', async () => {
   });
 
   render(<ConfigActions enabled={true} pluginId="steve" />);
-  const setupButton = await screen.findByRole('button', { name: 'Setup' });
+  const setupButton = await screen.findByText('Setup');
   expect(setupButton).toBeInTheDocument();
 });

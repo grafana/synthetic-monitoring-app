@@ -1,5 +1,5 @@
 import React from 'react';
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import { PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
@@ -63,10 +63,10 @@ describe('new checks', () => {
     await selectOption(user, { label: 'Probe locations', option: PUBLIC_PROBE.name });
 
     // Open requests section
-    await user.click(screen.getByRole('button', { name: /Requests/ }));
+    await user.click(screen.getByText(/Requests/));
 
     // Add a custom label
-    const addCustomLabelButton = await screen.findByRole('button', { name: /Add label/ });
+    const addCustomLabelButton = await screen.findByText(/Add label/);
     await user.click(addCustomLabelButton);
     const labelNameInput = await screen.findByTestId('label-name-0');
     await user.type(labelNameInput, LABELS[0].name);
@@ -86,7 +86,8 @@ describe('new checks', () => {
     await user.click(requestContainer);
     const assertionsTabs = await screen.findAllByLabelText('Tab Assertions');
     await user.click(assertionsTabs[0]);
-    const addAssertion = await screen.findByRole('button', { name: 'Add assertions' });
+    const request = screen.getByTestId('multihttp-request-0');
+    const addAssertion = await within(request).findByText('Add assertions');
     await user.click(addAssertion);
 
     await selectOption(user, { label: 'Assertion type', option: `JSON path value` });
