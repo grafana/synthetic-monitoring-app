@@ -214,7 +214,7 @@ const getHttpSettingsFormValues = (settings: HTTPCheck['settings']): HttpSetting
     headers: headersToLabels(httpSettings.headers || []),
     proxyConnectHeaders: headersToLabels(httpSettings.proxyConnectHeaders || []),
     regexValidations,
-    compression: compression ? selectableValueFrom(compression) : HTTP_COMPRESSION_ALGO_OPTIONS[0],
+    compression: compression ? compression : HTTP_COMPRESSION_ALGO_OPTIONS[0].value,
   };
 };
 
@@ -300,17 +300,20 @@ const getTracerouteSettingsFormValues = (settings: TracerouteCheck['settings']):
 };
 
 function getBaseFormValuesFromCheck(check: Check): Omit<CheckFormValues, 'checkType' | 'settings'> {
+  const frequency = check.frequency / 1000;
+  const timeout = check.timeout / 1000;
+
   return {
     alertSensitivity: check.alertSensitivity,
     publishAdvancedMetrics: !check.basicMetricsOnly,
     enabled: check.enabled,
-    frequency: check.frequency / 1000,
+    frequency,
     id: check.id,
     job: check.job,
     labels: check.labels,
     probes: check.probes,
     target: check.target,
-    timeout: check.timeout / 1000,
+    timeout,
   };
 }
 
@@ -320,7 +323,7 @@ function getBaseFormValuesFromCheck(check: Check): Omit<CheckFormValues, 'checkT
 // export function getFormValuesFromCheck(check: PingCheck): CheckFormValuesPing;
 // export function getFormValuesFromCheck(check: TCPCheck): CheckFormValuesTcp;
 // export function getFormValuesFromCheck(check: TracerouteCheck): CheckFormValuesTraceroute;
-export function getFormValuesFromCheck(check: Check): CheckFormValues {
+export function getFormValuesFromCheck(check: Check, checkType: CheckType): CheckFormValues {
   const base = getBaseFormValuesFromCheck(check);
 
   if (isDNSCheck(check)) {
@@ -420,30 +423,6 @@ export function getFormValuesFromCheck(check: Check): CheckFormValues {
   }
 
   throw new Error(`Unknown check type`);
-}
-
-export function getMultiHttpFormValuesFromCheck(check: MultiHTTPCheck): CheckFormValuesMultiHttp {
-  const base = getBaseFormValuesFromCheck(check);
-
-  return {
-    ...base,
-    checkType: CheckType.MULTI_HTTP,
-    settings: {
-      multihttp: getMultiHttpFormValues(check.settings),
-    },
-  };
-}
-
-export function getScriptedFormValuesFromCheck(check: ScriptedCheck): CheckFormValuesScripted {
-  const base = getBaseFormValuesFromCheck(check);
-
-  return {
-    ...base,
-    checkType: CheckType.Scripted,
-    settings: {
-      scripted: getScriptedCheckFormValues(check.settings),
-    },
-  };
 }
 
 export function getValueFromSelectable<T>(selectable: SelectableValue<T> | undefined): T | undefined {
@@ -553,7 +532,7 @@ const getHttpSettings = (settings: Partial<HttpSettingsFormValues> | undefined =
 
   const sslConfig = getHttpSslOptionsFromFormValue(getValueFromSelectable(settings.sslOptions) ?? HttpSslOption.Ignore);
 
-  const compression = getValueFromSelectable(settings.compression);
+  const compression = settings.compression;
 
   const validationRegexes = getHttpRegexValidationsFromFormValue(settings.regexValidations ?? []);
 
@@ -877,7 +856,6 @@ export const getCheckFromFormValues = (formValues: CheckFormValues): Check => {
     return {
       ...base,
       timeout: 30000,
-      frequency: 120000,
       settings: {
         traceroute: getTracerouteSettings(formValues.settings.traceroute),
       },

@@ -26,6 +26,7 @@ import { getAlertAnnotations } from 'scenes/Common/alertAnnotations';
 import { getEditButton } from 'scenes/Common/editButton';
 import { getEmptyScene } from 'scenes/Common/emptyScene';
 import { getErrorRateTimeseries } from 'scenes/HTTP/errorRateTimeseries';
+import { getMinStepFromFrequency } from 'scenes/utils';
 
 import { getLatencyByPhasePanel } from './latencyByPhase';
 
@@ -43,11 +44,12 @@ export function getPingScene({ metrics, logs, singleCheckMode }: DashboardSceneA
     const { job, instance, probe } = getVariables(CheckType.PING, metrics, checks, singleCheckMode);
 
     const variables = new SceneVariableSet({ variables: [probe, job, instance] });
-    const errorMap = getErrorRateMapPanel(metrics);
 
-    const uptime = getUptimeStat(metrics);
-    const reachability = getReachabilityStat(metrics);
-    const avgLatency = getAvgLatencyStat(metrics);
+    const minStep = getMinStepFromFrequency(checks?.[0]?.frequency);
+    const errorMap = getErrorRateMapPanel(metrics, minStep);
+    const uptime = getUptimeStat(metrics, minStep);
+    const reachability = getReachabilityStat(metrics, minStep);
+    const avgLatency = getAvgLatencyStat(metrics, minStep);
     const frequency = getFrequencyStat(metrics);
 
     const statRow = new SceneFlexLayout({
@@ -57,7 +59,7 @@ export function getPingScene({ metrics, logs, singleCheckMode }: DashboardSceneA
       ),
     });
 
-    const errorRateTimeseries = getErrorRateTimeseries(metrics);
+    const errorRateTimeseries = getErrorRateTimeseries(metrics, minStep);
     const topRight = new SceneFlexLayout({
       direction: 'column',
       children: [new SceneFlexItem({ height: 90, body: statRow }), new SceneFlexItem({ body: errorRateTimeseries })],

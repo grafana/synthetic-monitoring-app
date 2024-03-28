@@ -1,8 +1,10 @@
 import React from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
+import { OrgRole } from '@grafana/data';
 import { Field, Input } from '@grafana/ui';
 
 import { CheckFormValues, CheckType } from 'types';
+import { hasRole } from 'utils';
 import { validateFrequency, validateProbes, validateTimeout } from 'validation';
 import { useProbes } from 'data/useProbes';
 import { SliderInput } from 'components/SliderInput';
@@ -11,29 +13,26 @@ import { Subheader } from 'components/Subheader';
 import CheckProbes from './CheckProbes';
 
 interface Props {
-  isEditor: boolean;
-  timeout: number;
-  frequency: number;
   checkType: CheckType;
 }
 
 function getFrequencyBounds(checkType: CheckType) {
+  const oneHour = 60 * 60;
   if (checkType === CheckType.Traceroute) {
     return {
-      minFrequency: 60.0,
-      maxFrequency: 240.0,
-      defaultFrequency: 120.0,
+      minFrequency: 120.0,
+      maxFrequency: oneHour,
     };
   }
-  if (checkType === CheckType.MULTI_HTTP) {
+  if (checkType === CheckType.MULTI_HTTP || checkType === CheckType.Scripted) {
     return {
       minFrequency: 60.0,
-      maxFrequency: 120.0,
+      maxFrequency: oneHour,
     };
   }
   return {
     minFrequency: 10.0,
-    maxFrequency: 120.0,
+    maxFrequency: oneHour,
   };
 }
 
@@ -42,37 +41,30 @@ function getTimeoutBounds(checkType: CheckType) {
     return {
       minTimeout: 30.0,
       maxTimeout: 30.0,
-      defaultTimeout: 30.0,
     };
   }
-  if (checkType === CheckType.MULTI_HTTP) {
-    return {
-      minTimeout: 1.0,
-      maxTimeout: 30.0,
-    };
-  }
-  if (checkType === CheckType.Scripted) {
+  if (checkType === CheckType.Scripted || checkType === CheckType.MULTI_HTTP) {
     return {
       minTimeout: 5.0,
-      maxTimeout: 30.0,
-      defaultTimeout: 10.0,
+      maxTimeout: 60.0,
     };
   }
   return {
     minTimeout: 1.0,
-    maxTimeout: 10.0,
+    maxTimeout: 60.0,
   };
 }
 
-export const ProbeOptions = ({ frequency, timeout, isEditor, checkType }: Props) => {
+export const ProbeOptions = ({ checkType }: Props) => {
   const { data: probes = [] } = useProbes();
   const {
     control,
     formState: { errors },
   } = useFormContext<CheckFormValues>();
   const isTraceroute = checkType === CheckType.Traceroute;
-  const { minFrequency, maxFrequency, defaultFrequency } = getFrequencyBounds(checkType);
-  const { minTimeout, maxTimeout, defaultTimeout } = getTimeoutBounds(checkType);
+  const { minFrequency, maxFrequency } = getFrequencyBounds(checkType);
+  const { minTimeout, maxTimeout } = getTimeoutBounds(checkType);
+  const isEditor = hasRole(OrgRole.Editor);
 
   return (
     <div>
@@ -100,20 +92,12 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, checkType }: Props)
         invalid={Boolean(errors.frequency)}
         error={errors.frequency?.message}
       >
-        {checkType === CheckType.Traceroute || checkType === CheckType.Scripted ? (
-          // This is just a placeholder for now, the frequency for traceroute checks is hardcoded in the submit
-          <Input value={120} prefix="Every" suffix="seconds" width={20} readOnly />
-        ) : (
-          <SliderInput
-            validate={(value) => validateFrequency(value, checkType)}
-            name="frequency"
-            prefixLabel={'Every'}
-            suffixLabel={'seconds'}
-            min={minFrequency}
-            max={maxFrequency}
-            defaultValue={defaultFrequency ?? frequency / 1000}
-          />
-        )}
+        <SliderInput
+          validate={(value) => validateFrequency(value, maxFrequency)}
+          name="frequency"
+          min={minFrequency}
+          max={maxFrequency}
+        />
       </Field>
       <Field
         label="Timeout"
@@ -128,13 +112,10 @@ export const ProbeOptions = ({ frequency, timeout, isEditor, checkType }: Props)
         ) : (
           <SliderInput
             name="timeout"
-            validate={(value) => validateTimeout(value, checkType)}
-            defaultValue={defaultTimeout ?? timeout / 1000}
+            validate={(value) => validateTimeout(value, maxTimeout, minTimeout)}
             max={maxTimeout}
             min={minTimeout}
-            step={0.5}
-            suffixLabel="seconds"
-            prefixLabel="After"
+            step={1}
           />
         )}
       </Field>

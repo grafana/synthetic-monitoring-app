@@ -16,6 +16,7 @@ import {
 import { css, cx } from '@emotion/css';
 
 import { CheckFormValuesMultiHttp, MultiHttpVariableType } from 'types';
+import { RequestHeaders } from 'components/CheckEditor/FormComponents/RequestHeaders';
 import { MULTI_HTTP_VARIABLE_TYPE_OPTIONS } from 'components/constants';
 import { MultiHttpFormTabs } from 'components/MultiHttp/MultiHttpTypes';
 
@@ -24,7 +25,6 @@ import { AssertionsTab } from './AssertionsTab';
 import { getIsBodyDisabled } from './TabSection';
 
 export interface MultiHttpTabProps {
-  label?: string;
   index: number;
   activeTab?: MultiHttpFormTabs;
   active: boolean;
@@ -35,86 +35,17 @@ interface RequestTabsProps {
   activeTab: MultiHttpFormTabs;
 }
 
-export const HeadersTab = ({ label = 'header', index, active }: MultiHttpTabProps) => {
-  const { control, register, unregister, formState } = useFormContext<CheckFormValuesMultiHttp>();
-  const { fields, append, remove } = useFieldArray<CheckFormValuesMultiHttp>({
-    name: `settings.multihttp.entries.${index}.request.headers`,
-    control,
-  });
+export const HeadersTab = ({ index, active }: MultiHttpTabProps) => {
   const styles = useStyles2(getMultiHttpTabStyles);
 
   return (
     <div className={cx(styles.inputsContainer, { [styles.inactive]: !active })}>
-      <Field label="Request headers" description="The HTTP headers set for the probe.">
-        <>
-          {fields.map((field, i) => {
-            return (
-              <div key={field.id}>
-                <HorizontalGroup spacing="md" align="flex-start" className={styles.headersQueryInputs}>
-                  <HorizontalGroup spacing="md" align="flex-start" className={styles.headersQueryInputs}>
-                    <Field
-                      invalid={Boolean(
-                        formState.errors?.settings?.multihttp?.entries?.[index]?.request?.headers?.[i]?.name
-                      )}
-                      error={
-                        formState.errors?.settings?.multihttp?.entries?.[index]?.request?.headers?.[i]?.name?.message
-                      }
-                    >
-                      <Input
-                        {...register(`settings.multihttp.entries.${index}.request.headers.${i}.name`, {
-                          required: 'Header name required',
-                          minLength: 1,
-                        })}
-                        type="text"
-                        placeholder="name"
-                        data-testid={`header-name-${index}`}
-                      />
-                    </Field>
-                    <Field
-                      invalid={Boolean(
-                        formState.errors?.settings?.multihttp?.entries?.[index]?.request?.headers?.[i]?.value
-                      )}
-                      error={
-                        formState.errors?.settings?.multihttp?.entries?.[index]?.request?.headers?.[i]?.value?.message
-                      }
-                    >
-                      <Input
-                        {...register(`settings.multihttp.entries.${index}.request.headers.${i}.value`, {
-                          required: 'Header value required',
-                          minLength: 1,
-                        })}
-                        type="text"
-                        data-testid={`header-value-${index}`}
-                        placeholder="value"
-                      />
-                    </Field>
-                  </HorizontalGroup>
-                  <IconButton
-                    className={styles.removeIcon}
-                    name="minus-circle"
-                    type="button"
-                    onClick={() => {
-                      remove(i);
-                      unregister([`settings.multihttp.entries.${index}.request.headers.${i}`]);
-                    }}
-                    tooltip="Delete"
-                  />
-                </HorizontalGroup>
-              </div>
-            );
-          })}
-        </>
-      </Field>
-      <Button
-        onClick={() => append({})}
-        variant="secondary"
-        size="sm"
-        type="button"
-        className={styles.addHeaderQueryButton}
-        icon="plus"
-      >
-        Add {label}
-      </Button>
+      <RequestHeaders
+        ariaLabelSuffix={`for request ${index + 1}`}
+        description="The HTTP headers set for the probe."
+        label="Request header"
+        name={`settings.multihttp.entries.${index}.request.headers`}
+      />
     </div>
   );
 };
@@ -344,11 +275,11 @@ export const RequestTabs = ({ activeTab, index }: RequestTabsProps) => {
 
   return (
     <TabContent className={styles.tabsContent}>
-      <HeadersTab label="header" index={index} active={activeTab === MultiHttpFormTabs.Headers} />
+      <HeadersTab index={index} active={activeTab === MultiHttpFormTabs.Headers} />
       {!hideBody && <BodyTab index={index} active={activeTab === MultiHttpFormTabs.Body} />}
-      <QueryParamsTab index={index} label="queryParams" active={activeTab === MultiHttpFormTabs.QueryParams} />
-      <VariablesTab index={index} label="variables" active={activeTab === MultiHttpFormTabs.Variables} />
-      <AssertionsTab index={index} label="assertions" active={activeTab === MultiHttpFormTabs.Assertions} />
+      <QueryParamsTab index={index} active={activeTab === MultiHttpFormTabs.QueryParams} />
+      <VariablesTab index={index} active={activeTab === MultiHttpFormTabs.Variables} />
+      <AssertionsTab index={index} active={activeTab === MultiHttpFormTabs.Assertions} />
     </TabContent>
   );
 };

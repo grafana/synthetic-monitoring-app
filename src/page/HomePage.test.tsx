@@ -19,12 +19,13 @@ const assertBigValue = async (label: string, value: string) => {
   expect(valueEl).toBeInTheDocument();
 };
 
-describe('Information is present', () => {
+// Skipping this test because the homepage has been replaced by a scene
+describe.skip('Information is present', () => {
   test('shows usage', async () => {
     renderHomePage();
     await assertBigValue('Total checks', String(BASIC_CHECK_LIST.length));
     await assertBigValue('Total active series', `536`);
-    await assertBigValue('Checks executions per month', '637,091');
-    await assertBigValue('Logs per month', '0.59GB');
+    await assertBigValue('Checks executions per month', '558,251');
+    await assertBigValue('Logs per month', '0.53GB');
   });
 });

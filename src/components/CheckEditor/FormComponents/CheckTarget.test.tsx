@@ -1,19 +1,29 @@
 import React from 'react';
+import { FormProvider, useForm } from 'react-hook-form';
 import { screen } from '@testing-library/react';
 import { render } from 'test/render';
 
 import { CheckType } from 'types';
 
-import CheckTarget from './CheckTarget';
+import { CheckTarget } from './CheckTarget';
 
-const onChangeMock = jest.fn();
+const Component = ({ checkType, target }: { checkType: CheckType; target: string }) => {
+  const formMethods = useForm({
+    defaultValues: {
+      target,
+    },
+  });
 
-const renderCheckTarget = ({
-  target = '',
-  typeOfCheck = CheckType.DNS,
-  disabled = false,
-  onChange = onChangeMock,
-} = {}) => render(<CheckTarget value={target} typeOfCheck={typeOfCheck} disabled={disabled} onChange={onChange} />);
+  return (
+    <FormProvider {...formMethods}>
+      <CheckTarget checkType={checkType} />
+    </FormProvider>
+  );
+};
+
+const renderCheckTarget = ({ target = '', checkType = CheckType.DNS } = {}) => {
+  return render(<Component target={target} checkType={checkType} />);
+};
 
 describe('Target description is check type specific', () => {
   test('for DNS', async () => {
@@ -22,17 +32,17 @@ describe('Target description is check type specific', () => {
     expect(description).toBeInTheDocument();
   });
   test('for HTTP', async () => {
-    renderCheckTarget({ typeOfCheck: CheckType.HTTP });
+    renderCheckTarget({ checkType: CheckType.HTTP });
     const description = await screen.findByText('Full URL to send requests to');
     expect(description).toBeInTheDocument();
   });
   test('for PING', async () => {
-    renderCheckTarget({ typeOfCheck: CheckType.PING });
+    renderCheckTarget({ checkType: CheckType.PING });
     const description = await screen.findByText('Hostname to ping');
     expect(description).toBeInTheDocument();
   });
   test('for TCP', async () => {
-    renderCheckTarget({ typeOfCheck: CheckType.TCP });
+    renderCheckTarget({ checkType: CheckType.TCP });
     const description = await screen.findByText('Host:port to connect to');
     expect(description).toBeInTheDocument();
   });
@@ -40,7 +50,7 @@ describe('Target description is check type specific', () => {
 
 describe('HTTP targets', () => {
   test('have query params in separate inputs', async () => {
-    renderCheckTarget({ typeOfCheck: CheckType.HTTP, target: 'https://example.com?foo=bar' });
+    renderCheckTarget({ checkType: CheckType.HTTP, target: 'https://example.com?foo=bar' });
     const paramNameInput = (await screen.findByPlaceholderText('Key')) as HTMLInputElement;
     const paramValueInput = screen.getByPlaceholderText('Value') as HTMLInputElement;
     expect(paramNameInput.value).toBe('foo');
@@ -48,7 +58,7 @@ describe('HTTP targets', () => {
   });
 
   test('handles multiple query params', async () => {
-    await renderCheckTarget({ typeOfCheck: CheckType.HTTP, target: 'https://example.com?foo=bar&tacos=delicious' });
+    await renderCheckTarget({ checkType: CheckType.HTTP, target: 'https://example.com?foo=bar&tacos=delicious' });
     const paramNameInputs = (await screen.findAllByPlaceholderText('Key')) as HTMLInputElement[];
     const paramValueInputs = screen.getAllByPlaceholderText('Value') as HTMLInputElement[];
     const expectedNameValues = ['foo', 'tacos'];

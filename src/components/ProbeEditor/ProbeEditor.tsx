@@ -160,7 +160,7 @@ export const ProbeEditor = ({
                     />
                   </Field>
                 </div>
-                {canEdit && <LabelField<Probe> isEditor={canEdit} limit={3} />}
+                {canEdit && <LabelField<Probe> limit={3} />}
                 <div className={styles.buttonWrapper}>
                   {canEdit && (
                     <>

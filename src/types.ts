@@ -245,7 +245,7 @@ export interface HttpSettingsFormValues
   proxyConnectHeaders: HttpHeaderFormValue[];
   regexValidations: HttpRegexValidationFormValue[];
   followRedirects: boolean;
-  compression: SelectableValue<HTTPCompressionAlgo>;
+  compression: HTTPCompressionAlgo;
   proxyURL?: string;
 }
 export interface MultiHttpSettings {
@@ -627,8 +627,6 @@ export type AlertFilter = (record: PrometheusAlertRecord) => boolean;
 export enum CheckSort {
   AToZ = 'atoz',
   ZToA = 'ztoa',
-  UptimeDesc = 'uptimeDesc',
-  UptimeAsc = 'uptimeAsc',
   ReachabilityDesc = 'reachabilityDesc',
   ReachabilityAsc = 'reachabilityAsc',
 }

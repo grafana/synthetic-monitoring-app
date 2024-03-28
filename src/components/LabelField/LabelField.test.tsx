@@ -22,7 +22,7 @@ function renderLabelField(props: LabelFieldProps) {
 }
 
 it(`Should not render the limit text when limit is not provided`, async () => {
-  renderLabelField({ isEditor: true });
+  renderLabelField({});
   await screen.findByText('Labels');
   const limitText = await getLimitText();
   expect(limitText).not.toBeInTheDocument();
@@ -30,7 +30,7 @@ it(`Should not render the limit text when limit is not provided`, async () => {
 
 it(`Should render the limit text when limit is provided`, async () => {
   const limit = 5;
-  renderLabelField({ isEditor: true, limit });
+  renderLabelField({ limit });
   await screen.findByText('Labels');
   const limitText = await getLimitText();
   expect(limitText!.textContent?.includes(limit.toString()));
@@ -39,7 +39,7 @@ it(`Should render the limit text when limit is provided`, async () => {
 
 it(`Should render the limit text when limit is provided`, async () => {
   const limit = 5;
-  renderLabelField({ isEditor: true, limit });
+  renderLabelField({ limit });
   await screen.findByText('Labels');
   const limitText = await getLimitText();
   expect(limitText!.textContent?.includes(limit.toString()));

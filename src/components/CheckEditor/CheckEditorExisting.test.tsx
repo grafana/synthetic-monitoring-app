@@ -73,8 +73,13 @@ describe('editing checks', () => {
       targetCheck.target
     );
     expect(await screen.findByText(PRIVATE_PROBE.name)).toBeInTheDocument();
-    expect(await getSlider('frequency')).toHaveValue((targetCheck.frequency / 1000).toString());
-    expect(await getSlider('timeout')).toHaveValue((targetCheck.timeout / 1000).toString());
+    const [frequencyMinutes, frequencySeconds] = await getSlider('frequency');
+    expect(frequencyMinutes).toHaveValue(Math.floor(targetCheck.frequency / 1000 / 60).toString());
+    expect(frequencySeconds).toHaveValue(((targetCheck.frequency / 1000) % 60).toString());
+
+    const [timeoutMinutes, timeoutSeconds] = await getSlider('timeout');
+    expect(timeoutMinutes).toHaveValue(Math.floor(targetCheck.timeout / 1000 / 60).toString());
+    expect(timeoutSeconds).toHaveValue(((targetCheck.timeout / 1000) % 60).toString());
 
     const httpSection = await toggleSection('HTTP settings', user);
     expect(await screen.findByText('GET')).toBeInTheDocument();
@@ -93,8 +98,8 @@ describe('editing checks', () => {
 
     await toggleSection('Authentication', user);
     expect(await screen.findByPlaceholderText('Bearer token')).toHaveValue(bearerToken);
-    expect(await screen.findByPlaceholderText('Username')).toHaveValue(basicAuth?.username);
-    expect(await screen.findByPlaceholderText('Password')).toHaveValue(basicAuth?.password);
+    expect(await screen.findByLabelText('Username')).toHaveValue(basicAuth?.username);
+    expect(await screen.findByLabelText('Password')).toHaveValue(basicAuth?.password);
 
     const validation = await toggleSection('Validation', user);
 
@@ -179,10 +184,10 @@ describe('editing checks', () => {
     requestBodyInput.focus();
     await user.clear(requestBodyInput);
     await user.paste(BODY);
-    await user.click(await screen.findByRole('button', { name: 'Add header' }));
+    await user.click(await screen.findByRole('button', { name: 'Add request header' }));
 
-    await user.type(await screen.findByTestId('header-name-1'), NEW_HEADER.name);
-    await user.type(await screen.findByTestId('header-value-1'), NEW_HEADER.value);
+    await user.type(await screen.findByLabelText('Request header 2 name'), NEW_HEADER.name);
+    await user.type(await screen.findByLabelText('Request header 2 value'), NEW_HEADER.value);
 
     const compression = await screen.getByLabelText('Compression option', { exact: false });
     await user.click(compression);

@@ -1,5 +1,14 @@
 # Change Log
 
+# [1.13.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.13.0...v1.13.0) (2024-3-27)
+
+- Lengthen frequency time range to up to 1 hour
+
+# [1.12.10](https://github.com/grafana/synthetic-monitoring-app/compare/v1.12.9...v1.12.10) (2024-3-27)
+
+- Fix a bug where uptime and reachability were reversed in the check list
+- Redirect old scenes links to the updated model
+
 # [1.12.9](https://github.com/grafana/synthetic-monitoring-app/compare/v1.12.8...v1.12.9) (2024-3-21)
 
 - Fix a bug with bulk unselecting checks

@@ -3,7 +3,6 @@ import { Address4, Address6 } from 'ip-address';
 import validUrl from 'valid-url';
 
 import {
-  Check,
   CheckType,
   DnsSettings,
   HttpSettings,
@@ -13,36 +12,15 @@ import {
   TcpSettings,
   TracerouteSettings,
 } from 'types';
-import { checkType } from 'utils';
 import { INVALID_WEB_URL_MESSAGE, PEM_FOOTER, PEM_HEADER } from 'components/constants';
 
 export const CheckValidation = {
-  job: validateJob,
   target: validateTarget,
   frequency: validateFrequency,
   timeout: validateTimeout,
   labels: validateLabels,
   probes: validateProbes,
 };
-
-export function validateCheck(check: Check): boolean {
-  const type = checkType(check.settings);
-  return Boolean(
-    CheckValidation.job(check.job) &&
-      CheckValidation.target(checkType(check.settings), check.target) &&
-      CheckValidation.frequency(check.frequency, type) &&
-      CheckValidation.timeout(check.timeout, type) &&
-      CheckValidation.labels(check.labels) &&
-      CheckValidation.probes(check.probes)
-  );
-}
-
-export function validateJob(job: string): string | undefined {
-  if (job.length > 128) {
-    return 'Job name must be 128 characters or less';
-  }
-  return undefined;
-}
 
 export function validateTarget(typeOfCheck: CheckType, target: string): string | undefined {
   if (target.length > 2040) {
@@ -83,69 +61,20 @@ export function validateTarget(typeOfCheck: CheckType, target: string): string |
   }
 }
 
-export function validateFrequency(frequency: number, selectedCheckType: CheckType): string | undefined {
-  switch (selectedCheckType) {
-    case CheckType.Traceroute: {
-      if (frequency < 120) {
-        return `Frequency must be at least 120 seconds`;
-      }
-      if (frequency > 120) {
-        return `Frequency cannot be greater than 120 seconds`;
-      }
-      break;
-    }
-    case CheckType.MULTI_HTTP: {
-      if (frequency < 60) {
-        return `Frequency must be at least 60 seconds`;
-      }
-      if (frequency > 120) {
-        return `Frequency cannot be greater than 120 seconds`;
-      }
-      break;
-    }
-    default: {
-      if (frequency < 10) {
-        return `Frequency must be at least 10 seconds`;
-      }
-      if (frequency > 120) {
-        return `Frequency cannot be greater than 120 seconds`;
-      }
-    }
+export function validateFrequency(frequency: number, maxFrequency: number): string | undefined {
+  if (frequency > maxFrequency) {
+    return `Frequency cannot be greater than ${maxFrequency} seconds`;
   }
   return undefined;
 }
 
-export function validateTimeout(timeout: number, checkType: CheckType): string | undefined {
-  switch (checkType) {
-    case CheckType.Traceroute: {
-      if (timeout < 30) {
-        return 'Timeout must be at least 30 seconds';
-      }
-      if (timeout < 30) {
-        return 'Timeout cannot be more than 30 seconds';
-      }
-      break;
-    }
-    case CheckType.Scripted:
-    case CheckType.MULTI_HTTP: {
-      if (timeout < 1) {
-        return 'Timeout must be at least 1 second';
-      }
-      if (timeout > 30) {
-        return 'Timeout cannot be more than 30 seconds';
-      }
-      break;
-    }
-    default: {
-      if (timeout < 1) {
-        return 'Timeout must be at least 1 second';
-      }
-      if (timeout > 10) {
-        return `Timeout cannot be greater than 10 seconds`;
-      }
-    }
+export function validateTimeout(timeout: number, maxTimeout: number, minTimeout: number): string | undefined {
+  if (timeout > maxTimeout) {
+    return `Timeout cannot be more than ${maxTimeout} seconds`;
   }
-
+  if (timeout < minTimeout) {
+    return `Timeout must be at least ${minTimeout} seconds`;
+  }
   return undefined;
 }
 

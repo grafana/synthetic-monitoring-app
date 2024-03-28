@@ -19,8 +19,8 @@ export const submitForm = async (user: UserEvent) => {
 
 export const getSlider = async (formName: string) => {
   const container = await screen.findByTestId(formName);
-  const input = (await within(container).findByRole('textbox')) as HTMLInputElement;
-  return input;
+  const inputs = await within(container).findAllByRole('textbox');
+  return inputs;
 };
 
 export const fillBasicCheckFields = async (jobName: string, target: string, user: UserEvent, labels: Label[]) => {
@@ -51,7 +51,7 @@ export const fillBasicCheckFields = async (jobName: string, target: string, user
 
 export const fillDnsValidationFields = async (user: UserEvent) => {
   await toggleSection('Validation', user);
-  const addRegex = await screen.findByRole('button', { name: 'Add RegEx Validation' });
+  const addRegex = await screen.findByText(`Add Regex Validation`);
   await user.click(addRegex);
   await user.click(addRegex);
   const responseMatch1 = await screen.findByLabelText('DNS Response Match 1');

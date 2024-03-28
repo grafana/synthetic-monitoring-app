@@ -216,6 +216,9 @@ export const TIME_UNIT_OPTIONS = [
   },
 ];
 
+export const TEN_MINUTES_IN_MS = 1000 * 60 * 10;
+export const FIVE_MINUTES_IN_MS = 1000 * 60 * 5;
+
 export const FALLBACK_CHECK_BASE: Omit<Check, 'settings'> = {
   job: '',
   target: '',
@@ -263,7 +266,7 @@ export const FALLBACK_CHECK_HTTP: HTTPCheck = {
 
 export const FALLBACK_CHECK_MULTIHTTP: MultiHTTPCheck = {
   ...FALLBACK_CHECK_BASE,
-  frequency: 120000,
+  frequency: FIVE_MINUTES_IN_MS,
   timeout: 15000,
   settings: {
     multihttp: {
@@ -294,6 +297,8 @@ export const FALLBACK_CHECK_PING: PingCheck = {
 
 export const FALLBACK_CHECK_SCRIPTED: ScriptedCheck = {
   ...FALLBACK_CHECK_BASE,
+  frequency: FIVE_MINUTES_IN_MS,
+  timeout: 15000,
   settings: {
     scripted: {
       script: btoa(`import { check } from 'k6'
@@ -430,14 +435,6 @@ export const CHECK_LIST_SORT_OPTIONS = [
   {
     label: 'Desc. Reachability ',
     value: CheckSort.ReachabilityDesc,
-  },
-  {
-    label: 'Asc. Uptime ',
-    value: CheckSort.UptimeAsc,
-  },
-  {
-    label: 'Desc. Uptime ',
-    value: CheckSort.UptimeDesc,
   },
 ];
 
