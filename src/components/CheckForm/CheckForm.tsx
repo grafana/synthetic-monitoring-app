@@ -13,7 +13,6 @@ import { getCheckFromFormValues, getFormValuesFromCheck } from 'components/Check
 import { PROBES_SELECT_ID } from 'components/CheckEditor/CheckProbes';
 import { CheckTestResultsModal } from 'components/CheckTestResultsModal';
 import { CHECK_FORM_ERROR_EVENT, fallbackCheckMap } from 'components/constants';
-import { MultiHttpFeedbackAlert } from 'components/MultiHttp/MultiHttpFeedbackAlert';
 import { PluginPage } from 'components/PluginPage';
 import { getRoute } from 'components/Routing';
 
@@ -114,7 +113,6 @@ const CheckFormContent = ({ check, checkType }: CheckFormContentProps) => {
 
   return (
     <PluginPage pageNav={{ text: check?.job ? `Editing ${check.job}` : headerText }}>
-      {checkType === CheckType.MULTI_HTTP && <MultiHttpFeedbackAlert />}
       <>
         <FormProvider {...formMethods}>
           <form onSubmit={formMethods.handleSubmit(handleSubmit, handleError)}>
@@ -261,9 +259,6 @@ function shouldFocusProbes(errs: FieldErrors<CheckFormValues>) {
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({
-  breakLine: css({
-    marginTop: theme.spacing(3),
-  }),
   submissionError: css({
     marginTop: theme.spacing(2),
   }),

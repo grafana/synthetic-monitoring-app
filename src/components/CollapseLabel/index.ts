@@ -1,0 +1,1 @@
+export { CollapseLabel } from './CollapseLabel';

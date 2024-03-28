@@ -1,7 +1,4 @@
 import React from 'react';
-import { GrafanaTheme2 } from '@grafana/data';
-import { useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
 
 import { CheckFormValuesTraceroute, CheckType } from 'types';
 import { CheckEnabled } from 'components/CheckEditor/FormComponents/CheckEnabled';
@@ -12,41 +9,42 @@ import { TracerouteMaxHops } from 'components/CheckEditor/FormComponents/Tracero
 import { TracerouteMaxUnknownHops } from 'components/CheckEditor/FormComponents/TracerouteMaxUnknownHops';
 import { TraceroutePTRLookup } from 'components/CheckEditor/FormComponents/TraceroutePTRLookup';
 import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
+import { FormLayout } from 'components/CheckForm/FormLayout/FormLayout';
 import { CheckFormAlert } from 'components/CheckFormAlert';
 import { CheckUsage } from 'components/CheckUsage';
-import { Collapse } from 'components/Collapse';
 import { LabelField } from 'components/LabelField';
 
 export const CheckTracerouteLayout = () => {
-  const styles = useStyles2(getStyles);
-
   return (
-    <>
-      <Collapse label="General settings" isOpen>
+    <FormLayout>
+      <FormLayout.Section
+        label="General settings"
+        fields={[`enabled`, `job`, `target`, `probes`, `frequency`, `timeout`]}
+      >
         <CheckEnabled />
         <CheckJobName />
         <CheckTarget checkType={CheckType.Traceroute} />
         <ProbeOptions checkType={CheckType.Traceroute} />
         <CheckPublishedAdvanceMetrics />
         <CheckUsage />
-      </Collapse>
-      <Collapse label="Advanced options">
-        <div className={styles.maxWidth}>
-          <LabelField<CheckFormValuesTraceroute> />
-          <TracerouteMaxHops />
-          <TracerouteMaxUnknownHops />
-          <TraceroutePTRLookup />
-        </div>
-      </Collapse>
-      <Collapse label="Alerting">
+      </FormLayout.Section>
+      <FormLayout.Section
+        label="Advanced options"
+        fields={[
+          `labels`,
+          `settings.traceroute.maxHops`,
+          `settings.traceroute.maxUnknownHops`,
+          `settings.traceroute.ptrLookup`,
+        ]}
+      >
+        <LabelField<CheckFormValuesTraceroute> />
+        <TracerouteMaxHops />
+        <TracerouteMaxUnknownHops />
+        <TraceroutePTRLookup />
+      </FormLayout.Section>
+      <FormLayout.Section label="Alerting" fields={[`alertSensitivity`]}>
         <CheckFormAlert />
-      </Collapse>
-    </>
+      </FormLayout.Section>
+    </FormLayout>
   );
 };
-
-const getStyles = (theme: GrafanaTheme2) => ({
-  maxWidth: css({
-    maxWidth: `500px`,
-  }),
-});

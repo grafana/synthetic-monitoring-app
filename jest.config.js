@@ -26,6 +26,7 @@ module.exports = {
   transformIgnorePatterns: [
     nodeModulesToTransform([
       ...grafanaESModules,
+      'flat',
       '@grafana/ui/node_modules/ol',
       'yaml',
       '@grafana/schema',
