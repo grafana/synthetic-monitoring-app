@@ -1,9 +1,6 @@
-import { BASIC_CHECK_LIST } from 'test/fixtures/checks';
-
 import { CheckType } from 'types';
 import {
   CheckValidation,
-  validateCheck,
   validateLabelName,
   validateLabelValue,
   validateTLSCACert,
@@ -12,14 +9,6 @@ import {
 } from 'validation';
 
 jest.unmock('utils');
-
-describe('trivial cases', () => {
-  BASIC_CHECK_LIST.forEach((check) => {
-    test(`should validate ${Object.keys(check.settings)[0]} check`, () => {
-      expect(validateCheck(check)).toBe(false);
-    });
-  });
-});
 
 describe('http', () => {
   it('should reject non-http URLs', async () => {

@@ -153,6 +153,8 @@ export const BASIC_HTTP_CHECK: HTTPCheck = {
   basicMetricsOnly: true,
 };
 
+const TEN_MINUTES_IN_MS = 1000 * 60 * 10;
+
 export const BASIC_SCRIPTED_CHECK: ScriptedCheck = {
   id: 3,
   job: 'Job name for k6',
@@ -161,7 +163,7 @@ export const BASIC_SCRIPTED_CHECK: ScriptedCheck = {
   labels: [{ name: 'scriptedLabelName', value: 'scriptedLabelValue' }],
   probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
   timeout: 10000,
-  frequency: 120000,
+  frequency: TEN_MINUTES_IN_MS,
   alertSensitivity: 'none',
   basicMetricsOnly: true,
   settings: {
@@ -178,7 +180,7 @@ export const BASIC_MULTIHTTP_CHECK: MultiHTTPCheck = {
   enabled: true,
   labels: [{ name: 'labelName', value: 'labelValue' }],
   probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
-  timeout: 2000,
+  timeout: 5000,
   frequency: 110000,
   alertSensitivity: 'none',
   basicMetricsOnly: true,

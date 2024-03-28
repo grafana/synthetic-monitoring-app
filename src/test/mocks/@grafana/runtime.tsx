@@ -41,6 +41,7 @@ jest.mock('@grafana/runtime', () => {
         topnav: true,
         ngalert: true, // FeatureName.UnifiedAlerting
         'multi-http': true, // FeatureName.MultiHttp
+        syntheticsPerCheckDashboards: true, // FeatureName.PerCheckDashboards
       },
     },
     getBackendSrv: () => ({

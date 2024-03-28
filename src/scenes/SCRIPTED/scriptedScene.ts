@@ -19,6 +19,7 @@ import { getAlertAnnotations } from 'scenes/Common/alertAnnotations';
 import { getAllLogs } from 'scenes/Common/allLogs';
 import { getEditButton } from 'scenes/Common/editButton';
 import { getEmptyScene } from 'scenes/Common/emptyScene';
+import { getMinStepFromFrequency } from 'scenes/utils';
 
 import { getResultsByTargetTable } from './ResultsByTargetTable/ResultByTargetTable';
 import { getAssertionTable } from './AssertionsTable';
@@ -44,8 +45,10 @@ export function getScriptedScene(
       variables: [probe, job, instance],
     });
 
-    const reachability = getReachabilityStat(metrics);
-    const uptime = getUptimeStat(metrics);
+    const minStep = getMinStepFromFrequency(checks?.[0]?.frequency);
+
+    const reachability = getReachabilityStat(metrics, minStep);
+    const uptime = getUptimeStat(metrics, minStep);
 
     const distinctTargets = getDistinctTargets(metrics);
     const probeDuration = getProbeDuration(metrics);

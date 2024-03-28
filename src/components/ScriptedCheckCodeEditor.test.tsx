@@ -10,7 +10,7 @@ import { AlertSensitivity, CheckType, ROUTES } from 'types';
 import { CheckForm } from 'components/CheckForm/CheckForm';
 
 import { submitForm } from './CheckEditor/testHelpers';
-import { PLUGIN_URL_PATH } from './constants';
+import { FIVE_MINUTES_IN_MS, PLUGIN_URL_PATH } from './constants';
 
 // Monaco does not render with jest and is stuck at "Loading..."
 // There doesn't seem to be a solution to this at this point,
@@ -95,8 +95,8 @@ describe('new scripted check', () => {
       alertSensitivity: AlertSensitivity.None,
       basicMetricsOnly: true,
       enabled: true,
-      frequency: 120000,
-      timeout: 5000,
+      frequency: FIVE_MINUTES_IN_MS,
+      timeout: 15000, // 15 seconds
     });
   });
 });

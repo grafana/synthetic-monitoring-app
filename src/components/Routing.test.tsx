@@ -12,6 +12,9 @@ function renderRouting(options?: CustomRenderOptions) {
   return render(<Routing onNavChanged={jest.fn} />, options);
 }
 
+// Mocking these pages because they renders scenes, which makes jest explode
+jest.mock('page/DashboardPage');
+jest.mock('page/SceneHomepage');
 const notaRoute = `${PLUGIN_URL_PATH}/404`;
 
 describe('Only renders the unprovisioned setup page regardless of route when app is not provisioned', () => {
@@ -64,7 +67,7 @@ describe('Only renders the welcome page regardless of route when app is not init
 describe('Routes to pages correctly', () => {
   test('Home page renders', async () => {
     renderRouting({ path: getRoute(ROUTES.Home) });
-    const homePageText = await screen.findByText('What you can do', { selector: 'h2' });
+    const homePageText = await screen.findByText('Home page', { selector: 'h1' });
     expect(homePageText).toBeInTheDocument();
   });
   test('Checks page renders', async () => {
@@ -91,7 +94,15 @@ describe('Routes to pages correctly', () => {
   });
   test('Non-existent route redirects to homepage', async () => {
     renderRouting({ path: notaRoute });
-    const homePageText = await screen.findByText('What you can do', { selector: 'h2' });
+    const homePageText = await screen.findByText('Home page', { selector: 'h1' });
     expect(homePageText).toBeInTheDocument();
+  });
+
+  test('Redirect old scenes URLS to new scenes URL', async () => {
+    renderRouting({
+      path: `${PLUGIN_URL_PATH}${ROUTES.Scene}?var-job=Job name for http&var-instance=https://http.com`,
+    });
+    const sceneText = await screen.findByText('Dashboard page');
+    expect(sceneText).toBeInTheDocument();
   });
 });
