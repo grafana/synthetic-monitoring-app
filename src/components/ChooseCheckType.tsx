@@ -12,14 +12,10 @@ import { getRoute } from 'components/Routing';
 
 export function ChooseCheckType() {
   const styles = useStyles2(getStyles);
-  const { isEnabled: multiHttpEnabled } = useFeatureFlag(FeatureName.MultiHttp);
   const { isEnabled: scriptedEnabled } = useFeatureFlag(FeatureName.ScriptedChecks);
   // If we're editing, grab the appropriate check from the list
 
   const options = CHECK_TYPE_OPTIONS.filter(({ value }) => {
-    if (!multiHttpEnabled && value === CheckType.MULTI_HTTP) {
-      return false;
-    }
     if (!scriptedEnabled && value === CheckType.Scripted) {
       return false;
     }

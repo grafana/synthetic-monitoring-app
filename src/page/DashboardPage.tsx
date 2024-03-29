@@ -21,7 +21,6 @@ import { getTracerouteScene } from 'scenes/Traceroute/getTracerouteScene';
 function DashboardPageContent() {
   const { instance } = useContext(InstanceContext);
   const { isEnabled } = useFeatureFlag(FeatureName.Scenes);
-  const { isEnabled: multiHttpEnabled } = useFeatureFlag(FeatureName.MultiHttp);
   const { isEnabled: scriptedEnabled } = useFeatureFlag(FeatureName.ScriptedChecks);
   const { data: checks = [], isLoading } = useChecks();
   const { isEnabled: perCheckDashboardsEnabled } = useFeatureFlag(FeatureName.PerCheckDashboards);
@@ -48,7 +47,7 @@ function DashboardPageContent() {
     };
     const config: DashboardSceneAppConfig = { metrics: metricsDef, logs: logsDef, sm: smDef, singleCheckMode: false };
     if (!perCheckDashboardsEnabled) {
-      return getDashboardSceneApp(config, multiHttpEnabled, scriptedEnabled, checks);
+      return getDashboardSceneApp(config, scriptedEnabled, checks);
     }
     config.singleCheckMode = true;
     if (!checkToView) {
@@ -128,16 +127,7 @@ function DashboardPageContent() {
         return null;
       }
     }
-  }, [
-    instance.api,
-    instance.logs,
-    instance.metrics,
-    multiHttpEnabled,
-    scriptedEnabled,
-    checks,
-    perCheckDashboardsEnabled,
-    checkToView,
-  ]);
+  }, [instance.api, instance.logs, instance.metrics, scriptedEnabled, checks, perCheckDashboardsEnabled, checkToView]);
 
   if (!isEnabled) {
     navigate('redirect?dashboard=summary');

@@ -16,69 +16,50 @@ import { UsageStats } from 'components/UsageStats';
 
 import { SceneHomepage } from './SceneHomepage';
 
-const sortSummaryToTop = (dashboardA: DashboardInfo, dashboardB: DashboardInfo) => {
-  if (dashboardA.title === 'Synthetic Monitoring Summary') {
-    return -1;
-  }
-  if (dashboardB.title === 'Synthetic Monitoring Summary') {
-    return 1;
-  }
-  return 0;
-};
-
 export const HomePage = () => {
   const styles = useStyles2(getStyles);
   const { instance } = useContext(InstanceContext);
   const [dashboards, setDashboards] = useState<Array<Partial<DashboardInfo>>>([]);
-  const { isEnabled: scenesEnabled } = useFeatureFlag(FeatureName.Scenes);
-  const { isEnabled: multiHttpEnabled } = useFeatureFlag(FeatureName.MultiHttp);
   const { isEnabled: scriptedEnabled } = useFeatureFlag(FeatureName.ScriptedChecks);
   const { isEnabled: perCheckDashboardsEnabled } = useFeatureFlag(FeatureName.PerCheckDashboards);
 
   useEffect(() => {
     // Sort to make sure the summary dashboard is at the top of the list
-    if (!scenesEnabled) {
-      const sortedDashboards = instance.api?.instanceSettings.jsonData.dashboards.sort(sortSummaryToTop) ?? [];
-      setDashboards(sortedDashboards);
-    } else {
-      const dashboardList = [
-        {
-          title: 'Summary dashboard',
-          uid: '',
-        },
-        {
-          title: 'HTTP dashboard',
-          uid: 'http',
-        },
-        {
-          title: 'PING dashboard',
-          uid: 'ping',
-        },
-        {
-          title: 'DNS dashboard',
-          uid: 'dns',
-        },
+    const dashboardList = [
+      {
+        title: 'Summary dashboard',
+        uid: '',
+      },
+      {
+        title: 'HTTP dashboard',
+        uid: 'http',
+      },
+      { title: 'MULTIHTTP dashboard', uid: 'multihttp' },
+      {
+        title: 'PING dashboard',
+        uid: 'ping',
+      },
+      {
+        title: 'DNS dashboard',
+        uid: 'dns',
+      },
 
-        {
-          title: 'TCP dashboard',
-          uid: 'tcp',
-        },
-        {
-          title: 'Traceroute dashboard',
-          uid: 'traceroute',
-        },
-      ];
-      if (multiHttpEnabled) {
-        dashboardList.splice(3, 0, { title: 'MULTIHTTP dashboard', uid: 'multihttp' });
-      }
+      {
+        title: 'TCP dashboard',
+        uid: 'tcp',
+      },
+      {
+        title: 'Traceroute dashboard',
+        uid: 'traceroute',
+      },
+    ];
 
-      if (scriptedEnabled) {
-        dashboardList.push({ title: 'Scripted dashboard', uid: 'k6' });
-      }
-
-      setDashboards(dashboardList);
+    if (scriptedEnabled) {
+      dashboardList.push({ title: 'Scripted dashboard', uid: 'k6' });
     }
-  }, [instance.api, scenesEnabled, multiHttpEnabled, scriptedEnabled]);
+
+    setDashboards(dashboardList);
+  }, [instance.api, scriptedEnabled]);
 
   if (perCheckDashboardsEnabled) {
     return <SceneHomepage />;
@@ -103,17 +84,11 @@ export const HomePage = () => {
               return (
                 <a
                   className={styles.quickLink}
-                  href={
-                    scenesEnabled
-                      ? dashboard.uid === ``
-                        ? `${PLUGIN_URL_PATH}scene`
-                        : `${PLUGIN_URL_PATH}scene/${dashboard.uid}`
-                      : `d/${dashboard.uid}`
-                  }
+                  href={dashboard.uid === `` ? `${PLUGIN_URL_PATH}scene` : `${PLUGIN_URL_PATH}scene/${dashboard.uid}`}
                   key={dashboard.uid}
                 >
                   <Icon name="apps" size="lg" className={styles.quickLinkIcon} />
-                  {scenesEnabled ? `View the ${dashboard.title}` : `View the ${dashboard.title} dashboard`}
+                  {`View the ${dashboard.title}`}
                 </a>
               );
             })}

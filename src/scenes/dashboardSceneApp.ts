@@ -12,12 +12,7 @@ import { getHTTPScene } from './HTTP';
 import { getScriptedScene } from './SCRIPTED';
 import { getSummaryScene } from './Summary';
 
-export function getDashboardSceneApp(
-  config: DashboardSceneAppConfig,
-  includeMultiHttp = false,
-  includeScripted = false,
-  checks: Check[]
-) {
+export function getDashboardSceneApp(config: DashboardSceneAppConfig, includeScripted = false, checks: Check[]) {
   const { http, ping, dns, tcp, traceroute, multihttp, scripted } = checks.reduce<Record<CheckType, Check[]>>(
     (acc, check) => {
       const type = checkType(check.settings);
@@ -48,7 +43,11 @@ export function getDashboardSceneApp(
       url: `${PLUGIN_URL_PATH}${ROUTES.Scene}/http`,
       getScene: getHTTPScene(config, http),
     }),
-
+    new SceneAppPage({
+      title: 'MULTIHTTP',
+      url: `${PLUGIN_URL_PATH}${ROUTES.Scene}/multihttp`,
+      getScene: getScriptedScene(config, multihttp, CheckType.MULTI_HTTP),
+    }),
     new SceneAppPage({
       title: 'PING',
       url: `${PLUGIN_URL_PATH}${ROUTES.Scene}/ping`,
@@ -70,15 +69,6 @@ export function getDashboardSceneApp(
       getScene: getTracerouteScene(config, traceroute),
     }),
   ];
-
-  if (includeMultiHttp) {
-    const appPage = new SceneAppPage({
-      title: 'MULTIHTTP',
-      url: `${PLUGIN_URL_PATH}${ROUTES.Scene}/multihttp`,
-      getScene: getScriptedScene(config, multihttp, CheckType.MULTI_HTTP),
-    });
-    tabs.splice(2, 0, appPage);
-  }
 
   if (includeScripted) {
     const appPage = new SceneAppPage({
