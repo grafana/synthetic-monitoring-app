@@ -8,7 +8,6 @@ import { checkType as getCheckType } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { useChecks } from 'data/useChecks';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
-import { useNavigation } from 'hooks/useNavigation';
 import { PLUGIN_URL_PATH } from 'components/constants';
 import { getDashboardSceneApp } from 'scenes/dashboardSceneApp';
 import { getDNSScene } from 'scenes/DNS';
@@ -20,13 +19,11 @@ import { getTracerouteScene } from 'scenes/Traceroute/getTracerouteScene';
 
 function DashboardPageContent() {
   const { instance } = useContext(InstanceContext);
-  const { isEnabled } = useFeatureFlag(FeatureName.Scenes);
   const { isEnabled: scriptedEnabled } = useFeatureFlag(FeatureName.ScriptedChecks);
   const { data: checks = [], isLoading } = useChecks();
   const { isEnabled: perCheckDashboardsEnabled } = useFeatureFlag(FeatureName.PerCheckDashboards);
   const { id } = useParams<CheckPageParams>();
 
-  const navigate = useNavigation();
   const checkToView = checks.find((check) => String(check.id) === id);
 
   const scene = useMemo(() => {
@@ -129,10 +126,6 @@ function DashboardPageContent() {
     }
   }, [instance.api, instance.logs, instance.metrics, scriptedEnabled, checks, perCheckDashboardsEnabled, checkToView]);
 
-  if (!isEnabled) {
-    navigate('redirect?dashboard=summary');
-    return null;
-  }
   if (!scene || isLoading) {
     return <Spinner />;
   }

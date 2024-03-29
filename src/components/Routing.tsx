@@ -17,7 +17,6 @@ import { UnprovisionedSetup } from 'page/UnprovisionedSetup';
 import { WelcomePage } from 'page/WelcomePage';
 
 import { PLUGIN_URL_PATH } from './constants';
-import { DashboardRedirecter } from './DashboardRedirecter';
 import { SceneRedirecter } from './SceneRedirecter';
 
 export const Routing = ({ onNavChanged }: Pick<AppRootProps, 'onNavChanged'>) => {
@@ -65,7 +64,7 @@ export const Routing = ({ onNavChanged }: Pick<AppRootProps, 'onNavChanged'>) =>
   return (
     <Switch>
       <Route exact path={getRoute(ROUTES.Redirect)}>
-        <DashboardRedirecter />
+        <SceneRedirecter />
       </Route>
       <Route exact path={getRoute(ROUTES.Home)}>
         <HomePage />
