@@ -3,10 +3,9 @@ import { GrafanaTheme2, OrgRole } from '@grafana/data';
 import { Button, ConfirmModal, IconButton, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { Check, FeatureName, ROUTES } from 'types';
+import { Check, ROUTES } from 'types';
 import { checkType as getCheckType, hasRole } from 'utils';
 import { useDeleteCheck } from 'data/useChecks';
-import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useNavigation } from 'hooks/useNavigation';
 import { PLUGIN_URL_PATH } from 'components/constants';
 
@@ -29,24 +28,10 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon }: Props) =>
   const checkType = getCheckType(check.settings);
   const navigate = useNavigation();
   const { mutate: deleteCheck } = useDeleteCheck();
-  const { isEnabled: perCheckDashboardsEnabled } = useFeatureFlag(FeatureName.PerCheckDashboards);
 
   const showDashboard = () => {
-    if (perCheckDashboardsEnabled) {
-      const url = `${PLUGIN_URL_PATH}${ROUTES.Checks}/${check.id}/dashboard`;
-      navigate(url, {}, true);
-      return;
-    }
-
-    const url = `${PLUGIN_URL_PATH}${ROUTES.Scene}/${checkType}`;
-    navigate(
-      url,
-      {
-        'var-instance': check.target,
-        'var-job': check.job,
-      },
-      true
-    );
+    const url = `${PLUGIN_URL_PATH}${ROUTES.Checks}/${check.id}/dashboard`;
+    navigate(url, {}, true);
     return;
   };
 
