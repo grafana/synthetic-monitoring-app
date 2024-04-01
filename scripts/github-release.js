@@ -19,7 +19,7 @@ octokit.rest.repos
   .createRelease({
     owner: 'grafana',
     repo: 'synthetic-monitoring-app',
-    target_commitish: revision,
+    target_commitish: `release-${version}`,
     tag_name: version,
     name: version,
     body: message,
