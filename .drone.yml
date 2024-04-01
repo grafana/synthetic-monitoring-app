@@ -305,7 +305,7 @@ steps:
       GCOM_PUBLISH_TOKEN:
         from_secret: gcom_token
       GITHUB_TOKEN:
-        from_secret: github_token
+        from_secret: github_publish_token
 
 image_pull_secrets:
   - dockerconfigjson
@@ -368,6 +368,6 @@ kind: secret
 name: gcp_key
 ---
 kind: signature
-hmac: 994cf019dbfe5f9e76f1f2a04ce6da37a8311241bdab168f3667cb10b1263a5d
+hmac: 627cd4e4abb7a428911c2dd1b9154765ab8371e145151090863d367ae65b7fa7
 
 ...
