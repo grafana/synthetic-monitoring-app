@@ -23,8 +23,6 @@ octokit.rest.repos
     tag_name: version,
     name: version,
     body: message,
-    draft: true,
-    prerelease: true,
   })
   .then((response) => {
     console.log('Created release');
