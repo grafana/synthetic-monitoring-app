@@ -298,7 +298,7 @@ steps:
       - gcloud auth activate-service-account --key-file=/tmp/gcpkey.json
       # - PLUGIN_NAME="grafana-synthetic-monitoring-app"
       - VERSION=${DRONE_TAG}
-      - /root/app/bin/grafana-publisher.js -d --auto publishremote "synthetic-monitoring-app" $DRONE_REPO_NAME 1.12.6
+      - /root/app/bin/grafana-publisher.js -d --auto publishremote grafana-synthetic-monitoring-app 1.12.6 synthetic-monitoring-app
     environment:
       GCLOUD_SERVICE_KEY:
         from_secret: gcp_key
@@ -368,6 +368,6 @@ kind: secret
 name: gcp_key
 ---
 kind: signature
-hmac: 91b880a4b493d003d495c2c428839aada66bb68cc537a8787dd2a686b6fc0734
+hmac: 994cf019dbfe5f9e76f1f2a04ce6da37a8311241bdab168f3667cb10b1263a5d
 
 ...
