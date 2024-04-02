@@ -6,13 +6,14 @@ import { Probe } from 'types';
 import { useProbes } from 'data/useProbes';
 
 type ProbeRegionsSelectProps = {
+  disabled?: boolean;
   id: string;
   onChange: (value: string | undefined | null) => void;
   invalid?: boolean;
   value?: string | null;
 };
 
-export const ProbeRegionsSelect = ({ id, invalid, onChange, value }: ProbeRegionsSelectProps) => {
+export const ProbeRegionsSelect = ({ disabled, id, invalid, onChange, value }: ProbeRegionsSelectProps) => {
   const { data, isLoading } = useProbes();
   const regions = getRegions(data, value);
   const options = regions.map((region) => ({ label: region, value: region }));
@@ -33,7 +34,7 @@ export const ProbeRegionsSelect = ({ id, invalid, onChange, value }: ProbeRegion
         onChange(value);
       }}
       isLoading={isLoading}
-      disabled={isLoading}
+      disabled={isLoading || disabled}
       placeholder="Add or select a region"
       isClearable
       invalid={invalid}
