@@ -1,5 +1,9 @@
 # Change Log
 
+# [1.13.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.13.0...v1.13.1) (2024-4-2)
+
+- Fix a bug with empty search state and bulk selection
+
 # [1.13.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.13.0...v1.13.0) (2024-3-27)
 
 - Lengthen frequency time range to up to 1 hour
