@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
 import { GrafanaTheme2, OrgRole, SelectableValue } from '@grafana/data';
-import { Button, Checkbox, Icon, InlineSwitch, Select, Tooltip, useStyles2 } from '@grafana/ui';
+import { Button, Checkbox, Icon, Select, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { Check, CheckFiltersType, CheckListViewType, CheckSort, FeatureName } from 'types';
+import { Check, CheckFiltersType, CheckListViewType, CheckSort } from 'types';
 import { hasRole } from 'utils';
-import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { CheckFilters } from 'components/CheckFilters';
-import { CHECK_LIST_ICON_OVERLAY_LS_KEY, CHECK_LIST_SORT_OPTIONS } from 'components/constants';
+import { CHECK_LIST_SORT_OPTIONS } from 'components/constants';
 
 import ThresholdGlobalSettings from '../Thresholds/ThresholdGlobalSettings';
-import { getIconOverlayToggleFromLS, getViewTypeFromLS } from './actions';
+import { getViewTypeFromLS } from './actions';
 import { AddNewCheckButton } from './AddNewCheckButton';
 import { BulkActions } from './BulkActions';
 import { CheckListViewSwitcher } from './CheckListViewSwitcher';
@@ -43,10 +42,8 @@ export const CheckListHeader = ({
   sortType,
 }: CheckListHeaderProps) => {
   const styles = useStyles2(getStyles);
-  const { isEnabled: scenesEnabled } = useFeatureFlag(FeatureName.Scenes);
   const viewType = getViewTypeFromLS() ?? CheckListViewType.Card;
   const [showThresholdModal, setShowThresholdModal] = useState(false);
-  const [showVizIconOverlay, setShowVizIconOverlay] = useState(getIconOverlayToggleFromLS());
   const hasChecks = checks.length > 0;
   const isAllSelected = !hasChecks ? false : selectedCheckIds.size === checks.length;
   const isSomeSelected = hasChecks && !isAllSelected && selectedCheckIds.size > 0;
@@ -58,12 +55,11 @@ export const CheckListHeader = ({
     <>
       <div className={styles.row}>
         <div>
-          {!scenesEnabled ||
-            (viewType !== CheckListViewType.Viz && (
-              <div>
-                Currently showing {currentPageChecks.length} of {checks.length} total checks
-              </div>
-            ))}
+          {viewType !== CheckListViewType.Viz && (
+            <div>
+              Currently showing {currentPageChecks.length} of {checks.length} total checks
+            </div>
+          )}
         </div>
         <div className={styles.stack}>
           <CheckFilters
@@ -98,18 +94,6 @@ export const CheckListHeader = ({
             <BulkActions checks={selectedChecks} onResolved={onDelete} />
           ) : (
             <CheckListViewSwitcher onChange={onChangeView} viewType={viewType} />
-          )}
-          {!scenesEnabled && viewType === CheckListViewType.Viz && (
-            <InlineSwitch
-              label="Show icons"
-              showLabel
-              transparent
-              value={showVizIconOverlay}
-              onChange={(e) => {
-                window.localStorage.setItem(CHECK_LIST_ICON_OVERLAY_LS_KEY, String(e.currentTarget.checked));
-                setShowVizIconOverlay(e.currentTarget.checked);
-              }}
-            />
           )}
         </div>
         <Select

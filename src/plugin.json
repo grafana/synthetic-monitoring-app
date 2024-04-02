@@ -53,12 +53,6 @@
     },
     {
       "type": "page",
-      "name": "Dashboards",
-      "path": "/a/grafana-synthetic-monitoring-app/scene",
-      "addToNav": true
-    },
-    {
-      "type": "page",
       "name": "Checks",
       "path": "/a/grafana-synthetic-monitoring-app/checks",
       "addToNav": true

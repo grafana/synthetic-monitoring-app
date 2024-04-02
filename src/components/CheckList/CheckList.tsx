@@ -4,21 +4,11 @@ import { PluginPage } from '@grafana/runtime';
 import { Pagination, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import {
-  Check,
-  CheckEnabledStatus,
-  CheckFiltersType,
-  CheckListViewType,
-  CheckSort,
-  CheckType,
-  FeatureName,
-  Label,
-} from 'types';
+import { Check, CheckEnabledStatus, CheckFiltersType, CheckListViewType, CheckSort, CheckType, Label } from 'types';
 import { MetricCheckSuccess, Time } from 'datasource/responses.types';
 import { useSuspenseChecks } from 'data/useChecks';
 import { useChecksReachabilitySuccessRate } from 'data/useSuccessRates';
 import { findCheckinMetrics } from 'data/utils';
-import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { defaultFilters, getDefaultFilters } from 'components/CheckFilters';
 import {
   CHECK_LIST_STATUS_OPTIONS,
@@ -65,7 +55,6 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   const [selectedCheckIds, setSelectedChecksIds] = useState<Set<number>>(new Set());
   const [sortType, setSortType] = useState<CheckSort>(CheckSort.AToZ);
   const styles = useStyles2(getStyles);
-  const { isEnabled: scenesEnabled } = useFeatureFlag(FeatureName.Scenes);
   const CHECKS_PER_PAGE = viewType === CheckListViewType.Card ? CHECKS_PER_PAGE_CARD : CHECKS_PER_PAGE_LIST;
 
   const filteredChecks = filterChecks(checks, checkFilters);
@@ -161,7 +150,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
     return <EmptyCheckList />;
   }
 
-  const showHeaders = !scenesEnabled || viewType !== CheckListViewType.Viz;
+  const showHeaders = viewType !== CheckListViewType.Viz;
 
   return (
     <>

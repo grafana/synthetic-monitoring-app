@@ -10,14 +10,13 @@ import { useQuery } from 'hooks/useQuery';
 import { AlertingPage } from 'page/AlertingPage';
 import { CheckRouter } from 'page/CheckRouter';
 import { ConfigPage } from 'page/ConfigPage';
-import { HomePage } from 'page/HomePage';
 import { getNavModel } from 'page/pageDefinitions';
 import { ProbeRouter } from 'page/ProbeRouter';
+import { SceneHomepage } from 'page/SceneHomepage';
 import { UnprovisionedSetup } from 'page/UnprovisionedSetup';
 import { WelcomePage } from 'page/WelcomePage';
 
 import { PLUGIN_URL_PATH } from './constants';
-import { DashboardRedirecter } from './DashboardRedirecter';
 import { SceneRedirecter } from './SceneRedirecter';
 
 export const Routing = ({ onNavChanged }: Pick<AppRootProps, 'onNavChanged'>) => {
@@ -65,10 +64,10 @@ export const Routing = ({ onNavChanged }: Pick<AppRootProps, 'onNavChanged'>) =>
   return (
     <Switch>
       <Route exact path={getRoute(ROUTES.Redirect)}>
-        <DashboardRedirecter />
+        <SceneRedirecter />
       </Route>
       <Route exact path={getRoute(ROUTES.Home)}>
-        <HomePage />
+        <SceneHomepage />
       </Route>
       <Route path={getRoute(ROUTES.Scene)}>
         <SceneRedirecter />

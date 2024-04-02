@@ -653,10 +653,7 @@ export enum HTTPCompressionAlgo {
 
 export enum FeatureName {
   UnifiedAlerting = 'ngalert',
-  MultiHttp = 'multi-http',
-  Scenes = 'synthetics-scenes',
   ScriptedChecks = 'scripted-checks',
-  PerCheckDashboards = 'syntheticsPerCheckDashboards',
 }
 
 export interface UsageValues {

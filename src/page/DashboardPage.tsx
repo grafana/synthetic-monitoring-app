@@ -3,14 +3,11 @@ import { useParams } from 'react-router-dom';
 import { SceneApp, SceneAppPage } from '@grafana/scenes';
 import { Spinner } from '@grafana/ui';
 
-import { CheckPageParams, CheckType, DashboardSceneAppConfig, FeatureName } from 'types';
+import { CheckPageParams, CheckType, DashboardSceneAppConfig } from 'types';
 import { checkType as getCheckType } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { useChecks } from 'data/useChecks';
-import { useFeatureFlag } from 'hooks/useFeatureFlag';
-import { useNavigation } from 'hooks/useNavigation';
 import { PLUGIN_URL_PATH } from 'components/constants';
-import { getDashboardSceneApp } from 'scenes/dashboardSceneApp';
 import { getDNSScene } from 'scenes/DNS';
 import { getHTTPScene } from 'scenes/HTTP';
 import { getPingScene } from 'scenes/PING/pingScene';
@@ -20,14 +17,9 @@ import { getTracerouteScene } from 'scenes/Traceroute/getTracerouteScene';
 
 function DashboardPageContent() {
   const { instance } = useContext(InstanceContext);
-  const { isEnabled } = useFeatureFlag(FeatureName.Scenes);
-  const { isEnabled: multiHttpEnabled } = useFeatureFlag(FeatureName.MultiHttp);
-  const { isEnabled: scriptedEnabled } = useFeatureFlag(FeatureName.ScriptedChecks);
   const { data: checks = [], isLoading } = useChecks();
-  const { isEnabled: perCheckDashboardsEnabled } = useFeatureFlag(FeatureName.PerCheckDashboards);
   const { id } = useParams<CheckPageParams>();
 
-  const navigate = useNavigation();
   const checkToView = checks.find((check) => String(check.id) === id);
 
   const scene = useMemo(() => {
@@ -47,9 +39,6 @@ function DashboardPageContent() {
       type: instance.api.type,
     };
     const config: DashboardSceneAppConfig = { metrics: metricsDef, logs: logsDef, sm: smDef, singleCheckMode: false };
-    if (!perCheckDashboardsEnabled) {
-      return getDashboardSceneApp(config, multiHttpEnabled, scriptedEnabled, checks);
-    }
     config.singleCheckMode = true;
     if (!checkToView) {
       return null;
@@ -128,21 +117,8 @@ function DashboardPageContent() {
         return null;
       }
     }
-  }, [
-    instance.api,
-    instance.logs,
-    instance.metrics,
-    multiHttpEnabled,
-    scriptedEnabled,
-    checks,
-    perCheckDashboardsEnabled,
-    checkToView,
-  ]);
+  }, [instance.api, instance.logs, instance.metrics, checkToView]);
 
-  if (!isEnabled) {
-    navigate('redirect?dashboard=summary');
-    return null;
-  }
   if (!scene || isLoading) {
     return <Spinner />;
   }

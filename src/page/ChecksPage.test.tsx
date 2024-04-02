@@ -1,5 +1,4 @@
 import React from 'react';
-import runtime from '@grafana/runtime';
 import { screen, waitFor, within } from '@testing-library/react';
 import { ALERTING_RULES } from 'test/fixtures/alerting';
 import { BASIC_CHECK_LIST, BASIC_HTTP_CHECK, BASIC_PING_CHECK } from 'test/fixtures/checks';
@@ -29,29 +28,11 @@ test('renders checks', async () => {
   expect(screen.getByText(BASIC_PING_CHECK.job)).toBeInTheDocument();
 });
 
-test('renders check selection page with multi-http feature flag is ON', async () => {
+test('renders check selection page with correct check types', async () => {
   const { user } = await renderChecksPage();
   await user.click(screen.getByText('Add new check'));
   expect(screen.queryByText('HTTP', { selector: `h2` })).toBeInTheDocument();
   expect(screen.queryByText('MULTIHTTP', { selector: `h2` })).toBeInTheDocument();
-  expect(screen.queryByText('Traceroute', { selector: `h2` })).toBeInTheDocument();
-  expect(screen.queryByText('PING', { selector: `h2` })).toBeInTheDocument();
-  expect(screen.queryByText('DNS', { selector: `h2` })).toBeInTheDocument();
-});
-
-test('renders check selection page without multi-http feature flag is OFF', async () => {
-  jest.replaceProperty(runtime, `config`, {
-    ...runtime.config,
-    featureToggles: {
-      // @ts-expect-error
-      configFlag: { 'multi-http': false },
-    },
-  });
-
-  const { user } = await renderChecksPage();
-  await user.click(screen.getByText('Add new check'));
-  expect(screen.queryByText('HTTP', { selector: `h2` })).toBeInTheDocument();
-  expect(screen.queryByText('MULTIHTTP', { selector: `h2` })).not.toBeInTheDocument();
   expect(screen.queryByText('Traceroute', { selector: `h2` })).toBeInTheDocument();
   expect(screen.queryByText('PING', { selector: `h2` })).toBeInTheDocument();
   expect(screen.queryByText('DNS', { selector: `h2` })).toBeInTheDocument();
