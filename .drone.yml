@@ -262,9 +262,8 @@ steps:
       - if [ -z "$GCLOUD_SERVICE_KEY" ]; then echo "Missing GCLOUD_SERVICE_KEY"; exit -1; fi
       - printenv GCLOUD_SERVICE_KEY > /tmp/gcpkey.json
       - gcloud auth activate-service-account --key-file=/tmp/gcpkey.json
-      - PLUGIN_NAME=`grafana-synthetic-monitoring-app`
       - VERSION=`cat plugin_version.txt`
-      - /root/app/bin/grafana-publisher.js --auto publishremote $PLUGIN_NAME $VERSION synthetic-monitoring-app
+      - /root/app/bin/grafana-publisher.js --auto publishremote grafana-synthetic-monitoring-app $VERSION synthetic-monitoring-app
     environment:
       GCLOUD_SERVICE_KEY:
         from_secret: gcp_key
@@ -298,14 +297,14 @@ steps:
       - gcloud auth activate-service-account --key-file=/tmp/gcpkey.json
       # - PLUGIN_NAME="grafana-synthetic-monitoring-app"
       - VERSION=${DRONE_TAG}
-      - /root/app/bin/grafana-publisher.js -d --auto publishremote grafana-synthetic-monitoring-app 1.12.6 synthetic-monitoring-app
+      - /root/app/bin/grafana-publisher.js -d --auto publishremote grafana-synthetic-monitoring-app $VERSION synthetic-monitoring-app
     environment:
       GCLOUD_SERVICE_KEY:
         from_secret: gcp_key
       GCOM_PUBLISH_TOKEN:
         from_secret: gcom_token
       GITHUB_TOKEN:
-        from_secret: github_publish_token
+        from_secret: github_token
 
 image_pull_secrets:
   - dockerconfigjson
@@ -368,6 +367,6 @@ kind: secret
 name: gcp_key
 ---
 kind: signature
-hmac: 627cd4e4abb7a428911c2dd1b9154765ab8371e145151090863d367ae65b7fa7
+hmac: 83521e356bcf69b0abffe20b5641b6fda5dc729a661bd6ff8c78b7f6c775ecb8
 
 ...
