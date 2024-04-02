@@ -21,17 +21,19 @@ const requestMap = {
 
 export const CheckIpVersion = ({ checkType, name }: CheckIpVersionProps) => {
   const isEditor = hasRole(OrgRole.Editor);
+  const id = `${checkType}-ip-version`;
 
   return (
     <Field
       label="IP version"
       description={`The IP protocol of the ${requestMap[checkType]} request`}
       disabled={!isEditor}
+      htmlFor={id}
     >
       <Controller
         render={({ field }) => {
           const { ref, ...rest } = field;
-          return <Select {...rest} options={IP_OPTIONS} />;
+          return <Select {...rest} options={IP_OPTIONS} inputId={id} />;
         }}
         name={name}
       />

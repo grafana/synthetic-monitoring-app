@@ -38,9 +38,9 @@ export const CheckTCPLayout = () => {
       <FormLayout.Section label="TLS config" fields={[`settings.tcp.tlsConfig`]}>
         <TLSConfig checkType={CheckType.TCP} />
       </FormLayout.Section>
-      <FormLayout.Section label="Advanced options" fields={[`labels`, `settings.dns.ipVersion`]}>
+      <FormLayout.Section label="Advanced options" fields={[`labels`, `settings.tcp.ipVersion`]}>
         <LabelField<CheckFormValuesPing> />
-        <CheckIpVersion checkType={CheckType.DNS} name="settings.dns.ipVersion" />
+        <CheckIpVersion checkType={CheckType.TCP} name="settings.tcp.ipVersion" />
       </FormLayout.Section>
       <FormLayout.Section label="Alerting" fields={[`alertSensitivity`]}>
         <CheckFormAlert />
