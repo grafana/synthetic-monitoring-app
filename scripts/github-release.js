@@ -15,6 +15,7 @@ const changelog = readFileSync('./CHANGELOG.md', 'utf-8');
 const split = changelog.split(/\n\s*\n/);
 const message = split.slice(1, 3).join('\n\n');
 const branchName = `release-${version}`;
+const tagName = `v${version}`;
 
 octokit.rest.git
   .createRef({
@@ -29,8 +30,8 @@ octokit.rest.git
         owner: 'grafana',
         repo: 'synthetic-monitoring-app',
         target_commitish: branchName,
-        tag_name: version,
-        name: version,
+        tag_name: tagName,
+        name: tagName,
         body: message,
       })
       .then((releaseResp) => {
