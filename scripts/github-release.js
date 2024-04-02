@@ -14,16 +14,26 @@ const version = packageJson.version;
 const changelog = readFileSync('./CHANGELOG.md', 'utf-8');
 const split = changelog.split(/\n\s*\n/);
 const message = split.slice(1, 3).join('\n\n');
+const branchName = `release-${version}`;
 
-octokit.rest.repos
-  .createRelease({
+octokit.rest.git
+  .createRef({
     owner: 'grafana',
     repo: 'synthetic-monitoring-app',
-    target_commitish: `release-${version}`,
-    tag_name: version,
-    name: version,
-    body: message,
+    ref: `refs/heads/${branchName}`,
+    sha: revision,
   })
   .then((response) => {
-    console.log('Created release');
+    octokit.rest.repos
+      .createRelease({
+        owner: 'grafana',
+        repo: 'synthetic-monitoring-app',
+        target_commitish: branchName,
+        tag_name: version,
+        name: version,
+        body: message,
+      })
+      .then((releaseResp) => {
+        console.log('Created release');
+      });
   });
