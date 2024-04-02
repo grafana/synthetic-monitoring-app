@@ -3,6 +3,7 @@
 # [1.13.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.13.0...v1.13.1) (2024-4-2)
 
 - Fix a bug with empty search state and bulk selection
+- Fix a bug with the TCP IP version selection section of the check edit form
 
 # [1.13.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.13.0...v1.13.0) (2024-3-27)
 
