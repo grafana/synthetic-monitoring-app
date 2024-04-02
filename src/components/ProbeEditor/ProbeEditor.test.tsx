@@ -21,7 +21,7 @@ const renderProbeEditor = async ({ probe = TEMPLATE_PROBE } = {}) => {
   };
 
   const res = render(<ProbeEditor {...props} />);
-  await screen.findByText(/This probe is private./);
+  await screen.findByText(/Probe Name */);
   return res;
 };
 
@@ -91,25 +91,25 @@ it('saves new probe', async () => {
 });
 
 it('the form is uneditable when viewing a public probe', async () => {
-  renderProbeEditor({ probe: PUBLIC_PROBE });
-  assertUneditable();
+  await renderProbeEditor({ probe: PUBLIC_PROBE });
+  await assertUneditable();
 });
 
 it('the form is uneditable when logged in as a viewer', async () => {
   runTestAsViewer();
-  renderProbeEditor();
-  assertUneditable();
+  await renderProbeEditor();
+  await assertUneditable();
 });
 
 it('the form actions are unavailable when viewing a public probe', async () => {
-  renderProbeEditor({ probe: PUBLIC_PROBE });
-  assertNoActions();
+  await renderProbeEditor({ probe: PUBLIC_PROBE });
+  await assertNoActions();
 });
 
 it('the form actions are unavailable as a viewer', async () => {
   runTestAsViewer();
-  renderProbeEditor();
-  assertNoActions();
+  await renderProbeEditor();
+  await assertNoActions();
 });
 
 async function assertUneditable() {
@@ -127,11 +127,11 @@ async function assertUneditable() {
 }
 
 async function assertNoActions() {
-  const addLabelButton = await screen.findByText(/Add label/);
+  const addLabelButton = await screen.queryByText(/Add label/);
   expect(addLabelButton).not.toBeInTheDocument();
 
   const saveButton = await getSaveButton();
-  expect(saveButton).not.toBeInTheDocument();
+  expect(saveButton).toBeUndefined();
 }
 
 // extract this so we can be sure our assertions for them not being there are correct

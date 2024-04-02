@@ -149,6 +149,7 @@ export const ProbeEditor = ({
                       rules={{ required: 'Region is required' }}
                       render={({ field }) => (
                         <ProbeRegionsSelect
+                          disabled={!canEdit}
                           id="region"
                           invalid={Boolean(errors.region)}
                           onChange={(value) => {
