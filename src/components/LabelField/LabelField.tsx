@@ -22,15 +22,19 @@ export const LabelField = <T extends FormWithLabels>({ limit }: LabelFieldProps)
   const { watch } = useFormContext<FormWithLabels>();
   const labels = watch('labels');
   const isEditor = hasRole(OrgRole.Editor);
-  const description = `Custom labels to be included with collected metrics and logs. You can add up to ${
-    limits?.maxAllowedMetricLabels ?? 10
-  }.
-  If you add more than ${
-    limits?.maxAllowedLogLabels ?? 5
-  } labels, they will potentially not be used to index logs, and rather added as part of the log message.`;
+  let description = '';
+  if (limit) {
+    description = `Custom labels to be included with collected metrics and logs. You can add up to ${limit}.`;
+  } else {
+    description = `Custom labels to be included with collected metrics and logs. You can add up to ${
+      limits?.maxAllowedMetricLabels ?? 10
+    }. If you add more than ${
+      limits?.maxAllowedLogLabels ?? 5
+    } labels, they will potentially not be used to index logs, and rather added as part of the log message.`;
+  }
 
   return (
-    <Field label="Labels" description={description} disabled={!isEditor}>
+    <Field label="Labels" description={limit || limits ? description : ''} disabled={!isEditor}>
       <NameValueInput
         name="labels"
         disabled={!isEditor}
