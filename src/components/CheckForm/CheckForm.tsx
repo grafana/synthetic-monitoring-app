@@ -118,13 +118,18 @@ const CheckFormContent = ({ check, checkType }: CheckFormContentProps) => {
           <form onSubmit={formMethods.handleSubmit(handleSubmit, handleError)}>
             <CheckSelector checkType={checkType} />
             <HorizontalGroup>
-              <Button type="submit" disabled={formMethods.formState.isSubmitting || submitting}>
+              <Button
+                type="submit"
+                disabled={formMethods.formState.isSubmitting || submitting}
+                data-fs-element="Save check button"
+              >
                 Save
               </Button>
               {![CheckType.Traceroute].includes(checkType) && (
                 <Button
                   disabled={isPending}
                   type="submit"
+                  data-fs-element="Test check button"
                   variant="secondary"
                   icon={isPending ? `fa fa-spinner` : undefined}
                   ref={testRef}
@@ -135,6 +140,7 @@ const CheckFormContent = ({ check, checkType }: CheckFormContentProps) => {
               {check?.id && (
                 <Button
                   variant="destructive"
+                  data-fs-element="Delete check button"
                   onClick={() => setShowDeleteModal(true)}
                   disabled={!isEditor}
                   type="button"
@@ -143,7 +149,12 @@ const CheckFormContent = ({ check, checkType }: CheckFormContentProps) => {
                 </Button>
               )}
 
-              <LinkButton href={getRoute(ROUTES.Checks)} fill="text" variant="secondary">
+              <LinkButton
+                href={getRoute(ROUTES.Checks)}
+                fill="text"
+                variant="secondary"
+                data-fs-element="Cancel check button"
+              >
                 Cancel
               </LinkButton>
             </HorizontalGroup>

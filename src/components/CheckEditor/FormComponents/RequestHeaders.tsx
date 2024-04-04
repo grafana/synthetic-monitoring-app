@@ -13,9 +13,10 @@ type RequestHeadersProps = {
   description: string;
   label: string;
   name: FieldPath<CheckFormValues>;
+  'data-fs-element'?: string;
 };
 
-export const RequestHeaders = ({ ariaLabelSuffix, description, label, name }: RequestHeadersProps) => {
+export const RequestHeaders = ({ ariaLabelSuffix, description, label, name, ...rest }: RequestHeadersProps) => {
   const isEditor = hasRole(OrgRole.Editor);
 
   return (
@@ -27,6 +28,7 @@ export const RequestHeaders = ({ ariaLabelSuffix, description, label, name }: Re
         label={label}
         validateName={validateHTTPHeaderName}
         validateValue={validateHTTPHeaderValue}
+        {...rest}
       />
     </Field>
   );

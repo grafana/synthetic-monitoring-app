@@ -19,7 +19,7 @@ export const DNSCheckRecordType = () => {
         name="settings.dns.recordType"
         render={({ field }) => {
           const { ref, ...rest } = field;
-          return <Select {...rest} options={DNS_RECORD_TYPES} inputId={id} />;
+          return <Select {...rest} options={DNS_RECORD_TYPES} inputId={id} data-fs-element="Record type select" />;
         }}
       />
     </Field>

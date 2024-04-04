@@ -25,7 +25,15 @@ export const HttpCheckValidStatusCodes = () => {
         name="settings.http.validStatusCodes"
         render={({ field }) => {
           const { ref, ...rest } = field;
-          return <MultiSelect {...rest} options={validStatusCodes} disabled={!isEditor} inputId={id} />;
+          return (
+            <MultiSelect
+              {...rest}
+              options={validStatusCodes}
+              disabled={!isEditor}
+              inputId={id}
+              data-fs-element="Valid status codes select"
+            />
+          );
         }}
       />
     </Field>

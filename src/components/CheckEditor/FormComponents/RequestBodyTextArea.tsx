@@ -28,7 +28,13 @@ export const RequestBodyTextArea = ({ name }: RequestBodyTextAreaProps) => {
       error={error?.message}
       htmlFor={name}
     >
-      <TextArea id={name} {...register(name)} rows={2} disabled={!isEditor} />
+      <TextArea
+        id={name}
+        {...register(name)}
+        rows={2}
+        disabled={!isEditor}
+        data-fs-element="Check request body textarea"
+      />
     </Field>
   );
 };

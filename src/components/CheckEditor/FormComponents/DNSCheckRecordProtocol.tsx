@@ -21,6 +21,7 @@ export const DNSCheckRecordProtocol = () => {
           return <Select {...rest} options={DNS_PROTOCOLS} inputId={id} />;
         }}
         name="settings.dns.protocol"
+        data-fs-element="DNS protocol select"
       />
     </Field>
   );

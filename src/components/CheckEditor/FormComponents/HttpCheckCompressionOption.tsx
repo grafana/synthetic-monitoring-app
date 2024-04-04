@@ -26,7 +26,13 @@ export const HttpCheckCompressionOption = () => {
           };
 
           return (
-            <Select {...rest} inputId={compressionId} options={HTTP_COMPRESSION_ALGO_OPTIONS} onChange={handleChange} />
+            <Select
+              {...rest}
+              inputId={compressionId}
+              options={HTTP_COMPRESSION_ALGO_OPTIONS}
+              onChange={handleChange}
+              data-fs-element="Check compression select"
+            />
           );
         }}
       />

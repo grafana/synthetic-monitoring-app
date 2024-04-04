@@ -60,12 +60,14 @@ export const BodyTab = ({ index, active }: MultiHttpTabProps) => {
         <Input
           {...register(`settings.multihttp.entries.${index}.request.body.contentType`)}
           id={`request-body-${index}-contentType`}
+          data-fs-element="Request body content type input"
         />
       </Field>
       <Field label="Content encoding" description="Indicates the content encoding of the body">
         <Input
           {...register(`settings.multihttp.entries.${index}.request.body.contentEncoding`)}
           id={`request-body-${index}-contentEncoding`}
+          data-fs-element="Request body content encoding input"
         />
       </Field>
       <Field
@@ -78,6 +80,7 @@ export const BodyTab = ({ index, active }: MultiHttpTabProps) => {
           {...register(`settings.multihttp.entries.${index}.request.body.payload`)}
           rows={2}
           id={`request-body-${index}-payload`}
+          data-fs-element="Request body payload textarea"
         />
       </Field>
     </div>
@@ -111,6 +114,7 @@ const QueryParamsTab = ({ index, active }: MultiHttpTabProps) => {
                         type="text"
                         placeholder="Parameter name"
                         data-testid="query-param-name"
+                        data-fs-element="Query param name input"
                       />
                     </Field>
                     <Field invalid={Boolean(errors?.[i]?.value)} error={errors?.[i]?.value?.message}>
@@ -122,6 +126,7 @@ const QueryParamsTab = ({ index, active }: MultiHttpTabProps) => {
                         type="text"
                         placeholder="Parameter value"
                         data-testid="query-param-value"
+                        data-fs-element="Query param value input"
                       />
                     </Field>
                   </HorizontalGroup>
@@ -133,6 +138,7 @@ const QueryParamsTab = ({ index, active }: MultiHttpTabProps) => {
                       remove(i);
                     }}
                     tooltip="Delete"
+                    data-fs-element="Delete query param button"
                   />
                 </HorizontalGroup>
               </div>
@@ -146,6 +152,7 @@ const QueryParamsTab = ({ index, active }: MultiHttpTabProps) => {
         size="sm"
         type="button"
         className={styles.addHeaderQueryButton}
+        data-fs-element="Add query param button"
       >
         <Icon name="plus" />
         &nbsp; Add query param
@@ -193,6 +200,7 @@ const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
                           {...rest}
                           options={MULTI_HTTP_VARIABLE_TYPE_OPTIONS}
                           menuPlacement="bottom"
+                          data-fs-element="Variable type select"
                         />
                       </Field>
                     );
@@ -211,6 +219,7 @@ const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
                     invalid={Boolean(
                       formState.errors.settings?.multihttp?.entries?.[index]?.variables?.[variableIndex]?.type
                     )}
+                    data-fs-element="Variable name input"
                     {...register(`${variableFieldName}.${variableIndex}.name`, {
                       required: 'Variable name is required',
                     })}
@@ -226,6 +235,7 @@ const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
                     <Input
                       placeholder="Attribute"
                       id={`multihttp-variable-attribute-${index}-${variableIndex}`}
+                      data-fs-element="Variable attribute input"
                       {...register(`${variableFieldName}.${variableIndex}.attribute`)}
                     />
                   </Field>
@@ -239,13 +249,19 @@ const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
                   <Input
                     placeholder="Variable expression"
                     id={`multihttp-variable-expression-${index}-${variableIndex}`}
+                    data-fs-element="Variable expression input"
                     {...register(`${variableFieldName}.${variableIndex}.expression`, {
                       required: 'Expression is required',
                     })}
                   />
                 </Field>
                 <div className={styles.iconContainer}>
-                  <IconButton name="minus-circle" onClick={() => remove(variableIndex)} tooltip="Delete" />
+                  <IconButton
+                    name="minus-circle"
+                    onClick={() => remove(variableIndex)}
+                    tooltip="Delete"
+                    data-fs-element="Variable delete button"
+                  />
                 </div>
               </div>
             );
@@ -259,6 +275,7 @@ const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
         variant="secondary"
         size="sm"
         type="button"
+        data-fs-element="Variable delete button"
       >
         <Icon name="plus" />
         &nbsp; Add variable

@@ -29,7 +29,14 @@ export const RequestMethodSelect = ({ 'aria-label': ariaLabel = `Request method`
       <Controller
         render={({ field }) => {
           const { ref, ...rest } = field;
-          return <Select {...rest} options={METHOD_OPTIONS} aria-label={ariaLabel} />;
+          return (
+            <Select
+              {...rest}
+              options={METHOD_OPTIONS}
+              aria-label={ariaLabel}
+              data-fs-element="Check request method select"
+            />
+          );
         }}
         rules={{ required: true }}
         name={name}

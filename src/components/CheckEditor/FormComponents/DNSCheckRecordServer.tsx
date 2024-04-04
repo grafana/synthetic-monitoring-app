@@ -13,7 +13,13 @@ export const DNSCheckRecordServer = () => {
 
   return (
     <Field label="Server" disabled={!isEditor} htmlFor={id}>
-      <Input id={id} {...register('settings.dns.server')} type="text" placeholder="server" />
+      <Input
+        id={id}
+        {...register('settings.dns.server')}
+        type="text"
+        placeholder="server"
+        data-fs-element="DNS server input"
+      />
     </Field>
   );
 };

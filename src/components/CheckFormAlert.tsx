@@ -53,6 +53,7 @@ export const CheckFormAlert = () => {
                 onChange={(e) => {
                   field.onChange(e.value);
                 }}
+                data-fs-element="Alert sensitivity select"
               />
             );
           }}

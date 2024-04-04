@@ -99,6 +99,7 @@ export const MultiHttpCheckRequests = () => {
                       dispatchCollapse({ type: 'removeRequest', index });
                     }}
                     className={styles.removeRequestButton}
+                    data-fs-element={`Remove request ${index + 1}`}
                   >
                     Remove
                   </Button>

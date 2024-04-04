@@ -24,6 +24,7 @@ export const Collapse = ({ className, isOpen, label, children, onClick, ...props
           onClick?.(!isOpenState);
         }}
         type="button"
+        data-fs-element={`Collapse header ${label}`}
       >
         <div className={styles.label}>{label}</div>
         <Icon name={isOpenState ? 'angle-down' : 'angle-right'} className={styles.headerIcon} />

@@ -84,6 +84,7 @@ const CheckProbes = forwardRef(
                 closeMenuOnSelect={false}
                 onBlur={onBlur}
                 inputId={id}
+                data-fs-element="Probes select"
               />
             </Field>
             <div
@@ -93,10 +94,24 @@ const CheckProbes = forwardRef(
               `}
             >
               <HorizontalGroup spacing="sm">
-                <Button onClick={onAllLocations} disabled={!isEditor} variant="secondary" size="sm" type="button">
+                <Button
+                  onClick={onAllLocations}
+                  disabled={!isEditor}
+                  variant="secondary"
+                  size="sm"
+                  type="button"
+                  data-fs-element="Probes all button"
+                >
                   All
                 </Button>
-                <Button onClick={onClearLocations} disabled={!isEditor} variant="secondary" size="sm" type="button">
+                <Button
+                  onClick={onClearLocations}
+                  disabled={!isEditor}
+                  variant="secondary"
+                  size="sm"
+                  type="button"
+                  data-fs-element="Probes clear button"
+                >
                   Clear
                 </Button>
               </HorizontalGroup>

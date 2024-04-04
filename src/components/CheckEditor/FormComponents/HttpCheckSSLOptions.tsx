@@ -24,7 +24,15 @@ export const HttpCheckSSLOptions = () => {
         control={control}
         render={({ field }) => {
           const { ref, ...rest } = field;
-          return <Select {...rest} inputId={id} options={HTTP_SSL_OPTIONS} disabled={!isEditor} />;
+          return (
+            <Select
+              {...rest}
+              inputId={id}
+              options={HTTP_SSL_OPTIONS}
+              disabled={!isEditor}
+              data-fs-element="SSL options select"
+            />
+          );
         }}
       />
     </Field>

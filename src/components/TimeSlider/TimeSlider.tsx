@@ -130,6 +130,7 @@ export function TimeSlider({
           onChangeComplete={handleChangeComplete}
           ariaLabelForHandle={ariaLabelForHandle}
           included={included}
+          data-fs-element="Timeslider slider"
         />
 
         <Input
@@ -139,6 +140,7 @@ export function TimeSlider({
           onChange={onMinutesInputChange}
           onBlur={onMinutesInputBlur}
           id={minutesId}
+          data-fs-element="Timeslider minutes input"
         />
         <label htmlFor={minutesId}>minutes</label>
 
@@ -149,6 +151,7 @@ export function TimeSlider({
           onChange={onSecondsInputChange}
           onBlur={onSecondsInputBlur}
           id={secondsId}
+          data-fs-element="Timeslider seconds input"
         />
         <label htmlFor={secondsId}>seconds</label>
       </div>

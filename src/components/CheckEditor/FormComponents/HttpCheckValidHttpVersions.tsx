@@ -39,7 +39,15 @@ export const HttpCheckValidHttpVersions = () => {
         render={({ field }) => {
           const { ref, ...rest } = field;
 
-          return <MultiSelect {...rest} options={httpVersionOptions} disabled={!isEditor} inputId={id} />;
+          return (
+            <MultiSelect
+              {...rest}
+              options={httpVersionOptions}
+              disabled={!isEditor}
+              inputId={id}
+              data-fs-element="Valid http versions select"
+            />
+          );
         }}
       />
     </Field>

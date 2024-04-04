@@ -36,6 +36,7 @@ export const LabelField = <T extends FormWithLabels>({ limit }: LabelFieldProps)
         limit={limit ?? 10}
         validateName={(labelName) => validateLabelName(labelName, labels)}
         validateValue={validateLabelValue}
+        data-fs-element="Labels input"
       />
     </Field>
   );

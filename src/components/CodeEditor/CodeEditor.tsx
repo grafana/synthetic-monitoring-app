@@ -165,6 +165,7 @@ export const CodeEditor = forwardRef(function CodeEditor(
         onEditorDidMount={handleEditorDidMount}
         readOnly={readOnly}
         containerStyles={containerStyles}
+        data-fs-element="Code editor"
       />
     </div>
   );

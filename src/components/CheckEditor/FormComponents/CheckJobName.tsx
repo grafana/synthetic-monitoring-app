@@ -27,6 +27,7 @@ export const CheckJobName = () => {
         })}
         type="text"
         placeholder="jobName"
+        data-fs-element="Job name input"
       />
     </Field>
   );

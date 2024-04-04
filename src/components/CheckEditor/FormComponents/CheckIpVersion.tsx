@@ -33,7 +33,7 @@ export const CheckIpVersion = ({ checkType, name }: CheckIpVersionProps) => {
       <Controller
         render={({ field }) => {
           const { ref, ...rest } = field;
-          return <Select {...rest} options={IP_OPTIONS} inputId={id} />;
+          return <Select {...rest} options={IP_OPTIONS} inputId={id} data-fs-element="IP version select" />;
         }}
         name={name}
       />

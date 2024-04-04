@@ -15,6 +15,7 @@ export const HttpCheckFollowRedirects = () => {
       id="http-settings-followRedirects"
       label="Follow redirects"
       disabled={!isEditor}
+      data-fs-element="Follow redirects checkbox"
       {...register('settings.http.followRedirects')}
     />
   );
