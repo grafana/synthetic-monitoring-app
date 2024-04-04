@@ -23,7 +23,7 @@ export const CheckMultiHTTPLayout = () => {
         <CheckEnabled />
         <CheckJobName />
         <ProbeOptions checkType={CheckType.MULTI_HTTP} />
-        <LabelField<CheckFormValuesMultiHttp> />
+        <LabelField<CheckFormValuesMultiHttp> labelDestination="check" />
       </FormLayout.Section>
       <FormLayout.Section
         contentClassName={styles.requestsContainer}

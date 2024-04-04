@@ -37,7 +37,7 @@ export const CheckTracerouteLayout = () => {
           `settings.traceroute.ptrLookup`,
         ]}
       >
-        <LabelField<CheckFormValuesTraceroute> />
+        <LabelField<CheckFormValuesTraceroute> labelDestination="check" />
         <TracerouteMaxHops />
         <TracerouteMaxUnknownHops />
         <TraceroutePTRLookup />

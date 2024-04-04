@@ -102,7 +102,7 @@ export const CheckHTTPLayout = () => {
           `settings.http.cacheBustingQueryParamName`,
         ]}
       >
-        <LabelField<CheckFormValuesHttp> />
+        <LabelField<CheckFormValuesHttp> labelDestination="check" />
         <CheckIpVersion checkType={CheckType.HTTP} name="settings.http.ipVersion" />
         <HttpCheckFollowRedirects />
         <HttpCheckCacheBuster />

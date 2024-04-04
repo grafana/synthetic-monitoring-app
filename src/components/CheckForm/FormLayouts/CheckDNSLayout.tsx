@@ -46,7 +46,7 @@ export const CheckDNSLayout = () => {
         <DNSCheckResponseMatches />
       </FormLayout.Section>
       <FormLayout.Section label="Advanced options" fields={[`labels`, `settings.dns.ipVersion`]}>
-        <LabelField<CheckFormValuesPing> />
+        <LabelField<CheckFormValuesPing> labelDestination="check" />
         <CheckIpVersion checkType={CheckType.DNS} name="settings.dns.ipVersion" />
       </FormLayout.Section>
       <FormLayout.Section label="Alerting" fields={[`alertSensitivity`]}>
