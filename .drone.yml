@@ -286,18 +286,16 @@ trigger:
   target:
     - dryrun
 steps:
-  - name: publish-to-gcom
-    image: grafana/integration-grafana-publisher:latest
+  - name: publish plugin to grafana.com (release)
+    image: curlimages/curl:7.73.0
+    environment:
+      GRAFANA_API_KEY:
+        from_secret: signing_token
     commands:
-      - echo "start publish to GCOM"
-      - if [ -z "$GCOM_PUBLISH_TOKEN" ]; then echo "Missing GCOM Publish Key"; exit -1; fi
-      - if [ -z "$GITHUB_TOKEN" ]; then echo "Missing GITHUB_TOKEN"; exit -1; fi
-      - if [ -z "$GCLOUD_SERVICE_KEY" ]; then echo "Missing GCLOUD_SERVICE_KEY"; exit -1; fi
-      - printenv GCLOUD_SERVICE_KEY > /tmp/gcpkey.json
-      - gcloud auth activate-service-account --key-file=/tmp/gcpkey.json
-      # - PLUGIN_NAME="grafana-synthetic-monitoring-app"
-      - VERSION=${DRONE_TAG}
-      - /root/app/bin/grafana-publisher.js -d --auto publishremote grafana-synthetic-monitoring-app $VERSION synthetic-monitoring-app
+      # yamllint disable rule:line-length
+
+        - 'curl -f -w "status=%{http_code}" -s -H "Authorization: Bearer $${GRAFANA_API_KEY}" -d "download[any][url]=https://storage.googleapis.com/synthetic-monitoring-app-prod/builds/${DRONE_TAG}/grafana-synthetic-monitoring-app-${DRONE_TAG}.zip" -d "download[any][md5]=$$(curl -sL https://storage.googleapis.com/synthetic-monitoring-app-prod/builds/${DRONE_TAG}/grafana-synthetic-monitoring-app-${DRONE_TAG}.zip | md5sum | cut -d'' '' -f1)" -d url=https://github.com/grafana/synthetic-monitoring-app https://grafana.com/api/plugins'
+        # yamllint enable rule:line-length
     environment:
       GCLOUD_SERVICE_KEY:
         from_secret: gcp_key
@@ -367,6 +365,6 @@ kind: secret
 name: gcp_key
 ---
 kind: signature
-hmac: 83521e356bcf69b0abffe20b5641b6fda5dc729a661bd6ff8c78b7f6c775ecb8
+hmac: a8fb720eb3f858c17ca88942b76f13682e8f06b8b4e4144430b318529d2a5789
 
 ...
