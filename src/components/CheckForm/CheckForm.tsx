@@ -39,8 +39,9 @@ export const CheckForm = () => {
 
   const check = checks?.find((c) => c.id === Number(id)) ?? fallbackCheckMap[checkType];
 
-  const overCheckLimit = isOverCheckLimit({ checks, limits });
-  const overScriptedLimit = isOverScriptedLimit({ checks, limits });
+  // We don't want to gate submission for editing pre-existing checks, just prevent creating new ones
+  const overCheckLimit = !check && isOverCheckLimit({ checks, limits });
+  const overScriptedLimit = !check && isOverScriptedLimit({ checks, limits });
 
   return (
     <CheckFormContent
