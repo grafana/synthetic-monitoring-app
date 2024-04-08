@@ -4,7 +4,7 @@ import { Badge, LoadingPlaceholder, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckType, FeatureName, ROUTES } from 'types';
-import { checkType } from 'utils';
+import { isOverCheckLimit, isOverScriptedLimit } from 'utils';
 import { useChecks } from 'data/useChecks';
 import { useTenantLimits } from 'data/useTenantLimits';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
@@ -27,10 +27,8 @@ export function ChooseCheckType() {
     return <LoadingPlaceholder text="Loading..." />;
   }
 
-  const overScriptedLimit =
-    limits &&
-    checks &&
-    checks.filter((c) => checkType(c.settings) === CheckType.Scripted).length >= limits.MaxScriptedChecks;
+  const overScriptedLimit = isOverScriptedLimit({ checks, limits });
+  const overTotalLimit = isOverCheckLimit({ checks, limits });
 
   const options = CHECK_TYPE_OPTIONS.filter(({ value }) => {
     if (overScriptedLimit && (value === CheckType.MULTI_HTTP || value === CheckType.Scripted)) {
@@ -42,7 +40,6 @@ export function ChooseCheckType() {
     return true;
   });
 
-  const overTotalLimit = limits && checks && checks.length >= limits.MaxChecks;
   if (overTotalLimit) {
     return (
       <PluginPage layout={PageLayoutType?.Standard} pageNav={{ text: 'Choose a check type' }}>

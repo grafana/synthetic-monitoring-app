@@ -24,7 +24,7 @@ import {
   isTCPSettings,
 } from 'utils.types';
 import { SMDataSource } from 'datasource/DataSource';
-import { Metric } from 'datasource/responses.types';
+import { ListCheckResult, ListTenantLimitsResponse, Metric } from 'datasource/responses.types';
 
 /**
  * Find all synthetic-monitoring datasources
@@ -420,4 +420,32 @@ function doesTLSConfigHaveValues(tlsConfig?: TLSConfig) {
   }
 
   return Object.values(tlsConfig).some((value) => value);
+}
+
+export function isOverScriptedLimit({
+  checks,
+  limits,
+}: {
+  checks?: Check[] | ListCheckResult;
+  limits?: ListTenantLimitsResponse;
+}): boolean {
+  if (!limits || !checks) {
+    return false;
+  }
+  return (
+    checks && checks.filter((c) => checkType(c.settings) === CheckType.Scripted).length >= limits.MaxScriptedChecks
+  );
+}
+
+export function isOverCheckLimit({
+  checks,
+  limits,
+}: {
+  checks?: Check[] | ListCheckResult;
+  limits?: ListTenantLimitsResponse;
+}): boolean {
+  if (!limits || !checks) {
+    return false;
+  }
+  return checks.length >= limits.MaxChecks;
 }

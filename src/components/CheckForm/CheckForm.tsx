@@ -6,13 +6,15 @@ import { Alert, Button, ConfirmModal, HorizontalGroup, LinkButton, useStyles2 } 
 import { css } from '@emotion/css';
 
 import { Check, CheckFormValues, CheckPageParams, CheckType, ROUTES } from 'types';
-import { hasRole } from 'utils';
+import { hasRole, isOverCheckLimit, isOverScriptedLimit } from 'utils';
 import { useChecks, useCUDChecks } from 'data/useChecks';
+import { useTenantLimits } from 'data/useTenantLimits';
 import { useNavigation } from 'hooks/useNavigation';
 import { getCheckFromFormValues, getFormValuesFromCheck } from 'components/CheckEditor/checkFormTransformations';
 import { PROBES_SELECT_ID } from 'components/CheckEditor/CheckProbes';
 import { CheckTestResultsModal } from 'components/CheckTestResultsModal';
 import { CHECK_FORM_ERROR_EVENT, fallbackCheckMap } from 'components/constants';
+import { ErrorAlert } from 'components/ErrorAlert';
 import { PluginPage } from 'components/PluginPage';
 import { getRoute } from 'components/Routing';
 
@@ -27,6 +29,7 @@ import { useAdhocTest } from './useTestCheck';
 
 export const CheckForm = () => {
   const { data: checks } = useChecks();
+  const { data: limits } = useTenantLimits();
   const { id, checkType: checkTypeParam } = useParams<CheckPageParams>();
   const checkType = isValidCheckType(checkTypeParam) ? checkTypeParam : CheckType.PING;
 
@@ -36,15 +39,27 @@ export const CheckForm = () => {
 
   const check = checks?.find((c) => c.id === Number(id)) ?? fallbackCheckMap[checkType];
 
-  return <CheckFormContent check={check} checkType={checkType} />;
+  const overCheckLimit = isOverCheckLimit({ checks, limits });
+  const overScriptedLimit = isOverScriptedLimit({ checks, limits });
+
+  return (
+    <CheckFormContent
+      check={check}
+      checkType={checkType}
+      overCheckLimit={Boolean(overCheckLimit)}
+      overScriptedLimit={overScriptedLimit}
+    />
+  );
 };
 
 type CheckFormContentProps = {
   check: Check;
   checkType: CheckType;
+  overCheckLimit: boolean;
+  overScriptedLimit: boolean;
 };
 
-const CheckFormContent = ({ check, checkType }: CheckFormContentProps) => {
+const CheckFormContent = ({ check, checkType, overCheckLimit, overScriptedLimit }: CheckFormContentProps) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const styles = useStyles2(getStyles);
   const { adhocTestData, closeModal, isPending, openTestCheckModal, testCheck, testCheckError } =
@@ -116,9 +131,22 @@ const CheckFormContent = ({ check, checkType }: CheckFormContentProps) => {
       <>
         <FormProvider {...formMethods}>
           <form onSubmit={formMethods.handleSubmit(handleSubmit, handleError)}>
+            {(overCheckLimit || overScriptedLimit) && (
+              <ErrorAlert
+                title={`Maximum number of ${overScriptedLimit ? 'scripted' : ''} checks reached`}
+                content={`You have reached the maximum quantity of ${
+                  overScriptedLimit ? 'scripted' : ''
+                } checks allowed for your account. Please contact support for assistance.`}
+                onClick={navigateBack}
+                buttonText="Go to checks"
+              />
+            )}
             <CheckSelector checkType={checkType} />
             <HorizontalGroup>
-              <Button type="submit" disabled={formMethods.formState.isSubmitting || submitting}>
+              <Button
+                type="submit"
+                disabled={overScriptedLimit || overCheckLimit || formMethods.formState.isSubmitting || submitting}
+              >
                 Save
               </Button>
               {![CheckType.Traceroute].includes(checkType) && (
