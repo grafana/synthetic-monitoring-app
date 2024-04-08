@@ -9,7 +9,7 @@ import { FeatureName } from 'types';
 
 import { ChooseCheckType } from './ChooseCheckType';
 
-function renderChooseCheckType(checkLimit = 10, scriptedLimit = 10) {
+function renderChooseCheckType({ checkLimit = 10, scriptedLimit = 10 }) {
   server.use(
     apiRoute('getTenantLimits', {
       result: () => ({
@@ -27,7 +27,7 @@ function renderChooseCheckType(checkLimit = 10, scriptedLimit = 10) {
   return render(<ChooseCheckType />);
 }
 it('shows check type options with scripted feature off', async () => {
-  renderChooseCheckType();
+  renderChooseCheckType({});
   const checkTypes = ['HTTP', 'TCP', 'DNS', 'PING', 'MULTIHTTP', 'Traceroute'];
   const cards = await Promise.all(
     checkTypes.map((checkType) => {
@@ -40,10 +40,12 @@ it('shows check type options with scripted feature off', async () => {
 });
 
 it('shows check type options with scripted feature on', async () => {
-  // @ts-ignore
-  config.featureToggles[FeatureName.ScriptedChecks] = true;
+  jest.replaceProperty(config, 'featureToggles', {
+    // @ts-expect-error
+    [FeatureName.ScriptedChecks]: true,
+  });
 
-  renderChooseCheckType();
+  renderChooseCheckType({});
   const checkTypes = ['HTTP', 'TCP', 'DNS', 'PING', 'MULTIHTTP', 'Traceroute', 'Scripted'];
   const cards = await Promise.all(
     checkTypes.map((checkType) => {
@@ -56,7 +58,7 @@ it('shows check type options with scripted feature on', async () => {
 });
 
 it('shows error alert when check limit is reached', async () => {
-  renderChooseCheckType(1);
+  renderChooseCheckType({ checkLimit: 1 });
   const errorAlert = await screen.findByText('Check limit reached');
   expect(errorAlert).toBeInTheDocument();
   const checkTypes = ['HTTP', 'TCP', 'DNS', 'PING', 'MULTIHTTP', 'Traceroute', 'Scripted'];
@@ -73,8 +75,12 @@ it('shows error alert when check limit is reached', async () => {
 it('shows error alert when scripted check limit is reached', async () => {
   // @ts-ignore
   config.featureToggles[FeatureName.ScriptedChecks] = true;
+  jest.replaceProperty(config, 'featureToggles', {
+    // @ts-expect-error
+    [FeatureName.ScriptedChecks]: true,
+  });
 
-  renderChooseCheckType(10, 1);
+  renderChooseCheckType({ checkLimit: 10, scriptedLimit: 1 });
   const errorAlert = await screen.findByText('Scripted check limit reached');
   expect(errorAlert).toBeInTheDocument();
   const checkTypes = ['HTTP', 'TCP', 'DNS', 'PING', 'Traceroute'];
