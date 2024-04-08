@@ -1,7 +1,7 @@
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 import { OrgRole } from '@grafana/data';
-import { Alert, Button, Field, LoadingPlaceholder, useTheme2 } from '@grafana/ui';
+import { Alert, Button, Field, LoadingPlaceholder, Spinner, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Label } from 'types';
@@ -41,7 +41,7 @@ function getDescription(labelDestination: LabelFieldProps['labelDestination'], l
 }
 
 export const LabelField = <T extends FormWithLabels>({ labelDestination }: LabelFieldProps) => {
-  const { data: limits, isLoading, error, refetch } = useTenantLimits();
+  const { data: limits, isLoading, error, isRefetching, refetch } = useTenantLimits();
   const { watch } = useFormContext<FormWithLabels>();
   const labels = watch('labels');
   const isEditor = hasRole(OrgRole.Editor);
@@ -54,7 +54,7 @@ export const LabelField = <T extends FormWithLabels>({ labelDestination }: Label
         <LoadingPlaceholder text="Loading label limits" />
       ) : (
         <>
-          {error ? <LimitsFetchWarning refetch={refetch} error={error} /> : null}
+          {error ? <LimitsFetchWarning refetch={refetch} isRefetching={isRefetching} error={error} /> : null}
           <NameValueInput
             name="labels"
             disabled={!isEditor}
@@ -69,7 +69,15 @@ export const LabelField = <T extends FormWithLabels>({ labelDestination }: Label
   );
 };
 
-function LimitsFetchWarning({ refetch, error }: { refetch: () => void; error: Error }) {
+function LimitsFetchWarning({
+  refetch,
+  isRefetching,
+  error,
+}: {
+  refetch: () => void;
+  isRefetching: boolean;
+  error: Error;
+}) {
   const theme = useTheme2();
   return (
     <Alert severity="warning" title="Couldn't fetch label limits">
@@ -83,8 +91,9 @@ function LimitsFetchWarning({ refetch, error }: { refetch: () => void; error: Er
             refetch();
           }}
           variant="secondary"
+          disabled={isRefetching}
         >
-          Retry
+          {isRefetching ? <Spinner /> : 'Retry'}
         </Button>
       </div>
     </Alert>
