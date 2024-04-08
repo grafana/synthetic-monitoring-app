@@ -432,9 +432,8 @@ export function isOverScriptedLimit({
   if (!limits || !checks) {
     return false;
   }
-  return (
-    checks && checks.filter((c) => checkType(c.settings) === CheckType.Scripted).length >= limits.MaxScriptedChecks
-  );
+  const scriptedChecksCount = checks.filter((c) => checkType(c.settings) === CheckType.Scripted).length;
+  return scriptedChecksCount >= limits.MaxScriptedChecks;
 }
 
 export function isOverCheckLimit({
