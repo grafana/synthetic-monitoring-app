@@ -71,6 +71,7 @@ const FormSectionInternal = ({
             />
           }
           isOpen={iternalIsOpen}
+          data-fs-element={`Form section ${label}`}
         >
           <div className={cx(styles.content, contentClassName)}>{children}</div>
         </Collapse>

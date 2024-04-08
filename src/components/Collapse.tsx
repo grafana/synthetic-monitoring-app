@@ -8,12 +8,15 @@ interface Props {
   isOpen?: boolean;
   label: ReactNode;
   onClick?: (open: boolean) => void;
+  'data-fs-element'?: string;
 }
 
 export const Collapse = ({ className, isOpen, label, children, onClick, ...props }: PropsWithChildren<Props>) => {
   const [isOpenState, setIsOpenState] = React.useState(isOpen);
   const styles = useStyles2(getStyles);
 
+  const analyticsName = props['data-fs-element'];
+  delete props['data-fs-element'];
   return (
     <div className={cx(styles.container, className)} {...props}>
       <button
@@ -24,7 +27,7 @@ export const Collapse = ({ className, isOpen, label, children, onClick, ...props
           onClick?.(!isOpenState);
         }}
         type="button"
-        data-fs-element={`Collapse header ${label}`}
+        data-fs-element={analyticsName}
       >
         <div className={styles.label}>{label}</div>
         <Icon name={isOpenState ? 'angle-down' : 'angle-right'} className={styles.headerIcon} />
