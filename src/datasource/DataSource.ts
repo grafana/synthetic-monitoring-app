@@ -353,10 +353,13 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       });
   }
 
-  async getTenantLimits(): Promise<ListTenantLimitsResponse> {
+  async getTenantLimits() {
     return firstValueFrom(
-      getBackendSrv().fetch({ method: 'GET', url: `${this.instanceSettings.url}/sm/tenant/limits` })
-    ).then((res: any) => {
+      getBackendSrv().fetch<ListTenantLimitsResponse>({
+        method: 'GET',
+        url: `${this.instanceSettings.url}/sm/tenant/limits`,
+      })
+    ).then((res) => {
       return res.data;
     });
   }

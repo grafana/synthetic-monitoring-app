@@ -73,8 +73,9 @@ it('shows error alert when check limit is reached', async () => {
 });
 
 it('shows error alert when scripted check limit is reached', async () => {
-  // @ts-ignore
-  config.featureToggles[FeatureName.ScriptedChecks] = true;
+  // When a user is at the scripted limit, the scripted option should not be shown. Turning on the scripted feature flag
+  // here so that we're isolating that it's the limit that's causing the scripted option to not show, and not the feature flag.
+  // This override should be deleted once the scripted feature is generally released
   jest.replaceProperty(config, 'featureToggles', {
     // @ts-expect-error
     [FeatureName.ScriptedChecks]: true,
