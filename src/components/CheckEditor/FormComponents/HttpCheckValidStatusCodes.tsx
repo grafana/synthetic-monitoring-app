@@ -19,21 +19,14 @@ export const HttpCheckValidStatusCodes = () => {
       label="Valid status codes"
       description="Accepted status codes for this probe. Defaults to 2xx."
       disabled={!isEditor}
+      data-fs-element="Valid status codes select"
     >
       <Controller
         control={control}
         name="settings.http.validStatusCodes"
         render={({ field }) => {
           const { ref, ...rest } = field;
-          return (
-            <MultiSelect
-              {...rest}
-              options={validStatusCodes}
-              disabled={!isEditor}
-              inputId={id}
-              data-fs-element="Valid status codes select"
-            />
-          );
+          return <MultiSelect {...rest} options={validStatusCodes} disabled={!isEditor} inputId={id} />;
         }}
       />
     </Field>

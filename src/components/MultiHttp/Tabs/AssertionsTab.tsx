@@ -49,6 +49,7 @@ export function AssertionsTab({ index, active }: MultiHttpTabProps) {
                         invalid={Boolean(error)}
                         error={typeof errMessage === 'string' && errMessage}
                         htmlFor={id}
+                        data-fs-element="Assertion type select"
                       >
                         <Select
                           inputId={id}
@@ -159,6 +160,7 @@ function AssertionSubjectField({ entryIndex, assertionIndex }: AssertionProps) {
             invalid={Boolean(error)}
             error={typeof errMessage === 'string' && errMessage}
             htmlFor={id}
+            data-fs-element="Assertion subject select"
           >
             <Select inputId={id} {...rest} options={ASSERTION_SUBJECT_OPTIONS} menuPlacement="bottom" />
           </Field>
@@ -188,6 +190,7 @@ function AssertionConditionField({ entryIndex, assertionIndex }: AssertionProps)
             invalid={Boolean(error)}
             error={typeof errMessage === 'string' && errMessage}
             htmlFor={id}
+            data-fs-element="Assertion condition select"
           >
             <Select inputId={id} {...rest} options={ASSERTION_CONDITION_OPTIONS} menuPlacement="bottom" />
           </Field>
@@ -212,6 +215,7 @@ function AssertionValueField({ entryIndex, assertionIndex }: AssertionProps) {
       <Input
         placeholder="Value"
         id={`${entryIndex}-${assertionIndex}-value`}
+        data-fs-element="Assertion value input"
         {...register(`settings.multihttp.entries.${entryIndex}.checks.${assertionIndex}.value`, {
           required: 'Value is required',
         })}
@@ -232,6 +236,7 @@ function AssertionExpressionField({ entryIndex, assertionIndex }: AssertionProps
         placeholder={placeholder}
         data-testid={`${entryIndex}-${assertionIndex}-expression`}
         id={`${entryIndex}-${assertionIndex}-expression`}
+        data-fs-element="Assertion expression input"
         {...register(`settings.multihttp.entries.${entryIndex}.checks.${assertionIndex}.expression`, {
           required: 'Expression is required',
           validate: (value) => {

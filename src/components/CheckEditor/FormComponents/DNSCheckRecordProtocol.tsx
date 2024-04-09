@@ -13,7 +13,7 @@ export const DNSCheckRecordProtocol = () => {
   const id = 'dns-settings-protocol';
 
   return (
-    <Field label="Protocol" disabled={!isEditor} htmlFor={id}>
+    <Field label="Protocol" disabled={!isEditor} htmlFor={id} data-fs-element="DNS protocol select">
       <Controller
         control={control}
         render={({ field }) => {
@@ -21,7 +21,6 @@ export const DNSCheckRecordProtocol = () => {
           return <Select {...rest} options={DNS_PROTOCOLS} inputId={id} />;
         }}
         name="settings.dns.protocol"
-        data-fs-element="DNS protocol select"
       />
     </Field>
   );

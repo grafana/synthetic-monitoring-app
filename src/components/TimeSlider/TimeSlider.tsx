@@ -123,18 +123,18 @@ export function TimeSlider({
   return (
     <div className={cx(styles.container, styles.slider)}>
       <div className={cx(styles.sliderInput)}>
-        <SliderWithTooltip
-          min={min}
-          max={max}
-          step={step}
-          value={sliderValue}
-          onChange={onSliderChange}
-          onChangeComplete={handleChangeComplete}
-          ariaLabelForHandle={ariaLabelForHandle}
-          included={included}
-          data-fs-element={`${analyticsLabel} slider`}
-        />
-
+        <div data-fs-element={`${analyticsLabel} slider`} className={styles.sliderWrapper}>
+          <SliderWithTooltip
+            min={min}
+            max={max}
+            step={step}
+            value={sliderValue}
+            onChange={onSliderChange}
+            onChangeComplete={handleChangeComplete}
+            ariaLabelForHandle={ariaLabelForHandle}
+            included={included}
+          />
+        </div>
         <Input
           type="text"
           className={cx(styles.sliderInputField)}

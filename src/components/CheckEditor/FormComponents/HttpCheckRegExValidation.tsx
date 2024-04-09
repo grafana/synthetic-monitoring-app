@@ -40,35 +40,37 @@ export const HttpCheckRegExValidation = () => {
 
             return (
               <Fragment key={field.id}>
-                <Controller
-                  render={({ field }) => {
-                    const { ref, ...rest } = field;
-                    return (
-                      <Select
-                        {...rest}
-                        aria-label={`Validation Field Name ${userIndex}`}
-                        placeholder="Field name"
-                        options={HTTP_REGEX_VALIDATION_OPTIONS}
-                        invalid={
-                          disallowBodyMatching && Boolean(errors?.settings?.http?.regexValidations?.[index]?.matchType)
-                        }
-                        data-fs-element={`Regex validation field name ${index}`}
-                      />
-                    );
-                  }}
-                  rules={{
-                    validate: (value) => {
-                      if (disallowBodyMatching) {
-                        if (value?.value === HttpRegexValidationType.Body) {
-                          return 'Cannot validate the body of a HEAD request';
+                <div data-fs-element={`Regex validation field name ${index}`}>
+                  <Controller
+                    render={({ field }) => {
+                      const { ref, ...rest } = field;
+                      return (
+                        <Select
+                          {...rest}
+                          aria-label={`Validation Field Name ${userIndex}`}
+                          placeholder="Field name"
+                          options={HTTP_REGEX_VALIDATION_OPTIONS}
+                          invalid={
+                            disallowBodyMatching &&
+                            Boolean(errors?.settings?.http?.regexValidations?.[index]?.matchType)
+                          }
+                        />
+                      );
+                    }}
+                    rules={{
+                      validate: (value) => {
+                        if (disallowBodyMatching) {
+                          if (value?.value === HttpRegexValidationType.Body) {
+                            return 'Cannot validate the body of a HEAD request';
+                          }
+                          return;
                         }
                         return;
-                      }
-                      return;
-                    },
-                  }}
-                  name={`${REGEX_FIELD_NAME}.${index}.matchType`}
-                />
+                      },
+                    }}
+                    name={`${REGEX_FIELD_NAME}.${index}.matchType`}
+                  />
+                </div>
                 <div className={styles.validationExpressions}>
                   {isHeaderMatch && (
                     <div className={styles.validationHeaderName}>

@@ -13,13 +13,13 @@ export const DNSCheckRecordType = () => {
   const { control } = useFormContext<CheckFormValuesDns>();
 
   return (
-    <Field label="Record type" disabled={!isEditor} htmlFor={id}>
+    <Field label="Record type" disabled={!isEditor} htmlFor={id} data-fs-element="Record type select">
       <Controller
         control={control}
         name="settings.dns.recordType"
         render={({ field }) => {
           const { ref, ...rest } = field;
-          return <Select {...rest} options={DNS_RECORD_TYPES} inputId={id} data-fs-element="Record type select" />;
+          return <Select {...rest} options={DNS_RECORD_TYPES} inputId={id} />;
         }}
       />
     </Field>

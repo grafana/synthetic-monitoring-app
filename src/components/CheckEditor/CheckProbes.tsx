@@ -75,6 +75,7 @@ const CheckProbes = forwardRef(
               error={error}
               invalid={invalid}
               htmlFor={id}
+              data-fs-element="Probes select"
             >
               <MultiSelect
                 options={options}
@@ -84,7 +85,6 @@ const CheckProbes = forwardRef(
                 closeMenuOnSelect={false}
                 onBlur={onBlur}
                 inputId={id}
-                data-fs-element="Probes select"
               />
             </Field>
             <div

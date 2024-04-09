@@ -18,21 +18,14 @@ export const HttpCheckSSLOptions = () => {
       description="Choose whether probe fails if SSL is present or not present"
       disabled={!isEditor}
       htmlFor={id}
+      data-fs-element="SSL options select"
     >
       <Controller<CheckFormValuesHttp>
         name="settings.http.sslOptions"
         control={control}
         render={({ field }) => {
           const { ref, ...rest } = field;
-          return (
-            <Select
-              {...rest}
-              inputId={id}
-              options={HTTP_SSL_OPTIONS}
-              disabled={!isEditor}
-              data-fs-element="SSL options select"
-            />
-          );
+          return <Select {...rest} inputId={id} options={HTTP_SSL_OPTIONS} disabled={!isEditor} />;
         }}
       />
     </Field>

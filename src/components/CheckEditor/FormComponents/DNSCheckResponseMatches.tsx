@@ -28,23 +28,24 @@ export const DNSCheckResponseMatches = () => {
 
             return (
               <Fragment key={field.id}>
-                <Controller
-                  name={`settings.dns.validations.${index}.responseMatch`}
-                  rules={{ required: true }}
-                  render={({ field }) => {
-                    const { ref, ...rest } = field;
-                    return (
-                      <Select
-                        {...rest}
-                        value={field.value}
-                        aria-label={`DNS Response Match ${userIndex}`}
-                        options={DNS_RESPONSE_MATCH_OPTIONS}
-                        invalid={Boolean(formState.errors.settings?.dns?.validations?.[index]?.responseMatch)}
-                        data-fs-element="DNS Response Match select"
-                      />
-                    );
-                  }}
-                />
+                <div data-fs-element="DNS Response Match select">
+                  <Controller
+                    name={`settings.dns.validations.${index}.responseMatch`}
+                    rules={{ required: true }}
+                    render={({ field }) => {
+                      const { ref, ...rest } = field;
+                      return (
+                        <Select
+                          {...rest}
+                          value={field.value}
+                          aria-label={`DNS Response Match ${userIndex}`}
+                          options={DNS_RESPONSE_MATCH_OPTIONS}
+                          invalid={Boolean(formState.errors.settings?.dns?.validations?.[index]?.responseMatch)}
+                        />
+                      );
+                    }}
+                  />
+                </div>
                 <Input
                   {...register(`settings.dns.validations.${index}.expression`)}
                   placeholder="Type expression"

@@ -193,6 +193,7 @@ const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
                         description="The method of getting a value"
                         invalid={Boolean(errorPath?.type)}
                         error={typeof errMessage === `string` && errMessage}
+                        data-fs-element="Variable type select"
                       >
                         <Select
                           id={`multihttp-variable-type-${index}-${variableIndex}`}
@@ -200,7 +201,6 @@ const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
                           {...rest}
                           options={MULTI_HTTP_VARIABLE_TYPE_OPTIONS}
                           menuPlacement="bottom"
-                          data-fs-element="Variable type select"
                         />
                       </Field>
                     );

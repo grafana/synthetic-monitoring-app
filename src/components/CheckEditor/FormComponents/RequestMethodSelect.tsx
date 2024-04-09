@@ -25,18 +25,12 @@ export const RequestMethodSelect = ({ 'aria-label': ariaLabel = `Request method`
       disabled={!isEditor}
       invalid={Boolean(errMessage)}
       error={typeof errMessage === `string` && errMessage}
+      data-fs-element="Check request method select"
     >
       <Controller
         render={({ field }) => {
           const { ref, ...rest } = field;
-          return (
-            <Select
-              {...rest}
-              options={METHOD_OPTIONS}
-              aria-label={ariaLabel}
-              data-fs-element="Check request method select"
-            />
-          );
+          return <Select {...rest} options={METHOD_OPTIONS} aria-label={ariaLabel} />;
         }}
         rules={{ required: true }}
         name={name}

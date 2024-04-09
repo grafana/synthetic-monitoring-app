@@ -29,11 +29,12 @@ export const CheckIpVersion = ({ checkType, name }: CheckIpVersionProps) => {
       description={`The IP protocol of the ${requestMap[checkType]} request`}
       disabled={!isEditor}
       htmlFor={id}
+      data-fs-element="IP version select"
     >
       <Controller
         render={({ field }) => {
           const { ref, ...rest } = field;
-          return <Select {...rest} options={IP_OPTIONS} inputId={id} data-fs-element="IP version select" />;
+          return <Select {...rest} options={IP_OPTIONS} inputId={id} />;
         }}
         name={name}
       />

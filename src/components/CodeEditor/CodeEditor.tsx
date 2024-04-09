@@ -145,7 +145,7 @@ export const CodeEditor = forwardRef(function CodeEditor(
   }, [value, constrainedRanges]);
 
   return (
-    <div>
+    <div data-fs-element="Code editor">
       {renderHeader && renderHeader({ scriptValue: value })}
       {/* {overlayMessage && <Overlay>{overlayMessage}</Overlay>} */}
       <GrafanaCodeEditor
@@ -165,7 +165,6 @@ export const CodeEditor = forwardRef(function CodeEditor(
         onEditorDidMount={handleEditorDidMount}
         readOnly={readOnly}
         containerStyles={containerStyles}
-        data-fs-element="Code editor"
       />
     </div>
   );
