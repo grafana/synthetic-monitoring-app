@@ -253,13 +253,26 @@ steps:
         from_secret: updater-app-installation-id
       github_app_private_key:
         from_secret: updater-app-private-key
+
+image_pull_secrets:
+  - dockerconfigjson
+---
+kind: pipeline
+type: docker
+name: publish-gcom
+
+trigger:
+  event:
+    - tag
+
+steps:
   - name: publish plugin to grafana.com (release)
     image: curlimages/curl:7.73.0
     environment:
       GRAFANA_API_KEY:
         from_secret: signing_token
     commands:
-      - VERSION=`cat plugin_version.txt`
+      - VERSION="${DRONE_TAG#v}"
       # yamllint disable rule:line-length
       - 'curl -f -w "status=%{http_code}" -s -H "Authorization: Bearer $${GRAFANA_API_KEY}" -d "download[any][url]=https://storage.googleapis.com/synthetic-monitoring-app-prod/builds/${VERSION}/grafana-synthetic-monitoring-app-${VERSION}.zip" -d "download[any][md5]=$$(curl -sL https://storage.googleapis.com/synthetic-monitoring-app-prod/builds/${VERSION}/grafana-synthetic-monitoring-app-${VERSION}.zip | md5sum | cut -d'' '' -f1)" -d url=https://github.com/grafana/synthetic-monitoring-app https://grafana.com/api/plugins'
       # yamllint enable rule:line-length
@@ -325,6 +338,6 @@ kind: secret
 name: gcp_key
 ---
 kind: signature
-hmac: 55800bd3d3d3c31267e16171995424bffbe5fcd2f8ad9d5f717539cf71469228
+hmac: 3d98792c760a9b4472bdbe4cde8842c8299332d28553b310d57184c97d3238d1
 
 ...
