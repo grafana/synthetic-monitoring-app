@@ -1,0 +1,142 @@
+import { SelectableValue } from '@grafana/data';
+
+import {
+  CheckFormValuesHttp,
+  CheckType,
+  HeaderMatch,
+  HTTPCheck,
+  HttpRegexValidationFormValue,
+  HttpRegexValidationType,
+  HttpSettings,
+  HttpSettingsFormValues,
+  HttpSslOption,
+  Label,
+} from 'types';
+import {
+  getBaseFormValuesFromCheck,
+  getTlsConfigFormValues,
+  selectableValueFrom,
+} from 'components/CheckEditor/transformations/form.utils';
+import {
+  FALLBACK_CHECK_HTTP,
+  HTTP_COMPRESSION_ALGO_OPTIONS,
+  HTTP_REGEX_VALIDATION_OPTIONS,
+  HTTP_SSL_OPTIONS,
+} from 'components/constants';
+
+export function getHTTPCheckFormValues(check: HTTPCheck): CheckFormValuesHttp {
+  const base = getBaseFormValuesFromCheck(check);
+
+  return {
+    ...base,
+    checkType: CheckType.HTTP,
+    settings: {
+      http: getHttpSettingsForm(check.settings),
+    },
+  };
+}
+
+export function getHttpSettingsForm(settings: HTTPCheck['settings']): HttpSettingsFormValues {
+  const httpSettings = settings.http ?? FALLBACK_CHECK_HTTP.settings.http;
+  const {
+    failIfBodyMatchesRegexp,
+    failIfBodyNotMatchesRegexp,
+    failIfHeaderMatchesRegexp,
+    failIfHeaderNotMatchesRegexp,
+    noFollowRedirects,
+    tlsConfig,
+    compression,
+    ...pickedSettings
+  } = httpSettings;
+
+  const regexValidations = getHttpRegexValidationFormValues({
+    failIfBodyMatchesRegexp,
+    failIfBodyNotMatchesRegexp,
+    failIfHeaderMatchesRegexp,
+    failIfHeaderNotMatchesRegexp,
+  });
+
+  const transformedTlsConfig = getTlsConfigFormValues(tlsConfig);
+
+  return {
+    ...pickedSettings,
+    ...transformedTlsConfig,
+    followRedirects: !noFollowRedirects,
+    sslOptions: getHttpSettingsSslValue(httpSettings.failIfSSL ?? false, httpSettings.failIfNotSSL ?? false),
+    validStatusCodes: httpSettings.validStatusCodes?.map((statusCode) => selectableValueFrom(statusCode)) ?? [],
+    validHTTPVersions: httpSettings.validHTTPVersions?.map((httpVersion) => selectableValueFrom(httpVersion)) ?? [],
+    method: selectableValueFrom(httpSettings.method),
+    ipVersion: selectableValueFrom(httpSettings.ipVersion),
+    headers: headersToLabels(httpSettings.headers || []),
+    proxyConnectHeaders: headersToLabels(httpSettings.proxyConnectHeaders || []),
+    regexValidations,
+    compression: compression ? compression : HTTP_COMPRESSION_ALGO_OPTIONS[0].value,
+  };
+}
+
+const headersToLabels = (headers: string[]): Label[] =>
+  headers.map((header) => {
+    const parts = header.split(':');
+    const value = parts.slice(1).join(':');
+    return {
+      name: parts[0],
+      value: value,
+    };
+  });
+
+type HttpSettingsValidations = Pick<
+  HttpSettings,
+  | 'failIfBodyMatchesRegexp'
+  | 'failIfBodyNotMatchesRegexp'
+  | 'failIfHeaderMatchesRegexp'
+  | 'failIfHeaderNotMatchesRegexp'
+>;
+
+const getHttpRegexValidationFormValues = (
+  validationSettings: HttpSettingsValidations
+): HttpRegexValidationFormValue[] => {
+  const bodyRegexes = new Set(['failIfBodyMatchesRegexp', 'failIfBodyNotMatchesRegexp']);
+  const headerRegexes = new Set(['failIfHeaderMatchesRegexp', 'failIfHeaderNotMatchesRegexp']);
+  const invertedTypes = new Set(['failIfBodyNotMatchesRegexp', 'failIfHeaderNotMatchesRegexp']);
+  return Object.keys(validationSettings).reduce<HttpRegexValidationFormValue[]>((validationFormValues, regexType) => {
+    const validations = validationSettings[regexType as keyof HttpSettingsValidations] ?? [];
+    validations.forEach((validation: string | HeaderMatch) => {
+      if (bodyRegexes.has(regexType)) {
+        validationFormValues.push({
+          matchType: selectableValueFrom(HttpRegexValidationType.Body, HTTP_REGEX_VALIDATION_OPTIONS[1].label),
+          expression: validation as string,
+          inverted: invertedTypes.has(regexType),
+        });
+      } else if (headerRegexes.has(regexType)) {
+        const headerMatch = validation as HeaderMatch;
+        validationFormValues.push({
+          matchType: selectableValueFrom(HttpRegexValidationType.Header, HTTP_REGEX_VALIDATION_OPTIONS[0].label),
+          expression: headerMatch.regexp,
+          header: headerMatch.header,
+          allowMissing: headerMatch.allowMissing,
+          inverted: invertedTypes.has(regexType),
+        });
+      }
+    });
+    return validationFormValues;
+  }, []);
+};
+
+const getHttpSettingsSslValue = (failIfSSL: boolean, failIfNotSSL: boolean): SelectableValue<HttpSslOption> => {
+  if (failIfSSL && !failIfNotSSL) {
+    return (
+      HTTP_SSL_OPTIONS.find((option: SelectableValue<HttpSslOption>) => option.value === HttpSslOption.FailIfPresent) ??
+      HTTP_SSL_OPTIONS[0]
+    );
+  }
+
+  if (!failIfSSL && failIfNotSSL) {
+    return (
+      HTTP_SSL_OPTIONS.find(
+        (option: SelectableValue<HttpSslOption>) => option.value === HttpSslOption.FailIfNotPresent
+      ) ?? HTTP_SSL_OPTIONS[0]
+    );
+  }
+
+  return HTTP_SSL_OPTIONS[0];
+};
