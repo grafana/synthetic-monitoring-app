@@ -103,7 +103,6 @@ describe('new checks', () => {
       basicMetricsOnly: true,
       settings: {
         http: {
-          basicAuth: {},
           method: HttpMethod.GET,
           ipVersion: IpVersion.V4,
           noFollowRedirects: false,
