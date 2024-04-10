@@ -1,5 +1,11 @@
 # Change Log
 
+# [1.13.2](https://github.com/grafana/synthetic-monitoring-app/compare/v1.13.1...v1.13.2) (2024-4-10)
+
+- Fix a bug where basic auth was always being submitted even when empty
+- Fix a few typos in the scripted check form
+- Clean up some old feature flags that were no longer used
+
 # [1.13.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.13.0...v1.13.1) (2024-4-2)
 
 - Fix a bug with empty search state and bulk selection
