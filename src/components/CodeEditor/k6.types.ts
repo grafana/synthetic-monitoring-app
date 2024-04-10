@@ -4,6 +4,7 @@ import k6Crypto from '!raw-loader!@types/k6/crypto.d.ts';
 import k6Data from '!raw-loader!@types/k6/data.d.ts';
 import k6Encoding from '!raw-loader!@types/k6/encoding.d.ts';
 import k6Exec from '!raw-loader!@types/k6/execution.d.ts';
+import k6ExperimentalTracing from '!raw-loader!@types/k6/experimental/tracing.d.ts';
 import k6Html from '!raw-loader!@types/k6/html.d.ts';
 import k6Http from '!raw-loader!@types/k6/http.d.ts';
 import k6Types from '!raw-loader!@types/k6/index.d.ts';
@@ -24,4 +25,5 @@ export default {
   'k6/metrics': k6Metrics,
   'k6/options': k6Options,
   'k6/ws': k6Ws,
+  'k6/experimental/tracing': k6ExperimentalTracing,
 };
