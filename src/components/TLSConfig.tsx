@@ -26,6 +26,7 @@ export const TLSConfig = ({ checkType }: Props) => {
         id="tls-config-skip-validation"
         disabled={!isEditor}
         label="Disable target certificate validation"
+        data-fs-element="Check disable target certificate validation checkbox"
         {...register(`settings.${checkType}.tlsConfig.insecureSkipVerify`)}
       />
       <Field
@@ -44,6 +45,7 @@ export const TLSConfig = ({ checkType }: Props) => {
           type="text"
           placeholder="Server name"
           disabled={!isEditor}
+          data-fs-element="TLS server name input"
         />
       </Field>
       <Container>
@@ -63,6 +65,7 @@ export const TLSConfig = ({ checkType }: Props) => {
             rows={2}
             disabled={!isEditor}
             placeholder="CA certificate"
+            data-fs-element="TLS ca certificate textarea"
           />
         </Field>
       </Container>
@@ -83,6 +86,7 @@ export const TLSConfig = ({ checkType }: Props) => {
             rows={2}
             disabled={!isEditor}
             placeholder="Client certificate"
+            data-fs-element="TLS client certificate textarea"
           />
         </Field>
       </Container>
@@ -104,6 +108,7 @@ export const TLSConfig = ({ checkType }: Props) => {
             rows={2}
             disabled={!isEditor}
             placeholder="Client key"
+            data-fs-element="TLS client key textarea"
           />
         </Field>
       </Container>

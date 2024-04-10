@@ -32,6 +32,7 @@ export const TracerouteMaxUnknownHops = () => {
         min={0}
         type="number"
         disabled={!isEditor}
+        data-fs-element="Max unknown hops input"
       />
     </Field>
   );

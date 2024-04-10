@@ -56,6 +56,7 @@ export const CheckHTTPLayout = () => {
           description="The HTTP headers set for the probe."
           label="Request header"
           name="settings.http.headers"
+          data-fs-element="Request headers"
         />
         <HttpCheckCompressionOption />
         <HttpCheckProxyURL />
@@ -63,6 +64,7 @@ export const CheckHTTPLayout = () => {
           description="The HTTP headers sent to the proxy."
           label="Proxy connect header"
           name="settings.http.proxyConnectHeaders"
+          data-fs-element="Proxy connect headers"
         />
       </FormLayout.Section>
       <FormLayout.Section

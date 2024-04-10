@@ -27,6 +27,7 @@ export const MultiHttpCollapse = forwardRef<HTMLButtonElement, PropsWithChildren
           onToggle();
         }}
         ref={ref}
+        data-fs-element={`Collapse header ${label}`}
         type="button"
       >
         <Icon name={isOpen ? 'angle-down' : 'angle-right'} className={styles.headerIcon} />

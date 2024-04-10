@@ -18,7 +18,13 @@ export const TCPCheckUseTLS = () => {
       disabled={!isEditor}
       htmlFor={id}
     >
-      <Switch {...register('settings.tcp.tls')} title="Use TLS" disabled={!isEditor} id={id} />
+      <Switch
+        {...register('settings.tcp.tls')}
+        title="Use TLS"
+        disabled={!isEditor}
+        id={id}
+        data-fs-element="Use TLS switch"
+      />
     </Field>
   );
 };

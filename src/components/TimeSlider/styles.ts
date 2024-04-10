@@ -74,6 +74,9 @@ export const getStyles = (theme: GrafanaTheme2, hasMarks = false) => {
       width: '100%',
       // gap: theme.spacing(2),
     }),
+    sliderWrapper: css({
+      width: '100%',
+    }),
     sliderInputVertical: css({
       flexDirection: 'column',
       height: '100%',

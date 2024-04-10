@@ -52,7 +52,7 @@ export const SliderInput = ({ min, max, name, step = 1, validate }: SliderInputP
           rules={{ validate: (v) => validate?.(v) }}
           render={({ field }) => {
             const { ref, ...rest } = field;
-            return <TimeSlider {...rest} min={min ?? 0} max={max} step={step} />;
+            return <TimeSlider {...rest} min={min ?? 0} max={max} step={step} analyticsLabel={name} />;
           }}
         />
       </div>

@@ -30,6 +30,7 @@ export const TCPCheckQueryAndResponse = () => {
                 type="text"
                 placeholder="Response to expect"
                 disabled={!isEditor}
+                data-fs-element="TCP query response expect input"
               />
               <TextArea
                 {...register(`settings.tcp.queryResponse.${index}.send` as const)}
@@ -37,6 +38,7 @@ export const TCPCheckQueryAndResponse = () => {
                 placeholder="Data to send"
                 rows={1}
                 disabled={!isEditor}
+                data-fs-element="TCP query response send textarea"
               />
               <div className={styles.stack}>
                 <Field label="StartTLS" htmlFor={startTLSId} className={styles.switchField}>
@@ -45,10 +47,17 @@ export const TCPCheckQueryAndResponse = () => {
                     label="StartTLS"
                     disabled={!isEditor}
                     id={startTLSId}
+                    data-fs-element="TCP start TLS switch"
                   />
                 </Field>
               </div>
-              <IconButton name="minus-circle" onClick={() => remove(index)} disabled={!isEditor} tooltip="Delete" />
+              <IconButton
+                name="minus-circle"
+                onClick={() => remove(index)}
+                disabled={!isEditor}
+                tooltip="Delete"
+                data-fs-element="Delete query and response validation button"
+              />
             </div>
           );
         })}
@@ -58,6 +67,7 @@ export const TCPCheckQueryAndResponse = () => {
             variant="secondary"
             onClick={() => append({ expect: '', send: '', startTLS: false })}
             disabled={!isEditor}
+            data-fs-element="Add query response validation button"
           >
             Add query/response
           </Button>

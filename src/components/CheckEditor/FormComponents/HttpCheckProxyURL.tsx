@@ -18,7 +18,7 @@ export const HttpCheckProxyURL = () => {
       description="HTTP proxy server to use to connect to the target"
       disabled={!isEditor}
     >
-      <Input id={id} {...register('settings.http.proxyURL')} type="text" />
+      <Input id={id} {...register('settings.http.proxyURL')} type="text" data-fs-element="Check proxy URL input" />
     </Field>
   );
 };

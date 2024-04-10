@@ -26,6 +26,7 @@ const QueryParamInput = ({ index, queryParam, onChange, onDelete, onBlur }: Prop
       type="text"
       placeholder="Key"
       value={queryParam.name}
+      data-fs-element="Query param key input"
       onChange={(e: ChangeEvent<HTMLInputElement>) =>
         onChange({
           ...queryParam,
@@ -40,6 +41,7 @@ const QueryParamInput = ({ index, queryParam, onChange, onDelete, onBlur }: Prop
       type="text"
       placeholder="Value"
       value={queryParam.value}
+      data-fs-element="Query param value input"
       onChange={(e: ChangeEvent<HTMLInputElement>) =>
         onChange({
           ...queryParam,
@@ -53,6 +55,7 @@ const QueryParamInput = ({ index, queryParam, onChange, onDelete, onBlur }: Prop
       onClick={onDelete}
       type="button"
       tooltip="Delete"
+      data-fs-element="Query param delete button"
     />
   </>
 );
