@@ -537,7 +537,7 @@ const getHttpSettings = (settings: Partial<HttpSettingsFormValues> | undefined =
   const validationRegexes = getHttpRegexValidationsFromFormValue(settings.regexValidations ?? []);
 
   // We need to pick the sslOptions key out of the settings, since the API doesn't expect this key
-  const { sslOptions, regexValidations, followRedirects, tlsConfig, ...restToKeep } = settings;
+  const { basicAuth, sslOptions, regexValidations, followRedirects, tlsConfig, ...restToKeep } = settings;
 
   const transformedTlsConfig = getTlsConfigFromFormValues(tlsConfig);
 
@@ -546,6 +546,7 @@ const getHttpSettings = (settings: Partial<HttpSettingsFormValues> | undefined =
     ...sslConfig,
     ...validationRegexes,
     ...transformedTlsConfig,
+    basicAuth: isBasicAuthEmpty(basicAuth) ? undefined : basicAuth,
     noFollowRedirects: !followRedirects,
     method,
     headers: formattedHeaders,
@@ -864,3 +865,7 @@ export const getCheckFromFormValues = (formValues: CheckFormValues): Check => {
 
   throw new Error(`Unknown check type: ${formValues.checkType}`);
 };
+
+function isBasicAuthEmpty(basicAuth: HttpSettingsFormValues['basicAuth']) {
+  return !basicAuth?.username && !basicAuth?.password;
+}
