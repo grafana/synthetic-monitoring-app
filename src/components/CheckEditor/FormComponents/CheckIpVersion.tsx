@@ -1,15 +1,15 @@
 import React from 'react';
-import { Controller } from 'react-hook-form';
+import { Controller, FieldPath, useFormContext } from 'react-hook-form';
 import { OrgRole } from '@grafana/data';
 import { Field, Select } from '@grafana/ui';
 
-import { CheckType } from 'types';
+import { CheckFormValues, CheckType } from 'types';
 import { hasRole } from 'utils';
 import { IP_OPTIONS } from 'components/constants';
 
 type CheckIpVersionProps = {
   checkType: CheckType.HTTP | CheckType.PING | CheckType.DNS | CheckType.TCP;
-  name: string;
+  name: FieldPath<CheckFormValues>;
 };
 
 const requestMap = {
@@ -20,6 +20,7 @@ const requestMap = {
 };
 
 export const CheckIpVersion = ({ checkType, name }: CheckIpVersionProps) => {
+  const { control } = useFormContext<CheckFormValues>();
   const isEditor = hasRole(OrgRole.Editor);
   const id = `${checkType}-ip-version`;
 
@@ -31,9 +32,20 @@ export const CheckIpVersion = ({ checkType, name }: CheckIpVersionProps) => {
       htmlFor={id}
     >
       <Controller
+        control={control}
         render={({ field }) => {
-          const { ref, ...rest } = field;
-          return <Select {...rest} options={IP_OPTIONS} inputId={id} />;
+          const { ref, onChange, ...rest } = field;
+          return (
+            <Select
+              {...rest}
+              options={IP_OPTIONS}
+              inputId={id}
+              value={rest.value}
+              onChange={({ value }) => {
+                onChange(value);
+              }}
+            />
+          );
         }}
         name={name}
       />

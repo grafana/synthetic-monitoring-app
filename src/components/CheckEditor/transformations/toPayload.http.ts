@@ -10,9 +10,7 @@ import {
 import {
   getBasePayloadValuesFromForm,
   getTlsConfigFromFormValues,
-  getValueFromSelectable,
-  getValuesFromMultiSelectables,
-} from 'components/CheckEditor/transformations/payload.utils';
+} from 'components/CheckEditor/transformations/toPayload.utils';
 import { FALLBACK_CHECK_HTTP } from 'components/constants';
 
 export function getHTTPPayload(formValues: CheckFormValuesHttp): HTTPCheck {
@@ -31,8 +29,7 @@ function getHttpSettingsPayload(settings: Partial<HttpSettingsFormValues> | unde
   const formattedHeaders = headers?.map((header) => `${header.name}:${header.value}`) ?? [];
   const proxyHeaders = settings.proxyConnectHeaders ?? [];
   const formattedProxyHeaders = proxyHeaders?.map((header) => `${header.name}:${header.value}`) ?? [];
-  const method = getValueFromSelectable(settings?.method) ?? FALLBACK_CHECK_HTTP.settings.http.method;
-  const sslConfig = getHttpSslOptionsFromFormValue(getValueFromSelectable(settings.sslOptions) ?? HttpSslOption.Ignore);
+  const sslConfig = getHttpSslOptionsFromFormValue(settings.sslOptions ?? HttpSslOption.Ignore);
   const compression = settings.compression;
   const validationRegexes = getHttpRegexValidationsFromFormValue(settings.regexValidations ?? []);
 
@@ -46,12 +43,12 @@ function getHttpSettingsPayload(settings: Partial<HttpSettingsFormValues> | unde
     ...validationRegexes,
     ...transformedTlsConfig,
     noFollowRedirects: !followRedirects,
-    method,
+    method: settings?.method ?? FALLBACK_CHECK_HTTP.settings.http.method,
     headers: formattedHeaders,
     proxyConnectHeaders: formattedProxyHeaders,
-    ipVersion: getValueFromSelectable(settings?.ipVersion) ?? FALLBACK_CHECK_HTTP.settings.http.ipVersion,
-    validStatusCodes: getValuesFromMultiSelectables(settings?.validStatusCodes),
-    validHTTPVersions: getValuesFromMultiSelectables(settings?.validHTTPVersions),
+    ipVersion: settings?.ipVersion ?? FALLBACK_CHECK_HTTP.settings.http.ipVersion,
+    validStatusCodes: settings.validStatusCodes,
+    validHTTPVersions: settings?.validHTTPVersions,
     compression,
   });
 }
@@ -90,7 +87,7 @@ type HttpSettingsValidations = Pick<
 const getHttpRegexValidationsFromFormValue = (validations: HttpRegexValidationFormValue[]): HttpSettingsValidations =>
   validations.reduce<HttpSettingsValidations>(
     (results, validation) => {
-      switch (validation.matchType.value) {
+      switch (validation.matchType) {
         case HttpRegexValidationType.Body: {
           if (validation.inverted) {
             results.failIfBodyNotMatchesRegexp?.push(validation.expression);

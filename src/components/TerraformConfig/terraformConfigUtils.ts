@@ -95,8 +95,8 @@ const settingsToTF = (check: Check): TFCheckSettings => {
           fail_if_not_matches_regexp: check.settings.dns.validateAuthorityRRS?.failIfNotMatchesRegexp,
         },
         validate_additional_rrs: {
-          fail_if_matches_regexp: check.settings.dns.validateAditionalRRS?.failIfMatchesRegexp,
-          fail_if_not_matches_regexp: check.settings.dns.validateAditionalRRS?.failIfNotMatchesRegexp,
+          fail_if_matches_regexp: check.settings.dns.validateAdditionalRRS?.failIfMatchesRegexp,
+          fail_if_not_matches_regexp: check.settings.dns.validateAdditionalRRS?.failIfNotMatchesRegexp,
         },
       },
     };

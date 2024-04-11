@@ -1,5 +1,3 @@
-import { SelectableValue } from '@grafana/data';
-
 import {
   CheckFormValuesHttp,
   CheckType,
@@ -15,14 +13,8 @@ import {
 import {
   getBaseFormValuesFromCheck,
   getTlsConfigFormValues,
-  selectableValueFrom,
-} from 'components/CheckEditor/transformations/form.utils';
-import {
-  FALLBACK_CHECK_HTTP,
-  HTTP_COMPRESSION_ALGO_OPTIONS,
-  HTTP_REGEX_VALIDATION_OPTIONS,
-  HTTP_SSL_OPTIONS,
-} from 'components/constants';
+} from 'components/CheckEditor/transformations/toFormValues.utils';
+import { FALLBACK_CHECK_HTTP, HTTP_COMPRESSION_ALGO_OPTIONS } from 'components/constants';
 
 export function getHTTPCheckFormValues(check: HTTPCheck): CheckFormValuesHttp {
   const base = getBaseFormValuesFromCheck(check);
@@ -46,7 +38,7 @@ export function getHttpSettingsForm(settings: HTTPCheck['settings']): HttpSettin
     noFollowRedirects,
     tlsConfig,
     compression,
-    ...pickedSettings
+    ...rest
   } = httpSettings;
 
   const regexValidations = getHttpRegexValidationFormValues({
@@ -59,14 +51,12 @@ export function getHttpSettingsForm(settings: HTTPCheck['settings']): HttpSettin
   const transformedTlsConfig = getTlsConfigFormValues(tlsConfig);
 
   return {
-    ...pickedSettings,
+    ...rest,
     ...transformedTlsConfig,
     followRedirects: !noFollowRedirects,
     sslOptions: getHttpSettingsSslValue(httpSettings.failIfSSL ?? false, httpSettings.failIfNotSSL ?? false),
-    validStatusCodes: httpSettings.validStatusCodes?.map((statusCode) => selectableValueFrom(statusCode)) ?? [],
-    validHTTPVersions: httpSettings.validHTTPVersions?.map((httpVersion) => selectableValueFrom(httpVersion)) ?? [],
-    method: selectableValueFrom(httpSettings.method),
-    ipVersion: selectableValueFrom(httpSettings.ipVersion),
+    validStatusCodes: httpSettings.validStatusCodes ?? [],
+    validHTTPVersions: httpSettings.validHTTPVersions ?? [],
     headers: headersToLabels(httpSettings.headers || []),
     proxyConnectHeaders: headersToLabels(httpSettings.proxyConnectHeaders || []),
     regexValidations,
@@ -103,14 +93,14 @@ const getHttpRegexValidationFormValues = (
     validations.forEach((validation: string | HeaderMatch) => {
       if (bodyRegexes.has(regexType)) {
         validationFormValues.push({
-          matchType: selectableValueFrom(HttpRegexValidationType.Body, HTTP_REGEX_VALIDATION_OPTIONS[1].label),
+          matchType: HttpRegexValidationType.Body,
           expression: validation as string,
           inverted: invertedTypes.has(regexType),
         });
       } else if (headerRegexes.has(regexType)) {
         const headerMatch = validation as HeaderMatch;
         validationFormValues.push({
-          matchType: selectableValueFrom(HttpRegexValidationType.Header, HTTP_REGEX_VALIDATION_OPTIONS[0].label),
+          matchType: HttpRegexValidationType.Header,
           expression: headerMatch.regexp,
           header: headerMatch.header,
           allowMissing: headerMatch.allowMissing,
@@ -122,21 +112,14 @@ const getHttpRegexValidationFormValues = (
   }, []);
 };
 
-const getHttpSettingsSslValue = (failIfSSL: boolean, failIfNotSSL: boolean): SelectableValue<HttpSslOption> => {
+const getHttpSettingsSslValue = (failIfSSL: boolean, failIfNotSSL: boolean): HttpSslOption => {
   if (failIfSSL && !failIfNotSSL) {
-    return (
-      HTTP_SSL_OPTIONS.find((option: SelectableValue<HttpSslOption>) => option.value === HttpSslOption.FailIfPresent) ??
-      HTTP_SSL_OPTIONS[0]
-    );
+    return HttpSslOption.FailIfPresent;
   }
 
   if (!failIfSSL && failIfNotSSL) {
-    return (
-      HTTP_SSL_OPTIONS.find(
-        (option: SelectableValue<HttpSslOption>) => option.value === HttpSslOption.FailIfNotPresent
-      ) ?? HTTP_SSL_OPTIONS[0]
-    );
+    return HttpSslOption.FailIfNotPresent;
   }
 
-  return HTTP_SSL_OPTIONS[0];
+  return HttpSslOption.Ignore;
 };

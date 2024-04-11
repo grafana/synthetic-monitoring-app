@@ -1,5 +1,5 @@
 import { CheckFormValuesTraceroute, CheckType, TracerouteCheck, TracerouteSettingsFormValues } from 'types';
-import { getBaseFormValuesFromCheck } from 'components/CheckEditor/transformations/form.utils';
+import { getBaseFormValuesFromCheck } from 'components/CheckEditor/transformations/toFormValues.utils';
 import { FALLBACK_CHECK_TRACEROUTE } from 'components/constants';
 
 export function getTracerouteCheckFormValues(check: TracerouteCheck): CheckFormValuesTraceroute {

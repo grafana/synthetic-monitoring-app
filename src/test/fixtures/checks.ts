@@ -91,7 +91,7 @@ export const BASIC_DNS_CHECK: DNSCheck = {
       recordType: DnsRecordType.A,
       server: 'dns.google',
       validRCodes: [DnsResponseCodes.NOERROR] as string[],
-      validateAditionalRRS: {
+      validateAdditionalRRS: {
         failIfMatchesRegexp: [],
         failIfNotMatchesRegexp: [],
       } as DNSRRValidator,

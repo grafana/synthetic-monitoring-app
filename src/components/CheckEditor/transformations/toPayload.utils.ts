@@ -1,15 +1,7 @@
-import { SelectableValue } from '@grafana/data';
 import isBase64 from 'is-base64';
 
 import { AlertSensitivity, CheckBase, CheckFormValues, TLSConfig } from 'types';
 import { toBase64 } from 'utils';
-
-export function getValueFromSelectable<T>(selectable: SelectableValue<T> | undefined): T | undefined {
-  if (!selectable?.value) {
-    return undefined;
-  }
-  return selectable.value;
-}
 
 export function getBasePayloadValuesFromForm(formValues: CheckFormValues): CheckBase {
   return {
@@ -24,10 +16,6 @@ export function getBasePayloadValuesFromForm(formValues: CheckFormValues): Check
     target: formValues.target,
     timeout: formValues.timeout * 1000,
   };
-}
-
-export function getValuesFromMultiSelectables<T>(selectables: Array<SelectableValue<T>> | undefined): T[] | undefined {
-  return selectables?.map((selectable) => getValueFromSelectable(selectable)).filter(Boolean) as T[];
 }
 
 export function getTlsConfigFromFormValues(tlsConfig?: TLSConfig) {

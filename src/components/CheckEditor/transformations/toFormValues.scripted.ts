@@ -1,5 +1,5 @@
 import { CheckFormValuesScripted, CheckType, ScriptedCheck } from 'types';
-import { getBaseFormValuesFromCheck } from 'components/CheckEditor/transformations/form.utils';
+import { getBaseFormValuesFromCheck } from 'components/CheckEditor/transformations/toFormValues.utils';
 
 export function getScriptedCheckFormValues(check: ScriptedCheck): CheckFormValuesScripted {
   const base = getBaseFormValuesFromCheck(check);

@@ -1,8 +1,5 @@
 import { CheckFormValuesPing, PingCheck, PingSettings, PingSettingsFormValues } from 'types';
-import {
-  getBasePayloadValuesFromForm,
-  getValueFromSelectable,
-} from 'components/CheckEditor/transformations/payload.utils';
+import { getBasePayloadValuesFromForm } from 'components/CheckEditor/transformations/toPayload.utils';
 import { FALLBACK_CHECK_PING } from 'components/constants';
 
 export function getPingPayload(formValues: CheckFormValuesPing): PingCheck {
@@ -21,6 +18,6 @@ const getPingSettings = (settings: Partial<PingSettingsFormValues> | undefined =
 
   return {
     ...fallbackValues,
-    ipVersion: getValueFromSelectable(settings.ipVersion) ?? fallbackValues.ipVersion,
+    ipVersion: settings.ipVersion ?? fallbackValues.ipVersion,
   };
 };

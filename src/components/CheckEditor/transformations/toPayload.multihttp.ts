@@ -7,10 +7,7 @@ import {
   MultiHttpSettingsFormValues,
 } from 'types';
 import { toBase64 } from 'utils';
-import {
-  getBasePayloadValuesFromForm,
-  getValueFromSelectable,
-} from 'components/CheckEditor/transformations/payload.utils';
+import { getBasePayloadValuesFromForm } from 'components/CheckEditor/transformations/toPayload.utils';
 import { FALLBACK_CHECK_MULTIHTTP } from 'components/constants';
 import { MultiHttpRequestBody } from 'components/MultiHttp/MultiHttpTypes';
 
@@ -44,7 +41,7 @@ const getMultiHttpSettings = (settings?: MultiHttpSettingsFormValues): MultiHttp
         request: {
           ...entry.request,
           body,
-          method: getValueFromSelectable(entry.request.method) ?? HttpMethod.GET,
+          method: entry.request.method ?? HttpMethod.GET,
         },
         variables:
           entry.variables?.map((variable) => {

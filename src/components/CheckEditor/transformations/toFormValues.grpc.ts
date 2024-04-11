@@ -1,5 +1,5 @@
 import { CheckFormValuesGRPC, CheckType, GRPCCheck, GRPCSettingsFormValues } from 'types';
-import { getBaseFormValuesFromCheck } from 'components/CheckEditor/transformations/form.utils';
+import { getBaseFormValuesFromCheck } from 'components/CheckEditor/transformations/toFormValues.utils';
 
 export function getGRPCCheckFormValues(check: GRPCCheck): CheckFormValuesGRPC {
   const base = getBaseFormValuesFromCheck(check);

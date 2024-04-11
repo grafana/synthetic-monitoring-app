@@ -1,5 +1,5 @@
 import { CheckFormValuesGRPC, GRPCCheck } from 'types';
-import { getBasePayloadValuesFromForm } from 'components/CheckEditor/transformations/payload.utils';
+import { getBasePayloadValuesFromForm } from 'components/CheckEditor/transformations/toPayload.utils';
 
 export function getGRPCPayload(formValues: CheckFormValuesGRPC): GRPCCheck {
   const base = getBasePayloadValuesFromForm(formValues);

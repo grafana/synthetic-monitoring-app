@@ -1,6 +1,6 @@
 import { CheckFormValuesPing, CheckType, PingCheck, PingSettingsFormValues } from 'types';
-import { getBaseFormValuesFromCheck } from 'components/CheckEditor/transformations/form.utils';
-import { FALLBACK_CHECK_PING, IP_OPTIONS } from 'components/constants';
+import { getBaseFormValuesFromCheck } from 'components/CheckEditor/transformations/toFormValues.utils';
+import { FALLBACK_CHECK_PING } from 'components/constants';
 
 export function getPingCheckFormValues(check: PingCheck): CheckFormValuesPing {
   const base = getBaseFormValuesFromCheck(check);
@@ -15,10 +15,8 @@ export function getPingCheckFormValues(check: PingCheck): CheckFormValuesPing {
 }
 
 const getPingSettingsFormValues = (settings: PingCheck['settings']): PingSettingsFormValues => {
-  const pingSettings = settings.ping ?? FALLBACK_CHECK_PING.settings.ping;
-
   return {
-    ...pingSettings,
-    ipVersion: IP_OPTIONS.find(({ value }) => value === settings?.ping?.ipVersion) ?? IP_OPTIONS[1],
+    dontFragment: settings.ping.dontFragment ?? FALLBACK_CHECK_PING.settings.ping.dontFragment,
+    ipVersion: settings.ping?.ipVersion ?? FALLBACK_CHECK_PING.settings.ping.ipVersion,
   };
 };

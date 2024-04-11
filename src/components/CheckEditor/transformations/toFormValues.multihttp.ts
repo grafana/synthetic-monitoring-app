@@ -1,11 +1,10 @@
 import { CheckFormValuesMultiHttp, CheckType, MultiHTTPCheck, MultiHttpSettingsFormValues } from 'types';
 import { fromBase64 } from 'utils';
-import { getBaseFormValuesFromCheck } from 'components/CheckEditor/transformations/form.utils';
+import { getBaseFormValuesFromCheck } from 'components/CheckEditor/transformations/toFormValues.utils';
 import {
   ASSERTION_CONDITION_OPTIONS,
   ASSERTION_SUBJECT_OPTIONS,
   FALLBACK_CHECK_MULTIHTTP,
-  METHOD_OPTIONS,
   MULTI_HTTP_ASSERTION_TYPE_OPTIONS,
   MULTI_HTTP_VARIABLE_TYPE_OPTIONS,
 } from 'components/constants';
@@ -36,7 +35,6 @@ const getMultiHttpFormValues = (settings: MultiHTTPCheck['settings']): MultiHttp
                 payload: fromBase64(entry.request.body?.payload ?? ''),
               }
             : undefined,
-          method: METHOD_OPTIONS.find(({ value }) => value === entry.request.method) ?? METHOD_OPTIONS[0],
         },
         variables:
           entry.variables?.map(({ type, name, expression, attribute }) => {

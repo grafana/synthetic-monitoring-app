@@ -3,8 +3,7 @@ import { fromBase64 } from 'utils';
 import {
   getBaseFormValuesFromCheck,
   getTlsConfigFormValues,
-  selectableValueFrom,
-} from 'components/CheckEditor/transformations/form.utils';
+} from 'components/CheckEditor/transformations/toFormValues.utils';
 import { FALLBACK_CHECK_TCP } from 'components/constants';
 
 export function getTCPCheckFormValues(check: TCPCheck): CheckFormValuesTcp {
@@ -27,7 +26,6 @@ const getTcpSettingsFormValues = (settings: TCPCheck['settings']): TcpSettingsFo
   return {
     ...tcpSettings,
     ...tlsConfig,
-    ipVersion: selectableValueFrom(tcpSettings.ipVersion),
     queryResponse: formattedQueryResponse,
   };
 };

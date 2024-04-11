@@ -9,22 +9,22 @@ import {
   isTCPCheck,
   isTracerouteCheck,
 } from 'utils.types';
-import { getDNSCheckFormValues } from 'components/CheckEditor/transformations/form.dns';
-import { getGRPCCheckFormValues } from 'components/CheckEditor/transformations/form.grpc';
-import { getHTTPCheckFormValues } from 'components/CheckEditor/transformations/form.http';
-import { getMultiHTTPCheckFormValues } from 'components/CheckEditor/transformations/form.multihttp';
-import { getPingCheckFormValues } from 'components/CheckEditor/transformations/form.ping';
-import { getScriptedCheckFormValues } from 'components/CheckEditor/transformations/form.scripted';
-import { getTCPCheckFormValues } from 'components/CheckEditor/transformations/form.tcp';
-import { getTracerouteCheckFormValues } from 'components/CheckEditor/transformations/form.traceroute';
-import { getDNSPayload } from 'components/CheckEditor/transformations/payload.dns';
-import { getGRPCPayload } from 'components/CheckEditor/transformations/payload.grpc';
-import { getHTTPPayload } from 'components/CheckEditor/transformations/payload.http';
-import { getMultiHTTPPayload } from 'components/CheckEditor/transformations/payload.multihttp';
-import { getPingPayload } from 'components/CheckEditor/transformations/payload.ping';
-import { getScriptedPayload } from 'components/CheckEditor/transformations/payload.scripted';
-import { getTCPPayload } from 'components/CheckEditor/transformations/payload.tcp';
-import { getTraceroutePayload } from 'components/CheckEditor/transformations/payload.traceroute';
+import { getDNSCheckFormValues } from 'components/CheckEditor/transformations/toFormValues.dns';
+import { getGRPCCheckFormValues } from 'components/CheckEditor/transformations/toFormValues.grpc';
+import { getHTTPCheckFormValues } from 'components/CheckEditor/transformations/toFormValues.http';
+import { getMultiHTTPCheckFormValues } from 'components/CheckEditor/transformations/toFormValues.multihttp';
+import { getPingCheckFormValues } from 'components/CheckEditor/transformations/toFormValues.ping';
+import { getScriptedCheckFormValues } from 'components/CheckEditor/transformations/toFormValues.scripted';
+import { getTCPCheckFormValues } from 'components/CheckEditor/transformations/toFormValues.tcp';
+import { getTracerouteCheckFormValues } from 'components/CheckEditor/transformations/toFormValues.traceroute';
+import { getDNSPayload } from 'components/CheckEditor/transformations/toPayload.dns';
+import { getGRPCPayload } from 'components/CheckEditor/transformations/toPayload.grpc';
+import { getHTTPPayload } from 'components/CheckEditor/transformations/toPayload.http';
+import { getMultiHTTPPayload } from 'components/CheckEditor/transformations/toPayload.multihttp';
+import { getPingPayload } from 'components/CheckEditor/transformations/toPayload.ping';
+import { getScriptedPayload } from 'components/CheckEditor/transformations/toPayload.scripted';
+import { getTCPPayload } from 'components/CheckEditor/transformations/toPayload.tcp';
+import { getTraceroutePayload } from 'components/CheckEditor/transformations/toPayload.traceroute';
 
 // export function getFormValuesFromCheck(check: DNSCheck): CheckFormValuesDns;
 // export function getFormValuesFromCheck(check: GRPCCheck): CheckFormValuesGRPC;
@@ -32,7 +32,7 @@ import { getTraceroutePayload } from 'components/CheckEditor/transformations/pay
 // export function getFormValuesFromCheck(check: PingCheck): CheckFormValuesPing;
 // export function getFormValuesFromCheck(check: TCPCheck): CheckFormValuesTcp;
 // export function getFormValuesFromCheck(check: TracerouteCheck): CheckFormValuesTraceroute;
-export function getFormValuesFromCheck(check: Check, checkType: CheckType): CheckFormValues {
+export function toFormValues(check: Check, checkType: CheckType): CheckFormValues {
   if (isDNSCheck(check)) {
     return getDNSCheckFormValues(check);
   }
@@ -68,7 +68,7 @@ export function getFormValuesFromCheck(check: Check, checkType: CheckType): Chec
   throw new Error(`Unknown check type`);
 }
 
-export const getCheckFromFormValues = (formValues: CheckFormValues): Check => {
+export const toPayload = (formValues: CheckFormValues): Check => {
   if (formValues.checkType === CheckType.DNS) {
     return getDNSPayload(formValues);
   }

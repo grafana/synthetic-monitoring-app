@@ -10,7 +10,6 @@ import {
   AssertionSubjectVariant,
   MultiHttpEntry,
   MultiHttpVariable,
-  RequestMethods,
   RequestProps,
 } from 'components/MultiHttp/MultiHttpTypes';
 
@@ -125,7 +124,7 @@ export enum ResponseMatchType {
 export interface DnsValidationFormValue {
   expression: string;
   inverted: boolean;
-  responseMatch: SelectableValue<ResponseMatchType>;
+  responseMatch: ResponseMatchType;
 }
 
 export interface DnsSettings {
@@ -139,24 +138,11 @@ export interface DnsSettings {
   validRCodes?: string[];
   validateAnswerRRS?: DNSRRValidator;
   validateAuthorityRRS?: DNSRRValidator;
-  validateAditionalRRS?: DNSRRValidator;
+  validateAdditionalRRS?: DNSRRValidator;
 }
 
 export interface DnsSettingsFormValues
-  extends Omit<
-    DnsSettings,
-    | 'ipVersion'
-    | 'protocol'
-    | 'recordType'
-    | 'validRCodes'
-    | 'validateAnswerRRS'
-    | 'validateAuthorityRRS'
-    | 'validateAdditionalRRS'
-  > {
-  ipVersion: SelectableValue<IpVersion>;
-  protocol: SelectableValue<DnsProtocol>;
-  recordType: SelectableValue<DnsRecordType>;
-  validRCodes: Array<SelectableValue<string>>;
+  extends Omit<DnsSettings, 'validateAnswerRRS' | 'validateAuthorityRRS' | 'validateAdditionalRRS'> {
   validations: DnsValidationFormValue[];
 }
 
@@ -173,10 +159,8 @@ export interface TcpSettings {
   queryResponse?: TCPQueryResponse[];
 }
 
-export interface TcpSettingsFormValues extends Omit<TcpSettings, 'ipVersion'> {
-  ipVersion: SelectableValue<IpVersion>;
-}
-// HttpSettings provides the settings for a HTTP check.
+export interface TcpSettingsFormValues extends TcpSettings {}
+
 export interface HttpSettings {
   method: HttpMethod;
   headers?: string[];
@@ -211,7 +195,7 @@ interface HttpHeaderFormValue {
 }
 
 export interface HttpRegexValidationFormValue {
-  matchType: SelectableValue<HttpRegexValidationType>;
+  matchType: HttpRegexValidationType;
   expression: string;
   inverted: boolean;
   header?: string;
@@ -221,10 +205,6 @@ export interface HttpRegexValidationFormValue {
 export interface HttpSettingsFormValues
   extends Omit<
     HttpSettings,
-    | 'validStatusCodes'
-    | 'validHTTPVersions'
-    | 'method'
-    | 'ipVersion'
     | 'headers'
     | 'proxyConnectHeaders'
     | 'failIfSSL'
@@ -236,11 +216,7 @@ export interface HttpSettingsFormValues
     | 'noFollowRedirects'
     | 'compression'
   > {
-  sslOptions: SelectableValue<HttpSslOption>;
-  validStatusCodes: Array<SelectableValue<number>>;
-  validHTTPVersions: Array<SelectableValue<HttpVersion>>;
-  method: SelectableValue<HttpMethod>;
-  ipVersion: SelectableValue<IpVersion>;
+  sslOptions: HttpSslOption;
   headers: HttpHeaderFormValue[];
   proxyConnectHeaders: HttpHeaderFormValue[];
   regexValidations: HttpRegexValidationFormValue[];
@@ -256,13 +232,9 @@ export interface MultiHttpSettingsFormValues {
 }
 
 export interface MultiHttpEntryFormValues extends Omit<MultiHttpEntry, 'request' | 'variables' | 'checks'> {
-  request: MultiHttpRequestFormValues;
+  request: RequestProps;
   variables?: MultiHttpVariablesFormValues[];
   checks?: MultiHttpAssertionFormValues[];
-}
-
-export interface MultiHttpRequestFormValues extends Omit<RequestProps, 'method'> {
-  method: SelectableValue<RequestMethods>;
 }
 
 export interface MultiHttpVariablesFormValues extends Omit<MultiHttpVariable, 'type'> {
@@ -294,9 +266,7 @@ export interface PingSettings {
   dontFragment: boolean;
 }
 
-export interface PingSettingsFormValues extends Omit<PingSettings, 'ipVersion'> {
-  ipVersion: SelectableValue<IpVersion>;
-}
+export interface PingSettingsFormValues extends PingSettings {}
 
 export interface AlertFormValues {
   name: string;

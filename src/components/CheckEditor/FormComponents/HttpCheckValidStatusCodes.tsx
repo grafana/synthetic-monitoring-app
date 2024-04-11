@@ -24,8 +24,16 @@ export const HttpCheckValidStatusCodes = () => {
         control={control}
         name="settings.http.validStatusCodes"
         render={({ field }) => {
-          const { ref, ...rest } = field;
-          return <MultiSelect {...rest} options={validStatusCodes} disabled={!isEditor} inputId={id} />;
+          const { ref, onChange, ...rest } = field;
+          return (
+            <MultiSelect
+              {...rest}
+              options={validStatusCodes}
+              disabled={!isEditor}
+              inputId={id}
+              onChange={(values) => onChange(values.map((v) => v.value))}
+            />
+          );
         }}
       />
     </Field>

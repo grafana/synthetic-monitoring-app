@@ -1,5 +1,5 @@
 import { CheckFormValuesScripted, ScriptedCheck } from 'types';
-import { getBasePayloadValuesFromForm } from 'components/CheckEditor/transformations/payload.utils';
+import { getBasePayloadValuesFromForm } from 'components/CheckEditor/transformations/toPayload.utils';
 
 export function getScriptedPayload(formValues: CheckFormValuesScripted): ScriptedCheck {
   const base = getBasePayloadValuesFromForm(formValues);

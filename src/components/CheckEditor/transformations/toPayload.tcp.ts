@@ -3,8 +3,7 @@ import { toBase64 } from 'utils';
 import {
   getBasePayloadValuesFromForm,
   getTlsConfigFromFormValues,
-  getValueFromSelectable,
-} from 'components/CheckEditor/transformations/payload.utils';
+} from 'components/CheckEditor/transformations/toPayload.utils';
 import { FALLBACK_CHECK_TCP } from 'components/constants';
 
 export function getTCPPayload(formValues: CheckFormValuesTcp): TCPCheck {
@@ -28,7 +27,7 @@ const getTcpSettings = (settings: TcpSettingsFormValues): TcpSettings => {
     ...fallbackValues,
     ...tlsConfig,
     tls: settings.tls,
-    ipVersion: getValueFromSelectable(settings?.ipVersion) ?? fallbackValues.ipVersion,
+    ipVersion: settings.ipVersion ?? fallbackValues.ipVersion,
     queryResponse,
   };
 };

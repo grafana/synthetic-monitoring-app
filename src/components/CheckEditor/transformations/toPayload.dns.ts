@@ -6,11 +6,7 @@ import {
   DnsValidationFormValue,
   ResponseMatchType,
 } from 'types';
-import {
-  getBasePayloadValuesFromForm,
-  getValueFromSelectable,
-  getValuesFromMultiSelectables,
-} from 'components/CheckEditor/transformations/payload.utils';
+import { getBasePayloadValuesFromForm } from 'components/CheckEditor/transformations/toPayload.utils';
 import { FALLBACK_CHECK_DNS } from 'components/constants';
 
 export function getDNSPayload(formValues: CheckFormValuesDns): DNSCheck {
@@ -29,26 +25,26 @@ function getDNSSettingsPayload(settings: DnsSettingsFormValues): DnsSettings {
   const validations = getDnsValidationsFromFormValues(settings.validations);
 
   return {
-    recordType: getValueFromSelectable(settings?.recordType) ?? fallbackValues.recordType,
-    server: settings?.server ?? fallbackValues.server,
-    ipVersion: getValueFromSelectable(settings?.ipVersion) ?? fallbackValues.ipVersion,
-    protocol: getValueFromSelectable(settings?.protocol) ?? fallbackValues.protocol,
-    port: Number(settings?.port) ?? fallbackValues.port,
-    validRCodes: getValuesFromMultiSelectables(settings?.validRCodes) ?? fallbackValues.validRCodes,
+    recordType: settings.recordType ?? fallbackValues.recordType,
+    server: settings.server ?? fallbackValues.server,
+    ipVersion: settings.ipVersion ?? fallbackValues.ipVersion,
+    protocol: settings.protocol ?? fallbackValues.protocol,
+    port: Number(settings.port) ?? fallbackValues.port,
+    validRCodes: settings.validRCodes ?? fallbackValues.validRCodes,
     ...validations,
   };
 }
 
-type DnsValidations = Pick<DnsSettings, 'validateAditionalRRS' | 'validateAnswerRRS' | 'validateAuthorityRRS'>;
+type DnsValidations = Pick<DnsSettings, 'validateAdditionalRRS' | 'validateAnswerRRS' | 'validateAuthorityRRS'>;
 
 const getDnsValidationsFromFormValues = (validations: DnsValidationFormValue[]): DnsValidations =>
   validations.reduce<DnsValidations>(
     (acc, validation) => {
       const destinationName = validation.inverted ? 'failIfNotMatchesRegexp' : 'failIfMatchesRegexp';
-      const responseMatch = getValueFromSelectable(validation.responseMatch);
-      switch (responseMatch) {
+
+      switch (validation.responseMatch) {
         case ResponseMatchType.Additional:
-          acc.validateAditionalRRS![destinationName].push(validation.expression);
+          acc.validateAdditionalRRS![destinationName].push(validation.expression);
           break;
         case ResponseMatchType.Answer:
           acc.validateAnswerRRS![destinationName].push(validation.expression);
@@ -68,7 +64,7 @@ const getDnsValidationsFromFormValues = (validations: DnsValidationFormValue[]):
         failIfMatchesRegexp: [],
         failIfNotMatchesRegexp: [],
       },
-      validateAditionalRRS: {
+      validateAdditionalRRS: {
         failIfMatchesRegexp: [],
         failIfNotMatchesRegexp: [],
       },
