@@ -4,7 +4,18 @@ import { DataSourceRef, ThresholdsMode } from '@grafana/schema';
 import { UPTIME_DESCRIPTION } from 'components/constants';
 import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
+function getMinStep(minStep: string) {
+  try {
+    const minStepParsed = parseInt(minStep[0], 10);
+    return `${Math.max(minStepParsed, 5)}m`;
+  } catch (e) {
+    return minStep;
+  }
+}
+
 function getQueryRunner(metrics: DataSourceRef, minStep: string) {
+  // The min step for most queries is a minimum of 1 minute. For uptime, however, we want to make sure we have steps of at least 5 minutes in order for the math to work out.
+  const uptimeMinStep = getMinStep(minStep);
   const runner = new SceneQueryRunner({
     datasource: metrics,
     queries: [
@@ -22,7 +33,7 @@ function getQueryRunner(metrics: DataSourceRef, minStep: string) {
         )`,
         hide: false,
         instant: false,
-        interval: minStep,
+        interval: uptimeMinStep,
         legendFormat: '',
         range: true,
         refId: 'B',
