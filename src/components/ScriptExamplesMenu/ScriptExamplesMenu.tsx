@@ -25,7 +25,7 @@ export const ScriptExamplesMenu = ({ onSelectExample }: ScriptExamplesMenuProps)
         </Menu>
       }
     >
-      <Button type="button" variant="secondary" icon="angle-down" fill="text">
+      <Button type="button" variant="secondary" icon="angle-down" fill="text" data-fs-element="Script examples button">
         Script Examples
       </Button>
     </Dropdown>

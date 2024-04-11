@@ -22,6 +22,7 @@ export const HttpCheckCacheBuster = () => {
         {...register('settings.http.cacheBustingQueryParamName')}
         placeholder="cache-bust"
         disabled={!isEditor}
+        data-fs-element="Cache busting query parameter name input"
       />
     </Field>
   );

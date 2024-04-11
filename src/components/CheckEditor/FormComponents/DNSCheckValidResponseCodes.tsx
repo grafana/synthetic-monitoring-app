@@ -13,7 +13,13 @@ export const DNSCheckValidResponseCodes = () => {
   const id = 'validStatusCodes';
 
   return (
-    <Field htmlFor={id} label="Valid response codes" description="List of valid response codes" disabled={!isEditor}>
+    <Field
+      htmlFor={id}
+      label="Valid response codes"
+      description="List of valid response codes"
+      disabled={!isEditor}
+      data-fs-element="Valid response code select"
+    >
       <Controller
         control={control}
         name="settings.dns.validRCodes"

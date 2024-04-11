@@ -30,7 +30,13 @@ export const HttpCheckBasicAuthorization = () => {
           invalid={Boolean(formState.errors.settings?.http?.basicAuth?.username)}
           error={formState.errors.settings?.http?.basicAuth?.username?.message}
         >
-          <Input {...register('settings.http.basicAuth.username')} id={userNameId} type="text" disabled={!isEditor} />
+          <Input
+            {...register('settings.http.basicAuth.username')}
+            id={userNameId}
+            type="text"
+            disabled={!isEditor}
+            data-fs-element="Basic auth username input"
+          />
         </Field>
         <Field
           htmlFor={passwordId}
@@ -39,7 +45,13 @@ export const HttpCheckBasicAuthorization = () => {
           invalid={Boolean(formState.errors.settings?.http?.basicAuth?.password)}
           error={formState.errors.settings?.http?.basicAuth?.password?.message}
         >
-          <Input {...register('settings.http.basicAuth.password')} id={passwordId} type="text" disabled={!isEditor} />
+          <Input
+            {...register('settings.http.basicAuth.password')}
+            id={passwordId}
+            type="text"
+            disabled={!isEditor}
+            data-fs-element="Basic auth password input"
+          />
         </Field>
       </div>
     </OptionalInput>

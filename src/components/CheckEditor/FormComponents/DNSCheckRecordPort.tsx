@@ -13,7 +13,13 @@ export const DNSCheckRecordPort = () => {
 
   return (
     <Field label="Server" disabled={!isEditor} htmlFor={id}>
-      <Input id="dns-settings-port" {...register('settings.dns.port')} type="number" placeholder="port" />
+      <Input
+        id="dns-settings-port"
+        {...register('settings.dns.port')}
+        type="number"
+        placeholder="port"
+        data-fs-element="DNS port input"
+      />
     </Field>
   );
 };

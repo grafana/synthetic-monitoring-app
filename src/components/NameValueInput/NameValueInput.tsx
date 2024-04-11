@@ -16,6 +16,7 @@ interface Props {
   label: string;
   validateName?: (name: string) => string | undefined;
   validateValue?: (value: string) => string | undefined;
+  'data-fs-element'?: string;
 }
 
 function getErrors(errors: FieldErrorsImpl<CheckFormValues | Probe>, name: NameValueName) {
@@ -41,6 +42,7 @@ export const NameValueInput = ({
   label,
   validateName,
   validateValue,
+  ...rest
 }: Props) => {
   const {
     register,
@@ -72,6 +74,7 @@ export const NameValueInput = ({
               type="text"
               placeholder="name"
               disabled={disabled}
+              data-fs-element={`${rest['data-fs-element']}-name-${index}`}
             />
           </Field>
           <Field
@@ -86,6 +89,7 @@ export const NameValueInput = ({
               {...register(`${name}.${index}.value`, { required: true, validate: validateValue })}
               aria-label={`${label} ${index + 1} value ${ariaLabelSuffix}`}
               data-testid={`${label}-value-${index}`}
+              data-fs-element={`${rest['data-fs-element']}-value-${index}`}
               type="text"
               placeholder="value"
               disabled={disabled}
@@ -97,6 +101,7 @@ export const NameValueInput = ({
             `}
             name="minus-circle"
             type="button"
+            data-fs-element={`${rest['data-fs-element']}-delete-${index}`}
             onClick={() => {
               remove(index);
               requestAnimationFrame(() => {
@@ -116,6 +121,7 @@ export const NameValueInput = ({
           size="sm"
           type="button"
           ref={addRef}
+          data-fs-element={`${rest['data-fs-element']}-add`}
         >
           <Icon name="plus" />
           &nbsp; Add {label.toLocaleLowerCase()}

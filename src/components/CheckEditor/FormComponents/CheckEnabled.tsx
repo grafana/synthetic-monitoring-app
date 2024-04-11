@@ -13,6 +13,7 @@ export const CheckEnabled = () => {
   return (
     <HorizontalCheckboxField
       disabled={!isEditor}
+      data-fs-element="Check enabled checkbox"
       id="check-form-enabled"
       label="Enabled"
       description="If a check is enabled, metrics and logs are published to your Grafana Cloud stack."

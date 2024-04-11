@@ -18,6 +18,7 @@ export const HttpCheckSSLOptions = () => {
       description="Choose whether probe fails if SSL is present or not present"
       disabled={!isEditor}
       htmlFor={id}
+      data-fs-element="SSL options select"
     >
       <Controller<CheckFormValuesHttp>
         name="settings.http.sslOptions"

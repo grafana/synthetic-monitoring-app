@@ -25,6 +25,7 @@ export const RequestMethodSelect = ({ 'aria-label': ariaLabel = `Request method`
       disabled={!isEditor}
       invalid={Boolean(errMessage)}
       error={typeof errMessage === `string` && errMessage}
+      data-fs-element="Check request method select"
     >
       <Controller
         control={control}

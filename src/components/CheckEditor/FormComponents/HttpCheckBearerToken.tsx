@@ -28,6 +28,7 @@ export const HttpCheckBearerToken = () => {
           type="password"
           placeholder="Bearer token"
           disabled={!isEditor}
+          data-fs-element="Bearer token input"
         />
       </Field>
     </OptionalInput>

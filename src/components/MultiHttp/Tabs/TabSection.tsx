@@ -55,6 +55,7 @@ export const TabSection = ({ activeTab, index, onTabClick }: RequestTabsProps) =
           className={styles.tabs}
           counter={headers?.length ?? 0}
           suffix={tabErrorMap(formState.errors, index, MultiHttpFormTabs.Headers) ? TabErrorWarning : undefined}
+          data-fs-element="Headers tab"
         />
 
         <Tab
@@ -66,6 +67,7 @@ export const TabSection = ({ activeTab, index, onTabClick }: RequestTabsProps) =
           className={styles.tabs}
           counter={queryParams?.length ?? 0}
           suffix={tabErrorMap(formState.errors, index, MultiHttpFormTabs.QueryParams) ? TabErrorWarning : undefined}
+          data-fs-element="Query params tab"
         />
         <Tab
           label={'Assertions'}
@@ -76,6 +78,7 @@ export const TabSection = ({ activeTab, index, onTabClick }: RequestTabsProps) =
           className={styles.tabs}
           counter={assertions?.length ?? 0}
           suffix={tabErrorMap(formState.errors, index, MultiHttpFormTabs.Assertions) ? TabErrorWarning : undefined}
+          data-fs-element="Assertions tab"
         />
         <Tab
           label="Variables"
@@ -86,6 +89,7 @@ export const TabSection = ({ activeTab, index, onTabClick }: RequestTabsProps) =
           className={styles.tabs}
           counter={variables?.length ?? 0}
           suffix={tabErrorMap(formState.errors, index, MultiHttpFormTabs.Variables) ? TabErrorWarning : undefined}
+          data-fs-element="Variables tab"
         />
         {!isBodyDisabled && (
           <Tab
@@ -97,6 +101,7 @@ export const TabSection = ({ activeTab, index, onTabClick }: RequestTabsProps) =
               onTabClick(MultiHttpFormTabs.Body);
             }}
             suffix={tabErrorMap(formState.errors, index, MultiHttpFormTabs.Body) ? TabErrorWarning : undefined}
+            data-fs-element="Body tab"
           />
         )}
       </TabsBar>

@@ -19,6 +19,7 @@ export const HttpCheckValidStatusCodes = () => {
       label="Valid status codes"
       description="Accepted status codes for this probe. Defaults to 2xx."
       disabled={!isEditor}
+      data-fs-element="Valid status codes select"
     >
       <Controller
         control={control}

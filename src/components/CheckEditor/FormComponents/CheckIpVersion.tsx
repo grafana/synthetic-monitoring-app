@@ -30,6 +30,7 @@ export const CheckIpVersion = ({ checkType, name }: CheckIpVersionProps) => {
       description={`The IP protocol of the ${requestMap[checkType]} request`}
       disabled={!isEditor}
       htmlFor={id}
+      data-fs-element="IP version select"
     >
       <Controller
         control={control}

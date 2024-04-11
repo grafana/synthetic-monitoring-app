@@ -33,7 +33,7 @@ export const CheckFormAlert = () => {
         </p>
         <p>Tip: adding multiple probes can help to prevent alert flapping for less frequent checks</p>
       </div>
-      <Field label="Select alert sensitivity">
+      <Field label="Select alert sensitivity" data-fs-element="Alert sensitivity select">
         <Controller
           control={control}
           name="alertSensitivity"

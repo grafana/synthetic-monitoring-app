@@ -17,6 +17,7 @@ export const TraceroutePTRLookup = () => {
       description="Reverse lookup hostnames from IP addresses"
       disabled={!isEditor}
       {...register('settings.traceroute.ptrLookup')}
+      data-fs-element="PTR lookup checkbox"
     />
   );
 };

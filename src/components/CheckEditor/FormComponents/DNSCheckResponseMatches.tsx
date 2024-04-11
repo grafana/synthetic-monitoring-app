@@ -28,24 +28,30 @@ export const DNSCheckResponseMatches = () => {
 
             return (
               <Fragment key={field.id}>
-                <Controller
-                  name={`settings.dns.validations.${index}.responseMatch`}
-                  rules={{ required: true }}
-                  render={({ field }) => {
-                    const { ref, onChange, ...rest } = field;
-                    return (
-                      <Select
-                        {...rest}
-                        value={field.value}
-                        aria-label={`DNS Response Match ${userIndex}`}
-                        options={DNS_RESPONSE_MATCH_OPTIONS}
-                        invalid={Boolean(formState.errors.settings?.dns?.validations?.[index]?.responseMatch)}
-                        onChange={({ value }) => onChange(value)}
-                      />
-                    );
-                  }}
+                <div data-fs-element="DNS Response Match select">
+                  <Controller
+                    name={`settings.dns.validations.${index}.responseMatch`}
+                    rules={{ required: true }}
+                    render={({ field }) => {
+                      const { ref, onChange, ...rest } = field;
+                      return (
+                        <Select
+                          {...rest}
+                          value={field.value}
+                          aria-label={`DNS Response Match ${userIndex}`}
+                          options={DNS_RESPONSE_MATCH_OPTIONS}
+                          invalid={Boolean(formState.errors.settings?.dns?.validations?.[index]?.responseMatch)}
+                          onChange={({ value }) => onChange(value)}
+                        />
+                      );
+                    }}
+                  />
+                </div>
+                <Input
+                  {...register(`settings.dns.validations.${index}.expression`)}
+                  placeholder="Type expression"
+                  data-fs-element="DNS Response Match expression"
                 />
-                <Input {...register(`settings.dns.validations.${index}.expression`)} placeholder="Type expression" />
                 <div
                   className={css`
                     position: relative;
@@ -55,9 +61,15 @@ export const DNSCheckResponseMatches = () => {
                   <Checkbox
                     {...register(`settings.dns.validations.${index}.inverted`)}
                     aria-label={`Invert match for regex ${userIndex}`}
+                    data-fs-element="DNS Response Match invert"
                   />
                 </div>
-                <IconButton name="minus-circle" onClick={() => remove(index)} tooltip="Delete" />
+                <IconButton
+                  name="minus-circle"
+                  onClick={() => remove(index)}
+                  tooltip="Delete"
+                  data-fs-element="Delete DNS response match button"
+                />
               </Fragment>
             );
           })}
@@ -71,6 +83,7 @@ export const DNSCheckResponseMatches = () => {
           size="sm"
           disabled={!isEditor}
           onClick={() => append({ responseMatch: ResponseMatchType.Authority, expression: '', inverted: false })}
+          data-fs-element="Add DNS response match button"
         >
           Add Regex Validation
         </Button>

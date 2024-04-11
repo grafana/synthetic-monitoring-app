@@ -18,6 +18,7 @@ export interface SliderProps {
   onAfterChange?: (value?: number) => void;
   formatTooltipResult?: (value: number) => number;
   ariaLabelForHandle?: string;
+  analyticsLabel?: string;
 }
 
 export function TimeSlider({
@@ -29,6 +30,7 @@ export function TimeSlider({
   value,
   ariaLabelForHandle,
   included,
+  analyticsLabel,
 }: SliderProps) {
   const minutesId = useId();
   const secondsId = useId();
@@ -121,17 +123,18 @@ export function TimeSlider({
   return (
     <div className={cx(styles.container, styles.slider)}>
       <div className={cx(styles.sliderInput)}>
-        <SliderWithTooltip
-          min={min}
-          max={max}
-          step={step}
-          value={sliderValue}
-          onChange={onSliderChange}
-          onChangeComplete={handleChangeComplete}
-          ariaLabelForHandle={ariaLabelForHandle}
-          included={included}
-        />
-
+        <div data-fs-element={`${analyticsLabel} slider`} className={styles.sliderWrapper}>
+          <SliderWithTooltip
+            min={min}
+            max={max}
+            step={step}
+            value={sliderValue}
+            onChange={onSliderChange}
+            onChangeComplete={handleChangeComplete}
+            ariaLabelForHandle={ariaLabelForHandle}
+            included={included}
+          />
+        </div>
         <Input
           type="text"
           className={cx(styles.sliderInputField)}
@@ -139,6 +142,7 @@ export function TimeSlider({
           onChange={onMinutesInputChange}
           onBlur={onMinutesInputBlur}
           id={minutesId}
+          data-fs-element={`${analyticsLabel} minutes input`}
         />
         <label htmlFor={minutesId}>minutes</label>
 
@@ -149,6 +153,7 @@ export function TimeSlider({
           onChange={onSecondsInputChange}
           onBlur={onSecondsInputBlur}
           id={secondsId}
+          data-fs-element={`${analyticsLabel} seconds input`}
         />
         <label htmlFor={secondsId}>seconds</label>
       </div>

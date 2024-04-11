@@ -18,7 +18,12 @@ export const PingCheckFragment = () => {
       disabled={!isEditor}
       htmlFor={id}
     >
-      <Switch id={id} {...register('settings.ping.dontFragment')} disabled={!isEditor} />
+      <Switch
+        id={id}
+        {...register('settings.ping.dontFragment')}
+        disabled={!isEditor}
+        data-fs-element="Do not fragment switch"
+      />
     </Field>
   );
 };
