@@ -147,6 +147,7 @@ const CheckFormContent = ({ check, checkType, overCheckLimit, overScriptedLimit 
               <Button
                 type="submit"
                 disabled={overScriptedLimit || overCheckLimit || formMethods.formState.isSubmitting || submitting}
+                data-fs-element="Save check button"
               >
                 Save
               </Button>
@@ -154,6 +155,7 @@ const CheckFormContent = ({ check, checkType, overCheckLimit, overScriptedLimit 
                 <Button
                   disabled={isPending}
                   type="submit"
+                  data-fs-element="Test check button"
                   variant="secondary"
                   icon={isPending ? `fa fa-spinner` : undefined}
                   ref={testRef}
@@ -164,6 +166,7 @@ const CheckFormContent = ({ check, checkType, overCheckLimit, overScriptedLimit 
               {check?.id && (
                 <Button
                   variant="destructive"
+                  data-fs-element="Delete check button"
                   onClick={() => setShowDeleteModal(true)}
                   disabled={!isEditor}
                   type="button"
@@ -172,7 +175,12 @@ const CheckFormContent = ({ check, checkType, overCheckLimit, overScriptedLimit 
                 </Button>
               )}
 
-              <LinkButton href={getRoute(ROUTES.Checks)} fill="text" variant="secondary">
+              <LinkButton
+                href={getRoute(ROUTES.Checks)}
+                fill="text"
+                variant="secondary"
+                data-fs-element="Cancel check button"
+              >
                 Cancel
               </LinkButton>
             </HorizontalGroup>

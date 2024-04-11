@@ -62,6 +62,7 @@ export const LabelField = <T extends FormWithLabels>({ labelDestination }: Label
             limit={limit}
             validateName={(labelName) => validateLabelName(labelName, labels)}
             validateValue={validateLabelValue}
+            data-fs-element="Labels input"
           />
         </>
       )}

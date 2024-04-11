@@ -42,7 +42,14 @@ export function AvailableVariables({ index }: Props) {
         {availableVars.map((variable, i) => {
           const variableText = '${' + variable.name + '}';
           return (
-            <ClipboardButton key={i} getText={() => variableText} variant="secondary" fill="outline" icon="copy">
+            <ClipboardButton
+              key={i}
+              getText={() => variableText}
+              variant="secondary"
+              fill="outline"
+              icon="copy"
+              data-fs-element="Copy variable to clipboard button"
+            >
               {variableText}
             </ClipboardButton>
           );

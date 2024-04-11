@@ -25,6 +25,7 @@ export const ProbeList = ({ 'data-testid': dataTestId, probes, title, emptyText 
       data-testid={dataTestId}
       isOpen
       label={<h2 className={styles.heading}>{title}</h2>}
+      data-fs-element={`Probe section ${title}`}
     >
       {probes.length ? (
         probes.map((probe) => {

@@ -58,6 +58,7 @@ export const RequestTargetInput = ({
               id={id}
               data-testid={dataTestId}
               placeholder={targetHelp?.example}
+              data-fs-element="Target input"
               {...field}
             />
           </Field>

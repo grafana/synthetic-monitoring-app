@@ -16,6 +16,7 @@ export const HttpCheckCompressionOption = () => {
       description="The compression algorithm to expect in the response body"
       disabled={!isEditor}
       htmlFor={compressionId}
+      data-fs-element="Check compression select"
     >
       <Controller
         name="settings.http.compression"

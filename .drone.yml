@@ -253,28 +253,9 @@ steps:
         from_secret: updater-app-installation-id
       github_app_private_key:
         from_secret: updater-app-private-key
-  - name: publish-to-gcom
-    image: grafana/integration-grafana-publisher:latest
-    commands:
-      - echo "start publish to GCOM"
-      - if [ -z "$GCOM_PUBLISH_TOKEN" ]; then echo "Missing GCOM Publish Key"; exit -1; fi
-      - if [ -z "$GITHUB_TOKEN" ]; then echo "Missing GITHUB_TOKEN"; exit -1; fi
-      - if [ -z "$GCLOUD_SERVICE_KEY" ]; then echo "Missing GCLOUD_SERVICE_KEY"; exit -1; fi
-      - printenv GCLOUD_SERVICE_KEY > /tmp/gcpkey.json
-      - gcloud auth activate-service-account --key-file=/tmp/gcpkey.json
-      - VERSION=`cat plugin_version.txt`
-      - /root/app/bin/grafana-publisher.js --auto publishremote grafana-synthetic-monitoring-app $VERSION synthetic-monitoring-app
-    environment:
-      GCLOUD_SERVICE_KEY:
-        from_secret: gcp_key
-      GCOM_PUBLISH_TOKEN:
-        from_secret: signing_token
-      GITHUB_TOKEN:
-        from_secret: updater-app-private-key
 
 image_pull_secrets:
   - dockerconfigjson
-# Import secrets from Vault
 ---
 kind: pipeline
 type: docker
@@ -282,29 +263,19 @@ name: publish-gcom
 
 trigger:
   event:
-    - promote
-  target:
-    - dryrun
+    - tag
+
 steps:
-  - name: publish-to-gcom
-    image: grafana/integration-grafana-publisher:latest
-    commands:
-      - echo "start publish to GCOM"
-      - if [ -z "$GCOM_PUBLISH_TOKEN" ]; then echo "Missing GCOM Publish Key"; exit -1; fi
-      - if [ -z "$GITHUB_TOKEN" ]; then echo "Missing GITHUB_TOKEN"; exit -1; fi
-      - if [ -z "$GCLOUD_SERVICE_KEY" ]; then echo "Missing GCLOUD_SERVICE_KEY"; exit -1; fi
-      - printenv GCLOUD_SERVICE_KEY > /tmp/gcpkey.json
-      - gcloud auth activate-service-account --key-file=/tmp/gcpkey.json
-      # - PLUGIN_NAME="grafana-synthetic-monitoring-app"
-      - VERSION=${DRONE_TAG}
-      - /root/app/bin/grafana-publisher.js -d --auto publishremote grafana-synthetic-monitoring-app $VERSION synthetic-monitoring-app
+  - name: publish plugin to grafana.com (release)
+    image: curlimages/curl:7.73.0
     environment:
-      GCLOUD_SERVICE_KEY:
-        from_secret: gcp_key
-      GCOM_PUBLISH_TOKEN:
-        from_secret: gcom_token
-      GITHUB_TOKEN:
-        from_secret: github_token
+      GRAFANA_API_KEY:
+        from_secret: signing_token
+    commands:
+      - VERSION="${DRONE_TAG#v}"
+      # yamllint disable rule:line-length
+      - 'curl -f -w "status=%{http_code}" -s -H "Authorization: Bearer $${GRAFANA_API_KEY}" -d "download[any][url]=https://storage.googleapis.com/synthetic-monitoring-app-prod/builds/${VERSION}/grafana-synthetic-monitoring-app-${VERSION}.zip" -d "download[any][md5]=$$(curl -sL https://storage.googleapis.com/synthetic-monitoring-app-prod/builds/${VERSION}/grafana-synthetic-monitoring-app-${VERSION}.zip | md5sum | cut -d'' '' -f1)" -d url=https://github.com/grafana/synthetic-monitoring-app https://grafana.com/api/plugins'
+      # yamllint enable rule:line-length
 
 image_pull_secrets:
   - dockerconfigjson
@@ -367,6 +338,6 @@ kind: secret
 name: gcp_key
 ---
 kind: signature
-hmac: 83521e356bcf69b0abffe20b5641b6fda5dc729a661bd6ff8c78b7f6c775ecb8
+hmac: 3d98792c760a9b4472bdbe4cde8842c8299332d28553b310d57184c97d3238d1
 
 ...

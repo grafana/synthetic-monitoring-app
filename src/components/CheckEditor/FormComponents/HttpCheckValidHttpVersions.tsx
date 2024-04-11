@@ -32,6 +32,7 @@ export const HttpCheckValidHttpVersions = () => {
       description="Accepted HTTP versions for this probe"
       disabled={!isEditor}
       htmlFor={id}
+      data-fs-element="Valid http versions select"
     >
       <Controller
         control={control}
