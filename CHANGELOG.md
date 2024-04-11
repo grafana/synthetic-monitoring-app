@@ -1,5 +1,9 @@
 # Change Log
 
+# [1.13.3](https://github.com/grafana/synthetic-monitoring-app/compare/v1.13.2...v1.13.3) (2024-4-11)
+
+- Fix a bug where the min step in dashboard queries was defaulting to 5 minutes unnecessarily
+
 # [1.13.2](https://github.com/grafana/synthetic-monitoring-app/compare/v1.13.1...v1.13.2) (2024-4-10)
 
 - Fix a bug where basic auth was always being submitted even when empty
