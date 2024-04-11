@@ -274,7 +274,7 @@ steps:
     commands:
       - VERSION="${DRONE_TAG#v}"
       # yamllint disable rule:line-length
-      - 'curl -f -w "status=%{http_code}" -s -H "Authorization: Bearer $${GRAFANA_API_KEY}" -d "download[any][url]=https://storage.googleapis.com/synthetic-monitoring-app-prod/builds/${VERSION}/grafana-synthetic-monitoring-app-${VERSION}.zip" -d "download[any][md5]=$$(curl -sL https://storage.googleapis.com/synthetic-monitoring-app-prod/builds/${VERSION}/grafana-synthetic-monitoring-app-${VERSION}.zip | md5sum | cut -d'' '' -f1)" -d url=https://github.com/grafana/synthetic-monitoring-app https://grafana.com/api/plugins'
+      - 'curl -f -w "status=%{http_code}" -s -H "Authorization: Bearer $${GRAFANA_API_KEY}" -d "download[any][url]=https://storage.googleapis.com/synthetic-monitoring-app-prod/builds/${VERSION}/grafana-synthetic-monitoring-app-${VERSION}.zip" -d "download[any][md5]=$$(curl -sL https://storage.googleapis.com/synthetic-monitoring-app-prod/builds/${VERSION}/grafana-synthetic-monitoring-app-${VERSION}.zip | md5sum)" -d url=https://github.com/grafana/synthetic-monitoring-app https://grafana.com/api/plugins'
       # yamllint enable rule:line-length
 
 image_pull_secrets:
@@ -338,6 +338,6 @@ kind: secret
 name: gcp_key
 ---
 kind: signature
-hmac: 3d98792c760a9b4472bdbe4cde8842c8299332d28553b310d57184c97d3238d1
+hmac: 37cca11c3ec114f5250c01ab42e80e5143f65e870808b11769a6ee1b7db035c7
 
 ...
