@@ -1,6 +1,5 @@
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
-import { SelectableValue } from '@grafana/data';
 import { Icon, Tab, TabsBar, useStyles2, useTheme2 } from '@grafana/ui';
 
 import { CheckFormValuesMultiHttp, HttpMethod } from 'types';
@@ -21,8 +20,8 @@ function TabErrorWarning() {
   return <Icon name="exclamation-triangle" style={{ color: theme.colors.error.text, marginLeft: theme.spacing(1) }} />;
 }
 
-export function getIsBodyDisabled(method: SelectableValue<RequestMethods>) {
-  switch (method?.value) {
+export function getIsBodyDisabled(method: RequestMethods) {
+  switch (method) {
     case HttpMethod.POST:
     case HttpMethod.PUT:
     case HttpMethod.PATCH:

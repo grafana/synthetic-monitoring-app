@@ -38,9 +38,17 @@ export const HttpCheckValidHttpVersions = () => {
         control={control}
         name="settings.http.validHTTPVersions"
         render={({ field }) => {
-          const { ref, ...rest } = field;
+          const { ref, onChange, ...rest } = field;
 
-          return <MultiSelect {...rest} options={httpVersionOptions} disabled={!isEditor} inputId={id} />;
+          return (
+            <MultiSelect
+              {...rest}
+              options={httpVersionOptions}
+              disabled={!isEditor}
+              inputId={id}
+              onChange={(values) => onChange(values.map((v) => v.value))}
+            />
+          );
         }}
       />
     </Field>

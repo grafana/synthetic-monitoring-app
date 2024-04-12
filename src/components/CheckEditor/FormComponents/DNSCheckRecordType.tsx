@@ -18,8 +18,8 @@ export const DNSCheckRecordType = () => {
         control={control}
         name="settings.dns.recordType"
         render={({ field }) => {
-          const { ref, ...rest } = field;
-          return <Select {...rest} options={DNS_RECORD_TYPES} inputId={id} />;
+          const { ref, onChange, ...rest } = field;
+          return <Select {...rest} options={DNS_RECORD_TYPES} inputId={id} onChange={({ value }) => onChange(value)} />;
         }}
       />
     </Field>

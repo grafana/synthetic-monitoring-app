@@ -24,8 +24,16 @@ export const DNSCheckValidResponseCodes = () => {
         control={control}
         name="settings.dns.validRCodes"
         render={({ field }) => {
-          const { ref, ...rest } = field;
-          return <MultiSelect {...rest} options={DNS_RESPONSE_CODES} disabled={!isEditor} inputId={id} />;
+          const { ref, onChange, ...rest } = field;
+          return (
+            <MultiSelect
+              {...rest}
+              options={DNS_RESPONSE_CODES}
+              disabled={!isEditor}
+              inputId={id}
+              onChange={(values) => onChange(values.map((v) => v.value))}
+            />
+          );
         }}
       />
     </Field>

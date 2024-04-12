@@ -17,8 +17,8 @@ export const DNSCheckRecordProtocol = () => {
       <Controller
         control={control}
         render={({ field }) => {
-          const { ref, ...rest } = field;
-          return <Select {...rest} options={DNS_PROTOCOLS} inputId={id} />;
+          const { ref, onChange, ...rest } = field;
+          return <Select {...rest} options={DNS_PROTOCOLS} inputId={id} onChange={({ value }) => onChange(value)} />;
         }}
         name="settings.dns.protocol"
       />

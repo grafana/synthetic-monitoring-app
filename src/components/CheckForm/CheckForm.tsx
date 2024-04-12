@@ -2,14 +2,14 @@ import React, { BaseSyntheticEvent, useMemo, useRef, useState } from 'react';
 import { FieldErrors, FormProvider, useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 import { GrafanaTheme2, OrgRole } from '@grafana/data';
-import { Alert, Button, ConfirmModal, HorizontalGroup, LinkButton, useStyles2 } from '@grafana/ui';
+import { Alert, Button, ConfirmModal, LinkButton, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Check, CheckFormValues, CheckPageParams, CheckType, ROUTES } from 'types';
 import { hasRole } from 'utils';
 import { useChecks, useCUDChecks } from 'data/useChecks';
 import { useNavigation } from 'hooks/useNavigation';
-import { getCheckFromFormValues, getFormValuesFromCheck } from 'components/CheckEditor/checkFormTransformations';
+import { toFormValues, toPayload } from 'components/CheckEditor/checkFormTransformations';
 import { PROBES_SELECT_ID } from 'components/CheckEditor/CheckProbes';
 import { CheckTestResultsModal } from 'components/CheckTestResultsModal';
 import { CHECK_FORM_ERROR_EVENT, fallbackCheckMap } from 'components/constants';
@@ -50,7 +50,7 @@ const CheckFormContent = ({ check, checkType }: CheckFormContentProps) => {
   const { adhocTestData, closeModal, isPending, openTestCheckModal, testCheck, testCheckError } =
     useAdhocTest(checkType);
 
-  const initialValues = useMemo(() => getFormValuesFromCheck(check, checkType), [check, checkType]);
+  const initialValues = useMemo(() => toFormValues(check, checkType), [check, checkType]);
   const formMethods = useForm<CheckFormValues>({
     defaultValues: initialValues,
     shouldFocusError: false, // we manage focus manually
@@ -67,7 +67,7 @@ const CheckFormContent = ({ check, checkType }: CheckFormContentProps) => {
   const handleSubmit = (checkValues: CheckFormValues, event: BaseSyntheticEvent | undefined) => {
     // react-hook-form doesn't let us provide SubmitEvent to BaseSyntheticEvent
     const submitter = (event?.nativeEvent as SubmitEvent).submitter;
-    const toSubmit = getCheckFromFormValues(checkValues);
+    const toSubmit = toPayload(checkValues);
 
     if (submitter === testRef.current) {
       return testCheck(toSubmit);
@@ -117,7 +117,7 @@ const CheckFormContent = ({ check, checkType }: CheckFormContentProps) => {
         <FormProvider {...formMethods}>
           <form onSubmit={formMethods.handleSubmit(handleSubmit, handleError)}>
             <CheckSelector checkType={checkType} />
-            <HorizontalGroup>
+            <div className={styles.stack}>
               <Button
                 type="submit"
                 disabled={formMethods.formState.isSubmitting || submitting}
@@ -157,7 +157,7 @@ const CheckFormContent = ({ check, checkType }: CheckFormContentProps) => {
               >
                 Cancel
               </LinkButton>
-            </HorizontalGroup>
+            </div>
           </form>
         </FormProvider>
       </>
@@ -270,6 +270,11 @@ function shouldFocusProbes(errs: FieldErrors<CheckFormValues>) {
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({
+  stack: css({
+    marginTop: theme.spacing(4),
+    display: `flex`,
+    gap: theme.spacing(1),
+  }),
   submissionError: css({
     marginTop: theme.spacing(2),
   }),

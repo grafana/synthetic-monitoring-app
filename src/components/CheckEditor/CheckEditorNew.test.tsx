@@ -240,7 +240,7 @@ describe('new checks', () => {
           recordType: 'A',
           server: 'dns.google',
           validRCodes: ['NOERROR'],
-          validateAditionalRRS: {
+          validateAdditionalRRS: {
             failIfMatchesRegexp: [],
             failIfNotMatchesRegexp: [],
           },

@@ -33,9 +33,8 @@ export const HttpCheckRegExValidation = () => {
           <Label>Allow Missing</Label>
           <div />
           {fields.map((field, index) => {
-            const isHeaderMatch =
-              watch(`${REGEX_FIELD_NAME}.${index}.matchType`)?.value === HttpRegexValidationType.Header;
-            const disallowBodyMatching = watch('settings.http.method').value === HttpMethod.HEAD;
+            const isHeaderMatch = watch(`${REGEX_FIELD_NAME}.${index}.matchType`) === HttpRegexValidationType.Header;
+            const disallowBodyMatching = watch('settings.http.method') === HttpMethod.HEAD;
             const userIndex = index + 1;
 
             return (
@@ -43,7 +42,7 @@ export const HttpCheckRegExValidation = () => {
                 <div data-fs-element={`Regex validation field name ${index}`}>
                   <Controller
                     render={({ field }) => {
-                      const { ref, ...rest } = field;
+                      const { ref, onChange, ...rest } = field;
                       return (
                         <Select
                           {...rest}
@@ -54,6 +53,7 @@ export const HttpCheckRegExValidation = () => {
                             disallowBodyMatching &&
                             Boolean(errors?.settings?.http?.regexValidations?.[index]?.matchType)
                           }
+                          onChange={({ value }) => onChange(value)}
                         />
                       );
                     }}
@@ -123,7 +123,7 @@ export const HttpCheckRegExValidation = () => {
           variant="secondary"
           size="sm"
           disabled={!isEditor}
-          onClick={() => append({ matchType: HTTP_REGEX_VALIDATION_OPTIONS[1], expression: '', inverted: false })}
+          onClick={() => append({ matchType: HttpRegexValidationType.Body, expression: '', inverted: false })}
           data-fs-element="Add regex validation button"
         >
           Add Regex Validation
