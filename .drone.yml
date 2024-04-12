@@ -272,10 +272,7 @@ steps:
       GRAFANA_API_KEY:
         from_secret: signing_token
     commands:
-      - VERSION="${DRONE_TAG#v}"
-      # yamllint disable rule:line-length
-      - 'curl -f -w "status=%{http_code}" -s -H "Authorization: Bearer $${GRAFANA_API_KEY}" -d "download[any][url]=https://storage.googleapis.com/synthetic-monitoring-app-prod/builds/${VERSION}/grafana-synthetic-monitoring-app-${VERSION}.zip" -d "download[any][md5]=$$(curl -sL https://storage.googleapis.com/synthetic-monitoring-app-prod/builds/${VERSION}/grafana-synthetic-monitoring-app-${VERSION}.zip | md5sum | cut -d'' '' -f1)" -d url=https://github.com/grafana/synthetic-monitoring-app https://grafana.com/api/plugins'
-      # yamllint enable rule:line-length
+      - ./scripts/publish-gcom
 
 image_pull_secrets:
   - dockerconfigjson
@@ -338,6 +335,6 @@ kind: secret
 name: gcp_key
 ---
 kind: signature
-hmac: 3d98792c760a9b4472bdbe4cde8842c8299332d28553b310d57184c97d3238d1
+hmac: 8ff8679705ffd1006d10c8959d178ac428f90bacd9fe236af575c503ea70d09f
 
 ...
