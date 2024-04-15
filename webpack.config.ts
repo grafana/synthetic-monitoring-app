@@ -3,14 +3,12 @@ import path from 'path';
 import type { Configuration } from 'webpack';
 import { CustomizeRule, mergeWithRules } from 'webpack-merge';
 
-import { SOURCE_DIR } from './.config/webpack/constants';
 import { getPluginJson } from './.config/webpack/utils';
 import grafanaConfig from './.config/webpack/webpack.config';
 
 const config = async (env): Promise<Configuration> => {
   const pluginJson = getPluginJson();
   const baseConfig = await grafanaConfig(env);
-
   const customConfig = {
     module: {
       rules: [

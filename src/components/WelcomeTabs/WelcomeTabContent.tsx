@@ -4,16 +4,11 @@ import { config } from '@grafana/runtime';
 import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
+import { CodeSnippet } from 'components/CodeSnippet';
+
+import { SCRIPT_EXAMPLES, TERRAFORM_EXAMPLES } from './constants';
 import { WelcomeTab } from './WelcomeTabs';
-import {
-  dashboardDark,
-  dashboardLight,
-  k6CodeEditorDark,
-  k6CodeEditorLight,
-  privateProbeDark,
-  privateProbeLight,
-  terraformDocs,
-} from 'img';
+import { dashboardDark, dashboardLight, privateProbeDark, privateProbeLight } from 'img';
 
 interface Props {
   activeTab: WelcomeTab;
@@ -34,8 +29,26 @@ export function WelcomeTabContent({ activeTab }: Props) {
       return (
         <>
           <p>Use k6 scripts to monitor your services flexibly</p>
-
-          <img src={config.theme2.isDark ? k6CodeEditorDark : k6CodeEditorLight} className={styles.screenshot} />
+          <CodeSnippet
+            canCopy={true}
+            className={styles.codeSnippet}
+            tabs={[
+              {
+                value: 'Example scripts',
+                label: 'k6 Examples',
+                groups: SCRIPT_EXAMPLES.map(({ label, script }) => ({
+                  value: label,
+                  label,
+                  code: script,
+                  lang: 'js',
+                })),
+              },
+            ]}
+            dedent={true}
+            lang="js"
+            initialTab="initialize"
+            code="console.log('hello world')"
+          />
         </>
       );
     case WelcomeTab.PrivateProbes:
@@ -71,12 +84,32 @@ export function WelcomeTabContent({ activeTab }: Props) {
               interact with our API
             </a>
           </p>
-          <img src={terraformDocs} className={styles.screenshot} />
+          <CodeSnippet
+            canCopy={true}
+            className={styles.codeSnippet}
+            tabs={[
+              {
+                value: 'Example scripts',
+                label: 'Terraform examples',
+                groups: TERRAFORM_EXAMPLES.map(({ label, value }) => ({
+                  value: label,
+                  label,
+                  code: value,
+                  lang: 'js',
+                })),
+              },
+            ]}
+            dedent={true}
+          />
         </>
       );
   }
 }
 
 function getStyles(theme: GrafanaTheme2) {
-  return { screenshot: css({ maxWidth: '520px' }), tabContent: css({ marginTop: theme.spacing(4) }) };
+  return {
+    screenshot: css({ height: '700px' }),
+    tabContent: css({ marginTop: theme.spacing(4) }),
+    codeSnippet: css({ height: '700px' }),
+  };
 }
