@@ -44,7 +44,7 @@ describe('Only renders the welcome page regardless of route when app is not init
       });
 
       renderRouting({ path: getRoute(route) });
-      const text = await screen.findByText('Ready to start using synthetic monitoring?');
+      const text = await screen.findByText('Up and running in seconds, no instrumentation required');
       expect(text).toBeInTheDocument();
     });
   });
@@ -58,7 +58,7 @@ describe('Only renders the welcome page regardless of route when app is not init
     });
 
     renderRouting({ path: notaRoute });
-    const text = await screen.findByText('Ready to start using synthetic monitoring?');
+    const text = await screen.findByText('Up and running in seconds, no instrumentation required');
     expect(text).toBeInTheDocument();
   });
 });
