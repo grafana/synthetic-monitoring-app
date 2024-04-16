@@ -33,7 +33,7 @@ export function useLatency({ job, target, settings }: Check) {
 }
 
 function getQuery(job: Check['job'], target: Check['target'], type: CheckType) {
-  if (type === CheckType.MULTI_HTTP) {
+  if (type === CheckType.MULTI_HTTP || type === CheckType.Scripted) {
     return `sum by (job, instance) (sum_over_time(probe_http_total_duration_seconds{job="${job}", instance="${target}"}[6h])) / sum by (job, instance) (count_over_time(probe_http_total_duration_seconds{job="${job}", instance="${target}"}[6h])) `;
   }
 
