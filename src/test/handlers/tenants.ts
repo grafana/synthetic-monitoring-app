@@ -1,7 +1,12 @@
-import { TENANT, TENANT_SETTINGS, UPDATE_TENANT_SETTINGS } from 'test/fixtures/tenants';
+import { TENANT, TENANT_LIMITS, TENANT_SETTINGS, UPDATE_TENANT_SETTINGS } from 'test/fixtures/tenants';
 
 import { ApiEntry } from 'test/handlers/types';
-import { ListTenantSettingsResult, TenantResponse, UpdateTenantSettingsResult } from 'datasource/responses.types';
+import {
+  ListTenantLimitsResponse,
+  ListTenantSettingsResult,
+  TenantResponse,
+  UpdateTenantSettingsResult,
+} from 'datasource/responses.types';
 
 export const getTenant: ApiEntry<TenantResponse> = {
   route: `/sm/tenant`,
@@ -29,6 +34,16 @@ export const updateTenantSettings: ApiEntry<UpdateTenantSettingsResult> = {
   result: () => {
     return {
       json: UPDATE_TENANT_SETTINGS,
+    };
+  },
+};
+
+export const getTenantLimits: ApiEntry<ListTenantLimitsResponse> = {
+  route: `/sm/tenant/limits`,
+  method: `get`,
+  result: () => {
+    return {
+      json: TENANT_LIMITS,
     };
   },
 };

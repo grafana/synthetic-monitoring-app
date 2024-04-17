@@ -4,7 +4,7 @@ import { addCheck, bulkUpdateChecks, checkInfo, listChecks, updateCheck } from '
 import { getDashboard } from 'test/handlers/dashboards';
 import { getMetrics } from 'test/handlers/metrics';
 import { addProbe, listProbes, updateProbe } from 'test/handlers/probes';
-import { getTenant, getTenantSettings, updateTenantSettings } from 'test/handlers/tenants';
+import { getTenant, getTenantLimits, getTenantSettings, updateTenantSettings } from 'test/handlers/tenants';
 
 import { ApiEntry, RequestRes } from 'test/handlers/types';
 
@@ -19,6 +19,7 @@ const apiRoutes = {
   getMetrics,
   getTenant,
   getTenantSettings,
+  getTenantLimits,
   listChecks,
   listProbes,
   updateCheck,

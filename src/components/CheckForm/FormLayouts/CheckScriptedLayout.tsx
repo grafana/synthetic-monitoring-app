@@ -26,7 +26,7 @@ export const CheckScriptedLayout = () => {
         <CheckJobName />
         <ScriptedCheckInstance />
         <ProbeOptions checkType={CheckType.Scripted} />
-        <LabelField<CheckFormValuesScripted> />
+        <LabelField<CheckFormValuesScripted> labelDestination="check" />
       </FormLayout.Section>
       <FormLayout.Section
         contentClassName={styles.scriptContainer}

@@ -256,4 +256,50 @@ describe('new checks', () => {
       },
     });
   });
+
+  describe(`over limits`, () => {
+    it(`shows error alert when check limit is reached`, async () => {
+      server.use(
+        apiRoute('getTenantLimits', {
+          result: () => ({
+            json: {
+              MaxChecks: 1,
+              MaxScriptedChecks: 10,
+            },
+          }),
+        })
+      );
+      render(<CheckForm />, {
+        route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/:checkType`,
+        path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/http`,
+      });
+
+      const errorAlert = await screen.findByText(/Maximum number of checks reached/, { exact: false });
+      expect(errorAlert).toBeInTheDocument();
+      const submitButton = await screen.findByRole('button', { name: 'Save' });
+      expect(submitButton).toBeDisabled();
+    });
+
+    it(`shows error alert when scripted check limit is reached`, async () => {
+      server.use(
+        apiRoute('getTenantLimits', {
+          result: () => ({
+            json: {
+              MaxChecks: 10,
+              MaxScriptedChecks: 1,
+            },
+          }),
+        })
+      );
+      render(<CheckForm />, {
+        route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/:checkType`,
+        path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/scripted`,
+      });
+
+      const errorAlert = await screen.findByText(/Maximum number of scripted checks reached/, { exact: false });
+      expect(errorAlert).toBeInTheDocument();
+      const submitButton = await screen.findByRole('button', { name: 'Save' });
+      expect(submitButton).toBeDisabled();
+    });
+  });
 });

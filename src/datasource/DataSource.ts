@@ -22,6 +22,7 @@ import {
   DeleteProbeResult,
   ListCheckResult,
   ListProbeResult,
+  ListTenantLimitsResponse,
   ListTenantSettingsResult,
   ResetProbeTokenResult,
   UpdateCheckResult,
@@ -350,6 +351,17 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       .then((res: any) => {
         return res.data;
       });
+  }
+
+  async getTenantLimits() {
+    return firstValueFrom(
+      getBackendSrv().fetch<ListTenantLimitsResponse>({
+        method: 'GET',
+        url: `${this.instanceSettings.url}/sm/tenant/limits`,
+      })
+    ).then((res) => {
+      return res.data;
+    });
   }
 
   async getTenantSettings() {

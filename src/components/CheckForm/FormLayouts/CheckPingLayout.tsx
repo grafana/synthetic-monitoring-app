@@ -31,7 +31,7 @@ export const CheckPingLayout = () => {
         label="Advanced options"
         fields={[`labels`, `settings.ping.ipVersion`, `settings.ping.dontFragment`]}
       >
-        <LabelField<CheckFormValuesPing> />
+        <LabelField<CheckFormValuesPing> labelDestination="check" />
         <CheckIpVersion checkType={CheckType.PING} name="settings.ping.ipVersion" />
         <PingCheckFragment />
       </FormLayout.Section>
