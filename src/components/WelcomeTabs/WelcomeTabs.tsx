@@ -60,7 +60,7 @@ export function WelcomeTabs() {
 
 function getStyles(theme: GrafanaTheme2) {
   return {
-    tabContent: css({ marginTop: theme.spacing(4), minWidth: '1000px', minHeight: '500px' }),
-    tabBar: css({ width: '560px' }),
+    tabContent: css({ marginTop: theme.spacing(4), maxWidth: '100%', minHeight: '500px' }),
+    tabBar: css({ maxWidth: '560px', width: '100%' }),
   };
 }

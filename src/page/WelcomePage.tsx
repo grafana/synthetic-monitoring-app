@@ -292,10 +292,13 @@ function getStyles(theme: GrafanaTheme2) {
     getStartedButton: css({
       marginTop: theme.spacing(8),
     }),
-    divider: css({ width: '100%' }),
+    divider: css({
+      width: '100%',
+    }),
     valueProp: css({
       marginTop: theme.spacing(6),
       maxWidth: '700px',
+      width: '100%',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',

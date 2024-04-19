@@ -114,7 +114,7 @@ export function WelcomeTabContent({ activeTab }: Props) {
 
 function getStyles(theme: GrafanaTheme2) {
   return {
-    screenshot: css({ height: '700px', marginBottom: theme.spacing(5) }),
+    screenshot: css({ maxHeight: '700px', maxWidth: '100%', marginBottom: theme.spacing(5) }),
     tabContent: css({ marginTop: theme.spacing(4) }),
     codeSnippet: css({ height: '700px' }),
   };
