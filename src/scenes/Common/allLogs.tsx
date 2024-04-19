@@ -10,7 +10,7 @@ function getQueryRunner(logs: DataSourceRef) {
     datasource: logs,
     queries: [
       {
-        expr: '{probe=~"$probe", instance="$instance", job="$job"} | logfmt | __error__ = "" | level =~ "$errorLevel"',
+        expr: '{probe=~"$probe", instance="$instance", job="$job", probe_success=~"$probeSuccess"} | logfmt | __error__ = ""',
         refId: 'A',
       },
     ],
@@ -18,27 +18,27 @@ function getQueryRunner(logs: DataSourceRef) {
 }
 
 export function getAllLogs(logs: DataSourceRef) {
-  const errorLevel = new CustomVariable({
+  const unsuccessfulOnly = new CustomVariable({
     value: '.*',
-    name: 'errorLevel',
+    query: '.*',
+    name: 'probeSuccess',
     hide: VariableHide.hideVariable,
   });
   const variables = new SceneVariableSet({
-    variables: [errorLevel],
+    variables: [unsuccessfulOnly],
   });
 
   const levelSwitch = new SceneReactObject({
     reactNode: (
       <InlineSwitch
-        label="Errors only"
+        label="Unsuccessful runs only"
         transparent
         showLabel
         onChange={(e) => {
           if (e.currentTarget.checked) {
-            errorLevel.changeValueTo('error');
-            // switchState.setState({ value: true });
+            unsuccessfulOnly.changeValueTo('0');
           } else {
-            errorLevel.changeValueTo('.*');
+            unsuccessfulOnly.changeValueTo('.*');
           }
         }}
       />
