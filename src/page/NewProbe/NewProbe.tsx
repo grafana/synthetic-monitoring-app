@@ -23,6 +23,9 @@ export const TEMPLATE_PROBE: Probe = {
   onlineChange: 0,
   version: 'unknown',
   deprecated: false,
+  capabilities: {
+    disableScriptedChecks: false,
+  },
 };
 
 export const NewProbe = () => {

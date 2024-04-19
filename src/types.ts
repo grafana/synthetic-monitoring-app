@@ -113,6 +113,11 @@ export interface Probe extends BaseObject {
   labels: Label[];
   version: string;
   deprecated: boolean;
+  capabilities: ProbeCapabilities;
+}
+
+interface ProbeCapabilities {
+  disableScriptedChecks: boolean;
 }
 
 export enum ResponseMatchType {

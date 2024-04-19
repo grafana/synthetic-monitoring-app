@@ -17,6 +17,9 @@ export const PRIVATE_PROBE: Probe = {
   deprecated: false,
   modified: 1700000000.0,
   created: 1694212496.731247,
+  capabilities: {
+    disableScriptedChecks: false,
+  },
 } as const satisfies Probe;
 
 export const PUBLIC_PROBE: Probe = {
@@ -33,6 +36,9 @@ export const PUBLIC_PROBE: Probe = {
   deprecated: false,
   modified: 1700000000.0,
   created: 1694212496.731247,
+  capabilities: {
+    disableScriptedChecks: false,
+  },
 } as const satisfies Probe;
 
 export const ONLINE_PROBE: Probe = {
@@ -44,6 +50,13 @@ export const OFFLINE_PROBE: Probe = {
   ...PRIVATE_PROBE,
   online: false,
 } as const satisfies Probe;
+
+export const SCRIPTED_DISABLED_PROBE: Probe = {
+  ...PRIVATE_PROBE,
+  capabilities: {
+    disableScriptedChecks: true,
+  },
+};
 
 export const UNSELECTED_PRIVATE_PROBE: Probe = {
   name: 'enchiladas',
@@ -59,6 +72,9 @@ export const UNSELECTED_PRIVATE_PROBE: Probe = {
   deprecated: false,
   modified: 1700000000.0,
   created: 1694212496.731247,
+  capabilities: {
+    disableScriptedChecks: false,
+  },
 } as const satisfies Probe;
 
 export const DEFAULT_PROBES = [PRIVATE_PROBE, PUBLIC_PROBE, UNSELECTED_PRIVATE_PROBE];
