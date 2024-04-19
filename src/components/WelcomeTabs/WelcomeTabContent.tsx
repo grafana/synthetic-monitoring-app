@@ -22,7 +22,11 @@ export function WelcomeTabContent({ activeTab }: Props) {
         <>
           <p>Send individual requests via HTTP, DNS, TCP, PING or a traceroute</p>
 
-          <img src={config.theme2.isDark ? dashboardDark : dashboardLight} className={styles.screenshot} />
+          <img
+            src={config.theme2.isDark ? dashboardDark : dashboardLight}
+            className={styles.screenshot}
+            alt="A dashboard showing statistics about the performance of an HTTP request."
+          />
         </>
       );
     case WelcomeTab.K6:
@@ -46,8 +50,6 @@ export function WelcomeTabContent({ activeTab }: Props) {
             ]}
             dedent={true}
             lang="js"
-            initialTab="initialize"
-            code="console.log('hello world')"
           />
         </>
       );
@@ -58,7 +60,11 @@ export function WelcomeTabContent({ activeTab }: Props) {
             In addition to the locations we provide out of the box, you can set up your own probes to run inside your
             network or from a location of your choosing
           </p>
-          <img src={config.theme2.isDark ? privateProbeDark : privateProbeLight} className={styles.screenshot} />
+          <img
+            src={config.theme2.isDark ? privateProbeDark : privateProbeLight}
+            className={styles.screenshot}
+            alt="A form that allows configuring a private probe."
+          />
         </>
       );
     case WelcomeTab.AsCode:
@@ -108,7 +114,7 @@ export function WelcomeTabContent({ activeTab }: Props) {
 
 function getStyles(theme: GrafanaTheme2) {
   return {
-    screenshot: css({ height: '700px' }),
+    screenshot: css({ height: '700px', marginBottom: theme.spacing(5) }),
     tabContent: css({ marginTop: theme.spacing(4) }),
     codeSnippet: css({ height: '700px' }),
   };

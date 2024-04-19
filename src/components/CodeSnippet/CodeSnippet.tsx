@@ -56,12 +56,10 @@ const CopyToClipboardButton = (data: string) => {
 export const CodeSnippet = ({
   canCopy = true,
   code,
-  dedent = true,
   lang = 'js',
   initialTab,
   tabs = [],
   className,
-  height,
 }: CodeSnippetProps) => {
   const [activeTab, setActiveTab] = useState<string | undefined>(initialTab);
   const [activeGroup, setActiveGroup] = useState<string | undefined>();
@@ -92,7 +90,6 @@ export const CodeSnippet = ({
   const snippet = snippetTab?.code ?? code;
   const langSyntax = snippetTab?.lang || lang;
   const derivedActiveTab = activeTab ?? tabs[0]?.value;
-  console.log(Prism.languages);
   const highlightedSyntax = useMemo(
     () => snippet && Prism.highlight(formatter(snippet), Prism.languages[langSyntax] as Grammar, langSyntax),
     [formatter, snippet, langSyntax]
@@ -103,7 +100,7 @@ export const CodeSnippet = ({
       titleContent={
         tabs.length > 0 && (
           <TabsBar className={styles.tabsBar}>
-            {tabs.flatMap((tab) => {
+            {tabs.map((tab) => {
               return (
                 <CodeSnippetTab
                   key={`${tab.value}-tab`}
