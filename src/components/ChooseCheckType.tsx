@@ -1,15 +1,14 @@
 import React from 'react';
 import { GrafanaTheme2, PageLayoutType } from '@grafana/data';
-import { Badge, LoadingPlaceholder, useStyles2 } from '@grafana/ui';
+import { Badge, BadgeColor, LoadingPlaceholder, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { CheckType, FeatureName, ROUTES } from 'types';
+import { CheckStatus, CheckType, ROUTES } from 'types';
 import { isOverCheckLimit, isOverScriptedLimit } from 'utils';
 import { useChecks } from 'data/useChecks';
 import { useTenantLimits } from 'data/useTenantLimits';
-import { useFeatureFlag } from 'hooks/useFeatureFlag';
+import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
 import { useNavigation } from 'hooks/useNavigation';
-import { CHECK_TYPE_OPTIONS } from 'components/constants';
 import { PluginPage } from 'components/PluginPage';
 import { getRoute } from 'components/Routing';
 
@@ -21,7 +20,7 @@ export function ChooseCheckType() {
   const { data: checks, isLoading: checksLoading } = useChecks();
   const { data: limits, isLoading: limitsLoading } = useTenantLimits();
   const nav = useNavigation();
-  const { isEnabled: scriptedEnabled } = useFeatureFlag(FeatureName.ScriptedChecks);
+  const checkTypeOptions = useCheckTypeOptions();
 
   if (checksLoading || limitsLoading) {
     return <LoadingPlaceholder text="Loading..." />;
@@ -30,13 +29,11 @@ export function ChooseCheckType() {
   const overScriptedLimit = isOverScriptedLimit({ checks, limits });
   const overTotalLimit = isOverCheckLimit({ checks, limits });
 
-  const options = CHECK_TYPE_OPTIONS.filter(({ value }) => {
+  const options = checkTypeOptions.filter(({ value }) => {
     if (overScriptedLimit && (value === CheckType.MULTI_HTTP || value === CheckType.Scripted)) {
       return false;
     }
-    if (!scriptedEnabled && value === CheckType.Scripted) {
-      return false;
-    }
+
     return true;
   });
 
@@ -67,17 +64,13 @@ export function ChooseCheckType() {
         />
       )}
       <div className={styles.container}>
-        {options?.map((check) => {
+        {options.map((check) => {
           return (
             <Card key={check?.label || ''} className={styles.card} href={`${getRoute(ROUTES.NewCheck)}/${check.value}`}>
-              <Card.Heading className={styles.heading} variant="h6">
-                {check.label}
-                {check.value === CheckType.MULTI_HTTP && (
-                  <Badge text="Public preview" color="blue" className={styles.experimentalBadge} />
-                )}
-                {check.value === CheckType.Scripted && (
-                  <Badge text="Experimental" color="orange" className={styles.experimentalBadge} />
-                )}
+              <Card.Heading className={styles.stack} variant="h6">
+                <div>{check.label} </div>
+
+                {check.status && <CheckBadge status={check.status} />}
               </Card.Heading>
               <div className={styles.desc}>{check.description}</div>
             </Card>
@@ -87,6 +80,23 @@ export function ChooseCheckType() {
     </PluginPage>
   );
 }
+
+const colorMap: Record<CheckStatus, { text: string; color: BadgeColor }> = {
+  [CheckStatus.EXPERIMENTAL]: {
+    color: 'orange',
+    text: `Experimental`,
+  },
+  [CheckStatus.PUBLIC_PREVIEW]: {
+    color: 'blue',
+    text: `Public preview`,
+  },
+};
+
+const CheckBadge = ({ status }: { status: CheckStatus }) => {
+  const { text, color } = colorMap[status];
+
+  return <Badge text={text} color={color} />;
+};
 
 const getStyles = (theme: GrafanaTheme2) => ({
   container: css({
@@ -103,15 +113,13 @@ const getStyles = (theme: GrafanaTheme2) => ({
       background: theme.colors.emphasize(theme.colors.background.secondary, 0.03),
     },
   }),
-  heading: css({
-    textAlign: `center`,
-    justifyContent: `center`,
-    alignItems: `flex-start`,
-  }),
   desc: css({
     color: theme.colors.text.secondary,
   }),
-  experimentalBadge: css({
-    marginLeft: theme.spacing(1),
+  stack: css({
+    display: `flex`,
+    gap: theme.spacing(1),
+    alignItems: `center`,
+    justifyContent: `center`,
   }),
 });
