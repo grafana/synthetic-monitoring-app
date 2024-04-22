@@ -7,7 +7,6 @@ import { css, Global } from '@emotion/react';
 import { GlobalSettings } from 'types';
 import { queryClient } from 'data/queryClient';
 import { queryKeys as alertingQueryKeys } from 'data/useAlerts';
-import { DashboardUpdateModal } from 'components/DashboardUpdateModal';
 import { InstanceProvider } from 'components/InstanceProvider';
 import { Routing } from 'components/Routing';
 
@@ -38,7 +37,6 @@ export const App = (props: AppProps) => {
       >
         <QueryClientProvider client={queryClient}>
           <Routing {...props} />
-          <DashboardUpdateModal />
           <ReactQueryDevtools />
         </QueryClientProvider>
       </InstanceProvider>
