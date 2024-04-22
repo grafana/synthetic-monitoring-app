@@ -2,6 +2,7 @@ import React from 'react';
 import { GrafanaTheme2, PageLayoutType } from '@grafana/data';
 import { Badge, BadgeColor, LoadingPlaceholder, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { DataTestIds } from 'test/dataTestIds';
 
 import { CheckStatus, CheckType, ROUTES } from 'types';
 import { isOverCheckLimit, isOverScriptedLimit } from 'utils';
@@ -63,7 +64,7 @@ export function ChooseCheckType() {
           }}
         />
       )}
-      <div className={styles.container}>
+      <div className={styles.container} data-testid={DataTestIds.CHOOSE_CHECK_TYPE}>
         {options.map((check) => {
           return (
             <Card key={check?.label || ''} className={styles.card} href={`${getRoute(ROUTES.NewCheck)}/${check.value}`}>
