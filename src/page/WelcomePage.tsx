@@ -203,11 +203,13 @@ export const WelcomePage: FC<Props> = () => {
       <div className={styles.container}>
         <div className={styles.header}>
           <img src={meta?.info.logos.large} className={styles.logo} />
-          <h1 className={styles.title}>Monitor your endpoints and user flows from locations around the world</h1>
+          <h1 className={styles.title}>
+            Proactively monitor your endpoints and user flows from locations around the world
+          </h1>
           <div>
             <h5 className={styles.description}>
-              Grafana Synthetic Monitoring is powered by k6, Mimir, and Loki. Measure performance and uptime, simulate
-              user journeys, and get alerted before your users
+              Grafana Cloud Synthetic Monitoring is powered by k6, Mimir, and Loki. Measure performance and uptime,
+              simulate user journeys, and get alerted before your users
             </h5>
           </div>
           <Button
