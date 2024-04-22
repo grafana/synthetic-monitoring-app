@@ -1,4 +1,5 @@
 import React from 'react';
+import { config } from '@grafana/runtime';
 import { screen, waitFor, waitForElementToBeRemoved, within } from '@testing-library/react';
 import { BASIC_CHECK_LIST, BASIC_DNS_CHECK, BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
@@ -6,8 +7,8 @@ import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
 
-import { Check, ROUTES } from 'types';
-import { selectOption } from 'components/CheckEditor/testHelpers';
+import { Check, FeatureName, ROUTES } from 'types';
+import { getSelect, selectOption } from 'components/CheckEditor/testHelpers';
 import { PLUGIN_URL_PATH } from 'components/constants';
 
 import { CheckList } from './CheckList';
@@ -339,6 +340,35 @@ test('Sorting by success rate should not crash', async () => {
 
   const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(BASIC_CHECK_LIST.length);
+});
+
+test(`Scripted checks do not appear in the filters by default`, async () => {
+  const { user } = await renderCheckList();
+  const additionalFilters = await screen.findByText(/Additional filters/i);
+  await user.click(additionalFilters);
+
+  const select = await getSelect({ label: `Filter by type` });
+  await user.click(select[0]);
+  const listBox = screen.getByLabelText(`Select options menu`);
+
+  expect(within(listBox).queryByText(`Scripted`)).not.toBeInTheDocument();
+});
+
+test(`Scripted checks appear in the filters when the feature flag is enabled`, async () => {
+  jest.replaceProperty(config, 'featureToggles', {
+    // @ts-expect-error
+    [FeatureName.ScriptedChecks]: true,
+  });
+
+  const { user } = await renderCheckList();
+  const additionalFilters = await screen.findByText(/Additional filters/i);
+  await user.click(additionalFilters);
+
+  const select = await getSelect({ label: `Filter by type` });
+  await user.click(select[0]);
+  const listBox = screen.getByLabelText(`Select options menu`);
+
+  expect(within(listBox).getByText(`Scripted`)).toBeInTheDocument();
 });
 
 describe(`bulk select behaviour`, () => {
