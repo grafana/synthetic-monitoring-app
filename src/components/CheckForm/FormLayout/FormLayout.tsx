@@ -1,13 +1,13 @@
-import React, { Children, isValidElement, ReactNode } from 'react';
+import React, { Children, isValidElement, ReactNode, useState } from 'react';
 import { FieldErrors, FieldPath, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
-import { useStyles2, useTheme2 } from '@grafana/ui';
+import { Button, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { flatten } from 'flat';
 
 import { CheckFormValues } from 'types';
-import { Collapse } from 'components/Collapse';
-import { CollapseLabel } from 'components/CollapseLabel';
+
+import { FormSidebar } from './FormSidebar';
 
 type FormLayoutProps = {
   children: ReactNode;
@@ -15,8 +15,20 @@ type FormLayoutProps = {
 
 export const FormLayout = ({ children }: FormLayoutProps) => {
   let index = -1;
+  const [activeIndex, setActiveIndex] = useState(0);
+  const sectionHeaders: Array<{ label: string; hasErrors: boolean }> = [];
+  const { formState, trigger } = useFormContext<CheckFormValues>();
 
-  return Children.map(children, (child) => {
+  let sectionCount = 0;
+  Children.forEach(children, (child) => {
+    if (!isValidElement(child)) {
+      return;
+    }
+    if (child?.type === FormSection) {
+      sectionCount++;
+    }
+  });
+  const sections = Children.map(children, (child) => {
     if (!isValidElement(child)) {
       return null;
     }
@@ -24,11 +36,37 @@ export const FormLayout = ({ children }: FormLayoutProps) => {
     if (child.type === FormSection) {
       index++;
 
-      return <FormSectionInternal {...child.props} index={index} />;
+      const errors = checkForErrors(formState.errors, child.props.fields);
+      sectionHeaders.push({ label: child.props.label, hasErrors: errors.length > 0 });
+      return (
+        <FormSectionInternal
+          {...child.props}
+          index={index}
+          active={activeIndex === index}
+          onNextClick={
+            index !== sectionCount - 1
+              ? () => {
+                  trigger(child.props.fields).then((valid) => {
+                    if (valid) {
+                      setActiveIndex(activeIndex + 1);
+                    }
+                  });
+                }
+              : undefined
+          }
+        />
+      );
     }
 
     return child;
   });
+
+  return (
+    <div className={css({ display: 'flex', flexDirection: 'row' })}>
+      <FormSidebar sections={sectionHeaders} onSectionSelect={setActiveIndex} activeIndex={activeIndex} />
+      <div className={css({ paddingLeft: '24px' })}>{sections}</div>
+    </div>
+  );
 };
 
 type FormSectionProps = {
@@ -47,34 +85,24 @@ const FormSection = (props: FormSectionProps) => {
 const FormSectionInternal = ({
   children,
   contentClassName,
-  index,
   label,
-  fields,
-  isOpen,
-}: FormSectionProps & { index: number }) => {
-  const iternalIsOpen = index === 0 || isOpen;
+  active,
+  onNextClick,
+}: FormSectionProps & {
+  index: number;
+  active: boolean;
+  onNextClick?: () => void;
+}) => {
   const styles = useStyles2(getStyles);
-  const { formState } = useFormContext<CheckFormValues>();
-  const relevantErrors = checkForErrors(formState.errors, fields);
-  const hasErrors = relevantErrors.length > 0;
-  const theme = useTheme2();
 
   return (
-    <div className={styles.stack}>
+    <div
+      className={cx(styles.stack, { [css({ display: 'none' })]: !active })}
+      data-fs-element={`Form section ${label}`}
+    >
       <div className={styles.main}>
-        <Collapse
-          label={
-            <CollapseLabel
-              label={label}
-              icon={hasErrors ? `exclamation-triangle` : undefined}
-              iconColor={theme.colors.error.text}
-            />
-          }
-          isOpen={iternalIsOpen}
-          data-fs-element={`Form section ${label}`}
-        >
-          <div className={cx(styles.content, contentClassName)}>{children}</div>
-        </Collapse>
+        <div className={cx(styles.content, contentClassName)}>{children}</div>
+        <div>{onNextClick && <Button onClick={onNextClick}>Next</Button>}</div>
       </div>
     </div>
   );

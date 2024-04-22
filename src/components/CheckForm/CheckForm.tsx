@@ -70,6 +70,7 @@ const CheckFormContent = ({ check, checkType, overCheckLimit, overScriptedLimit 
   const formMethods = useForm<CheckFormValues>({
     defaultValues: initialValues,
     shouldFocusError: false, // we manage focus manually
+    mode: `onBlur`,
   });
 
   const { updateCheck, createCheck, deleteCheck, error, submitting } = useCUDChecks({ eventInfo: { checkType } });
