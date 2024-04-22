@@ -55,19 +55,17 @@ const Heading = ({ as = 'h2', children, className, variant = 'h2', ...rest }: He
   const styles = useStyles2((theme) => getHeadingStyles(theme, variant));
   const { href } = useContext(CardContext);
 
+  const content = <Tag className={cx(styles.heading, className)}>{children}</Tag>;
+
   if (href) {
     return (
-      <Link className={cx(styles.link, className)} href={href} {...rest}>
-        <Tag className={styles.heading}>{children}</Tag>
+      <Link className={styles.link} href={href} {...rest}>
+        {content}
       </Link>
     );
   }
 
-  return (
-    <Tag className={cx(styles.heading, className)} {...rest}>
-      {children}
-    </Tag>
-  );
+  return content;
 };
 
 const getHeadingStyles = (theme: GrafanaTheme2, variant: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6') => ({

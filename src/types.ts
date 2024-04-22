@@ -371,6 +371,8 @@ export type CheckFormValues =
   | CheckFormValuesTcp
   | CheckFormValuesTraceroute;
 
+export type CheckTypeFilter = CheckType | 'all';
+
 export interface FilteredCheck extends Omit<Check, 'id'> {
   id: number;
 }
@@ -697,7 +699,7 @@ export interface CheckFiltersType {
   [key: string]: any;
   search: string;
   labels: string[];
-  type: CheckType | 'all';
+  type: CheckTypeFilter;
   status: SelectableValue<CheckEnabledStatus>;
   probes: SelectableValue[] | [];
 }
@@ -760,3 +762,8 @@ export type PrometheusAlertingRule = {
   state: 'inactive'; // fill in others
   type: `alerting`;
 };
+
+export enum CheckStatus {
+  EXPERIMENTAL = 'experimental',
+  PUBLIC_PREVIEW = 'public-preview',
+}
