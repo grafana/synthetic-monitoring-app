@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { CheckFormValuesPing, CheckType } from 'types';
+import { CheckFormTypeLayoutProps, CheckFormValuesPing, CheckType } from 'types';
 import { CheckEnabled } from 'components/CheckEditor/FormComponents/CheckEnabled';
 import { CheckIpVersion } from 'components/CheckEditor/FormComponents/CheckIpVersion';
 import { CheckJobName } from 'components/CheckEditor/FormComponents/CheckJobName';
@@ -15,19 +15,18 @@ import { CheckUsage } from 'components/CheckUsage';
 import { LabelField } from 'components/LabelField';
 import { TLSConfig } from 'components/TLSConfig';
 
-export const CheckTCPLayout = () => {
+export const CheckTCPLayout = ({ formActions }: CheckFormTypeLayoutProps) => {
   return (
-    <FormLayout>
-      <FormLayout.Section
-        label="General settings"
-        fields={[`enabled`, `job`, `target`, `probes`, `frequency`, `timeout`, `publishAdvancedMetrics`]}
-      >
+    <FormLayout formActions={formActions}>
+      <FormLayout.Section label="Define check" fields={[`enabled`, `job`, `target`]} required>
         <CheckEnabled />
         <CheckJobName />
         <CheckTarget checkType={CheckType.TCP} />
-        <ProbeOptions checkType={CheckType.TCP} />
-        <CheckPublishedAdvanceMetrics />
+      </FormLayout.Section>
+      <FormLayout.Section label="Probes" fields={[`probes`, `frequency`, `timeout`, `publishAdvancedMetrics`]} required>
         <CheckUsage />
+        <CheckPublishedAdvanceMetrics />
+        <ProbeOptions checkType={CheckType.TCP} />
       </FormLayout.Section>
       <FormLayout.Section label="TCP settings" fields={[`settings.tcp.tls`]}>
         <TCPCheckUseTLS />

@@ -124,6 +124,70 @@ const CheckFormContent = ({ check, checkType, overCheckLimit, overScriptedLimit 
     deleteCheck(check, { onSuccess });
   };
 
+  const actions = useMemo(() => {
+    const actions = [
+      <LinkButton
+        key="cancel"
+        href={getRoute(ROUTES.Checks)}
+        fill="text"
+        variant="secondary"
+        data-fs-element="Cancel check button"
+      >
+        Cancel
+      </LinkButton>,
+    ];
+    if (![CheckType.Traceroute].includes(checkType)) {
+      actions.push(
+        <Button
+          disabled={isPending}
+          type="submit"
+          key="test"
+          data-fs-element="Test check button"
+          variant="secondary"
+          icon={isPending ? `fa fa-spinner` : undefined}
+          ref={testRef}
+        >
+          Test
+        </Button>
+      );
+    }
+    if (check.id) {
+      actions.push(
+        <Button
+          variant="destructive"
+          key="delete"
+          data-fs-element="Delete check button"
+          onClick={() => setShowDeleteModal(true)}
+          disabled={!isEditor}
+          type="button"
+        >
+          Delete Check
+        </Button>
+      );
+    }
+    actions.push(
+      <Button
+        type="submit"
+        key="save"
+        disabled={overScriptedLimit || overCheckLimit || formMethods.formState.isSubmitting || submitting}
+        data-fs-element="Save check button"
+      >
+        Save
+      </Button>
+    );
+
+    return actions;
+  }, [
+    overScriptedLimit,
+    overCheckLimit,
+    formMethods.formState.isSubmitting,
+    submitting,
+    checkType,
+    check.id,
+    isPending,
+    isEditor,
+  ]);
+
   const capitalizedCheckType = checkType.slice(0, 1).toUpperCase().concat(checkType.split('').slice(1).join(''));
   const headerText = check?.id ? `Editing ${check.job}` : `Add ${capitalizedCheckType} check`;
   const submissionError = error || testCheckError;
@@ -132,7 +196,7 @@ const CheckFormContent = ({ check, checkType, overCheckLimit, overScriptedLimit 
     <PluginPage pageNav={{ text: check?.job ? `Editing ${check.job}` : headerText }}>
       <>
         <FormProvider {...formMethods}>
-          <form onSubmit={formMethods.handleSubmit(handleSubmit, handleError)}>
+          <form onSubmit={formMethods.handleSubmit(handleSubmit, handleError)} className={css({ height: '100%' })}>
             {(overCheckLimit || overScriptedLimit) && (
               <ErrorAlert
                 title={`Maximum number of ${overScriptedLimit ? 'scripted' : ''} checks reached`}
@@ -143,48 +207,7 @@ const CheckFormContent = ({ check, checkType, overCheckLimit, overScriptedLimit 
                 buttonText="Go to checks"
               />
             )}
-            <CheckSelector checkType={checkType} />
-            <div className={styles.stack}>
-              <Button
-                type="submit"
-                disabled={overScriptedLimit || overCheckLimit || formMethods.formState.isSubmitting || submitting}
-                data-fs-element="Save check button"
-              >
-                Save
-              </Button>
-              {![CheckType.Traceroute].includes(checkType) && (
-                <Button
-                  disabled={isPending}
-                  type="submit"
-                  data-fs-element="Test check button"
-                  variant="secondary"
-                  icon={isPending ? `fa fa-spinner` : undefined}
-                  ref={testRef}
-                >
-                  Test
-                </Button>
-              )}
-              {check?.id && (
-                <Button
-                  variant="destructive"
-                  data-fs-element="Delete check button"
-                  onClick={() => setShowDeleteModal(true)}
-                  disabled={!isEditor}
-                  type="button"
-                >
-                  Delete Check
-                </Button>
-              )}
-
-              <LinkButton
-                href={getRoute(ROUTES.Checks)}
-                fill="text"
-                variant="secondary"
-                data-fs-element="Cancel check button"
-              >
-                Cancel
-              </LinkButton>
-            </div>
+            <CheckSelector checkType={checkType} formActions={actions} />
           </form>
         </FormProvider>
       </>
@@ -208,33 +231,33 @@ const CheckFormContent = ({ check, checkType, overCheckLimit, overScriptedLimit 
   );
 };
 
-const CheckSelector = ({ checkType }: { checkType: CheckType }) => {
+const CheckSelector = ({ checkType, formActions }: { checkType: CheckType; formActions: React.JSX.Element[] }) => {
   if (checkType === CheckType.HTTP) {
-    return <CheckHTTPLayout />;
+    return <CheckHTTPLayout formActions={formActions} />;
   }
 
   if (checkType === CheckType.MULTI_HTTP) {
-    return <CheckMultiHTTPLayout />;
+    return <CheckMultiHTTPLayout formActions={formActions} />;
   }
 
   if (checkType === CheckType.Scripted) {
-    return <CheckScriptedLayout />;
+    return <CheckScriptedLayout formActions={formActions} />;
   }
 
   if (checkType === CheckType.PING) {
-    return <CheckPingLayout />;
+    return <CheckPingLayout formActions={formActions} />;
   }
 
   if (checkType === CheckType.DNS) {
-    return <CheckDNSLayout />;
+    return <CheckDNSLayout formActions={formActions} />;
   }
 
   if (checkType === CheckType.TCP) {
-    return <CheckTCPLayout />;
+    return <CheckTCPLayout formActions={formActions} />;
   }
 
   if (checkType === CheckType.Traceroute) {
-    return <CheckTracerouteLayout />;
+    return <CheckTracerouteLayout formActions={formActions} />;
   }
 
   throw new Error(`Invalid check type: ${checkType}`);

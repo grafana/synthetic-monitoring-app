@@ -5,7 +5,7 @@ import { Button, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { flatten } from 'flat';
 
-import { CheckFormValues } from 'types';
+import { CheckFormTypeLayoutProps, CheckFormValues } from 'types';
 
 import { FormSidebar } from './FormSidebar';
 
@@ -13,11 +13,12 @@ type FormLayoutProps = {
   children: ReactNode;
 };
 
-export const FormLayout = ({ children }: FormLayoutProps) => {
+export const FormLayout = ({ children, formActions }: FormLayoutProps & CheckFormTypeLayoutProps) => {
   let index = -1;
   const [activeIndex, setActiveIndex] = useState(0);
-  const sectionHeaders: Array<{ label: string; hasErrors: boolean }> = [];
+  const sectionHeaders: Array<{ label: string; hasErrors: boolean; required: boolean }> = [];
   const { formState, trigger } = useFormContext<CheckFormValues>();
+  const styles = useStyles2(getStyles);
 
   let sectionCount = 0;
   Children.forEach(children, (child) => {
@@ -37,7 +38,7 @@ export const FormLayout = ({ children }: FormLayoutProps) => {
       index++;
 
       const errors = checkForErrors(formState.errors, child.props.fields);
-      sectionHeaders.push({ label: child.props.label, hasErrors: errors.length > 0 });
+      sectionHeaders.push({ label: child.props.label, hasErrors: errors.length > 0, required: child.props.required });
       return (
         <FormSectionInternal
           {...child.props}
@@ -62,9 +63,45 @@ export const FormLayout = ({ children }: FormLayoutProps) => {
   });
 
   return (
-    <div className={css({ display: 'flex', flexDirection: 'row' })}>
+    <div className={css({ display: 'flex', flexDirection: 'row', height: '100%' })}>
       <FormSidebar sections={sectionHeaders} onSectionSelect={setActiveIndex} activeIndex={activeIndex} />
-      <div className={css({ paddingLeft: '24px' })}>{sections}</div>
+      <div
+        className={css({
+          display: 'flex',
+          flexDirection: 'column',
+          flexGrow: '1',
+          justifyContent: 'space-between',
+        })}
+      >
+        <div className={css({ paddingLeft: '24px' })}>{sections}</div>
+        <div>
+          <hr className={css({ width: '100%' })} />
+          <div className={css({ display: 'flex', justifyContent: 'space-between', bottom: '0' })}>
+            <div className={styles.buttonGroup}>
+              {activeIndex !== 0 && (
+                <Button onClick={() => setActiveIndex(activeIndex - 1)} icon="arrow-left" variant="secondary">
+                  {sectionHeaders[activeIndex - 1].label}
+                </Button>
+              )}
+              {activeIndex !== sectionHeaders.length - 1 && (
+                <Button
+                  onClick={() => {
+                    trigger(sections?.[activeIndex].props.fields).then((valid) => {
+                      if (valid) {
+                        setActiveIndex(activeIndex + 1);
+                      }
+                    });
+                  }}
+                  icon="arrow-right"
+                >
+                  {sectionHeaders[activeIndex + 1].label}
+                </Button>
+              )}
+            </div>
+            <div className={styles.buttonGroup}>{formActions}</div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
@@ -74,7 +111,7 @@ type FormSectionProps = {
   contentClassName?: string;
   label: string;
   fields?: Array<FieldPath<CheckFormValues>>;
-  isOpen?: boolean;
+  required?: boolean;
 };
 
 // return doesn't matter as we take over how this behaves internally
@@ -87,11 +124,9 @@ const FormSectionInternal = ({
   contentClassName,
   label,
   active,
-  onNextClick,
 }: FormSectionProps & {
   index: number;
   active: boolean;
-  onNextClick?: () => void;
 }) => {
   const styles = useStyles2(getStyles);
 
@@ -102,7 +137,6 @@ const FormSectionInternal = ({
     >
       <div className={styles.main}>
         <div className={cx(styles.content, contentClassName)}>{children}</div>
-        <div>{onNextClick && <Button onClick={onNextClick}>Next</Button>}</div>
       </div>
     </div>
   );
@@ -129,6 +163,10 @@ const getStyles = (theme: GrafanaTheme2) => {
     }),
     content: css({
       maxWidth: `600px`,
+    }),
+    buttonGroup: css({
+      display: 'flex',
+      gap: theme.spacing(1),
     }),
     stack: css({
       display: 'flex',

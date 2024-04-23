@@ -767,3 +767,7 @@ export enum CheckStatus {
   EXPERIMENTAL = 'experimental',
   PUBLIC_PREVIEW = 'public-preview',
 }
+
+export interface CheckFormTypeLayoutProps {
+  formActions: React.JSX.Element[];
+}

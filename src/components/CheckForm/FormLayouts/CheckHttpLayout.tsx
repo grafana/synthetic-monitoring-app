@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { CheckFormValuesHttp, CheckType } from 'types';
+import { CheckFormTypeLayoutProps, CheckFormValuesHttp, CheckType } from 'types';
 import { CheckEnabled } from 'components/CheckEditor/FormComponents/CheckEnabled';
 import { CheckIpVersion } from 'components/CheckEditor/FormComponents/CheckIpVersion';
 import { CheckJobName } from 'components/CheckEditor/FormComponents/CheckJobName';
@@ -26,19 +26,18 @@ import { CheckUsage } from 'components/CheckUsage';
 import { LabelField } from 'components/LabelField';
 import { TLSConfig } from 'components/TLSConfig';
 
-export const CheckHTTPLayout = () => {
+export const CheckHTTPLayout = ({ formActions }: CheckFormTypeLayoutProps) => {
   return (
-    <FormLayout>
-      <FormLayout.Section
-        label="General settings"
-        fields={[`enabled`, `job`, `target`, `probes`, `frequency`, `timeout`]}
-      >
-        <CheckEnabled />
+    <FormLayout formActions={formActions}>
+      <FormLayout.Section label="Define check" fields={[`enabled`, `job`, `target`]} required>
         <CheckJobName />
         <CheckTarget checkType={CheckType.HTTP} />
-        <ProbeOptions checkType={CheckType.HTTP} />
-        <CheckPublishedAdvanceMetrics />
+        <CheckEnabled />
+      </FormLayout.Section>
+      <FormLayout.Section label="Probes" fields={[`probes`, `frequency`, `timeout`]} required>
         <CheckUsage />
+        <CheckPublishedAdvanceMetrics />
+        <ProbeOptions checkType={CheckType.HTTP} />
       </FormLayout.Section>
       <FormLayout.Section
         label="HTTP settings"

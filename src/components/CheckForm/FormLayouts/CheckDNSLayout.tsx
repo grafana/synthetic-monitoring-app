@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { CheckFormValuesPing, CheckType } from 'types';
+import { CheckFormTypeLayoutProps, CheckFormValuesPing, CheckType } from 'types';
 import { CheckEnabled } from 'components/CheckEditor/FormComponents/CheckEnabled';
 import { CheckIpVersion } from 'components/CheckEditor/FormComponents/CheckIpVersion';
 import { CheckJobName } from 'components/CheckEditor/FormComponents/CheckJobName';
@@ -18,12 +18,13 @@ import { CheckFormAlert } from 'components/CheckFormAlert';
 import { CheckUsage } from 'components/CheckUsage';
 import { LabelField } from 'components/LabelField';
 
-export const CheckDNSLayout = () => {
+export const CheckDNSLayout = ({ formActions }: CheckFormTypeLayoutProps) => {
   return (
-    <FormLayout>
+    <FormLayout formActions={formActions}>
       <FormLayout.Section
         label="General settings"
         fields={[`enabled`, `job`, `target`, `probes`, `frequency`, `timeout`]}
+        required
       >
         <CheckEnabled />
         <CheckJobName />

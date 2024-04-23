@@ -77,7 +77,7 @@ describe(`FormLayout`, () => {
         <FormLayout.Section label="First section">
           <div>{firstSectionText}</div>
         </FormLayout.Section>
-        <FormLayout.Section label="Second section" isOpen>
+        <FormLayout.Section label="Second section">
           <div>Second section content</div>
         </FormLayout.Section>
       </FormLayout>
