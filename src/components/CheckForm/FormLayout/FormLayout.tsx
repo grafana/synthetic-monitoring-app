@@ -124,6 +124,7 @@ const FormSectionInternal = ({
   contentClassName,
   label,
   active,
+  index,
 }: FormSectionProps & {
   index: number;
   active: boolean;
@@ -136,6 +137,9 @@ const FormSectionInternal = ({
       data-fs-element={`Form section ${label}`}
     >
       <div className={styles.main}>
+        <h3 className={styles.header}>
+          {index + 1}.&nbsp;{label}
+        </h3>
         <div className={cx(styles.content, contentClassName)}>{children}</div>
       </div>
     </div>
@@ -161,8 +165,11 @@ const getStyles = (theme: GrafanaTheme2) => {
     main: css({
       flex: 1,
     }),
+    header: css({
+      marginBottom: theme.spacing(4),
+    }),
     content: css({
-      maxWidth: `600px`,
+      maxWidth: `800px`,
     }),
     buttonGroup: css({
       display: 'flex',
