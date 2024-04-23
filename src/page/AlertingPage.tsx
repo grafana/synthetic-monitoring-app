@@ -89,23 +89,8 @@ const Alerting = () => {
       <p>
         View and edit default alerts for Synthetic Monitoring here. To tie one of these alerts to a check, you must
         select the alert sensitivity from the Alerting section of the check form when creating a check.{' '}
-        <a href="https://grafana.com/docs/grafana-cloud/synthetic-monitoring/#alerting" className={styles.link}>
+        <a href="https://grafana.com/docs/grafana-cloud/monitor-public-endpoints/configure-alerts/synthetic-monitoring-alerting/" className={styles.link}>
           Learn more about alerting for Synthetic Monitoring.
-        </a>
-      </p>
-      <p>
-        Routes and receivers must be configured in{' '}
-        <a href={'/alerting/list'} className={styles.link} target="blank" rel="noopener noreferer">
-          Grafana Alerting
-        </a>{' '}
-        in order to be notified when an alert fires.{' '}
-        <a
-          href="https://grafana.com/blog/2020/02/25/step-by-step-guide-to-setting-up-prometheus-alertmanager-with-slack-pagerduty-and-gmail/"
-          target="blank"
-          rel="noopener noreferer"
-          className={styles.link}
-        >
-          Learn more about configuring Alertmanager
         </a>
       </p>
       {!alertRules && <Spinner />}
