@@ -5,12 +5,15 @@ import { UserEvent } from '@testing-library/user-event';
 
 import { type Probe } from 'types';
 
-export const UPDATED_VALUES: Pick<Probe, 'name' | 'latitude' | 'longitude' | 'region' | 'labels'> = {
+export const UPDATED_VALUES: Pick<Probe, 'name' | 'latitude' | 'longitude' | 'region' | 'labels' | 'capabilities'> = {
   latitude: 19.05758,
   longitude: 72.89654,
   name: 'Shiny excellent probe',
   region: 'APAC',
   labels: [{ name: 'UPDATED', value: 'PROBE' }],
+  capabilities: {
+    disableScriptedChecks: true,
+  },
 };
 
 export async function fillProbeForm(user: UserEvent) {
@@ -47,6 +50,9 @@ export async function fillProbeForm(user: UserEvent) {
     const labelValueInput = await screen.findByLabelText(`Label ${humanIndex} value`, { exact: false });
     await user.type(labelValueInput, label.value);
   }
+
+  const disableScriptedChecks = await screen.findByLabelText('Disable scripted checks', { exact: false });
+  await user.click(disableScriptedChecks);
 }
 
 export function runTestAsViewer() {
