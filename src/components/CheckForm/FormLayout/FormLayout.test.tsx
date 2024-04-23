@@ -1,5 +1,6 @@
 import React, { ReactNode } from 'react';
 import { FormProvider, useForm, useFormContext } from 'react-hook-form';
+import { Button } from '@grafana/ui';
 import { screen } from '@testing-library/react';
 import { render } from 'test/render';
 
@@ -15,12 +16,18 @@ const renderTestForm = (children: TestFormProps['children']) => {
   return render(<TestForm>{children}</TestForm>);
 };
 
+const formActions = [
+  <Button key="hi" type="submit">
+    Submit
+  </Button>,
+];
+
 describe(`FormLayout`, () => {
-  it(`automatically has the first panel open`, async () => {
+  it(`automatically has the first step open`, async () => {
     const firstSectionText = `First section content`;
 
     renderTestForm(
-      <FormLayout>
+      <FormLayout formActions={formActions}>
         <FormLayout.Section label="First section">
           <div>{firstSectionText}</div>
         </FormLayout.Section>
@@ -38,7 +45,7 @@ describe(`FormLayout`, () => {
     const firstSectionText = `First section content`;
 
     renderTestForm(
-      <FormLayout>
+      <FormLayout formActions={formActions}>
         <div>Some child that means the formlayout section is not first</div>
         <FormLayout.Section label="First section">
           <div>{firstSectionText}</div>
@@ -52,8 +59,8 @@ describe(`FormLayout`, () => {
 
   it(`shows an error icon if any of the fields in that section have errors`, async () => {
     const { container, user } = renderTestForm(
-      <FormLayout>
-        <FormLayout.Section label="First section" fields={[`job`]}>
+      <FormLayout formActions={formActions}>
+        <FormLayout.Section label="First section" fields={[`job`]} required>
           <NameInput />
         </FormLayout.Section>
         <FormLayout.Section label="Second section">
@@ -68,12 +75,12 @@ describe(`FormLayout`, () => {
     expect(errorIcon).toBeVisible();
   });
 
-  it(`allows sections that aren't the first to be open by default`, async () => {
+  it(`moves between wizard steps with buttons`, async () => {
     const firstSectionText = `First section content`;
     const secondSectionText = `Second section content`;
 
-    renderTestForm(
-      <FormLayout>
+    const { user } = renderTestForm(
+      <FormLayout formActions={formActions}>
         <FormLayout.Section label="First section">
           <div>{firstSectionText}</div>
         </FormLayout.Section>
@@ -83,9 +90,38 @@ describe(`FormLayout`, () => {
       </FormLayout>
     );
 
-    const text = await screen.findByText(firstSectionText);
+    const next = await screen.findByRole('button', { name: 'Second section' });
+    await user.click(next);
+    const text = await screen.findByText(secondSectionText);
     expect(text).toBeVisible();
-    expect(screen.getByText(secondSectionText)).toBeVisible();
+    expect(screen.getByText(firstSectionText)).not.toBeVisible();
+  });
+
+  it(`moves between wizard steps with sidebar`, async () => {
+    const firstSectionText = `First section content`;
+    const secondSectionText = `Second section content`;
+    const thirdSectionText = `Third section content`;
+
+    const { user } = renderTestForm(
+      <FormLayout formActions={formActions}>
+        <FormLayout.Section label="First section">
+          <div>{firstSectionText}</div>
+        </FormLayout.Section>
+        <FormLayout.Section label="Second section">
+          <div>{secondSectionText}</div>
+        </FormLayout.Section>
+        <FormLayout.Section label="Third section">
+          <div>{thirdSectionText}</div>
+        </FormLayout.Section>
+      </FormLayout>
+    );
+
+    const next = await screen.findByText('Third section');
+    await user.click(next);
+    const text = await screen.findByText(thirdSectionText);
+    expect(text).toBeVisible();
+    expect(screen.getByText(firstSectionText)).not.toBeVisible();
+    expect(screen.getByText(secondSectionText)).not.toBeVisible();
   });
 });
 
@@ -98,10 +134,7 @@ const TestForm = ({ children }: TestFormProps) => {
 
   return (
     <FormProvider {...formMethods}>
-      <form onSubmit={formMethods.handleSubmit((_, e) => e?.preventDefault())}>
-        {children}
-        <button type="submit">Submit</button>
-      </form>
+      <form onSubmit={formMethods.handleSubmit((_, e) => e?.preventDefault())}>{children}</form>
     </FormProvider>
   );
 };
