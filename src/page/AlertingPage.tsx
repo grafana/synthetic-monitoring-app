@@ -89,7 +89,7 @@ const Alerting = () => {
       <p>
         View and edit default alerts for Synthetic Monitoring here. To tie one of these alerts to a check, you must
         select the alert sensitivity from the Alerting section of the check form when creating a check.{' '}
-        <a href="https://grafana.com/docs/grafana-cloud/monitor-public-endpoints/configure-alerts/synthetic-monitoring-alerting/" className={styles.link}>
+        <a href="https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/configure-alerts/synthetic-monitoring-alerting/" className={styles.link}>
           Learn more about alerting for Synthetic Monitoring.
         </a>
       </p>

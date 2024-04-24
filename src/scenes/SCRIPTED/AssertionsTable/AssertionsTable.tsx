@@ -216,7 +216,7 @@ function AssertionsTable({ model }: SceneComponentProps<AssertionsTableSceneObje
           href={
             checkType === CheckType.Scripted
               ? 'https://grafana.com/docs/k6/latest/using-k6/checks/'
-              : 'https://grafana.com/docs/grafana-cloud/monitor-public-endpoints/checks/multihttp/#assertions'
+              : 'https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/create-checks/checks/multihttp/#assertions'
           }
           target="_blank"
           rel="noopener noreferrer"
