@@ -20,8 +20,16 @@ export const ScriptedCheckScript = () => {
     <>
       {/* {!id && <ScriptExamplesMenu onSelectExample={(script) => setValue('settings.scripted.script', script)} />} */}
       <TabsBar>
-        <Tab label="Script" onChangeTab={() => setSelectedTab(ScriptEditorTabs.Script)} />
-        <Tab label="Examples" onChangeTab={() => setSelectedTab(ScriptEditorTabs.Examples)} />
+        <Tab
+          label="Script"
+          onChangeTab={() => setSelectedTab(ScriptEditorTabs.Script)}
+          active={selectedTab === ScriptEditorTabs.Script}
+        />
+        <Tab
+          label="Examples"
+          onChangeTab={() => setSelectedTab(ScriptEditorTabs.Examples)}
+          active={selectedTab === ScriptEditorTabs.Examples}
+        />
       </TabsBar>
       <TabContent>
         {selectedTab === ScriptEditorTabs.Script && (
