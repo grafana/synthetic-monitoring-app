@@ -9,29 +9,28 @@ export function FormSidebar({
   onSectionSelect,
   activeIndex,
 }: {
-  sections: Array<{ label: string; hasErrors: boolean; required?: boolean }>;
+  sections: Array<{ label: string; hasErrors: boolean; required?: boolean; complete: boolean }>;
   onSectionSelect: (index: number) => void;
   activeIndex: number;
 }) {
   const styles = useStyles2(getStyles);
   return (
     <ol className={styles.container}>
-      {sections.map(({ label: sectionTitle, required, hasErrors }, sectionIndex) => {
-        const prefix = hasErrors ? (
-          <Icon name={`exclamation-triangle`} color={config.theme2.colors.error.main} />
-        ) : (
-          <span className={css({ width: '16px', display: 'inline-block' })}>{sectionIndex + 1}</span>
-        );
+      {sections.map(({ label: sectionTitle, required, hasErrors, complete }, sectionIndex) => {
+        let prefix = <span className={css({ width: '16px', display: 'inline-block' })}>{sectionIndex + 1}</span>;
+        if (required && complete) {
+          prefix = <Icon name={`check`} color={config.theme2.colors.success.main} />;
+        }
+        if (hasErrors) {
+          prefix = <Icon name={`exclamation-triangle`} color={config.theme2.colors.error.main} />;
+        }
         return (
-          <li
-            key={sectionTitle}
-            onClick={() => onSectionSelect(sectionIndex)}
-            className={cx(styles.listItem, { [styles.active]: activeIndex === sectionIndex })}
-          >
-            <div className={css({ cursor: 'pointer' })}>
-              {prefix}&nbsp;{sectionTitle}
+          <li key={sectionTitle} className={cx(styles.listItem, { [styles.active]: activeIndex === sectionIndex })}>
+            <button className={styles.listItemLabel} type="button" onClick={() => onSectionSelect(sectionIndex)}>
+              {prefix}
+              {sectionTitle}
               {required && ' *'}
-            </div>
+            </button>
             {sectionIndex !== sections.length - 1 && <div className={styles.divider} />}
           </li>
         );
@@ -53,13 +52,21 @@ function getStyles(theme: GrafanaTheme2) {
       fontWeight: theme.typography.fontWeightLight,
       color: theme.colors.text.secondary,
     }),
+    listItemLabel: css({
+      display: 'flex',
+      alignItems: 'center',
+      gap: theme.spacing(1),
+      width: '100%',
+      border: 'none',
+      background: 'none',
+    }),
     active: css({
       fontWeight: theme.typography.fontWeightBold,
       color: theme.colors.text.maxContrast,
     }),
     divider: css({
       height: theme.spacing(2),
-      borderLeft: `1px dotted ${theme.colors.border.medium}`,
+      borderLeft: `1px solid ${theme.colors.border.medium}`,
       margin: `${theme.spacing(1)} 0`,
     }),
   };

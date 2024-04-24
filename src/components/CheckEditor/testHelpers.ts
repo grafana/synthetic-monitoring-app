@@ -6,7 +6,7 @@ import { Label } from 'types';
 import { DNS_RESPONSE_MATCH_OPTIONS } from 'components/constants';
 
 export const toggleSection = async (sectionName: string, user: UserEvent): Promise<HTMLElement> => {
-  const sectionHeader = await screen.findByText(sectionName);
+  const sectionHeader = await screen.findByRole('listitem', { name: sectionName });
   await user.click(sectionHeader);
   return sectionHeader.parentElement?.parentElement?.parentElement?.parentElement ?? new HTMLElement();
 };

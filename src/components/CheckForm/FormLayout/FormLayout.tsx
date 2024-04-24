@@ -1,9 +1,8 @@
 import React, { Children, isValidElement, ReactNode, useState } from 'react';
-import { FieldErrors, FieldPath, useFormContext } from 'react-hook-form';
+import { FieldError, FieldPath, FormState, useFormContext, UseFormGetFieldState } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Button, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
-import { flatten } from 'flat';
 
 import { CheckFormTypeLayoutProps, CheckFormValues } from 'types';
 
@@ -16,8 +15,8 @@ type FormLayoutProps = {
 export const FormLayout = ({ children, formActions }: FormLayoutProps & CheckFormTypeLayoutProps) => {
   let index = -1;
   const [activeIndex, setActiveIndex] = useState(0);
-  const sectionHeaders: Array<{ label: string; hasErrors: boolean; required: boolean }> = [];
-  const { formState, trigger } = useFormContext<CheckFormValues>();
+  const sectionHeaders: Array<{ label: string; hasErrors: boolean; required: boolean; complete: boolean }> = [];
+  const { formState, trigger, getFieldState } = useFormContext<CheckFormValues>();
   const styles = useStyles2(getStyles);
 
   let sectionCount = 0;
@@ -37,26 +36,14 @@ export const FormLayout = ({ children, formActions }: FormLayoutProps & CheckFor
     if (child.type === FormSection) {
       index++;
 
-      const errors = checkForErrors(formState.errors, child.props.fields);
-      sectionHeaders.push({ label: child.props.label, hasErrors: errors.length > 0, required: child.props.required });
-      return (
-        <FormSectionInternal
-          {...child.props}
-          index={index}
-          active={activeIndex === index}
-          onNextClick={
-            index !== sectionCount - 1
-              ? () => {
-                  trigger(child.props.fields).then((valid) => {
-                    if (valid) {
-                      setActiveIndex(activeIndex + 1);
-                    }
-                  });
-                }
-              : undefined
-          }
-        />
-      );
+      const { errors, valid } = checkForErrors({ fields: child.props.fields, formState, getFieldState });
+      sectionHeaders.push({
+        label: child.props.label,
+        hasErrors: errors.length > 0,
+        required: child.props.required,
+        complete: valid,
+      });
+      return <FormSectionInternal {...child.props} index={index} active={activeIndex === index} />;
     }
 
     return child;
@@ -70,6 +57,7 @@ export const FormLayout = ({ children, formActions }: FormLayoutProps & CheckFor
           display: 'flex',
           flexDirection: 'column',
           flexGrow: '1',
+          maxWidth: '800px',
           justifyContent: 'space-between',
         })}
       >
@@ -86,11 +74,8 @@ export const FormLayout = ({ children, formActions }: FormLayoutProps & CheckFor
               {activeIndex !== sectionHeaders.length - 1 && (
                 <Button
                   onClick={() => {
-                    trigger(sections?.[activeIndex].props.fields).then((valid) => {
-                      if (valid) {
-                        setActiveIndex(activeIndex + 1);
-                      }
-                    });
+                    trigger(sections?.[activeIndex].props.fields);
+                    setActiveIndex(activeIndex + 1);
                   }}
                   icon="arrow-right"
                 >
@@ -137,27 +122,39 @@ const FormSectionInternal = ({
       data-fs-element={`Form section ${label}`}
     >
       <div className={styles.main}>
-        <h3 className={styles.header}>
-          {index + 1}.&nbsp;{label}
-        </h3>
+        <h2 className={cx(`h3`, styles.header)}>{`${index + 1}. ${label}`}</h2>
         <div className={cx(styles.content, contentClassName)}>{children}</div>
       </div>
     </div>
   );
 };
 
-function checkForErrors(errors: FieldErrors<CheckFormValues>, fields: Array<FieldPath<CheckFormValues>> = []) {
-  const flattenedErrors = Object.keys(flatten(errors));
-  const typeErrors = flattenedErrors.filter((error) => error.endsWith('.type')).map((error) => error.split('.type')[0]);
-  const relevantErrors = typeErrors.filter((error) => {
-    if (fields.some((field) => error.startsWith(field))) {
-      return true;
+function checkForErrors({
+  formState,
+  fields = [],
+  getFieldState,
+}: {
+  formState: FormState<CheckFormValues>;
+  fields: Array<FieldPath<CheckFormValues>>;
+  getFieldState: UseFormGetFieldState<CheckFormValues>;
+}) {
+  let valid = true;
+  let touched = false;
+  let errors: FieldError[] = [];
+  fields.forEach((field) => {
+    const fieldState = getFieldState(field, formState);
+
+    if (fieldState.isTouched || fieldState.isDirty) {
+      touched = true;
     }
-
-    return false;
+    if (fieldState.invalid || fieldState.error) {
+      valid = false;
+    }
+    if (fieldState.error) {
+      errors.push(fieldState.error);
+    }
   });
-
-  return relevantErrors;
+  return { valid: valid && touched, errors };
 }
 
 const getStyles = (theme: GrafanaTheme2) => {
