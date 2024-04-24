@@ -4,21 +4,28 @@ import { config } from '@grafana/runtime';
 import { Icon, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
+export interface FormSidebarSection {
+  label: string;
+  hasErrors: boolean;
+  required?: boolean;
+  visited: boolean;
+}
+
 export function FormSidebar({
   sections,
   onSectionSelect,
   activeIndex,
 }: {
-  sections: Array<{ label: string; hasErrors: boolean; required?: boolean; complete: boolean }>;
+  sections: FormSidebarSection[];
   onSectionSelect: (index: number) => void;
   activeIndex: number;
 }) {
   const styles = useStyles2(getStyles);
   return (
     <ol className={styles.container}>
-      {sections.map(({ label: sectionTitle, required, hasErrors, complete }, sectionIndex) => {
+      {sections.map(({ label: sectionTitle, required, hasErrors, visited }, sectionIndex) => {
         let prefix = <span className={css({ width: '16px', display: 'inline-block' })}>{sectionIndex + 1}</span>;
-        if (required && complete) {
+        if (required && visited) {
           prefix = <Icon name={`check`} color={config.theme2.colors.success.main} />;
         }
         if (hasErrors) {
@@ -26,7 +33,13 @@ export function FormSidebar({
         }
         return (
           <li key={sectionTitle} className={cx(styles.listItem, { [styles.active]: activeIndex === sectionIndex })}>
-            <button className={styles.listItemLabel} type="button" onClick={() => onSectionSelect(sectionIndex)}>
+            <button
+              className={styles.listItemLabel}
+              type="button"
+              onClick={() => {
+                onSectionSelect(sectionIndex);
+              }}
+            >
               {prefix}
               {sectionTitle}
               {required && ' *'}

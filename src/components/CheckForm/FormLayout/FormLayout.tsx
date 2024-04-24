@@ -6,7 +6,7 @@ import { css, cx } from '@emotion/css';
 
 import { CheckFormTypeLayoutProps, CheckFormValues } from 'types';
 
-import { FormSidebar } from './FormSidebar';
+import { FormSidebar, FormSidebarSection } from './FormSidebar';
 
 type FormLayoutProps = {
   children: ReactNode;
@@ -15,7 +15,8 @@ type FormLayoutProps = {
 export const FormLayout = ({ children, formActions }: FormLayoutProps & CheckFormTypeLayoutProps) => {
   let index = -1;
   const [activeIndex, setActiveIndex] = useState(0);
-  const sectionHeaders: Array<{ label: string; hasErrors: boolean; required: boolean; complete: boolean }> = [];
+  const [visited, setVisited] = useState(new Set<number>());
+  const sectionHeaders: FormSidebarSection[] = [];
   const { formState, trigger, getFieldState } = useFormContext<CheckFormValues>();
   const styles = useStyles2(getStyles);
 
@@ -36,12 +37,16 @@ export const FormLayout = ({ children, formActions }: FormLayoutProps & CheckFor
     if (child.type === FormSection) {
       index++;
 
-      const { errors, valid } = checkForErrors({ fields: child.props.fields, formState, getFieldState });
+      const { errors } = checkForErrors({
+        fields: child.props.fields,
+        formState,
+        getFieldState,
+      });
       sectionHeaders.push({
         label: child.props.label,
         hasErrors: errors.length > 0,
         required: child.props.required,
-        complete: valid,
+        visited: visited.has(index),
       });
       return <FormSectionInternal {...child.props} index={index} active={activeIndex === index} />;
     }
@@ -49,9 +54,15 @@ export const FormLayout = ({ children, formActions }: FormLayoutProps & CheckFor
     return child;
   });
 
+  const navToIndex = (destinationIndex: number) => {
+    trigger(sections?.[activeIndex].props.fields);
+    setVisited((v) => v.add(activeIndex));
+    setActiveIndex(destinationIndex);
+  };
+
   return (
     <div className={css({ display: 'flex', flexDirection: 'row', height: '100%' })}>
-      <FormSidebar sections={sectionHeaders} onSectionSelect={setActiveIndex} activeIndex={activeIndex} />
+      <FormSidebar sections={sectionHeaders} onSectionSelect={navToIndex} activeIndex={activeIndex} />
       <div
         className={css({
           display: 'flex',
@@ -67,18 +78,12 @@ export const FormLayout = ({ children, formActions }: FormLayoutProps & CheckFor
           <div className={css({ display: 'flex', justifyContent: 'space-between', bottom: '0' })}>
             <div className={styles.buttonGroup}>
               {activeIndex !== 0 && (
-                <Button onClick={() => setActiveIndex(activeIndex - 1)} icon="arrow-left" variant="secondary">
+                <Button onClick={() => navToIndex(activeIndex - 1)} icon="arrow-left" variant="secondary">
                   {sectionHeaders[activeIndex - 1].label}
                 </Button>
               )}
               {activeIndex !== sectionHeaders.length - 1 && (
-                <Button
-                  onClick={() => {
-                    trigger(sections?.[activeIndex].props.fields);
-                    setActiveIndex(activeIndex + 1);
-                  }}
-                  icon="arrow-right"
-                >
+                <Button onClick={() => navToIndex(activeIndex + 1)} icon="arrow-right">
                   {sectionHeaders[activeIndex + 1].label}
                 </Button>
               )}
@@ -138,23 +143,14 @@ function checkForErrors({
   fields: Array<FieldPath<CheckFormValues>>;
   getFieldState: UseFormGetFieldState<CheckFormValues>;
 }) {
-  let valid = true;
-  let touched = false;
-  let errors: FieldError[] = [];
+  const errors: FieldError[] = [];
   fields.forEach((field) => {
     const fieldState = getFieldState(field, formState);
-
-    if (fieldState.isTouched || fieldState.isDirty) {
-      touched = true;
-    }
-    if (fieldState.invalid || fieldState.error) {
-      valid = false;
-    }
     if (fieldState.error) {
       errors.push(fieldState.error);
     }
   });
-  return { valid: valid && touched, errors };
+  return { errors };
 }
 
 const getStyles = (theme: GrafanaTheme2) => {
