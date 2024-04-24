@@ -20,7 +20,7 @@ export function WelcomeTabContent({ activeTab }: Props) {
     case WelcomeTab.Protocol:
       return (
         <>
-          <p>Send individual requests via HTTP, DNS, TCP, PING or a traceroute</p>
+          <p>Send individual requests via HTTP, DNS, TCP, PING or traceroute</p>
 
           <img
             src={config.theme2.isDark ? dashboardDark : dashboardLight}
