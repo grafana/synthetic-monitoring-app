@@ -45,7 +45,7 @@ const renderExistingCheckEditor = async (route: string) => {
 };
 
 describe('editing checks', () => {
-  it.only('renders the correct values on edit', async () => {
+  it('renders the correct values on edit', async () => {
     const targetCheck = FULL_HTTP_CHECK;
     const { alertSensitivity, labels, settings } = targetCheck;
     const {

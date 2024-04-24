@@ -13,11 +13,11 @@ import { CheckFormAlert } from 'components/CheckFormAlert';
 import { LabelField } from 'components/LabelField';
 import { MultiHttpFeedbackAlert } from 'components/MultiHttp/MultiHttpFeedbackAlert';
 
-export const CheckMultiHTTPLayout = ({ formActions }: CheckFormTypeLayoutProps) => {
+export const CheckMultiHTTPLayout = ({ formActions, onSubmit, onSubmitError }: CheckFormTypeLayoutProps) => {
   const styles = useStyles2(getStyles);
 
   return (
-    <FormLayout formActions={formActions}>
+    <FormLayout formActions={formActions} onSubmit={onSubmit} onSubmitError={onSubmitError}>
       <MultiHttpFeedbackAlert />
       <FormLayout.Section label="Define check" fields={[`enabled`, `job`, `labels`]} required>
         <CheckEnabled />

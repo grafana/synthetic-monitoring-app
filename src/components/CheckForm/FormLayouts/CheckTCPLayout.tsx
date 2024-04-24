@@ -15,9 +15,9 @@ import { CheckUsage } from 'components/CheckUsage';
 import { LabelField } from 'components/LabelField';
 import { TLSConfig } from 'components/TLSConfig';
 
-export const CheckTCPLayout = ({ formActions }: CheckFormTypeLayoutProps) => {
+export const CheckTCPLayout = ({ formActions, onSubmit, onSubmitError }: CheckFormTypeLayoutProps) => {
   return (
-    <FormLayout formActions={formActions}>
+    <FormLayout formActions={formActions} onSubmit={onSubmit} onSubmitError={onSubmitError}>
       <FormLayout.Section label="Define check" fields={[`enabled`, `job`, `target`]} required>
         <CheckEnabled />
         <CheckJobName />

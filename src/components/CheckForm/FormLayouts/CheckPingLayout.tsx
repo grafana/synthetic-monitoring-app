@@ -13,9 +13,9 @@ import { CheckFormAlert } from 'components/CheckFormAlert';
 import { CheckUsage } from 'components/CheckUsage';
 import { LabelField } from 'components/LabelField';
 
-export const CheckPingLayout = ({ formActions }: CheckFormTypeLayoutProps) => {
+export const CheckPingLayout = ({ formActions, onSubmit, onSubmitError }: CheckFormTypeLayoutProps) => {
   return (
-    <FormLayout formActions={formActions}>
+    <FormLayout formActions={formActions} onSubmit={onSubmit} onSubmitError={onSubmitError}>
       <FormLayout.Section label="Define check" fields={[`enabled`, `job`, `target`]} required>
         <CheckEnabled />
         <CheckJobName />

@@ -1,3 +1,4 @@
+import { SubmitErrorHandler, SubmitHandler } from 'react-hook-form';
 import { DataSourceSettings, OrgRole, SelectableValue } from '@grafana/data';
 import { EmbeddedScene, SceneRouteMatch } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
@@ -770,4 +771,6 @@ export enum CheckStatus {
 
 export interface CheckFormTypeLayoutProps {
   formActions: React.JSX.Element[];
+  onSubmit: SubmitHandler<CheckFormValues>;
+  onSubmitError?: SubmitErrorHandler<CheckFormValues>;
 }

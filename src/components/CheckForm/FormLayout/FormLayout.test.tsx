@@ -27,7 +27,7 @@ describe(`FormLayout`, () => {
     const firstSectionText = `First section content`;
 
     renderTestForm(
-      <FormLayout formActions={formActions}>
+      <FormLayout formActions={formActions} onSubmit={jest.fn()}>
         <FormLayout.Section label="First section">
           <div>{firstSectionText}</div>
         </FormLayout.Section>
@@ -45,7 +45,7 @@ describe(`FormLayout`, () => {
     const firstSectionText = `First section content`;
 
     renderTestForm(
-      <FormLayout formActions={formActions}>
+      <FormLayout formActions={formActions} onSubmit={jest.fn()}>
         <div>Some child that means the formlayout section is not first</div>
         <FormLayout.Section label="First section">
           <div>{firstSectionText}</div>
@@ -59,7 +59,7 @@ describe(`FormLayout`, () => {
 
   it(`shows an error icon if any of the fields in that section have errors`, async () => {
     const { container, user } = renderTestForm(
-      <FormLayout formActions={formActions}>
+      <FormLayout formActions={formActions} onSubmit={jest.fn()}>
         <FormLayout.Section label="First section" fields={[`job`]} required>
           <NameInput />
         </FormLayout.Section>
@@ -80,7 +80,7 @@ describe(`FormLayout`, () => {
     const secondSectionText = `Second section content`;
 
     const { user } = renderTestForm(
-      <FormLayout formActions={formActions}>
+      <FormLayout formActions={formActions} onSubmit={jest.fn()}>
         <FormLayout.Section label="First section">
           <div>{firstSectionText}</div>
         </FormLayout.Section>
@@ -103,7 +103,7 @@ describe(`FormLayout`, () => {
     const thirdSectionText = `Third section content`;
 
     const { user } = renderTestForm(
-      <FormLayout formActions={formActions}>
+      <FormLayout formActions={formActions} onSubmit={jest.fn()}>
         <FormLayout.Section label="First section">
           <div>{firstSectionText}</div>
         </FormLayout.Section>

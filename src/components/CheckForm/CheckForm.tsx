@@ -1,5 +1,5 @@
 import React, { BaseSyntheticEvent, useMemo, useRef, useState } from 'react';
-import { FieldErrors, FormProvider, useForm } from 'react-hook-form';
+import { FormProvider, SubmitErrorHandler, SubmitHandler, useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 import { GrafanaTheme2, OrgRole } from '@grafana/data';
 import { Alert, Button, ConfirmModal, LinkButton, useStyles2 } from '@grafana/ui';
@@ -11,9 +11,8 @@ import { useChecks, useCUDChecks } from 'data/useChecks';
 import { useTenantLimits } from 'data/useTenantLimits';
 import { useNavigation } from 'hooks/useNavigation';
 import { toFormValues, toPayload } from 'components/CheckEditor/checkFormTransformations';
-import { PROBES_SELECT_ID } from 'components/CheckEditor/CheckProbes';
 import { CheckTestResultsModal } from 'components/CheckTestResultsModal';
-import { CHECK_FORM_ERROR_EVENT, fallbackCheckMap } from 'components/constants';
+import { fallbackCheckMap } from 'components/constants';
 import { ErrorAlert } from 'components/ErrorAlert';
 import { PluginPage } from 'components/PluginPage';
 import { getRoute } from 'components/Routing';
@@ -108,18 +107,6 @@ const CheckFormContent = ({ check, checkType, overCheckLimit, overScriptedLimit 
     return createCheck(newCheck, { onSuccess });
   };
 
-  const handleError = (errs: FieldErrors<CheckFormValues>) => {
-    const shouldFocus = findFieldToFocus(errs);
-
-    // can't pass refs to all fields so have to manage it automatically
-    if (shouldFocus) {
-      shouldFocus.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
-      shouldFocus.focus?.({ preventScroll: true });
-    }
-
-    document.dispatchEvent(new CustomEvent(CHECK_FORM_ERROR_EVENT, { detail: errs }));
-  };
-
   const handleDelete = () => {
     deleteCheck(check, { onSuccess });
   };
@@ -196,19 +183,17 @@ const CheckFormContent = ({ check, checkType, overCheckLimit, overScriptedLimit 
     <PluginPage pageNav={{ text: check?.job ? `Editing ${check.job}` : headerText }}>
       <>
         <FormProvider {...formMethods}>
-          <form onSubmit={formMethods.handleSubmit(handleSubmit, handleError)} className={css({ height: '100%' })}>
-            {(overCheckLimit || overScriptedLimit) && (
-              <ErrorAlert
-                title={`Maximum number of ${overScriptedLimit ? 'scripted' : ''} checks reached`}
-                content={`You have reached the maximum quantity of ${
-                  overScriptedLimit ? 'scripted' : ''
-                } checks allowed for your account. Please contact support for assistance.`}
-                onClick={navigateBack}
-                buttonText="Go to checks"
-              />
-            )}
-            <CheckSelector checkType={checkType} formActions={actions} />
-          </form>
+          {(overCheckLimit || overScriptedLimit) && (
+            <ErrorAlert
+              title={`Maximum number of ${overScriptedLimit ? 'scripted' : ''} checks reached`}
+              content={`You have reached the maximum quantity of ${
+                overScriptedLimit ? 'scripted' : ''
+              } checks allowed for your account. Please contact support for assistance.`}
+              onClick={navigateBack}
+              buttonText="Go to checks"
+            />
+          )}
+          <CheckSelector checkType={checkType} formActions={actions} onSubmit={handleSubmit} />
         </FormProvider>
       </>
       {submissionError && (
@@ -231,33 +216,41 @@ const CheckFormContent = ({ check, checkType, overCheckLimit, overScriptedLimit 
   );
 };
 
-const CheckSelector = ({ checkType, formActions }: { checkType: CheckType; formActions: React.JSX.Element[] }) => {
+const CheckSelector = ({
+  checkType,
+  ...rest
+}: {
+  checkType: CheckType;
+  formActions: React.JSX.Element[];
+  onSubmit: SubmitHandler<CheckFormValues>;
+  onSubmitError?: SubmitErrorHandler<CheckFormValues>;
+}) => {
   if (checkType === CheckType.HTTP) {
-    return <CheckHTTPLayout formActions={formActions} />;
+    return <CheckHTTPLayout {...rest} />;
   }
 
   if (checkType === CheckType.MULTI_HTTP) {
-    return <CheckMultiHTTPLayout formActions={formActions} />;
+    return <CheckMultiHTTPLayout {...rest} />;
   }
 
   if (checkType === CheckType.Scripted) {
-    return <CheckScriptedLayout formActions={formActions} />;
+    return <CheckScriptedLayout {...rest} />;
   }
 
   if (checkType === CheckType.PING) {
-    return <CheckPingLayout formActions={formActions} />;
+    return <CheckPingLayout {...rest} />;
   }
 
   if (checkType === CheckType.DNS) {
-    return <CheckDNSLayout formActions={formActions} />;
+    return <CheckDNSLayout {...rest} />;
   }
 
   if (checkType === CheckType.TCP) {
-    return <CheckTCPLayout formActions={formActions} />;
+    return <CheckTCPLayout {...rest} />;
   }
 
   if (checkType === CheckType.Traceroute) {
-    return <CheckTracerouteLayout formActions={formActions} />;
+    return <CheckTracerouteLayout {...rest} />;
   }
 
   throw new Error(`Invalid check type: ${checkType}`);
@@ -273,50 +266,6 @@ function isValidCheckType(checkType?: CheckType): checkType is CheckType {
   }
 
   return false;
-}
-
-function findFieldToFocus(errs: FieldErrors<CheckFormValues>): HTMLElement | undefined {
-  if (shouldFocusProbes(errs)) {
-    return document.querySelector<HTMLInputElement>(`#${PROBES_SELECT_ID} input`) || undefined;
-  }
-
-  const ref = findRef(errs);
-  const isVisible = ref?.offsetParent !== null;
-  return isVisible ? ref : undefined;
-}
-
-function findRef(target: any): HTMLElement | undefined {
-  if (Array.isArray(target)) {
-    let ref;
-    for (let i = 0; i < target.length; i++) {
-      const found = findRef(target[i]);
-
-      if (found) {
-        ref = found;
-        break;
-      }
-    }
-
-    return ref;
-  }
-
-  if (target !== null && typeof target === `object`) {
-    if (target.ref) {
-      return target.ref;
-    }
-
-    return findRef(Object.values(target));
-  }
-
-  return undefined;
-}
-
-function shouldFocusProbes(errs: FieldErrors<CheckFormValues>) {
-  if (errs?.job || errs?.target) {
-    return false;
-  }
-
-  return `probes` in errs;
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({

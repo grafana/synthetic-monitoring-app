@@ -1,10 +1,13 @@
 import React, { Children, isValidElement, ReactNode, useState } from 'react';
-import { FieldError, FieldPath, FormState, useFormContext, UseFormGetFieldState } from 'react-hook-form';
+import { FieldError, FieldErrors, FieldPath, FormState, useFormContext, UseFormGetFieldState } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Button, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
+import { flatten } from 'flat';
 
 import { CheckFormTypeLayoutProps, CheckFormValues } from 'types';
+import { PROBES_SELECT_ID } from 'components/CheckEditor/CheckProbes';
+import { CHECK_FORM_ERROR_EVENT } from 'components/constants';
 
 import { FormSidebar, FormSidebarSection } from './FormSidebar';
 
@@ -12,12 +15,17 @@ type FormLayoutProps = {
   children: ReactNode;
 };
 
-export const FormLayout = ({ children, formActions }: FormLayoutProps & CheckFormTypeLayoutProps) => {
+export const FormLayout = ({
+  children,
+  formActions,
+  onSubmit,
+  onSubmitError,
+}: FormLayoutProps & CheckFormTypeLayoutProps) => {
   let index = -1;
   const [activeIndex, setActiveIndex] = useState(0);
   const [visited, setVisited] = useState(new Set<number>());
   const sectionHeaders: FormSidebarSection[] = [];
-  const { formState, trigger, getFieldState } = useFormContext<CheckFormValues>();
+  const { formState, trigger, getFieldState, handleSubmit } = useFormContext<CheckFormValues>();
   const styles = useStyles2(getStyles);
 
   let sectionCount = 0;
@@ -60,39 +68,67 @@ export const FormLayout = ({ children, formActions }: FormLayoutProps & CheckFor
     setActiveIndex(destinationIndex);
   };
 
+  const handleError = (errs: FieldErrors<CheckFormValues>) => {
+    const flattenedErrors = Object.keys(flatten(errs));
+    // Find the first section that has a field with an error.
+    const errSection = sections?.find((section) =>
+      flattenedErrors.find((errName: string) => {
+        return section.props.fields?.some((field: string) => errName.startsWith(field));
+      })
+    );
+    if (errSection !== undefined) {
+      setActiveIndex(errSection.props.index);
+    }
+
+    const shouldFocus = findFieldToFocus(errs);
+
+    // can't pass refs to all fields so have to manage it automatically
+    if (shouldFocus) {
+      shouldFocus.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+      shouldFocus.focus?.({ preventScroll: true });
+    }
+
+    document.dispatchEvent(new CustomEvent(CHECK_FORM_ERROR_EVENT, { detail: errs }));
+    if (onSubmitError) {
+      onSubmitError(errs);
+    }
+  };
+
   return (
-    <div className={css({ display: 'flex', flexDirection: 'row', height: '100%' })}>
-      <FormSidebar sections={sectionHeaders} onSectionSelect={navToIndex} activeIndex={activeIndex} />
-      <div
-        className={css({
-          display: 'flex',
-          flexDirection: 'column',
-          flexGrow: '1',
-          maxWidth: '800px',
-          justifyContent: 'space-between',
-        })}
-      >
-        <div className={css({ paddingLeft: '24px' })}>{sections}</div>
-        <div>
-          <hr className={css({ width: '100%' })} />
-          <div className={css({ display: 'flex', justifyContent: 'space-between', bottom: '0' })}>
-            <div className={styles.buttonGroup}>
-              {activeIndex !== 0 && (
-                <Button onClick={() => navToIndex(activeIndex - 1)} icon="arrow-left" variant="secondary">
-                  {sectionHeaders[activeIndex - 1].label}
-                </Button>
-              )}
-              {activeIndex !== sectionHeaders.length - 1 && (
-                <Button onClick={() => navToIndex(activeIndex + 1)} icon="arrow-right">
-                  {sectionHeaders[activeIndex + 1].label}
-                </Button>
-              )}
+    <form onSubmit={handleSubmit(onSubmit, handleError)} className={css({ height: '100%' })}>
+      <div className={css({ display: 'flex', flexDirection: 'row', height: '100%' })}>
+        <FormSidebar sections={sectionHeaders} onSectionSelect={navToIndex} activeIndex={activeIndex} />
+        <div
+          className={css({
+            display: 'flex',
+            flexDirection: 'column',
+            flexGrow: '1',
+            maxWidth: '800px',
+            justifyContent: 'space-between',
+          })}
+        >
+          <div className={css({ paddingLeft: '24px' })}>{sections}</div>
+          <div>
+            <hr className={css({ width: '100%' })} />
+            <div className={css({ display: 'flex', justifyContent: 'space-between', bottom: '0' })}>
+              <div className={styles.buttonGroup}>
+                {activeIndex !== 0 && (
+                  <Button onClick={() => navToIndex(activeIndex - 1)} icon="arrow-left" variant="secondary">
+                    {sectionHeaders[activeIndex - 1].label}
+                  </Button>
+                )}
+                {activeIndex !== sectionHeaders.length - 1 && (
+                  <Button onClick={() => navToIndex(activeIndex + 1)} icon="arrow-right">
+                    {sectionHeaders[activeIndex + 1].label}
+                  </Button>
+                )}
+              </div>
+              <div className={styles.buttonGroup}>{formActions}</div>
             </div>
-            <div className={styles.buttonGroup}>{formActions}</div>
           </div>
         </div>
       </div>
-    </div>
+    </form>
   );
 };
 
@@ -176,3 +212,47 @@ const getStyles = (theme: GrafanaTheme2) => {
 };
 
 FormLayout.Section = FormSection;
+
+function findFieldToFocus(errs: FieldErrors<CheckFormValues>): HTMLElement | undefined {
+  if (shouldFocusProbes(errs)) {
+    return document.querySelector<HTMLInputElement>(`#${PROBES_SELECT_ID} input`) || undefined;
+  }
+
+  const ref = findRef(errs);
+  const isVisible = ref?.offsetParent !== null;
+  return isVisible ? ref : undefined;
+}
+
+function findRef(target: any): HTMLElement | undefined {
+  if (Array.isArray(target)) {
+    let ref;
+    for (let i = 0; i < target.length; i++) {
+      const found = findRef(target[i]);
+
+      if (found) {
+        ref = found;
+        break;
+      }
+    }
+
+    return ref;
+  }
+
+  if (target !== null && typeof target === `object`) {
+    if (target.ref) {
+      return target.ref;
+    }
+
+    return findRef(Object.values(target));
+  }
+
+  return undefined;
+}
+
+function shouldFocusProbes(errs: FieldErrors<CheckFormValues>) {
+  if (errs?.job || errs?.target) {
+    return false;
+  }
+
+  return `probes` in errs;
+}

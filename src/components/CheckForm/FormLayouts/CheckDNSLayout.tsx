@@ -18,9 +18,9 @@ import { CheckFormAlert } from 'components/CheckFormAlert';
 import { CheckUsage } from 'components/CheckUsage';
 import { LabelField } from 'components/LabelField';
 
-export const CheckDNSLayout = ({ formActions }: CheckFormTypeLayoutProps) => {
+export const CheckDNSLayout = ({ formActions, onSubmit, onSubmitError }: CheckFormTypeLayoutProps) => {
   return (
-    <FormLayout formActions={formActions}>
+    <FormLayout formActions={formActions} onSubmit={onSubmit} onSubmitError={onSubmitError}>
       <FormLayout.Section label="Define check" fields={[`enabled`, `job`, `target`]} required>
         <CheckEnabled />
         <CheckJobName />
