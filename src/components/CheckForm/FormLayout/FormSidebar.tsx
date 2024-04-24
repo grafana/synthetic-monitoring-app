@@ -22,7 +22,7 @@ export function FormSidebar({
 }) {
   const styles = useStyles2(getStyles);
   return (
-    <ol className={styles.container}>
+    <ol className={styles.container} data-testid="form-sidebar">
       {sections.map(({ label: sectionTitle, required, hasErrors, visited }, sectionIndex) => {
         let prefix = <span className={css({ width: '16px', display: 'inline-block' })}>{sectionIndex + 1}</span>;
         if (required && visited) {

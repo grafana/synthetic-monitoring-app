@@ -6,9 +6,13 @@ import { Label } from 'types';
 import { DNS_RESPONSE_MATCH_OPTIONS } from 'components/constants';
 
 export const toggleSection = async (sectionName: string, user: UserEvent): Promise<HTMLElement> => {
-  const sectionHeader = await screen.findByRole('listitem', { name: sectionName });
+  // There can be overlap between section names and individual field names, so we need to search for section names in the sidebar only
+  const sidebar = await screen.findByTestId('form-sidebar');
+  const sectionRegexp = new RegExp(sectionName);
+  const sectionHeader = await within(sidebar).findByRole('button', { name: sectionRegexp });
   await user.click(sectionHeader);
-  return sectionHeader.parentElement?.parentElement?.parentElement?.parentElement ?? new HTMLElement();
+  const section = await screen.findAllByText(sectionRegexp);
+  return section[1].parentElement ?? new HTMLElement();
 };
 
 export const submitForm = async (user: UserEvent) => {

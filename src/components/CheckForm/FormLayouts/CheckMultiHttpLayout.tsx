@@ -24,13 +24,14 @@ export const CheckMultiHTTPLayout = ({ formActions }: CheckFormTypeLayoutProps) 
         <CheckJobName />
         <LabelField<CheckFormValuesMultiHttp> labelDestination="check" />
       </FormLayout.Section>
-      <FormLayout.Section label="Probes" fields={[`probes`]} required>
+      <FormLayout.Section label="Probes" fields={[`probes`, `frequency`, `timeout`]} required>
         <ProbeOptions checkType={CheckType.MULTI_HTTP} />
       </FormLayout.Section>
       <FormLayout.Section
         contentClassName={styles.requestsContainer}
         label="Requests"
         fields={[`settings.multihttp.entries`]}
+        required
       >
         <div>At least one target HTTP is required; limit 10 requests per check.</div>
         <MultiHttpCheckRequests />

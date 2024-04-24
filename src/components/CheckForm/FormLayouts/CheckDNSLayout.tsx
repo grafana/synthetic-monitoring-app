@@ -21,17 +21,15 @@ import { LabelField } from 'components/LabelField';
 export const CheckDNSLayout = ({ formActions }: CheckFormTypeLayoutProps) => {
   return (
     <FormLayout formActions={formActions}>
-      <FormLayout.Section
-        label="General settings"
-        fields={[`enabled`, `job`, `target`, `probes`, `frequency`, `timeout`]}
-        required
-      >
+      <FormLayout.Section label="Define check" fields={[`enabled`, `job`, `target`]} required>
         <CheckEnabled />
         <CheckJobName />
         <CheckTarget checkType={CheckType.DNS} />
-        <ProbeOptions checkType={CheckType.DNS} />
-        <CheckPublishedAdvanceMetrics />
+      </FormLayout.Section>
+      <FormLayout.Section label="Probes" fields={[`probes`, `frequency`, `timeout`]}>
         <CheckUsage />
+        <CheckPublishedAdvanceMetrics />
+        <ProbeOptions checkType={CheckType.DNS} />
       </FormLayout.Section>
       <FormLayout.Section
         label="DNS settings"
