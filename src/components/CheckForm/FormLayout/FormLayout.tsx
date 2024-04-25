@@ -1,7 +1,7 @@
 import React, { Children, isValidElement, ReactNode, useState } from 'react';
 import { FieldError, FieldErrors, FieldPath, FormState, useFormContext, UseFormGetFieldState } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Button, useStyles2 } from '@grafana/ui';
+import { Alert, Button, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { flatten } from 'flat';
 
@@ -13,6 +13,7 @@ import { FormSidebar, FormSidebarSection } from './FormSidebar';
 
 type FormLayoutProps = {
   children: ReactNode;
+  errorMessage?: string;
 };
 
 export const FormLayout = ({
@@ -20,6 +21,7 @@ export const FormLayout = ({
   formActions,
   onSubmit,
   onSubmitError,
+  errorMessage,
 }: FormLayoutProps & CheckFormTypeLayoutProps) => {
   let index = -1;
   const [activeIndex, setActiveIndex] = useState(0);
@@ -107,6 +109,13 @@ export const FormLayout = ({
           })}
         >
           <div>{sections}</div>
+          {errorMessage && (
+            <div className={styles.submissionError}>
+              <Alert title="Save failed" severity="error">
+                {errorMessage}
+              </Alert>
+            </div>
+          )}
           <div>
             <hr />
             <div className={cx(styles.actionsBar, styles.sectionContent)}>
@@ -211,6 +220,9 @@ const getStyles = (theme: GrafanaTheme2) => {
         gridTemplateColumns: `240px 1fr`,
         height: '100%',
       },
+    }),
+    submissionError: css({
+      marginTop: theme.spacing(2),
     }),
     section: css({
       containerName,

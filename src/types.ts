@@ -1,3 +1,4 @@
+import React from 'react';
 import { SubmitErrorHandler, SubmitHandler } from 'react-hook-form';
 import { DataSourceSettings, OrgRole, SelectableValue } from '@grafana/data';
 import { EmbeddedScene, SceneRouteMatch } from '@grafana/scenes';
@@ -778,4 +779,5 @@ export interface CheckFormTypeLayoutProps {
   formActions: React.JSX.Element[];
   onSubmit: SubmitHandler<CheckFormValues>;
   onSubmitError?: SubmitErrorHandler<CheckFormValues>;
+  errorMessage?: string;
 }

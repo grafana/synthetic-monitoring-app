@@ -1,9 +1,7 @@
 import React, { BaseSyntheticEvent, useMemo, useRef, useState } from 'react';
 import { FormProvider, SubmitErrorHandler, SubmitHandler, useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
-import { GrafanaTheme2 } from '@grafana/data';
-import { Alert, Button, ConfirmModal, LinkButton, useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { Button, ConfirmModal, LinkButton } from '@grafana/ui';
 
 import { Check, CheckFormValues, CheckPageParams, CheckType, ROUTES } from 'types';
 import { isOverCheckLimit, isOverScriptedLimit } from 'utils';
@@ -61,7 +59,6 @@ type CheckFormContentProps = {
 
 const CheckFormContent = ({ check, checkType, overCheckLimit, overScriptedLimit }: CheckFormContentProps) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const styles = useStyles2(getStyles);
   const { adhocTestData, closeModal, isPending, openTestCheckModal, testCheck, testCheckError } =
     useAdhocTest(checkType);
 
@@ -169,16 +166,14 @@ const CheckFormContent = ({ check, checkType, overCheckLimit, overScriptedLimit 
               buttonText="Go to checks"
             />
           )}
-          <CheckSelector checkType={checkType} formActions={actions} onSubmit={handleSubmit} />
+          <CheckSelector
+            checkType={checkType}
+            formActions={actions}
+            onSubmit={handleSubmit}
+            errorMessage={(submissionError && submissionError.message) ?? 'Something went wrong'}
+          />
         </FormProvider>
       </>
-      {submissionError && (
-        <div className={styles.submissionError}>
-          <Alert title="Save failed" severity="error">
-            {submissionError.message ?? 'Something went wrong'}
-          </Alert>
-        </div>
-      )}
       <CheckTestResultsModal isOpen={openTestCheckModal} onDismiss={closeModal} testResponse={adhocTestData} />
       <ConfirmModal
         isOpen={showDeleteModal}
@@ -200,6 +195,7 @@ const CheckSelector = ({
   formActions: React.JSX.Element[];
   onSubmit: SubmitHandler<CheckFormValues>;
   onSubmitError?: SubmitErrorHandler<CheckFormValues>;
+  errorMessage?: string;
 }) => {
   if (checkType === CheckType.HTTP) {
     return <CheckHTTPLayout {...rest} />;
@@ -243,14 +239,3 @@ function isValidCheckType(checkType?: CheckType): checkType is CheckType {
 
   return false;
 }
-
-const getStyles = (theme: GrafanaTheme2) => ({
-  stack: css({
-    marginTop: theme.spacing(4),
-    display: `flex`,
-    gap: theme.spacing(1),
-  }),
-  submissionError: css({
-    marginTop: theme.spacing(2),
-  }),
-});
