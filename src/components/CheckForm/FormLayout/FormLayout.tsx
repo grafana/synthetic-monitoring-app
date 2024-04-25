@@ -109,7 +109,7 @@ export const FormLayout = ({
           <div>{sections}</div>
           <div>
             <hr />
-            <div className={css({ display: 'flex', justifyContent: 'space-between' })}>
+            <div className={cx(styles.actionsBar, styles.sectionContent)}>
               <div className={styles.buttonGroup}>
                 {activeIndex !== 0 && (
                   <Button onClick={() => navToIndex(activeIndex - 1)} icon="arrow-left" variant="secondary">
@@ -158,13 +158,11 @@ const FormSectionInternal = ({
 
   return (
     <div
-      className={cx(styles.stack, { [css({ display: 'none' })]: !active })}
+      className={cx(styles.section, { [css({ display: 'none' })]: !active })}
       data-fs-element={`Form section ${label}`}
     >
-      <div className={styles.section}>
-        <h2 className={cx(`h3`, styles.header)}>{`${index + 1}. ${label}`}</h2>
-        <div className={contentClassName}>{children}</div>
-      </div>
+      <h2 className={cx(`h3`, styles.header)}>{`${index + 1}. ${label}`}</h2>
+      <div className={cx(styles.sectionContent, contentClassName)}>{children}</div>
     </div>
   );
 };
@@ -206,11 +204,11 @@ const getStyles = (theme: GrafanaTheme2) => {
       gap: theme.spacing(4),
 
       [containerQuery]: {
-        gridTemplateColumns: `240px minmax(auto, 800px)`,
+        gridTemplateColumns: `240px 1fr`,
         height: '100%',
       },
       [mediaQuery]: {
-        gridTemplateColumns: `240px minmax(auto, 800px)`,
+        gridTemplateColumns: `240px 1fr`,
         height: '100%',
       },
     }),
@@ -218,16 +216,16 @@ const getStyles = (theme: GrafanaTheme2) => {
       containerName,
       flex: 1,
     }),
+    sectionContent: css({
+      maxWidth: `800px`,
+    }),
     header: css({
       marginBottom: theme.spacing(4),
     }),
+    actionsBar: css({ display: 'flex', justifyContent: 'space-between', maxWidth: `800px` }),
     buttonGroup: css({
       display: 'flex',
       gap: theme.spacing(1),
-    }),
-    stack: css({
-      display: 'flex',
-      gap: theme.spacing(2),
     }),
   };
 };
