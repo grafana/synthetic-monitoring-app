@@ -109,14 +109,15 @@ export const FormLayout = ({
           })}
         >
           <div>{sections}</div>
-          {errorMessage && (
-            <div className={styles.submissionError}>
-              <Alert title="Save failed" severity="error">
-                {errorMessage}
-              </Alert>
-            </div>
-          )}
+
           <div>
+            {errorMessage && (
+              <div className={styles.submissionError}>
+                <Alert title="Save failed" severity="error">
+                  {errorMessage}
+                </Alert>
+              </div>
+            )}{' '}
             <hr />
             <div className={cx(styles.actionsBar, styles.sectionContent)}>
               <div className={styles.buttonGroup}>
