@@ -70,7 +70,6 @@ export function getStyles(theme: GrafanaTheme2) {
       marginRight: '5px',
     }),
     contentContainer: css({
-      width: '100%',
       display: 'flex',
       flexDirection: 'column',
       border: `1px ${theme.colors.border.medium} solid`,
