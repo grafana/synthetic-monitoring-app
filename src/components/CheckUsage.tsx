@@ -13,8 +13,8 @@ const getStyles = (theme: GrafanaTheme2) => ({
     marginBottom: theme.spacing(6),
   }),
   calcList: css({
-    display: 'flex',
-    flexWrap: 'wrap',
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
     gap: theme.spacing(1),
   }),
   icon: css({

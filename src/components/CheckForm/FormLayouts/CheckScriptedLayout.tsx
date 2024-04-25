@@ -14,11 +14,16 @@ import { CheckFormAlert } from 'components/CheckFormAlert';
 import { CheckUsage } from 'components/CheckUsage';
 import { LabelField } from 'components/LabelField';
 
-export const CheckScriptedLayout = ({ formActions, onSubmit, onSubmitError }: CheckFormTypeLayoutProps) => {
+export const CheckScriptedLayout = ({
+  formActions,
+  onSubmit,
+  onSubmitError,
+  errorMessage,
+}: CheckFormTypeLayoutProps) => {
   const styles = useStyles2(getStyles);
 
   return (
-    <FormLayout formActions={formActions} onSubmit={onSubmit} onSubmitError={onSubmitError}>
+    <FormLayout formActions={formActions} onSubmit={onSubmit} onSubmitError={onSubmitError} errorMessage={errorMessage}>
       <FormLayout.Section label="Define check" fields={[`enabled`, `job`, `target`]} required>
         <CheckEnabled />
         <CheckJobName />
