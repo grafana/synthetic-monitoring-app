@@ -4,7 +4,7 @@ import { Icon, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 const docs = {
-  probes: `https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/#probes`,
+  probes: `https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/create-checks/public-probes/`,
   publicProbes: `https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/create-checks/public-probes/`,
   privateProbes: `https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/set-up/set-up-private-probes/`,
   addPrivateProbe: `https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/set-up/set-up-private-probes/#add-a-new-probe-in-your-grafana-instance`,
