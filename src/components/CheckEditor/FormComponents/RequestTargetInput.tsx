@@ -142,12 +142,14 @@ const getTargetHelpText = (typeOfCheck: CheckType | undefined): TargetHelpInfo =
         text: 'The URL that best describes the target of the check',
         example: `https://grafana.com/`,
       };
+      break;
     }
     case CheckType.GRPC: {
       resp = {
         text: '',
         example: '',
       };
+      break;
     }
   }
   return resp;
