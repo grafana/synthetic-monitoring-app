@@ -95,22 +95,21 @@ export const FormLayout = ({
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit, handleError)} className={css({ height: '100%' })}>
-      <div className={css({ display: 'flex', flexDirection: 'row', height: '100%' })}>
+    <form onSubmit={handleSubmit(onSubmit, handleError)} className={styles.wrapper}>
+      <div className={styles.container}>
         <FormSidebar sections={sectionHeaders} onSectionSelect={navToIndex} activeIndex={activeIndex} />
         <div
           className={css({
             display: 'flex',
             flexDirection: 'column',
             flexGrow: '1',
-            maxWidth: '800px',
             justifyContent: 'space-between',
           })}
         >
-          <div className={css({ paddingLeft: '24px' })}>{sections}</div>
+          <div>{sections}</div>
           <div>
-            <hr className={css({ width: '100%' })} />
-            <div className={css({ display: 'flex', justifyContent: 'space-between', bottom: '0' })}>
+            <hr />
+            <div className={css({ display: 'flex', justifyContent: 'space-between' })}>
               <div className={styles.buttonGroup}>
                 {activeIndex !== 0 && (
                   <Button onClick={() => navToIndex(activeIndex - 1)} icon="arrow-left" variant="secondary">
@@ -162,9 +161,9 @@ const FormSectionInternal = ({
       className={cx(styles.stack, { [css({ display: 'none' })]: !active })}
       data-fs-element={`Form section ${label}`}
     >
-      <div className={styles.main}>
+      <div className={styles.section}>
         <h2 className={cx(`h3`, styles.header)}>{`${index + 1}. ${label}`}</h2>
-        <div className={cx(styles.content, contentClassName)}>{children}</div>
+        <div className={contentClassName}>{children}</div>
       </div>
     </div>
   );
@@ -190,15 +189,37 @@ function checkForErrors({
 }
 
 const getStyles = (theme: GrafanaTheme2) => {
+  const containerName = `checkForm`;
+  const breakpoint = theme.breakpoints.values.md;
+  const query = `(min-width: ${breakpoint + 1}px)`;
+  const containerQuery = `@container ${containerName} ${query}`;
+  const mediaQuery = `@supports not (container-type: inline-size) @media ${query}`;
+
   return {
-    main: css({
+    wrapper: css({
+      containerName,
+      containerType: `inline-size`,
+      height: '100%',
+    }),
+    container: css({
+      display: 'grid',
+      gap: theme.spacing(4),
+
+      [containerQuery]: {
+        gridTemplateColumns: `240px minmax(auto, 800px)`,
+        height: '100%',
+      },
+      [mediaQuery]: {
+        gridTemplateColumns: `240px minmax(auto, 800px)`,
+        height: '100%',
+      },
+    }),
+    section: css({
+      containerName,
       flex: 1,
     }),
     header: css({
       marginBottom: theme.spacing(4),
-    }),
-    content: css({
-      maxWidth: `800px`,
     }),
     buttonGroup: css({
       display: 'flex',
