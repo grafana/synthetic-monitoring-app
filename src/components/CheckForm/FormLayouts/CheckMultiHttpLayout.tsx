@@ -10,6 +10,7 @@ import { MultiHttpCheckRequests } from 'components/CheckEditor/FormComponents/Mu
 import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
 import { FormLayout } from 'components/CheckForm/FormLayout/FormLayout';
 import { CheckFormAlert } from 'components/CheckFormAlert';
+import { CheckUsage } from 'components/CheckUsage';
 import { LabelField } from 'components/LabelField';
 import { MultiHttpFeedbackAlert } from 'components/MultiHttp/MultiHttpFeedbackAlert';
 
@@ -25,6 +26,7 @@ export const CheckMultiHTTPLayout = ({ formActions, onSubmit, onSubmitError }: C
         <LabelField<CheckFormValuesMultiHttp> labelDestination="check" />
       </FormLayout.Section>
       <FormLayout.Section label="Probes" fields={[`probes`, `frequency`, `timeout`]} required>
+        <CheckUsage checkType={CheckType.MULTI_HTTP} />
         <ProbeOptions checkType={CheckType.MULTI_HTTP} />
       </FormLayout.Section>
       <FormLayout.Section

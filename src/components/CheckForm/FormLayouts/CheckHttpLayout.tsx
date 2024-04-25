@@ -35,7 +35,7 @@ export const CheckHTTPLayout = ({ formActions, onSubmit, onSubmitError }: CheckF
         <CheckEnabled />
       </FormLayout.Section>
       <FormLayout.Section label="Probes" fields={[`probes`, `frequency`, `timeout`]} required>
-        <CheckUsage />
+        <CheckUsage checkType={CheckType.HTTP} />
         <CheckPublishedAdvanceMetrics />
         <ProbeOptions checkType={CheckType.HTTP} />
       </FormLayout.Section>

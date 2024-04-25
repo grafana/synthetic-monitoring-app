@@ -23,7 +23,7 @@ export const CheckTracerouteLayout = ({ formActions, onSubmit, onSubmitError }: 
         <CheckTarget checkType={CheckType.Traceroute} />
       </FormLayout.Section>
       <FormLayout.Section label="Probes" fields={[`probes`, `frequency`, `timeout`]} required>
-        <CheckUsage />
+        <CheckUsage checkType={CheckType.Traceroute} />
         <CheckPublishedAdvanceMetrics />
         <ProbeOptions checkType={CheckType.Traceroute} />
       </FormLayout.Section>
