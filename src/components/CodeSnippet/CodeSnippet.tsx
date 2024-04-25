@@ -60,6 +60,7 @@ export const CodeSnippet = ({
   initialTab,
   tabs = [],
   className,
+  hideHeader,
 }: CodeSnippetProps) => {
   const [activeTab, setActiveTab] = useState<string | undefined>(initialTab);
   const [activeGroup, setActiveGroup] = useState<string | undefined>();
@@ -97,6 +98,7 @@ export const CodeSnippet = ({
 
   return (
     <SnippetWindow
+      hideHeader={hideHeader}
       titleContent={
         tabs.length > 0 && (
           <TabsBar className={styles.tabsBar}>
