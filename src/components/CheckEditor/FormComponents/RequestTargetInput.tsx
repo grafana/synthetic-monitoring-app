@@ -16,7 +16,6 @@ type RequestMethodInputProps = {
   checkType: CheckType;
   id: string;
   name: FieldPath<CheckFormValues>;
-  showQueryParams?: boolean;
 };
 
 export const RequestTargetInput = ({
@@ -25,13 +24,13 @@ export const RequestTargetInput = ({
   id,
   name,
   'data-testid': dataTestId,
-  showQueryParams,
 }: RequestMethodInputProps) => {
   const { control, formState, watch } = useFormContext<CheckFormValues>();
   const error = get(formState.errors, name);
   const styles = useStyles2(getStyles);
   const targetHelp = getTargetHelpText(checkType);
   const parsedURL = parseUrl(watch('target'));
+  const showQueryParams = checkType === CheckType.HTTP;
 
   return (
     <Controller
@@ -143,12 +142,14 @@ const getTargetHelpText = (typeOfCheck: CheckType | undefined): TargetHelpInfo =
         text: 'The URL that best describes the target of the check',
         example: `https://grafana.com/`,
       };
+      break;
     }
     case CheckType.GRPC: {
       resp = {
         text: '',
         example: '',
       };
+      break;
     }
   }
   return resp;
