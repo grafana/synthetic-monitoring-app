@@ -1,12 +1,12 @@
 import React, { BaseSyntheticEvent, useMemo, useRef, useState } from 'react';
 import { FormProvider, SubmitErrorHandler, SubmitHandler, useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
-import { GrafanaTheme2, OrgRole } from '@grafana/data';
+import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Button, ConfirmModal, LinkButton, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Check, CheckFormValues, CheckPageParams, CheckType, ROUTES } from 'types';
-import { hasRole, isOverCheckLimit, isOverScriptedLimit } from 'utils';
+import { isOverCheckLimit, isOverScriptedLimit } from 'utils';
 import { useChecks, useCUDChecks } from 'data/useChecks';
 import { useTenantLimits } from 'data/useTenantLimits';
 import { useNavigation } from 'hooks/useNavigation';
@@ -74,7 +74,6 @@ const CheckFormContent = ({ check, checkType, overCheckLimit, overScriptedLimit 
 
   const { updateCheck, createCheck, deleteCheck, error, submitting } = useCUDChecks({ eventInfo: { checkType } });
 
-  const isEditor = hasRole(OrgRole.Editor);
   const navigate = useNavigation();
   const navigateBack = () => navigate(ROUTES.Checks);
   const onSuccess = () => navigateBack();
@@ -138,20 +137,6 @@ const CheckFormContent = ({ check, checkType, overCheckLimit, overScriptedLimit 
         </Button>
       );
     }
-    if (check.id) {
-      actions.push(
-        <Button
-          variant="destructive"
-          key="delete"
-          data-fs-element="Delete check button"
-          onClick={() => setShowDeleteModal(true)}
-          disabled={!isEditor}
-          type="button"
-        >
-          Delete Check
-        </Button>
-      );
-    }
     actions.push(
       <Button
         type="submit"
@@ -164,16 +149,7 @@ const CheckFormContent = ({ check, checkType, overCheckLimit, overScriptedLimit 
     );
 
     return actions;
-  }, [
-    overScriptedLimit,
-    overCheckLimit,
-    formMethods.formState.isSubmitting,
-    submitting,
-    checkType,
-    check.id,
-    isPending,
-    isEditor,
-  ]);
+  }, [overScriptedLimit, overCheckLimit, formMethods.formState.isSubmitting, submitting, checkType, isPending]);
 
   const capitalizedCheckType = checkType.slice(0, 1).toUpperCase().concat(checkType.split('').slice(1).join(''));
   const headerText = check?.id ? `Editing ${check.job}` : `Add ${capitalizedCheckType} check`;
