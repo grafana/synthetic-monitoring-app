@@ -47,7 +47,7 @@ describe('http usage', () => {
       frequency: 60000,
     } as Check);
     expect(basic.current).toStrictEqual({
-      checksPerMonth: 43800,
+      checksPerMonth: 44640,
       activeSeries: http.Series,
       logsGbPerMonth: 0.04,
       dpm: 118,
@@ -61,7 +61,7 @@ describe('http usage', () => {
       frequency: 60000,
     } as Check);
     expect(multipleProbes.current).toStrictEqual({
-      checksPerMonth: 175200,
+      checksPerMonth: 178560,
       activeSeries: 472,
       logsGbPerMonth: 0.14,
       dpm: 472,
@@ -75,7 +75,7 @@ describe('http usage', () => {
       frequency: 10000,
     } as Check);
     expect(differentFrequency.current).toStrictEqual({
-      checksPerMonth: 262800,
+      checksPerMonth: 267840,
       activeSeries: http.Series,
       logsGbPerMonth: 0.21,
       dpm: 708,
@@ -93,7 +93,7 @@ describe('http usage', () => {
       frequency: 10000,
     } as Check);
     expect(withSSL.current).toStrictEqual({
-      checksPerMonth: 262800,
+      checksPerMonth: 267840,
       activeSeries: http_ssl.Series,
       logsGbPerMonth: 0.21,
       dpm: 732,
@@ -111,7 +111,7 @@ describe('http usage', () => {
     } as Check);
 
     expect(basic.current).toStrictEqual({
-      checksPerMonth: 43800,
+      checksPerMonth: 44640,
       activeSeries: 34,
       logsGbPerMonth: 0.04,
       dpm: 34,
@@ -126,7 +126,7 @@ describe('http usage', () => {
       basicMetricsOnly: true,
     } as Check);
     expect(multipleProbes.current).toStrictEqual({
-      checksPerMonth: 175200,
+      checksPerMonth: 178560,
       activeSeries: 136,
       logsGbPerMonth: 0.14,
       dpm: 136,
@@ -141,7 +141,7 @@ describe('http usage', () => {
       basicMetricsOnly: true,
     } as Check);
     expect(differentFrequency.current).toStrictEqual({
-      checksPerMonth: 262800,
+      checksPerMonth: 267840,
       activeSeries: http_basic.Series,
       logsGbPerMonth: 0.21,
       dpm: 204,
@@ -160,7 +160,7 @@ describe('http usage', () => {
       basicMetricsOnly: true,
     } as Check);
     expect(withSSL.current).toStrictEqual({
-      checksPerMonth: 262800,
+      checksPerMonth: 267840,
       activeSeries: http_ssl_basic.Series,
       logsGbPerMonth: 0.21,
       dpm: 228,
@@ -178,7 +178,7 @@ describe('ping usage', () => {
       frequency: 60000,
     } as Check);
     expect(basic.current).toStrictEqual({
-      checksPerMonth: 43800,
+      checksPerMonth: 44640,
       activeSeries: ping.Series,
       logsGbPerMonth: 0.04,
       dpm: 87,
@@ -196,7 +196,7 @@ describe('ping usage', () => {
     } as Check);
 
     expect(basic.current).toStrictEqual({
-      checksPerMonth: 43800,
+      checksPerMonth: 44640,
       activeSeries: ping_basic.Series,
       logsGbPerMonth: 0.04,
       dpm: 31,
@@ -214,7 +214,7 @@ describe('tcp usage', () => {
       frequency: 60000,
     } as Check);
     expect(basic.current).toStrictEqual({
-      checksPerMonth: 43800,
+      checksPerMonth: 44640,
       activeSeries: tcp.Series,
       logsGbPerMonth: 0.04,
       dpm: 37,
@@ -232,7 +232,7 @@ describe('tcp usage', () => {
       frequency: 10000,
     } as Check);
     expect(withSSL.current).toStrictEqual({
-      checksPerMonth: 262800,
+      checksPerMonth: 267840,
       activeSeries: tcp_ssl.Series,
       logsGbPerMonth: 0.21,
       dpm: 246,
@@ -249,7 +249,7 @@ describe('tcp usage', () => {
       basicMetricsOnly: true,
     } as Check);
     expect(basic.current).toStrictEqual({
-      checksPerMonth: 43800,
+      checksPerMonth: 44640,
       activeSeries: tcp_basic.Series,
       logsGbPerMonth: 0.04,
       dpm: 23,
@@ -268,7 +268,7 @@ describe('tcp usage', () => {
       basicMetricsOnly: true,
     } as Check);
     expect(withSSL.current).toStrictEqual({
-      checksPerMonth: 262800,
+      checksPerMonth: 267840,
       activeSeries: tcp_ssl_basic.Series,
       logsGbPerMonth: 0.21,
       dpm: 162,
@@ -286,7 +286,7 @@ describe('dns usage', () => {
       frequency: 60000,
     } as Check);
     expect(basic.current).toStrictEqual({
-      checksPerMonth: 43800,
+      checksPerMonth: 44640,
       activeSeries: dns.Series,
       logsGbPerMonth: 0.04,
       dpm: 85,
@@ -304,7 +304,7 @@ describe('dns usage', () => {
     } as Check);
 
     expect(basic.current).toStrictEqual({
-      checksPerMonth: 43800,
+      checksPerMonth: 44640,
       activeSeries: dns_basic.Series,
       logsGbPerMonth: 0.04,
       dpm: 29,
@@ -322,7 +322,7 @@ describe('scripted usage', () => {
       frequency: 60000,
     } as Check);
     expect(basic.current).toStrictEqual({
-      checksPerMonth: 43800,
+      checksPerMonth: 44640,
       activeSeries: scripted.Series,
       logsGbPerMonth: 0.04,
       dpm: scripted.Series,

@@ -10,7 +10,7 @@ interface ActiveSeriesParams {
 const getChecksPerMonth = (frequencySeconds: number) => {
   const checksPerMinute = 60 / frequencySeconds;
   const checksPerHour = checksPerMinute * 60;
-  const checksPerMonth = checksPerHour * 730;
+  const checksPerMonth = checksPerHour * 744; // Assume a 31 day month so users aren't surprised
   return Math.round(checksPerMonth);
 };
 
