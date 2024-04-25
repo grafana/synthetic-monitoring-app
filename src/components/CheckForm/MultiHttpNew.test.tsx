@@ -63,7 +63,8 @@ describe('new checks', () => {
     await selectOption(user, { label: 'Probe locations', option: PUBLIC_PROBE.name });
 
     // Open requests section
-    await user.click(screen.getByText(/Requests/));
+    // We need to search in the sidebar only because there can be overlap between section names and individual field names
+    await user.click(within(screen.getByTestId('form-sidebar')).getByText(/Requests/));
 
     // Add a custom label
     const addCustomLabelButton = await screen.findByText(/Add label/);

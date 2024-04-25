@@ -3,7 +3,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { CheckFormValuesMultiHttp, CheckType } from 'types';
+import { CheckFormTypeLayoutProps, CheckFormValuesMultiHttp, CheckType } from 'types';
 import { CheckEnabled } from 'components/CheckEditor/FormComponents/CheckEnabled';
 import { CheckJobName } from 'components/CheckEditor/FormComponents/CheckJobName';
 import { MultiHttpCheckRequests } from 'components/CheckEditor/FormComponents/MultiHttpCheckRequests';
@@ -13,23 +13,25 @@ import { CheckFormAlert } from 'components/CheckFormAlert';
 import { LabelField } from 'components/LabelField';
 import { MultiHttpFeedbackAlert } from 'components/MultiHttp/MultiHttpFeedbackAlert';
 
-export const CheckMultiHTTPLayout = () => {
+export const CheckMultiHTTPLayout = ({ formActions, onSubmit, onSubmitError }: CheckFormTypeLayoutProps) => {
   const styles = useStyles2(getStyles);
 
   return (
-    <FormLayout>
+    <FormLayout formActions={formActions} onSubmit={onSubmit} onSubmitError={onSubmitError}>
       <MultiHttpFeedbackAlert />
-      <FormLayout.Section label="General settings" fields={[`enabled`, `job`, `probes`, `labels`]}>
+      <FormLayout.Section label="Define check" fields={[`enabled`, `job`, `labels`]} required>
         <CheckEnabled />
         <CheckJobName />
-        <ProbeOptions checkType={CheckType.MULTI_HTTP} />
         <LabelField<CheckFormValuesMultiHttp> labelDestination="check" />
+      </FormLayout.Section>
+      <FormLayout.Section label="Probes" fields={[`probes`, `frequency`, `timeout`]} required>
+        <ProbeOptions checkType={CheckType.MULTI_HTTP} />
       </FormLayout.Section>
       <FormLayout.Section
         contentClassName={styles.requestsContainer}
         label="Requests"
         fields={[`settings.multihttp.entries`]}
-        isOpen
+        required
       >
         <div>At least one target HTTP is required; limit 10 requests per check.</div>
         <MultiHttpCheckRequests />

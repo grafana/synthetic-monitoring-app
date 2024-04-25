@@ -1,3 +1,4 @@
+import { SubmitErrorHandler, SubmitHandler } from 'react-hook-form';
 import { DataSourceSettings, OrgRole, SelectableValue } from '@grafana/data';
 import { EmbeddedScene, SceneRouteMatch } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
@@ -771,4 +772,10 @@ export type PrometheusAlertingRule = {
 export enum CheckStatus {
   EXPERIMENTAL = 'experimental',
   PUBLIC_PREVIEW = 'public-preview',
+}
+
+export interface CheckFormTypeLayoutProps {
+  formActions: React.JSX.Element[];
+  onSubmit: SubmitHandler<CheckFormValues>;
+  onSubmitError?: SubmitErrorHandler<CheckFormValues>;
 }

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { CheckFormValuesPing, CheckType } from 'types';
+import { CheckFormTypeLayoutProps, CheckFormValuesPing, CheckType } from 'types';
 import { CheckEnabled } from 'components/CheckEditor/FormComponents/CheckEnabled';
 import { CheckIpVersion } from 'components/CheckEditor/FormComponents/CheckIpVersion';
 import { CheckJobName } from 'components/CheckEditor/FormComponents/CheckJobName';
@@ -13,19 +13,18 @@ import { CheckFormAlert } from 'components/CheckFormAlert';
 import { CheckUsage } from 'components/CheckUsage';
 import { LabelField } from 'components/LabelField';
 
-export const CheckPingLayout = () => {
+export const CheckPingLayout = ({ formActions, onSubmit, onSubmitError }: CheckFormTypeLayoutProps) => {
   return (
-    <FormLayout>
-      <FormLayout.Section
-        label="General settings"
-        fields={[`enabled`, `job`, `target`, `probes`, `frequency`, `timeout`]}
-      >
+    <FormLayout formActions={formActions} onSubmit={onSubmit} onSubmitError={onSubmitError}>
+      <FormLayout.Section label="Define check" fields={[`enabled`, `job`, `target`]} required>
         <CheckEnabled />
         <CheckJobName />
         <CheckTarget checkType={CheckType.PING} />
-        <ProbeOptions checkType={CheckType.PING} />
-        <CheckPublishedAdvanceMetrics />
+      </FormLayout.Section>
+      <FormLayout.Section label="Probes" fields={[`probes`, `frequency`, `timeout`]} required>
         <CheckUsage />
+        <CheckPublishedAdvanceMetrics />
+        <ProbeOptions checkType={CheckType.PING} />
       </FormLayout.Section>
       <FormLayout.Section
         label="Advanced options"
