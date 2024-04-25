@@ -18,7 +18,6 @@ export const ScriptedCheckScript = () => {
 
   return (
     <>
-      {/* {!id && <ScriptExamplesMenu onSelectExample={(script) => setValue('settings.scripted.script', script)} />} */}
       <TabsBar>
         <Tab
           label="Script"
@@ -45,7 +44,6 @@ export const ScriptedCheckScript = () => {
           <CodeSnippet
             hideHeader
             canCopy={true}
-            // className={styles.codeSnippet}
             tabs={[
               {
                 value: 'Example scripts',
