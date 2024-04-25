@@ -24,7 +24,7 @@ export const CheckTCPLayout = ({ formActions, onSubmit, onSubmitError }: CheckFo
         <CheckTarget checkType={CheckType.TCP} />
       </FormLayout.Section>
       <FormLayout.Section label="Probes" fields={[`probes`, `frequency`, `timeout`, `publishAdvancedMetrics`]} required>
-        <CheckUsage />
+        <CheckUsage checkType={CheckType.TCP} />
         <CheckPublishedAdvanceMetrics />
         <ProbeOptions checkType={CheckType.TCP} />
       </FormLayout.Section>

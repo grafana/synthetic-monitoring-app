@@ -26,7 +26,7 @@ export const CheckScriptedLayout = ({ formActions, onSubmit, onSubmitError }: Ch
         <LabelField<CheckFormValuesScripted> labelDestination="check" />
       </FormLayout.Section>
       <FormLayout.Section label="Probes" fields={[`probes`, `frequency`, `timeout`]} required>
-        <CheckUsage />
+        <CheckUsage checkType={CheckType.Scripted} />
         <ProbeOptions checkType={CheckType.Scripted} />
       </FormLayout.Section>
       <FormLayout.Section

@@ -22,7 +22,7 @@ export const CheckPingLayout = ({ formActions, onSubmit, onSubmitError }: CheckF
         <CheckTarget checkType={CheckType.PING} />
       </FormLayout.Section>
       <FormLayout.Section label="Probes" fields={[`probes`, `frequency`, `timeout`]} required>
-        <CheckUsage />
+        <CheckUsage checkType={CheckType.PING} />
         <CheckPublishedAdvanceMetrics />
         <ProbeOptions checkType={CheckType.PING} />
       </FormLayout.Section>

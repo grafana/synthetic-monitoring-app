@@ -27,7 +27,7 @@ export const CheckDNSLayout = ({ formActions, onSubmit, onSubmitError }: CheckFo
         <CheckTarget checkType={CheckType.DNS} />
       </FormLayout.Section>
       <FormLayout.Section label="Probes" fields={[`probes`, `frequency`, `timeout`]}>
-        <CheckUsage />
+        <CheckUsage checkType={CheckType.DNS} />
         <CheckPublishedAdvanceMetrics />
         <ProbeOptions checkType={CheckType.DNS} />
       </FormLayout.Section>
