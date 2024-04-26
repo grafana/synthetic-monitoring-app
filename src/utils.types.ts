@@ -26,11 +26,7 @@ export function isDNSCheck(check: Partial<Check>): check is DNSCheck {
 }
 
 export function isGRPCCheck(check: Partial<Check>): check is GRPCCheck {
-  if (Object.hasOwnProperty.call(check.settings, 'grpc')) {
-    return true;
-  }
-
-  return false;
+  return 'grpc' in (check.settings ?? {});
 }
 
 export function isHttpCheck(check: Partial<Check>): check is HTTPCheck {

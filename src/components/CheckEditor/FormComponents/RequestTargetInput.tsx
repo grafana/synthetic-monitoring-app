@@ -144,10 +144,11 @@ const getTargetHelpText = (typeOfCheck: CheckType | undefined): TargetHelpInfo =
       };
       break;
     }
+
     case CheckType.GRPC: {
       resp = {
-        text: '',
-        example: '',
+        text: 'Host:port to connect to',
+        example: 'grafana.com:50051',
       };
       break;
     }

@@ -6,8 +6,8 @@ import { CheckIpVersion } from 'components/CheckEditor/FormComponents/CheckIpVer
 import { CheckJobName } from 'components/CheckEditor/FormComponents/CheckJobName';
 import { CheckPublishedAdvanceMetrics } from 'components/CheckEditor/FormComponents/CheckPublishedAdvanceMetrics';
 import { CheckTarget } from 'components/CheckEditor/FormComponents/CheckTarget';
+import { CheckUseTLS } from 'components/CheckEditor/FormComponents/CheckUseTLS';
 import { TCPCheckQueryAndResponse } from 'components/CheckEditor/FormComponents/TCPCheckQueryAndResponse';
-import { TCPCheckUseTLS } from 'components/CheckEditor/FormComponents/TCPCheckUseTLS';
 import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
 import { FormLayout } from 'components/CheckForm/FormLayout/FormLayout';
 import { CheckFormAlert } from 'components/CheckFormAlert';
@@ -29,7 +29,7 @@ export const CheckTCPLayout = ({ formActions, onSubmit, onSubmitError, errorMess
         <ProbeOptions checkType={CheckType.TCP} />
       </FormLayout.Section>
       <FormLayout.Section label="TCP settings" fields={[`settings.tcp.tls`]}>
-        <TCPCheckUseTLS />
+        <CheckUseTLS checkType={CheckType.TCP} />
       </FormLayout.Section>
       <FormLayout.Section label="Query/Response" fields={[`settings.tcp.queryResponse`]}>
         <TCPCheckQueryAndResponse />

@@ -14,5 +14,10 @@ export function getGRPCCheckFormValues(check: GRPCCheck): CheckFormValuesGRPC {
 }
 
 const getGRPCSettingsFormValues = (settings: GRPCCheck['settings']): GRPCSettingsFormValues => {
-  return {};
+  return {
+    ipVersion: settings.grpc?.ipVersion,
+    service: settings.grpc?.service,
+    tls: settings.grpc?.tls,
+    tlsConfig: settings.grpc?.tlsConfig,
+  };
 };

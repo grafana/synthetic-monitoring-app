@@ -1,6 +1,7 @@
 import { Check, Label, MultiHttpSettings, Probe, TLSConfig } from 'types';
 import {
   isDNSCheck,
+  isGRPCCheck,
   isHttpCheck,
   isMultiHttpCheck,
   isPingCheck,
@@ -148,6 +149,19 @@ const settingsToTF = (check: Check): TFCheckSettings => {
     };
   }
 
+  // TODO: This need to be verified
+  if (isGRPCCheck(check)) {
+    return {
+      grpc: {
+        tls: check.settings.grpc.tls,
+        service: check.settings.grpc.service,
+        ip_version: check.settings.grpc.ipVersion,
+        tls_config: tlsConfigToTF(check.settings.grpc.tlsConfig),
+      },
+    };
+  }
+
+  // @ts-expect-error - This should never happen
   const settingsKey = Object.keys(check.settings)[0];
   throw new Error(`Unknown check type: ${settingsKey}`);
 };

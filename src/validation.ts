@@ -52,6 +52,9 @@ export function validateTarget(typeOfCheck: CheckType, target: string): string |
       }
       return undefined;
     }
+    case CheckType.GRPC: {
+      return validateHostPort(target);
+    }
     default: {
       // we want to make sure that we are validating the target for all
       // check types; if someone adds a check type but forgets to update

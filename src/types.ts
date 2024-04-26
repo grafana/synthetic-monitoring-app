@@ -153,8 +153,6 @@ export interface DnsSettingsFormValues
   validations: DnsValidationFormValue[];
 }
 
-export interface GRPCSettingsFormValues {}
-
 export interface ScriptedSettings {
   script: string;
 }
@@ -231,9 +229,11 @@ export interface HttpSettingsFormValues
   compression: HTTPCompressionAlgo;
   proxyURL?: string;
 }
+
 export interface MultiHttpSettings {
   entries: MultiHttpEntry[];
 }
+
 export interface MultiHttpSettingsFormValues {
   entries: MultiHttpEntryFormValues[];
 }
@@ -274,6 +274,15 @@ export interface PingSettings {
 }
 
 export interface PingSettingsFormValues extends PingSettings {}
+
+export interface GRPCSettings {
+  ipVersion: IpVersion;
+  service?: string;
+  tls?: boolean;
+  tlsConfig?: TLSConfig;
+}
+
+export interface GRPCSettingsFormValues extends GRPCSettings {}
 
 export interface AlertFormValues {
   name: string;
@@ -402,7 +411,7 @@ export type DNSCheck = CheckBase & {
 
 export type GRPCCheck = CheckBase & {
   settings: {
-    grpc: undefined;
+    grpc: GRPCSettings;
   };
 };
 
@@ -704,6 +713,7 @@ export type RouteMatch<T extends { [K in keyof T]?: string | undefined } = any> 
 
 export interface CheckFiltersType {
   [key: string]: any;
+
   search: string;
   labels: string[];
   type: CheckTypeFilter;
@@ -780,4 +790,16 @@ export interface CheckFormTypeLayoutProps {
   onSubmit: SubmitHandler<CheckFormValues>;
   onSubmitError?: SubmitErrorHandler<CheckFormValues>;
   errorMessage?: string;
+}
+
+export type TLSCheckTypes = CheckType.HTTP | CheckType.TCP | CheckType.GRPC;
+
+export interface TLSFormValues extends CheckFormValuesBase {
+  checkType: TLSCheckTypes;
+  settings: {
+    [key in TLSCheckTypes]: {
+      tls?: boolean;
+      tlsConfig?: TLSConfig;
+    };
+  };
 }

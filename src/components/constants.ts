@@ -150,6 +150,11 @@ export const CHECK_TYPE_OPTIONS = [
     status: CheckStatus.PUBLIC_PREVIEW,
     featureToggle: FeatureName.ScriptedChecks,
   },
+  {
+    label: 'gRPC',
+    value: CheckType.GRPC,
+    description: 'Use the gRPC Health Checking Protocol to ensure a gRPC service is healthy',
+  },
 ];
 
 export const HTTP_SSL_OPTIONS = [
@@ -221,7 +226,10 @@ export const FALLBACK_CHECK_DNS: DNSCheck = {
 export const FALLBACK_CHECK_GRPC: GRPCCheck = {
   ...FALLBACK_CHECK_BASE,
   settings: {
-    grpc: undefined,
+    grpc: {
+      ipVersion: IpVersion.V4,
+      tls: false,
+    },
   },
 };
 
