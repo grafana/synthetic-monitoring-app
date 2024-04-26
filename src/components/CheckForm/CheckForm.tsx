@@ -170,7 +170,7 @@ const CheckFormContent = ({ check, checkType, overCheckLimit, overScriptedLimit 
             checkType={checkType}
             formActions={actions}
             onSubmit={handleSubmit}
-            errorMessage={(submissionError && submissionError.message) ?? 'Something went wrong'}
+            errorMessage={submissionError ? submissionError.message ?? 'Something went wrong' : undefined}
           />
         </FormProvider>
       </>
