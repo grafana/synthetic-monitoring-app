@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from 'react';
-import { DataQueryError, dateTimeParse } from '@grafana/data';
+import { DataQueryError } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import {
   SceneComponentProps,
@@ -118,29 +118,27 @@ export interface DataRow {
 
 function AssertionsTable({ model }: SceneComponentProps<AssertionsTableSceneObject>) {
   const { data } = sceneGraph.getData(model).useState();
-  const { value: timeRange } = sceneGraph.getTimeRange(model).useState();
   const { logs, checkType, minStep } = model.useState();
   const [hasLoaded, setHasLoaded] = React.useState(false);
   const [hasStartedLoading, setHasStartedLoading] = React.useState(false);
   const [logTimeLimitExceeded, setLogTimeLimitExceeded] = React.useState(false);
+  const [logRetentionLimit, setLogRetentionLimit] = React.useState<string>();
   const styles = useStyles2(getTablePanelStyles);
-
-  useEffect(() => {
-    const logQueryLimit = new Date().setDate(new Date().getDate() - 31);
-    const from = dateTimeParse(timeRange.from);
-    if (from.valueOf() < logQueryLimit) {
-      setLogTimeLimitExceeded(true);
-    } else if (logTimeLimitExceeded) {
-      setLogTimeLimitExceeded(false);
-    }
-  }, [timeRange.from, logTimeLimitExceeded]);
 
   useEffect(() => {
     // This is a hack because the data Loading state initializes as "Done", then goes to "Loading", and then goes back to "Done"
     if (data?.state === LoadingState.Loading) {
       setHasStartedLoading(true);
+      setLogTimeLimitExceeded(false);
     }
     if (data?.state === LoadingState.Done && hasStartedLoading && !hasLoaded) {
+      setHasLoaded(true);
+    }
+    // Detect if the time range is beyond the retention period of logs
+    if (data?.state === LoadingState.Error && hasLimitExceededError(data.errors)) {
+      const limit = getLogRetentionLimit(data.errors);
+      setLogRetentionLimit(limit);
+      setLogTimeLimitExceeded(true);
       setHasLoaded(true);
     }
   }, [data, hasLoaded, hasStartedLoading]);
@@ -238,7 +236,7 @@ function AssertionsTable({ model }: SceneComponentProps<AssertionsTableSceneObje
         <div className={styles.noDataContainer}>
           <Alert severity="warning" title="Time range beyond retention">
             The query that powers this panel is based on logs and the time range selected is beyond the retention period
-            of logs. In order to see data, select a time range less than 31 days.
+            of logs. In order to see data, select a time range less than {logRetentionLimit ?? '31 days'}
           </Alert>
         </div>
       ) : (
@@ -259,6 +257,24 @@ function AssertionsTable({ model }: SceneComponentProps<AssertionsTableSceneObje
         />
       )}
     </div>
+  );
+}
+
+function getLogRetentionLimit(errors?: DataQueryError[]) {
+  if (errors) {
+    for (const error of errors) {
+      if (error.message?.includes('max_query_lookback')) {
+        const limit = error.message.split('max_query_lookback ')?.[1]?.replace(/\(|\)/g, '');
+        return limit;
+      }
+    }
+  }
+  return;
+}
+
+function hasLimitExceededError(errors?: DataQueryError[]) {
+  return errors?.some((error) =>
+    error.message?.includes('this data is no longer available, it is past now - max_query_lookback')
   );
 }
 
