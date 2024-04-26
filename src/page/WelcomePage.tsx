@@ -1,7 +1,7 @@
 import React, { FC, useContext, useState } from 'react';
-import { DataSourceInstanceSettings, DataSourceJsonData, GrafanaTheme2, OrgRole } from '@grafana/data';
+import { DataSourceInstanceSettings, DataSourceJsonData, GrafanaTheme2, OrgRole, PageLayoutType } from '@grafana/data';
 import { config, getBackendSrv } from '@grafana/runtime';
-import { Alert, Button, Modal, Spinner, useStyles2 } from '@grafana/ui';
+import { Alert, Button, Spinner, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { isNumber } from 'lodash';
 
@@ -9,95 +9,11 @@ import { ROUTES, SubmissionErrorWrapper } from 'types';
 import { FaroEvent, reportError, reportEvent } from 'faro';
 import { hasRole, initializeDatasource } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { colors, LEGACY_LOGS_DS_NAME, LEGACY_METRICS_DS_NAME } from 'components/constants';
-import { DisplayCard } from 'components/DisplayCard';
-import FeaturesBanner from 'components/FeaturesBanner';
+import { LEGACY_LOGS_DS_NAME, LEGACY_METRICS_DS_NAME } from 'components/constants';
+import { MismatchedDatasourceModal } from 'components/MismatchedDatasourceModal';
 import { PluginPage } from 'components/PluginPage';
 import { getRoute } from 'components/Routing';
-
-import { dashboardScreenshot, dashboardScreenshotLight } from 'img';
-
-const getStyles = (theme: GrafanaTheme2) => {
-  const textColor = theme.isDark ? colors.darkText : colors.lightText;
-  return {
-    container: css`
-      position: absolute;
-      height: 100%;
-      width: 100%;
-      top: 0;
-      left: 0;
-      background: ${theme.colors.background.canvas};
-      color: ${textColor};
-      z-index: 1;
-      min-width: 1200px;
-      padding: 60px 120px 120px 120px;
-      display: flex;
-      justify-content: center;
-    `,
-    maxWidth: css`
-      max-width: 1800px;
-    `,
-    headerSection: css`
-      display: flex;
-      align-items: center;
-      margin-bottom: ${theme.spacing(4)};
-    `,
-    headerTitle: css`
-      color: ${textColor};
-    `,
-    headerLogo: css`
-      height: 78px;
-      width: 78px;
-      margin-right: ${theme.spacing(3)};
-    `,
-    headerSubtext: css`
-      margin-bottom: 0;
-      line-height: 20px;
-    `,
-    cardGrid: css`
-      display: grid;
-      grid-template-columns: 1fr minmax(500px, 1fr);
-      grid-template-rows: 240px 1fr;
-      grid-template-areas:
-        'billing screenshot'
-        'start   screenshot';
-      grid-gap: ${theme.spacing(4)};
-    `,
-    billing: css`
-      grid-area: 'billing';
-    `,
-    screenshotContainer: css`
-      grid-area: 'screenshot';
-    `,
-    screenshotCard: css`
-      padding: ${theme.spacing(2)};
-    `,
-    start: css`
-      grid-area: 'start';
-    `,
-    heading: css`
-      margin-bottom: ${theme.spacing(2)};
-      color: ${theme.colors.text.maxContrast};
-    `,
-    screenshot: css`
-      max-width: 100%;
-    `,
-    getStartedContainer: css`
-      display: flex;
-      justify-content: center;
-    `,
-    link: css`
-      color: ${theme.colors.text.link};
-    `,
-    marginTop: css`
-      margin-top: ${theme.spacing(3)};
-    `,
-    datasourceSelectionGrid: css`
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-    `,
-  };
-};
+import { WelcomeTabs } from 'components/WelcomeTabs/WelcomeTabs';
 
 function getMetricsName(provisionedName?: string) {
   if (config.datasources[LEGACY_METRICS_DS_NAME]) {
@@ -283,98 +199,109 @@ export const WelcomePage: FC<Props> = () => {
   };
 
   return (
-    <PluginPage pageNav={{ text: 'Welcome' }}>
+    <PluginPage layout={PageLayoutType.Canvas}>
       <div className={styles.container}>
-        <div className={styles.maxWidth}>
-          <div className={styles.headerSection}>
-            <img src={meta?.info.logos.small} className={styles.headerLogo} />
-            <div>
-              <h2 className={styles.headerTitle}>Welcome to Grafana Cloud Synthetic Monitoring</h2>
-              <p className={styles.headerSubtext}>
-                Synthetic monitoring provides you with insights into how your applications and services are behaving
-                from an external point of view. We provide 21 probe locations from around the world which assess
-                availability, performance, and correctness of your services.
-              </p>
-            </div>
+        <div className={styles.header}>
+          <img src={meta?.info.logos.large} className={styles.logo} role="presentation" />
+          <h1 className={styles.title}>
+            Proactively monitor your endpoints and user flows from locations around the world
+          </h1>
+          <div>
+            <h5 className={styles.description}>
+              Grafana Cloud Synthetic Monitoring is powered by k6, Mimir, and Loki. Measure performance and uptime,
+              simulate user journeys, and get alerted before your users
+            </h5>
           </div>
-          <FeaturesBanner />
-          <div className={styles.cardGrid}>
-            <DisplayCard className={styles.billing}>
-              <h3 className={styles.heading}>How billing works</h3>
-              <p>
-                Synthetic monitoring is available to all hosted Grafana Cloud customers, no matter which plan you have.{' '}
-              </p>
-              <p>We bill you based on the metrics and logs that are published to your Grafana Cloud stack.</p>
-              <a
-                href="https://grafana.com/docs/grafana-cloud/synthetic-monitoring/synthetic-monitoring-billing/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.link}
-              >
-                Read more about billing &gt;
-              </a>
-            </DisplayCard>
-            <div className={styles.screenshotContainer}>
-              <DisplayCard className={styles.screenshotCard}>
-                <img
-                  src={config.theme2.isDark ? dashboardScreenshot : dashboardScreenshotLight}
-                  className={styles.screenshot}
-                />
-              </DisplayCard>
-            </div>
-            <DisplayCard className={styles.start}>
-              <h3 className={styles.heading}>Ready to start using synthetic monitoring?</h3>
-              <Button onClick={handleClick} disabled={loading || !hasRole(OrgRole.Editor)} size="lg">
-                {loading ? <Spinner /> : 'Initialize the plugin'}
-              </Button>
-            </DisplayCard>
-          </div>
+          <Button
+            onClick={handleClick}
+            disabled={loading || !hasRole(OrgRole.Editor)}
+            size="lg"
+            className={styles.getStartedButton}
+          >
+            {loading ? <Spinner /> : 'Get started'}
+          </Button>
           {error && (
-            <div className={styles.marginTop}>
-              <Alert title="Something went wrong:">{error}</Alert>
-            </div>
+            <Alert title="Something went wrong:" className={styles.errorAlert}>
+              {error}
+            </Alert>
           )}
         </div>
-      </div>
-      <Modal isOpen={datasourceModalOpen} title="Datasource selection">
-        <p>
-          It looks like there is a mismatch between the way Synthetic Monitoring was provisioned and the currently
-          available datasources. This can happen when a Grafana instance is renamed, or if provisioning is incorrect.
-          Proceed with found datasources?
-        </p>
-        <div className={styles.datasourceSelectionGrid}>
-          <dt>Expecting metrics datasource:</dt>
-          <dt>Found metrics datasource:</dt>
-          <dd>{metricsName}</dd>
-          <dd>{metricsByUid?.name}</dd>
-          <dt>Expecting logs datasource:</dt>
-          <dt>Found logs datasource:</dt>
-          <dd>{logsName}</dd>
-          <dd>{logsByUid?.name}</dd>
+        <hr className={styles.divider} />
+        <div className={styles.valueProp}>
+          <h3 className={styles.valuePropHeader}>Up and running in seconds, no instrumentation required</h3>
+          <WelcomeTabs />
         </div>
-        <Modal.ButtonRow>
-          <Button variant="secondary" fill="outline" onClick={() => setDataSouceModalOpen(false)}>
-            Cancel
-          </Button>
-          <Button
-            disabled={loading}
-            onClick={() => {
-              if (meta?.jsonData?.metrics?.hostedId && meta?.jsonData?.logs.hostedId) {
-                initialize({
-                  metricsSettings: metricsByUid!, // we have already guaranteed that this exists above
-                  metricsHostedId: meta.jsonData.metrics.hostedId,
-                  logsSettings: logsByUid!, // we have already guaranteed that this exists above
-                  logsHostedId: meta.jsonData.logs.hostedId,
-                });
-              } else {
-                setError('Missing datasource hostedId');
-              }
-            }}
-          >
-            {loading ? <Spinner /> : 'Proceed'}
-          </Button>
-        </Modal.ButtonRow>
-      </Modal>
+      </div>
+
+      <MismatchedDatasourceModal
+        isOpen={datasourceModalOpen}
+        metricsFoundName={metricsByName?.name ?? 'Not found'}
+        metricsExpectedName={metricsByUid?.name ?? 'Not found'}
+        logsFoundName={logsByName?.name ?? 'Not found'}
+        logsExpectedName={logsByUid?.name ?? 'Not found'}
+        onDismiss={() => setDataSouceModalOpen(false)}
+        isSubmitting={loading}
+        onSubmit={() => {
+          if (meta?.jsonData?.metrics?.hostedId && meta?.jsonData?.logs.hostedId) {
+            initialize({
+              metricsSettings: metricsByUid!, // we have already guaranteed that this exists above
+              metricsHostedId: meta.jsonData.metrics.hostedId,
+              logsSettings: logsByUid!, // we have already guaranteed that this exists above
+              logsHostedId: meta.jsonData.logs.hostedId,
+            });
+          } else {
+            setError('Missing datasource hostedId');
+          }
+        }}
+      />
     </PluginPage>
   );
 };
+
+function getStyles(theme: GrafanaTheme2) {
+  return {
+    container: css({
+      width: '100%',
+      height: '100%',
+      marginTop: theme.spacing(16),
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'flex-start',
+      alignItems: 'center',
+      textAlign: 'center',
+    }),
+    header: css({
+      maxWidth: '660px',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'flex-start',
+      alignItems: 'center',
+      marginBottom: theme.spacing(8),
+    }),
+    logo: css({
+      width: '100px',
+    }),
+    title: css({
+      paddingTop: theme.spacing(8),
+      paddingBottom: theme.spacing(4),
+    }),
+    errorAlert: css({
+      marginTop: theme.spacing(4),
+    }),
+    description: css({
+      color: theme.colors.text.secondary,
+    }),
+    getStartedButton: css({
+      marginTop: theme.spacing(4),
+    }),
+    divider: css({
+      width: '100%',
+    }),
+    valueProp: css({
+      marginTop: theme.spacing(6),
+      maxWidth: '860px',
+      width: '100%',
+    }),
+    valuePropHeader: css({ marginBottom: theme.spacing(4) }),
+  };
+}

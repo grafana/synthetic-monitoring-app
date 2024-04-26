@@ -122,7 +122,6 @@ export const CHECK_TYPE_OPTIONS = [
     label: 'MULTIHTTP',
     value: CheckType.MULTI_HTTP,
     description: 'Check multiple web endpoints in sequence.',
-    status: CheckStatus.PUBLIC_PREVIEW,
   },
   {
     label: 'PING',
@@ -148,7 +147,7 @@ export const CHECK_TYPE_OPTIONS = [
     label: 'Scripted',
     value: CheckType.Scripted,
     description: 'Write a k6 script to run custom checks.',
-    status: CheckStatus.EXPERIMENTAL,
+    status: CheckStatus.PUBLIC_PREVIEW,
     featureToggle: FeatureName.ScriptedChecks,
   },
 ];
