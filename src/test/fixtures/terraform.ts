@@ -14,6 +14,7 @@ export const TERRAFORM_PRIVATE_PROBES = {
     name: PRIVATE_PROBE.name,
     public: PRIVATE_PROBE.public,
     region: PRIVATE_PROBE.region,
+    capabilities: PRIVATE_PROBE.capabilities,
   },
   [UNSELECTED_PRIVATE_PROBE.name]: {
     labels: {
@@ -24,6 +25,7 @@ export const TERRAFORM_PRIVATE_PROBES = {
     name: UNSELECTED_PRIVATE_PROBE.name,
     public: UNSELECTED_PRIVATE_PROBE.public,
     region: UNSELECTED_PRIVATE_PROBE.region,
+    capabilities: UNSELECTED_PRIVATE_PROBE.capabilities,
   },
 };
 

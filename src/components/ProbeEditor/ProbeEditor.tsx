@@ -6,6 +6,7 @@ import { css } from '@emotion/css';
 
 import { Probe, ROUTES } from 'types';
 import { canEditProbes } from 'utils';
+import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 import { LabelField } from 'components/LabelField';
 import { ProbeRegionsSelect } from 'components/ProbeRegionsSelect';
 import { getRoute } from 'components/Routing';
@@ -161,7 +162,17 @@ export const ProbeEditor = ({
                     />
                   </Field>
                 </div>
-                {canEdit && <LabelField<Probe> limit={3} />}
+                {canEdit && <LabelField<Probe> labelDestination={'probe'} />}
+                <div className={styles.marginBottom}>
+                  <Legend>Capabilities</Legend>
+                  <HorizontalCheckboxField
+                    {...form.register('capabilities.disableScriptedChecks')}
+                    label="Disable scripted checks"
+                    description="Prevent probe from running k6 based scripted checks."
+                    disabled={!canEdit}
+                    id="capabilities.disableScriptedChecks"
+                  />
+                </div>
                 <div className={styles.buttonWrapper}>
                   {canEdit && (
                     <>

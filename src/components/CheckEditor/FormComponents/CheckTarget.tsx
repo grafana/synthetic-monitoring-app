@@ -8,14 +8,6 @@ interface Props {
   checkType: CheckType;
 }
 
-export const CheckTarget = ({ checkType }: Props) => {
-  return (
-    <RequestTargetInput
-      checkType={checkType}
-      data-testid="check-editor-target"
-      id="check-target"
-      name="target"
-      showQueryParams
-    />
-  );
-};
+export const CheckTarget = ({ checkType }: Props) => (
+  <RequestTargetInput checkType={checkType} data-testid="check-editor-target" id="check-target" name="target" />
+);

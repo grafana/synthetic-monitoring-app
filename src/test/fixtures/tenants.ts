@@ -1,4 +1,9 @@
-import { ListTenantSettingsResult, TenantResponse, UpdateTenantSettingsResult } from 'datasource/responses.types';
+import {
+  ListTenantLimitsResponse,
+  ListTenantSettingsResult,
+  TenantResponse,
+  UpdateTenantSettingsResult,
+} from 'datasource/responses.types';
 
 export const TENANT: TenantResponse = {
   id: 76,
@@ -42,3 +47,11 @@ export const TENANT_SETTINGS: ListTenantSettingsResult = {
 };
 
 export const UPDATE_TENANT_SETTINGS: UpdateTenantSettingsResult = { msg: 'Settings updated' };
+export const TENANT_LIMITS: ListTenantLimitsResponse = {
+  MaxChecks: 100,
+  MaxScriptedChecks: 10,
+  MaxMetricLabels: 20,
+  MaxLogLabels: 15,
+  maxAllowedMetricLabels: 10,
+  maxAllowedLogLabels: 5,
+};

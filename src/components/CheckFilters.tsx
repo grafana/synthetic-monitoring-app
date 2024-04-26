@@ -3,23 +3,13 @@ import { GrafanaTheme2, SelectableValue, unEscapeStringFromRegex } from '@grafan
 import { Icon, Input, MultiSelect, Select, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { Check, CheckFiltersType } from 'types';
+import { Check, CheckFiltersType, CheckTypeFilter } from 'types';
 import { useProbes } from 'data/useProbes';
+import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
 
 import CheckFilterGroup from './CheckList/CheckFilterGroup';
-import { CHECK_FILTER_OPTIONS, CHECK_LIST_STATUS_OPTIONS } from './constants';
+import { CHECK_LIST_STATUS_OPTIONS } from './constants';
 import { LabelFilterInput } from './LabelFilterInput';
-
-const getStyles = (theme: GrafanaTheme2) => ({
-  flexRow: css`
-    display: flex;
-    flex-direction: row;
-  `,
-  verticalSpace: css`
-    margin-top: 10px;
-    margin-bottom: 10px;
-  `,
-});
 
 interface Props {
   onReset: () => void;
@@ -56,6 +46,22 @@ export function CheckFilters({
   checkFilters = defaultFilters,
   includeStatus = true,
 }: Props) {
+  const checkTypeOptions = useCheckTypeOptions();
+  const filterDesc = checkTypeOptions.map((option) => {
+    return {
+      label: option.label,
+      value: option.value,
+    };
+  });
+
+  const options: Array<{ label: string; value: CheckTypeFilter }> = [
+    {
+      label: 'All',
+      value: 'all',
+    },
+    ...filterDesc,
+  ];
+
   const styles = useStyles2(getStyles);
   const [searchValue, setSearchValue] = useState(checkFilters.search);
   const { data: probes = [] } = useProbes();
@@ -112,7 +118,7 @@ export function CheckFilters({
           <Select
             aria-label="Filter by type"
             prefix="Types"
-            options={CHECK_FILTER_OPTIONS}
+            options={options}
             className={styles.verticalSpace}
             width={20}
             onChange={(selected: SelectableValue) => {
@@ -157,3 +163,14 @@ export function CheckFilters({
     </>
   );
 }
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  flexRow: css({
+    display: `flex`,
+    flexDirection: `row`,
+  }),
+  verticalSpace: css({
+    marginTop: `10px`,
+    marginTottom: `10px`,
+  }),
+});

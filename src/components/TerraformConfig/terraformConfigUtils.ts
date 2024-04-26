@@ -183,4 +183,5 @@ export const probeToTF = (probe: Probe): TFProbe => ({
   region: probe.region,
   public: false,
   labels: labelsToTFLabels(probe.labels),
+  capabilities: probe.capabilities,
 });

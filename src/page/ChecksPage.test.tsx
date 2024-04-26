@@ -1,5 +1,6 @@
 import React from 'react';
 import { screen, waitFor, within } from '@testing-library/react';
+import { DataTestIds } from 'test/dataTestIds';
 import { ALERTING_RULES } from 'test/fixtures/alerting';
 import { BASIC_CHECK_LIST, BASIC_HTTP_CHECK, BASIC_PING_CHECK } from 'test/fixtures/checks';
 import { apiRoute } from 'test/handlers';
@@ -31,11 +32,12 @@ test('renders checks', async () => {
 test('renders check selection page with correct check types', async () => {
   const { user } = await renderChecksPage();
   await user.click(screen.getByText('Add new check'));
-  expect(screen.queryByText('HTTP', { selector: `h2` })).toBeInTheDocument();
-  expect(screen.queryByText('MULTIHTTP', { selector: `h2` })).toBeInTheDocument();
-  expect(screen.queryByText('Traceroute', { selector: `h2` })).toBeInTheDocument();
-  expect(screen.queryByText('PING', { selector: `h2` })).toBeInTheDocument();
-  expect(screen.queryByText('DNS', { selector: `h2` })).toBeInTheDocument();
+  const container = screen.getByTestId(DataTestIds.CHOOSE_CHECK_TYPE);
+  expect(within(container).queryByText('HTTP')).toBeInTheDocument();
+  expect(within(container).queryByText('MULTIHTTP')).toBeInTheDocument();
+  expect(within(container).queryByText('Traceroute')).toBeInTheDocument();
+  expect(within(container).queryByText('PING')).toBeInTheDocument();
+  expect(within(container).queryByText('DNS')).toBeInTheDocument();
 });
 
 test('renders check editor existing check', async () => {

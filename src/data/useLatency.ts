@@ -33,7 +33,9 @@ export function useLatency({ job, target, settings }: Check) {
 }
 
 function getQuery(job: Check['job'], target: Check['target'], type: CheckType) {
-  if (type === CheckType.MULTI_HTTP) {
+  // TODO: find a way to dynamically check what metrics are available in the scripted check so can more accurately report latency
+  // making assumption that all scripted checks are utilizing http protocol currently so this will report incorrectly for scripted checks using other protocols
+  if (type === CheckType.MULTI_HTTP || type === CheckType.Scripted) {
     return `sum by (job, instance) (sum_over_time(probe_http_total_duration_seconds{job="${job}", instance="${target}"}[6h])) / sum by (job, instance) (count_over_time(probe_http_total_duration_seconds{job="${job}", instance="${target}"}[6h])) `;
   }
 

@@ -3,7 +3,7 @@ import { Controller, useFormContext } from 'react-hook-form';
 import { OrgRole } from '@grafana/data';
 import { Field, Input } from '@grafana/ui';
 
-import { CheckFormValues, CheckType } from 'types';
+import { CheckFormValues, CheckType, Probe } from 'types';
 import { hasRole } from 'utils';
 import { validateFrequency, validateProbes, validateTimeout } from 'validation';
 import { useProbes } from 'data/useProbes';
@@ -55,6 +55,13 @@ function getTimeoutBounds(checkType: CheckType) {
   };
 }
 
+function getAvailableProbes(probes: Probe[], checkType: CheckType) {
+  if (checkType === CheckType.Scripted) {
+    return probes.filter((probe) => probe.capabilities.disableScriptedChecks === false);
+  }
+  return probes;
+}
+
 export const ProbeOptions = ({ checkType }: Props) => {
   const { data: probes = [] } = useProbes();
   const {
@@ -78,7 +85,7 @@ export const ProbeOptions = ({ checkType }: Props) => {
           <CheckProbes
             {...field}
             probes={field.value}
-            availableProbes={probes}
+            availableProbes={getAvailableProbes(probes, checkType)}
             isEditor={isEditor}
             invalid={Boolean(errors.probes)}
             error={errors.probes?.message}

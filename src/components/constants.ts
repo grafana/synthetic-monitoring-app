@@ -8,11 +8,13 @@ import {
   CheckEnabledStatus,
   CheckListViewType,
   CheckSort,
+  CheckStatus,
   CheckType,
   DNSCheck,
   DnsProtocol,
   DnsRecordType,
   DnsResponseCodes,
+  FeatureName,
   GRPCCheck,
   HTTPCheck,
   HTTPCompressionAlgo,
@@ -110,37 +112,6 @@ export const IP_OPTIONS = [
   },
 ];
 
-export const CHECK_FILTER_OPTIONS = [
-  {
-    label: 'All',
-    value: 'all',
-  },
-  {
-    label: 'HTTP',
-    value: CheckType.HTTP,
-  },
-  {
-    label: 'MULTIHTTP',
-    value: CheckType.MULTI_HTTP,
-  },
-  {
-    label: 'PING',
-    value: CheckType.PING,
-  },
-  {
-    label: 'DNS',
-    value: CheckType.DNS,
-  },
-  {
-    label: 'TCP',
-    value: CheckType.TCP,
-  },
-  {
-    label: 'Traceroute',
-    value: CheckType.Traceroute,
-  },
-];
-
 export const CHECK_TYPE_OPTIONS = [
   {
     label: 'HTTP',
@@ -150,7 +121,7 @@ export const CHECK_TYPE_OPTIONS = [
   {
     label: 'MULTIHTTP',
     value: CheckType.MULTI_HTTP,
-    description: 'Check multiple web endpoints in sequence',
+    description: 'Check multiple web endpoints in sequence.',
   },
   {
     label: 'PING',
@@ -160,22 +131,24 @@ export const CHECK_TYPE_OPTIONS = [
   {
     label: 'DNS',
     value: CheckType.DNS,
-    description: 'Ensures a domain resolves and measures the average time for the resolution to happen',
+    description: 'Ensures a domain resolves and measures the average time for the resolution to happen.',
   },
   {
     label: 'TCP',
     value: CheckType.TCP,
-    description: 'Ensures a hostname and port accept a connection and measures performance',
+    description: 'Ensures a hostname and port accept a connection and measures performance.',
   },
   {
     label: 'Traceroute',
     value: CheckType.Traceroute,
-    description: 'Trace the path of a request through the internet',
+    description: 'Trace the path of a request through the internet.',
   },
   {
     label: 'Scripted',
     value: CheckType.Scripted,
-    description: 'Write a K6 script to run custom checks',
+    description: 'Write a k6 script to run custom checks.',
+    status: CheckStatus.PUBLIC_PREVIEW,
+    featureToggle: FeatureName.ScriptedChecks,
   },
 ];
 

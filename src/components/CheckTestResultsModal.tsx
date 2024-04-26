@@ -95,7 +95,7 @@ export function CheckTestResultsModal({ testResponse, isOpen, onDismiss }: Props
           });
           setResultsByProbe({ ...resultsByProbe, ...resultsToUpdate });
         }
-      }, 30000);
+      }, testResponse.timeout + 30000);
     }
     return () => clearTimeout(timeoutId);
   }, [testResponse, probes, resultsByProbe]);

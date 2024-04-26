@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { CheckFormValuesTraceroute, CheckType } from 'types';
+import { CheckFormTypeLayoutProps, CheckFormValuesTraceroute, CheckType } from 'types';
 import { CheckEnabled } from 'components/CheckEditor/FormComponents/CheckEnabled';
 import { CheckJobName } from 'components/CheckEditor/FormComponents/CheckJobName';
 import { CheckPublishedAdvanceMetrics } from 'components/CheckEditor/FormComponents/CheckPublishedAdvanceMetrics';
@@ -14,19 +14,23 @@ import { CheckFormAlert } from 'components/CheckFormAlert';
 import { CheckUsage } from 'components/CheckUsage';
 import { LabelField } from 'components/LabelField';
 
-export const CheckTracerouteLayout = () => {
+export const CheckTracerouteLayout = ({
+  formActions,
+  onSubmit,
+  onSubmitError,
+  errorMessage,
+}: CheckFormTypeLayoutProps) => {
   return (
-    <FormLayout>
-      <FormLayout.Section
-        label="General settings"
-        fields={[`enabled`, `job`, `target`, `probes`, `frequency`, `timeout`]}
-      >
+    <FormLayout formActions={formActions} onSubmit={onSubmit} onSubmitError={onSubmitError} errorMessage={errorMessage}>
+      <FormLayout.Section label="Define check" fields={[`enabled`, `job`, `target`]} required>
         <CheckEnabled />
         <CheckJobName />
         <CheckTarget checkType={CheckType.Traceroute} />
-        <ProbeOptions checkType={CheckType.Traceroute} />
+      </FormLayout.Section>
+      <FormLayout.Section label="Probes" fields={[`probes`, `frequency`, `timeout`]} required>
+        <CheckUsage checkType={CheckType.Traceroute} />
         <CheckPublishedAdvanceMetrics />
-        <CheckUsage />
+        <ProbeOptions checkType={CheckType.Traceroute} />
       </FormLayout.Section>
       <FormLayout.Section
         label="Advanced options"
@@ -37,7 +41,7 @@ export const CheckTracerouteLayout = () => {
           `settings.traceroute.ptrLookup`,
         ]}
       >
-        <LabelField<CheckFormValuesTraceroute> />
+        <LabelField<CheckFormValuesTraceroute> labelDestination="check" />
         <TracerouteMaxHops />
         <TracerouteMaxUnknownHops />
         <TraceroutePTRLookup />

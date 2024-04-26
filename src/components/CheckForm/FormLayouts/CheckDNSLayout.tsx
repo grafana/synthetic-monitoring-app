@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { CheckFormValuesPing, CheckType } from 'types';
+import { CheckFormTypeLayoutProps, CheckFormValuesPing, CheckType } from 'types';
 import { CheckEnabled } from 'components/CheckEditor/FormComponents/CheckEnabled';
 import { CheckIpVersion } from 'components/CheckEditor/FormComponents/CheckIpVersion';
 import { CheckJobName } from 'components/CheckEditor/FormComponents/CheckJobName';
@@ -18,19 +18,18 @@ import { CheckFormAlert } from 'components/CheckFormAlert';
 import { CheckUsage } from 'components/CheckUsage';
 import { LabelField } from 'components/LabelField';
 
-export const CheckDNSLayout = () => {
+export const CheckDNSLayout = ({ formActions, onSubmit, onSubmitError, errorMessage }: CheckFormTypeLayoutProps) => {
   return (
-    <FormLayout>
-      <FormLayout.Section
-        label="General settings"
-        fields={[`enabled`, `job`, `target`, `probes`, `frequency`, `timeout`]}
-      >
+    <FormLayout formActions={formActions} onSubmit={onSubmit} onSubmitError={onSubmitError} errorMessage={errorMessage}>
+      <FormLayout.Section label="Define check" fields={[`enabled`, `job`, `target`]} required>
         <CheckEnabled />
         <CheckJobName />
         <CheckTarget checkType={CheckType.DNS} />
-        <ProbeOptions checkType={CheckType.DNS} />
+      </FormLayout.Section>
+      <FormLayout.Section label="Probes" fields={[`probes`, `frequency`, `timeout`]}>
+        <CheckUsage checkType={CheckType.DNS} />
         <CheckPublishedAdvanceMetrics />
-        <CheckUsage />
+        <ProbeOptions checkType={CheckType.DNS} />
       </FormLayout.Section>
       <FormLayout.Section
         label="DNS settings"
@@ -46,7 +45,7 @@ export const CheckDNSLayout = () => {
         <DNSCheckResponseMatches />
       </FormLayout.Section>
       <FormLayout.Section label="Advanced options" fields={[`labels`, `settings.dns.ipVersion`]}>
-        <LabelField<CheckFormValuesPing> />
+        <LabelField<CheckFormValuesPing> labelDestination="check" />
         <CheckIpVersion checkType={CheckType.DNS} name="settings.dns.ipVersion" />
       </FormLayout.Section>
       <FormLayout.Section label="Alerting" fields={[`alertSensitivity`]}>

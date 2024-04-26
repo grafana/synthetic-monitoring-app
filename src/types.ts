@@ -1,3 +1,5 @@
+import React from 'react';
+import { SubmitErrorHandler, SubmitHandler } from 'react-hook-form';
 import { DataSourceSettings, OrgRole, SelectableValue } from '@grafana/data';
 import { EmbeddedScene, SceneRouteMatch } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
@@ -113,6 +115,11 @@ export interface Probe extends BaseObject {
   labels: Label[];
   version: string;
   deprecated: boolean;
+  capabilities: ProbeCapabilities;
+}
+
+interface ProbeCapabilities {
+  disableScriptedChecks: boolean;
 }
 
 export enum ResponseMatchType {
@@ -370,6 +377,8 @@ export type CheckFormValues =
   | CheckFormValuesScripted
   | CheckFormValuesTcp
   | CheckFormValuesTraceroute;
+
+export type CheckTypeFilter = CheckType | 'all';
 
 export interface FilteredCheck extends Omit<Check, 'id'> {
   id: number;
@@ -697,7 +706,7 @@ export interface CheckFiltersType {
   [key: string]: any;
   search: string;
   labels: string[];
-  type: CheckType | 'all';
+  type: CheckTypeFilter;
   status: SelectableValue<CheckEnabledStatus>;
   probes: SelectableValue[] | [];
 }
@@ -760,3 +769,15 @@ export type PrometheusAlertingRule = {
   state: 'inactive'; // fill in others
   type: `alerting`;
 };
+
+export enum CheckStatus {
+  EXPERIMENTAL = 'experimental',
+  PUBLIC_PREVIEW = 'public-preview',
+}
+
+export interface CheckFormTypeLayoutProps {
+  formActions: React.JSX.Element[];
+  onSubmit: SubmitHandler<CheckFormValues>;
+  onSubmitError?: SubmitErrorHandler<CheckFormValues>;
+  errorMessage?: string;
+}

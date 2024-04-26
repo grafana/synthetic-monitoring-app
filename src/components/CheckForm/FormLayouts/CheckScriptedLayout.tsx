@@ -3,7 +3,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { CheckFormValuesScripted, CheckType } from 'types';
+import { CheckFormTypeLayoutProps, CheckFormValuesScripted, CheckType } from 'types';
 import { CheckEnabled } from 'components/CheckEditor/FormComponents/CheckEnabled';
 import { CheckJobName } from 'components/CheckEditor/FormComponents/CheckJobName';
 import { ScriptedCheckInstance } from 'components/CheckEditor/FormComponents/ScriptedCheckInstance';
@@ -11,28 +11,33 @@ import { ScriptedCheckScript } from 'components/CheckEditor/FormComponents/Scrip
 import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
 import { FormLayout } from 'components/CheckForm/FormLayout/FormLayout';
 import { CheckFormAlert } from 'components/CheckFormAlert';
+import { CheckUsage } from 'components/CheckUsage';
 import { LabelField } from 'components/LabelField';
 
-export const CheckScriptedLayout = () => {
+export const CheckScriptedLayout = ({
+  formActions,
+  onSubmit,
+  onSubmitError,
+  errorMessage,
+}: CheckFormTypeLayoutProps) => {
   const styles = useStyles2(getStyles);
 
   return (
-    <FormLayout>
-      <FormLayout.Section
-        label="General settings"
-        fields={[`enabled`, `job`, `target`, `probes`, `frequency`, `timeout`]}
-      >
+    <FormLayout formActions={formActions} onSubmit={onSubmit} onSubmitError={onSubmitError} errorMessage={errorMessage}>
+      <FormLayout.Section label="Define check" fields={[`enabled`, `job`, `target`]} required>
         <CheckEnabled />
         <CheckJobName />
         <ScriptedCheckInstance />
+        <LabelField<CheckFormValuesScripted> labelDestination="check" />
+      </FormLayout.Section>
+      <FormLayout.Section label="Probes" fields={[`probes`, `frequency`, `timeout`]} required>
+        <CheckUsage checkType={CheckType.Scripted} />
         <ProbeOptions checkType={CheckType.Scripted} />
-        <LabelField<CheckFormValuesScripted> />
       </FormLayout.Section>
       <FormLayout.Section
         contentClassName={styles.scriptContainer}
         label="Script"
         fields={[`settings.scripted.script`]}
-        isOpen
       >
         <ScriptedCheckScript />
       </FormLayout.Section>

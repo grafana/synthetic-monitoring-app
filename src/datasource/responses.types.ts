@@ -79,6 +79,15 @@ export type TenantResponse = {
   status: number;
 };
 
+export type ListTenantLimitsResponse = {
+  MaxChecks: number;
+  MaxScriptedChecks: number;
+  MaxMetricLabels: number;
+  MaxLogLabels: number;
+  maxAllowedMetricLabels: number;
+  maxAllowedLogLabels: number;
+};
+
 export type ListTenantSettingsResult = {
   remote_validation_disabled: boolean;
   thresholds: ThresholdSettings;

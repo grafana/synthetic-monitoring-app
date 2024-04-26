@@ -82,7 +82,7 @@ export function getScriptedScene(
           }),
           new SceneFlexLayout({
             direction: 'row',
-            children: [getAssertionTable(logs, checkType)],
+            children: [getAssertionTable(logs, checkType, minStep)],
           }),
           new SceneFlexLayout({
             direction: 'row',
@@ -96,7 +96,7 @@ export function getScriptedScene(
           }),
           new SceneFlexLayout({
             direction: 'row',
-            minHeight: 300,
+            minHeight: 900,
             children: [getAllLogs(logs)],
           }),
         ],

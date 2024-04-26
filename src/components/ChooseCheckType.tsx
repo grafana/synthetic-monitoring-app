@@ -1,38 +1,77 @@
 import React from 'react';
 import { GrafanaTheme2, PageLayoutType } from '@grafana/data';
-import { Badge, useStyles2 } from '@grafana/ui';
+import { Badge, BadgeColor, LoadingPlaceholder, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { DataTestIds } from 'test/dataTestIds';
 
-import { CheckType, FeatureName, ROUTES } from 'types';
-import { useFeatureFlag } from 'hooks/useFeatureFlag';
-import { Card } from 'components/Card';
-import { CHECK_TYPE_OPTIONS } from 'components/constants';
+import { CheckStatus, CheckType, ROUTES } from 'types';
+import { isOverCheckLimit, isOverScriptedLimit } from 'utils';
+import { useChecks } from 'data/useChecks';
+import { useTenantLimits } from 'data/useTenantLimits';
+import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
+import { useNavigation } from 'hooks/useNavigation';
 import { PluginPage } from 'components/PluginPage';
 import { getRoute } from 'components/Routing';
 
+import { Card } from './Card';
+import { ErrorAlert } from './ErrorAlert';
+
 export function ChooseCheckType() {
   const styles = useStyles2(getStyles);
-  const { isEnabled: scriptedEnabled } = useFeatureFlag(FeatureName.ScriptedChecks);
-  // If we're editing, grab the appropriate check from the list
+  const { data: checks, isLoading: checksLoading } = useChecks();
+  const { data: limits, isLoading: limitsLoading } = useTenantLimits();
+  const nav = useNavigation();
+  const checkTypeOptions = useCheckTypeOptions();
 
-  const options = CHECK_TYPE_OPTIONS.filter(({ value }) => {
-    if (!scriptedEnabled && value === CheckType.Scripted) {
+  if (checksLoading || limitsLoading) {
+    return <LoadingPlaceholder text="Loading..." />;
+  }
+
+  const overScriptedLimit = isOverScriptedLimit({ checks, limits });
+  const overTotalLimit = isOverCheckLimit({ checks, limits });
+
+  const options = checkTypeOptions.filter(({ value }) => {
+    if (overScriptedLimit && (value === CheckType.MULTI_HTTP || value === CheckType.Scripted)) {
       return false;
     }
+
     return true;
   });
 
+  if (overTotalLimit) {
+    return (
+      <PluginPage layout={PageLayoutType?.Standard} pageNav={{ text: 'Choose a check type' }}>
+        <ErrorAlert
+          title="Check limit reached"
+          content={`You have reached the limit of checks you can create. Your current limit is ${limits?.MaxChecks}. You can delete existing checks or upgrade your plan to create more. Please contact support if you've reached this limit in error.`}
+          buttonText={'Back to checks'}
+          onClick={() => {
+            nav(ROUTES.Checks);
+          }}
+        />
+      </PluginPage>
+    );
+  }
   return (
     <PluginPage layout={PageLayoutType?.Standard} pageNav={{ text: 'Choose a check type' }}>
-      <div className={styles.container}>
-        {options?.map((check) => {
+      {overScriptedLimit && (
+        <ErrorAlert
+          title="Scripted check limit reached"
+          content={`You have reached the limit of scripted and multiHTTP checks you can create. Your current limit is ${limits?.MaxScriptedChecks}. You can delete existing scripted checks or upgrade your plan to create more. Please contact support if you've reached this limit in error.`}
+          buttonText={'Back to checks'}
+          onClick={() => {
+            nav(ROUTES.Checks);
+          }}
+        />
+      )}
+      <div className={styles.container} data-testid={DataTestIds.CHOOSE_CHECK_TYPE}>
+        {options.map((check) => {
           return (
             <Card key={check?.label || ''} className={styles.card} href={`${getRoute(ROUTES.NewCheck)}/${check.value}`}>
-              <Card.Heading className={styles.heading} variant="h6">
-                {check.label}
-                {check.value === CheckType.Scripted && (
-                  <Badge text="Public preview" color="blue" className={styles.experimentalBadge} />
-                )}
+              <Card.Heading className={styles.stack} variant="h6">
+                <div>{check.label} </div>
+
+                {check.status && <CheckBadge status={check.status} />}
               </Card.Heading>
               <div className={styles.desc}>{check.description}</div>
             </Card>
@@ -42,6 +81,23 @@ export function ChooseCheckType() {
     </PluginPage>
   );
 }
+
+const colorMap: Record<CheckStatus, { text: string; color: BadgeColor }> = {
+  [CheckStatus.EXPERIMENTAL]: {
+    color: 'orange',
+    text: `Experimental`,
+  },
+  [CheckStatus.PUBLIC_PREVIEW]: {
+    color: 'blue',
+    text: `Public preview`,
+  },
+};
+
+const CheckBadge = ({ status }: { status: CheckStatus }) => {
+  const { text, color } = colorMap[status];
+
+  return <Badge text={text} color={color} />;
+};
 
 const getStyles = (theme: GrafanaTheme2) => ({
   container: css({
@@ -58,15 +114,13 @@ const getStyles = (theme: GrafanaTheme2) => ({
       background: theme.colors.emphasize(theme.colors.background.secondary, 0.03),
     },
   }),
-  heading: css({
-    textAlign: `center`,
-    justifyContent: `center`,
-    alignItems: `flex-start`,
-  }),
   desc: css({
     color: theme.colors.text.secondary,
   }),
-  experimentalBadge: css({
-    marginLeft: theme.spacing(1),
+  stack: css({
+    display: `flex`,
+    gap: theme.spacing(1),
+    alignItems: `center`,
+    justifyContent: `center`,
   }),
 });
