@@ -119,7 +119,7 @@ export interface DataRow {
 function AssertionsTable({ model }: SceneComponentProps<AssertionsTableSceneObject>) {
   const { data } = sceneGraph.getData(model).useState();
   const { value: timeRange } = sceneGraph.getTimeRange(model).useState();
-  const { logs, checkType } = model.useState();
+  const { logs, checkType, minStep } = model.useState();
   const [hasLoaded, setHasLoaded] = React.useState(false);
   const [hasStartedLoading, setHasStartedLoading] = React.useState(false);
   const [logTimeLimitExceeded, setLogTimeLimitExceeded] = React.useState(false);
@@ -247,7 +247,7 @@ function AssertionsTable({ model }: SceneComponentProps<AssertionsTableSceneObje
           data={tableData}
           expandableRows
           dataTableProps={{
-            expandableRowsComponentProps: { tableViz: model, logs },
+            expandableRowsComponentProps: { tableViz: model, logs, minStep },
           }}
           expandableComponent={AssertionTableRow}
           //@ts-ignore - noDataText expects a string, but we want to render a component and it works
@@ -266,6 +266,7 @@ interface AssertionsTableState extends SceneObjectState {
   logs: DataSourceRef;
   checkType: CheckType;
   expandedRows?: SceneObject[];
+  minStep: string;
 }
 
 export class AssertionsTableSceneObject extends SceneObjectBase<AssertionsTableState> {
@@ -275,13 +276,14 @@ export class AssertionsTableSceneObject extends SceneObjectBase<AssertionsTableS
   }
 }
 
-export function getAssertionTable(logs: DataSourceRef, checkType: CheckType) {
+export function getAssertionTable(logs: DataSourceRef, checkType: CheckType, minStep: string) {
   return new SceneFlexItem({
     body: new AssertionsTableSceneObject({
       $data: getQueryRunner(logs),
       checkType,
       logs,
       expandedRows: [],
+      minStep,
     }),
   });
 }

@@ -82,7 +82,7 @@ export function getScriptedScene(
           }),
           new SceneFlexLayout({
             direction: 'row',
-            children: [getAssertionTable(logs, checkType)],
+            children: [getAssertionTable(logs, checkType, minStep)],
           }),
           new SceneFlexLayout({
             direction: 'row',
