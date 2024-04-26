@@ -27,6 +27,7 @@ interface AssertionsTableRowState extends SceneObjectState {
 interface Props extends ExpanderComponentProps<DataRow> {
   tableViz?: AssertionsTableSceneObject;
   logs?: DataSourceRef;
+  minStep?: string;
 }
 
 function getStyles(theme: GrafanaTheme2) {
@@ -38,7 +39,7 @@ function getStyles(theme: GrafanaTheme2) {
   };
 }
 
-export function AssertionTableRow({ data, tableViz, logs }: Props) {
+export function AssertionTableRow({ data, tableViz, logs, minStep }: Props) {
   const { expandedRows } = tableViz?.useState() ?? {};
   const [rowKey, setRowKey] = React.useState<string | undefined>(undefined);
   const styles = useStyles2(getStyles);
@@ -46,11 +47,11 @@ export function AssertionTableRow({ data, tableViz, logs }: Props) {
 
   useEffect(() => {
     if (!rowScene && logs && tableViz) {
-      const newRowScene = getSuccessOverTimeByProbe(logs, data.name);
+      const newRowScene = getSuccessOverTimeByProbe(logs, data.name, minStep ?? '5m');
       setRowKey(newRowScene.state.key);
       tableViz.setState({ expandedRows: [...(tableViz.state.expandedRows ?? []), newRowScene] });
     }
-  }, [data.name, tableViz, rowScene, logs]);
+  }, [data.name, tableViz, rowScene, logs, minStep]);
 
   return <div className={styles.container}>{rowScene ? <rowScene.Component model={rowScene} /> : null}</div>;
 }

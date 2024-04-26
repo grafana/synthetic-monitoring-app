@@ -3,7 +3,7 @@ import { DataSourceRef } from '@grafana/schema';
 
 import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
-function getQueryRunner(metrics: DataSourceRef, name: string) {
+function getQueryRunner(metrics: DataSourceRef, name: string, minStep: string) {
   const escaped = name.replace(/"/g, '\\"');
   return new SceneQueryRunner({
     datasource: metrics,
@@ -18,7 +18,7 @@ function getQueryRunner(metrics: DataSourceRef, name: string) {
             | value = "1"
             | check = "${escaped}"
             | keep probe
-            [5m]
+            [${minStep}]
           )
           / 
           count_over_time  (
@@ -28,7 +28,7 @@ function getQueryRunner(metrics: DataSourceRef, name: string) {
               | msg = "check result"
               | check = "${escaped}"
               | keep probe
-              [5m]
+              [${minStep}]
             )
         `,
         refId: 'A',
@@ -40,13 +40,13 @@ function getQueryRunner(metrics: DataSourceRef, name: string) {
   });
 }
 
-export function getSuccessOverTimeByProbe(metrics: DataSourceRef, name: string) {
+export function getSuccessOverTimeByProbe(metrics: DataSourceRef, name: string, minStep: string) {
   return new SceneFlexLayout({
     height: 400,
     children: [
       new SceneFlexItem({
         body: new ExplorablePanel({
-          $data: getQueryRunner(metrics, name),
+          $data: getQueryRunner(metrics, name, minStep),
           options: {
             range: true,
           },
