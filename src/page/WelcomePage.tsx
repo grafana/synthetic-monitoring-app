@@ -202,7 +202,7 @@ export const WelcomePage: FC<Props> = () => {
     <PluginPage layout={PageLayoutType.Canvas}>
       <div className={styles.container}>
         <div className={styles.header}>
-          <img src={meta?.info.logos.large} className={styles.logo} />
+          <img src={meta?.info.logos.large} className={styles.logo} role="presentation" />
           <h1 className={styles.title}>
             Proactively monitor your endpoints and user flows from locations around the world
           </h1>
@@ -271,7 +271,7 @@ function getStyles(theme: GrafanaTheme2) {
       textAlign: 'center',
     }),
     header: css({
-      maxWidth: '520px',
+      maxWidth: '660px',
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'flex-start',
@@ -292,18 +292,15 @@ function getStyles(theme: GrafanaTheme2) {
       color: theme.colors.text.secondary,
     }),
     getStartedButton: css({
-      marginTop: theme.spacing(8),
+      marginTop: theme.spacing(4),
     }),
     divider: css({
       width: '100%',
     }),
     valueProp: css({
       marginTop: theme.spacing(6),
-      maxWidth: '700px',
+      maxWidth: '860px',
       width: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
     }),
     valuePropHeader: css({ marginBottom: theme.spacing(4) }),
   };

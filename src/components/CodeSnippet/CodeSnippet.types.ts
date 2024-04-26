@@ -27,6 +27,7 @@ export interface CodeSnippetProps {
   tabs?: CodeSnippetTab[];
   height?: string;
   className?: string;
+  hideHeader?: boolean;
 }
 
 export interface CodeSnippetTabProps {

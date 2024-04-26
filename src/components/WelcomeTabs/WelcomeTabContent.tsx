@@ -20,7 +20,7 @@ export function WelcomeTabContent({ activeTab }: Props) {
     case WelcomeTab.Protocol:
       return (
         <>
-          <p>Send individual requests via HTTP, DNS, TCP, PING or traceroute</p>
+          <p className={styles.text}>Send individual requests via HTTP, DNS, TCP, PING or traceroute</p>
 
           <img
             src={config.theme2.isDark ? dashboardDark : dashboardLight}
@@ -32,7 +32,7 @@ export function WelcomeTabContent({ activeTab }: Props) {
     case WelcomeTab.K6:
       return (
         <>
-          <p>Use k6 scripts to monitor your services flexibly</p>
+          <p className={styles.text}>Use k6 scripts to monitor your services flexibly</p>
           <CodeSnippet
             canCopy={true}
             className={styles.codeSnippet}
@@ -56,7 +56,7 @@ export function WelcomeTabContent({ activeTab }: Props) {
     case WelcomeTab.PrivateProbes:
       return (
         <>
-          <p>
+          <p className={styles.text}>
             In addition to the locations we provide out of the box, you can set up your own probes to run inside your
             network or from a location of your choosing
           </p>
@@ -70,7 +70,7 @@ export function WelcomeTabContent({ activeTab }: Props) {
     case WelcomeTab.AsCode:
       return (
         <>
-          <p>
+          <p className={styles.text}>
             Manage your checks as code, either via{' '}
             <a
               href="https://registry.terraform.io/providers/grafana/grafana/latest/docs/resources/synthetic_monitoring_check"
@@ -114,8 +114,15 @@ export function WelcomeTabContent({ activeTab }: Props) {
 
 function getStyles(theme: GrafanaTheme2) {
   return {
-    screenshot: css({ maxHeight: '700px', maxWidth: '100%', marginBottom: theme.spacing(5) }),
+    screenshot: css({ maxWidth: '100%' }),
     tabContent: css({ marginTop: theme.spacing(4) }),
     codeSnippet: css({ height: '700px' }),
+    text: css({
+      fontSize: theme.typography.h5.fontSize,
+      marginLeft: `auto`,
+      marginRight: `auto`,
+      marginBottom: theme.spacing(4),
+      maxWidth: `640px`,
+    }),
   };
 }

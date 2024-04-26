@@ -7,6 +7,7 @@ interface SnippetWindowProps {
   titleContent?: ReactNode;
   children?: ReactNode;
   className?: string;
+  hideHeader?: boolean;
 }
 
 interface TitleBarProps {
@@ -28,12 +29,12 @@ function TitleBar({ children }: TitleBarProps) {
   );
 }
 
-export function SnippetWindow({ titleContent, className, children }: SnippetWindowProps) {
+export function SnippetWindow({ titleContent, className, children, hideHeader }: SnippetWindowProps) {
   const styles = useStyles2(getStyles);
 
   return (
     <div className={cx(styles.appWindowStyled, className)}>
-      <TitleBar>{titleContent}</TitleBar>
+      {!hideHeader && <TitleBar>{titleContent}</TitleBar>}
       <div className={styles.contentContainer}>{children}</div>
     </div>
   );
@@ -70,7 +71,6 @@ export function getStyles(theme: GrafanaTheme2) {
       marginRight: '5px',
     }),
     contentContainer: css({
-      width: '100%',
       display: 'flex',
       flexDirection: 'column',
       border: `1px ${theme.colors.border.medium} solid`,
