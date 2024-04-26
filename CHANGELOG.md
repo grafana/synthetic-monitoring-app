@@ -1,5 +1,13 @@
 # Change Log
 
+# [1.14.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.13.4...v1.14.0) (2024-5-1)
+
+- Add a k6 based scripted check type
+- Updates design of the check creation form
+- Update documentation links
+- Only show query params for the HTTP check type
+- Fix the error log toggle to query by probe success instead of log error level
+
 # [1.13.4](https://github.com/grafana/synthetic-monitoring-app/compare/v1.13.3...v1.13.4) (2024-4-18)
 
 - Allow label limits to be configurable on a per tenant basis
