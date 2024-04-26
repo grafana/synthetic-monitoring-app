@@ -81,7 +81,7 @@ const CheckFormContent = ({ check, checkType, overCheckLimit, overScriptedLimit 
     // react-hook-form doesn't let us provide SubmitEvent to BaseSyntheticEvent
     const submitter = (event?.nativeEvent as SubmitEvent).submitter;
     const toSubmit = toPayload(checkValues);
-    console.log('toSubmit', toSubmit);
+
     if (submitter === testRef.current) {
       return testCheck(toSubmit);
     }
@@ -227,7 +227,7 @@ const CheckSelector = ({
   }
 
   if (checkType === CheckType.GRPC) {
-    return <CheckGrpcLayout />;
+    return <CheckGrpcLayout {...rest} />;
   }
 
   throw new Error(`Invalid check type: ${checkType}`);
