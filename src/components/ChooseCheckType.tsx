@@ -30,11 +30,8 @@ export function ChooseCheckType() {
             <Card key={check?.label || ''} className={styles.card} href={`${getRoute(ROUTES.NewCheck)}/${check.value}`}>
               <Card.Heading className={styles.heading} variant="h6">
                 {check.label}
-                {check.value === CheckType.MULTI_HTTP && (
-                  <Badge text="Public preview" color="blue" className={styles.experimentalBadge} />
-                )}
                 {check.value === CheckType.Scripted && (
-                  <Badge text="Experimental" color="orange" className={styles.experimentalBadge} />
+                  <Badge text="Public preview" color="blue" className={styles.experimentalBadge} />
                 )}
               </Card.Heading>
               <div className={styles.desc}>{check.description}</div>
