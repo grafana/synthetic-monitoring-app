@@ -154,6 +154,7 @@ export const CodeEditor = forwardRef(function CodeEditor(
         showLineNumbers={true}
         showMiniMap={false}
         monacoOptions={{
+          fixedOverflowWidgets: false,
           scrollBeyondLastLine: false,
           scrollbar: {
             alwaysConsumeMouseWheel: false,
