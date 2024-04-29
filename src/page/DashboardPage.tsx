@@ -9,12 +9,12 @@ import { InstanceContext } from 'contexts/InstanceContext';
 import { useChecks } from 'data/useChecks';
 import { PLUGIN_URL_PATH } from 'components/constants';
 import { getDNSScene } from 'scenes/DNS';
+import { getGRPCScene } from 'scenes/GRPC/getGRPCScene';
 import { getHTTPScene } from 'scenes/HTTP';
 import { getPingScene } from 'scenes/PING/pingScene';
 import { getScriptedScene } from 'scenes/SCRIPTED';
 import { getTcpScene } from 'scenes/TCP/getTcpScene';
 import { getTracerouteScene } from 'scenes/Traceroute/getTracerouteScene';
-import { getGRPCScene } from 'scenes/GRPC/getGRPCScene';
 
 function DashboardPageContent() {
   const { instance } = useContext(InstanceContext);
