@@ -21,21 +21,25 @@ export const CheckGrpcLayout = ({ formActions, onSubmit, onSubmitError, errorMes
       <FormLayout.Section
         label="General settings"
         fields={['enabled', 'job', 'target', 'probes', 'frequency', 'timeout']}
+        required
       >
         <CheckEnabled />
         <CheckJobName />
         <CheckTarget checkType={CheckType.GRPC} />
-        <ProbeOptions checkType={CheckType.GRPC} />
-        <CheckPublishedAdvanceMetrics />
-        <CheckUsage checkType={CheckType.GRPC} />
       </FormLayout.Section>
 
-      <FormLayout.Section label="gRPC settings" fields={['settings.grpc.service', 'settings.grpc.tls']}>
-        <CheckUseTLS checkType={CheckType.GRPC} />
+      <FormLayout.Section label="Probes" fields={[`probes`, `frequency`, `timeout`, `publishAdvancedMetrics`]} required>
+        <CheckUsage checkType={CheckType.GRPC} />
+        <CheckPublishedAdvanceMetrics />
+        <ProbeOptions checkType={CheckType.GRPC} />
+      </FormLayout.Section>
+
+      <FormLayout.Section label="gRPC settings" fields={['settings.grpc.service']}>
         <GRPCCheckService />
       </FormLayout.Section>
 
-      <FormLayout.Section label="TLS config" fields={[`settings.grpc.tlsConfig`]}>
+      <FormLayout.Section label="TLS config" fields={['settings.grpc.tls', 'settings.grpc.tlsConfig']}>
+        <CheckUseTLS checkType={CheckType.GRPC} />
         <TLSConfig checkType={CheckType.GRPC} />
       </FormLayout.Section>
 
