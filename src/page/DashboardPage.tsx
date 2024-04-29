@@ -14,6 +14,7 @@ import { getPingScene } from 'scenes/PING/pingScene';
 import { getScriptedScene } from 'scenes/SCRIPTED';
 import { getTcpScene } from 'scenes/TCP/getTcpScene';
 import { getTracerouteScene } from 'scenes/Traceroute/getTracerouteScene';
+import { getGRPCScene } from 'scenes/GRPC/getGRPCScene';
 
 function DashboardPageContent() {
   const { instance } = useContext(InstanceContext);
@@ -113,8 +114,17 @@ function DashboardPageContent() {
           ],
         });
       }
+
       case CheckType.GRPC: {
-        return null;
+        return new SceneApp({
+          pages: [
+            new SceneAppPage({
+              title: checkToView.job,
+              url,
+              getScene: getGRPCScene(config, [checkToView]),
+            }),
+          ],
+        });
       }
     }
   }, [instance.api, instance.logs, instance.metrics, checkToView]);
