@@ -1,6 +1,10 @@
 # Change Log
 
-# [1.14.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.13.4...v1.14.0) (2024-5-1)
+# [1.14.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.0...v1.14.1) (2024-4-29)
+
+- Temporarily disable responsive form layout that was causing issues with the scripted check editor
+
+# [1.14.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.13.4...v1.14.0) (2024-4-29)
 
 - Add a k6 based scripted check type
 - Updates design of the check creation form
