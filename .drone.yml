@@ -272,8 +272,8 @@ steps:
       GRAFANA_API_KEY:
         from_secret: signing_token
     commands:
-      - ls -al
-      - ./scripts/publish-gcom
+      - ls -al ./scripts
+      - ./scripts/publish-gcom.sh
 
 image_pull_secrets:
   - dockerconfigjson
@@ -336,6 +336,6 @@ kind: secret
 name: gcp_key
 ---
 kind: signature
-hmac: a09f1347561c3a079043b329f7df5a01d0927b24b9e8ac980e42a6edf39366ba
+hmac: 2579e8e7adbac655151f3d6d883b99a6480b324fa9c3f3503b4ae771dff11e15
 
 ...
