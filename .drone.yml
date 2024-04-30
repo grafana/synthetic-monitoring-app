@@ -272,6 +272,7 @@ steps:
       GRAFANA_API_KEY:
         from_secret: signing_token
     commands:
+      - ls -al
       - ./scripts/publish-gcom
 
 image_pull_secrets:
@@ -335,6 +336,6 @@ kind: secret
 name: gcp_key
 ---
 kind: signature
-hmac: 8ff8679705ffd1006d10c8959d178ac428f90bacd9fe236af575c503ea70d09f
+hmac: a09f1347561c3a079043b329f7df5a01d0927b24b9e8ac980e42a6edf39366ba
 
 ...

@@ -1,5 +1,9 @@
 # Change Log
 
+# [1.14.2](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.1...v1.14.2) (2024-4-30)
+
+- Make the check creation form responsive
+
 # [1.14.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.0...v1.14.1) (2024-4-29)
 
 - Temporarily disable responsive form layout that was causing issues with the scripted check editor
