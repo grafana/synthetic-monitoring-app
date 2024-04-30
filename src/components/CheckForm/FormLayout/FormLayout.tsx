@@ -198,36 +198,34 @@ function checkForErrors({
 
 const getStyles = (theme: GrafanaTheme2) => {
   const containerName = `checkForm`;
-  // const breakpoint = theme.breakpoints.values.xs;
-  // const query = `(min-width: ${breakpoint + 1}px)`;
-  // const containerQuery = `@container ${containerName} ${query}`;
-  // const mediaQuery = `@supports not (container-type: inline-size) @media ${query}`;
+  const breakpoint = theme.breakpoints.values.md;
+  const query = `(min-width: ${breakpoint + 1}px)`;
+  const containerQuery = `@container ${containerName} ${query}`;
+  const mediaQuery = `@supports not (container-type: inline-size) @media ${query}`;
 
   return {
     wrapper: css({
-      // containerName,
-      // containerType: `inline-size`,
+      containerName,
+      containerType: `inline-size`,
       height: '100%',
     }),
     container: css({
       display: 'grid',
       gap: theme.spacing(4),
-
-      gridTemplateColumns: `240px 1fr`,
-      height: '100%',
-      // [containerQuery]: {
-      // },
-      // [mediaQuery]: {
-      //   gridTemplateColumns: `240px 1fr`,
-      //   height: '100%',
-      // },
+      [containerQuery]: {
+        gridTemplateColumns: `240px 1fr`,
+        height: '100%',
+      },
+      [mediaQuery]: {
+        gridTemplateColumns: `240px 1fr`,
+        height: '100%',
+      },
     }),
     submissionError: css({
       marginTop: theme.spacing(2),
     }),
     section: css({
       containerName,
-      flex: 1,
     }),
     sectionContent: css({
       maxWidth: `800px`,
