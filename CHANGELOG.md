@@ -1,5 +1,10 @@
 # Change Log
 
+# [1.14.3](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.2...v1.14.3) (2024-5-1)
+
+- Fix a bug where checks with a frequency of 1 hour showing incorrect uptime on the check dashboards
+- Fix a bug on the config page where the terraform export didn't have the dependencies it needed
+
 # [1.14.2](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.1...v1.14.2) (2024-4-30)
 
 - Make the check creation form responsive
