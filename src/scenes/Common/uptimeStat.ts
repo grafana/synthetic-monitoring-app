@@ -6,7 +6,7 @@ import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
 function getMinStep(minStep: string) {
   try {
-    const minStepParsed = parseInt(minStep[0], 10);
+    const minStepParsed = parseInt(minStep.slice(0, -1), 10);
     return `${Math.max(minStepParsed, 5)}m`;
   } catch (e) {
     return minStep;
