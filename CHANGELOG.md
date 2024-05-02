@@ -1,5 +1,9 @@
 # Change Log
 
+# [1.14.4](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.3...v1.14.4) (2024-5-2)
+
+- Fix a bug with traceroute timeouts gettings the wrong default value
+
 # [1.14.3](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.2...v1.14.3) (2024-5-1)
 
 - Fix a bug where checks with a frequency of 1 hour showing incorrect uptime on the check dashboards
