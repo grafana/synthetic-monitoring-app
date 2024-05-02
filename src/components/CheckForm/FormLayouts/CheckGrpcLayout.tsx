@@ -18,11 +18,7 @@ import { TLSConfig } from 'components/TLSConfig';
 export const CheckGrpcLayout = ({ formActions, onSubmit, onSubmitError, errorMessage }: CheckFormTypeLayoutProps) => {
   return (
     <FormLayout formActions={formActions} onSubmit={onSubmit} onSubmitError={onSubmitError} errorMessage={errorMessage}>
-      <FormLayout.Section
-        label="General settings"
-        fields={['enabled', 'job', 'target', 'probes', 'frequency', 'timeout']}
-        required
-      >
+      <FormLayout.Section label="General settings" fields={['enabled', 'job', 'target']} required>
         <CheckEnabled />
         <CheckJobName />
         <CheckTarget checkType={CheckType.GRPC} />
