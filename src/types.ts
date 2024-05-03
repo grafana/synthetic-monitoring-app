@@ -68,10 +68,10 @@ export interface HeaderMatch {
 }
 
 export interface TLSConfig {
-  insecureSkipVerify?: boolean;
   caCert?: string;
   clientCert?: string;
   clientKey?: string;
+  insecureSkipVerify?: boolean;
   serverName?: string;
 }
 

@@ -5,7 +5,7 @@ import { Field, Input } from '@grafana/ui';
 
 import { CheckFormValues, CheckType, Probe } from 'types';
 import { hasRole } from 'utils';
-import { validateFrequency, validateProbes, validateTimeout } from 'validation';
+import { validateTimeout } from 'validation';
 import { useProbes } from 'data/useProbes';
 import { SliderInput } from 'components/SliderInput';
 import { Subheader } from 'components/Subheader';
@@ -80,7 +80,6 @@ export const ProbeOptions = ({ checkType }: Props) => {
       <Controller<CheckFormValues>
         control={control}
         name="probes"
-        rules={{ validate: validateProbes }}
         render={({ field }) => (
           <CheckProbes
             {...field}
@@ -99,12 +98,7 @@ export const ProbeOptions = ({ checkType }: Props) => {
         invalid={Boolean(errors.frequency)}
         error={errors.frequency?.message}
       >
-        <SliderInput
-          validate={(value) => validateFrequency(value, maxFrequency)}
-          name="frequency"
-          min={minFrequency}
-          max={maxFrequency}
-        />
+        <SliderInput name="frequency" min={minFrequency} max={maxFrequency} />
       </Field>
       <Field
         label="Timeout"

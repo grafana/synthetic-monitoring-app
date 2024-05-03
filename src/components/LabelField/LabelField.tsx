@@ -3,11 +3,11 @@ import { useFormContext } from 'react-hook-form';
 import { OrgRole } from '@grafana/data';
 import { Alert, Button, Field, LoadingPlaceholder, Spinner, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { capitalize } from 'lodash';
 
 import { Label } from 'types';
 import { FaroEvent, reportEvent } from 'faro';
 import { hasRole } from 'utils';
-import { validateLabelName, validateLabelValue } from 'validation';
 import { ListTenantLimitsResponse } from 'datasource/responses.types';
 import { useTenantLimits } from 'data/useTenantLimits';
 import { NameValueInput } from 'components/NameValueInput';
@@ -42,14 +42,20 @@ function getDescription(labelDestination: LabelFieldProps['labelDestination'], l
 
 export const LabelField = <T extends FormWithLabels>({ labelDestination }: LabelFieldProps) => {
   const { data: limits, isLoading, error, isRefetching, refetch } = useTenantLimits();
-  const { watch } = useFormContext<FormWithLabels>();
-  const labels = watch('labels');
+  const { formState } = useFormContext<FormWithLabels>();
   const isEditor = hasRole(OrgRole.Editor);
   const limit = getLimit(labelDestination, limits);
   const description = getDescription(labelDestination, limit, limits?.maxAllowedLogLabels ?? 5);
+  const labelError = formState.errors?.labels?.message || formState.errors?.labels?.root?.message;
 
   return (
-    <Field label="Labels" description={description} disabled={!isEditor}>
+    <Field
+      label="Labels"
+      description={description}
+      disabled={!isEditor}
+      error={parseErrorMessage(labelError, 'label')}
+      invalid={Boolean(labelError)}
+    >
       {isLoading ? (
         <LoadingPlaceholder text="Loading label limits" />
       ) : (
@@ -60,8 +66,6 @@ export const LabelField = <T extends FormWithLabels>({ labelDestination }: Label
             disabled={!isEditor}
             label="label"
             limit={limit}
-            validateName={(labelName) => validateLabelName(labelName, labels)}
-            validateValue={validateLabelValue}
             data-fs-element="Labels input"
           />
         </>
@@ -99,4 +103,8 @@ function LimitsFetchWarning({
       </div>
     </Alert>
   );
+}
+
+function parseErrorMessage(message: string | undefined, label: string) {
+  return message?.replace(`{type}`, capitalize(label));
 }
