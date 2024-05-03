@@ -36,7 +36,7 @@ export const fillBasicCheckFields = async (jobName: string, target: string, user
 
   // Set probe options
   await toggleSection(`Probes *`, user);
-  const probeOptions = screen.getByText('Probe options').parentElement;
+  const probeOptions = screen.getByText('Probe options');
   if (!probeOptions) {
     throw new Error('Couldnt find Probe Options');
   }

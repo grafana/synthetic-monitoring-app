@@ -303,6 +303,7 @@ export const FALLBACK_CHECK_TCP: TCPCheck = {
 export const FALLBACK_CHECK_TRACEROUTE: TracerouteCheck = {
   ...FALLBACK_CHECK_BASE,
   timeout: 30000,
+  frequency: 120000,
   settings: {
     traceroute: {
       maxHops: 64,

@@ -96,7 +96,7 @@ export const ProbeOptions = ({ checkType }: Props) => {
       <Field
         label="Frequency"
         description="How frequently the check should run."
-        disabled={!isEditor || isTraceroute} // is this correct?
+        disabled={!isEditor}
         invalid={Boolean(errors.frequency)}
         error={errors.frequency?.message}
       >

@@ -1,5 +1,5 @@
 import React from 'react';
-import { screen } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import { PRIVATE_PROBE } from 'test/fixtures/probes';
 import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
@@ -12,10 +12,10 @@ import { PLUGIN_URL_PATH } from 'components/constants';
 import { fillBasicCheckFields, submitForm, toggleSection } from './testHelpers';
 
 const JOB_NAME = `Traceroute job`;
-const TARGET = `https://grafana.com`;
+const TARGET = `grafana.com`;
 const LABELS: Label[] = [];
 
-describe(`Edits the sections of a Traceroute check correctly`, () => {
+describe(`Displays sections of a Traceroute check correctly`, () => {
   it(`Renders a readonly field for the probe's timeout field with a value of 30 seconds`, async () => {
     const { user } = render(<CheckForm />, {
       route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/:checkType`,
@@ -29,6 +29,24 @@ describe(`Edits the sections of a Traceroute check correctly`, () => {
     expect(timeout).toHaveValue(`30`);
   });
 
+  it(`Renders 2 minutes 0 seconds by default for the frequency field`, async () => {
+    const { user } = render(<CheckForm />, {
+      route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/:checkType`,
+      path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${CheckType.Traceroute}`,
+    });
+
+    await fillBasicCheckFields(JOB_NAME, TARGET, user, LABELS);
+    await toggleSection(`Probes`, user);
+
+    const frequency = await screen.getByTestId(`frequency`);
+    const minutes = await within(frequency).findByLabelText(/minutes/);
+    const seconds = await within(frequency).findByLabelText(/seconds/);
+    expect(minutes).toHaveValue(`2`);
+    expect(seconds).toHaveValue(`0`);
+  });
+});
+
+describe(`Submits a Traceroute check correctly`, () => {
   it(`Submits the form with a value of 30000 for the timeout field`, async () => {
     const { record, read } = getServerRequests();
     server.use(apiRoute(`addCheck`, {}, record));
@@ -39,16 +57,16 @@ describe(`Edits the sections of a Traceroute check correctly`, () => {
     });
 
     await fillBasicCheckFields(JOB_NAME, TARGET, user, LABELS);
+    screen.debug(undefined, 200000);
 
     await submitForm(user);
-
     const { body } = await read();
 
     expect(body).toEqual({
       alertSensitivity: AlertSensitivity.None,
       basicMetricsOnly: true,
       enabled: true,
-      frequency: 60000,
+      frequency: 120000,
       job: JOB_NAME,
       labels: LABELS,
       probes: [PRIVATE_PROBE.id],
