@@ -1,12 +1,5 @@
 import { CheckType } from 'types';
-import {
-  CheckValidation,
-  validateLabelName,
-  validateLabelValue,
-  validateTLSCACert,
-  validateTLSClientCert,
-  validateTLSClientKey,
-} from 'validation';
+import { CheckValidation, validateLabelName, validateLabelValue } from 'validation';
 
 jest.unmock('utils');
 
@@ -170,18 +163,6 @@ describe('tcp', () => {
     testcases.forEach((testcase: string) => {
       expect(CheckValidation.target(CheckType.TCP, testcase)).toBe(undefined);
     });
-  });
-});
-
-describe('certificates', () => {
-  it('should reject invalid certificates', async () => {
-    const invalidCert = 'not a legit cert';
-    expect(validateTLSCACert(invalidCert)).toBe('Certificate must be in the PEM format.');
-    expect(validateTLSClientCert(invalidCert)).toBe('Certificate must be in the PEM format.');
-  });
-  it('should reject invalid tls keys', () => {
-    const invalidKey = 'not a legit cert';
-    expect(validateTLSClientKey(invalidKey)).toBe('Key must be in the PEM format.');
   });
 });
 

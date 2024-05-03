@@ -2,6 +2,8 @@ import React, { BaseSyntheticEvent, useMemo, useRef, useState } from 'react';
 import { FormProvider, SubmitErrorHandler, SubmitHandler, useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 import { Button, ConfirmModal, LinkButton } from '@grafana/ui';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { HttpCheckSchema } from 'schemas/forms/HttpCheckSchema';
 
 import { Check, CheckFormValues, CheckPageParams, CheckType, ROUTES } from 'types';
 import { isOverCheckLimit, isOverScriptedLimit } from 'utils';
@@ -67,7 +69,7 @@ const CheckFormContent = ({ check, checkType, overCheckLimit, overScriptedLimit 
   const formMethods = useForm<CheckFormValues>({
     defaultValues: initialValues,
     shouldFocusError: false, // we manage focus manually
-    mode: `onBlur`,
+    resolver: zodResolver(HttpCheckSchema),
   });
 
   const { updateCheck, createCheck, deleteCheck, error, submitting } = useCUDChecks({ eventInfo: { checkType } });
@@ -77,7 +79,11 @@ const CheckFormContent = ({ check, checkType, overCheckLimit, overScriptedLimit 
   const onSuccess = () => navigateBack();
   const testRef = useRef<HTMLButtonElement>(null);
 
+  console.log(formMethods.formState.errors);
+  console.log(formMethods.watch());
+
   const handleSubmit = (checkValues: CheckFormValues, event: BaseSyntheticEvent | undefined) => {
+    console.log(checkValues);
     // react-hook-form doesn't let us provide SubmitEvent to BaseSyntheticEvent
     const submitter = (event?.nativeEvent as SubmitEvent).submitter;
     const toSubmit = toPayload(checkValues);
