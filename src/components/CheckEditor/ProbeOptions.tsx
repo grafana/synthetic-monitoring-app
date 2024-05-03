@@ -67,6 +67,7 @@ export const ProbeOptions = ({ checkType }: Props) => {
   const {
     control,
     formState: { errors },
+    register,
   } = useFormContext<CheckFormValues>();
   const isTraceroute = checkType === CheckType.Traceroute;
   const { minFrequency, maxFrequency } = getFrequencyBounds(checkType);
@@ -95,7 +96,7 @@ export const ProbeOptions = ({ checkType }: Props) => {
       <Field
         label="Frequency"
         description="How frequently the check should run."
-        disabled={!isEditor || isTraceroute}
+        disabled={!isEditor}
         invalid={Boolean(errors.frequency)}
         error={errors.frequency?.message}
       >
@@ -109,13 +110,19 @@ export const ProbeOptions = ({ checkType }: Props) => {
       <Field
         label="Timeout"
         description="Maximum execution time for a check"
-        disabled={!isEditor || checkType === CheckType.Traceroute}
         invalid={Boolean(errors.timeout)}
         error={errors.timeout?.message}
+        htmlFor={`timeout`}
       >
-        {checkType === CheckType.Traceroute ? (
-          // This is just a placeholder for now, the timeout for traceroute checks is hardcoded in the submit
-          <Input value={30} prefix="Every" suffix="seconds" width={20} />
+        {isTraceroute ? (
+          <Input
+            {...register(`timeout`)}
+            readOnly={!isEditor || isTraceroute}
+            prefix="Every"
+            suffix="seconds"
+            width={18}
+            id={`timeout`}
+          />
         ) : (
           <SliderInput
             name="timeout"
