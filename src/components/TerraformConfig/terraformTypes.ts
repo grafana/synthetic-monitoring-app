@@ -1,4 +1,13 @@
-import { BasicAuth, DnsSettings, HeaderMatch, HttpSettings, Probe, TCPQueryResponse, TcpSettings } from 'types';
+import {
+  BasicAuth,
+  DnsSettings,
+  GRPCSettings,
+  HeaderMatch,
+  HttpSettings,
+  Probe,
+  TCPQueryResponse,
+  TcpSettings,
+} from 'types';
 import { MultiHttpEntry, QueryParams, RequestProps } from 'components/MultiHttp/MultiHttpTypes';
 
 export interface TFOutput {
@@ -59,6 +68,10 @@ type KeyedTFScriptedSettings = {
   scripted: {};
 };
 
+type KeyedGRPCCheckSettings = {
+  grpc: TFGRPCSettings;
+};
+
 export type TFCheckSettings =
   | KeyedTFHttpSettings
   | KeyedTFPingSettings
@@ -66,7 +79,8 @@ export type TFCheckSettings =
   | KeyedTFDnsSettings
   | KeyedTFTracerouteSettings
   | KeyedTFMultiHTTPSettings
-  | KeyedTFScriptedSettings;
+  | KeyedTFScriptedSettings
+  | KeyedGRPCCheckSettings;
 
 interface TFFailIfMatchesNotMatches {
   fail_if_matches_regexp?: string[];
@@ -86,6 +100,11 @@ interface TFDnsSettings
   validate_additional_rrs: TFFailIfMatchesNotMatches;
 }
 
+interface TFGRPCSettings extends Omit<GRPCSettings, 'ipVersion' | 'tlsConfig'> {
+  ip_version?: string;
+  tls_config?: TFTlsConfig;
+}
+
 interface TFHttpSettings
   extends Omit<
     HttpSettings,
@@ -99,7 +118,6 @@ interface TFHttpSettings
     | 'basicAuth'
     | 'failIfSSL'
     | 'failIfNotSSL'
-    | 'validStatusCodes'
     | 'validHTTPVersions'
     | 'failIfBodyMatchesRegexp'
     | 'failIfBodyNotMatchesRegexp'

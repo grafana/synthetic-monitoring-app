@@ -371,6 +371,35 @@ test(`Scripted checks appear in the filters when the feature flag is enabled`, a
   expect(within(listBox).getByText(`Scripted`)).toBeInTheDocument();
 });
 
+test(`gRPC checks do not appear in the filters by default`, async () => {
+  const { user } = await renderCheckList();
+  const additionalFilters = await screen.findByText(/Additional filters/i);
+  await user.click(additionalFilters);
+
+  const select = await getSelect({ label: `Filter by type` });
+  await user.click(select[0]);
+  const listBox = screen.getByLabelText(`Select options menu`);
+
+  expect(within(listBox).queryByText(`gRPC`)).not.toBeInTheDocument();
+});
+
+test(`gRPC checks appear in the filters when the feature flag is enabled`, async () => {
+  jest.replaceProperty(config, 'featureToggles', {
+    // @ts-expect-error
+    [FeatureName.GRPCChecks]: true,
+  });
+
+  const { user } = await renderCheckList();
+  const additionalFilters = await screen.findByText(/Additional filters/i);
+  await user.click(additionalFilters);
+
+  const select = await getSelect({ label: `Filter by type` });
+  await user.click(select[0]);
+  const listBox = screen.getByLabelText(`Select options menu`);
+
+  expect(within(listBox).getByText(`gRPC`)).toBeInTheDocument();
+});
+
 describe(`bulk select behaviour`, () => {
   test('select all performs disable action on all visible checks', async () => {
     const { read, record } = getServerRequests();

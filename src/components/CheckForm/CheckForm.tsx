@@ -16,6 +16,7 @@ import { PluginPage } from 'components/PluginPage';
 import { getRoute } from 'components/Routing';
 
 import { CheckDNSLayout } from './FormLayouts/CheckDNSLayout';
+import { CheckGrpcLayout } from './FormLayouts/CheckGrpcLayout';
 import { CheckHTTPLayout } from './FormLayouts/CheckHttpLayout';
 import { CheckMultiHTTPLayout } from './FormLayouts/CheckMultiHttpLayout';
 import { CheckPingLayout } from './FormLayouts/CheckPingLayout';
@@ -225,6 +226,10 @@ const CheckSelector = ({
     return <CheckTracerouteLayout {...rest} />;
   }
 
+  if (checkType === CheckType.GRPC) {
+    return <CheckGrpcLayout {...rest} />;
+  }
+
   throw new Error(`Invalid check type: ${checkType}`);
 };
 
@@ -233,9 +238,5 @@ function isValidCheckType(checkType?: CheckType): checkType is CheckType {
     return false;
   }
 
-  if (Object.values(CheckType).includes(checkType)) {
-    return true;
-  }
-
-  return false;
+  return Object.values(CheckType).includes(checkType);
 }

@@ -25,5 +25,5 @@ const grafanaESModules = [
 
 module.exports = {
   nodeModulesToTransform,
-  grafanaESModules
-}
+  grafanaESModules,
+};

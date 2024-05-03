@@ -8,7 +8,7 @@ import { hasRole } from 'utils';
 import { IP_OPTIONS } from 'components/constants';
 
 type CheckIpVersionProps = {
-  checkType: CheckType.HTTP | CheckType.PING | CheckType.DNS | CheckType.TCP;
+  checkType: CheckType.HTTP | CheckType.PING | CheckType.DNS | CheckType.TCP | CheckType.GRPC;
   name: FieldPath<CheckFormValues>;
 };
 
@@ -17,6 +17,7 @@ const requestMap = {
   [CheckType.PING]: `ICMP`,
   [CheckType.DNS]: `ICMP`,
   [CheckType.TCP]: `TCP`,
+  [CheckType.GRPC]: `GRPC`,
 };
 
 export const CheckIpVersion = ({ checkType, name }: CheckIpVersionProps) => {

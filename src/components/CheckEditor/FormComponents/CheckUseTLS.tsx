@@ -3,13 +3,13 @@ import { useFormContext } from 'react-hook-form';
 import { OrgRole } from '@grafana/data';
 import { Field, Switch } from '@grafana/ui';
 
-import { CheckFormValuesTcp } from 'types';
+import {TLSCheckTypes, TLSFormValues} from 'types';
 import { hasRole } from 'utils';
 
-export const TCPCheckUseTLS = () => {
+export const CheckUseTLS = ({checkType}: {checkType: TLSCheckTypes}) => {
   const isEditor = hasRole(OrgRole.Editor);
-  const { register } = useFormContext<CheckFormValuesTcp>();
-  const id = 'tcp-settings-use-tls';
+  const { register } = useFormContext<TLSFormValues>();
+  const id = `${checkType}-settings-use-tls`;
 
   return (
     <Field
@@ -19,7 +19,7 @@ export const TCPCheckUseTLS = () => {
       htmlFor={id}
     >
       <Switch
-        {...register('settings.tcp.tls')}
+        {...register(`settings.${checkType}.tls`)}
         title="Use TLS"
         disabled={!isEditor}
         id={id}
