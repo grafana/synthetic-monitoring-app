@@ -13,8 +13,12 @@ enum ScriptEditorTabs {
 }
 
 export const ScriptedCheckScript = () => {
-  const { control } = useFormContext<CheckFormValuesScripted>();
+  const {
+    control,
+    formState: { errors },
+  } = useFormContext<CheckFormValuesScripted>();
   const [selectedTab, setSelectedTab] = React.useState(ScriptEditorTabs.Script);
+  const fieldError = errors.settings?.scripted?.script;
 
   return (
     <>
@@ -60,6 +64,7 @@ export const ScriptedCheckScript = () => {
             lang="js"
           />
         )}
+        {fieldError && <div>{fieldError.message}</div>}
       </TabContent>
     </>
   );

@@ -60,15 +60,6 @@ export function validateTarget(typeOfCheck: CheckType, target: string): string |
   }
 
   switch (typeOfCheck) {
-    case CheckType.Traceroute: {
-      return validateHostname(target);
-    }
-    case CheckType.Scripted: {
-      if (target.length < 3) {
-        return 'Instance must be at least 3 characters long';
-      }
-      return undefined;
-    }
     case CheckType.GRPC: {
       return validateHostPort(target);
     }

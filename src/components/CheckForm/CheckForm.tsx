@@ -7,6 +7,7 @@ import { DNSCheckSchema } from 'schemas/forms/DNSCheckSchema';
 import { HttpCheckSchema } from 'schemas/forms/HttpCheckSchema';
 import { MultiHttpCheckSchema } from 'schemas/forms/MultiHttpCheckSchema';
 import { PingCheckSchema } from 'schemas/forms/PingCheckSchema';
+import { ScriptedCheckSchema } from 'schemas/forms/ScriptedCheckSchema';
 import { TCPCheckSchema } from 'schemas/forms/TCPCheckSchema';
 import { TracerouteCheckSchema } from 'schemas/forms/TracerouteCheckSchema';
 
@@ -68,7 +69,7 @@ type CheckFormContentProps = {
 const schemaMap = {
   [CheckType.HTTP]: HttpCheckSchema,
   [CheckType.MULTI_HTTP]: MultiHttpCheckSchema,
-  [CheckType.Scripted]: HttpCheckSchema,
+  [CheckType.Scripted]: ScriptedCheckSchema,
   [CheckType.PING]: PingCheckSchema,
   [CheckType.DNS]: DNSCheckSchema,
   [CheckType.TCP]: TCPCheckSchema,
