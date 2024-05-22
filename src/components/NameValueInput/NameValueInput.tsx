@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { FieldErrorsImpl, useFieldArray, useFormContext } from 'react-hook-form';
-import { Button, Field, HorizontalGroup, Icon, IconButton, Input, useTheme2, VerticalGroup } from '@grafana/ui';
+import { GrafanaTheme2 } from '@grafana/data';
+import { Button, Field, HorizontalGroup, Icon, IconButton, Input, useStyles2, VerticalGroup } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckFormValues, Probe } from 'types';
@@ -34,6 +35,11 @@ function getErrors(errors: FieldErrorsImpl<CheckFormValues | Probe>, name: NameV
   return undefined;
 }
 
+const getStyles = (theme: GrafanaTheme2) => ({
+  addButton: css({ 'margin-top': theme.spacing(1) }),
+  field: css({ 'margin-bottom': 0, 'margin-top': theme.spacing(1) }),
+});
+
 export const NameValueInput = ({
   ariaLabelSuffix = ``,
   name,
@@ -51,20 +57,18 @@ export const NameValueInput = ({
   } = useFormContext<CheckFormValues | Probe>();
   const addRef = useRef<HTMLButtonElement>(null);
   const { fields, append, remove } = useFieldArray({ control, name });
-  const theme = useTheme2();
+  const styles = useStyles2(getStyles);
 
   const fieldError = getErrors(errors, name);
 
   return (
     <VerticalGroup justify="space-between">
       {fields.map((field, index) => (
-        <HorizontalGroup key={field.id} align="flex-start">
+        <HorizontalGroup key={field.id} align="center">
           <Field
             invalid={Boolean(fieldError?.[index]?.name?.type)}
             error={fieldError?.[index]?.name?.message}
-            className={css`
-              margin-bottom: 0;
-            `}
+            className={styles.field}
             required
           >
             <Input
@@ -80,9 +84,7 @@ export const NameValueInput = ({
           <Field
             invalid={Boolean(fieldError?.[index]?.value)}
             error={fieldError?.[index]?.value?.message}
-            className={css`
-              margin-bottom: 0;
-            `}
+            className={styles.field}
             required
           >
             <Input
@@ -96,9 +98,6 @@ export const NameValueInput = ({
             />
           </Field>
           <IconButton
-            className={css`
-              margin-top: ${theme.spacing(2)};
-            `}
             name="minus-circle"
             type="button"
             data-fs-element={`${rest['data-fs-element']}-delete-${index}`}
@@ -122,6 +121,7 @@ export const NameValueInput = ({
           type="button"
           ref={addRef}
           data-fs-element={`${rest['data-fs-element']}-add`}
+          className={styles.addButton}
         >
           <Icon name="plus" />
           &nbsp; Add {label.toLocaleLowerCase()}
