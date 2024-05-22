@@ -1,4 +1,4 @@
-import { HostNameTargetSchema } from 'schemas/general/HostnameTarget';
+import { HostNameTargetSchema } from 'schemas/general/HostNameTarget';
 import { z, ZodType } from 'zod';
 
 import { CheckFormValuesPing, CheckType, IpVersion, PingSettingsFormValues } from 'types';
