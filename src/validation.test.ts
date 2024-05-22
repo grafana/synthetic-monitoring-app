@@ -1,4 +1,3 @@
-import { CheckType } from 'types';
 import {
   validateDomain,
   validateHostname,

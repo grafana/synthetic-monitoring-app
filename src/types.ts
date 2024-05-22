@@ -245,8 +245,8 @@ export interface TracerouteSettings {
 }
 
 export interface TracerouteSettingsFormValues {
-  maxHops: string;
-  maxUnknownHops: string;
+  maxHops: number;
+  maxUnknownHops: number;
   ptrLookup: boolean;
   hopTimeout: number;
 }
