@@ -1,9 +1,9 @@
 import { ZodType } from 'zod';
 
-import { CheckFormValuesHttp, CheckFormValuesMultiHttp } from 'types';
+import { CheckFormValues } from 'types';
 
 import { HttpCheckSchema } from './HttpCheckSchema';
 import { MultiHttpCheckSchema } from './MultiHttpCheckSchema';
+import { PingSchema } from './PingSchema';
 
-export const CheckFormSchema: ZodType<CheckFormValuesHttp | CheckFormValuesMultiHttp> =
-  MultiHttpCheckSchema.or(HttpCheckSchema);
+export const CheckFormSchema: ZodType<CheckFormValues> = MultiHttpCheckSchema.or(HttpCheckSchema);
