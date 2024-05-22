@@ -45,49 +45,49 @@ const getMultiHttpSettings = (settings?: MultiHttpSettingsFormValues): MultiHttp
         },
         variables:
           entry.variables?.map((variable) => {
-            if (variable.type.value === undefined) {
+            if (variable.type === undefined) {
               throw new Error('Selecting a variable type is required');
             }
             return {
               ...variable,
-              type: variable.type.value,
+              type: variable.type,
             };
           }) ?? [],
         checks:
           entry.checks?.map(({ type, subject, condition, value, expression }) => {
-            switch (type.value) {
+            switch (type) {
               case MultiHttpAssertionType.Text:
-                if (subject?.value === undefined || condition?.value === undefined) {
+                if (subject === undefined || condition === undefined) {
                   throw new Error('Cannot have a Text assertion without a subject and condition');
                 }
                 return {
-                  type: type.value,
-                  subject: subject.value,
-                  condition: condition.value,
+                  type: type,
+                  subject: subject,
+                  condition: condition,
                   value,
                 };
               case MultiHttpAssertionType.JSONPath:
                 return {
-                  type: type.value,
+                  type: type,
                   expression,
                 };
               case MultiHttpAssertionType.JSONPathValue:
-                if (condition?.value === undefined) {
+                if (condition === undefined) {
                   throw new Error('Cannot have a JSON path value assertion without a condition');
                 }
                 return {
-                  type: type.value,
-                  condition: condition.value,
+                  type: type,
+                  condition: condition,
                   expression,
                   value,
                 };
               case MultiHttpAssertionType.Regex:
-                if (subject?.value === undefined) {
+                if (subject === undefined) {
                   throw new Error('Cannot have a Regex assertion without a subject');
                 }
                 return {
-                  type: type.value,
-                  subject: subject.value,
+                  type: type,
+                  subject: subject,
                   expression,
                 };
               default:

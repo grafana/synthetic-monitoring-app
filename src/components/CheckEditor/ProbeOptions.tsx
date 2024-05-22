@@ -78,7 +78,7 @@ export const ProbeOptions = ({ checkType }: Props) => {
     <div>
       <Subheader>Probe options</Subheader>
 
-      <Controller<CheckFormValues>
+      <Controller
         control={control}
         name="probes"
         render={({ field }) => (

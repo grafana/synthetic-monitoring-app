@@ -2,9 +2,10 @@ import React, { useCallback, useRef } from 'react';
 import { FieldErrorsImpl, useFieldArray, useFormContext, useFormState } from 'react-hook-form';
 import { Button, Field, HorizontalGroup, Icon, IconButton, Input, useTheme2, VerticalGroup } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { get } from 'lodash';
 
 import { CheckFormValues, Probe } from 'types';
-import { isHttpErrors } from 'utils.types';
+import { parseErrorMessage } from 'components/CheckForm/utils';
 
 export type NameValueName = 'settings.http.headers' | 'settings.http.proxyConnectHeaders' | 'labels';
 
@@ -18,18 +19,7 @@ interface Props {
 }
 
 function getErrors(errors: FieldErrorsImpl<CheckFormValues | Probe>, name: NameValueName) {
-  if (name === 'labels') {
-    return errors?.labels;
-  }
-  if (isHttpErrors(errors)) {
-    if (name === 'settings.http.headers') {
-      return errors?.settings?.http?.headers;
-    }
-    if (name === 'settings.http.proxyConnectHeaders') {
-      return errors?.settings?.http?.proxyConnectHeaders;
-    }
-  }
-  return undefined;
+  return get(errors, name);
 }
 
 export const NameValueInput = ({ ariaLabelSuffix = ``, name, disabled, limit, label, ...rest }: Props) => {
@@ -56,12 +46,13 @@ export const NameValueInput = ({ ariaLabelSuffix = ``, name, disabled, limit, la
       {fields.map((field, index) => {
         const labelNameField = register(`${name}.${index}.name`);
         const labelValueField = register(`${name}.${index}.value`);
+        console.log(fieldError);
 
         return (
           <HorizontalGroup key={field.id} align="flex-start">
             <Field
               invalid={Boolean(fieldError?.[index]?.name?.type)}
-              error={fieldError?.[index]?.name?.message}
+              error={parseErrorMessage(fieldError?.[index]?.name?.message, label)}
               className={css`
                 margin-bottom: 0;
               `}
@@ -83,7 +74,7 @@ export const NameValueInput = ({ ariaLabelSuffix = ``, name, disabled, limit, la
             </Field>
             <Field
               invalid={Boolean(fieldError?.[index]?.value)}
-              error={fieldError?.[index]?.value?.message}
+              error={parseErrorMessage(fieldError?.[index]?.value?.message, label)}
               className={css`
                 margin-bottom: 0;
               `}

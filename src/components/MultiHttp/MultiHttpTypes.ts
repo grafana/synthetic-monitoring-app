@@ -1,4 +1,4 @@
-import { HttpMethod, MultiHttpAssertionType } from 'types';
+import { HttpMethod, Label, MultiHttpAssertionType } from 'types';
 
 export enum MultiHttpFormTabs {
   Headers = 'headers',
@@ -15,23 +15,13 @@ export type MultiHttpVariable = {
   attribute?: string;
 };
 
-export type HeaderType = {
-  name: 'Accept' | 'Accept-Charset' | 'Authorization' | 'Cache-Control' | 'Content-Type' | string;
-  value: string;
-};
-
-export type QueryParams = {
-  name: string;
-  value: string;
-};
-
 export type RequestMethods = HttpMethod;
 export type RequestProps = {
   method: RequestMethods;
   url: string;
   body?: MultiHttpRequestBody;
-  headers: HeaderType[];
-  queryFields: QueryParams[];
+  headers?: Label[];
+  queryFields?: Label[];
   postData?: {
     mimeType: string;
     text: string;
@@ -41,10 +31,10 @@ export type RequestProps = {
 export type KeyTypes = 'url' | 'body' | 'method' | 'headers' | 'queryFields' | 'postData';
 
 export interface Assertion {
-  type: MultiHttpAssertionType;
-  subject?: AssertionSubjectVariant;
-  expression?: string;
   condition?: AssertionConditionVariant;
+  expression?: string;
+  subject?: AssertionSubjectVariant;
+  type: MultiHttpAssertionType;
   value?: string;
 }
 

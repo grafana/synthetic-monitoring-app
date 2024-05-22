@@ -3,13 +3,13 @@ import { useFormContext } from 'react-hook-form';
 import { OrgRole } from '@grafana/data';
 import { Alert, Button, Field, LoadingPlaceholder, Spinner, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { capitalize } from 'lodash';
 
 import { Label } from 'types';
 import { FaroEvent, reportEvent } from 'faro';
 import { hasRole } from 'utils';
 import { ListTenantLimitsResponse } from 'datasource/responses.types';
 import { useTenantLimits } from 'data/useTenantLimits';
+import { parseErrorMessage } from 'components/CheckForm/utils';
 import { NameValueInput } from 'components/NameValueInput';
 
 export interface LabelFieldProps {
@@ -103,8 +103,4 @@ function LimitsFetchWarning({
       </div>
     </Alert>
   );
-}
-
-function parseErrorMessage(message: string | undefined, label: string) {
-  return message?.replace(`{type}`, capitalize(label));
 }

@@ -6,14 +6,7 @@ import { DataSourceRef } from '@grafana/schema';
 
 import { LinkedDatasourceInfo } from './datasource/types';
 import { SMDataSource } from 'datasource/DataSource';
-import {
-  Assertion,
-  AssertionConditionVariant,
-  AssertionSubjectVariant,
-  MultiHttpEntry,
-  MultiHttpVariable,
-  RequestProps,
-} from 'components/MultiHttp/MultiHttpTypes';
+import { Assertion, MultiHttpEntry, MultiHttpVariable, RequestProps } from 'components/MultiHttp/MultiHttpTypes';
 
 export interface GlobalSettings {
   apiHost: string;
@@ -240,18 +233,8 @@ export interface MultiHttpSettingsFormValues {
 
 export interface MultiHttpEntryFormValues extends Omit<MultiHttpEntry, 'request' | 'variables' | 'checks'> {
   request: RequestProps;
-  variables?: MultiHttpVariablesFormValues[];
-  checks?: MultiHttpAssertionFormValues[];
-}
-
-export interface MultiHttpVariablesFormValues extends Omit<MultiHttpVariable, 'type'> {
-  type: SelectableValue<MultiHttpVariableType>;
-}
-
-export interface MultiHttpAssertionFormValues extends Omit<Assertion, 'type' | 'subject' | 'condition'> {
-  type: SelectableValue<MultiHttpAssertionType>;
-  subject?: SelectableValue<AssertionSubjectVariant>;
-  condition?: SelectableValue<AssertionConditionVariant>;
+  variables?: MultiHttpVariable[];
+  checks?: Assertion[];
 }
 
 export interface TracerouteSettings {

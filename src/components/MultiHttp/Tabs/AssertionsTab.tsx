@@ -10,6 +10,7 @@ import {
   MULTI_HTTP_ASSERTION_TYPE_OPTIONS,
 } from 'components/constants';
 
+import { AssertionConditionVariant, AssertionSubjectVariant } from '../MultiHttpTypes';
 import { getMultiHttpTabStyles, MultiHttpTabProps } from './Tabs';
 
 export function AssertionsTab({ index, active }: MultiHttpTabProps) {
@@ -36,11 +37,11 @@ export function AssertionsTab({ index, active }: MultiHttpTabProps) {
 
             return (
               <div className={styles.fieldsContainer} key={field.id}>
-                <Controller<CheckFormValuesMultiHttp>
+                <Controller
                   name={assertionTypeName}
-                  render={({ field: typeField }) => {
+                  render={({ field }) => {
                     const id = `multihttp-assertion-type-${index}-${assertionIndex}`;
-                    const { ref, ...rest } = typeField;
+                    const { ref, onChange, ...rest } = field;
 
                     return (
                       <Field
@@ -57,6 +58,9 @@ export function AssertionsTab({ index, active }: MultiHttpTabProps) {
                           {...rest}
                           options={MULTI_HTTP_ASSERTION_TYPE_OPTIONS}
                           menuPlacement="bottom"
+                          onChange={(e) => {
+                            field.onChange(e.value);
+                          }}
                         />
                       </Field>
                     );
@@ -81,7 +85,11 @@ export function AssertionsTab({ index, active }: MultiHttpTabProps) {
       </Field>
       <Button
         onClick={() => {
-          append({ type: undefined, expression: '' });
+          append({
+            type: MultiHttpAssertionType.Text,
+            condition: AssertionConditionVariant.Contains,
+            subject: AssertionSubjectVariant.ResponseBody,
+          });
         }}
         variant="secondary"
         size="sm"
@@ -106,7 +114,7 @@ function AssertionFields(props: AssertionProps) {
   const assertionFieldName = `settings.multihttp.entries.${entryIndex}.checks.${assertionIndex}.type` as const;
 
   const assertionType = watch(assertionFieldName);
-  switch (assertionType?.value) {
+  switch (assertionType) {
     case MultiHttpAssertionType.Text:
       return (
         <>
@@ -151,7 +159,7 @@ function AssertionSubjectField({ entryIndex, assertionIndex }: AssertionProps) {
       name={`settings.multihttp.entries.${entryIndex}.checks.${assertionIndex}.subject`}
       render={({ field }) => {
         const id = `${entryIndex}-${assertionIndex}-subject`;
-        const { ref, ...rest } = field;
+        const { ref, onChange, ...rest } = field;
 
         return (
           <Field
@@ -162,7 +170,13 @@ function AssertionSubjectField({ entryIndex, assertionIndex }: AssertionProps) {
             htmlFor={id}
             data-fs-element="Assertion subject select"
           >
-            <Select inputId={id} {...rest} options={ASSERTION_SUBJECT_OPTIONS} menuPlacement="bottom" />
+            <Select
+              inputId={id}
+              {...rest}
+              options={ASSERTION_SUBJECT_OPTIONS}
+              menuPlacement="bottom"
+              onChange={(e) => field.onChange(e.value)}
+            />
           </Field>
         );
       }}
@@ -181,7 +195,7 @@ function AssertionConditionField({ entryIndex, assertionIndex }: AssertionProps)
       name={`settings.multihttp.entries.${entryIndex}.checks.${assertionIndex}.condition`}
       render={({ field }) => {
         const id = `multihttp-assertion-condition-${entryIndex}-${assertionIndex}`;
-        const { ref, ...rest } = field;
+        const { ref, onChange, ...rest } = field;
 
         return (
           <Field
@@ -192,7 +206,13 @@ function AssertionConditionField({ entryIndex, assertionIndex }: AssertionProps)
             htmlFor={id}
             data-fs-element="Assertion condition select"
           >
-            <Select inputId={id} {...rest} options={ASSERTION_CONDITION_OPTIONS} menuPlacement="bottom" />
+            <Select
+              inputId={id}
+              {...rest}
+              options={ASSERTION_CONDITION_OPTIONS}
+              menuPlacement="bottom"
+              onChange={(e) => field.onChange(e.value)}
+            />
           </Field>
         );
       }}
@@ -206,7 +226,7 @@ function AssertionValueField({ entryIndex, assertionIndex }: AssertionProps) {
   const error = formState.errors.settings?.multihttp?.entries?.[entryIndex]?.checks?.[assertionIndex]?.value;
   const assertionType = watch(`settings.multihttp.entries.${entryIndex}.checks.${assertionIndex}.type`);
   const description =
-    assertionType.value === MultiHttpAssertionType.Text
+    assertionType === MultiHttpAssertionType.Text
       ? 'Value to compare with Subject'
       : 'Value to compare with result of expression';
 
@@ -227,7 +247,7 @@ function AssertionValueField({ entryIndex, assertionIndex }: AssertionProps) {
 function AssertionExpressionField({ entryIndex, assertionIndex }: AssertionProps) {
   const { formState, register, watch } = useFormContext<CheckFormValuesMultiHttp>();
   const assertionType = watch(`settings.multihttp.entries.${entryIndex}.checks.${assertionIndex}.type`);
-  const { description, placeholder } = getExpressionPlaceholderInfo(assertionType?.value);
+  const { description, placeholder } = getExpressionPlaceholderInfo(assertionType);
   const error = formState.errors.settings?.multihttp?.entries?.[entryIndex]?.checks?.[assertionIndex]?.expression;
 
   return (

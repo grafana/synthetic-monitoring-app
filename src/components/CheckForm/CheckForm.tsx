@@ -3,7 +3,7 @@ import { FormProvider, SubmitErrorHandler, SubmitHandler, useForm } from 'react-
 import { useParams } from 'react-router-dom';
 import { Button, ConfirmModal, LinkButton } from '@grafana/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { HttpCheckSchema } from 'schemas/forms/HttpCheckSchema';
+import { CheckFormSchema } from 'schemas/forms/Schemas';
 
 import { Check, CheckFormValues, CheckPageParams, CheckType, ROUTES } from 'types';
 import { isOverCheckLimit, isOverScriptedLimit } from 'utils';
@@ -69,7 +69,7 @@ const CheckFormContent = ({ check, checkType, overCheckLimit, overScriptedLimit 
   const formMethods = useForm<CheckFormValues>({
     defaultValues: initialValues,
     shouldFocusError: false, // we manage focus manually
-    resolver: zodResolver(HttpCheckSchema),
+    resolver: zodResolver(CheckFormSchema),
   });
 
   const { updateCheck, createCheck, deleteCheck, error, submitting } = useCUDChecks({ eventInfo: { checkType } });
