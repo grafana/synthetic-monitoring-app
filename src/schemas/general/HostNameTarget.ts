@@ -1,13 +1,13 @@
 import { z } from 'zod';
 
-import { validateHttpTarget } from 'validation';
+import { validateHostname } from 'validation';
 
 import { TargetSchema } from './Target';
 
-export const HttpTargetSchema = TargetSchema.and(z.string().superRefine(validate));
+export const HostNameTargetSchema = TargetSchema.and(z.string().superRefine(validate));
 
 function validate(target: string, ctx: z.RefinementCtx) {
-  const message = validateHttpTarget(target);
+  const message = validateHostname(target);
 
   if (message) {
     return ctx.addIssue({

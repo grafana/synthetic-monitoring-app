@@ -7,6 +7,7 @@ import { DNSCheckSchema } from 'schemas/forms/DNSCheckSchema';
 import { HttpCheckSchema } from 'schemas/forms/HttpCheckSchema';
 import { MultiHttpCheckSchema } from 'schemas/forms/MultiHttpCheckSchema';
 import { PingCheckSchema } from 'schemas/forms/PingCheckSchema';
+import { TCPCheckSchema } from 'schemas/forms/TCPCheckSchema';
 
 import { Check, CheckFormValues, CheckPageParams, CheckType, ROUTES } from 'types';
 import { isOverCheckLimit, isOverScriptedLimit } from 'utils';
@@ -69,7 +70,7 @@ const schemaMap = {
   [CheckType.Scripted]: HttpCheckSchema,
   [CheckType.PING]: PingCheckSchema,
   [CheckType.DNS]: DNSCheckSchema,
-  [CheckType.TCP]: HttpCheckSchema,
+  [CheckType.TCP]: TCPCheckSchema,
   [CheckType.Traceroute]: HttpCheckSchema,
   [CheckType.GRPC]: HttpCheckSchema,
 };

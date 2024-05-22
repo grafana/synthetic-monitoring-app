@@ -1,13 +1,58 @@
 import * as punycode from 'punycode';
 import { Address4, Address6 } from 'ip-address';
+import validUrl from 'valid-url';
 
 import { CheckType, Label } from 'types';
 
-export const CheckValidation = {
-  target: validateTarget,
-  timeout: validateTimeout,
-  labels: validateLabels,
-};
+export function validateHttpTarget(target: string) {
+  let message = 'Target must be a valid web URL';
+
+  try {
+    const httpEncoded = encodeURI(target);
+    const isValidUrl = Boolean(validUrl.isWebUri(httpEncoded));
+
+    if (!isValidUrl) {
+      throw new Error(message);
+    }
+  } catch {
+    return message;
+  }
+
+  try {
+    const parsedUrl = new URL(target);
+
+    if (!parsedUrl.protocol) {
+      message = 'Target must have a valid protocol';
+      throw new Error(message);
+    }
+
+    // isWebUri will allow some invalid hostnames, so we need addional validation
+    const ipv6 = isIpV6FromUrl(target);
+    if (ipv6) {
+      return undefined;
+    }
+
+    const hostname = parsedUrl.hostname;
+    if (validateHostname(hostname)) {
+      return 'Target must have a valid hostname';
+    }
+  } catch {
+    return message;
+  }
+
+  return undefined;
+}
+
+function isIpV6FromUrl(target: string) {
+  let isIpV6 = true;
+  try {
+    const address = Address6.fromURL(target);
+    isIpV6 = Boolean(address.address);
+  } catch (e) {
+    isIpV6 = false;
+  }
+  return isIpV6;
+}
 
 export function validateTarget(typeOfCheck: CheckType, target: string): string | undefined {
   if (target.length > 2040) {
@@ -15,15 +60,6 @@ export function validateTarget(typeOfCheck: CheckType, target: string): string |
   }
 
   switch (typeOfCheck) {
-    case CheckType.PING: {
-      return validateHostname(target);
-    }
-    case CheckType.DNS: {
-      return validateDomain(target);
-    }
-    case CheckType.TCP: {
-      return validateHostPort(target);
-    }
     case CheckType.Traceroute: {
       return validateHostname(target);
     }
@@ -117,7 +153,7 @@ export function validateAnnotationName(name: string): string | undefined {
   return undefined;
 }
 
-const isIpV4 = (target: string): boolean => {
+function isIpV4(target: string) {
   let isIpV4 = true;
   try {
     new Address4(target);
@@ -125,9 +161,9 @@ const isIpV4 = (target: string): boolean => {
     isIpV4 = false;
   }
   return isIpV4;
-};
+}
 
-const isIpV6 = (target: string): boolean => {
+function isIpV6(target: string) {
   let isIpV6 = true;
   try {
     new Address6(target);
@@ -135,9 +171,9 @@ const isIpV6 = (target: string): boolean => {
     isIpV6 = false;
   }
   return isIpV6;
-};
+}
 
-function validateDomain(target: string): string | undefined {
+export function validateDomain(target: string): string | undefined {
   const isIpAddress = isIpV4(target) || isIpV6(target);
 
   if (isIpAddress) {
@@ -242,7 +278,7 @@ export function validateHostname(target: string): string | undefined {
   return undefined;
 }
 
-function validateHostPort(target: string): string | undefined {
+export function validateHostPort(target: string): string | undefined {
   const re = new RegExp(/^(?:\[([0-9a-f:.]+)\]|([^:]+)):(\d+)$/, 'i');
   const match = target.match(re);
 

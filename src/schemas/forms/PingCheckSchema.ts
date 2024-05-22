@@ -1,4 +1,4 @@
-import { HttpTargetSchema } from 'schemas/general/HttpTarget';
+import { HostNameTargetSchema } from 'schemas/general/HostnameTarget';
 import { z, ZodType } from 'zod';
 
 import { CheckFormValuesPing, CheckType, IpVersion, PingSettingsFormValues } from 'types';
@@ -11,7 +11,7 @@ const PingSettingsSchema: ZodType<PingSettingsFormValues> = z.object({
 });
 
 const PingSchemaValues = z.object({
-  target: HttpTargetSchema,
+  target: HostNameTargetSchema,
   checkType: z.literal(CheckType.PING),
   settings: z.object({
     ping: PingSettingsSchema,

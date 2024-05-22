@@ -1,4 +1,4 @@
-import { HttpTargetSchema } from 'schemas/general/HttpTarget';
+import { DomainNameTarget } from 'schemas/general/DomainNameTarget';
 import { z, ZodType } from 'zod';
 
 import {
@@ -41,7 +41,7 @@ const DNSSettingsSchema: ZodType<DnsSettingsFormValues> = z.object({
 });
 
 const DNSSchemaValues = z.object({
-  target: HttpTargetSchema,
+  target: DomainNameTarget,
   checkType: z.literal(CheckType.DNS),
   settings: z.object({
     dns: DNSSettingsSchema,
