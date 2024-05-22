@@ -3,7 +3,10 @@ import { FormProvider, SubmitErrorHandler, SubmitHandler, useForm } from 'react-
 import { useParams } from 'react-router-dom';
 import { Button, ConfirmModal, LinkButton } from '@grafana/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CheckFormSchema } from 'schemas/forms/Schemas';
+import { DNSCheckSchema } from 'schemas/forms/DNSCheckSchema';
+import { HttpCheckSchema } from 'schemas/forms/HttpCheckSchema';
+import { MultiHttpCheckSchema } from 'schemas/forms/MultiHttpCheckSchema';
+import { PingCheckSchema } from 'schemas/forms/PingCheckSchema';
 
 import { Check, CheckFormValues, CheckPageParams, CheckType, ROUTES } from 'types';
 import { isOverCheckLimit, isOverScriptedLimit } from 'utils';
@@ -60,6 +63,17 @@ type CheckFormContentProps = {
   overScriptedLimit: boolean;
 };
 
+const schemaMap = {
+  [CheckType.HTTP]: HttpCheckSchema,
+  [CheckType.MULTI_HTTP]: MultiHttpCheckSchema,
+  [CheckType.Scripted]: HttpCheckSchema,
+  [CheckType.PING]: PingCheckSchema,
+  [CheckType.DNS]: DNSCheckSchema,
+  [CheckType.TCP]: HttpCheckSchema,
+  [CheckType.Traceroute]: HttpCheckSchema,
+  [CheckType.GRPC]: HttpCheckSchema,
+};
+
 const CheckFormContent = ({ check, checkType, overCheckLimit, overScriptedLimit }: CheckFormContentProps) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const { adhocTestData, closeModal, isPending, openTestCheckModal, testCheck, testCheckError } =
@@ -69,7 +83,7 @@ const CheckFormContent = ({ check, checkType, overCheckLimit, overScriptedLimit 
   const formMethods = useForm<CheckFormValues>({
     defaultValues: initialValues,
     shouldFocusError: false, // we manage focus manually
-    resolver: zodResolver(CheckFormSchema),
+    resolver: zodResolver(schemaMap[checkType]),
   });
 
   const { updateCheck, createCheck, deleteCheck, error, submitting } = useCUDChecks({ eventInfo: { checkType } });

@@ -135,7 +135,7 @@ export interface DnsSettings {
   port: number;
 
   // validation
-  validRCodes?: string[];
+  validRCodes?: DnsResponseCodes[];
   validateAnswerRRS?: DNSRRValidator;
   validateAuthorityRRS?: DNSRRValidator;
   validateAdditionalRRS?: DNSRRValidator;

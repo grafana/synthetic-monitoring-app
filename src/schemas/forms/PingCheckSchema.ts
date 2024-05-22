@@ -18,4 +18,4 @@ const PingSchemaValues = z.object({
   }),
 });
 
-export const PingSchema: ZodType<CheckFormValuesPing> = BaseCheckSchema.and(PingSchemaValues);
+export const PingCheckSchema: ZodType<CheckFormValuesPing> = BaseCheckSchema.and(PingSchemaValues);

@@ -46,7 +46,6 @@ export const NameValueInput = ({ ariaLabelSuffix = ``, name, disabled, limit, la
       {fields.map((field, index) => {
         const labelNameField = register(`${name}.${index}.name`);
         const labelValueField = register(`${name}.${index}.value`);
-        console.log(fieldError);
 
         return (
           <HorizontalGroup key={field.id} align="flex-start">
