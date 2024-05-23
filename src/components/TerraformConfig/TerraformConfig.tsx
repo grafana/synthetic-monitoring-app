@@ -85,13 +85,13 @@ const GenerateButton = () => {
             {checkCommands && (
               <>
                 <h5>Import existing checks into Terraform</h5>
-                <Clipboard content={checkCommands.join(' && ')} className={styles.clipboard} />
+                <Clipboard content={checkCommands.join(' && ')} className={styles.clipboard} truncate/>
               </>
             )}
             {probeCommands && (
               <>
                 <h5>Import custom probes into Terraform</h5>
-                <Clipboard content={probeCommands.join(' && ')} className={styles.clipboard} />
+                <Clipboard content={probeCommands.join(' && ')} className={styles.clipboard} truncate />
               </>
             )}
           </>
