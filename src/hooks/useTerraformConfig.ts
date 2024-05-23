@@ -70,7 +70,11 @@ function generateTerraformConfig(probes: Probe[], checks: Check[], apiHost?: str
     }`;
   });
 
-  return { config, checkCommands };
+  const probeCommands = Object.keys(probesConfig).map((probe) => {
+    return `terraform import grafana_synthetic_monitoring_probe.${probe} ${probesConfig[probe].id}:<PROBE_AUTH_TOKEN>`;
+  });
+
+  return { config, checkCommands, probeCommands };
 }
 
 export function useTerraformConfig() {

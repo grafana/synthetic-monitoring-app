@@ -191,6 +191,7 @@ export const sanitizeName = (name: string): string => {
 };
 
 export const probeToTF = (probe: Probe): TFProbe => ({
+  id: probe.id,
   name: probe.name,
   latitude: probe.latitude,
   longitude: probe.longitude,

@@ -13,6 +13,7 @@ import { MultiHttpEntry, QueryParams, RequestProps } from 'components/MultiHttp/
 export interface TFOutput {
   config: TFConfig;
   checkCommands: string[];
+  probeCommands: string[];
 }
 
 export interface TFConfig {
