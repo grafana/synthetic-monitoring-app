@@ -11,6 +11,7 @@ import { PingCheckSchema } from 'schemas/forms/PingCheckSchema';
 import { ScriptedCheckSchema } from 'schemas/forms/ScriptedCheckSchema';
 import { TCPCheckSchema } from 'schemas/forms/TCPCheckSchema';
 import { TracerouteCheckSchema } from 'schemas/forms/TracerouteCheckSchema';
+import { ZodType } from 'zod';
 
 import { Check, CheckFormValues, CheckPageParams, CheckType, ROUTES } from 'types';
 import { isOverCheckLimit, isOverScriptedLimit } from 'utils';
@@ -188,6 +189,7 @@ const CheckFormContent = ({ check, checkType, overCheckLimit, overScriptedLimit 
             />
           )}
           <CheckSelector
+            schema={schemaMap[checkType]}
             checkType={checkType}
             formActions={actions}
             onSubmit={handleSubmit}
@@ -217,6 +219,7 @@ const CheckSelector = ({
   onSubmit: SubmitHandler<CheckFormValues>;
   onSubmitError?: SubmitErrorHandler<CheckFormValues>;
   errorMessage?: string;
+  schema: ZodType<CheckFormValues>;
 }) => {
   if (checkType === CheckType.HTTP) {
     return <CheckHTTPLayout {...rest} />;

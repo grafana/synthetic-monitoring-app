@@ -26,9 +26,21 @@ import { CheckUsage } from 'components/CheckUsage';
 import { LabelField } from 'components/LabelField';
 import { TLSConfig } from 'components/TLSConfig';
 
-export const CheckHTTPLayout = ({ formActions, onSubmit, onSubmitError, errorMessage }: CheckFormTypeLayoutProps) => {
+export const CheckHTTPLayout = ({
+  formActions,
+  onSubmit,
+  onSubmitError,
+  errorMessage,
+  schema,
+}: CheckFormTypeLayoutProps) => {
   return (
-    <FormLayout formActions={formActions} onSubmit={onSubmit} onSubmitError={onSubmitError} errorMessage={errorMessage}>
+    <FormLayout
+      formActions={formActions}
+      onSubmit={onSubmit}
+      onSubmitError={onSubmitError}
+      errorMessage={errorMessage}
+      schema={schema}
+    >
       <FormLayout.Section label="Define check" fields={[`enabled`, `job`, `target`]} required>
         <CheckJobName />
         <CheckTarget checkType={CheckType.HTTP} />

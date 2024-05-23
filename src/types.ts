@@ -3,6 +3,7 @@ import { SubmitErrorHandler, SubmitHandler } from 'react-hook-form';
 import { DataSourceSettings, OrgRole, SelectableValue } from '@grafana/data';
 import { EmbeddedScene, SceneRouteMatch } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
+import { ZodType } from 'zod';
 
 import { LinkedDatasourceInfo } from './datasource/types';
 import { SMDataSource } from 'datasource/DataSource';
@@ -782,6 +783,7 @@ export interface CheckFormTypeLayoutProps {
   onSubmit: SubmitHandler<CheckFormValues>;
   onSubmitError?: SubmitErrorHandler<CheckFormValues>;
   errorMessage?: string;
+  schema: ZodType;
 }
 
 export type TLSCheckTypes = CheckType.HTTP | CheckType.TCP | CheckType.GRPC;
