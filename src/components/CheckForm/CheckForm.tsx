@@ -97,11 +97,7 @@ const CheckFormContent = ({ check, checkType, overCheckLimit, overScriptedLimit 
   const onSuccess = () => navigateBack();
   const testRef = useRef<HTMLButtonElement>(null);
 
-  console.log(formMethods.watch());
-  console.dir(formMethods.formState.errors, { depth: 5 });
-
   const handleSubmit = (checkValues: CheckFormValues, event: BaseSyntheticEvent | undefined) => {
-    // console.log(checkValues);
     // react-hook-form doesn't let us provide SubmitEvent to BaseSyntheticEvent
     const submitter = (event?.nativeEvent as SubmitEvent).submitter;
     const toSubmit = toPayload(checkValues);

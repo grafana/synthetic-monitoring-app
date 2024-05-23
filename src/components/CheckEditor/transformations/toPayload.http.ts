@@ -133,5 +133,6 @@ function sanitize(settings: HttpSettings): HttpSettings {
   return {
     ...rest,
     basicAuth: isBasicAuthEmpty(basicAuth) ? undefined : basicAuth,
+    bearerToken: settings.bearerToken || undefined,
   };
 }

@@ -1,5 +1,6 @@
+import { HeadersSchema } from 'schemas/general/Header';
 import { HttpTargetSchema } from 'schemas/general/HttpTarget';
-import { LabelsSchema } from 'schemas/general/Label';
+import { QueryParamsSchema } from 'schemas/general/QueryParam';
 import { z, ZodType } from 'zod';
 
 import {
@@ -30,8 +31,8 @@ const MultiHttpRequestSchema: ZodType<RequestProps> = z.object({
       payload: z.string(),
     })
     .optional(),
-  headers: LabelsSchema,
-  queryFields: LabelsSchema,
+  headers: HeadersSchema,
+  queryFields: QueryParamsSchema.optional(),
   postData: z
     .object({
       mimeType: z.string(),

@@ -40,11 +40,11 @@ export const HttpCheckRegExValidation = () => {
       };
 
   return (
-    <div className={cx(styles.stackCol, styles.gap2)}>
+    <div className={cx(styles.stackCol, styles.gap2)} data-testid={DataTestIds.CHECK_FORM_HTTP_VALIDATION_REGEX}>
       <Label>Regex Validation</Label>
       {Boolean(fields.length) && (
         <div className={styles.stackCol}>
-          <div className={styles.validationGrid} data-testid={DataTestIds.CHECK_FORM_HTTP_VALIDATION_REGEX}>
+          <div className={styles.validationGrid}>
             <Label>Field Name</Label>
             <Label>Match condition</Label>
             <Label>Invert Match</Label>

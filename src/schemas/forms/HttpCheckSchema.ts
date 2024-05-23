@@ -1,5 +1,5 @@
+import { HeadersSchema } from 'schemas/general/Header';
 import { HttpTargetSchema } from 'schemas/general/HttpTarget';
-import { LabelsSchema } from 'schemas/general/Label';
 import { TLSConfigSchema } from 'schemas/general/TLSConfig';
 import { z, ZodType } from 'zod';
 
@@ -40,8 +40,8 @@ const HttpRegexValidationSchema: ZodType<HttpRegexValidationFormValue> = HttpReg
 
 const HttpSettingsSchema: ZodType<HttpSettingsFormValues> = z.object({
   sslOptions: z.nativeEnum(HttpSslOption),
-  headers: LabelsSchema,
-  proxyConnectHeaders: LabelsSchema,
+  headers: HeadersSchema,
+  proxyConnectHeaders: HeadersSchema,
   regexValidations: z.array(HttpRegexValidationSchema),
   followRedirects: z.boolean(),
   compression: z.nativeEnum(HTTPCompressionAlgo),
@@ -57,6 +57,7 @@ const HttpSettingsSchema: ZodType<HttpSettingsFormValues> = z.object({
     password: z.string(),
   }),
   tlsConfig: TLSConfigSchema,
+  cacheBustingQueryParamName: z.string().optional(),
 });
 
 const HttpSchemaValues = z.object({
