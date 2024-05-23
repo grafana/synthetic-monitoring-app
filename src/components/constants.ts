@@ -165,11 +165,11 @@ export const HTTP_SSL_OPTIONS = [
     value: HttpSslOption.Ignore,
   },
   {
-    label: 'Probe fails if SSL is present.',
+    label: 'Probe fails if SSL is present',
     value: HttpSslOption.FailIfPresent,
   },
   {
-    label: 'Probe fails if SSL is not present.',
+    label: 'Probe fails if SSL is not present',
     value: HttpSslOption.FailIfNotPresent,
   },
 ];
