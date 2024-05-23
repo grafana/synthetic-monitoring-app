@@ -9,6 +9,7 @@ export const TERRAFORM_PRIVATE_PROBES = {
       [PRIVATE_PROBE.labels[0].name]: PRIVATE_PROBE.labels[0].value,
       [PRIVATE_PROBE.labels[1].name]: PRIVATE_PROBE.labels[1].value,
     },
+    id: PRIVATE_PROBE.id,
     latitude: PRIVATE_PROBE.latitude,
     longitude: PRIVATE_PROBE.longitude,
     name: PRIVATE_PROBE.name,
@@ -20,6 +21,7 @@ export const TERRAFORM_PRIVATE_PROBES = {
     labels: {
       [UNSELECTED_PRIVATE_PROBE.labels[0].name]: UNSELECTED_PRIVATE_PROBE.labels[0].value,
     },
+    id: UNSELECTED_PRIVATE_PROBE.id,
     latitude: UNSELECTED_PRIVATE_PROBE.latitude,
     longitude: UNSELECTED_PRIVATE_PROBE.longitude,
     name: UNSELECTED_PRIVATE_PROBE.name,
