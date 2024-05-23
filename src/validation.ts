@@ -2,7 +2,7 @@ import * as punycode from 'punycode';
 import { Address4, Address6 } from 'ip-address';
 import validUrl from 'valid-url';
 
-import { CheckType, Label } from 'types';
+import { Label } from 'types';
 
 export function validateHttpTarget(target: string) {
   let message = 'Target must be a valid web URL';
@@ -52,24 +52,6 @@ function isIpV6FromUrl(target: string) {
     isIpV6 = false;
   }
   return isIpV6;
-}
-
-export function validateTarget(typeOfCheck: CheckType, target: string): string | undefined {
-  if (target.length > 2040) {
-    return 'Target length must be less than 2040 characters';
-  }
-
-  switch (typeOfCheck) {
-    case CheckType.GRPC: {
-      return validateHostPort(target);
-    }
-    default: {
-      // we want to make sure that we are validating the target for all
-      // check types; if someone adds a check type but forgets to update
-      // this validation, it will land here.
-      return 'Invalid check type';
-    }
-  }
 }
 
 export function validateTimeout(timeout: number, maxTimeout: number, minTimeout: number): string | undefined {

@@ -1,11 +1,17 @@
-import React, { Fragment } from 'react';
-import { Controller, useFieldArray, useFormContext } from 'react-hook-form';
+import React from 'react';
+import { Controller, FieldErrors, useFieldArray, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2, OrgRole } from '@grafana/data';
-import { Button, Checkbox, IconButton, Input, Label, Select, Switch, useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { Button, Checkbox, Field, IconButton, Input, Label, Select, Switch, useStyles2 } from '@grafana/ui';
+import { css, cx } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
-import { CheckFormValuesHttp, HttpMethod, HttpRegexValidationType } from 'types';
+import {
+  CheckFormValuesHttp,
+  HttpMethod,
+  HttpRegexHeaderValidationFormValue,
+  HttpRegexValidationFormValue,
+  HttpRegexValidationType,
+} from 'types';
 import { hasRole } from 'utils';
 import { HTTP_REGEX_VALIDATION_OPTIONS } from 'components/constants';
 
@@ -21,24 +27,38 @@ export const HttpCheckRegExValidation = () => {
   } = useFormContext<CheckFormValuesHttp>();
   const { fields, append, remove } = useFieldArray<CheckFormValuesHttp>({ control, name: REGEX_FIELD_NAME });
   const isEditor = hasRole(OrgRole.Editor);
+  const disallowBodyMatching = watch('settings.http.method') === HttpMethod.HEAD;
+  const options = disallowBodyMatching
+    ? HTTP_REGEX_VALIDATION_OPTIONS.filter((option) => option.value !== HttpRegexValidationType.Body)
+    : HTTP_REGEX_VALIDATION_OPTIONS;
+  const newOption: HttpRegexValidationFormValue = disallowBodyMatching
+    ? { matchType: HttpRegexValidationType.Header, expression: '', inverted: false, allowMissing: false, header: `` }
+    : {
+        matchType: HttpRegexValidationType.Body,
+        expression: '',
+        inverted: false,
+      };
 
   return (
-    <div className={styles.stackCol}>
+    <div className={cx(styles.stackCol, styles.gap2)}>
       <Label>Regex Validation</Label>
       {Boolean(fields.length) && (
-        <div className={styles.validationGrid} data-testid={DataTestIds.CHECK_FORM_HTTP_VALIDATION_REGEX}>
-          <Label>Field Name</Label>
-          <Label>Match condition</Label>
-          <Label>Invert Match</Label>
-          <Label>Allow Missing</Label>
-          <div />
+        <div className={styles.stackCol}>
+          <div className={styles.validationGrid} data-testid={DataTestIds.CHECK_FORM_HTTP_VALIDATION_REGEX}>
+            <Label>Field Name</Label>
+            <Label>Match condition</Label>
+            <Label>Invert Match</Label>
+            <Label>Allow Missing</Label>
+            <div />
+          </div>
+
           {fields.map((field, index) => {
             const isHeaderMatch = watch(`${REGEX_FIELD_NAME}.${index}.matchType`) === HttpRegexValidationType.Header;
-            const disallowBodyMatching = watch('settings.http.method') === HttpMethod.HEAD;
             const userIndex = index + 1;
+            const baseErrorPath = errors?.settings?.http?.regexValidations?.[index];
 
             return (
-              <Fragment key={field.id}>
+              <div className={styles.validationGrid} key={field.id}>
                 <div data-fs-element={`Regex validation field name ${index}`}>
                   <Controller
                     render={({ field }) => {
@@ -48,25 +68,10 @@ export const HttpCheckRegExValidation = () => {
                           {...rest}
                           aria-label={`Validation Field Name ${userIndex}`}
                           placeholder="Field name"
-                          options={HTTP_REGEX_VALIDATION_OPTIONS}
-                          invalid={
-                            disallowBodyMatching &&
-                            Boolean(errors?.settings?.http?.regexValidations?.[index]?.matchType)
-                          }
+                          options={options}
                           onChange={({ value }) => onChange(value)}
                         />
                       );
-                    }}
-                    rules={{
-                      validate: (value) => {
-                        if (disallowBodyMatching) {
-                          if (value?.value === HttpRegexValidationType.Body) {
-                            return 'Cannot validate the body of a HEAD request';
-                          }
-                          return;
-                        }
-                        return;
-                      },
                     }}
                     name={`${REGEX_FIELD_NAME}.${index}.matchType`}
                   />
@@ -74,18 +79,30 @@ export const HttpCheckRegExValidation = () => {
                 <div className={styles.validationExpressions}>
                   {isHeaderMatch && (
                     <div className={styles.validationHeaderName}>
-                      <Input
-                        {...register(`${REGEX_FIELD_NAME}.${index}.header`)}
-                        placeholder="Header name"
-                        data-fs-element={`Regex header name ${index}`}
-                      />
+                      <Field
+                        className={styles.field}
+                        invalid={isHttpRegexHeaderError(baseErrorPath) && Boolean(baseErrorPath?.header) ? true : false}
+                        error={isHttpRegexHeaderError(baseErrorPath) && baseErrorPath?.header?.message}
+                      >
+                        <Input
+                          {...register(`${REGEX_FIELD_NAME}.${index}.header`)}
+                          placeholder="Header name"
+                          data-fs-element={`Regex header name ${index}`}
+                        />
+                      </Field>
                     </div>
                   )}
-                  <Input
-                    {...register(`${REGEX_FIELD_NAME}.${index}.expression`)}
-                    placeholder="Regex"
-                    data-fs-element={`Regex expression ${index}`}
-                  />
+                  <Field
+                    className={cx(styles.field, styles.grow)}
+                    invalid={Boolean(baseErrorPath?.expression) ? true : false}
+                    error={baseErrorPath?.expression?.message}
+                  >
+                    <Input
+                      {...register(`${REGEX_FIELD_NAME}.${index}.expression`)}
+                      placeholder="Regex"
+                      data-fs-element={`Regex expression ${index}`}
+                    />
+                  </Field>
                 </div>
                 <div className={styles.validationInverted}>
                   <Checkbox
@@ -106,32 +123,40 @@ export const HttpCheckRegExValidation = () => {
                   <div />
                 )}
                 <IconButton
+                  className={styles.removeButtonWrapper}
                   name="minus-circle"
                   onClick={() => remove(index)}
                   tooltip="Delete"
                   data-fs-element={`Regex delete ${index}`}
                 />
-              </Fragment>
+              </div>
             );
           })}
         </div>
       )}
-      <div>
-        <Button
-          type="button"
-          icon="plus"
-          variant="secondary"
-          size="sm"
-          disabled={!isEditor}
-          onClick={() => append({ matchType: HttpRegexValidationType.Body, expression: '', inverted: false })}
-          data-fs-element="Add regex validation button"
-        >
-          Add Regex Validation
-        </Button>
-      </div>
+      {isEditor && (
+        <div>
+          <Button
+            type="button"
+            icon="plus"
+            variant="secondary"
+            size="sm"
+            onClick={() => append(newOption)}
+            data-fs-element="Add regex validation button"
+          >
+            Add Regex Validation
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
+
+function isHttpRegexHeaderError(
+  errors?: FieldErrors<HttpRegexValidationFormValue>
+): errors is FieldErrors<HttpRegexHeaderValidationFormValue> {
+  return errors ? 'header' in errors : false;
+}
 
 const getStyles = (theme: GrafanaTheme2) => ({
   stackCol: css({
@@ -139,25 +164,39 @@ const getStyles = (theme: GrafanaTheme2) => ({
     flexDirection: `column`,
     gap: theme.spacing(1),
   }),
+  gap2: css({
+    gap: theme.spacing(2),
+  }),
+  grow: css({
+    flexGrow: 1,
+  }),
+  field: css({
+    marginBottom: 0,
+  }),
   validationGrid: css({
     display: `grid`,
-    gridTemplateColumns: `300px auto 70px auto auto`,
+    gridTemplateColumns: `2fr 4fr 1fr 1fr 1fr`,
     gridGap: theme.spacing(1),
-    alignItems: `center`,
+    alignItems: `start`,
   }),
   validationExpressions: css({
     display: `flex`,
     flexDirection: `row`,
-    alignItems: `center`,
+    alignItems: `start`,
   }),
   validationHeaderName: css({
     marginRight: theme.spacing(1),
   }),
   validationAllowMissing: css({
-    justifySelf: `start`,
+    justifySelf: `center`,
+    marginTop: theme.spacing(1),
   }),
   validationInverted: css({
     position: `relative`,
     justifySelf: `center`,
+    marginTop: theme.spacing(0.5),
+  }),
+  removeButtonWrapper: css({
+    marginTop: theme.spacing(1),
   }),
 });

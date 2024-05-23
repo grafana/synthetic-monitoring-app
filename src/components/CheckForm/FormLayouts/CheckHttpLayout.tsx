@@ -87,7 +87,12 @@ export const CheckHTTPLayout = ({ formActions, onSubmit, onSubmitError, errorMes
       </FormLayout.Section>
       <FormLayout.Section
         label="Validation"
-        fields={[`settings.http.validStatusCodes`, `settings.http.validHTTPVersions`, `settings.http.sslOptions`]}
+        fields={[
+          `settings.http.validStatusCodes`,
+          `settings.http.validHTTPVersions`,
+          `settings.http.sslOptions`,
+          `settings.http.regexValidations`,
+        ]}
       >
         <HttpCheckValidStatusCodes />
         <HttpCheckValidHttpVersions />

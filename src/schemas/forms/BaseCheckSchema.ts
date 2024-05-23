@@ -10,6 +10,7 @@ export const BaseCheckSchema: ZodType<CheckFormValuesBase> = z.object({
   job: JobSchema,
   target: z.string(),
   frequency: FrequencySchema,
+  id: z.number().optional(),
   timeout: z.number(),
   enabled: z.boolean(),
   alertSensitivity: z.string(),

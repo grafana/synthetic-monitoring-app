@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 import { Button, ConfirmModal, LinkButton } from '@grafana/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { DNSCheckSchema } from 'schemas/forms/DNSCheckSchema';
+import { GRPCCheckSchema } from 'schemas/forms/GRPCCheckSchema';
 import { HttpCheckSchema } from 'schemas/forms/HttpCheckSchema';
 import { MultiHttpCheckSchema } from 'schemas/forms/MultiHttpCheckSchema';
 import { PingCheckSchema } from 'schemas/forms/PingCheckSchema';
@@ -74,7 +75,7 @@ const schemaMap = {
   [CheckType.DNS]: DNSCheckSchema,
   [CheckType.TCP]: TCPCheckSchema,
   [CheckType.Traceroute]: TracerouteCheckSchema,
-  [CheckType.GRPC]: HttpCheckSchema,
+  [CheckType.GRPC]: GRPCCheckSchema,
 };
 
 const CheckFormContent = ({ check, checkType, overCheckLimit, overScriptedLimit }: CheckFormContentProps) => {
@@ -96,11 +97,11 @@ const CheckFormContent = ({ check, checkType, overCheckLimit, overScriptedLimit 
   const onSuccess = () => navigateBack();
   const testRef = useRef<HTMLButtonElement>(null);
 
-  console.log(formMethods.formState.errors);
   console.log(formMethods.watch());
+  console.dir(formMethods.formState.errors, { depth: 5 });
 
   const handleSubmit = (checkValues: CheckFormValues, event: BaseSyntheticEvent | undefined) => {
-    console.log(checkValues);
+    // console.log(checkValues);
     // react-hook-form doesn't let us provide SubmitEvent to BaseSyntheticEvent
     const submitter = (event?.nativeEvent as SubmitEvent).submitter;
     const toSubmit = toPayload(checkValues);

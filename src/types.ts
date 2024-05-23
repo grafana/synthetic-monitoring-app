@@ -192,13 +192,21 @@ interface HttpHeaderFormValue {
   value: string;
 }
 
-export interface HttpRegexValidationFormValue {
-  matchType: HttpRegexValidationType;
+export interface HttpRegexBodyValidationFormValue {
+  matchType: HttpRegexValidationType.Body;
   expression: string;
   inverted: boolean;
-  header?: string;
-  allowMissing?: boolean;
 }
+
+export interface HttpRegexHeaderValidationFormValue {
+  matchType: HttpRegexValidationType.Header;
+  expression: string;
+  inverted: boolean;
+  header: string;
+  allowMissing: boolean;
+}
+
+export type HttpRegexValidationFormValue = HttpRegexBodyValidationFormValue | HttpRegexHeaderValidationFormValue;
 
 export interface HttpSettingsFormValues
   extends Omit<

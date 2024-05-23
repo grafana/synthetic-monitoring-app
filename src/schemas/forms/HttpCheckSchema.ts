@@ -8,6 +8,8 @@ import {
   CheckType,
   HTTPCompressionAlgo,
   HttpMethod,
+  HttpRegexBodyValidationFormValue,
+  HttpRegexHeaderValidationFormValue,
   HttpRegexValidationFormValue,
   HttpRegexValidationType,
   HttpSettingsFormValues,
@@ -18,13 +20,23 @@ import {
 
 import { BaseCheckSchema } from './BaseCheckSchema';
 
-const HttpRegexValidationSchema: ZodType<HttpRegexValidationFormValue> = z.object({
-  matchType: z.nativeEnum(HttpRegexValidationType),
-  expression: z.string(),
+const HttpRegexBodyValidationSchema: ZodType<HttpRegexBodyValidationFormValue> = z.object({
+  matchType: z.literal(HttpRegexValidationType.Body),
+  expression: z.string().min(1, 'Expression is required'),
   inverted: z.boolean(),
-  header: z.string(),
+});
+
+const HttpRegexHeaderValidationSchema: ZodType<HttpRegexHeaderValidationFormValue> = z.object({
+  matchType: z.literal(HttpRegexValidationType.Header),
+  expression: z.string().min(1, 'Expression is required'),
+  inverted: z.boolean(),
+  header: z.string().min(1, 'Header is required'),
   allowMissing: z.boolean(),
 });
+
+const HttpRegexValidationSchema: ZodType<HttpRegexValidationFormValue> = HttpRegexBodyValidationSchema.or(
+  HttpRegexHeaderValidationSchema
+);
 
 const HttpSettingsSchema: ZodType<HttpSettingsFormValues> = z.object({
   sslOptions: z.nativeEnum(HttpSslOption),
@@ -36,7 +48,6 @@ const HttpSettingsSchema: ZodType<HttpSettingsFormValues> = z.object({
   proxyURL: z.string(),
   ipVersion: z.nativeEnum(IpVersion),
   method: z.nativeEnum(HttpMethod),
-
   body: z.string(),
   validHTTPVersions: z.array(z.nativeEnum(HttpVersion)),
   validStatusCodes: z.array(z.number()),
