@@ -9,7 +9,6 @@ import { CheckFilters } from 'components/CheckFilters';
 import { CHECK_LIST_SORT_OPTIONS } from 'components/constants';
 
 import ThresholdGlobalSettings from '../Thresholds/ThresholdGlobalSettings';
-import { getViewTypeFromLS } from './actions';
 import { AddNewCheckButton } from './AddNewCheckButton';
 import { BulkActions } from './BulkActions';
 import { CheckListViewSwitcher } from './CheckListViewSwitcher';
@@ -26,6 +25,7 @@ type CheckListHeaderProps = {
   onSelectAll: (e: React.ChangeEvent<HTMLInputElement>) => void;
   selectedCheckIds: Set<number>;
   sortType: CheckSort;
+  viewType: CheckListViewType;
 };
 
 export const CheckListHeader = ({
@@ -40,9 +40,9 @@ export const CheckListHeader = ({
   onSelectAll,
   selectedCheckIds,
   sortType,
+  viewType,
 }: CheckListHeaderProps) => {
   const styles = useStyles2(getStyles);
-  const viewType = getViewTypeFromLS() ?? CheckListViewType.Card;
   const [showThresholdModal, setShowThresholdModal] = useState(false);
   const hasChecks = checks.length > 0;
   const isAllSelected = !hasChecks ? false : selectedCheckIds.size === checks.length;

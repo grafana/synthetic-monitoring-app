@@ -9,6 +9,7 @@ import { MetricCheckSuccess, Time } from 'datasource/responses.types';
 import { useSuspenseChecks } from 'data/useChecks';
 import { useChecksReachabilitySuccessRate } from 'data/useSuccessRates';
 import { findCheckinMetrics } from 'data/utils';
+import useQueryParametersState from 'hooks/useQueryParametersState';
 import { defaultFilters, getDefaultFilters } from 'components/CheckFilters';
 import {
   CHECK_LIST_STATUS_OPTIONS,
@@ -19,18 +20,16 @@ import {
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
 
 import { CheckListItem } from '../CheckListItem';
-import { getViewTypeFromLS } from './actions';
 import { matchesAllFilters } from './checkFilters';
 import { CheckListHeader } from './CheckListHeader';
 import { CheckListScene } from './CheckListScene';
 import EmptyCheckList from './EmptyCheckList';
 
 export const CheckList = () => {
-  const [viewType, setViewType] = useState(getViewTypeFromLS() ?? CheckListViewType.Card);
+  const [viewType, setViewType] = useQueryParametersState<number>(CHECK_LIST_VIEW_TYPE_LS_KEY, CheckListViewType.Card);
 
   const handleChangeViewType = (value: CheckListViewType) => {
     setViewType(value);
-    window.localStorage.setItem(CHECK_LIST_VIEW_TYPE_LS_KEY, String(value));
   };
 
   return (
@@ -167,6 +166,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
           onDelete={handleUnselectAll}
           selectedCheckIds={selectedCheckIds}
           sortType={sortType}
+          viewType={viewType}
         />
       )}
       {viewType === CheckListViewType.Viz ? (
