@@ -11,12 +11,7 @@ import { useChecksReachabilitySuccessRate } from 'data/useSuccessRates';
 import { findCheckinMetrics } from 'data/utils';
 import useQueryParametersState from 'hooks/useQueryParametersState';
 import { defaultFilters, getDefaultFilters } from 'components/CheckFilters';
-import {
-  CHECK_LIST_STATUS_OPTIONS,
-  CHECK_LIST_VIEW_TYPE_LS_KEY,
-  CHECKS_PER_PAGE_CARD,
-  CHECKS_PER_PAGE_LIST,
-} from 'components/constants';
+import { CHECK_LIST_STATUS_OPTIONS, CHECKS_PER_PAGE_CARD, CHECKS_PER_PAGE_LIST } from 'components/constants';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
 
 import { CheckListItem } from '../CheckListItem';
@@ -26,7 +21,7 @@ import { CheckListScene } from './CheckListScene';
 import EmptyCheckList from './EmptyCheckList';
 
 export const CheckList = () => {
-  const [viewType, setViewType] = useQueryParametersState<number>(CHECK_LIST_VIEW_TYPE_LS_KEY, CheckListViewType.Card);
+  const [viewType, setViewType] = useQueryParametersState<number>('viewType', CheckListViewType.Card);
 
   const handleChangeViewType = (value: CheckListViewType) => {
     setViewType(value);
@@ -49,7 +44,11 @@ type CheckListContentProps = {
 const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps) => {
   const { data: checks } = useSuspenseChecks();
   const { data: reachabilitySuccessRates = [] } = useChecksReachabilitySuccessRate();
-  const [checkFilters, setCheckFilters] = useState<CheckFiltersType>(getDefaultFilters());
+  const [checkFilters, setCheckFilters] = useQueryParametersState<CheckFiltersType>(
+    'checkFilters',
+    getDefaultFilters()
+  );
+
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCheckIds, setSelectedChecksIds] = useState<Set<number>>(new Set());
   const [sortType, setSortType] = useState<CheckSort>(CheckSort.AToZ);
@@ -64,12 +63,8 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   const totalPages = Math.ceil(filteredChecks.length / CHECKS_PER_PAGE);
 
   const handleFilterChange = (filters: CheckFiltersType) => {
-    setCheckFilters((cf) => ({
-      ...cf,
-      ...filters,
-    }));
     setCurrentPage(1);
-    localStorage.setItem('checkFilters', JSON.stringify(filters));
+    setCheckFilters(filters);
 
     setSelectedChecksIds((current) => {
       const filteredChecks = filterChecks(checks, filters);
@@ -80,7 +75,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
 
   const handleResetFilters = () => {
     handleFilterChange(defaultFilters);
-    localStorage.removeItem('checkFilters');
+    setCheckFilters(null);
   };
 
   const handleLabelSelect = (label: Label) => {
