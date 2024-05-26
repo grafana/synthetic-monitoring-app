@@ -442,8 +442,6 @@ export const PEM_HEADER = '-----BEGIN CERTIFICATE-----';
 
 export const PEM_FOOTER = '-----END CERTIFICATE-----';
 
-export const CHECK_LIST_VIEW_TYPE_LS_KEY = 'grafana.sm.checklist.viewType';
-
 export const CHECK_LIST_ICON_OVERLAY_LS_KEY = 'grafana.sm.checklist.iconOverlay';
 
 export const INVALID_WEB_URL_MESSAGE = 'Target must be a valid web URL';
