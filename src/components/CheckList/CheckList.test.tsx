@@ -1,4 +1,5 @@
 import React from 'react';
+import { MemoryRouter } from 'react-router-dom';
 import { config } from '@grafana/runtime';
 import { screen, waitFor, waitForElementToBeRemoved, within } from '@testing-library/react';
 import { BASIC_CHECK_LIST, BASIC_DNS_CHECK, BASIC_HTTP_CHECK } from 'test/fixtures/checks';
@@ -24,7 +25,7 @@ const useNavigationHook = require('hooks/useNavigation');
 
 jest.setTimeout(20000);
 
-const renderCheckList = async (checks = BASIC_CHECK_LIST) => {
+const renderCheckList = async (checks = BASIC_CHECK_LIST, searchParams = '') => {
   server.use(
     apiRoute(`listChecks`, {
       result: () => {
@@ -35,17 +36,15 @@ const renderCheckList = async (checks = BASIC_CHECK_LIST) => {
     })
   );
 
-  const res = render(<CheckList />, {
-    path: `${PLUGIN_URL_PATH}${ROUTES.Checks}`,
-  });
+  const res = render(
+    <MemoryRouter initialEntries={[{ pathname: `${PLUGIN_URL_PATH}${ROUTES.Checks}`, search: searchParams }]}>
+      <CheckList />
+    </MemoryRouter>
+  );
 
   await waitFor(() => expect(screen.getByText('Add new check')).toBeInTheDocument());
   return res;
 };
-
-beforeEach(() => {
-  localStorage.clear();
-});
 
 test('renders empty state', async () => {
   server.use(
@@ -175,18 +174,16 @@ test('filters by probe', async () => {
   expect(checks.length).toBe(1);
 });
 
-test('loads search from localStorage', async () => {
-  localStorage.setItem(
-    'checkFilters',
-    JSON.stringify({
-      search: BASIC_DNS_CHECK.job,
-      labels: [],
-      type: 'all',
-      status: { label: 'All', value: 0 },
-      probes: [],
-    })
-  );
-  await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK]);
+test('loads search from query params', async () => {
+  const searchParams = `checkFilters=${JSON.stringify({
+    search: BASIC_DNS_CHECK.job,
+    labels: [],
+    type: 'all',
+    status: { label: 'All', value: 0 },
+    probes: [],
+  })}`;
+
+  await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK], searchParams);
   const searchInput = await screen.findByPlaceholderText('Search by job name, endpoint, or label');
   expect(searchInput).toHaveValue(BASIC_DNS_CHECK.job);
 
@@ -194,7 +191,7 @@ test('loads search from localStorage', async () => {
   expect(checks.length).toBe(1);
 });
 
-test('loads status filter from localStorage', async () => {
+test('loads status filter from query params', async () => {
   const filters = {
     search: '',
     labels: [],
@@ -203,14 +200,14 @@ test('loads status filter from localStorage', async () => {
     probes: [],
   };
 
-  localStorage.setItem('checkFilters', JSON.stringify(filters));
+  const searchParams = `checkFilters=${JSON.stringify(filters)}`;
 
   const DNS_CHECK_DISABLED = {
     ...BASIC_DNS_CHECK,
     enabled: false,
   };
 
-  const { user } = await renderCheckList([DNS_CHECK_DISABLED, BASIC_HTTP_CHECK]);
+  const { user } = await renderCheckList([DNS_CHECK_DISABLED, BASIC_HTTP_CHECK], searchParams);
   const additionalFilters = await screen.findByText(/Additional filters/i);
   await user.click(additionalFilters);
 
@@ -221,7 +218,7 @@ test('loads status filter from localStorage', async () => {
   expect(checks.length).toBe(1);
 });
 
-test('loads type filter from localStorage', async () => {
+test('loads type filter from query params', async () => {
   const filters = {
     search: '',
     labels: [],
@@ -230,8 +227,8 @@ test('loads type filter from localStorage', async () => {
     probes: [],
   };
 
-  localStorage.setItem('checkFilters', JSON.stringify(filters));
-  const { user } = await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK]);
+  const searchParams = `checkFilters=${JSON.stringify(filters)}`;
+  const { user } = await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK], searchParams);
   const additionalFilters = await screen.findByText(/Additional filters \(1 active\)/i);
   await user.click(additionalFilters);
 
@@ -243,7 +240,7 @@ test('loads type filter from localStorage', async () => {
   expect(checks.length).toBe(1);
 });
 
-test('loads labels from localStorage', async () => {
+test('loads labels from query params', async () => {
   const label = BASIC_DNS_CHECK.labels[0];
   const constructedLabel = `${label.name}: ${label.value}`;
 
@@ -255,8 +252,8 @@ test('loads labels from localStorage', async () => {
     probes: [],
   };
 
-  localStorage.setItem('checkFilters', JSON.stringify(filters));
-  const { user } = await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK]);
+  const searchParams = `checkFilters=${JSON.stringify(filters)}`;
+  const { user } = await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK], searchParams);
   const additionalFilters = await screen.findByText(/Additional filters \(1 active\)/i);
   await user.click(additionalFilters);
 
@@ -266,6 +263,30 @@ test('loads labels from localStorage', async () => {
 
   const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(1);
+});
+
+test('loads sorting type in ascending order from query params', async () => {
+  const searchParams = `sortType="atoz"`;
+  await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK], searchParams);
+  const sortInput = await screen.findByText(/A-Z/i);
+  expect(sortInput).toBeInTheDocument();
+
+  const checks = await screen.findAllByTestId('check-card');
+  expect(checks.length).toBe(2);
+  expect(checks[0]).toHaveTextContent(BASIC_DNS_CHECK.job);
+  expect(checks[1]).toHaveTextContent(BASIC_HTTP_CHECK.job);
+});
+
+test('loads sorting type in descending order from query params', async () => {
+  const searchParams = `sortType="ztoa"`;
+  await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK], searchParams);
+  const sortInput = await screen.findByText(/Z-A/i);
+  expect(sortInput).toBeInTheDocument();
+
+  const checks = await screen.findAllByTestId('check-card');
+  expect(checks.length).toBe(2);
+  expect(checks[0]).toHaveTextContent(BASIC_HTTP_CHECK.job);
+  expect(checks[1]).toHaveTextContent(BASIC_DNS_CHECK.job);
 });
 
 test('clicking type chiclet adds it to filter', async () => {
