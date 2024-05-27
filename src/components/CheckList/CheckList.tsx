@@ -48,10 +48,10 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
     'checkFilters',
     getDefaultFilters()
   );
+  const [sortType, setSortType] = useQueryParametersState<CheckSort>('sortType', CheckSort.AToZ);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCheckIds, setSelectedChecksIds] = useState<Set<number>>(new Set());
-  const [sortType, setSortType] = useState<CheckSort>(CheckSort.AToZ);
   const styles = useStyles2(getStyles);
   const CHECKS_PER_PAGE = viewType === CheckListViewType.Card ? CHECKS_PER_PAGE_CARD : CHECKS_PER_PAGE_LIST;
 
