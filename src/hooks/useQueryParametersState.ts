@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 
-const useQueryParametersState = <T>(key: string, initialValue: T): [T, (value: T | null) => void] => {
+const useQueryParametersState = <ValueType>(
+  key: string,
+  initialValue: ValueType
+): [ValueType, (value: ValueType | null) => void] => {
   const location = useLocation();
   const history = useHistory();
 
   const queryParams = new URLSearchParams(location.search);
-  const initialValueString = queryParams.get(key);
-  const parsedInitialValue = initialValueString ? JSON.parse(initialValueString) : '';
+  const existingValue = queryParams.get(key);
+  const parsedExistingValue = existingValue ? JSON.parse(existingValue) : '';
 
-  const [state, setState] = useState<T | null>(parsedInitialValue);
+  const [state, setState] = useState<ValueType | null>(parsedExistingValue);
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
@@ -18,10 +21,10 @@ const useQueryParametersState = <T>(key: string, initialValue: T): [T, (value: T
     } else {
       queryParams.set(key, JSON.stringify(state));
     }
-    history.replace({ search: queryParams.toString() });
+    history.push({ search: queryParams.toString() });
   }, [key, state, location.search, history]);
 
-  const updateState = (value: T | null) => {
+  const updateState = (value: ValueType | null) => {
     setState(value);
   };
 
