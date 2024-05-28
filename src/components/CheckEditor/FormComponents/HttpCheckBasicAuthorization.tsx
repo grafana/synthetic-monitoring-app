@@ -6,55 +6,47 @@ import { css } from '@emotion/css';
 
 import { CheckFormValuesHttp } from 'types';
 import { hasRole } from 'utils';
-import { OptionalInput } from 'components/OptionalInput/OptionalInput';
 
 export const HttpCheckBasicAuthorization = () => {
   const isEditor = hasRole(OrgRole.Editor);
-  const { formState, register, getValues } = useFormContext<CheckFormValuesHttp>();
+  const { formState, register } = useFormContext<CheckFormValuesHttp>();
   const userNameId = 'basicAuthUsername';
   const passwordId = 'basicAuthPassword';
   const styles = useStyles2(getStyles);
 
   return (
-    <OptionalInput
-      label="Include basic authorization header in request"
-      isOpen={Boolean(
-        getValues(`settings.http.basicAuth.username`) || Boolean(getValues(`settings.http.basicAuth.password`))
-      )}
-    >
-      <div className={styles.stack}>
-        <Field
-          htmlFor={userNameId}
+    <div className={styles.stack}>
+      <Field
+        htmlFor={userNameId}
+        disabled={!isEditor}
+        label="Username"
+        invalid={Boolean(formState.errors.settings?.http?.basicAuth?.username)}
+        error={formState.errors.settings?.http?.basicAuth?.username?.message}
+      >
+        <Input
+          {...register('settings.http.basicAuth.username')}
+          id={userNameId}
+          type="text"
           disabled={!isEditor}
-          label="Username"
-          invalid={Boolean(formState.errors.settings?.http?.basicAuth?.username)}
-          error={formState.errors.settings?.http?.basicAuth?.username?.message}
-        >
-          <Input
-            {...register('settings.http.basicAuth.username')}
-            id={userNameId}
-            type="text"
-            disabled={!isEditor}
-            data-fs-element="Basic auth username input"
-          />
-        </Field>
-        <Field
-          htmlFor={passwordId}
+          data-fs-element="Basic auth username input"
+        />
+      </Field>
+      <Field
+        htmlFor={passwordId}
+        disabled={!isEditor}
+        label="Password"
+        invalid={Boolean(formState.errors.settings?.http?.basicAuth?.password)}
+        error={formState.errors.settings?.http?.basicAuth?.password?.message}
+      >
+        <Input
+          {...register('settings.http.basicAuth.password')}
+          id={passwordId}
+          type="text"
           disabled={!isEditor}
-          label="Password"
-          invalid={Boolean(formState.errors.settings?.http?.basicAuth?.password)}
-          error={formState.errors.settings?.http?.basicAuth?.password?.message}
-        >
-          <Input
-            {...register('settings.http.basicAuth.password')}
-            id={passwordId}
-            type="text"
-            disabled={!isEditor}
-            data-fs-element="Basic auth password input"
-          />
-        </Field>
-      </div>
-    </OptionalInput>
+          data-fs-element="Basic auth password input"
+        />
+      </Field>
+    </div>
   );
 };
 

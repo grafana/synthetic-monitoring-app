@@ -5,18 +5,14 @@ import { Field, Input } from '@grafana/ui';
 
 import { CheckFormValuesHttp } from 'types';
 import { hasRole } from 'utils';
-import { OptionalInput } from 'components/OptionalInput/OptionalInput';
 
 export const HttpCheckBearerToken = () => {
   const isEditor = hasRole(OrgRole.Editor);
-  const { getValues, formState, register } = useFormContext<CheckFormValuesHttp>();
+  const { formState, register } = useFormContext<CheckFormValuesHttp>();
   const id = 'bearerToken';
 
   return (
-    <OptionalInput
-      label="Include bearer authorization header in request"
-      isOpen={Boolean(getValues(`settings.http.bearerToken`))}
-    >
+    
       <Field
         htmlFor={id}
         disabled={!isEditor}
@@ -31,6 +27,5 @@ export const HttpCheckBearerToken = () => {
           data-fs-element="Bearer token input"
         />
       </Field>
-    </OptionalInput>
   );
 };
