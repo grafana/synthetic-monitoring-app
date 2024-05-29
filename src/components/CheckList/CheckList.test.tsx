@@ -1,5 +1,4 @@
 import React from 'react';
-import { MemoryRouter } from 'react-router-dom';
 import { config } from '@grafana/runtime';
 import { screen, waitFor, waitForElementToBeRemoved, within } from '@testing-library/react';
 import { BASIC_CHECK_LIST, BASIC_DNS_CHECK, BASIC_HTTP_CHECK } from 'test/fixtures/checks';
@@ -36,11 +35,9 @@ const renderCheckList = async (checks = BASIC_CHECK_LIST, searchParams = '') => 
     })
   );
 
-  const res = render(
-    <MemoryRouter initialEntries={[{ pathname: `${PLUGIN_URL_PATH}${ROUTES.Checks}`, search: searchParams }]}>
-      <CheckList />
-    </MemoryRouter>
-  );
+  const res = render(<CheckList />, {
+    path: `${PLUGIN_URL_PATH}${ROUTES.Checks}?${searchParams}`,
+  });
 
   await waitFor(() => expect(screen.getByText('Add new check')).toBeInTheDocument());
   return res;
