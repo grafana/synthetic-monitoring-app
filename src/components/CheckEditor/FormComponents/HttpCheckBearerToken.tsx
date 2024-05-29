@@ -25,7 +25,7 @@ export const HttpCheckBearerToken = () => {
       >
         <Input
           {...register('settings.http.bearerToken')}
-          // type="password"
+          type="password"
           placeholder="Bearer token"
           disabled={!isEditor}
           data-fs-element="Bearer token input"

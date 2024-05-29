@@ -239,10 +239,6 @@ export const FALLBACK_CHECK_HTTP: HTTPCheck = {
   ...FALLBACK_CHECK_BASE,
   settings: {
     http: {
-      basicAuth: {
-        password: '',
-        username: '',
-      },
       method: HttpMethod.GET,
       ipVersion: IpVersion.V4,
       noFollowRedirects: false,
