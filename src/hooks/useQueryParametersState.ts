@@ -1,34 +1,54 @@
-import { useEffect, useState } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useCallback, useMemo } from 'react';
+import { useHistory } from 'react-router-dom';
+
+import { useSearchParams } from './useSearchParams';
+
+enum HistoryStrategy {
+  Push = 'push',
+  Replace = 'replace',
+}
 
 const useQueryParametersState = <ValueType>(
   key: string,
-  initialValue: ValueType
+  initialValue: ValueType,
+  strategy: HistoryStrategy = HistoryStrategy.Push
 ): [ValueType, (value: ValueType | null) => void] => {
-  const location = useLocation();
   const history = useHistory();
 
-  const queryParams = new URLSearchParams(location.search);
+  const queryParams = useSearchParams();
+
   const existingValue = queryParams.get(key);
-  const parsedExistingValue = existingValue ? JSON.parse(existingValue) : '';
 
-  const [state, setState] = useState<ValueType | null>(parsedExistingValue);
+  //@todo: implement a better way to parse the value
+  let parsedExistingValue = useMemo(() => {
+    return existingValue ? JSON.parse(existingValue) : '';
+  }, [existingValue]);
 
-  useEffect(() => {
-    const queryParams = new URLSearchParams(location.search);
-    if (state === null) {
-      queryParams.delete(key);
-    } else {
-      queryParams.set(key, JSON.stringify(state));
+  const updateHistory = useCallback(() => {
+    switch (strategy) {
+      case HistoryStrategy.Push:
+        history.push({ search: queryParams.toString() });
+        break;
+      case HistoryStrategy.Replace:
+        history.replace({ search: queryParams.toString() });
+        break;
+      default:
+        history.push({ search: queryParams.toString() });
+        break;
     }
-    history.push({ search: queryParams.toString() });
-  }, [key, state, location.search, history]);
+  }, [strategy, history, queryParams]);
 
   const updateState = (value: ValueType | null) => {
-    setState(value);
+    if (value === null) {
+      queryParams.delete(key);
+    } else {
+      queryParams.set(key, JSON.stringify(value));
+    }
+
+    updateHistory();
   };
 
-  return [state || initialValue, updateState];
+  return [parsedExistingValue || initialValue, updateState];
 };
 
 export default useQueryParametersState;
