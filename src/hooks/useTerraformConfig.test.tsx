@@ -1,21 +1,29 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { BASIC_PING_CHECK } from 'test/fixtures/checks';
+import { PRIVATE_PROBE, UNSELECTED_PRIVATE_PROBE } from 'test/fixtures/probes';
 import { TERRAFORM_BASIC_PING_CHECK, TERRAFORM_PRIVATE_PROBES } from 'test/fixtures/terraform';
 import { apiRoute } from 'test/handlers';
 import { createWrapper } from 'test/render';
 import { server } from 'test/server';
 
-import { Check, HttpMethod } from 'types';
+import { Check, HttpMethod, Probe } from 'types';
 import { sanitizeName } from 'components/TerraformConfig/terraformConfigUtils';
 
 import { useTerraformConfig } from './useTerraformConfig';
 
-async function renderTerraformHook(checks: Check[]) {
+async function renderTerraformHook(checks: Check[], probes: Probe[]) {
   server.use(
     apiRoute('listChecks', {
       result: () => {
         return {
           json: checks,
+        };
+      },
+    }),
+    apiRoute('listProbes', {
+      result: () => {
+        return {
+          json: probes,
         };
       },
     })
@@ -38,8 +46,8 @@ async function renderTerraformHook(checks: Check[]) {
 }
 
 describe('terraform config generation', () => {
-  test('handles basic case', async () => {
-    const result = await renderTerraformHook([BASIC_PING_CHECK]);
+  test('handles basic check case', async () => {
+    const result = await renderTerraformHook([BASIC_PING_CHECK], [PRIVATE_PROBE, UNSELECTED_PRIVATE_PROBE]);
 
     expect(result.current.checkCommands).toEqual(
       [BASIC_PING_CHECK].map((check) => {
@@ -52,19 +60,39 @@ describe('terraform config generation', () => {
     expect(result.current.config).toEqual(TERRAFORM_BASIC_PING_CHECK);
   });
 
-  test('avoids duplicate resource names', async () => {
-    const result = await renderTerraformHook([
-      {
-        ...BASIC_PING_CHECK,
-        job: 'a really really really really really really really really really long jobname',
-        target: 'areallyreallyreallyreallyreallyreallyreallyreallyreallyreallyreallyreallylongexample.com',
-      },
-      {
-        ...BASIC_PING_CHECK,
-        job: 'a really really really really really really really really really long jobname',
-        target: 'areallyreallyreallyreallyreallyreallyreallyreallyreallyreallyreallyreallylongexample.com/stuff',
-      },
+  test('handles basic probe case', async () => {
+    const result = await renderTerraformHook([BASIC_PING_CHECK], [PRIVATE_PROBE]);
+
+    expect(result.current.probeCommands).toEqual([
+      `terraform import grafana_synthetic_monitoring_probe.${PRIVATE_PROBE.name} ${PRIVATE_PROBE.id}:<PROBE_AUTH_TOKEN>`,
     ]);
+  });
+
+  test('handles several probes case', async () => {
+    const result = await renderTerraformHook([BASIC_PING_CHECK], [PRIVATE_PROBE, UNSELECTED_PRIVATE_PROBE]);
+
+    expect(result.current.probeCommands).toEqual([
+      `terraform import grafana_synthetic_monitoring_probe.${PRIVATE_PROBE.name} ${PRIVATE_PROBE.id}:<PROBE_AUTH_TOKEN>`,
+      `terraform import grafana_synthetic_monitoring_probe.${UNSELECTED_PRIVATE_PROBE.name} ${UNSELECTED_PRIVATE_PROBE.id}:<PROBE_AUTH_TOKEN>`,
+    ]);
+  });
+
+  test('avoids duplicate resource names', async () => {
+    const result = await renderTerraformHook(
+      [
+        {
+          ...BASIC_PING_CHECK,
+          job: 'a really really really really really really really really really long jobname',
+          target: 'areallyreallyreallyreallyreallyreallyreallyreallyreallyreallyreallyreallylongexample.com',
+        },
+        {
+          ...BASIC_PING_CHECK,
+          job: 'a really really really really really really really really really long jobname',
+          target: 'areallyreallyreallyreallyreallyreallyreallyreallyreallyreallyreallyreallylongexample.com/stuff',
+        },
+      ],
+      [PRIVATE_PROBE, UNSELECTED_PRIVATE_PROBE]
+    );
 
     expect(result.current.config).toEqual({
       provider: {
@@ -123,41 +151,44 @@ describe('terraform config generation', () => {
   });
 
   test('handles multihttp checks', async () => {
-    const result = await renderTerraformHook([
-      {
-        job: 'stuff',
-        target: 'https://www.grafana-dev.com',
-        enabled: true,
-        labels: [],
-        probes: [1, 2],
-        timeout: 17000,
-        frequency: 120000,
-        alertSensitivity: 'none',
-        settings: {
-          multihttp: {
-            entries: [
-              {
-                // @ts-expect-error
-                request: { method: 'GET', url: 'https://www.grafana-dev.com', headers: [], queryFields: [{}] },
-                variables: [],
-                checks: [{ type: 0, subject: 2, condition: 2, value: '200' }],
-              },
-              {
-                request: { url: 'https://secondrequest.com', method: HttpMethod.POST, headers: [], queryFields: [] },
-                variables: [{ type: 0, name: 'avariable', expression: 'great.variable.path' }],
-                checks: [],
-              },
-              {
-                request: { url: '${avariable}', method: HttpMethod.GET, headers: [], queryFields: [] },
-                variables: [],
-                checks: [],
-              },
-            ],
+    const result = await renderTerraformHook(
+      [
+        {
+          job: 'stuff',
+          target: 'https://www.grafana-dev.com',
+          enabled: true,
+          labels: [],
+          probes: [1, 2],
+          timeout: 17000,
+          frequency: 120000,
+          alertSensitivity: 'none',
+          settings: {
+            multihttp: {
+              entries: [
+                {
+                  // @ts-expect-error
+                  request: { method: 'GET', url: 'https://www.grafana-dev.com', headers: [], queryFields: [{}] },
+                  variables: [],
+                  checks: [{ type: 0, subject: 2, condition: 2, value: '200' }],
+                },
+                {
+                  request: { url: 'https://secondrequest.com', method: HttpMethod.POST, headers: [], queryFields: [] },
+                  variables: [{ type: 0, name: 'avariable', expression: 'great.variable.path' }],
+                  checks: [],
+                },
+                {
+                  request: { url: '${avariable}', method: HttpMethod.GET, headers: [], queryFields: [] },
+                  variables: [],
+                  checks: [],
+                },
+              ],
+            },
           },
+          basicMetricsOnly: true,
         },
-        basicMetricsOnly: true,
-      },
-    ]);
+      ],
+      [PRIVATE_PROBE, UNSELECTED_PRIVATE_PROBE]
+    );
 
     expect(result.current.config).toEqual({
       provider: {
