@@ -164,11 +164,26 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
         },
       },
       {
-        id: 'joinByField',
-        options: {
-          byField: 'job',
-          mode: 'inner',
-        },
+        "id": "calculateField",
+        "options": {
+          "mode": "binary",
+          "reduce": {
+            "reducer": "sum"
+          },
+          "binary": {
+            "left": "instance",
+            "right": "job"
+          },
+          "alias": "key",
+          "replaceFields": false
+        }
+      },
+      {
+        "id": "joinByField",
+        "options": {
+          "byField": "key",
+          "mode": "inner"
+        }
       },
       {
         id: 'calculateField',
@@ -204,6 +219,7 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
         id: 'organize',
         options: {
           excludeByName: {
+            "key": true,
             'Value #A (sum)': true,
             'Value #latency denom (sum)': true,
             'Value #latency numer (sum)': true,
