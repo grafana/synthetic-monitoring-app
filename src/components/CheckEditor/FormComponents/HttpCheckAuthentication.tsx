@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
-import { RadioButtonList, useStyles2 } from '@grafana/ui';
+import { RadioButtonGroup, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckFormValuesHttp } from 'types';
@@ -26,12 +26,11 @@ export const HttpCheckAuthentication = () => {
 
   return (
     <>
-      <RadioButtonList
-        name="auth-type"
+      <RadioButtonGroup
         options={[
           { label: 'None', value: 'none' },
-          { label: 'Include bearer authorization header in request', value: 'bearer' },
-          { label: 'Include basic authorization header in request', value: 'basic' },
+          { label: 'Bearer', value: 'bearer' },
+          { label: 'Basic', value: 'basic' },
         ]}
         value={selectedOption}
         onChange={handleChangeOption}

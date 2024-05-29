@@ -12,20 +12,20 @@ export const HttpCheckBearerToken = () => {
   const id = 'bearerToken';
 
   return (
-    
-      <Field
-        htmlFor={id}
+    <Field
+      htmlFor={id}
+      disabled={!isEditor}
+      label="Include bearer authorization header in request"
+      invalid={Boolean(formState.errors.settings?.http?.bearerToken)}
+      error={formState.errors.settings?.http?.bearerToken?.message}
+    >
+      <Input
+        {...register('settings.http.bearerToken')}
+        type="password"
+        placeholder="Bearer token"
         disabled={!isEditor}
-        invalid={Boolean(formState.errors.settings?.http?.bearerToken)}
-        error={formState.errors.settings?.http?.bearerToken?.message}
-      >
-        <Input
-          {...register('settings.http.bearerToken')}
-          type="password"
-          placeholder="Bearer token"
-          disabled={!isEditor}
-          data-fs-element="Bearer token input"
-        />
-      </Field>
+        data-fs-element="Bearer token input"
+      />
+    </Field>
   );
 };
