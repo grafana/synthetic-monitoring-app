@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { FieldErrorsImpl, useFieldArray, useFormContext } from 'react-hook-form';
-import { Button, Field, HorizontalGroup, Icon, IconButton, Input, useTheme2, VerticalGroup } from '@grafana/ui';
+import { GrafanaTheme2 } from '@grafana/data';
+import { Button, Field, Icon, IconButton, Input, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckFormValues, Probe } from 'types';
@@ -51,20 +52,18 @@ export const NameValueInput = ({
   } = useFormContext<CheckFormValues | Probe>();
   const addRef = useRef<HTMLButtonElement>(null);
   const { fields, append, remove } = useFieldArray({ control, name });
-  const theme = useTheme2();
+  const styles = useStyles2(getStyles);
 
   const fieldError = getErrors(errors, name);
 
   return (
-    <VerticalGroup justify="space-between">
+    <div className={styles.stackCol}>
       {fields.map((field, index) => (
-        <HorizontalGroup key={field.id} align="flex-start">
+        <div key={field.id} className={styles.stack}>
           <Field
             invalid={Boolean(fieldError?.[index]?.name?.type)}
             error={fieldError?.[index]?.name?.message}
-            className={css`
-              margin-bottom: 0;
-            `}
+            className={styles.field}
             required
           >
             <Input
@@ -80,9 +79,7 @@ export const NameValueInput = ({
           <Field
             invalid={Boolean(fieldError?.[index]?.value)}
             error={fieldError?.[index]?.value?.message}
-            className={css`
-              margin-bottom: 0;
-            `}
+            className={styles.field}
             required
           >
             <Input
@@ -96,9 +93,6 @@ export const NameValueInput = ({
             />
           </Field>
           <IconButton
-            className={css`
-              margin-top: ${theme.spacing(2)};
-            `}
             name="minus-circle"
             type="button"
             data-fs-element={`${rest['data-fs-element']}-delete-${index}`}
@@ -111,22 +105,40 @@ export const NameValueInput = ({
             disabled={disabled}
             tooltip="Delete"
           />
-        </HorizontalGroup>
+        </div>
       ))}
       {(limit === undefined || fields.length < limit) && (
-        <Button
-          onClick={() => append({ name: '', value: '' })}
-          disabled={disabled}
-          variant="secondary"
-          size="sm"
-          type="button"
-          ref={addRef}
-          data-fs-element={`${rest['data-fs-element']}-add`}
-        >
-          <Icon name="plus" />
-          &nbsp; Add {label.toLocaleLowerCase()}
-        </Button>
+        <div className={styles.stack}>
+          <Button
+            onClick={() => append({ name: '', value: '' })}
+            disabled={disabled}
+            variant="secondary"
+            size="sm"
+            type="button"
+            ref={addRef}
+            data-fs-element={`${rest['data-fs-element']}-add`}
+            className={styles.addButton}
+          >
+            <Icon name="plus" />
+            &nbsp; Add {label.toLocaleLowerCase()}
+          </Button>
+        </div>
       )}
-    </VerticalGroup>
+    </div>
   );
 };
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  addButton: css({ 'margin-top': theme.spacing(1) }),
+  field: css({ 'margin-bottom': 0, 'margin-top': 0 }),
+  stack: css({
+    display: `flex`,
+    gap: theme.spacing(1),
+  }),
+  stackCol: css({
+    display: 'flex',
+    gap: theme.spacing(1),
+    flexDirection: 'column',
+    marginTop: theme.spacing(1),
+  }),
+});
