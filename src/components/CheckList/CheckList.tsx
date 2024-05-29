@@ -21,7 +21,7 @@ import { CheckListScene } from './CheckListScene';
 import EmptyCheckList from './EmptyCheckList';
 
 export const CheckList = () => {
-  const [viewType, setViewType] = useQueryParametersState<number>('viewType', CheckListViewType.Card);
+  const [viewType, setViewType] = useQueryParametersState<CheckListViewType>('view', CheckListViewType.Card);
 
   const handleChangeViewType = (value: CheckListViewType) => {
     setViewType(value);
@@ -45,10 +45,10 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   const { data: checks } = useSuspenseChecks();
   const { data: reachabilitySuccessRates = [] } = useChecksReachabilitySuccessRate();
   const [checkFilters, setCheckFilters] = useQueryParametersState<CheckFiltersType>(
-    'checkFilters',
+    'filters',
     getDefaultFilters()
   );
-  const [sortType, setSortType] = useQueryParametersState<CheckSort>('sortType', CheckSort.AToZ);
+  const [sortType, setSortType] = useQueryParametersState<CheckSort>('sort', CheckSort.AToZ);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCheckIds, setSelectedChecksIds] = useState<Set<number>>(new Set());

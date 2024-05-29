@@ -626,9 +626,9 @@ export enum CheckEnabledStatus {
 }
 
 export enum CheckListViewType {
-  Card,
-  List,
-  Viz,
+  Card = 'card',
+  List = 'list',
+  Viz = 'viz',
 }
 
 export enum HTTPCompressionAlgo {
