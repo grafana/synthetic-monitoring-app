@@ -14,6 +14,7 @@ import { MultiHttpEntry, RequestProps } from 'components/MultiHttp/MultiHttpType
 export interface TFOutput {
   config: TFConfig;
   checkCommands: string[];
+  probeCommands: string[];
 }
 
 export interface TFConfig {

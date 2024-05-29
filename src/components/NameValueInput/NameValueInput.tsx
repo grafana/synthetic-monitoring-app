@@ -1,6 +1,7 @@
 import React, { useCallback, useRef } from 'react';
 import { FieldErrorsImpl, useFieldArray, useFormContext, useFormState } from 'react-hook-form';
-import { Button, Field, HorizontalGroup, Icon, IconButton, Input, useTheme2, VerticalGroup } from '@grafana/ui';
+import { GrafanaTheme2 } from '@grafana/data';
+import { Button, Field, Icon, IconButton, Input, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { get } from 'lodash';
 
@@ -32,7 +33,8 @@ export const NameValueInput = ({ ariaLabelSuffix = ``, name, disabled, limit, la
   const { isSubmitted } = useFormState({ control });
   const addRef = useRef<HTMLButtonElement>(null);
   const { fields, append, remove } = useFieldArray({ control, name });
-  const theme = useTheme2();
+  const styles = useStyles2(getStyles);
+
   const fieldError = getErrors(errors, name);
 
   const handleTrigger = useCallback(() => {
@@ -42,29 +44,26 @@ export const NameValueInput = ({ ariaLabelSuffix = ``, name, disabled, limit, la
   }, [trigger, isSubmitted, name]);
 
   return (
-    <VerticalGroup justify="space-between">
+    <div className={styles.stackCol}>
       {fields.map((field, index) => {
         const labelNameField = register(`${name}.${index}.name`);
         const labelValueField = register(`${name}.${index}.value`);
 
         return (
-          <HorizontalGroup key={field.id} align="flex-start">
+          <div key={field.id} className={styles.stack}>
             <Field
               invalid={Boolean(fieldError?.[index]?.name?.type)}
               error={parseErrorMessage(fieldError?.[index]?.name?.message, label)}
-              className={css`
-                margin-bottom: 0;
-              `}
+              className={styles.field}
               required
             >
               <Input
-                {...labelNameField}
+                {...register(`${name}.${index}.name`)}
                 aria-label={`${label} ${index + 1} name ${ariaLabelSuffix}`}
                 data-testid={`${label}-name-${index}`}
                 type="text"
                 placeholder="name"
                 disabled={disabled}
-                data-fs-element={`${rest['data-fs-element']}-name-${index}`}
                 onChange={(v) => {
                   labelNameField.onChange(v);
                   handleTrigger();
@@ -74,9 +73,7 @@ export const NameValueInput = ({ ariaLabelSuffix = ``, name, disabled, limit, la
             <Field
               invalid={Boolean(fieldError?.[index]?.value)}
               error={parseErrorMessage(fieldError?.[index]?.value?.message, label)}
-              className={css`
-                margin-bottom: 0;
-              `}
+              className={styles.field}
               required
             >
               <Input
@@ -93,43 +90,60 @@ export const NameValueInput = ({ ariaLabelSuffix = ``, name, disabled, limit, la
                 }}
               />
             </Field>
-            <IconButton
-              className={css`
-                margin-top: ${theme.spacing(2)};
-              `}
-              name="minus-circle"
-              type="button"
-              data-fs-element={`${rest['data-fs-element']}-delete-${index}`}
-              onClick={() => {
-                remove(index);
-                requestAnimationFrame(() => {
-                  addRef.current?.focus();
-                  handleTrigger();
-                });
-              }}
-              disabled={disabled}
-              tooltip="Delete"
-            />
-          </HorizontalGroup>
+            <div className={styles.remove}>
+              <IconButton
+                name="minus-circle"
+                type="button"
+                data-fs-element={`${rest['data-fs-element']}-delete-${index}`}
+                onClick={() => {
+                  remove(index);
+                  requestAnimationFrame(() => {
+                    addRef.current?.focus();
+                    handleTrigger();
+                  });
+                }}
+                disabled={disabled}
+                tooltip="Delete"
+              />
+            </div>
+          </div>
         );
       })}
       {(limit === undefined || fields.length < limit) && (
-        <Button
-          onClick={() => {
-            append({ name: '', value: '' });
-            handleTrigger();
-          }}
-          disabled={disabled}
-          variant="secondary"
-          size="sm"
-          type="button"
-          ref={addRef}
-          data-fs-element={`${rest['data-fs-element']}-add`}
-        >
-          <Icon name="plus" />
-          &nbsp; Add {label.toLocaleLowerCase()}
-        </Button>
+        <div className={styles.stack}>
+          <Button
+            onClick={() => append({ name: '', value: '' })}
+            disabled={disabled}
+            variant="secondary"
+            size="sm"
+            type="button"
+            ref={addRef}
+            data-fs-element={`${rest['data-fs-element']}-add`}
+            className={styles.addButton}
+          >
+            <Icon name="plus" />
+            &nbsp; Add {label.toLocaleLowerCase()}
+          </Button>
+        </div>
       )}
-    </VerticalGroup>
+    </div>
   );
 };
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  addButton: css({ 'margin-top': theme.spacing(1) }),
+  field: css({ 'margin-bottom': 0, 'margin-top': 0 }),
+  stack: css({
+    display: `flex`,
+    gap: theme.spacing(1),
+  }),
+  stackCol: css({
+    display: 'flex',
+    gap: theme.spacing(1),
+    flexDirection: 'column',
+    marginTop: theme.spacing(1),
+  }),
+  remove: css({
+    marginTop: theme.spacing(1),
+  }),
+});
