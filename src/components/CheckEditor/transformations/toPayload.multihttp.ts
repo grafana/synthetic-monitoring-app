@@ -54,41 +54,41 @@ const getMultiHttpSettings = (settings?: MultiHttpSettingsFormValues): MultiHttp
             };
           }) ?? [],
         checks:
-          entry.checks?.map(({ type, subject, condition, value, expression }) => {
-            switch (type) {
+          entry.checks?.map((check) => {
+            switch (check.type) {
               case MultiHttpAssertionType.Text:
-                if (subject === undefined || condition === undefined) {
+                if (check.subject === undefined || check.condition === undefined) {
                   throw new Error('Cannot have a Text assertion without a subject and condition');
                 }
                 return {
-                  type: type,
-                  subject: subject,
-                  condition: condition,
-                  value,
+                  type: check.type,
+                  subject: check.subject,
+                  condition: check.condition,
+                  value: check.value,
                 };
               case MultiHttpAssertionType.JSONPath:
                 return {
-                  type: type,
-                  expression,
+                  type: check.type,
+                  expression: check.expression,
                 };
               case MultiHttpAssertionType.JSONPathValue:
-                if (condition === undefined) {
+                if (check.condition === undefined) {
                   throw new Error('Cannot have a JSON path value assertion without a condition');
                 }
                 return {
-                  type: type,
-                  condition: condition,
-                  expression,
-                  value,
+                  type: check.type,
+                  condition: check.condition,
+                  expression: check.expression,
+                  value: check.value,
                 };
               case MultiHttpAssertionType.Regex:
-                if (subject === undefined) {
+                if (check.subject === undefined) {
                   throw new Error('Cannot have a Regex assertion without a subject');
                 }
                 return {
-                  type: type,
-                  subject: subject,
-                  expression,
+                  type: check.type,
+                  subject: check.subject,
+                  expression: check.expression,
                 };
               default:
                 throw new Error('invalid assertion type');

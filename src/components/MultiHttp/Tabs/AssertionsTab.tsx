@@ -1,5 +1,13 @@
 import React from 'react';
-import { Controller, useFieldArray, useFormContext } from 'react-hook-form';
+import {
+  Controller,
+  FieldError,
+  FieldErrorsImpl,
+  FieldPath,
+  Merge,
+  useFieldArray,
+  useFormContext,
+} from 'react-hook-form';
 import { Button, Field, Icon, IconButton, Input, Select, useStyles2 } from '@grafana/ui';
 import { cx } from '@emotion/css';
 
@@ -10,11 +18,19 @@ import {
   MULTI_HTTP_ASSERTION_TYPE_OPTIONS,
 } from 'components/constants';
 
-import { AssertionConditionVariant, AssertionSubjectVariant } from '../MultiHttpTypes';
+import {
+  Assertion,
+  AssertionConditionVariant,
+  AssertionJsonPath,
+  AssertionJsonPathValue,
+  AssertionRegex,
+  AssertionSubjectVariant,
+  AssertionText,
+} from '../MultiHttpTypes';
 import { getMultiHttpTabStyles, MultiHttpTabProps } from './Tabs';
 
 export function AssertionsTab({ index, active }: MultiHttpTabProps) {
-  const assertionFieldName = `settings.multihttp.entries.${index}.checks` as const;
+  const assertionFieldName: FieldPath<CheckFormValuesMultiHttp> = `settings.multihttp.entries.${index}.checks`;
   const { control, formState } = useFormContext<CheckFormValuesMultiHttp>();
   const { fields, append, remove } = useFieldArray<CheckFormValuesMultiHttp>({
     control,
@@ -88,6 +104,7 @@ export function AssertionsTab({ index, active }: MultiHttpTabProps) {
             type: MultiHttpAssertionType.Text,
             condition: AssertionConditionVariant.Contains,
             subject: AssertionSubjectVariant.ResponseBody,
+            value: ``,
           });
         }}
         variant="secondary"
@@ -150,8 +167,9 @@ function AssertionFields(props: AssertionProps) {
 
 function AssertionSubjectField({ entryIndex, assertionIndex }: AssertionProps) {
   const { formState } = useFormContext<CheckFormValuesMultiHttp>();
-  const error = formState.errors.settings?.multihttp?.entries?.[entryIndex]?.checks?.[assertionIndex]?.subject;
-  const errMessage = error?.message;
+  const error = formState.errors.settings?.multihttp?.entries?.[entryIndex]?.checks?.[assertionIndex];
+  const err = errorHasSubject(error) ? error?.subject : undefined;
+  const errMessage = err?.message;
 
   return (
     <Controller
@@ -164,7 +182,7 @@ function AssertionSubjectField({ entryIndex, assertionIndex }: AssertionProps) {
           <Field
             label="Subject"
             description="Target value to assert against"
-            invalid={Boolean(error)}
+            invalid={Boolean(err)}
             error={errMessage}
             htmlFor={id}
             data-fs-element="Assertion subject select"
@@ -185,8 +203,9 @@ function AssertionSubjectField({ entryIndex, assertionIndex }: AssertionProps) {
 
 function AssertionConditionField({ entryIndex, assertionIndex }: AssertionProps) {
   const { formState } = useFormContext<CheckFormValuesMultiHttp>();
-  const error = formState.errors.settings?.multihttp?.entries?.[entryIndex]?.checks?.[assertionIndex]?.condition;
-  const errMessage = error?.message;
+  const error = formState.errors.settings?.multihttp?.entries?.[entryIndex]?.checks?.[assertionIndex];
+  const err = errorHasCondition(error) ? error?.condition : undefined;
+  const errMessage = err?.message;
 
   return (
     <Controller
@@ -199,7 +218,7 @@ function AssertionConditionField({ entryIndex, assertionIndex }: AssertionProps)
           <Field
             label="Condition"
             description="Comparator"
-            invalid={Boolean(error)}
+            invalid={Boolean(err)}
             error={errMessage}
             htmlFor={id}
             data-fs-element="Assertion condition select"
@@ -220,7 +239,9 @@ function AssertionConditionField({ entryIndex, assertionIndex }: AssertionProps)
 
 function AssertionValueField({ entryIndex, assertionIndex }: AssertionProps) {
   const { formState, register, watch } = useFormContext<CheckFormValuesMultiHttp>();
-  const error = formState.errors.settings?.multihttp?.entries?.[entryIndex]?.checks?.[assertionIndex]?.value;
+  const error = formState.errors.settings?.multihttp?.entries?.[entryIndex]?.checks?.[assertionIndex];
+  const err = errorHasValue(error) ? error?.value : undefined;
+  const errMessage = err?.message;
   const assertionType = watch(`settings.multihttp.entries.${entryIndex}.checks.${assertionIndex}.type`);
   const description =
     assertionType === MultiHttpAssertionType.Text
@@ -228,7 +249,7 @@ function AssertionValueField({ entryIndex, assertionIndex }: AssertionProps) {
       : 'Value to compare with result of expression';
 
   return (
-    <Field label="Value" description={description} invalid={Boolean(error)} error={error?.message as unknown as string}>
+    <Field label="Value" description={description} invalid={Boolean(err)} error={errMessage}>
       <Input
         placeholder="Value"
         id={`${entryIndex}-${assertionIndex}-value`}
@@ -243,10 +264,12 @@ function AssertionExpressionField({ entryIndex, assertionIndex }: AssertionProps
   const { formState, register, watch } = useFormContext<CheckFormValuesMultiHttp>();
   const assertionType = watch(`settings.multihttp.entries.${entryIndex}.checks.${assertionIndex}.type`);
   const { description, placeholder } = getExpressionPlaceholderInfo(assertionType);
-  const error = formState.errors.settings?.multihttp?.entries?.[entryIndex]?.checks?.[assertionIndex]?.expression;
+  const error = formState.errors.settings?.multihttp?.entries?.[entryIndex]?.checks?.[assertionIndex];
+  const err = errorHasExpression(error) ? error?.expression : undefined;
+  const errMessage = err?.message;
 
   return (
-    <Field label="Expression" invalid={Boolean(error)} error={error?.message} description={description}>
+    <Field label="Expression" invalid={Boolean(err)} error={errMessage} description={description}>
       <Input
         placeholder={placeholder}
         data-testid={`${entryIndex}-${assertionIndex}-expression`}
@@ -289,4 +312,44 @@ function getExpressionPlaceholderInfo(assertionType?: MultiHttpAssertionType) {
       };
     }
   }
+}
+
+function errorHasSubject(
+  error: Merge<FieldError, FieldErrorsImpl<NonNullable<Assertion>>> | undefined
+): error is FieldErrorsImpl<AssertionText | AssertionRegex> {
+  if (error) {
+    return 'subject' in error;
+  }
+
+  return false;
+}
+
+function errorHasCondition(
+  error: Merge<FieldError, FieldErrorsImpl<NonNullable<Assertion>>> | undefined
+): error is FieldErrorsImpl<AssertionText | AssertionJsonPathValue> {
+  if (error) {
+    return 'condition' in error;
+  }
+
+  return false;
+}
+
+function errorHasValue(
+  error: Merge<FieldError, FieldErrorsImpl<NonNullable<Assertion>>> | undefined
+): error is FieldErrorsImpl<AssertionText | AssertionJsonPathValue> {
+  if (error) {
+    return 'value' in error;
+  }
+
+  return false;
+}
+
+function errorHasExpression(
+  error: Merge<FieldError, FieldErrorsImpl<NonNullable<Assertion>>> | undefined
+): error is FieldErrorsImpl<AssertionJsonPathValue | AssertionJsonPath | AssertionRegex> {
+  if (error) {
+    return 'expression' in error;
+  }
+
+  return false;
 }

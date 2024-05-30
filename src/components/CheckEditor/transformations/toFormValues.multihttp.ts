@@ -39,16 +39,7 @@ const getMultiHttpFormValues = (settings: MultiHTTPCheck['settings']): MultiHttp
               attribute,
             };
           }) ?? [],
-        checks:
-          entry.checks?.map(({ type, subject, condition, expression, value }) => {
-            return {
-              type,
-              subject,
-              condition,
-              expression,
-              value,
-            };
-          }) ?? [],
+        checks: entry.checks,
       };
     }),
   };
