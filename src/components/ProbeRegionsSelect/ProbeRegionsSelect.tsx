@@ -38,6 +38,7 @@ export const ProbeRegionsSelect = ({ disabled, id, invalid, onChange, value }: P
       placeholder="Add or select a region"
       isClearable
       invalid={invalid}
+      tabSelectsValue={false}
     />
   );
 };
@@ -46,8 +47,8 @@ function getRegions(probes?: Probe[], value?: string | null) {
   const val = value === null ? undefined : value;
 
   if (!probes) {
-    return [val];
+    return [val].filter(Boolean);
   }
 
-  return uniq([...probes.map((probe) => probe.region), val]);
+  return uniq([...probes.map((probe) => probe.region), val].filter(Boolean));
 }

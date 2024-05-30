@@ -86,11 +86,11 @@ export interface TCPQueryResponse {
 }
 
 export interface BaseObject {
-  id?: number;
-  tenantId?: number;
   created?: number; // seconds
-  updated?: number; // seconds
+  id?: number;
   modified?: number; // seconds
+  tenantId?: number;
+  updated?: number; // seconds
 }
 
 export interface Label {

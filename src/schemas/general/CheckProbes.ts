@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 const MAX_PROBES = 64;
 
-export const ProbesSchema = z
+export const CheckProbesSchema = z
   .array(z.number(), { required_error: 'At least one probe is required' })
   .nonempty({
     message: 'At least one probe is required',
