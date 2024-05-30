@@ -65,7 +65,6 @@ export function AssertionsTab({ index, active }: MultiHttpTabProps) {
                       </Field>
                     );
                   }}
-                  rules={{ required: 'Assertion type is required' }}
                 />
                 <AssertionFields entryIndex={index} assertionIndex={assertionIndex} />
 
@@ -155,7 +154,7 @@ function AssertionSubjectField({ entryIndex, assertionIndex }: AssertionProps) {
   const errMessage = error?.message;
 
   return (
-    <Controller<CheckFormValuesMultiHttp>
+    <Controller
       name={`settings.multihttp.entries.${entryIndex}.checks.${assertionIndex}.subject`}
       render={({ field }) => {
         const id = `${entryIndex}-${assertionIndex}-subject`;
@@ -166,7 +165,7 @@ function AssertionSubjectField({ entryIndex, assertionIndex }: AssertionProps) {
             label="Subject"
             description="Target value to assert against"
             invalid={Boolean(error)}
-            error={typeof errMessage === 'string' && errMessage}
+            error={errMessage}
             htmlFor={id}
             data-fs-element="Assertion subject select"
           >
@@ -180,7 +179,6 @@ function AssertionSubjectField({ entryIndex, assertionIndex }: AssertionProps) {
           </Field>
         );
       }}
-      rules={{ required: 'Subject is required' }}
     />
   );
 }
@@ -191,7 +189,7 @@ function AssertionConditionField({ entryIndex, assertionIndex }: AssertionProps)
   const errMessage = error?.message;
 
   return (
-    <Controller<CheckFormValuesMultiHttp>
+    <Controller
       name={`settings.multihttp.entries.${entryIndex}.checks.${assertionIndex}.condition`}
       render={({ field }) => {
         const id = `multihttp-assertion-condition-${entryIndex}-${assertionIndex}`;
@@ -202,7 +200,7 @@ function AssertionConditionField({ entryIndex, assertionIndex }: AssertionProps)
             label="Condition"
             description="Comparator"
             invalid={Boolean(error)}
-            error={typeof errMessage === 'string' && errMessage}
+            error={errMessage}
             htmlFor={id}
             data-fs-element="Assertion condition select"
           >
@@ -216,7 +214,6 @@ function AssertionConditionField({ entryIndex, assertionIndex }: AssertionProps)
           </Field>
         );
       }}
-      rules={{ required: 'Condition is required' }}
     />
   );
 }
@@ -236,9 +233,7 @@ function AssertionValueField({ entryIndex, assertionIndex }: AssertionProps) {
         placeholder="Value"
         id={`${entryIndex}-${assertionIndex}-value`}
         data-fs-element="Assertion value input"
-        {...register(`settings.multihttp.entries.${entryIndex}.checks.${assertionIndex}.value`, {
-          required: 'Value is required',
-        })}
+        {...register(`settings.multihttp.entries.${entryIndex}.checks.${assertionIndex}.value`)}
       />
     </Field>
   );
@@ -257,15 +252,7 @@ function AssertionExpressionField({ entryIndex, assertionIndex }: AssertionProps
         data-testid={`${entryIndex}-${assertionIndex}-expression`}
         id={`${entryIndex}-${assertionIndex}-expression`}
         data-fs-element="Assertion expression input"
-        {...register(`settings.multihttp.entries.${entryIndex}.checks.${assertionIndex}.expression`, {
-          required: 'Expression is required',
-          validate: (value) => {
-            if (!value) {
-              return 'Expression is required';
-            }
-            return;
-          },
-        })}
+        {...register(`settings.multihttp.entries.${entryIndex}.checks.${assertionIndex}.expression`)}
       />
     </Field>
   );

@@ -184,16 +184,16 @@ const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
 
             return (
               <div className={styles.fieldsContainer} key={field.id}>
-                <Controller<CheckFormValuesMultiHttp>
+                <Controller
                   name={variableTypeName}
                   render={({ field: typeField }) => {
-                    const { ref, ...rest } = typeField;
+                    const { ref, onChange, ...rest } = typeField;
                     return (
                       <Field
                         label="Variable type"
                         description="The method of getting a value"
                         invalid={Boolean(errorPath?.type)}
-                        error={typeof errMessage === `string` && errMessage}
+                        error={errMessage}
                         data-fs-element="Variable type select"
                       >
                         <Select
@@ -202,11 +202,13 @@ const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
                           {...rest}
                           options={MULTI_HTTP_VARIABLE_TYPE_OPTIONS}
                           menuPlacement="bottom"
+                          onChange={({ value }) => {
+                            onChange(value);
+                          }}
                         />
                       </Field>
                     );
                   }}
-                  rules={{ required: `Variable type is required` }}
                 />
                 <Field
                   label="Variable name"
@@ -221,9 +223,7 @@ const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
                       formState.errors.settings?.multihttp?.entries?.[index]?.variables?.[variableIndex]?.type
                     )}
                     data-fs-element="Variable name input"
-                    {...register(`${variableFieldName}.${variableIndex}.name`, {
-                      required: 'Variable name is required',
-                    })}
+                    {...register(`${variableFieldName}.${variableIndex}.name`)}
                   />
                 </Field>
                 {variableTypeValue === MultiHttpVariableType.CSS_SELECTOR && (
@@ -251,9 +251,7 @@ const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
                     placeholder="Variable expression"
                     id={`multihttp-variable-expression-${index}-${variableIndex}`}
                     data-fs-element="Variable expression input"
-                    {...register(`${variableFieldName}.${variableIndex}.expression`, {
-                      required: 'Expression is required',
-                    })}
+                    {...register(`${variableFieldName}.${variableIndex}.expression`)}
                   />
                 </Field>
                 <div className={styles.iconContainer}>

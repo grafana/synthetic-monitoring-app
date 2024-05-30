@@ -46,13 +46,17 @@ const MultiHttpAssertionSchema: ZodType<Assertion> = z.object({
   expression: z.string().optional(),
   subject: z.nativeEnum(AssertionSubjectVariant).optional(),
   type: z.nativeEnum(MultiHttpAssertionType),
-  value: z.string().optional(),
+  value: z
+    .string({
+      required_error: 'Value is required',
+    })
+    .min(1, { message: 'Value is required' }),
 });
 
 const MultiHttpVariablesSchema: ZodType<MultiHttpVariable> = z.object({
   attribute: z.string().optional(),
-  expression: z.string(),
-  name: z.string(),
+  expression: z.string().min(1, { message: 'Expression is required' }),
+  name: z.string().min(1, { message: 'Name is required' }),
   type: z.number(),
 });
 
