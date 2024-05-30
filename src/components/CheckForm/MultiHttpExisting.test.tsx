@@ -7,7 +7,7 @@ import { render } from 'test/render';
 import { server } from 'test/server';
 
 import { ROUTES } from 'types';
-import { getSlider } from 'components/CheckEditor/testHelpers';
+import { getSlider, selectOption } from 'components/CheckEditor/testHelpers';
 import { PLUGIN_URL_PATH } from 'components/constants';
 
 import { CheckForm } from './CheckForm';
@@ -172,10 +172,7 @@ describe('editing multihttp check', () => {
     await user.clear(values[0]);
     await user.type(values[0], MODIFIED_CHECK1.value);
 
-    const subjects = await screen.findAllByLabelText('Subject', { exact: false });
-    await user.click(subjects[0]);
-    await user.click(screen.getByText('Headers', { selector: `span` }));
-
+    await selectOption(user, { label: `Subject`, option: `Headers` });
     const submitButton = await screen.findByText('Save');
     await user.click(submitButton);
 
