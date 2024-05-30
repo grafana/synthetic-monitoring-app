@@ -8,21 +8,40 @@ enum HistoryStrategy {
   Replace = 'replace',
 }
 
-const useQueryParametersState = <ValueType>(
-  key: string,
-  initialValue: ValueType,
-  strategy: HistoryStrategy = HistoryStrategy.Push
-): [ValueType, (value: ValueType | null) => void] => {
+interface QueryParametersStateProps<ValueType> {
+  key: string;
+  initialValue: ValueType;
+  encode?: (value: ValueType) => string;
+  decode?: (value: string) => ValueType;
+  strategy?: HistoryStrategy;
+}
+
+const useQueryParametersState = <ValueType>({
+  key,
+  initialValue,
+  encode = JSON.stringify,
+  decode = JSON.parse,
+  strategy = HistoryStrategy.Push,
+}: QueryParametersStateProps<ValueType>): [ValueType, (value: ValueType | null) => void] => {
   const history = useHistory();
 
   const queryParams = useSearchParams();
 
   const existingValue = queryParams.get(key);
 
-  //@todo: implement a better way to parse the value
-  let parsedExistingValue = useMemo(() => {
-    return existingValue ? JSON.parse(existingValue) : '';
-  }, [existingValue]);
+  const parsedExistingValue = useMemo(() => {
+    return existingValue ? decode(existingValue) : null;
+  }, [existingValue, decode]);
+
+  const updateState = (value: ValueType | null) => {
+    if (value === null) {
+      queryParams.delete(key);
+    } else {
+      queryParams.set(key, encode(value));
+    }
+
+    updateHistory();
+  };
 
   const updateHistory = useCallback(() => {
     switch (strategy) {
@@ -37,16 +56,6 @@ const useQueryParametersState = <ValueType>(
         break;
     }
   }, [strategy, history, queryParams]);
-
-  const updateState = (value: ValueType | null) => {
-    if (value === null) {
-      queryParams.delete(key);
-    } else {
-      queryParams.set(key, JSON.stringify(value));
-    }
-
-    updateHistory();
-  };
 
   return [parsedExistingValue || initialValue, updateState];
 };
