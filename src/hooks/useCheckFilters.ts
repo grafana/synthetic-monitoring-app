@@ -1,7 +1,7 @@
 import { SelectableValue } from '@grafana/data';
 import { capitalize } from 'lodash';
 
-import { CheckEnabledStatus, CheckTypeFilter } from 'types';
+import { CheckEnabledStatus, CheckType, CheckTypeFilter } from 'types';
 import { defaultFilters } from 'components/CheckFilters';
 
 import useQueryParametersState from './useQueryParametersState';
@@ -40,7 +40,13 @@ export function useCheckFilters() {
       key: 'type',
       initialValue: defaultFilters.type,
       encode: (value) => value,
-      decode: (value) => value as CheckTypeFilter,
+      decode: (value) => {
+        const availableTypes = Object.values(CheckType).map((type) => type.toLowerCase());
+        if (availableTypes.includes(value.toLowerCase())) {
+          return value as CheckTypeFilter;
+        }
+        return 'all';
+      },
     }),
     status: useQueryParametersState<SelectableValue<CheckEnabledStatus>>({
       key: 'status',

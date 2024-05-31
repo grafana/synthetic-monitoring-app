@@ -40,9 +40,8 @@ const useQueryParametersState = <ValueType>({
     } else {
       newParams.set(key, encode(value));
     }
-
     const search = newParams.toString();
-    const href = search.length > 0 ? `${location.pathname}?${newParams.toString()}` : location.pathname;
+    const href = search.length > 0 ? `${location.pathname}?${search}` : location.pathname;
 
     updateHistory(href);
   };
