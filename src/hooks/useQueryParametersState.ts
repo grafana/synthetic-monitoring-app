@@ -34,28 +34,35 @@ const useQueryParametersState = <ValueType>({
   }, [existingValue, decode]);
 
   const updateState = (value: ValueType | null) => {
+    const newParams = new URLSearchParams(location.search);
     if (value === null) {
-      queryParams.delete(key);
+      newParams.delete(key);
     } else {
-      queryParams.set(key, encode(value));
+      newParams.set(key, encode(value));
     }
 
-    updateHistory();
+    const search = newParams.toString();
+    const href = search.length > 0 ? `${location.pathname}?${newParams.toString()}` : location.pathname;
+
+    updateHistory(href);
   };
 
-  const updateHistory = useCallback(() => {
-    switch (strategy) {
-      case HistoryStrategy.Push:
-        history.push({ search: queryParams.toString() });
-        break;
-      case HistoryStrategy.Replace:
-        history.replace({ search: queryParams.toString() });
-        break;
-      default:
-        history.push({ search: queryParams.toString() });
-        break;
-    }
-  }, [strategy, history, queryParams]);
+  const updateHistory = useCallback(
+    (href: string) => {
+      switch (strategy) {
+        case HistoryStrategy.Push:
+          history.push(href);
+          break;
+        case HistoryStrategy.Replace:
+          history.replace(href);
+          break;
+        default:
+          history.push(href);
+          break;
+      }
+    },
+    [strategy, history]
+  );
 
   return [parsedExistingValue || initialValue, updateState];
 };
