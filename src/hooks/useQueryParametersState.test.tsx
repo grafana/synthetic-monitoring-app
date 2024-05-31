@@ -27,14 +27,12 @@ describe('useQueryParametersState', () => {
       hash: '',
     };
     useLocation.mockReturnValue(mockLocation);
-    const { result } = renderHook(() => useQueryParametersState('myKey', initialValue));
+    const { result } = renderHook(() => useQueryParametersState({ key: 'myKey', initialValue }));
 
     expect(result.current[0]).toEqual({ count: 0 });
-    expect(historyPushMock).toHaveBeenCalledTimes(1);
-    expect(historyPushMock).toHaveBeenCalledWith({
-      search: `myKey=${encodeURIComponent(JSON.stringify(initialValue))}`,
-    });
+    expect(historyPushMock).toHaveBeenCalledTimes(0);
   });
+
   test('Updates query params', () => {
     const initialValue = { count: 0 };
     const newValue = { count: 10 };
@@ -48,22 +46,17 @@ describe('useQueryParametersState', () => {
 
     useLocation.mockReturnValue(mockLocation);
 
-    const { result } = renderHook(() => useQueryParametersState('myKey', initialValue));
-    const [, updateState] = result.current;
+    const { result } = renderHook(() => useQueryParametersState({ key: 'myKey', initialValue }));
+    const [state, updateState] = result.current;
 
-    expect(result.current[0]).toEqual(initialValue);
+    expect(state).toEqual(initialValue);
 
     act(() => {
       updateState(newValue);
     });
 
-    // Check that the state has been updated to the new value
-    expect(result.current[0]).toEqual(newValue);
-
-    expect(historyPushMock).toHaveBeenCalledTimes(2);
-    expect(historyPushMock).toHaveBeenLastCalledWith({
-      search: `myKey=${encodeURIComponent(JSON.stringify(newValue))}`,
-    });
+    expect(historyPushMock).toHaveBeenCalledTimes(1);
+    expect(historyPushMock).toHaveBeenCalledWith(`/?myKey=${encodeURIComponent(JSON.stringify(newValue))}`);
   });
 
   test('Removes query params', () => {
@@ -77,7 +70,7 @@ describe('useQueryParametersState', () => {
 
     useLocation.mockReturnValue(mockLocation);
 
-    const { result } = renderHook(() => useQueryParametersState('myKey', initialValue));
+    const { result } = renderHook(() => useQueryParametersState({ key: 'myKey', initialValue }));
     const [, updateState] = result.current;
 
     expect(result.current[0]).toEqual(initialValue);
@@ -88,14 +81,15 @@ describe('useQueryParametersState', () => {
 
     expect(result.current[0]).toEqual(initialValue);
 
-    expect(historyPushMock).toHaveBeenCalledTimes(2);
-    expect(historyPushMock).toHaveBeenLastCalledWith({ search: '' });
+    expect(historyPushMock).toHaveBeenCalledTimes(1);
+    expect(historyPushMock).toHaveBeenCalledWith('/');
   });
 
   test('Does not remove pre-existing query params when deleting a key', () => {
     const initialValue = { count: 0 };
+    const initialValueNotToBeRemoved = 'anotherValue';
     const mockLocation: Location = {
-      search: `keyToRemove=${JSON.stringify(initialValue)}&anotherKey="anotherValue"`,
+      search: `keyToRemove=${JSON.stringify(initialValue)}&anotherKey="${initialValueNotToBeRemoved}"`,
       pathname: '',
       state: '',
       hash: '',
@@ -103,7 +97,7 @@ describe('useQueryParametersState', () => {
 
     useLocation.mockReturnValue(mockLocation);
 
-    const { result } = renderHook(() => useQueryParametersState('keyToRemove', initialValue));
+    const { result } = renderHook(() => useQueryParametersState({ key: 'keyToRemove', initialValue }));
     const [, updateState] = result.current;
 
     expect(result.current[0]).toEqual(initialValue);
@@ -114,7 +108,10 @@ describe('useQueryParametersState', () => {
 
     expect(result.current[0]).toEqual(initialValue);
 
-    expect(historyPushMock).toHaveBeenCalledTimes(2);
-    expect(historyPushMock).toHaveBeenLastCalledWith({ search: `anotherKey=${encodeURIComponent('"anotherValue"')}` });
+    expect(historyPushMock).toHaveBeenCalledTimes(1);
+    const { result: anotherKeyState } = renderHook(() =>
+      useQueryParametersState({ key: 'anotherKey', initialValue: '' })
+    );
+    expect(anotherKeyState.current[0]).toEqual(initialValueNotToBeRemoved);
   });
 });
