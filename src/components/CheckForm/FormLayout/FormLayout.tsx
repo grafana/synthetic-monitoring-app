@@ -241,11 +241,11 @@ const getStyles = (theme: GrafanaTheme2) => {
       display: 'grid',
       gap: theme.spacing(4),
       [containerQuery]: {
-        gridTemplateColumns: `240px 1fr`,
+        gridTemplateColumns: `160px 1fr`,
         height: '100%',
       },
       [mediaQuery]: {
-        gridTemplateColumns: `240px 1fr`,
+        gridTemplateColumns: `160px 1fr`,
         height: '100%',
       },
     }),

@@ -48,7 +48,7 @@ const HttpSettingsSchema: ZodType<HttpSettingsFormValues> = z.object({
   proxyURL: z.string(),
   ipVersion: z.nativeEnum(IpVersion),
   method: z.nativeEnum(HttpMethod),
-  body: z.string(),
+  body: z.string().optional(),
   validHTTPVersions: z.array(z.nativeEnum(HttpVersion)),
   validStatusCodes: z.array(z.number()),
   bearerToken: z.string().optional(),

@@ -1,7 +1,9 @@
 import React from 'react';
+import { GrafanaTheme2 } from '@grafana/data';
+import { RadioButtonGroup, Tab, TabContent, TabsBar, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 
 import { CheckFormTypeLayoutProps, CheckFormValuesHttp, CheckType } from 'types';
-import { CheckEnabled } from 'components/CheckEditor/FormComponents/CheckEnabled';
 import { CheckIpVersion } from 'components/CheckEditor/FormComponents/CheckIpVersion';
 import { CheckJobName } from 'components/CheckEditor/FormComponents/CheckJobName';
 import { CheckPublishedAdvanceMetrics } from 'components/CheckEditor/FormComponents/CheckPublishedAdvanceMetrics';
@@ -19,6 +21,7 @@ import { HttpCheckValidStatusCodes } from 'components/CheckEditor/FormComponents
 import { RequestBodyTextArea } from 'components/CheckEditor/FormComponents/RequestBodyTextArea';
 import { RequestHeaders } from 'components/CheckEditor/FormComponents/RequestHeaders';
 import { RequestMethodSelect } from 'components/CheckEditor/FormComponents/RequestMethodSelect';
+import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
 import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
 import { FormLayout } from 'components/CheckForm/FormLayout/FormLayout';
 import { CheckFormAlert } from 'components/CheckFormAlert';
@@ -41,89 +44,57 @@ export const CheckHTTPLayout = ({
       errorMessage={errorMessage}
       schema={schema}
     >
-      <FormLayout.Section label="Define check" fields={[`enabled`, `job`, `target`]} required>
-        <CheckJobName />
-        <CheckTarget checkType={CheckType.HTTP} />
-        <CheckEnabled />
-      </FormLayout.Section>
-      <FormLayout.Section label="Probes" fields={[`probes`, `frequency`, `timeout`]} required>
-        <CheckUsage checkType={CheckType.HTTP} />
-        <CheckPublishedAdvanceMetrics />
-        <ProbeOptions checkType={CheckType.HTTP} />
-      </FormLayout.Section>
       <FormLayout.Section
-        label="HTTP settings"
+        label="Define check"
         fields={[
+          `job`,
+          `target`,
           `settings.http.method`,
           `settings.http.body`,
           `settings.http.headers`,
           `settings.http.compression`,
           `settings.http.proxyConnectHeaders`,
-        ]}
-      >
-        <RequestMethodSelect name="settings.http.method" />
-        <RequestBodyTextArea name="settings.http.body" />
-        <RequestHeaders
-          description="The HTTP headers set for the probe."
-          label="Request header"
-          name="settings.http.headers"
-          data-fs-element="Request headers"
-        />
-        <HttpCheckCompressionOption />
-        <HttpCheckProxyURL />
-        <RequestHeaders
-          description="The HTTP headers sent to the proxy."
-          label="Proxy connect header"
-          name="settings.http.proxyConnectHeaders"
-          data-fs-element="Proxy connect headers"
-        />
-      </FormLayout.Section>
-      <FormLayout.Section
-        label="TLS config"
-        fields={[
           `settings.http.tlsConfig.caCert`,
           `settings.http.tlsConfig.clientCert`,
           `settings.http.tlsConfig.clientKey`,
           `settings.http.tlsConfig.insecureSkipVerify`,
           `settings.http.tlsConfig.serverName`,
+          `settings.http.bearerToken`,
+          `settings.http.basicAuth.password`,
+          `settings.http.basicAuth.username`,
         ]}
       >
-        <TLSConfig checkType={CheckType.HTTP} />
+        <SubSectionContent />
       </FormLayout.Section>
       <FormLayout.Section
-        label="Authentication"
-        fields={[`settings.http.bearerToken`, `settings.http.basicAuth.password`, `settings.http.basicAuth.username`]}
-      >
-        <HttpCheckBearerToken />
-        <HttpCheckBasicAuthorization />
-      </FormLayout.Section>
-      <FormLayout.Section
-        label="Validation"
+        label="Define uptime"
         fields={[
           `settings.http.validStatusCodes`,
           `settings.http.validHTTPVersions`,
           `settings.http.sslOptions`,
           `settings.http.regexValidations`,
+          `alertSensitivity`,
         ]}
       >
         <HttpCheckValidStatusCodes />
         <HttpCheckValidHttpVersions />
         <HttpCheckSSLOptions />
         <HttpCheckRegExValidation />
+        <HttpCheckCompressionOption />
+        <Timeout checkType={CheckType.HTTP} />
       </FormLayout.Section>
+
       <FormLayout.Section
-        label="Advanced options"
-        fields={[
-          `labels`,
-          `settings.http.ipVersion`,
-          `settings.http.followRedirects`,
-          `settings.http.cacheBustingQueryParamName`,
-        ]}
+        label="Probes"
+        fields={[`probes`, `frequency`, `timeout`, `settings.http.cacheBustingQueryParamName`]}
       >
-        <LabelField<CheckFormValuesHttp> labelDestination="check" />
-        <CheckIpVersion checkType={CheckType.HTTP} name="settings.http.ipVersion" />
-        <HttpCheckFollowRedirects />
+        <ProbeOptions checkType={CheckType.HTTP} />
+        <CheckPublishedAdvanceMetrics />
         <HttpCheckCacheBuster />
+        <CheckUsage checkType={CheckType.HTTP} />
+      </FormLayout.Section>
+      <FormLayout.Section label="Labels" fields={[`labels`]}>
+        <LabelField<CheckFormValuesHttp> labelDestination="check" />
       </FormLayout.Section>
       <FormLayout.Section label="Alerting" fields={[`alertSensitivity`]}>
         <CheckFormAlert />
@@ -131,3 +102,83 @@ export const CheckHTTPLayout = ({
     </FormLayout>
   );
 };
+
+enum SubSections {
+  Request = 'Request',
+  Settings = 'HTTP Settings',
+  TLS = `TLS Config`,
+  Proxy = `Proxy`,
+}
+
+const SubSectionContent = () => {
+  const [checkType, setCheckType] = React.useState<CheckType>(CheckType.HTTP);
+  const [activeTab, setActiveTab] = React.useState(SubSections.Request);
+  const styles = useStyles2(getStyles);
+
+  return (
+    <div className={styles.stackCol}>
+      <CheckJobName />
+      <h3 className="h4">Define request</h3>
+      <div>
+        <RadioButtonGroup
+          options={[
+            { label: 'HTTP', value: CheckType.HTTP },
+            { label: 'gRPC', value: CheckType.GRPC },
+          ]}
+          value={checkType}
+          onChange={(value) => {
+            setCheckType(value);
+          }}
+        />
+      </div>
+      <TabsBar>
+        {Object.values(SubSections).map((section) => (
+          <Tab key={section} label={section} onChangeTab={() => setActiveTab(section)} active={activeTab === section} />
+        ))}
+      </TabsBar>
+      <TabContent>
+        {activeTab === SubSections.Request && (
+          <>
+            <CheckTarget checkType={CheckType.HTTP} />
+          </>
+        )}
+        {activeTab === SubSections.Settings && (
+          <>
+            <RequestMethodSelect name="settings.http.method" />
+            <RequestBodyTextArea name="settings.http.body" />
+            <HttpCheckBearerToken />
+            <HttpCheckBasicAuthorization />
+            <RequestHeaders
+              description="The HTTP headers set for the probe."
+              label="Request header"
+              name="settings.http.headers"
+              data-fs-element="Request headers"
+            />
+            <HttpCheckFollowRedirects />
+            <CheckIpVersion checkType={CheckType.HTTP} name="settings.http.ipVersion" />
+          </>
+        )}
+        {activeTab === SubSections.TLS && <TLSConfig checkType={CheckType.HTTP} />}
+        {activeTab === SubSections.Proxy && (
+          <>
+            <HttpCheckProxyURL />
+            <RequestHeaders
+              description="The HTTP headers sent to the proxy."
+              label="Proxy connect header"
+              name="settings.http.proxyConnectHeaders"
+              data-fs-element="Proxy connect headers"
+            />
+          </>
+        )}
+      </TabContent>
+    </div>
+  );
+};
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  stackCol: css({
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(2),
+  }),
+});
