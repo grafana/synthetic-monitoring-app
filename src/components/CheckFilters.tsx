@@ -1,9 +1,9 @@
-import React, { ChangeEvent, useRef, useState } from 'react';
+import React, { ChangeEvent, useMemo, useRef, useState } from 'react';
 import { GrafanaTheme2, SelectableValue, unEscapeStringFromRegex } from '@grafana/data';
 import { Icon, Input, MultiSelect, Select, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { Check, CheckFiltersType, CheckTypeFilter } from 'types';
+import { Check, CheckFiltersType, CheckTypeFilter, ProbeFilter } from 'types';
 import { useProbes } from 'data/useProbes';
 import { FilterType } from 'hooks/useCheckFilters';
 import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
@@ -76,6 +76,13 @@ export function CheckFilters({
     }, 300);
   }
 
+  const probesOptions: Array<SelectableValue<ProbeFilter>> = useMemo(() => {
+    return probes.map((probe) => {
+      const probeOption: SelectableValue = { label: probe.name, value: probe.id };
+      return probeOption;
+    });
+  }, [probes]);
+
   return (
     <>
       <Input
@@ -147,12 +154,15 @@ export function CheckFilters({
           aria-label="Filter by probe"
           prefix="Probes"
           onChange={(v) => {
-            onChange({
-              ...checkFilters,
-              probes: v,
-            }, 'probes');
+            onChange(
+              {
+                ...checkFilters,
+                probes: v,
+              },
+              'probes'
+            );
           }}
-          options={probes.map((p) => ({ label: p.name, value: p.id }))}
+          options={probesOptions}
           value={checkFilters.probes}
           placeholder="All probes"
           allowCustomValue={false}

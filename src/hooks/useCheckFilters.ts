@@ -1,7 +1,8 @@
 import { SelectableValue } from '@grafana/data';
 import { capitalize } from 'lodash';
 
-import { CheckEnabledStatus, CheckType, CheckTypeFilter } from 'types';
+import { CheckEnabledStatus, CheckType, CheckTypeFilter, ProbeFilter } from 'types';
+import { useProbes } from 'data/useProbes';
 import { defaultFilters } from 'components/CheckFilters';
 
 import useQueryParametersState from './useQueryParametersState';
@@ -17,12 +18,14 @@ interface CheckFiltersProps {
     update: (value: SelectableValue<CheckEnabledStatus> | null) => void
   ];
   probes: [
-    state: Array<SelectableValue<{ label: string; value: number }>>,
-    update: (value: Array<SelectableValue<{ label: string; value: number }>> | null) => void
+    state: Array<SelectableValue<ProbeFilter>>,
+    update: (value: Array<SelectableValue<ProbeFilter>> | null) => void
   ];
 }
 
 export function useCheckFilters() {
+  const { data: probes = [] } = useProbes();
+
   const filters: CheckFiltersProps = {
     search: useQueryParametersState<string>({
       key: 'search',
@@ -59,14 +62,16 @@ export function useCheckFilters() {
         return { label: capitalize(CheckEnabledStatus.All), value: CheckEnabledStatus.All };
       },
     }),
-    probes: useQueryParametersState<Array<SelectableValue<{ label: string; value: number }>>>({
+    probes: useQueryParametersState<Array<SelectableValue<ProbeFilter>>>({
       key: 'probes',
       initialValue: defaultFilters.probes,
-      encode: (value) => {
-        return JSON.stringify(value);
-      },
+      encode: (value) => value.map((probe) => probe.label).join(','),
       decode: (value) => {
-        return JSON.parse(value);
+        const labels = value.split(',');
+        const probesValues = probes
+          .filter((probe) => labels.includes(probe.name))
+          .map((probe) => ({ label: probe.name, value: probe.id } as SelectableValue<ProbeFilter>));
+        return probesValues;
       },
     }),
   };

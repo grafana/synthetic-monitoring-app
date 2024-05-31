@@ -712,6 +712,10 @@ export type SceneBuilder<T extends { [K in keyof T]?: string | undefined } = any
 
 export type RouteMatch<T extends { [K in keyof T]?: string | undefined } = any> = SceneRouteMatch<T>;
 
+export type ProbeFilter = {
+  label: string;
+  value: number;
+};
 export interface CheckFiltersType {
   [key: string]: any;
 
@@ -719,7 +723,7 @@ export interface CheckFiltersType {
   labels: string[];
   type: CheckTypeFilter;
   status: SelectableValue<CheckEnabledStatus>;
-  probes: SelectableValue[] | [];
+  probes: Array<SelectableValue<ProbeFilter>>;
 }
 
 export interface ThresholdValues {
