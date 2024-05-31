@@ -620,9 +620,9 @@ export enum CheckSort {
 }
 
 export enum CheckEnabledStatus {
-  All,
-  Enabled,
-  Disabled,
+  All = 'all',
+  Enabled = 'enabled',
+  Disabled = 'disabled',
 }
 
 export enum CheckListViewType {

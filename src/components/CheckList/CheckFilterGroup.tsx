@@ -3,7 +3,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Button, Modal, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { CheckFiltersType } from 'types';
+import { CheckEnabledStatus, CheckFiltersType } from 'types';
 
 const groupStyles = (theme: GrafanaTheme2) => ({
   horizontalGroup: css`
@@ -44,9 +44,9 @@ const CheckFilterGroup = ({ children, onReset, filters }: Props) => {
         case 'search':
           break;
         case 'status':
-          if (filters.status.value !== 0) {
+          if (filters.status.value !== CheckEnabledStatus.All) {
             active += 1;
-          }
+          } 
           break;
         case 'probes':
           if (filters.probes.length > 0) {
