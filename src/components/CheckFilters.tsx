@@ -5,6 +5,7 @@ import { css } from '@emotion/css';
 
 import { Check, CheckFiltersType, CheckTypeFilter } from 'types';
 import { useProbes } from 'data/useProbes';
+import { FilterType } from 'hooks/useCheckFilters';
 import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
 
 import CheckFilterGroup from './CheckList/CheckFilterGroup';
@@ -13,7 +14,7 @@ import { LabelFilterInput } from './LabelFilterInput';
 
 interface Props {
   onReset: () => void;
-  onChange: (filters: CheckFiltersType) => void;
+  onChange: (filters: CheckFiltersType, type: FilterType) => void;
   checks: Check[];
   checkFilters?: CheckFiltersType;
   includeStatus?: boolean;
@@ -28,14 +29,6 @@ export const defaultFilters: CheckFiltersType = {
 };
 
 export const getDefaultFilters = (): CheckFiltersType => {
-  const storedFilters = localStorage.getItem('checkFilters');
-  if (storedFilters) {
-    try {
-      return JSON.parse(storedFilters) as CheckFiltersType;
-    } catch (e) {
-      return defaultFilters;
-    }
-  }
   return defaultFilters;
 };
 
@@ -78,7 +71,7 @@ export function CheckFilters({
     debounceRef.current = setTimeout(() => {
       if (debounceRef.current) {
         clearTimeout(debounceRef.current);
-        onChange({ ...checkFilters, search: value });
+        onChange({ ...checkFilters, search: value }, 'search');
       }
     }, 300);
   }
@@ -107,10 +100,13 @@ export function CheckFilters({
               width={20}
               className={styles.verticalSpace}
               onChange={(option) => {
-                onChange({
-                  ...checkFilters,
-                  status: option,
-                });
+                onChange(
+                  {
+                    ...checkFilters,
+                    status: option,
+                  },
+                  'status'
+                );
               }}
               value={checkFilters.status}
             />
@@ -122,10 +118,13 @@ export function CheckFilters({
             className={styles.verticalSpace}
             width={20}
             onChange={(selected: SelectableValue) => {
-              onChange({
-                ...checkFilters,
-                type: selected?.value ?? checkFilters.type,
-              });
+              onChange(
+                {
+                  ...checkFilters,
+                  type: selected?.value ?? checkFilters.type,
+                },
+                'type'
+              );
             }}
             value={checkFilters.type}
           />
@@ -133,10 +132,13 @@ export function CheckFilters({
         <LabelFilterInput
           checks={checks}
           onChange={(labels) => {
-            onChange({
-              ...checkFilters,
-              labels,
-            });
+            onChange(
+              {
+                ...checkFilters,
+                labels,
+              },
+              'labels'
+            );
           }}
           labelFilters={checkFilters.labels}
           className={styles.verticalSpace}
@@ -148,7 +150,7 @@ export function CheckFilters({
             onChange({
               ...checkFilters,
               probes: v,
-            });
+            }, 'probes');
           }}
           options={probes.map((p) => ({ label: p.name, value: p.id }))}
           value={checkFilters.probes}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { GrafanaTheme2, SelectableValue } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
 import { Pagination, useStyles2 } from '@grafana/ui';
@@ -9,8 +9,8 @@ import { MetricCheckSuccess, Time } from 'datasource/responses.types';
 import { useSuspenseChecks } from 'data/useChecks';
 import { useChecksReachabilitySuccessRate } from 'data/useSuccessRates';
 import { findCheckinMetrics } from 'data/utils';
+import { FilterType, useCheckFilters } from 'hooks/useCheckFilters';
 import useQueryParametersState from 'hooks/useQueryParametersState';
-import { defaultFilters, getDefaultFilters } from 'components/CheckFilters';
 import { CHECK_LIST_STATUS_OPTIONS, CHECKS_PER_PAGE_CARD, CHECKS_PER_PAGE_LIST } from 'components/constants';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
 
@@ -49,16 +49,25 @@ type CheckListContentProps = {
 const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps) => {
   const { data: checks } = useSuspenseChecks();
   const { data: reachabilitySuccessRates = [] } = useChecksReachabilitySuccessRate();
-  const [checkFilters, setCheckFilters] = useQueryParametersState<CheckFiltersType>({
-    key: 'filters',
-    initialValue: getDefaultFilters(),
-  });
+  const filters = useCheckFilters();
+
   const [sortType, setSortType] = useQueryParametersState<CheckSort>({
     key: 'sort',
     initialValue: CheckSort.AToZ,
     encode: (value) => value.toString(),
     decode: (value) => value as CheckSort,
   });
+
+  const [labels, setLabels] = filters.labels;
+  const [search, setSearch] = filters.search;
+  const [type, setType] = filters.type;
+  const [status, setStatus] = filters.status;
+  const [probes, setProbes] = filters.probes;
+
+  const checkFilters = useMemo(
+    () => ({ labels, search, type, status, probes }),
+    [labels, search, type, status, probes]
+  );
 
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCheckIds, setSelectedChecksIds] = useState<Set<number>>(new Set());
@@ -72,9 +81,28 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   const isAllSelected = selectedCheckIds.size === filteredChecks.length;
   const totalPages = Math.ceil(filteredChecks.length / CHECKS_PER_PAGE);
 
-  const handleFilterChange = (filters: CheckFiltersType) => {
+  const handleFilterChange = (filters: CheckFiltersType, type?: FilterType) => {
     setCurrentPage(1);
-    setCheckFilters(filters);
+
+    switch (type) {
+      case 'search':
+        setSearch(filters.search);
+        break;
+      case 'labels':
+        setLabels(filters.labels);
+        break;
+      case 'type':
+        setType(filters.type);
+        break;
+      case 'status':
+        setStatus(filters.status);
+        break;
+      case 'probes':
+        setProbes(filters.probes);
+        break;
+      default:
+        break;
+    }
 
     setSelectedChecksIds((current) => {
       const filteredChecks = filterChecks(checks, filters);
@@ -84,35 +112,26 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   };
 
   const handleResetFilters = () => {
-    handleFilterChange(defaultFilters);
-    setCheckFilters(null);
+    setSearch(null);
+    setLabels(null);
+    setType(null);
+    setProbes(null);
+    setStatus(null);
   };
 
   const handleLabelSelect = (label: Label) => {
-    const updated = {
-      ...checkFilters,
-      labels: Array.from(new Set([...checkFilters.labels, `${label.name}: ${label.value}`])),
-    };
-
-    handleFilterChange(updated);
+    setLabels(Array.from(new Set([...labels, `${label.name}: ${label.value}`])));
   };
 
   const handleTypeSelect = (checkType: CheckType) => {
-    const updated = { ...checkFilters, type: checkType };
-
-    handleFilterChange(updated);
+    setType(checkType);
   };
 
   const handleStatusSelect = (enabled: boolean) => {
     const status = enabled ? CheckEnabledStatus.Enabled : CheckEnabledStatus.Disabled;
-    const option = CHECK_LIST_STATUS_OPTIONS.find(({ value }) => value === status);
-
+    const option = CHECK_LIST_STATUS_OPTIONS.find(({ value }: SelectableValue<CheckEnabledStatus>) => value === status);
     if (option) {
-      const updated = {
-        ...checkFilters,
-        status: option,
-      };
-      handleFilterChange(updated);
+      setStatus(option);
     }
   };
 
@@ -179,9 +198,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
           <CheckListScene
             onChangeViewType={handleChangeViewType}
             checkFilters={checkFilters}
-            onFilterChange={(filters: CheckFiltersType) => {
-              setCheckFilters(filters);
-            }}
+            onFilterChange={handleFilterChange}
             onReset={handleResetFilters}
           />
         </div>

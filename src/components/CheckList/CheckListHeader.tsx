@@ -5,6 +5,7 @@ import { css } from '@emotion/css';
 
 import { Check, CheckFiltersType, CheckListViewType, CheckSort } from 'types';
 import { hasRole } from 'utils';
+import { FilterType } from 'hooks/useCheckFilters';
 import { CheckFilters } from 'components/CheckFilters';
 import { CHECK_LIST_SORT_OPTIONS } from 'components/constants';
 
@@ -19,7 +20,7 @@ type CheckListHeaderProps = {
   currentPageChecks: Check[];
   onChangeView: (viewType: CheckListViewType) => void;
   onDelete: () => void;
-  onFilterChange: (filters: CheckFiltersType) => void;
+  onFilterChange: (filters: CheckFiltersType, type: FilterType) => void;
   onSort: (sort: SelectableValue<CheckSort>) => void;
   onResetFilters: () => void;
   onSelectAll: (e: React.ChangeEvent<HTMLInputElement>) => void;
