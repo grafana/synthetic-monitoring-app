@@ -24,6 +24,7 @@ export const HttpCheckBearerToken = () => {
         {...register('settings.http.bearerToken', {
           required: { value: true, message: 'Bearer Token is required' },
         })}
+        id={id}
         type="password"
         placeholder="Bearer token"
         disabled={!isEditor}
