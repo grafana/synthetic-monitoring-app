@@ -7,7 +7,6 @@ import { CheckFormValues, CheckType, Probe } from 'types';
 import { hasRole } from 'utils';
 import { useProbes } from 'data/useProbes';
 import { SliderInput } from 'components/SliderInput';
-import { Subheader } from 'components/Subheader';
 
 import CheckProbes from './CheckProbes';
 
@@ -26,8 +25,6 @@ export const ProbeOptions = ({ checkType }: Props) => {
 
   return (
     <div>
-      <Subheader>Probe options</Subheader>
-
       <Controller
         control={control}
         name="probes"

@@ -16,7 +16,7 @@ const Component = ({ checkType, target }: { checkType: CheckType; target: string
 
   return (
     <FormProvider {...formMethods}>
-      <CheckTarget checkType={checkType} />
+      <CheckTarget />
     </FormProvider>
   );
 };

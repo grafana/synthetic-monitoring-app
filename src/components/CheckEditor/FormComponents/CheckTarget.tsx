@@ -1,13 +1,23 @@
 import React from 'react';
 
 import { CheckType } from 'types';
+import { useFormCheckType } from 'components/CheckForm2/useCheckType';
 
+import { RequestMethodAndTarget } from './RequestMethodAndTarget';
 import { RequestTargetInput } from './RequestTargetInput';
 
-interface Props {
-  checkType: CheckType;
-}
+export const CheckTarget = () => {
+  const checkType = useFormCheckType();
 
-export const CheckTarget = ({ checkType }: Props) => (
-  <RequestTargetInput checkType={checkType} data-testid="check-editor-target" id="check-target" name="target" />
-);
+  if (checkType === CheckType.HTTP) {
+    return (
+      <RequestMethodAndTarget checkType={CheckType.HTTP} methodName={`settings.http.method`} targetName="target" />
+    );
+  }
+
+  if (checkType === CheckType.MULTI_HTTP || checkType === CheckType.Scripted) {
+    return null;
+  }
+
+  return <RequestTargetInput checkType={checkType} data-testid="check-editor-target" id="check-target" name="target" />;
+};

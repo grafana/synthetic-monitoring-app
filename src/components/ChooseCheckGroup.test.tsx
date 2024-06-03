@@ -7,9 +7,9 @@ import { server } from 'test/server';
 
 import { FeatureName } from 'types';
 
-import { ChooseCheckType } from './ChooseCheckType';
+import { ChooseCheckGroup } from './ChooseCheckGroup';
 
-function renderChooseCheckType({ checkLimit = 10, scriptedLimit = 10 }) {
+function renderChooseCheckGroup({ checkLimit = 10, scriptedLimit = 10 }) {
   server.use(
     apiRoute('getTenantLimits', {
       result: () => ({
@@ -24,10 +24,10 @@ function renderChooseCheckType({ checkLimit = 10, scriptedLimit = 10 }) {
       }),
     })
   );
-  return render(<ChooseCheckType />);
+  return render(<ChooseCheckGroup />);
 }
 it('shows check type options with scripted feature off', async () => {
-  renderChooseCheckType({});
+  renderChooseCheckGroup({});
   const checkTypes = ['HTTP', 'TCP', 'DNS', 'PING', 'MULTIHTTP', 'Traceroute'];
   const cards = await Promise.all(
     checkTypes.map((checkType) => {
@@ -45,7 +45,7 @@ it('shows check type options with scripted feature on', async () => {
     [FeatureName.ScriptedChecks]: true,
   });
 
-  renderChooseCheckType({});
+  renderChooseCheckGroup({});
   const checkTypes = ['HTTP', 'TCP', 'DNS', 'PING', 'MULTIHTTP', 'Traceroute', 'Scripted'];
   const cards = await Promise.all(
     checkTypes.map((checkType) => {
@@ -58,7 +58,7 @@ it('shows check type options with scripted feature on', async () => {
 });
 
 it('shows error alert when check limit is reached', async () => {
-  renderChooseCheckType({ checkLimit: 1 });
+  renderChooseCheckGroup({ checkLimit: 1 });
   const errorAlert = await screen.findByText('Check limit reached');
   expect(errorAlert).toBeInTheDocument();
   const checkTypes = ['HTTP', 'TCP', 'DNS', 'PING', 'MULTIHTTP', 'Traceroute', 'Scripted'];
@@ -81,7 +81,7 @@ it('shows error alert when scripted check limit is reached', async () => {
     [FeatureName.ScriptedChecks]: true,
   });
 
-  renderChooseCheckType({ checkLimit: 10, scriptedLimit: 1 });
+  renderChooseCheckGroup({ checkLimit: 10, scriptedLimit: 1 });
   const errorAlert = await screen.findByText('Scripted check limit reached');
   expect(errorAlert).toBeInTheDocument();
   const checkTypes = ['HTTP', 'TCP', 'DNS', 'PING', 'Traceroute'];

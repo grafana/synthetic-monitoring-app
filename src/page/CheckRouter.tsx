@@ -1,9 +1,9 @@
 import React from 'react';
 import { Route, Switch, useRouteMatch } from 'react-router-dom';
 
-import { CheckForm } from 'components/CheckForm/CheckForm';
+import { CheckForm2 } from 'components/CheckForm2/CheckForm2';
 import { CheckList } from 'components/CheckList';
-import { ChooseCheckType } from 'components/ChooseCheckType';
+import { ChooseCheckGroup } from 'components/ChooseCheckGroup';
 
 import { DashboardPage } from './DashboardPage';
 
@@ -18,14 +18,14 @@ export function CheckRouter() {
       <Route path={`${path}/:id/dashboard`} exact>
         <DashboardPage />
       </Route>
-      <Route path={`${path}/new/:checkType?`}>
-        <CheckForm />
+      <Route path={`${path}/new/:checkTypeGroup?`}>
+        <CheckForm2 />
       </Route>
-      <Route path={`${path}/edit/:checkType/:id`} exact>
-        <CheckForm />
+      <Route path={`${path}/edit/:checkTypeGroup/:id`} exact>
+        <CheckForm2 />
       </Route>
       <Route path={`${path}/choose-type`} exact>
-        <ChooseCheckType />
+        <ChooseCheckGroup />
       </Route>
     </Switch>
   );

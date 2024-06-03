@@ -7,19 +7,21 @@ const PEM_FOOTER = '-----END CERTIFICATE-----';
 
 const CERT_ERROR_MESSAGE = 'Certificate must be in the PEM format.';
 
-export const TLSConfigSchema: ZodType<TLSConfig> = z.object({
-  caCert: z.string().refine(validateTLSCACert, {
-    message: CERT_ERROR_MESSAGE,
-  }),
-  clientCert: z.string().refine(validateTLSClientCert, {
-    message: CERT_ERROR_MESSAGE,
-  }),
-  clientKey: z.string().refine(validateTLSClientKey, {
-    message: 'Key must be in the PEM format.',
-  }),
-  insecureSkipVerify: z.boolean(),
-  serverName: z.string(),
-});
+export const TLSConfigSchema: ZodType<TLSConfig | undefined> = z
+  .object({
+    caCert: z.string().refine(validateTLSCACert, {
+      message: CERT_ERROR_MESSAGE,
+    }),
+    clientCert: z.string().refine(validateTLSClientCert, {
+      message: CERT_ERROR_MESSAGE,
+    }),
+    clientKey: z.string().refine(validateTLSClientKey, {
+      message: 'Key must be in the PEM format.',
+    }),
+    insecureSkipVerify: z.boolean(),
+    serverName: z.string(),
+  })
+  .optional();
 
 function validateTLSCACert(caCert?: string) {
   if (!caCert) {

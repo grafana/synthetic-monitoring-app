@@ -82,6 +82,7 @@ export const FormLayout = ({
   const handleSubmit = (checkValues: CheckFormValues, event: BaseSyntheticEvent | undefined) => {
     markAllSectionsVisited();
     onSubmit(checkValues, event);
+    console.log(checkValues, event);
   };
 
   const handleError = (errs: FieldErrors<CheckFormValues>) => {

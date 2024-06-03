@@ -17,7 +17,7 @@ const requestMap = {
   [CheckType.PING]: `ICMP`,
   [CheckType.DNS]: `ICMP`,
   [CheckType.TCP]: `TCP`,
-  [CheckType.GRPC]: `GRPC`,
+  [CheckType.GRPC]: `gRPC`,
 };
 
 export const CheckIpVersion = ({ checkType, name }: CheckIpVersionProps) => {

@@ -306,7 +306,6 @@ export const BASIC_TCP_CHECK: TCPCheck = {
 export const BASIC_TRACEROUTE_CHECK: TracerouteCheck = {
   id: 7,
   frequency: 120000,
-  offset: 0,
   timeout: 30000,
   enabled: true,
   labels: [],

@@ -45,7 +45,7 @@ function EmptyScene({ checkType }: { checkType?: CheckType }) {
         <Card.Actions className={styles.cardButtons}>
           <Button
             onClick={() => {
-              navigate(checkType ? ROUTES.NewCheck + '/' + checkType : ROUTES.ChooseCheckType);
+              navigate(checkType ? ROUTES.NewCheck + '/' + checkType : ROUTES.ChooseCheckGroup);
             }}
           >
             Create a check

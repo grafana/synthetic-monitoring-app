@@ -85,7 +85,7 @@ export interface TCPQueryResponse {
   startTLS: boolean;
 }
 
-export interface BaseObject {
+export interface ExistingObject {
   id?: number;
   tenantId?: number;
   created?: number; // seconds
@@ -98,7 +98,7 @@ export interface Label {
   value: string;
 }
 
-export interface Probe extends BaseObject {
+export interface Probe extends ExistingObject {
   name: string;
   public: boolean;
   latitude: number;
@@ -346,11 +346,10 @@ export type CheckFormValuesScripted = CheckFormValuesBase & {
   };
 };
 
-export interface CheckBase extends BaseObject {
+export interface CheckBase {
   job: string;
   target: string;
   frequency: number;
-  offset?: number;
   timeout: number;
   enabled: boolean;
   alertSensitivity: AlertSensitivity | string;
@@ -395,53 +394,61 @@ export type Settings =
   | TCPCheck['settings']
   | TracerouteCheck['settings'];
 
-export type DNSCheck = CheckBase & {
-  settings: {
-    dns: DnsSettings;
+export type DNSCheck = CheckBase &
+  ExistingObject & {
+    settings: {
+      dns: DnsSettings;
+    };
   };
-};
 
-export type GRPCCheck = CheckBase & {
-  settings: {
-    grpc: GRPCSettings;
+export type GRPCCheck = CheckBase &
+  ExistingObject & {
+    settings: {
+      grpc: GRPCSettings;
+    };
   };
-};
 
-export type HTTPCheck = CheckBase & {
-  settings: {
-    http: HttpSettings;
+export type HTTPCheck = CheckBase &
+  ExistingObject & {
+    settings: {
+      http: HttpSettings;
+    };
   };
-};
 
-export type ScriptedCheck = CheckBase & {
-  settings: {
-    scripted: ScriptedSettings;
+export type ScriptedCheck = CheckBase &
+  ExistingObject & {
+    settings: {
+      scripted: ScriptedSettings;
+    };
   };
-};
 
-export type MultiHTTPCheck = CheckBase & {
-  settings: {
-    multihttp: MultiHttpSettings;
+export type MultiHTTPCheck = CheckBase &
+  ExistingObject & {
+    settings: {
+      multihttp: MultiHttpSettings;
+    };
   };
-};
 
-export type PingCheck = CheckBase & {
-  settings: {
-    ping: PingSettings;
+export type PingCheck = CheckBase &
+  ExistingObject & {
+    settings: {
+      ping: PingSettings;
+    };
   };
-};
 
-export type TCPCheck = CheckBase & {
-  settings: {
-    tcp: TcpSettings;
+export type TCPCheck = CheckBase &
+  ExistingObject & {
+    settings: {
+      tcp: TcpSettings;
+    };
   };
-};
 
-export type TracerouteCheck = CheckBase & {
-  settings: {
-    traceroute: TracerouteSettings;
+export type TracerouteCheck = CheckBase &
+  ExistingObject & {
+    settings: {
+      traceroute: TracerouteSettings;
+    };
   };
-};
 
 export enum CheckType {
   DNS = 'dns',
@@ -452,6 +459,12 @@ export enum CheckType {
   Scripted = 'scripted',
   TCP = 'tcp',
   Traceroute = 'traceroute',
+}
+
+export enum CheckTypeGroup {
+  ApiTest = `api-test`,
+  MultiStep = `multistep`,
+  Scripted = `scripted`,
 }
 
 export interface HostedInstance {
@@ -656,14 +669,17 @@ export enum ROUTES {
   EditCheck = 'checks/edit',
   Config = 'config',
   Scene = 'scene',
-  ChooseCheckType = 'checks/choose-type',
+  ChooseCheckGroup = 'checks/choose-type',
   ScriptedChecks = 'scripted-checks',
 }
 
 export interface CheckPageParams {
-  view: string;
   id: string;
   checkType?: CheckType;
+}
+
+export interface CheckFormPageParams {
+  checkTypeGroup: CheckTypeGroup;
 }
 
 export interface ProbePageParams {
@@ -784,6 +800,7 @@ export interface CheckFormTypeLayoutProps {
   onSubmitError?: SubmitErrorHandler<CheckFormValues>;
   errorMessage?: string;
   schema: ZodType;
+  checkType?: CheckType;
 }
 
 export type TLSCheckTypes = CheckType.HTTP | CheckType.TCP | CheckType.GRPC;

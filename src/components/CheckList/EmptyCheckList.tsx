@@ -37,7 +37,7 @@ const EmptyCheckList = () => {
           check out the Synthetic Monitoring docs.
         </a>
       </span>
-      <Button size="md" onClick={() => navigate(ROUTES.ChooseCheckType)}>
+      <Button size="md" onClick={() => navigate(ROUTES.ChooseCheckGroup)}>
         New check
       </Button>
     </div>

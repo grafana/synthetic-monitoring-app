@@ -20,24 +20,20 @@ const addK6Types = (monaco: typeof monacoType) => {
   monaco.languages.typescript.javascriptDefaults.addExtraLib("declare module 'https://*'");
 };
 const containerStyles = css`
-  height: 100%;
   min-height: 600px;
 
   & > div {
-    height: inherit;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    min-height: 600px;
+
+    > section {
+      min-height: 600px;
+    }
   }
 
   // Background styling for editable ranges (multi)
   .editableArea--multi-line {
     opacity: 1;
     background-color: rgba(255, 255, 255, 0.1);
-  }
-
-  > section {
-    min-height: inherit;
   }
 `;
 
@@ -46,7 +42,6 @@ export const CodeEditor = forwardRef(function CodeEditor(
     checkJs = true,
     constrainedRanges,
     language = 'javascript',
-    overlayMessage,
     readOnly,
     renderHeader,
     value,
@@ -62,18 +57,18 @@ export const CodeEditor = forwardRef(function CodeEditor(
   const [prevValue, setPrevValue] = useState(value);
 
   // GC
-  useEffect(() => {
-    return () => {
-      if (constrainedInstance) {
-        constrainedInstance.disposeConstrainer();
-      }
+  // useEffect(() => {
+  //   return () => {
+  //     if (constrainedInstance) {
+  //       constrainedInstance.disposeConstrainer();
+  //     }
 
-      if (editorRef) {
-        editorRef.dispose();
-      }
-    };
-    // eslint-disable-next-line
-  }, []);
+  //     if (editorRef) {
+  //       editorRef.dispose();
+  //     }
+  //   };
+  //   // eslint-disable-next-line
+  // }, []);
 
   const handleValidation = (monaco: typeof monacoType, editor: monacoType.editor.IStandaloneCodeEditor) => {
     if (!onValidation) {

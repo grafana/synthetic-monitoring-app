@@ -7,7 +7,7 @@ import { useNavigation } from 'hooks/useNavigation';
 export function AddNewCheckButton() {
   const navigate = useNavigation();
   return (
-    <Button variant="primary" onClick={() => navigate(ROUTES.ChooseCheckType)} type="button">
+    <Button variant="primary" onClick={() => navigate(ROUTES.ChooseCheckGroup)} type="button">
       Add new check
     </Button>
   );

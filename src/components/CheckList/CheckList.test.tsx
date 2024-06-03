@@ -309,7 +309,7 @@ test('clicking add new is handled', async () => {
   const { user } = await renderCheckList();
   const addNewButton = await screen.findByText('Add new check');
   await user.click(addNewButton);
-  expect(navigate).toHaveBeenCalledWith(ROUTES.ChooseCheckType);
+  expect(navigate).toHaveBeenCalledWith(ROUTES.ChooseCheckGroup);
 });
 
 test('cascader adds labels to label filter', async () => {

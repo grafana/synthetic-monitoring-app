@@ -1,14 +1,14 @@
 import React from 'react';
 import { GrafanaTheme2, PageLayoutType } from '@grafana/data';
-import { Badge, BadgeColor, LoadingPlaceholder, useStyles2 } from '@grafana/ui';
+import { Badge, BadgeColor, Icon, LoadingPlaceholder, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
-import { CheckStatus, CheckType, ROUTES } from 'types';
+import { CheckStatus, ROUTES } from 'types';
 import { isOverCheckLimit, isOverScriptedLimit } from 'utils';
 import { useChecks } from 'data/useChecks';
 import { useTenantLimits } from 'data/useTenantLimits';
-import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
+import { useCheckTypeGroupOptions } from 'hooks/useCheckTypeGroupOptions';
 import { useNavigation } from 'hooks/useNavigation';
 import { PluginPage } from 'components/PluginPage';
 import { getRoute } from 'components/Routing';
@@ -16,12 +16,12 @@ import { getRoute } from 'components/Routing';
 import { Card } from './Card';
 import { ErrorAlert } from './ErrorAlert';
 
-export function ChooseCheckType() {
+export const ChooseCheckGroup = () => {
   const styles = useStyles2(getStyles);
   const { data: checks, isLoading: checksLoading } = useChecks();
   const { data: limits, isLoading: limitsLoading } = useTenantLimits();
   const nav = useNavigation();
-  const checkTypeOptions = useCheckTypeOptions();
+  const options = useCheckTypeGroupOptions();
 
   if (checksLoading || limitsLoading) {
     return <LoadingPlaceholder text="Loading..." />;
@@ -30,28 +30,6 @@ export function ChooseCheckType() {
   const overScriptedLimit = isOverScriptedLimit({ checks, limits });
   const overTotalLimit = isOverCheckLimit({ checks, limits });
 
-  const options = checkTypeOptions.filter(({ value }) => {
-    if (overScriptedLimit && (value === CheckType.MULTI_HTTP || value === CheckType.Scripted)) {
-      return false;
-    }
-
-    return true;
-  });
-
-  if (overTotalLimit) {
-    return (
-      <PluginPage layout={PageLayoutType?.Standard} pageNav={{ text: 'Choose a check type' }}>
-        <ErrorAlert
-          title="Check limit reached"
-          content={`You have reached the limit of checks you can create. Your current limit is ${limits?.MaxChecks}. You can delete existing checks or upgrade your plan to create more. Please contact support if you've reached this limit in error.`}
-          buttonText={'Back to checks'}
-          onClick={() => {
-            nav(ROUTES.Checks);
-          }}
-        />
-      </PluginPage>
-    );
-  }
   return (
     <PluginPage layout={PageLayoutType?.Standard} pageNav={{ text: 'Choose a check type' }}>
       {overScriptedLimit && (
@@ -65,22 +43,23 @@ export function ChooseCheckType() {
         />
       )}
       <div className={styles.container} data-testid={DataTestIds.CHOOSE_CHECK_TYPE}>
-        {options.map((check) => {
+        {options.map((group) => {
           return (
-            <Card key={check?.label || ''} className={styles.card} href={`${getRoute(ROUTES.NewCheck)}/${check.value}`}>
+            <Card key={group?.label || ''} className={styles.card} href={`${getRoute(ROUTES.NewCheck)}/${group.value}`}>
+              <div className={styles.iconWrapper}>
+                <Icon name={group.icon} size="xxxl" />
+              </div>
               <Card.Heading className={styles.stack} variant="h6">
-                <div>{check.label} </div>
-
-                {check.status && <CheckBadge status={check.status} />}
+                <div>{group.label} </div>
               </Card.Heading>
-              <div className={styles.desc}>{check.description}</div>
+              <div className={styles.desc}>{group.description}</div>
             </Card>
           );
         })}
       </div>
     </PluginPage>
   );
-}
+};
 
 const colorMap: Record<CheckStatus, { text: string; color: BadgeColor }> = {
   [CheckStatus.EXPERIMENTAL]: {
@@ -107,6 +86,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     display: `grid`,
     gridTemplateColumns: `repeat(auto-fit, minmax(200px, 400px))`,
     gap: theme.spacing(2),
+    textAlign: `center`,
   }),
   card: css({
     ':hover': {
@@ -122,5 +102,10 @@ const getStyles = (theme: GrafanaTheme2) => ({
     gap: theme.spacing(1),
     alignItems: `center`,
     justifyContent: `center`,
+  }),
+  iconWrapper: css({
+    display: `flex`,
+    justifyContent: `center`,
+    marginBottom: theme.spacing(2),
   }),
 });

@@ -7,7 +7,6 @@ import { get } from 'lodash';
 
 import { CheckFormValues, CheckType } from 'types';
 import { parseUrl } from 'utils';
-import QueryParams from 'components/QueryParams';
 
 type RequestMethodInputProps = {
   'aria-label'?: string;
@@ -29,7 +28,6 @@ export const RequestTargetInput = ({
   const styles = useStyles2(getStyles);
   const targetHelp = getTargetHelpText(checkType);
   const parsedURL = parseUrl(watch('target'));
-  const showQueryParams = checkType === CheckType.HTTP;
 
   return (
     <Controller
@@ -55,17 +53,6 @@ export const RequestTargetInput = ({
               value={typeof field.value === `string` ? field.value : ''}
             />
           </Field>
-          {showQueryParams && parsedURL && (
-            <QueryParams
-              target={parsedURL}
-              onBlur={field.onBlur}
-              onChange={(target: string) => field.onChange(target)}
-              className={css`
-                padding-left: 1rem;
-                margin-bottom: 1rem;
-              `}
-            />
-          )}
         </>
       )}
     />

@@ -45,17 +45,19 @@ const HttpSettingsSchema: ZodType<HttpSettingsFormValues> = z.object({
   regexValidations: z.array(HttpRegexValidationSchema),
   followRedirects: z.boolean(),
   compression: z.nativeEnum(HTTPCompressionAlgo),
-  proxyURL: z.string(),
+  proxyURL: z.string().optional(),
   ipVersion: z.nativeEnum(IpVersion),
   method: z.nativeEnum(HttpMethod),
   body: z.string().optional(),
   validHTTPVersions: z.array(z.nativeEnum(HttpVersion)),
   validStatusCodes: z.array(z.number()),
   bearerToken: z.string().optional(),
-  basicAuth: z.object({
-    username: z.string(),
-    password: z.string(),
-  }),
+  basicAuth: z
+    .object({
+      username: z.string(),
+      password: z.string(),
+    })
+    .optional(),
   tlsConfig: TLSConfigSchema,
   cacheBustingQueryParamName: z.string().optional(),
 });

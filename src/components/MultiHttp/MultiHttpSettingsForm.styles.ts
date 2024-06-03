@@ -11,6 +11,7 @@ export const getMultiHttpFormStyles = (theme: GrafanaTheme2) => ({
     align-self: flex-start;
     align-items: content;
     position: relative;
+    width: 100%;
   `,
   collapseTarget: css`
     background-color: ${theme.colors.background.secondary};
