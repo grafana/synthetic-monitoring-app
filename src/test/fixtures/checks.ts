@@ -357,7 +357,6 @@ export const FULL_HTTP_CHECK: HTTPCheck = {
       validHTTPVersions: [HttpVersion.HTTP1_0],
       failIfNotSSL: true,
       failIfSSL: false,
-      bearerToken: 'a bear',
       basicAuth: { username: 'steve', password: 'stevessecurepassword' },
       proxyURL: 'https://proxygrafana.com',
       proxyConnectHeaders: [],

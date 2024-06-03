@@ -51,7 +51,6 @@ describe('editing checks', () => {
     const {
       // failIfNotSSL,
       basicAuth,
-      bearerToken,
       body,
       cacheBustingQueryParamName,
       compression,
@@ -97,9 +96,11 @@ describe('editing checks', () => {
     expect(await screen.findByLabelText('Client key', { exact: false })).toHaveValue(validKey);
 
     await toggleSection('Authentication', user);
-    expect(await screen.findByPlaceholderText('Bearer token')).toHaveValue(bearerToken);
-    expect(await screen.findByLabelText('Username')).toHaveValue(basicAuth?.username);
-    expect(await screen.findByLabelText('Password')).toHaveValue(basicAuth?.password);
+    await user.click(await screen.findByLabelText('Bearer'));
+    expect(await screen.findByPlaceholderText('Bearer token')).not.toHaveValue();
+    await user.click(await screen.findByLabelText('Basic'));
+    expect(await screen.findByLabelText('Username *')).toHaveValue(basicAuth?.username);
+    expect(await screen.findByLabelText('Password *')).toHaveValue(basicAuth?.password);
 
     const validation = await toggleSection('Validation', user);
 

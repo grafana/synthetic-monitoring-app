@@ -73,9 +73,9 @@ describe(`Edits the sections of a HTTP check correctly`, () => {
 
     await fillBasicCheckFields(JOB_NAME, TARGET, user, LABELS);
     await user.click(await screen.getByText('Authentication'));
-    await user.click(await screen.findByLabelText('Include basic authorization header in request'));
-    await user.type(await screen.findByLabelText('Username'), basicAuth.username);
-    await user.type(await screen.findByLabelText('Password'), basicAuth.password);
+    await user.click(await screen.findByLabelText('Basic'));
+    await user.type(await screen.findByLabelText('Username *'), basicAuth.username);
+    await user.type(await screen.findByLabelText('Password *'), basicAuth.password);
     await submitForm(user);
 
     const { body } = await read();
