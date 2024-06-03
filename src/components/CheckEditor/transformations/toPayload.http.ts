@@ -137,10 +137,12 @@ function isBasicAuthEmpty(basicAuth: HttpSettingsFormValues['basicAuth']) {
 }
 
 function sanitize(settings: HttpSettings): HttpSettings {
-  const { basicAuth, ...rest } = settings;
+  const { authType, bearerToken, basicAuth, ...rest } = settings;
 
   return {
     ...rest,
-    basicAuth: isBasicAuthEmpty(basicAuth) ? undefined : basicAuth,
+    basicAuth: authType === 'basic' && !isBasicAuthEmpty(basicAuth) ? basicAuth : undefined,
+    bearerToken: authType === 'bearer' && bearerToken ? bearerToken : undefined,
+    authType: undefined,
   };
 }

@@ -18,9 +18,12 @@ export const HttpCheckBearerToken = () => {
       label="Include bearer authorization header in request"
       invalid={Boolean(formState.errors.settings?.http?.bearerToken)}
       error={formState.errors.settings?.http?.bearerToken?.message}
+      required
     >
       <Input
-        {...register('settings.http.bearerToken')}
+        {...register('settings.http.bearerToken', {
+          required: { value: true, message: 'Bearer Token is required' },
+        })}
         type="password"
         placeholder="Bearer token"
         disabled={!isEditor}

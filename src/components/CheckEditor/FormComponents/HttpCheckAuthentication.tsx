@@ -1,27 +1,41 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { RadioButtonGroup, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { CheckFormValuesHttp } from 'types';
+import { CheckFormValuesHttp, HttpAuthType } from 'types';
 
 import { HttpCheckBasicAuthorization } from './HttpCheckBasicAuthorization';
 import { HttpCheckBearerToken } from './HttpCheckBearerToken';
 
-type AuthType = 'none' | 'bearer' | 'basic';
-
 export const HttpCheckAuthentication = () => {
   const styles = useStyles2(getStyles);
 
-  const [selectedOption, setSelectedOption] = useState<AuthType>('none');
-  const { setValue } = useFormContext<CheckFormValuesHttp>();
+  const { getValues, setValue } = useFormContext<CheckFormValuesHttp>();
 
-  const handleChangeOption = (value: AuthType) => {
-    setSelectedOption(value);
-    setValue('settings.http.bearerToken', '');
-    setValue('settings.http.basicAuth.username', '');
-    setValue('settings.http.basicAuth.password', '');
+  const isBasicAuth = Boolean(
+    getValues(`settings.http.basicAuth.username`) || Boolean(getValues(`settings.http.basicAuth.password`))
+  );
+
+  const isBearerAuth = Boolean(getValues(`settings.http.bearerToken`));
+
+  const authType = getValues('settings.http.authType');
+
+  useEffect(() => {
+    if (isBasicAuth) {
+      setValue('settings.http.authType', 'basic');
+      return;
+    }
+    if (isBearerAuth) {
+      setValue('settings.http.authType', 'bearer');
+      return;
+    }
+    setValue('settings.http.authType', 'none');
+  }, [isBasicAuth, isBearerAuth, setValue]);
+
+  const handleChangeOption = (value: HttpAuthType) => {
+    setValue('settings.http.authType', value);
   };
 
   return (
@@ -32,13 +46,13 @@ export const HttpCheckAuthentication = () => {
           { label: 'Bearer', value: 'bearer' },
           { label: 'Basic', value: 'basic' },
         ]}
-        value={selectedOption}
+        value={authType}
         onChange={handleChangeOption}
       />
 
       <div className={styles.fieldsContainer}>
-        {selectedOption === 'bearer' && <HttpCheckBearerToken />}
-        {selectedOption === 'basic' && <HttpCheckBasicAuthorization />}
+        {authType === 'bearer' && <HttpCheckBearerToken />}
+        {authType === 'basic' && <HttpCheckBasicAuthorization />}
       </div>
     </>
   );

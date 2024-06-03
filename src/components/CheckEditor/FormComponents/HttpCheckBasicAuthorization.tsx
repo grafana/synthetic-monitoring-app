@@ -23,9 +23,12 @@ export const HttpCheckBasicAuthorization = () => {
         label="Username"
         invalid={Boolean(formState.errors.settings?.http?.basicAuth?.username)}
         error={formState.errors.settings?.http?.basicAuth?.username?.message}
+        required
       >
         <Input
-          {...register('settings.http.basicAuth.username')}
+          {...register('settings.http.basicAuth.username', {
+            required: { value: true, message: 'Username is required' },
+          })}
           id={userNameId}
           type="text"
           disabled={!isEditor}
@@ -38,9 +41,12 @@ export const HttpCheckBasicAuthorization = () => {
         label="Password"
         invalid={Boolean(formState.errors.settings?.http?.basicAuth?.password)}
         error={formState.errors.settings?.http?.basicAuth?.password?.message}
+        required
       >
         <Input
-          {...register('settings.http.basicAuth.password')}
+          {...register('settings.http.basicAuth.password', {
+            required: { value: true, message: 'Password is required' },
+          })}
           id={passwordId}
           type="text"
           disabled={!isEditor}
