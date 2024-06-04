@@ -6,6 +6,7 @@ import { DataSourceRef } from '@grafana/schema';
 
 import { LinkedDatasourceInfo } from './datasource/types';
 import { SMDataSource } from 'datasource/DataSource';
+import { FilterType } from 'hooks/useCheckFilters';
 import {
   Assertion,
   AssertionConditionVariant,
@@ -690,7 +691,7 @@ export interface VizViewSceneAppConfig extends DashboardSceneAppConfig {
   checkFilters: CheckFiltersType;
   checks: Check[];
   onReset: () => void;
-  onFilterChange: (filters: CheckFiltersType) => void;
+  onFilterChange: (filters: CheckFiltersType, type: FilterType) => void;
 }
 
 export enum MultiHttpVariableType {
