@@ -9,7 +9,7 @@ import { FaroEvent, reportEvent } from 'faro';
 import { hasRole } from 'utils';
 import { ListTenantLimitsResponse } from 'datasource/responses.types';
 import { useTenantLimits } from 'data/useTenantLimits';
-import { parseErrorMessage } from 'components/CheckForm/utils';
+import { interpolateErrorMessage } from 'components/CheckForm/utils';
 import { NameValueInput } from 'components/NameValueInput';
 
 export interface LabelFieldProps {
@@ -53,7 +53,7 @@ export const LabelField = <T extends FormWithLabels>({ labelDestination }: Label
       label="Labels"
       description={description}
       disabled={!isEditor}
-      error={parseErrorMessage(labelError, 'label')}
+      error={interpolateErrorMessage(labelError, 'label')}
       invalid={Boolean(labelError)}
     >
       {isLoading ? (

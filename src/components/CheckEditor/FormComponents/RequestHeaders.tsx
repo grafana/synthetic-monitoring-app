@@ -6,7 +6,7 @@ import { get } from 'lodash';
 
 import { CheckFormValues } from 'types';
 import { hasRole } from 'utils';
-import { parseErrorMessage } from 'components/CheckForm/utils';
+import { interpolateErrorMessage } from 'components/CheckForm/utils';
 import { NameValueInput, NameValueName } from 'components/NameValueInput/NameValueInput';
 
 type RequestHeadersProps = {
@@ -30,7 +30,7 @@ export const RequestHeaders = ({ ariaLabelSuffix, description, label, name, ...r
       label={`${label}s`}
       description={description}
       disabled={!isEditor}
-      error={parseErrorMessage(errorMessage, label)}
+      error={interpolateErrorMessage(errorMessage, label)}
       invalid={Boolean(errorMessage)}
     >
       <NameValueInput
