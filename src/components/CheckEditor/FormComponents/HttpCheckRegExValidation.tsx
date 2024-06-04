@@ -81,7 +81,7 @@ export const HttpCheckRegExValidation = () => {
                     <div className={styles.validationHeaderName}>
                       <Field
                         className={styles.field}
-                        invalid={isHttpRegexHeaderError(baseErrorPath) && Boolean(baseErrorPath?.header) ? true : false}
+                        invalid={isHttpRegexHeaderError(baseErrorPath) && Boolean(baseErrorPath?.header)}
                         error={isHttpRegexHeaderError(baseErrorPath) && baseErrorPath?.header?.message}
                       >
                         <Input
