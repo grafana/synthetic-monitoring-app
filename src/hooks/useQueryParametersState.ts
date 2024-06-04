@@ -21,7 +21,7 @@ const useQueryParametersState = <ValueType>({
   initialValue,
   encode = JSON.stringify,
   decode = JSON.parse,
-  strategy = HistoryStrategy.Push,
+  strategy = HistoryStrategy.Replace,
 }: QueryParametersStateProps<ValueType>): [ValueType, (value: ValueType | null) => void] => {
   const history = useHistory();
 

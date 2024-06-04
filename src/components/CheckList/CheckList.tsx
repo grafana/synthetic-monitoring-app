@@ -81,7 +81,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   const isAllSelected = selectedCheckIds.size === filteredChecks.length;
   const totalPages = Math.ceil(filteredChecks.length / CHECKS_PER_PAGE);
 
-  const handleFilterChange = (filters: CheckFiltersType, type?: FilterType) => {
+  const handleFilterChange = (filters: CheckFiltersType, type: FilterType) => {
     setCurrentPage(1);
 
     switch (type) {
