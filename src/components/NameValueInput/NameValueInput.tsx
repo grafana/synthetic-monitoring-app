@@ -1,11 +1,12 @@
-import React, { useRef } from 'react';
-import { FieldErrorsImpl, useFieldArray, useFormContext } from 'react-hook-form';
+import React, { useCallback, useRef } from 'react';
+import { FieldErrorsImpl, useFieldArray, useFormContext, useFormState } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Button, Field, Icon, IconButton, Input, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { get } from 'lodash';
 
 import { CheckFormValues, Probe } from 'types';
-import { isHttpErrors } from 'utils.types';
+import { interpolateErrorMessage } from 'components/CheckForm/utils';
 
 export type NameValueName = 'settings.http.headers' | 'settings.http.proxyConnectHeaders' | 'labels';
 
@@ -15,98 +16,99 @@ interface Props {
   limit?: number;
   disabled?: boolean;
   label: string;
-  validateName?: (name: string) => string | undefined;
-  validateValue?: (value: string) => string | undefined;
   'data-fs-element'?: string;
 }
 
 function getErrors(errors: FieldErrorsImpl<CheckFormValues | Probe>, name: NameValueName) {
-  if (name === 'labels') {
-    return errors?.labels;
-  }
-  if (isHttpErrors(errors)) {
-    if (name === 'settings.http.headers') {
-      return errors?.settings?.http?.headers;
-    }
-    if (name === 'settings.http.proxyConnectHeaders') {
-      return errors?.settings?.http?.proxyConnectHeaders;
-    }
-  }
-  return undefined;
+  return get(errors, name);
 }
 
-export const NameValueInput = ({
-  ariaLabelSuffix = ``,
-  name,
-  disabled,
-  limit,
-  label,
-  validateName,
-  validateValue,
-  ...rest
-}: Props) => {
+export const NameValueInput = ({ ariaLabelSuffix = ``, name, disabled, limit, label, ...rest }: Props) => {
   const {
     register,
     control,
     formState: { errors },
+    trigger,
   } = useFormContext<CheckFormValues | Probe>();
+  const { isSubmitted } = useFormState({ control });
   const addRef = useRef<HTMLButtonElement>(null);
   const { fields, append, remove } = useFieldArray({ control, name });
   const styles = useStyles2(getStyles);
 
   const fieldError = getErrors(errors, name);
 
+  const handleTrigger = useCallback(() => {
+    if (isSubmitted) {
+      trigger(name);
+    }
+  }, [trigger, isSubmitted, name]);
+
   return (
     <div className={styles.stackCol}>
-      {fields.map((field, index) => (
-        <div key={field.id} className={styles.stack}>
-          <Field
-            invalid={Boolean(fieldError?.[index]?.name?.type)}
-            error={fieldError?.[index]?.name?.message}
-            className={styles.field}
-            required
-          >
-            <Input
-              {...register(`${name}.${index}.name`, { required: true, validate: validateName })}
-              aria-label={`${label} ${index + 1} name ${ariaLabelSuffix}`}
-              data-testid={`${label}-name-${index}`}
-              type="text"
-              placeholder="name"
-              disabled={disabled}
-              data-fs-element={`${rest['data-fs-element']}-name-${index}`}
-            />
-          </Field>
-          <Field
-            invalid={Boolean(fieldError?.[index]?.value)}
-            error={fieldError?.[index]?.value?.message}
-            className={styles.field}
-            required
-          >
-            <Input
-              {...register(`${name}.${index}.value`, { required: true, validate: validateValue })}
-              aria-label={`${label} ${index + 1} value ${ariaLabelSuffix}`}
-              data-testid={`${label}-value-${index}`}
-              data-fs-element={`${rest['data-fs-element']}-value-${index}`}
-              type="text"
-              placeholder="value"
-              disabled={disabled}
-            />
-          </Field>
-          <IconButton
-            name="minus-circle"
-            type="button"
-            data-fs-element={`${rest['data-fs-element']}-delete-${index}`}
-            onClick={() => {
-              remove(index);
-              requestAnimationFrame(() => {
-                addRef.current?.focus();
-              });
-            }}
-            disabled={disabled}
-            tooltip="Delete"
-          />
-        </div>
-      ))}
+      {fields.map((field, index) => {
+        const labelNameField = register(`${name}.${index}.name`);
+        const labelValueField = register(`${name}.${index}.value`);
+
+        return (
+          <div key={field.id} className={styles.stack}>
+            <Field
+              invalid={Boolean(fieldError?.[index]?.name?.type)}
+              error={interpolateErrorMessage(fieldError?.[index]?.name?.message, label)}
+              className={styles.field}
+              required
+            >
+              <Input
+                {...register(`${name}.${index}.name`)}
+                aria-label={`${label} ${index + 1} name ${ariaLabelSuffix}`}
+                data-testid={`${label}-name-${index}`}
+                type="text"
+                placeholder="name"
+                disabled={disabled}
+                onChange={(v) => {
+                  labelNameField.onChange(v);
+                  handleTrigger();
+                }}
+              />
+            </Field>
+            <Field
+              invalid={Boolean(fieldError?.[index]?.value)}
+              error={interpolateErrorMessage(fieldError?.[index]?.value?.message, label)}
+              className={styles.field}
+              required
+            >
+              <Input
+                {...labelValueField}
+                aria-label={`${label} ${index + 1} value ${ariaLabelSuffix}`}
+                data-testid={`${label}-value-${index}`}
+                data-fs-element={`${rest['data-fs-element']}-value-${index}`}
+                type="text"
+                placeholder="value"
+                disabled={disabled}
+                onChange={(v) => {
+                  labelValueField.onChange(v);
+                  handleTrigger();
+                }}
+              />
+            </Field>
+            <div className={styles.remove}>
+              <IconButton
+                name="minus-circle"
+                type="button"
+                data-fs-element={`${rest['data-fs-element']}-delete-${index}`}
+                onClick={() => {
+                  remove(index);
+                  requestAnimationFrame(() => {
+                    addRef.current?.focus();
+                    handleTrigger();
+                  });
+                }}
+                disabled={disabled}
+                tooltip="Delete"
+              />
+            </div>
+          </div>
+        );
+      })}
       {(limit === undefined || fields.length < limit) && (
         <div className={styles.stack}>
           <Button
@@ -139,6 +141,9 @@ const getStyles = (theme: GrafanaTheme2) => ({
     display: 'flex',
     gap: theme.spacing(1),
     flexDirection: 'column',
+    marginTop: theme.spacing(1),
+  }),
+  remove: css({
     marginTop: theme.spacing(1),
   }),
 });

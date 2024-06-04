@@ -18,9 +18,9 @@ const getTracerouteSettings = (settings: TracerouteSettingsFormValues | undefine
   const updatedSettings = settings ?? fallbackValues;
 
   return {
-    maxHops: parseInt(String(updatedSettings.maxHops), 10),
+    maxHops: updatedSettings.maxHops,
     ptrLookup: updatedSettings.ptrLookup,
-    maxUnknownHops: parseInt(String(updatedSettings.maxUnknownHops), 10),
+    maxUnknownHops: updatedSettings.maxUnknownHops,
     hopTimeout: updatedSettings.hopTimeout,
   };
 };

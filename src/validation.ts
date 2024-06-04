@@ -2,73 +2,56 @@ import * as punycode from 'punycode';
 import { Address4, Address6 } from 'ip-address';
 import validUrl from 'valid-url';
 
-import {
-  CheckType,
-  DnsSettings,
-  HttpSettings,
-  Label,
-  MultiHttpSettings,
-  PingSettings,
-  TcpSettings,
-  TracerouteSettings,
-} from 'types';
-import { INVALID_WEB_URL_MESSAGE, PEM_FOOTER, PEM_HEADER } from 'components/constants';
+import { Label } from 'types';
 
-export const CheckValidation = {
-  target: validateTarget,
-  frequency: validateFrequency,
-  timeout: validateTimeout,
-  labels: validateLabels,
-  probes: validateProbes,
-};
+export function validateHttpTarget(target: string) {
+  let message = 'Target must be a valid web URL';
 
-export function validateTarget(typeOfCheck: CheckType, target: string): string | undefined {
-  if (target.length > 2040) {
-    return 'Target length must be less than 2040 characters';
+  try {
+    const httpEncoded = encodeURI(target);
+    const isValidUrl = Boolean(validUrl.isWebUri(httpEncoded));
+
+    if (!isValidUrl) {
+      throw new Error(message);
+    }
+  } catch {
+    return message;
   }
 
-  switch (typeOfCheck) {
-    case CheckType.HTTP: {
-      return validateHttpTarget(target);
+  try {
+    const parsedUrl = new URL(target);
+
+    if (!parsedUrl.protocol) {
+      message = 'Target must have a valid protocol';
+      throw new Error(message);
     }
-    case CheckType.MULTI_HTTP: {
-      return validateHttpTarget(target);
-    }
-    case CheckType.PING: {
-      return validateHostname(target);
-    }
-    case CheckType.DNS: {
-      return validateDomain(target);
-    }
-    case CheckType.TCP: {
-      return validateHostPort(target);
-    }
-    case CheckType.Traceroute: {
-      return validateHostname(target);
-    }
-    case CheckType.Scripted: {
-      if (target.length < 3) {
-        return 'Instance must be at least 3 characters long';
-      }
+
+    // isWebUri will allow some invalid hostnames, so we need addional validation
+    const ipv6 = isIpV6FromUrl(target);
+    if (ipv6) {
       return undefined;
     }
-    case CheckType.GRPC: {
-      return validateHostPort(target);
+
+    const hostname = parsedUrl.hostname;
+    if (validateHostname(hostname)) {
+      return 'Target must have a valid hostname';
     }
-    default: {
-      // we want to make sure that we are validating the target for all
-      // check types; if someone adds a check type but forgets to update
-      // this validation, it will land here.
-      return 'Invalid check type';
-    }
+  } catch {
+    return message;
   }
+
+  return undefined;
 }
 
-export function validateFrequency(frequency: number, maxFrequency: number): string | undefined {
-  if (frequency > maxFrequency) {
-    return `Frequency cannot be greater than ${maxFrequency} seconds`;
+function isIpV6FromUrl(target: string) {
+  let isIpV6 = true;
+  try {
+    const address = Address6.fromURL(target);
+    isIpV6 = Boolean(address.address);
+  } catch (e) {
+    isIpV6 = false;
   }
-  return undefined;
+  return isIpV6;
 }
 
 export function validateTimeout(timeout: number, maxTimeout: number, minTimeout: number): string | undefined {
@@ -143,133 +126,7 @@ export function validateAnnotationName(name: string): string | undefined {
   return undefined;
 }
 
-export const validateBasicAuthUsername = (username: string) => {
-  return undefined;
-};
-
-export const validateBearerToken = (token: string) => {
-  return undefined;
-};
-
-export const validateTLSServerName = (serverName?: string) => {
-  return true;
-};
-
-export const validateTLSCACert = (caCert?: string) => {
-  if (!caCert) {
-    return undefined;
-  }
-  if (caCert.indexOf(PEM_HEADER) < 0 || caCert.indexOf(PEM_FOOTER) < 0) {
-    return 'Certificate must be in the PEM format.';
-  }
-  return undefined;
-};
-
-export const validateTLSClientCert = (clientCert?: string) => {
-  if (!clientCert) {
-    return undefined;
-  }
-  if (clientCert.indexOf(PEM_HEADER) < 0 || clientCert.indexOf(PEM_FOOTER) < 0) {
-    return 'Certificate must be in the PEM format.';
-  }
-  return undefined;
-};
-
-export const validateTLSClientKey = (clientKey?: string) => {
-  if (!clientKey) {
-    return undefined;
-  }
-  if (clientKey.indexOf('-----BEGIN') < 0 || clientKey.indexOf('-----END') < 0) {
-    return 'Key must be in the PEM format.';
-  }
-  return undefined;
-};
-
-export function validateProbes(probes: number[]): string | undefined {
-  if (probes.length === 0) {
-    return 'Select a probe';
-  }
-  if (probes.length > 64) {
-    return `The maximum probe quantity is 64, you have selected ${probes.length}`;
-  }
-  return undefined;
-}
-
-export const validateHTTPBody = (body: string) => {
-  return undefined;
-};
-
-export const validateHTTPHeaderName = (name: string) => {
-  return undefined;
-};
-
-export const validateHTTPHeaderValue = (name: string) => {
-  return undefined;
-};
-
-export function validateSettingsTraceroute(settings?: TracerouteSettings): string | undefined {
-  return undefined;
-}
-
-export function validateSettingsHTTP(settings: HttpSettings): string | undefined {
-  return undefined;
-}
-
-export function validateSettingsMultiHTTP(settings: MultiHttpSettings): string | undefined {
-  return undefined;
-}
-
-export function validateSettingsPING(settings: PingSettings): string | undefined {
-  return undefined;
-}
-
-export function validateSettingsDNS(settings: DnsSettings): string | undefined {
-  return undefined;
-}
-
-export function validateSettingsTCP(settings: TcpSettings): string | undefined {
-  return undefined;
-}
-
-function validateHttpTarget(target: string): string | undefined {
-  try {
-    // valid url will fail if curly brackets are not URI encoded, but curly brackets are technically allowed and work in the real world.
-    // We encode the target before checking to get around that
-    // encodeURI can throw in certain circumstances, so we must wrap it in a try/catch
-    const httpEncoded = encodeURI(target);
-    const isValidUrl = Boolean(validUrl.isWebUri(httpEncoded));
-    if (!isValidUrl) {
-      return INVALID_WEB_URL_MESSAGE;
-    }
-  } catch (e) {
-    return INVALID_WEB_URL_MESSAGE;
-  }
-
-  try {
-    const parsedUrl = new URL(target);
-
-    if (!parsedUrl.protocol) {
-      return 'Target must have a valid protocol';
-    }
-
-    // isWebUri will allow some invalid hostnames, so we need addional validation
-    const ipv6 = isIpV6FromUrl(target);
-    if (ipv6) {
-      return undefined;
-    }
-
-    const hostname = parsedUrl.hostname;
-    if (validateHostname(hostname)) {
-      return 'Target must have a valid hostname';
-    }
-    return undefined;
-  } catch (e) {
-    // The new URL constructor throws on invalid web URLs
-    return INVALID_WEB_URL_MESSAGE;
-  }
-}
-
-const isIpV4 = (target: string): boolean => {
+function isIpV4(target: string) {
   let isIpV4 = true;
   try {
     new Address4(target);
@@ -277,9 +134,9 @@ const isIpV4 = (target: string): boolean => {
     isIpV4 = false;
   }
   return isIpV4;
-};
+}
 
-const isIpV6 = (target: string): boolean => {
+function isIpV6(target: string) {
   let isIpV6 = true;
   try {
     new Address6(target);
@@ -287,20 +144,9 @@ const isIpV6 = (target: string): boolean => {
     isIpV6 = false;
   }
   return isIpV6;
-};
+}
 
-const isIpV6FromUrl = (target: string): boolean => {
-  let isIpV6 = true;
-  try {
-    const address = Address6.fromURL(target);
-    isIpV6 = Boolean(address.address);
-  } catch (e) {
-    isIpV6 = false;
-  }
-  return isIpV6;
-};
-
-function validateDomain(target: string): string | undefined {
+export function validateDomain(target: string): string | undefined {
   const isIpAddress = isIpV4(target) || isIpV6(target);
 
   if (isIpAddress) {
@@ -389,7 +235,7 @@ function validateDomainElement(element: string, isLast: boolean): string | undef
   return undefined;
 }
 
-function validateHostname(target: string): string | undefined {
+export function validateHostname(target: string): string | undefined {
   const ipv4 = isIpV4(target);
   const ipv6 = isIpV6(target);
   const pc = punycode.toASCII(target);
@@ -405,7 +251,7 @@ function validateHostname(target: string): string | undefined {
   return undefined;
 }
 
-function validateHostPort(target: string): string | undefined {
+export function validateHostPort(target: string): string | undefined {
   const re = new RegExp(/^(?:\[([0-9a-f:.]+)\]|([^:]+)):(\d+)$/, 'i');
   const match = target.match(re);
 

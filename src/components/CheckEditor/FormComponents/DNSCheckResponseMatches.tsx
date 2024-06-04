@@ -31,7 +31,6 @@ export const DNSCheckResponseMatches = () => {
                 <div data-fs-element="DNS Response Match select">
                   <Controller
                     name={`settings.dns.validations.${index}.responseMatch`}
-                    rules={{ required: true }}
                     render={({ field }) => {
                       const { ref, onChange, ...rest } = field;
                       return (

@@ -26,9 +26,21 @@ import { CheckUsage } from 'components/CheckUsage';
 import { LabelField } from 'components/LabelField';
 import { TLSConfig } from 'components/TLSConfig';
 
-export const CheckHTTPLayout = ({ formActions, onSubmit, onSubmitError, errorMessage }: CheckFormTypeLayoutProps) => {
+export const CheckHTTPLayout = ({
+  formActions,
+  onSubmit,
+  onSubmitError,
+  errorMessage,
+  schema,
+}: CheckFormTypeLayoutProps) => {
   return (
-    <FormLayout formActions={formActions} onSubmit={onSubmit} onSubmitError={onSubmitError} errorMessage={errorMessage}>
+    <FormLayout
+      formActions={formActions}
+      onSubmit={onSubmit}
+      onSubmitError={onSubmitError}
+      errorMessage={errorMessage}
+      schema={schema}
+    >
       <FormLayout.Section label="Define check" fields={[`enabled`, `job`, `target`]} required>
         <CheckJobName />
         <CheckTarget checkType={CheckType.HTTP} />
@@ -87,7 +99,12 @@ export const CheckHTTPLayout = ({ formActions, onSubmit, onSubmitError, errorMes
       </FormLayout.Section>
       <FormLayout.Section
         label="Validation"
-        fields={[`settings.http.validStatusCodes`, `settings.http.validHTTPVersions`, `settings.http.sslOptions`]}
+        fields={[
+          `settings.http.validStatusCodes`,
+          `settings.http.validHTTPVersions`,
+          `settings.http.sslOptions`,
+          `settings.http.regexValidations`,
+        ]}
       >
         <HttpCheckValidStatusCodes />
         <HttpCheckValidHttpVersions />

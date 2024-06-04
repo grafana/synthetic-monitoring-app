@@ -4,11 +4,12 @@ import {
   GRPCSettings,
   HeaderMatch,
   HttpSettings,
+  Label,
   Probe,
   TCPQueryResponse,
   TcpSettings,
 } from 'types';
-import { MultiHttpEntry, QueryParams, RequestProps } from 'components/MultiHttp/MultiHttpTypes';
+import { MultiHttpEntry, RequestProps } from 'components/MultiHttp/MultiHttpTypes';
 
 export interface TFOutput {
   config: TFConfig;
@@ -171,7 +172,7 @@ export interface TFMultiHttpEntry extends Omit<MultiHttpEntry, 'request'> {
 }
 
 interface TFMultiHttpRequest extends Omit<RequestProps, 'queryFields' | 'postData' | 'body'> {
-  query_fields?: QueryParams[];
+  query_fields?: Label[];
   post_data?: {
     mime_type: string;
     text: string;

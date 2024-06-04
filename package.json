@@ -105,6 +105,7 @@
     "@grafana/scenes": "3.5.0",
     "@grafana/schema": "10.1.4",
     "@grafana/ui": "10.1.4",
+    "@hookform/resolvers": "3.3.4",
     "@popperjs/core": "^2.9.2",
     "@tanstack/react-query": "5.8.4",
     "@tanstack/react-query-devtools": "5.8.4",
@@ -128,7 +129,8 @@
     "react-router-dom": "^5.2.0",
     "sortablejs": "^1.15.0",
     "valid-url": "^1.0.9",
-    "yaml": "^2.2.2"
+    "yaml": "^2.2.2",
+    "zod": "3.23.6"
   },
   "packageManager": "yarn@1.22.19"
 }

@@ -1,9 +1,10 @@
-import React, { Children, isValidElement, ReactNode, useState } from 'react';
-import { FieldError, FieldErrors, FieldPath, FormState, useFormContext, UseFormGetFieldState } from 'react-hook-form';
+import React, { BaseSyntheticEvent, Children, isValidElement, ReactNode, useState } from 'react';
+import { FieldErrors, FieldPath, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Button, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { flatten } from 'flat';
+import { ZodType } from 'zod';
 
 import { CheckFormTypeLayoutProps, CheckFormValues } from 'types';
 import { PROBES_SELECT_ID } from 'components/CheckEditor/CheckProbes';
@@ -22,12 +23,13 @@ export const FormLayout = ({
   onSubmit,
   onSubmitError,
   errorMessage,
+  schema,
 }: FormLayoutProps & CheckFormTypeLayoutProps) => {
   let index = -1;
   const [activeIndex, setActiveIndex] = useState(0);
-  const [visited, setVisited] = useState(new Set<number>());
+  const [visitedSections, setVisitedSections] = useState(new Set<number>());
   const sectionHeaders: FormSidebarSection[] = [];
-  const { formState, trigger, getFieldState, handleSubmit } = useFormContext<CheckFormValues>();
+  const { getValues, handleSubmit: formSubmit } = useFormContext<CheckFormValues>();
   const styles = useStyles2(getStyles);
 
   let sectionCount = 0;
@@ -47,16 +49,20 @@ export const FormLayout = ({
     if (child.type === FormSection) {
       index++;
 
+      const values = getValues();
       const { errors } = checkForErrors({
         fields: child.props.fields,
-        formState,
-        getFieldState,
+        values,
+        schema,
       });
+
+      const visited = visitedSections.has(index);
+
       sectionHeaders.push({
         label: child.props.label,
-        hasErrors: errors.length > 0,
+        hasErrors: visited && errors.length > 0,
         required: child.props.required,
-        visited: visited.has(index),
+        visited,
       });
       return <FormSectionInternal {...child.props} index={index} active={activeIndex === index} />;
     }
@@ -65,12 +71,21 @@ export const FormLayout = ({
   });
 
   const navToIndex = (destinationIndex: number) => {
-    trigger(sections?.[activeIndex].props.fields);
-    setVisited((v) => v.add(activeIndex));
+    setVisitedSections((v) => v.add(activeIndex));
     setActiveIndex(destinationIndex);
   };
 
+  const markAllSectionsVisited = () => {
+    setVisitedSections(new Set(Array.from({ length: sectionCount }, (_, i) => i)));
+  };
+
+  const handleSubmit = (checkValues: CheckFormValues, event: BaseSyntheticEvent | undefined) => {
+    markAllSectionsVisited();
+    onSubmit(checkValues, event);
+  };
+
   const handleError = (errs: FieldErrors<CheckFormValues>) => {
+    markAllSectionsVisited();
     const flattenedErrors = Object.keys(flatten(errs));
     // Find the first section that has a field with an error.
     const errSection = sections?.find((section) =>
@@ -97,7 +112,7 @@ export const FormLayout = ({
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit, handleError)} className={styles.wrapper}>
+    <form onSubmit={formSubmit(handleSubmit, handleError)} className={styles.wrapper}>
       <div className={styles.container}>
         <FormSidebar sections={sectionHeaders} onSectionSelect={navToIndex} activeIndex={activeIndex} />
         <div
@@ -117,7 +132,7 @@ export const FormLayout = ({
                   {errorMessage}
                 </Alert>
               </div>
-            )}{' '}
+            )}
             <hr />
             <div className={cx(styles.actionsBar, styles.sectionContent)}>
               <div className={styles.buttonGroup}>
@@ -178,22 +193,35 @@ const FormSectionInternal = ({
 };
 
 function checkForErrors({
-  formState,
   fields = [],
-  getFieldState,
+  values,
+  schema,
 }: {
-  formState: FormState<CheckFormValues>;
+  values: CheckFormValues;
   fields: Array<FieldPath<CheckFormValues>>;
-  getFieldState: UseFormGetFieldState<CheckFormValues>;
+  schema: ZodType<CheckFormValues>;
 }) {
-  const errors: FieldError[] = [];
-  fields.forEach((field) => {
-    const fieldState = getFieldState(field, formState);
-    if (fieldState.error) {
-      errors.push(fieldState.error);
-    }
-  });
-  return { errors };
+  const result = schema.safeParse(values);
+
+  if (!result.success) {
+    const errors = result.error.errors.reduce<string[]>((acc, err) => {
+      const path = err.path.join('.');
+      const isRelevant = fields.some((f) => path.startsWith(f));
+
+      if (isRelevant) {
+        return [...acc, path];
+      }
+
+      return acc;
+    }, []);
+    return {
+      errors,
+    };
+  }
+
+  return {
+    errors: [],
+  };
 }
 
 const getStyles = (theme: GrafanaTheme2) => {

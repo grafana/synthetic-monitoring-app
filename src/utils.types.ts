@@ -1,5 +1,3 @@
-import { FieldErrors, FieldErrorsImpl } from 'react-hook-form';
-
 import {
   Check,
   CheckFormValues,
@@ -35,10 +33,6 @@ export function isHttpCheck(check: Partial<Check>): check is HTTPCheck {
   }
 
   return false;
-}
-
-export function isHttpErrors(errors: FieldErrors<CheckFormValues>): errors is FieldErrorsImpl<CheckFormValuesHttp> {
-  return 'settings' in errors;
 }
 
 export function isMultiHttpCheck(check: Partial<Check>): check is MultiHTTPCheck {

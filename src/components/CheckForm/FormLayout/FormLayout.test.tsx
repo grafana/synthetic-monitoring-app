@@ -2,6 +2,7 @@ import React, { ReactNode } from 'react';
 import { FormProvider, useForm, useFormContext } from 'react-hook-form';
 import { Button } from '@grafana/ui';
 import { screen } from '@testing-library/react';
+import { z } from 'zod';
 import { render } from 'test/render';
 
 import { FormLayout } from './FormLayout';
@@ -27,7 +28,7 @@ describe(`FormLayout`, () => {
     const firstSectionText = `First section content`;
 
     renderTestForm(
-      <FormLayout formActions={formActions} onSubmit={jest.fn()}>
+      <FormLayout formActions={formActions} onSubmit={jest.fn()} schema={z.object({})}>
         <FormLayout.Section label="First section">
           <div>{firstSectionText}</div>
         </FormLayout.Section>
@@ -45,7 +46,7 @@ describe(`FormLayout`, () => {
     const firstSectionText = `First section content`;
 
     renderTestForm(
-      <FormLayout formActions={formActions} onSubmit={jest.fn()}>
+      <FormLayout formActions={formActions} onSubmit={jest.fn()} schema={z.object({})}>
         <div>Some child that means the formlayout section is not first</div>
         <FormLayout.Section label="First section">
           <div>{firstSectionText}</div>
@@ -59,7 +60,13 @@ describe(`FormLayout`, () => {
 
   it(`shows an error icon if any of the fields in that section have errors`, async () => {
     const { container, user } = renderTestForm(
-      <FormLayout formActions={formActions} onSubmit={jest.fn()}>
+      <FormLayout
+        formActions={formActions}
+        onSubmit={jest.fn()}
+        schema={z.object({
+          job: z.string().min(1),
+        })}
+      >
         <FormLayout.Section label="First section" fields={[`job`]} required>
           <NameInput />
         </FormLayout.Section>
@@ -80,7 +87,7 @@ describe(`FormLayout`, () => {
     const secondSectionText = `Second section content`;
 
     const { user } = renderTestForm(
-      <FormLayout formActions={formActions} onSubmit={jest.fn()}>
+      <FormLayout formActions={formActions} onSubmit={jest.fn()} schema={z.object({})}>
         <FormLayout.Section label="First section">
           <div>{firstSectionText}</div>
         </FormLayout.Section>
@@ -103,7 +110,7 @@ describe(`FormLayout`, () => {
     const thirdSectionText = `Third section content`;
 
     const { user } = renderTestForm(
-      <FormLayout formActions={formActions} onSubmit={jest.fn()}>
+      <FormLayout formActions={formActions} onSubmit={jest.fn()} schema={z.object({})}>
         <FormLayout.Section label="First section">
           <div>{firstSectionText}</div>
         </FormLayout.Section>
@@ -142,5 +149,5 @@ const TestForm = ({ children }: TestFormProps) => {
 const NameInput = () => {
   const { register } = useFormContext<TestValues>();
 
-  return <input {...register('job', { required: true })} />;
+  return <input {...register('job')} />;
 };

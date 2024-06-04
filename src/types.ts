@@ -3,18 +3,12 @@ import { SubmitErrorHandler, SubmitHandler } from 'react-hook-form';
 import { DataSourceSettings, OrgRole, SelectableValue } from '@grafana/data';
 import { EmbeddedScene, SceneRouteMatch } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
+import { ZodType } from 'zod';
 
 import { LinkedDatasourceInfo } from './datasource/types';
 import { SMDataSource } from 'datasource/DataSource';
 import { FilterType } from 'hooks/useCheckFilters';
-import {
-  Assertion,
-  AssertionConditionVariant,
-  AssertionSubjectVariant,
-  MultiHttpEntry,
-  MultiHttpVariable,
-  RequestProps,
-} from 'components/MultiHttp/MultiHttpTypes';
+import { Assertion, MultiHttpEntry, MultiHttpVariable, RequestProps } from 'components/MultiHttp/MultiHttpTypes';
 
 export interface GlobalSettings {
   apiHost: string;
@@ -69,10 +63,10 @@ export interface HeaderMatch {
 }
 
 export interface TLSConfig {
-  insecureSkipVerify?: boolean;
   caCert?: string;
   clientCert?: string;
   clientKey?: string;
+  insecureSkipVerify?: boolean;
   serverName?: string;
 }
 
@@ -143,7 +137,7 @@ export interface DnsSettings {
   port: number;
 
   // validation
-  validRCodes?: string[];
+  validRCodes?: DnsResponseCodes[];
   validateAnswerRRS?: DNSRRValidator;
   validateAuthorityRRS?: DNSRRValidator;
   validateAdditionalRRS?: DNSRRValidator;
@@ -200,13 +194,21 @@ interface HttpHeaderFormValue {
   value: string;
 }
 
-export interface HttpRegexValidationFormValue {
-  matchType: HttpRegexValidationType;
+export interface HttpRegexBodyValidationFormValue {
+  matchType: HttpRegexValidationType.Body;
   expression: string;
   inverted: boolean;
-  header?: string;
-  allowMissing?: boolean;
 }
+
+export interface HttpRegexHeaderValidationFormValue {
+  matchType: HttpRegexValidationType.Header;
+  expression: string;
+  inverted: boolean;
+  header: string;
+  allowMissing: boolean;
+}
+
+export type HttpRegexValidationFormValue = HttpRegexBodyValidationFormValue | HttpRegexHeaderValidationFormValue;
 
 export interface HttpSettingsFormValues
   extends Omit<
@@ -241,18 +243,8 @@ export interface MultiHttpSettingsFormValues {
 
 export interface MultiHttpEntryFormValues extends Omit<MultiHttpEntry, 'request' | 'variables' | 'checks'> {
   request: RequestProps;
-  variables?: MultiHttpVariablesFormValues[];
-  checks?: MultiHttpAssertionFormValues[];
-}
-
-export interface MultiHttpVariablesFormValues extends Omit<MultiHttpVariable, 'type'> {
-  type: SelectableValue<MultiHttpVariableType>;
-}
-
-export interface MultiHttpAssertionFormValues extends Omit<Assertion, 'type' | 'subject' | 'condition'> {
-  type: SelectableValue<MultiHttpAssertionType>;
-  subject?: SelectableValue<AssertionSubjectVariant>;
-  condition?: SelectableValue<AssertionConditionVariant>;
+  variables?: MultiHttpVariable[];
+  checks?: Assertion[];
 }
 
 export interface TracerouteSettings {
@@ -263,8 +255,8 @@ export interface TracerouteSettings {
 }
 
 export interface TracerouteSettingsFormValues {
-  maxHops: string;
-  maxUnknownHops: string;
+  maxHops: number;
+  maxUnknownHops: number;
   ptrLookup: boolean;
   hopTimeout: number;
 }
@@ -796,6 +788,7 @@ export interface CheckFormTypeLayoutProps {
   onSubmit: SubmitHandler<CheckFormValues>;
   onSubmitError?: SubmitErrorHandler<CheckFormValues>;
   errorMessage?: string;
+  schema: ZodType;
 }
 
 export type TLSCheckTypes = CheckType.HTTP | CheckType.TCP | CheckType.GRPC;
