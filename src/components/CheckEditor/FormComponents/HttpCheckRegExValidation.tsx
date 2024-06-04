@@ -94,7 +94,7 @@ export const HttpCheckRegExValidation = () => {
                   )}
                   <Field
                     className={cx(styles.field, styles.grow)}
-                    invalid={Boolean(baseErrorPath?.expression) ? true : false}
+                    invalid={Boolean(baseErrorPath?.expression)}
                     error={baseErrorPath?.expression?.message}
                   >
                     <Input
