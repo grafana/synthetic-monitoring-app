@@ -52,10 +52,12 @@ const HttpSettingsSchema: ZodType<HttpSettingsFormValues> = z.object({
   validHTTPVersions: z.array(z.nativeEnum(HttpVersion)),
   validStatusCodes: z.array(z.number()),
   bearerToken: z.string().optional(),
-  basicAuth: z.object({
-    username: z.string(),
-    password: z.string(),
-  }),
+  basicAuth: z
+    .object({
+      username: z.string(),
+      password: z.string(),
+    })
+    .optional(),
   tlsConfig: TLSConfigSchema,
   cacheBustingQueryParamName: z.string().optional(),
 });

@@ -30,13 +30,32 @@ export type RequestProps = {
 
 export type KeyTypes = 'url' | 'body' | 'method' | 'headers' | 'queryFields' | 'postData';
 
-export interface Assertion {
-  condition?: AssertionConditionVariant;
-  expression?: string;
-  subject?: AssertionSubjectVariant;
-  type: MultiHttpAssertionType;
-  value?: string;
+export interface AssertionText {
+  condition: AssertionConditionVariant;
+  subject: AssertionSubjectVariant;
+  type: MultiHttpAssertionType.Text;
+  value: string;
 }
+
+export interface AssertionJsonPathValue {
+  condition: AssertionConditionVariant;
+  expression: string;
+  type: MultiHttpAssertionType.JSONPathValue;
+  value: string;
+}
+
+export interface AssertionJsonPath {
+  expression: string;
+  type: MultiHttpAssertionType.JSONPath;
+}
+
+export interface AssertionRegex {
+  expression: string;
+  type: MultiHttpAssertionType.Regex;
+  subject: AssertionSubjectVariant;
+}
+
+export type Assertion = AssertionText | AssertionJsonPathValue | AssertionJsonPath | AssertionRegex;
 
 export interface MultiHttpRequestBody {
   contentType: string;

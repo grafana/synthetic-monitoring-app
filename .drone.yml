@@ -65,7 +65,7 @@ steps:
           "pull_request_enabled": true,
           "pull_request_existing_strategy": "ignore",
           "pull_request_message": "Triggered by ${DRONE_COMMIT_LINK}. NOTE: dev does not refer directly to an environment it refers to stacks associated with the dev 'wave'. See [here](https://github.com/grafana/deployment_tools/blob/master/ksonnet/environments/hosted-grafana/waves/provisioned-plugins/README.md#waves) for more info.",
-          "pull_request_reviewers": ["rdubrock", "ckbedwell"],
+          "pull_request_reviewers": ["VikaCep", "ckbedwell"],
           "update_jsonnet_attribute_configs": [
             {
               "file_path": "ksonnet/environments/hosted-grafana/waves/provisioned-plugins/grafana-synthetic-monitoring-app/dev.libsonnet",
@@ -127,7 +127,7 @@ steps:
           "pull_request_enabled": true,
           "pull_request_existing_strategy": "ignore",
           "pull_request_message": "Triggered by ${DRONE_COMMIT_LINK}. NOTE: staging does not refer directly to an environment it refers to stacks associated with the staging 'wave'. See [here](https://github.com/grafana/deployment_tools/blob/master/ksonnet/environments/hosted-grafana/waves/provisioned-plugins/README.md#waves) for more info.",
-          "pull_request_reviewers": ["rdubrock", "ckbedwell"],
+          "pull_request_reviewers": ["VikaCep", "ckbedwell"],
           "update_jsonnet_attribute_configs": [
             {
               "file_path": "ksonnet/environments/hosted-grafana/waves/provisioned-plugins/grafana-synthetic-monitoring-app/staging.libsonnet",
@@ -179,7 +179,7 @@ steps:
           "pull_request_enabled": true,
           "pull_request_existing_strategy": "ignore",
           "pull_request_message": "Triggered by ${DRONE_COMMIT_LINK}. NOTE: canary does not refer directly to an environment it refers to stacks associated with the canary 'wave'. See [here](https://github.com/grafana/deployment_tools/blob/master/ksonnet/environments/hosted-grafana/waves/provisioned-plugins/README.md#waves) for more info.",
-          "pull_request_reviewers": ["rdubrock", "ckbedwell"],
+          "pull_request_reviewers": ["VikaCep", "ckbedwell"],
           "update_jsonnet_attribute_configs": [
             {
               "file_path": "ksonnet/environments/hosted-grafana/waves/provisioned-plugins/grafana-synthetic-monitoring-app/prod-canary.libsonnet",
@@ -233,7 +233,7 @@ steps:
           "pull_request_enabled": true,
           "pull_request_existing_strategy": "ignore",
           "pull_request_message": "Triggered by ${DRONE_COMMIT_LINK}. NOTE: prod does not refer directly to an environment it refers to stacks associated with the prod 'wave'. See [here](https://github.com/grafana/deployment_tools/blob/master/ksonnet/environments/hosted-grafana/waves/provisioned-plugins/README.md#waves) for more info.",
-          "pull_request_reviewers": ["rdubrock", "ckbedwell"],
+          "pull_request_reviewers": ["VikaCep", "ckbedwell"],
           "update_jsonnet_attribute_configs": [
             {
               "file_path": "ksonnet/environments/hosted-grafana/waves/provisioned-plugins/grafana-synthetic-monitoring-app/prod.libsonnet",
@@ -336,6 +336,6 @@ kind: secret
 name: gcp_key
 ---
 kind: signature
-hmac: 2579e8e7adbac655151f3d6d883b99a6480b324fa9c3f3503b4ae771dff11e15
+hmac: ede448d84d902df6e886dc356506c374c626a3d66fad501699c1f1b239dddf49
 
 ...
