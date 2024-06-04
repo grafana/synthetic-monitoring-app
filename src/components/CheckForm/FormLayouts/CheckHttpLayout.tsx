@@ -79,12 +79,7 @@ export const CheckHTTPLayout = ({ formActions, onSubmit, onSubmitError, errorMes
       </FormLayout.Section>
       <FormLayout.Section
         label="Authentication"
-        fields={[
-          `settings.http.authType`,
-          `settings.http.bearerToken`,
-          `settings.http.basicAuth.password`,
-          `settings.http.basicAuth.username`,
-        ]}
+        fields={[`settings.http.bearerToken`, `settings.http.basicAuth.password`, `settings.http.basicAuth.username`]}
       >
         <HttpCheckAuthentication />
       </FormLayout.Section>

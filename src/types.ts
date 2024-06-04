@@ -166,8 +166,6 @@ export interface TcpSettings {
 
 export interface TcpSettingsFormValues extends TcpSettings {}
 
-export type HttpAuthType = 'none' | 'bearer' | 'basic';
-
 export interface HttpSettings {
   method: HttpMethod;
   headers?: string[];
@@ -180,7 +178,6 @@ export interface HttpSettings {
   proxyConnectHeaders?: string[];
 
   // Authentication
-  authType?: HttpAuthType;
   bearerToken?: string;
   basicAuth?: BasicAuth;
 

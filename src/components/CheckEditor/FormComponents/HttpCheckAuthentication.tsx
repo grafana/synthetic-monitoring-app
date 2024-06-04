@@ -1,13 +1,15 @@
-import React, { useEffect } from 'react';
+import React, { MutableRefObject, useCallback, useRef, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { RadioButtonGroup, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { CheckFormValuesHttp, HttpAuthType } from 'types';
+import { BasicAuth, CheckFormValuesHttp } from 'types';
 
 import { HttpCheckBasicAuthorization } from './HttpCheckBasicAuthorization';
 import { HttpCheckBearerToken } from './HttpCheckBearerToken';
+
+type HttpAuthType = 'none' | 'bearer' | 'basic';
 
 export const HttpCheckAuthentication = () => {
   const styles = useStyles2(getStyles);
@@ -17,25 +19,60 @@ export const HttpCheckAuthentication = () => {
   const isBasicAuth = Boolean(
     getValues(`settings.http.basicAuth.username`) || Boolean(getValues(`settings.http.basicAuth.password`))
   );
-
   const isBearerAuth = Boolean(getValues(`settings.http.bearerToken`));
 
-  const authType = getValues('settings.http.authType');
+  const [authType, setAuthType] = useState<HttpAuthType>(isBasicAuth ? 'basic' : isBearerAuth ? 'bearer' : 'none');
 
-  useEffect(() => {
-    if (isBasicAuth) {
-      setValue('settings.http.authType', 'basic');
-      return;
-    }
-    if (isBearerAuth) {
-      setValue('settings.http.authType', 'bearer');
-      return;
-    }
-    setValue('settings.http.authType', 'none');
-  }, [isBasicAuth, isBearerAuth, setValue]);
+  const bearerTokenRef: MutableRefObject<string | undefined> = useRef(undefined);
+  const basicAuthRef: MutableRefObject<BasicAuth | undefined> = useRef(undefined);
 
-  const handleChangeOption = (value: HttpAuthType) => {
-    setValue('settings.http.authType', value);
+  const storeBearerTokenValue = useCallback(() => {
+    if (getValues('settings.http.bearerToken')) {
+      bearerTokenRef.current = getValues('settings.http.bearerToken');
+    }
+  }, [getValues]);
+
+  const storeBasicAuthValue = useCallback(() => {
+    if (getValues('settings.http.basicAuth')) {
+      basicAuthRef.current = getValues('settings.http.basicAuth');
+    }
+  }, [getValues]);
+
+  const handleChangeOption = (newValue: HttpAuthType) => {
+    setAuthType(newValue);
+
+    //going from none|basic to bearer
+    if (newValue === 'bearer') {
+      storeBasicAuthValue();
+
+      //clean basicAuth input
+      setValue('settings.http.basicAuth', undefined);
+
+      //restore bearer value from ref
+      setValue('settings.http.bearerToken', bearerTokenRef.current);
+    }
+
+    //going from none|bearer to basic
+    if (newValue === 'basic') {
+      storeBearerTokenValue();
+
+      //clean bearer input
+      setValue('settings.http.bearerToken', undefined);
+
+      //restore basicAuth value from ref
+      setValue('settings.http.basicAuth', basicAuthRef.current);
+    }
+
+    //going from bearer|basic to none
+    if (newValue === 'none') {
+      storeBasicAuthValue();
+      storeBearerTokenValue();
+
+      //clean bearer input
+      setValue('settings.http.bearerToken', undefined);
+      //clean basicAuth input
+      setValue('settings.http.basicAuth', undefined);
+    }
   };
 
   return (
