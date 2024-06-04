@@ -24,7 +24,7 @@ export function getSSLExpiryStat(metrics: DataSourceRef) {
   return new ExplorablePanel({
     pluginId: 'stat',
     title: 'SSL Expiry',
-    description: 'The average time to receive an answer across all the checks during the whole time period.',
+    description: 'The time remaining until SSL chain expiry',
     $data: queryRunner,
     fieldConfig: {
       defaults: {

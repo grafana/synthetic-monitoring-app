@@ -1,6 +1,6 @@
 import React from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
-import { Tab, TabContent, TabsBar } from '@grafana/ui';
+import { FieldValidationMessage, Tab, TabContent, TabsBar } from '@grafana/ui';
 
 import { CheckFormValuesScripted } from 'types';
 import { CodeEditor } from 'components/CodeEditor';
@@ -64,7 +64,7 @@ export const ScriptedCheckScript = () => {
             lang="js"
           />
         )}
-        {fieldError && <div>{fieldError.message}</div>}
+        {fieldError && <FieldValidationMessage>{fieldError.message}</FieldValidationMessage>}
       </TabContent>
     </>
   );

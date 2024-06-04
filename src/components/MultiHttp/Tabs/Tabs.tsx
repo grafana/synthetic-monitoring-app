@@ -17,7 +17,7 @@ import { css, cx } from '@emotion/css';
 
 import { CheckFormValuesMultiHttp, MultiHttpVariableType } from 'types';
 import { RequestHeaders } from 'components/CheckEditor/FormComponents/RequestHeaders';
-import { parseErrorMessage } from 'components/CheckForm/utils';
+import { interpolateErrorMessage } from 'components/CheckForm/utils';
 import { MULTI_HTTP_VARIABLE_TYPE_OPTIONS } from 'components/constants';
 import { MultiHttpFormTabs } from 'components/MultiHttp/MultiHttpTypes';
 
@@ -108,7 +108,7 @@ const QueryParamsTab = ({ index, active }: MultiHttpTabProps) => {
                   <HorizontalGroup spacing="md" align="flex-start">
                     <Field
                       invalid={Boolean(errors?.[i]?.name)}
-                      error={parseErrorMessage(errors?.[i]?.name?.message, `Query param`)}
+                      error={interpolateErrorMessage(errors?.[i]?.name?.message, `Query param`)}
                     >
                       <Input
                         {...register(`settings.multihttp.entries.${index}.request.queryFields.${i}.name`)}
@@ -120,7 +120,7 @@ const QueryParamsTab = ({ index, active }: MultiHttpTabProps) => {
                     </Field>
                     <Field
                       invalid={Boolean(errors?.[i]?.value)}
-                      error={parseErrorMessage(errors?.[i]?.value?.message, `Query param`)}
+                      error={interpolateErrorMessage(errors?.[i]?.value?.message, `Query param`)}
                     >
                       <Input
                         {...register(`settings.multihttp.entries.${index}.request.queryFields.${i}.value`)}

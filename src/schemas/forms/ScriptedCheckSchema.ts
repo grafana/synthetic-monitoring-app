@@ -4,8 +4,24 @@ import { CheckFormValuesScripted, CheckType, ScriptedSettings } from 'types';
 
 import { BaseCheckSchema } from './BaseCheckSchema';
 
+const MAX_SCRIPT_IN_KB = 128;
+
 const ScriptedSettingsSchema: ZodType<ScriptedSettings> = z.object({
-  script: z.string().min(1, `Script is required.`),
+  script: z
+    .string()
+    .min(1, `Script is required.`)
+    .superRefine((val, ctx) => {
+      const textBlob = new Blob([val], { type: 'text/plain' });
+      const sizeInBytes = textBlob.size;
+      const sizeInKb = sizeInBytes / 1024;
+
+      if (sizeInKb > MAX_SCRIPT_IN_KB) {
+        return ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Script is too big (${sizeInKb.toFixed(2)}kb). Maximum size is ${MAX_SCRIPT_IN_KB}kb.`,
+        });
+      }
+    }),
 });
 
 const ScriptedSchemaValues = z.object({

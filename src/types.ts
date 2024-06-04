@@ -7,6 +7,7 @@ import { ZodType } from 'zod';
 
 import { LinkedDatasourceInfo } from './datasource/types';
 import { SMDataSource } from 'datasource/DataSource';
+import { FilterType } from 'hooks/useCheckFilters';
 import { Assertion, MultiHttpEntry, MultiHttpVariable, RequestProps } from 'components/MultiHttp/MultiHttpTypes';
 
 export interface GlobalSettings {
@@ -86,11 +87,11 @@ export interface TCPQueryResponse {
 }
 
 export interface ExistingObject {
-  id?: number;
-  tenantId?: number;
   created?: number; // seconds
-  updated?: number; // seconds
+  id?: number;
   modified?: number; // seconds
+  tenantId?: number;
+  updated?: number; // seconds
 }
 
 export interface Label {
@@ -625,15 +626,15 @@ export enum CheckSort {
 }
 
 export enum CheckEnabledStatus {
-  All,
-  Enabled,
-  Disabled,
+  All = 'all',
+  Enabled = 'enabled',
+  Disabled = 'disabled',
 }
 
 export enum CheckListViewType {
-  Card,
-  List,
-  Viz,
+  Card = 'card',
+  List = 'list',
+  Viz = 'viz',
 }
 
 export enum HTTPCompressionAlgo {
@@ -698,7 +699,7 @@ export interface VizViewSceneAppConfig extends DashboardSceneAppConfig {
   checkFilters: CheckFiltersType;
   checks: Check[];
   onReset: () => void;
-  onFilterChange: (filters: CheckFiltersType) => void;
+  onFilterChange: (filters: CheckFiltersType, type: FilterType) => void;
 }
 
 export enum MultiHttpVariableType {
@@ -720,6 +721,10 @@ export type SceneBuilder<T extends { [K in keyof T]?: string | undefined } = any
 
 export type RouteMatch<T extends { [K in keyof T]?: string | undefined } = any> = SceneRouteMatch<T>;
 
+export type ProbeFilter = {
+  label: string;
+  value: number;
+};
 export interface CheckFiltersType {
   [key: string]: any;
 
@@ -727,7 +732,7 @@ export interface CheckFiltersType {
   labels: string[];
   type: CheckTypeFilter;
   status: SelectableValue<CheckEnabledStatus>;
-  probes: SelectableValue[] | [];
+  probes: Array<SelectableValue<ProbeFilter>>;
 }
 
 export interface ThresholdValues {

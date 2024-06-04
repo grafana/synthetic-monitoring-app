@@ -6,7 +6,7 @@ import { css } from '@emotion/css';
 import { get } from 'lodash';
 
 import { CheckFormValues, Probe } from 'types';
-import { parseErrorMessage } from 'components/CheckForm/utils';
+import { interpolateErrorMessage } from 'components/CheckForm/utils';
 
 export type NameValueName = 'settings.http.headers' | 'settings.http.proxyConnectHeaders' | 'labels';
 
@@ -53,7 +53,7 @@ export const NameValueInput = ({ ariaLabelSuffix = ``, name, disabled, limit, la
           <div key={field.id} className={styles.stack}>
             <Field
               invalid={Boolean(fieldError?.[index]?.name?.type)}
-              error={parseErrorMessage(fieldError?.[index]?.name?.message, label)}
+              error={interpolateErrorMessage(fieldError?.[index]?.name?.message, label)}
               className={styles.field}
               required
             >
@@ -72,7 +72,7 @@ export const NameValueInput = ({ ariaLabelSuffix = ``, name, disabled, limit, la
             </Field>
             <Field
               invalid={Boolean(fieldError?.[index]?.value)}
-              error={parseErrorMessage(fieldError?.[index]?.value?.message, label)}
+              error={interpolateErrorMessage(fieldError?.[index]?.value?.message, label)}
               className={styles.field}
               required
             >

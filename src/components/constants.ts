@@ -374,7 +374,7 @@ export const CHECK_LIST_SORT_OPTIONS = [
   },
 ];
 
-export const CHECK_LIST_STATUS_OPTIONS = [
+export const CHECK_LIST_STATUS_OPTIONS: Array<SelectableValue<CheckEnabledStatus>> = [
   { label: 'All', value: CheckEnabledStatus.All },
   { label: 'Enabled', value: CheckEnabledStatus.Enabled },
   { label: 'Disabled', value: CheckEnabledStatus.Disabled },
