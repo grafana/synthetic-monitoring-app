@@ -5,11 +5,11 @@ import { css } from '@emotion/css';
 
 import { Check, CheckFiltersType, CheckListViewType, CheckSort } from 'types';
 import { hasRole } from 'utils';
+import { FilterType } from 'hooks/useCheckFilters';
 import { CheckFilters } from 'components/CheckFilters';
 import { CHECK_LIST_SORT_OPTIONS } from 'components/constants';
 
 import ThresholdGlobalSettings from '../Thresholds/ThresholdGlobalSettings';
-import { getViewTypeFromLS } from './actions';
 import { AddNewCheckButton } from './AddNewCheckButton';
 import { BulkActions } from './BulkActions';
 import { CheckListViewSwitcher } from './CheckListViewSwitcher';
@@ -20,12 +20,13 @@ type CheckListHeaderProps = {
   currentPageChecks: Check[];
   onChangeView: (viewType: CheckListViewType) => void;
   onDelete: () => void;
-  onFilterChange: (filters: CheckFiltersType) => void;
+  onFilterChange: (filters: CheckFiltersType, type: FilterType) => void;
   onSort: (sort: SelectableValue<CheckSort>) => void;
   onResetFilters: () => void;
   onSelectAll: (e: React.ChangeEvent<HTMLInputElement>) => void;
   selectedCheckIds: Set<number>;
   sortType: CheckSort;
+  viewType: CheckListViewType;
 };
 
 export const CheckListHeader = ({
@@ -40,9 +41,9 @@ export const CheckListHeader = ({
   onSelectAll,
   selectedCheckIds,
   sortType,
+  viewType,
 }: CheckListHeaderProps) => {
   const styles = useStyles2(getStyles);
-  const viewType = getViewTypeFromLS() ?? CheckListViewType.Card;
   const [showThresholdModal, setShowThresholdModal] = useState(false);
   const hasChecks = checks.length > 0;
   const isAllSelected = !hasChecks ? false : selectedCheckIds.size === checks.length;
