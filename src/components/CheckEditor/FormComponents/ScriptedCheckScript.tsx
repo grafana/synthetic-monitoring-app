@@ -1,6 +1,6 @@
 import React from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
-import { Tab, TabContent, TabsBar } from '@grafana/ui';
+import { FieldValidationMessage, Tab, TabContent, TabsBar } from '@grafana/ui';
 
 import { CheckFormValuesScripted } from 'types';
 import { CodeEditor } from 'components/CodeEditor';
@@ -13,8 +13,12 @@ enum ScriptEditorTabs {
 }
 
 export const ScriptedCheckScript = () => {
-  const { control } = useFormContext<CheckFormValuesScripted>();
+  const {
+    control,
+    formState: { errors },
+  } = useFormContext<CheckFormValuesScripted>();
   const [selectedTab, setSelectedTab] = React.useState(ScriptEditorTabs.Script);
+  const fieldError = errors.settings?.scripted?.script;
 
   return (
     <>
@@ -60,6 +64,7 @@ export const ScriptedCheckScript = () => {
             lang="js"
           />
         )}
+        {fieldError && <FieldValidationMessage>{fieldError.message}</FieldValidationMessage>}
       </TabContent>
     </>
   );

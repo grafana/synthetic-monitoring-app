@@ -4,8 +4,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Field, Icon, Input, Label, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { CheckFormValuesScripted, CheckType } from 'types';
-import { validateTarget } from 'validation';
+import { CheckFormValuesScripted } from 'types';
 
 export const ScriptedCheckInstance = () => {
   const { formState, register } = useFormContext<CheckFormValuesScripted>();
@@ -33,13 +32,7 @@ export const ScriptedCheckInstance = () => {
       error={formState.errors.target?.message}
       required
     >
-      <Input
-        id="target"
-        {...register('target', {
-          required: { value: true, message: 'Instance is required' },
-          validate: (value) => validateTarget(CheckType.Scripted, value),
-        })}
-      />
+      <Input id="target" {...register('target')} />
     </Field>
   );
 };

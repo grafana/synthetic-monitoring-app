@@ -26,8 +26,7 @@ export const TracerouteMaxUnknownHops = () => {
       <Input
         id={id}
         {...register('settings.traceroute.maxUnknownHops', {
-          min: { value: 0, message: `Must be greater than 0` },
-          max: { value: 20, message: `Can be no more than 20` },
+          valueAsNumber: true,
         })}
         min={0}
         type="number"

@@ -5,7 +5,6 @@ import { Container, Field, Input, TextArea } from '@grafana/ui';
 
 import { CheckFormValuesGRPC, CheckFormValuesHttp, CheckFormValuesTcp, TLSCheckTypes, TLSFormValues } from 'types';
 import { hasRole } from 'utils';
-import { validateTLSCACert, validateTLSClientCert, validateTLSClientKey, validateTLSServerName } from 'validation';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 
 interface Props {
@@ -38,10 +37,7 @@ export const TLSConfig = ({ checkType }: Props) => {
       >
         <Input
           id="tls-config-server-name"
-          {...register(`settings.${checkType}.tlsConfig.serverName`, {
-            validate: (value) => validateTLSServerName(value),
-            required: false,
-          })}
+          {...register(`settings.${checkType}.tlsConfig.serverName`)}
           type="text"
           placeholder="Server name"
           disabled={!isEditor}
@@ -58,10 +54,7 @@ export const TLSConfig = ({ checkType }: Props) => {
         >
           <TextArea
             id="tls-config-ca-certificate"
-            {...register(`settings.${checkType}.tlsConfig.caCert`, {
-              validate: validateTLSCACert,
-              required: false,
-            })}
+            {...register(`settings.${checkType}.tlsConfig.caCert`)}
             rows={2}
             disabled={!isEditor}
             placeholder="CA certificate"
@@ -79,10 +72,7 @@ export const TLSConfig = ({ checkType }: Props) => {
         >
           <TextArea
             id="tls-config-client-cert"
-            {...register(`settings.${checkType}.tlsConfig.clientCert`, {
-              validate: validateTLSClientCert,
-              required: false,
-            })}
+            {...register(`settings.${checkType}.tlsConfig.clientCert`)}
             rows={2}
             disabled={!isEditor}
             placeholder="Client certificate"
@@ -100,10 +90,7 @@ export const TLSConfig = ({ checkType }: Props) => {
         >
           <TextArea
             id="tls-config-client-key"
-            {...register(`settings.${checkType}.tlsConfig.clientKey`, {
-              validate: validateTLSClientKey,
-              required: false,
-            })}
+            {...register(`settings.${checkType}.tlsConfig.clientKey`)}
             type="password"
             rows={2}
             disabled={!isEditor}

@@ -31,7 +31,9 @@ export const HttpCheckSSLOptions = () => {
               inputId={id}
               options={HTTP_SSL_OPTIONS}
               disabled={!isEditor}
-              onChange={(e) => onChange(e.value)}
+              onChange={({ value }) => {
+                onChange(value);
+              }}
             />
           );
         }}

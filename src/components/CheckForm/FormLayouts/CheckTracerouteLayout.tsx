@@ -19,9 +19,16 @@ export const CheckTracerouteLayout = ({
   onSubmit,
   onSubmitError,
   errorMessage,
+  schema,
 }: CheckFormTypeLayoutProps) => {
   return (
-    <FormLayout formActions={formActions} onSubmit={onSubmit} onSubmitError={onSubmitError} errorMessage={errorMessage}>
+    <FormLayout
+      formActions={formActions}
+      onSubmit={onSubmit}
+      onSubmitError={onSubmitError}
+      errorMessage={errorMessage}
+      schema={schema}
+    >
       <FormLayout.Section label="Define check" fields={[`enabled`, `job`, `target`]} required>
         <CheckEnabled />
         <CheckJobName />
