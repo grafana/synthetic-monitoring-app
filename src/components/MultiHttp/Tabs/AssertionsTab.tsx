@@ -168,8 +168,8 @@ function AssertionFields(props: AssertionProps) {
 function AssertionSubjectField({ entryIndex, assertionIndex }: AssertionProps) {
   const { formState } = useFormContext<CheckFormValuesMultiHttp>();
   const error = formState.errors.settings?.multihttp?.entries?.[entryIndex]?.checks?.[assertionIndex];
-  const err = errorHasSubject(error) ? error?.subject : undefined;
-  const errMessage = err?.message;
+  const errorSubject = errorHasSubject(error) ? error?.subject : undefined;
+  const errorMessage = errorSubject?.message;
 
   return (
     <Controller
@@ -182,8 +182,8 @@ function AssertionSubjectField({ entryIndex, assertionIndex }: AssertionProps) {
           <Field
             label="Subject"
             description="Target value to assert against"
-            invalid={Boolean(err)}
-            error={errMessage}
+            invalid={Boolean(errorSubject)}
+            error={errorMessage}
             htmlFor={id}
             data-fs-element="Assertion subject select"
           >
@@ -204,8 +204,8 @@ function AssertionSubjectField({ entryIndex, assertionIndex }: AssertionProps) {
 function AssertionConditionField({ entryIndex, assertionIndex }: AssertionProps) {
   const { formState } = useFormContext<CheckFormValuesMultiHttp>();
   const error = formState.errors.settings?.multihttp?.entries?.[entryIndex]?.checks?.[assertionIndex];
-  const err = errorHasCondition(error) ? error?.condition : undefined;
-  const errMessage = err?.message;
+  const errorCondition = errorHasCondition(error) ? error?.condition : undefined;
+  const errorMessage = errorCondition?.message;
 
   return (
     <Controller
@@ -218,8 +218,8 @@ function AssertionConditionField({ entryIndex, assertionIndex }: AssertionProps)
           <Field
             label="Condition"
             description="Comparator"
-            invalid={Boolean(err)}
-            error={errMessage}
+            invalid={Boolean(errorCondition)}
+            error={errorMessage}
             htmlFor={id}
             data-fs-element="Assertion condition select"
           >
@@ -240,8 +240,8 @@ function AssertionConditionField({ entryIndex, assertionIndex }: AssertionProps)
 function AssertionValueField({ entryIndex, assertionIndex }: AssertionProps) {
   const { formState, register, watch } = useFormContext<CheckFormValuesMultiHttp>();
   const error = formState.errors.settings?.multihttp?.entries?.[entryIndex]?.checks?.[assertionIndex];
-  const err = errorHasValue(error) ? error?.value : undefined;
-  const errMessage = err?.message;
+  const errorValue = errorHasValue(error) ? error?.value : undefined;
+  const errorMessage = errorValue?.message;
   const assertionType = watch(`settings.multihttp.entries.${entryIndex}.checks.${assertionIndex}.type`);
   const description =
     assertionType === MultiHttpAssertionType.Text
@@ -249,7 +249,7 @@ function AssertionValueField({ entryIndex, assertionIndex }: AssertionProps) {
       : 'Value to compare with result of expression';
 
   return (
-    <Field label="Value" description={description} invalid={Boolean(err)} error={errMessage}>
+    <Field label="Value" description={description} invalid={Boolean(errorValue)} error={errorMessage}>
       <Input
         placeholder="Value"
         id={`${entryIndex}-${assertionIndex}-value`}
@@ -265,11 +265,11 @@ function AssertionExpressionField({ entryIndex, assertionIndex }: AssertionProps
   const assertionType = watch(`settings.multihttp.entries.${entryIndex}.checks.${assertionIndex}.type`);
   const { description, placeholder } = getExpressionPlaceholderInfo(assertionType);
   const error = formState.errors.settings?.multihttp?.entries?.[entryIndex]?.checks?.[assertionIndex];
-  const err = errorHasExpression(error) ? error?.expression : undefined;
-  const errMessage = err?.message;
+  const errorExpression = errorHasExpression(error) ? error?.expression : undefined;
+  const errorMessage = errorExpression?.message;
 
   return (
-    <Field label="Expression" invalid={Boolean(err)} error={errMessage} description={description}>
+    <Field label="Expression" invalid={Boolean(errorMessage)} error={errorMessage} description={description}>
       <Input
         placeholder={placeholder}
         data-testid={`${entryIndex}-${assertionIndex}-expression`}
