@@ -1,4 +1,4 @@
-import React, { MutableRefObject, useCallback, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { RadioButtonGroup, useStyles2 } from '@grafana/ui';
