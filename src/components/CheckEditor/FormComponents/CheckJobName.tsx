@@ -21,10 +21,7 @@ export const CheckJobName = () => {
     >
       <Input
         id="check-editor-job-input"
-        {...register('job', {
-          required: { value: true, message: 'Job name is required' },
-          validate: validateJob,
-        })}
+        {...register('job')}
         type="text"
         placeholder="jobName"
         data-fs-element="Job name input"
@@ -32,11 +29,3 @@ export const CheckJobName = () => {
     </Field>
   );
 };
-
-function validateJob(job: string): string | undefined {
-  if (job.length > 128) {
-    return 'Job name must be 128 characters or less';
-  }
-
-  return undefined;
-}

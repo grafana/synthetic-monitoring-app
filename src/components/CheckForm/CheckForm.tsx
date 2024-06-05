@@ -2,6 +2,16 @@ import React, { BaseSyntheticEvent, useMemo, useRef, useState } from 'react';
 import { FormProvider, SubmitErrorHandler, SubmitHandler, useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 import { Button, ConfirmModal, LinkButton } from '@grafana/ui';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { DNSCheckSchema } from 'schemas/forms/DNSCheckSchema';
+import { GRPCCheckSchema } from 'schemas/forms/GRPCCheckSchema';
+import { HttpCheckSchema } from 'schemas/forms/HttpCheckSchema';
+import { MultiHttpCheckSchema } from 'schemas/forms/MultiHttpCheckSchema';
+import { PingCheckSchema } from 'schemas/forms/PingCheckSchema';
+import { ScriptedCheckSchema } from 'schemas/forms/ScriptedCheckSchema';
+import { TCPCheckSchema } from 'schemas/forms/TCPCheckSchema';
+import { TracerouteCheckSchema } from 'schemas/forms/TracerouteCheckSchema';
+import { ZodType } from 'zod';
 
 import { Check, CheckFormValues, CheckPageParams, CheckType, ROUTES } from 'types';
 import { isOverCheckLimit, isOverScriptedLimit } from 'utils';
@@ -16,6 +26,7 @@ import { PluginPage } from 'components/PluginPage';
 import { getRoute } from 'components/Routing';
 
 import { CheckDNSLayout } from './FormLayouts/CheckDNSLayout';
+import { CheckGrpcLayout } from './FormLayouts/CheckGrpcLayout';
 import { CheckHTTPLayout } from './FormLayouts/CheckHttpLayout';
 import { CheckMultiHTTPLayout } from './FormLayouts/CheckMultiHttpLayout';
 import { CheckPingLayout } from './FormLayouts/CheckPingLayout';
@@ -57,6 +68,17 @@ type CheckFormContentProps = {
   overScriptedLimit: boolean;
 };
 
+const schemaMap = {
+  [CheckType.HTTP]: HttpCheckSchema,
+  [CheckType.MULTI_HTTP]: MultiHttpCheckSchema,
+  [CheckType.Scripted]: ScriptedCheckSchema,
+  [CheckType.PING]: PingCheckSchema,
+  [CheckType.DNS]: DNSCheckSchema,
+  [CheckType.TCP]: TCPCheckSchema,
+  [CheckType.Traceroute]: TracerouteCheckSchema,
+  [CheckType.GRPC]: GRPCCheckSchema,
+};
+
 const CheckFormContent = ({ check, checkType, overCheckLimit, overScriptedLimit }: CheckFormContentProps) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const { adhocTestData, closeModal, isPending, openTestCheckModal, testCheck, testCheckError } =
@@ -66,7 +88,7 @@ const CheckFormContent = ({ check, checkType, overCheckLimit, overScriptedLimit 
   const formMethods = useForm<CheckFormValues>({
     defaultValues: initialValues,
     shouldFocusError: false, // we manage focus manually
-    mode: `onBlur`,
+    resolver: zodResolver(schemaMap[checkType]),
   });
 
   const { updateCheck, createCheck, deleteCheck, error, submitting } = useCUDChecks({ eventInfo: { checkType } });
@@ -167,6 +189,7 @@ const CheckFormContent = ({ check, checkType, overCheckLimit, overScriptedLimit 
             />
           )}
           <CheckSelector
+            schema={schemaMap[checkType]}
             checkType={checkType}
             formActions={actions}
             onSubmit={handleSubmit}
@@ -196,6 +219,7 @@ const CheckSelector = ({
   onSubmit: SubmitHandler<CheckFormValues>;
   onSubmitError?: SubmitErrorHandler<CheckFormValues>;
   errorMessage?: string;
+  schema: ZodType<CheckFormValues>;
 }) => {
   if (checkType === CheckType.HTTP) {
     return <CheckHTTPLayout {...rest} />;
@@ -225,6 +249,10 @@ const CheckSelector = ({
     return <CheckTracerouteLayout {...rest} />;
   }
 
+  if (checkType === CheckType.GRPC) {
+    return <CheckGrpcLayout {...rest} />;
+  }
+
   throw new Error(`Invalid check type: ${checkType}`);
 };
 
@@ -233,9 +261,5 @@ function isValidCheckType(checkType?: CheckType): checkType is CheckType {
     return false;
   }
 
-  if (Object.values(CheckType).includes(checkType)) {
-    return true;
-  }
-
-  return false;
+  return Object.values(CheckType).includes(checkType);
 }

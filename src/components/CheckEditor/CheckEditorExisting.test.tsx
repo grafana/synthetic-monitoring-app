@@ -106,7 +106,7 @@ describe('editing checks', () => {
     expect(await within(validation).findByText(validStatusCodes![0])).toBeInTheDocument();
     expect(await within(validation).findByText(validHTTPVersions![0])).toBeInTheDocument();
     // failIfNotSSL
-    expect(await within(validation).findByText('Probe fails if SSL is not present.')).toBeInTheDocument();
+    expect(await within(validation).findByText('Probe fails if SSL is not present')).toBeInTheDocument();
     const [header1, header2] = await within(validation).findAllByPlaceholderText('Header name');
     expect(header1).toHaveValue(failIfHeaderMatchesRegexp![0].header);
     expect(header2).toHaveValue(failIfHeaderNotMatchesRegexp![0]?.header);

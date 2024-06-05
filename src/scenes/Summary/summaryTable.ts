@@ -164,11 +164,26 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
         },
       },
       {
-        id: 'joinByField',
-        options: {
-          byField: 'job',
-          mode: 'inner',
-        },
+        "id": "calculateField",
+        "options": {
+          "mode": "binary",
+          "reduce": {
+            "reducer": "sum"
+          },
+          "binary": {
+            "left": "instance",
+            "right": "job"
+          },
+          "alias": "key",
+          "replaceFields": false
+        }
+      },
+      {
+        "id": "joinByField",
+        "options": {
+          "byField": "key",
+          "mode": "inner"
+        }
       },
       {
         id: 'calculateField',
@@ -204,6 +219,7 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
         id: 'organize',
         options: {
           excludeByName: {
+            "key": true,
             'Value #A (sum)': true,
             'Value #latency denom (sum)': true,
             'Value #latency numer (sum)': true,
@@ -214,6 +230,10 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
             'check_name (lastNotNull) 4': true,
             'check_name (lastNotNull) 5': true,
             'id (lastNotNull)': false,
+            'job 2': true,
+            'job 3': true,
+            'job 4': true,
+            'job 5': true,
             'instance 2': true,
             'instance 3': true,
             'instance 4': true,
@@ -240,7 +260,7 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
             'instance 4': 14,
             'instance 5': 17,
             'instance 6': 18,
-            job: 0,
+            'job 1': 0,
             latency: 6,
             reachability: 5,
             'Value #reach numer (sum) / Value #reach denom (sum)': 5,

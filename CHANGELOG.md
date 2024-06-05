@@ -1,5 +1,9 @@
 # Change Log
 
+# [1.14.5](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.3...v1.14.4) (2024-5-23)
+
+- Fix a bug with with SSL failing checks option not being respected in http checks
+
 # [1.14.4](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.3...v1.14.4) (2024-5-2)
 
 - Fix a bug with traceroute timeouts gettings the wrong default value

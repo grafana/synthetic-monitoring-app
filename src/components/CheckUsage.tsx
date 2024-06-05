@@ -66,7 +66,7 @@ export const CheckUsage = ({ checkType }: { checkType: CheckType }) => {
       <div className={styles.calcList}>
         <div className={styles.section}>
           <Icon className={styles.icon} name="calendar-alt" />
-          Checks per month: <strong className={styles.value}>{usage.checksPerMonth.toLocaleString()}</strong>
+          Test executions per month: <strong className={styles.value}>{usage.checksPerMonth.toLocaleString()}</strong>
         </div>
         {!hideTelemetry && (
           <>

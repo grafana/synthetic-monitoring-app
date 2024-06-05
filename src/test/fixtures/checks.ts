@@ -90,7 +90,7 @@ export const BASIC_DNS_CHECK: DNSCheck = {
       protocol: DnsProtocol.UDP,
       recordType: DnsRecordType.A,
       server: 'dns.google',
-      validRCodes: [DnsResponseCodes.NOERROR] as string[],
+      validRCodes: [DnsResponseCodes.NOERROR],
       validateAdditionalRRS: {
         failIfMatchesRegexp: [],
         failIfNotMatchesRegexp: [],

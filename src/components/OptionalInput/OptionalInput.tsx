@@ -1,7 +1,7 @@
 import React, { ReactNode, useId, useState } from 'react';
 import { GrafanaTheme2, OrgRole } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { css, cx } from '@emotion/css';
 
 import { hasRole } from 'utils';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
@@ -27,7 +27,7 @@ export const OptionalInput = ({ children, label, isOpen = false }: OptionalInput
         value={include}
         onChange={() => setInclude(!include)}
       />
-      {include && children}
+      <div className={cx({ [styles.hide]: !include })}>{children}</div>
     </div>
   );
 };
@@ -38,6 +38,9 @@ const getStyles = (theme: GrafanaTheme2) => {
       display: `flex`,
       flexDirection: `column`,
       gap: theme.spacing(1),
+    }),
+    hide: css({
+      display: `none`,
     }),
   };
 };

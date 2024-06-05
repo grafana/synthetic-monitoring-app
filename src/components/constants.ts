@@ -150,6 +150,13 @@ export const CHECK_TYPE_OPTIONS = [
     status: CheckStatus.PUBLIC_PREVIEW,
     featureToggle: FeatureName.ScriptedChecks,
   },
+  {
+    label: 'gRPC',
+    value: CheckType.GRPC,
+    description: 'Use the gRPC Health Checking Protocol to ensure a gRPC service is healthy',
+    status: CheckStatus.EXPERIMENTAL,
+    featureToggle: FeatureName.GRPCChecks,
+  },
 ];
 
 export const HTTP_SSL_OPTIONS = [
@@ -158,11 +165,11 @@ export const HTTP_SSL_OPTIONS = [
     value: HttpSslOption.Ignore,
   },
   {
-    label: 'Probe fails if SSL is present.',
+    label: 'Probe fails if SSL is present',
     value: HttpSslOption.FailIfPresent,
   },
   {
-    label: 'Probe fails if SSL is not present.',
+    label: 'Probe fails if SSL is not present',
     value: HttpSslOption.FailIfNotPresent,
   },
 ];
@@ -221,7 +228,10 @@ export const FALLBACK_CHECK_DNS: DNSCheck = {
 export const FALLBACK_CHECK_GRPC: GRPCCheck = {
   ...FALLBACK_CHECK_BASE,
   settings: {
-    grpc: undefined,
+    grpc: {
+      ipVersion: IpVersion.V4,
+      tls: false,
+    },
   },
 };
 
@@ -413,7 +423,7 @@ export const CHECK_LIST_SORT_OPTIONS = [
   },
 ];
 
-export const CHECK_LIST_STATUS_OPTIONS = [
+export const CHECK_LIST_STATUS_OPTIONS: Array<SelectableValue<CheckEnabledStatus>> = [
   { label: 'All', value: CheckEnabledStatus.All },
   { label: 'Enabled', value: CheckEnabledStatus.Enabled },
   { label: 'Disabled', value: CheckEnabledStatus.Disabled },
@@ -428,15 +438,9 @@ export const CHECK_LIST_VIEW_TYPE_OPTIONS = [
 export const CHECKS_PER_PAGE_CARD = 15;
 export const CHECKS_PER_PAGE_LIST = 50;
 
-export const PEM_HEADER = '-----BEGIN CERTIFICATE-----';
-
-export const PEM_FOOTER = '-----END CERTIFICATE-----';
-
 export const CHECK_LIST_VIEW_TYPE_LS_KEY = 'grafana.sm.checklist.viewType';
 
 export const CHECK_LIST_ICON_OVERLAY_LS_KEY = 'grafana.sm.checklist.iconOverlay';
-
-export const INVALID_WEB_URL_MESSAGE = 'Target must be a valid web URL';
 
 export const HTTP_COMPRESSION_ALGO_OPTIONS = [
   { label: 'none', value: HTTPCompressionAlgo.none },

@@ -26,14 +26,14 @@ export const TCPCheckQueryAndResponse = () => {
           return (
             <div className={styles.stack} key={field.id}>
               <Input
-                {...register(`settings.tcp.queryResponse.${index}.expect` as const)}
+                {...register(`settings.tcp.queryResponse.${index}.expect`)}
                 type="text"
                 placeholder="Response to expect"
                 disabled={!isEditor}
                 data-fs-element="TCP query response expect input"
               />
               <TextArea
-                {...register(`settings.tcp.queryResponse.${index}.send` as const)}
+                {...register(`settings.tcp.queryResponse.${index}.send`)}
                 type="text"
                 placeholder="Data to send"
                 rows={1}

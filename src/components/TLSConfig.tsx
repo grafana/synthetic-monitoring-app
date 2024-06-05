@@ -1,24 +1,23 @@
 import React from 'react';
-import { DeepMap, FieldError, useFormContext } from 'react-hook-form';
+import { FieldErrors, useFormContext } from 'react-hook-form';
 import { OrgRole } from '@grafana/data';
 import { Container, Field, Input, TextArea } from '@grafana/ui';
 
-import { CheckFormValuesHttp, CheckFormValuesTcp, CheckType } from 'types';
+import { CheckFormValuesGRPC, CheckFormValuesHttp, CheckFormValuesTcp, TLSCheckTypes, TLSFormValues } from 'types';
 import { hasRole } from 'utils';
-import { validateTLSCACert, validateTLSClientCert, validateTLSClientKey, validateTLSServerName } from 'validation';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 
 interface Props {
-  checkType: CheckType.HTTP | CheckType.TCP;
+  checkType: TLSCheckTypes;
 }
 
 export const TLSConfig = ({ checkType }: Props) => {
   const {
     register,
     formState: { errors },
-  } = useFormContext<CheckFormValuesHttp | CheckFormValuesTcp>();
+  } = useFormContext<CheckFormValuesHttp | CheckFormValuesTcp | CheckFormValuesGRPC>();
   const isEditor = hasRole(OrgRole.Editor);
-  const errs = isErrorsHttp(errors) ? errors.settings?.http : isErrorsTcp(errors) ? errors.settings?.tcp : undefined;
+  const errs = getCheckTypeErrors(errors, checkType);
 
   return (
     <>
@@ -38,10 +37,7 @@ export const TLSConfig = ({ checkType }: Props) => {
       >
         <Input
           id="tls-config-server-name"
-          {...register(`settings.${checkType}.tlsConfig.serverName`, {
-            validate: (value) => validateTLSServerName(value),
-            required: false,
-          })}
+          {...register(`settings.${checkType}.tlsConfig.serverName`)}
           type="text"
           placeholder="Server name"
           disabled={!isEditor}
@@ -58,10 +54,7 @@ export const TLSConfig = ({ checkType }: Props) => {
         >
           <TextArea
             id="tls-config-ca-certificate"
-            {...register(`settings.${checkType}.tlsConfig.caCert`, {
-              validate: validateTLSCACert,
-              required: false,
-            })}
+            {...register(`settings.${checkType}.tlsConfig.caCert`)}
             rows={2}
             disabled={!isEditor}
             placeholder="CA certificate"
@@ -79,10 +72,7 @@ export const TLSConfig = ({ checkType }: Props) => {
         >
           <TextArea
             id="tls-config-client-cert"
-            {...register(`settings.${checkType}.tlsConfig.clientCert`, {
-              validate: validateTLSClientCert,
-              required: false,
-            })}
+            {...register(`settings.${checkType}.tlsConfig.clientCert`)}
             rows={2}
             disabled={!isEditor}
             placeholder="Client certificate"
@@ -100,10 +90,7 @@ export const TLSConfig = ({ checkType }: Props) => {
         >
           <TextArea
             id="tls-config-client-key"
-            {...register(`settings.${checkType}.tlsConfig.clientKey`, {
-              validate: validateTLSClientKey,
-              required: false,
-            })}
+            {...register(`settings.${checkType}.tlsConfig.clientKey`)}
             type="password"
             rows={2}
             disabled={!isEditor}
@@ -116,18 +103,6 @@ export const TLSConfig = ({ checkType }: Props) => {
   );
 };
 
-function isErrorsHttp(errors: any): errors is DeepMap<CheckFormValuesHttp, FieldError> {
-  if (Object.hasOwnProperty.call(errors?.settings || {}, 'http')) {
-    return true;
-  }
-
-  return false;
-}
-
-function isErrorsTcp(errors: any): errors is DeepMap<CheckFormValuesTcp, FieldError> {
-  if (Object.hasOwnProperty.call(errors?.settings || {}, 'tcp')) {
-    return true;
-  }
-
-  return false;
+function getCheckTypeErrors(errors: FieldErrors<TLSFormValues>, checkType: Props['checkType']) {
+  return errors?.settings?.[checkType];
 }

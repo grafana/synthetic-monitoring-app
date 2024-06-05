@@ -4,7 +4,9 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { ClipboardButton, Field, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { CheckFormValuesMultiHttp, MultiHttpVariablesFormValues } from 'types';
+import { CheckFormValuesMultiHttp } from 'types';
+
+import { MultiHttpVariable } from './MultiHttpTypes';
 
 interface Props {
   index: number;
@@ -25,7 +27,7 @@ export function AvailableVariables({ index }: Props) {
   const { watch } = useFormContext<CheckFormValuesMultiHttp>();
   const settings: CheckFormValuesMultiHttp['settings'] = watch('settings');
   const availableVars =
-    settings.multihttp.entries.reduce<MultiHttpVariablesFormValues[]>((acc, entry, requestIndex) => {
+    settings.multihttp.entries.reduce<MultiHttpVariable[]>((acc, entry, requestIndex) => {
       if (index > requestIndex) {
         return acc.concat(entry.variables ?? []);
       }

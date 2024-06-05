@@ -8,11 +8,15 @@ import { hasRole } from 'utils';
 
 export const DNSCheckRecordServer = () => {
   const isEditor = hasRole(OrgRole.Editor);
-  const { register } = useFormContext<CheckFormValuesDns>();
+  const {
+    register,
+    formState: { errors },
+  } = useFormContext<CheckFormValuesDns>();
   const id = 'dns-settings-server-address';
+  const fieldError = errors?.settings?.dns?.server?.message;
 
   return (
-    <Field label="Server" disabled={!isEditor} htmlFor={id}>
+    <Field label="Server" disabled={!isEditor} htmlFor={id} invalid={Boolean(fieldError)} error={fieldError}>
       <Input
         id={id}
         {...register('settings.dns.server')}

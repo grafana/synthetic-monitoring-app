@@ -7,7 +7,6 @@ import { get } from 'lodash';
 
 import { CheckFormValues, CheckType } from 'types';
 import { parseUrl } from 'utils';
-import { validateTarget } from 'validation';
 import QueryParams from 'components/QueryParams';
 
 type RequestMethodInputProps = {
@@ -36,12 +35,6 @@ export const RequestTargetInput = ({
     <Controller
       name={name}
       control={control}
-      rules={{
-        required: { value: true, message: 'Target is required' },
-        validate: (target) => {
-          return validateTarget(checkType, target);
-        },
-      }}
       render={({ field }) => (
         <>
           <Field
@@ -59,6 +52,7 @@ export const RequestTargetInput = ({
               placeholder={targetHelp?.example}
               data-fs-element="Target input"
               {...field}
+              value={typeof field.value === `string` ? field.value : ''}
             />
           </Field>
           {showQueryParams && parsedURL && (
@@ -144,10 +138,11 @@ const getTargetHelpText = (typeOfCheck: CheckType | undefined): TargetHelpInfo =
       };
       break;
     }
+
     case CheckType.GRPC: {
       resp = {
-        text: '',
-        example: '',
+        text: 'Host:port to connect to',
+        example: 'grafana.com:50051',
       };
       break;
     }

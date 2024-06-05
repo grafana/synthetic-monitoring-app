@@ -9,6 +9,7 @@ import { InstanceContext } from 'contexts/InstanceContext';
 import { useChecks } from 'data/useChecks';
 import { PLUGIN_URL_PATH } from 'components/constants';
 import { getDNSScene } from 'scenes/DNS';
+import { getGRPCScene } from 'scenes/GRPC/getGRPCScene';
 import { getHTTPScene } from 'scenes/HTTP';
 import { getPingScene } from 'scenes/PING/pingScene';
 import { getScriptedScene } from 'scenes/SCRIPTED';
@@ -113,8 +114,17 @@ function DashboardPageContent() {
           ],
         });
       }
+
       case CheckType.GRPC: {
-        return null;
+        return new SceneApp({
+          pages: [
+            new SceneAppPage({
+              title: checkToView.job,
+              url,
+              getScene: getGRPCScene(config, [checkToView]),
+            }),
+          ],
+        });
       }
     }
   }, [instance.api, instance.logs, instance.metrics, checkToView]);

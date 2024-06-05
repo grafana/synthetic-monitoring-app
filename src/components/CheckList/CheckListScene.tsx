@@ -19,6 +19,7 @@ import { Spinner } from '@grafana/ui';
 import { CheckFiltersType, CheckListViewType, VizViewSceneAppConfig } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { useChecks } from 'data/useChecks';
+import { FilterType } from 'hooks/useCheckFilters';
 import { CheckFilters } from 'components/CheckFilters';
 import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
@@ -270,7 +271,7 @@ interface Props {
   onChangeViewType: (viewType: CheckListViewType) => void;
   checkFilters: CheckFiltersType;
   onReset: () => void;
-  onFilterChange: (filters: CheckFiltersType) => void;
+  onFilterChange: (filters: CheckFiltersType, type: FilterType) => void;
 }
 
 export function CheckListScene({ onChangeViewType, checkFilters, onReset, onFilterChange }: Props) {

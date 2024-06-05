@@ -1,5 +1,3 @@
-import { FieldErrors, FieldErrorsImpl } from 'react-hook-form';
-
 import {
   Check,
   CheckFormValues,
@@ -26,11 +24,7 @@ export function isDNSCheck(check: Partial<Check>): check is DNSCheck {
 }
 
 export function isGRPCCheck(check: Partial<Check>): check is GRPCCheck {
-  if (Object.hasOwnProperty.call(check.settings, 'grpc')) {
-    return true;
-  }
-
-  return false;
+  return 'grpc' in (check.settings ?? {});
 }
 
 export function isHttpCheck(check: Partial<Check>): check is HTTPCheck {
@@ -39,10 +33,6 @@ export function isHttpCheck(check: Partial<Check>): check is HTTPCheck {
   }
 
   return false;
-}
-
-export function isHttpErrors(errors: FieldErrors<CheckFormValues>): errors is FieldErrorsImpl<CheckFormValuesHttp> {
-  return 'settings' in errors;
 }
 
 export function isMultiHttpCheck(check: Partial<Check>): check is MultiHTTPCheck {
