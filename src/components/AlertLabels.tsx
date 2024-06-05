@@ -58,7 +58,7 @@ export const AlertLabels: FC = () => {
           <Fragment key={field.id}>
             <Field
               error={errors?.labels?.[labelIndex]?.name?.message}
-              invalid={Boolean(errors?.labels?.[labelIndex]?.name)}
+              invalid={Boolean(errors?.labels?.[labelIndex]?.name) ? true : undefined}
             >
               <Input
                 {...register(`${NAME}.${labelIndex}.name` as const, {
@@ -70,7 +70,7 @@ export const AlertLabels: FC = () => {
             </Field>
             <Field
               error={errors?.labels?.[labelIndex]?.value?.message}
-              invalid={Boolean(errors?.labels?.[labelIndex]?.value)}
+              invalid={Boolean(errors?.labels?.[labelIndex]?.value) ? true : undefined}
             >
               <Input
                 {...register(`${NAME}.${labelIndex}.value` as const, {

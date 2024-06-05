@@ -74,7 +74,9 @@ export const BodyTab = ({ index, active }: MultiHttpTabProps) => {
       <Field
         label="Request body payload"
         description="The body of the HTTP request used in probe."
-        invalid={Boolean(formState?.errors?.settings?.multihttp?.entries?.[index]?.request?.body?.payload)}
+        invalid={
+          Boolean(formState?.errors?.settings?.multihttp?.entries?.[index]?.request?.body?.payload) ? true : undefined
+        }
         error={formState?.errors?.settings?.multihttp?.entries?.[index]?.request?.body?.payload?.message}
       >
         <TextArea
@@ -107,7 +109,7 @@ const QueryParamsTab = ({ index, active }: MultiHttpTabProps) => {
                 <HorizontalGroup align="flex-start" spacing="md">
                   <HorizontalGroup spacing="md" align="flex-start">
                     <Field
-                      invalid={Boolean(errors?.[i]?.name)}
+                      invalid={Boolean(errors?.[i]?.name) ? true : undefined}
                       error={interpolateErrorMessage(errors?.[i]?.name?.message, `Query param`)}
                     >
                       <Input
@@ -119,7 +121,7 @@ const QueryParamsTab = ({ index, active }: MultiHttpTabProps) => {
                       />
                     </Field>
                     <Field
-                      invalid={Boolean(errors?.[i]?.value)}
+                      invalid={Boolean(errors?.[i]?.value) ? true : undefined}
                       error={interpolateErrorMessage(errors?.[i]?.value?.message, `Query param`)}
                     >
                       <Input
@@ -192,7 +194,7 @@ const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
                       <Field
                         label="Variable type"
                         description="The method of getting a value"
-                        invalid={Boolean(errorPath?.type)}
+                        invalid={Boolean(errorPath?.type) ? true : undefined}
                         error={errMessage}
                         data-fs-element="Variable type select"
                       >
@@ -213,15 +215,17 @@ const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
                 <Field
                   label="Variable name"
                   description="The name of the variable"
-                  invalid={Boolean(errorPath?.name)}
+                  invalid={Boolean(errorPath?.name) ? true : undefined}
                   error={errorPath?.name?.message}
                 >
                   <Input
                     placeholder="Variable name"
                     id={`multihttp-variable-name-${index}-${variableIndex}`}
-                    invalid={Boolean(
-                      formState.errors.settings?.multihttp?.entries?.[index]?.variables?.[variableIndex]?.type
-                    )}
+                    invalid={
+                      Boolean(formState.errors.settings?.multihttp?.entries?.[index]?.variables?.[variableIndex]?.type)
+                        ? true
+                        : undefined
+                    }
                     data-fs-element="Variable name input"
                     {...register(`${variableFieldName}.${variableIndex}.name`)}
                   />
@@ -230,7 +234,7 @@ const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
                   <Field
                     label="Attribute"
                     description="Name of the attribute to extract the value from. Leave blank to get contents of tag"
-                    invalid={Boolean(errorPath?.attribute)}
+                    invalid={Boolean(errorPath?.attribute) ? true : undefined}
                     error={errorPath?.attribute?.message}
                   >
                     <Input
@@ -244,7 +248,7 @@ const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
                 <Field
                   label="Variable expression"
                   description="Expression to extract the value"
-                  invalid={Boolean(errorPath?.expression)}
+                  invalid={Boolean(errorPath?.expression) ? true : undefined}
                   error={errorPath?.expression?.message}
                 >
                   <Input

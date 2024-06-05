@@ -52,7 +52,7 @@ export const NameValueInput = ({ ariaLabelSuffix = ``, name, disabled, limit, la
         return (
           <div key={field.id} className={styles.stack}>
             <Field
-              invalid={Boolean(fieldError?.[index]?.name?.type)}
+              invalid={Boolean(fieldError?.[index]?.name?.type) ? true : undefined}
               error={interpolateErrorMessage(fieldError?.[index]?.name?.message, label)}
               className={styles.field}
               required
@@ -71,7 +71,7 @@ export const NameValueInput = ({ ariaLabelSuffix = ``, name, disabled, limit, la
               />
             </Field>
             <Field
-              invalid={Boolean(fieldError?.[index]?.value)}
+              invalid={Boolean(fieldError?.[index]?.value) ? true : undefined}
               error={interpolateErrorMessage(fieldError?.[index]?.value?.message, label)}
               className={styles.field}
               required

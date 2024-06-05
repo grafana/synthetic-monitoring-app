@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import { Icon, useStyles2 } from '@grafana/ui';
@@ -38,8 +38,8 @@ export function FormSidebar({
         const isLast = sectionIndex === sections.length - 1;
 
         return (
-          <>
-            <li key={sectionTitle} className={cx(styles.listItem, { [styles.active]: isActive })}>
+          <Fragment key={sectionTitle}>
+            <li className={cx(styles.listItem, { [styles.active]: isActive })}>
               <button
                 className={styles.listItemLabel}
                 type="button"
@@ -54,7 +54,7 @@ export function FormSidebar({
               </button>
             </li>
             {!isLast && <div className={styles.divider} />}
-          </>
+          </Fragment>
         );
       })}
     </ol>
@@ -71,7 +71,7 @@ function getStyles(theme: GrafanaTheme2) {
 
   return {
     container: css({
-      'list-style-type': 'none',
+      listStyleType: 'none',
       borderRight: border,
 
       [containerQuery]: {

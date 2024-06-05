@@ -81,7 +81,9 @@ export const HttpCheckRegExValidation = () => {
                     <div className={styles.validationHeaderName}>
                       <Field
                         className={styles.field}
-                        invalid={isHttpRegexHeaderError(baseErrorPath) && Boolean(baseErrorPath?.header)}
+                        invalid={
+                          isHttpRegexHeaderError(baseErrorPath) && Boolean(baseErrorPath?.header) ? true : undefined
+                        }
                         error={isHttpRegexHeaderError(baseErrorPath) && baseErrorPath?.header?.message}
                       >
                         <Input
@@ -94,7 +96,7 @@ export const HttpCheckRegExValidation = () => {
                   )}
                   <Field
                     className={cx(styles.field, styles.grow)}
-                    invalid={Boolean(baseErrorPath?.expression)}
+                    invalid={Boolean(baseErrorPath?.expression) ? true : undefined}
                     error={baseErrorPath?.expression?.message}
                   >
                     <Input

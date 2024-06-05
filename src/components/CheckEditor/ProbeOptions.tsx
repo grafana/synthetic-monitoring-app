@@ -87,7 +87,7 @@ export const ProbeOptions = ({ checkType }: Props) => {
             probes={field.value}
             availableProbes={getAvailableProbes(probes, checkType)}
             isEditor={isEditor}
-            invalid={Boolean(errors.probes)}
+            invalid={Boolean(errors.probes) ? true : undefined}
             error={errors.probes?.message}
           />
         )}
@@ -96,7 +96,7 @@ export const ProbeOptions = ({ checkType }: Props) => {
         label="Frequency"
         description="How frequently the check should run."
         disabled={!isEditor}
-        invalid={Boolean(errors.frequency)}
+        invalid={Boolean(errors.frequency) ? true : undefined}
         error={errors.frequency?.message}
       >
         <SliderInput name="frequency" min={minFrequency} max={maxFrequency} />
@@ -104,7 +104,7 @@ export const ProbeOptions = ({ checkType }: Props) => {
       <Field
         label="Timeout"
         description="Maximum execution time for a check"
-        invalid={Boolean(errors.timeout)}
+        invalid={Boolean(errors.timeout) ? true : undefined}
         error={errors.timeout?.message}
         htmlFor={`timeout`}
       >

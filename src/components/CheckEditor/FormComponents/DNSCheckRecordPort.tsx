@@ -16,7 +16,13 @@ export const DNSCheckRecordPort = () => {
   const fieldError = errors?.settings?.dns?.port?.message;
 
   return (
-    <Field label="Port" disabled={!isEditor} htmlFor={id} invalid={Boolean(fieldError)} error={fieldError}>
+    <Field
+      label="Port"
+      disabled={!isEditor}
+      htmlFor={id}
+      invalid={Boolean(fieldError) ? true : undefined}
+      error={fieldError}
+    >
       <Input
         id="dns-settings-port"
         {...register('settings.dns.port', { valueAsNumber: true })}

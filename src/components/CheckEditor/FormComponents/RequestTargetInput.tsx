@@ -40,7 +40,7 @@ export const RequestTargetInput = ({
           <Field
             label="Request target"
             description={targetHelp?.text}
-            invalid={Boolean(error)}
+            invalid={Boolean(error) ? true : undefined}
             error={error?.message}
             className={styles.requestTargetInput}
             htmlFor={id}

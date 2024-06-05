@@ -31,7 +31,7 @@ export const RequestHeaders = ({ ariaLabelSuffix, description, label, name, ...r
       description={description}
       disabled={!isEditor}
       error={interpolateErrorMessage(errorMessage, label)}
-      invalid={Boolean(errorMessage)}
+      invalid={Boolean(errorMessage) ? true : undefined}
     >
       <NameValueInput
         ariaLabelSuffix={ariaLabelSuffix}

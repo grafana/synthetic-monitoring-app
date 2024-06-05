@@ -37,7 +37,7 @@ export const ProbeRegionsSelect = ({ disabled, id, invalid, onChange, value }: P
       disabled={isLoading || disabled}
       placeholder="Add or select a region"
       isClearable
-      invalid={invalid}
+      invalid={invalid ? true : undefined}
     />
   );
 };

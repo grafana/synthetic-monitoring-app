@@ -70,7 +70,7 @@ export const ProbeEditor = ({
                 </Label>
                 <Field
                   error="Name is required"
-                  invalid={Boolean(errors.name)}
+                  invalid={Boolean(errors.name) ? true : undefined}
                   label="Probe Name"
                   description="Unique name for this probe."
                   disabled={!canEdit}
@@ -91,7 +91,7 @@ export const ProbeEditor = ({
                   <Legend>Location information</Legend>
                   <Field
                     error="Must be between -90 and 90"
-                    invalid={Boolean(errors.latitude)}
+                    invalid={Boolean(errors.latitude) ? true : undefined}
                     required
                     label="Latitude"
                     description="Latitude coordinates for this probe."
@@ -112,7 +112,7 @@ export const ProbeEditor = ({
                   </Field>
                   <Field
                     error="Must be between -180 and 180"
-                    invalid={Boolean(errors.longitude)}
+                    invalid={Boolean(errors.longitude) ? true : undefined}
                     required
                     label="Longitude"
                     description="Longitude coordinates for this probe."
@@ -140,7 +140,7 @@ export const ProbeEditor = ({
                     description="Region of this probe."
                     disabled={!canEdit}
                     error={errors.region?.message}
-                    invalid={Boolean(errors.region)}
+                    invalid={Boolean(errors.region) ? true : undefined}
                     required
                     htmlFor="region"
                   >
@@ -152,7 +152,7 @@ export const ProbeEditor = ({
                         <ProbeRegionsSelect
                           disabled={!canEdit}
                           id="region"
-                          invalid={Boolean(errors.region)}
+                          invalid={Boolean(errors.region) ? true : undefined}
                           onChange={(value) => {
                             field.onChange(value);
                           }}

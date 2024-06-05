@@ -32,7 +32,7 @@ export const TLSConfig = ({ checkType }: Props) => {
         label="Server name"
         description="Used to verify the hostname for the targets"
         disabled={!isEditor}
-        invalid={Boolean(errs?.tlsConfig?.serverName)}
+        invalid={Boolean(errs?.tlsConfig?.serverName) ? true : undefined}
         error={errs?.tlsConfig?.serverName?.message}
       >
         <Input
@@ -49,7 +49,7 @@ export const TLSConfig = ({ checkType }: Props) => {
           label="CA certificate"
           description="Certificate must be in PEM format."
           disabled={!isEditor}
-          invalid={Boolean(errs?.tlsConfig?.caCert)}
+          invalid={Boolean(errs?.tlsConfig?.caCert) ? true : undefined}
           error={errs?.tlsConfig?.caCert?.message}
         >
           <TextArea
@@ -67,7 +67,7 @@ export const TLSConfig = ({ checkType }: Props) => {
           label="Client certificate"
           description="The client cert file for the targets. The certificate must be in PEM format."
           disabled={!isEditor}
-          invalid={Boolean(errs?.tlsConfig?.clientCert)}
+          invalid={Boolean(errs?.tlsConfig?.clientCert) ? true : undefined}
           error={errs?.tlsConfig?.clientCert?.message}
         >
           <TextArea
@@ -85,7 +85,7 @@ export const TLSConfig = ({ checkType }: Props) => {
           label="Client key"
           description="The client key file for the targets. The key must be in PEM format."
           disabled={!isEditor}
-          invalid={Boolean(errs?.tlsConfig?.clientKey)}
+          invalid={Boolean(errs?.tlsConfig?.clientKey) ? true : undefined}
           error={errs?.tlsConfig?.clientKey?.message}
         >
           <TextArea

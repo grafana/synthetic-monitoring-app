@@ -15,7 +15,7 @@ export const CheckJobName = () => {
       label="Job name"
       description={'Name used for job label (in metrics it will appear as `job=X`)'}
       disabled={!isEditor}
-      invalid={Boolean(formState.errors.job)}
+      invalid={Boolean(formState.errors.job) ? true : undefined}
       error={formState.errors.job?.message}
       required
     >

@@ -24,7 +24,7 @@ export const RequestBodyTextArea = ({ name }: RequestBodyTextAreaProps) => {
       label="Request body"
       description="The body of the HTTP request used in probe."
       disabled={!isEditor}
-      invalid={Boolean(error)}
+      invalid={Boolean(error) ? true : undefined}
       error={error?.message}
       htmlFor={name}
     >

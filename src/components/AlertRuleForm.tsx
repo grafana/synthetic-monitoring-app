@@ -231,7 +231,7 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
                 </div>
                 <span className={styles.inlineText}>will fire an alert if less than </span>
                 <Field
-                  invalid={Boolean(errors?.probePercentage)}
+                  invalid={Boolean(errors?.probePercentage) ? true : undefined}
                   error={errors?.probePercentage?.message?.toString()}
                   className={styles.noMargin}
                 >
@@ -245,7 +245,7 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
                 </Field>
                 <span className={styles.inlineText}>% of probes report connection success for</span>
                 <Field
-                  invalid={Boolean(errors?.timeCount)}
+                  invalid={Boolean(errors?.timeCount) ? true : undefined}
                   error={errors?.timeCount?.message?.toString()}
                   className={styles.noMargin}
                 >

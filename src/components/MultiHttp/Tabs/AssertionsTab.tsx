@@ -63,7 +63,7 @@ export function AssertionsTab({ index, active }: MultiHttpTabProps) {
                       <Field
                         label="Assertion type"
                         description="Method for finding assertion value"
-                        invalid={Boolean(error)}
+                        invalid={Boolean(error) ? true : undefined}
                         error={typeof errMessage === 'string' && errMessage}
                         htmlFor={id}
                         data-fs-element="Assertion type select"
@@ -182,7 +182,7 @@ function AssertionSubjectField({ entryIndex, assertionIndex }: AssertionProps) {
           <Field
             label="Subject"
             description="Target value to assert against"
-            invalid={Boolean(errorSubject)}
+            invalid={Boolean(errorSubject) ? true : undefined}
             error={errorMessage}
             htmlFor={id}
             data-fs-element="Assertion subject select"
@@ -218,7 +218,7 @@ function AssertionConditionField({ entryIndex, assertionIndex }: AssertionProps)
           <Field
             label="Condition"
             description="Comparator"
-            invalid={Boolean(errorCondition)}
+            invalid={Boolean(errorCondition) ? true : undefined}
             error={errorMessage}
             htmlFor={id}
             data-fs-element="Assertion condition select"

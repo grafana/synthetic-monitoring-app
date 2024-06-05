@@ -16,7 +16,13 @@ export const DNSCheckRecordServer = () => {
   const fieldError = errors?.settings?.dns?.server?.message;
 
   return (
-    <Field label="Server" disabled={!isEditor} htmlFor={id} invalid={Boolean(fieldError)} error={fieldError}>
+    <Field
+      label="Server"
+      disabled={!isEditor}
+      htmlFor={id}
+      invalid={Boolean(fieldError) ? true : undefined}
+      error={fieldError}
+    >
       <Input
         id={id}
         {...register('settings.dns.server')}

@@ -19,7 +19,7 @@ export const TracerouteMaxUnknownHops = () => {
       label="Max unknown hops"
       description="Maximimum number of hosts to traverse that give no response"
       disabled={!isEditor}
-      invalid={Boolean(errors.settings?.traceroute?.maxUnknownHops)}
+      invalid={Boolean(errors.settings?.traceroute?.maxUnknownHops) ? true : undefined}
       error={errors.settings?.traceroute?.maxUnknownHops?.message}
       htmlFor={id}
     >

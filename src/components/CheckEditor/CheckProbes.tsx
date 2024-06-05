@@ -73,7 +73,7 @@ const CheckProbes = forwardRef(
               description="Select one, multiple, or all probes where this target will be checked from. Deprecated probes can be removed, but they cannot be added."
               disabled={!isEditor}
               error={error}
-              invalid={invalid}
+              invalid={invalid ? true : undefined}
               htmlFor={id}
               data-fs-element="Probes select"
             >

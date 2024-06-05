@@ -19,7 +19,7 @@ export const TracerouteMaxHops = () => {
       label="Max hops"
       description="Maximum TTL for the trace"
       disabled={!isEditor}
-      invalid={Boolean(errors.settings?.traceroute?.maxHops)}
+      invalid={Boolean(errors.settings?.traceroute?.maxHops) ? true : undefined}
       error={errors.settings?.traceroute?.maxHops?.message}
       htmlFor={id}
     >

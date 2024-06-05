@@ -74,7 +74,7 @@ export const MultiHttpCheckRequests = () => {
             key={field.id}
             className={styles.collapseTarget}
             data-testid={`multihttp-request-${index}`}
-            invalid={Boolean(errors?.settings?.multihttp?.entries?.[index])}
+            invalid={Boolean(errors?.settings?.multihttp?.entries?.[index]) ? true : undefined}
             isOpen={collapseState[index].open}
             onToggle={() => dispatchCollapse({ type: 'toggle', index })}
             ref={(el) => (panelRefs.current[index] = el)}

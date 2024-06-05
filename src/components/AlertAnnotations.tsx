@@ -53,7 +53,7 @@ export const AlertAnnotations = () => {
         {fields.map((field, annotationIndex) => (
           <Fragment key={field.id}>
             <Field
-              invalid={Boolean(errors?.annotations?.[annotationIndex]?.name)}
+              invalid={Boolean(errors?.annotations?.[annotationIndex]?.name) ? true : undefined}
               error={errors?.annotations?.[annotationIndex]?.name?.message}
             >
               <Input

@@ -39,7 +39,11 @@ export const DNSCheckResponseMatches = () => {
                           value={field.value}
                           aria-label={`DNS Response Match ${userIndex}`}
                           options={DNS_RESPONSE_MATCH_OPTIONS}
-                          invalid={Boolean(formState.errors.settings?.dns?.validations?.[index]?.responseMatch)}
+                          invalid={
+                            Boolean(formState.errors.settings?.dns?.validations?.[index]?.responseMatch)
+                              ? true
+                              : undefined
+                          }
                           onChange={({ value }) => onChange(value)}
                         />
                       );

@@ -20,7 +20,7 @@ export const HttpCheckBearerToken = () => {
       <Field
         htmlFor={id}
         disabled={!isEditor}
-        invalid={Boolean(formState.errors.settings?.http?.bearerToken)}
+        invalid={Boolean(formState.errors.settings?.http?.bearerToken) ? true : undefined}
         error={formState.errors.settings?.http?.bearerToken?.message}
       >
         <Input

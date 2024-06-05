@@ -139,11 +139,7 @@ const TestForm = ({ children }: TestFormProps) => {
     },
   });
 
-  return (
-    <FormProvider {...formMethods}>
-      <form onSubmit={formMethods.handleSubmit((_, e) => e?.preventDefault())}>{children}</form>
-    </FormProvider>
-  );
+  return <FormProvider {...formMethods}>{children}</FormProvider>;
 };
 
 const NameInput = () => {

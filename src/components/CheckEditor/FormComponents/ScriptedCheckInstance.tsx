@@ -28,7 +28,7 @@ export const ScriptedCheckInstance = () => {
           </Tooltip>
         </Label>
       }
-      invalid={Boolean(formState.errors.target)}
+      invalid={Boolean(formState.errors.target) ? true : undefined}
       error={formState.errors.target?.message}
       required
     >

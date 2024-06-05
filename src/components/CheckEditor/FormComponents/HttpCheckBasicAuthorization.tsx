@@ -27,7 +27,7 @@ export const HttpCheckBasicAuthorization = () => {
           htmlFor={userNameId}
           disabled={!isEditor}
           label="Username"
-          invalid={Boolean(formState.errors.settings?.http?.basicAuth?.username)}
+          invalid={Boolean(formState.errors.settings?.http?.basicAuth?.username) ? true : undefined}
           error={formState.errors.settings?.http?.basicAuth?.username?.message}
         >
           <Input
@@ -42,7 +42,7 @@ export const HttpCheckBasicAuthorization = () => {
           htmlFor={passwordId}
           disabled={!isEditor}
           label="Password"
-          invalid={Boolean(formState.errors.settings?.http?.basicAuth?.password)}
+          invalid={Boolean(formState.errors.settings?.http?.basicAuth?.password) ? true : undefined}
           error={formState.errors.settings?.http?.basicAuth?.password?.message}
         >
           <Input

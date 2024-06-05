@@ -15,7 +15,7 @@ export const GRPCCheckService = () => {
       label="Service"
       description={'Service to perform health check against'}
       disabled={!isEditor}
-      invalid={Boolean(formState.errors?.settings?.grpc?.service)}
+      invalid={Boolean(formState.errors?.settings?.grpc?.service) ? true : undefined}
       error={formState.errors?.settings?.grpc?.message}
     >
       <Input

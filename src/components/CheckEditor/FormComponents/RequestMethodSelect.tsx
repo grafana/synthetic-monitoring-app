@@ -23,7 +23,7 @@ export const RequestMethodSelect = ({ 'aria-label': ariaLabel = `Request method`
       label="Request method"
       description="The HTTP method the probe will use"
       disabled={!isEditor}
-      invalid={Boolean(errMessage)}
+      invalid={Boolean(errMessage) ? true : undefined}
       error={typeof errMessage === `string` && errMessage}
       data-fs-element="Check request method select"
     >
