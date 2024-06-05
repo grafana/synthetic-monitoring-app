@@ -23,8 +23,8 @@ export const HttpCheckAuthentication = () => {
 
   const [authType, setAuthType] = useState<HttpAuthType>(isBasicAuth ? 'basic' : isBearerAuth ? 'bearer' : 'none');
 
-  const bearerTokenRef: MutableRefObject<string | undefined> = useRef(undefined);
-  const basicAuthRef: MutableRefObject<BasicAuth | undefined> = useRef(undefined);
+  const bearerTokenRef = useRef<string | undefined>(undefined);
+  const basicAuthRef = useRef<BasicAuth | undefined>(undefined);
 
   const storeBearerTokenValue = useCallback(() => {
     if (getValues('settings.http.bearerToken')) {
