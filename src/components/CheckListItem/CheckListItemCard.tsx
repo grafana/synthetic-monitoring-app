@@ -59,6 +59,7 @@ export const CheckListItemCard = ({
                   frequency={check.frequency}
                   activeSeries={usage?.activeSeries}
                   probeLocations={check.probes.length}
+                  executionsRate={usage?.checksPerMonth}
                 />
               </div>
             </div>
