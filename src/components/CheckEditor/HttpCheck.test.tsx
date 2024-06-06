@@ -73,14 +73,37 @@ describe(`Edits the sections of a HTTP check correctly`, () => {
 
     await fillBasicCheckFields(JOB_NAME, TARGET, user, LABELS);
     await user.click(await screen.getByText('Authentication'));
-    await user.click(await screen.findByLabelText('Include basic authorization header in request'));
-    await user.type(await screen.findByLabelText('Username'), basicAuth.username);
-    await user.type(await screen.findByLabelText('Password'), basicAuth.password);
+    await user.click(await screen.findByLabelText('Basic'));
+    await user.type(await screen.findByLabelText('Username *'), basicAuth.username);
+    await user.type(await screen.findByLabelText('Password *'), basicAuth.password);
     await submitForm(user);
 
     const { body } = await read();
 
     expect(body).toStrictEqual(merge({}, EXPECTED_PAYLOAD, { settings: { http: { basicAuth } } }));
+  });
+
+  it(`Adds bearer token if set`, async () => {
+    const bearerToken = 'bear';
+
+    const { record, read } = getServerRequests();
+    server.use(apiRoute(`addCheck`, {}, record));
+
+    const { user } = render(<CheckForm />, {
+      route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/:checkType`,
+      path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${CheckType.HTTP}`,
+    });
+
+    await fillBasicCheckFields(JOB_NAME, TARGET, user, LABELS);
+    await user.click(await screen.getByText('Authentication'));
+    await user.click(await screen.findByLabelText('Bearer'));
+    await user.type(await screen.findByLabelText('Include bearer authorization header in request *'), bearerToken);
+    
+    await submitForm(user);
+
+    const { body } = await read();
+
+    expect(body).toStrictEqual(merge({}, EXPECTED_PAYLOAD, { settings: { http: { bearerToken } } }));
   });
 
   it(`Does not add basic auth if not added`, async () => {

@@ -5,32 +5,31 @@ import { Field, Input } from '@grafana/ui';
 
 import { CheckFormValuesHttp } from 'types';
 import { hasRole } from 'utils';
-import { OptionalInput } from 'components/OptionalInput/OptionalInput';
 
 export const HttpCheckBearerToken = () => {
   const isEditor = hasRole(OrgRole.Editor);
-  const { getValues, formState, register } = useFormContext<CheckFormValuesHttp>();
+  const { formState, register } = useFormContext<CheckFormValuesHttp>();
   const id = 'bearerToken';
 
   return (
-    <OptionalInput
+    <Field
+      htmlFor={id}
+      disabled={!isEditor}
       label="Include bearer authorization header in request"
-      isOpen={Boolean(getValues(`settings.http.bearerToken`))}
+      invalid={Boolean(formState.errors.settings?.http?.bearerToken)}
+      error={formState.errors.settings?.http?.bearerToken?.message}
+      required
     >
-      <Field
-        htmlFor={id}
+      <Input
+        {...register('settings.http.bearerToken', {
+          required: { value: true, message: 'Bearer Token is required' },
+        })}
+        id={id}
+        type="password"
+        placeholder="Bearer token"
         disabled={!isEditor}
-        invalid={Boolean(formState.errors.settings?.http?.bearerToken)}
-        error={formState.errors.settings?.http?.bearerToken?.message}
-      >
-        <Input
-          {...register('settings.http.bearerToken')}
-          type="password"
-          placeholder="Bearer token"
-          disabled={!isEditor}
-          data-fs-element="Bearer token input"
-        />
-      </Field>
-    </OptionalInput>
+        data-fs-element="Bearer token input"
+      />
+    </Field>
   );
 };

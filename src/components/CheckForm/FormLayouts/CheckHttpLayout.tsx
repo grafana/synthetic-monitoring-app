@@ -6,8 +6,7 @@ import { CheckIpVersion } from 'components/CheckEditor/FormComponents/CheckIpVer
 import { CheckJobName } from 'components/CheckEditor/FormComponents/CheckJobName';
 import { CheckPublishedAdvanceMetrics } from 'components/CheckEditor/FormComponents/CheckPublishedAdvanceMetrics';
 import { CheckTarget } from 'components/CheckEditor/FormComponents/CheckTarget';
-import { HttpCheckBasicAuthorization } from 'components/CheckEditor/FormComponents/HttpCheckBasicAuthorization';
-import { HttpCheckBearerToken } from 'components/CheckEditor/FormComponents/HttpCheckBearerToken';
+import { HttpCheckAuthentication } from 'components/CheckEditor/FormComponents/HttpCheckAuthentication';
 import { HttpCheckCacheBuster } from 'components/CheckEditor/FormComponents/HttpCheckCacheBuster';
 import { HttpCheckCompressionOption } from 'components/CheckEditor/FormComponents/HttpCheckCompressionOption';
 import { HttpCheckFollowRedirects } from 'components/CheckEditor/FormComponents/HttpCheckFollowRedirects';
@@ -94,8 +93,7 @@ export const CheckHTTPLayout = ({
         label="Authentication"
         fields={[`settings.http.bearerToken`, `settings.http.basicAuth.password`, `settings.http.basicAuth.username`]}
       >
-        <HttpCheckBearerToken />
-        <HttpCheckBasicAuthorization />
+        <HttpCheckAuthentication />
       </FormLayout.Section>
       <FormLayout.Section
         label="Validation"
