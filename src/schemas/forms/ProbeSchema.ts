@@ -35,6 +35,7 @@ export const ProbeSchema: ZodType<Probe> = z.object({
   longitude: z
     .number({
       required_error: `Longitude is required`,
+      invalid_type_error: `Latitude must be a number`,
     })
     .min(LATITUDE_MIN, `Longitude must be greater than ${LONGITUDE_MIN}`)
     .max(LATITUDE_MAX, `Longitude must be less than ${LONGITUDE_MAX}`),
