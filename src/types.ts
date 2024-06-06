@@ -610,6 +610,8 @@ export enum CheckSort {
   ZToA = 'ztoa',
   ReachabilityDesc = 'reachabilityDesc',
   ReachabilityAsc = 'reachabilityAsc',
+  ExecutionsDesc = 'executionsDesc',
+  ExecutionsAsc = 'executionsAsc',
 }
 
 export enum CheckEnabledStatus {
