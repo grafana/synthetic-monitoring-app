@@ -3,6 +3,8 @@ import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Button, Field, Input, Label, Legend, LinkButton, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { ProbeSchema } from 'schemas/forms/ProbeSchema';
 
 import { Probe, ROUTES } from 'types';
 import { canEditProbes } from 'utils';
@@ -31,7 +33,7 @@ export const ProbeEditor = ({
 }: ProbeEditorProps) => {
   const styles = useStyles2(getStyles);
   const canEdit = canEditProbes(probe);
-  const form = useForm<Probe>({ defaultValues: probe });
+  const form = useForm<Probe>({ defaultValues: probe, resolver: zodResolver(ProbeSchema) });
   const { latitude, longitude } = form.watch();
   const handleSubmit = form.handleSubmit((formValues: Probe) => onSubmit(formValues));
   const { errors, isSubmitting } = form.formState;
@@ -69,7 +71,7 @@ export const ProbeEditor = ({
                   {`This probe is ${probe.public ? 'public' : 'private'}.`}
                 </Label>
                 <Field
-                  error="Name is required"
+                  error={errors.name?.message}
                   invalid={Boolean(errors.name)}
                   label="Probe Name"
                   description="Unique name for this probe."
@@ -80,17 +82,14 @@ export const ProbeEditor = ({
                     aria-label="Probe name"
                     type="text"
                     maxLength={32}
-                    {...form.register('name', {
-                      required: true,
-                      maxLength: 32,
-                    })}
+                    {...form.register('name')}
                     placeholder="Probe name"
                   />
                 </Field>
                 <div>
                   <Legend>Location information</Legend>
                   <Field
-                    error="Must be between -90 and 90"
+                    error={errors.latitude?.message}
                     invalid={Boolean(errors.latitude)}
                     required
                     label="Latitude"
@@ -99,9 +98,6 @@ export const ProbeEditor = ({
                   >
                     <Input
                       {...form.register('latitude', {
-                        required: true,
-                        max: 90,
-                        min: -90,
                         valueAsNumber: true,
                       })}
                       aria-label="Latitude"
@@ -111,7 +107,7 @@ export const ProbeEditor = ({
                     />
                   </Field>
                   <Field
-                    error="Must be between -180 and 180"
+                    error={errors.longitude?.message}
                     invalid={Boolean(errors.longitude)}
                     required
                     label="Longitude"
@@ -120,9 +116,6 @@ export const ProbeEditor = ({
                   >
                     <Input
                       {...form.register('longitude', {
-                        required: true,
-                        max: 180,
-                        min: -180,
                         valueAsNumber: true,
                       })}
                       aria-label="Longitude"
@@ -147,7 +140,6 @@ export const ProbeEditor = ({
                     <Controller
                       control={form.control}
                       name="region"
-                      rules={{ required: 'Region is required' }}
                       render={({ field }) => (
                         <ProbeRegionsSelect
                           disabled={!canEdit}

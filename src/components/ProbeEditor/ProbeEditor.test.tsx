@@ -40,7 +40,7 @@ describe('validation', () => {
     await user.type(latitudeInput, '444');
     const saveButton = await getSaveButton();
     await user.click(saveButton!);
-    const errorMessage = await screen.findByText('Must be between -90 and 90');
+    const errorMessage = await screen.findByText('Latitude must be less than 90');
     expect(errorMessage).toBeInTheDocument();
   });
 
@@ -50,7 +50,7 @@ describe('validation', () => {
     await user.type(longitudeInput, '444');
     const saveButton = await getSaveButton();
     await user.click(saveButton!);
-    const errorMessage = await screen.findByText('Must be between -180 and 180');
+    const errorMessage = await screen.findByText('Longitude must be less than 180');
     expect(errorMessage).toBeInTheDocument();
   });
 });
@@ -70,7 +70,7 @@ it('disables save button on invalid values', async () => {
   const longitudeInput = await screen.findByLabelText('Longitude', { exact: false });
   await user.type(longitudeInput, '444');
   await user.click(saveButton!);
-  const errorMessage = await screen.findByText('Must be between -180 and 180');
+  const errorMessage = await screen.findByText('Longitude must be less than 180');
   expect(errorMessage).toBeInTheDocument();
   expect(saveButton).toBeDisabled();
 });
