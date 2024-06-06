@@ -269,14 +269,14 @@ function sortChecks(checks: Check[], sortType: CheckSort, reachabilitySuccessRat
   if (sortType === CheckSort.ExecutionsAsc) {
     return checks.sort((a, b) => {
       const [sortA, sortB] = getNumberOfExecutions(a, b);
-      return sortB - sortA;
+      return sortA - sortB;
     });
   }
 
   if (sortType === CheckSort.ExecutionsDesc) {
     return checks.sort((a, b) => {
       const [sortA, sortB] = getNumberOfExecutions(a, b);
-      return sortA - sortB;
+      return sortB - sortA;
     });
   }
 
