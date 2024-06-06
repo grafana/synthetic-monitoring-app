@@ -1,5 +1,8 @@
+import { CustomTransformOperator, DataFrame, Field } from '@grafana/data';
 import { SceneDataTransformer, SceneQueryRunner } from '@grafana/scenes';
 import { DataSourceRef, ThresholdsMode } from '@grafana/schema';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
@@ -117,6 +120,13 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
     $data: queryRunner,
     transformations: [
       {
+        id: 'renameByRegex',
+        options: {
+          regex: 'target',
+          renamePattern: 'instance',
+        },
+      },
+      {
         id: 'groupBy',
         options: {
           fields: {
@@ -164,9 +174,24 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
         },
       },
       {
+        id: 'calculateField',
+        options: {
+          mode: 'binary',
+          reduce: {
+            reducer: 'sum',
+          },
+          binary: {
+            left: 'instance',
+            right: 'job',
+          },
+          alias: 'key',
+          replaceFields: false,
+        },
+      },
+      {
         id: 'joinByField',
         options: {
-          byField: 'job',
+          byField: 'key',
           mode: 'inner',
         },
       },
@@ -200,64 +225,7 @@ function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
           },
         },
       },
-      {
-        id: 'organize',
-        options: {
-          excludeByName: {
-            'Value #A (sum)': true,
-            'Value #latency denom (sum)': true,
-            'Value #latency numer (sum)': true,
-            'Value #reach denom (sum)': true,
-            'Value #reach numer (sum)': true,
-            'check_name (lastNotNull) 2': true,
-            'check_name (lastNotNull) 3': true,
-            'check_name (lastNotNull) 4': true,
-            'check_name (lastNotNull) 5': true,
-            'id (lastNotNull)': false,
-            'instance 2': true,
-            'instance 3': true,
-            'instance 4': true,
-            'instance 5': true,
-            'instance 6': true,
-          },
-          indexByName: {
-            'Value #latency denom (sum)': 16,
-            'Value #latency numer (sum)': 13,
-            'Value #reach denom (sum)': 10,
-            'Value #reach numer (sum)': 7,
-            'Value #state (lastNotNull)': 3,
-            'Value #uptime (mean)': 4,
-            'check_name (lastNotNull)': 2,
-            'check_name (lastNotNull) 1': 2,
-            'check_name (lastNotNull) 2': 9,
-            'check_name (lastNotNull) 3': 12,
-            'check_name (lastNotNull) 4': 15,
-            'check_name (lastNotNull) 5': 19,
-            'id (lastNotNull)': 20,
-            'instance 1': 1,
-            'instance 2': 8,
-            'instance 3': 11,
-            'instance 4': 14,
-            'instance 5': 17,
-            'instance 6': 18,
-            job: 0,
-            latency: 6,
-            reachability: 5,
-            'Value #reach numer (sum) / Value #reach denom (sum)': 5,
-            'Value #latency numer (sum) / Value #latency denom (sum)': 6,
-          },
-          renameByName: {
-            'Value #state (lastNotNull)': 'state',
-            'Value #uptime (mean)': 'uptime',
-            'check_name (lastNotNull)': 'check type',
-            'check_name (lastNotNull) 1': 'check type',
-            'id (lastNotNull)': 'id',
-            'Value #reach numer (sum) / Value #reach denom (sum)': 'reachability',
-            'Value #latency numer (sum) / Value #latency denom (sum)': 'latency',
-          },
-          includeByName: {},
-        },
-      },
+      customOrganize,
     ],
   });
   return transformed;
@@ -538,3 +506,38 @@ export function getSummaryTable(metrics: DataSourceRef, sm: DataSourceRef) {
   });
   return tablePanel;
 }
+
+const FIELD_TRANSFORMATIONS = [
+  { from: 'job', to: 'job' },
+  { from: 'instance', to: 'instance' },
+  { from: 'id (lastNotNull)', to: 'id' },
+  { from: 'check_name (lastNotNull)', to: 'check type' },
+  { from: 'Value #state (lastNotNull)', to: 'state' },
+  { from: 'Value #reach numer (sum) / Value #reach denom (sum)', to: 'reachability' },
+  { from: 'Value #latency numer (sum) / Value #latency denom (sum)', to: 'latency' },
+];
+
+const customOrganize: CustomTransformOperator = () => (source: Observable<DataFrame[]>) => {
+  return source.pipe(
+    map((data: DataFrame[]) => {
+      return data.map((d) => {
+        const fields = d.fields.reduce<Field[]>((acc, f) => {
+          const fieldName = f.name;
+          const toKeep = FIELD_TRANSFORMATIONS.find((t) => t.from === fieldName);
+          const alreadyExists = acc.find((a) => a.name === toKeep?.to);
+
+          if (toKeep && !alreadyExists) {
+            return [...acc, { ...f, name: toKeep.to }];
+          }
+
+          return acc;
+        }, []);
+
+        return {
+          length: d.length,
+          fields,
+        };
+      });
+    })
+  );
+};

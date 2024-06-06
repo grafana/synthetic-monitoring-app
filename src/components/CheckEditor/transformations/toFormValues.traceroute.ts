@@ -18,9 +18,9 @@ const getTracerouteSettingsFormValues = (settings: TracerouteCheck['settings']):
   const tracerouteSettings = settings.traceroute ?? FALLBACK_CHECK_TRACEROUTE.settings.traceroute;
 
   return {
-    maxHops: String(tracerouteSettings.maxHops),
+    maxHops: tracerouteSettings.maxHops,
     ptrLookup: tracerouteSettings.ptrLookup,
-    maxUnknownHops: String(tracerouteSettings.maxUnknownHops),
+    maxUnknownHops: tracerouteSettings.maxUnknownHops,
     hopTimeout: tracerouteSettings.hopTimeout,
   };
 };

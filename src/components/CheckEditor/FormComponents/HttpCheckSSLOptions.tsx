@@ -24,8 +24,18 @@ export const HttpCheckSSLOptions = () => {
         name="settings.http.sslOptions"
         control={control}
         render={({ field }) => {
-          const { ref, ...rest } = field;
-          return <Select {...rest} inputId={id} options={HTTP_SSL_OPTIONS} disabled={!isEditor} />;
+          const { ref, onChange, ...rest } = field;
+          return (
+            <Select
+              {...rest}
+              inputId={id}
+              options={HTTP_SSL_OPTIONS}
+              disabled={!isEditor}
+              onChange={({ value }) => {
+                onChange(value);
+              }}
+            />
+          );
         }}
       />
     </Field>

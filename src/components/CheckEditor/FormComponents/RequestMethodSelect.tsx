@@ -40,7 +40,6 @@ export const RequestMethodSelect = ({ 'aria-label': ariaLabel = `Request method`
             />
           );
         }}
-        rules={{ required: true }}
         name={name}
       />
     </Field>

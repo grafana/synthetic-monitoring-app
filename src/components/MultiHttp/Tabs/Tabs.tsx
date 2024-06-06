@@ -17,6 +17,7 @@ import { css, cx } from '@emotion/css';
 
 import { CheckFormValuesMultiHttp, MultiHttpVariableType } from 'types';
 import { RequestHeaders } from 'components/CheckEditor/FormComponents/RequestHeaders';
+import { interpolateErrorMessage } from 'components/CheckForm/utils';
 import { MULTI_HTTP_VARIABLE_TYPE_OPTIONS } from 'components/constants';
 import { MultiHttpFormTabs } from 'components/MultiHttp/MultiHttpTypes';
 
@@ -105,24 +106,24 @@ const QueryParamsTab = ({ index, active }: MultiHttpTabProps) => {
               <div key={field.id}>
                 <HorizontalGroup align="flex-start" spacing="md">
                   <HorizontalGroup spacing="md" align="flex-start">
-                    <Field invalid={Boolean(errors?.[i]?.name)} error={errors?.[i]?.name?.message}>
+                    <Field
+                      invalid={Boolean(errors?.[i]?.name)}
+                      error={interpolateErrorMessage(errors?.[i]?.name?.message, `Query param`)}
+                    >
                       <Input
-                        {...register(`settings.multihttp.entries.${index}.request.queryFields.${i}.name`, {
-                          required: 'Query param name required',
-                          minLength: 1,
-                        })}
+                        {...register(`settings.multihttp.entries.${index}.request.queryFields.${i}.name`)}
                         type="text"
                         placeholder="Parameter name"
                         data-testid="query-param-name"
                         data-fs-element="Query param name input"
                       />
                     </Field>
-                    <Field invalid={Boolean(errors?.[i]?.value)} error={errors?.[i]?.value?.message}>
+                    <Field
+                      invalid={Boolean(errors?.[i]?.value)}
+                      error={interpolateErrorMessage(errors?.[i]?.value?.message, `Query param`)}
+                    >
                       <Input
-                        {...register(`settings.multihttp.entries.${index}.request.queryFields.${i}.value`, {
-                          required: 'Query param value required',
-                          minLength: 1,
-                        })}
+                        {...register(`settings.multihttp.entries.${index}.request.queryFields.${i}.value`)}
                         type="text"
                         placeholder="Parameter value"
                         data-testid="query-param-value"
@@ -176,23 +177,23 @@ const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
         <>
           {fields.map((field, variableIndex) => {
             const variableTypeName = `${variableFieldName}.${variableIndex}.type` as const;
-            const variableTypeValue = watch(variableTypeName)?.value;
+            const variableTypeValue = watch(variableTypeName);
             const errorPath = formState.errors.settings?.multihttp?.entries?.[index]?.variables?.[variableIndex];
             // @ts-expect-error -- I think type is a reserved keyword in react-hook-form so it can't read this properly
             const errMessage = errorPath?.type?.message;
 
             return (
               <div className={styles.fieldsContainer} key={field.id}>
-                <Controller<CheckFormValuesMultiHttp>
+                <Controller
                   name={variableTypeName}
                   render={({ field: typeField }) => {
-                    const { ref, ...rest } = typeField;
+                    const { ref, onChange, ...rest } = typeField;
                     return (
                       <Field
                         label="Variable type"
                         description="The method of getting a value"
                         invalid={Boolean(errorPath?.type)}
-                        error={typeof errMessage === `string` && errMessage}
+                        error={errMessage}
                         data-fs-element="Variable type select"
                       >
                         <Select
@@ -201,11 +202,13 @@ const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
                           {...rest}
                           options={MULTI_HTTP_VARIABLE_TYPE_OPTIONS}
                           menuPlacement="bottom"
+                          onChange={({ value }) => {
+                            onChange(value);
+                          }}
                         />
                       </Field>
                     );
                   }}
-                  rules={{ required: `Variable type is required` }}
                 />
                 <Field
                   label="Variable name"
@@ -220,9 +223,7 @@ const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
                       formState.errors.settings?.multihttp?.entries?.[index]?.variables?.[variableIndex]?.type
                     )}
                     data-fs-element="Variable name input"
-                    {...register(`${variableFieldName}.${variableIndex}.name`, {
-                      required: 'Variable name is required',
-                    })}
+                    {...register(`${variableFieldName}.${variableIndex}.name`)}
                   />
                 </Field>
                 {variableTypeValue === MultiHttpVariableType.CSS_SELECTOR && (
@@ -250,9 +251,7 @@ const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
                     placeholder="Variable expression"
                     id={`multihttp-variable-expression-${index}-${variableIndex}`}
                     data-fs-element="Variable expression input"
-                    {...register(`${variableFieldName}.${variableIndex}.expression`, {
-                      required: 'Expression is required',
-                    })}
+                    {...register(`${variableFieldName}.${variableIndex}.expression`)}
                   />
                 </Field>
                 <div className={styles.iconContainer}>
@@ -270,7 +269,7 @@ const VariablesTab = ({ index, active }: MultiHttpTabProps) => {
       </Field>
       <Button
         onClick={() => {
-          append({ type: undefined, name: '', expression: '' });
+          append({ type: MultiHttpVariableType.JSON_PATH, name: '', expression: '' });
         }}
         variant="secondary"
         size="sm"

@@ -1,5 +1,20 @@
 # Change Log
 
+# [1.14.6](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.5...v1.14.6) (2024-6-5)
+
+- Removed public preview message from multihttp checks
+- Added url parameters to manage check list state, allowing deep linking to specific checks
+- Fix an issue on the homepage summary table where jobs were being duplicated
+- Fix text for SSL tooltip in Scenes dashboards
+- Fix alignment issues for labels and headers in the check creation forms
+- Fix terraform export for private probes
+- Fix wording for test executions in executions calculator
+- Changed form validation to zod schemas
+
+# [1.14.5](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.4...v1.14.5) (2024-5-23)
+
+- Fix a bug with with SSL failing checks option not being respected in http checks
+
 # [1.14.4](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.3...v1.14.4) (2024-5-2)
 
 - Fix a bug with traceroute timeouts gettings the wrong default value

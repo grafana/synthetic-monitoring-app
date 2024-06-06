@@ -25,10 +25,7 @@ export const TracerouteMaxHops = () => {
     >
       <Input
         id={id}
-        {...register('settings.traceroute.maxHops', {
-          min: { value: 0, message: `Must be greater than 0` },
-          max: { value: 64, message: `Can be no more than 64` },
-        })}
+        {...register('settings.traceroute.maxHops', { valueAsNumber: true })}
         min={0}
         type="number"
         disabled={!isEditor}

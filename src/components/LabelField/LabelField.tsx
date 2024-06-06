@@ -7,9 +7,9 @@ import { css } from '@emotion/css';
 import { Label } from 'types';
 import { FaroEvent, reportEvent } from 'faro';
 import { hasRole } from 'utils';
-import { validateLabelName, validateLabelValue } from 'validation';
 import { ListTenantLimitsResponse } from 'datasource/responses.types';
 import { useTenantLimits } from 'data/useTenantLimits';
+import { interpolateErrorMessage } from 'components/CheckForm/utils';
 import { NameValueInput } from 'components/NameValueInput';
 
 export interface LabelFieldProps {
@@ -42,14 +42,20 @@ function getDescription(labelDestination: LabelFieldProps['labelDestination'], l
 
 export const LabelField = <T extends FormWithLabels>({ labelDestination }: LabelFieldProps) => {
   const { data: limits, isLoading, error, isRefetching, refetch } = useTenantLimits();
-  const { watch } = useFormContext<FormWithLabels>();
-  const labels = watch('labels');
+  const { formState } = useFormContext<FormWithLabels>();
   const isEditor = hasRole(OrgRole.Editor);
   const limit = getLimit(labelDestination, limits);
   const description = getDescription(labelDestination, limit, limits?.maxAllowedLogLabels ?? 5);
+  const labelError = formState.errors?.labels?.message || formState.errors?.labels?.root?.message;
 
   return (
-    <Field label="Labels" description={description} disabled={!isEditor}>
+    <Field
+      label="Labels"
+      description={description}
+      disabled={!isEditor}
+      error={interpolateErrorMessage(labelError, 'label')}
+      invalid={Boolean(labelError)}
+    >
       {isLoading ? (
         <LoadingPlaceholder text="Loading label limits" />
       ) : (
@@ -60,8 +66,6 @@ export const LabelField = <T extends FormWithLabels>({ labelDestination }: Label
             disabled={!isEditor}
             label="label"
             limit={limit}
-            validateName={(labelName) => validateLabelName(labelName, labels)}
-            validateValue={validateLabelValue}
             data-fs-element="Labels input"
           />
         </>

@@ -29,7 +29,7 @@ function getHttpSettingsPayload(settings: Partial<HttpSettingsFormValues> | unde
   const formattedHeaders = headers?.map((header) => `${header.name}:${header.value}`) ?? [];
   const proxyHeaders = settings.proxyConnectHeaders ?? [];
   const formattedProxyHeaders = proxyHeaders?.map((header) => `${header.name}:${header.value}`) ?? [];
-  const sslConfig = getHttpSslOptionsFromFormValue(settings.sslOptions ?? HttpSslOption.Ignore);
+  const sslConfig = getHttpSslOptionsFromFormValue(settings.sslOptions);
   const compression = settings.compression;
   const validationRegexes = getHttpRegexValidationsFromFormValue(settings.regexValidations ?? []);
 
@@ -53,7 +53,16 @@ function getHttpSettingsPayload(settings: Partial<HttpSettingsFormValues> | unde
   });
 }
 
-const getHttpSslOptionsFromFormValue = (sslOption: HttpSslOption): Pick<HttpSettings, 'failIfSSL' | 'failIfNotSSL'> => {
+const getHttpSslOptionsFromFormValue = (
+  sslOption?: HttpSslOption
+): Pick<HttpSettings, 'failIfSSL' | 'failIfNotSSL'> => {
+  if (sslOption === undefined) {
+    return {
+      failIfNotSSL: false,
+      failIfSSL: false,
+    };
+  }
+
   switch (sslOption) {
     case HttpSslOption.Ignore: {
       return {
@@ -133,5 +142,6 @@ function sanitize(settings: HttpSettings): HttpSettings {
   return {
     ...rest,
     basicAuth: isBasicAuthEmpty(basicAuth) ? undefined : basicAuth,
+    bearerToken: settings.bearerToken || undefined,
   };
 }
