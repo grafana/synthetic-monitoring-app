@@ -127,6 +127,7 @@
     "react-hook-form": "7.50.1",
     "react-popper": "^2.2.5",
     "react-router-dom": "^5.2.0",
+    "rxjs": "7.8.1",
     "sortablejs": "^1.15.0",
     "valid-url": "^1.0.9",
     "yaml": "^2.2.2",
