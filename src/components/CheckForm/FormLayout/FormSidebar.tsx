@@ -1,65 +1,73 @@
-import React from 'react';
+import React, { Fragment, ReactElement } from 'react';
+import { useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import { Icon, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
-export interface FormSidebarSection {
-  label: string;
-  hasErrors: boolean;
-  required?: boolean;
-  visited: boolean;
-}
+import { CheckFormValues } from 'types';
 
-export function FormSidebar({
-  sections,
-  onSectionSelect,
-  activeIndex,
-}: {
-  sections: FormSidebarSection[];
-  onSectionSelect: (index: number) => void;
-  activeIndex: number;
-}) {
+import { useCheckFormSchema } from '../checkForm.hooks';
+import { checkForErrors } from './formlayout.utils';
+import { FormSectionProps } from './FormSection';
+
+type FormSidebarProps = {
+  activeSection: number;
+  onSectionClick: (index: number) => void;
+  sections: Array<ReactElement<FormSectionProps>>;
+  visitedSections: number[];
+};
+
+export const FormSidebar = ({ activeSection, onSectionClick, sections, visitedSections }: FormSidebarProps) => {
   const styles = useStyles2(getStyles);
+  const values = useFormContext<CheckFormValues>().watch();
+  const schema = useCheckFormSchema();
+
   return (
     <ol className={styles.container} data-testid="form-sidebar">
-      {sections.map(({ label: sectionTitle, required, hasErrors, visited }, sectionIndex) => {
-        let prefix = <span className={css({ width: '16px', display: 'inline-block' })}>{sectionIndex + 1}</span>;
+      {sections.map(({ props }) => {
+        const sectionIndex = props.index;
+        const label = props.label;
+        const hasBeenVisited = visitedSections.includes(sectionIndex);
+        const fields = props.fields || [];
+        const { errors } = checkForErrors({ fields, values, schema });
+        const hasErrors = errors.length > 0;
 
-        if (visited) {
-          prefix = <Icon name={`check`} color={config.theme2.colors.success.main} />;
-        }
-
-        if (hasErrors) {
-          prefix = <Icon name={`exclamation-triangle`} color={config.theme2.colors.error.main} />;
-        }
-
-        const isActive = activeIndex === sectionIndex;
+        const isActive = activeSection === sectionIndex;
         const isLast = sectionIndex === sections.length - 1;
 
         return (
-          <>
-            <li key={sectionTitle} className={cx(styles.listItem, { [styles.active]: isActive })}>
+          <Fragment key={label}>
+            <li className={cx(styles.listItem, { [styles.active]: isActive })}>
               <button
                 className={styles.listItemLabel}
                 type="button"
                 onClick={() => {
-                  onSectionSelect(sectionIndex);
+                  onSectionClick(sectionIndex);
                 }}
               >
-                {prefix}
-                <div className={cx(styles.label, { [`activeLabel`]: isActive })}>{`${sectionTitle} ${
-                  required ? ' *' : ``
-                }`}</div>
+                <Prefix index={sectionIndex + 1} visited={hasBeenVisited} hasErrors={hasErrors} />
+                <div className={cx(styles.label, { [`activeLabel`]: isActive })}>{`${label}`}</div>
               </button>
             </li>
             {!isLast && <div className={styles.divider} />}
-          </>
+          </Fragment>
         );
       })}
     </ol>
   );
-}
+};
+
+const Prefix = ({ index, hasErrors, visited }: any) => {
+  if (visited) {
+    const name = hasErrors ? `exclamation-triangle` : `check`;
+    const color = hasErrors ? config.theme2.colors.error.main : config.theme2.colors.success.main;
+
+    return <Icon name={name} color={color} />;
+  }
+
+  return <span className={css({ width: '16px', display: 'inline-block' })}>{index}</span>;
+};
 
 function getStyles(theme: GrafanaTheme2) {
   const containerName = `checkForm`;

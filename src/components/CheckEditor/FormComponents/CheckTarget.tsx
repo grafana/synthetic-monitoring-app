@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { CheckType } from 'types';
-import { useFormCheckType } from 'components/CheckForm2/useCheckType';
+import { useFormCheckType } from 'components/CheckForm/useCheckType';
 
 import { RequestMethodAndTarget } from './RequestMethodAndTarget';
 import { RequestTargetInput } from './RequestTargetInput';

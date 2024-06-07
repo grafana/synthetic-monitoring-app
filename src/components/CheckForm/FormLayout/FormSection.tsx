@@ -6,9 +6,8 @@ import { css, cx } from '@emotion/css';
 
 import { CheckFormValues } from 'types';
 
-import { useFormLayoutContext } from './formLayoutContextProvider';
-
 export type FormSectionProps = {
+  activeSection: number;
   children: ReactNode;
   label: string;
   fields?: Array<FieldPath<CheckFormValues>>;
@@ -16,12 +15,11 @@ export type FormSectionProps = {
 };
 
 // return doesn't matter as we take over how this behaves internally
-export const FormSection = (props: Omit<FormSectionProps, 'index'>) => {
+export const FormSection = (props: Omit<FormSectionProps, 'index' | 'activeSection'>) => {
   return props.children;
 };
 
-export const FormSectionInternal = ({ children, label, index }: FormSectionProps) => {
-  const { activeSection } = useFormLayoutContext();
+export const FormSectionInternal = ({ activeSection, children, label, index }: FormSectionProps) => {
   const styles = useStyles2(getStyles);
   const isActive = activeSection === index;
 

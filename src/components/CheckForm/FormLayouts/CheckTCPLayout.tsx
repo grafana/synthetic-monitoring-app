@@ -21,7 +21,7 @@ export const TCPCheckLayout: Record<LayoutSection, Array<Section<CheckFormValues
       ),
     },
     {
-      label: `TLS Config`,
+      label: `Authentication`,
       fields: [`settings.tcp.tls`, `settings.tcp.tlsConfig`],
       Component: (
         <>

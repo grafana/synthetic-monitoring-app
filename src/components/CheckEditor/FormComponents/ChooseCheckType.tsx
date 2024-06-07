@@ -5,7 +5,7 @@ import { Label, RadioButtonGroup } from '@grafana/ui';
 
 import { CheckFormPageParams, CheckFormValues, CheckType } from 'types';
 import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
-import { useFormCheckType } from 'components/CheckForm2/useCheckType';
+import { useFormCheckType } from 'components/CheckForm/useCheckType';
 import { fallbackCheckMap } from 'components/constants';
 
 import { toFormValues } from '../checkFormTransformations';

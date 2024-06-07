@@ -137,7 +137,7 @@ function isBasicAuthEmpty(basicAuth: HttpSettingsFormValues['basicAuth']) {
 }
 
 function sanitize(settings: HttpSettings): HttpSettings {
-  const { basicAuth, ...rest } = settings;
+  const { bearerToken, basicAuth, ...rest } = settings;
 
   return {
     ...rest,

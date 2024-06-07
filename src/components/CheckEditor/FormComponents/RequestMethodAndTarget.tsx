@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Controller, FieldPath, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2, OrgRole } from '@grafana/data';
 import { Field, Input, Select, useStyles2 } from '@grafana/ui';
@@ -17,7 +17,7 @@ type RequestMethodInputProps = {
 };
 
 export const RequestMethodAndTarget = ({
-  'aria-label': ariaLabel = `Request method`,
+  'aria-label': ariaLabel = `Request target`,
   checkType,
   methodName,
   targetName,
@@ -29,13 +29,14 @@ export const RequestMethodAndTarget = ({
   const id = `request-method-${methodName}`;
   const styles = useStyles2(getStyles);
   const targetHelp = getTargetHelpText(checkType);
+  const [showPlaceholder, setShowplaceholder] = useState(true);
 
   return (
     <Field
-      label="Request method"
+      label="Request target"
       description={targetHelp.text}
       disabled={!isEditor}
-      data-fs-element="Check request method select"
+      data-fs-element="Check request target select"
       htmlFor={id}
     >
       <div className={styles.stack}>
@@ -61,8 +62,13 @@ export const RequestMethodAndTarget = ({
             aria-label={ariaLabel}
             id={id}
             data-fs-element="Target input"
-            placeholder={targetHelp.example}
+            placeholder={showPlaceholder ? targetHelp.example : ``}
+            onFocus={() => setShowplaceholder(false)}
             {...targetField}
+            onBlur={(e) => {
+              setShowplaceholder(true);
+              targetField.onBlur(e);
+            }}
           />
         </Field>
       </div>

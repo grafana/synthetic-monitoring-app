@@ -1,11 +1,11 @@
 import React from 'react';
+import { css } from '@emotion/css';
 
 import { LayoutSection, Section } from './Layout.types';
 import { CheckFormValuesHttp, CheckType } from 'types';
 import { CheckIpVersion } from 'components/CheckEditor/FormComponents/CheckIpVersion';
 import { CheckPublishedAdvanceMetrics } from 'components/CheckEditor/FormComponents/CheckPublishedAdvanceMetrics';
-import { HttpCheckBasicAuthorization } from 'components/CheckEditor/FormComponents/HttpCheckBasicAuthorization';
-import { HttpCheckBearerToken } from 'components/CheckEditor/FormComponents/HttpCheckBearerToken';
+import { HttpCheckAuthentication } from 'components/CheckEditor/FormComponents/HttpCheckAuthentication';
 import { HttpCheckCacheBuster } from 'components/CheckEditor/FormComponents/HttpCheckCacheBuster';
 import { HttpCheckCompressionOption } from 'components/CheckEditor/FormComponents/HttpCheckCompressionOption';
 import { HttpCheckFollowRedirects } from 'components/CheckEditor/FormComponents/HttpCheckFollowRedirects';
@@ -44,22 +44,25 @@ export const HttpCheckLayout: Record<LayoutSection, Array<Section<CheckFormValue
     },
     {
       label: `Authentication`,
-      fields: [`settings.http.bearerToken`, `settings.http.basicAuth`],
-      Component: (
-        <>
-          <HttpCheckBearerToken />
-          <HttpCheckBasicAuthorization />
-        </>
-      ),
-    },
-    {
-      label: `TLS Config`,
       fields: [
+        `settings.http.bearerToken`,
+        `settings.http.basicAuth`,
         `settings.http.tlsConfig.caCert`,
         `settings.http.tlsConfig.clientCert`,
         `settings.http.tlsConfig.clientKey`,
       ],
-      Component: <TLSConfig checkType={CheckType.HTTP} />,
+      Component: (
+        <div className={css({ display: `flex`, flexDirection: `column`, gap: `16px` })}>
+          <div>
+            <h3 className="h6">Authentication Type</h3>
+            <HttpCheckAuthentication />
+          </div>
+          <div>
+            <h3 className="h6">TLS Config</h3>
+            <TLSConfig checkType={CheckType.HTTP} />
+          </div>
+        </div>
+      ),
     },
     {
       label: `Proxy`,
@@ -106,6 +109,7 @@ export const HttpCheckLayout: Record<LayoutSection, Array<Section<CheckFormValue
       fields: [`settings.http.cacheBustingQueryParamName`],
       Component: (
         <>
+          <HttpCheckCacheBuster />
           <CheckPublishedAdvanceMetrics />
         </>
       ),

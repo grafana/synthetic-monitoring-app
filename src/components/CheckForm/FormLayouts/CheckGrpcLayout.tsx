@@ -30,7 +30,7 @@ export const GRPCCheckLayout: Record<LayoutSection, Array<Section<CheckFormValue
       ),
     },
     {
-      label: `TLS Config`,
+      label: `Authentication`,
       fields: [`settings.grpc.tls`, `settings.grpc.tlsConfig`],
       Component: (
         <>

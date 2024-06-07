@@ -1,201 +1,178 @@
-import React, { BaseSyntheticEvent, useMemo, useRef } from 'react';
+import React, { useId } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
-import { useLocation, useParams } from 'react-router-dom';
-import { Button, LinkButton } from '@grafana/ui';
+import { useParams } from 'react-router-dom';
+import { GrafanaTheme2 } from '@grafana/data';
+import { useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { DNSCheckSchema } from 'schemas/forms/DNSCheckSchema';
-import { GRPCCheckSchema } from 'schemas/forms/GRPCCheckSchema';
-import { HttpCheckSchema } from 'schemas/forms/HttpCheckSchema';
-import { MultiHttpCheckSchema } from 'schemas/forms/MultiHttpCheckSchema';
-import { PingCheckSchema } from 'schemas/forms/PingCheckSchema';
-import { ScriptedCheckSchema } from 'schemas/forms/ScriptedCheckSchema';
-import { TCPCheckSchema } from 'schemas/forms/TCPCheckSchema';
-import { TracerouteCheckSchema } from 'schemas/forms/TracerouteCheckSchema';
 
-import { Check, CheckFormValues, CheckPageParams, CheckType, ROUTES } from 'types';
-import { isOverCheckLimit, isOverScriptedLimit } from 'utils';
-import { useChecks, useCUDChecks } from 'data/useChecks';
-import { useTenantLimits } from 'data/useTenantLimits';
-import { useNavigation } from 'hooks/useNavigation';
-import { toFormValues, toPayload } from 'components/CheckEditor/checkFormTransformations';
-import { CheckTestResultsModal } from 'components/CheckTestResultsModal';
+import {
+  Check,
+  CheckFormValues,
+  CheckFormValuesDns,
+  CheckFormValuesGRPC,
+  CheckFormValuesHttp,
+  CheckFormValuesMultiHttp,
+  CheckFormValuesPing,
+  CheckFormValuesScripted,
+  CheckFormValuesTcp,
+  CheckFormValuesTraceroute,
+  CheckPageParams,
+  CheckType,
+} from 'types';
+import { useChecks } from 'data/useChecks';
+import { toFormValues } from 'components/CheckEditor/checkFormTransformations';
+import { CheckJobName } from 'components/CheckEditor/FormComponents/CheckJobName';
+import { CheckTarget } from 'components/CheckEditor/FormComponents/CheckTarget';
+import { ChooseCheckType } from 'components/CheckEditor/FormComponents/ChooseCheckType';
+import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
+import { DNSCheckLayout } from 'components/CheckForm/FormLayouts/CheckDNSLayout';
+import { GRPCCheckLayout } from 'components/CheckForm/FormLayouts/CheckGrpcLayout';
+import { HttpCheckLayout } from 'components/CheckForm/FormLayouts/CheckHttpLayout';
+import { MultiHTTPCheckLayout } from 'components/CheckForm/FormLayouts/CheckMultiHttpLayout';
+import { PingCheckLayout } from 'components/CheckForm/FormLayouts/CheckPingLayout';
+import { ScriptedCheckLayout } from 'components/CheckForm/FormLayouts/CheckScriptedLayout';
+import { TCPCheckLayout } from 'components/CheckForm/FormLayouts/CheckTCPLayout';
+import { TracerouteCheckLayout } from 'components/CheckForm/FormLayouts/CheckTracerouteLayout';
+import { LayoutSection, Section } from 'components/CheckForm/FormLayouts/Layout.types';
+import { CheckFormAlert } from 'components/CheckFormAlert';
+import { CheckUsage } from 'components/CheckUsage';
 import { fallbackCheckMap } from 'components/constants';
-import { ErrorAlert } from 'components/ErrorAlert';
+import { LabelField } from 'components/LabelField';
 import { PluginPage } from 'components/PluginPage';
-import { getRoute } from 'components/Routing';
 
-import { CheckFields } from './CheckFields';
-import { useAdhocTest } from './useTestCheck';
+import { SubSectionContent } from './CheckFieldsSubSection';
+import { useCheckFormSchema } from './checkForm.hooks';
+import { FormLayout } from './FormLayout';
+import { useFormCheckType } from './useCheckType';
+
+type CheckForm2Props = {
+  check?: Check;
+};
 
 export const CheckForm = () => {
   const { data: checks } = useChecks();
-  const { data: limits } = useTenantLimits();
-  const { id, checkType: checkTypeParam } = useParams<CheckPageParams>();
-  const checkType = isValidCheckType(checkTypeParam) ? checkTypeParam : CheckType.PING;
+  const { id } = useParams<CheckPageParams>();
 
   if (id && !checks) {
     return null;
   }
 
-  const check = checks?.find((c) => c.id === Number(id)) ?? fallbackCheckMap[checkType];
+  const check = checks?.find((c) => c.id === Number(id));
 
-  // We don't want to gate submission for editing pre-existing checks, just prevent creating new ones
-  const overCheckLimit = !check.id && isOverCheckLimit({ checks, limits });
-  const overScriptedLimit = !check.id && isOverScriptedLimit({ checks, limits });
+  if (!check && id) {
+    return `Can't find check`;
+  }
 
-  return (
-    <CheckFormContent
-      check={check}
-      checkType={checkType}
-      overCheckLimit={Boolean(overCheckLimit)}
-      overScriptedLimit={overScriptedLimit}
-    />
-  );
+  return <CheckFormContent check={check} />;
+};
+const layoutMap = {
+  [CheckType.HTTP]: HttpCheckLayout,
+  [CheckType.MULTI_HTTP]: MultiHTTPCheckLayout,
+  [CheckType.Scripted]: ScriptedCheckLayout,
+  [CheckType.PING]: PingCheckLayout,
+  [CheckType.DNS]: DNSCheckLayout,
+  [CheckType.TCP]: TCPCheckLayout,
+  [CheckType.Traceroute]: TracerouteCheckLayout,
+  [CheckType.GRPC]: GRPCCheckLayout,
 };
 
-type CheckFormContentProps = {
-  check: Check;
-  checkType: CheckType;
-  overCheckLimit: boolean;
-  overScriptedLimit: boolean;
+type CheckTypeMap = {
+  [CheckType.DNS]: CheckFormValuesDns;
+  [CheckType.HTTP]: CheckFormValuesHttp;
+  [CheckType.MULTI_HTTP]: CheckFormValuesMultiHttp;
+  [CheckType.Scripted]: CheckFormValuesScripted;
+  [CheckType.PING]: CheckFormValuesPing;
+  [CheckType.TCP]: CheckFormValuesTcp;
+  [CheckType.Traceroute]: CheckFormValuesTraceroute;
+  [CheckType.GRPC]: CheckFormValuesGRPC;
 };
 
-const schemaMap = {
-  [CheckType.HTTP]: HttpCheckSchema,
-  [CheckType.MULTI_HTTP]: MultiHttpCheckSchema,
-  [CheckType.Scripted]: ScriptedCheckSchema,
-  [CheckType.PING]: PingCheckSchema,
-  [CheckType.DNS]: DNSCheckSchema,
-  [CheckType.TCP]: TCPCheckSchema,
-  [CheckType.Traceroute]: TracerouteCheckSchema,
-  [CheckType.GRPC]: GRPCCheckSchema,
+const checkTypeStep1Label = {
+  [CheckType.DNS]: `Request`,
+  [CheckType.HTTP]: `Request`,
+  [CheckType.MULTI_HTTP]: `Steps`,
+  [CheckType.Scripted]: `Script`,
+  [CheckType.PING]: `Request`,
+  [CheckType.TCP]: `Request`,
+  [CheckType.Traceroute]: `Request`,
+  [CheckType.GRPC]: `Request`,
 };
 
-const CheckFormContent = ({ check, overCheckLimit, overScriptedLimit }: CheckFormContentProps) => {
-  const { search } = useLocation();
-  const searchParams = new URLSearchParams(search);
-  const checkType = (searchParams.get('checkType') as CheckType) || CheckType.HTTP;
-  const { adhocTestData, closeModal, isPending, openTestCheckModal, testCheck, testCheckError } =
-    useAdhocTest(checkType);
-  const initialValues = useMemo(() => toFormValues(check, checkType), [check, checkType]);
+export const CheckFormContent = ({ check }: CheckForm2Props) => {
+  const checkType = useFormCheckType();
+  const initialCheck = check || fallbackCheckMap[checkType];
+  const schema = useCheckFormSchema();
+  const styles = useStyles2(getStyles);
+
   const formMethods = useForm<CheckFormValues>({
-    defaultValues: initialValues,
+    defaultValues: toFormValues(initialCheck, checkType),
     shouldFocusError: false, // we manage focus manually
-    resolver: zodResolver(schemaMap[checkType]),
+    resolver: zodResolver(schema),
   });
-  console.log(formMethods.watch());
-  console.log(formMethods.formState.errors);
-  const { updateCheck, createCheck, error, submitting } = useCUDChecks({ eventInfo: { checkType } });
+  // console.log(formMethods.watch());
+  // console.log(formMethods.formState.errors);
 
-  const navigate = useNavigation();
-  const navigateBack = () => navigate(ROUTES.Checks);
-  const onSuccess = () => navigateBack();
-  const testRef = useRef<HTMLButtonElement>(null);
+  // @ts-expect-error
+  const layout: Record<LayoutSection, Array<Section<CheckTypeMap[typeof checkType]>>> = layoutMap[checkType];
 
-  const handleSubmit = (checkValues: CheckFormValues, event: BaseSyntheticEvent | undefined) => {
-    // react-hook-form doesn't let us provide SubmitEvent to BaseSyntheticEvent
-    const submitter = (event?.nativeEvent as SubmitEvent).submitter;
-    const toSubmit = toPayload(checkValues);
+  const defineCheckSection = layout[LayoutSection.Check] || [];
+  const defineCheckFields = defineCheckSection.map((section) => section.fields).flat();
 
-    if (submitter === testRef.current) {
-      return testCheck(toSubmit);
-    }
+  const defineUptimeSection = layout[LayoutSection.Uptime] || [];
+  const defineUptimeFields = defineUptimeSection.map((section) => section.fields).flat();
 
-    mutateCheck(toSubmit);
-  };
+  const probesSection = layout[LayoutSection.Probes] || [];
+  const probesFields = probesSection.map((section) => section.fields).flat();
 
-  const mutateCheck = (newCheck: Check) => {
-    if (check.id) {
-      return updateCheck(
-        {
-          id: check.id,
-          tenantId: check.tenantId,
-          ...newCheck,
-        },
-        { onSuccess }
-      );
-    }
-
-    return createCheck(newCheck, { onSuccess });
-  };
-
-  const actions = useMemo(() => {
-    const actions = [
-      <LinkButton
-        key="cancel"
-        href={getRoute(ROUTES.Checks)}
-        fill="text"
-        variant="secondary"
-        data-fs-element="Cancel check button"
-      >
-        Cancel
-      </LinkButton>,
-    ];
-    if (![CheckType.Traceroute].includes(checkType)) {
-      actions.push(
-        <Button
-          disabled={isPending}
-          type="submit"
-          key="test"
-          data-fs-element="Test check button"
-          variant="secondary"
-          icon={isPending ? `fa fa-spinner` : undefined}
-          ref={testRef}
-        >
-          Test
-        </Button>
-      );
-    }
-    actions.push(
-      <Button
-        type="submit"
-        key="save"
-        disabled={overScriptedLimit || overCheckLimit || formMethods.formState.isSubmitting || submitting}
-        data-fs-element="Save check button"
-      >
-        Save
-      </Button>
-    );
-
-    return actions;
-  }, [overScriptedLimit, overCheckLimit, formMethods.formState.isSubmitting, submitting, checkType, isPending]);
-
-  const capitalizedCheckType = checkType.slice(0, 1).toUpperCase().concat(checkType.split('').slice(1).join(''));
-  const headerText = check?.id ? `Editing ${check.job}` : `Add ${capitalizedCheckType} check`;
-  const submissionError = error || testCheckError;
+  const labelsSection = layout[LayoutSection.Labels] || [];
+  const labelsFields = probesSection.map((section) => section.fields).flat();
 
   return (
-    <PluginPage pageNav={{ text: check?.job ? `Editing ${check.job}` : headerText }}>
-      <>
-        <FormProvider {...formMethods}>
-          {(overCheckLimit || overScriptedLimit) && (
-            <ErrorAlert
-              title={`Maximum number of ${overScriptedLimit ? 'scripted' : ''} checks reached`}
-              content={`You have reached the maximum quantity of ${
-                overScriptedLimit ? 'scripted' : ''
-              } checks allowed for your account. Please contact support for assistance.`}
-              onClick={navigateBack}
-              buttonText="Go to checks"
-            />
-          )}
-          <CheckFields
-            schema={schemaMap[checkType]}
-            checkType={checkType}
-            formActions={actions}
-            onSubmit={handleSubmit}
-            errorMessage={submissionError ? submissionError.message ?? 'Something went wrong' : undefined}
-          />
-        </FormProvider>
-      </>
-      <CheckTestResultsModal isOpen={openTestCheckModal} onDismiss={closeModal} testResponse={adhocTestData} />
+    <PluginPage pageNav={{ text: `Check Form Redux` }}>
+      <FormProvider {...formMethods}>
+        <div className={styles.wrapper}>
+          <FormLayout>
+            <FormLayout.Section label={checkTypeStep1Label[checkType]} fields={[`job`, ...defineCheckFields]}>
+              <div className={styles.stackCol}>
+                <CheckJobName />
+                <ChooseCheckType />
+                <CheckTarget />
+                <SubSectionContent sections={defineCheckSection} />
+              </div>
+            </FormLayout.Section>
+            <FormLayout.Section label="Define uptime" fields={defineUptimeFields}>
+              <SubSectionContent sections={defineUptimeSection} />
+            </FormLayout.Section>
+
+            <FormLayout.Section label="Probes" fields={[`probes`, `frequency`, ...probesFields]}>
+              <ProbeOptions checkType={checkType} />
+              <SubSectionContent sections={probesSection} />
+              <CheckUsage checkType={checkType} />
+            </FormLayout.Section>
+            <FormLayout.Section label="Labels" fields={[`labels`, ...labelsFields]}>
+              <SubSectionContent sections={labelsSection} />
+              <LabelField<CheckFormValuesHttp> labelDestination="check" />
+            </FormLayout.Section>
+            <FormLayout.Section label="Alerting" fields={[`alertSensitivity`]}>
+              <CheckFormAlert />
+            </FormLayout.Section>
+            <FormLayout.Section label="Review">Test the form?</FormLayout.Section>
+          </FormLayout>
+        </div>
+      </FormProvider>
     </PluginPage>
   );
 };
 
-function isValidCheckType(checkType?: CheckType): checkType is CheckType {
-  if (!checkType) {
-    return false;
-  }
-
-  return Object.values(CheckType).includes(checkType);
-}
+const getStyles = (theme: GrafanaTheme2) => ({
+  stackCol: css({
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(2),
+  }),
+  wrapper: css({
+    paddingTop: theme.spacing(2),
+    height: `100%`,
+  }),
+});

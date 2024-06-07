@@ -1,8 +1,36 @@
+import { useCallback, useState } from 'react';
 import { FieldErrors, FieldPath } from 'react-hook-form';
+import { uniq } from 'lodash';
 import { ZodType } from 'zod';
 
 import { CheckFormValues } from 'types';
 import { PROBES_SELECT_ID } from 'components/CheckEditor/CheckProbes';
+
+export function useFormLayout() {
+  const [visitedSections, setVisitedSections] = useState<number[]>([]);
+  const [activeSection, setActiveSection] = useState(0);
+
+  const setVisited = useCallback((visited: number[]) => {
+    setVisitedSections((prev) => uniq([...prev, ...visited]));
+  }, []);
+
+  const goToSection = useCallback(
+    (index: number) => {
+      setActiveSection(index);
+      const previous = new Array(index).fill(0).map((_, i) => i);
+      setVisited(previous);
+    },
+    [setVisited]
+  );
+
+  return {
+    activeSection,
+    goToSection,
+    setActiveSection,
+    setVisited,
+    visitedSections,
+  };
+}
 
 export function checkForErrors({
   fields = [],
