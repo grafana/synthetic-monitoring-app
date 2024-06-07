@@ -17,7 +17,7 @@ export function findValueByName(
   name: string,
   method: string,
   fieldName: string,
-  fields: Array<Field<any, any[]>>
+  fields: Array<Field<any>>
 ): any {
   const nameFieldIndex = fields.findIndex((field) => field.name === 'name' || field.name === 'url');
   if (nameFieldIndex === -1) {
