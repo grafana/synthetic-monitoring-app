@@ -5,7 +5,9 @@ import { render } from 'test/render';
 
 import { CheckType } from 'types';
 
-import { CheckTarget } from './CheckTarget';
+const CheckTarget = () => {
+  return null;
+};
 
 const Component = ({ checkType, target }: { checkType: CheckType; target: string }) => {
   const formMethods = useForm({

@@ -2,59 +2,63 @@ import React from 'react';
 
 import { LayoutSection, Section } from './Layout.types';
 import { CheckFormValuesTcp, CheckType } from 'types';
-import { CheckIpVersion } from 'components/CheckEditor/FormComponents/CheckIpVersion';
+import { TCPRequestFields } from 'components/CheckEditor/CheckEditor.types';
 import { CheckPublishedAdvanceMetrics } from 'components/CheckEditor/FormComponents/CheckPublishedAdvanceMetrics';
-import { CheckUseTLS } from 'components/CheckEditor/FormComponents/CheckUseTLS';
 import { TCPCheckQueryAndResponse } from 'components/CheckEditor/FormComponents/TCPCheckQueryAndResponse';
+import { TCPRequest } from 'components/CheckEditor/FormComponents/TCPRequest';
 import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
-import { TLSConfig } from 'components/TLSConfig';
 
-export const TCPCheckLayout: Record<LayoutSection, Array<Section<CheckFormValuesTcp>>> = {
-  [LayoutSection.Check]: [
-    {
-      label: `Request Options`,
-      fields: [`settings.tcp.ipVersion`],
-      Component: (
-        <>
-          <CheckIpVersion checkType={CheckType.TCP} name="settings.tcp.ipVersion" />
-        </>
-      ),
-    },
-    {
-      label: `Authentication`,
-      fields: [`settings.tcp.tls`, `settings.tcp.tlsConfig`],
-      Component: (
-        <>
-          <CheckUseTLS checkType={CheckType.TCP} />
-          <TLSConfig checkType={CheckType.TCP} />
-        </>
-      ),
-    },
-  ],
-  [LayoutSection.Uptime]: [
-    {
-      label: ``,
-      fields: [`settings.tcp.queryResponse`, `timeout`],
-      Component: (
-        <>
-          <TCPCheckQueryAndResponse />
-          <Timeout checkType={CheckType.TCP} />
-        </>
-      ),
-    },
-  ],
-  [LayoutSection.Probes]: [
-    {
-      label: ``,
-      fields: [`publishAdvancedMetrics`],
-      Component: (
-        <>
-          <CheckPublishedAdvanceMetrics />
-        </>
-      ),
-    },
-  ],
-  [LayoutSection.Labels]: [],
-  [LayoutSection.Alerting]: [],
-  [LayoutSection.Review]: [],
+const TCP_FIELDS: TCPRequestFields = {
+  target: {
+    name: `target`,
+  },
+  ipVersion: {
+    name: `settings.tcp.ipVersion`,
+  },
+  useTLS: {
+    name: `settings.tcp.tls`,
+  },
+  tlsServerName: {
+    name: `settings.tcp.tlsConfig.serverName`,
+  },
+  tlsInsecureSkipVerify: {
+    name: `settings.tcp.tlsConfig.insecureSkipVerify`,
+  },
+  tlsCaSCert: {
+    name: `settings.tcp.tlsConfig.caCert`,
+  },
+  tlsClientCert: {
+    name: `settings.tcp.tlsConfig.clientCert`,
+  },
+  tlsClientKey: {
+    name: `settings.tcp.tlsConfig.clientKey`,
+  },
+};
+
+export const TCPCheckLayout: Partial<Record<LayoutSection, Section<CheckFormValuesTcp>>> = {
+  [LayoutSection.Check]: {
+    fields: [`target`],
+    Component: (
+      <>
+        <TCPRequest fields={TCP_FIELDS} />
+      </>
+    ),
+  },
+  [LayoutSection.Uptime]: {
+    fields: [`settings.tcp.queryResponse`, `timeout`],
+    Component: (
+      <>
+        <TCPCheckQueryAndResponse />
+        <Timeout checkType={CheckType.TCP} />
+      </>
+    ),
+  },
+  [LayoutSection.Probes]: {
+    fields: [`publishAdvancedMetrics`],
+    Component: (
+      <>
+        <CheckPublishedAdvanceMetrics />
+      </>
+    ),
+  },
 };

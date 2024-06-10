@@ -1,10 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import React, { FormEvent, useEffect, useRef } from 'react';
 import { FieldErrors, useFieldArray, useFormContext } from 'react-hook-form';
-import { Button, HorizontalGroup, useStyles2, VerticalGroup } from '@grafana/ui';
+import { Button, useStyles2 } from '@grafana/ui';
 
-import { CheckFormValues, CheckFormValuesMultiHttp, CheckType, HttpMethod } from 'types';
-import { RequestMethodSelect } from 'components/CheckEditor/FormComponents/RequestMethodSelect';
-import { RequestTargetInput } from 'components/CheckEditor/FormComponents/RequestTargetInput';
+import { CheckFormValues, CheckFormValuesMultiHttp, HttpMethod } from 'types';
 import { CHECK_FORM_ERROR_EVENT } from 'components/constants';
 import { AvailableVariables } from 'components/MultiHttp/AvailableVariables';
 import { MultiHttpCollapse } from 'components/MultiHttp/MultiHttpCollapse';
@@ -14,7 +12,8 @@ import {
   getMultiHttpFormErrors,
   useMultiHttpCollapseState,
 } from 'components/MultiHttp/MultiHttpSettingsForm.utils';
-import { TabSection } from 'components/MultiHttp/Tabs/TabSection';
+
+import { HttpRequest } from './HttpRequest';
 
 export const MultiHttpCheckRequests = () => {
   const {
@@ -64,6 +63,10 @@ export const MultiHttpCheckRequests = () => {
     };
   }, [dispatchCollapse]);
 
+  const parseQueryParams = (e: FormEvent) => {
+    console.log(e);
+  };
+
   return (
     <div className={styles.request}>
       {entryFields.map((field, index) => {
@@ -72,50 +75,50 @@ export const MultiHttpCheckRequests = () => {
           <MultiHttpCollapse
             label={urlForIndex}
             key={field.id}
-            className={styles.collapseTarget}
             data-testid={`multihttp-request-${index}`}
             invalid={Boolean(errors?.settings?.multihttp?.entries?.[index])}
             isOpen={collapseState[index].open}
             onToggle={() => dispatchCollapse({ type: 'toggle', index })}
             ref={(el) => (panelRefs.current[index] = el)}
           >
-            <VerticalGroup>
-              <HorizontalGroup spacing="lg" align="flex-start">
-                <RequestTargetInput
-                  aria-label={`Request target for request ${index + 1}`}
-                  checkType={CheckType.MULTI_HTTP}
-                  name={`settings.multihttp.entries.${index}.request.url`}
-                  id={`request-target-url-${index}`}
-                />
-                <RequestMethodSelect
-                  aria-label={`Request method for request ${index + 1}`}
-                  name={`settings.multihttp.entries.${index}.request.method`}
-                />
-                {index !== 0 && (
-                  <Button
-                    variant="secondary"
-                    onClick={() => {
-                      remove(index);
-                      dispatchCollapse({ type: 'removeRequest', index });
-                    }}
-                    className={styles.removeRequestButton}
-                    data-fs-element={`Remove request ${index + 1}`}
-                  >
-                    Remove
-                  </Button>
-                )}
-              </HorizontalGroup>
-
-              <AvailableVariables index={index} />
-
-              <TabSection
-                index={index}
-                activeTab={collapseState[index].activeTab}
-                onTabClick={(tab) => {
-                  dispatchCollapse({ type: 'updateRequestPanel', index, tab });
+            <HttpRequest
+              fields={{
+                target: {
+                  name: `settings.multihttp.entries.${index}.request.url`,
+                  onChange: parseQueryParams,
+                },
+                method: {
+                  name: `settings.multihttp.entries.${index}.request.method`,
+                  'aria-label': `Request target for request ${index + 1}`,
+                },
+                requestHeaders: {
+                  name: `settings.multihttp.entries.${index}.request.headers`,
+                },
+                requestBody: {
+                  name: `settings.multihttp.entries.${index}.request.body.payload`,
+                },
+                requestContentEncoding: {
+                  name: `settings.multihttp.entries.${index}.request.body.contentEncoding`,
+                },
+                requestContentType: {
+                  name: `settings.multihttp.entries.${index}.request.body.contentType`,
+                },
+              }}
+            />
+            {index !== 0 && (
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  remove(index);
+                  dispatchCollapse({ type: 'removeRequest', index });
                 }}
-              />
-            </VerticalGroup>
+                className={styles.removeRequestButton}
+                data-fs-element={`Remove request ${index + 1}`}
+              >
+                Remove
+              </Button>
+            )}
+            <AvailableVariables index={index} />
           </MultiHttpCollapse>
         );
       })}

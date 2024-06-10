@@ -16,6 +16,8 @@ import {
 import { css, cx } from '@emotion/css';
 
 import { CheckFormValuesMultiHttp, MultiHttpVariableType } from 'types';
+import { RequestBodyContentEncoding } from 'components/CheckEditor/FormComponents/RequestBodyContentEncoding';
+import { RequestBodyContentType } from 'components/CheckEditor/FormComponents/RequestBodyContentType';
 import { RequestHeaders } from 'components/CheckEditor/FormComponents/RequestHeaders';
 import { interpolateErrorMessage } from 'components/CheckForm/utils';
 import { MULTI_HTTP_VARIABLE_TYPE_OPTIONS } from 'components/constants';
@@ -57,20 +59,8 @@ export const BodyTab = ({ index, active }: MultiHttpTabProps) => {
 
   return (
     <div className={cx(styles.inputsContainer, { [styles.inactive]: !active })} data-testid="body-tab">
-      <Field label="Content type" description="Indicates the media type of the body">
-        <Input
-          {...register(`settings.multihttp.entries.${index}.request.body.contentType`)}
-          id={`request-body-${index}-contentType`}
-          data-fs-element="Request body content type input"
-        />
-      </Field>
-      <Field label="Content encoding" description="Indicates the content encoding of the body">
-        <Input
-          {...register(`settings.multihttp.entries.${index}.request.body.contentEncoding`)}
-          id={`request-body-${index}-contentEncoding`}
-          data-fs-element="Request body content encoding input"
-        />
-      </Field>
+      <RequestBodyContentType name={`settings.multihttp.entries.${index}.request.body.contentType`} />
+      <RequestBodyContentEncoding name={`settings.multihttp.entries.${index}.request.body.contentEncoding`} />
       <Field
         label="Request body payload"
         description="The body of the HTTP request used in probe."

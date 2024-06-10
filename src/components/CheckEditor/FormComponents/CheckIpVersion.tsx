@@ -1,34 +1,26 @@
-import React from 'react';
+import React, { useId } from 'react';
 import { Controller, FieldPath, useFormContext } from 'react-hook-form';
 import { OrgRole } from '@grafana/data';
 import { Field, Select } from '@grafana/ui';
 
-import { CheckFormValues, CheckType } from 'types';
+import { CheckFormValues } from 'types';
 import { hasRole } from 'utils';
 import { IP_OPTIONS } from 'components/constants';
 
 type CheckIpVersionProps = {
-  checkType: CheckType.HTTP | CheckType.PING | CheckType.DNS | CheckType.TCP | CheckType.GRPC;
+  description: string;
   name: FieldPath<CheckFormValues>;
 };
 
-const requestMap = {
-  [CheckType.HTTP]: `HTTP`,
-  [CheckType.PING]: `ICMP`,
-  [CheckType.DNS]: `ICMP`,
-  [CheckType.TCP]: `TCP`,
-  [CheckType.GRPC]: `gRPC`,
-};
-
-export const CheckIpVersion = ({ checkType, name }: CheckIpVersionProps) => {
+export const CheckIpVersion = ({ description, name }: CheckIpVersionProps) => {
   const { control } = useFormContext<CheckFormValues>();
   const isEditor = hasRole(OrgRole.Editor);
-  const id = `${checkType}-ip-version`;
+  const id = useId().replace(/:/g, '_');
 
   return (
     <Field
       label="IP version"
-      description={`The IP protocol of the ${requestMap[checkType]} request`}
+      description={description}
       disabled={!isEditor}
       htmlFor={id}
       data-fs-element="IP version select"

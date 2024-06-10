@@ -2,47 +2,46 @@ import React from 'react';
 
 import { LayoutSection, Section } from './Layout.types';
 import { CheckFormValuesPing, CheckType } from 'types';
-import { CheckIpVersion } from 'components/CheckEditor/FormComponents/CheckIpVersion';
+import { PingRequestFields } from 'components/CheckEditor/CheckEditor.types';
 import { CheckPublishedAdvanceMetrics } from 'components/CheckEditor/FormComponents/CheckPublishedAdvanceMetrics';
-import { PingCheckFragment } from 'components/CheckEditor/FormComponents/PingCheckFragment';
+import { PingRequest } from 'components/CheckEditor/FormComponents/PingRequest';
 import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
 
-export const PingCheckLayout: Record<LayoutSection, Array<Section<CheckFormValuesPing>>> = {
-  [LayoutSection.Check]: [
-    {
-      label: ``,
-      fields: [`settings.ping.ipVersion`, `settings.ping.dontFragment`],
-      Component: (
-        <>
-          <CheckIpVersion checkType={CheckType.PING} name="settings.ping.ipVersion" />
-          <PingCheckFragment />
-        </>
-      ),
-    },
-  ],
-  [LayoutSection.Uptime]: [
-    {
-      label: ``,
-      fields: [`timeout`],
-      Component: (
-        <>
-          <Timeout checkType={CheckType.PING} />
-        </>
-      ),
-    },
-  ],
-  [LayoutSection.Probes]: [
-    {
-      label: ``,
-      fields: [`publishAdvancedMetrics`],
-      Component: (
-        <>
-          <CheckPublishedAdvanceMetrics />
-        </>
-      ),
-    },
-  ],
-  [LayoutSection.Labels]: [],
-  [LayoutSection.Alerting]: [],
-  [LayoutSection.Review]: [],
+const PING_FIELDS: PingRequestFields = {
+  target: {
+    name: `target`,
+  },
+  ipVersion: {
+    name: `settings.ping.ipVersion`,
+  },
+  dontFragment: {
+    name: `settings.ping.dontFragment`,
+  },
+};
+
+export const PingCheckLayout: Partial<Record<LayoutSection, Section<CheckFormValuesPing>>> = {
+  [LayoutSection.Check]: {
+    fields: [`settings.ping.ipVersion`, `settings.ping.dontFragment`],
+    Component: (
+      <>
+        <PingRequest fields={PING_FIELDS} />
+      </>
+    ),
+  },
+  [LayoutSection.Uptime]: {
+    fields: [`timeout`],
+    Component: (
+      <>
+        <Timeout checkType={CheckType.PING} />
+      </>
+    ),
+  },
+  [LayoutSection.Probes]: {
+    fields: [`publishAdvancedMetrics`],
+    Component: (
+      <>
+        <CheckPublishedAdvanceMetrics />
+      </>
+    ),
+  },
 };

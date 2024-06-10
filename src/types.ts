@@ -462,12 +462,6 @@ export enum CheckType {
   Traceroute = 'traceroute',
 }
 
-export enum CheckTypeGroup {
-  ApiTest = `api-test`,
-  MultiStep = `multistep`,
-  Scripted = `scripted`,
-}
-
 export interface HostedInstance {
   id: number;
   orgSlug: string;
@@ -670,17 +664,12 @@ export enum ROUTES {
   EditCheck = 'checks/edit',
   Config = 'config',
   Scene = 'scene',
-  ChooseCheckGroup = 'checks/choose-type',
   ScriptedChecks = 'scripted-checks',
 }
 
 export interface CheckPageParams {
   id: string;
   checkType?: CheckType;
-}
-
-export interface CheckFormPageParams {
-  checkTypeGroup: CheckTypeGroup;
 }
 
 export interface ProbePageParams {

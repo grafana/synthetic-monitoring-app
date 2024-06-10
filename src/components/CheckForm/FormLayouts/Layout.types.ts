@@ -13,7 +13,6 @@ export enum LayoutSection {
 }
 
 export type Section<T extends CheckFormValues> = {
-  label: string;
   fields: Array<FieldPath<T>>;
   Component: ReactElement;
 };

@@ -5,31 +5,21 @@ import { CheckFormValuesMultiHttp, CheckType } from 'types';
 import { MultiHttpCheckRequests } from 'components/CheckEditor/FormComponents/MultiHttpCheckRequests';
 import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
 
-export const MultiHTTPCheckLayout: Record<LayoutSection, Array<Section<CheckFormValuesMultiHttp>>> = {
-  [LayoutSection.Check]: [
-    {
-      label: ``,
-      fields: [`settings.multihttp.entries`],
-      Component: (
-        <>
-          <MultiHttpCheckRequests />
-        </>
-      ),
-    },
-  ],
-  [LayoutSection.Uptime]: [
-    {
-      label: ``,
-      fields: [`timeout`],
-      Component: (
-        <>
-          <Timeout checkType={CheckType.MULTI_HTTP} />
-        </>
-      ),
-    },
-  ],
-  [LayoutSection.Probes]: [],
-  [LayoutSection.Labels]: [],
-  [LayoutSection.Alerting]: [],
-  [LayoutSection.Review]: [],
+export const MultiHTTPCheckLayout: Partial<Record<LayoutSection, Section<CheckFormValuesMultiHttp>>> = {
+  [LayoutSection.Check]: {
+    fields: [`settings.multihttp.entries`],
+    Component: (
+      <>
+        <MultiHttpCheckRequests />
+      </>
+    ),
+  },
+  [LayoutSection.Uptime]: {
+    fields: [`timeout`],
+    Component: (
+      <>
+        <Timeout checkType={CheckType.MULTI_HTTP} />
+      </>
+    ),
+  },
 };

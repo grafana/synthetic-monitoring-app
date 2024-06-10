@@ -13,10 +13,6 @@ export const getMultiHttpFormStyles = (theme: GrafanaTheme2) => ({
     position: relative;
     width: 100%;
   `,
-  collapseTarget: css`
-    background-color: ${theme.colors.background.secondary};
-    max-height: 100%;
-  `,
   jobNameInput: css`
     width: 100%;
   `,

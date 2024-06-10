@@ -31,7 +31,7 @@ export const RequestBodyTextArea = ({ name }: RequestBodyTextAreaProps) => {
       <TextArea
         id={name}
         {...register(name)}
-        rows={2}
+        rows={10}
         disabled={!isEditor}
         data-fs-element="Check request body textarea"
       />

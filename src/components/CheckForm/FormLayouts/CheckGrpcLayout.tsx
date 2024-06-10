@@ -2,67 +2,64 @@ import React from 'react';
 
 import { LayoutSection, Section } from './Layout.types';
 import { CheckFormValuesGRPC, CheckType } from 'types';
-import { CheckIpVersion } from 'components/CheckEditor/FormComponents/CheckIpVersion';
+import { GRPCRequestFields } from 'components/CheckEditor/CheckEditor.types';
 import { CheckPublishedAdvanceMetrics } from 'components/CheckEditor/FormComponents/CheckPublishedAdvanceMetrics';
-import { CheckUseTLS } from 'components/CheckEditor/FormComponents/CheckUseTLS';
-import { GRPCCheckService } from 'components/CheckEditor/FormComponents/GRPCCheckService';
+import { GRPCRequest } from 'components/CheckEditor/FormComponents/GRPCRequest';
 import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
-import { TLSConfig } from 'components/TLSConfig';
 
-export const GRPCCheckLayout: Record<LayoutSection, Array<Section<CheckFormValuesGRPC>>> = {
-  [LayoutSection.Check]: [
-    {
-      label: `Request Options`,
-      fields: [`settings.grpc.ipVersion`],
-      Component: (
-        <>
-          <CheckIpVersion checkType={CheckType.GRPC} name="settings.grpc.ipVersion" />
-        </>
-      ),
-    },
-    {
-      label: `Service`,
-      fields: [`settings.grpc.service`],
-      Component: (
-        <>
-          <GRPCCheckService />
-        </>
-      ),
-    },
-    {
-      label: `Authentication`,
-      fields: [`settings.grpc.tls`, `settings.grpc.tlsConfig`],
-      Component: (
-        <>
-          <CheckUseTLS checkType={CheckType.GRPC} />
-          <TLSConfig checkType={CheckType.GRPC} />
-        </>
-      ),
-    },
-  ],
-  [LayoutSection.Uptime]: [
-    {
-      label: ``,
-      fields: [`timeout`],
-      Component: (
-        <>
-          <Timeout checkType={CheckType.GRPC} />
-        </>
-      ),
-    },
-  ],
-  [LayoutSection.Probes]: [
-    {
-      label: ``,
-      fields: [`publishAdvancedMetrics`],
-      Component: (
-        <>
-          <CheckPublishedAdvanceMetrics />
-        </>
-      ),
-    },
-  ],
-  [LayoutSection.Labels]: [],
-  [LayoutSection.Alerting]: [],
-  [LayoutSection.Review]: [],
+const GRPC_FIELDS: GRPCRequestFields = {
+  target: {
+    name: `target`,
+  },
+  ipVersion: {
+    name: `settings.grpc.ipVersion`,
+  },
+  service: {
+    name: `settings.grpc.service`,
+  },
+  useTLS: {
+    name: `settings.grpc.tls`,
+  },
+  tlsServerName: {
+    name: `settings.grpc.tlsConfig.serverName`,
+  },
+  tlsInsecureSkipVerify: {
+    name: `settings.grpc.tlsConfig.insecureSkipVerify`,
+  },
+  tlsCaSCert: {
+    name: `settings.grpc.tlsConfig.caCert`,
+  },
+  tlsClientCert: {
+    name: `settings.grpc.tlsConfig.clientCert`,
+  },
+  tlsClientKey: {
+    name: `settings.grpc.tlsConfig.clientKey`,
+  },
+};
+
+export const GRPCCheckLayout: Partial<Record<LayoutSection, Section<CheckFormValuesGRPC>>> = {
+  [LayoutSection.Check]: {
+    fields: [`target`],
+    Component: (
+      <>
+        <GRPCRequest fields={GRPC_FIELDS} />
+      </>
+    ),
+  },
+  [LayoutSection.Uptime]: {
+    fields: [`timeout`],
+    Component: (
+      <>
+        <Timeout checkType={CheckType.GRPC} />
+      </>
+    ),
+  },
+  [LayoutSection.Probes]: {
+    fields: [`publishAdvancedMetrics`],
+    Component: (
+      <>
+        <CheckPublishedAdvanceMetrics />
+      </>
+    ),
+  },
 };

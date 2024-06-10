@@ -1,121 +1,90 @@
 import React from 'react';
-import { css } from '@emotion/css';
 
 import { LayoutSection, Section } from './Layout.types';
-import { CheckFormValuesHttp, CheckType } from 'types';
-import { CheckIpVersion } from 'components/CheckEditor/FormComponents/CheckIpVersion';
+import { CheckFormValues, CheckType } from 'types';
+import { HttpRequestFields } from 'components/CheckEditor/CheckEditor.types';
 import { CheckPublishedAdvanceMetrics } from 'components/CheckEditor/FormComponents/CheckPublishedAdvanceMetrics';
-import { HttpCheckAuthentication } from 'components/CheckEditor/FormComponents/HttpCheckAuthentication';
 import { HttpCheckCacheBuster } from 'components/CheckEditor/FormComponents/HttpCheckCacheBuster';
 import { HttpCheckCompressionOption } from 'components/CheckEditor/FormComponents/HttpCheckCompressionOption';
-import { HttpCheckFollowRedirects } from 'components/CheckEditor/FormComponents/HttpCheckFollowRedirects';
-import { HttpCheckProxyURL } from 'components/CheckEditor/FormComponents/HttpCheckProxyURL';
 import { HttpCheckRegExValidation } from 'components/CheckEditor/FormComponents/HttpCheckRegExValidation';
 import { HttpCheckSSLOptions } from 'components/CheckEditor/FormComponents/HttpCheckSSLOptions';
 import { HttpCheckValidHttpVersions } from 'components/CheckEditor/FormComponents/HttpCheckValidHttpVersions';
 import { HttpCheckValidStatusCodes } from 'components/CheckEditor/FormComponents/HttpCheckValidStatusCodes';
-import { RequestBodyTextArea } from 'components/CheckEditor/FormComponents/RequestBodyTextArea';
-import { RequestHeaders } from 'components/CheckEditor/FormComponents/RequestHeaders';
+import { HttpRequest } from 'components/CheckEditor/FormComponents/HttpRequest';
 import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
-import { TLSConfig } from 'components/TLSConfig';
 
-export const HttpCheckLayout: Record<LayoutSection, Array<Section<CheckFormValuesHttp>>> = {
-  [LayoutSection.Check]: [
-    {
-      label: `Request Options`,
-      fields: [`settings.http.headers`],
-      Component: (
-        <>
-          <RequestHeaders
-            description="The HTTP headers set for the probe."
-            label="Request header"
-            name="settings.http.headers"
-            data-fs-element="Request headers"
-          />
-          <HttpCheckFollowRedirects />
-          <CheckIpVersion checkType={CheckType.HTTP} name="settings.http.ipVersion" />
-        </>
-      ),
-    },
-    {
-      label: `Request Body`,
-      fields: [`settings.http.body`],
-      Component: <RequestBodyTextArea name="settings.http.body" />,
-    },
-    {
-      label: `Authentication`,
-      fields: [
-        `settings.http.bearerToken`,
-        `settings.http.basicAuth`,
-        `settings.http.tlsConfig.caCert`,
-        `settings.http.tlsConfig.clientCert`,
-        `settings.http.tlsConfig.clientKey`,
-      ],
-      Component: (
-        <div className={css({ display: `flex`, flexDirection: `column`, gap: `16px` })}>
-          <div>
-            <h3 className="h6">Authentication Type</h3>
-            <HttpCheckAuthentication />
-          </div>
-          <div>
-            <h3 className="h6">TLS Config</h3>
-            <TLSConfig checkType={CheckType.HTTP} />
-          </div>
-        </div>
-      ),
-    },
-    {
-      label: `Proxy`,
-      fields: [`settings.http.proxyURL`, `settings.http.proxyConnectHeaders`],
-      Component: (
-        <>
-          <HttpCheckProxyURL />
-          <RequestHeaders
-            description="The HTTP headers sent to the proxy."
-            label="Proxy connect header"
-            name="settings.http.proxyConnectHeaders"
-            data-fs-element="Proxy connect headers"
-          />
-        </>
-      ),
-    },
-  ],
-  [LayoutSection.Uptime]: [
-    {
-      label: ``,
-      fields: [
-        `settings.http.validStatusCodes`,
-        `settings.http.validHTTPVersions`,
-        `settings.http.sslOptions`,
-        `settings.http.regexValidations`,
-        `settings.http.compression`,
-        `timeout`,
-      ],
-      Component: (
-        <>
-          <HttpCheckValidStatusCodes />
-          <HttpCheckValidHttpVersions />
-          <HttpCheckSSLOptions />
-          <HttpCheckRegExValidation />
-          <HttpCheckCompressionOption />
-          <Timeout checkType={CheckType.HTTP} />
-        </>
-      ),
-    },
-  ],
-  [LayoutSection.Probes]: [
-    {
-      label: ``,
-      fields: [`settings.http.cacheBustingQueryParamName`],
-      Component: (
-        <>
-          <HttpCheckCacheBuster />
-          <CheckPublishedAdvanceMetrics />
-        </>
-      ),
-    },
-  ],
-  [LayoutSection.Labels]: [],
-  [LayoutSection.Alerting]: [],
-  [LayoutSection.Review]: [],
+const HTTP_REQUEST_FIELDS: HttpRequestFields = {
+  target: {
+    name: `target`,
+  },
+  method: {
+    name: `settings.http.method`,
+  },
+  requestHeaders: {
+    name: `settings.http.headers`,
+  },
+  requestBody: {
+    name: `settings.http.body`,
+  },
+  tlsServerName: {
+    name: `settings.http.tlsConfig.serverName`,
+  },
+  tlsInsecureSkipVerify: {
+    name: `settings.http.tlsConfig.insecureSkipVerify`,
+  },
+  tlsCaSCert: {
+    name: `settings.http.tlsConfig.caCert`,
+  },
+  tlsClientCert: {
+    name: `settings.http.tlsConfig.clientCert`,
+  },
+  tlsClientKey: {
+    name: `settings.http.tlsConfig.clientKey`,
+  },
+  proxyUrl: {
+    name: `settings.http.proxyURL`,
+  },
+  proxyHeaders: {
+    name: `settings.http.proxyConnectHeaders`,
+  },
+};
+
+export const HttpCheckLayout: Partial<Record<LayoutSection, Section<CheckFormValues>>> = {
+  [LayoutSection.Check]: {
+    fields: Object.values(HTTP_REQUEST_FIELDS).map((field) => field.name),
+    Component: (
+      <>
+        <HttpRequest fields={HTTP_REQUEST_FIELDS} />
+      </>
+    ),
+  },
+  [LayoutSection.Uptime]: {
+    fields: [
+      `settings.http.validStatusCodes`,
+      `settings.http.validHTTPVersions`,
+      `settings.http.sslOptions`,
+      `settings.http.regexValidations`,
+      `settings.http.compression`,
+      `timeout`,
+    ],
+    Component: (
+      <>
+        <HttpCheckValidStatusCodes />
+        <HttpCheckValidHttpVersions />
+        <HttpCheckSSLOptions />
+        <HttpCheckRegExValidation />
+        <HttpCheckCompressionOption />
+        <Timeout checkType={CheckType.HTTP} />
+      </>
+    ),
+  },
+  [LayoutSection.Probes]: {
+    fields: [`settings.http.cacheBustingQueryParamName`],
+    Component: (
+      <>
+        <HttpCheckCacheBuster />
+        <CheckPublishedAdvanceMetrics />
+      </>
+    ),
+  },
 };
