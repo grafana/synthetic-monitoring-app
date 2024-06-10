@@ -7,7 +7,7 @@ const config = require('./.config/jest.config');
 module.exports = {
   // Jest configuration provided by Grafana scaffolding
   ...config,
-  setupFilesAfterEnv: ['<rootDir>/src/test/encoder-workaround.tsx', '<rootDir>/src/test/jest-setup.tsx'],
+  setupFilesAfterEnv: ['<rootDir>/src/test/jest-setup.tsx'],
   moduleNameMapper: {
     ...config.moduleNameMapper,
     '^lodash-es$': 'lodash',

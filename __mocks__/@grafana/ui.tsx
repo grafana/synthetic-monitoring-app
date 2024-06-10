@@ -1,6 +1,8 @@
 // @ts-ignore
 window.__react_router_build__ = undefined;
 
+import { TextEncoder } from 'util';
+global.TextEncoder = TextEncoder;
 const ui = jest.requireActual('@grafana/ui');
 import React, { forwardRef } from 'react';
 import { Link } from 'react-router-dom';
