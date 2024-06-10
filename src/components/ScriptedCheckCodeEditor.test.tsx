@@ -12,21 +12,6 @@ import { CheckForm } from 'components/CheckForm/CheckForm';
 import { submitForm } from './CheckEditor/testHelpers';
 import { FIVE_MINUTES_IN_MS, PLUGIN_URL_PATH } from './constants';
 
-// Monaco does not render with jest and is stuck at "Loading..."
-// There doesn't seem to be a solution to this at this point,
-// mocking it instead. Related github issue:
-// https://github.com/suren-atoyan/monaco-react/issues/88
-jest.mock('components/CodeEditor', () => {
-  const FakeEditor = React.forwardRef((props: any, ref: any) => {
-    return <textarea ref={ref} data-testid="code-editor" {...props} />;
-  });
-  FakeEditor.displayName = 'CodeEditor';
-
-  return {
-    CodeEditor: FakeEditor,
-  };
-});
-
 const { findByLabelText, findByPlaceholderText, findByTestId, findByText, getByText } = screen;
 
 describe('new scripted check', () => {

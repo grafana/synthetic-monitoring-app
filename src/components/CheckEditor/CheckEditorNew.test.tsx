@@ -23,11 +23,6 @@ jest.mock('hooks/useAlerts', () => ({
   }),
 }));
 
-jest.mock('@grafana/ui', () => ({
-  ...jest.requireActual('@grafana/ui'),
-  CodeEditor: () => <textarea />,
-}));
-
 const renderNewCheckEditor = async (checkType?: CheckType) => {
   const res = render(<CheckForm />, {
     route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/:checkType`,

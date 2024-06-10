@@ -17,11 +17,6 @@ import { PLUGIN_URL_PATH } from 'components/constants';
 
 import { CheckForm } from './CheckForm';
 
-jest.mock('@grafana/ui', () => ({
-  ...jest.requireActual('@grafana/ui'),
-  CodeEditor: () => <textarea />,
-}));
-
 describe(`<CheckForm />`, () => {
   describe(`saving a check`, () => {
     BASIC_CHECK_LIST.map((check) => {
