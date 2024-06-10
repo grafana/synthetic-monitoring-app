@@ -421,6 +421,14 @@ export const CHECK_LIST_SORT_OPTIONS = [
     label: 'Desc. Reachability ',
     value: CheckSort.ReachabilityDesc,
   },
+  {
+    label: 'Asc. Executions ',
+    value: CheckSort.ExecutionsAsc,
+  },
+  {
+    label: 'Desc. Executions ',
+    value: CheckSort.ExecutionsDesc,
+  },
 ];
 
 export const CHECK_LIST_STATUS_OPTIONS: Array<SelectableValue<CheckEnabledStatus>> = [

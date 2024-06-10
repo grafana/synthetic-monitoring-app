@@ -1,7 +1,13 @@
 import React from 'react';
 import { config } from '@grafana/runtime';
 import { screen, waitFor, waitForElementToBeRemoved, within } from '@testing-library/react';
-import { BASIC_CHECK_LIST, BASIC_DNS_CHECK, BASIC_HTTP_CHECK } from 'test/fixtures/checks';
+import {
+  BASIC_CHECK_LIST,
+  BASIC_DNS_CHECK,
+  BASIC_HTTP_CHECK,
+  BASIC_TCP_CHECK,
+  BASIC_TRACEROUTE_CHECK,
+} from 'test/fixtures/checks';
 import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
@@ -229,10 +235,10 @@ test('loads labels from query params', async () => {
 test('loads sorting type in ascending order from query params', async () => {
   const searchParams = `sort=atoz`;
   await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK], searchParams);
-  await screen.findByText("Sort");
-  const sortValue = await screen.findByText("A-Z");
+  await screen.findByText('Sort');
+  const sortValue = await screen.findByText('A-Z');
   expect(sortValue).toBeInTheDocument();
-  
+
   const checks = await screen.findAllByTestId('check-card');
   expect(checks.length).toBe(2);
   expect(checks[0]).toHaveTextContent(BASIC_DNS_CHECK.job);
@@ -242,7 +248,7 @@ test('loads sorting type in ascending order from query params', async () => {
 test('loads sorting type in descending order from query params', async () => {
   const searchParams = `sort=ztoa`;
   await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK], searchParams);
-  await screen.findByText("Sort");
+  await screen.findByText('Sort');
   const sortInput = await screen.findByText(/Z-A/i);
   expect(sortInput).toBeInTheDocument();
 
@@ -507,6 +513,39 @@ describe(`bulk select behaviour`, () => {
         enabled: false,
       }))
     );
+  });
+
+  test(`Displays check execution frequency`, async () => {
+    await renderCheckList([BASIC_TCP_CHECK, BASIC_TRACEROUTE_CHECK]);
+    const checks = await screen.findAllByTestId('check-card');
+
+    expect(checks.length).toBe(2);
+    expect(checks[0]).toHaveTextContent(`89280 executions / month`);
+    expect(checks[1]).toHaveTextContent(`44640 executions / month`);
+  });
+
+  test(`Sorts by check execution frequency`, async () => {
+    const { user } = await renderCheckList([BASIC_TCP_CHECK, BASIC_TRACEROUTE_CHECK]);
+    const checks = await screen.findAllByTestId('check-card');
+
+    expect(checks.length).toBe(2);
+    expect(checks[0]).toHaveTextContent(`89280 executions / month`);
+    expect(checks[1]).toHaveTextContent(`44640 executions / month`);
+
+    const sortPicker = await screen.getByLabelText('Sort checks by');
+    await user.click(sortPicker);
+    await user.click(screen.getByText(`Asc. Executions`, { selector: 'span' }));
+
+    expect(checks.length).toBe(2);
+    expect(checks[0]).toHaveTextContent(`44640 executions / month`);
+    expect(checks[1]).toHaveTextContent(`89280 executions / month`);
+
+    await user.click(sortPicker);
+    await user.click(screen.getByText(`Desc. Executions`, { selector: 'span' }));
+
+    expect(checks.length).toBe(2);
+    expect(checks[0]).toHaveTextContent(`89280 executions / month`);
+    expect(checks[1]).toHaveTextContent(`44640 executions / month`);
   });
 });
 
