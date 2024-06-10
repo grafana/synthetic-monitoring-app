@@ -1,6 +1,6 @@
 import React, { forwardRef, useCallback, useState } from 'react';
 import { AppEvents, SelectableValue } from '@grafana/data';
-import { Button, Field, HorizontalGroup, MultiSelect, ThemeContext } from '@grafana/ui';
+import { Button, Field, MultiSelect, Stack, ThemeContext } from '@grafana/ui';
 import appEvents from 'grafana/app/core/app_events';
 import { css } from '@emotion/css';
 
@@ -93,7 +93,7 @@ const CheckProbes = forwardRef(
                 margin-bottom: ${theme.spacing(2)};
               `}
             >
-              <HorizontalGroup spacing="sm">
+              <Stack>
                 <Button
                   onClick={onAllLocations}
                   disabled={!isEditor}
@@ -114,7 +114,7 @@ const CheckProbes = forwardRef(
                 >
                   Clear
                 </Button>
-              </HorizontalGroup>
+              </Stack>
             </div>
           </>
         )}

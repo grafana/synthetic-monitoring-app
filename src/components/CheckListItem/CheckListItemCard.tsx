@@ -1,6 +1,6 @@
 import React, { ChangeEvent } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Checkbox, HorizontalGroup, useStyles2 } from '@grafana/ui';
+import { Checkbox, Stack, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 import { Label } from 'types';
@@ -72,16 +72,14 @@ export const CheckListItemCard = ({
               )}
             </div>
           </div>
-          <div className={styles.footer}>
-            <HorizontalGroup wrap>
+          <Stack>
+            <Stack grow={1}>
               {check.labels.map((label: Label, index) => (
                 <CheckCardLabel key={index} label={label} onLabelSelect={onLabelSelect} />
               ))}
-            </HorizontalGroup>
-            <div className={styles.actionContainer}>
-              <CheckItemActionButtons check={check} />
-            </div>
-          </div>
+            </Stack>
+            <CheckItemActionButtons check={check} />
+          </Stack>
         </div>
       </div>
     </div>
@@ -142,14 +140,5 @@ const getStyles = (theme: GrafanaTheme2) => ({
   stats: css({
     display: 'flex',
     alignItems: 'center',
-  }),
-  footer: css({
-    display: 'flex',
-  }),
-  actionContainer: css({
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    height: '100%',
   }),
 });

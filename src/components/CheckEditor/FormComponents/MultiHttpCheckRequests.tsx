@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { FieldErrors, useFieldArray, useFormContext } from 'react-hook-form';
-import { Button, HorizontalGroup, useStyles2, VerticalGroup } from '@grafana/ui';
+import { Button, Stack, useStyles2 } from '@grafana/ui';
 
 import { CheckFormValues, CheckFormValuesMultiHttp, CheckType, HttpMethod } from 'types';
 import { RequestMethodSelect } from 'components/CheckEditor/FormComponents/RequestMethodSelect';
@@ -79,8 +79,8 @@ export const MultiHttpCheckRequests = () => {
             onToggle={() => dispatchCollapse({ type: 'toggle', index })}
             ref={(el) => (panelRefs.current[index] = el)}
           >
-            <VerticalGroup>
-              <HorizontalGroup spacing="lg" align="flex-start">
+            <Stack direction={'column'}>
+              <Stack alignItems="flex-start" gap={3}>
                 <RequestTargetInput
                   aria-label={`Request target for request ${index + 1}`}
                   checkType={CheckType.MULTI_HTTP}
@@ -104,7 +104,7 @@ export const MultiHttpCheckRequests = () => {
                     Remove
                   </Button>
                 )}
-              </HorizontalGroup>
+              </Stack>
 
               <AvailableVariables index={index} />
 
@@ -115,7 +115,7 @@ export const MultiHttpCheckRequests = () => {
                   dispatchCollapse({ type: 'updateRequestPanel', index, tab });
                 }}
               />
-            </VerticalGroup>
+            </Stack>
           </MultiHttpCollapse>
         );
       })}

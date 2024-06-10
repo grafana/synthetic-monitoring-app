@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, HorizontalGroup, Modal } from '@grafana/ui';
+import { Button, Modal, Stack } from '@grafana/ui';
 
 import { ThresholdSettings, ThresholdValues } from 'types';
 import { useThresholds, useUpdateThresholds } from 'data/useThresholds';
@@ -63,14 +63,14 @@ const ThresholdGlobalSettingsContent = ({ onSuccess, thresholds }: ThresholdGlob
 
   return (
     <>
-      <HorizontalGroup spacing="sm" height={35}>
+      <Stack gap={1}>
         <Button data-testid="threshold-save" onClick={handleSaveThresholds}>
           Save changes
         </Button>
         <Button data-testid="threshold-defaults" variant="secondary" onClick={handleSetDefaults}>
           Reset all to defaults
         </Button>
-      </HorizontalGroup>
+      </Stack>
       <p style={{ marginTop: '20px', marginBottom: '20px', fontStyle: 'italic', fontSize: '.9rem' }}>
         Note: these settings apply only to the check list view.
       </p>
