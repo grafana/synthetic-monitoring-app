@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { config } from '@grafana/runtime';
-import { Alert, Button, HorizontalGroup, Icon, Modal, Spinner, useStyles2 } from '@grafana/ui';
+import { Alert, Button, Icon, Modal, Spinner, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { AlertFormValues, AlertRule } from 'types';
@@ -89,7 +89,10 @@ const Alerting = () => {
       <p>
         View and edit default alerts for Synthetic Monitoring here. To tie one of these alerts to a check, you must
         select the alert sensitivity from the Alerting section of the check form when creating a check.{' '}
-        <a href="https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/configure-alerts/synthetic-monitoring-alerting/" className={styles.link}>
+        <a
+          href="https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/configure-alerts/synthetic-monitoring-alerting/"
+          className={styles.link}
+        >
           Learn more about alerting for Synthetic Monitoring.
         </a>
       </p>
@@ -114,16 +117,16 @@ const Alerting = () => {
         <AlertRuleForm key={`${alertRule.alert}-${index}`} rule={alertRule} onSubmit={getUpdateRules(index)} />
       ))}
       {Boolean(alertRules?.length) ? (
-        <HorizontalGroup justify="flex-end" height="70px">
+        <Stack justifyContent="flex-end">
           <Button variant="destructive" type="button" onClick={() => setShowResetModal(true)}>
             Reset to defaults
           </Button>
-        </HorizontalGroup>
+        </Stack>
       ) : null}
       <Modal isOpen={showResetModal} title="Reset default alert rules?" onDismiss={() => setShowResetModal(false)}>
         Resetting the alert rules will overwrite any changes made in the <code>syntheticmonitoring {'>'} default</code>{' '}
         rule group.
-        <HorizontalGroup justify="center">
+        <Stack justifyContent="center">
           <Button
             type="button"
             variant="destructive"
@@ -137,7 +140,7 @@ const Alerting = () => {
           <Button type="button" variant="secondary" onClick={() => setShowResetModal(false)}>
             Cancel
           </Button>
-        </HorizontalGroup>
+        </Stack>
       </Modal>
     </div>
   );
