@@ -120,12 +120,6 @@ export const CheckFormContent = ({ check }: CheckForm2Props) => {
             <FormLayout.Section label="Define uptime" fields={defineUptimeFields}>
               {UptimeComponent}
             </FormLayout.Section>
-
-            <FormLayout.Section label="Probes" fields={[`probes`, `frequency`, ...probesFields]}>
-              <ProbeOptions checkType={checkType} />
-              {ProbesComponent}
-              <CheckUsage checkType={checkType} />
-            </FormLayout.Section>
             <FormLayout.Section label="Labels" fields={[`labels`, ...labelsFields]}>
               {labelsComponent}
               <LabelField labelDestination="check" />
@@ -133,7 +127,11 @@ export const CheckFormContent = ({ check }: CheckForm2Props) => {
             <FormLayout.Section label="Alerting" fields={[`alertSensitivity`]}>
               <CheckFormAlert />
             </FormLayout.Section>
-            <FormLayout.Section label="Review">Test the form?</FormLayout.Section>
+            <FormLayout.Section label="Probes" fields={[`probes`, `frequency`, ...probesFields]}>
+              <ProbeOptions checkType={checkType} />
+              {ProbesComponent}
+              <CheckUsage checkType={checkType} />
+            </FormLayout.Section>
           </FormLayout>
         </div>
       </FormProvider>

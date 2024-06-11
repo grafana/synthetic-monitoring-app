@@ -10,11 +10,6 @@ const CHECK_TYPE_OPTIONS = [
     description: 'Measures a web endpoint for availability, response time, SSL certificate expiration and more.',
   },
   {
-    label: 'MULTIHTTP',
-    value: CheckType.MULTI_HTTP,
-    description: 'Check multiple web endpoints in sequence.',
-  },
-  {
     label: 'PING',
     value: CheckType.PING,
     description: 'Check a host for availability and response time.',
@@ -40,6 +35,11 @@ const CHECK_TYPE_OPTIONS = [
     label: 'Traceroute',
     value: CheckType.Traceroute,
     description: 'Trace the path of a request through the internet.',
+  },
+  {
+    label: 'MULTIHTTP',
+    value: CheckType.MULTI_HTTP,
+    description: 'Check multiple web endpoints in sequence.',
   },
   {
     label: 'Scripted',

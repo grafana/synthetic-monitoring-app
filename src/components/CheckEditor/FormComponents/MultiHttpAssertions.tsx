@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Controller,
   FieldError,
@@ -8,8 +8,9 @@ import {
   useFieldArray,
   useFormContext,
 } from 'react-hook-form';
-import { Button, Field, Icon, IconButton, Input, Select, useStyles2 } from '@grafana/ui';
-import { cx } from '@emotion/css';
+import { GrafanaTheme2 } from '@grafana/data';
+import { Button, Field, IconButton, Input, Select, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 
 import { CheckFormValuesMultiHttp, MultiHttpAssertionType } from 'types';
 import {
@@ -17,7 +18,7 @@ import {
   ASSERTION_SUBJECT_OPTIONS,
   MULTI_HTTP_ASSERTION_TYPE_OPTIONS,
 } from 'components/constants';
-
+import { MultiHttpCollapse } from 'components/MultiHttp/MultiHttpCollapse';
 import {
   Assertion,
   AssertionConditionVariant,
@@ -26,20 +27,55 @@ import {
   AssertionRegex,
   AssertionSubjectVariant,
   AssertionText,
-} from '../MultiHttpTypes';
-import { getMultiHttpTabStyles, MultiHttpTabProps } from './Tabs';
+} from 'components/MultiHttp/MultiHttpTypes';
 
-export function AssertionsTab({ index, active }: MultiHttpTabProps) {
+export const MultiHttpAssertions = () => {
+  const { getValues } = useFormContext<CheckFormValuesMultiHttp>();
+  const values = getValues();
+  const entries = values.settings?.multihttp?.entries ?? [];
+  const [toggleStates, setToggleStates] = useState<boolean[]>(entries.map(() => true));
+  const styles = useStyles2(getStyles);
+
+  return (
+    <div className={styles.container}>
+      {entries.map((entry, index) => {
+        return (
+          <MultiHttpCollapse
+            key={`${entry.request.method}-${entry.request.url}`}
+            label={entry.request.url || `Request ${index + 1}`}
+            isOpen={toggleStates[index]}
+            onToggle={() => {
+              setToggleStates((prev) => {
+                const newStates = [...prev];
+                newStates[index] = !newStates[index];
+                return newStates;
+              });
+            }}
+          >
+            <RequestAssertions index={index} />
+          </MultiHttpCollapse>
+        );
+      })}
+    </div>
+  );
+};
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  container: css({
+    marginBottom: theme.spacing(4),
+  }),
+});
+
+const RequestAssertions = ({ index }: { index: number }) => {
   const assertionFieldName: FieldPath<CheckFormValuesMultiHttp> = `settings.multihttp.entries.${index}.checks`;
   const { control, formState } = useFormContext<CheckFormValuesMultiHttp>();
   const { fields, append, remove } = useFieldArray<CheckFormValuesMultiHttp>({
     control,
     name: assertionFieldName,
   });
-  const styles = useStyles2(getMultiHttpTabStyles);
 
   return (
-    <div className={cx(styles.inputsContainer, { [styles.inactive]: !active })}>
+    <>
       <Field
         label="Assertions"
         description="Use assertions to validate that the system is responding with the expected content"
@@ -52,7 +88,7 @@ export function AssertionsTab({ index, active }: MultiHttpTabProps) {
             const errMessage = error?.message;
 
             return (
-              <div className={styles.fieldsContainer} key={field.id}>
+              <div key={field.id}>
                 <Controller
                   name={assertionTypeName}
                   render={({ field }) => {
@@ -70,7 +106,6 @@ export function AssertionsTab({ index, active }: MultiHttpTabProps) {
                       >
                         <Select
                           inputId={id}
-                          className={styles.minInputWidth}
                           {...rest}
                           options={MULTI_HTTP_ASSERTION_TYPE_OPTIONS}
                           menuPlacement="bottom"
@@ -84,7 +119,7 @@ export function AssertionsTab({ index, active }: MultiHttpTabProps) {
                 />
                 <AssertionFields entryIndex={index} assertionIndex={assertionIndex} />
 
-                <div className={styles.iconContainer}>
+                <div>
                   <IconButton
                     name="minus-circle"
                     onClick={() => {
@@ -110,21 +145,19 @@ export function AssertionsTab({ index, active }: MultiHttpTabProps) {
         variant="secondary"
         size="sm"
         type="button"
-        className={styles.addHeaderQueryButton}
+        icon="plus"
       >
-        <Icon name="plus" />
-        &nbsp; Add assertions
+        Add assertions
       </Button>
-    </div>
+    </>
   );
-}
+};
 
 type AssertionProps = {
   entryIndex: number;
   assertionIndex: number;
 };
-
-function AssertionFields(props: AssertionProps) {
+const AssertionFields = (props: AssertionProps) => {
   const { entryIndex, assertionIndex } = props;
   const { watch } = useFormContext<CheckFormValuesMultiHttp>();
   const assertionFieldName = `settings.multihttp.entries.${entryIndex}.checks.${assertionIndex}.type` as const;
@@ -163,7 +196,7 @@ function AssertionFields(props: AssertionProps) {
     default:
       return null;
   }
-}
+};
 
 function AssertionSubjectField({ entryIndex, assertionIndex }: AssertionProps) {
   const { formState } = useFormContext<CheckFormValuesMultiHttp>();

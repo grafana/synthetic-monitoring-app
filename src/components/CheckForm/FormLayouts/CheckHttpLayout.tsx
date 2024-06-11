@@ -23,6 +23,9 @@ const HTTP_REQUEST_FIELDS: HttpRequestFields = {
   requestHeaders: {
     name: `settings.http.headers`,
   },
+  ipVersion: {
+    name: `settings.http.ipVersion`,
+  },
   requestBody: {
     name: `settings.http.body`,
   },

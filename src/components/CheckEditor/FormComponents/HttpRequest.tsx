@@ -1,15 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2, OrgRole } from '@grafana/data';
-import { Field, Input, Select, useStyles2 } from '@grafana/ui';
+import { Select, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { get } from 'lodash';
 
 import { HttpRequestFields, TLSConfigFields } from '../CheckEditor.types';
 import { CheckFormValues } from 'types';
 import { hasRole } from 'utils';
-import { RequestOptions } from 'components/CheckForm/RequestOptions';
 import { METHOD_OPTIONS } from 'components/constants';
+import { Request } from 'components/Request';
 import { TLSConfig } from 'components/TLSConfig';
 
 import { CheckIpVersion } from './CheckIpVersion';
@@ -23,22 +22,19 @@ import { RequestHeaders } from './RequestHeaders';
 
 export const HttpRequest = ({ fields }: { fields: HttpRequestFields }) => {
   const isEditor = hasRole(OrgRole.Editor);
-  const { control, formState, register } = useFormContext<CheckFormValues>();
-  const targetField = register(fields.target.name);
-  const targetFieldError = get(formState.errors, fields.target.name)?.message;
+  const { control } = useFormContext<CheckFormValues>();
   const id = `request-method-${fields.method.name}`;
   const styles = useStyles2(getStyles);
-  const [showPlaceholder, setShowplaceholder] = useState(true);
 
   return (
-    <div className={styles.stackCol}>
-      <Field
+    <Request>
+      <Request.Field
         label="Request target"
         description={`Full URL to send requests to`}
         disabled={!isEditor}
         data-fs-element="Check request target select"
         htmlFor={id}
-        className={styles.field}
+        name={fields.target.name}
       >
         <div className={styles.grid}>
           <Controller
@@ -58,27 +54,12 @@ export const HttpRequest = ({ fields }: { fields: HttpRequestFields }) => {
             }}
             name={fields.method.name}
           />
-          <Field className={styles.field} invalid={Boolean(targetFieldError)} error={targetFieldError}>
-            <Input
-              id={id}
-              data-fs-element="Target input"
-              placeholder={showPlaceholder ? `https://grafana.com/` : ``}
-              onFocus={() => setShowplaceholder(false)}
-              {...targetField}
-              onChange={(e) => {
-                targetField.onChange(e);
-                fields.target.onChange?.(e);
-              }}
-              onBlur={(e) => {
-                setShowplaceholder(true);
-                targetField.onBlur(e);
-              }}
-            />
-          </Field>
+          <Request.Input data-fs-element="Target input" placeholder={`https://grafana.com/`} />
+          <Request.Test />
         </div>
-      </Field>
+      </Request.Field>
       <HttpRequestOptions fields={fields} />
-    </div>
+    </Request>
   );
 };
 
@@ -93,8 +74,8 @@ const HttpRequestOptions = ({ fields }: { fields: HttpRequestFields }) => {
   const proxyFields = getProxyFields(fields);
 
   return (
-    <RequestOptions>
-      <RequestOptions.Section label={`Request Options`}>
+    <Request.Options>
+      <Request.Options.Section label={`Options`}>
         <RequestHeaders
           description="The HTTP headers set for the probe."
           label="Request header"
@@ -103,13 +84,13 @@ const HttpRequestOptions = ({ fields }: { fields: HttpRequestFields }) => {
         />
         {followRedirectsName && <HttpCheckFollowRedirects name={followRedirectsName} />}
         {ipVersionName && <CheckIpVersion description={`The IP protocol of the HTTP request`} name={ipVersionName} />}
-      </RequestOptions.Section>
-      <RequestOptions.Section label={`Request Body`}>
+      </Request.Options.Section>
+      <Request.Options.Section label={`Request Body`}>
         {requestContentTypeName && <RequestBodyContentType name={requestContentTypeName} />}
         {requestContentEncodingName && <RequestBodyContentEncoding name={requestContentEncodingName} />}
         <RequestBodyTextArea name={requestBodyName} />
-      </RequestOptions.Section>
-      <RequestOptions.Section label={`Authentication`}>
+      </Request.Options.Section>
+      <Request.Options.Section label={`Authentication`}>
         <div className={css({ display: `flex`, flexDirection: `column`, gap: `16px` })}>
           <div>
             <h3 className="h6">Authentication Type</h3>
@@ -122,9 +103,9 @@ const HttpRequestOptions = ({ fields }: { fields: HttpRequestFields }) => {
             </div>
           )}
         </div>
-      </RequestOptions.Section>
+      </Request.Options.Section>
       {proxyFields && proxyFields.headers && proxyFields.url && (
-        <RequestOptions.Section label={`Proxy`}>
+        <Request.Options.Section label={`Proxy`}>
           <HttpCheckProxyURL name={proxyFields.url.name} />
           <RequestHeaders
             description="The HTTP headers sent to the proxy."
@@ -132,9 +113,9 @@ const HttpRequestOptions = ({ fields }: { fields: HttpRequestFields }) => {
             name={proxyFields.headers.name}
             data-fs-element="Proxy connect headers"
           />
-        </RequestOptions.Section>
+        </Request.Options.Section>
       )}
-    </RequestOptions>
+    </Request.Options>
   );
 };
 
@@ -172,14 +153,6 @@ function getProxyFields(fields: HttpRequestFields) {
 const getStyles = (theme: GrafanaTheme2) => ({
   grid: css({
     display: `grid`,
-    gridTemplateColumns: `110px 1fr`,
-  }),
-  stackCol: css({
-    display: `flex`,
-    flexDirection: `column`,
-    gap: theme.spacing(2),
-  }),
-  field: css({
-    margin: 0,
+    gridTemplateColumns: `110px 1fr auto`,
   }),
 });

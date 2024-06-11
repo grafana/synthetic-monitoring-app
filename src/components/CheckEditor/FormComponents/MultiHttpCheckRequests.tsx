@@ -1,12 +1,13 @@
 import React, { FormEvent, useEffect, useRef } from 'react';
 import { FieldErrors, useFieldArray, useFormContext } from 'react-hook-form';
+import { GrafanaTheme2 } from '@grafana/data';
 import { Button, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 
 import { CheckFormValues, CheckFormValuesMultiHttp, HttpMethod } from 'types';
 import { CHECK_FORM_ERROR_EVENT } from 'components/constants';
 import { AvailableVariables } from 'components/MultiHttp/AvailableVariables';
 import { MultiHttpCollapse } from 'components/MultiHttp/MultiHttpCollapse';
-import { getMultiHttpFormStyles } from 'components/MultiHttp/MultiHttpSettingsForm.styles';
 import {
   focusField,
   getMultiHttpFormErrors,
@@ -16,6 +17,7 @@ import {
 import { HttpRequest } from './HttpRequest';
 
 export const MultiHttpCheckRequests = () => {
+  const styles = useStyles2(getStyles);
   const {
     control,
     watch,
@@ -23,7 +25,6 @@ export const MultiHttpCheckRequests = () => {
     getValues,
   } = useFormContext<CheckFormValuesMultiHttp>();
 
-  const styles = useStyles2(getMultiHttpFormStyles);
   const panelRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const [collapseState, dispatchCollapse] = useMultiHttpCollapseState(getValues());
 
@@ -68,9 +69,17 @@ export const MultiHttpCheckRequests = () => {
   };
 
   return (
-    <div className={styles.request}>
+    <div>
       {entryFields.map((field, index) => {
+        const onRemove =
+          index !== 0
+            ? () => {
+                remove(index);
+                dispatchCollapse({ type: 'removeRequest', index });
+              }
+            : undefined;
         const urlForIndex = watch(`settings.multihttp.entries.${index}.request.url`) || `Request ${index + 1}`;
+
         return (
           <MultiHttpCollapse
             label={urlForIndex}
@@ -80,6 +89,7 @@ export const MultiHttpCheckRequests = () => {
             isOpen={collapseState[index].open}
             onToggle={() => dispatchCollapse({ type: 'toggle', index })}
             ref={(el) => (panelRefs.current[index] = el)}
+            onRemove={onRemove}
           >
             <HttpRequest
               fields={{
@@ -105,27 +115,14 @@ export const MultiHttpCheckRequests = () => {
                 },
               }}
             />
-            {index !== 0 && (
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  remove(index);
-                  dispatchCollapse({ type: 'removeRequest', index });
-                }}
-                className={styles.removeRequestButton}
-                data-fs-element={`Remove request ${index + 1}`}
-              >
-                Remove
-              </Button>
-            )}
             <AvailableVariables index={index} />
           </MultiHttpCollapse>
         );
       })}
 
       <Button
+        className={styles.addButton}
         type="button"
-        fill="text"
         size="md"
         icon="plus"
         disabled={requests?.length > 9}
@@ -137,10 +134,15 @@ export const MultiHttpCheckRequests = () => {
           });
           dispatchCollapse({ type: 'addNewRequest' });
         }}
-        className={styles.addRequestButton}
       >
         Add request
       </Button>
     </div>
   );
 };
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  addButton: css({
+    marginTop: theme.spacing(4),
+  }),
+});

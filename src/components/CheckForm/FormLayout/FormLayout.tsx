@@ -114,7 +114,7 @@ export const FormLayout = ({ children }: FormLayoutProps) => {
                   </Button>
                 )}
               </div>
-              <div>
+              <div className={styles.stack2}>
                 {activeSection < formSections.length - 1 ? (
                   <Button onClick={() => goToSection(activeSection + 1)} icon="arrow-right" type="button">
                     <div className={styles.stack}>
@@ -123,10 +123,11 @@ export const FormLayout = ({ children }: FormLayoutProps) => {
                     </div>
                   </Button>
                 ) : (
-                  <Button key="submit" type="submit">
-                    Submit
-                  </Button>
+                  <Button key="test">Test</Button>
                 )}
+                <Button key="submit" type="submit">
+                  Submit
+                </Button>
               </div>
             </div>
           </div>
@@ -147,6 +148,10 @@ const getStyles = (theme: GrafanaTheme2) => {
     stack: css({
       display: `flex`,
       gap: theme.spacing(0.5),
+    }),
+    stack2: css({
+      display: `flex`,
+      gap: theme.spacing(1),
     }),
     wrapper: css({
       containerName,

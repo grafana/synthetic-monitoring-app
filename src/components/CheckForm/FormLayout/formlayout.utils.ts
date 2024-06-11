@@ -6,6 +6,12 @@ import { ZodType } from 'zod';
 import { CheckFormValues } from 'types';
 import { PROBES_SELECT_ID } from 'components/CheckEditor/CheckProbes';
 
+// because we have separated multihttp assertions we need a way to say that no matter the
+// entry's index this error belongs to the steps section or the uptime definition step
+// so we have to wildcard the entry index in form errors
+// -1 works well because it is type safe as it is a number but it is also impossible to be a valid index
+export const ENTRY_INDEX_CHAR = `-1`;
+
 export function useFormLayout() {
   const [visitedSections, setVisitedSections] = useState<number[]>([]);
   const [activeSection, setActiveSection] = useState(0);
@@ -45,7 +51,7 @@ export function checkForErrors({
 
   if (!result.success) {
     const errors = result.error.errors.reduce<string[]>((acc, err) => {
-      const path = err.path.join('.');
+      const path = err.path.map((e) => (typeof e === 'number' ? ENTRY_INDEX_CHAR : e)).join('.');
       const isRelevant = fields.some((f) => path.startsWith(f));
 
       if (isRelevant) {

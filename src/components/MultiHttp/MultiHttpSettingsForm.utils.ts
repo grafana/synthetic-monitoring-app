@@ -47,7 +47,7 @@ function reducer(state: RequestPanelState[], action: Action) {
       const newState = state.map((value) => {
         return {
           ...value,
-          open: false,
+          open: value.open,
         };
       });
       return [

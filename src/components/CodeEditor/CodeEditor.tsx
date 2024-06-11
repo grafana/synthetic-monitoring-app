@@ -20,20 +20,24 @@ const addK6Types = (monaco: typeof monacoType) => {
   monaco.languages.typescript.javascriptDefaults.addExtraLib("declare module 'https://*'");
 };
 const containerStyles = css`
+  height: 100%;
   min-height: 600px;
 
   & > div {
-    min-height: 600px;
-
-    > section {
-      min-height: 600px;
-    }
+    height: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   // Background styling for editable ranges (multi)
   .editableArea--multi-line {
     opacity: 1;
     background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  > section {
+    min-height: inherit;
   }
 `;
 

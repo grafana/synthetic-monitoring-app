@@ -1,7 +1,7 @@
 import React, { forwardRef, PropsWithChildren } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Icon, useStyles2 } from '@grafana/ui';
-import { css, cx } from '@emotion/css';
+import { Button, Icon, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 
 interface Props {
   'data-testid'?: string;
@@ -10,16 +10,17 @@ interface Props {
   className?: string | string[];
   isOpen: boolean;
   onToggle: () => void;
+  onRemove?: () => void;
 }
 
 export const MultiHttpCollapse = forwardRef<HTMLButtonElement, PropsWithChildren<Props>>(function MultiHttpCollapse(
-  { 'data-testid': dataTestId, label, children, invalid, className, isOpen, onToggle },
+  { 'data-testid': dataTestId, label, children, invalid, isOpen, onRemove, onToggle },
   ref
 ) {
   const styles = useStyles2(getStyles);
 
   return (
-    <div className={cx([!className ? 'panel-container' : className])}>
+    <div>
       <button
         className={styles.header}
         onClick={(e) => {
@@ -34,38 +35,57 @@ export const MultiHttpCollapse = forwardRef<HTMLButtonElement, PropsWithChildren
         <div className={styles.label}>{label}</div>
         {!isOpen && invalid && <Icon name="exclamation-triangle" className={styles.errorIcon} />}
       </button>
-      <div className={cx(styles.body, { [styles.hidden]: !isOpen })} data-testid={dataTestId}>
-        {children}
-      </div>
+      {isOpen && (
+        <div className={styles.body} data-testid={dataTestId}>
+          <div className={styles.actions}>
+            {onRemove && (
+              <Button
+                className={styles.removeButton}
+                variant="secondary"
+                onClick={onRemove}
+                data-fs-element={`Remove ${label}`}
+                icon="trash-alt"
+                tooltip={`Remove request`}
+                size="sm"
+              />
+            )}
+          </div>
+          <div>{children}</div>
+        </div>
+      )}
     </div>
   );
 });
 
 const getStyles = (theme: GrafanaTheme2) => ({
-  header: css`
-    display: flex;
-    align-items: center;
-    transition: all 0.1s linear;
-    border: none;
-    background: none;
-    padding: ${theme.spacing(2)};
-    width: 100%;
-  `,
-  headerIcon: css`
-    margin-right: ${theme.spacing(1)};
-  `,
-  label: css`
-    margin-right: ${theme.spacing(1)};
-    font-size: ${theme.typography.h4.fontSize};
-  `,
-  body: css`
-    padding: ${theme.spacing(2)};
-  `,
-  hidden: css`
-    display: none;
-  `,
-  errorIcon: css`
-    color: ${theme.colors.error.text};
-    margin-left: ${theme.spacing(1)};
-  `,
+  header: css({
+    backgroundColor: `transparent`,
+    border: 0,
+    display: `flex`,
+    alignItems: `center`,
+    padding: theme.spacing(2, 0),
+    width: `100%`,
+  }),
+  headerIcon: css({
+    marginRight: theme.spacing(1),
+  }),
+  label: css({
+    marginRight: theme.spacing(1),
+    fontSize: theme.typography.h4.fontSize,
+  }),
+  errorIcon: css({
+    color: theme.colors.error.text,
+    marginLeft: theme.spacing(1),
+  }),
+  body: css({
+    display: `grid`,
+    gridTemplateColumns: `36px auto`,
+    gap: theme.spacing(2.5),
+  }),
+  actions: css({
+    borderRight: `2px solid ${theme.colors.border.strong}`,
+  }),
+  removeButton: css({
+    borderRadius: `50%`,
+  }),
 });
