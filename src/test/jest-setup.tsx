@@ -3,7 +3,7 @@
 import '../../.config/jest-setup';
 import { server } from './server';
 import 'test/silenceErrors';
-import { TextEncoder } from 'util';
+import './encoder-workaround';
 
 beforeAll(() => {
   server.listen({
@@ -26,7 +26,5 @@ global.IntersectionObserver = jest.fn(() => ({
   rootMargin: '',
   thresholds: [],
 }));
-
-global.TextEncoder = TextEncoder;
 
 import 'test/mocks/@grafana/runtime';
