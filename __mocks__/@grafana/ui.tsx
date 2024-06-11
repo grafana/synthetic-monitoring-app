@@ -41,7 +41,7 @@ function LinkButton({ children, href, ...props }: any) {
 // mocking it instead. Related github issue:
 // https://github.com/suren-atoyan/monaco-react/issues/88
 const CodeEditor = React.forwardRef((props: any, ref: any) => {
-  return <textarea ref={ref} data-testid="code-editor" {...props} />;
+  return <textarea ref={ref} data-testid="code-editor" onChange={props.onChange} value={props.value} />;
 });
 CodeEditor.displayName = 'CodeEditor';
 
