@@ -48,7 +48,7 @@ export const HttpCheckBasicAuthorization = () => {
             required: { value: true, message: 'Password is required' },
           })}
           id={passwordId}
-          type="text"
+          type="password"
           disabled={!isEditor}
           data-fs-element="Basic auth password input"
         />
