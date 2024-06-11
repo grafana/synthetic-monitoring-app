@@ -4,6 +4,7 @@ const originalConsoleError = console.error;
 const ignoreErrorsList = [
   `Could not parse CSS stylesheet`,
   `Using kebab-case for css properties in objects is not supported.`,
+  `Warning: An update to %s inside a test was not wrapped in act(...).`,
 ];
 
 beforeAll(() => {
