@@ -20,6 +20,7 @@ export const HttpCheckBearerToken = () => {
       disabled={!isEditor}
       invalid={Boolean(formState.errors.settings?.http?.bearerToken)}
       error={formState.errors.settings?.http?.bearerToken?.message}
+      placeholder='Bearer token'
       id={id}
       required={true}
       data-fs-element="Bearer token input"
