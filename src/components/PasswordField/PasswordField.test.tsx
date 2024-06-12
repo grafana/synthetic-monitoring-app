@@ -1,9 +1,8 @@
 import React from 'react';
-
 import { Field } from '@grafana/ui';
+import { render } from 'test/render';
 
 import { PasswordField } from './PasswordField';
-import { render } from 'test/render';
 
 describe('PasswordField', () => {
   test('should render correctly', async () => {
