@@ -13,14 +13,12 @@ export const HttpCheckBearerToken = () => {
 
   return (
     <PasswordField
-      {...register('settings.http.bearerToken', {
-        required: { value: true, message: 'Bearer Token is required' },
-      })}
+      {...register('settings.http.bearerToken')}
       label="Include bearer authorization header in request"
       disabled={!isEditor}
       invalid={Boolean(formState.errors.settings?.http?.bearerToken)}
       error={formState.errors.settings?.http?.bearerToken?.message}
-      placeholder='Bearer token'
+      placeholder="Bearer token"
       id={id}
       required={true}
       data-fs-element="Bearer token input"

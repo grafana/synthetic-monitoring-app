@@ -27,9 +27,7 @@ export const HttpCheckBasicAuthorization = () => {
         required
       >
         <Input
-          {...register('settings.http.basicAuth.username', {
-            required: { value: true, message: 'Username is required' },
-          })}
+          {...register('settings.http.basicAuth.username')}
           id={userNameId}
           type="text"
           disabled={!isEditor}
@@ -38,9 +36,7 @@ export const HttpCheckBasicAuthorization = () => {
       </Field>
 
       <PasswordField
-        {...register('settings.http.basicAuth.password', {
-          required: { value: true, message: 'Password is required' },
-        })}
+        {...register('settings.http.basicAuth.password')}
         label="Password"
         disabled={!isEditor}
         invalid={Boolean(formState.errors.settings?.http?.basicAuth?.password)}
