@@ -6,6 +6,7 @@ import { css } from '@emotion/css';
 
 import { CheckFormValuesHttp } from 'types';
 import { hasRole } from 'utils';
+import { PasswordField } from 'components/PasswordField/PasswordField';
 
 export const HttpCheckBasicAuthorization = () => {
   const isEditor = hasRole(OrgRole.Editor);
@@ -35,24 +36,19 @@ export const HttpCheckBasicAuthorization = () => {
           data-fs-element="Basic auth username input"
         />
       </Field>
-      <Field
-        htmlFor={passwordId}
-        disabled={!isEditor}
+
+      <PasswordField
+        {...register('settings.http.basicAuth.password', {
+          required: { value: true, message: 'Password is required' },
+        })}
         label="Password"
+        disabled={!isEditor}
         invalid={Boolean(formState.errors.settings?.http?.basicAuth?.password)}
         error={formState.errors.settings?.http?.basicAuth?.password?.message}
-        required
-      >
-        <Input
-          {...register('settings.http.basicAuth.password', {
-            required: { value: true, message: 'Password is required' },
-          })}
-          id={passwordId}
-          type="password"
-          disabled={!isEditor}
-          data-fs-element="Basic auth password input"
-        />
-      </Field>
+        id={passwordId}
+        required={true}
+        data-fs-element="Basic auth password input"
+      />
     </div>
   );
 };
