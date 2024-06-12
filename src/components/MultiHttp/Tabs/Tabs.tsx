@@ -1,18 +1,7 @@
 import React from 'react';
 import { Controller, useFieldArray, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
-import {
-  Button,
-  Field,
-  HorizontalGroup,
-  Icon,
-  IconButton,
-  Input,
-  Select,
-  TabContent,
-  TextArea,
-  useStyles2,
-} from '@grafana/ui';
+import { Button, Field, Icon, IconButton, Input, Select, Stack, TabContent, TextArea, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 import { CheckFormValuesMultiHttp, MultiHttpVariableType } from 'types';
@@ -104,8 +93,8 @@ const QueryParamsTab = ({ index, active }: MultiHttpTabProps) => {
           {fields.map((field, i) => {
             return (
               <div key={field.id}>
-                <HorizontalGroup align="flex-start" spacing="md">
-                  <HorizontalGroup spacing="md" align="flex-start">
+                <Stack alignItems="flex-start" gap={2}>
+                  <Stack alignItems="flex-start" gap={2}>
                     <Field
                       invalid={Boolean(errors?.[i]?.name)}
                       error={interpolateErrorMessage(errors?.[i]?.name?.message, `Query param`)}
@@ -130,7 +119,7 @@ const QueryParamsTab = ({ index, active }: MultiHttpTabProps) => {
                         data-fs-element="Query param value input"
                       />
                     </Field>
-                  </HorizontalGroup>
+                  </Stack>
                   <IconButton
                     className={styles.removeIcon}
                     name="minus-circle"
@@ -141,7 +130,7 @@ const QueryParamsTab = ({ index, active }: MultiHttpTabProps) => {
                     tooltip="Delete"
                     data-fs-element="Delete query param button"
                   />
-                </HorizontalGroup>
+                </Stack>
               </div>
             );
           })}

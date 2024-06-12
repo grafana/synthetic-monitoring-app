@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react';
 import { getBackendSrv } from '@grafana/runtime';
-import { Alert, Button, HorizontalGroup, Modal } from '@grafana/ui';
+import { Alert, Button, Modal,Stack } from '@grafana/ui';
 
 import { FaroEvent, reportEvent } from 'faro';
 import { InstanceContext } from 'contexts/InstanceContext';
@@ -41,14 +41,14 @@ export const DisablePluginModal = ({ isOpen, onDismiss, pluginId }: Props) => {
     <Modal title="Disable synthetic monitoring" isOpen={isOpen} onDismiss={onDismiss}>
       <p>Are you sure? Disabling the plugin will also disable all your checks.</p>
 
-      <HorizontalGroup>
+      <Stack>
         <Button variant="destructive" onClick={disableTenant}>
           Disable
         </Button>
         <Button variant="secondary" onClick={onDismiss}>
           Cancel
         </Button>
-      </HorizontalGroup>
+      </Stack>
 
       {error && <Alert title="Disable failed">{error}</Alert>}
     </Modal>

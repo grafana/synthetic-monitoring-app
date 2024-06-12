@@ -3,7 +3,7 @@ import { useAsyncCallback } from 'react-async-hook';
 import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { AppEvents, GrafanaTheme2, SelectableValue } from '@grafana/data';
 import { FetchResponse } from '@grafana/runtime';
-import { Alert, Button, Field, HorizontalGroup, Icon, Input, Label, Select, useStyles2 } from '@grafana/ui';
+import { Alert, Button, Field, Icon, Input, Label, Select, Stack, useStyles2 } from '@grafana/ui';
 import appEvents from 'grafana/app/core/app_events';
 import { css } from '@emotion/css';
 
@@ -87,7 +87,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
   inlineText: css`
     white-space: nowrap;
-    flex-grow: 1;
   `,
   numberInput: css`
     width: 75px;
@@ -217,7 +216,7 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
             </Field>
             <div className={styles.expressionContainer}>
               <Label>Expression</Label>
-              <HorizontalGroup align="center" wrap marginHeight={0}>
+              <Stack alignItems="center" justifyContent="flex-start" wrap="wrap">
                 <span className={styles.inlineText}>Checks with a sensitivity level of</span>
                 <div className={styles.selectInput}>
                   <Controller
@@ -267,7 +266,7 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
                     name="timeUnit"
                   />
                 </div>
-              </HorizontalGroup>
+              </Stack>
             </div>
             <AlertLabels />
             <AlertAnnotations />
@@ -313,14 +312,14 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
               </div>
             </SubCollapse>
             <hr className={styles.breakLine} />
-            <HorizontalGroup height="40px">
+            <Stack>
               <Button type="submit" disabled={submitting}>
                 Save alert
               </Button>
               <Button variant="secondary" type="button" onClick={onCancel}>
                 Cancel
               </Button>
-            </HorizontalGroup>
+            </Stack>
             {error && (
               <div className={styles.submitFail}>
                 <Alert title="There was an error updating the alert rule">{error.message}</Alert>

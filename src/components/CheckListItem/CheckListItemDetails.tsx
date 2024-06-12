@@ -1,6 +1,6 @@
 import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Button, HorizontalGroup, Tooltip, useStyles2 } from '@grafana/ui';
+import { Button, Stack, Tooltip, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 import { Label } from 'types';
@@ -55,7 +55,7 @@ export const CheckListItemDetails = ({
           <Tooltip
             placement="bottom-end"
             content={
-              <HorizontalGroup justify="flex-end" wrap>
+              <Stack justifyContent="flex-end" wrap={'wrap'}>
                 {labels.map((label: Label, index) => (
                   <CheckCardLabel
                     key={index}
@@ -64,7 +64,7 @@ export const CheckListItemDetails = ({
                     className={styles.labelWidth}
                   />
                 ))}
-              </HorizontalGroup>
+              </Stack>
             }
           >
             <Button disabled={labels.length === 0} type="button" fill="text" size="sm">

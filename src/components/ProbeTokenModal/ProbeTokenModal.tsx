@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert, Button, HorizontalGroup, Modal, VerticalGroup } from '@grafana/ui';
+import { Alert, Button, Modal, Stack } from '@grafana/ui';
 
 import { Clipboard } from 'components/Clipboard';
 import { DocsLink } from 'components/DocsLink';
@@ -17,13 +17,13 @@ export const ProbeTokenModal = ({ actionText, isOpen, onDismiss, token }: TokenM
       <Alert severity="warning" title="Note">
         This is the only time you will see this token. If you need to view it again, you will need to reset the token.
       </Alert>
-      <VerticalGroup spacing="md">
+      <Stack direction={'column'} gap={2}>
         <Clipboard content={token} />
-        <HorizontalGroup justify="space-between">
+        <Stack justifyContent="space-between">
           <DocsLink article="addPrivateProbe">Learn how to run a private probe</DocsLink>
           <Button onClick={onDismiss}>{actionText}</Button>
-        </HorizontalGroup>
-      </VerticalGroup>
+        </Stack>
+      </Stack>
     </Modal>
   );
 };

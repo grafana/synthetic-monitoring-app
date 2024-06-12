@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Button, HorizontalGroup, Modal, useStyles2 } from '@grafana/ui';
+import { Button, Modal, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { intersection } from 'lodash';
 
@@ -108,7 +108,7 @@ const BulkEditModalContent = ({ onDismiss, isOpen, checks, action }: BulkEditMod
       </div>
 
       <div className={styles.verticalSpace}>
-        <HorizontalGroup>
+        <Stack>
           <Button
             onClick={handleSubmit}
             disabled={!probeIds.length || isPending}
@@ -120,7 +120,7 @@ const BulkEditModalContent = ({ onDismiss, isOpen, checks, action }: BulkEditMod
           <Button disabled={!probeIds.length || isPending} variant="secondary" onClick={() => setProbeIds([])}>
             Clear selection
           </Button>
-        </HorizontalGroup>
+        </Stack>
       </div>
     </Modal>
   );
