@@ -93,7 +93,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     gap: theme.spacing(2.5),
   }),
   actions: css({
-    borderRight: `2px solid ${theme.colors.border.strong}`,
+    borderRight: `1px solid ${theme.colors.border.medium}`,
   }),
   removeButton: css({
     borderRadius: `50%`,

@@ -1,5 +1,6 @@
 import React, { useEffect, useReducer, useState } from 'react';
-import { Button, Field, Label } from '@grafana/ui';
+import { GrafanaTheme2 } from '@grafana/data';
+import { Button, Field, Label, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import QueryParamInput, { QueryParam } from './QueryParamInput';
@@ -60,6 +61,7 @@ function queryParamReducer(state: QueryParam[], action: Action) {
 }
 
 const QueryParams = ({ target, onChange, className, onBlur }: Props) => {
+  const styles = useStyles2(getStyles);
   const [formattedParams, dispatch] = useReducer(queryParamReducer, target, init);
   const [shouldUpdate, setShouldUpdate] = useState(false);
 
@@ -89,14 +91,7 @@ const QueryParams = ({ target, onChange, className, onBlur }: Props) => {
   return (
     <div className={className}>
       <Field label="Query params" description="Query params for the target URL">
-        <div
-          className={css`
-            display: grid;
-            grid-template-columns: auto auto auto;
-            grid-gap: 0.25rem;
-            align-items: center;
-          `}
-        >
+        <div className={styles.grid}>
           <Label>Key</Label>
           <Label>Value</Label>
           <div />
@@ -121,5 +116,14 @@ const QueryParams = ({ target, onChange, className, onBlur }: Props) => {
     </div>
   );
 };
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  grid: css({
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr auto',
+    gridGap: theme.spacing(1, 2),
+    alignItems: 'center',
+  }),
+});
 
 export default QueryParams;

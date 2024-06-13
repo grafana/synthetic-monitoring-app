@@ -22,7 +22,7 @@ export const RequestField = ({ children, description, label = `Request target`, 
 
   return (
     <RequestFieldContext.Provider value={{ id, ...rest }}>
-      <Field className={styles.stack} description={description} label={label}>
+      <Field className={styles.field} description={description} label={label}>
         <div className={styles.wrapper}>{children}</div>
       </Field>
     </RequestFieldContext.Provider>
@@ -30,7 +30,7 @@ export const RequestField = ({ children, description, label = `Request target`, 
 };
 
 const getStyles = (theme: GrafanaTheme2) => ({
-  stack: css({
+  field: css({
     margin: 0,
   }),
   wrapper: css({

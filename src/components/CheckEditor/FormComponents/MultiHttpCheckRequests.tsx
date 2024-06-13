@@ -95,7 +95,7 @@ export const MultiHttpCheckRequests = () => {
             onRemove={onRemove}
             requestMethod={requestMethod}
           >
-            <Stack direction={`column`} gap={1}>
+            <Stack direction={`column`}>
               <AvailableVariables index={index} />
               <HttpRequest
                 fields={{

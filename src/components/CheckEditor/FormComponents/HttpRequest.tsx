@@ -6,9 +6,10 @@ import { css, cx } from '@emotion/css';
 
 import { HttpRequestFields, TLSConfigFields } from '../CheckEditor.types';
 import { CheckFormValues, HttpMethod } from 'types';
-import { getMethodColor, hasRole } from 'utils';
+import { getMethodColor, hasRole, parseUrl } from 'utils';
 import { METHOD_OPTIONS } from 'components/constants';
 import { Indent } from 'components/Indent';
+import QueryParams from 'components/QueryParams';
 import { Request } from 'components/Request';
 import { TLSConfig } from 'components/TLSConfig';
 
@@ -24,10 +25,12 @@ import { RequestHeaders } from './RequestHeaders';
 export const HttpRequest = ({ fields }: { fields: HttpRequestFields }) => {
   const [showQueryParams, setShowQueryParams] = useState(false);
   const isEditor = hasRole(OrgRole.Editor);
-  const { control } = useFormContext<CheckFormValues>();
+  const { control, setValue, watch } = useFormContext<CheckFormValues>();
   const id = `request-method-${fields.method.name}`;
   const styles = useStyles2(getStyles);
   const theme = useTheme2();
+  const targetValue = watch(fields.target.name) as string;
+  const parsedURL = parseUrl(targetValue);
 
   return (
     <Request>
@@ -80,9 +83,9 @@ export const HttpRequest = ({ fields }: { fields: HttpRequestFields }) => {
           <Request.Test />
         </div>
       </Request.Field>
-      {showQueryParams && (
+      {showQueryParams && parsedURL && (
         <Indent>
-          <div>Query parameters!</div>
+          <QueryParams target={parsedURL} onChange={(target: string) => setValue(fields.target.name, target)} />
         </Indent>
       )}
       <HttpRequestOptions fields={fields} />
