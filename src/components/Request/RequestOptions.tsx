@@ -3,6 +3,8 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Button, Tab, TabContent, TabsBar, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
+import { Indent } from 'components/Indent';
+
 export const RequestOptions = ({ children }: { children: ReactNode }) => {
   const [open, setOpen] = useState(false);
 
@@ -11,7 +13,11 @@ export const RequestOptions = ({ children }: { children: ReactNode }) => {
       <Button onClick={() => setOpen((v) => !v)} type="button" fill="text" icon={open ? `arrow-down` : `arrow-right`}>
         Request options
       </Button>
-      {open && <RequestOptionsContent>{children}</RequestOptionsContent>}
+      {open && (
+        <Indent>
+          <RequestOptionsContent>{children}</RequestOptionsContent>
+        </Indent>
+      )}
     </div>
   );
 };

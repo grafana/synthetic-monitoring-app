@@ -9,7 +9,7 @@ import {
   useFormContext,
 } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Button, Field, IconButton, Input, Select, useStyles2 } from '@grafana/ui';
+import { Button, Field, IconButton, Input, Select, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckFormValuesMultiHttp, MultiHttpAssertionType } from 'types';
@@ -76,81 +76,76 @@ const RequestAssertions = ({ index }: { index: number }) => {
   });
 
   return (
-    <>
-      <Field
-        label="Assertions"
-        description="Use assertions to validate that the system is responding with the expected content"
-      >
-        <>
-          {fields.map((field, assertionIndex) => {
-            const assertionTypeName = `${assertionFieldName}.${assertionIndex}.type` as const;
-            const error = formState.errors.settings?.multihttp?.entries?.[index]?.checks?.[assertionIndex]?.type;
-            // @ts-expect-error - I think 'type' is a reservered keyword in react-hook-form so it can't read this properly
-            const errMessage = error?.message;
+    <Stack direction={`column`}>
+      {fields.map((field, assertionIndex) => {
+        const assertionTypeName = `${assertionFieldName}.${assertionIndex}.type` as const;
+        const error = formState.errors.settings?.multihttp?.entries?.[index]?.checks?.[assertionIndex]?.type;
+        // @ts-expect-error - I think 'type' is a reservered keyword in react-hook-form so it can't read this properly
+        const errMessage = error?.message;
 
-            return (
-              <div key={field.id} className={styles.container}>
-                <Controller
-                  name={assertionTypeName}
-                  render={({ field }) => {
-                    const id = `multihttp-assertion-type-${index}-${assertionIndex}`;
-                    const { ref, onChange, ...rest } = field;
+        return (
+          <Stack key={field.id}>
+            <Controller
+              name={assertionTypeName}
+              render={({ field }) => {
+                const id = `multihttp-assertion-type-${index}-${assertionIndex}`;
+                const { ref, onChange, ...rest } = field;
 
-                    return (
-                      <Field
-                        label="Assertion type"
-                        description="Method for finding assertion value"
-                        invalid={Boolean(error)}
-                        error={typeof errMessage === 'string' && errMessage}
-                        htmlFor={id}
-                        data-fs-element="Assertion type select"
-                      >
-                        <Select
-                          inputId={id}
-                          {...rest}
-                          options={MULTI_HTTP_ASSERTION_TYPE_OPTIONS}
-                          menuPlacement="bottom"
-                          onChange={(e) => {
-                            field.onChange(e.value);
-                          }}
-                        />
-                      </Field>
-                    );
-                  }}
-                />
-                <AssertionFields entryIndex={index} assertionIndex={assertionIndex} />
+                return (
+                  <Field
+                    label="Assertion type"
+                    description="Method for finding assertion value"
+                    invalid={Boolean(error)}
+                    error={typeof errMessage === 'string' && errMessage}
+                    htmlFor={id}
+                    data-fs-element="Assertion type select"
+                  >
+                    <Select
+                      inputId={id}
+                      {...rest}
+                      options={MULTI_HTTP_ASSERTION_TYPE_OPTIONS}
+                      menuPlacement="bottom"
+                      onChange={(e) => {
+                        field.onChange(e.value);
+                      }}
+                    />
+                  </Field>
+                );
+              }}
+            />
+            <AssertionFields entryIndex={index} assertionIndex={assertionIndex} />
 
-                <div>
-                  <IconButton
-                    name="minus-circle"
-                    onClick={() => {
-                      remove(assertionIndex);
-                    }}
-                    tooltip="Delete"
-                  />
-                </div>
-              </div>
-            );
-          })}
-        </>
-      </Field>
-      <Button
-        onClick={() => {
-          append({
-            type: MultiHttpAssertionType.Text,
-            condition: AssertionConditionVariant.Contains,
-            subject: AssertionSubjectVariant.ResponseBody,
-            value: ``,
-          });
-        }}
-        variant="secondary"
-        size="sm"
-        type="button"
-        icon="plus"
-      >
-        Add assertions
-      </Button>
-    </>
+            <div>
+              <IconButton
+                name="minus-circle"
+                onClick={() => {
+                  remove(assertionIndex);
+                }}
+                tooltip="Delete"
+              />
+            </div>
+          </Stack>
+        );
+      })}
+      <div>
+        <Button
+          onClick={() => {
+            append({
+              type: MultiHttpAssertionType.Text,
+              condition: AssertionConditionVariant.Contains,
+              subject: AssertionSubjectVariant.ResponseBody,
+              value: ``,
+            });
+          }}
+          variant="secondary"
+          size="sm"
+          type="button"
+          icon="plus"
+        >
+          Add assertion
+        </Button>
+      </div>
+    </Stack>
   );
 };
 

@@ -1,11 +1,12 @@
-import React, { FormEvent, useEffect, useRef } from 'react';
+import React, { FormEvent, useEffect, useRef, useState } from 'react';
 import { FieldErrors, useFieldArray, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Button, useStyles2 } from '@grafana/ui';
+import { Button, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckFormValues, CheckFormValuesMultiHttp, HttpMethod } from 'types';
 import { CHECK_FORM_ERROR_EVENT } from 'components/constants';
+import { Indent } from 'components/Indent';
 import { AvailableVariables } from 'components/MultiHttp/AvailableVariables';
 import { MultiHttpCollapse } from 'components/MultiHttp/MultiHttpCollapse';
 import {
@@ -15,6 +16,7 @@ import {
 } from 'components/MultiHttp/MultiHttpSettingsForm.utils';
 
 import { HttpRequest } from './HttpRequest';
+import { VariablesFields } from './VariablesFields';
 
 export const MultiHttpCheckRequests = () => {
   const styles = useStyles2(getStyles);
@@ -69,7 +71,7 @@ export const MultiHttpCheckRequests = () => {
   };
 
   return (
-    <div>
+    <Stack direction={`column`} gap={1}>
       {entryFields.map((field, index) => {
         const onRemove =
           index !== 0
@@ -93,53 +95,77 @@ export const MultiHttpCheckRequests = () => {
             onRemove={onRemove}
             requestMethod={requestMethod}
           >
-            <HttpRequest
-              fields={{
-                target: {
-                  name: `settings.multihttp.entries.${index}.request.url`,
-                  onChange: parseQueryParams,
-                },
-                method: {
-                  name: `settings.multihttp.entries.${index}.request.method`,
-                  'aria-label': `Request target for request ${index + 1}`,
-                },
-                requestHeaders: {
-                  name: `settings.multihttp.entries.${index}.request.headers`,
-                },
-                requestBody: {
-                  name: `settings.multihttp.entries.${index}.request.body.payload`,
-                },
-                requestContentEncoding: {
-                  name: `settings.multihttp.entries.${index}.request.body.contentEncoding`,
-                },
-                requestContentType: {
-                  name: `settings.multihttp.entries.${index}.request.body.contentType`,
-                },
-              }}
-            />
-            <AvailableVariables index={index} />
+            <Stack direction={`column`} gap={1}>
+              <AvailableVariables index={index} />
+              <HttpRequest
+                fields={{
+                  target: {
+                    name: `settings.multihttp.entries.${index}.request.url`,
+                    onChange: parseQueryParams,
+                  },
+                  method: {
+                    name: `settings.multihttp.entries.${index}.request.method`,
+                    'aria-label': `Request target for request ${index + 1}`,
+                  },
+                  requestHeaders: {
+                    name: `settings.multihttp.entries.${index}.request.headers`,
+                  },
+                  requestBody: {
+                    name: `settings.multihttp.entries.${index}.request.body.payload`,
+                  },
+                  requestContentEncoding: {
+                    name: `settings.multihttp.entries.${index}.request.body.contentEncoding`,
+                  },
+                  requestContentType: {
+                    name: `settings.multihttp.entries.${index}.request.body.contentType`,
+                  },
+                }}
+              />
+              <SetVariables index={index} />
+            </Stack>
           </MultiHttpCollapse>
         );
       })}
 
-      <Button
-        className={styles.addButton}
-        type="button"
-        size="md"
-        icon="plus"
-        disabled={requests?.length > 9}
-        tooltip={requests?.length > 9 ? 'Maximum of 10 requests per check' : undefined}
-        tooltipPlacement="bottom-start"
-        onClick={() => {
-          append({
-            request: { url: ``, method: HttpMethod.GET },
-          });
-          dispatchCollapse({ type: 'addNewRequest' });
-        }}
-      >
-        Add request
-      </Button>
-    </div>
+      <div>
+        <Button
+          className={styles.addButton}
+          type="button"
+          size="md"
+          icon="plus"
+          disabled={requests?.length > 9}
+          tooltip={requests?.length > 9 ? 'Maximum of 10 requests per check' : undefined}
+          tooltipPlacement="bottom-start"
+          onClick={() => {
+            append({
+              request: { url: ``, method: HttpMethod.GET },
+            });
+            dispatchCollapse({ type: 'addNewRequest' });
+          }}
+        >
+          Add request
+        </Button>
+      </div>
+    </Stack>
+  );
+};
+
+const SetVariables = ({ index }: { index: number }) => {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Stack direction={`column`}>
+      <div>
+        <Button onClick={() => setOpen((v) => !v)} type="button" fill="text" icon={open ? `arrow-down` : `arrow-right`}>
+          Set variables
+        </Button>
+      </div>
+      {open && (
+        <Indent>
+          <VariablesFields index={index} />
+        </Indent>
+      )}
+    </Stack>
   );
 };
 

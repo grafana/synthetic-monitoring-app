@@ -1,13 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2, OrgRole } from '@grafana/data';
-import { Select, useStyles2, useTheme2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { Select, Tooltip, useStyles2, useTheme2 } from '@grafana/ui';
+import { css, cx } from '@emotion/css';
 
 import { HttpRequestFields, TLSConfigFields } from '../CheckEditor.types';
 import { CheckFormValues, HttpMethod } from 'types';
 import { getMethodColor, hasRole } from 'utils';
 import { METHOD_OPTIONS } from 'components/constants';
+import { Indent } from 'components/Indent';
 import { Request } from 'components/Request';
 import { TLSConfig } from 'components/TLSConfig';
 
@@ -21,6 +22,7 @@ import { RequestBodyTextArea } from './RequestBodyTextArea';
 import { RequestHeaders } from './RequestHeaders';
 
 export const HttpRequest = ({ fields }: { fields: HttpRequestFields }) => {
+  const [showQueryParams, setShowQueryParams] = useState(false);
   const isEditor = hasRole(OrgRole.Editor);
   const { control } = useFormContext<CheckFormValues>();
   const id = `request-method-${fields.method.name}`;
@@ -60,10 +62,29 @@ export const HttpRequest = ({ fields }: { fields: HttpRequestFields }) => {
             }}
             name={fields.method.name}
           />
-          <Request.Input data-fs-element="Target input" placeholder={`https://grafana.com/`} />
+          <Request.Input
+            data-fs-element="Target input"
+            placeholder={`https://grafana.com/`}
+            suffix={
+              <Tooltip content={`Manage query parameters`}>
+                <button
+                  className={cx(styles.queryParams, { [styles.active]: showQueryParams })}
+                  type="button"
+                  onClick={() => setShowQueryParams((v) => !v)}
+                >
+                  ?=
+                </button>
+              </Tooltip>
+            }
+          />
           <Request.Test />
         </div>
       </Request.Field>
+      {showQueryParams && (
+        <Indent>
+          <div>Query parameters!</div>
+        </Indent>
+      )}
       <HttpRequestOptions fields={fields} />
     </Request>
   );
@@ -159,7 +180,14 @@ function getProxyFields(fields: HttpRequestFields) {
 const getStyles = (theme: GrafanaTheme2) => ({
   grid: css({
     display: `grid`,
-    gridTemplateColumns: `110px 1fr auto`,
+    gridTemplateColumns: `110px 1fr auto auto`,
   }),
-  method: css({}),
+  queryParams: css({
+    background: `transparent`,
+    border: 0,
+    padding: 0,
+  }),
+  active: css({
+    color: theme.colors.primary.border,
+  }),
 });

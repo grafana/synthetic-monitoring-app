@@ -1,7 +1,7 @@
 import React, { forwardRef, PropsWithChildren } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Button, Icon, useStyles2, useTheme2 } from '@grafana/ui';
-import { css, cx } from '@emotion/css';
+import { Button, Icon, Stack, useStyles2, useTheme2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 
 import { HttpMethod } from 'types';
 import { getMethodColor } from 'utils';
@@ -26,7 +26,7 @@ export const MultiHttpCollapse = forwardRef<HTMLButtonElement, PropsWithChildren
     const styles = useStyles2(getStyles);
 
     return (
-      <div>
+      <Stack gap={1} direction={`column`}>
         <button
           className={styles.header}
           onClick={(e) => {
@@ -60,7 +60,7 @@ export const MultiHttpCollapse = forwardRef<HTMLButtonElement, PropsWithChildren
             <div>{children}</div>
           </div>
         )}
-      </div>
+      </Stack>
     );
   }
 );
@@ -74,6 +74,10 @@ const getStyles = (theme: GrafanaTheme2) => ({
     padding: theme.spacing(2, 0),
     width: `100%`,
     gap: theme.spacing(1),
+
+    [`&:hover`]: {
+      backgroundColor: theme.colors.background.secondary,
+    },
   }),
   label: css({
     marginRight: theme.spacing(1),
