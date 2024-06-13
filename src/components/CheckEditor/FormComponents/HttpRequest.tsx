@@ -1,12 +1,12 @@
 import React from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2, OrgRole } from '@grafana/data';
-import { Select, useStyles2 } from '@grafana/ui';
+import { Select, useStyles2, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { HttpRequestFields, TLSConfigFields } from '../CheckEditor.types';
-import { CheckFormValues } from 'types';
-import { hasRole } from 'utils';
+import { CheckFormValues, HttpMethod } from 'types';
+import { getMethodColor, hasRole } from 'utils';
 import { METHOD_OPTIONS } from 'components/constants';
 import { Request } from 'components/Request';
 import { TLSConfig } from 'components/TLSConfig';
@@ -25,6 +25,7 @@ export const HttpRequest = ({ fields }: { fields: HttpRequestFields }) => {
   const { control } = useFormContext<CheckFormValues>();
   const id = `request-method-${fields.method.name}`;
   const styles = useStyles2(getStyles);
+  const theme = useTheme2();
 
   return (
     <Request>
@@ -41,10 +42,15 @@ export const HttpRequest = ({ fields }: { fields: HttpRequestFields }) => {
             control={control}
             render={({ field }) => {
               const { ref, onChange, ...rest } = field;
+              const value = field.value as HttpMethod;
+
               return (
                 <div>
                   <Select
                     {...rest}
+                    className={css({
+                      borderColor: getMethodColor(theme, value),
+                    })}
                     options={METHOD_OPTIONS}
                     aria-label={fields.method['aria-label']}
                     onChange={({ value }) => onChange(value)}
@@ -155,4 +161,5 @@ const getStyles = (theme: GrafanaTheme2) => ({
     display: `grid`,
     gridTemplateColumns: `110px 1fr auto`,
   }),
+  method: css({}),
 });

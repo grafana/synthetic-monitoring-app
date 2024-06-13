@@ -51,6 +51,7 @@ export const MultiHttpAssertions = () => {
                 return newStates;
               });
             }}
+            requestMethod={entry.request.method}
           >
             <RequestAssertions index={index} />
           </MultiHttpCollapse>
@@ -88,7 +89,7 @@ const RequestAssertions = ({ index }: { index: number }) => {
             const errMessage = error?.message;
 
             return (
-              <div key={field.id}>
+              <div key={field.id} className={styles.container}>
                 <Controller
                   name={assertionTypeName}
                   render={({ field }) => {
@@ -157,6 +158,7 @@ type AssertionProps = {
   entryIndex: number;
   assertionIndex: number;
 };
+
 const AssertionFields = (props: AssertionProps) => {
   const { entryIndex, assertionIndex } = props;
   const { watch } = useFormContext<CheckFormValuesMultiHttp>();

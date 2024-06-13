@@ -1,9 +1,12 @@
 import React, { forwardRef, PropsWithChildren } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Button, Icon, useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { Button, Icon, useStyles2, useTheme2 } from '@grafana/ui';
+import { css, cx } from '@emotion/css';
 
-interface Props {
+import { HttpMethod } from 'types';
+import { getMethodColor } from 'utils';
+
+interface MultiHttpCollapseProps {
   'data-testid'?: string;
   label: string;
   invalid?: boolean;
@@ -11,51 +14,56 @@ interface Props {
   isOpen: boolean;
   onToggle: () => void;
   onRemove?: () => void;
+  requestMethod: HttpMethod;
 }
 
-export const MultiHttpCollapse = forwardRef<HTMLButtonElement, PropsWithChildren<Props>>(function MultiHttpCollapse(
-  { 'data-testid': dataTestId, label, children, invalid, isOpen, onRemove, onToggle },
-  ref
-) {
-  const styles = useStyles2(getStyles);
+export const MultiHttpCollapse = forwardRef<HTMLButtonElement, PropsWithChildren<MultiHttpCollapseProps>>(
+  function MultiHttpCollapse(
+    { 'data-testid': dataTestId, label, children, invalid, isOpen, onRemove, onToggle, requestMethod },
+    ref
+  ) {
+    const theme = useTheme2();
+    const styles = useStyles2(getStyles);
 
-  return (
-    <div>
-      <button
-        className={styles.header}
-        onClick={(e) => {
-          e.preventDefault();
-          onToggle();
-        }}
-        ref={ref}
-        data-fs-element={`Collapse header ${label}`}
-        type="button"
-      >
-        <Icon name={isOpen ? 'angle-down' : 'angle-right'} className={styles.headerIcon} />
-        <div className={styles.label}>{label}</div>
-        {!isOpen && invalid && <Icon name="exclamation-triangle" className={styles.errorIcon} />}
-      </button>
-      {isOpen && (
-        <div className={styles.body} data-testid={dataTestId}>
-          <div className={styles.actions}>
-            {onRemove && (
-              <Button
-                className={styles.removeButton}
-                variant="secondary"
-                onClick={onRemove}
-                data-fs-element={`Remove ${label}`}
-                icon="trash-alt"
-                tooltip={`Remove request`}
-                size="sm"
-              />
-            )}
+    return (
+      <div>
+        <button
+          className={styles.header}
+          onClick={(e) => {
+            e.preventDefault();
+            onToggle();
+          }}
+          ref={ref}
+          data-fs-element={`Collapse header ${label}`}
+          type="button"
+        >
+          <Icon name={isOpen ? 'angle-down' : 'angle-right'} />
+          <div className={css({ color: getMethodColor(theme, requestMethod) })}>{requestMethod}</div>
+          <div className={styles.label}>{label}</div>
+          {!isOpen && invalid && <Icon name="exclamation-triangle" className={styles.errorIcon} />}
+        </button>
+        {isOpen && (
+          <div className={styles.body} data-testid={dataTestId}>
+            <div className={styles.actions}>
+              {onRemove && (
+                <Button
+                  className={styles.removeButton}
+                  variant="secondary"
+                  onClick={onRemove}
+                  data-fs-element={`Remove ${label}`}
+                  icon="trash-alt"
+                  tooltip={`Remove request`}
+                  size="sm"
+                />
+              )}
+            </div>
+            <div>{children}</div>
           </div>
-          <div>{children}</div>
-        </div>
-      )}
-    </div>
-  );
-});
+        )}
+      </div>
+    );
+  }
+);
 
 const getStyles = (theme: GrafanaTheme2) => ({
   header: css({
@@ -65,9 +73,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     alignItems: `center`,
     padding: theme.spacing(2, 0),
     width: `100%`,
-  }),
-  headerIcon: css({
-    marginRight: theme.spacing(1),
+    gap: theme.spacing(1),
   }),
   label: css({
     marginRight: theme.spacing(1),
@@ -87,5 +93,10 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
   removeButton: css({
     borderRadius: `50%`,
+    padding: 0,
+    width: theme.spacing(3),
+    height: theme.spacing(3),
+    alignItems: `center`,
+    justifyContent: `center`,
   }),
 });

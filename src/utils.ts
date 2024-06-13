@@ -1,4 +1,4 @@
-import { DataSourceInstanceSettings, OrgRole, TimeRange } from '@grafana/data';
+import { DataSourceInstanceSettings, GrafanaTheme2, OrgRole, TimeRange } from '@grafana/data';
 import { config, FetchResponse, getBackendSrv } from '@grafana/runtime';
 import { firstValueFrom } from 'rxjs';
 
@@ -9,6 +9,7 @@ import {
   CheckFormValues,
   CheckType,
   HostedInstance,
+  HttpMethod,
   Probe,
   Settings,
   SubmissionErrorWrapper,
@@ -447,4 +448,18 @@ export function isOverCheckLimit({
     return false;
   }
   return checks.length >= limits.MaxChecks;
+}
+
+export function getMethodColor(theme: GrafanaTheme2, value: HttpMethod) {
+  const colorMap = {
+    [HttpMethod.DELETE]: theme.visualization.getColorByName('red'),
+    [HttpMethod.GET]: theme.visualization.getColorByName('green'),
+    [HttpMethod.HEAD]: theme.visualization.getColorByName('super-light-green'),
+    [HttpMethod.OPTIONS]: theme.visualization.getColorByName('dark-purple'),
+    [HttpMethod.PATCH]: theme.visualization.getColorByName('super-light-purple'),
+    [HttpMethod.POST]: theme.visualization.getColorByName('yellow'),
+    [HttpMethod.PUT]: theme.visualization.getColorByName('blue'),
+  };
+
+  return colorMap[value];
 }

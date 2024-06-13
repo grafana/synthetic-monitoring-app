@@ -78,6 +78,7 @@ export const MultiHttpCheckRequests = () => {
                 dispatchCollapse({ type: 'removeRequest', index });
               }
             : undefined;
+        const requestMethod = watch(`settings.multihttp.entries.${index}.request.method`);
         const urlForIndex = watch(`settings.multihttp.entries.${index}.request.url`) || `Request ${index + 1}`;
 
         return (
@@ -90,6 +91,7 @@ export const MultiHttpCheckRequests = () => {
             onToggle={() => dispatchCollapse({ type: 'toggle', index })}
             ref={(el) => (panelRefs.current[index] = el)}
             onRemove={onRemove}
+            requestMethod={requestMethod}
           >
             <HttpRequest
               fields={{
