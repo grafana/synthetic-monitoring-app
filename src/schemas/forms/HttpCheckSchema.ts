@@ -57,7 +57,26 @@ const HttpSettingsSchema: ZodType<HttpSettingsFormValues> = z.object({
       username: z.string(),
       password: z.string(),
     })
-    .optional(),
+    .optional()
+    .superRefine((data, ctx) => {
+      if (!data) {
+        return;
+      }
+      if (!data.username && data.password) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Username is required',
+          path: ['username'],
+        });
+      }
+      if (data.username && !data.password) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Password is required',
+          path: ['password'],
+        });
+      }
+    }),
   tlsConfig: TLSConfigSchema,
   cacheBustingQueryParamName: z.string().optional(),
 });
