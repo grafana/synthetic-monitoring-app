@@ -57,8 +57,6 @@ describe(`Submits a Traceroute check correctly`, () => {
     });
 
     await fillBasicCheckFields(JOB_NAME, TARGET, user, LABELS);
-    screen.debug(undefined, 200000);
-
     await submitForm(user);
     const { body } = await read();
 

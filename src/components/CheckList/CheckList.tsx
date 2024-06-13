@@ -3,6 +3,7 @@ import { GrafanaTheme2, SelectableValue } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
 import { Pagination, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { getTotalChecksPerMonth } from 'checkUsageCalc';
 
 import { Check, CheckEnabledStatus, CheckFiltersType, CheckListViewType, CheckSort, CheckType, Label } from 'types';
 import { MetricCheckSuccess, Time } from 'datasource/responses.types';
@@ -265,6 +266,20 @@ function sortChecks(checks: Check[], sortType: CheckSort, reachabilitySuccessRat
     });
   }
 
+  if (sortType === CheckSort.ExecutionsAsc) {
+    return checks.sort((a, b) => {
+      const [sortA, sortB] = getNumberOfExecutions(a, b);
+      return sortA - sortB;
+    });
+  }
+
+  if (sortType === CheckSort.ExecutionsDesc) {
+    return checks.sort((a, b) => {
+      const [sortA, sortB] = getNumberOfExecutions(a, b);
+      return sortB - sortA;
+    });
+  }
+
   return checks;
 }
 
@@ -275,6 +290,12 @@ function getMetricValues(checkA: Check, checkB: Check, metrics: MetricCheckSucce
   const sortA = metricA?.value[1] || 101;
   const sortB = metricB?.value[1] || 101;
 
+  return [sortA, sortB];
+}
+
+function getNumberOfExecutions(checkA: Check, checkB: Check) {
+  const sortA = getTotalChecksPerMonth(checkA.probes.length, checkA.frequency / 1000) || 101;
+  const sortB = getTotalChecksPerMonth(checkB.probes.length, checkB.frequency / 1000) || 101;
   return [sortA, sortB];
 }
 

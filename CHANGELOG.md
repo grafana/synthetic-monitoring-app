@@ -1,5 +1,12 @@
 # Change Log
 
+# [1.14.7](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.6...v1.14.7) (2024-6-11)
+
+- Added test execution rate in the check list page. Added accompaying sort options to sort checks by ascending / descending execution rates
+- Fixed an issue where drilldowns are not working in the Scenes home dashboard
+- Changed the HTTP authentication type to a radio button pattern rather than multiple checkboxes
+- Changed probe form validation to zod schemas
+
 # [1.14.6](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.5...v1.14.6) (2024-6-5)
 
 - Removed public preview message from multihttp checks
@@ -9,7 +16,7 @@
 - Fix alignment issues for labels and headers in the check creation forms
 - Fix terraform export for private probes
 - Fix wording for test executions in executions calculator
-- Changed form validation to zod schemas
+- Changed check form validation to zod schemas
 
 # [1.14.5](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.4...v1.14.5) (2024-5-23)
 

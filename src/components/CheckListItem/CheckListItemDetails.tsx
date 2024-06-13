@@ -1,6 +1,6 @@
 import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Button, HorizontalGroup, Tooltip, useStyles2 } from '@grafana/ui';
+import { Button, Stack, Tooltip, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 import { Label } from 'types';
@@ -13,7 +13,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     white-space: nowrap;
     display: flex;
     align-items: center;
-    width: 400px;
+    width: 600px;
   `,
   labelWidth: css`
     max-width: 350px;
@@ -24,6 +24,7 @@ interface Props {
   frequency: number;
   activeSeries?: number;
   probeLocations: number;
+  executionsRate?: number;
   className?: string;
   labelCount?: number;
   labels?: Label[];
@@ -34,6 +35,7 @@ export const CheckListItemDetails = ({
   frequency,
   activeSeries,
   probeLocations,
+  executionsRate,
   className,
   labels,
   onLabelClick,
@@ -41,17 +43,19 @@ export const CheckListItemDetails = ({
   const styles = useStyles2(getStyles);
   const activeSeriesMessage = activeSeries !== undefined ? `${activeSeries} active series` : null;
   const probeLocationsMessage = probeLocations === 1 ? `${probeLocations} location` : `${probeLocations} locations`;
+  const executionRateMessage = executionsRate ? `${executionsRate} executions / month` : null;
   return (
     <div className={cx(styles.checkDetails, className)}>
       {frequency / 1000}s frequency &nbsp;&nbsp;<strong>|</strong>&nbsp;&nbsp; {activeSeriesMessage}
-      &nbsp;&nbsp;<strong>|</strong>&nbsp;&nbsp; {probeLocationsMessage}
+      &nbsp;&nbsp;<strong>|</strong>&nbsp;&nbsp; {probeLocationsMessage}&nbsp;&nbsp;
+      <strong>|</strong>&nbsp;&nbsp; {executionRateMessage}
       {labels && onLabelClick && (
         <>
           &nbsp;&nbsp;<strong>|</strong>
           <Tooltip
             placement="bottom-end"
             content={
-              <HorizontalGroup justify="flex-end" wrap>
+              <Stack justifyContent="flex-end" wrap={'wrap'}>
                 {labels.map((label: Label, index) => (
                   <CheckCardLabel
                     key={index}
@@ -60,7 +64,7 @@ export const CheckListItemDetails = ({
                     className={styles.labelWidth}
                   />
                 ))}
-              </HorizontalGroup>
+              </Stack>
             }
           >
             <Button disabled={labels.length === 0} type="button" fill="text" size="sm">

@@ -54,7 +54,7 @@ export const LabelField = <T extends FormWithLabels>({ labelDestination }: Label
       description={description}
       disabled={!isEditor}
       error={interpolateErrorMessage(labelError, 'label')}
-      invalid={Boolean(labelError)}
+      invalid={Boolean(labelError) || undefined}
     >
       {isLoading ? (
         <LoadingPlaceholder text="Loading label limits" />

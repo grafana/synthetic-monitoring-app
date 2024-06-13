@@ -14,7 +14,7 @@ const getChecksPerMonth = (frequencySeconds: number) => {
   return Math.round(checksPerMonth);
 };
 
-const getTotalChecksPerMonth = (probeCount: number, frequencySeconds: number) => {
+export const getTotalChecksPerMonth = (probeCount: number, frequencySeconds: number) => {
   const checksPerMonth = getChecksPerMonth(frequencySeconds);
   return checksPerMonth * probeCount;
 };

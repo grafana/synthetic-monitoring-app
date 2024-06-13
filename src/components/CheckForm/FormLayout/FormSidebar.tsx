@@ -79,7 +79,7 @@ function getStyles(theme: GrafanaTheme2) {
 
   return {
     container: css({
-      'list-style-type': 'none',
+      listStyleType: 'none',
       borderRight: border,
 
       [containerQuery]: {

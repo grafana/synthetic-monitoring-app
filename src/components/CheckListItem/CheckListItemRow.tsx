@@ -58,6 +58,7 @@ export const CheckListItemRow = ({
           labelCount={check.labels.length}
           labels={check.labels}
           onLabelClick={onLabelSelect}
+          executionsRate={usage?.checksPerMonth}
         />
         <CheckItemActionButtons check={check} viewDashboardAsIcon />
       </div>

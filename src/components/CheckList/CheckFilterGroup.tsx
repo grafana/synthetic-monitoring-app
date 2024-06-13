@@ -1,18 +1,14 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Button, Modal, useStyles2 } from '@grafana/ui';
+import { Button, Modal, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckEnabledStatus, CheckFiltersType } from 'types';
 
 const groupStyles = (theme: GrafanaTheme2) => ({
-  horizontalGroup: css`
-    margin-top: 20px;
-    margin-bottom: 0px;
-    display: flex;
-    justify-content: flex-end;
-    align-self: flex-end;
-  `,
+  marginTop: css({
+    marginTop: theme.spacing(3),
+  }),
 });
 
 interface Props {
@@ -46,7 +42,7 @@ const CheckFilterGroup = ({ children, onReset, filters }: Props) => {
         case 'status':
           if (filters.status.value !== CheckEnabledStatus.All) {
             active += 1;
-          } 
+          }
           break;
         case 'probes':
           if (filters.probes.length > 0) {
@@ -73,13 +69,20 @@ const CheckFilterGroup = ({ children, onReset, filters }: Props) => {
       <Modal title={filterTitle} isOpen={openFilters} onDismiss={handleFilterOpen}>
         <div>
           {children}
-          <div className={styles.horizontalGroup}>
-            <Button variant="secondary" fill="text" onClick={onReset}>
-              Reset
-            </Button>
-            <Button style={{ marginLeft: '10px' }} fill="text" variant="primary" onClick={() => setOpenFilters(false)}>
-              Close
-            </Button>
+          <div className={styles.marginTop}>
+            <Stack justifyContent={'flex-end'} alignItems={'flex-end'}>
+              <Button variant="secondary" fill="text" onClick={onReset}>
+                Reset
+              </Button>
+              <Button
+                style={{ marginLeft: '10px' }}
+                fill="text"
+                variant="primary"
+                onClick={() => setOpenFilters(false)}
+              >
+                Close
+              </Button>
+            </Stack>
           </div>
         </div>
       </Modal>
