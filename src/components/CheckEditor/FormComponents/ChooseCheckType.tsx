@@ -1,9 +1,9 @@
 import React, { useRef } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
-import { Label, RadioButtonGroup } from '@grafana/ui';
+import { Badge, BadgeColor, Label, RadioButtonGroup, Stack } from '@grafana/ui';
 
-import { CheckFormValues, CheckType } from 'types';
+import { CheckFormValues, CheckStatus, CheckType } from 'types';
 import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
 import { useFormCheckType } from 'components/CheckForm/useCheckType';
 import { fallbackCheckMap } from 'components/constants';
@@ -31,13 +31,44 @@ export const ChooseCheckType = () => {
   };
 
   const id = 'check-type';
+  const { description, status } = options.find((option) => option.value === checkType) || {};
 
   return (
     <div>
       <Label htmlFor={id}>Request type</Label>
-      <RadioButtonGroup id={id} options={options} value={checkType} onChange={handleCheckTypeChange} />
+      <Stack direction={`column`}>
+        <div>
+          <RadioButtonGroup
+            id={id}
+            options={options.map(({ label, value }) => ({ label, value }))}
+            value={checkType}
+            onChange={handleCheckTypeChange}
+          />
+        </div>
+        <Stack>
+          {description}
+          {status && <CheckBadge status={status} />}
+        </Stack>
+      </Stack>
     </div>
   );
+};
+
+const colorMap: Record<CheckStatus, { text: string; color: BadgeColor }> = {
+  [CheckStatus.EXPERIMENTAL]: {
+    color: 'orange',
+    text: `Experimental`,
+  },
+  [CheckStatus.PUBLIC_PREVIEW]: {
+    color: 'blue',
+    text: `Public preview`,
+  },
+};
+
+const CheckBadge = ({ status }: { status: CheckStatus }) => {
+  const { text, color } = colorMap[status];
+
+  return <Badge text={text} color={color} />;
 };
 
 function updateCheckTypeValues(refValues: RefType, checkType: CheckType) {

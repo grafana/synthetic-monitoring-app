@@ -34,6 +34,7 @@ export const RequestInput = ({
         data-testid={dataTestId}
         placeholder={showPlaceholder ? placeholder : undefined}
         data-fs-element="Target input"
+        invalid={Boolean(error)}
         onFocus={() => setShowplaceholder(false)}
         onChange={(e) => {
           fieldOnChange(e);

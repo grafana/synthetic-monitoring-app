@@ -17,7 +17,7 @@ const CHECK_TYPE_OPTIONS = [
   {
     label: 'gRPC',
     value: CheckType.GRPC,
-    description: 'Use the gRPC Health Checking Protocol to ensure a gRPC service is healthy',
+    description: 'Use the gRPC Health Checking Protocol to ensure a gRPC service is healthy.',
     status: CheckStatus.EXPERIMENTAL,
     featureToggle: FeatureName.GRPCChecks,
   },

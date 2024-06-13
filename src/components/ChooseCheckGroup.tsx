@@ -61,23 +61,6 @@ export const ChooseCheckGroup = () => {
   );
 };
 
-const colorMap: Record<CheckStatus, { text: string; color: BadgeColor }> = {
-  [CheckStatus.EXPERIMENTAL]: {
-    color: 'orange',
-    text: `Experimental`,
-  },
-  [CheckStatus.PUBLIC_PREVIEW]: {
-    color: 'blue',
-    text: `Public preview`,
-  },
-};
-
-const CheckBadge = ({ status }: { status: CheckStatus }) => {
-  const { text, color } = colorMap[status];
-
-  return <Badge text={text} color={color} />;
-};
-
 const getStyles = (theme: GrafanaTheme2) => ({
   container: css({
     width: `100%`,

@@ -83,9 +83,13 @@ export const HttpRequest = ({ fields }: { fields: HttpRequestFields }) => {
           <Request.Test />
         </div>
       </Request.Field>
-      {showQueryParams && parsedURL && (
+      {showQueryParams && (
         <Indent>
-          <QueryParams target={parsedURL} onChange={(target: string) => setValue(fields.target.name, target)} />
+          {parsedURL ? (
+            <QueryParams target={parsedURL} onChange={(target: string) => setValue(fields.target.name, target)} />
+          ) : (
+            <div className={styles.provideURL}>Provide a valid URL to manage your query parameters.</div>
+          )}
         </Indent>
       )}
       <HttpRequestOptions fields={fields} />
@@ -192,5 +196,9 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
   active: css({
     color: theme.colors.primary.border,
+  }),
+  provideURL: css({
+    fontSize: theme.typography.bodySmall.fontSize,
+    fontStyle: `italic`,
   }),
 });
