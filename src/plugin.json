@@ -69,7 +69,7 @@
     }
   ],
   "dependencies": {
-    "grafanaDependency": ">=10.0.0",
-    "grafanaVersion": "10.0"
+    "grafanaDependency": ">=11.0.0",
+    "grafanaVersion": "11.0"
   }
 }
