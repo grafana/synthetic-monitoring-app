@@ -1,7 +1,7 @@
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 import { OrgRole } from '@grafana/data';
-import { Alert, Button, Field, LoadingPlaceholder, Spinner, useTheme2 } from '@grafana/ui';
+import { Alert, Button, Field, LoadingPlaceholder, Spinner, TextLink, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Label } from 'types';
@@ -32,12 +32,27 @@ function getLimit(labelDestination: LabelFieldProps['labelDestination'], limits?
   return 10;
 }
 
+const customLabelsDocs = (
+  <TextLink
+    href="https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/analyze-results/custom-labels/#custom-labels"
+    external={true}
+    variant="bodySmall"
+  >
+    Read more
+  </TextLink>
+);
+
 function getDescription(labelDestination: LabelFieldProps['labelDestination'], limit: number, logLabelLimit: number) {
+  let descriptionText = `Custom labels to be included with collected metrics and logs. You can add up to ${limit}. If you add more than ${logLabelLimit} labels, they will potentially not be used to index logs, and rather added as part of the log message.`;
   if (labelDestination === 'probe') {
-    return `Custom labels to be included with collected metrics and logs. You can add up to ${limit}.`;
+    descriptionText = `Custom labels to be included with collected metrics and logs. You can add up to ${limit}.`;
   }
 
-  return `Custom labels to be included with collected metrics and logs. You can add up to ${limit}. If you add more than ${logLabelLimit} labels, they will potentially not be used to index logs, and rather added as part of the log message.`;
+  return (
+    <>
+      {descriptionText} {customLabelsDocs}
+    </>
+  );
 }
 
 export const LabelField = <T extends FormWithLabels>({ labelDestination }: LabelFieldProps) => {
