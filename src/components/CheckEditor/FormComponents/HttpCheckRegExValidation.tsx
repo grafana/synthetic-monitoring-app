@@ -1,7 +1,7 @@
 import React from 'react';
 import { Controller, FieldErrors, useFieldArray, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2, OrgRole } from '@grafana/data';
-import { Button, Checkbox, Field, IconButton, Input, Label, Select, Switch, useStyles2 } from '@grafana/ui';
+import { Box, Button, Checkbox, Field, IconButton, Input, Label, Select, Stack, Switch, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
@@ -40,115 +40,117 @@ export const HttpCheckRegExValidation = () => {
       };
 
   return (
-    <div className={cx(styles.stackCol, styles.gap2)} data-testid={DataTestIds.CHECK_FORM_HTTP_VALIDATION_REGEX}>
-      <Label>Regex Validation</Label>
-      {Boolean(fields.length) && (
-        <div className={styles.stackCol}>
-          <div className={styles.validationGrid}>
-            <Label>Field Name</Label>
-            <Label>Match condition</Label>
-            <Label>Invert Match</Label>
-            <Label>Allow Missing</Label>
-            <div />
-          </div>
+    <Box marginBottom={2}>
+      <Stack direction={`column`} gap={2} data-testid={DataTestIds.CHECK_FORM_HTTP_VALIDATION_REGEX}>
+        <Label>Regex Validation</Label>
+        {Boolean(fields.length) && (
+          <Stack direction={`column`}>
+            <div className={styles.validationGrid}>
+              <Label>Field Name</Label>
+              <Label>Match condition</Label>
+              <Label>Invert Match</Label>
+              <Label>Allow Missing</Label>
+              <div />
+            </div>
 
-          {fields.map((field, index) => {
-            const isHeaderMatch = watch(`${REGEX_FIELD_NAME}.${index}.matchType`) === HttpRegexValidationType.Header;
-            const userIndex = index + 1;
-            const baseErrorPath = errors?.settings?.http?.regexValidations?.[index];
+            {fields.map((field, index) => {
+              const isHeaderMatch = watch(`${REGEX_FIELD_NAME}.${index}.matchType`) === HttpRegexValidationType.Header;
+              const userIndex = index + 1;
+              const baseErrorPath = errors?.settings?.http?.regexValidations?.[index];
 
-            return (
-              <div className={styles.validationGrid} key={field.id}>
-                <div data-fs-element={`Regex validation field name ${index}`}>
-                  <Controller
-                    render={({ field }) => {
-                      const { ref, onChange, ...rest } = field;
-                      return (
-                        <Select
-                          {...rest}
-                          aria-label={`Validation Field Name ${userIndex}`}
-                          placeholder="Field name"
-                          options={options}
-                          onChange={({ value }) => onChange(value)}
-                        />
-                      );
-                    }}
-                    name={`${REGEX_FIELD_NAME}.${index}.matchType`}
-                  />
-                </div>
-                <div className={styles.validationExpressions}>
-                  {isHeaderMatch && (
-                    <div className={styles.validationHeaderName}>
-                      <Field
-                        className={styles.field}
-                        invalid={isHttpRegexHeaderError(baseErrorPath) && Boolean(baseErrorPath?.header)}
-                        error={isHttpRegexHeaderError(baseErrorPath) && baseErrorPath?.header?.message}
-                      >
-                        <Input
-                          {...register(`${REGEX_FIELD_NAME}.${index}.header`)}
-                          placeholder="Header name"
-                          data-fs-element={`Regex header name ${index}`}
-                        />
-                      </Field>
-                    </div>
-                  )}
-                  <Field
-                    className={cx(styles.field, styles.grow)}
-                    invalid={Boolean(baseErrorPath?.expression)}
-                    error={baseErrorPath?.expression?.message}
-                  >
-                    <Input
-                      {...register(`${REGEX_FIELD_NAME}.${index}.expression`)}
-                      placeholder="Regex"
-                      data-fs-element={`Regex expression ${index}`}
-                    />
-                  </Field>
-                </div>
-                <div className={styles.validationInverted}>
-                  <Checkbox
-                    {...register(`${REGEX_FIELD_NAME}.${index}.inverted`)}
-                    data-fs-element={`Regex inverted ${index}`}
-                    aria-label={`Invert match for regex ${userIndex}`}
-                  />
-                </div>
-                {isHeaderMatch ? (
-                  <div className={styles.validationAllowMissing}>
-                    <Switch
-                      {...register(`${REGEX_FIELD_NAME}.${index}.allowMissing`)}
-                      aria-label={`Allow missing header for regex ${userIndex}`}
-                      data-fs-element={`Regex allow missing ${index}`}
+              return (
+                <div className={styles.validationGrid} key={field.id}>
+                  <div data-fs-element={`Regex validation field name ${index}`}>
+                    <Controller
+                      render={({ field }) => {
+                        const { ref, onChange, ...rest } = field;
+                        return (
+                          <Select
+                            {...rest}
+                            aria-label={`Validation Field Name ${userIndex}`}
+                            placeholder="Field name"
+                            options={options}
+                            onChange={({ value }) => onChange(value)}
+                          />
+                        );
+                      }}
+                      name={`${REGEX_FIELD_NAME}.${index}.matchType`}
                     />
                   </div>
-                ) : (
-                  <div />
-                )}
-                <IconButton
-                  className={styles.removeButtonWrapper}
-                  name="minus-circle"
-                  onClick={() => remove(index)}
-                  tooltip="Delete"
-                  data-fs-element={`Regex delete ${index}`}
-                />
-              </div>
-            );
-          })}
-        </div>
-      )}
-      {isEditor && (
-        <div>
-          <Button
-            type="button"
-            icon="plus"
-            variant="secondary"
-            size="sm"
-            onClick={() => append(newOption)}
-            data-fs-element="Add regex validation button"
-          >
-            Add Regex Validation
-          </Button>
-        </div>
-      )}
-    </div>
+                  <div className={styles.validationExpressions}>
+                    {isHeaderMatch && (
+                      <div className={styles.validationHeaderName}>
+                        <Field
+                          className={styles.field}
+                          invalid={isHttpRegexHeaderError(baseErrorPath) && Boolean(baseErrorPath?.header)}
+                          error={isHttpRegexHeaderError(baseErrorPath) && baseErrorPath?.header?.message}
+                        >
+                          <Input
+                            {...register(`${REGEX_FIELD_NAME}.${index}.header`)}
+                            placeholder="Header name"
+                            data-fs-element={`Regex header name ${index}`}
+                          />
+                        </Field>
+                      </div>
+                    )}
+                    <Field
+                      className={cx(styles.field, styles.grow)}
+                      invalid={Boolean(baseErrorPath?.expression)}
+                      error={baseErrorPath?.expression?.message}
+                    >
+                      <Input
+                        {...register(`${REGEX_FIELD_NAME}.${index}.expression`)}
+                        placeholder="Regex"
+                        data-fs-element={`Regex expression ${index}`}
+                      />
+                    </Field>
+                  </div>
+                  <div className={styles.validationInverted}>
+                    <Checkbox
+                      {...register(`${REGEX_FIELD_NAME}.${index}.inverted`)}
+                      data-fs-element={`Regex inverted ${index}`}
+                      aria-label={`Invert match for regex ${userIndex}`}
+                    />
+                  </div>
+                  {isHeaderMatch ? (
+                    <div className={styles.validationAllowMissing}>
+                      <Switch
+                        {...register(`${REGEX_FIELD_NAME}.${index}.allowMissing`)}
+                        aria-label={`Allow missing header for regex ${userIndex}`}
+                        data-fs-element={`Regex allow missing ${index}`}
+                      />
+                    </div>
+                  ) : (
+                    <div />
+                  )}
+                  <IconButton
+                    className={styles.removeButtonWrapper}
+                    name="minus-circle"
+                    onClick={() => remove(index)}
+                    tooltip="Delete"
+                    data-fs-element={`Regex delete ${index}`}
+                  />
+                </div>
+              );
+            })}
+          </Stack>
+        )}
+        {isEditor && (
+          <div>
+            <Button
+              type="button"
+              icon="plus"
+              variant="secondary"
+              size="sm"
+              onClick={() => append(newOption)}
+              data-fs-element="Add regex validation button"
+            >
+              Add Regex Validation
+            </Button>
+          </div>
+        )}
+      </Stack>
+    </Box>
   );
 };
 
@@ -159,14 +161,6 @@ function isHttpRegexHeaderError(
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({
-  stackCol: css({
-    display: `flex`,
-    flexDirection: `column`,
-    gap: theme.spacing(1),
-  }),
-  gap2: css({
-    gap: theme.spacing(2),
-  }),
   grow: css({
     flexGrow: 1,
   }),

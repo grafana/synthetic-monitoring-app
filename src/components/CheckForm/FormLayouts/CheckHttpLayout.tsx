@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 
 import { LayoutSection, Section } from './Layout.types';
 import { CheckFormValues, CheckType } from 'types';
@@ -13,7 +13,9 @@ import { HttpCheckValidStatusCodes } from 'components/CheckEditor/FormComponents
 import { HttpRequest } from 'components/CheckEditor/FormComponents/HttpRequest';
 import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
 
-const HTTP_REQUEST_FIELDS: HttpRequestFields = {
+import { useCheckFormContext } from '../CheckFormContext';
+
+export const HTTP_REQUEST_FIELDS: HttpRequestFields = {
   target: {
     name: `target`,
   },
@@ -52,14 +54,21 @@ const HTTP_REQUEST_FIELDS: HttpRequestFields = {
   },
 };
 
+const CheckHttpRequest = () => {
+  const { supportingContent } = useCheckFormContext();
+  const { addRequest } = supportingContent;
+
+  const onTest = useCallback(() => {
+    addRequest(HTTP_REQUEST_FIELDS);
+  }, [addRequest]);
+
+  return <HttpRequest fields={HTTP_REQUEST_FIELDS} onTest={onTest} />;
+};
+
 export const HttpCheckLayout: Partial<Record<LayoutSection, Section<CheckFormValues>>> = {
   [LayoutSection.Check]: {
     fields: Object.values(HTTP_REQUEST_FIELDS).map((field) => field.name),
-    Component: (
-      <>
-        <HttpRequest fields={HTTP_REQUEST_FIELDS} />
-      </>
-    ),
+    Component: <CheckHttpRequest />,
   },
   [LayoutSection.Uptime]: {
     fields: [
@@ -85,8 +94,8 @@ export const HttpCheckLayout: Partial<Record<LayoutSection, Section<CheckFormVal
     fields: [`settings.http.cacheBustingQueryParamName`],
     Component: (
       <>
-        <HttpCheckCacheBuster />
         <CheckPublishedAdvanceMetrics />
+        <HttpCheckCacheBuster />
       </>
     ),
   },

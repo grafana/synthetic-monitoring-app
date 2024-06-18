@@ -22,7 +22,7 @@ export const RequestField = ({ children, description, label = `Request target`, 
 
   return (
     <RequestFieldContext.Provider value={{ id, ...rest }}>
-      <Field className={styles.field} description={description} label={label}>
+      <Field className={styles.field} description={description} label={label} required>
         <div className={styles.wrapper}>{children}</div>
       </Field>
     </RequestFieldContext.Provider>

@@ -11,7 +11,7 @@ export const PingRequest = ({ fields }: { fields: PingRequestFields }) => {
     <Request>
       <Request.Field description={`Send an ICMP echo request to a target`} name={fields.target.name}>
         <Request.Input placeholder={`grafana.com`} />
-        <Request.Test />
+        <Request.Test onClick={() => console.log(`hook me up`)} />
       </Request.Field>
       <Request.Options>
         <Request.Options.Section label={`Options`}>

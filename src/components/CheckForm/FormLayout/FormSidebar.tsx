@@ -32,7 +32,6 @@ export const FormSidebar = ({ activeSection, onSectionClick, sections, visitedSe
         const fields = props.fields || [];
         const { errors } = checkForErrors({ fields, values, schema });
         const hasErrors = errors.length > 0;
-
         const isActive = activeSection === sectionIndex;
         const isLast = sectionIndex === sections.length - 1;
 

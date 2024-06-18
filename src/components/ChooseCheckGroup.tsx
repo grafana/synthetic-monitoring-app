@@ -1,10 +1,10 @@
 import React from 'react';
 import { GrafanaTheme2, PageLayoutType } from '@grafana/data';
-import { Badge, BadgeColor, Icon, LoadingPlaceholder, useStyles2 } from '@grafana/ui';
+import { Icon, LoadingPlaceholder, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
-import { CheckStatus, ROUTES } from 'types';
+import { ROUTES } from 'types';
 import { isOverCheckLimit, isOverScriptedLimit } from 'utils';
 import { useChecks } from 'data/useChecks';
 import { useTenantLimits } from 'data/useTenantLimits';
@@ -29,7 +29,7 @@ export const ChooseCheckGroup = () => {
 
   const overScriptedLimit = isOverScriptedLimit({ checks, limits });
   const overTotalLimit = isOverCheckLimit({ checks, limits });
-
+  console.log(overTotalLimit); // TODD - wire this up
   return (
     <PluginPage layout={PageLayoutType?.Standard} pageNav={{ text: 'Choose a check type' }}>
       {overScriptedLimit && (
@@ -42,6 +42,10 @@ export const ChooseCheckGroup = () => {
           }}
         />
       )}
+      <div>
+        Pick between {options.length} different types of checks to monitor your services. Choose the one that best fits
+        your needs.
+      </div>
       <div className={styles.container} data-testid={DataTestIds.CHOOSE_CHECK_TYPE}>
         {options.map((group) => {
           return (

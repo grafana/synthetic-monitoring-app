@@ -11,22 +11,22 @@ interface CheckTypeGroupOption {
   icon: IconName;
 }
 
-const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
+export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
   {
-    label: 'API Test',
-    description: 'Test the availability and performance of your API endpoints.',
+    label: 'API Endpoint',
+    description: 'Monitor the availability and performance of a service, website or API with different request types.',
     value: CheckTypeGroup.ApiTest,
     icon: `heart-rate`,
   },
   {
     label: 'Multi Step',
-    description: 'Run multiple requests in sequence.',
+    description: 'Run multiple requests in sequence, using the response data from one request to the next.',
     value: CheckTypeGroup.MultiStep,
     icon: `gf-interpolation-step-after`,
   },
   {
     label: 'Scripted',
-    description: 'Write custom checks with k6 scripts.',
+    description: 'Write a custom script to run any number of requests with custom checks and assertions.',
     value: CheckTypeGroup.Scripted,
     icon: `k6`,
   },

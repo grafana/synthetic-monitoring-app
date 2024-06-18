@@ -2,12 +2,13 @@ import React from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 import { GrafanaTheme2 } from '@grafana/data';
-import { useStyles2 } from '@grafana/ui';
+import { Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { zodResolver } from '@hookform/resolvers/zod';
 
-import { Check, CheckFormValues, CheckPageParams, CheckType } from 'types';
+import { Check, CheckFormPageParams, CheckFormValues, CheckPageParams, CheckType } from 'types';
 import { useChecks } from 'data/useChecks';
+import { CHECK_TYPE_GROUP_OPTIONS } from 'hooks/useCheckTypeGroupOptions';
 import { toFormValues } from 'components/CheckEditor/checkFormTransformations';
 import { CheckJobName } from 'components/CheckEditor/FormComponents/CheckJobName';
 import { ChooseCheckType } from 'components/CheckEditor/FormComponents/ChooseCheckType';
@@ -28,6 +29,7 @@ import { LabelField } from 'components/LabelField';
 import { PluginPage } from 'components/PluginPage';
 
 import { useCheckFormSchema } from './checkForm.hooks';
+import { CheckFormContextProvider } from './CheckFormContext';
 import { FormLayout } from './FormLayout';
 import { useFormCheckType } from './useCheckType';
 
@@ -65,7 +67,7 @@ const layoutMap = {
 const checkTypeStep1Label = {
   [CheckType.DNS]: `Request`,
   [CheckType.HTTP]: `Request`,
-  [CheckType.MULTI_HTTP]: `Steps`,
+  [CheckType.MULTI_HTTP]: `Requests`,
   [CheckType.Scripted]: `Script`,
   [CheckType.PING]: `Request`,
   [CheckType.TCP]: `Request`,
@@ -75,6 +77,8 @@ const checkTypeStep1Label = {
 
 export const CheckFormContent = ({ check }: CheckForm2Props) => {
   const checkType = useFormCheckType();
+  const { checkTypeGroup } = useParams<CheckFormPageParams>();
+  const entry = CHECK_TYPE_GROUP_OPTIONS.find((option) => option.value === checkTypeGroup);
   const initialCheck = check || fallbackCheckMap[checkType];
   const schema = useCheckFormSchema();
   const styles = useStyles2(getStyles);
@@ -106,45 +110,44 @@ export const CheckFormContent = ({ check }: CheckForm2Props) => {
   const labelsComponent = labelsSection?.Component;
 
   return (
-    <PluginPage pageNav={{ text: `Check Form Redux` }}>
+    <PluginPage pageNav={{ text: `New ${entry?.label} check` }}>
       <FormProvider {...formMethods}>
-        <div className={styles.wrapper}>
-          <FormLayout>
-            <FormLayout.Section label={checkTypeStep1Label[checkType]} fields={[`job`, ...defineCheckFields]}>
-              <div className={styles.stackCol}>
-                <CheckJobName />
-                <ChooseCheckType />
-                {CheckComponent}
-              </div>
-            </FormLayout.Section>
-            <FormLayout.Section label="Define uptime" fields={defineUptimeFields}>
-              {UptimeComponent}
-            </FormLayout.Section>
-            <FormLayout.Section label="Labels" fields={[`labels`, ...labelsFields]}>
-              {labelsComponent}
-              <LabelField labelDestination="check" />
-            </FormLayout.Section>
-            <FormLayout.Section label="Alerting" fields={[`alertSensitivity`]}>
-              <CheckFormAlert />
-            </FormLayout.Section>
-            <FormLayout.Section label="Probes" fields={[`probes`, `frequency`, ...probesFields]}>
-              <ProbeOptions checkType={checkType} />
-              {ProbesComponent}
-              <CheckUsage checkType={checkType} />
-            </FormLayout.Section>
-          </FormLayout>
-        </div>
+        <CheckFormContextProvider>
+          <div className={styles.wrapper}>
+            <FormLayout>
+              <FormLayout.Section label={checkTypeStep1Label[checkType]} fields={[`job`, ...defineCheckFields]}>
+                <Stack direction={`column`} gap={4}>
+                  <CheckJobName />
+                  <Stack direction={`column`} gap={2}>
+                    <ChooseCheckType />
+                    {CheckComponent}
+                  </Stack>
+                </Stack>
+              </FormLayout.Section>
+              <FormLayout.Section label="Define uptime" fields={defineUptimeFields}>
+                {UptimeComponent}
+              </FormLayout.Section>
+              <FormLayout.Section label="Labels" fields={[`labels`, ...labelsFields]}>
+                {labelsComponent}
+                <LabelField labelDestination="check" />
+              </FormLayout.Section>
+              <FormLayout.Section label="Alerting" fields={[`alertSensitivity`]}>
+                <CheckFormAlert />
+              </FormLayout.Section>
+              <FormLayout.Section label="Probes" fields={[`probes`, `frequency`, ...probesFields]}>
+                <ProbeOptions checkType={checkType} />
+                {ProbesComponent}
+                <CheckUsage checkType={checkType} />
+              </FormLayout.Section>
+            </FormLayout>
+          </div>
+        </CheckFormContextProvider>
       </FormProvider>
     </PluginPage>
   );
 };
 
 const getStyles = (theme: GrafanaTheme2) => ({
-  stackCol: css({
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing(2),
-  }),
   wrapper: css({
     paddingTop: theme.spacing(2),
     height: `100%`,

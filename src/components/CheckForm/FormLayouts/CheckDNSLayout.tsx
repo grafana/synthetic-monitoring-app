@@ -9,7 +9,7 @@ import { DNSCheckValidResponseCodes } from 'components/CheckEditor/FormComponent
 import { DNSRequest } from 'components/CheckEditor/FormComponents/DNSRequest';
 import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
 
-const DNS_REQUEST_FIELDS: DNSRequestFields = {
+export const DNS_REQUEST_FIELDS: DNSRequestFields = {
   target: {
     name: `target`,
   },

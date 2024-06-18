@@ -14,7 +14,7 @@ export const GRPCRequest = ({ fields }: { fields: GRPCRequestFields }) => {
     <Request>
       <Request.Field description={`Host:port to connect to`} name={fields.target.name}>
         <Request.Input placeholder={`grafana.com:50051`} />
-        <Request.Test />
+        <Request.Test onClick={() => console.log(`hook me up`)} />
       </Request.Field>
       <GRPCRequestOptions fields={fields} />
     </Request>
@@ -32,7 +32,7 @@ const GRPCRequestOptions = ({ fields }: { fields: GRPCRequestFields }) => {
       <Request.Options.Section label={`Service`}>
         <GRPCCheckService />
       </Request.Options.Section>
-      <Request.Options.Section label={`Authentication`}>
+      <Request.Options.Section label={`TLS Config`}>
         <CheckUseTLS checkType={CheckType.GRPC} />
         <TLSConfig fields={fields} />
       </Request.Options.Section>

@@ -24,7 +24,12 @@ const TRACEROUTE_FIELDS: TracerouteRequestFields = {
 
 export const TracerouteCheckLayout: Partial<Record<LayoutSection, Section<CheckFormValuesTraceroute>>> = {
   [LayoutSection.Check]: {
-    fields: [`settings.traceroute.maxHops`, `settings.traceroute.maxUnknownHops`, `settings.traceroute.ptrLookup`],
+    fields: [
+      `target`,
+      `settings.traceroute.maxHops`,
+      `settings.traceroute.maxUnknownHops`,
+      `settings.traceroute.ptrLookup`,
+    ],
     Component: (
       <div>
         <TracerouteRequest fields={TRACEROUTE_FIELDS} />

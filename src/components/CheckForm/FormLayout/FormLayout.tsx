@@ -11,12 +11,15 @@ import { CHECK_FORM_ERROR_EVENT } from 'components/constants';
 import { findFieldToFocus, useFormLayout } from './formlayout.utils';
 import { FormSection, FormSectionInternal } from './FormSection';
 import { FormSidebar } from './FormSidebar';
+import { FormSupportingContent } from './FormSupportingContent';
 
 type FormLayoutProps = {
   children: ReactNode;
 };
 
-const errorMessage = ``;
+const errorMessage = ``; // todo: hook this back up
+
+export const FORM_MAX_WIDTH = `720px`;
 
 export const FormLayout = ({ children }: FormLayoutProps) => {
   const { handleSubmit: formSubmit } = useFormContext<CheckFormValues>();
@@ -58,7 +61,6 @@ export const FormLayout = ({ children }: FormLayoutProps) => {
         return section.props.fields?.some((field: string) => errName.startsWith(field));
       })
     );
-    console.log(errs);
 
     if (errSection !== undefined) {
       setActiveSection(errSection.props.index);
@@ -76,7 +78,7 @@ export const FormLayout = ({ children }: FormLayoutProps) => {
   };
 
   return (
-    <form onSubmit={formSubmit(handleSubmit, handleError)} className={styles.wrapper}>
+    <div className={styles.wrapper}>
       <div className={styles.container}>
         <FormSidebar
           activeSection={activeSection}
@@ -84,13 +86,14 @@ export const FormLayout = ({ children }: FormLayoutProps) => {
           sections={formSections}
           visitedSections={visitedSections}
         />
-        <div
+        <form
           className={css({
             display: 'flex',
             flexDirection: 'column',
             flexGrow: '1',
             justifyContent: 'space-between',
           })}
+          onSubmit={formSubmit(handleSubmit, handleError)}
         >
           <div>{sections}</div>
 
@@ -131,9 +134,10 @@ export const FormLayout = ({ children }: FormLayoutProps) => {
               </div>
             </div>
           </div>
-        </div>
+        </form>
+        <FormSupportingContent />
       </div>
-    </form>
+    </div>
   );
 };
 
@@ -143,6 +147,11 @@ const getStyles = (theme: GrafanaTheme2) => {
   const query = `(min-width: ${breakpoint + 1}px)`;
   const containerQuery = `@container ${containerName} ${query}`;
   const mediaQuery = `@supports not (container-type: inline-size) @media ${query}`;
+
+  const containerRules = {
+    gridTemplateColumns: `160px minmax(0, ${FORM_MAX_WIDTH}) 1fr`,
+    height: '100%',
+  };
 
   return {
     stack: css({
@@ -161,22 +170,16 @@ const getStyles = (theme: GrafanaTheme2) => {
     container: css({
       display: 'grid',
       gap: theme.spacing(4),
-      [containerQuery]: {
-        gridTemplateColumns: `160px 1fr`,
-        height: '100%',
-      },
-      [mediaQuery]: {
-        gridTemplateColumns: `160px 1fr`,
-        height: '100%',
-      },
+      [containerQuery]: containerRules,
+      [mediaQuery]: containerRules,
     }),
     sectionContent: css({
-      maxWidth: `800px`,
+      maxWidth: FORM_MAX_WIDTH,
     }),
     submissionError: css({
       marginTop: theme.spacing(2),
     }),
-    actionsBar: css({ display: 'flex', justifyContent: 'space-between', maxWidth: `800px` }),
+    actionsBar: css({ display: 'flex', justifyContent: 'space-between', maxWidth: FORM_MAX_WIDTH }),
   };
 };
 

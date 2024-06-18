@@ -7,7 +7,7 @@ import { CheckPublishedAdvanceMetrics } from 'components/CheckEditor/FormCompone
 import { GRPCRequest } from 'components/CheckEditor/FormComponents/GRPCRequest';
 import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
 
-const GRPC_FIELDS: GRPCRequestFields = {
+export const GRPC_FIELDS: GRPCRequestFields = {
   target: {
     name: `target`,
   },

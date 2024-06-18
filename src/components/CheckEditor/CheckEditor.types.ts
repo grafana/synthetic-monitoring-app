@@ -1,7 +1,7 @@
 import { FormEvent } from 'react';
 import { FieldPath } from 'react-hook-form';
 
-import { CheckFormValues, CheckFormValuesPing } from 'types';
+import { CheckFormValues, CheckFormValuesPing, CheckFormValuesScripted } from 'types';
 
 export type FieldProps<T extends CheckFormValues = CheckFormValues> = {
   name: FieldPath<T>;
@@ -55,8 +55,8 @@ export type TCPRequestFields = TLSConfigFields & {
 };
 
 export type PingRequestFields = {
-  target: FieldProps;
-  ipVersion: FieldProps;
+  target: FieldProps<CheckFormValuesPing>;
+  ipVersion: FieldProps<CheckFormValuesPing>;
   dontFragment: FieldProps<CheckFormValuesPing>;
 };
 
@@ -65,4 +65,9 @@ export type TracerouteRequestFields = {
   maxHops: FieldProps;
   maxUnknownHops: FieldProps;
   ptrLookup: FieldProps;
+};
+
+export type ScriptedRequestFields = {
+  target: FieldProps<CheckFormValuesScripted>;
+  script: FieldProps<CheckFormValuesScripted>;
 };

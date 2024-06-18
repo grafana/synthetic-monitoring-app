@@ -9,7 +9,7 @@ import {
   useFormContext,
 } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Button, Field, IconButton, Input, Select, Stack, useStyles2 } from '@grafana/ui';
+import { Button, Counter, Field, IconButton, Input, Select, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckFormValuesMultiHttp, MultiHttpAssertionType } from 'types';
@@ -38,7 +38,13 @@ export const MultiHttpAssertions = () => {
 
   return (
     <div className={styles.container}>
+      <Text element="h3" variant="h6">
+        Request Assertions
+      </Text>
       {entries.map((entry, index) => {
+        const assertionFieldName: FieldPath<CheckFormValuesMultiHttp> = `settings.multihttp.entries.${index}.checks`;
+        const assertionsLength = getValues(assertionFieldName)?.length;
+
         return (
           <MultiHttpCollapse
             key={`${entry.request.method}-${entry.request.url}`}
@@ -52,6 +58,7 @@ export const MultiHttpAssertions = () => {
               });
             }}
             requestMethod={entry.request.method}
+            suffix={assertionsLength ? <Counter value={assertionsLength} /> : undefined}
           >
             <RequestAssertions index={index} />
           </MultiHttpCollapse>
@@ -68,65 +75,63 @@ const getStyles = (theme: GrafanaTheme2) => ({
 });
 
 const RequestAssertions = ({ index }: { index: number }) => {
+  const styles = useStyles2(getRequestAssertionsStyles);
   const assertionFieldName: FieldPath<CheckFormValuesMultiHttp> = `settings.multihttp.entries.${index}.checks`;
-  const { control, formState } = useFormContext<CheckFormValuesMultiHttp>();
+  const { control } = useFormContext<CheckFormValuesMultiHttp>();
   const { fields, append, remove } = useFieldArray<CheckFormValuesMultiHttp>({
     control,
     name: assertionFieldName,
   });
 
   return (
-    <Stack direction={`column`}>
-      {fields.map((field, assertionIndex) => {
-        const assertionTypeName = `${assertionFieldName}.${assertionIndex}.type` as const;
-        const error = formState.errors.settings?.multihttp?.entries?.[index]?.checks?.[assertionIndex]?.type;
-        // @ts-expect-error - I think 'type' is a reservered keyword in react-hook-form so it can't read this properly
-        const errMessage = error?.message;
+    <>
+      <Stack direction={`column`}>
+        {fields.map((field, assertionIndex) => {
+          const assertionTypeName: FieldPath<CheckFormValuesMultiHttp> = `${assertionFieldName}.${assertionIndex}.type`;
 
-        return (
-          <Stack key={field.id}>
-            <Controller
-              name={assertionTypeName}
-              render={({ field }) => {
-                const id = `multihttp-assertion-type-${index}-${assertionIndex}`;
-                const { ref, onChange, ...rest } = field;
+          return (
+            <Stack alignItems={`baseline`} key={field.id}>
+              <Controller
+                name={assertionTypeName}
+                render={({ field }) => {
+                  const id = `multihttp-assertion-type-${index}-${assertionIndex}`;
+                  const { ref, onChange, ...rest } = field;
 
-                return (
-                  <Field
-                    label="Assertion type"
-                    description="Method for finding assertion value"
-                    invalid={Boolean(error)}
-                    error={typeof errMessage === 'string' && errMessage}
-                    htmlFor={id}
-                    data-fs-element="Assertion type select"
-                  >
-                    <Select
-                      inputId={id}
-                      {...rest}
-                      options={MULTI_HTTP_ASSERTION_TYPE_OPTIONS}
-                      menuPlacement="bottom"
-                      onChange={(e) => {
-                        field.onChange(e.value);
-                      }}
-                    />
-                  </Field>
-                );
-              }}
-            />
-            <AssertionFields entryIndex={index} assertionIndex={assertionIndex} />
-
-            <div>
-              <IconButton
-                name="minus-circle"
-                onClick={() => {
-                  remove(assertionIndex);
+                  return (
+                    <Field
+                      label="Assertion type"
+                      description="Method for finding assertion value"
+                      htmlFor={id}
+                      data-fs-element="Assertion type select"
+                    >
+                      <Select
+                        inputId={id}
+                        {...rest}
+                        options={MULTI_HTTP_ASSERTION_TYPE_OPTIONS}
+                        menuPlacement="bottom"
+                        onChange={(e) => {
+                          field.onChange(e.value);
+                        }}
+                      />
+                    </Field>
+                  );
                 }}
-                tooltip="Delete"
               />
-            </div>
-          </Stack>
-        );
-      })}
+              <AssertionFields entryIndex={index} assertionIndex={assertionIndex} />
+
+              <div className={styles.removeButton}>
+                <IconButton
+                  name="minus-circle"
+                  onClick={() => {
+                    remove(assertionIndex);
+                  }}
+                  tooltip="Delete"
+                />
+              </div>
+            </Stack>
+          );
+        })}
+      </Stack>
       <div>
         <Button
           onClick={() => {
@@ -145,9 +150,16 @@ const RequestAssertions = ({ index }: { index: number }) => {
           Add assertion
         </Button>
       </div>
-    </Stack>
+    </>
   );
 };
+
+const getRequestAssertionsStyles = (theme: GrafanaTheme2) => ({
+  removeButton: css({
+    position: `relative`,
+    top: theme.spacing(4),
+  }),
+});
 
 type AssertionProps = {
   entryIndex: number;

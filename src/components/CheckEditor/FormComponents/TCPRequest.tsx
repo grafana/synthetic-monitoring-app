@@ -13,7 +13,7 @@ export const TCPRequest = ({ fields }: { fields: TCPRequestFields }) => {
     <Request>
       <Request.Field description={`Host:port to connect to`} name={fields.target.name}>
         <Request.Input placeholder={`grafana.com:80`} />
-        <Request.Test />
+        <Request.Test onClick={() => console.log(`hook me up`)} />
       </Request.Field>
       <TCPRequestOptions fields={fields} />
     </Request>
@@ -28,8 +28,8 @@ const TCPRequestOptions = ({ fields }: { fields: TCPRequestFields }) => {
       <Request.Options.Section label={`Options`}>
         <CheckIpVersion description={`The IP protocol of the TCP request`} name={ipVersionName} />
       </Request.Options.Section>
-      <Request.Options.Section label={`Authentication`}>
-        <CheckUseTLS checkType={CheckType.GRPC} />
+      <Request.Options.Section label={`TLS Config`}>
+        <CheckUseTLS checkType={CheckType.TCP} />
         <TLSConfig fields={fields} />
       </Request.Options.Section>
     </Request.Options>

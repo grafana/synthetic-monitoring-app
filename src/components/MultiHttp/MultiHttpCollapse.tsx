@@ -1,6 +1,6 @@
-import React, { forwardRef, PropsWithChildren } from 'react';
+import React, { forwardRef, PropsWithChildren, ReactNode } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Button, Icon, Stack, useStyles2, useTheme2 } from '@grafana/ui';
+import { Button, Icon, Stack, Text, useStyles2, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { HttpMethod } from 'types';
@@ -15,11 +15,12 @@ interface MultiHttpCollapseProps {
   onToggle: () => void;
   onRemove?: () => void;
   requestMethod: HttpMethod;
+  suffix?: ReactNode;
 }
 
 export const MultiHttpCollapse = forwardRef<HTMLButtonElement, PropsWithChildren<MultiHttpCollapseProps>>(
   function MultiHttpCollapse(
-    { 'data-testid': dataTestId, label, children, invalid, isOpen, onRemove, onToggle, requestMethod },
+    { 'data-testid': dataTestId, label, children, invalid, isOpen, onRemove, onToggle, requestMethod, suffix },
     ref
   ) {
     const theme = useTheme2();
@@ -39,8 +40,11 @@ export const MultiHttpCollapse = forwardRef<HTMLButtonElement, PropsWithChildren
         >
           <Icon name={isOpen ? 'angle-down' : 'angle-right'} />
           <div className={css({ color: getMethodColor(theme, requestMethod) })}>{requestMethod}</div>
-          <div className={styles.label}>{label}</div>
-          {!isOpen && invalid && <Icon name="exclamation-triangle" className={styles.errorIcon} />}
+          <Text element="span" variant="h4">
+            {label}
+          </Text>
+          {suffix}
+          {invalid && <Icon name="exclamation-triangle" className={styles.errorIcon} />}
         </button>
         {isOpen && (
           <div className={styles.body} data-testid={dataTestId}>
@@ -80,7 +84,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
     },
   }),
   label: css({
-    marginRight: theme.spacing(1),
     fontSize: theme.typography.h4.fontSize,
   }),
   errorIcon: css({

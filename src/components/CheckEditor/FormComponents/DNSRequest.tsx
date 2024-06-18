@@ -14,7 +14,7 @@ export const DNSRequest = ({ fields }: { fields: DNSRequestFields }) => {
     <Request>
       <Request.Field name={fields.target.name} description={`Name of record to query`}>
         <Request.Input placeholder={`Name of record to query`} />
-        <Request.Test />
+        <Request.Test onClick={() => console.log(`hook me up`)} />
       </Request.Field>
       <DNSRequestOptions fields={fields} />
     </Request>
@@ -26,16 +26,14 @@ const DNSRequestOptions = ({ fields }: { fields: DNSRequestFields }) => {
 
   return (
     <Request.Options>
-      <Request.Options.Section label={`Request Options`}>
+      <Request.Options.Section label={`Options`}>
         <CheckIpVersion description={`The IP protocol of the ICMP request`} name={ipVersionName} />
       </Request.Options.Section>
       <Request.Options.Section label={`DNS Settings`}>
-        <>
-          <DNSCheckRecordType />
-          <DNSCheckRecordServer />
-          <DNSCheckRecordProtocol />
-          <DNSCheckRecordPort />
-        </>
+        <DNSCheckRecordType />
+        <DNSCheckRecordServer />
+        <DNSCheckRecordProtocol />
+        <DNSCheckRecordPort />
       </Request.Options.Section>
     </Request.Options>
   );

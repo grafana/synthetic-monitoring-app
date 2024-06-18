@@ -1,10 +1,12 @@
 import React, { ReactNode } from 'react';
 import { FieldPath } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
-import { useStyles2 } from '@grafana/ui';
-import { css, cx } from '@emotion/css';
+import { Box, Text, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 
 import { CheckFormValues } from 'types';
+
+import { FORM_MAX_WIDTH } from './FormLayout';
 
 export type FormSectionProps = {
   activeSection: number;
@@ -29,7 +31,9 @@ export const FormSectionInternal = ({ activeSection, children, label, index }: F
 
   return (
     <div data-fs-element={`Form section ${label}`}>
-      <h2 className={cx(`h3`, styles.header)}>{`${index + 1}. ${label}`}</h2>
+      <Box marginBottom={4}>
+        <Text element="h2" variant="h3">{`${index + 1}. ${label}`}</Text>
+      </Box>
       <div className={styles.sectionContent}>{children}</div>
     </div>
   );
@@ -38,10 +42,7 @@ export const FormSectionInternal = ({ activeSection, children, label, index }: F
 const getStyles = (theme: GrafanaTheme2) => {
   return {
     sectionContent: css({
-      maxWidth: `800px`,
-    }),
-    header: css({
-      marginBottom: theme.spacing(4),
+      maxWidth: FORM_MAX_WIDTH,
     }),
   };
 };

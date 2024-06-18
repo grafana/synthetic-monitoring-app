@@ -27,7 +27,14 @@ export const Timeout = ({ checkType }: Props) => {
       htmlFor={`timeout`}
     >
       {isTraceroute ? (
-        <Input {...register(`timeout`)} readOnly prefix="Every" suffix="seconds" width={18} id={`timeout`} />
+        <Input
+          {...register(`timeout`, { valueAsNumber: true })}
+          readOnly
+          prefix="Every"
+          suffix="seconds"
+          width={18}
+          id={`timeout`}
+        />
       ) : (
         <SliderInput
           name="timeout"

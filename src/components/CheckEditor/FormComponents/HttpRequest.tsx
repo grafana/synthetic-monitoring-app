@@ -22,7 +22,12 @@ import { RequestBodyContentType } from './RequestBodyContentType';
 import { RequestBodyTextArea } from './RequestBodyTextArea';
 import { RequestHeaders } from './RequestHeaders';
 
-export const HttpRequest = ({ fields }: { fields: HttpRequestFields }) => {
+interface HttpRequestProps {
+  fields: HttpRequestFields;
+  onTest: () => void;
+}
+
+export const HttpRequest = ({ fields, onTest }: HttpRequestProps) => {
   const [showQueryParams, setShowQueryParams] = useState(false);
   const isEditor = hasRole(OrgRole.Editor);
   const { control, setValue, watch } = useFormContext<CheckFormValues>();
@@ -35,7 +40,6 @@ export const HttpRequest = ({ fields }: { fields: HttpRequestFields }) => {
   return (
     <Request>
       <Request.Field
-        label="Request target"
         description={`Full URL to send requests to`}
         disabled={!isEditor}
         data-fs-element="Check request target select"
@@ -80,7 +84,7 @@ export const HttpRequest = ({ fields }: { fields: HttpRequestFields }) => {
               </Tooltip>
             }
           />
-          <Request.Test />
+          <Request.Test onClick={onTest} />
         </div>
       </Request.Field>
       {showQueryParams && (
@@ -130,14 +134,13 @@ const HttpRequestOptions = ({ fields }: { fields: HttpRequestFields }) => {
             <h3 className="h6">Authentication Type</h3>
             <HttpCheckAuthentication />
           </div>
-          {tlsFields && (
-            <div>
-              <h3 className="h6">TLS Config</h3>
-              <TLSConfig fields={tlsFields} />
-            </div>
-          )}
         </div>
       </Request.Options.Section>
+      {tlsFields && (
+        <Request.Options.Section label={`TLS Config`}>
+          <TLSConfig fields={fields} />
+        </Request.Options.Section>
+      )}
       {proxyFields && proxyFields.headers && proxyFields.url && (
         <Request.Options.Section label={`Proxy`}>
           <HttpCheckProxyURL name={proxyFields.url.name} />

@@ -21,7 +21,7 @@ const PING_FIELDS: PingRequestFields = {
 
 export const PingCheckLayout: Partial<Record<LayoutSection, Section<CheckFormValuesPing>>> = {
   [LayoutSection.Check]: {
-    fields: [`settings.ping.ipVersion`, `settings.ping.dontFragment`],
+    fields: Object.values(PING_FIELDS).map((field) => field.name),
     Component: (
       <>
         <PingRequest fields={PING_FIELDS} />

@@ -1,10 +1,13 @@
-import React, { FormEvent, useEffect, useRef, useState } from 'react';
+import React, { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { FieldErrors, useFieldArray, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Button, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
+import { HttpRequestFields } from '../CheckEditor.types';
 import { CheckFormValues, CheckFormValuesMultiHttp, HttpMethod } from 'types';
+import { useCheckFormContext } from 'components/CheckForm/CheckFormContext';
+import { ENTRY_INDEX_CHAR } from 'components/CheckForm/FormLayout/formlayout.utils';
 import { CHECK_FORM_ERROR_EVENT } from 'components/constants';
 import { Indent } from 'components/Indent';
 import { AvailableVariables } from 'components/MultiHttp/AvailableVariables';
@@ -17,6 +20,27 @@ import {
 
 import { HttpRequest } from './HttpRequest';
 import { VariablesFields } from './VariablesFields';
+
+export const MULTI_HTTP_REQUEST_FIELDS: HttpRequestFields = {
+  target: {
+    name: `settings.multihttp.entries.${ENTRY_INDEX_CHAR}.request.url`,
+  },
+  method: {
+    name: `settings.multihttp.entries.${ENTRY_INDEX_CHAR}.request.method`,
+  },
+  requestHeaders: {
+    name: `settings.multihttp.entries.${ENTRY_INDEX_CHAR}.request.headers`,
+  },
+  requestBody: {
+    name: `settings.multihttp.entries.${ENTRY_INDEX_CHAR}.request.body.payload`,
+  },
+  requestContentEncoding: {
+    name: `settings.multihttp.entries.${ENTRY_INDEX_CHAR}.request.body.contentEncoding`,
+  },
+  requestContentType: {
+    name: `settings.multihttp.entries.${ENTRY_INDEX_CHAR}.request.body.contentType`,
+  },
+};
 
 export const MultiHttpCheckRequests = () => {
   const styles = useStyles2(getStyles);
@@ -66,10 +90,6 @@ export const MultiHttpCheckRequests = () => {
     };
   }, [dispatchCollapse]);
 
-  const parseQueryParams = (e: FormEvent) => {
-    console.log(e);
-  };
-
   return (
     <Stack direction={`column`} gap={1}>
       {entryFields.map((field, index) => {
@@ -97,30 +117,7 @@ export const MultiHttpCheckRequests = () => {
           >
             <Stack direction={`column`}>
               <AvailableVariables index={index} />
-              <HttpRequest
-                fields={{
-                  target: {
-                    name: `settings.multihttp.entries.${index}.request.url`,
-                    onChange: parseQueryParams,
-                  },
-                  method: {
-                    name: `settings.multihttp.entries.${index}.request.method`,
-                    'aria-label': `Request target for request ${index + 1}`,
-                  },
-                  requestHeaders: {
-                    name: `settings.multihttp.entries.${index}.request.headers`,
-                  },
-                  requestBody: {
-                    name: `settings.multihttp.entries.${index}.request.body.payload`,
-                  },
-                  requestContentEncoding: {
-                    name: `settings.multihttp.entries.${index}.request.body.contentEncoding`,
-                  },
-                  requestContentType: {
-                    name: `settings.multihttp.entries.${index}.request.body.contentType`,
-                  },
-                }}
-              />
+              <MultiHttpRequest index={index} />
               <SetVariables index={index} />
             </Stack>
           </MultiHttpCollapse>
@@ -147,6 +144,48 @@ export const MultiHttpCheckRequests = () => {
         </Button>
       </div>
     </Stack>
+  );
+};
+
+const parseQueryParams = (e: FormEvent) => {
+  console.log(e);
+};
+
+const MultiHttpRequest = ({ index }: { index: number }) => {
+  const { supportingContent } = useCheckFormContext();
+  const { addRequest } = supportingContent;
+
+  const fields = Object.entries(MULTI_HTTP_REQUEST_FIELDS).reduce<HttpRequestFields>((acc, field) => {
+    const [key, value] = field;
+
+    return {
+      ...acc,
+      [key]: {
+        ...value,
+        name: value.name.replace(ENTRY_INDEX_CHAR, index.toString()),
+      },
+    };
+  }, MULTI_HTTP_REQUEST_FIELDS);
+
+  const onTest = useCallback(() => {
+    addRequest(fields);
+  }, [addRequest, fields]);
+
+  return (
+    <HttpRequest
+      fields={{
+        ...fields,
+        target: {
+          ...fields.target,
+          onChange: parseQueryParams,
+        },
+        method: {
+          ...fields.method,
+          'aria-label': `Request target for request ${index + 1}`,
+        },
+      }}
+      onTest={onTest}
+    />
   );
 };
 
