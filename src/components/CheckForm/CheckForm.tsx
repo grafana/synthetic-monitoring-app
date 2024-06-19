@@ -28,8 +28,8 @@ import { fallbackCheckMap } from 'components/constants';
 import { LabelField } from 'components/LabelField';
 import { PluginPage } from 'components/PluginPage';
 
+import { CheckFormContextProvider } from './CheckFormContext/CheckFormContext';
 import { useCheckFormSchema } from './checkForm.hooks';
-import { CheckFormContextProvider } from './CheckFormContext';
 import { FormLayout } from './FormLayout';
 import { useFormCheckType } from './useCheckType';
 

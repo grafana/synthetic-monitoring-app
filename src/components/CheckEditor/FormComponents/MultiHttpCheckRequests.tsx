@@ -6,7 +6,7 @@ import { css } from '@emotion/css';
 
 import { HttpRequestFields } from '../CheckEditor.types';
 import { CheckFormValues, CheckFormValuesMultiHttp, HttpMethod } from 'types';
-import { useCheckFormContext } from 'components/CheckForm/CheckFormContext';
+import { useCheckFormContext } from 'components/CheckForm/CheckFormContext/CheckFormContext';
 import { ENTRY_INDEX_CHAR } from 'components/CheckForm/FormLayout/formlayout.utils';
 import { CHECK_FORM_ERROR_EVENT } from 'components/constants';
 import { Indent } from 'components/Indent';

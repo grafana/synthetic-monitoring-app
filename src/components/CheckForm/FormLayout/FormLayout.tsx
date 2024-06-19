@@ -86,15 +86,7 @@ export const FormLayout = ({ children }: FormLayoutProps) => {
           sections={formSections}
           visitedSections={visitedSections}
         />
-        <form
-          className={css({
-            display: 'flex',
-            flexDirection: 'column',
-            flexGrow: '1',
-            justifyContent: 'space-between',
-          })}
-          onSubmit={formSubmit(handleSubmit, handleError)}
-        >
+        <form className={styles.form} onSubmit={formSubmit(handleSubmit, handleError)}>
           <div>{sections}</div>
 
           <div>
@@ -149,7 +141,7 @@ const getStyles = (theme: GrafanaTheme2) => {
   const mediaQuery = `@supports not (container-type: inline-size) @media ${query}`;
 
   const containerRules = {
-    gridTemplateColumns: `160px minmax(0, ${FORM_MAX_WIDTH}) 1fr`,
+    gridTemplateColumns: `160px minmax(0, ${FORM_MAX_WIDTH}) minmax(0, 600px)`,
     height: '100%',
   };
 
@@ -172,6 +164,12 @@ const getStyles = (theme: GrafanaTheme2) => {
       gap: theme.spacing(4),
       [containerQuery]: containerRules,
       [mediaQuery]: containerRules,
+    }),
+    form: css({
+      display: 'flex',
+      flexDirection: 'column',
+      flexGrow: '1',
+      justifyContent: 'space-between',
     }),
     sectionContent: css({
       maxWidth: FORM_MAX_WIDTH,

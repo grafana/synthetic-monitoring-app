@@ -13,7 +13,7 @@ import { HttpCheckValidStatusCodes } from 'components/CheckEditor/FormComponents
 import { HttpRequest } from 'components/CheckEditor/FormComponents/HttpRequest';
 import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
 
-import { useCheckFormContext } from '../CheckFormContext';
+import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
 
 export const HTTP_REQUEST_FIELDS: HttpRequestFields = {
   target: {
