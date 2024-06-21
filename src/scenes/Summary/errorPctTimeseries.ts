@@ -38,13 +38,9 @@ function getErrorPercentageQuery() {
 
 function getErrorPercentageQueryRunner(metrics: DataSourceRef) {
   const queryRunner = new SceneQueryRunner({
-    datasource: {
-      uid: '-- Mixed --',
-      type: 'datasource',
-    },
+    datasource: metrics,
     queries: [
       {
-        datasource: metrics,
         exemplar: true,
         expr: getErrorPercentageQuery(),
         hide: false,

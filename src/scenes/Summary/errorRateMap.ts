@@ -3,10 +3,9 @@ import { DataSourceRef, ThresholdsMode } from '@grafana/schema';
 
 import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
-function getErrorMapQueries(datasource: DataSourceRef) {
+function getErrorMapQueries() {
   return [
     {
-      datasource,
       expr: `sum by (probe, geohash)
       (
         rate(probe_all_success_sum{probe=~"$probe"}[$__rate_interval])
@@ -26,7 +25,6 @@ function getErrorMapQueries(datasource: DataSourceRef) {
       range: true,
     },
     {
-      datasource,
       refId: 'B',
       expr: `sum by (probe, geohash)
       (
@@ -49,11 +47,8 @@ function getErrorMapQueries(datasource: DataSourceRef) {
 
 function getMapQueryRunner(metrics: DataSourceRef) {
   const queryRunner = new SceneQueryRunner({
-    datasource: {
-      uid: '-- Mixed --',
-      type: 'datasource',
-    },
-    queries: getErrorMapQueries(metrics),
+    datasource: metrics,
+    queries: getErrorMapQueries(),
   });
 
   return new SceneDataTransformer({

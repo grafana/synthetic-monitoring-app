@@ -5,13 +5,9 @@ import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
 function getLatencyQueryRunner(metrics: DataSourceRef) {
   const queryRunner = new SceneQueryRunner({
-    datasource: {
-      uid: '-- Mixed --',
-      type: 'datasource',
-    },
+    datasource: metrics,
     queries: [
       {
-        datasource: metrics,
         expr: `
         (
           sum(
