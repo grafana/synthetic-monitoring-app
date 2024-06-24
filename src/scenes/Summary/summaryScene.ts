@@ -78,6 +78,7 @@ export function getSummaryScene({ metrics, sm }: DashboardSceneAppConfig, checks
     const filters = new AdHocFiltersVariable({
       datasource: metrics,
       filters: [],
+      applyMode: 'manual',
       getTagKeysProvider: () => {
         return Promise.resolve({
           replace: true,
