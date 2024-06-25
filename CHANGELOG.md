@@ -1,5 +1,10 @@
 # Change Log
 
+# [1.14.9](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.8...v1.14.9) (2024-6-25)
+
+- Fix home dashboard when applying filters for error percentage, latency and error rate panels.
+- Fix validation for longitude field in custom probes creation form.
+
 # [1.14.8](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.7...v1.14.8) (2024-6-19)
 
 - Updated Grafana dependencies (@grafana/ui, @grafana/data, @grafana/runtime and @grafana/schema) to version 11.0.0
