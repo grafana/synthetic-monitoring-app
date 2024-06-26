@@ -1,12 +1,12 @@
 import React, { PropsWithChildren, useContext } from 'react';
+import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Button, Spinner, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 
+import { ROUTES } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
 import useAppInitializer from 'hooks/useAppInitializer';
-import { ROUTES } from 'types';
 import { MismatchedDatasourceModal } from 'components/MismatchedDatasourceModal';
-import { GrafanaTheme2 } from '@grafana/data';
-import { css } from '@emotion/css';
 
 interface Props {
   redirectTo?: ROUTES;

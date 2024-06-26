@@ -7,6 +7,7 @@ import { hasRole } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { PluginPage } from 'components/PluginPage';
 import { WelcomeTabs } from 'components/WelcomeTabs/WelcomeTabs';
+
 import { AppInitializer } from './AppInitializer';
 
 interface Props {}

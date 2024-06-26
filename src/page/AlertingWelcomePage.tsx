@@ -1,12 +1,13 @@
 import React from 'react';
+import { OrgRole } from '@grafana/data';
 import { Stack, TextLink } from '@grafana/ui';
 
-import { PluginPage } from 'components/PluginPage';
-import { Card } from 'components/Card';
 import { ROUTES } from 'types';
-import { AppInitializer } from './AppInitializer';
 import { hasRole } from 'utils';
-import { OrgRole } from '@grafana/data';
+import { Card } from 'components/Card';
+import { PluginPage } from 'components/PluginPage';
+
+import { AppInitializer } from './AppInitializer';
 
 export const AlertingWelcomePage = () => {
   return (
@@ -15,7 +16,7 @@ export const AlertingWelcomePage = () => {
         <Stack justifyContent={'center'} alignItems={'center'} direction={'column'}>
           <h2>Get started monitoring your services</h2>
           <p>
-            Click the "See Alerting" button to initialize the plugin and see a list of default alerts or visit the
+            Click the {"See Alerting"} button to initialize the plugin and see a list of default alerts or visit the
             Synthetic Monitoring{' '}
             <TextLink href="https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/" external={true}>
               documentation

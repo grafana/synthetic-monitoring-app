@@ -1,15 +1,14 @@
 import { useContext, useState } from 'react';
 import { DataSourceInstanceSettings, DataSourceJsonData } from '@grafana/data';
-
-import { isNumber } from 'lodash';
 import { config, getBackendSrv } from '@grafana/runtime';
+import { isNumber } from 'lodash';
 
 import { ROUTES, SubmissionErrorWrapper } from 'types';
 import { FaroEvent, reportError, reportEvent } from 'faro';
 import { initializeDatasource } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
-import { getRoute } from 'components/Routing';
 import { LEGACY_LOGS_DS_NAME, LEGACY_METRICS_DS_NAME } from 'components/constants';
+import { getRoute } from 'components/Routing';
 
 interface InitializeProps {
   metricsSettings: DataSourceInstanceSettings<DataSourceJsonData>;

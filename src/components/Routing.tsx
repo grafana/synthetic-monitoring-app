@@ -8,19 +8,19 @@ import { InstanceContext } from 'contexts/InstanceContext';
 import { QueryParamMap, useNavigation } from 'hooks/useNavigation';
 import { useQuery } from 'hooks/useQuery';
 import { AlertingPage } from 'page/AlertingPage';
+import { AlertingWelcomePage } from 'page/AlertingWelcomePage';
 import { CheckRouter } from 'page/CheckRouter';
+import { ChecksWelcomePage } from 'page/ChecksWelcomePage';
 import { ConfigPage } from 'page/ConfigPage';
 import { getNavModel } from 'page/pageDefinitions';
 import { ProbeRouter } from 'page/ProbeRouter';
+import { ProbesWelcomePage } from 'page/ProbesWelcomePage';
 import { SceneHomepage } from 'page/SceneHomepage';
 import { UnprovisionedSetup } from 'page/UnprovisionedSetup';
 import { WelcomePage } from 'page/WelcomePage';
 
 import { PLUGIN_URL_PATH } from './constants';
 import { SceneRedirecter } from './SceneRedirecter';
-import { ChecksWelcomePage } from 'page/ChecksWelcomePage';
-import { ProbesWelcomePage } from 'page/ProbesWelcomePage';
-import { AlertingWelcomePage } from 'page/AlertingWelcomePage';
 
 export const Routing = ({ onNavChanged }: Pick<AppRootProps, 'onNavChanged'>) => {
   const queryParams = useQuery();
