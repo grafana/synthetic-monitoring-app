@@ -636,9 +636,10 @@ export enum HTTPCompressionAlgo {
 }
 
 export enum FeatureName {
-  UnifiedAlerting = 'ngalert',
-  ScriptedChecks = 'scripted-checks',
+  BrowserChecks = 'browser-checks',
   GRPCChecks = 'grpc-checks',
+  ScriptedChecks = 'scripted-checks',
+  UnifiedAlerting = 'ngalert',
 }
 
 export interface UsageValues {
