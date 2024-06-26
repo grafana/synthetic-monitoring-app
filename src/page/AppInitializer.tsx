@@ -16,7 +16,6 @@ interface Props {
 }
 
 export const AppInitializer = ({
-  children,
   redirectTo,
   disabled,
   buttonClassname,
