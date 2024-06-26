@@ -157,6 +157,13 @@ export const CHECK_TYPE_OPTIONS = [
     status: CheckStatus.EXPERIMENTAL,
     featureToggle: FeatureName.GRPCChecks,
   },
+  {
+    label: 'Browser',
+    value: CheckType.Browser,
+    description: 'Leverage k6 browser module to run checks in a browser.',
+    status: CheckStatus.EXPERIMENTAL,
+    featureToggle: FeatureName.BrowserChecks,
+  },
 ];
 
 export const HTTP_SSL_OPTIONS = [
