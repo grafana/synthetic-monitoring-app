@@ -445,6 +445,7 @@ export type TracerouteCheck = CheckBase & {
 };
 
 export enum CheckType {
+  Browser = 'browser',
   DNS = 'dns',
   GRPC = 'grpc',
   HTTP = 'http',
