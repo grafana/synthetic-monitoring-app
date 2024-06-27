@@ -33,20 +33,73 @@ describe('Only renders the unprovisioned setup page regardless of route when app
   });
 });
 
-describe('Only renders the welcome page regardless of route when app is not initializd', () => {
-  Object.entries(ROUTES).map(([key, route]) => {
-    test(`Route ${key}`, async () => {
-      jest.spyOn(runTime, `getDataSourceSrv`).mockImplementation(() => {
-        return {
-          ...jest.requireActual('@grafana/runtime').getDataSourceSrv(),
-          get: () => Promise.resolve(),
-        };
-      });
-
-      renderRouting({ path: getRoute(route) });
-      const text = await screen.findByText('Up and running in seconds, no instrumentation required');
-      expect(text).toBeInTheDocument();
+describe('Renders specific welcome pages when app is not initializd', () => {
+  test(`Route Home`, async () => {
+    jest.spyOn(runTime, `getDataSourceSrv`).mockImplementation(() => {
+      return {
+        ...jest.requireActual('@grafana/runtime').getDataSourceSrv(),
+        get: () => Promise.resolve(),
+      };
     });
+
+    renderRouting({ path: getRoute(ROUTES.Home) });
+    const text = await screen.findByText('Up and running in seconds, no instrumentation required');
+    expect(text).toBeInTheDocument();
+  });
+  test(`Route Probes`, async () => {
+    jest.spyOn(runTime, `getDataSourceSrv`).mockImplementation(() => {
+      return {
+        ...jest.requireActual('@grafana/runtime').getDataSourceSrv(),
+        get: () => Promise.resolve(),
+      };
+    });
+
+    renderRouting({ path: getRoute(ROUTES.Probes) });
+    const text = await screen.findByText(
+      'Click the See Probes button to initialize the plugin and see a list of public probes',
+      { exact: false }
+    );
+    expect(text).toBeInTheDocument();
+  });
+  test(`Route Alerts`, async () => {
+    jest.spyOn(runTime, `getDataSourceSrv`).mockImplementation(() => {
+      return {
+        ...jest.requireActual('@grafana/runtime').getDataSourceSrv(),
+        get: () => Promise.resolve(),
+      };
+    });
+
+    renderRouting({ path: getRoute(ROUTES.Alerts) });
+    const text = await screen.findByText(
+      'Click the See Alerting button to initialize the plugin and see a list of default alerts',
+      { exact: false }
+    );
+    expect(text).toBeInTheDocument();
+  });
+  test(`Route Checks`, async () => {
+    jest.spyOn(runTime, `getDataSourceSrv`).mockImplementation(() => {
+      return {
+        ...jest.requireActual('@grafana/runtime').getDataSourceSrv(),
+        get: () => Promise.resolve(),
+      };
+    });
+
+    renderRouting({ path: getRoute(ROUTES.Checks) });
+    const text = await screen.findByText('Click the Create a Check button to create checks', { exact: false });
+    expect(text).toBeInTheDocument();
+  });
+
+  test(`Route Config`, async () => {
+    jest.spyOn(runTime, `getDataSourceSrv`).mockImplementation(() => {
+      return {
+        ...jest.requireActual('@grafana/runtime').getDataSourceSrv(),
+        get: () => Promise.resolve(),
+      };
+    });
+
+    renderRouting({ path: getRoute(ROUTES.Config) });
+    const text = await screen.findByText('Programmatic management');
+    expect(text).toBeInTheDocument();
   });
 
   test('Non-existent route (404)', async () => {
