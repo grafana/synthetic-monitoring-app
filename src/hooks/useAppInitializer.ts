@@ -82,7 +82,7 @@ function ensureNameAndUidMatch(
   throw new Error('Invalid provisioning. Could not find datasources');
 }
 
-const useAppInitializer = (redirectTo?: ROUTES) => {
+export const useAppInitializer = (redirectTo?: ROUTES) => {
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [datasourceModalOpen, setDataSouceModalOpen] = useState<boolean>(false);
@@ -206,5 +206,3 @@ const useAppInitializer = (redirectTo?: ROUTES) => {
     setDataSouceModalOpen,
   };
 };
-
-export default useAppInitializer;

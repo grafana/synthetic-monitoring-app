@@ -5,7 +5,7 @@ import { css } from '@emotion/css';
 
 import { ROUTES } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
-import useAppInitializer from 'hooks/useAppInitializer';
+import { useAppInitializer } from 'hooks/useAppInitializer';
 import { MismatchedDatasourceModal } from 'components/MismatchedDatasourceModal';
 
 interface Props {
@@ -15,12 +15,7 @@ interface Props {
   buttonText: string;
 }
 
-export const AppInitializer = ({
-  redirectTo,
-  disabled,
-  buttonClassname,
-  buttonText,
-}: PropsWithChildren<Props>) => {
+export const AppInitializer = ({ redirectTo, disabled, buttonClassname, buttonText }: PropsWithChildren<Props>) => {
   const { meta } = useContext(InstanceContext);
 
   const styles = useStyles2(getStyles);
