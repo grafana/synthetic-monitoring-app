@@ -24,7 +24,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
 });
 
-const EmptyCheckList = () => {
+export const EmptyCheckList = () => {
   const navigate = useNavigation();
   const styles = useStyles2(getStyles);
 
@@ -43,5 +43,3 @@ const EmptyCheckList = () => {
     </div>
   );
 };
-
-export default EmptyCheckList;

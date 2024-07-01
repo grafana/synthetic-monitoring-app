@@ -17,7 +17,7 @@ interface Props {
   filters: CheckFiltersType;
 }
 
-const CheckFilterGroup = ({ children, onReset, filters }: Props) => {
+export const CheckFilterGroup = ({ children, onReset, filters }: Props) => {
   const [openFilters, setOpenFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState(0);
   const styles = useStyles2(groupStyles);
@@ -89,5 +89,3 @@ const CheckFilterGroup = ({ children, onReset, filters }: Props) => {
     </>
   );
 };
-
-export default CheckFilterGroup;

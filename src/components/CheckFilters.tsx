@@ -8,7 +8,7 @@ import { useProbes } from 'data/useProbes';
 import { FilterType } from 'hooks/useCheckFilters';
 import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
 
-import CheckFilterGroup from './CheckList/CheckFilterGroup';
+import { CheckFilterGroup } from './CheckList/CheckFilterGroup';
 import { CHECK_LIST_STATUS_OPTIONS } from './constants';
 import { LabelFilterInput } from './LabelFilterInput';
 

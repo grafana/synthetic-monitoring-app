@@ -17,7 +17,7 @@ interface Props {
   onBlur?: () => void;
 }
 
-const QueryParamInput = ({ index, queryParam, onChange, onDelete, onBlur }: Props) => (
+export const QueryParamInput = ({ index, queryParam, onChange, onDelete, onBlur }: Props) => (
   <>
     <Input
       aria-label={`Query param key ${index + 1}`}
@@ -59,5 +59,3 @@ const QueryParamInput = ({ index, queryParam, onChange, onDelete, onBlur }: Prop
     />
   </>
 );
-
-export default QueryParamInput;

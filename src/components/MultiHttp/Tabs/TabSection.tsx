@@ -109,5 +109,3 @@ export const TabSection = ({ activeTab, index, onTabClick }: RequestTabsProps) =
     </div>
   );
 };
-
-export default TabSection;

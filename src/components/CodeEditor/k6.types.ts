@@ -14,6 +14,7 @@ import k6Ws from '!raw-loader!@types/k6/ws.d.ts';
 
 export { default as k6GlobalTypes } from '!raw-loader!@types/k6/global.d.ts';
 
+// eslint-disable-next-line no-restricted-syntax
 export default {
   k6: k6Types,
   'k6/http': k6Http,

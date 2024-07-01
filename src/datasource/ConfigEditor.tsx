@@ -4,7 +4,7 @@ import { Container, LegacyForms } from '@grafana/ui';
 
 import { SecureJsonData,SMOptions } from './types';
 import { InstanceProvider } from 'components/InstanceProvider';
-import LinkedDatasourceView from 'components/LinkedDatasourceView';
+import { LinkedDatasourceView } from 'components/LinkedDatasourceView';
 
 interface Props extends DataSourcePluginOptionsEditorProps<SMOptions, SecureJsonData> {}
 

@@ -19,7 +19,7 @@ function parseVersion(version: string): GrafanaVersion | undefined {
   }
 }
 
-export default function useGrafanaVersion() {
+export function useGrafanaVersion() {
   const version = config.buildInfo.version;
   return parseVersion(version) ?? { major: 0, minor: 0, patch: '' };
 }

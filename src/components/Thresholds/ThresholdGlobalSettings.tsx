@@ -4,7 +4,7 @@ import { Button, Modal, Stack } from '@grafana/ui';
 import { ThresholdSettings, ThresholdValues } from 'types';
 import { useThresholds, useUpdateThresholds } from 'data/useThresholds';
 
-import ThresholdFormSection from './ThresholdFormSection';
+import { ThresholdFormSection } from './ThresholdFormSection';
 
 interface Props {
   onDismiss: () => void;
@@ -21,7 +21,7 @@ const thresholdMsDefaults: ThresholdValues = {
   lowerLimit: 200,
 };
 
-const ThresholdGlobalSettings = ({ onDismiss, isOpen }: Props) => {
+export const ThresholdGlobalSettings = ({ onDismiss, isOpen }: Props) => {
   const { data } = useThresholds();
 
   if (!data) {
@@ -100,5 +100,3 @@ const ThresholdGlobalSettingsContent = ({ onSuccess, thresholds }: ThresholdGlob
     </>
   );
 };
-
-export default ThresholdGlobalSettings;

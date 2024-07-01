@@ -11,7 +11,7 @@ import { useSuspenseChecks } from 'data/useChecks';
 import { useChecksReachabilitySuccessRate } from 'data/useSuccessRates';
 import { findCheckinMetrics } from 'data/utils';
 import { FilterType, useCheckFilters } from 'hooks/useCheckFilters';
-import useQueryParametersState from 'hooks/useQueryParametersState';
+import { useQueryParametersState } from 'hooks/useQueryParametersState';
 import { CHECK_LIST_STATUS_OPTIONS, CHECKS_PER_PAGE_CARD, CHECKS_PER_PAGE_LIST } from 'components/constants';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
 
@@ -19,7 +19,7 @@ import { CheckListItem } from '../CheckListItem';
 import { matchesAllFilters } from './checkFilters';
 import { CheckListHeader } from './CheckListHeader';
 import { CheckListScene } from './CheckListScene';
-import EmptyCheckList from './EmptyCheckList';
+import { EmptyCheckList } from './EmptyCheckList';
 
 export const CheckList = () => {
   const [viewType, setViewType] = useQueryParametersState<CheckListViewType>({

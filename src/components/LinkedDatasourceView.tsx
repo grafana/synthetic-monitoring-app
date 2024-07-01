@@ -10,7 +10,7 @@ interface Props {
   type: 'loki' | 'prometheus';
 }
 
-const LinkedDatasourceView = ({ type }: Props) => {
+export const LinkedDatasourceView = ({ type }: Props) => {
   const navigate = useNavigation();
   const { instance, meta } = useContext(InstanceContext);
   if (!instance.metrics || !instance.logs) {
@@ -47,5 +47,3 @@ const LinkedDatasourceView = ({ type }: Props) => {
     </div>
   );
 };
-
-export default LinkedDatasourceView;

@@ -2,7 +2,7 @@ import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
 import { render } from 'test/render';
 
-import QueryParams from './QueryParams';
+import { QueryParams } from './QueryParams';
 
 const onChange = jest.fn();
 

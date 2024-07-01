@@ -9,7 +9,7 @@ import { FilterType } from 'hooks/useCheckFilters';
 import { CheckFilters } from 'components/CheckFilters';
 import { CHECK_LIST_SORT_OPTIONS } from 'components/constants';
 
-import ThresholdGlobalSettings from '../Thresholds/ThresholdGlobalSettings';
+import { ThresholdGlobalSettings } from '../Thresholds/ThresholdGlobalSettings';
 import { AddNewCheckButton } from './AddNewCheckButton';
 import { BulkActions } from './BulkActions';
 import { CheckListViewSwitcher } from './CheckListViewSwitcher';

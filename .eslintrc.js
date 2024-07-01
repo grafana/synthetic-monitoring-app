@@ -5,6 +5,13 @@ module.exports = {
   rules: {
     'no-redeclare': 'off', // we use typescript's 'no-redeclare' rule instead
     '@typescript-eslint/no-redeclare': ['error'],
+    'no-restricted-syntax': [
+      'error',
+      {
+        selector: 'ExportDefaultDeclaration',
+        message: 'Prefer named exports',
+      },
+    ],
     ['simple-import-sort/imports']: [
       'error',
       {

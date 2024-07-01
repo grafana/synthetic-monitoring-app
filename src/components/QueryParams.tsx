@@ -2,7 +2,7 @@ import React, { useEffect, useReducer, useState } from 'react';
 import { Button, Field, Label } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import QueryParamInput, { QueryParam } from './QueryParamInput';
+import { QueryParam,QueryParamInput } from './QueryParamInput';
 
 interface Props {
   target: URL;
@@ -59,7 +59,7 @@ function queryParamReducer(state: QueryParam[], action: Action) {
   }
 }
 
-const QueryParams = ({ target, onChange, className, onBlur }: Props) => {
+export const QueryParams = ({ target, onChange, className, onBlur }: Props) => {
   const [formattedParams, dispatch] = useReducer(queryParamReducer, target, init);
   const [shouldUpdate, setShouldUpdate] = useState(false);
 
@@ -121,5 +121,3 @@ const QueryParams = ({ target, onChange, className, onBlur }: Props) => {
     </div>
   );
 };
-
-export default QueryParams;

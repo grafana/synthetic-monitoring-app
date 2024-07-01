@@ -7,7 +7,7 @@ import { css } from '@emotion/css';
 import { AlertFormValues, AlertRule } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { useAlerts } from 'hooks/useAlerts';
-import useUnifiedAlertsEnabled from 'hooks/useUnifiedAlertsEnabled';
+import { useUnifiedAlertsEnabled } from 'hooks/useUnifiedAlertsEnabled';
 import { transformAlertFormValues } from 'components/alertingTransformations';
 import { AlertRuleForm } from 'components/AlertRuleForm';
 import { PluginPage } from 'components/PluginPage';
