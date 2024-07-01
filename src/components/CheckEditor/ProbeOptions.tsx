@@ -10,7 +10,7 @@ import { useProbes } from 'data/useProbes';
 import { SliderInput } from 'components/SliderInput';
 import { Subheader } from 'components/Subheader';
 
-import CheckProbes from './CheckProbes';
+import { CheckProbes } from './CheckProbes';
 
 interface Props {
   checkType: CheckType;

@@ -7,7 +7,7 @@ import { get } from 'lodash';
 
 import { CheckFormValues, CheckType } from 'types';
 import { parseUrl } from 'utils';
-import QueryParams from 'components/QueryParams';
+import { QueryParams } from 'components/QueryParams';
 
 type RequestMethodInputProps = {
   'aria-label'?: string;

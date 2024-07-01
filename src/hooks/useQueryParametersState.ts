@@ -16,7 +16,7 @@ interface QueryParametersStateProps<ValueType> {
   strategy?: HistoryStrategy;
 }
 
-const useQueryParametersState = <ValueType>({
+export const useQueryParametersState = <ValueType>({
   key,
   initialValue,
   encode = JSON.stringify,
@@ -65,5 +65,3 @@ const useQueryParametersState = <ValueType>({
 
   return [parsedExistingValue || initialValue, updateState];
 };
-
-export default useQueryParametersState;
