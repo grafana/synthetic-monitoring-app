@@ -1,32 +1,21 @@
 import React from 'react';
-import { OrgRole } from '@grafana/data';
-import { Stack, TextLink } from '@grafana/ui';
+import { TextLink } from '@grafana/ui';
 
 import { ROUTES } from 'types';
-import { hasRole } from 'utils';
-import { Card } from 'components/Card';
-import { PluginPage } from 'components/PluginPage';
 
-import { AppInitializer } from './AppInitializer';
+import { SubsectionWelcomePage } from './SubsectionWelcomePage';
 
 export const AlertingWelcomePage = () => {
-  return (
-    <PluginPage>
-      <Card>
-        <Stack justifyContent={'center'} alignItems={'center'} direction={'column'}>
-          <h2>Get started monitoring your services</h2>
-          <p>
-            Click the {"See Alerting"} button to initialize the plugin and see a list of default alerts or visit the
-            Synthetic Monitoring{' '}
-            <TextLink href="https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/" external={true}>
-              documentation
-            </TextLink>{' '}
-            for more information
-          </p>
+  const BUTTON_TEXT = 'See Alerting';
 
-          <AppInitializer redirectTo={ROUTES.Alerts} disabled={!hasRole(OrgRole.Editor)} buttonText="See Alerting" />
-        </Stack>
-      </Card>
-    </PluginPage>
+  return (
+    <SubsectionWelcomePage redirectTo={ROUTES.Alerts} buttonText={BUTTON_TEXT}>
+      Click the {BUTTON_TEXT} button to initialize the plugin and see a list of default alerts or visit the Synthetic
+      Monitoring{' '}
+      <TextLink href="https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/" external={true}>
+        documentation
+      </TextLink>{' '}
+      for more information
+    </SubsectionWelcomePage>
   );
 };
