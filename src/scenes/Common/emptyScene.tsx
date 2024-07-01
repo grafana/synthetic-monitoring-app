@@ -1,7 +1,7 @@
 import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { EmbeddedScene, SceneReactObject } from '@grafana/scenes';
-import { Button, Card, useStyles2 } from '@grafana/ui';
+import { Button, Card, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckType, ROUTES } from 'types';
@@ -22,7 +22,7 @@ function getStyles(theme: GrafanaTheme2) {
     `,
     emptyCard: css`
       min-height: 200px;
-      max-width: 600px;
+      max-width: 800px;
       padding: ${theme.spacing(4)};
     `,
     cardButtons: css`
@@ -40,7 +40,13 @@ function EmptyScene({ checkType }: { checkType?: CheckType }) {
     <div className={styles.container}>
       <Card className={styles.emptyCard}>
         <Card.Heading className={styles.cardHeader}>
-          You don&apos;t have any {checkType ? checkType.toUpperCase() : ''} checks running
+          <p>
+            You don&apos;t have any {checkType ? checkType.toUpperCase() : ''} checks running. Click the Create a check
+            button to start monitoring your services with Grafana Cloud, or{' '}
+            <TextLink href="https://grafana.com/docs/grafana-cloud/synthetic-monitoring/" external={true}>
+              check out the Synthetic Monitoring docs.
+            </TextLink>
+          </p>
         </Card.Heading>
         <Card.Actions className={styles.cardButtons}>
           <Button

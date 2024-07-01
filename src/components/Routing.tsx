@@ -8,10 +8,13 @@ import { InstanceContext } from 'contexts/InstanceContext';
 import { QueryParamMap, useNavigation } from 'hooks/useNavigation';
 import { useQuery } from 'hooks/useQuery';
 import { AlertingPage } from 'page/AlertingPage';
+import { AlertingWelcomePage } from 'page/AlertingWelcomePage';
 import { CheckRouter } from 'page/CheckRouter';
+import { ChecksWelcomePage } from 'page/ChecksWelcomePage';
 import { ConfigPage } from 'page/ConfigPage';
 import { getNavModel } from 'page/pageDefinitions';
 import { ProbeRouter } from 'page/ProbeRouter';
+import { ProbesWelcomePage } from 'page/ProbesWelcomePage';
 import { SceneHomepage } from 'page/SceneHomepage';
 import { UnprovisionedSetup } from 'page/UnprovisionedSetup';
 import { WelcomePage } from 'page/WelcomePage';
@@ -48,17 +51,13 @@ export const Routing = ({ onNavChanged }: Pick<AppRootProps, 'onNavChanged'>) =>
   }, [page, navigate, queryParams]);
 
   useLayoutEffect(() => {
-    if (!provisioned || (!initialized && location.pathname !== getRoute(ROUTES.Home))) {
+    if (!provisioned) {
       navigate(ROUTES.Home);
     }
-  }, [provisioned, initialized, location.pathname, navigate]);
+  }, [provisioned, navigate]);
 
   if (!provisioned) {
     return <UnprovisionedSetup />;
-  }
-
-  if (!initialized) {
-    return <WelcomePage />;
   }
 
   return (
@@ -67,19 +66,13 @@ export const Routing = ({ onNavChanged }: Pick<AppRootProps, 'onNavChanged'>) =>
         <SceneRedirecter />
       </Route>
       <Route exact path={getRoute(ROUTES.Home)}>
-        <SceneHomepage />
+        {initialized ? <SceneHomepage /> : <WelcomePage />}
       </Route>
-      <Route path={getRoute(ROUTES.Scene)}>
-        <SceneRedirecter />
-      </Route>
-      <Route path={getRoute(ROUTES.Checks)}>
-        <CheckRouter />
-      </Route>
-      <Route path={getRoute(ROUTES.Probes)}>
-        <ProbeRouter />
-      </Route>
+      <Route path={getRoute(ROUTES.Scene)}>{initialized ? <SceneRedirecter /> : <WelcomePage />}</Route>
+      <Route path={getRoute(ROUTES.Checks)}>{initialized ? <CheckRouter /> : <ChecksWelcomePage />}</Route>
+      <Route path={getRoute(ROUTES.Probes)}>{initialized ? <ProbeRouter /> : <ProbesWelcomePage />}</Route>
       <Route exact path={getRoute(ROUTES.Alerts)}>
-        <AlertingPage />
+        {initialized ? <AlertingPage /> : <AlertingWelcomePage />}
       </Route>
       <Route path={getRoute(ROUTES.Config)}>
         <ConfigPage />
