@@ -1,8 +1,8 @@
 import React, { useContext } from 'react';
 
+import { InstanceContext } from 'contexts/InstanceContext';
 import { AccessToken } from 'components/AccessToken';
 import { TerraformConfig } from 'components/TerraformConfig';
-import { InstanceContext } from 'contexts/InstanceContext';
 
 export const ProgrammaticManagement = () => {
   const { meta, instance } = useContext(InstanceContext);

@@ -4,10 +4,10 @@ import { Alert, Button, Modal, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { FaroEvent, reportEvent } from 'faro';
+import { InstanceContext } from 'contexts/InstanceContext';
 import { useTerraformConfig } from 'hooks/useTerraformConfig';
 import { Clipboard } from 'components/Clipboard';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
-import { InstanceContext } from 'contexts/InstanceContext';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   modal: css`
