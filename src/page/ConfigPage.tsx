@@ -30,7 +30,7 @@ function getStyles(theme: GrafanaTheme2) {
       padding: ${theme.spacing(2)} 0;
     `,
     configActions: css`
-      padding: ${theme.spacing(4)} 0;
+      padding-bottom: ${theme.spacing(2)};
     `,
   };
 }
