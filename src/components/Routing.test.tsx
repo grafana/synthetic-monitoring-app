@@ -85,7 +85,7 @@ describe('Renders specific welcome pages when app is not initializd', () => {
     });
 
     renderRouting({ path: getRoute(ROUTES.Checks) });
-    const text = await screen.findByText('Click the Create a Check button to create checks', { exact: false });
+    const text = await screen.findByText('Click the Create a Check button to initialize the plugin and create checks', { exact: false });
     expect(text).toBeInTheDocument();
   });
 
