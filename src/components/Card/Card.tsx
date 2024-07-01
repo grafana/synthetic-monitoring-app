@@ -34,7 +34,6 @@ function getStyles(theme: GrafanaTheme2) {
 
       '&:hover': {
         background: theme.colors.emphasize(theme.colors.background.secondary, 0.03),
-        cursor: 'pointer',
         zIndex: 1,
       },
     }),
@@ -88,6 +87,7 @@ const getHeadingStyles = (theme: GrafanaTheme2, variant: 'h1' | 'h2' | 'h3' | 'h
       left: 0,
       right: 0,
       borderRadius: theme.shape.radius.default,
+      cursor: 'pointer',
     },
 
     '&:focus-visible': {

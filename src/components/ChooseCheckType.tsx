@@ -110,7 +110,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
   card: css({
     ':hover': {
-      cursor: 'pointer',
       background: theme.colors.emphasize(theme.colors.background.secondary, 0.03),
     },
   }),
