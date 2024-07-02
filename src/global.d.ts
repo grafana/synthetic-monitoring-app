@@ -37,10 +37,12 @@ declare module 'constrained-editor-plugin' {
   }
 
   export declare function constrainedEditor(monaco: typeof monacoTypes): ConstrainedEditorInstance;
+  // eslint-disable-next-line no-restricted-syntax
   export default constrainedEditor;
 }
 
 declare module '*?raw' {
   const content: string;
+  // eslint-disable-next-line no-restricted-syntax
   export default content;
 }

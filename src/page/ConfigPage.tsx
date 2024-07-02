@@ -6,7 +6,7 @@ import { css } from '@emotion/css';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { BackendAddress } from 'components/BackendAddress';
 import { ConfigActions } from 'components/ConfigActions';
-import LinkedDatasourceView from 'components/LinkedDatasourceView';
+import { LinkedDatasourceView } from 'components/LinkedDatasourceView';
 import { PluginPage } from 'components/PluginPage';
 import { ProgrammaticManagement } from 'components/ProgrammaticManagement';
 

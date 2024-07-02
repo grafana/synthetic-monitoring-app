@@ -2,7 +2,7 @@ import { useLocation as useLocationFromReactRouter } from 'react-router-dom';
 import { act, renderHook } from '@testing-library/react';
 import { Location } from 'history';
 
-import useQueryParametersState from './useQueryParametersState';
+import { useQueryParametersState } from './useQueryParametersState';
 
 const historyPushMock = jest.fn();
 const historyReplaceMock = jest.fn();
