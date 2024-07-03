@@ -3,7 +3,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Button, Label, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import QueryParamInput, { QueryParam } from './QueryParamInput';
+import { QueryParam, QueryParamInput } from './QueryParamInput';
 
 interface Props {
   target: URL;
@@ -59,7 +59,7 @@ function queryParamReducer(state: QueryParam[], action: Action) {
   }
 }
 
-const QueryParams = ({ target, onChange, onBlur }: Props) => {
+export const QueryParams = ({ target, onChange, onBlur }: Props) => {
   const styles = useStyles2(getStyles);
   const [formattedParams, dispatch] = useReducer(queryParamReducer, target, init);
   const [shouldUpdate, setShouldUpdate] = useState(false);
@@ -124,5 +124,3 @@ const getStyles = (theme: GrafanaTheme2) => ({
     alignItems: 'center',
   }),
 });
-
-export default QueryParams;

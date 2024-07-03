@@ -1,5 +1,17 @@
 # Change Log
 
+# [1.14.9](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.8...v1.14.9) (2024-6-25)
+
+- Fix home dashboard when applying filters for error percentage, latency and error rate panels.
+- Fix validation for longitude field in custom probes creation form.
+
+# [1.14.8](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.7...v1.14.8) (2024-6-19)
+
+- Updated Grafana dependencies (@grafana/ui, @grafana/data, @grafana/runtime and @grafana/schema) to version 11.0.0
+- Updated Grafana dependency version in plugin configuration.
+- Added a PasswordField component to mask password inputs in the HTTP Auth section.
+- Added a link to the docs in the check’s custom labels section.
+
 # [1.14.7](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.6...v1.14.7) (2024-6-11)
 
 - Added test execution rate in the check list page. Added accompaying sort options to sort checks by ascending / descending execution rates

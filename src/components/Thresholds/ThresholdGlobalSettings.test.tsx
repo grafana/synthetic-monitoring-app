@@ -5,7 +5,7 @@ import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
 
-import ThresholdGlobalSettings from './ThresholdGlobalSettings';
+import { ThresholdGlobalSettings } from './ThresholdGlobalSettings';
 
 const onDismiss = jest.fn();
 

@@ -1,8 +1,8 @@
-import { dataLayers, SceneDataLayers } from '@grafana/scenes';
+import { dataLayers, SceneDataLayerSet } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
 
 export function getAlertAnnotations(metrics: DataSourceRef) {
-  return new SceneDataLayers({
+  return new SceneDataLayerSet({
     layers: [
       new dataLayers.AnnotationsDataLayer({
         name: 'Alerts firing',
@@ -39,7 +39,7 @@ export function getAlertAnnotations(metrics: DataSourceRef) {
 }
 
 export function getSummaryAlertAnnotations(metrics: DataSourceRef) {
-  return new SceneDataLayers({
+  return new SceneDataLayerSet({
     layers: [
       new dataLayers.AnnotationsDataLayer({
         name: 'Alerts firing',

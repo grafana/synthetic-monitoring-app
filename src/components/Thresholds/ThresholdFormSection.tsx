@@ -93,7 +93,13 @@ const displayDowntimeEstimate = (percentage: number) => {
   }
 };
 
-const ThresholdFormSection = ({ label, unit, description, thresholds, setThresholds }: ThresholdSectionProps) => {
+export const ThresholdFormSection = ({
+  label,
+  unit,
+  description,
+  thresholds,
+  setThresholds,
+}: ThresholdSectionProps) => {
   const styles = useStyles2(getSectionStyles());
   const isLatency = unit === 'ms';
   const handleUpdateThreshold = useCallback(
@@ -186,5 +192,3 @@ const ThresholdFormSection = ({ label, unit, description, thresholds, setThresho
     </div>
   );
 };
-
-export default ThresholdFormSection;

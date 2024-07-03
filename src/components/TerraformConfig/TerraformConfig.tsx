@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Button, Modal, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { FaroEvent, reportEvent } from 'faro';
+import { InstanceContext } from 'contexts/InstanceContext';
 import { useTerraformConfig } from 'hooks/useTerraformConfig';
 import { Clipboard } from 'components/Clipboard';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
@@ -28,11 +29,20 @@ const getStyles = (theme: GrafanaTheme2) => ({
 
 export const TerraformConfig = () => {
   const styles = useStyles2(getStyles);
-
+  const { meta, instance } = useContext(InstanceContext);
+  const initialized = meta?.enabled && instance.api;
   return (
     <div>
       <h5>Terraform</h5>
-      <div>You can manage synthetic monitoring checks via Terraform. Export your current checks as config</div>
+      <div>
+        You can manage synthetic monitoring checks via Terraform. Export your current checks as config
+        {!initialized && (
+          <p>
+            <strong>Note: </strong>You need to initialize the plugin before importing this configuration.
+          </p>
+        )}
+      </div>
+
       <QueryErrorBoundary
         fallback={
           <Button className={styles.vericalSpace} disabled icon="fa fa-spinner">
@@ -50,6 +60,8 @@ const GenerateButton = () => {
   const { config, checkCommands, probeCommands, error } = useTerraformConfig();
   const [showModal, setShowModal] = useState(false);
   const styles = useStyles2(getStyles);
+  const { meta, instance } = useContext(InstanceContext);
+  const initialized = meta?.enabled && instance.api;
 
   return (
     <>
@@ -68,7 +80,7 @@ const GenerateButton = () => {
         onDismiss={() => setShowModal(false)}
         contentClassName={styles.modal}
       >
-        {error && <Alert title={error.message} />}
+        {initialized && error && <Alert title={error.message} />}
         {config && (checkCommands || probeCommands) && (
           <>
             <Alert title="Terraform and JSON" severity="info">
@@ -78,17 +90,17 @@ const GenerateButton = () => {
               <TextLink href="https://registry.terraform.io/providers/grafana/grafana/latest/docs" external={true}>
                 Terraform provider docs
               </TextLink>{' '}
-              for more details
+              for more details.
             </Alert>
             <h5>tf.json</h5>
             <Clipboard content={JSON.stringify(config, null, 2)} className={styles.clipboard} />
-            {checkCommands && (
+            {initialized && checkCommands && (
               <>
                 <h5>Import existing checks into Terraform</h5>
                 <Clipboard content={checkCommands.join(' && ')} className={styles.clipboard} />
               </>
             )}
-            {probeCommands && (
+            {initialized && probeCommands && (
               <>
                 <h5>Import custom probes into Terraform</h5>
                 <Clipboard content={probeCommands.join(' && ')} className={styles.clipboard} />

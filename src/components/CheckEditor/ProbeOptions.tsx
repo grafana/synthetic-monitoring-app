@@ -8,7 +8,7 @@ import { hasRole } from 'utils';
 import { useProbes } from 'data/useProbes';
 import { SliderInput } from 'components/SliderInput';
 
-import CheckProbes from './CheckProbes';
+import { CheckProbes } from './CheckProbes';
 
 interface Props {
   checkType: CheckType;

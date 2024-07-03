@@ -1,6 +1,6 @@
 {
   "name": "synthetic-monitoring-app",
-  "version": "1.14.8",
+  "version": "1.14.10",
   "description": "Grafana Synthetic Monitoring App",
   "scripts": {
     "build": "webpack -c webpack.config.ts --env production",
@@ -102,7 +102,7 @@
     "@grafana/faro-web-sdk": "1.3.6",
     "@grafana/k6-test-builder": "^0.8.6",
     "@grafana/runtime": "11.0.0",
-    "@grafana/scenes": "3.5.0",
+    "@grafana/scenes": "5.1.0",
     "@grafana/schema": "11.0.0",
     "@grafana/ui": "11.0.0",
     "@hookform/resolvers": "3.3.4",

@@ -6,7 +6,7 @@ import { css } from '@emotion/css';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { BackendAddress } from 'components/BackendAddress';
 import { ConfigActions } from 'components/ConfigActions';
-import LinkedDatasourceView from 'components/LinkedDatasourceView';
+import { LinkedDatasourceView } from 'components/LinkedDatasourceView';
 import { PluginPage } from 'components/PluginPage';
 import { ProgrammaticManagement } from 'components/ProgrammaticManagement';
 
@@ -30,7 +30,7 @@ function getStyles(theme: GrafanaTheme2) {
       padding: ${theme.spacing(2)} 0;
     `,
     configActions: css`
-      padding: ${theme.spacing(4)} 0;
+      padding-bottom: ${theme.spacing(2)};
     `,
   };
 }

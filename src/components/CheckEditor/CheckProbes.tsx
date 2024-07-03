@@ -18,7 +18,7 @@ interface Props {
 
 export const PROBES_SELECT_ID = 'check-probes-select';
 
-const CheckProbes = forwardRef(
+export const CheckProbes = forwardRef(
   ({ probes, availableProbes, isEditor, onChange, onBlur, invalid, error }: Props, ref) => {
     const [currentProbes, setCurrentProbes] = useState<number[]>(probes);
 
@@ -124,5 +124,3 @@ const CheckProbes = forwardRef(
 );
 
 CheckProbes.displayName = 'CheckProbes';
-
-export default CheckProbes;

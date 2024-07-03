@@ -13,8 +13,8 @@ import {
   SM_ALERTING_NAMESPACE,
 } from 'components/constants';
 
-import useGrafanaVersion from './useGrafanaVersion';
-import useUnifiedAlertsEnabled from './useUnifiedAlertsEnabled';
+import { useGrafanaVersion } from './useGrafanaVersion';
+import { useUnifiedAlertsEnabled } from './useUnifiedAlertsEnabled';
 
 enum AlertThresholds {
   High = 95,

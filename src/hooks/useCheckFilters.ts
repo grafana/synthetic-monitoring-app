@@ -5,7 +5,7 @@ import { CheckEnabledStatus, CheckType, CheckTypeFilter, ProbeFilter } from 'typ
 import { useProbes } from 'data/useProbes';
 import { defaultFilters } from 'components/CheckFilters';
 
-import useQueryParametersState from './useQueryParametersState';
+import { useQueryParametersState } from './useQueryParametersState';
 
 export type FilterType = 'search' | 'labels' | 'type' | 'status' | 'probes';
 
