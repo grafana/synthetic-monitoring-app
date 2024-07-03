@@ -211,6 +211,7 @@ export class ResultsByTargetTableSceneObject extends SceneObjectBase<ResultsByTa
           <Table<DataRow>
             columns={columns}
             data={tableData}
+            className={styles.table}
             expandableRows
             dataTableProps={{
               expandableRowsComponentProps: { tableViz: model, metrics, checkType },
@@ -235,6 +236,7 @@ export class ResultsByTargetTableSceneObject extends SceneObjectBase<ResultsByTa
 
 export function getResultsByTargetTable(metrics: DataSourceRef, checkType: CheckType) {
   return new SceneFlexItem({
+    maxWidth: '100%',
     body: new ResultsByTargetTableSceneObject({
       $data: getQueryRunner(metrics, checkType),
       metrics,
