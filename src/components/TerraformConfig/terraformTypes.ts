@@ -70,19 +70,24 @@ type KeyedTFScriptedSettings = {
   scripted: {};
 };
 
-type KeyedGRPCCheckSettings = {
+type KeyedTFBrowserSettings = {
+  browser: {};
+};
+
+type KeyedTFGRPCCheckSettings = {
   grpc: TFGRPCSettings;
 };
 
 export type TFCheckSettings =
-  | KeyedTFHttpSettings
-  | KeyedTFPingSettings
-  | KeyedTFTcpSettings
+  | KeyedTFBrowserSettings
   | KeyedTFDnsSettings
-  | KeyedTFTracerouteSettings
+  | KeyedTFGRPCCheckSettings
+  | KeyedTFHttpSettings
   | KeyedTFMultiHTTPSettings
+  | KeyedTFPingSettings
   | KeyedTFScriptedSettings
-  | KeyedGRPCCheckSettings;
+  | KeyedTFTcpSettings
+  | KeyedTFTracerouteSettings;
 
 interface TFFailIfMatchesNotMatches {
   fail_if_matches_regexp?: string[];
