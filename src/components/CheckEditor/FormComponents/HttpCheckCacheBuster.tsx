@@ -1,12 +1,14 @@
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
-import { OrgRole } from '@grafana/data';
-import { Field, Input } from '@grafana/ui';
+import { GrafanaTheme2, OrgRole } from '@grafana/data';
+import { Field, Input, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 
 import { CheckFormValuesHttp } from 'types';
 import { hasRole } from 'utils';
 
 export const HttpCheckCacheBuster = () => {
+  const styles = useStyles2(getStyles);
   const isEditor = hasRole(OrgRole.Editor);
   const { register } = useFormContext<CheckFormValuesHttp>();
   const id = 'https-settings-cache-busting-query';
@@ -23,7 +25,16 @@ export const HttpCheckCacheBuster = () => {
         placeholder="cache-bust"
         disabled={!isEditor}
         data-fs-element="Cache busting query parameter name input"
+        className={styles.input}
       />
     </Field>
   );
+};
+
+const getStyles = (theme: GrafanaTheme2) => {
+  return {
+    input: css({
+      marginTop: theme.spacing(1),
+    }),
+  };
 };

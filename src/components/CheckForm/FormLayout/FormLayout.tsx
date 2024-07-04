@@ -19,7 +19,7 @@ type FormLayoutProps = {
 
 const errorMessage = ``; // todo: hook this back up
 
-export const FORM_MAX_WIDTH = `720px`;
+export const FORM_MAX_WIDTH = `860px`;
 
 export const FormLayout = ({ children }: FormLayoutProps) => {
   const { handleSubmit: formSubmit } = useFormContext<CheckFormValues>();
@@ -141,7 +141,7 @@ const getStyles = (theme: GrafanaTheme2) => {
   const mediaQuery = `@supports not (container-type: inline-size) @media ${query}`;
 
   const containerRules = {
-    gridTemplateColumns: `160px minmax(0, ${FORM_MAX_WIDTH}) minmax(0, 600px)`,
+    gridTemplateColumns: `160px minmax(0, ${FORM_MAX_WIDTH}) minmax(50px, auto)`,
     height: '100%',
   };
 

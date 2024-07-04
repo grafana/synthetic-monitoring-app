@@ -1,6 +1,6 @@
 import React from 'react';
 import { GrafanaTheme2, PageLayoutType } from '@grafana/data';
-import { Icon, LoadingPlaceholder, useStyles2 } from '@grafana/ui';
+import { Badge, Icon, LoadingPlaceholder, Stack, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
@@ -8,10 +8,11 @@ import { ROUTES } from 'types';
 import { isOverCheckLimit, isOverScriptedLimit } from 'utils';
 import { useChecks } from 'data/useChecks';
 import { useTenantLimits } from 'data/useTenantLimits';
-import { useCheckTypeGroupOptions } from 'hooks/useCheckTypeGroupOptions';
+import { CheckTypeGroupOption, ProtocolOption, useCheckTypeGroupOptions } from 'hooks/useCheckTypeGroupOptions';
 import { useNavigation } from 'hooks/useNavigation';
 import { PluginPage } from 'components/PluginPage';
 import { getRoute } from 'components/Routing';
+import { Toggletip } from 'components/Toggletip';
 
 import { Card } from './Card';
 import { ErrorAlert } from './ErrorAlert';
@@ -48,20 +49,70 @@ export const ChooseCheckGroup = () => {
       </div>
       <div className={styles.container} data-testid={DataTestIds.CHOOSE_CHECK_TYPE}>
         {options.map((group) => {
-          return (
-            <Card key={group?.label || ''} className={styles.card} href={`${getRoute(ROUTES.NewCheck)}/${group.value}`}>
-              <div className={styles.iconWrapper}>
-                <Icon name={group.icon} size="xxxl" />
-              </div>
-              <Card.Heading className={styles.stack} variant="h6">
-                <div>{group.label} </div>
-              </Card.Heading>
-              <div className={styles.desc}>{group.description}</div>
-            </Card>
-          );
+          return <CheckGroupCard key={group.label} group={group} />;
         })}
       </div>
     </PluginPage>
+  );
+};
+
+const CheckGroupCard = ({ group }: { group: CheckTypeGroupOption }) => {
+  const styles = useStyles2(getStyles);
+
+  return (
+    <Card key={group?.label || ''} className={styles.card} href={`${getRoute(ROUTES.NewCheck)}/${group.value}`}>
+      <Stack direction={`column`} justifyContent={`center`}>
+        <div className={styles.iconWrapper}>
+          <Icon name={group.icon} size="xxxl" />
+        </div>
+        <Card.Heading variant="h6">
+          <div>{group.label} </div>
+        </Card.Heading>
+        <div className={styles.desc}>{group.description}</div>
+
+        <div className={styles.protocols}>
+          <Stack direction={`column`}>
+            Supported protocols:
+            <Stack justifyContent={`center`}>
+              {group.protocols.map((protocol) => {
+                return <Protocol key={protocol.label} {...protocol} />;
+              })}
+            </Stack>
+          </Stack>
+        </div>
+      </Stack>
+    </Card>
+  );
+};
+
+const Protocol = ({ label, tooltip }: ProtocolOption) => {
+  const styles = useStyles2(getStyles);
+  const content = <Badge text={label} color={`blue`} />;
+
+  if (!tooltip) {
+    return content;
+  }
+
+  // return (
+  //   <Tooltip content={tooltip}>
+  //     <div>{content}</div>
+  //   </Tooltip>
+  // );
+
+  return (
+    <Toggletip content={<div>{tooltip}</div>}>
+      <button className={styles.button}>
+        <Badge
+          text={
+            <Stack gap={0.5} alignItems={`center`}>
+              <div>{label}</div>
+              <Icon name={`info-circle`} size="sm" />
+            </Stack>
+          }
+          color={`blue`}
+        />
+      </button>
+    </Toggletip>
   );
 };
 
@@ -75,6 +126,16 @@ const getStyles = (theme: GrafanaTheme2) => ({
     gap: theme.spacing(2),
     textAlign: `center`,
   }),
+  button: css({
+    background: `none`,
+    border: `none`,
+    padding: 0,
+    transform: `rotate(0)`, // using a css trick so the transform creates a new z-index context so the tooltip can be on top
+
+    '&:hover': {
+      background: theme.colors.emphasize(theme.visualization.getColorByName('blue'), 0.15),
+    },
+  }),
   card: css({
     ':hover': {
       background: theme.colors.emphasize(theme.colors.background.secondary, 0.03),
@@ -83,15 +144,11 @@ const getStyles = (theme: GrafanaTheme2) => ({
   desc: css({
     color: theme.colors.text.secondary,
   }),
-  stack: css({
-    display: `flex`,
-    gap: theme.spacing(1),
-    alignItems: `center`,
-    justifyContent: `center`,
-  }),
   iconWrapper: css({
     display: `flex`,
     justifyContent: `center`,
-    marginBottom: theme.spacing(2),
+  }),
+  protocols: css({
+    marginTop: theme.spacing(2),
   }),
 });

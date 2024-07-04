@@ -3,7 +3,7 @@ import { useContext } from 'react';
 import { CheckStatus, CheckType, CheckTypeGroup, FeatureName } from 'types';
 import { FeatureFlagContext } from 'contexts/FeatureFlagContext';
 
-const CHECK_TYPE_OPTIONS = [
+export const CHECK_TYPE_OPTIONS = [
   {
     label: 'HTTP',
     value: CheckType.HTTP,

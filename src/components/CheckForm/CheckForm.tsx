@@ -134,7 +134,7 @@ export const CheckFormContent = ({ check }: CheckForm2Props) => {
               <FormLayout.Section label="Alerting" fields={[`alertSensitivity`]}>
                 <CheckFormAlert />
               </FormLayout.Section>
-              <FormLayout.Section label="Probes" fields={[`probes`, `frequency`, ...probesFields]}>
+              <FormLayout.Section label="Execution" fields={[`probes`, `frequency`, ...probesFields]}>
                 <ProbeOptions checkType={checkType} />
                 {ProbesComponent}
                 <CheckUsage checkType={checkType} />

@@ -224,6 +224,7 @@ function AssertionsTable({ model }: SceneComponentProps<AssertionsTableSceneObje
       </div>
     );
   };
+  console.log(tableData);
 
   return (
     <div className={styles.container}>

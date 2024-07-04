@@ -6,10 +6,9 @@ import { CheckFormValues } from 'types';
 export enum LayoutSection {
   Check = `Request`,
   Uptime = `Define Uptime`,
-  Probes = `Probes`,
   Labels = `Labels`,
   Alerting = `Alerting`,
-  Review = `Review`,
+  Probes = `Execution`,
 }
 
 export type Section<T extends CheckFormValues> = {

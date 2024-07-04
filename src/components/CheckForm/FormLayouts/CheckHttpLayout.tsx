@@ -95,7 +95,6 @@ export const HttpCheckLayout: Partial<Record<LayoutSection, Section<CheckFormVal
     Component: (
       <>
         <CheckPublishedAdvanceMetrics />
-        <HttpCheckCacheBuster />
       </>
     ),
   },

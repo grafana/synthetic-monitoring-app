@@ -3,6 +3,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Button, Label, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
+import { HttpCheckCacheBuster } from './CheckEditor/FormComponents/HttpCheckCacheBuster';
 import { QueryParam, QueryParamInput } from './QueryParamInput';
 
 interface Props {
@@ -88,7 +89,7 @@ export const QueryParams = ({ target, onChange, onBlur }: Props) => {
   };
 
   return (
-    <Stack direction={`column`}>
+    <Stack direction={`column`} gap={2}>
       <div className={styles.grid}>
         <Label>Key</Label>
         <Label>Value</Label>
@@ -112,6 +113,7 @@ export const QueryParams = ({ target, onChange, onBlur }: Props) => {
           Add query param
         </Button>
       </div>
+      <HttpCheckCacheBuster />
     </Stack>
   );
 };
