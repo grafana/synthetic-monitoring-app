@@ -31,7 +31,7 @@ it(`creates a new probe, displays the modal and redirects on close`, async () =>
 });
 
 //regression for https://github.com/grafana/support-escalations/issues/11171
-test(`Doesn't show a validation error for valid longitud values`, async () => {
+test(`Doesn't show a validation error for valid longitude values`, async () => {
   const { user } = renderNewProbe();
   const saveButton = await screen.findByText('Add new probe');
   const longitudeInput = await screen.findByLabelText('Longitude');
