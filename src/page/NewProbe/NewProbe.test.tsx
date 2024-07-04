@@ -43,5 +43,5 @@ test(`Doesn't show a validation error for valid longitude values`, async () => {
 
   await user.clear(longitudeInput);
   await user.type(longitudeInput, '116.3971');
-  expect(expect(errorMsg).not.toBeInTheDocument());
+  expect(errorMsg).not.toBeInTheDocument();
 });
