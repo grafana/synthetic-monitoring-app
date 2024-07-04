@@ -9,7 +9,7 @@ import { CheckFormValues, HttpMethod } from 'types';
 import { getMethodColor, hasRole, parseUrl } from 'utils';
 import { METHOD_OPTIONS } from 'components/constants';
 import { Indent } from 'components/Indent';
-import QueryParams from 'components/QueryParams';
+import { QueryParams } from 'components/QueryParams';
 import { Request } from 'components/Request';
 import { TLSConfig } from 'components/TLSConfig';
 
@@ -63,6 +63,7 @@ export const HttpRequest = ({ fields, onTest }: HttpRequestProps) => {
                     options={METHOD_OPTIONS}
                     aria-label={fields.method['aria-label']}
                     onChange={({ value }) => onChange(value)}
+                    tabSelectsValue={false}
                   />
                 </div>
               );
