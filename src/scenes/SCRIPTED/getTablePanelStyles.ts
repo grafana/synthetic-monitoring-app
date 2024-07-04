@@ -10,7 +10,7 @@ export function getTablePanelStyles(theme: GrafanaTheme2) {
     }),
     title: css({
       label: 'panel-title',
-      display: 'flex',
+      display: 'block',
       marginBottom: 0, // override default h6 margin-bottom
       padding: theme.spacing(theme.components.panel.padding),
       textOverflow: 'ellipsis',
@@ -29,6 +29,11 @@ export function getTablePanelStyles(theme: GrafanaTheme2) {
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
+    }),
+    table: css({
+      '& > div': {
+        display: 'flex',
+      },
     }),
   };
 }
