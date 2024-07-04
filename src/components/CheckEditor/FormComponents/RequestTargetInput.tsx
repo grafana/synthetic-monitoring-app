@@ -131,6 +131,9 @@ const getTargetHelpText = (typeOfCheck: CheckType | undefined): TargetHelpInfo =
       };
       break;
     }
+
+    case CheckType.Browser:
+    // fallthrough
     case CheckType.Scripted: {
       resp = {
         text: 'The URL that best describes the target of the check',
@@ -147,5 +150,6 @@ const getTargetHelpText = (typeOfCheck: CheckType | undefined): TargetHelpInfo =
       break;
     }
   }
+
   return resp;
 };

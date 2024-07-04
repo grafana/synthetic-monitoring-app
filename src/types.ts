@@ -152,6 +152,10 @@ export interface ScriptedSettings {
   script: string;
 }
 
+export interface BrowserSettings {
+  script: string;
+}
+
 export interface TcpSettings {
   ipVersion: IpVersion;
   tls: boolean;
@@ -347,6 +351,13 @@ export type CheckFormValuesScripted = CheckFormValuesBase & {
   };
 };
 
+export type CheckFormValuesBrowser = CheckFormValuesBase & {
+  checkType: CheckType.Browser;
+  settings: {
+    browser: BrowserSettings;
+  };
+};
+
 export interface CheckBase extends BaseObject {
   job: string;
   target: string;
@@ -361,6 +372,7 @@ export interface CheckBase extends BaseObject {
 }
 
 export type Check =
+  | BrowserCheck
   | DNSCheck
   | GRPCCheck
   | HTTPCheck
@@ -378,7 +390,8 @@ export type CheckFormValues =
   | CheckFormValuesPing
   | CheckFormValuesScripted
   | CheckFormValuesTcp
-  | CheckFormValuesTraceroute;
+  | CheckFormValuesTraceroute
+  | CheckFormValuesBrowser;
 
 export type CheckTypeFilter = CheckType | 'all';
 
@@ -387,6 +400,7 @@ export interface FilteredCheck extends Omit<Check, 'id'> {
 }
 
 export type Settings =
+  | BrowserCheck['settings']
   | DNSCheck['settings']
   | GRPCCheck['settings']
   | HTTPCheck['settings']
@@ -395,6 +409,12 @@ export type Settings =
   | PingCheck['settings']
   | TCPCheck['settings']
   | TracerouteCheck['settings'];
+
+export type BrowserCheck = CheckBase & {
+  settings: {
+    browser: BrowserSettings;
+  };
+};
 
 export type DNSCheck = CheckBase & {
   settings: {

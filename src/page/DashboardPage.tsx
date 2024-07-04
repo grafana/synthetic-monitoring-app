@@ -69,6 +69,9 @@ function DashboardPageContent() {
           ],
         });
       }
+      case CheckType.Browser:
+      // @todo: add browser scene
+      // fallthrough
       case CheckType.Scripted:
       case CheckType.MULTI_HTTP: {
         return new SceneApp({
