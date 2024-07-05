@@ -257,7 +257,6 @@ const CheckSelector = ({
   }
 
   if (checkType === CheckType.Browser) {
-    console.log('rest', rest);
     return <CheckBrowserLayout {...rest} />;
   }
 
