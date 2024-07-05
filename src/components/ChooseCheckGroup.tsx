@@ -1,6 +1,6 @@
 import React from 'react';
 import { GrafanaTheme2, PageLayoutType } from '@grafana/data';
-import { Badge, Icon, LoadingPlaceholder, Stack, Tooltip, useStyles2 } from '@grafana/ui';
+import { Badge, Icon, LinkButton, LoadingPlaceholder, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
@@ -60,16 +60,18 @@ const CheckGroupCard = ({ group }: { group: CheckTypeGroupOption }) => {
   const styles = useStyles2(getStyles);
 
   return (
-    <Card key={group?.label || ''} className={styles.card} href={`${getRoute(ROUTES.NewCheck)}/${group.value}`}>
-      <Stack direction={`column`} justifyContent={`center`}>
-        <div className={styles.iconWrapper}>
+    <Card key={group.label}>
+      <Stack direction={`column`} justifyContent={`center`} gap={2}>
+        <Stack justifyContent={`center`}>
           <Icon name={group.icon} size="xxxl" />
-        </div>
+        </Stack>
         <Card.Heading variant="h6">
           <div>{group.label} </div>
         </Card.Heading>
         <div className={styles.desc}>{group.description}</div>
-
+        <div>
+          <LinkButton href={`${getRoute(ROUTES.NewCheck)}/${group.value}`}>Create {group.label} check</LinkButton>
+        </div>
         <div className={styles.protocols}>
           <Stack direction={`column`}>
             Supported protocols:
@@ -85,35 +87,38 @@ const CheckGroupCard = ({ group }: { group: CheckTypeGroupOption }) => {
   );
 };
 
-const Protocol = ({ label, tooltip }: ProtocolOption) => {
+const Protocol = ({ href, label, tooltip }: ProtocolOption) => {
   const styles = useStyles2(getStyles);
   const content = <Badge text={label} color={`blue`} />;
+  console.log({ href, label, tooltip });
 
-  if (!tooltip) {
-    return content;
+  if (tooltip) {
+    return (
+      <Toggletip content={<div>{tooltip}</div>}>
+        <button className={styles.badgeLink}>
+          <Badge
+            text={
+              <Stack gap={0.5} alignItems={`center`}>
+                <div>{label}</div>
+                <Icon name={`info-circle`} size="sm" />
+              </Stack>
+            }
+            color={`blue`}
+          />
+        </button>
+      </Toggletip>
+    );
   }
 
-  // return (
-  //   <Tooltip content={tooltip}>
-  //     <div>{content}</div>
-  //   </Tooltip>
-  // );
+  if (href) {
+    return (
+      <a className={styles.badgeLink} href={href}>
+        {content}
+      </a>
+    );
+  }
 
-  return (
-    <Toggletip content={<div>{tooltip}</div>}>
-      <button className={styles.button}>
-        <Badge
-          text={
-            <Stack gap={0.5} alignItems={`center`}>
-              <div>{label}</div>
-              <Icon name={`info-circle`} size="sm" />
-            </Stack>
-          }
-          color={`blue`}
-        />
-      </button>
-    </Toggletip>
-  );
+  return content;
 };
 
 const getStyles = (theme: GrafanaTheme2) => ({
@@ -126,29 +131,19 @@ const getStyles = (theme: GrafanaTheme2) => ({
     gap: theme.spacing(2),
     textAlign: `center`,
   }),
-  button: css({
+  badgeLink: css({
     background: `none`,
     border: `none`,
     padding: 0,
-    transform: `rotate(0)`, // using a css trick so the transform creates a new z-index context so the tooltip can be on top
 
     '&:hover': {
       background: theme.colors.emphasize(theme.visualization.getColorByName('blue'), 0.15),
     },
   }),
-  card: css({
-    ':hover': {
-      background: theme.colors.emphasize(theme.colors.background.secondary, 0.03),
-    },
-  }),
   desc: css({
     color: theme.colors.text.secondary,
   }),
-  iconWrapper: css({
-    display: `flex`,
-    justifyContent: `center`,
-  }),
   protocols: css({
-    marginTop: theme.spacing(2),
+    marginTop: theme.spacing(1),
   }),
 });

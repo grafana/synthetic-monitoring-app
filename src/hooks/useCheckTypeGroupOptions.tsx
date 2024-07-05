@@ -2,13 +2,15 @@ import React, { ReactNode } from 'react';
 import { IconName } from '@grafana/data';
 import { TextLink } from '@grafana/ui';
 
-import { CheckTypeGroup } from 'types';
+import { CheckType, CheckTypeGroup, ROUTES } from 'types';
+import { getRoute } from 'components/Routing';
 
 import { CHECK_TYPE_OPTIONS, useCheckTypeOptions } from './useCheckTypeOptions';
 
 export type ProtocolOption = {
   label: string;
   tooltip?: ReactNode;
+  href?: string;
 };
 
 export interface CheckTypeGroupOption {
@@ -27,6 +29,7 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
     icon: `heart-rate`,
     protocols: CHECK_TYPE_OPTIONS.filter((option) => option.group === CheckTypeGroup.ApiTest).map((option) => ({
       label: option.label,
+      href: `${getRoute(ROUTES.NewCheck)}/${CheckTypeGroup.ApiTest}?checkType=${option.value}`,
     })),
   },
   {
@@ -34,7 +37,12 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
     description: 'Run multiple requests in sequence, using the response data from one request to the next.',
     value: CheckTypeGroup.MultiStep,
     icon: `gf-interpolation-step-after`,
-    protocols: [{ label: `HTTP` }],
+    protocols: [
+      {
+        label: `HTTP`,
+        href: `${getRoute(ROUTES.NewCheck)}/${CheckTypeGroup.MultiStep}?checkType=${CheckType.MULTI_HTTP}`,
+      },
+    ],
   },
   {
     label: 'Scripted',
