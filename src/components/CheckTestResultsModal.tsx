@@ -66,8 +66,7 @@ export function CheckTestResultsModal({ testResponse, isOpen, onDismiss }: Props
   const [now] = useState(Date.now());
   const [resultsByProbe, setResultsByProbe] = useState<Record<string, any>>({});
   const start = dateTime(now).subtract(5, 'm');
-  const end = dateTime(now);
-  const { data } = useLogData(query, { start, end, skip: !testResponse || !isOpen });
+  const { data } = useLogData(query, { start, skip: !testResponse || !isOpen });
   const { data: probes = [] } = useProbes();
 
   // This effect is to handle the whole test taking longer than 30 seconds. It checks for any probes that haven't given a response and fills in a fake metrics/logs response that indicates a failure.
@@ -144,8 +143,6 @@ export function CheckTestResultsModal({ testResponse, isOpen, onDismiss }: Props
             probeName={probe?.name ?? ''}
             success={success}
             loading={!result}
-            start={start}
-            end={end}
             logs={result?.logs}
           />
         );

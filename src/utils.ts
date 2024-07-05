@@ -213,22 +213,20 @@ export const queryLogsLegacy = async (
   url: string,
   query: string,
   start: number,
-  end: number
+  end?: number // defaults to now
 ): Promise<LogQueryResponse> => {
   const backendSrv = getBackendSrv();
   const params = {
-    direction: 'BACKWARD',
     limit: 1000,
     query,
-    start: start,
-    end: end,
-    // step: ,
+    start,
+    end,
   };
 
   try {
     const response = await backendSrv.datasourceRequest({
       method: 'GET',
-      url: `${url}/loki/api/v1/query`,
+      url: `${url}/loki/api/v1/query_range`,
       params,
     });
     return {
