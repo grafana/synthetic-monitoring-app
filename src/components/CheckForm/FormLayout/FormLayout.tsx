@@ -1,28 +1,30 @@
 import React, { BaseSyntheticEvent, Children, isValidElement, ReactNode, useMemo } from 'react';
-import { FieldErrors, useFormContext } from 'react-hook-form';
+import { FieldErrors, FieldValues, SubmitHandler } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Button, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { flatten } from 'flat';
-
-import { CheckFormValues } from 'types';
-import { CHECK_FORM_ERROR_EVENT } from 'components/constants';
 
 import { findFieldToFocus, useFormLayout } from './formlayout.utils';
 import { FormSection, FormSectionInternal } from './FormSection';
 import { FormSidebar } from './FormSidebar';
 import { FormSupportingContent } from './FormSupportingContent';
 
-type FormLayoutProps = {
+type FormLayoutProps<T extends FieldValues> = {
   children: ReactNode;
+  onSubmit: (
+    onValid: SubmitHandler<T>,
+    onInvalid: (errs: FieldErrors<T>) => void
+  ) => (event: BaseSyntheticEvent) => void;
+  onValid: SubmitHandler<T>;
+  onInvalid?: (errs: FieldErrors<T>) => void;
 };
 
 const errorMessage = ``; // todo: hook this back up
 
 export const FORM_MAX_WIDTH = `860px`;
 
-export const FormLayout = ({ children }: FormLayoutProps) => {
-  const { handleSubmit: formSubmit } = useFormContext<CheckFormValues>();
+export const FormLayout = <T extends FieldValues>({ children, onSubmit, onValid, onInvalid }: FormLayoutProps<T>) => {
   const styles = useStyles2(getStyles);
   const { activeSection, setActiveSection, goToSection, setVisited, visitedSections } = useFormLayout();
 
@@ -47,12 +49,13 @@ export const FormLayout = ({ children }: FormLayoutProps) => {
   }, [activeSection, children]);
 
   const formSections = sections.filter((section) => section.type === FormSectionInternal);
-  const handleSubmit = (checkValues: CheckFormValues, event: BaseSyntheticEvent | undefined) => {
+
+  const handleValid = (formValues: T, event: BaseSyntheticEvent | undefined) => {
     setVisited(sections.map((section) => section.props.index));
-    // onSubmit(checkValues, event);
+    onValid(formValues, event);
   };
 
-  const handleError = (errs: FieldErrors<CheckFormValues>) => {
+  const handleError = (errs: FieldErrors<T>) => {
     setVisited(sections.map((section) => section.props.index));
     const flattenedErrors = Object.keys(flatten(errs));
     // Find the first section that has a field with an error.
@@ -74,7 +77,7 @@ export const FormLayout = ({ children }: FormLayoutProps) => {
       shouldFocus.focus?.({ preventScroll: true });
     }
 
-    document.dispatchEvent(new CustomEvent(CHECK_FORM_ERROR_EVENT, { detail: errs }));
+    onInvalid?.(errs);
   };
 
   return (
@@ -86,7 +89,7 @@ export const FormLayout = ({ children }: FormLayoutProps) => {
           sections={formSections}
           visitedSections={visitedSections}
         />
-        <form className={styles.form} onSubmit={formSubmit(handleSubmit, handleError)}>
+        <form className={styles.form} onSubmit={onSubmit(handleValid, handleError)}>
           <div>{sections}</div>
 
           <div>
@@ -134,7 +137,7 @@ export const FormLayout = ({ children }: FormLayoutProps) => {
 };
 
 const getStyles = (theme: GrafanaTheme2) => {
-  const containerName = `checkForm`;
+  const containerName = `formLayout`;
   const breakpoint = theme.breakpoints.values.md;
   const query = `(min-width: ${breakpoint + 1}px)`;
   const containerQuery = `@container ${containerName} ${query}`;

@@ -85,7 +85,7 @@ export const HttpRequest = ({ fields, onTest }: HttpRequestProps) => {
               </Tooltip>
             }
           />
-          <Request.Test onClick={onTest} />
+          <Request.Test disabled={!parsedURL} onClick={onTest} />
         </div>
       </Request.Field>
       {showQueryParams && (

@@ -1,5 +1,5 @@
 import React from 'react';
-import { FormProvider, useForm } from 'react-hook-form';
+import { FormProvider, SubmitErrorHandler, SubmitHandler, useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Stack, useStyles2 } from '@grafana/ui';
@@ -29,7 +29,7 @@ import { LabelField } from 'components/LabelField';
 import { PluginPage } from 'components/PluginPage';
 
 import { CheckFormContextProvider } from './CheckFormContext/CheckFormContext';
-import { useCheckFormSchema } from './checkForm.hooks';
+import { useCheckForm, useCheckFormSchema } from './checkForm.hooks';
 import { FormLayout } from './FormLayout';
 import { useFormCheckType } from './useCheckType';
 
@@ -88,8 +88,10 @@ export const CheckFormContent = ({ check }: CheckForm2Props) => {
     shouldFocusError: false, // we manage focus manually
     resolver: zodResolver(schema),
   });
-  // console.log(formMethods.watch());
-  // console.log(formMethods.formState.errors);
+  const { handleInvalid, handleValid } = useCheckForm({ check, checkType });
+
+  const handleSubmit = (onValid: SubmitHandler<CheckFormValues>, onInvalid: SubmitErrorHandler<CheckFormValues>) =>
+    formMethods.handleSubmit(onValid, onInvalid);
 
   const layout = layoutMap[checkType];
 
@@ -114,7 +116,7 @@ export const CheckFormContent = ({ check }: CheckForm2Props) => {
       <FormProvider {...formMethods}>
         <CheckFormContextProvider>
           <div className={styles.wrapper}>
-            <FormLayout>
+            <FormLayout onSubmit={handleSubmit} onValid={handleValid} onInvalid={handleInvalid}>
               <FormLayout.Section label={checkTypeStep1Label[checkType]} fields={[`job`, ...defineCheckFields]}>
                 <Stack direction={`column`} gap={4}>
                   <CheckJobName />

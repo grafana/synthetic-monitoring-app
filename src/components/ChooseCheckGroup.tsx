@@ -87,10 +87,10 @@ const CheckGroupCard = ({ group }: { group: CheckTypeGroupOption }) => {
   );
 };
 
+const BADGE_COLOR = `blue`;
+
 const Protocol = ({ href, label, tooltip }: ProtocolOption) => {
   const styles = useStyles2(getStyles);
-  const content = <Badge text={label} color={`blue`} />;
-  console.log({ href, label, tooltip });
 
   if (tooltip) {
     return (
@@ -103,7 +103,7 @@ const Protocol = ({ href, label, tooltip }: ProtocolOption) => {
                 <Icon name={`info-circle`} size="sm" />
               </Stack>
             }
-            color={`blue`}
+            color={BADGE_COLOR}
           />
         </button>
       </Toggletip>
@@ -113,12 +113,12 @@ const Protocol = ({ href, label, tooltip }: ProtocolOption) => {
   if (href) {
     return (
       <a className={styles.badgeLink} href={href}>
-        {content}
+        <Badge text={label} color={BADGE_COLOR} />
       </a>
     );
   }
 
-  return content;
+  return <Badge text={label} color={BADGE_COLOR} />;
 };
 
 const getStyles = (theme: GrafanaTheme2) => ({
@@ -137,7 +137,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     padding: 0,
 
     '&:hover': {
-      background: theme.colors.emphasize(theme.visualization.getColorByName('blue'), 0.15),
+      background: theme.colors.emphasize(theme.visualization.getColorByName(BADGE_COLOR), 0.15),
     },
   }),
   desc: css({
