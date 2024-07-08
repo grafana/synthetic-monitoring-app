@@ -116,7 +116,7 @@ export const CheckFormContent = ({ check }: CheckForm2Props) => {
       <FormProvider {...formMethods}>
         <CheckFormContextProvider>
           <div className={styles.wrapper}>
-            <FormLayout onSubmit={handleSubmit} onValid={handleValid} onInvalid={handleInvalid}>
+            <FormLayout onSubmit={handleSubmit} onValid={handleValid} onInvalid={handleInvalid} schema={schema}>
               <FormLayout.Section label={checkTypeStep1Label[checkType]} fields={[`job`, ...defineCheckFields]}>
                 <Stack direction={`column`} gap={4}>
                   <CheckJobName />

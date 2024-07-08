@@ -4,6 +4,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Button, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { flatten } from 'flat';
+import { ZodType } from 'zod';
 
 import { findFieldToFocus, useFormLayout } from './formlayout.utils';
 import { FormSection, FormSectionInternal } from './FormSection';
@@ -18,13 +19,20 @@ type FormLayoutProps<T extends FieldValues> = {
   ) => (event: BaseSyntheticEvent) => void;
   onValid: SubmitHandler<T>;
   onInvalid?: (errs: FieldErrors<T>) => void;
+  schema: ZodType<T>;
 };
 
 const errorMessage = ``; // todo: hook this back up
 
 export const FORM_MAX_WIDTH = `860px`;
 
-export const FormLayout = <T extends FieldValues>({ children, onSubmit, onValid, onInvalid }: FormLayoutProps<T>) => {
+export const FormLayout = <T extends FieldValues>({
+  children,
+  onSubmit,
+  onValid,
+  onInvalid,
+  schema,
+}: FormLayoutProps<T>) => {
   const styles = useStyles2(getStyles);
   const { activeSection, setActiveSection, goToSection, setVisited, visitedSections } = useFormLayout();
 
@@ -88,6 +96,7 @@ export const FormLayout = <T extends FieldValues>({ children, onSubmit, onValid,
           onSectionClick={goToSection}
           sections={formSections}
           visitedSections={visitedSections}
+          schema={schema}
         />
         <form className={styles.form} onSubmit={onSubmit(handleValid, handleError)}>
           <div>{sections}</div>

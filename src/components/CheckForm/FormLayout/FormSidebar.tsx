@@ -1,13 +1,13 @@
 import React, { Fragment, ReactElement } from 'react';
-import { useFormContext } from 'react-hook-form';
+import { FieldValues, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import { Icon, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
+import { ZodType } from 'zod';
 
 import { CheckFormValues } from 'types';
 
-import { useCheckFormSchema } from '../checkForm.hooks';
 import { checkForErrors } from './formlayout.utils';
 import { FormSectionProps } from './FormSection';
 
@@ -16,12 +16,12 @@ type FormSidebarProps = {
   onSectionClick: (index: number) => void;
   sections: Array<ReactElement<FormSectionProps>>;
   visitedSections: number[];
+  schema: ZodType<FieldValues>;
 };
 
-export const FormSidebar = ({ activeSection, onSectionClick, sections, visitedSections }: FormSidebarProps) => {
+export const FormSidebar = ({ activeSection, onSectionClick, sections, visitedSections, schema }: FormSidebarProps) => {
   const styles = useStyles2(getStyles);
   const values = useFormContext<CheckFormValues>().watch();
-  const schema = useCheckFormSchema();
 
   return (
     <ol className={styles.container} data-testid="form-sidebar">

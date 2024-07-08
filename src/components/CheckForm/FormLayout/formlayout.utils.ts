@@ -1,9 +1,8 @@
 import { useCallback, useState } from 'react';
-import { FieldErrors, FieldPath } from 'react-hook-form';
+import { FieldErrors, FieldPath, FieldValues } from 'react-hook-form';
 import { uniq } from 'lodash';
 import { ZodType } from 'zod';
 
-import { CheckFormValues } from 'types';
 import { PROBES_SELECT_ID } from 'components/CheckEditor/CheckProbes';
 
 // because we have separated multihttp assertions we need a way to say that no matter the
@@ -38,14 +37,14 @@ export function useFormLayout() {
   };
 }
 
-export function checkForErrors({
+export function checkForErrors<T extends FieldValues>({
   fields = [],
   values,
   schema,
 }: {
-  values: CheckFormValues;
-  fields: Array<FieldPath<CheckFormValues>>;
-  schema: ZodType<CheckFormValues>;
+  values: T;
+  fields: Array<FieldPath<T>>;
+  schema: ZodType<T>;
 }) {
   const result = schema.safeParse(values);
 
@@ -70,7 +69,7 @@ export function checkForErrors({
   };
 }
 
-export function findFieldToFocus(errs: FieldErrors<CheckFormValues>): HTMLElement | undefined {
+export function findFieldToFocus<T extends FieldValues>(errs: FieldErrors<T>): HTMLElement | undefined {
   if (shouldFocusProbes(errs)) {
     return document.querySelector<HTMLInputElement>(`#${PROBES_SELECT_ID} input`) || undefined;
   }
@@ -106,7 +105,7 @@ function findRef(target: any): HTMLElement | undefined {
   return undefined;
 }
 
-function shouldFocusProbes(errs: FieldErrors<CheckFormValues>) {
+function shouldFocusProbes<T extends FieldValues>(errs: FieldErrors<T>) {
   if (errs?.job || errs?.target) {
     return false;
   }
