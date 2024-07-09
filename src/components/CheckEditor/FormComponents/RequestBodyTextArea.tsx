@@ -29,6 +29,7 @@ export const RequestBodyTextArea = ({ name }: RequestBodyTextAreaProps) => {
       htmlFor={name}
     >
       <TextArea
+        aria-label={`Request body`}
         id={name}
         {...register(name)}
         rows={10}

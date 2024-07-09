@@ -1,0 +1,129 @@
+import { screen } from '@testing-library/react';
+import { VALID_CERT, VALID_KEY } from 'test/fixtures/checks';
+
+import { CheckType, IpVersion } from 'types';
+import { fillMandatoryFields, renderForm, submitForm } from 'components/CheckEditor/__tests__/helpers';
+import { selectOption } from 'components/CheckEditor/testHelpers';
+
+const checkType = CheckType.TCP;
+
+describe(`TCPCheck - Section 1 (Request) payload`, () => {
+  it(`has the correct default values submitted`, async () => {
+    const { read, user } = await renderForm(checkType);
+
+    await fillMandatoryFields({ user, checkType });
+    await submitForm(user);
+
+    const { body } = await read();
+    expect(body.settings.tcp.ipVersion).toBe(IpVersion.V4);
+  });
+
+  it(`can add request target`, async () => {
+    const REQUEST_TARGET = `example.com:80`;
+
+    const { read, user } = await renderForm(checkType);
+    const targetInput = await screen.findByLabelText('Request target', { exact: false });
+    await user.type(targetInput, REQUEST_TARGET);
+
+    await fillMandatoryFields({ user, fieldsToOmit: [`target`], checkType });
+    await submitForm(user);
+
+    const { body } = await read();
+    expect(body.target).toBe(REQUEST_TARGET);
+  });
+
+  describe(`Request options`, () => {
+    it(`can submit the IP version`, async () => {
+      const IP_VERSION = IpVersion.V6;
+
+      const { read, user } = await renderForm(checkType);
+      await user.click(screen.getByText('Request options'));
+      await selectOption(user, { label: 'IP version', option: IP_VERSION });
+
+      await fillMandatoryFields({ user, checkType });
+      await submitForm(user);
+
+      const { body } = await read();
+      expect(body.settings.tcp.ipVersion).toBe(IP_VERSION);
+    });
+  });
+
+  describe(`TLS Config`, () => {
+    it(`can turn off if TLS is used`, async () => {
+      const { read, user } = await renderForm(checkType);
+      await user.click(screen.getByText('Request options'));
+      await user.click(screen.getByText('TLS Config'));
+
+      await user.click(screen.getByLabelText('Use TLS', { exact: false }));
+      await fillMandatoryFields({ user, checkType });
+      await submitForm(user);
+
+      const { body } = await read();
+      expect(body.settings.tcp.tls).toBe(true);
+    });
+
+    it(`can disable target certificate validation`, async () => {
+      const { read, user } = await renderForm(checkType);
+      await user.click(screen.getByText('Request options'));
+      await user.click(screen.getByText('TLS Config'));
+
+      await user.click(screen.getByLabelText('Disable target certificate validation'));
+      await fillMandatoryFields({ user, checkType });
+      await submitForm(user);
+
+      const { body } = await read();
+      expect(body.settings.tcp.tlsConfig.insecureSkipVerify).toBe(true);
+    });
+
+    it(`can add server name`, async () => {
+      const SERVER_NAME = `server.com`;
+
+      const { read, user } = await renderForm(checkType);
+      await user.click(screen.getByText('Request options'));
+      await user.click(screen.getByText('TLS Config'));
+
+      await user.type(screen.getByLabelText('Server name', { exact: false }), SERVER_NAME);
+      await fillMandatoryFields({ user, checkType });
+      await submitForm(user);
+
+      const { body } = await read();
+      expect(body.settings.tcp.tlsConfig.serverName).toBe(SERVER_NAME);
+    });
+
+    it(`can add CA certificate`, async () => {
+      const { read, user } = await renderForm(checkType);
+      await user.click(screen.getByText('Request options'));
+      await user.click(screen.getByText('TLS Config'));
+      await user.type(screen.getByLabelText('CA certificate', { exact: false }), VALID_CERT);
+      await fillMandatoryFields({ user, checkType });
+      await submitForm(user);
+
+      const { body } = await read();
+      expect(body.settings.tcp.tlsConfig.caCert).toBe(btoa(VALID_CERT));
+    });
+
+    it(`can add Client certificate`, async () => {
+      const { read, user } = await renderForm(checkType);
+      await user.click(screen.getByText('Request options'));
+      await user.click(screen.getByText('TLS Config'));
+      await user.type(screen.getByLabelText('Client certificate', { exact: false }), VALID_CERT);
+      await fillMandatoryFields({ user, checkType });
+      await submitForm(user);
+
+      const { body } = await read();
+      expect(body.settings.tcp.tlsConfig.clientCert).toBe(btoa(VALID_CERT));
+    });
+
+    it(`can add Client key`, async () => {
+      const { read, user } = await renderForm(checkType);
+      await user.click(screen.getByText('Request options'));
+      await user.click(screen.getByText('TLS Config'));
+      await user.type(screen.getByLabelText('Client key', { exact: false }), VALID_KEY);
+      await fillMandatoryFields({ user, checkType });
+      await submitForm(user);
+
+      const { body } = await read();
+      expect(body.settings.tcp.tlsConfig.clientKey).toBe(btoa(VALID_KEY));
+    });
+  });
+});

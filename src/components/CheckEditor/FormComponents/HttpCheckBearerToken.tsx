@@ -14,7 +14,7 @@ export const HttpCheckBearerToken = () => {
   return (
     <PasswordField
       {...register('settings.http.bearerToken')}
-      label="Include bearer authorization header in request"
+      label="Bearer Authorization"
       disabled={!isEditor}
       invalid={Boolean(formState.errors.settings?.http?.bearerToken)}
       error={formState.errors.settings?.http?.bearerToken?.message}

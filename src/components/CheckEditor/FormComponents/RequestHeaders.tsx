@@ -10,14 +10,13 @@ import { interpolateErrorMessage } from 'components/CheckForm/utils';
 import { NameValueInput, NameValueName } from 'components/NameValueInput/NameValueInput';
 
 type RequestHeadersProps = {
-  ariaLabelSuffix?: string;
   description: string;
   label: string;
   name: FieldPath<CheckFormValues>;
   'data-fs-element'?: string;
 };
 
-export const RequestHeaders = ({ ariaLabelSuffix, description, label, name, ...rest }: RequestHeadersProps) => {
+export const RequestHeaders = ({ description, label, name, ...rest }: RequestHeadersProps) => {
   const isEditor = hasRole(OrgRole.Editor);
   const {
     formState: { errors },
@@ -33,13 +32,7 @@ export const RequestHeaders = ({ ariaLabelSuffix, description, label, name, ...r
       error={interpolateErrorMessage(errorMessage, label)}
       invalid={Boolean(errorMessage)}
     >
-      <NameValueInput
-        ariaLabelSuffix={ariaLabelSuffix}
-        name={name as NameValueName}
-        disabled={!isEditor}
-        label={label}
-        {...rest}
-      />
+      <NameValueInput name={name as NameValueName} disabled={!isEditor} label={label} {...rest} />
     </Field>
   );
 };

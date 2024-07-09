@@ -89,6 +89,7 @@ export const HttpCheckRegExValidation = () => {
                             {...register(`${REGEX_FIELD_NAME}.${index}.header`)}
                             placeholder="Header name"
                             data-fs-element={`Regex header name ${index}`}
+                            aria-label={`Header name for validation ${userIndex}`}
                           />
                         </Field>
                       </div>
@@ -102,6 +103,7 @@ export const HttpCheckRegExValidation = () => {
                         {...register(`${REGEX_FIELD_NAME}.${index}.expression`)}
                         placeholder="Regex"
                         data-fs-element={`Regex expression ${index}`}
+                        aria-label={`Regex expression for validation ${userIndex}`}
                       />
                     </Field>
                   </div>
@@ -109,14 +111,14 @@ export const HttpCheckRegExValidation = () => {
                     <Checkbox
                       {...register(`${REGEX_FIELD_NAME}.${index}.inverted`)}
                       data-fs-element={`Regex inverted ${index}`}
-                      aria-label={`Invert match for regex ${userIndex}`}
+                      aria-label={`Invert match for validation ${userIndex}`}
                     />
                   </div>
                   {isHeaderMatch ? (
                     <div className={styles.validationAllowMissing}>
                       <Switch
                         {...register(`${REGEX_FIELD_NAME}.${index}.allowMissing`)}
-                        aria-label={`Allow missing header for regex ${userIndex}`}
+                        aria-label={`Allow missing header for validation ${userIndex}`}
                         data-fs-element={`Regex allow missing ${index}`}
                       />
                     </div>
@@ -129,6 +131,7 @@ export const HttpCheckRegExValidation = () => {
                     onClick={() => remove(index)}
                     tooltip="Delete"
                     data-fs-element={`Regex delete ${index}`}
+                    aria-label={`Delete regex validation ${userIndex}`}
                   />
                 </div>
               );

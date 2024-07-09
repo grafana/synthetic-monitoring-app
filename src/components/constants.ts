@@ -172,6 +172,18 @@ export const FALLBACK_CHECK_DNS: DNSCheck = {
       protocol: DnsProtocol.UDP,
       port: 53,
       validRCodes: [DnsResponseCodes.NOERROR],
+      validateAdditionalRRS: {
+        failIfMatchesRegexp: [],
+        failIfNotMatchesRegexp: [],
+      },
+      validateAnswerRRS: {
+        failIfMatchesRegexp: [],
+        failIfNotMatchesRegexp: [],
+      },
+      validateAuthorityRRS: {
+        failIfMatchesRegexp: [],
+        failIfNotMatchesRegexp: [],
+      },
     },
   },
 };
@@ -194,6 +206,16 @@ export const FALLBACK_CHECK_HTTP: HTTPCheck = {
       ipVersion: IpVersion.V4,
       noFollowRedirects: false,
       compression: HTTPCompressionAlgo.none,
+      failIfNotSSL: false,
+      failIfSSL: false,
+      failIfBodyMatchesRegexp: [],
+      failIfBodyNotMatchesRegexp: [],
+      failIfHeaderMatchesRegexp: [],
+      failIfHeaderNotMatchesRegexp: [],
+      headers: [],
+      proxyConnectHeaders: [],
+      validHTTPVersions: [],
+      validStatusCodes: [],
     },
   },
 };

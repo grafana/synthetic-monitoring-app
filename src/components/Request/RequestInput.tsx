@@ -30,6 +30,7 @@ export const RequestInput = ({
   return (
     <Field className={styles.field} invalid={Boolean(error)} error={error?.message}>
       <Input
+        aria-label={`Request target *`}
         id={id}
         data-testid={dataTestId}
         placeholder={showPlaceholder ? placeholder : undefined}

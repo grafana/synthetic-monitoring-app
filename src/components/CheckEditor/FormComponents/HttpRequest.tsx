@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2, OrgRole } from '@grafana/data';
-import { Select, Tooltip, useStyles2, useTheme2 } from '@grafana/ui';
+import { Select, Stack, Tooltip, useStyles2, useTheme2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 import { HttpRequestFields, TLSConfigFields } from '../CheckEditor.types';
-import { CheckFormValues, HttpMethod } from 'types';
+import { HttpMethod } from 'types';
 import { getMethodColor, hasRole, parseUrl } from 'utils';
 import { METHOD_OPTIONS } from 'components/constants';
 import { Indent } from 'components/Indent';
@@ -30,7 +30,7 @@ interface HttpRequestProps {
 export const HttpRequest = ({ fields, onTest }: HttpRequestProps) => {
   const [showQueryParams, setShowQueryParams] = useState(false);
   const isEditor = hasRole(OrgRole.Editor);
-  const { control, setValue, watch } = useFormContext<CheckFormValues>();
+  const { control, setValue, watch } = useFormContext();
   const id = `request-method-${fields.method.name}`;
   const styles = useStyles2(getStyles);
   const theme = useTheme2();
@@ -57,11 +57,11 @@ export const HttpRequest = ({ fields, onTest }: HttpRequestProps) => {
                 <div>
                   <Select
                     {...rest}
+                    aria-label={fields.method['aria-label'] || `Request method *`}
                     className={css({
                       borderColor: getMethodColor(theme, value),
                     })}
                     options={METHOD_OPTIONS}
-                    aria-label={fields.method['aria-label']}
                     onChange={({ value }) => onChange(value)}
                     tabSelectsValue={false}
                   />
@@ -71,11 +71,14 @@ export const HttpRequest = ({ fields, onTest }: HttpRequestProps) => {
             name={fields.method.name}
           />
           <Request.Input
+            aria-label={fields.target['aria-label'] || `Request target *`}
             data-fs-element="Target input"
             placeholder={`https://grafana.com/`}
             suffix={
               <Tooltip content={`Manage query parameters`}>
                 <button
+                  aria-label={`Manage query parameters`}
+                  aria-pressed={showQueryParams}
                   className={cx(styles.queryParams, { [styles.active]: showQueryParams })}
                   type="button"
                   onClick={() => setShowQueryParams((v) => !v)}
@@ -109,6 +112,7 @@ const HttpRequestOptions = ({ fields }: { fields: HttpRequestFields }) => {
   const requestBodyName = fields.requestBody?.name;
   const requestContentTypeName = fields.requestContentType?.name;
   const requestContentEncodingName = fields.requestContentEncoding?.name;
+  const authFields = fields.basicAuth || fields.bearerToken;
   const tlsFields = getTLSFields(fields);
   const proxyFields = getProxyFields(fields);
 
@@ -129,14 +133,16 @@ const HttpRequestOptions = ({ fields }: { fields: HttpRequestFields }) => {
         {requestContentEncodingName && <RequestBodyContentEncoding name={requestContentEncodingName} />}
         <RequestBodyTextArea name={requestBodyName} />
       </Request.Options.Section>
-      <Request.Options.Section label={`Authentication`}>
-        <div className={css({ display: `flex`, flexDirection: `column`, gap: `16px` })}>
-          <div>
-            <h3 className="h6">Authentication Type</h3>
-            <HttpCheckAuthentication />
-          </div>
-        </div>
-      </Request.Options.Section>
+      {authFields && (
+        <Request.Options.Section label={`Authentication`}>
+          <Stack direction={`column`} gap={2}>
+            <div>
+              <h3 className="h6">Authentication Type</h3>
+              <HttpCheckAuthentication />
+            </div>
+          </Stack>
+        </Request.Options.Section>
+      )}
       {tlsFields && (
         <Request.Options.Section label={`TLS Config`}>
           <TLSConfig fields={fields} />

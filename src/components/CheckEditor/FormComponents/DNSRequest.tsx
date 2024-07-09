@@ -13,7 +13,7 @@ export const DNSRequest = ({ fields }: { fields: DNSRequestFields }) => {
   return (
     <Request>
       <Request.Field name={fields.target.name} description={`Name of record to query`}>
-        <Request.Input placeholder={`Name of record to query`} />
+        <Request.Input placeholder={`grafana.com`} />
         <Request.Test onClick={() => console.log(`hook me up`)} />
       </Request.Field>
       <DNSRequestOptions fields={fields} />

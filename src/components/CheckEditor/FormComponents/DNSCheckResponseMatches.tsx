@@ -48,6 +48,7 @@ export const DNSCheckResponseMatches = () => {
                 </div>
                 <Input
                   {...register(`settings.dns.validations.${index}.expression`)}
+                  aria-label={`Regex expression for validation ${userIndex}`}
                   placeholder="Type expression"
                   data-fs-element="DNS Response Match expression"
                 />
@@ -59,7 +60,7 @@ export const DNSCheckResponseMatches = () => {
                 >
                   <Checkbox
                     {...register(`settings.dns.validations.${index}.inverted`)}
-                    aria-label={`Invert match for regex ${userIndex}`}
+                    aria-label={`Invert match for validation ${userIndex}`}
                     data-fs-element="DNS Response Match invert"
                   />
                 </div>

@@ -6,8 +6,8 @@ import {
   BASIC_TCP_CHECK,
   CUSTOM_ALERT_SENSITIVITY_CHECK,
   FULL_HTTP_CHECK,
-  validCert,
-  validKey,
+  VALID_CERT,
+  VALID_KEY,
 } from 'test/fixtures/checks';
 import { PRIVATE_PROBE, UNSELECTED_PRIVATE_PROBE } from 'test/fixtures/probes';
 import { apiRoute, getServerRequests } from 'test/handlers';
@@ -91,9 +91,9 @@ describe('editing checks', () => {
     await toggleSection('TLS config', user);
     expect(await screen.findByLabelText('Disable target certificate validation')).toBeChecked();
     expect(await screen.findByLabelText('Server name', { exact: false })).toHaveValue(tlsConfig?.serverName);
-    expect(await screen.findByLabelText('CA certificate', { exact: false })).toHaveValue(validCert);
-    expect(await screen.findByLabelText('Client certificate', { exact: false })).toHaveValue(validCert);
-    expect(await screen.findByLabelText('Client key', { exact: false })).toHaveValue(validKey);
+    expect(await screen.findByLabelText('CA certificate', { exact: false })).toHaveValue(VALID_CERT);
+    expect(await screen.findByLabelText('Client certificate', { exact: false })).toHaveValue(VALID_CERT);
+    expect(await screen.findByLabelText('Client key', { exact: false })).toHaveValue(VALID_KEY);
 
     await toggleSection('Authentication', user);
     await user.click(await screen.findByLabelText('Bearer'));

@@ -42,6 +42,7 @@ export const CheckFormAlert = () => {
             return (
               <Select
                 {...rest}
+                aria-label="Select alert sensitivity"
                 width={40}
                 disabled={isCustomSensitivity}
                 data-testid="alertSensitivityInput"

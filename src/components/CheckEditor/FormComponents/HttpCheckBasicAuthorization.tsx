@@ -1,8 +1,7 @@
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
-import { GrafanaTheme2, OrgRole } from '@grafana/data';
-import { Field, Input, Label, useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { OrgRole } from '@grafana/data';
+import { Field, Input, Stack } from '@grafana/ui';
 
 import { CheckFormValuesHttp } from 'types';
 import { hasRole } from 'utils';
@@ -13,11 +12,9 @@ export const HttpCheckBasicAuthorization = () => {
   const { formState, register } = useFormContext<CheckFormValuesHttp>();
   const userNameId = 'basicAuthUsername';
   const passwordId = 'basicAuthPassword';
-  const styles = useStyles2(getStyles);
 
   return (
-    <div className={styles.stack}>
-      <Label className={styles.stack}>Include basic authorization header in request</Label>
+    <Stack direction={`column`}>
       <Field
         htmlFor={userNameId}
         disabled={!isEditor}
@@ -45,14 +42,6 @@ export const HttpCheckBasicAuthorization = () => {
         required={true}
         data-fs-element="Basic auth password input"
       />
-    </div>
+    </Stack>
   );
 };
-
-const getStyles = (theme: GrafanaTheme2) => ({
-  stack: css({
-    display: `flex`,
-    gap: theme.spacing(1),
-    flexDirection: `column`,
-  }),
-});

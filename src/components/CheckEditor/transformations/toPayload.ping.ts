@@ -18,6 +18,7 @@ const getPingSettings = (settings: Partial<PingSettingsFormValues> | undefined =
 
   return {
     ...fallbackValues,
+    dontFragment: settings.dontFragment ?? fallbackValues.dontFragment,
     ipVersion: settings.ipVersion ?? fallbackValues.ipVersion,
   };
 };

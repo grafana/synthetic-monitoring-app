@@ -30,6 +30,12 @@ export const HTTP_REQUEST_FIELDS: HttpRequestFields = {
   requestBody: {
     name: `settings.http.body`,
   },
+  basicAuth: {
+    name: `settings.http.basicAuth`,
+  },
+  bearerToken: {
+    name: `settings.http.bearerToken`,
+  },
   tlsServerName: {
     name: `settings.http.tlsConfig.serverName`,
   },

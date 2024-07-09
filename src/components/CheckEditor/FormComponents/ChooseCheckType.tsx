@@ -43,7 +43,7 @@ export const ChooseCheckType = () => {
     <div>
       <Label htmlFor={id}>Request type</Label>
       <Stack direction={`column`}>
-        <div>
+        <div data-fs-element={`Request type selector`}>
           <RadioButtonGroup
             id={id}
             options={groupOptions.map(({ label, value }) => ({ label, value }))}

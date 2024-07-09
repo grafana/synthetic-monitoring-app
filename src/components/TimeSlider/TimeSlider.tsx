@@ -143,6 +143,7 @@ export function TimeSlider({
           onBlur={onMinutesInputBlur}
           id={minutesId}
           data-fs-element={`${analyticsLabel} minutes input`}
+          aria-label={`${analyticsLabel} minutes input`}
         />
         <label htmlFor={minutesId}>minutes</label>
 
@@ -154,6 +155,7 @@ export function TimeSlider({
           onBlur={onSecondsInputBlur}
           id={secondsId}
           data-fs-element={`${analyticsLabel} seconds input`}
+          aria-label={`${analyticsLabel} seconds input`}
         />
         <label htmlFor={secondsId}>seconds</label>
       </div>
