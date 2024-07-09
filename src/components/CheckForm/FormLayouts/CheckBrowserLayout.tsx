@@ -26,10 +26,7 @@ export const CheckBrowserLayout = ({
   return (
     <FormLayout
       formActions={formActions}
-      onSubmit={(...rest) => {
-        console.log(`onSubmit`);
-        onSubmit(...rest);
-      }}
+      onSubmit={onSubmit}
       onSubmitError={onSubmitError}
       errorMessage={errorMessage}
       schema={schema}
