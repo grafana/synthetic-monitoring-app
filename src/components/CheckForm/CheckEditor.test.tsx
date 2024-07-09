@@ -12,7 +12,7 @@ import {
 import { render } from 'test/render';
 
 import { ROUTES } from 'types';
-import { checkType } from 'utils';
+import { getCheckType } from 'utils';
 import { PLUGIN_URL_PATH } from 'components/constants';
 
 import { CheckForm } from './CheckForm';
@@ -20,7 +20,7 @@ import { CheckForm } from './CheckForm';
 describe(`<CheckForm />`, () => {
   describe(`saving a check`, () => {
     BASIC_CHECK_LIST.map((check) => {
-      const type = checkType(check.settings);
+      const type = getCheckType(check.settings);
 
       it(`triggers form validation when trying to save a ${type} check`, async () => {
         const { user } = render(<CheckForm />, {
@@ -38,7 +38,7 @@ describe(`<CheckForm />`, () => {
 
   describe(`adhoc tests`, () => {
     [BASIC_DNS_CHECK, BASIC_HTTP_CHECK, BASIC_MULTIHTTP_CHECK, BASIC_PING_CHECK, BASIC_TCP_CHECK].forEach((check) => {
-      const type = checkType(check.settings);
+      const type = getCheckType(check.settings);
 
       it(`triggers form validation when trying to test a ${type} check`, async () => {
         const { user } = render(<CheckForm />, {
@@ -54,7 +54,7 @@ describe(`<CheckForm />`, () => {
     });
 
     [BASIC_MULTIHTTP_CHECK, BASIC_TRACEROUTE_CHECK].forEach((check) => {
-      const type = checkType(check.settings);
+      const type = getCheckType(check.settings);
 
       it(`doesn't show the test button for a ${type} check`, async () => {
         render(<CheckForm />, {

@@ -33,10 +33,6 @@ import { useCheckForm, useCheckFormSchema } from './checkForm.hooks';
 import { FormLayout } from './FormLayout';
 import { useFormCheckType } from './useCheckType';
 
-type CheckForm2Props = {
-  check?: Check;
-};
-
 export const CheckForm = () => {
   const { data: checks } = useChecks();
   const { id } = useParams<CheckPageParams>();
@@ -53,6 +49,7 @@ export const CheckForm = () => {
 
   return <CheckFormContent check={check} />;
 };
+
 const layoutMap = {
   [CheckType.HTTP]: HttpCheckLayout,
   [CheckType.MULTI_HTTP]: MultiHTTPCheckLayout,
@@ -75,12 +72,16 @@ const checkTypeStep1Label = {
   [CheckType.GRPC]: `Request`,
 };
 
-export const CheckFormContent = ({ check }: CheckForm2Props) => {
-  const checkType = useFormCheckType();
+type CheckFormProps = {
+  check?: Check;
+};
+
+const CheckFormContent = ({ check }: CheckFormProps) => {
+  const checkType = useFormCheckType(check);
   const { checkTypeGroup } = useParams<CheckFormPageParams>();
   const entry = CHECK_TYPE_GROUP_OPTIONS.find((option) => option.value === checkTypeGroup);
   const initialCheck = check || fallbackCheckMap[checkType];
-  const schema = useCheckFormSchema();
+  const schema = useCheckFormSchema(check);
   const styles = useStyles2(getStyles);
 
   const formMethods = useForm<CheckFormValues>({
@@ -121,7 +122,7 @@ export const CheckFormContent = ({ check }: CheckForm2Props) => {
                 <Stack direction={`column`} gap={4}>
                   <CheckJobName />
                   <Stack direction={`column`} gap={2}>
-                    <ChooseCheckType />
+                    <ChooseCheckType disabled={Boolean(check)} checkTypeGroup={checkTypeGroup} checkType={checkType} />
                     {CheckComponent}
                   </Stack>
                 </Stack>

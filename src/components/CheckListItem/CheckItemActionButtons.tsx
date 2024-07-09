@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { GrafanaTheme2, OrgRole } from '@grafana/data';
-import { Button, ConfirmModal, IconButton, useStyles2 } from '@grafana/ui';
+import { Button, ConfirmModal, IconButton, LinkButton, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Check, ROUTES } from 'types';
-import { checkType as getCheckType, hasRole } from 'utils';
+import { getCheckType as getCheckType, getCheckTypeGroup, hasRole } from 'utils';
 import { useDeleteCheck } from 'data/useChecks';
 import { useNavigation } from 'hooks/useNavigation';
 import { PLUGIN_URL_PATH } from 'components/constants';
+import { getRoute } from 'components/Routing';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   actionButtonGroup: css`
@@ -26,6 +27,7 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon }: Props) =>
   const styles = useStyles2(getStyles);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const checkType = getCheckType(check.settings);
+  const checkTypeGroup = getCheckTypeGroup(checkType);
   const navigate = useNavigation();
   const { mutate: deleteCheck } = useDeleteCheck();
 
@@ -44,14 +46,14 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon }: Props) =>
           View dashboard
         </Button>
       )}
-      <IconButton
-        tooltip="Edit check"
-        name="pen"
+      <LinkButton
         data-testid="edit-check-button"
-        onClick={() => {
-          navigate(`${ROUTES.EditCheck}/${checkType}/${check.id}`);
-        }}
+        href={`${getRoute(ROUTES.EditCheck)}/${checkTypeGroup}/${check.id}`}
+        icon={`pen`}
+        tooltip="Edit check"
         disabled={!hasRole(OrgRole.Editor)}
+        variant="secondary"
+        fill={`text`}
       />
       <IconButton
         tooltip="Delete check"

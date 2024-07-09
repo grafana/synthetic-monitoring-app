@@ -1,24 +1,27 @@
 import React, { useRef } from 'react';
 import { useFormContext } from 'react-hook-form';
-import { useHistory, useParams } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import { Badge, BadgeColor, Label, RadioButtonGroup, Stack, Text } from '@grafana/ui';
 
-import { CheckFormPageParams, CheckFormValues, CheckStatus, CheckType } from 'types';
+import { CheckFormValues, CheckStatus, CheckType, CheckTypeGroup } from 'types';
 import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
-import { useFormCheckType } from 'components/CheckForm/useCheckType';
 import { fallbackCheckMap } from 'components/constants';
 
 import { toFormValues } from '../checkFormTransformations';
 
 type RefType = Partial<Record<CheckType, CheckFormValues>>;
 
-export const ChooseCheckType = () => {
-  const { checkTypeGroup } = useParams<CheckFormPageParams>();
+interface ChooseCheckTypeProps {
+  checkType: CheckType;
+  checkTypeGroup: CheckTypeGroup;
+  disabled: boolean;
+}
+
+export const ChooseCheckType = ({ checkType, checkTypeGroup, disabled }: ChooseCheckTypeProps) => {
   const history = useHistory();
   const ref = useRef<RefType>({});
   const options = useCheckTypeOptions();
   const groupOptions = options.filter((option) => option.group === checkTypeGroup);
-  const checkType = useFormCheckType();
   const { getValues, reset } = useFormContext();
 
   const handleCheckTypeChange = (newCheckType: CheckType) => {
@@ -49,6 +52,7 @@ export const ChooseCheckType = () => {
             options={groupOptions.map(({ label, value }) => ({ label, value }))}
             value={checkType}
             onChange={handleCheckTypeChange}
+            disabled={disabled}
           />
         </div>
         <Stack alignItems={`center`}>

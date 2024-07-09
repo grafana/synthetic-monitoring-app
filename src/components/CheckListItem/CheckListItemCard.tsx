@@ -4,7 +4,7 @@ import { Checkbox, Stack, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 import { Label } from 'types';
-import { checkToUsageCalcValues, checkType as getCheckType } from 'utils';
+import { checkToUsageCalcValues, getCheckType as getCheckType } from 'utils';
 import { useUsageCalc } from 'hooks/useUsageCalc';
 import { AlertStatus } from 'components/AlertStatus/AlertStatus';
 import { LatencyGauge, SuccessRateGaugeCheckReachability, SuccessRateGaugeCheckUptime } from 'components/Gauges';

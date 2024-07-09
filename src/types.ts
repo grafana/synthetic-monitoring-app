@@ -683,6 +683,7 @@ export interface CheckPageParams {
 
 export interface CheckFormPageParams {
   checkTypeGroup: CheckTypeGroup;
+  id?: string;
 }
 
 export interface ProbePageParams {

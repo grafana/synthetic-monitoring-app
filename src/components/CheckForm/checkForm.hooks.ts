@@ -28,8 +28,8 @@ const schemaMap = {
   [CheckType.Traceroute]: TracerouteCheckSchema,
 };
 
-export function useCheckFormSchema() {
-  const checkType = useFormCheckType();
+export function useCheckFormSchema(check?: Check) {
+  const checkType = useFormCheckType(check);
 
   return schemaMap[checkType];
 }

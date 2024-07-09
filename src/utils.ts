@@ -8,6 +8,7 @@ import {
   Check,
   CheckFormValues,
   CheckType,
+  CheckTypeGroup,
   HostedInstance,
   HttpMethod,
   Probe,
@@ -26,6 +27,7 @@ import {
 } from 'utils.types';
 import { SMDataSource } from 'datasource/DataSource';
 import { ListCheckResult, ListTenantLimitsResponse, Metric } from 'datasource/responses.types';
+import { CHECK_TYPE_OPTIONS } from 'hooks/useCheckTypeOptions';
 
 /**
  * Find all synthetic-monitoring datasources
@@ -158,7 +160,7 @@ export const matchStrings = (string: string, comparisons: string[]): boolean => 
   return comparisons.some((comparison) => comparison.toLowerCase().match(lowerCased));
 };
 
-export function checkType(settings: Settings): CheckType {
+export function getCheckType(settings: Settings): CheckType {
   let types = Object.keys(settings);
   if (types.length < 1) {
     return CheckType.HTTP;
@@ -169,6 +171,16 @@ export function checkType(settings: Settings): CheckType {
   }
 
   return types[0] as CheckType;
+}
+
+export function getCheckTypeGroup(checkType: CheckType): CheckTypeGroup {
+  const group = CHECK_TYPE_OPTIONS.find((option) => option.value === checkType)?.group;
+
+  if (!group) {
+    throw new Error(`Check type ${checkType} not found in check type options`);
+  }
+
+  return group;
 }
 
 interface MetricDatasourceResponse<T> {
@@ -342,7 +354,7 @@ export function formatDate(number: number) {
 
 export function checkToUsageCalcValues(check: Check): CalculateUsageValues {
   const { basicMetricsOnly, settings, frequency, probes } = check;
-  const cType = checkType(check.settings);
+  const cType = getCheckType(check.settings);
 
   return {
     assertionCount: getEntriesCount(settings),
@@ -433,7 +445,7 @@ export function isOverScriptedLimit({
   if (!limits || !checks) {
     return false;
   }
-  const scriptedChecksCount = checks.filter((c) => checkType(c.settings) === CheckType.Scripted).length;
+  const scriptedChecksCount = checks.filter((c) => getCheckType(c.settings) === CheckType.Scripted).length;
   return scriptedChecksCount >= limits.MaxScriptedChecks;
 }
 
