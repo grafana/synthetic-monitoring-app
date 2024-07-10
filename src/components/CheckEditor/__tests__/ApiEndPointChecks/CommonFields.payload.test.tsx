@@ -12,8 +12,8 @@ import {
   FALLBACK_CHECK_TRACEROUTE,
 } from 'components/constants';
 
-import { goToSection, renderNewForm, submitForm, TARGET_MAP } from '../../__testHelpers__/checkForm';
 import { fillMandatoryFields } from '../../__testHelpers__/apiEndPoint';
+import { goToSection, renderNewForm, submitForm, TARGET_MAP } from '../../__testHelpers__/checkForm';
 
 const FALLBACK_CHECK_MAP: Record<string, Check> = {
   [CheckType.HTTP]: FALLBACK_CHECK_HTTP,

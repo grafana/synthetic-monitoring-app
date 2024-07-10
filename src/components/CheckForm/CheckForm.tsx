@@ -79,7 +79,8 @@ type CheckFormProps = {
 const CheckFormContent = ({ check }: CheckFormProps) => {
   const checkType = useFormCheckType(check);
   const { checkTypeGroup } = useParams<CheckFormPageParams>();
-  const entry = CHECK_TYPE_GROUP_OPTIONS.find((option) => option.value === checkTypeGroup);
+  const group =
+    CHECK_TYPE_GROUP_OPTIONS.find((option) => option.value === checkTypeGroup) || CHECK_TYPE_GROUP_OPTIONS[0];
   const initialCheck = check || fallbackCheckMap[checkType];
   const schema = useCheckFormSchema(check);
   const styles = useStyles2(getStyles);
@@ -112,8 +113,10 @@ const CheckFormContent = ({ check }: CheckFormProps) => {
   const labelsFields = labelsSection?.fields || [];
   const labelsComponent = labelsSection?.Component;
 
+  const pageNavText = check ? `Editing ${check.job}` : `New ${group.label} check`;
+
   return (
-    <PluginPage pageNav={{ text: `New ${entry?.label} check` }}>
+    <PluginPage pageNav={{ text: pageNavText }}>
       <FormProvider {...formMethods}>
         <CheckFormContextProvider>
           <div className={styles.wrapper}>
