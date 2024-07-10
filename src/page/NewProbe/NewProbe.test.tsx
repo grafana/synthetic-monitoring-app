@@ -29,3 +29,19 @@ it(`creates a new probe, displays the modal and redirects on close`, async () =>
   await user.click(dismiss);
   await waitFor(() => expect(history.location.pathname).toBe(getRoute(ROUTES.Probes)));
 });
+
+//regression for https://github.com/grafana/support-escalations/issues/11171
+test(`Doesn't show a validation error for valid longitude values`, async () => {
+  const { user } = renderNewProbe();
+  const saveButton = await screen.findByText('Add new probe');
+  const longitudeInput = await screen.findByLabelText('Longitude');
+  await user.type(longitudeInput, '180.01');
+  await user.click(saveButton);
+
+  const errorMsg = await screen.queryByText('Longitude must be less than 180');
+  expect(errorMsg).toBeInTheDocument();
+
+  await user.clear(longitudeInput);
+  await user.type(longitudeInput, '116.3971');
+  expect(errorMsg).not.toBeInTheDocument();
+});

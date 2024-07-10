@@ -66,6 +66,11 @@
       "name": "Config",
       "path": "/a/grafana-synthetic-monitoring-app/config",
       "addToNav": true
+    },
+    {
+      "type": "datasource",
+      "name": "Synthetic Monitoring API",
+      "path": "datasource/plugin.json"
     }
   ],
   "dependencies": {
