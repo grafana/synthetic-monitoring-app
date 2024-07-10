@@ -1,6 +1,6 @@
 # Change Log
 
-# [1.14.10](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.9...v1.14.10) (2024-6-25)
+# [1.14.10](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.9...v1.14.10) (2024-7-10)
 
 - Upgrade scenes to version 5.1.0
 - Fix cursor type on cards without links
