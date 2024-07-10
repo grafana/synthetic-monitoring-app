@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { DataFrame, DateTime, dateTime, GrafanaTheme2, LoadingState } from '@grafana/data';
+import { DataFrame, dateTime, GrafanaTheme2, LoadingState } from '@grafana/data';
 import { PanelRenderer } from '@grafana/runtime';
 import { Badge, Collapse, Icon, Spinner, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
@@ -8,12 +8,10 @@ interface Props {
   probeName: string;
   success: boolean;
   loading: boolean;
-  start: DateTime;
-  end: DateTime;
   logs: DataFrame;
 }
 
-export function CheckTestResult({ probeName, success, loading, logs, start, end }: Props) {
+export function CheckTestResult({ probeName, success, loading, logs }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const styles = useStyles2(getStyles);
   const header = (

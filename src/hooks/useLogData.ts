@@ -6,7 +6,7 @@ import { InstanceContext } from 'contexts/InstanceContext';
 
 interface UseLogOptions {
   start: DateTime;
-  end: DateTime;
+  end?: DateTime;
   skip: boolean;
 }
 
@@ -18,7 +18,7 @@ export function useLogData(query: string, options: UseLogOptions) {
   const [data, setData] = useState<any[]>([]);
   const [error, setError] = useState<string | undefined>();
   const start = options.start.unix();
-  const end = options.end.unix();
+  const end = options.end?.unix();
 
   // refresh data every 3 seconds
   useEffect(() => {
