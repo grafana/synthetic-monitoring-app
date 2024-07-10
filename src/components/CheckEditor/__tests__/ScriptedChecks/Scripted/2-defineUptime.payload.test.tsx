@@ -3,37 +3,35 @@ import { screen } from '@testing-library/react';
 import { CheckType } from 'types';
 import { goToSection, renderNewForm, submitForm } from 'components/CheckEditor/__testHelpers__/checkForm';
 
-import { fillMandatoryFields } from '../../../__testHelpers__/apiEndPoint';
+import { fillMandatoryFields } from '../../../__testHelpers__/scripted';
 
-const checkType = CheckType.DNS;
+const checkType = CheckType.Scripted;
 
-describe(`DNSCheck - Section 5 (Execution) payload`, () => {
+describe(`ScriptedCheck - Section 2 (Define uptime) payload`, () => {
   it(`has the correct default values submitted`, async () => {
-    const ONE_MINUTE_IN_MS = 60 * 1000;
-
+    const FIFTEEN_SECONDS_IN_MS = 15 * 1000;
     const { read, user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
     await submitForm(user);
     const { body } = await read();
 
-    expect(body.frequency).toBe(ONE_MINUTE_IN_MS);
+    expect(body.timeout).toBe(FIFTEEN_SECONDS_IN_MS);
   });
 
-  it(`can add probe frequency`, async () => {
+  it(`can set the timeout`, async () => {
     const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
-    await goToSection(user, 5);
+    await goToSection(user, 2);
 
-    const minutesInput = screen.getByLabelText('frequency minutes input');
-    const secondsInput = screen.getByLabelText('frequency seconds input');
-    await user.clear(minutesInput);
+    const minutesInput = screen.getByLabelText('timeout minutes input');
+    const secondsInput = screen.getByLabelText('timeout seconds input');
+    await user.type(minutesInput, '1');
     await user.clear(secondsInput);
-    await user.type(secondsInput, '30');
 
     await submitForm(user);
 
     const { body } = await read();
 
-    expect(body.frequency).toBe(30000);
+    expect(body.timeout).toBe(60000);
   });
 });

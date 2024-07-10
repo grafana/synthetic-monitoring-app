@@ -225,8 +225,8 @@ export interface HttpSettingsFormValues
     | 'compression'
   > {
   sslOptions: HttpSslOption;
-  headers: HttpHeaderFormValue[];
-  proxyConnectHeaders: HttpHeaderFormValue[];
+  headers?: HttpHeaderFormValue[];
+  proxyConnectHeaders?: HttpHeaderFormValue[];
   regexValidations: HttpRegexValidationFormValue[];
   followRedirects: boolean;
   compression: HTTPCompressionAlgo;

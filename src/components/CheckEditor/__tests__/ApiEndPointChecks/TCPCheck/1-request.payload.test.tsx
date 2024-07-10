@@ -2,14 +2,16 @@ import { screen } from '@testing-library/react';
 import { VALID_CERT, VALID_KEY } from 'test/fixtures/checks';
 
 import { CheckType, IpVersion } from 'types';
-import { fillMandatoryFields, renderForm, submitForm } from 'components/CheckEditor/__tests__/helpers';
-import { selectOption } from 'components/CheckEditor/testHelpers';
+import { renderNewForm, submitForm } from 'components/CheckEditor/__testHelpers__/checkForm';
+import { selectOption } from 'test/utils';
+
+import { fillMandatoryFields } from '../../../__testHelpers__/apiEndPoint';
 
 const checkType = CheckType.TCP;
 
 describe(`TCPCheck - Section 1 (Request) payload`, () => {
   it(`has the correct default values submitted`, async () => {
-    const { read, user } = await renderForm(checkType);
+    const { read, user } = await renderNewForm(checkType);
 
     await fillMandatoryFields({ user, checkType });
     await submitForm(user);
@@ -21,7 +23,7 @@ describe(`TCPCheck - Section 1 (Request) payload`, () => {
   it(`can add request target`, async () => {
     const REQUEST_TARGET = `example.com:80`;
 
-    const { read, user } = await renderForm(checkType);
+    const { read, user } = await renderNewForm(checkType);
     const targetInput = await screen.findByLabelText('Request target', { exact: false });
     await user.type(targetInput, REQUEST_TARGET);
 
@@ -36,7 +38,7 @@ describe(`TCPCheck - Section 1 (Request) payload`, () => {
     it(`can submit the IP version`, async () => {
       const IP_VERSION = IpVersion.V6;
 
-      const { read, user } = await renderForm(checkType);
+      const { read, user } = await renderNewForm(checkType);
       await user.click(screen.getByText('Request options'));
       await selectOption(user, { label: 'IP version', option: IP_VERSION });
 
@@ -50,7 +52,7 @@ describe(`TCPCheck - Section 1 (Request) payload`, () => {
 
   describe(`TLS Config`, () => {
     it(`can turn off if TLS is used`, async () => {
-      const { read, user } = await renderForm(checkType);
+      const { read, user } = await renderNewForm(checkType);
       await user.click(screen.getByText('Request options'));
       await user.click(screen.getByText('TLS Config'));
 
@@ -63,7 +65,7 @@ describe(`TCPCheck - Section 1 (Request) payload`, () => {
     });
 
     it(`can disable target certificate validation`, async () => {
-      const { read, user } = await renderForm(checkType);
+      const { read, user } = await renderNewForm(checkType);
       await user.click(screen.getByText('Request options'));
       await user.click(screen.getByText('TLS Config'));
 
@@ -78,7 +80,7 @@ describe(`TCPCheck - Section 1 (Request) payload`, () => {
     it(`can add server name`, async () => {
       const SERVER_NAME = `server.com`;
 
-      const { read, user } = await renderForm(checkType);
+      const { read, user } = await renderNewForm(checkType);
       await user.click(screen.getByText('Request options'));
       await user.click(screen.getByText('TLS Config'));
 
@@ -91,7 +93,7 @@ describe(`TCPCheck - Section 1 (Request) payload`, () => {
     });
 
     it(`can add CA certificate`, async () => {
-      const { read, user } = await renderForm(checkType);
+      const { read, user } = await renderNewForm(checkType);
       await user.click(screen.getByText('Request options'));
       await user.click(screen.getByText('TLS Config'));
       await user.type(screen.getByLabelText('CA certificate', { exact: false }), VALID_CERT);
@@ -103,7 +105,7 @@ describe(`TCPCheck - Section 1 (Request) payload`, () => {
     });
 
     it(`can add Client certificate`, async () => {
-      const { read, user } = await renderForm(checkType);
+      const { read, user } = await renderNewForm(checkType);
       await user.click(screen.getByText('Request options'));
       await user.click(screen.getByText('TLS Config'));
       await user.type(screen.getByLabelText('Client certificate', { exact: false }), VALID_CERT);
@@ -115,7 +117,7 @@ describe(`TCPCheck - Section 1 (Request) payload`, () => {
     });
 
     it(`can add Client key`, async () => {
-      const { read, user } = await renderForm(checkType);
+      const { read, user } = await renderNewForm(checkType);
       await user.click(screen.getByText('Request options'));
       await user.click(screen.getByText('TLS Config'));
       await user.type(screen.getByLabelText('Client key', { exact: false }), VALID_KEY);

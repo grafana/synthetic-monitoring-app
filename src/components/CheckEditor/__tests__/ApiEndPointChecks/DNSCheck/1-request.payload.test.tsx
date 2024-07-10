@@ -1,14 +1,16 @@
 import { screen } from '@testing-library/react';
+import { selectOption } from 'test/utils';
 
 import { CheckType, DnsProtocol, DnsRecordType, IpVersion } from 'types';
-import { fillMandatoryFields, renderForm, submitForm } from 'components/CheckEditor/__tests__/helpers';
-import { selectOption } from 'components/CheckEditor/testHelpers';
+import { renderNewForm, submitForm } from 'components/CheckEditor/__testHelpers__/checkForm';
+
+import { fillMandatoryFields } from '../../../__testHelpers__/apiEndPoint';
 
 const checkType = CheckType.DNS;
 
-describe(`DNSCheck - Section 1 (Request) payload`, () => {
+describe(`MultiHttpCheck - Section 1 (Request) payload`, () => {
   it(`has the correct default values submitted`, async () => {
-    const { read, user } = await renderForm(checkType);
+    const { read, user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
     await submitForm(user);
     const { body } = await read();
@@ -23,7 +25,7 @@ describe(`DNSCheck - Section 1 (Request) payload`, () => {
   it(`can add request target`, async () => {
     const REQUEST_TARGET = `example.com`;
 
-    const { read, user } = await renderForm(checkType);
+    const { read, user } = await renderNewForm(checkType);
     const targetInput = await screen.findByLabelText('Request target', { exact: false });
     await user.type(targetInput, REQUEST_TARGET);
 
@@ -38,7 +40,7 @@ describe(`DNSCheck - Section 1 (Request) payload`, () => {
     it(`can submit the IP version`, async () => {
       const IP_VERSION = IpVersion.V6;
 
-      const { read, user } = await renderForm(checkType);
+      const { read, user } = await renderNewForm(checkType);
       await user.click(screen.getByText('Request options'));
       await selectOption(user, { label: 'IP version', option: IP_VERSION });
 
@@ -54,7 +56,7 @@ describe(`DNSCheck - Section 1 (Request) payload`, () => {
     it(`can change the record type`, async () => {
       const RECORD = DnsRecordType.AAAA;
 
-      const { read, user } = await renderForm(checkType);
+      const { read, user } = await renderNewForm(checkType);
       await user.click(screen.getByText('Request options'));
       await user.click(screen.getByText('DNS Settings'));
 
@@ -70,7 +72,7 @@ describe(`DNSCheck - Section 1 (Request) payload`, () => {
     it(`can change the server`, async () => {
       const SERVER = `different.server`;
 
-      const { read, user } = await renderForm(checkType);
+      const { read, user } = await renderNewForm(checkType);
       await user.click(screen.getByText('Request options'));
       await user.click(screen.getByText('DNS Settings'));
 
@@ -88,7 +90,7 @@ describe(`DNSCheck - Section 1 (Request) payload`, () => {
     it(`can change the protocol type`, async () => {
       const PROTOCOL = DnsProtocol.TCP;
 
-      const { read, user } = await renderForm(checkType);
+      const { read, user } = await renderNewForm(checkType);
       await user.click(screen.getByText('Request options'));
       await user.click(screen.getByText('DNS Settings'));
 
@@ -104,7 +106,7 @@ describe(`DNSCheck - Section 1 (Request) payload`, () => {
     it(`can change the port`, async () => {
       const PORT = 54;
 
-      const { read, user } = await renderForm(checkType);
+      const { read, user } = await renderNewForm(checkType);
       await user.click(screen.getByText('Request options'));
       await user.click(screen.getByText('DNS Settings'));
 

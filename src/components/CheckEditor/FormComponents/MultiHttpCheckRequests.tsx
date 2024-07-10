@@ -3,6 +3,7 @@ import { FieldErrors, useFieldArray, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Button, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { DataTestIds } from 'test/dataTestIds';
 
 import { HttpRequestFields } from '../CheckEditor.types';
 import { CheckFormValues, CheckFormValuesMultiHttp, HttpMethod } from 'types';
@@ -39,6 +40,9 @@ export const MULTI_HTTP_REQUEST_FIELDS: HttpRequestFields = {
   },
   requestContentType: {
     name: `settings.multihttp.entries.${ENTRY_INDEX_CHAR}.request.body.contentType`,
+  },
+  queryParams: {
+    name: `settings.multihttp.entries.${ENTRY_INDEX_CHAR}.request.queryFields`,
   },
 };
 
@@ -107,7 +111,7 @@ export const MultiHttpCheckRequests = () => {
           <MultiHttpCollapse
             label={urlForIndex}
             key={field.id}
-            data-testid={`multihttp-request-${index}`}
+            data-testid={`${DataTestIds.MULTI_HTTP_REQUEST}-${index}`}
             invalid={Boolean(errors?.settings?.multihttp?.entries?.[index])}
             isOpen={collapseState[index].open}
             onToggle={() => dispatchCollapse({ type: 'toggle', index })}
@@ -178,10 +182,11 @@ const MultiHttpRequest = ({ index }: { index: number }) => {
         target: {
           ...fields.target,
           onChange: parseQueryParams,
+          'aria-label': `Request target for request ${index + 1} *`,
         },
         method: {
           ...fields.method,
-          'aria-label': `Request target for request ${index + 1}`,
+          'aria-label': `Request method for request ${index + 1} *`,
         },
       }}
       onTest={onTest}

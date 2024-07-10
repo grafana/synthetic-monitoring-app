@@ -1,15 +1,17 @@
 import { screen, within } from '@testing-library/react';
+import { getSelect, selectOption } from 'test/utils';
 
 import { CheckType, DnsResponseCodes } from 'types';
-import { fillMandatoryFields, goToSection, renderForm, submitForm } from 'components/CheckEditor/__tests__/helpers';
-import { getSelect, selectOption } from 'components/CheckEditor/testHelpers';
+import { goToSection, renderNewForm, submitForm } from 'components/CheckEditor/__testHelpers__/checkForm';
+
+import { fillMandatoryFields } from '../../../__testHelpers__/apiEndPoint';
 
 const checkType = CheckType.DNS;
 
 describe(`DNSCheck - Section 2 (Define uptime) payload`, () => {
   it(`has the correct default values submitted`, async () => {
     const THREE_SECONDS_IN_MS = 3 * 1000;
-    const { read, user } = await renderForm(checkType);
+    const { read, user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
     await submitForm(user);
     const { body } = await read();
@@ -21,7 +23,7 @@ describe(`DNSCheck - Section 2 (Define uptime) payload`, () => {
   it(`can add valid response codes`, async () => {
     const RESPONSE_CODES = [DnsResponseCodes.BADVERS, DnsResponseCodes.BADCOOKIE];
 
-    const { user, read } = await renderForm(checkType);
+    const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
     await goToSection(user, 2);
 
@@ -43,7 +45,7 @@ describe(`DNSCheck - Section 2 (Define uptime) payload`, () => {
     it(`can fail if authority matches`, async () => {
       const EXPRESSION = 'test expression';
 
-      const { user, read } = await renderForm(checkType);
+      const { user, read } = await renderNewForm(checkType);
       await fillMandatoryFields({ user, checkType });
       await goToSection(user, 2);
 
@@ -65,7 +67,7 @@ describe(`DNSCheck - Section 2 (Define uptime) payload`, () => {
     it(`can fail if authority NOT matches`, async () => {
       const EXPRESSION = 'test expression';
 
-      const { user, read } = await renderForm(checkType);
+      const { user, read } = await renderNewForm(checkType);
       await fillMandatoryFields({ user, checkType });
       await goToSection(user, 2);
 
@@ -88,7 +90,7 @@ describe(`DNSCheck - Section 2 (Define uptime) payload`, () => {
     it(`can fail if answer matches`, async () => {
       const EXPRESSION = 'test expression';
 
-      const { user, read } = await renderForm(checkType);
+      const { user, read } = await renderNewForm(checkType);
       await fillMandatoryFields({ user, checkType });
       await goToSection(user, 2);
 
@@ -110,7 +112,7 @@ describe(`DNSCheck - Section 2 (Define uptime) payload`, () => {
     it(`can fail if answer NOT matches`, async () => {
       const EXPRESSION = 'test expression';
 
-      const { user, read } = await renderForm(checkType);
+      const { user, read } = await renderNewForm(checkType);
       await fillMandatoryFields({ user, checkType });
       await goToSection(user, 2);
 
@@ -133,7 +135,7 @@ describe(`DNSCheck - Section 2 (Define uptime) payload`, () => {
     it(`can fail if additional matches`, async () => {
       const EXPRESSION = 'test expression';
 
-      const { user, read } = await renderForm(checkType);
+      const { user, read } = await renderNewForm(checkType);
       await fillMandatoryFields({ user, checkType });
       await goToSection(user, 2);
 
@@ -155,7 +157,7 @@ describe(`DNSCheck - Section 2 (Define uptime) payload`, () => {
     it(`can fail if additional NOT matches`, async () => {
       const EXPRESSION = 'test expression';
 
-      const { user, read } = await renderForm(checkType);
+      const { user, read } = await renderNewForm(checkType);
       await fillMandatoryFields({ user, checkType });
       await goToSection(user, 2);
 
@@ -177,7 +179,7 @@ describe(`DNSCheck - Section 2 (Define uptime) payload`, () => {
   });
 
   it(`can set the timeout`, async () => {
-    const { user, read } = await renderForm(checkType);
+    const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
     await goToSection(user, 2);
 

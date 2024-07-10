@@ -1,13 +1,15 @@
 import { screen } from '@testing-library/react';
 
 import { CheckType } from 'types';
-import { fillMandatoryFields, renderForm, submitForm } from 'components/CheckEditor/__tests__/helpers';
+import { renderNewForm, submitForm } from 'components/CheckEditor/__testHelpers__/checkForm';
+
+import { fillMandatoryFields } from '../../../__testHelpers__/apiEndPoint';
 
 const checkType = CheckType.Traceroute;
 
 describe(`TracerouteCheck - Section 1 (Request) payload`, () => {
   it(`has the correct default values submitted`, async () => {
-    const { read, user } = await renderForm(checkType);
+    const { read, user } = await renderNewForm(checkType);
 
     await fillMandatoryFields({ user, checkType });
     await submitForm(user);
@@ -21,7 +23,7 @@ describe(`TracerouteCheck - Section 1 (Request) payload`, () => {
   it(`can add request target`, async () => {
     const REQUEST_TARGET = `example.com`;
 
-    const { read, user } = await renderForm(checkType);
+    const { read, user } = await renderNewForm(checkType);
     const targetInput = await screen.findByLabelText('Request target', { exact: false });
     await user.type(targetInput, REQUEST_TARGET);
 
@@ -36,7 +38,7 @@ describe(`TracerouteCheck - Section 1 (Request) payload`, () => {
     it(`can change the max hops`, async () => {
       const MAX_HOPS = 30;
 
-      const { read, user } = await renderForm(checkType);
+      const { read, user } = await renderNewForm(checkType);
       await user.click(screen.getByText('Request options'));
       const maxHopsInput = screen.getByLabelText('Max hops', { exact: false });
       await user.clear(maxHopsInput);
@@ -53,7 +55,7 @@ describe(`TracerouteCheck - Section 1 (Request) payload`, () => {
   it(`can change the max unknown hops`, async () => {
     const MAX_UNKNOWN_HOPS = 3;
 
-    const { read, user } = await renderForm(checkType);
+    const { read, user } = await renderNewForm(checkType);
     await user.click(screen.getByText('Request options'));
     const maxUnknownHopsInput = screen.getByLabelText('Max unknown hops', { exact: false });
     await user.clear(maxUnknownHopsInput);
@@ -67,7 +69,7 @@ describe(`TracerouteCheck - Section 1 (Request) payload`, () => {
   });
 
   it(`can disable PTR lookup`, async () => {
-    const { read, user } = await renderForm(checkType);
+    const { read, user } = await renderNewForm(checkType);
     await user.click(screen.getByText('Request options'));
 
     await user.click(screen.getByLabelText('PTR lookup', { exact: false }));

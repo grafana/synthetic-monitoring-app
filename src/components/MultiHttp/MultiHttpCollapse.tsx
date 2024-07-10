@@ -27,7 +27,7 @@ export const MultiHttpCollapse = forwardRef<HTMLButtonElement, PropsWithChildren
     const styles = useStyles2(getStyles);
 
     return (
-      <Stack gap={1} direction={`column`}>
+      <Stack gap={1} direction={`column`} data-testid={dataTestId}>
         <button
           className={styles.header}
           onClick={(e) => {
@@ -47,10 +47,11 @@ export const MultiHttpCollapse = forwardRef<HTMLButtonElement, PropsWithChildren
           {invalid && <Icon name="exclamation-triangle" className={styles.errorIcon} />}
         </button>
         {isOpen && (
-          <div className={styles.body} data-testid={dataTestId}>
+          <div className={styles.body}>
             <div className={styles.actions}>
               {onRemove && (
                 <Button
+                  aria-label={`Remove request ${label}`}
                   className={styles.removeButton}
                   variant="secondary"
                   onClick={onRemove}

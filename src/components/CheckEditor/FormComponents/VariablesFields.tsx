@@ -21,6 +21,9 @@ export const VariablesFields = ({ index }: { index: number }) => {
         const errorPath = formState.errors.settings?.multihttp?.entries?.[index]?.variables?.[variableIndex];
         // @ts-expect-error -- I think type is a reserved keyword in react-hook-form so it can't read this properly
         const errMessage = errorPath?.type?.message;
+        const variableNameId = `multihttp-variable-name-${index}-${variableIndex}`;
+        const variableAttributeId = `multihttp-variable-attribute-${index}-${variableIndex}`;
+        const variableExpressionId = `multihttp-variable-expression-${index}-${variableIndex}`;
 
         return (
           <Stack key={field.id}>
@@ -29,10 +32,11 @@ export const VariablesFields = ({ index }: { index: number }) => {
               description="The name of the variable"
               invalid={Boolean(errorPath?.name)}
               error={errorPath?.name?.message}
+              htmlFor={variableNameId}
             >
               <Input
                 placeholder="Variable name"
-                id={`multihttp-variable-name-${index}-${variableIndex}`}
+                id={variableNameId}
                 invalid={Boolean(
                   formState.errors.settings?.multihttp?.entries?.[index]?.variables?.[variableIndex]?.type
                 )}
@@ -53,7 +57,7 @@ export const VariablesFields = ({ index }: { index: number }) => {
                     data-fs-element="Variable type select"
                   >
                     <Select
-                      id={`multihttp-variable-type-${index}-${variableIndex}`}
+                      aria-label="Variable type"
                       {...rest}
                       options={MULTI_HTTP_VARIABLE_TYPE_OPTIONS}
                       menuPlacement="bottom"
@@ -71,10 +75,11 @@ export const VariablesFields = ({ index }: { index: number }) => {
                 description="Name of the attribute to extract the value from. Leave blank to get contents of tag"
                 invalid={Boolean(errorPath?.attribute)}
                 error={errorPath?.attribute?.message}
+                htmlFor={variableAttributeId}
               >
                 <Input
                   placeholder="Attribute"
-                  id={`multihttp-variable-attribute-${index}-${variableIndex}`}
+                  id={variableAttributeId}
                   data-fs-element="Variable attribute input"
                   {...register(`${variableFieldName}.${variableIndex}.attribute`)}
                 />
@@ -85,11 +90,12 @@ export const VariablesFields = ({ index }: { index: number }) => {
               description="Expression to extract the value"
               error={errorPath?.expression?.message}
               invalid={Boolean(errorPath?.expression)}
+              htmlFor={variableExpressionId}
             >
               <div className={styles.aligner}>
                 <Input
                   placeholder="Variable expression"
-                  id={`multihttp-variable-expression-${index}-${variableIndex}`}
+                  id={variableExpressionId}
                   data-fs-element="Variable expression input"
                   invalid={Boolean(errorPath?.expression)}
                   {...register(`${variableFieldName}.${variableIndex}.expression`)}

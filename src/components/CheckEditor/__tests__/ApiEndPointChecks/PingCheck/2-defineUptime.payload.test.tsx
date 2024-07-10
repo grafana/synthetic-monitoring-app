@@ -1,14 +1,16 @@
 import { screen } from '@testing-library/react';
 
 import { CheckType } from 'types';
-import { fillMandatoryFields, goToSection, renderForm, submitForm } from 'components/CheckEditor/__tests__/helpers';
+import { goToSection, renderNewForm, submitForm } from 'components/CheckEditor/__testHelpers__/checkForm';
+
+import { fillMandatoryFields } from '../../../__testHelpers__/apiEndPoint';
 
 const checkType = CheckType.PING;
 
 describe(`PingCheck - Section 2 (Define uptime) payload`, () => {
   it(`has the correct default values submitted`, async () => {
     const THREE_SECONDS_IN_MS = 3 * 1000;
-    const { read, user } = await renderForm(checkType);
+    const { read, user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
     await submitForm(user);
     const { body } = await read();
@@ -17,7 +19,7 @@ describe(`PingCheck - Section 2 (Define uptime) payload`, () => {
   });
 
   it(`can set the timeout`, async () => {
-    const { user, read } = await renderForm(checkType);
+    const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
     await goToSection(user, 2);
 

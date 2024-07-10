@@ -1,15 +1,17 @@
 import { screen } from '@testing-library/react';
 import { VALID_CERT, VALID_KEY } from 'test/fixtures/checks';
+import { selectOption } from 'test/utils';
 
 import { CheckType, HttpMethod, IpVersion } from 'types';
-import { fillMandatoryFields, goToSection, renderForm, submitForm } from 'components/CheckEditor/__tests__/helpers';
-import { selectOption } from 'components/CheckEditor/testHelpers';
+import { goToSection, renderNewForm, submitForm } from 'components/CheckEditor/__testHelpers__/checkForm';
+
+import { fillMandatoryFields } from '../../../__testHelpers__/apiEndPoint';
 
 const checkType = CheckType.HTTP;
 
 describe(`HttpCheck - Section 1 (Request) payload`, () => {
   it(`has the correct default values submitted`, async () => {
-    const { read, user } = await renderForm(checkType);
+    const { read, user } = await renderNewForm(checkType);
 
     await fillMandatoryFields({ user, checkType });
     await submitForm(user);
@@ -20,7 +22,7 @@ describe(`HttpCheck - Section 1 (Request) payload`, () => {
 
   it(`can change method to POST`, async () => {
     const METHOD_OPTION = HttpMethod.POST;
-    const { read, user } = await renderForm(checkType);
+    const { read, user } = await renderNewForm(checkType);
     await selectOption(user, { label: 'Request method', option: METHOD_OPTION });
 
     await fillMandatoryFields({ user, checkType });
@@ -33,7 +35,7 @@ describe(`HttpCheck - Section 1 (Request) payload`, () => {
   it(`can add request target`, async () => {
     const REQUEST_TARGET = `https://example.com`;
 
-    const { read, user } = await renderForm(checkType);
+    const { read, user } = await renderNewForm(checkType);
     const targetInput = await screen.findByLabelText('Request target', { exact: false });
     await user.type(targetInput, REQUEST_TARGET);
 
@@ -51,7 +53,7 @@ describe(`HttpCheck - Section 1 (Request) payload`, () => {
     const QUERY_PARAM_KEY_2 = `key2`;
     const QUERY_PARAM_VALUE_2 = `value2`;
 
-    const { read, user } = await renderForm(checkType);
+    const { read, user } = await renderNewForm(checkType);
 
     const targetInput = await screen.findByLabelText('Request target', { exact: false });
     await user.type(targetInput, REQUEST_TARGET);
@@ -86,7 +88,7 @@ describe(`HttpCheck - Section 1 (Request) payload`, () => {
   it(`can add a cache busting query parameter`, async () => {
     const CACHE_BUSTER_PARAM = `ghost-busting`;
 
-    const { read, user } = await renderForm(checkType);
+    const { read, user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
     await goToSection(user, 1);
 
@@ -108,7 +110,7 @@ describe(`HttpCheck - Section 1 (Request) payload`, () => {
       const HEADER_KEY_2 = `header-key-2`;
       const HEADER_VALUE_2 = `header-value-2`;
 
-      const { read, user } = await renderForm(checkType);
+      const { read, user } = await renderNewForm(checkType);
 
       await user.click(screen.getByText('Request options'));
       const addRequestHeaderButton = screen.getByText(`Add request header`, { exact: false });
@@ -140,7 +142,7 @@ describe(`HttpCheck - Section 1 (Request) payload`, () => {
     it(`can submit the IP version`, async () => {
       const IP_VERSION = IpVersion.V6;
 
-      const { read, user } = await renderForm(checkType);
+      const { read, user } = await renderNewForm(checkType);
       await user.click(screen.getByText('Request options'));
       await selectOption(user, { label: 'IP version', option: IP_VERSION });
 
@@ -156,7 +158,7 @@ describe(`HttpCheck - Section 1 (Request) payload`, () => {
     it(`can add request body`, async () => {
       const REQUEST_BODY = `simple body text`;
 
-      const { read, user } = await renderForm(checkType);
+      const { read, user } = await renderNewForm(checkType);
       await user.click(screen.getByText('Request options'));
       await user.click(screen.getByText('Request Body'));
       await user.type(screen.getByLabelText('Request body', { selector: `textarea` }), REQUEST_BODY);
@@ -172,7 +174,7 @@ describe(`HttpCheck - Section 1 (Request) payload`, () => {
     it(`can add bearer token`, async () => {
       const BEARER_TOKEN = `a lovely bear`;
 
-      const { read, user } = await renderForm(checkType);
+      const { read, user } = await renderNewForm(checkType);
       await user.click(screen.getByText('Request options'));
       await user.click(screen.getByText('Authentication'));
       await user.click(screen.getByLabelText('Bearer'));
@@ -188,7 +190,7 @@ describe(`HttpCheck - Section 1 (Request) payload`, () => {
       const USERNAME = `the user`;
       const PASSWORD = `the password`;
 
-      const { read, user } = await renderForm(checkType);
+      const { read, user } = await renderNewForm(checkType);
       await user.click(screen.getByText('Request options'));
       await user.click(screen.getByText('Authentication'));
       await user.click(screen.getByLabelText('Basic'));
@@ -208,7 +210,7 @@ describe(`HttpCheck - Section 1 (Request) payload`, () => {
 
   describe(`TLS Config`, () => {
     it(`can disable target certificate validation`, async () => {
-      const { read, user } = await renderForm(checkType);
+      const { read, user } = await renderNewForm(checkType);
       await user.click(screen.getByText('Request options'));
       await user.click(screen.getByText('TLS Config'));
 
@@ -223,7 +225,7 @@ describe(`HttpCheck - Section 1 (Request) payload`, () => {
     it(`can add server name`, async () => {
       const SERVER_NAME = `server.com`;
 
-      const { read, user } = await renderForm(checkType);
+      const { read, user } = await renderNewForm(checkType);
       await user.click(screen.getByText('Request options'));
       await user.click(screen.getByText('TLS Config'));
 
@@ -236,7 +238,7 @@ describe(`HttpCheck - Section 1 (Request) payload`, () => {
     });
 
     it(`can add CA certificate`, async () => {
-      const { read, user } = await renderForm(checkType);
+      const { read, user } = await renderNewForm(checkType);
       await user.click(screen.getByText('Request options'));
       await user.click(screen.getByText('TLS Config'));
       await user.type(screen.getByLabelText('CA certificate', { exact: false }), VALID_CERT);
@@ -248,7 +250,7 @@ describe(`HttpCheck - Section 1 (Request) payload`, () => {
     });
 
     it(`can add Client certificate`, async () => {
-      const { read, user } = await renderForm(checkType);
+      const { read, user } = await renderNewForm(checkType);
       await user.click(screen.getByText('Request options'));
       await user.click(screen.getByText('TLS Config'));
       await user.type(screen.getByLabelText('Client certificate', { exact: false }), VALID_CERT);
@@ -260,7 +262,7 @@ describe(`HttpCheck - Section 1 (Request) payload`, () => {
     });
 
     it(`can add Client key`, async () => {
-      const { read, user } = await renderForm(checkType);
+      const { read, user } = await renderNewForm(checkType);
       await user.click(screen.getByText('Request options'));
       await user.click(screen.getByText('TLS Config'));
       await user.type(screen.getByLabelText('Client key', { exact: false }), VALID_KEY);
@@ -276,7 +278,7 @@ describe(`HttpCheck - Section 1 (Request) payload`, () => {
     it(`can add proxy URL`, async () => {
       const PROXY_URL = `https://proxy.com`;
 
-      const { read, user } = await renderForm(checkType);
+      const { read, user } = await renderNewForm(checkType);
       await user.click(screen.getByText('Request options'));
       await user.click(screen.getByText('Proxy'));
       await user.type(screen.getByLabelText('Proxy URL', { exact: false }), PROXY_URL);
@@ -293,7 +295,7 @@ describe(`HttpCheck - Section 1 (Request) payload`, () => {
       const PROXY_HEADER_KEY_2 = `proxy-header-key-2`;
       const PROXY_HEADER_VALUE_2 = `proxy-header-value-2`;
 
-      const { read, user } = await renderForm(checkType);
+      const { read, user } = await renderNewForm(checkType);
       await user.click(screen.getByText('Request options'));
       await user.click(screen.getByText('Proxy'));
       const addRequestHeaderButton = screen.getByText(`Add proxy connect header`, { exact: false });

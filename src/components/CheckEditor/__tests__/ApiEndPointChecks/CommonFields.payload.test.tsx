@@ -1,5 +1,6 @@
 import { screen } from '@testing-library/react';
 import { PRIVATE_PROBE } from 'test/fixtures/probes';
+import { selectOption } from 'test/utils';
 
 import { AlertSensitivity, Check, CheckType } from 'types';
 import {
@@ -11,8 +12,8 @@ import {
   FALLBACK_CHECK_TRACEROUTE,
 } from 'components/constants';
 
-import { selectOption } from '../../testHelpers';
-import { fillMandatoryFields, goToSection, renderForm, submitForm, TARGET_MAP } from '../helpers';
+import { goToSection, renderNewForm, submitForm, TARGET_MAP } from '../../__testHelpers__/checkForm';
+import { fillMandatoryFields } from '../../__testHelpers__/apiEndPoint';
 
 const FALLBACK_CHECK_MAP: Record<string, Check> = {
   [CheckType.HTTP]: FALLBACK_CHECK_HTTP,
@@ -29,7 +30,7 @@ describe('Api endpoint checks - common fields', () => {
       const checkType = cType as CheckType;
 
       it(`can submit the form with the minimum required fields`, async () => {
-        const { user, read } = await renderForm(checkType);
+        const { user, read } = await renderNewForm(checkType);
         await fillMandatoryFields({ user, checkType });
 
         await submitForm(user);
@@ -51,7 +52,7 @@ describe('Api endpoint checks - common fields', () => {
           const LABEL_KEY_2 = 'label2';
           const LABEL_VALUE_2 = 'value2';
 
-          const { user, read } = await renderForm(checkType);
+          const { user, read } = await renderNewForm(checkType);
           await fillMandatoryFields({ user, checkType });
           await goToSection(user, 3);
 
@@ -78,7 +79,7 @@ describe('Api endpoint checks - common fields', () => {
 
       describe(`Section 4 (alerting)`, () => {
         it(`can submit the form with alerting filled in`, async () => {
-          const { user, read } = await renderForm(checkType);
+          const { user, read } = await renderNewForm(checkType);
           await fillMandatoryFields({ user, checkType });
 
           await goToSection(user, 4);
@@ -94,7 +95,7 @@ describe('Api endpoint checks - common fields', () => {
 
       describe(`Section 5 (Execution)`, () => {
         it(`can publish a full set of metrics`, async () => {
-          const { user, read } = await renderForm(checkType);
+          const { user, read } = await renderNewForm(checkType);
           await fillMandatoryFields({ user, checkType });
           await goToSection(user, 5);
 

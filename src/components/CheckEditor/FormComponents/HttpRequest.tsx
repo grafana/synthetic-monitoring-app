@@ -21,6 +21,7 @@ import { RequestBodyContentEncoding } from './RequestBodyContentEncoding';
 import { RequestBodyContentType } from './RequestBodyContentType';
 import { RequestBodyTextArea } from './RequestBodyTextArea';
 import { RequestHeaders } from './RequestHeaders';
+import { RequestQueryParams } from './RequestQueryParams';
 
 interface HttpRequestProps {
   fields: HttpRequestFields;
@@ -128,6 +129,16 @@ const HttpRequestOptions = ({ fields }: { fields: HttpRequestFields }) => {
         {followRedirectsName && <HttpCheckFollowRedirects name={followRedirectsName} />}
         {ipVersionName && <CheckIpVersion description={`The IP protocol of the HTTP request`} name={ipVersionName} />}
       </Request.Options.Section>
+      {fields.queryParams && (
+        <Request.Options.Section label={`Query Parameters`}>
+          <RequestQueryParams
+            description={`The query parameters sent with the request. These parameters reduce cardinality when displaying URLs in dashboards. If you need higher cardinality, add your query parameters to the "Request target" field instead.`}
+            label={`Query parameter`}
+            name={fields.queryParams.name}
+            data-fs-element="Query parameters"
+          />
+        </Request.Options.Section>
+      )}
       <Request.Options.Section label={`Request Body`}>
         {requestContentTypeName && <RequestBodyContentType name={requestContentTypeName} />}
         {requestContentEncodingName && <RequestBodyContentEncoding name={requestContentEncodingName} />}

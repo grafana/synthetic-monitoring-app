@@ -11,6 +11,7 @@ import {
 import { GrafanaTheme2 } from '@grafana/data';
 import { Button, Counter, Field, IconButton, Input, Select, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { DataTestIds } from 'test/dataTestIds';
 
 import { CheckFormValuesMultiHttp, MultiHttpAssertionType } from 'types';
 import {
@@ -44,11 +45,14 @@ export const MultiHttpAssertions = () => {
       {entries.map((entry, index) => {
         const assertionFieldName: FieldPath<CheckFormValuesMultiHttp> = `settings.multihttp.entries.${index}.checks`;
         const assertionsLength = getValues(assertionFieldName)?.length;
+        const fallbackLabel = `Request ${index + 1}`;
+        const label = entry.request.url || fallbackLabel;
 
         return (
           <MultiHttpCollapse
-            key={`${entry.request.method}-${entry.request.url}`}
-            label={entry.request.url || `Request ${index + 1}`}
+            data-testid={`${DataTestIds.REQUEST_ASSERTION}-${index}`}
+            key={`${entry.request.method}-${label}`}
+            label={label}
             isOpen={toggleStates[index]}
             onToggle={() => {
               setToggleStates((prev) => {
@@ -90,7 +94,11 @@ const RequestAssertions = ({ index }: { index: number }) => {
           const assertionTypeName: FieldPath<CheckFormValuesMultiHttp> = `${assertionFieldName}.${assertionIndex}.type`;
 
           return (
-            <Stack alignItems={`baseline`} key={field.id}>
+            <Stack
+              alignItems={`baseline`}
+              key={field.id}
+              data-testid={`${DataTestIds.INDIVIDUAL_ASSERTION}-${assertionIndex}`}
+            >
               <Controller
                 name={assertionTypeName}
                 render={({ field }) => {

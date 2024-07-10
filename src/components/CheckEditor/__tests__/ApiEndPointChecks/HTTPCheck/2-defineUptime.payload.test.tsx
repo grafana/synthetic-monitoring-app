@@ -1,15 +1,17 @@
 import { screen } from '@testing-library/react';
+import { selectOption } from 'test/utils';
 
 import { CheckType, HTTPCompressionAlgo, HttpVersion } from 'types';
-import { fillMandatoryFields, goToSection, renderForm, submitForm } from 'components/CheckEditor/__tests__/helpers';
-import { selectOption } from 'components/CheckEditor/testHelpers';
+import { goToSection, renderNewForm, submitForm } from 'components/CheckEditor/__testHelpers__/checkForm';
+
+import { fillMandatoryFields } from '../../../__testHelpers__/apiEndPoint';
 
 const checkType = CheckType.HTTP;
 
 describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
   it(`has the correct default values submitted`, async () => {
     const THREE_SECONDS_IN_MS = 3 * 1000;
-    const { read, user } = await renderForm(checkType);
+    const { read, user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
     await submitForm(user);
     const { body } = await read();
@@ -23,7 +25,7 @@ describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
     const ALL_GOOD_STATUS_CODE = 200;
     const I_AM_A_TEAPOT_STATUS_CODE = 418;
 
-    const { read, user } = await renderForm(checkType);
+    const { read, user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
 
     await goToSection(user, 2);
@@ -37,7 +39,7 @@ describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
   });
 
   it(`can add valid HTTP versions`, async () => {
-    const { read, user } = await renderForm(checkType);
+    const { read, user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
 
     await goToSection(user, 2);
@@ -51,7 +53,7 @@ describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
   });
 
   it(`ignores SSL`, async () => {
-    const { read, user } = await renderForm(checkType);
+    const { read, user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
 
     await goToSection(user, 2);
@@ -65,7 +67,7 @@ describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
   });
 
   it(`fails if SSL is present`, async () => {
-    const { read, user } = await renderForm(checkType);
+    const { read, user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
 
     await goToSection(user, 2);
@@ -79,7 +81,7 @@ describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
   });
 
   it(`fails if SSL is not present`, async () => {
-    const { read, user } = await renderForm(checkType);
+    const { read, user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
 
     await goToSection(user, 2);
@@ -98,7 +100,7 @@ describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
         const HEADER_NAME = `X-Header-Name`;
         const REGEX = `some nice regex`;
 
-        const { read, user } = await renderForm(checkType);
+        const { read, user } = await renderNewForm(checkType);
         await fillMandatoryFields({ user, checkType });
 
         await goToSection(user, 2);
@@ -126,7 +128,7 @@ describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
         const HEADER_NAME = `X-Header-Name`;
         const REGEX = `some nice regex`;
 
-        const { read, user } = await renderForm(checkType);
+        const { read, user } = await renderNewForm(checkType);
         await fillMandatoryFields({ user, checkType });
 
         await goToSection(user, 2);
@@ -155,7 +157,7 @@ describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
         const HEADER_NAME = `X-Header-Name`;
         const REGEX = `some nice regex`;
 
-        const { read, user } = await renderForm(checkType);
+        const { read, user } = await renderNewForm(checkType);
         await fillMandatoryFields({ user, checkType });
 
         await goToSection(user, 2);
@@ -184,7 +186,7 @@ describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
         const HEADER_NAME = `X-Header-Name`;
         const REGEX = `some nice regex`;
 
-        const { read, user } = await renderForm(checkType);
+        const { read, user } = await renderNewForm(checkType);
         await fillMandatoryFields({ user, checkType });
 
         await goToSection(user, 2);
@@ -215,7 +217,7 @@ describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
       it(`can add a failing check if it matches a regex`, async () => {
         const REGEX = `some nice regex`;
 
-        const { read, user } = await renderForm(checkType);
+        const { read, user } = await renderNewForm(checkType);
         await fillMandatoryFields({ user, checkType });
 
         await goToSection(user, 2);
@@ -235,7 +237,7 @@ describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
       it(`can add a failing check if it does not match a regex`, async () => {
         const REGEX = `some nice regex`;
 
-        const { read, user } = await renderForm(checkType);
+        const { read, user } = await renderNewForm(checkType);
         await fillMandatoryFields({ user, checkType });
 
         await goToSection(user, 2);
@@ -256,7 +258,7 @@ describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
   });
 
   it(`can add a compression option`, async () => {
-    const { read, user } = await renderForm(checkType);
+    const { read, user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
     await goToSection(user, 2);
     await selectOption(user, { label: 'Compression option', option: 'gzip' });
@@ -267,7 +269,7 @@ describe(`HttpCheck - Section 2 (Define uptime) payload`, () => {
   });
 
   it(`can set the timeout`, async () => {
-    const { user, read } = await renderForm(checkType);
+    const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
     await goToSection(user, 2);
 

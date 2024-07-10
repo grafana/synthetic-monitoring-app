@@ -4,7 +4,7 @@ import { type UserEvent } from '@testing-library/user-event';
 import { render } from 'test/render';
 
 import { AlertFamily, AlertRule, AlertSensitivity } from 'types';
-import { selectOption } from 'components/CheckEditor/testHelpers';
+import { selectOption } from 'test/utils';
 import {
   ALERT_PROBE_SUCCESS_RECORDING_EXPR,
   DEFAULT_ALERT_NAMES_BY_FAMILY_AND_SENSITIVITY,

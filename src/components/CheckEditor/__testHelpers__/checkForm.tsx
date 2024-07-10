@@ -1,41 +1,34 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
 import { UserEvent } from '@testing-library/user-event';
-import { PRIVATE_PROBE } from 'test/fixtures/probes';
 import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
 
-import { CheckType, CheckTypeGroup, ROUTES } from 'types';
+import { Check, CheckType, ROUTES } from 'types';
+import { getCheckType, getCheckTypeGroup } from 'utils';
 import { CheckForm } from 'components/CheckForm/CheckForm';
 import { PLUGIN_URL_PATH } from 'components/constants';
-
-import { selectOption } from '../testHelpers';
-
-interface FillMandatoryFieldsOptions {
-  user: UserEvent;
-  fieldsToOmit?: Array<'job' | 'target' | 'probes'>;
-  checkType: CheckType;
-}
 
 export const TARGET_MAP = {
   [CheckType.DNS]: 'grafana.com',
   [CheckType.GRPC]: 'grafana.com:50051',
   [CheckType.HTTP]: 'https://grafana.com/',
-  [CheckType.MULTI_HTTP]: '',
+  [CheckType.MULTI_HTTP]: 'https://grafana.com/',
   [CheckType.PING]: 'grafana.com',
   [CheckType.Scripted]: 'Whatever string we would like',
   [CheckType.TCP]: 'grafana.com:80',
   [CheckType.Traceroute]: 'grafana.com',
 };
 
-export async function renderForm(checkType: CheckType) {
+export async function renderNewForm(checkType: CheckType) {
   const { record, read } = getServerRequests();
   server.use(apiRoute(`addCheck`, {}, record));
+  const checkTypeGroup = getCheckTypeGroup(checkType);
 
   const res = render(<CheckForm />, {
-    route: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/:checkTypeGroup`,
-    path: `${PLUGIN_URL_PATH}${ROUTES.Checks}/new/${CheckTypeGroup.ApiTest}?checkType=${checkType}`,
+    route: `${PLUGIN_URL_PATH}${ROUTES.NewCheck}/:checkTypeGroup`,
+    path: `${PLUGIN_URL_PATH}${ROUTES.NewCheck}/${checkTypeGroup}?checkType=${checkType}`,
   });
 
   await screen.findByText('Submit');
@@ -46,24 +39,23 @@ export async function renderForm(checkType: CheckType) {
   };
 }
 
-export async function fillMandatoryFields({ user, fieldsToOmit = [], checkType }: FillMandatoryFieldsOptions) {
-  await goToSection(user, 1);
+export async function renderEditForm(check: Check) {
+  const { record, read } = getServerRequests();
+  server.use(apiRoute(`updateCheck`, {}, record));
+  const checkType = getCheckType(check.settings);
+  const checkTypeGroup = getCheckTypeGroup(checkType);
 
-  if (!fieldsToOmit.includes('job')) {
-    const jobNameInput = await screen.findByLabelText('Job name', { exact: false });
-    await user.type(jobNameInput, `MANDATORY JOB NAME`);
-  }
+  const res = render(<CheckForm />, {
+    route: `${PLUGIN_URL_PATH}${ROUTES.EditCheck}/edit/:checkTypeGroup/:id`,
+    path: `${PLUGIN_URL_PATH}${ROUTES.EditCheck}/edit/${checkTypeGroup}/${check.id}`,
+  });
 
-  if (!fieldsToOmit.includes('target')) {
-    const targetInput = await screen.getByPlaceholderText(TARGET_MAP[checkType]);
-    await user.type(targetInput, TARGET_MAP[checkType]);
-  }
+  await screen.findByText('Submit');
 
-  await goToSection(user, 5);
-
-  if (!fieldsToOmit.includes('probes')) {
-    await selectOption(user, { label: 'Probe locations', option: PRIVATE_PROBE.name });
-  }
+  return {
+    ...res,
+    read,
+  };
 }
 
 export async function goToSection(user: UserEvent, sectionIndex: 1 | 2 | 3 | 4 | 5) {

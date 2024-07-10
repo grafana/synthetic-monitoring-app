@@ -14,7 +14,7 @@ import { render } from 'test/render';
 import { server } from 'test/server';
 
 import { Check, FeatureName, ROUTES } from 'types';
-import { getSelect, selectOption } from 'components/CheckEditor/testHelpers';
+import { getSelect, selectOption } from 'test/utils';
 import { PLUGIN_URL_PATH } from 'components/constants';
 
 import { CheckList } from './CheckList';

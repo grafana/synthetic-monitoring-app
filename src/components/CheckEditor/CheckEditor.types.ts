@@ -30,6 +30,7 @@ export type HttpRequestFields = TLSConfigFields & {
   bearerToken?: FieldProps;
   proxyUrl?: FieldProps;
   proxyHeaders?: FieldProps;
+  queryParams?: FieldProps;
 };
 
 export type DNSRequestFields = {
