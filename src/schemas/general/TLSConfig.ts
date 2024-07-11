@@ -18,7 +18,7 @@ export const TLSConfigSchema: ZodType<TLSConfig | undefined> = z
     clientKey: z.string().refine(validateTLSClientKey, {
       message: 'Key must be in the PEM format.',
     }),
-    insecureSkipVerify: z.boolean(),
+    insecureSkipVerify: z.boolean().optional(),
     serverName: z.string(),
   })
   .optional();

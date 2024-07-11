@@ -6,4 +6,5 @@ export enum DataTestIds {
   INDIVIDUAL_ASSERTION = 'individual-assertion',
   REQUEST_ASSERTION = 'request-assertion',
   MULTI_HTTP_REQUEST = 'multihttp-request',
+  ACTIONS_BAR = 'actions-bar',
 }

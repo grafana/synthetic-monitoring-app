@@ -2,29 +2,12 @@ import { screen } from '@testing-library/react';
 import { PRIVATE_PROBE } from 'test/fixtures/probes';
 import { selectOption } from 'test/utils';
 
-import { AlertSensitivity, Check, CheckType } from 'types';
-import {
-  FALLBACK_CHECK_DNS,
-  FALLBACK_CHECK_GRPC,
-  FALLBACK_CHECK_HTTP,
-  FALLBACK_CHECK_PING,
-  FALLBACK_CHECK_TCP,
-  FALLBACK_CHECK_TRACEROUTE,
-} from 'components/constants';
+import { AlertSensitivity, CheckType } from 'types';
 
-import { fillMandatoryFields } from '../../__testHelpers__/apiEndPoint';
+import { FALLBACK_CHECK_MAP, fillMandatoryFields } from '../../__testHelpers__/apiEndPoint';
 import { goToSection, renderNewForm, submitForm, TARGET_MAP } from '../../__testHelpers__/checkForm';
 
-const FALLBACK_CHECK_MAP: Record<string, Check> = {
-  [CheckType.HTTP]: FALLBACK_CHECK_HTTP,
-  [CheckType.PING]: FALLBACK_CHECK_PING,
-  [CheckType.GRPC]: FALLBACK_CHECK_GRPC,
-  [CheckType.DNS]: FALLBACK_CHECK_DNS,
-  [CheckType.TCP]: FALLBACK_CHECK_TCP,
-  [CheckType.Traceroute]: FALLBACK_CHECK_TRACEROUTE,
-};
-
-describe('Api endpoint checks - common fields', () => {
+describe('Api endpoint checks - common fields payload', () => {
   Object.keys(FALLBACK_CHECK_MAP).forEach((cType) => {
     describe(`${cType}`, () => {
       const checkType = cType as CheckType;

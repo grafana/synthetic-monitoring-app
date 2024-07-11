@@ -69,7 +69,7 @@ const Prefix = ({ index, hasErrors, visited }: any) => {
 };
 
 function getStyles(theme: GrafanaTheme2) {
-  const containerName = `checkForm`;
+  const containerName = `formLayout`;
   const breakpoint = theme.breakpoints.values.md;
   const query = `(max-width: ${breakpoint}px)`;
   const containerQuery = `@container ${containerName} ${query}`;

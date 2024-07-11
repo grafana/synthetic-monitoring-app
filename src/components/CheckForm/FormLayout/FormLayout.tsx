@@ -5,13 +5,20 @@ import { Alert, Button, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { flatten } from 'flat';
 import { ZodType } from 'zod';
+import { DataTestIds } from 'test/dataTestIds';
 
 import { findFieldToFocus, useFormLayout } from './formlayout.utils';
 import { FormSection, FormSectionInternal } from './FormSection';
 import { FormSidebar } from './FormSidebar';
 import { FormSupportingContent } from './FormSupportingContent';
 
+type ActionNode = {
+  index: number;
+  element: ReactNode;
+};
+
 type FormLayoutProps<T extends FieldValues> = {
+  actions?: ActionNode[];
   children: ReactNode;
   onSubmit: (
     onValid: SubmitHandler<T>,
@@ -27,6 +34,7 @@ const errorMessage = ``; // todo: hook this back up
 export const FORM_MAX_WIDTH = `860px`;
 
 export const FormLayout = <T extends FieldValues>({
+  actions,
   children,
   onSubmit,
   onValid,
@@ -88,6 +96,8 @@ export const FormLayout = <T extends FieldValues>({
     onInvalid?.(errs);
   };
 
+  const actionButtons = actions?.find((action) => action.index === activeSection)?.element;
+
   return (
     <div className={styles.wrapper}>
       <div className={styles.container}>
@@ -121,16 +131,15 @@ export const FormLayout = <T extends FieldValues>({
                   </Button>
                 )}
               </div>
-              <div className={styles.stack2}>
-                {activeSection < formSections.length - 1 ? (
+              <div className={styles.stack2} data-testid={DataTestIds.ACTIONS_BAR}>
+                {actionButtons}
+                {activeSection < formSections.length - 1 && (
                   <Button onClick={() => goToSection(activeSection + 1)} icon="arrow-right" type="button">
                     <div className={styles.stack}>
                       <div>{activeSection + 2}.</div>
                       <div>{sections[activeSection + 1].props.label}</div>
                     </div>
                   </Button>
-                ) : (
-                  <Button key="test">Test</Button>
                 )}
                 <Button key="submit" type="submit">
                   Submit

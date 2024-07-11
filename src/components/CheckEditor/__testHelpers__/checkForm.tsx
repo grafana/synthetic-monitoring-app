@@ -1,6 +1,7 @@
 import React from 'react';
-import { screen } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import { UserEvent } from '@testing-library/user-event';
+import { DataTestIds } from 'test/dataTestIds';
 import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
@@ -70,4 +71,10 @@ export async function goToSection(user: UserEvent, sectionIndex: 1 | 2 | 3 | 4 |
 export async function submitForm(user: UserEvent) {
   const saveButton = await screen.findByText('Submit');
   await user.click(saveButton);
+}
+
+export async function testCheck(user: UserEvent) {
+  const actionsBar = screen.getByTestId(DataTestIds.ACTIONS_BAR);
+  const testButton = await within(actionsBar).findByText('Test');
+  await user.click(testButton);
 }

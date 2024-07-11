@@ -1,12 +1,13 @@
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import { FormProvider, SubmitErrorHandler, SubmitHandler, useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Stack, useStyles2 } from '@grafana/ui';
+import { Button, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { Check, CheckFormPageParams, CheckFormValues, CheckPageParams, CheckType } from 'types';
+import { AdHocCheckResponse } from 'datasource/responses.types';
 import { useChecks } from 'data/useChecks';
 import { CHECK_TYPE_GROUP_OPTIONS } from 'hooks/useCheckTypeGroupOptions';
 import { toFormValues } from 'components/CheckEditor/checkFormTransformations';
@@ -23,6 +24,7 @@ import { TCPCheckLayout } from 'components/CheckForm/FormLayouts/CheckTCPLayout'
 import { TracerouteCheckLayout } from 'components/CheckForm/FormLayouts/CheckTracerouteLayout';
 import { LayoutSection } from 'components/CheckForm/FormLayouts/Layout.types';
 import { CheckFormAlert } from 'components/CheckFormAlert';
+import { CheckTestResultsModal } from 'components/CheckTestResultsModal';
 import { CheckUsage } from 'components/CheckUsage';
 import { fallbackCheckMap } from 'components/constants';
 import { LabelField } from 'components/LabelField';
@@ -77,6 +79,8 @@ type CheckFormProps = {
 };
 
 const CheckFormContent = ({ check }: CheckFormProps) => {
+  const [openTestCheckModal, setOpenTestCheckModal] = useState(false);
+  const [adhocTestData, setAdhocTestData] = useState<AdHocCheckResponse>();
   const checkType = useFormCheckType(check);
   const { checkTypeGroup } = useParams<CheckFormPageParams>();
   const group =
@@ -90,7 +94,15 @@ const CheckFormContent = ({ check }: CheckFormProps) => {
     shouldFocusError: false, // we manage focus manually
     resolver: zodResolver(schema),
   });
-  const { handleInvalid, handleValid } = useCheckForm({ check, checkType });
+  const { handleInvalid, handleValid, testButtonRef, testCheckError, testCheckPending } = useCheckForm({
+    check,
+    checkType,
+    onTestSuccess: (data) => {
+      console.log(`hit me`);
+      setAdhocTestData(data);
+      setOpenTestCheckModal(true);
+    },
+  });
 
   const handleSubmit = (onValid: SubmitHandler<CheckFormValues>, onInvalid: SubmitErrorHandler<CheckFormValues>) =>
     formMethods.handleSubmit(onValid, onInvalid);
@@ -115,12 +127,44 @@ const CheckFormContent = ({ check }: CheckFormProps) => {
 
   const pageNavText = check ? `Editing ${check.job}` : `New ${group.label} check`;
 
+  const actions =
+    checkType !== CheckType.Traceroute
+      ? [
+          {
+            index: 4,
+            element: (
+              <Button
+                type="submit"
+                variant={`secondary`}
+                ref={testButtonRef}
+                icon={testCheckPending ? `fa fa-spinner` : undefined}
+              >
+                Test
+              </Button>
+            ),
+          },
+        ]
+      : [];
+
+  const closeModal = useCallback(() => {
+    setOpenTestCheckModal(false);
+  }, []);
+
+  // console.log(formMethods.formState.errors);
+  // console.log(formMethods.watch());
+
   return (
     <PluginPage pageNav={{ text: pageNavText }}>
       <FormProvider {...formMethods}>
         <CheckFormContextProvider>
           <div className={styles.wrapper}>
-            <FormLayout onSubmit={handleSubmit} onValid={handleValid} onInvalid={handleInvalid} schema={schema}>
+            <FormLayout
+              actions={actions}
+              onSubmit={handleSubmit}
+              onValid={handleValid}
+              onInvalid={handleInvalid}
+              schema={schema}
+            >
               <FormLayout.Section label={checkTypeStep1Label[checkType]} fields={[`job`, ...defineCheckFields]}>
                 <Stack direction={`column`} gap={4}>
                   <CheckJobName />
@@ -149,6 +193,7 @@ const CheckFormContent = ({ check }: CheckFormProps) => {
           </div>
         </CheckFormContextProvider>
       </FormProvider>
+      <CheckTestResultsModal isOpen={openTestCheckModal} onDismiss={closeModal} testResponse={adhocTestData} />
     </PluginPage>
   );
 };

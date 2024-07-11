@@ -1,4 +1,4 @@
-import { BaseSyntheticEvent, useCallback } from 'react';
+import { BaseSyntheticEvent, useCallback, useRef } from 'react';
 import { FieldErrors } from 'react-hook-form';
 import { DNSCheckSchema } from 'schemas/forms/DNSCheckSchema';
 import { GRPCCheckSchema } from 'schemas/forms/GRPCCheckSchema';
@@ -10,7 +10,8 @@ import { TCPCheckSchema } from 'schemas/forms/TCPCheckSchema';
 import { TracerouteCheckSchema } from 'schemas/forms/TracerouteCheckSchema';
 
 import { Check, CheckFormValues, CheckType, ROUTES } from 'types';
-import { useCUDChecks } from 'data/useChecks';
+import { AdHocCheckResponse } from 'datasource/responses.types';
+import { useCUDChecks, useTestCheck } from 'data/useChecks';
 import { useNavigation } from 'hooks/useNavigation';
 import { toPayload } from 'components/CheckEditor/checkFormTransformations';
 import { CHECK_FORM_ERROR_EVENT } from 'components/constants';
@@ -34,9 +35,17 @@ export function useCheckFormSchema(check?: Check) {
   return schemaMap[checkType];
 }
 
-export function useCheckForm({ check, checkType }: { check?: Check; checkType: CheckType }) {
+interface UseCheckFormProps {
+  check?: Check;
+  checkType: CheckType;
+  onTestSuccess: (data: AdHocCheckResponse) => void;
+}
+
+export function useCheckForm({ check, checkType, onTestSuccess }: UseCheckFormProps) {
   const navigate = useNavigation();
   const { updateCheck, createCheck } = useCUDChecks({ eventInfo: { checkType } });
+  const testButtonRef = useRef<HTMLButtonElement>(null);
+  const { mutate: testCheck, isPending, error } = useTestCheck({ eventInfo: { checkType } });
 
   const mutateCheck = useCallback(
     (newCheck: Check) => {
@@ -60,11 +69,18 @@ export function useCheckForm({ check, checkType }: { check?: Check; checkType: C
 
   const handleValid = useCallback(
     (checkValues: CheckFormValues, event: BaseSyntheticEvent | undefined) => {
+      // react-hook-form doesn't let us provide SubmitEvent to BaseSyntheticEvent
+      const submitter = (event?.nativeEvent as SubmitEvent).submitter;
       const toSubmit = toPayload(checkValues);
+      console.log(event);
+
+      if (submitter === testButtonRef.current) {
+        return testCheck(toSubmit, { onSuccess: onTestSuccess });
+      }
 
       mutateCheck(toSubmit);
     },
-    [mutateCheck]
+    [mutateCheck, onTestSuccess, testCheck]
   );
 
   const handleInvalid = useCallback((errs: FieldErrors) => {
@@ -72,6 +88,9 @@ export function useCheckForm({ check, checkType }: { check?: Check; checkType: C
   }, []);
 
   return {
+    testCheckError: error,
+    testCheckPending: isPending,
+    testButtonRef,
     handleValid,
     handleInvalid,
   };

@@ -4,6 +4,14 @@ import { PRIVATE_PROBE } from 'test/fixtures/probes';
 import { selectOption } from 'test/utils';
 
 import { CheckType } from 'types';
+import {
+  FALLBACK_CHECK_DNS,
+  FALLBACK_CHECK_GRPC,
+  FALLBACK_CHECK_HTTP,
+  FALLBACK_CHECK_PING,
+  FALLBACK_CHECK_TCP,
+  FALLBACK_CHECK_TRACEROUTE,
+} from 'components/constants';
 
 import { goToSection, TARGET_MAP } from './checkForm';
 
@@ -12,6 +20,15 @@ interface FillMandatoryFieldsOptions {
   fieldsToOmit?: Array<'job' | 'target' | 'probes'>;
   checkType: CheckType;
 }
+
+export const FALLBACK_CHECK_MAP: Record<string, Check> = {
+  [CheckType.HTTP]: FALLBACK_CHECK_HTTP,
+  [CheckType.PING]: FALLBACK_CHECK_PING,
+  [CheckType.GRPC]: FALLBACK_CHECK_GRPC,
+  [CheckType.DNS]: FALLBACK_CHECK_DNS,
+  [CheckType.TCP]: FALLBACK_CHECK_TCP,
+  [CheckType.Traceroute]: FALLBACK_CHECK_TRACEROUTE,
+};
 
 export async function fillMandatoryFields({ user, fieldsToOmit = [], checkType }: FillMandatoryFieldsOptions) {
   await goToSection(user, 1);

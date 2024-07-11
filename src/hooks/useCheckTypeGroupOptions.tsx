@@ -1,6 +1,5 @@
-import React, { ReactNode } from 'react';
+import { ReactNode } from 'react';
 import { IconName } from '@grafana/data';
-import { TextLink } from '@grafana/ui';
 
 import { CheckType, CheckTypeGroup, ROUTES } from 'types';
 import { getRoute } from 'components/Routing';
@@ -51,23 +50,24 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
     icon: `k6`,
     protocols: [
       { label: `HTTP` },
-      { label: `gRPC` },
+      // we don't support these yet
+      // { label: `gRPC` },
       { label: `WebSockets` },
-      {
-        label: `+More`,
-        tooltip: (
-          <div>
-            You can use k6 extensions to add more protocols.{' '}
-            <TextLink
-              href={`https://grafana.com/docs/k6/latest/using-k6/protocols/#extend-protocol-support-with-xk6`}
-              external
-              variant={`bodySmall`}
-            >
-              Extending protocol support
-            </TextLink>
-          </div>
-        ),
-      },
+      // {
+      //   label: `+More`,
+      //   tooltip: (
+      //     <div>
+      //       You can use k6 extensions to add more protocols.{' '}
+      //       <TextLink
+      //         href={`https://grafana.com/docs/k6/latest/using-k6/protocols/#extend-protocol-support-with-xk6`}
+      //         external
+      //         variant={`bodySmall`}
+      //       >
+      //         Extending protocol support
+      //       </TextLink>
+      //     </div>
+      //   ),
+      // },
     ],
   },
 ];
