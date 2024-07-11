@@ -152,6 +152,7 @@ const CheckFormContent = ({ check }: CheckFormProps) => {
 
   // console.log(formMethods.formState.errors);
   // console.log(formMethods.watch());
+  console.log(testCheckError);
 
   return (
     <PluginPage pageNav={{ text: pageNavText }}>

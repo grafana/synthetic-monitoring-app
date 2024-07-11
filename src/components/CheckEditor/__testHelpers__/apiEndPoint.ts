@@ -3,7 +3,7 @@ import { UserEvent } from '@testing-library/user-event';
 import { PRIVATE_PROBE } from 'test/fixtures/probes';
 import { selectOption } from 'test/utils';
 
-import { CheckType } from 'types';
+import { Check, CheckType } from 'types';
 import {
   FALLBACK_CHECK_DNS,
   FALLBACK_CHECK_GRPC,
