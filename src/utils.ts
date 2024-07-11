@@ -26,7 +26,7 @@ import {
   isTCPSettings,
 } from 'utils.types';
 import { SMDataSource } from 'datasource/DataSource';
-import { ListCheckResult, ListTenantLimitsResponse, Metric } from 'datasource/responses.types';
+import { Metric } from 'datasource/responses.types';
 import { CHECK_TYPE_OPTIONS } from 'hooks/useCheckTypeOptions';
 
 /**
@@ -433,33 +433,6 @@ function doesTLSConfigHaveValues(tlsConfig?: TLSConfig) {
   }
 
   return Object.values(tlsConfig).some((value) => value);
-}
-
-export function isOverScriptedLimit({
-  checks,
-  limits,
-}: {
-  checks?: Check[] | ListCheckResult;
-  limits?: ListTenantLimitsResponse;
-}): boolean {
-  if (!limits || !checks) {
-    return false;
-  }
-  const scriptedChecksCount = checks.filter((c) => getCheckType(c.settings) === CheckType.Scripted).length;
-  return scriptedChecksCount >= limits.MaxScriptedChecks;
-}
-
-export function isOverCheckLimit({
-  checks,
-  limits,
-}: {
-  checks?: Check[] | ListCheckResult;
-  limits?: ListTenantLimitsResponse;
-}): boolean {
-  if (!limits || !checks) {
-    return false;
-  }
-  return checks.length >= limits.MaxChecks;
 }
 
 export function getMethodColor(theme: GrafanaTheme2, value: HttpMethod) {

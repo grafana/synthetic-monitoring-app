@@ -6,12 +6,6 @@ import { render } from 'test/render';
 
 import { FormLayout } from './FormLayout';
 
-type TestValues = {
-  job: string;
-};
-
-type TestFormProps = { children: ReactNode };
-
 describe(`FormLayout`, () => {
   it(`automatically has the first step open`, async () => {
     const firstSectionText = `First section content`;
@@ -118,6 +112,12 @@ describe(`FormLayout`, () => {
     expect(await screen.queryByText(secondSectionText)).not.toBeInTheDocument();
   });
 });
+
+type TestValues = {
+  job: string;
+};
+
+type TestFormProps = { children: ReactNode };
 
 const TestForm = ({ children }: TestFormProps) => {
   const formMethods = useForm<TestValues>({

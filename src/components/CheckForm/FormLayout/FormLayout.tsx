@@ -1,7 +1,7 @@
 import React, { BaseSyntheticEvent, Children, isValidElement, ReactNode, useMemo } from 'react';
 import { FieldErrors, FieldValues, SubmitHandler } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Alert, Button, useStyles2 } from '@grafana/ui';
+import { Button, Stack, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { flatten } from 'flat';
 import { ZodType } from 'zod';
@@ -18,6 +18,7 @@ type ActionNode = {
 
 type FormLayoutProps<T extends FieldValues> = {
   actions?: ActionNode[];
+  alerts?: ReactNode;
   children: ReactNode;
   onSubmit: (
     onValid: SubmitHandler<T>,
@@ -28,12 +29,11 @@ type FormLayoutProps<T extends FieldValues> = {
   schema: ZodType<T>;
 };
 
-const errorMessage = ``; // todo: hook this back up
-
 export const FORM_MAX_WIDTH = `860px`;
 
 export const FormLayout = <T extends FieldValues>({
   actions,
+  alerts,
   children,
   onSubmit,
   onValid,
@@ -111,39 +111,33 @@ export const FormLayout = <T extends FieldValues>({
           <div>{sections}</div>
 
           <div>
-            {errorMessage && (
-              <div className={styles.submissionError}>
-                <Alert title="Save failed" severity="error">
-                  {errorMessage}
-                </Alert>
-              </div>
-            )}
+            {alerts && <div className={styles.alerts}>{alerts}</div>}
             <hr />
             <div className={cx(styles.actionsBar, styles.sectionContent)}>
               <div>
                 {activeSection !== 0 && (
                   <Button onClick={() => goToSection(activeSection - 1)} icon="arrow-left" variant="secondary">
-                    <div className={styles.stack}>
+                    <Stack gap={0.5}>
                       <div>{activeSection}.</div>
                       <div>{sections[activeSection - 1].props.label}</div>
-                    </div>
+                    </Stack>
                   </Button>
                 )}
               </div>
-              <div className={styles.stack2} data-testid={DataTestIds.ACTIONS_BAR}>
+              <Stack data-testid={DataTestIds.ACTIONS_BAR}>
                 {actionButtons}
                 {activeSection < formSections.length - 1 && (
                   <Button onClick={() => goToSection(activeSection + 1)} icon="arrow-right" type="button">
-                    <div className={styles.stack}>
+                    <Stack>
                       <div>{activeSection + 2}.</div>
                       <div>{sections[activeSection + 1].props.label}</div>
-                    </div>
+                    </Stack>
                   </Button>
                 )}
                 <Button key="submit" type="submit">
                   Submit
                 </Button>
-              </div>
+              </Stack>
             </div>
           </div>
         </form>
@@ -165,14 +159,6 @@ const getStyles = (theme: GrafanaTheme2) => {
   };
 
   return {
-    stack: css({
-      display: `flex`,
-      gap: theme.spacing(0.5),
-    }),
-    stack2: css({
-      display: `flex`,
-      gap: theme.spacing(1),
-    }),
     wrapper: css({
       containerName,
       containerType: `inline-size`,
@@ -193,7 +179,7 @@ const getStyles = (theme: GrafanaTheme2) => {
     sectionContent: css({
       maxWidth: FORM_MAX_WIDTH,
     }),
-    submissionError: css({
+    alerts: css({
       marginTop: theme.spacing(2),
     }),
     actionsBar: css({ display: 'flex', justifyContent: 'space-between', maxWidth: FORM_MAX_WIDTH }),

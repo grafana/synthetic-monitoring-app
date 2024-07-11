@@ -12,9 +12,9 @@ import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
+import { getSelect, selectOption } from 'test/utils';
 
 import { Check, FeatureName, ROUTES } from 'types';
-import { getSelect, selectOption } from 'test/utils';
 import { PLUGIN_URL_PATH } from 'components/constants';
 
 import { CheckList } from './CheckList';

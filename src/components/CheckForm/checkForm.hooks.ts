@@ -43,9 +43,9 @@ interface UseCheckFormProps {
 
 export function useCheckForm({ check, checkType, onTestSuccess }: UseCheckFormProps) {
   const navigate = useNavigation();
-  const { updateCheck, createCheck } = useCUDChecks({ eventInfo: { checkType } });
+  const { updateCheck, createCheck, error } = useCUDChecks({ eventInfo: { checkType } });
   const testButtonRef = useRef<HTMLButtonElement>(null);
-  const { mutate: testCheck, isPending, error } = useTestCheck({ eventInfo: { checkType } });
+  const { mutate: testCheck, isPending, error: testError } = useTestCheck({ eventInfo: { checkType } });
 
   const mutateCheck = useCallback(
     (newCheck: Check) => {
@@ -87,7 +87,8 @@ export function useCheckForm({ check, checkType, onTestSuccess }: UseCheckFormPr
   }, []);
 
   return {
-    testCheckError: error,
+    error,
+    testCheckError: testError,
     testCheckPending: isPending,
     testButtonRef,
     handleValid,

@@ -14,12 +14,12 @@ type CardProps = ContextProps & {
 
 const CardContext = createContext<ContextProps>({ href: '' });
 
-export const Card = ({ children, className, href }: CardProps) => {
+export const Card = ({ children, className, href, ...rest }: CardProps) => {
   const styles = useStyles2(getStyles);
 
   return (
     <CardContext.Provider value={{ href }}>
-      <div className={cx(styles.card, className)}>{children}</div>
+      <div className={cx(styles.card, className)} {...rest}>{children}</div>
     </CardContext.Provider>
   );
 };

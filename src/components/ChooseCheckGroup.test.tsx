@@ -9,7 +9,7 @@ import { FeatureName } from 'types';
 
 import { ChooseCheckGroup } from './ChooseCheckGroup';
 
-function renderChooseCheckGroup({ checkLimit = 10, scriptedLimit = 10 }) {
+async function renderChooseCheckGroup({ checkLimit = 10, scriptedLimit = 10 } = {}) {
   server.use(
     apiRoute('getTenantLimits', {
       result: () => ({
@@ -24,19 +24,17 @@ function renderChooseCheckGroup({ checkLimit = 10, scriptedLimit = 10 }) {
       }),
     })
   );
-  return render(<ChooseCheckGroup />);
+  const res = render(<ChooseCheckGroup />);
+  await screen.findByText('Choose a check type');
+
+  return res;
 }
 it('shows check type options with scripted feature off', async () => {
-  renderChooseCheckGroup({});
-  const checkTypes = ['HTTP', 'TCP', 'DNS', 'PING', 'MULTIHTTP', 'Traceroute'];
-  const cards = await Promise.all(
-    checkTypes.map((checkType) => {
-      return screen.findByText(checkType);
-    })
-  );
-  cards.forEach((card) => {
-    expect(card).toBeInTheDocument();
-  });
+  await renderChooseCheckGroup();
+
+  expect(screen.getByText('API Endpoint')).toBeInTheDocument();
+  expect(screen.getByText('Multi Step')).toBeInTheDocument();
+  expect(screen.queryByText('Scripted')).not.toBeInTheDocument();
 });
 
 it('shows check type options with scripted feature on', async () => {
@@ -45,54 +43,35 @@ it('shows check type options with scripted feature on', async () => {
     [FeatureName.ScriptedChecks]: true,
   });
 
-  renderChooseCheckGroup({});
-  const checkTypes = ['HTTP', 'TCP', 'DNS', 'PING', 'MULTIHTTP', 'Traceroute', 'Scripted'];
-  const cards = await Promise.all(
-    checkTypes.map((checkType) => {
-      return screen.findByText(checkType);
-    })
-  );
-  cards.forEach((card) => {
-    expect(card).toBeInTheDocument();
-  });
+  await renderChooseCheckGroup();
+  expect(screen.getByText('Scripted')).toBeInTheDocument();
 });
 
 it('shows error alert when check limit is reached', async () => {
-  renderChooseCheckGroup({ checkLimit: 1 });
-  const errorAlert = await screen.findByText('Check limit reached');
-  expect(errorAlert).toBeInTheDocument();
-  const checkTypes = ['HTTP', 'TCP', 'DNS', 'PING', 'MULTIHTTP', 'Traceroute', 'Scripted'];
-  const cards = await Promise.all(
-    checkTypes.map((checkType) => {
-      return screen.queryByText(checkType);
-    })
-  );
-  cards.forEach((card) => {
-    expect(card).not.toBeInTheDocument();
-  });
+  await renderChooseCheckGroup({ checkLimit: 1 });
+  const limitError = await screen.findByText('Check limit reached');
+  expect(limitError).toBeInTheDocument();
 });
 
 it('shows error alert when scripted check limit is reached', async () => {
-  // When a user is at the scripted limit, the scripted option should not be shown. Turning on the scripted feature flag
-  // here so that we're isolating that it's the limit that's causing the scripted option to not show, and not the feature flag.
-  // This override should be deleted once the scripted feature is generally released
   jest.replaceProperty(config, 'featureToggles', {
     // @ts-expect-error
     [FeatureName.ScriptedChecks]: true,
   });
 
-  renderChooseCheckGroup({ checkLimit: 10, scriptedLimit: 1 });
-  const errorAlert = await screen.findByText('Scripted check limit reached');
-  expect(errorAlert).toBeInTheDocument();
-  const checkTypes = ['HTTP', 'TCP', 'DNS', 'PING', 'Traceroute'];
-  const cards = await Promise.all(
-    checkTypes.map((checkType) => {
-      return screen.findByText(checkType);
-    })
-  );
-  cards.forEach((card) => {
-    expect(card).toBeInTheDocument();
+  await renderChooseCheckGroup({ checkLimit: 10, scriptedLimit: 0 });
+  const limitError = await screen.findByText('Scripted check limit reached');
+  expect(limitError).toBeInTheDocument();
+});
+
+it('shows total check limit over scripted check limit error if both are reached', async () => {
+  jest.replaceProperty(config, 'featureToggles', {
+    // @ts-expect-error
+    [FeatureName.ScriptedChecks]: true,
   });
-  expect(screen.queryByText('MULTIHTTP')).not.toBeInTheDocument();
-  expect(screen.queryByText('Scripted')).not.toBeInTheDocument();
+
+  await renderChooseCheckGroup({ checkLimit: 1, scriptedLimit: 0 });
+  const limitError = await screen.findByText('Check limit reached');
+  expect(limitError).toBeInTheDocument();
+  expect(screen.queryByText('Scripted check limit reached')).not.toBeInTheDocument();
 });

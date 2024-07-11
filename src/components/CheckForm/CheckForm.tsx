@@ -2,14 +2,12 @@ import React, { useCallback, useState } from 'react';
 import { FormProvider, SubmitErrorHandler, SubmitHandler, useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Button, Stack, useStyles2 } from '@grafana/ui';
+import { Alert, Button, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { zodResolver } from '@hookform/resolvers/zod';
 
-import { Check, CheckFormPageParams, CheckFormValues, CheckPageParams, CheckType } from 'types';
+import { Check, CheckFormPageParams, CheckFormValues, CheckType } from 'types';
 import { AdHocCheckResponse } from 'datasource/responses.types';
-import { useChecks } from 'data/useChecks';
-import { CHECK_TYPE_GROUP_OPTIONS } from 'hooks/useCheckTypeGroupOptions';
 import { toFormValues } from 'components/CheckEditor/checkFormTransformations';
 import { CheckJobName } from 'components/CheckEditor/FormComponents/CheckJobName';
 import { ChooseCheckType } from 'components/CheckEditor/FormComponents/ChooseCheckType';
@@ -35,23 +33,6 @@ import { useCheckForm, useCheckFormSchema } from './checkForm.hooks';
 import { FormLayout } from './FormLayout';
 import { useFormCheckType } from './useCheckType';
 
-export const CheckForm = () => {
-  const { data: checks } = useChecks();
-  const { id } = useParams<CheckPageParams>();
-
-  if (id && !checks) {
-    return null;
-  }
-
-  const check = checks?.find((c) => c.id === Number(id));
-
-  if (!check && id) {
-    return `Can't find check`;
-  }
-
-  return <CheckFormContent check={check} />;
-};
-
 const layoutMap = {
   [CheckType.HTTP]: HttpCheckLayout,
   [CheckType.MULTI_HTTP]: MultiHTTPCheckLayout,
@@ -76,15 +57,14 @@ const checkTypeStep1Label = {
 
 type CheckFormProps = {
   check?: Check;
+  pageTitle: string;
 };
 
-const CheckFormContent = ({ check }: CheckFormProps) => {
+export const CheckForm = ({ check, pageTitle }: CheckFormProps) => {
   const [openTestCheckModal, setOpenTestCheckModal] = useState(false);
   const [adhocTestData, setAdhocTestData] = useState<AdHocCheckResponse>();
   const checkType = useFormCheckType(check);
   const { checkTypeGroup } = useParams<CheckFormPageParams>();
-  const group =
-    CHECK_TYPE_GROUP_OPTIONS.find((option) => option.value === checkTypeGroup) || CHECK_TYPE_GROUP_OPTIONS[0];
   const initialCheck = check || fallbackCheckMap[checkType];
   const schema = useCheckFormSchema(check);
   const styles = useStyles2(getStyles);
@@ -94,7 +74,8 @@ const CheckFormContent = ({ check }: CheckFormProps) => {
     shouldFocusError: false, // we manage focus manually
     resolver: zodResolver(schema),
   });
-  const { handleInvalid, handleValid, testButtonRef, testCheckPending } = useCheckForm({
+
+  const { error, handleInvalid, handleValid, testButtonRef, testCheckError, testCheckPending } = useCheckForm({
     check,
     checkType,
     onTestSuccess: (data) => {
@@ -124,41 +105,37 @@ const CheckFormContent = ({ check }: CheckFormProps) => {
   const labelsFields = labelsSection?.fields || [];
   const labelsComponent = labelsSection?.Component;
 
-  const pageNavText = check ? `Editing ${check.job}` : `New ${group.label} check`;
-
-  const actions =
-    checkType !== CheckType.Traceroute
-      ? [
-          {
-            index: 4,
-            element: (
-              <Button
-                type="submit"
-                variant={`secondary`}
-                ref={testButtonRef}
-                icon={testCheckPending ? `fa fa-spinner` : undefined}
-              >
-                Test
-              </Button>
-            ),
-          },
-        ]
-      : [];
-
   const closeModal = useCallback(() => {
     setOpenTestCheckModal(false);
   }, []);
+
+  const actions = constructActions({ ref: testButtonRef, loading: testCheckPending, checkType });
+  const alerts = (error || testCheckError) && (
+    <Stack direction={`column`}>
+      {error && (
+        <Alert title="Save failed" severity="error">
+          {error.message}
+        </Alert>
+      )}
+      {testCheckError && (
+        <Alert title="Test failed" severity="error">
+          {testCheckError.message}
+        </Alert>
+      )}
+    </Stack>
+  );
 
   // console.log(formMethods.formState.errors);
   // console.log(formMethods.watch());
 
   return (
-    <PluginPage pageNav={{ text: pageNavText }}>
+    <PluginPage pageNav={{ text: pageTitle }}>
       <FormProvider {...formMethods}>
         <CheckFormContextProvider>
           <div className={styles.wrapper}>
             <FormLayout
               actions={actions}
+              alerts={alerts}
               onSubmit={handleSubmit}
               onValid={handleValid}
               onInvalid={handleInvalid}
@@ -196,6 +173,27 @@ const CheckFormContent = ({ check }: CheckFormProps) => {
     </PluginPage>
   );
 };
+
+interface ConstructActionsProps {
+  ref: React.RefObject<HTMLButtonElement>;
+  loading: boolean;
+  checkType: CheckType;
+}
+
+function constructActions({ ref, loading, checkType }: ConstructActionsProps) {
+  return checkType !== CheckType.Traceroute
+    ? [
+        {
+          index: 4,
+          element: (
+            <Button type="submit" variant={`secondary`} ref={ref} icon={loading ? `fa fa-spinner` : undefined}>
+              Test
+            </Button>
+          ),
+        },
+      ]
+    : [];
+}
 
 const getStyles = (theme: GrafanaTheme2) => ({
   wrapper: css({

@@ -39,7 +39,6 @@ export const ChooseCheckType = ({ checkType, checkTypeGroup, disabled }: ChooseC
     return null;
   }
 
-  const id = 'check-type';
   const { description, status } = groupOptions.find((option) => option.value === checkType) || {};
   const requestTypeOptions = groupOptions.map(({ label, value }) => {
     const standard = { label, value };
@@ -56,11 +55,11 @@ export const ChooseCheckType = ({ checkType, checkTypeGroup, disabled }: ChooseC
 
   return (
     <div>
-      <Label htmlFor={id}>Request type</Label>
+      <Label>Request type</Label>
       <Stack direction={`column`}>
         <div data-fs-element={`Request type selector`}>
           <RadioButtonGroup
-            id={id}
+            aria-label={`Request type`}
             options={requestTypeOptions}
             value={checkType}
             onChange={handleCheckTypeChange}

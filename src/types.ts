@@ -651,6 +651,7 @@ export enum FeatureName {
   UnifiedAlerting = 'ngalert',
   ScriptedChecks = 'scripted-checks',
   GRPCChecks = 'grpc-checks',
+  __TURNOFF = 'test-only-do-not-use',
 }
 
 export interface UsageValues {
