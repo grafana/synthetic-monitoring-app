@@ -3,8 +3,8 @@ import { DataTestIds } from 'test/dataTestIds';
 import { selectOption } from 'test/utils';
 
 import { CheckType, MultiHttpAssertionType } from 'types';
-import { goToSection, renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
 import { AssertionConditionVariant, AssertionSubjectVariant } from 'components/MultiHttp/MultiHttpTypes';
+import { goToSection, renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
 
 import { fillMandatoryFields } from '../../../../__testHelpers__/multiStep';
 

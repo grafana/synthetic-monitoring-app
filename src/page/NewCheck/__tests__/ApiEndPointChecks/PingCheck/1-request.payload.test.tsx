@@ -1,8 +1,8 @@
 import { screen } from '@testing-library/react';
+import { selectOption } from 'test/utils';
 
 import { CheckType, IpVersion } from 'types';
 import { renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
-import { selectOption } from 'test/utils';
 
 import { fillMandatoryFields } from '../../../../__testHelpers__/apiEndPoint';
 
