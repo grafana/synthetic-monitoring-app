@@ -25,7 +25,7 @@ import { RequestQueryParams } from './RequestQueryParams';
 
 interface HttpRequestProps {
   fields: HttpRequestFields;
-  onTest: () => void;
+  onTest?: () => void;
 }
 
 export const HttpRequest = ({ fields, onTest }: HttpRequestProps) => {

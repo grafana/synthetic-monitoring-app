@@ -72,7 +72,6 @@ export function useCheckForm({ check, checkType, onTestSuccess }: UseCheckFormPr
       // react-hook-form doesn't let us provide SubmitEvent to BaseSyntheticEvent
       const submitter = (event?.nativeEvent as SubmitEvent).submitter;
       const toSubmit = toPayload(checkValues);
-      console.log(event);
 
       if (submitter === testButtonRef.current) {
         return testCheck(toSubmit, { onSuccess: onTestSuccess });

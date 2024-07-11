@@ -41,6 +41,18 @@ export const ChooseCheckType = ({ checkType, checkTypeGroup, disabled }: ChooseC
 
   const id = 'check-type';
   const { description, status } = groupOptions.find((option) => option.value === checkType) || {};
+  const requestTypeOptions = groupOptions.map(({ label, value }) => {
+    const standard = { label, value };
+
+    if (disabled && value !== checkType) {
+      return {
+        ...standard,
+        description: `You can not modify this check type after it has been created.`,
+      };
+    }
+
+    return { label, value };
+  });
 
   return (
     <div>
@@ -49,7 +61,7 @@ export const ChooseCheckType = ({ checkType, checkTypeGroup, disabled }: ChooseC
         <div data-fs-element={`Request type selector`}>
           <RadioButtonGroup
             id={id}
-            options={groupOptions.map(({ label, value }) => ({ label, value }))}
+            options={requestTypeOptions}
             value={checkType}
             onChange={handleCheckTypeChange}
             disabled={disabled}
@@ -61,7 +73,7 @@ export const ChooseCheckType = ({ checkType, checkTypeGroup, disabled }: ChooseC
               {description}
             </Text>
           )}
-          {status && <CheckBadge status={status} />}
+          {status ? <CheckBadge status={status} /> : <BadgePlaceholder />}
         </Stack>
       </Stack>
     </div>
@@ -84,6 +96,9 @@ const CheckBadge = ({ status }: { status: CheckStatus }) => {
 
   return <Badge text={text} color={color} />;
 };
+
+// so the text doesn't bounce up and down when there area a mix of badges / no-badges
+const BadgePlaceholder = () => <div style={{ height: `22px` }} />;
 
 function updateCheckTypeValues(refValues: RefType, checkType: CheckType, currentCheckType: CheckType) {
   if (Object.hasOwnProperty.call(refValues, checkType)) {

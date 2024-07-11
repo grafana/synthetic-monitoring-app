@@ -10,7 +10,6 @@ import { DataTestIds } from 'test/dataTestIds';
 import { findFieldToFocus, useFormLayout } from './formlayout.utils';
 import { FormSection, FormSectionInternal } from './FormSection';
 import { FormSidebar } from './FormSidebar';
-import { FormSupportingContent } from './FormSupportingContent';
 
 type ActionNode = {
   index: number;
@@ -148,7 +147,6 @@ export const FormLayout = <T extends FieldValues>({
             </div>
           </div>
         </form>
-        <FormSupportingContent />
       </div>
     </div>
   );

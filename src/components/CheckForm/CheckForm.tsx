@@ -94,11 +94,10 @@ const CheckFormContent = ({ check }: CheckFormProps) => {
     shouldFocusError: false, // we manage focus manually
     resolver: zodResolver(schema),
   });
-  const { handleInvalid, handleValid, testButtonRef, testCheckError, testCheckPending } = useCheckForm({
+  const { handleInvalid, handleValid, testButtonRef, testCheckPending } = useCheckForm({
     check,
     checkType,
     onTestSuccess: (data) => {
-      console.log(`hit me`);
       setAdhocTestData(data);
       setOpenTestCheckModal(true);
     },
@@ -152,7 +151,6 @@ const CheckFormContent = ({ check }: CheckFormProps) => {
 
   // console.log(formMethods.formState.errors);
   // console.log(formMethods.watch());
-  console.log(testCheckError);
 
   return (
     <PluginPage pageNav={{ text: pageNavText }}>
