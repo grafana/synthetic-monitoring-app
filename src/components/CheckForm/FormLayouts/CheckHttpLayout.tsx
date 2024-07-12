@@ -60,14 +60,14 @@ export const HTTP_REQUEST_FIELDS: HttpRequestFields = {
 };
 
 const CheckHttpRequest = () => {
-  const { supportingContent } = useCheckFormContext();
+  const { isFormDisabled, supportingContent } = useCheckFormContext();
   const { addRequest } = supportingContent;
 
   const onTest = useCallback(() => {
     addRequest(HTTP_REQUEST_FIELDS);
   }, [addRequest]);
 
-  return <HttpRequest fields={HTTP_REQUEST_FIELDS} onTest={onTest} />;
+  return <HttpRequest disabled={isFormDisabled} fields={HTTP_REQUEST_FIELDS} onTest={onTest} />;
 };
 
 export const HttpCheckLayout: Partial<Record<LayoutSection, Section<CheckFormValues>>> = {

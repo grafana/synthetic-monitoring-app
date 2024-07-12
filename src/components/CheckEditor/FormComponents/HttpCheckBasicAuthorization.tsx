@@ -1,14 +1,11 @@
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
-import { OrgRole } from '@grafana/data';
 import { Field, Input, Stack } from '@grafana/ui';
 
 import { CheckFormValuesHttp } from 'types';
-import { hasRole } from 'utils';
 import { PasswordField } from 'components/PasswordField/PasswordField';
 
-export const HttpCheckBasicAuthorization = () => {
-  const isEditor = hasRole(OrgRole.Editor);
+export const HttpCheckBasicAuthorization = ({ disabled }: { disabled?: boolean }) => {
   const { formState, register } = useFormContext<CheckFormValuesHttp>();
   const userNameId = 'basicAuthUsername';
   const passwordId = 'basicAuthPassword';
@@ -17,7 +14,6 @@ export const HttpCheckBasicAuthorization = () => {
     <Stack direction={`column`}>
       <Field
         htmlFor={userNameId}
-        disabled={!isEditor}
         label="Username"
         invalid={Boolean(formState.errors.settings?.http?.basicAuth?.username)}
         error={formState.errors.settings?.http?.basicAuth?.username?.message}
@@ -27,7 +23,7 @@ export const HttpCheckBasicAuthorization = () => {
           {...register('settings.http.basicAuth.username')}
           id={userNameId}
           type="text"
-          disabled={!isEditor}
+          disabled={disabled}
           data-fs-element="Basic auth username input"
         />
       </Field>
@@ -35,7 +31,7 @@ export const HttpCheckBasicAuthorization = () => {
       <PasswordField
         {...register('settings.http.basicAuth.password')}
         label="Password"
-        disabled={!isEditor}
+        disabled={disabled}
         invalid={Boolean(formState.errors.settings?.http?.basicAuth?.password)}
         error={formState.errors.settings?.http?.basicAuth?.password?.message}
         id={passwordId}

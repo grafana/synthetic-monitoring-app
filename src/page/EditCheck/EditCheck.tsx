@@ -14,14 +14,19 @@ export const EditCheck = () => {
 
 const EditCheckContent = () => {
   const { id } = useParams<CheckPageParams>();
-  const { data: checks, isLoading, error, refetch } = useChecks();
+  const { data: checks, isError, isLoading, error, refetch } = useChecks();
   const check = checks?.find((c) => c.id === Number(id));
   const job = check?.job || ``;
   const pageTitle = isLoading ? `Loading...` : `Editing ${job}`;
 
   return (
     <>
-      <CheckForm check={check} pageTitle={pageTitle} key={check ? `loading` : `ready`} />
+      <CheckForm
+        check={check}
+        disabled={isLoading || isError}
+        pageTitle={pageTitle}
+        key={check ? `loading` : `ready`}
+      />
       {checks && !check && <NotFoundModal />}
       {error && <ErrorModal error={error} onClick={refetch} />}
     </>

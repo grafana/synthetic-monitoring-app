@@ -7,17 +7,22 @@ import { TracerouteMaxHops } from './TracerouteMaxHops';
 import { TracerouteMaxUnknownHops } from './TracerouteMaxUnknownHops';
 import { TraceroutePTRLookup } from './TraceroutePTRLookup';
 
-export const TracerouteRequest = ({ fields }: { fields: TracerouteRequestFields }) => {
+interface TracerouteRequestProps {
+  disabled?: boolean;
+  fields: TracerouteRequestFields;
+}
+
+export const TracerouteRequest = ({ disabled, fields }: TracerouteRequestProps) => {
   return (
     <Request>
       <Request.Field description={`Hostname to send traceroute`} name={fields.target.name}>
-        <Request.Input placeholder={`grafana.com`} />
+        <Request.Input disabled={disabled} placeholder={`grafana.com`} />
       </Request.Field>
       <Request.Options>
         <Request.Options.Section label={`Options`}>
-          <TracerouteMaxHops />
-          <TracerouteMaxUnknownHops />
-          <TraceroutePTRLookup />
+          <TracerouteMaxHops disabled={disabled} />
+          <TracerouteMaxUnknownHops disabled={disabled} />
+          <TraceroutePTRLookup disabled={disabled} />
         </Request.Options.Section>
       </Request.Options>
     </Request>

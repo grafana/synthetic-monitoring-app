@@ -1,23 +1,21 @@
 import React from 'react';
 import { FieldPath, useFormContext } from 'react-hook-form';
-import { OrgRole } from '@grafana/data';
 import { Field } from '@grafana/ui';
 import { get } from 'lodash';
 
 import { CheckFormValues } from 'types';
-import { hasRole } from 'utils';
 import { interpolateErrorMessage } from 'components/CheckForm/utils';
 import { NameValueInput, NameValueName } from 'components/NameValueInput/NameValueInput';
 
 type RequestHeadersProps = {
   description: string;
+  disabled?: boolean;
   label: string;
   name: FieldPath<CheckFormValues>;
   'data-fs-element'?: string;
 };
 
-export const RequestHeaders = ({ description, label, name, ...rest }: RequestHeadersProps) => {
-  const isEditor = hasRole(OrgRole.Editor);
+export const RequestHeaders = ({ description, disabled, label, name, ...rest }: RequestHeadersProps) => {
   const {
     formState: { errors },
   } = useFormContext<CheckFormValues>();
@@ -28,11 +26,10 @@ export const RequestHeaders = ({ description, label, name, ...rest }: RequestHea
     <Field
       label={`${label}s`}
       description={description}
-      disabled={!isEditor}
       error={interpolateErrorMessage(errorMessage, label)}
       invalid={Boolean(errorMessage)}
     >
-      <NameValueInput name={name as NameValueName} disabled={!isEditor} label={label} {...rest} />
+      <NameValueInput name={name as NameValueName} disabled={disabled} label={label} {...rest} />
     </Field>
   );
 };

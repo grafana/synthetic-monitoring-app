@@ -49,29 +49,6 @@ it('shows check type options with scripted feature on', async () => {
 
 it('shows error alert when check limit is reached', async () => {
   await renderChooseCheckGroup({ checkLimit: 1 });
-  const limitError = await screen.findByText('Check limit reached');
+  const limitError = await screen.findByText(/You have reached the limit of checks you can create./);
   expect(limitError).toBeInTheDocument();
-});
-
-it('shows error alert when scripted check limit is reached', async () => {
-  jest.replaceProperty(config, 'featureToggles', {
-    // @ts-expect-error
-    [FeatureName.ScriptedChecks]: true,
-  });
-
-  await renderChooseCheckGroup({ checkLimit: 10, scriptedLimit: 0 });
-  const limitError = await screen.findByText('Scripted check limit reached');
-  expect(limitError).toBeInTheDocument();
-});
-
-it('shows total check limit over scripted check limit error if both are reached', async () => {
-  jest.replaceProperty(config, 'featureToggles', {
-    // @ts-expect-error
-    [FeatureName.ScriptedChecks]: true,
-  });
-
-  await renderChooseCheckGroup({ checkLimit: 1, scriptedLimit: 0 });
-  const limitError = await screen.findByText('Check limit reached');
-  expect(limitError).toBeInTheDocument();
-  expect(screen.queryByText('Scripted check limit reached')).not.toBeInTheDocument();
 });

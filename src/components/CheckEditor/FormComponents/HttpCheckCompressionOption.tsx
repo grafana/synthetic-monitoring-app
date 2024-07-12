@@ -1,24 +1,26 @@
 import React from 'react';
-import { Controller } from 'react-hook-form';
-import { OrgRole, SelectableValue } from '@grafana/data';
+import { Controller, useFormContext } from 'react-hook-form';
+import { SelectableValue } from '@grafana/data';
 import { Field, Select } from '@grafana/ui';
 
-import { hasRole } from 'utils';
+import { CheckFormValuesHttp } from 'types';
+import { useCheckFormContext } from 'components/CheckForm/CheckFormContext/CheckFormContext';
 import { HTTP_COMPRESSION_ALGO_OPTIONS } from 'components/constants';
 
 export const HttpCheckCompressionOption = () => {
-  const isEditor = hasRole(OrgRole.Editor);
   const compressionId = 'http-settings-compression';
+  const { control } = useFormContext<CheckFormValuesHttp>();
+  const { isFormDisabled } = useCheckFormContext();
 
   return (
     <Field
       label="Compression option"
       description="The compression algorithm to expect in the response body"
-      disabled={!isEditor}
       htmlFor={compressionId}
       data-fs-element="Check compression select"
     >
       <Controller
+        control={control}
         name="settings.http.compression"
         render={({ field }) => {
           const { ref, ...rest } = field;
@@ -27,7 +29,13 @@ export const HttpCheckCompressionOption = () => {
           };
 
           return (
-            <Select {...rest} inputId={compressionId} options={HTTP_COMPRESSION_ALGO_OPTIONS} onChange={handleChange} />
+            <Select
+              {...rest}
+              disabled={isFormDisabled}
+              inputId={compressionId}
+              options={HTTP_COMPRESSION_ALGO_OPTIONS}
+              onChange={handleChange}
+            />
           );
         }}
       />

@@ -14,6 +14,7 @@ import { css } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
 import { CheckFormValuesMultiHttp, MultiHttpAssertionType } from 'types';
+import { useCheckFormContext } from 'components/CheckForm/CheckFormContext/CheckFormContext';
 import {
   ASSERTION_CONDITION_OPTIONS,
   ASSERTION_SUBJECT_OPTIONS,
@@ -82,6 +83,7 @@ const RequestAssertions = ({ index }: { index: number }) => {
   const styles = useStyles2(getRequestAssertionsStyles);
   const assertionFieldName: FieldPath<CheckFormValuesMultiHttp> = `settings.multihttp.entries.${index}.checks`;
   const { control } = useFormContext<CheckFormValuesMultiHttp>();
+  const { isFormDisabled } = useCheckFormContext();
   const { fields, append, remove } = useFieldArray<CheckFormValuesMultiHttp>({
     control,
     name: assertionFieldName,
@@ -115,6 +117,7 @@ const RequestAssertions = ({ index }: { index: number }) => {
                       <Select
                         inputId={id}
                         {...rest}
+                        disabled={isFormDisabled}
                         options={MULTI_HTTP_ASSERTION_TYPE_OPTIONS}
                         menuPlacement="bottom"
                         onChange={(e) => {
@@ -125,17 +128,19 @@ const RequestAssertions = ({ index }: { index: number }) => {
                   );
                 }}
               />
-              <AssertionFields entryIndex={index} assertionIndex={assertionIndex} />
+              <AssertionFields assertionIndex={assertionIndex} disabled={isFormDisabled} entryIndex={index} />
 
-              <div className={styles.removeButton}>
-                <IconButton
-                  name="minus-circle"
-                  onClick={() => {
-                    remove(assertionIndex);
-                  }}
-                  tooltip="Delete"
-                />
-              </div>
+              {!isFormDisabled && (
+                <div className={styles.removeButton}>
+                  <IconButton
+                    name="minus-circle"
+                    onClick={() => {
+                      remove(assertionIndex);
+                    }}
+                    tooltip="Delete"
+                  />
+                </div>
+              )}
             </Stack>
           );
         })}
@@ -150,6 +155,7 @@ const RequestAssertions = ({ index }: { index: number }) => {
               value: ``,
             });
           }}
+          disabled={isFormDisabled}
           variant="secondary"
           size="sm"
           type="button"
@@ -170,8 +176,9 @@ const getRequestAssertionsStyles = (theme: GrafanaTheme2) => ({
 });
 
 type AssertionProps = {
-  entryIndex: number;
   assertionIndex: number;
+  disabled?: boolean;
+  entryIndex: number;
 };
 
 const AssertionFields = (props: AssertionProps) => {
@@ -215,7 +222,7 @@ const AssertionFields = (props: AssertionProps) => {
   }
 };
 
-function AssertionSubjectField({ entryIndex, assertionIndex }: AssertionProps) {
+function AssertionSubjectField({ assertionIndex, disabled, entryIndex }: AssertionProps) {
   const { formState } = useFormContext<CheckFormValuesMultiHttp>();
   const error = formState.errors.settings?.multihttp?.entries?.[entryIndex]?.checks?.[assertionIndex];
   const errorSubject = errorHasSubject(error) ? error?.subject : undefined;
@@ -240,6 +247,7 @@ function AssertionSubjectField({ entryIndex, assertionIndex }: AssertionProps) {
             <Select
               inputId={id}
               {...rest}
+              disabled={disabled}
               options={ASSERTION_SUBJECT_OPTIONS}
               menuPlacement="bottom"
               onChange={(e) => field.onChange(e.value)}
@@ -251,7 +259,7 @@ function AssertionSubjectField({ entryIndex, assertionIndex }: AssertionProps) {
   );
 }
 
-function AssertionConditionField({ entryIndex, assertionIndex }: AssertionProps) {
+function AssertionConditionField({ assertionIndex, disabled, entryIndex }: AssertionProps) {
   const { formState } = useFormContext<CheckFormValuesMultiHttp>();
   const error = formState.errors.settings?.multihttp?.entries?.[entryIndex]?.checks?.[assertionIndex];
   const errorCondition = errorHasCondition(error) ? error?.condition : undefined;
@@ -276,6 +284,7 @@ function AssertionConditionField({ entryIndex, assertionIndex }: AssertionProps)
             <Select
               inputId={id}
               {...rest}
+              disabled={disabled}
               options={ASSERTION_CONDITION_OPTIONS}
               menuPlacement="bottom"
               onChange={(e) => field.onChange(e.value)}
@@ -287,7 +296,7 @@ function AssertionConditionField({ entryIndex, assertionIndex }: AssertionProps)
   );
 }
 
-function AssertionValueField({ entryIndex, assertionIndex }: AssertionProps) {
+function AssertionValueField({ assertionIndex, disabled, entryIndex }: AssertionProps) {
   const { formState, register, watch } = useFormContext<CheckFormValuesMultiHttp>();
   const error = formState.errors.settings?.multihttp?.entries?.[entryIndex]?.checks?.[assertionIndex];
   const errorValue = errorHasValue(error) ? error?.value : undefined;
@@ -304,13 +313,14 @@ function AssertionValueField({ entryIndex, assertionIndex }: AssertionProps) {
         placeholder="Value"
         id={`${entryIndex}-${assertionIndex}-value`}
         data-fs-element="Assertion value input"
+        disabled={disabled}
         {...register(`settings.multihttp.entries.${entryIndex}.checks.${assertionIndex}.value`)}
       />
     </Field>
   );
 }
 
-function AssertionExpressionField({ entryIndex, assertionIndex }: AssertionProps) {
+function AssertionExpressionField({ assertionIndex, disabled, entryIndex }: AssertionProps) {
   const { formState, register, watch } = useFormContext<CheckFormValuesMultiHttp>();
   const assertionType = watch(`settings.multihttp.entries.${entryIndex}.checks.${assertionIndex}.type`);
   const { description, placeholder } = getExpressionPlaceholderInfo(assertionType);
@@ -325,6 +335,7 @@ function AssertionExpressionField({ entryIndex, assertionIndex }: AssertionProps
         data-testid={`${entryIndex}-${assertionIndex}-expression`}
         id={`${entryIndex}-${assertionIndex}-expression`}
         data-fs-element="Assertion expression input"
+        disabled={disabled}
         {...register(`settings.multihttp.entries.${entryIndex}.checks.${assertionIndex}.expression`)}
       />
     </Field>

@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { FieldValidationMessage, Tab, TabContent, TabsBar } from '@grafana/ui';
 
 import { CheckFormValuesScripted } from 'types';
+import { useCheckFormContext } from 'components/CheckForm/CheckFormContext/CheckFormContext';
 import { CodeEditor } from 'components/CodeEditor';
 import { CodeSnippet } from 'components/CodeSnippet';
 import { SCRIPT_EXAMPLES } from 'components/WelcomeTabs/constants';
@@ -17,7 +18,8 @@ export const ScriptedCheckScript = () => {
     control,
     formState: { errors },
   } = useFormContext<CheckFormValuesScripted>();
-  const [selectedTab, setSelectedTab] = React.useState(ScriptEditorTabs.Script);
+  const { isFormDisabled } = useCheckFormContext();
+  const [selectedTab, setSelectedTab] = useState(ScriptEditorTabs.Script);
   const fieldError = errors.settings?.scripted?.script;
 
   return (
@@ -40,7 +42,7 @@ export const ScriptedCheckScript = () => {
             name="settings.scripted.script"
             control={control}
             render={({ field }) => {
-              return <CodeEditor {...field} />;
+              return <CodeEditor {...field} readOnly={isFormDisabled} />;
             }}
           />
         )}

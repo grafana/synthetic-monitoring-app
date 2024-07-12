@@ -6,31 +6,33 @@ import SliderComponent from 'rc-slider';
 import { getStyles } from './styles';
 
 export interface SliderProps {
-  min: number;
+  /** If the value is true, it means a continuous value interval, otherwise, it is a independent value. */
+  // defaultValue: number;
+  analyticsLabel?: string;
+  ariaLabelForHandle?: string;
+  disabled?: boolean;
+  formatTooltipResult?: (value: number) => number;
+  included?: boolean;
   max: number;
+  min: number;
+  onAfterChange?: (value?: number) => void;
+  onChange?: (value: number) => void;
   step?: number;
   tooltipAlwaysVisible?: boolean;
-  /** If the value is true, it means a continuous value interval, otherwise, it is a independent value. */
-  included?: boolean;
   value?: number;
-  // defaultValue: number;
-  onChange?: (value: number) => void;
-  onAfterChange?: (value?: number) => void;
-  formatTooltipResult?: (value: number) => number;
-  ariaLabelForHandle?: string;
-  analyticsLabel?: string;
 }
 
 export function TimeSlider({
-  min,
+  analyticsLabel,
+  ariaLabelForHandle,
+  disabled,
+  included,
   max,
-  onChange,
+  min,
   onAfterChange,
+  onChange,
   step,
   value,
-  ariaLabelForHandle,
-  included,
-  analyticsLabel,
 }: SliderProps) {
   const minutesId = useId();
   const secondsId = useId();
@@ -125,37 +127,40 @@ export function TimeSlider({
       <div className={cx(styles.sliderInput)}>
         <div data-fs-element={`${analyticsLabel} slider`} className={styles.sliderWrapper}>
           <SliderWithTooltip
-            min={min}
+            ariaLabelForHandle={ariaLabelForHandle}
+            disabled={disabled}
+            included={included}
             max={max}
-            step={step}
-            value={sliderValue}
+            min={min}
             onChange={onSliderChange}
             onChangeComplete={handleChangeComplete}
-            ariaLabelForHandle={ariaLabelForHandle}
-            included={included}
+            step={step}
+            value={sliderValue}
           />
         </div>
         <Input
-          type="text"
-          className={cx(styles.sliderInputField)}
-          value={minutes}
-          onChange={onMinutesInputChange}
-          onBlur={onMinutesInputBlur}
-          id={minutesId}
-          data-fs-element={`${analyticsLabel} minutes input`}
           aria-label={`${analyticsLabel} minutes input`}
+          className={cx(styles.sliderInputField)}
+          data-fs-element={`${analyticsLabel} minutes input`}
+          disabled={disabled}
+          id={minutesId}
+          onBlur={onMinutesInputBlur}
+          onChange={onMinutesInputChange}
+          type="text"
+          value={minutes}
         />
         <label htmlFor={minutesId}>minutes</label>
 
         <Input
-          type="text"
-          className={cx(styles.sliderInputField)}
-          value={seconds}
-          onChange={onSecondsInputChange}
-          onBlur={onSecondsInputBlur}
-          id={secondsId}
-          data-fs-element={`${analyticsLabel} seconds input`}
           aria-label={`${analyticsLabel} seconds input`}
+          className={cx(styles.sliderInputField)}
+          data-fs-element={`${analyticsLabel} seconds input`}
+          disabled={disabled}
+          id={secondsId}
+          onBlur={onSecondsInputBlur}
+          onChange={onSecondsInputChange}
+          type="text"
+          value={seconds}
         />
         <label htmlFor={secondsId}>seconds</label>
       </div>

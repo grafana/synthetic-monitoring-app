@@ -1,15 +1,14 @@
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
-import { OrgRole } from '@grafana/data';
 import { Field, Input, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckFormValues } from 'types';
-import { hasRole } from 'utils';
+import { useCheckFormContext } from 'components/CheckForm/CheckFormContext/CheckFormContext';
 
 export const CheckJobName = () => {
   const styles = useStyles2(getStyles);
-  const isEditor = hasRole(OrgRole.Editor);
+  const { isFormDisabled } = useCheckFormContext();
   const { formState, register } = useFormContext<CheckFormValues>();
 
   return (
@@ -17,18 +16,12 @@ export const CheckJobName = () => {
       className={styles.field}
       label="Job name"
       description={'Name used for job label (in metrics it will appear as `job=X`)'}
-      disabled={!isEditor}
+      disabled={isFormDisabled}
       invalid={Boolean(formState.errors.job)}
       error={formState.errors.job?.message}
       required
     >
-      <Input
-        id="check-editor-job-input"
-        {...register('job')}
-        type="text"
-        placeholder="jobName"
-        data-fs-element="Job name input"
-      />
+      <Input id="check-editor-job-input" {...register('job')} type="text" data-fs-element="Job name input" />
     </Field>
   );
 };

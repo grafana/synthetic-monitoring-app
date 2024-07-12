@@ -33,7 +33,7 @@ export async function renderNewForm(checkType: CheckType) {
     path: `${PLUGIN_URL_PATH}${ROUTES.NewCheck}/${checkTypeGroup}?checkType=${checkType}`,
   });
 
-  await screen.findByText('Submit');
+  await screen.findByTestId(DataTestIds.PAGE_READY);
 
   return {
     ...res,

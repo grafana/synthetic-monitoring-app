@@ -9,31 +9,37 @@ import { DNSCheckRecordProtocol } from './DNSCheckRecordProtocol';
 import { DNSCheckRecordServer } from './DNSCheckRecordServer';
 import { DNSCheckRecordType } from './DNSCheckRecordType';
 
-export const DNSRequest = ({ fields }: { fields: DNSRequestFields }) => {
+interface DNSRequestProps {
+  disabled?: boolean;
+  fields: DNSRequestFields;
+  onTest: () => void;
+}
+
+export const DNSRequest = ({ disabled, fields, onTest }: DNSRequestProps) => {
   return (
     <Request>
       <Request.Field name={fields.target.name} description={`Name of record to query`}>
-        <Request.Input placeholder={`grafana.com`} />
-        <Request.Test onClick={() => console.log(`hook me up`)} />
+        <Request.Input disabled={disabled} placeholder={`grafana.com`} />
+        <Request.Test onClick={onTest} />
       </Request.Field>
-      <DNSRequestOptions fields={fields} />
+      <DNSRequestOptions disabled={disabled} fields={fields} />
     </Request>
   );
 };
 
-const DNSRequestOptions = ({ fields }: { fields: DNSRequestFields }) => {
+const DNSRequestOptions = ({ disabled, fields }: Omit<DNSRequestProps, 'onTest'>) => {
   const ipVersionName = fields.ipVersion.name;
 
   return (
     <Request.Options>
       <Request.Options.Section label={`Options`}>
-        <CheckIpVersion description={`The IP protocol of the ICMP request`} name={ipVersionName} />
+        <CheckIpVersion description={`The IP protocol of the ICMP request`} disabled={disabled} name={ipVersionName} />
       </Request.Options.Section>
       <Request.Options.Section label={`DNS Settings`}>
-        <DNSCheckRecordType />
-        <DNSCheckRecordServer />
-        <DNSCheckRecordProtocol />
-        <DNSCheckRecordPort />
+        <DNSCheckRecordType disabled={disabled} />
+        <DNSCheckRecordServer disabled={disabled} />
+        <DNSCheckRecordProtocol disabled={disabled} />
+        <DNSCheckRecordPort disabled={disabled} />
       </Request.Options.Section>
     </Request.Options>
   );

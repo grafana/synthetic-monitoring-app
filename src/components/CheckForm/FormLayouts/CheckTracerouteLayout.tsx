@@ -7,6 +7,8 @@ import { CheckPublishedAdvanceMetrics } from 'components/CheckEditor/FormCompone
 import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
 import { TracerouteRequest } from 'components/CheckEditor/FormComponents/TracerouteRequest';
 
+import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
+
 const TRACEROUTE_FIELDS: TracerouteRequestFields = {
   target: {
     name: `target`,
@@ -22,6 +24,11 @@ const TRACEROUTE_FIELDS: TracerouteRequestFields = {
   },
 };
 
+const CheckTracerouteRequest = () => {
+  const { isFormDisabled } = useCheckFormContext();
+
+  return <TracerouteRequest disabled={isFormDisabled} fields={TRACEROUTE_FIELDS} />;
+};
 export const TracerouteCheckLayout: Partial<Record<LayoutSection, Section<CheckFormValuesTraceroute>>> = {
   [LayoutSection.Check]: {
     fields: [
@@ -32,7 +39,7 @@ export const TracerouteCheckLayout: Partial<Record<LayoutSection, Section<CheckF
     ],
     Component: (
       <div>
-        <TracerouteRequest fields={TRACEROUTE_FIELDS} />
+        <CheckTracerouteRequest />
       </div>
     ),
   },

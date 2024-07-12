@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 
 import { LayoutSection, Section } from './Layout.types';
 import { CheckFormValuesGRPC, CheckType } from 'types';
@@ -7,7 +7,9 @@ import { CheckPublishedAdvanceMetrics } from 'components/CheckEditor/FormCompone
 import { GRPCRequest } from 'components/CheckEditor/FormComponents/GRPCRequest';
 import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
 
-export const GRPC_FIELDS: GRPCRequestFields = {
+import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
+
+export const GRPC_REQUEST_FIELDS: GRPCRequestFields = {
   target: {
     name: `target`,
   },
@@ -37,12 +39,23 @@ export const GRPC_FIELDS: GRPCRequestFields = {
   },
 };
 
+const CheckGRPCRequest = () => {
+  const { isFormDisabled, supportingContent } = useCheckFormContext();
+  const { addRequest } = supportingContent;
+
+  const onTest = useCallback(() => {
+    addRequest(GRPC_REQUEST_FIELDS);
+  }, [addRequest]);
+
+  return <GRPCRequest disabled={isFormDisabled} fields={GRPC_REQUEST_FIELDS} onTest={onTest} />;
+};
+
 export const GRPCCheckLayout: Partial<Record<LayoutSection, Section<CheckFormValuesGRPC>>> = {
   [LayoutSection.Check]: {
     fields: [`target`],
     Component: (
       <>
-        <GRPCRequest fields={GRPC_FIELDS} />
+        <CheckGRPCRequest />
       </>
     ),
   },

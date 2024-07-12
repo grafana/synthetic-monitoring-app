@@ -13,8 +13,13 @@ type RequestInputProps = ComponentProps<typeof Input> & {
   placeholder?: string;
 };
 
-export const RequestInput = ({
+export const RequestInput = (props: RequestInputProps) => {
+  return <RequestInputContent {...props} key={props.disabled ? `disabled` : `enabled`} />;
+};
+
+export const RequestInputContent = ({
   'data-testid': dataTestId,
+  disabled,
   onBlur,
   onChange,
   placeholder,
@@ -23,7 +28,7 @@ export const RequestInput = ({
   const styles = useStyles2(getStyles);
   const { formState, register } = useFormContext<CheckFormValues>();
   const { id, name } = useContext(RequestFieldContext);
-  const [showPlaceholder, setShowplaceholder] = useState(true);
+  const [showPlaceholder, setShowplaceholder] = useState(disabled ? false : true);
   const error = get(formState.errors, name);
   const { onBlur: fieldOnBlur, onChange: fieldOnChange, ...field } = register(name);
 
@@ -46,6 +51,7 @@ export const RequestInput = ({
           fieldOnBlur(e);
           onBlur?.(e);
         }}
+        disabled={disabled}
         {...props}
         {...field}
       />

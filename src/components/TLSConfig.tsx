@@ -1,24 +1,22 @@
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
-import { OrgRole } from '@grafana/data';
 import { Container, Field, Input, TextArea } from '@grafana/ui';
 import { get } from 'lodash';
 
 import { TLSConfigFields } from './CheckEditor/CheckEditor.types';
 import { CheckFormValues } from 'types';
-import { hasRole } from 'utils';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 
-interface Props {
+interface TLSConfigProps {
+  disabled?: boolean;
   fields: TLSConfigFields;
 }
 
-export const TLSConfig = ({ fields }: Props) => {
+export const TLSConfig = ({ disabled, fields }: TLSConfigProps) => {
   const {
     register,
     formState: { errors },
   } = useFormContext<CheckFormValues>();
-  const isEditor = hasRole(OrgRole.Editor);
   const tlsInsecureSkipVerify = fields.tlsInsecureSkipVerify?.name;
   const serverName = fields.tlsServerName?.name;
   const caCert = fields.tlsCaSCert?.name;
@@ -35,7 +33,7 @@ export const TLSConfig = ({ fields }: Props) => {
       {tlsInsecureSkipVerify && (
         <HorizontalCheckboxField
           id="tls-config-skip-validation"
-          disabled={!isEditor}
+          disabled={disabled}
           label="Disable target certificate validation"
           data-fs-element="Check disable target certificate validation checkbox"
           {...register(tlsInsecureSkipVerify)}
@@ -45,7 +43,7 @@ export const TLSConfig = ({ fields }: Props) => {
         <Field
           label="Server name"
           description="Used to verify the hostname for the targets"
-          disabled={!isEditor}
+          disabled={disabled}
           invalid={Boolean(serverNameError)}
           error={serverNameError?.message}
         >
@@ -54,7 +52,7 @@ export const TLSConfig = ({ fields }: Props) => {
             {...register(serverName)}
             type="text"
             placeholder="Server name"
-            disabled={!isEditor}
+            disabled={disabled}
             data-fs-element="TLS server name input"
           />
         </Field>
@@ -64,7 +62,7 @@ export const TLSConfig = ({ fields }: Props) => {
           <Field
             label="CA certificate"
             description="Certificate must be in PEM format."
-            disabled={!isEditor}
+            disabled={disabled}
             invalid={Boolean(caCertError)}
             error={caCertError?.message}
           >
@@ -72,7 +70,7 @@ export const TLSConfig = ({ fields }: Props) => {
               id="tls-config-ca-certificate"
               {...register(caCert)}
               rows={2}
-              disabled={!isEditor}
+              disabled={disabled}
               placeholder="CA certificate"
               data-fs-element="TLS ca certificate textarea"
             />
@@ -84,7 +82,7 @@ export const TLSConfig = ({ fields }: Props) => {
           <Field
             label="Client certificate"
             description="The client cert file for the targets. The certificate must be in PEM format."
-            disabled={!isEditor}
+            disabled={disabled}
             invalid={Boolean(clientCertError)}
             error={clientCertError?.message}
           >
@@ -92,7 +90,7 @@ export const TLSConfig = ({ fields }: Props) => {
               id="tls-config-client-cert"
               {...register(clientCert)}
               rows={2}
-              disabled={!isEditor}
+              disabled={disabled}
               placeholder="Client certificate"
               data-fs-element="TLS client certificate textarea"
             />
@@ -104,7 +102,7 @@ export const TLSConfig = ({ fields }: Props) => {
           <Field
             label="Client key"
             description="The client key file for the targets. The key must be in PEM format."
-            disabled={!isEditor}
+            disabled={disabled}
             invalid={Boolean(clientKeyError)}
             error={clientKeyError?.message}
           >
@@ -113,7 +111,7 @@ export const TLSConfig = ({ fields }: Props) => {
               {...register(clientKey)}
               type="password"
               rows={2}
-              disabled={!isEditor}
+              disabled={disabled}
               placeholder="Client key"
               data-fs-element="TLS client key textarea"
             />

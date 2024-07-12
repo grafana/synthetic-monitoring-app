@@ -6,17 +6,27 @@ import { Request } from 'components/Request';
 import { CheckIpVersion } from './CheckIpVersion';
 import { PingCheckFragment } from './PingCheckFragment';
 
-export const PingRequest = ({ fields }: { fields: PingRequestFields }) => {
+interface PingRequestProps {
+  disabled?: boolean;
+  fields: PingRequestFields;
+  onTest: () => void;
+}
+
+export const PingRequest = ({ disabled, fields, onTest }: PingRequestProps) => {
   return (
     <Request>
       <Request.Field description={`Send an ICMP echo request to a target`} name={fields.target.name}>
-        <Request.Input placeholder={`grafana.com`} />
-        <Request.Test onClick={() => console.log(`hook me up`)} />
+        <Request.Input disabled={disabled} placeholder={`grafana.com`} />
+        <Request.Test onClick={onTest} />
       </Request.Field>
       <Request.Options>
         <Request.Options.Section label={`Options`}>
-          <CheckIpVersion description={`The IP protocol of the ICMP request`} name={fields.ipVersion.name} />
-          <PingCheckFragment name={fields.dontFragment.name} />
+          <CheckIpVersion
+            description={`The IP protocol of the ICMP request`}
+            disabled={disabled}
+            name={fields.ipVersion.name}
+          />
+          <PingCheckFragment disabled={disabled} name={fields.dontFragment.name} />
         </Request.Options.Section>
       </Request.Options>
     </Request>

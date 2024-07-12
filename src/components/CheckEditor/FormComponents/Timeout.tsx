@@ -4,6 +4,7 @@ import { Field, Input } from '@grafana/ui';
 
 import { CheckFormValues, CheckType } from 'types';
 import { validateTimeout } from 'validation';
+import { useCheckFormContext } from 'components/CheckForm/CheckFormContext/CheckFormContext';
 import { SliderInput } from 'components/SliderInput';
 
 interface Props {
@@ -15,6 +16,7 @@ export const Timeout = ({ checkType }: Props) => {
     formState: { errors },
     register,
   } = useFormContext<CheckFormValues>();
+  const { isFormDisabled } = useCheckFormContext();
   const isTraceroute = checkType === CheckType.Traceroute;
   const { minTimeout, maxTimeout } = getTimeoutBounds(checkType);
 
@@ -37,11 +39,12 @@ export const Timeout = ({ checkType }: Props) => {
         />
       ) : (
         <SliderInput
-          name="timeout"
-          validate={(value) => validateTimeout(value, maxTimeout, minTimeout)}
+          disabled={isFormDisabled}
           max={maxTimeout}
           min={minTimeout}
+          name="timeout"
           step={1}
+          validate={(value) => validateTimeout(value, maxTimeout, minTimeout)}
         />
       )}
     </Field>

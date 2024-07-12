@@ -1,27 +1,25 @@
 import React from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
-import { OrgRole } from '@grafana/data';
 import { Field } from '@grafana/ui';
 
 import { CheckFormValues, CheckType, Probe } from 'types';
-import { hasRole } from 'utils';
 import { useProbes } from 'data/useProbes';
 import { SliderInput } from 'components/SliderInput';
 
 import { CheckProbes } from './CheckProbes';
 
-interface Props {
+interface ProbeOptionsProps {
   checkType: CheckType;
+  disabled?: boolean;
 }
 
-export const ProbeOptions = ({ checkType }: Props) => {
+export const ProbeOptions = ({ checkType, disabled }: ProbeOptionsProps) => {
   const { data: probes = [] } = useProbes();
   const {
     control,
     formState: { errors },
   } = useFormContext<CheckFormValues>();
   const { minFrequency, maxFrequency } = getFrequencyBounds(checkType);
-  const isEditor = hasRole(OrgRole.Editor);
 
   return (
     <div>
@@ -33,7 +31,7 @@ export const ProbeOptions = ({ checkType }: Props) => {
             {...field}
             probes={field.value}
             availableProbes={getAvailableProbes(probes, checkType)}
-            isEditor={isEditor}
+            disabled={disabled}
             invalid={Boolean(errors.probes)}
             error={errors.probes?.message}
           />
@@ -42,11 +40,10 @@ export const ProbeOptions = ({ checkType }: Props) => {
       <Field
         label="Frequency"
         description="How frequently the check should run."
-        disabled={!isEditor}
         invalid={Boolean(errors.frequency)}
         error={errors.frequency?.message}
       >
-        <SliderInput name="frequency" min={minFrequency} max={maxFrequency} />
+        <SliderInput disabled={disabled} name="frequency" min={minFrequency} max={maxFrequency} />
       </Field>
     </div>
   );

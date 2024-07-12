@@ -11,13 +11,18 @@ import { PROBES_SELECT_ID } from 'components/CheckEditor/CheckProbes';
 // -1 works well because it is type safe as it is a number but it is also impossible to be a valid index
 export const ENTRY_INDEX_CHAR = `-1`;
 
-export function useFormLayout() {
+export function useFormLayout(disabled?: boolean) {
   const [visitedSections, setVisitedSections] = useState<number[]>([]);
   const [activeSection, setActiveSection] = useState(0);
 
-  const setVisited = useCallback((visited: number[]) => {
-    setVisitedSections((prev) => uniq([...prev, ...visited]));
-  }, []);
+  const setVisited = useCallback(
+    (visited: number[]) => {
+      if (!disabled) {
+        setVisitedSections((prev) => uniq([...prev, ...visited]));
+      }
+    },
+    [disabled]
+  );
 
   const goToSection = useCallback(
     (index: number) => {

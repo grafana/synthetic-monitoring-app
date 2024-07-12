@@ -1,18 +1,16 @@
 import React from 'react';
 import { FieldPath, useFormContext } from 'react-hook-form';
-import { OrgRole } from '@grafana/data';
 import { Field, TextArea } from '@grafana/ui';
 import { get } from 'lodash';
 
 import { CheckFormValues } from 'types';
-import { hasRole } from 'utils';
 
 type RequestBodyTextAreaProps = {
+  disabled?: boolean;
   name: FieldPath<CheckFormValues>;
 };
 
-export const RequestBodyTextArea = ({ name }: RequestBodyTextAreaProps) => {
-  const isEditor = hasRole(OrgRole.Editor);
+export const RequestBodyTextArea = ({ disabled, name }: RequestBodyTextAreaProps) => {
   const {
     register,
     formState: { errors },
@@ -23,7 +21,7 @@ export const RequestBodyTextArea = ({ name }: RequestBodyTextAreaProps) => {
     <Field
       label="Request body"
       description="The body of the HTTP request used in probe."
-      disabled={!isEditor}
+      disabled={disabled}
       invalid={Boolean(error)}
       error={error?.message}
       htmlFor={name}
@@ -33,7 +31,7 @@ export const RequestBodyTextArea = ({ name }: RequestBodyTextAreaProps) => {
         id={name}
         {...register(name)}
         rows={10}
-        disabled={!isEditor}
+        disabled={disabled}
         data-fs-element="Check request body textarea"
       />
     </Field>

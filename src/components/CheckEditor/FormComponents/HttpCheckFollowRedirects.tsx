@@ -1,21 +1,20 @@
 import React from 'react';
 import { FieldPath, useFormContext } from 'react-hook-form';
-import { OrgRole } from '@grafana/data';
 
 import { CheckFormValues } from 'types';
-import { hasRole } from 'utils';
+import { useCheckFormContext } from 'components/CheckForm/CheckFormContext/CheckFormContext';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 
 export const HttpCheckFollowRedirects = ({ name }: { name: FieldPath<CheckFormValues> }) => {
-  const isEditor = hasRole(OrgRole.Editor);
   const { register } = useFormContext<CheckFormValues>();
+  const { isFormDisabled } = useCheckFormContext();
 
   return (
     <HorizontalCheckboxField
+      data-fs-element="Follow redirects checkbox"
+      disabled={isFormDisabled}
       id="http-settings-followRedirects"
       label="Follow redirects"
-      disabled={!isEditor}
-      data-fs-element="Follow redirects checkbox"
       {...register(name)}
     />
   );

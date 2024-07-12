@@ -1,4 +1,4 @@
-import React, { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { FieldErrors, useFieldArray, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Button, Stack, useStyles2 } from '@grafana/ui';
@@ -54,6 +54,7 @@ export const MultiHttpCheckRequests = () => {
     formState: { errors },
     getValues,
   } = useFormContext<CheckFormValuesMultiHttp>();
+  const { isFormDisabled } = useCheckFormContext();
 
   const panelRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const [collapseState, dispatchCollapse] = useMultiHttpCollapseState(getValues());
@@ -134,7 +135,7 @@ export const MultiHttpCheckRequests = () => {
           type="button"
           size="md"
           icon="plus"
-          disabled={requests?.length > 9}
+          disabled={requests?.length > 9 || isFormDisabled}
           tooltip={requests?.length > 9 ? 'Maximum of 10 requests per check' : undefined}
           tooltipPlacement="bottom-start"
           onClick={() => {
@@ -151,12 +152,8 @@ export const MultiHttpCheckRequests = () => {
   );
 };
 
-const parseQueryParams = (e: FormEvent) => {
-  console.log(e);
-};
-
 const MultiHttpRequest = ({ index }: { index: number }) => {
-  const { supportingContent } = useCheckFormContext();
+  const { isFormDisabled, supportingContent } = useCheckFormContext();
   const { addRequest } = supportingContent;
 
   const fields = Object.entries(MULTI_HTTP_REQUEST_FIELDS).reduce<HttpRequestFields>((acc, field) => {
@@ -177,11 +174,11 @@ const MultiHttpRequest = ({ index }: { index: number }) => {
 
   return (
     <HttpRequest
+      disabled={isFormDisabled}
       fields={{
         ...fields,
         target: {
           ...fields.target,
-          onChange: parseQueryParams,
           'aria-label': `Request target for request ${index + 1} *`,
         },
         method: {

@@ -7,7 +7,7 @@ import { useTenantLimits } from 'data/useTenantLimits';
 import { useFeatureFlag } from './useFeatureFlag';
 
 export function useLimits() {
-  const { data: limits, isLoading, error } = useTenantLimits();
+  const { data: limits, isLoading, error, isFetched } = useTenantLimits();
   const { data: checks } = useChecks();
   const isOverCheckLimit = getIsOverCheckLimit({ checks, limits });
   const isScriptedOn = useFeatureFlag(FeatureName.ScriptedChecks);
@@ -16,6 +16,7 @@ export function useLimits() {
   return {
     limits,
     isLoading,
+    isReady: isFetched,
     isOverCheckLimit,
     isOverScriptedLimit,
     error,
@@ -32,6 +33,7 @@ function getIsOverScriptedLimit({
   if (!limits || !checks) {
     return false;
   }
+
   const scriptedChecksCount = checks.filter((c) => getCheckType(c.settings) === CheckType.Scripted).length;
   return scriptedChecksCount >= limits.MaxScriptedChecks;
 }
@@ -46,5 +48,6 @@ function getIsOverCheckLimit({
   if (!limits || !checks) {
     return false;
   }
+
   return checks.length >= limits.MaxChecks;
 }

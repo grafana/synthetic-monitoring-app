@@ -1,4 +1,4 @@
-import React, { BaseSyntheticEvent, Children, isValidElement, ReactNode, useMemo } from 'react';
+import React, { BaseSyntheticEvent, Children, isValidElement, ReactNode, useCallback, useMemo } from 'react';
 import { FieldErrors, FieldValues, SubmitHandler } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Button, Stack, useStyles2 } from '@grafana/ui';
@@ -20,6 +20,7 @@ type FormLayoutProps<T extends FieldValues> = {
   actions?: ActionNode[];
   alerts?: ReactNode;
   children: ReactNode;
+  disabled?: boolean;
   onSubmit: (
     onValid: SubmitHandler<T>,
     onInvalid: (errs: FieldErrors<T>) => void
@@ -34,6 +35,7 @@ export const FORM_MAX_WIDTH = `860px`;
 export const FormLayout = <T extends FieldValues>({
   actions,
   alerts,
+  disabled,
   children,
   onSubmit,
   onValid,
@@ -41,7 +43,7 @@ export const FormLayout = <T extends FieldValues>({
   schema,
 }: FormLayoutProps<T>) => {
   const styles = useStyles2(getStyles);
-  const { activeSection, setActiveSection, goToSection, setVisited, visitedSections } = useFormLayout();
+  const { activeSection, setActiveSection, goToSection, setVisited, visitedSections } = useFormLayout(disabled);
 
   const sections = useMemo(() => {
     let index = -1;
@@ -65,35 +67,48 @@ export const FormLayout = <T extends FieldValues>({
 
   const formSections = sections.filter((section) => section.type === FormSectionInternal);
 
-  const handleValid = (formValues: T, event: BaseSyntheticEvent | undefined) => {
-    setVisited(sections.map((section) => section.props.index));
-    onValid(formValues, event);
-  };
+  const handleVisited = useCallback(
+    (indices: number[]) => {
+      setVisited(indices);
+    },
+    [setVisited]
+  );
 
-  const handleError = (errs: FieldErrors<T>) => {
-    setVisited(sections.map((section) => section.props.index));
-    const flattenedErrors = Object.keys(flatten(errs));
-    // Find the first section that has a field with an error.
-    const errSection = sections?.find((section) =>
-      flattenedErrors.find((errName: string) => {
-        return section.props.fields?.some((field: string) => errName.startsWith(field));
-      })
-    );
+  const handleValid = useCallback(
+    (formValues: T, event: BaseSyntheticEvent | undefined) => {
+      handleVisited(sections.map((section) => section.props.index));
+      onValid(formValues, event);
+    },
+    [handleVisited, onValid, sections]
+  );
 
-    if (errSection !== undefined) {
-      setActiveSection(errSection.props.index);
-    }
+  const handleError = useCallback(
+    (errs: FieldErrors<T>) => {
+      handleVisited(sections.map((section) => section.props.index));
+      const flattenedErrors = Object.keys(flatten(errs));
+      // Find the first section that has a field with an error.
+      const errSection = sections?.find((section) =>
+        flattenedErrors.find((errName: string) => {
+          return section.props.fields?.some((field: string) => errName.startsWith(field));
+        })
+      );
 
-    const shouldFocus = findFieldToFocus(errs);
+      if (errSection !== undefined) {
+        setActiveSection(errSection.props.index);
+      }
 
-    // can't pass refs to all fields so have to manage it automatically
-    if (shouldFocus) {
-      shouldFocus.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
-      shouldFocus.focus?.({ preventScroll: true });
-    }
+      const shouldFocus = findFieldToFocus(errs);
 
-    onInvalid?.(errs);
-  };
+      // can't pass refs to all fields so have to manage it automatically
+      if (shouldFocus) {
+        shouldFocus.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+        shouldFocus.focus?.({ preventScroll: true });
+      }
+
+      onInvalid?.(errs);
+    },
+    [handleVisited, onInvalid, sections, setActiveSection]
+  );
 
   const actionButtons = actions?.find((action) => action.index === activeSection)?.element;
 
@@ -134,7 +149,7 @@ export const FormLayout = <T extends FieldValues>({
                     </Stack>
                   </Button>
                 )}
-                <Button key="submit" type="submit">
+                <Button disabled={disabled} key="submit" type="submit">
                   Submit
                 </Button>
               </Stack>

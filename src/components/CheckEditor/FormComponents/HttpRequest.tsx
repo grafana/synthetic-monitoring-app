@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
-import { GrafanaTheme2, OrgRole } from '@grafana/data';
+import { GrafanaTheme2 } from '@grafana/data';
 import { Select, Stack, Tooltip, useStyles2, useTheme2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 import { HttpRequestFields, TLSConfigFields } from '../CheckEditor.types';
 import { HttpMethod } from 'types';
-import { getMethodColor, hasRole, parseUrl } from 'utils';
+import { getMethodColor, parseUrl } from 'utils';
 import { METHOD_OPTIONS } from 'components/constants';
 import { Indent } from 'components/Indent';
 import { QueryParams } from 'components/QueryParams';
@@ -24,13 +24,13 @@ import { RequestHeaders } from './RequestHeaders';
 import { RequestQueryParams } from './RequestQueryParams';
 
 interface HttpRequestProps {
+  disabled?: boolean;
   fields: HttpRequestFields;
   onTest?: () => void;
 }
 
-export const HttpRequest = ({ fields, onTest }: HttpRequestProps) => {
+export const HttpRequest = ({ disabled, fields, onTest }: HttpRequestProps) => {
   const [showQueryParams, setShowQueryParams] = useState(false);
-  const isEditor = hasRole(OrgRole.Editor);
   const { control, setValue, watch } = useFormContext();
   const id = `request-method-${fields.method.name}`;
   const styles = useStyles2(getStyles);
@@ -42,7 +42,7 @@ export const HttpRequest = ({ fields, onTest }: HttpRequestProps) => {
     <Request>
       <Request.Field
         description={`Full URL to send requests to`}
-        disabled={!isEditor}
+        disabled={disabled}
         data-fs-element="Check request target select"
         htmlFor={id}
         name={fields.target.name}
@@ -62,6 +62,7 @@ export const HttpRequest = ({ fields, onTest }: HttpRequestProps) => {
                     className={css({
                       borderColor: getMethodColor(theme, value),
                     })}
+                    disabled={disabled}
                     options={METHOD_OPTIONS}
                     onChange={({ value }) => onChange(value)}
                     tabSelectsValue={false}
@@ -74,19 +75,22 @@ export const HttpRequest = ({ fields, onTest }: HttpRequestProps) => {
           <Request.Input
             aria-label={fields.target['aria-label'] || `Request target *`}
             data-fs-element="Target input"
+            disabled={disabled}
             placeholder={`https://grafana.com/`}
             suffix={
-              <Tooltip content={`Manage query parameters`}>
-                <button
-                  aria-label={`Manage query parameters`}
-                  aria-pressed={showQueryParams}
-                  className={cx(styles.queryParams, { [styles.active]: showQueryParams })}
-                  type="button"
-                  onClick={() => setShowQueryParams((v) => !v)}
-                >
-                  ?=
-                </button>
-              </Tooltip>
+              !disabled && (
+                <Tooltip content={`Manage query parameters`}>
+                  <button
+                    aria-label={`Manage query parameters`}
+                    aria-pressed={showQueryParams}
+                    className={cx(styles.queryParams, { [styles.active]: showQueryParams })}
+                    type="button"
+                    onClick={() => setShowQueryParams((v) => !v)}
+                  >
+                    ?=
+                  </button>
+                </Tooltip>
+              )
             }
           />
           <Request.Test disabled={!parsedURL} onClick={onTest} />
@@ -95,18 +99,30 @@ export const HttpRequest = ({ fields, onTest }: HttpRequestProps) => {
       {showQueryParams && (
         <Indent>
           {parsedURL ? (
-            <QueryParams target={parsedURL} onChange={(target: string) => setValue(fields.target.name, target)} />
+            <QueryParams
+              target={parsedURL}
+              onChange={(target: string) => {
+                if (!disabled) {
+                  setValue(fields.target.name, target);
+                }
+              }}
+            />
           ) : (
             <div className={styles.provideURL}>Provide a valid URL to manage your query parameters.</div>
           )}
         </Indent>
       )}
-      <HttpRequestOptions fields={fields} />
+      <HttpRequestOptions disabled={disabled} fields={fields} />
     </Request>
   );
 };
 
-const HttpRequestOptions = ({ fields }: { fields: HttpRequestFields }) => {
+interface HttpRequestOptionsProps {
+  disabled?: boolean;
+  fields: HttpRequestFields;
+}
+
+const HttpRequestOptions = ({ disabled, fields }: HttpRequestOptionsProps) => {
   const requestHeadersName = fields.requestHeaders.name;
   const followRedirectsName = fields.followRedirects?.name;
   const ipVersionName = fields.ipVersion?.name;
@@ -122,17 +138,25 @@ const HttpRequestOptions = ({ fields }: { fields: HttpRequestFields }) => {
       <Request.Options.Section label={`Options`}>
         <RequestHeaders
           description="The HTTP headers set for the probe."
+          disabled={disabled}
           label="Request header"
           name={requestHeadersName}
           data-fs-element="Request headers"
         />
         {followRedirectsName && <HttpCheckFollowRedirects name={followRedirectsName} />}
-        {ipVersionName && <CheckIpVersion description={`The IP protocol of the HTTP request`} name={ipVersionName} />}
+        {ipVersionName && (
+          <CheckIpVersion
+            disabled={disabled}
+            description={`The IP protocol of the HTTP request`}
+            name={ipVersionName}
+          />
+        )}
       </Request.Options.Section>
       {fields.queryParams && (
         <Request.Options.Section label={`Query Parameters`}>
           <RequestQueryParams
             description={`The query parameters sent with the request. These parameters reduce cardinality when displaying URLs in dashboards. If you need higher cardinality, add your query parameters to the "Request target" field instead.`}
+            disabled={disabled}
             label={`Query parameter`}
             name={fields.queryParams.name}
             data-fs-element="Query parameters"
@@ -140,30 +164,33 @@ const HttpRequestOptions = ({ fields }: { fields: HttpRequestFields }) => {
         </Request.Options.Section>
       )}
       <Request.Options.Section label={`Request Body`}>
-        {requestContentTypeName && <RequestBodyContentType name={requestContentTypeName} />}
-        {requestContentEncodingName && <RequestBodyContentEncoding name={requestContentEncodingName} />}
-        <RequestBodyTextArea name={requestBodyName} />
+        {requestContentTypeName && <RequestBodyContentType disabled={disabled} name={requestContentTypeName} />}
+        {requestContentEncodingName && (
+          <RequestBodyContentEncoding disabled={disabled} name={requestContentEncodingName} />
+        )}
+        <RequestBodyTextArea disabled={disabled} name={requestBodyName} />
       </Request.Options.Section>
       {authFields && (
         <Request.Options.Section label={`Authentication`}>
           <Stack direction={`column`} gap={2}>
             <div>
               <h3 className="h6">Authentication Type</h3>
-              <HttpCheckAuthentication />
+              <HttpCheckAuthentication disabled={disabled} />
             </div>
           </Stack>
         </Request.Options.Section>
       )}
       {tlsFields && (
         <Request.Options.Section label={`TLS Config`}>
-          <TLSConfig fields={fields} />
+          <TLSConfig disabled={disabled} fields={fields} />
         </Request.Options.Section>
       )}
       {proxyFields && proxyFields.headers && proxyFields.url && (
         <Request.Options.Section label={`Proxy`}>
-          <HttpCheckProxyURL name={proxyFields.url.name} />
+          <HttpCheckProxyURL disabled={disabled} name={proxyFields.url.name} />
           <RequestHeaders
             description="The HTTP headers sent to the proxy."
+            disabled={disabled}
             label="Proxy connect header"
             name={proxyFields.headers.name}
             data-fs-element="Proxy connect headers"

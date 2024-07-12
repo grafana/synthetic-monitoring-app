@@ -1,13 +1,10 @@
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
-import { OrgRole } from '@grafana/data';
 
 import { CheckFormValuesHttp } from 'types';
-import { hasRole } from 'utils';
 import { PasswordField } from 'components/PasswordField/PasswordField';
 
-export const HttpCheckBearerToken = () => {
-  const isEditor = hasRole(OrgRole.Editor);
+export const HttpCheckBearerToken = ({ disabled }: { disabled?: boolean }) => {
   const { formState, register } = useFormContext<CheckFormValuesHttp>();
   const id = 'bearerToken';
 
@@ -15,7 +12,7 @@ export const HttpCheckBearerToken = () => {
     <PasswordField
       {...register('settings.http.bearerToken')}
       label="Bearer Authorization"
-      disabled={!isEditor}
+      disabled={disabled}
       invalid={Boolean(formState.errors.settings?.http?.bearerToken)}
       error={formState.errors.settings?.http?.bearerToken?.message}
       placeholder="Bearer token"

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Controller, FieldErrors, useFieldArray, useFormContext } from 'react-hook-form';
-import { GrafanaTheme2, OrgRole } from '@grafana/data';
+import { GrafanaTheme2 } from '@grafana/data';
 import { Box, Button, Checkbox, Field, IconButton, Input, Label, Select, Stack, Switch, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
@@ -12,7 +12,7 @@ import {
   HttpRegexValidationFormValue,
   HttpRegexValidationType,
 } from 'types';
-import { hasRole } from 'utils';
+import { useCheckFormContext } from 'components/CheckForm/CheckFormContext/CheckFormContext';
 import { HTTP_REGEX_VALIDATION_OPTIONS } from 'components/constants';
 
 const REGEX_FIELD_NAME = 'settings.http.regexValidations';
@@ -25,8 +25,8 @@ export const HttpCheckRegExValidation = () => {
     watch,
     formState: { errors },
   } = useFormContext<CheckFormValuesHttp>();
+  const { isFormDisabled } = useCheckFormContext();
   const { fields, append, remove } = useFieldArray<CheckFormValuesHttp>({ control, name: REGEX_FIELD_NAME });
-  const isEditor = hasRole(OrgRole.Editor);
   const disallowBodyMatching = watch('settings.http.method') === HttpMethod.HEAD;
   const options = disallowBodyMatching
     ? HTTP_REGEX_VALIDATION_OPTIONS.filter((option) => option.value !== HttpRegexValidationType.Body)
@@ -68,9 +68,10 @@ export const HttpCheckRegExValidation = () => {
                           <Select
                             {...rest}
                             aria-label={`Validation Field Name ${userIndex}`}
-                            placeholder="Field name"
-                            options={options}
+                            disabled={isFormDisabled}
                             onChange={({ value }) => onChange(value)}
+                            options={options}
+                            placeholder="Field name"
                           />
                         );
                       }}
@@ -87,9 +88,10 @@ export const HttpCheckRegExValidation = () => {
                         >
                           <Input
                             {...register(`${REGEX_FIELD_NAME}.${index}.header`)}
-                            placeholder="Header name"
-                            data-fs-element={`Regex header name ${index}`}
                             aria-label={`Header name for validation ${userIndex}`}
+                            data-fs-element={`Regex header name ${index}`}
+                            disabled={isFormDisabled}
+                            placeholder="Header name"
                           />
                         </Field>
                       </div>
@@ -101,17 +103,19 @@ export const HttpCheckRegExValidation = () => {
                     >
                       <Input
                         {...register(`${REGEX_FIELD_NAME}.${index}.expression`)}
-                        placeholder="Regex"
-                        data-fs-element={`Regex expression ${index}`}
                         aria-label={`Regex expression for validation ${userIndex}`}
+                        data-fs-element={`Regex expression ${index}`}
+                        disabled={isFormDisabled}
+                        placeholder="Regex"
                       />
                     </Field>
                   </div>
                   <div className={styles.validationInverted}>
                     <Checkbox
                       {...register(`${REGEX_FIELD_NAME}.${index}.inverted`)}
-                      data-fs-element={`Regex inverted ${index}`}
                       aria-label={`Invert match for validation ${userIndex}`}
+                      data-fs-element={`Regex inverted ${index}`}
+                      disabled={isFormDisabled}
                     />
                   </div>
                   {isHeaderMatch ? (
@@ -120,38 +124,39 @@ export const HttpCheckRegExValidation = () => {
                         {...register(`${REGEX_FIELD_NAME}.${index}.allowMissing`)}
                         aria-label={`Allow missing header for validation ${userIndex}`}
                         data-fs-element={`Regex allow missing ${index}`}
+                        disabled={isFormDisabled}
                       />
                     </div>
                   ) : (
                     <div />
                   )}
                   <IconButton
+                    aria-label={`Delete regex validation ${userIndex}`}
                     className={styles.removeButtonWrapper}
+                    data-fs-element={`Regex delete ${index}`}
+                    disabled={isFormDisabled}
                     name="minus-circle"
                     onClick={() => remove(index)}
                     tooltip="Delete"
-                    data-fs-element={`Regex delete ${index}`}
-                    aria-label={`Delete regex validation ${userIndex}`}
                   />
                 </div>
               );
             })}
           </Stack>
         )}
-        {isEditor && (
-          <div>
-            <Button
-              type="button"
-              icon="plus"
-              variant="secondary"
-              size="sm"
-              onClick={() => append(newOption)}
-              data-fs-element="Add regex validation button"
-            >
-              Add Regex Validation
-            </Button>
-          </div>
-        )}
+        <div>
+          <Button
+            data-fs-element="Add regex validation button"
+            disabled={isFormDisabled}
+            icon="plus"
+            onClick={() => append(newOption)}
+            size="sm"
+            type="button"
+            variant="secondary"
+          >
+            Add Regex Validation
+          </Button>
+        </div>
       </Stack>
     </Box>
   );

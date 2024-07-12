@@ -1,18 +1,17 @@
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
-import { OrgRole } from '@grafana/data';
 import { Alert, Button, Field, LoadingPlaceholder, Spinner, TextLink, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Label } from 'types';
 import { FaroEvent, reportEvent } from 'faro';
-import { hasRole } from 'utils';
 import { ListTenantLimitsResponse } from 'datasource/responses.types';
 import { useTenantLimits } from 'data/useTenantLimits';
 import { interpolateErrorMessage } from 'components/CheckForm/utils';
 import { NameValueInput } from 'components/NameValueInput';
 
 export interface LabelFieldProps {
+  disabled?: boolean;
   labelDestination: 'check' | 'probe';
 }
 
@@ -55,10 +54,9 @@ function getDescription(labelDestination: LabelFieldProps['labelDestination'], l
   );
 }
 
-export const LabelField = <T extends FormWithLabels>({ labelDestination }: LabelFieldProps) => {
+export const LabelField = <T extends FormWithLabels>({ disabled, labelDestination }: LabelFieldProps) => {
   const { data: limits, isLoading, error, isRefetching, refetch } = useTenantLimits();
   const { formState } = useFormContext<FormWithLabels>();
-  const isEditor = hasRole(OrgRole.Editor);
   const limit = getLimit(labelDestination, limits);
   const description = getDescription(labelDestination, limit, limits?.maxAllowedLogLabels ?? 5);
   const labelError = formState.errors?.labels?.message || formState.errors?.labels?.root?.message;
@@ -67,7 +65,7 @@ export const LabelField = <T extends FormWithLabels>({ labelDestination }: Label
     <Field
       label="Labels"
       description={description}
-      disabled={!isEditor}
+      disabled={disabled}
       error={interpolateErrorMessage(labelError, 'label')}
       invalid={Boolean(labelError) || undefined}
     >
@@ -78,7 +76,7 @@ export const LabelField = <T extends FormWithLabels>({ labelDestination }: Label
           {error ? <LimitsFetchWarning refetch={refetch} isRefetching={isRefetching} error={error} /> : null}
           <NameValueInput
             name="labels"
-            disabled={!isEditor}
+            disabled={disabled}
             label="label"
             limit={limit}
             data-fs-element="Labels input"

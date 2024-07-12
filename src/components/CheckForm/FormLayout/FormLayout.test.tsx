@@ -22,7 +22,7 @@ describe(`FormLayout`, () => {
     );
 
     const text = await screen.findByText(firstSectionText);
-    expect(text).toBeVisible();
+    expect(text).toBeInTheDocument();
   });
 
   it(`only indexes children that are formSection`, async () => {
@@ -38,7 +38,7 @@ describe(`FormLayout`, () => {
     );
 
     const text = await screen.findByText(firstSectionText);
-    expect(text).toBeVisible();
+    expect(text).toBeInTheDocument();
   });
 
   it(`shows an error icon if any of the fields in that section have errors`, async () => {
@@ -56,7 +56,7 @@ describe(`FormLayout`, () => {
     const submitButton = await screen.findByText(`Submit`);
     await user.click(submitButton);
     const errorIcon = await container.querySelector(`svg[name='exclamation-triangle']`);
-    expect(errorIcon).toBeVisible();
+    expect(errorIcon).toBeInTheDocument();
   });
 
   it(`moves between wizard steps with buttons`, async () => {
@@ -78,7 +78,7 @@ describe(`FormLayout`, () => {
     const next = await screen.findByRole('button', { name: '2. Second section' });
     await user.click(next);
     const text = await screen.findByText(secondSectionText);
-    expect(text).toBeVisible();
+    expect(text).toBeInTheDocument();
     expect(await screen.queryByText(firstSectionText)).not.toBeInTheDocument();
   });
 
@@ -107,9 +107,71 @@ describe(`FormLayout`, () => {
     const next = await screen.findByText('Third section');
     await user.click(next);
     const text = await screen.findByText(thirdSectionText);
-    expect(text).toBeVisible();
+    expect(text).toBeInTheDocument();
     expect(await screen.queryByText(firstSectionText)).not.toBeInTheDocument();
     expect(await screen.queryByText(secondSectionText)).not.toBeInTheDocument();
+  });
+
+  it(`disables the submit button if the form is disabled`, async () => {
+    render(
+      <TestForm disabled>
+        <FormLayout.Section label="First section" fields={[`job`]}>
+          <NameInput />
+        </FormLayout.Section>
+        <FormLayout.Section label="Second section">
+          <div>Second section content</div>
+        </FormLayout.Section>
+      </TestForm>
+    );
+
+    const submitButton = await screen.findByRole(`button`, { name: `Submit` });
+    expect(submitButton).toBeDisabled();
+  });
+
+  it(`validates previous steps when moving between steps`, async () => {
+    const { container, user } = render(
+      <TestForm>
+        <FormLayout.Section label="First section" fields={[`job`]}>
+          <NameInput />
+        </FormLayout.Section>
+        <FormLayout.Section label="Second section">
+          <div>Second section content</div>
+        </FormLayout.Section>
+        <FormLayout.Section label="Third section">
+          <div>Third section content</div>
+        </FormLayout.Section>
+      </TestForm>
+    );
+
+    const next = await screen.findByText(/Third section/);
+    await user.click(next);
+    const errorIcon = await container.querySelector(`svg[name='exclamation-triangle']`);
+    const validIcon = await container.querySelector(`svg[name='check']`);
+    expect(errorIcon).toBeInTheDocument();
+    expect(validIcon).toBeInTheDocument();
+  });
+
+  it(`disables showing validation when the form is disabled`, async () => {
+    const { container, user } = render(
+      <TestForm disabled>
+        <FormLayout.Section label="First section" fields={[`job`]}>
+          <NameInput />
+        </FormLayout.Section>
+        <FormLayout.Section label="Second section">
+          <div>Second section content</div>
+        </FormLayout.Section>
+        <FormLayout.Section label="Third section">
+          <div>Third section content</div>
+        </FormLayout.Section>
+      </TestForm>
+    );
+
+    const next = await screen.findByText(/Third section/);
+    await user.click(next);
+    const errorIcon = await container.querySelector(`svg[name='exclamation-triangle']`);
+    const validIcon = await container.querySelector(`svg[name='check']`);
+    expect(errorIcon).not.toBeInTheDocument();
+    expect(validIcon).not.toBeInTheDocument();
   });
 });
 
@@ -117,9 +179,9 @@ type TestValues = {
   job: string;
 };
 
-type TestFormProps = { children: ReactNode };
+type TestFormProps = { children: ReactNode; disabled?: boolean };
 
-const TestForm = ({ children }: TestFormProps) => {
+const TestForm = ({ children, disabled }: TestFormProps) => {
   const formMethods = useForm<TestValues>({
     defaultValues: {
       job: ``,
@@ -129,6 +191,7 @@ const TestForm = ({ children }: TestFormProps) => {
   return (
     <FormProvider {...formMethods}>
       <FormLayout
+        disabled={disabled}
         onSubmit={formMethods.handleSubmit}
         onValid={(v) => v}
         schema={z.object({

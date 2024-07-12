@@ -5,10 +5,12 @@ import { Button, Field, IconButton, Input, Select, Stack, useStyles2 } from '@gr
 import { css } from '@emotion/css';
 
 import { CheckFormValuesMultiHttp, MultiHttpVariableType } from 'types';
+import { useCheckFormContext } from 'components/CheckForm/CheckFormContext/CheckFormContext';
 import { MULTI_HTTP_VARIABLE_TYPE_OPTIONS } from 'components/constants';
 
 export const VariablesFields = ({ index }: { index: number }) => {
   const styles = useStyles2(getStyles);
+  const { isFormDisabled } = useCheckFormContext();
   const variableFieldName: FieldPath<CheckFormValuesMultiHttp> = `settings.multihttp.entries.${index}.variables`;
   const { control, formState, register, watch } = useFormContext<CheckFormValuesMultiHttp>();
   const { append, fields, remove } = useFieldArray<CheckFormValuesMultiHttp>({ control, name: variableFieldName });
@@ -41,6 +43,7 @@ export const VariablesFields = ({ index }: { index: number }) => {
                   formState.errors.settings?.multihttp?.entries?.[index]?.variables?.[variableIndex]?.type
                 )}
                 data-fs-element="Variable name input"
+                disabled={isFormDisabled}
                 {...register(`${variableFieldName}.${variableIndex}.name`)}
               />
             </Field>
@@ -59,6 +62,7 @@ export const VariablesFields = ({ index }: { index: number }) => {
                     <Select
                       aria-label="Variable type"
                       {...rest}
+                      disabled={isFormDisabled}
                       options={MULTI_HTTP_VARIABLE_TYPE_OPTIONS}
                       menuPlacement="bottom"
                       onChange={({ value }) => {
@@ -81,6 +85,7 @@ export const VariablesFields = ({ index }: { index: number }) => {
                   placeholder="Attribute"
                   id={variableAttributeId}
                   data-fs-element="Variable attribute input"
+                  disabled={isFormDisabled}
                   {...register(`${variableFieldName}.${variableIndex}.attribute`)}
                 />
               </Field>
@@ -97,6 +102,7 @@ export const VariablesFields = ({ index }: { index: number }) => {
                   placeholder="Variable expression"
                   id={variableExpressionId}
                   data-fs-element="Variable expression input"
+                  disabled={isFormDisabled}
                   invalid={Boolean(errorPath?.expression)}
                   {...register(`${variableFieldName}.${variableIndex}.expression`)}
                 />
@@ -118,6 +124,7 @@ export const VariablesFields = ({ index }: { index: number }) => {
           onClick={() => {
             append({ type: MultiHttpVariableType.JSON_PATH, name: '', expression: '' });
           }}
+          disabled={isFormDisabled}
           variant="secondary"
           size="sm"
           type="button"

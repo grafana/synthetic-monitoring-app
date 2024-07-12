@@ -8,4 +8,6 @@ export enum DataTestIds {
   REQUEST_ASSERTION = 'request-assertion',
   MULTI_HTTP_REQUEST = 'multihttp-request',
   ACTIONS_BAR = 'actions-bar',
+  PAGE_READY = 'page-ready',
+  PAGE_NOT_READY = 'page-not-ready',
 }
