@@ -47,7 +47,7 @@
     "@types/ip-address": "^7.0.0",
     "@types/is-base64": "^1.1.0",
     "@types/jest": "^29.5.0",
-    "@types/k6": "^0.47.1",
+    "@types/k6": "0.52.0",
     "@types/lodash": "^4.14.194",
     "@types/node": "^18.15.11",
     "@types/prismjs": "1.26.3",

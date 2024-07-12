@@ -1,5 +1,6 @@
 import { Check, Label, MultiHttpSettings, Probe, TLSConfig } from 'types';
 import {
+  isBrowserCheck,
   isDNSCheck,
   isGRPCCheck,
   isHttpCheck,
@@ -146,6 +147,12 @@ const settingsToTF = (check: Check): TFCheckSettings => {
   if (isScriptedCheck(check)) {
     return {
       scripted: {},
+    };
+  }
+
+  if (isBrowserCheck(check)) {
+    return {
+      browser: {},
     };
   }
 

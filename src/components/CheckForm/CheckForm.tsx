@@ -3,6 +3,7 @@ import { FormProvider, SubmitErrorHandler, SubmitHandler, useForm } from 'react-
 import { useParams } from 'react-router-dom';
 import { Button, ConfirmModal, LinkButton } from '@grafana/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { BrowserCheckSchema } from 'schemas/forms/BrowserCheckSchema';
 import { DNSCheckSchema } from 'schemas/forms/DNSCheckSchema';
 import { GRPCCheckSchema } from 'schemas/forms/GRPCCheckSchema';
 import { HttpCheckSchema } from 'schemas/forms/HttpCheckSchema';
@@ -25,6 +26,7 @@ import { ErrorAlert } from 'components/ErrorAlert';
 import { PluginPage } from 'components/PluginPage';
 import { getRoute } from 'components/Routing';
 
+import { CheckBrowserLayout } from './FormLayouts/CheckBrowserLayout';
 import { CheckDNSLayout } from './FormLayouts/CheckDNSLayout';
 import { CheckGrpcLayout } from './FormLayouts/CheckGrpcLayout';
 import { CheckHTTPLayout } from './FormLayouts/CheckHttpLayout';
@@ -69,6 +71,7 @@ type CheckFormContentProps = {
 };
 
 const schemaMap = {
+  [CheckType.Browser]: BrowserCheckSchema,
   [CheckType.HTTP]: HttpCheckSchema,
   [CheckType.MULTI_HTTP]: MultiHttpCheckSchema,
   [CheckType.Scripted]: ScriptedCheckSchema,
@@ -251,6 +254,10 @@ const CheckSelector = ({
 
   if (checkType === CheckType.GRPC) {
     return <CheckGrpcLayout {...rest} />;
+  }
+
+  if (checkType === CheckType.Browser) {
+    return <CheckBrowserLayout {...rest} />;
   }
 
   throw new Error(`Invalid check type: ${checkType}`);

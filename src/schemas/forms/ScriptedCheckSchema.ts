@@ -6,7 +6,10 @@ import { BaseCheckSchema } from './BaseCheckSchema';
 
 const MAX_SCRIPT_IN_KB = 128;
 
-const ScriptedSettingsSchema: ZodType<ScriptedSettings> = z.object({
+/** Important: this schema is also used in `BrowserCheckSchema.ts`
+ *  If you change this schema, make sure to update the other file as well (if they start to diverge).
+ * */
+export const ScriptedSettingsSchema: ZodType<ScriptedSettings> = z.object({
   script: z
     .string()
     .min(1, `Script is required.`)
