@@ -1,5 +1,16 @@
 # Change Log
 
+# [1.14.10](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.9...v1.14.10) (2024-7-10)
+
+- Upgrade scenes to version 5.1.0
+- Fix cursor type on cards without links
+- Improve non-initialized pages to provide section specific content
+- Enforce named exports
+- Avoid horizontal scrolling on check's dashboard
+- Add regression test for longitud validation fix
+- Add datasource to includes in order to provide support for loading synthentic monitoring appn assets from a CDN
+- Make loki query fetch range instead of instant logs to prevent timeout errors on ad-hoc tests
+
 # [1.14.9](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.8...v1.14.9) (2024-6-25)
 
 - Fix home dashboard when applying filters for error percentage, latency and error rate panels.
