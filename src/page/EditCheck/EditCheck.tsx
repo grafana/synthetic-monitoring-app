@@ -49,7 +49,8 @@ const NotFoundModal = () => {
       closeOnEscape={false}
     >
       <Alert title={``} severity="error">
-        We were unable to find your check. It may have been deleted or you may not have access to it.
+        We were unable to find your check. It may have been deleted or you may not have access to it. If you think you
+        are seeing this message in error, please contact your administrator.
       </Alert>
       <Modal.ButtonRow>
         <LinkButton href={getRoute(ROUTES.Checks)}>Go to check list</LinkButton>
