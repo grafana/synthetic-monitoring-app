@@ -8,7 +8,7 @@ interface RequestTestProps {
 }
 
 export const RequestTest = ({ disabled, label = `Test`, onClick }: RequestTestProps) => {
-  // temporarily disabling the test button for all requests
+  // todo: temporarily disabling the test button for all requests
   if (!onClick || true) {
     return null;
   }

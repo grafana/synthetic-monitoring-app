@@ -46,6 +46,7 @@ export const CodeEditor = forwardRef(function CodeEditor(
     checkJs = true,
     constrainedRanges,
     language = 'javascript',
+    overlayMessage,
     readOnly,
     renderHeader,
     value,
@@ -61,18 +62,18 @@ export const CodeEditor = forwardRef(function CodeEditor(
   const [prevValue, setPrevValue] = useState(value);
 
   // GC
-  // useEffect(() => {
-  //   return () => {
-  //     if (constrainedInstance) {
-  //       constrainedInstance.disposeConstrainer();
-  //     }
+  useEffect(() => {
+    return () => {
+      if (constrainedInstance) {
+        constrainedInstance.disposeConstrainer();
+      }
 
-  //     if (editorRef) {
-  //       editorRef.dispose();
-  //     }
-  //   };
-  //   // eslint-disable-next-line
-  // }, []);
+      if (editorRef) {
+        editorRef.dispose();
+      }
+    };
+    // eslint-disable-next-line
+  }, []);
 
   const handleValidation = (monaco: typeof monacoType, editor: monacoType.editor.IStandaloneCodeEditor) => {
     if (!onValidation) {

@@ -6,12 +6,11 @@ import SliderComponent from 'rc-slider';
 import { getStyles } from './styles';
 
 export interface SliderProps {
-  /** If the value is true, it means a continuous value interval, otherwise, it is a independent value. */
-  // defaultValue: number;
   analyticsLabel?: string;
   ariaLabelForHandle?: string;
   disabled?: boolean;
   formatTooltipResult?: (value: number) => number;
+  /** If the value is true, it means a continuous value interval, otherwise, it is a independent value. */
   included?: boolean;
   max: number;
   min: number;

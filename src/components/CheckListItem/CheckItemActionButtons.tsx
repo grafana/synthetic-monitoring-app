@@ -4,7 +4,7 @@ import { Button, ConfirmModal, IconButton, LinkButton, useStyles2 } from '@grafa
 import { css } from '@emotion/css';
 
 import { Check, ROUTES } from 'types';
-import { getCheckType as getCheckType, getCheckTypeGroup, hasRole } from 'utils';
+import { getCheckType, getCheckTypeGroup, hasRole } from 'utils';
 import { useDeleteCheck } from 'data/useChecks';
 import { useNavigation } from 'hooks/useNavigation';
 import { PLUGIN_URL_PATH } from 'components/constants';

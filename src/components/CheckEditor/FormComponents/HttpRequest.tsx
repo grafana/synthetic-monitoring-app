@@ -154,13 +154,7 @@ const HttpRequestOptions = ({ disabled, fields }: HttpRequestOptionsProps) => {
       </Request.Options.Section>
       {fields.queryParams && (
         <Request.Options.Section label={`Query Parameters`}>
-          <RequestQueryParams
-            description={`The query parameters sent with the request. These parameters reduce cardinality when displaying URLs in dashboards. If you need higher cardinality, add your query parameters to the "Request target" field instead.`}
-            disabled={disabled}
-            label={`Query parameter`}
-            name={fields.queryParams.name}
-            data-fs-element="Query parameters"
-          />
+          <RequestQueryParams disabled={disabled} name={fields.queryParams.name} />
         </Request.Options.Section>
       )}
       <Request.Options.Section label={`Request Body`}>

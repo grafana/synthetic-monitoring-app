@@ -50,9 +50,10 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
     icon: `k6`,
     protocols: [
       { label: `HTTP` },
-      // we don't support these yet
+      // todo: we don't support these yet
       // { label: `gRPC` },
       { label: `WebSockets` },
+      // todo: we don't support these yet
       // {
       //   label: `+More`,
       //   tooltip: (

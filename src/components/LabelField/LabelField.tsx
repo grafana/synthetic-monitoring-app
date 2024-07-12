@@ -65,7 +65,6 @@ export const LabelField = <T extends FormWithLabels>({ disabled, labelDestinatio
     <Field
       label="Labels"
       description={description}
-      disabled={disabled}
       error={interpolateErrorMessage(labelError, 'label')}
       invalid={Boolean(labelError) || undefined}
     >

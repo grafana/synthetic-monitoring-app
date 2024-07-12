@@ -59,7 +59,7 @@ test('disabled for flags that do not exist', async () => {
   expect(notEnabled).toBeInTheDocument();
 });
 
-// broken this somehow -- will look into why later date
+// todo: broken this test somehow despite it does work correctly -- will look into why later date
 test.skip('detects feature flags in url params', async () => {
   renderFeatureFlags(URL_FLAG);
   const enabled = await screen.findByText('the feature is enabled');
