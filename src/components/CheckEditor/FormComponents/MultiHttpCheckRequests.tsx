@@ -20,7 +20,7 @@ import {
 } from 'components/MultiHttp/MultiHttpSettingsForm.utils';
 
 import { HttpRequest } from './HttpRequest';
-import { VariablesFields } from './VariablesFields';
+import { MultiHttpVariables } from './MultiHttpVariables';
 
 export const MULTI_HTTP_REQUEST_FIELDS: HttpRequestFields = {
   target: {
@@ -203,7 +203,7 @@ const SetVariables = ({ index }: { index: number }) => {
       </div>
       {open && (
         <Indent>
-          <VariablesFields index={index} />
+          <MultiHttpVariables index={index} />
         </Indent>
       )}
     </Stack>

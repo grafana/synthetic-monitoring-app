@@ -8,7 +8,7 @@ import { CheckFormValuesMultiHttp, MultiHttpVariableType } from 'types';
 import { useCheckFormContext } from 'components/CheckForm/CheckFormContext/CheckFormContext';
 import { MULTI_HTTP_VARIABLE_TYPE_OPTIONS } from 'components/constants';
 
-export const VariablesFields = ({ index }: { index: number }) => {
+export const MultiHttpVariables = ({ index }: { index: number }) => {
   const styles = useStyles2(getStyles);
   const { isFormDisabled } = useCheckFormContext();
   const variableFieldName: FieldPath<CheckFormValuesMultiHttp> = `settings.multihttp.entries.${index}.variables`;
