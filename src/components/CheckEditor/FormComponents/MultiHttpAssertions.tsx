@@ -115,14 +115,14 @@ const RequestAssertions = ({ index }: { index: number }) => {
                       data-fs-element="Assertion type select"
                     >
                       <Select
-                        inputId={id}
                         {...rest}
                         disabled={isFormDisabled}
-                        options={MULTI_HTTP_ASSERTION_TYPE_OPTIONS}
+                        inputId={id}
                         menuPlacement="bottom"
                         onChange={(e) => {
                           field.onChange(e.value);
                         }}
+                        options={MULTI_HTTP_ASSERTION_TYPE_OPTIONS}
                       />
                     </Field>
                   );
@@ -147,6 +147,8 @@ const RequestAssertions = ({ index }: { index: number }) => {
       </Stack>
       <div>
         <Button
+          disabled={isFormDisabled}
+          icon="plus"
           onClick={() => {
             append({
               type: MultiHttpAssertionType.Text,
@@ -155,11 +157,9 @@ const RequestAssertions = ({ index }: { index: number }) => {
               value: ``,
             });
           }}
-          disabled={isFormDisabled}
-          variant="secondary"
           size="sm"
           type="button"
-          icon="plus"
+          variant="secondary"
         >
           Add assertion
         </Button>
@@ -237,20 +237,20 @@ function AssertionSubjectField({ assertionIndex, disabled, entryIndex }: Asserti
 
         return (
           <Field
-            label="Subject"
+            data-fs-element="Assertion subject select"
             description="Target value to assert against"
-            invalid={Boolean(errorSubject)}
             error={errorMessage}
             htmlFor={id}
-            data-fs-element="Assertion subject select"
+            invalid={Boolean(errorSubject)}
+            label="Subject"
           >
             <Select
-              inputId={id}
               {...rest}
               disabled={disabled}
-              options={ASSERTION_SUBJECT_OPTIONS}
+              inputId={id}
               menuPlacement="bottom"
               onChange={(e) => field.onChange(e.value)}
+              options={ASSERTION_SUBJECT_OPTIONS}
             />
           </Field>
         );
@@ -282,12 +282,12 @@ function AssertionConditionField({ assertionIndex, disabled, entryIndex }: Asser
             data-fs-element="Assertion condition select"
           >
             <Select
-              inputId={id}
               {...rest}
               disabled={disabled}
-              options={ASSERTION_CONDITION_OPTIONS}
+              inputId={id}
               menuPlacement="bottom"
               onChange={(e) => field.onChange(e.value)}
+              options={ASSERTION_CONDITION_OPTIONS}
             />
           </Field>
         );
@@ -331,12 +331,12 @@ function AssertionExpressionField({ assertionIndex, disabled, entryIndex }: Asse
   return (
     <Field label="Expression" invalid={Boolean(errorMessage)} error={errorMessage} description={description}>
       <Input
-        placeholder={placeholder}
-        data-testid={`${entryIndex}-${assertionIndex}-expression`}
-        id={`${entryIndex}-${assertionIndex}-expression`}
-        data-fs-element="Assertion expression input"
-        disabled={disabled}
         {...register(`settings.multihttp.entries.${entryIndex}.checks.${assertionIndex}.expression`)}
+        data-fs-element="Assertion expression input"
+        data-testid={`${entryIndex}-${assertionIndex}-expression`}
+        disabled={disabled}
+        id={`${entryIndex}-${assertionIndex}-expression`}
+        placeholder={placeholder}
       />
     </Field>
   );

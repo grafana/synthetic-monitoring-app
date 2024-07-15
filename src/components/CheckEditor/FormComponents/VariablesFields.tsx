@@ -30,21 +30,21 @@ export const VariablesFields = ({ index }: { index: number }) => {
         return (
           <Stack key={field.id}>
             <Field
-              label="Variable name"
               description="The name of the variable"
-              invalid={Boolean(errorPath?.name)}
               error={errorPath?.name?.message}
               htmlFor={variableNameId}
+              invalid={Boolean(errorPath?.name)}
+              label="Variable name"
             >
               <Input
-                placeholder="Variable name"
+                {...register(`${variableFieldName}.${variableIndex}.name`)}
+                data-fs-element="Variable name input"
+                disabled={isFormDisabled}
                 id={variableNameId}
                 invalid={Boolean(
                   formState.errors.settings?.multihttp?.entries?.[index]?.variables?.[variableIndex]?.type
                 )}
-                data-fs-element="Variable name input"
-                disabled={isFormDisabled}
-                {...register(`${variableFieldName}.${variableIndex}.name`)}
+                placeholder="Variable name"
               />
             </Field>
             <Controller
@@ -53,21 +53,21 @@ export const VariablesFields = ({ index }: { index: number }) => {
                 const { ref, onChange, ...rest } = typeField;
                 return (
                   <Field
-                    label="Variable type"
-                    description="The method of getting a value"
-                    invalid={Boolean(errorPath?.type)}
-                    error={errMessage}
                     data-fs-element="Variable type select"
+                    description="The method of getting a value"
+                    error={errMessage}
+                    invalid={Boolean(errorPath?.type)}
+                    label="Variable type"
                   >
                     <Select
-                      aria-label="Variable type"
                       {...rest}
+                      aria-label="Variable type"
                       disabled={isFormDisabled}
-                      options={MULTI_HTTP_VARIABLE_TYPE_OPTIONS}
                       menuPlacement="bottom"
                       onChange={({ value }) => {
                         onChange(value);
                       }}
+                      options={MULTI_HTTP_VARIABLE_TYPE_OPTIONS}
                     />
                   </Field>
                 );
@@ -75,43 +75,43 @@ export const VariablesFields = ({ index }: { index: number }) => {
             />
             {variableTypeValue === MultiHttpVariableType.CSS_SELECTOR && (
               <Field
-                label="Attribute"
                 description="Name of the attribute to extract the value from. Leave blank to get contents of tag"
-                invalid={Boolean(errorPath?.attribute)}
                 error={errorPath?.attribute?.message}
                 htmlFor={variableAttributeId}
+                invalid={Boolean(errorPath?.attribute)}
+                label="Attribute"
               >
                 <Input
-                  placeholder="Attribute"
-                  id={variableAttributeId}
+                  {...register(`${variableFieldName}.${variableIndex}.attribute`)}
                   data-fs-element="Variable attribute input"
                   disabled={isFormDisabled}
-                  {...register(`${variableFieldName}.${variableIndex}.attribute`)}
+                  id={variableAttributeId}
+                  placeholder="Attribute"
                 />
               </Field>
             )}
             <Field
-              label="Variable expression"
               description="Expression to extract the value"
               error={errorPath?.expression?.message}
-              invalid={Boolean(errorPath?.expression)}
               htmlFor={variableExpressionId}
+              invalid={Boolean(errorPath?.expression)}
+              label="Variable expression"
             >
               <div className={styles.aligner}>
                 <Input
-                  placeholder="Variable expression"
-                  id={variableExpressionId}
+                  {...register(`${variableFieldName}.${variableIndex}.expression`)}
                   data-fs-element="Variable expression input"
                   disabled={isFormDisabled}
+                  id={variableExpressionId}
                   invalid={Boolean(errorPath?.expression)}
-                  {...register(`${variableFieldName}.${variableIndex}.expression`)}
+                  placeholder="Variable expression"
                 />
                 <IconButton
                   className={styles.removebutton}
+                  data-fs-element="Variable delete button"
                   name="minus-circle"
                   onClick={() => remove(variableIndex)}
                   tooltip="Delete"
-                  data-fs-element="Variable delete button"
                 />
               </div>
             </Field>
@@ -121,15 +121,15 @@ export const VariablesFields = ({ index }: { index: number }) => {
       })}
       <div>
         <Button
+          data-fs-element="Variable delete button"
+          disabled={isFormDisabled}
+          icon={`plus`}
           onClick={() => {
             append({ type: MultiHttpVariableType.JSON_PATH, name: '', expression: '' });
           }}
-          disabled={isFormDisabled}
-          variant="secondary"
           size="sm"
           type="button"
-          data-fs-element="Variable delete button"
-          icon={`plus`}
+          variant="secondary"
         >
           Add variable
         </Button>

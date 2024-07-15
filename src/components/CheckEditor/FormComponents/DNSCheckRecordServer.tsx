@@ -13,13 +13,14 @@ export const DNSCheckRecordServer = ({ disabled }: { disabled?: boolean }) => {
   const fieldError = errors?.settings?.dns?.server?.message;
 
   return (
-    <Field label="Server" disabled={disabled} htmlFor={id} invalid={Boolean(fieldError)} error={fieldError}>
+    <Field label="Server" htmlFor={id} invalid={Boolean(fieldError)} error={fieldError}>
       <Input
-        id={id}
         {...register('settings.dns.server')}
-        type="text"
-        placeholder="server"
         data-fs-element="DNS server input"
+        disabled={disabled}
+        id={id}
+        placeholder="server"
+        type="text"
       />
     </Field>
   );

@@ -78,14 +78,14 @@ export const HttpCheckAuthentication = ({ disabled }: { disabled?: boolean }) =>
   return (
     <>
       <RadioButtonGroup
+        disabled={disabled}
+        onChange={handleChangeOption}
         options={[
           { label: 'None', value: 'none' },
           { label: 'Bearer', value: 'bearer' },
           { label: 'Basic', value: 'basic' },
         ]}
         value={authType}
-        onChange={handleChangeOption}
-        disabled={disabled}
       />
 
       <div className={styles.fieldsContainer}>

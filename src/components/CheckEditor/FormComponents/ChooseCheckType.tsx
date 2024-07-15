@@ -50,7 +50,7 @@ export const ChooseCheckType = ({ checkType, checkTypeGroup, disabled }: ChooseC
       };
     }
 
-    return { label, value };
+    return standard;
   });
 
   return (

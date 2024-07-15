@@ -60,13 +60,13 @@ export const NameValueInput = ({ name, disabled, limit, label, ...rest }: Props)
                 {...register(`${name}.${index}.name`)}
                 aria-label={`${label} ${index + 1} name`}
                 data-testid={`${label}-name-${index}`}
-                type="text"
-                placeholder="name"
                 disabled={disabled}
                 onChange={(v) => {
                   labelNameField.onChange(v);
                   handleTrigger();
                 }}
+                placeholder="name"
+                type="text"
               />
             </Field>
             <Field

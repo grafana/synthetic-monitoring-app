@@ -43,7 +43,6 @@ export const TLSConfig = ({ disabled, fields }: TLSConfigProps) => {
         <Field
           label="Server name"
           description="Used to verify the hostname for the targets"
-          disabled={disabled}
           invalid={Boolean(serverNameError)}
           error={serverNameError?.message}
         >
@@ -62,7 +61,6 @@ export const TLSConfig = ({ disabled, fields }: TLSConfigProps) => {
           <Field
             label="CA certificate"
             description="Certificate must be in PEM format."
-            disabled={disabled}
             invalid={Boolean(caCertError)}
             error={caCertError?.message}
           >
@@ -82,7 +80,6 @@ export const TLSConfig = ({ disabled, fields }: TLSConfigProps) => {
           <Field
             label="Client certificate"
             description="The client cert file for the targets. The certificate must be in PEM format."
-            disabled={disabled}
             invalid={Boolean(clientCertError)}
             error={clientCertError?.message}
           >
@@ -102,7 +99,6 @@ export const TLSConfig = ({ disabled, fields }: TLSConfigProps) => {
           <Field
             label="Client key"
             description="The client key file for the targets. The key must be in PEM format."
-            disabled={disabled}
             invalid={Boolean(clientKeyError)}
             error={clientKeyError?.message}
           >

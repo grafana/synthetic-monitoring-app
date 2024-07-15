@@ -74,11 +74,11 @@ export const LabelField = <T extends FormWithLabels>({ disabled, labelDestinatio
         <>
           {error ? <LimitsFetchWarning refetch={refetch} isRefetching={isRefetching} error={error} /> : null}
           <NameValueInput
-            name="labels"
+            data-fs-element="Labels input"
             disabled={disabled}
             label="label"
             limit={limit}
-            data-fs-element="Labels input"
+            name="labels"
           />
         </>
       )}

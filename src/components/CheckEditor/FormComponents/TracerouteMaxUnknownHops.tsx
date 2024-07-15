@@ -13,21 +13,21 @@ export const TracerouteMaxUnknownHops = ({ disabled }: { disabled?: boolean }) =
 
   return (
     <Field
-      label="Max unknown hops"
       description="Maximimum number of hosts to traverse that give no response"
-      invalid={Boolean(errors.settings?.traceroute?.maxUnknownHops)}
       error={errors.settings?.traceroute?.maxUnknownHops?.message}
       htmlFor={id}
+      invalid={Boolean(errors.settings?.traceroute?.maxUnknownHops)}
+      label="Max unknown hops"
     >
       <Input
-        id={id}
         {...register('settings.traceroute.maxUnknownHops', {
           valueAsNumber: true,
         })}
+        data-fs-element="Max unknown hops input"
+        disabled={disabled}
+        id={id}
         min={0}
         type="number"
-        disabled={disabled}
-        data-fs-element="Max unknown hops input"
       />
     </Field>
   );

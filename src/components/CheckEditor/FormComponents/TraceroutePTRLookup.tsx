@@ -9,12 +9,12 @@ export const TraceroutePTRLookup = ({ disabled }: { disabled?: boolean }) => {
 
   return (
     <HorizontalCheckboxField
-      id="traceroute-settings-ptr-lookup"
-      label="PTR lookup"
-      description="Reverse lookup hostnames from IP addresses"
-      disabled={disabled}
       {...register('settings.traceroute.ptrLookup')}
       data-fs-element="PTR lookup checkbox"
+      description="Reverse lookup hostnames from IP addresses"
+      disabled={disabled}
+      id="traceroute-settings-ptr-lookup"
+      label="PTR lookup"
     />
   );
 };

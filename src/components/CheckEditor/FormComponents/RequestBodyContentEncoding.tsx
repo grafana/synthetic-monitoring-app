@@ -17,9 +17,9 @@ export const RequestBodyContentEncoding = ({ disabled, name }: RequestBodyConten
     <Field label="Content encoding" description="Indicates the content encoding of the body" htmlFor={id}>
       <Input
         {...register(name)}
-        id={id}
         data-fs-element={`Request body content encoding input ${id}`}
         disabled={disabled}
+        id={id}
       />
     </Field>
   );

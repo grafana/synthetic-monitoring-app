@@ -22,17 +22,17 @@ export const RequestQueryParams = ({ disabled, name, ...rest }: RequestQueryPara
 
   return (
     <Field
-      label={`${label}s`}
       description={`The query parameters sent with the request. These parameters reduce cardinality when displaying URLs in dashboards. If you need higher cardinality, add your query parameters to the "Request target" field instead.`}
       error={interpolateErrorMessage(errorMessage, label)}
       invalid={Boolean(errorMessage)}
+      label={`${label}s`}
     >
       <NameValueInput
+        {...rest}
         data-fs-element="Query parameters"
         disabled={disabled}
         label={label}
         name={name as NameValueName}
-        {...rest}
       />
     </Field>
   );

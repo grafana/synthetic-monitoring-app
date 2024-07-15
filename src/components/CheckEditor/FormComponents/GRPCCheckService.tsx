@@ -15,12 +15,12 @@ export const GRPCCheckService = ({ disabled }: { disabled?: boolean }) => {
       error={formState.errors?.settings?.grpc?.message}
     >
       <Input
+        {...register('settings.grpc.service')}
+        data-fs-element="gRPC service name input"
         disabled={disabled}
         id="check-editor-grpc-service-input"
-        {...register('settings.grpc.service')}
-        type="text"
         placeholder="service"
-        data-fs-element="gRPC service name input"
+        type="text"
       />
     </Field>
   );

@@ -11,11 +11,11 @@ export const HttpCheckFollowRedirects = ({ name }: { name: FieldPath<CheckFormVa
 
   return (
     <HorizontalCheckboxField
+      {...register(name)}
       data-fs-element="Follow redirects checkbox"
       disabled={isFormDisabled}
       id="http-settings-followRedirects"
       label="Follow redirects"
-      {...register(name)}
     />
   );
 };

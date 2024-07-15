@@ -71,7 +71,6 @@ export const CheckProbes = forwardRef(
               id={PROBES_SELECT_ID}
               label="Probe locations"
               description="Select one, multiple, or all probes where this target will be checked from. Deprecated probes can be removed, but they cannot be added."
-              disabled={disabled}
               error={error}
               invalid={invalid}
               htmlFor={id}

@@ -41,9 +41,9 @@ export const HttpRequest = ({ disabled, fields, onTest }: HttpRequestProps) => {
   return (
     <Request>
       <Request.Field
+        data-fs-element="Check request target select"
         description={`Full URL to send requests to`}
         disabled={disabled}
-        data-fs-element="Check request target select"
         htmlFor={id}
         name={fields.target.name}
       >
@@ -63,8 +63,8 @@ export const HttpRequest = ({ disabled, fields, onTest }: HttpRequestProps) => {
                       borderColor: getMethodColor(theme, value),
                     })}
                     disabled={disabled}
-                    options={METHOD_OPTIONS}
                     onChange={({ value }) => onChange(value)}
+                    options={METHOD_OPTIONS}
                     tabSelectsValue={false}
                   />
                 </div>

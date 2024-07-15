@@ -34,7 +34,7 @@ export const ScriptedCheckInstance = () => {
       error={formState.errors.target?.message}
       required
     >
-      <Input id="target" {...register('target')} disabled={isFormDisabled} />
+      <Input {...register('target')} disabled={isFormDisabled} id="target" />
     </Field>
   );
 };

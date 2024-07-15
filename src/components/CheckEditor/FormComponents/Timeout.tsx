@@ -22,20 +22,20 @@ export const Timeout = ({ checkType }: Props) => {
 
   return (
     <Field
-      label="Timeout"
       description="Maximum execution time for a check"
-      invalid={Boolean(errors.timeout)}
       error={errors.timeout?.message}
       htmlFor={`timeout`}
+      invalid={Boolean(errors.timeout)}
+      label="Timeout"
     >
       {isTraceroute ? (
         <Input
           {...register(`timeout`, { valueAsNumber: true })}
-          readOnly
+          id={`timeout`}
           prefix="Every"
+          readOnly
           suffix="seconds"
           width={18}
-          id={`timeout`}
         />
       ) : (
         <SliderInput

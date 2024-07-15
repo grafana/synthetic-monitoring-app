@@ -16,12 +16,17 @@ export const CheckJobName = () => {
       className={styles.field}
       label="Job name"
       description={'Name used for job label (in metrics it will appear as `job=X`)'}
-      disabled={isFormDisabled}
       invalid={Boolean(formState.errors.job)}
       error={formState.errors.job?.message}
       required
     >
-      <Input id="check-editor-job-input" {...register('job')} type="text" data-fs-element="Job name input" />
+      <Input
+        id="check-editor-job-input"
+        {...register('job')}
+        disabled={isFormDisabled}
+        type="text"
+        data-fs-element="Job name input"
+      />
     </Field>
   );
 };

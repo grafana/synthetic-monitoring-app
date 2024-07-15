@@ -14,11 +14,10 @@ export const HttpCheckValidStatusCodes = () => {
 
   return (
     <Field
+      data-fs-element="Valid status codes select"
+      description="Accepted status codes for this probe. Defaults to 2xx."
       htmlFor={id}
       label="Valid status codes"
-      description="Accepted status codes for this probe. Defaults to 2xx."
-      disabled={isFormDisabled}
-      data-fs-element="Valid status codes select"
     >
       <Controller
         control={control}
@@ -28,10 +27,10 @@ export const HttpCheckValidStatusCodes = () => {
           return (
             <MultiSelect
               {...rest}
-              options={validStatusCodes}
               disabled={isFormDisabled}
               inputId={id}
               onChange={(values) => onChange(values.map((v) => v.value))}
+              options={validStatusCodes}
             />
           );
         }}

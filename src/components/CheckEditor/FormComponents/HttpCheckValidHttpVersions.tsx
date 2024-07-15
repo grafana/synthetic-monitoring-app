@@ -41,10 +41,10 @@ export const HttpCheckValidHttpVersions = () => {
           return (
             <MultiSelect
               {...rest}
-              options={httpVersionOptions}
               disabled={isFormDisabled}
               inputId={id}
               onChange={(values) => onChange(values.map((v) => v.value))}
+              options={httpVersionOptions}
             />
           );
         }}

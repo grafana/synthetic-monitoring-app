@@ -19,20 +19,19 @@ export const RequestBodyTextArea = ({ disabled, name }: RequestBodyTextAreaProps
 
   return (
     <Field
-      label="Request body"
       description="The body of the HTTP request used in probe."
-      disabled={disabled}
-      invalid={Boolean(error)}
       error={error?.message}
       htmlFor={name}
+      invalid={Boolean(error)}
+      label="Request body"
     >
       <TextArea
-        aria-label={`Request body`}
-        id={name}
         {...register(name)}
-        rows={10}
-        disabled={disabled}
+        aria-label={`Request body`}
         data-fs-element="Check request body textarea"
+        disabled={disabled}
+        id={name}
+        rows={10}
       />
     </Field>
   );

@@ -132,18 +132,18 @@ export const MultiHttpCheckRequests = () => {
       <div>
         <Button
           className={styles.addButton}
-          type="button"
-          size="md"
-          icon="plus"
           disabled={requests?.length > 9 || isFormDisabled}
-          tooltip={requests?.length > 9 ? 'Maximum of 10 requests per check' : undefined}
-          tooltipPlacement="bottom-start"
+          icon="plus"
           onClick={() => {
             append({
               request: { url: ``, method: HttpMethod.GET },
             });
             dispatchCollapse({ type: 'addNewRequest' });
           }}
+          size="md"
+          tooltip={requests?.length > 9 ? 'Maximum of 10 requests per check' : undefined}
+          tooltipPlacement="bottom-start"
+          type="button"
         >
           Add request
         </Button>

@@ -20,11 +20,11 @@ export const HttpCheckCacheBuster = () => {
       htmlFor={id}
     >
       <Input
-        id={id}
         {...register('settings.http.cacheBustingQueryParamName')}
         className={styles.input}
         data-fs-element="Cache busting query parameter name input"
         disabled={isFormDisabled}
+        id={id}
         placeholder="cache-bust"
       />
     </Field>

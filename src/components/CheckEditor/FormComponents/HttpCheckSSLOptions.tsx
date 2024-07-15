@@ -26,12 +26,12 @@ export const HttpCheckSSLOptions = () => {
           return (
             <Select
               {...rest}
-              inputId={id}
-              options={HTTP_SSL_OPTIONS}
               disabled={isFormDisabled}
+              inputId={id}
               onChange={({ value }) => {
                 onChange(value);
               }}
+              options={HTTP_SSL_OPTIONS}
             />
           );
         }}

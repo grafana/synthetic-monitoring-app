@@ -15,7 +15,7 @@ export const HttpCheckProxyURL = ({ disabled, name }: HttpCheckProxyURLProps) =>
 
   return (
     <Field htmlFor={id} label="Proxy URL" description="HTTP proxy server to use to connect to the target">
-      <Input id={id} {...register(name)} type="text" data-fs-element="Check proxy URL input" disabled={disabled} />
+      <Input {...register(name)} data-fs-element="Check proxy URL input" disabled={disabled} id={id} type="text" />
     </Field>
   );
 };

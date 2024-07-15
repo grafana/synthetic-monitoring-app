@@ -21,22 +21,22 @@ export const HttpCheckBasicAuthorization = ({ disabled }: { disabled?: boolean }
       >
         <Input
           {...register('settings.http.basicAuth.username')}
+          data-fs-element="Basic auth username input"
+          disabled={disabled}
           id={userNameId}
           type="text"
-          disabled={disabled}
-          data-fs-element="Basic auth username input"
         />
       </Field>
 
       <PasswordField
         {...register('settings.http.basicAuth.password')}
-        label="Password"
+        data-fs-element="Basic auth password input"
         disabled={disabled}
-        invalid={Boolean(formState.errors.settings?.http?.basicAuth?.password)}
         error={formState.errors.settings?.http?.basicAuth?.password?.message}
         id={passwordId}
+        invalid={Boolean(formState.errors.settings?.http?.basicAuth?.password)}
+        label="Password"
         required={true}
-        data-fs-element="Basic auth password input"
       />
     </Stack>
   );

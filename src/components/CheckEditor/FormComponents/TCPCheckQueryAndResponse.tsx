@@ -55,22 +55,22 @@ export const TCPCheckQueryAndResponse = () => {
                 </Field>
               </Stack>
               <IconButton
+                data-fs-element="Delete query and response validation button"
+                disabled={isFormDisabled}
                 name="minus-circle"
                 onClick={() => remove(index)}
-                disabled={isFormDisabled}
                 tooltip="Delete"
-                data-fs-element="Delete query and response validation button"
               />
             </Stack>
           );
         })}
         <div>
           <Button
+            data-fs-element="Add query response validation button"
+            disabled={isFormDisabled}
+            onClick={() => append({ expect: '', send: '', startTLS: false })}
             size="sm"
             variant="secondary"
-            onClick={() => append({ expect: '', send: '', startTLS: false })}
-            disabled={isFormDisabled}
-            data-fs-element="Add query response validation button"
           >
             Add query/response
           </Button>

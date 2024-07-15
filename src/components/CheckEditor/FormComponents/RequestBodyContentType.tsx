@@ -17,9 +17,9 @@ export const RequestBodyContentType = ({ disabled, name }: RequestBodyContentTyp
     <Field label="Content type" description="Indicates the media type of the body" htmlFor={id}>
       <Input
         {...register(name)}
-        id={id}
         data-fs-element={`Request body content type input ${id}`}
         disabled={disabled}
+        id={id}
       />
     </Field>
   );

@@ -11,14 +11,14 @@ export const HttpCheckBearerToken = ({ disabled }: { disabled?: boolean }) => {
   return (
     <PasswordField
       {...register('settings.http.bearerToken')}
-      label="Bearer Authorization"
-      disabled={disabled}
-      invalid={Boolean(formState.errors.settings?.http?.bearerToken)}
-      error={formState.errors.settings?.http?.bearerToken?.message}
-      placeholder="Bearer token"
-      id={id}
-      required={true}
       data-fs-element="Bearer token input"
+      disabled={disabled}
+      error={formState.errors.settings?.http?.bearerToken?.message}
+      id={id}
+      invalid={Boolean(formState.errors.settings?.http?.bearerToken)}
+      label="Bearer Authorization"
+      placeholder="Bearer token"
+      required={true}
     />
   );
 };
