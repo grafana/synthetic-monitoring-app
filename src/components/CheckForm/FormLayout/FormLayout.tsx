@@ -16,7 +16,7 @@ type ActionNode = {
   element: ReactNode;
 };
 
-type FormLayoutProps<T extends FieldValues> = {
+export type FormLayoutProps<T extends FieldValues> = {
   actions?: ActionNode[];
   alerts?: ReactNode;
   children: ReactNode;
@@ -128,24 +128,24 @@ export const FormLayout = <T extends FieldValues>({
           <div>
             {alerts && <div className={styles.alerts}>{alerts}</div>}
             <hr />
-            <div className={cx(styles.actionsBar, styles.sectionContent)}>
+            <div className={cx(styles.actionsBar, styles.sectionContent)} data-testid={DataTestIds.ACTIONS_BAR}>
               <div>
                 {activeSection !== 0 && (
                   <Button onClick={() => goToSection(activeSection - 1)} icon="arrow-left" variant="secondary">
                     <Stack gap={0.5}>
                       <div>{activeSection}.</div>
-                      <div>{sections[activeSection - 1].props.label}</div>
+                      <div>{formSections[activeSection - 1].props.label}</div>
                     </Stack>
                   </Button>
                 )}
               </div>
-              <Stack data-testid={DataTestIds.ACTIONS_BAR}>
+              <Stack>
                 {actionButtons}
                 {activeSection < formSections.length - 1 && (
                   <Button onClick={() => goToSection(activeSection + 1)} icon="arrow-right" type="button">
                     <Stack>
                       <div>{activeSection + 2}.</div>
-                      <div>{sections[activeSection + 1].props.label}</div>
+                      <div>{formSections[activeSection + 1].props.label}</div>
                     </Stack>
                   </Button>
                 )}

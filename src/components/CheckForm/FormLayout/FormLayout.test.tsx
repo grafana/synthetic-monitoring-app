@@ -1,10 +1,11 @@
-import React, { ReactNode } from 'react';
-import { FormProvider, useForm, useFormContext } from 'react-hook-form';
-import { screen } from '@testing-library/react';
+import React from 'react';
+import { FieldValues, FormProvider, useForm, useFormContext } from 'react-hook-form';
+import { screen, within } from '@testing-library/react';
 import { z } from 'zod';
+import { DataTestIds } from 'test/dataTestIds';
 import { render } from 'test/render';
 
-import { FormLayout } from './FormLayout';
+import { FormLayout, type FormLayoutProps } from './FormLayout';
 
 describe(`FormLayout`, () => {
   it(`automatically has the first step open`, async () => {
@@ -173,15 +174,97 @@ describe(`FormLayout`, () => {
     expect(errorIcon).not.toBeInTheDocument();
     expect(validIcon).not.toBeInTheDocument();
   });
+
+  it(`shows the correct next/previous buttons`, async () => {
+    const firstSectionLabel = `First section`;
+    const secondSectionLabel = `Second section`;
+    const thirdSectionLabel = `Third section`;
+
+    const { user } = render(
+      <TestForm>
+        <div>{`NOT A FORM SECTION. DON'T COUNT ME`}</div>
+        <FormLayout.Section label={firstSectionLabel} fields={[`job`]}>
+          <NameInput />
+        </FormLayout.Section>
+        <FormLayout.Section label={secondSectionLabel}>
+          <div>Second section content</div>
+        </FormLayout.Section>
+        <FormLayout.Section label={thirdSectionLabel}>
+          <div>Third section content</div>
+        </FormLayout.Section>
+      </TestForm>
+    );
+
+    const actionsBar = await screen.findByTestId(DataTestIds.ACTIONS_BAR);
+
+    // when on step 1
+    expect(within(actionsBar).getAllByRole(`button`).length).toBe(2);
+    expect(within(actionsBar).getByText(secondSectionLabel)).toBeInTheDocument();
+    expect(within(actionsBar).queryByText(firstSectionLabel)).not.toBeInTheDocument();
+    expect(within(actionsBar).getByText(`Submit`)).toBeInTheDocument();
+
+    // when on step 2
+    await user.click(within(actionsBar).getByText(secondSectionLabel));
+    expect(within(actionsBar).getAllByRole(`button`).length).toBe(3);
+    expect(within(actionsBar).getByText(firstSectionLabel)).toBeInTheDocument();
+    expect(within(actionsBar).queryByText(secondSectionLabel)).not.toBeInTheDocument();
+    expect(within(actionsBar).getByText(thirdSectionLabel)).toBeInTheDocument();
+    expect(within(actionsBar).getByText(`Submit`)).toBeInTheDocument();
+
+    // when on step 3
+    await user.click(within(actionsBar).getByText(thirdSectionLabel));
+    expect(within(actionsBar).getAllByRole(`button`).length).toBe(2);
+    expect(within(actionsBar).queryByText(firstSectionLabel)).not.toBeInTheDocument();
+    expect(within(actionsBar).getByText(secondSectionLabel)).toBeInTheDocument();
+    expect(within(actionsBar).queryByText(thirdSectionLabel)).not.toBeInTheDocument();
+    expect(within(actionsBar).getByText(`Submit`)).toBeInTheDocument();
+  });
+
+  it(`renders custom action buttons correctly`, async () => {
+    const sectionOneCustomButtonText = `Section 1 custom button`;
+    const sectionTwoCustomButtonText = `Section 2 custom button`;
+
+    const actions = [
+      {
+        index: 0,
+        element: <button>{sectionOneCustomButtonText}</button>,
+      },
+      {
+        index: 1,
+        element: <button>{sectionTwoCustomButtonText}</button>,
+      },
+    ];
+
+    const { user } = render(
+      <TestForm actions={actions}>
+        <FormLayout.Section label="First section" fields={[`job`]}>
+          <NameInput />
+        </FormLayout.Section>
+        <FormLayout.Section label="Second section">
+          <div>Second section content</div>
+        </FormLayout.Section>
+      </TestForm>
+    );
+
+    const actionsBar = await screen.findByTestId(DataTestIds.ACTIONS_BAR);
+    expect(within(actionsBar).getByText(sectionOneCustomButtonText)).toBeInTheDocument();
+    expect(within(actionsBar).queryByText(sectionTwoCustomButtonText)).not.toBeInTheDocument();
+
+    await user.click(within(actionsBar).getByText(`Second section`));
+    expect(within(actionsBar).queryByText(sectionOneCustomButtonText)).not.toBeInTheDocument();
+    expect(within(actionsBar).getByText(sectionTwoCustomButtonText)).toBeInTheDocument();
+  });
 });
 
 type TestValues = {
   job: string;
 };
 
-type TestFormProps = { children: ReactNode; disabled?: boolean };
-
-const TestForm = ({ children, disabled }: TestFormProps) => {
+const TestForm = <T extends FieldValues>({
+  actions,
+  children,
+  disabled,
+}: Pick<FormLayoutProps<T>, 'actions' | 'children' | 'disabled'>) => {
   const formMethods = useForm<TestValues>({
     defaultValues: {
       job: ``,
@@ -191,6 +274,7 @@ const TestForm = ({ children, disabled }: TestFormProps) => {
   return (
     <FormProvider {...formMethods}>
       <FormLayout
+        actions={actions}
         disabled={disabled}
         onSubmit={formMethods.handleSubmit}
         onValid={(v) => v}
