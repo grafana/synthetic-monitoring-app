@@ -1,7 +1,9 @@
-import React, { createContext, ReactNode, useId } from 'react';
+import React, { createContext, ReactNode } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Field, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+
+import { useDOMId } from 'hooks/useDOMId';
 
 type SharedProps = Record<string, any> & {
   label?: string;
@@ -18,7 +20,7 @@ type RequestFieldProps = SharedProps & {
 
 export const RequestField = ({ children, description, label = `Request target`, ...rest }: RequestFieldProps) => {
   const styles = useStyles2(getStyles);
-  const id = useId().replace(/:/g, '_');
+  const id = useDOMId();
 
   return (
     <RequestFieldContext.Provider value={{ id, ...rest }}>

@@ -1,8 +1,9 @@
-import React, { useId } from 'react';
+import React from 'react';
 import { FieldPath, useFormContext } from 'react-hook-form';
 import { Field, Input } from '@grafana/ui';
 
 import { CheckFormValues } from 'types';
+import { useDOMId } from 'hooks/useDOMId';
 
 interface RequestBodyContentTypeProps {
   disabled?: boolean;
@@ -11,7 +12,7 @@ interface RequestBodyContentTypeProps {
 
 export const RequestBodyContentType = ({ disabled, name }: RequestBodyContentTypeProps) => {
   const { register } = useFormContext<CheckFormValues>();
-  const id = useId().replace(/:/g, '_');
+  const id = useDOMId();
 
   return (
     <Field label="Content type" description="Indicates the media type of the body" htmlFor={id}>

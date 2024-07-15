@@ -1,8 +1,9 @@
-import React, { useId } from 'react';
+import React from 'react';
 import { Controller, FieldPath, useFormContext } from 'react-hook-form';
 import { Field, Select } from '@grafana/ui';
 
 import { CheckFormValues } from 'types';
+import { useDOMId } from 'hooks/useDOMId';
 import { IP_OPTIONS } from 'components/constants';
 
 type CheckIpVersionProps = {
@@ -13,7 +14,7 @@ type CheckIpVersionProps = {
 
 export const CheckIpVersion = ({ description, disabled, name }: CheckIpVersionProps) => {
   const { control } = useFormContext<CheckFormValues>();
-  const id = useId().replace(/:/g, '_');
+  const id = useDOMId();
 
   return (
     <Field label="IP version" description={description} htmlFor={id} data-fs-element="IP version select">
