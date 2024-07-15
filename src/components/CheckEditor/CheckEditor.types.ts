@@ -1,7 +1,17 @@
 import { FormEvent } from 'react';
 import { FieldPath } from 'react-hook-form';
 
-import { CheckFormValues, CheckFormValuesPing, CheckFormValuesScripted } from 'types';
+import {
+  CheckFormValues,
+  CheckFormValuesDns,
+  CheckFormValuesGRPC,
+  CheckFormValuesHttp,
+  CheckFormValuesMultiHttp,
+  CheckFormValuesPing,
+  CheckFormValuesScripted,
+  CheckFormValuesTcp,
+  CheckFormValuesTraceroute,
+} from 'types';
 
 export type FieldProps<T extends CheckFormValues = CheckFormValues> = {
   name: FieldPath<T>;
@@ -18,41 +28,41 @@ export type TLSConfigFields = {
 };
 
 export type HttpRequestFields = TLSConfigFields & {
-  method: FieldProps;
-  target: FieldProps;
-  requestHeaders: FieldProps;
-  requestBody: FieldProps;
-  followRedirects?: FieldProps;
-  ipVersion?: FieldProps;
-  requestContentType?: FieldProps;
-  requestContentEncoding?: FieldProps;
-  basicAuth?: FieldProps;
-  bearerToken?: FieldProps;
-  proxyUrl?: FieldProps;
-  proxyHeaders?: FieldProps;
-  queryParams?: FieldProps;
+  method: FieldProps<CheckFormValuesHttp | CheckFormValuesMultiHttp>;
+  target: FieldProps<CheckFormValuesHttp | CheckFormValuesMultiHttp>;
+  requestHeaders: FieldProps<CheckFormValuesHttp | CheckFormValuesMultiHttp>;
+  requestBody: FieldProps<CheckFormValuesHttp | CheckFormValuesMultiHttp>;
+  followRedirects?: FieldProps<CheckFormValuesHttp | CheckFormValuesMultiHttp>;
+  ipVersion?: FieldProps<CheckFormValuesHttp | CheckFormValuesMultiHttp>;
+  requestContentType?: FieldProps<CheckFormValuesHttp | CheckFormValuesMultiHttp>;
+  requestContentEncoding?: FieldProps<CheckFormValuesHttp | CheckFormValuesMultiHttp>;
+  basicAuth?: FieldProps<CheckFormValuesHttp | CheckFormValuesMultiHttp>;
+  bearerToken?: FieldProps<CheckFormValuesHttp | CheckFormValuesMultiHttp>;
+  proxyUrl?: FieldProps<CheckFormValuesHttp | CheckFormValuesMultiHttp>;
+  proxyHeaders?: FieldProps<CheckFormValuesHttp | CheckFormValuesMultiHttp>;
+  queryParams?: FieldProps<CheckFormValuesHttp | CheckFormValuesMultiHttp>;
 };
 
 export type DNSRequestFields = {
-  target: FieldProps;
-  ipVersion: FieldProps;
-  recordType: FieldProps;
-  server: FieldProps;
-  protocol: FieldProps;
-  port: FieldProps;
+  target: FieldProps<CheckFormValuesDns>;
+  ipVersion: FieldProps<CheckFormValuesDns>;
+  recordType: FieldProps<CheckFormValuesDns>;
+  server: FieldProps<CheckFormValuesDns>;
+  protocol: FieldProps<CheckFormValuesDns>;
+  port: FieldProps<CheckFormValuesDns>;
 };
 
 export type GRPCRequestFields = TLSConfigFields & {
-  ipVersion: FieldProps;
-  target: FieldProps;
-  service: FieldProps;
-  useTLS: FieldProps;
+  ipVersion: FieldProps<CheckFormValuesGRPC>;
+  target: FieldProps<CheckFormValuesGRPC>;
+  service: FieldProps<CheckFormValuesGRPC>;
+  useTLS: FieldProps<CheckFormValuesGRPC>;
 };
 
 export type TCPRequestFields = TLSConfigFields & {
-  target: FieldProps;
-  ipVersion: FieldProps;
-  useTLS: FieldProps;
+  target: FieldProps<CheckFormValuesTcp>;
+  ipVersion: FieldProps<CheckFormValuesTcp>;
+  useTLS: FieldProps<CheckFormValuesTcp>;
 };
 
 export type PingRequestFields = {
@@ -62,10 +72,10 @@ export type PingRequestFields = {
 };
 
 export type TracerouteRequestFields = {
-  target: FieldProps;
-  maxHops: FieldProps;
-  maxUnknownHops: FieldProps;
-  ptrLookup: FieldProps;
+  target: FieldProps<CheckFormValuesTraceroute>;
+  maxHops: FieldProps<CheckFormValuesTraceroute>;
+  maxUnknownHops: FieldProps<CheckFormValuesTraceroute>;
+  ptrLookup: FieldProps<CheckFormValuesTraceroute>;
 };
 
 export type ScriptedRequestFields = {
