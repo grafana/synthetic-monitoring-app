@@ -2,7 +2,7 @@ import React from 'react';
 import { Stack, TextLink } from '@grafana/ui';
 
 import { LayoutSection, Section } from './Layout.types';
-import { CheckFormValuesScripted, CheckType } from 'types';
+import { CheckFormValuesScripted } from 'types';
 import { ScriptedCheckInstance } from 'components/CheckEditor/FormComponents/ScriptedCheckInstance';
 import { ScriptedCheckScript } from 'components/CheckEditor/FormComponents/ScriptedCheckScript';
 import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
@@ -36,7 +36,7 @@ export const ScriptedCheckLayout: Partial<Record<LayoutSection, Section<CheckFor
             running checks in a k6 script.
           </TextLink>
         </div>
-        <Timeout checkType={CheckType.MULTI_HTTP} />
+        <Timeout min={5.0} />
       </Stack>
     ),
   },

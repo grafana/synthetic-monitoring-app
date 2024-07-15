@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 
 import { LayoutSection, Section } from './Layout.types';
-import { CheckFormValuesDns, CheckType } from 'types';
+import { CheckFormValuesDns } from 'types';
 import { DNSRequestFields } from 'components/CheckEditor/CheckEditor.types';
 import { CheckPublishedAdvanceMetrics } from 'components/CheckEditor/FormComponents/CheckPublishedAdvanceMetrics';
 import { DNSCheckResponseMatches } from 'components/CheckEditor/FormComponents/DNSCheckResponseMatches';
@@ -58,7 +58,7 @@ export const DNSCheckLayout: Partial<Record<LayoutSection, Section<CheckFormValu
       <>
         <DNSCheckValidResponseCodes />
         <DNSCheckResponseMatches />
-        <Timeout checkType={CheckType.DNS} />
+        <Timeout />
       </>
     ),
   },

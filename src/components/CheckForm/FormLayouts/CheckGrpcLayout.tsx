@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 
 import { LayoutSection, Section } from './Layout.types';
-import { CheckFormValuesGRPC, CheckType } from 'types';
+import { CheckFormValuesGRPC } from 'types';
 import { GRPCRequestFields } from 'components/CheckEditor/CheckEditor.types';
 import { CheckPublishedAdvanceMetrics } from 'components/CheckEditor/FormComponents/CheckPublishedAdvanceMetrics';
 import { GRPCRequest } from 'components/CheckEditor/FormComponents/GRPCRequest';
@@ -63,7 +63,7 @@ export const GRPCCheckLayout: Partial<Record<LayoutSection, Section<CheckFormVal
     fields: [`timeout`],
     Component: (
       <>
-        <Timeout checkType={CheckType.GRPC} />
+        <Timeout />
       </>
     ),
   },

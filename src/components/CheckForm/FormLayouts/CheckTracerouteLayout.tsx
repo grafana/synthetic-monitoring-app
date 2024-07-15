@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { LayoutSection, Section } from './Layout.types';
-import { CheckFormValuesTraceroute, CheckType } from 'types';
+import { CheckFormValuesTraceroute } from 'types';
 import { TracerouteRequestFields } from 'components/CheckEditor/CheckEditor.types';
 import { CheckPublishedAdvanceMetrics } from 'components/CheckEditor/FormComponents/CheckPublishedAdvanceMetrics';
 import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
@@ -47,7 +47,7 @@ export const TracerouteCheckLayout: Partial<Record<LayoutSection, Section<CheckF
     fields: [`timeout`],
     Component: (
       <>
-        <Timeout checkType={CheckType.Traceroute} />
+        <Timeout max={30.0} min={30.0} />
       </>
     ),
   },

@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 
 import { LayoutSection, Section } from './Layout.types';
-import { CheckFormValuesPing, CheckType } from 'types';
+import { CheckFormValuesPing } from 'types';
 import { PingRequestFields } from 'components/CheckEditor/CheckEditor.types';
 import { CheckPublishedAdvanceMetrics } from 'components/CheckEditor/FormComponents/CheckPublishedAdvanceMetrics';
 import { PingRequest } from 'components/CheckEditor/FormComponents/PingRequest';
@@ -45,7 +45,7 @@ export const PingCheckLayout: Partial<Record<LayoutSection, Section<CheckFormVal
     fields: [`timeout`],
     Component: (
       <>
-        <Timeout checkType={CheckType.PING} />
+        <Timeout />
       </>
     ),
   },

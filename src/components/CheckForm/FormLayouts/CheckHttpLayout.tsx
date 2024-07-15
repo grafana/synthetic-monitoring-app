@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 
 import { LayoutSection, Section } from './Layout.types';
-import { CheckFormValues, CheckType } from 'types';
+import { CheckFormValues } from 'types';
 import { HttpRequestFields } from 'components/CheckEditor/CheckEditor.types';
 import { CheckPublishedAdvanceMetrics } from 'components/CheckEditor/FormComponents/CheckPublishedAdvanceMetrics';
 import { HttpCheckCompressionOption } from 'components/CheckEditor/FormComponents/HttpCheckCompressionOption';
@@ -91,7 +91,7 @@ export const HttpCheckLayout: Partial<Record<LayoutSection, Section<CheckFormVal
         <HttpCheckSSLOptions />
         <HttpCheckRegExValidation />
         <HttpCheckCompressionOption />
-        <Timeout checkType={CheckType.HTTP} />
+        <Timeout />
       </>
     ),
   },

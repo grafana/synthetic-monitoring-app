@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { LayoutSection, Section } from './Layout.types';
-import { CheckFormValuesMultiHttp, CheckType } from 'types';
+import { CheckFormValuesMultiHttp } from 'types';
 import { MultiHttpAssertions } from 'components/CheckEditor/FormComponents/MultiHttpAssertions';
 import { MultiHttpCheckRequests } from 'components/CheckEditor/FormComponents/MultiHttpCheckRequests';
 import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
@@ -22,7 +22,7 @@ export const MultiHTTPCheckLayout: Partial<Record<LayoutSection, Section<CheckFo
     Component: (
       <>
         <MultiHttpAssertions />
-        <Timeout checkType={CheckType.MULTI_HTTP} />
+        <Timeout min={5.0} />
       </>
     ),
   },

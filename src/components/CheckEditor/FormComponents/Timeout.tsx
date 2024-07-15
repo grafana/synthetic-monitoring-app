@@ -2,23 +2,23 @@ import React from 'react';
 import { useFormContext } from 'react-hook-form';
 import { Field, Input } from '@grafana/ui';
 
-import { CheckFormValues, CheckType } from 'types';
+import { CheckFormValues } from 'types';
 import { validateTimeout } from 'validation';
 import { useCheckFormContext } from 'components/CheckForm/CheckFormContext/CheckFormContext';
 import { SliderInput } from 'components/SliderInput';
 
-interface Props {
-  checkType: CheckType;
+interface TimeoutProps {
+  min?: number;
+  max?: number;
 }
 
-export const Timeout = ({ checkType }: Props) => {
+export const Timeout = ({ min = 1.0, max = 60.0 }: TimeoutProps) => {
   const {
     formState: { errors },
     register,
   } = useFormContext<CheckFormValues>();
   const { isFormDisabled } = useCheckFormContext();
-  const isTraceroute = checkType === CheckType.Traceroute;
-  const { minTimeout, maxTimeout } = getTimeoutBounds(checkType);
+  const readOnly = min === max;
 
   return (
     <Field
@@ -28,7 +28,7 @@ export const Timeout = ({ checkType }: Props) => {
       invalid={Boolean(errors.timeout)}
       label="Timeout"
     >
-      {isTraceroute ? (
+      {readOnly ? (
         <Input
           {...register(`timeout`, { valueAsNumber: true })}
           id={`timeout`}
@@ -40,32 +40,13 @@ export const Timeout = ({ checkType }: Props) => {
       ) : (
         <SliderInput
           disabled={isFormDisabled}
-          max={maxTimeout}
-          min={minTimeout}
+          max={max}
+          min={min}
           name="timeout"
           step={1}
-          validate={(value) => validateTimeout(value, maxTimeout, minTimeout)}
+          validate={(value) => validateTimeout(value, max, min)}
         />
       )}
     </Field>
   );
 };
-
-function getTimeoutBounds(checkType: CheckType) {
-  if (checkType === CheckType.Traceroute) {
-    return {
-      minTimeout: 30.0,
-      maxTimeout: 30.0,
-    };
-  }
-  if (checkType === CheckType.Scripted || checkType === CheckType.MULTI_HTTP) {
-    return {
-      minTimeout: 5.0,
-      maxTimeout: 60.0,
-    };
-  }
-  return {
-    minTimeout: 1.0,
-    maxTimeout: 60.0,
-  };
-}
