@@ -2,6 +2,7 @@ import React, { useCallback } from 'react';
 
 import { LayoutSection, Section } from './Layout.types';
 import { CheckFormValues } from 'types';
+import { useNestedRequestErrors } from 'hooks/useNestedRequestErrors';
 import { HttpRequestFields } from 'components/CheckEditor/CheckEditor.types';
 import { CheckPublishedAdvanceMetrics } from 'components/CheckEditor/FormComponents/CheckPublishedAdvanceMetrics';
 import { HttpCheckCompressionOption } from 'components/CheckEditor/FormComponents/HttpCheckCompressionOption';
@@ -23,51 +24,64 @@ export const HTTP_REQUEST_FIELDS: HttpRequestFields = {
   },
   requestHeaders: {
     name: `settings.http.headers`,
+    section: 0,
   },
   ipVersion: {
     name: `settings.http.ipVersion`,
+    section: 0,
   },
   requestBody: {
     name: `settings.http.body`,
+    section: 2,
   },
   basicAuth: {
     name: `settings.http.basicAuth`,
+    section: 3,
   },
   bearerToken: {
     name: `settings.http.bearerToken`,
+    section: 3,
   },
   tlsServerName: {
     name: `settings.http.tlsConfig.serverName`,
+    section: 4,
   },
   tlsInsecureSkipVerify: {
     name: `settings.http.tlsConfig.insecureSkipVerify`,
+    section: 4,
   },
   tlsCaSCert: {
     name: `settings.http.tlsConfig.caCert`,
+    section: 4,
   },
   tlsClientCert: {
     name: `settings.http.tlsConfig.clientCert`,
+    section: 4,
   },
   tlsClientKey: {
     name: `settings.http.tlsConfig.clientKey`,
+    section: 4,
   },
   proxyUrl: {
     name: `settings.http.proxyURL`,
+    section: 5,
   },
   proxyHeaders: {
     name: `settings.http.proxyConnectHeaders`,
+    section: 5,
   },
 };
 
 const CheckHttpRequest = () => {
   const { isFormDisabled, supportingContent } = useCheckFormContext();
   const { addRequest } = supportingContent;
+  const { handleErrorRef } = useNestedRequestErrors(HTTP_REQUEST_FIELDS);
 
   const onTest = useCallback(() => {
     addRequest(HTTP_REQUEST_FIELDS);
   }, [addRequest]);
 
-  return <HttpRequest disabled={isFormDisabled} fields={HTTP_REQUEST_FIELDS} onTest={onTest} />;
+  return <HttpRequest disabled={isFormDisabled} fields={HTTP_REQUEST_FIELDS} onTest={onTest} ref={handleErrorRef} />;
 };
 
 export const HttpCheckLayout: Partial<Record<LayoutSection, Section<CheckFormValues>>> = {

@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 
 import { TCPRequestFields } from '../CheckEditor.types';
 import { CheckType } from 'types';
+import { HandleErrorRef } from 'hooks/useNestedRequestErrors';
 import { Request } from 'components/Request';
 import { TLSConfig } from 'components/TLSConfig';
 
@@ -14,30 +15,31 @@ interface TCPRequestProps {
   onTest: () => void;
 }
 
-export const TCPRequest = ({ disabled, fields, onTest }: TCPRequestProps) => {
-  return (
-    <Request>
-      <Request.Field description={`Host:port to connect to`} name={fields.target.name}>
-        <Request.Input disabled={disabled} placeholder={`grafana.com:80`} />
-        <Request.Test onClick={onTest} />
-      </Request.Field>
-      <TCPRequestOptions disabled={disabled} fields={fields} />
-    </Request>
-  );
-};
+export const TCPRequest = forwardRef<HandleErrorRef, TCPRequestProps>(
+  ({ disabled, fields, onTest }, handleErrorRef) => {
+    return (
+      <Request>
+        <Request.Field description={`Host:port to connect to`} name={fields.target.name}>
+          <Request.Input disabled={disabled} placeholder={`grafana.com:80`} />
+          <Request.Test onClick={onTest} />
+        </Request.Field>
 
-const TCPRequestOptions = ({ disabled, fields }: Omit<TCPRequestProps, 'onTest'>) => {
-  const ipVersionName = fields.ipVersion.name;
+        <Request.Options ref={handleErrorRef}>
+          <Request.Options.Section label={`Options`}>
+            <CheckIpVersion
+              disabled={disabled}
+              description={`The IP protocol of the TCP request`}
+              name={fields.ipVersion.name}
+            />
+          </Request.Options.Section>
+          <Request.Options.Section label={`TLS Config`}>
+            <CheckUseTLS checkType={CheckType.TCP} disabled={disabled} />
+            <TLSConfig disabled={disabled} fields={fields} />
+          </Request.Options.Section>
+        </Request.Options>
+      </Request>
+    );
+  }
+);
 
-  return (
-    <Request.Options>
-      <Request.Options.Section label={`Options`}>
-        <CheckIpVersion disabled={disabled} description={`The IP protocol of the TCP request`} name={ipVersionName} />
-      </Request.Options.Section>
-      <Request.Options.Section label={`TLS Config`}>
-        <CheckUseTLS checkType={CheckType.TCP} disabled={disabled} />
-        <TLSConfig disabled={disabled} fields={fields} />
-      </Request.Options.Section>
-    </Request.Options>
-  );
-};
+TCPRequest.displayName = 'TCPRequest';

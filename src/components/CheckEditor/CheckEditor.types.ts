@@ -17,6 +17,7 @@ export type FieldProps<T extends CheckFormValues = CheckFormValues> = {
   name: FieldPath<T>;
   onChange?: (e: FormEvent) => void;
   'aria-label'?: string;
+  section?: number;
 };
 
 export type TLSConfigFields = {
@@ -82,3 +83,12 @@ export type ScriptedRequestFields = {
   target: FieldProps<CheckFormValuesScripted>;
   script: FieldProps<CheckFormValuesScripted>;
 };
+
+export type RequestFields =
+  | HttpRequestFields
+  | DNSRequestFields
+  | GRPCRequestFields
+  | TCPRequestFields
+  | PingRequestFields
+  | TracerouteRequestFields
+  | ScriptedRequestFields;

@@ -13,6 +13,8 @@ enum ScriptEditorTabs {
   Examples = 'examples',
 }
 
+export const SCRIPT_TEXTAREA_ID = 'check-script-textarea';
+
 export const ScriptedCheckScript = () => {
   const {
     control,
@@ -42,7 +44,7 @@ export const ScriptedCheckScript = () => {
             name="settings.scripted.script"
             control={control}
             render={({ field }) => {
-              return <CodeEditor {...field} readOnly={isFormDisabled} />;
+              return <CodeEditor {...field} id={SCRIPT_TEXTAREA_ID} readOnly={isFormDisabled} />;
             }}
           />
         )}

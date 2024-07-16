@@ -5,7 +5,7 @@ declare module 'body-parser';
 import { FieldErrors } from 'react-hook-form';
 import {} from '@emotion/core';
 
-import { CheckFormValues } from 'types';
+import { CheckFormInvalidSubmissionEvent, CheckFormValues } from 'types';
 import { CHECK_FORM_ERROR_EVENT } from 'components/constants';
 
 // This is a monkey patch of the default Object.keys() typing that casts the return type to be a keyof the original object, instead of a string. https://fettblog.eu/typescript-better-object-keys/
@@ -22,7 +22,7 @@ interface ObjectConstructor {
 }
 
 interface CustomEventMap {
-  [CHECK_FORM_ERROR_EVENT]: CustomEvent<FieldErrors<CheckFormValues>>;
+  [CHECK_FORM_ERROR_EVENT]: CustomEvent<CheckFormInvalidSubmissionEvent>;
 }
 
 declare global {

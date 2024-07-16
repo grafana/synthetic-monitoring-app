@@ -504,4 +504,4 @@ export const LATENCY_DESCRIPTION =
 
 export const STANDARD_REFRESH_INTERVAL = 1000 * 60;
 
-export const CHECK_FORM_ERROR_EVENT = `sm-form-error`;
+export const CHECK_FORM_ERROR_EVENT = `sm-check-form-error`;

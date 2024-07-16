@@ -3,11 +3,11 @@ import { FieldErrors, FieldValues, SubmitHandler } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Button, Stack, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
-import { flatten } from 'flat';
 import { ZodType } from 'zod';
 import { DataTestIds } from 'test/dataTestIds';
 
-import { findFieldToFocus, useFormLayout } from './formlayout.utils';
+import { flattenKeys } from '../checkForm.hooks';
+import { normalizeFlattenedErrors, useFormLayout } from './formlayout.utils';
 import { FormSection, FormSectionInternal } from './FormSection';
 import { FormSidebar } from './FormSidebar';
 
@@ -76,38 +76,32 @@ export const FormLayout = <T extends FieldValues>({
 
   const handleValid = useCallback(
     (formValues: T, event: BaseSyntheticEvent | undefined) => {
-      handleVisited(sections.map((section) => section.props.index));
+      handleVisited(formSections.map((section) => section.props.index));
       onValid(formValues, event);
     },
-    [handleVisited, onValid, sections]
+    [handleVisited, onValid, formSections]
   );
 
   const handleError = useCallback(
     (errs: FieldErrors<T>) => {
-      handleVisited(sections.map((section) => section.props.index));
-      const flattenedErrors = Object.keys(flatten(errs));
-      // Find the first section that has a field with an error.
-      const errSection = sections?.find((section) =>
-        flattenedErrors.find((errName: string) => {
-          return section.props.fields?.some((field: string) => errName.startsWith(field));
-        })
-      );
+      handleVisited(formSections.map((section) => section.props.index));
+      const flattenedErrors = normalizeFlattenedErrors(flattenKeys(errs));
+
+      const errSection = formSections?.find((section) => {
+        const fields = section.props.fields;
+
+        return flattenedErrors.find((errName: string) => {
+          return fields?.some((field: string) => errName.startsWith(field));
+        });
+      });
 
       if (errSection !== undefined) {
         setActiveSection(errSection.props.index);
       }
 
-      const shouldFocus = findFieldToFocus(errs);
-
-      // can't pass refs to all fields so have to manage it automatically
-      if (shouldFocus) {
-        shouldFocus.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
-        shouldFocus.focus?.({ preventScroll: true });
-      }
-
       onInvalid?.(errs);
     },
-    [handleVisited, onInvalid, sections, setActiveSection]
+    [handleVisited, onInvalid, formSections, setActiveSection]
   );
 
   const actionButtons = actions?.find((action) => action.index === activeSection)?.element;

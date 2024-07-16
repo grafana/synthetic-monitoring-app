@@ -1,5 +1,5 @@
 import React from 'react';
-import { SubmitErrorHandler, SubmitHandler } from 'react-hook-form';
+import { FieldErrors, SubmitErrorHandler, SubmitHandler } from 'react-hook-form';
 import { DataSourceSettings, OrgRole, SelectableValue } from '@grafana/data';
 import { EmbeddedScene, SceneRouteMatch } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
@@ -822,4 +822,9 @@ export interface TLSFormValues extends CheckFormValuesBase {
       tlsConfig?: TLSConfig;
     };
   };
+}
+
+export interface CheckFormInvalidSubmissionEvent {
+  errs: FieldErrors<CheckFormValues>;
+  source: string;
 }
