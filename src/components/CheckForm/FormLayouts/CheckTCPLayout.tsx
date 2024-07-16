@@ -11,7 +11,7 @@ import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
 
 import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
 
-const TCP_FIELDS: TCPRequestFields = {
+const TCP_REQUEST_FIELDS: TCPRequestFields = {
   target: {
     name: `target`,
   },
@@ -48,18 +48,18 @@ const TCP_FIELDS: TCPRequestFields = {
 const CheckTCPRequest = () => {
   const { isFormDisabled, supportingContent } = useCheckFormContext();
   const { addRequest } = supportingContent;
-  const { handleErrorRef } = useNestedRequestErrors(TCP_FIELDS);
+  const { handleErrorRef } = useNestedRequestErrors(TCP_REQUEST_FIELDS);
 
   const onTest = useCallback(() => {
-    addRequest(TCP_FIELDS);
+    addRequest(TCP_REQUEST_FIELDS);
   }, [addRequest]);
 
-  return <TCPRequest disabled={isFormDisabled} fields={TCP_FIELDS} onTest={onTest} ref={handleErrorRef} />;
+  return <TCPRequest disabled={isFormDisabled} fields={TCP_REQUEST_FIELDS} onTest={onTest} ref={handleErrorRef} />;
 };
 
 export const TCPCheckLayout: Partial<Record<LayoutSection, Section<CheckFormValuesTcp>>> = {
   [LayoutSection.Check]: {
-    fields: [`target`],
+    fields: Object.values(TCP_REQUEST_FIELDS).map((field) => field.name),
     Component: (
       <>
         <CheckTCPRequest />

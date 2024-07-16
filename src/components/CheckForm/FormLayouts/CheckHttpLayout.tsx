@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 
 import { LayoutSection, Section } from './Layout.types';
-import { CheckFormValues } from 'types';
+import { CheckFormValues, CheckFormValuesHttp } from 'types';
 import { useNestedRequestErrors } from 'hooks/useNestedRequestErrors';
 import { HttpRequestFields } from 'components/CheckEditor/CheckEditor.types';
 import { CheckPublishedAdvanceMetrics } from 'components/CheckEditor/FormComponents/CheckPublishedAdvanceMetrics';
@@ -15,7 +15,7 @@ import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
 
 import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
 
-export const HTTP_REQUEST_FIELDS: HttpRequestFields = {
+export const HTTP_REQUEST_FIELDS: HttpRequestFields<CheckFormValuesHttp> = {
   target: {
     name: `target`,
   },

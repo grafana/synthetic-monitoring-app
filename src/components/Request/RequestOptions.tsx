@@ -21,10 +21,11 @@ export const RequestOptions = forwardRef<HandleErrorRef, RequestOptionsProps>(({
   return (
     <div>
       <Button
-        onClick={() => setIsOpen((v) => !v)}
-        type="button"
+        aria-expanded={isOpen}
         fill="text"
         icon={isOpen ? `arrow-down` : `arrow-right`}
+        onClick={() => setIsOpen((v) => !v)}
+        type="button"
       >
         Request options
       </Button>

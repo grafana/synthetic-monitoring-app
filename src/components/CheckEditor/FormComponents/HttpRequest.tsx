@@ -5,7 +5,7 @@ import { Select, Stack, Tooltip, useStyles2, useTheme2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 import { HttpRequestFields, TLSConfigFields } from '../CheckEditor.types';
-import { HttpMethod } from 'types';
+import { CheckFormValuesHttp, CheckFormValuesMultiHttp, HttpMethod } from 'types';
 import { getMethodColor, parseUrl } from 'utils';
 import { HandleErrorRef } from 'hooks/useNestedRequestErrors';
 import { METHOD_OPTIONS } from 'components/constants';
@@ -24,108 +24,109 @@ import { RequestBodyTextArea } from './RequestBodyTextArea';
 import { RequestHeaders } from './RequestHeaders';
 import { RequestQueryParams } from './RequestQueryParams';
 
-interface HttpRequestProps {
+interface HttpRequestProps<T extends CheckFormValuesHttp | CheckFormValuesMultiHttp> {
   disabled?: boolean;
-  fields: HttpRequestFields;
+  fields: HttpRequestFields<T>;
   onTest?: () => void;
   onError?: () => void;
 }
 
-export const HttpRequest = forwardRef<HandleErrorRef, HttpRequestProps>(
-  ({ disabled, fields, onTest }, handleErrorRef) => {
-    const [showQueryParams, setShowQueryParams] = useState(false);
-    const { control, setValue, watch } = useFormContext();
-    const id = `request-method-${fields.method.name}`;
-    const styles = useStyles2(getStyles);
-    const theme = useTheme2();
-    const targetValue = watch(fields.target.name) as string;
-    const parsedURL = parseUrl(targetValue);
+export const HttpRequest = forwardRef<
+  HandleErrorRef,
+  HttpRequestProps<CheckFormValuesMultiHttp> | HttpRequestProps<CheckFormValuesHttp>
+>(({ disabled, fields, onTest }, handleErrorRef) => {
+  const [showQueryParams, setShowQueryParams] = useState(false);
+  const { control, setValue, watch } = useFormContext();
+  const id = `request-method-${fields.method.name}`;
+  const styles = useStyles2(getStyles);
+  const theme = useTheme2();
+  const targetValue = watch(fields.target.name) as string;
+  const parsedURL = parseUrl(targetValue);
 
-    return (
-      <Request>
-        <Request.Field
-          data-fs-element="Check request target select"
-          description={`Full URL to send requests to`}
-          disabled={disabled}
-          htmlFor={id}
-          name={fields.target.name}
-        >
-          <div className={styles.grid}>
-            <Controller
-              control={control}
-              render={({ field }) => {
-                const { ref, onChange, ...rest } = field;
-                const value = field.value as HttpMethod;
+  return (
+    <Request>
+      <Request.Field
+        data-fs-element="Check request target select"
+        description={`Full URL to send requests to`}
+        disabled={disabled}
+        htmlFor={id}
+        name={fields.target.name}
+      >
+        <div className={styles.grid}>
+          <Controller
+            control={control}
+            render={({ field }) => {
+              const { ref, onChange, ...rest } = field;
+              const value = field.value as HttpMethod;
 
-                return (
-                  <div>
-                    <Select
-                      {...rest}
-                      aria-label={fields.method['aria-label'] || `Request method *`}
-                      className={css({
-                        borderColor: getMethodColor(theme, value),
-                      })}
-                      disabled={disabled}
-                      onChange={({ value }) => onChange(value)}
-                      options={METHOD_OPTIONS}
-                      tabSelectsValue={false}
-                    />
-                  </div>
-                );
+              return (
+                <div>
+                  <Select
+                    {...rest}
+                    aria-label={fields.method['aria-label'] || `Request method *`}
+                    className={css({
+                      borderColor: getMethodColor(theme, value),
+                    })}
+                    disabled={disabled}
+                    onChange={({ value }) => onChange(value)}
+                    options={METHOD_OPTIONS}
+                    tabSelectsValue={false}
+                  />
+                </div>
+              );
+            }}
+            name={fields.method.name}
+          />
+          <Request.Input
+            aria-label={fields.target['aria-label'] || `Request target *`}
+            data-fs-element="Target input"
+            disabled={disabled}
+            placeholder={`https://grafana.com/`}
+            suffix={
+              !disabled && (
+                <Tooltip content={`Manage query parameters`}>
+                  <button
+                    aria-label={`Manage query parameters`}
+                    aria-pressed={showQueryParams}
+                    className={cx(styles.queryParams, { [styles.active]: showQueryParams })}
+                    type="button"
+                    onClick={() => setShowQueryParams((v) => !v)}
+                  >
+                    ?=
+                  </button>
+                </Tooltip>
+              )
+            }
+          />
+          <Request.Test disabled={!parsedURL} onClick={onTest} />
+        </div>
+      </Request.Field>
+      {showQueryParams && (
+        <Indent>
+          {parsedURL ? (
+            <QueryParams
+              target={parsedURL}
+              onChange={(target: string) => {
+                if (!disabled) {
+                  setValue(fields.target.name, target);
+                }
               }}
-              name={fields.method.name}
             />
-            <Request.Input
-              aria-label={fields.target['aria-label'] || `Request target *`}
-              data-fs-element="Target input"
-              disabled={disabled}
-              placeholder={`https://grafana.com/`}
-              suffix={
-                !disabled && (
-                  <Tooltip content={`Manage query parameters`}>
-                    <button
-                      aria-label={`Manage query parameters`}
-                      aria-pressed={showQueryParams}
-                      className={cx(styles.queryParams, { [styles.active]: showQueryParams })}
-                      type="button"
-                      onClick={() => setShowQueryParams((v) => !v)}
-                    >
-                      ?=
-                    </button>
-                  </Tooltip>
-                )
-              }
-            />
-            <Request.Test disabled={!parsedURL} onClick={onTest} />
-          </div>
-        </Request.Field>
-        {showQueryParams && (
-          <Indent>
-            {parsedURL ? (
-              <QueryParams
-                target={parsedURL}
-                onChange={(target: string) => {
-                  if (!disabled) {
-                    setValue(fields.target.name, target);
-                  }
-                }}
-              />
-            ) : (
-              <div className={styles.provideURL}>Provide a valid URL to manage your query parameters.</div>
-            )}
-          </Indent>
-        )}
-        <HttpRequestOptions disabled={disabled} fields={fields} ref={handleErrorRef} />
-      </Request>
-    );
-  }
-);
+          ) : (
+            <div className={styles.provideURL}>Provide a valid URL to manage your query parameters.</div>
+          )}
+        </Indent>
+      )}
+      <HttpRequestOptions disabled={disabled} fields={fields} ref={handleErrorRef} />
+    </Request>
+  );
+});
 
 HttpRequest.displayName = 'HttpRequest';
 
 interface HttpRequestOptionsProps {
   disabled?: boolean;
-  fields: HttpRequestFields;
+  fields: HttpRequestFields<CheckFormValuesHttp> | HttpRequestFields<CheckFormValuesMultiHttp>;
 }
 
 const HttpRequestOptions = forwardRef<HandleErrorRef, HttpRequestOptionsProps>(
@@ -183,7 +184,7 @@ const HttpRequestOptions = forwardRef<HandleErrorRef, HttpRequestOptionsProps>(
         )}
         {tlsFields && (
           <Request.Options.Section label={`TLS Config`}>
-            <TLSConfig disabled={disabled} fields={fields} />
+            <TLSConfig disabled={disabled} fields={tlsFields} />
           </Request.Options.Section>
         )}
         {proxyFields && proxyFields.headers && proxyFields.url && (
@@ -205,7 +206,13 @@ const HttpRequestOptions = forwardRef<HandleErrorRef, HttpRequestOptionsProps>(
 
 HttpRequestOptions.displayName = 'HttpRequestOptions';
 
-function getTLSFields(fields: HttpRequestFields): TLSConfigFields | null {
+function getTLSFields(
+  fields: HttpRequestFields<CheckFormValuesHttp> | HttpRequestFields<CheckFormValuesMultiHttp>
+): TLSConfigFields<CheckFormValuesHttp> | null {
+  if (isMultiHttpFields(fields)) {
+    return null;
+  }
+
   if (
     !fields.tlsServerName &&
     !fields.tlsInsecureSkipVerify &&
@@ -225,7 +232,13 @@ function getTLSFields(fields: HttpRequestFields): TLSConfigFields | null {
   };
 }
 
-function getProxyFields(fields: HttpRequestFields) {
+function isMultiHttpFields(
+  fields: HttpRequestFields<CheckFormValuesHttp> | HttpRequestFields<CheckFormValuesMultiHttp>
+): fields is HttpRequestFields<CheckFormValuesMultiHttp> {
+  return 'requestBody' in fields;
+}
+
+function getProxyFields(fields: HttpRequestFields<CheckFormValuesHttp> | HttpRequestFields<CheckFormValuesMultiHttp>) {
   if (!fields.proxyUrl && !fields.proxyHeaders) {
     return null;
   }

@@ -82,10 +82,14 @@ export const FormLayout = <T extends FieldValues>({
     [handleVisited, onValid, formSections]
   );
 
-  const handleError = useCallback(
+  const handleInvalid = useCallback(
     (errs: FieldErrors<T>) => {
       handleVisited(formSections.map((section) => section.props.index));
       const flattenedErrors = normalizeFlattenedErrors(flattenKeys(errs));
+      console.log({
+        errs,
+        flattenedErrors,
+      });
 
       const errSection = formSections?.find((section) => {
         const fields = section.props.fields;
@@ -116,7 +120,7 @@ export const FormLayout = <T extends FieldValues>({
           visitedSections={visitedSections}
           schema={schema}
         />
-        <form className={styles.form} onSubmit={onSubmit(handleValid, handleError)}>
+        <form className={styles.form} onSubmit={onSubmit(handleValid, handleInvalid)}>
           <div>{sections}</div>
 
           <div>

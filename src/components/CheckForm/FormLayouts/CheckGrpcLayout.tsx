@@ -62,7 +62,7 @@ const CheckGRPCRequest = () => {
 
 export const GRPCCheckLayout: Partial<Record<LayoutSection, Section<CheckFormValuesGRPC>>> = {
   [LayoutSection.Check]: {
-    fields: [`target`],
+    fields: Object.values(GRPC_REQUEST_FIELDS).map((field) => field.name),
     Component: (
       <>
         <CheckGRPCRequest />

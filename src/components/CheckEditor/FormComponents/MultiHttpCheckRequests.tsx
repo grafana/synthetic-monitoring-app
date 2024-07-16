@@ -20,7 +20,7 @@ import { getMultiHttpFormErrors, useMultiHttpCollapseState } from 'components/Mu
 import { HttpRequest } from './HttpRequest';
 import { MultiHttpVariables } from './MultiHttpVariables';
 
-export const MULTI_HTTP_REQUEST_FIELDS: HttpRequestFields = {
+export const MULTI_HTTP_REQUEST_FIELDS: HttpRequestFields<CheckFormValuesMultiHttp> = {
   target: {
     name: `settings.multihttp.entries.${ENTRY_INDEX_CHAR}.request.url`,
   },
@@ -157,9 +157,9 @@ const MultiHttpRequest = ({ index }: { index: number }) => {
   const { isFormDisabled, supportingContent } = useCheckFormContext();
   const { addRequest } = supportingContent;
 
-  const fields = useMemo(
-    () =>
-      Object.entries(MULTI_HTTP_REQUEST_FIELDS).reduce<HttpRequestFields>((acc, field) => {
+  const fields: HttpRequestFields<CheckFormValuesMultiHttp> = useMemo(() => {
+    const initial = Object.entries(MULTI_HTTP_REQUEST_FIELDS).reduce<HttpRequestFields<CheckFormValuesMultiHttp>>(
+      (acc, field) => {
         const [key, value] = field;
 
         return {
@@ -169,9 +169,22 @@ const MultiHttpRequest = ({ index }: { index: number }) => {
             name: value.name.replace(ENTRY_INDEX_CHAR, index.toString()),
           },
         };
-      }, MULTI_HTTP_REQUEST_FIELDS),
-    [index]
-  );
+      },
+      MULTI_HTTP_REQUEST_FIELDS
+    );
+
+    return {
+      ...initial,
+      target: {
+        ...initial.target,
+        'aria-label': `Request target for request ${index + 1} *`,
+      },
+      method: {
+        ...initial.method,
+        'aria-label': `Request method for request ${index + 1} *`,
+      },
+    };
+  }, [index]);
 
   const onTest = useCallback(() => {
     addRequest(fields);
@@ -179,24 +192,7 @@ const MultiHttpRequest = ({ index }: { index: number }) => {
 
   const { handleErrorRef } = useNestedRequestErrors(fields);
 
-  return (
-    <HttpRequest
-      disabled={isFormDisabled}
-      fields={{
-        ...fields,
-        target: {
-          ...fields.target,
-          'aria-label': `Request target for request ${index + 1} *`,
-        },
-        method: {
-          ...fields.method,
-          'aria-label': `Request method for request ${index + 1} *`,
-        },
-      }}
-      onTest={onTest}
-      ref={handleErrorRef}
-    />
-  );
+  return <HttpRequest disabled={isFormDisabled} fields={fields} onTest={onTest} ref={handleErrorRef} />;
 };
 
 MultiHttpRequest.displayName = 'MultiHttpRequest';
@@ -224,7 +220,13 @@ const SetVariables = ({ index }: { index: number }) => {
   return (
     <Stack direction={`column`}>
       <div>
-        <Button onClick={() => setOpen((v) => !v)} type="button" fill="text" icon={open ? `arrow-down` : `arrow-right`}>
+        <Button
+          aria-expanded={open}
+          fill="text"
+          icon={open ? `arrow-down` : `arrow-right`}
+          onClick={() => setOpen((v) => !v)}
+          type="button"
+        >
           Set variables
         </Button>
       </div>

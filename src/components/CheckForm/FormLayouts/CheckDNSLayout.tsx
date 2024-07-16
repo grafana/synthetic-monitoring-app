@@ -52,7 +52,7 @@ const CheckDNSRequest = () => {
 
 export const DNSCheckLayout: Partial<Record<LayoutSection, Section<CheckFormValuesDns>>> = {
   [LayoutSection.Check]: {
-    fields: [`target`],
+    fields: Object.values(DNS_REQUEST_FIELDS).map((field) => field.name),
     Component: (
       <>
         <CheckDNSRequest />

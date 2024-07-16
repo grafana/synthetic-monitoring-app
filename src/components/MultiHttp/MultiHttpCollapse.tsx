@@ -37,6 +37,7 @@ export const MultiHttpCollapse = forwardRef<HTMLButtonElement, PropsWithChildren
           ref={ref}
           data-fs-element={`Collapse header ${label}`}
           type="button"
+          aria-expanded={isOpen}
         >
           <Icon name={isOpen ? 'angle-down' : 'angle-right'} />
           <div className={css({ color: getMethodColor(theme, requestMethod) })}>{requestMethod}</div>
