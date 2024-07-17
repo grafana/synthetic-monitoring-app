@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { FieldValidationMessage, Tab, TabContent, TabsBar } from '@grafana/ui';
 
@@ -6,6 +6,7 @@ import { CheckFormValuesScripted } from 'types';
 import { useCheckFormContext } from 'components/CheckForm/CheckFormContext/CheckFormContext';
 import { CodeEditor } from 'components/CodeEditor';
 import { CodeSnippet } from 'components/CodeSnippet';
+import { CHECK_FORM_ERROR_EVENT } from 'components/constants';
 import { SCRIPT_EXAMPLES } from 'components/WelcomeTabs/constants';
 
 enum ScriptEditorTabs {
@@ -23,6 +24,20 @@ export const ScriptedCheckScript = () => {
   const { isFormDisabled } = useCheckFormContext();
   const [selectedTab, setSelectedTab] = useState(ScriptEditorTabs.Script);
   const fieldError = errors.settings?.scripted?.script;
+
+  useEffect(() => {
+    const goToScriptTab = () => {
+      if (fieldError) {
+        setSelectedTab(ScriptEditorTabs.Script);
+      }
+    };
+
+    document.addEventListener(CHECK_FORM_ERROR_EVENT, goToScriptTab);
+
+    return () => {
+      document.removeEventListener(CHECK_FORM_ERROR_EVENT, goToScriptTab);
+    };
+  }, [fieldError]);
 
   return (
     <>

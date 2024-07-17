@@ -5,24 +5,23 @@ import { renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
 
 import { fillMandatoryFields } from '../../../../__testHelpers__/apiEndPoint';
 
-const checkType = CheckType.DNS;
+const checkType = CheckType.Traceroute;
 
-describe(`DNSCheck - Section 1 (Request) UI`, () => {
+describe(`TracerouteCheck - Section 1 (Request) UI`, () => {
   it(`will navigate to the first section and open the request to reveal a nested error`, async () => {
     const { user } = await renderNewForm(checkType);
     await user.click(screen.getByText('Request options'));
-    await user.click(screen.getByText('DNS Settings'));
 
-    const serverInputPreSubmit = screen.getByLabelText('Server');
-    await user.clear(serverInputPreSubmit);
+    const unknownHopsInputPreSubmit = screen.getByLabelText('Max unknown hops', { exact: false });
+    await user.clear(unknownHopsInputPreSubmit);
 
     await fillMandatoryFields({ user, checkType });
     await submitForm(user);
 
-    const err = await screen.findByText(`DNS server is required`, { exact: false });
+    const err = await screen.findByText(`Must be a number (0-20)`);
     expect(err).toBeInTheDocument();
 
-    const serverInputPostSubmit = screen.getByLabelText('Server');
-    await waitFor(() => expect(serverInputPostSubmit).toHaveFocus());
+    const unknownHopsInputPostSubmit = screen.getByLabelText('Max unknown hops', { exact: false });
+    await waitFor(() => expect(unknownHopsInputPostSubmit).toHaveFocus());
   });
 });

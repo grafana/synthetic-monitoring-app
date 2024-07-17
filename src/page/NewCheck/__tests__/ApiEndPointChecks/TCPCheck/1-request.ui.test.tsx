@@ -5,24 +5,24 @@ import { renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
 
 import { fillMandatoryFields } from '../../../../__testHelpers__/apiEndPoint';
 
-const checkType = CheckType.DNS;
+const checkType = CheckType.TCP;
 
-describe(`DNSCheck - Section 1 (Request) UI`, () => {
+describe(`TCPCheck - Section 1 (Request) UI`, () => {
   it(`will navigate to the first section and open the request to reveal a nested error`, async () => {
     const { user } = await renderNewForm(checkType);
     await user.click(screen.getByText('Request options'));
-    await user.click(screen.getByText('DNS Settings'));
+    await user.click(screen.getByText('TLS Config'));
 
-    const serverInputPreSubmit = screen.getByLabelText('Server');
-    await user.clear(serverInputPreSubmit);
+    const certInputPreSubmit = screen.getByLabelText('CA certificate', { exact: false });
+    await user.type(certInputPreSubmit, `not a cert`);
 
     await fillMandatoryFields({ user, checkType });
     await submitForm(user);
 
-    const err = await screen.findByText(`DNS server is required`, { exact: false });
+    const err = await screen.findByText(`Certificate must be in the PEM format.`);
     expect(err).toBeInTheDocument();
 
-    const serverInputPostSubmit = screen.getByLabelText('Server');
-    await waitFor(() => expect(serverInputPostSubmit).toHaveFocus());
+    const certInputPostSubmit = screen.getByLabelText('CA certificate', { exact: false });
+    await waitFor(() => expect(certInputPostSubmit).toHaveFocus());
   });
 });

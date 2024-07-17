@@ -232,10 +232,11 @@ function getTLSFields(
   };
 }
 
+// todo: this is a bit rubbish
 function isMultiHttpFields(
   fields: HttpRequestFields<CheckFormValuesHttp> | HttpRequestFields<CheckFormValuesMultiHttp>
 ): fields is HttpRequestFields<CheckFormValuesMultiHttp> {
-  return 'requestBody' in fields;
+  return fields.target.name.startsWith(`settings.multihttp`);
 }
 
 function getProxyFields(fields: HttpRequestFields<CheckFormValuesHttp> | HttpRequestFields<CheckFormValuesMultiHttp>) {

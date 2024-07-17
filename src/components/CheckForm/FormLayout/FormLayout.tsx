@@ -86,10 +86,6 @@ export const FormLayout = <T extends FieldValues>({
     (errs: FieldErrors<T>) => {
       handleVisited(formSections.map((section) => section.props.index));
       const flattenedErrors = normalizeFlattenedErrors(flattenKeys(errs));
-      console.log({
-        errs,
-        flattenedErrors,
-      });
 
       const errSection = formSections?.find((section) => {
         const fields = section.props.fields;
