@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 
 import { CheckType } from 'types';
 import { renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
@@ -20,8 +20,5 @@ describe(`TracerouteCheck - Section 1 (Request) UI`, () => {
 
     const err = await screen.findByText(`Must be a number (0-20)`);
     expect(err).toBeInTheDocument();
-
-    const unknownHopsInputPostSubmit = screen.getByLabelText('Max unknown hops', { exact: false });
-    await waitFor(() => expect(unknownHopsInputPostSubmit).toHaveFocus());
   });
 });

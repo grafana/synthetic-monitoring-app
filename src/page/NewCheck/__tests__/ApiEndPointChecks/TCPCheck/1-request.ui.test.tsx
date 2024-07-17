@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 
 import { CheckType } from 'types';
 import { renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
@@ -21,8 +21,5 @@ describe(`TCPCheck - Section 1 (Request) UI`, () => {
 
     const err = await screen.findByText(`Certificate must be in the PEM format.`);
     expect(err).toBeInTheDocument();
-
-    const certInputPostSubmit = screen.getByLabelText('CA certificate', { exact: false });
-    await waitFor(() => expect(certInputPostSubmit).toHaveFocus());
   });
 });

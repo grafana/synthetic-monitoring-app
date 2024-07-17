@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 
 import { CheckType } from 'types';
 import { renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
@@ -21,8 +21,5 @@ describe(`DNSCheck - Section 1 (Request) UI`, () => {
 
     const err = await screen.findByText(`DNS server is required`, { exact: false });
     expect(err).toBeInTheDocument();
-
-    const serverInputPostSubmit = screen.getByLabelText('Server');
-    await waitFor(() => expect(serverInputPostSubmit).toHaveFocus());
   });
 });

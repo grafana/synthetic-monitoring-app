@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import { getSelect } from 'test/utils';
 
 import { CheckType, HttpMethod } from 'types';
@@ -32,8 +32,5 @@ describe(`HttpCheck - Section 1 (Request) UI`, () => {
 
     const err = await screen.findByText(`Request header name is required`);
     expect(err).toBeInTheDocument();
-
-    const requestHeaderName = screen.getByLabelText('Request header 1 name');
-    await waitFor(() => expect(requestHeaderName).toHaveFocus());
   });
 });

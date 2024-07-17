@@ -315,7 +315,7 @@ const TestForm = <T extends FieldValues>({
       <FormLayout
         actions={actions}
         disabled={disabled}
-        onSubmit={(v, i) => formMethods.handleSubmit(v, i)}
+        onSubmit={formMethods.handleSubmit}
         onValid={(v) => v}
         schema={schema}
       >
