@@ -431,8 +431,6 @@ export const HTTP_COMPRESSION_ALGO_OPTIONS = [
   { label: 'deflate', value: HTTPCompressionAlgo.deflate },
 ];
 
-export const PLUGIN_URL_PATH = '/a/grafana-synthetic-monitoring-app/';
-
 export const METHOD_OPTIONS = [
   {
     label: 'GET',

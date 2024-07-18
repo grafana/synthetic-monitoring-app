@@ -5,7 +5,7 @@ import { render } from 'test/render';
 import { runTestAsViewer } from 'test/utils';
 
 import { ROUTES } from 'types';
-import { getRoute } from 'components/Routing';
+import { getRoute } from 'components/Routing.utils';
 
 import { ProbeCard } from './ProbeCard';
 

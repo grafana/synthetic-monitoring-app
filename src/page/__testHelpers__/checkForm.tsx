@@ -8,7 +8,7 @@ import { server } from 'test/server';
 
 import { Check, CheckType, ROUTES } from 'types';
 import { getCheckType, getCheckTypeGroup } from 'utils';
-import { PLUGIN_URL_PATH } from 'components/constants';
+import { PLUGIN_URL_PATH } from 'components/Routing.consts';
 import { EditCheck } from 'page/EditCheck';
 import { NewCheck } from 'page/NewCheck';
 

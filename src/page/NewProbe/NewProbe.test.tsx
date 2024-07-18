@@ -5,7 +5,7 @@ import { render } from 'test/render';
 import { fillProbeForm } from 'test/utils';
 
 import { ROUTES } from 'types';
-import { getRoute } from 'components/Routing';
+import { getRoute } from 'components/Routing.utils';
 
 import { NewProbe } from './NewProbe';
 

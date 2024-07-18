@@ -11,7 +11,7 @@ import { canEditProbes } from 'utils';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 import { LabelField } from 'components/LabelField';
 import { ProbeRegionsSelect } from 'components/ProbeRegionsSelect';
-import { getRoute } from 'components/Routing';
+import { getRoute } from 'components/Routing.utils';
 import { SimpleMap } from 'components/SimpleMap';
 
 type ProbeEditorProps = {

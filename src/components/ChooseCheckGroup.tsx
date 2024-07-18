@@ -8,7 +8,7 @@ import { CheckTypeGroup, ROUTES } from 'types';
 import { CheckTypeGroupOption, ProtocolOption, useCheckTypeGroupOptions } from 'hooks/useCheckTypeGroupOptions';
 import { useLimits } from 'hooks/useLimits';
 import { PluginPage } from 'components/PluginPage';
-import { getRoute } from 'components/Routing';
+import { getRoute } from 'components/Routing.utils';
 import { Toggletip } from 'components/Toggletip';
 
 import { Card } from './Card';

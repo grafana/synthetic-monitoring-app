@@ -12,7 +12,7 @@ import { DocsLink } from 'components/DocsLink';
 import { PluginPage } from 'components/PluginPage';
 import { ProbeList } from 'components/ProbeList';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
-import { getRoute } from 'components/Routing';
+import { getRoute } from 'components/Routing.utils';
 
 export const Probes = () => {
   const theme = useTheme2();

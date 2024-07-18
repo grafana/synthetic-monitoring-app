@@ -1,6 +1,7 @@
 import React from 'react';
-import { Route, Switch, useRouteMatch } from 'react-router-dom';
+import { Redirect, Route, Switch, useRouteMatch } from 'react-router-dom';
 
+import { CHECK_TYPE_OPTIONS } from 'hooks/useCheckTypeOptions';
 import { CheckList } from 'components/CheckList';
 import { ChooseCheckGroup } from 'components/ChooseCheckGroup';
 
@@ -13,6 +14,21 @@ export function CheckRouter() {
 
   return (
     <Switch>
+      {NEW_CHECK_REDIRECTS.map(({ from, to }) => (
+        <Route key={from} path={`${path}${from}`} exact>
+          <Redirect to={`${path}${to}`} />
+        </Route>
+      ))}
+      {EDIT_CHECK_REDIRECTS.map(({ from, to }) => (
+        <Route key={from} path={`${path}${from}`} exact>
+          {(props) => {
+            return <Redirect to={`${path}${to}/${props.match?.params.id}`} />;
+          }}
+        </Route>
+      ))}
+      <Route path={`${path}/edit/`} exact>
+        <CheckList />
+      </Route>
       <Route path={path} exact>
         <CheckList />
       </Route>
@@ -31,3 +47,13 @@ export function CheckRouter() {
     </Switch>
   );
 }
+
+const NEW_CHECK_REDIRECTS = CHECK_TYPE_OPTIONS.map(({ group, value }) => ({
+  from: `/new/${value}`,
+  to: `/new/${group}?checkType=${value}`,
+}));
+
+const EDIT_CHECK_REDIRECTS = CHECK_TYPE_OPTIONS.map(({ group, value }) => ({
+  from: `/edit/${value}/:id`,
+  to: `/edit/${group}`,
+}));
