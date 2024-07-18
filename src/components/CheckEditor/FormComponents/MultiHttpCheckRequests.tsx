@@ -8,7 +8,7 @@ import { DataTestIds } from 'test/dataTestIds';
 import { HttpRequestFields } from '../CheckEditor.types';
 import { CheckFormInvalidSubmissionEvent, CheckFormValuesMultiHttp, HttpMethod } from 'types';
 import { useNestedRequestErrors } from 'hooks/useNestedRequestErrors';
-import { broadcastFailedSubmission, flattenKeys } from 'components/CheckForm/checkForm.hooks';
+import { broadcastFailedSubmission, flattenKeys } from 'components/CheckForm/checkForm.utils';
 import { useCheckFormContext } from 'components/CheckForm/CheckFormContext/CheckFormContext';
 import { ENTRY_INDEX_CHAR } from 'components/CheckForm/FormLayout/formlayout.utils';
 import { CHECK_FORM_ERROR_EVENT } from 'components/constants';
@@ -75,15 +75,18 @@ export const MultiHttpCheckRequests = () => {
   useEffect(() => {
     const openRequest = (e: CustomEvent<CheckFormInvalidSubmissionEvent>) => {
       const { errs, source } = e.detail;
-      const res = getMultiHttpFormErrors(errs);
 
-      if (res !== null) {
-        dispatchCollapse({
-          type: 'openRequestPanels',
-          indexes: res,
-        });
+      // we need to check the source to avoid creating an infinite loop
+      // of rebroadcasting the same event
+      if (source !== `collapsible`) {
+        const res = getMultiHttpFormErrors(errs);
 
-        if (source !== `collapsible`) {
+        if (res !== null) {
+          dispatchCollapse({
+            type: 'openRequestPanels',
+            indexes: res,
+          });
+
           broadcastFailedSubmission(errs, `collapsible`);
         }
       }

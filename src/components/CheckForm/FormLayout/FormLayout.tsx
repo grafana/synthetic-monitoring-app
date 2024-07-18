@@ -6,7 +6,7 @@ import { css, cx } from '@emotion/css';
 import { ZodType } from 'zod';
 import { DataTestIds } from 'test/dataTestIds';
 
-import { flattenKeys } from '../checkForm.hooks';
+import { flattenKeys } from '../checkForm.utils';
 import { normalizeFlattenedErrors, useFormLayout } from './formlayout.utils';
 import { FormSection, FormSectionInternal } from './FormSection';
 import { FormSidebar } from './FormSidebar';

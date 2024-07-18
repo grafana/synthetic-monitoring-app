@@ -3,7 +3,7 @@ import { FieldErrors } from 'react-hook-form';
 
 import { CheckFormInvalidSubmissionEvent, CheckFormValues } from 'types';
 import { RequestFields } from 'components/CheckEditor/CheckEditor.types';
-import { flattenKeys } from 'components/CheckForm/checkForm.hooks';
+import { flattenKeys } from 'components/CheckForm/checkForm.utils';
 import { CHECK_FORM_ERROR_EVENT } from 'components/constants';
 
 export interface HandleErrorRef {
