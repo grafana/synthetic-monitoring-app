@@ -8,7 +8,7 @@ import { fillMandatoryFields } from '../../../../__testHelpers__/apiEndPoint';
 
 const checkType = CheckType.DNS;
 
-describe(`MultiHttpCheck - Section 1 (Request) payload`, () => {
+describe(`DNSCheck - Section 1 (Request) payload`, () => {
   it(`has the correct default values submitted`, async () => {
     const { read, user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });

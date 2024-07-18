@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ClipboardButton, Tab, TabsBar, useStyles2 } from '@grafana/ui';
 import { cx } from '@emotion/css';
-import Prism, { Grammar } from 'prismjs';
+import { highlight, languages } from 'prismjs';
 
 import { CodeSnippetGroupProps, CodeSnippetProps, CodeSnippetTabProps } from './CodeSnippet.types';
 
@@ -88,11 +88,11 @@ export const CodeSnippet = ({
   }, [activeTab, initialTab]);
 
   const formatter = snippetTab?.dedent ? formatCode : identity;
-  const snippet = snippetTab?.code ?? code;
+  const snippet = snippetTab.code.toString();
   const langSyntax = snippetTab?.lang || lang;
   const derivedActiveTab = activeTab ?? tabs[0]?.value;
   const highlightedSyntax = useMemo(
-    () => snippet && Prism.highlight(formatter(snippet), Prism.languages[langSyntax] as Grammar, langSyntax),
+    () => snippet && highlight(formatter(snippet), languages[langSyntax], langSyntax),
     [formatter, snippet, langSyntax]
   );
 

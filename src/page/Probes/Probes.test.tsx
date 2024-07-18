@@ -5,7 +5,7 @@ import { DEFAULT_PROBES, PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probe
 import { render } from 'test/render';
 
 import { ROUTES } from 'types';
-import { getRoute } from 'components/Routing';
+import { getRoute } from 'components/Routing.utils';
 
 import { Probes } from './Probes';
 

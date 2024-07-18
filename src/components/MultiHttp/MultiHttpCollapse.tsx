@@ -1,7 +1,7 @@
 import React, { forwardRef, PropsWithChildren, ReactNode } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Button, Icon, Stack, Text, useStyles2, useTheme2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { css, cx } from '@emotion/css';
 
 import { HttpMethod } from 'types';
 import { getMethodColor } from 'utils';
@@ -37,6 +37,7 @@ export const MultiHttpCollapse = forwardRef<HTMLButtonElement, PropsWithChildren
           ref={ref}
           data-fs-element={`Collapse header ${label}`}
           type="button"
+          aria-expanded={isOpen}
         >
           <Icon name={isOpen ? 'angle-down' : 'angle-right'} />
           <div className={css({ color: getMethodColor(theme, requestMethod) })}>{requestMethod}</div>
@@ -46,25 +47,29 @@ export const MultiHttpCollapse = forwardRef<HTMLButtonElement, PropsWithChildren
           {suffix}
           {invalid && <Icon name="exclamation-triangle" className={styles.errorIcon} />}
         </button>
-        {isOpen && (
-          <div className={styles.body}>
-            <div className={styles.actions}>
-              {onRemove && (
-                <Button
-                  aria-label={`Remove request ${label}`}
-                  className={styles.removeButton}
-                  variant="secondary"
-                  onClick={onRemove}
-                  data-fs-element={`Remove ${label}`}
-                  icon="trash-alt"
-                  tooltip={`Remove request`}
-                  size="sm"
-                />
-              )}
-            </div>
-            <div>{children}</div>
+
+        <div
+          className={cx(styles.body, {
+            // we default to using css here so the event listeners are available for the nested content
+            [styles.isOpen]: isOpen,
+          })}
+        >
+          <div className={styles.actions}>
+            {onRemove && (
+              <Button
+                aria-label={`Remove request ${label}`}
+                className={styles.removeButton}
+                variant="secondary"
+                onClick={onRemove}
+                data-fs-element={`Remove ${label}`}
+                icon="trash-alt"
+                tooltip={`Remove request`}
+                size="sm"
+              />
+            )}
           </div>
-        )}
+          <div>{children}</div>
+        </div>
       </Stack>
     );
   }
@@ -92,9 +97,12 @@ const getStyles = (theme: GrafanaTheme2) => ({
     marginLeft: theme.spacing(1),
   }),
   body: css({
-    display: `grid`,
+    display: `none`,
     gridTemplateColumns: `36px auto`,
     gap: theme.spacing(2.5),
+  }),
+  isOpen: css({
+    display: `grid`,
   }),
   actions: css({
     borderRight: `1px solid ${theme.colors.border.medium}`,

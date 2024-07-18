@@ -9,9 +9,18 @@ const MAX_HOPS = 64;
 const MAX_UNKNOWN_HOPS = 20;
 
 const TracerouteSettingsSchema: ZodType<TracerouteSettingsFormValues> = z.object({
-  maxHops: z.number().min(0, `Must be greater than 0`).max(MAX_HOPS, `Can be no more than ${MAX_HOPS} hops`),
+  maxHops: z
+    .number({
+      required_error: `Must be a number (0-${MAX_HOPS})`,
+      invalid_type_error: `Must be a number (0-${MAX_HOPS})`,
+    })
+    .min(0, `Must be greater than 0`)
+    .max(MAX_HOPS, `Can be no more than ${MAX_HOPS} hops`),
   maxUnknownHops: z
-    .number()
+    .number({
+      required_error: `Must be a number (0-${MAX_UNKNOWN_HOPS})`,
+      invalid_type_error: `Must be a number (0-${MAX_UNKNOWN_HOPS})`,
+    })
     .min(0, `Must be greater than 0`)
     .max(MAX_UNKNOWN_HOPS, `Can be no more than ${MAX_UNKNOWN_HOPS} hops`),
   ptrLookup: z.boolean(),

@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import { apiRoute } from 'test/handlers';
 import { server } from 'test/server';
 
@@ -82,6 +82,16 @@ describe(`<NewCheck />`, () => {
 
     await renderNewForm(CheckType.HTTP);
     expect(screen.getByRole(`button`, { name: /Submit/ })).toBeEnabled();
+  });
+
+  it(`should focus the probes select correctly when appropriate`, async () => {
+    const { user } = await renderNewForm(CheckType.HTTP);
+
+    await fillMandatoryFields({ user, checkType: CheckType.HTTP, fieldsToOmit: ['probes'] });
+    await submitForm(user);
+
+    const probesSelect = await screen.findByLabelText(/Probe locations/);
+    await waitFor(() => expect(probesSelect).toHaveFocus());
   });
 
   // jsdom doesn't give us back the submitter of the form, so we can't test this

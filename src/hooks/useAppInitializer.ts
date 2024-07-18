@@ -8,7 +8,7 @@ import { FaroEvent, reportError, reportEvent } from 'faro';
 import { initializeDatasource } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { LEGACY_LOGS_DS_NAME, LEGACY_METRICS_DS_NAME } from 'components/constants';
-import { getRoute } from 'components/Routing';
+import { getRoute } from 'components/Routing.utils';
 
 interface InitializeProps {
   metricsSettings: DataSourceInstanceSettings<DataSourceJsonData>;

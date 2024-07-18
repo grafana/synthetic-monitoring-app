@@ -3,11 +3,12 @@ import { useFormContext } from 'react-hook-form';
 import { DataFrameJSON, dateTime } from '@grafana/data';
 import { merge } from 'lodash';
 
-import { Request, RequestFields } from './CheckFormContext.types';
+import { Request } from './CheckFormContext.types';
 import { CheckFormValues, Probe } from 'types';
 import { useTestCheck } from 'data/useChecks';
 import { useLogs } from 'data/useLogs';
 import { useProbes } from 'data/useProbes';
+import { RequestFields } from 'components/CheckEditor/CheckEditor.types';
 import { toPayload } from 'components/CheckEditor/checkFormTransformations';
 
 // todo: this needs work and isn't used currently

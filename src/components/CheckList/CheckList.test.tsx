@@ -15,7 +15,7 @@ import { server } from 'test/server';
 import { getSelect, selectOption } from 'test/utils';
 
 import { Check, FeatureName, ROUTES } from 'types';
-import { PLUGIN_URL_PATH } from 'components/constants';
+import { PLUGIN_URL_PATH } from 'components/Routing.consts';
 
 import { CheckList } from './CheckList';
 

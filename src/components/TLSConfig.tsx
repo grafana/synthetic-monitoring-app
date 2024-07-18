@@ -4,15 +4,18 @@ import { Container, Field, Input, TextArea } from '@grafana/ui';
 import { get } from 'lodash';
 
 import { TLSConfigFields } from './CheckEditor/CheckEditor.types';
-import { CheckFormValues } from 'types';
+import { CheckFormValues, CheckFormValuesGRPC, CheckFormValuesHttp, CheckFormValuesTcp } from 'types';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 
-interface TLSConfigProps {
+interface TLSConfigProps<T extends CheckFormValues = CheckFormValues> {
   disabled?: boolean;
-  fields: TLSConfigFields;
+  fields: TLSConfigFields<T>;
 }
 
-export const TLSConfig = ({ disabled, fields }: TLSConfigProps) => {
+export const TLSConfig = <T extends CheckFormValuesHttp | CheckFormValuesTcp | CheckFormValuesGRPC>({
+  disabled,
+  fields,
+}: TLSConfigProps<T>) => {
   const {
     register,
     formState: { errors },

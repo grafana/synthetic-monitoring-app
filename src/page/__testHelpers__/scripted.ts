@@ -17,12 +17,12 @@ export async function fillMandatoryFields({ user, fieldsToOmit = [], checkType }
   await goToSection(user, 1);
 
   if (!fieldsToOmit.includes('job')) {
-    const jobNameInput = await screen.findByLabelText('Job name', { exact: false });
+    const jobNameInput = screen.getByLabelText('Job name', { exact: false });
     await user.type(jobNameInput, `MANDATORY JOB NAME`);
   }
 
   if (!fieldsToOmit.includes('target')) {
-    const targetInput = await screen.getByLabelText(`Instance`, { exact: false });
+    const targetInput = screen.getByLabelText(`Instance`, { exact: false });
     await user.type(targetInput, TARGET_MAP[checkType]);
   }
 

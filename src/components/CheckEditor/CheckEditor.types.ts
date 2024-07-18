@@ -17,30 +17,31 @@ export type FieldProps<T extends CheckFormValues = CheckFormValues> = {
   name: FieldPath<T>;
   onChange?: (e: FormEvent) => void;
   'aria-label'?: string;
+  section?: number;
 };
 
-export type TLSConfigFields = {
-  tlsServerName?: FieldProps;
-  tlsInsecureSkipVerify?: FieldProps;
-  tlsCaSCert?: FieldProps;
-  tlsClientCert?: FieldProps;
-  tlsClientKey?: FieldProps;
+export type TLSConfigFields<T extends CheckFormValues> = {
+  tlsServerName?: FieldProps<T>;
+  tlsInsecureSkipVerify?: FieldProps<T>;
+  tlsCaSCert?: FieldProps<T>;
+  tlsClientCert?: FieldProps<T>;
+  tlsClientKey?: FieldProps<T>;
 };
 
-export type HttpRequestFields = TLSConfigFields & {
-  method: FieldProps<CheckFormValuesHttp | CheckFormValuesMultiHttp>;
-  target: FieldProps<CheckFormValuesHttp | CheckFormValuesMultiHttp>;
-  requestHeaders: FieldProps<CheckFormValuesHttp | CheckFormValuesMultiHttp>;
-  requestBody: FieldProps<CheckFormValuesHttp | CheckFormValuesMultiHttp>;
-  followRedirects?: FieldProps<CheckFormValuesHttp | CheckFormValuesMultiHttp>;
-  ipVersion?: FieldProps<CheckFormValuesHttp | CheckFormValuesMultiHttp>;
-  requestContentType?: FieldProps<CheckFormValuesHttp | CheckFormValuesMultiHttp>;
-  requestContentEncoding?: FieldProps<CheckFormValuesHttp | CheckFormValuesMultiHttp>;
-  basicAuth?: FieldProps<CheckFormValuesHttp | CheckFormValuesMultiHttp>;
-  bearerToken?: FieldProps<CheckFormValuesHttp | CheckFormValuesMultiHttp>;
-  proxyUrl?: FieldProps<CheckFormValuesHttp | CheckFormValuesMultiHttp>;
-  proxyHeaders?: FieldProps<CheckFormValuesHttp | CheckFormValuesMultiHttp>;
-  queryParams?: FieldProps<CheckFormValuesHttp | CheckFormValuesMultiHttp>;
+export type HttpRequestFields<T extends CheckFormValuesHttp | CheckFormValuesMultiHttp> = TLSConfigFields<T> & {
+  method: FieldProps<T>;
+  target: FieldProps<T>;
+  requestHeaders: FieldProps<T>;
+  requestBody: FieldProps<T>;
+  followRedirects?: FieldProps<T>;
+  ipVersion?: FieldProps<T>;
+  requestContentType?: FieldProps<T>;
+  requestContentEncoding?: FieldProps<T>;
+  basicAuth?: FieldProps<T>;
+  bearerToken?: FieldProps<T>;
+  proxyUrl?: FieldProps<T>;
+  proxyHeaders?: FieldProps<T>;
+  queryParams?: FieldProps<T>;
 };
 
 export type DNSRequestFields = {
@@ -52,14 +53,14 @@ export type DNSRequestFields = {
   port: FieldProps<CheckFormValuesDns>;
 };
 
-export type GRPCRequestFields = TLSConfigFields & {
+export type GRPCRequestFields = TLSConfigFields<CheckFormValuesGRPC> & {
   ipVersion: FieldProps<CheckFormValuesGRPC>;
   target: FieldProps<CheckFormValuesGRPC>;
   service: FieldProps<CheckFormValuesGRPC>;
   useTLS: FieldProps<CheckFormValuesGRPC>;
 };
 
-export type TCPRequestFields = TLSConfigFields & {
+export type TCPRequestFields = TLSConfigFields<CheckFormValuesTcp> & {
   target: FieldProps<CheckFormValuesTcp>;
   ipVersion: FieldProps<CheckFormValuesTcp>;
   useTLS: FieldProps<CheckFormValuesTcp>;
@@ -82,3 +83,13 @@ export type ScriptedRequestFields = {
   target: FieldProps<CheckFormValuesScripted>;
   script: FieldProps<CheckFormValuesScripted>;
 };
+
+export type RequestFields =
+  | HttpRequestFields<CheckFormValuesHttp>
+  | HttpRequestFields<CheckFormValuesMultiHttp>
+  | DNSRequestFields
+  | GRPCRequestFields
+  | TCPRequestFields
+  | PingRequestFields
+  | TracerouteRequestFields
+  | ScriptedRequestFields;

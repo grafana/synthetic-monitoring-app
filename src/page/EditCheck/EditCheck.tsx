@@ -6,7 +6,7 @@ import { CheckPageParams, ROUTES } from 'types';
 import { useChecks } from 'data/useChecks';
 import { useNavigation } from 'hooks/useNavigation';
 import { CheckForm } from 'components/CheckForm/CheckForm';
-import { getRoute } from 'components/Routing';
+import { getRoute } from 'components/Routing.utils';
 
 export const EditCheck = () => {
   return <EditCheckContent />;

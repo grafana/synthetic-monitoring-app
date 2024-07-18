@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import { IconName } from '@grafana/data';
 
 import { CheckType, CheckTypeGroup, ROUTES } from 'types';
-import { getRoute } from 'components/Routing';
+import { getRoute } from 'components/Routing.utils';
 
 import { CHECK_TYPE_OPTIONS, useCheckTypeOptions } from './useCheckTypeOptions';
 

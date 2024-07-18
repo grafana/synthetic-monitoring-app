@@ -7,7 +7,7 @@ import { CheckPageParams, CheckType, DashboardSceneAppConfig } from 'types';
 import { getCheckType } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { useChecks } from 'data/useChecks';
-import { PLUGIN_URL_PATH } from 'components/constants';
+import { PLUGIN_URL_PATH } from 'components/Routing.consts';
 import { getDNSScene } from 'scenes/DNS';
 import { getGRPCScene } from 'scenes/GRPC/getGRPCScene';
 import { getHTTPScene } from 'scenes/HTTP';

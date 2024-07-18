@@ -1,11 +1,11 @@
 import React from 'react';
-import { SceneReactObject, SceneVariable } from '@grafana/scenes';
-import { Button, Spinner } from '@grafana/ui';
+import { SceneReactObject, SceneVariable, VariableValue } from '@grafana/scenes';
+import { LinkButton } from '@grafana/ui';
 
-import { ROUTES } from 'types';
-import { getCheckType } from 'utils';
+import { Check, ROUTES } from 'types';
+import { getCheckType, getCheckTypeGroup } from 'utils';
 import { useChecks } from 'data/useChecks';
-import { useNavigation } from 'hooks/useNavigation';
+import { getRoute } from 'components/Routing.utils';
 
 interface Props {
   job: SceneVariable;
@@ -14,23 +14,26 @@ interface Props {
 
 function EditCheckButton({ job, instance }: Props) {
   const { data: checks = [], isLoading } = useChecks();
-  const navigate = useNavigation();
+  const url = getUrl(checks, instance.getValue(), job.getValue());
+
   return (
-    <Button
-      variant="secondary"
-      onClick={() => {
-        const check = checks.find((check) => check.target === instance.getValue() && check.job === job.getValue());
-        if (!check) {
-          return;
-        }
-        const type = getCheckType(check.settings);
-        navigate(`${ROUTES.EditCheck}/${type}/${check.id}`);
-      }}
-      disabled={isLoading || !checks}
-    >
-      {isLoading ? <Spinner /> : 'Edit check'}
-    </Button>
+    <LinkButton variant="secondary" href={url} disabled={isLoading || !url} icon={isLoading ? 'fa fa-spinner' : 'edit'}>
+      Edit check
+    </LinkButton>
   );
+}
+
+function getUrl(checks: Check[], target?: VariableValue | null, job?: VariableValue | null) {
+  const check = checks.find((check) => check.target === target && check.job === job);
+
+  if (!check) {
+    return undefined;
+  }
+
+  const checkType = getCheckType(check.settings);
+  const checkTypeGroup = getCheckTypeGroup(checkType);
+
+  return `${getRoute(ROUTES.EditCheck)}/${checkTypeGroup}/${check.id}`;
 }
 
 export function getEditButton({ job, instance }: Props) {
