@@ -2,7 +2,7 @@ import { useContext } from 'react';
 import { type QueryKey, useQuery } from '@tanstack/react-query';
 
 import { Check, CheckType } from 'types';
-import { checkType, queryMetric } from 'utils';
+import { getCheckType, queryMetric } from 'utils';
 import { SMDataSource } from 'datasource/DataSource';
 import { MetricLatency } from 'datasource/responses.types';
 import { InstanceContext } from 'contexts/InstanceContext';
@@ -16,7 +16,7 @@ export function useLatency({ job, target, settings }: Check) {
   const { instance } = useContext(InstanceContext);
   const api = instance.api as SMDataSource;
   const url = api.getMetricsDS()?.url || ``;
-  const type = checkType(settings);
+  const type = getCheckType(settings);
 
   return useQuery({
     queryKey: [...queryKeys.latencies, url, job, target, type],

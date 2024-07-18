@@ -1,62 +1,44 @@
 import React from 'react';
-import { GrafanaTheme2 } from '@grafana/data';
-import { useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { Stack, TextLink } from '@grafana/ui';
 
-import { CheckFormTypeLayoutProps, CheckFormValuesScripted, CheckType } from 'types';
-import { CheckEnabled } from 'components/CheckEditor/FormComponents/CheckEnabled';
-import { CheckJobName } from 'components/CheckEditor/FormComponents/CheckJobName';
+import { LayoutSection, Section } from './Layout.types';
+import { CheckFormValuesScripted } from 'types';
+import { ScriptedFields } from 'components/CheckEditor/CheckEditor.types';
 import { ScriptedCheckInstance } from 'components/CheckEditor/FormComponents/ScriptedCheckInstance';
 import { ScriptedCheckScript } from 'components/CheckEditor/FormComponents/ScriptedCheckScript';
-import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
-import { FormLayout } from 'components/CheckForm/FormLayout/FormLayout';
-import { CheckFormAlert } from 'components/CheckFormAlert';
-import { CheckUsage } from 'components/CheckUsage';
-import { LabelField } from 'components/LabelField';
+import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
 
-export const CheckScriptedLayout = ({
-  formActions,
-  onSubmit,
-  onSubmitError,
-  errorMessage,
-  schema,
-}: CheckFormTypeLayoutProps) => {
-  const styles = useStyles2(getStyles);
-
-  return (
-    <FormLayout
-      formActions={formActions}
-      onSubmit={onSubmit}
-      onSubmitError={onSubmitError}
-      errorMessage={errorMessage}
-      schema={schema}
-    >
-      <FormLayout.Section label="Define check" fields={[`enabled`, `job`, `target`]} required>
-        <CheckEnabled />
-        <CheckJobName />
-        <ScriptedCheckInstance />
-        <LabelField<CheckFormValuesScripted> labelDestination="check" />
-      </FormLayout.Section>
-      <FormLayout.Section label="Probes" fields={[`probes`, `frequency`, `timeout`]} required>
-        <CheckUsage checkType={CheckType.Scripted} />
-        <ProbeOptions checkType={CheckType.Scripted} />
-      </FormLayout.Section>
-      <FormLayout.Section
-        contentClassName={styles.scriptContainer}
-        label="Script"
-        fields={[`settings.scripted.script`]}
-      >
-        <ScriptedCheckScript />
-      </FormLayout.Section>
-      <FormLayout.Section label="Alerting" fields={[`alertSensitivity`]}>
-        <CheckFormAlert />
-      </FormLayout.Section>
-    </FormLayout>
-  );
+export const SCRIPTED_CHECK_FIELDS: ScriptedFields = {
+  script: {
+    name: `settings.scripted.script`,
+  },
+  target: {
+    name: `target`,
+  },
 };
 
-const getStyles = (theme: GrafanaTheme2) => ({
-  scriptContainer: css({
-    maxWidth: `1200px`,
-  }),
-});
+export const ScriptedCheckLayout: Partial<Record<LayoutSection, Section<CheckFormValuesScripted>>> = {
+  [LayoutSection.Check]: {
+    fields: Object.values(SCRIPTED_CHECK_FIELDS).map((field) => field.name),
+    Component: (
+      <>
+        <ScriptedCheckInstance />
+        <ScriptedCheckScript />
+      </>
+    ),
+  },
+  [LayoutSection.Uptime]: {
+    fields: [`timeout`],
+    Component: (
+      <Stack direction={`column`} gap={4}>
+        <div>
+          Include uptime checks and assertions in your script. See the docs about {` `}
+          <TextLink href={`https://grafana.com/docs/k6/latest/javascript-api/k6/check/`} external>
+            running checks in a k6 script.
+          </TextLink>
+        </div>
+        <Timeout min={5.0} />
+      </Stack>
+    ),
+  },
+};

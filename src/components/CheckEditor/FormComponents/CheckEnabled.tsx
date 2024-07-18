@@ -1,18 +1,17 @@
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
-import { OrgRole } from '@grafana/data';
 
 import { CheckFormValues } from 'types';
-import { hasRole } from 'utils';
+import { useCheckFormContext } from 'components/CheckForm/CheckFormContext/CheckFormContext';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 
 export const CheckEnabled = () => {
-  const isEditor = hasRole(OrgRole.Editor);
   const { register } = useFormContext<CheckFormValues>();
+  const { isFormDisabled } = useCheckFormContext();
 
   return (
     <HorizontalCheckboxField
-      disabled={!isEditor}
+      disabled={isFormDisabled}
       data-fs-element="Check enabled checkbox"
       id="check-form-enabled"
       label="Enabled"

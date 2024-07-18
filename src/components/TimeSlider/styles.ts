@@ -21,6 +21,9 @@ export const getStyles = (theme: GrafanaTheme2, hasMarks = false) => {
         flexGrow: 1,
         marginLeft: '7px', // half the size of the handle to align handle to the left on 0 value
       },
+      ['.rc-slider-disabled']: {
+        backgroundColor: theme.isDark ? `transparent` : theme.colors.background.secondary,
+      },
       ['.rc-slider-mark']: {
         top: theme.spacing(1.75),
       },

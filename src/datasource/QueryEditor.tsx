@@ -5,9 +5,9 @@ import { MultiSelect, Select, Spinner } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { defaults } from 'lodash';
 
-import { defaultQuery,QueryType, SMOptions, SMQuery } from './types';
+import { defaultQuery, QueryType, SMOptions, SMQuery } from './types';
 import { CheckType, Probe } from 'types';
-import { checkType } from 'utils';
+import { getCheckType } from 'utils';
 
 import { SMDataSource } from './DataSource';
 
@@ -82,7 +82,7 @@ export class QueryEditor extends PureComponent<Props, State> {
     const probes = await datasource.listProbes();
 
     const tracerouteCheckOptions = checks
-      .filter((check) => checkType(check.settings) === CheckType.Traceroute)
+      .filter((check) => getCheckType(check.settings) === CheckType.Traceroute)
       .map<SelectableValue<TracerouteCheckOptionValue>>((check) => {
         return {
           value: {

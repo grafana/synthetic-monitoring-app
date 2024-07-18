@@ -4,9 +4,10 @@ import { screen } from '@testing-library/react';
 import { type CustomRenderOptions, render } from 'test/render';
 
 import { ROUTES } from 'types';
+import { PLUGIN_URL_PATH } from 'components/Routing.consts';
 
-import { PLUGIN_URL_PATH } from './constants';
-import { getRoute, Routing } from './Routing';
+import { Routing } from './Routing';
+import { getRoute } from './Routing.utils';
 
 function renderRouting(options?: CustomRenderOptions) {
   return render(<Routing onNavChanged={jest.fn} />, options);
@@ -85,7 +86,9 @@ describe('Renders specific welcome pages when app is not initializd', () => {
     });
 
     renderRouting({ path: getRoute(ROUTES.Checks) });
-    const text = await screen.findByText('Click the Create a Check button to initialize the plugin and create checks', { exact: false });
+    const text = await screen.findByText('Click the Create a Check button to initialize the plugin and create checks', {
+      exact: false,
+    });
     expect(text).toBeInTheDocument();
   });
 

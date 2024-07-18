@@ -22,7 +22,7 @@ import { AdHocCheckResponse } from 'datasource/responses.types';
 
 import { PRIVATE_PROBE, PUBLIC_PROBE } from './probes';
 
-export const validCert = `-----BEGIN CERTIFICATE-----
+export const VALID_CERT = `-----BEGIN CERTIFICATE-----
 MIICUTCCAfugAwIBAgIBADANBgkqhkiG9w0BAQQFADBXMQswCQYDVQQGEwJDTjEL
 MAkGA1UECBMCUE4xCzAJBgNVBAcTAkNOMQswCQYDVQQKEwJPTjELMAkGA1UECxMC
 VU4xFDASBgNVBAMTC0hlcm9uZyBZYW5nMB4XDTA1MDcxNTIxMTk0N1oXDTA1MDgx
@@ -38,7 +38,7 @@ BQADQQA/ugzBrjjK9jcWnDVfGHlk3icNRq0oV7Ri32z/+HQX67aRfgZu7KWdI+Ju
 Wm7DCfrPNGVwFWUQOmsPue9rZBgO
 -----END CERTIFICATE-----`;
 
-export const validKey = `-----BEGIN RSA PRIVATE KEY-----
+export const VALID_KEY = `-----BEGIN RSA PRIVATE KEY-----
 Proc-Type: 4,ENCRYPTED
 DEK-Info: DES-EDE3-CBC,F57524B7B26F4694
 
@@ -69,8 +69,8 @@ YCvzqCrla1em/Kakkws7Qu/pVj9R8ndHzoLktOi3l6lwwy5d4L697DyhP+02+eLt
 SBefoVnBNp449CSHW+brvPEyKD3D5CVpTIDfu2y8+nHszfBL22wuO4T+oem5h55A
 -----END RSA PRIVATE KEY-----`;
 
-const transformedValidCert = btoa(validCert);
-const transformedValidKey = btoa(validKey);
+const transformedValidCert = btoa(VALID_CERT);
+const transformedValidKey = btoa(VALID_KEY);
 
 export const BASIC_DNS_CHECK: DNSCheck = {
   id: 1,
@@ -306,7 +306,6 @@ export const BASIC_TCP_CHECK: TCPCheck = {
 export const BASIC_TRACEROUTE_CHECK: TracerouteCheck = {
   id: 7,
   frequency: 120000,
-  offset: 0,
   timeout: 30000,
   enabled: true,
   labels: [],

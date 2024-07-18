@@ -1,9 +1,9 @@
 import isBase64 from 'is-base64';
 
-import { AlertSensitivity, CheckBase, CheckFormValues, TLSConfig } from 'types';
+import { AlertSensitivity, CheckBase, CheckFormValues, ExistingObject, TLSConfig } from 'types';
 import { toBase64 } from 'utils';
 
-export function getBasePayloadValuesFromForm(formValues: CheckFormValues): CheckBase {
+export function getBasePayloadValuesFromForm(formValues: CheckFormValues): CheckBase & ExistingObject {
   return {
     alertSensitivity: formValues.alertSensitivity ?? AlertSensitivity.None,
     basicMetricsOnly: !formValues.publishAdvancedMetrics,

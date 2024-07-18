@@ -1,38 +1,23 @@
 import React from 'react';
 import { Controller, FieldPath, useFormContext } from 'react-hook-form';
-import { OrgRole } from '@grafana/data';
 import { Field, Select } from '@grafana/ui';
 
-import { CheckFormValues, CheckType } from 'types';
-import { hasRole } from 'utils';
+import { CheckFormValues } from 'types';
+import { useDOMId } from 'hooks/useDOMId';
 import { IP_OPTIONS } from 'components/constants';
 
 type CheckIpVersionProps = {
-  checkType: CheckType.HTTP | CheckType.PING | CheckType.DNS | CheckType.TCP | CheckType.GRPC;
+  description: string;
+  disabled?: boolean;
   name: FieldPath<CheckFormValues>;
 };
 
-const requestMap = {
-  [CheckType.HTTP]: `HTTP`,
-  [CheckType.PING]: `ICMP`,
-  [CheckType.DNS]: `ICMP`,
-  [CheckType.TCP]: `TCP`,
-  [CheckType.GRPC]: `GRPC`,
-};
-
-export const CheckIpVersion = ({ checkType, name }: CheckIpVersionProps) => {
+export const CheckIpVersion = ({ description, disabled, name }: CheckIpVersionProps) => {
   const { control } = useFormContext<CheckFormValues>();
-  const isEditor = hasRole(OrgRole.Editor);
-  const id = `${checkType}-ip-version`;
+  const id = useDOMId();
 
   return (
-    <Field
-      label="IP version"
-      description={`The IP protocol of the ${requestMap[checkType]} request`}
-      disabled={!isEditor}
-      htmlFor={id}
-      data-fs-element="IP version select"
-    >
+    <Field label="IP version" description={description} htmlFor={id} data-fs-element="IP version select">
       <Controller
         control={control}
         render={({ field }) => {
@@ -40,6 +25,7 @@ export const CheckIpVersion = ({ checkType, name }: CheckIpVersionProps) => {
           return (
             <Select
               {...rest}
+              disabled={disabled}
               options={IP_OPTIONS}
               inputId={id}
               value={rest.value}

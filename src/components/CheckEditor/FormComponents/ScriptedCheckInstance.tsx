@@ -5,9 +5,11 @@ import { Field, Icon, Input, Label, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckFormValuesScripted } from 'types';
+import { useCheckFormContext } from 'components/CheckForm/CheckFormContext/CheckFormContext';
 
 export const ScriptedCheckInstance = () => {
   const { formState, register } = useFormContext<CheckFormValuesScripted>();
+  const { isFormDisabled } = useCheckFormContext();
   const styles = useStyles2(getStyles);
 
   return (
@@ -32,7 +34,7 @@ export const ScriptedCheckInstance = () => {
       error={formState.errors.target?.message}
       required
     >
-      <Input id="target" {...register('target')} />
+      <Input {...register('target')} disabled={isFormDisabled} id="target" />
     </Field>
   );
 };

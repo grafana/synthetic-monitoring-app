@@ -9,13 +9,11 @@ import {
   CheckEnabledStatus,
   CheckListViewType,
   CheckSort,
-  CheckStatus,
   CheckType,
   DNSCheck,
   DnsProtocol,
   DnsRecordType,
   DnsResponseCodes,
-  FeatureName,
   GRPCCheck,
   HTTPCheck,
   HTTPCompressionAlgo,
@@ -110,60 +108,6 @@ export const IP_OPTIONS = [
   {
     label: 'V6',
     value: IpVersion.V6,
-  },
-];
-
-export const CHECK_TYPE_OPTIONS = [
-  {
-    label: 'HTTP',
-    value: CheckType.HTTP,
-    description: 'Measures a web endpoint for availability, response time, SSL certificate expiration and more.',
-  },
-  {
-    label: 'MULTIHTTP',
-    value: CheckType.MULTI_HTTP,
-    description: 'Check multiple web endpoints in sequence.',
-  },
-  {
-    label: 'PING',
-    value: CheckType.PING,
-    description: 'Check a host for availability and response time.',
-  },
-  {
-    label: 'DNS',
-    value: CheckType.DNS,
-    description: 'Ensures a domain resolves and measures the average time for the resolution to happen.',
-  },
-  {
-    label: 'TCP',
-    value: CheckType.TCP,
-    description: 'Ensures a hostname and port accept a connection and measures performance.',
-  },
-  {
-    label: 'Traceroute',
-    value: CheckType.Traceroute,
-    description: 'Trace the path of a request through the internet.',
-  },
-  {
-    label: 'Scripted',
-    value: CheckType.Scripted,
-    description: 'Write a k6 script to run custom checks.',
-    status: CheckStatus.PUBLIC_PREVIEW,
-    featureToggle: FeatureName.ScriptedChecks,
-  },
-  {
-    label: 'gRPC',
-    value: CheckType.GRPC,
-    description: 'Use the gRPC Health Checking Protocol to ensure a gRPC service is healthy',
-    status: CheckStatus.EXPERIMENTAL,
-    featureToggle: FeatureName.GRPCChecks,
-  },
-  {
-    label: 'Browser',
-    value: CheckType.Browser,
-    description: 'Leverage k6 browser module to run checks in a browser.',
-    status: CheckStatus.EXPERIMENTAL,
-    featureToggle: FeatureName.BrowserChecks,
   },
 ];
 
@@ -284,6 +228,18 @@ export const FALLBACK_CHECK_DNS: DNSCheck = {
       protocol: DnsProtocol.UDP,
       port: 53,
       validRCodes: [DnsResponseCodes.NOERROR],
+      validateAdditionalRRS: {
+        failIfMatchesRegexp: [],
+        failIfNotMatchesRegexp: [],
+      },
+      validateAnswerRRS: {
+        failIfMatchesRegexp: [],
+        failIfNotMatchesRegexp: [],
+      },
+      validateAuthorityRRS: {
+        failIfMatchesRegexp: [],
+        failIfNotMatchesRegexp: [],
+      },
     },
   },
 };
@@ -306,6 +262,16 @@ export const FALLBACK_CHECK_HTTP: HTTPCheck = {
       ipVersion: IpVersion.V4,
       noFollowRedirects: false,
       compression: HTTPCompressionAlgo.none,
+      failIfNotSSL: false,
+      failIfSSL: false,
+      failIfBodyMatchesRegexp: [],
+      failIfBodyNotMatchesRegexp: [],
+      failIfHeaderMatchesRegexp: [],
+      failIfHeaderNotMatchesRegexp: [],
+      headers: [],
+      proxyConnectHeaders: [],
+      validHTTPVersions: [],
+      validStatusCodes: [],
     },
   },
 };
@@ -523,8 +489,6 @@ export const HTTP_COMPRESSION_ALGO_OPTIONS = [
   { label: 'deflate', value: HTTPCompressionAlgo.deflate },
 ];
 
-export const PLUGIN_URL_PATH = '/a/grafana-synthetic-monitoring-app/';
-
 export const METHOD_OPTIONS = [
   {
     label: 'GET',
@@ -596,4 +560,4 @@ export const LATENCY_DESCRIPTION =
 
 export const STANDARD_REFRESH_INTERVAL = 1000 * 60;
 
-export const CHECK_FORM_ERROR_EVENT = `sm-form-error`;
+export const CHECK_FORM_ERROR_EVENT = `sm-check-form-error`;

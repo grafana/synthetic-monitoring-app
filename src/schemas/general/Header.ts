@@ -16,14 +16,17 @@ const HeaderSchema = z.object({
     .min(1, { message: VALUE_REQUIRED_ERROR }),
 });
 
-export const HeadersSchema = z.array(HeaderSchema).superRefine((headers, ctx) => {
-  const headerNames = headers.map((header) => header.name);
-  const uniqueNames = new Set(headerNames);
+export const HeadersSchema = z
+  .array(HeaderSchema)
+  .superRefine((headers, ctx) => {
+    const headerNames = headers.map((header) => header.name);
+    const uniqueNames = new Set(headerNames);
 
-  if (headerNames.length !== uniqueNames.size) {
-    return ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: '{type} names cannot be duplicated',
-    });
-  }
-});
+    if (headerNames.length !== uniqueNames.size) {
+      return ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: '{type} names cannot be duplicated',
+      });
+    }
+  })
+  .optional();

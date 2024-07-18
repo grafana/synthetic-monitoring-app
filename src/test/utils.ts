@@ -1,6 +1,6 @@
 import { OrgRole } from '@grafana/data';
 import { config } from '@grafana/runtime';
-import { act, screen } from '@testing-library/react';
+import { act, screen, within } from '@testing-library/react';
 import { UserEvent } from '@testing-library/user-event';
 
 import { type Probe } from 'types';
@@ -73,3 +73,56 @@ export function runTestAsViewer() {
     },
   });
 }
+
+export const getSlider = async (formName: string) => {
+  const container = await screen.findByTestId(formName);
+  const minutes = await within(container).findByLabelText('minutes');
+  const seconds = await within(container).findByLabelText('seconds');
+  return [minutes, seconds];
+};
+
+type GetSelectProps =
+  | {
+      label: string | RegExp;
+    }
+  | {
+      text: string | RegExp;
+    };
+
+export const getSelect = async (options: GetSelectProps, context?: HTMLElement) => {
+  let selector;
+
+  if ('label' in options) {
+    if (context) {
+      selector = await within(context).findByLabelText(options.label, { exact: false });
+    } else {
+      selector = await screen.findByLabelText(options.label, { exact: false });
+    }
+  }
+
+  if ('text' in options) {
+    if (context) {
+      selector = await within(context).findByText(options.text);
+    } else {
+      selector = await screen.findByText(options.text);
+    }
+  }
+
+  const parent = selector!.parentElement?.parentElement?.parentElement as HTMLElement;
+  const input = parent.querySelector(`input`) as HTMLInputElement;
+
+  return [parent, input];
+};
+
+type SelectOptions = GetSelectProps & {
+  option: string;
+};
+
+export const selectOption = async (user: UserEvent, options: SelectOptions, context?: HTMLElement) => {
+  const [, input] = await getSelect(options, context);
+
+  await user.click(input);
+  const option = within(screen.getByLabelText(`Select options menu`)).getByText(options.option);
+
+  await user.click(option);
+};

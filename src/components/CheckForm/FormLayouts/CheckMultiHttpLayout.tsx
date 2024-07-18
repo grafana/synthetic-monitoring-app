@@ -1,50 +1,32 @@
 import React from 'react';
-import { GrafanaTheme2 } from '@grafana/data';
-import { useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
 
-import { CheckFormTypeLayoutProps, CheckFormValuesMultiHttp, CheckType } from 'types';
-import { CheckEnabled } from 'components/CheckEditor/FormComponents/CheckEnabled';
-import { CheckJobName } from 'components/CheckEditor/FormComponents/CheckJobName';
+import { LayoutSection, Section } from './Layout.types';
+import { CheckFormValuesMultiHttp } from 'types';
+import { MultiHttpAssertions } from 'components/CheckEditor/FormComponents/MultiHttpAssertions';
 import { MultiHttpCheckRequests } from 'components/CheckEditor/FormComponents/MultiHttpCheckRequests';
-import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
-import { FormLayout } from 'components/CheckForm/FormLayout/FormLayout';
-import { CheckFormAlert } from 'components/CheckFormAlert';
-import { CheckUsage } from 'components/CheckUsage';
-import { LabelField } from 'components/LabelField';
+import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
 
-export const CheckMultiHTTPLayout = ({ formActions, onSubmit, onSubmitError, schema }: CheckFormTypeLayoutProps) => {
-  const styles = useStyles2(getStyles);
+import { ENTRY_INDEX_CHAR } from '../FormLayout/formlayout.utils';
 
-  return (
-    <FormLayout formActions={formActions} onSubmit={onSubmit} onSubmitError={onSubmitError} schema={schema}>
-      <FormLayout.Section label="Define check" fields={[`enabled`, `job`, `labels`]} required>
-        <CheckEnabled />
-        <CheckJobName />
-        <LabelField<CheckFormValuesMultiHttp> labelDestination="check" />
-      </FormLayout.Section>
-      <FormLayout.Section label="Probes" fields={[`probes`, `frequency`, `timeout`]} required>
-        <CheckUsage checkType={CheckType.MULTI_HTTP} />
-        <ProbeOptions checkType={CheckType.MULTI_HTTP} />
-      </FormLayout.Section>
-      <FormLayout.Section
-        contentClassName={styles.requestsContainer}
-        label="Requests"
-        fields={[`settings.multihttp.entries`]}
-        required
-      >
-        <div>At least one target HTTP is required; limit 10 requests per check.</div>
+export const MultiHTTPCheckLayout: Partial<Record<LayoutSection, Section<CheckFormValuesMultiHttp>>> = {
+  [LayoutSection.Check]: {
+    fields: [
+      `settings.multihttp.entries.${ENTRY_INDEX_CHAR}.request`,
+      `settings.multihttp.entries.${ENTRY_INDEX_CHAR}.variables`,
+    ],
+    Component: (
+      <>
         <MultiHttpCheckRequests />
-      </FormLayout.Section>
-      <FormLayout.Section label="Alerting" fields={[`alertSensitivity`]}>
-        <CheckFormAlert />
-      </FormLayout.Section>
-    </FormLayout>
-  );
+      </>
+    ),
+  },
+  [LayoutSection.Uptime]: {
+    fields: [`timeout`, `settings.multihttp.entries.${ENTRY_INDEX_CHAR}.checks`],
+    Component: (
+      <>
+        <MultiHttpAssertions />
+        <Timeout min={5.0} />
+      </>
+    ),
+  },
 };
-
-const getStyles = (theme: GrafanaTheme2) => ({
-  requestsContainer: css({
-    maxWidth: `1200px`,
-  }),
-});

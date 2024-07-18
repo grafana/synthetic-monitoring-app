@@ -3,43 +3,38 @@ import { FieldErrors } from 'react-hook-form';
 
 import { CheckFormValuesMultiHttp } from 'types';
 
-import { MultiHttpFormTabs } from './MultiHttpTypes';
-
-const tabOrder = [
-  MultiHttpFormTabs.Headers,
-  MultiHttpFormTabs.QueryParams,
-  MultiHttpFormTabs.Assertions,
-  MultiHttpFormTabs.Variables,
-  MultiHttpFormTabs.Body,
-];
-
 type FormErrors = FieldErrors<CheckFormValuesMultiHttp>;
-
-export const tabErrorMap = (errors: FormErrors, index: number, tab: MultiHttpFormTabs) => {
-  const entry = errors?.settings?.multihttp?.entries?.[index];
-
-  const tabErrorPathMap = {
-    [MultiHttpFormTabs.Headers]: entry?.request?.headers?.length,
-    [MultiHttpFormTabs.QueryParams]: entry?.request?.queryFields?.length,
-    [MultiHttpFormTabs.Assertions]: entry?.checks?.length,
-    [MultiHttpFormTabs.Variables]: entry?.variables?.length,
-    [MultiHttpFormTabs.Body]: false, // Body tab does not have any validation
-  };
-
-  return tabErrorPathMap[tab];
-};
 
 type RequestPanelState = {
   open: boolean;
-  activeTab: MultiHttpFormTabs;
 };
 
-type Action = {
-  type: string;
-  index?: number;
-  open?: boolean;
-  tab?: MultiHttpFormTabs;
+type AddAction = {
+  type: `addNewRequest`;
 };
+
+type UpdateAction = {
+  type: `updateRequestPanel`;
+  index: number;
+  open: boolean;
+};
+
+type OpenMultipleAction = {
+  type: `openRequestPanels`;
+  indexes: number[];
+};
+
+type RemoveAction = {
+  type: `removeRequest`;
+  index: number;
+};
+
+type ToggleAction = {
+  type: `toggle`;
+  index: number;
+};
+
+type Action = UpdateAction | AddAction | OpenMultipleAction | RemoveAction | ToggleAction;
 
 function reducer(state: RequestPanelState[], action: Action) {
   switch (action.type) {
@@ -47,14 +42,13 @@ function reducer(state: RequestPanelState[], action: Action) {
       const newState = state.map((value) => {
         return {
           ...value,
-          open: false,
+          open: value.open,
         };
       });
       return [
         ...newState,
         {
           open: true,
-          activeTab: MultiHttpFormTabs.Headers,
         },
       ];
     case 'removeRequest':
@@ -76,9 +70,20 @@ function reducer(state: RequestPanelState[], action: Action) {
           return {
             ...value,
             open: action.open || value.open,
-            activeTab: action.tab || value.activeTab,
           };
         }
+        return value;
+      });
+    }
+    case 'openRequestPanels': {
+      return state.map((value, index) => {
+        if (action.indexes.includes(index)) {
+          return {
+            ...value,
+            open: true,
+          };
+        }
+
         return value;
       });
     }
@@ -90,88 +95,17 @@ function reducer(state: RequestPanelState[], action: Action) {
 export function useMultiHttpCollapseState(check: CheckFormValuesMultiHttp) {
   const initialState = check.settings.multihttp.entries?.map((_, index, arr) => ({
     open: index === arr.length - 1,
-    activeTab: MultiHttpFormTabs.Headers,
-  })) ?? [{ open: true, activeTab: MultiHttpFormTabs.Headers }];
+  })) ?? [{ open: true }];
 
   return useReducer(reducer, initialState);
 }
 
 export function getMultiHttpFormErrors(errs: FormErrors) {
-  const errKeys = Object.keys(errs);
-
-  if (errKeys.some((key) => key !== 'settings')) {
-    return false;
-  }
-
   const entries = errs.settings?.multihttp?.entries;
-  const isMultiHttpError = errKeys.length === 1 && entries;
-  const firstCollapsibleError = entries?.findIndex?.(Boolean);
 
-  if (isMultiHttpError && typeof firstCollapsibleError === 'number') {
-    const firstTabWithErrors = tabOrder
-      .map((tab) => {
-        if (tabErrorMap(errs, firstCollapsibleError, tab)) {
-          return tab;
-        }
-
-        return false;
-      })
-      .filter(Boolean);
-
-    return {
-      id: `settings.multihttp.entries${findPath(entries, 'message')}`,
-      index: firstCollapsibleError,
-      tab: firstTabWithErrors[0] || MultiHttpFormTabs.Headers,
-    };
-  }
-
-  return false;
-}
-
-// rudimentary tree traversal to find the first object with asked for key
-function findPath(target: any, key: string, existingPath = ``): string | null {
-  if (Array.isArray(target)) {
-    for (let i = 0; i < target.length; i++) {
-      let path = findPath(target[i], key, `${existingPath}.${i}.`);
-
-      if (path) {
-        return path;
-      }
-    }
-  }
-
-  if (target !== null && typeof target === 'object') {
-    if (target.hasOwnProperty(key)) {
-      return existingPath;
-    }
-
-    for (let k in target) {
-      let path = findPath(target[k], key, existingPath ? `${existingPath}.${k}` : k);
-
-      if (path) {
-        return path;
-      }
-    }
+  if (Array.isArray(entries) && entries.length > 0) {
+    return entries.map((_, index) => index).filter((entry) => entry !== undefined);
   }
 
   return null;
-}
-
-export function focusField(buttonRef: HTMLButtonElement | null, id: string) {
-  requestAnimationFrame(() => {
-    buttonRef?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-    requestAnimationFrame(() => {
-      const inputEl = document.querySelector(`[name="${id}"]`);
-
-      if (inputEl instanceof HTMLInputElement) {
-        if (inputEl.type === 'hidden') {
-          const focussableInput = inputEl?.parentElement?.querySelector(`input`);
-          return focussableInput?.focus({ preventScroll: true });
-        }
-
-        inputEl.focus({ preventScroll: true });
-      }
-    });
-  });
 }

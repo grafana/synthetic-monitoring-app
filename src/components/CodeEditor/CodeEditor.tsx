@@ -45,15 +45,16 @@ export const CodeEditor = forwardRef(function CodeEditor(
   {
     checkJs = true,
     constrainedRanges,
+    id,
     language = 'javascript',
-    overlayMessage,
-    readOnly,
-    renderHeader,
-    value,
     onBeforeEditorMount,
     onChange,
     onDidChangeContentInEditableRange,
     onValidation,
+    overlayMessage,
+    readOnly,
+    renderHeader,
+    value,
   }: CodeEditorProps & ConstrainedEditorProps,
   ref
 ) {
@@ -145,7 +146,7 @@ export const CodeEditor = forwardRef(function CodeEditor(
   }, [value, constrainedRanges]);
 
   return (
-    <div data-fs-element="Code editor">
+    <div data-fs-element="Code editor" id={id}>
       {renderHeader && renderHeader({ scriptValue: value })}
       {/* {overlayMessage && <Overlay>{overlayMessage}</Overlay>} */}
       <GrafanaCodeEditor
@@ -160,7 +161,6 @@ export const CodeEditor = forwardRef(function CodeEditor(
             alwaysConsumeMouseWheel: false,
           },
         }}
-        //@ts-ignore The onChange prop works by the type def doesn't believe it exists
         onChange={onChange}
         onBeforeEditorMount={handleBeforeEditorMount}
         onEditorDidMount={handleEditorDidMount}
