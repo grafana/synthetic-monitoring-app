@@ -6,6 +6,7 @@ import {
   DataSourceApi,
   DataSourceInstanceSettings,
   ScopedVars,
+  TimeRange,
 } from '@grafana/data';
 import { getBackendSrv, getTemplateSrv } from '@grafana/runtime';
 import { isArray } from 'lodash';
@@ -24,6 +25,7 @@ import {
   ListProbeResult,
   ListTenantLimitsResponse,
   ListTenantSettingsResult,
+  LogsQueryResponse,
   ResetProbeTokenResult,
   UpdateCheckResult,
   UpdateProbeResult,
@@ -194,6 +196,31 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       })
     ).then((res) => {
       return res.data;
+    });
+  }
+
+  queryLogs(expr: string, range: TimeRange) {
+    return firstValueFrom(
+      getBackendSrv().fetch<LogsQueryResponse>({
+        method: 'POST',
+        url: `/api/ds/query`,
+        data: {
+          queries: [
+            {
+              refId: 'A',
+              expr,
+              queryType: 'range',
+              datasource: this.instanceSettings.jsonData.logs,
+              intervalMs: 2000,
+              maxDataPoints: 1779,
+            },
+          ],
+          from: String(range.from.unix() * 1000),
+          to: String(range.to.unix() * 1000),
+        },
+      })
+    ).then((res) => {
+      return res.data.results.A.frames;
     });
   }
 

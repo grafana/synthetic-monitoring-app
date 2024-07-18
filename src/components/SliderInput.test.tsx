@@ -2,7 +2,7 @@ import React from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { render } from 'test/render';
 
-import { getSlider } from './CheckEditor/testHelpers';
+import { getSlider } from '../test/utils';
 import { SliderInput, SliderInputProps } from './SliderInput';
 
 interface FormWrapperProps extends SliderInputProps {

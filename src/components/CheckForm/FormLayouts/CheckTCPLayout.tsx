@@ -1,61 +1,77 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 
-import { CheckFormTypeLayoutProps, CheckFormValuesPing, CheckType } from 'types';
-import { CheckEnabled } from 'components/CheckEditor/FormComponents/CheckEnabled';
-import { CheckIpVersion } from 'components/CheckEditor/FormComponents/CheckIpVersion';
-import { CheckJobName } from 'components/CheckEditor/FormComponents/CheckJobName';
+import { LayoutSection, Section } from './Layout.types';
+import { CheckFormValuesTcp } from 'types';
+import { TCPRequestFields } from 'components/CheckEditor/CheckEditor.types';
 import { CheckPublishedAdvanceMetrics } from 'components/CheckEditor/FormComponents/CheckPublishedAdvanceMetrics';
-import { CheckTarget } from 'components/CheckEditor/FormComponents/CheckTarget';
-import { CheckUseTLS } from 'components/CheckEditor/FormComponents/CheckUseTLS';
 import { TCPCheckQueryAndResponse } from 'components/CheckEditor/FormComponents/TCPCheckQueryAndResponse';
-import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
-import { FormLayout } from 'components/CheckForm/FormLayout/FormLayout';
-import { CheckFormAlert } from 'components/CheckFormAlert';
-import { CheckUsage } from 'components/CheckUsage';
-import { LabelField } from 'components/LabelField';
-import { TLSConfig } from 'components/TLSConfig';
+import { TCPRequest } from 'components/CheckEditor/FormComponents/TCPRequest';
+import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
 
-export const CheckTCPLayout = ({
-  formActions,
-  onSubmit,
-  onSubmitError,
-  errorMessage,
-  schema,
-}: CheckFormTypeLayoutProps) => {
-  return (
-    <FormLayout
-      formActions={formActions}
-      onSubmit={onSubmit}
-      onSubmitError={onSubmitError}
-      errorMessage={errorMessage}
-      schema={schema}
-    >
-      <FormLayout.Section label="Define check" fields={[`enabled`, `job`, `target`]} required>
-        <CheckEnabled />
-        <CheckJobName />
-        <CheckTarget checkType={CheckType.TCP} />
-      </FormLayout.Section>
-      <FormLayout.Section label="Probes" fields={[`probes`, `frequency`, `timeout`, `publishAdvancedMetrics`]} required>
-        <CheckUsage checkType={CheckType.TCP} />
-        <CheckPublishedAdvanceMetrics />
-        <ProbeOptions checkType={CheckType.TCP} />
-      </FormLayout.Section>
-      <FormLayout.Section label="TCP settings" fields={[`settings.tcp.tls`]}>
-        <CheckUseTLS checkType={CheckType.TCP} />
-      </FormLayout.Section>
-      <FormLayout.Section label="Query/Response" fields={[`settings.tcp.queryResponse`]}>
+import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
+
+const TCP_FIELDS: TCPRequestFields = {
+  target: {
+    name: `target`,
+  },
+  ipVersion: {
+    name: `settings.tcp.ipVersion`,
+  },
+  useTLS: {
+    name: `settings.tcp.tls`,
+  },
+  tlsServerName: {
+    name: `settings.tcp.tlsConfig.serverName`,
+  },
+  tlsInsecureSkipVerify: {
+    name: `settings.tcp.tlsConfig.insecureSkipVerify`,
+  },
+  tlsCaSCert: {
+    name: `settings.tcp.tlsConfig.caCert`,
+  },
+  tlsClientCert: {
+    name: `settings.tcp.tlsConfig.clientCert`,
+  },
+  tlsClientKey: {
+    name: `settings.tcp.tlsConfig.clientKey`,
+  },
+};
+
+const CheckTCPRequest = () => {
+  const { isFormDisabled, supportingContent } = useCheckFormContext();
+  const { addRequest } = supportingContent;
+
+  const onTest = useCallback(() => {
+    addRequest(TCP_FIELDS);
+  }, [addRequest]);
+
+  return <TCPRequest disabled={isFormDisabled} fields={TCP_FIELDS} onTest={onTest} />;
+};
+
+export const TCPCheckLayout: Partial<Record<LayoutSection, Section<CheckFormValuesTcp>>> = {
+  [LayoutSection.Check]: {
+    fields: [`target`],
+    Component: (
+      <>
+        <CheckTCPRequest />
+      </>
+    ),
+  },
+  [LayoutSection.Uptime]: {
+    fields: [`settings.tcp.queryResponse`, `timeout`],
+    Component: (
+      <>
         <TCPCheckQueryAndResponse />
-      </FormLayout.Section>
-      <FormLayout.Section label="TLS config" fields={[`settings.tcp.tlsConfig`]}>
-        <TLSConfig checkType={CheckType.TCP} />
-      </FormLayout.Section>
-      <FormLayout.Section label="Advanced options" fields={[`labels`, `settings.tcp.ipVersion`]}>
-        <LabelField<CheckFormValuesPing> labelDestination="check" />
-        <CheckIpVersion checkType={CheckType.TCP} name="settings.tcp.ipVersion" />
-      </FormLayout.Section>
-      <FormLayout.Section label="Alerting" fields={[`alertSensitivity`]}>
-        <CheckFormAlert />
-      </FormLayout.Section>
-    </FormLayout>
-  );
+        <Timeout />
+      </>
+    ),
+  },
+  [LayoutSection.Probes]: {
+    fields: [`publishAdvancedMetrics`],
+    Component: (
+      <>
+        <CheckPublishedAdvanceMetrics />
+      </>
+    ),
+  },
 };

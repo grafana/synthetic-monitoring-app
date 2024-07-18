@@ -1,93 +1,86 @@
 import React from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
-import { GrafanaTheme2, OrgRole } from '@grafana/data';
-import { Button, Field, IconButton, Input, Switch, TextArea, useStyles2 } from '@grafana/ui';
+import { GrafanaTheme2 } from '@grafana/data';
+import { Button, Field, IconButton, Input, Stack, Switch, TextArea, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckFormValuesTcp } from 'types';
-import { hasRole } from 'utils';
+import { useCheckFormContext } from 'components/CheckForm/CheckFormContext/CheckFormContext';
 
 export const TCPCheckQueryAndResponse = () => {
-  const isEditor = hasRole(OrgRole.Editor);
   const styles = useStyles2(getStyles);
   const { register, control } = useFormContext<CheckFormValuesTcp>();
+  const { isFormDisabled } = useCheckFormContext();
   const { fields, append, remove } = useFieldArray<CheckFormValuesTcp>({ control, name: 'settings.tcp.queryResponse' });
 
   return (
     <Field
       label="Query and response"
       description="The query sent in the TCP probe and the expected associated response. StartTLS upgrades TCP connection to TLS."
-      disabled={!isEditor}
     >
-      <div className={styles.stackCol}>
+      <Stack direction={`column`}>
         {fields.map((field, index) => {
           const startTLSId = `tcp-settings-query-response-start-tls-${index}`;
+          const userIndex = index + 1;
 
           return (
-            <div className={styles.stack} key={field.id}>
+            <Stack alignItems={`center`} key={field.id}>
               <Input
                 {...register(`settings.tcp.queryResponse.${index}.expect`)}
-                type="text"
-                placeholder="Response to expect"
-                disabled={!isEditor}
+                aria-label={`Response to expect ${userIndex}`}
                 data-fs-element="TCP query response expect input"
+                disabled={isFormDisabled}
+                placeholder="Response to expect"
+                type="text"
               />
               <TextArea
                 {...register(`settings.tcp.queryResponse.${index}.send`)}
-                type="text"
+                aria-label={`Data to send ${userIndex}`}
+                data-fs-element="TCP query response send textarea"
+                disabled={isFormDisabled}
                 placeholder="Data to send"
                 rows={1}
-                disabled={!isEditor}
-                data-fs-element="TCP query response send textarea"
+                type="text"
               />
-              <div className={styles.stack}>
+              <Stack alignItems={`center`}>
                 <Field label="StartTLS" htmlFor={startTLSId} className={styles.switchField}>
                   <Switch
-                    {...register(`settings.tcp.queryResponse.${index}.startTLS` as const)}
-                    label="StartTLS"
-                    disabled={!isEditor}
-                    id={startTLSId}
+                    {...register(`settings.tcp.queryResponse.${index}.startTLS`)}
+                    aria-label={`Start TLS switch ${userIndex}`}
                     data-fs-element="TCP start TLS switch"
+                    disabled={isFormDisabled}
+                    id={startTLSId}
+                    label="StartTLS"
                   />
                 </Field>
-              </div>
+              </Stack>
               <IconButton
+                data-fs-element="Delete query and response validation button"
+                disabled={isFormDisabled}
                 name="minus-circle"
                 onClick={() => remove(index)}
-                disabled={!isEditor}
                 tooltip="Delete"
-                data-fs-element="Delete query and response validation button"
               />
-            </div>
+            </Stack>
           );
         })}
         <div>
           <Button
+            data-fs-element="Add query response validation button"
+            disabled={isFormDisabled}
+            onClick={() => append({ expect: '', send: '', startTLS: false })}
             size="sm"
             variant="secondary"
-            onClick={() => append({ expect: '', send: '', startTLS: false })}
-            disabled={!isEditor}
-            data-fs-element="Add query response validation button"
           >
             Add query/response
           </Button>
         </div>
-      </div>
+      </Stack>
     </Field>
   );
 };
 
 const getStyles = (theme: GrafanaTheme2) => ({
-  stack: css({
-    display: 'flex',
-    gap: theme.spacing(1),
-    alignItems: `center`,
-  }),
-  stackCol: css({
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing(1),
-  }),
   switchField: css({
     margin: 0,
     flexDirection: 'row',

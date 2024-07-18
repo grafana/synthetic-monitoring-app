@@ -1,4 +1,4 @@
-import { DataSourceInstanceSettings, OrgRole, TimeRange } from '@grafana/data';
+import { DataSourceInstanceSettings, GrafanaTheme2, OrgRole, TimeRange } from '@grafana/data';
 import { config, FetchError, FetchResponse, getBackendSrv } from '@grafana/runtime';
 import { firstValueFrom } from 'rxjs';
 
@@ -8,7 +8,9 @@ import {
   Check,
   CheckFormValues,
   CheckType,
+  CheckTypeGroup,
   HostedInstance,
+  HttpMethod,
   Probe,
   Settings,
   ThresholdValues,
@@ -23,7 +25,8 @@ import {
   isTCPSettings,
 } from 'utils.types';
 import { SMDataSource } from 'datasource/DataSource';
-import { ListCheckResult, ListTenantLimitsResponse, Metric } from 'datasource/responses.types';
+import { Metric } from 'datasource/responses.types';
+import { CHECK_TYPE_OPTIONS } from 'hooks/useCheckTypeOptions';
 
 /**
  * Find all synthetic-monitoring datasources
@@ -156,7 +159,7 @@ export const matchStrings = (string: string, comparisons: string[]): boolean => 
   return comparisons.some((comparison) => comparison.toLowerCase().match(lowerCased));
 };
 
-export function checkType(settings: Settings): CheckType {
+export function getCheckType(settings: Settings): CheckType {
   let types = Object.keys(settings);
   if (types.length < 1) {
     return CheckType.HTTP;
@@ -167,6 +170,16 @@ export function checkType(settings: Settings): CheckType {
   }
 
   return types[0] as CheckType;
+}
+
+export function getCheckTypeGroup(checkType: CheckType): CheckTypeGroup {
+  const group = CHECK_TYPE_OPTIONS.find((option) => option.value === checkType)?.group;
+
+  if (!group) {
+    throw new Error(`Check type ${checkType} not found in check type options`);
+  }
+
+  return group;
 }
 
 interface MetricDatasourceResponse<T> {
@@ -338,7 +351,7 @@ export function formatDate(number: number) {
 
 export function checkToUsageCalcValues(check: Check): CalculateUsageValues {
   const { basicMetricsOnly, settings, frequency, probes } = check;
-  const cType = checkType(check.settings);
+  const cType = getCheckType(check.settings);
 
   return {
     assertionCount: getEntriesCount(settings),
@@ -419,29 +432,16 @@ function doesTLSConfigHaveValues(tlsConfig?: TLSConfig) {
   return Object.values(tlsConfig).some((value) => value);
 }
 
-export function isOverScriptedLimit({
-  checks,
-  limits,
-}: {
-  checks?: Check[] | ListCheckResult;
-  limits?: ListTenantLimitsResponse;
-}): boolean {
-  if (!limits || !checks) {
-    return false;
-  }
-  const scriptedChecksCount = checks.filter((c) => checkType(c.settings) === CheckType.Scripted).length;
-  return scriptedChecksCount >= limits.MaxScriptedChecks;
-}
+export function getMethodColor(theme: GrafanaTheme2, value: HttpMethod) {
+  const colorMap = {
+    [HttpMethod.DELETE]: theme.visualization.getColorByName('red'),
+    [HttpMethod.GET]: theme.visualization.getColorByName('green'),
+    [HttpMethod.HEAD]: theme.visualization.getColorByName('super-light-green'),
+    [HttpMethod.OPTIONS]: theme.visualization.getColorByName('dark-purple'),
+    [HttpMethod.PATCH]: theme.visualization.getColorByName('super-light-purple'),
+    [HttpMethod.POST]: theme.visualization.getColorByName('yellow'),
+    [HttpMethod.PUT]: theme.visualization.getColorByName('blue'),
+  };
 
-export function isOverCheckLimit({
-  checks,
-  limits,
-}: {
-  checks?: Check[] | ListCheckResult;
-  limits?: ListTenantLimitsResponse;
-}): boolean {
-  if (!limits || !checks) {
-    return false;
-  }
-  return checks.length >= limits.MaxChecks;
+  return colorMap[value];
 }

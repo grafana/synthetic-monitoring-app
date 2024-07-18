@@ -3,7 +3,7 @@ import { SceneReactObject, SceneVariable } from '@grafana/scenes';
 import { Button, Spinner } from '@grafana/ui';
 
 import { ROUTES } from 'types';
-import { checkType } from 'utils';
+import { getCheckType } from 'utils';
 import { useChecks } from 'data/useChecks';
 import { useNavigation } from 'hooks/useNavigation';
 
@@ -23,7 +23,7 @@ function EditCheckButton({ job, instance }: Props) {
         if (!check) {
           return;
         }
-        const type = checkType(check.settings);
+        const type = getCheckType(check.settings);
         navigate(`${ROUTES.EditCheck}/${type}/${check.id}`);
       }}
       disabled={isLoading || !checks}

@@ -24,13 +24,13 @@ export enum IpVersion {
 }
 
 export enum HttpMethod {
+  DELETE = 'DELETE',
   GET = 'GET',
   HEAD = 'HEAD',
+  OPTIONS = 'OPTIONS',
+  PATCH = 'PATCH',
   POST = 'POST',
   PUT = 'PUT',
-  PATCH = 'PATCH',
-  OPTIONS = 'OPTIONS',
-  DELETE = 'DELETE',
 }
 
 export enum HttpVersion {
@@ -86,7 +86,7 @@ export interface TCPQueryResponse {
   startTLS: boolean;
 }
 
-export interface BaseObject {
+export interface ExistingObject {
   created?: number; // seconds
   id?: number;
   modified?: number; // seconds
@@ -99,7 +99,7 @@ export interface Label {
   value: string;
 }
 
-export interface Probe extends BaseObject {
+export interface Probe extends ExistingObject {
   name: string;
   public: boolean;
   latitude: number;
@@ -225,8 +225,8 @@ export interface HttpSettingsFormValues
     | 'compression'
   > {
   sslOptions: HttpSslOption;
-  headers: HttpHeaderFormValue[];
-  proxyConnectHeaders: HttpHeaderFormValue[];
+  headers?: HttpHeaderFormValue[];
+  proxyConnectHeaders?: HttpHeaderFormValue[];
   regexValidations: HttpRegexValidationFormValue[];
   followRedirects: boolean;
   compression: HTTPCompressionAlgo;
@@ -347,11 +347,10 @@ export type CheckFormValuesScripted = CheckFormValuesBase & {
   };
 };
 
-export interface CheckBase extends BaseObject {
+export interface CheckBase {
   job: string;
   target: string;
   frequency: number;
-  offset?: number;
   timeout: number;
   enabled: boolean;
   alertSensitivity: AlertSensitivity | string;
@@ -396,53 +395,61 @@ export type Settings =
   | TCPCheck['settings']
   | TracerouteCheck['settings'];
 
-export type DNSCheck = CheckBase & {
-  settings: {
-    dns: DnsSettings;
+export type DNSCheck = CheckBase &
+  ExistingObject & {
+    settings: {
+      dns: DnsSettings;
+    };
   };
-};
 
-export type GRPCCheck = CheckBase & {
-  settings: {
-    grpc: GRPCSettings;
+export type GRPCCheck = CheckBase &
+  ExistingObject & {
+    settings: {
+      grpc: GRPCSettings;
+    };
   };
-};
 
-export type HTTPCheck = CheckBase & {
-  settings: {
-    http: HttpSettings;
+export type HTTPCheck = CheckBase &
+  ExistingObject & {
+    settings: {
+      http: HttpSettings;
+    };
   };
-};
 
-export type ScriptedCheck = CheckBase & {
-  settings: {
-    scripted: ScriptedSettings;
+export type ScriptedCheck = CheckBase &
+  ExistingObject & {
+    settings: {
+      scripted: ScriptedSettings;
+    };
   };
-};
 
-export type MultiHTTPCheck = CheckBase & {
-  settings: {
-    multihttp: MultiHttpSettings;
+export type MultiHTTPCheck = CheckBase &
+  ExistingObject & {
+    settings: {
+      multihttp: MultiHttpSettings;
+    };
   };
-};
 
-export type PingCheck = CheckBase & {
-  settings: {
-    ping: PingSettings;
+export type PingCheck = CheckBase &
+  ExistingObject & {
+    settings: {
+      ping: PingSettings;
+    };
   };
-};
 
-export type TCPCheck = CheckBase & {
-  settings: {
-    tcp: TcpSettings;
+export type TCPCheck = CheckBase &
+  ExistingObject & {
+    settings: {
+      tcp: TcpSettings;
+    };
   };
-};
 
-export type TracerouteCheck = CheckBase & {
-  settings: {
-    traceroute: TracerouteSettings;
+export type TracerouteCheck = CheckBase &
+  ExistingObject & {
+    settings: {
+      traceroute: TracerouteSettings;
+    };
   };
-};
 
 export enum CheckType {
   DNS = 'dns',
@@ -453,6 +460,12 @@ export enum CheckType {
   Scripted = 'scripted',
   TCP = 'tcp',
   Traceroute = 'traceroute',
+}
+
+export enum CheckTypeGroup {
+  ApiTest = `api-endpoint`,
+  MultiStep = `multistep`,
+  Scripted = `scripted`,
 }
 
 export interface HostedInstance {
@@ -626,6 +639,7 @@ export enum FeatureName {
   UnifiedAlerting = 'ngalert',
   ScriptedChecks = 'scripted-checks',
   GRPCChecks = 'grpc-checks',
+  __TURNOFF = 'test-only-do-not-use',
 }
 
 export interface UsageValues {
@@ -636,25 +650,29 @@ export interface UsageValues {
 }
 
 export enum ROUTES {
-  Redirect = 'redirect',
-  Home = 'home',
-  Probes = 'probes',
-  NewProbe = 'probes/new',
-  EditProbe = 'probes/edit',
   Alerts = 'alerts',
   Checks = 'checks',
-  NewCheck = 'checks/new',
-  EditCheck = 'checks/edit',
+  ChooseCheckGroup = 'checks/choose-type',
   Config = 'config',
+  EditCheck = 'checks/edit',
+  EditProbe = 'probes/edit',
+  Home = 'home',
+  NewCheck = 'checks/new',
+  NewProbe = 'probes/new',
+  Probes = 'probes',
+  Redirect = 'redirect',
   Scene = 'scene',
-  ChooseCheckType = 'checks/choose-type',
   ScriptedChecks = 'scripted-checks',
 }
 
 export interface CheckPageParams {
-  view: string;
   id: string;
   checkType?: CheckType;
+}
+
+export interface CheckFormPageParams {
+  checkTypeGroup: CheckTypeGroup;
+  id?: string;
 }
 
 export interface ProbePageParams {
@@ -779,6 +797,7 @@ export interface CheckFormTypeLayoutProps {
   onSubmitError?: SubmitErrorHandler<CheckFormValues>;
   errorMessage?: string;
   schema: ZodType;
+  checkType?: CheckType;
 }
 
 export type TLSCheckTypes = CheckType.HTTP | CheckType.TCP | CheckType.GRPC;

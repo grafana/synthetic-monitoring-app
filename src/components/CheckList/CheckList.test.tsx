@@ -12,9 +12,9 @@ import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
+import { getSelect, selectOption } from 'test/utils';
 
 import { Check, FeatureName, ROUTES } from 'types';
-import { getSelect, selectOption } from 'components/CheckEditor/testHelpers';
 import { PLUGIN_URL_PATH } from 'components/constants';
 
 import { CheckList } from './CheckList';
@@ -299,7 +299,7 @@ test('clicking add new is handled', async () => {
   const { user } = await renderCheckList();
   const addNewButton = await screen.findByText('Add new check');
   await user.click(addNewButton);
-  expect(navigate).toHaveBeenCalledWith(ROUTES.ChooseCheckType);
+  expect(navigate).toHaveBeenCalledWith(ROUTES.ChooseCheckGroup);
 });
 
 test('cascader adds labels to label filter', async () => {

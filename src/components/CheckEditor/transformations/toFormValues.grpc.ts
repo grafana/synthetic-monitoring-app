@@ -1,5 +1,8 @@
 import { CheckFormValuesGRPC, CheckType, GRPCCheck, GRPCSettingsFormValues } from 'types';
-import { getBaseFormValuesFromCheck } from 'components/CheckEditor/transformations/toFormValues.utils';
+import {
+  getBaseFormValuesFromCheck,
+  getTlsConfigFormValues,
+} from 'components/CheckEditor/transformations/toFormValues.utils';
 
 export function getGRPCCheckFormValues(check: GRPCCheck): CheckFormValuesGRPC {
   const base = getBaseFormValuesFromCheck(check);
@@ -14,10 +17,12 @@ export function getGRPCCheckFormValues(check: GRPCCheck): CheckFormValuesGRPC {
 }
 
 const getGRPCSettingsFormValues = (settings: GRPCCheck['settings']): GRPCSettingsFormValues => {
+  const transformedTlsConfig = getTlsConfigFormValues(settings.grpc?.tlsConfig);
+
   return {
     ipVersion: settings.grpc?.ipVersion,
     service: settings.grpc?.service,
     tls: settings.grpc?.tls,
-    tlsConfig: settings.grpc?.tlsConfig,
+    ...transformedTlsConfig,
   };
 };

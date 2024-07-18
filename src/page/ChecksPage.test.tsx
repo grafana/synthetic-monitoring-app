@@ -7,7 +7,7 @@ import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
 
-import { AlertSensitivity, Check, ROUTES } from 'types';
+import { AlertSensitivity, Check, CheckTypeGroup, ROUTES } from 'types';
 import { PLUGIN_URL_PATH } from 'components/constants';
 
 import { CheckRouter } from './CheckRouter';
@@ -33,12 +33,16 @@ test('renders check selection page with correct check types', async () => {
   const { user } = await renderChecksPage();
   await user.click(screen.getByText('Add new check'));
   await waitFor(() => expect(screen.getByTestId(DataTestIds.CHOOSE_CHECK_TYPE)).toBeInTheDocument());
-  
-  expect(screen.queryByText('HTTP')).toBeInTheDocument();
-  expect(screen.queryByText('MULTIHTTP')).toBeInTheDocument();
-  expect(screen.queryByText('Traceroute')).toBeInTheDocument();
-  expect(screen.queryByText('PING')).toBeInTheDocument();
-  expect(screen.queryByText('DNS')).toBeInTheDocument();
+  const apiEndPointCard = screen.getByTestId(`${DataTestIds.CHECK_GROUP_CARD}-${CheckTypeGroup.ApiTest}`);
+
+  expect(within(apiEndPointCard).getByText('HTTP')).toBeInTheDocument();
+  expect(within(apiEndPointCard).getByText('Ping')).toBeInTheDocument();
+  expect(within(apiEndPointCard).getByText('DNS')).toBeInTheDocument();
+  expect(within(apiEndPointCard).getByText('TCP')).toBeInTheDocument();
+  expect(within(apiEndPointCard).getByText('Traceroute')).toBeInTheDocument();
+
+  const multiStepCard = screen.getByTestId(`${DataTestIds.CHECK_GROUP_CARD}-${CheckTypeGroup.MultiStep}`);
+  expect(within(multiStepCard).getByText('HTTP')).toBeInTheDocument();
 });
 
 test('renders check editor existing check', async () => {

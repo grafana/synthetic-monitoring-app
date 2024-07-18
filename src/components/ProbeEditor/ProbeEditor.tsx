@@ -154,7 +154,7 @@ export const ProbeEditor = ({
                     />
                   </Field>
                 </div>
-                {canEdit && <LabelField<Probe> labelDestination={'probe'} />}
+                {canEdit && <LabelField<Probe> disabled={!canEdit} labelDestination={'probe'} />}
                 <div className={styles.marginBottom}>
                   <Legend>Capabilities</Legend>
                   <HorizontalCheckboxField
