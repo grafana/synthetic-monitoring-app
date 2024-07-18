@@ -1,5 +1,4 @@
 import { CheckFormValues } from 'types';
-
 export type Request = {
   id: number;
   check: {
