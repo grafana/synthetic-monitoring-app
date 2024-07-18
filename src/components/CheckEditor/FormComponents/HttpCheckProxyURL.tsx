@@ -1,24 +1,21 @@
 import React from 'react';
-import { useFormContext } from 'react-hook-form';
-import { OrgRole } from '@grafana/data';
+import { FieldPath, useFormContext } from 'react-hook-form';
 import { Field, Input } from '@grafana/ui';
 
 import { CheckFormValues } from 'types';
-import { hasRole } from 'utils';
 
-export const HttpCheckProxyURL = () => {
-  const isEditor = hasRole(OrgRole.Editor);
+interface HttpCheckProxyURLProps {
+  disabled?: boolean;
+  name: FieldPath<CheckFormValues>;
+}
+
+export const HttpCheckProxyURL = ({ disabled, name }: HttpCheckProxyURLProps) => {
   const { register } = useFormContext<CheckFormValues>();
   const id = 'proxyUrl';
 
   return (
-    <Field
-      htmlFor={id}
-      label="Proxy URL"
-      description="HTTP proxy server to use to connect to the target"
-      disabled={!isEditor}
-    >
-      <Input id={id} {...register('settings.http.proxyURL')} type="text" data-fs-element="Check proxy URL input" />
+    <Field htmlFor={id} label="Proxy URL" description="HTTP proxy server to use to connect to the target">
+      <Input {...register(name)} data-fs-element="Check proxy URL input" disabled={disabled} id={id} type="text" />
     </Field>
   );
 };

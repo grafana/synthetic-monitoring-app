@@ -1,15 +1,14 @@
 import React from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
-import { OrgRole } from '@grafana/data';
 import { Field, MultiSelect } from '@grafana/ui';
 
 import { CheckFormValues } from 'types';
-import { hasRole } from 'utils';
+import { useCheckFormContext } from 'components/CheckForm/CheckFormContext/CheckFormContext';
 import { DNS_RESPONSE_CODES } from 'components/constants';
 
 export const DNSCheckValidResponseCodes = () => {
-  const isEditor = hasRole(OrgRole.Editor);
   const { control } = useFormContext<CheckFormValues>();
+  const { isFormDisabled } = useCheckFormContext();
   const id = 'validStatusCodes';
 
   return (
@@ -17,7 +16,6 @@ export const DNSCheckValidResponseCodes = () => {
       htmlFor={id}
       label="Valid response codes"
       description="List of valid response codes"
-      disabled={!isEditor}
       data-fs-element="Valid response code select"
     >
       <Controller
@@ -29,7 +27,7 @@ export const DNSCheckValidResponseCodes = () => {
             <MultiSelect
               {...rest}
               options={DNS_RESPONSE_CODES}
-              disabled={!isEditor}
+              disabled={isFormDisabled}
               inputId={id}
               onChange={(values) => onChange(values.map((v) => v.value))}
             />

@@ -1,11 +1,12 @@
 import React from 'react';
 import { Route, Switch, useRouteMatch } from 'react-router-dom';
 
-import { CheckForm } from 'components/CheckForm/CheckForm';
 import { CheckList } from 'components/CheckList';
-import { ChooseCheckType } from 'components/ChooseCheckType';
+import { ChooseCheckGroup } from 'components/ChooseCheckGroup';
 
 import { DashboardPage } from './DashboardPage';
+import { EditCheck } from './EditCheck';
+import { NewCheck } from './NewCheck';
 
 export function CheckRouter() {
   const { path } = useRouteMatch();
@@ -18,14 +19,14 @@ export function CheckRouter() {
       <Route path={`${path}/:id/dashboard`} exact>
         <DashboardPage />
       </Route>
-      <Route path={`${path}/new/:checkType?`}>
-        <CheckForm />
+      <Route path={`${path}/new/:checkTypeGroup?`}>
+        <NewCheck />
       </Route>
-      <Route path={`${path}/edit/:checkType/:id`} exact>
-        <CheckForm />
+      <Route path={`${path}/edit/:checkTypeGroup/:id`} exact>
+        <EditCheck />
       </Route>
       <Route path={`${path}/choose-type`} exact>
-        <ChooseCheckType />
+        <ChooseCheckGroup />
       </Route>
     </Switch>
   );

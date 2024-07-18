@@ -4,7 +4,7 @@ import { SceneApp, SceneAppPage } from '@grafana/scenes';
 import { Spinner } from '@grafana/ui';
 
 import { CheckPageParams, CheckType, DashboardSceneAppConfig } from 'types';
-import { checkType as getCheckType } from 'utils';
+import { getCheckType } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { useChecks } from 'data/useChecks';
 import { PLUGIN_URL_PATH } from 'components/constants';

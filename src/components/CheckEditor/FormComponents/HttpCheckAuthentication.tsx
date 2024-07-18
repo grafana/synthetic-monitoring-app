@@ -11,7 +11,7 @@ import { HttpCheckBearerToken } from './HttpCheckBearerToken';
 
 type HttpAuthType = 'none' | 'bearer' | 'basic';
 
-export const HttpCheckAuthentication = () => {
+export const HttpCheckAuthentication = ({ disabled }: { disabled?: boolean }) => {
   const styles = useStyles2(getStyles);
 
   const { getValues, setValue } = useFormContext<CheckFormValuesHttp>();
@@ -78,18 +78,19 @@ export const HttpCheckAuthentication = () => {
   return (
     <>
       <RadioButtonGroup
+        disabled={disabled}
+        onChange={handleChangeOption}
         options={[
           { label: 'None', value: 'none' },
           { label: 'Bearer', value: 'bearer' },
           { label: 'Basic', value: 'basic' },
         ]}
         value={authType}
-        onChange={handleChangeOption}
       />
 
       <div className={styles.fieldsContainer}>
-        {authType === 'bearer' && <HttpCheckBearerToken />}
-        {authType === 'basic' && <HttpCheckBasicAuthorization />}
+        {authType === 'bearer' && <HttpCheckBearerToken disabled={disabled} />}
+        {authType === 'basic' && <HttpCheckBasicAuthorization disabled={disabled} />}
       </div>
     </>
   );

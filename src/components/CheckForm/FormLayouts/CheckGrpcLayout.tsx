@@ -1,63 +1,78 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 
-import { CheckFormTypeLayoutProps, CheckFormValuesGRPC, CheckType } from 'types';
-import { CheckEnabled } from 'components/CheckEditor/FormComponents/CheckEnabled';
-import { CheckIpVersion } from 'components/CheckEditor/FormComponents/CheckIpVersion';
-import { CheckJobName } from 'components/CheckEditor/FormComponents/CheckJobName';
+import { LayoutSection, Section } from './Layout.types';
+import { CheckFormValuesGRPC } from 'types';
+import { GRPCRequestFields } from 'components/CheckEditor/CheckEditor.types';
 import { CheckPublishedAdvanceMetrics } from 'components/CheckEditor/FormComponents/CheckPublishedAdvanceMetrics';
-import { CheckTarget } from 'components/CheckEditor/FormComponents/CheckTarget';
-import { CheckUseTLS } from 'components/CheckEditor/FormComponents/CheckUseTLS';
-import { GRPCCheckService } from 'components/CheckEditor/FormComponents/GRPCCheckService';
-import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
-import { FormLayout } from 'components/CheckForm/FormLayout/FormLayout';
-import { CheckFormAlert } from 'components/CheckFormAlert';
-import { CheckUsage } from 'components/CheckUsage';
-import { LabelField } from 'components/LabelField';
-import { TLSConfig } from 'components/TLSConfig';
+import { GRPCRequest } from 'components/CheckEditor/FormComponents/GRPCRequest';
+import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
 
-export const CheckGrpcLayout = ({
-  formActions,
-  onSubmit,
-  onSubmitError,
-  errorMessage,
-  schema,
-}: CheckFormTypeLayoutProps) => {
-  return (
-    <FormLayout
-      formActions={formActions}
-      onSubmit={onSubmit}
-      onSubmitError={onSubmitError}
-      errorMessage={errorMessage}
-      schema={schema}
-    >
-      <FormLayout.Section label="General settings" fields={['enabled', 'job', 'target']} required>
-        <CheckEnabled />
-        <CheckJobName />
-        <CheckTarget checkType={CheckType.GRPC} />
-      </FormLayout.Section>
+import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
 
-      <FormLayout.Section label="Probes" fields={[`probes`, `frequency`, `timeout`, `publishAdvancedMetrics`]} required>
-        <CheckUsage checkType={CheckType.GRPC} />
+export const GRPC_REQUEST_FIELDS: GRPCRequestFields = {
+  target: {
+    name: `target`,
+  },
+  ipVersion: {
+    name: `settings.grpc.ipVersion`,
+  },
+  service: {
+    name: `settings.grpc.service`,
+  },
+  useTLS: {
+    name: `settings.grpc.tls`,
+  },
+  tlsServerName: {
+    name: `settings.grpc.tlsConfig.serverName`,
+  },
+  tlsInsecureSkipVerify: {
+    name: `settings.grpc.tlsConfig.insecureSkipVerify`,
+  },
+  tlsCaSCert: {
+    name: `settings.grpc.tlsConfig.caCert`,
+  },
+  tlsClientCert: {
+    name: `settings.grpc.tlsConfig.clientCert`,
+  },
+  tlsClientKey: {
+    name: `settings.grpc.tlsConfig.clientKey`,
+  },
+};
+
+const CheckGRPCRequest = () => {
+  const { isFormDisabled, supportingContent } = useCheckFormContext();
+  const { addRequest } = supportingContent;
+
+  const onTest = useCallback(() => {
+    addRequest(GRPC_REQUEST_FIELDS);
+  }, [addRequest]);
+
+  return <GRPCRequest disabled={isFormDisabled} fields={GRPC_REQUEST_FIELDS} onTest={onTest} />;
+};
+
+export const GRPCCheckLayout: Partial<Record<LayoutSection, Section<CheckFormValuesGRPC>>> = {
+  [LayoutSection.Check]: {
+    fields: [`target`],
+    Component: (
+      <>
+        <CheckGRPCRequest />
+      </>
+    ),
+  },
+  [LayoutSection.Uptime]: {
+    fields: [`timeout`],
+    Component: (
+      <>
+        <Timeout />
+      </>
+    ),
+  },
+  [LayoutSection.Probes]: {
+    fields: [`publishAdvancedMetrics`],
+    Component: (
+      <>
         <CheckPublishedAdvanceMetrics />
-        <ProbeOptions checkType={CheckType.GRPC} />
-      </FormLayout.Section>
-
-      <FormLayout.Section label="gRPC settings" fields={['settings.grpc.service']}>
-        <GRPCCheckService />
-      </FormLayout.Section>
-
-      <FormLayout.Section label="TLS config" fields={['settings.grpc.tls', 'settings.grpc.tlsConfig']}>
-        <CheckUseTLS checkType={CheckType.GRPC} />
-        <TLSConfig checkType={CheckType.GRPC} />
-      </FormLayout.Section>
-
-      <FormLayout.Section label="Advanced options" fields={['labels', 'settings.grpc.ipVersion']}>
-        <LabelField<CheckFormValuesGRPC> labelDestination="check" />
-        <CheckIpVersion checkType={CheckType.GRPC} name="settings.grpc.ipVersion" />
-      </FormLayout.Section>
-      <FormLayout.Section label="Alerting" fields={[`alertSensitivity`]}>
-        <CheckFormAlert />
-      </FormLayout.Section>
-    </FormLayout>
-  );
+      </>
+    ),
+  },
 };

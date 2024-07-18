@@ -9,6 +9,7 @@ import { CheckFormValues } from 'types';
 import { TimeSlider } from './TimeSlider/TimeSlider';
 
 export interface SliderInputProps {
+  disabled?: boolean;
   min: number;
   max: number;
   name: FieldPath<CheckFormValues>;
@@ -39,7 +40,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
 });
 
-export const SliderInput = ({ min, max, name, step = 1 }: SliderInputProps) => {
+export const SliderInput = ({ disabled, min, max, name, step = 1 }: SliderInputProps) => {
   const styles = useStyles2(getStyles);
   const { control } = useFormContext();
 
@@ -51,7 +52,9 @@ export const SliderInput = ({ min, max, name, step = 1 }: SliderInputProps) => {
           control={control}
           render={({ field }) => {
             const { ref, ...rest } = field;
-            return <TimeSlider {...rest} min={min ?? 0} max={max} step={step} analyticsLabel={name} />;
+            return (
+              <TimeSlider {...rest} disabled={disabled} min={min ?? 0} max={max} step={step} analyticsLabel={name} />
+            );
           }}
         />
       </div>

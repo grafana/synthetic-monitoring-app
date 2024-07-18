@@ -1,13 +1,10 @@
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
-import { OrgRole } from '@grafana/data';
 import { Field, Input } from '@grafana/ui';
 
 import { CheckFormValuesTraceroute } from 'types';
-import { hasRole } from 'utils';
 
-export const TracerouteMaxUnknownHops = () => {
-  const isEditor = hasRole(OrgRole.Editor);
+export const TracerouteMaxUnknownHops = ({ disabled }: { disabled?: boolean }) => {
   const {
     register,
     formState: { errors },
@@ -16,22 +13,21 @@ export const TracerouteMaxUnknownHops = () => {
 
   return (
     <Field
-      label="Max unknown hops"
       description="Maximimum number of hosts to traverse that give no response"
-      disabled={!isEditor}
-      invalid={Boolean(errors.settings?.traceroute?.maxUnknownHops)}
       error={errors.settings?.traceroute?.maxUnknownHops?.message}
       htmlFor={id}
+      invalid={Boolean(errors.settings?.traceroute?.maxUnknownHops)}
+      label="Max unknown hops"
     >
       <Input
-        id={id}
         {...register('settings.traceroute.maxUnknownHops', {
           valueAsNumber: true,
         })}
+        data-fs-element="Max unknown hops input"
+        disabled={disabled}
+        id={id}
         min={0}
         type="number"
-        disabled={!isEditor}
-        data-fs-element="Max unknown hops input"
       />
     </Field>
   );

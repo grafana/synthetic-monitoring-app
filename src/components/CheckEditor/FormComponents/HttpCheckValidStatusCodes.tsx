@@ -1,25 +1,23 @@
 import React from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
-import { OrgRole } from '@grafana/data';
 import { Field, MultiSelect } from '@grafana/ui';
 
 import { CheckFormValues } from 'types';
-import { hasRole } from 'utils';
+import { useCheckFormContext } from 'components/CheckForm/CheckFormContext/CheckFormContext';
 
 const validStatusCodes = generateValidStatusCodes();
 
 export const HttpCheckValidStatusCodes = () => {
-  const isEditor = hasRole(OrgRole.Editor);
   const { control } = useFormContext<CheckFormValues>();
+  const { isFormDisabled } = useCheckFormContext();
   const id = 'validStatusCodes';
 
   return (
     <Field
+      data-fs-element="Valid status codes select"
+      description="Accepted status codes for this probe. Defaults to 2xx."
       htmlFor={id}
       label="Valid status codes"
-      description="Accepted status codes for this probe. Defaults to 2xx."
-      disabled={!isEditor}
-      data-fs-element="Valid status codes select"
     >
       <Controller
         control={control}
@@ -29,10 +27,10 @@ export const HttpCheckValidStatusCodes = () => {
           return (
             <MultiSelect
               {...rest}
-              options={validStatusCodes}
-              disabled={!isEditor}
+              disabled={isFormDisabled}
               inputId={id}
               onChange={(values) => onChange(values.map((v) => v.value))}
+              options={validStatusCodes}
             />
           );
         }}

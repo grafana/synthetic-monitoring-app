@@ -1,3 +1,5 @@
+import { DataFrameJSON } from '@grafana/data';
+
 import { AlertRecord, Check, Probe, PrometheusAlertsGroup, Settings, ThresholdSettings } from 'types';
 import { AccountingClassNames, DashboardInfo } from 'datasource/types';
 
@@ -146,4 +148,13 @@ export type ListPrometheusAlertsResponse = {
     groups: PrometheusAlertsGroup[];
   };
   status: `success`;
+};
+
+export type LogsQueryResponse = {
+  results: Record<
+    string,
+    {
+      frames: DataFrameJSON[];
+    }
+  >;
 };

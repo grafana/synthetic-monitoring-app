@@ -3,7 +3,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Checkbox, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
-import { checkToUsageCalcValues, checkType as getCheckType } from 'utils';
+import { checkToUsageCalcValues, getCheckType } from 'utils';
 import { useUsageCalc } from 'hooks/useUsageCalc';
 import { AlertStatus } from 'components/AlertStatus/AlertStatus';
 

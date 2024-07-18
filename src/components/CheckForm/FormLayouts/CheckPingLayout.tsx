@@ -1,54 +1,60 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 
-import { CheckFormTypeLayoutProps, CheckFormValuesPing, CheckType } from 'types';
-import { CheckEnabled } from 'components/CheckEditor/FormComponents/CheckEnabled';
-import { CheckIpVersion } from 'components/CheckEditor/FormComponents/CheckIpVersion';
-import { CheckJobName } from 'components/CheckEditor/FormComponents/CheckJobName';
+import { LayoutSection, Section } from './Layout.types';
+import { CheckFormValuesPing } from 'types';
+import { PingRequestFields } from 'components/CheckEditor/CheckEditor.types';
 import { CheckPublishedAdvanceMetrics } from 'components/CheckEditor/FormComponents/CheckPublishedAdvanceMetrics';
-import { CheckTarget } from 'components/CheckEditor/FormComponents/CheckTarget';
-import { PingCheckFragment } from 'components/CheckEditor/FormComponents/PingCheckFragment';
-import { ProbeOptions } from 'components/CheckEditor/ProbeOptions';
-import { FormLayout } from 'components/CheckForm/FormLayout/FormLayout';
-import { CheckFormAlert } from 'components/CheckFormAlert';
-import { CheckUsage } from 'components/CheckUsage';
-import { LabelField } from 'components/LabelField';
+import { PingRequest } from 'components/CheckEditor/FormComponents/PingRequest';
+import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
 
-export const CheckPingLayout = ({
-  formActions,
-  onSubmit,
-  onSubmitError,
-  errorMessage,
-  schema,
-}: CheckFormTypeLayoutProps) => {
-  return (
-    <FormLayout
-      formActions={formActions}
-      onSubmit={onSubmit}
-      onSubmitError={onSubmitError}
-      errorMessage={errorMessage}
-      schema={schema}
-    >
-      <FormLayout.Section label="Define check" fields={[`enabled`, `job`, `target`]} required>
-        <CheckEnabled />
-        <CheckJobName />
-        <CheckTarget checkType={CheckType.PING} />
-      </FormLayout.Section>
-      <FormLayout.Section label="Probes" fields={[`probes`, `frequency`, `timeout`]} required>
-        <CheckUsage checkType={CheckType.PING} />
+import { useCheckFormContext } from '../CheckFormContext/CheckFormContext';
+
+const PING_FIELDS: PingRequestFields = {
+  target: {
+    name: `target`,
+  },
+  ipVersion: {
+    name: `settings.ping.ipVersion`,
+  },
+  dontFragment: {
+    name: `settings.ping.dontFragment`,
+  },
+};
+
+const CheckPingRequest = () => {
+  const { isFormDisabled, supportingContent } = useCheckFormContext();
+  const { addRequest } = supportingContent;
+
+  const onTest = useCallback(() => {
+    addRequest(PING_FIELDS);
+  }, [addRequest]);
+
+  return <PingRequest disabled={isFormDisabled} fields={PING_FIELDS} onTest={onTest} />;
+};
+
+export const PingCheckLayout: Partial<Record<LayoutSection, Section<CheckFormValuesPing>>> = {
+  [LayoutSection.Check]: {
+    fields: Object.values(PING_FIELDS).map((field) => field.name),
+    Component: (
+      <>
+        <CheckPingRequest />
+      </>
+    ),
+  },
+  [LayoutSection.Uptime]: {
+    fields: [`timeout`],
+    Component: (
+      <>
+        <Timeout />
+      </>
+    ),
+  },
+  [LayoutSection.Probes]: {
+    fields: [`publishAdvancedMetrics`],
+    Component: (
+      <>
         <CheckPublishedAdvanceMetrics />
-        <ProbeOptions checkType={CheckType.PING} />
-      </FormLayout.Section>
-      <FormLayout.Section
-        label="Advanced options"
-        fields={[`labels`, `settings.ping.ipVersion`, `settings.ping.dontFragment`]}
-      >
-        <LabelField<CheckFormValuesPing> labelDestination="check" />
-        <CheckIpVersion checkType={CheckType.PING} name="settings.ping.ipVersion" />
-        <PingCheckFragment />
-      </FormLayout.Section>
-      <FormLayout.Section label="Alerting" fields={[`alertSensitivity`]}>
-        <CheckFormAlert />
-      </FormLayout.Section>
-    </FormLayout>
-  );
+      </>
+    ),
+  },
 };

@@ -19,8 +19,9 @@ import { SceneHomepage } from 'page/SceneHomepage';
 import { UnprovisionedSetup } from 'page/UnprovisionedSetup';
 import { WelcomePage } from 'page/WelcomePage';
 
-import { PLUGIN_URL_PATH } from './constants';
 import { SceneRedirecter } from './SceneRedirecter';
+
+export const PLUGIN_URL_PATH = '/a/grafana-synthetic-monitoring-app/';
 
 export const Routing = ({ onNavChanged }: Pick<AppRootProps, 'onNavChanged'>) => {
   const queryParams = useQuery();
@@ -87,5 +88,5 @@ export const Routing = ({ onNavChanged }: Pick<AppRootProps, 'onNavChanged'>) =>
 };
 
 export function getRoute(route: ROUTES) {
-  return `${PLUGIN_URL_PATH}${route}`;
+  return `/a/grafana-synthetic-monitoring-app/${route}`;
 }
