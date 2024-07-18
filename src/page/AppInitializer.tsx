@@ -1,6 +1,6 @@
 import React, { PropsWithChildren, useContext } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Alert, Button, Spinner, useStyles2 } from '@grafana/ui';
+import { Alert, Button, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { ROUTES } from 'types';
@@ -36,8 +36,14 @@ export const AppInitializer = ({ redirectTo, disabled, buttonClassname, buttonTe
 
   return (
     <div>
-      <Button onClick={handleClick} disabled={loading || disabled} size="lg" className={buttonClassname}>
-        {loading ? <Spinner /> : buttonText}
+      <Button
+        onClick={handleClick}
+        disabled={loading || disabled}
+        size="lg"
+        className={buttonClassname}
+        icon={loading ? 'fa fa-spinner' : undefined}
+      >
+        {buttonText}
       </Button>
 
       {error && (
@@ -74,5 +80,6 @@ export const AppInitializer = ({ redirectTo, disabled, buttonClassname, buttonTe
 const getStyles = (theme: GrafanaTheme2) => ({
   errorAlert: css({
     marginTop: theme.spacing(4),
+    textAlign: `initial`,
   }),
 });

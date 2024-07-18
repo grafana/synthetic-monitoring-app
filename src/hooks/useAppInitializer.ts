@@ -1,9 +1,9 @@
 import { useContext, useState } from 'react';
 import { DataSourceInstanceSettings, DataSourceJsonData } from '@grafana/data';
-import { config, getBackendSrv } from '@grafana/runtime';
+import { config, FetchError, getBackendSrv } from '@grafana/runtime';
 import { isNumber } from 'lodash';
 
-import { ROUTES, SubmissionErrorWrapper } from 'types';
+import { ROUTES } from 'types';
 import { FaroEvent, reportError, reportEvent } from 'faro';
 import { initializeDatasource } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
@@ -185,10 +185,13 @@ export const useAppInitializer = (redirectTo?: ROUTES) => {
         window.location.href = `${window.location.origin}${getRoute(ROUTES.Home)}`;
       }
     } catch (e) {
-      const err = e as unknown as SubmissionErrorWrapper;
-      setError(err.data?.msg ?? err.data?.err ?? 'Something went wrong');
+      const err = e as FetchError;
+      const { data } = err;
+      const msg = (err.message || data.message) ?? 'Something went wrong';
+      console.log(e);
+      setError(msg);
       setLoading(false);
-      reportError(err.data?.msg ?? err.data?.err ?? err, FaroEvent.INIT);
+      reportError(msg, FaroEvent.INIT);
     }
   };
 

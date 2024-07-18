@@ -532,18 +532,6 @@ export enum HttpRegexValidationType {
   Body = 'Body',
 }
 
-export interface SubmissionError {
-  message?: string;
-  msg?: string;
-  err?: string;
-}
-
-export interface SubmissionErrorWrapper {
-  data: SubmissionError;
-  status?: string;
-  message?: string;
-}
-
 export interface DashboardMeta {
   json: string;
   latestVersion: number;

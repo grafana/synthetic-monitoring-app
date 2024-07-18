@@ -1,5 +1,5 @@
 import { DataSourceInstanceSettings, OrgRole, TimeRange } from '@grafana/data';
-import { config, FetchResponse, getBackendSrv } from '@grafana/runtime';
+import { config, FetchError, FetchResponse, getBackendSrv } from '@grafana/runtime';
 import { firstValueFrom } from 'rxjs';
 
 import { DashboardInfo, LinkedDatasourceInfo, LogQueryResponse, LogStream, SMOptions } from './datasource/types';
@@ -11,7 +11,6 @@ import {
   HostedInstance,
   Probe,
   Settings,
-  SubmissionErrorWrapper,
   ThresholdValues,
   TLSConfig,
 } from 'types';
@@ -233,8 +232,8 @@ export const queryLogsLegacy = async (
       data: response.data?.data?.result ?? [],
     };
   } catch (e) {
-    const err = e as SubmissionErrorWrapper;
-    return { error: (err.message || err.data?.message) ?? 'Error fetching data', data: [] };
+    const err = e as FetchError;
+    return { error: (err.message || err.data.message) ?? 'Error fetching data', data: [] };
   }
 };
 

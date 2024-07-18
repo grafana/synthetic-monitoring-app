@@ -46,3 +46,26 @@ declare module '*?raw' {
   // eslint-disable-next-line no-restricted-syntax
   export default content;
 }
+
+declare module 'grafana/app/core/core' {
+  import { OrgRole } from '@grafana/data';
+
+  // https://github.com/grafana/grafana/blob/main/public/app/core/services/context_srv.ts#L59
+  export const contextSrv: {
+    hasEditPermissionInFolders: boolean;
+    isGrafanaAdmin: boolean;
+    isEditor: boolean;
+    isSignedIn: boolean;
+
+    user: {
+      id: number;
+      orgRole: OrgRole | '';
+      permissions?: Record<string, boolean>;
+    };
+
+    hasAccess(action: string, fallBack: boolean): boolean;
+    hasPermission(action: string): boolean;
+    hasRole(role: string): boolean;
+    accessControlEnabled(): boolean;
+  };
+}
