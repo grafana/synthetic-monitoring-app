@@ -7,7 +7,7 @@ import { AlertSensitivity, Check, PrometheusAlertsGroup, ROUTES } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { useAlertRules } from 'hooks/useAlertRules';
 import { AlertSensitivityBadge } from 'components/AlertSensitivityBadge';
-import { getRoute } from 'components/Routing';
+import { getRoute } from 'components/Routing.utils';
 import { Toggletip } from 'components/Toggletip';
 
 type AlertStatusProps = {

@@ -19,7 +19,8 @@ import { SceneHomepage } from 'page/SceneHomepage';
 import { UnprovisionedSetup } from 'page/UnprovisionedSetup';
 import { WelcomePage } from 'page/WelcomePage';
 
-import { PLUGIN_URL_PATH } from './constants';
+import { PLUGIN_URL_PATH } from './Routing.consts';
+import { getRoute } from './Routing.utils';
 import { SceneRedirecter } from './SceneRedirecter';
 
 export const Routing = ({ onNavChanged }: Pick<AppRootProps, 'onNavChanged'>) => {
@@ -85,7 +86,3 @@ export const Routing = ({ onNavChanged }: Pick<AppRootProps, 'onNavChanged'>) =>
     </Switch>
   );
 };
-
-export function getRoute(route: ROUTES) {
-  return `${PLUGIN_URL_PATH}${route}`;
-}

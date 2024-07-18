@@ -1,7 +1,7 @@
 import React, { useCallback, useRef } from 'react';
 import { FieldErrorsImpl, useFieldArray, useFormContext, useFormState } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Button, Field, Icon, IconButton, Input, useStyles2 } from '@grafana/ui';
+import { Button, Field, IconButton, Input, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { get } from 'lodash';
 
@@ -11,7 +11,6 @@ import { interpolateErrorMessage } from 'components/CheckForm/utils';
 export type NameValueName = 'settings.http.headers' | 'settings.http.proxyConnectHeaders' | 'labels';
 
 interface Props {
-  ariaLabelSuffix?: string;
   name: NameValueName;
   limit?: number;
   disabled?: boolean;
@@ -23,7 +22,7 @@ function getErrors(errors: FieldErrorsImpl<CheckFormValues | Probe>, name: NameV
   return get(errors, name);
 }
 
-export const NameValueInput = ({ ariaLabelSuffix = ``, name, disabled, limit, label, ...rest }: Props) => {
+export const NameValueInput = ({ name, disabled, limit, label, ...rest }: Props) => {
   const {
     register,
     control,
@@ -59,15 +58,15 @@ export const NameValueInput = ({ ariaLabelSuffix = ``, name, disabled, limit, la
             >
               <Input
                 {...register(`${name}.${index}.name`)}
-                aria-label={`${label} ${index + 1} name ${ariaLabelSuffix}`}
+                aria-label={`${label} ${index + 1} name`}
                 data-testid={`${label}-name-${index}`}
-                type="text"
-                placeholder="name"
                 disabled={disabled}
                 onChange={(v) => {
                   labelNameField.onChange(v);
                   handleTrigger();
                 }}
+                placeholder="name"
+                type="text"
               />
             </Field>
             <Field
@@ -78,7 +77,7 @@ export const NameValueInput = ({ ariaLabelSuffix = ``, name, disabled, limit, la
             >
               <Input
                 {...labelValueField}
-                aria-label={`${label} ${index + 1} value ${ariaLabelSuffix}`}
+                aria-label={`${label} ${index + 1} value`}
                 data-testid={`${label}-value-${index}`}
                 data-fs-element={`${rest['data-fs-element']}-value-${index}`}
                 type="text"
@@ -120,9 +119,9 @@ export const NameValueInput = ({ ariaLabelSuffix = ``, name, disabled, limit, la
             ref={addRef}
             data-fs-element={`${rest['data-fs-element']}-add`}
             className={styles.addButton}
+            icon={`plus`}
           >
-            <Icon name="plus" />
-            &nbsp; Add {label.toLocaleLowerCase()}
+            Add {label.toLocaleLowerCase()}
           </Button>
         </div>
       )}

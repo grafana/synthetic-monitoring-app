@@ -1,22 +1,20 @@
 import React from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
-import { OrgRole } from '@grafana/data';
 import { Field, Select } from '@grafana/ui';
 
 import { CheckFormValuesHttp } from 'types';
-import { hasRole } from 'utils';
+import { useCheckFormContext } from 'components/CheckForm/CheckFormContext/CheckFormContext';
 import { HTTP_SSL_OPTIONS } from 'components/constants';
 
 export const HttpCheckSSLOptions = () => {
-  const isEditor = hasRole(OrgRole.Editor);
   const { control } = useFormContext<CheckFormValuesHttp>();
+  const { isFormDisabled } = useCheckFormContext();
   const id = 'http-settings-ssl-options';
 
   return (
     <Field
       label="SSL options"
       description="Choose whether probe fails if SSL is present or not present"
-      disabled={!isEditor}
       htmlFor={id}
       data-fs-element="SSL options select"
     >
@@ -28,12 +26,12 @@ export const HttpCheckSSLOptions = () => {
           return (
             <Select
               {...rest}
+              disabled={isFormDisabled}
               inputId={id}
-              options={HTTP_SSL_OPTIONS}
-              disabled={!isEditor}
               onChange={({ value }) => {
                 onChange(value);
               }}
+              options={HTTP_SSL_OPTIONS}
             />
           );
         }}

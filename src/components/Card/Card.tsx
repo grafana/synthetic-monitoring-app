@@ -1,6 +1,6 @@
-import React, { createContext, HTMLAttributes, ReactNode, useContext } from 'react';
+import React, { ComponentProps, createContext, HTMLAttributes, ReactNode, useContext } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Link, styleMixins, useStyles2 } from '@grafana/ui';
+import { Link, styleMixins, Text, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 type ContextProps = {
@@ -14,12 +14,12 @@ type CardProps = ContextProps & {
 
 const CardContext = createContext<ContextProps>({ href: '' });
 
-export const Card = ({ children, className, href }: CardProps) => {
+export const Card = ({ children, className, href, ...rest }: CardProps) => {
   const styles = useStyles2(getStyles);
 
   return (
     <CardContext.Provider value={{ href }}>
-      <div className={cx(styles.card, className)}>{children}</div>
+      <div className={cx(styles.card, className)} {...rest}>{children}</div>
     </CardContext.Provider>
   );
 };
@@ -41,20 +41,23 @@ function getStyles(theme: GrafanaTheme2) {
 }
 
 type HeadingCommonProps = {
-  as?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'p' | 'div' | 'span';
-  children: ReactNode;
+  as?: ComponentProps<typeof Text>['element'];
+  children: NonNullable<ReactNode>;
   className?: string;
-  variant?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+  variant?: ComponentProps<typeof Text>['variant'];
 };
 
 type HeadingProps = HTMLAttributes<HTMLElement> & HeadingCommonProps;
 
 const Heading = ({ as = 'h2', children, className, variant = 'h2', ...rest }: HeadingProps) => {
-  const Tag = as;
-  const styles = useStyles2((theme) => getHeadingStyles(theme, variant));
+  const styles = useStyles2(getHeadingStyles);
   const { href } = useContext(CardContext);
 
-  const content = <Tag className={cx(styles.heading, className)}>{children}</Tag>;
+  const content = (
+    <Text element={as} variant={variant}>
+      {children}
+    </Text>
+  );
 
   if (href) {
     return (
@@ -67,14 +70,7 @@ const Heading = ({ as = 'h2', children, className, variant = 'h2', ...rest }: He
   return content;
 };
 
-const getHeadingStyles = (theme: GrafanaTheme2, variant: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6') => ({
-  heading: css({
-    fontFamily: theme.typography[variant].fontFamily,
-    fontSize: theme.typography[variant].fontSize,
-    fontWeight: theme.typography[variant].fontWeight,
-    letterSpacing: theme.typography[variant].letterSpacing,
-    lineHeight: theme.typography[variant].lineHeight,
-  }),
+const getHeadingStyles = (theme: GrafanaTheme2) => ({
   link: css({
     display: `block`,
     all: 'unset',

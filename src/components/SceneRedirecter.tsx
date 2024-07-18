@@ -6,7 +6,7 @@ import { ROUTES } from 'types';
 import { useChecks } from 'data/useChecks';
 import { useQuery } from 'hooks/useQuery';
 
-import { PLUGIN_URL_PATH } from './constants';
+import { PLUGIN_URL_PATH } from './Routing.consts';
 
 export function SceneRedirecter() {
   const queryParams = useQuery();

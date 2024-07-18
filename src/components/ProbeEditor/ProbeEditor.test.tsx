@@ -5,7 +5,7 @@ import { render } from 'test/render';
 import { fillProbeForm, runTestAsViewer, UPDATED_VALUES } from 'test/utils';
 
 import { ROUTES } from 'types';
-import { getRoute } from 'components/Routing';
+import { getRoute } from 'components/Routing.utils';
 import { TEMPLATE_PROBE } from 'page/NewProbe';
 
 import { ProbeEditor } from './ProbeEditor';

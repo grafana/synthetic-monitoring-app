@@ -1,10 +1,9 @@
 import React from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
-import { OrgRole } from '@grafana/data';
 import { Field, MultiSelect } from '@grafana/ui';
 
 import { CheckFormValues, HttpVersion } from 'types';
-import { hasRole } from 'utils';
+import { useCheckFormContext } from 'components/CheckForm/CheckFormContext/CheckFormContext';
 
 const httpVersionOptions = [
   {
@@ -22,15 +21,14 @@ const httpVersionOptions = [
 ];
 
 export const HttpCheckValidHttpVersions = () => {
-  const isEditor = hasRole(OrgRole.Editor);
   const { control } = useFormContext<CheckFormValues>();
+  const { isFormDisabled } = useCheckFormContext();
   const id = 'http-settings-valid-http-versions';
 
   return (
     <Field
       label="Valid HTTP versions"
       description="Accepted HTTP versions for this probe"
-      disabled={!isEditor}
       htmlFor={id}
       data-fs-element="Valid http versions select"
     >
@@ -43,10 +41,10 @@ export const HttpCheckValidHttpVersions = () => {
           return (
             <MultiSelect
               {...rest}
-              options={httpVersionOptions}
-              disabled={!isEditor}
+              disabled={isFormDisabled}
               inputId={id}
               onChange={(values) => onChange(values.map((v) => v.value))}
+              options={httpVersionOptions}
             />
           );
         }}

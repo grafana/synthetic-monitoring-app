@@ -1,107 +1,87 @@
-import React, { ReactNode } from 'react';
-import { FormProvider, useForm, useFormContext } from 'react-hook-form';
-import { Button } from '@grafana/ui';
-import { screen } from '@testing-library/react';
+import React from 'react';
+import { FieldValues, FormProvider, useForm, useFormContext } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { screen, within } from '@testing-library/react';
 import { z } from 'zod';
+import { DataTestIds } from 'test/dataTestIds';
 import { render } from 'test/render';
 
-import { FormLayout } from './FormLayout';
-
-type TestValues = {
-  job: string;
-};
-
-type TestFormProps = { children: ReactNode };
-
-const renderTestForm = (children: TestFormProps['children']) => {
-  return render(<TestForm>{children}</TestForm>);
-};
-
-const formActions = [
-  <Button key="hi" type="submit">
-    Submit
-  </Button>,
-];
+import { FormLayout, type FormLayoutProps } from './FormLayout';
 
 describe(`FormLayout`, () => {
   it(`automatically has the first step open`, async () => {
     const firstSectionText = `First section content`;
 
-    renderTestForm(
-      <FormLayout formActions={formActions} onSubmit={jest.fn()} schema={z.object({})}>
+    render(
+      <TestForm>
         <FormLayout.Section label="First section">
           <div>{firstSectionText}</div>
         </FormLayout.Section>
         <FormLayout.Section label="Second section">
           <div>Second section content</div>
         </FormLayout.Section>
-      </FormLayout>
+      </TestForm>
     );
 
     const text = await screen.findByText(firstSectionText);
-    expect(text).toBeVisible();
+    expect(text).toBeInTheDocument();
   });
 
   it(`only indexes children that are formSection`, async () => {
     const firstSectionText = `First section content`;
 
-    renderTestForm(
-      <FormLayout formActions={formActions} onSubmit={jest.fn()} schema={z.object({})}>
+    render(
+      <TestForm>
         <div>Some child that means the formlayout section is not first</div>
         <FormLayout.Section label="First section">
           <div>{firstSectionText}</div>
         </FormLayout.Section>
-      </FormLayout>
+      </TestForm>
     );
 
     const text = await screen.findByText(firstSectionText);
-    expect(text).toBeVisible();
+    expect(text).toBeInTheDocument();
   });
 
   it(`shows an error icon if any of the fields in that section have errors`, async () => {
-    const { container, user } = renderTestForm(
-      <FormLayout
-        formActions={formActions}
-        onSubmit={jest.fn()}
-        schema={z.object({
-          job: z.string().min(1),
-        })}
-      >
-        <FormLayout.Section label="First section" fields={[`job`]} required>
-          <NameInput />
+    const { container, user } = render(
+      <TestForm>
+        <FormLayout.Section label="First section" fields={[`job`]}>
+          <JobInput />
         </FormLayout.Section>
         <FormLayout.Section label="Second section">
           <div>Second section content</div>
         </FormLayout.Section>
-      </FormLayout>
+      </TestForm>
     );
 
     const submitButton = await screen.findByText(`Submit`);
     await user.click(submitButton);
     const errorIcon = await container.querySelector(`svg[name='exclamation-triangle']`);
-    expect(errorIcon).toBeVisible();
+    expect(errorIcon).toBeInTheDocument();
   });
 
   it(`moves between wizard steps with buttons`, async () => {
     const firstSectionText = `First section content`;
     const secondSectionText = `Second section content`;
 
-    const { user } = renderTestForm(
-      <FormLayout formActions={formActions} onSubmit={jest.fn()} schema={z.object({})}>
+    const { user } = render(
+      <TestForm>
         <FormLayout.Section label="First section">
           <div>{firstSectionText}</div>
         </FormLayout.Section>
         <FormLayout.Section label="Second section">
           <div>Second section content</div>
         </FormLayout.Section>
-      </FormLayout>
+      </TestForm>
     );
 
-    const next = await screen.findByRole('button', { name: 'Second section' });
+    expect(await screen.findByText(firstSectionText)).toBeInTheDocument();
+    const next = await screen.findByRole('button', { name: '2. Second section' });
     await user.click(next);
     const text = await screen.findByText(secondSectionText);
-    expect(text).toBeVisible();
-    expect(screen.getByText(firstSectionText)).not.toBeVisible();
+    expect(text).toBeInTheDocument();
+    expect(await screen.queryByText(firstSectionText)).not.toBeInTheDocument();
   });
 
   it(`moves between wizard steps with sidebar`, async () => {
@@ -109,8 +89,8 @@ describe(`FormLayout`, () => {
     const secondSectionText = `Second section content`;
     const thirdSectionText = `Third section content`;
 
-    const { user } = renderTestForm(
-      <FormLayout formActions={formActions} onSubmit={jest.fn()} schema={z.object({})}>
+    const { user } = render(
+      <TestForm>
         <FormLayout.Section label="First section">
           <div>{firstSectionText}</div>
         </FormLayout.Section>
@@ -120,30 +100,245 @@ describe(`FormLayout`, () => {
         <FormLayout.Section label="Third section">
           <div>{thirdSectionText}</div>
         </FormLayout.Section>
-      </FormLayout>
+      </TestForm>
     );
 
+    const initialText = await screen.findByText(firstSectionText);
+    expect(initialText).toBeInTheDocument();
+    expect(await screen.queryByText(thirdSectionText)).not.toBeInTheDocument();
     const next = await screen.findByText('Third section');
     await user.click(next);
     const text = await screen.findByText(thirdSectionText);
-    expect(text).toBeVisible();
-    expect(screen.getByText(firstSectionText)).not.toBeVisible();
-    expect(screen.getByText(secondSectionText)).not.toBeVisible();
+    expect(text).toBeInTheDocument();
+    expect(await screen.queryByText(firstSectionText)).not.toBeInTheDocument();
+    expect(await screen.queryByText(secondSectionText)).not.toBeInTheDocument();
+  });
+
+  it(`disables the submit button if the form is disabled`, async () => {
+    render(
+      <TestForm disabled>
+        <FormLayout.Section label="First section" fields={[`job`]}>
+          <JobInput />
+        </FormLayout.Section>
+        <FormLayout.Section label="Second section">
+          <div>Second section content</div>
+        </FormLayout.Section>
+      </TestForm>
+    );
+
+    const submitButton = await screen.findByRole(`button`, { name: `Submit` });
+    expect(submitButton).toBeDisabled();
+  });
+
+  it(`validates previous steps when moving between steps`, async () => {
+    const { container, user } = render(
+      <TestForm>
+        <FormLayout.Section label="First section" fields={[`job`]}>
+          <JobInput />
+        </FormLayout.Section>
+        <FormLayout.Section label="Second section">
+          <div>Second section content</div>
+        </FormLayout.Section>
+        <FormLayout.Section label="Third section">
+          <div>Third section content</div>
+        </FormLayout.Section>
+      </TestForm>
+    );
+
+    const next = await screen.findByText(/Third section/);
+    await user.click(next);
+    const errorIcon = await container.querySelector(`svg[name='exclamation-triangle']`);
+    const validIcon = await container.querySelector(`svg[name='check']`);
+    expect(errorIcon).toBeInTheDocument();
+    expect(validIcon).toBeInTheDocument();
+  });
+
+  it(`disables showing validation when the form is disabled`, async () => {
+    const { container, user } = render(
+      <TestForm disabled>
+        <FormLayout.Section label="First section" fields={[`job`]}>
+          <JobInput />
+        </FormLayout.Section>
+        <FormLayout.Section label="Second section">
+          <div>Second section content</div>
+        </FormLayout.Section>
+        <FormLayout.Section label="Third section">
+          <div>Third section content</div>
+        </FormLayout.Section>
+      </TestForm>
+    );
+
+    const next = await screen.findByText(/Third section/);
+    await user.click(next);
+    const errorIcon = await container.querySelector(`svg[name='exclamation-triangle']`);
+    const validIcon = await container.querySelector(`svg[name='check']`);
+    expect(errorIcon).not.toBeInTheDocument();
+    expect(validIcon).not.toBeInTheDocument();
+  });
+
+  it(`shows the correct next/previous buttons`, async () => {
+    const firstSectionLabel = `First section`;
+    const secondSectionLabel = `Second section`;
+    const thirdSectionLabel = `Third section`;
+
+    const { user } = render(
+      <TestForm>
+        <div>{`NOT A FORM SECTION. DON'T COUNT ME`}</div>
+        <FormLayout.Section label={firstSectionLabel} fields={[`job`]}>
+          <JobInput />
+        </FormLayout.Section>
+        <FormLayout.Section label={secondSectionLabel}>
+          <div>Second section content</div>
+        </FormLayout.Section>
+        <FormLayout.Section label={thirdSectionLabel}>
+          <div>Third section content</div>
+        </FormLayout.Section>
+      </TestForm>
+    );
+
+    const actionsBar = await screen.findByTestId(DataTestIds.ACTIONS_BAR);
+
+    // when on step 1
+    expect(within(actionsBar).getAllByRole(`button`).length).toBe(2);
+    expect(within(actionsBar).getByText(secondSectionLabel)).toBeInTheDocument();
+    expect(within(actionsBar).queryByText(firstSectionLabel)).not.toBeInTheDocument();
+    expect(within(actionsBar).getByText(`Submit`)).toBeInTheDocument();
+
+    // when on step 2
+    await user.click(within(actionsBar).getByText(secondSectionLabel));
+    expect(within(actionsBar).getAllByRole(`button`).length).toBe(3);
+    expect(within(actionsBar).getByText(firstSectionLabel)).toBeInTheDocument();
+    expect(within(actionsBar).queryByText(secondSectionLabel)).not.toBeInTheDocument();
+    expect(within(actionsBar).getByText(thirdSectionLabel)).toBeInTheDocument();
+    expect(within(actionsBar).getByText(`Submit`)).toBeInTheDocument();
+
+    // when on step 3
+    await user.click(within(actionsBar).getByText(thirdSectionLabel));
+    expect(within(actionsBar).getAllByRole(`button`).length).toBe(2);
+    expect(within(actionsBar).queryByText(firstSectionLabel)).not.toBeInTheDocument();
+    expect(within(actionsBar).getByText(secondSectionLabel)).toBeInTheDocument();
+    expect(within(actionsBar).queryByText(thirdSectionLabel)).not.toBeInTheDocument();
+    expect(within(actionsBar).getByText(`Submit`)).toBeInTheDocument();
+  });
+
+  it(`renders custom action buttons correctly`, async () => {
+    const sectionOneCustomButtonText = `Section 1 custom button`;
+    const sectionTwoCustomButtonText = `Section 2 custom button`;
+
+    const actions = [
+      {
+        index: 0,
+        element: <button>{sectionOneCustomButtonText}</button>,
+      },
+      {
+        index: 1,
+        element: <button>{sectionTwoCustomButtonText}</button>,
+      },
+    ];
+
+    const { user } = render(
+      <TestForm actions={actions}>
+        <FormLayout.Section label="First section" fields={[`job`]}>
+          <JobInput />
+        </FormLayout.Section>
+        <FormLayout.Section label="Second section">
+          <div>Second section content</div>
+        </FormLayout.Section>
+      </TestForm>
+    );
+
+    const actionsBar = await screen.findByTestId(DataTestIds.ACTIONS_BAR);
+    expect(within(actionsBar).getByText(sectionOneCustomButtonText)).toBeInTheDocument();
+    expect(within(actionsBar).queryByText(sectionTwoCustomButtonText)).not.toBeInTheDocument();
+
+    await user.click(within(actionsBar).getByText(`Second section`));
+    expect(within(actionsBar).queryByText(sectionOneCustomButtonText)).not.toBeInTheDocument();
+    expect(within(actionsBar).getByText(sectionTwoCustomButtonText)).toBeInTheDocument();
+  });
+
+  it(`moves to the first step with an error on submission`, async () => {
+    const secondSectionContent = `Second section content`;
+    const thirdSectionContent = `Third section content`;
+    const thirdSectionLabel = `Third section`;
+
+    const { user } = render(
+      <TestForm>
+        <FormLayout.Section label="First section" fields={[`job`]}>
+          <JobInput />
+        </FormLayout.Section>
+        <FormLayout.Section label="Second section" fields={[`target`]}>
+          <TargetInput />
+          <div>{secondSectionContent}</div>
+        </FormLayout.Section>
+        <FormLayout.Section label={thirdSectionLabel}>
+          <div>{thirdSectionContent}</div>
+        </FormLayout.Section>
+      </TestForm>
+    );
+
+    const jobInput = await screen.findByLabelText(`Job`);
+    await user.type(jobInput, `job`);
+    const lastSection = await screen.findByText(thirdSectionLabel);
+    await user.click(lastSection);
+    expect(screen.getByText(thirdSectionContent)).toBeInTheDocument();
+    await user.click(screen.getByText(`Submit`));
+    const firstSection = await screen.findByText(secondSectionContent);
+    expect(firstSection).toBeInTheDocument();
   });
 });
 
-const TestForm = ({ children }: TestFormProps) => {
+type TestValues = {
+  job: string;
+  target: string;
+};
+
+const schema = z.object({
+  job: z.string().min(1),
+  target: z.string().min(1),
+});
+
+const TestForm = <T extends FieldValues>({
+  actions,
+  children,
+  disabled,
+}: Pick<FormLayoutProps<T>, 'actions' | 'children' | 'disabled'>) => {
   const formMethods = useForm<TestValues>({
     defaultValues: {
       job: ``,
+      target: ``,
     },
+    resolver: zodResolver(schema),
   });
 
-  return <FormProvider {...formMethods}>{children}</FormProvider>;
+  return (
+    <FormProvider {...formMethods}>
+      <FormLayout
+        actions={actions}
+        disabled={disabled}
+        onSubmit={formMethods.handleSubmit}
+        onValid={(v) => v}
+        schema={schema}
+      >
+        {children}
+      </FormLayout>
+    </FormProvider>
+  );
 };
 
-const NameInput = () => {
+const JobInput = () => {
+  const { register } = useFormContext<TestValues>();
+  const id = `job`;
+
+  return (
+    <>
+      <label htmlFor={id}>Job</label>
+      <input {...register('job')} id={id} />
+    </>
+  );
+};
+
+const TargetInput = () => {
   const { register } = useFormContext<TestValues>();
 
-  return <input {...register('job')} />;
+  return <input {...register('target')} />;
 };

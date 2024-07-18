@@ -6,10 +6,10 @@ import { css } from '@emotion/css';
 
 import { Probe } from 'types';
 
-interface Props {
+interface CheckProbesProps {
   probes: number[];
   availableProbes: Probe[];
-  isEditor: boolean;
+  disabled?: boolean;
   onChange: (probes: number[]) => void;
   onBlur?: () => void;
   invalid?: boolean;
@@ -19,7 +19,7 @@ interface Props {
 export const PROBES_SELECT_ID = 'check-probes-select';
 
 export const CheckProbes = forwardRef(
-  ({ probes, availableProbes, isEditor, onChange, onBlur, invalid, error }: Props, ref) => {
+  ({ probes, availableProbes, disabled, onChange, onBlur, invalid, error }: CheckProbesProps, ref) => {
     const [currentProbes, setCurrentProbes] = useState<number[]>(probes);
 
     const onChangeSelect = useCallback(
@@ -71,7 +71,6 @@ export const CheckProbes = forwardRef(
               id={PROBES_SELECT_ID}
               label="Probe locations"
               description="Select one, multiple, or all probes where this target will be checked from. Deprecated probes can be removed, but they cannot be added."
-              disabled={!isEditor}
               error={error}
               invalid={invalid}
               htmlFor={id}
@@ -81,7 +80,7 @@ export const CheckProbes = forwardRef(
                 options={options}
                 value={selectedProbes}
                 onChange={onChangeSelect}
-                disabled={!isEditor}
+                disabled={disabled}
                 closeMenuOnSelect={false}
                 onBlur={onBlur}
                 inputId={id}
@@ -96,7 +95,7 @@ export const CheckProbes = forwardRef(
               <Stack>
                 <Button
                   onClick={onAllLocations}
-                  disabled={!isEditor}
+                  disabled={disabled}
                   variant="secondary"
                   size="sm"
                   type="button"
@@ -106,7 +105,7 @@ export const CheckProbes = forwardRef(
                 </Button>
                 <Button
                   onClick={onClearLocations}
-                  disabled={!isEditor}
+                  disabled={disabled}
                   variant="secondary"
                   size="sm"
                   type="button"

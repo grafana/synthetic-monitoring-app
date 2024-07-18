@@ -1,29 +1,26 @@
 import React from 'react';
-import { useFormContext } from 'react-hook-form';
-import { OrgRole } from '@grafana/data';
+import { FieldPath, useFormContext } from 'react-hook-form';
 import { Field, Switch } from '@grafana/ui';
 
 import { CheckFormValuesPing } from 'types';
-import { hasRole } from 'utils';
 
-export const PingCheckFragment = () => {
-  const isEditor = hasRole(OrgRole.Editor);
+interface PingCheckFragmentProps {
+  disabled?: boolean;
+  name: FieldPath<CheckFormValuesPing>;
+}
+
+export const PingCheckFragment = ({ disabled, name }: PingCheckFragmentProps) => {
   const { register } = useFormContext<CheckFormValuesPing>();
   const id = 'ping-settings-dont-fragment';
 
   return (
     <Field
-      label="Don't fragment"
       description="Set the DF-bit in the IP-header. Only works with ipV4"
-      disabled={!isEditor}
+      disabled={disabled}
       htmlFor={id}
+      label="Don't fragment"
     >
-      <Switch
-        id={id}
-        {...register('settings.ping.dontFragment')}
-        disabled={!isEditor}
-        data-fs-element="Do not fragment switch"
-      />
+      <Switch id={id} {...register(name)} disabled={disabled} data-fs-element="Do not fragment switch" />
     </Field>
   );
 };

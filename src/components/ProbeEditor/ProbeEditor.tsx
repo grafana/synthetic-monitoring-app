@@ -11,7 +11,7 @@ import { canEditProbes } from 'utils';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 import { LabelField } from 'components/LabelField';
 import { ProbeRegionsSelect } from 'components/ProbeRegionsSelect';
-import { getRoute } from 'components/Routing';
+import { getRoute } from 'components/Routing.utils';
 import { SimpleMap } from 'components/SimpleMap';
 
 type ProbeEditorProps = {
@@ -154,7 +154,7 @@ export const ProbeEditor = ({
                     />
                   </Field>
                 </div>
-                {canEdit && <LabelField<Probe> labelDestination={'probe'} />}
+                {canEdit && <LabelField<Probe> disabled={!canEdit} labelDestination={'probe'} />}
                 <div className={styles.marginBottom}>
                   <Legend>Capabilities</Legend>
                   <HorizontalCheckboxField

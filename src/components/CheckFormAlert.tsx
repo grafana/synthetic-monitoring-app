@@ -6,11 +6,13 @@ import { css } from '@emotion/css';
 
 import { CheckFormValues } from 'types';
 
+import { useCheckFormContext } from './CheckForm/CheckFormContext/CheckFormContext';
 import { ALERT_SENSITIVITY_OPTIONS } from './constants';
 
 export const CheckFormAlert = () => {
   const styles = useStyles2(getStyles);
   const { control, watch } = useFormContext<CheckFormValues>();
+  const { isFormDisabled } = useCheckFormContext();
   const alertSensitivity = watch('alertSensitivity');
 
   const isCustomSensitivity = !Boolean(ALERT_SENSITIVITY_OPTIONS.find((option) => option.value === alertSensitivity));
@@ -42,8 +44,9 @@ export const CheckFormAlert = () => {
             return (
               <Select
                 {...rest}
+                aria-label="Select alert sensitivity"
                 width={40}
-                disabled={isCustomSensitivity}
+                disabled={isFormDisabled || isCustomSensitivity}
                 data-testid="alertSensitivityInput"
                 options={
                   isCustomSensitivity

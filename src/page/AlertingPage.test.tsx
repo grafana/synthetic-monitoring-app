@@ -2,9 +2,9 @@ import React from 'react';
 import { screen, waitFor, within } from '@testing-library/react';
 import { type UserEvent } from '@testing-library/user-event';
 import { render } from 'test/render';
+import { selectOption } from 'test/utils';
 
 import { AlertFamily, AlertRule, AlertSensitivity } from 'types';
-import { selectOption } from 'components/CheckEditor/testHelpers';
 import {
   ALERT_PROBE_SUCCESS_RECORDING_EXPR,
   DEFAULT_ALERT_NAMES_BY_FAMILY_AND_SENSITIVITY,
