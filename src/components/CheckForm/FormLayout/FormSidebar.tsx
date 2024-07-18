@@ -37,16 +37,16 @@ export const FormSidebar = ({ activeSection, onSectionClick, sections, visitedSe
 
         return (
           <Fragment key={label}>
-            <li className={cx(styles.listItem, { [styles.active]: isActive })}>
+            <li className={styles.listItem}>
               <button
-                className={styles.listItemLabel}
+                className={styles.button}
                 type="button"
                 onClick={() => {
                   onSectionClick(sectionIndex);
                 }}
               >
                 <Prefix index={sectionIndex + 1} visited={hasBeenVisited} hasErrors={hasErrors} />
-                <div className={cx(styles.label, { [`activeLabel`]: isActive })}>{`${label}`}</div>
+                <div className={cx(styles.label, { [styles.activeLabel]: isActive })}>{`${label}`}</div>
               </button>
             </li>
             {!isLast && <div className={styles.divider} />}
@@ -76,6 +76,22 @@ function getStyles(theme: GrafanaTheme2) {
   const mediaQuery = `@supports not (container-type: inline-size) @media ${query}`;
   const border = `1px solid ${theme.colors.border.medium}`;
 
+  const activeLabel = css({
+    fontWeight: theme.typography.fontWeightBold,
+    color: theme.colors.text.maxContrast,
+  });
+
+  const label = css({
+    [`&:not(.${activeLabel})`]: {
+      [containerQuery]: {
+        display: 'none',
+      },
+      [mediaQuery]: {
+        display: 'none',
+      },
+    },
+  });
+
   return {
     container: css({
       listStyleType: 'none',
@@ -100,29 +116,20 @@ function getStyles(theme: GrafanaTheme2) {
       fontWeight: theme.typography.fontWeightLight,
       color: theme.colors.text.secondary,
     }),
-    listItemLabel: css({
+    button: css({
       display: 'flex',
       alignItems: 'center',
       gap: theme.spacing(1),
       width: '100%',
       border: 'none',
       background: 'none',
-    }),
-    activeLabel: css({}),
-    label: css({
-      [`&:not(.activeLabel)`]: {
-        [containerQuery]: {
-          display: 'none',
-        },
-        [mediaQuery]: {
-          display: 'none',
-        },
+
+      [`&:hover .${label}, &:focus-visible .${label}`]: {
+        textDecoration: 'underline',
       },
     }),
-    active: css({
-      fontWeight: theme.typography.fontWeightBold,
-      color: theme.colors.text.maxContrast,
-    }),
+    activeLabel,
+    label,
     divider: css({
       height: theme.spacing(2),
       borderLeft: `2px solid ${theme.colors.border.medium}`,
