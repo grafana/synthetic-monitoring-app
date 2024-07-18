@@ -7,7 +7,7 @@ import { type Label, type Probe, ROUTES } from 'types';
 import { canEditProbes } from 'utils';
 import { Card } from 'components/Card';
 import { SuccessRateGaugeProbe } from 'components/Gauges';
-import { getRoute } from 'components/Routing';
+import { getRoute } from 'components/Routing.utils';
 
 export const ProbeCard = ({ probe }: { probe: Probe }) => {
   const [isFocused, setIsFocused] = useState(false);

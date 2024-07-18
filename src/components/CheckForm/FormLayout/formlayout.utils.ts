@@ -1,9 +1,7 @@
 import { useCallback, useState } from 'react';
-import { FieldErrors, FieldPath, FieldValues } from 'react-hook-form';
+import { FieldPath, FieldValues } from 'react-hook-form';
 import { uniq } from 'lodash';
 import { ZodType } from 'zod';
-
-import { PROBES_SELECT_ID } from 'components/CheckEditor/CheckProbes';
 
 // because we have separated multihttp assertions we need a way to say that no matter the
 // entry's index this error belongs to the steps section or the uptime definition step
@@ -74,46 +72,12 @@ export function checkForErrors<T extends FieldValues>({
   };
 }
 
-export function findFieldToFocus<T extends FieldValues>(errs: FieldErrors<T>): HTMLElement | undefined {
-  if (shouldFocusProbes(errs)) {
-    return document.querySelector<HTMLInputElement>(`#${PROBES_SELECT_ID} input`) || undefined;
-  }
-
-  const ref = findRef(errs);
-  const isVisible = ref?.offsetParent !== null;
-  return isVisible ? ref : undefined;
-}
-
-function findRef(target: any): HTMLElement | undefined {
-  if (Array.isArray(target)) {
-    let ref;
-    for (let i = 0; i < target.length; i++) {
-      const found = findRef(target[i]);
-
-      if (found) {
-        ref = found;
-        break;
-      }
+export function normalizeFlattenedErrors(errors: string[]) {
+  return errors.map((error) => {
+    if (error.startsWith(`settings.multihttp.entries`)) {
+      return error.replace(/\.[0-9]\./, `.${ENTRY_INDEX_CHAR}.`);
     }
 
-    return ref;
-  }
-
-  if (target !== null && typeof target === `object`) {
-    if (target.ref) {
-      return target.ref;
-    }
-
-    return findRef(Object.values(target));
-  }
-
-  return undefined;
-}
-
-function shouldFocusProbes<T extends FieldValues>(errs: FieldErrors<T>) {
-  if (errs?.job || errs?.target) {
-    return false;
-  }
-
-  return `probes` in errs;
+    return error;
+  });
 }

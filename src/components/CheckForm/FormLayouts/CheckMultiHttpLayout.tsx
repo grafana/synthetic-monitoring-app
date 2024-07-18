@@ -10,7 +10,10 @@ import { ENTRY_INDEX_CHAR } from '../FormLayout/formlayout.utils';
 
 export const MultiHTTPCheckLayout: Partial<Record<LayoutSection, Section<CheckFormValuesMultiHttp>>> = {
   [LayoutSection.Check]: {
-    fields: [`settings.multihttp.entries.${ENTRY_INDEX_CHAR}.request`],
+    fields: [
+      `settings.multihttp.entries.${ENTRY_INDEX_CHAR}.request`,
+      `settings.multihttp.entries.${ENTRY_INDEX_CHAR}.variables`,
+    ],
     Component: (
       <>
         <MultiHttpCheckRequests />

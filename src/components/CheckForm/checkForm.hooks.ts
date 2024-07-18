@@ -14,8 +14,8 @@ import { AdHocCheckResponse } from 'datasource/responses.types';
 import { useCUDChecks, useTestCheck } from 'data/useChecks';
 import { useNavigation } from 'hooks/useNavigation';
 import { toPayload } from 'components/CheckEditor/checkFormTransformations';
-import { CHECK_FORM_ERROR_EVENT } from 'components/constants';
 
+import { broadcastFailedSubmission, findFieldToFocus } from './checkForm.utils';
 import { useFormCheckType } from './useCheckType';
 
 const schemaMap = {
@@ -83,7 +83,12 @@ export function useCheckForm({ check, checkType, onTestSuccess }: UseCheckFormPr
   );
 
   const handleInvalid = useCallback((errs: FieldErrors) => {
-    document.dispatchEvent(new CustomEvent(CHECK_FORM_ERROR_EVENT, { detail: errs }));
+    broadcastFailedSubmission(errs, `submission`);
+
+    // wait for the fields to be rendered after discovery
+    setTimeout(() => {
+      findFieldToFocus(errs);
+    }, 100);
   }, []);
 
   return {

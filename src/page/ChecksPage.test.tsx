@@ -8,7 +8,7 @@ import { render } from 'test/render';
 import { server } from 'test/server';
 
 import { AlertSensitivity, Check, CheckTypeGroup, ROUTES } from 'types';
-import { PLUGIN_URL_PATH } from 'components/constants';
+import { PLUGIN_URL_PATH } from 'components/Routing.consts';
 
 import { CheckRouter } from './CheckRouter';
 

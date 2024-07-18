@@ -431,8 +431,6 @@ export const HTTP_COMPRESSION_ALGO_OPTIONS = [
   { label: 'deflate', value: HTTPCompressionAlgo.deflate },
 ];
 
-export const PLUGIN_URL_PATH = '/a/grafana-synthetic-monitoring-app/';
-
 export const METHOD_OPTIONS = [
   {
     label: 'GET',
@@ -504,4 +502,4 @@ export const LATENCY_DESCRIPTION =
 
 export const STANDARD_REFRESH_INTERVAL = 1000 * 60;
 
-export const CHECK_FORM_ERROR_EVENT = `sm-form-error`;
+export const CHECK_FORM_ERROR_EVENT = `sm-check-form-error`;

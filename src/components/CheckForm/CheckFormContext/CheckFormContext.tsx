@@ -1,6 +1,7 @@
 import React, { createContext, ReactNode, useContext, useMemo } from 'react';
 
-import { Request, RequestFields } from './CheckFormContext.types';
+import { Request } from './CheckFormContext.types';
+import { RequestFields } from 'components/CheckEditor/CheckEditor.types';
 
 import { useTestRequests } from './useTestRequests';
 

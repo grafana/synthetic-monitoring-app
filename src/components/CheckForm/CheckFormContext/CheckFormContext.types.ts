@@ -1,12 +1,4 @@
 import { CheckFormValues } from 'types';
-import {
-  DNSRequestFields,
-  GRPCRequestFields,
-  HttpRequestFields,
-  PingRequestFields,
-  TCPRequestFields,
-  TracerouteRequestFields,
-} from 'components/CheckEditor/CheckEditor.types';
 export type Request = {
   id: number;
   check: {
@@ -19,11 +11,3 @@ export type Request = {
     result: any;
   };
 };
-
-export type RequestFields =
-  | HttpRequestFields
-  | DNSRequestFields
-  | GRPCRequestFields
-  | TCPRequestFields
-  | TracerouteRequestFields
-  | PingRequestFields;

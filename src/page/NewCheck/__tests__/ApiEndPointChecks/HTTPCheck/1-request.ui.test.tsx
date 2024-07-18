@@ -2,7 +2,8 @@ import { screen, within } from '@testing-library/react';
 import { getSelect } from 'test/utils';
 
 import { CheckType, HttpMethod } from 'types';
-import { renderNewForm } from 'page/__testHelpers__/checkForm';
+import { fillMandatoryFields } from 'page/__testHelpers__/apiEndPoint';
+import { renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
 
 const checkType = CheckType.HTTP;
 
@@ -19,5 +20,17 @@ describe(`HttpCheck - Section 1 (Request) UI`, () => {
 
     const [methodSelect] = await getSelect({ label: 'Request method' });
     expect(within(methodSelect).getByText(HttpMethod.GET)).toBeInTheDocument();
+  });
+
+  it(`will navigate to the first section and open the request to reveal a nested error`, async () => {
+    const { user } = await renderNewForm(checkType);
+    await user.click(screen.getByText('Request options'));
+    await user.click(screen.getByText('Add request header'));
+
+    await fillMandatoryFields({ user, checkType });
+    await submitForm(user);
+
+    const err = await screen.findByText(`Request header name is required`);
+    expect(err).toBeInTheDocument();
   });
 });

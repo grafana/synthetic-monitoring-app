@@ -2,6 +2,7 @@ import React, { useCallback } from 'react';
 
 import { LayoutSection, Section } from './Layout.types';
 import { CheckFormValuesPing } from 'types';
+import { useNestedRequestErrors } from 'hooks/useNestedRequestErrors';
 import { PingRequestFields } from 'components/CheckEditor/CheckEditor.types';
 import { CheckPublishedAdvanceMetrics } from 'components/CheckEditor/FormComponents/CheckPublishedAdvanceMetrics';
 import { PingRequest } from 'components/CheckEditor/FormComponents/PingRequest';
@@ -15,21 +16,24 @@ const PING_FIELDS: PingRequestFields = {
   },
   ipVersion: {
     name: `settings.ping.ipVersion`,
+    section: 0,
   },
   dontFragment: {
     name: `settings.ping.dontFragment`,
+    section: 0,
   },
 };
 
 const CheckPingRequest = () => {
   const { isFormDisabled, supportingContent } = useCheckFormContext();
   const { addRequest } = supportingContent;
+  const { handleErrorRef } = useNestedRequestErrors(PING_FIELDS);
 
   const onTest = useCallback(() => {
     addRequest(PING_FIELDS);
   }, [addRequest]);
 
-  return <PingRequest disabled={isFormDisabled} fields={PING_FIELDS} onTest={onTest} />;
+  return <PingRequest disabled={isFormDisabled} fields={PING_FIELDS} onTest={onTest} ref={handleErrorRef} />;
 };
 
 export const PingCheckLayout: Partial<Record<LayoutSection, Section<CheckFormValuesPing>>> = {

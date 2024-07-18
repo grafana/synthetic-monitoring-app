@@ -5,7 +5,7 @@ import { LoadingPlaceholder } from '@grafana/ui';
 import { DashboardSceneAppConfig, ROUTES } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { useChecks } from 'data/useChecks';
-import { PLUGIN_URL_PATH } from 'components/constants';
+import { PLUGIN_URL_PATH } from 'components/Routing.consts';
 import { getSummaryScene } from 'scenes/Summary';
 
 export const SceneHomepage = () => {

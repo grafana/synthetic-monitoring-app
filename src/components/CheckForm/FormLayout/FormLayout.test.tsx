@@ -1,5 +1,6 @@
 import React from 'react';
 import { FieldValues, FormProvider, useForm, useFormContext } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { screen, within } from '@testing-library/react';
 import { z } from 'zod';
 import { DataTestIds } from 'test/dataTestIds';
@@ -46,7 +47,7 @@ describe(`FormLayout`, () => {
     const { container, user } = render(
       <TestForm>
         <FormLayout.Section label="First section" fields={[`job`]}>
-          <NameInput />
+          <JobInput />
         </FormLayout.Section>
         <FormLayout.Section label="Second section">
           <div>Second section content</div>
@@ -117,7 +118,7 @@ describe(`FormLayout`, () => {
     render(
       <TestForm disabled>
         <FormLayout.Section label="First section" fields={[`job`]}>
-          <NameInput />
+          <JobInput />
         </FormLayout.Section>
         <FormLayout.Section label="Second section">
           <div>Second section content</div>
@@ -133,7 +134,7 @@ describe(`FormLayout`, () => {
     const { container, user } = render(
       <TestForm>
         <FormLayout.Section label="First section" fields={[`job`]}>
-          <NameInput />
+          <JobInput />
         </FormLayout.Section>
         <FormLayout.Section label="Second section">
           <div>Second section content</div>
@@ -156,7 +157,7 @@ describe(`FormLayout`, () => {
     const { container, user } = render(
       <TestForm disabled>
         <FormLayout.Section label="First section" fields={[`job`]}>
-          <NameInput />
+          <JobInput />
         </FormLayout.Section>
         <FormLayout.Section label="Second section">
           <div>Second section content</div>
@@ -184,7 +185,7 @@ describe(`FormLayout`, () => {
       <TestForm>
         <div>{`NOT A FORM SECTION. DON'T COUNT ME`}</div>
         <FormLayout.Section label={firstSectionLabel} fields={[`job`]}>
-          <NameInput />
+          <JobInput />
         </FormLayout.Section>
         <FormLayout.Section label={secondSectionLabel}>
           <div>Second section content</div>
@@ -238,7 +239,7 @@ describe(`FormLayout`, () => {
     const { user } = render(
       <TestForm actions={actions}>
         <FormLayout.Section label="First section" fields={[`job`]}>
-          <NameInput />
+          <JobInput />
         </FormLayout.Section>
         <FormLayout.Section label="Second section">
           <div>Second section content</div>
@@ -254,11 +255,47 @@ describe(`FormLayout`, () => {
     expect(within(actionsBar).queryByText(sectionOneCustomButtonText)).not.toBeInTheDocument();
     expect(within(actionsBar).getByText(sectionTwoCustomButtonText)).toBeInTheDocument();
   });
+
+  it(`moves to the first step with an error on submission`, async () => {
+    const secondSectionContent = `Second section content`;
+    const thirdSectionContent = `Third section content`;
+    const thirdSectionLabel = `Third section`;
+
+    const { user } = render(
+      <TestForm>
+        <FormLayout.Section label="First section" fields={[`job`]}>
+          <JobInput />
+        </FormLayout.Section>
+        <FormLayout.Section label="Second section" fields={[`target`]}>
+          <TargetInput />
+          <div>{secondSectionContent}</div>
+        </FormLayout.Section>
+        <FormLayout.Section label={thirdSectionLabel}>
+          <div>{thirdSectionContent}</div>
+        </FormLayout.Section>
+      </TestForm>
+    );
+
+    const jobInput = await screen.findByLabelText(`Job`);
+    await user.type(jobInput, `job`);
+    const lastSection = await screen.findByText(thirdSectionLabel);
+    await user.click(lastSection);
+    expect(screen.getByText(thirdSectionContent)).toBeInTheDocument();
+    await user.click(screen.getByText(`Submit`));
+    const firstSection = await screen.findByText(secondSectionContent);
+    expect(firstSection).toBeInTheDocument();
+  });
 });
 
 type TestValues = {
   job: string;
+  target: string;
 };
+
+const schema = z.object({
+  job: z.string().min(1),
+  target: z.string().min(1),
+});
 
 const TestForm = <T extends FieldValues>({
   actions,
@@ -268,7 +305,9 @@ const TestForm = <T extends FieldValues>({
   const formMethods = useForm<TestValues>({
     defaultValues: {
       job: ``,
+      target: ``,
     },
+    resolver: zodResolver(schema),
   });
 
   return (
@@ -278,9 +317,7 @@ const TestForm = <T extends FieldValues>({
         disabled={disabled}
         onSubmit={formMethods.handleSubmit}
         onValid={(v) => v}
-        schema={z.object({
-          job: z.string().min(1),
-        })}
+        schema={schema}
       >
         {children}
       </FormLayout>
@@ -288,8 +325,20 @@ const TestForm = <T extends FieldValues>({
   );
 };
 
-const NameInput = () => {
+const JobInput = () => {
+  const { register } = useFormContext<TestValues>();
+  const id = `job`;
+
+  return (
+    <>
+      <label htmlFor={id}>Job</label>
+      <input {...register('job')} id={id} />
+    </>
+  );
+};
+
+const TargetInput = () => {
   const { register } = useFormContext<TestValues>();
 
-  return <input {...register('job')} />;
+  return <input {...register('target')} />;
 };

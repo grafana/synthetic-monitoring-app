@@ -1,28 +1,26 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { FieldErrors, useFieldArray, useFormContext } from 'react-hook-form';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useFieldArray, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Button, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
 import { HttpRequestFields } from '../CheckEditor.types';
-import { CheckFormValues, CheckFormValuesMultiHttp, HttpMethod } from 'types';
+import { CheckFormInvalidSubmissionEvent, CheckFormValuesMultiHttp, HttpMethod } from 'types';
+import { useNestedRequestErrors } from 'hooks/useNestedRequestErrors';
+import { broadcastFailedSubmission, flattenKeys } from 'components/CheckForm/checkForm.utils';
 import { useCheckFormContext } from 'components/CheckForm/CheckFormContext/CheckFormContext';
 import { ENTRY_INDEX_CHAR } from 'components/CheckForm/FormLayout/formlayout.utils';
 import { CHECK_FORM_ERROR_EVENT } from 'components/constants';
 import { Indent } from 'components/Indent';
 import { AvailableVariables } from 'components/MultiHttp/AvailableVariables';
 import { MultiHttpCollapse } from 'components/MultiHttp/MultiHttpCollapse';
-import {
-  focusField,
-  getMultiHttpFormErrors,
-  useMultiHttpCollapseState,
-} from 'components/MultiHttp/MultiHttpSettingsForm.utils';
+import { getMultiHttpFormErrors, useMultiHttpCollapseState } from 'components/MultiHttp/MultiHttpSettingsForm.utils';
 
 import { HttpRequest } from './HttpRequest';
 import { MultiHttpVariables } from './MultiHttpVariables';
 
-export const MULTI_HTTP_REQUEST_FIELDS: HttpRequestFields = {
+export const MULTI_HTTP_REQUEST_FIELDS: HttpRequestFields<CheckFormValuesMultiHttp> = {
   target: {
     name: `settings.multihttp.entries.${ENTRY_INDEX_CHAR}.request.url`,
   },
@@ -31,18 +29,23 @@ export const MULTI_HTTP_REQUEST_FIELDS: HttpRequestFields = {
   },
   requestHeaders: {
     name: `settings.multihttp.entries.${ENTRY_INDEX_CHAR}.request.headers`,
-  },
-  requestBody: {
-    name: `settings.multihttp.entries.${ENTRY_INDEX_CHAR}.request.body.payload`,
-  },
-  requestContentEncoding: {
-    name: `settings.multihttp.entries.${ENTRY_INDEX_CHAR}.request.body.contentEncoding`,
-  },
-  requestContentType: {
-    name: `settings.multihttp.entries.${ENTRY_INDEX_CHAR}.request.body.contentType`,
+    section: 0,
   },
   queryParams: {
     name: `settings.multihttp.entries.${ENTRY_INDEX_CHAR}.request.queryFields`,
+    section: 1,
+  },
+  requestBody: {
+    name: `settings.multihttp.entries.${ENTRY_INDEX_CHAR}.request.body.payload`,
+    section: 2,
+  },
+  requestContentEncoding: {
+    name: `settings.multihttp.entries.${ENTRY_INDEX_CHAR}.request.body.contentEncoding`,
+    section: 2,
+  },
+  requestContentType: {
+    name: `settings.multihttp.entries.${ENTRY_INDEX_CHAR}.request.body.contentType`,
+    section: 2,
   },
 };
 
@@ -70,28 +73,29 @@ export const MultiHttpCheckRequests = () => {
   const requests = watch('settings.multihttp.entries');
 
   useEffect(() => {
-    const onErrorEvent = (e: CustomEvent<FieldErrors<CheckFormValues>>) => {
-      const errs = e.detail;
-      const res = getMultiHttpFormErrors(errs);
+    const openRequest = (e: CustomEvent<CheckFormInvalidSubmissionEvent>) => {
+      const { errs, source } = e.detail;
 
-      if (res) {
-        dispatchCollapse({
-          type: 'updateRequestPanel',
-          open: true,
-          index: res.index,
-          tab: res.tab,
-        });
+      // we need to check the source to avoid creating an infinite loop
+      // of rebroadcasting the same event
+      if (source !== `collapsible`) {
+        const res = getMultiHttpFormErrors(errs);
 
-        if (panelRefs.current[res.index]) {
-          focusField(panelRefs.current[res.index], res.id);
+        if (res !== null) {
+          dispatchCollapse({
+            type: 'openRequestPanels',
+            indexes: res,
+          });
+
+          broadcastFailedSubmission(errs, `collapsible`);
         }
       }
     };
 
-    document.addEventListener(CHECK_FORM_ERROR_EVENT, onErrorEvent);
+    document.addEventListener(CHECK_FORM_ERROR_EVENT, openRequest);
 
     return () => {
-      document.removeEventListener(CHECK_FORM_ERROR_EVENT, onErrorEvent);
+      document.removeEventListener(CHECK_FORM_ERROR_EVENT, openRequest);
     };
   }, [dispatchCollapse]);
 
@@ -156,48 +160,76 @@ const MultiHttpRequest = ({ index }: { index: number }) => {
   const { isFormDisabled, supportingContent } = useCheckFormContext();
   const { addRequest } = supportingContent;
 
-  const fields = Object.entries(MULTI_HTTP_REQUEST_FIELDS).reduce<HttpRequestFields>((acc, field) => {
-    const [key, value] = field;
+  const fields: HttpRequestFields<CheckFormValuesMultiHttp> = useMemo(() => {
+    const initial = Object.entries(MULTI_HTTP_REQUEST_FIELDS).reduce<HttpRequestFields<CheckFormValuesMultiHttp>>(
+      (acc, field) => {
+        const [key, value] = field;
+
+        return {
+          ...acc,
+          [key]: {
+            ...value,
+            name: value.name.replace(ENTRY_INDEX_CHAR, index.toString()),
+          },
+        };
+      },
+      MULTI_HTTP_REQUEST_FIELDS
+    );
 
     return {
-      ...acc,
-      [key]: {
-        ...value,
-        name: value.name.replace(ENTRY_INDEX_CHAR, index.toString()),
+      ...initial,
+      target: {
+        ...initial.target,
+        'aria-label': `Request target for request ${index + 1} *`,
+      },
+      method: {
+        ...initial.method,
+        'aria-label': `Request method for request ${index + 1} *`,
       },
     };
-  }, MULTI_HTTP_REQUEST_FIELDS);
+  }, [index]);
 
   const onTest = useCallback(() => {
     addRequest(fields);
   }, [addRequest, fields]);
 
-  return (
-    <HttpRequest
-      disabled={isFormDisabled}
-      fields={{
-        ...fields,
-        target: {
-          ...fields.target,
-          'aria-label': `Request target for request ${index + 1} *`,
-        },
-        method: {
-          ...fields.method,
-          'aria-label': `Request method for request ${index + 1} *`,
-        },
-      }}
-      onTest={onTest}
-    />
-  );
+  const { handleErrorRef } = useNestedRequestErrors(fields);
+
+  return <HttpRequest disabled={isFormDisabled} fields={fields} onTest={onTest} ref={handleErrorRef} />;
 };
+
+MultiHttpRequest.displayName = 'MultiHttpRequest';
 
 const SetVariables = ({ index }: { index: number }) => {
   const [open, setOpen] = useState(false);
 
+  useEffect(() => {
+    const handleErrorEvent = (event: CustomEvent<CheckFormInvalidSubmissionEvent>) => {
+      const { errs } = event.detail;
+      const errorKeys = flattenKeys(errs);
+
+      if (errorKeys.some((key) => key.startsWith(`settings.multihttp.entries.${index}.variables`))) {
+        setOpen(true);
+      }
+    };
+
+    document.addEventListener(CHECK_FORM_ERROR_EVENT, handleErrorEvent);
+
+    return () => {
+      document.removeEventListener(CHECK_FORM_ERROR_EVENT, handleErrorEvent);
+    };
+  }, [index]);
+
   return (
     <Stack direction={`column`}>
       <div>
-        <Button onClick={() => setOpen((v) => !v)} type="button" fill="text" icon={open ? `arrow-down` : `arrow-right`}>
+        <Button
+          aria-expanded={open}
+          fill="text"
+          icon={open ? `arrow-down` : `arrow-right`}
+          onClick={() => setOpen((v) => !v)}
+          type="button"
+        >
           Set variables
         </Button>
       </div>
