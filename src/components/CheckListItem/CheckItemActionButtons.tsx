@@ -7,8 +7,8 @@ import { Check, ROUTES } from 'types';
 import { getCheckType, getCheckTypeGroup, hasRole } from 'utils';
 import { useDeleteCheck } from 'data/useChecks';
 import { useNavigation } from 'hooks/useNavigation';
-import { getRoute } from 'components/Routing.utils';
 import { PLUGIN_URL_PATH } from 'components/Routing.consts';
+import { getRoute } from 'components/Routing.utils';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   actionButtonGroup: css`
