@@ -4,6 +4,7 @@ import { selectOption } from 'test/utils';
 
 import { AlertSensitivity, Check, CheckType } from 'types';
 import {
+  FALLBACK_CHECK_BROWSER,
   FALLBACK_CHECK_DNS,
   FALLBACK_CHECK_GRPC,
   FALLBACK_CHECK_HTTP,
@@ -22,6 +23,7 @@ export const FALLBACK_CHECK_MAP: Record<string, Check> = {
   [CheckType.DNS]: FALLBACK_CHECK_DNS,
   [CheckType.TCP]: FALLBACK_CHECK_TCP,
   [CheckType.Traceroute]: FALLBACK_CHECK_TRACEROUTE,
+  [CheckType.Browser]: FALLBACK_CHECK_BROWSER,
 };
 
 describe('Api endpoint checks - common fields payload', () => {

@@ -29,6 +29,7 @@ const schemaMap = {
   [CheckType.Scripted]: ScriptedCheckSchema,
   [CheckType.TCP]: TCPCheckSchema,
   [CheckType.Traceroute]: TracerouteCheckSchema,
+  [CheckType.Browser]: BrowserCheckSchema,
 };
 
 export function useCheckFormSchema(check?: Check) {
