@@ -1,5 +1,6 @@
 import { BaseSyntheticEvent, useCallback, useRef } from 'react';
 import { FieldErrors } from 'react-hook-form';
+import { BrowserCheckSchema } from 'schemas/forms/BrowserCheckSchema';
 import { DNSCheckSchema } from 'schemas/forms/DNSCheckSchema';
 import { GRPCCheckSchema } from 'schemas/forms/GRPCCheckSchema';
 import { HttpCheckSchema } from 'schemas/forms/HttpCheckSchema';
@@ -27,6 +28,7 @@ const schemaMap = {
   [CheckType.Scripted]: ScriptedCheckSchema,
   [CheckType.TCP]: TCPCheckSchema,
   [CheckType.Traceroute]: TracerouteCheckSchema,
+  [CheckType.Browser]: BrowserCheckSchema,
 };
 
 export function useCheckFormSchema(check?: Check) {
