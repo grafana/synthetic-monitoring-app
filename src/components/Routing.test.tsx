@@ -1,5 +1,6 @@
 import React from 'react';
-import runTime from '@grafana/runtime';
+import { OrgRole } from '@grafana/data';
+import runTime, { config } from '@grafana/runtime';
 import { screen } from '@testing-library/react';
 import { type CustomRenderOptions, render } from 'test/render';
 
@@ -8,9 +9,6 @@ import { PLUGIN_URL_PATH } from 'components/Routing.consts';
 
 import { Routing } from './Routing';
 import { getRoute } from './Routing.utils';
-
-import { config } from '@grafana/runtime';
-import { OrgRole } from '@grafana/data';
 
 function renderRouting(options?: CustomRenderOptions) {
   return render(<Routing onNavChanged={jest.fn} />, options);
