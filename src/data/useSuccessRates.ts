@@ -1,13 +1,12 @@
-import { useContext } from 'react';
 import { type QueryKey, useQuery } from '@tanstack/react-query';
 
 import { Check } from 'types';
 import { queryMetric } from 'utils';
 import { MetricCheckSuccess, MetricProbeSuccessRate } from 'datasource/responses.types';
-import { InstanceContext } from 'contexts/InstanceContext';
 import { STANDARD_REFRESH_INTERVAL } from 'components/constants';
 import { getMinStepFromFrequency } from 'scenes/utils';
 
+import { useMetricsDS } from './useMetricsDS';
 import { findCheckinMetrics } from './utils';
 
 const queryKeys: Record<'checkReachability' | 'checkUptime' | 'probeReachability', QueryKey> = {
@@ -26,6 +25,7 @@ export function useChecksReachabilitySuccessRate() {
     // otherwise it would continuously refetch
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: [...queryKeys.checkReachability, query, url],
+    // @ts-expect-error -- todo: fix this
     queryFn: () => queryMetric<MetricCheckSuccess>(url, query, options),
     refetchInterval: (query) => STANDARD_REFRESH_INTERVAL,
   });
@@ -56,6 +56,7 @@ export function useCheckUptimeSuccessRate(check: Check) {
     // otherwise it would continuously refetch
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: [...queryKeys.checkUptime, query, url],
+    // @ts-expect-error -- todo: fix this
     queryFn: () => queryMetric<MetricCheckSuccess>(url, query, options),
     refetchInterval: (query) => STANDARD_REFRESH_INTERVAL,
   });
@@ -70,6 +71,7 @@ export function useProbesReachabilitySuccessRate() {
     // otherwise it would continuously refetch
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: [...queryKeys.probeReachability, query, url],
+    // @ts-expect-error -- todo: fix this
     queryFn: () => queryMetric<MetricProbeSuccessRate>(url, query, options),
     refetchInterval: (query) => STANDARD_REFRESH_INTERVAL,
   });
@@ -86,8 +88,8 @@ export function useProbeReachabilitySuccessRate(probeName?: string) {
 }
 
 function useQueryMetric(interval?: string) {
-  const { instance } = useContext(InstanceContext);
-  const url = instance.api?.getMetricsDS()?.url || ``;
+  const metricsDS = useMetricsDS();
+  const url = metricsDS.url;
   const now = Math.floor(Date.now() / 1000);
   const threeHoursAgo = now - 60 * 60 * 3;
 

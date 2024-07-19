@@ -26,7 +26,7 @@ import {
 import { Metric } from 'datasource/responses.types';
 import { CHECK_TYPE_OPTIONS } from 'hooks/useCheckTypeOptions';
 
-export function findLinkedDatasource(linkedDSInfo: LinkedDatasourceInfo): DataSourceInstanceSettings | undefined {
+export function findLinkedDatasource(linkedDSInfo: LinkedDatasourceInfo): DataSourceInstanceSettings {
   if (linkedDSInfo.uid) {
     const linkedDS = Object.values(config.datasources).find((ds) => ds.uid === linkedDSInfo.uid);
 

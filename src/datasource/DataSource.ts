@@ -127,6 +127,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
         data.push(copy);
       } else if (query.queryType === QueryType.Traceroute) {
         const logsUrl = this.getLogsDS()?.url;
+
         if (!logsUrl) {
           return {
             data: [],

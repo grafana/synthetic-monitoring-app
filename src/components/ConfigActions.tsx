@@ -1,27 +1,22 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { getBackendSrv } from '@grafana/runtime';
 import { Button } from '@grafana/ui';
 
 import { ROUTES } from 'types';
-import { InstanceContext } from 'contexts/InstanceContext';
+import { useMeta } from 'hooks/useMeta';
 import { useNavigation } from 'hooks/useNavigation';
 
 import { DisablePluginModal } from './DisablePluginModal';
 
-interface Props {
-  enabled?: boolean;
-  pluginId: string;
-}
-
-export const ConfigActions = ({ enabled, pluginId }: Props) => {
-  const { instance } = useContext(InstanceContext);
+export const ConfigActions = ({ initialized }: { initialized?: boolean }) => {
   const [showDisableModal, setShowDisableModal] = useState(false);
   const navigate = useNavigation();
+  const meta = useMeta();
 
   const handleEnable = async () => {
     await getBackendSrv()
       .fetch({
-        url: `/api/plugins/${pluginId}/settings`,
+        url: `/api/plugins/${meta.id}/settings`,
         method: 'POST',
         data: {
           enabled: true,
@@ -37,18 +32,18 @@ export const ConfigActions = ({ enabled, pluginId }: Props) => {
   };
 
   const getAction = () => {
-    if (instance?.api) {
+    if (!meta.enabled) {
       return (
-        <Button variant="destructive" onClick={() => setShowDisableModal(true)}>
-          Disable synthetic monitoring
+        <Button variant="primary" onClick={handleEnable}>
+          Enable plugin
         </Button>
       );
     }
 
-    if (!enabled) {
+    if (initialized) {
       return (
-        <Button variant="primary" onClick={handleEnable}>
-          Enable plugin
+        <Button variant="destructive" onClick={() => setShowDisableModal(true)}>
+          Disable synthetic monitoring
         </Button>
       );
     }
@@ -63,7 +58,7 @@ export const ConfigActions = ({ enabled, pluginId }: Props) => {
   return (
     <>
       {getAction()}
-      <DisablePluginModal isOpen={showDisableModal} onDismiss={() => setShowDisableModal(false)} pluginId={pluginId} />
+      <DisablePluginModal isOpen={showDisableModal} onDismiss={() => setShowDisableModal(false)} />
     </>
   );
 };

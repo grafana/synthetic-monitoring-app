@@ -1,12 +1,11 @@
 import React from 'react';
 import { FieldErrors, SubmitErrorHandler, SubmitHandler } from 'react-hook-form';
-import { DataSourceSettings, OrgRole, SelectableValue } from '@grafana/data';
+import { OrgRole, SelectableValue } from '@grafana/data';
 import { EmbeddedScene, SceneRouteMatch } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
 import { ZodType } from 'zod';
 
 import { LinkedDatasourceInfo } from './datasource/types';
-import { SMDataSource } from 'datasource/DataSource';
 import { FilterType } from 'hooks/useCheckFilters';
 import { Assertion, MultiHttpEntry, MultiHttpVariable, RequestProps } from 'components/MultiHttp/MultiHttpTypes';
 
@@ -484,13 +483,6 @@ export interface HostedInstance {
   currentUsage: number;
 }
 
-export interface GrafanaInstances {
-  api?: SMDataSource;
-  metrics?: DataSourceSettings;
-  logs?: DataSourceSettings;
-  alertRuler?: DataSourceSettings;
-}
-
 export interface User {
   email: string;
   id: number;
@@ -636,7 +628,6 @@ export enum HTTPCompressionAlgo {
 }
 
 export enum FeatureName {
-  UnifiedAlerting = 'ngalert',
   ScriptedChecks = 'scripted-checks',
   GRPCChecks = 'grpc-checks',
   __TURNOFF = 'test-only-do-not-use',

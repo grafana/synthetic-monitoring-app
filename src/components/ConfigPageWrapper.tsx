@@ -3,22 +3,29 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { AppPluginMeta, PluginConfigPageProps } from '@grafana/data';
 
 import { GlobalSettings } from 'types';
+import { InstanceContextProvider } from 'contexts/InstanceContext';
 import { queryClient } from 'data/queryClient';
-import { InstanceProvider } from 'components/InstanceProvider';
+import { useSetupSMDatasource } from 'data/useSetupSMDatasource';
 import { ConfigPage } from 'page/ConfigPage';
 
-interface Props extends PluginConfigPageProps<AppPluginMeta<GlobalSettings>> {}
+import { CenteredSpinner } from './CenteredSpinner';
 
-export const ConfigPageWrapper = ({ plugin }: Props) => {
+export const ConfigPageWrapper = ({ plugin }: PluginConfigPageProps<AppPluginMeta<GlobalSettings>>) => {
   return (
-    <InstanceProvider
-      metricInstanceName={plugin.meta.jsonData?.metrics?.grafanaName}
-      logsInstanceName={plugin.meta.jsonData?.logs?.grafanaName}
-      meta={plugin.meta}
-    >
-      <QueryClientProvider client={queryClient}>
-        <ConfigPage />
-      </QueryClientProvider>
-    </InstanceProvider>
+    <QueryClientProvider client={queryClient}>
+      <InstanceContextProvider meta={plugin.meta}>
+        <ConfigPageWrapperContent />
+      </InstanceContextProvider>
+    </QueryClientProvider>
   );
+};
+
+const ConfigPageWrapperContent = () => {
+  const { data, isLoading } = useSetupSMDatasource();
+
+  if (isLoading) {
+    return <CenteredSpinner />;
+  }
+
+  return <ConfigPage initialized={Boolean(data)} />;
 };

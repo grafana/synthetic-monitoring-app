@@ -39,7 +39,6 @@ jest.mock('@grafana/runtime', () => {
       featureToggles: {
         ...actual.config.featureToggles,
         topnav: true,
-        ngalert: true, // FeatureName.UnifiedAlerting
         'multi-http': true, // FeatureName.MultiHttp
         syntheticsPerCheckDashboards: true, // FeatureName.PerCheckDashboards
       },

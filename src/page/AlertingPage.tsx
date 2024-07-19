@@ -1,13 +1,11 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { config } from '@grafana/runtime';
-import { Alert, Button, Icon, Modal, Spinner, Stack, useStyles2 } from '@grafana/ui';
+import { Alert, Button, Modal, Spinner, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { AlertFormValues, AlertRule } from 'types';
-import { InstanceContext } from 'contexts/InstanceContext';
 import { useAlerts } from 'hooks/useAlerts';
-import { useUnifiedAlertsEnabled } from 'hooks/useUnifiedAlertsEnabled';
 import { transformAlertFormValues } from 'components/alertingTransformations';
 import { AlertRuleForm } from 'components/AlertRuleForm';
 import { PluginPage } from 'components/PluginPage';
@@ -30,8 +28,6 @@ const Alerting = () => {
   const { alertRules, setDefaultRules, setRules, alertError } = useAlerts();
   const [updatingDefaultRules, setUpdatingDefaultRules] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
-  const { instance } = useContext(InstanceContext);
-  const isUnifiedAlertingEnabled = useUnifiedAlertsEnabled();
 
   const { recordingRules, alertingRules } = alertRules?.reduce<SplitAlertRules>(
     (rules, currentRule) => {
@@ -66,22 +62,6 @@ const Alerting = () => {
     });
     return await setRules([...recordingRules, ...updatedRules]);
   };
-
-  if (!instance.alertRuler && !isUnifiedAlertingEnabled) {
-    return (
-      <div>
-        <Icon className={styles.icon} name="exclamation-triangle" />
-        Synthetic Monitoring uses &nbsp;
-        <a href="https://grafana.com/docs/grafana/latest/alerting/unified-alerting/" className={styles.link}>
-          Unified Alerting
-        </a>
-        , which is not enabled in this Grafana instance. Alert rules can be added to new or existing checks in &nbsp;
-        <a href="https://grafana.com" className={styles.link}>
-          Grafana Cloud.
-        </a>
-      </div>
-    );
-  }
 
   return (
     <div>

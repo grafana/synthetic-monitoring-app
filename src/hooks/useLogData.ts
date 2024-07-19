@@ -1,8 +1,8 @@
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DateTime } from '@grafana/data';
 
 import { queryLogsLegacy } from 'utils';
-import { InstanceContext } from 'contexts/InstanceContext';
+import { useLogsDS } from 'data/useLogsDS';
 
 interface UseLogOptions {
   start: DateTime;
@@ -13,7 +13,8 @@ interface UseLogOptions {
 const REFETCH_INTERVAL = 10000;
 
 export function useLogData(query: string, options: UseLogOptions) {
-  const { instance } = useContext(InstanceContext);
+  const logsDS = useLogsDS();
+  const url = logsDS?.url;
   const [isFetchingData, setIsFetchingData] = useState(false);
   const [data, setData] = useState<any[]>([]);
   const [error, setError] = useState<string | undefined>();
@@ -23,7 +24,6 @@ export function useLogData(query: string, options: UseLogOptions) {
   // refresh data every 3 seconds
   useEffect(() => {
     const getData = async () => {
-      const url = instance.api?.getLogsDS()?.url;
       if (!url) {
         return;
       }
@@ -46,7 +46,7 @@ export function useLogData(query: string, options: UseLogOptions) {
     }, REFETCH_INTERVAL);
 
     return () => clearInterval(interval);
-  }, [query, instance.api, options.skip, start, end]);
+  }, [query, url, options.skip, start, end]);
 
   return {
     loading: isFetchingData,

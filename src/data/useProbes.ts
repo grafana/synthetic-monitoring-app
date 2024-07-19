@@ -1,4 +1,3 @@
-import { useContext } from 'react';
 import { type QueryKey, useMutation, UseMutationResult, useQuery, useSuspenseQuery } from '@tanstack/react-query';
 import { isFetchError } from '@grafana/runtime';
 
@@ -12,8 +11,9 @@ import type {
   ResetProbeTokenResult,
   UpdateProbeResult,
 } from 'datasource/responses.types';
-import { InstanceContext } from 'contexts/InstanceContext';
 import { queryClient } from 'data/queryClient';
+
+import { useSyntheticMonitoringDS } from './useSyntheticMonitoringDS';
 
 export const queryKeys: Record<'list', QueryKey> = {
   list: ['probes'],
@@ -27,17 +27,15 @@ function probesQuery(api: SMDataSource) {
 }
 
 export function useProbes() {
-  const { instance } = useContext(InstanceContext);
-  const api = instance.api as SMDataSource;
+  const smDS = useSyntheticMonitoringDS();
 
-  return useQuery(probesQuery(api));
+  return useQuery(probesQuery(smDS));
 }
 
 export function useSuspenseProbes() {
-  const { instance } = useContext(InstanceContext);
-  const api = instance.api as SMDataSource;
+  const smDS = useSyntheticMonitoringDS();
 
-  return useSuspenseQuery(probesQuery(api));
+  return useSuspenseQuery(probesQuery(smDS));
 }
 
 export function useSuspenseProbe(id: number) {
@@ -51,14 +49,13 @@ export function useSuspenseProbe(id: number) {
 }
 
 export function useCreateProbe({ eventInfo, onError, onSuccess }: MutationProps<AddProbeResult> = {}) {
-  const { instance } = useContext(InstanceContext);
-  const api = instance.api as SMDataSource;
+  const smDS = useSyntheticMonitoringDS();
   const eventType = FaroEvent.CREATE_PROBE;
 
   return useMutation<AddProbeResult, Error, Probe, UseMutationResult>({
     mutationFn: async (probe: Probe) => {
       try {
-        const res = await api.addProbe({
+        const res = await smDS.addProbe({
           ...probe,
           public: false,
         });
@@ -95,12 +92,11 @@ function handleAddProbeError(error: unknown) {
 }
 
 export function useUpdateProbe({ eventInfo, onError, onSuccess }: MutationProps<UpdateProbeResult> = {}) {
-  const { instance } = useContext(InstanceContext);
-  const api = instance.api as SMDataSource;
+  const smDS = useSyntheticMonitoringDS();
   const eventType = FaroEvent.UPDATE_PROBE;
 
   return useMutation<UpdateProbeResult, Error, Probe, UseMutationResult>({
-    mutationFn: (probe: Probe) => api.updateProbe(probe),
+    mutationFn: (probe: Probe) => smDS.updateProbe(probe),
     onError: (error: unknown) => {
       onError?.(error);
     },
@@ -124,13 +120,12 @@ type ExtendedDeleteProbeResult = DeleteProbeResult & {
 };
 
 export function useDeleteProbe({ eventInfo, onError, onSuccess }: MutationProps<DeleteProbeResult> = {}) {
-  const { instance } = useContext(InstanceContext);
-  const api = instance.api as SMDataSource;
+  const smDS = useSyntheticMonitoringDS();
   const eventType = FaroEvent.DELETE_PROBE;
 
   return useMutation<ExtendedDeleteProbeResult, Error, Probe, UseMutationResult>({
     mutationFn: (probe: Probe) =>
-      api.deleteProbe(probe.id!).then((res) => ({
+      smDS.deleteProbe(probe.id!).then((res) => ({
         ...res,
         probeName: probe.name,
       })),
@@ -152,12 +147,11 @@ export function useDeleteProbe({ eventInfo, onError, onSuccess }: MutationProps<
 }
 
 export function useResetProbeToken({ eventInfo, onError, onSuccess }: MutationProps<ResetProbeTokenResult> = {}) {
-  const { instance } = useContext(InstanceContext);
-  const api = instance.api as SMDataSource;
+  const smDS = useSyntheticMonitoringDS();
   const eventType = FaroEvent.RESET_PROBE_TOKEN;
 
   return useMutation<ResetProbeTokenResult, Error, Probe, UseMutationResult>({
-    mutationFn: (probe: Probe) => api.resetProbeToken(probe),
+    mutationFn: (probe: Probe) => smDS.resetProbeToken(probe),
     onError: (error) => {
       onError?.(error);
     },

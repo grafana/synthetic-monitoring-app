@@ -1,24 +1,28 @@
-import React, { useContext, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { SceneApp, SceneAppPage } from '@grafana/scenes';
 import { LoadingPlaceholder } from '@grafana/ui';
 
 import { DashboardSceneAppConfig, ROUTES } from 'types';
-import { InstanceContext } from 'contexts/InstanceContext';
 import { useChecks } from 'data/useChecks';
+import { useLogsDS } from 'data/useLogsDS';
+import { useMetricsDS } from 'data/useMetricsDS';
+import { useSyntheticMonitoringDS } from 'data/useSyntheticMonitoringDS';
 import { PLUGIN_URL_PATH } from 'components/Routing.consts';
 import { getSummaryScene } from 'scenes/Summary';
 
 export const SceneHomepage = () => {
-  const { instance } = useContext(InstanceContext);
+  const smDS = useSyntheticMonitoringDS();
+  const metricsDS = useMetricsDS();
+  const logsDS = useLogsDS();
   const { data: checks = [], isLoading } = useChecks();
 
   const scene = useMemo(() => {
     const config: DashboardSceneAppConfig = {
       metrics: {
-        uid: instance.metrics?.uid,
+        uid: metricsDS.uid,
       },
-      logs: { uid: instance.logs?.uid },
-      sm: { uid: instance.api?.uid },
+      logs: { uid: logsDS.uid },
+      sm: { uid: smDS.uid },
       singleCheckMode: true,
     };
 
@@ -32,7 +36,7 @@ export const SceneHomepage = () => {
         }),
       ],
     });
-  }, [instance.metrics?.uid, instance.logs?.uid, instance.api?.uid, checks]);
+  }, [metricsDS, logsDS, smDS, checks]);
 
   if (!scene || isLoading) {
     return <LoadingPlaceholder text="Loading..." />;

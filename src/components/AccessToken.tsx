@@ -1,10 +1,10 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Button, Modal, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { FaroEvent, reportError,reportEvent } from 'faro';
-import { InstanceContext } from 'contexts/InstanceContext';
+import { FaroEvent, reportError, reportEvent } from 'faro';
+import { useSyntheticMonitoringDS } from 'data/useSyntheticMonitoringDS';
 import { Clipboard } from 'components/Clipboard';
 
 const getStyles = (theme: GrafanaTheme2) => ({
@@ -14,7 +14,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
 });
 
 export const AccessToken = () => {
-  const { instance } = useContext(InstanceContext);
+  const smDS = useSyntheticMonitoringDS();
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState<string | undefined>();
   const [token, setToken] = useState<string | undefined>();
@@ -23,7 +23,7 @@ export const AccessToken = () => {
   const showTokenModal = async () => {
     try {
       reportEvent(FaroEvent.CREATE_ACCESS_TOKEN);
-      const token = await instance.api?.createApiToken();
+      const token = await smDS.createApiToken();
       setToken(token);
       setShowModal(true);
     } catch (e) {

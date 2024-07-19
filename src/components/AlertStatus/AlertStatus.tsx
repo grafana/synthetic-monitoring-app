@@ -1,10 +1,10 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Icon, IconButton, LinkButton, Tooltip, useStyles2, useTheme2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 import { AlertSensitivity, Check, PrometheusAlertsGroup, ROUTES } from 'types';
-import { InstanceContext } from 'contexts/InstanceContext';
+import { useMetricsDS } from 'data/useMetricsDS';
 import { useAlertRules } from 'hooks/useAlertRules';
 import { AlertSensitivityBadge } from 'components/AlertSensitivityBadge';
 import { getRoute } from 'components/Routing.utils';
@@ -105,18 +105,18 @@ type AlertRuleDisplayProps = {
 
 const NamespaceAlertRuleDisplay = ({ group }: AlertRuleDisplayProps) => {
   const styles = useStyles2(getStyles);
-  const { instance } = useContext(InstanceContext);
-  const datasourceName = instance?.metrics?.name || ``;
+  const metricsDS = useMetricsDS();
+  const metricsName = metricsDS.name;
   const { file, name, rules } = group;
   const filteredRules = rules.filter((record) => record.type === `alerting`);
-  const queryParamForAlerting = encodeURIComponent(`datasource:${datasourceName} namespace:${file} group:${name}`);
+  const queryParamForAlerting = encodeURIComponent(`datasource:${metricsName} namespace:${file} group:${name}`);
 
   return (
     <div className={styles.stackCol}>
       <div className={styles.stack}>
-        <Tooltip content={datasourceName}>
+        <Tooltip content={metricsName}>
           <img
-            alt={datasourceName}
+            alt={metricsName}
             className={styles.image}
             src="/public/app/plugins/datasource/prometheus/img/prometheus_logo.svg"
           />
@@ -137,7 +137,7 @@ const NamespaceAlertRuleDisplay = ({ group }: AlertRuleDisplayProps) => {
               <Icon name="corner-down-right-alt" />
               <span>{rule.name}</span>
               <LinkButton
-                href={`/alerting/${datasourceName}/${rule.name}/find`}
+                href={`/alerting/${metricsName}/${rule.name}/find`}
                 icon="eye"
                 fill="text"
                 tooltip="View rule in Alerting"

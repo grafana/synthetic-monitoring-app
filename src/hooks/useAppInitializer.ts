@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import { DataSourceInstanceSettings, DataSourceJsonData } from '@grafana/data';
 import { config, FetchError, getBackendSrv } from '@grafana/runtime';
 import { isNumber } from 'lodash';
@@ -6,9 +6,10 @@ import { isNumber } from 'lodash';
 import { ROUTES } from 'types';
 import { FaroEvent, reportError, reportEvent } from 'faro';
 import { LinkedDatasourceInfo, SMOptions } from 'datasource/types';
-import { InstanceContext } from 'contexts/InstanceContext';
 import { LEGACY_LOGS_DS_NAME, LEGACY_METRICS_DS_NAME } from 'components/constants';
 import { getRoute } from 'components/Routing.utils';
+
+import { useMeta } from './useMeta';
 
 interface InitializeProps {
   metricsSettings: DataSourceInstanceSettings<DataSourceJsonData>;
@@ -86,11 +87,11 @@ export const useAppInitializer = (redirectTo?: ROUTES) => {
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [datasourceModalOpen, setDataSouceModalOpen] = useState<boolean>(false);
-  const { meta } = useContext(InstanceContext);
+  const meta = useMeta();
 
-  const metricsName = getMetricsName(meta?.jsonData?.metrics.grafanaName);
+  const metricsName = getMetricsName(meta.jsonData?.metrics.grafanaName);
   const { byName: metricsByName, byUid: metricsByUid } = findDatasourceByNameAndUid(metricsName, 'prometheus');
-  const logsName = getLogsName(meta?.jsonData?.logs.grafanaName);
+  const logsName = getLogsName(meta.jsonData?.logs.grafanaName);
   const { byName: logsByName, byUid: logsByUid } = findDatasourceByNameAndUid(logsName, 'loki');
   const stackId = meta?.jsonData?.stackId;
 

@@ -1,4 +1,4 @@
-import React, { useContext, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { DataTransformerConfig, ThresholdsMode } from '@grafana/data';
 import {
   CustomTransformOperator,
@@ -17,8 +17,10 @@ import {
 import { Spinner } from '@grafana/ui';
 
 import { CheckFiltersType, CheckListViewType, VizViewSceneAppConfig } from 'types';
-import { InstanceContext } from 'contexts/InstanceContext';
 import { useChecks } from 'data/useChecks';
+import { useLogsDS } from 'data/useLogsDS';
+import { useMetricsDS } from 'data/useMetricsDS';
+import { useSyntheticMonitoringDS } from 'data/useSyntheticMonitoringDS';
 import { FilterType } from 'hooks/useCheckFilters';
 import { CheckFilters } from 'components/CheckFilters';
 import { ExplorablePanel } from 'scenes/ExplorablePanel';
@@ -275,29 +277,23 @@ interface Props {
 }
 
 export function CheckListScene({ onChangeViewType, checkFilters, onReset, onFilterChange }: Props) {
-  const { instance } = useContext(InstanceContext);
+  const smDS = useSyntheticMonitoringDS();
+  const metricsDS = useMetricsDS();
+  const logsDS = useLogsDS();
   const { data: checks = [], isLoading } = useChecks();
 
-  const { api, logs, metrics } = useMemo(
-    () => ({ api: instance.api, logs: instance.logs, metrics: instance.metrics }),
-    [instance.api, instance.logs, instance.metrics]
-  );
-
   const scene = useMemo(() => {
-    if (!metrics || !logs || !api) {
-      return undefined;
-    }
     const metricsDef = {
-      uid: metrics.uid,
-      type: metrics.type,
+      uid: metricsDS.uid,
+      type: metricsDS.type,
     };
     const logsDef = {
-      uid: logs.uid,
-      type: logs.type,
+      uid: logsDS.uid,
+      type: logsDS.type,
     };
     const smDef = {
-      uid: api.uid,
-      type: api.type,
+      uid: smDS.uid,
+      type: smDS.type,
     };
     return getCheckListScene(
       {
@@ -312,7 +308,7 @@ export function CheckListScene({ onChangeViewType, checkFilters, onReset, onFilt
       },
       checks.length
     );
-  }, [onChangeViewType, api, logs, metrics, checks, checkFilters, onReset, onFilterChange]);
+  }, [onChangeViewType, metricsDS, logsDS, smDS, checks, checkFilters, onReset, onFilterChange]);
 
   if (!scene || isLoading) {
     return <Spinner />;

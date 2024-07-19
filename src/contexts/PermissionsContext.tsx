@@ -35,7 +35,7 @@ export function usePermissions() {
   const context = useContext(PermissionsContext);
 
   if (!context) {
-    throw new Error('usePermissions must be used within a CheckFormContextProvider');
+    throw new Error('usePermissions must be used within a PermissionsContextProvider');
   }
 
   return context;

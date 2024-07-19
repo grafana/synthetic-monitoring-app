@@ -1,11 +1,11 @@
-import React, { PropsWithChildren, useContext } from 'react';
+import React, { PropsWithChildren } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Button, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { ROUTES } from 'types';
-import { InstanceContext } from 'contexts/InstanceContext';
 import { useAppInitializer } from 'hooks/useAppInitializer';
+import { useMeta } from 'hooks/useMeta';
 import { MismatchedDatasourceModal } from 'components/MismatchedDatasourceModal';
 
 interface Props {
@@ -16,8 +16,7 @@ interface Props {
 }
 
 export const AppInitializer = ({ redirectTo, disabled, buttonClassname, buttonText }: PropsWithChildren<Props>) => {
-  const { meta } = useContext(InstanceContext);
-
+  const meta = useMeta();
   const styles = useStyles2(getStyles);
 
   const {
@@ -52,6 +51,7 @@ export const AppInitializer = ({ redirectTo, disabled, buttonClassname, buttonTe
         </Alert>
       )}
 
+      {/* todo: is this needed? */}
       <MismatchedDatasourceModal
         isOpen={datasourceModalOpen}
         metricsFoundName={metricsByName?.name ?? 'Not found'}

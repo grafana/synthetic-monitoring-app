@@ -1,10 +1,9 @@
-import { useContext } from 'react';
 import { config as runtimeConfig } from '@grafana/runtime';
 
 import { Check, Probe } from 'types';
-import { InstanceContext } from 'contexts/InstanceContext';
 import { useChecks } from 'data/useChecks';
 import { useProbes } from 'data/useProbes';
+import { useSyntheticMonitoringDS } from 'data/useSyntheticMonitoringDS';
 import { checkToTF, probeToTF, sanitizeName } from 'components/TerraformConfig/terraformConfigUtils';
 import { TFCheckConfig, TFConfig, TFOutput, TFProbeConfig } from 'components/TerraformConfig/terraformTypes';
 
@@ -79,10 +78,10 @@ function generateTerraformConfig(probes: Probe[], checks: Check[], apiHost?: str
 }
 
 export function useTerraformConfig() {
-  const { instance } = useContext(InstanceContext);
+  const smDS = useSyntheticMonitoringDS();
   const { data: probes = [], error: probesError } = useProbes();
   const { data: checks = [], error: checksError } = useChecks();
-  const apiHost = instance.api?.instanceSettings.jsonData?.apiHost;
+  const apiHost = smDS.instanceSettings.jsonData?.apiHost;
   const generated = generateTerraformConfig(probes, checks, apiHost);
   const error = probesError || checksError;
 

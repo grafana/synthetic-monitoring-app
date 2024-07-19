@@ -1,13 +1,11 @@
-import { useContext } from 'react';
 import { type QueryKey, useQuery } from '@tanstack/react-query';
-import { DataSourceSettings } from '@grafana/data';
 import { getBackendSrv } from '@grafana/runtime';
 import { firstValueFrom } from 'rxjs';
 
 import { AlertFilter, PrometheusAlertRecord, PrometheusAlertsGroup } from 'types';
 import { ListPrometheusAlertsResponse } from 'datasource/responses.types';
-import { InstanceContext } from 'contexts/InstanceContext';
 
+import { useMetricsDS } from './useMetricsDS';
 import { constructError, showAlert } from './utils';
 
 export const queryKeys: Record<'list', QueryKey> = {
@@ -19,13 +17,13 @@ const alertFilter = (alert: PrometheusAlertRecord) => {
 };
 
 export function useAlerts() {
-  const { instance } = useContext(InstanceContext);
-  const metrics = instance.metrics as DataSourceSettings;
+  const metricsDS = useMetricsDS();
+  const metricsUID = metricsDS.uid;
 
   return useQuery({
-    queryKey: [...queryKeys.list, metrics.uid],
+    queryKey: [...queryKeys.list, metricsUID],
     queryFn: () => {
-      return queryAlertApi(metrics.uid);
+      return queryAlertApi(metricsUID);
     },
     select: (data) => {
       return findRelevantAlertGroups(data.groups, alertFilter);

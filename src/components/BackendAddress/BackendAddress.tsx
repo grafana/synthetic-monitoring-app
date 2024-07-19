@@ -1,6 +1,6 @@
-import React, { useContext } from 'react';
+import React from 'react';
 
-import { InstanceContext } from 'contexts/InstanceContext';
+import { useSyntheticMonitoringDS } from 'data/useSyntheticMonitoringDS';
 
 type BackendAddressProps = {
   omitHttp?: boolean;
@@ -8,8 +8,8 @@ type BackendAddressProps = {
 };
 
 export const BackendAddress = ({ omitHttp }: BackendAddressProps) => {
-  const { instance } = useContext(InstanceContext);
-  const backendAddress = instance.api?.instanceSettings.jsonData.apiHost || ``;
+  const smDS = useSyntheticMonitoringDS();
+  const backendAddress = smDS.instanceSettings.jsonData.apiHost;
   const display = omitHttp ? backendAddress.replace('https://', '') : backendAddress;
 
   return (

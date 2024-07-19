@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { useAsyncCallback } from 'react-async-hook';
 import { Controller, FormProvider, useForm } from 'react-hook-form';
 import { AppEvents, GrafanaTheme2, SelectableValue } from '@grafana/data';
@@ -8,7 +8,7 @@ import appEvents from 'grafana/app/core/app_events';
 import { css } from '@emotion/css';
 
 import { AlertRule, AlertSensitivity, Label as LabelType, TimeUnits } from 'types';
-import { InstanceContext } from 'contexts/InstanceContext';
+import { useMetricsDS } from 'data/useMetricsDS';
 
 import { AlertAnnotations } from './AlertAnnotations';
 import { alertDescriptionFromRule, transformAlertFormValues } from './alertingTransformations';
@@ -144,7 +144,7 @@ type Props = {
 
 export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
   const defaultValues = getAlertFormValues(rule);
-  const { instance } = useContext(InstanceContext);
+  const metricsDS = useMetricsDS();
   const styles = useStyles2(getStyles);
   const [isOpen, setIsOpen] = useState(false);
   const formMethods = useForm<AlertFormValues>({
@@ -193,7 +193,7 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
       <div className={styles.container}>
         It looks like this rule has been edited in Cloud Alerting, and can no longer be edited in Synthetic Monitoring.
         To update this rule, visit{' '}
-        <a href={`alerting/list?dataSource=${instance.metrics?.name}`} className={styles.link}>
+        <a href={`alerting/list?dataSource=${metricsDS.name}`} className={styles.link}>
           Grafana Cloud Alerting
         </a>
       </div>

@@ -1,27 +1,28 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { getBackendSrv } from '@grafana/runtime';
-import { Alert, Button, Modal,Stack } from '@grafana/ui';
+import { Alert, Button, Modal, Stack } from '@grafana/ui';
 
 import { FaroEvent, reportEvent } from 'faro';
-import { InstanceContext } from 'contexts/InstanceContext';
+import { useSyntheticMonitoringDS } from 'data/useSyntheticMonitoringDS';
+import { useMeta } from 'hooks/useMeta';
 
 type Props = {
   isOpen: boolean;
   onDismiss: () => void;
-  pluginId: string;
 };
 
-export const DisablePluginModal = ({ isOpen, onDismiss, pluginId }: Props) => {
-  const { instance } = useContext(InstanceContext);
+export const DisablePluginModal = ({ isOpen, onDismiss }: Props) => {
+  const smDS = useSyntheticMonitoringDS();
+  const meta = useMeta();
   const [error, setError] = useState<string | undefined>();
 
   const disableTenant = async () => {
     try {
       reportEvent(FaroEvent.DISABLE_PLUGIN);
-      await instance.api?.disableTenant();
+      await smDS.disableTenant();
       await getBackendSrv()
         .fetch({
-          url: `/api/plugins/${pluginId}/settings`,
+          url: `/api/plugins/${meta.id}/settings`,
           method: 'POST',
           headers: { 'X-Grafana-NoCache': 'true' },
           data: {
