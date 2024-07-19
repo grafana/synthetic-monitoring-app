@@ -1,6 +1,6 @@
 import React, { PropsWithChildren, useContext } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Alert, Button, useStyles2 } from '@grafana/ui';
+import { Alert, Button, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { ROUTES } from 'types';
@@ -35,7 +35,7 @@ export const AppInitializer = ({ redirectTo, disabled, buttonClassname, buttonTe
   } = useAppInitializer(redirectTo);
 
   return (
-    <div>
+    <Stack direction={`column`} alignItems={`center`}>
       <Button
         onClick={handleClick}
         disabled={loading || disabled}
@@ -73,7 +73,7 @@ export const AppInitializer = ({ redirectTo, disabled, buttonClassname, buttonTe
           }
         }}
       />
-    </div>
+    </Stack>
   );
 };
 

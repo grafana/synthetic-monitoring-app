@@ -5,7 +5,7 @@ import { isNumber } from 'lodash';
 
 import { ROUTES } from 'types';
 import { FaroEvent, reportError, reportEvent } from 'faro';
-import { initializeDatasource } from 'utils';
+import { LinkedDatasourceInfo, SMOptions } from 'datasource/types';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { LEGACY_LOGS_DS_NAME, LEGACY_METRICS_DS_NAME } from 'components/constants';
 import { getRoute } from 'components/Routing.utils';
@@ -209,3 +209,59 @@ export const useAppInitializer = (redirectTo?: ROUTES) => {
     setDataSouceModalOpen,
   };
 };
+
+interface DatasourcePayload {
+  accessToken: string;
+  apiHost: string;
+  metrics: LinkedDatasourceInfo;
+  logs: LinkedDatasourceInfo;
+}
+
+async function initializeDatasource(datasourcePayload: DatasourcePayload): Promise<SMOptions> {
+  const existingDatasource = findSMDataSources()?.[0];
+  if (existingDatasource) {
+    return getBackendSrv().put(`api/datasources/${existingDatasource.id}`, {
+      ...existingDatasource,
+      access: 'proxy',
+      isDefault: false,
+      secureJsonData: {
+        accessToken: datasourcePayload.accessToken,
+      },
+      jsonData: {
+        apiHost: datasourcePayload.apiHost,
+        initialized: true,
+        metrics: datasourcePayload.metrics,
+        logs: datasourcePayload.logs,
+      },
+    });
+  }
+  return createNewApiInstance(datasourcePayload);
+}
+
+// Used for stubbing out the datasource when plugin is not provisioned
+
+async function createNewApiInstance(payload: DatasourcePayload): Promise<SMOptions> {
+  return getBackendSrv().post('api/datasources', {
+    name: 'Synthetic Monitoring',
+    type: 'synthetic-monitoring-datasource',
+    access: 'proxy',
+    isDefault: false,
+    jsonData: {
+      apiHost: payload.apiHost,
+      initialized: true,
+      metrics: payload.metrics,
+      logs: payload.logs,
+    },
+    secureJsonData: {
+      accessToken: payload.accessToken,
+    },
+  });
+}
+/**
+ * Find all synthetic-monitoring datasources
+ */
+function findSMDataSources(): Array<DataSourceInstanceSettings<SMOptions>> {
+  return Object.values(config.datasources).filter((ds) => {
+    return ds.type === 'synthetic-monitoring-datasource';
+  }) as unknown as Array<DataSourceInstanceSettings<SMOptions>>;
+}

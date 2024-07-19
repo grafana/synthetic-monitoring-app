@@ -1,12 +1,11 @@
-import React, { createContext, PropsWithChildren } from 'react';
+import React, { createContext, PropsWithChildren, useContext } from 'react';
 
 interface ContextProps {
   canViewSM: boolean;
   canViewLogs: boolean;
   canViewMetrics: boolean;
   canEditSM: boolean;
-  canEditLogs: boolean;
-  canEditMetrics: boolean;
+  canAdminSM: boolean;
 }
 
 const PermissionsContext = createContext<ContextProps>({
@@ -14,8 +13,7 @@ const PermissionsContext = createContext<ContextProps>({
   canViewLogs: false,
   canViewMetrics: false,
   canEditSM: false,
-  canEditLogs: false,
-  canEditMetrics: false,
+  canAdminSM: false,
 });
 
 export const PermissionsContextProvider = ({ children }: PropsWithChildren) => {
@@ -24,14 +22,21 @@ export const PermissionsContextProvider = ({ children }: PropsWithChildren) => {
   const canViewMetrics = true;
 
   const canEditSM = true;
-  const canEditLogs = true;
-  const canEditMetrics = true;
+  const canAdminSM = true;
 
   return (
-    <PermissionsContext.Provider
-      value={{ canViewSM, canViewLogs, canViewMetrics, canEditSM, canEditLogs, canEditMetrics }}
-    >
+    <PermissionsContext.Provider value={{ canViewSM, canViewLogs, canViewMetrics, canEditSM, canAdminSM }}>
       {children}
     </PermissionsContext.Provider>
   );
 };
+
+export function usePermissions() {
+  const context = useContext(PermissionsContext);
+
+  if (!context) {
+    throw new Error('usePermissions must be used within a CheckFormContextProvider');
+  }
+
+  return context;
+}

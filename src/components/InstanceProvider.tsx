@@ -32,6 +32,8 @@ async function fetchDatasources(
   metricInstanceName: string | undefined,
   logsInstanceName: string | undefined
 ): Promise<GrafanaInstances> {
+  const test = await getBackendSrv().get('api/datasources?accesscontrol=true');
+  console.log(test);
   const dataSourceSrv = getDataSourceSrv();
   const smApi = (await dataSourceSrv.get('Synthetic Monitoring').catch((e) => undefined)) as SMDataSource | undefined;
   let metrics;
@@ -98,6 +100,13 @@ async function fetchDatasources(
       logs,
     } as GrafanaInstances;
   }
+
+  console.log({
+    api: smApi,
+    metrics,
+    logs,
+    alertRuler,
+  });
 
   return {
     api: smApi,
