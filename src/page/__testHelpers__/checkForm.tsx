@@ -22,7 +22,6 @@ export const TARGET_MAP = {
   [CheckType.Browser]: 'Whatever string we would like',
   [CheckType.TCP]: 'grafana.com:80',
   [CheckType.Traceroute]: 'grafana.com',
-  [CheckType.Browser]: 'Whatever string we would like',
 };
 
 export async function renderNewForm(checkType: CheckType) {
