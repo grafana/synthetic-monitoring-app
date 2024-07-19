@@ -5,6 +5,7 @@ import { AppRootProps } from '@grafana/data';
 import { css, Global } from '@emotion/react';
 
 import { GlobalSettings } from 'types';
+import { PermissionsContextProvider } from 'contexts/PermissionsContext';
 import { queryClient } from 'data/queryClient';
 import { queryKeys as alertingQueryKeys } from 'data/useAlerts';
 import { InstanceProvider } from 'components/InstanceProvider';
@@ -36,8 +37,10 @@ export const App = (props: AppProps) => {
         meta={meta}
       >
         <QueryClientProvider client={queryClient}>
-          <Routing {...props} />
-          <ReactQueryDevtools />
+          <PermissionsContextProvider>
+            <Routing {...props} />
+            <ReactQueryDevtools />
+          </PermissionsContextProvider>
         </QueryClientProvider>
       </InstanceProvider>
     </FeatureFlagProvider>
