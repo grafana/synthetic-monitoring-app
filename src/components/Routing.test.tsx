@@ -9,6 +9,9 @@ import { PLUGIN_URL_PATH } from 'components/Routing.consts';
 import { Routing } from './Routing';
 import { getRoute } from './Routing.utils';
 
+import { config } from '@grafana/runtime';
+import { OrgRole } from '@grafana/data';
+
 function renderRouting(options?: CustomRenderOptions) {
   return render(<Routing onNavChanged={jest.fn} />, options);
 }
@@ -148,6 +151,21 @@ describe('Routes to pages correctly', () => {
     );
     expect(configText).toBeInTheDocument();
   });
+
+  test('Config page redirects to homepage when the user is viewer', async () => {
+    jest.replaceProperty(config, 'bootData', {
+      // @ts-expect-error
+      user: {
+        orgRole: OrgRole.Viewer,
+      },
+    });
+
+    renderRouting({ path: getRoute(ROUTES.Config) });
+
+    const homePageText = await screen.findByText('Home page', { selector: 'h1' });
+    expect(homePageText).toBeInTheDocument();
+  });
+
   test('Non-existent route redirects to homepage', async () => {
     renderRouting({ path: notaRoute });
     const homePageText = await screen.findByText('Home page', { selector: 'h1' });
