@@ -1,6 +1,7 @@
 import React from 'react';
 import { Redirect, Route, Switch, useRouteMatch } from 'react-router-dom';
 
+import { CheckType } from 'types';
 import { CHECK_TYPE_OPTIONS } from 'hooks/useCheckTypeOptions';
 import { CheckList } from 'components/CheckList';
 import { ChooseCheckGroup } from 'components/ChooseCheckGroup';
@@ -35,7 +36,7 @@ export function CheckRouter() {
       <Route path={`${path}/:id/dashboard`} exact>
         <DashboardPage />
       </Route>
-      <Route path={`${path}/new/:checkTypeGroup?`}>
+      <Route path={`${path}/new/:checkTypeGroup`}>
         <NewCheck />
       </Route>
       <Route path={`${path}/edit/:checkTypeGroup/:id`} exact>
@@ -48,12 +49,16 @@ export function CheckRouter() {
   );
 }
 
-const NEW_CHECK_REDIRECTS = CHECK_TYPE_OPTIONS.map(({ group, value }) => ({
+// these result in the same from/to values so redirect infinitely
+const excludedCheckTypes = [CheckType.Scripted];
+const filteredCheckTypes = CHECK_TYPE_OPTIONS.filter(({ value }) => !excludedCheckTypes.includes(value));
+
+const NEW_CHECK_REDIRECTS = filteredCheckTypes.map(({ group, value }) => ({
   from: `/new/${value}`,
   to: `/new/${group}?checkType=${value}`,
 }));
 
-const EDIT_CHECK_REDIRECTS = CHECK_TYPE_OPTIONS.map(({ group, value }) => ({
+const EDIT_CHECK_REDIRECTS = filteredCheckTypes.map(({ group, value }) => ({
   from: `/edit/${value}/:id`,
   to: `/edit/${group}`,
 }));
