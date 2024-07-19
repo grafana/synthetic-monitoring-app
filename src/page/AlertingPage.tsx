@@ -5,13 +5,13 @@ import { Alert, Button, Icon, Modal, Spinner, Stack, useStyles2 } from '@grafana
 import { css } from '@emotion/css';
 
 import { AlertFormValues, AlertRule } from 'types';
+import { hasRole } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { useAlerts } from 'hooks/useAlerts';
 import { useUnifiedAlertsEnabled } from 'hooks/useUnifiedAlertsEnabled';
 import { transformAlertFormValues } from 'components/alertingTransformations';
 import { AlertRuleForm } from 'components/AlertRuleForm';
 import { PluginPage } from 'components/PluginPage';
-import { hasRole } from 'utils';
 
 type SplitAlertRules = {
   recordingRules: AlertRule[];

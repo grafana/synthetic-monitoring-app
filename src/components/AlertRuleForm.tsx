@@ -8,6 +8,7 @@ import appEvents from 'grafana/app/core/app_events';
 import { css } from '@emotion/css';
 
 import { AlertRule, AlertSensitivity, Label as LabelType, TimeUnits } from 'types';
+import { hasRole } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
 
 import { AlertAnnotations } from './AlertAnnotations';
@@ -15,7 +16,6 @@ import { alertDescriptionFromRule, transformAlertFormValues } from './alertingTr
 import { AlertLabels } from './AlertLabels';
 import { ALERT_SENSITIVITY_OPTIONS, TIME_UNIT_OPTIONS } from './constants';
 import { SubCollapse } from './SubCollapse';
-import { hasRole } from 'utils';
 
 export enum AlertTimeUnits {
   Milliseconds = 'ms',
