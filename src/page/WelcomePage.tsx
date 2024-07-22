@@ -1,10 +1,10 @@
-import React, { FC, useContext } from 'react';
+import React, { FC } from 'react';
 import { GrafanaTheme2, OrgRole, PageLayoutType } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { hasRole } from 'utils';
-import { InstanceContext } from 'contexts/InstanceContext';
+import { useMeta } from 'hooks/useMeta';
 import { PluginPage } from 'components/PluginPage';
 import { WelcomeTabs } from 'components/WelcomeTabs/WelcomeTabs';
 
@@ -14,13 +14,13 @@ interface Props {}
 
 export const WelcomePage: FC<Props> = () => {
   const styles = useStyles2(getStyles);
-  const { meta } = useContext(InstanceContext);
+  const { info } = useMeta();
 
   return (
     <PluginPage layout={PageLayoutType.Canvas}>
       <div className={styles.container}>
         <div className={styles.header}>
-          <img src={meta?.info.logos.large} className={styles.logo} role="presentation" />
+          <img src={info.logos.large} className={styles.logo} role="presentation" />
           <h1 className={styles.title}>
             Proactively monitor your endpoints and user flows from locations around the world
           </h1>

@@ -1,9 +1,9 @@
 import React, { PropsWithChildren, useEffect, useState } from 'react';
-import { AppPluginMeta, OrgRole } from '@grafana/data';
+import { OrgRole } from '@grafana/data';
 import { config, getBackendSrv, getDataSourceSrv } from '@grafana/runtime';
 import appEvents from 'grafana/app/core/app_events';
 
-import { GlobalSettings, GrafanaInstances } from 'types';
+import { GrafanaInstances } from 'types';
 import { hasRole } from 'utils';
 import { SMDataSource } from 'datasource/DataSource';
 import { InstanceContext } from 'contexts/InstanceContext';
@@ -110,15 +110,9 @@ async function fetchDatasources(
 interface Props {
   metricInstanceName?: string;
   logsInstanceName?: string;
-  meta: AppPluginMeta<GlobalSettings>;
 }
 
-export const InstanceProvider = ({
-  children,
-  metricInstanceName,
-  logsInstanceName,
-  meta,
-}: PropsWithChildren<Props>) => {
+export const InstanceProvider = ({ children, metricInstanceName, logsInstanceName }: PropsWithChildren<Props>) => {
   const [instances, setInstances] = useState<GrafanaInstances | null>(null);
   const [instancesLoading, setInstancesLoading] = useState(true);
   useEffect(() => {
@@ -154,5 +148,5 @@ export const InstanceProvider = ({
     throw new Error('There was an error finding datasources required for Synthetic Monitoring');
   }
 
-  return <InstanceContext.Provider value={{ meta, instance: instances }}>{children}</InstanceContext.Provider>;
+  return <InstanceContext.Provider value={{ instance: instances }}>{children}</InstanceContext.Provider>;
 };

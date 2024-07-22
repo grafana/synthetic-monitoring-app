@@ -1,12 +1,14 @@
 import React, { useContext } from 'react';
 
 import { InstanceContext } from 'contexts/InstanceContext';
+import { useMeta } from 'hooks/useMeta';
 import { AccessToken } from 'components/AccessToken';
 import { TerraformConfig } from 'components/TerraformConfig';
 
 export const ProgrammaticManagement = () => {
-  const { meta, instance } = useContext(InstanceContext);
-  const initialized = meta?.enabled && instance.api;
+  const { instance } = useContext(InstanceContext);
+  const { enabled } = useMeta();
+  const initialized = enabled && instance.api;
 
   return (
     <div>

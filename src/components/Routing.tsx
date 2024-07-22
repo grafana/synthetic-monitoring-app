@@ -6,6 +6,7 @@ import { config } from '@grafana/runtime';
 import { ROUTES } from 'types';
 import { hasRole } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
+import { useMeta } from 'hooks/useMeta';
 import { QueryParamMap, useNavigation } from 'hooks/useNavigation';
 import { useQuery } from 'hooks/useQuery';
 import { AlertingPage } from 'page/AlertingPage';
@@ -28,10 +29,11 @@ export const Routing = ({ onNavChanged }: Pick<AppRootProps, 'onNavChanged'>) =>
   const queryParams = useQuery();
   const navigate = useNavigation();
   const location = useLocation();
-  const { instance, meta } = useContext(InstanceContext);
-  const provisioned = Boolean(meta?.jsonData?.metrics?.grafanaName);
-  const initialized = meta?.enabled && instance.api;
-  const logo = meta?.info.logos.large || ``;
+  const { instance } = useContext(InstanceContext);
+  const { enabled, info, jsonData } = useMeta();
+  const provisioned = Boolean(jsonData?.metrics?.grafanaName);
+  const initialized = enabled && instance.api;
+  const logo = info.logos.large || ``;
 
   useEffect(() => {
     const navModel = getNavModel(logo, location.pathname);

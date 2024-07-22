@@ -5,6 +5,7 @@ import { css } from '@emotion/css';
 
 import { FaroEvent, reportEvent } from 'faro';
 import { InstanceContext } from 'contexts/InstanceContext';
+import { useMeta } from 'hooks/useMeta';
 import { useTerraformConfig } from 'hooks/useTerraformConfig';
 import { Clipboard } from 'components/Clipboard';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
@@ -29,8 +30,10 @@ const getStyles = (theme: GrafanaTheme2) => ({
 
 export const TerraformConfig = () => {
   const styles = useStyles2(getStyles);
-  const { meta, instance } = useContext(InstanceContext);
-  const initialized = meta?.enabled && instance.api;
+  const { enabled } = useMeta();
+  const { instance } = useContext(InstanceContext);
+  const initialized = enabled && instance.api;
+
   return (
     <div>
       <h5>Terraform</h5>
@@ -60,8 +63,9 @@ const GenerateButton = () => {
   const { config, checkCommands, probeCommands, error } = useTerraformConfig();
   const [showModal, setShowModal] = useState(false);
   const styles = useStyles2(getStyles);
-  const { meta, instance } = useContext(InstanceContext);
-  const initialized = meta?.enabled && instance.api;
+  const { enabled } = useMeta();
+  const { instance } = useContext(InstanceContext);
+  const initialized = enabled && instance.api;
 
   return (
     <>
