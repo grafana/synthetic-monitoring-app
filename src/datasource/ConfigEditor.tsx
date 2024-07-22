@@ -1,78 +1,78 @@
-import React, { ChangeEvent,PureComponent } from 'react';
-import { DataSourcePluginOptionsEditorProps } from '@grafana/data';
-import { Container, LegacyForms } from '@grafana/ui';
+import React, { PureComponent } from 'react';
+import { DataSourcePluginOptionsEditorProps, DataSourceSettings } from '@grafana/data';
+import { LegacyForms } from '@grafana/ui';
 
-import { SecureJsonData,SMOptions } from './types';
-import { InstanceProvider } from 'components/InstanceProvider';
-import { LinkedDatasourceView } from 'components/LinkedDatasourceView';
+import { SecureJsonData, SMOptions } from './types';
+import { GlobalSettings } from 'types';
+
+type Options = DataSourceSettings<SMOptions, SecureJsonData>;
 
 interface Props extends DataSourcePluginOptionsEditorProps<SMOptions, SecureJsonData> {}
 
 export class ConfigEditor extends PureComponent<Props> {
-  onAccessTokenChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const { onOptionsChange, options } = this.props;
-    onOptionsChange({
-      ...options,
-      secureJsonData: {
-        accessToken: event.target.value,
-      },
-    });
-  };
-
-  onResetAccessToken = () => {
-    const { onOptionsChange, options } = this.props;
-    onOptionsChange({
-      ...options,
-      secureJsonFields: {
-        ...options.secureJsonFields,
-        accessToken: false,
-      },
-      secureJsonData: {
-        ...options.secureJsonData,
-        accessToken: '',
-      },
-    });
-  };
-
   render() {
-    const { options } = this.props;
-    const { secureJsonFields } = options;
-    const secureJsonData = (options.secureJsonData || {}) as SecureJsonData;
-    function isConfigured(): boolean {
-      return (secureJsonFields && secureJsonFields.accessToken) as boolean;
-    }
-    return (
-      // @ts-ignore
-      <InstanceProvider meta={options}>
-        {isValid(options.jsonData) && isConfigured() && (
-          <Container margin="sm">
-            <LinkedDatasourceView type="prometheus" />
-            <LinkedDatasourceView type="loki" />
-          </Container>
-        )}
-        <br />
-        <div className="gf-form-group">
-          <div className="gf-form-inline">
-            <div className="gf-form">
-              <LegacyForms.SecretFormField
-                isConfigured={isConfigured()}
-                value={secureJsonData.accessToken || ''}
-                label="Access Token"
-                placeholder="access token saved on the server"
-                labelWidth={10}
-                inputWidth={20}
-                onReset={this.onResetAccessToken}
-                onChange={this.onAccessTokenChange}
-              />
-            </div>
-          </div>
-        </div>
-      </InstanceProvider>
-    );
+    const { onOptionsChange, options } = this.props;
+
+    return <ConfigEditorContent options={options} onOptionsChange={onOptionsChange} />;
   }
 }
 
-export function isValid(settings: SMOptions): boolean {
+const ConfigEditorContent = ({
+  options,
+  onOptionsChange,
+}: {
+  options: Options;
+  onOptionsChange: (options: Options) => void;
+}) => {
+  const { secureJsonData } = options;
+
+  return (
+    <>
+      <br />
+      <div className="gf-form-group">
+        <div className="gf-form-inline">
+          <div className="gf-form">
+            <LegacyForms.SecretFormField
+              isConfigured
+              value={secureJsonData?.accessToken || ''}
+              label="Access Token"
+              placeholder="access token saved on the server"
+              labelWidth={10}
+              inputWidth={20}
+              onReset={() => {
+                onOptionsChange(resetAccessToken(options));
+              }}
+              onChange={(event) => {
+                onOptionsChange({
+                  ...options,
+                  secureJsonData: {
+                    accessToken: event.target.value,
+                  },
+                });
+              }}
+            />
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+function resetAccessToken(options: Options): Options {
+  return {
+    ...options,
+    secureJsonFields: {
+      ...options.secureJsonFields,
+      accessToken: false,
+    },
+    secureJsonData: {
+      ...options.secureJsonData,
+      accessToken: '',
+    },
+  };
+}
+
+export function isValid(settings?: GlobalSettings): boolean {
   if (!settings) {
     return false;
   }
