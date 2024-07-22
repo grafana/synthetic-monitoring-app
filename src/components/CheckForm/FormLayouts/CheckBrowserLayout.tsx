@@ -4,8 +4,8 @@ import { Stack, TextLink } from '@grafana/ui';
 import { LayoutSection, Section } from './Layout.types';
 import { CheckFormValuesBrowser } from 'types';
 import { BrowserFields } from 'components/CheckEditor/CheckEditor.types';
-import { ScriptedCheckInstance } from 'components/CheckEditor/FormComponents/ScriptedCheckInstance';
-import { ScriptedCheckScript } from 'components/CheckEditor/FormComponents/ScriptedCheckScript';
+import { BrowserCheckInstance } from 'components/CheckEditor/FormComponents/BrowserCheckInstance';
+import { BrowserCheckScript } from 'components/CheckEditor/FormComponents/BrowserCheckScript';
 import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
 
 export const BROWSER_CHECK_FIELDS: BrowserFields = {
@@ -22,8 +22,8 @@ export const BrowserCheckLayout: Partial<Record<LayoutSection, Section<CheckForm
     fields: Object.values(BROWSER_CHECK_FIELDS).map((field) => field.name),
     Component: (
       <>
-        <ScriptedCheckInstance />
-        <ScriptedCheckScript />
+        <BrowserCheckInstance />
+        <BrowserCheckScript />
       </>
     ),
   },
