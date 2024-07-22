@@ -1,9 +1,8 @@
 import React from 'react';
-import { GrafanaTheme2, OrgRole, PageLayoutType } from '@grafana/data';
+import { GrafanaTheme2, PageLayoutType } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { hasRole } from 'utils';
 import { useMeta } from 'hooks/useMeta';
 import { PluginPage } from 'components/PluginPage';
 import { WelcomeTabs } from 'components/WelcomeTabs/WelcomeTabs';
@@ -28,11 +27,7 @@ export const WelcomePage = () => {
               simulate user journeys, and get alerted before your users
             </h5>
           </div>
-          <AppInitializer
-            disabled={!hasRole(OrgRole.Editor)}
-            buttonText="Get started"
-            buttonClassname={styles.getStartedButton}
-          />
+          <AppInitializer buttonText="Get started" buttonClassname={styles.getStartedButton} />
         </div>
         <hr className={styles.divider} />
         <div className={styles.valueProp}>

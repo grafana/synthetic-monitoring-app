@@ -11,7 +11,7 @@ import { Assertion, MultiHttpEntry, MultiHttpVariable, RequestProps } from 'comp
 
 export interface GlobalSettings {
   apiHost: string;
-  stackId?: number;
+  stackId: number;
   metrics: LinkedDatasourceInfo;
   logs: LinkedDatasourceInfo;
 }

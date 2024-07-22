@@ -5,18 +5,18 @@ import { AppRootProps } from '@grafana/data';
 import { css, Global } from '@emotion/react';
 
 import { GlobalSettings } from 'types';
-import { InstanceContextProvider } from 'contexts/InstanceContext';
-import { PermissionsContextProvider } from 'contexts/PermissionsContext';
+import { DatasourceContextProvider } from 'contexts/DatasourceContextProvider';
+import { MetaContextProvider } from 'contexts/MetaContext';
 import { queryClient } from 'data/queryClient';
 import { queryKeys as alertingQueryKeys } from 'data/useAlerts';
-import { Routing } from 'components/Routing';
+import { InitialisedRouter } from 'components/Routing';
 
 import { FeatureFlagProvider } from './FeatureFlagProvider';
 
 type AppProps = AppRootProps<GlobalSettings>;
 
 export const App = (props: AppProps) => {
-  const { meta } = props;
+  const { meta, onNavChanged } = props;
 
   useEffect(() => {
     return () => {
@@ -30,15 +30,15 @@ export const App = (props: AppProps) => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <FeatureFlagProvider>
-        <GlobalStyles />
-        <InstanceContextProvider meta={meta}>
-          <PermissionsContextProvider>
-            <Routing {...props} />
-            <ReactQueryDevtools />
-          </PermissionsContextProvider>
-        </InstanceContextProvider>
-      </FeatureFlagProvider>
+      <MetaContextProvider meta={meta}>
+        <FeatureFlagProvider>
+          <GlobalStyles />
+          <DatasourceContextProvider>
+            <InitialisedRouter onNavChanged={onNavChanged} />
+          </DatasourceContextProvider>
+        </FeatureFlagProvider>
+      </MetaContextProvider>
+      <ReactQueryDevtools />
     </QueryClientProvider>
   );
 };

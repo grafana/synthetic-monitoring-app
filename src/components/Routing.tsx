@@ -8,17 +8,22 @@ import { useMeta } from 'hooks/useMeta';
 import { QueryParamMap, useNavigation } from 'hooks/useNavigation';
 import { useQuery } from 'hooks/useQuery';
 import { AlertingPage } from 'page/AlertingPage';
+import { AlertingWelcomePage } from 'page/AlertingWelcomePage';
 import { CheckRouter } from 'page/CheckRouter';
+import { ChecksWelcomePage } from 'page/ChecksWelcomePage';
 import { ConfigPage } from 'page/ConfigPage';
 import { getNavModel } from 'page/pageDefinitions';
 import { ProbeRouter } from 'page/ProbeRouter';
+import { ProbesWelcomePage } from 'page/ProbesWelcomePage';
 import { SceneHomepage } from 'page/SceneHomepage';
+import { UnprovisionedSetup } from 'page/UnprovisionedSetup';
+import { WelcomePage } from 'page/WelcomePage';
 
 import { PLUGIN_URL_PATH } from './Routing.consts';
 import { getRoute } from './Routing.utils';
 import { SceneRedirecter } from './SceneRedirecter';
 
-export const Routing = ({ onNavChanged }: Pick<AppRootProps, 'onNavChanged'>) => {
+export const InitialisedRouter = ({ onNavChanged }: Pick<AppRootProps, 'onNavChanged'>) => {
   const queryParams = useQuery();
   const navigate = useNavigation();
   const location = useLocation();
@@ -33,6 +38,7 @@ export const Routing = ({ onNavChanged }: Pick<AppRootProps, 'onNavChanged'>) =>
   }, [logo, onNavChanged, location.pathname]);
 
   const page = queryParams.get('page');
+
   useEffect(() => {
     if (page) {
       queryParams.delete('page');
@@ -66,6 +72,44 @@ export const Routing = ({ onNavChanged }: Pick<AppRootProps, 'onNavChanged'>) =>
       </Route>
       <Route path={getRoute(ROUTES.Config)}>
         <ConfigPage initialized />
+      </Route>
+
+      {/* Default route (only redirect if the path matches the plugin's URL) */}
+      <Route path={PLUGIN_URL_PATH}>
+        <Redirect to={getRoute(ROUTES.Home)} />
+      </Route>
+    </Switch>
+  );
+};
+
+export const UninitialisedRouter = () => {
+  // todo: is this the correct check for provisioning?
+  const meta = useMeta();
+  const provisioned = Boolean(meta.jsonData?.metrics?.grafanaName);
+
+  if (!provisioned) {
+    return <UnprovisionedSetup />;
+  }
+
+  return (
+    <Switch>
+      <Route exact path={getRoute(ROUTES.Home)}>
+        <WelcomePage />
+      </Route>
+      <Route path={getRoute(ROUTES.Scene)}>
+        <WelcomePage />
+      </Route>
+      <Route path={getRoute(ROUTES.Checks)}>
+        <ChecksWelcomePage />
+      </Route>
+      <Route path={getRoute(ROUTES.Probes)}>
+        <ProbesWelcomePage />
+      </Route>
+      <Route exact path={getRoute(ROUTES.Alerts)}>
+        <AlertingWelcomePage />
+      </Route>
+      <Route path={getRoute(ROUTES.Config)}>
+        <ConfigPage />
       </Route>
 
       {/* Default route (only redirect if the path matches the plugin's URL) */}

@@ -1,56 +1,31 @@
 import React from 'react';
-import { Button, Modal, Spinner } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { Button, Modal } from '@grafana/ui';
 
-interface Props {
+interface MismatchedDatasourceModalProps {
+  disabled?: boolean;
   isOpen: boolean;
-  onSubmit: () => void;
-  isSubmitting: boolean;
+  loading?: boolean;
   onDismiss: () => void;
-  metricsFoundName: string;
-  logsFoundName: string;
-  logsExpectedName: string;
-  metricsExpectedName: string;
+  onSubmit: () => void;
 }
 
+// todo: rename this modal
 export function MismatchedDatasourceModal({
   isOpen,
-  onSubmit,
-  isSubmitting,
+  disabled,
+  loading,
   onDismiss,
-  metricsFoundName,
-  logsFoundName,
-  logsExpectedName,
-  metricsExpectedName,
-}: Props) {
+  onSubmit,
+}: MismatchedDatasourceModalProps) {
   return (
     <Modal isOpen={isOpen} title="Datasource selection">
-      <p>
-        It looks like there is a mismatch between the way Synthetic Monitoring was provisioned and the currently
-        available datasources. This can happen when a Grafana instance is renamed, or if provisioning is incorrect.
-        Proceed with found datasources?
-      </p>
-      <div
-        className={css({
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-        })}
-      >
-        <dt>Expecting metrics datasource:</dt>
-        <dt>Found metrics datasource:</dt>
-        <dd>{metricsExpectedName}</dd>
-        <dd>{metricsFoundName}</dd>
-        <dt>Expecting logs datasource:</dt>
-        <dt>Found logs datasource:</dt>
-        <dd>{logsExpectedName}</dd>
-        <dd>{logsFoundName}</dd>
-      </div>
+      Choose the datasource you want to use for Synthetic Monitoring.
       <Modal.ButtonRow>
         <Button variant="secondary" fill="outline" onClick={onDismiss}>
           Cancel
         </Button>
-        <Button disabled={isSubmitting} onClick={onSubmit}>
-          {isSubmitting ? <Spinner /> : 'Proceed'}
+        <Button disabled={disabled} onClick={onSubmit} icon={loading ? `fa fa-spinner` : undefined}>
+          Proceed
         </Button>
       </Modal.ButtonRow>
     </Modal>

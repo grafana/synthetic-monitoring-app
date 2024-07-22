@@ -1,37 +1,34 @@
-import React, { PropsWithChildren } from 'react';
+import React, { PropsWithChildren, useCallback } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
+import { getDataSourceSrv } from '@grafana/runtime';
 import { Alert, Button, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { ROUTES } from 'types';
 import { useAppInitializer } from 'hooks/useAppInitializer';
-import { useMeta } from 'hooks/useMeta';
-import { MismatchedDatasourceModal } from 'components/MismatchedDatasourceModal';
+// import { useNavigation } from 'hooks/useNavigation';
 
 interface Props {
   redirectTo?: ROUTES;
-  disabled: boolean;
   buttonClassname?: string;
   buttonText: string;
 }
 
-export const AppInitializer = ({ redirectTo, disabled, buttonClassname, buttonText }: PropsWithChildren<Props>) => {
-  const meta = useMeta();
+export const AppInitializer = ({ redirectTo, buttonClassname, buttonText }: PropsWithChildren<Props>) => {
   const styles = useStyles2(getStyles);
+  // const navigate = useNavigation();
+  const { initialize, loading, error, disabled } = useAppInitializer();
+  const ds = getDataSourceSrv().getList();
+  console.log(ds);
 
-  const {
-    error,
-    setError,
-    loading,
-    metricsByName,
-    metricsByUid,
-    logsByName,
-    logsByUid,
-    initialize,
-    handleClick,
-    datasourceModalOpen,
-    setDataSouceModalOpen,
-  } = useAppInitializer(redirectTo);
+  const handleClick = useCallback(async () => {
+    await initialize();
+
+    if (redirectTo) {
+      console.log(`redirectTo: ${redirectTo}`);
+      // navigate(redirectTo);
+    }
+  }, [initialize, redirectTo]);
 
   return (
     <Stack direction={`column`} alignItems={`center`}>
@@ -47,32 +44,20 @@ export const AppInitializer = ({ redirectTo, disabled, buttonClassname, buttonTe
 
       {error && (
         <Alert title="Something went wrong:" className={styles.errorAlert}>
-          {error}
+          {error?.message}
         </Alert>
       )}
 
       {/* todo: is this needed? */}
-      <MismatchedDatasourceModal
+      {/* <MismatchedDatasourceModal
         isOpen={datasourceModalOpen}
-        metricsFoundName={metricsByName?.name ?? 'Not found'}
-        metricsExpectedName={metricsByUid?.name ?? 'Not found'}
-        logsFoundName={logsByName?.name ?? 'Not found'}
-        logsExpectedName={logsByUid?.name ?? 'Not found'}
         onDismiss={() => setDataSouceModalOpen(false)}
-        isSubmitting={loading}
+        disabled={loading}
+        loading={loading}
         onSubmit={() => {
-          if (meta?.jsonData?.metrics?.hostedId && meta?.jsonData?.logs.hostedId) {
-            initialize({
-              metricsSettings: metricsByUid!, // we have already guaranteed that this exists above
-              metricsHostedId: meta.jsonData.metrics.hostedId,
-              logsSettings: logsByUid!, // we have already guaranteed that this exists above
-              logsHostedId: meta.jsonData.logs.hostedId,
-            });
-          } else {
-            setError('Missing datasource hostedId');
-          }
+          console.log(`onSubmit`);
         }}
-      />
+      /> */}
     </Stack>
   );
 };

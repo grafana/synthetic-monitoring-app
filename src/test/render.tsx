@@ -8,7 +8,8 @@ import { createMemoryHistory } from 'history';
 import pluginInfo from 'plugin.json';
 
 import { GlobalSettings } from 'types';
-import { InstanceContextProvider } from 'contexts/InstanceContext';
+import { DatasourceContextProvider } from 'contexts/DatasourceContextProvider';
+import { MetaContextProvider } from 'contexts/MetaContext';
 import { getQueryClient } from 'data/queryClient';
 import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
 
@@ -48,18 +49,20 @@ export const createWrapper = ({ path, route, meta }: WrapperProps = {}) => {
   // eslint-disable-next-line react/display-name
   const Wrapper = ({ children }: { children: ReactNode }) => (
     <QueryClientProvider client={getQueryClient()}>
-      <FeatureFlagProvider>
-        <InstanceContextProvider
-          meta={{
-            ...defaultMeta,
-            ...meta,
-          }}
-        >
-          <Router history={history}>
-            <Route path={route}>{children}</Route>
-          </Router>
-        </InstanceContextProvider>
-      </FeatureFlagProvider>
+      <MetaContextProvider
+        meta={{
+          ...defaultMeta,
+          ...meta,
+        }}
+      >
+        <FeatureFlagProvider>
+          <DatasourceContextProvider>
+            <Router history={history}>
+              <Route path={route}>{children}</Route>
+            </Router>
+          </DatasourceContextProvider>
+        </FeatureFlagProvider>
+      </MetaContextProvider>
     </QueryClientProvider>
   );
 

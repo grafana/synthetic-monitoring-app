@@ -31,34 +31,28 @@ export const ConfigActions = ({ initialized }: { initialized?: boolean }) => {
     navigate(ROUTES.Home);
   };
 
-  const getAction = () => {
-    if (!meta.enabled) {
-      return (
-        <Button variant="primary" onClick={handleEnable}>
-          Enable plugin
-        </Button>
-      );
-    }
+  if (!meta.enabled) {
+    return (
+      <Button variant="primary" onClick={handleEnable}>
+        Enable plugin
+      </Button>
+    );
+  }
 
-    if (initialized) {
-      return (
+  if (initialized) {
+    return (
+      <>
         <Button variant="destructive" onClick={() => setShowDisableModal(true)}>
           Disable synthetic monitoring
         </Button>
-      );
-    }
-
-    return (
-      <Button variant="primary" onClick={handleSetup}>
-        Setup
-      </Button>
+        <DisablePluginModal isOpen={showDisableModal} onDismiss={() => setShowDisableModal(false)} />
+      </>
     );
-  };
+  }
 
   return (
-    <>
-      {getAction()}
-      <DisablePluginModal isOpen={showDisableModal} onDismiss={() => setShowDisableModal(false)} />
-    </>
+    <Button variant="primary" onClick={handleSetup}>
+      Setup
+    </Button>
   );
 };

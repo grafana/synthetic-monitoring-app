@@ -6,11 +6,11 @@ import { type CustomRenderOptions, render } from 'test/render';
 import { ROUTES } from 'types';
 import { PLUGIN_URL_PATH } from 'components/Routing.consts';
 
-import { Routing } from './Routing';
+import { InitialisedRouter } from './Routing';
 import { getRoute } from './Routing.utils';
 
 function renderRouting(options?: CustomRenderOptions) {
-  return render(<Routing onNavChanged={jest.fn} />, options);
+  return render(<InitialisedRouter onNavChanged={jest.fn} />, options);
 }
 
 // Mocking these pages because they renders scenes, which makes jest explode
