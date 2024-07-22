@@ -5,7 +5,7 @@ import { ApiEntry } from 'test/handlers/types';
 import { AlertGroupResponse, ListPrometheusAlertsResponse } from 'datasource/responses.types';
 
 export const getAlertRules: ApiEntry<AlertGroupResponse> = {
-  route: `/api/ruler/1/api/v1/rules/synthetic_monitoring/default`,
+  route: `/api/ruler/4/api/v1/rules/synthetic_monitoring/default`,
   method: `get`,
   result: () => {
     return {
