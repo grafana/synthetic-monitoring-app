@@ -1,7 +1,8 @@
 import React from 'react';
-import { AppRootProps, NavModelItem } from '@grafana/data';
+import { AppRootProps, NavModelItem, OrgRole } from '@grafana/data';
 
 import { Settings } from 'types';
+import { hasRole } from 'utils';
 import { PLUGIN_URL_PATH } from 'components/Routing.consts';
 
 export type PageDefinition = {
@@ -33,12 +34,15 @@ const pages: NavModelItem[] = [
     id: 'alerts',
     url: `${PLUGIN_URL_PATH}alerts`,
   },
-  {
+];
+
+if (hasRole(OrgRole.Editor)) {
+  pages.push({
     text: 'Config',
     id: 'config',
     url: `${PLUGIN_URL_PATH}config`,
-  },
-];
+  });
+}
 
 export const getNavModel = (logo: string, path: string) => {
   const node = {

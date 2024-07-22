@@ -1,10 +1,11 @@
 import React, { useContext, useState } from 'react';
-import { GrafanaTheme2 } from '@grafana/data';
+import { GrafanaTheme2, OrgRole } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import { Alert, Button, Icon, Modal, Spinner, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { AlertFormValues, AlertRule } from 'types';
+import { hasRole } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { useAlerts } from 'hooks/useAlerts';
 import { useUnifiedAlertsEnabled } from 'hooks/useUnifiedAlertsEnabled';
@@ -108,7 +109,7 @@ const Alerting = () => {
             You do not have any default alerts for Synthetic Monitoring yet. Click below to get some default alerts. You
             can also create custom alerts for checks using Grafana Cloud Alerting.
           </span>
-          <Button size="md" disabled={updatingDefaultRules} onClick={populateDefaultAlerts}>
+          <Button size="md" disabled={updatingDefaultRules || !hasRole(OrgRole.Editor)} onClick={populateDefaultAlerts}>
             Populate default alerts
           </Button>
         </div>
@@ -118,7 +119,12 @@ const Alerting = () => {
       ))}
       {Boolean(alertRules?.length) ? (
         <Stack justifyContent="flex-end">
-          <Button variant="destructive" type="button" onClick={() => setShowResetModal(true)}>
+          <Button
+            variant="destructive"
+            type="button"
+            onClick={() => setShowResetModal(true)}
+            disabled={!hasRole(OrgRole.Editor)}
+          >
             Reset to defaults
           </Button>
         </Stack>

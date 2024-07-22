@@ -2,6 +2,7 @@ import React from 'react';
 import runTime from '@grafana/runtime';
 import { screen } from '@testing-library/react';
 import { type CustomRenderOptions, render } from 'test/render';
+import { runTestAsViewer } from 'test/utils';
 
 import { ROUTES } from 'types';
 import { PLUGIN_URL_PATH } from 'components/Routing.consts';
@@ -148,6 +149,16 @@ describe('Routes to pages correctly', () => {
     );
     expect(configText).toBeInTheDocument();
   });
+
+  test('Config page redirects to homepage when the user is viewer', async () => {
+    runTestAsViewer();
+
+    renderRouting({ path: getRoute(ROUTES.Config) });
+
+    const homePageText = await screen.findByText('Home page', { selector: 'h1' });
+    expect(homePageText).toBeInTheDocument();
+  });
+
   test('Non-existent route redirects to homepage', async () => {
     renderRouting({ path: notaRoute });
     const homePageText = await screen.findByText('Home page', { selector: 'h1' });
