@@ -1,8 +1,8 @@
 import React from 'react';
-import { OrgRole } from '@grafana/data';
-import runTime, { config } from '@grafana/runtime';
+import runTime from '@grafana/runtime';
 import { screen } from '@testing-library/react';
 import { type CustomRenderOptions, render } from 'test/render';
+import { runTestAsViewer } from 'test/utils';
 
 import { ROUTES } from 'types';
 import { PLUGIN_URL_PATH } from 'components/Routing.consts';
@@ -151,12 +151,7 @@ describe('Routes to pages correctly', () => {
   });
 
   test('Config page redirects to homepage when the user is viewer', async () => {
-    jest.replaceProperty(config, 'bootData', {
-      // @ts-expect-error
-      user: {
-        orgRole: OrgRole.Viewer,
-      },
-    });
+    runTestAsViewer();
 
     renderRouting({ path: getRoute(ROUTES.Config) });
 
