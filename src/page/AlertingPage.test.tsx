@@ -2,7 +2,7 @@ import React from 'react';
 import { screen, waitFor, within } from '@testing-library/react';
 import { type UserEvent } from '@testing-library/user-event';
 import { render } from 'test/render';
-import { selectOption } from 'test/utils';
+import { runTestAsViewer, selectOption } from 'test/utils';
 
 import { AlertFamily, AlertRule, AlertSensitivity } from 'types';
 import {
@@ -12,7 +12,31 @@ import {
 import { AlertingPage } from 'page/AlertingPage';
 
 jest.mock('hooks/useAlerts', () => {
-  const { defaultRules } = jest.requireActual('hooks/useAlerts');
+  const actual = jest.requireActual('hooks/useAlerts');
+  return {
+    ...actual,
+    useAlerts: jest.fn(),
+  };
+});
+
+const useAlertsHook = require('hooks/useAlerts');
+
+const { defaultRules } = jest.requireActual('hooks/useAlerts');
+const setDefaultRules = jest.fn();
+const setRules = jest.fn().mockImplementation(() => Promise.resolve({ ok: true }));
+jest.setTimeout(30000);
+
+const renderAlerting = () => {
+  return render(<AlertingPage />);
+};
+
+const toggleSection = async (sectionName: string, user: UserEvent): Promise<HTMLElement> => {
+  const sectionHeader = await screen.findByText(sectionName);
+  await user.click(sectionHeader);
+  return sectionHeader.parentElement?.parentElement ?? new HTMLElement();
+};
+
+it('adds default alerts and edits alerts', async () => {
   const useAlertsMock = jest
     .fn()
     .mockImplementationOnce(() => ({
@@ -27,29 +51,14 @@ jest.mock('hooks/useAlerts', () => {
       setDefaultRules,
       setRules,
     }));
-  return { useAlerts: useAlertsMock, defaultRules };
-});
 
-jest.setTimeout(30000);
+  useAlertsHook.useAlerts = useAlertsMock;
 
-const setDefaultRules = jest.fn();
-const setRules = jest.fn().mockImplementation(() => Promise.resolve({ ok: true }));
-
-const renderAlerting = () => {
-  return render(<AlertingPage />);
-};
-
-const toggleSection = async (sectionName: string, user: UserEvent): Promise<HTMLElement> => {
-  const sectionHeader = await screen.findByText(sectionName);
-  await user.click(sectionHeader);
-  return sectionHeader.parentElement?.parentElement ?? new HTMLElement();
-};
-
-it('adds default alerts and edits alerts', async () => {
   const { user } = renderAlerting();
-  const defaultAlertButton = await screen.findByText('Populate default alerts');
-  await user.click(defaultAlertButton);
+  const defaultAlertButton = await screen.findByRole('button', { name: 'Populate default alerts' });
   await waitFor(() => expect(defaultAlertButton).not.toBeDisabled());
+
+  await user.click(defaultAlertButton);
   expect(setDefaultRules).toHaveBeenCalledTimes(1);
 
   const button = await screen.findByText(
@@ -145,4 +154,21 @@ it('adds default alerts and edits alerts', async () => {
       },
     },
   ]);
+});
+
+it('shows the Populate alerts button as disabled when user is viewer', async () => {
+  runTestAsViewer();
+
+  const useAlertsMock = jest.fn().mockImplementation(() => ({
+    alertRules: [],
+    alertError: '',
+    setDefaultRules,
+    setRules,
+  }));
+
+  useAlertsHook.useAlerts = useAlertsMock;
+
+  renderAlerting();
+  const defaultAlertButton = await screen.findByRole('button', { name: 'Populate default alerts' });
+  await waitFor(() => expect(defaultAlertButton).toBeDisabled());
 });
