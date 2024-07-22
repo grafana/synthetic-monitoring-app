@@ -6,7 +6,6 @@ import { DataSourceRef } from '@grafana/schema';
 import { ZodType } from 'zod';
 
 import { LinkedDatasourceInfo } from './datasource/types';
-import { SMDataSource } from 'datasource/DataSource';
 import { FilterType } from 'hooks/useCheckFilters';
 import { Assertion, MultiHttpEntry, MultiHttpVariable, RequestProps } from 'components/MultiHttp/MultiHttpTypes';
 
@@ -485,9 +484,8 @@ export interface HostedInstance {
 }
 
 export interface GrafanaInstances {
-  api?: SMDataSource;
-  metrics?: DataSourceSettings;
-  logs?: DataSourceSettings;
+  metrics?: Pick<DataSourceSettings, 'id' | 'uid' | 'type' | 'name'>;
+  logs?: Pick<DataSourceSettings, 'id' | 'uid' | 'type' | 'name'>;
   alertRuler?: DataSourceSettings;
 }
 

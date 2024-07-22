@@ -1,4 +1,3 @@
-import { useContext } from 'react';
 import { type QueryKey, useMutation, UseMutationResult, useQuery, useSuspenseQuery } from '@tanstack/react-query';
 import { isFetchError } from '@grafana/runtime';
 
@@ -13,8 +12,8 @@ import type {
   DeleteCheckResult,
   UpdateCheckResult,
 } from 'datasource/responses.types';
-import { InstanceContext } from 'contexts/InstanceContext';
 import { queryClient } from 'data/queryClient';
+import { useSMDS } from 'hooks/useSMDS';
 
 export const queryKeys: Record<'list', QueryKey> = {
   list: ['checks'],
@@ -28,17 +27,15 @@ const checksQuery = (api: SMDataSource) => {
 };
 
 export function useChecks() {
-  const { instance } = useContext(InstanceContext);
-  const api = instance.api as SMDataSource;
+  const smDS = useSMDS();
 
-  return useQuery(checksQuery(api));
+  return useQuery(checksQuery(smDS));
 }
 
 export function useSuspenseChecks() {
-  const { instance } = useContext(InstanceContext);
-  const api = instance.api as SMDataSource;
+  const smDS = useSMDS();
 
-  return useSuspenseQuery(checksQuery(api));
+  return useSuspenseQuery(checksQuery(smDS));
 }
 
 export function useCheck(id: number) {
@@ -52,14 +49,13 @@ export function useCheck(id: number) {
 }
 
 export function useCreateCheck({ eventInfo, onError, onSuccess }: MutationProps<AddCheckResult> = {}) {
-  const { instance } = useContext(InstanceContext);
-  const api = instance.api as SMDataSource;
+  const smDS = useSMDS();
   const eventType = FaroEvent.CREATE_CHECK;
 
   return useMutation<AddCheckResult, Error, Check, UseMutationResult>({
     mutationFn: async (check: Check) => {
       try {
-        const res = await api.addCheck(check);
+        const res = await smDS.addCheck(check);
 
         return res;
       } catch (error) {
@@ -85,14 +81,13 @@ export function useCreateCheck({ eventInfo, onError, onSuccess }: MutationProps<
 }
 
 export function useUpdateCheck({ eventInfo, onError, onSuccess }: MutationProps<UpdateCheckResult> = {}) {
-  const { instance } = useContext(InstanceContext);
-  const api = instance.api as SMDataSource;
+  const smDS = useSMDS();
   const eventType = FaroEvent.UPDATE_CHECK;
 
   return useMutation<UpdateCheckResult, Error, Check, UseMutationResult>({
     mutationFn: async (check: Check) => {
       try {
-        const res = await api.updateCheck(check).then((res) => ({
+        const res = await smDS.updateCheck(check).then((res) => ({
           ...res,
           job: check.job,
         }));
@@ -125,14 +120,13 @@ type ExtendedDeleteCheckResult = DeleteCheckResult & {
 };
 
 export function useDeleteCheck({ eventInfo, onError, onSuccess }: MutationProps<DeleteCheckResult> = {}) {
-  const { instance } = useContext(InstanceContext);
-  const api = instance.api as SMDataSource;
+  const smDS = useSMDS();
   const eventType = FaroEvent.DELETE_CHECK;
 
   return useMutation<ExtendedDeleteCheckResult, Error, Check, UseMutationResult>({
     mutationFn: async (check: Check) => {
       try {
-        const res = await api.deleteCheck(check.id!).then((res) => ({
+        const res = await smDS.deleteCheck(check.id!).then((res) => ({
           ...res,
           job: check.job,
         }));
@@ -168,14 +162,13 @@ export function useBulkUpdateChecks({
   onError,
   onSuccess,
 }: MutationProps<ExtendedBulkUpdateCheckResult> = {}) {
-  const { instance } = useContext(InstanceContext);
-  const api = instance.api as SMDataSource;
+  const smDS = useSMDS();
   const eventType = FaroEvent.BULK_UPDATE_CHECK;
 
   return useMutation<ExtendedBulkUpdateCheckResult, Error, Check[], UseMutationResult>({
     mutationFn: async (checks: Check[]) => {
       try {
-        const res = await api.bulkUpdateChecks(checks).then((result) => ({
+        const res = await smDS.bulkUpdateChecks(checks).then((result) => ({
           ...result,
           checks,
         }));
@@ -203,13 +196,12 @@ export function useBulkUpdateChecks({
 }
 
 export function useBulkDeleteChecks({ eventInfo, onSuccess, onError }: MutationProps<number[]> = {}) {
-  const { instance } = useContext(InstanceContext);
-  const api = instance.api as SMDataSource;
+  const smDS = useSMDS();
   const eventType = FaroEvent.BULK_DELETE_CHECK;
 
   return useMutation<number[], Error, number[], UseMutationResult>({
     mutationFn: async (checkIds: number[]) => {
-      const attempts = checkIds.map((id) => api.deleteCheck(id));
+      const attempts = checkIds.map((id) => smDS.deleteCheck(id));
       const results = await Promise.allSettled(attempts);
       const errorCount = results.filter((r) => r.status === `rejected`).length;
 
@@ -239,14 +231,13 @@ export function useBulkDeleteChecks({ eventInfo, onSuccess, onError }: MutationP
 }
 
 export function useTestCheck({ eventInfo, onSuccess, onError }: MutationProps<AdHocCheckResponse> = {}) {
-  const { instance } = useContext(InstanceContext);
-  const api = instance.api as SMDataSource;
+  const smDS = useSMDS();
   const eventType = FaroEvent.TEST_CHECK;
 
   return useMutation<AdHocCheckResponse, Error, Check, UseMutationResult>({
     mutationFn: async (check: Check) => {
       try {
-        const res = await api
+        const res = await smDS
           .testCheck(check)
           .then((res) => {
             if (!res) {

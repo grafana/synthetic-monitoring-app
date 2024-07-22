@@ -6,17 +6,18 @@ import { css, Global } from '@emotion/react';
 
 import { GlobalSettings } from 'types';
 import { MetaContextProvider } from 'contexts/MetaContext';
+import { SMDatasourceProvider } from 'contexts/SMDatasourceContext';
 import { queryClient } from 'data/queryClient';
 import { queryKeys as alertingQueryKeys } from 'data/useAlerts';
 import { InstanceProvider } from 'components/InstanceProvider';
-import { Routing } from 'components/Routing';
 
 import { FeatureFlagProvider } from './FeatureFlagProvider';
+import { InitialisedRouter } from './Routing';
 
 type AppProps = AppRootProps<GlobalSettings>;
 
 export const App = (props: AppProps) => {
-  const { meta } = props;
+  const { meta, onNavChanged } = props;
 
   useEffect(() => {
     return () => {
@@ -29,20 +30,22 @@ export const App = (props: AppProps) => {
   }, [meta.jsonData?.metrics.uid]);
 
   return (
-    <MetaContextProvider meta={meta}>
-      <FeatureFlagProvider>
-        <GlobalStyles />
-        <InstanceProvider
-          metricInstanceName={meta.jsonData?.metrics?.grafanaName}
-          logsInstanceName={meta.jsonData?.logs?.grafanaName}
-        >
-          <QueryClientProvider client={queryClient}>
-            <Routing {...props} />
-            <ReactQueryDevtools />
-          </QueryClientProvider>
-        </InstanceProvider>
-      </FeatureFlagProvider>
-    </MetaContextProvider>
+    <QueryClientProvider client={queryClient}>
+      <MetaContextProvider meta={meta}>
+        <FeatureFlagProvider>
+          <GlobalStyles />
+          <SMDatasourceProvider>
+            <InstanceProvider
+              metricInstanceName={meta.jsonData?.metrics?.grafanaName}
+              logsInstanceName={meta.jsonData?.logs?.grafanaName}
+            >
+              <InitialisedRouter onNavChanged={onNavChanged} />
+              <ReactQueryDevtools />
+            </InstanceProvider>
+          </SMDatasourceProvider>
+        </FeatureFlagProvider>
+      </MetaContextProvider>
+    </QueryClientProvider>
   );
 };
 

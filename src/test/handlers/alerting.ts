@@ -1,4 +1,5 @@
 import { ALERTING_RULES } from 'test/fixtures/alerting';
+import { MetricsDSSettings } from 'test/fixtures/datasources';
 
 import { ApiEntry } from 'test/handlers/types';
 import { AlertGroupResponse, ListPrometheusAlertsResponse } from 'datasource/responses.types';
@@ -61,7 +62,7 @@ export const getAlertRules: ApiEntry<AlertGroupResponse> = {
 };
 
 export const getPromAlertRules: ApiEntry<ListPrometheusAlertsResponse> = {
-  route: `/api/prometheus/uid-1/api/v1/rules`,
+  route: `/api/prometheus/${MetricsDSSettings.uid}/api/v1/rules`,
   method: `get`,
   result: () => {
     return {

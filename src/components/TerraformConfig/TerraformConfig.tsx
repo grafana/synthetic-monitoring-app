@@ -1,11 +1,11 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Button, Modal, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { FaroEvent, reportEvent } from 'faro';
-import { InstanceContext } from 'contexts/InstanceContext';
 import { useMeta } from 'hooks/useMeta';
+import { useSMDS } from 'hooks/useSMDS';
 import { useTerraformConfig } from 'hooks/useTerraformConfig';
 import { Clipboard } from 'components/Clipboard';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
@@ -31,8 +31,8 @@ const getStyles = (theme: GrafanaTheme2) => ({
 export const TerraformConfig = () => {
   const styles = useStyles2(getStyles);
   const { enabled } = useMeta();
-  const { instance } = useContext(InstanceContext);
-  const initialized = enabled && instance.api;
+  const smDS = useSMDS();
+  const initialized = enabled && smDS;
 
   return (
     <div>
@@ -64,8 +64,8 @@ const GenerateButton = () => {
   const [showModal, setShowModal] = useState(false);
   const styles = useStyles2(getStyles);
   const { enabled } = useMeta();
-  const { instance } = useContext(InstanceContext);
-  const initialized = enabled && instance.api;
+  const smDS = useSMDS();
+  const initialized = enabled && smDS;
 
   return (
     <>

@@ -1,25 +1,22 @@
-import { useContext } from 'react';
 import { type QueryKey, useMutation, UseMutationResult, useQuery } from '@tanstack/react-query';
 
 import { type MutationProps } from 'data/types';
 import type { ThresholdSettings } from 'types';
 import { FaroEvent } from 'faro';
-import { SMDataSource } from 'datasource/DataSource';
 import type { UpdateTenantSettingsResult } from 'datasource/responses.types';
-import { InstanceContext } from 'contexts/InstanceContext';
 import { queryClient } from 'data/queryClient';
+import { useSMDS } from 'hooks/useSMDS';
 
 export const queryKeys: Record<'list', QueryKey> = {
   list: ['thresholds'],
 };
 
 export function useThresholds() {
-  const { instance } = useContext(InstanceContext);
-  const api = instance.api as SMDataSource;
+  const smDS = useSMDS();
 
   return useQuery({
     queryKey: queryKeys.list,
-    queryFn: () => api.getTenantSettings(),
+    queryFn: () => smDS.getTenantSettings(),
   });
 }
 
@@ -34,12 +31,11 @@ export function useThreshold(type: keyof ThresholdSettings) {
 }
 
 export function useUpdateThresholds({ onError, onSuccess }: MutationProps<UpdateTenantSettingsResult> = {}) {
-  const { instance } = useContext(InstanceContext);
-  const api = instance.api as SMDataSource;
+  const smDS = useSMDS();
   const eventType = FaroEvent.SAVE_THRESHOLDS;
 
   return useMutation<UpdateTenantSettingsResult, Error, ThresholdSettings, UseMutationResult>({
-    mutationFn: (thresholds: ThresholdSettings) => api.updateTenantSettings({ thresholds }),
+    mutationFn: (thresholds: ThresholdSettings) => smDS.updateTenantSettings({ thresholds }),
     onError: (error: unknown) => {
       onError?.(error);
     },

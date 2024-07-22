@@ -21,6 +21,7 @@ export const defaultQuery: SMQuery = {
 export interface LinkedDatasourceInfo {
   grafanaName: string;
   hostedId: number;
+  type?: string;
   uid?: string;
 }
 

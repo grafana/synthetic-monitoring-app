@@ -12,8 +12,6 @@ import { PLUGIN_URL_PATH } from 'components/Routing.consts';
 
 import { CheckRouter } from './CheckRouter';
 
-jest.setTimeout(20000);
-
 const renderChecksPage = async () => {
   const res = render(<CheckRouter />, {
     path: `${PLUGIN_URL_PATH}${ROUTES.Checks}`,
@@ -150,7 +148,6 @@ test(`renders retry button when unable to fetch alerts`, async () => {
   );
 
   const { user } = await renderChecksPage();
-  await waitFor(() => {}, { timeout: 10000 });
   const refetchButton = await screen.findByLabelText('Unable to fetch alerting rules. Retry?');
 
   server.use(

@@ -1,4 +1,5 @@
 import { BASIC_CHECK_LIST } from 'test/fixtures/checks';
+import { MetricsDSSettings } from 'test/fixtures/datasources';
 
 import { ApiEntry } from 'test/handlers/types';
 import { MetricDatasourceResponse } from 'datasource/responses.types';
@@ -16,7 +17,7 @@ const checkReachabilityQuery =
 const checkUptimeQuery = `sum_over_time((ceil(sum by (instance, job) (increase(probe_all_success_sum[5m])) / sum by (instance, job) (increase(probe_all_success_count[5m]))))[3h:]) / count_over_time((sum by (instance, job) (increase(probe_all_success_count[5m])))[3h:])`;
 
 export const getMetrics: ApiEntry<MetricDatasourceResponse<any>> = {
-  route: '/metrics/api/v1/query',
+  route: `${MetricsDSSettings.url}/api/v1/query`,
   method: 'get',
   result: (req) => {
     const query = req.url.searchParams.get('query') || ``;

@@ -1,9 +1,8 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Container, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { InstanceContext } from 'contexts/InstanceContext';
 import { useMeta } from 'hooks/useMeta';
 import { BackendAddress } from 'components/BackendAddress';
 import { ConfigActions } from 'components/ConfigActions';
@@ -36,10 +35,9 @@ function getStyles(theme: GrafanaTheme2) {
   };
 }
 
-export function ConfigPage() {
-  const { instance } = useContext(InstanceContext);
-  const meta = useMeta();
+export function ConfigPage({ initialized }: { initialized?: boolean }) {
   const styles = useStyles2(getStyles);
+  const meta = useMeta();
 
   return (
     <PluginPage>
@@ -66,7 +64,7 @@ export function ConfigPage() {
             </a>
           </p>
         </div>
-        {instance.api && (
+        {initialized && (
           <div className={styles.tenantConfig}>
             <div className={styles.linkedDatasources}>
               <h3>Linked Data Sources</h3>
@@ -80,10 +78,10 @@ export function ConfigPage() {
             </div>
           </div>
         )}
-        <div className={styles.programmaticManagement}>{meta.enabled && <ProgrammaticManagement />}</div>
+        <div className={styles.programmaticManagement}>{initialized && <ProgrammaticManagement />}</div>
         <div className={styles.configActions}>
           <hr></hr>
-          <ConfigActions enabled={meta.enabled} pluginId={meta.id ?? 'grafana-synthetic-monitoring-app'} />
+          <ConfigActions initialized={initialized} />
         </div>
         <div>Plugin version: {meta.info.version}</div>
       </div>
