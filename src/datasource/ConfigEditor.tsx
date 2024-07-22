@@ -1,14 +1,11 @@
 import React, { PureComponent } from 'react';
-import { QueryClientProvider } from '@tanstack/react-query';
-import { AppPluginMeta, DataSourcePluginOptionsEditorProps } from '@grafana/data';
-import { Container, LegacyForms } from '@grafana/ui';
+import { DataSourcePluginOptionsEditorProps, DataSourceSettings } from '@grafana/data';
+import { LegacyForms } from '@grafana/ui';
 
 import { SecureJsonData, SMOptions } from './types';
 import { GlobalSettings } from 'types';
-import { MetaContextProvider } from 'contexts/MetaContext';
-import { SMDatasourceProvider } from 'contexts/SMDatasourceContext';
-import { queryClient } from 'data/queryClient';
-import { LinkedDatasourceView } from 'components/LinkedDatasourceView';
+
+type Options = DataSourceSettings<SMOptions, SecureJsonData>;
 
 interface Props extends DataSourcePluginOptionsEditorProps<SMOptions, SecureJsonData> {}
 
@@ -20,60 +17,56 @@ export class ConfigEditor extends PureComponent<Props> {
   }
 }
 
-const ConfigEditorContent = ({ options, onOptionsChange }: { options: any; onOptionsChange: any }) => {
-  const { secureJsonData, jsonData } = options;
+const ConfigEditorContent = ({
+  options,
+  onOptionsChange,
+}: {
+  options: Options;
+  onOptionsChange: (options: Options) => void;
+}) => {
+  const { secureJsonData } = options;
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <MetaContextProvider meta={options}>
-        <SMDatasourceProvider>
-          {isValid(jsonData) && secureJsonData?.accessToken && (
-            <Container margin="sm">
-              <LinkedDatasourceView type="prometheus" />
-              <LinkedDatasourceView type="loki" />
-            </Container>
-          )}
-          <br />
-          <div className="gf-form-group">
-            <div className="gf-form-inline">
-              <div className="gf-form">
-                <LegacyForms.SecretFormField
-                  isConfigured
-                  value={secureJsonData?.accessToken || ''}
-                  label="Access Token"
-                  placeholder="access token saved on the server"
-                  labelWidth={10}
-                  inputWidth={20}
-                  onReset={() => {
-                    onOptionsChange(resetAccessToken(options));
-                  }}
-                  onChange={(event) => {
-                    onOptionsChange({
-                      ...options,
-                      secureJsonData: {
-                        accessToken: event.target.value,
-                      },
-                    });
-                  }}
-                />
-              </div>
-            </div>
+    <>
+      <br />
+      <div className="gf-form-group">
+        <div className="gf-form-inline">
+          <div className="gf-form">
+            <LegacyForms.SecretFormField
+              isConfigured
+              value={secureJsonData?.accessToken || ''}
+              label="Access Token"
+              placeholder="access token saved on the server"
+              labelWidth={10}
+              inputWidth={20}
+              onReset={() => {
+                onOptionsChange(resetAccessToken(options));
+              }}
+              onChange={(event) => {
+                onOptionsChange({
+                  ...options,
+                  secureJsonData: {
+                    accessToken: event.target.value,
+                  },
+                });
+              }}
+            />
           </div>
-        </SMDatasourceProvider>
-      </MetaContextProvider>
-    </QueryClientProvider>
+        </div>
+      </div>
+    </>
   );
 };
 
-function resetAccessToken(meta: AppPluginMeta<GlobalSettings>): AppPluginMeta<GlobalSettings> {
+function resetAccessToken(options: Options): Options {
   return {
-    ...meta,
+    ...options,
     secureJsonFields: {
-      ...meta.secureJsonFields,
+      ...options.secureJsonFields,
       accessToken: false,
     },
     secureJsonData: {
-      ...meta.secureJsonData,
+      ...options.secureJsonData,
       accessToken: '',
     },
   };

@@ -1,6 +1,6 @@
 import { DataSourcePlugin } from '@grafana/data';
 
-import { SMOptions,SMQuery } from './types';
+import { SMOptions, SMQuery } from './types';
 
 import { ConfigEditor } from './ConfigEditor';
 import { SMDataSource } from './DataSource';

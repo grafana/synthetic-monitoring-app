@@ -33,16 +33,7 @@ export function useMetaContext() {
   return context;
 }
 
+// todo: work out what to do if this is not a verified meta
 function verifyMeta(meta: AppPluginMeta<GlobalSettings>): VerifiedMeta {
-  // if (!meta.jsonData) {
-  //   console.log(meta);
-  //   throw new Error('verifyMeta: meta.jsonData is required');
-  // }
-
-  // if (!meta.jsonData.stackId) {
-  //   console.log(meta);
-  //   throw new Error('verifyMeta: meta.jsonData.stackId is required');
-  // }
-
   return meta as VerifiedMeta;
 }
