@@ -1,25 +1,27 @@
-import React, { useContext, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { SceneApp, SceneAppPage } from '@grafana/scenes';
 import { LoadingPlaceholder } from '@grafana/ui';
 
 import { DashboardSceneAppConfig, ROUTES } from 'types';
-import { InstanceContext } from 'contexts/InstanceContext';
 import { useChecks } from 'data/useChecks';
+import { useLogsDS } from 'hooks/useLogsDS';
+import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useSMDS } from 'hooks/useSMDS';
 import { PLUGIN_URL_PATH } from 'components/Routing.consts';
 import { getSummaryScene } from 'scenes/Summary';
 
 export const SceneHomepage = () => {
   const smDS = useSMDS();
-  const { instance } = useContext(InstanceContext);
+  const metricsDS = useMetricsDS();
+  const logsDS = useLogsDS();
   const { data: checks = [], isLoading } = useChecks();
 
   const scene = useMemo(() => {
     const config: DashboardSceneAppConfig = {
       metrics: {
-        uid: instance.metrics?.uid,
+        uid: metricsDS.uid,
       },
-      logs: { uid: instance.logs?.uid },
+      logs: { uid: logsDS.uid },
       sm: { uid: smDS.uid },
       singleCheckMode: true,
     };
@@ -34,7 +36,7 @@ export const SceneHomepage = () => {
         }),
       ],
     });
-  }, [instance.metrics?.uid, instance.logs?.uid, smDS, checks]);
+  }, [metricsDS, logsDS, smDS, checks]);
 
   if (!scene || isLoading) {
     return <LoadingPlaceholder text="Loading..." />;

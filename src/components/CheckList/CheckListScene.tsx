@@ -1,4 +1,4 @@
-import React, { useContext, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { DataTransformerConfig, ThresholdsMode } from '@grafana/data';
 import {
   CustomTransformOperator,
@@ -17,9 +17,10 @@ import {
 import { Spinner } from '@grafana/ui';
 
 import { CheckFiltersType, CheckListViewType, VizViewSceneAppConfig } from 'types';
-import { InstanceContext } from 'contexts/InstanceContext';
 import { useChecks } from 'data/useChecks';
 import { FilterType } from 'hooks/useCheckFilters';
+import { useLogsDS } from 'hooks/useLogsDS';
+import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useSMDS } from 'hooks/useSMDS';
 import { CheckFilters } from 'components/CheckFilters';
 import { ExplorablePanel } from 'scenes/ExplorablePanel';
@@ -276,36 +277,26 @@ interface Props {
 }
 
 export function CheckListScene({ onChangeViewType, checkFilters, onReset, onFilterChange }: Props) {
-  const { instance } = useContext(InstanceContext);
+  const metricsDS = useMetricsDS();
+  const logsDS = useLogsDS();
   const smDS = useSMDS();
   const { data: checks = [], isLoading } = useChecks();
 
-  const { api, logs, metrics } = useMemo(
-    () => ({ api: smDS, logs: instance.logs, metrics: instance.metrics }),
-    [smDS, instance.logs, instance.metrics]
-  );
-
   const scene = useMemo(() => {
-    if (!metrics || !logs || !api) {
-      return undefined;
-    }
-    const metricsDef = {
-      uid: metrics.uid,
-      type: metrics.type,
-    };
-    const logsDef = {
-      uid: logs.uid,
-      type: logs.type,
-    };
-    const smDef = {
-      uid: api.uid,
-      type: api.type,
-    };
     return getCheckListScene(
       {
-        metrics: metricsDef,
-        logs: logsDef,
-        sm: smDef,
+        metrics: {
+          uid: metricsDS.uid,
+          type: metricsDS.type,
+        },
+        logs: {
+          uid: logsDS.uid,
+          type: logsDS.type,
+        },
+        sm: {
+          uid: smDS.uid,
+          type: smDS.type,
+        },
         onChangeViewType,
         checkFilters,
         checks,
@@ -314,7 +305,7 @@ export function CheckListScene({ onChangeViewType, checkFilters, onReset, onFilt
       },
       checks.length
     );
-  }, [onChangeViewType, api, logs, metrics, checks, checkFilters, onReset, onFilterChange]);
+  }, [onChangeViewType, smDS, logsDS, metricsDS, checks, checkFilters, onReset, onFilterChange]);
 
   if (!scene || isLoading) {
     return <Spinner />;

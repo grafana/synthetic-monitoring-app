@@ -38,7 +38,7 @@ export function findSMDataSources(): Array<DataSourceInstanceSettings<SMOptions>
   }) as unknown as Array<DataSourceInstanceSettings<SMOptions>>;
 }
 
-export function findLinkedDatasource(linkedDSInfo: LinkedDatasourceInfo): DataSourceInstanceSettings | undefined {
+export function findLinkedDatasource(linkedDSInfo: LinkedDatasourceInfo): DataSourceInstanceSettings {
   if (linkedDSInfo.uid) {
     const linkedDS = Object.values(config.datasources).find((ds) => ds.uid === linkedDSInfo.uid);
     if (linkedDS) {
