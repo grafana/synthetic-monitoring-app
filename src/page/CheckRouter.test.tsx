@@ -1,15 +1,13 @@
 import React from 'react';
-import { OrgRole } from '@grafana/data';
-import { config } from '@grafana/runtime';
 import { screen, waitFor } from '@testing-library/react';
 import { BASIC_HTTP_CHECK, BASIC_SCRIPTED_CHECK } from 'test/fixtures/checks';
 import { render } from 'test/render';
+import { runTestAsViewer } from 'test/utils';
 
 import { CheckType, CheckTypeGroup, ROUTES } from 'types';
 import { PLUGIN_URL_PATH } from 'components/Routing.consts';
 
 import { CheckRouter } from './CheckRouter';
-import { runTestAsViewer } from 'test/utils';
 
 describe(`<CheckRouter />`, () => {
   it(`should redirect from the old add new check route to the new one`, async () => {
