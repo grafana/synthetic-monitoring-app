@@ -9,16 +9,9 @@ import { CheckType, CheckTypeGroup, ROUTES } from 'types';
 import { PLUGIN_URL_PATH } from 'components/Routing.consts';
 
 import { CheckRouter } from './CheckRouter';
+import { runTestAsViewer } from 'test/utils';
 
 describe(`<CheckRouter />`, () => {
-  beforeAll(() => {
-    jest.replaceProperty(config, 'bootData', {
-      // @ts-expect-error
-      user: {
-        orgRole: OrgRole.Editor,
-      },
-    });
-  });
   it(`should redirect from the old add new check route to the new one`, async () => {
     const checkType = CheckType.HTTP;
 
@@ -79,13 +72,8 @@ describe(`<CheckRouter />`, () => {
 
   describe('Permissions', () => {
     describe('When user is viewer', () => {
-      beforeAll(() => {
-        jest.replaceProperty(config, 'bootData', {
-          // @ts-expect-error
-          user: {
-            orgRole: OrgRole.Viewer,
-          },
-        });
+      beforeEach(() => {
+        runTestAsViewer();
       });
       it(`Should not load the edit check route and redirect to the homepage`, async () => {
         const checkType = CheckType.Scripted;
@@ -101,14 +89,6 @@ describe(`<CheckRouter />`, () => {
     });
 
     describe('When user is editor', () => {
-      beforeAll(() => {
-        jest.replaceProperty(config, 'bootData', {
-          // @ts-expect-error
-          user: {
-            orgRole: OrgRole.Editor,
-          },
-        });
-      });
       it(`Should load the edit check route`, async () => {
         const checkType = CheckType.Scripted;
         const checkID = BASIC_SCRIPTED_CHECK.id;
