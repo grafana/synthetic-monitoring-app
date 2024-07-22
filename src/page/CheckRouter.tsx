@@ -1,7 +1,9 @@
 import React from 'react';
 import { Redirect, Route, Switch, useRouteMatch } from 'react-router-dom';
+import { OrgRole } from '@grafana/data';
 
 import { CheckType } from 'types';
+import { hasRole } from 'utils';
 import { CHECK_TYPE_OPTIONS } from 'hooks/useCheckTypeOptions';
 import { CheckList } from 'components/CheckList';
 import { ChooseCheckGroup } from 'components/ChooseCheckGroup';
@@ -40,7 +42,7 @@ export function CheckRouter() {
         <NewCheck />
       </Route>
       <Route path={`${path}/edit/:checkTypeGroup/:id`} exact>
-        <EditCheck />
+        {hasRole(OrgRole.Editor) ? <EditCheck /> : <Redirect to={`${path}`} />}
       </Route>
       <Route path={`${path}/choose-type`} exact>
         <ChooseCheckGroup />

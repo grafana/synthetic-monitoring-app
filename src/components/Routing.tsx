@@ -1,9 +1,10 @@
 import React, { useContext, useEffect, useLayoutEffect } from 'react';
 import { Redirect, Route, Switch, useLocation } from 'react-router-dom';
-import { AppRootProps } from '@grafana/data';
+import { AppRootProps, OrgRole } from '@grafana/data';
 import { config } from '@grafana/runtime';
 
 import { ROUTES } from 'types';
+import { hasRole } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { QueryParamMap, useNavigation } from 'hooks/useNavigation';
 import { useQuery } from 'hooks/useQuery';
@@ -76,7 +77,7 @@ export const Routing = ({ onNavChanged }: Pick<AppRootProps, 'onNavChanged'>) =>
         {initialized ? <AlertingPage /> : <AlertingWelcomePage />}
       </Route>
       <Route path={getRoute(ROUTES.Config)}>
-        <ConfigPage />
+        {hasRole(OrgRole.Editor) ? <ConfigPage /> : <Redirect to={getRoute(ROUTES.Home)} />}
       </Route>
 
       {/* Default route (only redirect if the path matches the plugin's URL) */}

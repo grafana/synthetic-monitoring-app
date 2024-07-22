@@ -1,13 +1,14 @@
 import React, { useContext, useState } from 'react';
 import { useAsyncCallback } from 'react-async-hook';
 import { Controller, FormProvider, useForm } from 'react-hook-form';
-import { AppEvents, GrafanaTheme2, SelectableValue } from '@grafana/data';
+import { AppEvents, GrafanaTheme2, OrgRole, SelectableValue } from '@grafana/data';
 import { FetchResponse } from '@grafana/runtime';
 import { Alert, Button, Field, Icon, Input, Label, Select, Stack, useStyles2 } from '@grafana/ui';
 import appEvents from 'grafana/app/core/app_events';
 import { css } from '@emotion/css';
 
 import { AlertRule, AlertSensitivity, Label as LabelType, TimeUnits } from 'types';
+import { hasRole } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
 
 import { AlertAnnotations } from './AlertAnnotations';
@@ -313,7 +314,7 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
             </SubCollapse>
             <hr className={styles.breakLine} />
             <Stack>
-              <Button type="submit" disabled={submitting}>
+              <Button type="submit" disabled={submitting || !hasRole(OrgRole.Editor)}>
                 Save alert
               </Button>
               <Button variant="secondary" type="button" onClick={onCancel}>
