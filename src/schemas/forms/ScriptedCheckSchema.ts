@@ -10,7 +10,7 @@ export const ScriptedSettingsSchema: ZodType<ScriptedSettings> = z.object({
 });
 
 const ScriptedSchemaValues = z.object({
-  target: z.string().min(3, `Instance must be at lesat 3 characters long.`),
+  target: z.string().min(3, `Instance must be at least 3 characters long.`),
   checkType: z.literal(CheckType.Scripted),
   settings: z.object({
     scripted: ScriptedSettingsSchema,

@@ -10,7 +10,7 @@ const BrowserSettingsSchema: ZodType<BrowserSettings> = z.object({
 });
 
 const BrowserSchemaValues = z.object({
-  target: z.string().min(3, `Instance must be at lesat 3 characters long.`),
+  target: z.string().min(3, `Instance must be at least 3 characters long.`),
   checkType: z.literal(CheckType.Browser),
   settings: z.object({
     browser: BrowserSettingsSchema,
