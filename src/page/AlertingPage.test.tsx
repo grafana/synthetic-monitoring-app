@@ -24,7 +24,6 @@ const useAlertsHook = require('hooks/useAlerts');
 const { defaultRules } = jest.requireActual('hooks/useAlerts');
 const setDefaultRules = jest.fn();
 const setRules = jest.fn().mockImplementation(() => Promise.resolve({ ok: true }));
-jest.setTimeout(30000);
 
 const renderAlerting = () => {
   return render(<AlertingPage />);
