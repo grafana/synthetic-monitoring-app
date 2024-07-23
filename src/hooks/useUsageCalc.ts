@@ -41,7 +41,7 @@ export function useUsageCalc(calcUsageValues: CalculateUsageValues[]) {
         assertionCount,
         probeCount,
         frequencySeconds,
-        seriesPerProbe: data.AccountingClasses[accountingClass].Series,
+        seriesPerProbe: data.AccountingClasses[accountingClass]?.Series,
       });
 
       return {
