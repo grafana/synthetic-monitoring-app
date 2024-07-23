@@ -177,7 +177,8 @@ export function getCheckTypeGroup(checkType: CheckType): CheckTypeGroup {
   const group = CHECK_TYPE_OPTIONS.find((option) => option.value === checkType)?.group;
 
   if (!group) {
-    throw new Error(`Check type ${checkType} not found in check type options`);
+    console.log(`Check type ${checkType} not found in check type options`);
+    return CHECK_TYPE_OPTIONS[0].group;
   }
 
   return group;
