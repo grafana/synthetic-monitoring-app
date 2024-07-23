@@ -6,6 +6,7 @@ import { css, Global } from '@emotion/react';
 
 import { GlobalSettings } from 'types';
 import { MetaContextProvider } from 'contexts/MetaContext';
+import { PermissionsContextProvider } from 'contexts/PermissionsContext';
 import { SMDatasourceProvider } from 'contexts/SMDatasourceContext';
 import { queryClient } from 'data/queryClient';
 import { queryKeys as alertingQueryKeys } from 'data/useAlerts';
@@ -34,7 +35,9 @@ export const App = (props: AppProps) => {
         <FeatureFlagProvider>
           <GlobalStyles />
           <SMDatasourceProvider>
-            <InitialisedRouter onNavChanged={onNavChanged} />
+            <PermissionsContextProvider>
+              <InitialisedRouter onNavChanged={onNavChanged} />
+            </PermissionsContextProvider>
             <ReactQueryDevtools />
           </SMDatasourceProvider>
         </FeatureFlagProvider>
