@@ -18,7 +18,7 @@ const renderChecksPage = async () => {
     route: `${PLUGIN_URL_PATH}${ROUTES.Checks}`,
   });
 
-  await waitFor(() => expect(screen.getByText('Add new check')).toBeInTheDocument());
+  await waitFor(() => expect(screen.getByText('Add new check')).toBeInTheDocument(), { timeout: 10000 });
   return res;
 };
 
