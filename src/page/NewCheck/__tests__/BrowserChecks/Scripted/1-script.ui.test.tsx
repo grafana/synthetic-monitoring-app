@@ -5,7 +5,7 @@ import { renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
 
 const checkType = CheckType.Browser;
 
-describe.only(`BrowserCheck - 1 (Script) UI`, () => {
+describe(`BrowserCheck - 1 (Script) UI`, () => {
   describe('will validate the script', () => {
     it(`will display an error when the script is missing`, async () => {
       const { user } = await renderNewForm(checkType);
