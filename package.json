@@ -19,8 +19,6 @@
     "sign": "npx --yes @grafana/sign-plugin@latest",
     "spellcheck": "cspell -c cspell.config.json \"**/*.{ts,tsx,js,go,md,mdx,yml,yaml,json,scss,css}\"",
     "test": "jest --all",
-    "test:accessibility": "pa11y --runner axe --reporter json http://localhost:3000/a/grafana-synthetic-monitoring-app/?page=checks > pa11y-report.json",
-    "test:ci": "jest --passWithNoTests --maxWorkers 4",
     "test:changed": "jest --watch --onlyChanged",
     "typecheck": "tsc --noEmit"
   },
