@@ -28,8 +28,6 @@ jest.mock('hooks/useNavigation', () => {
 });
 const useNavigationHook = require('hooks/useNavigation');
 
-jest.setTimeout(20000);
-
 const renderCheckList = async (checks = BASIC_CHECK_LIST, searchParams = '') => {
   server.use(
     apiRoute(`listChecks`, {

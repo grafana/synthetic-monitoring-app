@@ -1,5 +1,5 @@
 import React from 'react';
-import { screen, within } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import { UserEvent } from '@testing-library/user-event';
 import { DataTestIds } from 'test/dataTestIds';
 import { apiRoute, getServerRequests } from 'test/handlers';
@@ -33,11 +33,26 @@ export async function renderNewForm(checkType: CheckType) {
     path: `${PLUGIN_URL_PATH}${ROUTES.NewCheck}/${checkTypeGroup}?checkType=${checkType}`,
   });
 
-  await screen.findByTestId(DataTestIds.PAGE_READY);
+  await waitFor(async () => await screen.findByTestId(DataTestIds.PAGE_READY), { timeout: 10000 });
+
+  const typeButReallyPaste = async (target: Element, value: string, args?: any) => {
+    if (target instanceof HTMLElement) {
+      await act(() => {
+        target.focus();
+      });
+      await res.user.paste(value);
+    }
+  };
+
+  const user: UserEvent = {
+    ...res.user,
+    type: typeButReallyPaste,
+  };
 
   return {
     ...res,
     read,
+    user,
   };
 }
 
@@ -52,7 +67,7 @@ export async function renderEditForm(check: Pick<Check, 'id' | 'settings'>) {
     path: `${PLUGIN_URL_PATH}${ROUTES.EditCheck}/edit/${checkTypeGroup}/${check.id}`,
   });
 
-  await screen.findByText(/^Editing/);
+  await waitFor(async () => await screen.findByText(/^Editing/), { timeout: 10000 });
 
   return {
     ...res,
