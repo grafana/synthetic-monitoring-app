@@ -29,12 +29,12 @@ function DashboardPageContent() {
 
   const scene = useMemo(() => {
     const metricsDef = {
-      uid: metricsDS.uid,
-      type: metricsDS.type,
+      uid: metricsDS?.uid,
+      type: metricsDS?.type,
     };
     const logsDef = {
-      uid: logsDS.uid,
-      type: logsDS.type,
+      uid: logsDS?.uid,
+      type: logsDS?.type,
     };
     const smDef = {
       uid: smDS.uid,

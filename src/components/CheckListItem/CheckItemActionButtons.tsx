@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { GrafanaTheme2, OrgRole } from '@grafana/data';
+import { GrafanaTheme2 } from '@grafana/data';
 import { Button, ConfirmModal, IconButton, LinkButton, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Check, ROUTES } from 'types';
-import { getCheckType, getCheckTypeGroup, hasRole } from 'utils';
+import { getCheckType, getCheckTypeGroup } from 'utils';
 import { useDeleteCheck } from 'data/useChecks';
+import { useCanWriteSM } from 'hooks/useDSPermission';
 import { useNavigation } from 'hooks/useNavigation';
 import { PLUGIN_URL_PATH } from 'components/Routing.consts';
 import { getRoute } from 'components/Routing.utils';
@@ -24,6 +25,7 @@ interface Props {
 }
 
 export const CheckItemActionButtons = ({ check, viewDashboardAsIcon }: Props) => {
+  const canEdit = useCanWriteSM();
   const styles = useStyles2(getStyles);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const checkType = getCheckType(check.settings);
@@ -51,7 +53,7 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon }: Props) =>
         href={`${getRoute(ROUTES.EditCheck)}/${checkTypeGroup}/${check.id}`}
         icon={`pen`}
         tooltip="Edit check"
-        disabled={!hasRole(OrgRole.Editor)}
+        disabled={!canEdit}
         variant="secondary"
         fill={`text`}
       />
@@ -59,7 +61,7 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon }: Props) =>
         tooltip="Delete check"
         name="trash-alt"
         onClick={() => setShowDeleteModal(true)}
-        disabled={!hasRole(OrgRole.Editor)}
+        disabled={!canEdit}
       />
       <ConfirmModal
         isOpen={showDeleteModal}

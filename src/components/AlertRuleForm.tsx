@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { useAsyncCallback } from 'react-async-hook';
 import { Controller, FormProvider, useForm } from 'react-hook-form';
-import { AppEvents, GrafanaTheme2, OrgRole, SelectableValue } from '@grafana/data';
+import { AppEvents, GrafanaTheme2, SelectableValue } from '@grafana/data';
 import { FetchResponse } from '@grafana/runtime';
 import { Alert, Button, Field, Icon, Input, Label, Select, Stack, useStyles2 } from '@grafana/ui';
 import appEvents from 'grafana/app/core/app_events';
 import { css } from '@emotion/css';
 
 import { AlertRule, AlertSensitivity, Label as LabelType, TimeUnits } from 'types';
-import { hasRole } from 'utils';
+import { useCanWriteSM } from 'hooks/useDSPermission';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 
 import { AlertAnnotations } from './AlertAnnotations';
@@ -144,6 +144,7 @@ type Props = {
 };
 
 export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
+  const canWriteSM = useCanWriteSM();
   const defaultValues = getAlertFormValues(rule);
   const metricsDS = useMetricsDS();
   const styles = useStyles2(getStyles);
@@ -193,10 +194,14 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
     ) : (
       <div className={styles.container}>
         It looks like this rule has been edited in Cloud Alerting, and can no longer be edited in Synthetic Monitoring.
-        To update this rule, visit{' '}
-        <a href={`alerting/list?dataSource=${metricsDS.name}`} className={styles.link}>
-          Grafana Cloud Alerting
-        </a>
+        {metricsDS && (
+          <div>
+            To update this rule, visit{' '}
+            <a href={`alerting/list?dataSource=${metricsDS.name}`} className={styles.link}>
+              Grafana Cloud Alerting
+            </a>
+          </div>
+        )}
       </div>
     );
   }
@@ -314,7 +319,7 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
             </SubCollapse>
             <hr className={styles.breakLine} />
             <Stack>
-              <Button type="submit" disabled={submitting || !hasRole(OrgRole.Editor)}>
+              <Button type="submit" disabled={submitting || !canWriteSM}>
                 Save alert
               </Button>
               <Button variant="secondary" type="button" onClick={onCancel}>

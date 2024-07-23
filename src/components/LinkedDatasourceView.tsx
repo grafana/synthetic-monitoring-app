@@ -28,10 +28,16 @@ export const LinkedDatasourceView = ({ type }: Props) => {
     loki: meta.jsonData?.logs?.hostedId,
   };
 
+  const ds = dsMap[type];
+
+  if (!ds) {
+    return null;
+  }
+
   const datasource = findLinkedDatasource({
-    grafanaName: dsMap[type].name,
+    grafanaName: ds.name,
     hostedId: hostedIDMap[type] ?? 0,
-    uid: dsMap[type].uid,
+    uid: ds.uid,
   });
 
   const handleClick = () => {

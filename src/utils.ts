@@ -1,5 +1,8 @@
 import { DataSourceInstanceSettings, GrafanaTheme2, OrgRole, TimeRange } from '@grafana/data';
 import { config, FetchResponse, getBackendSrv } from '@grafana/runtime';
+// todo: update this when we move to grafana 11.2
+// https://github.com/grafana/grafana/pull/89047
+import { contextSrv } from 'grafana/app/core/core';
 import { firstValueFrom } from 'rxjs';
 
 import { DashboardInfo, LinkedDatasourceInfo, LogQueryResponse, LogStream, SMOptions } from './datasource/types';
@@ -38,13 +41,15 @@ export function findSMDataSources(): Array<DataSourceInstanceSettings<SMOptions>
   }) as unknown as Array<DataSourceInstanceSettings<SMOptions>>;
 }
 
-export function findLinkedDatasource(linkedDSInfo: LinkedDatasourceInfo): DataSourceInstanceSettings {
+export function findLinkedDatasource(linkedDSInfo: LinkedDatasourceInfo): DataSourceInstanceSettings | undefined {
   if (linkedDSInfo.uid) {
     const linkedDS = Object.values(config.datasources).find((ds) => ds.uid === linkedDSInfo.uid);
+
     if (linkedDS) {
       return linkedDS;
     }
   }
+
   return config.datasources[linkedDSInfo.grafanaName];
 }
 
@@ -446,4 +451,8 @@ export function getMethodColor(theme: GrafanaTheme2, value: HttpMethod) {
   };
 
   return colorMap[value];
+}
+
+export function hasPermission() {
+  return contextSrv.hasPermission;
 }

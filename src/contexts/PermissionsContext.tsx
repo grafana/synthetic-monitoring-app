@@ -1,9 +1,11 @@
 import React, { createContext, PropsWithChildren, useContext } from 'react';
+import { PluginPage } from '@grafana/runtime';
 
 import { useDSAccessControl } from 'data/useDSAccessControl';
 import { useLogsDS } from 'hooks/useLogsDS';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useSMDS } from 'hooks/useSMDS';
+import { CenteredSpinner } from 'components/CenteredSpinner';
 
 type PermissionsContextValue = {
   smDS: string[];
@@ -13,19 +15,21 @@ type PermissionsContextValue = {
 
 export const PermissionsContext = createContext<PermissionsContextValue>(null);
 
-interface PermissionsContextProviderProps extends PropsWithChildren {}
-
-export const PermissionsContextProvider = ({ children }: PermissionsContextProviderProps) => {
+export const PermissionsContextProvider = ({ children }: PropsWithChildren) => {
   const smDS = useSMDS();
   const metricsDS = useMetricsDS();
   const logsDS = useLogsDS();
 
-  const { data: smAccessControl } = useDSAccessControl(smDS.uid);
-  const { data: metricsAccessControl } = useDSAccessControl(metricsDS.uid);
-  const { data: logsAccessControl } = useDSAccessControl(logsDS.uid);
+  const { data: smAccessControl = [], isLoading: smLoading } = useDSAccessControl(smDS.uid);
+  const { data: metricsAccessControl = [], isLoading: metricsLoading } = useDSAccessControl(metricsDS?.uid);
+  const { data: logsAccessControl = [], isLoading: logsLoading } = useDSAccessControl(logsDS?.uid);
 
-  if (!smAccessControl || !metricsAccessControl || !logsAccessControl) {
-    return null;
+  if (smLoading || metricsLoading || logsLoading) {
+    return (
+      <PluginPage>
+        <CenteredSpinner />
+      </PluginPage>
+    );
   }
 
   console.log({ smAccessControl, metricsAccessControl, logsAccessControl });

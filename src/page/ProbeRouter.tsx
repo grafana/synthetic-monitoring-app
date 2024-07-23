@@ -1,22 +1,21 @@
 import React from 'react';
 import { Route, Switch, useRouteMatch } from 'react-router-dom';
-import { OrgRole } from '@grafana/data';
 
-import { hasRole } from 'utils';
+import { useCanWriteSM } from 'hooks/useDSPermission';
 import { EditProbe } from 'page/EditProbe';
 import { NewProbe } from 'page/NewProbe';
 import { Probes } from 'page/Probes';
 
 export const ProbeRouter = () => {
   const { path } = useRouteMatch();
-  const isEditor = hasRole(OrgRole.Editor);
+  const canEdit = useCanWriteSM();
 
   return (
     <Switch>
       <Route path={path} exact>
         <Probes />
       </Route>
-      {isEditor && (
+      {canEdit && (
         <Route path={`${path}/new`}>
           <NewProbe />
         </Route>

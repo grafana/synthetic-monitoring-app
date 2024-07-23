@@ -1,15 +1,15 @@
 import React, { RefObject, useCallback, useState } from 'react';
 import { FormProvider, SubmitErrorHandler, SubmitHandler, useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
-import { GrafanaTheme2, OrgRole } from '@grafana/data';
+import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Button, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { DataTestIds } from 'test/dataTestIds';
 
 import { Check, CheckFormPageParams, CheckFormValues, CheckType } from 'types';
-import { hasRole } from 'utils';
 import { AdHocCheckResponse } from 'datasource/responses.types';
+import { useCanWriteSM } from 'hooks/useDSPermission';
 import { useLimits } from 'hooks/useLimits';
 import { toFormValues } from 'components/CheckEditor/checkFormTransformations';
 import { CheckJobName } from 'components/CheckEditor/FormComponents/CheckJobName';
@@ -66,7 +66,7 @@ type CheckFormProps = {
 };
 
 export const CheckForm = ({ check, disabled, pageTitle }: CheckFormProps) => {
-  const canEdit = hasRole(OrgRole.Editor);
+  const canEdit = useCanWriteSM();
   const [openTestCheckModal, setOpenTestCheckModal] = useState(false);
   const [adhocTestData, setAdhocTestData] = useState<AdHocCheckResponse>();
   const checkType = useFormCheckType(check);

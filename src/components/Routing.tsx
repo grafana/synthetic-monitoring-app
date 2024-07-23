@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import { Redirect, Route, Switch, useLocation } from 'react-router-dom';
-import { AppRootProps, OrgRole } from '@grafana/data';
+import { AppRootProps } from '@grafana/data';
 import { config } from '@grafana/runtime';
 
 import { ROUTES } from 'types';
-import { hasRole } from 'utils';
+import { useCanWriteSM } from 'hooks/useDSPermission';
 import { useMeta } from 'hooks/useMeta';
 import { QueryParamMap, useNavigation } from 'hooks/useNavigation';
 import { useQuery } from 'hooks/useQuery';
@@ -29,6 +29,7 @@ export const InitialisedRouter = ({ onNavChanged }: Pick<AppRootProps, 'onNavCha
   const location = useLocation();
   const meta = useMeta();
   const logo = meta.info.logos.large;
+  const canWriteSM = useCanWriteSM();
 
   useEffect(() => {
     const navModel = getNavModel(logo, location.pathname);
@@ -71,7 +72,7 @@ export const InitialisedRouter = ({ onNavChanged }: Pick<AppRootProps, 'onNavCha
         <AlertingPage />
       </Route>
       <Route path={getRoute(ROUTES.Config)}>
-        {hasRole(OrgRole.Editor) ? <ConfigPage /> : <Redirect to={getRoute(ROUTES.Home)} />}
+        {canWriteSM ? <ConfigPage /> : <Redirect to={getRoute(ROUTES.Home)} />}
       </Route>
 
       <Route>
@@ -84,6 +85,7 @@ export const InitialisedRouter = ({ onNavChanged }: Pick<AppRootProps, 'onNavCha
 export const UninitialisedRouter = () => {
   const meta = useMeta();
   const provisioned = Boolean(meta.jsonData?.metrics?.grafanaName);
+  const canWriteSM = useCanWriteSM();
 
   // todo: is this the correct check for provisioning?
   // todo: is this state even possible in Grafana v11?
@@ -109,7 +111,7 @@ export const UninitialisedRouter = () => {
         <AlertingWelcomePage />
       </Route>
       <Route path={getRoute(ROUTES.Config)}>
-        {hasRole(OrgRole.Editor) ? <ConfigPage /> : <Redirect to={getRoute(ROUTES.Home)} />}
+        {canWriteSM ? <ConfigPage /> : <Redirect to={getRoute(ROUTES.Home)} />}
       </Route>
 
       {/* Default route (only redirect if the path matches the plugin's URL) */}

@@ -1,29 +1,28 @@
 import React, { ReactNode, useId, useState } from 'react';
-import { GrafanaTheme2, OrgRole } from '@grafana/data';
+import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
-import { hasRole } from 'utils';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 
 type OptionalInputProps = {
   children: ReactNode;
+  disabled?: boolean;
   label: string;
   isOpen?: boolean;
 };
 
-export const OptionalInput = ({ children, label, isOpen = false }: OptionalInputProps) => {
+export const OptionalInput = ({ children, disabled, label, isOpen = false }: OptionalInputProps) => {
   const styles = useStyles2(getStyles);
   const [include, setInclude] = useState(isOpen);
   const id = useId();
-  const isEditor = hasRole(OrgRole.Editor);
 
   return (
     <div className={styles.stackCol}>
       <HorizontalCheckboxField
         label={label}
         id={id}
-        disabled={!isEditor}
+        disabled={disabled}
         value={include}
         onChange={() => setInclude(!include)}
       />

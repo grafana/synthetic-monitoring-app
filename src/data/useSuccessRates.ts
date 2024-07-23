@@ -3,7 +3,7 @@ import { type QueryKey, useQuery } from '@tanstack/react-query';
 import { Check } from 'types';
 import { queryMetric } from 'utils';
 import { MetricCheckSuccess, MetricProbeSuccessRate } from 'datasource/responses.types';
-import { useSMDS } from 'hooks/useSMDS';
+import { useMetricsDS } from 'hooks/useMetricsDS';
 import { STANDARD_REFRESH_INTERVAL } from 'components/constants';
 import { getMinStepFromFrequency } from 'scenes/utils';
 
@@ -85,10 +85,8 @@ export function useProbeReachabilitySuccessRate(probeName?: string) {
 }
 
 function useQueryMetric(interval?: string) {
-  const smDS = useSMDS();
-  // todo: remove this cast
-  const url = smDS.getMetricsDS()?.url as string;
-
+  const metricsDS = useMetricsDS();
+  const url = metricsDS?.url || '';
   const now = Math.floor(Date.now() / 1000);
   const threeHoursAgo = now - 60 * 60 * 3;
 

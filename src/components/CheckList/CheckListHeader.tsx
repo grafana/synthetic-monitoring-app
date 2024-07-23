@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { GrafanaTheme2, OrgRole, SelectableValue } from '@grafana/data';
+import { GrafanaTheme2, SelectableValue } from '@grafana/data';
 import { Button, Checkbox, Icon, Select, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Check, CheckFiltersType, CheckListViewType, CheckSort } from 'types';
-import { hasRole } from 'utils';
 import { FilterType } from 'hooks/useCheckFilters';
+import { useCanWriteSM } from 'hooks/useDSPermission';
 import { CheckFilters } from 'components/CheckFilters';
 import { CHECK_LIST_SORT_OPTIONS } from 'components/constants';
 
@@ -43,6 +43,7 @@ export const CheckListHeader = ({
   sortType,
   viewType,
 }: CheckListHeaderProps) => {
+  const canEdit = useCanWriteSM();
   const styles = useStyles2(getStyles);
   const [showThresholdModal, setShowThresholdModal] = useState(false);
   const hasChecks = checks.length > 0;
@@ -69,7 +70,7 @@ export const CheckListHeader = ({
             checkFilters={checkFilters}
             onChange={onFilterChange}
           />
-          {hasRole(OrgRole.Editor) && (
+          {canEdit && (
             <>
               <Button variant="secondary" fill="outline" onClick={() => setShowThresholdModal((v) => !v)}>
                 Set Thresholds
