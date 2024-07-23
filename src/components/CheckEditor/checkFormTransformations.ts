@@ -1,5 +1,6 @@
 import { Check, CheckFormValues, CheckType } from 'types';
 import {
+  isBrowserCheck,
   isDNSCheck,
   isGRPCCheck,
   isHttpCheck,
@@ -9,6 +10,7 @@ import {
   isTCPCheck,
   isTracerouteCheck,
 } from 'utils.types';
+import { getBrowserCheckFormValues } from 'components/CheckEditor/transformations/toFormValues.browser';
 import { getDNSCheckFormValues } from 'components/CheckEditor/transformations/toFormValues.dns';
 import { getGRPCCheckFormValues } from 'components/CheckEditor/transformations/toFormValues.grpc';
 import { getHTTPCheckFormValues } from 'components/CheckEditor/transformations/toFormValues.http';
@@ -17,6 +19,7 @@ import { getPingCheckFormValues } from 'components/CheckEditor/transformations/t
 import { getScriptedCheckFormValues } from 'components/CheckEditor/transformations/toFormValues.scripted';
 import { getTCPCheckFormValues } from 'components/CheckEditor/transformations/toFormValues.tcp';
 import { getTracerouteCheckFormValues } from 'components/CheckEditor/transformations/toFormValues.traceroute';
+import { getBrowserPayload } from 'components/CheckEditor/transformations/toPayload.browser';
 import { getDNSPayload } from 'components/CheckEditor/transformations/toPayload.dns';
 import { getGRPCPayload } from 'components/CheckEditor/transformations/toPayload.grpc';
 import { getHTTPPayload } from 'components/CheckEditor/transformations/toPayload.http';
@@ -65,6 +68,10 @@ export function toFormValues(check: Check, checkType: CheckType): CheckFormValue
     return getTracerouteCheckFormValues(check);
   }
 
+  if (isBrowserCheck(check)) {
+    return getBrowserCheckFormValues(check);
+  }
+
   throw new Error(`Unknown check type`);
 }
 
@@ -99,6 +106,10 @@ export const toPayload = (formValues: CheckFormValues): Check => {
 
   if (formValues.checkType === CheckType.Traceroute) {
     return getTraceroutePayload(formValues);
+  }
+
+  if (formValues.checkType === CheckType.Browser) {
+    return getBrowserPayload(formValues);
   }
 
   throw new Error(`Unknown check type: ${formValues}`);
