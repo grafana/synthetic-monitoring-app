@@ -5,7 +5,7 @@ import { renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
 
 const checkType = CheckType.Browser;
 
-describe(`BrowserCheck - 1 (Script) UI`, () => {
+describe.only(`BrowserCheck - 1 (Script) UI`, () => {
   describe('will validate the script', () => {
     it(`will display an error when the script is missing`, async () => {
       const { user } = await renderNewForm(checkType);
@@ -21,10 +21,7 @@ describe(`BrowserCheck - 1 (Script) UI`, () => {
       const { user } = await renderNewForm(checkType);
       const scriptTextAreaPreSubmit = screen.getByTestId(`code-editor`);
       await user.clear(scriptTextAreaPreSubmit);
-      await user.type(
-        scriptTextAreaPreSubmit,
-        "import {\\{} check {\\}} from 'k6'; export const options = {\\{}{\\}};"
-      );
+      await user.type(scriptTextAreaPreSubmit, "import { check } from 'k6'; export const options = {}");
 
       await submitForm(user);
       const err = await screen.findByText("Script must import { browser } from 'k6/browser'");
@@ -35,7 +32,7 @@ describe(`BrowserCheck - 1 (Script) UI`, () => {
       const { user } = await renderNewForm(checkType);
       const scriptTextAreaPreSubmit = screen.getByTestId(`code-editor`);
       await user.clear(scriptTextAreaPreSubmit);
-      await user.type(scriptTextAreaPreSubmit, "import {\\{} check {\\}} from 'k6';");
+      await user.type(scriptTextAreaPreSubmit, "import { check } from 'k6';");
 
       await submitForm(user);
       const err = await screen.findByText('Script does not export any options.');
