@@ -71,6 +71,17 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
       // },
     ],
   },
+  {
+    label: `Browser`,
+    description: `Monitor the availability and performance of a website using a real browser.`,
+    value: CheckTypeGroup.Browser,
+    icon: `globe`,
+    protocols: [
+      {
+        label: `HTTP`,
+      },
+    ],
+  },
 ];
 
 export function useCheckTypeGroupOptions() {

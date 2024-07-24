@@ -56,6 +56,14 @@ export const CHECK_TYPE_OPTIONS = [
     featureToggle: FeatureName.ScriptedChecks,
     group: CheckTypeGroup.Scripted,
   },
+  {
+    label: 'Browser',
+    value: CheckType.Browser,
+    description: 'Leverage k6 browser module to run checks in a browser.',
+    status: CheckStatus.EXPERIMENTAL,
+    featureToggle: FeatureName.BrowserChecks,
+    group: CheckTypeGroup.Browser,
+  },
 ];
 
 export function useCheckTypeOptions() {

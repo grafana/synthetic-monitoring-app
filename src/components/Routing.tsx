@@ -72,7 +72,7 @@ export const InitialisedRouter = ({ onNavChanged }: Pick<AppRootProps, 'onNavCha
         <AlertingPage />
       </Route>
       <Route path={getRoute(ROUTES.Config)}>
-        {canWriteSM ? <ConfigPage /> : <Redirect to={getRoute(ROUTES.Home)} />}
+        {canWriteSM ? <ConfigPage initialized /> : <Redirect to={getRoute(ROUTES.Home)} />}
       </Route>
 
       <Route>

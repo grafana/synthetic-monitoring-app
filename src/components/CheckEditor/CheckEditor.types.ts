@@ -3,6 +3,7 @@ import { FieldPath } from 'react-hook-form';
 
 import {
   CheckFormValues,
+  CheckFormValuesBrowser,
   CheckFormValuesDns,
   CheckFormValuesGRPC,
   CheckFormValuesHttp,
@@ -79,9 +80,14 @@ export type TracerouteRequestFields = {
   ptrLookup: FieldProps<CheckFormValuesTraceroute>;
 };
 
-export type ScriptedRequestFields = {
+export type ScriptedFields = {
   target: FieldProps<CheckFormValuesScripted>;
   script: FieldProps<CheckFormValuesScripted>;
+};
+
+export type BrowserFields = {
+  target: FieldProps<CheckFormValuesBrowser>;
+  script: FieldProps<CheckFormValuesBrowser>;
 };
 
 export type RequestFields =
@@ -92,4 +98,5 @@ export type RequestFields =
   | TCPRequestFields
   | PingRequestFields
   | TracerouteRequestFields
-  | ScriptedRequestFields;
+  | ScriptedFields
+  | BrowserFields;

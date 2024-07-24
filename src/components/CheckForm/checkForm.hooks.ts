@@ -1,5 +1,6 @@
 import { BaseSyntheticEvent, useCallback, useRef } from 'react';
 import { FieldErrors } from 'react-hook-form';
+import { BrowserCheckSchema } from 'schemas/forms/BrowserCheckSchema';
 import { DNSCheckSchema } from 'schemas/forms/DNSCheckSchema';
 import { GRPCCheckSchema } from 'schemas/forms/GRPCCheckSchema';
 import { HttpCheckSchema } from 'schemas/forms/HttpCheckSchema';
@@ -19,6 +20,7 @@ import { broadcastFailedSubmission, findFieldToFocus } from './checkForm.utils';
 import { useFormCheckType } from './useCheckType';
 
 const schemaMap = {
+  [CheckType.Browser]: BrowserCheckSchema,
   [CheckType.DNS]: DNSCheckSchema,
   [CheckType.GRPC]: GRPCCheckSchema,
   [CheckType.HTTP]: HttpCheckSchema,

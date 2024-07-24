@@ -52,7 +52,7 @@ export function CheckRouter() {
 }
 
 // these result in the same from/to values so redirect infinitely
-const excludedCheckTypes = [CheckType.Scripted];
+const excludedCheckTypes = [CheckType.Scripted, CheckType.Browser];
 const filteredCheckTypes = CHECK_TYPE_OPTIONS.filter(({ value }) => !excludedCheckTypes.includes(value));
 
 const NEW_CHECK_REDIRECTS = filteredCheckTypes.map(({ group, value }) => ({

@@ -33,6 +33,7 @@ import { OverLimitAlert } from 'components/OverLimitAlert';
 import { PluginPage } from 'components/PluginPage';
 
 import { CheckFormContextProvider, useCheckFormContext } from './CheckFormContext/CheckFormContext';
+import { BrowserCheckLayout } from './FormLayouts/CheckBrowserLayout';
 import { useCheckForm, useCheckFormSchema } from './checkForm.hooks';
 import { FormLayout } from './FormLayout';
 import { useFormCheckType } from './useCheckType';
@@ -46,6 +47,7 @@ const layoutMap = {
   [CheckType.TCP]: TCPCheckLayout,
   [CheckType.Traceroute]: TracerouteCheckLayout,
   [CheckType.GRPC]: GRPCCheckLayout,
+  [CheckType.Browser]: BrowserCheckLayout,
 };
 
 const checkTypeStep1Label = {
@@ -57,6 +59,7 @@ const checkTypeStep1Label = {
   [CheckType.TCP]: `Request`,
   [CheckType.Traceroute]: `Request`,
   [CheckType.GRPC]: `Request`,
+  [CheckType.Browser]: `Script`,
 };
 
 type CheckFormProps = {

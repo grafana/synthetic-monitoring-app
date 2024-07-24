@@ -2,28 +2,28 @@ import React from 'react';
 import { Stack, TextLink } from '@grafana/ui';
 
 import { LayoutSection, Section } from './Layout.types';
-import { CheckFormValuesScripted } from 'types';
-import { ScriptedFields } from 'components/CheckEditor/CheckEditor.types';
-import { ScriptedCheckInstance } from 'components/CheckEditor/FormComponents/ScriptedCheckInstance';
-import { ScriptedCheckScript } from 'components/CheckEditor/FormComponents/ScriptedCheckScript';
+import { CheckFormValuesBrowser } from 'types';
+import { BrowserFields } from 'components/CheckEditor/CheckEditor.types';
+import { BrowserCheckInstance } from 'components/CheckEditor/FormComponents/BrowserCheckInstance';
+import { BrowserCheckScript } from 'components/CheckEditor/FormComponents/BrowserCheckScript';
 import { Timeout } from 'components/CheckEditor/FormComponents/Timeout';
 
-export const SCRIPTED_CHECK_FIELDS: ScriptedFields = {
+export const BROWSER_CHECK_FIELDS: BrowserFields = {
   script: {
-    name: `settings.scripted.script`,
+    name: `settings.browser.script`,
   },
   target: {
     name: `target`,
   },
 };
 
-export const ScriptedCheckLayout: Partial<Record<LayoutSection, Section<CheckFormValuesScripted>>> = {
+export const BrowserCheckLayout: Partial<Record<LayoutSection, Section<CheckFormValuesBrowser>>> = {
   [LayoutSection.Check]: {
-    fields: Object.values(SCRIPTED_CHECK_FIELDS).map((field) => field.name),
+    fields: Object.values(BROWSER_CHECK_FIELDS).map((field) => field.name),
     Component: (
       <>
-        <ScriptedCheckInstance />
-        <ScriptedCheckScript />
+        <BrowserCheckInstance />
+        <BrowserCheckScript />
       </>
     ),
   },
