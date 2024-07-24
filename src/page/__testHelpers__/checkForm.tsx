@@ -19,6 +19,7 @@ export const TARGET_MAP = {
   [CheckType.MULTI_HTTP]: 'https://grafana.com/',
   [CheckType.PING]: 'grafana.com',
   [CheckType.Scripted]: 'Whatever string we would like',
+  [CheckType.Browser]: 'Whatever string we would like',
   [CheckType.TCP]: 'grafana.com:80',
   [CheckType.Traceroute]: 'grafana.com',
 };

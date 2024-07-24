@@ -1,10 +1,12 @@
 import {
+  BrowserCheck,
   Check,
   CheckFormValues,
   CheckFormValuesGRPC,
   CheckFormValuesHttp,
   CheckFormValuesMultiHttp,
   CheckFormValuesTcp,
+  CheckType,
   DNSCheck,
   GRPCCheck,
   HTTPCheck,
@@ -73,6 +75,10 @@ export function isTracerouteCheck(check: Partial<Check>): check is TracerouteChe
   }
 
   return false;
+}
+
+export function isBrowserCheck(check: Partial<Check>): check is BrowserCheck {
+  return CheckType.Browser in (check.settings ?? {});
 }
 
 export function isDNSSettings(settings: Check['settings']): settings is DNSCheck['settings'] {
