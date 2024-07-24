@@ -370,6 +370,7 @@ export const FULL_HTTP_CHECK: HTTPCheck = {
 
 export const CUSTOM_ALERT_SENSITIVITY_CHECK: DNSCheck = {
   ...BASIC_DNS_CHECK,
+  job: `Job name for dns with custom alert sensitivity`,
   id: 9,
   alertSensitivity: 'slightly sensitive',
 };
