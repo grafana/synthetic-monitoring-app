@@ -10,31 +10,6 @@ import { LinkedDatasourceView } from 'components/LinkedDatasourceView';
 import { PluginPage } from 'components/PluginPage';
 import { ProgrammaticManagement } from 'components/ProgrammaticManagement';
 
-function getStyles(theme: GrafanaTheme2) {
-  return {
-    tenantConfig: css`
-      margin-top: ${theme.spacing(4)};
-      background: ${theme.colors.background.primary};
-    `,
-    paddingX: css`
-      padding-left: ${theme.spacing(4)};
-      padding-right: ${theme.spacing(4)};
-    `,
-    linkedDatasources: css`
-      margin-top: ${theme.spacing(4)};
-    `,
-    backendAddress: css`
-      margin-top: ${theme.spacing(4)};
-    `,
-    programmaticManagement: css`
-      padding: ${theme.spacing(2)} 0;
-    `,
-    configActions: css`
-      padding-bottom: ${theme.spacing(2)};
-    `,
-  };
-}
-
 export function ConfigPage({ initialized }: { initialized?: boolean }) {
   const styles = useStyles2(getStyles);
   const meta = useMeta();
@@ -60,8 +35,9 @@ export function ConfigPage({ initialized }: { initialized?: boolean }) {
               target="_blank"
               rel="noopener noreferrer"
             >
-              sign up now{' '}
+              sign up now
             </a>
+            .
           </p>
         </div>
         {initialized && (
@@ -87,4 +63,29 @@ export function ConfigPage({ initialized }: { initialized?: boolean }) {
       </div>
     </PluginPage>
   );
+}
+
+function getStyles(theme: GrafanaTheme2) {
+  return {
+    tenantConfig: css({
+      marginTop: theme.spacing(4),
+      background: theme.colors.background.primary,
+    }),
+    paddingX: css({
+      paddingLeft: theme.spacing(4),
+      paddingRight: theme.spacing(4),
+    }),
+    linkedDatasources: css({
+      marginTop: theme.spacing(4),
+    }),
+    backendAddress: css({
+      marginTop: theme.spacing(4),
+    }),
+    programmaticManagement: css({
+      padding: theme.spacing(2, 0),
+    }),
+    configActions: css({
+      paddingBottom: theme.spacing(2),
+    }),
+  };
 }

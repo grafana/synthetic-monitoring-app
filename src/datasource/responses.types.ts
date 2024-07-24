@@ -158,3 +158,8 @@ export type LogsQueryResponse = {
     }
   >;
 };
+
+export type AccessTokenResponse = {
+  msg: string;
+  token: string;
+};

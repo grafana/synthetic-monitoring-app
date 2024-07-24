@@ -14,6 +14,7 @@ import { firstValueFrom } from 'rxjs';
 
 import { Check, HostedInstance, Probe, ThresholdSettings } from '../types';
 import {
+  AccessTokenResponse,
   AddCheckResult,
   AddProbeResult,
   AdHocCheckResponse,
@@ -478,8 +479,8 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   }
 
   async getViewerToken(apiToken: string, instance: HostedInstance): Promise<string> {
-    return getBackendSrv()
-      .fetch({
+    return firstValueFrom(
+      getBackendSrv().fetch<AccessTokenResponse>({
         method: 'POST',
         url: `${this.instanceSettings.url}/sm/register/viewer-token`,
         data: {
@@ -488,21 +489,19 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
           type: instance.type,
         },
       })
-      .toPromise()
-      .then((res: any) => {
-        return res.data?.token;
-      });
+    ).then((res) => {
+      return res.data.token;
+    });
   }
 
   async createApiToken(): Promise<string> {
-    return getBackendSrv()
-      .fetch({
+    return firstValueFrom(
+      getBackendSrv().fetch<AccessTokenResponse>({
         method: 'POST',
         url: `${this.instanceSettings.url}/sm/token/create`,
         data: {},
       })
-      .toPromise()
-      .then((res: any) => res.data?.token);
+    ).then((res) => res.data.token);
   }
 
   //--------------------------------------------------------------------------------
