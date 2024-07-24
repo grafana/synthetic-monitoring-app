@@ -17,6 +17,7 @@ import { getPingScene } from 'scenes/PING/pingScene';
 import { getScriptedScene } from 'scenes/SCRIPTED';
 import { getTcpScene } from 'scenes/TCP/getTcpScene';
 import { getTracerouteScene } from 'scenes/Traceroute/getTracerouteScene';
+import { getBrowserScene } from 'scenes/BROWSER/browserScene';
 
 function DashboardPageContent() {
   const smDS = useSMDS();
@@ -72,7 +73,15 @@ function DashboardPageContent() {
         });
       }
       case CheckType.Browser:
-      // @todo: add browser scene
+        return new SceneApp({
+          pages: [
+            new SceneAppPage({
+              title: checkToView.job,
+              url,
+              getScene: getBrowserScene(config, [checkToView], checkType),
+            }),
+          ],
+        });
       // fallthrough
       case CheckType.Scripted:
       case CheckType.MULTI_HTTP: {
