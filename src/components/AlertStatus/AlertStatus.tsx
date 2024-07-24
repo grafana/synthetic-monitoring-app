@@ -17,15 +17,20 @@ type AlertStatusProps = {
 
 export const AlertStatus = ({ check, compact }: AlertStatusProps) => {
   const hasAlertSensitivity = check.alertSensitivity !== undefined && check.alertSensitivity !== AlertSensitivity.None;
+  const metricsDS = useMetricsDS();
 
-  if (!hasAlertSensitivity) {
+  if (!hasAlertSensitivity || !metricsDS) {
     return null;
   }
 
-  return <AlertStatusContent check={check} compact={compact} />;
+  return <AlertStatusContent check={check} compact={compact} metricsDSName={metricsDS.name} />;
 };
 
-export const AlertStatusContent = ({ check, compact }: AlertStatusProps) => {
+type AlertStatusContentProps = AlertStatusProps & {
+  metricsDSName: string;
+};
+
+export const AlertStatusContent = ({ check, compact, metricsDSName }: AlertStatusContentProps) => {
   const { alertSensitivity } = check;
   const { groups, isLoading, enabled, isError, refetch } = useAlertRules(alertSensitivity);
   const styles = useStyles2(getStyles);
@@ -54,7 +59,7 @@ export const AlertStatusContent = ({ check, compact }: AlertStatusProps) => {
     const ariaLabel = `Alert configuration warning`;
 
     return (
-      <Toggletip content={<AlertGroups groups={groups} check={check} />}>
+      <Toggletip content={<AlertGroups groups={groups} check={check} metricsDSName={metricsDSName} />}>
         {compact ? (
           <IconButton aria-label={ariaLabel} className={styles.warningIcon} name="exclamation-triangle" />
         ) : (
@@ -68,7 +73,7 @@ export const AlertStatusContent = ({ check, compact }: AlertStatusProps) => {
   }
 
   return (
-    <Toggletip content={<AlertGroups groups={groups} check={check} />}>
+    <Toggletip content={<AlertGroups groups={groups} check={check} metricsDSName={metricsDSName} />}>
       <IconButton aria-label="Alert rules" name={`bell`} color={theme.colors.warning.border} />
     </Toggletip>
   );
@@ -77,9 +82,10 @@ export const AlertStatusContent = ({ check, compact }: AlertStatusProps) => {
 type AlertRulesProps = {
   groups: PrometheusAlertsGroup[];
   check: Check;
+  metricsDSName: string;
 };
 
-const AlertGroups = ({ check, groups }: AlertRulesProps) => {
+const AlertGroups = ({ check, groups, metricsDSName }: AlertRulesProps) => {
   const hasGroups = groups.length > 0;
   const styles = useStyles2(getStyles);
 
@@ -90,7 +96,7 @@ const AlertGroups = ({ check, groups }: AlertRulesProps) => {
         groups.map((group) => {
           const id = `${group.file}-${group.name}`;
 
-          return <NamespaceAlertRuleDisplay key={id} group={group} />;
+          return <NamespaceAlertRuleDisplay key={id} group={group} metricsDSName={metricsDSName} />;
         })
       ) : (
         <ZeroStateAlerts alertSensitivity={check.alertSensitivity} />
@@ -101,12 +107,11 @@ const AlertGroups = ({ check, groups }: AlertRulesProps) => {
 
 type AlertRuleDisplayProps = {
   group: PrometheusAlertsGroup;
+  metricsDSName: string;
 };
 
-const NamespaceAlertRuleDisplay = ({ group }: AlertRuleDisplayProps) => {
+const NamespaceAlertRuleDisplay = ({ group, metricsDSName }: AlertRuleDisplayProps) => {
   const styles = useStyles2(getStyles);
-  const metricsDS = useMetricsDS();
-  const metricsDSName = metricsDS.name;
   const { file, name, rules } = group;
   const filteredRules = rules.filter((record) => record.type === `alerting`);
   const queryParamForAlerting = encodeURIComponent(`datasource:${metricsDSName} namespace:${file} group:${name}`);

@@ -19,8 +19,16 @@ export function useCanReadMetrics() {
   return useDSPermission(`metrics`, `datasources:read`);
 }
 
+export function useCanWriteMetrics() {
+  return useDSPermission(`metrics`, `datasources:write`);
+}
+
 export function useCanReadLogs() {
   return useDSPermission(`logs`, `datasources:read`);
+}
+
+export function useCanWriteLogs() {
+  return useDSPermission(`logs`, `datasources:write`);
 }
 
 export function useCanReadSM() {

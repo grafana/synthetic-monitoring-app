@@ -32,8 +32,6 @@ export const PermissionsContextProvider = ({ children }: PropsWithChildren) => {
     );
   }
 
-  console.log({ smAccessControl, metricsAccessControl, logsAccessControl });
-
   return (
     <PermissionsContext.Provider
       value={{ smDS: smAccessControl, metricsDS: metricsAccessControl, logsDS: logsAccessControl }}

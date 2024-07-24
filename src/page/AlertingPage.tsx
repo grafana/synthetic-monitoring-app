@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { GrafanaTheme2, OrgRole } from '@grafana/data';
-import { config } from '@grafana/runtime';
+import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Button, Modal, Spinner, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { AlertFormValues, AlertRule } from 'types';
-import { hasRole } from 'utils';
+import { hasPermission } from 'utils';
 import { useAlerts } from 'hooks/useAlerts';
+import { useCanReadMetrics } from 'hooks/useDSPermission';
 import { transformAlertFormValues } from 'components/alertingTransformations';
 import { AlertRuleForm } from 'components/AlertRuleForm';
 import { PluginPage } from 'components/PluginPage';
@@ -26,9 +26,31 @@ export const AlertingPage = () => {
 
 const Alerting = () => {
   const styles = useStyles2(getStyles);
-  const { alertRules, setDefaultRules, setRules, alertError } = useAlerts();
+  const canRead = useCanReadMetrics();
+
+  return (
+    <div>
+      <p>
+        View and edit default alerts for Synthetic Monitoring here. To tie one of these alerts to a check, you must
+        select the alert sensitivity from the Alerting section of the check form when creating a check.{' '}
+        <a
+          href="https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/configure-alerts/synthetic-monitoring-alerting/"
+          className={styles.link}
+        >
+          Learn more about alerting for Synthetic Monitoring.
+        </a>
+      </p>
+      {canRead ? <AlertingPageContent /> : <InsufficientPermissions />}
+    </div>
+  );
+};
+
+const AlertingPageContent = () => {
+  const styles = useStyles2(getStyles);
   const [updatingDefaultRules, setUpdatingDefaultRules] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
+  const { alertRules, setDefaultRules, setRules, alertError } = useAlerts();
+  const canEdit = hasPermission(`alert.instances.external:write`);
 
   const { recordingRules, alertingRules } = alertRules?.reduce<SplitAlertRules>(
     (rules, currentRule) => {
@@ -65,18 +87,7 @@ const Alerting = () => {
   };
 
   return (
-    <div>
-      {!config.featureToggles.topnav && <h2>Alerts</h2>}
-      <p>
-        View and edit default alerts for Synthetic Monitoring here. To tie one of these alerts to a check, you must
-        select the alert sensitivity from the Alerting section of the check form when creating a check.{' '}
-        <a
-          href="https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/configure-alerts/synthetic-monitoring-alerting/"
-          className={styles.link}
-        >
-          Learn more about alerting for Synthetic Monitoring.
-        </a>
-      </p>
+    <>
       {!alertRules && <Spinner />}
       {alertError && (
         <Alert title="Error fetching alert rules" severity="error">
@@ -89,7 +100,7 @@ const Alerting = () => {
             You do not have any default alerts for Synthetic Monitoring yet. Click below to get some default alerts. You
             can also create custom alerts for checks using Grafana Cloud Alerting.
           </span>
-          <Button size="md" disabled={updatingDefaultRules || !hasRole(OrgRole.Editor)} onClick={populateDefaultAlerts}>
+          <Button size="md" disabled={updatingDefaultRules || !canEdit} onClick={populateDefaultAlerts}>
             Populate default alerts
           </Button>
         </div>
@@ -99,7 +110,7 @@ const Alerting = () => {
       ))}
       {Boolean(alertRules?.length) ? (
         <Stack justifyContent="flex-end">
-          <Button variant="destructive" type="button" onClick={() => setShowResetModal(true)}>
+          <Button disabled={!canEdit} variant="destructive" type="button" onClick={() => setShowResetModal(true)}>
             Reset to defaults
           </Button>
         </Stack>
@@ -123,7 +134,15 @@ const Alerting = () => {
           </Button>
         </Stack>
       </Modal>
-    </div>
+    </>
+  );
+};
+
+const InsufficientPermissions = () => {
+  return (
+    <Alert title="Insufficent permissions">
+      You do not have the appropriate permissions to read the alert rules. To request access contact your administrator.
+    </Alert>
   );
 };
 

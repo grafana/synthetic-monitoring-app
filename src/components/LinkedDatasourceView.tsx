@@ -1,22 +1,27 @@
 import React from 'react';
 import { Spinner } from '@grafana/ui';
 
-import { ROUTES } from 'types';
 import { findLinkedDatasource } from 'utils';
+import { useCanReadMetrics, useCanWriteLogs } from 'hooks/useDSPermission';
 import { useLogsDS } from 'hooks/useLogsDS';
 import { useMeta } from 'hooks/useMeta';
 import { useMetricsDS } from 'hooks/useMetricsDS';
-import { useNavigation } from 'hooks/useNavigation';
 
 interface Props {
   type: 'loki' | 'prometheus';
 }
 
 export const LinkedDatasourceView = ({ type }: Props) => {
-  const navigate = useNavigation();
   const metricsDS = useMetricsDS();
   const logsDS = useLogsDS();
   const meta = useMeta();
+  const canEditLogs = useCanWriteLogs();
+  const canEditMetrics = useCanReadMetrics();
+
+  const canEditMap = {
+    prometheus: canEditMetrics,
+    loki: canEditLogs,
+  };
 
   const dsMap = {
     prometheus: metricsDS,
@@ -40,25 +45,20 @@ export const LinkedDatasourceView = ({ type }: Props) => {
     uid: ds.uid,
   });
 
-  const handleClick = () => {
-    if (datasource?.type === 'synthetic-monitoring-datasource') {
-      navigate(ROUTES.Home);
-    } else {
-      navigate(`datasources/edit/${datasource?.id}/`, {}, true);
-    }
-  };
-
   if (!datasource) {
     return <Spinner />;
   }
 
+  const showHref = canEditMap[type];
+  const Tag = showHref ? 'a' : 'div';
+
   return (
-    <div className="add-data-source-item" onClick={handleClick}>
+    <Tag className="add-data-source-item" href={showHref ? `datasources/edit/${datasource?.id}/` : undefined}>
       <img className="add-data-source-item-logo" src={datasource.meta.info.logos.small} alt="" />
       <div className="add-data-source-item-text-wrapper">
         <span className="add-data-source-item-text">{datasource.name}</span>
         <span className="add-data-source-item-desc">{datasource.type}</span>
       </div>
-    </div>
+    </Tag>
   );
 };

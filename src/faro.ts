@@ -42,7 +42,7 @@ export function isFaroEventMeta(event?: unknown): event is FaroEventMeta {
 
 export function pushFaroCount(type: string, count: number) {
   try {
-    faro.api.pushMeasurement({ type, values: { count } });
+    faro.api?.pushMeasurement({ type, values: { count } });
   } catch (e) {}
 }
 
@@ -53,7 +53,7 @@ export function reportEvent(type: FaroEvent, info: Record<string, string> = {}) 
   };
 
   try {
-    faro.api.pushEvent(type, attributes);
+    faro.api?.pushEvent(type, attributes);
   } catch (e) {
     console.error(`Failed to report event: ${type}`, e);
   }

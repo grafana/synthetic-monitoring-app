@@ -444,6 +444,6 @@ export function getMethodColor(theme: GrafanaTheme2, value: HttpMethod) {
   return colorMap[value];
 }
 
-export function hasPermission() {
-  return contextSrv.hasPermission;
+export function hasPermission(action: string) {
+  return contextSrv.hasPermission(action);
 }

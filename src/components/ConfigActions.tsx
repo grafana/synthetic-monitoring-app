@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
 import { getBackendSrv } from '@grafana/runtime';
-import { Button } from '@grafana/ui';
+import { Button, LinkButton } from '@grafana/ui';
 
 import { ROUTES } from 'types';
+import { hasPermission } from 'utils';
 import { useMeta } from 'hooks/useMeta';
-import { useNavigation } from 'hooks/useNavigation';
 
 import { DisablePluginModal } from './DisablePluginModal';
+import { getRoute } from './Routing.utils';
 
 export const ConfigActions = ({ initialized }: { initialized?: boolean }) => {
   const [showDisableModal, setShowDisableModal] = useState(false);
-  const navigate = useNavigation();
   const meta = useMeta();
+  const canEdit = hasPermission(`plugins:write`);
 
   const handleEnable = async () => {
     await getBackendSrv()
@@ -27,9 +28,9 @@ export const ConfigActions = ({ initialized }: { initialized?: boolean }) => {
     window.location.reload();
   };
 
-  const handleSetup = () => {
-    navigate(ROUTES.Home);
-  };
+  if (!canEdit) {
+    return null;
+  }
 
   if (!meta.enabled) {
     return (
@@ -51,8 +52,8 @@ export const ConfigActions = ({ initialized }: { initialized?: boolean }) => {
   }
 
   return (
-    <Button variant="primary" onClick={handleSetup}>
+    <LinkButton variant="primary" href={getRoute(ROUTES.Home)}>
       Setup
-    </Button>
+    </LinkButton>
   );
 };

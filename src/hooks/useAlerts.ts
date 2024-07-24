@@ -12,8 +12,6 @@ import {
   SM_ALERTING_NAMESPACE,
 } from 'components/constants';
 
-import { useGrafanaVersion } from './useGrafanaVersion';
-
 enum AlertThresholds {
   High = 95,
   Medium = 90,
@@ -78,17 +76,7 @@ export function useAlerts() {
   const [alertRules, setAlertRules] = useState<AlertRule[]>();
   const [defaultRulesSetCount, setDefaultRulesSetCount] = useState(0);
   const [alertError, setAlertError] = useState('');
-  const [metricsIdentifier, setMetricsIdentifier] = useState<string | number>('');
-  const { major: grafanaVersion } = useGrafanaVersion();
   const metricsDS = useMetricsDS();
-
-  useEffect(() => {
-    // There was a breaking change in the alert ruler api in Grafana v9. It switched from fetching by datasource ID to fetching by datasource UID.
-    const id = grafanaVersion >= 9 ? metricsDS.uid : metricsDS.id;
-    if (id) {
-      setMetricsIdentifier(id);
-    }
-  }, [metricsDS, grafanaVersion]);
 
   const setDefaultRules = async () => {
     if (!metricsDS) {
@@ -96,7 +84,7 @@ export function useAlerts() {
     }
     await getBackendSrv()
       .fetch({
-        url: `/api/ruler/${metricsIdentifier}/api/v1/rules/${SM_ALERTING_NAMESPACE}`,
+        url: `/api/ruler/${metricsDS.uid}/api/v1/rules/${SM_ALERTING_NAMESPACE}`,
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -109,6 +97,10 @@ export function useAlerts() {
   };
 
   const setRules = async (rules: AlertRule[]) => {
+    if (!metricsDS) {
+      return;
+    }
+
     const ruleGroup = {
       name: 'default',
       rules,
@@ -116,7 +108,7 @@ export function useAlerts() {
 
     const updateResponse = getBackendSrv()
       .fetch({
-        url: `/api/ruler/${metricsIdentifier}/api/v1/rules/${SM_ALERTING_NAMESPACE}`,
+        url: `/api/ruler/${metricsDS.uid}/api/v1/rules/${SM_ALERTING_NAMESPACE}`,
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -131,17 +123,17 @@ export function useAlerts() {
   };
 
   useEffect(() => {
-    if (!metricsIdentifier) {
+    if (!metricsDS) {
       return;
     }
 
-    fetchSMRules(metricsIdentifier).then(({ rules, error }) => {
+    fetchSMRules(metricsDS.uid).then(({ rules, error }) => {
       setAlertRules(rules);
       if (error) {
         setAlertError(error);
       }
     });
-  }, [defaultRulesSetCount, metricsDS, metricsIdentifier]);
+  }, [defaultRulesSetCount, metricsDS]);
 
   return {
     alertRules,
