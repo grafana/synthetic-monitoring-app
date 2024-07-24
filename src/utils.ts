@@ -14,7 +14,6 @@ import {
   CheckTypeGroup,
   HostedInstance,
   HttpMethod,
-  Probe,
   Settings,
   SubmissionErrorWrapper,
   ThresholdValues,
@@ -336,14 +335,6 @@ export function getRandomProbes(probes: number[], quantity: number): number[] {
     randomProbes.add(probes[index]);
   }
   return Array.from(randomProbes).sort((a, b) => a - b);
-}
-
-export function canEditProbes(probe?: Probe) {
-  if (!probe || probe.public) {
-    return false;
-  }
-
-  return hasRole(OrgRole.Editor);
 }
 
 export function formatDate(number: number) {

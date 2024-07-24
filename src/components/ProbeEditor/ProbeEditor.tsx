@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { ProbeSchema } from 'schemas/forms/ProbeSchema';
 
 import { Probe, ROUTES } from 'types';
-import { canEditProbes } from 'utils';
+import { useCanEditProbe } from 'hooks/useCanEditProbe';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 import { LabelField } from 'components/LabelField';
 import { ProbeRegionsSelect } from 'components/ProbeRegionsSelect';
@@ -32,7 +32,7 @@ export const ProbeEditor = ({
   supportingContent,
 }: ProbeEditorProps) => {
   const styles = useStyles2(getStyles);
-  const canEdit = canEditProbes(probe);
+  const canEdit = useCanEditProbe(probe);
   const form = useForm<Probe>({ defaultValues: probe, resolver: zodResolver(ProbeSchema) });
   const { latitude, longitude } = form.watch();
   const handleSubmit = form.handleSubmit((formValues: Probe) => onSubmit(formValues));

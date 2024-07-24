@@ -1,8 +1,7 @@
 import { type Probe } from 'types';
-import { canEditProbes } from 'utils';
 
-export function getTitle(probe?: Probe) {
-  const verb = canEditProbes(probe) ? 'Editing' : 'Viewing';
+export function getTitle(probe?: Probe, canEdit?: boolean) {
+  const verb = canEdit ? 'Editing' : 'Viewing';
   const type = !probe ? `` : probe.public ? 'public' : 'private';
 
   return `${verb} ${type} probe ${probe ? probe.name : ``}`;

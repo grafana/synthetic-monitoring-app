@@ -23,11 +23,11 @@ export const App = (props: AppProps) => {
     return () => {
       // we have a dependency on alerts to display our alerting correctly
       // so we are invalidating the alerts list on the assumption the user might change their alerting options when they leave SM
-      // going to leave this despite it being a little bit buggy as the idea is correct (well, it should be invalidatQueries...)
+      // going to leave this despite it being a little bit buggy as the idea is correct (well, it should be invalidateQueries...)
       // alerting have some aggressive caching going on so I'm finding testing this hard
       queryClient.removeQueries({ queryKey: alertingQueryKeys.list });
     };
-  }, [meta.jsonData?.metrics.uid]);
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

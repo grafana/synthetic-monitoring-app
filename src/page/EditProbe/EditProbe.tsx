@@ -3,8 +3,8 @@ import { useParams } from 'react-router-dom';
 import { Button, ConfirmModal } from '@grafana/ui';
 
 import { type Probe, type ProbePageParams, ROUTES } from 'types';
-import { canEditProbes } from 'utils';
 import { useDeleteProbe, useSuspenseProbe, useUpdateProbe } from 'data/useProbes';
+import { useCanEditProbe } from 'hooks/useCanEditProbe';
 import { useNavigation } from 'hooks/useNavigation';
 import { PluginPage } from 'components/PluginPage';
 import { ProbeEditor } from 'components/ProbeEditor';
@@ -16,9 +16,10 @@ import { getErrorInfo, getTitle } from './EditProbe.utils';
 
 export const EditProbe = () => {
   const [probe, setProbe] = useState<Probe>();
+  const canEdit = useCanEditProbe(probe);
 
   return (
-    <PluginPage pageNav={{ text: getTitle(probe) }}>
+    <PluginPage pageNav={{ text: getTitle(probe, canEdit) }}>
       <QueryErrorBoundary>
         <EditProbeFetch onProbeFetch={setProbe} />
       </QueryErrorBoundary>
@@ -50,6 +51,7 @@ const EditProbeFetch = ({ onProbeFetch }: { onProbeFetch: (probe: Probe) => void
 
 const EditProbeContent = ({ probe }: { probe: Probe }) => {
   const navigate = useNavigation();
+  const canEdit = useCanEditProbe(probe);
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [probeToken, setProbeToken] = useState(``);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -84,12 +86,12 @@ const EditProbeContent = ({ probe }: { probe: Probe }) => {
 
   const actions = useMemo(
     () =>
-      canEditProbes(probe) ? (
+      canEdit ? (
         <Button type="button" variant="destructive" onClick={() => setShowDeleteModal(true)}>
           Delete Probe
         </Button>
       ) : null,
-    [probe]
+    [canEdit]
   );
 
   const onReset = useCallback((token: string) => {

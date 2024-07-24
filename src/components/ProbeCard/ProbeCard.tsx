@@ -4,12 +4,13 @@ import { Badge, Button, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 import { type Label, type Probe, ROUTES } from 'types';
-import { canEditProbes } from 'utils';
+import { useCanEditProbe } from 'hooks/useCanEditProbe';
 import { Card } from 'components/Card';
 import { SuccessRateGaugeProbe } from 'components/Gauges';
 import { getRoute } from 'components/Routing.utils';
 
 export const ProbeCard = ({ probe }: { probe: Probe }) => {
+  const canEdit = useCanEditProbe(probe);
   const [isFocused, setIsFocused] = useState(false);
   const onlineTxt = probe.online ? 'Online' : 'Offline';
   const onlineIcon = probe.online ? 'heart' : 'heart-break';
@@ -19,7 +20,6 @@ export const ProbeCard = ({ probe }: { probe: Probe }) => {
   const styles = useStyles2(getStyles);
   const href = `${getRoute(ROUTES.EditProbe)}/${probe.id}`;
   const labelsString = labelsToString(probe.labels);
-  const canEdit = canEditProbes(probe);
 
   return (
     <Card className={styles.card} href={href}>
