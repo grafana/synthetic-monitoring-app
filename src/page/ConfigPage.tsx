@@ -4,6 +4,7 @@ import { Container, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { InstanceContext } from 'contexts/InstanceContext';
+import { useMeta } from 'hooks/useMeta';
 import { BackendAddress } from 'components/BackendAddress';
 import { ConfigActions } from 'components/ConfigActions';
 import { LinkedDatasourceView } from 'components/LinkedDatasourceView';
@@ -36,7 +37,8 @@ function getStyles(theme: GrafanaTheme2) {
 }
 
 export function ConfigPage() {
-  const { meta, instance } = useContext(InstanceContext);
+  const { instance } = useContext(InstanceContext);
+  const meta = useMeta();
   const styles = useStyles2(getStyles);
 
   return (
@@ -78,12 +80,12 @@ export function ConfigPage() {
             </div>
           </div>
         )}
-        <div className={styles.programmaticManagement}>{meta?.enabled && <ProgrammaticManagement />}</div>
+        <div className={styles.programmaticManagement}>{meta.enabled && <ProgrammaticManagement />}</div>
         <div className={styles.configActions}>
           <hr></hr>
-          <ConfigActions enabled={meta?.enabled} pluginId={meta?.id ?? 'grafana-synthetic-monitoring-app'} />
+          <ConfigActions enabled={meta.enabled} pluginId={meta.id ?? 'grafana-synthetic-monitoring-app'} />
         </div>
-        <div>Plugin version: {meta?.info.version}</div>
+        <div>Plugin version: {meta.info.version}</div>
       </div>
     </PluginPage>
   );

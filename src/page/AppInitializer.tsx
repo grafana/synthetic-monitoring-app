@@ -1,11 +1,11 @@
-import React, { PropsWithChildren, useContext } from 'react';
+import React, { PropsWithChildren } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Button, Spinner, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { ROUTES } from 'types';
-import { InstanceContext } from 'contexts/InstanceContext';
 import { useAppInitializer } from 'hooks/useAppInitializer';
+import { useMeta } from 'hooks/useMeta';
 import { MismatchedDatasourceModal } from 'components/MismatchedDatasourceModal';
 
 interface Props {
@@ -16,8 +16,7 @@ interface Props {
 }
 
 export const AppInitializer = ({ redirectTo, disabled, buttonClassname, buttonText }: PropsWithChildren<Props>) => {
-  const { meta } = useContext(InstanceContext);
-
+  const { jsonData } = useMeta();
   const styles = useStyles2(getStyles);
 
   const {
@@ -55,12 +54,12 @@ export const AppInitializer = ({ redirectTo, disabled, buttonClassname, buttonTe
         onDismiss={() => setDataSouceModalOpen(false)}
         isSubmitting={loading}
         onSubmit={() => {
-          if (meta?.jsonData?.metrics?.hostedId && meta?.jsonData?.logs.hostedId) {
+          if (jsonData.metrics?.hostedId && jsonData.logs.hostedId) {
             initialize({
               metricsSettings: metricsByUid!, // we have already guaranteed that this exists above
-              metricsHostedId: meta.jsonData.metrics.hostedId,
+              metricsHostedId: jsonData.metrics.hostedId,
               logsSettings: logsByUid!, // we have already guaranteed that this exists above
-              logsHostedId: meta.jsonData.logs.hostedId,
+              logsHostedId: jsonData.logs.hostedId,
             });
           } else {
             setError('Missing datasource hostedId');
