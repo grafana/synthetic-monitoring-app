@@ -158,7 +158,7 @@ export interface BrowserSettings {
 
 export interface TcpSettings {
   ipVersion: IpVersion;
-  tls: boolean;
+  tls?: boolean;
   tlsConfig?: TLSConfig;
   queryResponse?: TCPQueryResponse[];
 }

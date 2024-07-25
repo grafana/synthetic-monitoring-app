@@ -9,7 +9,7 @@ export function selectableValueFrom<T>(value: T, label?: string): SelectableValu
 }
 
 export const getTlsConfigFormValues = (tlsConfig?: TLSConfig) => {
-  if (!tlsConfig) {
+  if (!tlsConfig || Object.keys(tlsConfig).length === 0) {
     return {};
   }
 
