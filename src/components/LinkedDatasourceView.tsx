@@ -1,10 +1,11 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { Spinner } from '@grafana/ui';
 
 import { ROUTES } from 'types';
 import { findLinkedDatasource } from 'utils';
-import { InstanceContext } from 'contexts/InstanceContext';
+import { useLogsDS } from 'hooks/useLogsDS';
 import { useMeta } from 'hooks/useMeta';
+import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useNavigation } from 'hooks/useNavigation';
 
 interface Props {
@@ -13,18 +14,24 @@ interface Props {
 
 export const LinkedDatasourceView = ({ type }: Props) => {
   const navigate = useNavigation();
-  const { instance } = useContext(InstanceContext);
-  const { jsonData } = useMeta();
-  if (!instance.metrics || !instance.logs) {
-    return <Spinner />;
-  }
+  const metricsDS = useMetricsDS();
+  const logsDS = useLogsDS();
+  const meta = useMeta();
 
-  const info = type === 'prometheus' ? instance.metrics : instance.logs;
-  const hostedId = type === 'prometheus' ? jsonData?.metrics.hostedId : jsonData?.logs.hostedId;
+  const dsMap = {
+    prometheus: metricsDS,
+    loki: logsDS,
+  };
+
+  const hostedIDMap = {
+    prometheus: meta.jsonData?.metrics?.hostedId,
+    loki: meta.jsonData?.logs?.hostedId,
+  };
+
   const datasource = findLinkedDatasource({
-    grafanaName: info.name,
-    hostedId: hostedId ?? 0,
-    uid: info.uid,
+    grafanaName: dsMap[type].name,
+    hostedId: hostedIDMap[type] ?? 0,
+    uid: dsMap[type].uid,
   });
 
   const handleClick = () => {

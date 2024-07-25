@@ -9,7 +9,6 @@ import { MetaContextProvider } from 'contexts/MetaContext';
 import { SMDatasourceProvider } from 'contexts/SMDatasourceContext';
 import { queryClient } from 'data/queryClient';
 import { queryKeys as alertingQueryKeys } from 'data/useAlerts';
-import { InstanceProvider } from 'components/InstanceProvider';
 
 import { FeatureFlagProvider } from './FeatureFlagProvider';
 import { InitialisedRouter } from './Routing';
@@ -35,13 +34,8 @@ export const App = (props: AppProps) => {
         <FeatureFlagProvider>
           <GlobalStyles />
           <SMDatasourceProvider>
-            <InstanceProvider
-              metricInstanceName={meta.jsonData?.metrics?.grafanaName}
-              logsInstanceName={meta.jsonData?.logs?.grafanaName}
-            >
-              <InitialisedRouter onNavChanged={onNavChanged} />
-              <ReactQueryDevtools />
-            </InstanceProvider>
+            <InitialisedRouter onNavChanged={onNavChanged} />
+            <ReactQueryDevtools />
           </SMDatasourceProvider>
         </FeatureFlagProvider>
       </MetaContextProvider>

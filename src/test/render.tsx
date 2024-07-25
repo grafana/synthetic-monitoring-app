@@ -12,7 +12,6 @@ import { MetaContextProvider } from 'contexts/MetaContext';
 import { SMDatasourceProvider } from 'contexts/SMDatasourceContext';
 import { getQueryClient } from 'data/queryClient';
 import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
-import { InstanceProvider } from 'components/InstanceProvider';
 
 export type ComponentWrapperProps = {
   children: ReactNode;
@@ -55,13 +54,11 @@ const DefaultWrapper = ({ children, history, route, meta }: ComponentWrapperProp
     <QueryClientProvider client={getQueryClient()}>
       <MetaContextProvider meta={{ ...defaultTestMeta, ...meta }}>
         <FeatureFlagProvider>
-          <Router history={history}>
-            <SMDatasourceProvider>
-              <InstanceProvider>
-                <Route path={route}>{children}</Route>
-              </InstanceProvider>
-            </SMDatasourceProvider>
-          </Router>
+          <SMDatasourceProvider>
+            <Router history={history}>
+              <Route path={route}>{children}</Route>
+            </Router>
+          </SMDatasourceProvider>
         </FeatureFlagProvider>
       </MetaContextProvider>
     </QueryClientProvider>

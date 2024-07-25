@@ -1,12 +1,13 @@
-import React, { useContext, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { SceneApp, SceneAppPage } from '@grafana/scenes';
 import { Spinner } from '@grafana/ui';
 
 import { CheckPageParams, CheckType, DashboardSceneAppConfig } from 'types';
 import { getCheckType } from 'utils';
-import { InstanceContext } from 'contexts/InstanceContext';
 import { useChecks } from 'data/useChecks';
+import { useLogsDS } from 'hooks/useLogsDS';
+import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useSMDS } from 'hooks/useSMDS';
 import { PLUGIN_URL_PATH } from 'components/Routing.consts';
 import { getDNSScene } from 'scenes/DNS';
@@ -19,28 +20,27 @@ import { getTracerouteScene } from 'scenes/Traceroute/getTracerouteScene';
 
 function DashboardPageContent() {
   const smDS = useSMDS();
-  const { instance } = useContext(InstanceContext);
+  const metricsDS = useMetricsDS();
+  const logsDS = useLogsDS();
   const { data: checks = [], isLoading } = useChecks();
   const { id } = useParams<CheckPageParams>();
 
   const checkToView = checks.find((check) => String(check.id) === id);
 
   const scene = useMemo(() => {
-    if (!instance.metrics || !instance.logs) {
-      return;
-    }
     const metricsDef = {
-      uid: instance.metrics.uid,
-      type: instance.metrics.type,
+      uid: metricsDS.uid,
+      type: metricsDS.type,
     };
     const logsDef = {
-      uid: instance.logs.uid,
-      type: instance.logs.type,
+      uid: logsDS.uid,
+      type: logsDS.type,
     };
     const smDef = {
       uid: smDS.uid,
       type: smDS.type,
     };
+
     const config: DashboardSceneAppConfig = { metrics: metricsDef, logs: logsDef, sm: smDef, singleCheckMode: false };
     config.singleCheckMode = true;
     if (!checkToView) {
@@ -132,7 +132,7 @@ function DashboardPageContent() {
         });
       }
     }
-  }, [instance.logs, instance.metrics, checkToView, smDS]);
+  }, [smDS, metricsDS, logsDS, checkToView]);
 
   if (!scene || isLoading) {
     return <Spinner />;
