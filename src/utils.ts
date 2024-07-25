@@ -5,14 +5,13 @@ import { config, FetchResponse, getBackendSrv } from '@grafana/runtime';
 import { contextSrv } from 'grafana/app/core/core';
 import { firstValueFrom } from 'rxjs';
 
-import { DashboardInfo, LinkedDatasourceInfo, LogQueryResponse, LogStream, SMOptions } from './datasource/types';
+import { LinkedDatasourceInfo, LogQueryResponse, LogStream, SMOptions } from './datasource/types';
 import {
   CalculateUsageValues,
   Check,
   CheckFormValues,
   CheckType,
   CheckTypeGroup,
-  HostedInstance,
   HttpMethod,
   Settings,
   SubmissionErrorWrapper,
@@ -27,7 +26,6 @@ import {
   isTCPFormValuesSettings,
   isTCPSettings,
 } from 'utils.types';
-import { SMDataSource } from 'datasource/DataSource';
 import { Metric } from 'datasource/responses.types';
 import { CHECK_TYPE_OPTIONS } from 'hooks/useCheckTypeOptions';
 
@@ -40,16 +38,16 @@ export function findSMDataSources(): Array<DataSourceInstanceSettings<SMOptions>
   }) as unknown as Array<DataSourceInstanceSettings<SMOptions>>;
 }
 
-export function findLinkedDatasource(linkedDSInfo: LinkedDatasourceInfo): DataSourceInstanceSettings | undefined {
-  if (linkedDSInfo.uid) {
-    const linkedDS = Object.values(config.datasources).find((ds) => ds.uid === linkedDSInfo.uid);
+export function findLinkedDatasource(uid: string, grafanaName: string): DataSourceInstanceSettings | undefined {
+  if (uid) {
+    const linkedDS = Object.values(config.datasources).find((ds) => ds.uid === uid);
 
     if (linkedDS) {
       return linkedDS;
     }
   }
 
-  return config.datasources[linkedDSInfo.grafanaName];
+  return config.datasources[grafanaName];
 }
 
 interface DatasourcePayload {
@@ -61,62 +59,55 @@ interface DatasourcePayload {
 
 // Used for stubbing out the datasource when plugin is not provisioned
 
-export async function createNewApiInstance(payload: DatasourcePayload): Promise<SMOptions> {
-  return getBackendSrv().post('api/datasources', {
-    name: 'Synthetic Monitoring',
-    type: 'synthetic-monitoring-datasource',
-    access: 'proxy',
-    isDefault: false,
-    jsonData: {
-      apiHost: payload.apiHost,
-      initialized: true,
-      metrics: payload.metrics,
-      logs: payload.logs,
-    },
-    secureJsonData: {
-      accessToken: payload.accessToken,
-    },
-  });
+export function createNewApiInstance(payload: DatasourcePayload) {
+  return firstValueFrom(
+    getBackendSrv().fetch<SMOptions>({
+      url: 'api/datasources',
+      data: {
+        name: 'Synthetic Monitoring',
+        type: 'synthetic-monitoring-datasource',
+        access: 'proxy',
+        isDefault: false,
+        jsonData: {
+          apiHost: payload.apiHost,
+          initialized: true,
+          metrics: payload.metrics,
+          logs: payload.logs,
+        },
+        secureJsonData: {
+          accessToken: payload.accessToken,
+        },
+      },
+    })
+  );
 }
 
-export async function initializeDatasource(datasourcePayload: DatasourcePayload): Promise<SMOptions> {
+export function initializeDatasource(datasourcePayload: DatasourcePayload) {
   const existingDatasource = findSMDataSources()?.[0];
   if (existingDatasource) {
-    return getBackendSrv().put(`api/datasources/${existingDatasource.id}`, {
-      ...existingDatasource,
-      access: 'proxy',
-      isDefault: false,
-      secureJsonData: {
-        accessToken: datasourcePayload.accessToken,
-      },
-      jsonData: {
-        apiHost: datasourcePayload.apiHost,
-        initialized: true,
-        metrics: datasourcePayload.metrics,
-        logs: datasourcePayload.logs,
-      },
-    });
+    return firstValueFrom(
+      getBackendSrv().fetch<SMOptions>({
+        method: 'PUT',
+        url: `api/datasources/${existingDatasource.id}`,
+        data: {
+          ...existingDatasource,
+          access: 'proxy',
+          isDefault: false,
+          secureJsonData: {
+            accessToken: datasourcePayload.accessToken,
+          },
+          jsonData: {
+            apiHost: datasourcePayload.apiHost,
+            initialized: true,
+            metrics: datasourcePayload.metrics,
+            logs: datasourcePayload.logs,
+          },
+        },
+      })
+    );
   }
-  return createNewApiInstance(datasourcePayload);
-}
 
-export async function createHostedInstance(info: HostedInstance, key: string): Promise<DataSourceInstanceSettings> {
-  const data = {
-    name: `grafanacloud-${info.name}`,
-    url: info.url + (info.type === 'logs' ? '' : '/api/prom'),
-    access: 'proxy',
-    basicAuth: true,
-    basicAuthUser: `${info.id}`,
-    secureJsonData: {
-      basicAuthPassword: key,
-    },
-    type: info.type === 'logs' ? 'loki' : 'prometheus',
-  };
-  return getBackendSrv()
-    .post('api/datasources', data)
-    .then((d) => {
-      return d.datasource;
-    });
+  return createNewApiInstance(datasourcePayload);
 }
 
 export function hasRole(requiredRole: OrgRole): boolean {
@@ -135,12 +126,6 @@ export function hasRole(requiredRole: OrgRole): boolean {
       return false;
     }
   }
-}
-
-/** Given hosted info, link to an existing instance */
-export function dashboardUID(checkType: string, ds?: SMDataSource): DashboardInfo | undefined {
-  const dashboards = ds?.instanceSettings?.jsonData?.dashboards;
-  return dashboards?.find((item) => item.json.toLocaleLowerCase() === `sm-${checkType}.json`);
 }
 
 export const parseUrl = (url: string) => {

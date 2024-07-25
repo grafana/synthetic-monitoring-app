@@ -3,7 +3,8 @@ import { Router } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import runTime from '@grafana/runtime';
 import { screen } from '@testing-library/react';
-import { ComponentWrapperProps, defaultTestMeta, render } from 'test/render';
+import { SM_META } from 'test/fixtures/meta';
+import { ComponentWrapperProps, render } from 'test/render';
 
 import { getQueryClient } from 'data/queryClient';
 import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
@@ -14,7 +15,7 @@ import { SMDatasourceProvider } from './SMDatasourceContext';
 const Wrapper = ({ children, history, meta }: ComponentWrapperProps) => {
   return (
     <QueryClientProvider client={getQueryClient()}>
-      <MetaContextProvider meta={{ ...defaultTestMeta, ...meta }}>
+      <MetaContextProvider meta={{ ...SM_META, ...meta }}>
         <FeatureFlagProvider>
           <Router history={history}>{children}</Router>
         </FeatureFlagProvider>

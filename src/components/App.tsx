@@ -4,7 +4,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { AppRootProps } from '@grafana/data';
 import { css, Global } from '@emotion/react';
 
-import { GlobalSettings } from 'types';
+import { ProvisioningJsonData } from 'types';
 import { MetaContextProvider } from 'contexts/MetaContext';
 import { PermissionsContextProvider } from 'contexts/PermissionsContext';
 import { SMDatasourceProvider } from 'contexts/SMDatasourceContext';
@@ -14,9 +14,7 @@ import { queryKeys as alertingQueryKeys } from 'data/useAlerts';
 import { FeatureFlagProvider } from './FeatureFlagProvider';
 import { InitialisedRouter } from './Routing';
 
-type AppProps = AppRootProps<GlobalSettings>;
-
-export const App = (props: AppProps) => {
+export const App = (props: AppRootProps<ProvisioningJsonData>) => {
   const { meta, onNavChanged } = props;
 
   useEffect(() => {

@@ -1,14 +1,15 @@
 import React, { PropsWithChildren, type ReactElement, type ReactNode } from 'react';
 import { Route, Router } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { AppPluginMeta, PluginType } from '@grafana/data';
+import { AppPluginMeta } from '@grafana/data';
 import { render, type RenderOptions } from '@testing-library/react';
 import userEventLib from '@testing-library/user-event';
 import { createMemoryHistory, type MemoryHistory } from 'history';
-import pluginInfo from 'plugin.json';
+import { SM_META } from 'test/fixtures/meta';
 
-import { GlobalSettings } from 'types';
+import { ProvisioningJsonData } from 'types';
 import { MetaContextProvider } from 'contexts/MetaContext';
+import { PermissionsContextProvider } from 'contexts/PermissionsContext';
 import { SMDatasourceProvider } from 'contexts/SMDatasourceContext';
 import { getQueryClient } from 'data/queryClient';
 import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
@@ -17,48 +18,28 @@ export type ComponentWrapperProps = {
   children: ReactNode;
   history: MemoryHistory;
   route?: string;
-  meta?: Partial<AppPluginMeta<GlobalSettings>>;
+  meta?: Partial<AppPluginMeta<ProvisioningJsonData>>;
 };
 
 type CreateWrapperProps = {
   path?: string;
   route?: string;
-  meta?: Partial<AppPluginMeta<GlobalSettings>>;
+  meta?: Partial<AppPluginMeta<ProvisioningJsonData>>;
   wrapper?: (props: ComponentWrapperProps) => ReactElement;
-};
-
-export const defaultTestMeta = {
-  id: pluginInfo.id,
-  name: pluginInfo.name,
-  type: PluginType.app,
-  info: { ...pluginInfo.info, links: [] },
-  module: `/public/plugins/grafana-synthetic-monitoring-app/module.js`,
-  baseUrl: `/public/plugins/grafana-synthetic-monitoring-app`,
-  enabled: true,
-  jsonData: {
-    metrics: {
-      grafanaName: 'prometheus',
-      hostedId: 123,
-    },
-    logs: {
-      grafanaName: 'loki',
-      hostedId: 456,
-    },
-    apiHost: 'https://synthetic-monitoring-api.grafana.net',
-    stackId: 1,
-  },
 };
 
 const DefaultWrapper = ({ children, history, route, meta }: ComponentWrapperProps) => {
   return (
     <QueryClientProvider client={getQueryClient()}>
-      <MetaContextProvider meta={{ ...defaultTestMeta, ...meta }}>
+      <MetaContextProvider meta={{ ...SM_META, ...meta }}>
         <FeatureFlagProvider>
-          <Router history={history}>
-            <SMDatasourceProvider>
-              <Route path={route}>{children}</Route>
-            </SMDatasourceProvider>
-          </Router>
+          <SMDatasourceProvider>
+            <PermissionsContextProvider>
+              <Router history={history}>
+                <Route path={route}>{children}</Route>
+              </Router>
+            </PermissionsContextProvider>
+          </SMDatasourceProvider>
         </FeatureFlagProvider>
       </MetaContextProvider>
     </QueryClientProvider>

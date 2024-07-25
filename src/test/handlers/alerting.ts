@@ -1,11 +1,11 @@
 import { ALERTING_RULES } from 'test/fixtures/alerting';
-import { MetricsDSSettings } from 'test/fixtures/datasources';
+import { METRICS_DATASOURCE } from 'test/fixtures/datasources';
 
 import { ApiEntry } from 'test/handlers/types';
 import { AlertGroupResponse, ListPrometheusAlertsResponse } from 'datasource/responses.types';
 
 export const getAlertRules: ApiEntry<AlertGroupResponse> = {
-  route: `/api/ruler/4/api/v1/rules/synthetic_monitoring/default`,
+  route: `/api/ruler/${METRICS_DATASOURCE.uid}/api/v1/rules/synthetic_monitoring/default`,
   method: `get`,
   result: () => {
     return {
@@ -62,7 +62,7 @@ export const getAlertRules: ApiEntry<AlertGroupResponse> = {
 };
 
 export const getPromAlertRules: ApiEntry<ListPrometheusAlertsResponse> = {
-  route: `/api/prometheus/${MetricsDSSettings.uid}/api/v1/rules`,
+  route: `/api/prometheus/${METRICS_DATASOURCE.uid}/api/v1/rules`,
   method: `get`,
   result: () => {
     return {

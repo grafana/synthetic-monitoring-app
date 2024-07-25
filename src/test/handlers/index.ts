@@ -2,6 +2,7 @@ import { rest } from 'msw';
 import { getAlertRules, getPromAlertRules } from 'test/handlers/alerting';
 import { addCheck, bulkUpdateChecks, checkInfo, listChecks, updateCheck } from 'test/handlers/checks';
 import { getDashboard } from 'test/handlers/dashboards';
+import { getLogsDS, getMetricsDS, getSMDS } from 'test/handlers/datasources';
 import { getMetrics } from 'test/handlers/metrics';
 import { addProbe, listProbes, updateProbe } from 'test/handlers/probes';
 import { getTenant, getTenantLimits, getTenantSettings, updateTenantSettings } from 'test/handlers/tenants';
@@ -19,6 +20,9 @@ const apiRoutes = {
   getPromAlertRules,
   getDashboard,
   getMetrics,
+  getSMDS,
+  getLogsDS,
+  getMetricsDS,
   getTenant,
   getTenantSettings,
   getTenantLimits,

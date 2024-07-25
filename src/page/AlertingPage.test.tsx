@@ -2,9 +2,10 @@ import React from 'react';
 import { screen, waitFor, within } from '@testing-library/react';
 import { type UserEvent } from '@testing-library/user-event';
 import { render } from 'test/render';
-import { runTestAsViewer, selectOption } from 'test/utils';
+import { selectOption } from 'test/utils';
 
 import { AlertFamily, AlertRule, AlertSensitivity } from 'types';
+import { hasPermission } from 'utils';
 import {
   ALERT_PROBE_SUCCESS_RECORDING_EXPR,
   DEFAULT_ALERT_NAMES_BY_FAMILY_AND_SENSITIVITY,
@@ -16,6 +17,13 @@ jest.mock('hooks/useAlerts', () => {
   return {
     ...actual,
     useAlerts: jest.fn(),
+  };
+});
+
+jest.mock('utils', () => {
+  return {
+    ...jest.requireActual('utils'),
+    hasPermission: jest.fn().mockReturnValue(true),
   };
 });
 
@@ -156,7 +164,7 @@ it('adds default alerts and edits alerts', async () => {
 });
 
 it('shows the Populate alerts button as disabled when user is viewer', async () => {
-  runTestAsViewer();
+  jest.mocked(hasPermission).mockReturnValue(false);
 
   const useAlertsMock = jest.fn().mockImplementation(() => ({
     alertRules: [],

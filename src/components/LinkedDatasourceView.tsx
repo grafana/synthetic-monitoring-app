@@ -4,17 +4,15 @@ import { Spinner } from '@grafana/ui';
 import { findLinkedDatasource } from 'utils';
 import { useCanReadMetrics, useCanWriteLogs } from 'hooks/useDSPermission';
 import { useLogsDS } from 'hooks/useLogsDS';
-import { useMeta } from 'hooks/useMeta';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 
-interface Props {
+interface LinkedDatasourceViewProps {
   type: 'loki' | 'prometheus';
 }
 
-export const LinkedDatasourceView = ({ type }: Props) => {
+export const LinkedDatasourceView = ({ type }: LinkedDatasourceViewProps) => {
   const metricsDS = useMetricsDS();
   const logsDS = useLogsDS();
-  const meta = useMeta();
   const canEditLogs = useCanWriteLogs();
   const canEditMetrics = useCanReadMetrics();
 
@@ -28,22 +26,13 @@ export const LinkedDatasourceView = ({ type }: Props) => {
     loki: logsDS,
   };
 
-  const hostedIDMap = {
-    prometheus: meta.jsonData?.metrics?.hostedId,
-    loki: meta.jsonData?.logs?.hostedId,
-  };
-
   const ds = dsMap[type];
 
   if (!ds) {
     return null;
   }
 
-  const datasource = findLinkedDatasource({
-    grafanaName: ds.name,
-    hostedId: hostedIDMap[type] ?? 0,
-    uid: ds.uid,
-  });
+  const datasource = findLinkedDatasource(ds.uid, ds.name);
 
   if (!datasource) {
     return <Spinner />;

@@ -1,9 +1,16 @@
-import { OrgRole } from '@grafana/data';
-import { config } from '@grafana/runtime';
 import { act, screen, within } from '@testing-library/react';
 import { UserEvent } from '@testing-library/user-event';
+import {
+  LOGS_DATASOURCE,
+  METRICS_DATASOURCE,
+  SM_DATASOURCE,
+  VIEWER_DEFAULT_DATASOURCE_ACCESS_CONTROL,
+} from 'test/fixtures/datasources';
 
 import { type Probe } from 'types';
+
+import { apiRoute } from './handlers';
+import { server } from './server';
 
 export const UPDATED_VALUES: Pick<Probe, 'name' | 'latitude' | 'longitude' | 'region' | 'labels' | 'capabilities'> = {
   latitude: 19.05758,
@@ -55,23 +62,55 @@ export async function fillProbeForm(user: UserEvent) {
   await user.click(disableScriptedChecks);
 }
 
-export function runTestAsViewer() {
-  // this gets reset to editor in afterEach in jest-setup.js
-  const runtime = require('@grafana/runtime');
-  jest.replaceProperty(runtime, `config`, {
-    ...config,
-    bootData: {
-      ...config.bootData,
-      user: {
-        ...config.bootData.user,
-        orgRole: OrgRole.Viewer,
+export function runTestAsSMViewer() {
+  server.use(
+    apiRoute(`getSMDS`, {
+      result: () => {
+        return {
+          json: {
+            ...SM_DATASOURCE,
+            accessControl: VIEWER_DEFAULT_DATASOURCE_ACCESS_CONTROL,
+          },
+        };
       },
-    },
-    featureToggles: {
-      ...config.featureToggles,
-      topnav: true,
-    },
-  });
+    })
+  );
+}
+
+export function runTestAsLogsViewer() {
+  server.use(
+    apiRoute(`getLogsDS`, {
+      result: () => {
+        return {
+          json: {
+            ...LOGS_DATASOURCE,
+            accessControl: VIEWER_DEFAULT_DATASOURCE_ACCESS_CONTROL,
+          },
+        };
+      },
+    })
+  );
+}
+
+export function runTestAsMetricsViewer() {
+  server.use(
+    apiRoute(`getMetricsDS`, {
+      result: () => {
+        return {
+          json: {
+            ...METRICS_DATASOURCE,
+            accessControl: VIEWER_DEFAULT_DATASOURCE_ACCESS_CONTROL,
+          },
+        };
+      },
+    })
+  );
+}
+
+export function runTestAsViewer() {
+  runTestAsSMViewer();
+  runTestAsLogsViewer();
+  runTestAsMetricsViewer();
 }
 
 export const getSlider = async (formName: string) => {

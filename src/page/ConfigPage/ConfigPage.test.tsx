@@ -1,6 +1,6 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
-import { LogsDSSettings, MetricsDSSettings, SMDSSettings } from 'test/fixtures/datasources';
+import { LOGS_DATASOURCE, METRICS_DATASOURCE, SM_DATASOURCE } from 'test/fixtures/datasources';
 import { CREATE_ACCESS_TOKEN } from 'test/fixtures/tokens';
 import { render } from 'test/render';
 
@@ -25,16 +25,17 @@ describe(`<ConfigPage /> uninitialised state`, () => {
 describe(`<ConfigPage /> initialised state`, () => {
   it(`renders the linked data sources`, async () => {
     render(<ConfigPage initialized />);
-    const promName = await screen.findByText(MetricsDSSettings.name);
+    const promName = await screen.findByText(METRICS_DATASOURCE.name);
 
     expect(promName).toBeInTheDocument();
-    expect(screen.getByText(LogsDSSettings.name)).toBeInTheDocument();
+    expect(screen.getByText(LOGS_DATASOURCE.name)).toBeInTheDocument();
   });
 
   it(`renders the backend address`, async () => {
     render(<ConfigPage initialized />);
 
-    const backendAddress = await screen.findByText(SMDSSettings.jsonData.apiHost);
+    const withoutHttps = SM_DATASOURCE.jsonData.apiHost.replace('https://', '');
+    const backendAddress = await screen.findByText(withoutHttps);
     expect(backendAddress).toBeInTheDocument();
   });
 

@@ -1,5 +1,6 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { BASIC_PING_CHECK } from 'test/fixtures/checks';
+import { SM_DATASOURCE } from 'test/fixtures/datasources';
 import { PRIVATE_PROBE, UNSELECTED_PRIVATE_PROBE } from 'test/fixtures/probes';
 import { TERRAFORM_BASIC_PING_CHECK, TERRAFORM_PRIVATE_PROBES } from 'test/fixtures/terraform';
 import { apiRoute } from 'test/handlers';
@@ -99,7 +100,7 @@ describe('terraform config generation', () => {
         grafana: {
           auth: '<add an api key from grafana.com>',
           sm_access_token: '<add an sm access token>',
-          sm_url: 'http://localhost:4030',
+          sm_url: SM_DATASOURCE.jsonData.apiHost,
           url: '',
         },
       },
@@ -195,7 +196,7 @@ describe('terraform config generation', () => {
         grafana: {
           auth: '<add an api key from grafana.com>',
           sm_access_token: '<add an sm access token>',
-          sm_url: 'http://localhost:4030',
+          sm_url: SM_DATASOURCE.jsonData.apiHost,
           url: '',
         },
       },

@@ -1,15 +1,13 @@
 import React, { PureComponent } from 'react';
-import { DataSourcePluginOptionsEditorProps, DataSourceSettings } from '@grafana/data';
+import { DataSourcePluginOptionsEditorProps } from '@grafana/data';
 import { LegacyForms } from '@grafana/ui';
 
 import { SecureJsonData, SMOptions } from './types';
-import { GlobalSettings } from 'types';
+import { InitializedJsonData } from 'types';
 
-type Options = DataSourceSettings<SMOptions, SecureJsonData>;
+type Options = DataSourcePluginOptionsEditorProps<SMOptions, SecureJsonData>['options'];
 
-interface Props extends DataSourcePluginOptionsEditorProps<SMOptions, SecureJsonData> {}
-
-export class ConfigEditor extends PureComponent<Props> {
+export class ConfigEditor extends PureComponent<DataSourcePluginOptionsEditorProps<SMOptions, SecureJsonData>> {
   render() {
     const { onOptionsChange, options } = this.props;
 
@@ -21,7 +19,7 @@ const ConfigEditorContent = ({
   options,
   onOptionsChange,
 }: {
-  options: Options;
+  options: DataSourcePluginOptionsEditorProps<SMOptions, SecureJsonData>['options'];
   onOptionsChange: (options: Options) => void;
 }) => {
   const { secureJsonData } = options;
@@ -72,7 +70,7 @@ function resetAccessToken(options: Options): Options {
   };
 }
 
-export function isValid(settings?: GlobalSettings): boolean {
+export function isValid(settings?: InitializedJsonData): boolean {
   if (!settings) {
     return false;
   }
