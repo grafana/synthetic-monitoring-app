@@ -17,6 +17,10 @@ jest.mock('@grafana/runtime', () => {
         [METRICS_DATASOURCE.name]: METRICS_DATASOURCE,
         [LOGS_DATASOURCE.name]: LOGS_DATASOURCE,
       },
+      featureToggles: {
+        ...actual.config.featureToggles,
+        topnav: true,
+      },
     },
     getBackendSrv: () => ({
       datasourceRequest: axios.request,
