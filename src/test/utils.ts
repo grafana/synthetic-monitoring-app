@@ -1,3 +1,4 @@
+import { config } from '@grafana/runtime';
 import { act, screen, within } from '@testing-library/react';
 import { UserEvent } from '@testing-library/user-event';
 import {
@@ -105,6 +106,28 @@ export function runTestAsMetricsViewer() {
       },
     })
   );
+}
+
+export function runTestWithoutMetricsAccess() {
+  // this gets reset in afterEach in jest-setup.js
+  const runtime = require('@grafana/runtime');
+  jest.replaceProperty(runtime, `config`, {
+    ...config,
+    datasources: {
+      [LOGS_DATASOURCE.name]: LOGS_DATASOURCE,
+    },
+  });
+}
+
+export function runTestWithoutLogsAccess() {
+  // this gets reset in afterEach in jest-setup.js
+  const runtime = require('@grafana/runtime');
+  jest.replaceProperty(runtime, `config`, {
+    ...config,
+    datasources: {
+      [METRICS_DATASOURCE.name]: METRICS_DATASOURCE,
+    },
+  });
 }
 
 export function runTestAsViewer() {

@@ -1,4 +1,4 @@
-import { DataSourceInstanceSettings, GrafanaTheme2, OrgRole, TimeRange } from '@grafana/data';
+import { DataSourceInstanceSettings, GrafanaTheme2, TimeRange } from '@grafana/data';
 import { config, FetchResponse, getBackendSrv } from '@grafana/runtime';
 // todo: update this when we move to grafana 11.2
 // https://github.com/grafana/grafana/pull/89047
@@ -108,24 +108,6 @@ export function initializeDatasource(datasourcePayload: DatasourcePayload) {
   }
 
   return createNewApiInstance(datasourcePayload);
-}
-
-export function hasRole(requiredRole: OrgRole): boolean {
-  const user = config.bootData.user;
-  switch (requiredRole) {
-    case OrgRole.Admin: {
-      return user.orgRole === OrgRole.Admin;
-    }
-    case OrgRole.Editor: {
-      return user.orgRole === OrgRole.Admin || user.orgRole === OrgRole.Editor;
-    }
-    case OrgRole.Viewer: {
-      return user.orgRole === OrgRole.Admin || user.orgRole === OrgRole.Editor || user.orgRole === OrgRole.Viewer;
-    }
-    default: {
-      return false;
-    }
-  }
 }
 
 export const parseUrl = (url: string) => {

@@ -3,6 +3,7 @@ import { screen } from '@testing-library/react';
 import { LOGS_DATASOURCE, METRICS_DATASOURCE, SM_DATASOURCE } from 'test/fixtures/datasources';
 import { CREATE_ACCESS_TOKEN } from 'test/fixtures/tokens';
 import { render } from 'test/render';
+import { runTestWithoutLogsAccess, runTestWithoutMetricsAccess } from 'test/utils';
 
 import { ConfigPage } from './ConfigPage';
 
@@ -19,6 +20,26 @@ describe(`<ConfigPage /> uninitialised state`, () => {
 
     const pluginVersion = await screen.findByText(`Plugin version: %VERSION%`);
     expect(pluginVersion).toBeInTheDocument();
+  });
+
+  it(`does not render metrics datasource when the user doesn't have access`, async () => {
+    runTestWithoutMetricsAccess();
+
+    render(<ConfigPage initialized />);
+    const title = await screen.findByText(`Linked Data Sources`);
+
+    expect(title).toBeInTheDocument();
+    expect(screen.queryByText(METRICS_DATASOURCE.name)).not.toBeInTheDocument();
+  });
+
+  it(`does not render logs datasource when the user doesn't have access`, async () => {
+    runTestWithoutLogsAccess();
+
+    render(<ConfigPage initialized />);
+    const title = await screen.findByText(`Linked Data Sources`);
+
+    expect(title).toBeInTheDocument();
+    expect(screen.queryByText(LOGS_DATASOURCE.name)).not.toBeInTheDocument();
   });
 });
 

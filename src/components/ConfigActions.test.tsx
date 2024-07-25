@@ -2,7 +2,15 @@ import React from 'react';
 import { screen } from '@testing-library/react';
 import { render } from 'test/render';
 
+import { hasPermission } from 'utils';
 import { ConfigActions } from 'components/ConfigActions';
+
+jest.mock('utils', () => {
+  return {
+    ...jest.requireActual('utils'),
+    hasPermission: jest.fn().mockReturnValue(true),
+  };
+});
 
 it('shows disable option when activated', async () => {
   render(<ConfigActions initialized />);
@@ -11,7 +19,6 @@ it('shows disable option when activated', async () => {
   expect(disableButton).toBeInTheDocument();
 });
 
-// todo: fix these when permissions added
 it('shows enable action when disabled', async () => {
   render(<ConfigActions />, {
     meta: {
@@ -23,9 +30,32 @@ it('shows enable action when disabled', async () => {
   expect(enableButton).toBeInTheDocument();
 });
 
-// todo: fix these when permissions added
 it('shows setup action when not intialized', async () => {
   render(<ConfigActions />);
   const setupButton = await screen.findByText('Setup');
   expect(setupButton).toBeInTheDocument();
+});
+
+it(`doesn't show any config actions when the user doesn't have write permissions`, async () => {
+  jest.mocked(hasPermission).mockReturnValue(false);
+
+  render(<ConfigActions initialized />);
+
+  expect(screen.queryByText('Disable synthetic monitoring')).not.toBeInTheDocument();
+  expect(screen.queryByText('Enable plugin')).not.toBeInTheDocument();
+  expect(screen.queryByText('Setup')).not.toBeInTheDocument();
+});
+
+it(`doesn't show any config actions when the user doesn't have write permissions`, async () => {
+  jest.mocked(hasPermission).mockReturnValue(false);
+
+  render(<ConfigActions />, {
+    meta: {
+      enabled: false,
+    },
+  });
+
+  expect(screen.queryByText('Disable synthetic monitoring')).not.toBeInTheDocument();
+  expect(screen.queryByText('Enable plugin')).not.toBeInTheDocument();
+  expect(screen.queryByText('Setup')).not.toBeInTheDocument();
 });

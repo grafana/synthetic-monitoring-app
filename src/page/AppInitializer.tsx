@@ -4,20 +4,21 @@ import { Alert, Button, Spinner, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { ROUTES } from 'types';
+import { hasPermission } from 'utils';
 import { useAppInitializer } from 'hooks/useAppInitializer';
 import { useMeta } from 'hooks/useMeta';
 import { MismatchedDatasourceModal } from 'components/MismatchedDatasourceModal';
 
 interface Props {
   redirectTo?: ROUTES;
-  disabled: boolean;
   buttonClassname?: string;
   buttonText: string;
 }
 
-export const AppInitializer = ({ redirectTo, disabled, buttonClassname, buttonText }: PropsWithChildren<Props>) => {
+export const AppInitializer = ({ redirectTo, buttonClassname, buttonText }: PropsWithChildren<Props>) => {
   const { jsonData } = useMeta();
   const styles = useStyles2(getStyles);
+  const canInitialize = hasPermission(`datasources:create`);
 
   const {
     error,
@@ -33,9 +34,13 @@ export const AppInitializer = ({ redirectTo, disabled, buttonClassname, buttonTe
     setDataSouceModalOpen,
   } = useAppInitializer(redirectTo);
 
+  if (!canInitialize) {
+    return null;
+  }
+
   return (
     <div>
-      <Button onClick={handleClick} disabled={loading || disabled} size="lg" className={buttonClassname}>
+      <Button onClick={handleClick} disabled={loading} size="lg" className={buttonClassname}>
         {loading ? <Spinner /> : buttonText}
       </Button>
 

@@ -3,7 +3,6 @@ import { GrafanaTheme2, PageLayoutType } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { hasPermission } from 'utils';
 import { useMeta } from 'hooks/useMeta';
 import { PluginPage } from 'components/PluginPage';
 import { WelcomeTabs } from 'components/WelcomeTabs/WelcomeTabs';
@@ -13,7 +12,6 @@ import { AppInitializer } from './AppInitializer';
 export const WelcomePage = () => {
   const styles = useStyles2(getStyles);
   const { info } = useMeta();
-  const canInitialize = hasPermission(`datasources:create`);
 
   return (
     <PluginPage layout={PageLayoutType.Canvas}>
@@ -29,11 +27,7 @@ export const WelcomePage = () => {
               simulate user journeys, and get alerted before your users
             </h5>
           </div>
-          <AppInitializer
-            disabled={!canInitialize}
-            buttonText="Get started"
-            buttonClassname={styles.getStartedButton}
-          />
+          <AppInitializer buttonText="Get started" buttonClassname={styles.getStartedButton} />
         </div>
         <hr className={styles.divider} />
         <div className={styles.valueProp}>
