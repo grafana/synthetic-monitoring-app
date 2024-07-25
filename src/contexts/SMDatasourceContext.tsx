@@ -15,7 +15,7 @@ export const SMDatasourceContext = createContext<SMDatasourceContextValue>(null)
 export const SMDatasourceProvider = ({ children }: PropsWithChildren) => {
   const { data, isLoading } = useGetSMDatasource();
 
-  if (isLoading && !data) {
+  if (isLoading) {
     return (
       <PluginPage>
         <CenteredSpinner />

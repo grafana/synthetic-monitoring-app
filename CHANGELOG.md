@@ -1,5 +1,11 @@
 # Change Log
 
+# [1.14.11](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.10...v1.14.11) (2024-7-25)
+
+- The check creation pages have been redesigned to be more user-friendly and intuitive. Every check now has five sections regardless of type.
+- Check types now have a parent group: Api Endpoint, Multi step and Scripted in the plugin UI.
+- Added restrictions when users have the viewer role.
+
 # [1.14.10](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.9...v1.14.10) (2024-7-10)
 
 - Upgrade scenes to version 5.1.0

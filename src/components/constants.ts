@@ -4,6 +4,7 @@ import {
   AlertFamily,
   AlertSensitivity,
   AlertSeverity,
+  BrowserCheck,
   Check,
   CheckEnabledStatus,
   CheckListViewType,
@@ -150,6 +151,61 @@ export const TIME_UNIT_OPTIONS = [
 export const TEN_MINUTES_IN_MS = 1000 * 60 * 10;
 export const FIVE_MINUTES_IN_MS = 1000 * 60 * 5;
 
+const EXAMPLE_SCRIPT_SCRIPTED = btoa(`import { check } from 'k6'
+import http from 'k6/http'
+
+export default function main() {
+  const res = http.get('http://test.k6.io/');
+  // console.log will be represented as logs in Loki
+  console.log('got a response')
+  check(res, {
+    'is status 200': (r) => r.status === 200,
+  });
+}`);
+
+const EXAMPLE_SCRIPT_BROWSER = btoa(`import { browser } from 'k6/browser';
+import { check } from 'k6';
+
+export const options = {
+  scenarios: {
+    ui: {
+      executor: 'shared-iterations',
+      options: {
+        browser: {
+          type: 'chromium',
+        },
+      },
+    },
+  },
+  thresholds: {
+    checks: ['rate==1.0'],
+  },
+};
+
+export default async function () {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+
+  try {
+    await page.goto("https://test.k6.io/my_messages.php");
+
+    await page.locator('input[name="login"]').type("admin");
+    await page.locator('input[name="password"]').type("123");
+
+    await Promise.all([
+      page.waitForNavigation(),
+      page.locator('input[type="submit"]').click(),
+    ]);
+
+    const header = await page.locator("h2").textContent();
+    check(header, {
+      header: (h) => h == "Welcome, admin!",
+    });
+  } finally {
+    await page.close();
+  }
+}`);
+
 export const FALLBACK_CHECK_BASE: Omit<Check, 'settings'> = {
   job: '',
   target: '',
@@ -257,17 +313,18 @@ export const FALLBACK_CHECK_SCRIPTED: ScriptedCheck = {
   timeout: 15000,
   settings: {
     scripted: {
-      script: btoa(`import { check } from 'k6'
-import http from 'k6/http'
+      script: EXAMPLE_SCRIPT_SCRIPTED,
+    },
+  },
+};
 
-export default function main() {
-  const res = http.get('http://test.k6.io/');
-  // console.log will be represented as logs in Loki
-  console.log('got a response')
-  check(res, {
-    'is status 200': (r) => r.status === 200,
-  });
-}`),
+export const FALLBACK_CHECK_BROWSER: BrowserCheck = {
+  ...FALLBACK_CHECK_BASE,
+  frequency: FIVE_MINUTES_IN_MS,
+  timeout: 15000,
+  settings: {
+    browser: {
+      script: EXAMPLE_SCRIPT_BROWSER,
     },
   },
 };
@@ -298,6 +355,7 @@ export const FALLBACK_CHECK_TRACEROUTE: TracerouteCheck = {
 };
 
 export const fallbackCheckMap = {
+  [CheckType.Browser]: FALLBACK_CHECK_BROWSER,
   [CheckType.DNS]: FALLBACK_CHECK_DNS,
   [CheckType.GRPC]: FALLBACK_CHECK_GRPC,
   [CheckType.HTTP]: FALLBACK_CHECK_HTTP,

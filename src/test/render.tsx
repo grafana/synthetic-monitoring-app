@@ -54,11 +54,11 @@ const DefaultWrapper = ({ children, history, route, meta }: ComponentWrapperProp
     <QueryClientProvider client={getQueryClient()}>
       <MetaContextProvider meta={{ ...defaultTestMeta, ...meta }}>
         <FeatureFlagProvider>
-          <Router history={history}>
-            <SMDatasourceProvider>
+          <SMDatasourceProvider>
+            <Router history={history}>
               <Route path={route}>{children}</Route>
-            </SMDatasourceProvider>
-          </Router>
+            </Router>
+          </SMDatasourceProvider>
         </FeatureFlagProvider>
       </MetaContextProvider>
     </QueryClientProvider>

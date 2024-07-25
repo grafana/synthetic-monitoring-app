@@ -151,9 +151,13 @@ export interface ScriptedSettings {
   script: string;
 }
 
+export interface BrowserSettings {
+  script: string;
+}
+
 export interface TcpSettings {
   ipVersion: IpVersion;
-  tls: boolean;
+  tls?: boolean;
   tlsConfig?: TLSConfig;
   queryResponse?: TCPQueryResponse[];
 }
@@ -346,6 +350,13 @@ export type CheckFormValuesScripted = CheckFormValuesBase & {
   };
 };
 
+export type CheckFormValuesBrowser = CheckFormValuesBase & {
+  checkType: CheckType.Browser;
+  settings: {
+    browser: BrowserSettings;
+  };
+};
+
 export interface CheckBase {
   job: string;
   target: string;
@@ -359,6 +370,7 @@ export interface CheckBase {
 }
 
 export type Check =
+  | BrowserCheck
   | DNSCheck
   | GRPCCheck
   | HTTPCheck
@@ -376,7 +388,8 @@ export type CheckFormValues =
   | CheckFormValuesPing
   | CheckFormValuesScripted
   | CheckFormValuesTcp
-  | CheckFormValuesTraceroute;
+  | CheckFormValuesTraceroute
+  | CheckFormValuesBrowser;
 
 export type CheckTypeFilter = CheckType | 'all';
 
@@ -385,6 +398,7 @@ export interface FilteredCheck extends Omit<Check, 'id'> {
 }
 
 export type Settings =
+  | BrowserCheck['settings']
   | DNSCheck['settings']
   | GRPCCheck['settings']
   | HTTPCheck['settings']
@@ -422,6 +436,13 @@ export type ScriptedCheck = CheckBase &
     };
   };
 
+export type BrowserCheck = CheckBase &
+  ExistingObject & {
+    settings: {
+      browser: BrowserSettings;
+    };
+  };
+
 export type MultiHTTPCheck = CheckBase &
   ExistingObject & {
     settings: {
@@ -451,6 +472,7 @@ export type TracerouteCheck = CheckBase &
   };
 
 export enum CheckType {
+  Browser = 'browser',
   DNS = 'dns',
   GRPC = 'grpc',
   HTTP = 'http',
@@ -465,6 +487,7 @@ export enum CheckTypeGroup {
   ApiTest = `api-endpoint`,
   MultiStep = `multistep`,
   Scripted = `scripted`,
+  Browser = `browser`,
 }
 
 export interface HostedInstance {
@@ -646,9 +669,10 @@ export enum HTTPCompressionAlgo {
 }
 
 export enum FeatureName {
-  UnifiedAlerting = 'ngalert',
-  ScriptedChecks = 'scripted-checks',
+  BrowserChecks = 'browser-checks',
   GRPCChecks = 'grpc-checks',
+  ScriptedChecks = 'scripted-checks',
+  UnifiedAlerting = 'ngalert',
   __TURNOFF = 'test-only-do-not-use',
 }
 

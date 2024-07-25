@@ -1,5 +1,6 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
+import { SMDSSettings } from 'test/fixtures/datasources';
 import { type CustomRenderOptions, render } from 'test/render';
 import { runTestAsViewer } from 'test/utils';
 
@@ -95,6 +96,12 @@ describe('Routes to pages correctly', () => {
       /Synthetic Monitoring is a blackbox monitoring solution provided as part of/i
     );
     expect(configText).toBeInTheDocument();
+  });
+
+  test(`Config page renders the initialized state`, async () => {
+    renderInitialisedRouting({ path: getRoute(ROUTES.Config) });
+    const backendAddress = await screen.findByText(SMDSSettings.jsonData.apiHost);
+    expect(backendAddress).toBeInTheDocument();
   });
 
   test('Config page redirects to homepage when the user is viewer', async () => {

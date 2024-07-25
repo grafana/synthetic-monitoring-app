@@ -8,7 +8,7 @@ import { BaseCheckSchema } from './BaseCheckSchema';
 
 const TCPSettingsSchema: ZodType<TcpSettingsFormValues> = z.object({
   ipVersion: z.nativeEnum(IpVersion),
-  tls: z.boolean(),
+  tls: z.boolean().optional(),
   tlsConfig: TLSConfigSchema,
   queryResponse: z.array(
     z.object({

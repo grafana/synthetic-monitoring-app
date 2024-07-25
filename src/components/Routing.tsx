@@ -71,7 +71,7 @@ export const InitialisedRouter = ({ onNavChanged }: Pick<AppRootProps, 'onNavCha
         <AlertingPage />
       </Route>
       <Route path={getRoute(ROUTES.Config)}>
-        {hasRole(OrgRole.Editor) ? <ConfigPage /> : <Redirect to={getRoute(ROUTES.Home)} />}
+        {hasRole(OrgRole.Editor) ? <ConfigPage initialized /> : <Redirect to={getRoute(ROUTES.Home)} />}
       </Route>
 
       <Route>
