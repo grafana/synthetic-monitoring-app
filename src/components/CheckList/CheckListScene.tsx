@@ -20,6 +20,7 @@ import { CheckFiltersType, CheckListViewType, VizViewSceneAppConfig } from 'type
 import { InstanceContext } from 'contexts/InstanceContext';
 import { useChecks } from 'data/useChecks';
 import { FilterType } from 'hooks/useCheckFilters';
+import { useSMDS } from 'hooks/useSMDS';
 import { CheckFilters } from 'components/CheckFilters';
 import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
@@ -276,11 +277,12 @@ interface Props {
 
 export function CheckListScene({ onChangeViewType, checkFilters, onReset, onFilterChange }: Props) {
   const { instance } = useContext(InstanceContext);
+  const smDS = useSMDS();
   const { data: checks = [], isLoading } = useChecks();
 
   const { api, logs, metrics } = useMemo(
-    () => ({ api: instance.api, logs: instance.logs, metrics: instance.metrics }),
-    [instance.api, instance.logs, instance.metrics]
+    () => ({ api: smDS, logs: instance.logs, metrics: instance.metrics }),
+    [smDS, instance.logs, instance.metrics]
   );
 
   const scene = useMemo(() => {

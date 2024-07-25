@@ -18,6 +18,7 @@ export enum FaroEvent {
   SAVE_THRESHOLDS = 'save_thresholds',
   SHOW_TERRAFORM_CONFIG = 'show_terraform_config',
   REFETCH_TENANT_LIMITS = 'refetch_tenant_limits',
+  INITIALIZE_ACCESS_TOKEN = 'initialize_access_token',
 }
 
 enum FARO_ENV {

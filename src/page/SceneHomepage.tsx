@@ -5,10 +5,12 @@ import { LoadingPlaceholder } from '@grafana/ui';
 import { DashboardSceneAppConfig, ROUTES } from 'types';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { useChecks } from 'data/useChecks';
+import { useSMDS } from 'hooks/useSMDS';
 import { PLUGIN_URL_PATH } from 'components/Routing.consts';
 import { getSummaryScene } from 'scenes/Summary';
 
 export const SceneHomepage = () => {
+  const smDS = useSMDS();
   const { instance } = useContext(InstanceContext);
   const { data: checks = [], isLoading } = useChecks();
 
@@ -18,7 +20,7 @@ export const SceneHomepage = () => {
         uid: instance.metrics?.uid,
       },
       logs: { uid: instance.logs?.uid },
-      sm: { uid: instance.api?.uid },
+      sm: { uid: smDS.uid },
       singleCheckMode: true,
     };
 
@@ -32,7 +34,7 @@ export const SceneHomepage = () => {
         }),
       ],
     });
-  }, [instance.metrics?.uid, instance.logs?.uid, instance.api?.uid, checks]);
+  }, [instance.metrics?.uid, instance.logs?.uid, smDS, checks]);
 
   if (!scene || isLoading) {
     return <LoadingPlaceholder text="Loading..." />;

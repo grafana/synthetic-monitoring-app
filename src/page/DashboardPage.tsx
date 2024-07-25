@@ -7,6 +7,7 @@ import { CheckPageParams, CheckType, DashboardSceneAppConfig } from 'types';
 import { getCheckType } from 'utils';
 import { InstanceContext } from 'contexts/InstanceContext';
 import { useChecks } from 'data/useChecks';
+import { useSMDS } from 'hooks/useSMDS';
 import { PLUGIN_URL_PATH } from 'components/Routing.consts';
 import { getDNSScene } from 'scenes/DNS';
 import { getGRPCScene } from 'scenes/GRPC/getGRPCScene';
@@ -17,6 +18,7 @@ import { getTcpScene } from 'scenes/TCP/getTcpScene';
 import { getTracerouteScene } from 'scenes/Traceroute/getTracerouteScene';
 
 function DashboardPageContent() {
+  const smDS = useSMDS();
   const { instance } = useContext(InstanceContext);
   const { data: checks = [], isLoading } = useChecks();
   const { id } = useParams<CheckPageParams>();
@@ -24,7 +26,7 @@ function DashboardPageContent() {
   const checkToView = checks.find((check) => String(check.id) === id);
 
   const scene = useMemo(() => {
-    if (!instance.api || !instance.metrics || !instance.logs) {
+    if (!instance.metrics || !instance.logs) {
       return;
     }
     const metricsDef = {
@@ -36,8 +38,8 @@ function DashboardPageContent() {
       type: instance.logs.type,
     };
     const smDef = {
-      uid: instance.api.uid,
-      type: instance.api.type,
+      uid: smDS.uid,
+      type: smDS.type,
     };
     const config: DashboardSceneAppConfig = { metrics: metricsDef, logs: logsDef, sm: smDef, singleCheckMode: false };
     config.singleCheckMode = true;
@@ -130,7 +132,7 @@ function DashboardPageContent() {
         });
       }
     }
-  }, [instance.api, instance.logs, instance.metrics, checkToView]);
+  }, [instance.logs, instance.metrics, checkToView, smDS]);
 
   if (!scene || isLoading) {
     return <Spinner />;

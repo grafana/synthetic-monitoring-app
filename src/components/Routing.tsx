@@ -1,11 +1,10 @@
-import React, { useContext, useEffect, useLayoutEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Redirect, Route, Switch, useLocation } from 'react-router-dom';
 import { AppRootProps, OrgRole } from '@grafana/data';
 import { config } from '@grafana/runtime';
 
 import { ROUTES } from 'types';
 import { hasRole } from 'utils';
-import { InstanceContext } from 'contexts/InstanceContext';
 import { useMeta } from 'hooks/useMeta';
 import { QueryParamMap, useNavigation } from 'hooks/useNavigation';
 import { useQuery } from 'hooks/useQuery';
@@ -21,19 +20,15 @@ import { SceneHomepage } from 'page/SceneHomepage';
 import { UnprovisionedSetup } from 'page/UnprovisionedSetup';
 import { WelcomePage } from 'page/WelcomePage';
 
-import { PLUGIN_URL_PATH } from './Routing.consts';
 import { getRoute } from './Routing.utils';
 import { SceneRedirecter } from './SceneRedirecter';
 
-export const Routing = ({ onNavChanged }: Pick<AppRootProps, 'onNavChanged'>) => {
+export const InitialisedRouter = ({ onNavChanged }: Pick<AppRootProps, 'onNavChanged'>) => {
   const queryParams = useQuery();
   const navigate = useNavigation();
   const location = useLocation();
-  const { instance } = useContext(InstanceContext);
-  const { enabled, info, jsonData } = useMeta();
-  const provisioned = Boolean(jsonData?.metrics?.grafanaName);
-  const initialized = enabled && instance.api;
-  const logo = info.logos.large || ``;
+  const meta = useMeta();
+  const logo = meta.info.logos.large;
 
   useEffect(() => {
     const navModel = getNavModel(logo, location.pathname);
@@ -43,6 +38,7 @@ export const Routing = ({ onNavChanged }: Pick<AppRootProps, 'onNavChanged'>) =>
   }, [logo, onNavChanged, location.pathname]);
 
   const page = queryParams.get('page');
+
   useEffect(() => {
     if (page) {
       queryParams.delete('page');
@@ -54,36 +50,70 @@ export const Routing = ({ onNavChanged }: Pick<AppRootProps, 'onNavChanged'>) =>
     }
   }, [page, navigate, queryParams]);
 
-  useLayoutEffect(() => {
-    if (!provisioned) {
-      navigate(ROUTES.Home);
-    }
-  }, [provisioned, navigate]);
-
-  if (!provisioned) {
-    return <UnprovisionedSetup />;
-  }
-
   return (
     <Switch>
       <Route exact path={getRoute(ROUTES.Redirect)}>
         <SceneRedirecter />
       </Route>
       <Route exact path={getRoute(ROUTES.Home)}>
-        {initialized ? <SceneHomepage /> : <WelcomePage />}
+        <SceneHomepage />
       </Route>
-      <Route path={getRoute(ROUTES.Scene)}>{initialized ? <SceneRedirecter /> : <WelcomePage />}</Route>
-      <Route path={getRoute(ROUTES.Checks)}>{initialized ? <CheckRouter /> : <ChecksWelcomePage />}</Route>
-      <Route path={getRoute(ROUTES.Probes)}>{initialized ? <ProbeRouter /> : <ProbesWelcomePage />}</Route>
+      <Route path={getRoute(ROUTES.Scene)}>
+        <SceneRedirecter />
+      </Route>
+      <Route path={getRoute(ROUTES.Checks)}>
+        <CheckRouter />
+      </Route>
+      <Route path={getRoute(ROUTES.Probes)}>
+        <ProbeRouter />
+      </Route>
       <Route exact path={getRoute(ROUTES.Alerts)}>
-        {initialized ? <AlertingPage /> : <AlertingWelcomePage />}
+        <AlertingPage />
+      </Route>
+      <Route path={getRoute(ROUTES.Config)}>
+        {hasRole(OrgRole.Editor) ? <ConfigPage initialized /> : <Redirect to={getRoute(ROUTES.Home)} />}
+      </Route>
+
+      <Route>
+        <Redirect to={getRoute(ROUTES.Home)} />
+      </Route>
+    </Switch>
+  );
+};
+
+export const UninitialisedRouter = () => {
+  const meta = useMeta();
+  const provisioned = Boolean(meta.jsonData?.metrics?.grafanaName);
+
+  // todo: is this the correct check for provisioning?
+  // todo: is this state even possible in Grafana v11?
+  if (!provisioned) {
+    return <UnprovisionedSetup />;
+  }
+
+  return (
+    <Switch>
+      <Route exact path={getRoute(ROUTES.Home)}>
+        <WelcomePage />
+      </Route>
+      <Route path={getRoute(ROUTES.Scene)}>
+        <WelcomePage />
+      </Route>
+      <Route path={getRoute(ROUTES.Checks)}>
+        <ChecksWelcomePage />
+      </Route>
+      <Route path={getRoute(ROUTES.Probes)}>
+        <ProbesWelcomePage />
+      </Route>
+      <Route exact path={getRoute(ROUTES.Alerts)}>
+        <AlertingWelcomePage />
       </Route>
       <Route path={getRoute(ROUTES.Config)}>
         {hasRole(OrgRole.Editor) ? <ConfigPage /> : <Redirect to={getRoute(ROUTES.Home)} />}
       </Route>
 
       {/* Default route (only redirect if the path matches the plugin's URL) */}
-      <Route path={PLUGIN_URL_PATH}>
+      <Route>
         <Redirect to={getRoute(ROUTES.Home)} />
       </Route>
     </Switch>

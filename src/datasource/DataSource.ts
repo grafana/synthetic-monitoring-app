@@ -14,6 +14,7 @@ import { firstValueFrom } from 'rxjs';
 
 import { Check, HostedInstance, Probe, ThresholdSettings } from '../types';
 import {
+  AccessTokenResponse,
   AddCheckResult,
   AddProbeResult,
   AdHocCheckResponse,
@@ -70,21 +71,15 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   }
 
   getMetricsDS() {
-    const info = this.instanceSettings.jsonData.metrics;
-    const ds = findLinkedDatasource({ ...info, uid: 'grafanacloud-metrics' });
-    if (ds) {
-      return ds;
-    }
+    const info = { uid: 'grafanacloud-metrics', ...this.instanceSettings.jsonData.metrics };
+
     return findLinkedDatasource(info);
   }
 
   getLogsDS() {
-    const info = this.instanceSettings.jsonData.logs;
-    const ds = findLinkedDatasource({ ...info, uid: 'grafanacloud-logs' });
-    if (ds) {
-      return ds;
-    }
-    return findLinkedDatasource(this.instanceSettings.jsonData.logs);
+    const info = { uid: 'grafanacloud-logs', ...this.instanceSettings.jsonData.logs };
+
+    return findLinkedDatasource(info);
   }
 
   async query(options: DataQueryRequest<SMQuery>): Promise<DataQueryResponse> {
@@ -133,6 +128,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
         data.push(copy);
       } else if (query.queryType === QueryType.Traceroute) {
         const logsUrl = this.getLogsDS()?.url;
+
         if (!logsUrl) {
           return {
             data: [],
@@ -483,8 +479,8 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   }
 
   async getViewerToken(apiToken: string, instance: HostedInstance): Promise<string> {
-    return getBackendSrv()
-      .fetch({
+    return firstValueFrom(
+      getBackendSrv().fetch<AccessTokenResponse>({
         method: 'POST',
         url: `${this.instanceSettings.url}/sm/register/viewer-token`,
         data: {
@@ -493,21 +489,19 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
           type: instance.type,
         },
       })
-      .toPromise()
-      .then((res: any) => {
-        return res.data?.token;
-      });
+    ).then((res) => {
+      return res.data.token;
+    });
   }
 
   async createApiToken(): Promise<string> {
-    return getBackendSrv()
-      .fetch({
+    return firstValueFrom(
+      getBackendSrv().fetch<AccessTokenResponse>({
         method: 'POST',
         url: `${this.instanceSettings.url}/sm/token/create`,
         data: {},
       })
-      .toPromise()
-      .then((res: any) => res.data?.token);
+    ).then((res) => res.data.token);
   }
 
   //--------------------------------------------------------------------------------

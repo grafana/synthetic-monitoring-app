@@ -1,11 +1,9 @@
-import { useContext } from 'react';
 import { type QueryKey, useQuery } from '@tanstack/react-query';
 
 import { Check, CheckType } from 'types';
 import { getCheckType, queryMetric } from 'utils';
-import { SMDataSource } from 'datasource/DataSource';
 import { MetricLatency } from 'datasource/responses.types';
-import { InstanceContext } from 'contexts/InstanceContext';
+import { useSMDS } from 'hooks/useSMDS';
 import { STANDARD_REFRESH_INTERVAL } from 'components/constants';
 
 const queryKeys: Record<'latencies', QueryKey> = {
@@ -13,9 +11,8 @@ const queryKeys: Record<'latencies', QueryKey> = {
 };
 
 export function useLatency({ job, target, settings }: Check) {
-  const { instance } = useContext(InstanceContext);
-  const api = instance.api as SMDataSource;
-  const url = api.getMetricsDS()?.url || ``;
+  const smDS = useSMDS();
+  const url = smDS.getMetricsDS()?.url || ``;
   const type = getCheckType(settings);
 
   return useQuery({

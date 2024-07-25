@@ -5,6 +5,7 @@ import { getDashboard } from 'test/handlers/dashboards';
 import { getMetrics } from 'test/handlers/metrics';
 import { addProbe, listProbes, updateProbe } from 'test/handlers/probes';
 import { getTenant, getTenantLimits, getTenantSettings, updateTenantSettings } from 'test/handlers/tenants';
+import { createAccessToken } from 'test/handlers/tokens';
 
 import { ApiEntry, RequestRes } from 'test/handlers/types';
 
@@ -13,6 +14,7 @@ const apiRoutes = {
   addProbe,
   bulkUpdateChecks,
   checkInfo,
+  createAccessToken,
   getAlertRules,
   getPromAlertRules,
   getDashboard,

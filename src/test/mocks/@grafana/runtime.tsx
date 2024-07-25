@@ -11,7 +11,7 @@ import { BackendSrvRequest } from '@grafana/runtime';
 import { DataQuery, LoadingState } from '@grafana/schema';
 import axios, { Method } from 'axios';
 import { from } from 'rxjs';
-import { instanceSettings } from 'datasource/__mocks__/DataSource';
+import { LogsDSSettings, MetricsDSSettings, SMDSSettings } from 'test/fixtures/datasources';
 
 import { SMDataSource } from 'datasource/DataSource';
 
@@ -29,13 +29,7 @@ jest.mock('@grafana/runtime', () => {
           orgRole: OrgRole.Editor,
         },
       },
-      datasources: [
-        {
-          uid: `grafanacloud-metrics`,
-          grafanaName: `Synthetic Monitoring Metrics`,
-          url: `/metrics`,
-        },
-      ],
+      datasources: [MetricsDSSettings, LogsDSSettings],
       featureToggles: {
         ...actual.config.featureToggles,
         topnav: true,
@@ -68,15 +62,15 @@ jest.mock('@grafana/runtime', () => {
     getDataSourceSrv: () => ({
       get: (name: string) => {
         if (name === `Synthetic Monitoring`) {
-          return Promise.resolve(new SMDataSource(instanceSettings));
+          return Promise.resolve(new SMDataSource(SMDSSettings));
         }
 
         if (name === `Synthetic Monitoring Metrics`) {
           return Promise.resolve(
             new FakeMetricsDS({
-              name: `grafanacloud-fake-prom`,
+              name: SMDSSettings.jsonData.metrics.grafanaName,
               url: `/metrics`,
-              id: 1,
+              id: SMDSSettings.jsonData.metrics.hostedId,
               type: `prometheus`,
             })
           );
@@ -85,9 +79,9 @@ jest.mock('@grafana/runtime', () => {
         if (name === `Synthetic Monitoring Logs`) {
           return Promise.resolve(
             new FakeMetricsDS({
-              name: `grafanacloud-fake-logs`,
+              name: SMDSSettings.jsonData.logs.grafanaName,
               url: `/logs/`,
-              id: 2,
+              id: SMDSSettings.jsonData.logs.hostedId,
               type: `loki`,
             })
           );
@@ -118,7 +112,7 @@ class FakeMetricsDS extends DataSourceApi {
       url: info.url,
       id: info.id,
       type: info.type,
-      uid: `uid-${info.id}`,
+      uid: info.uid,
       readOnly: false,
       meta: {
         id: info.id.toString(),
