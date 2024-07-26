@@ -26,6 +26,7 @@ import { getProbeDuration } from 'scenes/SCRIPTED/probeDuration';
 import { getResultsByTargetTable } from 'scenes/SCRIPTED/ResultsByTargetTable/ResultByTargetTable';
 import { getMinStepFromFrequency } from 'scenes/utils';
 
+import { getPageLoad } from './WebVitals/pageLoad';
 import { getWebVitals } from './WebVitals/webVitals';
 
 export function getBrowserScene(
@@ -57,6 +58,7 @@ export function getBrowserScene(
     const annotations = getAlertAnnotations(metrics);
 
     const webVitals = getWebVitals(metrics);
+    const pageLoad = getPageLoad(metrics);
 
     return new EmbeddedScene({
       $timeRange: timeRange,
@@ -83,7 +85,11 @@ export function getBrowserScene(
             height: 150,
             children: [new SceneFlexItem({ body: webVitals })],
           }),
-
+          new SceneFlexLayout({
+            direction: 'row',
+            height: 200,
+            children: [new SceneFlexItem({ body: pageLoad })],
+          }),
           new SceneFlexLayout({
             direction: 'row',
             height: 150,
