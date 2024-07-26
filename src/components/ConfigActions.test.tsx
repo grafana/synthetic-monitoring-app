@@ -46,7 +46,7 @@ it(`doesn't show any config actions when the user doesn't have write permissions
   expect(screen.queryByText('Setup')).not.toBeInTheDocument();
 });
 
-it(`doesn't show any config actions when the user doesn't have write permissions`, async () => {
+it(`doesn't show any config actions when the user doesn't have write permissions and meta enabled is false`, async () => {
   jest.mocked(hasPermission).mockReturnValue(false);
 
   render(<ConfigActions />, {

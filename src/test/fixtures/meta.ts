@@ -11,12 +11,12 @@ export const SM_META = {
   enabled: true,
   jsonData: {
     metrics: {
-      grafanaName: 'prometheus',
-      hostedId: 123,
+      grafanaName: 'grafanacloud-prom',
+      hostedId: 4,
     },
     logs: {
-      grafanaName: 'loki',
-      hostedId: 456,
+      grafanaName: 'grafanacloud-logs',
+      hostedId: 8,
     },
     apiHost: 'https://synthetic-monitoring-api.grafana.net',
     stackId: 1,

@@ -11,11 +11,10 @@ import { MismatchedDatasourceModal } from 'components/MismatchedDatasourceModal'
 
 interface Props {
   redirectTo?: ROUTES;
-  buttonClassname?: string;
   buttonText: string;
 }
 
-export const AppInitializer = ({ redirectTo, buttonClassname, buttonText }: PropsWithChildren<Props>) => {
+export const AppInitializer = ({ redirectTo, buttonText }: PropsWithChildren<Props>) => {
   const { jsonData } = useMeta();
   const styles = useStyles2(getStyles);
   const canInitialize = hasPermission(`datasources:create`);
@@ -35,17 +34,21 @@ export const AppInitializer = ({ redirectTo, buttonClassname, buttonText }: Prop
   } = useAppInitializer(redirectTo);
 
   if (!canInitialize) {
-    return null;
+    return (
+      <Alert title="" severity="info">
+        Contact your administrator to get you started.
+      </Alert>
+    );
   }
 
   return (
     <div>
-      <Button onClick={handleClick} disabled={loading} size="lg" className={buttonClassname}>
+      <Button onClick={handleClick} disabled={loading} size="lg">
         {loading ? <Spinner /> : buttonText}
       </Button>
 
       {error && (
-        <Alert title="Something went wrong:" className={styles.errorAlert}>
+        <Alert title="Something went wrong:" className={styles.alert}>
           {error}
         </Alert>
       )}
@@ -59,7 +62,7 @@ export const AppInitializer = ({ redirectTo, buttonClassname, buttonText }: Prop
         onDismiss={() => setDataSouceModalOpen(false)}
         isSubmitting={loading}
         onSubmit={() => {
-          if (jsonData.metrics?.hostedId && jsonData.logs.hostedId) {
+          if (jsonData.metrics.hostedId && jsonData.logs.hostedId) {
             initialize({
               metricsSettings: metricsByUid!, // we have already guaranteed that this exists above
               metricsHostedId: jsonData.metrics.hostedId,
@@ -76,7 +79,7 @@ export const AppInitializer = ({ redirectTo, buttonClassname, buttonText }: Prop
 };
 
 const getStyles = (theme: GrafanaTheme2) => ({
-  errorAlert: css({
+  alert: css({
     marginTop: theme.spacing(4),
   }),
 });

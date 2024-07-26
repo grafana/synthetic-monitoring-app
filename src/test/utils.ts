@@ -1,4 +1,4 @@
-import { config } from '@grafana/runtime';
+import runTime, { config } from '@grafana/runtime';
 import { act, screen, within } from '@testing-library/react';
 import { UserEvent } from '@testing-library/user-event';
 import {
@@ -108,6 +108,12 @@ export function runTestAsMetricsViewer() {
   );
 }
 
+export function runTestAsViewer() {
+  runTestAsSMViewer();
+  runTestAsLogsViewer();
+  runTestAsMetricsViewer();
+}
+
 export function runTestWithoutMetricsAccess() {
   // this gets reset in afterEach in jest-setup.js
   const runtime = require('@grafana/runtime');
@@ -130,10 +136,13 @@ export function runTestWithoutLogsAccess() {
   });
 }
 
-export function runTestAsViewer() {
-  runTestAsSMViewer();
-  runTestAsLogsViewer();
-  runTestAsMetricsViewer();
+export function runTestWithoutSMAccess() {
+  jest.spyOn(runTime, 'getDataSourceSrv').mockImplementation(() => {
+    return {
+      ...jest.requireActual('@grafana/runtime').getDatasourceSrv(),
+      get: () => Promise.resolve(),
+    };
+  });
 }
 
 export const getSlider = async (formName: string) => {

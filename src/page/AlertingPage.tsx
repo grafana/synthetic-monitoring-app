@@ -4,9 +4,8 @@ import { Alert, Button, Modal, Spinner, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { AlertFormValues, AlertRule } from 'types';
-import { hasPermission } from 'utils';
 import { useAlerts } from 'hooks/useAlerts';
-import { useCanReadMetrics } from 'hooks/useDSPermission';
+import { useCanReadMetrics, useDSPermission } from 'hooks/useDSPermission';
 import { transformAlertFormValues } from 'components/alertingTransformations';
 import { AlertRuleForm } from 'components/AlertRuleForm';
 import { PluginPage } from 'components/PluginPage';
@@ -50,7 +49,7 @@ const AlertingPageContent = () => {
   const [updatingDefaultRules, setUpdatingDefaultRules] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
   const { alertRules, setDefaultRules, setRules, alertError } = useAlerts();
-  const canEdit = hasPermission(`alert.instances.external:write`);
+  const canEdit = useDSPermission(`metrics`, `alert.instances.external:write`);
 
   const { recordingRules, alertingRules } = alertRules?.reduce<SplitAlertRules>(
     (rules, currentRule) => {
@@ -106,7 +105,12 @@ const AlertingPageContent = () => {
         </div>
       )}
       {alertingRules.map((alertRule, index) => (
-        <AlertRuleForm key={`${alertRule.alert}-${index}`} rule={alertRule} onSubmit={getUpdateRules(index)} />
+        <AlertRuleForm
+          key={`${alertRule.alert}-${index}`}
+          rule={alertRule}
+          onSubmit={getUpdateRules(index)}
+          canEdit={canEdit}
+        />
       ))}
       {Boolean(alertRules?.length) ? (
         <Stack justifyContent="flex-end">
@@ -140,7 +144,7 @@ const AlertingPageContent = () => {
 
 const InsufficientPermissions = () => {
   return (
-    <Alert title="Insufficent permissions">
+    <Alert title="Insufficent permissions" severity="info">
       You do not have the appropriate permissions to read the alert rules. To request access contact your administrator.
     </Alert>
   );

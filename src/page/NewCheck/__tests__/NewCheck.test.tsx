@@ -1,10 +1,11 @@
 import { screen, waitFor } from '@testing-library/react';
 import { apiRoute } from 'test/handlers';
 import { server } from 'test/server';
+import { runTestWithoutLogsAccess } from 'test/utils';
 
 import { CheckType } from 'types';
 import { fillMandatoryFields } from 'page/__testHelpers__/apiEndPoint';
-import { renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
+import { goToSection, renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
 
 describe(`<NewCheck />`, () => {
   it(`should show an error message when it fails to save a check`, async () => {
@@ -92,6 +93,15 @@ describe(`<NewCheck />`, () => {
 
     const probesSelect = await screen.findByLabelText(/Probe locations/);
     await waitFor(() => expect(probesSelect).toHaveFocus());
+  });
+
+  it(`should disable the test button when the user doesn't have logs access`, async () => {
+    runTestWithoutLogsAccess();
+    const { user } = await renderNewForm(CheckType.HTTP);
+    await goToSection(user, 5);
+
+    const testButton = screen.getByRole(`button`, { name: /Test/ });
+    expect(testButton).toBeDisabled();
   });
 
   // jsdom doesn't give us back the submitter of the form, so we can't test this

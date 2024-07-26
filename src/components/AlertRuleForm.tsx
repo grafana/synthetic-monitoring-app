@@ -8,7 +8,6 @@ import appEvents from 'grafana/app/core/app_events';
 import { css } from '@emotion/css';
 
 import { AlertRule, AlertSensitivity, Label as LabelType, TimeUnits } from 'types';
-import { useCanWriteSM } from 'hooks/useDSPermission';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 
 import { AlertAnnotations } from './AlertAnnotations';
@@ -139,12 +138,12 @@ const getStyles = (theme: GrafanaTheme2) => ({
 });
 
 type Props = {
+  canEdit: boolean;
   rule: AlertRule;
   onSubmit: (alertValues: AlertFormValues) => Promise<FetchResponse<unknown> | undefined>;
 };
 
-export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
-  const canWriteSM = useCanWriteSM();
+export const AlertRuleForm = ({ canEdit, rule, onSubmit }: Props) => {
   const defaultValues = getAlertFormValues(rule);
   const metricsDS = useMetricsDS();
   const styles = useStyles2(getStyles);
@@ -218,7 +217,7 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
         <FormProvider {...formMethods}>
           <form className={styles.container} onSubmit={handleSubmit(execute)}>
             <Field label="Alert name">
-              <Input {...register('name', { required: true })} id="alert-name" />
+              <Input {...register('name', { required: true })} id="alert-name" disabled={!canEdit} />
             </Field>
             <div className={styles.expressionContainer}>
               <Label>Expression</Label>
@@ -228,7 +227,7 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
                   <Controller
                     render={({ field }) => {
                       const { ref, ...rest } = field;
-                      return <Select {...rest} options={ALERT_SENSITIVITY_OPTIONS} />;
+                      return <Select {...rest} options={ALERT_SENSITIVITY_OPTIONS} disabled={!canEdit} />;
                     }}
                     control={control}
                     name="sensitivity"
@@ -246,6 +245,7 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
                     type="number"
                     data-testid="probePercentage"
                     id="alertProbePercentage"
+                    disabled={!canEdit}
                   />
                 </Field>
                 <span className={styles.inlineText}>% of probes report connection success for</span>
@@ -260,13 +260,16 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
                     type="number"
                     className={styles.numberInput}
                     id="alertTimeCount"
+                    disabled={!canEdit}
                   />
                 </Field>
                 <div className={styles.selectInput}>
                   <Controller
                     render={({ field }) => {
                       const { ref, ...rest } = field;
-                      return <Select {...rest} options={TIME_UNIT_OPTIONS} aria-label="Time unit" />;
+                      return (
+                        <Select {...rest} options={TIME_UNIT_OPTIONS} aria-label="Time unit" disabled={!canEdit} />
+                      );
                     }}
                     control={control}
                     name="timeUnit"
@@ -274,8 +277,8 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
                 </div>
               </Stack>
             </div>
-            <AlertLabels />
-            <AlertAnnotations />
+            <AlertLabels canEdit={canEdit} />
+            <AlertAnnotations canEdit={canEdit} />
             <SubCollapse title="Config preview">
               <div>
                 <p className={styles.previewHelpText}>
@@ -319,7 +322,7 @@ export const AlertRuleForm = ({ rule, onSubmit }: Props) => {
             </SubCollapse>
             <hr className={styles.breakLine} />
             <Stack>
-              <Button type="submit" disabled={submitting || !canWriteSM}>
+              <Button type="submit" disabled={submitting || !canEdit}>
                 Save alert
               </Button>
               <Button variant="secondary" type="button" onClick={onCancel}>

@@ -1,6 +1,6 @@
 import React, { PropsWithChildren } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Stack, useStyles2 } from '@grafana/ui';
+import { Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { ROUTES } from 'types';
@@ -22,10 +22,9 @@ export const SubsectionWelcomePage = ({ children, redirectTo, buttonText }: Prop
     <PluginPage>
       <Stack alignItems={'center'} justifyContent={'center'}>
         <Card className={styles.welcomeCard}>
-          <Stack justifyContent={'center'} alignItems={'center'} direction={'column'}>
-            <h2>Get started monitoring your services</h2>
-            <p>{children}</p>
-
+          <Stack justifyContent={'center'} alignItems={'center'} direction={'column'} gap={3}>
+            <Text element={`h2`}>Get started monitoring your services</Text>
+            <div>{children}</div>
             <AppInitializer redirectTo={redirectTo} buttonText={buttonText} />
           </Stack>
         </Card>

@@ -42,11 +42,8 @@ export const EDITOR_DEFAULT_DATASOURCE_ACCESS_CONTROL = {
 
 export const VIEWER_DEFAULT_DATASOURCE_ACCESS_CONTROL = {
   'alert.instances.external:read': true,
-  'alert.instances.external:write': true,
   'alert.notifications.external:read': true,
-  'alert.notifications.external:write': true,
   'alert.rules.external:read': true,
-  'alert.rules.external:write': true,
   'datasources.id:read': true,
   'datasources:query': true,
   'datasources:read': true,

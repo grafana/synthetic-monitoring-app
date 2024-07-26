@@ -1,15 +1,15 @@
-import React, { RefObject, useCallback, useState } from 'react';
+import React, { forwardRef, RefObject, useCallback, useState } from 'react';
 import { FormProvider, SubmitErrorHandler, SubmitHandler, useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Alert, Button, Stack, useStyles2 } from '@grafana/ui';
+import { Alert, Button, Stack, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { DataTestIds } from 'test/dataTestIds';
 
 import { Check, CheckFormPageParams, CheckFormValues, CheckType } from 'types';
 import { AdHocCheckResponse } from 'datasource/responses.types';
-import { useCanWriteSM } from 'hooks/useDSPermission';
+import { useCanReadLogs, useCanWriteSM } from 'hooks/useDSPermission';
 import { useLimits } from 'hooks/useLimits';
 import { toFormValues } from 'components/CheckEditor/checkFormTransformations';
 import { CheckJobName } from 'components/CheckEditor/FormComponents/CheckJobName';
@@ -70,6 +70,7 @@ type CheckFormProps = {
 
 export const CheckForm = ({ check, disabled, pageTitle }: CheckFormProps) => {
   const canEdit = useCanWriteSM();
+  const canReadLogs = useCanReadLogs();
   const [openTestCheckModal, setOpenTestCheckModal] = useState(false);
   const [adhocTestData, setAdhocTestData] = useState<AdHocCheckResponse>();
   const checkType = useFormCheckType(check);
@@ -123,7 +124,14 @@ export const CheckForm = ({ check, disabled, pageTitle }: CheckFormProps) => {
     setOpenTestCheckModal(false);
   }, []);
 
-  const actions = constructActions({ disabled: isDisabled, ref: testButtonRef, loading: testCheckPending, checkType });
+  const actions = constructActions({
+    canReadLogs,
+    checkType,
+    disabled: isDisabled,
+    loading: testCheckPending,
+    ref: testButtonRef,
+  });
+
   const alerts = (error || testCheckError) && (
     <Stack direction={`column`}>
       {error && (
@@ -221,32 +229,51 @@ function getLimitDisabled({ isExistingCheck, isLoading, overLimit }: GetIsDisabl
 }
 
 interface ConstructActionsProps {
-  disabled: boolean;
-  ref: RefObject<HTMLButtonElement>;
-  loading: boolean;
+  canReadLogs: boolean;
   checkType: CheckType;
+  disabled: boolean;
+  loading: boolean;
+  ref: RefObject<HTMLButtonElement>;
 }
 
-function constructActions({ disabled, ref, loading, checkType }: ConstructActionsProps) {
+function constructActions({ checkType, ...rest }: ConstructActionsProps) {
   return checkType !== CheckType.Traceroute
     ? [
         {
           index: 4,
-          element: (
-            <Button
-              disabled={disabled}
-              icon={loading ? `fa fa-spinner` : undefined}
-              ref={ref}
-              type="submit"
-              variant={`secondary`}
-            >
-              Test
-            </Button>
-          ),
+          element: <TestButton {...rest} />,
         },
       ]
     : [];
 }
+
+const TestButton = forwardRef<HTMLButtonElement, Omit<ConstructActionsProps, 'checkType'>>(
+  ({ disabled, canReadLogs, loading }, ref) => {
+    const content = (
+      <Button
+        disabled={disabled || !canReadLogs}
+        icon={loading ? `fa fa-spinner` : undefined}
+        ref={ref}
+        type="submit"
+        variant={`secondary`}
+      >
+        Test
+      </Button>
+    );
+
+    if (!canReadLogs) {
+      return (
+        <Tooltip content="You need permission to read logs to test checks.">
+          <span>{content}</span>
+        </Tooltip>
+      );
+    }
+
+    return content;
+  }
+);
+
+TestButton.displayName = `TestButton`;
 
 const getStyles = (theme: GrafanaTheme2) => ({
   wrapper: css({

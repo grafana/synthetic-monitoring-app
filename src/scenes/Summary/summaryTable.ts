@@ -7,103 +7,107 @@ import { map } from 'rxjs/operators';
 import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
 function getSummaryTableQueryRunner(metrics: DataSourceRef, sm: DataSourceRef) {
+  const metricsQueries = [
+    {
+      datasource: metrics,
+      editorMode: 'code',
+      expr: ` sum by (instance, job, check_name)
+        (
+          rate(probe_all_success_sum{probe=~"$probe"}[$__rate_interval])
+          *
+          on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters })
+        )`,
+      legendFormat: '__auto',
+      interval: '1m',
+      range: true,
+      refId: 'reach numer',
+      format: 'table',
+    },
+    {
+      datasource: metrics,
+      refId: 'reach denom',
+      expr: `sum by (instance, check_name, job)
+        (
+          rate(probe_all_success_count{probe=~"$probe"}[$__rate_interval])
+          *
+          on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters })
+        )`,
+      range: true,
+      instant: false,
+      hide: false,
+      interval: '1m',
+      editorMode: 'code',
+      legendFormat: '__auto',
+      format: 'table',
+    },
+    {
+      datasource: metrics,
+      refId: 'latency numer',
+      expr: `   sum by (instance, job, check_name)
+        (
+          rate(probe_all_duration_seconds_sum{probe=~"$probe"}[$__rate_interval])
+          *
+          on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters })
+        )`,
+      range: true,
+      instant: false,
+      hide: false,
+      interval: '1m',
+      editorMode: 'code',
+      legendFormat: '__auto',
+      format: 'table',
+    },
+    {
+      datasource: metrics,
+      refId: 'latency denom',
+      expr: ` sum by (instance, job, check_name)
+        (
+          rate(probe_all_duration_seconds_count{probe=~"$probe"}[$__rate_interval])
+          *
+          on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters })
+        )`,
+      range: true,
+      instant: false,
+      hide: false,
+      interval: '1m',
+      editorMode: 'code',
+      legendFormat: '__auto',
+      format: 'table',
+    },
+    {
+      datasource: metrics,
+      refId: 'state',
+      expr: `ceil(
+          sum by (instance, job, check_name)
+          (
+            rate(probe_all_success_sum{probe=~"$probe"}[5m])
+            *
+            on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters })
+          )
+          /
+          sum by (instance, check_name, job)
+          (
+            rate(probe_all_success_count{probe=~"$probe"}[5m])
+            *
+            on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters })
+          )
+        )`,
+      range: true,
+      instant: false,
+      hide: false,
+      editorMode: 'code',
+      legendFormat: '__auto',
+      format: 'table',
+    },
+  ];
+
   const queryRunner = new SceneQueryRunner({
     datasource: {
       uid: '-- Mixed --',
       type: 'datasource',
     },
     queries: [
-      {
-        datasource: metrics,
-        editorMode: 'code',
-        expr: ` sum by (instance, job, check_name)
-          (
-            rate(probe_all_success_sum{probe=~"$probe"}[$__rate_interval])
-            *
-            on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters })
-          )`,
-        legendFormat: '__auto',
-        interval: '1m',
-        range: true,
-        refId: 'reach numer',
-        format: 'table',
-      },
-      {
-        datasource: metrics,
-        refId: 'reach denom',
-        expr: `sum by (instance, check_name, job)
-          (
-            rate(probe_all_success_count{probe=~"$probe"}[$__rate_interval])
-            *
-            on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters })
-          )`,
-        range: true,
-        instant: false,
-        hide: false,
-        interval: '1m',
-        editorMode: 'code',
-        legendFormat: '__auto',
-        format: 'table',
-      },
-      {
-        datasource: metrics,
-        refId: 'latency numer',
-        expr: `   sum by (instance, job, check_name)
-          (
-            rate(probe_all_duration_seconds_sum{probe=~"$probe"}[$__rate_interval])
-            *
-            on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters })
-          )`,
-        range: true,
-        instant: false,
-        hide: false,
-        interval: '1m',
-        editorMode: 'code',
-        legendFormat: '__auto',
-        format: 'table',
-      },
-      {
-        datasource: metrics,
-        refId: 'latency denom',
-        expr: ` sum by (instance, job, check_name)
-          (
-            rate(probe_all_duration_seconds_count{probe=~"$probe"}[$__rate_interval])
-            *
-            on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters })
-          )`,
-        range: true,
-        instant: false,
-        hide: false,
-        interval: '1m',
-        editorMode: 'code',
-        legendFormat: '__auto',
-        format: 'table',
-      },
-      {
-        datasource: metrics,
-        refId: 'state',
-        expr: `ceil(
-            sum by (instance, job, check_name)
-            (
-              rate(probe_all_success_sum{probe=~"$probe"}[5m])
-              *
-              on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters })
-            )
-            /
-            sum by (instance, check_name, job)
-            (
-              rate(probe_all_success_count{probe=~"$probe"}[5m])
-              *
-              on (instance, job, probe, config_version) group_left(check_name) max by (instance, job, probe, config_version, check_name) (sm_check_info{check_name=~"$check_type", region=~"$region", $Filters })
-            )
-          )`,
-        range: true,
-        instant: false,
-        hide: false,
-        editorMode: 'code',
-        legendFormat: '__auto',
-        format: 'table',
-      },
+      ...(metrics?.uid ? metricsQueries : []),
       {
         refId: 'A',
         hide: false,

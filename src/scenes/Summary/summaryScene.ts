@@ -108,13 +108,15 @@ export function getSummaryScene({ metrics, sm }: DashboardSceneAppConfig, checks
 
     const annotations = getSummaryAlertAnnotations(metrics);
 
+    const children = metrics?.uid ? [tableRow, mapRow, latencyRow] : [tableRow];
+
     return new EmbeddedScene({
       $timeRange: timeRange,
       $variables: new SceneVariableSet({ variables: [region, probe, checkTypeVar, filters] }),
       $data: annotations,
       body: new SceneFlexLayout({
         direction: 'column',
-        children: [tableRow, mapRow, latencyRow],
+        children,
       }),
       controls: [
         new VariableValueSelectors({}),

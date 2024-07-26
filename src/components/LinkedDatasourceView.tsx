@@ -2,7 +2,7 @@ import React from 'react';
 import { Spinner } from '@grafana/ui';
 
 import { findLinkedDatasource } from 'utils';
-import { useCanReadMetrics, useCanWriteLogs } from 'hooks/useDSPermission';
+import { useCanWriteLogs, useCanWriteMetrics } from 'hooks/useDSPermission';
 import { useLogsDS } from 'hooks/useLogsDS';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 
@@ -14,7 +14,7 @@ export const LinkedDatasourceView = ({ type }: LinkedDatasourceViewProps) => {
   const metricsDS = useMetricsDS();
   const logsDS = useLogsDS();
   const canEditLogs = useCanWriteLogs();
-  const canEditMetrics = useCanReadMetrics();
+  const canEditMetrics = useCanWriteMetrics();
 
   const canEditMap = {
     prometheus: canEditMetrics,

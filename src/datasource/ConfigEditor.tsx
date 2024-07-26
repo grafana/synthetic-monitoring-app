@@ -5,9 +5,10 @@ import { LegacyForms } from '@grafana/ui';
 import { SecureJsonData, SMOptions } from './types';
 import { InitializedJsonData } from 'types';
 
-type Options = DataSourcePluginOptionsEditorProps<SMOptions, SecureJsonData>['options'];
+type ConfigEditorProps = DataSourcePluginOptionsEditorProps<SMOptions, SecureJsonData>;
+type Options = ConfigEditorProps['options'];
 
-export class ConfigEditor extends PureComponent<DataSourcePluginOptionsEditorProps<SMOptions, SecureJsonData>> {
+export class ConfigEditor extends PureComponent<ConfigEditorProps> {
   render() {
     const { onOptionsChange, options } = this.props;
 
@@ -19,7 +20,7 @@ const ConfigEditorContent = ({
   options,
   onOptionsChange,
 }: {
-  options: DataSourcePluginOptionsEditorProps<SMOptions, SecureJsonData>['options'];
+  options: Options;
   onOptionsChange: (options: Options) => void;
 }) => {
   const { secureJsonData } = options;
