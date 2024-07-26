@@ -26,6 +26,8 @@ import { getProbeDuration } from 'scenes/SCRIPTED/probeDuration';
 import { getResultsByTargetTable } from 'scenes/SCRIPTED/ResultsByTargetTable/ResultByTargetTable';
 import { getMinStepFromFrequency } from 'scenes/utils';
 
+import { getWebVitals } from './WebVitals/webVitals';
+
 export function getBrowserScene(
   { metrics, logs, singleCheckMode }: DashboardSceneAppConfig,
   checks: Check[] = [],
@@ -52,8 +54,10 @@ export function getBrowserScene(
     const distinctTargets = getDistinctTargets(metrics);
     const probeDuration = getProbeDuration(metrics);
     const editButton = getEditButton({ job, instance });
-
     const annotations = getAlertAnnotations(metrics);
+
+    const webVitals = getWebVitals(metrics);
+
     return new EmbeddedScene({
       $timeRange: timeRange,
       $variables: variables,
@@ -74,6 +78,12 @@ export function getBrowserScene(
       body: new SceneFlexLayout({
         direction: 'column',
         children: [
+          new SceneFlexLayout({
+            direction: 'row',
+            height: 150,
+            children: [new SceneFlexItem({ body: webVitals })],
+          }),
+
           new SceneFlexLayout({
             direction: 'row',
             height: 150,
