@@ -32,7 +32,7 @@ export const LinkedDatasourceView = ({ type }: LinkedDatasourceViewProps) => {
     return null;
   }
 
-  const datasource = findLinkedDatasource(ds.uid, ds.name);
+  const datasource = findLinkedDatasource(ds.uid);
 
   if (!datasource) {
     return <Spinner />;

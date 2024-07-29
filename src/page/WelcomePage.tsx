@@ -4,10 +4,9 @@ import { Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { useMeta } from 'hooks/useMeta';
+import { AppInitializer } from 'components/AppInitializer';
 import { PluginPage } from 'components/PluginPage';
 import { WelcomeTabs } from 'components/WelcomeTabs/WelcomeTabs';
-
-import { AppInitializer } from './AppInitializer';
 
 export const WelcomePage = () => {
   const styles = useStyles2(getStyles);

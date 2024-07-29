@@ -5,7 +5,7 @@ import { config } from '@grafana/runtime';
 import { ProvisioningJsonData } from './types';
 import { getFaroConfig } from 'faro';
 import { App } from 'components/App';
-import { ConfigPageWrapper } from 'components/ConfigPageWrapper';
+import { PluginCatalogConfigPage } from 'components/PluginCatalogConfigPage';
 
 const { env, url, name } = getFaroConfig();
 
@@ -29,6 +29,6 @@ if (window.location.hostname !== 'localhost') {
 export const plugin = new AppPlugin<ProvisioningJsonData>().setRootPage(App).addConfigPage({
   title: 'Config',
   icon: 'cog',
-  body: ConfigPageWrapper,
+  body: PluginCatalogConfigPage,
   id: 'config',
 });

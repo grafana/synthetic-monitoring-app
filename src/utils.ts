@@ -5,7 +5,7 @@ import { config, FetchResponse, getBackendSrv } from '@grafana/runtime';
 import { contextSrv } from 'grafana/app/core/core';
 import { firstValueFrom } from 'rxjs';
 
-import { LinkedDatasourceInfo, LogQueryResponse, LogStream, SMOptions } from './datasource/types';
+import { LogQueryResponse, LogStream, SMOptions } from './datasource/types';
 import {
   CalculateUsageValues,
   Check,
@@ -38,76 +38,8 @@ export function findSMDataSources(): Array<DataSourceInstanceSettings<SMOptions>
   }) as unknown as Array<DataSourceInstanceSettings<SMOptions>>;
 }
 
-export function findLinkedDatasource(uid: string, grafanaName: string): DataSourceInstanceSettings | undefined {
-  if (uid) {
-    const linkedDS = Object.values(config.datasources).find((ds) => ds.uid === uid);
-
-    if (linkedDS) {
-      return linkedDS;
-    }
-  }
-
-  return config.datasources[grafanaName];
-}
-
-interface DatasourcePayload {
-  accessToken: string;
-  apiHost: string;
-  metrics: LinkedDatasourceInfo;
-  logs: LinkedDatasourceInfo;
-}
-
-// Used for stubbing out the datasource when plugin is not provisioned
-
-export function createNewApiInstance(payload: DatasourcePayload) {
-  return firstValueFrom(
-    getBackendSrv().fetch<SMOptions>({
-      url: 'api/datasources',
-      data: {
-        name: 'Synthetic Monitoring',
-        type: 'synthetic-monitoring-datasource',
-        access: 'proxy',
-        isDefault: false,
-        jsonData: {
-          apiHost: payload.apiHost,
-          initialized: true,
-          metrics: payload.metrics,
-          logs: payload.logs,
-        },
-        secureJsonData: {
-          accessToken: payload.accessToken,
-        },
-      },
-    })
-  );
-}
-
-export function initializeDatasource(datasourcePayload: DatasourcePayload) {
-  const existingDatasource = findSMDataSources()?.[0];
-  if (existingDatasource) {
-    return firstValueFrom(
-      getBackendSrv().fetch<SMOptions>({
-        method: 'PUT',
-        url: `api/datasources/${existingDatasource.id}`,
-        data: {
-          ...existingDatasource,
-          access: 'proxy',
-          isDefault: false,
-          secureJsonData: {
-            accessToken: datasourcePayload.accessToken,
-          },
-          jsonData: {
-            apiHost: datasourcePayload.apiHost,
-            initialized: true,
-            metrics: datasourcePayload.metrics,
-            logs: datasourcePayload.logs,
-          },
-        },
-      })
-    );
-  }
-
-  return createNewApiInstance(datasourcePayload);
+export function findLinkedDatasource(uid: string): DataSourceInstanceSettings | undefined {
+  return Object.values(config.datasources).find((ds) => ds.uid === uid);
 }
 
 export const parseUrl = (url: string) => {

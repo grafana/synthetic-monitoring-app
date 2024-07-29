@@ -77,11 +77,11 @@ export function isValid(settings?: InitializedJsonData): boolean {
   }
 
   const { apiHost, metrics, logs } = settings;
-  if (!apiHost || !metrics || !metrics.grafanaName || !metrics.hostedId) {
+  if (!apiHost || !metrics?.hostedId) {
     return false;
   }
 
-  if (!logs || !logs.grafanaName || !logs.hostedId) {
+  if (!logs || !logs?.hostedId) {
     return false;
   }
 

@@ -71,15 +71,15 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   }
 
   getMetricsDS() {
-    const { uid, grafanaName } = this.instanceSettings.jsonData.metrics;
+    const { uid } = this.instanceSettings.jsonData.metrics;
 
-    return findLinkedDatasource(uid, grafanaName);
+    return findLinkedDatasource(uid);
   }
 
   getLogsDS() {
-    const { uid, grafanaName } = this.instanceSettings.jsonData.logs;
+    const { uid } = this.instanceSettings.jsonData.logs;
 
-    return findLinkedDatasource(uid, grafanaName);
+    return findLinkedDatasource(uid);
   }
 
   async query(options: DataQueryRequest<SMQuery>): Promise<DataQueryResponse> {
@@ -165,25 +165,6 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     return { data };
   }
 
-  getProbeValueFromVar(probe: string | string[] | undefined): string {
-    const allProbes = '.+';
-    const isArray = Array.isArray(probe);
-
-    if (!probe || (!isArray && (!probe || probe === '$__all'))) {
-      return allProbes;
-    }
-    if (isArray && probe.length > 1) {
-      return (probe as string[]).join('|');
-    } else if (isArray && probe.length === 1) {
-      if (!probe[0] || probe[0] === '$__all') {
-        return allProbes;
-      }
-      return probe[0];
-    }
-
-    return allProbes;
-  }
-
   async getCheckInfo() {
     return firstValueFrom(
       getBackendSrv().fetch<CheckInfoResult>({
@@ -195,6 +176,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     });
   }
 
+  // todo: unify this with the utils queryLogs method
   queryLogs(expr: string, range: TimeRange) {
     return firstValueFrom(
       getBackendSrv().fetch<LogsQueryResponse>({
@@ -431,16 +413,6 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   // SETUP
   //--------------------------------------------------------------------------------
 
-  normalizeURL(url: string): string {
-    if (url.startsWith('http://')) {
-      return url;
-    } else if (url.startsWith('https://')) {
-      return url;
-    } else {
-      return 'https://' + url;
-    }
-  }
-
   onOptionsChange = async (options: SMOptions) => {
     const data = {
       ...this.instanceSettings,
@@ -449,34 +421,6 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     };
     await getBackendSrv().put(`api/datasources/${this.instanceSettings.id}`, data);
   };
-
-  async registerSave(apiToken: string, options: SMOptions, accessToken: string): Promise<any> {
-    const data = {
-      ...this.instanceSettings,
-      jsonData: options,
-      secureJsonData: {
-        accessToken,
-      },
-      access: 'proxy',
-    };
-    await getBackendSrv().put(`api/datasources/${this.instanceSettings.id}`, data);
-
-    // Note the accessToken above must be saved first!
-    return await getBackendSrv().fetch({
-      method: 'POST',
-      url: `${this.instanceSettings.url}/sm/register/save`,
-      headers: {
-        // ensure the grafana backend doesn't use a cached copy of the
-        // datasource config, as it might not have the new accessToken set.
-        'X-Grafana-NoCache': 'true',
-      },
-      data: {
-        apiToken,
-        metricsInstanceId: options.metrics.hostedId,
-        logsInstanceId: options.logs.hostedId,
-      },
-    });
-  }
 
   async createApiToken(): Promise<string> {
     return firstValueFrom(

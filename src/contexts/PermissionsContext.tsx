@@ -1,6 +1,7 @@
 import React, { createContext, PropsWithChildren, useContext } from 'react';
 import { PluginPage } from '@grafana/runtime';
 
+import { DSAccessControlResponse } from 'datasource/responses.types';
 import { useDSAccessControl } from 'data/useDSAccessControl';
 import { useLogsDS } from 'hooks/useLogsDS';
 import { useMetricsDS } from 'hooks/useMetricsDS';
@@ -20,9 +21,9 @@ export const PermissionsContextProvider = ({ children }: PropsWithChildren) => {
   const metricsDS = useMetricsDS();
   const logsDS = useLogsDS();
 
-  const { data: smAccessControl = [], isLoading: smLoading } = useDSAccessControl(smDS.uid);
-  const { data: metricsAccessControl = [], isLoading: metricsLoading } = useDSAccessControl(metricsDS?.uid);
-  const { data: logsAccessControl = [], isLoading: logsLoading } = useDSAccessControl(logsDS?.uid);
+  const { data: smData, isLoading: smLoading } = useDSAccessControl(smDS.uid);
+  const { data: metricsData, isLoading: metricsLoading } = useDSAccessControl(metricsDS?.uid);
+  const { data: logsData, isLoading: logsLoading } = useDSAccessControl(logsDS?.uid);
 
   if (smLoading || metricsLoading || logsLoading) {
     return (
@@ -34,7 +35,11 @@ export const PermissionsContextProvider = ({ children }: PropsWithChildren) => {
 
   return (
     <PermissionsContext.Provider
-      value={{ smDS: smAccessControl, metricsDS: metricsAccessControl, logsDS: logsAccessControl }}
+      value={{
+        smDS: accessControlFilter(smData),
+        metricsDS: accessControlFilter(metricsData),
+        logsDS: accessControlFilter(logsData),
+      }}
     >
       {children}
     </PermissionsContext.Provider>
@@ -49,4 +54,14 @@ export function usePermissionsContext() {
   }
 
   return context;
+}
+
+function accessControlFilter(data?: DSAccessControlResponse) {
+  if (!data) {
+    return [];
+  }
+
+  return Object.entries(data.accessControl)
+    .filter(([_, value]) => Boolean(value))
+    .map(([key]) => key);
 }
