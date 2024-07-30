@@ -12,7 +12,7 @@ import { getBackendSrv, getTemplateSrv } from '@grafana/runtime';
 import { isArray } from 'lodash';
 import { firstValueFrom } from 'rxjs';
 
-import { Check, HostedInstance, Probe, ThresholdSettings } from '../types';
+import { Check, Probe, ThresholdSettings } from '../types';
 import {
   AccessTokenResponse,
   AddCheckResult,
@@ -71,15 +71,15 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   }
 
   getMetricsDS() {
-    const info = { uid: 'grafanacloud-metrics', ...this.instanceSettings.jsonData.metrics };
+    const { uid } = this.instanceSettings.jsonData.metrics;
 
-    return findLinkedDatasource(info);
+    return findLinkedDatasource(uid);
   }
 
   getLogsDS() {
-    const info = { uid: 'grafanacloud-logs', ...this.instanceSettings.jsonData.logs };
+    const { uid } = this.instanceSettings.jsonData.logs;
 
-    return findLinkedDatasource(info);
+    return findLinkedDatasource(uid);
   }
 
   async query(options: DataQueryRequest<SMQuery>): Promise<DataQueryResponse> {
@@ -475,22 +475,6 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
         metricsInstanceId: options.metrics.hostedId,
         logsInstanceId: options.logs.hostedId,
       },
-    });
-  }
-
-  async getViewerToken(apiToken: string, instance: HostedInstance): Promise<string> {
-    return firstValueFrom(
-      getBackendSrv().fetch<AccessTokenResponse>({
-        method: 'POST',
-        url: `${this.instanceSettings.url}/sm/register/viewer-token`,
-        data: {
-          apiToken,
-          id: instance.id,
-          type: instance.type,
-        },
-      })
-    ).then((res) => {
-      return res.data.token;
     });
   }
 

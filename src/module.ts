@@ -2,7 +2,7 @@ import { AppPlugin } from '@grafana/data';
 import { getWebInstrumentations, initializeFaro } from '@grafana/faro-web-sdk';
 import { config } from '@grafana/runtime';
 
-import { GlobalSettings } from './types';
+import { ProvisioningJsonData } from './types';
 import { getFaroConfig } from 'faro';
 import { App } from 'components/App';
 import { ConfigPageWrapper } from 'components/ConfigPageWrapper';
@@ -26,7 +26,7 @@ if (window.location.hostname !== 'localhost') {
   });
 }
 
-export const plugin = new AppPlugin<GlobalSettings>().setRootPage(App).addConfigPage({
+export const plugin = new AppPlugin<ProvisioningJsonData>().setRootPage(App).addConfigPage({
   title: 'Config',
   icon: 'cog',
   body: ConfigPageWrapper,

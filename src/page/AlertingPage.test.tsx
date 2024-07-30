@@ -2,7 +2,7 @@ import React from 'react';
 import { screen, waitFor, within } from '@testing-library/react';
 import { type UserEvent } from '@testing-library/user-event';
 import { render } from 'test/render';
-import { runTestAsViewer, selectOption } from 'test/utils';
+import { runTestAsMetricsViewer, selectOption } from 'test/utils';
 
 import { AlertFamily, AlertRule, AlertSensitivity } from 'types';
 import {
@@ -156,7 +156,7 @@ it('adds default alerts and edits alerts', async () => {
 });
 
 it('shows the Populate alerts button as disabled when user is viewer', async () => {
-  runTestAsViewer();
+  runTestAsMetricsViewer();
 
   const useAlertsMock = jest.fn().mockImplementation(() => ({
     alertRules: [],

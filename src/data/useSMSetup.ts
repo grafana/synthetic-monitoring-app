@@ -1,6 +1,7 @@
 import { QueryKey } from '@tanstack/query-core';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { getBackendSrv, getDataSourceSrv } from '@grafana/runtime';
+import { firstValueFrom } from 'rxjs';
 
 import { MutationProps } from './types';
 import { FaroEvent } from 'faro';
@@ -32,7 +33,13 @@ export function useSMAccessToken({ eventInfo }: MutationProps<any> = {}) {
 
   return useMutation({
     mutationFn: ({ data, id }: GetAccessTokenPayload) => {
-      return getBackendSrv().post(`api/plugin-proxy/${id}/install`, { data });
+      return firstValueFrom(
+        getBackendSrv().fetch({
+          method: 'POST',
+          url: `api/plugin-proxy/${id}/install`,
+          data,
+        })
+      );
     },
     meta: {
       event: {
@@ -55,21 +62,27 @@ export function useInitSMDatasource({ eventInfo }: MutationProps<any> = {}) {
 
   return useMutation({
     mutationFn: ({ apiHost, metrics, logs, accessToken }: InitSMPayload) =>
-      getBackendSrv().post('api/datasources', {
-        name: 'Synthetic Monitoring',
-        type: 'synthetic-monitoring-datasource',
-        access: 'proxy',
-        isDefault: false,
-        jsonData: {
-          apiHost,
-          initialized: true,
-          metrics,
-          logs,
-        },
-        secureJsonData: {
-          accessToken,
-        },
-      }),
+      firstValueFrom(
+        getBackendSrv().fetch({
+          method: 'POST',
+          url: 'api/datasources',
+          data: {
+            name: 'Synthetic Monitoring',
+            type: 'synthetic-monitoring-datasource',
+            access: 'proxy',
+            isDefault: false,
+            jsonData: {
+              apiHost,
+              initialized: true,
+              metrics,
+              logs,
+            },
+            secureJsonData: {
+              accessToken,
+            },
+          },
+        })
+      ),
     meta: {
       event: {
         info: eventInfo,

@@ -4,20 +4,20 @@ import { Alert, Button, Spinner, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { ROUTES } from 'types';
+import { hasGlobalPermission } from 'utils';
 import { useAppInitializer } from 'hooks/useAppInitializer';
 import { useMeta } from 'hooks/useMeta';
 import { MismatchedDatasourceModal } from 'components/MismatchedDatasourceModal';
 
 interface Props {
   redirectTo?: ROUTES;
-  disabled: boolean;
-  buttonClassname?: string;
   buttonText: string;
 }
 
-export const AppInitializer = ({ redirectTo, disabled, buttonClassname, buttonText }: PropsWithChildren<Props>) => {
+export const AppInitializer = ({ redirectTo, buttonText }: PropsWithChildren<Props>) => {
   const { jsonData } = useMeta();
   const styles = useStyles2(getStyles);
+  const canInitialize = hasGlobalPermission(`datasources:create`);
 
   const {
     error,
@@ -33,14 +33,22 @@ export const AppInitializer = ({ redirectTo, disabled, buttonClassname, buttonTe
     setDataSouceModalOpen,
   } = useAppInitializer(redirectTo);
 
+  if (!canInitialize) {
+    return (
+      <Alert title="" severity="info">
+        Contact your administrator to get you started.
+      </Alert>
+    );
+  }
+
   return (
     <div>
-      <Button onClick={handleClick} disabled={loading || disabled} size="lg" className={buttonClassname}>
+      <Button onClick={handleClick} disabled={loading} size="lg">
         {loading ? <Spinner /> : buttonText}
       </Button>
 
       {error && (
-        <Alert title="Something went wrong:" className={styles.errorAlert}>
+        <Alert title="Something went wrong:" className={styles.alert}>
           {error}
         </Alert>
       )}
@@ -54,7 +62,7 @@ export const AppInitializer = ({ redirectTo, disabled, buttonClassname, buttonTe
         onDismiss={() => setDataSouceModalOpen(false)}
         isSubmitting={loading}
         onSubmit={() => {
-          if (jsonData.metrics?.hostedId && jsonData.logs.hostedId) {
+          if (jsonData.metrics.hostedId && jsonData.logs.hostedId) {
             initialize({
               metricsSettings: metricsByUid!, // we have already guaranteed that this exists above
               metricsHostedId: jsonData.metrics.hostedId,
@@ -71,7 +79,7 @@ export const AppInitializer = ({ redirectTo, disabled, buttonClassname, buttonTe
 };
 
 const getStyles = (theme: GrafanaTheme2) => ({
-  errorAlert: css({
+  alert: css({
     marginTop: theme.spacing(4),
   }),
 });

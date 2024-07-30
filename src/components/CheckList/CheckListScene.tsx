@@ -286,12 +286,12 @@ export function CheckListScene({ onChangeViewType, checkFilters, onReset, onFilt
     return getCheckListScene(
       {
         metrics: {
-          uid: metricsDS.uid,
-          type: metricsDS.type,
+          uid: metricsDS?.uid,
+          type: metricsDS?.type,
         },
         logs: {
-          uid: logsDS.uid,
-          type: logsDS.type,
+          uid: logsDS?.uid,
+          type: logsDS?.type,
         },
         sm: {
           uid: smDS.uid,

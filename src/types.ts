@@ -1,17 +1,24 @@
 import React from 'react';
 import { FieldErrors, SubmitErrorHandler, SubmitHandler } from 'react-hook-form';
-import { DataSourceSettings, OrgRole, SelectableValue } from '@grafana/data';
+import { SelectableValue } from '@grafana/data';
 import { EmbeddedScene, SceneRouteMatch } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
 import { ZodType } from 'zod';
 
-import { LinkedDatasourceInfo } from './datasource/types';
+import { LinkedDatasourceInfo, ProvisioningLinkedDatasourceInfo } from './datasource/types';
 import { FilterType } from 'hooks/useCheckFilters';
 import { Assertion, MultiHttpEntry, MultiHttpVariable, RequestProps } from 'components/MultiHttp/MultiHttpTypes';
 
-export interface GlobalSettings {
+export interface ProvisioningJsonData {
   apiHost: string;
-  stackId?: number;
+  stackId: number;
+  metrics: ProvisioningLinkedDatasourceInfo;
+  logs: ProvisioningLinkedDatasourceInfo;
+}
+
+export interface InitializedJsonData {
+  apiHost: string;
+  stackId: number;
   metrics: LinkedDatasourceInfo;
   logs: LinkedDatasourceInfo;
 }
@@ -488,38 +495,6 @@ export enum CheckTypeGroup {
   MultiStep = `multistep`,
   Scripted = `scripted`,
   Browser = `browser`,
-}
-
-export interface HostedInstance {
-  id: number;
-  orgSlug: string;
-  orgName: string;
-  clusterSlug: string;
-  clusterName: string;
-  type: string; // "prometheus" "logs",
-  name: string;
-  url: string;
-  description: string;
-  status: string;
-  currentActiveSeries: number;
-  currentDpm: number;
-  currentUsage: number;
-}
-
-export interface GrafanaInstances {
-  metrics?: Pick<DataSourceSettings, 'id' | 'uid' | 'type' | 'name'>;
-  logs?: Pick<DataSourceSettings, 'id' | 'uid' | 'type' | 'name'>;
-  alertRuler?: DataSourceSettings;
-}
-
-export interface User {
-  email: string;
-  id: number;
-  isGrafanaAdmin: boolean;
-  isSignedIn: boolean;
-  orgId: number;
-  orgName: string;
-  orgRole: OrgRole;
 }
 
 export enum DnsResponseCodes {

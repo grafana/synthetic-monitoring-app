@@ -25,7 +25,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
 
 const NAME = 'annotations';
 
-export const AlertAnnotations = () => {
+export const AlertAnnotations = ({ canEdit }: { canEdit: boolean }) => {
   const styles = useStyles2(getStyles);
   const {
     control,
@@ -62,22 +62,28 @@ export const AlertAnnotations = () => {
                 })}
                 placeholder="Name"
                 data-testid={`alert-annotationName-${annotationIndex}`}
+                disabled={!canEdit}
               />
             </Field>
             <TextArea
               {...register(`${NAME}.${annotationIndex}.value` as const)}
               placeholder="Value"
               data-testid={`alert-annotationValue-${annotationIndex}`}
+              disabled={!canEdit}
             />
-            <Button type="button" onClick={() => remove(annotationIndex)} fill="text">
-              Delete
-            </Button>
+            {canEdit && (
+              <Button type="button" onClick={() => remove(annotationIndex)} fill="text">
+                Delete
+              </Button>
+            )}
           </Fragment>
         ))}
       </div>
-      <Button type="button" fill="text" size="sm" icon="plus" onClick={() => append({})} className={styles.addButton}>
-        Add annotation
-      </Button>
+      {canEdit && (
+        <Button type="button" fill="text" size="sm" icon="plus" onClick={() => append({})} className={styles.addButton}>
+          Add annotation
+        </Button>
+      )}
     </SubCollapse>
   );
 };

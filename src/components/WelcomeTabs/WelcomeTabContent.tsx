@@ -20,7 +20,7 @@ export function WelcomeTabContent({ activeTab }: Props) {
     case WelcomeTab.Protocol:
       return (
         <>
-          <p className={styles.text}>Send individual requests via HTTP, DNS, TCP, PING or traceroute</p>
+          <div className={styles.text}>Send individual requests via HTTP, DNS, TCP, PING or traceroute</div>
 
           <img
             src={config.theme2.isDark ? dashboardDark : dashboardLight}
@@ -32,7 +32,7 @@ export function WelcomeTabContent({ activeTab }: Props) {
     case WelcomeTab.K6:
       return (
         <>
-          <p className={styles.text}>Use k6 scripts to monitor your services flexibly</p>
+          <div className={styles.text}>Use k6 scripts to monitor your services flexibly</div>
           <CodeSnippet
             canCopy={true}
             className={styles.codeSnippet}
@@ -56,10 +56,10 @@ export function WelcomeTabContent({ activeTab }: Props) {
     case WelcomeTab.PrivateProbes:
       return (
         <>
-          <p className={styles.text}>
+          <div className={styles.text}>
             In addition to the locations we provide out of the box, you can set up your own probes to run inside your
             network or from a location of your choosing
-          </p>
+          </div>
           <img
             src={config.theme2.isDark ? privateProbeDark : privateProbeLight}
             className={styles.screenshot}
@@ -70,7 +70,7 @@ export function WelcomeTabContent({ activeTab }: Props) {
     case WelcomeTab.AsCode:
       return (
         <>
-          <p className={styles.text}>
+          <div className={styles.text}>
             Manage your checks as code, either via{' '}
             <a
               href="https://registry.terraform.io/providers/grafana/grafana/latest/docs/resources/synthetic_monitoring_check"
@@ -89,7 +89,7 @@ export function WelcomeTabContent({ activeTab }: Props) {
             >
               interact with our API
             </a>
-          </p>
+          </div>
           <CodeSnippet
             canCopy={true}
             className={styles.codeSnippet}
@@ -121,7 +121,6 @@ function getStyles(theme: GrafanaTheme2) {
       fontSize: theme.typography.h5.fontSize,
       marginLeft: `auto`,
       marginRight: `auto`,
-      marginBottom: theme.spacing(4),
       maxWidth: `640px`,
     }),
   };

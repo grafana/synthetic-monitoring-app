@@ -1,10 +1,10 @@
 import React, { createContext, PropsWithChildren, useContext } from 'react';
 import { AppPluginMeta } from '@grafana/data';
 
-import type { GlobalSettings } from 'types';
+import type { ProvisioningJsonData } from 'types';
 
-interface VerifiedMeta extends Omit<AppPluginMeta<GlobalSettings>, 'jsonData'> {
-  jsonData: GlobalSettings;
+interface VerifiedMeta extends Omit<AppPluginMeta<ProvisioningJsonData>, 'jsonData'> {
+  jsonData: ProvisioningJsonData;
 }
 
 type MetaContextValue = {
@@ -14,7 +14,7 @@ type MetaContextValue = {
 export const MetaContext = createContext<MetaContextValue>(null);
 
 interface MetaContextProviderProps extends PropsWithChildren {
-  meta: AppPluginMeta<GlobalSettings>;
+  meta: AppPluginMeta<ProvisioningJsonData>;
 }
 
 export const MetaContextProvider = ({ children, meta }: MetaContextProviderProps) => {
@@ -34,6 +34,6 @@ export function useMetaContext() {
 }
 
 // todo: work out what to do if this is not a verified meta
-function verifyMeta(meta: AppPluginMeta<GlobalSettings>): VerifiedMeta {
+function verifyMeta(meta: AppPluginMeta<ProvisioningJsonData>): VerifiedMeta {
   return meta as VerifiedMeta;
 }

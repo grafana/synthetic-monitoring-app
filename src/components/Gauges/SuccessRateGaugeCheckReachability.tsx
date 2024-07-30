@@ -2,6 +2,7 @@ import React from 'react';
 
 import { Check } from 'types';
 import { useCheckReachabilitySuccessRate } from 'data/useSuccessRates';
+import { useMetricsDS } from 'hooks/useMetricsDS';
 
 import { Gauge } from './Gauge';
 
@@ -18,8 +19,13 @@ export const SuccessRateGaugeCheckReachability = ({
   width,
   onClick,
 }: SuccessRateGaugeCheckReachabilityProps) => {
+  const metricsDS = useMetricsDS();
   const { data, isLoading, isFetching } = useCheckReachabilitySuccessRate(check);
   const value = data ? data.value?.[1] : null;
+
+  if (!metricsDS) {
+    return null;
+  }
 
   return (
     <Gauge

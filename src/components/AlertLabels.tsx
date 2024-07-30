@@ -1,4 +1,4 @@
-import React, { FC, Fragment } from 'react';
+import React, { Fragment } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Button, Field, Input, Label, useStyles2 } from '@grafana/ui';
@@ -25,7 +25,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
 });
 const NAME = 'labels';
 
-export const AlertLabels: FC = () => {
+export const AlertLabels = ({ canEdit }: { canEdit: boolean }) => {
   const styles = useStyles2(getStyles);
   const {
     control,
@@ -66,6 +66,7 @@ export const AlertLabels: FC = () => {
                 })}
                 placeholder="Name"
                 data-testid={`alert-labelName-${labelIndex}`}
+                disabled={!canEdit}
               />
             </Field>
             <Field
@@ -78,17 +79,22 @@ export const AlertLabels: FC = () => {
                 })}
                 placeholder="Value"
                 data-testid={`alert-labelValue-${labelIndex}`}
+                disabled={!canEdit}
               />
             </Field>
-            <Button type="button" onClick={() => remove(labelIndex)} fill="text">
-              Delete
-            </Button>
+            {canEdit && (
+              <Button type="button" onClick={() => remove(labelIndex)} fill="text">
+                Delete
+              </Button>
+            )}
           </Fragment>
         ))}
       </div>
-      <Button type="button" fill="text" size="sm" icon="plus" onClick={() => append({})} className={styles.addButton}>
-        Add label
-      </Button>
+      {canEdit && (
+        <Button type="button" fill="text" size="sm" icon="plus" onClick={() => append({})} className={styles.addButton}>
+          Add label
+        </Button>
+      )}
     </SubCollapse>
   );
 };

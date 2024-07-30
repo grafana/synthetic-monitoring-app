@@ -20,13 +20,19 @@ export function useAlerts() {
   const metricsDS = useMetricsDS();
 
   return useQuery({
-    queryKey: [...queryKeys.list, metricsDS.uid],
+    queryKey: [...queryKeys.list, metricsDS?.uid],
     queryFn: () => {
-      return queryAlertApi(metricsDS.uid);
+      if (!metricsDS?.uid) {
+        // this shouldn't matter as it won't run due to enabled being false
+        return Promise.reject();
+      }
+
+      return queryAlertApi(metricsDS?.uid);
     },
     select: (data) => {
       return findRelevantAlertGroups(data.groups, alertFilter);
     },
+    enabled: Boolean(metricsDS?.uid),
   });
 }
 

@@ -15,6 +15,7 @@ module.exports = {
       '<rootDir>/src/test/fileMock.js',
     '^!raw-loader!*': '<rootDir>/src/test/rawLoaderMock.js',
     '^(.+)\\?raw$': '<rootDir>/src/test/rawLoaderMock.js',
+    '^grafana/app/core/core$': '<rootDir>/src/test/mocks/grafana/app/core/core.js',
   },
   testTimeout: 30000,
   // Inform jest to only transform specific node_module packages.

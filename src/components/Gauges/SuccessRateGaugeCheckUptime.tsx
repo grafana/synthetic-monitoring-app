@@ -2,6 +2,7 @@ import React from 'react';
 
 import { Check } from 'types';
 import { useCheckUptimeSuccessRate } from 'data/useSuccessRates';
+import { useMetricsDS } from 'hooks/useMetricsDS';
 
 import { Gauge } from './Gauge';
 
@@ -13,9 +14,13 @@ type SuccessRateGaugeCheckUptimeProps = {
 };
 
 export const SuccessRateGaugeCheckUptime = ({ check, height, width, onClick }: SuccessRateGaugeCheckUptimeProps) => {
+  const metricsDS = useMetricsDS();
   const { data, isLoading, isFetching } = useCheckUptimeSuccessRate(check);
-
   const value = data ? data[0]?.value?.[1] : null;
+
+  if (!metricsDS) {
+    return null;
+  }
 
   return (
     <Gauge

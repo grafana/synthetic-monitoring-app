@@ -1,3 +1,5 @@
+import { SM_DATASOURCE } from 'test/fixtures/datasources';
+
 import { sanitizeName } from 'components/TerraformConfig/terraformConfigUtils';
 
 import { BASIC_PING_CHECK } from './checks';
@@ -36,7 +38,7 @@ export const TERRAFORM_BASIC_PING_CHECK = {
     grafana: {
       auth: '<add an api key from grafana.com>',
       sm_access_token: '<add an sm access token>',
-      sm_url: 'http://localhost:4030',
+      sm_url: SM_DATASOURCE.jsonData.apiHost,
       url: '',
     },
   },

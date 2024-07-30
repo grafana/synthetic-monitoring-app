@@ -51,16 +51,13 @@ export function WelcomeTabs() {
           active={activeTab === WelcomeTab.AsCode}
         />
       </TabsBar>
-      <div className={styles.tabContent}>
-        <WelcomeTabContent activeTab={activeTab} />
-      </div>
+      <WelcomeTabContent activeTab={activeTab} />
     </>
   );
 }
 
 function getStyles(theme: GrafanaTheme2) {
   return {
-    tabContent: css({ margin: theme.spacing(4, 0, 8) }),
     tabBar: css({ maxWidth: '560px', width: '100%', margin: `auto` }),
   };
 }

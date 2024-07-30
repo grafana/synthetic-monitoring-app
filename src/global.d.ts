@@ -46,3 +46,9 @@ declare module '*?raw' {
   // eslint-disable-next-line no-restricted-syntax
   export default content;
 }
+declare module 'grafana/app/core/core' {
+  // https://github.com/grafana/grafana/blob/main/public/app/core/services/context_srv.ts
+  export const contextSrv: {
+    hasPermission(action: string): boolean;
+  };
+}

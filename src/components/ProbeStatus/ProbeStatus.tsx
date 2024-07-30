@@ -4,8 +4,9 @@ import { Badge, BadgeColor, Button, ConfirmModal, Container, IconName, Legend, u
 import { css } from '@emotion/css';
 
 import { type Probe } from 'types';
-import { canEditProbes, formatDate } from 'utils';
+import { formatDate } from 'utils';
 import { useResetProbeToken } from 'data/useProbes';
+import { useCanEditProbe } from 'hooks/useCanEditProbe';
 import { SuccessRateGaugeProbe } from 'components/Gauges';
 
 interface Props {
@@ -21,6 +22,8 @@ interface BadgeStatus {
 
 export const ProbeStatus = ({ probe, onReset }: Props) => {
   const [showResetModal, setShowResetModal] = useState(false);
+  const canEdit = useCanEditProbe(probe);
+
   const styles = useStyles2(getStyles);
   const { mutate: onResetToken } = useResetProbeToken({
     onSuccess: ({ token }) => {
@@ -36,7 +39,6 @@ export const ProbeStatus = ({ probe, onReset }: Props) => {
   const badgeStatus = getBadgeStatus(probe.online);
   const neverModified = probe.created === probe.modified;
   const neverOnline = probe.onlineChange === probe.created && !probe.online;
-  const canEdit = canEditProbes(probe);
 
   return (
     <div>

@@ -2,6 +2,7 @@ import React from 'react';
 
 import { Probe } from 'types';
 import { useProbeReachabilitySuccessRate } from 'data/useSuccessRates';
+import { useMetricsDS } from 'hooks/useMetricsDS';
 
 import { Gauge } from './Gauge';
 type SuccessRateGaugeProbeProps = {
@@ -12,8 +13,13 @@ type SuccessRateGaugeProbeProps = {
 };
 
 export const SuccessRateGaugeProbe = ({ probeName, height, width, onClick }: SuccessRateGaugeProbeProps) => {
+  const metricsDS = useMetricsDS();
   const { data, isLoading, isFetching } = useProbeReachabilitySuccessRate(probeName);
   const value = data?.value[1] ?? null;
+
+  if (!metricsDS) {
+    return null;
+  }
 
   return (
     <Gauge

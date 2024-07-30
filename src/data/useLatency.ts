@@ -3,7 +3,7 @@ import { type QueryKey, useQuery } from '@tanstack/react-query';
 import { Check, CheckType } from 'types';
 import { getCheckType, queryMetric } from 'utils';
 import { MetricLatency } from 'datasource/responses.types';
-import { useSMDS } from 'hooks/useSMDS';
+import { useMetricsDS } from 'hooks/useMetricsDS';
 import { STANDARD_REFRESH_INTERVAL } from 'components/constants';
 
 const queryKeys: Record<'latencies', QueryKey> = {
@@ -11,13 +11,19 @@ const queryKeys: Record<'latencies', QueryKey> = {
 };
 
 export function useLatency({ job, target, settings }: Check) {
-  const smDS = useSMDS();
-  const url = smDS.getMetricsDS()?.url || ``;
+  const metricsDS = useMetricsDS();
+  const url = metricsDS?.url || '';
   const type = getCheckType(settings);
 
   return useQuery({
-    queryKey: [...queryKeys.latencies, url, job, target, type],
-    queryFn: () => queryMetric<MetricLatency>(url, getQuery(job, target, type)),
+    queryKey: [...queryKeys.latencies, url, job, target, type, metricsDS],
+    queryFn: () => {
+      if (!metricsDS) {
+        return Promise.reject(`You need to have a metrics datasource available.`);
+      }
+
+      return queryMetric<MetricLatency>(url, getQuery(job, target, type));
+    },
     refetchInterval: (query) => STANDARD_REFRESH_INTERVAL,
     select: (data) => {
       if (data) {
@@ -26,6 +32,7 @@ export function useLatency({ job, target, settings }: Check) {
 
       return data;
     },
+    enabled: Boolean(metricsDS),
   });
 }
 

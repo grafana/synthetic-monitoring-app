@@ -1,8 +1,9 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
-import { LogsDSSettings, MetricsDSSettings, SMDSSettings } from 'test/fixtures/datasources';
+import { LOGS_DATASOURCE, METRICS_DATASOURCE, SM_DATASOURCE } from 'test/fixtures/datasources';
 import { CREATE_ACCESS_TOKEN } from 'test/fixtures/tokens';
 import { render } from 'test/render';
+import { runTestWithoutLogsAccess, runTestWithoutMetricsAccess } from 'test/utils';
 
 import { ConfigPage } from './ConfigPage';
 
@@ -20,21 +21,42 @@ describe(`<ConfigPage /> uninitialised state`, () => {
     const pluginVersion = await screen.findByText(`Plugin version: %VERSION%`);
     expect(pluginVersion).toBeInTheDocument();
   });
+
+  it(`does not render metrics datasource when the user doesn't have access`, async () => {
+    runTestWithoutMetricsAccess();
+
+    render(<ConfigPage initialized />);
+    const title = await screen.findByText(`Linked Data Sources`);
+
+    expect(title).toBeInTheDocument();
+    expect(screen.queryByText(METRICS_DATASOURCE.name)).not.toBeInTheDocument();
+  });
+
+  it(`does not render logs datasource when the user doesn't have access`, async () => {
+    runTestWithoutLogsAccess();
+
+    render(<ConfigPage initialized />);
+    const title = await screen.findByText(`Linked Data Sources`);
+
+    expect(title).toBeInTheDocument();
+    expect(screen.queryByText(LOGS_DATASOURCE.name)).not.toBeInTheDocument();
+  });
 });
 
 describe(`<ConfigPage /> initialised state`, () => {
   it(`renders the linked data sources`, async () => {
     render(<ConfigPage initialized />);
-    const promName = await screen.findByText(MetricsDSSettings.name);
+    const promName = await screen.findByText(METRICS_DATASOURCE.name);
 
     expect(promName).toBeInTheDocument();
-    expect(screen.getByText(LogsDSSettings.name)).toBeInTheDocument();
+    expect(screen.getByText(LOGS_DATASOURCE.name)).toBeInTheDocument();
   });
 
   it(`renders the backend address`, async () => {
     render(<ConfigPage initialized />);
 
-    const backendAddress = await screen.findByText(SMDSSettings.jsonData.apiHost);
+    const withoutHttps = SM_DATASOURCE.jsonData.apiHost.replace('https://', '');
+    const backendAddress = await screen.findByText(withoutHttps);
     expect(backendAddress).toBeInTheDocument();
   });
 

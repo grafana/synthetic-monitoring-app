@@ -1,10 +1,57 @@
-import { DataSourceInstanceSettings, PluginSignatureStatus, PluginType } from '@grafana/data';
+import {
+  DataSourceInstanceSettings,
+  PluginSignatureStatus,
+  PluginType,
+  WithAccessControlMetadata,
+} from '@grafana/data';
+import { SM_META } from 'test/fixtures/meta';
 
 import { SMOptions } from 'datasource/types';
 
-export const MetricsDSSettings: DataSourceInstanceSettings<any> = {
+export const ADMIN_DEFAULT_DATASOURCE_ACCESS_CONTROL = {
+  'alert.instances.external:read': true,
+  'alert.instances.external:write': true,
+  'alert.notifications.external:read': true,
+  'alert.notifications.external:write': true,
+  'alert.rules.external:read': true,
+  'alert.rules.external:write': true,
+  'datasources.caching:read': true,
+  'datasources.caching:write': true,
+  'datasources.id:read': true,
+  'datasources.permissions:read': true,
+  'datasources.permissions:write': true,
+  'datasources:delete': true,
+  'datasources:query': true,
+  'datasources:read': true,
+  'datasources:write': true,
+};
+
+export const EDITOR_DEFAULT_DATASOURCE_ACCESS_CONTROL = {
+  'alert.instances.external:read': true,
+  'alert.instances.external:write': true,
+  'alert.notifications.external:read': true,
+  'alert.notifications.external:write': true,
+  'alert.rules.external:read': true,
+  'alert.rules.external:write': true,
+  'datasources.id:read': true,
+  'datasources:delete': true,
+  'datasources:query': true,
+  'datasources:read': true,
+  'datasources:write': true,
+};
+
+export const VIEWER_DEFAULT_DATASOURCE_ACCESS_CONTROL = {
+  'alert.instances.external:read': true,
+  'alert.notifications.external:read': true,
+  'alert.rules.external:read': true,
+  'datasources.id:read': true,
+  'datasources:query': true,
+  'datasources:read': true,
+};
+
+export const METRICS_DATASOURCE: DataSourceInstanceSettings<any> & WithAccessControlMetadata = {
   id: 4,
-  uid: 'grafanacloud-prom',
+  uid: 'P4DCEA413A673ADCC',
   type: 'prometheus',
   name: 'grafanacloud-ckbedwellksix-prom',
   meta: {
@@ -57,7 +104,7 @@ export const MetricsDSSettings: DataSourceInstanceSettings<any> = {
       hideDeprecation: false,
     },
   },
-  url: '/api/datasources/proxy/uid/grafanacloud-prom',
+  url: '/api/datasources/proxy/uid/P4DCEA413A673ADCC',
   isDefault: true,
   access: 'proxy',
   jsonData: {
@@ -78,11 +125,12 @@ export const MetricsDSSettings: DataSourceInstanceSettings<any> = {
     enabled: false,
     TTLMs: 0,
   },
+  accessControl: ADMIN_DEFAULT_DATASOURCE_ACCESS_CONTROL,
 };
 
-export const LogsDSSettings: DataSourceInstanceSettings<any> = {
+export const LOGS_DATASOURCE: DataSourceInstanceSettings<any> & WithAccessControlMetadata = {
   id: 8,
-  uid: 'grafanacloud-logs',
+  uid: 'P4DC6B4C9A7FFCC6C',
   type: 'loki',
   name: 'grafanacloud-ckbedwellksix-logs',
   meta: {
@@ -137,7 +185,7 @@ export const LogsDSSettings: DataSourceInstanceSettings<any> = {
       hideDeprecation: false,
     },
   },
-  url: '/api/datasources/proxy/uid/grafanacloud-logs',
+  url: '/api/datasources/proxy/uid/P4DC6B4C9A7FFCC6C',
   isDefault: false,
   access: 'proxy',
   jsonData: {
@@ -156,102 +204,35 @@ export const LogsDSSettings: DataSourceInstanceSettings<any> = {
     enabled: false,
     TTLMs: 0,
   },
+  accessControl: ADMIN_DEFAULT_DATASOURCE_ACCESS_CONTROL,
 };
 
-export const SMDSSettings: DataSourceInstanceSettings<SMOptions> = {
-  id: 32,
-  uid: 'testuid',
-  type: 'synthetic-monitoring-datasource',
+export const SM_DATASOURCE: DataSourceInstanceSettings<SMOptions> & WithAccessControlMetadata = {
+  id: 6,
+  uid: 'adsjbccbll2bkb',
   name: 'Synthetic Monitoring',
+  type: 'synthetic-monitoring-datasource',
   access: 'proxy',
-  readOnly: false,
-  url: ``,
-  meta: {
-    type: PluginType.datasource,
-    name: 'Synthetic Monitoring API',
-    id: 'synthetic-monitoring-datasource',
-    info: {
-      author: {
-        name: 'Grafana',
-        url: '',
-      },
-      description: 'Synthetic Monitoring API',
-      links: [],
-      logos: {
-        small: 'public/plugins/synthetic-monitoring-datasource/img/logo.svg',
-        large: 'public/plugins/synthetic-monitoring-datasource/img/logo.svg',
-      },
-      build: {},
-      screenshots: [],
-      version: '',
-      updated: '',
-    },
-    dependencies: {
-      grafanaVersion: '*',
-      plugins: [],
-    },
-    includes: undefined,
-    module: 'plugins/synthetic-monitoring-datasource/module',
-    baseUrl: 'public/plugins/synthetic-monitoring-datasource',
-    category: '',
-    signature: PluginSignatureStatus.valid,
-    annotations: false,
-    metrics: true,
-    alerting: false,
-    logs: false,
-    tracing: false,
-    streaming: false,
-  },
+  url: '',
+  withCredentials: false,
+  isDefault: false,
   jsonData: {
-    apiHost: 'http://localhost:4030',
-    dashboards: [
-      {
-        json: 'sm-http.json',
-        latestVersion: 24,
-        title: 'Synthetic Monitoring HTTP',
-        uid: 'rq0JrllZz',
-        version: 24,
-      },
-      {
-        json: 'sm-ping.json',
-        latestVersion: 23,
-        title: 'Synthetic Monitoring Ping',
-        uid: 'EHyn7ueZk',
-        version: 23,
-      },
-      {
-        json: 'sm-dns.json',
-        latestVersion: 9,
-        title: 'Synthetic Monitoring DNS',
-        uid: 'lgL6odgGz',
-        version: 9,
-      },
-      {
-        json: 'sm-tcp.json',
-        latestVersion: 8,
-        title: 'Synthetic Monitoring TCP',
-        uid: 'mh84e5mMk',
-        version: 8,
-      },
-      {
-        json: 'sm-summary.json',
-        latestVersion: 36,
-        title: 'Synthetic Monitoring Summary',
-        uid: 'fU-WBSqWz',
-        version: 36,
-      },
-    ],
+    apiHost: 'https://synthetic-monitoring-api-dev.grafana-dev.net',
+    initialized: true,
     logs: {
-      grafanaName: LogsDSSettings.name,
-      hostedId: LogsDSSettings.id,
-      type: LogsDSSettings.type,
-      uid: LogsDSSettings.uid,
+      grafanaName: 'grafanacloud-ckbedwellksix-logs',
+      hostedId: 147960,
+      type: 'loki',
+      uid: 'P4DC6B4C9A7FFCC6C',
     },
     metrics: {
-      grafanaName: MetricsDSSettings.name,
-      hostedId: MetricsDSSettings.id,
-      type: MetricsDSSettings.type,
-      uid: MetricsDSSettings.uid,
+      grafanaName: 'grafanacloud-ckbedwellksix-prom',
+      hostedId: 15629,
+      type: 'prometheus',
+      uid: 'P4DCEA413A673ADCC',
     },
   },
+  meta: SM_META,
+  readOnly: false,
+  accessControl: ADMIN_DEFAULT_DATASOURCE_ACCESS_CONTROL,
 };

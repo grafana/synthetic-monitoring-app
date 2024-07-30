@@ -3,7 +3,7 @@ import { type QueryKey, useQuery } from '@tanstack/react-query';
 import { Check } from 'types';
 import { queryMetric } from 'utils';
 import { MetricCheckSuccess, MetricProbeSuccessRate } from 'datasource/responses.types';
-import { useSMDS } from 'hooks/useSMDS';
+import { useMetricsDS } from 'hooks/useMetricsDS';
 import { STANDARD_REFRESH_INTERVAL } from 'components/constants';
 import { getMinStepFromFrequency } from 'scenes/utils';
 
@@ -16,7 +16,9 @@ const queryKeys: Record<'checkReachability' | 'checkUptime' | 'probeReachability
 };
 
 export function useChecksReachabilitySuccessRate() {
-  const { url, options } = useQueryMetric();
+  const { options } = useQueryMetric();
+  const metricsDS = useMetricsDS();
+  const url = metricsDS?.url || ``;
   const query =
     'sum(rate(probe_all_success_sum[3h])) by (job, instance) / sum(rate(probe_all_success_count[3h])) by (job, instance)';
 
@@ -25,8 +27,15 @@ export function useChecksReachabilitySuccessRate() {
     // otherwise it would continuously refetch
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: [...queryKeys.checkReachability, query, url],
-    queryFn: () => queryMetric<MetricCheckSuccess>(url, query, options),
+    queryFn: () => {
+      if (!metricsDS) {
+        return Promise.reject(`You need to have a metrics datasource available.`);
+      }
+
+      return queryMetric<MetricCheckSuccess>(url, query, options);
+    },
     refetchInterval: (query) => STANDARD_REFRESH_INTERVAL,
+    enabled: Boolean(metricsDS),
   });
 }
 
@@ -41,7 +50,9 @@ export function useCheckReachabilitySuccessRate(check: Check) {
 }
 
 export function useCheckUptimeSuccessRate(check: Check) {
-  const { url, options } = useQueryMetric(getMinStepFromFrequency(check.frequency));
+  const { options } = useQueryMetric(getMinStepFromFrequency(check.frequency));
+  const metricsDS = useMetricsDS();
+  const url = metricsDS?.url || ``;
 
   const query = `
   ceil(
@@ -55,13 +66,22 @@ export function useCheckUptimeSuccessRate(check: Check) {
     // otherwise it would continuously refetch
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: [...queryKeys.checkUptime, query, url],
-    queryFn: () => queryMetric<MetricCheckSuccess>(url, query, options),
+    queryFn: () => {
+      if (!metricsDS) {
+        return Promise.reject(`You need to have a metrics datasource available.`);
+      }
+
+      return queryMetric<MetricCheckSuccess>(url, query, options);
+    },
     refetchInterval: (query) => STANDARD_REFRESH_INTERVAL,
+    enabled: Boolean(metricsDS),
   });
 }
 
 export function useProbesReachabilitySuccessRate() {
-  const { url, options } = useQueryMetric();
+  const { options } = useQueryMetric();
+  const metricsDS = useMetricsDS();
+  const url = metricsDS?.url || ``;
   const query = 'sum(rate(probe_all_success_sum[3h])) by (probe) / sum(rate(probe_all_success_count[3h])) by (probe)';
 
   return useQuery({
@@ -69,8 +89,15 @@ export function useProbesReachabilitySuccessRate() {
     // otherwise it would continuously refetch
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: [...queryKeys.probeReachability, query, url],
-    queryFn: () => queryMetric<MetricProbeSuccessRate>(url, query, options),
+    queryFn: () => {
+      if (!metricsDS) {
+        return Promise.reject(`You need to have a metrics datasource available.`);
+      }
+
+      return queryMetric<MetricProbeSuccessRate>(url, query, options);
+    },
     refetchInterval: (query) => STANDARD_REFRESH_INTERVAL,
+    enabled: Boolean(metricsDS),
   });
 }
 
@@ -85,10 +112,6 @@ export function useProbeReachabilitySuccessRate(probeName?: string) {
 }
 
 function useQueryMetric(interval?: string) {
-  const smDS = useSMDS();
-  // todo: remove this cast
-  const url = smDS.getMetricsDS()?.url as string;
-
   const now = Math.floor(Date.now() / 1000);
   const threeHoursAgo = now - 60 * 60 * 3;
 
@@ -99,5 +122,5 @@ function useQueryMetric(interval?: string) {
     interval,
   };
 
-  return { url, options };
+  return { options };
 }

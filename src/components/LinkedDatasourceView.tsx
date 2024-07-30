@@ -1,58 +1,45 @@
 import React from 'react';
-import { Spinner } from '@grafana/ui';
 
-import { ROUTES } from 'types';
-import { findLinkedDatasource } from 'utils';
+import { useCanWriteLogs, useCanWriteMetrics } from 'hooks/useDSPermission';
 import { useLogsDS } from 'hooks/useLogsDS';
-import { useMeta } from 'hooks/useMeta';
 import { useMetricsDS } from 'hooks/useMetricsDS';
-import { useNavigation } from 'hooks/useNavigation';
 
-interface Props {
+interface LinkedDatasourceViewProps {
   type: 'loki' | 'prometheus';
 }
 
-export const LinkedDatasourceView = ({ type }: Props) => {
-  const navigate = useNavigation();
+export const LinkedDatasourceView = ({ type }: LinkedDatasourceViewProps) => {
   const metricsDS = useMetricsDS();
   const logsDS = useLogsDS();
-  const meta = useMeta();
+  const canEditLogs = useCanWriteLogs();
+  const canEditMetrics = useCanWriteMetrics();
+
+  const canEditMap = {
+    prometheus: canEditMetrics,
+    loki: canEditLogs,
+  };
 
   const dsMap = {
     prometheus: metricsDS,
     loki: logsDS,
   };
 
-  const hostedIDMap = {
-    prometheus: meta.jsonData?.metrics?.hostedId,
-    loki: meta.jsonData?.logs?.hostedId,
-  };
+  const ds = dsMap[type];
 
-  const datasource = findLinkedDatasource({
-    grafanaName: dsMap[type].name,
-    hostedId: hostedIDMap[type] ?? 0,
-    uid: dsMap[type].uid,
-  });
-
-  const handleClick = () => {
-    if (datasource?.type === 'synthetic-monitoring-datasource') {
-      navigate(ROUTES.Home);
-    } else {
-      navigate(`datasources/edit/${datasource?.id}/`, {}, true);
-    }
-  };
-
-  if (!datasource) {
-    return <Spinner />;
+  if (!ds) {
+    return null;
   }
 
+  const showHref = canEditMap[type];
+  const Tag = showHref ? 'a' : 'div';
+
   return (
-    <div className="add-data-source-item" onClick={handleClick}>
-      <img className="add-data-source-item-logo" src={datasource.meta.info.logos.small} alt="" />
+    <Tag className="add-data-source-item" href={showHref ? `datasources/edit/${ds.uid}/` : undefined}>
+      <img className="add-data-source-item-logo" src={ds.meta.info.logos.small} alt="" />
       <div className="add-data-source-item-text-wrapper">
-        <span className="add-data-source-item-text">{datasource.name}</span>
-        <span className="add-data-source-item-desc">{datasource.type}</span>
+        <span className="add-data-source-item-text">{ds.name}</span>
+        <span className="add-data-source-item-desc">{ds.type}</span>
       </div>
-    </div>
+    </Tag>
   );
 };

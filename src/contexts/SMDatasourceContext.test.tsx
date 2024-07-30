@@ -1,20 +1,29 @@
 import React from 'react';
 import { Router } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
-import runTime from '@grafana/runtime';
 import { screen } from '@testing-library/react';
-import { ComponentWrapperProps, defaultTestMeta, render } from 'test/render';
+import { SM_META } from 'test/fixtures/meta';
+import { ComponentWrapperProps, render } from 'test/render';
+import { runTestWithoutSMAccess } from 'test/utils';
 
+import { hasGlobalPermission } from 'utils';
 import { getQueryClient } from 'data/queryClient';
 import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
 
 import { MetaContextProvider } from './MetaContext';
 import { SMDatasourceProvider } from './SMDatasourceContext';
 
+jest.mock('utils', () => {
+  return {
+    ...jest.requireActual('utils'),
+    hasGlobalPermission: jest.fn().mockReturnValue(true),
+  };
+});
+
 const Wrapper = ({ children, history, meta }: ComponentWrapperProps) => {
   return (
     <QueryClientProvider client={getQueryClient()}>
-      <MetaContextProvider meta={{ ...defaultTestMeta, ...meta }}>
+      <MetaContextProvider meta={{ ...SM_META, ...meta }}>
         <FeatureFlagProvider>
           <Router history={history}>{children}</Router>
         </FeatureFlagProvider>
@@ -36,18 +45,25 @@ describe(`<SMDatasourceProvider />`, () => {
   });
 
   it(`should render uninitialized router when there is no Synthetic Monitoring DS available`, async () => {
-    jest.spyOn(runTime, 'getDataSourceSrv').mockImplementation(() => {
-      return {
-        ...jest.requireActual('@grafana/runtime').getDatasourceSrv(),
-        get: () => Promise.resolve(),
-      };
-    });
+    runTestWithoutSMAccess();
 
     render(<SMDatasourceProvider>{HAPPY_PATH_CONTENT}</SMDatasourceProvider>, {
       wrapper: Wrapper,
     });
 
     const text = await screen.findByText(/Proactively monitor your/);
+    expect(text).toBeInTheDocument();
+  });
+
+  it(`should render uninitialised router and contact admin alert when the user doesn't have SM access or datasource creation permissions`, async () => {
+    runTestWithoutSMAccess();
+    jest.mocked(hasGlobalPermission).mockReturnValue(false);
+
+    render(<SMDatasourceProvider>{HAPPY_PATH_CONTENT}</SMDatasourceProvider>, {
+      wrapper: Wrapper,
+    });
+
+    const text = await screen.findByText(/Contact your administrator to get you started./);
     expect(text).toBeInTheDocument();
   });
 });

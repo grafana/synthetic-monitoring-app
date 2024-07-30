@@ -19,9 +19,9 @@ export const SceneHomepage = () => {
   const scene = useMemo(() => {
     const config: DashboardSceneAppConfig = {
       metrics: {
-        uid: metricsDS.uid,
+        uid: metricsDS?.uid,
       },
-      logs: { uid: logsDS.uid },
+      logs: { uid: logsDS?.uid },
       sm: { uid: smDS.uid },
       singleCheckMode: true,
     };
