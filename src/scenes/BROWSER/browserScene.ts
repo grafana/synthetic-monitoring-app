@@ -22,12 +22,12 @@ import { getEmptyScene } from 'scenes/Common/emptyScene';
 import { getAssertionTable } from 'scenes/SCRIPTED/AssertionsTable';
 import { getDataTransferred } from 'scenes/SCRIPTED/dataTransferred';
 import { getDistinctTargets } from 'scenes/SCRIPTED/distinctTargets';
-import { getProbeDuration } from 'scenes/SCRIPTED/probeDuration';
 import { getResultsByTargetTable } from 'scenes/SCRIPTED/ResultsByTargetTable/ResultByTargetTable';
 import { getMinStepFromFrequency } from 'scenes/utils';
 
 import { getPageLoad } from './WebVitals/pageLoad';
 import { getWebVitals } from './WebVitals/webVitals';
+import { getProbeDuration } from './probeDuration';
 
 export function getBrowserScene(
   { metrics, logs, singleCheckMode }: DashboardSceneAppConfig,
