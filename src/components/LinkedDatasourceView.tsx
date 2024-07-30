@@ -42,7 +42,7 @@ export const LinkedDatasourceView = ({ type }: LinkedDatasourceViewProps) => {
   const Tag = showHref ? 'a' : 'div';
 
   return (
-    <Tag className="add-data-source-item" href={showHref ? `datasources/edit/${datasource?.id}/` : undefined}>
+    <Tag className="add-data-source-item" href={showHref ? `datasources/edit/${datasource?.uid}/` : undefined}>
       <img className="add-data-source-item-logo" src={datasource.meta.info.logos.small} alt="" />
       <div className="add-data-source-item-text-wrapper">
         <span className="add-data-source-item-text">{datasource.name}</span>

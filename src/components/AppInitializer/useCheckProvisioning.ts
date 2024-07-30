@@ -46,16 +46,15 @@ async function doLookUp(data: ProvisioningLinkedDatasourceInfo, type: DSType) {
 
   try {
     const matchingTypes = availableDSoptions.filter((ds) => ds.type === type).map((ds) => ds.uid);
-    const allDS = await Promise.all(matchingTypes.map(fetchAccessControlledDS));
-
-    const match = allDS.find((ds) => ds.basicAuthUser === String(data.hostedId));
+    const allMatchingDS = await Promise.all(matchingTypes.map(fetchAccessControlledDS));
+    const match = allMatchingDS.find((ds) => ds.basicAuthUser === String(data.hostedId));
 
     if (match) {
       return match.uid;
     }
 
     throw new Error(
-      `Your provisioning file provided a hostedId that didn't match any datasources you have access to. Either choose another datasource or check your provisioning file is set-up correctly.`
+      `Your provisioning file provided a hostedId that didn't match any datasources you have access to. Either choose another datasource or check your provisioning file is set-up correctly or check you have access to the desired datasource.`
     );
   } catch (e) {
     if (isFetchError(e)) {
