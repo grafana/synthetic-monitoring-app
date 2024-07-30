@@ -25,9 +25,9 @@ import { getMinStepFromFrequency } from 'scenes/utils';
 
 import { getPageLoad } from './WebVitals/pageLoad';
 import { getWebVitals } from './WebVitals/webVitals';
+import { getDataTransferred } from './dataTransferred';
 import { getDistinctTargets } from './distinctTargets';
 import { getProbeDuration } from './probeDuration';
-import { getDataTransferred } from './dataTransferred';
 
 export function getBrowserScene(
   { metrics, logs, singleCheckMode }: DashboardSceneAppConfig,
