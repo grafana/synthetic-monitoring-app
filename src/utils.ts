@@ -54,6 +54,7 @@ interface DatasourcePayload {
 export function createNewApiInstance(payload: DatasourcePayload) {
   return firstValueFrom(
     getBackendSrv().fetch<SMOptions>({
+      method: 'POST',
       url: 'api/datasources',
       data: {
         name: 'Synthetic Monitoring',
