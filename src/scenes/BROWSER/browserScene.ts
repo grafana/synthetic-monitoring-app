@@ -21,12 +21,12 @@ import { getEditButton } from 'scenes/Common/editButton';
 import { getEmptyScene } from 'scenes/Common/emptyScene';
 import { getAssertionTable } from 'scenes/SCRIPTED/AssertionsTable';
 import { getDataTransferred } from 'scenes/SCRIPTED/dataTransferred';
-import { getDistinctTargets } from 'scenes/SCRIPTED/distinctTargets';
 import { getResultsByTargetTable } from 'scenes/SCRIPTED/ResultsByTargetTable/ResultByTargetTable';
 import { getMinStepFromFrequency } from 'scenes/utils';
 
 import { getPageLoad } from './WebVitals/pageLoad';
 import { getWebVitals } from './WebVitals/webVitals';
+import { getDistinctTargets } from './distinctTargets';
 import { getProbeDuration } from './probeDuration';
 
 export function getBrowserScene(
