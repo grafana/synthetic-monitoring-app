@@ -22,15 +22,31 @@ function getQueryRunner(metrics: DataSourceRef, minStep: string) {
       {
         editorMode: 'code',
         exemplar: true,
-        expr: `# the inner query is going to produce a non-zero value if there was at least one successful check during the 5 minute window
-        # so make it a 1 if there was at least one success and a 0 otherwise
-        ceil(
-          # the number of successes across all probes
-          sum by (instance, job) (increase(probe_all_success_sum{instance="$instance", job="$job"}[$__rate_interval]))
-          /
-          # the total number of times we checked across all probes
-          (sum by (instance, job) (increase(probe_all_success_count{instance="$instance", job="$job"}[$__rate_interval])) + 1) # + 1 because we want to make sure it goes to 1, not 2
-        )`,
+        expr: `
+        sum_over_time(
+ # the inner query is going to produce a non-zero value if there was at least one successful check during the 5 minute window
+ # so make it a 1 if there was at least one success and a 0 otherwise
+ ceil(
+   # the number of successes across all probes
+   sum by (instance, job) (increase(probe_all_success_sum{instance="$instance", job="$job"}[$__rate_interval]))
+   /
+   # the total number of times we checked across all probes
+   (sum by (instance, job) (increase(probe_all_success_count{instance="$instance", job="$job"}[$__rate_interval])) + 1) # + 1 because we want to make sure it goes to 1, not 2
+ )
+ [$__range:]
+)
+/
+count_over_time(
+ # the inner query is going to produce a non-zero value if there was at least one successful check during the 5 minute window
+ # so make it a 1 if there was at least one success and a 0 otherwise
+ ceil(
+   # the number of successes across all probes
+   sum by (instance, job) (increase(probe_all_success_sum{instance="$instance", job="$job"}[$__rate_interval]))
+   /
+   # the total number of times we checked across all probes
+   (sum by (instance, job) (increase(probe_all_success_count{instance="$instance", job="$job"}[$__rate_interval])) + 1) # + 1 because we want to make sure it goes to 1, not 2
+ )
+ [$__range:])`,
         hide: false,
         instant: false,
         interval: uptimeMinStep,
