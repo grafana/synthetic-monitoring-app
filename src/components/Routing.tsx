@@ -82,7 +82,7 @@ export const InitialisedRouter = ({ onNavChanged }: Pick<AppRootProps, 'onNavCha
 
 export const UninitialisedRouter = () => {
   const meta = useMeta();
-  const provisioned = Boolean(meta.jsonData?.metrics?.grafanaName);
+  const provisioned = Boolean(meta.jsonData?.metrics?.hostedId);
 
   // todo: is this the correct check for provisioning?
   // todo: is this state even possible in Grafana v11?

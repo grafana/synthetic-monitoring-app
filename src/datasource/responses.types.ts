@@ -1,4 +1,4 @@
-import { DataFrameJSON } from '@grafana/data';
+import { DataFrameJSON, WithAccessControlMetadata } from '@grafana/data';
 
 import { AlertRecord, Check, Probe, PrometheusAlertsGroup, Settings, ThresholdSettings } from 'types';
 import { AccountingClassNames, DashboardInfo } from 'datasource/types';
@@ -162,4 +162,36 @@ export type LogsQueryResponse = {
 export type AccessTokenResponse = {
   msg: string;
   token: string;
+};
+
+// adding to this as needed - it returns much more
+export type DSAccessControlResponse = Required<WithAccessControlMetadata> & {
+  basicAuthUser: string; // hostedId
+  uid: string;
+  type: string;
+};
+
+type DatasourceInstance = {
+  clusterName: string;
+  clusterSlug: string;
+  currentUsage: number;
+  description: string;
+  id: number; // hostedInstanceID
+  name: string; // there is a discrepancy between if it should have grafanacloud- prefix or not
+  orgId: number;
+  orgName: string;
+  orgSlug: string;
+  stackId: number;
+  status: string;
+  type: string;
+  url: string;
+};
+
+export type SMPluginInstallResponse = {
+  accessToken: string;
+  tenantInfo: {
+    id: number;
+    logInstance: DatasourceInstance;
+    metricInstance: DatasourceInstance;
+  };
 };

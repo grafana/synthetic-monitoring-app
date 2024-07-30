@@ -1,21 +1,24 @@
 import { QueryKey } from '@tanstack/query-core';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, UseMutationResult, useQuery } from '@tanstack/react-query';
 import { getBackendSrv, getDataSourceSrv } from '@grafana/runtime';
 import { firstValueFrom } from 'rxjs';
 
 import { MutationProps } from './types';
 import { FaroEvent } from 'faro';
 import { SMDataSource } from 'datasource/DataSource';
+import { SMPluginInstallResponse } from 'datasource/responses.types';
 import { LinkedDatasourceInfo } from 'datasource/types';
 
 export const queryKeys: Record<'list', QueryKey> = {
   list: ['get-sm-datasource'],
 };
 
+export const THE_ONE_AND_ONLY_SM_DS = `Synthetic Monitoring`;
+
 export function useGetSMDatasource() {
   return useQuery({
     queryKey: queryKeys.list,
-    queryFn: () => getDataSourceSrv().get(`Synthetic Monitoring`) as Promise<SMDataSource>,
+    queryFn: () => getDataSourceSrv().get(THE_ONE_AND_ONLY_SM_DS) as Promise<SMDataSource>,
   });
 }
 
@@ -31,15 +34,15 @@ interface GetAccessTokenPayload {
 export function useSMAccessToken({ eventInfo }: MutationProps<any> = {}) {
   const eventType = FaroEvent.INITIALIZE_ACCESS_TOKEN;
 
-  return useMutation({
-    mutationFn: ({ data, id }: GetAccessTokenPayload) => {
+  return useMutation<SMPluginInstallResponse, Error, GetAccessTokenPayload, UseMutationResult>({
+    mutationFn: ({ data, id }) => {
       return firstValueFrom(
-        getBackendSrv().fetch({
+        getBackendSrv().fetch<SMPluginInstallResponse>({
           method: 'POST',
           url: `api/plugin-proxy/${id}/install`,
           data,
         })
-      );
+      ).then((res) => res.data);
     },
     meta: {
       event: {
@@ -50,24 +53,64 @@ export function useSMAccessToken({ eventInfo }: MutationProps<any> = {}) {
   });
 }
 
-interface InitSMPayload {
+interface SMPayload {
   accessToken: string;
   apiHost: string;
-  metrics: LinkedDatasourceInfo;
   logs: LinkedDatasourceInfo;
+  name: string;
+  metrics: LinkedDatasourceInfo;
 }
 
-export function useInitSMDatasource({ eventInfo }: MutationProps<any> = {}) {
-  const eventType = FaroEvent.INIT;
+export function useCreateSMDatasource({ eventInfo }: MutationProps<any> = {}) {
+  const eventType = FaroEvent.INIT_SM;
 
   return useMutation({
-    mutationFn: ({ apiHost, metrics, logs, accessToken }: InitSMPayload) =>
+    mutationFn: ({ accessToken, apiHost, logs, name, metrics }: SMPayload) =>
       firstValueFrom(
         getBackendSrv().fetch({
           method: 'POST',
           url: 'api/datasources',
           data: {
-            name: 'Synthetic Monitoring',
+            name,
+            type: 'synthetic-monitoring-datasource',
+            access: 'proxy',
+            isDefault: false,
+            jsonData: {
+              apiHost,
+              initialized: true,
+              metrics,
+              logs,
+            },
+            secureJsonData: {
+              accessToken,
+            },
+          },
+        })
+      ),
+    meta: {
+      event: {
+        info: eventInfo,
+        type: eventType,
+      },
+    },
+  });
+}
+
+interface UpdateSMPayload extends SMPayload {
+  id: number;
+}
+
+export function useUpdateSMDatasource({ eventInfo }: MutationProps<any> = {}) {
+  const eventType = FaroEvent.UPDATE_SM_DS;
+
+  return useMutation({
+    mutationFn: ({ accessToken, apiHost, id, logs, name, metrics }: UpdateSMPayload) =>
+      firstValueFrom(
+        getBackendSrv().fetch({
+          method: 'PUT',
+          url: `api/datasources/${id}`,
+          data: {
+            name,
             type: 'synthetic-monitoring-datasource',
             access: 'proxy',
             isDefault: false,
