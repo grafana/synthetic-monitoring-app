@@ -6,7 +6,7 @@ import { SM_META } from 'test/fixtures/meta';
 import { ComponentWrapperProps, render } from 'test/render';
 import { runTestWithoutSMAccess } from 'test/utils';
 
-import { hasPermission } from 'utils';
+import { hasGlobalPermission } from 'utils';
 import { getQueryClient } from 'data/queryClient';
 import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
 
@@ -16,7 +16,7 @@ import { SMDatasourceProvider } from './SMDatasourceContext';
 jest.mock('utils', () => {
   return {
     ...jest.requireActual('utils'),
-    hasPermission: jest.fn().mockReturnValue(true),
+    hasGlobalPermission: jest.fn().mockReturnValue(true),
   };
 });
 
@@ -57,7 +57,7 @@ describe(`<SMDatasourceProvider />`, () => {
 
   it(`should render uninitialised router and contact admin alert when the user doesn't have SM access or datasource creation permissions`, async () => {
     runTestWithoutSMAccess();
-    jest.mocked(hasPermission).mockReturnValue(false);
+    jest.mocked(hasGlobalPermission).mockReturnValue(false);
 
     render(<SMDatasourceProvider>{HAPPY_PATH_CONTENT}</SMDatasourceProvider>, {
       wrapper: Wrapper,

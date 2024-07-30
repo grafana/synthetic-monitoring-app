@@ -2,7 +2,7 @@ import React, { PropsWithChildren, useState } from 'react';
 import { Alert, Button } from '@grafana/ui';
 
 import { ROUTES } from 'types';
-import { hasPermission } from 'utils';
+import { hasGlobalPermission } from 'utils';
 
 import { SetupModal } from './SetupModal';
 
@@ -12,7 +12,7 @@ interface Props {
 }
 
 export const AppInitializer = ({ redirectTo, buttonText }: PropsWithChildren<Props>) => {
-  const canInitialize = hasPermission(`datasources:create`);
+  const canInitialize = hasGlobalPermission(`datasources:create`);
   const [open, setOpen] = useState(false);
 
   if (!canInitialize) {

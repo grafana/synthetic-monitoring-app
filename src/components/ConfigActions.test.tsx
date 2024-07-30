@@ -2,13 +2,13 @@ import React from 'react';
 import { screen } from '@testing-library/react';
 import { render } from 'test/render';
 
-import { hasPermission } from 'utils';
+import { hasGlobalPermission } from 'utils';
 import { ConfigActions } from 'components/ConfigActions';
 
 jest.mock('utils', () => {
   return {
     ...jest.requireActual('utils'),
-    hasPermission: jest.fn().mockReturnValue(true),
+    hasGlobalPermission: jest.fn().mockReturnValue(true),
   };
 });
 
@@ -37,7 +37,7 @@ it('shows setup action when not intialized', async () => {
 });
 
 it(`doesn't show any config actions when the user doesn't have write permissions`, async () => {
-  jest.mocked(hasPermission).mockReturnValue(false);
+  jest.mocked(hasGlobalPermission).mockReturnValue(false);
 
   render(<ConfigActions initialized />);
 
@@ -47,7 +47,7 @@ it(`doesn't show any config actions when the user doesn't have write permissions
 });
 
 it(`doesn't show any config actions when the user doesn't have write permissions and meta enabled is false`, async () => {
-  jest.mocked(hasPermission).mockReturnValue(false);
+  jest.mocked(hasGlobalPermission).mockReturnValue(false);
 
   render(<ConfigActions />, {
     meta: {

@@ -1,7 +1,5 @@
 import React from 'react';
-import { Spinner } from '@grafana/ui';
 
-import { findLinkedDatasource } from 'utils';
 import { useCanWriteLogs, useCanWriteMetrics } from 'hooks/useDSPermission';
 import { useLogsDS } from 'hooks/useLogsDS';
 import { useMetricsDS } from 'hooks/useMetricsDS';
@@ -32,21 +30,15 @@ export const LinkedDatasourceView = ({ type }: LinkedDatasourceViewProps) => {
     return null;
   }
 
-  const datasource = findLinkedDatasource(ds.uid);
-
-  if (!datasource) {
-    return <Spinner />;
-  }
-
   const showHref = canEditMap[type];
   const Tag = showHref ? 'a' : 'div';
 
   return (
-    <Tag className="add-data-source-item" href={showHref ? `datasources/edit/${datasource?.uid}/` : undefined}>
-      <img className="add-data-source-item-logo" src={datasource.meta.info.logos.small} alt="" />
+    <Tag className="add-data-source-item" href={showHref ? `datasources/edit/${ds.uid}/` : undefined}>
+      <img className="add-data-source-item-logo" src={ds.meta.info.logos.small} alt="" />
       <div className="add-data-source-item-text-wrapper">
-        <span className="add-data-source-item-text">{datasource.name}</span>
-        <span className="add-data-source-item-desc">{datasource.type}</span>
+        <span className="add-data-source-item-text">{ds.name}</span>
+        <span className="add-data-source-item-desc">{ds.type}</span>
       </div>
     </Tag>
   );

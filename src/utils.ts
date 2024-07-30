@@ -343,6 +343,6 @@ export function getMethodColor(theme: GrafanaTheme2, value: HttpMethod) {
   return colorMap[value];
 }
 
-export function hasPermission(action: string) {
+export function hasGlobalPermission(action: string) {
   return contextSrv.hasPermission(action);
 }
