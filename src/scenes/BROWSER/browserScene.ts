@@ -20,7 +20,6 @@ import { getAllLogs } from 'scenes/Common/allLogs';
 import { getEditButton } from 'scenes/Common/editButton';
 import { getEmptyScene } from 'scenes/Common/emptyScene';
 import { getAssertionTable } from 'scenes/SCRIPTED/AssertionsTable';
-import { getDataTransferred } from 'scenes/SCRIPTED/dataTransferred';
 import { getResultsByTargetTable } from 'scenes/SCRIPTED/ResultsByTargetTable/ResultByTargetTable';
 import { getMinStepFromFrequency } from 'scenes/utils';
 
@@ -28,6 +27,7 @@ import { getPageLoad } from './WebVitals/pageLoad';
 import { getWebVitals } from './WebVitals/webVitals';
 import { getDistinctTargets } from './distinctTargets';
 import { getProbeDuration } from './probeDuration';
+import { getDataTransferred } from './dataTransferred';
 
 export function getBrowserScene(
   { metrics, logs, singleCheckMode }: DashboardSceneAppConfig,
