@@ -51,7 +51,7 @@ export const VIEWER_DEFAULT_DATASOURCE_ACCESS_CONTROL = {
 
 export const METRICS_DATASOURCE: DataSourceInstanceSettings<any> & WithAccessControlMetadata = {
   id: 4,
-  uid: 'grafanacloud-prom',
+  uid: 'P4DCEA413A673ADCC',
   type: 'prometheus',
   name: 'grafanacloud-ckbedwellksix-prom',
   meta: {
@@ -104,7 +104,7 @@ export const METRICS_DATASOURCE: DataSourceInstanceSettings<any> & WithAccessCon
       hideDeprecation: false,
     },
   },
-  url: '/api/datasources/proxy/uid/grafanacloud-prom',
+  url: '/api/datasources/proxy/uid/P4DCEA413A673ADCC',
   isDefault: true,
   access: 'proxy',
   jsonData: {
@@ -130,7 +130,7 @@ export const METRICS_DATASOURCE: DataSourceInstanceSettings<any> & WithAccessCon
 
 export const LOGS_DATASOURCE: DataSourceInstanceSettings<any> & WithAccessControlMetadata = {
   id: 8,
-  uid: 'grafanacloud-logs',
+  uid: 'P4DC6B4C9A7FFCC6C',
   type: 'loki',
   name: 'grafanacloud-ckbedwellksix-logs',
   meta: {
@@ -185,7 +185,7 @@ export const LOGS_DATASOURCE: DataSourceInstanceSettings<any> & WithAccessContro
       hideDeprecation: false,
     },
   },
-  url: '/api/datasources/proxy/uid/grafanacloud-logs',
+  url: '/api/datasources/proxy/uid/P4DC6B4C9A7FFCC6C',
   isDefault: false,
   access: 'proxy',
   jsonData: {

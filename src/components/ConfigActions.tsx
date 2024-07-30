@@ -3,7 +3,7 @@ import { getBackendSrv } from '@grafana/runtime';
 import { Button, LinkButton } from '@grafana/ui';
 
 import { ROUTES } from 'types';
-import { hasPermission } from 'utils';
+import { hasGlobalPermission } from 'utils';
 import { useMeta } from 'hooks/useMeta';
 
 import { DisablePluginModal } from './DisablePluginModal';
@@ -12,7 +12,7 @@ import { getRoute } from './Routing.utils';
 export const ConfigActions = ({ initialized }: { initialized?: boolean }) => {
   const [showDisableModal, setShowDisableModal] = useState(false);
   const meta = useMeta();
-  const canEdit = hasPermission(`plugins:write`);
+  const canEdit = hasGlobalPermission(`plugins:write`);
 
   const handleEnable = async () => {
     await getBackendSrv()

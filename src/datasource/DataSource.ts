@@ -71,15 +71,15 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   }
 
   getMetricsDS() {
-    const { uid, grafanaName } = this.instanceSettings.jsonData.metrics;
+    const { uid } = this.instanceSettings.jsonData.metrics;
 
-    return findLinkedDatasource(uid, grafanaName);
+    return findLinkedDatasource(uid);
   }
 
   getLogsDS() {
-    const { uid, grafanaName } = this.instanceSettings.jsonData.logs;
+    const { uid } = this.instanceSettings.jsonData.logs;
 
-    return findLinkedDatasource(uid, grafanaName);
+    return findLinkedDatasource(uid);
   }
 
   async query(options: DataQueryRequest<SMQuery>): Promise<DataQueryResponse> {

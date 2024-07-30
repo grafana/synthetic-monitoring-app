@@ -4,7 +4,7 @@ import { Alert, Button, Spinner, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { ROUTES } from 'types';
-import { hasPermission } from 'utils';
+import { hasGlobalPermission } from 'utils';
 import { useAppInitializer } from 'hooks/useAppInitializer';
 import { useMeta } from 'hooks/useMeta';
 import { MismatchedDatasourceModal } from 'components/MismatchedDatasourceModal';
@@ -17,7 +17,7 @@ interface Props {
 export const AppInitializer = ({ redirectTo, buttonText }: PropsWithChildren<Props>) => {
   const { jsonData } = useMeta();
   const styles = useStyles2(getStyles);
-  const canInitialize = hasPermission(`datasources:create`);
+  const canInitialize = hasGlobalPermission(`datasources:create`);
 
   const {
     error,

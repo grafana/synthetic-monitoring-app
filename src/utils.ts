@@ -38,16 +38,8 @@ export function findSMDataSources(): Array<DataSourceInstanceSettings<SMOptions>
   }) as unknown as Array<DataSourceInstanceSettings<SMOptions>>;
 }
 
-export function findLinkedDatasource(uid: string, grafanaName: string): DataSourceInstanceSettings | undefined {
-  if (uid) {
-    const linkedDS = Object.values(config.datasources).find((ds) => ds.uid === uid);
-
-    if (linkedDS) {
-      return linkedDS;
-    }
-  }
-
-  return config.datasources[grafanaName];
+export function findLinkedDatasource(uid: string): DataSourceInstanceSettings | undefined {
+  return Object.values(config.datasources).find((ds) => ds.uid === uid);
 }
 
 interface DatasourcePayload {
@@ -411,6 +403,6 @@ export function getMethodColor(theme: GrafanaTheme2, value: HttpMethod) {
   return colorMap[value];
 }
 
-export function hasPermission(action: string) {
+export function hasGlobalPermission(action: string) {
   return contextSrv.hasPermission(action);
 }
