@@ -20,7 +20,6 @@ import { getAllLogs } from 'scenes/Common/allLogs';
 import { getEditButton } from 'scenes/Common/editButton';
 import { getEmptyScene } from 'scenes/Common/emptyScene';
 import { getAssertionTable } from 'scenes/SCRIPTED/AssertionsTable';
-import { getResultsByTargetTable } from 'scenes/SCRIPTED/ResultsByTargetTable/ResultByTargetTable';
 import { getMinStepFromFrequency } from 'scenes/utils';
 
 import { getPageLoad } from './WebVitals/pageLoad';
@@ -105,10 +104,11 @@ export function getBrowserScene(
             children: [distinctTargets, probeDuration],
           }),
           getDataTransferred(metrics),
+          /* @todo: implement a table displaying web vitals metrics per url
           new SceneFlexLayout({
             direction: 'row',
-            children: [getResultsByTargetTable(metrics, checkType)],
-          }),
+            children: [getResultsByTargetTable(metrics)],
+          }),*/
           new SceneFlexLayout({
             direction: 'row',
             minHeight: 900,
