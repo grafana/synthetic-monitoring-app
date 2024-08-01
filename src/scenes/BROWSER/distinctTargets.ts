@@ -9,7 +9,7 @@ function getQueryRunner(metrics: DataSourceRef) {
     queries: [
       {
         expr: `count by (job, target) (
-          count by (url, method) (
+          count by (url) (
             probe_browser_web_vital_fcp{probe=~"\${probe}", job="\${job}", instance="\${instance}"}
           )
         )`,
