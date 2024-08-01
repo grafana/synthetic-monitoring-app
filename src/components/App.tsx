@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { AppRootProps } from '@grafana/data';
+import { SuccessfullySynced } from '@grafana/runtimeProxy';
 import { css, Global } from '@emotion/react';
 
 import { ProvisioningJsonData } from 'types';
@@ -18,6 +19,12 @@ export const App = (props: AppRootProps<ProvisioningJsonData>) => {
   const { meta, onNavChanged } = props;
 
   useEffect(() => {
+    try {
+      return console.log(SuccessfullySynced());
+    } catch (e) {
+      console.error('You are not synced to your local grafana/grafana runtime');
+    }
+
     return () => {
       // we have a dependency on alerts to display our alerting correctly
       // so we are invalidating the alerts list on the assumption the user might change their alerting options when they leave SM
