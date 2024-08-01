@@ -3,10 +3,11 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Icon, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { WEB_VITAL_CONFIG, WebVitalName, WebVitalUnit, WebVitalValueConfig } from './types';
+import { WebVitalName } from './types';
 
+import { getWebVitalValueConfig } from './utils';
 import { WebVitalBarGauge } from './WebVitalBarGauge';
-import { getWebVitalScore, WebVitalValue } from './WebVitalValue';
+import { WebVitalValue } from './WebVitalValue';
 
 interface WebVitalGaugeProps {
   name: WebVitalName;
@@ -41,71 +42,6 @@ export function WebVitalGauge({ value, name, longName, description }: WebVitalGa
       </div>
     </div>
   );
-}
-
-function getWebVitalValueConfig(name: WebVitalName, value: undefined | number | null = null): WebVitalValueConfig {
-  const config = WEB_VITAL_CONFIG[name];
-  if (!config) {
-    throw new TypeError(`Unknown web vital name: ${name}`);
-  }
-  const score = getWebVitalScore(name, value);
-  const unit = config.unit;
-  const formattedValue = webVitalFormatter(value, unit);
-  const thresholds = config.thresholds;
-
-  return {
-    name,
-    value: formattedValue,
-    score,
-    unitType: unit,
-    unit: getPresentationUnit(unit),
-    originalValue: value,
-    thresholds,
-    toString() {
-      return getWebVitalValueString(this);
-    },
-  };
-}
-
-function getWebVitalValueString(value: WebVitalValueConfig) {
-  if (value.originalValue === null) {
-    return '-';
-  }
-  if (value.unitType === 'score') {
-    return value.value.toString();
-  }
-
-  return `${value.value}${value.unit}`;
-}
-
-export function webVitalFormatter(value: number | null, unit: WebVitalUnit) {
-  if (value === null) {
-    return '-';
-  }
-
-  switch (unit) {
-    case 'milliseconds':
-      return value.toFixed(0);
-    case 'seconds':
-      return (value > 0 ? value / 1000 : 0).toFixed(2);
-    case 'score':
-      return value.toFixed(2);
-    default:
-      return unit;
-  }
-}
-
-function getPresentationUnit(unit: WebVitalValueConfig['unitType']) {
-  switch (unit) {
-    case 'seconds':
-      return 's';
-    case 'milliseconds':
-      return 'ms';
-    case 'score':
-      return '';
-    default:
-      return unit;
-  }
 }
 
 export function getStyles(theme: GrafanaTheme2) {

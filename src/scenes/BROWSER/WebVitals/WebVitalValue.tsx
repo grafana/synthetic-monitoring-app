@@ -3,7 +3,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
-import { WEB_VITAL_CONFIG, WebVitalName, WebVitalScore, WebVitalValueConfig } from './types';
+import { WebVitalValueConfig } from './types';
 
 interface WebVitalValueProps {
   value: WebVitalValueConfig;
@@ -20,26 +20,6 @@ export function WebVitalValue({ value }: WebVitalValueProps) {
       </h4>
     </div>
   );
-}
-
-export function getWebVitalScore(name: WebVitalName, value: number | null): WebVitalScore | undefined {
-  const thresholds = WEB_VITAL_CONFIG[name]?.thresholds;
-
-  if (!thresholds || value === null) {
-    return undefined;
-  }
-
-  const [good, poor] = thresholds;
-
-  if (good >= value) {
-    return 'good';
-  }
-
-  if (poor < value) {
-    return 'poor';
-  }
-
-  return 'needs_improvement';
 }
 
 export function getStyles(theme: GrafanaTheme2) {

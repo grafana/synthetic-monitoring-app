@@ -6,7 +6,7 @@ import { css, cx } from '@emotion/css';
 import { WebVitalValueConfig } from './types';
 
 import { GaugeArrow } from './GaugeArrow';
-import { webVitalFormatter } from './WebVitalGauge';
+import { webVitalFormatter } from './utils';
 
 interface WebVitalBarGaugeProps {
   value: WebVitalValueConfig;
