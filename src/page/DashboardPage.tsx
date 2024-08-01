@@ -10,6 +10,7 @@ import { useLogsDS } from 'hooks/useLogsDS';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useSMDS } from 'hooks/useSMDS';
 import { PLUGIN_URL_PATH } from 'components/Routing.consts';
+import { getBrowserScene } from 'scenes/BROWSER/browserScene';
 import { getDNSScene } from 'scenes/DNS';
 import { getGRPCScene } from 'scenes/GRPC/getGRPCScene';
 import { getHTTPScene } from 'scenes/HTTP';
@@ -72,7 +73,15 @@ function DashboardPageContent() {
         });
       }
       case CheckType.Browser:
-      // @todo: add browser scene
+        return new SceneApp({
+          pages: [
+            new SceneAppPage({
+              title: checkToView.job,
+              url,
+              getScene: getBrowserScene(config, [checkToView], checkType),
+            }),
+          ],
+        });
       // fallthrough
       case CheckType.Scripted:
       case CheckType.MULTI_HTTP: {
