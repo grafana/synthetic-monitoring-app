@@ -17,7 +17,7 @@ import { Alert, LinkButton, LoadingPlaceholder, useStyles2 } from '@grafana/ui';
 import { CheckType } from 'types';
 import { Table, TableColumn } from 'components/Table';
 
-import { getTablePanelStyles } from '../getTablePanelStyles';
+import { getTablePanelStyles } from '../../SCRIPTED/getTablePanelStyles';
 import { AssertionTableRow } from './AssertionsTableRow';
 
 function getQueryRunner(logs: DataSourceRef) {

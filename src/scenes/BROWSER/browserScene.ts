@@ -17,9 +17,9 @@ import { Check, CheckType, DashboardSceneAppConfig } from 'types';
 import { getReachabilityStat, getUptimeStat, getVariables } from 'scenes/Common';
 import { getAlertAnnotations } from 'scenes/Common/alertAnnotations';
 import { getAllLogs } from 'scenes/Common/allLogs';
+import { getAssertionTable } from 'scenes/Common/AssertionsTable';
 import { getEditButton } from 'scenes/Common/editButton';
 import { getEmptyScene } from 'scenes/Common/emptyScene';
-import { getAssertionTable } from 'scenes/SCRIPTED/AssertionsTable';
 import { getMinStepFromFrequency } from 'scenes/utils';
 
 import { getPageLoad } from './WebVitals/pageLoad';

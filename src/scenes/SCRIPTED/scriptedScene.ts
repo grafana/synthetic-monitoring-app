@@ -21,8 +21,8 @@ import { getEditButton } from 'scenes/Common/editButton';
 import { getEmptyScene } from 'scenes/Common/emptyScene';
 import { getMinStepFromFrequency } from 'scenes/utils';
 
+import { getAssertionTable } from '../Common/AssertionsTable';
 import { getResultsByTargetTable } from './ResultsByTargetTable/ResultByTargetTable';
-import { getAssertionTable } from './AssertionsTable';
 import { getDataTransferred } from './dataTransferred';
 import { getDistinctTargets } from './distinctTargets';
 import { getProbeDuration } from './probeDuration';
