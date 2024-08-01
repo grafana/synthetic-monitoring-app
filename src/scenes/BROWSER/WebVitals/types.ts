@@ -22,7 +22,7 @@ export const WEB_VITAL_SCORE = {
 };
 
 interface WebVitalConfig {
-  name: string;
+  name: WebVitalName;
   longName: string;
   unit: WebVitalUnit;
   description?: string;
@@ -31,14 +31,14 @@ interface WebVitalConfig {
 
 export const WEB_VITAL_CONFIG: Record<WebVitalName, WebVitalConfig> = {
   lcp: {
-    name: 'LCP',
+    name: 'lcp',
     longName: 'Largest Contentful Paint',
     unit: 'seconds',
     description: "Marks the point in the page load timeline where the page's main content has likely loaded",
     thresholds: [2500, 4000],
   },
   fid: {
-    name: 'FID',
+    name: 'fid',
     longName: 'First Input Delay',
     unit: 'milliseconds',
     description:
@@ -46,14 +46,14 @@ export const WEB_VITAL_CONFIG: Record<WebVitalName, WebVitalConfig> = {
     thresholds: [100, 300],
   },
   cls: {
-    name: 'CLS',
+    name: 'cls',
     longName: 'Cumulative Layout Shift',
     unit: 'score',
     description: 'Quantifies how often users experience unexpected layout shifts - low CLS helps ensure good UX',
     thresholds: [0.1, 0.25],
   },
   fcp: {
-    name: 'FCP',
+    name: 'fcp',
     longName: 'First Contentful Paint',
     unit: 'seconds',
     description:
@@ -61,14 +61,14 @@ export const WEB_VITAL_CONFIG: Record<WebVitalName, WebVitalConfig> = {
     thresholds: [1800, 3000],
   },
   inp: {
-    name: 'INP',
+    name: 'inp',
     longName: 'Interaction to next paint',
     unit: 'milliseconds',
     description: `"Interaction to Next Paint" measures a page's responsiveness throughout all interactions by observing the latency of all qualifying interactions that occur throughout the lifespan of a user's visit`,
     thresholds: [200, 500],
   },
   ttfb: {
-    name: 'TTFB',
+    name: 'ttfb',
     longName: 'Time to First Byte',
     unit: 'milliseconds',
     description: 'The time between the request for a resource and when the first byte of a response begins to arrive',

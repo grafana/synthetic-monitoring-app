@@ -40,8 +40,9 @@ function WebVitalGaugeRenderer({ model }: SceneComponentProps<WebVitalGaugeScene
       }
 
       const view = new DataFrameView(frame);
+      console.log(view.toArray());
 
-      return view.toArray()[0].Value;
+      return view.toArray()[0]?.Mean;
     }
   }, [data, refId]);
 
