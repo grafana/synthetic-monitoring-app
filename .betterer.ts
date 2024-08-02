@@ -1,9 +1,8 @@
 import { BettererFileTest } from '@betterer/betterer';
 import { ESLint, Linter } from 'eslint';
 
-
 export default {
-  'better eslint': () => countEslintErrors().include('**/*.{ts,tsx}')
+  'internationalization (i18n)': () => countEslintErrors().include('**/*.{ts,tsx}'),
 };
 
 function countEslintErrors() {
@@ -31,7 +30,7 @@ function countEslintErrors() {
       overrides: [
         {
           files: ['**/*.{ts,tsx}'],
-          excludedFiles: ['**/*.d.ts'],
+          excludedFiles: ['**/*.d.ts', '**/__mocks__/**/*.{ts,tsx,js,jsx}'],
           rules: {
             '@grafana/no-untranslated-strings': 'error',
           },

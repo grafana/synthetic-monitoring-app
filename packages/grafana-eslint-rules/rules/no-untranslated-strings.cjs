@@ -10,7 +10,7 @@ const noUntranslatedStrings = createRule({
     return {
       JSXText(node) {
         const ancestors = context.getAncestors();
-        const isEmpty =  !node.value.trim();
+        const isEmpty = !node.value.trim();
         const hasTransAncestor = ancestors.some((ancestor) => {
           return (
             ancestor.type === AST_NODE_TYPES.JSXElement &&
@@ -33,6 +33,7 @@ const noUntranslatedStrings = createRule({
     type: 'suggestion',
     docs: {
       description: 'Check untranslated strings',
+      recommended: false,
     },
     messages: {
       noUntranslatedStrings: 'No untranslated strings. Wrap text with <Trans />',
@@ -41,6 +42,5 @@ const noUntranslatedStrings = createRule({
   },
   defaultOptions: [],
 });
-
 
 module.exports = noUntranslatedStrings;
