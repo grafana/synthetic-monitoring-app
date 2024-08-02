@@ -1,6 +1,6 @@
 module.exports = {
   extends: ['./.config/.eslintrc', 'plugin:@tanstack/eslint-plugin-query/recommended'],
-  plugins: ['simple-import-sort'],
+  plugins: ['simple-import-sort', '@grafana'],
   ignorePatterns: ['**/snippets/*.js'],
   rules: {
     'no-redeclare': 'off', // we use typescript's 'no-redeclare' rule instead
