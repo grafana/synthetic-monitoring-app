@@ -4,6 +4,7 @@ import { Button } from '@grafana/ui';
 import { ROUTES } from 'types';
 import { useCanWriteSM } from 'hooks/useDSPermission';
 import { useNavigation } from 'hooks/useNavigation';
+import { Trans } from '@grafana/runtime/src/services/internationalization/i18n';
 
 export function AddNewCheckButton() {
   const navigate = useNavigation();
@@ -15,7 +16,7 @@ export function AddNewCheckButton() {
 
   return (
     <Button variant="primary" onClick={() => navigate(ROUTES.ChooseCheckGroup)} type="button">
-      Add new check
+      <Trans i18nKey="checks.list.add-new">Add new check</Trans>
     </Button>
   );
 }

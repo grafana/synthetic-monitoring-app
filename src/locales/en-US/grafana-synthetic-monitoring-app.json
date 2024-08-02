@@ -1,4 +1,9 @@
 {
+  "checks": {
+    "list": {
+      "add-new": "Add new check"
+    }
+  },
   "nav": {
     "synthetics": {
       "title": "IF YOU ARE READING THIS IN THE BRWOSER THERE IS A PROBLEM"

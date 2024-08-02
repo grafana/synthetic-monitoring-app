@@ -32,6 +32,7 @@
     "@betterer/eslint": "5.4.0",
     "@commitlint/cli": "^12.1.4",
     "@commitlint/config-conventional": "^12.1.4",
+    "@crowdin/cli": "^4.1.1",
     "@grafana/eslint-config": "^6.0.0",
     "@grafana/eslint-plugin": "link:./packages/grafana-eslint-rules",
     "@grafana/tsconfig": "^1.2.0-rc1",

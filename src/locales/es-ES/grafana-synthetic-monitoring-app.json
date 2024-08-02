@@ -1,4 +1,12 @@
 {
-  "_comment": "",
-  "chris": "MUY EMOCIONANTE VERTE"
+  "checks": {
+    "list": {
+      "add-new": "Agregar nuevo chequeo"
+    }
+  },
+  "nav": {
+    "synthetics": {
+      "title": "IF YOU ARE READING THIS IN THE BRWOSER THERE IS A PROBLEM"
+    }
+  }
 }
