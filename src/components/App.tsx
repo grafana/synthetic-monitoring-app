@@ -57,10 +57,16 @@ const TranslatedCorrectlyBanner = () => {
   return (
     <div style={{ margin: `20px 0` }}>
       <Stack justifyContent={`center`}>
-        <i18n.Trans i18nKey="nav.synthetics.title">
-          IF YOU ARE READING THIS IN THE BRWOSER THERE IS A PROBLEM
-        </i18n.Trans>
-        <div>{i18n.t('nav.synthetics.title', 'IF YOU ARE READING THIS IN THE BRWOSER THERE IS A PROBLEM')}</div>
+        <Stack direction={`column`} alignItems={`center`}>
+          <div>{`<Trans />`}</div>
+          <i18n.Trans i18nKey="nav.synthetics.title">
+            IF YOU ARE READING THIS IN THE BRWOSER THERE IS A PROBLEM
+          </i18n.Trans>
+        </Stack>
+        <Stack direction={`column`} alignItems={`center`}>
+          <div>t()</div>
+          <div>{i18n.t('nav.synthetics.title', 'IF YOU ARE READING THIS IN THE BRWOSER THERE IS A PROBLEM')}</div>
+        </Stack>
       </Stack>
     </div>
   );
