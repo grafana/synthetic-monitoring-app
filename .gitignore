@@ -37,5 +37,4 @@ temp/
 .DS_Store
 
 src/@grafana/runtimeProxy.ts
-src/locales/en-US/grafana-synthetic-monitoring-app.json
-src/locales/pseudo-LOCALE/grafana-synthetic-monitoring-app.json
+src/locales/
