@@ -35,3 +35,6 @@ temp/
 
 .vscode
 .DS_Store
+
+src/@grafana/runtimeProxy.ts
+src/locales/en-US/grafana-synthetic-monitoring-app.json

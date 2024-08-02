@@ -78,3 +78,8 @@ package-latest:
 .PHONY: generate-version
 generate-version:
 	$(ROOT_DIR)/scripts/plugin-version-hash.sh
+
+.PHONY: i18n-extract
+i18n-extract:
+	@echo "Extracting i18n strings for the plugin"
+	yarn run i18next --config ./src/locales/i18next-parser.config.cjs
