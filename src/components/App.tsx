@@ -2,7 +2,8 @@ import React, { useEffect } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { AppRootProps } from '@grafana/data';
-import { SuccessfullySynced } from '@grafana/runtimeProxy';
+import { i18n } from '@grafana/runtime';
+import { Stack } from '@grafana/ui';
 import { css, Global } from '@emotion/react';
 
 import { ProvisioningJsonData } from 'types';
@@ -20,7 +21,7 @@ export const App = (props: AppRootProps<ProvisioningJsonData>) => {
 
   useEffect(() => {
     try {
-      return console.log(SuccessfullySynced());
+      return console.log(i18n.SuccessfullySynced());
     } catch (e) {
       console.error('You are not synced to your local grafana/grafana runtime');
     }
@@ -39,6 +40,7 @@ export const App = (props: AppRootProps<ProvisioningJsonData>) => {
       <MetaContextProvider meta={meta}>
         <FeatureFlagProvider>
           <GlobalStyles />
+          <TranslatedCorrectlyBanner />
           <SMDatasourceProvider>
             <PermissionsContextProvider>
               <InitialisedRouter onNavChanged={onNavChanged} />
@@ -48,6 +50,19 @@ export const App = (props: AppRootProps<ProvisioningJsonData>) => {
         </FeatureFlagProvider>
       </MetaContextProvider>
     </QueryClientProvider>
+  );
+};
+
+const TranslatedCorrectlyBanner = () => {
+  return (
+    <div style={{ margin: `20px 0` }}>
+      <Stack justifyContent={`center`}>
+        <i18n.Trans i18nKey="nav.synthetics.title">
+          IF YOU ARE READING THIS IN THE BRWOSER THERE IS A PROBLEM
+        </i18n.Trans>
+        <div>{i18n.t('nav.synthetics.title', 'IF YOU ARE READING THIS IN THE BRWOSER THERE IS A PROBLEM')}</div>
+      </Stack>
+    </div>
   );
 };
 
