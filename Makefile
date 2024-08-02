@@ -83,3 +83,4 @@ generate-version:
 i18n-extract:
 	@echo "Extracting i18n strings for the plugin"
 	yarn run i18next --config ./src/locales/i18next-parser.config.cjs
+	node ./src/locales/pseudo.mjs
