@@ -82,5 +82,5 @@ generate-version:
 .PHONY: i18n-extract
 i18n-extract:
 	@echo "Extracting i18n strings for the plugin"
-	yarn run i18next --config ./src/locales/i18next-parser.config.cjs
-	node ./src/locales/pseudo.mjs
+	yarn run i18next --config ./.i18n/i18next-parser.config.cjs
+	node ./.i18n/pseudo.mjs

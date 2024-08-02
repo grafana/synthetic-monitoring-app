@@ -8,6 +8,6 @@ module.exports = {
 
   // plugin specific config
   defaultNamespace: 'grafana-synthetic-monitoring-app',
-  input: ['../**/*.{tsx,ts}'],
+  input: ['./../src/**/*.{tsx,ts}'],
   output: './src/locales/$LOCALE/$NAMESPACE.json',
 };
