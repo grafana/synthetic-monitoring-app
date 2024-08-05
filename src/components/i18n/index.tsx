@@ -12,14 +12,18 @@ import pluginJson from '../../plugin.json';
 
 const I18N_NAMESPACE = pluginJson.id;
 
+// this is so the extract script doesn't recognise them
+const RuntimeTrans = i18n.Trans;
+const RuntimeT = i18n.t;
+
 export const Trans: typeof i18n.Trans = (props) => {
   return (
-    <i18n.Trans i18nKey={props.i18nKey} ns={I18N_NAMESPACE}>
+    <RuntimeTrans i18nKey={props.i18nKey} ns={I18N_NAMESPACE}>
       {props.children}
-    </i18n.Trans>
+    </RuntimeTrans>
   );
 };
 
 export const t: typeof i18n.t = (id: string, defaultMessage: string, values?: Record<string, unknown>) => {
-  return i18n.t(`${I18N_NAMESPACE}:${id}`, defaultMessage, values);
+  return RuntimeT(`${I18N_NAMESPACE}:${id}`, defaultMessage, values);
 };

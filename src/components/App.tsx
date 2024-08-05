@@ -62,6 +62,7 @@ const TranslatedCorrectlyBanner = () => {
           <div>{`<Trans />`}</div>
           <Trans i18nKey="nav.synthetics.title">Synthetics in the house</Trans>
           <Trans i18nKey="nav.k6.title">k6 in the house</Trans>
+          <Trans i18nKey="nav.k6.title2">k62 in the house</Trans>
         </Stack>
         <Stack direction={`column`} alignItems={`center`}>
           <div>t()</div>
