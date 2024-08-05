@@ -4,6 +4,7 @@ import { Button, Modal, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckEnabledStatus, CheckFiltersType } from 'types';
+import { Trans } from 'components/i18n';
 
 const groupStyles = (theme: GrafanaTheme2) => ({
   marginTop: css({
@@ -80,7 +81,7 @@ export const CheckFilterGroup = ({ children, onReset, filters }: Props) => {
                 variant="primary"
                 onClick={() => setOpenFilters(false)}
               >
-                Close
+                <Trans i18nKey={'checks.filter.close'}>Close</Trans>
               </Button>
             </Stack>
           </div>

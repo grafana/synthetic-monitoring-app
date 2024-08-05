@@ -1,5 +1,8 @@
 {
   "checks": {
+    "filter": {
+      "close": "Cľőşę"
+    },
     "list": {
       "add-new": "Åđđ ŉęŵ čĥęčĸ"
     }

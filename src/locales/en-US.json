@@ -1,5 +1,8 @@
 {
   "checks": {
+    "filter": {
+      "close": "Close"
+    },
     "list": {
       "add-new": "Add new check"
     }
