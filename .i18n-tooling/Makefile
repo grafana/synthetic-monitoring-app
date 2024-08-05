@@ -7,15 +7,14 @@ i18n-extract:
 
 .PHONY: i18n-upload
 i18n-upload:
-	pwd
 	@echo "Uploading source files to crowdin"
 	crowdin config lint
-	# crowdin upload sources
+	crowdin upload sources
 
 .PHONY: i18n-download
 i18n-download:
 	@echo "Download translation files from crowdin"
-	yarn run crowdin --config ./.i18n-tooling/crowdin.yml pull --all
+	crowdin pull --all
 
 .PHONY: i18n-betterer-update
 i18n-betterer-update:
