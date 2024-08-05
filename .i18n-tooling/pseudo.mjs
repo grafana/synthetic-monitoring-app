@@ -34,4 +34,4 @@ async function pseudoizeJson(inputPath, outputPath) {
 }
 
 // Plugin translations
-await pseudoizeJson('../src/locales/en-US.json', '../src/locales/pseudo-LOCALE.json');
+await pseudoizeJson('../src/locales/en-US/grafana-synthetic-monitoring-app.json', '../src/locales/pseudo-LOCALE/grafana-synthetic-monitoring-app.json');
