@@ -81,7 +81,7 @@ export const CheckFilterGroup = ({ children, onReset, filters }: Props) => {
                 variant="primary"
                 onClick={() => setOpenFilters(false)}
               >
-                <Trans i18nKey={'checks.filter.close'}>Close</Trans>
+                <Trans i18nKey={'checks.filters.close'}>Close</Trans>
               </Button>
             </Stack>
           </div>

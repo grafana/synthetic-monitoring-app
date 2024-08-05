@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - 'src/locales/en-US/grafana-synthetic-monitorin-app.json'
+      - 'src/locales/en-US/grafana-synthetic-monitoring-app.json'
     branches:
       - hackathon/i18n-all-the-things
 

@@ -1,6 +1,6 @@
 {
   "checks": {
-    "filter": {
+    "filters": {
       "close": "Close"
     },
     "list": {
