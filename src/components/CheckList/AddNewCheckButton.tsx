@@ -1,10 +1,10 @@
 import React from 'react';
-import { Trans } from '@grafana/runtime';
 import { Button } from '@grafana/ui';
 
 import { ROUTES } from 'types';
 import { useCanWriteSM } from 'hooks/useDSPermission';
 import { useNavigation } from 'hooks/useNavigation';
+import { Trans } from 'components/i18n';
 
 export function AddNewCheckButton() {
   const navigate = useNavigation();

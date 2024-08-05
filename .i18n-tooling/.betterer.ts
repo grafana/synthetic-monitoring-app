@@ -43,6 +43,12 @@ function countEslintErrors() {
       .forEach(({ messages, filePath }) => {
         const file = fileTestResult.addFile(filePath, '');
         messages.forEach((message, index) => {
+          // TODO: add some sort of unique identifier to the issue
+          // currently if you have an existing issue, remove the existing one then add a new one
+          // this is allowed because it didn't get 'worse'
+          // if the issues had unique identifiers it would get flagged as worse in the above scenario
+          // the trick is working out how to identify them so they endure
+          // when the same issue's line / col number changes
           file.addIssue(0, 0, message.message, `${index}`);
         });
       });
