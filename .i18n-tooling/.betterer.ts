@@ -27,7 +27,7 @@ function countEslintErrors() {
       overrides: [
         {
           files: ['*.ts', '*.tsx'],
-          excludedFiles: ['*.d.ts', '__mocks__/**/*.{ts,tsx}'],
+          excludedFiles: ['*.d.ts'],
           rules: {
             '@grafana/no-untranslated-strings': 'error',
           },

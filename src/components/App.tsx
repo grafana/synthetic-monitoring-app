@@ -12,6 +12,7 @@ import { PermissionsContextProvider } from 'contexts/PermissionsContext';
 import { SMDatasourceProvider } from 'contexts/SMDatasourceContext';
 import { queryClient } from 'data/queryClient';
 import { queryKeys as alertingQueryKeys } from 'data/useAlerts';
+import { t, Trans } from 'components/i18n';
 
 import { FeatureFlagProvider } from './FeatureFlagProvider';
 import { InitialisedRouter } from './Routing';
@@ -36,22 +37,20 @@ export const App = (props: AppRootProps<ProvisioningJsonData>) => {
   }, []);
 
   return (
-    <i18n.PluginI18nProvider namespace={meta.id}>
-      <QueryClientProvider client={queryClient}>
-        <MetaContextProvider meta={meta}>
-          <FeatureFlagProvider>
-            <GlobalStyles />
-            <TranslatedCorrectlyBanner />
-            <SMDatasourceProvider>
-              <PermissionsContextProvider>
-                <InitialisedRouter onNavChanged={onNavChanged} />
-              </PermissionsContextProvider>
-              <ReactQueryDevtools />
-            </SMDatasourceProvider>
-          </FeatureFlagProvider>
-        </MetaContextProvider>
-      </QueryClientProvider>
-    </i18n.PluginI18nProvider>
+    <QueryClientProvider client={queryClient}>
+      <MetaContextProvider meta={meta}>
+        <FeatureFlagProvider>
+          <GlobalStyles />
+          <TranslatedCorrectlyBanner />
+          <SMDatasourceProvider>
+            <PermissionsContextProvider>
+              <InitialisedRouter onNavChanged={onNavChanged} />
+            </PermissionsContextProvider>
+            <ReactQueryDevtools />
+          </SMDatasourceProvider>
+        </FeatureFlagProvider>
+      </MetaContextProvider>
+    </QueryClientProvider>
   );
 };
 
@@ -61,13 +60,11 @@ const TranslatedCorrectlyBanner = () => {
       <Stack justifyContent={`center`}>
         <Stack direction={`column`} alignItems={`center`}>
           <div>{`<Trans />`}</div>
-          <i18n.Trans i18nKey="nav.synthetics.title">
-            IF YOU ARE READING THIS IN THE BRWOSER THERE IS A PROBLEM
-          </i18n.Trans>
+          <Trans i18nKey="nav.synthetics.title">Synthetics in the house</Trans>
         </Stack>
         <Stack direction={`column`} alignItems={`center`}>
           <div>t()</div>
-          <div>{i18n.t('nav.synthetics.title', 'IF YOU ARE READING THIS IN THE BRWOSER THERE IS A PROBLEM')}</div>
+          <div>{t('nav.synthetics.title', 'Synthetics in the house')}</div>
         </Stack>
       </Stack>
     </div>

@@ -15,7 +15,7 @@ import '@grafana/runtime';
 declare module '@grafana/runtime' {
   type I18n = {
     SuccessfullySynced: () => string;
-    Trans: (props: { children: ReactNode; i18nKey: string }) => any;
+    Trans: (props: { children: ReactNode; i18nKey: string; ns?: string }) => any;
     t: (id: string, defaultMessage: string, values?: Record<string, unknown>) => string;
     PluginI18nProvider: (props: { children: ReactNode; namespace: string }) => any;
   };

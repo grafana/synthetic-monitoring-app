@@ -9,7 +9,7 @@
 files:
   [
     {
-      'source': '/src/locales/en-US.json',
-      'translation': '/src/locales/%original_file_name%',
+      'source': '../src/locales/%locale%.json',
+      'translation': '../src/locales/%original_file_name%',
     },
   ]
