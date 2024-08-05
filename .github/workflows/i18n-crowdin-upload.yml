@@ -1,0 +1,31 @@
+
+name: Crowdin Upload Action
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'src/locales/en-US/grafana-synthetic-monitorin-app.json'
+    branches:
+      - hackathon/i18n-all-the-things
+
+jobs:
+  upload-sources-to-crowdin:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Crowdin push
+        uses: crowdin/github-action@v2
+        with:
+          upload_sources: true
+          upload_sources_args: '--dest=src/locales/en-US/grafana-synthetic-monitorin-app.json'
+          upload_translations: false
+          download_translations: false
+          create_pull_request: false
+          config: '.i18n-tooling/crowdin.yml'
+        env:
+          CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
+          CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}

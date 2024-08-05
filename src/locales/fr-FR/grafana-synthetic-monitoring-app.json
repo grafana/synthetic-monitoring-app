@@ -5,8 +5,11 @@
     }
   },
   "nav": {
+    "k6": {
+      "title": "k6 in the house"
+    },
     "synthetics": {
-      "title": "IF YOU ARE READING THIS IN THE BRWOSER THERE IS A PROBLEM"
+      "title": "Synthetics in the house"
     }
   }
 }
