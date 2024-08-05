@@ -36,20 +36,22 @@ export const App = (props: AppRootProps<ProvisioningJsonData>) => {
   }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <MetaContextProvider meta={meta}>
-        <FeatureFlagProvider>
-          <GlobalStyles />
-          <TranslatedCorrectlyBanner />
-          <SMDatasourceProvider>
-            <PermissionsContextProvider>
-              <InitialisedRouter onNavChanged={onNavChanged} />
-            </PermissionsContextProvider>
-            <ReactQueryDevtools />
-          </SMDatasourceProvider>
-        </FeatureFlagProvider>
-      </MetaContextProvider>
-    </QueryClientProvider>
+    <i18n.PluginI18nProvider namespace={meta.id}>
+      <QueryClientProvider client={queryClient}>
+        <MetaContextProvider meta={meta}>
+          <FeatureFlagProvider>
+            <GlobalStyles />
+            <TranslatedCorrectlyBanner />
+            <SMDatasourceProvider>
+              <PermissionsContextProvider>
+                <InitialisedRouter onNavChanged={onNavChanged} />
+              </PermissionsContextProvider>
+              <ReactQueryDevtools />
+            </SMDatasourceProvider>
+          </FeatureFlagProvider>
+        </MetaContextProvider>
+      </QueryClientProvider>
+    </i18n.PluginI18nProvider>
   );
 };
 

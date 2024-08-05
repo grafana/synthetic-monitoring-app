@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trans } from '@grafana/runtime/src/services/internationalization/i18n';
+import { Trans } from '@grafana/runtime';
 import { Button } from '@grafana/ui';
 
 import { ROUTES } from 'types';

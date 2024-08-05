@@ -1,8 +1,11 @@
 import { BettererFileTest } from '@betterer/betterer';
 import { ESLint, Linter } from 'eslint';
+import path from 'path';
+
+const srcPath = path.resolve(__dirname, '../src');
 
 export default {
-  'internationalization (i18n)': () => countEslintErrors().include('**/*.{ts,tsx}'),
+  'internationalization (i18n)': () => countEslintErrors().include('../src/**/*.{ts,tsx}'),
 };
 
 function countEslintErrors() {
@@ -14,23 +17,17 @@ function countEslintErrors() {
 
     const { baseDirectory } = resolver;
     const cli = new ESLint({ cwd: baseDirectory });
-
+    // console.log(filePaths);
     // Get the base config to set up parsing etc correctly
     // this is by far the slowest part of this code. It takes eslint about 2 seconds just to find the config
     const baseConfig = await cli.calculateConfigForFile(filePaths[0]);
 
-    const baseRules: Partial<Linter.RulesRecord> = {};
-
     const config: Linter.Config = {
       ...baseConfig,
-      rules: baseRules,
-
-      // Be careful when specifying overrides for the same rules as in baseRules - it will... override
-      // the same rule, not merge them with different configurations
       overrides: [
         {
-          files: ['**/*.{ts,tsx}'],
-          excludedFiles: ['**/*.d.ts', '**/__mocks__/**/*.{ts,tsx,js,jsx}'],
+          files: ['*.ts', '*.tsx'],
+          excludedFiles: ['*.d.ts', '__mocks__/**/*.{ts,tsx}'],
           rules: {
             '@grafana/no-untranslated-strings': 'error',
           },
@@ -48,10 +45,15 @@ function countEslintErrors() {
     lintResults
       .filter((lintResult) => lintResult.source)
       .forEach(({ messages, filePath }) => {
+        console.log(baseDirectory);
         const file = fileTestResult.addFile(filePath, '');
         messages.forEach((message, index) => {
           file.addIssue(0, 0, message.message, `${index}`);
         });
       });
+
+    console.log({
+      baseDirectory,
+    });
   });
 }
