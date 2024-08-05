@@ -35,5 +35,3 @@ temp/
 
 .vscode
 .DS_Store
-
-src/@grafana/runtimeProxy.ts

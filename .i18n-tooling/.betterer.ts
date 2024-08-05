@@ -1,8 +1,5 @@
 import { BettererFileTest } from '@betterer/betterer';
 import { ESLint, Linter } from 'eslint';
-import path from 'path';
-
-const srcPath = path.resolve(__dirname, '../src');
 
 export default {
   'internationalization (i18n)': () => countEslintErrors().include('../src/**/*.{ts,tsx}'),
@@ -17,7 +14,6 @@ function countEslintErrors() {
 
     const { baseDirectory } = resolver;
     const cli = new ESLint({ cwd: baseDirectory });
-    // console.log(filePaths);
     // Get the base config to set up parsing etc correctly
     // this is by far the slowest part of this code. It takes eslint about 2 seconds just to find the config
     const baseConfig = await cli.calculateConfigForFile(filePaths[0]);
@@ -45,15 +41,10 @@ function countEslintErrors() {
     lintResults
       .filter((lintResult) => lintResult.source)
       .forEach(({ messages, filePath }) => {
-        console.log(baseDirectory);
         const file = fileTestResult.addFile(filePath, '');
         messages.forEach((message, index) => {
           file.addIssue(0, 0, message.message, `${index}`);
         });
       });
-
-    console.log({
-      baseDirectory,
-    });
   });
 }

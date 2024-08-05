@@ -3,10 +3,5 @@
     "list": {
       "add-new": "Add new check"
     }
-  },
-  "nav": {
-    "synthetics": {
-      "title": "chris Synthetics in the house"
-    }
   }
 }

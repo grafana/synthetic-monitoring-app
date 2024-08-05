@@ -1,2 +1,4 @@
 # this should be ignored by the root .gitignore but just in case
 packages/grafana-eslint-rules/node_modules/
+
+.betterer.results-temp
