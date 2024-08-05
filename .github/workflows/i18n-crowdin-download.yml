@@ -2,11 +2,13 @@ name: Crowdin Download Action
 
 on:
   workflow_dispatch:
-  push:
-    # paths:
-    #  - 'src/locales/en-US/grafana-synthetic-monitoring-app.json'
-    branches:
-      - hackathon/i18n-all-the-things
+  #push:
+  # paths:
+  #   - 'src/locales/en-US/grafana-synthetic-monitoring-app.json'
+  # branches:
+  #   - hackathon/i18n-all-the-things
+  release:
+    types: [published]
 
 jobs:
   download-sources-from-crowdin:
