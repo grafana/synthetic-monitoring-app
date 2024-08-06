@@ -59,11 +59,11 @@ INCREMENTAL_IMPROVEMENTS
 
 The tooling will install [`betterer`](https://phenomnomnominal.github.io/betterer/) and `@grafana/eslint-rules` with the custom rule `no-untranslated-strings`. It will run once on install to create a baseline of untranslated strings.
 
-It will update the `./.i18n-tooling/Makefile` with the appropriate scripts and it will add two commands to your `package.json` file `scripts` section:
+It will update the `./.config-i18n/Makefile` with the appropriate scripts and it will add two commands to your `package.json` file `scripts` section:
 
 ```
-"i18n:betterer-local": "make -C ./.i18n-tooling i18n-betterer-local",
-"i18n:betterer-cicd": "make -C ./.i18n-tooling i18n-betterer-cicd"
+"i18n:betterer-local": "make -C ./.config-i18n i18n-betterer-local",
+"i18n:betterer-cicd": "make -C ./.config-i18n i18n-betterer-cicd"
 ```
 
 - `i18n:betterer-local` is intended to be run by the developer locally to ensure that no new untranslated strings have been added and if they would like to check before committing.
@@ -71,7 +71,7 @@ It will update the `./.i18n-tooling/Makefile` with the appropriate scripts and i
 
 _Why are there two commands?_
 
-`i18n:betterer` updates the baseline of untranslated strings and writes them to the `./.i18n-tooling/.betterer.results` file. If it is run locally it will update the baseline after failing and the developer may accidentally commit the changes, so then when it runs in the CI/CD it won't pick up that the plugin's internationalization has gotten worse and pass the test.
+`i18n:betterer` updates the baseline of untranslated strings and writes them to the `./.config-i18n/.betterer.results` file. If it is run locally it will update the baseline after failing and the developer may accidentally commit the changes, so then when it runs in the CI/CD it won't pick up that the plugin's internationalization has gotten worse and pass the test.
 
 #### option `ADD_CI_CD_STEP: true`
 
@@ -89,13 +89,13 @@ EXTRACT_UNTRANSLATED_STRINGS
 
 The tooling will add two files:
 
-- `./.i18n-tooling/i18next-parser.config.cjs`
-- `./.i18n-tooling/psuedo.mjs`
+- `./.config-i18n/i18next-parser.config.cjs`
+- `./.config-i18n/psuedo.mjs`
 
-It will update the `./.i18n-tooling/Makefile` with the appropriate script and it will add a command to your `package.json` file `scripts` section:
+It will update the `./.config-i18n/Makefile` with the appropriate script and it will add a command to your `package.json` file `scripts` section:
 
 ```
-"i18n:extract": "make -C ./.i18n-tooling i18n-extract"
+"i18n:extract": "make -C ./.config-i18n i18n-extract"
 ```
 
 This command will extract all the untranslated strings from your plugin and update your `src/locales/en-US/{pluginId}.json` file with the new strings. It will also create/update a `src/locales/pseudo-LOCALE/{pluginId}.pseudo.json` file with the psuedo translations.
@@ -117,15 +117,15 @@ CROWDIN_UPLOAD
 
 #### option `ON: true`
 
-The tooling will add `./.i18n-tooling/crowdin.yml`. This file will contain the configuration for the Crowdin CLI to upload your translations to the Grafana Crowdin project.
+The tooling will add `./.config-i18n/crowdin.yml`. This file will contain the configuration for the Crowdin CLI to upload your translations to the Grafana Crowdin project.
 
-It will update the `./.i18n-tooling/Makefile` with the appropriate script and it will add a command to your `package.json` file `scripts` section:
+It will update the `./.config-i18n/Makefile` with the appropriate script and it will add a command to your `package.json` file `scripts` section:
 
 ```
-"i18n:upload": "make -C ./.i18n-tooling i18n-upload"
+"i18n:upload": "make -C ./.config-i18n i18n-upload"
 ```
 
-There is a separate README file in the `.i18n-tooling` folder that will guide you through the process of setting up the Crowdin CLI and configuring the tooling to work with your Crowdin project.
+There is a separate README file in the `.config-i18n` folder that will guide you through the process of setting up the Crowdin CLI and configuring the tooling to work with your Crowdin project.
 
 #### option `ADD_CI_CD_STEP: true`
 
@@ -141,15 +141,15 @@ CROWDIN_DOWNLOAD
 
 #### option `ON: true`
 
-The tooling will add `./.i18n-tooling/crowdin.yml`. This file will contain the configuration for the Crowdin CLI to upload your translations to the Grafana Crowdin project.
+The tooling will add `./.config-i18n/crowdin.yml`. This file will contain the configuration for the Crowdin CLI to upload your translations to the Grafana Crowdin project.
 
-It will update the `./.i18n-tooling/Makefile` with the appropriate script and it will add a command to your `package.json` file `scripts` section:
+It will update the `./.config-i18n/Makefile` with the appropriate script and it will add a command to your `package.json` file `scripts` section:
 
 ```
-"i18n:download": "make -C ./.i18n-tooling i18n-download"
+"i18n:download": "make -C ./.config-i18n i18n-download"
 ```
 
-There is a separate README file in the `.i18n-tooling` folder that will guide you through the process of setting up the Crowdin CLI and configuring the tooling to work with your Crowdin project.
+There is a separate README file in the `.config-i18n` folder that will guide you through the process of setting up the Crowdin CLI and configuring the tooling to work with your Crowdin project.
 
 #### option `ADD_CI_CD_STEP: true`
 
@@ -167,7 +167,7 @@ Not currently. This may be an option in the future.
 
 ### Can I opt in/out of specific tooling after I have made my initial choice?
 
-Yes. We keep a file within the `.i18n-tooling` folder (`options.json`) recording your opt-in choices. Update this file with your new choices and run `npx @grafana/i18n-tooling@latest update` to apply your new choices.
+Yes. We keep a file within the `.config-i18n` folder (`options.json`) recording your opt-in choices. Update this file with your new choices and run `npx @grafana/config-i18n@latest update` to apply your new choices.
 
 ### I have added new translations to my plugin with no other code changes. Do I have to do a release so they are picked up by Grafana?
 

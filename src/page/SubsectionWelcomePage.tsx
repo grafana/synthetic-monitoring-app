@@ -5,6 +5,7 @@ import { css } from '@emotion/css';
 
 import { ROUTES } from 'types';
 import { Card } from 'components/Card';
+import { Trans } from 'components/i18n';
 import { PluginPage } from 'components/PluginPage';
 
 import { AppInitializer } from './AppInitializer';
@@ -23,7 +24,9 @@ export const SubsectionWelcomePage = ({ children, redirectTo, buttonText }: Prop
       <Stack alignItems={'center'} justifyContent={'center'}>
         <Card className={styles.welcomeCard}>
           <Stack justifyContent={'center'} alignItems={'center'} direction={'column'} gap={3}>
-            <Text element={`h2`}>Get started monitoring your services</Text>
+            <Text element={`h2`}>
+              <Trans i18nKey="welcome.checks.title">Get started monitoring your services</Trans>
+            </Text>
             <div>{children}</div>
             <AppInitializer redirectTo={redirectTo} buttonText={buttonText} />
           </Stack>

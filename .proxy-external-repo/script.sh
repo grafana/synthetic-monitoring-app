@@ -1,7 +1,7 @@
 #!/bin/bash
 
 from_dir=".proxy-external-repo"
-to_dir=".i18n-tooling"
+to_dir=".config-i18n"
 
 echo -n "Would you like to set up betterer? (y/n): "
 read input

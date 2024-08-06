@@ -1,15 +1,31 @@
 {
   "checks": {
+    "filters": {
+      "close": "Cerrar"
+    },
     "list": {
       "add-new": "Agregar nuevo chequeo"
     }
   },
-  "nav": {
-    "k6": {
-      "title": "k6 in the house"
+  "welcome": {
+    "checks": {
+      "title": "Chris was here"
     },
-    "synthetics": {
-      "title": "Synthetics in the house"
+    "intro": {
+      "started": "Get started",
+      "text": "Grafana Cloud Synthetic Monitoring is powered by k6, Mimir, and Loki. Measure performance and uptime, simulate user journeys, and get alerted before your users",
+      "title": "Proactively monitor your endpoints and user flows from locations around the world"
+    },
+    "tabs": {
+      "as-code-content": "Manage your checks as code, either via <2>Terraform</2> or directly <6>interact with our API</6>",
+      "as-code-title": "Manage as code",
+      "probes-content": "In addition to the locations we provide out of the box, you can set up your own probes to run inside your network or from a location of your choosing",
+      "probes-title": "Private probes",
+      "protocol-content": "Send individual requests via HTTP, DNS, TCP, PING or traceroute",
+      "protocol-title": "Protocol checks",
+      "scripting-content": "Use k6 scripts to monitor your services flexibly",
+      "scripting-title": "Scripting with k6",
+      "title": "Up and running in seconds, no instrumentation required"
     }
   }
 }

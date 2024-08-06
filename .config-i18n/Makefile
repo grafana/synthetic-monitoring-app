@@ -2,7 +2,7 @@
 .PHONY: i18n-extract
 i18n-extract:
 	@echo "Extracting i18n strings for the plugin"
-	yarn run i18next --config ./.i18n-tooling/i18next-parser.config.cjs
+	yarn run i18next --config ./.config-i18n/i18next-parser.config.cjs
 	node ./pseudo.mjs
 
 .PHONY: i18n-upload
@@ -16,9 +16,13 @@ i18n-download:
 	@echo "Download translation files from crowdin"
 	crowdin pull --all
 
+.PHONY: i18n-betterer-setup
+i18n-betterer-setup:
+	betterer ./.config-i18n 
+
 .PHONY: i18n-betterer-cicd
 i18n-betterer-cicd:
-	betterer
+	betterer --update --silent
 
 .PHONY: i18n-betterer-local
 i18n-betterer-local:

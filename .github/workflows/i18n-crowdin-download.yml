@@ -23,7 +23,7 @@ jobs:
           upload_sources: false
           upload_translations: false
           download_translations: true
-          config: '.i18n-tooling/crowdin.yml'
+          config: '.config-i18n/crowdin.yml'
           localization_branch_name: l18n_crowdin_translations
 
           create_pull_request: true
