@@ -1,0 +1,4 @@
+{
+    "i18n:upload": "make -C ./.config-i18n i18n-upload",
+    "i18n:download": "make -C ./.config-i18n i18n-download"
+}

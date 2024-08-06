@@ -84,6 +84,28 @@ copy_i18n_files() {
   cp -r "${from_dir}/i18n/"* "${i18n_dst}"
 }
 
+setup_crowdin() {
+  info "Installing crowdin CLI tool..."
+  yarn add @crowdin/cli
+  # 1. Copy crowdin.yml
+  # 2. Add i18n scripts to package.json
+  # 3. Add commands to Makefile?
+  info "Crowdin successfully installed!"
+
+  info "Updating package.json to include crowdin scripts..."
+
+  local tmpfile
+  tmpfile=$(mktemp)
+  jq --slurpfile input "${from_dir}/crowdin-scripts.json" '.scripts += $input[0]' package.json > "${tmpfile}" &&
+    mv "${tmpfile}" package.json
+
+  info "package.json successfully updated!"
+}
+
+setup_crowdin_cicd() {
+  # 4. Add CI/CD steps
+  true
+}
 
 info() {
   "${GUM}" log --level info "$@"
@@ -108,20 +130,19 @@ info "Setting up i18n tooling..."
 if "${GUM}" confirm "Would you like to set up betterer?" --default=yes ; then
   setup_betterer
 else
-  info "Betterer not set up."
+  info "Skipping betterer setup."
 fi
 
 copy_i18n_files
 
 if "${GUM}" confirm "Would you like to use crowdin to manage your translation files?" --default=yes ; then
-  info "Installing crowdin CLI tool..."
-  yarn add @crowdin/cli
-  # 1. Copy crowdin.yml
-  # 2. Add i18n scripts to package.json
-  # 3. Add commands to Makefile?
-  info "Crowdin successfully installed!"
+  setup_crowdin
+
   if "${GUM}" confirm "Would you like to add CI/CD steps?" --default=yes ; then
-    # 4. Add CI/CD steps
-    :
+    setup_crowdin_cicd
   fi
+else
+  info "Skipping crowdin setup."
 fi
+
+info "i18n tooling setup complete!"
