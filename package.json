@@ -3,8 +3,8 @@
   "version": "1.14.12",
   "description": "Grafana Synthetic Monitoring App",
   "scripts": {
-    "i18n:betterer-update": "make -C ./.i18n-tooling i18n-betterer-update",
-    "i18n:betterer-test": "make -C ./.i18n-tooling i18n-betterer-test",
+    "i18n:betterer-cicd": "make -C ./.i18n-tooling i18n-betterer-cicd",
+    "i18n:betterer-local": "make -C ./.i18n-tooling i18n-betterer-local",
     "i18n:extract": "make -C ./.i18n-tooling i18n-extract",
     "i18n:upload": "make -C ./.i18n-tooling i18n-upload",
     "i18n:download": "make -C ./.i18n-tooling i18n-download",
