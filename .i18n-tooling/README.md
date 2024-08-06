@@ -90,7 +90,7 @@ EXTRACT_UNTRANSLATED_STRINGS
 The tooling will add two files:
 
 - `./.i18n-tooling/i18next-parser.config.cjs`
-- `./.i18n-tooling/psuedo.mjs`
+- `./.i18n-tooling/pseudo.mjs`
 
 It will update the `./.i18n-tooling/Makefile` with the appropriate script and it will add a command to your `package.json` file `scripts` section:
 
