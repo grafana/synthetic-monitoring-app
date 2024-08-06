@@ -1,8 +1,9 @@
 import { BettererFileTest } from '@betterer/betterer';
 import { ESLint, Linter } from 'eslint';
 
+
 export default {
-  'internationalization (i18n)': () => countEslintErrors().include('../src/**/*.{ts,tsx}'),
+  'internationalization (i18n)': () => countEslintErrors().include('./src/**/*.{ts,tsx}')
 };
 
 function countEslintErrors() {
@@ -14,16 +15,18 @@ function countEslintErrors() {
 
     const { baseDirectory } = resolver;
     const cli = new ESLint({ cwd: baseDirectory });
+
     // Get the base config to set up parsing etc correctly
     // this is by far the slowest part of this code. It takes eslint about 2 seconds just to find the config
     const baseConfig = await cli.calculateConfigForFile(filePaths[0]);
 
     const config: Linter.Config = {
       ...baseConfig,
+
       overrides: [
         {
-          files: ['*.ts', '*.tsx'],
-          excludedFiles: ['*.d.ts'],
+          files: ['**/*.{ts,tsx}'],
+          excludedFiles: ['**/*.d.ts'],
           rules: {
             '@grafana/no-untranslated-strings': 'error',
           },
