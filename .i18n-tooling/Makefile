@@ -18,7 +18,7 @@ i18n-download:
 
 .PHONY: i18n-betterer-update
 i18n-betterer-update:
-	betterer
+	betterer --update
 
 .PHONY: i18n-betterer-test
 i18n-betterer-test:
