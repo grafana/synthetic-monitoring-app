@@ -3,6 +3,8 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Tab, TabsBar, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
+import { t } from 'components/i18n';
+
 import { WelcomeTabContent } from './WelcomeTabContent';
 
 export enum WelcomeTab {
@@ -20,7 +22,7 @@ export function WelcomeTabs() {
       <TabsBar className={styles.tabBar}>
         <Tab
           key={WelcomeTab.Protocol}
-          label="Protocol checks"
+          label={t(`welcome.tabs.protocol-title`, `Protocol checks`)}
           onChangeTab={() => {
             setActiveTab(WelcomeTab.Protocol);
           }}
@@ -28,7 +30,7 @@ export function WelcomeTabs() {
         />
         <Tab
           key={WelcomeTab.K6}
-          label="Scripting with k6"
+          label={t(`welcome.tabs.scripting-title`, `Scripting with k6`)}
           onChangeTab={() => {
             setActiveTab(WelcomeTab.K6);
           }}
@@ -36,7 +38,7 @@ export function WelcomeTabs() {
         />
         <Tab
           key={WelcomeTab.PrivateProbes}
-          label="Private probes"
+          label={t(`welcome.tabs.probes-title`, `Private probes`)}
           onChangeTab={() => {
             setActiveTab(WelcomeTab.PrivateProbes);
           }}
@@ -44,7 +46,7 @@ export function WelcomeTabs() {
         />
         <Tab
           key={WelcomeTab.AsCode}
-          label="Manage as code"
+          label={t(`welcome.tabs.as-code-title`, `Manage as code`)}
           onChangeTab={() => {
             setActiveTab(WelcomeTab.AsCode);
           }}
