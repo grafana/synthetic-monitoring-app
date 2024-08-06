@@ -1,10 +1,10 @@
-name: Crowdin Upload Action
+name: i18n - Crowdin Upload Action
 
 on:
   workflow_dispatch:
   push:
-    paths:
-      - 'src/locales/en-US/grafana-synthetic-monitoring-app.json'
+    #paths:
+      #- 'src/locales/en-US/grafana-synthetic-monitoring-app.json'
     branches:
       - hackathon/i18n-all-the-things
 
@@ -15,6 +15,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Extract keys
+        run: yarn i18n:extract
 
       - name: Crowdin push
         uses: crowdin/github-action@v2

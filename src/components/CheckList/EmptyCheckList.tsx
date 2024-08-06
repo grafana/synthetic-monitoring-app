@@ -5,6 +5,7 @@ import { css } from '@emotion/css';
 
 import { ROUTES } from 'types';
 import { useNavigation } from 'hooks/useNavigation';
+import { Trans } from 'components/i18n';
 
 const getStyles = (theme: GrafanaTheme2) => ({
   emptyCard: css`
@@ -38,7 +39,7 @@ export const EmptyCheckList = () => {
         </a>
       </span>
       <Button size="md" onClick={() => navigate(ROUTES.ChooseCheckGroup)}>
-        New check
+        <Trans i18nKey={'checks.list.new'}>New Check</Trans>
       </Button>
     </div>
   );
