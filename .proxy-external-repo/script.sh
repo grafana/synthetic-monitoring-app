@@ -1,4 +1,8 @@
 #!/bin/bash
+
+from_dir=".proxy-external-repo"
+to_dir=".i18n-tooling"
+
 echo -n "Would you like to set up betterer? (y/n): "
 read input
 echo $input
@@ -7,9 +11,9 @@ if [ $input == "y" ]; then
   # Copy packages/grafana-eslint-rules to root directory
   # This is necessary for betterer to find the rules
   echo "---------------------------------"
-  echo "Copying i18n-tooling/packages/grafana-eslint-rules to root directory..."
-  mkdir -p ./packages/grafana-eslint-rules
-  cp -r ./.i18n-tooling/packages/grafana-eslint-rules ./packages
+  echo "Copying $from_dir/packages/grafana-eslint-rules to root directory..."
+  mkdir -p ./$to_dir/packages/grafana-eslint-rules
+  cp -r ./$from_dir/packages/grafana-eslint-rules ./$to_dir/packages/grafana-eslint-rules
 
   # Add packages directory to .gitignore
   echo "" >> .gitignore
