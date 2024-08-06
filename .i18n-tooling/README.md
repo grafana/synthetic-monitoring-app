@@ -141,7 +141,7 @@ CROWDIN_DOWNLOAD
 
 #### option `ON: true`
 
-The tooling will add `./.i18n-tooling/crowdin.yml`. This file will contain the configuration for the Crowdin CLI to upload your translations to the Grafana Crowdin project.
+The tooling will add `./.i18n-tooling/crowdin.yml`. This file will contain the configuration for the Crowdin CLI to download your translations from the Grafana Crowdin project.
 
 It will update the `./.i18n-tooling/Makefile` with the appropriate script and it will add a command to your `package.json` file `scripts` section:
 
