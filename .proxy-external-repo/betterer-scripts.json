@@ -1,0 +1,4 @@
+{
+    "i18n:betterer-cicd": "make -C ./.config-i18n i18n-betterer-cicd",
+    "i18n:betterer-local": "make -C ./.config-i18n i18n-betterer-local"
+}
