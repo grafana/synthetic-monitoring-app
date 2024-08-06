@@ -3,7 +3,6 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { AppRootProps } from '@grafana/data';
 import { i18n } from '@grafana/runtime';
-import { Stack } from '@grafana/ui';
 import { css, Global } from '@emotion/react';
 
 import { ProvisioningJsonData } from 'types';
@@ -12,7 +11,6 @@ import { PermissionsContextProvider } from 'contexts/PermissionsContext';
 import { SMDatasourceProvider } from 'contexts/SMDatasourceContext';
 import { queryClient } from 'data/queryClient';
 import { queryKeys as alertingQueryKeys } from 'data/useAlerts';
-import { t, Trans } from 'components/i18n';
 
 import { FeatureFlagProvider } from './FeatureFlagProvider';
 import { InitialisedRouter } from './Routing';
@@ -41,7 +39,6 @@ export const App = (props: AppRootProps<ProvisioningJsonData>) => {
       <MetaContextProvider meta={meta}>
         <FeatureFlagProvider>
           <GlobalStyles />
-          <TranslatedCorrectlyBanner />
           <SMDatasourceProvider>
             <PermissionsContextProvider>
               <InitialisedRouter onNavChanged={onNavChanged} />
@@ -51,25 +48,6 @@ export const App = (props: AppRootProps<ProvisioningJsonData>) => {
         </FeatureFlagProvider>
       </MetaContextProvider>
     </QueryClientProvider>
-  );
-};
-
-const TranslatedCorrectlyBanner = () => {
-  return (
-    <div style={{ margin: `20px 0` }}>
-      <Stack justifyContent={`center`}>
-        <Stack direction={`column`} alignItems={`center`}>
-          <div>{`<Trans />`}</div>
-          <Trans i18nKey="nav.synthetics.title">Synthetics in the house</Trans>
-          <Trans i18nKey="nav.k6.title">k6 in the house</Trans>
-          <Trans i18nKey="nav.k6.title2">k62 in the house</Trans>
-        </Stack>
-        <Stack direction={`column`} alignItems={`center`}>
-          <div>t()</div>
-          <div>{t('nav.synthetics.title', 'Synthetics in the house')}</div>
-        </Stack>
-      </Stack>
-    </div>
   );
 };
 

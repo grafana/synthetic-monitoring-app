@@ -18,7 +18,7 @@ i18n-download:
 
 .PHONY: i18n-betterer-cicd
 i18n-betterer-cicd:
-	betterer --update --silent
+	betterer
 
 .PHONY: i18n-betterer-local
 i18n-betterer-local:

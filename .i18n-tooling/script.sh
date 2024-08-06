@@ -29,7 +29,7 @@ if [ $input == "y" ]; then
   echo "---------------------------------"
   echo "Running betterer..."
   echo "---------------------------------"
-  yarn i18n:betterer-cicd
+  betterer --update --silent
 
   # Ask user to commit results
   echo "---------------------------------"
