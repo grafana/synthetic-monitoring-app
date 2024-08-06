@@ -25,6 +25,13 @@ if [ $input == "y" ]; then
   echo "---------------------------------"
   echo "Betterer installed!"
   echo "---------------------------------"
+
+  # Run betterer
+  echo "---------------------------------"
+  echo "Running betterer..."
+  echo "---------------------------------"
+  yarn i18n:betterer-update
+
 else
   echo "Betterer not set up."
 fi
