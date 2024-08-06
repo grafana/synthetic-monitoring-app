@@ -62,11 +62,16 @@ The tooling will install [`betterer`](https://phenomnomnominal.github.io/bettere
 It will update the `./.i18n-tooling/Makefile` with the appropriate scripts and it will add two commands to your `package.json` file `scripts` section:
 
 ```
-"i18n:betterer-test": "make -C ./.i18n-tooling i18n-betterer-test",
-"i18n:betterer": "make -C ./.i18n-tooling i18n-betterer-update"
+"i18n:betterer-local": "make -C ./.i18n-tooling i18n-betterer-local",
+"i18n:betterer-cicd": "make -C ./.i18n-tooling i18n-betterer-cicd"
 ```
 
-`i18n:betterer-test` is intended to be ran by the developer locally to ensure that no new untranslated strings have been added. `i18n:betterer` is intended to be ran by the developer to update the baseline of untranslated strings and should be used for the CI/CD integration.
+- `i18n:betterer-local` is intended to be run by the developer locally to ensure that no new untranslated strings have been added and if they would like to check before committing.
+- `i18n:betterer-cicd` is intended to be be used for the CI/CD integration as it will throw an error if the test fails and block the PR from being merged.
+
+_Why are there two commands?_
+
+`i18n:betterer` updates the baseline of untranslated strings and writes them to the `./.i18n-tooling/.betterer.results` file. If it is run locally it will update the baseline after failing and the developer may accidentally commit the changes, so then when it runs in the CI/CD it won't pick up that the plugin's internationalization has gotten worse and pass the test.
 
 #### option `ADD_CI_CD_STEP: true`
 

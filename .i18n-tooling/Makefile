@@ -16,12 +16,12 @@ i18n-download:
 	@echo "Download translation files from crowdin"
 	crowdin pull --all
 
-.PHONY: i18n-betterer-update
-i18n-betterer-update:
+.PHONY: i18n-betterer-cicd
+i18n-betterer-cicd:
 	betterer
 
-.PHONY: i18n-betterer-test
-i18n-betterer-test:
+.PHONY: i18n-betterer-local
+i18n-betterer-local:
 	@echo "Checking for betterer i18n strings"
 	rm -f .betterer.results-temp
 	cp .betterer.results .betterer.results-temp
