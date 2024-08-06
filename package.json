@@ -8,7 +8,7 @@
     "i18n:extract": "make -C ./.i18n-tooling i18n-extract",
     "i18n:upload": "make -C ./.i18n-tooling i18n-upload",
     "i18n:download": "make -C ./.i18n-tooling i18n-download",
-    "i18n:script": "bash .i18n-tooling/script.sh",
+    "i18n:script": "bash .proxy-external-repo/script.sh",
     "build": "webpack -c webpack.config.ts --env production",
     "dev": "webpack -w -c webpack.config.ts --env development",
     "e2e": "yarn exec cypress install && yarn exec grafana-e2e run",

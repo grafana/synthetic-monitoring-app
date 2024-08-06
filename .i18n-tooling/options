@@ -1,5 +1,0 @@
-I18N_EXTRACT=true
-I18N_BETTERER=true
-CROWDIN=true
-CI_ACTIONS=true
-COMPONENTS=src/Components/i18n
