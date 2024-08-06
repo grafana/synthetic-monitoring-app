@@ -23,8 +23,7 @@ if [ $input == "y" ]; then
   yarn add @betterer/betterer
   yarn add @betterer/cli
   echo "---------------------------------"
-  echo "Betterer installed!"
-  echo "---------------------------------"
+  echo "Betterer successfully installed!"
 
   # Run betterer
   echo "---------------------------------"
@@ -34,7 +33,7 @@ if [ $input == "y" ]; then
 
   # Ask user to commit results
   echo "---------------------------------"
-  echo "Betterer file updated!"
+  echo "Betterer file successfully updated!"
   echo "---------------------------------"
   echo "Now that you have added the appropriate packages and run betterer, you should commit the changes to the repository."
   echo "---------------------------------"
