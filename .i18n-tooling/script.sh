@@ -32,6 +32,13 @@ if [ $input == "y" ]; then
   echo "---------------------------------"
   yarn i18n:betterer-update
 
+  # Ask user to commit results
+  echo "---------------------------------"
+  echo "Betterer file updated!"
+  echo "---------------------------------"
+  echo "Now that you have added the appropriate packages and run betterer, you should commit the changes to the repository."
+  echo "---------------------------------"
+
 else
   echo "Betterer not set up."
 fi
