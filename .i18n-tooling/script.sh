@@ -6,7 +6,7 @@ echo $input
 if [ $input == "y" ]; then
   # Copy packages/grafana-eslint-rules to root directory
   # This is necessary for betterer to find the rules
-  echo ""
+  echo "---------------------------------"
   echo "Copying i18n-tooling/packages/grafana-eslint-rules to root directory..."
   mkdir -p ./packages/grafana-eslint-rules
   cp -r ./.i18n-tooling/packages/grafana-eslint-rules ./packages
@@ -16,11 +16,15 @@ if [ $input == "y" ]; then
   echo "# Directory for i18n eslint rules" >> .gitignore
   echo "packages/" >> .gitignore
 
-  echo ""
+  # Install betterer
+  echo "---------------------------------"
   echo "Installing betterer..."
-  # npm install -g betterer
+  echo "---------------------------------"
+  yarn add @betterer/betterer
+  yarn add @betterer/cli
+  echo "---------------------------------"
   echo "Betterer installed!"
-  echo "You can now run 'betterer init' to create a betterer config file."
+  echo "---------------------------------"
 else
   echo "Betterer not set up."
 fi

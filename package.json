@@ -32,9 +32,6 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@babel/core": "^7.21.4",
-    "@betterer/betterer": "5.4.0",
-    "@betterer/cli": "5.4.0",
-    "@betterer/eslint": "5.4.0",
     "@commitlint/cli": "^12.1.4",
     "@commitlint/config-conventional": "^12.1.4",
     "@crowdin/cli": "^4.1.1",
