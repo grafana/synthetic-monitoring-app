@@ -33,6 +33,8 @@ setup_betterer() {
 
   mkdir -p "./packages/grafana-eslint-rules"
   cp -r "./${from_dir}/packages/grafana-eslint-rules" "./packages/"
+  cp -r "./${from_dir}/.betterer.ts" "./"
+  cp -r "./${from_dir}/.betterer.results" "./"
 
   if ! grep -q '^packages/$' .gitignore ; then
     cat <<-EOT >> .gitignore
