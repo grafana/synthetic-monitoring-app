@@ -10,19 +10,37 @@ setup() {
     exit 1
   fi
 
-  if ! command -v bingo &> /dev/null; then
-    go install github.com/bwplotka/bingo@latest
-    if command -v bingo &> /dev/null; then
-      echo "bingo installed successfully."
-    else
-      echo "E: bingo failed to install. Stop."
-      exit 1
+  BINGO=$(command -v bingo 2> /dev/null)
+
+  if test -z "${BINGO}" ; then
+    # No bingo on the path. Is GOBIN not in the user's path?
+    GOBIN=$(go env GOBIN)
+    if test -z "${GOBIN}" ; then
+      GOBIN=$(go env GOPATH)/bin
+    fi
+
+    # Try again with this path.
+    BINGO=$(command -v "${GOBIN}/bingo" 2> /dev/null)
+
+    if test -z "${BINGO}" ; then
+      # Still no bingo. Install it.
+      go install github.com/bwplotka/bingo@latest
+
+      # Is it there yet?
+      BINGO=$(command -v "${GOBIN}/bingo" 2> /dev/null)
+
+      if test -z "${BINGO}" ; then
+        echo "E: bingo failed to install. Stop."
+        exit 2
+      else
+        echo "bingo installed successfully."
+      fi
     fi
   fi
 
-  if ! bingo get ; then
+  if ! "${BINGO}" get ; then
     echo "E: bingo get failed. Stop."
-    exit 1
+    exit 3
   fi
 }
 
