@@ -170,8 +170,8 @@ setup_crowdin() {
 }
 
 setup_crowdin_cicd() {
-  # 4. Add CI/CD steps
-  true
+  sed -e "s,{{PLUGIN_ID}},${plugin_id},g" < "${from_dir}/crowdin/i18n-crowdin-download.yml" > .github/workflows/i18n-crowdin-download.yml
+  sed -e "s,{{PLUGIN_ID}},${plugin_id},g" < "${from_dir}/crowdin/i18n-crowdin-upload.yml" > .github/workflows/i18n-crowdin-upload.yml
 }
 
 info() {
