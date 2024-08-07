@@ -4,7 +4,7 @@ i18n-betterer-setup:
 
 .PHONY: i18n-betterer-cicd
 i18n-betterer-cicd:
-	betterer --update --silent
+	betterer --update --silent --config ../.betterer.ts --results ../.betterer.results
 
 .PHONY: i18n-betterer-local
 i18n-betterer-local:
