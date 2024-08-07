@@ -86,7 +86,8 @@
     },
     "list": {
       "add-new": "Add new check",
-      "new": "New Check"
+      "new": "New Check",
+      "title": "Checks"
     },
     "set-thresholds-button": "Set Thresholds",
     "showing": "Currently showing {{checks}} of {{total}} total checks",
