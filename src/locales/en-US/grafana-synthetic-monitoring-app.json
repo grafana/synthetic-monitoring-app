@@ -103,6 +103,8 @@
       "cta": "See Alerting"
     },
     "checks": {
+      "content": "Click the {{buttonText}} button to initialize the plugin and create checks or visit the Synthetic Monitoring <4>documentation</4> for more information",
+      "cta": "Create a Check",
       "title": "Get started monitoring your services"
     },
     "intro": {
