@@ -42,6 +42,8 @@ setup() {
     echo "E: bingo get failed. Stop."
     exit 3
   fi
+
+  . ./.bingo/variables.env
 }
 
 setup_betterer() {
@@ -142,8 +144,6 @@ error() {
 }
 
 setup
-
-. ./.bingo/variables.env
 
 from_dir=".proxy-external-repo"
 to_dir=".config-i18n"
