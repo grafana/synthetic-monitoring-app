@@ -3,7 +3,7 @@ import { ESLint, Linter } from 'eslint';
 
 
 export default {
-  'internationalization (i18n)': () => countEslintErrors().include('./src/**/*.{ts,tsx}')
+  'internationalization (i18n)': () => countEslintErrors().include('../src/**/*.{ts,tsx}')
 };
 
 function countEslintErrors() {
@@ -25,8 +25,8 @@ function countEslintErrors() {
 
       overrides: [
         {
-          files: ['**/*.{ts,tsx}'],
-          excludedFiles: ['**/*.d.ts'],
+          files: ['*.ts', '*.tsx'],
+          excludedFiles: ['*.d.ts'],
           rules: {
             '@grafana/no-untranslated-strings': 'error',
           },

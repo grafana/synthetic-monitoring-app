@@ -5,7 +5,7 @@
 //
 exports[`internationalization (i18n)`] = {
   value: `{
-    "src/components/AccessToken.tsx:5381": [
+    "../src/components/AccessToken.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "2"],
@@ -14,21 +14,21 @@ exports[`internationalization (i18n)`] = {
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "5"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "6"]
     ],
-    "src/components/AlertAnnotations.tsx:5381": [
+    "../src/components/AlertAnnotations.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "2"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "3"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "4"]
     ],
-    "src/components/AlertLabels.tsx:5381": [
+    "../src/components/AlertLabels.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "2"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "3"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "4"]
     ],
-    "src/components/AlertRuleForm.tsx:5381": [
+    "../src/components/AlertRuleForm.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "2"],
@@ -48,39 +48,39 @@ exports[`internationalization (i18n)`] = {
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "16"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "17"]
     ],
-    "src/components/AlertStatus/AlertStatus.tsx:5381": [
+    "../src/components/AlertStatus/AlertStatus.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "2"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "3"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "4"]
     ],
-    "src/components/BackendAddress/BackendAddress.tsx:5381": [
+    "../src/components/BackendAddress/BackendAddress.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"]
     ],
-    "src/components/BulkEditModal/BulkEditModal.tsx:5381": [
+    "../src/components/BulkEditModal/BulkEditModal.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"]
     ],
-    "src/components/CheckEditor/CheckProbes.tsx:5381": [
+    "../src/components/CheckEditor/CheckProbes.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"]
     ],
-    "src/components/CheckEditor/FormComponents/BrowserCheckInstance.tsx:5381": [
+    "../src/components/CheckEditor/FormComponents/BrowserCheckInstance.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"]
     ],
-    "src/components/CheckEditor/FormComponents/ChooseCheckType.tsx:5381": [
+    "../src/components/CheckEditor/FormComponents/ChooseCheckType.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"]
     ],
-    "src/components/CheckEditor/FormComponents/DNSCheckResponseMatches.tsx:5381": [
+    "../src/components/CheckEditor/FormComponents/DNSCheckResponseMatches.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "2"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "3"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "4"]
     ],
-    "src/components/CheckEditor/FormComponents/HttpCheckRegExValidation.tsx:5381": [
+    "../src/components/CheckEditor/FormComponents/HttpCheckRegExValidation.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "2"],
@@ -88,34 +88,34 @@ exports[`internationalization (i18n)`] = {
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "4"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "5"]
     ],
-    "src/components/CheckEditor/FormComponents/HttpRequest.tsx:5381": [
+    "../src/components/CheckEditor/FormComponents/HttpRequest.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "2"]
     ],
-    "src/components/CheckEditor/FormComponents/MultiHttpAssertions.tsx:5381": [
+    "../src/components/CheckEditor/FormComponents/MultiHttpAssertions.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "2"]
     ],
-    "src/components/CheckEditor/FormComponents/MultiHttpCheckRequests.tsx:5381": [
+    "../src/components/CheckEditor/FormComponents/MultiHttpCheckRequests.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"]
     ],
-    "src/components/CheckEditor/FormComponents/MultiHttpVariables.tsx:5381": [
+    "../src/components/CheckEditor/FormComponents/MultiHttpVariables.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"]
     ],
-    "src/components/CheckEditor/FormComponents/ScriptedCheckInstance.tsx:5381": [
+    "../src/components/CheckEditor/FormComponents/ScriptedCheckInstance.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"]
     ],
-    "src/components/CheckEditor/FormComponents/TCPCheckQueryAndResponse.tsx:5381": [
+    "../src/components/CheckEditor/FormComponents/TCPCheckQueryAndResponse.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"]
     ],
-    "src/components/CheckForm/CheckForm.tsx:5381": [
+    "../src/components/CheckForm/CheckForm.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"]
     ],
-    "src/components/CheckForm/FormLayout/FormLayout.test.tsx:5381": [
+    "../src/components/CheckForm/FormLayout/FormLayout.test.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "2"],
@@ -130,28 +130,28 @@ exports[`internationalization (i18n)`] = {
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "11"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "12"]
     ],
-    "src/components/CheckForm/FormLayout/FormLayout.tsx:5381": [
+    "../src/components/CheckForm/FormLayout/FormLayout.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "2"]
     ],
-    "src/components/CheckForm/FormLayout/FormSupportingContent.tsx:5381": [
+    "../src/components/CheckForm/FormLayout/FormSupportingContent.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"]
     ],
-    "src/components/CheckForm/FormLayouts/CheckBrowserLayout.tsx:5381": [
+    "../src/components/CheckForm/FormLayouts/CheckBrowserLayout.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"]
     ],
-    "src/components/CheckForm/FormLayouts/CheckScriptedLayout.tsx:5381": [
+    "../src/components/CheckForm/FormLayouts/CheckScriptedLayout.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"]
     ],
-    "src/components/CheckFormAlert.tsx:5381": [
+    "../src/components/CheckFormAlert.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "2"]
     ],
-    "src/components/CheckList/BulkActions.tsx:5381": [
+    "../src/components/CheckList/BulkActions.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "2"],
@@ -159,36 +159,17 @@ exports[`internationalization (i18n)`] = {
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "4"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "5"]
     ],
-    "src/components/CheckList/CheckFilterGroup.tsx:5381": [
+    "../src/components/CheckList/CheckFilterGroup.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"]
     ],
-    "src/components/CheckList/CheckListHeader.tsx:5381": [
-      [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
-      [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"],
-      [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "2"],
-      [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "3"],
-      [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "4"]
-    ],
-    "src/components/CheckList/EmptyCheckList.tsx:5381": [
+    "../src/components/CheckList/EmptyCheckList.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"]
     ],
-    "src/components/CheckListItem/CheckItemActionButtons.tsx:5381": [
+    "../src/components/CheckTestResultsModal.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"]
     ],
-    "src/components/CheckListItem/CheckListItemDetails.tsx:5381": [
-      [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
-      [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"],
-      [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "2"],
-      [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "3"],
-      [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "4"],
-      [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "5"],
-      [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "6"]
-    ],
-    "src/components/CheckTestResultsModal.tsx:5381": [
-      [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"]
-    ],
-    "src/components/CheckUsage.tsx:5381": [
+    "../src/components/CheckUsage.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "2"],
@@ -196,34 +177,31 @@ exports[`internationalization (i18n)`] = {
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "4"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "5"]
     ],
-    "src/components/ChooseCheckGroup.tsx:5381": [
+    "../src/components/ChooseCheckGroup.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
-      [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"],
-      [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "2"],
-      [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "3"],
-      [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "4"]
+      [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"]
     ],
-    "src/components/CodeSnippet/CodeSnippet.tsx:5381": [
+    "../src/components/CodeSnippet/CodeSnippet.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"]
     ],
-    "src/components/ConfigActions.tsx:5381": [
+    "../src/components/ConfigActions.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "2"]
     ],
-    "src/components/DisablePluginModal.tsx:5381": [
+    "../src/components/DisablePluginModal.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "2"]
     ],
-    "src/components/LabelField/LabelField.tsx:5381": [
+    "../src/components/LabelField/LabelField.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"]
     ],
-    "src/components/LabelFilterInput.tsx:5381": [
+    "../src/components/LabelFilterInput.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"]
     ],
-    "src/components/MismatchedDatasourceModal.tsx:5381": [
+    "../src/components/MismatchedDatasourceModal.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "2"],
@@ -231,10 +209,10 @@ exports[`internationalization (i18n)`] = {
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "4"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "5"]
     ],
-    "src/components/NameValueInput/NameValueInput.tsx:5381": [
+    "../src/components/NameValueInput/NameValueInput.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"]
     ],
-    "src/components/NewScriptedCheck/NewScriptedCheck.tsx:5381": [
+    "../src/components/NewScriptedCheck/NewScriptedCheck.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "2"],
@@ -242,40 +220,40 @@ exports[`internationalization (i18n)`] = {
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "4"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "5"]
     ],
-    "src/components/ProbeCard/ProbeCard.tsx:5381": [
+    "../src/components/ProbeCard/ProbeCard.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"]
     ],
-    "src/components/ProbeEditor/ProbeEditor.tsx:5381": [
+    "../src/components/ProbeEditor/ProbeEditor.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "2"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "3"]
     ],
-    "src/components/ProbeStatus/ProbeStatus.tsx:5381": [
+    "../src/components/ProbeStatus/ProbeStatus.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"]
     ],
-    "src/components/ProbeTokenModal/ProbeTokenModal.tsx:5381": [
+    "../src/components/ProbeTokenModal/ProbeTokenModal.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"]
     ],
-    "src/components/ProgrammaticManagement.tsx:5381": [
+    "../src/components/ProgrammaticManagement.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"]
     ],
-    "src/components/QueryParams.tsx:5381": [
+    "../src/components/QueryParams.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "2"]
     ],
-    "src/components/Request/RequestOptions.tsx:5381": [
+    "../src/components/Request/RequestOptions.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"]
     ],
-    "src/components/SimpleMap/SimpleMap.tsx:5381": [
+    "../src/components/SimpleMap/SimpleMap.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"]
     ],
-    "src/components/TerraformConfig/TerraformConfig.tsx:5381": [
+    "../src/components/TerraformConfig/TerraformConfig.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "2"],
@@ -293,21 +271,21 @@ exports[`internationalization (i18n)`] = {
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "14"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "15"]
     ],
-    "src/components/Thresholds/ThresholdGlobalSettings.tsx:5381": [
+    "../src/components/Thresholds/ThresholdGlobalSettings.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "2"]
     ],
-    "src/components/TimeSlider/TimeSlider.tsx:5381": [
+    "../src/components/TimeSlider/TimeSlider.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"]
     ],
-    "src/hooks/useFeatureFlag.test.tsx:5381": [
+    "../src/hooks/useFeatureFlag.test.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "2"]
     ],
-    "src/page/AlertingPage.tsx:5381": [
+    "../src/page/AlertingPage.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "2"],
@@ -321,16 +299,10 @@ exports[`internationalization (i18n)`] = {
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "10"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "11"]
     ],
-    "src/page/AppInitializer.tsx:5381": [
+    "../src/page/AppInitializer.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"]
     ],
-    "src/page/ChecksWelcomePage.tsx:5381": [
-      [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
-      [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"],
-      [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "2"],
-      [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "3"]
-    ],
-    "src/page/ConfigPage/ConfigPage.tsx:5381": [
+    "../src/page/ConfigPage/ConfigPage.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "2"],
@@ -339,21 +311,21 @@ exports[`internationalization (i18n)`] = {
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "5"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "6"]
     ],
-    "src/page/EditCheck/EditCheck.tsx:5381": [
+    "../src/page/EditCheck/EditCheck.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "2"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "3"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "4"]
     ],
-    "src/page/EditProbe/EditProbe.tsx:5381": [
+    "../src/page/EditProbe/EditProbe.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"]
     ],
-    "src/page/NewProbe/NewProbe.tsx:5381": [
+    "../src/page/NewProbe/NewProbe.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"]
     ],
-    "src/page/Probes/Probes.tsx:5381": [
+    "../src/page/Probes/Probes.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "2"],
@@ -361,42 +333,42 @@ exports[`internationalization (i18n)`] = {
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "4"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "5"]
     ],
-    "src/page/ProbesWelcomePage.tsx:5381": [
+    "../src/page/ProbesWelcomePage.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "2"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "3"]
     ],
-    "src/page/UnprovisionedSetup.tsx:5381": [
+    "../src/page/UnprovisionedSetup.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "2"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "3"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "4"]
     ],
-    "src/page/__mocks__/DashboardPage.tsx:5381": [
+    "../src/page/__mocks__/DashboardPage.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"]
     ],
-    "src/page/__mocks__/SceneHomepage.tsx:5381": [
+    "../src/page/__mocks__/SceneHomepage.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"]
     ],
-    "src/scenes/Common/editButton.tsx:5381": [
+    "../src/scenes/Common/editButton.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"]
     ],
-    "src/scenes/Common/emptyScene.tsx:5381": [
+    "../src/scenes/Common/emptyScene.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "2"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "3"]
     ],
-    "src/scenes/SCRIPTED/AssertionsTable/AssertionsTable.tsx:5381": [
+    "../src/scenes/SCRIPTED/AssertionsTable/AssertionsTable.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "2"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "3"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "4"]
     ],
-    "src/scenes/SCRIPTED/ResultsByTargetTable/ResultByTargetTable.tsx:5381": [
+    "../src/scenes/SCRIPTED/ResultsByTargetTable/ResultByTargetTable.tsx:5381": [
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "0"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "1"],
       [0, 0, 0, "No untranslated strings. Wrap text with <Trans />", "2"],
