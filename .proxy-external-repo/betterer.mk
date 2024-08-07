@@ -1,3 +1,4 @@
+
 .PHONY: i18n-betterer-setup
 i18n-betterer-setup:
 	betterer ./.config-i18n

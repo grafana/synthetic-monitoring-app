@@ -81,6 +81,8 @@ setup_betterer() {
   jq --slurpfile input "${from_dir}/betterer-packages.json" '.devDependencies += $input[0]' package.json > "${tmpfile}" &&
     mv "${tmpfile}" package.json
 
+  cat "${from_dir}/betterer.mk" >> "${to_dir}/Makefile"
+
   info "package.json successfully updated!"
 
   info "Installing betterer..."
@@ -151,6 +153,8 @@ setup_crowdin() {
   tmpfile=$(mktemp)
   jq --slurpfile input "${from_dir}/crowdin-scripts.json" '.scripts += $input[0]' package.json > "${tmpfile}" &&
     mv "${tmpfile}" package.json
+
+  cat "${from_dir}/crowdin.mk" >> "${to_dir}/Makefile"
 
   info "package.json successfully updated!"
 }
