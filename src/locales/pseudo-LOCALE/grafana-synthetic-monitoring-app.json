@@ -93,6 +93,9 @@
     "showing": "Cūřřęŉŧľy şĥőŵįŉģ {{checks}} őƒ {{total}} ŧőŧäľ čĥęčĸş",
     "sort-by": "Ŝőřŧ"
   },
+  "checks-group": {
+    "create": "Cřęäŧę {{label}} čĥęčĸ"
+  },
   "gauge": {
     "latency": "Ŀäŧęŉčy",
     "reachability": "Ŗęäčĥäþįľįŧy",

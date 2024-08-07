@@ -93,6 +93,9 @@
     "showing": "Currently showing {{checks}} of {{total}} total checks",
     "sort-by": "Sort"
   },
+  "checks-group": {
+    "create": "Create {{label}} check"
+  },
   "gauge": {
     "latency": "Latency",
     "reachability": "Reachability",

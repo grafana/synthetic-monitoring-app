@@ -61,7 +61,7 @@ const CheckGroupCard = ({ group }: { group: CheckTypeGroupOption }) => {
         <div className={styles.desc}>{group.description}</div>
         <div>
           <LinkButton disabled={disabled} href={`${getRoute(ROUTES.NewCheck)}/${group.value}`}>
-            Create {group.label} check
+            <Trans i18nKey={`checks-group.create`}>Create {{ label: group.label }} check</Trans>
           </LinkButton>
         </div>
         <div className={styles.protocols}>
