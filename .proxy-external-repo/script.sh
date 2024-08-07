@@ -44,11 +44,6 @@ setup_betterer() {
 	EOT
   fi
 
-  info "Installing betterer..."
-  yarn add @betterer/betterer
-  yarn add @betterer/cli
-  info "Betterer successfully installed!"
-
   info "Updating package.json to include betterer scripts..."
 
   local tmpfile
@@ -62,6 +57,11 @@ setup_betterer() {
     mv "${tmpfile}" package.json
 
   info "package.json successfully updated!"
+
+  info "Installing betterer..."
+  yarn add @betterer/betterer
+  yarn add @betterer/cli
+  info "Betterer successfully installed!"
 
   "${GUM}" spin --title="Running betterer..." -- "${bin_path}/betterer" --update --silent
 
