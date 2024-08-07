@@ -3,13 +3,10 @@
   "version": "1.14.12",
   "description": "Grafana Synthetic Monitoring App",
   "scripts": {
-    "i18n:betterer-cicd": "make -C ./.config-i18n i18n-betterer-cicd",
-    "i18n:betterer-local": "make -C ./.config-i18n i18n-betterer-local",
     "i18n:extract": "make -C ./.config-i18n i18n-extract",
     "i18n:upload": "make -C ./.config-i18n i18n-upload",
     "i18n:download": "make -C ./.config-i18n i18n-download",
     "i18n:script": "bash .proxy-external-repo/script.sh",
-    "betterer": "betterer",
     "build": "webpack -c webpack.config.ts --env production",
     "dev": "webpack -w -c webpack.config.ts --env development",
     "e2e": "yarn exec cypress install && yarn exec grafana-e2e run",
@@ -27,14 +24,14 @@
     "spellcheck": "cspell -c cspell.config.json \"**/*.{ts,tsx,js,go,md,mdx,yml,yaml,json,scss,css}\"",
     "test": "jest --all",
     "test:changed": "jest --watch --onlyChanged",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "i18n:betterer-cicd": "make -C ./.config-i18n i18n-betterer-cicd",
+    "i18n:betterer-local": "make -C ./.config-i18n i18n-betterer-local"
   },
   "author": "Grafana Labs",
   "license": "Apache-2.0",
   "devDependencies": {
     "@babel/core": "^7.21.4",
-    "@betterer/betterer": "^5.4.0",
-    "@betterer/cli": "^5.4.0",
     "@commitlint/cli": "^12.1.4",
     "@commitlint/config-conventional": "^12.1.4",
     "@crowdin/cli": "^4.1.1",
@@ -104,6 +101,8 @@
     "webpack-merge": "^5.8.0"
   },
   "dependencies": {
+    "@betterer/betterer": "^5.4.0",
+    "@betterer/cli": "^5.4.0",
     "@emotion/css": "^11.1.3",
     "@grafana/data": "11.0.0",
     "@grafana/faro-web-sdk": "1.3.6",

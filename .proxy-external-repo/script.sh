@@ -31,8 +31,10 @@ setup_betterer() {
   # This is necessary for betterer to find the rules
   info "Copying $from_dir/packages/grafana-eslint-rules to root directory..."
 
-  mkdir -p "${to_dir}/packages"
-  cp -r "${from_dir}/packages/grafana-eslint-rules" "${to_dir}/packages/"
+  mkdir -p "./packages/grafana-eslint-rules"
+  cp -r "./${from_dir}/packages/grafana-eslint-rules" "./packages/"
+  cp -r "./${from_dir}/.betterer.ts" "./"
+  cp -r "./${from_dir}/.betterer.results" "./"
 
   if ! grep -q '^packages/$' .gitignore ; then
     cat <<-EOT >> .gitignore
@@ -42,6 +44,20 @@ setup_betterer() {
 	EOT
   fi
 
+  info "Updating package.json to include betterer scripts..."
+
+  local tmpfile
+  tmpfile=$(mktemp)
+  jq --slurpfile input "${from_dir}/betterer-scripts.json" '.scripts += $input[0]' package.json > "${tmpfile}" &&
+    mv "${tmpfile}" package.json
+
+  local tmpfile
+  tmpfile=$(mktemp)
+  jq --slurpfile input "${from_dir}/betterer-packages.json" '.devDependencies += $input[0]' package.json > "${tmpfile}" &&
+    mv "${tmpfile}" package.json
+
+  info "package.json successfully updated!"
+
   info "Installing betterer..."
   yarn add @betterer/betterer
   yarn add @betterer/cli
@@ -50,15 +66,6 @@ setup_betterer() {
   "${GUM}" spin --title="Running betterer..." -- "${bin_path}/betterer" --update --silent
 
   info "Betterer file successfully updated!"
-
-  info "Updating package.json to include betterer scripts..."
-
-  local tmpfile
-  tmpfile=$(mktemp)
-  jq --slurpfile input "${from_dir}/betterer-scripts.json" '.scripts += $input[0]' package.json > "${tmpfile}" &&
-    mv "${tmpfile}" package.json
-
-  info "package.json successfully updated!"
 
   info "Now that you have added the appropriate packages and run betterer, you should commit the changes to the repository."
 }
@@ -120,9 +127,8 @@ setup
 
 . ./.bingo/variables.env
 
-# TODO(mem): IIRC 'readlink -m' is not available on macOS
-from_dir=$(readlink -m ".proxy-external-repo")
-to_dir=$(readlink -m ".config-i18n")
+from_dir=".proxy-external-repo"
+to_dir=".config-i18n"
 bin_path=$(yarn bin)
 
 info "Setting up i18n tooling..."
