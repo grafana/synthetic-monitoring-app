@@ -48,6 +48,13 @@ setup() {
     exit 3
   fi
 
+  if test ! -e .bingo/gum.mod ; then
+    if ! "${BINGO}" get github.com/charmbracelet/gum@v0.14.3 ; then
+      echo "E: adding gum failed. Stop."
+      exit 4
+    fi
+  fi
+
   . ./.bingo/variables.env
 }
 
