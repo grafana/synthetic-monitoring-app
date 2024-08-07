@@ -98,6 +98,11 @@
     "reachability": "Reachability",
     "uptime": "Uptime"
   },
+  "probes": {
+    "list": {
+      "description": "Probes are the agents responsible for emulating user interactions and collecting data from your specified targets across different global locations."
+    }
+  },
   "welcome": {
     "alerts": {
       "content": "Click the {{buttonText}} button to initialize the plugin and see a list of default alerts or visit the Synthetic Monitoring <4>documentation</4> for more information",

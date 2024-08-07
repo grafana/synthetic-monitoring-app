@@ -8,6 +8,7 @@ import { useProbes } from 'data/useProbes';
 import { useCanWriteSM } from 'hooks/useDSPermission';
 import { CenteredSpinner } from 'components/CenteredSpinner';
 import { DocsLink } from 'components/DocsLink';
+import { Trans } from 'components/i18n';
 import { PluginPage } from 'components/PluginPage';
 import { ProbeList } from 'components/ProbeList';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
@@ -20,8 +21,8 @@ export const Probes = () => {
     <PluginPage actions={<Actions />}>
       <div className={css({ maxWidth: `560px`, marginBottom: theme.spacing(4) })}>
         <p>
-          Probes are the agents responsible for emulating user interactions and collecting data from your specified
-          targets across different global locations.
+          <Trans i18nKey={'probes.list.description'}>Probes are the agents responsible for emulating user interactions and collecting data from your specified
+          targets across different global locations.</Trans>
         </p>
         <DocsLink article="probes">Learn more about probes</DocsLink>
       </div>
