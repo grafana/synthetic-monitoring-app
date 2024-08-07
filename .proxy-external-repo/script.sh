@@ -95,7 +95,9 @@ setup_betterer() {
   info "Now that you have added the appropriate packages and run betterer, you should commit the changes to the repository."
 }
 
-copy_i18n_files() {
+setup_i18n() {
+  info "Setting up basic i18n tooling..."
+
   i18n_dst_default='src/components/i18n'
 
   if ! "${AUTOPILOT}" ; then
@@ -109,11 +111,30 @@ copy_i18n_files() {
 
   i18n_dst="${i18n_dst:-${i18n_dst_default}}"
 
+  mkdir -p "${to_dir}"
+
+  cp "${from_dir}/i18next-parser.config.cjs" "${to_dir}"
+  cp "${from_dir}/Makefile" "${to_dir}"
+  cp "${from_dir}/pseudo.mjs" "${to_dir}"
+  cp "${from_dir}/README.md" "${to_dir}"
+  cp -a "${from_dir}/packages" "${to_dir}"
+
   info "Installing i18n functions to '${i18n_dst}'"
 
   mkdir -p "${i18n_dst}"
   # TODO(mem): Is this the right source directory for this?
   cp -r "${from_dir}/i18n/"* "${i18n_dst}"
+
+  info "Updating package.json to include basic i18n scripts..."
+
+  local tmpfile
+  tmpfile=$(mktemp)
+  jq --slurpfile input "${from_dir}/i18n-scripts.json" '.scripts += $input[0]' package.json > "${tmpfile}" &&
+    mv "${tmpfile}" package.json
+
+  info "package.json successfully updated!"
+
+  info "Setting up basic i18n tooling... done!"
 }
 
 setup_crowdin() {
@@ -156,13 +177,13 @@ if "${GUM}" confirm "Would you like to set up the i18n tooling with the recommen
   AUTOPILOT=true
 fi
 
+setup_i18n
+
 if "${AUTOPILOT}" || "${GUM}" confirm "Would you like to set up betterer?" --default=yes ; then
   setup_betterer
 else
   info "Skipping betterer setup."
 fi
-
-copy_i18n_files
 
 if "${AUTOPILOT}" || "${GUM}" confirm "Would you like to use crowdin to manage your translation files?" --default=yes ; then
   setup_crowdin
