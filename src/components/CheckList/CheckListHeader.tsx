@@ -8,6 +8,7 @@ import { FilterType } from 'hooks/useCheckFilters';
 import { useCanWriteSM } from 'hooks/useDSPermission';
 import { CheckFilters } from 'components/CheckFilters';
 import { CHECK_LIST_SORT_OPTIONS } from 'components/constants';
+import { Trans } from 'components/i18n';
 
 import { ThresholdGlobalSettings } from '../Thresholds/ThresholdGlobalSettings';
 import { AddNewCheckButton } from './AddNewCheckButton';
@@ -59,7 +60,9 @@ export const CheckListHeader = ({
         <div>
           {viewType !== CheckListViewType.Viz && (
             <div>
-              Currently showing {currentPageChecks.length} of {checks.length} total checks
+              <Trans i18nKey={`checks.showing`}>
+                Currently showing {{ checks: currentPageChecks.length }} of {{ total: checks.length }} total checks
+              </Trans>
             </div>
           )}
         </div>
@@ -73,7 +76,7 @@ export const CheckListHeader = ({
           {canEdit && (
             <>
               <Button variant="secondary" fill="outline" onClick={() => setShowThresholdModal((v) => !v)}>
-                Set Thresholds
+                <Trans i18nKey={`checks.set-thresholds-button`}>Set Thresholds</Trans>
               </Button>
               <AddNewCheckButton />
             </>
@@ -102,7 +105,8 @@ export const CheckListHeader = ({
           aria-label="Sort checks by"
           prefix={
             <div>
-              <Icon name="sort-amount-down" /> Sort
+              <Icon name="sort-amount-down" />
+              <Trans i18nKey={`checks.sort-by`}>Sort</Trans>
             </div>
           }
           options={CHECK_LIST_SORT_OPTIONS}

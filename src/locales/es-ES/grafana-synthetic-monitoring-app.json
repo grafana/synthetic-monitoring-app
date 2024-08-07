@@ -1,31 +1,128 @@
 {
-  "checks": {
-    "filters": {
-      "close": "Cerrar"
+  "check": {
+    "disabled": "Disabled",
+    "enabled": "Enabled",
+    "executions-rate": "{{rate}} executions / month",
+    "frequency": "{{series}} active series",
+    "probe-location_one": "{{locations}} location",
+    "probe-location_other": "{{locations}} locations",
+    "view-labels_one": "View {{count}} label",
+    "view-labels_other": "View {{count}} labels"
+  },
+  "check-group": {
+    "api-endpoint": {
+      "desc": "Monitor the availability and performance of a service, website or API with different request types.",
+      "title": "API Endpoint"
     },
-    "list": {
-      "add-new": "Agregar nuevo chequeo"
+    "browser": {
+      "desc": "Monitor the availability and performance of a website using a real browser.",
+      "title": "Browser"
+    },
+    "choose-title": "Choose a check type",
+    "choose-type_one": "Pick between {{checkTypes}} different types of checks to monitor your services. Choose the one that best fits your needs.",
+    "choose-type_other": "Pick between {{checkTypes}} different types of checks to monitor your services. Choose the one that best fits your needs.",
+    "multi-step": {
+      "desc": "Run multiple requests in sequence, using the response data from one request to the next.",
+      "title": "Multi Step"
+    },
+    "protocols": {
+      "http": "HTTP",
+      "websockets": "WebSockets"
+    },
+    "scripted": {
+      "desc": "Write a custom script to run any number of requests with custom checks and assertions.",
+      "title": "Scripted"
+    },
+    "supported-protocols": "Supported protocols:"
+  },
+  "check-type": {
+    "browser": {
+      "desc": "Leverage k6 browser module to run checks in a browser.",
+      "title": "Browser"
+    },
+    "dns": {
+      "desc": "Ensures a domain resolves and measures the average time for the resolution to happen.",
+      "title": "DNS"
+    },
+    "grpc": {
+      "desc": "Use the gRPC Health Checking Protocol to ensure a gRPC service is healthy.",
+      "title": "gRPC"
+    },
+    "http": {
+      "desc": "Measures a web endpoint for availability, response time, SSL certificate expiration and more.",
+      "title": "HTTP"
+    },
+    "multihttp": {
+      "desc": "Check multiple web endpoints in sequence.",
+      "title": "MultiHTTP"
+    },
+    "ping": {
+      "desc": "Check a host for availability and response time.",
+      "title": "Ping"
+    },
+    "scripted": {
+      "desc": "Write a k6 script to run custom checks.",
+      "title": "Scripted"
+    },
+    "tcp": {
+      "desc": "Ensures a hostname and port accept a connection and measures performance.",
+      "title": "TCP"
+    },
+    "traceroute": {
+      "desc": "Trace the path of a request through the internet.",
+      "title": "Traceroute"
     }
   },
+  "checks": {
+    "card": {
+      "frequency": "{{frequency}}{{unit}} frequency",
+      "view-dashboard": "View dashboard"
+    },
+    "filters": {
+      "additional": "Additional filters",
+      "additional-active": "Additional filters ({{ activeCount }} active)",
+      "close": "Cerrar",
+      "search-placeholder": "Search by job name, endpoint, or label"
+    },
+    "list": {
+      "add-new": "Agregar nuevo chequeo",
+      "new": "New Check",
+      "title": "Checks"
+    },
+    "set-thresholds-button": "Set Thresholds",
+    "showing": "Currently showing {{checks}} of {{total}} total checks",
+    "sort-by": "Sort"
+  },
+  "gauge": {
+    "latency": "Latency",
+    "reachability": "Reachability",
+    "uptime": "Uptime"
+  },
   "welcome": {
+    "alerts": {
+      "content": "Click the {{buttonText}} button to initialize the plugin and see a list of default alerts or visit the Synthetic Monitoring <4>documentation</4> for more information",
+      "cta": "See Alerting"
+    },
     "checks": {
-      "title": "Chris was here"
+      "content": "Click the {{buttonText}} button to initialize the plugin and create checks or visit the Synthetic Monitoring <4>documentation</4> for more information",
+      "cta": "Create a Check",
+      "title": "Comience a monitorear sus servicios"
     },
     "intro": {
-      "started": "Get started",
-      "text": "Grafana Cloud Synthetic Monitoring is powered by k6, Mimir, and Loki. Measure performance and uptime, simulate user journeys, and get alerted before your users",
-      "title": "Proactively monitor your endpoints and user flows from locations around the world"
+      "started": "Comenzar",
+      "text": "El monitoreo sintético de Grafana Cloud funciona con k6, Mimir y Loki. Mida rendimiento y tiempo de disponibilidad, simule viajes de usuario y reciba alertas antes que sus usuarios",
+      "title": "Monitoree proactivamente sus puntos de entrada y flujos de usuario desde ubicaciones alrededor del mundo"
     },
     "tabs": {
-      "as-code-content": "Manage your checks as code, either via <2>Terraform</2> or directly <6>interact with our API</6>",
-      "as-code-title": "Manage as code",
-      "probes-content": "In addition to the locations we provide out of the box, you can set up your own probes to run inside your network or from a location of your choosing",
-      "probes-title": "Private probes",
-      "protocol-content": "Send individual requests via HTTP, DNS, TCP, PING or traceroute",
-      "protocol-title": "Protocol checks",
-      "scripting-content": "Use k6 scripts to monitor your services flexibly",
-      "scripting-title": "Scripting with k6",
-      "title": "Up and running in seconds, no instrumentation required"
+      "as-code-content": "Gestiona tus chequeos como código, tanto a través de <2>Terraform</2> como también <6>interactuando directamente con nuestra API</6>",
+      "as-code-title": "Administrar como código",
+      "probes-content": "Además de las ubicaciones que proporcionamos de manera estándar, puede configurar sus propios agentes para correr desde dentro de su red o desde una ubicación de su elección",
+      "probes-title": "Agentes propios",
+      "protocol-content": "Enviar solicitudes individuales a través de HTTP, DNS, TCP, PING o traceroute",
+      "protocol-title": "Comprobación de protocolo",
+      "scripting-content": "Utilice scripts de k6 para monitorear sus servicios de forma flexible",
+      "scripting-title": "Automatización con k6",
+      "title": "Arriba y corriendo en segundos, no se requiere instrumentación"
     }
   }
 }

@@ -1,0 +1,3 @@
+{
+    "i18n:extract": "make -C ./.config-i18n i18n-extract"
+}

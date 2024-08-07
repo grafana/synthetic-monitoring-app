@@ -5,22 +5,9 @@ import { css, cx } from '@emotion/css';
 
 import { Label } from 'types';
 import { CheckCardLabel } from 'components/CheckCardLabel';
+import { Trans } from 'components/i18n';
 
-const getStyles = (theme: GrafanaTheme2) => ({
-  checkDetails: css`
-    font-size: ${theme.typography.bodySmall.fontSize};
-    line-height: ${theme.typography.bodySmall.lineHeight};
-    white-space: nowrap;
-    display: flex;
-    align-items: center;
-    width: 600px;
-  `,
-  labelWidth: css`
-    max-width: 350px;
-  `,
-});
-
-interface Props {
+interface CheckListItemDetailsProps {
   frequency: number;
   activeSeries?: number;
   probeLocations: number;
@@ -39,19 +26,34 @@ export const CheckListItemDetails = ({
   className,
   labels,
   onLabelClick,
-}: Props) => {
+}: CheckListItemDetailsProps) => {
   const styles = useStyles2(getStyles);
-  const activeSeriesMessage = activeSeries !== undefined ? `${activeSeries} active series` : null;
-  const probeLocationsMessage = probeLocations === 1 ? `${probeLocations} location` : `${probeLocations} locations`;
-  const executionRateMessage = executionsRate ? `${executionsRate} executions / month` : null;
+
   return (
     <div className={cx(styles.checkDetails, className)}>
-      {frequency / 1000}s frequency &nbsp;&nbsp;<strong>|</strong>&nbsp;&nbsp; {activeSeriesMessage}
-      &nbsp;&nbsp;<strong>|</strong>&nbsp;&nbsp; {probeLocationsMessage}&nbsp;&nbsp;
-      <strong>|</strong>&nbsp;&nbsp; {executionRateMessage}
+      <div>
+        <Trans i18nKey={`checks.card.frequency`}>
+          {{ frequency: frequency / 1000 }}
+          {{ unit: 's' }} frequency
+        </Trans>
+      </div>
+      {activeSeries && (
+        <div>
+          <Trans i18nKey="check.frequency">{{ series: activeSeries }} active series</Trans>
+        </div>
+      )}
+      <div>
+        <Trans i18nKey="check.probe-location" count={probeLocations}>
+          {{ locations: probeLocations }} locations
+        </Trans>
+      </div>
+      {executionsRate && (
+        <div>
+          <Trans i18nKey={`check.executions-rate`}>{{ rate: executionsRate }} executions / month</Trans>
+        </div>
+      )}
       {labels && onLabelClick && (
         <>
-          &nbsp;&nbsp;<strong>|</strong>
           <Tooltip
             placement="bottom-end"
             content={
@@ -68,7 +70,9 @@ export const CheckListItemDetails = ({
             }
           >
             <Button disabled={labels.length === 0} type="button" fill="text" size="sm">
-              View {labels.length} label{labels.length === 1 ? '' : 's'}
+              <Trans i18nKey={`check.view-labels`} count={labels.length}>
+                View {{ count: labels.length }} label
+              </Trans>
             </Button>
           </Tooltip>
         </>
@@ -76,3 +80,23 @@ export const CheckListItemDetails = ({
     </div>
   );
 };
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  checkDetails: css({
+    fontSize: theme.typography.bodySmall.fontSize,
+    lineHeight: theme.typography.bodySmall.lineHeight,
+    whiteSpace: `nowrap`,
+    display: `flex`,
+    gap: theme.spacing(1),
+    alignItems: `center`,
+    width: `600px`,
+
+    [`> div:not(:last-child)`]: css({
+      paddingRight: theme.spacing(1),
+      borderRight: `1px solid currentColor`,
+    }),
+  }),
+  labelWidth: css({
+    maxWidth: `350px`,
+  }),
+});

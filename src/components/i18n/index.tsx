@@ -17,12 +17,12 @@ const RuntimeT = i18n.t;
 
 export const Trans: typeof i18n.Trans = (props) => {
   return (
-    <RuntimeTrans i18nKey={props.i18nKey} ns={I18N_NAMESPACE}>
+    <RuntimeTrans ns={I18N_NAMESPACE} {...props}>
       {props.children}
     </RuntimeTrans>
   );
 };
 
-export const t: typeof i18n.t = (id: string, defaultMessage: string, values?: Record<string, unknown>) => {
-  return RuntimeT(`${I18N_NAMESPACE}:${id}`, defaultMessage, values);
+export const t: typeof i18n.t = (id: string, ...args) => {
+  return RuntimeT(`${I18N_NAMESPACE}:${id}`, ...args);
 };

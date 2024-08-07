@@ -7,6 +7,7 @@ import { Check, ROUTES } from 'types';
 import { getCheckType, getCheckTypeGroup } from 'utils';
 import { useDeleteCheck } from 'data/useChecks';
 import { useCanReadMetrics, useCanWriteSM } from 'hooks/useDSPermission';
+import { Trans } from 'components/i18n';
 import { getRoute } from 'components/Routing.utils';
 
 const getStyles = (theme: GrafanaTheme2) => ({
@@ -45,7 +46,7 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon }: Props) =>
             />
           ) : (
             <LinkButton href={`${getRoute(ROUTES.Checks)}/${check.id}/dashboard`} size="sm" fill="text">
-              View dashboard
+              <Trans i18nKey="checks.card.view-dashboard">View dashboard</Trans>
             </LinkButton>
           )}
         </>
