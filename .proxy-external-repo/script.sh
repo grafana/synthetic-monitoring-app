@@ -49,10 +49,6 @@ setup_betterer() {
   yarn add @betterer/cli
   info "Betterer successfully installed!"
 
-  "${GUM}" spin --title="Running betterer..." -- "${bin_path}/betterer" --update --silent
-
-  info "Betterer file successfully updated!"
-
   info "Updating package.json to include betterer scripts..."
 
   local tmpfile
@@ -66,6 +62,10 @@ setup_betterer() {
     mv "${tmpfile}" package.json
 
   info "package.json successfully updated!"
+
+  "${GUM}" spin --title="Running betterer..." -- "${bin_path}/betterer" --update --silent
+
+  info "Betterer file successfully updated!"
 
   info "Now that you have added the appropriate packages and run betterer, you should commit the changes to the repository."
 }
