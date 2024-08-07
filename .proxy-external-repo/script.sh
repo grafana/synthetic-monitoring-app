@@ -4,6 +4,11 @@ set -e
 set -o pipefail
 set -u
 
+from_dir=".proxy-external-repo"
+to_dir=".config-i18n"
+bin_path=$(yarn bin)
+AUTOPILOT=false
+
 setup() {
   if ! command -v go &> /dev/null; then
     echo "Go is not installed. Please install Go before running this script."
@@ -93,16 +98,16 @@ setup_betterer() {
 copy_i18n_files() {
   i18n_dst_default='src/components/i18n'
 
-  i18n_dst=$("${GUM}" input \
-    --header="$("${GUM}" style --bold --foreground=3 'Where would you like the name-spaced i18n Trans and t functions installed?')" \
-    --prompt='> ' \
-    --width=0 \
-    --placeholder="enter the path to a directory (default: ${i18n_dst_default})"
-  )
-
-  if test -z "${i18n_dst}" ; then
-    i18n_dst="${i18n_dst_default}"
+  if ! "${AUTOPILOT}" ; then
+    i18n_dst=$("${GUM}" input \
+      --header="$("${GUM}" style --bold --foreground=3 'Where would you like the name-spaced i18n Trans and t functions installed?')" \
+      --prompt='> ' \
+      --width=0 \
+      --placeholder="enter the path to a directory (default: ${i18n_dst_default})"
+    )
   fi
+
+  i18n_dst="${i18n_dst:-${i18n_dst_default}}"
 
   info "Installing i18n functions to '${i18n_dst}'"
 
@@ -145,13 +150,13 @@ error() {
 
 setup
 
-from_dir=".proxy-external-repo"
-to_dir=".config-i18n"
-bin_path=$(yarn bin)
-
 info "Setting up i18n tooling..."
 
-if "${GUM}" confirm "Would you like to set up betterer?" --default=yes ; then
+if "${GUM}" confirm "Would you like to set up the i18n tooling with the recommended defaults?" --default=yes ; then
+  AUTOPILOT=true
+fi
+
+if "${AUTOPILOT}" || "${GUM}" confirm "Would you like to set up betterer?" --default=yes ; then
   setup_betterer
 else
   info "Skipping betterer setup."
@@ -159,10 +164,10 @@ fi
 
 copy_i18n_files
 
-if "${GUM}" confirm "Would you like to use crowdin to manage your translation files?" --default=yes ; then
+if "${AUTOPILOT}" || "${GUM}" confirm "Would you like to use crowdin to manage your translation files?" --default=yes ; then
   setup_crowdin
 
-  if "${GUM}" confirm "Would you like to add CI/CD steps?" --default=yes ; then
+  if "${AUTOPILOT}" || "${GUM}" confirm "Would you like to add CI/CD steps?" --default=yes ; then
     setup_crowdin_cicd
   fi
 else
