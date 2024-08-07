@@ -12,6 +12,7 @@ import { getRoute } from 'components/Routing.utils';
 import { Toggletip } from 'components/Toggletip';
 
 import { Card } from './Card';
+import { t, Trans } from './i18n';
 import { OverLimitAlert } from './OverLimitAlert';
 
 export const ChooseCheckGroup = () => {
@@ -19,11 +20,16 @@ export const ChooseCheckGroup = () => {
   const options = useCheckTypeGroupOptions();
 
   return (
-    <PluginPage layout={PageLayoutType.Standard} pageNav={{ text: 'Choose a check type' }}>
+    <PluginPage
+      layout={PageLayoutType.Standard}
+      pageNav={{ text: t(`check-group.choose-title`, 'Choose a check type') }}
+    >
       <Stack direction={`column`} gap={2}>
         <div>
-          Pick between {options.length} different types of checks to monitor your services. Choose the one that best
-          fits your needs.
+          <Trans i18nKey={`check-group.choose-type`} count={options.length}>
+            Pick between {{ checkTypes: options.length }} different types of checks to monitor your services. Choose the
+            one that best fits your needs.
+          </Trans>
         </div>
         <OverLimitAlert />
         <div className={styles.container} data-testid={DataTestIds.CHOOSE_CHECK_TYPE}>
@@ -60,7 +66,7 @@ const CheckGroupCard = ({ group }: { group: CheckTypeGroupOption }) => {
         </div>
         <div className={styles.protocols}>
           <Stack direction={`column`}>
-            Supported protocols:
+            <Trans i18nKey={`check-group.supported-protocols`}>Supported protocols:</Trans>
             <Stack justifyContent={`center`}>
               {group.protocols.map((protocol) => {
                 return <Protocol key={protocol.label} {...protocol} href={disabled ? undefined : protocol.href} />;

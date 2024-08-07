@@ -45,7 +45,7 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
     icon: `gf-interpolation-step-after`,
     protocols: [
       {
-        label: `HTTP`,
+        label: t(`check-group.protocols.http`, `HTTP`),
         href: `${getRoute(ROUTES.NewCheck)}/${CheckTypeGroup.MultiStep}?checkType=${CheckType.MULTI_HTTP}`,
       },
     ],
@@ -59,10 +59,10 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
     value: CheckTypeGroup.Scripted,
     icon: `k6`,
     protocols: [
-      { label: `HTTP` },
+      { label: t(`check-group.protocols.http`, `HTTP`) },
       // todo: we don't support these yet
       // { label: `gRPC` },
-      { label: `WebSockets` },
+      { label: t(`check-group.protocols.websockets`, `WebSockets`) },
       // todo: we don't support these yet
       // {
       //   label: `+More`,
@@ -91,7 +91,7 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
     icon: `globe`,
     protocols: [
       {
-        label: `HTTP`,
+        label: t(`check-group.protocols.http`, `HTTP`),
       },
     ],
   },

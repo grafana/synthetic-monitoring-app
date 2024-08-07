@@ -1,5 +1,7 @@
 {
   "check": {
+    "disabled": "Disabled",
+    "enabled": "Enabled",
     "executions-rate": "{{rate}} executions / month",
     "frequency": "{{series}} active series",
     "probe-location_one": "{{locations}} location",
@@ -16,14 +18,22 @@
       "desc": "Monitor the availability and performance of a website using a real browser.",
       "title": "Browser"
     },
+    "choose-title": "Choose a check type",
+    "choose-type_one": "Pick between {{checkTypes}} different types of checks to monitor your services. Choose the one that best fits your needs.",
+    "choose-type_other": "Pick between {{checkTypes}} different types of checks to monitor your services. Choose the one that best fits your needs.",
     "multi-step": {
       "desc": "Run multiple requests in sequence, using the response data from one request to the next.",
       "title": "Multi Step"
     },
+    "protocols": {
+      "http": "HTTP",
+      "websockets": "WebSockets"
+    },
     "scripted": {
       "desc": "Write a custom script to run any number of requests with custom checks and assertions.",
       "title": "Scripted"
-    }
+    },
+    "supported-protocols": "Supported protocols:"
   },
   "check-type": {
     "browser": {

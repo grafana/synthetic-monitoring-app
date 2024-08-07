@@ -3,6 +3,8 @@ import { useTheme } from '@grafana/ui';
 
 import { Pill } from 'components/Pill';
 
+import { t } from './i18n';
+
 interface Props {
   enabled: boolean;
   className?: string;
@@ -24,7 +26,7 @@ export const CheckStatusPill = ({ enabled, onClick, className }: Props) => {
         }
       }}
     >
-      {enabled ? 'Enabled' : 'Disabled'}
+      {enabled ? t(`check.enabled`, 'Enabled') : t(`check.disabled`, 'Disabled')}
     </Pill>
   );
 };
