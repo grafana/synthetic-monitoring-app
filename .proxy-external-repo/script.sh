@@ -169,4 +169,4 @@ else
   info "Skipping crowdin setup."
 fi
 
-info "i18n tooling setup complete!"
+"${GUM}" style --border=normal --align=center --width=50 --bold --foreground=3 "$("${GUM}" format -t emoji 'i18n tooling setup complete! :tada:')"
