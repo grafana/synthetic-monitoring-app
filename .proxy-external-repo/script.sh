@@ -90,7 +90,7 @@ setup_betterer() {
   yarn add @betterer/cli
   info "Betterer successfully installed!"
 
-  "${GUM}" spin --title="Running betterer..." -- "${bin_path}/betterer" --update --silent
+  "${GUM}" spin --title="Running betterer..." -- yarn i18n:betterer
 
   info "Betterer file successfully updated!"
 

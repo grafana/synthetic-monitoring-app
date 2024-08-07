@@ -25,6 +25,7 @@
     "test": "jest --all",
     "test:changed": "jest --watch --onlyChanged",
     "typecheck": "tsc --noEmit",
+    "i18n:betterer": "betterer --update --config .config-i18n/.betterer.ts --results .config-i18n/.betterer.results",
     "i18n:betterer-cicd": "make -C ./.config-i18n i18n-betterer-cicd",
     "i18n:betterer-local": "make -C ./.config-i18n i18n-betterer-local"
   },
