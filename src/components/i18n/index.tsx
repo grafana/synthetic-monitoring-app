@@ -7,8 +7,7 @@
 
 import React from 'react';
 import { i18n } from '@grafana/runtime';
-
-import pluginJson from '../../plugin.json';
+import pluginJson from 'plugin.json';
 
 const I18N_NAMESPACE = pluginJson.id;
 

@@ -35,3 +35,6 @@ temp/
 
 .vscode
 .DS_Store
+
+# Directory for i18n eslint rules
+packages/

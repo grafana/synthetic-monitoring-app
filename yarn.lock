@@ -321,7 +321,7 @@
   resolved "https://registry.yarnpkg.com/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz#75a2e8b51cb758a7553d6804a5932d7aace75c39"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
-"@betterer/betterer@5.4.0", "@betterer/betterer@^5.4.0":
+"@betterer/betterer@^5.4.0":
   version "5.4.0"
   resolved "https://registry.yarnpkg.com/@betterer/betterer/-/betterer-5.4.0.tgz#5b81ed06bd84d81b94b0da4b32335e44972a2c57"
   integrity sha512-t91JDLdUv5t70TPn1rzTiYA2WhtehDV23/KKkePMDo2Q/7QaHyHiTDG40+BnDh9LB7bW0Q4jOZXClf0tupOXNQ==
@@ -344,7 +344,7 @@
   optionalDependencies:
     typescript ">=2.7"
 
-"@betterer/cli@5.4.0":
+"@betterer/cli@^5.4.0":
   version "5.4.0"
   resolved "https://registry.yarnpkg.com/@betterer/cli/-/cli-5.4.0.tgz#609adc910848ab9fd5d94545b52f5474126cf711"
   integrity sha512-FtXbNLoxsg54w9LQWngXNuGNZj8BHG9qPv6r2Hvr5FYw1ZblAsTW9Vya9NlbOtSxIVrVf/aM9FVTIltTPhFHfA==

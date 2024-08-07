@@ -8,6 +8,10 @@
     }
   },
   "welcome": {
+    "alerts": {
+      "content": "Click the {{buttonText}} button to initialize the plugin and see a list of default alerts or visit the Synthetic Monitoring <4>documentation</4> for more information",
+      "cta": "See Alerting"
+    },
     "checks": {
       "title": "Get started monitoring your services"
     },
