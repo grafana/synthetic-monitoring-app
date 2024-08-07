@@ -7,7 +7,7 @@ module.exports = {
   resetDefaultValueLocale: 'en-US', // Updates extracted values when they change in code
 
   // plugin specific config
-  defaultNamespace: 'grafana-synthetic-monitoring-app',
+  defaultNamespace: '{{PLUGIN_ID}}',
   input: ['./../src/**/*.{tsx,ts}'],
   output: './src/locales/$LOCALE/$NAMESPACE.json',
 };

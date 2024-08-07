@@ -9,7 +9,7 @@
 files:
   [
     {
-      'source': '/src/locales/en-US/grafana-synthetic-monitoring-app.json',
+      'source': '/src/locales/en-US/{{PLUGIN_ID}}.json',
       'translation': '/src/locales/%locale%/%original_file_name%',
     },
   ]

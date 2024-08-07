@@ -10,6 +10,8 @@ bin_path=$(yarn bin)
 AUTOPILOT=false
 
 setup() {
+  echo 'Setting things up... please wait while we install some dependencies.'
+
   if ! command -v go &> /dev/null; then
     echo "Go is not installed. Please install Go before running this script."
     exit 1
@@ -56,6 +58,8 @@ setup() {
   fi
 
   . ./.bingo/variables.env
+
+  info "Done setting things up!"
 }
 
 setup_betterer() {
@@ -122,9 +126,9 @@ setup_i18n() {
 
   mkdir -p "${to_dir}"
 
-  cp "${from_dir}/i18next-parser.config.cjs" "${to_dir}"
+  sed -e "s,{{PLUGIN_ID}},${plugin_id},g" < "${from_dir}/i18next-parser.config.cjs" > "${to_dir}/i18next-parser.config.cjs"
   cp "${from_dir}/Makefile" "${to_dir}"
-  cp "${from_dir}/pseudo.mjs" "${to_dir}"
+  sed -e "s,{{PLUGIN_ID}},${plugin_id},g" < "${from_dir}/pseudo.mjs" > "${to_dir}/pseudo.mjs"
   cp "${from_dir}/README.md" "${to_dir}"
   cp -a "${from_dir}/packages" "${to_dir}"
 
@@ -151,7 +155,7 @@ setup_crowdin() {
   yarn add @crowdin/cli
   info "Crowdin successfully installed!"
 
-  cp "${from_dir}/crowdin.yml" "${to_dir}"
+  sed -e "s,{{PLUGIN_ID}},${plugin_id},g" < "${from_dir}/crowdin.yml" > "${to_dir}/crowdin.yml"
 
   info "Updating package.json to include crowdin scripts..."
 
@@ -180,6 +184,22 @@ error() {
 }
 
 setup
+
+if test -e src/plugin.json ; then
+  plugin_id=$(jq -r .id src/plugin.json)
+fi
+
+if test -z "${plugin_id}" ; then
+  info "Cannot determine plugin's id."
+  plugin_id=$("${GUM}" input \
+    --header="$("${GUM}" style --bold --foreground=3 "What's the id of your plugin? I looked in src/plugin.json but didn't find it there")" \
+    --prompt='> ' \
+    --width=0 \
+    --placeholder="enter your plugin's id"
+  )
+fi
+
+info "Using plugin id '${plugin_id}'"
 
 info "Setting up i18n tooling..."
 
