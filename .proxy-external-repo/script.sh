@@ -31,8 +31,8 @@ setup_betterer() {
   # This is necessary for betterer to find the rules
   info "Copying $from_dir/packages/grafana-eslint-rules to root directory..."
 
-  mkdir -p "${to_dir}/packages"
-  cp -r "${from_dir}/packages/grafana-eslint-rules" "${to_dir}/packages/"
+  mkdir -p "./packages/grafana-eslint-rules"
+  cp -r "./${from_dir}/packages/grafana-eslint-rules" "./packages/"
 
   if ! grep -q '^packages/$' .gitignore ; then
     cat <<-EOT >> .gitignore
@@ -120,9 +120,8 @@ setup
 
 . ./.bingo/variables.env
 
-# TODO(mem): IIRC 'readlink -m' is not available on macOS
-from_dir=$(readlink -m ".proxy-external-repo")
-to_dir=$(readlink -m ".config-i18n")
+from_dir=".proxy-external-repo"
+to_dir=".config-i18n"
 bin_path=$(yarn bin)
 
 info "Setting up i18n tooling..."
