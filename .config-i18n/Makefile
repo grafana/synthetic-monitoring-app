@@ -28,9 +28,9 @@ i18n-betterer-cicd:
 i18n-betterer-local:
 	@echo "Checking for betterer i18n strings"
 	rm -f .betterer.results-temp
-	cp .betterer.results .betterer.results-temp
+	cp ../.betterer.results .betterer.results-temp
 	# run betterer and if it errors remove the temp file
-	betterer --results .betterer.results-temp || rm -f .betterer.results-temp
+	betterer --config ../.betterer.ts --results .betterer.results-temp || rm -f .betterer.results-temp
 
 	# if it succeeds remove the temp file
 	rm -f .betterer.results-temp
