@@ -1,11 +1,91 @@
 {
+  "check": {
+    "executions-rate": "{{rate}} executions / month",
+    "frequency": "{{series}} active series",
+    "probe-location_one": "{{locations}} location",
+    "probe-location_other": "{{locations}} locations",
+    "view-labels_one": "View {{count}} label",
+    "view-labels_other": "View {{count}} labels"
+  },
+  "check-group": {
+    "api-endpoint": {
+      "desc": "Monitor the availability and performance of a service, website or API with different request types.",
+      "title": "API Endpoint"
+    },
+    "browser": {
+      "desc": "Monitor the availability and performance of a website using a real browser.",
+      "title": "Browser"
+    },
+    "multi-step": {
+      "desc": "Run multiple requests in sequence, using the response data from one request to the next.",
+      "title": "Multi Step"
+    },
+    "scripted": {
+      "desc": "Write a custom script to run any number of requests with custom checks and assertions.",
+      "title": "Scripted"
+    }
+  },
+  "check-type": {
+    "browser": {
+      "desc": "Leverage k6 browser module to run checks in a browser.",
+      "title": "Browser"
+    },
+    "dns": {
+      "desc": "Ensures a domain resolves and measures the average time for the resolution to happen.",
+      "title": "DNS"
+    },
+    "grpc": {
+      "desc": "Use the gRPC Health Checking Protocol to ensure a gRPC service is healthy.",
+      "title": "gRPC"
+    },
+    "http": {
+      "desc": "Measures a web endpoint for availability, response time, SSL certificate expiration and more.",
+      "title": "HTTP"
+    },
+    "multihttp": {
+      "desc": "Check multiple web endpoints in sequence.",
+      "title": "MultiHTTP"
+    },
+    "ping": {
+      "desc": "Check a host for availability and response time.",
+      "title": "Ping"
+    },
+    "scripted": {
+      "desc": "Write a k6 script to run custom checks.",
+      "title": "Scripted"
+    },
+    "tcp": {
+      "desc": "Ensures a hostname and port accept a connection and measures performance.",
+      "title": "TCP"
+    },
+    "traceroute": {
+      "desc": "Trace the path of a request through the internet.",
+      "title": "Traceroute"
+    }
+  },
   "checks": {
+    "card": {
+      "frequency": "{{frequency}}{{unit}} frequency",
+      "view-dashboard": "View dashboard"
+    },
     "filters": {
-      "close": "Close"
+      "additional": "Additional filters",
+      "additional-active": "Additional filters ({{ activeCount }} active)",
+      "close": "Close",
+      "search-placeholder": "Search by job name, endpoint, or label"
     },
     "list": {
-      "add-new": "Add new check"
-    }
+      "add-new": "Add new check",
+      "new": "New Check"
+    },
+    "set-thresholds-button": "Set Thresholds",
+    "showing": "Currently showing {{checks}} of {{total}} total checks",
+    "sort-by": "Sort"
+  },
+  "gauge": {
+    "latency": "Latency",
+    "reachability": "Reachability",
+    "uptime": "Uptime"
   },
   "welcome": {
     "alerts": {

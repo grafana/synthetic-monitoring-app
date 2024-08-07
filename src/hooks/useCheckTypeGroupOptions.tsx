@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { IconName } from '@grafana/data';
 
 import { CheckType, CheckTypeGroup, ROUTES } from 'types';
+import { t } from 'components/i18n';
 import { getRoute } from 'components/Routing.utils';
 
 import { CHECK_TYPE_OPTIONS, useCheckTypeOptions } from './useCheckTypeOptions';
@@ -22,8 +23,11 @@ export interface CheckTypeGroupOption {
 
 export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
   {
-    label: 'API Endpoint',
-    description: 'Monitor the availability and performance of a service, website or API with different request types.',
+    label: t(`check-group.api-endpoint.title`, 'API Endpoint'),
+    description: t(
+      `check-group.api-endpoint.desc`,
+      'Monitor the availability and performance of a service, website or API with different request types.'
+    ),
     value: CheckTypeGroup.ApiTest,
     icon: `heart-rate`,
     protocols: CHECK_TYPE_OPTIONS.filter((option) => option.group === CheckTypeGroup.ApiTest).map((option) => ({
@@ -32,8 +36,11 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
     })),
   },
   {
-    label: 'Multi Step',
-    description: 'Run multiple requests in sequence, using the response data from one request to the next.',
+    label: t(`check-group.multi-step.title`, 'Multi Step'),
+    description: t(
+      `check-group.multi-step.desc`,
+      'Run multiple requests in sequence, using the response data from one request to the next.'
+    ),
     value: CheckTypeGroup.MultiStep,
     icon: `gf-interpolation-step-after`,
     protocols: [
@@ -44,8 +51,11 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
     ],
   },
   {
-    label: 'Scripted',
-    description: 'Write a custom script to run any number of requests with custom checks and assertions.',
+    label: t(`check-group.scripted.title`, 'Scripted'),
+    description: t(
+      `check-group.scripted.desc`,
+      'Write a custom script to run any number of requests with custom checks and assertions.'
+    ),
     value: CheckTypeGroup.Scripted,
     icon: `k6`,
     protocols: [
@@ -72,8 +82,11 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
     ],
   },
   {
-    label: `Browser`,
-    description: `Monitor the availability and performance of a website using a real browser.`,
+    label: t(`check-group.browser.title`, 'Browser'),
+    description: t(
+      `check-group.browser.desc`,
+      'Monitor the availability and performance of a website using a real browser.'
+    ),
     value: CheckTypeGroup.Browser,
     icon: `globe`,
     protocols: [

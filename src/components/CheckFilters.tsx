@@ -10,6 +10,7 @@ import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
 
 import { CheckFilterGroup } from './CheckList/CheckFilterGroup';
 import { CHECK_LIST_STATUS_OPTIONS } from './constants';
+import { t } from './i18n';
 import { LabelFilterInput } from './LabelFilterInput';
 
 interface Props {
@@ -94,7 +95,7 @@ export function CheckFilters({
         type="text"
         value={searchValue ? unEscapeStringFromRegex(searchValue) : ''}
         onChange={handleSearchChange}
-        placeholder="Search by job name, endpoint, or label"
+        placeholder={t(`checks.filters.search-placeholder`, 'Search by job name, endpoint, or label')}
       />
       <CheckFilterGroup onReset={onReset} filters={checkFilters}>
         <div className={styles.flexRow}>

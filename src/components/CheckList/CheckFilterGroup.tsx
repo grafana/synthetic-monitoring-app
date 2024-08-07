@@ -4,7 +4,7 @@ import { Button, Modal, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckEnabledStatus, CheckFiltersType } from 'types';
-import { Trans } from 'components/i18n';
+import { t, Trans } from 'components/i18n';
 
 const groupStyles = (theme: GrafanaTheme2) => ({
   marginTop: css({
@@ -60,7 +60,11 @@ export const CheckFilterGroup = ({ children, onReset, filters }: Props) => {
     setActiveFilters(active);
   }, [filters]);
 
-  const filterTitle = `Additional filters ${activeFilters > 0 ? `(${activeFilters} active)` : ''}`;
+  const filtersTitle = t(`checks.filters.additional`, `Additional filters`);
+  const activeFiltersTitle = t(`checks.filters.additional-active`, `Additional filters ({{ activeCount }} active)`, {
+    activeCount: activeFilters,
+  });
+  const filterTitle = activeFilters > 0 ? activeFiltersTitle : filtersTitle;
 
   return (
     <>
