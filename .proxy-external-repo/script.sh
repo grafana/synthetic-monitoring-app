@@ -149,10 +149,9 @@ setup_i18n() {
 setup_crowdin() {
   info "Installing crowdin CLI tool..."
   yarn add @crowdin/cli
-  # 1. Copy crowdin.yml
-  # 2. Add i18n scripts to package.json
-  # 3. Add commands to Makefile?
   info "Crowdin successfully installed!"
+
+  cp "${from_dir}/crowdin.yml" "${to_dir}"
 
   info "Updating package.json to include crowdin scripts..."
 
