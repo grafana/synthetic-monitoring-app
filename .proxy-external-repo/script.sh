@@ -60,6 +60,11 @@ setup_betterer() {
   jq --slurpfile input "${from_dir}/betterer-scripts.json" '.scripts += $input[0]' package.json > "${tmpfile}" &&
     mv "${tmpfile}" package.json
 
+  local tmpfile
+  tmpfile=$(mktemp)
+  jq --slurpfile input "${from_dir}/betterer-packages.json" '.devDependencies += $input[0]' package.json > "${tmpfile}" &&
+    mv "${tmpfile}" package.json
+
   info "package.json successfully updated!"
 
   info "Now that you have added the appropriate packages and run betterer, you should commit the changes to the repository."
