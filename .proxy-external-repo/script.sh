@@ -178,9 +178,47 @@ info() {
   "${GUM}" log --level info "$@"
 }
 
+warn() {
+  "${GUM}" log --level warn "$@"
+}
+
 error() {
   "${GUM}" log --level error "$@"
   exit 10
+}
+
+join_by() {
+  local d=${1-} f=${2-}
+  if shift 2; then
+    printf %s "$f" "${@/#/$d}"
+  fi
+}
+
+patch_eslint() {
+  if ! grep -q -E '^\s*plugins:\s*\[(.+)\],' .eslintrc.js ; then
+    info "No plugins section identified in .eslintrc.js. Skipping patching."
+    warn "Please add the '@grafana' plugin to the plugins section of your .eslintrc.js file."
+    return
+  fi
+
+  IFS=", " read -r -a arr < <(sed -n 's/^\s*plugins:\s*\[\(.\+\)\],/\1/p' .eslintrc.js)
+
+  local found
+  found=false
+  for plugin in "${arr[@]}" ; do
+    if test "${plugin}" = "'@grafana'" ; then
+      found=true
+      break
+    fi
+  done
+
+  if $found ; then
+    info "Found '@grafana' plugin in .eslintrc.js. Skipping patching."
+  else
+    arr+=("'@grafana'")
+    str=$(join_by ", " "${arr[@]}")
+    sed -i "s/^\(\s*plugins:\s*\[\).*/\1${str}\],/" .eslintrc.js
+  fi
 }
 
 setup
@@ -208,6 +246,8 @@ if "${GUM}" confirm "Would you like to set up the i18n tooling with the recommen
 fi
 
 setup_i18n
+
+patch_eslint
 
 if "${AUTOPILOT}" || "${GUM}" confirm "Would you like to set up betterer?" --default=yes ; then
   setup_betterer
