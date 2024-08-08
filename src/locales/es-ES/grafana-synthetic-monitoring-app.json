@@ -1,128 +1,136 @@
 {
   "check": {
-    "disabled": "Disabled",
-    "enabled": "Enabled",
-    "executions-rate": "{{rate}} executions / month",
-    "frequency": "{{series}} active series",
-    "probe-location_one": "{{locations}} location",
-    "probe-location_other": "{{locations}} locations",
-    "view-labels_one": "View {{count}} label",
-    "view-labels_other": "View {{count}} labels"
+    "disabled": "Deshabilitado",
+    "enabled": "Habilitado",
+    "executions-rate": "{{rate}} ejecuciones / mes",
+    "frequency": "{{series}} series activas",
+    "probe-location_one": "{{locations}} ubicación",
+    "probe-location_other": "{{locations}} ubicaciones",
+    "view-labels_one": "Ver {{count}} etiqueta",
+    "view-labels_other": "Ver {{count}} etiquetas"
   },
   "check-group": {
     "api-endpoint": {
-      "desc": "Monitor the availability and performance of a service, website or API with different request types.",
-      "title": "API Endpoint"
+      "desc": "Monitorea la disponibilidad y el rendimiento de un servicio, sitio web o API con distintos tipos de solicitudes.",
+      "title": "Punto final de API"
     },
     "browser": {
-      "desc": "Monitor the availability and performance of a website using a real browser.",
-      "title": "Browser"
+      "desc": "Monitorea la disponibilidad y rendimiento de un sitio web utilizando un navegador real.",
+      "title": "Navegador"
     },
-    "choose-title": "Choose a check type",
-    "choose-type_one": "Pick between {{checkTypes}} different types of checks to monitor your services. Choose the one that best fits your needs.",
-    "choose-type_other": "Pick between {{checkTypes}} different types of checks to monitor your services. Choose the one that best fits your needs.",
+    "choose-title": "Selecciona un tipo de verificación",
+    "choose-type_one": "Escoge entre {{checkTypes}} tipos diferentes de verificaciones para monitorear tus servicios. Selecciona el que mejor responda a tus necesidades.",
+    "choose-type_other": "Escoge entre {{checkTypes}} tipos diferentes de verificaciones para monitorear tus servicios. Selecciona el que mejor responda a tus necesidades.",
     "multi-step": {
-      "desc": "Run multiple requests in sequence, using the response data from one request to the next.",
-      "title": "Multi Step"
+      "desc": "Ejecuta varias solicitudes en secuencia, usando los datos de respuesta de una petición en la siguiente.",
+      "title": "Múltiples pasos"
     },
     "protocols": {
       "http": "HTTP",
       "websockets": "WebSockets"
     },
     "scripted": {
-      "desc": "Write a custom script to run any number of requests with custom checks and assertions.",
+      "desc": "Escribe un script personalizado para ejecutar cualquier número de peticiones con verificaciones y aserciones personalizadas.",
       "title": "Scripted"
     },
-    "supported-protocols": "Supported protocols:"
+    "supported-protocols": "Protocolos compatibles:"
   },
   "check-type": {
     "browser": {
-      "desc": "Leverage k6 browser module to run checks in a browser.",
-      "title": "Browser"
+      "desc": "Utiliza el módulo k6 browser para ejecutar verificaciones en un navegador.",
+      "title": "Navegador"
     },
     "dns": {
-      "desc": "Ensures a domain resolves and measures the average time for the resolution to happen.",
+      "desc": "Asegura que un dominio resuelva correctamente y mide el tiempo promedio que toma su resolución.",
       "title": "DNS"
     },
     "grpc": {
-      "desc": "Use the gRPC Health Checking Protocol to ensure a gRPC service is healthy.",
+      "desc": "Utiliza el protocolo gRPC Health Checking para asegurar que un servicio gRPC funcione correctamente.",
       "title": "gRPC"
     },
     "http": {
-      "desc": "Measures a web endpoint for availability, response time, SSL certificate expiration and more.",
+      "desc": "Analiza la disponibilidad, tiempo de respuesta, estado de certificados SSL y más información sobre un sitio web.",
       "title": "HTTP"
     },
     "multihttp": {
-      "desc": "Check multiple web endpoints in sequence.",
+      "desc": "Verifica múltiples direcciones web en secuencia.",
       "title": "MultiHTTP"
     },
     "ping": {
-      "desc": "Check a host for availability and response time.",
+      "desc": "Verifica la disponibilidad y tiempo de respuesta de un host.",
       "title": "Ping"
     },
     "scripted": {
-      "desc": "Write a k6 script to run custom checks.",
+      "desc": "Escribe un script de k6 para ejecutar verificaciones personalizadas.",
       "title": "Scripted"
     },
     "tcp": {
-      "desc": "Ensures a hostname and port accept a connection and measures performance.",
+      "desc": "Asegura que un nombre de host y puerto acepten conexiones y mide su rendimiento.",
       "title": "TCP"
     },
     "traceroute": {
-      "desc": "Trace the path of a request through the internet.",
+      "desc": "Traza la ruta de una solicitud a través de internet.",
       "title": "Traceroute"
     }
   },
   "checks": {
     "card": {
-      "frequency": "{{frequency}}{{unit}} frequency",
-      "view-dashboard": "View dashboard"
+      "frequency": "{{frequency}}{{unit}} frecuencia",
+      "view-dashboard": "Ver panel de control"
     },
     "filters": {
-      "additional": "Additional filters",
-      "additional-active": "Additional filters ({{ activeCount }} active)",
+      "additional": "Filtros adicionales",
+      "additional-active": "Filtros adicionales ({{ activeCount }} activo(s))",
       "close": "Cerrar",
-      "search-placeholder": "Search by job name, endpoint, or label"
+      "search-placeholder": "Busca por nombre, url o etiqueta"
     },
     "list": {
-      "add-new": "Agregar nuevo chequeo",
-      "new": "New Check",
-      "title": "Checks"
+      "add-new": "Agregar nueva verificación",
+      "new": "Nueva verificación",
+      "title": "Verificaciones"
     },
-    "set-thresholds-button": "Set Thresholds",
-    "showing": "Currently showing {{checks}} of {{total}} total checks",
-    "sort-by": "Sort"
+    "set-thresholds-button": "Definir umbrales",
+    "showing": "Mostrando {{checks}} de {{total}}",
+    "sort-by": "Ordenar"
+  },
+  "checks-group": {
+    "create": "Crear verificación {{label}}"
   },
   "gauge": {
-    "latency": "Latency",
-    "reachability": "Reachability",
-    "uptime": "Uptime"
+    "latency": "Latencia",
+    "reachability": "Alcance",
+    "uptime": "Tiempo de actividad"
+  },
+  "probes": {
+    "list": {
+      "description": "Probes are the agents responsible for emulating user interactions and collecting data from your specified targets across different global locations."
+    }
   },
   "welcome": {
     "alerts": {
-      "content": "Click the {{buttonText}} button to initialize the plugin and see a list of default alerts or visit the Synthetic Monitoring <4>documentation</4> for more information",
-      "cta": "See Alerting"
+      "content": "Haz clic en el botón {{buttonText}} para inicializar el plugin y ver una lista de alertas predeterminadas, o visita la <4>documentación</4> de Syntetic Monitoring para más información",
+      "cta": "Ver Alertas"
     },
     "checks": {
-      "content": "Click the {{buttonText}} button to initialize the plugin and create checks or visit the Synthetic Monitoring <4>documentation</4> for more information",
-      "cta": "Create a Check",
-      "title": "Comience a monitorear sus servicios"
+      "content": "Haz click en el botón {{buttonText}} para inicializar el plugin y crear verificaciones o visita la <4>documentación</4> de Synthetic Monitoring para más información",
+      "cta": "Crear una verificación",
+      "title": "Comienza a monitorear tus servicios"
     },
     "intro": {
       "started": "Comenzar",
-      "text": "El monitoreo sintético de Grafana Cloud funciona con k6, Mimir y Loki. Mida rendimiento y tiempo de disponibilidad, simule viajes de usuario y reciba alertas antes que sus usuarios",
-      "title": "Monitoree proactivamente sus puntos de entrada y flujos de usuario desde ubicaciones alrededor del mundo"
+      "text": "El monitoreo sintético de Grafana Cloud funciona con k6, Mimir y Loki. Mide el rendimiento y tiempo de disponibilidad de las aplicaciones, simula recorridos y recibe alertas antes que tus usuarios",
+      "title": "Monitorea proactivamente tus puntos de entrada y flujos de usuario desde ubicaciones alrededor del mundo"
     },
     "tabs": {
       "as-code-content": "Gestiona tus chequeos como código, tanto a través de <2>Terraform</2> como también <6>interactuando directamente con nuestra API</6>",
       "as-code-title": "Administrar como código",
-      "probes-content": "Además de las ubicaciones que proporcionamos de manera estándar, puede configurar sus propios agentes para correr desde dentro de su red o desde una ubicación de su elección",
+      "probes-content": "Además de las ubicaciones que proporcionamos de manera estándar, puedes configurar tus propios agentes para correr desde dentro de tu red o desde una ubicación de tu elección",
       "probes-title": "Agentes propios",
       "protocol-content": "Enviar solicitudes individuales a través de HTTP, DNS, TCP, PING o traceroute",
       "protocol-title": "Comprobación de protocolo",
-      "scripting-content": "Utilice scripts de k6 para monitorear sus servicios de forma flexible",
+      "scripting-content": "Utiliza scripts de k6 para monitorear tus servicios de forma flexible",
       "scripting-title": "Automatización con k6",
-      "title": "Arriba y corriendo en segundos, no se requiere instrumentación"
+      "title": "Operativo en segundos, no se requiere instrumentación"
     }
   }
 }
