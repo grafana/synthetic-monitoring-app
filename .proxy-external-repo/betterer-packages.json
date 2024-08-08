@@ -1,0 +1,3 @@
+{
+    "@grafana/eslint-plugin": "link:./packages/grafana-eslint-rules"
+}

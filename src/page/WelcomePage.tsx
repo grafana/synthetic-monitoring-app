@@ -4,6 +4,7 @@ import { Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { useMeta } from 'hooks/useMeta';
+import { t, Trans } from 'components/i18n';
 import { PluginPage } from 'components/PluginPage';
 import { WelcomeTabs } from 'components/WelcomeTabs/WelcomeTabs';
 
@@ -19,19 +20,25 @@ export const WelcomePage = () => {
         <div className={styles.intro}>
           <Stack gap={4} alignItems={'center'} direction={`column`}>
             <img src={info.logos.large} className={styles.logo} role="presentation" />
-            <Text element="h1">Proactively monitor your endpoints and user flows from locations around the world</Text>
+            <Text element="h1">
+              <Trans i18nKey="welcome.intro.title">
+                Proactively monitor your endpoints and user flows from locations around the world
+              </Trans>
+            </Text>
             <div className={styles.description}>
-              Grafana Cloud Synthetic Monitoring is powered by k6, Mimir, and Loki. Measure performance and uptime,
-              simulate user journeys, and get alerted before your users
+              <Trans i18nKey="welcome.intro.text">
+                Grafana Cloud Synthetic Monitoring is powered by k6, Mimir, and Loki. Measure performance and uptime,
+                simulate user journeys, and get alerted before your users
+              </Trans>
             </div>
-            <AppInitializer buttonText="Get started" />
+            <AppInitializer buttonText={t(`welcome.intro.started`, `Get started`)} />
           </Stack>
         </div>
         <hr className={styles.divider} />
         <div className={styles.valueProp}>
           <Stack gap={4} alignItems={'center'} direction={`column`}>
             <Text variant={`h2`} element={`h2`}>
-              Up and running in seconds, no instrumentation required
+              <Trans i18nKey="welcome.tabs.title">Up and running in seconds, no instrumentation required</Trans>
             </Text>
             <WelcomeTabs />
           </Stack>

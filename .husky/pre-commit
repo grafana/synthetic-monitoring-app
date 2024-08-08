@@ -1,0 +1,5 @@
+#!/bin/sh
+#
+# Husky pre-commit hook
+
+yarn i18n:extract

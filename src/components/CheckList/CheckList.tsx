@@ -13,6 +13,7 @@ import { findCheckinMetrics } from 'data/utils';
 import { FilterType, useCheckFilters } from 'hooks/useCheckFilters';
 import { useQueryParametersState } from 'hooks/useQueryParametersState';
 import { CHECK_LIST_STATUS_OPTIONS, CHECKS_PER_PAGE_CARD, CHECKS_PER_PAGE_LIST } from 'components/constants';
+import { t } from 'components/i18n';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
 
 import { CheckListItem } from '../CheckListItem';
@@ -34,7 +35,7 @@ export const CheckList = () => {
   };
 
   return (
-    <PluginPage>
+    <PluginPage pageNav={{ text: t(`checks.list.title`, `Checks`) }}>
       <QueryErrorBoundary>
         <CheckListContent onChangeViewType={handleChangeViewType} viewType={viewType} />
       </QueryErrorBoundary>

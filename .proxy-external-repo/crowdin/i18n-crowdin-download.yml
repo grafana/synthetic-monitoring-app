@@ -1,0 +1,36 @@
+name: i18n - Crowdin Download Action
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'src/locales/en-US/{{PLUGIN_ID}}.json'
+    branches:
+      - hackathon/i18n-all-the-things
+  #release:
+  #types: [published]
+
+jobs:
+  download-sources-from-crowdin:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Synchronize with Crowdin
+        uses: crowdin/github-action@v2
+        with:
+          upload_sources: false
+          upload_translations: false
+          download_translations: true
+          config: '.config-i18n/crowdin.yml'
+          localization_branch_name: l18n_crowdin_translations
+
+          create_pull_request: true
+          pull_request_title: 'New Crowdin translations'
+          pull_request_body: 'New Crowdin pull request with translations'
+          pull_request_base_branch_name: 'hackathon/i18n-all-the-things'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
+          CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}

@@ -78,3 +78,4 @@ package-latest:
 .PHONY: generate-version
 generate-version:
 	$(ROOT_DIR)/scripts/plugin-version-hash.sh
+

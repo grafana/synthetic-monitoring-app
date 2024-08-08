@@ -7,6 +7,7 @@ import { getLatencySuccessRateThresholdColor, getSuccessRateThresholdColor } fro
 import { useThreshold } from 'data/useThresholds';
 import { BigValueTitle } from 'components/BigValueTitle';
 import { LATENCY_DESCRIPTION, REACHABILITY_DESCRIPTION, UPTIME_DESCRIPTION } from 'components/constants';
+import { t } from 'components/i18n';
 
 interface Props {
   height: number;
@@ -60,9 +61,9 @@ const infoMap = {
 };
 
 const titleMap = {
-  latency: 'Latency',
-  reachability: 'Reachability',
-  uptime: 'Uptime',
+  latency: t(`gauge.latency`, 'Latency'),
+  reachability: t(`gauge.reachability`, 'Reachability'),
+  uptime: t(`gauge.uptime`, 'Uptime'),
 };
 
 const comparisonMap = {
