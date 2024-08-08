@@ -1,9 +1,8 @@
 import { BettererFileTest } from '@betterer/betterer';
 import { ESLint, Linter } from 'eslint';
 
-
 export default {
-  'internationalization (i18n)': () => countEslintErrors().include('../src/**/*.{ts,tsx}')
+  'internationalization (i18n)': () => countEslintErrors().include('../src/**/*.{ts,tsx}'),
 };
 
 function countEslintErrors() {
@@ -22,7 +21,7 @@ function countEslintErrors() {
 
     const config: Linter.Config = {
       ...baseConfig,
-
+      plugins: [...(baseConfig.plugins || []), '@grafana'],
       overrides: [
         {
           files: ['*.ts', '*.tsx'],

@@ -60,6 +60,6 @@ export function WelcomeTabs() {
 
 function getStyles(theme: GrafanaTheme2) {
   return {
-    tabBar: css({ maxWidth: '560px', width: '100%', margin: `auto` }),
+    tabBar: css({ maxWidth: '600px', width: '100%', margin: `auto` }),
   };
 }
