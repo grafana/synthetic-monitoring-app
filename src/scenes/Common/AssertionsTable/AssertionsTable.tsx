@@ -17,7 +17,7 @@ import { Alert, LinkButton, LoadingPlaceholder, useStyles2 } from '@grafana/ui';
 import { CheckType } from 'types';
 import { Table, TableColumn } from 'components/Table';
 
-import { getTablePanelStyles } from '../getTablePanelStyles';
+import { getTablePanelStyles } from '../../SCRIPTED/getTablePanelStyles';
 import { AssertionTableRow } from './AssertionsTableRow';
 
 function getQueryRunner(logs: DataSourceRef) {
@@ -203,7 +203,7 @@ function AssertionsTable({ model }: SceneComponentProps<AssertionsTableSceneObje
     }
     return (
       <div className={styles.noDataContainer}>
-        {checkType === CheckType.Scripted ? (
+        {checkType === CheckType.Scripted || checkType === CheckType.Browser ? (
           <p>There are no assertions in this script. You can use k6 Checks to validate conditions in your script.</p>
         ) : (
           <p>There are no assertions in the check. You can use assertions to validate conditions in your check</p>
@@ -212,7 +212,7 @@ function AssertionsTable({ model }: SceneComponentProps<AssertionsTableSceneObje
         <LinkButton
           variant="primary"
           href={
-            checkType === CheckType.Scripted
+            checkType === CheckType.Scripted || checkType === CheckType.Browser
               ? 'https://grafana.com/docs/k6/latest/using-k6/checks/'
               : 'https://grafana.com/docs/grafana-cloud/testing/synthetic-monitoring/create-checks/checks/multihttp/#assertions'
           }
