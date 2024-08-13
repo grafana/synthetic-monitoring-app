@@ -7,11 +7,10 @@ const matchesFilterType = (check: Check, typeFilter: CheckTypeFilter) => {
   if (typeFilter === 'all') {
     return true;
   }
+
   const checkType = getCheckType(check.settings);
-  if (checkType === typeFilter) {
-    return true;
-  }
-  return false;
+
+  return checkType === typeFilter;
 };
 
 const matchesSearchFilter = ({ target, job, labels }: Check, searchFilter: string) => {
@@ -36,37 +35,33 @@ const matchesLabelFilter = ({ labels }: Check, labelFilters: string[]) => {
   if (!labelFilters || labelFilters.length === 0) {
     return true;
   }
-  const result = labels?.some(({ name, value }) => {
-    const filtersResult = labelFilters.some((filter) => {
-      return filter === `${name}: ${value}`;
-    });
-    return filtersResult;
+
+  return labels?.some(({ name, value }) => {
+    return labelFilters.some((filter) => filter === `${name}: ${value}`);
   });
-  return result;
 };
 
 const matchesStatusFilter = ({ enabled }: Check, { value }: SelectableValue) => {
-  if (
+  return (
     value === CheckEnabledStatus.All ||
     (value === CheckEnabledStatus.Enabled && enabled) ||
     (value === CheckEnabledStatus.Disabled && !enabled)
-  ) {
-    return true;
-  }
-  return false;
+  );
 };
 
 const matchesSelectedProbes = (check: Check, selectedProbes: SelectableValue[]) => {
   if (selectedProbes.length === 0) {
     return true;
-  } else {
-    const probeIds = selectedProbes.map((p) => p.value);
-    return check.probes.some((id) => probeIds.includes(id));
   }
+
+  const probeIds = selectedProbes.map((p) => p.value);
+
+  return check.probes.some((id) => probeIds.includes(id));
 };
 
 export const matchesAllFilters = (check: Check, checkFilters: CheckFiltersType) => {
   const { type, search, labels, status, probes } = checkFilters;
+
   return (
     Boolean(check.id) &&
     matchesFilterType(check, type) &&
