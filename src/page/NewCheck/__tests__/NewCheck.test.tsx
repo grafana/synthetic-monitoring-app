@@ -107,7 +107,7 @@ describe(`<NewCheck />`, () => {
     const jobNameField = await screen.findByLabelText(/Job name/);
     await waitFor(() => expect(jobNameField).toHaveFocus());
 
-    expect(screen.getByText(/Job names can't contain commas or single quotes/)).toBeInTheDocument();
+    expect(screen.getByText(/Job names can't contain commas or quotes/)).toBeInTheDocument();
   });
 
   it(`should display an error message when the job name contains single quotes`, async () => {
@@ -122,8 +122,24 @@ describe(`<NewCheck />`, () => {
     const jobNameField = await screen.findByLabelText(/Job name/);
     await waitFor(() => expect(jobNameField).toHaveFocus());
 
-    expect(screen.getByText(/Job names can't contain commas or single quotes/)).toBeInTheDocument();
+    expect(screen.getByText(/Job names can't contain commas or quotes/)).toBeInTheDocument();
   });
+
+  it(`should display an error message when the job name contains double quotes`, async () => {
+    const { user } = await renderNewForm(CheckType.HTTP);
+
+    const jobNameInput = await screen.findByLabelText('Job name', { exact: false });
+    await user.type(jobNameInput, `job name with " double quote`);
+
+    await fillMandatoryFields({ user, checkType: CheckType.HTTP, fieldsToOmit: ['job'] });
+    await submitForm(user);
+
+    const jobNameField = await screen.findByLabelText(/Job name/);
+    await waitFor(() => expect(jobNameField).toHaveFocus());
+
+    expect(screen.getByText(/Job names can't contain commas or quotes/)).toBeInTheDocument();
+  });
+
 
 
   it(`should disable the test button when the user doesn't have logs access`, async () => {
