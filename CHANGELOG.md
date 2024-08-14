@@ -1,5 +1,11 @@
 # Change Log
 
+# [1.14.12](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.11...v1.14.12) (2024-8-14)
+
+- Added datasource RBAC support in the plugin. The plugin now respects RBAC permissions for its datasources.
+- Fix a bug with saving existing checks with empty TLS configs
+- Fix a regression where the http checks follow redirects checkbox was missing
+
 # [1.14.11](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.10...v1.14.11) (2024-7-25)
 
 - The check creation pages have been redesigned to be more user-friendly and intuitive. Every check now has five sections regardless of type.
