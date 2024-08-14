@@ -5,7 +5,7 @@ import { Alert, Button, Field, Input } from '@grafana/ui';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z, ZodType } from 'zod';
 
-import { THE_ONE_AND_ONLY_SM_DS } from 'data/useSMSetup';
+import { DEFAULT_SM_DS_NAME } from 'data/useSMSetup';
 import { useAppInitializer } from 'hooks/useAppInitializer';
 import { DatasourceSelector } from 'components/AppInitializer/DatasourceSelector';
 
@@ -35,7 +35,7 @@ export const AppSetupForm = ({ logsError, logsUid, metricsError, metricsUid, onS
     defaultValues: {
       logsDSUid: logsUid || ``,
       metricsDSUid: metricsUid || ``,
-      SMDSName: THE_ONE_AND_ONLY_SM_DS,
+      SMDSName: DEFAULT_SM_DS_NAME,
     },
     resolver: zodResolver(schema),
   });
@@ -52,7 +52,7 @@ export const AppSetupForm = ({ logsError, logsUid, metricsError, metricsUid, onS
 
   return (
     <FormProvider {...formMethods}>
-      <Field label={`Sythetic Datasource Name`} invalid={Boolean(fieldNameError)} error={fieldNameError} disabled>
+      <Field label={`Synthetic Datasource Name`} invalid={Boolean(fieldNameError)} error={fieldNameError}>
         <Input {...formMethods.register(`SMDSName`)} />
       </Field>
       <Controller

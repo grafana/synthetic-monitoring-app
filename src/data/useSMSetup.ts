@@ -13,12 +13,23 @@ export const queryKeys: Record<'list', QueryKey> = {
   list: ['get-sm-datasource'],
 };
 
-export const THE_ONE_AND_ONLY_SM_DS = `Synthetic Monitoring`;
+export const DEFAULT_SM_DS_NAME = `Synthetic Monitoring`;
 
 export function useGetSMDatasource() {
+  const datasources = getDataSourceSrv().getList();
+  const SMDataSources = datasources.filter((ds) => ds.type === 'synthetic-monitoring-datasource');
+  const name = SMDataSources[0]?.name;
+
   return useQuery({
-    queryKey: queryKeys.list,
-    queryFn: () => getDataSourceSrv().get(THE_ONE_AND_ONLY_SM_DS) as Promise<SMDataSource>,
+    queryKey: [...queryKeys.list, name],
+    queryFn: () => {
+      if (name) {
+        return getDataSourceSrv().get(name) as Promise<SMDataSource>;
+      }
+
+      return Promise.resolve(null);
+    },
+    enabled: Boolean(name),
   });
 }
 
