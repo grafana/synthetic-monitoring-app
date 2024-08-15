@@ -140,7 +140,18 @@ describe(`<NewCheck />`, () => {
     expect(screen.getByText(/Job names can't contain commas or quotes/)).toBeInTheDocument();
   });
 
+  it(`trims white spaces from job name`, async () => {
+    const { read, user } = await renderNewForm(CheckType.HTTP);
 
+    const jobNameInput = await screen.findByLabelText('Job name', { exact: false });
+    await user.type(jobNameInput, `   my job name   `);
+
+    await fillMandatoryFields({ user, checkType: CheckType.HTTP, fieldsToOmit: ['job'] });
+    await submitForm(user);
+
+    const { body } = await read();
+    expect(body.job).toBe('my job name');
+  });
 
   it(`should disable the test button when the user doesn't have logs access`, async () => {
     runTestWithoutLogsAccess();
