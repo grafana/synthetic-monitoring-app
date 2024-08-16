@@ -96,7 +96,7 @@ export function getBrowserScene(
           }),
           new SceneFlexLayout({
             direction: 'row',
-            children: [getAssertionTable(logs, checkType, minStep)],
+            children: [getAssertionTable(logs, checkType, checks?.[0]?.frequency)],
           }),
           new SceneFlexLayout({
             direction: 'row',

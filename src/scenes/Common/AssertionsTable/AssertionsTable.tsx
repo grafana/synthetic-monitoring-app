@@ -16,6 +16,7 @@ import { Alert, LinkButton, LoadingPlaceholder, useStyles2 } from '@grafana/ui';
 
 import { CheckType } from 'types';
 import { Table, TableColumn } from 'components/Table';
+import { getMinStepFromFrequency } from 'scenes/utils';
 
 import { getTablePanelStyles } from '../../SCRIPTED/getTablePanelStyles';
 import { AssertionTableRow } from './AssertionsTableRow';
@@ -292,7 +293,8 @@ export class AssertionsTableSceneObject extends SceneObjectBase<AssertionsTableS
   }
 }
 
-export function getAssertionTable(logs: DataSourceRef, checkType: CheckType, minStep: string) {
+export function getAssertionTable(logs: DataSourceRef, checkType: CheckType, frequency: number) {
+  const minStep = getMinStepFromFrequency(frequency, 2);
   return new SceneFlexItem({
     body: new AssertionsTableSceneObject({
       $data: getQueryRunner(logs),
