@@ -1,6 +1,6 @@
 # Change Log
 
-# [1.14.12](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.11...v1.14.12) (2024-8-14)
+# [1.14.12](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.11...v1.14.12) (2024-8-19)
 
 - Added datasource RBAC support in the plugin. The plugin now respects RBAC permissions for its datasources.
 - Fix a bug with saving existing checks with empty TLS configs
