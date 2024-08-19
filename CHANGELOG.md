@@ -5,6 +5,8 @@
 - Added datasource RBAC support in the plugin. The plugin now respects RBAC permissions for its datasources.
 - Fix a bug with saving existing checks with empty TLS configs
 - Fix a regression where the http checks follow redirects checkbox was missing
+- Prevent problematic characters from being added to job names (commas and single/double quotes)
+- Fix a bug with the assertions graph success / failure rate making the wrong query on scripted checks dashboard
 
 # [1.14.11](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.10...v1.14.11) (2024-7-25)
 
