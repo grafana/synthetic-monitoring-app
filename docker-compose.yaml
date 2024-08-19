@@ -9,7 +9,7 @@ services:
         grafana_version: ${GRAFANA_VERSION:-main}
         grafana_image: ${GRAFANA_IMAGE:-grafana-enterprise}
     ports:
-      - 3001:3000/tcp
+      - 3000:3000/tcp
     volumes:
       - ./dist:/var/lib/grafana/plugins/grafana-synthetic-monitoring-app
       - ./dev/provisioning:/etc/grafana/provisioning
