@@ -70,16 +70,24 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     return interpolated;
   }
 
+  // these are assumptions which may not hold true in all cases
+  // see https://github.com/grafana/synthetic-monitoring-app/pull/911 for more details
   getMetricsDS() {
-    const { uid } = this.instanceSettings.jsonData.metrics;
-
-    return findLinkedDatasource(uid);
+    const info = this.instanceSettings.jsonData.metrics;
+    const ds = findLinkedDatasource({ ...info, uid: 'grafanacloud-metrics' });
+    if (ds) {
+      return ds;
+    }
+    return findLinkedDatasource(info);
   }
 
   getLogsDS() {
-    const { uid } = this.instanceSettings.jsonData.logs;
-
-    return findLinkedDatasource(uid);
+    const info = this.instanceSettings.jsonData.logs;
+    const ds = findLinkedDatasource({ ...info, uid: 'grafanacloud-logs' });
+    if (ds) {
+      return ds;
+    }
+    return findLinkedDatasource(this.instanceSettings.jsonData.logs);
   }
 
   async query(options: DataQueryRequest<SMQuery>): Promise<DataQueryResponse> {
