@@ -70,6 +70,8 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     return interpolated;
   }
 
+  // these are assumptions which may not hold true in all cases
+  // see https://github.com/grafana/synthetic-monitoring-app/pull/911 for more details
   getMetricsDS() {
     const info = this.instanceSettings.jsonData.metrics;
     const ds = findLinkedDatasource({ ...info, uid: 'grafanacloud-metrics' });
