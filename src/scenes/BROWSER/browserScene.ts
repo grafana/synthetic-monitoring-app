@@ -22,6 +22,8 @@ import { getEditButton } from 'scenes/Common/editButton';
 import { getEmptyScene } from 'scenes/Common/emptyScene';
 import { getMinStepFromFrequency } from 'scenes/utils';
 
+import { getCumulativeLayoutShift } from './WebVitals/cumulativeLayoutShift';
+import { getInputResponseTime } from './WebVitals/inputResponseTime';
 import { getPageLoad } from './WebVitals/pageLoad';
 import { getWebVitals } from './WebVitals/webVitals';
 import { getDataTransferred } from './dataTransferred';
@@ -59,6 +61,8 @@ export function getBrowserScene(
 
     const webVitals = getWebVitals(metrics);
     const pageLoad = getPageLoad(metrics);
+    const cumulativeLayoutShift = getCumulativeLayoutShift(metrics);
+    const inputResponseTime = getInputResponseTime(metrics);
 
     return new EmbeddedScene({
       $timeRange: timeRange,
@@ -88,7 +92,11 @@ export function getBrowserScene(
           new SceneFlexLayout({
             direction: 'row',
             height: 200,
-            children: [new SceneFlexItem({ body: pageLoad })],
+            children: [
+              new SceneFlexItem({ body: pageLoad }),
+              new SceneFlexItem({ body: cumulativeLayoutShift }),
+              new SceneFlexItem({ body: inputResponseTime }),
+            ],
           }),
           new SceneFlexLayout({
             direction: 'row',

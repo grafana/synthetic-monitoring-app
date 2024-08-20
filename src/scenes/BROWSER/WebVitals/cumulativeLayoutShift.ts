@@ -7,24 +7,14 @@ function getQueryRunner(metrics: DataSourceRef) {
     queries: [
       {
         refId: 'A',
-        expr: `sum by (job, instance) (quantile_over_time(0.75, probe_browser_web_vital_ttfb{instance="$instance", job="$job"}[$__rate_interval]))`,
-        legendFormat: 'TTFB {{url}}',
-      },
-      {
-        refId: 'B',
-        expr: `sum by (job, instance) (quantile_over_time(0.75, probe_browser_web_vital_fcp{instance="$instance", job="$job"}[$__rate_interval]))`,
-        legendFormat: 'FCP',
-      },
-      {
-        refId: 'C',
-        expr: `sum by (job, instance) (quantile_over_time(0.75, probe_browser_web_vital_lcp{instance="$instance", job="$job"}[$__rate_interval]))`,
-        legendFormat: 'LCP',
+        expr: `sum by (job, instance) (quantile_over_time(0.75, probe_browser_web_vital_cls{instance="$instance", job="$job"}[$__rate_interval]))`,
+        legendFormat: 'CLS',
       },
     ],
   });
 }
 
-export function getPageLoad(metrics: DataSourceRef) {
+export function getCumulativeLayoutShift(metrics: DataSourceRef) {
   return new SceneFlexLayout({
     direction: 'column',
     $data: getQueryRunner(metrics),
@@ -35,7 +25,7 @@ export function getPageLoad(metrics: DataSourceRef) {
         children: [
           new SceneFlexItem({
             body: PanelBuilders.timeseries()
-              .setTitle('Page Load (TTFB, FCP, LCP) - p75')
+              .setTitle('Cumulative Layout Shift (CLS) - p75')
               .setDescription('')
               .setCustomFieldConfig('drawStyle', GraphDrawStyle.Line)
               .setCustomFieldConfig('fillOpacity', 10)
