@@ -140,7 +140,7 @@ export function runTestWithoutSMAccess() {
   jest.spyOn(runTime, 'getDataSourceSrv').mockImplementation(() => {
     return {
       ...jest.requireActual('@grafana/runtime').getDatasourceSrv(),
-      get: () => Promise.resolve(),
+      getList: () => [METRICS_DATASOURCE, LOGS_DATASOURCE],
     };
   });
 }
