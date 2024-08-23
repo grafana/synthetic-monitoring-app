@@ -44,13 +44,8 @@ jest.mock('@grafana/runtime', () => {
       },
     }),
     getDataSourceSrv: () => ({
-      get: (name: string) => {
-        if (name === `Synthetic Monitoring`) {
-          return Promise.resolve(new SMDataSource(SM_DATASOURCE));
-        }
-
-        throw new Error(`Requested unknown datasource: ${name}`);
-      },
+      getList: () => [METRICS_DATASOURCE, LOGS_DATASOURCE, SM_DATASOURCE],
+      get: () => Promise.resolve(new SMDataSource(SM_DATASOURCE)),
     }),
     getLocationSrv: () => ({
       update: (args: any) => args,
