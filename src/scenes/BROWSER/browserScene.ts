@@ -31,7 +31,8 @@ import { getProbeDuration } from './probeDuration';
 export function getBrowserScene(
   { metrics, logs, singleCheckMode }: DashboardSceneAppConfig,
   checks: Check[] = [],
-  checkType: CheckType
+  checkType: CheckType,
+  newUptimeQuery = false,
 ) {
   return () => {
     if (checks.length === 0) {
@@ -49,7 +50,7 @@ export function getBrowserScene(
     const minStep = getMinStepFromFrequency(checks?.[0]?.frequency);
 
     const reachability = getReachabilityStat(metrics, minStep);
-    const uptime = getUptimeStat(metrics, minStep);
+    const uptime = getUptimeStat(metrics, minStep, newUptimeQuery);
 
     const distinctTargets = getDistinctTargets(metrics);
     const probeDuration = getProbeDuration(metrics);

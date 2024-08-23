@@ -30,7 +30,8 @@ import { getProbeDuration } from './probeDuration';
 export function getScriptedScene(
   { metrics, logs, singleCheckMode }: DashboardSceneAppConfig,
   checks: Check[] = [],
-  checkType: CheckType
+  checkType: CheckType,
+  newUptimeQuery = false,
 ) {
   return () => {
     if (checks.length === 0) {
@@ -48,7 +49,7 @@ export function getScriptedScene(
     const minStep = getMinStepFromFrequency(checks?.[0]?.frequency);
 
     const reachability = getReachabilityStat(metrics, minStep);
-    const uptime = getUptimeStat(metrics, minStep);
+    const uptime = getUptimeStat(metrics, minStep, newUptimeQuery);
 
     const distinctTargets = getDistinctTargets(metrics);
     const probeDuration = getProbeDuration(metrics);
