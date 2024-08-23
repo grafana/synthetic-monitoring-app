@@ -1,4 +1,5 @@
 import React from 'react';
+import { OrgRole } from '@grafana/data';
 import { BackendSrvRequest } from '@grafana/runtime';
 import axios from 'axios';
 import { from } from 'rxjs';
@@ -20,6 +21,12 @@ jest.mock('@grafana/runtime', () => {
       featureToggles: {
         ...actual.config.featureToggles,
         topnav: true,
+      },
+      bootData: {
+        user: {
+          ...actual.config.user,
+          orgRole: OrgRole.Admin,
+        },
       },
     },
     getBackendSrv: () => ({

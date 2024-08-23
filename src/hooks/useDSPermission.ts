@@ -1,3 +1,6 @@
+import { OrgRole } from '@grafana/data';
+import { config } from '@grafana/runtime';
+
 import { usePermissionsContext } from 'contexts/PermissionsContext';
 
 type DSOptions = `sm` | `metrics` | `logs`;
@@ -35,6 +38,14 @@ export function useCanReadSM() {
   return useDSPermission(`sm`, `datasources:read`);
 }
 
+// we've rolled this back to respect org roles
+// this will change when we do proper plugin RBAC in the near future
 export function useCanWriteSM() {
-  return useDSPermission(`sm`, `datasources:write`);
+  const orgRole = config.bootData.user.orgRole;
+
+  if (orgRole) {
+    return [OrgRole.Editor, OrgRole.Admin].includes(orgRole);
+  }
+
+  return false;
 }
