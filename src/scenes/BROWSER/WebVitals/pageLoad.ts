@@ -1,5 +1,7 @@
-import { PanelBuilders, SceneFlexItem, SceneFlexLayout, SceneQueryRunner } from '@grafana/scenes';
+import { SceneFlexItem, SceneFlexLayout, SceneQueryRunner } from '@grafana/scenes';
 import { DataSourceRef, GraphDrawStyle } from '@grafana/schema';
+
+import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
 function getQueryRunner(metrics: DataSourceRef) {
   return new SceneQueryRunner({
@@ -34,15 +36,23 @@ export function getPageLoad(metrics: DataSourceRef) {
         height: 200,
         children: [
           new SceneFlexItem({
-            body: PanelBuilders.timeseries()
-              .setTitle('Page Load (TTFB, FCP, LCP) - p75')
-              .setDescription('')
-              .setCustomFieldConfig('drawStyle', GraphDrawStyle.Line)
-              .setCustomFieldConfig('fillOpacity', 10)
-              .setCustomFieldConfig('spanNulls', true)
-              .setCustomFieldConfig('pointSize', 5)
-              .setUnit('ms')
-              .build(),
+            body: new ExplorablePanel({
+              title: 'Page Load (TTFB, FCP, LCP) - p75',
+              description: '',
+              pluginId: 'timeseries',
+              fieldConfig: {
+                defaults: {
+                  unit: 'ms',
+                  custom: {
+                    drawStyle: GraphDrawStyle.Line,
+                    fillOpacity: 10,
+                    spanNulls: true,
+                    pointSize: 5,
+                  },
+                },
+                overrides: [],
+              },
+            }),
           }),
         ],
       }),
