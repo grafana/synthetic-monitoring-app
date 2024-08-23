@@ -14,6 +14,7 @@ services:
       - ./dist:/var/lib/grafana/plugins/grafana-synthetic-monitoring-app
       - ./dev/provisioning:/etc/grafana/provisioning
       - ./dev/custom.ini:/etc/grafana/grafana.ini
+      - ./dev/license.jwt:/var/lib/grafana/license.jwt
       - grafana-storage:/var/lib/grafana
 
 volumes:

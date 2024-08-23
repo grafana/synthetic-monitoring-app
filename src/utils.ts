@@ -38,8 +38,14 @@ export function findSMDataSources(): Array<DataSourceInstanceSettings<SMOptions>
   }) as unknown as Array<DataSourceInstanceSettings<SMOptions>>;
 }
 
-export function findLinkedDatasource(uid: string): DataSourceInstanceSettings | undefined {
-  return Object.values(config.datasources).find((ds) => ds.uid === uid);
+export function findLinkedDatasource(linkedDSInfo: LinkedDatasourceInfo): DataSourceInstanceSettings | undefined {
+  if (linkedDSInfo.uid) {
+    const linkedDS = Object.values(config.datasources).find((ds) => ds.uid === linkedDSInfo.uid);
+    if (linkedDS) {
+      return linkedDS;
+    }
+  }
+  return config.datasources[linkedDSInfo.grafanaName];
 }
 
 export const parseUrl = (url: string) => {

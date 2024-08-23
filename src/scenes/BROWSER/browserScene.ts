@@ -17,17 +17,18 @@ import { Check, CheckType, DashboardSceneAppConfig } from 'types';
 import { getReachabilityStat, getUptimeStat, getVariables } from 'scenes/Common';
 import { getAlertAnnotations } from 'scenes/Common/alertAnnotations';
 import { getAllLogs } from 'scenes/Common/allLogs';
+import { getAssertionTable } from 'scenes/Common/AssertionsTable';
 import { getEditButton } from 'scenes/Common/editButton';
 import { getEmptyScene } from 'scenes/Common/emptyScene';
 import { getMinStepFromFrequency } from 'scenes/utils';
 
-import { getAssertionTable } from '../Common/AssertionsTable';
-import { getResultsByTargetTable } from './ResultsByTargetTable/ResultByTargetTable';
+import { getPageLoad } from './WebVitals/pageLoad';
+import { getWebVitals } from './WebVitals/webVitals';
 import { getDataTransferred } from './dataTransferred';
 import { getDistinctTargets } from './distinctTargets';
 import { getProbeDuration } from './probeDuration';
 
-export function getScriptedScene(
+export function getBrowserScene(
   { metrics, logs, singleCheckMode }: DashboardSceneAppConfig,
   checks: Check[] = [],
   checkType: CheckType
@@ -53,8 +54,11 @@ export function getScriptedScene(
     const distinctTargets = getDistinctTargets(metrics);
     const probeDuration = getProbeDuration(metrics);
     const editButton = getEditButton({ job, instance });
-
     const annotations = getAlertAnnotations(metrics);
+
+    const webVitals = getWebVitals(metrics);
+    const pageLoad = getPageLoad(metrics);
+
     return new EmbeddedScene({
       $timeRange: timeRange,
       $variables: variables,
@@ -78,6 +82,16 @@ export function getScriptedScene(
           new SceneFlexLayout({
             direction: 'row',
             height: 150,
+            children: [new SceneFlexItem({ body: webVitals })],
+          }),
+          new SceneFlexLayout({
+            direction: 'row',
+            height: 200,
+            children: [new SceneFlexItem({ body: pageLoad })],
+          }),
+          new SceneFlexLayout({
+            direction: 'row',
+            height: 150,
             children: [new SceneFlexItem({ body: uptime }), new SceneFlexItem({ body: reachability })],
           }),
           new SceneFlexLayout({
@@ -90,10 +104,11 @@ export function getScriptedScene(
             children: [distinctTargets, probeDuration],
           }),
           getDataTransferred(metrics),
+          /* @todo: implement a table displaying web vitals metrics per url
           new SceneFlexLayout({
             direction: 'row',
-            children: [getResultsByTargetTable(metrics, checkType)],
-          }),
+            children: [getResultsByTargetTable(metrics)],
+          }),*/
           new SceneFlexLayout({
             direction: 'row',
             minHeight: 900,

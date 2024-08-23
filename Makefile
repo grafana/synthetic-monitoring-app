@@ -78,3 +78,8 @@ package-latest:
 .PHONY: generate-version
 generate-version:
 	$(ROOT_DIR)/scripts/plugin-version-hash.sh
+
+.PHONY: server
+server:
+	touch $(ROOT_DIR)/dev/license.jwt
+	docker-compose rm -f && docker-compose up --build

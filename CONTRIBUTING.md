@@ -49,3 +49,9 @@ Grafana configuration can be adjusted using the `custom.ini` file located in `/d
 - Change the `apiHost` variable in your plugin provisioning yaml file to point at your locally running API. To allow docker to reach your local API URL, you need to provision the Synthetic Monitoring app with `apiHost: http://host.docker.internal:4030`.
 - You will need to run a private probe on your machine
 - NOTE: This will still push data to Cloud
+
+### Grafana Enterprise integration
+
+Grafana Enterprise adds features which the plugin takes advantage of (e.g. RBAC). To run the development environment with Grafana Enterprise features enabled you need to add a valid Grafana Enterprise license by updating `dev/license.jwt`. It has been added to our `.gitignore` file to ensure your license doesn't get added to any pull requests (we wouldn't want that happening again...).
+
+When running `yarn server` if `dev/license.jwt` doesn't exist it will create it for you with no content present. You are free to update this file with your own license.
