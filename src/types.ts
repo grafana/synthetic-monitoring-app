@@ -648,6 +648,7 @@ export enum FeatureName {
   GRPCChecks = 'grpc-checks',
   ScriptedChecks = 'scripted-checks',
   UnifiedAlerting = 'ngalert',
+  UptimeQueryV2 = 'uptime-query-v2',
   __TURNOFF = 'test-only-do-not-use',
 }
 
