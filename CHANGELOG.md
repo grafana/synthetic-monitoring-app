@@ -1,6 +1,6 @@
 # Change Log
 
-# [1.15.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.13...v1.15.0) (2024-8-20)
+# [1.15.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.13...v1.15.0) (2024-8-26)
 
 - Bump axios from 1.6.7 to 1.7.4 (https://github.com/grafana/synthetic-monitoring-app/pull/909)
 - Revert the way we do datasource lookups (https://github.com/grafana/synthetic-monitoring-app/pull/911)
