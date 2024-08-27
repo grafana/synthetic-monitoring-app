@@ -1,4 +1,5 @@
 import React from 'react';
+import { OrgRole } from '@grafana/data';
 import { BackendSrvRequest } from '@grafana/runtime';
 import axios from 'axios';
 import { from } from 'rxjs';
@@ -20,6 +21,12 @@ jest.mock('@grafana/runtime', () => {
       featureToggles: {
         ...actual.config.featureToggles,
         topnav: true,
+      },
+      bootData: {
+        user: {
+          ...actual.config.user,
+          orgRole: OrgRole.Admin,
+        },
       },
     },
     getBackendSrv: () => ({
@@ -44,13 +51,8 @@ jest.mock('@grafana/runtime', () => {
       },
     }),
     getDataSourceSrv: () => ({
-      get: (name: string) => {
-        if (name === `Synthetic Monitoring`) {
-          return Promise.resolve(new SMDataSource(SM_DATASOURCE));
-        }
-
-        throw new Error(`Requested unknown datasource: ${name}`);
-      },
+      getList: () => [METRICS_DATASOURCE, LOGS_DATASOURCE, SM_DATASOURCE],
+      get: () => Promise.resolve(new SMDataSource(SM_DATASOURCE)),
     }),
     getLocationSrv: () => ({
       update: (args: any) => args,

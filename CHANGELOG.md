@@ -1,5 +1,15 @@
 # Change Log
 
+# [1.15.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.13...v1.15.1) (2024-8-26)
+
+- Bump axios from 1.6.7 to 1.7.4 (https://github.com/grafana/synthetic-monitoring-app/pull/909)
+- Revert the way we do datasource lookups (https://github.com/grafana/synthetic-monitoring-app/pull/911)
+- Fix typo in alerts error message (https://github.com/grafana/synthetic-monitoring-app/pull/913)
+- Obtain SM datasource by its type and not name to prevent errors when it’s been renamed (https://github.com/grafana/synthetic-monitoring-app/pull/921)
+- Revert sm:write permissions to be obtained froom org roles instead of datasource (https://github.com/grafana/synthetic-monitoring-app/pull/923)
+- Add new version of uptime calculation query and set it under FF  (https://github.com/grafana/synthetic-monitoring-app/pull/840/)
+- Hide grpc option in check cards when feature flag off (https://github.com/grafana/synthetic-monitoring-app/pull/922)
+
 # [1.14.13](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.11...v1.14.13) (2024-8-20)
 
 - Added datasource RBAC support in the plugin. The plugin now respects RBAC permissions for its datasources.
