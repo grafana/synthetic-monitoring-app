@@ -5,7 +5,7 @@ import { config, FetchResponse, getBackendSrv } from '@grafana/runtime';
 import { contextSrv } from 'grafana/app/core/core';
 import { firstValueFrom } from 'rxjs';
 
-import { LogQueryResponse, LogStream, SMOptions } from './datasource/types';
+import { LinkedDatasourceInfo, LogQueryResponse, LogStream, SMOptions } from './datasource/types';
 import {
   CalculateUsageValues,
   Check,
@@ -45,7 +45,12 @@ export function findLinkedDatasource(linkedDSInfo: LinkedDatasourceInfo): DataSo
       return linkedDS;
     }
   }
-  return config.datasources[linkedDSInfo.grafanaName];
+
+  if (linkedDSInfo.grafanaName) {
+    return config.datasources[linkedDSInfo.grafanaName];
+  }
+
+  return undefined;
 }
 
 export const parseUrl = (url: string) => {

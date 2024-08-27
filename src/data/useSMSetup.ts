@@ -9,6 +9,8 @@ import { SMDataSource } from 'datasource/DataSource';
 import { SMPluginInstallResponse } from 'datasource/responses.types';
 import { LinkedDatasourceInfo } from 'datasource/types';
 
+export const DEFAULT_SM_DS_NAME = `Synthetic Monitoring`;
+
 export const queryKeys: Record<'list', QueryKey> = {
   list: ['get-sm-datasource'],
 };

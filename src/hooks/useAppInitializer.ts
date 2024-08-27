@@ -41,7 +41,7 @@ export const useAppInitializer = (onSuccess: () => void) => {
                       uid: logsDS.uid,
                     },
                     metrics: {
-                      hostedId: tenantInfo.logInstance.id,
+                      hostedId: tenantInfo.metricInstance.id,
                       type: metricsDS.type,
                       uid: metricsDS.uid,
                     },
