@@ -25,6 +25,7 @@ import { getMinStepFromFrequency } from 'scenes/utils';
 import { getCumulativeLayoutShift } from './WebVitals/cumulativeLayoutShift';
 import { getInputResponseTime } from './WebVitals/inputResponseTime';
 import { getPageLoad } from './WebVitals/pageLoad';
+import { getPagePerformance, getWebVitalsTable } from './WebVitals/webVitalsTable';
 import { getWebVitals } from './WebVitals/webVitals';
 import { getDataTransferred } from './dataTransferred';
 import { getDistinctTargets } from './distinctTargets';
@@ -34,7 +35,7 @@ export function getBrowserScene(
   { metrics, logs, singleCheckMode }: DashboardSceneAppConfig,
   checks: Check[] = [],
   checkType: CheckType,
-  newUptimeQuery = false,
+  newUptimeQuery = false
 ) {
   return () => {
     if (checks.length === 0) {
@@ -61,6 +62,9 @@ export function getBrowserScene(
 
     const webVitals = getWebVitals(metrics);
     const pageLoad = getPageLoad(metrics);
+
+    const webVitalsTable = getWebVitalsTable(metrics);
+
     const cumulativeLayoutShift = getCumulativeLayoutShift(metrics);
     const inputResponseTime = getInputResponseTime(metrics);
 
@@ -97,6 +101,11 @@ export function getBrowserScene(
               new SceneFlexItem({ body: cumulativeLayoutShift }),
               new SceneFlexItem({ body: inputResponseTime }),
             ],
+          }),
+          new SceneFlexLayout({
+            direction: 'row',
+            height: 300,
+            children: [new SceneFlexItem({ body: webVitalsTable })],
           }),
           new SceneFlexLayout({
             direction: 'row',
