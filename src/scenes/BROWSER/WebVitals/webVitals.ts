@@ -11,7 +11,7 @@ function getQueryRunner(metrics: DataSourceRef, refId: string) {
     queries: [
       {
         refId: `wv-${refId}`,
-        expr: `quantile_over_time(0.75, probe_browser_web_vital_${refId}{instance="$instance", job="$job"}[$__rate_interval])`,
+        expr: `quantile_over_time(0.75, probe_browser_web_vital_${refId}{instance="$instance", job="$job"}[$__range])`,
       },
     ],
   });
