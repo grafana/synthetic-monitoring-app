@@ -9,12 +9,12 @@ function getQueryRunner(metrics: DataSourceRef) {
     queries: [
       {
         refId: 'A',
-        expr: `sum by (job, instance) (quantile_over_time(0.75, probe_browser_web_vital_fid{instance="$instance", job="$job"}[$__rate_interval]))`,
+        expr: `avg by (job, instance) (quantile_over_time(0.75, probe_browser_web_vital_fid{instance="$instance", job="$job"}[$__range]))`,
         legendFormat: 'FID',
       },
       {
         refId: 'B',
-        expr: `sum by (job, instance) (quantile_over_time(0.75, probe_browser_web_vital_inp{instance="$instance", job="$job"}[$__rate_interval]))`,
+        expr: `avg by (job, instance) (quantile_over_time(0.75, probe_browser_web_vital_inp{instance="$instance", job="$job"}[$__range]))`,
         legendFormat: 'INP',
       },
     ],

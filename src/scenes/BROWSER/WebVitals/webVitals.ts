@@ -11,7 +11,7 @@ function getQueryRunner(metrics: DataSourceRef, refId: string) {
     queries: [
       {
         refId: `wv-${refId}`,
-        expr: `quantile_over_time(0.75, probe_browser_web_vital_${refId}{instance="$instance", job="$job"}[$__range])`,
+        expr: `avg by (instance, job) (quantile_over_time(0.75, probe_browser_web_vital_${refId}{instance="$instance", job="$job"}[$__range]))`,
       },
     ],
   });
@@ -40,15 +40,6 @@ export function getWebVitals(metrics: DataSourceRef) {
         children: [
           new SceneFlexItem({
             body: new WebVitalGaugeScene({
-              name: WEB_VITAL_CONFIG.ttfb.name,
-              longName: WEB_VITAL_CONFIG.ttfb.longName,
-              description: WEB_VITAL_CONFIG.ttfb.description,
-              refId: `wv-${WEB_VITAL_CONFIG.ttfb.name}`,
-            }),
-            $data: getQueryRunner(metrics, WEB_VITAL_CONFIG.ttfb.name),
-          }),
-          new SceneFlexItem({
-            body: new WebVitalGaugeScene({
               name: WEB_VITAL_CONFIG.fcp.name,
               longName: WEB_VITAL_CONFIG.fcp.longName,
               description: WEB_VITAL_CONFIG.fcp.description,
@@ -64,6 +55,15 @@ export function getWebVitals(metrics: DataSourceRef) {
               refId: `wv-${WEB_VITAL_CONFIG.lcp.name}`,
             }),
             $data: getQueryRunner(metrics, WEB_VITAL_CONFIG.lcp.name),
+          }),
+          new SceneFlexItem({
+            body: new WebVitalGaugeScene({
+              name: WEB_VITAL_CONFIG.ttfb.name,
+              longName: WEB_VITAL_CONFIG.ttfb.longName,
+              description: WEB_VITAL_CONFIG.ttfb.description,
+              refId: `wv-${WEB_VITAL_CONFIG.ttfb.name}`,
+            }),
+            $data: getQueryRunner(metrics, WEB_VITAL_CONFIG.ttfb.name),
           }),
           new SceneFlexItem({
             body: new WebVitalGaugeScene({

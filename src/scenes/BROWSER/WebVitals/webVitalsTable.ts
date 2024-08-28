@@ -16,16 +16,33 @@ const transformation = (queries: SceneDataProvider<SceneDataState>) => {
       {
         id: DataTransformerID.timeSeriesTable,
         options: {
-          stat: 'mean',
+          A: {
+            stat: 'mean',
+          },
+          B: {
+            stat: 'mean',
+          },
+          C: {
+            stat: 'mean',
+          },
+          D: {
+            stat: 'mean',
+          },
+          E: {
+            stat: 'mean',
+          },
+          F: {
+            stat: 'mean',
+          },
         },
       },
-      /*{
+      {
         id: DataTransformerID.joinByField,
         options: {
           byField: 'url',
           mode: 'outer',
         },
-      },*/
+      },
       {
         id: DataTransformerID.organize,
         options: {
