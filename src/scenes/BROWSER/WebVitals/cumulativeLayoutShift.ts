@@ -30,6 +30,11 @@ export function getCumulativeLayoutShift(metrics: DataSourceRef) {
               title: 'Cumulative Layout Shift (CLS) - p75',
               description: '',
               pluginId: 'timeseries',
+              options: {
+                tooltip: {
+                  mode: 'multi',
+                }
+              },
               fieldConfig: {
                 defaults: {
                   unit: 'ms',

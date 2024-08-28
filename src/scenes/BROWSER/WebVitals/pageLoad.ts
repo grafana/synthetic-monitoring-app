@@ -40,6 +40,11 @@ export function getPageLoad(metrics: DataSourceRef) {
               title: 'Page Load (TTFB, FCP, LCP) - p75',
               description: '',
               pluginId: 'timeseries',
+              options: {
+                tooltip: {
+                  mode: 'multi',
+                }
+              },
               fieldConfig: {
                 defaults: {
                   unit: 'ms',

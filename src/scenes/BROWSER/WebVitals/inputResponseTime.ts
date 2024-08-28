@@ -35,6 +35,11 @@ export function getInputResponseTime(metrics: DataSourceRef) {
               title: 'Input Response Time (FID, INP) - p75',
               description: '',
               pluginId: 'timeseries',
+              options: {
+                tooltip: {
+                  mode: 'multi',
+                }
+              },
               fieldConfig: {
                 defaults: {
                   unit: 'ms',
