@@ -1,6 +1,5 @@
 import { DataTransformerID } from '@grafana/data';
 import {
-  PanelBuilders,
   SceneDataProvider,
   SceneDataState,
   SceneDataTransformer,
@@ -9,6 +8,8 @@ import {
   SceneQueryRunner,
 } from '@grafana/scenes';
 import { DataSourceRef } from '@grafana/schema';
+
+import { ExplorablePanel } from 'scenes/ExplorablePanel';
 
 const transformation = (queries: SceneDataProvider<SceneDataState>) => {
   return new SceneDataTransformer({
@@ -46,7 +47,10 @@ const transformation = (queries: SceneDataProvider<SceneDataState>) => {
       {
         id: DataTransformerID.organize,
         options: {
-          excludeByName: {},
+          excludeByName: {
+            instance: true,
+            job: true,
+          },
           renameByName: {
             url: 'Page URL',
             'Trend #A': 'FCP',
@@ -69,27 +73,27 @@ function getQueryRunner(metrics: DataSourceRef) {
     queries: [
       {
         refId: 'A',
-        expr: `avg by (url) (quantile_over_time(0.75, probe_browser_web_vital_fcp{instance="$instance", job="$job"}[$__range]))`,
+        expr: `avg by (url, instance, job) (quantile_over_time(0.75, probe_browser_web_vital_fcp{instance="$instance", job="$job"}[$__range]))`,
       },
       {
         refId: 'B',
-        expr: `avg by (url) (quantile_over_time(0.75, probe_browser_web_vital_lcp{instance="$instance", job="$job"}[$__range]))`,
+        expr: `avg by (url, instance, job) (quantile_over_time(0.75, probe_browser_web_vital_lcp{instance="$instance", job="$job"}[$__range]))`,
       },
       {
         refId: 'C',
-        expr: `avg by (url) (quantile_over_time(0.75, probe_browser_web_vital_ttfb{instance="$instance", job="$job"}[$__range]))`,
+        expr: `avg by (url, instance, job) (quantile_over_time(0.75, probe_browser_web_vital_ttfb{instance="$instance", job="$job"}[$__range]))`,
       },
       {
         refId: 'D',
-        expr: `avg by (url) (quantile_over_time(0.75, probe_browser_web_vital_cls{instance="$instance", job="$job"}[$__range]))`,
+        expr: `avg by (url, instance, job) (quantile_over_time(0.75, probe_browser_web_vital_cls{instance="$instance", job="$job"}[$__range]))`,
       },
       {
         refId: 'E',
-        expr: `avg by (url) (quantile_over_time(0.75, probe_browser_web_vital_fid{instance="$instance", job="$job"}[$__range]))`,
+        expr: `avg by (url, instance, job) (quantile_over_time(0.75, probe_browser_web_vital_fid{instance="$instance", job="$job"}[$__range]))`,
       },
       {
         refId: 'F',
-        expr: `avg by (url) (quantile_over_time(0.75, probe_browser_web_vital_inp{instance="$instance", job="$job"}[$__range]))`,
+        expr: `avg by (url, instance, job) (quantile_over_time(0.75, probe_browser_web_vital_inp{instance="$instance", job="$job"}[$__range]))`,
       },
     ],
   });
@@ -98,7 +102,6 @@ function getQueryRunner(metrics: DataSourceRef) {
 }
 
 export function getWebVitalsTable(metrics: DataSourceRef) {
-  const data = getQueryRunner(metrics);
   return new SceneFlexLayout({
     direction: 'column',
     $data: getQueryRunner(metrics),
@@ -108,7 +111,47 @@ export function getWebVitalsTable(metrics: DataSourceRef) {
         height: 300,
         children: [
           new SceneFlexItem({
-            body: PanelBuilders.table().setTitle('Metrics by url').setData(data).build(),
+            body: new ExplorablePanel({
+              title: 'Metrics by URL',
+              pluginId: 'table',
+              fieldConfig: {
+                defaults: {
+                  unit: 'ms',
+                  noValue: '-',
+                  custom: {
+                    cellOptions: {
+                      type: 'sparkline',
+                      hideValue: false,
+                      lineInterpolation: 'smooth',
+                      spanNulls: true,
+                      insertNulls: true,
+                    },
+                  },
+                },
+
+                overrides: [
+                  {
+                    matcher: {
+                      id: 'byName',
+                      options: 'url',
+                    },
+                    properties: [
+                      {
+                        id: 'custom.cellOptions',
+                        value: {
+                          type: 'auto',
+                        },
+                      },
+                    ],
+                  },
+                ],
+              },
+              options: {
+                footer: {
+                  enablePagination: true,
+                },
+              },
+            }),
           }),
         ],
       }),
