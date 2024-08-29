@@ -121,6 +121,7 @@ export interface Probe extends ExistingObject {
 
 interface ProbeCapabilities {
   disableScriptedChecks: boolean;
+  disableBrowserChecks: boolean;
 }
 
 export enum ResponseMatchType {

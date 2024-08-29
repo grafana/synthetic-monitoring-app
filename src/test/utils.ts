@@ -21,6 +21,7 @@ export const UPDATED_VALUES: Pick<Probe, 'name' | 'latitude' | 'longitude' | 're
   labels: [{ name: 'UPDATED', value: 'PROBE' }],
   capabilities: {
     disableScriptedChecks: true,
+    disableBrowserChecks: true,
   },
 };
 
@@ -61,6 +62,9 @@ export async function fillProbeForm(user: UserEvent) {
 
   const disableScriptedChecks = await screen.findByLabelText('Disable scripted checks', { exact: false });
   await user.click(disableScriptedChecks);
+
+  const disableBrowserChecks = await screen.findByLabelText('Disable browser checks', { exact: false });
+  await user.click(disableBrowserChecks);
 }
 
 export function runTestAsSMViewer() {
