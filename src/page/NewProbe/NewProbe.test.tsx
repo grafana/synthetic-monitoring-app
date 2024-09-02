@@ -1,10 +1,11 @@
 import React from 'react';
+import { config } from '@grafana/runtime';
 import { screen, waitFor } from '@testing-library/react';
 import { ADD_PROBE_TOKEN_RESPONSE } from 'test/fixtures/probes';
 import { render } from 'test/render';
 import { fillProbeForm } from 'test/utils';
 
-import { ROUTES } from 'types';
+import { FeatureName, ROUTES } from 'types';
 import { getRoute } from 'components/Routing.utils';
 
 import { NewProbe } from './NewProbe';
@@ -19,6 +20,11 @@ const renderNewProbe = () => {
 };
 
 it(`creates a new probe, displays the modal and redirects on close`, async () => {
+  jest.replaceProperty(config, 'featureToggles', {
+    // @ts-expect-error
+    [FeatureName.BrowserChecks]: true,
+  });
+
   const { history, user } = renderNewProbe();
   await fillProbeForm(user);
 

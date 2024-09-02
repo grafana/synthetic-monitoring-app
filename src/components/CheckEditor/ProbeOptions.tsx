@@ -73,5 +73,9 @@ function getAvailableProbes(probes: Probe[], checkType: CheckType) {
   if (checkType === CheckType.Scripted) {
     return probes.filter((probe) => probe.capabilities.disableScriptedChecks === false);
   }
+
+  if (checkType === CheckType.Browser) {
+    return probes.filter((probe) => probe.capabilities.disableBrowserChecks === false);
+  }
   return probes;
 }

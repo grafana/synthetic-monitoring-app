@@ -25,6 +25,7 @@ export const TEMPLATE_PROBE: Probe = {
   deprecated: false,
   capabilities: {
     disableScriptedChecks: false,
+    disableBrowserChecks: false,
   },
 };
 

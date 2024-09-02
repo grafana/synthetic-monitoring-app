@@ -50,5 +50,6 @@ export const ProbeSchema: ZodType<Probe> = z.object({
   deprecated: z.boolean(),
   capabilities: z.object({
     disableScriptedChecks: z.boolean(),
+    disableBrowserChecks: z.boolean(),
   }),
 });
