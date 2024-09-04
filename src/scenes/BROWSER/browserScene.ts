@@ -91,6 +91,11 @@ export function getBrowserScene(
           new SceneFlexLayout({
             direction: 'row',
             height: 150,
+            children: [new SceneFlexItem({ body: uptime }), new SceneFlexItem({ body: reachability })],
+          }),
+          new SceneFlexLayout({
+            direction: 'row',
+            height: 150,
             children: [new SceneFlexItem({ body: webVitals })],
           }),
           new SceneFlexLayout({
@@ -109,11 +114,6 @@ export function getBrowserScene(
           }),
           new SceneFlexLayout({
             direction: 'row',
-            height: 150,
-            children: [new SceneFlexItem({ body: uptime }), new SceneFlexItem({ body: reachability })],
-          }),
-          new SceneFlexLayout({
-            direction: 'row',
             children: [getAssertionTable(logs, checkType, checks?.[0]?.frequency)],
           }),
           new SceneFlexLayout({
@@ -122,11 +122,6 @@ export function getBrowserScene(
             children: [distinctTargets, probeDuration],
           }),
           getDataTransferred(metrics),
-          /* @todo: implement a table displaying web vitals metrics per url
-          new SceneFlexLayout({
-            direction: 'row',
-            children: [getResultsByTargetTable(metrics)],
-          }),*/
           new SceneFlexLayout({
             direction: 'row',
             minHeight: 900,
