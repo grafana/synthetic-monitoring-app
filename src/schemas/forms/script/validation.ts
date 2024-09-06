@@ -1,6 +1,6 @@
 import { RefinementCtx, ZodIssueCode } from 'zod';
 
-import { extractImportStatement, extractOptionsExport, parseScript } from './parser';
+import { checkForChromium, extractImportStatement, extractOptionsExport, parseScript } from './parser';
 
 const MAX_SCRIPT_IN_KB = 128;
 
@@ -33,6 +33,13 @@ export function validateBrowserScript(script: string, context: RefinementCtx) {
     return context.addIssue({
       code: ZodIssueCode.custom,
       message: 'Script does not export any options.',
+    });
+  }
+
+  if (!checkForChromium(options)) {
+    return context.addIssue({
+      code: ZodIssueCode.custom,
+      message: 'Script must set the type to chromium in the browser options.',
     });
   }
 
