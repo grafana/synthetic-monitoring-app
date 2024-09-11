@@ -26,14 +26,7 @@ export function WebVitalGauge({ value, name, longName, description, exploreLink 
     <div className={styles.container}>
       <div>
         <div className={styles.fullNameContainer}>
-          <div className={styles.nameWrapper}>
-            <h3 className={styles.shortName}>{name}</h3>
-            {description ? (
-              <Tooltip content={description}>
-                <Icon name="question-circle" size="lg" />
-              </Tooltip>
-            ) : null}
-          </div>
+          <h3 className={styles.shortName}>{name}</h3>
           {exploreLink ? (
             <LinkButton
               key="explore"
@@ -46,8 +39,14 @@ export function WebVitalGauge({ value, name, longName, description, exploreLink 
             ></LinkButton>
           ) : null}
         </div>
-
-        <span className={styles.fullName}>{longName}</span>
+        <div className={styles.nameWrapper}>
+          <span className={styles.fullName}>{longName}</span>
+          {description ? (
+            <Tooltip content={description}>
+              <Icon name="question-circle" size="sm" />
+            </Tooltip>
+          ) : null}
+        </div>
       </div>
 
       <div>
@@ -80,7 +79,7 @@ export function getStyles(theme: GrafanaTheme2) {
     nameWrapper: css({
       display: 'flex',
       alignItems: 'center',
-      gap: `${theme.spacing(2)}`,
+      gap: `${theme.spacing(1)}`,
     }),
     fullName: css({
       color: `${theme.colors.text.secondary}`,
