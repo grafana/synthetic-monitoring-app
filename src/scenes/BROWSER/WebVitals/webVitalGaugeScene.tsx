@@ -14,7 +14,7 @@ interface WebVitalGaugeProps extends SceneObjectState {
   name: string;
   longName: string;
   description?: string;
-  exploreLink: string;
+  exploreLink?: string;
 }
 
 export class WebVitalGaugeScene extends SceneObjectBase<WebVitalGaugeProps> {
