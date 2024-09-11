@@ -1,6 +1,6 @@
 import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Icon, Tooltip, useStyles2 } from '@grafana/ui';
+import { Icon, LinkButton, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { WebVitalName } from './types';
@@ -14,9 +14,10 @@ interface WebVitalGaugeProps {
   longName: string;
   value: number;
   description?: string;
+  exploreLink?: string;
 }
 
-export function WebVitalGauge({ value, name, longName, description }: WebVitalGaugeProps) {
+export function WebVitalGauge({ value, name, longName, description, exploreLink }: WebVitalGaugeProps) {
   const styles = useStyles2(getStyles);
 
   const valueConfig = getWebVitalValueConfig(name, value);
@@ -25,11 +26,24 @@ export function WebVitalGauge({ value, name, longName, description }: WebVitalGa
     <div className={styles.container}>
       <div>
         <div className={styles.fullNameContainer}>
-          <h3 className={styles.shortName}>{name}</h3>
-          {description ? (
-            <Tooltip content={description}>
-              <Icon name="question-circle" size="lg" />
-            </Tooltip>
+          <div className={styles.nameWrapper}>
+            <h3 className={styles.shortName}>{name}</h3>
+            {description ? (
+              <Tooltip content={description}>
+                <Icon name="question-circle" size="lg" />
+              </Tooltip>
+            ) : null}
+          </div>
+          {exploreLink ? (
+            <LinkButton
+              key="explore"
+              tooltip={'Explore'}
+              target="_blank"
+              icon="compass"
+              size="sm"
+              variant="secondary"
+              href={`/explore?left=${exploreLink}`}
+            ></LinkButton>
           ) : null}
         </div>
 
@@ -62,6 +76,11 @@ export function getStyles(theme: GrafanaTheme2) {
       color: `${theme.colors.text.secondary}`,
       display: 'flex',
       justifyContent: 'space-between',
+    }),
+    nameWrapper: css({
+      display: 'flex',
+      alignItems: 'center',
+      gap: `${theme.spacing(2)}`,
     }),
     fullName: css({
       color: `${theme.colors.text.secondary}`,
