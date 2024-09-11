@@ -9,24 +9,14 @@ function getQueryRunner(metrics: DataSourceRef) {
     queries: [
       {
         refId: 'A',
-        expr: `avg by (instance, job) (quantile_over_time(0.75, probe_browser_web_vital_fcp{instance="$instance", job="$job"}[$__range]))`,
-        legendFormat: 'FCP',
-      },
-      {
-        refId: 'B',
-        expr: `avg by (instance, job) (quantile_over_time(0.75, probe_browser_web_vital_lcp{instance="$instance", job="$job"}[$__range]))`,
-        legendFormat: 'LCP',
-      },
-      {
-        refId: 'C',
-        expr: `avg by (instance, job) (quantile_over_time(0.75, probe_browser_web_vital_ttfb{instance="$instance", job="$job"}[$__range]))`,
-        legendFormat: 'TTFB',
+        expr: `avg by (job, instance) (quantile_over_time(0.75, probe_browser_web_vital_cls{instance="$instance", job="$job"}[$__range]))`,
+        legendFormat: 'CLS',
       },
     ],
   });
 }
 
-export function getPageLoad(metrics: DataSourceRef) {
+export function getCumulativeLayoutShift(metrics: DataSourceRef) {
   return new SceneFlexLayout({
     direction: 'column',
     $data: getQueryRunner(metrics),
@@ -37,7 +27,7 @@ export function getPageLoad(metrics: DataSourceRef) {
         children: [
           new SceneFlexItem({
             body: new ExplorablePanel({
-              title: 'Page Load (TTFB, FCP, LCP) - p75',
+              title: 'Cumulative Layout Shift (CLS) - p75',
               description: '',
               pluginId: 'timeseries',
               options: {
