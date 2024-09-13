@@ -1,13 +1,14 @@
 import React, { useRef } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
-import { Badge, BadgeColor, Label, RadioButtonGroup, Stack, Text } from '@grafana/ui';
+import { Label, RadioButtonGroup, Stack, Text } from '@grafana/ui';
 
-import { CheckFormValues, CheckStatus, CheckType, CheckTypeGroup } from 'types';
+import { CheckFormValues, CheckType, CheckTypeGroup } from 'types';
 import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
 import { fallbackCheckMap } from 'components/constants';
 
 import { toFormValues } from '../checkFormTransformations';
+import { CheckStatusBadge } from './CheckStatusBadge';
 
 type RefType = Partial<Record<CheckType, CheckFormValues>>;
 
@@ -72,28 +73,11 @@ export const ChooseCheckType = ({ checkType, checkTypeGroup, disabled }: ChooseC
               {description}
             </Text>
           )}
-          {status ? <CheckBadge status={status} /> : <BadgePlaceholder />}
+          {status ? <CheckStatusBadge status={status} /> : <BadgePlaceholder />}
         </Stack>
       </Stack>
     </div>
   );
-};
-
-const colorMap: Record<CheckStatus, { text: string; color: BadgeColor }> = {
-  [CheckStatus.EXPERIMENTAL]: {
-    color: 'orange',
-    text: `Experimental`,
-  },
-  [CheckStatus.PUBLIC_PREVIEW]: {
-    color: 'blue',
-    text: `Public preview`,
-  },
-};
-
-const CheckBadge = ({ status }: { status: CheckStatus }) => {
-  const { text, color } = colorMap[status];
-
-  return <Badge text={text} color={color} />;
 };
 
 // so the text doesn't bounce up and down when there area a mix of badges / no-badges

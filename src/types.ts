@@ -799,6 +799,7 @@ export type PrometheusAlertingRule = {
 
 export enum CheckStatus {
   EXPERIMENTAL = 'experimental',
+  PRIVATE_PREVIEW = 'private-preview',
   PUBLIC_PREVIEW = 'public-preview',
 }
 

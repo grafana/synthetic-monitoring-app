@@ -11,6 +11,7 @@ import { PluginPage } from 'components/PluginPage';
 import { getRoute } from 'components/Routing.utils';
 import { Toggletip } from 'components/Toggletip';
 
+import { CheckStatusBadge } from './CheckEditor/FormComponents/CheckStatusBadge';
 import { Card } from './Card';
 import { OverLimitAlert } from './OverLimitAlert';
 
@@ -66,6 +67,7 @@ const CheckGroupCard = ({ group }: { group: CheckTypeGroupOption }) => {
                 return <Protocol key={protocol.label} {...protocol} href={disabled ? undefined : protocol.href} />;
               })}
             </Stack>
+            <Stack justifyContent={`center`}>{group.status && <CheckStatusBadge status={group.status} />}</Stack>
           </Stack>
         </div>
       </Stack>
