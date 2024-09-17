@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { DataFrameView, GrafanaTheme2 } from '@grafana/data';
 import { SceneComponentProps, sceneGraph, SceneObjectBase, SceneObjectState } from '@grafana/scenes';
-import { useStyles2 } from '@grafana/ui';
+import { Menu, PanelChrome, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { WebVitalName } from './types';
@@ -51,13 +51,17 @@ function WebVitalGaugeRenderer({ model }: SceneComponentProps<WebVitalGaugeScene
 
   return (
     <div className={styles}>
-      <WebVitalGauge
-        value={value}
-        name={name as WebVitalName}
+      <PanelChrome
+        title={name.toUpperCase()}
         description={description}
-        longName={longName}
-        exploreLink={exploreLink}
-      />
+        menu={() => (
+          <Menu>
+            {exploreLink && <Menu.Item label="Explore" icon="compass" url={`/explore?left=${exploreLink}`} />}
+          </Menu>
+        )}
+      >
+        <WebVitalGauge value={value} name={name as WebVitalName} longName={longName} />
+      </PanelChrome>
     </div>
   );
 }
@@ -96,7 +100,5 @@ function setExploreLink(model: WebVitalGaugeScene) {
 
 const getStyles = (theme: GrafanaTheme2) =>
   css({
-    border: `1px solid ${theme.colors.border.weak}`,
-    padding: '.5rem',
     width: '100%',
   });
