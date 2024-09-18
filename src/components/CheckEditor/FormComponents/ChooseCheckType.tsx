@@ -1,9 +1,9 @@
 import React, { useRef } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
-import { Badge, BadgeColor, Label, RadioButtonGroup, Stack, Text } from '@grafana/ui';
+import { Label, RadioButtonGroup, Stack, Text } from '@grafana/ui';
 
-import { CheckFormValues, CheckStatus, CheckType, CheckTypeGroup } from 'types';
+import { CheckFormValues, CheckType, CheckTypeGroup } from 'types';
 import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
 import { fallbackCheckMap } from 'components/constants';
 
@@ -39,7 +39,7 @@ export const ChooseCheckType = ({ checkType, checkTypeGroup, disabled }: ChooseC
     return null;
   }
 
-  const { description, status } = groupOptions.find((option) => option.value === checkType) || {};
+  const { description } = groupOptions.find((option) => option.value === checkType) || {};
   const requestTypeOptions = groupOptions.map(({ label, value }) => {
     const standard = { label, value };
 
@@ -72,32 +72,11 @@ export const ChooseCheckType = ({ checkType, checkTypeGroup, disabled }: ChooseC
               {description}
             </Text>
           )}
-          {status ? <CheckBadge status={status} /> : <BadgePlaceholder />}
         </Stack>
       </Stack>
     </div>
   );
 };
-
-const colorMap: Record<CheckStatus, { text: string; color: BadgeColor }> = {
-  [CheckStatus.EXPERIMENTAL]: {
-    color: 'orange',
-    text: `Experimental`,
-  },
-  [CheckStatus.PUBLIC_PREVIEW]: {
-    color: 'blue',
-    text: `Public preview`,
-  },
-};
-
-const CheckBadge = ({ status }: { status: CheckStatus }) => {
-  const { text, color } = colorMap[status];
-
-  return <Badge text={text} color={color} />;
-};
-
-// so the text doesn't bounce up and down when there area a mix of badges / no-badges
-const BadgePlaceholder = () => <div style={{ height: `22px` }} />;
 
 function updateCheckTypeValues(refValues: RefType, checkType: CheckType, currentCheckType: CheckType) {
   if (Object.hasOwnProperty.call(refValues, checkType)) {

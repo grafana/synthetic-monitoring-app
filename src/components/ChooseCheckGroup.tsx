@@ -6,11 +6,13 @@ import { DataTestIds } from 'test/dataTestIds';
 
 import { CheckTypeGroup, ROUTES } from 'types';
 import { CheckTypeGroupOption, ProtocolOption, useCheckTypeGroupOptions } from 'hooks/useCheckTypeGroupOptions';
+import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
 import { useLimits } from 'hooks/useLimits';
 import { PluginPage } from 'components/PluginPage';
 import { getRoute } from 'components/Routing.utils';
 import { Toggletip } from 'components/Toggletip';
 
+import { CheckStatusBadge } from './CheckEditor/FormComponents/CheckStatusBadge';
 import { Card } from './Card';
 import { OverLimitAlert } from './OverLimitAlert';
 
@@ -39,6 +41,10 @@ export const ChooseCheckGroup = () => {
 const CheckGroupCard = ({ group }: { group: CheckTypeGroupOption }) => {
   const styles = useStyles2(getStyles);
   const { isOverCheckLimit, isOverScriptedLimit } = useLimits();
+  const checkOptions = useCheckTypeOptions().filter((option) => option.group === group.value);
+  const checksWithStatus = checkOptions.filter((option) => option.status);
+  const shouldShowStatus = checksWithStatus.length === checkOptions.length;
+
   const disabled =
     isOverCheckLimit ||
     ([CheckTypeGroup.MultiStep, CheckTypeGroup.Scripted].includes(group.value) && isOverScriptedLimit);
@@ -59,13 +65,18 @@ const CheckGroupCard = ({ group }: { group: CheckTypeGroupOption }) => {
           </LinkButton>
         </div>
         <div className={styles.protocols}>
-          <Stack direction={`column`}>
+          <Stack direction={`column`} gap={2}>
             Supported protocols:
             <Stack justifyContent={`center`}>
               {group.protocols.map((protocol) => {
                 return <Protocol key={protocol.label} {...protocol} href={disabled ? undefined : protocol.href} />;
               })}
             </Stack>
+            {shouldShowStatus && checksWithStatus[0].status && (
+              <Stack justifyContent={`center`}>
+                <CheckStatusBadge {...checksWithStatus[0].status} />
+              </Stack>
+            )}
           </Stack>
         </div>
       </Stack>

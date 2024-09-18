@@ -9,6 +9,7 @@ import { DataTestIds } from 'test/dataTestIds';
 
 import { Check, CheckFormPageParams, CheckFormValues, CheckType } from 'types';
 import { AdHocCheckResponse } from 'datasource/responses.types';
+import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
 import { useCanReadLogs, useCanWriteSM } from 'hooks/useDSPermission';
 import { useLimits } from 'hooks/useLimits';
 import { toFormValues } from 'components/CheckEditor/checkFormTransformations';
@@ -78,6 +79,7 @@ export const CheckForm = ({ check, disabled, pageTitle }: CheckFormProps) => {
   const initialCheck = check || fallbackCheckMap[checkType];
   const schema = useCheckFormSchema(check);
   const styles = useStyles2(getStyles);
+  const status = useCheckTypeOptions().find((option) => option.value === checkType)?.status;
   const isExistingCheck = Boolean(check);
   const { isLoading, isOverCheckLimit, isOverScriptedLimit, isReady } = useLimits();
   const overLimit =
@@ -165,7 +167,12 @@ export const CheckForm = ({ check, disabled, pageTitle }: CheckFormProps) => {
               schema={schema}
             >
               {!isExistingCheck && <OverLimitAlert checkType={checkType} />}
-              <FormLayout.Section label={checkTypeStep1Label[checkType]} fields={[`job`, ...defineCheckFields]}>
+
+              <FormLayout.Section
+                label={checkTypeStep1Label[checkType]}
+                fields={[`job`, ...defineCheckFields]}
+                status={status}
+              >
                 <Stack direction={`column`} gap={4}>
                   <CheckJobName />
                   <Stack direction={`column`} gap={2}>
@@ -174,17 +181,17 @@ export const CheckForm = ({ check, disabled, pageTitle }: CheckFormProps) => {
                   </Stack>
                 </Stack>
               </FormLayout.Section>
-              <FormLayout.Section label="Define uptime" fields={defineUptimeFields}>
+              <FormLayout.Section label="Define uptime" fields={defineUptimeFields} status={status}>
                 {UptimeComponent}
               </FormLayout.Section>
-              <FormLayout.Section label="Labels" fields={[`labels`, ...labelsFields]}>
+              <FormLayout.Section label="Labels" fields={[`labels`, ...labelsFields]} status={status}>
                 {labelsComponent}
                 <CheckLabels />
               </FormLayout.Section>
-              <FormLayout.Section label="Alerting" fields={[`alertSensitivity`]}>
+              <FormLayout.Section label="Alerting" fields={[`alertSensitivity`]} status={status}>
                 <CheckFormAlert />
               </FormLayout.Section>
-              <FormLayout.Section label="Execution" fields={[`probes`, `frequency`, ...probesFields]}>
+              <FormLayout.Section label="Execution" fields={[`probes`, `frequency`, ...probesFields]} status={status}>
                 <CheckProbeOptions checkType={checkType} />
                 {ProbesComponent}
                 <CheckUsage checkType={checkType} />
