@@ -8,7 +8,6 @@ import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
 import { fallbackCheckMap } from 'components/constants';
 
 import { toFormValues } from '../checkFormTransformations';
-import { CheckStatusBadge } from './CheckStatusBadge';
 
 type RefType = Partial<Record<CheckType, CheckFormValues>>;
 
@@ -40,7 +39,7 @@ export const ChooseCheckType = ({ checkType, checkTypeGroup, disabled }: ChooseC
     return null;
   }
 
-  const { description, status } = groupOptions.find((option) => option.value === checkType) || {};
+  const { description } = groupOptions.find((option) => option.value === checkType) || {};
   const requestTypeOptions = groupOptions.map(({ label, value }) => {
     const standard = { label, value };
 
@@ -73,15 +72,11 @@ export const ChooseCheckType = ({ checkType, checkTypeGroup, disabled }: ChooseC
               {description}
             </Text>
           )}
-          {status ? <CheckStatusBadge status={status} /> : <BadgePlaceholder />}
         </Stack>
       </Stack>
     </div>
   );
 };
-
-// so the text doesn't bounce up and down when there area a mix of badges / no-badges
-const BadgePlaceholder = () => <div style={{ height: `22px` }} />;
 
 function updateCheckTypeValues(refValues: RefType, checkType: CheckType, currentCheckType: CheckType) {
   if (Object.hasOwnProperty.call(refValues, checkType)) {

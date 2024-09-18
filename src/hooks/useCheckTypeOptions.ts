@@ -20,7 +20,10 @@ export const CHECK_TYPE_OPTIONS = [
     label: 'gRPC',
     value: CheckType.GRPC,
     description: 'Use the gRPC Health Checking Protocol to ensure a gRPC service is healthy.',
-    status: CheckStatus.EXPERIMENTAL,
+    status: {
+      value: CheckStatus.EXPERIMENTAL,
+      description: `gRPC checks are experimental. We're actively working on improving the experience and adding more features.`,
+    },
     featureToggle: FeatureName.GRPCChecks,
     group: CheckTypeGroup.ApiTest,
   },
@@ -52,7 +55,10 @@ export const CHECK_TYPE_OPTIONS = [
     label: 'Scripted',
     value: CheckType.Scripted,
     description: 'Write a k6 script to run custom checks.',
-    status: CheckStatus.PUBLIC_PREVIEW,
+    status: {
+      value: CheckStatus.PUBLIC_PREVIEW,
+      description: `Scripted checks are in public preview. We're actively working on improving the experience and adding more features.`,
+    },
     featureToggle: FeatureName.ScriptedChecks,
     group: CheckTypeGroup.Scripted,
   },
@@ -60,7 +66,12 @@ export const CHECK_TYPE_OPTIONS = [
     label: 'Browser',
     value: CheckType.Browser,
     description: 'Leverage k6 browser module to run checks in a browser.',
-    status: CheckStatus.EXPERIMENTAL,
+    status: {
+      value: CheckStatus.PRIVATE_PREVIEW,
+      description: `Browser checks are in private preview. During the preview they are free to use: test executions will not be billed.`,
+      docsLink:
+        'https://grafana.com/docs/grafana-cloud/cost-management-and-billing/understand-your-invoice/synthetic-monitoring-invoice/',
+    },
     featureToggle: FeatureName.BrowserChecks,
     group: CheckTypeGroup.Browser,
   },

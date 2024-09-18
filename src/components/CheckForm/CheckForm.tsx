@@ -2,13 +2,14 @@ import React, { forwardRef, RefObject, useCallback, useState } from 'react';
 import { FormProvider, SubmitErrorHandler, SubmitHandler, useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Alert, Button, Stack, TextLink, Tooltip, useStyles2 } from '@grafana/ui';
+import { Alert, Button, Stack, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { DataTestIds } from 'test/dataTestIds';
 
 import { Check, CheckFormPageParams, CheckFormValues, CheckType } from 'types';
 import { AdHocCheckResponse } from 'datasource/responses.types';
+import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
 import { useCanReadLogs, useCanWriteSM } from 'hooks/useDSPermission';
 import { useLimits } from 'hooks/useLimits';
 import { toFormValues } from 'components/CheckEditor/checkFormTransformations';
@@ -78,6 +79,7 @@ export const CheckForm = ({ check, disabled, pageTitle }: CheckFormProps) => {
   const initialCheck = check || fallbackCheckMap[checkType];
   const schema = useCheckFormSchema(check);
   const styles = useStyles2(getStyles);
+  const status = useCheckTypeOptions().find((option) => option.value === checkType)?.status;
   const isExistingCheck = Boolean(check);
   const { isLoading, isOverCheckLimit, isOverScriptedLimit, isReady } = useLimits();
   const overLimit =
@@ -166,22 +168,11 @@ export const CheckForm = ({ check, disabled, pageTitle }: CheckFormProps) => {
             >
               {!isExistingCheck && <OverLimitAlert checkType={checkType} />}
 
-              {checkType === CheckType.Browser && (
-                <Alert severity="info" title="">
-                  <div>
-                    Browser checks are in private preview. During the preview they are free to use: test executions will
-                    not be billed.{' '}
-                    <TextLink
-                      href="https://grafana.com/docs/grafana-cloud/cost-management-and-billing/understand-your-invoice/synthetic-monitoring-invoice/"
-                      external={true}
-                    >
-                      Read more
-                    </TextLink>
-                  </div>
-                </Alert>
-              )}
-
-              <FormLayout.Section label={checkTypeStep1Label[checkType]} fields={[`job`, ...defineCheckFields]}>
+              <FormLayout.Section
+                label={checkTypeStep1Label[checkType]}
+                fields={[`job`, ...defineCheckFields]}
+                status={status}
+              >
                 <Stack direction={`column`} gap={4}>
                   <CheckJobName />
                   <Stack direction={`column`} gap={2}>
@@ -190,17 +181,17 @@ export const CheckForm = ({ check, disabled, pageTitle }: CheckFormProps) => {
                   </Stack>
                 </Stack>
               </FormLayout.Section>
-              <FormLayout.Section label="Define uptime" fields={defineUptimeFields}>
+              <FormLayout.Section label="Define uptime" fields={defineUptimeFields} status={status}>
                 {UptimeComponent}
               </FormLayout.Section>
-              <FormLayout.Section label="Labels" fields={[`labels`, ...labelsFields]}>
+              <FormLayout.Section label="Labels" fields={[`labels`, ...labelsFields]} status={status}>
                 {labelsComponent}
                 <CheckLabels />
               </FormLayout.Section>
-              <FormLayout.Section label="Alerting" fields={[`alertSensitivity`]}>
+              <FormLayout.Section label="Alerting" fields={[`alertSensitivity`]} status={status}>
                 <CheckFormAlert />
               </FormLayout.Section>
-              <FormLayout.Section label="Execution" fields={[`probes`, `frequency`, ...probesFields]}>
+              <FormLayout.Section label="Execution" fields={[`probes`, `frequency`, ...probesFields]} status={status}>
                 <CheckProbeOptions checkType={checkType} />
                 {ProbesComponent}
                 <CheckUsage checkType={checkType} />

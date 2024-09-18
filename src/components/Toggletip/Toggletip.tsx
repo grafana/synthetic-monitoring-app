@@ -25,5 +25,7 @@ const ContentWrapper = ({ children }: ContentWrapperProps) => {
 const getStyles = (theme: GrafanaTheme2) => ({
   toggletipCard: css({
     margin: theme.spacing(-1, 0, -1, 0),
+    paddingRight: theme.spacing(2),
+    lineHeight: theme.typography.body.lineHeight,
   }),
 });
