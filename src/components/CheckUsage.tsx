@@ -31,7 +31,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
 });
 
-const hideTelemetryForTypes = [CheckType.Scripted, CheckType.MULTI_HTTP];
+const hideTelemetryForTypes = [CheckType.Scripted, CheckType.MULTI_HTTP, CheckType.Browser];
 
 export const CheckUsage = ({ checkType }: { checkType: CheckType }) => {
   const styles = useStyles2(getStyles);

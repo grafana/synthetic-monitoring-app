@@ -1,7 +1,7 @@
 import { ReactNode, useContext } from 'react';
 import { IconName } from '@grafana/data';
 
-import { CheckStatus, CheckType, CheckTypeGroup, FeatureName, ROUTES } from 'types';
+import { CheckType, CheckTypeGroup, FeatureName, ROUTES } from 'types';
 import { FeatureFlagContext } from 'contexts/FeatureFlagContext';
 import { getRoute } from 'components/Routing.utils';
 
@@ -20,7 +20,6 @@ export interface CheckTypeGroupOption {
   value: CheckTypeGroup;
   icon: IconName;
   protocols: ProtocolOption[];
-  status?: CheckStatus;
 }
 
 export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
@@ -80,7 +79,6 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
     description: `Monitor the availability and performance of a website using a real browser.`,
     value: CheckTypeGroup.Browser,
     icon: `globe`,
-    status: CheckStatus.PRIVATE_PREVIEW,
     protocols: [
       {
         label: `HTTP`,
