@@ -3,7 +3,7 @@ import { sceneGraph, VizPanel, VizPanelMenu, VizPanelState } from '@grafana/scen
 import { DataQuery } from '@grafana/schema';
 import appEvents from 'grafana/app/core/app_events';
 
-interface DataQueryExtended extends DataQuery {
+export interface DataQueryExtended extends DataQuery {
   expr: string;
 }
 

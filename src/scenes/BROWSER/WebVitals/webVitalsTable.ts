@@ -144,6 +144,18 @@ export function getWebVitalsTable(metrics: DataSourceRef) {
                       },
                     ],
                   },
+                  {
+                    matcher: {
+                      id: 'byName',
+                      options: 'Trend #D',
+                    },
+                    properties: [
+                      {
+                        id: 'unit',
+                        value: 'none',
+                      },
+                    ],
+                  },
                 ],
               },
               options: {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Icon, Tooltip, useStyles2 } from '@grafana/ui';
+import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { WebVitalName } from './types';
@@ -13,28 +13,15 @@ interface WebVitalGaugeProps {
   name: WebVitalName;
   longName: string;
   value: number;
-  description?: string;
 }
 
-export function WebVitalGauge({ value, name, longName, description }: WebVitalGaugeProps) {
+export function WebVitalGauge({ value, name, longName }: WebVitalGaugeProps) {
   const styles = useStyles2(getStyles);
-
   const valueConfig = getWebVitalValueConfig(name, value);
 
   return (
     <div className={styles.container}>
-      <div>
-        <div className={styles.fullNameContainer}>
-          <h3 className={styles.shortName}>{name}</h3>
-          {description ? (
-            <Tooltip content={description}>
-              <Icon name="question-circle" size="lg" />
-            </Tooltip>
-          ) : null}
-        </div>
-
-        <span className={styles.fullName}>{longName}</span>
-      </div>
+      <span className={styles.fullName}>{longName}</span>
 
       <div>
         <WebVitalValue value={valueConfig} />
@@ -51,18 +38,9 @@ export function getStyles(theme: GrafanaTheme2) {
       display: 'flex',
       flexDirection: 'column',
       gap: `${theme.spacing(1.5)}`,
+      position: 'relative',
     }),
-    shortName: css({
-      color: `${theme.colors.text.primary}`,
-      fontWeight: '700',
-      marginBottom: '0',
-      textTransform: 'uppercase',
-    }),
-    fullNameContainer: css({
-      color: `${theme.colors.text.secondary}`,
-      display: 'flex',
-      justifyContent: 'space-between',
-    }),
+
     fullName: css({
       color: `${theme.colors.text.secondary}`,
       fontSize: `${theme.typography.bodySmall.fontSize}`,

@@ -37,7 +37,7 @@ export function getCumulativeLayoutShift(metrics: DataSourceRef) {
               },
               fieldConfig: {
                 defaults: {
-                  unit: 'ms',
+                  unit: 'none',
                   custom: {
                     drawStyle: GraphDrawStyle.Line,
                     fillOpacity: 10,
