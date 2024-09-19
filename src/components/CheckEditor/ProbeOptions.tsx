@@ -57,7 +57,7 @@ function getFrequencyBounds(checkType: CheckType) {
       maxFrequency: oneHour,
     };
   }
-  if (checkType === CheckType.MULTI_HTTP || checkType === CheckType.Scripted) {
+  if (checkType === CheckType.MULTI_HTTP || checkType === CheckType.Scripted || checkType === CheckType.Browser) {
     return {
       minFrequency: 60.0,
       maxFrequency: oneHour,
