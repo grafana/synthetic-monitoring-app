@@ -1,5 +1,16 @@
 # Change Log
 
+# [1.15.2](https://github.com/grafana/synthetic-monitoring-app/compare/v1.15.1...v1.15.2) (2024-9-19)
+
+- Allow to disable browser checks in probe creation (https://github.com/grafana/synthetic-monitoring-app/pull/928)
+- Add browser checks validation (https://github.com/grafana/synthetic-monitoring-app/pull/930)
+- New version of browser dashboards (https://github.com/grafana/synthetic-monitoring-app/pull/931)
+- Add private preview badge to browser checks (https://github.com/grafana/synthetic-monitoring-app/pull/935)
+- Updated status badge appearance and organisation (https://github.com/grafana/synthetic-monitoring-app/pull/936)
+- Upgrade k6 types version to 0.53.0 (https://github.com/grafana/synthetic-monitoring-app/pull/937)
+- Set browser checks min frequency to 60 seconds (https://github.com/grafana/synthetic-monitoring-app/pull/938)
+- Add script examples specific to browser checks (https://github.com/grafana/synthetic-monitoring-app/pull/939)
+
 # [1.15.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.13...v1.15.1) (2024-8-26)
 
 - Bump axios from 1.6.7 to 1.7.4 (https://github.com/grafana/synthetic-monitoring-app/pull/909)
