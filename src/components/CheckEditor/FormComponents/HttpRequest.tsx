@@ -149,7 +149,6 @@ const HttpRequestOptions = forwardRef<HandleErrorRef, HttpRequestOptionsProps>(
             disabled={disabled}
             label="Request header"
             name={requestHeadersName}
-            data-fs-element="Request headers"
           />
           {followRedirectsName && <HttpCheckFollowRedirects name={followRedirectsName} />}
           {ipVersionName && (
