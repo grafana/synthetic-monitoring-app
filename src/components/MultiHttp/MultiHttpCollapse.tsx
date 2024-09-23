@@ -35,7 +35,6 @@ export const MultiHttpCollapse = forwardRef<HTMLButtonElement, PropsWithChildren
             onToggle();
           }}
           ref={ref}
-          data-fs-element={`Collapse header ${label}`}
           type="button"
           aria-expanded={isOpen}
         >
