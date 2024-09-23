@@ -10,6 +10,7 @@ import { PermissionsContextProvider } from 'contexts/PermissionsContext';
 import { SMDatasourceProvider } from 'contexts/SMDatasourceContext';
 import { queryClient } from 'data/queryClient';
 import { queryKeys as alertingQueryKeys } from 'data/useAlerts';
+import { queryKeys as smSetupQueryKeys } from 'data/useSMSetup';
 
 import { FeatureFlagProvider } from './FeatureFlagProvider';
 import { InitialisedRouter } from './Routing';
@@ -23,7 +24,7 @@ export const App = (props: AppRootProps<ProvisioningJsonData>) => {
       // so we are invalidating the alerts list on the assumption the user might change their alerting options when they leave SM
       // going to leave this despite it being a little bit buggy as the idea is correct (well, it should be invalidateQueries...)
       // alerting have some aggressive caching going on so I'm finding testing this hard
-      queryClient.removeQueries({ queryKey: alertingQueryKeys.list });
+      queryClient.removeQueries({ queryKey: [...alertingQueryKeys.list, ...smSetupQueryKeys.list] });
     };
   }, []);
 

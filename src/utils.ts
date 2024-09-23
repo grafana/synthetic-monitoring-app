@@ -45,68 +45,12 @@ export function findLinkedDatasource(linkedDSInfo: LinkedDatasourceInfo): DataSo
       return linkedDS;
     }
   }
-  return config.datasources[linkedDSInfo.grafanaName];
-}
 
-interface DatasourcePayload {
-  accessToken: string;
-  apiHost: string;
-  metrics: LinkedDatasourceInfo;
-  logs: LinkedDatasourceInfo;
-}
-
-// Used for stubbing out the datasource when plugin is not provisioned
-
-export function createNewApiInstance(payload: DatasourcePayload) {
-  return firstValueFrom(
-    getBackendSrv().fetch<SMOptions>({
-      method: 'POST',
-      url: 'api/datasources',
-      data: {
-        name: 'Synthetic Monitoring',
-        type: 'synthetic-monitoring-datasource',
-        access: 'proxy',
-        isDefault: false,
-        jsonData: {
-          apiHost: payload.apiHost,
-          initialized: true,
-          metrics: payload.metrics,
-          logs: payload.logs,
-        },
-        secureJsonData: {
-          accessToken: payload.accessToken,
-        },
-      },
-    })
-  );
-}
-
-export function initializeDatasource(datasourcePayload: DatasourcePayload) {
-  const existingDatasource = findSMDataSources()?.[0];
-  if (existingDatasource) {
-    return firstValueFrom(
-      getBackendSrv().fetch<SMOptions>({
-        method: 'PUT',
-        url: `api/datasources/${existingDatasource.id}`,
-        data: {
-          ...existingDatasource,
-          access: 'proxy',
-          isDefault: false,
-          secureJsonData: {
-            accessToken: datasourcePayload.accessToken,
-          },
-          jsonData: {
-            apiHost: datasourcePayload.apiHost,
-            initialized: true,
-            metrics: datasourcePayload.metrics,
-            logs: datasourcePayload.logs,
-          },
-        },
-      })
-    );
+  if (linkedDSInfo.grafanaName) {
+    return config.datasources[linkedDSInfo.grafanaName];
   }
 
-  return createNewApiInstance(datasourcePayload);
+  return undefined;
 }
 
 export const parseUrl = (url: string) => {

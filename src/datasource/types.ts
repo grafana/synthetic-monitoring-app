@@ -19,7 +19,7 @@ export const defaultQuery: SMQuery = {
 } as SMQuery;
 
 export interface ProvisioningLinkedDatasourceInfo {
-  grafanaName: string;
+  grafanaName?: string;
   hostedId: number;
 }
 
