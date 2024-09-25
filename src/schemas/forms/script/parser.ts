@@ -78,6 +78,29 @@ export function checkForChromium(objectExpression: ObjectExpression): boolean {
   return false;
 }
 
+export function hasInvalidProperties(objectExpression: ObjectExpression): boolean {
+  const scenarios = getPropertyValueByPath(objectExpression, ['scenarios']);
+  if (!scenarios || scenarios.type !== 'ObjectExpression') {
+    return false;
+  }
+
+  const invalidProps = ['duration', 'vus', 'iterations'];
+
+  for (const scenario of scenarios.properties) {
+    if (scenario.key.type === 'Identifier') {
+      const uiValue = scenario.value;
+      for (const prop of invalidProps) {
+        const propValue = getPropertyValueByPath(uiValue, [prop]);
+        if (propValue !== undefined) {
+          return true;
+        }
+      }
+    }
+  }
+
+  return false;
+}
+
 interface ImportBrowserState {
   importStatement: Node | null;
 }

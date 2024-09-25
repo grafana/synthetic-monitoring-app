@@ -1,6 +1,12 @@
 import { RefinementCtx, ZodIssueCode } from 'zod';
 
-import { checkForChromium, extractImportStatement, extractOptionsExport, parseScript } from './parser';
+import {
+  checkForChromium,
+  extractImportStatement,
+  extractOptionsExport,
+  hasInvalidProperties,
+  parseScript,
+} from './parser';
 
 const MAX_SCRIPT_IN_KB = 128;
 
@@ -40,6 +46,13 @@ export function validateBrowserScript(script: string, context: RefinementCtx) {
     return context.addIssue({
       code: ZodIssueCode.custom,
       message: 'Script must set the type to chromium in the browser options.',
+    });
+  }
+
+  if (hasInvalidProperties(options)) {
+    return context.addIssue({
+      code: ZodIssueCode.custom,
+      message: "Script can't define vus, duration or iteration values for this check",
     });
   }
 
