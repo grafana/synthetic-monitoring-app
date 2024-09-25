@@ -61,11 +61,21 @@ const optionExportMatcher: SimpleVisitors<{ options: ObjectExpression | null }> 
 };
 
 export function checkForChromium(objectExpression: ObjectExpression): boolean {
-  // Path to the property we're interested in
-  const path = ['scenarios', 'ui', 'options', 'browser', 'type'];
-  const value = getPropertyValueByPath(objectExpression, path);
+  const scenarios = getPropertyValueByPath(objectExpression, ['scenarios']);
+  if (!scenarios || scenarios.type !== 'ObjectExpression') {
+    return false;
+  }
 
-  return value === 'chromium';
+  for (const scenario of scenarios.properties) {
+    if (scenario.key.type === 'Identifier') {
+      const type = getPropertyValueByPath(scenario.value, ['options', 'browser', 'type']);
+      if (type === 'chromium') {
+        return true;
+      }
+    }
+  }
+
+  return false;
 }
 
 interface ImportBrowserState {
