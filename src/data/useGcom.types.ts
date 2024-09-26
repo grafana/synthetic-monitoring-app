@@ -6,7 +6,7 @@ export enum SubscriptionCodeType {
   SS_ADVANCED = 'grafana-cloud-ss-advanced',
 }
 
-export type RelevantInstancesResponse = Pick<InstanceResponse, 'orgId'>;
+export type RelevantInstanceResponse = Pick<InstanceResponse, 'orgId'>;
 export type RelevantOrgResponse = Pick<OrgResponse, 'subscriptions'>;
 
 export interface InstanceResponse {

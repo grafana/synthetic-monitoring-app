@@ -1,12 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { getBackendSrv } from '@grafana/runtime';
 import { firstValueFrom } from 'rxjs';
-import { INSTANCES_RESPONSE, ORG_RESPONSE } from 'test/fixtures/gcom';
+import { INSTANCE_RESPONSE, ORG_RESPONSE } from 'test/fixtures/gcom';
 
 import {
   InstanceResponse,
   OrgResponse,
-  RelevantInstancesResponse,
+  RelevantInstanceResponse,
   RelevantOrgResponse,
   UsageBillingDimensions,
 } from './useGcom.types';
@@ -20,13 +20,13 @@ An issue has been created to remove this dependency and add this feature directl
 const MOCK_LATENCY = 2000;
 
 export function useGcomInstance() {
-  return useQuery<RelevantInstancesResponse>({
+  return useQuery<RelevantInstanceResponse>({
     queryKey: [`gcom-instance`],
     queryFn: () => {
       if (process.env.NODE_ENV === 'development') {
         return new Promise((resolve) => {
           setTimeout(() => {
-            resolve(INSTANCES_RESPONSE);
+            resolve(INSTANCE_RESPONSE);
           }, MOCK_LATENCY);
         });
       }
