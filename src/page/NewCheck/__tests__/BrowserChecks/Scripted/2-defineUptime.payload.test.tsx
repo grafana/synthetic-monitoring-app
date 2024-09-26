@@ -9,13 +9,13 @@ const checkType = CheckType.Browser;
 
 describe(`BrowserCheck - Section 2 (Define uptime) payload`, () => {
   it(`has the correct default values submitted`, async () => {
-    const FIFTEEN_SECONDS_IN_MS = 15 * 1000;
+    const SIXTY_SECONDS_IN_MS = 60 * 1000;
     const { read, user } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType });
     await submitForm(user);
     const { body } = await read();
 
-    expect(body.timeout).toBe(FIFTEEN_SECONDS_IN_MS);
+    expect(body.timeout).toBe(SIXTY_SECONDS_IN_MS);
   });
 
   it(`can set the timeout`, async () => {
@@ -25,13 +25,13 @@ describe(`BrowserCheck - Section 2 (Define uptime) payload`, () => {
 
     const minutesInput = screen.getByLabelText('timeout minutes input');
     const secondsInput = screen.getByLabelText('timeout seconds input');
-    await user.type(minutesInput, '1');
+    await user.clear(minutesInput);
     await user.clear(secondsInput);
+    await user.type(secondsInput, '15');
 
     await submitForm(user);
 
     const { body } = await read();
-
-    expect(body.timeout).toBe(60000);
+    expect(body.timeout).toBe(15000);
   });
 });
