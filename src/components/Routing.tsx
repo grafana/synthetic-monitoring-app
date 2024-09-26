@@ -4,6 +4,7 @@ import { AppRootProps } from '@grafana/data';
 import { config } from '@grafana/runtime';
 
 import { ROUTES } from 'types';
+import { useCurrentHGSubscription } from 'hooks/useCurrentHGSubscription';
 import { useMeta } from 'hooks/useMeta';
 import { QueryParamMap, useNavigation } from 'hooks/useNavigation';
 import { useQuery } from 'hooks/useQuery';
@@ -28,6 +29,9 @@ export const InitialisedRouter = ({ onNavChanged }: Pick<AppRootProps, 'onNavCha
   const location = useLocation();
   const meta = useMeta();
   const logo = meta.info.logos.large;
+
+  // trigger the look-up regardless of route
+  useCurrentHGSubscription();
 
   useEffect(() => {
     const navModel = getNavModel(logo, location.pathname);
