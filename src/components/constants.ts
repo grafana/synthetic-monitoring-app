@@ -321,7 +321,7 @@ export const FALLBACK_CHECK_SCRIPTED: ScriptedCheck = {
 export const FALLBACK_CHECK_BROWSER: BrowserCheck = {
   ...FALLBACK_CHECK_BASE,
   frequency: FIVE_MINUTES_IN_MS,
-  timeout: 15000,
+  timeout: 60000,
   settings: {
     browser: {
       script: EXAMPLE_SCRIPT_BROWSER,
