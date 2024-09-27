@@ -20,7 +20,6 @@ jest.mock('@grafana/runtime', () => {
       },
       featureToggles: {
         ...actual.config.featureToggles,
-        topnav: true,
       },
       bootData: {
         user: {

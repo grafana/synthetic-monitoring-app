@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from 'react';
+import { PluginPage } from '@grafana/runtime';
 import { Alert, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
@@ -8,7 +9,6 @@ import { useCreateProbe } from 'data/useProbes';
 import { useNavigation } from 'hooks/useNavigation';
 import { BackendAddress } from 'components/BackendAddress';
 import { DocsLink } from 'components/DocsLink';
-import { PluginPage } from 'components/PluginPage';
 import { ProbeEditor } from 'components/ProbeEditor';
 import { ProbeTokenModal } from 'components/ProbeTokenModal';
 
