@@ -212,7 +212,7 @@ steps:
     image: node:18
     commands:
       - ./scripts/install-ci-deps-apt.sh
-      - make install lint test build sign package gh-release
+      - make install lint test build sign package
     environment:
       GCP_KEY:
         from_secret: gcp_key
