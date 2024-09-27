@@ -1,10 +1,10 @@
 import React from 'react';
 import { GrafanaTheme2, PageLayoutType } from '@grafana/data';
+import { PluginPage } from '@grafana/runtime';
 import { Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { useMeta } from 'hooks/useMeta';
-import { PluginPage } from 'components/PluginPage';
 import { WelcomeTabs } from 'components/WelcomeTabs/WelcomeTabs';
 
 import { AppInitializer } from './AppInitializer';
