@@ -22,7 +22,7 @@ export const ORG_RESPONSE_FREE: RelevantOrgResponse = {
   },
 };
 
-export const ORG_RESPONSE: RelevantOrgResponse = {
+export const ORG_RESPONSE_PRO: RelevantOrgResponse = {
   subscriptions: {
     current: {
       endDate: null,

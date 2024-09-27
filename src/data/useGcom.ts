@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { getBackendSrv } from '@grafana/runtime';
 import { firstValueFrom } from 'rxjs';
-import { INSTANCE_RESPONSE, ORG_RESPONSE } from 'test/fixtures/gcom';
+import { INSTANCE_RESPONSE, ORG_RESPONSE_PRO } from 'test/fixtures/gcom';
 
 import {
   InstanceResponse,
@@ -14,7 +14,8 @@ import {
 /*
 How we are calling gcom is an ANTI-PATTERN. It's a bad idea to rely on another plugin to provide information for us
 however we are adding this in temporarily so we can add this feature to SM.
-An issue has been created to remove this dependency and add this feature directly to SM in the near future.
+An issue has been created to remove this dependency and add this feature directly to SM in the near future:
+https://github.com/grafana/synthetic-monitoring-app/issues/946
 */
 
 const MOCK_LATENCY = 2000;
@@ -48,7 +49,7 @@ export function useGcomOrg(orgSlugOrId?: string | number) {
       if (process.env.NODE_ENV === 'development') {
         return new Promise((resolve) => {
           setTimeout(() => {
-            resolve(ORG_RESPONSE);
+            resolve(ORG_RESPONSE_PRO);
           }, MOCK_LATENCY);
         });
       }

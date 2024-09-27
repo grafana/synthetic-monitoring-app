@@ -1,4 +1,4 @@
-import { INSTANCE_RESPONSE, ORG_RESPONSE } from 'test/fixtures/gcom';
+import { INSTANCE_RESPONSE, ORG_RESPONSE_PRO } from 'test/fixtures/gcom';
 
 import { RelevantInstanceResponse, RelevantOrgResponse } from 'data/useGcom.types';
 import { ApiEntry } from 'test/handlers/types';
@@ -18,7 +18,7 @@ export const getOrg: ApiEntry<RelevantOrgResponse> = {
   method: `get`,
   result: (req) => {
     return {
-      json: ORG_RESPONSE,
+      json: ORG_RESPONSE_PRO,
     };
   },
 };
