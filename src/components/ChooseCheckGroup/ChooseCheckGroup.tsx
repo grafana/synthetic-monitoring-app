@@ -1,11 +1,11 @@
 import React from 'react';
 import { GrafanaTheme2, PageLayoutType } from '@grafana/data';
+import { PluginPage } from '@grafana/runtime';
 import { Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
 import { useCheckTypeGroupOptions } from 'hooks/useCheckTypeGroupOptions';
-import { PluginPage } from 'components/PluginPage';
 
 import { OverLimitAlert } from '../OverLimitAlert';
 import { CheckGroupCard } from './CheckGroupCard';

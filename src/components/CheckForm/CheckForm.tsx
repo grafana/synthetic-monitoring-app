@@ -2,6 +2,7 @@ import React, { forwardRef, RefObject, useCallback, useState } from 'react';
 import { FormProvider, SubmitErrorHandler, SubmitHandler, useForm } from 'react-hook-form';
 import { useParams } from 'react-router-dom';
 import { GrafanaTheme2 } from '@grafana/data';
+import { PluginPage } from '@grafana/runtime';
 import { Alert, Button, Stack, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -31,7 +32,6 @@ import { CheckUsage } from 'components/CheckUsage';
 import { fallbackCheckMap } from 'components/constants';
 import { LabelField } from 'components/LabelField';
 import { OverLimitAlert } from 'components/OverLimitAlert';
-import { PluginPage } from 'components/PluginPage';
 
 import { CheckFormContextProvider, useCheckFormContext } from './CheckFormContext/CheckFormContext';
 import { BrowserCheckLayout } from './FormLayouts/CheckBrowserLayout';

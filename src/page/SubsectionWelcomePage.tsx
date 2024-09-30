@@ -1,11 +1,11 @@
 import React, { PropsWithChildren } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
+import { PluginPage } from '@grafana/runtime';
 import { Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { ROUTES } from 'types';
 import { Card } from 'components/Card';
-import { PluginPage } from 'components/PluginPage';
 
 import { AppInitializer } from './AppInitializer';
 

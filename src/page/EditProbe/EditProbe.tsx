@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { PluginPage } from '@grafana/runtime';
 import { Button, ConfirmModal } from '@grafana/ui';
 
 import { type Probe, type ProbePageParams, ROUTES } from 'types';
 import { useDeleteProbe, useSuspenseProbe, useUpdateProbe } from 'data/useProbes';
 import { useCanEditProbe } from 'hooks/useCanEditProbe';
 import { useNavigation } from 'hooks/useNavigation';
-import { PluginPage } from 'components/PluginPage';
 import { ProbeEditor } from 'components/ProbeEditor';
 import { ProbeStatus } from 'components/ProbeStatus';
 import { ProbeTokenModal } from 'components/ProbeTokenModal';
