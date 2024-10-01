@@ -1,12 +1,6 @@
 import { RefinementCtx, ZodIssueCode } from 'zod';
 
-import {
-  checkForChromium,
-  extractImportStatement,
-  extractOptionsExport,
-  hasInvalidProperties,
-  parseScript,
-} from './parser';
+import { extractImportStatement, extractOptionsExport, getProperty, parseScript } from './parser';
 
 const MAX_SCRIPT_IN_KB = 128;
 
@@ -42,17 +36,37 @@ export function validateBrowserScript(script: string, context: RefinementCtx) {
     });
   }
 
-  if (!checkForChromium(options)) {
+  const hasChromium = getProperty(options, ['options', 'browser', 'type']) === 'chromium';
+  if (!hasChromium) {
     return context.addIssue({
       code: ZodIssueCode.custom,
       message: 'Script must set the type to chromium in the browser options.',
     });
   }
 
-  if (hasInvalidProperties(options)) {
+  const hasInvalidDuration = getProperty(options, ['duration']) !== undefined;
+  if (hasInvalidDuration) {
     return context.addIssue({
       code: ZodIssueCode.custom,
-      message: "Script can't define vus, duration or iteration values for this check",
+      message: "Script can't define a duration value for this check",
+    });
+  }
+
+  const vus = getProperty(options, ['vus']);
+  const hasInvaludVus = vus !== undefined && vus > 1;
+  if (hasInvaludVus) {
+    return context.addIssue({
+      code: ZodIssueCode.custom,
+      message: "Script can't define vus > 1 for this check",
+    });
+  }
+
+  const iterations = getProperty(options, ['iterations']);
+  const hasInvalidIterations = iterations !== undefined && iterations > 1;
+  if (hasInvalidIterations) {
+    return context.addIssue({
+      code: ZodIssueCode.custom,
+      message: "Script can't define iterations > 1 for this check",
     });
   }
 

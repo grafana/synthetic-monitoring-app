@@ -60,7 +60,7 @@ const optionExportMatcher: SimpleVisitors<{ options: ObjectExpression | null }> 
   },
 };
 
-export function checkForChromium(objectExpression: ObjectExpression): boolean {
+export function getProperty(objectExpression: ObjectExpression, propPath: string[]) {
   const scenarios = getPropertyValueByPath(objectExpression, ['scenarios']);
   if (!scenarios || scenarios.type !== 'ObjectExpression') {
     return false;
@@ -68,37 +68,10 @@ export function checkForChromium(objectExpression: ObjectExpression): boolean {
 
   for (const scenario of scenarios.properties) {
     if (scenario.key.type === 'Identifier') {
-      const type = getPropertyValueByPath(scenario.value, ['options', 'browser', 'type']);
-      if (type === 'chromium') {
-        return true;
-      }
+      const propValue = getPropertyValueByPath(scenario.value, propPath);
+      return propValue;
     }
   }
-
-  return false;
-}
-
-export function hasInvalidProperties(objectExpression: ObjectExpression): boolean {
-  const scenarios = getPropertyValueByPath(objectExpression, ['scenarios']);
-  if (!scenarios || scenarios.type !== 'ObjectExpression') {
-    return false;
-  }
-
-  const invalidProps = ['duration', 'vus', 'iterations'];
-
-  for (const scenario of scenarios.properties) {
-    if (scenario.key.type === 'Identifier') {
-      const uiValue = scenario.value;
-      for (const prop of invalidProps) {
-        const propValue = getPropertyValueByPath(uiValue, [prop]);
-        if (propValue !== undefined) {
-          return true;
-        }
-      }
-    }
-  }
-
-  return false;
 }
 
 interface ImportBrowserState {
