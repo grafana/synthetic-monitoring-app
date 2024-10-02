@@ -2,9 +2,9 @@ import React from 'react';
 import { screen } from '@testing-library/react';
 import { DEFAULT_PROBES } from 'test/fixtures/probes';
 import { render } from 'test/render';
+import { probeToExtendedProbe } from 'test/utils';
 
 import { ProbeList } from './ProbeList';
-import { probeToExtendedProbe } from '../../test/utils';
 
 const TITLE = `Default Probes`;
 

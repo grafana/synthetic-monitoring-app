@@ -6,7 +6,7 @@ import { css } from '@emotion/css';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ProbeSchema } from 'schemas/forms/ProbeSchema';
 
-import { FeatureName,ExtendedProbe, Probe, ROUTES } from 'types';
+import { ExtendedProbe, FeatureName, Probe, ROUTES } from 'types';
 import { useCanEditProbe } from 'hooks/useCanEditProbe';
 import { FeatureFlag } from 'components/FeatureFlag';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
