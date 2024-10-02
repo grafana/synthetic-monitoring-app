@@ -3,9 +3,9 @@ import { config } from '@grafana/runtime';
 import { screen, waitFor } from '@testing-library/react';
 import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import { render } from 'test/render';
-import { fillProbeForm, runTestAsViewer, UPDATED_VALUES } from 'test/utils';
+import { fillProbeForm, probeToExtendedProbe, runTestAsViewer, UPDATED_VALUES } from 'test/utils';
 
-import { FeatureName, ROUTES } from 'types';
+import { ExtendedProbe, FeatureName, Probe, ROUTES } from 'types';
 import { getRoute } from 'components/Routing.utils';
 import { TEMPLATE_PROBE } from 'page/NewProbe';
 
@@ -14,10 +14,10 @@ import { ProbeEditor } from './ProbeEditor';
 const onSubmit = jest.fn();
 const submitText = 'Save';
 
-const renderProbeEditor = async ({ probe = TEMPLATE_PROBE } = {}) => {
+const renderProbeEditor = async ({ probe = TEMPLATE_PROBE }: { probe?: Probe | ExtendedProbe } = {}) => {
   const props = {
     onSubmit,
-    probe,
+    probe: probeToExtendedProbe(probe),
     submitText,
   };
 

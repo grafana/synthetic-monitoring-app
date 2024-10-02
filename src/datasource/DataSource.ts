@@ -29,10 +29,12 @@ import {
   type ResetProbeTokenResult,
   UpdateCheckResult,
   type UpdateProbeResult,
+  type UpdateTenantSettingsResult,
 } from './responses.types';
 import { QueryType, SMOptions, SMQuery } from './types';
 import { findLinkedDatasource, getRandomProbes, queryLogs } from 'utils';
 
+import { ExtendedBulkUpdateCheckResult } from '../data/useChecks';
 import { parseTracerouteLogs } from './traceroute-utils';
 
 export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
@@ -300,7 +302,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   }
 
   async bulkUpdateChecks(checks: Check[]) {
-    return this.fetchAPI(`${this.instanceSettings.url}/sm/check/update/bulk`, {
+    return this.fetchAPI<ExtendedBulkUpdateCheckResult>(`${this.instanceSettings.url}/sm/check/update/bulk`, {
       method: 'POST',
       data: checks,
     });
@@ -319,7 +321,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   }
 
   async updateTenantSettings(settings: { thresholds: ThresholdSettings }) {
-    return this.fetchAPI(`${this.instanceSettings.url}/sm/tenant/settings/update`, {
+    return this.fetchAPI<UpdateTenantSettingsResult>(`${this.instanceSettings.url}/sm/tenant/settings/update`, {
       method: 'POST',
       data: {
         ...settings,
