@@ -35,3 +35,5 @@ temp/
 
 .vscode
 .DS_Store
+
+dev/license.jwt

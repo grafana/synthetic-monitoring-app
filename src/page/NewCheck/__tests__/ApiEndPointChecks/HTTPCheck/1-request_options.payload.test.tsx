@@ -57,4 +57,16 @@ describe(`HttpCheck - Section 1 (Request) Request Options payload`, () => {
     const { body } = await read();
     expect(body.settings.http.ipVersion).toBe(IP_VERSION);
   });
+
+  it(`can submit follow redirects`, async () => {
+    const { read, user } = await renderNewForm(checkType);
+    await user.click(screen.getByText('Request options'));
+    await user.click(screen.getByLabelText('Follow redirects'));
+
+    await fillMandatoryFields({ user, checkType });
+    await submitForm(user);
+
+    const { body } = await read();
+    expect(body.settings.http.noFollowRedirects).toBe(true);
+  });
 });

@@ -12,10 +12,24 @@ export const queryKeys: Record<'list', QueryKey> = {
   list: ['get-sm-datasource'],
 };
 
+const getDataSourceName = () => {
+  const smDs = getDataSourceSrv()
+    .getList()
+    .find((ds) => ds.type === 'synthetic-monitoring-datasource');
+
+  return smDs?.name;
+};
+
 export function useGetSMDatasource() {
   return useQuery({
     queryKey: queryKeys.list,
-    queryFn: () => getDataSourceSrv().get(`Synthetic Monitoring`) as Promise<SMDataSource>,
+    queryFn: () => {
+      const smDsName = getDataSourceName();
+      if (!smDsName) {
+        return undefined;
+      }
+      return getDataSourceSrv().get(smDsName) as Promise<SMDataSource>;
+    },
   });
 }
 

@@ -1,5 +1,34 @@
 # Change Log
 
+# [1.15.2](https://github.com/grafana/synthetic-monitoring-app/compare/v1.15.1...v1.15.2) (2024-9-19)
+
+- Allow to disable browser checks in probe creation (https://github.com/grafana/synthetic-monitoring-app/pull/928)
+- Add browser checks validation (https://github.com/grafana/synthetic-monitoring-app/pull/930)
+- New version of browser dashboards (https://github.com/grafana/synthetic-monitoring-app/pull/931)
+- Add private preview badge to browser checks (https://github.com/grafana/synthetic-monitoring-app/pull/935)
+- Updated status badge appearance and organisation (https://github.com/grafana/synthetic-monitoring-app/pull/936)
+- Upgrade k6 types version to 0.53.0 (https://github.com/grafana/synthetic-monitoring-app/pull/937)
+- Set browser checks min frequency to 60 seconds (https://github.com/grafana/synthetic-monitoring-app/pull/938)
+- Add script examples specific to browser checks (https://github.com/grafana/synthetic-monitoring-app/pull/939)
+
+# [1.15.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.13...v1.15.1) (2024-8-26)
+
+- Bump axios from 1.6.7 to 1.7.4 (https://github.com/grafana/synthetic-monitoring-app/pull/909)
+- Revert the way we do datasource lookups (https://github.com/grafana/synthetic-monitoring-app/pull/911)
+- Fix typo in alerts error message (https://github.com/grafana/synthetic-monitoring-app/pull/913)
+- Obtain SM datasource by its type and not name to prevent errors when it’s been renamed (https://github.com/grafana/synthetic-monitoring-app/pull/921)
+- Revert sm:write permissions to be obtained froom org roles instead of datasource (https://github.com/grafana/synthetic-monitoring-app/pull/923)
+- Add new version of uptime calculation query and set it under FF  (https://github.com/grafana/synthetic-monitoring-app/pull/840/)
+- Hide grpc option in check cards when feature flag off (https://github.com/grafana/synthetic-monitoring-app/pull/922)
+
+# [1.14.13](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.11...v1.14.13) (2024-8-20)
+
+- Added datasource RBAC support in the plugin. The plugin now respects RBAC permissions for its datasources.
+- Fix a bug with saving existing checks with empty TLS configs
+- Fix a regression where the http checks follow redirects checkbox was missing
+- Prevent problematic characters from being added to job names (commas and single/double quotes)
+- Fix a bug with the assertions graph success / failure rate making the wrong query on scripted checks dashboard
+
 # [1.14.11](https://github.com/grafana/synthetic-monitoring-app/compare/v1.14.10...v1.14.11) (2024-7-25)
 
 - The check creation pages have been redesigned to be more user-friendly and intuitive. Every check now has five sections regardless of type.

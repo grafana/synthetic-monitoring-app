@@ -1,10 +1,11 @@
 import React from 'react';
+import { config } from '@grafana/runtime';
 import { screen, waitFor } from '@testing-library/react';
 import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import { render } from 'test/render';
 import { fillProbeForm, runTestAsViewer, UPDATED_VALUES } from 'test/utils';
 
-import { ROUTES } from 'types';
+import { FeatureName, ROUTES } from 'types';
 import { getRoute } from 'components/Routing.utils';
 import { TEMPLATE_PROBE } from 'page/NewProbe';
 
@@ -76,6 +77,11 @@ it('disables save button on invalid values', async () => {
 });
 
 it('saves new probe', async () => {
+  jest.replaceProperty(config, 'featureToggles', {
+    // @ts-expect-error
+    [FeatureName.BrowserChecks]: true,
+  });
+
   const probe = PRIVATE_PROBE;
   const { user } = await renderProbeEditor({ probe });
   await fillProbeForm(user);

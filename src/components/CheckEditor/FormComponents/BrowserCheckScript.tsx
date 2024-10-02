@@ -5,7 +5,7 @@ import { FieldValidationMessage, Tab, TabContent, TabsBar } from '@grafana/ui';
 import { CheckFormValuesBrowser } from 'types';
 import { CodeEditor } from 'components/CodeEditor';
 import { CodeSnippet } from 'components/CodeSnippet';
-import { SCRIPT_EXAMPLES } from 'components/WelcomeTabs/constants';
+import { BROWSER_EXAMPLES } from 'components/WelcomeTabs/constants';
 
 enum ScriptEditorTabs {
   Script = 'script',
@@ -52,7 +52,7 @@ export const BrowserCheckScript = () => {
               {
                 value: 'Example scripts',
                 label: '',
-                groups: SCRIPT_EXAMPLES.map(({ label, script }) => ({
+                groups: BROWSER_EXAMPLES.map(({ label, script }) => ({
                   value: label,
                   label,
                   code: script,

@@ -1,4 +1,5 @@
 import React from 'react';
+import { PluginPage } from '@grafana/runtime';
 import { LinkButton, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
@@ -8,7 +9,6 @@ import { useExtendedProbes } from 'data/useProbes';
 import { useCanWriteSM } from 'hooks/useDSPermission';
 import { CenteredSpinner } from 'components/CenteredSpinner';
 import { DocsLink } from 'components/DocsLink';
-import { PluginPage } from 'components/PluginPage';
 import { ProbeList } from 'components/ProbeList';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
 import { getRoute } from 'components/Routing.utils';

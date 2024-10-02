@@ -652,6 +652,7 @@ export enum FeatureName {
   GRPCChecks = 'grpc-checks',
   ScriptedChecks = 'scripted-checks',
   UnifiedAlerting = 'ngalert',
+  UptimeQueryV2 = 'uptime-query-v2',
   __TURNOFF = 'test-only-do-not-use',
 }
 
@@ -801,6 +802,7 @@ export type PrometheusAlertingRule = {
 
 export enum CheckStatus {
   EXPERIMENTAL = 'experimental',
+  PRIVATE_PREVIEW = 'private-preview',
   PUBLIC_PREVIEW = 'public-preview',
 }
 

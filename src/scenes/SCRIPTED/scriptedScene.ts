@@ -21,8 +21,8 @@ import { getEditButton } from 'scenes/Common/editButton';
 import { getEmptyScene } from 'scenes/Common/emptyScene';
 import { getMinStepFromFrequency } from 'scenes/utils';
 
+import { getAssertionTable } from '../Common/AssertionsTable';
 import { getResultsByTargetTable } from './ResultsByTargetTable/ResultByTargetTable';
-import { getAssertionTable } from './AssertionsTable';
 import { getDataTransferred } from './dataTransferred';
 import { getDistinctTargets } from './distinctTargets';
 import { getProbeDuration } from './probeDuration';
@@ -30,7 +30,8 @@ import { getProbeDuration } from './probeDuration';
 export function getScriptedScene(
   { metrics, logs, singleCheckMode }: DashboardSceneAppConfig,
   checks: Check[] = [],
-  checkType: CheckType
+  checkType: CheckType,
+  newUptimeQuery = false,
 ) {
   return () => {
     if (checks.length === 0) {
@@ -48,7 +49,7 @@ export function getScriptedScene(
     const minStep = getMinStepFromFrequency(checks?.[0]?.frequency);
 
     const reachability = getReachabilityStat(metrics, minStep);
-    const uptime = getUptimeStat(metrics, minStep);
+    const uptime = getUptimeStat(metrics, minStep, newUptimeQuery);
 
     const distinctTargets = getDistinctTargets(metrics);
     const probeDuration = getProbeDuration(metrics);
@@ -82,7 +83,7 @@ export function getScriptedScene(
           }),
           new SceneFlexLayout({
             direction: 'row',
-            children: [getAssertionTable(logs, checkType, minStep)],
+            children: [getAssertionTable(logs, checkType, checks?.[0]?.frequency)],
           }),
           new SceneFlexLayout({
             direction: 'row',

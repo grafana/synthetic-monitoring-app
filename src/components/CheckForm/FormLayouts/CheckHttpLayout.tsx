@@ -30,6 +30,10 @@ export const HTTP_REQUEST_FIELDS: HttpRequestFields<CheckFormValuesHttp> = {
     name: `settings.http.ipVersion`,
     section: 0,
   },
+  followRedirects: {
+    name: `settings.http.followRedirects`,
+    section: 0,
+  },
   requestBody: {
     name: `settings.http.body`,
     section: 2,

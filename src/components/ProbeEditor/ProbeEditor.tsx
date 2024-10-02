@@ -6,8 +6,9 @@ import { css } from '@emotion/css';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ProbeSchema } from 'schemas/forms/ProbeSchema';
 
-import { ExtendedProbe, Probe, ROUTES } from 'types';
+import { FeatureName,ExtendedProbe, Probe, ROUTES } from 'types';
 import { useCanEditProbe } from 'hooks/useCanEditProbe';
+import { FeatureFlag } from 'components/FeatureFlag';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 import { LabelField } from 'components/LabelField';
 import { ProbeRegionsSelect } from 'components/ProbeRegionsSelect';
@@ -164,6 +165,19 @@ export const ProbeEditor = ({
                     disabled={!canEdit}
                     id="capabilities.disableScriptedChecks"
                   />
+                  <FeatureFlag name={FeatureName.BrowserChecks}>
+                    {({ isEnabled }) =>
+                      isEnabled ? (
+                        <HorizontalCheckboxField
+                          {...form.register('capabilities.disableBrowserChecks')}
+                          label="Disable browser checks"
+                          description="Prevent probe from running k6 based browser checks."
+                          disabled={!canEdit}
+                          id="capabilities.disableBrowserChecks"
+                        />
+                      ) : null
+                    }
+                  </FeatureFlag>
                 </div>
                 <div className={styles.buttonWrapper}>
                   {canEdit && (

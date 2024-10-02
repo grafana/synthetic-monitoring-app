@@ -1,5 +1,6 @@
 import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
+import { PluginPage } from '@grafana/runtime';
 import { Container, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
@@ -7,7 +8,6 @@ import { useMeta } from 'hooks/useMeta';
 import { BackendAddress } from 'components/BackendAddress';
 import { ConfigActions } from 'components/ConfigActions';
 import { LinkedDatasourceView } from 'components/LinkedDatasourceView';
-import { PluginPage } from 'components/PluginPage';
 import { ProgrammaticManagement } from 'components/ProgrammaticManagement';
 
 export function ConfigPage({ initialized }: { initialized?: boolean }) {

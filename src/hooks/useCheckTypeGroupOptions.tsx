@@ -1,15 +1,17 @@
-import { ReactNode } from 'react';
+import { ReactNode, useContext } from 'react';
 import { IconName } from '@grafana/data';
 
-import { CheckType, CheckTypeGroup, ROUTES } from 'types';
+import { CheckType, CheckTypeGroup, FeatureName, ROUTES } from 'types';
+import { FeatureFlagContext } from 'contexts/FeatureFlagContext';
 import { getRoute } from 'components/Routing.utils';
 
-import { CHECK_TYPE_OPTIONS, useCheckTypeOptions } from './useCheckTypeOptions';
+import { CHECK_TYPE_OPTIONS } from './useCheckTypeOptions';
 
 export type ProtocolOption = {
   label: string;
   tooltip?: ReactNode;
   href?: string;
+  featureToggle?: FeatureName | undefined;
 };
 
 export interface CheckTypeGroupOption {
@@ -29,6 +31,7 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
     protocols: CHECK_TYPE_OPTIONS.filter((option) => option.group === CheckTypeGroup.ApiTest).map((option) => ({
       label: option.label,
       href: `${getRoute(ROUTES.NewCheck)}/${CheckTypeGroup.ApiTest}?checkType=${option.value}`,
+      featureToggle: option.featureToggle,
     })),
   },
   {
@@ -49,10 +52,10 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
     value: CheckTypeGroup.Scripted,
     icon: `k6`,
     protocols: [
-      { label: `HTTP` },
+      { label: `HTTP`, featureToggle: FeatureName.ScriptedChecks },
       // todo: we don't support these yet
       // { label: `gRPC` },
-      { label: `WebSockets` },
+      { label: `WebSockets`, featureToggle: FeatureName.ScriptedChecks },
       // todo: we don't support these yet
       // {
       //   label: `+More`,
@@ -79,21 +82,23 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
     protocols: [
       {
         label: `HTTP`,
+        featureToggle: FeatureName.BrowserChecks,
       },
     ],
   },
 ];
 
 export function useCheckTypeGroupOptions() {
-  const groups = useCheckTypeOptions().reduce<CheckTypeGroup[]>((acc, option) => {
-    const group = option.group;
+  const { isFeatureEnabled } = useContext(FeatureFlagContext);
 
-    if (acc.includes(group)) {
-      return acc;
-    }
+  return CHECK_TYPE_GROUP_OPTIONS.map((option) => {
+    const protocols = option.protocols.filter((protocol) =>
+      protocol.featureToggle ? isFeatureEnabled(protocol.featureToggle) : true
+    );
 
-    return [...acc, group];
-  }, []);
-
-  return CHECK_TYPE_GROUP_OPTIONS.filter((option) => groups.includes(option.value));
+    return {
+      ...option,
+      protocols,
+    };
+  }).filter((option) => option.protocols.length > 0);
 }

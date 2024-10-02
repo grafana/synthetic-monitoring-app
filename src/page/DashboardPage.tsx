@@ -3,13 +3,15 @@ import { useParams } from 'react-router-dom';
 import { SceneApp, SceneAppPage } from '@grafana/scenes';
 import { Spinner } from '@grafana/ui';
 
-import { CheckPageParams, CheckType, DashboardSceneAppConfig } from 'types';
+import { CheckPageParams, CheckType, DashboardSceneAppConfig, FeatureName } from 'types';
 import { getCheckType } from 'utils';
 import { useChecks } from 'data/useChecks';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useLogsDS } from 'hooks/useLogsDS';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useSMDS } from 'hooks/useSMDS';
 import { PLUGIN_URL_PATH } from 'components/Routing.consts';
+import { getBrowserScene } from 'scenes/BROWSER/browserScene';
 import { getDNSScene } from 'scenes/DNS';
 import { getGRPCScene } from 'scenes/GRPC/getGRPCScene';
 import { getHTTPScene } from 'scenes/HTTP';
@@ -26,6 +28,8 @@ function DashboardPageContent() {
   const { id } = useParams<CheckPageParams>();
 
   const checkToView = checks.find((check) => String(check.id) === id);
+
+  const newUptimeQuery = useFeatureFlag(FeatureName.UptimeQueryV2)?.isEnabled;
 
   const scene = useMemo(() => {
     const metricsDef = {
@@ -55,7 +59,7 @@ function DashboardPageContent() {
             new SceneAppPage({
               title: checkToView.job,
               url,
-              getScene: getDNSScene(config, [checkToView]),
+              getScene: getDNSScene(config, [checkToView], newUptimeQuery),
             }),
           ],
         });
@@ -66,13 +70,21 @@ function DashboardPageContent() {
             new SceneAppPage({
               title: checkToView.job,
               url,
-              getScene: getHTTPScene(config, [checkToView]),
+              getScene: getHTTPScene(config, [checkToView], newUptimeQuery),
             }),
           ],
         });
       }
       case CheckType.Browser:
-      // @todo: add browser scene
+        return new SceneApp({
+          pages: [
+            new SceneAppPage({
+              title: checkToView.job,
+              url,
+              getScene: getBrowserScene(config, [checkToView], checkType, newUptimeQuery),
+            }),
+          ],
+        });
       // fallthrough
       case CheckType.Scripted:
       case CheckType.MULTI_HTTP: {
@@ -81,7 +93,7 @@ function DashboardPageContent() {
             new SceneAppPage({
               title: checkToView.job,
               url,
-              getScene: getScriptedScene(config, [checkToView], checkType),
+              getScene: getScriptedScene(config, [checkToView], checkType, newUptimeQuery),
             }),
           ],
         });
@@ -92,7 +104,7 @@ function DashboardPageContent() {
             new SceneAppPage({
               title: checkToView.job,
               url,
-              getScene: getPingScene(config, [checkToView]),
+              getScene: getPingScene(config, [checkToView], newUptimeQuery),
             }),
           ],
         });
@@ -103,7 +115,7 @@ function DashboardPageContent() {
             new SceneAppPage({
               title: checkToView.job,
               url,
-              getScene: getTcpScene(config, [checkToView]),
+              getScene: getTcpScene(config, [checkToView], newUptimeQuery),
             }),
           ],
         });
@@ -126,13 +138,13 @@ function DashboardPageContent() {
             new SceneAppPage({
               title: checkToView.job,
               url,
-              getScene: getGRPCScene(config, [checkToView]),
+              getScene: getGRPCScene(config, [checkToView], newUptimeQuery),
             }),
           ],
         });
       }
     }
-  }, [smDS, metricsDS, logsDS, checkToView]);
+  }, [smDS, metricsDS, logsDS, checkToView, newUptimeQuery]);
 
   if (!scene || isLoading) {
     return <Spinner />;

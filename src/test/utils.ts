@@ -1,10 +1,10 @@
+import { OrgRole } from '@grafana/data';
 import runTime, { config } from '@grafana/runtime';
 import { act, screen, within } from '@testing-library/react';
 import { UserEvent } from '@testing-library/user-event';
 import {
   LOGS_DATASOURCE,
   METRICS_DATASOURCE,
-  SM_DATASOURCE,
   VIEWER_DEFAULT_DATASOURCE_ACCESS_CONTROL,
 } from 'test/fixtures/datasources';
 
@@ -62,21 +62,24 @@ export async function fillProbeForm(user: UserEvent) {
 
   const disableScriptedChecks = await screen.findByLabelText('Disable scripted checks', { exact: false });
   await user.click(disableScriptedChecks);
+
+  const disableBrowserChecks = await screen.findByLabelText('Disable browser checks', { exact: false });
+  await user.click(disableBrowserChecks);
 }
 
 export function runTestAsSMViewer() {
-  server.use(
-    apiRoute(`getSMDS`, {
-      result: () => {
-        return {
-          json: {
-            ...SM_DATASOURCE,
-            accessControl: VIEWER_DEFAULT_DATASOURCE_ACCESS_CONTROL,
-          },
-        };
+  // this gets reset in afterEach in jest-setup.js
+  const runtime = require('@grafana/runtime');
+  jest.replaceProperty(runtime, `config`, {
+    ...config,
+    bootData: {
+      ...config.bootData,
+      user: {
+        ...config.bootData.user,
+        orgRole: OrgRole.Viewer,
       },
-    })
-  );
+    },
+  });
 }
 
 export function runTestAsLogsViewer() {
@@ -141,7 +144,7 @@ export function runTestWithoutSMAccess() {
   jest.spyOn(runTime, 'getDataSourceSrv').mockImplementation(() => {
     return {
       ...jest.requireActual('@grafana/runtime').getDatasourceSrv(),
-      get: () => Promise.resolve(),
+      getList: () => [METRICS_DATASOURCE, LOGS_DATASOURCE],
     };
   });
 }

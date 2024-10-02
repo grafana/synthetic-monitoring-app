@@ -1,4 +1,4 @@
-import { Node, ObjectExpression, parse } from 'acorn';
+import { Node, ObjectExpression, parse, Property } from 'acorn';
 import { simple as walk, SimpleVisitors } from 'acorn-walk';
 
 export function parseScript(script: string) {
@@ -15,6 +15,27 @@ export function parseScript(script: string) {
 
 interface ExtractOptionsState {
   options: ObjectExpression | null;
+}
+
+function getPropertyValueByPath(obj: ObjectExpression, path: string[]): any {
+  let current: any = obj;
+  for (const key of path) {
+    if (current.type !== 'ObjectExpression') {
+      return undefined;
+    }
+
+    const property = current.properties.find(
+      (prop: Property) => prop.key.type === 'Identifier' && prop.key.name === key
+    );
+    if (property?.value.type === 'ObjectExpression') {
+      current = property.value;
+    } else if (property?.value.type === 'Literal') {
+      current = property.value.value;
+    } else {
+      return undefined;
+    }
+  }
+  return current;
 }
 
 const optionExportMatcher: SimpleVisitors<{ options: ObjectExpression | null }> = {
@@ -38,6 +59,14 @@ const optionExportMatcher: SimpleVisitors<{ options: ObjectExpression | null }> 
     state.options = options.init;
   },
 };
+
+export function checkForChromium(objectExpression: ObjectExpression): boolean {
+  // Path to the property we're interested in
+  const path = ['scenarios', 'ui', 'options', 'browser', 'type'];
+  const value = getPropertyValueByPath(objectExpression, path);
+
+  return value === 'chromium';
+}
 
 interface ImportBrowserState {
   importStatement: Node | null;

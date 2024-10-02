@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
+import { PluginPage } from '@grafana/runtime';
 import { Alert, Button, Modal, Spinner, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
@@ -8,7 +9,6 @@ import { useAlerts } from 'hooks/useAlerts';
 import { useCanReadMetrics, useDSPermission } from 'hooks/useDSPermission';
 import { transformAlertFormValues } from 'components/alertingTransformations';
 import { AlertRuleForm } from 'components/AlertRuleForm';
-import { PluginPage } from 'components/PluginPage';
 
 type SplitAlertRules = {
   recordingRules: AlertRule[];
@@ -144,7 +144,7 @@ const AlertingPageContent = () => {
 
 const InsufficientPermissions = () => {
   return (
-    <Alert title="Insufficent permissions" severity="info">
+    <Alert title="Insufficient permissions" severity="info">
       You do not have the appropriate permissions to read the alert rules. To request access contact your administrator.
     </Alert>
   );

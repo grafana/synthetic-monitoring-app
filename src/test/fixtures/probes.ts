@@ -57,7 +57,7 @@ export const SCRIPTED_DISABLED_PROBE: Probe = {
   ...PRIVATE_PROBE,
   capabilities: {
     disableScriptedChecks: true,
-    disableBrowserChecks: false,
+    disableBrowserChecks: true,
   },
 };
 

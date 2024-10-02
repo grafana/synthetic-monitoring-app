@@ -1,17 +1,24 @@
+import { SelectableOptGroup } from '@grafana/ui';
+
+import { BROWSER_EXAMPLE_CHOICES } from 'components/BrowserExamplesMenu/constants';
 import { ExampleScript, SCRIPT_EXAMPLE_CHOICES } from 'components/ScriptExamplesMenu/constants';
 
-export const SCRIPT_EXAMPLES = SCRIPT_EXAMPLE_CHOICES.reduce<ExampleScript[]>((acc, group) => {
-  group.options.forEach((option) => {
-    if (option.label) {
-      acc.push({
-        label: option.label,
-        script: option.script,
-        value: option.value,
-      });
-    }
-  });
-  return acc;
-}, []);
+const formatScriptExamples = (input: SelectableOptGroup[]) =>
+  input.reduce<ExampleScript[]>((acc, group) => {
+    group.options.forEach((option) => {
+      if (option.label) {
+        acc.push({
+          label: option.label,
+          script: option.script,
+          value: option.value,
+        });
+      }
+    });
+    return acc;
+  }, []);
+
+export const SCRIPT_EXAMPLES = formatScriptExamples(SCRIPT_EXAMPLE_CHOICES);
+export const BROWSER_EXAMPLES = formatScriptExamples(BROWSER_EXAMPLE_CHOICES);
 
 const DNS_BASIC = `data "grafana_synthetic_monitoring_probes" "main" {}
 resource "grafana_synthetic_monitoring_check" "dns" {

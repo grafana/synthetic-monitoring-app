@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
-import { Redirect, Route, Switch, useLocation } from 'react-router-dom';
+import { Redirect, Route, Switch } from 'react-router-dom';
 import { AppRootProps } from '@grafana/data';
-import { config } from '@grafana/runtime';
 
 import { ROUTES } from 'types';
 import { useMeta } from 'hooks/useMeta';
@@ -12,7 +11,6 @@ import { AlertingWelcomePage } from 'page/AlertingWelcomePage';
 import { CheckRouter } from 'page/CheckRouter';
 import { ChecksWelcomePage } from 'page/ChecksWelcomePage';
 import { ConfigPage } from 'page/ConfigPage';
-import { getNavModel } from 'page/pageDefinitions';
 import { ProbeRouter } from 'page/ProbeRouter';
 import { ProbesWelcomePage } from 'page/ProbesWelcomePage';
 import { SceneHomepage } from 'page/SceneHomepage';
@@ -25,16 +23,6 @@ import { SceneRedirecter } from './SceneRedirecter';
 export const InitialisedRouter = ({ onNavChanged }: Pick<AppRootProps, 'onNavChanged'>) => {
   const queryParams = useQuery();
   const navigate = useNavigation();
-  const location = useLocation();
-  const meta = useMeta();
-  const logo = meta.info.logos.large;
-
-  useEffect(() => {
-    const navModel = getNavModel(logo, location.pathname);
-    if (!config.featureToggles.topnav) {
-      onNavChanged(navModel);
-    }
-  }, [logo, onNavChanged, location.pathname]);
 
   const page = queryParams.get('page');
 

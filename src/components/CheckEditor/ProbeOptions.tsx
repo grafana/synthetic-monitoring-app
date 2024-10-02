@@ -57,7 +57,7 @@ function getFrequencyBounds(checkType: CheckType) {
       maxFrequency: oneHour,
     };
   }
-  if (checkType === CheckType.MULTI_HTTP || checkType === CheckType.Scripted) {
+  if (checkType === CheckType.MULTI_HTTP || checkType === CheckType.Scripted || checkType === CheckType.Browser) {
     return {
       minFrequency: 60.0,
       maxFrequency: oneHour,
@@ -72,6 +72,10 @@ function getFrequencyBounds(checkType: CheckType) {
 function getAvailableProbes(probes: Probe[], checkType: CheckType) {
   if (checkType === CheckType.Scripted) {
     return probes.filter((probe) => probe.capabilities.disableScriptedChecks === false);
+  }
+
+  if (checkType === CheckType.Browser) {
+    return probes.filter((probe) => probe.capabilities.disableBrowserChecks === false);
   }
   return probes;
 }
