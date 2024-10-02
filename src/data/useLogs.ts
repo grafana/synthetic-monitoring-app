@@ -14,8 +14,7 @@ export function useLogs() {
   return useMutation<DataFrameJSON[], Error, Args, UseMutationResult>({
     mutationFn: async ({ expr, range }: Args) => {
       try {
-        const res = await smDS.queryLogs(expr, range);
-        return res;
+        return await smDS.queryLogs(expr, range);
       } catch (error) {
         throw error;
       }
