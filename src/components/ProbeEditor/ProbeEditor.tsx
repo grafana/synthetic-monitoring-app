@@ -6,7 +6,7 @@ import { css } from '@emotion/css';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ProbeSchema } from 'schemas/forms/ProbeSchema';
 
-import { Probe, ROUTES } from 'types';
+import { ExtendedProbe, Probe, ROUTES } from 'types';
 import { useCanEditProbe } from 'hooks/useCanEditProbe';
 import { HorizontalCheckboxField } from 'components/HorizonalCheckboxField';
 import { LabelField } from 'components/LabelField';
@@ -18,7 +18,7 @@ type ProbeEditorProps = {
   actions?: ReactNode;
   errorInfo?: { title: string; message: string };
   onSubmit: (formValues: Probe) => void;
-  probe: Probe;
+  probe: ExtendedProbe;
   submitText: string;
   supportingContent?: ReactNode;
 };

@@ -1,18 +1,22 @@
+import { useMemo } from 'react';
 import { type QueryKey, useMutation, UseMutationResult, useQuery, useSuspenseQuery } from '@tanstack/react-query';
 import { isFetchError } from '@grafana/runtime';
 
 import { type MutationProps } from 'data/types';
-import { type Probe } from 'types';
+import { ExtendedProbe, type Probe } from 'types';
 import { FaroEvent } from 'faro';
 import { SMDataSource } from 'datasource/DataSource';
 import type {
   AddProbeResult,
+  DeleteProbeError,
   DeleteProbeResult,
   ResetProbeTokenResult,
   UpdateProbeResult,
 } from 'datasource/responses.types';
 import { queryClient } from 'data/queryClient';
 import { useSMDS } from 'hooks/useSMDS';
+
+import { useChecks } from './useChecks';
 
 export const queryKeys: Record<'list', QueryKey> = {
   list: ['probes'],
@@ -29,6 +33,42 @@ export function useProbes() {
   const smDS = useSMDS();
 
   return useQuery(probesQuery(smDS));
+}
+
+export function useExtendedProbes(): [ExtendedProbe[], boolean] {
+  const { data: probes = [], isLoading: isLoadingProbes } = useProbes();
+  const { data: checks = [], isLoading: isLoadingChecks } = useChecks();
+  const isLoading = isLoadingProbes || isLoadingChecks;
+
+  return useMemo<[ExtendedProbe[], boolean]>(() => {
+    if (isLoadingProbes || isLoadingChecks) {
+      return [[], isLoading];
+    }
+
+    const extendedProbes = probes.map((probe) => {
+      return checks.reduce<ExtendedProbe>(
+        (acc, check) => {
+          if (probe.id && check.id && check.probes.includes(probe.id)) {
+            acc.checks.push(check.id);
+          }
+
+          return acc;
+        },
+        { ...probe, checks: [] }
+      );
+    });
+
+    return [extendedProbes, isLoading];
+  }, [isLoadingProbes, isLoadingChecks, probes, isLoading, checks]);
+}
+
+export function useExtendedProbe(id: number): [ExtendedProbe | undefined, boolean] {
+  const [probes, isLoading] = useExtendedProbes();
+  const probe = probes.find((probe) => probe.id === id);
+
+  return useMemo(() => {
+    return [probe, isLoading];
+  }, [probe, isLoading]);
 }
 
 export function useSuspenseProbes() {
@@ -122,7 +162,7 @@ export function useDeleteProbe({ eventInfo, onError, onSuccess }: MutationProps<
   const smDS = useSMDS();
   const eventType = FaroEvent.DELETE_PROBE;
 
-  return useMutation<ExtendedDeleteProbeResult, Error, Probe, UseMutationResult>({
+  return useMutation<ExtendedDeleteProbeResult, DeleteProbeError, Probe, UseMutationResult>({
     mutationFn: (probe: Probe) =>
       smDS.deleteProbe(probe.id!).then((res) => ({
         ...res,

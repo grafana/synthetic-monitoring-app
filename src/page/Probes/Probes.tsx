@@ -3,8 +3,8 @@ import { LinkButton, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
-import { type Probe, ROUTES } from 'types';
-import { useProbes } from 'data/useProbes';
+import { ExtendedProbe, ROUTES } from 'types';
+import { useExtendedProbes } from 'data/useProbes';
 import { useCanWriteSM } from 'hooks/useDSPermission';
 import { CenteredSpinner } from 'components/CenteredSpinner';
 import { DocsLink } from 'components/DocsLink';
@@ -42,21 +42,21 @@ const Actions = () => {
 };
 
 const ProbesContent = () => {
-  const { data: probes = [], isLoading } = useProbes();
+  const [extendedProbes, isLoading] = useExtendedProbes();
 
   if (isLoading) {
     return <CenteredSpinner />;
   }
 
   const initial: {
-    publicProbes: Probe[];
-    privateProbes: Probe[];
+    publicProbes: ExtendedProbe[];
+    privateProbes: ExtendedProbe[];
   } = {
     publicProbes: [],
     privateProbes: [],
   };
 
-  const { publicProbes, privateProbes } = probes
+  const { publicProbes, privateProbes } = extendedProbes
     .sort((probeA, probeB) => probeA.name.localeCompare(probeB.name))
     .filter((probe) => Boolean(probe.id))
     .reduce((acc, probe) => {

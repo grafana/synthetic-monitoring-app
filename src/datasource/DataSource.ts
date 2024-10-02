@@ -8,7 +8,7 @@ import {
   ScopedVars,
   TimeRange,
 } from '@grafana/data';
-import { getBackendSrv, getTemplateSrv } from '@grafana/runtime';
+import { BackendSrvRequest, getBackendSrv, getTemplateSrv } from '@grafana/runtime';
 import { isArray } from 'lodash';
 import { firstValueFrom } from 'rxjs';
 
@@ -259,17 +259,6 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     });
   }
 
-  async deleteProbe(id: number) {
-    return firstValueFrom(
-      getBackendSrv().fetch<DeleteProbeResult>({
-        method: 'DELETE',
-        url: `${this.instanceSettings.url}/sm/probe/delete/${id}`,
-      })
-    ).then((res) => {
-      return res.data;
-    });
-  }
-
   async resetProbeToken(probe: Probe) {
     return firstValueFrom(
       getBackendSrv().fetch<ResetProbeTokenResult>({
@@ -280,6 +269,25 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     ).then((res) => {
       return res.data;
     });
+  }
+
+  async fetchAPI<T>(url: BackendSrvRequest['url'], options?: Omit<BackendSrvRequest, 'url'>) {
+    const response = await firstValueFrom(
+      getBackendSrv().fetch<T>({
+        method: options?.method ?? 'GET',
+        url,
+        ...options,
+      })
+    ).catch((error: unknown) => {
+      console.warn('Error fetching API', error);
+      throw error;
+    });
+
+    return response?.data as T;
+  }
+
+  async deleteProbe(id: number) {
+    return this.fetchAPI<DeleteProbeResult>(`${this.instanceSettings.url}/sm/probe/delete/${id}`, { method: 'DELETE' });
   }
 
   //--------------------------------------------------------------------------------

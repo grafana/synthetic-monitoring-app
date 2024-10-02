@@ -19,6 +19,7 @@ export const PRIVATE_PROBE: Probe = {
   created: 1694212496.731247,
   capabilities: {
     disableScriptedChecks: false,
+    disableBrowserChecks: false,
   },
 } as const satisfies Probe;
 
@@ -38,6 +39,7 @@ export const PUBLIC_PROBE: Probe = {
   created: 1694212496.731247,
   capabilities: {
     disableScriptedChecks: false,
+    disableBrowserChecks: false,
   },
 } as const satisfies Probe;
 
@@ -55,6 +57,7 @@ export const SCRIPTED_DISABLED_PROBE: Probe = {
   ...PRIVATE_PROBE,
   capabilities: {
     disableScriptedChecks: true,
+    disableBrowserChecks: false,
   },
 };
 
@@ -74,6 +77,7 @@ export const UNSELECTED_PRIVATE_PROBE: Probe = {
   created: 1694212496.731247,
   capabilities: {
     disableScriptedChecks: false,
+    disableBrowserChecks: false,
   },
 } as const satisfies Probe;
 

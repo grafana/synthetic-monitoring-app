@@ -21,6 +21,7 @@ export const UPDATED_VALUES: Pick<Probe, 'name' | 'latitude' | 'longitude' | 're
   labels: [{ name: 'UPDATED', value: 'PROBE' }],
   capabilities: {
     disableScriptedChecks: true,
+    disableBrowserChecks: true,
   },
 };
 

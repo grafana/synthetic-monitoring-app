@@ -119,8 +119,12 @@ export interface Probe extends ExistingObject {
   capabilities: ProbeCapabilities;
 }
 
+// Used to extend the Probe object with additional properties (see Probes.tsx component)
+export type ExtendedProbe = Probe & { checks: number[] };
+
 interface ProbeCapabilities {
   disableScriptedChecks: boolean;
+  disableBrowserChecks: boolean;
 }
 
 export enum ResponseMatchType {
