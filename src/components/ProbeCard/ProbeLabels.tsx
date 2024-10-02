@@ -18,8 +18,7 @@ export function ProbeLabels({ labels }: ProbeLabelsProps) {
     return (
       <Fragment key={name}>
         <Text color="maxContrast">
-          {LABEL_PREFIX}
-          {name}: <Text color={'warning'}>{value}</Text>
+          {`${LABEL_PREFIX}${name}`}: <Text color="warning">{value}</Text>
           {labels[index + 1] && ', '}
         </Text>
       </Fragment>

@@ -54,7 +54,6 @@ const EditProbeContent = ({ probe }: { probe: ExtendedProbe }) => {
   const canEdit = useCanEditProbe(probe);
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [probeToken, setProbeToken] = useState(``);
-  // const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const onUpdateSuccess = useCallback(() => {
     navigate(ROUTES.Probes);
@@ -64,8 +63,10 @@ const EditProbeContent = ({ probe }: { probe: ExtendedProbe }) => {
 
   const handleSubmit = useCallback(
     (formValues: Probe) => {
+      const { checks, ...probeEntity } = probe;
+
       return onUpdate({
-        ...probe,
+        ...probeEntity,
         ...formValues,
       });
     },

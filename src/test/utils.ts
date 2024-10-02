@@ -8,7 +8,7 @@ import {
   VIEWER_DEFAULT_DATASOURCE_ACCESS_CONTROL,
 } from 'test/fixtures/datasources';
 
-import { type Probe } from 'types';
+import { ExtendedProbe, type Probe } from 'types';
 
 import { apiRoute } from './handlers';
 import { server } from './server';
@@ -201,3 +201,8 @@ export const selectOption = async (user: UserEvent, options: SelectOptions, cont
 
   await user.click(option);
 };
+
+export const probeToExtendedProbe = (probe: Probe, usedByChecks: number[] = []): ExtendedProbe => ({
+  ...probe,
+  checks: usedByChecks,
+});

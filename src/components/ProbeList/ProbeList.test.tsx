@@ -4,11 +4,14 @@ import { DEFAULT_PROBES } from 'test/fixtures/probes';
 import { render } from 'test/render';
 
 import { ProbeList } from './ProbeList';
+import { probeToExtendedProbe } from '../../test/utils';
 
 const TITLE = `Default Probes`;
 
 it(`Toggles visibility of the probe cards`, async () => {
-  const { user } = render(<ProbeList probes={DEFAULT_PROBES} title={TITLE} />);
+  const { user } = render(
+    <ProbeList probes={DEFAULT_PROBES.map((probe) => probeToExtendedProbe(probe))} title={TITLE} />
+  );
   const cards = await screen.findAllByText(`Reachability`);
   const title = screen.getByText(TITLE);
 

@@ -24,7 +24,7 @@ export function ProbeUsageLink({ probe, className, variant, showWhenUnused = fal
   }
 
   return (
-    <TextLink className={className} variant={variant} color="link" href={checksHref}>
+    <TextLink data-testid="probe-usage-link" className={className} variant={variant} color="link" href={checksHref}>
       {`Used in ${checksCount} ${noun}`}
     </TextLink>
   );

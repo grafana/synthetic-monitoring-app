@@ -25,7 +25,8 @@ export const ProbeCard = ({ probe }: { probe: ExtendedProbe }) => {
         <div>
           <ProbeStatus probe={probe} />
           <Link href={probeEditHref}>
-            {probe.name} {probe.region && `(${probe.region})`}
+            <span>{probe.name}</span>
+            {probe.region && <span>&nbsp;{`(${probe.region})`}</span>}
           </Link>
         </div>
       </Card.Heading>
@@ -56,6 +57,7 @@ export const ProbeCard = ({ probe }: { probe: ExtendedProbe }) => {
         {canEdit ? (
           <>
             <LinkButton
+              data-testid="probe-card-action-button"
               icon="pen"
               fill="outline"
               variant="secondary"
@@ -68,6 +70,7 @@ export const ProbeCard = ({ probe }: { probe: ExtendedProbe }) => {
           </>
         ) : (
           <LinkButton
+            data-testid="probe-card-action-button"
             href={probeEditHref}
             fill="outline"
             variant="secondary"

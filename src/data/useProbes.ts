@@ -94,12 +94,10 @@ export function useCreateProbe({ eventInfo, onError, onSuccess }: MutationProps<
   return useMutation<AddProbeResult, Error, Probe, UseMutationResult>({
     mutationFn: async (probe: Probe) => {
       try {
-        const res = await smDS.addProbe({
+        return await smDS.addProbe({
           ...probe,
           public: false,
         });
-
-        return res;
       } catch (error) {
         throw handleAddProbeError(error);
       }

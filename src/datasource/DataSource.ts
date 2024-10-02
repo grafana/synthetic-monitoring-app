@@ -16,6 +16,7 @@ import { Check, Probe, ThresholdSettings } from '../types';
 import {
   AccessTokenResponse,
   AddCheckResult,
+  type AddProbeResult,
   AdHocCheckResponse,
   CheckInfoResult,
   DeleteCheckResult,
@@ -25,7 +26,9 @@ import {
   ListTenantLimitsResponse,
   ListTenantSettingsResult,
   LogsQueryResponse,
+  type ResetProbeTokenResult,
   UpdateCheckResult,
+  type UpdateProbeResult,
 } from './responses.types';
 import { QueryType, SMOptions, SMQuery } from './types';
 import { findLinkedDatasource, getRandomProbes, queryLogs } from 'utils';
@@ -234,21 +237,21 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   }
 
   async addProbe(probe: Probe) {
-    return this.fetchAPI(`${this.instanceSettings.url}/sm/probe/add`, {
+    return this.fetchAPI<AddProbeResult>(`${this.instanceSettings.url}/sm/probe/add`, {
       method: 'POST',
       data: probe,
     });
   }
 
   async updateProbe(probe: Probe) {
-    return this.fetchAPI(`${this.instanceSettings.url}/sm/probe/update`, {
+    return this.fetchAPI<UpdateProbeResult>(`${this.instanceSettings.url}/sm/probe/update`, {
       method: 'POST',
       data: probe,
     });
   }
 
   async resetProbeToken(probe: Probe) {
-    return this.fetchAPI(`${this.instanceSettings.url}/sm/probe/update?reset-token=true`, {
+    return this.fetchAPI<ResetProbeTokenResult>(`${this.instanceSettings.url}/sm/probe/update?reset-token=true`, {
       method: 'POST',
       data: probe,
     });
