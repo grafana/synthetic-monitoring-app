@@ -55,10 +55,6 @@ export const CHECK_TYPE_OPTIONS = [
     label: 'Scripted',
     value: CheckType.Scripted,
     description: 'Write a k6 script to run custom checks.',
-    status: {
-      value: CheckStatus.PUBLIC_PREVIEW,
-      description: `Scripted checks are in public preview. We're actively working on improving the experience and adding more features.`,
-    },
     featureToggle: FeatureName.ScriptedChecks,
     group: CheckTypeGroup.Scripted,
   },
