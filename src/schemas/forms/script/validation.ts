@@ -53,7 +53,7 @@ export function validateBrowserScript(script: string, context: RefinementCtx) {
   }
 
   const vus = getProperty(options, ['vus']);
-  const hasInvaludVus = vus !== undefined && vus > 1;
+  const hasInvaludVus = vus !== undefined && vus !== 1;
   if (hasInvaludVus) {
     return context.addIssue({
       code: ZodIssueCode.custom,
@@ -62,7 +62,7 @@ export function validateBrowserScript(script: string, context: RefinementCtx) {
   }
 
   const iterations = getProperty(options, ['iterations']);
-  const hasInvalidIterations = iterations !== undefined && iterations > 1;
+  const hasInvalidIterations = iterations !== undefined && iterations !== 1;
   if (hasInvalidIterations) {
     return context.addIssue({
       code: ZodIssueCode.custom,

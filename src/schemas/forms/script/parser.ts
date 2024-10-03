@@ -32,7 +32,7 @@ function getPropertyValueByPath(obj: ObjectExpression, path: string[]): any {
     } else if (property?.value.type === 'Literal') {
       current = property.value.value;
     } else {
-      return undefined;
+      return property?.value;
     }
   }
   return current;
