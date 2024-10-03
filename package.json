@@ -106,6 +106,7 @@
     "eslint-plugin-simple-import-sort": "^10.0.0",
     "ip-address": "^7.1.0",
     "is-base64": "^1.1.0",
+    "js-base64": "^3.7.7",
     "lodash": "4.17.21",
     "ol": "8.2.0",
     "prismjs": "1.29.0",

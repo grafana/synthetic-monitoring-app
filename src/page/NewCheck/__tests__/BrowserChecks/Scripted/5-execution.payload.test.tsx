@@ -5,7 +5,7 @@ import { goToSection, renderNewForm, submitForm } from 'page/__testHelpers__/che
 
 import { fillMandatoryFields } from '../../../../__testHelpers__/scripted';
 
-const checkType = CheckType.Scripted;
+const checkType = CheckType.Browser;
 
 describe(`BrowserCheck - Section 5 (Execution) payload`, () => {
   it(`has the correct default values submitted`, async () => {

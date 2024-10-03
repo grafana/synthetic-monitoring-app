@@ -1,3 +1,5 @@
+import { encode } from 'js-base64';
+
 import { CheckFormValuesScripted, ScriptedCheck } from 'types';
 import { getBasePayloadValuesFromForm } from 'components/CheckEditor/transformations/toPayload.utils';
 
@@ -8,7 +10,7 @@ export function getScriptedPayload(formValues: CheckFormValuesScripted): Scripte
     ...base,
     settings: {
       scripted: {
-        script: btoa(formValues.settings.scripted.script),
+        script: encode(formValues.settings.scripted.script),
       },
     },
   };
