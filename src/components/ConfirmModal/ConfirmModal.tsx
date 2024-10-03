@@ -33,6 +33,8 @@ export function AsyncConfirmModal({
   error: _error,
   onDismiss,
   body,
+  dismissText = 'Cancel',
+  confirmText = 'Confirm',
   ...props
 }: AsyncConfirmModalProps) {
   const [error, setError] = useState<AsyncConfirmModalProps['error']>(_error);
@@ -101,7 +103,7 @@ export function AsyncConfirmModal({
       {!!description && <div className={styles.description}>{description}</div>}
       <Modal.ButtonRow>
         <Button variant="secondary" fill="outline" onClick={handleDismiss}>
-          Cancel
+          {dismissText}
         </Button>
         <Button
           disabled={disabled}
@@ -109,7 +111,7 @@ export function AsyncConfirmModal({
           variant="destructive"
           onClick={handleConfirm}
         >
-          Confirm
+          {confirmText}
         </Button>
       </Modal.ButtonRow>
     </Modal>

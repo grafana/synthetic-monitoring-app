@@ -50,6 +50,8 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
         ...options,
       })
     ).catch((error: unknown) => {
+      // We could log the error here
+
       throw error;
     });
 
