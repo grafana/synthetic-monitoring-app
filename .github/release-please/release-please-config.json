@@ -8,6 +8,8 @@
         { "type": "feat", "section": "Features" },
         { "type": "fix", "section": "Fixes" },
         { "type": "docs", "section": "Documentation" },
+        { "type": "chore", "section": "Miscellaneous Chores" },
+        { "type": "refactor", "section": "Code Refactoring" },
         { "type": "release", "section": "Release"}
       ]
     }
