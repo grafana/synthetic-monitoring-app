@@ -7,7 +7,8 @@ const checkType = CheckType.Browser;
 
 const browserImport = `import { browser } from 'k6/browser';`;
 const exportOptions = `export const options = { };`;
-const exportCorrectOptions = `export const options = {scenarios: {
+const exportCorrectOptions = `export const options = { 
+   scenarios: {
     ui: {
       options: {
         browser: {
@@ -60,6 +61,78 @@ describe(`BrowserCheck - 1 (Script) UI`, () => {
 
       await submitForm(user);
       const err = await screen.findByText('Script must set the type to chromium in the browser options.');
+      expect(err).toBeInTheDocument();
+    });
+
+    it(`will display an error when it defines a duration prop`, async () => {
+      const { user } = await renderNewForm(checkType);
+      const scriptTextAreaPreSubmit = screen.getByTestId(`code-editor`);
+      await user.clear(scriptTextAreaPreSubmit);
+
+      const invalidDurationOptions = `export const options = { 
+        scenarios: {
+          ui: {
+            duration: '1m',
+            options: {
+              browser: {
+                type: 'chromium',
+              },
+            },
+          },
+        },
+      };`;
+      await user.type(scriptTextAreaPreSubmit, browserImport + invalidDurationOptions);
+
+      await submitForm(user);
+      const err = await screen.findByText("Script can't define a duration value for this check");
+      expect(err).toBeInTheDocument();
+    });
+
+    it(`will display an error when it defines vus > 1`, async () => {
+      const { user } = await renderNewForm(checkType);
+      const scriptTextAreaPreSubmit = screen.getByTestId(`code-editor`);
+      await user.clear(scriptTextAreaPreSubmit);
+
+      const invalidVusOptions = `export const options = { 
+        scenarios: {
+          ui: {
+            vus: 2,
+            options: {
+              browser: {
+                type: 'chromium',
+              },
+            },
+          },
+        },
+      };`;
+      await user.type(scriptTextAreaPreSubmit, browserImport + invalidVusOptions);
+
+      await submitForm(user);
+      const err = await screen.findByText("Script can't define vus > 1 for this check");
+      expect(err).toBeInTheDocument();
+    });
+
+    it(`will display an error when it defines iterations > 1`, async () => {
+      const { user } = await renderNewForm(checkType);
+      const scriptTextAreaPreSubmit = screen.getByTestId(`code-editor`);
+      await user.clear(scriptTextAreaPreSubmit);
+
+      const invalidIterationsOptions = `export const options = { 
+        scenarios: {
+          ui: {
+            iterations: 2,
+            options: {
+              browser: {
+                type: 'chromium',
+              },
+            },
+          },
+        },
+      };`;
+      await user.type(scriptTextAreaPreSubmit, browserImport + invalidIterationsOptions);
+
+      await submitForm(user);
+      const err = await screen.findByText("Script can't define iterations > 1 for this check");
       expect(err).toBeInTheDocument();
     });
   });
