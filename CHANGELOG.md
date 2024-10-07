@@ -524,6 +524,27 @@
 - almost there... skipping docs publish step ([d97521c](https://github.com/grafana/synthetic-monitoring-app/commit/d97521ce6038149f406bcce6406bc9242b11242e))
 - gcom token secret ([1c2b5b8](https://github.com/grafana/synthetic-monitoring-app/commit/1c2b5b8473cc1cf719c0c678db1af60829f33ad1))
 
+## [1.16.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.15.2...v1.16.0) (2024-10-07)
+
+
+### Features
+
+* extra validations for browser checks ([#942](https://github.com/grafana/synthetic-monitoring-app/issues/942)) ([1e3960d](https://github.com/grafana/synthetic-monitoring-app/commit/1e3960dcb3b8a6b983e1821f65356620f70cb38b))
+* set default timeout for browser checks to 1 min ([#945](https://github.com/grafana/synthetic-monitoring-app/issues/945)) ([e2be2da](https://github.com/grafana/synthetic-monitoring-app/commit/e2be2da8d4ef44dda965ff348f8386fbffcc3938))
+
+
+### Fixes
+
+* remove dynamic and unused data-fs-element attributes ([#941](https://github.com/grafana/synthetic-monitoring-app/issues/941)) ([d1b11ae](https://github.com/grafana/synthetic-monitoring-app/commit/d1b11aeccaf158b4fc25dd54e8a6845e37b125de))
+
+
+### Miscellaneous Chores
+
+* change browser checks to public preview status ([#952](https://github.com/grafana/synthetic-monitoring-app/issues/952)) ([26d0c5b](https://github.com/grafana/synthetic-monitoring-app/commit/26d0c5b8889b70bb98e2b9e2725a563e9afda74b))
+* Setup release-please ([#933](https://github.com/grafana/synthetic-monitoring-app/issues/933)) ([e7ebcd6](https://github.com/grafana/synthetic-monitoring-app/commit/e7ebcd6d13f82d639aef240053bed6efa124cb2c))
+* Tune release process ([#947](https://github.com/grafana/synthetic-monitoring-app/issues/947)) ([1b3f2c0](https://github.com/grafana/synthetic-monitoring-app/commit/1b3f2c0a54d62eb2a88093c9917d382cda001964))
+* update fillform example to use async check ([#949](https://github.com/grafana/synthetic-monitoring-app/issues/949)) ([91b00e5](https://github.com/grafana/synthetic-monitoring-app/commit/91b00e5c39726a1ba7312f01778193afdd84632b))
+
 ## [1.2.30] - 2021-08-27
 
 - New start to changelog with updated build process
