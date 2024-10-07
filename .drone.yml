@@ -212,7 +212,7 @@ steps:
     image: node:18
     commands:
       - ./scripts/install-ci-deps-apt.sh
-      - make install lint test build sign package gh-release
+      - make install lint test build sign package
     environment:
       GCP_KEY:
         from_secret: gcp_key
@@ -229,7 +229,7 @@ steps:
           "repo_owner": "grafana",
           "repo_name": "deployment_tools",
           "destination_branch": "master",
-          "pull_request_branch_prefix": "ci/synthetic-monitoring-plugin",
+          "pull_request_branch_prefix": "auto-merge/synthetic-monitoring-plugin",
           "pull_request_enabled": true,
           "pull_request_existing_strategy": "ignore",
           "pull_request_message": "Triggered by ${DRONE_COMMIT_LINK}. NOTE: prod does not refer directly to an environment it refers to stacks associated with the prod 'wave'. See [here](https://github.com/grafana/deployment_tools/blob/master/ksonnet/environments/hosted-grafana/waves/provisioned-plugins/README.md#waves) for more info.",
