@@ -25,7 +25,7 @@ export interface CheckTypeGroupOption {
 export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
   {
     label: 'API Endpoint',
-    description: 'Monitor the availability and performance of a service, website or API with different request types.',
+    description: 'Monitor service, website, or API availability and performance with different request types.',
     value: CheckTypeGroup.ApiTest,
     icon: `heart-rate`,
     protocols: CHECK_TYPE_OPTIONS.filter((option) => option.group === CheckTypeGroup.ApiTest).map((option) => ({
@@ -52,7 +52,11 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
     value: CheckTypeGroup.Scripted,
     icon: `k6`,
     protocols: [
-      { label: `HTTP`, featureToggle: FeatureName.ScriptedChecks },
+      {
+        label: `HTTP`,
+        featureToggle: FeatureName.ScriptedChecks,
+        href: `${getRoute(ROUTES.NewCheck)}/${CheckTypeGroup.Scripted}?checkType=${CheckType.Scripted}`,
+      },
       // todo: we don't support these yet
       // { label: `gRPC` },
       { label: `WebSockets`, featureToggle: FeatureName.ScriptedChecks },
@@ -83,6 +87,7 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
       {
         label: `HTTP`,
         featureToggle: FeatureName.BrowserChecks,
+        href: `${getRoute(ROUTES.NewCheck)}/${CheckTypeGroup.Browser}?checkType=${CheckType.Browser}`,
       },
     ],
   },
