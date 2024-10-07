@@ -1,7 +1,7 @@
 import React from 'react';
 import { GrafanaTheme2, PageLayoutType } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
-import { Badge, Icon, LinkButton, Stack, useStyles2 } from '@grafana/ui';
+import { Icon, LinkButton, Stack, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
@@ -12,7 +12,7 @@ import { useLimits } from 'hooks/useLimits';
 import { getRoute } from 'components/Routing.utils';
 import { Toggletip } from 'components/Toggletip';
 
-import { CheckStatusBadge } from './CheckEditor/FormComponents/CheckStatusBadge';
+import { CheckStatusInfo } from './CheckEditor/FormComponents/CheckStatusInfo';
 import { Card } from './Card';
 import { OverLimitAlert } from './OverLimitAlert';
 
@@ -55,28 +55,28 @@ const CheckGroupCard = ({ group }: { group: CheckTypeGroupOption }) => {
         <Stack justifyContent={`center`}>
           <Icon name={group.icon} size="xxxl" />
         </Stack>
-        <Card.Heading variant="h6">
-          <div>{group.label} </div>
+        <Card.Heading variant="h5">
+          <Stack justifyContent={'center'}>
+            {group.label}
+            {shouldShowStatus && checksWithStatus[0].status && <CheckStatusInfo {...checksWithStatus[0].status} />}
+          </Stack>
         </Card.Heading>
         <div className={styles.desc}>{group.description}</div>
         <div>
           <LinkButton disabled={disabled} href={`${getRoute(ROUTES.NewCheck)}/${group.value}`}>
-            Create {group.label} check
+            {group.label}
           </LinkButton>
         </div>
         <div className={styles.protocols}>
           <Stack direction={`column`} gap={2}>
-            Supported protocols:
-            <Stack justifyContent={`center`}>
-              {group.protocols.map((protocol) => {
-                return <Protocol key={protocol.label} {...protocol} href={disabled ? undefined : protocol.href} />;
-              })}
+            <Stack justifyContent={`center`} alignItems={'center'}>
+              {group.protocols.map((protocol, index) => (
+                <span key={protocol.label}>
+                  <Protocol {...protocol} href={disabled ? undefined : protocol.href} />
+                  {index < group.protocols.length - 1 && ', '}
+                </span>
+              ))}
             </Stack>
-            {shouldShowStatus && checksWithStatus[0].status && (
-              <Stack justifyContent={`center`}>
-                <CheckStatusBadge {...checksWithStatus[0].status} />
-              </Stack>
-            )}
           </Stack>
         </div>
       </Stack>
@@ -84,38 +84,31 @@ const CheckGroupCard = ({ group }: { group: CheckTypeGroupOption }) => {
   );
 };
 
-const BADGE_COLOR = `blue`;
-
 const Protocol = ({ href, label, tooltip }: ProtocolOption) => {
   const styles = useStyles2(getStyles);
 
   if (tooltip) {
     return (
       <Toggletip content={<div>{tooltip}</div>}>
-        <button className={styles.badgeLink}>
-          <Badge
-            text={
-              <Stack gap={0.5} alignItems={`center`}>
-                <div>{label}</div>
-                <Icon name={`info-circle`} size="sm" />
-              </Stack>
-            }
-            color={BADGE_COLOR}
-          />
-        </button>
+        <div className={styles.badgeLink}>
+          <Stack gap={0.5} alignItems={`center`}>
+            <span>{label}</span>
+            <Icon name={`info-circle`} size="sm" />
+          </Stack>
+        </div>
       </Toggletip>
     );
   }
 
   if (href) {
     return (
-      <a className={styles.badgeLink} href={href}>
-        <Badge text={label} color={BADGE_COLOR} />
-      </a>
+      <TextLink className={styles.badgeLink} href={href} inline={false} color="secondary">
+        {label}
+      </TextLink>
     );
   }
 
-  return <Badge text={label} color={BADGE_COLOR} />;
+  return <span>{label}</span>;
 };
 
 const getStyles = (theme: GrafanaTheme2) => ({
@@ -130,15 +123,17 @@ const getStyles = (theme: GrafanaTheme2) => ({
     background: `none`,
     border: `none`,
     padding: 0,
-
-    '&:hover': {
-      background: theme.colors.emphasize(theme.visualization.getColorByName(BADGE_COLOR), 0.15),
-    },
   }),
   desc: css({
     color: theme.colors.text.secondary,
   }),
   protocols: css({
     marginTop: theme.spacing(1),
+    borderTop: `1px solid ${theme.colors.border.weak}`,
+    color: theme.colors.text.secondary,
+    display: 'flex',
+    height: '35px',
+    alignItems: 'flex-end',
+    justifyContent: 'center',
   }),
 });
