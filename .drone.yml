@@ -254,18 +254,6 @@ steps:
       github_app_private_key:
         from_secret: updater-app-private-key
 
-image_pull_secrets:
-  - dockerconfigjson
----
-kind: pipeline
-type: docker
-name: publish-gcom
-
-trigger:
-  event:
-    - tag
-
-steps:
   - name: publish plugin to grafana.com (release)
     image: curlimages/curl:7.73.0
     environment:
