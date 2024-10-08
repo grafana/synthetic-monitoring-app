@@ -53,12 +53,14 @@ const CheckGroupCard = ({ group }: { group: CheckTypeGroupOption }) => {
     <Card key={group.label} data-testid={`${DataTestIds.CHECK_GROUP_CARD}-${group.value}`}>
       <Stack direction={`column`} justifyContent={`center`} gap={2}>
         <Stack justifyContent={`center`}>
-          <Icon name={group.icon} size="xxxl" />
-          {shouldShowStatus && checksWithStatus[0].status && <NewStatusBadge status={checksWithStatus[0].status.value} />}
+          <Icon name={group.icon} size="xxxl" className={styles.groupIcon} />
+          {shouldShowStatus && checksWithStatus[0].status && (
+            <NewStatusBadge status={checksWithStatus[0].status.value} />
+          )}
         </Stack>
         <Card.Heading variant="h5">
           <Stack justifyContent={'center'}>
-            {group.label}
+            <div className={styles.groupName}>{group.label}</div>
             {shouldShowStatus && checksWithStatus[0].status && <CheckStatusInfo {...checksWithStatus[0].status} />}
           </Stack>
         </Card.Heading>
@@ -119,14 +121,15 @@ const getStyles = (theme: GrafanaTheme2) => ({
     gridTemplateColumns: `repeat(auto-fit, minmax(200px, 400px))`,
     gap: theme.spacing(2),
     textAlign: `center`,
+    color: theme.colors.text.secondary,
   }),
   badgeLink: css({
     background: `none`,
     border: `none`,
     padding: 0,
   }),
-  desc: css({
-    color: theme.colors.text.secondary,
+  groupName: css({
+    color: theme.colors.text.primary,
   }),
   protocols: css({
     marginTop: theme.spacing(1),
