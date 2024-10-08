@@ -12,7 +12,7 @@ import { useLimits } from 'hooks/useLimits';
 import { getRoute } from 'components/Routing.utils';
 import { Toggletip } from 'components/Toggletip';
 
-import { CheckStatusInfo } from './CheckEditor/FormComponents/CheckStatusInfo';
+import { CheckStatusInfo, NewStatusBadge } from './CheckEditor/FormComponents/CheckStatusInfo';
 import { Card } from './Card';
 import { OverLimitAlert } from './OverLimitAlert';
 
@@ -54,6 +54,7 @@ const CheckGroupCard = ({ group }: { group: CheckTypeGroupOption }) => {
       <Stack direction={`column`} justifyContent={`center`} gap={2}>
         <Stack justifyContent={`center`}>
           <Icon name={group.icon} size="xxxl" />
+          {shouldShowStatus && checksWithStatus[0].status && <NewStatusBadge status={checksWithStatus[0].status.value} />}
         </Stack>
         <Card.Heading variant="h5">
           <Stack justifyContent={'center'}>
