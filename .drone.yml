@@ -260,6 +260,7 @@ steps:
       GRAFANA_API_KEY:
         from_secret: signing_token
     commands:
+      - ./scripts/install-ci-deps-apt.sh
       - ls -al ./scripts
       - ./scripts/publish-gcom.sh
 
