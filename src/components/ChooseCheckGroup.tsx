@@ -53,7 +53,7 @@ const CheckGroupCard = ({ group }: { group: CheckTypeGroupOption }) => {
     <Card key={group.label} data-testid={`${DataTestIds.CHECK_GROUP_CARD}-${group.value}`}>
       <Stack direction={`column`} justifyContent={`center`} gap={2}>
         <Stack justifyContent={`center`}>
-          <Icon name={group.icon} size="xxxl" className={styles.groupIcon} />
+          <Icon name={group.icon} size="xxxl" />
           {shouldShowStatus && checksWithStatus[0].status && (
             <NewStatusBadge status={checksWithStatus[0].status.value} />
           )}
@@ -64,7 +64,7 @@ const CheckGroupCard = ({ group }: { group: CheckTypeGroupOption }) => {
             {shouldShowStatus && checksWithStatus[0].status && <CheckStatusInfo {...checksWithStatus[0].status} />}
           </Stack>
         </Card.Heading>
-        <div className={styles.desc}>{group.description}</div>
+        <div>{group.description}</div>
         <div>
           <LinkButton disabled={disabled} href={`${getRoute(ROUTES.NewCheck)}/${group.value}`}>
             {group.label}
