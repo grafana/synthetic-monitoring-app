@@ -1,18 +1,17 @@
 import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Icon, Stack, TextLink, useStyles2 } from '@grafana/ui';
+import { Badge, Icon, Stack, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckStatus } from 'types';
 import { Toggletip } from 'components/Toggletip';
 
 export interface CheckStatusInfoProps {
-  value: CheckStatus;
   description?: string;
   docsLink?: string;
 }
 
-export const CheckStatusInfo = ({ description, docsLink, value }: CheckStatusInfoProps) => {
+export const CheckStatusInfo = ({ description, docsLink }: CheckStatusInfoProps) => {
   const styles = useStyles2((theme: GrafanaTheme2) => getStyles(theme));
 
   return (
@@ -40,7 +39,25 @@ export const CheckStatusInfo = ({ description, docsLink, value }: CheckStatusInf
   );
 };
 
+export const NewStatusBadge = ({ status }: { status: CheckStatus }) => {
+  const styles = useStyles2((theme: GrafanaTheme2) => getStyles(theme));
+
+  if (![CheckStatus.EXPERIMENTAL, CheckStatus.PRIVATE_PREVIEW, CheckStatus.PUBLIC_PREVIEW].includes(status)) {
+    return null;
+  }
+
+  return <Badge text={'NEW'} color={'orange'} className={styles.newBadge} />;
+};
+
 const getStyles = (theme: GrafanaTheme2) => ({
+  newBadge: css({
+    position: 'absolute',
+    right: 0,
+    marginRight: theme.spacing(3),
+    marginTop: theme.spacing(2),
+    height: '26px',
+  }),
+
   infoLink: css({
     background: `none`,
     border: `none`,
