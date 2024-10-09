@@ -1,21 +1,15 @@
 import React, { useCallback, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { FetchResponse } from '@grafana/runtime';
 import { Button, Tooltip } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { type ExtendedProbe } from 'types';
+import type { BackendError, DeleteProbeButtonProps } from './DeleteProbeButton.types';
+import { useDeleteProbe } from 'data/useProbes';
+import { useCanEditProbe } from 'hooks/useCanEditProbe';
+import { ConfirmModal } from 'components/ConfirmModal';
+import { ProbeUsageLink } from 'components/ProbeUsageLink';
 
-import { useDeleteProbe } from '../data/useProbes';
-import { useCanEditProbe } from '../hooks/useCanEditProbe';
-import { ConfirmModal } from './ConfirmModal';
-import { ProbeUsageLink } from './ProbeUsageLink';
-
-type BackendError = FetchResponse<{ err: string; msg: string }>;
-
-interface DeleteProbeButtonProps {
-  probe: ExtendedProbe;
-}
+import { getPrettyError } from './DeleteProbeButton.utils';
 
 export function DeleteProbeButton({ probe }: DeleteProbeButtonProps) {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -34,11 +28,12 @@ export function DeleteProbeButton({ probe }: DeleteProbeButtonProps) {
       setError(undefined);
     }
 
-    if ('data' in error && 'err' in error.data && 'msg' in error.data) {
-      setError({ name: error.data.err, message: error.data.msg });
-    } else {
-      setError({ name: 'Unknown error', message: 'An unknown error occurred' });
-    }
+    setError(getPrettyError(error, probe));
+    // if ('data' in error && 'err' in error.data && 'msg' in error.data) {
+    //   setError({ name: error.data.err, message: error.data.msg });
+    // } else {
+    //   setError({ name: 'Unknown error', message: 'An unknown error occurred' });
+    // }
   };
 
   const handleOnClick = () => {

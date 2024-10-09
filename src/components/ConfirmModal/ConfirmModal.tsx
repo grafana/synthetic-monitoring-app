@@ -3,18 +3,10 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Button, ConfirmModal as GrafanaConfirmModal, ConfirmModalProps, Modal, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-interface ConfirmError {
-  name: string;
-  message: string;
-}
+import type { AsyncConfirmModalProps } from './ConfirmModal.types';
 
-interface AsyncConfirmModalProps extends Omit<ConfirmModalProps, 'onConfirm'> {
-  async: boolean;
-  error?: ConfirmError;
-  onSuccess?: (response: unknown) => void;
-  onError?: (error: ConfirmError) => void;
-  onConfirm?: () => Promise<unknown>;
-}
+import { GENERIC_ERROR_MESSAGE } from './ConfirmModal.constants';
+import { getErrorWithFallback, hasOnError } from './ConfirmModal.utils';
 
 export function ConfirmModal(props: ConfirmModalProps | AsyncConfirmModalProps) {
   if (!('async' in props)) {
@@ -23,8 +15,6 @@ export function ConfirmModal(props: ConfirmModalProps | AsyncConfirmModalProps) 
 
   return <AsyncConfirmModal {...props} />;
 }
-
-const GENERIC_ERROR_MESSAGE = 'Something went wrong. Unable to fulfill the requested action.';
 
 export function AsyncConfirmModal({
   title,
@@ -58,44 +48,33 @@ export function AsyncConfirmModal({
 
   const disabled = pending || error !== undefined;
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (pending) {
       return;
     }
-    setPending(true);
-    props
-      .onConfirm?.()
-      .then((response: unknown) => {
-        props.onSuccess?.(response);
-        handleDismiss();
-      })
-      .catch((error: ConfirmError) => {
-        if ('onError' in props && typeof props.onError === 'function') {
-          props.onError(error);
-          return;
-        }
 
-        if (
-          error &&
-          'message' in error &&
-          typeof error.message === 'string' &&
-          'name' in error &&
-          typeof error.name === 'string'
-        ) {
-          setError(error);
-        } else {
-          setError({ name: `${title} error`, message: GENERIC_ERROR_MESSAGE });
-        }
-      })
-      .finally(() => {
-        setPending(false);
-      });
+    setPending(true);
+
+    try {
+      const response = await props.onConfirm?.();
+      props.onSuccess?.(response);
+      handleDismiss();
+    } catch (error: any) {
+      if (hasOnError(props)) {
+        props.onError(error);
+        return;
+      }
+
+      setError(getErrorWithFallback(error, title));
+    } finally {
+      setPending(false);
+    }
   };
 
   return (
     <Modal className={styles.modal} title={title} isOpen={isOpen} onDismiss={handleDismiss}>
       {!!error && (
-        <Alert title={error?.name ?? `${title} error`} severity="error">
+        <Alert className={styles.alert} title={error?.name ?? `${title} error`} severity="error">
           <div>{error?.message ?? GENERIC_ERROR_MESSAGE}</div>
         </Alert>
       )}
@@ -123,6 +102,11 @@ const getStyles = (theme: GrafanaTheme2) => ({
   modal: css({
     width: '100%',
     maxWidth: '500px',
+  }),
+  alert: css({
+    '& *:first-letter': {
+      textTransform: 'uppercase',
+    },
   }),
   body: css({
     fontSize: theme.typography.h5.fontSize,

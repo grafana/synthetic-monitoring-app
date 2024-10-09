@@ -27,6 +27,7 @@ import {
   ListTenantSettingsResult,
   LogsQueryResponse,
   type ResetProbeTokenResult,
+  TenantResponse,
   UpdateCheckResult,
   type UpdateProbeResult,
   type UpdateTenantSettingsResult,
@@ -310,8 +311,8 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     });
   }
 
-  async getTenant(): Promise<any> {
-    return this.fetchAPI<any>(`${this.instanceSettings.url}/sm/tenant`);
+  async getTenant() {
+    return this.fetchAPI<TenantResponse>(`${this.instanceSettings.url}/sm/tenant`);
   }
 
   async getTenantLimits() {
