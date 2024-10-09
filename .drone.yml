@@ -255,7 +255,7 @@ steps:
         from_secret: updater-app-private-key
 
   - name: publish plugin to grafana.com (release)
-    image: curlimages/curl:7.73.0
+    image: ubuntu:latest
     environment:
       GRAFANA_API_KEY:
         from_secret: signing_token
