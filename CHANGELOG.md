@@ -524,6 +524,14 @@
 - almost there... skipping docs publish step ([d97521c](https://github.com/grafana/synthetic-monitoring-app/commit/d97521ce6038149f406bcce6406bc9242b11242e))
 - gcom token secret ([1c2b5b8](https://github.com/grafana/synthetic-monitoring-app/commit/1c2b5b8473cc1cf719c0c678db1af60829f33ad1))
 
+## [1.16.3](https://github.com/grafana/synthetic-monitoring-app/compare/v1.16.2...v1.16.3) (2024-10-09)
+
+
+### Miscellaneous Chores
+
+* Add git to publish step ([#962](https://github.com/grafana/synthetic-monitoring-app/issues/962)) ([cfafe1f](https://github.com/grafana/synthetic-monitoring-app/commit/cfafe1f363086de0b209109e16f671dc26e41119))
+* Change publish step image ([#964](https://github.com/grafana/synthetic-monitoring-app/issues/964)) ([d25ea9f](https://github.com/grafana/synthetic-monitoring-app/commit/d25ea9f808e735dcfe012493f00db6bb9bd151bd))
+
 ## [1.16.2](https://github.com/grafana/synthetic-monitoring-app/compare/v1.16.1...v1.16.2) (2024-10-08)
 
 
