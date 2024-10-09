@@ -1,4 +1,4 @@
- #!/bin/bash
+#!/bin/bash
 # This is used in Drone to generate the version string for automatic PR creation
 set -eufo pipefail
 
