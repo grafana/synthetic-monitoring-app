@@ -25,9 +25,9 @@ export interface CheckTypeGroupOption {
 export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
   {
     label: 'API Endpoint',
-    description: 'Monitor the availability and performance of a service, website or API with different request types.',
+    description: 'Monitor service, website, or API availability and performance with different request types.',
     value: CheckTypeGroup.ApiTest,
-    icon: `heart-rate`,
+    icon: `api-endpoint`,
     protocols: CHECK_TYPE_OPTIONS.filter((option) => option.group === CheckTypeGroup.ApiTest).map((option) => ({
       label: option.label,
       href: `${getRoute(ROUTES.NewCheck)}/${CheckTypeGroup.ApiTest}?checkType=${option.value}`,
@@ -38,7 +38,7 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
     label: 'Multi Step',
     description: 'Run multiple requests in sequence, using the response data from one request to the next.',
     value: CheckTypeGroup.MultiStep,
-    icon: `gf-interpolation-step-after`,
+    icon: `multi-step`,
     protocols: [
       {
         label: `HTTP`,
@@ -50,9 +50,13 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
     label: 'Scripted',
     description: 'Write a custom script to run any number of requests with custom checks and assertions.',
     value: CheckTypeGroup.Scripted,
-    icon: `k6`,
+    icon: `k6-rounded`,
     protocols: [
-      { label: `HTTP`, featureToggle: FeatureName.ScriptedChecks },
+      {
+        label: `HTTP`,
+        featureToggle: FeatureName.ScriptedChecks,
+        href: `${getRoute(ROUTES.NewCheck)}/${CheckTypeGroup.Scripted}?checkType=${CheckType.Scripted}`,
+      },
       // todo: we don't support these yet
       // { label: `gRPC` },
       { label: `WebSockets`, featureToggle: FeatureName.ScriptedChecks },
@@ -78,11 +82,12 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
     label: `Browser`,
     description: `Monitor the availability and performance of a website using a real browser.`,
     value: CheckTypeGroup.Browser,
-    icon: `globe`,
+    icon: `browser-alt`,
     protocols: [
       {
         label: `HTTP`,
         featureToggle: FeatureName.BrowserChecks,
+        href: `${getRoute(ROUTES.NewCheck)}/${CheckTypeGroup.Browser}?checkType=${CheckType.Browser}`,
       },
     ],
   },
