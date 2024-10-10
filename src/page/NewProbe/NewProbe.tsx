@@ -3,7 +3,7 @@ import { PluginPage } from '@grafana/runtime';
 import { Alert, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { type Probe, ROUTES } from 'types';
+import { ExtendedProbe, type Probe, ROUTES } from 'types';
 import { type AddProbeResult } from 'datasource/responses.types';
 import { useCreateProbe } from 'data/useProbes';
 import { useNavigation } from 'hooks/useNavigation';
@@ -12,7 +12,7 @@ import { DocsLink } from 'components/DocsLink';
 import { ProbeEditor } from 'components/ProbeEditor';
 import { ProbeTokenModal } from 'components/ProbeTokenModal';
 
-export const TEMPLATE_PROBE: Probe = {
+export const TEMPLATE_PROBE: ExtendedProbe = {
   name: '',
   public: false,
   latitude: 0.0,
@@ -27,6 +27,7 @@ export const TEMPLATE_PROBE: Probe = {
     disableScriptedChecks: false,
     disableBrowserChecks: false,
   },
+  checks: [],
 };
 
 export const NewProbe = () => {

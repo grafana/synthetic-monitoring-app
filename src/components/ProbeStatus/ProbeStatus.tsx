@@ -3,14 +3,16 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Badge, BadgeColor, Button, ConfirmModal, Container, IconName, Legend, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { type Probe } from 'types';
+import { type ExtendedProbe } from 'types';
 import { formatDate } from 'utils';
 import { useResetProbeToken } from 'data/useProbes';
 import { useCanEditProbe } from 'hooks/useCanEditProbe';
 import { SuccessRateGaugeProbe } from 'components/Gauges';
 
-interface Props {
-  probe: Probe;
+import { ProbeUsageLink } from '../ProbeUsageLink';
+
+interface ProbeStatusProps {
+  probe: ExtendedProbe;
   onReset: (token: string) => void;
 }
 
@@ -20,7 +22,7 @@ interface BadgeStatus {
   icon: IconName;
 }
 
-export const ProbeStatus = ({ probe, onReset }: Props) => {
+export const ProbeStatus = ({ probe, onReset }: ProbeStatusProps) => {
   const [showResetModal, setShowResetModal] = useState(false);
   const canEdit = useCanEditProbe(probe);
 
@@ -73,6 +75,7 @@ export const ProbeStatus = ({ probe, onReset }: Props) => {
         {probe.modified && (
           <Meta title="Last modified:" value={neverModified ? `Never` : formatDate(probe.modified * 1000)} />
         )}
+        <ProbeUsageLink probe={probe} />
       </div>
     </div>
   );

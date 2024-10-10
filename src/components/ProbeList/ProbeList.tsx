@@ -3,13 +3,13 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { type Probe } from 'types';
+import { type ExtendedProbe } from 'types';
 import { Collapse } from 'components/Collapse';
 import { ProbeCard } from 'components/ProbeCard';
 
 interface Props {
   [`data-testid`]?: string;
-  probes: Probe[];
+  probes: ExtendedProbe[];
   title: string;
   emptyText?: ReactNode;
 }

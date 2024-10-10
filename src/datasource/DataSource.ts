@@ -8,7 +8,7 @@ import {
   ScopedVars,
   TimeRange,
 } from '@grafana/data';
-import { getBackendSrv, getTemplateSrv } from '@grafana/runtime';
+import { BackendSrvRequest, getBackendSrv, getTemplateSrv } from '@grafana/runtime';
 import { isArray } from 'lodash';
 import { firstValueFrom } from 'rxjs';
 
@@ -16,9 +16,8 @@ import { Check, Probe, ThresholdSettings } from '../types';
 import {
   AccessTokenResponse,
   AddCheckResult,
-  AddProbeResult,
+  type AddProbeResult,
   AdHocCheckResponse,
-  BulkUpdateCheckResult,
   CheckInfoResult,
   DeleteCheckResult,
   DeleteProbeResult,
@@ -27,19 +26,37 @@ import {
   ListTenantLimitsResponse,
   ListTenantSettingsResult,
   LogsQueryResponse,
-  ResetProbeTokenResult,
+  type ResetProbeTokenResult,
+  TenantResponse,
   UpdateCheckResult,
-  UpdateProbeResult,
-  UpdateTenantSettingsResult,
+  type UpdateProbeResult,
+  type UpdateTenantSettingsResult,
 } from './responses.types';
 import { QueryType, SMOptions, SMQuery } from './types';
 import { findLinkedDatasource, getRandomProbes, queryLogs } from 'utils';
 
+import { ExtendedBulkUpdateCheckResult } from '../data/useChecks';
 import { parseTracerouteLogs } from './traceroute-utils';
 
 export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   constructor(public instanceSettings: DataSourceInstanceSettings<SMOptions>) {
     super(instanceSettings);
+  }
+
+  async fetchAPI<T>(url: BackendSrvRequest['url'], options?: Omit<BackendSrvRequest, 'url'>) {
+    const response = await firstValueFrom(
+      getBackendSrv().fetch<T>({
+        method: options?.method ?? 'GET',
+        url,
+        ...options,
+      })
+    ).catch((error: unknown) => {
+      // We could log the error here
+
+      throw error;
+    });
+
+    return response?.data as T;
   }
 
   interpolateVariablesInQueries(queries: SMQuery[], scopedVars: {} | ScopedVars): SMQuery[] {
@@ -193,39 +210,27 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   }
 
   async getCheckInfo() {
-    return firstValueFrom(
-      getBackendSrv().fetch<CheckInfoResult>({
-        method: 'GET',
-        url: `${this.instanceSettings.url}/sm/checks/info`,
-      })
-    ).then((res) => {
-      return res.data;
-    });
+    return this.fetchAPI<CheckInfoResult>(`${this.instanceSettings.url}/sm/checks/info`);
   }
 
-  queryLogs(expr: string, range: TimeRange) {
-    return firstValueFrom(
-      getBackendSrv().fetch<LogsQueryResponse>({
-        method: 'POST',
-        url: `/api/ds/query`,
-        data: {
-          queries: [
-            {
-              refId: 'A',
-              expr,
-              queryType: 'range',
-              datasource: this.instanceSettings.jsonData.logs,
-              intervalMs: 2000,
-              maxDataPoints: 1779,
-            },
-          ],
-          from: String(range.from.unix() * 1000),
-          to: String(range.to.unix() * 1000),
-        },
-      })
-    ).then((res) => {
-      return res.data.results.A.frames;
-    });
+  async queryLogs(expr: string, range: TimeRange) {
+    return this.fetchAPI<LogsQueryResponse>(`/api/ds/query`, {
+      method: 'POST',
+      data: {
+        queries: [
+          {
+            refId: 'A',
+            expr,
+            queryType: 'range',
+            datasource: this.instanceSettings.jsonData.logs,
+            intervalMs: 2000,
+            maxDataPoints: 1779,
+          },
+        ],
+        from: String(range.from.unix() * 1000),
+        to: String(range.to.unix() * 1000),
+      },
+    }).then((data) => data.results.A.frames);
   }
 
   //--------------------------------------------------------------------------------
@@ -233,61 +238,32 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   //--------------------------------------------------------------------------------
 
   async listProbes() {
-    return firstValueFrom(
-      getBackendSrv().fetch<ListProbeResult>({
-        method: 'GET',
-        url: `${this.instanceSettings.url}/sm/probe/list`,
-      })
-    ).then((res) => {
-      return res.data;
-    });
+    return this.fetchAPI<ListProbeResult>(`${this.instanceSettings.url}/sm/probe/list`);
   }
 
   async addProbe(probe: Probe) {
-    return firstValueFrom(
-      getBackendSrv().fetch<AddProbeResult>({
-        method: 'POST',
-        url: `${this.instanceSettings.url}/sm/probe/add`,
-        data: probe,
-      })
-    ).then((res) => {
-      return res.data;
+    return this.fetchAPI<AddProbeResult>(`${this.instanceSettings.url}/sm/probe/add`, {
+      method: 'POST',
+      data: probe,
     });
   }
 
   async updateProbe(probe: Probe) {
-    return firstValueFrom(
-      getBackendSrv().fetch<UpdateProbeResult>({
-        method: 'POST',
-        url: `${this.instanceSettings.url}/sm/probe/update`,
-        data: probe,
-      })
-    ).then((res) => {
-      return res.data;
-    });
-  }
-
-  async deleteProbe(id: number) {
-    return firstValueFrom(
-      getBackendSrv().fetch<DeleteProbeResult>({
-        method: 'DELETE',
-        url: `${this.instanceSettings.url}/sm/probe/delete/${id}`,
-      })
-    ).then((res) => {
-      return res.data;
+    return this.fetchAPI<UpdateProbeResult>(`${this.instanceSettings.url}/sm/probe/update`, {
+      method: 'POST',
+      data: probe,
     });
   }
 
   async resetProbeToken(probe: Probe) {
-    return firstValueFrom(
-      getBackendSrv().fetch<ResetProbeTokenResult>({
-        method: 'POST',
-        url: `${this.instanceSettings.url}/sm/probe/update?reset-token=true`,
-        data: probe,
-      })
-    ).then((res) => {
-      return res.data;
+    return this.fetchAPI<ResetProbeTokenResult>(`${this.instanceSettings.url}/sm/probe/update?reset-token=true`, {
+      method: 'POST',
+      data: probe,
     });
+  }
+
+  async deleteProbe(id: number) {
+    return this.fetchAPI<DeleteProbeResult>(`${this.instanceSettings.url}/sm/probe/delete/${id}`, { method: 'DELETE' });
   }
 
   //--------------------------------------------------------------------------------
@@ -295,144 +271,76 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   //--------------------------------------------------------------------------------
 
   async listChecks() {
-    return firstValueFrom(
-      getBackendSrv().fetch<ListCheckResult>({
-        method: 'GET',
-        url: `${this.instanceSettings.url}/sm/check/list`,
-      })
-    ).then((res) => {
-      return res.data;
-    });
+    return this.fetchAPI<ListCheckResult>(`${this.instanceSettings.url}/sm/check/list`);
   }
 
   async getCheck(checkId: number) {
-    return firstValueFrom(
-      getBackendSrv().fetch<Check>({
-        method: `GET`,
-        url: `${this.instanceSettings.url}/sm/check/${checkId}`,
-      })
-    ).then((res) => res.data);
+    return this.fetchAPI<Check>(`${this.instanceSettings.url}/sm/check/${checkId}`);
   }
 
   async testCheck(check: Check) {
     const payload = getTestPayload(check);
-
-    return firstValueFrom(
-      getBackendSrv().fetch<AdHocCheckResponse>({
-        method: 'POST',
-        url: `${this.instanceSettings.url}/sm/check/adhoc`,
-        data: payload,
-      })
-    ).then((res) => {
-      return res.data;
+    return this.fetchAPI<AdHocCheckResponse>(`${this.instanceSettings.url}/sm/check/adhoc`, {
+      method: 'POST',
+      data: payload,
     });
   }
 
   async addCheck(check: Check) {
-    return firstValueFrom(
-      getBackendSrv().fetch<AddCheckResult>({
-        method: 'POST',
-        url: `${this.instanceSettings.url}/sm/check/add`,
-        data: check,
-      })
-    ).then((res) => {
-      return res.data;
+    return this.fetchAPI<AddCheckResult>(`${this.instanceSettings.url}/sm/check/add`, {
+      method: 'POST',
+      data: check,
     });
   }
 
   async deleteCheck(id: number) {
-    return firstValueFrom(
-      getBackendSrv().fetch<DeleteCheckResult>({
-        method: 'DELETE',
-        url: `${this.instanceSettings.url}/sm/check/delete/${id}`,
-      })
-    ).then((res) => {
-      return res.data;
-    });
+    return this.fetchAPI<DeleteCheckResult>(`${this.instanceSettings.url}/sm/check/delete/${id}`, { method: 'DELETE' });
   }
 
   async updateCheck(check: Check) {
-    return firstValueFrom(
-      getBackendSrv().fetch<UpdateCheckResult>({
-        method: 'POST',
-        url: `${this.instanceSettings.url}/sm/check/update`,
-        data: check,
-      })
-    ).then((res) => {
-      return res.data;
+    return this.fetchAPI<UpdateCheckResult>(`${this.instanceSettings.url}/sm/check/update`, {
+      method: 'POST',
+      data: check,
     });
   }
 
   async bulkUpdateChecks(checks: Check[]) {
-    return firstValueFrom(
-      getBackendSrv().fetch<BulkUpdateCheckResult>({
-        method: 'POST',
-        url: `${this.instanceSettings.url}/sm/check/update/bulk`,
-        data: checks,
-      })
-    ).then((res) => {
-      return res.data;
+    return this.fetchAPI<ExtendedBulkUpdateCheckResult>(`${this.instanceSettings.url}/sm/check/update/bulk`, {
+      method: 'POST',
+      data: checks,
     });
   }
 
-  async getTenant(): Promise<any> {
-    return getBackendSrv()
-      .fetch({ method: 'GET', url: `${this.instanceSettings.url}/sm/tenant` })
-      .toPromise()
-      .then((res: any) => {
-        return res.data;
-      });
+  async getTenant() {
+    return this.fetchAPI<TenantResponse>(`${this.instanceSettings.url}/sm/tenant`);
   }
 
   async getTenantLimits() {
-    return firstValueFrom(
-      getBackendSrv().fetch<ListTenantLimitsResponse>({
-        method: 'GET',
-        url: `${this.instanceSettings.url}/sm/tenant/limits`,
-      })
-    ).then((res) => {
-      return res.data;
-    });
+    return this.fetchAPI<ListTenantLimitsResponse>(`${this.instanceSettings.url}/sm/tenant/limits`);
   }
 
   async getTenantSettings() {
-    return firstValueFrom(
-      getBackendSrv().fetch<ListTenantSettingsResult>({
-        method: 'GET',
-        url: `${this.instanceSettings.url}/sm/tenant/settings`,
-      })
-    ).then((res) => res.data);
+    return this.fetchAPI<ListTenantSettingsResult>(`${this.instanceSettings.url}/sm/tenant/settings`);
   }
 
   async updateTenantSettings(settings: { thresholds: ThresholdSettings }) {
-    return firstValueFrom(
-      getBackendSrv().fetch<UpdateTenantSettingsResult>({
-        method: 'POST',
-        url: `${this.instanceSettings.url}/sm/tenant/settings/update`,
-        data: {
-          ...settings,
-        },
-      })
-    ).then((res) => {
-      return res.data;
+    return this.fetchAPI<UpdateTenantSettingsResult>(`${this.instanceSettings.url}/sm/tenant/settings/update`, {
+      method: 'POST',
+      data: {
+        ...settings,
+      },
     });
   }
 
   async disableTenant(): Promise<any> {
     const tenant = await this.getTenant();
-    return getBackendSrv()
-      .fetch({
-        method: 'POST',
-        url: `${this.instanceSettings.url}/sm/tenant/update`,
-        data: {
-          ...tenant,
-          status: 1,
-        },
-      })
-      .toPromise()
-      .then((res: any) => {
-        return res.data;
-      });
+    return this.fetchAPI(`${this.instanceSettings.url}/sm/tenant/update`, {
+      method: 'POST',
+      data: {
+        ...tenant,
+        status: 1,
+      },
+    });
   }
 
   //--------------------------------------------------------------------------------
@@ -487,13 +395,10 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   }
 
   async createApiToken(): Promise<string> {
-    return firstValueFrom(
-      getBackendSrv().fetch<AccessTokenResponse>({
-        method: 'POST',
-        url: `${this.instanceSettings.url}/sm/token/create`,
-        data: {},
-      })
-    ).then((res) => res.data.token);
+    return this.fetchAPI<AccessTokenResponse>(`${this.instanceSettings.url}/sm/token/create`, {
+      method: 'POST',
+      data: {},
+    }).then((data) => data.token);
   }
 
   //--------------------------------------------------------------------------------

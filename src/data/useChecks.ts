@@ -153,7 +153,7 @@ export function useDeleteCheck({ eventInfo, onError, onSuccess }: MutationProps<
   });
 }
 
-type ExtendedBulkUpdateCheckResult = BulkUpdateCheckResult & {
+export type ExtendedBulkUpdateCheckResult = BulkUpdateCheckResult & {
   checks: Check[];
 };
 
