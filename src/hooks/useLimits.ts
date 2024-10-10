@@ -4,50 +4,59 @@ import { ListCheckResult, ListTenantLimitsResponse } from 'datasource/responses.
 import { useChecks } from 'data/useChecks';
 import { useTenantLimits } from 'data/useTenantLimits';
 
+import { useAtHgExecutionLimit } from './useAtHgExecutionLimit';
 import { useFeatureFlag } from './useFeatureFlag';
 
 export function useLimits() {
-  const { data: limits, isLoading, error, isFetched } = useTenantLimits();
+  const {
+    data: tenantLimits,
+    isLoading: isLoadingTenant,
+    error: errorTenant,
+    isFetched: isFetchedTenant,
+  } = useTenantLimits();
   const { data: checks } = useChecks();
-  const isOverCheckLimit = getIsOverCheckLimit({ checks, limits });
+  const { data: isOverHgExecutionLimit, isLoading: isLoadingHgLimit } = useAtHgExecutionLimit();
+
+  const isOverCheckLimit = getIsOverCheckLimit({ checks, tenantLimits });
   const isScriptedOn = useFeatureFlag(FeatureName.ScriptedChecks);
-  const isOverScriptedLimit = isScriptedOn && getIsOverScriptedLimit({ checks, limits });
+  const isOverScriptedLimit = isScriptedOn && getIsOverScriptedLimit({ checks, tenantLimits });
 
   return {
-    limits,
-    isLoading,
-    isReady: isFetched,
+    tenantLimits: tenantLimits,
+    isLoading: isLoadingTenant || isLoadingHgLimit,
+    isReady: isFetchedTenant && !isLoadingHgLimit,
     isOverCheckLimit,
+    isOverHgExecutionLimit: isOverHgExecutionLimit,
     isOverScriptedLimit,
-    error,
+    error: errorTenant,
   };
 }
 
 function getIsOverScriptedLimit({
   checks,
-  limits,
+  tenantLimits,
 }: {
   checks?: Check[] | ListCheckResult;
-  limits?: ListTenantLimitsResponse;
+  tenantLimits?: ListTenantLimitsResponse;
 }): boolean {
-  if (!limits || !checks) {
+  if (!tenantLimits || !checks) {
     return false;
   }
 
   const scriptedChecksCount = checks.filter((c) => getCheckType(c.settings) === CheckType.Scripted).length;
-  return scriptedChecksCount >= limits.MaxScriptedChecks;
+  return scriptedChecksCount >= tenantLimits.MaxScriptedChecks;
 }
 
 function getIsOverCheckLimit({
   checks,
-  limits,
+  tenantLimits,
 }: {
   checks?: Check[] | ListCheckResult;
-  limits?: ListTenantLimitsResponse;
+  tenantLimits?: ListTenantLimitsResponse;
 }): boolean {
-  if (!limits || !checks) {
+  if (!tenantLimits || !checks) {
     return false;
   }
 
-  return checks.length >= limits.MaxChecks;
+  return checks.length >= tenantLimits.MaxChecks;
 }

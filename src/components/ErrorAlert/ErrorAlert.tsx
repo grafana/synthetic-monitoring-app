@@ -1,5 +1,6 @@
 import React, { type ReactNode } from 'react';
-import { Alert, Button, useTheme2 } from '@grafana/ui';
+import { GrafanaTheme2 } from '@grafana/data';
+import { Alert, Button, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 const defaultTitle = 'Something went wrong';
@@ -18,17 +19,11 @@ export const ErrorAlert = ({
   onClick,
   title = defaultTitle,
 }: ErrorAlertProps) => {
-  const theme = useTheme2();
+  const styles = useStyles2(getStyles);
 
   return (
-    <Alert severity="error" title={title}>
-      <div
-        className={css({
-          display: 'flex',
-          justifyContent: 'space-between',
-          gap: theme.spacing(2),
-        })}
-      >
+    <Alert severity="error" title={title} className={styles.container}>
+      <div className={styles.content}>
         <div>{content}</div>
 
         <Button variant="secondary" onClick={onClick}>
@@ -38,3 +33,14 @@ export const ErrorAlert = ({
     </Alert>
   );
 };
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  container: css({
+    maxWidth: `1648px`,
+  }),
+  content: css({
+    display: 'flex',
+    justifyContent: 'space-between',
+    gap: theme.spacing(2),
+  }),
+});

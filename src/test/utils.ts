@@ -10,6 +10,7 @@ import {
 
 import { type Probe } from 'types';
 
+import { ORG_RESPONSE_FREE } from './fixtures/gcom';
 import { apiRoute } from './handlers';
 import { server } from './server';
 
@@ -147,6 +148,18 @@ export function runTestWithoutSMAccess() {
       getList: () => [METRICS_DATASOURCE, LOGS_DATASOURCE],
     };
   });
+}
+
+export function runTestAsHGFreeUserOverLimit() {
+  server.use(
+    apiRoute(`getOrg`, {
+      result: () => {
+        return {
+          json: ORG_RESPONSE_FREE,
+        };
+      },
+    })
+  );
 }
 
 export const getSlider = async (formName: string) => {

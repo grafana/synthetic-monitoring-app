@@ -3,6 +3,7 @@ import { Redirect, Route, Switch } from 'react-router-dom';
 import { AppRootProps } from '@grafana/data';
 
 import { ROUTES } from 'types';
+import { useLimits } from 'hooks/useLimits';
 import { useMeta } from 'hooks/useMeta';
 import { QueryParamMap, useNavigation } from 'hooks/useNavigation';
 import { useQuery } from 'hooks/useQuery';
@@ -25,6 +26,7 @@ export const InitialisedRouter = ({ onNavChanged }: Pick<AppRootProps, 'onNavCha
   const navigate = useNavigation();
 
   const page = queryParams.get('page');
+  useLimits();
 
   useEffect(() => {
     if (page) {
