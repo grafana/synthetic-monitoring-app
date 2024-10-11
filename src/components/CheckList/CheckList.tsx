@@ -253,21 +253,21 @@ function sortChecks(checks: Check[], sortType: CheckSort, reachabilitySuccessRat
 
   if ([CheckSort.ReachabilityAsc, CheckSort.ReachabilityDesc].includes(sortType)) {
     const checkWithMetrics = checks.map((check) => {
-      const metricValue = findCheckinMetrics(reachabilitySuccessRates, check);
-      const value = metricValue === undefined ? -1 : metricValue.value[1];
+      const reachabilityMetric = findCheckinMetrics(reachabilitySuccessRates, check);
+      const reachability = reachabilityMetric === undefined ? -1 : reachabilityMetric.value[1];
 
       return {
         ...check,
-        metric: value,
+        reachability,
       };
     });
 
     return checkWithMetrics.sort((a, b) => {
       if (sortType === CheckSort.ReachabilityAsc) {
-        return a.metric - b.metric;
+        return a.reachability - b.reachability;
       }
 
-      return b.metric - a.metric;
+      return b.reachability - a.reachability;
     });
   }
 
