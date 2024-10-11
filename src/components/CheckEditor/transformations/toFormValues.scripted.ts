@@ -1,3 +1,5 @@
+import { decode } from 'js-base64';
+
 import { CheckFormValuesScripted, CheckType, ScriptedCheck } from 'types';
 import { getBaseFormValuesFromCheck } from 'components/CheckEditor/transformations/toFormValues.utils';
 
@@ -9,7 +11,7 @@ export function getScriptedCheckFormValues(check: ScriptedCheck): CheckFormValue
     checkType: CheckType.Scripted,
     settings: {
       scripted: {
-        script: atob(check.settings?.scripted?.script),
+        script: decode(check.settings?.scripted?.script),
       },
     },
   };

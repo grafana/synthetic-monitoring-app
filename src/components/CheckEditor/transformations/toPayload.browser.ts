@@ -1,3 +1,5 @@
+import { encode } from 'js-base64';
+
 import { BrowserCheck, CheckFormValuesBrowser } from 'types';
 import { getBasePayloadValuesFromForm } from 'components/CheckEditor/transformations/toPayload.utils';
 
@@ -8,7 +10,7 @@ export function getBrowserPayload(formValues: CheckFormValuesBrowser): BrowserCh
     ...base,
     settings: {
       browser: {
-        script: btoa(formValues.settings.browser.script),
+        script: encode(formValues.settings.browser.script),
       },
     },
   };

@@ -13,6 +13,7 @@ apt-get update >/dev/null && apt-get install -y \
   make \
   wget \
   zip \
+  curl \
   >/dev/null
 
 wget -q https://github.com/cli/cli/releases/download/v${gh_version}/gh_${gh_version}_linux_amd64.deb

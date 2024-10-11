@@ -1,8 +1,9 @@
- #!/bin/bash
+#!/bin/bash
 # This is used in Drone to generate the version string for automatic PR creation
 set -eufo pipefail
 
-VERSION="${DRONE_TAG#v}"
+ROOT_DIR=$(git rev-parse --show-toplevel)
+VERSION="$(grep version ${ROOT_DIR}/package.json | cut -d':' -f2 | tr -d "\"', \r")"
 
 echo "${VERSION}"
 

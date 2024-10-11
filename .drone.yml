@@ -212,7 +212,7 @@ steps:
     image: node:18
     commands:
       - ./scripts/install-ci-deps-apt.sh
-      - make install lint test build sign package gh-release
+      - make install lint test build sign package
     environment:
       GCP_KEY:
         from_secret: gcp_key
@@ -229,7 +229,7 @@ steps:
           "repo_owner": "grafana",
           "repo_name": "deployment_tools",
           "destination_branch": "master",
-          "pull_request_branch_prefix": "ci/synthetic-monitoring-plugin",
+          "pull_request_branch_prefix": "auto-merge/synthetic-monitoring-plugin",
           "pull_request_enabled": true,
           "pull_request_existing_strategy": "ignore",
           "pull_request_message": "Triggered by ${DRONE_COMMIT_LINK}. NOTE: prod does not refer directly to an environment it refers to stacks associated with the prod 'wave'. See [here](https://github.com/grafana/deployment_tools/blob/master/ksonnet/environments/hosted-grafana/waves/provisioned-plugins/README.md#waves) for more info.",
@@ -254,24 +254,13 @@ steps:
       github_app_private_key:
         from_secret: updater-app-private-key
 
-image_pull_secrets:
-  - dockerconfigjson
----
-kind: pipeline
-type: docker
-name: publish-gcom
-
-trigger:
-  event:
-    - tag
-
-steps:
   - name: publish plugin to grafana.com (release)
-    image: curlimages/curl:7.73.0
+    image: ubuntu:latest
     environment:
       GRAFANA_API_KEY:
         from_secret: signing_token
     commands:
+      - ./scripts/install-ci-deps-apt.sh
       - ls -al ./scripts
       - ./scripts/publish-gcom.sh
 
@@ -336,6 +325,6 @@ kind: secret
 name: gcp_key
 ---
 kind: signature
-hmac: ede448d84d902df6e886dc356506c374c626a3d66fad501699c1f1b239dddf49
+hmac: 5ea4dd99d229f1949320b0a44266432f838ca13721ae2a48713b0e73060baece
 
 ...
