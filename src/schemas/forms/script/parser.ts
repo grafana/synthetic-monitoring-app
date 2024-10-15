@@ -32,7 +32,7 @@ function getPropertyValueByPath(obj: ObjectExpression, path: string[]): any {
     } else if (property?.value.type === 'Literal') {
       current = property.value.value;
     } else {
-      return undefined;
+      return property?.value;
     }
   }
   return current;
@@ -60,12 +60,18 @@ const optionExportMatcher: SimpleVisitors<{ options: ObjectExpression | null }> 
   },
 };
 
-export function checkForChromium(objectExpression: ObjectExpression): boolean {
-  // Path to the property we're interested in
-  const path = ['scenarios', 'ui', 'options', 'browser', 'type'];
-  const value = getPropertyValueByPath(objectExpression, path);
+export function getProperty(objectExpression: ObjectExpression, propPath: string[]) {
+  const scenarios = getPropertyValueByPath(objectExpression, ['scenarios']);
+  if (!scenarios || scenarios.type !== 'ObjectExpression') {
+    return false;
+  }
 
-  return value === 'chromium';
+  for (const scenario of scenarios.properties) {
+    if (scenario.key.type === 'Identifier') {
+      const propValue = getPropertyValueByPath(scenario.value, propPath);
+      return propValue;
+    }
+  }
 }
 
 interface ImportBrowserState {

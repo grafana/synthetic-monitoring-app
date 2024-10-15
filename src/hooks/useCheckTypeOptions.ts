@@ -55,10 +55,6 @@ export const CHECK_TYPE_OPTIONS = [
     label: 'Scripted',
     value: CheckType.Scripted,
     description: 'Write a k6 script to run custom checks.',
-    status: {
-      value: CheckStatus.PUBLIC_PREVIEW,
-      description: `Scripted checks are in public preview. We're actively working on improving the experience and adding more features.`,
-    },
     featureToggle: FeatureName.ScriptedChecks,
     group: CheckTypeGroup.Scripted,
   },
@@ -67,8 +63,8 @@ export const CHECK_TYPE_OPTIONS = [
     value: CheckType.Browser,
     description: 'Leverage k6 browser module to run checks in a browser.',
     status: {
-      value: CheckStatus.PRIVATE_PREVIEW,
-      description: `Browser checks are in private preview. During the preview they are free to use: test executions will not be billed.`,
+      value: CheckStatus.PUBLIC_PREVIEW,
+      description: `Browser checks are in public preview. During the preview they are free to use: test executions will not be billed.`,
       docsLink:
         'https://grafana.com/docs/grafana-cloud/cost-management-and-billing/understand-your-invoice/synthetic-monitoring-invoice/',
     },

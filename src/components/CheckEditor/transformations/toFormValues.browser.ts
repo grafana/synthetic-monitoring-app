@@ -1,3 +1,5 @@
+import { decode } from 'js-base64';
+
 import { BrowserCheck, CheckFormValuesBrowser, CheckType } from 'types';
 import { getBaseFormValuesFromCheck } from 'components/CheckEditor/transformations/toFormValues.utils';
 
@@ -9,7 +11,7 @@ export function getBrowserCheckFormValues(check: BrowserCheck): CheckFormValuesB
     checkType: CheckType.Browser,
     settings: {
       browser: {
-        script: atob(check.settings?.browser?.script),
+        script: decode(check.settings?.browser?.script),
       },
     },
   };

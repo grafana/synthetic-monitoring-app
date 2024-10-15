@@ -1,5 +1,5 @@
-import { check } from 'k6';
 import { browser } from 'k6/browser';
+import { check } from 'https://jslib.k6.io/k6-utils/1.5.0/index.js';
 
 export const options = {
   scenarios: {
@@ -35,15 +35,17 @@ export default async function () {
     // to resolve.
     await Promise.all([page.waitForNavigation(), page.locator('input[type="submit"]').click()]);
 
-    const h2 = page.locator('h2');
-    const headerOK = (await h2.textContent()) == 'Welcome, admin!';
-    check(headerOK, { header: headerOK });
+    await check(page.locator('h2'), {
+      header: async (element) => {
+        return (await element.textContent()) == 'Welcome, admin!';
+      },
+    });
 
     // Check whether we receive cookies from the logged site.
-    check(await context.cookies(), {
-      'session cookie is set': (cookies) => {
-        const sessionID = cookies.find((c) => c.name == 'sid');
-        return typeof sessionID !== 'undefined';
+    await check(context, {
+      'session cookie is set': async (ctx) => {
+        const cookies = await ctx.cookies();
+        return cookies.find((c) => c.name == 'sid') !== undefined;
       },
     });
   } finally {
