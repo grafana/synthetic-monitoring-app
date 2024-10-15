@@ -75,7 +75,7 @@ export function AsyncConfirmModal({
     <Modal className={styles.modal} title={title} isOpen={isOpen} onDismiss={handleDismiss}>
       {!!error && (
         <Alert className={styles.alert} title={error?.name ?? `${title} error`} severity="error">
-          <div>{error?.message ?? GENERIC_ERROR_MESSAGE}</div>
+          <div>{error.message ?? GENERIC_ERROR_MESSAGE}</div>
         </Alert>
       )}
       <div className={styles.body}>{body}</div>
