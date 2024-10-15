@@ -3,6 +3,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { useTheme2 } from '@grafana/ui';
 import { renderHook, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import { DataTestIds } from 'test/dataTestIds';
 import { OFFLINE_PROBE, ONLINE_PROBE, PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import { render } from 'test/render';
 import { probeToExtendedProbe, runTestAsViewer } from 'test/utils';
@@ -120,7 +121,7 @@ it.each<[ExtendedProbe, string]>([
 
     await screen.findByText(probe.name);
 
-    const usageLink = screen.getByTestId('probe-usage-link');
+    const usageLink = screen.getByTestId(DataTestIds.PROBE_USAGE_LINK);
     expect(usageLink).toBeInTheDocument();
     expect(usageLink).toHaveTextContent(expectedText);
     await user.click(usageLink);
@@ -135,6 +136,6 @@ it('Displays the correct information for a probe that is NOT in use', async () =
   render(<ProbeCard probe={probe} />);
   await screen.findByText(probe.name);
 
-  const usageLink = screen.queryByTestId('probe-usage-link');
+  const usageLink = screen.queryByTestId(DataTestIds.PROBE_USAGE_LINK);
   expect(usageLink).not.toBeInTheDocument();
 });

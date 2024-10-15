@@ -5,6 +5,7 @@ import { TextLink } from '@grafana/ui';
 import { ExtendedProbe, ROUTES } from 'types';
 
 import { getRoute } from './Routing.utils';
+import { DataTestIds } from '../test/dataTestIds';
 
 interface ProbeUsageLinkProps {
   probe: ExtendedProbe;
@@ -24,7 +25,13 @@ export function ProbeUsageLink({ probe, className, variant, showWhenUnused = fal
   }
 
   return (
-    <TextLink data-testid="probe-usage-link" className={className} variant={variant} color="link" href={checksHref}>
+    <TextLink
+      data-testid={DataTestIds.PROBE_USAGE_LINK}
+      className={className}
+      variant={variant}
+      color="link"
+      href={checksHref}
+    >
       {`Used in ${checksCount} ${noun}`}
     </TextLink>
   );
