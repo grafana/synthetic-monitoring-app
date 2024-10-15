@@ -16,16 +16,14 @@ import { Protocol } from './Protocol';
 
 export const CheckGroupCard = ({ group }: { group: CheckTypeGroupOption }) => {
   const styles = useStyles2(getStyles);
-  const { isOverHgExecutionLimit, isOverCheckLimit, isOverScriptedLimit, isReady } = useLimits();
+  const limits = useLimits();
+  const { isReady } = limits;
   const checkOptions = useCheckTypeOptions().filter((option) => option.group === group.value);
   const checksWithStatus = checkOptions.filter((option) => option.status);
   const shouldShowStatus = checksWithStatus.length === checkOptions.length;
 
-  const disabled =
-    !isReady ||
-    isOverCheckLimit ||
-    isOverHgExecutionLimit ||
-    ([CheckTypeGroup.MultiStep, CheckTypeGroup.Scripted].includes(group.value) && isOverScriptedLimit);
+  const tooltip = getTooltip(limits, group.value);
+  const disabled = Boolean(tooltip);
 
   return (
     <Card key={group.label} data-testid={`${DataTestIds.CHECK_GROUP_CARD}-${group.value}`}>
@@ -42,7 +40,7 @@ export const CheckGroupCard = ({ group }: { group: CheckTypeGroupOption }) => {
             icon={!isReady ? 'fa fa-spinner' : undefined}
             disabled={disabled}
             href={`${getRoute(ROUTES.NewCheck)}/${group.value}`}
-            tooltip={getTooltip(isReady, isOverCheckLimit, isOverHgExecutionLimit)}
+            tooltip={getTooltip(limits, group.value)}
           >
             {group.label} check
           </LinkButton>
@@ -67,7 +65,16 @@ export const CheckGroupCard = ({ group }: { group: CheckTypeGroupOption }) => {
   );
 };
 
-function getTooltip(isReady: boolean, isOverCheckLimit: boolean, isOverHgExecutionLimit: boolean) {
+function getTooltip(
+  {
+    isReady,
+    isOverBrowserLimit,
+    isOverScriptedLimit,
+    isOverCheckLimit,
+    isOverHgExecutionLimit,
+  }: ReturnType<typeof useLimits>,
+  checkTypeGroup: CheckTypeGroup
+) {
   if (!isReady) {
     return `Checking your plan`;
   }
@@ -77,7 +84,15 @@ function getTooltip(isReady: boolean, isOverCheckLimit: boolean, isOverHgExecuti
   }
 
   if (isOverHgExecutionLimit) {
-    return `You have reached the limit of your check executions.`;
+    return `You have reached the limit of your check executions`;
+  }
+
+  if (isOverBrowserLimit && checkTypeGroup === CheckTypeGroup.Browser) {
+    return `You have reached the limit of your Browser checks`;
+  }
+
+  if (isOverScriptedLimit && [CheckTypeGroup.Scripted, CheckTypeGroup.MultiStep].includes(checkTypeGroup)) {
+    return `You have reached the limit of your Scripted and Multi Step checks`;
   }
 
   return undefined;

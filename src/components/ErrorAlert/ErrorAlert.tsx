@@ -22,7 +22,7 @@ export const ErrorAlert = ({
   const styles = useStyles2(getStyles);
 
   return (
-    <Alert severity="error" title={title} className={styles.container}>
+    <Alert severity="error" title={title}>
       <div className={styles.content}>
         <div>{content}</div>
 
@@ -35,9 +35,6 @@ export const ErrorAlert = ({
 };
 
 const getStyles = (theme: GrafanaTheme2) => ({
-  container: css({
-    maxWidth: `1648px`,
-  }),
   content: css({
     display: 'flex',
     justifyContent: 'space-between',

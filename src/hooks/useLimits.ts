@@ -19,17 +19,35 @@ export function useLimits() {
 
   const isOverCheckLimit = getIsOverCheckLimit({ checks, tenantLimits });
   const isScriptedOn = useFeatureFlag(FeatureName.ScriptedChecks);
+  const isBrowserOn = useFeatureFlag(FeatureName.BrowserChecks);
   const isOverScriptedLimit = isScriptedOn && getIsOverScriptedLimit({ checks, tenantLimits });
+  const isOverBrowserLimit = isBrowserOn && getIsOverBrowserLimit({ checks, tenantLimits });
 
   return {
     tenantLimits: tenantLimits,
     isLoading: isLoadingTenant || isLoadingHgLimit,
     isReady: isFetchedTenant && !isLoadingHgLimit,
     isOverCheckLimit,
-    isOverHgExecutionLimit: isOverHgExecutionLimit,
+    isOverHgExecutionLimit,
     isOverScriptedLimit,
+    isOverBrowserLimit,
     error: errorTenant,
   };
+}
+
+function getIsOverBrowserLimit({
+  checks,
+  tenantLimits,
+}: {
+  checks?: Check[] | ListCheckResult;
+  tenantLimits?: ListTenantLimitsResponse;
+}): boolean {
+  if (!tenantLimits || !checks) {
+    return false;
+  }
+
+  const browserChecksCount = checks.filter((c) => getCheckType(c.settings) === CheckType.Browser).length;
+  return browserChecksCount >= tenantLimits.MaxBrowserChecks;
 }
 
 function getIsOverScriptedLimit({

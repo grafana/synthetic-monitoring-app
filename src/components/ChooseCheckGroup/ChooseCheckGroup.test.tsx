@@ -77,7 +77,7 @@ it('shows gRPC option when feature is enabled', async () => {
 
 it('shows error alert when check limit is reached', async () => {
   await renderChooseCheckGroup({ checkLimit: 1 });
-  const limitError = await screen.findByText(/You have reached the limit of checks you can create./);
+  const limitError = await screen.findByText(/You have reached your check limit of /);
   expect(limitError).toBeInTheDocument();
 });
 
@@ -91,7 +91,7 @@ it(`shows an error alert when user is HG Free user with over 100k execution limi
   });
 
   await renderChooseCheckGroup();
-  const alert = await screen.findByText(/You have reached the limit of the monthly executions you can create./);
+  const alert = await screen.findByText(/You have reached your monthly execution limit of/);
   expect(alert).toBeInTheDocument();
 
   const apiEndPointButton = screen.getByRole(`link`, { name: `API Endpoint check` });

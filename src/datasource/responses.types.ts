@@ -82,6 +82,7 @@ export type TenantResponse = {
 };
 
 export type ListTenantLimitsResponse = {
+  MaxBrowserChecks: number;
   MaxChecks: number;
   MaxScriptedChecks: number;
   MaxMetricLabels: number;

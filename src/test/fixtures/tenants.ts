@@ -48,6 +48,7 @@ export const TENANT_SETTINGS: ListTenantSettingsResult = {
 
 export const UPDATE_TENANT_SETTINGS: UpdateTenantSettingsResult = { msg: 'Settings updated' };
 export const TENANT_LIMITS: ListTenantLimitsResponse = {
+  MaxBrowserChecks: 10,
   MaxChecks: 100,
   MaxScriptedChecks: 10,
   MaxMetricLabels: 20,

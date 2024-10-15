@@ -45,7 +45,7 @@ describe(`<NewCheck />`, () => {
     );
 
     await renderNewForm(CheckType.HTTP);
-    expect(await screen.findByText(/You have reached the limit of checks you can create./)).toBeInTheDocument();
+    expect(await screen.findByText(/You have reached your check limit of /)).toBeInTheDocument();
   });
 
   it(`should disable the form when the check limit is reached`, async () => {
@@ -89,9 +89,7 @@ describe(`<NewCheck />`, () => {
     runTestAsHGFreeUserOverLimit();
 
     await renderNewForm(CheckType.HTTP);
-    expect(
-      await screen.findByText(/You have reached the limit of the monthly executions you can create./)
-    ).toBeInTheDocument();
+    expect(await screen.findByText(/You have reached your monthly execution limit of/)).toBeInTheDocument();
   });
 
   it(`should disable the form when the mothly execution limit is reached for HG free tier customers`, async () => {

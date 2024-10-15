@@ -9,7 +9,7 @@ import { FeatureName } from 'types';
 
 import { OverLimitAlert } from './OverLimitAlert';
 
-async function renderOverLimitAlert({ checkLimit = 500, scriptedLimit = 50 } = {}) {
+async function renderOverLimitAlert({ browserLimit = 50, checkLimit = 500, scriptedLimit = 50 } = {}) {
   let loaded = false;
 
   server.use(
@@ -18,6 +18,7 @@ async function renderOverLimitAlert({ checkLimit = 500, scriptedLimit = 50 } = {
         loaded = true;
         return {
           json: {
+            MaxBrowserChecks: browserLimit,
             MaxChecks: checkLimit,
             MaxScriptedChecks: scriptedLimit,
             MaxMetricLabels: 16,
@@ -41,7 +42,7 @@ it('shows check type options with scripted feature off', async () => {
 
 it('shows error alert when check limit is reached', async () => {
   await renderOverLimitAlert({ checkLimit: 0 });
-  const limitError = await screen.findByText(/You have reached the limit of checks you can create./);
+  const limitError = await screen.findByText(/You have reached your check limit of /);
   expect(limitError).toBeInTheDocument();
 });
 
@@ -52,9 +53,18 @@ it('shows error alert when scripted check limit is reached', async () => {
   });
 
   await renderOverLimitAlert({ scriptedLimit: 0 });
-  const limitError = await screen.findByText(
-    /You have reached the limit of scripted and multiHTTP checks you can create./
-  );
+  const limitError = await screen.findByText(/You have reached your Scripted and Multi Step check limit of/);
+  expect(limitError).toBeInTheDocument();
+});
+
+it('shows error alert when browser check limit is reached', async () => {
+  jest.replaceProperty(config, 'featureToggles', {
+    // @ts-expect-error
+    [FeatureName.BrowserChecks]: true,
+  });
+
+  await renderOverLimitAlert({ browserLimit: 0 });
+  const limitError = await screen.findByText(/You have reached your Browser check limit of/);
   expect(limitError).toBeInTheDocument();
 });
 
@@ -65,7 +75,7 @@ it('shows total check limit over scripted check limit error if both are reached'
   });
 
   await renderOverLimitAlert({ checkLimit: 1, scriptedLimit: 0 });
-  const limitError = await screen.findByText(/You have reached the limit of checks you can create./);
+  const limitError = await screen.findByText(/You have reached your check limit of /);
   expect(limitError).toBeInTheDocument();
   expect(
     screen.queryByText(/You have reached the limit of scripted and multiHTTP checks you can create./)
