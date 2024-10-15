@@ -10,4 +10,5 @@ export enum DataTestIds {
   ACTIONS_BAR = 'actions-bar',
   PAGE_READY = 'page-ready',
   PAGE_NOT_READY = 'page-not-ready',
+  PROBE_USAGE_LINK = 'probe-usage-link',
 }

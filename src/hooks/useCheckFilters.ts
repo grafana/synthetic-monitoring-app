@@ -68,10 +68,10 @@ export function useCheckFilters() {
       encode: (value) => value.map((probe) => probe.label).join(','),
       decode: (value) => {
         const labels = value.split(',');
-        const probesValues = probes
+
+        return probes
           .filter((probe) => labels.includes(probe.name))
           .map((probe) => ({ label: probe.name, value: probe.id } as SelectableValue<ProbeFilter>));
-        return probesValues;
       },
     }),
   };

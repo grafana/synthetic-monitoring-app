@@ -54,11 +54,7 @@ export function isPingCheck(check: Partial<Check>): check is PingCheck {
 }
 
 export function isScriptedCheck(check: Partial<Check>): check is ScriptedCheck {
-  if (Object.hasOwnProperty.call(check.settings, 'scripted')) {
-    return true;
-  }
-
-  return false;
+  return CheckType.Scripted in (check.settings ?? {});
 }
 
 export function isTCPCheck(check: Partial<Check>): check is TCPCheck {
