@@ -101,21 +101,6 @@ describe(`<NewCheck />`, () => {
     expect(screen.getByRole(`button`, { name: /Submit/ })).toBeDisabled();
   });
 
-  it(`should NOT disable the form when the gcom api can't be reached`, async () => {
-    server.use(
-      apiRoute('getOrg', {
-        result: () => {
-          return {
-            status: 500,
-          };
-        },
-      })
-    );
-
-    await renderNewForm(CheckType.HTTP);
-    expect(screen.getByRole(`button`, { name: /Submit/ })).not.toBeDisabled();
-  });
-
   it(`should focus the probes select correctly when appropriate`, async () => {
     const { user } = await renderNewForm(CheckType.HTTP);
 

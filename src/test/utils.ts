@@ -10,7 +10,6 @@ import {
 
 import { type Probe } from 'types';
 
-import { ORG_RESPONSE_FREE } from './fixtures/gcom';
 import { apiRoute } from './handlers';
 import { server } from './server';
 
@@ -151,15 +150,16 @@ export function runTestWithoutSMAccess() {
 }
 
 export function runTestAsHGFreeUserOverLimit() {
-  server.use(
-    apiRoute(`getOrg`, {
-      result: () => {
-        return {
-          json: ORG_RESPONSE_FREE,
-        };
-      },
-    })
-  );
+  // this gets reset in afterEach in jest-setup.js
+  const runtime = require('@grafana/runtime');
+
+  jest.replaceProperty(runtime, `config`, {
+    ...config,
+    buildInfo: {
+      ...config.buildInfo,
+      edition: `Cloud Free`,
+    },
+  });
 }
 
 export const getSlider = async (formName: string) => {

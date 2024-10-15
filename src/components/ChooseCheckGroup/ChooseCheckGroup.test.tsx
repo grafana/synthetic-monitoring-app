@@ -1,6 +1,6 @@
 import React from 'react';
 import { config } from '@grafana/runtime';
-import { screen, waitFor } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
@@ -103,50 +103,4 @@ it(`shows an error alert when user is HG Free user with over 100k execution limi
   expect(multiStepButton).toHaveAttribute(`aria-disabled`, `true`);
   expect(scriptedButton).toHaveAttribute(`aria-disabled`, `true`);
   expect(browserButton).toHaveAttribute(`aria-disabled`, `true`);
-});
-
-it(`does NOT disable checks if it doesn't get a response from gcom instance api`, async () => {
-  server.use(
-    apiRoute(`getInstance`, {
-      result: () => {
-        return {
-          json: {},
-          status: 401,
-        };
-      },
-    })
-  );
-
-  await renderChooseCheckGroup();
-  const button = screen.getByRole('link', { name: /API Endpoint check/i });
-  const spinner = button.querySelector(`[data-testid="spinner"]`);
-  await waitFor(() => expect(spinner).not.toBeInTheDocument());
-  expect(screen.getByRole('link', { name: /API Endpoint check/i })).toHaveAttribute('aria-disabled', 'false');
-});
-
-it(`does NOT disable checks if it doesn't get a response from gcom org api`, async () => {
-  server.use(
-    apiRoute(`getOrg`, {
-      result: () => {
-        return {
-          json: {},
-          status: 401,
-        };
-      },
-    })
-  );
-
-  await renderChooseCheckGroup();
-  const button = screen.getByRole('link', { name: /API Endpoint check/i });
-  const spinner = button.querySelector(`[data-testid="spinner"]`);
-  await waitFor(() => expect(spinner).not.toBeInTheDocument());
-  expect(screen.getByRole('link', { name: /API Endpoint check/i })).toHaveAttribute('aria-disabled', 'false');
-});
-
-// worried this might be flakey so feel free to delete in the future
-it(`disables checks whilst waiting for gcom response`, async () => {
-  await renderChooseCheckGroup();
-  const apiEndPointButton = screen.getByRole(`link`, { name: `API Endpoint check` });
-
-  expect(apiEndPointButton).toHaveAttribute(`aria-disabled`, `true`);
 });

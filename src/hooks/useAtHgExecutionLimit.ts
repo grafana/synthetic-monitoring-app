@@ -1,19 +1,18 @@
-import { SubscriptionCodeType } from 'data/useGcom.types';
+import { config } from '@grafana/runtime';
 
-import { useCurrentHGSubscription } from './useCurrentHGSubscription';
 import { useMonthlyTotalExecutionCount } from './useMonthlyTotalExecutionCount';
 
 export const FREE_EXECUTION_LIMIT = 100000;
 
 export function useAtHgExecutionLimit() {
   const { data: totalMonthlyChecks, isLoading: isLoadingMonthlyChecks } = useMonthlyTotalExecutionCount();
-  const { data, isLoading: isLoadingHGSubscription } = useCurrentHGSubscription();
-  const isFree = data === SubscriptionCodeType.FREE;
+  // @ts-expect-error - Cloud Free is not defined in the config but it is what is present for Free trial accounts and free tier accounts
+  const isFree = config.buildInfo.edition === `Cloud Free`;
   const isOverLimit = totalMonthlyChecks >= FREE_EXECUTION_LIMIT;
 
   return {
     data: isOverLimit && isFree,
-    isLoading: isLoadingMonthlyChecks || isLoadingHGSubscription,
+    isLoading: isLoadingMonthlyChecks,
     isError: false,
   };
 }
