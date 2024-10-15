@@ -11,11 +11,12 @@ import { ProbeUsageLink } from 'components/ProbeUsageLink';
 
 import { getPrettyError } from './DeleteProbeButton.utils';
 
-export function DeleteProbeButton({ probe }: DeleteProbeButtonProps) {
+export function DeleteProbeButton({ probe, onDeleteSuccess: _onDeleteSuccess }: DeleteProbeButtonProps) {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const onDeleteSuccess = useCallback(() => {
     setShowDeleteModal(false);
-  }, []);
+    _onDeleteSuccess?.();
+  }, [_onDeleteSuccess]);
 
   const { mutateAsync: deleteProbe, isPending } = useDeleteProbe({ onSuccess: onDeleteSuccess });
   const canEdit = useCanEditProbe(probe);
@@ -29,11 +30,6 @@ export function DeleteProbeButton({ probe }: DeleteProbeButtonProps) {
     }
 
     setError(getPrettyError(error, probe));
-    // if ('data' in error && 'err' in error.data && 'msg' in error.data) {
-    //   setError({ name: error.data.err, message: error.data.msg });
-    // } else {
-    //   setError({ name: 'Unknown error', message: 'An unknown error occurred' });
-    // }
   };
 
   const handleOnClick = () => {
@@ -55,9 +51,10 @@ export function DeleteProbeButton({ probe }: DeleteProbeButtonProps) {
       </>
     );
 
+    // Both tooltip component and button prob is used for accessibility reasons
     return (
       <Tooltip content={tooltipContent} interactive={canEdit && !canDelete}>
-        <Button type="button" variant="destructive" disabled>
+        <Button type="button" variant="destructive" tooltip={tooltipContent} disabled>
           Delete probe
         </Button>
       </Tooltip>

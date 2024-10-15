@@ -6,4 +6,5 @@ export type BackendError = FetchResponse<{ err: string; msg: string }>;
 
 export interface DeleteProbeButtonProps {
   probe: ExtendedProbe;
+  onDeleteSuccess?: () => void;
 }

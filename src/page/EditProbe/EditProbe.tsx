@@ -75,7 +75,14 @@ const EditProbeContent = ({ probe }: { probe: ExtendedProbe }) => {
 
   const errorInfo = getErrorInfo(updateError);
 
-  const actions = useMemo(() => (canEdit ? <DeleteProbeButton probe={probe} /> : null), [canEdit, probe]);
+  const handleOnDeleteSuccess = useCallback(() => {
+    navigate(ROUTES.Probes);
+  }, [navigate]);
+
+  const actions = useMemo(
+    () => (canEdit ? <DeleteProbeButton probe={probe} onDeleteSuccess={handleOnDeleteSuccess} /> : null),
+    [canEdit, handleOnDeleteSuccess, probe]
+  );
 
   const onReset = useCallback((token: string) => {
     setShowTokenModal(true);
