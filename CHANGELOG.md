@@ -524,6 +524,23 @@
 - almost there... skipping docs publish step ([d97521c](https://github.com/grafana/synthetic-monitoring-app/commit/d97521ce6038149f406bcce6406bc9242b11242e))
 - gcom token secret ([1c2b5b8](https://github.com/grafana/synthetic-monitoring-app/commit/1c2b5b8473cc1cf719c0c678db1af60829f33ad1))
 
+## [1.16.5](https://github.com/grafana/synthetic-monitoring-app/compare/v1.16.4...v1.16.5) (2024-10-15)
+
+
+### Features
+
+* improve delete private probe flow ([#951](https://github.com/grafana/synthetic-monitoring-app/issues/951)) ([8be4a9e](https://github.com/grafana/synthetic-monitoring-app/commit/8be4a9ea3803dd909f774300bc787c0639e7d555))
+
+
+### Fixes
+
+* Update asc / desc reachability sorting ([#970](https://github.com/grafana/synthetic-monitoring-app/issues/970)) ([c281b77](https://github.com/grafana/synthetic-monitoring-app/commit/c281b7755055ae1958f4a758c448296e9e6aae6e))
+
+
+### Miscellaneous Chores
+
+* Update Drone signature ([#968](https://github.com/grafana/synthetic-monitoring-app/issues/968)) ([a40b5e6](https://github.com/grafana/synthetic-monitoring-app/commit/a40b5e6b4066ff57f2fb1d76a4bc725289edeec7))
+
 ## [1.16.4](https://github.com/grafana/synthetic-monitoring-app/compare/v1.16.3...v1.16.4) (2024-10-09)
 
 
