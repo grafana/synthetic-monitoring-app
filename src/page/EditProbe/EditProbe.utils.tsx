@@ -9,22 +9,11 @@ export function getTitle(probe?: Probe, canEdit?: boolean) {
 
 type ErrorInfo = Error | null;
 
-export function getErrorInfo(updateError: ErrorInfo, deleteError: ErrorInfo) {
+export function getErrorInfo(updateError: ErrorInfo) {
   if (updateError) {
     return {
       title: 'Failed to update probe',
       message: updateError.message,
-    };
-  }
-
-  if (deleteError) {
-    const message = deleteError.message.includes('delete not allowed')
-      ? 'You may have checks that are still using this probe.'
-      : deleteError.message;
-
-    return {
-      title: 'Failed to delete probe',
-      message,
     };
   }
 

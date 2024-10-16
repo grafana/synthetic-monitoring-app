@@ -1,152 +1,125 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Badge, Button, useStyles2 } from '@grafana/ui';
-import { css, cx } from '@emotion/css';
+import { Card, Link, LinkButton, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 
-import { type Label, type Probe, ROUTES } from 'types';
+import { type ExtendedProbe, type Label, ROUTES } from 'types';
 import { useCanEditProbe } from 'hooks/useCanEditProbe';
-import { Card } from 'components/Card';
 import { SuccessRateGaugeProbe } from 'components/Gauges';
 import { getRoute } from 'components/Routing.utils';
 
-export const ProbeCard = ({ probe }: { probe: Probe }) => {
+import { ProbeUsageLink } from '../ProbeUsageLink';
+import { ProbeDisabledCapabilities } from './ProbeDisabledCapabilities';
+import { ProbeLabels } from './ProbeLabels';
+import { ProbeStatus } from './ProbeStatus';
+
+export const ProbeCard = ({ probe }: { probe: ExtendedProbe }) => {
   const canEdit = useCanEditProbe(probe);
-  const [isFocused, setIsFocused] = useState(false);
-  const onlineTxt = probe.online ? 'Online' : 'Offline';
-  const onlineIcon = probe.online ? 'heart' : 'heart-break';
-  const color = probe.online ? 'green' : 'red';
-  const probeTypeText = probe.public ? 'Public' : 'Private';
-  const probeTypeIcon = probe.public ? 'cloud' : 'lock';
-  const styles = useStyles2(getStyles);
-  const href = `${getRoute(ROUTES.EditProbe)}/${probe.id}`;
+  const probeEditHref = `${getRoute(ROUTES.EditProbe)}/${probe.id}`;
   const labelsString = labelsToString(probe.labels);
+  const styles = useStyles2(getStyles2);
 
   return (
-    <Card className={styles.card} href={href}>
-      <div className={styles.cardContent}>
+    <Card>
+      <Card.Heading>
         <div>
-          <Card.Heading as="h3" variant="h5" onFocus={() => setIsFocused(true)} onBlur={() => setIsFocused(false)}>
-            {probe.name}
-          </Card.Heading>
-          <div className={styles.info}>
-            <div className={styles.badges}>
-              <Badge color={color} icon={onlineIcon} text={onlineTxt} />
-              <Badge color="blue" icon="compass" text={probe.region} />
-              <Badge color="blue" icon={probeTypeIcon} text={probeTypeText} />
+          <ProbeStatus probe={probe} />
+          <Link href={probeEditHref}>
+            <span>{probe.name}</span>
+            {probe.region && <span>&nbsp;{`(${probe.region})`}</span>}
+          </Link>
+        </div>
+      </Card.Heading>
+
+      <Card.Meta>
+        <div>Version: {probe.version}</div>
+      </Card.Meta>
+
+      <Card.Description className={styles.extendedDescription}>
+        <div>
+          {labelsString && (
+            <div>
+              Labels:{' '}
+              <div className={styles.labelContainer}>
+                <ProbeLabels labels={probe.labels} />
+              </div>
             </div>
-            <div className={styles.meta}>
-              {labelsString && <div>Labels: {labelsString}</div>}
-              <div>Version: {probe.version}</div>
-            </div>
-          </div>
+          )}
+          <ProbeDisabledCapabilities probe={probe} />
+          <ProbeUsageLink probe={probe} />
         </div>
         <div className={styles.gaugeContainer}>
           <SuccessRateGaugeProbe probeName={probe.name} height={60} width={150} />
         </div>
-        <div className={styles.buttonWrapper}>
-          <Button aria-hidden className={cx(styles.button, { [styles.focussed]: isFocused })} tabIndex={-1}>
-            {canEdit ? `Edit` : `View`}
-          </Button>
-        </div>
-      </div>
+      </Card.Description>
+
+      <Card.Actions>
+        {canEdit ? (
+          <>
+            <LinkButton
+              data-testid="probe-card-action-button"
+              icon="pen"
+              fill="outline"
+              variant="secondary"
+              href={probeEditHref}
+              aria-label={`Edit probe ${probe.name}`}
+              tooltip="Edit probe"
+            >
+              Edit
+            </LinkButton>
+          </>
+        ) : (
+          <LinkButton
+            data-testid="probe-card-action-button"
+            href={probeEditHref}
+            fill="outline"
+            variant="secondary"
+            icon="eye"
+            tooltip="View probe"
+            aria-label={`View probe ${probe.name}`}
+          >
+            View
+          </LinkButton>
+        )}
+      </Card.Actions>
     </Card>
   );
 };
 
-const getStyles = (theme: GrafanaTheme2) => {
+const getStyles2 = (theme: GrafanaTheme2) => {
   const containerName = `probeCard`;
-  const breakpoint = theme.breakpoints.values.sm;
-  const containerQuery = `@container ${containerName} (max-width: ${breakpoint}px)`;
-  const mediaQuery = `@supports not (container-type: inline-size) @media (max-width: ${breakpoint}px)`;
 
   return {
     card: css({
       containerName,
-      containerType: `inline-size`,
-      marginBottom: theme.spacing(1),
-
-      '&:hover button': {
-        opacity: 1,
-      },
     }),
-    cardContent: css({
-      display: `grid`,
-      gridTemplateColumns: `auto 1fr auto`,
-      gridTemplateAreas: `"info gauge action"`,
-
-      [containerQuery]: {
-        gridTemplateAreas: `
-        "info action"
-        "gauge action"
-        `,
-        gridTemplateColumns: `1fr auto`,
-      },
-
-      [mediaQuery]: {
-        gridTemplateAreas: `
-        "info action"
-        "gauge action"
-        `,
-        gridTemplateColumns: `1fr auto`,
-      },
-    }),
-    info: css({
-      display: `flex`,
+    badgeContainer: css({
+      display: `inline-flex`,
       gap: theme.spacing(0.5),
-      flexDirection: `column`,
-      gridArea: `info`,
-    }),
-    badges: css({
-      display: `flex`,
-      gap: theme.spacing(0.5),
-    }),
-    meta: css({
-      color: theme.colors.text.secondary,
+      flexWrap: `wrap`,
     }),
     gaugeContainer: css({
       display: 'flex',
       justifyContent: 'flex-end',
       alignItems: 'center',
       gridArea: `gauge`,
-
-      [containerQuery]: {
-        justifyContent: 'flex-start',
-        marginLeft: theme.spacing(-1),
-        marginTop: theme.spacing(1),
-      },
-
-      [mediaQuery]: {
-        justifyContent: 'flex-start',
-        marginLeft: theme.spacing(-1),
-        marginTop: theme.spacing(1),
-      },
     }),
-    link: css({
-      marginBottom: theme.spacing(1),
+    extendedTags: css({
+      gridRowEnd: 'span 2',
     }),
-    buttonWrapper: css({
-      alignItems: 'center',
+    extendedDescription: css({
+      gridColumn: '1 / span 3',
       display: 'flex',
-      gap: theme.spacing(2),
-      gridArea: `action`,
+      justifyContent: 'space-between',
     }),
-    button: css({
-      opacity: 0,
-
-      [containerQuery]: {
-        opacity: 1,
-      },
-
-      [mediaQuery]: {
-        opacity: 1,
-      },
-    }),
-    focussed: css({
-      opacity: 1,
+    labelContainer: css({
+      display: 'inline-flex',
+      flexWrap: 'wrap',
+      gap: theme.spacing(0.5),
     }),
   };
 };
 
 function labelsToString(labels: Label[]) {
-  return labels.map(({ name, value }) => `${name}:${value}`).join(', ');
+  return labels.map(({ name, value }) => `label_${name}: ${value}`).join(', ');
 }

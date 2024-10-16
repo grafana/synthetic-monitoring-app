@@ -77,7 +77,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
 
   const filteredChecks = filterChecks(checks, checkFilters);
   const sortedChecks = sortChecks(filteredChecks, sortType, reachabilitySuccessRates);
-  const currentPageChecks = filteredChecks.slice((currentPage - 1) * CHECKS_PER_PAGE, currentPage * CHECKS_PER_PAGE);
+  const currentPageChecks = sortedChecks.slice((currentPage - 1) * CHECKS_PER_PAGE, currentPage * CHECKS_PER_PAGE);
 
   const isAllSelected = selectedCheckIds.size === filteredChecks.length;
   const totalPages = Math.ceil(filteredChecks.length / CHECKS_PER_PAGE);
@@ -251,18 +251,23 @@ function sortChecks(checks: Check[], sortType: CheckSort, reachabilitySuccessRat
     return checks.sort((a, b) => b.job.localeCompare(a.job));
   }
 
-  if (sortType === CheckSort.ReachabilityAsc) {
-    return checks.sort((a, b) => {
-      const [sortA, sortB] = getMetricValues(a, b, reachabilitySuccessRates);
-      return sortB - sortA;
+  if ([CheckSort.ReachabilityAsc, CheckSort.ReachabilityDesc].includes(sortType)) {
+    const checkWithMetrics = checks.map((check) => {
+      const reachabilityMetric = findCheckinMetrics(reachabilitySuccessRates, check);
+      const reachability = reachabilityMetric === undefined ? -1 : reachabilityMetric.value[1];
+
+      return {
+        ...check,
+        reachability,
+      };
     });
-  }
 
-  if (sortType === CheckSort.ReachabilityDesc) {
-    return checks.sort((a, b) => {
-      const [sortA, sortB] = getMetricValues(a, b, reachabilitySuccessRates);
+    return checkWithMetrics.sort((a, b) => {
+      if (sortType === CheckSort.ReachabilityAsc) {
+        return a.reachability - b.reachability;
+      }
 
-      return sortA - sortB;
+      return b.reachability - a.reachability;
     });
   }
 
@@ -281,16 +286,6 @@ function sortChecks(checks: Check[], sortType: CheckSort, reachabilitySuccessRat
   }
 
   return checks;
-}
-
-function getMetricValues(checkA: Check, checkB: Check, metrics: MetricCheckSuccessParsed[]) {
-  const metricA = findCheckinMetrics(metrics, checkA);
-  const metricB = findCheckinMetrics(metrics, checkB);
-
-  const sortA = metricA?.value[1] || 101;
-  const sortB = metricB?.value[1] || 101;
-
-  return [sortA, sortB];
 }
 
 function getNumberOfExecutions(checkA: Check, checkB: Check) {

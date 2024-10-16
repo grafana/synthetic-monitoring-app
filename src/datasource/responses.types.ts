@@ -10,10 +10,17 @@ export type AddProbeResult = {
   token: string;
 };
 
-export type DeleteProbeResult = {
+export type DeleteProbeSuccess = {
   msg: string;
   probeId: Probe['id'];
 };
+
+export type DeleteProbeError = {
+  err: string;
+  msg: string;
+};
+
+export type DeleteProbeResult = DeleteProbeSuccess | DeleteProbeError;
 
 export type UpdateProbeResult = {
   probe: Probe;
