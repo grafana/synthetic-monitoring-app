@@ -198,7 +198,7 @@ export default async function () {
     ]);
 
     const header = await page.locator("h2").textContent();
-    check(header, {
+    await check(header, {
       header: (h) => h == "Welcome, admin!",
     });
   } finally {
