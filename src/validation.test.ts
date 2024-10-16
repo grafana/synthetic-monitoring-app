@@ -1,6 +1,6 @@
 import {
   validateDomain,
-  validateHostname,
+  validateHostAddress,
   validateHostPort,
   validateHttpTarget,
   validateLabelName,
@@ -80,12 +80,12 @@ describe('http', () => {
 
 describe('PING', () => {
   it('should reject hostnames without domains', async () => {
-    expect(validateHostname('grafana')).toBe('Target must be a valid hostname');
+    expect(validateHostAddress('grafana')).toBe('Target must be a valid host address');
   });
   it('should reject ping targets with invalid hostnames', async () => {
     const testcases: string[] = ['x.', '.y', 'x=y.org'];
     testcases.forEach((testcase: string) => {
-      expect(validateHostname(testcase)).toBe('Target must be a valid hostname');
+      expect(validateHostAddress(testcase)).toBe('Target must be a valid host address');
     });
   });
 
@@ -100,7 +100,7 @@ describe('PING', () => {
       '224.0.0.0',
     ];
     testcases.forEach((testcase: string) => {
-      expect(validateHostname(testcase)).toBe(undefined);
+      expect(validateHostAddress(testcase)).toBe(undefined);
     });
   });
 
@@ -115,7 +115,7 @@ describe('PING', () => {
       'ff00::', // multicast address
     ];
     testcases.forEach((testcase: string) => {
-      expect(validateHostname(testcase)).toBe(undefined);
+      expect(validateHostAddress(testcase)).toBe(undefined);
     });
   });
 });
