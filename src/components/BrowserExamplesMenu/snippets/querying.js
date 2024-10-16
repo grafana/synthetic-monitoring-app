@@ -1,4 +1,4 @@
-import { check } from 'k6';
+import { check } from 'https://jslib.k6.io/k6-utils/1.5.0/index.js';
 import { browser } from 'k6/browser';
 
 export const options = {
@@ -27,7 +27,7 @@ export default async function () {
     const titleWithCSS = await page.$('header h1.title').then((e) => e.textContent());
     const titleWithXPath = await page.$(`//header//h1[@class="title"]`).then((e) => e.textContent());
 
-    check(page, {
+    await check(page, {
       'Title with CSS selector': titleWithCSS == 'test.k6.io',
       'Title with XPath selector': titleWithXPath == 'test.k6.io',
     });

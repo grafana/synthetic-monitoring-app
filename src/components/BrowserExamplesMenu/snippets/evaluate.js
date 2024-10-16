@@ -1,4 +1,4 @@
-import { check } from 'k6';
+import { check } from 'https://jslib.k6.io/k6-utils/1.5.0/index.js';
 import { browser } from 'k6/browser';
 
 export const options = {
@@ -28,7 +28,7 @@ export default async function () {
     let result = await page.evaluate(() => {
       return Promise.resolve(5 * 42);
     });
-    check(result, {
+    await check(result, {
       'result should be 210': (result) => result == 210,
     });
 
@@ -39,7 +39,7 @@ export default async function () {
       },
       [5, 5]
     );
-    check(result, {
+    await check(result, {
       'result should be 25': (result) => result == 25,
     });
   } finally {

@@ -1,4 +1,4 @@
-import { check } from 'k6';
+import { check } from 'https://jslib.k6.io/k6-utils/1.5.0/index.js';
 import { browser } from 'k6/browser';
 
 export const options = {
@@ -27,7 +27,7 @@ export default async function () {
     });
     let el = await page.$('#dark-mode-toggle-3');
     const mode = await el.getAttribute('mode');
-    check(mode, {
+    await check(mode, {
       "GetAttribute('mode')": mode === 'light',
     });
   } finally {

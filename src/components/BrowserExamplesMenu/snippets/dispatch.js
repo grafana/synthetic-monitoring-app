@@ -1,4 +1,4 @@
-import { check } from 'k6';
+import { check } from 'https://jslib.k6.io/k6-utils/1.5.0/index.js';
 import { browser } from 'k6/browser';
 
 export const options = {
@@ -29,7 +29,7 @@ export default async function() {
 
     const h3 = page.locator("h3");
     const ok = await h3.textContent() == "Contact us";
-    check(ok, { "header": ok });
+    await check(ok, { "header": ok });
   } finally {
     await page.close();
   }

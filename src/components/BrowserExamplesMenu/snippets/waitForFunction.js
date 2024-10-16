@@ -1,4 +1,4 @@
-import { check } from 'k6';
+import { check } from 'https://jslib.k6.io/k6-utils/1.5.0/index.js';
 import { browser } from 'k6/browser';
 
 export const options = {
@@ -34,7 +34,7 @@ export default async function () {
       polling: 'mutation',
       timeout: 2000,
     });
-    check(ok, { 'waitForFunction successfully resolved': ok.innerHTML() == 'Hello' });
+    await check(ok, { 'waitForFunction successfully resolved': ok.innerHTML() == 'Hello' });
   } finally {
     await page.close();
   }
