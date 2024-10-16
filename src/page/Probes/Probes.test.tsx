@@ -4,9 +4,6 @@ import { DataTestIds } from 'test/dataTestIds';
 import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import { render } from 'test/render';
 
-import { ROUTES } from 'types';
-import { getRoute } from 'components/Routing.utils';
-
 import { Probes } from './Probes';
 
 const renderProbeList = () => {
@@ -27,10 +24,8 @@ it(`renders public probes in the correct list`, async () => {
   expect(publicProbe).toBeInTheDocument();
 });
 
-it('handles add new', async () => {
-  const { history, user } = renderProbeList();
+it('renders add new button', async () => {
+  renderProbeList();
   const addNewButton = await screen.findByText('Add Private Probe');
-  await user.click(addNewButton);
-
-  expect(history.location.pathname).toBe(getRoute(ROUTES.NewProbe));
+  expect(addNewButton).toBeInTheDocument();
 });

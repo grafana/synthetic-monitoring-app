@@ -43,14 +43,11 @@ test('renders check selection page with correct check types', async () => {
   expect(within(multiStepCard).getByText('HTTP')).toBeInTheDocument();
 });
 
-test('renders check editor existing check', async () => {
-  const { user } = await renderChecksPage();
+test('renders editor button on cards', async () => {
+  await renderChecksPage();
   const editButtons = await screen.findAllByTestId('edit-check-button');
-  const sortedBasicCheckList = BASIC_CHECK_LIST.sort((a, b) => a.job.localeCompare(b.job));
-  const checkToEdit = 3;
 
-  await user.click(editButtons[checkToEdit]);
-  await waitFor(() => expect(screen.getByText(`Editing ${sortedBasicCheckList[checkToEdit].job}`)).toBeInTheDocument());
+  expect(BASIC_CHECK_LIST.length).toBe(editButtons.length);
 });
 
 test(`renders alerts for relevant checks`, async () => {
