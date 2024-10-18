@@ -197,9 +197,8 @@ export default async function () {
       page.locator('input[type="submit"]').click(),
     ]);
 
-    const header = await page.locator("h2").textContent();
-    await check(header, {
-      header: (h) => h == "Welcome, admin!",
+    await check(page.locator("h2"), {
+      header: async (locator) => (await locator.textContent()) == "Welcome, admin!",
     });
   } finally {
     await page.close();

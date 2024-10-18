@@ -25,10 +25,9 @@ export default async function () {
     await page.goto('https://googlechromelabs.github.io/dark-mode-toggle/demo/', {
       waitUntil: 'load',
     });
-    let el = await page.$('#dark-mode-toggle-3');
-    const mode = await el.getAttribute('mode');
-    await check(mode, {
-      "GetAttribute('mode')": mode === 'light',
+
+    await check(page.locator('#dark-mode-toggle-3'), {
+      "GetAttribute('mode')": async (locator) => (await locator.getAttribute('mode')) === 'light',
     });
   } finally {
     await page.close();
