@@ -1,4 +1,4 @@
-import { check } from 'k6';
+import { check } from 'https://jslib.k6.io/k6-utils/1.5.0/index.js';
 import { browser } from 'k6/browser';
 
 export const options = {
@@ -7,17 +7,17 @@ export const options = {
       executor: 'shared-iterations',
       options: {
         browser: {
-            type: 'chromium',
+          type: 'chromium',
         },
       },
     },
   },
   thresholds: {
-    checks: ["rate==1.0"]
-  }
-}
+    checks: ['rate==1.0'],
+  },
+};
 
-export default async function() {
+export default async function () {
   const context = await browser.newContext();
   const page = await context.newPage();
 
@@ -25,11 +25,11 @@ export default async function() {
     await page.goto('https://test.k6.io/', { waitUntil: 'networkidle' });
 
     const contacts = page.locator('a[href="/contacts.php"]');
-    await contacts.dispatchEvent("click");
+    await contacts.dispatchEvent('click');
 
-    const h3 = page.locator("h3");
-    const ok = await h3.textContent() == "Contact us";
-    check(ok, { "header": ok });
+    await check(page.locator('h3'), {
+      header: async (locator) => (await locator.textContent()) === 'Contact us',
+    });
   } finally {
     await page.close();
   }
