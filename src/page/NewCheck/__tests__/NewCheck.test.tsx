@@ -1,7 +1,7 @@
 import { screen, waitFor } from '@testing-library/react';
 import { apiRoute } from 'test/handlers';
 import { server } from 'test/server';
-import { runTestWithoutLogsAccess } from 'test/utils';
+import { runTestAsHGFreeUserOverLimit, runTestWithoutLogsAccess } from 'test/utils';
 
 import { CheckType } from 'types';
 import { fillMandatoryFields } from 'page/__testHelpers__/apiEndPoint';
@@ -45,7 +45,7 @@ describe(`<NewCheck />`, () => {
     );
 
     await renderNewForm(CheckType.HTTP);
-    expect(await screen.findByText(/You have reached the limit of checks you can create./)).toBeInTheDocument();
+    expect(await screen.findByText(/You have reached your check limit of /)).toBeInTheDocument();
   });
 
   it(`should disable the form when the check limit is reached`, async () => {
@@ -83,6 +83,20 @@ describe(`<NewCheck />`, () => {
 
     await renderNewForm(CheckType.HTTP);
     expect(screen.getByRole(`button`, { name: /Submit/ })).toBeEnabled();
+  });
+
+  it(`should show the mothly execution limit warning when the limit is reached for HG free tier customers`, async () => {
+    runTestAsHGFreeUserOverLimit();
+
+    await renderNewForm(CheckType.HTTP);
+    expect(await screen.findByText(/You have reached your monthly execution limit of/)).toBeInTheDocument();
+  });
+
+  it(`should disable the form when the mothly execution limit is reached for HG free tier customers`, async () => {
+    runTestAsHGFreeUserOverLimit();
+
+    await renderNewForm(CheckType.HTTP);
+    expect(screen.getByRole(`button`, { name: /Submit/ })).toBeDisabled();
   });
 
   it(`should focus the probes select correctly when appropriate`, async () => {

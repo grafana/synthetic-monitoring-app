@@ -81,9 +81,13 @@ export const CheckForm = ({ check, disabled, pageTitle }: CheckFormProps) => {
   const styles = useStyles2(getStyles);
   const status = useCheckTypeOptions().find((option) => option.value === checkType)?.status;
   const isExistingCheck = Boolean(check);
-  const { isLoading, isOverCheckLimit, isOverScriptedLimit, isReady } = useLimits();
+  const { isLoading, isOverBrowserLimit, isOverHgExecutionLimit, isOverCheckLimit, isOverScriptedLimit, isReady } =
+    useLimits();
   const overLimit =
-    isOverCheckLimit || ([CheckType.MULTI_HTTP, CheckType.Scripted].includes(checkType) && isOverScriptedLimit);
+    isOverHgExecutionLimit ||
+    isOverCheckLimit ||
+    (checkType === CheckType.Browser && isOverBrowserLimit) ||
+    ([CheckType.MULTI_HTTP, CheckType.Scripted].includes(checkType) && isOverScriptedLimit);
   const isDisabled = disabled || !canEdit || getLimitDisabled({ isExistingCheck, isLoading, overLimit });
 
   const formMethods = useForm<CheckFormValues>({

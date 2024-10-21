@@ -26,14 +26,6 @@ export function BigValue({ value }: BigValueProps) {
   );
 }
 
-function LinkButton({ children, href, ...props }: any) {
-  return (
-    <Link to={href} {...props}>
-      {children}
-    </Link>
-  );
-}
-
 // Monaco does not render with jest and is stuck at "Loading..."
 // There doesn't seem to be a solution to this at this point,
 // mocking it instead. Related github issue:
@@ -47,6 +39,5 @@ module.exports = {
   ...ui,
   Icon,
   BigValue,
-  LinkButton,
   CodeEditor,
 };

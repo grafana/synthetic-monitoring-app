@@ -149,6 +149,19 @@ export function runTestWithoutSMAccess() {
   });
 }
 
+export function runTestAsHGFreeUserOverLimit() {
+  // this gets reset in afterEach in jest-setup.js
+  const runtime = require('@grafana/runtime');
+
+  jest.replaceProperty(runtime, `config`, {
+    ...config,
+    buildInfo: {
+      ...config.buildInfo,
+      edition: `Cloud Free`,
+    },
+  });
+}
+
 export const getSlider = async (formName: string) => {
   const container = await screen.findByTestId(formName);
   const minutes = await within(container).findByLabelText('minutes');

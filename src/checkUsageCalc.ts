@@ -7,10 +7,17 @@ interface ActiveSeriesParams {
   seriesPerProbe: number;
 }
 
+// the backend calculation is more nuanced than this, but this is a good enough approximation
+// https://github.com/grafana/synthetic-monitoring-api/blob/1a6b6e0af252aa838ce02df801f5b36295e1a9c9/internal/dto/limits/calculations.go#L7
+// Slack context: https://raintank-corp.slack.com/archives/C0175SS6SA3/p1714059415879179
+
+const DAYS_IN_MONTH = 31;
+
 const getChecksPerMonth = (frequencySeconds: number) => {
   const checksPerMinute = 60 / frequencySeconds;
   const checksPerHour = checksPerMinute * 60;
-  const checksPerMonth = checksPerHour * 744; // Assume a 31 day month so users aren't surprised
+  const checksPerDay = checksPerHour * 24;
+  const checksPerMonth = checksPerDay * DAYS_IN_MONTH;
   return Math.round(checksPerMonth);
 };
 

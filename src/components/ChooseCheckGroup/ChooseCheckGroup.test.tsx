@@ -4,6 +4,7 @@ import { screen } from '@testing-library/react';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
+import { runTestAsHGFreeUserOverLimit } from 'test/utils';
 
 import { FeatureName } from 'types';
 
@@ -29,6 +30,7 @@ async function renderChooseCheckGroup({ checkLimit = 10, scriptedLimit = 10 } = 
 
   return res;
 }
+
 it('shows check type options correctly with feature flags off', async () => {
   await renderChooseCheckGroup();
 
@@ -75,6 +77,30 @@ it('shows gRPC option when feature is enabled', async () => {
 
 it('shows error alert when check limit is reached', async () => {
   await renderChooseCheckGroup({ checkLimit: 1 });
-  const limitError = await screen.findByText(/You have reached the limit of checks you can create./);
+  const limitError = await screen.findByText(/You have reached your check limit of /);
   expect(limitError).toBeInTheDocument();
+});
+
+it(`shows an error alert when user is HG Free user with over 100k execution limit`, async () => {
+  runTestAsHGFreeUserOverLimit();
+
+  jest.replaceProperty(config, 'featureToggles', {
+    // @ts-expect-error
+    [FeatureName.ScriptedChecks]: true,
+    [FeatureName.BrowserChecks]: true,
+  });
+
+  await renderChooseCheckGroup();
+  const alert = await screen.findByText(/You have reached your monthly execution limit of/);
+  expect(alert).toBeInTheDocument();
+
+  const apiEndPointButton = screen.getByRole(`link`, { name: `API Endpoint check` });
+  const multiStepButton = screen.getByRole(`link`, { name: `Multi Step check` });
+  const scriptedButton = screen.getByRole(`link`, { name: `Scripted check` });
+  const browserButton = screen.getByRole(`link`, { name: `Browser check` });
+
+  expect(apiEndPointButton).toHaveAttribute(`aria-disabled`, `true`);
+  expect(multiStepButton).toHaveAttribute(`aria-disabled`, `true`);
+  expect(scriptedButton).toHaveAttribute(`aria-disabled`, `true`);
+  expect(browserButton).toHaveAttribute(`aria-disabled`, `true`);
 });
