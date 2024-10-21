@@ -5,14 +5,14 @@ import validUrl from 'valid-url';
 import { Label } from 'types';
 
 export function validateHttpTarget(target: string) {
-  let message = 'Target must be a valid web URL';
+  const message = 'Target must be a valid web URL';
 
   try {
     const httpEncoded = encodeURI(target);
     const isValidUrl = Boolean(validUrl.isWebUri(httpEncoded));
 
     if (!isValidUrl) {
-      throw new Error(message);
+      return message;
     }
   } catch {
     return message;
@@ -22,8 +22,7 @@ export function validateHttpTarget(target: string) {
     const parsedUrl = new URL(target);
 
     if (!parsedUrl.protocol) {
-      message = 'Target must have a valid protocol';
-      throw new Error(message);
+      return 'Target must have a valid protocol';
     }
 
     // isWebUri will allow some invalid hostnames, so we need addional validation
@@ -33,7 +32,7 @@ export function validateHttpTarget(target: string) {
     }
 
     const hostname = parsedUrl.hostname;
-    if (validateHostname(hostname)) {
+    if (validateHostAddress(hostname)) {
       return 'Target must have a valid hostname';
     }
   } catch {
@@ -44,7 +43,7 @@ export function validateHttpTarget(target: string) {
 }
 
 function isIpV6FromUrl(target: string) {
-  let isIpV6 = true;
+  let isIpV6;
   try {
     const address = Address6.fromURL(target);
     isIpV6 = Boolean(address.address);
@@ -165,10 +164,8 @@ export function validateDomain(target: string): string | undefined {
 
   const filteredElements = rawElements.filter((element, index) => {
     const isLast = index === rawElements.length - 1;
-    if (isLast && element === '') {
-      return false;
-    }
-    return true;
+
+    return !(isLast && element === '');
   });
 
   const errors = filteredElements
@@ -196,7 +193,7 @@ function isCharacterLetter(character: string): boolean {
 }
 
 function isValidDomainCharacter(character: string): boolean {
-  const regex = new RegExp(/[-A-Za-z0-9\.]/);
+  const regex = new RegExp(/[-A-Za-z0-9.]/);
   return Boolean(!character.match(regex)?.length);
 }
 
@@ -235,7 +232,7 @@ function validateDomainElement(element: string, isLast: boolean): string | undef
   return undefined;
 }
 
-export function validateHostname(target: string): string | undefined {
+export function validateHostAddress(target: string): string | undefined {
   const ipv4 = isIpV4(target);
   const ipv6 = isIpV6(target);
   const pc = punycode.toASCII(target);
@@ -245,14 +242,14 @@ export function validateHostname(target: string): string | undefined {
     'i'
   );
   if (!pc.match(re) && !ipv4 && !ipv6) {
-    return 'Target must be a valid hostname';
+    return 'Target must be a valid host address';
   }
 
   return undefined;
 }
 
 export function validateHostPort(target: string): string | undefined {
-  const re = new RegExp(/^(?:\[([0-9a-f:.]+)\]|([^:]+)):(\d+)$/, 'i');
+  const re = new RegExp(/^(?:\[([0-9a-f:.]+)]|([^:]+)):(\d+)$/, 'i');
   const match = target.match(re);
 
   if (match === null) {
@@ -273,5 +270,5 @@ export function validateHostPort(target: string): string | undefined {
     return 'Port must be greater than 0';
   }
 
-  return validateHostname(host);
+  return validateHostAddress(host);
 }
