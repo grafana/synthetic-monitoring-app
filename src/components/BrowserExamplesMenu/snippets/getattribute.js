@@ -1,4 +1,4 @@
-import { check } from 'k6';
+import { check } from 'https://jslib.k6.io/k6-utils/1.5.0/index.js';
 import { browser } from 'k6/browser';
 
 export const options = {
@@ -25,10 +25,9 @@ export default async function () {
     await page.goto('https://googlechromelabs.github.io/dark-mode-toggle/demo/', {
       waitUntil: 'load',
     });
-    let el = await page.$('#dark-mode-toggle-3');
-    const mode = await el.getAttribute('mode');
-    check(mode, {
-      "GetAttribute('mode')": mode === 'light',
+
+    await check(page.locator('#dark-mode-toggle-3'), {
+      "GetAttribute('mode')": async (locator) => (await locator.getAttribute('mode')) === 'light',
     });
   } finally {
     await page.close();

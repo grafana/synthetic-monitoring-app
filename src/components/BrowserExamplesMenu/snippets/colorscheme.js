@@ -1,4 +1,4 @@
-import { check } from 'k6';
+import { check } from 'https://jslib.k6.io/k6-utils/1.5.0/index.js';
 import { browser } from 'k6/browser';
 
 export const options = {
@@ -36,7 +36,7 @@ export default async function() {
         isDarkColorScheme: window.matchMedia('(prefers-color-scheme: dark)').matches
       };
     });
-    check(colorScheme, {
+    await check(colorScheme, {
       'isDarkColorScheme': cs => cs.isDarkColorScheme
     });
   } finally {

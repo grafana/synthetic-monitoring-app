@@ -1,4 +1,4 @@
-import { check } from 'k6';
+import { check } from 'https://jslib.k6.io/k6-utils/1.5.0/index.js';
 import { browser } from 'k6/browser';
 
 export const options = {
@@ -24,12 +24,14 @@ export default async function () {
   try {
     await page.goto('https://test.k6.io/');
 
-    const titleWithCSS = await page.$('header h1.title').then((e) => e.textContent());
-    const titleWithXPath = await page.$(`//header//h1[@class="title"]`).then((e) => e.textContent());
+    const title = 'test.k6.io';
 
-    check(page, {
-      'Title with CSS selector': titleWithCSS == 'test.k6.io',
-      'Title with XPath selector': titleWithXPath == 'test.k6.io',
+    await check(page.locator('header h1.title'), {
+      'Title with CSS selector': async (locator) => (await locator.textContent()) === title,
+    });
+
+    await check(page.locator(`//header//h1[@class="title"]`), {
+      'Title with XPath selector': async (locator) => (await locator.textContent()) === title,
     });
   } finally {
     await page.close();
