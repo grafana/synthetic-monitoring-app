@@ -1,6 +1,6 @@
 import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Badge, Icon, Stack, useStyles2 } from '@grafana/ui';
+import { Icon, Stack, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { ProtocolOption } from 'hooks/useCheckTypeGroupOptions';
@@ -14,30 +14,25 @@ export const Protocol = ({ href, label, tooltip }: ProtocolOption) => {
   if (tooltip) {
     return (
       <Toggletip content={<div>{tooltip}</div>}>
-        <button className={styles.badgeLink}>
-          <Badge
-            text={
-              <Stack gap={0.5} alignItems={`center`}>
-                <div>{label}</div>
-                <Icon name={`info-circle`} size="sm" />
-              </Stack>
-            }
-            color={BADGE_COLOR}
-          />
-        </button>
+        <div className={styles.badgeLink}>
+          <Stack gap={0.5} alignItems={`center`}>
+            <span>{label}</span>
+            <Icon name={`info-circle`} size="sm" />
+          </Stack>
+        </div>
       </Toggletip>
     );
   }
 
   if (href) {
     return (
-      <a className={styles.badgeLink} href={href}>
-        <Badge text={label} color={BADGE_COLOR} />
-      </a>
+      <TextLink className={styles.badgeLink} href={href} inline={false} color="secondary">
+        {label}
+      </TextLink>
     );
   }
 
-  return <Badge text={label} color={BADGE_COLOR} />;
+  return <span>{label}</span>;
 };
 
 const getStyles = (theme: GrafanaTheme2) => ({

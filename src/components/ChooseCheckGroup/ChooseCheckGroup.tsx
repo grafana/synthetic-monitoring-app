@@ -6,8 +6,8 @@ import { css } from '@emotion/css';
 import { DataTestIds } from 'test/dataTestIds';
 
 import { useCheckTypeGroupOptions } from 'hooks/useCheckTypeGroupOptions';
+import { OverLimitAlert } from 'components/OverLimitAlert';
 
-import { OverLimitAlert } from '../OverLimitAlert';
 import { CheckGroupCard } from './CheckGroupCard';
 
 export const ChooseCheckGroup = () => {
@@ -39,5 +39,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
     gridTemplateColumns: `repeat(auto-fit, minmax(200px, 400px))`,
     gap: theme.spacing(2),
     textAlign: `center`,
+    color: theme.colors.text.secondary,
   }),
 });

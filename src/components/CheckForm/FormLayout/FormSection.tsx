@@ -5,7 +5,7 @@ import { Box, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckFormValues } from 'types';
-import { CheckStatusBadge, CheckStatusBadgeProps } from 'components/CheckEditor/FormComponents/CheckStatusBadge';
+import { CheckStatusInfo, CheckStatusInfoProps } from 'components/CheckEditor/FormComponents/CheckStatusInfo';
 
 import { FORM_MAX_WIDTH } from './FormLayout';
 
@@ -15,7 +15,7 @@ export type FormSectionProps = {
   label: string;
   fields?: Array<FieldPath<CheckFormValues>>;
   index: number;
-  status?: CheckStatusBadgeProps;
+  status?: CheckStatusInfoProps;
 };
 
 // return doesn't matter as we take over how this behaves internally
@@ -37,7 +37,7 @@ export const FormSectionInternal = ({ activeSection, children, label, index, sta
         <Text element="h2" variant="h3">
           <Stack gap={2}>
             {`${index + 1}. ${label}`}
-            {status && <CheckStatusBadge {...status} />}
+            {status && <CheckStatusInfo {...status} />}
           </Stack>
         </Text>
       </Box>
