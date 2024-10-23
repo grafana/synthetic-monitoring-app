@@ -8,10 +8,10 @@ import { CheckTypeGroup, ROUTES } from 'types';
 import { CheckTypeGroupOption } from 'hooks/useCheckTypeGroupOptions';
 import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
 import { useLimits } from 'hooks/useLimits';
+import { CheckStatusInfo, NewStatusBadge } from 'components/CheckEditor/FormComponents/CheckStatusInfo';
 import { getRoute } from 'components/Routing.utils';
 
 import { Card } from '../Card';
-import { CheckStatusBadge } from '../CheckEditor/FormComponents/CheckStatusBadge';
 import { Protocol } from './Protocol';
 
 export const CheckGroupCard = ({ group }: { group: CheckTypeGroupOption }) => {
@@ -30,11 +30,17 @@ export const CheckGroupCard = ({ group }: { group: CheckTypeGroupOption }) => {
       <Stack direction={`column`} justifyContent={`center`} gap={2}>
         <Stack justifyContent={`center`}>
           <Icon name={group.icon} size="xxxl" />
+          {shouldShowStatus && checksWithStatus[0].status && (
+            <NewStatusBadge status={checksWithStatus[0].status.value} />
+          )}
         </Stack>
-        <Card.Heading variant="h6">
-          <div>{group.label} </div>
+        <Card.Heading variant="h5">
+          <Stack justifyContent={'center'}>
+            <div className={styles.groupName}>{group.label}</div>
+            {shouldShowStatus && checksWithStatus[0].status && <CheckStatusInfo {...checksWithStatus[0].status} />}
+          </Stack>
         </Card.Heading>
-        <div className={styles.desc}>{group.description}</div>
+        <div>{group.description}</div>
         <div>
           <LinkButton
             icon={!isReady ? 'fa fa-spinner' : undefined}
@@ -42,22 +48,19 @@ export const CheckGroupCard = ({ group }: { group: CheckTypeGroupOption }) => {
             href={`${getRoute(ROUTES.NewCheck)}/${group.value}`}
             tooltip={getTooltip(limits, group.value)}
           >
-            {group.label} check
+            {group.label}
           </LinkButton>
         </div>
         <div className={styles.protocols}>
           <Stack direction={`column`} gap={2}>
-            Supported protocols:
-            <Stack justifyContent={`center`}>
-              {group.protocols.map((protocol) => {
-                return <Protocol key={protocol.label} {...protocol} href={disabled ? undefined : protocol.href} />;
-              })}
+            <Stack justifyContent={`center`} alignItems={'center'}>
+              {group.protocols.map((protocol, index) => (
+                <span key={protocol.label}>
+                  <Protocol {...protocol} href={disabled ? undefined : protocol.href} />
+                  {index < group.protocols.length - 1 && ', '}
+                </span>
+              ))}
             </Stack>
-            {shouldShowStatus && checksWithStatus[0].status && (
-              <Stack justifyContent={`center`}>
-                <CheckStatusBadge {...checksWithStatus[0].status} />
-              </Stack>
-            )}
           </Stack>
         </div>
       </Stack>
@@ -102,7 +105,16 @@ const getStyles = (theme: GrafanaTheme2) => ({
   desc: css({
     color: theme.colors.text.secondary,
   }),
+  groupName: css({
+    color: theme.colors.text.primary,
+  }),
   protocols: css({
     marginTop: theme.spacing(1),
+    borderTop: `1px solid ${theme.colors.border.weak}`,
+    color: theme.colors.text.secondary,
+    display: 'flex',
+    height: '35px',
+    alignItems: 'flex-end',
+    justifyContent: 'center',
   }),
 });
