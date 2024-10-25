@@ -1,7 +1,7 @@
 import { FieldErrors } from 'react-hook-form';
 
 import { CheckFormValues } from 'types';
-import { PROBES_SELECT_ID } from 'components/CheckEditor/CheckProbes';
+import { PROBES_SELECT_ID } from 'components/CheckEditor/CheckProbes/CheckProbes';
 import { SCRIPT_TEXTAREA_ID } from 'components/CheckEditor/FormComponents/ScriptedCheckScript';
 import { CHECK_FORM_ERROR_EVENT } from 'components/constants';
 

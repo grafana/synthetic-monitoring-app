@@ -6,7 +6,7 @@ import { CheckFormValues, CheckType, Probe } from 'types';
 import { useProbes } from 'data/useProbes';
 import { SliderInput } from 'components/SliderInput';
 
-import { CheckProbes } from './CheckProbes';
+import { CheckProbes } from './CheckProbes/CheckProbes';
 
 interface ProbeOptionsProps {
   checkType: CheckType;
