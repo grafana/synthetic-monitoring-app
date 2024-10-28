@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Alert, LinkButton } from '@grafana/ui';
+import { Alert, LinkButton, Stack } from '@grafana/ui';
 
 import { ROUTES } from 'types';
 import { getRoute } from 'components/Routing.utils';
@@ -19,13 +19,13 @@ export const PrivateProbesAlert = () => {
         setDisplay(false);
       }}
     >
-      Probes are automated tools that test websites and apps. They act like users by sending requests and checking the
-      responses.
-      <div>
+      <Stack gap={1} direction={'column'} alignItems={'flex-start'}>
+        Probes are automated tools that test websites and apps. They act like users by sending requests and checking the
+        responses.
         <LinkButton size="sm" href={`${getRoute(ROUTES.NewProbe)}`}>
           Set up a Private Probe
         </LinkButton>
-      </div>
+      </Stack>
     </Alert>
   );
 };

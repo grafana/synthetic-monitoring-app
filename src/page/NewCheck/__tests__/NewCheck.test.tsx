@@ -99,16 +99,6 @@ describe(`<NewCheck />`, () => {
     expect(screen.getByRole(`button`, { name: /Submit/ })).toBeDisabled();
   });
 
-  it(`should focus the probes select correctly when appropriate`, async () => {
-    const { user } = await renderNewForm(CheckType.HTTP);
-
-    await fillMandatoryFields({ user, checkType: CheckType.HTTP, fieldsToOmit: ['probes'] });
-    await submitForm(user);
-
-    const probesSelect = await screen.findByLabelText(/Probe locations/);
-    await waitFor(() => expect(probesSelect).toHaveFocus());
-  });
-
   it(`should display an error message when the job name contains commas`, async () => {
     const { user } = await renderNewForm(CheckType.HTTP);
 

@@ -81,7 +81,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
 
   probesColumn: css({
-    width: '250px',
+    minWidth: '250px',
     fontSize: theme.typography.h6.fontSize,
     fontWeight: theme.typography.fontWeightLight,
   }),

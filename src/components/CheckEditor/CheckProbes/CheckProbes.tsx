@@ -45,7 +45,7 @@ export const CheckProbes = forwardRef(({ probes, availableProbes, onChange, erro
       >
         <div>
           <ProbesFilter probes={availableProbes} onSearch={setFilteredProbes} />
-          <Stack alignItems="flex-start">
+          <Stack wrap={'wrap'}>
             {privateProbes.length > 0 && (
               <ProbesList
                 title="Private probes"
