@@ -26,7 +26,7 @@ export const CheckGroupCard = ({ group }: { group: CheckTypeGroupOption }) => {
   const disabled = Boolean(tooltip);
 
   return (
-    <Card key={group.label} data-testid={`${DataTestIds.CHECK_GROUP_CARD}-${group.value}`}>
+    <Card key={group.label} data-testid={`${DataTestIds.CHECK_GROUP_CARD}-${group.value}`} className={styles.checkCard}>
       <Stack direction={`column`} justifyContent={`center`} gap={2}>
         <Stack justifyContent={`center`}>
           <Icon name={group.icon} size="xxxl" />
@@ -54,7 +54,7 @@ export const CheckGroupCard = ({ group }: { group: CheckTypeGroupOption }) => {
         </div>
         <div className={styles.protocols}>
           <Stack direction={`column`} gap={2}>
-            <Stack justifyContent={`center`} alignItems={'center'}>
+            <Stack justifyContent={'center'} alignItems={'center'}>
               {group.protocols.map((protocol, index) => (
                 <span key={protocol.label}>
                   <Protocol {...protocol} href={disabled ? undefined : protocol.href} />
@@ -103,6 +103,12 @@ function getTooltip(
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({
+  checkCard: css({
+    minWidth: '0',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'wrap',
+  }),
   desc: css({
     color: theme.colors.text.secondary,
   }),

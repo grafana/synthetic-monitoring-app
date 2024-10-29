@@ -32,13 +32,25 @@ export const ChooseCheckGroup = () => {
   );
 };
 
-const getStyles = (theme: GrafanaTheme2) => ({
-  container: css({
-    width: `100%`,
-    display: `grid`,
-    gridTemplateColumns: `repeat(auto-fit, minmax(200px, 400px))`,
-    gap: theme.spacing(2),
-    textAlign: `center`,
-    color: theme.colors.text.secondary,
-  }),
-});
+const getStyles = (theme: GrafanaTheme2) => {
+  const twoColumnsQuery = `@media (max-width: ${theme.breakpoints.values.lg}px)`;
+  const oneColumnQuery = `@media (max-width: ${theme.breakpoints.values.sm}px)`;
+  return {
+    container: css({
+      width: `100%`,
+      display: `grid`,
+      gridTemplateColumns: 'repeat(4, 1fr)',
+      gap: theme.spacing(2),
+      textAlign: `center`,
+      color: theme.colors.text.secondary,
+
+      [twoColumnsQuery]: {
+        gridTemplateColumns: 'repeat(2, 1fr)',
+      },
+
+      [oneColumnQuery]: {
+        gridTemplateColumns: '1fr',
+      },
+    }),
+  };
+};
