@@ -54,24 +54,26 @@ export const ProbesList = ({
           {title} ({probes.length})
         </Label>
       </div>
-      {probes.map((probe: Probe) => (
-        <div key={probe.id} className={styles.container}>
-          <Checkbox
-            id={`probe-${probe.id}`}
-            onClick={() => handleToggleProbe(probe)}
-            checked={selectedProbes.includes(probe.id as number)}
-          />
-          <Label htmlFor={`probe-${probe.id}`} className={styles.columnLabel}>
-            <ProbeStatus probe={probe} /> {probe.name}
-          </Label>
-        </div>
-      ))}
+      <div className={styles.probesList}>
+        {probes.map((probe: Probe) => (
+          <div key={probe.id} className={styles.item}>
+            <Checkbox
+              id={`probe-${probe.id}`}
+              onClick={() => handleToggleProbe(probe)}
+              checked={selectedProbes.includes(probe.id as number)}
+            />
+            <Label htmlFor={`probe-${probe.id}`} className={styles.columnLabel}>
+              <ProbeStatus probe={probe} /> {probe.name}
+            </Label>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
 
 const getStyles = (theme: GrafanaTheme2) => ({
-  container: css({
+  item: css({
     marginTop: theme.spacing(1),
     marginBottom: theme.spacing(1),
     display: `flex`,
@@ -81,9 +83,17 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
 
   probesColumn: css({
-    minWidth: '250px',
     fontSize: theme.typography.h6.fontSize,
     fontWeight: theme.typography.fontWeightLight,
+  }),
+
+  probesList: css({
+    display: 'flex',
+    flexDirection: 'column',
+    minWidth: '250px',
+    maxWidth: '350px',
+    maxHeight: '230px',
+    overflowY: 'auto',
   }),
 
   sectionHeader: css({

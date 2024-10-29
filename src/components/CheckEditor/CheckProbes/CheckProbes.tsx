@@ -67,7 +67,7 @@ export const CheckProbes = forwardRef(({ probes, availableProbes, onChange, erro
           </Stack>
         </div>
       </Field>
-      {privateProbes.length === 1 && filteredProbes.length === availableProbes.length && <PrivateProbesAlert />}
+      {privateProbes.length === 0 && filteredProbes.length === availableProbes.length && <PrivateProbesAlert />}
     </div>
   );
 });
