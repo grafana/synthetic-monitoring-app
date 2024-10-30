@@ -47,7 +47,6 @@ export const CheckGroupCard = ({ group }: { group: CheckTypeGroupOption }) => {
             disabled={disabled}
             href={`${getRoute(ROUTES.NewCheck)}/${group.value}`}
             tooltip={getTooltip(limits, group.value)}
-            data-testid={`${group.label} check`}
           >
             {group.label}
           </LinkButton>
