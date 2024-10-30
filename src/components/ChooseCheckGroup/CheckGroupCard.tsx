@@ -34,13 +34,13 @@ export const CheckGroupCard = ({ group }: { group: CheckTypeGroupOption }) => {
             <NewStatusBadge status={checksWithStatus[0].status.value} />
           )}
         </Stack>
-        <Card.Heading variant="h5">
+        <Card.Heading variant="h5" className={styles.cardHeader}>
           <Stack justifyContent={'center'}>
             <div className={styles.groupName}>{group.label}</div>
             {shouldShowStatus && checksWithStatus[0].status && <CheckStatusInfo {...checksWithStatus[0].status} />}
           </Stack>
         </Card.Heading>
-        <div>{group.description}</div>
+        <div className={styles.cardDescription}>{group.description}</div>
         <div>
           <LinkButton
             icon={!isReady ? 'fa fa-spinner' : undefined}
@@ -54,14 +54,14 @@ export const CheckGroupCard = ({ group }: { group: CheckTypeGroupOption }) => {
         </div>
         <div className={styles.protocols}>
           <Stack direction={`column`} gap={2}>
-            <Stack justifyContent={'center'} alignItems={'center'}>
+            <div className={styles.cardFooter}>
               {group.protocols.map((protocol, index) => (
                 <span key={protocol.label}>
                   <Protocol {...protocol} href={disabled ? undefined : protocol.href} />
                   {index < group.protocols.length - 1 && ', '}
                 </span>
               ))}
-            </Stack>
+            </div>
           </Stack>
         </div>
       </Stack>
@@ -103,6 +103,23 @@ function getTooltip(
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({
+  cardHeader: css({
+    maxHeight: '20px',
+  }),
+
+  cardDescription: css({
+    maxHeight: '70px',
+    overflowY: 'scroll',
+  }),
+
+  cardFooter: css({
+    display: 'flex',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: '4px',
+    maxHeight: '20px',
+  }),
+
   checkCard: css({
     minWidth: '0',
     overflow: 'hidden',

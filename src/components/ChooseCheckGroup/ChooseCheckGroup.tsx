@@ -33,7 +33,7 @@ export const ChooseCheckGroup = () => {
 };
 
 const getStyles = (theme: GrafanaTheme2) => {
-  const twoColumnsQuery = `@media (max-width: ${theme.breakpoints.values.lg}px)`;
+  const twoColumnsQuery = `@media (max-width: ${theme.breakpoints.values.xxl}px)`;
   const oneColumnQuery = `@media (max-width: ${theme.breakpoints.values.sm}px)`;
   return {
     container: css({
