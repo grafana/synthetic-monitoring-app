@@ -1,11 +1,15 @@
 import React, { ReactNode } from 'react';
 import { FieldPath } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Box, Stack, Text, useStyles2 } from '@grafana/ui';
+import { Box, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckFormValues } from 'types';
-import { CheckStatusInfo, CheckStatusInfoProps } from 'components/CheckEditor/FormComponents/CheckStatusInfo';
+import {
+  CheckStatusInfo,
+  CheckStatusInfoProps,
+  NewStatusBadge,
+} from 'components/CheckEditor/FormComponents/CheckStatusInfo';
 
 import { FORM_MAX_WIDTH } from './FormLayout';
 
@@ -32,13 +36,14 @@ export const FormSectionInternal = ({ activeSection, children, label, index, sta
   }
 
   return (
-    <div data-fs-element={`Form section ${label}`}>
+    <div data-fs-element={`Form section ${label}`} className={styles.formContainer}>
       <Box marginBottom={4}>
         <Text element="h2" variant="h3">
-          <Stack gap={2}>
+          <div className={styles.header}>
             {`${index + 1}. ${label}`}
+            {status?.value && <NewStatusBadge status={status.value} />}
             {status && <CheckStatusInfo {...status} />}
-          </Stack>
+          </div>
         </Text>
       </Box>
       <div className={styles.sectionContent}>{children}</div>
@@ -48,8 +53,17 @@ export const FormSectionInternal = ({ activeSection, children, label, index, sta
 
 const getStyles = (theme: GrafanaTheme2) => {
   return {
+    header: css({
+      position: 'relative',
+      display: 'flex',
+      gap: theme.spacing(2),
+    }),
     sectionContent: css({
       maxWidth: FORM_MAX_WIDTH,
+    }),
+
+    formContainer: css({
+      position: 'relative',
     }),
   };
 };

@@ -9,6 +9,7 @@ import { Toggletip } from 'components/Toggletip';
 export interface CheckStatusInfoProps {
   description?: string;
   docsLink?: string;
+  value?: CheckStatus;
 }
 
 export const CheckStatusInfo = ({ description, docsLink }: CheckStatusInfoProps) => {
@@ -39,25 +40,15 @@ export const CheckStatusInfo = ({ description, docsLink }: CheckStatusInfoProps)
   );
 };
 
-export const NewStatusBadge = ({ status }: { status: CheckStatus }) => {
-  const styles = useStyles2((theme: GrafanaTheme2) => getStyles(theme));
-
+export const NewStatusBadge = ({ status, className }: { status: CheckStatus; className?: string }) => {
   if (![CheckStatus.EXPERIMENTAL, CheckStatus.PRIVATE_PREVIEW, CheckStatus.PUBLIC_PREVIEW].includes(status)) {
     return null;
   }
 
-  return <Badge text={'NEW'} color={'orange'} className={styles.newBadge} />;
+  return <Badge text={'NEW'} color={'orange'} className={className} />;
 };
 
 const getStyles = (theme: GrafanaTheme2) => ({
-  newBadge: css({
-    position: 'absolute',
-    right: 0,
-    marginRight: theme.spacing(3),
-    marginTop: theme.spacing(2),
-    height: '26px',
-  }),
-
   infoLink: css({
     background: `none`,
     border: `none`,

@@ -31,7 +31,7 @@ export const CheckGroupCard = ({ group }: { group: CheckTypeGroupOption }) => {
         <Stack justifyContent={`center`}>
           <Icon name={group.icon} size="xxxl" />
           {shouldShowStatus && checksWithStatus[0].status && (
-            <NewStatusBadge status={checksWithStatus[0].status.value} />
+            <NewStatusBadge status={checksWithStatus[0].status.value} className={styles.newBadge} />
           )}
         </Stack>
         <Card.Heading variant="h5" className={styles.cardHeader}>
@@ -103,6 +103,14 @@ function getTooltip(
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({
+  newBadge: css({
+    position: 'absolute',
+    right: 0,
+    marginRight: theme.spacing(3),
+    marginTop: theme.spacing(2),
+    height: '26px',
+  }),
+
   cardHeader: css({
     maxHeight: '20px',
   }),
