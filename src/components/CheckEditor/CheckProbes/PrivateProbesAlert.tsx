@@ -20,8 +20,8 @@ export const PrivateProbesAlert = () => {
       }}
     >
       <Stack gap={1} direction={'column'} alignItems={'flex-start'}>
-        Probes are automated tools that test websites and apps. They act like users by sending requests and checking the
-        responses.
+        Private probes are instances of the open source Grafana Synthetic Monitoring Agent and are only accessible to
+        you.
         <LinkButton size="sm" href={`${getRoute(ROUTES.NewProbe)}`}>
           Set up a Private Probe
         </LinkButton>
