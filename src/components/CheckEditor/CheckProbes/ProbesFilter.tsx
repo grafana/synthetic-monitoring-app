@@ -12,7 +12,14 @@ export const ProbesFilter = ({ probes, onSearch }: { probes: Probe[]; onSearch: 
     const searchValue = event.target.value.toLowerCase();
 
     const filteredProbes = probes.filter(
-      (probe) => probe.region.toLowerCase().includes(searchValue) || probe.name.toLowerCase().includes(searchValue)
+      (probe) =>
+        probe.region.toLowerCase().includes(searchValue) ||
+        probe.name.toLowerCase().includes(searchValue) ||
+        probe.longRegion?.toLowerCase().includes(searchValue) ||
+        probe.city?.toLowerCase().includes(searchValue) ||
+        probe.provider?.toLowerCase().includes(searchValue) ||
+        probe.country?.toLowerCase().includes(searchValue) ||
+        probe.countryCode?.toLowerCase().includes(searchValue)
     );
 
     onSearch(filteredProbes);
@@ -20,7 +27,11 @@ export const ProbesFilter = ({ probes, onSearch }: { probes: Probe[]; onSearch: 
 
   return (
     <div className={styles.searchInput}>
-      <Input prefix={<Icon name="search" />} placeholder="Find a probe by city or region" onChange={handleSearch} />
+      <Input
+        prefix={<Icon name="search" />}
+        placeholder="Find a probe by city, country, region or provider"
+        onChange={handleSearch}
+      />
     </div>
   );
 };

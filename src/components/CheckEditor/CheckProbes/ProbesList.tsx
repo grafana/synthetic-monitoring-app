@@ -51,7 +51,7 @@ export const ProbesList = ({
       <div className={styles.sectionHeader}>
         <Checkbox id={`header-${title}`} onClick={handleToggleAll} checked={allProbesSelected} />
         <Label htmlFor={`header-${title}`} className={styles.headerLabel}>
-          {title} ({probes.length})
+          {`${title} (${probes.length})`}
         </Label>
       </div>
       <div className={styles.probesList}>
@@ -63,7 +63,10 @@ export const ProbesList = ({
               checked={selectedProbes.includes(probe.id as number)}
             />
             <Label htmlFor={`probe-${probe.id}`} className={styles.columnLabel}>
-              <ProbeStatus probe={probe} /> {probe.name}
+              <ProbeStatus probe={probe} />{' '}
+              {`${probe.name}${probe.countryCode ? `, ${probe.countryCode}` : ''} ${
+                probe.provider ? `(${probe.provider})` : ''
+              }`}
             </Label>
           </div>
         ))}

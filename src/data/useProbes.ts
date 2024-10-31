@@ -10,11 +10,13 @@ import type {
   AddProbeResult,
   DeleteProbeError,
   DeleteProbeResult,
+  ListProbeResult,
   ResetProbeTokenResult,
   UpdateProbeResult,
 } from 'datasource/responses.types';
 import { queryClient } from 'data/queryClient';
 import { useSMDS } from 'hooks/useSMDS';
+import { PROBES_METADATA } from 'components/CheckEditor/ProbesMetadata';
 
 import { useChecks } from './useChecks';
 
@@ -33,6 +35,25 @@ export function useProbes() {
   const smDS = useSMDS();
 
   return useQuery(probesQuery(smDS));
+}
+
+export function useProbesWithMetadata() {
+  const { data: probes = [], isLoading } = useProbes();
+
+  const probesWithMetadata = useMemo<ListProbeResult>(() => {
+    if (isLoading) {
+      return [];
+    }
+    
+    return probes.map((probe) => {
+      const metadata = PROBES_METADATA.find(
+        (info) => info.name === probe.name && info.region === probe.region
+      );
+      return metadata ? { ...probe, ...metadata } : probe;
+    });
+  }, [probes, isLoading]);
+
+  return { data: probesWithMetadata, isLoading };
 }
 
 export function useExtendedProbes(): [ExtendedProbe[], boolean] {

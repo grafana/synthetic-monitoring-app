@@ -3,7 +3,7 @@ import { Controller, useFormContext } from 'react-hook-form';
 import { Field } from '@grafana/ui';
 
 import { CheckFormValues, CheckType, Probe } from 'types';
-import { useProbes } from 'data/useProbes';
+import { useProbesWithMetadata } from 'data/useProbes';
 import { SliderInput } from 'components/SliderInput';
 
 import { CheckProbes } from './CheckProbes/CheckProbes';
@@ -14,7 +14,7 @@ interface ProbeOptionsProps {
 }
 
 export const ProbeOptions = ({ checkType, disabled }: ProbeOptionsProps) => {
-  const { data: probes = [] } = useProbes();
+  const { data: probes = [] } = useProbesWithMetadata();
   const {
     control,
     formState: { errors },
