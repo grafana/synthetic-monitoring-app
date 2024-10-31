@@ -46,12 +46,22 @@ export const ProbesList = ({
     [probes, selectedProbes]
   );
 
+  const someProbesSelected = useMemo(
+    () => probes.some((probe) => selectedProbes.includes(probe.id as number)) && !allProbesSelected,
+    [probes, selectedProbes, allProbesSelected]
+  );
+
   return (
     <div className={styles.probesColumn}>
       <div className={styles.sectionHeader}>
-        <Checkbox id={`header-${title}`} onClick={handleToggleAll} checked={allProbesSelected} />
+        <Checkbox
+          id={`header-${title}`}
+          onClick={handleToggleAll}
+          checked={allProbesSelected}
+          indeterminate={someProbesSelected}
+        />
         <Label htmlFor={`header-${title}`} className={styles.headerLabel}>
-          {`${title} (${probes.length})`}
+          {`${title} (${selectedProbes.length})`}
         </Label>
       </div>
       <div className={styles.probesList}>
