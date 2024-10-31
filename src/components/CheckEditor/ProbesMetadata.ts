@@ -2,7 +2,7 @@ import { ProbeProvider } from 'types';
 
 const REGION_APAC = { code: 'APAC', long: 'Asia-Pacific' };
 const REGION_AMER = { code: 'AMER', long: 'The Americas' };
-const REGION_EMEA = { code: 'EMEA', long: 'Europe, Middle East, Africa' };
+const REGION_EMEA = { code: 'EMEA', long: 'Europe, M. East, Africa' };
 
 const COUNTRY_IN = { code: 'IN', long: 'India' };
 const COUNTRY_KR = { code: 'KR', long: 'South Korea' };

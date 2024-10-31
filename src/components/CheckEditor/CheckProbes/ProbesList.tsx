@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Checkbox, Label, useStyles2 } from '@grafana/ui';
+import { Checkbox, Label, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Probe } from 'types';
@@ -61,7 +61,10 @@ export const ProbesList = ({
           indeterminate={someProbesSelected}
         />
         <Label htmlFor={`header-${title}`} className={styles.headerLabel}>
-          {`${title} (${selectedProbes.length})`}
+          <Stack>
+            <Text>{`${title} (${selectedProbes.length})`}</Text>
+            {probes[0]?.longRegion && <span className={styles.probeRegionDescription}>{probes[0]?.longRegion}</span>}
+          </Stack>
         </Label>
       </div>
       <div className={styles.probesList}>
@@ -98,6 +101,12 @@ const getStyles = (theme: GrafanaTheme2) => ({
   probesColumn: css({
     fontSize: theme.typography.h6.fontSize,
     fontWeight: theme.typography.fontWeightLight,
+  }),
+
+  probeRegionDescription: css({
+    color: theme.colors.text.secondary,
+    fontSize: theme.typography.bodySmall.fontSize,
+    paddingTop: '3px',
   }),
 
   probesList: css({
