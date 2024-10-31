@@ -196,9 +196,9 @@ export const CheckForm = ({ check, disabled, pageTitle }: CheckFormProps) => {
                 <CheckFormAlert />
               </FormLayout.Section>
               <FormLayout.Section label="Execution" fields={[`probes`, `frequency`, ...probesFields]} status={status}>
-                <CheckUsage checkType={checkType} />
                 <CheckProbeOptions checkType={checkType} />
                 {ProbesComponent}
+                <CheckUsage checkType={checkType} />
               </FormLayout.Section>
             </FormLayout>
           </div>
