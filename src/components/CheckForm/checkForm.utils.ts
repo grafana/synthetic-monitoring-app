@@ -1,6 +1,7 @@
 import { FieldErrors } from 'react-hook-form';
 
 import { CheckFormValues } from 'types';
+import { PROBES_FILTER_ID } from 'components/CheckEditor/CheckProbes/ProbesFilter';
 import { SCRIPT_TEXTAREA_ID } from 'components/CheckEditor/FormComponents/ScriptedCheckScript';
 import { CHECK_FORM_ERROR_EVENT } from 'components/constants';
 
@@ -56,8 +57,13 @@ function getFirstInput(errs: FieldErrors<CheckFormValues>) {
 }
 
 function searchForSpecialInputs(errKeys: string[] = []) {
+  const probes = errKeys.includes(`probes`) && document.querySelector(`#${PROBES_FILTER_ID} input`);
   const script =
     errKeys.includes(`settings.scripted.script`) && document.querySelector(`#${SCRIPT_TEXTAREA_ID} textarea`);
+
+  if (probes) {
+    return probes;
+  }
 
   if (script) {
     return script;

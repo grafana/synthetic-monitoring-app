@@ -5,6 +5,8 @@ import { css } from '@emotion/css';
 
 import { Probe } from 'types';
 
+export const PROBES_FILTER_ID = 'check-probes-filter';
+
 export const ProbesFilter = ({ probes, onSearch }: { probes: Probe[]; onSearch: (probes: Probe[]) => void }) => {
   const styles = useStyles2(getStyles);
 
@@ -31,6 +33,7 @@ export const ProbesFilter = ({ probes, onSearch }: { probes: Probe[]; onSearch: 
         prefix={<Icon name="search" />}
         placeholder="Find a probe by city, country, region or provider"
         onChange={handleSearch}
+        id={PROBES_FILTER_ID}
       />
     </div>
   );
