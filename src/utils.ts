@@ -5,7 +5,7 @@ import { config, FetchResponse, getBackendSrv } from '@grafana/runtime';
 import { contextSrv } from 'grafana/app/core/core';
 import { firstValueFrom } from 'rxjs';
 
-import { LinkedDatasourceInfo, LogQueryResponse, LogStream, SMOptions } from './datasource/types';
+import { LinkedDatasourceInfo, LogLine, LogQueryResponse, LogStream, SMOptions } from './datasource/types';
 import {
   CalculateUsageValues,
   Check,
@@ -208,7 +208,7 @@ export const queryLogsLegacy = async (
   };
 
   try {
-    const response = await backendSrv.datasourceRequest({
+    const response = await backendSrv.datasourceRequest<{ data: { result: LogLine[] } }>({
       method: 'GET',
       url: `${url}/loki/api/v1/query_range`,
       params,

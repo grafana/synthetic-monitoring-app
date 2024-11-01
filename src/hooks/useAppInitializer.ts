@@ -155,7 +155,7 @@ export const useAppInitializer = (redirectTo?: ROUTES) => {
       logsInstanceId: logsHostedId,
     };
     try {
-      const { accessToken } = await getBackendSrv().request({
+      const { accessToken } = await getBackendSrv().request<{ accessToken: string }>({
         url: `api/plugin-proxy/${id}/install`,
         method: 'POST',
         data: body,

@@ -1,9 +1,11 @@
 import React, { PropsWithChildren, type ReactElement, type ReactNode } from 'react';
-import { Route, Routes } from 'react-router-dom-v5-compat';
+import { MemoryRouter } from 'react-router-dom';
+import { CompatRouter, Route, Routes } from 'react-router-dom-v5-compat';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { AppPluginMeta } from '@grafana/data';
 import { render, type RenderOptions } from '@testing-library/react';
 import userEventLib from '@testing-library/user-event';
+import { createMemoryHistory, type MemoryHistory } from 'history';
 import { SM_META } from 'test/fixtures/meta';
 
 import { ProvisioningJsonData } from 'types';
@@ -13,8 +15,11 @@ import { SMDatasourceProvider } from 'contexts/SMDatasourceContext';
 import { getQueryClient } from 'data/queryClient';
 import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
 
+import { TestRouteInfo } from '../routes/test/TestRouteInfo';
+
 export type ComponentWrapperProps = {
   children: ReactNode;
+  history: MemoryHistory;
   route?: string;
   meta?: Partial<AppPluginMeta<ProvisioningJsonData>>;
 };
@@ -26,16 +31,29 @@ type CreateWrapperProps = {
   wrapper?: (props: ComponentWrapperProps) => ReactElement;
 };
 
-const DefaultWrapper = ({ children, route, meta }: ComponentWrapperProps) => {
+const DefaultWrapper = ({ children, route = '/', history, meta }: ComponentWrapperProps) => {
   return (
     <QueryClientProvider client={getQueryClient()}>
       <MetaContextProvider meta={{ ...SM_META, ...meta }}>
         <FeatureFlagProvider>
           <SMDatasourceProvider>
             <PermissionsContextProvider>
-              <Routes>
-                <Route path={route}>{children}</Route>
-              </Routes>
+              <MemoryRouter initialEntries={history.entries}>
+                <CompatRouter>
+                  <Routes>
+                    <Route path={route} element={children} />
+                    <Route
+                      path="*"
+                      element={
+                        <>
+                          <TestRouteInfo route={route} />
+                          {children}
+                        </>
+                      }
+                    />
+                  </Routes>
+                </CompatRouter>
+              </MemoryRouter>
             </PermissionsContextProvider>
           </SMDatasourceProvider>
         </FeatureFlagProvider>
@@ -44,11 +62,14 @@ const DefaultWrapper = ({ children, route, meta }: ComponentWrapperProps) => {
   );
 };
 
-export const createWrapper = ({ route, meta, wrapper }: CreateWrapperProps = {}) => {
+export const createWrapper = ({ route, meta, path = '/', wrapper }: CreateWrapperProps = {}) => {
   const Component = wrapper || DefaultWrapper;
+  const history = createMemoryHistory({
+    initialEntries: path ? [path] : undefined,
+  });
 
   const Wrapper = ({ children }: PropsWithChildren) => (
-    <Component route={route} meta={meta}>
+    <Component route={route} meta={meta} history={history}>
       {children}
     </Component>
   );
