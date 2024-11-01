@@ -11,7 +11,7 @@ export function getBasePayloadValuesFromForm(formValues: CheckFormValues): Check
     frequency: formValues.frequency * 1000,
     id: formValues.id,
     job: formValues.job,
-    labels: formValues.labels,
+    labels: formValues.labels.filter(label => label.key && label.value),
     probes: formValues.probes,
     target: formValues.target,
     timeout: formValues.timeout * 1000,
