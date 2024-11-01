@@ -423,7 +423,7 @@ function getFieldOverrides() {
           value: [
             {
               title: 'Show details...',
-              url: '/a/grafana-synthetic-monitoring-app/checks/${__data.fields.id}/dashboard',
+              url: '/a/grafana-synthetic-monitoring-app/checks/${__data.fields.id}',
             },
           ],
         },
@@ -440,7 +440,7 @@ function getFieldOverrides() {
           value: [
             {
               title: 'Show details...',
-              url: '/a/grafana-synthetic-monitoring-app/checks/${__data.fields.id}/dashboard',
+              url: '/a/grafana-synthetic-monitoring-app/checks/${__data.fields.id}',
             },
           ],
         },
