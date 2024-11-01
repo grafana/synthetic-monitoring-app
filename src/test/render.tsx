@@ -1,10 +1,9 @@
 import React, { PropsWithChildren, type ReactElement, type ReactNode } from 'react';
-import { Route, Router } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom-v5-compat';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { AppPluginMeta } from '@grafana/data';
 import { render, type RenderOptions } from '@testing-library/react';
 import userEventLib from '@testing-library/user-event';
-import { createMemoryHistory, type MemoryHistory } from 'history';
 import { SM_META } from 'test/fixtures/meta';
 
 import { ProvisioningJsonData } from 'types';
@@ -16,7 +15,6 @@ import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
 
 export type ComponentWrapperProps = {
   children: ReactNode;
-  history: MemoryHistory;
   route?: string;
   meta?: Partial<AppPluginMeta<ProvisioningJsonData>>;
 };
@@ -28,16 +26,16 @@ type CreateWrapperProps = {
   wrapper?: (props: ComponentWrapperProps) => ReactElement;
 };
 
-const DefaultWrapper = ({ children, history, route, meta }: ComponentWrapperProps) => {
+const DefaultWrapper = ({ children, route, meta }: ComponentWrapperProps) => {
   return (
     <QueryClientProvider client={getQueryClient()}>
       <MetaContextProvider meta={{ ...SM_META, ...meta }}>
         <FeatureFlagProvider>
           <SMDatasourceProvider>
             <PermissionsContextProvider>
-              <Router history={history}>
+              <Routes>
                 <Route path={route}>{children}</Route>
-              </Router>
+              </Routes>
             </PermissionsContextProvider>
           </SMDatasourceProvider>
         </FeatureFlagProvider>
@@ -46,15 +44,11 @@ const DefaultWrapper = ({ children, history, route, meta }: ComponentWrapperProp
   );
 };
 
-export const createWrapper = ({ path, route, meta, wrapper }: CreateWrapperProps = {}) => {
-  const history = createMemoryHistory({
-    initialEntries: path ? [path] : undefined,
-  });
-
+export const createWrapper = ({ route, meta, wrapper }: CreateWrapperProps = {}) => {
   const Component = wrapper || DefaultWrapper;
 
   const Wrapper = ({ children }: PropsWithChildren) => (
-    <Component history={history} route={route} meta={meta}>
+    <Component route={route} meta={meta}>
       {children}
     </Component>
   );

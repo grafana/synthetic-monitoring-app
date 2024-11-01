@@ -14,6 +14,7 @@ import { ProbeUsageLink } from '../ProbeUsageLink';
 interface ProbeStatusProps {
   probe: ExtendedProbe;
   onReset: (token: string) => void;
+  readOnly?: boolean;
 }
 
 interface BadgeStatus {
@@ -22,9 +23,10 @@ interface BadgeStatus {
   icon: IconName;
 }
 
-export const ProbeStatus = ({ probe, onReset }: ProbeStatusProps) => {
+export const ProbeStatus = ({ probe, onReset, readOnly }: ProbeStatusProps) => {
   const [showResetModal, setShowResetModal] = useState(false);
   const canEdit = useCanEditProbe(probe);
+  const writeMode = canEdit && !readOnly;
 
   const styles = useStyles2(getStyles);
   const { mutate: onResetToken } = useResetProbeToken({
@@ -51,7 +53,7 @@ export const ProbeStatus = ({ probe, onReset }: ProbeStatusProps) => {
         </div>
         {canEdit && (
           <Container>
-            <Button variant="destructive" onClick={() => setShowResetModal(true)}>
+            <Button variant="destructive" disabled={!writeMode} onClick={() => setShowResetModal(true)}>
               Reset Access Token
             </Button>
             <ConfirmModal

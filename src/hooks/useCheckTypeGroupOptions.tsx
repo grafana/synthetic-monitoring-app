@@ -107,3 +107,7 @@ export function useCheckTypeGroupOptions() {
     };
   }).filter((option) => option.protocols.length > 0);
 }
+
+export function useCheckTypeGroupOption(checkTypeGroup?: CheckTypeGroup) {
+  return useCheckTypeGroupOptions().find(({ value }) => value === checkTypeGroup);
+}

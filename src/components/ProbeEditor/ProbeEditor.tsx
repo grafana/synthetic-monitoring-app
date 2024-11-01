@@ -22,6 +22,7 @@ type ProbeEditorProps = {
   probe: ExtendedProbe;
   submitText: string;
   supportingContent?: ReactNode;
+  readOnly?: boolean;
 };
 
 export const ProbeEditor = ({
@@ -31,9 +32,11 @@ export const ProbeEditor = ({
   probe,
   submitText,
   supportingContent,
+  readOnly,
 }: ProbeEditorProps) => {
   const styles = useStyles2(getStyles);
   const canEdit = useCanEditProbe(probe);
+  const writeMode = canEdit && !readOnly;
   const form = useForm<Probe>({ defaultValues: probe, resolver: zodResolver(ProbeSchema) });
   const { latitude, longitude } = form.watch();
   const handleSubmit = form.handleSubmit((formValues: Probe) => onSubmit(formValues));
@@ -76,7 +79,7 @@ export const ProbeEditor = ({
                   invalid={Boolean(errors.name)}
                   label="Probe Name"
                   description="Unique name for this probe."
-                  disabled={!canEdit}
+                  disabled={!writeMode}
                   required
                 >
                   <Input
@@ -95,7 +98,7 @@ export const ProbeEditor = ({
                     required
                     label="Latitude"
                     description="Latitude coordinates for this probe."
-                    disabled={!canEdit}
+                    disabled={!writeMode}
                   >
                     <Input
                       {...form.register('latitude', {
@@ -113,7 +116,7 @@ export const ProbeEditor = ({
                     required
                     label="Longitude"
                     description="Longitude coordinates for this probe."
-                    disabled={!canEdit}
+                    disabled={!writeMode}
                   >
                     <Input
                       {...form.register('longitude', {
@@ -126,13 +129,18 @@ export const ProbeEditor = ({
                     />
                   </Field>
                   <div className={styles.marginBottom}>
-                    <SimpleMap canEdit={canEdit} latitude={latitude} longitude={longitude} onClick={getCoordsFromMap} />
-                    {canEdit && <div className={styles.caption}>Click on the map to place the probe.</div>}
+                    <SimpleMap
+                      canEdit={writeMode}
+                      latitude={latitude}
+                      longitude={longitude}
+                      onClick={getCoordsFromMap}
+                    />
+                    {writeMode && <div className={styles.caption}>Click on the map to place the probe.</div>}
                   </div>
                   <Field
                     label="Region"
                     description="Region of this probe."
-                    disabled={!canEdit}
+                    disabled={!writeMode}
                     error={errors.region?.message}
                     invalid={Boolean(errors.region)}
                     required
@@ -143,7 +151,7 @@ export const ProbeEditor = ({
                       name="region"
                       render={({ field }) => (
                         <ProbeRegionsSelect
-                          disabled={!canEdit}
+                          disabled={!writeMode}
                           id="region"
                           invalid={Boolean(errors.region)}
                           onChange={(value) => {
@@ -155,14 +163,14 @@ export const ProbeEditor = ({
                     />
                   </Field>
                 </div>
-                {canEdit && <LabelField<Probe> disabled={!canEdit} labelDestination={'probe'} />}
+                {canEdit && <LabelField<Probe> disabled={!writeMode} labelDestination={'probe'} />}
                 <div className={styles.marginBottom}>
                   <Legend>Capabilities</Legend>
                   <HorizontalCheckboxField
                     {...form.register('capabilities.disableScriptedChecks')}
                     label="Disable scripted checks"
                     description="Prevent probe from running k6 based scripted checks."
-                    disabled={!canEdit}
+                    disabled={!writeMode}
                     id="capabilities.disableScriptedChecks"
                   />
                   <FeatureFlag name={FeatureName.BrowserChecks}>
@@ -172,7 +180,7 @@ export const ProbeEditor = ({
                           {...form.register('capabilities.disableBrowserChecks')}
                           label="Disable browser checks"
                           description="Prevent probe from running k6 based browser checks."
-                          disabled={!canEdit}
+                          disabled={!writeMode}
                           id="capabilities.disableBrowserChecks"
                         />
                       ) : null
@@ -185,7 +193,7 @@ export const ProbeEditor = ({
                       <Button
                         icon={loading ? 'fa fa-spinner' : undefined}
                         type="submit"
-                        disabled={isSubmitting || Object.keys(errors ?? {}).length > 0}
+                        disabled={!writeMode || isSubmitting || Object.keys(errors ?? {}).length > 0}
                       >
                         {submitText}
                       </Button>

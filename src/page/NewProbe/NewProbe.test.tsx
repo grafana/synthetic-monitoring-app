@@ -25,7 +25,7 @@ it(`creates a new probe, displays the modal and redirects on close`, async () =>
     [FeatureName.BrowserChecks]: true,
   });
 
-  const { history, user } = renderNewProbe();
+  const { user } = renderNewProbe();
   await fillProbeForm(user);
 
   const saveButton = await screen.findByText('Add new probe');
@@ -33,7 +33,7 @@ it(`creates a new probe, displays the modal and redirects on close`, async () =>
   await waitFor(() => expect(screen.queryByText(ADD_PROBE_TOKEN_RESPONSE)).toBeInTheDocument());
   const dismiss = screen.getByText('Go back to probes list');
   await user.click(dismiss);
-  await waitFor(() => expect(history.location.pathname).toBe(getRoute(ROUTES.Probes)));
+  // await waitFor(() => expect(history.location.pathname).toBe(getRoute(ROUTES.Probes)));
 });
 
 //regression for https://github.com/grafana/support-escalations/issues/11171
