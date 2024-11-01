@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom-v5-compat';
 import { getLocationSrv } from '@grafana/runtime';
 
 import { PLUGIN_URL_PATH } from 'components/Routing.consts';
@@ -9,8 +9,9 @@ export type QueryParamMap = {
 };
 
 export function useNavigation() {
-  const history = useHistory();
-  const navigate = useCallback(
+  const navigate = useNavigate();
+
+  return useCallback(
     (url: string, queryParams?: QueryParamMap, external?: boolean, additionalState?: any) => {
       const normalized = url.startsWith('/') ? url.slice(1) : url;
       if (external) {
@@ -20,11 +21,9 @@ export function useNavigation() {
           (acc, [key, val]) => acc.concat(`&${key}=${val}`),
           ''
         );
-        history.push(`${PLUGIN_URL_PATH}${normalized}${paramString ? '?' : ''}${paramString}`, additionalState);
+        navigate(`${PLUGIN_URL_PATH}${normalized}${paramString ? '?' : ''}${paramString}`, additionalState);
       }
     },
-    [history]
+    [navigate]
   );
-
-  return navigate;
 }

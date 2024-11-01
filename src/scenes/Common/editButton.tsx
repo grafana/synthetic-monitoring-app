@@ -1,12 +1,11 @@
 import React from 'react';
 import { SceneReactObject, SceneVariable, VariableValue } from '@grafana/scenes';
 import { LinkButton } from '@grafana/ui';
+import { generateRoutePath } from 'routes/utils';
 
 import { Check, ROUTES } from 'types';
-import { getCheckType, getCheckTypeGroup } from 'utils';
 import { useChecks } from 'data/useChecks';
 import { useCanWriteSM } from 'hooks/useDSPermission';
-import { getRoute } from 'components/Routing.utils';
 
 interface Props {
   job: SceneVariable;
@@ -37,10 +36,7 @@ function getUrl(checks: Check[], target?: VariableValue | null, job?: VariableVa
     return undefined;
   }
 
-  const checkType = getCheckType(check.settings);
-  const checkTypeGroup = getCheckTypeGroup(checkType);
-
-  return `${getRoute(ROUTES.EditCheck)}/${checkTypeGroup}/${check.id}`;
+  return `${generateRoutePath(ROUTES.EditCheck, { id: check.id ?? 'new' })}`;
 }
 
 export function getEditButton({ job, instance }: Props) {

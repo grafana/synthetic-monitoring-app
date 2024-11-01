@@ -15,7 +15,7 @@ import { FeatureFlagProvider } from './FeatureFlagProvider';
 import { InitialisedRouter } from './Routing';
 
 export const App = (props: AppRootProps<ProvisioningJsonData>) => {
-  const { meta, onNavChanged } = props;
+  const { meta } = props;
 
   useEffect(() => {
     return () => {
@@ -34,7 +34,7 @@ export const App = (props: AppRootProps<ProvisioningJsonData>) => {
           <GlobalStyles />
           <SMDatasourceProvider>
             <PermissionsContextProvider>
-              <InitialisedRouter onNavChanged={onNavChanged} />
+              <InitialisedRouter />
             </PermissionsContextProvider>
             <ReactQueryDevtools />
           </SMDatasourceProvider>

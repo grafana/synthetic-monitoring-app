@@ -1,13 +1,12 @@
-import { useLocation as useLocationFromReactRouter } from 'react-router-dom';
+import { useLocation as useLocationFromReactRouter } from 'react-router-dom-v5-compat';
 import { act, renderHook } from '@testing-library/react';
-import { Location } from 'history';
 
 import { useQueryParametersState } from './useQueryParametersState';
 
 const historyPushMock = jest.fn();
 const historyReplaceMock = jest.fn();
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
+jest.mock('react-router-dom-v5-compat', () => ({
+  ...jest.requireActual('react-router-dom-v5-compat'),
   useLocation: jest.fn(),
   useHistory: jest.fn(() => ({ replace: historyReplaceMock, push: historyPushMock })),
 }));
@@ -21,12 +20,14 @@ describe('useQueryParametersState', () => {
 
   test('Gets the initial value from query params', () => {
     const initialValue = { count: 0 };
-    const mockLocation: Location = {
+    const mockLocation = {
       search: `myKey=${JSON.stringify(initialValue)}`,
       pathname: '',
       state: '',
       hash: '',
+      key: '',
     };
+
     useLocation.mockReturnValue(mockLocation);
     const { result } = renderHook(() => useQueryParametersState({ key: 'myKey', initialValue }));
 
@@ -38,11 +39,12 @@ describe('useQueryParametersState', () => {
     const initialValue = { count: 0 };
     const newValue = { count: 10 };
 
-    const mockLocation: Location = {
+    const mockLocation = {
       search: `myKey=${JSON.stringify(initialValue)}`,
       pathname: '',
       state: '',
       hash: '',
+      key: '',
     };
 
     useLocation.mockReturnValue(mockLocation);
@@ -62,11 +64,12 @@ describe('useQueryParametersState', () => {
 
   test('Removes query params', () => {
     const initialValue = { count: 0 };
-    const mockLocation: Location = {
+    const mockLocation = {
       search: `myKey=${JSON.stringify(initialValue)}`,
       pathname: '',
       state: '',
       hash: '',
+      key: '',
     };
 
     useLocation.mockReturnValue(mockLocation);
@@ -89,11 +92,12 @@ describe('useQueryParametersState', () => {
   test('Does not remove pre-existing query params when deleting a key', () => {
     const initialValue = { count: 0 };
     const initialValueNotToBeRemoved = 'anotherValue';
-    const mockLocation: Location = {
+    const mockLocation = {
       search: `keyToRemove=${JSON.stringify(initialValue)}&anotherKey="${initialValueNotToBeRemoved}"`,
       pathname: '',
       state: '',
       hash: '',
+      key: '',
     };
 
     useLocation.mockReturnValue(mockLocation);

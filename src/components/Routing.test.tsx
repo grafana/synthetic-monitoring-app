@@ -10,7 +10,7 @@ import { InitialisedRouter, UninitialisedRouter } from './Routing';
 import { getRoute } from './Routing.utils';
 
 function renderInitialisedRouting(options?: CustomRenderOptions) {
-  return render(<InitialisedRouter onNavChanged={jest.fn} />, options);
+  return render(<InitialisedRouter />, options);
 }
 
 function renderUninitialisedRouting(options?: CustomRenderOptions) {

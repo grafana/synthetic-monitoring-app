@@ -1,1 +1,0 @@
-export { NewScriptedCheck } from './NewScriptedCheck';

@@ -1,12 +1,11 @@
 import React from 'react';
-import { Redirect } from 'react-router-dom';
+import { Navigate } from 'react-router-dom-v5-compat';
 import { LoadingPlaceholder } from '@grafana/ui';
+import { generateRoutePath } from 'routes/utils';
 
 import { ROUTES } from 'types';
 import { useChecks } from 'data/useChecks';
 import { useQuery } from 'hooks/useQuery';
-
-import { PLUGIN_URL_PATH } from './Routing.consts';
 
 export function SceneRedirecter() {
   const queryParams = useQuery();
@@ -21,8 +20,8 @@ export function SceneRedirecter() {
   const check = data?.find((check) => check.job === job && check.target === instance);
 
   if (!check || !check.id) {
-    return <Redirect to={ROUTES.Home} />;
+    return <Navigate to={generateRoutePath(ROUTES.Home)} replace />;
   }
 
-  return <Redirect to={`${PLUGIN_URL_PATH}${ROUTES.Checks}/${check.id}/dashboard`} />;
+  return <Navigate to={generateRoutePath(ROUTES.CheckDashboard, { id: check.id })} />;
 }
