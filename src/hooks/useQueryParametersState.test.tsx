@@ -3,12 +3,14 @@ import { act, renderHook } from '@testing-library/react';
 
 import { useQueryParametersState } from './useQueryParametersState';
 
-const historyPushMock = jest.fn();
-const historyReplaceMock = jest.fn();
+const navigateMock = jest.fn();
+
+// useLocation: jest.fn(),
+
 jest.mock('react-router-dom-v5-compat', () => ({
   ...jest.requireActual('react-router-dom-v5-compat'),
+  useNavigate: jest.fn(() => navigateMock),
   useLocation: jest.fn(),
-  useHistory: jest.fn(() => ({ replace: historyReplaceMock, push: historyPushMock })),
 }));
 
 const useLocation = useLocationFromReactRouter as jest.MockedFunction<typeof useLocationFromReactRouter>;
@@ -32,7 +34,7 @@ describe('useQueryParametersState', () => {
     const { result } = renderHook(() => useQueryParametersState({ key: 'myKey', initialValue }));
 
     expect(result.current[0]).toEqual({ count: 0 });
-    expect(historyReplaceMock).toHaveBeenCalledTimes(0);
+    expect(navigateMock).toHaveBeenCalledTimes(0);
   });
 
   test('Updates query params', () => {
@@ -58,8 +60,10 @@ describe('useQueryParametersState', () => {
       updateState(newValue);
     });
 
-    expect(historyReplaceMock).toHaveBeenCalledTimes(1);
-    expect(historyReplaceMock).toHaveBeenCalledWith(`/?myKey=${encodeURIComponent(JSON.stringify(newValue))}`);
+    expect(navigateMock).toHaveBeenCalledTimes(1);
+    expect(navigateMock).toHaveBeenCalledWith(`/?myKey=${encodeURIComponent(JSON.stringify(newValue))}`, {
+      replace: true,
+    });
   });
 
   test('Removes query params', () => {
@@ -85,8 +89,8 @@ describe('useQueryParametersState', () => {
 
     expect(result.current[0]).toEqual(initialValue);
 
-    expect(historyReplaceMock).toHaveBeenCalledTimes(1);
-    expect(historyReplaceMock).toHaveBeenCalledWith('/');
+    expect(navigateMock).toHaveBeenCalledTimes(1);
+    expect(navigateMock).toHaveBeenCalledWith('/', { replace: true });
   });
 
   test('Does not remove pre-existing query params when deleting a key', () => {
@@ -113,7 +117,7 @@ describe('useQueryParametersState', () => {
 
     expect(result.current[0]).toEqual(initialValue);
 
-    expect(historyReplaceMock).toHaveBeenCalledTimes(1);
+    expect(navigateMock).toHaveBeenCalledTimes(1);
     const { result: anotherKeyState } = renderHook(() =>
       useQueryParametersState({ key: 'anotherKey', initialValue: '' })
     );

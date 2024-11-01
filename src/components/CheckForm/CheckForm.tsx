@@ -1,4 +1,4 @@
-import React, { forwardRef, RefObject, useCallback, useState } from 'react';
+import React, { forwardRef, RefObject, useCallback, useMemo, useState } from 'react';
 import { FormProvider, SubmitErrorHandler, SubmitHandler, useForm } from 'react-hook-form';
 import { generatePath } from 'react-router-dom-v5-compat';
 import { GrafanaTheme2 } from '@grafana/data';
@@ -157,23 +157,24 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
     </Stack>
   );
 
-  const isNew = !check?.id;
-  const navModel = isNew
-    ? createNavModel({ text: `Choose a check type`, url: generateRoutePath(ROUTES.ChooseCheckGroup) }, [
-        { text: `${checkTypeGroupOption?.label}` },
-      ])
-    : createNavModel(
-        {
-          text: check?.job ?? '...',
-          url: check ? `${generatePath(getRoute(ROUTES.CheckDashboard), check)}` : undefined,
-        },
-        [{ text: `Edit` }]
-      );
+  const navModel = useMemo(() => {
+    return isExistingCheck
+      ? createNavModel(
+          {
+            text: check?.job!,
+            url: generatePath(getRoute(ROUTES.CheckDashboard), check),
+          },
+          [{ text: `Edit` }]
+        )
+      : createNavModel({ text: `Choose a check type`, url: generateRoutePath(ROUTES.ChooseCheckGroup) }, [
+          { text: `${checkTypeGroupOption?.label}` },
+        ]);
+  }, [check, checkTypeGroupOption, isExistingCheck]);
 
   return (
     <PluginPage
       pageNav={navModel}
-      renderTitle={isNew ? undefined : () => <Text element="h1">Editing {check?.job}</Text>}
+      renderTitle={isExistingCheck ? () => <Text element="h1">{`Editing ${check?.job}`}</Text> : undefined}
     >
       <FormProvider {...formMethods}>
         <CheckFormContextProvider disabled={isDisabled}>

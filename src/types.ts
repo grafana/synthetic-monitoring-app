@@ -686,6 +686,7 @@ export enum ROUTES {
   EditProbe = 'probes/:id/edit',
   Home = 'home',
   NewCheck = 'checks/new',
+  NewCheckType = 'checks/new/:checkTypeGroup',
   NewProbe = 'probes/new',
   Probes = 'probes',
   Redirect = 'redirect',
