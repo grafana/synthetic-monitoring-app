@@ -172,6 +172,7 @@ const getStyles = (theme: GrafanaTheme2) => {
       containerName,
       containerType: `inline-size`,
       height: '100%',
+      contain: 'layout',
     }),
     container: css({
       display: 'grid',
