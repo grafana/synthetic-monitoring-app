@@ -73,6 +73,162 @@
       "path": "datasource/plugin.json"
     }
   ],
+  "roles": [
+    {
+      "role": {
+        "name": "Checks reader",
+        "description": "Read checks in the Synthetic Monitoring app",
+        "permissions": [{ "action": "grafana-synthetic-monitoring-app.checks:read" }]
+      },
+      "grants": ["Admin", "Editor", "Viewer"]
+    },
+    {
+      "role": {
+        "name": "Checks writer",
+        "description": "Create, edit and delete checks in the Synthetic Monitoring app",
+        "permissions": [
+          { "action": "grafana-synthetic-monitoring-app.checks:edit" },
+          { "action": "grafana-synthetic-monitoring-app.checks:read" },
+          { "action": "grafana-synthetic-monitoring-app.checks:delete" }
+        ]
+      },
+      "grants": ["Admin", "Editor"]
+    },
+    {
+      "role": {
+        "name": "Probes reader",
+        "description": "Read probes in the Synthetic Monitoring app",
+        "permissions": [{ "action": "grafana-synthetic-monitoring-app.probes:read" }]
+      },
+      "grants": ["Admin", "Editor", "Viewer"]
+    },
+    {
+      "role": {
+        "name": "Probes writer",
+        "description": "Create, edit and delete probes in the Synthetic Monitoring app",
+        "permissions": [
+          { "action": "grafana-synthetic-monitoring-app.probes:edit" },
+          { "action": "grafana-synthetic-monitoring-app.probes:read" },
+          { "action": "grafana-synthetic-monitoring-app.probes:delete" }
+        ]
+      },
+      "grants": ["Admin", "Editor"]
+    },
+    {
+      "role": {
+        "name": "Alerts reader",
+        "description": "Read alerts in the Synthetic Monitoring app",
+        "permissions": [{ "action": "grafana-synthetic-monitoring-app.alerts:read" }]
+      },
+      "grants": ["Admin", "Editor", "Viewer"]
+    },
+    {
+      "role": {
+        "name": "Alerts writer",
+        "description": "Create, edit and delete alerts in the Synthetic Monitoring app",
+        "permissions": [
+          { "action": "grafana-synthetic-monitoring-app.alerts:edit" },
+          { "action": "grafana-synthetic-monitoring-app.alerts:read" },
+          { "action": "grafana-synthetic-monitoring-app.alerts:delete" }
+        ]
+      },
+      "grants": ["Admin", "Editor"]
+    },
+    {
+      "role": {
+        "name": "Thresholds reader",
+        "description": "Read thresholds in the Synthetic Monitoring app",
+        "permissions": [{ "action": "grafana-synthetic-monitoring-app.thresholds:read" }]
+      },
+      "grants": ["Admin", "Editor", "Viewer"]
+    },
+    {
+      "role": {
+        "name": "Thresholds writer",
+        "description": "Read and edit thresholds in the Synthetic Monitoring app",
+        "permissions": [
+          { "action": "grafana-synthetic-monitoring-app.thresholds:edit" },
+          { "action": "grafana-synthetic-monitoring-app.thresholds:read" }
+        ]
+      },
+      "grants": ["Admin", "Editor"]
+    },
+    {
+      "role": {
+        "name": "Access tokens writer",
+        "description": "Create and delete access tokens in the Synthetic Monitoring app",
+        "permissions": [
+          { "action": "grafana-synthetic-monitoring-app.access-tokens:create" },
+          { "action": "grafana-synthetic-monitoring-app.access-tokens:delete" }
+        ]
+      },
+      "grants": ["Admin", "Editor"]
+    },
+    {
+      "role": {
+        "name": "Full admin access",
+        "description": "Full access to write and manage checks, probes, alerts, thresholds, and access tokens as well as enabling/disabling the Synthetic Monitoring plugin",
+        "permissions": [
+          { "action": "grafana-synthetic-monitoring-app.plugin:enable" },
+          { "action": "grafana-synthetic-monitoring-app.plugin:disable" },
+          { "action": "grafana-synthetic-monitoring-app.checks:write" },
+          { "action": "grafana-synthetic-monitoring-app.probes:write" },
+          { "action": "grafana-synthetic-monitoring-app.alerts:write" },
+          { "action": "grafana-synthetic-monitoring-app.thresholds:write" },
+          { "action": "grafana-synthetic-monitoring-app.tokens:write" },
+          { "action": "grafana-synthetic-monitoring-app.checks:read" },
+          { "action": "grafana-synthetic-monitoring-app.probes:read" },
+          { "action": "grafana-synthetic-monitoring-app.alerts:read" },
+          { "action": "grafana-synthetic-monitoring-app.thresholds:read" },
+          { "action": "grafana-synthetic-monitoring-app.tokens:read" },
+          { "action": "grafana-synthetic-monitoring-app.checks:delete" },
+          { "action": "grafana-synthetic-monitoring-app.probes:delete" },
+          { "action": "grafana-synthetic-monitoring-app.alerts:delete" },
+          { "action": "grafana-synthetic-monitoring-app.thresholds:delete" },
+          { "action": "grafana-synthetic-monitoring-app.tokens:delete" }
+        ]
+      },
+      "grants": ["Admin"]
+    },
+    {
+      "role": {
+        "name": "Full write access",
+        "description": "Add, update and delete checks, probes, alerts, thresholds, and access tokens in the Synthetic Monitoring app",
+        "permissions": [
+          { "action": "grafana-synthetic-monitoring-app.checks:write" },
+          { "action": "grafana-synthetic-monitoring-app.probes:write" },
+          { "action": "grafana-synthetic-monitoring-app.alerts:write" },
+          { "action": "grafana-synthetic-monitoring-app.thresholds:write" },
+          { "action": "grafana-synthetic-monitoring-app.tokens:write" },
+          { "action": "grafana-synthetic-monitoring-app.checks:read" },
+          { "action": "grafana-synthetic-monitoring-app.probes:read" },
+          { "action": "grafana-synthetic-monitoring-app.alerts:read" },
+          { "action": "grafana-synthetic-monitoring-app.thresholds:read" },
+          { "action": "grafana-synthetic-monitoring-app.tokens:read" },
+          { "action": "grafana-synthetic-monitoring-app.checks:delete" },
+          { "action": "grafana-synthetic-monitoring-app.probes:delete" },
+          { "action": "grafana-synthetic-monitoring-app.alerts:delete" },
+          { "action": "grafana-synthetic-monitoring-app.thresholds:delete" },
+          { "action": "grafana-synthetic-monitoring-app.tokens:delete" }
+        ]
+      },
+      "grants": ["Admin", "Editor"]
+    },
+    {
+      "role": {
+        "name": "Full read-only access",
+        "description": "Read checks, probes, alerts, thresholds, and access tokens in the Synthetic Monitoring app",
+        "permissions": [
+          { "action": "grafana-synthetic-monitoring-app.checks:read" },
+          { "action": "grafana-synthetic-monitoring-app.probes:read" },
+          { "action": "grafana-synthetic-monitoring-app.alerts:read" },
+          { "action": "grafana-synthetic-monitoring-app.thresholds:read" },
+          { "action": "grafana-synthetic-monitoring-app.tokens:read" }
+        ]
+      },
+      "grants": ["Admin", "Editor", "Viewer"]
+    }
+  ],
   "dependencies": {
     "grafanaDependency": ">=11.3.0",
     "grafanaVersion": "11.3"
