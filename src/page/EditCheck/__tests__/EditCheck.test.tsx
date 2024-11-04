@@ -7,20 +7,12 @@ import { runTestAsViewer } from 'test/utils';
 import { renderEditForm } from 'page/__testHelpers__/checkForm';
 
 describe(`<EditCheck />`, () => {
-  // TODO: Fix this test
-  it.skip(`renders the can't find check modal when given a bad check id`, async () => {
-    await renderEditForm({ id: -1, settings: { scripted: { script: `` } } });
+  it(`renders the can't find check modal when given a bad check id`, async () => {
+    await renderEditForm(-1);
     expect(screen.getByText(/We were unable to find your check/)).toBeInTheDocument();
   });
 
-  // TODO: Fix this test
-  it.skip(`renders the can't find check modal when given a bad check id`, async () => {
-    await renderEditForm({ id: -1, settings: { scripted: { script: `` } } });
-    expect(screen.getByText(/We were unable to find your check/)).toBeInTheDocument();
-  });
-
-  // TODO: Fix this test
-  it.skip(`renders the error modal when unable to fetch the check`, async () => {
+  it(`renders the error modal when unable to fetch the check`, async () => {
     server.use(
       apiRoute(`listChecks`, {
         result: () => {
@@ -31,12 +23,11 @@ describe(`<EditCheck />`, () => {
       })
     );
 
-    await renderEditForm(BASIC_HTTP_CHECK);
+    await renderEditForm(BASIC_HTTP_CHECK.id);
     expect(screen.getByText(/An error has occurred/)).toBeInTheDocument();
   });
 
-  // TODO: Fix this test
-  it.skip(`should not show the limits warning when the limits are reached`, async () => {
+  it(`should not show the limits warning when the limits are reached`, async () => {
     server.use(
       apiRoute('getTenantLimits', {
         result: () => {
@@ -54,14 +45,14 @@ describe(`<EditCheck />`, () => {
       })
     );
 
-    await renderEditForm(BASIC_HTTP_CHECK);
+    await renderEditForm(BASIC_HTTP_CHECK.id);
     expect(screen.queryByText(/Check limit reached/)).not.toBeInTheDocument();
   });
 
   // TODO: Fix this test
-  it.skip(`disables the form when the user is a viewer`, async () => {
+  it(`disables the form when the user is a viewer`, async () => {
     runTestAsViewer();
-    await renderEditForm(BASIC_HTTP_CHECK);
+    await renderEditForm(BASIC_HTTP_CHECK.id);
     expect(screen.getByRole(`button`, { name: `Submit` })).toBeDisabled();
   });
 });

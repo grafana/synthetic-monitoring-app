@@ -5,6 +5,7 @@ import { DataTestIds } from '../../test/dataTestIds';
 
 export function TestRouteInfo({ path, route }: { path?: string; route?: string }) {
   const location = useLocation();
+
   const params = useParams();
   return (
     <div data-testid={DataTestIds.TEST_ROUTER_INFO} aria-hidden>

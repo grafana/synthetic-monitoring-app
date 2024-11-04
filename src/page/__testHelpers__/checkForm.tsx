@@ -59,16 +59,20 @@ export async function renderNewForm(checkType: CheckType) {
   };
 }
 
-export async function renderEditForm(check: Pick<Check, 'id' | 'settings'>) {
+export async function renderEditForm(id: Check['id']) {
   const { record, read } = getServerRequests();
   server.use(apiRoute(`updateCheck`, {}, record));
 
+  if (!Number.isInteger(id)) {
+    throw new Error('id must be an integer');
+  }
+
   const res = render(<EditCheck />, {
-    route: getRoute(ROUTES.EditCheck),
-    path: generateRoutePath(ROUTES.EditCheck, { id: check.id! }),
+    route: ROUTES.EditCheck,
+    path: generateRoutePath(ROUTES.EditCheck, { id: id! }),
   });
 
-  await waitFor(async () => await screen.findByText(/^Editing/), { timeout: 10000 });
+  await waitFor(async () => screen.getByTestId('page-ready'), { timeout: 10000 });
 
   return {
     ...res,
