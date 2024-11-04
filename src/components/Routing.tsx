@@ -107,7 +107,7 @@ export const InitialisedRouter = () => {
       <Route path={ROUTES.Scene} element={<SceneRedirecter />} />
 
       {/* TODO: Create 404 instead of navigating to home(?) */}
-      <Route path="*" element={<div>Route route fallthrough</div>} />
+      <Route path="*" element={<Navigate to={`../${ROUTES.Home}`} replace />} />
     </Routes>
   );
 };
