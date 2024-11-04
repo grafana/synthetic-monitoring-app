@@ -26,7 +26,7 @@
       "path": "install",
       "method": "*",
       "url": "{{ .JsonData.apiHost }}/api/v1/register/install",
-      "reqRole": "Editor",
+      "reqAction": "grafana-synthetic-monitoring-app.plugin:enable",
       "headers": [
         {
           "name": "Authorization",
@@ -40,6 +40,7 @@
       "type": "page",
       "name": "Home",
       "path": "/a/grafana-synthetic-monitoring-app/home",
+      "action": "grafana-synthetic-monitoring-app.checks:read",
       "addToNav": true,
       "defaultNav": true
     },
@@ -47,18 +48,21 @@
       "type": "page",
       "name": "Checks",
       "path": "/a/grafana-synthetic-monitoring-app/checks",
+      "action": "grafana-synthetic-monitoring-app.checks:read",
       "addToNav": true
     },
     {
       "type": "page",
       "name": "Probes",
       "path": "/a/grafana-synthetic-monitoring-app/probes",
+      "action": "grafana-synthetic-monitoring-app.probes:read",
       "addToNav": true
     },
     {
       "type": "page",
       "name": "Alerts",
       "path": "/a/grafana-synthetic-monitoring-app/alerts",
+      "action": "grafana-synthetic-monitoring-app.alerts:read",
       "addToNav": true
     },
     {
