@@ -31,7 +31,22 @@ type CreateWrapperProps = {
   wrapper?: (props: ComponentWrapperProps) => ReactElement;
 };
 
-const DefaultWrapper = ({ children, route = '/', history, meta }: ComponentWrapperProps) => {
+const APP_ROOT = '/a/grafana-synthetic-monitoring-app';
+
+function getRelativeRoute(route?: string) {
+  if (!route) {
+    return '*';
+  }
+  if (route.includes(`${APP_ROOT}/`)) {
+    return route.replace(`${APP_ROOT}/`, '');
+  }
+
+  return route;
+}
+
+const DefaultWrapper = ({ children, route: _route, history, meta }: ComponentWrapperProps) => {
+  const route = getRelativeRoute(_route);
+
   return (
     <QueryClientProvider client={getQueryClient()}>
       <MetaContextProvider meta={{ ...SM_META, ...meta }}>
@@ -41,13 +56,33 @@ const DefaultWrapper = ({ children, route = '/', history, meta }: ComponentWrapp
               <MemoryRouter initialEntries={history.entries}>
                 <CompatRouter>
                   <Routes>
-                    <Route path={route} element={children} />
+                    <Route path={APP_ROOT}>
+                      <Route
+                        path={route}
+                        element={
+                          <>
+                            <TestRouteInfo route={route} />
+                            {children}
+                          </>
+                        }
+                      />
+                    </Route>
+                    <Route path={route}>
+                      <Route
+                        path={route}
+                        element={
+                          <>
+                            <TestRouteInfo route={route} />
+                            {children}
+                          </>
+                        }
+                      />
+                    </Route>
                     <Route
                       path="*"
                       element={
                         <>
                           <TestRouteInfo route={route} />
-                          {children}
                         </>
                       }
                     />
@@ -62,10 +97,11 @@ const DefaultWrapper = ({ children, route = '/', history, meta }: ComponentWrapp
   );
 };
 
-export const createWrapper = ({ route, meta, path = '/', wrapper }: CreateWrapperProps = {}) => {
+export const createWrapper = ({ route = '*', meta, path: _path, wrapper }: CreateWrapperProps = {}) => {
+  const path = _path && _path.startsWith(`${APP_ROOT}/`) ? _path : `${APP_ROOT}/${_path}`.split('//').join('/');
   const Component = wrapper || DefaultWrapper;
   const history = createMemoryHistory({
-    initialEntries: path ? [path] : undefined,
+    initialEntries: path ? [path] : [APP_ROOT],
   });
 
   const Wrapper = ({ children }: PropsWithChildren) => (

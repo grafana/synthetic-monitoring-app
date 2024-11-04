@@ -24,7 +24,7 @@ describe('useQueryParametersState', () => {
     const initialValue = { count: 0 };
     const mockLocation = {
       search: `myKey=${JSON.stringify(initialValue)}`,
-      pathname: '',
+      pathname: '/',
       state: '',
       hash: '',
       key: '',
@@ -43,7 +43,7 @@ describe('useQueryParametersState', () => {
 
     const mockLocation = {
       search: `myKey=${JSON.stringify(initialValue)}`,
-      pathname: '',
+      pathname: '/',
       state: '',
       hash: '',
       key: '',
@@ -70,7 +70,7 @@ describe('useQueryParametersState', () => {
     const initialValue = { count: 0 };
     const mockLocation = {
       search: `myKey=${JSON.stringify(initialValue)}`,
-      pathname: '',
+      pathname: '/',
       state: '',
       hash: '',
       key: '',
@@ -98,7 +98,7 @@ describe('useQueryParametersState', () => {
     const initialValueNotToBeRemoved = 'anotherValue';
     const mockLocation = {
       search: `keyToRemove=${JSON.stringify(initialValue)}&anotherKey="${initialValueNotToBeRemoved}"`,
-      pathname: '',
+      pathname: '/',
       state: '',
       hash: '',
       key: '',

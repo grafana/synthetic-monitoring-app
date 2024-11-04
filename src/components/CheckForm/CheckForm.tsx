@@ -83,7 +83,7 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
   const schema = useCheckFormSchema(check);
   const styles = useStyles2(getStyles);
   const status = useCheckTypeOptions().find((option) => option.value === checkType)?.status;
-  const isExistingCheck = Boolean(check);
+  const isExistingCheck = !!(check && check?.id !== undefined);
   const { isLoading, isOverBrowserLimit, isOverHgExecutionLimit, isOverCheckLimit, isOverScriptedLimit, isReady } =
     useLimits();
   const overLimit =
@@ -167,7 +167,7 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
           [{ text: `Edit` }]
         )
       : createNavModel({ text: `Choose a check type`, url: generateRoutePath(ROUTES.ChooseCheckGroup) }, [
-          { text: `${checkTypeGroupOption?.label}` },
+          { text: `${checkTypeGroupOption?.label ?? 'Check not found'}` },
         ]);
   }, [check, checkTypeGroupOption, isExistingCheck]);
 

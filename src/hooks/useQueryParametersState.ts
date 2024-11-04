@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom-v5-compat';
+import { useLocation, useNavigate } from 'react-router-dom-v5-compat';
 
 import { useSearchParams } from './useSearchParams';
 
@@ -24,7 +24,7 @@ export const useQueryParametersState = <ValueType>({
   strategy = HistoryStrategy.Replace,
 }: QueryParametersStateProps<ValueType>): [ValueType, (value: ValueType | null) => void] => {
   const navigate = useNavigate();
-
+  const location = useLocation();
   const queryParams = useSearchParams();
 
   const existingValue = queryParams.get(key);

@@ -17,7 +17,6 @@ import { getSelect, selectOption } from 'test/utils';
 import { Check, FeatureName, ROUTES } from 'types';
 
 import { generateRoutePath } from '../../routes';
-import { getRoute } from '../Routing.utils';
 import { CheckList } from './CheckList';
 
 jest.mock('hooks/useNavigation', () => {
@@ -43,9 +42,8 @@ const renderCheckList = async (checks = BASIC_CHECK_LIST, searchParams = '') => 
   const path = `${generateRoutePath(ROUTES.Checks)}?${searchParams}`;
 
   const res = render(<CheckList />, {
-    route: getRoute(ROUTES.Checks),
+    route: ROUTES.Checks,
     path,
-    // path: `${PLUGIN_URL_PATH}${ROUTES.Checks}?${searchParams}`,
   });
 
   await waitFor(() => expect(screen.getByText('Add new check')).toBeInTheDocument(), { timeout: 5000 });
@@ -305,7 +303,7 @@ test('clicking add new is handled', async () => {
 });
 
 // TODO: Fix this test
-test.skip('cascader adds labels to label filter', async () => {
+test('cascader adds labels to label filter', async () => {
   const { user } = await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK]);
   const additionalFilters = await screen.findByText(/Additional filters/i);
   await user.click(additionalFilters);
@@ -327,11 +325,11 @@ test.skip('cascader adds labels to label filter', async () => {
 
 test('Sorting by success rate should not crash', async () => {
   const { user } = await renderCheckList();
-  const sortPicker = await screen.getByLabelText('Sort checks by');
+  const sortPicker = screen.getByLabelText('Sort checks by');
   await user.click(sortPicker);
   await user.click(screen.getByText(`Asc. Reachability`, { selector: 'span' }));
 
-  const checks = await screen.findAllByTestId('check-card');
+  const checks = await waitFor(() => screen.findAllByTestId('check-card'), { timeout: 5000 });
   expect(checks.length).toBe(BASIC_CHECK_LIST.length);
 });
 
@@ -479,7 +477,7 @@ describe(`bulk select behaviour`, () => {
     });
   });
 
-  test.skip(`bulk select is disabled when no checks are rendered because of an empty search`, async () => {
+  test(`bulk select is disabled when no checks are rendered because of an empty search`, async () => {
     const { user } = await renderCheckList();
     const searchInput = await screen.findByLabelText('Search checks');
     const selectAll = await screen.findByLabelText('Select all');
@@ -493,7 +491,7 @@ describe(`bulk select behaviour`, () => {
     expect(selectAll).not.toBeChecked();
   });
 
-  test.skip(`bulk selected items are reduced when a filter is added`, async () => {
+  test(`bulk selected items are reduced when a filter is added`, async () => {
     const { read, record } = getServerRequests();
     server.use(apiRoute(`bulkUpdateChecks`, {}, record));
     const { user } = await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK]);
@@ -527,7 +525,7 @@ describe(`bulk select behaviour`, () => {
     expect(checks[1]).toHaveTextContent(`44640 executions / month`);
   });
 
-  test.skip(`Sorts by check execution frequency`, async () => {
+  test(`Sorts by check execution frequency`, async () => {
     const { user } = await renderCheckList([BASIC_TCP_CHECK, BASIC_TRACEROUTE_CHECK]);
     const checks = await screen.findAllByTestId('check-card');
 
