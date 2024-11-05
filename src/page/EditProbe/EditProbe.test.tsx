@@ -9,6 +9,8 @@ import { Probe, ROUTES } from 'types';
 import { formatDate } from 'utils';
 import { getRoute } from 'components/Routing.utils';
 
+import { generateRoutePath } from '../../routes';
+import { DataTestIds } from '../../test/dataTestIds';
 import { EditProbe } from './EditProbe';
 
 const renderEditProbe = (probe: Probe) => {
@@ -55,7 +57,9 @@ describe(`Private probes`, () => {
     const saveButton = getSaveButton();
     await user.click(saveButton!);
 
-    //     await waitFor(() => expect(history.location.pathname).toBe(getRoute(ROUTES.Probes)));
+    expect(screen.getByTestId(DataTestIds.TEST_ROUTER_INFO_PATHNAME)).toHaveTextContent(
+      generateRoutePath(ROUTES.Probes)
+    );
 
     const { body } = await read();
 
