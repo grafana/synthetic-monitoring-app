@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom-v5-compat';
 import { PluginPage } from '@grafana/runtime';
-import { LinkButton } from '@grafana/ui';
+import { LinkButton, TextLink } from '@grafana/ui';
 import { generateRoutePath } from 'routes/utils';
 
 import { ExtendedProbe, type Probe, type ProbePageParams, ROUTES } from 'types';
@@ -14,11 +14,13 @@ import { ProbeStatus } from 'components/ProbeStatus';
 import { ProbeTokenModal } from 'components/ProbeTokenModal';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
 
+import { getRoute } from '../../components/Routing.utils';
 import { PluginPageNotFound } from '../NotFound/NotFound';
 import { getErrorInfo, getTitle } from './EditProbe.utils';
 
 export const EditProbe = ({ readOnly }: { readOnly?: boolean }) => {
   const [probe, setProbe] = useState<ExtendedProbe>();
+  const [errorMessage, setErrorMessage] = useState<string>('');
   const navigate = useNavigate();
   const canEdit = useCanEditProbe(probe);
 
@@ -28,6 +30,14 @@ export const EditProbe = ({ readOnly }: { readOnly?: boolean }) => {
       navigate(generateRoutePath(ROUTES.ViewProbe, { id: probe.id! }), { replace: true });
     }
   }, [canEdit, navigate, probe, readOnly]);
+  if (errorMessage) {
+    return (
+      <PluginPageNotFound breadcrumb="Probe not found">
+        Unable to find the probe you are looking for. Try the{' '}
+        <TextLink href={getRoute(ROUTES.Probes)}>probe listing</TextLink> page.
+      </PluginPageNotFound>
+    );
+  }
 
   return (
     <PluginPage
@@ -43,7 +53,7 @@ export const EditProbe = ({ readOnly }: { readOnly?: boolean }) => {
       }
     >
       <QueryErrorBoundary>
-        <EditProbeFetch readOnly={readOnly} onProbeFetch={setProbe} />
+        <EditProbeFetch readOnly={readOnly} onProbeFetch={setProbe} onError={setErrorMessage} />
       </QueryErrorBoundary>
     </PluginPage>
   );
@@ -52,9 +62,11 @@ export const EditProbe = ({ readOnly }: { readOnly?: boolean }) => {
 const EditProbeFetch = ({
   onProbeFetch,
   readOnly,
+  onError,
 }: {
   readOnly?: boolean;
   onProbeFetch: (probe: ExtendedProbe) => void;
+  onError?: (message: string) => void;
 }) => {
   const { id } = useParams<ProbePageParams>();
   const [probe, isLoading] = useExtendedProbe(Number(id));
@@ -64,12 +76,12 @@ const EditProbeFetch = ({
     if (probe) {
       onProbeFetch(probe);
     }
-  }, [isLoading, navigate, onProbeFetch, probe]);
+    if (!isLoading && !probe) {
+      onError && onError('Probe not found');
+    }
+  }, [isLoading, navigate, onError, onProbeFetch, probe]);
 
   if (!probe) {
-    if (!isLoading) {
-      return <PluginPageNotFound />;
-    }
     return null;
   }
 
