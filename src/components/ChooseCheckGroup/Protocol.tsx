@@ -26,7 +26,7 @@ export const Protocol = ({ href, label, tooltip }: ProtocolOption) => {
 
   if (href) {
     return (
-      <TextLink className={styles.badgeLink} href={href} inline={false} color="secondary">
+      <TextLink className={styles.badgeLink} href={href} inline={false} color="primary">
         {label}
       </TextLink>
     );

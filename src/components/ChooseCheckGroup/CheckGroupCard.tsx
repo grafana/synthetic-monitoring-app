@@ -41,7 +41,7 @@ export const CheckGroupCard = ({ group }: { group: CheckTypeGroupOption }) => {
           </Stack>
         </Card.Heading>
         <div className={styles.cardDescription}>{group.description}</div>
-        <div>
+        <div className={styles.cardButton}>
           <LinkButton
             icon={!isReady ? 'fa fa-spinner' : undefined}
             disabled={disabled}
@@ -116,7 +116,11 @@ const getStyles = (theme: GrafanaTheme2) => ({
 
   cardDescription: css({
     maxHeight: '70px',
-    overflowY: 'scroll',
+    overflow: 'hidden',
+  }),
+
+  cardButton: css({
+    marginTop: 'auto',
   }),
 
   cardFooter: css({
@@ -132,6 +136,10 @@ const getStyles = (theme: GrafanaTheme2) => ({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'wrap',
+
+    '> div:first-of-type': {
+      height: '100%',
+    },
   }),
   desc: css({
     color: theme.colors.text.secondary,
@@ -140,9 +148,8 @@ const getStyles = (theme: GrafanaTheme2) => ({
     color: theme.colors.text.primary,
   }),
   protocols: css({
-    marginTop: theme.spacing(1),
     borderTop: `1px solid ${theme.colors.border.weak}`,
-    color: theme.colors.text.secondary,
+    color: theme.colors.text.primary,
     display: 'flex',
     height: '35px',
     alignItems: 'flex-end',

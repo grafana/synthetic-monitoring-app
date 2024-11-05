@@ -55,7 +55,7 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
       {
         label: `HTTP`,
         featureToggle: FeatureName.ScriptedChecks,
-        href: `${getRoute(ROUTES.NewCheck)}/${CheckTypeGroup.Scripted}?checkType=${CheckType.Scripted}`,
+        href: `${getRoute(ROUTES.NewCheck)}/${CheckTypeGroup.Scripted}`,
       },
       // todo: we don't support these yet
       // { label: `gRPC` },
@@ -87,7 +87,7 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
       {
         label: `HTTP`,
         featureToggle: FeatureName.BrowserChecks,
-        href: `${getRoute(ROUTES.NewCheck)}/${CheckTypeGroup.Browser}?checkType=${CheckType.Browser}`,
+        href: `${getRoute(ROUTES.NewCheck)}/${CheckTypeGroup.Browser}`,
       },
     ],
   },
