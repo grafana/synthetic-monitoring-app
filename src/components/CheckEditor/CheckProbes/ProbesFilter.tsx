@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Icon, Input, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
@@ -27,6 +27,12 @@ export const ProbesFilter = ({ probes, onSearch }: { probes: Probe[]; onSearch: 
     onSearch(filteredProbes);
   };
 
+  const handleKeyDown = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+    }
+  }, []);
+
   return (
     <div className={styles.searchInput}>
       <Input
@@ -34,6 +40,7 @@ export const ProbesFilter = ({ probes, onSearch }: { probes: Probe[]; onSearch: 
         placeholder="Find a probe by city, country, region or provider"
         onChange={handleSearch}
         id={PROBES_FILTER_ID}
+        onKeyDown={handleKeyDown}
       />
     </div>
   );

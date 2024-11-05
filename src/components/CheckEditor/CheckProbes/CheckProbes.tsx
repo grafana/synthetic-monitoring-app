@@ -16,7 +16,7 @@ interface CheckProbesProps {
   invalid?: boolean;
   error?: string;
 }
-export const CheckProbes = forwardRef(({ probes, availableProbes, onChange, error }: CheckProbesProps, ref) => {
+export const CheckProbes = forwardRef(({ probes, availableProbes, onChange, error }: CheckProbesProps) => {
   const [filteredProbes, setFilteredProbes] = useState<Probe[]>(availableProbes);
 
   const publicProbes = useMemo(() => filteredProbes.filter((probe) => probe.public), [filteredProbes]);
@@ -35,6 +35,8 @@ export const CheckProbes = forwardRef(({ probes, availableProbes, onChange, erro
     [publicProbes]
   );
 
+  const showPrivateProbesDiscovery = privateProbes.length === 0 && filteredProbes.length === availableProbes.length;
+
   return (
     <div>
       <Field
@@ -45,7 +47,7 @@ export const CheckProbes = forwardRef(({ probes, availableProbes, onChange, erro
       >
         <div>
           <ProbesFilter probes={availableProbes} onSearch={setFilteredProbes} />
-          <Stack wrap={'wrap'}>
+          <Stack wrap="wrap">
             {privateProbes.length > 0 && (
               <ProbesList
                 title="Private probes"
@@ -67,7 +69,7 @@ export const CheckProbes = forwardRef(({ probes, availableProbes, onChange, erro
           </Stack>
         </div>
       </Field>
-      {privateProbes.length === 0 && filteredProbes.length === availableProbes.length && <PrivateProbesAlert />}
+      {showPrivateProbesDiscovery && <PrivateProbesAlert />}
     </div>
   );
 });

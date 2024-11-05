@@ -24,10 +24,11 @@ export const ProbesList = ({
       onSelectionChange(selectedProbes.filter((id) => !probes.some((probe) => probe.id === id)));
       return;
     }
-    onSelectionChange([
+    const selected = new Set([
       ...selectedProbes,
-      ...(probes.filter((probe) => !probe.deprecated).map((probe) => probe.id) as number[]),
+      ...probes.filter((probe) => !probe.deprecated).map((probe) => probe.id!),
     ]);
+    onSelectionChange([...selected]);
   };
 
   const handleToggleProbe = (probe: Probe) => {
@@ -41,13 +42,19 @@ export const ProbesList = ({
     onSelectionChange([...selectedProbes, probe.id]);
   };
 
+  const probeIds = useMemo(() => probes.map((probe) => probe.id!), [probes]);
+  const regionSelectedProbes = useMemo(
+    () => selectedProbes.filter((probe) => probeIds.includes(probe)),
+    [selectedProbes, probeIds]
+  );
+
   const allProbesSelected = useMemo(
-    () => probes.every((probe) => selectedProbes.includes(probe.id as number)),
+    () => probes.every((probe) => selectedProbes.includes(probe.id!)),
     [probes, selectedProbes]
   );
 
   const someProbesSelected = useMemo(
-    () => probes.some((probe) => selectedProbes.includes(probe.id as number)) && !allProbesSelected,
+    () => probes.some((probe) => selectedProbes.includes(probe.id!)) && !allProbesSelected,
     [probes, selectedProbes, allProbesSelected]
   );
 
@@ -62,7 +69,7 @@ export const ProbesList = ({
         />
         <Label htmlFor={`header-${title}`} className={styles.headerLabel}>
           <Stack>
-            <Text>{`${title} (${selectedProbes.length})`}</Text>
+            <Text>{`${title} (${regionSelectedProbes.length})`}</Text>
             {probes[0]?.longRegion && <span className={styles.probeRegionDescription}>{probes[0]?.longRegion}</span>}
           </Stack>
         </Label>
@@ -73,7 +80,7 @@ export const ProbesList = ({
             <Checkbox
               id={`probe-${probe.id}`}
               onClick={() => handleToggleProbe(probe)}
-              checked={selectedProbes.includes(probe.id as number)}
+              checked={selectedProbes.includes(probe.id!)}
             />
             <Label htmlFor={`probe-${probe.id}`} className={styles.columnLabel}>
               <ProbeStatus probe={probe} />{' '}
