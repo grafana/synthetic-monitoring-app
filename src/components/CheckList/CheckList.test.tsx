@@ -302,7 +302,6 @@ test('clicking add new is handled', async () => {
   expect(navigate).toHaveBeenCalledWith(ROUTES.ChooseCheckGroup);
 });
 
-// TODO: Fix this test
 test('cascader adds labels to label filter', async () => {
   const { user } = await renderCheckList([BASIC_DNS_CHECK, BASIC_HTTP_CHECK]);
   const additionalFilters = await screen.findByText(/Additional filters/i);

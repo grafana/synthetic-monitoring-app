@@ -1,6 +1,5 @@
 import React, { forwardRef, RefObject, useCallback, useMemo, useState } from 'react';
 import { FormProvider, SubmitErrorHandler, SubmitHandler, useForm } from 'react-hook-form';
-import { generatePath } from 'react-router-dom-v5-compat';
 import { GrafanaTheme2 } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
 import { Alert, Button, Stack, Text, Tooltip, useStyles2 } from '@grafana/ui';
@@ -35,7 +34,6 @@ import { CheckUsage } from 'components/CheckUsage';
 import { fallbackCheckMap } from 'components/constants';
 import { LabelField } from 'components/LabelField';
 import { OverLimitAlert } from 'components/OverLimitAlert';
-import { getRoute } from 'components/Routing.utils';
 
 import { CheckFormContextProvider, useCheckFormContext } from './CheckFormContext/CheckFormContext';
 import { BrowserCheckLayout } from './FormLayouts/CheckBrowserLayout';
@@ -162,7 +160,7 @@ export const CheckForm = ({ check, disabled }: CheckFormProps) => {
       ? createNavModel(
           {
             text: check?.job!,
-            url: generatePath(getRoute(ROUTES.CheckDashboard), check),
+            url: generateRoutePath(ROUTES.CheckDashboard, { id: check.id! }),
           },
           [{ text: `Edit` }]
         )

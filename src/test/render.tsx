@@ -61,7 +61,7 @@ const DefaultWrapper = ({ children, route: _route, history, meta }: ComponentWra
                         path={route}
                         element={
                           <>
-                            <TestRouteInfo route={route} />
+                            <TestRouteInfo />
                             {children}
                           </>
                         }
@@ -72,7 +72,7 @@ const DefaultWrapper = ({ children, route: _route, history, meta }: ComponentWra
                         path={route}
                         element={
                           <>
-                            <TestRouteInfo route={route} />
+                            <TestRouteInfo />
                             {children}
                           </>
                         }
@@ -82,7 +82,7 @@ const DefaultWrapper = ({ children, route: _route, history, meta }: ComponentWra
                       path="*"
                       element={
                         <>
-                          <TestRouteInfo route={route} />
+                          <TestRouteInfo />
                         </>
                       }
                     />

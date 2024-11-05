@@ -25,7 +25,6 @@ const MIN_TCP_CHECK: TCPCheck = {
   alertSensitivity: 'none',
 };
 
-// TODO: Fix this test
 it(`TCPCheck -- can successfully submit an existing check with no editing`, async () => {
   server.use(
     apiRoute(`listChecks`, {

@@ -29,7 +29,6 @@ const MIN_HTTP_CHECK: HTTPCheck = {
   alertSensitivity: 'none',
 };
 
-// TODO: Fix this test
 it(`HTTPCheck -- can successfully submit an existing check with no editing`, async () => {
   server.use(
     apiRoute(`listChecks`, {

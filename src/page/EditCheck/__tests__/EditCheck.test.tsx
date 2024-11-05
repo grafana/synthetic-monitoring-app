@@ -49,7 +49,6 @@ describe(`<EditCheck />`, () => {
     expect(screen.queryByText(/Check limit reached/)).not.toBeInTheDocument();
   });
 
-  // TODO: Fix this test
   it(`disables the form when the user is a viewer`, async () => {
     runTestAsViewer();
     await renderEditForm(BASIC_HTTP_CHECK.id);
