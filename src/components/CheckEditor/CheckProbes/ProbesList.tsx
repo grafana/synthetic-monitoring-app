@@ -146,5 +146,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   columnLabel: css({
     fontWeight: theme.typography.fontWeightLight,
     fontSize: theme.typography.h6.fontSize,
+    lineHeight: theme.typography.body.lineHeight,
+    marginBottom: '0',
   }),
 });
