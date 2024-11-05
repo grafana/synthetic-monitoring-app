@@ -11,7 +11,7 @@ export const ProgrammaticManagement = () => {
 
   return (
     <div>
-      <h3>Programmatic management</h3>
+      <h5>Programmatic management</h5>
       {initialised && canCreateAccessToken && <AccessToken />}
       <br />
       <TerraformConfig />

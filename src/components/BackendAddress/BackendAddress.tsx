@@ -14,7 +14,7 @@ export const BackendAddress = ({ omitHttp }: BackendAddressProps) => {
 
   return (
     <>
-      <div className="h3">Backend address</div>
+      <div className="h5">Backend address</div>
       <p>
         The agent will need to connect to the instance of the Synthetics API that corresponds with the region of your
         stack. This is the backend address for your stack:
