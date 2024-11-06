@@ -34,13 +34,13 @@ export const CheckGroupCard = ({ group }: { group: CheckTypeGroupOption }) => {
             <NewStatusBadge status={checksWithStatus[0].status.value} className={styles.newBadge} />
           )}
         </Stack>
-        <Card.Heading variant="h5" className={styles.cardHeader}>
+        <Card.Heading variant="h5">
           <Stack justifyContent={'center'}>
             <div className={styles.groupName}>{group.label}</div>
             {shouldShowStatus && checksWithStatus[0].status && <CheckStatusInfo {...checksWithStatus[0].status} />}
           </Stack>
         </Card.Heading>
-        <div className={styles.cardDescription}>{group.description}</div>
+        <div>{group.description}</div>
         <div className={styles.cardButton}>
           <LinkButton
             icon={!isReady ? 'fa fa-spinner' : undefined}
@@ -110,15 +110,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
     height: '26px',
   }),
 
-  cardHeader: css({
-    maxHeight: '20px',
-  }),
-
-  cardDescription: css({
-    maxHeight: '70px',
-    overflow: 'hidden',
-  }),
-
   cardButton: css({
     marginTop: 'auto',
   }),
@@ -128,7 +119,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     flexWrap: 'wrap',
     justifyContent: 'center',
     gap: '4px',
-    maxHeight: '20px',
+    marginTop: theme.spacing(1),
   }),
 
   checkCard: css({
@@ -151,8 +142,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
     borderTop: `1px solid ${theme.colors.border.weak}`,
     color: theme.colors.text.primary,
     display: 'flex',
-    height: '35px',
-    alignItems: 'flex-end',
     justifyContent: 'center',
   }),
 });

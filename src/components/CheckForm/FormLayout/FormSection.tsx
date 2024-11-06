@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react';
 import { FieldPath } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Box, Text, useStyles2 } from '@grafana/ui';
+import { Box, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckFormValues } from 'types';
@@ -41,8 +41,10 @@ export const FormSectionInternal = ({ activeSection, children, label, index, sta
         <Text element="h2" variant="h3">
           <div className={styles.header}>
             {`${index + 1}. ${label}`}
-            {status?.value && <NewStatusBadge status={status.value} />}
-            {status && <CheckStatusInfo {...status} />}
+            <Stack gap={1}>
+              {status?.value && <NewStatusBadge status={status.value} />}
+              {status && <CheckStatusInfo {...status} />}
+            </Stack>
           </div>
         </Text>
       </Box>
