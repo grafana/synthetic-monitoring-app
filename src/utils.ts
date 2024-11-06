@@ -1,11 +1,11 @@
-import { DataSourceInstanceSettings, GrafanaTheme2, TimeRange } from '@grafana/data';
+import { DataSourceInstanceSettings, GrafanaTheme2, NavModelItem, TimeRange } from '@grafana/data';
 import { config, FetchResponse, getBackendSrv } from '@grafana/runtime';
 // todo: update this when we move to grafana 11.2
 // https://github.com/grafana/grafana/pull/89047
 import { contextSrv } from 'grafana/app/core/core';
 import { firstValueFrom } from 'rxjs';
 
-import { LinkedDatasourceInfo, LogQueryResponse, LogStream, SMOptions } from './datasource/types';
+import { LinkedDatasourceInfo, LogLine, LogQueryResponse, LogStream, SMOptions } from './datasource/types';
 import {
   CalculateUsageValues,
   Check,
@@ -208,7 +208,7 @@ export const queryLogsLegacy = async (
   };
 
   try {
-    const response = await backendSrv.datasourceRequest({
+    const response = await backendSrv.datasourceRequest<{ data: { result: LogLine[] } }>({
       method: 'GET',
       url: `${url}/loki/api/v1/query_range`,
       params,
@@ -412,4 +412,17 @@ export function getMethodColor(theme: GrafanaTheme2, value: HttpMethod) {
 
 export function hasGlobalPermission(action: string) {
   return contextSrv.hasPermission(action);
+}
+
+export function createNavModel(base: NavModelItem, items: NavModelItem[]): NavModelItem {
+  if (base.id === 'loading') {
+    return base;
+  }
+
+  return items.reduce((acc, item) => {
+    return {
+      ...item,
+      parentItem: acc,
+    };
+  }, base);
 }

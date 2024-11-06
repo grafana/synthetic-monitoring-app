@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom-v5-compat';
 import { PluginPage } from '@grafana/runtime';
+import { LinkButton, TextLink } from '@grafana/ui';
+import { generateRoutePath } from 'routes/utils';
 
 import { ExtendedProbe, type Probe, type ProbePageParams, ROUTES } from 'types';
 import { useExtendedProbe, useUpdateProbe } from 'data/useProbes';
@@ -12,46 +14,84 @@ import { ProbeStatus } from 'components/ProbeStatus';
 import { ProbeTokenModal } from 'components/ProbeTokenModal';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
 
+import { getRoute } from '../../components/Routing.utils';
+import { PluginPageNotFound } from '../NotFound/NotFound';
 import { getErrorInfo, getTitle } from './EditProbe.utils';
 
-export const EditProbe = () => {
+export const EditProbe = ({ readOnly }: { readOnly?: boolean }) => {
   const [probe, setProbe] = useState<ExtendedProbe>();
+  const [errorMessage, setErrorMessage] = useState<string>('');
+  const navigate = useNavigate();
   const canEdit = useCanEditProbe(probe);
 
+  useEffect(() => {
+    // This is mainly here to handle legacy links redirect
+    if (probe && !canEdit && !readOnly) {
+      navigate(generateRoutePath(ROUTES.ViewProbe, { id: probe.id! }), { replace: true });
+    }
+  }, [canEdit, navigate, probe, readOnly]);
+  if (errorMessage) {
+    return (
+      <PluginPageNotFound breadcrumb="Probe not found">
+        Unable to find the probe you are looking for. Try the{' '}
+        <TextLink href={getRoute(ROUTES.Probes)}>probe listing</TextLink> page.
+      </PluginPageNotFound>
+    );
+  }
+
   return (
-    <PluginPage pageNav={{ text: getTitle(probe, canEdit) }}>
+    <PluginPage
+      pageNav={{ text: getTitle(probe, canEdit && !readOnly) }}
+      actions={
+        canEdit &&
+        probe &&
+        readOnly && (
+          <LinkButton variant="secondary" icon="pen" href={generateRoutePath(ROUTES.EditProbe, { id: probe.id! })}>
+            Edit probe
+          </LinkButton>
+        )
+      }
+    >
       <QueryErrorBoundary>
-        <EditProbeFetch onProbeFetch={setProbe} />
+        <EditProbeFetch readOnly={readOnly} onProbeFetch={setProbe} onError={setErrorMessage} />
       </QueryErrorBoundary>
     </PluginPage>
   );
 };
 
-const EditProbeFetch = ({ onProbeFetch }: { onProbeFetch: (probe: ExtendedProbe) => void }) => {
+const EditProbeFetch = ({
+  onProbeFetch,
+  readOnly,
+  onError,
+}: {
+  readOnly?: boolean;
+  onProbeFetch: (probe: ExtendedProbe) => void;
+  onError?: (message: string) => void;
+}) => {
   const { id } = useParams<ProbePageParams>();
   const [probe, isLoading] = useExtendedProbe(Number(id));
   const navigate = useNavigation();
 
   useEffect(() => {
-    if (!probe && !isLoading) {
-      navigate(ROUTES.Probes);
-    }
-
     if (probe) {
       onProbeFetch(probe);
     }
-  }, [isLoading, navigate, onProbeFetch, probe]);
+    if (!isLoading && !probe) {
+      onError && onError('Probe not found');
+    }
+  }, [isLoading, navigate, onError, onProbeFetch, probe]);
 
   if (!probe) {
     return null;
   }
 
-  return <EditProbeContent probe={probe} />;
+  return <EditProbeContent readOnly={readOnly} probe={probe} />;
 };
 
-const EditProbeContent = ({ probe }: { probe: ExtendedProbe }) => {
+const EditProbeContent = ({ probe, readOnly }: { readOnly?: boolean; probe: ExtendedProbe }) => {
   const navigate = useNavigation();
   const canEdit = useCanEditProbe(probe);
+  const writeMode = canEdit && !readOnly;
   const [showTokenModal, setShowTokenModal] = useState(false);
   const [probeToken, setProbeToken] = useState(``);
 
@@ -80,8 +120,8 @@ const EditProbeContent = ({ probe }: { probe: ExtendedProbe }) => {
   }, [navigate]);
 
   const actions = useMemo(
-    () => (canEdit ? <DeleteProbeButton probe={probe} onDeleteSuccess={handleOnDeleteSuccess} /> : null),
-    [canEdit, handleOnDeleteSuccess, probe]
+    () => (writeMode ? <DeleteProbeButton probe={probe} onDeleteSuccess={handleOnDeleteSuccess} /> : null),
+    [writeMode, handleOnDeleteSuccess, probe]
   );
 
   const onReset = useCallback((token: string) => {
@@ -97,7 +137,8 @@ const EditProbeContent = ({ probe }: { probe: ExtendedProbe }) => {
         onSubmit={handleSubmit}
         probe={probe}
         submitText="Update probe"
-        supportingContent={<ProbeStatus probe={probe} onReset={onReset} />}
+        readOnly={readOnly}
+        supportingContent={<ProbeStatus probe={probe} onReset={onReset} readOnly={readOnly} />}
       />
       <ProbeTokenModal
         actionText="Close"

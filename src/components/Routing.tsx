@@ -1,27 +1,37 @@
 import React, { useEffect } from 'react';
-import { Redirect, Route, Switch } from 'react-router-dom';
-import { AppRootProps } from '@grafana/data';
+import { Navigate, Route, Routes } from 'react-router-dom-v5-compat';
+import { TextLink } from '@grafana/ui';
+import { getNewCheckTypeRedirects, LegacyEditRedirect } from 'routes';
 
 import { ROUTES } from 'types';
+import { useCanWriteSM } from 'hooks/useDSPermission';
 import { useLimits } from 'hooks/useLimits';
 import { useMeta } from 'hooks/useMeta';
 import { QueryParamMap, useNavigation } from 'hooks/useNavigation';
 import { useQuery } from 'hooks/useQuery';
 import { AlertingPage } from 'page/AlertingPage';
 import { AlertingWelcomePage } from 'page/AlertingWelcomePage';
-import { CheckRouter } from 'page/CheckRouter';
 import { ChecksWelcomePage } from 'page/ChecksWelcomePage';
 import { ConfigPage } from 'page/ConfigPage';
-import { ProbeRouter } from 'page/ProbeRouter';
+import { DashboardPage } from 'page/DashboardPage';
+import { EditCheck } from 'page/EditCheck';
+import { EditProbe } from 'page/EditProbe';
+import { NewCheck } from 'page/NewCheck';
+import { NewProbe } from 'page/NewProbe';
+import { CheckNotFound } from 'page/NotFound/CheckNotFound';
+import { PluginPageNotFound } from 'page/NotFound/NotFound';
+import { Probes } from 'page/Probes';
 import { ProbesWelcomePage } from 'page/ProbesWelcomePage';
 import { SceneHomepage } from 'page/SceneHomepage';
 import { UnprovisionedSetup } from 'page/UnprovisionedSetup';
 import { WelcomePage } from 'page/WelcomePage';
 
+import { CheckList } from './CheckList';
+import { ChooseCheckGroup } from './ChooseCheckGroup';
 import { getRoute } from './Routing.utils';
 import { SceneRedirecter } from './SceneRedirecter';
 
-export const InitialisedRouter = ({ onNavChanged }: Pick<AppRootProps, 'onNavChanged'>) => {
+export const InitialisedRouter = () => {
   const queryParams = useQuery();
   const navigate = useNavigation();
 
@@ -38,35 +48,67 @@ export const InitialisedRouter = ({ onNavChanged }: Pick<AppRootProps, 'onNavCha
       navigate(path, translated);
     }
   }, [page, navigate, queryParams]);
+  const canEdit = useCanWriteSM();
 
   return (
-    <Switch>
-      <Route exact path={getRoute(ROUTES.Redirect)}>
-        <SceneRedirecter />
-      </Route>
-      <Route exact path={getRoute(ROUTES.Home)}>
-        <SceneHomepage />
-      </Route>
-      <Route path={getRoute(ROUTES.Scene)}>
-        <SceneRedirecter />
-      </Route>
-      <Route path={getRoute(ROUTES.Checks)}>
-        <CheckRouter />
-      </Route>
-      <Route path={getRoute(ROUTES.Probes)}>
-        <ProbeRouter />
-      </Route>
-      <Route exact path={getRoute(ROUTES.Alerts)}>
-        <AlertingPage />
-      </Route>
-      <Route path={getRoute(ROUTES.Config)}>
-        <ConfigPage initialized />
+    <Routes>
+      <Route index element={<Navigate to={ROUTES.Home} />} />
+
+      <Route path={ROUTES.Home} element={<SceneHomepage />} />
+
+      <Route path={ROUTES.Checks}>
+        <Route index element={<CheckList />} />
+        <Route path=":id">
+          <Route index element={<DashboardPage />} />
+          <Route path="edit" element={canEdit ? <EditCheck /> : <Navigate to=".." replace />} />
+          <Route path="dashboard" element={<Navigate to=".." replace />} />
+          <Route path="*" element={<CheckNotFound />} />
+        </Route>
+        <Route path="choose-type" element={<ChooseCheckGroup />} />
+        <Route path="new">
+          <Route index element={<ChooseCheckGroup />} />
+          {getNewCheckTypeRedirects().map(({ checkType, checkTypeGroupUrl }) => (
+            <Route key={checkType} path={checkType} element={<Navigate to={`../${checkTypeGroupUrl}`} replace />} />
+          ))}
+          <Route path=":checkTypeGroup" element={<NewCheck />} />
+          <Route path="*" element={<CheckNotFound />} />
+        </Route>
+
+        <Route path="edit/:id" element={<LegacyEditRedirect entity="check" />} />
+
+        <Route
+          path="*"
+          element={
+            <PluginPageNotFound>
+              The page you are looking for does not exist. Here is a working link to{' '}
+              <TextLink href={getRoute(ROUTES.Checks)}>checks listing</TextLink>.
+            </PluginPageNotFound>
+          }
+        />
       </Route>
 
-      <Route>
-        <Redirect to={getRoute(ROUTES.Home)} />
+      <Route path={ROUTES.Probes}>
+        <Route index element={<Probes />} />
+        <Route path="new" element={<NewProbe />} />
+        <Route path=":id">
+          <Route index element={<EditProbe readOnly />} />
+          <Route path="edit" element={<EditProbe />} />
+        </Route>
+
+        <Route path="edit/:id" element={<LegacyEditRedirect entity="probe" />} />
       </Route>
-    </Switch>
+
+      <Route path={ROUTES.Alerts} element={<AlertingPage />} />
+
+      <Route path={ROUTES.Config} element={<ConfigPage initialized />} />
+
+      <Route path={ROUTES.Redirect} element={<SceneRedirecter />} />
+
+      <Route path={ROUTES.Scene} element={<SceneRedirecter />} />
+
+      {/* TODO: Create 404 instead of navigating to home(?) */}
+      <Route path="*" element={<Navigate to={`../${ROUTES.Home}`} replace />} />
+    </Routes>
   );
 };
 
@@ -81,30 +123,16 @@ export const UninitialisedRouter = () => {
   }
 
   return (
-    <Switch>
-      <Route exact path={getRoute(ROUTES.Home)}>
-        <WelcomePage />
-      </Route>
-      <Route path={getRoute(ROUTES.Scene)}>
-        <WelcomePage />
-      </Route>
-      <Route path={getRoute(ROUTES.Checks)}>
-        <ChecksWelcomePage />
-      </Route>
-      <Route path={getRoute(ROUTES.Probes)}>
-        <ProbesWelcomePage />
-      </Route>
-      <Route exact path={getRoute(ROUTES.Alerts)}>
-        <AlertingWelcomePage />
-      </Route>
-      <Route path={getRoute(ROUTES.Config)}>
-        <ConfigPage />
-      </Route>
+    <Routes>
+      <Route path={ROUTES.Home} element={<WelcomePage />} />
+      <Route path={ROUTES.Scene} element={<WelcomePage />} />
+      <Route path={ROUTES.Checks} element={<ChecksWelcomePage />} />
+      <Route path={ROUTES.Probes} element={<ProbesWelcomePage />} />
+      <Route path={ROUTES.Alerts} element={<AlertingWelcomePage />} />
+      <Route path={ROUTES.Config} element={<ConfigPage />} />
 
-      {/* Default route (only redirect if the path matches the plugin's URL) */}
-      <Route>
-        <Redirect to={getRoute(ROUTES.Home)} />
-      </Route>
-    </Switch>
+      {/* TODO: Create 404 instead of navigating to home(?) */}
+      <Route path="*" element={<Navigate to={ROUTES.Home} />} />
+    </Routes>
   );
 };

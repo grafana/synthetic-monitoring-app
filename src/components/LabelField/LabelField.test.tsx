@@ -25,15 +25,15 @@ function renderLabelField(props: LabelFieldProps) {
 }
 
 it(`Should render the probe limit text when probe is the destination`, async () => {
-  renderLabelField({ labelDestination: 'probe' });
+  await renderLabelField({ labelDestination: 'probe' });
   await screen.findByText('Labels');
-  const limitText = await getLimitText();
+  const limitText = getLimitText();
   expect(limitText!.textContent?.includes('3'));
   expect(limitText).toBeInTheDocument();
 });
 
 it(`Should render the check limit text when check is the destination`, async () => {
-  renderLabelField({ labelDestination: 'check' });
+  await renderLabelField({ labelDestination: 'check' });
   await screen.findByText('Labels');
   const limitText = await getLimitText();
   expect(limitText!.textContent?.includes('10'));
@@ -52,7 +52,7 @@ it(`Should show a warning and a retry when the limits fetch fails`, async () => 
   server.use(apiRoute('getTenantLimits', getTenantLimits));
   const retry = await screen.findByText('Retry');
   await user.click(retry);
-  waitFor(() => expect(screen.queryByText("Couldn't fetch label limits")).not.toBeInTheDocument());
+  await waitFor(() => expect(screen.queryByText("Couldn't fetch label limits")).not.toBeInTheDocument());
 });
 
 // extract these so we can be sure the negative assertion works

@@ -36,7 +36,8 @@ it(`TCPCheck -- can successfully submit an existing check with no editing`, asyn
     })
   );
 
-  const { read, user } = await renderEditForm({ id: MIN_TCP_CHECK.id, settings: MIN_TCP_CHECK.settings });
+  const { read, user } = await renderEditForm(MIN_TCP_CHECK.id);
+
   await submitForm(user);
 
   const { body } = await read();

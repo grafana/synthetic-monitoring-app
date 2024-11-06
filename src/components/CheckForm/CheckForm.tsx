@@ -1,15 +1,17 @@
-import React, { forwardRef, RefObject, useCallback, useState } from 'react';
+import React, { forwardRef, RefObject, useCallback, useMemo, useState } from 'react';
 import { FormProvider, SubmitErrorHandler, SubmitHandler, useForm } from 'react-hook-form';
-import { useParams } from 'react-router-dom';
 import { GrafanaTheme2 } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
-import { Alert, Button, Stack, Tooltip, useStyles2 } from '@grafana/ui';
+import { Alert, Button, Stack, Text, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { generateRoutePath } from 'routes';
 import { DataTestIds } from 'test/dataTestIds';
 
-import { Check, CheckFormPageParams, CheckFormValues, CheckType } from 'types';
+import { Check, CheckFormValues, CheckType, ROUTES } from 'types';
+import { createNavModel } from 'utils';
 import { AdHocCheckResponse } from 'datasource/responses.types';
+import { useCheckTypeGroupOption } from 'hooks/useCheckTypeGroupOptions';
 import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
 import { useCanReadLogs, useCanWriteSM } from 'hooks/useDSPermission';
 import { useLimits } from 'hooks/useLimits';
@@ -37,7 +39,7 @@ import { CheckFormContextProvider, useCheckFormContext } from './CheckFormContex
 import { BrowserCheckLayout } from './FormLayouts/CheckBrowserLayout';
 import { useCheckForm, useCheckFormSchema } from './checkForm.hooks';
 import { FormLayout } from './FormLayout';
-import { useFormCheckType } from './useCheckType';
+import { useFormCheckType, useFormCheckTypeGroup } from './useCheckType';
 
 const layoutMap = {
   [CheckType.HTTP]: HttpCheckLayout,
@@ -66,21 +68,20 @@ const checkTypeStep1Label = {
 type CheckFormProps = {
   check?: Check;
   disabled?: boolean;
-  pageTitle: string;
 };
 
-export const CheckForm = ({ check, disabled, pageTitle }: CheckFormProps) => {
+export const CheckForm = ({ check, disabled }: CheckFormProps) => {
   const canEdit = useCanWriteSM();
   const canReadLogs = useCanReadLogs();
   const [openTestCheckModal, setOpenTestCheckModal] = useState(false);
   const [adhocTestData, setAdhocTestData] = useState<AdHocCheckResponse>();
   const checkType = useFormCheckType(check);
-  const { checkTypeGroup } = useParams<CheckFormPageParams>();
+  const checkTypeGroup = useFormCheckTypeGroup(check);
   const initialCheck = check || fallbackCheckMap[checkType];
   const schema = useCheckFormSchema(check);
   const styles = useStyles2(getStyles);
   const status = useCheckTypeOptions().find((option) => option.value === checkType)?.status;
-  const isExistingCheck = Boolean(check);
+  const isExistingCheck = !!(check && check?.id !== undefined);
   const { isLoading, isOverBrowserLimit, isOverHgExecutionLimit, isOverCheckLimit, isOverScriptedLimit, isReady } =
     useLimits();
   const overLimit =
@@ -137,6 +138,7 @@ export const CheckForm = ({ check, disabled, pageTitle }: CheckFormProps) => {
     loading: testCheckPending,
     ref: testButtonRef,
   });
+  const checkTypeGroupOption = useCheckTypeGroupOption(checkTypeGroup);
 
   const alerts = (error || testCheckError) && (
     <Stack direction={`column`}>
@@ -153,11 +155,25 @@ export const CheckForm = ({ check, disabled, pageTitle }: CheckFormProps) => {
     </Stack>
   );
 
-  // console.log(formMethods.formState.errors);
-  // console.log(formMethods.watch());
+  const navModel = useMemo(() => {
+    return isExistingCheck
+      ? createNavModel(
+          {
+            text: check?.job!,
+            url: generateRoutePath(ROUTES.CheckDashboard, { id: check.id! }),
+          },
+          [{ text: `Edit` }]
+        )
+      : createNavModel({ text: `Choose a check type`, url: generateRoutePath(ROUTES.ChooseCheckGroup) }, [
+          { text: `${checkTypeGroupOption?.label ?? 'Check not found'}` },
+        ]);
+  }, [check, checkTypeGroupOption, isExistingCheck]);
 
   return (
-    <PluginPage pageNav={{ text: pageTitle }}>
+    <PluginPage
+      pageNav={navModel}
+      renderTitle={isExistingCheck ? () => <Text element="h1">{`Editing ${check?.job}`}</Text> : undefined}
+    >
       <FormProvider {...formMethods}>
         <CheckFormContextProvider disabled={isDisabled}>
           <div className={styles.wrapper} data-testid={isReady ? DataTestIds.PAGE_READY : DataTestIds.PAGE_NOT_READY}>
@@ -232,11 +248,7 @@ function getLimitDisabled({ isExistingCheck, isLoading, overLimit }: GetIsDisabl
     return false;
   }
 
-  if (isLoading || overLimit) {
-    return true;
-  }
-
-  return false;
+  return isLoading || overLimit;
 }
 
 interface ConstructActionsProps {

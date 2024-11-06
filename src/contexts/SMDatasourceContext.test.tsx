@@ -1,5 +1,6 @@
 import React from 'react';
-import { Router } from 'react-router-dom';
+import { MemoryRouter } from 'react-router-dom';
+import { CompatRouter, Route, Routes } from 'react-router-dom-v5-compat';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { screen } from '@testing-library/react';
 import { SM_META } from 'test/fixtures/meta';
@@ -25,7 +26,13 @@ const Wrapper = ({ children, history, meta }: ComponentWrapperProps) => {
     <QueryClientProvider client={getQueryClient()}>
       <MetaContextProvider meta={{ ...SM_META, ...meta }}>
         <FeatureFlagProvider>
-          <Router history={history}>{children}</Router>
+          <MemoryRouter initialEntries={history.entries}>
+            <CompatRouter>
+              <Routes>
+                <Route path="*" element={children} />
+              </Routes>
+            </CompatRouter>
+          </MemoryRouter>
         </FeatureFlagProvider>
       </MetaContextProvider>
     </QueryClientProvider>

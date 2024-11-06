@@ -669,10 +669,13 @@ export enum ROUTES {
   Checks = 'checks',
   ChooseCheckGroup = 'checks/choose-type',
   Config = 'config',
-  EditCheck = 'checks/edit',
-  EditProbe = 'probes/edit',
+  CheckDashboard = 'checks/:id',
+  EditCheck = 'checks/:id/edit',
+  ViewProbe = 'probes/:id',
+  EditProbe = 'probes/:id/edit',
   Home = 'home',
   NewCheck = 'checks/new',
+  NewCheckType = 'checks/new/:checkTypeGroup',
   NewProbe = 'probes/new',
   Probes = 'probes',
   Redirect = 'redirect',
@@ -681,17 +684,19 @@ export enum ROUTES {
   ConfigSecrets = 'config/secrets',
 }
 
-export interface CheckPageParams {
+interface Params extends Record<string, string | undefined> {}
+
+export interface CheckPageParams extends Params {
   id: string;
   checkType?: CheckType;
 }
 
-export interface CheckFormPageParams {
-  checkTypeGroup: CheckTypeGroup;
+export interface CheckFormPageParams extends Params {
+  checkTypeGroup?: CheckTypeGroup;
   id?: string;
 }
 
-export interface ProbePageParams {
+export interface ProbePageParams extends Params {
   view?: string;
   id?: string;
 }

@@ -1,5 +1,5 @@
 import React from 'react';
-import { screen, waitFor } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { PRIVATE_PROBE, PUBLIC_PROBE, UPDATED_PROBE_TOKEN_RESPONSE } from 'test/fixtures/probes';
 import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
@@ -9,6 +9,8 @@ import { Probe, ROUTES } from 'types';
 import { formatDate } from 'utils';
 import { getRoute } from 'components/Routing.utils';
 
+import { generateRoutePath } from '../../routes';
+import { DataTestIds } from '../../test/dataTestIds';
 import { EditProbe } from './EditProbe';
 
 const renderEditProbe = (probe: Probe) => {
@@ -49,13 +51,15 @@ describe(`Private probes`, () => {
   it('updates existing probe and redirects to the probes list', async () => {
     const { record, read } = getServerRequests();
     server.use(apiRoute(`updateProbe`, {}, record));
-    const { history, user } = renderEditProbe(PRIVATE_PROBE);
+    const { user } = renderEditProbe(PRIVATE_PROBE);
     await screen.findByText(/This probe is private/);
 
     const saveButton = getSaveButton();
     await user.click(saveButton!);
 
-    await waitFor(() => expect(history.location.pathname).toBe(getRoute(ROUTES.Probes)));
+    expect(screen.getByTestId(DataTestIds.TEST_ROUTER_INFO_PATHNAME)).toHaveTextContent(
+      generateRoutePath(ROUTES.Probes)
+    );
 
     const { body } = await read();
 

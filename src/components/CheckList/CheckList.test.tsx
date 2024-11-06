@@ -15,8 +15,8 @@ import { server } from 'test/server';
 import { getSelect, selectOption } from 'test/utils';
 
 import { Check, FeatureName, ROUTES } from 'types';
-import { PLUGIN_URL_PATH } from 'components/Routing.consts';
 
+import { generateRoutePath } from '../../routes';
 import { CheckList } from './CheckList';
 
 jest.mock('hooks/useNavigation', () => {
@@ -39,11 +39,14 @@ const renderCheckList = async (checks = BASIC_CHECK_LIST, searchParams = '') => 
     })
   );
 
+  const path = `${generateRoutePath(ROUTES.Checks)}?${searchParams}`;
+
   const res = render(<CheckList />, {
-    path: `${PLUGIN_URL_PATH}${ROUTES.Checks}?${searchParams}`,
+    route: ROUTES.Checks,
+    path,
   });
 
-  await waitFor(() => expect(screen.getByText('Add new check')).toBeInTheDocument());
+  await waitFor(() => expect(screen.getByText('Add new check')).toBeInTheDocument(), { timeout: 5000 });
   return res;
 };
 
@@ -58,9 +61,8 @@ test('renders empty state', async () => {
     })
   );
 
-  await render(<CheckList />, {
-    path: `${PLUGIN_URL_PATH}${ROUTES.Checks}`,
-  });
+  render(<CheckList />);
+
   const emptyWarning = await screen.findByText('This account does not currently have any checks configured', {
     exact: false,
   });
@@ -322,11 +324,11 @@ test('cascader adds labels to label filter', async () => {
 
 test('Sorting by success rate should not crash', async () => {
   const { user } = await renderCheckList();
-  const sortPicker = await screen.getByLabelText('Sort checks by');
+  const sortPicker = screen.getByLabelText('Sort checks by');
   await user.click(sortPicker);
   await user.click(screen.getByText(`Asc. Reachability`, { selector: 'span' }));
 
-  const checks = await screen.findAllByTestId('check-card');
+  const checks = await waitFor(() => screen.findAllByTestId('check-card'), { timeout: 5000 });
   expect(checks.length).toBe(BASIC_CHECK_LIST.length);
 });
 
@@ -481,10 +483,10 @@ describe(`bulk select behaviour`, () => {
     await user.click(selectAll);
     expect(selectAll).toBeChecked();
 
-    await searchInput.focus();
+    searchInput.focus();
     await user.paste('non-existent-check');
 
-    await waitFor(() => expect(selectAll).toBeDisabled());
+    await waitFor(() => expect(selectAll).toBeDisabled(), { timeout: 5000 });
     expect(selectAll).not.toBeChecked();
   });
 

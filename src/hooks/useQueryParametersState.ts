@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom-v5-compat';
 
 import { useSearchParams } from './useSearchParams';
 
@@ -23,8 +23,8 @@ export const useQueryParametersState = <ValueType>({
   decode = JSON.parse,
   strategy = HistoryStrategy.Replace,
 }: QueryParametersStateProps<ValueType>): [ValueType, (value: ValueType | null) => void] => {
-  const history = useHistory();
-
+  const navigate = useNavigate();
+  const location = useLocation();
   const queryParams = useSearchParams();
 
   const existingValue = queryParams.get(key);
@@ -50,17 +50,17 @@ export const useQueryParametersState = <ValueType>({
     (href: string) => {
       switch (strategy) {
         case HistoryStrategy.Push:
-          history.push(href);
+          navigate(href);
           break;
         case HistoryStrategy.Replace:
-          history.replace(href);
+          navigate(href, { replace: true });
           break;
         default:
-          history.push(href);
+          navigate(href);
           break;
       }
     },
-    [strategy, history]
+    [strategy, navigate]
   );
 
   return [parsedExistingValue || initialValue, updateState];

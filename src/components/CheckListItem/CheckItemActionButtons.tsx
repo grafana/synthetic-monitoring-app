@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { ConfirmModal, IconButton, LinkButton, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { generateRoutePath } from 'routes/utils';
 
 import { Check, ROUTES } from 'types';
-import { getCheckType, getCheckTypeGroup } from 'utils';
 import { useDeleteCheck } from 'data/useChecks';
 import { useCanReadMetrics, useCanWriteSM } from 'hooks/useDSPermission';
 import { getRoute } from 'components/Routing.utils';
@@ -27,8 +27,7 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon }: Props) =>
   const canReadMetrics = useCanReadMetrics();
   const styles = useStyles2(getStyles);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const checkType = getCheckType(check.settings);
-  const checkTypeGroup = getCheckTypeGroup(checkType);
+
   const { mutate: deleteCheck } = useDeleteCheck();
 
   return (
@@ -37,7 +36,7 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon }: Props) =>
         <>
           {viewDashboardAsIcon ? (
             <LinkButton
-              href={`${getRoute(ROUTES.Checks)}/${check.id}/dashboard`}
+              href={generateRoutePath(ROUTES.CheckDashboard, { id: check.id! })}
               size="sm"
               fill="text"
               name="apps"
@@ -52,7 +51,7 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon }: Props) =>
       )}
       <LinkButton
         data-testid="edit-check-button"
-        href={`${getRoute(ROUTES.EditCheck)}/${checkTypeGroup}/${check.id}`}
+        href={`${generateRoutePath(ROUTES.EditCheck, { id: check.id! })}`}
         icon={`pen`}
         tooltip="Edit check"
         disabled={!canEdit}

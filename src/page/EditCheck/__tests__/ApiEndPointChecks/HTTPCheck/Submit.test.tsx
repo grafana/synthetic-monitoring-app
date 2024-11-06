@@ -40,7 +40,7 @@ it(`HTTPCheck -- can successfully submit an existing check with no editing`, asy
     })
   );
 
-  const { read, user } = await renderEditForm({ id: MIN_HTTP_CHECK.id, settings: MIN_HTTP_CHECK.settings });
+  const { read, user } = await renderEditForm(MIN_HTTP_CHECK.id);
   await submitForm(user);
 
   const { body } = await read();

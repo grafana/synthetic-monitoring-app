@@ -2,11 +2,11 @@ import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Card, Link, LinkButton, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { generateRoutePath } from 'routes/utils';
 
 import { type ExtendedProbe, type Label, ROUTES } from 'types';
 import { useCanEditProbe } from 'hooks/useCanEditProbe';
 import { SuccessRateGaugeProbe } from 'components/Gauges';
-import { getRoute } from 'components/Routing.utils';
 
 import { ProbeUsageLink } from '../ProbeUsageLink';
 import { ProbeDisabledCapabilities } from './ProbeDisabledCapabilities';
@@ -15,7 +15,7 @@ import { ProbeStatus } from './ProbeStatus';
 
 export const ProbeCard = ({ probe }: { probe: ExtendedProbe }) => {
   const canEdit = useCanEditProbe(probe);
-  const probeEditHref = `${getRoute(ROUTES.EditProbe)}/${probe.id}`;
+  const probeEditHref = generateRoutePath(canEdit ? ROUTES.EditProbe : ROUTES.ViewProbe, { id: probe.id! });
   const labelsString = labelsToString(probe.labels);
   const styles = useStyles2(getStyles2);
 

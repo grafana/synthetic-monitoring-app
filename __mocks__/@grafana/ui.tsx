@@ -3,7 +3,6 @@ window.__react_router_build__ = undefined;
 
 const ui = jest.requireActual('@grafana/ui');
 import React, { forwardRef } from 'react';
-import { Link } from 'react-router-dom';
 
 const Icon = forwardRef((props, ref) => <svg {...props} />);
 Icon.displayName = 'Icon';

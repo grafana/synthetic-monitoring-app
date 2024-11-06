@@ -7,10 +7,12 @@ import { render } from 'test/render';
 import { server } from 'test/server';
 
 import { Check, CheckType, ROUTES } from 'types';
-import { getCheckType, getCheckTypeGroup } from 'utils';
-import { PLUGIN_URL_PATH } from 'components/Routing.consts';
+import { getCheckTypeGroup } from 'utils';
 import { EditCheck } from 'page/EditCheck';
 import { NewCheck } from 'page/NewCheck';
+
+import { getRoute } from '../../components/Routing.utils';
+import { generateRoutePath } from '../../routes';
 
 export const TARGET_MAP = {
   [CheckType.DNS]: 'grafana.com',
@@ -30,8 +32,8 @@ export async function renderNewForm(checkType: CheckType) {
   const checkTypeGroup = getCheckTypeGroup(checkType);
 
   const res = render(<NewCheck />, {
-    route: `${PLUGIN_URL_PATH}${ROUTES.NewCheck}/:checkTypeGroup`,
-    path: `${PLUGIN_URL_PATH}${ROUTES.NewCheck}/${checkTypeGroup}?checkType=${checkType}`,
+    path: `${generateRoutePath(ROUTES.NewCheck)}/${checkTypeGroup}?checkType=${checkType}`,
+    route: `${getRoute(ROUTES.NewCheck)}/:checkTypeGroup`,
   });
 
   await waitFor(async () => await screen.findByTestId(DataTestIds.PAGE_READY), { timeout: 10000 });
@@ -57,18 +59,20 @@ export async function renderNewForm(checkType: CheckType) {
   };
 }
 
-export async function renderEditForm(check: Pick<Check, 'id' | 'settings'>) {
+export async function renderEditForm(id: Check['id']) {
   const { record, read } = getServerRequests();
   server.use(apiRoute(`updateCheck`, {}, record));
-  const checkType = getCheckType(check.settings);
-  const checkTypeGroup = getCheckTypeGroup(checkType);
+
+  if (!Number.isInteger(id)) {
+    throw new Error('id must be an integer');
+  }
 
   const res = render(<EditCheck />, {
-    route: `${PLUGIN_URL_PATH}${ROUTES.EditCheck}/edit/:checkTypeGroup/:id`,
-    path: `${PLUGIN_URL_PATH}${ROUTES.EditCheck}/edit/${checkTypeGroup}/${check.id}`,
+    route: ROUTES.EditCheck,
+    path: generateRoutePath(ROUTES.EditCheck, { id: id! }),
   });
 
-  await waitFor(async () => await screen.findByText(/^Editing/), { timeout: 10000 });
+  await waitFor(async () => screen.getByTestId('page-ready'), { timeout: 10000 });
 
   return {
     ...res,

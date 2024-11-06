@@ -83,6 +83,9 @@ export const METRICS_DATASOURCE: DataSourceInstanceSettings<any> & WithAccessCon
       grafanaDependency: '',
       grafanaVersion: '*',
       plugins: [],
+      extensions: {
+        exposedComponents: [],
+      },
     },
     includes: [],
     category: 'tsdb',
@@ -166,6 +169,9 @@ export const LOGS_DATASOURCE: DataSourceInstanceSettings<any> & WithAccessContro
       grafanaDependency: '',
       grafanaVersion: '*',
       plugins: [],
+      extensions: {
+        exposedComponents: [],
+      },
     },
     category: 'logging',
     backend: true,

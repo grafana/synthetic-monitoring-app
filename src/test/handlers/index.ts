@@ -81,8 +81,7 @@ export function getServerRequests() {
     const request = requests[index];
 
     try {
-      const json = await request?.json();
-      body = json;
+      body = await request?.json();
     } catch (e) {
       console.error(e);
     }
