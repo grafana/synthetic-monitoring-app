@@ -40,6 +40,7 @@ export function useCanReadSM() {
 
 // we've rolled this back to respect org roles
 // this will change when we do proper plugin RBAC in the near future
+// Note: this is used by `PluginConfigPage`, which is not wrapped in any app context
 export function useCanWriteSM() {
   const orgRole = config.bootData.user.orgRole;
 

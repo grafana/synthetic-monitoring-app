@@ -1,16 +1,18 @@
 import React, { useCallback, useState } from 'react';
 import { PluginPage } from '@grafana/runtime';
-import { Alert, useTheme2 } from '@grafana/ui';
+import { Alert, Label, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { ExtendedProbe, type Probe, ROUTES } from 'types';
 import { type AddProbeResult } from 'datasource/responses.types';
 import { useCreateProbe } from 'data/useProbes';
+import { useBackendAddress } from 'hooks/useBackendAddress';
 import { useNavigation } from 'hooks/useNavigation';
-import { BackendAddress } from 'components/BackendAddress';
 import { DocsLink } from 'components/DocsLink';
 import { ProbeEditor } from 'components/ProbeEditor';
 import { ProbeTokenModal } from 'components/ProbeTokenModal';
+
+import { Preformatted } from '../../components/Preformatted';
 
 export const TEMPLATE_PROBE: ExtendedProbe = {
   name: '',
@@ -81,10 +83,12 @@ export const NewProbe = () => {
 
 const SettingUpAProbe = () => {
   const theme = useTheme2();
+  const [address, description] = useBackendAddress(true);
 
   return (
     <div>
-      <BackendAddress omitHttp />
+      <Label description={description}>Backend address</Label>
+      <Preformatted>{address}</Preformatted>
       <DocsLink article="addPrivateProbe" className={css({ marginBottom: theme.spacing(2) })}>
         Learn how to run a private probe
       </DocsLink>

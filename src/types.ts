@@ -666,12 +666,11 @@ export interface UsageValues {
 
 export enum ROUTES {
   Alerts = 'alerts',
+  CheckDashboard = 'checks/:id',
   Checks = 'checks',
   ChooseCheckGroup = 'checks/choose-type',
-  Config = 'config',
-  CheckDashboard = 'checks/:id',
+  Config = 'config', // config (index)
   EditCheck = 'checks/:id/edit',
-  ViewProbe = 'probes/:id',
   EditProbe = 'probes/:id/edit',
   Home = 'home',
   NewCheck = 'checks/new',
@@ -681,7 +680,7 @@ export enum ROUTES {
   Redirect = 'redirect',
   Scene = 'scene',
   ScriptedChecks = 'scripted-checks',
-  ConfigSecrets = 'config/secrets',
+  ViewProbe = 'probes/:id',
 }
 
 interface Params extends Record<string, string | undefined> {}
