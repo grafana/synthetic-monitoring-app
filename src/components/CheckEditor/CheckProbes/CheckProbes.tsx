@@ -4,7 +4,7 @@ import { Field, Stack } from '@grafana/ui';
 import { Probe } from 'types';
 
 import { PrivateProbesAlert } from './PrivateProbesAlert';
-import { ProbesFilter } from './ProbesFilter';
+import { PROBES_FILTER_ID, ProbesFilter } from './ProbesFilter';
 import { ProbesList } from './ProbesList';
 
 interface CheckProbesProps {
@@ -44,6 +44,7 @@ export const CheckProbes = forwardRef(({ probes, availableProbes, onChange, erro
         description="Select one, multiple, or all probes where this target will be checked from. Deprecated probes can be removed, but they cannot be added."
         invalid={!!error}
         error={error}
+        htmlFor={PROBES_FILTER_ID}
       >
         <div>
           <ProbesFilter probes={availableProbes} onSearch={setFilteredProbes} />

@@ -57,7 +57,7 @@ function getFirstInput(errs: FieldErrors<CheckFormValues>) {
 }
 
 function searchForSpecialInputs(errKeys: string[] = []) {
-  const probes = errKeys.includes(`probes`) && document.querySelector(`#${PROBES_FILTER_ID} input`);
+  const probes = errKeys.includes(`probes`) && document.querySelector(`#${PROBES_FILTER_ID}`);
   const script =
     errKeys.includes(`settings.scripted.script`) && document.querySelector(`#${SCRIPT_TEXTAREA_ID} textarea`);
 

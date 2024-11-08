@@ -6,6 +6,7 @@ import { runTestAsHGFreeUserOverLimit, runTestWithoutLogsAccess } from 'test/uti
 import { CheckType } from 'types';
 import { fillMandatoryFields } from 'page/__testHelpers__/apiEndPoint';
 import { goToSection, renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
+import { PROBES_FILTER_ID } from 'components/CheckEditor/CheckProbes/ProbesFilter';
 
 describe(`<NewCheck />`, () => {
   it(`should show an error message when it fails to save a check`, async () => {
@@ -97,6 +98,16 @@ describe(`<NewCheck />`, () => {
 
     await renderNewForm(CheckType.HTTP);
     expect(screen.getByRole(`button`, { name: /Submit/ })).toBeDisabled();
+  });
+
+  it(`should focus the probes filter component when appropriate`, async () => {
+    const { user } = await renderNewForm(CheckType.HTTP);
+
+    await fillMandatoryFields({ user, checkType: CheckType.HTTP, fieldsToOmit: ['probes'] });
+    await submitForm(user);
+
+    const probesFilter = await screen.findByLabelText(/Probe locations/);
+    await waitFor(() => expect(probesFilter).toHaveFocus());
   });
 
   it(`should display an error message when the job name contains commas`, async () => {
