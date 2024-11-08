@@ -6,7 +6,6 @@ import { runTestAsHGFreeUserOverLimit, runTestWithoutLogsAccess } from 'test/uti
 import { CheckType } from 'types';
 import { fillMandatoryFields } from 'page/__testHelpers__/apiEndPoint';
 import { goToSection, renderNewForm, submitForm } from 'page/__testHelpers__/checkForm';
-import { PROBES_FILTER_ID } from 'components/CheckEditor/CheckProbes/ProbesFilter';
 
 describe(`<NewCheck />`, () => {
   it(`should show an error message when it fails to save a check`, async () => {
