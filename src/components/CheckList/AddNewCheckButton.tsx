@@ -2,14 +2,14 @@ import React from 'react';
 import { Button } from '@grafana/ui';
 
 import { ROUTES } from 'types';
-import { useCanWriteSM } from 'hooks/useDSPermission';
 import { useNavigation } from 'hooks/useNavigation';
+import { getUserPermissions } from 'hooks/useUserPermissions';
 
 export function AddNewCheckButton() {
   const navigate = useNavigation();
-  const canEdit = useCanWriteSM();
+  const { canWriteChecks } = getUserPermissions();
 
-  if (!canEdit) {
+  if (!canWriteChecks) {
     return null;
   }
 

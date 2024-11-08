@@ -6,7 +6,7 @@ import { generateRoutePath } from 'routes/utils';
 
 import { Check, ROUTES } from 'types';
 import { useDeleteCheck } from 'data/useChecks';
-import { useCanReadMetrics, useCanWriteSM } from 'hooks/useDSPermission';
+import { getUserPermissions } from 'hooks/useUserPermissions';
 import { getRoute } from 'components/Routing.utils';
 
 const getStyles = (theme: GrafanaTheme2) => ({
@@ -23,8 +23,8 @@ interface Props {
 }
 
 export const CheckItemActionButtons = ({ check, viewDashboardAsIcon }: Props) => {
-  const canEdit = useCanWriteSM();
-  const canReadMetrics = useCanReadMetrics();
+  const { canReadChecks, canWriteChecks, canDeleteChecks } = getUserPermissions();
+
   const styles = useStyles2(getStyles);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
@@ -32,7 +32,7 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon }: Props) =>
 
   return (
     <div className={styles.actionButtonGroup}>
-      {canReadMetrics && (
+      {canReadChecks && (
         <>
           {viewDashboardAsIcon ? (
             <LinkButton
@@ -54,7 +54,7 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon }: Props) =>
         href={`${generateRoutePath(ROUTES.EditCheck, { id: check.id! })}`}
         icon={`pen`}
         tooltip="Edit check"
-        disabled={!canEdit}
+        disabled={!canWriteChecks}
         variant="secondary"
         fill={`text`}
       />
@@ -62,7 +62,7 @@ export const CheckItemActionButtons = ({ check, viewDashboardAsIcon }: Props) =>
         tooltip="Delete check"
         name="trash-alt"
         onClick={() => setShowDeleteModal(true)}
-        disabled={!canEdit}
+        disabled={!canDeleteChecks}
       />
       <ConfirmModal
         isOpen={showDeleteModal}
