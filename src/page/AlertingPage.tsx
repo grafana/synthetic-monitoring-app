@@ -49,7 +49,7 @@ const AlertingPageContent = () => {
   const [updatingDefaultRules, setUpdatingDefaultRules] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
   const { alertRules, setDefaultRules, setRules, alertError } = useAlerts();
-  const { canWriteAlerts, canDeleteAlerts } = useAlertPermissions();
+  const { canWriteAlerts } = useAlertPermissions();
 
   const { recordingRules, alertingRules } = alertRules?.reduce<SplitAlertRules>(
     (rules, currentRule) => {
