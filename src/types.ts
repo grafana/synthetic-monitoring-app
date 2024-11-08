@@ -846,3 +846,23 @@ export interface CheckFormInvalidSubmissionEvent {
   errs: FieldErrors<CheckFormValues>;
   source: string;
 }
+
+export type PluginPermissions =
+  | 'grafana-synthetic-monitoring-app.checks:read'
+  | 'grafana-synthetic-monitoring-app.checks:edit'
+  | 'grafana-synthetic-monitoring-app.checks:delete'
+  | 'grafana-synthetic-monitoring-app.probes:read'
+  | 'grafana-synthetic-monitoring-app.probes:edit'
+  | 'grafana-synthetic-monitoring-app.probes:delete'
+  | 'grafana-synthetic-monitoring-app.alerts:read'
+  | 'grafana-synthetic-monitoring-app.alerts:edit'
+  | 'grafana-synthetic-monitoring-app.alerts:delete'
+  | 'grafana-synthetic-monitoring-app.thresholds:read'
+  | 'grafana-synthetic-monitoring-app.thresholds:edit'
+  | 'grafana-synthetic-monitoring-app.access-tokens:create'
+  | 'grafana-synthetic-monitoring-app.access-tokens:delete'
+  | 'grafana-synthetic-monitoring-app.plugin:enable'
+  | 'grafana-synthetic-monitoring-app.plugin:disable'
+  | 'grafana-synthetic-monitoring-app.tokens:write'
+  | 'grafana-synthetic-monitoring-app.tokens:read'
+  | 'grafana-synthetic-monitoring-app.tokens:delete';
