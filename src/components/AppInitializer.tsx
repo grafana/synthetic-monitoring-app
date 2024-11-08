@@ -8,6 +8,7 @@ import { ROUTES } from 'types';
 import { hasGlobalPermission } from 'utils';
 import { useAppInitializer } from 'hooks/useAppInitializer';
 import { useMeta } from 'hooks/useMeta';
+import { useUserPermissions } from 'hooks/useUserPermissions';
 import { MismatchedDatasourceModal } from 'components/MismatchedDatasourceModal';
 
 interface Props {
@@ -19,7 +20,8 @@ interface Props {
 export const AppInitializer = ({ redirectTo, buttonText }: PropsWithChildren<Props>) => {
   const { jsonData } = useMeta();
   const styles = useStyles2(getStyles);
-  const canInitialize = hasGlobalPermission(`datasources:create`);
+  const { canEnablePlugin } = useUserPermissions();
+  const canInitialize = canEnablePlugin && hasGlobalPermission(`datasources:create`);
 
   const {
     error,
