@@ -524,6 +524,13 @@
 - almost there... skipping docs publish step ([d97521c](https://github.com/grafana/synthetic-monitoring-app/commit/d97521ce6038149f406bcce6406bc9242b11242e))
 - gcom token secret ([1c2b5b8](https://github.com/grafana/synthetic-monitoring-app/commit/1c2b5b8473cc1cf719c0c678db1af60829f33ad1))
 
+## [1.16.6](https://github.com/grafana/synthetic-monitoring-app/compare/v1.16.5...v1.16.6) (2024-11-11)
+
+
+### Fixes
+
+* check usage calculation for MultiHTTP checks ([#984](https://github.com/grafana/synthetic-monitoring-app/issues/984)) ([c93de04](https://github.com/grafana/synthetic-monitoring-app/commit/c93de049c093c5cb1e6acc7ca59bcbcd651a3632))
+
 ## [1.16.5](https://github.com/grafana/synthetic-monitoring-app/compare/v1.16.4...v1.16.5) (2024-10-21)
 
 
