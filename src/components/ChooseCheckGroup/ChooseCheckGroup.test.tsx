@@ -34,10 +34,10 @@ async function renderChooseCheckGroup({ checkLimit = 10, scriptedLimit = 10 } = 
 it('shows check type options correctly with feature flags off', async () => {
   await renderChooseCheckGroup();
 
-  expect(screen.getByText('API Endpoint')).toBeInTheDocument();
-  expect(screen.getByText('Multi Step')).toBeInTheDocument();
-  expect(screen.queryByText('Scripted')).not.toBeInTheDocument();
-  expect(screen.queryByText('Browser')).not.toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: `API Endpoint` })).toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: `Multi Step` })).toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: `Scripted` })).not.toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: `Browser` })).not.toBeInTheDocument();
 });
 
 it('shows the scripted card with correct feature flag on', async () => {
@@ -47,7 +47,7 @@ it('shows the scripted card with correct feature flag on', async () => {
   });
 
   await renderChooseCheckGroup();
-  expect(screen.getByText('Scripted')).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: `Scripted` })).toBeInTheDocument();
 });
 
 it('shows the browser card with correct feature flag on', async () => {
@@ -57,7 +57,7 @@ it('shows the browser card with correct feature flag on', async () => {
   });
 
   await renderChooseCheckGroup();
-  expect(screen.getByText('Browser')).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: `Browser` })).toBeInTheDocument();
 });
 
 it(`doesn't show gRPC option by default`, async () => {
@@ -94,10 +94,10 @@ it(`shows an error alert when user is HG Free user with over 100k execution limi
   const alert = await screen.findByText(/You have reached your monthly execution limit of/);
   expect(alert).toBeInTheDocument();
 
-  const apiEndPointButton = screen.getByRole(`link`, { name: `API Endpoint check` });
-  const multiStepButton = screen.getByRole(`link`, { name: `Multi Step check` });
-  const scriptedButton = screen.getByRole(`link`, { name: `Scripted check` });
-  const browserButton = screen.getByRole(`link`, { name: `Browser check` });
+  const apiEndPointButton = screen.getByRole('link', { name: `API Endpoint` });
+  const multiStepButton = screen.getByRole('link', { name: `Multi Step` });
+  const scriptedButton = screen.getByRole('link', { name: `Scripted` });
+  const browserButton = screen.getByRole('link', { name: `Browser` });
 
   expect(apiEndPointButton).toHaveAttribute(`aria-disabled`, `true`);
   expect(multiStepButton).toHaveAttribute(`aria-disabled`, `true`);

@@ -8,10 +8,10 @@ import { CheckTypeGroup, ROUTES } from 'types';
 import { CheckTypeGroupOption } from 'hooks/useCheckTypeGroupOptions';
 import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
 import { useLimits } from 'hooks/useLimits';
+import { CheckStatusInfo, NewStatusBadge } from 'components/CheckEditor/FormComponents/CheckStatusInfo';
 import { getRoute } from 'components/Routing.utils';
 
 import { Card } from '../Card';
-import { CheckStatusBadge } from '../CheckEditor/FormComponents/CheckStatusBadge';
 import { Protocol } from './Protocol';
 
 export const CheckGroupCard = ({ group }: { group: CheckTypeGroupOption }) => {
@@ -26,38 +26,41 @@ export const CheckGroupCard = ({ group }: { group: CheckTypeGroupOption }) => {
   const disabled = Boolean(tooltip);
 
   return (
-    <Card key={group.label} data-testid={`${DataTestIds.CHECK_GROUP_CARD}-${group.value}`}>
+    <Card key={group.label} data-testid={`${DataTestIds.CHECK_GROUP_CARD}-${group.value}`} className={styles.checkCard}>
       <Stack direction={`column`} justifyContent={`center`} gap={2}>
         <Stack justifyContent={`center`}>
           <Icon name={group.icon} size="xxxl" />
+          {shouldShowStatus && checksWithStatus[0].status && (
+            <NewStatusBadge status={checksWithStatus[0].status.value} className={styles.newBadge} />
+          )}
         </Stack>
-        <Card.Heading variant="h6">
-          <div>{group.label} </div>
+        <Card.Heading variant="h5">
+          <Stack justifyContent={'center'}>
+            <div className={styles.groupName}>{group.label}</div>
+            {shouldShowStatus && checksWithStatus[0].status && <CheckStatusInfo {...checksWithStatus[0].status} />}
+          </Stack>
         </Card.Heading>
-        <div className={styles.desc}>{group.description}</div>
-        <div>
+        <div>{group.description}</div>
+        <div className={styles.cardButton}>
           <LinkButton
             icon={!isReady ? 'fa fa-spinner' : undefined}
             disabled={disabled}
             href={`${getRoute(ROUTES.NewCheck)}/${group.value}`}
             tooltip={getTooltip(limits, group.value)}
           >
-            {group.label} check
+            {group.label}
           </LinkButton>
         </div>
         <div className={styles.protocols}>
           <Stack direction={`column`} gap={2}>
-            Supported protocols:
-            <Stack justifyContent={`center`}>
-              {group.protocols.map((protocol) => {
-                return <Protocol key={protocol.label} {...protocol} href={disabled ? undefined : protocol.href} />;
-              })}
-            </Stack>
-            {shouldShowStatus && checksWithStatus[0].status && (
-              <Stack justifyContent={`center`}>
-                <CheckStatusBadge {...checksWithStatus[0].status} />
-              </Stack>
-            )}
+            <div className={styles.cardFooter}>
+              {group.protocols.map((protocol, index) => (
+                <span key={protocol.label}>
+                  <Protocol {...protocol} href={disabled ? undefined : protocol.href} />
+                  {index < group.protocols.length - 1 && ', '}
+                </span>
+              ))}
+            </div>
           </Stack>
         </div>
       </Stack>
@@ -99,10 +102,46 @@ function getTooltip(
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({
+  newBadge: css({
+    position: 'absolute',
+    right: 0,
+    marginRight: theme.spacing(3),
+    marginTop: theme.spacing(2),
+    height: '26px',
+  }),
+
+  cardButton: css({
+    marginTop: 'auto',
+  }),
+
+  cardFooter: css({
+    display: 'flex',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: '4px',
+    marginTop: theme.spacing(1),
+  }),
+
+  checkCard: css({
+    minWidth: '0',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'wrap',
+
+    '> div:first-of-type': {
+      height: '100%',
+    },
+  }),
   desc: css({
     color: theme.colors.text.secondary,
   }),
+  groupName: css({
+    color: theme.colors.text.primary,
+  }),
   protocols: css({
-    marginTop: theme.spacing(1),
+    borderTop: `1px solid ${theme.colors.border.weak}`,
+    color: theme.colors.text.primary,
+    display: 'flex',
+    justifyContent: 'center',
   }),
 });
