@@ -2,16 +2,13 @@ import { OrgRole } from '@grafana/data';
 import { config } from '@grafana/runtime';
 
 import { PluginPermissions } from 'types';
-import { hasGlobalPermission } from 'utils';
 
 const isUserActionAllowed = (permission: PluginPermissions, fallbackOrgRole: OrgRole) => {
   const { orgRole: userOrgRole, permissions: userPermissions } = config.bootData.user;
   const isAllowed = config.featureToggles.accessControlOnCall
     ? !!userPermissions?.[permission]
     : userOrgRole === fallbackOrgRole;
-  console.log('permissions', userPermissions);
-  console.log('hasAccess', hasGlobalPermission('grafana-synthetic-monitoring-app.checks:edit'));
-  console.log('userOrgRole', userOrgRole);
+
   return isAllowed;
 };
 
