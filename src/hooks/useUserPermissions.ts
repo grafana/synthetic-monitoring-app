@@ -3,13 +3,31 @@ import { config } from '@grafana/runtime';
 
 import { PluginPermissions } from 'types';
 
-const isUserActionAllowed = (permission: PluginPermissions, fallbackOrgRole: OrgRole) => {
-  const { orgRole: userOrgRole, permissions: userPermissions } = config.bootData.user;
-  const isAllowed = config.featureToggles.accessControlOnCall
-    ? !!userPermissions?.[permission]
-    : userOrgRole === fallbackOrgRole;
+const hasMinFallbackRole = (fallbackOrgRole: OrgRole) => {
+  const { orgRole } = config.bootData.user;
 
-  return isAllowed;
+  if (!orgRole) {
+    return false;
+  }
+
+  const roleHierarchy: Record<OrgRole, OrgRole[]> = {
+    [OrgRole.Viewer]: [OrgRole.Viewer, OrgRole.Editor, OrgRole.Admin],
+    [OrgRole.Editor]: [OrgRole.Editor, OrgRole.Admin],
+    [OrgRole.Admin]: [OrgRole.Admin],
+    [OrgRole.None]: [],
+  };
+
+  return roleHierarchy[fallbackOrgRole]?.includes(orgRole) || false;
+};
+
+const isUserActionAllowed = (permission: PluginPermissions, fallbackOrgRole: OrgRole): boolean => {
+  const { permissions: userPermissions } = config.bootData.user;
+
+  if (config.featureToggles.accessControlOnCall) {
+    return Boolean(userPermissions?.[permission]);
+  }
+
+  return hasMinFallbackRole(fallbackOrgRole);
 };
 
 export const getUserPermissions = () => {
