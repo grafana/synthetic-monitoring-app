@@ -84,6 +84,7 @@
         "description": "Read checks in the Synthetic Monitoring app",
         "permissions": [
           { "action": "plugins.app:access", "scope": "plugins:id:grafana-synthetic-monitoring-app" },
+          { "action": "grafana-synthetic-monitoring-app:read" },
 
           { "action": "grafana-synthetic-monitoring-app.checks:read" }
         ]
@@ -96,6 +97,8 @@
         "description": "Create, edit and delete checks in the Synthetic Monitoring app",
         "permissions": [
           { "action": "plugins.app:access", "scope": "plugins:id:grafana-synthetic-monitoring-app" },
+          { "action": "grafana-synthetic-monitoring-app:read" },
+          { "action": "grafana-synthetic-monitoring-app:write" },
 
           { "action": "grafana-synthetic-monitoring-app.checks:edit" },
           { "action": "grafana-synthetic-monitoring-app.checks:read" },
@@ -110,6 +113,7 @@
         "description": "Read probes in the Synthetic Monitoring app",
         "permissions": [
           { "action": "plugins.app:access", "scope": "plugins:id:grafana-synthetic-monitoring-app" },
+          { "action": "grafana-synthetic-monitoring-app:read" },
 
           { "action": "grafana-synthetic-monitoring-app.probes:read" }
         ]
@@ -122,6 +126,8 @@
         "description": "Create, edit and delete probes in the Synthetic Monitoring app",
         "permissions": [
           { "action": "plugins.app:access", "scope": "plugins:id:grafana-synthetic-monitoring-app" },
+          { "action": "grafana-synthetic-monitoring-app:read" },
+          { "action": "grafana-synthetic-monitoring-app:write" },
 
           { "action": "grafana-synthetic-monitoring-app.probes:edit" },
           { "action": "grafana-synthetic-monitoring-app.probes:read" },
@@ -136,6 +142,7 @@
         "description": "Read alerts in the Synthetic Monitoring app",
         "permissions": [
           { "action": "plugins.app:access", "scope": "plugins:id:grafana-synthetic-monitoring-app" },
+          { "action": "grafana-synthetic-monitoring-app:read" },
 
           { "action": "grafana-synthetic-monitoring-app.alerts:read" }
         ]
@@ -148,6 +155,8 @@
         "description": "Create, edit and delete alerts in the Synthetic Monitoring app",
         "permissions": [
           { "action": "plugins.app:access", "scope": "plugins:id:grafana-synthetic-monitoring-app" },
+          { "action": "grafana-synthetic-monitoring-app:read" },
+          { "action": "grafana-synthetic-monitoring-app:write" },
 
           { "action": "grafana-synthetic-monitoring-app.alerts:edit" },
           { "action": "grafana-synthetic-monitoring-app.alerts:read" },
@@ -162,6 +171,7 @@
         "description": "Read thresholds in the Synthetic Monitoring app",
         "permissions": [
           { "action": "plugins.app:access", "scope": "plugins:id:grafana-synthetic-monitoring-app" },
+          { "action": "grafana-synthetic-monitoring-app:read" },
 
           { "action": "grafana-synthetic-monitoring-app.thresholds:read" }
         ]
@@ -174,6 +184,8 @@
         "description": "Read and edit thresholds in the Synthetic Monitoring app",
         "permissions": [
           { "action": "plugins.app:access", "scope": "plugins:id:grafana-synthetic-monitoring-app" },
+          { "action": "grafana-synthetic-monitoring-app:read" },
+          { "action": "grafana-synthetic-monitoring-app:write" },
 
           { "action": "grafana-synthetic-monitoring-app.thresholds:edit" },
           { "action": "grafana-synthetic-monitoring-app.thresholds:read" }
@@ -187,6 +199,8 @@
         "description": "Create and delete access tokens in the Synthetic Monitoring app",
         "permissions": [
           { "action": "plugins.app:access", "scope": "plugins:id:grafana-synthetic-monitoring-app" },
+          { "action": "grafana-synthetic-monitoring-app:read" },
+          { "action": "grafana-synthetic-monitoring-app:write" },
 
           { "action": "grafana-synthetic-monitoring-app.access-tokens:create" },
           { "action": "grafana-synthetic-monitoring-app.access-tokens:delete" }
@@ -200,6 +214,7 @@
         "description": "Read access tokens in the Synthetic Monitoring app",
         "permissions": [
           { "action": "plugins.app:access", "scope": "plugins:id:grafana-synthetic-monitoring-app" },
+          { "action": "grafana-synthetic-monitoring-app:read" },
 
           { "action": "grafana-synthetic-monitoring-app.access-tokens:read" }
         ]
@@ -212,6 +227,8 @@
         "description": "Full access to write and manage checks, probes, alerts, thresholds, and access tokens as well as enabling/disabling the Synthetic Monitoring plugin",
         "permissions": [
           { "action": "plugins.app:access", "scope": "plugins:id:grafana-synthetic-monitoring-app" },
+          { "action": "grafana-synthetic-monitoring-app:read" },
+          { "action": "grafana-synthetic-monitoring-app:write" },
 
           { "action": "grafana-synthetic-monitoring-app.plugin:enable" },
           { "action": "grafana-synthetic-monitoring-app.plugin:disable" },
@@ -240,6 +257,8 @@
         "description": "Add, update and delete checks, probes, alerts, thresholds, and access tokens in the Synthetic Monitoring app",
         "permissions": [
           { "action": "plugins.app:access", "scope": "plugins:id:grafana-synthetic-monitoring-app" },
+          { "action": "grafana-synthetic-monitoring-app:read" },
+          { "action": "grafana-synthetic-monitoring-app:write" },
 
           { "action": "grafana-synthetic-monitoring-app.checks:write" },
           { "action": "grafana-synthetic-monitoring-app.probes:write" },
@@ -266,6 +285,7 @@
         "description": "Read checks, probes, alerts, thresholds, and access tokens in the Synthetic Monitoring app",
         "permissions": [
           { "action": "plugins.app:access", "scope": "plugins:id:grafana-synthetic-monitoring-app" },
+          { "action": "grafana-synthetic-monitoring-app:read" },
 
           { "action": "grafana-synthetic-monitoring-app.checks:read" },
           { "action": "grafana-synthetic-monitoring-app.probes:read" },
