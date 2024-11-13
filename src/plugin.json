@@ -100,7 +100,7 @@
           { "action": "grafana-synthetic-monitoring-app:read" },
           { "action": "grafana-synthetic-monitoring-app:write" },
 
-          { "action": "grafana-synthetic-monitoring-app.checks:edit" },
+          { "action": "grafana-synthetic-monitoring-app.checks:write" },
           { "action": "grafana-synthetic-monitoring-app.checks:read" },
           { "action": "grafana-synthetic-monitoring-app.checks:delete" }
         ]
@@ -129,7 +129,7 @@
           { "action": "grafana-synthetic-monitoring-app:read" },
           { "action": "grafana-synthetic-monitoring-app:write" },
 
-          { "action": "grafana-synthetic-monitoring-app.probes:edit" },
+          { "action": "grafana-synthetic-monitoring-app.probes:write" },
           { "action": "grafana-synthetic-monitoring-app.probes:read" },
           { "action": "grafana-synthetic-monitoring-app.probes:delete" }
         ]
@@ -158,7 +158,7 @@
           { "action": "grafana-synthetic-monitoring-app:read" },
           { "action": "grafana-synthetic-monitoring-app:write" },
 
-          { "action": "grafana-synthetic-monitoring-app.alerts:edit" },
+          { "action": "grafana-synthetic-monitoring-app.alerts:write" },
           { "action": "grafana-synthetic-monitoring-app.alerts:read" },
           { "action": "grafana-synthetic-monitoring-app.alerts:delete" }
         ]
@@ -187,7 +187,7 @@
           { "action": "grafana-synthetic-monitoring-app:read" },
           { "action": "grafana-synthetic-monitoring-app:write" },
 
-          { "action": "grafana-synthetic-monitoring-app.thresholds:edit" },
+          { "action": "grafana-synthetic-monitoring-app.thresholds:write" },
           { "action": "grafana-synthetic-monitoring-app.thresholds:read" }
         ]
       },
