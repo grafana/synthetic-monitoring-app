@@ -848,17 +848,19 @@ export interface CheckFormInvalidSubmissionEvent {
 }
 
 export type PluginPermissions =
+  | 'grafana-synthetic-monitoring-app:read'
+  | 'grafana-synthetic-monitoring-app:write'
   | 'grafana-synthetic-monitoring-app.checks:read'
-  | 'grafana-synthetic-monitoring-app.checks:edit'
+  | 'grafana-synthetic-monitoring-app.checks:write'
   | 'grafana-synthetic-monitoring-app.checks:delete'
   | 'grafana-synthetic-monitoring-app.probes:read'
-  | 'grafana-synthetic-monitoring-app.probes:edit'
+  | 'grafana-synthetic-monitoring-app.probes:write'
   | 'grafana-synthetic-monitoring-app.probes:delete'
   | 'grafana-synthetic-monitoring-app.alerts:read'
-  | 'grafana-synthetic-monitoring-app.alerts:edit'
+  | 'grafana-synthetic-monitoring-app.alerts:write'
   | 'grafana-synthetic-monitoring-app.alerts:delete'
   | 'grafana-synthetic-monitoring-app.thresholds:read'
-  | 'grafana-synthetic-monitoring-app.thresholds:edit'
+  | 'grafana-synthetic-monitoring-app.thresholds:write'
   | 'grafana-synthetic-monitoring-app.access-tokens:create'
   | 'grafana-synthetic-monitoring-app.access-tokens:delete'
   | 'grafana-synthetic-monitoring-app.plugin:enable'
