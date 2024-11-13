@@ -89,7 +89,7 @@
           { "action": "grafana-synthetic-monitoring-app.checks:read" }
         ]
       },
-      "grants": ["Admin", "Editor", "Viewer"]
+      "grants": ["Viewer"]
     },
     {
       "role": {
@@ -118,7 +118,7 @@
           { "action": "grafana-synthetic-monitoring-app.probes:read" }
         ]
       },
-      "grants": ["Admin", "Editor", "Viewer"]
+      "grants": ["Viewer"]
     },
     {
       "role": {
@@ -147,7 +147,7 @@
           { "action": "grafana-synthetic-monitoring-app.alerts:read" }
         ]
       },
-      "grants": ["Admin", "Editor", "Viewer"]
+      "grants": ["Viewer"]
     },
     {
       "role": {
@@ -176,7 +176,7 @@
           { "action": "grafana-synthetic-monitoring-app.thresholds:read" }
         ]
       },
-      "grants": ["Admin", "Editor", "Viewer"]
+      "grants": ["Viewer"]
     },
     {
       "role": {
@@ -294,7 +294,7 @@
           { "action": "grafana-synthetic-monitoring-app.tokens:read" }
         ]
       },
-      "grants": ["Admin", "Editor", "Viewer"]
+      "grants": ["Viewer"]
     }
   ],
   "dependencies": {
