@@ -206,7 +206,7 @@
           { "action": "grafana-synthetic-monitoring-app.access-tokens:delete" }
         ]
       },
-      "grants": ["Admin", "Editor"]
+      "grants": ["Admin"]
     },
     {
       "role": {
@@ -223,7 +223,7 @@
     },
     {
       "role": {
-        "name": "Full admin access",
+        "name": "Admin",
         "description": "Full access to write and manage checks, probes, alerts, thresholds, and access tokens as well as enabling/disabling the Synthetic Monitoring plugin",
         "permissions": [
           { "action": "plugins.app:access", "scope": "plugins:id:grafana-synthetic-monitoring-app" },
@@ -253,7 +253,7 @@
     },
     {
       "role": {
-        "name": "Full write access",
+        "name": "Editor",
         "description": "Add, update and delete checks, probes, alerts, thresholds, and access tokens in the Synthetic Monitoring app",
         "permissions": [
           { "action": "plugins.app:access", "scope": "plugins:id:grafana-synthetic-monitoring-app" },
@@ -264,7 +264,6 @@
           { "action": "grafana-synthetic-monitoring-app.probes:write" },
           { "action": "grafana-synthetic-monitoring-app.alerts:write" },
           { "action": "grafana-synthetic-monitoring-app.thresholds:write" },
-          { "action": "grafana-synthetic-monitoring-app.tokens:write" },
           { "action": "grafana-synthetic-monitoring-app.checks:read" },
           { "action": "grafana-synthetic-monitoring-app.probes:read" },
           { "action": "grafana-synthetic-monitoring-app.alerts:read" },
@@ -273,15 +272,14 @@
           { "action": "grafana-synthetic-monitoring-app.checks:delete" },
           { "action": "grafana-synthetic-monitoring-app.probes:delete" },
           { "action": "grafana-synthetic-monitoring-app.alerts:delete" },
-          { "action": "grafana-synthetic-monitoring-app.thresholds:delete" },
-          { "action": "grafana-synthetic-monitoring-app.tokens:delete" }
+          { "action": "grafana-synthetic-monitoring-app.thresholds:delete" }
         ]
       },
       "grants": ["Admin", "Editor"]
     },
     {
       "role": {
-        "name": "Full read-only access",
+        "name": "Reader",
         "description": "Read checks, probes, alerts, thresholds, and access tokens in the Synthetic Monitoring app",
         "permissions": [
           { "action": "plugins.app:access", "scope": "plugins:id:grafana-synthetic-monitoring-app" },
