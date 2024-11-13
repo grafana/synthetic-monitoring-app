@@ -12,6 +12,7 @@ import { ExtendedProbe, type Probe } from 'types';
 
 import { apiRoute } from './handlers';
 import { server } from './server';
+import { FULL_ADMIN_ACCESS, FULL_READONLY_ACCESS, FULL_WRITER_ACCESS } from './fixtures/rbacPermissions';
 
 export const UPDATED_VALUES: Pick<Probe, 'name' | 'latitude' | 'longitude' | 'region' | 'labels' | 'capabilities'> = {
   latitude: 19.05758,
@@ -146,6 +147,60 @@ export function runTestWithoutSMAccess() {
       ...jest.requireActual('@grafana/runtime').getDatasourceSrv(),
       getList: () => [METRICS_DATASOURCE, LOGS_DATASOURCE],
     };
+  });
+}
+
+export function runTestAsRbacReader() {
+  const runtime = require('@grafana/runtime');
+  jest.replaceProperty(runtime, `config`, {
+    ...config,
+    featureToggles: {
+      ...runtime.config.featureToggles,
+      accessControlOnCall: true,
+    },
+
+    bootData: {
+      ...runtime.config.bootData,
+      user: {
+        permissions: FULL_READONLY_ACCESS,
+      },
+    },
+  });
+}
+
+export function runTestAsRbacEditor() {
+  const runtime = require('@grafana/runtime');
+  jest.replaceProperty(runtime, `config`, {
+    ...config,
+    featureToggles: {
+      ...runtime.config.featureToggles,
+      accessControlOnCall: true,
+    },
+
+    bootData: {
+      ...runtime.config.bootData,
+      user: {
+        permissions: FULL_WRITER_ACCESS,
+      },
+    },
+  });
+}
+
+export function runTestAsRbacAdmin() {
+  const runtime = require('@grafana/runtime');
+  jest.replaceProperty(runtime, `config`, {
+    ...config,
+    featureToggles: {
+      ...runtime.config.featureToggles,
+      accessControlOnCall: true,
+    },
+
+    bootData: {
+      ...runtime.config.bootData,
+      user: {
+        permissions: FULL_ADMIN_ACCESS,
+      },
+    },
   });
 }
 
