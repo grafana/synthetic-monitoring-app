@@ -35,7 +35,7 @@ it(`creates a new probe, displays the modal and redirects on close`, async () =>
   await waitFor(() => expect(screen.queryByText(ADD_PROBE_TOKEN_RESPONSE)).toBeInTheDocument());
   const dismiss = screen.getByText('Go back to probes list');
   await user.click(dismiss);
-  // await waitFor(() => expect(history.location.pathname).toBe(getRoute(ROUTES.Probes)));
+
   expect(screen.getByTestId(DataTestIds.TEST_ROUTER_INFO_PATHNAME)).toHaveTextContent(generateRoutePath(ROUTES.Probes));
 });
 

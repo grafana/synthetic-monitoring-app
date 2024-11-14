@@ -33,7 +33,7 @@ export const ChooseCheckType = ({ checkType, checkTypeGroup, disabled }: ChooseC
 
     const values = updateCheckTypeValues(ref.current, newCheckType, checkType);
     reset(values);
-    navigate({ search: `?checkType=${newCheckType}` }, { replace: true }); // todo: preserve all query params
+    navigate({ search: `?checkType=${newCheckType}` }, { replace: true });
   };
 
   if (groupOptions.length === 1) {

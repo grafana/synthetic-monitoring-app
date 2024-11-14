@@ -22,7 +22,7 @@ type ProbeEditorProps = {
   probe: ExtendedProbe;
   submitText: string;
   supportingContent?: ReactNode;
-  readOnly?: boolean;
+  forceViewMode?: boolean;
 };
 
 export const ProbeEditor = ({
@@ -32,11 +32,11 @@ export const ProbeEditor = ({
   probe,
   submitText,
   supportingContent,
-  readOnly,
+  forceViewMode, // When true, the form is in view mode
 }: ProbeEditorProps) => {
   const styles = useStyles2(getStyles);
   const canEdit = useCanEditProbe(probe);
-  const writeMode = canEdit && !readOnly;
+  const writeMode = canEdit && !forceViewMode;
   const form = useForm<Probe>({ defaultValues: probe, resolver: zodResolver(ProbeSchema) });
   const { latitude, longitude } = form.watch();
   const handleSubmit = form.handleSubmit((formValues: Probe) => onSubmit(formValues));
