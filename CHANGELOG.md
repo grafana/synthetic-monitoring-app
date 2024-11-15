@@ -1,4 +1,4 @@
-# Change Log
+# Changelog
 
 # [1.15.2](https://github.com/grafana/synthetic-monitoring-app/compare/v1.15.1...v1.15.2) (2024-9-19)
 
