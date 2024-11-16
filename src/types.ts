@@ -653,7 +653,6 @@ export enum FeatureName {
   ScriptedChecks = 'scripted-checks',
   UnifiedAlerting = 'ngalert',
   UptimeQueryV2 = 'uptime-query-v2',
-  SecretManagementDemo = 'synthetics-secrets-demo',
   __TURNOFF = 'test-only-do-not-use',
 }
 
